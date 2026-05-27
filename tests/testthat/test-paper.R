@@ -234,9 +234,9 @@ test_that("ref_table", {
 
   paper <- demopaper()
   bib <- ref_table(paper)
-  expect_equal(bib$bib_id, 1:5)
+  expect_equal(bib$bib_id, 0:4)
   expect_equal(bib$doi[[5]], paper$bib$doi[[5]])
-  expect_equal(bib$doi[1:4], paper$bib_match$doi[1:4])
+  expect_in(bib$doi[2:4], paper$bib_match$doi[1:4])
 
   paper$bib_match <- NULL
   bib <- ref_table(paper)

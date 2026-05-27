@@ -1,0 +1,1536 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 4,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            5,
+                            7
+                        ]
+                    ],
+                    "date-time": "2026-05-07T06:27:58Z",
+                    "timestamp": 1778135278370,
+                    "version": "3.51.4"
+                },
+                "reference-count": 112,
+                "publisher": "Oxford University Press (OUP)",
+                "issue": "6",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "short-container-title": [
+                    "Cerebral Cortex"
+                ],
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2009,
+                            6,
+                            1
+                        ]
+                    ]
+                },
+                "DOI": "10.1093/cercor/bhn181",
+                "type": "journal-article",
+                "created": {
+                    "date-parts": [
+                        [
+                            2008,
+                            11,
+                            20
+                        ]
+                    ],
+                    "date-time": "2008-11-20T01:44:39Z",
+                    "timestamp": 1227145479000
+                },
+                "page": "1239-1255",
+                "source": "Crossref",
+                "is-referenced-by-count": 565,
+                "title": [
+                    "The Observation and Execution of Actions Share Motor and Somatosensory Voxels in all Tested Subjects: Single-Subject Analyses of Unsmoothed fMRI Data"
+                ],
+                "prefix": "10.1093",
+                "volume": "19",
+                "author": [
+                    {
+                        "given": "V.",
+                        "family": "Gazzola",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    },
+                    {
+                        "given": "C.",
+                        "family": "Keysers",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "286",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2008,
+                            11,
+                            19
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "issue": "2",
+                        "key": "1_10923754",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "319",
+                        "DOI": "10.1002/(SICI)1096-9861(19990920)412:2<319::AID-CNE10>3.0.CO;2-7",
+                        "volume": "412",
+                        "author": "Amunts",
+                        "year": "1999",
+                        "journal-title": "The Journal of comparative neurology",
+                        "ISSN": "https://id.crossref.org/issn/0021-9967",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "2_16707853",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "303",
+                        "DOI": "10.1146/annurev.neuro.20.1.303",
+                        "volume": "20",
+                        "author": "Andersen",
+                        "year": "1997",
+                        "journal-title": "Annual review of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0147-006X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "24",
+                        "key": "3_30115104",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2129",
+                        "DOI": "10.1016/j.cub.2007.11.045",
+                        "volume": "17",
+                        "author": "Avenanti",
+                        "year": "2007",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "4_33290347",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "640",
+                        "DOI": "10.1006/nimg.2001.1029",
+                        "volume": "15",
+                        "year": "2002",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "9",
+                        "key": "5_18170713",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2609",
+                        "DOI": "10.1111/j.0953-816X.2004.03348.x",
+                        "volume": "19",
+                        "author": "Aziz-Zadeh",
+                        "year": "2004",
+                        "journal-title": "The European journal of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0953-816X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "11",
+                        "key": "6_21741772",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2964",
+                        "DOI": "10.1523/JNEUROSCI.2921-05.2006",
+                        "volume": "26",
+                        "author": "Aziz-Zadeh",
+                        "year": "2006",
+                        "journal-title": "Journal of Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0270-6474",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "7_17023202",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "127",
+                        "DOI": "10.1007/s00221-002-1037-5",
+                        "volume": "144",
+                        "author": "Aziz-Zadeh",
+                        "year": "2002",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "8_34748877",
+                        "first-page": "917",
+                        "volume": "30",
+                        "year": "2005",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "7",
+                        "key": "9_18950322",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1571",
+                        "DOI": "10.1093/brain/awh500",
+                        "volume": "128",
+                        "year": "2005",
+                        "journal-title": "Brain",
+                        "ISSN": "https://id.crossref.org/issn/0006-8950",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1-2",
+                        "key": "10_21238782",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "115",
+                        "DOI": "10.1016/j.brainres.2005.10.034",
+                        "volume": "1065",
+                        "author": "Borroni",
+                        "year": "2005",
+                        "journal-title": "Brain research",
+                        "ISSN": "https://id.crossref.org/issn/0006-8993",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "11_32889425",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "312",
+                        "DOI": "10.1016/j.neuroimage.2004.11.043",
+                        "volume": "25",
+                        "year": "2005",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "24",
+                        "key": "12_29288847",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2117",
+                        "DOI": "10.1016/j.cub.2007.11.057",
+                        "volume": "17",
+                        "author": "Skelhorn",
+                        "year": "2007",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "2",
+                        "key": "13_11035549",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "400",
+                        "DOI": "10.1046/j.1460-9568.2001.01385.x",
+                        "volume": "13",
+                        "author": "Buccino",
+                        "year": "2001",
+                        "journal-title": "The European journal of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0953-816X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "14_18076920",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "114",
+                        "DOI": "10.1162/089892904322755601",
+                        "volume": "16",
+                        "author": "Buccino",
+                        "year": "2004",
+                        "journal-title": "Journal of Cognitive Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0898-929X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "15_33290328",
+                        "first-page": "323",
+                        "volume": "42",
+                        "year": "2004",
+                        "ISSN": "https://id.crossref.org/issn/1097-4199",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "8",
+                        "key": "16_19255387",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1243",
+                        "DOI": "10.1093/cercor/bhi007",
+                        "volume": "15",
+                        "year": "2005",
+                        "journal-title": "Cerebral Cortex",
+                        "ISSN": "https://id.crossref.org/issn/1047-3211",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "19",
+                        "key": "17_22778339",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1905",
+                        "DOI": "10.1016/j.cub.2006.07.065",
+                        "volume": "16",
+                        "author": "Calvo-Merino",
+                        "year": "2006",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "18_34121954",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "430",
+                        "DOI": "10.1016/j.neuroimage.2006.06.054",
+                        "volume": "33",
+                        "year": "2006",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "17",
+                        "key": "19_29385728",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1527",
+                        "DOI": "10.1016/j.cub.2007.08.006",
+                        "volume": "17",
+                        "author": "Catmur",
+                        "year": "2007",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "20_21513114",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "53",
+                        "DOI": "10.1002/cne.20849",
+                        "volume": "495",
+                        "author": "Choi",
+                        "year": "2006",
+                        "journal-title": "The Journal of comparative neurology",
+                        "ISSN": "https://id.crossref.org/issn/0021-9967",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "11",
+                        "key": "21_19155187",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1761",
+                        "DOI": "10.1093/cercor/bhi053",
+                        "volume": "15",
+                        "year": "2005",
+                        "journal-title": "Cerebral Cortex",
+                        "ISSN": "https://id.crossref.org/issn/1047-3211",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "22_33290331",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1257",
+                        "DOI": "10.1016/j.neuroimage.2006.01.033",
+                        "volume": "31",
+                        "year": "2006",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "23_21520420",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "28",
+                        "DOI": "10.1038/nn1611",
+                        "volume": "9",
+                        "author": "Dapretto",
+                        "year": "2006",
+                        "journal-title": "Nature neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/1097-6256",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "6",
+                        "key": "24_30713995",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "454",
+                        "DOI": "10.1016/j.cub.2008.02.057",
+                        "volume": "18",
+                        "author": "de Lange",
+                        "year": "2008",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "10",
+                        "key": "25_5798936",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1763",
+                        "DOI": "10.1093/brain/120.10.1763",
+                        "volume": "120",
+                        "author": "Decety",
+                        "year": "1997",
+                        "journal-title": "Brain",
+                        "ISSN": "https://id.crossref.org/issn/0006-8950",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "11",
+                        "key": "27_19217411",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "423",
+                        "DOI": "10.1016/S1364-6613(00)01537-0",
+                        "volume": "4",
+                        "author": "Desmurget",
+                        "year": "2000",
+                        "journal-title": "Trends in cognitive sciences",
+                        "ISSN": "https://id.crossref.org/issn/1364-6613",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "28_10219082",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "176",
+                        "DOI": "10.1007/BF00230027",
+                        "volume": "91",
+                        "author": "di Pellegrino",
+                        "year": "1992",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1-3",
+                        "key": "29_23004634",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "233",
+                        "DOI": "10.1016/j.brainresbull.2006.09.015",
+                        "volume": "71",
+                        "author": "Dimitrova",
+                        "year": "2006",
+                        "journal-title": "Brain research bulletin",
+                        "ISSN": "https://id.crossref.org/issn/0361-9230",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "3",
+                        "key": "30_28948414",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1415",
+                        "DOI": "10.1152/jn.00238.2007",
+                        "volume": "98",
+                        "year": "2007",
+                        "journal-title": "Journal of Neurophysiology",
+                        "ISSN": "https://id.crossref.org/issn/0022-3077",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "31_19601198",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "634",
+                        "DOI": "10.1152/jn.00626.2002",
+                        "volume": "89",
+                        "year": "2003",
+                        "journal-title": "Journal of Neurophysiology",
+                        "ISSN": "https://id.crossref.org/issn/0022-3077",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "2",
+                        "key": "32_19145317",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "268",
+                        "DOI": "10.1093/cercor/bhi106",
+                        "volume": "16",
+                        "year": "2006",
+                        "journal-title": "Cerebral Cortex",
+                        "ISSN": "https://id.crossref.org/issn/1047-3211",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "8",
+                        "key": "33_22776842",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1800",
+                        "DOI": "10.1093/cercor/bhl090",
+                        "volume": "17",
+                        "year": "2007",
+                        "journal-title": "Cerebral Cortex",
+                        "ISSN": "https://id.crossref.org/issn/1047-3211",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "34_33290349",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1325",
+                        "DOI": "10.1016/j.neuroimage.2004.12.034",
+                        "volume": "25",
+                        "year": "2005",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "2",
+                        "key": "36_16919326",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "399",
+                        "DOI": "10.1046/j.0953-816x.2001.01874.x",
+                        "volume": "15",
+                        "author": "Fadiga",
+                        "year": "2002",
+                        "journal-title": "The European journal of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0953-816X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "6",
+                        "key": "37_15999801",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "2608",
+                        "DOI": "10.1152/jn.1995.73.6.2608",
+                        "volume": "73",
+                        "author": "Fadiga",
+                        "year": "1995",
+                        "journal-title": "Journal of Neurophysiology",
+                        "ISSN": "https://id.crossref.org/issn/0022-3077",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5722",
+                        "key": "38_18834401",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "662",
+                        "DOI": "10.1126/science.1106138",
+                        "volume": "308",
+                        "author": "Fogassi",
+                        "year": "2005",
+                        "journal-title": "Science",
+                        "ISSN": "https://id.crossref.org/issn/0036-8075",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "2",
+                        "key": "40_16241017",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "593",
+                        "DOI": "10.1093/brain/119.2.593",
+                        "volume": "119",
+                        "author": "Gallese",
+                        "year": "1996",
+                        "journal-title": "Brain",
+                        "ISSN": "https://id.crossref.org/issn/0006-8950",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "9",
+                        "key": "41_18517633",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "396",
+                        "DOI": "10.1016/j.tics.2004.07.002",
+                        "volume": "8",
+                        "author": "Gallese",
+                        "year": "2004",
+                        "journal-title": "Trends in cognitive sciences",
+                        "ISSN": "https://id.crossref.org/issn/1364-6613",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "7",
+                        "key": "42_11177708",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1489",
+                        "DOI": "10.1097/00001756-200105250-00038",
+                        "volume": "12",
+                        "author": "Gangitano",
+                        "year": "2001",
+                        "journal-title": "Neuroreport",
+                        "ISSN": "https://id.crossref.org/issn/0959-4965",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "18",
+                        "key": "43_22618052",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1824",
+                        "DOI": "10.1016/j.cub.2006.07.072",
+                        "volume": "16",
+                        "author": "Gazzola",
+                        "year": "2006",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "44_33290350",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1674",
+                        "DOI": "10.1016/j.neuroimage.2007.02.003",
+                        "volume": "35",
+                        "year": "2007",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "14",
+                        "key": "45_28932166",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1235",
+                        "DOI": "10.1016/j.cub.2007.06.045",
+                        "volume": "17",
+                        "author": "Fan",
+                        "year": "2007",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "6594",
+                        "key": "47_16351842",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "805",
+                        "DOI": "10.1038/382805a0",
+                        "volume": "382",
+                        "author": "Geyer",
+                        "year": "1996",
+                        "journal-title": "Nature; Physical Science (London)",
+                        "ISSN": "https://id.crossref.org/issn/1476-4687",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "48_34748878",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "63",
+                        "DOI": "10.1006/nimg.1999.0440",
+                        "volume": "10",
+                        "year": "1999",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "49_33290345",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "684",
+                        "DOI": "10.1006/nimg.2000.0548",
+                        "volume": "11",
+                        "year": "2000",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "12",
+                        "key": "50_23717327",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2769",
+                        "DOI": "10.1093/cercor/bhm004",
+                        "volume": "17",
+                        "year": "2007",
+                        "journal-title": "Cerebral Cortex",
+                        "ISSN": "https://id.crossref.org/issn/1047-3211",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "23",
+                        "key": "51_22219831",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "6282",
+                        "DOI": "10.1523/JNEUROSCI.0638-06.2006",
+                        "volume": "26",
+                        "author": "Goldenberg",
+                        "year": "2006",
+                        "journal-title": "Journal of Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0270-6474",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "52_16546312",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "103",
+                        "DOI": "10.1007/BF00227183",
+                        "volume": "112",
+                        "author": "Grafton",
+                        "year": "1996",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "53_34326501",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "617",
+                        "DOI": "10.1006/nimg.2001.0858",
+                        "volume": "14",
+                        "year": "2001",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "54_33290333",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "928",
+                        "DOI": "10.1016/S1053-8119(03)00042-9",
+                        "volume": "18",
+                        "year": "2003",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "4",
+                        "key": "55_21452869",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1133",
+                        "DOI": "10.1523/JNEUROSCI.4551-05.2006",
+                        "volume": "26",
+                        "author": "Hamilton",
+                        "year": "2006",
+                        "journal-title": "Journal of Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0270-6474",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "25",
+                        "key": "56_6256519",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "15061",
+                        "DOI": "10.1073/pnas.95.25.15061",
+                        "volume": "95",
+                        "author": "Hari",
+                        "year": "1998",
+                        "journal-title": "PNAS",
+                        "ISSN": "https://id.crossref.org/issn/0027-8424",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5664",
+                        "key": "57_18084913",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1634",
+                        "DOI": "10.1126/science.1089506",
+                        "volume": "303",
+                        "author": "Hasson",
+                        "year": "2004",
+                        "journal-title": "Science",
+                        "ISSN": "https://id.crossref.org/issn/0036-8075",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5",
+                        "key": "58_17552758",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1123",
+                        "DOI": "10.1046/j.1460-9568.2003.02530.x",
+                        "volume": "17",
+                        "author": "Heiser",
+                        "year": "2003",
+                        "journal-title": "The European journal of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0953-816X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "6",
+                        "key": "59_19203549",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "253",
+                        "DOI": "10.1016/S1364-6613(00)01661-2",
+                        "volume": "5",
+                        "author": "Heyes",
+                        "year": "2001",
+                        "journal-title": "Trends in cognitive sciences",
+                        "ISSN": "https://id.crossref.org/issn/1364-6613",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "60_10197049",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "117",
+                        "DOI": "10.1007/BF00227786",
+                        "volume": "93",
+                        "author": "Hietanen",
+                        "year": "1993",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1-2",
+                        "key": "61_16351513",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "155",
+                        "DOI": "10.1016/0166-4328(95)00193-X",
+                        "volume": "76",
+                        "author": "Hietanen",
+                        "year": "1996",
+                        "journal-title": "Behavioural brain research",
+                        "ISSN": "https://id.crossref.org/issn/0166-4328",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "24",
+                        "key": "62_11409342",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "13995",
+                        "DOI": "10.1073/pnas.241474598",
+                        "volume": "98",
+                        "author": "Iacoboni",
+                        "year": "2001",
+                        "journal-title": "PNAS",
+                        "ISSN": "https://id.crossref.org/issn/0027-8424",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "3",
+                        "key": "63_18730646",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "e79",
+                        "DOI": "10.1371/journal.pbio.0030079",
+                        "volume": "3",
+                        "author": "Iacoboni",
+                        "year": "2005",
+                        "journal-title": "PLoS biology",
+                        "ISSN": "https://id.crossref.org/issn/1544-9173",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5449",
+                        "key": "64_6420166",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2526",
+                        "DOI": "10.1126/science.286.5449.2526",
+                        "volume": "286",
+                        "author": "Iacoboni",
+                        "year": "1999",
+                        "journal-title": "Science",
+                        "ISSN": "https://id.crossref.org/issn/0036-8075",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "66_32889431",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "771",
+                        "DOI": "10.1016/j.neuroimage.2004.09.006",
+                        "volume": "24",
+                        "year": "2005",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "67_33539229",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "429",
+                        "DOI": "10.1016/j.neuroimage.2005.11.026",
+                        "volume": "31",
+                        "year": "2006",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "68_32660790",
+                        "first-page": "383",
+                        "volume": "156",
+                        "year": "2006",
+                        "journal-title": "Progress in brain research",
+                        "ISSN": "https://id.crossref.org/issn/0079-6123",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5",
+                        "key": "69_28511063",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "194",
+                        "DOI": "10.1016/j.tics.2007.02.002",
+                        "volume": "11",
+                        "author": "Keysers",
+                        "year": "2007",
+                        "journal-title": "Trends in cognitive sciences",
+                        "ISSN": "https://id.crossref.org/issn/1364-6613",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "4",
+                        "key": "70_17916779",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "628",
+                        "DOI": "10.1007/s00221-003-1603-5",
+                        "volume": "153",
+                        "author": "Keysers",
+                        "year": "2003",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "11",
+                        "key": "71_18478413",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "501",
+                        "DOI": "10.1016/j.tics.2004.09.005",
+                        "volume": "8",
+                        "author": "Keysers",
+                        "year": "2004",
+                        "journal-title": "Trends in cognitive sciences",
+                        "ISSN": "https://id.crossref.org/issn/1364-6613",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5582",
+                        "key": "72_17179756",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "846",
+                        "DOI": "10.1126/science.1070311",
+                        "volume": "297",
+                        "author": "Kohler",
+                        "year": "2002",
+                        "journal-title": "Science",
+                        "ISSN": "https://id.crossref.org/issn/0036-8075",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "73_34748879",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "601",
+                        "DOI": "10.1016/j.neuroimage.2003.09.038",
+                        "volume": "21",
+                        "year": "2004",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "2",
+                        "key": "74_30070573",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "324",
+                        "DOI": "10.1162/jocn.2008.20021",
+                        "volume": "20",
+                        "author": "Lestou",
+                        "year": "2008",
+                        "journal-title": "Journal of Cognitive Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0898-929X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1-2",
+                        "key": "75_10954855",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "181",
+                        "DOI": "10.1007/s002210050833",
+                        "volume": "128",
+                        "author": "Luppino",
+                        "year": "1999",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "3",
+                        "key": "76_13965423",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "281",
+                        "DOI": "10.1002/cne.902510302",
+                        "volume": "251",
+                        "author": "Matelli",
+                        "year": "1986",
+                        "journal-title": "The Journal of comparative neurology",
+                        "ISSN": "https://id.crossref.org/issn/0021-9967",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "17",
+                        "key": "77_17913664",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2135",
+                        "DOI": "10.1097/00001756-200312020-00001",
+                        "volume": "14",
+                        "author": "Miall",
+                        "year": "2003",
+                        "journal-title": "Neuroreport",
+                        "ISSN": "https://id.crossref.org/issn/0959-4965",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "7",
+                        "key": "78_18905760",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "986",
+                        "DOI": "10.1093/cercor/bhh199",
+                        "volume": "15",
+                        "year": "2005",
+                        "journal-title": "Cerebral Cortex",
+                        "ISSN": "https://id.crossref.org/issn/1047-3211",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "79_34298794",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "923",
+                        "DOI": "10.1016/j.neuroimage.2006.07.035",
+                        "volume": "33",
+                        "year": "2006",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "6",
+                        "key": "80_19438906",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1513",
+                        "DOI": "10.1111/j.1460-9568.2005.04336.x",
+                        "volume": "22",
+                        "author": "Montagna",
+                        "year": "2005",
+                        "journal-title": "The European journal of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0953-816X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "82_33648685",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "642",
+                        "DOI": "10.1016/j.neuroimage.2007.03.079",
+                        "volume": "37",
+                        "year": "2007",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "9",
+                        "key": "83_23007212",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2214",
+                        "DOI": "10.1093/cercor/bhl129",
+                        "volume": "17",
+                        "year": "2007",
+                        "journal-title": "Cerebral Cortex",
+                        "ISSN": "https://id.crossref.org/issn/1047-3211",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "84_33597796",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "731",
+                        "DOI": "10.1016/j.neuroimage.2004.10.011",
+                        "volume": "24",
+                        "year": "2005",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "85_32660793",
+                        "first-page": "143",
+                        "volume": "20",
+                        "year": "2008",
+                        "journal-title": "Journal of Cognitive Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0898-929X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "86_34177233",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1858",
+                        "DOI": "10.1016/j.neuroimage.2007.10.041",
+                        "volume": "39",
+                        "year": "2008",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5746",
+                        "key": "87_19468675",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "332",
+                        "DOI": "10.1126/science.1115593",
+                        "volume": "310",
+                        "author": "Nelissen",
+                        "year": "2005",
+                        "journal-title": "Science",
+                        "ISSN": "https://id.crossref.org/issn/0036-8075",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "4",
+                        "key": "88_8210099",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "611",
+                        "DOI": "10.1002/cne.901920402",
+                        "volume": "192",
+                        "author": "Nelson",
+                        "year": "1980",
+                        "journal-title": "The Journal of comparative neurology",
+                        "ISSN": "https://id.crossref.org/issn/0021-9967",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "89_33494606",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "653",
+                        "DOI": "10.1016/j.neuroimage.2004.12.005",
+                        "volume": "25",
+                        "year": "2005",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "90_32660795",
+                        "first-page": "913",
+                        "volume": "97",
+                        "year": "2000",
+                        "journal-title": "TEMPORAL DYNAMICS OF CORTICAL REPRESENTATION FOR ACTION"
+                    },
+                    {
+                        "issue": "13",
+                        "key": "91_18473662",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "2019",
+                        "DOI": "10.1097/00001756-200409150-00005",
+                        "volume": "15",
+                        "author": "Oouchida",
+                        "year": "2004",
+                        "journal-title": "Neuroreport",
+                        "ISSN": "https://id.crossref.org/issn/0959-4965",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "12",
+                        "key": "92_30639950",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "3030",
+                        "DOI": "10.1523/JNEUROSCI.5748-07.2008",
+                        "volume": "28",
+                        "author": "Pazzaglia",
+                        "year": "2008",
+                        "journal-title": "Journal of Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0270-6474",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5",
+                        "key": "93_21745894",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "524",
+                        "DOI": "10.1016/j.cub.2006.01.033",
+                        "volume": "16",
+                        "author": "Pobric",
+                        "year": "2006",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "94_33876975",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "193",
+                        "DOI": "10.1016/j.neuroimage.2004.04.024",
+                        "volume": "23",
+                        "year": "2004",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "46",
+                        "key": "95_29852457",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "12675",
+                        "DOI": "10.1523/JNEUROSCI.2988-07.2007",
+                        "volume": "27",
+                        "author": "Raos",
+                        "year": "2007",
+                        "journal-title": "Journal of Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0270-6474",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "96_18237290",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "169",
+                        "DOI": "10.1146/annurev.neuro.27.070203.144230",
+                        "volume": "27",
+                        "author": "Rizzolatti",
+                        "year": "2004",
+                        "journal-title": "Annual review of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0147-006X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "2",
+                        "key": "97_9294582",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "337",
+                        "DOI": "10.1007/BF00231253",
+                        "volume": "82",
+                        "author": "Rizzolatti",
+                        "year": "1990",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "98_16199004",
+                        "first-page": "45",
+                        "volume": "70",
+                        "author": "Rizzolatti",
+                        "year": "1996",
+                        "journal-title": "Advances in neurology",
+                        "ISSN": "https://id.crossref.org/issn/0091-3952",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "2",
+                        "key": "99_17899604",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "146",
+                        "DOI": "10.1007/s00221-003-1588-0",
+                        "volume": "153",
+                        "author": "Rizzolatti",
+                        "year": "2003",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "100_11483728",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "16",
+                        "DOI": "10.1016/S1388-2457(01)00725-8",
+                        "volume": "113",
+                        "author": "Rossi",
+                        "year": "2002",
+                        "journal-title": "Clinical neurophysiology : official journal of the International Federation of Clinical Neurophysiology",
+                        "ISSN": "https://id.crossref.org/issn/1388-2457",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "101_5429883",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "53",
+                        "DOI": "10.1002/cne.902890105",
+                        "volume": "289",
+                        "author": "Schmahmann",
+                        "year": "1989",
+                        "journal-title": "The Journal of comparative neurology",
+                        "ISSN": "https://id.crossref.org/issn/0021-9967",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "11",
+                        "key": "102_5052180",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "4049",
+                        "DOI": "10.1523/JNEUROSCI.08-11-04049.1988",
+                        "volume": "8",
+                        "author": "Selemon",
+                        "year": "1988",
+                        "journal-title": "Journal of Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0270-6474",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "103_4570353",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1",
+                        "DOI": "10.1016/0006-8993(78)90584-X",
+                        "volume": "149",
+                        "author": "Seltzer",
+                        "year": "1978",
+                        "journal-title": "Brain research",
+                        "ISSN": "https://id.crossref.org/issn/0006-8993",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "3",
+                        "key": "104_15543553",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "445",
+                        "DOI": "10.1002/cne.903430308",
+                        "volume": "343",
+                        "author": "Seltzer",
+                        "year": "1994",
+                        "journal-title": "The Journal of comparative neurology",
+                        "ISSN": "https://id.crossref.org/issn/0021-9967",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "5661",
+                        "key": "105_18050704",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "1157",
+                        "DOI": "10.1126/science.1093535",
+                        "volume": "303",
+                        "author": "Singer",
+                        "year": "2004",
+                        "journal-title": "Science",
+                        "ISSN": "https://id.crossref.org/issn/0036-8075",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "41",
+                        "key": "106_19466180",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "9339",
+                        "DOI": "10.1523/JNEUROSCI.2282-05.2005",
+                        "volume": "25",
+                        "author": "Stefan",
+                        "year": "2005",
+                        "journal-title": "Journal of Neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0270-6474",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "4",
+                        "key": "107_10041052",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "967",
+                        "DOI": "10.1152/physrev.1992.72.4.967",
+                        "volume": "72",
+                        "author": "Stein",
+                        "year": "1992",
+                        "journal-title": "Physiological Reviews",
+                        "ISSN": "https://id.crossref.org/issn/0031-9333",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "109_17105659",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "91",
+                        "DOI": "10.1007/s00221-002-1078-9",
+                        "volume": "145",
+                        "author": "Tann  -Gari  py",
+                        "year": "2002",
+                        "journal-title": "Experimental brain research. Experimentelle Hirnforschung. Exp&#x00A0;&#x00A0;rimentation c&#x00A0;&#x00A0;r&#x00A0;&#x00A0;brale",
+                        "ISSN": "https://id.crossref.org/issn/0014-4819",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "110_9816337",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "403",
+                        "DOI": "10.1146/annurev.ne.15.030192.002155",
+                        "volume": "15",
+                        "author": "Thach",
+                        "year": "1992",
+                        "journal-title": "Annual review of neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/0147-006X",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "10",
+                        "key": "111_31164087",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "R431",
+                        "DOI": "10.1016/j.cub.2008.03.018",
+                        "volume": "18",
+                        "author": "Thioux",
+                        "year": "2008",
+                        "journal-title": "Current biology : CB",
+                        "ISSN": "https://id.crossref.org/issn/0960-9822",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "112_32956376",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "105",
+                        "DOI": "10.1016/j.neuroimage.2006.11.054",
+                        "volume": "35",
+                        "year": "2007",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "113_33539236",
+                        "first-page": "155",
+                        "volume": "31",
+                        "year": "2001",
+                        "ISSN": "https://id.crossref.org/issn/1097-4199",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1",
+                        "key": "114_23451857",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "30",
+                        "DOI": "10.1038/nn1815",
+                        "volume": "10",
+                        "author": "Urgesi",
+                        "year": "2007",
+                        "journal-title": "Nature neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/1097-6256",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "4",
+                        "key": "115_18000903",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "301",
+                        "DOI": "10.1016/j.jchemneu.2003.09.004",
+                        "volume": "26",
+                        "author": "Vogt",
+                        "year": "2003",
+                        "journal-title": "Journal of chemical neuroanatomy",
+                        "ISSN": "https://id.crossref.org/issn/0891-0618",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "1431",
+                        "key": "116_17580269",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "593",
+                        "DOI": "10.1098/rstb.2002.1238",
+                        "volume": "358",
+                        "author": "Wolpert",
+                        "year": "2003",
+                        "journal-title": "Philosophical Transactions of the Royal Society B: Biological Sciences",
+                        "ISSN": "https://id.crossref.org/issn/0962-8436",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "117_28594860",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "1212",
+                        "DOI": "10.1038/81497",
+                        "volume": "3",
+                        "year": "2000",
+                        "journal-title": "Nature neuroscience",
+                        "ISSN": "https://id.crossref.org/issn/1097-6256",
+                        "issn-type": "print"
+                    },
+                    {
+                        "issue": "9",
+                        "key": "118_24023108",
+                        "doi-asserted-by": "publisher",
+                        "first-page": "338",
+                        "DOI": "10.1016/S1364-6613(98)01221-2",
+                        "volume": "2",
+                        "author": "Wolpert",
+                        "year": "1998",
+                        "journal-title": "Trends in cognitive sciences",
+                        "ISSN": "https://id.crossref.org/issn/1364-6613",
+                        "issn-type": "print"
+                    },
+                    {
+                        "key": "119_32881651",
+                        "doi-asserted-by": "crossref",
+                        "first-page": "173",
+                        "DOI": "10.1006/nimg.1995.1023",
+                        "volume": "2",
+                        "year": "1995",
+                        "ISSN": "https://id.crossref.org/issn/1095-9572",
+                        "issn-type": "print"
+                    }
+                ],
+                "container-title": [
+                    "Cerebral Cortex"
+                ],
+                "language": "en",
+                "link": [
+                    {
+                        "URL": "http://academic.oup.com/cercor/article-pdf/19/6/1239/17301694/bhn181.pdf",
+                        "content-type": "unspecified",
+                        "content-version": "vor",
+                        "intended-application": "similarity-checking"
+                    }
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2019,
+                            5,
+                            15
+                        ]
+                    ],
+                    "date-time": "2019-05-15T15:41:43Z",
+                    "timestamp": 1557934903000
+                },
+                "score": 147.56873,
+                "resource": {
+                    "primary": {
+                        "URL": "https://academic.oup.com/cercor/article-lookup/doi/10.1093/cercor/bhn181"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2008,
+                            11,
+                            19
+                        ]
+                    ]
+                },
+                "references-count": 112,
+                "journal-issue": {
+                    "issue": "6",
+                    "published-online": {
+                        "date-parts": [
+                            [
+                                2009,
+                                5,
+                                6
+                            ]
+                        ]
+                    },
+                    "published-print": {
+                        "date-parts": [
+                            [
+                                2009,
+                                6,
+                                1
+                            ]
+                        ]
+                    }
+                },
+                "URL": "https://doi.org/10.1093/cercor/bhn181",
+                "ISSN": [
+                    "1047-3211",
+                    "1460-2199"
+                ],
+                "issn-type": [
+                    {
+                        "value": "1047-3211",
+                        "type": "print"
+                    },
+                    {
+                        "value": "1460-2199",
+                        "type": "electronic"
+                    }
+                ],
+                "published": {
+                    "date-parts": [
+                        [
+                            2008,
+                            11,
+                            19
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

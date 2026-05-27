@@ -50,9 +50,9 @@ test_that("1 paper, NULL save_path, no CR lookup", {
   tab_sec <-paper$section[paper$section$section_id == paper$table$section_id, ]$section_type
   expect_equal(tab_sec, "table")
 
-  expect_equal(paper$figure$figure_id, 1)
-  fig_sec <-paper$section[paper$section$section_id == paper$figure$section_id, ]$section_type
-  expect_equal(fig_sec, "figure")
+  expect_equal(paper$figure$figure_id, 1:2)
+  fig_sec <-paper$section[paper$section$section_id %in% paper$figure$section_id, ]$section_type
+  expect_in(fig_sec, "figure")
 })
 
 
@@ -127,6 +127,7 @@ test_that("multiple papers, save_path, no CR lookup", {
 
 
 test_that("1 paper, NULL save_path, CR lookup", {
+  skip("CrossRef problems")
   xml_file <- demofile("xml")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_equal(paper_cr$bib_match$service[[1]], "crossref")
@@ -134,9 +135,11 @@ test_that("1 paper, NULL save_path, CR lookup", {
 
 
 test_that("multiple papers, NULL save_path, CR lookup", {
+  skip("CrossRef problems")
+
   xml_file <- c(
-    system.file("demos/to_err_is_human.xml", package = "metacheck"),
-    system.file("demos/to_err_is_human.xml", package = "metacheck")
+    demofile("xml"),
+    demofile("xml")
   )
   papers_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_equal(papers_cr[[1]]$bib_match$service[[1]], "crossref")
@@ -153,7 +156,7 @@ test_that("read", {
 })
 
 test_that("read grobid xml", {
-  xml_file <- system.file("demos/to_err_is_human.xml", package = "metacheck")
+  xml_file <- demofile("xml")
   title <- "To Err is Human: An Empirical Investigation"
 
   obs_xml <- read(xml_file)
@@ -163,17 +166,17 @@ test_that("read grobid xml", {
 })
 
 test_that("bibr file", {
-  bibr_file <- system.file("demos/to_err_is_human.json", package = "metacheck")
+  bibr_file <- demofile("json")
   obs_bibr <- read(bibr_file)
   expect_s3_class(obs_bibr, "scivrs_paper")
   expect_match(obs_bibr$info$title, "To Err is Human")
 })
 
 test_that("both grobid xml and bibr", {
-  xml_file <- system.file("demos/to_err_is_human.xml", package = "metacheck")
-  bibr_file <- system.file("demos/to_err_is_human.json", package = "metacheck")
+  xml_file <- test_path("fixtures", "formats", "preprint.pdf.tei.xml")
+  json_file <- demofile("json")
 
-  file_path <- c(xml_file, bibr_file)
+  file_path <- c(xml_file, json_file)
   obs <- read(file_path)
   expect_equal(length(obs), 2)
   expect_s3_class(obs, "scivrs_paperlist")
@@ -181,16 +184,17 @@ test_that("both grobid xml and bibr", {
 
 test_that(".tei_xrefs handles URL refs with query strings", {
   xml <- xml2::read_xml(
-    "<TEI><text><body><p>The gridded soil data are available at <ref type='url' target='https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2358'>ORNL DAAC</ref> for download.</p></body></text></TEI>"
+    "<TEI><text><body><div><p>The gridded soil data are available at <ref type=\"url\" target=\"https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2358\">ORNL DAAC</ref> for download.</p></div></body></text></TEI>"
   )
 
   text_table <- data.frame(
     text_id = 1,
-    text = "The gridded soil data are available at ORNL DAAC for download."
+    text = "The gridded soil data are available at ORNL DAAC for download.",
+    formatted = "The gridded soil data are available at <ref type=\"url\" target=\"https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=2358\">ORNL DAAC</ref> for download."
   )
 
   expect_no_error(
-    xrefs <- metacheck:::.tei_xrefs(xml, text_table)
+    xrefs <- .tei_xrefs(text_table)
   )
   expect_s3_class(xrefs, "data.frame")
 })
@@ -469,9 +473,4 @@ test_that("in-text refs", {
   x <- grep("Strikingly", text$text)
   expect_false(grepl("<ref", text$text[[x]], fixed = TRUE))
   expect_true(grepl("<ref", text$formatted[[x]], fixed = TRUE))
-
-  x <- grep("http", text$text)
-  text$formatted[x]
-  txt <- text$text[x]
-  text$formatted[9]
 })

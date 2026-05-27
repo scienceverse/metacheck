@@ -314,7 +314,7 @@ grobid_to_bibr <- function(xml_file,
 
   # info ----
   title <- xml_find1(xml, ".//titleStmt/title")
-  abstract <- xml_find1(xml, ".//abstract")
+  #abstract <- xml_find1(xml, ".//abstract")
   keywords <- xml_find(xml, ".//textClass/keywords/term")
   if (keywords[[1]] == "") keywords <- c()
   doi <- xml_find1(xml, ".//idno[@type='DOI']")
@@ -327,7 +327,7 @@ grobid_to_bibr <- function(xml_file,
     input_format <- paste("grobid", grobid_version)
   }
 
-  paper$info <- data.frame(
+  paper$info <- dplyr::tibble(
     title = title %||% "",
     keywords = I(list(keywords)),
     doi = doi,
@@ -353,9 +353,24 @@ grobid_to_bibr <- function(xml_file,
   paper$text$header <- NULL
   paper$text$section_type <- NULL
 
-  paper$section <- data.frame(
+  header <- sapply(sec$header, \(h) {
+    if (is.na(h)) return(NA_character_)
+
+    x <- paste0("<p>", h, "</p>") |> xml2::read_xml()
+    head <- xml2::xml_find_first(x, "//head")
+
+    if (length(head) == 0) return(xml2::xml_text(x))
+
+    header <- xml2::xml_text(head)
+    n <- xml2::xml_attr(head, "n")
+    if (!is.na(n)) header <- paste(n, header)
+
+    return(header)
+  })
+
+  paper$section <- dplyr::tibble(
     section_id = sec$section_id,
-    header = sec$header,
+    header = header,
     parent_section_id = rep(NA_integer_, nrow(sec)),
     section_type = sec$section_type,
     classification_score = rep(NA_real_, nrow(sec))
@@ -363,7 +378,7 @@ grobid_to_bibr <- function(xml_file,
 
   # figure ----
   fig_sec <- paper$section[paper$section$section_type == "figure", ]$section_id
-  paper$figure <- data.frame(
+  paper$figure <- dplyr::tibble(
     figure_id = seq_along(fig_sec),
     section_id = fig_sec,
     image = rep(NA_character_, length(fig_sec)),
@@ -372,7 +387,7 @@ grobid_to_bibr <- function(xml_file,
 
   # table ----
   tab_sec <- paper$section[paper$section$section_type == "table", ]$section_id
-  paper$table <- data.frame(
+  paper$table <- dplyr::tibble(
     table_id = seq_along(tab_sec),
     section_id = tab_sec,
     html = rep(NA_character_, length(tab_sec)),
@@ -396,13 +411,13 @@ grobid_to_bibr <- function(xml_file,
   # append references to section and text and replace with text_id
   if (nrow(paper$bib) > 0) {
     section_id <- max(c(0, paper$section$section_id)) + 1
-    sec_add <- list(section_id = section_id,
+    sec_add <- dplyr::tibble(section_id = section_id,
                    header = "References",
                    section_type = "references")
     paper$section <- dplyr::bind_rows(paper$section, sec_add)
     text_ids <- max(c(0, paper$text$text_id)) + seq_along(paper$bib$bib_text)
     p_ids <- max(c(0, paper$text$paragraph_id)) + seq_along(paper$bib$bib_text)
-    text_add <- data.frame(
+    text_add <- dplyr::tibble(
       text_id = text_ids,
       paragraph_id = p_ids,
       section_id = section_id,
@@ -415,26 +430,14 @@ grobid_to_bibr <- function(xml_file,
   paper$bib$bib_text <- NULL
 
   # xref ----
-  paper$xref <- .tei_xrefs(xml, text_table = paper$text)
+  paper$xref <- .tei_xrefs(text_table = paper$text)
 
   # url ----
-  #links <- extract_urls(paper)
-
-  urls <- xml2::xml_find_all(xml, "//ref[@type='url']")
-  href <- xml2::xml_attr(urls, "target")
-  link_text <- xml2::xml_text(urls) |> gsub("\\s+", " ", x = _)
-  text_id <- sapply(link_text, \(lt) {
-    id <- grep(lt, paper$text$text, fixed = TRUE)
-    if (length(id)) id[[1]] else NA_integer_
-  }, USE.NAMES = FALSE)
-  paper$url <- data.frame(
-    href = href,
-    link_text = link_text,
-    text_id = text_id
-  ) |> unique()
+  paper$url <- .tei_url(text_table = paper$text)
 
   # fix URLs in text that have rogue spaces
-  same <- paper$url$href  == gsub("\\s", "", paper$url$link_text)
+  same <- gsub("^https?://", "", paper$url$href) ==
+    gsub("^https?://", "", gsub("\\s", "", paper$url$link_text))
   for (i in seq_along(same)) {
     paper$text$text <- gsub(paper$url$link_text[[i]],
          paper$url$href[[i]],
@@ -443,7 +446,7 @@ grobid_to_bibr <- function(xml_file,
   paper$url$link_text[same] <- NA_character_
 
   # eq ----
-  paper$eq <- extract_equations(paper)
+  paper$eq <- extract_eq(paper)
   paper$eq$paper_id <- NULL
 
   paper <- .paper_coerce(paper)
@@ -466,9 +469,41 @@ grobid_to_bibr <- function(xml_file,
   if (!is.null(full_text) && nrow(full_text) > 0) {
     # stop initials and abbreviations getting parsed as sentences
     # full_text$text <- full_text$text |>
+    operators <- c(
+      "=", "<", ">", "~",
+      "\u2248", # ~~
+      "\u2260", # !=
+      "\u2264", # <=
+      "\u2265", # >=
+      "\u226A", # <<
+      "\u226B" # >>
+    ) |> paste(collapse = "")
+    num_pre_op <- sprintf("\\s+([\u00B20-9.]+\\s*[%s])", operators)
+
+
     full_text$formatted <- full_text$formatted |>
-      gsub("(https?://)\\s+", "\\1", x = _) |>
-      gsub("(\\d\\.)\\s+(\\d)", "\\1\\2", x = _) |>
+      # fix common mangled stats
+      #gsub("\u00B2",                            "2", x = _) |>
+      gsub(num_pre_op, "\\1", x = _) |>
+      gsub("r\\s*p\\s*2",                        "rp\u00B2", x = _) |>
+      gsub("ω\\s*p\\s*2",                        "ωp\u00B2", x = _) |>
+      gsub("η\\s*p\\s*[2\u00B2]",                "ηp\u00B2", x = _) |>
+      gsub("η\\s*G\\s*[2\u00B2]",                "ηG\u00B2", x = _) |>
+      gsub("η\\s*[2\u00B2]",                     "η\u00B2", x = _) |>
+      gsub("τ\\s*[2\u00B2]",                     "τ\u00B2", x = _) |>
+      gsub("\\br\\s*[2\u00B2](\\s*[=><])",       "r\u00B2\\1", x = _) |>
+      gsub("\\bR\\s*[2\u00B2]\\s+M\\b",          "R\u00B2M", x = _) |>
+      gsub("\\bR\\s*[2\u00B2]\\b",               "R\u00B2", x = _) |>
+      gsub("\\bI\\s*[2\u00B2]\\b",               "I\u00B2", x = _) |>
+      gsub("χ\\s*[2\u00B2]",                     "χ\u00B2", x = _) |>
+      gsub("\\bf\\s*[2\u00B2](\\s*[=><])",       "f\u00B2\\1", x = _) |>
+      gsub("χ[2\u00B2]\\s*\\((\\s*\\d+)\\s*\\)", "χ\u00B2(\\1)", x = _) |>
+      gsub("\\br\\s*\\((\\s*\\d+)\\s*\\)",       "r(\\1)", x = _) |>
+      gsub("\\bd\\s+z\\b",                       "dz", x = _) |>
+      gsub("\\bBF\\s+([10]{2})\\b",              "BF\\1", x = _) |> # BF 10; BF 01
+
+      gsub("(https?://)\\s+", "\\1", x = _) |> # whitespace in url
+      gsub("(\\d\\.)\\s+(\\d)", "\\1\\2", x = _) |> # #. #
       gsub("\\b[Ff]ig\\. (\\D?\\d)", "Fig \\1", x = _) |>
       gsub("\\b[Ff]igure\\. (\\d)", "Figure \\1", x = _) |>
       gsub("\\b[Tt]ab\\. (\\d)", "Tab \\1", x = _) |>
@@ -485,8 +520,9 @@ grobid_to_bibr <- function(xml_file,
     ft$text <- sapply(ft$formatted, \(x) {
       tryCatch({
         x |> paste("<p>", x = _, "<p>") |>
-          rvest::read_html() |>
-          rvest::html_text2()
+          xml2::read_html() |>
+          xml2::xml_text() |>
+          trimws()
       }, error = \(e) {
         return(x)
       })
@@ -497,12 +533,13 @@ grobid_to_bibr <- function(xml_file,
     ft$text <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$text)
     ft$formatted[ft$formatted == ft$text] <- NA_character_
   } else {
-    ft <- data.frame(
+    ft <- dplyr::tibble(
       header = character(0),
       text = character(0),
       formatted = character(0),
-      div = double(0),
-      p = double(0)
+      section = character(0),
+      div = integer(0),
+      p = integer(0)
     )
   }
 
@@ -535,7 +572,7 @@ grobid_to_bibr <- function(xml_file,
   }
 
   # check if sections with no label are Figure or Table
-  first_s <- ft$p == 1 & ft$s == 1
+  first_s <- ft$p == 1
   no_header <- substr(ft$header, 0, 4) == "[div"
 
   fig_n <- grepl("^Figure\\s*\\d+", ft$text)
@@ -578,26 +615,30 @@ grobid_to_bibr <- function(xml_file,
 
   ## abstract ----
   p <- xml2::xml_find_all(xml, ".//abstract //p")
-  abst_table <- data.frame(
+  abst_table <- dplyr::tibble(
     header = "Abstract",
-    text = xml2::xml_text(p),
+    #text = xml2::xml_text(p),
     formatted = as.character(p),
-    div = 0
+    div = 0,
+    section = "abstract"
   )
 
   ## body ----
   divs <- xml2::xml_find_all(xml, "//text //body //div")
   div_text <- lapply(seq_along(divs), \(i){
     div <- divs[[i]]
-    header <- xml2::xml_find_first(div, ".//head") |> xml2::xml_text()
+    h <- xml2::xml_find_first(div, ".//head")
+    header <- as.character(h)
     if (is.na(header)) header <- sprintf("[div-%02d]", i)
     p <- xml2::xml_find_all(div, ".//p")
+    if (length(p) == 0) p <- header
 
-    df <- data.frame(
+    df <- dplyr::tibble(
       header = header,
-      text = xml2::xml_text(p),
+      #text = xml2::xml_text(p),
       formatted = as.character(p),
-      div = i
+      div = i,
+      section = NA_character_
     )
   })
 
@@ -610,12 +651,14 @@ grobid_to_bibr <- function(xml_file,
     divs <- xml2::xml_find_all(xml, str)
     b_text <- lapply(seq_along(divs), \(i){
       div <- divs[[i]]
-      header <- xml_find1(div, ".//head")
+      h <- xml2::xml_find_first(div, ".//head")
+      header <- as.character(h)
       paragraphs <- xml_find(div, ".//p")
       x <- xml2::xml_find_all(div, ".//p")
-      df <- data.frame(
+      df <- dplyr::tibble(
         header = header,
-        text = xml2::xml_text(x),
+        #text = xml2::xml_text(x),
+        p = seq_along(x),
         formatted = as.character(x),
         div = NA,
         section = t
@@ -628,9 +671,10 @@ grobid_to_bibr <- function(xml_file,
   # make divs increment (this is gross code)
   if (!is.null(back_text)) {
     start <- length(div_text) + 1
-    end <- sum(back_text$p == 0) + start - 1
-    back_text$div[back_text$p == 0] <- start:end
+    end <- sum(back_text$p == 1) + start - 1
+    back_text$div[back_text$p == 1] <- start:end
     back_text <- tidyr::fill(back_text, div)
+    back_text$p <- NULL
   }
 
   ## add figures and tables ----
@@ -639,31 +683,32 @@ grobid_to_bibr <- function(xml_file,
   figtbl <- lapply(figs, \(fig) {
     figid <- xml2::xml_attr(fig, "id")
     formatted <- xml2::xml_find_first(fig, ".//figDesc")
+    h <- xml2::xml_find_first(fig, ".//head")
+    header <- as.character(h)
 
-    data.frame(
-      header = xml_find1(fig, ".//head"),
-      text = xml_find1(fig, ".//figDesc"),
+    dplyr::tibble(
+      header = header,
+      #text = xml_find1(fig, ".//figDesc"),
       formatted = as.character(formatted),
       section = sub("_\\d+$", "", x = figid),
       div = sub("^(fig|tab)_", "", x = figid) |> as.numeric()
-    ) |>
-      dplyr::filter(trimws(text) != "")
+    )
   }) |> do.call(rbind, args = _)
-  figtbl <- figtbl %||% data.frame()
+  figtbl <- figtbl %||% dplyr::tibble()
 
   ## add footnotes ----
   notes <- xml2::xml_find_all(xml, "//note[@place='foot']")
   notetbl <- lapply(notes, \(note) {
     noteid <- xml2::xml_attr(note, "id")
-    data.frame(
+    dplyr::tibble(
       header = "",
-      text = xml2::xml_text(note),
+      #text = xml2::xml_text(note),
       formatted = as.character(note),
       section = sub("_\\d+$", "", x = noteid),
       div = sub("^foot_", "", x = noteid) |> as.numeric()
     )
   }) |> do.call(rbind, args = _)
-  notetbl <- notetbl %||% data.frame()
+  notetbl <- notetbl %||% dplyr::tibble()
 
   all_tables <- c(
     list(abst_table),
@@ -675,11 +720,12 @@ grobid_to_bibr <- function(xml_file,
     )
   )
   ft <- do.call(dplyr::bind_rows, all_tables)
+  ft <- ft[!is.na(ft$formatted), ]
 
   # re-number p and div
   ft$p <- seq_along(ft[, 1])
-  figtab <- ft[ft$section %in% c("fig", "tab"), ]
-  nofigtab <- ft[!ft$section %in% c("fig", "tab"), ]
+  figtab <- ft[ft$section %in% c("fig", "tab", "foot"), ]
+  nofigtab <- ft[!ft$section %in% c("fig", "tab", "foot"), ]
   divmax <- ifelse(nrow(nofigtab), max(nofigtab$div, na.rm = TRUE), 0)
   figtab$div <- divmax + seq_along(figtab$div)
   ft <- dplyr::bind_rows(nofigtab, figtab)
@@ -691,7 +737,7 @@ grobid_to_bibr <- function(xml_file,
   ft <- .process_full_text(ft)
   #ft <- ft[ft$text != ft$header, ]
 
-  full_text <- data.frame(
+  full_text <- dplyr::tibble(
     text = ft$text,
     text_id = seq_along(ft$text),
     paragraph_id = ft$p,
@@ -737,101 +783,77 @@ grobid_to_bibr <- function(xml_file,
   dplyr::bind_rows(authors)
 }
 
-#' Get cross references from TEI type XML
+#' Get cross references from text table
 #'
-#' @param xml The XML
 #' @param text_table The text table for the paper
 #'
 #' @return xrefs table
 #' @keywords internal
-.tei_xrefs <- function(xml, text_table) {
-  text <- text_id <- xref_id <- xref_type <- NULL
-  safe_html_text <- function(x) {
-    out <- tryCatch(
-      xml2::xml_text(xml2::read_html(x)),
-      error = function(e) NA_character_
+.tei_xrefs <- function(text_table) {
+  null_table <- dplyr::tibble(
+    xref_id =  character(0),
+    xref_type = character(0),
+    contents =  character(0),
+    text_id = integer(0)
+  )
+
+  if (nrow(text_table) == 0) return(null_table)
+
+  xrefs <- mapply(\(f, text_id) {
+    if (is.na(f)) return(null_table)
+    ref <- paste0("<p>", f, "</p>") |>
+      xml2::read_html() |>
+      xml2::xml_find_all("//ref")
+
+    if (length(ref) == 0) return(null_table)
+
+    dplyr::tibble(
+      xref_id =  sapply(ref, xml2::xml_attr, "target"),
+      xref_type = sapply(ref, xml2::xml_attr, "type"),
+      contents =  sapply(ref, xml2::xml_text),
+      text_id = text_id
     )
-    if (length(out) == 0) {
-      return(NA_character_)
-    }
-    out[[1]]
-  }
+  }, f = text_table$formatted, text_id = text_table$text_id, SIMPLIFY = FALSE) |>
+    dplyr::bind_rows() |>
+    dplyr::filter(xref_type != "url")
 
-  xrefs <- xml2::xml_find_all(xml, "//ref")
-  if (length(xrefs) == 0) {
-    return(data.frame(
-      xref_id = character(0),
-      type = character(0),
-      contents = character(0),
-      text = character(0)
-    ))
-  }
-
-  types <- sapply(xrefs, xml2::xml_attr, "type")
-  targets <- sapply(xrefs, xml2::xml_attr, "target")
-  contents <- sapply(xrefs, xml2::xml_text)
-  p <- lapply(xrefs, xml2::xml_parent) |>
-    sapply(as.character) |>
-    gsub("</?p>", "", x = _)
-
-  # get in-text citation
-  xref_data <- data.frame(
-    i = seq_along(xrefs),
-    xref_id = sub("#", "", targets),
-    xref_type = types,
-    contents = contents,
-    p = p
-  ) |>
-    # stop initials getting parsed as sentences
-    dplyr::mutate(p = gsub("\\b([A-Z])\\.", "\\1", p)) |>
-    tidytext::unnest_sentences(output = "text", input = "p", to_lower = FALSE) |>
-    dplyr::filter(grepl("<ref", text, fixed = TRUE)) |>
-    dplyr::rowwise() |>
-    dplyr::filter({
-      id_match <- !is.na(xref_id) && grepl(paste0("#", xref_id), text, fixed = TRUE)
-      if (id_match) {
-        TRUE
-      } else if (is.na(xref_id)) {
-        text_plain <- safe_html_text(text)
-        !is.na(text_plain) && grepl(contents, text_plain, fixed = TRUE)
-      } else {
-        FALSE
-      }
-    })
-
-  if (nrow(xref_data) > 0) {
-    xref_data <- xref_data |>
-      dplyr::mutate(text = sapply(text, safe_html_text)) |>
-      dplyr::mutate(text = ifelse(is.na(text), p, text)) |>
-      dplyr::ungroup() |>
-      dplyr::arrange(xref_type, gsub("\\D", "", x = xref_id) |> as.integer())
-  }
-
-  # get text_id
-  cols <- c("xref_id", "xref_type", "contents", "text")
-  xrefs <- xref_data[, cols] |>
-    unique() |>
-    dplyr::left_join(text_table, by = "text") |>
-    dplyr::select(xref_id, xref_type, contents, text_id, text) |>
-    dplyr::mutate(xref_type = dplyr::recode_values(xref_type,
-                                                "bibr" ~ "bib",
-                                                "figure" ~ "figure",
-                                                "table" ~ "table"),
-                  xref_id = suppressWarnings(gsub("[a-z]", "", xref_id) |>
-                                               as.integer()))
-
-  # fuzzy_match if no text id
-  # no_id <- xrefs[is.na(xrefs$text_id), cols] |>
-  #   dplyr::rowwise() |>
-  #   dplyr::mutate(
-  #     strdist = which.min(stringdist::stringdist(text, text_table$text)),
-  #     text = text_table$text[strdist],
-  #     text_id = text_table$text_id[strdist]
-  #   ) |>
-  #   dplyr::ungroup()
-  xrefs$text <- NULL
+  xrefs$xref_id <- gsub("\\D", "", xrefs$xref_id) |> as.integer()
 
   return(xrefs)
+}
+
+#' Get URLs from text table
+#'
+#' @param text_table The text table for the paper
+#'
+#' @return xrefs table
+#' @keywords internal
+.tei_url <- function(text_table) {
+  null_table <- dplyr::tibble(
+    href =  character(0),
+    link_text =  character(0),
+    text_id = integer(0)
+  )
+
+  if (nrow(text_table) == 0) return(null_table)
+
+  urls <- mapply(\(f, text_id) {
+    if (is.na(f)) return(null_table)
+    url <- paste0("<p>", f, "</p>") |>
+      xml2::read_html() |>
+      xml2::xml_find_all("//ref[@type='url']")
+
+    if (length(url) == 0) return(null_table)
+
+    dplyr::tibble(
+      href =  sapply(url, xml2::xml_attr, "target"),
+      link_text =  sapply(url, xml2::xml_text),
+      text_id = text_id
+    )
+  }, f = text_table$formatted, text_id = text_table$text_id, SIMPLIFY = FALSE) |>
+    dplyr::bind_rows()
+
+  return(urls)
 }
 
 #' Get bibliography from TEI type XML
@@ -865,7 +887,7 @@ grobid_to_bibr <- function(xml_file,
     bib_table$year <- gsub("\\D", "", year) |> as.integer()
     bib_table$year_suffix <- gsub("\\d", "", year)
   } else {
-    bib_table <- data.frame(
+    bib_table <- dplyr::tibble(
       bib_id = character(0),
       bib_text = character(0)
     )

@@ -614,7 +614,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
       jp
     }, paper, file_name, save_path)
 
-    return(json_paths)
+    return(invisible(json_paths))
   }
 
   if (is.null(file_name)) file_name <- paper$paper_id
@@ -627,7 +627,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
                        auto_unbox = TRUE,
                        pretty = TRUE)
 
-  return(json_path)
+  invisible(json_path)
 }
 
 

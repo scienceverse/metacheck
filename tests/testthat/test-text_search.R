@@ -9,8 +9,7 @@ test_that("text_search", {
   expect_error(suppressWarnings(text_search(paper, "(bad pattern")),
                "Check the pattern argument")
 
-  expect_warning(text_search(paper, "test", fixed = TRUE),
-               "argument 'ignore.case = TRUE' will be ignored")
+  expect_no_warning(text_search(paper, "test", fixed = TRUE))
 
   paper <- paper("no text")
   expect_no_warning(x <- text_search(paper))

@@ -1,3 +1,11 @@
+# metacheck 0.0.0.9105
+
+* Much less buggy `.grobid_to_bibr()` conversion, handling URLs in text, xrefs, url, and eq tables better.
+* `extract_equations()` renamed to `extract_eq()` and now extracts degrees of freedom (df column)
+* Improvements to `.tei_text()` to fix common problems with grobid handling of equations (e.g., "")
+* Corresponding paper schema changes
+* Updated `psychsci` and `demopaper()` and `demofile()` for new schema and read
+
 # metacheck 0.0.0.9104
 
 * Updated `file_types` to fix a bug that prepended X to all extensions starting with a number.
@@ -5,6 +13,7 @@
 * `read()` no longer errors when reading an empty directory, just messages and returns an empty paperlist
 * `read()` only reads in the .json version if a .json and .xml file with the same name exist
 * `read()` has a new argument `recursive` (default FALSE) to recursively read a directory. This does not handle it well if individual files have the same paper_id, so don't do that.
+
 
 # metacheck 0.0.0.9103
 
