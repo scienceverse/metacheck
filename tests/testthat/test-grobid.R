@@ -473,4 +473,5 @@ test_that("in-text refs", {
   x <- grep("Strikingly", text$text)
   expect_false(grepl("<ref", text$text[[x]], fixed = TRUE))
   expect_true(grepl("<ref", text$formatted[[x]], fixed = TRUE))
+  expect_true(length(unique(text$paragraph_id)) > 1)
 })

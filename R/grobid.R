@@ -723,7 +723,8 @@ grobid_to_bibr <- function(xml_file,
   ft <- ft[!is.na(ft$formatted), ]
 
   # re-number p and div
-  ft$p <- seq_along(ft[, 1])
+  ft$p <- 0
+  ft$p <- seq_along(ft$p)
   figtab <- ft[ft$section %in% c("fig", "tab", "foot"), ]
   nofigtab <- ft[!ft$section %in% c("fig", "tab", "foot"), ]
   divmax <- ifelse(nrow(nofigtab), max(nofigtab$div, na.rm = TRUE), 0)
