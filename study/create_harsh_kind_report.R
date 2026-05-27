@@ -1,4 +1,3 @@
-library(metacheck)
 library(httr)
 library(jsonlite)
 library(devtools)
@@ -94,13 +93,13 @@ output_qmd_filename <- paste(pdf_path, "_report.qmd", sep = "")
 
 report_harsh(paper,
   modules = c(
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_effect_size_harsh.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/marginal_harsh.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/power_harsh.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/code_check_harsh.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/open_practices_harsh.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_exact_harsh.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_nonsig_harsh.R"
+    "stat_effect_size_harsh.R",
+    "marginal_harsh.R",
+    "power_harsh.R",
+    "code_check_harsh.R",
+    "open_practices_harsh.R",
+    "stat_p_exact_harsh.R",
+    "stat_p_nonsig_harsh.R"
   ),
   output_format = "qmd",
   output_file = output_qmd_filename,
@@ -113,13 +112,13 @@ report_harsh(paper,
 
 report_kind(paper,
   modules = c(
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_effect_size_kind.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/marginal_kind.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/power_kind.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/code_check_kind.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/open_practices_kind.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_exact_kind.R",
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/stat_p_nonsig_kind.R"
+    "stat_effect_size_kind.R",
+    "marginal_kind.R",
+    "power_kind.R",
+    "code_check_kind.R",
+    "open_practices_kind.R",
+    "stat_p_exact_kind.R",
+    "stat_p_nonsig_kind.R"
   ),
   output_format = "qmd",
   output_file = output_qmd_filename,
