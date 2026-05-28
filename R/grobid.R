@@ -464,7 +464,7 @@ grobid_to_bibr <- function(xml_file,
 .process_full_text <- function(full_text) {
   ## tokenize sentences ----
   # TODO: get tidytext to stop breaking sentences at "S.E. ="
-  text <- NULL # hack to stop cmdcheck warning :(
+  text <- formatted <- NULL # hack to stop cmdcheck warning :(
 
   if (!is.null(full_text) && nrow(full_text) > 0) {
     # stop initials and abbreviations getting parsed as sentences
@@ -485,22 +485,22 @@ grobid_to_bibr <- function(xml_file,
       # fix common mangled stats
       #gsub("\u00B2",                            "2", x = _) |>
       gsub(num_pre_op, "\\1", x = _) |>
-      gsub("r\\s*p\\s*2",                        "rp\u00B2", x = _) |>
-      gsub("ω\\s*p\\s*2",                        "ωp\u00B2", x = _) |>
-      gsub("η\\s*p\\s*[2\u00B2]",                "ηp\u00B2", x = _) |>
-      gsub("η\\s*G\\s*[2\u00B2]",                "ηG\u00B2", x = _) |>
-      gsub("η\\s*[2\u00B2]",                     "η\u00B2", x = _) |>
-      gsub("τ\\s*[2\u00B2]",                     "τ\u00B2", x = _) |>
-      gsub("\\br\\s*[2\u00B2](\\s*[=><])",       "r\u00B2\\1", x = _) |>
-      gsub("\\bR\\s*[2\u00B2]\\s+M\\b",          "R\u00B2M", x = _) |>
-      gsub("\\bR\\s*[2\u00B2]\\b",               "R\u00B2", x = _) |>
-      gsub("\\bI\\s*[2\u00B2]\\b",               "I\u00B2", x = _) |>
-      gsub("χ\\s*[2\u00B2]",                     "χ\u00B2", x = _) |>
-      gsub("\\bf\\s*[2\u00B2](\\s*[=><])",       "f\u00B2\\1", x = _) |>
-      gsub("χ[2\u00B2]\\s*\\((\\s*\\d+)\\s*\\)", "χ\u00B2(\\1)", x = _) |>
-      gsub("\\br\\s*\\((\\s*\\d+)\\s*\\)",       "r(\\1)", x = _) |>
-      gsub("\\bd\\s+z\\b",                       "dz", x = _) |>
-      gsub("\\bBF\\s+([10]{2})\\b",              "BF\\1", x = _) |> # BF 10; BF 01
+      gsub("r\\s*p\\s*2",                  "rp\u00B2", x = _) |>
+      gsub("\u03C\\s*p\\s*2",              "\u03Cp\u00B2", x = _) |> # omega
+      gsub("\u03B7\\s*p\\s*[2\u00B2]",     "\u03B7p\u00B2", x = _) |> # eta
+      gsub("\u03B7\\s*G\\s*[2\u00B2]",     "\u03B7G\u00B2", x = _) |> # eta
+      gsub("\u03B7\\s*[2\u00B2]",          "\u03B7\u00B2", x = _) |> # eta
+      gsub("\u03C4\\s*[2\u00B2]",          "\u03C4\u00B2", x = _) |> # tau
+      gsub("\\br\\s*[2\u00B2](\\s*[=><])", "r\u00B2\\1", x = _) |>
+      gsub("\\bR\\s*[2\u00B2]\\s+M\\b",    "R\u00B2M", x = _) |>
+      gsub("\\bR\\s*[2\u00B2]\\b",         "R\u00B2", x = _) |>
+      gsub("\\bI\\s*[2\u00B2]\\b",         "I\u00B2", x = _) |>
+      gsub("\u03A7\\s*[2\u00B2]",          "\u03A7\u00B2", x = _) |> # chi
+      gsub("\\bf\\s*[2\u00B2](\\s*[=><])", "f\u00B2\\1", x = _) |>
+      gsub("\u03A7[2\u00B2]\\s*\\((\\s*\\d+)\\s*\\)", "\u03A7\u00B2(\\1)", x = _) |> # chi
+      gsub("\\br\\s*\\((\\s*\\d+)\\s*\\)", "r(\\1)", x = _) |>
+      gsub("\\bd\\s+z\\b",                 "dz", x = _) |>
+      gsub("\\bBF\\s+([10]{2})\\b",        "BF\\1", x = _) |> # BF 10; BF 01
 
       gsub("(https?://)\\s+", "\\1", x = _) |> # whitespace in url
       gsub("(\\d\\.)\\s+(\\d)", "\\1\\2", x = _) |> # #. #
@@ -807,6 +807,8 @@ grobid_to_bibr <- function(xml_file,
 #' @return xrefs table
 #' @keywords internal
 .tei_xrefs <- function(text_table) {
+  xref_type <- NULL
+
   null_table <- dplyr::tibble(
     xref_id =  character(0),
     xref_type = character(0),
