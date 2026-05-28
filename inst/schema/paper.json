@@ -230,22 +230,22 @@
 
     "text": {
       "type": "object",
-      "required": ["text_id", "section_id", "paragraph_id", "text"],
+      "required": ["text", "text_id", "paragraph_id", "section_id"],
       "properties": {
+        "text": { "type": "string" },
         "text_id": { "type": "integer" },
+        "paragraph_id": { "type": "integer" },
         "section_id": {
           "description": "References the section table; null when sentence belongs to root (pre-first-heading)",
           "type": ["integer", "null"]
         },
-        "paragraph_id": { "type": "integer" },
-        "text": { "type": "string" },
-        "formatted": {
-          "description": "Original OCR representation for display formulas (e.g. LaTeX); null for regular text",
-          "type": ["string", "null"]
-        },
         "page_number": {
           "type": ["integer", "null"],
           "description": "The page number of the original document where the sentence starts (1-based)"
+        },
+        "formatted": {
+          "description": "Original OCR representation for display formulas (e.g. LaTeX); or XML for grobid imports; null for regular text",
+          "type": ["string", "null"]
         }
       }
     },
@@ -534,7 +534,7 @@
 
     "eq": {
       "type": "object",
-      "required": ["text_id", "grp_id", "lhs", "comp", "rhs"],
+      "required": ["text_id", "grp_id", "lhs", "df", "comp", "rhs"],
       "properties": {
         "text_id": {
           "description": "ID from the text table for the source sentence",
@@ -546,6 +546,10 @@
         },
         "lhs": {
           "description": "Left-hand side of the equation",
+          "type": "string"
+        },
+        "df": {
+          "description": "Degrees of freedom, if included parenthetically on the LHS",
           "type": "string"
         },
         "comp": {

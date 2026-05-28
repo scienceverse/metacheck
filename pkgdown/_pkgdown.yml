@@ -175,7 +175,7 @@ reference:
 - title: Extras
   desc: ~
   contents:
-  - '`extract_equations`'
+  - '`extract_eq`'
   - '`extract_p_values`'
   - '`extract_urls`'
   - '`stats`'

@@ -4,11 +4,14 @@ quarto::quarto_render(qmd, "pdf")
 quarto::quarto_render(qmd, "docx")
 
 # convert newest PDF to bibr (when bibr changes)
-pdf <- "inst/demos/to_err_is_human.pdf"
-bibr <- convert_bibr(pdf, "inst/demos", backend = "scivrs")
+pdf <- demofile("pdf")
+bibr <- convert(pdf, "inst/demos", crossref_lookup = TRUE)
+
+xml <- demofile("xml")
+bibr <- convert(xml, "inst/demos", crossref_lookup = TRUE)
 
 # read in and check (when read changes)
-bibr <- "inst/demos/to_err_is_human.json"
+bibr <- demofile("json")
 demopaper <- read(bibr)
 stopifnot(paper_validate(demopaper))
 

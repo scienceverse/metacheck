@@ -47,7 +47,7 @@ ref_consistency <- function(paper) {
       names_from = extra, names_prefix = "n_extra_",
       values_from = n, values_fill = 0
     )
-  summary_table <- paper_id(paper) |>
+  summary_table <- data.frame(paper_id = paper_id(paper)) |>
     dplyr::left_join(nbibs, by = "paper_id") |>
     dplyr::left_join(nxrefs, by = "paper_id") |>
     dplyr::left_join(nmiss, by = "paper_id") |>

@@ -19,6 +19,7 @@ file_category <- function(contents) {
 
     contents$filetype <- lapply(contents$name, \(nm) {
       types <- file_types$ext |>
+        gsub("\\+", "\\\\+", x = _) |>
         gsub("\\.", "\\\\.", x = _) |>
         paste0("\\.", x = _ , "$") |>
         sapply(grepl, x = nm, ignore.case = TRUE) |>
@@ -26,7 +27,7 @@ file_category <- function(contents) {
         unname()
       file_types[types, ]$type |>
         unique() |>
-        paste(collapse = ",")
+        paste(collapse = ";")
     })
   }
 
@@ -49,6 +50,7 @@ file_category <- function(contents) {
   is_data <- dplyr::case_when(
     cat == "data" ~ TRUE,
     ft == "data" ~ TRUE,
+    grepl("\\bdata\\b", ft) ~ TRUE,
     grepl("data", nm, ignore.case = TRUE) ~ TRUE,
     .default = FALSE
   )
@@ -58,6 +60,8 @@ file_category <- function(contents) {
     cat == "code" ~ TRUE,
     ft == "code" ~ TRUE,
     grepl("code|script", nm, ignore.case = TRUE) ~ TRUE,
+    grepl("\\bcode\\b", ft) ~ TRUE,
+    grepl("\\bstats\\b", ft) ~ TRUE,
     .default = FALSE
   )
 

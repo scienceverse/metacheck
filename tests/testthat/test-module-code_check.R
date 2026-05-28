@@ -102,7 +102,7 @@ test_that("multiple paper issue", {
   )
   mo <- module_run(paper, "code_check")
 
-  expect_setequal(mo$summary_table$paper_id, paper_id(paper)$paper_id)
+  expect_setequal(mo$summary_table$paper_id, paper_id(paper))
 })
 
 

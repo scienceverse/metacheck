@@ -538,13 +538,13 @@ paper_table <- function(paper, table, cols = NULL) {
 #'
 #' @param paper a paper or paperlist
 #'
-#' @returns a table with paper_id column
+#' @returns a vector of paper_ids
 #' @export
 #'
 #' @examples
 #' paper_id(psychsci)
 paper_id <- function(paper) {
-  paper_table(paper, "info", "paper_id")
+  paper_table(paper, "info", "paper_id")$paper_id
 }
 
 #' Reference and DOI table
@@ -614,7 +614,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
       jp
     }, paper, file_name, save_path)
 
-    return(json_paths)
+    return(invisible(json_paths))
   }
 
   if (is.null(file_name)) file_name <- paper$paper_id
@@ -627,7 +627,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
                        auto_unbox = TRUE,
                        pretty = TRUE)
 
-  return(json_path)
+  invisible(json_path)
 }
 
 

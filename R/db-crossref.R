@@ -575,7 +575,7 @@ add_bib_match <- function(paper, min_score = 50) {
   )
 
   # remove unfound
-  bib_match_table <- bib_match[!is.na(bib_match$doi), ] |>
+  bib_match_table <- bib_match[!is.na(bib_match$title), ] |>
     dplyr::arrange(paper_id, bib_id)
 
   # add bib_match table to paper object(s)

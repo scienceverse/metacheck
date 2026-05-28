@@ -32,7 +32,7 @@ open_practices <- function(paper) {
                     "\\bdetailed\\b",
                     "\\bsee\\b")
   repo_words <- c("http", # url
-                  "repository",
+                  "repositor",
                   "archive",
                   #"\\b\\d{4}\\b", # year in a citations
                   "\\bosf\\b",
@@ -107,7 +107,7 @@ open_practices <- function(paper) {
   table$on_request <- grepl(on_request, table$text)
 
   # re-order by paper_id (same as paper) and text_id (inc)
-  paper_ids <- paper_id(paper)$paper_id
+  paper_ids <- paper_id(paper)
   table$paper_id <- factor(table$paper_id, paper_ids)
   table <- dplyr::arrange(table, paper_id, text_id)
   table$paper_id <- as.character(table$paper_id)

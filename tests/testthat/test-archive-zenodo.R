@@ -1,3 +1,6 @@
+#httptest2::start_capturing()
+httptest2::use_mock_api()
+
 test_that("zenodo_links", {
   expect_true(is.function(metacheck::zenodo_links))
   expect_no_error(helplist <- help(zenodo_links, metacheck))
@@ -49,58 +52,15 @@ test_that(".zenodo_id", {
 })
 
 
+
 test_that(".zenodo_info", {
   expect_true(is.function(metacheck:::.zenodo_info))
 
-  testthat::local_mocked_bindings(
-    request = function(url) {
-      structure(list(url = url), class = "httr2_request")
-    },
-    req_error = function(req, is_error) {
-      req
-    },
-    req_perform = function(req) {
-      structure(list(
-        status = 200,
-        body = list(
-          metadata = list(
-            title = "Example title",
-            description = "Example description",
-            publication_date = "2026-01-01",
-            creators = list(list(name = "Jane Doe")),
-            keywords = list("open", "data"),
-            resource_type = list(type = "dataset"),
-            journal = list(title = "Journal"),
-            license = list(id = "cc-by-4.0")
-          ),
-          doi = "10.5281/zenodo.12345",
-          updated = "2026-01-02",
-          owners = list(list(id = 1)),
-          stats = list(downloads = 10, unique_downloads = 5, views = 20),
-          files = list(list(
-            id = "f1",
-            key = "data.csv",
-            size = 101,
-            checksum = "md5:abc",
-            links = list(self = "https://files.example/f1")
-          ))
-        )
-      ), class = "httr2_response")
-    },
-    resp_status = function(resp) {
-      resp$status
-    },
-    resp_body_json = function(resp) {
-      resp$body
-    },
-    .package = "httr2"
-  )
+  info <- .zenodo_info("https://doi.org/10.5281/zenodo.123456789")
 
-  info <- .zenodo_info("https://doi.org/10.5281/zenodo.12345")
-
-  expect_equal(info$zenodo_id, "12345")
+  expect_equal(info$zenodo_id, "123456789")
   expect_equal(info$title, "Example title")
-  expect_equal(info$doi, "10.5281/zenodo.12345")
+  expect_equal(info$doi, "10.5281/zenodo.123456789")
   expect_equal(info$resource_type, "dataset")
   expect_equal(info$license, "cc-by-4.0")
   expect_equal(info$downloads, 10)
@@ -132,39 +92,23 @@ test_that("zenodo_info", {
   expect_no_error(helplist <- help(zenodo_info, metacheck))
 
   expect_error(zenodo_info(bad_arg))
-  testthat::local_mocked_bindings(
-    online = function(...) TRUE,
-    .zenodo_info = function(zenodo_id, pb = NULL) {
-      data.frame(
-        zenodo_id = as.character(zenodo_id),
-        title = paste("Record", zenodo_id),
-        files = I(list(list(list(
-          id = paste0("f", zenodo_id),
-          key = "data.csv",
-          size = 123,
-          checksum = "md5:test",
-          links = list(self = NA_character_)
-        ))))
-      )
-    }
-  )
 
   z <- c(
-    "https://doi.org/10.5281/zenodo.111",
-    "https://zenodo.org/records/222",
-    "https://doi.org/10.5281/zenodo.111",
+    "https://doi.org/10.5281/zenodo.17754445",
+    "https://zenodo.org/records/123456789",
+    "https://doi.org/10.5281/zenodo.17754445",
     NA_character_
   )
   info <- zenodo_info(z)
 
-  expect_setequal(info$zenodo_id, c("111", "222"))
-  expect_true(all(grepl("Record", info$title)))
+  expect_setequal(info$zenodo_id, c("17754445", "123456789"))
+  expect_contains(info$title, "Example title")
 
   tbl <- data.frame(
     id = 1:3,
     href = c(
-      "https://doi.org/10.5281/zenodo.333",
-      "https://zenodo.org/records/444",
+      "https://doi.org/10.5281/zenodo.17754445",
+      "https://zenodo.org/records/123456789",
       "not-a-zenodo-id"
     )
   )
@@ -172,7 +116,7 @@ test_that("zenodo_info", {
 
   expect_equal(nrow(info2), 3)
   expect_equal(info2$href, tbl$href)
-  expect_equal(info2$zenodo_id[1:2], c("333", "444"))
+  expect_equal(info2$zenodo_id[1:2], c("17754445", "123456789"))
   expect_true(is.na(info2$zenodo_id[3]))
   expect_true(is.na(info2$title[3]))
 })
@@ -278,3 +222,6 @@ test_that("zenodo_file_download", {
   expect_true(dl_ok$downloaded[[1]])
   expect_true(file.exists(file.path(tmpdir_ok, "24680", "ok.csv")))
 })
+
+httptest2::stop_mocking()
+#httptest2::stop_capturing()

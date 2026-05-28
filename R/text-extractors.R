@@ -95,8 +95,8 @@ extract_p_values <- function(paper) {
 #'
 #' @examples
 #' paper <- demopaper()
-#' p_values <- extract_equations(paper)
-extract_equations <- function(paper) {
+#' p_values <- extract_eq(paper)
+extract_eq <- function(paper) {
   # set up pattern
   operators <- c(
     "=", "<", ">", "~",
@@ -108,19 +108,30 @@ extract_equations <- function(paper) {
     "\u226B" # >>
   )
   greek <- c(
-    "\u03B2", # beta
-    "\u03B7", # eta
-    "\u03B1" # alpha
+    beta  = "\u03B2",  # regression coefficient
+    eta   = "\u03B7",  # effect size (η²)
+    alpha = "\u03B1",  # significance level
+    delta = "\u03B4",  # small delta
+    Delta = "\u0394",  # big delta
+    chi   = "\u03C7",  # chi
+    mu    = "\u03BC",  # population mean
+    sigma = "\u03C3",  # population SD
+    rho   = "\u03C1",  # population correlation
+    theta = "\u03B8",  # generic parameter
+    lambda= "\u03BB",  # rate (e.g., Poisson)
+    gamma = "\u03B3",  # shape/scale parameter
+    tau   = "\u03C4",  # precision (1/variance)
+    pi    = "\u03C0"   # proportion
   )
 
   op <- operators |> paste(collapse = "")
-  gr <- greek |> paste(collapse = "")
+  gr <- "\u0370-\u03FF" # greek |> paste(collapse = "")
   pattern <- paste0(
     "(?:(Cronbach..|Cohen..|\\d{1,2}%)\\s+)?", # common prefix
-    "[", gr, "a-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
+    "[", gr, "\u00B2a-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
     "(?:\\([^)]*\\))?\\s*", # optional parentheses
     "[", op , "]{1,3}\\s*", # 1-3 operators
-    "([0-9\\.,+-]*[0-9]|\\[[^\\]]+\\])", # valid numbers or anything in []
+    "([0-9\\.,+-]*[0-9]|\\[[^\\]]+\\]|n\\.?\\s*s\\.?)", # valid numbers or anything in [] or NS
     "\\s*(e\\s*-\\d+)?", # also match scientific notation
     "(\\s*[x\\*]\\s*10\\s*\\^\\s*-\\d+)?"
   )
@@ -133,7 +144,29 @@ extract_equations <- function(paper) {
                 ignore.case = TRUE)
 
   if (nrow(eq) == 0) {
-    return(data.frame())
+    return(data.frame(
+      text_id = integer(0),
+      grp_id = integer(0),
+      lhs = character(0),
+      df = character(0),
+      comp = character(0),
+      rhs = character(0),
+      paper_id = character(0)
+    ))
+  }
+
+  # get df
+  pattern <- "(?:\\([^)]*\\))"
+  matches <- gregexpr(pattern, eq$text, perl = TRUE)
+  df <- regmatches(eq$text, matches)
+  eq$df <- NA_character_
+  for (i in seq_along(df)) {
+    if (length(df[[i]]) > 0) {
+      eq$df[[i]] <- df[[i]][[1]]
+      eq$text[[i]] <- eq$text[[i]] |>
+        sub(df[[i]][[1]], "", x = _, fixed = TRUE) |>
+        gsub("\\s+", " ", x = _)
+    }
   }
 
   # get operator
@@ -162,7 +195,8 @@ extract_equations <- function(paper) {
     }
   }
 
-  cols <- c("text_id", "grp_id", "lhs", "comp", "rhs", "paper_id")
+  cols <- c("text_id", "grp_id", "lhs", "df", "comp", "rhs", "paper_id")
+  numeric_lhs <- grepl("^[0-9]$", eq$lhs)
 
-  return(eq[, cols])
+  return(eq[!numeric_lhs, cols])
 }

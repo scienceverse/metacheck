@@ -103,54 +103,20 @@ test_that("OSF, github and rb", {
 })
 
 test_that("Zenodo", {
-  testthat::local_mocked_bindings(
-    zenodo_links = function(paper) {
-      data.frame(
-        paper_id = paper$paper_id,
-        href = "https://doi.org/10.5281/zenodo.12345"
-      )
-    },
-    zenodo_info = function(zenodo_url, id_col = 1, pb = NULL) {
-      data.frame(
-        zenodo_url = as.character(zenodo_url),
-        files = I(list(list(
-          list(key = "analysis.R", size = 100, links = list(self = "https://files.example/analysis.R")),
-          list(key = "dataset.csv", size = 200, links = list(self = "https://files.example/dataset.csv")),
-          list(key = "README.md", size = 50, links = list(self = "https://files.example/README.md")),
-          list(key = "archive.zip", size = 300, links = list(self = "https://files.example/archive.zip")),
-          list(key = "archive.7z", size = 400, links = list(self = "https://files.example/archive.7z"))
-        )))
-      )
-    }
-  )
-
+  paper <- test_paper(url = "https://zenodo.org/records/17754445")
   module <- "repo_check"
-  paper <- test_paper()
-  paper$url <- data.frame(href = "https://doi.org/10.5281/zenodo.12345", text_id = 1)
   mod_output <- module_run(paper, module)
 
-  expect_equal(mod_output$traffic_light, "yellow")
-  expect_equal(nrow(mod_output$table), 5)
-  expect_setequal(mod_output$table$file_name, c("analysis.R", "dataset.csv", "README.md", "archive.zip", "archive.7z"))
-  archive_rows <- mod_output$table[mod_output$table$file_name %in% c("archive.zip", "archive.7z"), ]
-  expect_equal(nrow(archive_rows), 2)
-  expect_true(all(archive_rows$file_type == "archive"))
+  expect_equal(mod_output$table$file_name, "ResearchBox_4377.zip")
+  expect_equal(mod_output$summary_table$files_zip, 1)
 
-  report_text <- paste(mod_output$report, collapse = " ")
-  expect_true(grepl("archive\\.zip", report_text))
-  expect_true(grepl("archive\\.7z", report_text))
-  expect_false(grepl("archives:.*NA", report_text))
-
-  exp <- data.frame(
-    paper_id = paper$paper_id,
-    repo_n = 1,
-    files_n = 5,
-    files_data = 1,
-    files_code = 1,
-    files_readme = 1,
-    files_zip = 2
+  paper <- paperlist(
+    test_paper(url = "https://zenodo.org/records/17754445"),
+    test_paper(url = "https://zenodo.org/records/123456789")
   )
-  expect_equal(mod_output$summary_table, exp)
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$summary_table$files_n, c(1, 1))
+  expect_equal(mod_output$summary_table$files_zip, c(1, 0))
 })
 
 httptest2::stop_mocking()

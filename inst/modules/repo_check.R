@@ -196,26 +196,6 @@ repo_check <- function(paper) {
             !grepl("\\.", basename(zenodo_files_df$file_name))
           zenodo_files_df$ext[no_ext] <- NA_character_
 
-          # Normalize x*/s* extension aliases used in file_types.
-          # This generic fallback fixes 37 potential extension-mapping issues,
-          # including the 7z -> x7z/s7z case from Zenodo keys.
-          known_ext <- metacheck::file_types$ext
-          x_alias <- paste0("x", zenodo_files_df$ext)
-          s_alias <- paste0("s", zenodo_files_df$ext)
-          zenodo_files_df$ext <- dplyr::if_else(
-            is.na(zenodo_files_df$ext) | zenodo_files_df$ext %in% known_ext,
-            zenodo_files_df$ext,
-            dplyr::if_else(
-              x_alias %in% known_ext,
-              x_alias,
-              dplyr::if_else(
-                s_alias %in% known_ext,
-                s_alias,
-                zenodo_files_df$ext
-              )
-            )
-          )
-
           zenodo_files_df <- zenodo_files_df |>
             dplyr::left_join(metacheck::file_types, by = "ext") |>
             dplyr::rename(file_type = type)
@@ -236,7 +216,7 @@ repo_check <- function(paper) {
       traffic_light = "na",
       summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, or Zenodo.",
       summary_table = data.frame(
-        paper_id = paper$paper_id,
+        paper_id = paper_id(paper),
         repo_n = 0,
         files_n = NA,
         files_data = NA,

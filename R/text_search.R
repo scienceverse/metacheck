@@ -34,6 +34,7 @@ text_search <- function(paper, pattern = ".*",
                         include_refs = FALSE) {
   return <- match.arg(return)
   text <- NULL # hack to stop cmdcheck warning :(
+  if (isTRUE(fixed)) ignore.case <- FALSE
 
   # iterate and combine if multiple patterns ----
   if (length(pattern) > 1) {

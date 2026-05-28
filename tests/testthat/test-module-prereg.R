@@ -100,7 +100,7 @@ test_that("multiple papers", {
                   c("OSF Preregistration", "AsPredicted"))
   expect_contains(names(mo$table), "paper_id")
   expect_setequal(mo$table$id, c(guid1, guid2))
-  ids <- paper_id(paper)$paper_id
+  ids <- paper_id(paper)
   expect_setequal(mo$table$paper_id, ids)
   expect_setequal(mo$summary_table$paper_id, ids)
   expect_setequal(mo$summary_table$preregistration, c(1,1))
