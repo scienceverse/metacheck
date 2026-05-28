@@ -513,10 +513,12 @@ grobid_to_bibr <- function(xml_file,
       gsub("</p>$", "", x = _) |>
       gsub("^<figDesc>", "", x = _) |>
       gsub("</figDesc>$", "", x = _) |>
+      gsub("</ref><ref", "</ref> <ref", x = _, fixed = TRUE) |>
       trimws()
 
     ft <- full_text |>
       tidytext::unnest_sentences(formatted, formatted, to_lower = FALSE)
+
     ft$text <- sapply(ft$formatted, \(x) {
       tryCatch({
         x |> paste("<p>", x = _, "<p>") |>
@@ -526,11 +528,25 @@ grobid_to_bibr <- function(xml_file,
       }, error = \(e) {
         return(x)
       })
-    })
+    }, USE.NAMES = FALSE)
 
     # return initials
     ft$formatted <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$formatted)
     ft$text <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$text)
+
+    # merge sentence frags
+    no_end <- which(!grepl("[\\.\\?\\!\\\"]$", x = ft$text))
+    no_cap <- which(!grepl("^[A-Z]", ft$text))
+    merge <- (no_end + 1) %in% no_cap
+    # iterate backward in case of >2 in a row
+    for (x in rev(no_end[merge])) {
+      ft$text[[x]] <- paste(ft$text[[x]], ft$text[[x + 1]])
+      ft$formatted[[x]] <- paste(ft$formatted[[x]], ft$formatted[[x + 1]])
+      keep <- setdiff(seq_along(ft$text), x + 1)
+      ft <- ft[keep, ]
+    }
+
+    # remove redundant formatted
     ft$formatted[ft$formatted == ft$text] <- NA_character_
   } else {
     ft <- dplyr::tibble(

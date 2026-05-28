@@ -475,3 +475,23 @@ test_that("in-text refs", {
   expect_true(grepl("<ref", text$formatted[[x]], fixed = TRUE))
   expect_true(length(unique(text$paragraph_id)) > 1)
 })
+
+
+test_that("URL in text", {
+  skip("no test yet")
+  xml_file <- "data-raw/psychsci/grobid_0.9.0-crf/0956797616647519.xml"
+  xml_text <- readLines(xml_file, warn = FALSE) |>
+    paste(collapse = "\n") |>
+    # fixes a glitch that stops grobid xml from being read
+    gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
+         x = _, fixed = TRUE
+    ) |>
+    gsub("Fig\\. (\\d{1,2})(\\s*\\.)?", "Fig \\1", x = _) |>
+    gsub("Figure\\. (\\d{1,2})(\\s*\\.)?", "Figure \\1", x = _) |>
+    gsub("Tab\\. (\\d{1,2})(\\s*\\.)?", "Tab \\1", x = _) |>
+    gsub("Table\\. (\\d{1,2})(\\s*\\.)?", "Table \\1", x = _)
+
+  xml <- xml2::read_xml(xml_text)
+  text2 <- .tei_text(xml)
+#   grep("doi", text$text, fixed = TRUE)
+})
