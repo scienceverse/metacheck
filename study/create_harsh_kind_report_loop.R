@@ -131,6 +131,18 @@ for (report_num in seq_len(reports)) {
   preprint_info_1   <- osf_info(preprint_id)
   preprint_info_2   <- osf_info(preprint_info_1$primary_file)
   preprint_filename <- gsub("[^A-Za-z0-9_.-]", "_", preprint_info_2$name)
+
+  if (length(preprint_filename) == 0 || !nzchar(preprint_filename)) {
+    cat("Skipping preprint", preprint_id, ": no valid file found.\n")
+    preprint_i <- preprint_i + 1
+    if (preprint_i > 10) {
+      page_i     <- page_i + 1
+      preprint_i <- 1
+      page_data  <- NULL
+    }
+    next
+  }
+
   cat("File:", preprint_filename, "\n")
 
   destination_file <- file.path("c://preprint", preprint_filename)
