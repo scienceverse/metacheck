@@ -104,6 +104,10 @@ code_check <- function(paper, file_limit = 20) {
         on.exit(options(knitr.duplicate.label = old_knitr_opt))
         options(knitr.duplicate.label = 'allow')
 
+        # Quotes and backticks in chunk labels break knitr's option parser
+        chunk_headers <- grepl("^```\\{", file_lines)
+        file_lines[chunk_headers] <- gsub("['\"`]", "", file_lines[chunk_headers])
+
         knitr::purl(
           text = file_lines,
           output = tmp_r,
@@ -163,8 +167,9 @@ code_check <- function(paper, file_limit = 20) {
       return(collector)
     },
     error = \(e) {
-      collector <- list(error = e$message)
-      return(collector)
+      warning(sprintf("code_check could not process '%s': %s",
+                      code_files$file_name[i], e$message))
+      list(error = e$message)
     })
   }) # end of loop over code files
 
