@@ -8,7 +8,7 @@
 #'
 #' The regular expressions can miss power analyses, or fail to classify them correctly. The type of power analysis is often difficult to classify, which can easily be solved by explicitly specifying the type of power analysis as 'a-priori', 'sensitivity', or 'post-hoc'. Note that 'post-hoc' or 'observed' power is rarely useful. The LMM can fail to identify information in the paper, and will not have access to information in paragraphs in the paper other than those that contain the word 'power'. This package was validated by the Metacheck team on articles in Psychological Science.
 #'
-#' <validation>In a sample of 250 papers with 309 instances of power statements, this module correctly indicated at least one aspect of the power analysis was missing in 91% of the power analyses. The module did not detect 7% of the power analysis statements in the papers.
+#' <validation>In a sample of 250 papers with 309 instances of power statements, this module correctly indicated at least one aspect of the power analysis was missing in 91% of the power analyses. The module did not detect 7% of the power analysis statements in the papers.</validation>
 #'
 #' @keywords method
 #'

@@ -8,7 +8,7 @@
 #'
 #' The regular expressions can miss information in code files, or falsely detect parts of the code as a fixed file path. Libraries/imports might be loaded in one block, even if there are more than 3 intermittent lines. The package was validated internally on papers published in Psychological Science. There might be valid reasons why some loaded files can’t be shared, but the module can’t evaluate these reasons, and always gives a warning.
 #'
-#' <validation>In a sample of 250 papers with 135 instances of repositories, this module correctly classified 98% of the files.
+#' <validation>In a sample of 250 papers with 135 instances of repositories, this module correctly classified 98% of the files.</validation>
 #'
 #' @keywords results
 #'

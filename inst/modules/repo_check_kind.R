@@ -8,7 +8,7 @@
 #'
 #' If you want to extend the package to be able to download files from additional data repositories reach out to the Metacheck development team.
 #'
-#' <validation>In a sample of 250 papers with 135 instances of repositories, this module correctly classified the presence of at least one issue in a repository when it was present 96% of the time.
+#' <validation>In a sample of 250 papers with 135 instances of repositories, this module correctly classified the presence of at least one issue in a repository when it was present 96% of the time.</validation>
 #'
 #' @keywords results
 #'
