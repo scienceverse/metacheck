@@ -8,6 +8,8 @@
 #'
 #' The regular expressions can miss power analyses, or fail to classify them correctly. The type of power analysis is often difficult to classify, which can easily be solved by explicitly specifying the type of power analysis as 'a-priori', 'sensitivity', or 'post-hoc'. Note that 'post-hoc' or 'observed' power is rarely useful. The LMM can fail to identify information in the paper, and will not have access to information in paragraphs in the paper other than those that contain the word 'power'. This package was validated by the Metacheck team on articles in Psychological Science.
 #'
+#' <validation>In a sample of 250 papers with 309 instances of power statements, this module correctly indicated at least one aspect of the power analysis was missing in 91% of the power analyses. The module did not detect 7% of the power analysis statements in the papers.
+#'
 #' @keywords method
 #'
 #' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
@@ -79,7 +81,7 @@ power <- function(paper, seed = 8675309, think = NULL) {
     ## use LLM ----
 
     # define system prompt from JSON schema
-    preface <- "Identify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
+    preface <- "/no_think\n\nIdentify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
     # schema also defined below
     schema <- readLines("https://scienceverse.org/schema/power.json") |>
       paste(collapse = "\n")
@@ -173,7 +175,7 @@ power <- function(paper, seed = 8675309, think = NULL) {
     ## power detected ----
     # check for observed power and add text/type
     observed_power_text <- ifelse(
-      any(table$power_type == "posthoc"),
+      "power_type" %in% names(table) && any(table$power_type == "posthoc", na.rm = TRUE),
       observed_power_text <- "You reported a power analysis that has been classified as 'post-hoc'. Calculating observed power is [almost never useful](https://lakens.github.io/statistical_inferences/08-samplesizejustification.html#sec-posthocpower). If you actually performed a sensitivity power analysis, label it as such explicitly.",
       ""
     )

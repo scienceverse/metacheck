@@ -177,7 +177,7 @@ module_find <- function(module) {
 
   module_names <- basename(module_paths) |> sub("\\.R$", "", x = _)
 
-  which_mod <- which(module_names == module)
+  which_mod <- which(module_names == sub("\\.R$", "", module))
   if (length(which_mod) > 0) {
     module_path <- module_paths[which_mod[[1]]]
   } else if (file.exists(module)) {

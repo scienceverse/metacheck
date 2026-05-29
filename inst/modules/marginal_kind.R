@@ -8,6 +8,8 @@
 #'
 #' Some of the terms identified might not be problematic in some contexts, and there are ways to describe ‘marginal significance’ that are not detected by the module.
 #'
+#'<validation>In a sample of 72 papers with 236 instances of marginal statements, this module correctly detected 117 of them (true positives), and incorrectly identified 46 (false positives). It missed 73 that were reported (false negatives). Therefore, 38% (73/(73+117) of true instances were missed and 28% (46/(46+117) of detections were false positives.
+#'
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})

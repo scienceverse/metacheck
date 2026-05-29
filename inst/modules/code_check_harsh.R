@@ -8,7 +8,7 @@
 #'
 #' The regular expressions can miss information in code files, or falsely detect parts of the code as a fixed file path. Libraries/imports might be loaded in one block, even if there are more than 3 intermittent lines. The package was validated internally on papers published in Psychological Science. There might be valid reasons why some loaded files can’t be shared, but the module can’t evaluate these reasons, and always gives a warning.
 #'
-#' If you want to extend the package to perform additional checks on code files, or make the checks work on other types of code files, reach out to the Metacheck development team.
+#' <validation>In a sample of 250 papers with 135 instances of repositories, this module correctly classified 98% of the files.
 #'
 #' @keywords results
 #'

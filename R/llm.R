@@ -74,6 +74,16 @@ llm <- function(text, system_prompt,
   ollama_model_name <- sub("^ollama/", "", model)
   ollama_base_url <- Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
+  if (startsWith(model, "ollama/")) {
+    ok <- tryCatch({
+      httr2::request(paste0(ollama_base_url, "/api/tags")) |>
+        httr2::req_timeout(3) |>
+        httr2::req_perform()
+      TRUE
+    }, error = \(e) FALSE)
+    if (!ok) stop("Ollama is not running at ", ollama_base_url, ". Start ollama and try again.", call. = FALSE)
+  }
+
   # when routing to native ollama, save options and strip think before ellmer sees params
   if (use_ollama_native) {
     params$think <- NULL

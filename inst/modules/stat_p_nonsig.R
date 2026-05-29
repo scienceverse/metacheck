@@ -8,6 +8,7 @@
 #'
 #' In the future, the Metacheck team aims to incorporate a machine learning classifier to only return sentences likely to contain misinterpretations. If you want to help to improve the module, reach out to the Metacheck development team.
 #'
+#' <validation>In a sample of 224 papers with 2326 non-significant p-values, this module correctly detected 1940 of them (true positives), and incorrectly identified 255 (false positives). It missed 131 that were reported (false negatives). Therefore, 6% (131/(131+1940) of true instances were missed and 12% (255/(255+1940) of detections were false positives.
 #'
 #' @keywords results
 #'

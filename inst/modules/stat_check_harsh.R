@@ -81,7 +81,7 @@ stat_check <- function(paper) {
     summary_text <- report
   } else if (tl == "red") {
     n_errors <- sum(table$error, na.rm = TRUE)
-    report_text <- "We detected possible errors in test statistics. Note that as the accuracy of statcheck has only been validated for *t*-tests and *F*-tests. As Metacheck only uses validated modules, we only provide statcheck results for *t* tests and *F*-tests."
+    report_text <- "We detected possible errors in test statistics. Carefully check these results, as you might be incorrectly reported a t-test of F-test."
     summary_text <- sprintf(
       "%d possible error%s in t-tests or F-tests",
       n_errors, ifelse(n_errors == 1, "", "s")

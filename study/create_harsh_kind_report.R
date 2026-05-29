@@ -18,28 +18,19 @@ llm_max_calls(500)
 # Word needs to be open for the conversion to work
 
 docx_to_pdf_word <- function(docx_path) {
-  # Ensure path is in Windows format
   docx_path <- normalizePath(docx_path, winslash = "\\", mustWork = TRUE)
-
-  # Build output filename (same folder, .pdf extension)
   pdf_path <- sub("\\.docx$", ".pdf", docx_path, ignore.case = TRUE)
 
-  # Start Word
   word <- COMCreate("Word.Application")
   word[["Visible"]] <- FALSE
 
-  # Open DOCX
-  doc <- word[["Documents"]]$Open(docx_path)
+  on.exit(tryCatch(word$Quit(0L), error = \(e) NULL))
 
-  # 17 = wdExportFormatPDF (Word constant)
+  doc <- word[["Documents"]]$Open(docx_path)
   doc$ExportAsFixedFormat(
     OutputFileName = pdf_path,
-    ExportFormat   = 17
+    ExportFormat   = 17L
   )
-
-  # Close and quit Word
-  doc$Close(FALSE)
-  word$Quit()
 
   return(pdf_path)
 }
@@ -51,7 +42,7 @@ page_i <- 1 # get which page (1 is latest)
 res <- GET(paste("https://api.osf.io/v2/preprints/?filter[provider]=psyarxiv&sort=-date_created&page=", page_i, sep = "")) # access page i
 preprints <- fromJSON(rawToChar(res$content))
 preprints <- preprints$data # temporarily store data of current page
-preprint_i <- 2 # number 1 to 10 from the page
+preprint_i <- 1 # number 1 to 10 from the page
 preprint_info_1 <- osf_info(preprints$id[[preprint_i]])
 preprint_info_2 <- osf_info(preprint_info_1$primary_file)
 preprint_filename <- preprint_info_2$name
@@ -93,17 +84,19 @@ output_qmd_filename <- paste(pdf_path, "_report.qmd", sep = "")
 
 report_harsh(paper,
   modules = c(
-    "stat_effect_size_harsh.R",
-    "marginal_harsh.R",
-    "power_harsh.R",
-    "code_check_harsh.R",
-    "stat_p_exact_harsh.R",
-    "stat_p_nonsig_harsh.R"
+    "stat_effect_size_harsh",
+    "marginal_harsh",
+    "power_harsh",
+    "code_check_harsh",
+    "stat_p_exact_harsh",
+    "stat_p_nonsig_harsh",
+    "repo_check_harsh",
+    "stat_check_harsh"
   ),
   output_format = "qmd",
   output_file = output_qmd_filename,
   args = list(
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/power_harsh.R" = list(
+    "power_harsh" = list(
       think = FALSE
     )
   )
@@ -111,30 +104,63 @@ report_harsh(paper,
 
 report_kind(paper,
   modules = c(
-    "stat_effect_size_kind.R",
-    "marginal_kind.R",
-    "power_kind.R",
-    "code_check_kind.R",
-    "open_practices_kind.R",
-    "stat_p_exact_kind.R",
-    "stat_p_nonsig_kind.R"
+    "stat_effect_size_kind",
+    "marginal_kind",
+    "power_kind",
+    "code_check_kind",
+    "open_practices_kind",
+    "stat_p_exact_kind",
+    "stat_p_nonsig_kind",
+    "repo_check_kind",
+    "stat_check_kind"
   ),
   output_format = "qmd",
   output_file = output_qmd_filename,
   args = list(
-    "C:/Users/dlakens/OneDrive - TU Eindhoven/git_repos/metacheck/inst/modules/power_harsh.R" = list(
+    "power_" = list(
       think = FALSE
     )
   )
 )
 
-# Optionally, remove validation info:
+# Optionally, remove validation info and explanation:
 
 output_qmd_filename |>
   readLines() |>
-  gsub(".validation { display: block;", ".validation { display: none;", x = _, fixed = TRUE) |>
-  writeLines(qmd_path)
+  (\(x) {
+    x <- gsub(
+      ".validation { display: block;",
+      ".validation { display: none;",
+      x,
+      fixed = TRUE
+    )
+
+    out <- character(0)
+    in_callout <- FALSE
+
+    for (line in x) {
+      # detect start of callout block
+      if (grepl("^:::.*callout", line)) {
+        in_callout <- TRUE
+        next
+      }
+
+      # detect end of callout block
+      if (in_callout && grepl("^:::", line)) {
+        in_callout <- FALSE
+        next
+      }
+
+      # keep only lines outside callouts
+      if (!in_callout) {
+        out <- c(out, line)
+      }
+    }
+
+    out
+  })() |>
+  writeLines(output_qmd_filename)
 
 # Compile as html
-quarto::quarto_render(qmd_path, output_format = "html")
-browseURL(gsub("\\.qmd$", ".html", qmd_path))
+quarto::quarto_render(output_qmd_filename, output_format = "html")
+browseURL(gsub("\\.qmd$", ".html", output_qmd_filename))

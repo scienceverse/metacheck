@@ -191,10 +191,13 @@ report_module_run <- function(paper, modules, args = list()) {
 
   # run each module ----
   # module_output <- lapply(modules, \(module) {
+  args_normalized <- setNames(args, basename(names(args)) |> sub("\\.R$", "", x = _))
+
   op <- paper
   for (module in modules) {
     pb$tick(tokens = list(what = module))
-    mod_args <- args[[module]] %||% list()
+    module_key <- basename(module) |> sub("\\.R$", "", x = _)
+    mod_args <- args_normalized[[module_key]] %||% list()
     mod_args$paper <- op
     mod_args$module <- module
 

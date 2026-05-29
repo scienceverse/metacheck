@@ -8,6 +8,8 @@
 #'
 #' If you want to extend the package to detect effect sizes for additional tests, reach out to the Metacheck development team.
 #'
+#' <validation>In a sample of 161 papers with 1469 tests, of which 1129 had effect sizes, and 340 did not have effect sizes, the stat_effect_size module correctly detected 1106 effects that were reported (true positives), but missed 23 that were reported (false negatives), and incorrectly identified 45 effect sizes when there was no effect sizes reported (false positives), and correctly identified 295 missing effect sizes. Therefore 2% of true instances were missed, 13% of detections were false positives.</validation>
+#'
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
