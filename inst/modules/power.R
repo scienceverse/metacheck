@@ -166,7 +166,7 @@ power <- function(paper, seed = 8675309) {
     summary_text <- "No power analyses were detected."
     report <- c(summary_text, collapse_section(guidance))
 
-    summary_table <- paper_id(paper)
+    summary_table <- data.frame(paper_id = paper_id(paper))
     summary_table$power_n <- 0
     summary_table$power_complete <- NA_integer_
   } else {
