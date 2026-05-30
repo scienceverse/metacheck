@@ -21,7 +21,7 @@
 #' @param seed a seed for the LLM
 #'
 #' @returns a list
-power <- function(paper, seed = 8675309, think = NULL) {
+power <- function(paper, seed = 8675309) {
   # find potential power anlayses ----
 
   # select paragraphs with power/powers/powered
@@ -89,7 +89,7 @@ power <- function(paper, seed = 8675309, think = NULL) {
       text = potential_power,
       system_prompt = system_prompt,
       text_col = "text",
-      params = c(list(seed = seed), if (!is.null(think)) list(think = think))
+      params = list(seed = seed)
     )
 
     table <- llm_results |>
