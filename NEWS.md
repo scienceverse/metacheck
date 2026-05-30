@@ -1,3 +1,8 @@
+# metacheck 0.0.0.9106
+
+* Added functions from svutils back in. 
+* Reorganised some ML read-in functions (internal).
+
 # metacheck 0.0.0.9105
 
 * Much less buggy `.grobid_to_bibr()` conversion, handling URLs in text, xrefs, url, and eq tables better.

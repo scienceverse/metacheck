@@ -147,7 +147,7 @@ get_orcid <- function(family, given = "*") {
     return("")
   }
 
-  orcid <- xml_find(xml, "//common:path")
+  orcid <- .xml_find_text(xml, "//common:path")
 
   n <- length(orcid)
   if (n == 0) {
@@ -196,13 +196,13 @@ orcid_person <- function(orcid) {
 
     list(
       orcid = x,
-      # name  = xml_find(xml, "//personal-details:credit-name", ";"),
-      given = xml_find(xml, "//personal-details:given-names", " "),
-      family = xml_find(xml, "//personal-details:family-name", " "),
-      email = xml_find(xml, "//email:email //email:email") |> list(),
-      country = xml_find(xml, "//address:country", ";"),
-      keywords = xml_find(xml, "//keyword:content") |> list(),
-      urls = xml_find(xml, "//researcher-url:url") |> list()
+      # name  = .xml_find_text(xml, "//personal-details:credit-name", ";"),
+      given = .xml_find_text(xml, "//personal-details:given-names", " "),
+      family = .xml_find_text(xml, "//personal-details:family-name", " "),
+      email = .xml_find_text(xml, "//email:email //email:email") |> list(),
+      country = .xml_find_text(xml, "//address:country", ";"),
+      keywords = .xml_find_text(xml, "//keyword:content") |> list(),
+      urls = .xml_find_text(xml, "//researcher-url:url") |> list()
     )
   })
 

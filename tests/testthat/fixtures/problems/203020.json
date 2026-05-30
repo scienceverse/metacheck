@@ -480,24 +480,16 @@
       "formatted": "However, whereas young participants could use many other features to perform the task accurately, older participants specifically used the eyes (see Supplementary Results and Supplementary Figures <ref type=\"figure\">S1-S4<\/ref>)."
     },
     {
-      "text": "| RESULTS",
+      "text": "| RESULTS | Behavioral information: <stimulus information; behavior>",
       "text_id": 51,
       "paragraph_id": 10,
       "section_id": 2,
       "page_number": null,
-      "formatted": "<head n=\"2\">| RESULTS<\/head>"
-    },
-    {
-      "text": "| Behavioral information: <stimulus information; behavior>",
-      "text_id": 52,
-      "paragraph_id": 11,
-      "section_id": 3,
-      "page_number": null,
-      "formatted": "<head n=\"2.1\">| Behavioral information: &lt;stimulus information; behavior&gt;<\/head>"
+      "formatted": "<head n=\"2\">| RESULTS<\/head> <head n=\"2.1\">| Behavioral information: &lt;stimulus information; behavior&gt;<\/head>"
     },
     {
       "text": "We now turn to the important question of where, when and how brain processes represent task-relevant features to support behavioral decisions.",
-      "text_id": 53,
+      "text_id": 52,
       "paragraph_id": 12,
       "section_id": 4,
       "page_number": null,
@@ -505,7 +497,7 @@
     },
     {
       "text": "Before we proceed, we must first rule out low-level optical factors as the main contributor to any age-related delay in our analyses.",
-      "text_id": 54,
+      "text_id": 53,
       "paragraph_id": 12,
       "section_id": 4,
       "page_number": null,
@@ -513,31 +505,23 @@
     },
     {
       "text": "To do this, we computed the time course of the standard deviation of the mean ERP across electrodes (ERP STD ) using causal-filtered data (see Section 4 and Figure 3a).",
-      "text_id": 55,
+      "text_id": 54,
       "paragraph_id": 12,
       "section_id": 4,
       "page_number": null,
       "formatted": "To do this, we computed the time course of the standard deviation of the mean ERP across electrodes (ERP STD ) using causal-filtered data (see Section 4 and Figure <ref type=\"figure\">3a<\/ref>)."
     },
     {
-      "text": "ERP STD onsets correspond to the initial activation of the occipital cortex that follows stimulus presentation (Foxe & Simpson, 2002), which could",
-      "text_id": 56,
+      "text": "ERP STD onsets correspond to the initial activation of the occipital cortex that follows stimulus presentation (Foxe & Simpson, 2002), which could related potentials (ERPs). (a) ERP onsets.",
+      "text_id": 55,
       "paragraph_id": 12,
       "section_id": 4,
       "page_number": null,
-      "formatted": "ERP STD onsets correspond to the initial activation of the occipital cortex that follows stimulus presentation <ref type=\"bibr\" target=\"#b15\">(Foxe &amp; Simpson, 2002)<\/ref>, which could"
-    },
-    {
-      "text": "related potentials (ERPs). (a) ERP onsets.",
-      "text_id": 57,
-      "paragraph_id": 13,
-      "section_id": 4,
-      "page_number": null,
-      "formatted": null
+      "formatted": "ERP STD onsets correspond to the initial activation of the occipital cortex that follows stimulus presentation <ref type=\"bibr\" target=\"#b15\">(Foxe &amp; Simpson, 2002)<\/ref>, which could related potentials (ERPs). (a) ERP onsets."
     },
     {
       "text": "Thin gray lines show individual participants' ERP STD (μV/cm 2 ).",
-      "text_id": 58,
+      "text_id": 56,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -545,7 +529,7 @@
     },
     {
       "text": "Colored thick lines show group averages with shaded areas indicating 95% confidence intervals around the group means.",
-      "text_id": 59,
+      "text_id": 57,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -553,7 +537,7 @@
     },
     {
       "text": "Vertical dashed lines mark the overlapped onset times of cortical activity in each group. (b) ERP topographies.",
-      "text_id": 60,
+      "text_id": 58,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -561,7 +545,7 @@
     },
     {
       "text": "For face only trials, we averaged across participants the largest squared ERP amplitude at the time of its peak. (c).",
-      "text_id": 61,
+      "text_id": 59,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -569,7 +553,7 @@
     },
     {
       "text": "Right occipital-temporal ERP.",
-      "text_id": 62,
+      "text_id": 60,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -577,7 +561,7 @@
     },
     {
       "text": "Thick lines show averaged ERPs across young (green) and older (blue) participants, for face (top panel) and noise bubble trials (bottom panel), with shaded areas corresponding to 95% confidence intervals.",
-      "text_id": 63,
+      "text_id": 61,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -585,7 +569,7 @@
     },
     {
       "text": "In each panel, numbers indicate the group median (and confidence intervals) of N170 latencies, which are delayed by ~20 ms in older adults reveal generic, age-related delays already present in the earliest stages of the visual processing pathway.",
-      "text_id": 64,
+      "text_id": 62,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -593,7 +577,7 @@
     },
     {
       "text": "However, we found similar ERP STD onsets in young (68 ms [64, 72]) and older (69 ms [62,75]) participants (Figure 3a), with a negligible difference between them (-0.5 ms [-7, 5]), which suggests that there is no clear evidence for a generic delay in the onset of cortical activity in response to visual stimuli in older participants.",
-      "text_id": 65,
+      "text_id": 63,
       "paragraph_id": 13,
       "section_id": 4,
       "page_number": null,
@@ -601,7 +585,7 @@
     },
     {
       "text": "Despite no clear generic neural delay in older participants, their peak N170 response latencies to full faces on the right occipital electrode (RE) were delayed relative to the N170 response of young participants by 18 ms [9,24] (and by 23 ms [9,38], in response to the practice full noise trials; see Section 4.2).",
-      "text_id": 66,
+      "text_id": 64,
       "paragraph_id": 14,
       "section_id": 5,
       "page_number": null,
@@ -609,7 +593,7 @@
     },
     {
       "text": "These N170 peak delays on the RE were confirmed in bubbles trials that sampled face and noise information  (i.e., 22 ms [10, 32] and 18 ms [7,31], respectively, see Figure 3c; see Figure 3b for a summary topography).",
-      "text_id": 67,
+      "text_id": 65,
       "paragraph_id": 14,
       "section_id": 5,
       "page_number": null,
@@ -617,7 +601,7 @@
     },
     {
       "text": "The N170 latency delay on bubble noise trials was unlikely to be attributable to false alarms.",
-      "text_id": 68,
+      "text_id": 66,
       "paragraph_id": 14,
       "section_id": 5,
       "page_number": null,
@@ -625,7 +609,7 @@
     },
     {
       "text": "Analysis of behavioral responses revealed that older adults were less accurate than young adults only on face trials (i.e., had more \"misses\"; see also Supplementary Results), whereas both groups were highly accurate on noise trials.",
-      "text_id": 69,
+      "text_id": 67,
       "paragraph_id": 14,
       "section_id": 5,
       "page_number": null,
@@ -633,7 +617,7 @@
     },
     {
       "text": "N170 peak amplitudes were similar in young and older participants, except on practice noise trials, where they were larger in older than young participants (see Supplementary Results and Supplementary Figure S5).",
-      "text_id": 70,
+      "text_id": 68,
       "paragraph_id": 14,
       "section_id": 5,
       "page_number": null,
@@ -641,7 +625,7 @@
     },
     {
       "text": "Our novel methodology enables us to directly visualize the dynamic representation of facial features in the single-trial amplitude variations of EEG activity during the detection task.",
-      "text_id": 71,
+      "text_id": 69,
       "paragraph_id": 15,
       "section_id": 6,
       "page_number": null,
@@ -649,7 +633,7 @@
     },
     {
       "text": "To do this, we computed the MI relationship between <pixel visibility information; EEG activ-ity>, for each stimulus pixel, on the left (LE) and right (RE) electrode (see Section 4.5), every 2 ms between 0 and 400 ms post-stimulus.  [42,82] of that of young adults, see Figure 4b,c).",
-      "text_id": 72,
+      "text_id": 70,
       "paragraph_id": 15,
       "section_id": 6,
       "page_number": null,
@@ -657,7 +641,7 @@
     },
     {
       "text": "We then used the resulting images of brain information to compute their maximum MI across all time points and pixel locations (see Figure 4d).",
-      "text_id": 73,
+      "text_id": 71,
       "paragraph_id": 16,
       "section_id": 6,
       "page_number": null,
@@ -665,7 +649,7 @@
     },
     {
       "text": "Peak EEG representation of the left eye occurred 40 ms [23,57] earlier in young adults relative to older adults (i.e., ~164 ms in young vs. ~204 ms in older adults).",
-      "text_id": 74,
+      "text_id": 72,
       "paragraph_id": 16,
       "section_id": 6,
       "page_number": null,
@@ -673,7 +657,7 @@
     },
     {
       "text": "To rule out the possibility that maximum information was represented on other electrodes, we independently performed a full brainby-time analysis.",
-      "text_id": 75,
+      "text_id": 73,
       "paragraph_id": 17,
       "section_id": 6,
       "page_number": null,
@@ -681,7 +665,7 @@
     },
     {
       "text": "To this end, we again computed the MI relationship between <pixel visibility information; EEG activity> at each pixel and time point between 0 and 400 ms poststimulus, on all electrodes.",
-      "text_id": 76,
+      "text_id": 74,
       "paragraph_id": 17,
       "section_id": 6,
       "page_number": null,
@@ -689,7 +673,7 @@
     },
     {
       "text": "We found that maximum MI peaked primarily in the left and right lateraloccipital region in both young and older observers (see Figure 4e).",
-      "text_id": 77,
+      "text_id": 75,
       "paragraph_id": 17,
       "section_id": 6,
       "page_number": null,
@@ -697,7 +681,7 @@
     },
     {
       "text": "Furthermore, computing the maximum MI across all electrodes revealed similar results to those reported here for RE (see Supplementary Figure S6).",
-      "text_id": 78,
+      "text_id": 76,
       "paragraph_id": 17,
       "section_id": 6,
       "page_number": null,
@@ -705,7 +689,7 @@
     },
     {
       "text": "At this juncture, it is important to emphasize that we also ruled out a potential effect of participants paying spatial attention to the location of the eyes in sample images (rather than one of representation of the eyes per se) by repeating the above analyses using only noise trials.",
-      "text_id": 79,
+      "text_id": 77,
       "paragraph_id": 18,
       "section_id": 6,
       "page_number": null,
@@ -713,7 +697,7 @@
     },
     {
       "text": "In these noise trials, we did not find sensitivity to the image locations of the eyes (i.e., where the eyes of a face would be in face trials), in any participant.",
-      "text_id": 80,
+      "text_id": 78,
       "paragraph_id": 18,
       "section_id": 6,
       "page_number": null,
@@ -721,7 +705,7 @@
     },
     {
       "text": "Note that the midline electrode (Oz, see Supplementary Figures S7 and S8) also revealed the weaker representation of various other facial features (such as eyes, chin, mouth, nose, and forehead) in some participants.",
-      "text_id": 81,
+      "text_id": 79,
       "paragraph_id": 18,
       "section_id": 6,
       "page_number": null,
@@ -729,7 +713,7 @@
     },
     {
       "text": "As these representations were inconsistent across participants, we did not analyze them further.",
-      "text_id": 82,
+      "text_id": 80,
       "paragraph_id": 18,
       "section_id": 6,
       "page_number": null,
@@ -737,7 +721,7 @@
     },
     {
       "text": "So far, we have shown that face detection behavior in all participants involves the processing of eyes in the stimulus (particularly the left one), with a ~200 ms decision response delay in the older group.",
-      "text_id": 83,
+      "text_id": 81,
       "paragraph_id": 19,
       "section_id": 7,
       "page_number": null,
@@ -745,7 +729,7 @@
     },
     {
       "text": "We have also shown that this left eye impacted neural EEG responses in most participants, with a 40 ms representation delay in the older group.",
-      "text_id": 84,
+      "text_id": 82,
       "paragraph_id": 19,
       "section_id": 7,
       "page_number": null,
@@ -753,7 +737,7 @@
     },
     {
       "text": "Now, we integrate behavioral and brain results by showing where the representation of the eyes in the EEG also modulates face detection behavior, on the same trials.",
-      "text_id": 85,
+      "text_id": 83,
       "paragraph_id": 19,
       "section_id": 7,
       "page_number": null,
@@ -761,7 +745,7 @@
     },
     {
       "text": "To do this, we computed separately for each participant the information theoretic feature redundancy (Ince et al., 2017), red (eye; EEG; RT), which is the shared variability between three variable: single-trial visibility of the left and right eye in the stimulus, at contralateral electrodes (RE and LE), together with the corresponding RTs (see Section 4.10).",
-      "text_id": 86,
+      "text_id": 84,
       "paragraph_id": 20,
       "section_id": 7,
       "page_number": null,
@@ -769,7 +753,7 @@
     },
     {
       "text": "In this application, redundancy measures the strength of the representational similarity of a given stimulus feature (e.g., relative visibility of the left eye) between variations of EEG amplitude (e.g., on the RE) and variations of face detection RT.",
-      "text_id": 87,
+      "text_id": 85,
       "paragraph_id": 20,
       "section_id": 7,
       "page_number": null,
@@ -777,7 +761,7 @@
     },
     {
       "text": "On the RE, we found a 46 ms [30,81] redundancy delay between the young and older participants (i.e., 165 ms peak [155,178] for young, and a 215 ms peak [196,246] for older adults; see Figure 4f).",
-      "text_id": 88,
+      "text_id": 86,
       "paragraph_id": 20,
       "section_id": 7,
       "page_number": null,
@@ -785,7 +769,7 @@
     },
     {
       "text": "We observed a similar 42 ms [20,86] delay between young and older participants on the LE, where right eye redundancy peaked at 172 ms [161,186] for young, and at 220 ms [196,261] for older adults (see Supplementary Figure S10).",
-      "text_id": 89,
+      "text_id": 87,
       "paragraph_id": 20,
       "section_id": 7,
       "page_number": null,
@@ -793,7 +777,7 @@
     },
     {
       "text": "These results confirm that the EEG and RT similarly represent the eyes, but with a 42 ms delay in older adults.",
-      "text_id": 90,
+      "text_id": 88,
       "paragraph_id": 20,
       "section_id": 7,
       "page_number": null,
@@ -801,7 +785,7 @@
     },
     {
       "text": "We now demonstrate that the delayed representation of the eyes in the EEG underpins delayed RT in older adults.",
-      "text_id": 91,
+      "text_id": 89,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -809,7 +793,7 @@
     },
     {
       "text": "We tested this by computing the redundancy between the age groups, RT latency, and the peak latency of EEG eye representation (see Section 4.11).",
-      "text_id": 92,
+      "text_id": 90,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -817,7 +801,7 @@
     },
     {
       "text": "Specifically, we first quantified (with MI) the strength of the relationship between age group and each participant's median RT-it was 0.5 [0.36 0.81] bits-and also between age group and redundant eye representation latency in the EEG-it was 0.28 [0.08 0.64] bits for the left eye (at RE) and 0.29 [0.08 0.69] bits for the right eye (at LE).",
-      "text_id": 93,
+      "text_id": 91,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -825,7 +809,7 @@
     },
     {
       "text": "Having shown that both RT latency and EEG eye representation associate with age group, we asked whether these two associations themselves overlap-i.e., whether we can similarly predict age group from RT latency and EEG eye representation.",
-      "text_id": 94,
+      "text_id": 92,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -833,7 +817,7 @@
     },
     {
       "text": "We found that the redundancy between latency of the left eye representation (at RE) and RT was 0.28 [0.06 0.51] bits.",
-      "text_id": 95,
+      "text_id": 93,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -841,7 +825,7 @@
     },
     {
       "text": "This was 100% of the age prediction obtained from the left eye representation alone (0.28 [0.08 0.64]).",
-      "text_id": 96,
+      "text_id": 94,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -849,7 +833,7 @@
     },
     {
       "text": "We also found that redundancy between latency of the right eye (at LE) and RT was 0.12 [-0.09 0.43] bits.",
-      "text_id": 97,
+      "text_id": 95,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -857,7 +841,7 @@
     },
     {
       "text": "This was 40% of the age prediction obtained from the right eye representation alone (0.29 [0.08 0.69]).",
-      "text_id": 98,
+      "text_id": 96,
       "paragraph_id": 21,
       "section_id": 8,
       "page_number": null,
@@ -865,7 +849,7 @@
     },
     {
       "text": "These results demonstrate that only the left eye (at RE) representation is purely related to the RT deficit between age groups.",
-      "text_id": 99,
+      "text_id": 97,
       "paragraph_id": 22,
       "section_id": 8,
       "page_number": null,
@@ -873,7 +857,7 @@
     },
     {
       "text": "The results also reflect the strongly lateralized relationship between stimulus and RT (Figure 2).",
-      "text_id": 100,
+      "text_id": 98,
       "paragraph_id": 22,
       "section_id": 8,
       "page_number": null,
@@ -881,7 +865,7 @@
     },
     {
       "text": "To summarize, we used information theoretic redundancy at two levels (within and across participants) to demonstrate a direct link between behaviorally relevant neural information processing change",
-      "text_id": 101,
+      "text_id": 99,
       "paragraph_id": 23,
       "section_id": 8,
       "page_number": null,
@@ -889,7 +873,7 @@
     },
     {
       "text": "Here, we set out to investigate how information-processing delays in the aging brain could slow down face detection behavior (a fundamental social interaction task), using the novel information theoretic measures of the SIR framework.",
-      "text_id": 102,
+      "text_id": 100,
       "paragraph_id": 24,
       "section_id": 9,
       "page_number": null,
@@ -897,7 +881,7 @@
     },
     {
       "text": "Specifically, we considered the interactions between three variables: stimulus information, neural EEG activity, and RT, and compared the results between young and older adults.",
-      "text_id": 103,
+      "text_id": 101,
       "paragraph_id": 24,
       "section_id": 9,
       "page_number": null,
@@ -905,7 +889,7 @@
     },
     {
       "text": "We characterized the face information that young and older participants selectively use when detecting faces (i.e., the eyes of a face), and we traced the origin of the behavioral delay with aging to a delay in the neural processes that represent the eyes of faces for the task during the N170 period.",
-      "text_id": 104,
+      "text_id": 102,
       "paragraph_id": 24,
       "section_id": 9,
       "page_number": null,
@@ -913,7 +897,7 @@
     },
     {
       "text": "We ensured that the neural eye representation delay could not be explained by generic delays of onsets of cortical activity in young and older participants.",
-      "text_id": 105,
+      "text_id": 103,
       "paragraph_id": 24,
       "section_id": 9,
       "page_number": null,
@@ -921,7 +905,7 @@
     },
     {
       "text": "This study provides an important step toward understanding visual cognitive aging.",
-      "text_id": 106,
+      "text_id": 104,
       "paragraph_id": 25,
       "section_id": 9,
       "page_number": null,
@@ -929,7 +913,7 @@
     },
     {
       "text": "First, we demonstrate that young and older adults can use the same face information (the eyes) to quickly detect faces.",
-      "text_id": 107,
+      "text_id": 105,
       "paragraph_id": 25,
       "section_id": 9,
       "page_number": null,
@@ -937,7 +921,7 @@
     },
     {
       "text": "As such, our results contrast with previously published findings that suggest that a differential use of horizontal versus vertical information might underlie the impairment of older adults when identifying faces (Chaby, Narme, & George, 2011;Obermeyer, Kolling, Schaich, & Knopf, 2012).",
-      "text_id": 108,
+      "text_id": 106,
       "paragraph_id": 25,
       "section_id": 9,
       "page_number": null,
@@ -945,7 +929,7 @@
     },
     {
       "text": "Here, although older adults had fewer correct responses when detecting faces, the same face information modulated their slower RTs.",
-      "text_id": 109,
+      "text_id": 107,
       "paragraph_id": 25,
       "section_id": 9,
       "page_number": null,
@@ -953,7 +937,7 @@
     },
     {
       "text": "Our analyses of correct versus incorrect responses (see Supplementary Results) revealed that while young adults can use any facial features to detect a face, older adults relied heavily on the eyes for correct detection.",
-      "text_id": 110,
+      "text_id": 108,
       "paragraph_id": 25,
       "section_id": 9,
       "page_number": null,
@@ -961,7 +945,7 @@
     },
     {
       "text": "As such, it is possible that rather than inefficiently extracting information from faces, older adults were more conservative, detecting a face only when its eyes were visible (see also van Rijsbergen, Jaworska, Rousselet, & Schyns, 2014), although another possibility is that older adults relied more on local contrast information contained within the eye region of the face, in line with previous studies showing that they require more contrast to detect and discriminate faces (Lott, Haegerstrom-Portnoy, Schneck, & Brabyn, 2005;Owsley, Sekuler, & Boldt, 1981).",
-      "text_id": 111,
+      "text_id": 109,
       "paragraph_id": 25,
       "section_id": 9,
       "page_number": null,
@@ -969,7 +953,7 @@
     },
     {
       "text": "In any case, the uncovering of such difference was made possible by Bubbles sampling (Gosselin & Schyns, 2001), which limits researcher bias by not making a priori assumptions about the features that participants should use (Creighton, Bennett, & Sekuler, 2018;Éthier-Majcher, Joubert, & Gosselin, 2013;van Rijsbergen et al., 2014).",
-      "text_id": 112,
+      "text_id": 110,
       "paragraph_id": 25,
       "section_id": 9,
       "page_number": null,
@@ -977,7 +961,7 @@
     },
     {
       "text": "Establishing equivalence of behavioral information in the two groups is an important benchmark for comparing the task-relevant neural coding of information.",
-      "text_id": 113,
+      "text_id": 111,
       "paragraph_id": 26,
       "section_id": 9,
       "page_number": null,
@@ -985,7 +969,7 @@
     },
     {
       "text": "Here, we found that the EEG activity of both young and older adults represented the eye pixels contralateral to the lateral-occipital recording electrodes, an effect that was stronger at the right hemisphere electrodes in both groups, in agreement with the reported right hemisphere dominance for face processing (Sergent, Ohta, & MacDonald, 1992).",
-      "text_id": 114,
+      "text_id": 112,
       "paragraph_id": 26,
       "section_id": 9,
       "page_number": null,
@@ -993,7 +977,7 @@
     },
     {
       "text": "Although feature representation was qualitatively similar across young and older adults, it was delayed by 40 ms and weaker in older adults, in the absence of generic delays in the onset of visual cortical activity in older participants.",
-      "text_id": 115,
+      "text_id": 113,
       "paragraph_id": 26,
       "section_id": 9,
       "page_number": null,
@@ -1001,7 +985,7 @@
     },
     {
       "text": "This suggests that the reported delay occurred at the stages of cortical information processing, and was not due to precortical neural factors; thereby adding to the evidence that processing speed delays are unlikely to be due to bottom-up optical factors, such as senile miosis, contrast sensitivity (Bieniek, Bennett, Sekuler, & Rousselet, 2016;Bieniek, Frei, & Rousselet, 2013), or visual acuity (Price et al., 2017).",
-      "text_id": 116,
+      "text_id": 114,
       "paragraph_id": 26,
       "section_id": 9,
       "page_number": null,
@@ -1009,7 +993,7 @@
     },
     {
       "text": "Furthermore, we believe that bottom-up optical factors were unlikely contributors to the observed differences at the neural level, because any bottom-up factors should affect all neural responses irrespectively of their category, whereas we observed much larger N170 to noise textures in older than in young participants.",
-      "text_id": 117,
+      "text_id": 115,
       "paragraph_id": 27,
       "section_id": 9,
       "page_number": null,
@@ -1017,7 +1001,7 @@
     },
     {
       "text": "Although our stimuli were only frontal views of faces, it would be interesting to test side views, in line with previous studies showing age-related behavioral decrement on perception of faces across viewpoints (Habak, Wilkinson, & Wilson, 2008;Wilson, Mei, Habak, & Wilkinson, 2011).",
-      "text_id": 118,
+      "text_id": 116,
       "paragraph_id": 28,
       "section_id": 9,
       "page_number": null,
@@ -1025,7 +1009,7 @@
     },
     {
       "text": "Processing of facial/head viewpoints follows a distinct sequence of encoding that reflects different levels of computational complexity (Kietzmann, Gert, Tong, & König, 2017).",
-      "text_id": 119,
+      "text_id": 117,
       "paragraph_id": 28,
       "section_id": 9,
       "page_number": null,
@@ -1033,7 +1017,7 @@
     },
     {
       "text": "Whether aging affects different stages of viewpoint processing similarly would inform whether processing speed is delayed in a constant or cumulative manner along the visual cortical hierarchy (Price et al., 2017).",
-      "text_id": 120,
+      "text_id": 118,
       "paragraph_id": 28,
       "section_id": 9,
       "page_number": null,
@@ -1041,7 +1025,7 @@
     },
     {
       "text": "The age-related delay that we report here agrees with previous cross-sectional results, which suggest that face processing slows down from 20 years of age and onwards (Bieniek et al., 2013;Rousselet et al.,2010Rousselet et al., , 2009)).",
-      "text_id": 121,
+      "text_id": 119,
       "paragraph_id": 29,
       "section_id": 9,
       "page_number": null,
@@ -1049,7 +1033,7 @@
     },
     {
       "text": "However, previous studies could not ascribe these delays to the representation of task-relevant features, as reported here (see also Rousselet, Ince, van Rijsbergen, & Schyns, 2014;Schyns, Petro, & Smith, 2007;Smith, Gosselin, & Schyns, 2004).",
-      "text_id": 122,
+      "text_id": 120,
       "paragraph_id": 29,
       "section_id": 9,
       "page_number": null,
@@ -1057,7 +1041,7 @@
     },
     {
       "text": "Such task-relevant feature representations in the brain are important for two main reasons.",
-      "text_id": 123,
+      "text_id": 121,
       "paragraph_id": 30,
       "section_id": 9,
       "page_number": null,
@@ -1065,7 +1049,7 @@
     },
     {
       "text": "First, by demonstrating the neural representation of task-relevant face features in older adults, we can show that the reported delays (neural and behavioral) do not arise from an inability to inhibit the task-irrelevant information that increases with age (Gazzaley et al., 2008;Zanto, Toy, & Gazzaley, 2010).",
-      "text_id": 124,
+      "text_id": 122,
       "paragraph_id": 30,
       "section_id": 9,
       "page_number": null,
@@ -1073,7 +1057,7 @@
     },
     {
       "text": "Second, we can use the direct evidence of neural representation of the same features to demonstrate that the N170 time window is functionally equivalent in young and older adults (cf. Rousselet et al., 2010).",
-      "text_id": 125,
+      "text_id": 123,
       "paragraph_id": 30,
       "section_id": 9,
       "page_number": null,
@@ -1081,7 +1065,7 @@
     },
     {
       "text": "The N170 is an early component of face processing (Bentin, Allison, Puce, Perez, & McCarthy, 1996;Itier, Alain, Sedore, & McIntosh, 2007;Rousselet et al., 2014) that is delayed in older participants (Gazzaley et al., 2008;Nakamura et al., 2001;Rousselet et al., 2009;Wiese et al., 2008).",
-      "text_id": 126,
+      "text_id": 124,
       "paragraph_id": 30,
       "section_id": 9,
       "page_number": null,
@@ -1089,7 +1073,7 @@
     },
     {
       "text": "Comparing the latencies from the same component across age groups presumes that it indexes the same neuronal processes over a life span.",
-      "text_id": 127,
+      "text_id": 125,
       "paragraph_id": 31,
       "section_id": 9,
       "page_number": null,
@@ -1097,7 +1081,7 @@
     },
     {
       "text": "However, prior to this current study, it was unclear whether the single-trial activity evoked during the N170 time window represents the same information content across age groups.",
-      "text_id": 128,
+      "text_id": 126,
       "paragraph_id": 31,
       "section_id": 9,
       "page_number": null,
@@ -1105,7 +1089,7 @@
     },
     {
       "text": "Here, we show that the N170 performs the same representation function in two age groups detecting faces, albeit with a delay in older adults (Rousselet et al., 2009;Schyns et al., 2007;Smith et al., 2004;van Rijsbergen & Schyns, 2009).",
-      "text_id": 129,
+      "text_id": 127,
       "paragraph_id": 31,
       "section_id": 9,
       "page_number": null,
@@ -1113,7 +1097,7 @@
     },
     {
       "text": "In fact, our results suggest that the 40 ms representation delay of the eyes over the N170 in older adults was directly related to their 200 ms RT delay when using this information to detect faces.",
-      "text_id": 130,
+      "text_id": 128,
       "paragraph_id": 31,
       "section_id": 9,
       "page_number": null,
@@ -1121,7 +1105,7 @@
     },
     {
       "text": "We can thus trace the origin of the behavioral slowing to the early stages of stimulus processing, which could complement other studies that have indicated that slowing originates from motor response generation (Kolev, Falkenstein, & Yordanova, 2006;Yordanova, Kolev, Hohnsbein, & Falkenstein, 2004).",
-      "text_id": 131,
+      "text_id": 129,
       "paragraph_id": 31,
       "section_id": 9,
       "page_number": null,
@@ -1129,7 +1113,7 @@
     },
     {
       "text": "At this juncture, it is important to emphasize that the age-related delay in the processing of the eye information from the sample image cannot be attributed to the presence of Bubble masks.",
-      "text_id": 132,
+      "text_id": 130,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1137,7 +1121,7 @@
     },
     {
       "text": "Bubbles can be thought of as a \"masking procedure\" that degrades the visual input and possibly entails object completion (Tang et al., 2014).",
-      "text_id": 133,
+      "text_id": 131,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1145,7 +1129,7 @@
     },
     {
       "text": "The processing of occluded stimuli by the visual system might require additional resources to perform the task, leading to longer processing times (Sekuler, Gold, Murray, & Bennett, 2000).",
-      "text_id": 134,
+      "text_id": 132,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1153,7 +1137,7 @@
     },
     {
       "text": "As such, any delay observed in a sample of older adults could be due to a combination of factors: a genuine slowing down of processing speed, as well as an increase in the time needed to process the occluded stimulus with respect to young adults.",
-      "text_id": 135,
+      "text_id": 133,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1161,7 +1145,7 @@
     },
     {
       "text": "However, our ERP results show that the extra processing time of Bubbled images compared with full images differed very little between young and older participants.",
-      "text_id": 136,
+      "text_id": 134,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1169,7 +1153,7 @@
     },
     {
       "text": "Specifically, even though the processing of the Bubbled stimuli was delayed with respect to full images by about 20 ms in both young and older participants, there was only a weak interaction between age and masking condition.",
-      "text_id": 137,
+      "text_id": 135,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1177,7 +1161,7 @@
     },
     {
       "text": "In both practice (unmasked) and Bubble (masked) trials, the N170 latency to face images in older participants was delayed by about 20 ms (18 ms in practice trials and 22 ms in Bubble trials) with respect to that in young participants.",
-      "text_id": 138,
+      "text_id": 136,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1185,7 +1169,7 @@
     },
     {
       "text": "This agrees with a recent study (Bieniek et al., 2013), which showed that even though stimulus luminance affects the entire ERP time course in both young and older participants, it does not affect age-related differences in processing speed.",
-      "text_id": 139,
+      "text_id": 137,
       "paragraph_id": 32,
       "section_id": 9,
       "page_number": null,
@@ -1193,7 +1177,7 @@
     },
     {
       "text": "Whether other stimulus characteristics (e.g., external features, color pigmentation) affect processing speed and use of diagnostic information with age remains to be explored.",
-      "text_id": 140,
+      "text_id": 138,
       "paragraph_id": 33,
       "section_id": 9,
       "page_number": null,
@@ -1201,7 +1185,7 @@
     },
     {
       "text": "Here, we used relatively sparse images of grayscale faces, presented in an oval mask, without any external features such as hair.",
-      "text_id": 141,
+      "text_id": 139,
       "paragraph_id": 33,
       "section_id": 9,
       "page_number": null,
@@ -1209,7 +1193,7 @@
     },
     {
       "text": "Additional information such as color might increase the diagnostic information across the whole face, whereas external features might become more relevant at longer viewing distances.",
-      "text_id": 142,
+      "text_id": 140,
       "paragraph_id": 33,
       "section_id": 9,
       "page_number": null,
@@ -1217,7 +1201,7 @@
     },
     {
       "text": "Furthermore, we only used images of young faces.",
-      "text_id": 143,
+      "text_id": 141,
       "paragraph_id": 33,
       "section_id": 9,
       "page_number": null,
@@ -1225,7 +1209,7 @@
     },
     {
       "text": "Aging is associated with changes to the physical appearance of the face (e.g., wrinkling, pigmentation; van Rijsbergen et al., 2014) that might affect the diagnostic information for a particular task.",
-      "text_id": 144,
+      "text_id": 142,
       "paragraph_id": 34,
       "section_id": 9,
       "page_number": null,
@@ -1233,7 +1217,7 @@
     },
     {
       "text": "While face processing strategies might vary depending on the age of the observer relative to the age of the stimuli shown (own-age bias; van Rijsbergen et al., 2014;Anastasi & Rhodes, 2005;Wiese et al., 2008), we do not know whether these will affect N170 latencies or amplitudes (Komes, Schweinberger, & Wiese, 2015;Wiese et al., 2008).",
-      "text_id": 145,
+      "text_id": 143,
       "paragraph_id": 34,
       "section_id": 9,
       "page_number": null,
@@ -1241,7 +1225,7 @@
     },
     {
       "text": "Altogether, future studies should aim to uncover the extent to which delays in other processing stages (i.e., postperceptual decision, sensorimotor integration, or motor generation processes) influence the observed behavioral slow down.",
-      "text_id": 146,
+      "text_id": 144,
       "paragraph_id": 35,
       "section_id": 9,
       "page_number": null,
@@ -1249,7 +1233,7 @@
     },
     {
       "text": "Our results also raise further considerations regarding their generalization to other stimulus categories, both simple and complex, such as scenes, objects, words, but also sensory modalities and tasks.",
-      "text_id": 147,
+      "text_id": 145,
       "paragraph_id": 35,
       "section_id": 9,
       "page_number": null,
@@ -1257,7 +1241,7 @@
     },
     {
       "text": "Recent evidence suggests that aging cannot be regarded as a unitary concept that affects functionally relevant brain regions in the same manner (Price et al., 2017).",
-      "text_id": 148,
+      "text_id": 146,
       "paragraph_id": 35,
       "section_id": 9,
       "page_number": null,
@@ -1265,7 +1249,7 @@
     },
     {
       "text": "Instead, whether the observed age-related delay is constant or cumulative, may depend on a variety of factors other than structural differences in brain regions (Peters, 2009;Price et al., 2017;Raz et al., 2005;Wang, Zhou, Ma, & Leventhal, 2005), such as the sensory modality, task, and stimulus complexity.",
-      "text_id": 149,
+      "text_id": 147,
       "paragraph_id": 35,
       "section_id": 9,
       "page_number": null,
@@ -1273,7 +1257,7 @@
     },
     {
       "text": "Our new methods can address some of these issues by linking tightly controlled stimulus information to brain response and decision behavior in important social cognition tasks.",
-      "text_id": 150,
+      "text_id": 148,
       "paragraph_id": 35,
       "section_id": 9,
       "page_number": null,
@@ -1281,7 +1265,7 @@
     },
     {
       "text": "These methods can also be extended to other sensory modalities to study group differences (i.e., cultural, developmental, clinical) in perception and cognition.",
-      "text_id": 151,
+      "text_id": 149,
       "paragraph_id": 35,
       "section_id": 9,
       "page_number": null,
@@ -1289,7 +1273,7 @@
     },
     {
       "text": "To summarize, our results provide the first functional account that advancing age involves differences in neural delays in the representation of task-relevant information for behavior.",
-      "text_id": 152,
+      "text_id": 150,
       "paragraph_id": 36,
       "section_id": 9,
       "page_number": null,
@@ -1297,7 +1281,7 @@
     },
     {
       "text": "They address the fundamental challenge of developing theories of cognitive aging that explain how the neural information processes involved in a cognitive task slow down behavior.",
-      "text_id": 153,
+      "text_id": 151,
       "paragraph_id": 36,
       "section_id": 9,
       "page_number": null,
@@ -1305,7 +1289,7 @@
     },
     {
       "text": "| METHODS",
-      "text_id": 154,
+      "text_id": 152,
       "paragraph_id": 37,
       "section_id": 10,
       "page_number": null,
@@ -1313,7 +1297,7 @@
     },
     {
       "text": "Eighteen young (nine females, median age = 23, min 20, max 36) and 19 older adults (seven females, median age = 66, min 60, max 86) participated in the study (data of 15 of the young participants were used in Rousselet et al. (2014)).",
-      "text_id": 155,
+      "text_id": 153,
       "paragraph_id": 38,
       "section_id": 11,
       "page_number": null,
@@ -1321,7 +1305,7 @@
     },
     {
       "text": "Only one participant was >80 years, the age range of all other older adults was 60-77, comparable to that of the young adults.",
-      "text_id": 156,
+      "text_id": 154,
       "paragraph_id": 38,
       "section_id": 11,
       "page_number": null,
@@ -1329,7 +1313,7 @@
     },
     {
       "text": "In a face discrimination task, we have shown a qualitative shift in the time course of brain activity around 47 years of age (Rousselet et al., 2010), which we investigated here with age ranges appropriate for the research question.",
-      "text_id": 157,
+      "text_id": 155,
       "paragraph_id": 38,
       "section_id": 11,
       "page_number": null,
@@ -1337,7 +1321,7 @@
     },
     {
       "text": "All older adults were local residents.",
-      "text_id": 158,
+      "text_id": 156,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1345,7 +1329,7 @@
     },
     {
       "text": "We excluded participants if they reported any current eye condition (i.e., lazy eye, glaucoma, macular degeneration, cataract), had a history of mental illness, were currently taking psychotropic medications or used to take them, suffered from any neurological condition, had diabetes, or had suffered a stroke or a serious head injury.",
-      "text_id": 159,
+      "text_id": 157,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1353,7 +1337,7 @@
     },
     {
       "text": "We also excluded participants if their latest eye test was more than a year (for older participants) or 2 years (for young participants) prior to the study taking place.",
-      "text_id": 160,
+      "text_id": 158,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1361,7 +1345,7 @@
     },
     {
       "text": "Two older participants reported having cataracts removed, and one older participant reported having undergone a laser surgery.",
-      "text_id": 161,
+      "text_id": 159,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1369,7 +1353,7 @@
     },
     {
       "text": "We included them because their corrected vision was within normal range.",
-      "text_id": 162,
+      "text_id": 160,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1377,7 +1361,7 @@
     },
     {
       "text": "In addition, older participants completed the Montreal Cognitive Assessment to screen for cognitive impairment.",
-      "text_id": 163,
+      "text_id": 161,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1385,7 +1369,7 @@
     },
     {
       "text": "All participants achieved a score of 26 or above, indicating normal cognitive performance.",
-      "text_id": 164,
+      "text_id": 162,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1393,7 +1377,7 @@
     },
     {
       "text": "We assessed all participants' visual acuity and contrast sensitivity in the lab using a Colenbrander mixed contrast card set and a Pelli-Robson chart.",
-      "text_id": 165,
+      "text_id": 163,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1401,7 +1385,7 @@
     },
     {
       "text": "All participants had normal or near-normal visual acuity as measured with the 63 cm viewing distance (computer distance) chart (Table 1).",
-      "text_id": 166,
+      "text_id": 164,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1409,7 +1393,7 @@
     },
     {
       "text": "Three older participants had contrast sensitivity of 1.65, and all others had contrast sensitivity of 1.95 log units, within the normal range of contrast sensitivity for that age group (Elliott, Sanderson, & Conkey, 1990).",
-      "text_id": 167,
+      "text_id": 165,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1417,7 +1401,7 @@
     },
     {
       "text": "All young participants had contrast sensitivity of 1.95 log units or above.",
-      "text_id": 168,
+      "text_id": 166,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1425,7 +1409,7 @@
     },
     {
       "text": "During the experimental session, participants wore their habitual correction if needed.",
-      "text_id": 169,
+      "text_id": 167,
       "paragraph_id": 39,
       "section_id": 11,
       "page_number": null,
@@ -1433,7 +1417,7 @@
     },
     {
       "text": "The study was approved by the local ethics committee at the College of Science and Engineering, University of Glasgow (approval no.",
-      "text_id": 170,
+      "text_id": 168,
       "paragraph_id": 40,
       "section_id": 11,
       "page_number": null,
@@ -1441,7 +1425,7 @@
     },
     {
       "text": "FIMS00740), and conducted in line with the British Psychological Society ethics guidelines.",
-      "text_id": 171,
+      "text_id": 169,
       "paragraph_id": 40,
       "section_id": 11,
       "page_number": null,
@@ -1449,7 +1433,7 @@
     },
     {
       "text": "Informed written consent was obtained from each participant before the study.",
-      "text_id": 172,
+      "text_id": 170,
       "paragraph_id": 40,
       "section_id": 11,
       "page_number": null,
@@ -1457,7 +1441,7 @@
     },
     {
       "text": "Participants were compensated £6/h.",
-      "text_id": 173,
+      "text_id": 171,
       "paragraph_id": 40,
       "section_id": 11,
       "page_number": null,
@@ -1465,7 +1449,7 @@
     },
     {
       "text": "We used a set of 10 grayscaled, front-view photographs of faces, oval cropped to remove external features, and pasted onto a uniform gray background (Gold, Bennett, & Sekuler, 1999).",
-      "text_id": 174,
+      "text_id": 172,
       "paragraph_id": 41,
       "section_id": 12,
       "page_number": null,
@@ -1473,7 +1457,7 @@
     },
     {
       "text": "The pictures spanned 9.3 × 9.3 of visual angle; the face oval was 4.9 × 7.0 of visual angle.",
-      "text_id": 175,
+      "text_id": 173,
       "paragraph_id": 41,
       "section_id": 12,
       "page_number": null,
@@ -1481,7 +1465,7 @@
     },
     {
       "text": "A unique image was presented on each trial by introducing phase noise (70% phase coherence) into the face images (Rousselet, Pernet, Bennett, & Sekuler, 2008).",
-      "text_id": 176,
+      "text_id": 174,
       "paragraph_id": 42,
       "section_id": 12,
       "page_number": null,
@@ -1489,7 +1473,7 @@
     },
     {
       "text": "Noisy textures were created by fully randomizing the phase of the face images (0% phase coherence).",
-      "text_id": 177,
+      "text_id": 175,
       "paragraph_id": 42,
       "section_id": 12,
       "page_number": null,
@@ -1497,7 +1481,7 @@
     },
     {
       "text": "All stimuli had the same amplitude spectrum, set to the mean amplitude of the face images.",
-      "text_id": 178,
+      "text_id": 176,
       "paragraph_id": 42,
       "section_id": 12,
       "page_number": null,
@@ -1505,7 +1489,7 @@
     },
     {
       "text": "Face and noise images were revealed through \"bubble masks,\" that is, masks containing 10 two-dimensional Gaussian apertures (σ = 0.36 ), with the constraint that the center of the aperture remained in the face oval (Rousselet et al., 2014).",
-      "text_id": 179,
+      "text_id": 177,
       "paragraph_id": 42,
       "section_id": 12,
       "page_number": null,
@@ -1513,7 +1497,7 @@
     },
     {
       "text": "We wrote our experiments in MATLAB using the Psychophysics Toolbox extensions (Brainard, 1997;Kleiner, Brainard, & Pelli, 2007;Pelli, 1997).",
-      "text_id": 180,
+      "text_id": 178,
       "paragraph_id": 42,
       "section_id": 12,
       "page_number": null,
@@ -1521,7 +1505,7 @@
     },
     {
       "text": "Participants came in for two experimental sessions on separate days.",
-      "text_id": 181,
+      "text_id": 179,
       "paragraph_id": 43,
       "section_id": 13,
       "page_number": null,
@@ -1529,7 +1513,7 @@
     },
     {
       "text": "During each session, we asked participants to minimize movement and blinking, or blink only when hitting a response button.",
-      "text_id": 182,
+      "text_id": 180,
       "paragraph_id": 44,
       "section_id": 13,
       "page_number": null,
@@ -1537,7 +1521,7 @@
     },
     {
       "text": "We maintained a viewing distance of 80 cm using a chinrest.",
-      "text_id": 183,
+      "text_id": 181,
       "paragraph_id": 44,
       "section_id": 13,
       "page_number": null,
@@ -1545,7 +1529,7 @@
     },
     {
       "text": "In each experimental session, participants completed 12 blocks of 100 trials each, seated in a sound-attenuated booth.",
-      "text_id": 184,
+      "text_id": 182,
       "paragraph_id": 45,
       "section_id": 13,
       "page_number": null,
@@ -1553,7 +1537,7 @@
     },
     {
       "text": "The first block was a practice block of images without bubble masks.",
-      "text_id": 185,
+      "text_id": 183,
       "paragraph_id": 45,
       "section_id": 13,
       "page_number": null,
@@ -1561,7 +1545,7 @@
     },
     {
       "text": "As such, across the two sessions participants performed 200 trials without bubble masks, and 2,200 trials with bubble masks.",
-      "text_id": 186,
+      "text_id": 184,
       "paragraph_id": 45,
       "section_id": 13,
       "page_number": null,
@@ -1569,7 +1553,7 @@
     },
     {
       "text": "Practice blocks used a set of 10 face identities and 10 unique noise textures, each repeated five times were randomized within each block.",
-      "text_id": 187,
+      "text_id": 185,
       "paragraph_id": 45,
       "section_id": 13,
       "page_number": null,
@@ -1577,7 +1561,7 @@
     },
     {
       "text": "Each practice session lasted about 60-75 min, including breaks, but excluding EEG electrode application.",
-      "text_id": 188,
+      "text_id": 186,
       "paragraph_id": 45,
       "section_id": 13,
       "page_number": null,
@@ -1585,7 +1569,7 @@
     },
     {
       "text": "On each trial, we instructed participants to categorize stimuli as fast and as accurately as possible, by pressing \"1\" for face, and \"2\" for texture on the numerical pad of a keyboard, using the index and middle finger of their dominant hand.",
-      "text_id": 189,
+      "text_id": 187,
       "paragraph_id": 46,
       "section_id": 13,
       "page_number": null,
@@ -1593,7 +1577,7 @@
     },
     {
       "text": "Each trial began with a small black fixation cross (12 × 12 pixels, 0.4 × 0.4 of visual angle) displayed at the center of the monitor screen for a random time interval of 500-1,000 ms, followed by an image of a face or a texture presented for seven frames (~82 ms).",
-      "text_id": 190,
+      "text_id": 188,
       "paragraph_id": 46,
       "section_id": 13,
       "page_number": null,
@@ -1601,7 +1585,7 @@
     },
     {
       "text": "After the stimulus, a blank gray screen was displayed until the participant responded.",
-      "text_id": 191,
+      "text_id": 189,
       "paragraph_id": 46,
       "section_id": 13,
       "page_number": null,
@@ -1609,7 +1593,7 @@
     },
     {
       "text": "The fixation cross, the stimulus, and the blank response screen were all displayed on a uniform gray background with mean luminance of ~43 cd/m 2 .",
-      "text_id": 192,
+      "text_id": 190,
       "paragraph_id": 46,
       "section_id": 13,
       "page_number": null,
@@ -1617,7 +1601,7 @@
     },
     {
       "text": "After each block of 100 trials, participants could take a break, and they received feedback on their performance in the previous block and on their overall performance in the experiment (median RT and percentage of correct responses).",
-      "text_id": 193,
+      "text_id": 191,
       "paragraph_id": 46,
       "section_id": 13,
       "page_number": null,
@@ -1625,7 +1609,7 @@
     },
     {
       "text": "The next block started after participants pressed a key.",
-      "text_id": 194,
+      "text_id": 192,
       "paragraph_id": 46,
       "section_id": 13,
       "page_number": null,
@@ -1633,7 +1617,7 @@
     },
     {
       "text": "We recorded EEG data at 512 Hz using a 128-channel BioSemi ActiveTwo EEG system (BioSemi, Amsterdam, the Netherlands).",
-      "text_id": 195,
+      "text_id": 193,
       "paragraph_id": 47,
       "section_id": 14,
       "page_number": null,
@@ -1641,7 +1625,7 @@
     },
     {
       "text": "Four",
-      "text_id": 196,
+      "text_id": 194,
       "paragraph_id": 47,
       "section_id": 14,
       "page_number": null,
@@ -1649,7 +1633,7 @@
     },
     {
       "text": "T A B L E 1 Visual test scores.",
-      "text_id": 197,
+      "text_id": 195,
       "paragraph_id": 48,
       "section_id": 14,
       "page_number": null,
@@ -1657,7 +1641,7 @@
     },
     {
       "text": "Visual acuity scores are reported for HC and LC charts presented at the 63 cm viewing distance, and expressed as raw VAS HC 63 LC 63 CS Young 108 [95, 110] 99 [94, 104] 1.95 [1.95, 2.25] -0.16 [0.10, -0.20] 0.02 [0.12, -0.08] Older 98 [93, 105] 89 [82, 95] 1.95 [1.65, 1.95] 0.04 [0.14, -0.10] 0.22 [0.36, 0.10] Note: The corresponding logMAR scores are presented below in italics.",
-      "text_id": 198,
+      "text_id": 196,
       "paragraph_id": 48,
       "section_id": 14,
       "page_number": null,
@@ -1665,7 +1649,7 @@
     },
     {
       "text": "Square brackets indicate the minimum and maximum scores across participants in each age group.",
-      "text_id": 199,
+      "text_id": 197,
       "paragraph_id": 48,
       "section_id": 14,
       "page_number": null,
@@ -1673,7 +1657,7 @@
     },
     {
       "text": "CS scores for young and older participants correspond to median log units across all participants in each age group.",
-      "text_id": 200,
+      "text_id": 198,
       "paragraph_id": 48,
       "section_id": 14,
       "page_number": null,
@@ -1681,7 +1665,7 @@
     },
     {
       "text": "Abbreviations: CS, contrast sensitivity; HC, high contrast; LC, low contrast; VASs, visual acuity scores.",
-      "text_id": 201,
+      "text_id": 199,
       "paragraph_id": 48,
       "section_id": 14,
       "page_number": null,
@@ -1689,7 +1673,7 @@
     },
     {
       "text": "additional UltraFlat Active BioSemi electrodes were placed below and at the outer canthi of both eyes.",
-      "text_id": 202,
+      "text_id": 200,
       "paragraph_id": 49,
       "section_id": 14,
       "page_number": null,
@@ -1697,7 +1681,7 @@
     },
     {
       "text": "Electrode offsets were kept between ±20 μV.",
-      "text_id": 203,
+      "text_id": 201,
       "paragraph_id": 49,
       "section_id": 14,
       "page_number": null,
@@ -1705,7 +1689,7 @@
     },
     {
       "text": "EEG data were preprocessed using MATLAB 2013b and the opensource EEGLAB toolbox (Delorme et al., 2011;Delorme & Makeig, 2004).",
-      "text_id": 204,
+      "text_id": 202,
       "paragraph_id": 50,
       "section_id": 14,
       "page_number": null,
@@ -1713,7 +1697,7 @@
     },
     {
       "text": "Data were first average referenced and detrended.",
-      "text_id": 205,
+      "text_id": 203,
       "paragraph_id": 50,
       "section_id": 14,
       "page_number": null,
@@ -1721,7 +1705,7 @@
     },
     {
       "text": "Two types of filtering were then performed.",
-      "text_id": 206,
+      "text_id": 204,
       "paragraph_id": 50,
       "section_id": 14,
       "page_number": null,
@@ -1729,7 +1713,7 @@
     },
     {
       "text": "First, data were band-pass filtered between 1 and 30 Hz using a noncausal fourth-order Butterworth filter.",
-      "text_id": 207,
+      "text_id": 205,
       "paragraph_id": 50,
       "section_id": 14,
       "page_number": null,
@@ -1737,7 +1721,7 @@
     },
     {
       "text": "Independently, another dataset was created in which data were preprocessed with fourth-order Butterworth filters: a high-pass causal filter at 2 Hz and a low-pass noncausal filter at 30 Hz, to preserve accurate timing of onsets (Acunzo, MacKenzie, & van Rossum, 2012;Luck, 2005;Rousselet, 2012;Widmann & Schröger, 2012).",
-      "text_id": 208,
+      "text_id": 206,
       "paragraph_id": 50,
       "section_id": 14,
       "page_number": null,
@@ -1745,7 +1729,7 @@
     },
     {
       "text": "Data from both datasets were then downsampled to 500 Hz, and epoched between -300 and 1,000 ms around stimulus onset.",
-      "text_id": 209,
+      "text_id": 207,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1753,7 +1737,7 @@
     },
     {
       "text": "Mean baseline was removed from the causal-filtered data, and channel mean was removed from each channel in the noncausal-filtered data in order to increase the reliability of independent component analysis (ICA) (Groppe, Makeig, & Kutas, 2009).",
-      "text_id": 210,
+      "text_id": 208,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1761,7 +1745,7 @@
     },
     {
       "text": "Noisy electrodes and trials Subsequently, we performed ICA on the noncausal filtered dataset using the Infomax algorithm as implemented in the runica function in EEGLAB (Delorme & Makeig, 2004;Delorme, Sejnowski, & Makeig, 2007).",
-      "text_id": 211,
+      "text_id": 209,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1769,7 +1753,7 @@
     },
     {
       "text": "The ICA weights were then applied to the causal filtered dataset to ensure removal of the same components, and artifactual the CSD toolbox (Kayser, 2009;Tenke & Kayser, 2012).",
-      "text_id": 212,
+      "text_id": 210,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1777,7 +1761,7 @@
     },
     {
       "text": "CSD waveforms were computed using parameters 50 iterations, m = 4, and λ = 10 -5 .",
-      "text_id": 213,
+      "text_id": 211,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1785,7 +1769,7 @@
     },
     {
       "text": "The head radius was arbitrarily set to 10 cm, so that the ERP units are μV/cm 2 .",
-      "text_id": 214,
+      "text_id": 212,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1793,7 +1777,7 @@
     },
     {
       "text": "The CSD transformation is a spatial high-pass filtering of the data, which sharpens ERP topographies and reduces the influence of volume-conducted activity.",
-      "text_id": 215,
+      "text_id": 213,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1801,7 +1785,7 @@
     },
     {
       "text": "CSD waveforms are also reference free.",
-      "text_id": 216,
+      "text_id": 214,
       "paragraph_id": 51,
       "section_id": 14,
       "page_number": null,
@@ -1809,7 +1793,7 @@
     },
     {
       "text": "We performed detailed analyses on the subset of four posterior midline electrodes that are sensitive to face features or conjunction of features: from top to bottom CPz, Pz, POz, and Oz (Rousselet et al., 2014;Schyns, Thut, & Gross, 2011).",
-      "text_id": 217,
+      "text_id": 215,
       "paragraph_id": 52,
       "section_id": 15,
       "page_number": null,
@@ -1817,7 +1801,7 @@
     },
     {
       "text": "We only report the results of Oz because the other three electrodes had weak MI to face features in the two groups.",
-      "text_id": 218,
+      "text_id": 216,
       "paragraph_id": 52,
       "section_id": 15,
       "page_number": null,
@@ -1825,7 +1809,7 @@
     },
     {
       "text": "We also selected two posterior-lateral electrodes, one in the right hemisphere (RE), and one in the left hemisphere (LE) by measuring the difference between all bubble face trials and all bubble noise trials at all posterior-lateral electrodes, squaring it, and selecting the left and the REs that showed the maximum difference in the period 130-250 ms.",
-      "text_id": 219,
+      "text_id": 217,
       "paragraph_id": 52,
       "section_id": 15,
       "page_number": null,
@@ -1833,7 +1817,7 @@
     },
     {
       "text": "Across participants, the selected LE and RE were P7/8, or PO7/8, or their immediate neighbors.",
-      "text_id": 220,
+      "text_id": 218,
       "paragraph_id": 52,
       "section_id": 15,
       "page_number": null,
@@ -1841,7 +1825,7 @@
     },
     {
       "text": "These electrodes are typically associated with large face ERPs in the literature.",
-      "text_id": 221,
+      "text_id": 219,
       "paragraph_id": 52,
       "section_id": 15,
       "page_number": null,
@@ -1849,7 +1833,7 @@
     },
     {
       "text": "We compared the amplitude and latency of the N170 between the two age groups.",
-      "text_id": 222,
+      "text_id": 220,
       "paragraph_id": 53,
       "section_id": 16,
       "page_number": null,
@@ -1857,7 +1841,7 @@
     },
     {
       "text": "To this end, we computed mean ERPs across trials for each participant, separately for face and noise trials, and for practice (without Bubbles) and regular (with Bubbles) trials.",
-      "text_id": 223,
+      "text_id": 221,
       "paragraph_id": 53,
       "section_id": 16,
       "page_number": null,
@@ -1865,7 +1849,7 @@
     },
     {
       "text": "For ERPs recorded at the lateral-occipital electrode in the right hemisphere (RE), we defined the N170 peak in individual participants as the minimum mean ERP between 110 and 230 ms, and considered separately its latency and amplitude.",
-      "text_id": 224,
+      "text_id": 222,
       "paragraph_id": 53,
       "section_id": 16,
       "page_number": null,
@@ -1873,7 +1857,7 @@
     },
     {
       "text": "We conducted statistical analyses using MATLAB 2013b and the LIMO EEG toolbox (Pernet et al., 2011).",
-      "text_id": 225,
+      "text_id": 223,
       "paragraph_id": 54,
       "section_id": 17,
       "page_number": null,
@@ -1881,7 +1865,7 @@
     },
     {
       "text": "Throughout the paper, square brackets indicate 95% confidence intervals computed using the percentile bootstrap technique, with 1,000 bootstrap samples.",
-      "text_id": 226,
+      "text_id": 224,
       "paragraph_id": 54,
       "section_id": 17,
       "page_number": null,
@@ -1889,7 +1873,7 @@
     },
     {
       "text": "Unless otherwise stated, median values are Harrell-Davis estimates of the second quartile (Harrell & Davis, 1982).",
-      "text_id": 227,
+      "text_id": 225,
       "paragraph_id": 54,
       "section_id": 17,
       "page_number": null,
@@ -1897,7 +1881,7 @@
     },
     {
       "text": "We used MI to quantify the dependence between stimulus features and behavioral and brain responses (Ince et al., 2017;Ince, Petersen, Swan, & Panzeri, 2009;Kayser, Ince, Gross, & Kayser, 2015;Park, Ince, Schyns, Thut, & Gross, 2015;Schyns et al., 2011).",
-      "text_id": 228,
+      "text_id": 226,
       "paragraph_id": 55,
       "section_id": 18,
       "page_number": null,
@@ -1905,7 +1889,7 @@
     },
     {
       "text": "We binned pixel visibility across trials (due to random bubbles sampling), and behavioral and EEG responses into three equiprobable bins (for details, see Rousselet et al., 2014).",
-      "text_id": 229,
+      "text_id": 227,
       "paragraph_id": 55,
       "section_id": 18,
       "page_number": null,
@@ -1913,7 +1897,7 @@
     },
     {
       "text": "We then calculated several MI quantities in single participants: MI(PIX; RT) to establish the relationship between image pixels and RTs; MI(PIX; CORRECT) to establish the relationship between image pixels and correct responses; MI(PIX; RESP) between pixels and response category; and MI(PIX; ERP) to establish the relationship between image pixels and ERPs.",
-      "text_id": 230,
+      "text_id": 228,
       "paragraph_id": 55,
       "section_id": 18,
       "page_number": null,
@@ -1921,31 +1905,23 @@
     },
     {
       "text": "We computed these quantities separately for face and noise trials.",
-      "text_id": 231,
+      "text_id": 229,
       "paragraph_id": 55,
       "section_id": 18,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "To control for the variable number of trials in each participant arising as a result of EEG preprocessing, we scaled every MI quantity for every participant by a factor of 2Nln2 (Ince, Mazzoni, Bartels, Logothetis, & Panzeri, 2012), using the formula:",
-      "text_id": 232,
+      "text": "To control for the variable number of trials in each participant arising as a result of EEG preprocessing, we scaled every MI quantity for every participant by a factor of 2Nln2 (Ince, Mazzoni, Bartels, Logothetis, & Panzeri, 2012), using the formula: where MI refers to mutual information values and Nt is the number of trials.",
+      "text_id": 230,
       "paragraph_id": 55,
       "section_id": 18,
       "page_number": null,
-      "formatted": "To control for the variable number of trials in each participant arising as a result of EEG preprocessing, we scaled every MI quantity for every participant by a factor of 2Nln2 <ref type=\"bibr\" target=\"#b27\">(Ince, Mazzoni, Bartels, Logothetis, &amp; Panzeri, 2012)<\/ref>, using the formula:"
-    },
-    {
-      "text": "where MI refers to mutual information values and Nt is the number of trials.",
-      "text_id": 233,
-      "paragraph_id": 56,
-      "section_id": 18,
-      "page_number": null,
-      "formatted": null
+      "formatted": "To control for the variable number of trials in each participant arising as a result of EEG preprocessing, we scaled every MI quantity for every participant by a factor of 2Nln2 <ref type=\"bibr\" target=\"#b27\">(Ince, Mazzoni, Bartels, Logothetis, &amp; Panzeri, 2012)<\/ref>, using the formula: where MI refers to mutual information values and Nt is the number of trials."
     },
     {
       "text": "MI scaled , therefore, reflects a measure of MI adjusted for a systematic upward bias in the information estimate that might arise due to limited data sampling, especially if the numbers of trials in the two age groups are systematically different.",
-      "text_id": 234,
+      "text_id": 231,
       "paragraph_id": 56,
       "section_id": 18,
       "page_number": null,
@@ -1953,7 +1929,7 @@
     },
     {
       "text": "It also converts MI to be the effect size for a log-likelihood test of independence (Sokal & Rohlf, 2012).",
-      "text_id": 235,
+      "text_id": 232,
       "paragraph_id": 56,
       "section_id": 18,
       "page_number": null,
@@ -1961,7 +1937,7 @@
     },
     {
       "text": "All group-difference analyses were performed using the scaled MI values.",
-      "text_id": 236,
+      "text_id": 233,
       "paragraph_id": 56,
       "section_id": 18,
       "page_number": null,
@@ -1969,7 +1945,7 @@
     },
     {
       "text": "We refer to MI between pixels and behavior or ERPs as classification images: they reveal the image pixels associated with modulations of the responses.",
-      "text_id": 237,
+      "text_id": 234,
       "paragraph_id": 57,
       "section_id": 19,
       "page_number": null,
@@ -1977,7 +1953,7 @@
     },
     {
       "text": "We computed the MI(PIX, ERP) classification images at every time point within the first 400 ms following stimulus onset, using the noncausal and causal-filtered datasets, and at each of the six electrodes specified above.",
-      "text_id": 238,
+      "text_id": 235,
       "paragraph_id": 57,
       "section_id": 19,
       "page_number": null,
@@ -1985,7 +1961,7 @@
     },
     {
       "text": "We summarized each classification image with its maximum MI and reported these time courses per electrode.",
-      "text_id": 239,
+      "text_id": 236,
       "paragraph_id": 57,
       "section_id": 19,
       "page_number": null,
@@ -1993,7 +1969,7 @@
     },
     {
       "text": "To establish the statistical significance of the classification image pixels while controlling for multiple comparisons arising from testing at multiple pixels, we performed a permutation test coupled with the threshold-free cluster enhancement technique (Smith & Nichols, 2009) on individual participants' data (Rousselet et al., 2014).",
-      "text_id": 240,
+      "text_id": 237,
       "paragraph_id": 58,
       "section_id": 20,
       "page_number": null,
@@ -2001,7 +1977,7 @@
     },
     {
       "text": "We computed coinformation (coI) (Bell, 2003) (equivalent to interaction information (McGill, 1954) but with opposite sign for three variables) to quantify the triple dependence between eye visibility, RTs, and brain responses (Ince, 2017;Ince et al.,2017Ince et al., ,2016Ince et al., ,2015; Zhan, Ince, Van Rijsbergen, & Schyns, 2018), that is, coI(eye; RT; EEG).",
-      "text_id": 241,
+      "text_id": 238,
       "paragraph_id": 59,
       "section_id": 21,
       "page_number": null,
@@ -2009,7 +1985,7 @@
     },
     {
       "text": "Positive values of coI quantify redundancy, specifically here redundant or overlapping information about the stimulus eye visibility, which is common to both EEG and RT responses.",
-      "text_id": 242,
+      "text_id": 239,
       "paragraph_id": 59,
       "section_id": 21,
       "page_number": null,
@@ -2017,7 +1993,7 @@
     },
     {
       "text": "We computed coinformation redundancy with the following expression: FeatRed = MIðEEG; eye visibilityÞ + MIðRT; eye visibility -MIð½EEGRT; eye visibilityÞ We used here Gaussian-Copula Mutual Information a semiparametric rank-based estimator suitable for continuous variables (Ince et al., 2017) (see also Supplementary Methods) and considered a two-dimensional EEG signal consisting of voltage together with its instantaneous temporal derivative (see Supplementary Methods).",
-      "text_id": 243,
+      "text_id": 240,
       "paragraph_id": 59,
       "section_id": 21,
       "page_number": null,
@@ -2025,31 +2001,23 @@
     },
     {
       "text": "If there is less information about eye visibility available from EEG and RT considered jointly, MI([EEG RT]; eye visibility), than there is when the two responses are considered independently, MI(EEG; eye visibility) + MI(RT; eye visibility), then this shows that part of the relationship quantified by MI(EEG; eye visibility) overlaps with that quantified by MI(RT; eye visibility).",
-      "text_id": 244,
+      "text_id": 241,
       "paragraph_id": 59,
       "section_id": 21,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "As such, redundancy quantifies the overlapping information content (i.e., a common driving effect) within",
-      "text_id": 245,
+      "text": "As such, redundancy quantifies the overlapping information content (i.e., a common driving effect) within both EEG and RT, about eye visibility.",
+      "text_id": 242,
       "paragraph_id": 59,
-      "section_id": 21,
-      "page_number": null,
-      "formatted": null
-    },
-    {
-      "text": "both EEG and RT, about eye visibility.",
-      "text_id": 246,
-      "paragraph_id": 60,
       "section_id": 21,
       "page_number": null,
       "formatted": null
     },
     {
       "text": "We computed this measure at all time points and electrodes for each participant independently.",
-      "text_id": 247,
+      "text_id": 243,
       "paragraph_id": 60,
       "section_id": 21,
       "page_number": null,
@@ -2057,7 +2025,7 @@
     },
     {
       "text": "Then, for each participant, we plotted the time course of redundancy at occipital-temporal electrodes specified above (i.e., RE and LE) between 0 and 400 ms poststimulus.",
-      "text_id": 248,
+      "text_id": 244,
       "paragraph_id": 61,
       "section_id": 21,
       "page_number": null,
@@ -2065,7 +2033,7 @@
     },
     {
       "text": "We computed group-level redundancy to quantify the degree to which median RT and individual peak redundancy time provide a common prediction of the age group (young vs. older) across individual participants.",
-      "text_id": 249,
+      "text_id": 245,
       "paragraph_id": 62,
       "section_id": 22,
       "page_number": null,
@@ -2073,7 +2041,7 @@
     },
     {
       "text": "For these analyses, we quantized RT and peak redundancy time into three equally populated bins (splitting on tertiles of the distribution across participants) and calculated MI from the standard discrete definition (Cover & Thomas, 2005;Ince et al., 2017).",
-      "text_id": 250,
+      "text_id": 246,
       "paragraph_id": 62,
       "section_id": 22,
       "page_number": null,
@@ -2081,7 +2049,7 @@
     },
     {
       "text": "We applied Miller-Madow bias correction to the individual MI estimated before calculating group redundancy as: GroupRed = MIðFRP; groupÞ+ MIðRT; groupÞ-MIð½FRP RT; groupÞ where FRP is feature redundancy peak time, RT is reaction time, and group is age group for each participant.",
-      "text_id": 251,
+      "text_id": 247,
       "paragraph_id": 62,
       "section_id": 22,
       "page_number": null,
@@ -2089,7 +2057,7 @@
     },
     {
       "text": "We determined bootstrap confidence intervals via resampling participants with replacement 1,000 times.",
-      "text_id": 252,
+      "text_id": 248,
       "paragraph_id": 62,
       "section_id": 22,
       "page_number": null,
@@ -2097,7 +2065,7 @@
     },
     {
       "text": "We quantified ERP onsets using the causal-filtered datasets.",
-      "text_id": 253,
+      "text_id": 249,
       "paragraph_id": 63,
       "section_id": 23,
       "page_number": null,
@@ -2105,7 +2073,7 @@
     },
     {
       "text": "To control for multiple comparisons, we used a bootstrap temporal clustering technique as implemented in LIMO EEG (Pernet et al., 2011;Pernet, Latinus, Nichols, & Rousselet, 2015).",
-      "text_id": 254,
+      "text_id": 250,
       "paragraph_id": 63,
       "section_id": 23,
       "page_number": null,
@@ -2113,7 +2081,7 @@
     },
     {
       "text": "To test whether age-related delays reflect differences in the onset of afferent activity to the visual cortex, we looked at the time course of the SD across electrodes of the mean ERP (ERP STD ).",
-      "text_id": 255,
+      "text_id": 251,
       "paragraph_id": 64,
       "section_id": 24,
       "page_number": null,
@@ -2121,7 +2089,7 @@
     },
     {
       "text": "ERP STD provides a compact description of the global ERP response, summarizing each participant's evoked brain activity across electrodes in one vector.",
-      "text_id": 256,
+      "text_id": 252,
       "paragraph_id": 64,
       "section_id": 24,
       "page_number": null,
@@ -2129,7 +2097,7 @@
     },
     {
       "text": "This analysis was based on the notion that early visual activity can be characterized by a sudden increase in SD of the mean ERP across electrodes (Foxe & Simpson, 2002).",
-      "text_id": 257,
+      "text_id": 253,
       "paragraph_id": 65,
       "section_id": 24,
       "page_number": null,
@@ -2137,7 +2105,7 @@
     },
     {
       "text": "We computed the ERP STD time course for each individual participant and mean baseline centered it.",
-      "text_id": 258,
+      "text_id": 254,
       "paragraph_id": 65,
       "section_id": 24,
       "page_number": null,
@@ -2145,7 +2113,7 @@
     },
     {
       "text": "Then, we localized the first peak the minimum height of which was five times the height of any peak in the baseline.",
-      "text_id": 259,
+      "text_id": 255,
       "paragraph_id": 65,
       "section_id": 24,
       "page_number": null,
@@ -2153,7 +2121,7 @@
     },
     {
       "text": "Then, using ARESLab toolbox (Jekabsons, 2015), we built a piecewise-linear regression model with three basis functions using the multivariate adaptive regression splines (Friedman, 1991) method.",
-      "text_id": 260,
+      "text_id": 256,
       "paragraph_id": 65,
       "section_id": 24,
       "page_number": null,
@@ -2161,7 +2129,7 @@
     },
     {
       "text": "This approach divided the data into two segments and fitted each segment with separate models (regression splines).",
-      "text_id": 261,
+      "text_id": 257,
       "paragraph_id": 65,
       "section_id": 24,
       "page_number": null,
@@ -2169,7 +2137,7 @@
     },
     {
       "text": "Onsets were defined as the location in time of the first knot of the fitted spline, that is, the point where division between the two models occurred.",
-      "text_id": 262,
+      "text_id": 258,
       "paragraph_id": 65,
       "section_id": 24,
       "page_number": null,
@@ -2177,7 +2145,7 @@
     },
     {
       "text": "We quantified MI onsets using the same technique as with ERP STD onsets.",
-      "text_id": 263,
+      "text_id": 259,
       "paragraph_id": 66,
       "section_id": 25,
       "page_number": null,
@@ -2185,7 +2153,7 @@
     },
     {
       "text": "We computed topographic maps for each participant from the wholescalp MI(PIX; ERP) results, and for the whole-scalp ERP results, at the individual MI peak, or ERP peak latency, respectively.",
-      "text_id": 264,
+      "text_id": 260,
       "paragraph_id": 67,
       "section_id": 26,
       "page_number": null,
@@ -2193,7 +2161,7 @@
     },
     {
       "text": "Individual ERP topographic maps were squared.",
-      "text_id": 265,
+      "text_id": 261,
       "paragraph_id": 67,
       "section_id": 26,
       "page_number": null,
@@ -2201,7 +2169,7 @@
     },
     {
       "text": "All topographic maps were interpolated and rendered in a 67 × 67 pixel image using the EEGLAB function topoplot, and then averaged across participants in each age group.",
-      "text_id": 266,
+      "text_id": 262,
       "paragraph_id": 67,
       "section_id": 26,
       "page_number": null,
@@ -2209,7 +2177,7 @@
     },
     {
       "text": "Using the interpolated head maps, we then computed a hemispheric lateralization index for each participant using MI results.",
-      "text_id": 267,
+      "text_id": 263,
       "paragraph_id": 68,
       "section_id": 26,
       "page_number": null,
@@ -2217,7 +2185,7 @@
     },
     {
       "text": "First, we normalized MI values in each participant between 0 and 1.",
-      "text_id": 268,
+      "text_id": 264,
       "paragraph_id": 68,
       "section_id": 26,
       "page_number": null,
@@ -2225,7 +2193,7 @@
     },
     {
       "text": "Then, we saved the maximum pixel intensity in the left and the right hemisphere (lower left and right quadrants of the interpolated image), excluding the midline.",
-      "text_id": 269,
+      "text_id": 265,
       "paragraph_id": 68,
       "section_id": 26,
       "page_number": null,
@@ -2233,7 +2201,7 @@
     },
     {
       "text": "This work has been funded by the U.K. Biotechnology and Biological Sciences Research Council (BBSRC) grant BB/J018929/1 awarded to N.J.V.R., G.A.R., and P.G.S. K.J. was supported by the BBSRCDoctoral Training Partnership (WestBio) Studentship.",
-      "text_id": 270,
+      "text_id": 266,
       "paragraph_id": 69,
       "section_id": 27,
       "page_number": null,
@@ -2241,7 +2209,7 @@
     },
     {
       "text": "P.G.S. received support from the Wellcome Trust (Senior Investigator Award, United Kingdom; 107802) and the Multidisciplinary University Research Initiative/Engineering and Physical Sciences Research Council (United States, United Kingdom; 172046-01).",
-      "text_id": 271,
+      "text_id": 267,
       "paragraph_id": 69,
       "section_id": 27,
       "page_number": null,
@@ -2249,7 +2217,7 @@
     },
     {
       "text": "Biotechnology and Biological Sciences Research Council, Grant/Award Number: BB/ J018929/1; Multidisciplinary University Research Initiative/Engineering and Physical Sciences Research Council, Grant/Award Number: 172046-01; Wellcome Trust, Grant/ Award Number: 107802; BBSRC West Bio Doctoral Training Partnership",
-      "text_id": 272,
+      "text_id": 268,
       "paragraph_id": 70,
       "section_id": 28,
       "page_number": null,
@@ -2257,7 +2225,7 @@
     },
     {
       "text": "A reproducibility package with data and code is available on figshare: https://doi.org/10.6084/m9.figshare.10744937.",
-      "text_id": 273,
+      "text_id": 269,
       "paragraph_id": 71,
       "section_id": 29,
       "page_number": null,
@@ -2265,7 +2233,7 @@
     },
     {
       "text": "Single-trial data from the young participants are available on Dryad: https://datadryad.org/stash/dataset/doi:10.5061/dryad.8m2g3",
-      "text_id": 274,
+      "text_id": 270,
       "paragraph_id": 71,
       "section_id": 29,
       "page_number": null,
@@ -2273,7 +2241,7 @@
     },
     {
       "text": "Additional supporting information may be found online in the Supporting Information section at the end of this article.",
-      "text_id": 275,
+      "text_id": 271,
       "paragraph_id": 72,
       "section_id": 30,
       "page_number": null,
@@ -2281,7 +2249,7 @@
     },
     {
       "text": "Seventeen young (median age = 23) and 18 older (median age = 66) participants categorized 2,200 pictures of faces and noise textures revealed through Gaussian apertures (so-called \"Bubbles,\" Gosselin & Schyns, 2001), which sample random spatial regions of face and noise images on each trial.",
-      "text_id": 276,
+      "text_id": 272,
       "paragraph_id": 73,
       "section_id": 31,
       "page_number": null,
@@ -2289,7 +2257,7 @@
     },
     {
       "text": "Young participants were 198 ms faster to detect faces (median RT in young = 378 ms, 95% confidence interval = [349, 401] vs.",
-      "text_id": 277,
+      "text_id": 273,
       "paragraph_id": 73,
       "section_id": 31,
       "page_number": null,
@@ -2297,7 +2265,7 @@
     },
     {
       "text": "RT in older participants = 576 ms [527, 604]).",
-      "text_id": 278,
+      "text_id": 274,
       "paragraph_id": 73,
       "section_id": 31,
       "page_number": null,
@@ -2305,7 +2273,7 @@
     },
     {
       "text": "I G U R E 4 Brain information. (a) Right electrode (RE): frequency of significant effects.",
-      "text_id": 279,
+      "text_id": 275,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2313,7 +2281,7 @@
     },
     {
       "text": "Using the maximum mutual information (MI) image across time points on RE in each participant, the white number in the left upper corner of every image corresponds to the maximum number of participants showing a significant effect at the same face pixel (on face and noise trials separately), whereas the number in the right upper corner corresponds to the total number of participants showing significant effects at any pixel. (b) RE: mean difference.",
-      "text_id": 280,
+      "text_id": 276,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2321,7 +2289,7 @@
     },
     {
       "text": "Averaging the maximum MI images across young and older participants separately produced images of group differences (young-older) for face trials (left) and noise trials (right).",
-      "text_id": 281,
+      "text_id": 277,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2329,7 +2297,7 @@
     },
     {
       "text": "Average MI in the left eye region of the face image was higher for young than older participants.",
-      "text_id": 282,
+      "text_id": 278,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2337,7 +2305,7 @@
     },
     {
       "text": "Throughout the figure, MI represents normalized MI values (see Section 4). (c) Individual participants.",
-      "text_id": 283,
+      "text_id": 279,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2345,7 +2313,7 @@
     },
     {
       "text": "Dot plot shows, for each participant (colored dot), MI values summed within a mask that captures left eye-only pixels (represented as a red circle in the face inset; see Supplementary Methods).",
-      "text_id": 284,
+      "text_id": 280,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2353,7 +2321,7 @@
     },
     {
       "text": "Red bars correspond to the median of these per-participant averages.",
-      "text_id": 285,
+      "text_id": 281,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2361,7 +2329,7 @@
     },
     {
       "text": "Distributions of individual participant values were different between the two groups. (d) RE: time course of brain information are presented for both face and noise (insets) bubbles trials on RE.",
-      "text_id": 286,
+      "text_id": 282,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2369,7 +2337,7 @@
     },
     {
       "text": "Color-coded numbers correspond to median latencies of maximum MI in both groups.",
-      "text_id": 287,
+      "text_id": 283,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2377,7 +2345,7 @@
     },
     {
       "text": "Shaded areas correspond to bootstrap 95% confidence intervals around the 20% trimmed mean. (e) MI topographies.",
-      "text_id": 288,
+      "text_id": 284,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2385,7 +2353,7 @@
     },
     {
       "text": "MI <face information; electroencephalogram (EEG) activity> (i.e., brain information) averaged across young and older participants for each electrode across time points and face pixels. (f) Right electrode (RE): representation for behavior.",
-      "text_id": 289,
+      "text_id": 285,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2393,7 +2361,7 @@
     },
     {
       "text": "A time course of behavioral redundancy shows a 46 ms delay in the representation of the left eye on the RE for delayed face detection reaction time (RT) in older adults",
-      "text_id": 290,
+      "text_id": 286,
       "paragraph_id": 74,
       "section_id": 32,
       "page_number": null,
@@ -2401,31 +2369,23 @@
     },
     {
       "text": "Figure 1d illustrates example MI classification images of brain information on electrode RE.",
-      "text_id": 291,
+      "text_id": 287,
       "paragraph_id": 75,
       "section_id": 33,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "As shown in Figure 4a, EEG activity at RE contralaterally represented the left eye in most young (N = 16/17) and older (N = 12/18) adults (see Supplementary Figures S7 and S8 for LE results), with a weaker overall representation in older adults (their peak MI was 57%",
-      "text_id": 292,
+      "text": "As shown in Figure 4a, EEG activity at RE contralaterally represented the left eye in most young (N = 16/17) and older (N = 12/18) adults (see Supplementary Figures S7 and S8 for LE results), with a weaker overall representation in older adults (their peak MI was 57% 48 ms delay in left eye redundancy) and a behavioral aging deficit (200 ms RT delay across participants of our sample).",
+      "text_id": 288,
       "paragraph_id": 75,
       "section_id": 33,
-      "page_number": null,
-      "formatted": null
-    },
-    {
-      "text": "48 ms delay in left eye redundancy) and a behavioral aging deficit (200 ms RT delay across participants of our sample).",
-      "text_id": 293,
-      "paragraph_id": 76,
-      "section_id": 34,
       "page_number": null,
       "formatted": null
     },
     {
       "text": "Specifically, within participants, we explicitly quantified the triple relationship <stimulus information; EEG activity; behavior> within SIR to focus on the aspects of information processing reflected in EEG signals that are directly relevant to face detection RT.",
-      "text_id": 294,
+      "text_id": 289,
       "paragraph_id": 76,
       "section_id": 34,
       "page_number": null,
@@ -2433,7 +2393,7 @@
     },
     {
       "text": "Across participants, quantification of the triple relationship <age group; representational delay; RT delay> suggests a group level interpretation in which right-lateralized (but not left-lateralized) neural representational delays underlie behavioral slowdown in aging.",
-      "text_id": 295,
+      "text_id": 290,
       "paragraph_id": 76,
       "section_id": 34,
       "page_number": null,
@@ -2441,7 +2401,7 @@
     },
     {
       "text": "were then detected by visual inspection of the noncausal dataset, and rejected on a participant-by-participant basis.",
-      "text_id": 296,
+      "text_id": 291,
       "paragraph_id": 77,
       "section_id": 35,
       "page_number": null,
@@ -2449,7 +2409,7 @@
     },
     {
       "text": "Following visual inspection, one young participant and one older participant were excluded from further analyses due to noisy EEG signal.",
-      "text_id": 297,
+      "text_id": 292,
       "paragraph_id": 77,
       "section_id": 35,
       "page_number": null,
@@ -2457,7 +2417,7 @@
     },
     {
       "text": "MI analysis confirmed the lack of sensitivity to any facial features in these participants.",
-      "text_id": 298,
+      "text_id": 293,
       "paragraph_id": 77,
       "section_id": 35,
       "page_number": null,
@@ -2465,7 +2425,7 @@
     },
     {
       "text": "The resulting sample size was 17 young and 18 older participants.",
-      "text_id": 299,
+      "text_id": 294,
       "paragraph_id": 77,
       "section_id": 35,
       "page_number": null,
@@ -2473,7 +2433,7 @@
     },
     {
       "text": "In this sample, more noisy channels were on average removed from older than from young participants' datasets (older participants: median = 10, min = 0, max = 24; young participants: median = 5, min = 0, max = 28; median difference = 4 [2, 7]).",
-      "text_id": 300,
+      "text_id": 295,
       "paragraph_id": 77,
       "section_id": 35,
       "page_number": null,
@@ -2481,7 +2441,7 @@
     },
     {
       "text": "More noisy Bubble trials were also removed from older than from young participants' datasets (trials included in analyses, older participants: median 2,130, min 1987, max 2,180; young participants: median 2,178, min 2,023, max 2,198;   median difference = 42 [23, 64]).",
-      "text_id": 301,
+      "text_id": 296,
       "paragraph_id": 77,
       "section_id": 35,
       "page_number": null,
@@ -2489,7 +2449,7 @@
     },
     {
       "text": "components were rejected from both datasets (median = 4, min = 1, max = 27 for one older participant who displayed excessive blink activity; the second max was 17).",
-      "text_id": 302,
+      "text_id": 297,
       "paragraph_id": 78,
       "section_id": 36,
       "page_number": null,
@@ -2497,7 +2457,7 @@
     },
     {
       "text": "Then, baseline correction was performed again, and data epochs were removed based on an absolute threshold value larger than 100 μV and the presence of a linear trend with an absolute slope larger than 75 μV per epoch and R² larger than .3.",
-      "text_id": 303,
+      "text_id": 298,
       "paragraph_id": 78,
       "section_id": 36,
       "page_number": null,
@@ -2505,31 +2465,23 @@
     },
     {
       "text": "The median number of bubble trials accepted for analysis was, out of 1,100, for older participants: face trials = 1,069 [min = 999, max = 1,092]; noise trials = 1,067 [min = 986, max = 1,088]; for young participants: face trials = 1,090 [min = 1,006, max = 1,100]; noise trials = 1,089 [min = 1,014, max = 1,098].",
-      "text_id": 304,
+      "text_id": 299,
       "paragraph_id": 78,
       "section_id": 36,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Finally, we computed single-trial spherical spline current source density waveforms using",
-      "text_id": 305,
+      "text": "Finally, we computed single-trial spherical spline current source density waveforms using the lateralization index in each group as the ratio (MI left -MI right )/(MI left + MI right ).",
+      "text_id": 300,
       "paragraph_id": 78,
       "section_id": 36,
-      "page_number": null,
-      "formatted": null
-    },
-    {
-      "text": "the lateralization index in each group as the ratio (MI left -MI right )/(MI left + MI right ).",
-      "text_id": 306,
-      "paragraph_id": 79,
-      "section_id": 37,
       "page_number": null,
       "formatted": null
     },
     {
       "text": "Whole-scalp MI was strongest at posterior-lateral electrodes, and tended to be right lateralized in both groups (lateralization index for face trials, young = -0.18 [-0.31, -0.05]; older = -0.23 [-0.37, -0.09]; group difference = 0.07 [-0.07, 0.21]).",
-      "text_id": 307,
+      "text_id": 301,
       "paragraph_id": 79,
       "section_id": 37,
       "page_number": null,
@@ -2537,7 +2489,7 @@
     },
     {
       "text": "Acunzo, D. J., MacKenzie, G., & van Rossum, M. C. W. (2012). Systematic biases in early ERP and ERF components as a result of high-pass filter- ing. Journal of Neuroscience Methods, 209(1), 212-218. https://doi. org/10.1016/j.jneumeth.2012.06.011",
-      "text_id": 308,
+      "text_id": 302,
       "paragraph_id": 80,
       "section_id": 38,
       "page_number": null,
@@ -2545,7 +2497,7 @@
     },
     {
       "text": "Anastasi, J. S., & Rhodes, M. G. (2005). An own-age bias in face recognition for children and older adults. Psychonomic Bulletin & Review, 12(6), 1043-1047. https://doi.org/10.3758/BF03206441",
-      "text_id": 309,
+      "text_id": 303,
       "paragraph_id": 81,
       "section_id": 38,
       "page_number": null,
@@ -2553,7 +2505,7 @@
     },
     {
       "text": "Bell, A. J. (2003). The co-information lattice. In Proceedings of the 4th Inter- national Symposium on Independent Component Analysis and Blind Signal Separation (ICA2003), Nara, Japan, 1-4 April (pp. 921-926).",
-      "text_id": 310,
+      "text_id": 304,
       "paragraph_id": 82,
       "section_id": 38,
       "page_number": null,
@@ -2561,15 +2513,15 @@
     },
     {
       "text": "Bentin, S., Allison, T., Puce, A., Perez, E., & McCarthy, G. (1996). Electro- physiological studies of face perception in humans. Journal of Cognitive Neuroscience, 8(6), 551-565.",
-      "text_id": 311,
+      "text_id": 305,
       "paragraph_id": 83,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Bieniek, M. M., Bennett, P. J., Sekuler, A. B., & Rousselet, G. A. (2016). A robust and representative lower bound on object processing speed in humans. European Journal of Neuroscience, 44(2), 1804-1814. https:// doi.org/10.1111/ejn.13100",
-      "text_id": 312,
+      "text": "Bieniek, M. M., Bennett, P. J., Sekuler, A. B., & Rousselet, G. A. (2016). A robust and representative lower bound on object processing speed in humans. European Journal of Neuroscience, 44(2), 1804-1814. https://doi.org/10.1111/ejn.13100",
+      "text_id": 306,
       "paragraph_id": 84,
       "section_id": 38,
       "page_number": null,
@@ -2577,7 +2529,7 @@
     },
     {
       "text": "Bieniek, M. M., Frei, L. S., & Rousselet, G. A. (2013). Early ERPs to faces: Aging, luminance, and individual differences. Frontiers in Psychology, 4, 268. https://doi.org/10.3389/fpsyg.2013.00268",
-      "text_id": 313,
+      "text_id": 307,
       "paragraph_id": 85,
       "section_id": 38,
       "page_number": null,
@@ -2585,7 +2537,7 @@
     },
     {
       "text": "Brainard, D. H. (1997). The psychophysics toolbox. Spatial Vision, 10(4), 433-436.",
-      "text_id": 314,
+      "text_id": 308,
       "paragraph_id": 86,
       "section_id": 38,
       "page_number": null,
@@ -2593,7 +2545,7 @@
     },
     {
       "text": "Chaby, L., Narme, P., & George, N. (2011). Older adults' configural processing of faces: Role of second-order information. Psychology and Aging, 26(1), 71-79. https://doi.org/10.1037/a0020873",
-      "text_id": 315,
+      "text_id": 309,
       "paragraph_id": 87,
       "section_id": 38,
       "page_number": null,
@@ -2601,15 +2553,15 @@
     },
     {
       "text": "Cover, T. M., & Thomas, J. A. (2005). Elements of information theory. New York, NY: Wiley-Interscience. https://doi.org/10.1002/ 047174882X",
-      "text_id": 316,
+      "text_id": 310,
       "paragraph_id": 88,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Creighton, S. E., Bennett, P. J., & Sekuler, A. B. (2018). Classification images characterize age-related deficits in face discrimination. Vision Research, 157, 97-104. https://doi.org/10.1016/J.VISRES.2018. 07.002",
-      "text_id": 317,
+      "text": "Creighton, S. E., Bennett, P. J., & Sekuler, A. B. (2018). Classification images characterize age-related deficits in face discrimination. Vision Research, 157, 97-104. https://doi.org/10.1016/J.VISRES.2018.07.002",
+      "text_id": 311,
       "paragraph_id": 89,
       "section_id": 38,
       "page_number": null,
@@ -2617,15 +2569,15 @@
     },
     {
       "text": "Delorme, A., & Makeig, S. (2004). EEGLAB: An open source toolbox for analysis of single-trial EEG dynamics including independent compo- nent analysis. Journal of Neuroscience Methods, 134, 9-21. https://doi. org/10.1016/j.jneumeth.2003.10.009",
-      "text_id": 318,
+      "text_id": 312,
       "paragraph_id": 90,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Delorme, A., Mullen, T., Kothe, C., Akalin Acar, Z., Bigdely-Shamlo, N., Vankov, A., … Makeig, S. (2011). EEGLAB, SIFT, NFT, BCILAB, and ERICA: New tools for advanced EEG processing. Computational Intelli- gence and Neuroscience, 2011, 130714, 1-12. https://doi.org/10. 1155/2011/130714",
-      "text_id": 319,
+      "text": "Delorme, A., Mullen, T., Kothe, C., Akalin Acar, Z., Bigdely-Shamlo, N., Vankov, A., … Makeig, S. (2011). EEGLAB, SIFT, NFT, BCILAB, and ERICA: New tools for advanced EEG processing. Computational Intelli- gence and Neuroscience, 2011, 130714, 1-12. https://doi.org/10.1155/2011/130714",
+      "text_id": 313,
       "paragraph_id": 91,
       "section_id": 38,
       "page_number": null,
@@ -2633,7 +2585,7 @@
     },
     {
       "text": "Delorme, A., Sejnowski, T., & Makeig, S. (2007). Enhanced detection of artifacts in EEG data using higher-order statistics and independent component analysis. NeuroImage, 34(4), 1443-1449. https://doi.org/ 10.1016/j.neuroimage.2006.11.004",
-      "text_id": 320,
+      "text_id": 314,
       "paragraph_id": 92,
       "section_id": 38,
       "page_number": null,
@@ -2641,7 +2593,7 @@
     },
     {
       "text": "Elliott, D. B., Sanderson, K., & Conkey, A. (1990). The reliability of the Pelli-Robson contrast sensitivity chart. Ophthalmic and Physiological Optics, 10(1), 21-24. https://doi.org/10.1111/j.1475-1313.1990. tb01100.x",
-      "text_id": 321,
+      "text_id": 315,
       "paragraph_id": 93,
       "section_id": 38,
       "page_number": null,
@@ -2649,15 +2601,15 @@
     },
     {
       "text": "Éthier-Majcher, C., Joubert, S., & Gosselin, F. (2013). Reverse correlating trustworthy faces in young and older adults. Frontiers in Psychology, 4, 592. https://doi.org/10.3389/fpsyg.2013.00592",
-      "text_id": 322,
+      "text_id": 316,
       "paragraph_id": 94,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Foxe, J. J., & Simpson, G. V. (2002). Flow of activation from V1 to frontal cortex in humans: A framework for defining \"early\" visual processing. Experimental Brain Research, 142(1), 139-150. https://doi.org/10. 1007/s00221-001-0906-7",
-      "text_id": 323,
+      "text": "Foxe, J. J., & Simpson, G. V. (2002). Flow of activation from V1 to frontal cortex in humans: A framework for defining \"early\" visual processing. Experimental Brain Research, 142(1), 139-150. https://doi.org/10.1007/s00221-001-0906-7",
+      "text_id": 317,
       "paragraph_id": 95,
       "section_id": 38,
       "page_number": null,
@@ -2665,7 +2617,7 @@
     },
     {
       "text": "Friedman, J. H. (1991). Multivariate adaptive regression splines. The Annals of Statistics, 19(1), 1-67. https://doi.org/10.1214/aos/1176347963",
-      "text_id": 324,
+      "text_id": 318,
       "paragraph_id": 96,
       "section_id": 38,
       "page_number": null,
@@ -2673,7 +2625,7 @@
     },
     {
       "text": "Gazzaley, A., Clapp, W., Kelley, J., McEvoy, K., Knight, R. T., & D'Esposito, M. (2008). Age-related top-down suppression deficit in the early stages of cortical visual memory processing. Proceedings of the National Academy of Sciences of the United States of America, 105 (35), 13122-13126. https://doi.org/10.1073/pnas.0806074105",
-      "text_id": 325,
+      "text_id": 319,
       "paragraph_id": 97,
       "section_id": 38,
       "page_number": null,
@@ -2681,7 +2633,7 @@
     },
     {
       "text": "Gold, J., Bennett, P. J., & Sekuler, A. B. (1999). Identification of band-pass filtered letters and faces by human and ideal observers. Vision Research, 39(21), 3537-3560. https://doi.org/10.1016/S0042-6989 (99)00080-2",
-      "text_id": 326,
+      "text_id": 320,
       "paragraph_id": 98,
       "section_id": 38,
       "page_number": null,
@@ -2689,7 +2641,7 @@
     },
     {
       "text": "Gosselin, F., & Schyns, P. G. (2001). Bubbles: A technique to reveal the use of information in recognition tasks. Vision Research, 41(17), 2261-2271. https://doi.org/10.1016/S0042-6989(01)00097-9",
-      "text_id": 327,
+      "text_id": 321,
       "paragraph_id": 99,
       "section_id": 38,
       "page_number": null,
@@ -2697,7 +2649,7 @@
     },
     {
       "text": "Groppe, D. M., Makeig, S., & Kutas, M. (2009). Identifying reliable indepen- dent components via split-half comparisons. NeuroImage, 45(4), 1199-1211. https://doi.org/10.1016/j.neuroimage.2008.12.038",
-      "text_id": 328,
+      "text_id": 322,
       "paragraph_id": 100,
       "section_id": 38,
       "page_number": null,
@@ -2705,7 +2657,7 @@
     },
     {
       "text": "Habak, C., Wilkinson, F., & Wilson, H. R. (2008). Aging disrupts the neural transformations that link facial identity across views. Vision Research, 48(1), 9-15. https://doi.org/10.1016/j.visres.2007.10.007",
-      "text_id": 329,
+      "text_id": 323,
       "paragraph_id": 101,
       "section_id": 38,
       "page_number": null,
@@ -2713,23 +2665,23 @@
     },
     {
       "text": "Harrell, F. E., & Davis, C. E. (1982). A new distribution-free quantile esti- mator.",
-      "text_id": 330,
+      "text_id": 324,
       "paragraph_id": 102,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Biometrika, 69(3), 635-640. https://doi.org/10.1093/biomet/ 69.3.635",
-      "text_id": 331,
+      "text": "Biometrika, 69(3), 635-640. https://doi.org/10.1093/biomet/69.3.635",
+      "text_id": 325,
       "paragraph_id": 103,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Ince, R. A. A. (2017). Measuring multivariate redundant information with pointwise common change in surprisal. Entropy, 19(7), 318. https:// doi.org/10.3390/e19070318",
-      "text_id": 332,
+      "text": "Ince, R. A. A. (2017). Measuring multivariate redundant information with pointwise common change in surprisal. Entropy, 19(7), 318. https://doi.org/10.3390/e19070318",
+      "text_id": 326,
       "paragraph_id": 104,
       "section_id": 38,
       "page_number": null,
@@ -2737,7 +2689,7 @@
     },
     {
       "text": "Ince, R. A. A., Giordano, B. L., Kayser, C., Rousselet, G. A., Gross, J., & Schyns, P. G. (2017). A statistical framework for neuroimaging data analysis based on mutual information estimated via a Gaussian copula. Human Brain Mapping, 38(3), 1541-1573. https://doi.org/10.1002/ hbm.23471",
-      "text_id": 333,
+      "text_id": 327,
       "paragraph_id": 105,
       "section_id": 38,
       "page_number": null,
@@ -2745,7 +2697,7 @@
     },
     {
       "text": "Ince, R. A. A., Jaworska, K., Gross, J., Panzeri, S., van Rijsbergen, N. J., Rousselet, G. A., & Schyns, P. G. (2016). The deceptively simple N170 reflects network information processing mechanisms involving visual feature coding and transfer across hemispheres. Cerebral Cortex, 26 (11), 4123-4135. https://doi.org/10.1093/cercor/bhw196",
-      "text_id": 334,
+      "text_id": 328,
       "paragraph_id": 106,
       "section_id": 38,
       "page_number": null,
@@ -2753,7 +2705,7 @@
     },
     {
       "text": "Ince, R. A. A., Mazzoni, A., Bartels, A., Logothetis, N. K., & Panzeri, S. (2012). A novel test to determine the significance of neural selectivity to single and multiple potentially correlated stimulus features. Journal of Neuroscience Methods, 210(1), 49-65. https://doi.org/10.1016/j. jneumeth.2011.11.013",
-      "text_id": 335,
+      "text_id": 329,
       "paragraph_id": 107,
       "section_id": 38,
       "page_number": null,
@@ -2761,7 +2713,7 @@
     },
     {
       "text": "Ince, R. A. A., Petersen, R. S., Swan, D. C., & Panzeri, S. (2009). Python for information theoretic analysis of neural data. Frontiers in Neu- roinformatics, 3(4), 1-15. https://doi.org/10.3389/neuro.11.004.2009",
-      "text_id": 336,
+      "text_id": 330,
       "paragraph_id": 108,
       "section_id": 38,
       "page_number": null,
@@ -2769,15 +2721,15 @@
     },
     {
       "text": "Ince, R. A. A., van Rijsbergen, N. J., Thut, G., Rousselet, G. A., Gross, J., Panzeri, S., & Schyns, P. G. (2015). Tracing the flow of perceptual fea- tures in an algorithmic brain network. Scientific Reports, 5(1), 17681. https://doi.org/10.1038/srep17681",
-      "text_id": 337,
+      "text_id": 331,
       "paragraph_id": 109,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Itier, R. J., Alain, C., Sedore, K., & McIntosh, A. R. (2007). Early face processing specificity: It's in the eyes! Journal of Cognitive Neurosci- ence, 19(11), 1815-1826. https://doi.org/10.1162/jocn.2007.19.11. 1815",
-      "text_id": 338,
+      "text": "Itier, R. J., Alain, C., Sedore, K., & McIntosh, A. R. (2007). Early face processing specificity: It's in the eyes! Journal of Cognitive Neurosci- ence, 19(11), 1815-1826. https://doi.org/10.1162/jocn.2007.19.11.1815",
+      "text_id": 332,
       "paragraph_id": 110,
       "section_id": 38,
       "page_number": null,
@@ -2785,7 +2737,7 @@
     },
     {
       "text": "Jekabsons, G. (2015). ARESLab: Adaptive Regression Splines toolbox for Matlab/Octave.",
-      "text_id": 339,
+      "text_id": 333,
       "paragraph_id": 111,
       "section_id": 38,
       "page_number": null,
@@ -2793,7 +2745,7 @@
     },
     {
       "text": "Kayser, J. (2009). Current source density (CSD) interpolation using spheri- cal splines -CSD Toolbox (Version 1.1). New York State Psychiatric Institute: Division of Cognitive Neuroscience.",
-      "text_id": 340,
+      "text_id": 334,
       "paragraph_id": 112,
       "section_id": 38,
       "page_number": null,
@@ -2801,7 +2753,7 @@
     },
     {
       "text": "Kayser, S. J., Ince, R. A. A., Gross, J., & Kayser, C. (2015). Irregular speech rate dissociates auditory cortical entrainment, evoked responses, and frontal alpha. Journal of Neuroscience, 35(44), 14691-14701.",
-      "text_id": 341,
+      "text_id": 335,
       "paragraph_id": 113,
       "section_id": 38,
       "page_number": null,
@@ -2809,7 +2761,7 @@
     },
     {
       "text": "Kietzmann, T. C., Gert, A. L., Tong, F., & König, P. (2017). Representational dynamics of facial viewpoint encoding. Journal of Cognitive Neurosci- ence, 29(4), 637-651. https://doi.org/10.1162/jocn_a_01070",
-      "text_id": 342,
+      "text_id": 336,
       "paragraph_id": 114,
       "section_id": 38,
       "page_number": null,
@@ -2817,7 +2769,7 @@
     },
     {
       "text": "Kleiner, M., Brainard, D. H., & Pelli, D. (2007). What's new in Psychtoolbox-3? Perception, 36 (ECVP Abstract Supplement).",
-      "text_id": 343,
+      "text_id": 337,
       "paragraph_id": 115,
       "section_id": 38,
       "page_number": null,
@@ -2825,7 +2777,7 @@
     },
     {
       "text": "Kolev, V., Falkenstein, M., & Yordanova, J. (2006). Motor-response genera- tion as a source of aging-related behavioural slowing in choice- reaction tasks. Neurobiology of Aging, 27(11), 1719-1730. https://doi. org/10.1016/j.neurobiolaging.2005.09.027",
-      "text_id": 344,
+      "text_id": 338,
       "paragraph_id": 116,
       "section_id": 38,
       "page_number": null,
@@ -2833,7 +2785,7 @@
     },
     {
       "text": "Komes, J., Schweinberger, S. R., & Wiese, H. (2015). Neural correlates of cognitive aging during the perception of facial age: The role of relatively distant and local texture information. Frontiers in Psychology, 6, 1420. https://doi.org/10.3389/fpsyg.2015.01420",
-      "text_id": 345,
+      "text_id": 339,
       "paragraph_id": 117,
       "section_id": 38,
       "page_number": null,
@@ -2841,7 +2793,7 @@
     },
     {
       "text": "Lott, L. A., Haegerstrom-Portnoy, G., Schneck, M. E., & Brabyn, J. A. (2005). Face recognition in the elderly. Optometry and Vision Science, 82(10), 874-881.",
-      "text_id": 346,
+      "text_id": 340,
       "paragraph_id": 118,
       "section_id": 38,
       "page_number": null,
@@ -2849,7 +2801,7 @@
     },
     {
       "text": "Luck, S. J. (2005). An introduction to the event-related potential technique. Cambridge: MIT Press.",
-      "text_id": 347,
+      "text_id": 341,
       "paragraph_id": 119,
       "section_id": 38,
       "page_number": null,
@@ -2857,7 +2809,7 @@
     },
     {
       "text": "McGill, W. J. (1954). Multivariate information transmission. Psychometrika, 19(2), 97-116. https://doi.org/10.1007/BF02289159",
-      "text_id": 348,
+      "text_id": 342,
       "paragraph_id": 120,
       "section_id": 38,
       "page_number": null,
@@ -2865,7 +2817,7 @@
     },
     {
       "text": "Nakamura, A., Yamada, T., Abe, Y., Nakamura, K., Sato, N., Horibe, K., … Ito, K. (2001). Age-related changes in brain neuromagnetic responses to face perception in humans. Neuroscience Letters, 312, 13-16. https://doi.org/10.1016/S0304-3940(01)02168-1",
-      "text_id": 349,
+      "text_id": 343,
       "paragraph_id": 121,
       "section_id": 38,
       "page_number": null,
@@ -2873,7 +2825,7 @@
     },
     {
       "text": "Obermeyer, S., Kolling, T., Schaich, A., & Knopf, M. (2012). Differences between old and young adults' ability to recognize human faces under- lie processing of horizontal information. Frontiers in Aging Neurosci- ence, 4, 1-9. https://doi.org/10.3389/fnagi.2012.00003",
-      "text_id": 350,
+      "text_id": 344,
       "paragraph_id": 122,
       "section_id": 38,
       "page_number": null,
@@ -2881,7 +2833,7 @@
     },
     {
       "text": "Owsley, C., Sekuler, R., & Boldt, C. (1981). Aging and low-contrast vision: Face perception. Investigative Ophthalmology and Visual Science, 21(2), 362-365.",
-      "text_id": 351,
+      "text_id": 345,
       "paragraph_id": 123,
       "section_id": 38,
       "page_number": null,
@@ -2889,7 +2841,7 @@
     },
     {
       "text": "Park, H., Ince, R. A. A., Schyns, P. G., Thut, G., & Gross, J. (2015). Frontal top-down signals increase coupling of auditory low-frequency oscilla- tions to continuous speech in human listeners. Current Biology, 25, 1649-1653. https://doi.org/10.1016/j.cub.2015.04.049",
-      "text_id": 352,
+      "text_id": 346,
       "paragraph_id": 124,
       "section_id": 38,
       "page_number": null,
@@ -2897,23 +2849,23 @@
     },
     {
       "text": "Pelli, D. G. (1997). The VideoToolbox software for visual psychophysics: Transforming numbers into movies. Spatial Vision, 10(4), 437-442.",
-      "text_id": 353,
+      "text_id": 347,
       "paragraph_id": 125,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Pernet, C. R., Latinus, M., Nichols, T. E., & Rousselet, G. A. (2015). Cluster- based computational methods for mass univariate analyses of event- related brain potentials/fields: A simulation study. Journal of Neurosci- ence Methods, 250, 85-93. https://doi.org/10.1016/j.jneumeth.2014. 08.003",
-      "text_id": 354,
+      "text": "Pernet, C. R., Latinus, M., Nichols, T. E., & Rousselet, G. A. (2015). Cluster- based computational methods for mass univariate analyses of event- related brain potentials/fields: A simulation study. Journal of Neurosci- ence Methods, 250, 85-93. https://doi.org/10.1016/j.jneumeth.2014.08.003",
+      "text_id": 348,
       "paragraph_id": 126,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Pernet, C. R., Chauveau, N., Gaspar, C., Rousselet, G. A., Pernet, C. R., Chauveau, N., … Rousselet, G. A. (2011). LIMO EEG: A toolbox for hierarchical LInear MOdeling of ElectroEncephaloGraphic data. Com- putational Intelligence and Neuroscience, 2011, 831409, 1-11. https:// doi.org/10.1155/2011/831409",
-      "text_id": 355,
+      "text": "Pernet, C. R., Chauveau, N., Gaspar, C., Rousselet, G. A., Pernet, C. R., Chauveau, N., … Rousselet, G. A. (2011). LIMO EEG: A toolbox for hierarchical LInear MOdeling of ElectroEncephaloGraphic data. Com- putational Intelligence and Neuroscience, 2011, 831409, 1-11. https://doi.org/10.1155/2011/831409",
+      "text_id": 349,
       "paragraph_id": 127,
       "section_id": 38,
       "page_number": null,
@@ -2921,15 +2873,15 @@
     },
     {
       "text": "Peters, A. (2009). The effects of normal aging on myelinated nerve fibers in monkey central nervous system. Frontiers in Neuroanatomy, 3(11), 1-10. https://doi.org/10.3389/neuro.05.011.2009",
-      "text_id": 356,
+      "text_id": 350,
       "paragraph_id": 128,
       "section_id": 38,
       "page_number": null,
       "formatted": null
     },
     {
-      "text": "Price, D., Tyler, L. K., Neto Henriques, R., Campbell, K. L., Williams, N., Treder, M. S., … Henson, R. N. A. (2017). Age-related delay in visual and auditory evoked responses is mediated by white-and grey-matter differences. Nature Communications, 8, 15671. https://doi.org/10. 1038/ncomms15671",
-      "text_id": 357,
+      "text": "Price, D., Tyler, L. K., Neto Henriques, R., Campbell, K. L., Williams, N., Treder, M. S., … Henson, R. N. A. (2017). Age-related delay in visual and auditory evoked responses is mediated by white-and grey-matter differences. Nature Communications, 8, 15671. https://doi.org/10.1038/ncomms15671",
+      "text_id": 351,
       "paragraph_id": 129,
       "section_id": 38,
       "page_number": null,
@@ -2937,7 +2889,7 @@
     },
     {
       "text": "Raz, N., Lindenberger, U., Rodrigue, K. M., Kennedy, K. M., Head, D., Williamson, A., … Acker, J. D. (2005). Regional brain changes in aging healthy adults: General trends, individual differences and modifiers. Cerebral Cortex, 15(11), 1676-1689. https://doi.org/10.1093/cercor/ bhi044",
-      "text_id": 358,
+      "text_id": 352,
       "paragraph_id": 130,
       "section_id": 38,
       "page_number": null,
@@ -2945,7 +2897,7 @@
     },
     {
       "text": "Rousselet, G. A. (2012). Does filtering preclude us from studying ERP time-courses? Frontiers in Psychology, 3, 131. https://doi.org/10.3389/ fpsyg.2012.00131",
-      "text_id": 359,
+      "text_id": 353,
       "paragraph_id": 131,
       "section_id": 38,
       "page_number": null,
@@ -2953,7 +2905,7 @@
     },
     {
       "text": "Rousselet, G. A., Gaspar, C. M., Pernet, C. R., Husk, J. S., Bennett, P. J., & Sekuler, A. B. (2010). Healthy aging delays scalp EEG sensitivity to noise in a face discrimination task. Frontiers in Psychology, 1, 1-14. https://doi.org/10.3389/fpsyg.2010.00019",
-      "text_id": 360,
+      "text_id": 354,
       "paragraph_id": 132,
       "section_id": 38,
       "page_number": null,
@@ -2961,7 +2913,7 @@
     },
     {
       "text": "Rousselet, G. A., Husk, J. S., Pernet, C. R., Gaspar, C. M., Bennett, P. J., & Sekuler, A. B. (2009). Age-related delay in informa- tion accrual for faces: Evidence from a parametric, single-trial EEG approach. BMC Neuroscience, 10, 114. https://doi.org/10.1186/ 1471-2202-10-114",
-      "text_id": 361,
+      "text_id": 355,
       "paragraph_id": 133,
       "section_id": 38,
       "page_number": null,
@@ -2969,7 +2921,7 @@
     },
     {
       "text": "Rousselet, G. A., Ince, R. A. A., van Rijsbergen, N. J., & Schyns, P. G. (2014). Eye coding mechanisms in early human face event-related potentials. Journal of Vision, 14, 1-24. https://doi.org/10.1167/14.13.7.doi",
-      "text_id": 362,
+      "text_id": 356,
       "paragraph_id": 134,
       "section_id": 38,
       "page_number": null,
@@ -2977,7 +2929,7 @@
     },
     {
       "text": "Rousselet, G. A., Pernet, C. R., Bennett, P. J., & Sekuler, A. B. (2008). Para- metric study of EEG sensitivity to phase noise during face processing. BMC Neuroscience, 9, 98. https://doi.org/10.1186/1471-2202-9-98",
-      "text_id": 363,
+      "text_id": 357,
       "paragraph_id": 135,
       "section_id": 38,
       "page_number": null,
@@ -2985,7 +2937,7 @@
     },
     {
       "text": "Salthouse, T. A. (2000). Aging and measures of processing speed. Biological Psychology, 54(1-3), 35-54.",
-      "text_id": 364,
+      "text_id": 358,
       "paragraph_id": 136,
       "section_id": 38,
       "page_number": null,
@@ -2993,7 +2945,7 @@
     },
     {
       "text": "Schyns, P. G., Petro, L. S., & Smith, M. L. (2007). Dynamics of visual infor- mation integration in the brain for categorizing facial expressions. Current Biology, 17(18), 1580-1585. https://doi.org/10.1016/j.cub.2007.08.048",
-      "text_id": 365,
+      "text_id": 359,
       "paragraph_id": 137,
       "section_id": 38,
       "page_number": null,
@@ -3001,7 +2953,7 @@
     },
     {
       "text": "Schyns, P. G., Thut, G., & Gross, J. (2011). Cracking the code of oscillatory activity. PLoS Biology, 9(5), e1001064. https://doi.org/10.1371/ journal.pbio.1001064",
-      "text_id": 366,
+      "text_id": 360,
       "paragraph_id": 138,
       "section_id": 38,
       "page_number": null,
@@ -3009,7 +2961,7 @@
     },
     {
       "text": "Sekuler, A. B., Gold, J. M., Murray, R. F., & Bennett, P. (2000). Visual com- pletion of partly occluded objects: Insights from behavioral studies. Neuro-Ophtalmology, 23, 165-168.",
-      "text_id": 367,
+      "text_id": 361,
       "paragraph_id": 139,
       "section_id": 38,
       "page_number": null,
@@ -3017,7 +2969,7 @@
     },
     {
       "text": "Sergent, J., Ohta, S., & MacDonald, B. (1992). Functional neuroanatomy of face and object processing. A Positron Emission Tomography Study. Brain, 115(Pt. 1), 15-36.",
-      "text_id": 368,
+      "text_id": 362,
       "paragraph_id": 140,
       "section_id": 38,
       "page_number": null,
@@ -3025,7 +2977,7 @@
     },
     {
       "text": "Smith, M. L., Gosselin, F., & Schyns, P. G. (2004). Receptive fields for flexi- ble face categorizations. Psychological Science, 15(11), 753-761. https://doi.org/10.1111/j.0956-7976.2004.00752.x",
-      "text_id": 369,
+      "text_id": 363,
       "paragraph_id": 141,
       "section_id": 38,
       "page_number": null,
@@ -3033,7 +2985,7 @@
     },
     {
       "text": "Smith, S. M., & Nichols, T. E. (2009). Threshold-free cluster enhancement: Addressing problems of smoothing, threshold dependence and localisation in cluster inference. NeuroImage, 44(1), 83-98. https://doi. org/10.1016/j.neuroimage.2008.03.061",
-      "text_id": 370,
+      "text_id": 364,
       "paragraph_id": 142,
       "section_id": 38,
       "page_number": null,
@@ -3041,7 +2993,7 @@
     },
     {
       "text": "Sokal, R. R., & Rohlf, F. J. (2012). Biometry: The principles and practice of statistics in biological research (4th ed.). San Francisco: W.H. Freeman.",
-      "text_id": 371,
+      "text_id": 365,
       "paragraph_id": 143,
       "section_id": 38,
       "page_number": null,
@@ -3049,7 +3001,7 @@
     },
     {
       "text": "Tang, H., Buia, C., Madhavan, R., Crone, N. E., Madsen, J. R., Anderson, W. S., & Kreiman, G. (2014). Spatiotemporal dynamics underlying object completion in human ventral visual cortex. Neuron, 83(3), 736-748. https://doi.org/10.1016/j.neuron.2014.06.017",
-      "text_id": 372,
+      "text_id": 366,
       "paragraph_id": 144,
       "section_id": 38,
       "page_number": null,
@@ -3057,7 +3009,7 @@
     },
     {
       "text": "Tenke, C. E., & Kayser, J. (2012). Generator localization by current source density (CSD): Implications of volume conduction and field closure at intracranial and scalp resolutions. Clinical Neurophysiology, 123(12), 2328-2345. https://doi.org/10.1016/j.clinph.2012.06.005",
-      "text_id": 373,
+      "text_id": 367,
       "paragraph_id": 145,
       "section_id": 38,
       "page_number": null,
@@ -3065,7 +3017,7 @@
     },
     {
       "text": "van Rijsbergen, N. J., Jaworska, K., Rousselet, G. A., & Schyns, P. G. (2014). With age comes representational wisdom in social signals. Current Biol- ogy, 24(23), 2792-2796. https://doi.org/10.1016/j.cub.2014.09.075",
-      "text_id": 374,
+      "text_id": 368,
       "paragraph_id": 146,
       "section_id": 38,
       "page_number": null,
@@ -3073,7 +3025,7 @@
     },
     {
       "text": "van Rijsbergen, N. J., & Schyns, P. G. (2009). Dynamics of trimming the content of face representations for categorization in the brain. PLoS Computational Biology, 5(11), e1000561. https://doi.org/10.1371/journal.pcbi.1000561",
-      "text_id": 375,
+      "text_id": 369,
       "paragraph_id": 147,
       "section_id": 38,
       "page_number": null,
@@ -3081,7 +3033,7 @@
     },
     {
       "text": "Wang, Y., Zhou, Y., Ma, Y., & Leventhal, A. G. (2005). Degradation of signal timing in cortical areas V1 and V2 of senescent monkeys. Cerebral Cor- tex, 15(4), 403-408. https://doi.org/10.1093/cercor/bhh143",
-      "text_id": 376,
+      "text_id": 370,
       "paragraph_id": 148,
       "section_id": 38,
       "page_number": null,
@@ -3089,7 +3041,7 @@
     },
     {
       "text": "Widmann, A., & Schröger, E. (2012). Filter effects and filter artifacts in the analysis of electrophysiological data. Frontiers in Psychology, 3, 233. https://doi.org/10.3389/fpsyg.2012.00233",
-      "text_id": 377,
+      "text_id": 371,
       "paragraph_id": 149,
       "section_id": 38,
       "page_number": null,
@@ -3097,7 +3049,7 @@
     },
     {
       "text": "Wiese, H., Schweinberger, S. R., & Hansen, K. (2008). The age of the beholder: ERP evidence of an own-age bias in face memory. Neuropsychologia, 46(12), 2973-2985. https://doi.org/10.1016/j. neuropsychologia.2008.06.007",
-      "text_id": 378,
+      "text_id": 372,
       "paragraph_id": 150,
       "section_id": 38,
       "page_number": null,
@@ -3105,7 +3057,7 @@
     },
     {
       "text": "Wilson, H. R., Mei, M., Habak, C., & Wilkinson, F. (2011). Visual band- widths for face orientation increase during healthy aging. Vision Research, 51(1), 160-164. https://doi.org/10.1016/j.visres.2010.10.026",
-      "text_id": 379,
+      "text_id": 373,
       "paragraph_id": 151,
       "section_id": 38,
       "page_number": null,
@@ -3113,7 +3065,7 @@
     },
     {
       "text": "Yordanova, J., Kolev, V., Hohnsbein, J., & Falkenstein, M. (2004). Sensori- motor slowing with ageing is mediated by a functional dysregulation of motor-generation processes: Evidence from high-resolution event- related potentials. Brain, 127(2), 351-362. https://doi.org/10.1093/ brain/awh042",
-      "text_id": 380,
+      "text_id": 374,
       "paragraph_id": 152,
       "section_id": 38,
       "page_number": null,
@@ -3121,7 +3073,7 @@
     },
     {
       "text": "Zanto, T. P., Toy, B., & Gazzaley, A. (2010). Delays in neural processing dur- ing working memory encoding in normal aging. Neuropsychologia, 48(1), 13-25. https://doi.org/10.1016/j.neuropsychologia.2009.08.003",
-      "text_id": 381,
+      "text_id": 375,
       "paragraph_id": 153,
       "section_id": 38,
       "page_number": null,
@@ -3129,7 +3081,7 @@
     },
     {
       "text": "Zhan, J., Ince, R. A. A., Van Rijsbergen, N. J., & Schyns, P. G. (2018). Dynamic construction of reduced representations in the brain for per- ceptual decision behavior. Current Biology, 29(2), 319-326.",
-      "text_id": 382,
+      "text_id": 376,
       "paragraph_id": 154,
       "section_id": 38,
       "page_number": null,
@@ -3154,13 +3106,6 @@
     {
       "section_id": 2,
       "header": "2 | RESULTS",
-      "parent_section_id": null,
-      "section_type": "results",
-      "classification_score": null
-    },
-    {
-      "section_id": 3,
-      "header": "2.1 | Behavioral information: <stimulus information; behavior>",
       "parent_section_id": null,
       "section_type": "results",
       "classification_score": null
@@ -3415,7 +3360,7 @@
     {
       "href": "https://doi.org/10.6084/m9.figshare.10744937",
       "link_text": null,
-      "text_id": 273
+      "text_id": 269
     }
   ],
   "bib": [
@@ -3434,7 +3379,7 @@
       "container": "Journal of Neuroscience Methods",
       "bib_id": 0,
       "year_suffix": "",
-      "text_id": 308
+      "text_id": 302
     },
     {
       "bib_type": "article",
@@ -3451,7 +3396,7 @@
       "container": "Psychonomic Bulletin & Review",
       "bib_id": 1,
       "year_suffix": "",
-      "text_id": 309
+      "text_id": 303
     },
     {
       "bib_type": "article",
@@ -3468,7 +3413,7 @@
       "container": "",
       "bib_id": 2,
       "year_suffix": "",
-      "text_id": 310
+      "text_id": 304
     },
     {
       "bib_type": "article",
@@ -3485,7 +3430,7 @@
       "container": "Journal of Cognitive Neuroscience",
       "bib_id": 3,
       "year_suffix": "",
-      "text_id": 311
+      "text_id": 305
     },
     {
       "bib_type": "article",
@@ -3502,7 +3447,7 @@
       "container": "European Journal of Neuroscience",
       "bib_id": 4,
       "year_suffix": "",
-      "text_id": 312
+      "text_id": 306
     },
     {
       "bib_type": "article",
@@ -3519,7 +3464,7 @@
       "container": "Frontiers in Psychology",
       "bib_id": 5,
       "year_suffix": "",
-      "text_id": 313
+      "text_id": 307
     },
     {
       "bib_type": "article",
@@ -3536,7 +3481,7 @@
       "container": "Spatial Vision",
       "bib_id": 6,
       "year_suffix": "",
-      "text_id": 314
+      "text_id": 308
     },
     {
       "bib_type": "article",
@@ -3553,7 +3498,7 @@
       "container": "Psychology and Aging",
       "bib_id": 7,
       "year_suffix": "",
-      "text_id": 315
+      "text_id": 309
     },
     {
       "bib_type": "article",
@@ -3570,7 +3515,7 @@
       "container": "",
       "bib_id": 8,
       "year_suffix": "",
-      "text_id": 316
+      "text_id": 310
     },
     {
       "bib_type": "article",
@@ -3587,7 +3532,7 @@
       "container": "Vision Research",
       "bib_id": 9,
       "year_suffix": "",
-      "text_id": 317
+      "text_id": 311
     },
     {
       "bib_type": "article",
@@ -3604,7 +3549,7 @@
       "container": "Journal of Neuroscience Methods",
       "bib_id": 10,
       "year_suffix": "",
-      "text_id": 318
+      "text_id": 312
     },
     {
       "bib_type": "article",
@@ -3621,7 +3566,7 @@
       "container": "Computational Intelligence and Neuroscience",
       "bib_id": 11,
       "year_suffix": "",
-      "text_id": 319
+      "text_id": 313
     },
     {
       "bib_type": "article",
@@ -3638,7 +3583,7 @@
       "container": "NeuroImage",
       "bib_id": 12,
       "year_suffix": "",
-      "text_id": 320
+      "text_id": 314
     },
     {
       "bib_type": "article",
@@ -3655,7 +3600,7 @@
       "container": "Ophthalmic and Physiological Optics",
       "bib_id": 13,
       "year_suffix": "",
-      "text_id": 321
+      "text_id": 315
     },
     {
       "bib_type": "article",
@@ -3672,7 +3617,7 @@
       "container": "Frontiers in Psychology",
       "bib_id": 14,
       "year_suffix": "",
-      "text_id": 322
+      "text_id": 316
     },
     {
       "bib_type": "article",
@@ -3689,7 +3634,7 @@
       "container": "Experimental Brain Research",
       "bib_id": 15,
       "year_suffix": "",
-      "text_id": 323
+      "text_id": 317
     },
     {
       "bib_type": "article",
@@ -3706,7 +3651,7 @@
       "container": "The Annals of Statistics",
       "bib_id": 16,
       "year_suffix": "",
-      "text_id": 324
+      "text_id": 318
     },
     {
       "bib_type": "article",
@@ -3723,7 +3668,7 @@
       "container": "Proceedings of the National Academy of Sciences of the United States of America",
       "bib_id": 17,
       "year_suffix": "",
-      "text_id": 325
+      "text_id": 319
     },
     {
       "bib_type": "article",
@@ -3740,7 +3685,7 @@
       "container": "Vision Research",
       "bib_id": 18,
       "year_suffix": "",
-      "text_id": 326
+      "text_id": 320
     },
     {
       "bib_type": "article",
@@ -3757,7 +3702,7 @@
       "container": "Vision Research",
       "bib_id": 19,
       "year_suffix": "",
-      "text_id": 327
+      "text_id": 321
     },
     {
       "bib_type": "article",
@@ -3774,7 +3719,7 @@
       "container": "NeuroImage",
       "bib_id": 20,
       "year_suffix": "",
-      "text_id": 328
+      "text_id": 322
     },
     {
       "bib_type": "article",
@@ -3791,7 +3736,7 @@
       "container": "Vision Research",
       "bib_id": 21,
       "year_suffix": "",
-      "text_id": 329
+      "text_id": 323
     },
     {
       "bib_type": "article",
@@ -3808,7 +3753,7 @@
       "container": "",
       "bib_id": 22,
       "year_suffix": "",
-      "text_id": 330
+      "text_id": 324
     },
     {
       "bib_type": "article",
@@ -3825,7 +3770,7 @@
       "container": "Biometrika",
       "bib_id": 23,
       "year_suffix": null,
-      "text_id": 331
+      "text_id": 325
     },
     {
       "bib_type": "article",
@@ -3842,7 +3787,7 @@
       "container": "Entropy",
       "bib_id": 24,
       "year_suffix": "",
-      "text_id": 332
+      "text_id": 326
     },
     {
       "bib_type": "article",
@@ -3859,7 +3804,7 @@
       "container": "Human Brain Mapping",
       "bib_id": 25,
       "year_suffix": "",
-      "text_id": 333
+      "text_id": 327
     },
     {
       "bib_type": "article",
@@ -3876,7 +3821,7 @@
       "container": "Cerebral Cortex",
       "bib_id": 26,
       "year_suffix": "",
-      "text_id": 334
+      "text_id": 328
     },
     {
       "bib_type": "article",
@@ -3893,7 +3838,7 @@
       "container": "Journal of Neuroscience Methods",
       "bib_id": 27,
       "year_suffix": "",
-      "text_id": 335
+      "text_id": 329
     },
     {
       "bib_type": "article",
@@ -3910,7 +3855,7 @@
       "container": "Frontiers in Neuroinformatics",
       "bib_id": 28,
       "year_suffix": "",
-      "text_id": 336
+      "text_id": 330
     },
     {
       "bib_type": "article",
@@ -3927,7 +3872,7 @@
       "container": "Scientific Reports",
       "bib_id": 29,
       "year_suffix": "",
-      "text_id": 337
+      "text_id": 331
     },
     {
       "bib_type": "article",
@@ -3944,7 +3889,7 @@
       "container": "Journal of Cognitive Neuroscience",
       "bib_id": 30,
       "year_suffix": "",
-      "text_id": 338
+      "text_id": 332
     },
     {
       "bib_type": "article",
@@ -3961,7 +3906,7 @@
       "container": "",
       "bib_id": 31,
       "year_suffix": "",
-      "text_id": 339
+      "text_id": 333
     },
     {
       "bib_type": "article",
@@ -3978,7 +3923,7 @@
       "container": "",
       "bib_id": 32,
       "year_suffix": "",
-      "text_id": 340
+      "text_id": 334
     },
     {
       "bib_type": "article",
@@ -3995,7 +3940,7 @@
       "container": "Journal of Neuroscience",
       "bib_id": 33,
       "year_suffix": "",
-      "text_id": 341
+      "text_id": 335
     },
     {
       "bib_type": "article",
@@ -4012,7 +3957,7 @@
       "container": "Journal of Cognitive Neuroscience",
       "bib_id": 34,
       "year_suffix": "",
-      "text_id": 342
+      "text_id": 336
     },
     {
       "bib_type": "article",
@@ -4029,7 +3974,7 @@
       "container": "",
       "bib_id": 35,
       "year_suffix": "",
-      "text_id": 343
+      "text_id": 337
     },
     {
       "bib_type": "article",
@@ -4046,7 +3991,7 @@
       "container": "Neurobiology of Aging",
       "bib_id": 36,
       "year_suffix": "",
-      "text_id": 344
+      "text_id": 338
     },
     {
       "bib_type": "article",
@@ -4063,7 +4008,7 @@
       "container": "Frontiers in Psychology",
       "bib_id": 37,
       "year_suffix": "",
-      "text_id": 345
+      "text_id": 339
     },
     {
       "bib_type": "article",
@@ -4080,7 +4025,7 @@
       "container": "Optometry and Vision Science",
       "bib_id": 38,
       "year_suffix": "",
-      "text_id": 346
+      "text_id": 340
     },
     {
       "bib_type": "article",
@@ -4097,7 +4042,7 @@
       "container": "",
       "bib_id": 39,
       "year_suffix": "",
-      "text_id": 347
+      "text_id": 341
     },
     {
       "bib_type": "article",
@@ -4114,7 +4059,7 @@
       "container": "Psychometrika",
       "bib_id": 40,
       "year_suffix": "",
-      "text_id": 348
+      "text_id": 342
     },
     {
       "bib_type": "article",
@@ -4131,7 +4076,7 @@
       "container": "Neuroscience Letters",
       "bib_id": 41,
       "year_suffix": "",
-      "text_id": 349
+      "text_id": 343
     },
     {
       "bib_type": "article",
@@ -4148,7 +4093,7 @@
       "container": "Frontiers in Aging Neuroscience",
       "bib_id": 42,
       "year_suffix": "",
-      "text_id": 350
+      "text_id": 344
     },
     {
       "bib_type": "article",
@@ -4165,7 +4110,7 @@
       "container": "Investigative Ophthalmology and Visual Science",
       "bib_id": 43,
       "year_suffix": "",
-      "text_id": 351
+      "text_id": 345
     },
     {
       "bib_type": "article",
@@ -4182,7 +4127,7 @@
       "container": "Current Biology",
       "bib_id": 44,
       "year_suffix": "",
-      "text_id": 352
+      "text_id": 346
     },
     {
       "bib_type": "article",
@@ -4199,7 +4144,7 @@
       "container": "Spatial Vision",
       "bib_id": 45,
       "year_suffix": "",
-      "text_id": 353
+      "text_id": 347
     },
     {
       "bib_type": "article",
@@ -4216,7 +4161,7 @@
       "container": "Journal of Neuroscience Methods",
       "bib_id": 46,
       "year_suffix": "",
-      "text_id": 354
+      "text_id": 348
     },
     {
       "bib_type": "article",
@@ -4233,7 +4178,7 @@
       "container": "Computational Intelligence and Neuroscience",
       "bib_id": 47,
       "year_suffix": "",
-      "text_id": 355
+      "text_id": 349
     },
     {
       "bib_type": "article",
@@ -4250,7 +4195,7 @@
       "container": "Frontiers in Neuroanatomy",
       "bib_id": 48,
       "year_suffix": "",
-      "text_id": 356
+      "text_id": 350
     },
     {
       "bib_type": "article",
@@ -4267,7 +4212,7 @@
       "container": "Nature Communications",
       "bib_id": 49,
       "year_suffix": "",
-      "text_id": 357
+      "text_id": 351
     },
     {
       "bib_type": "article",
@@ -4284,7 +4229,7 @@
       "container": "Cerebral Cortex",
       "bib_id": 50,
       "year_suffix": "",
-      "text_id": 358
+      "text_id": 352
     },
     {
       "bib_type": "article",
@@ -4301,7 +4246,7 @@
       "container": "Frontiers in Psychology",
       "bib_id": 51,
       "year_suffix": "",
-      "text_id": 359
+      "text_id": 353
     },
     {
       "bib_type": "article",
@@ -4318,7 +4263,7 @@
       "container": "Frontiers in Psychology",
       "bib_id": 52,
       "year_suffix": "",
-      "text_id": 360
+      "text_id": 354
     },
     {
       "bib_type": "article",
@@ -4335,7 +4280,7 @@
       "container": "BMC Neuroscience",
       "bib_id": 53,
       "year_suffix": "",
-      "text_id": 361
+      "text_id": 355
     },
     {
       "bib_type": "article",
@@ -4352,7 +4297,7 @@
       "container": "Journal of Vision",
       "bib_id": 54,
       "year_suffix": "",
-      "text_id": 362
+      "text_id": 356
     },
     {
       "bib_type": "article",
@@ -4369,7 +4314,7 @@
       "container": "BMC Neuroscience",
       "bib_id": 55,
       "year_suffix": "",
-      "text_id": 363
+      "text_id": 357
     },
     {
       "bib_type": "article",
@@ -4386,7 +4331,7 @@
       "container": "Biological Psychology",
       "bib_id": 56,
       "year_suffix": "",
-      "text_id": 364
+      "text_id": 358
     },
     {
       "bib_type": "article",
@@ -4403,7 +4348,7 @@
       "container": "Current Biology",
       "bib_id": 57,
       "year_suffix": "",
-      "text_id": 365
+      "text_id": 359
     },
     {
       "bib_type": "article",
@@ -4420,7 +4365,7 @@
       "container": "PLoS Biology",
       "bib_id": 58,
       "year_suffix": "",
-      "text_id": 366
+      "text_id": 360
     },
     {
       "bib_type": "article",
@@ -4437,7 +4382,7 @@
       "container": "Neuro-Ophtalmology",
       "bib_id": 59,
       "year_suffix": "",
-      "text_id": 367
+      "text_id": 361
     },
     {
       "bib_type": "article",
@@ -4454,7 +4399,7 @@
       "container": "Brain",
       "bib_id": 60,
       "year_suffix": "",
-      "text_id": 368
+      "text_id": 362
     },
     {
       "bib_type": "article",
@@ -4471,7 +4416,7 @@
       "container": "Psychological Science",
       "bib_id": 61,
       "year_suffix": "",
-      "text_id": 369
+      "text_id": 363
     },
     {
       "bib_type": "article",
@@ -4488,7 +4433,7 @@
       "container": "NeuroImage",
       "bib_id": 62,
       "year_suffix": "",
-      "text_id": 370
+      "text_id": 364
     },
     {
       "bib_type": "article",
@@ -4505,7 +4450,7 @@
       "container": "",
       "bib_id": 63,
       "year_suffix": "",
-      "text_id": 371
+      "text_id": 365
     },
     {
       "bib_type": "article",
@@ -4522,7 +4467,7 @@
       "container": "Neuron",
       "bib_id": 64,
       "year_suffix": "",
-      "text_id": 372
+      "text_id": 366
     },
     {
       "bib_type": "article",
@@ -4539,7 +4484,7 @@
       "container": "Clinical Neurophysiology",
       "bib_id": 65,
       "year_suffix": "",
-      "text_id": 373
+      "text_id": 367
     },
     {
       "bib_type": "article",
@@ -4556,7 +4501,7 @@
       "container": "Current Biology",
       "bib_id": 66,
       "year_suffix": "",
-      "text_id": 374
+      "text_id": 368
     },
     {
       "bib_type": "article",
@@ -4573,7 +4518,7 @@
       "container": "PLoS Computational Biology",
       "bib_id": 67,
       "year_suffix": "",
-      "text_id": 375
+      "text_id": 369
     },
     {
       "bib_type": "article",
@@ -4590,7 +4535,7 @@
       "container": "Cerebral Cortex",
       "bib_id": 68,
       "year_suffix": "",
-      "text_id": 376
+      "text_id": 370
     },
     {
       "bib_type": "article",
@@ -4607,7 +4552,7 @@
       "container": "Frontiers in Psychology",
       "bib_id": 69,
       "year_suffix": "",
-      "text_id": 377
+      "text_id": 371
     },
     {
       "bib_type": "article",
@@ -4624,7 +4569,7 @@
       "container": "Neuropsychologia",
       "bib_id": 70,
       "year_suffix": "",
-      "text_id": 378
+      "text_id": 372
     },
     {
       "bib_type": "article",
@@ -4641,7 +4586,7 @@
       "container": "Vision Research",
       "bib_id": 71,
       "year_suffix": "",
-      "text_id": 379
+      "text_id": 373
     },
     {
       "bib_type": "article",
@@ -4658,7 +4603,7 @@
       "container": "Brain",
       "bib_id": 72,
       "year_suffix": "",
-      "text_id": 380
+      "text_id": 374
     },
     {
       "bib_type": "article",
@@ -4675,7 +4620,7 @@
       "container": "Neuropsychologia",
       "bib_id": 73,
       "year_suffix": "",
-      "text_id": 381
+      "text_id": 375
     },
     {
       "bib_type": "article",
@@ -4692,7 +4637,7 @@
       "container": "Current Biology",
       "bib_id": 74,
       "year_suffix": "",
-      "text_id": 382
+      "text_id": 376
     }
   ],
   "xref": [
@@ -4796,871 +4741,871 @@
       "xref_id": null,
       "xref_type": "figure",
       "contents": "3a",
-      "text_id": 55
+      "text_id": 54
     },
     {
       "xref_id": 15,
       "xref_type": "bibr",
       "contents": "(Foxe & Simpson, 2002)",
-      "text_id": 56
+      "text_id": 55
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "(68 ms [64, 72]",
-      "text_id": 65
+      "text_id": 63
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[62,",
-      "text_id": 65
+      "text_id": 63
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "75]",
-      "text_id": 65
+      "text_id": 63
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "3a",
-      "text_id": 65
+      "text_id": 63
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[-7, 5]",
-      "text_id": 65
+      "text_id": 63
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[9,",
-      "text_id": 66
+      "text_id": 64
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "24]",
-      "text_id": 66
+      "text_id": 64
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[9,",
-      "text_id": 66
+      "text_id": 64
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "38]",
-      "text_id": 66
+      "text_id": 64
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "(i.e., 22 ms [10, 32]",
-      "text_id": 67
+      "text_id": 65
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[7,",
-      "text_id": 67
+      "text_id": 65
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "31]",
-      "text_id": 67
+      "text_id": 65
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "3c",
-      "text_id": 67
+      "text_id": 65
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "3b",
-      "text_id": 67
+      "text_id": 65
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "S5",
-      "text_id": 70
+      "text_id": 68
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[42,",
-      "text_id": 72
+      "text_id": 70
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "82]",
-      "text_id": 72
+      "text_id": 70
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "4b",
-      "text_id": 72
+      "text_id": 70
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "c",
-      "text_id": 72
+      "text_id": 70
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "4d",
-      "text_id": 73
+      "text_id": 71
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[23,",
-      "text_id": 74
+      "text_id": 72
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "57]",
-      "text_id": 74
+      "text_id": 72
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "4e",
-      "text_id": 77
+      "text_id": 75
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "S6",
-      "text_id": 78
+      "text_id": 76
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "S7",
-      "text_id": 81
+      "text_id": 79
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "S8",
-      "text_id": 81
+      "text_id": 79
     },
     {
       "xref_id": 25,
       "xref_type": "bibr",
       "contents": "(Ince et al., 2017)",
-      "text_id": 86
+      "text_id": 84
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[30,",
-      "text_id": 88
+      "text_id": 86
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "81]",
-      "text_id": 88
+      "text_id": 86
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[155,",
-      "text_id": 88
+      "text_id": 86
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "178]",
-      "text_id": 88
+      "text_id": 86
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[196,",
-      "text_id": 88
+      "text_id": 86
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "246]",
-      "text_id": 88
+      "text_id": 86
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "4f",
-      "text_id": 88
+      "text_id": 86
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[20,",
-      "text_id": 89
+      "text_id": 87
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "86]",
-      "text_id": 89
+      "text_id": 87
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[161,",
-      "text_id": 89
+      "text_id": 87
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "186]",
-      "text_id": 89
+      "text_id": 87
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "[196,",
-      "text_id": 89
+      "text_id": 87
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "261]",
-      "text_id": 89
+      "text_id": 87
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "S10",
-      "text_id": 89
+      "text_id": 87
     },
     {
       "xref_id": null,
       "xref_type": "figure",
       "contents": "2",
-      "text_id": 100
+      "text_id": 98
     },
     {
       "xref_id": 7,
       "xref_type": "bibr",
       "contents": "(Chaby, Narme, & George, 2011;",
-      "text_id": 108
+      "text_id": 106
     },
     {
       "xref_id": 42,
       "xref_type": "bibr",
       "contents": "Obermeyer, Kolling, Schaich, & Knopf, 2012)",
-      "text_id": 108
+      "text_id": 106
     },
     {
       "xref_id": 66,
       "xref_type": "bibr",
       "contents": "van Rijsbergen, Jaworska, Rousselet, & Schyns, 2014)",
-      "text_id": 111
+      "text_id": 109
     },
     {
       "xref_id": 38,
       "xref_type": "bibr",
       "contents": "(Lott, Haegerstrom-Portnoy, Schneck, & Brabyn, 2005;",
-      "text_id": 111
+      "text_id": 109
     },
     {
       "xref_id": 43,
       "xref_type": "bibr",
       "contents": "Owsley, Sekuler, & Boldt, 1981)",
-      "text_id": 111
+      "text_id": 109
     },
     {
       "xref_id": 19,
       "xref_type": "bibr",
       "contents": "(Gosselin & Schyns, 2001)",
-      "text_id": 112
+      "text_id": 110
     },
     {
       "xref_id": 9,
       "xref_type": "bibr",
       "contents": "(Creighton, Bennett, & Sekuler, 2018;",
-      "text_id": 112
+      "text_id": 110
     },
     {
       "xref_id": 14,
       "xref_type": "bibr",
       "contents": "Éthier-Majcher, Joubert, & Gosselin, 2013;",
-      "text_id": 112
+      "text_id": 110
     },
     {
       "xref_id": 66,
       "xref_type": "bibr",
       "contents": "van Rijsbergen et al., 2014)",
-      "text_id": 112
+      "text_id": 110
     },
     {
       "xref_id": 60,
       "xref_type": "bibr",
       "contents": "(Sergent, Ohta, & MacDonald, 1992)",
-      "text_id": 114
+      "text_id": 112
     },
     {
       "xref_id": 4,
       "xref_type": "bibr",
       "contents": "(Bieniek, Bennett, Sekuler, & Rousselet, 2016;",
-      "text_id": 116
+      "text_id": 114
     },
     {
       "xref_id": 5,
       "xref_type": "bibr",
       "contents": "Bieniek, Frei, & Rousselet, 2013)",
-      "text_id": 116
+      "text_id": 114
     },
     {
       "xref_id": 49,
       "xref_type": "bibr",
       "contents": "(Price et al., 2017)",
-      "text_id": 116
+      "text_id": 114
     },
     {
       "xref_id": 21,
       "xref_type": "bibr",
       "contents": "(Habak, Wilkinson, & Wilson, 2008;",
-      "text_id": 118
+      "text_id": 116
     },
     {
       "xref_id": 71,
       "xref_type": "bibr",
       "contents": "Wilson, Mei, Habak, & Wilkinson, 2011)",
-      "text_id": 118
+      "text_id": 116
     },
     {
       "xref_id": 34,
       "xref_type": "bibr",
       "contents": "(Kietzmann, Gert, Tong, & König, 2017)",
-      "text_id": 119
+      "text_id": 117
     },
     {
       "xref_id": 49,
       "xref_type": "bibr",
       "contents": "(Price et al., 2017)",
-      "text_id": 120
+      "text_id": 118
     },
     {
       "xref_id": 5,
       "xref_type": "bibr",
       "contents": "(Bieniek et al., 2013;",
-      "text_id": 121
+      "text_id": 119
     },
     {
       "xref_id": 52,
       "xref_type": "bibr",
       "contents": "Rousselet et al.,2010",
-      "text_id": 121
+      "text_id": 119
     },
     {
       "xref_id": 53,
       "xref_type": "bibr",
       "contents": "Rousselet et al., , 2009))",
-      "text_id": 121
+      "text_id": 119
     },
     {
       "xref_id": 54,
       "xref_type": "bibr",
       "contents": "Rousselet, Ince, van Rijsbergen, & Schyns, 2014;",
-      "text_id": 122
+      "text_id": 120
     },
     {
       "xref_id": 57,
       "xref_type": "bibr",
       "contents": "Schyns, Petro, & Smith, 2007;",
-      "text_id": 122
+      "text_id": 120
     },
     {
       "xref_id": 61,
       "xref_type": "bibr",
       "contents": "Smith, Gosselin, & Schyns, 2004)",
-      "text_id": 122
+      "text_id": 120
     },
     {
       "xref_id": 17,
       "xref_type": "bibr",
       "contents": "(Gazzaley et al., 2008;",
-      "text_id": 124
+      "text_id": 122
     },
     {
       "xref_id": 73,
       "xref_type": "bibr",
       "contents": "Zanto, Toy, & Gazzaley, 2010)",
-      "text_id": 124
+      "text_id": 122
     },
     {
       "xref_id": 52,
       "xref_type": "bibr",
       "contents": "Rousselet et al., 2010)",
-      "text_id": 125
+      "text_id": 123
     },
     {
       "xref_id": 3,
       "xref_type": "bibr",
       "contents": "(Bentin, Allison, Puce, Perez, & McCarthy, 1996;",
-      "text_id": 126
+      "text_id": 124
     },
     {
       "xref_id": 30,
       "xref_type": "bibr",
       "contents": "Itier, Alain, Sedore, & McIntosh, 2007;",
-      "text_id": 126
+      "text_id": 124
     },
     {
       "xref_id": 54,
       "xref_type": "bibr",
       "contents": "Rousselet et al., 2014)",
-      "text_id": 126
+      "text_id": 124
     },
     {
       "xref_id": 17,
       "xref_type": "bibr",
       "contents": "(Gazzaley et al., 2008;",
-      "text_id": 126
+      "text_id": 124
     },
     {
       "xref_id": 41,
       "xref_type": "bibr",
       "contents": "Nakamura et al., 2001;",
-      "text_id": 126
+      "text_id": 124
     },
     {
       "xref_id": 53,
       "xref_type": "bibr",
       "contents": "Rousselet et al., 2009;",
-      "text_id": 126
+      "text_id": 124
     },
     {
       "xref_id": 70,
       "xref_type": "bibr",
       "contents": "Wiese et al., 2008)",
-      "text_id": 126
+      "text_id": 124
     },
     {
       "xref_id": 53,
       "xref_type": "bibr",
       "contents": "(Rousselet et al., 2009;",
-      "text_id": 129
+      "text_id": 127
     },
     {
       "xref_id": 57,
       "xref_type": "bibr",
       "contents": "Schyns et al., 2007;",
-      "text_id": 129
+      "text_id": 127
     },
     {
       "xref_id": 61,
       "xref_type": "bibr",
       "contents": "Smith et al., 2004;",
-      "text_id": 129
+      "text_id": 127
     },
     {
       "xref_id": 67,
       "xref_type": "bibr",
       "contents": "van Rijsbergen & Schyns, 2009)",
-      "text_id": 129
+      "text_id": 127
     },
     {
       "xref_id": 36,
       "xref_type": "bibr",
       "contents": "(Kolev, Falkenstein, & Yordanova, 2006;",
-      "text_id": 131
+      "text_id": 129
     },
     {
       "xref_id": 72,
       "xref_type": "bibr",
       "contents": "Yordanova, Kolev, Hohnsbein, & Falkenstein, 2004)",
-      "text_id": 131
+      "text_id": 129
     },
     {
       "xref_id": 64,
       "xref_type": "bibr",
       "contents": "(Tang et al., 2014)",
-      "text_id": 133
+      "text_id": 131
     },
     {
       "xref_id": 59,
       "xref_type": "bibr",
       "contents": "(Sekuler, Gold, Murray, & Bennett, 2000)",
-      "text_id": 134
+      "text_id": 132
     },
     {
       "xref_id": 5,
       "xref_type": "bibr",
       "contents": "(Bieniek et al., 2013)",
-      "text_id": 139
+      "text_id": 137
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "Rijsbergen et al., 2014;",
-      "text_id": 145
+      "text_id": 143
     },
     {
       "xref_id": 1,
       "xref_type": "bibr",
       "contents": "Anastasi & Rhodes, 2005;",
-      "text_id": 145
+      "text_id": 143
     },
     {
       "xref_id": 70,
       "xref_type": "bibr",
       "contents": "Wiese et al., 2008)",
-      "text_id": 145
+      "text_id": 143
     },
     {
       "xref_id": 37,
       "xref_type": "bibr",
       "contents": "(Komes, Schweinberger, & Wiese, 2015;",
-      "text_id": 145
+      "text_id": 143
     },
     {
       "xref_id": 70,
       "xref_type": "bibr",
       "contents": "Wiese et al., 2008)",
-      "text_id": 145
+      "text_id": 143
     },
     {
       "xref_id": 49,
       "xref_type": "bibr",
       "contents": "(Price et al., 2017)",
-      "text_id": 148
+      "text_id": 146
     },
     {
       "xref_id": 48,
       "xref_type": "bibr",
       "contents": "(Peters, 2009;",
-      "text_id": 149
+      "text_id": 147
     },
     {
       "xref_id": 49,
       "xref_type": "bibr",
       "contents": "Price et al., 2017;",
-      "text_id": 149
+      "text_id": 147
     },
     {
       "xref_id": 50,
       "xref_type": "bibr",
       "contents": "Raz et al., 2005;",
-      "text_id": 149
+      "text_id": 147
     },
     {
       "xref_id": 68,
       "xref_type": "bibr",
       "contents": "Wang, Zhou, Ma, & Leventhal, 2005)",
-      "text_id": 149
+      "text_id": 147
     },
     {
       "xref_id": 54,
       "xref_type": "bibr",
       "contents": "Rousselet et al. (2014)",
-      "text_id": 155
+      "text_id": 153
     },
     {
       "xref_id": 52,
       "xref_type": "bibr",
       "contents": "(Rousselet et al., 2010)",
-      "text_id": 157
+      "text_id": 155
     },
     {
       "xref_id": null,
       "xref_type": "table",
       "contents": "1",
-      "text_id": 166
+      "text_id": 164
     },
     {
       "xref_id": 13,
       "xref_type": "bibr",
       "contents": "(Elliott, Sanderson, & Conkey, 1990)",
-      "text_id": 167
+      "text_id": 165
     },
     {
       "xref_id": 18,
       "xref_type": "bibr",
       "contents": "(Gold, Bennett, & Sekuler, 1999)",
-      "text_id": 174
+      "text_id": 172
     },
     {
       "xref_id": 55,
       "xref_type": "bibr",
       "contents": "(Rousselet, Pernet, Bennett, & Sekuler, 2008)",
-      "text_id": 176
+      "text_id": 174
     },
     {
       "xref_id": 54,
       "xref_type": "bibr",
       "contents": "(Rousselet et al., 2014)",
-      "text_id": 179
+      "text_id": 177
     },
     {
       "xref_id": 6,
       "xref_type": "bibr",
       "contents": "(Brainard, 1997;",
-      "text_id": 180
+      "text_id": 178
     },
     {
       "xref_id": 35,
       "xref_type": "bibr",
       "contents": "Kleiner, Brainard, & Pelli, 2007;",
-      "text_id": 180
+      "text_id": 178
     },
     {
       "xref_id": 45,
       "xref_type": "bibr",
       "contents": "Pelli, 1997)",
-      "text_id": 180
+      "text_id": 178
     },
     {
       "xref_id": 11,
       "xref_type": "bibr",
       "contents": "(Delorme et al., 2011;",
-      "text_id": 204
+      "text_id": 202
     },
     {
       "xref_id": 10,
       "xref_type": "bibr",
       "contents": "Delorme & Makeig, 2004)",
-      "text_id": 204
+      "text_id": 202
     },
     {
       "xref_id": 0,
       "xref_type": "bibr",
       "contents": "(Acunzo, MacKenzie, & van Rossum, 2012;",
-      "text_id": 208
+      "text_id": 206
     },
     {
       "xref_id": 39,
       "xref_type": "bibr",
       "contents": "Luck, 2005;",
-      "text_id": 208
+      "text_id": 206
     },
     {
       "xref_id": 51,
       "xref_type": "bibr",
       "contents": "Rousselet, 2012;",
-      "text_id": 208
+      "text_id": 206
     },
     {
       "xref_id": 69,
       "xref_type": "bibr",
       "contents": "Widmann & Schröger, 2012)",
-      "text_id": 208
+      "text_id": 206
     },
     {
       "xref_id": 20,
       "xref_type": "bibr",
       "contents": "(Groppe, Makeig, & Kutas, 2009)",
-      "text_id": 210
+      "text_id": 208
     },
     {
       "xref_id": 10,
       "xref_type": "bibr",
       "contents": "(Delorme & Makeig, 2004;",
-      "text_id": 211
+      "text_id": 209
     },
     {
       "xref_id": 12,
       "xref_type": "bibr",
       "contents": "Delorme, Sejnowski, & Makeig, 2007)",
-      "text_id": 211
+      "text_id": 209
     },
     {
       "xref_id": 32,
       "xref_type": "bibr",
       "contents": "(Kayser, 2009;",
-      "text_id": 212
+      "text_id": 210
     },
     {
       "xref_id": 65,
       "xref_type": "bibr",
       "contents": "Tenke & Kayser, 2012)",
-      "text_id": 212
+      "text_id": 210
     },
     {
       "xref_id": 54,
       "xref_type": "bibr",
       "contents": "(Rousselet et al., 2014;",
-      "text_id": 217
+      "text_id": 215
     },
     {
       "xref_id": 58,
       "xref_type": "bibr",
       "contents": "Schyns, Thut, & Gross, 2011)",
-      "text_id": 217
+      "text_id": 215
     },
     {
       "xref_id": 47,
       "xref_type": "bibr",
       "contents": "(Pernet et al., 2011)",
-      "text_id": 225
+      "text_id": 223
     },
     {
       "xref_id": 22,
       "xref_type": "bibr",
       "contents": "(Harrell & Davis, 1982)",
-      "text_id": 227
+      "text_id": 225
     },
     {
       "xref_id": 25,
       "xref_type": "bibr",
       "contents": "(Ince et al., 2017;",
-      "text_id": 228
+      "text_id": 226
     },
     {
       "xref_id": 28,
       "xref_type": "bibr",
       "contents": "Ince, Petersen, Swan, & Panzeri, 2009;",
-      "text_id": 228
+      "text_id": 226
     },
     {
       "xref_id": 33,
       "xref_type": "bibr",
       "contents": "Kayser, Ince, Gross, & Kayser, 2015;",
-      "text_id": 228
+      "text_id": 226
     },
     {
       "xref_id": 44,
       "xref_type": "bibr",
       "contents": "Park, Ince, Schyns, Thut, & Gross, 2015;",
-      "text_id": 228
+      "text_id": 226
     },
     {
       "xref_id": 58,
       "xref_type": "bibr",
       "contents": "Schyns et al., 2011)",
-      "text_id": 228
+      "text_id": 226
     },
     {
       "xref_id": 54,
       "xref_type": "bibr",
       "contents": "Rousselet et al., 2014)",
-      "text_id": 229
+      "text_id": 227
     },
     {
       "xref_id": 27,
       "xref_type": "bibr",
       "contents": "(Ince, Mazzoni, Bartels, Logothetis, & Panzeri, 2012)",
-      "text_id": 232
+      "text_id": 230
     },
     {
       "xref_id": 63,
       "xref_type": "bibr",
       "contents": "(Sokal & Rohlf, 2012)",
-      "text_id": 235
+      "text_id": 232
     },
     {
       "xref_id": 62,
       "xref_type": "bibr",
       "contents": "(Smith & Nichols, 2009)",
-      "text_id": 240
+      "text_id": 237
     },
     {
       "xref_id": 54,
       "xref_type": "bibr",
       "contents": "(Rousselet et al., 2014)",
-      "text_id": 240
+      "text_id": 237
     },
     {
       "xref_id": 2,
       "xref_type": "bibr",
       "contents": "(Bell, 2003)",
-      "text_id": 241
+      "text_id": 238
     },
     {
       "xref_id": 40,
       "xref_type": "bibr",
       "contents": "(McGill, 1954)",
-      "text_id": 241
+      "text_id": 238
     },
     {
       "xref_id": 24,
       "xref_type": "bibr",
       "contents": "(Ince, 2017;",
-      "text_id": 241
+      "text_id": 238
     },
     {
       "xref_id": 25,
       "xref_type": "bibr",
       "contents": "Ince et al.,2017",
-      "text_id": 241
+      "text_id": 238
     },
     {
       "xref_id": 26,
       "xref_type": "bibr",
       "contents": "Ince et al., ,2016",
-      "text_id": 241
+      "text_id": 238
     },
     {
       "xref_id": 29,
       "xref_type": "bibr",
       "contents": "Ince et al., ,2015",
-      "text_id": 241
+      "text_id": 238
     },
     {
       "xref_id": null,
       "xref_type": "bibr",
       "contents": "RE and LE)",
-      "text_id": 248
+      "text_id": 244
     },
     {
       "xref_id": 8,
       "xref_type": "bibr",
       "contents": "(Cover & Thomas, 2005;",
-      "text_id": 250
+      "text_id": 246
     },
     {
       "xref_id": 25,
       "xref_type": "bibr",
       "contents": "Ince et al., 2017)",
-      "text_id": 250
+      "text_id": 246
     },
     {
       "xref_id": 47,
       "xref_type": "bibr",
       "contents": "(Pernet et al., 2011;",
-      "text_id": 254
+      "text_id": 250
     },
     {
       "xref_id": 46,
       "xref_type": "bibr",
       "contents": "Pernet, Latinus, Nichols, & Rousselet, 2015)",
-      "text_id": 254
+      "text_id": 250
     },
     {
       "xref_id": 15,
       "xref_type": "bibr",
       "contents": "(Foxe & Simpson, 2002)",
-      "text_id": 257
+      "text_id": 253
     },
     {
       "xref_id": 31,
       "xref_type": "bibr",
       "contents": "(Jekabsons, 2015)",
-      "text_id": 260
+      "text_id": 256
     },
     {
       "xref_id": 16,
       "xref_type": "bibr",
       "contents": "(Friedman, 1991)",
-      "text_id": 260
+      "text_id": 256
     }
   ],
   "figure": [
@@ -5710,7 +5655,7 @@
   "table": [],
   "eq": [
     {
-      "text_id": 155,
+      "text_id": 153,
       "grp_id": 1,
       "lhs": "age",
       "df": null,
@@ -5718,7 +5663,7 @@
       "rhs": "23"
     },
     {
-      "text_id": 155,
+      "text_id": 153,
       "grp_id": 1,
       "lhs": "age",
       "df": null,
@@ -5726,7 +5671,7 @@
       "rhs": "66"
     },
     {
-      "text_id": 179,
+      "text_id": 177,
       "grp_id": 2,
       "lhs": "σ",
       "df": null,
@@ -5734,7 +5679,7 @@
       "rhs": "0.36"
     },
     {
-      "text_id": 213,
+      "text_id": 211,
       "grp_id": 3,
       "lhs": "m",
       "df": null,
@@ -5742,7 +5687,7 @@
       "rhs": "4"
     },
     {
-      "text_id": 213,
+      "text_id": 211,
       "grp_id": 3,
       "lhs": "λ",
       "df": null,
@@ -5750,7 +5695,7 @@
       "rhs": "10"
     },
     {
-      "text_id": 276,
+      "text_id": 272,
       "grp_id": 4,
       "lhs": "age",
       "df": null,
@@ -5758,7 +5703,7 @@
       "rhs": "23"
     },
     {
-      "text_id": 276,
+      "text_id": 272,
       "grp_id": 4,
       "lhs": "age",
       "df": null,
@@ -5766,7 +5711,7 @@
       "rhs": "66"
     },
     {
-      "text_id": 277,
+      "text_id": 273,
       "grp_id": 5,
       "lhs": "young",
       "df": null,
@@ -5774,7 +5719,7 @@
       "rhs": "378"
     },
     {
-      "text_id": 277,
+      "text_id": 273,
       "grp_id": 5,
       "lhs": "interval",
       "df": null,
@@ -5782,7 +5727,7 @@
       "rhs": "[349, 401]"
     },
     {
-      "text_id": 278,
+      "text_id": 274,
       "grp_id": 6,
       "lhs": "participants",
       "df": null,
@@ -5790,7 +5735,7 @@
       "rhs": "576"
     },
     {
-      "text_id": 292,
+      "text_id": 288,
       "grp_id": 7,
       "lhs": "N",
       "df": null,
@@ -5798,7 +5743,7 @@
       "rhs": "16"
     },
     {
-      "text_id": 292,
+      "text_id": 288,
       "grp_id": 7,
       "lhs": "N",
       "df": null,
@@ -5806,7 +5751,7 @@
       "rhs": "12"
     },
     {
-      "text_id": 300,
+      "text_id": 295,
       "grp_id": 8,
       "lhs": "median",
       "df": null,
@@ -5814,7 +5759,7 @@
       "rhs": "10"
     },
     {
-      "text_id": 300,
+      "text_id": 295,
       "grp_id": 8,
       "lhs": "min",
       "df": null,
@@ -5822,7 +5767,7 @@
       "rhs": "0"
     },
     {
-      "text_id": 300,
+      "text_id": 295,
       "grp_id": 8,
       "lhs": "max",
       "df": null,
@@ -5830,7 +5775,7 @@
       "rhs": "24"
     },
     {
-      "text_id": 300,
+      "text_id": 295,
       "grp_id": 8,
       "lhs": "median",
       "df": null,
@@ -5838,7 +5783,7 @@
       "rhs": "5"
     },
     {
-      "text_id": 300,
+      "text_id": 295,
       "grp_id": 8,
       "lhs": "min",
       "df": null,
@@ -5846,7 +5791,7 @@
       "rhs": "0"
     },
     {
-      "text_id": 300,
+      "text_id": 295,
       "grp_id": 8,
       "lhs": "max",
       "df": null,
@@ -5854,7 +5799,7 @@
       "rhs": "28"
     },
     {
-      "text_id": 300,
+      "text_id": 295,
       "grp_id": 8,
       "lhs": "difference",
       "df": null,
@@ -5862,7 +5807,7 @@
       "rhs": "4"
     },
     {
-      "text_id": 301,
+      "text_id": 296,
       "grp_id": 9,
       "lhs": "difference",
       "df": null,
@@ -5870,7 +5815,7 @@
       "rhs": "42"
     },
     {
-      "text_id": 302,
+      "text_id": 297,
       "grp_id": 10,
       "lhs": "median",
       "df": null,
@@ -5878,7 +5823,7 @@
       "rhs": "4"
     },
     {
-      "text_id": 302,
+      "text_id": 297,
       "grp_id": 10,
       "lhs": "min",
       "df": null,
@@ -5886,7 +5831,7 @@
       "rhs": "1"
     },
     {
-      "text_id": 302,
+      "text_id": 297,
       "grp_id": 10,
       "lhs": "max",
       "df": null,
@@ -5894,7 +5839,7 @@
       "rhs": "27"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "trials",
       "df": null,
@@ -5902,7 +5847,7 @@
       "rhs": "1,069"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "min",
       "df": null,
@@ -5910,7 +5855,7 @@
       "rhs": "999"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "max",
       "df": null,
@@ -5918,7 +5863,7 @@
       "rhs": "1,092"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "trials",
       "df": null,
@@ -5926,7 +5871,7 @@
       "rhs": "1,067"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "min",
       "df": null,
@@ -5934,7 +5879,7 @@
       "rhs": "986"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "max",
       "df": null,
@@ -5942,7 +5887,7 @@
       "rhs": "1,088"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "trials",
       "df": null,
@@ -5950,7 +5895,7 @@
       "rhs": "1,090"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "min",
       "df": null,
@@ -5958,7 +5903,7 @@
       "rhs": "1,006"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "max",
       "df": null,
@@ -5966,7 +5911,7 @@
       "rhs": "1,100"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "trials",
       "df": null,
@@ -5974,7 +5919,7 @@
       "rhs": "1,089"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "min",
       "df": null,
@@ -5982,7 +5927,7 @@
       "rhs": "1,014"
     },
     {
-      "text_id": 304,
+      "text_id": 299,
       "grp_id": 11,
       "lhs": "max",
       "df": null,
@@ -5990,7 +5935,7 @@
       "rhs": "1,098"
     },
     {
-      "text_id": 307,
+      "text_id": 301,
       "grp_id": 12,
       "lhs": "young",
       "df": null,
@@ -5998,7 +5943,7 @@
       "rhs": "-0.18"
     },
     {
-      "text_id": 307,
+      "text_id": 301,
       "grp_id": 12,
       "lhs": "older",
       "df": null,
@@ -6006,7 +5951,7 @@
       "rhs": "-0.23"
     },
     {
-      "text_id": 307,
+      "text_id": 301,
       "grp_id": 12,
       "lhs": "difference",
       "df": null,
@@ -6014,7 +5959,7 @@
       "rhs": "0.07"
     },
     {
-      "text_id": 156,
+      "text_id": 154,
       "grp_id": 13,
       "lhs": "was",
       "df": null,
@@ -6030,7 +5975,7 @@
       "rhs": "170"
     },
     {
-      "text_id": 64,
+      "text_id": 62,
       "grp_id": 15,
       "lhs": "by",
       "df": null,
@@ -6038,7 +5983,7 @@
       "rhs": "20"
     },
     {
-      "text_id": 74,
+      "text_id": 72,
       "grp_id": 16,
       "lhs": "vs.",
       "df": null,
@@ -6046,7 +5991,7 @@
       "rhs": "204"
     },
     {
-      "text_id": 83,
+      "text_id": 81,
       "grp_id": 17,
       "lhs": "a",
       "df": null,
@@ -6054,7 +5999,7 @@
       "rhs": "200"
     },
     {
-      "text_id": 192,
+      "text_id": 190,
       "grp_id": 18,
       "lhs": "of",
       "df": null,

@@ -35,14 +35,14 @@ They can be used in the format argument when creating the progress bar.
 :spin Shows a spinner that updates even when progress is advanced by zero.
 }
 \examples{
-bar <- pb(10)
-for (i in 1:10) {
+bar <- pb(5)
+for (i in 1:5) {
   Sys.sleep(.25)
   bar$tick()
 }
 
 bar <- pb(NA, "(:spin) Item :what")
-for (i in 1:10) {
+for (i in 1:5) {
   Sys.sleep(.25)
   bar$tick(0, list(what = i))
 }
