@@ -95,13 +95,13 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
       collector <- list()
       # access via URL if not local
       if (!is.na(code_files$file_location[i])) {
-        con <- file(code_files$file_location[i], "r")
+        con <- file(code_files$file_location[i], "r", encoding = "latin1")
       } else {
         con <- url(code_files$file_url[i])
       }
 
-      # read in files
-      file_lines <- readLines(con, warn = FALSE)
+      # read in files; skipNul handles UTF-16 LE encoded files (e.g. Stata on Windows)
+      file_lines <- readLines(con, warn = FALSE, skipNul = TRUE)
       close(con)
 
       is_rmd <- grepl("\\.(rmd|qmd)",

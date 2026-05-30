@@ -89,7 +89,7 @@ test_that("local_files finds files recursively", {
   # file in subdirectory
   expect_true("helper.R" %in% result$file_name)
 
-  expect_equal(nrow(result), 5)
+  expect_equal(nrow(result), 7)
 })
 
 test_that("local_files file type detection", {
@@ -151,8 +151,8 @@ test_that("repo_check local_path only", {
 
   # one repo: the local folder
   expect_equal(mo$summary_table$repo_n, 1)
-  expect_equal(mo$summary_table$files_n, 5)
-  expect_equal(mo$summary_table$files_code, 3)
+  expect_equal(mo$summary_table$files_n, 7)
+  expect_equal(mo$summary_table$files_code, 3)  # .do is "stats" type, not "code"
   expect_equal(mo$summary_table$files_data, 1)
   expect_equal(mo$summary_table$files_readme, 1)
   expect_equal(mo$summary_table$files_zip, 0)
@@ -175,10 +175,10 @@ test_that("repo_check paper + local_path", {
 
   # two repos: OSF + local
   expect_equal(mo$summary_table$repo_n, 2)
-  expect_equal(mo$summary_table$files_n, 9)
+  expect_equal(mo$summary_table$files_n, 11)
 
   # combined counts
-  expect_equal(mo$summary_table$files_code, 5)
+  expect_equal(mo$summary_table$files_code, 5)  # .do is "stats" type, not "code"
   expect_equal(mo$summary_table$files_readme, 1)  # only local has README
   expect_equal(mo$summary_table$files_zip, 1)      # only OSF has zip
 
@@ -192,11 +192,11 @@ test_that("repo_check paper + local_path", {
 })
 
 test_that("code_check paper + local_path", {
-  # OSF 629bx has 2 code files; fixture_dir has 3 → total 5
+  # OSF 629bx has 2 code files; fixture_dir has 5 (3 R + 2 Stata) → total 7
   paper <- test_paper(url = "https://osf.io/629bx")
   mo <- module_run(paper, "code_check", local_path = fixture_dir)
 
-  expect_equal(mo$summary_table$code_n, 5)
+  expect_equal(mo$summary_table$code_n, 7)
 
   # code files from both repos in the table
   expect_true("analysis.R" %in% mo$table$file_name)  # local
@@ -213,6 +213,20 @@ httptest2::stop_mocking()
 
 
 # code_check() + local_path ----
+
+test_that("code_check reads non-UTF-8 encoded files without NA", {
+  # stata_latin1.do: Windows-1252 encoded (non-ASCII bytes invalid in UTF-8)
+  # stata_utf16.do:  UTF-16 LE encoded (NUL bytes after every ASCII char)
+  # Both previously produced code_lines=0 and percentage_comment=NA
+  mo <- module_run(no_paper(), "code_check", local_path = fixture_dir)
+
+  for (fname in c("stata_latin1.do", "stata_utf16.do")) {
+    row <- mo$table[mo$table$file_name == fname, ]
+    expect_true(nrow(row) == 1, label = paste(fname, "found in table"))
+    expect_true(row$code_lines > 0, label = paste(fname, "code_lines > 0"))
+    expect_false(is.na(row$percentage_comment), label = paste(fname, "percentage_comment not NA"))
+  }
+})
 
 test_that("code_check local_path errors", {
   # non-existent path propagates as an error
@@ -235,10 +249,10 @@ test_that("code_check local_path finds code files", {
   mo <- module_run(no_paper(), "code_check", local_path = fixture_dir)
 
   expect_equal(mo$traffic_light, "yellow")
-  # fixture has analysis.R, analysis_no_comments.R, subdir/helper.R
-  expect_equal(mo$summary_table$code_n, 3)
-  expect_true(all(c("analysis.R", "analysis_no_comments.R", "helper.R") %in%
-                    mo$table$file_name))
+  # fixture has analysis.R, analysis_no_comments.R, subdir/helper.R, stata_latin1.do, stata_utf16.do
+  expect_equal(mo$summary_table$code_n, 5)
+  expect_true(all(c("analysis.R", "analysis_no_comments.R", "helper.R",
+                    "stata_latin1.do", "stata_utf16.do") %in% mo$table$file_name))
 })
 
 test_that("code_check local_path: present files are not flagged missing", {
