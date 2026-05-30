@@ -18,7 +18,8 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a list
-repo_check <- function(paper, local_path = NULL) {
+repo_check <- function(paper = NULL, local_path = NULL) {
+  if (is.null(paper)) paper <- no_paper()
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")

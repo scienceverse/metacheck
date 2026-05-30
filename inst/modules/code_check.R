@@ -23,7 +23,7 @@
 #' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.
 #'
 #' @returns a list
-code_check <- function(paper = NULL, file_limit = 20, local_path = NULL) {
+code_check <- function(paper, file_limit = 20, local_path = NULL) {
   if (is.null(paper)) paper <- no_paper()
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
