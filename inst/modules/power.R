@@ -21,7 +21,7 @@
 #' @param seed a seed for the LLM
 #'
 #' @returns a list
-power <- function(paper, seed = 8675309) {
+power <- function(paper, seed = 8675309, think = NULL) {
   # find potential power anlayses ----
 
   # select paragraphs with power/powers/powered
@@ -79,7 +79,7 @@ power <- function(paper, seed = 8675309) {
     ## use LLM ----
 
     # define system prompt from JSON schema
-    preface <- "Identify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
+    preface <- "/no_think\n\nIdentify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
     # schema also defined below
     schema <- readLines("https://scienceverse.org/schema/power.json") |>
       paste(collapse = "\n")
@@ -89,7 +89,7 @@ power <- function(paper, seed = 8675309) {
       text = potential_power,
       system_prompt = system_prompt,
       text_col = "text",
-      params = list(seed = seed)
+      params = c(list(seed = seed), if (!is.null(think)) list(think = think))
     )
 
     table <- llm_results |>
@@ -166,7 +166,7 @@ power <- function(paper, seed = 8675309) {
     summary_text <- "No power analyses were detected."
     report <- c(summary_text, collapse_section(guidance))
 
-    summary_table <- data.frame(paper_id = paper_id(paper))
+    summary_table <- paper_id(paper)
     summary_table$power_n <- 0
     summary_table$power_complete <- NA_integer_
   } else {

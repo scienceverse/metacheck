@@ -67,6 +67,31 @@ llm <- function(text, system_prompt,
   if (is.null(params$temperature)) {
     params$temperature <- 0
   }
+
+  # detect ollama + think=FALSE before params is converted by ellmer::params()
+  # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it
+  use_ollama_native <- startsWith(model, "ollama/") && isFALSE(params$think)
+  ollama_model_name <- sub("^ollama/", "", model)
+  ollama_base_url <- Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+  if (startsWith(model, "ollama/")) {
+    ok <- tryCatch({
+      httr2::request(paste0(ollama_base_url, "/api/tags")) |>
+        httr2::req_timeout(3) |>
+        httr2::req_perform()
+      TRUE
+    }, error = \(e) FALSE)
+    if (!ok) stop("Ollama is not running at ", ollama_base_url, ". Start ollama and try again.", call. = FALSE)
+  }
+
+  # when routing to native ollama, save options and strip think before ellmer sees params
+  if (use_ollama_native) {
+    params$think <- NULL
+    ollama_options <- params  # raw params become ollama /api/chat options
+  } else {
+    ollama_options <- list()
+  }
+
   tryCatch(
     {
       params <- do.call(ellmer::params, params)
@@ -86,23 +111,33 @@ llm <- function(text, system_prompt,
   responses <- lapply(seq_along(unique_text), function(i) {
     tryCatch(
       {
-        # fresh chat per call to avoid context accumulation
-        chat <- ellmer::chat(
-          name = model,
-          system_prompt = system_prompt,
-          params = params
-        )
-
-        if (structured) {
-          result <- chat$chat_structured(unique_text[i], type = type)
-          df <- .unnest_result(result)
-          df$.join_key. <- unique_text[i]
+        if (use_ollama_native && !structured) {
+          # native ollama API: think=FALSE is honoured here, unlike /v1/
+          answer <- .llm_ollama_native(
+            unique_text[i], system_prompt, ollama_model_name,
+            think = FALSE, options = ollama_options, base_url = ollama_base_url
+          )
           pb$tick()
-          df
+          list(answer = answer)
         } else {
-          answer <- chat$chat(unique_text[i], echo = FALSE)
-          pb$tick()
-          list(answer = trimws(answer))
+          # fresh chat per call to avoid context accumulation
+          chat <- ellmer::chat(
+            name = model,
+            system_prompt = system_prompt,
+            params = params
+          )
+
+          if (structured) {
+            result <- chat$chat_structured(unique_text[i], type = type)
+            df <- .unnest_result(result)
+            df$.join_key. <- unique_text[i]
+            pb$tick()
+            df
+          } else {
+            answer <- chat$chat(unique_text[i], echo = FALSE)
+            pb$tick()
+            list(answer = trimws(answer))
+          }
         }
       },
       error = function(e) {
@@ -163,6 +198,32 @@ llm <- function(text, system_prompt,
   }
 
   return(answer_df)
+}
+
+#' Call ollama native API with think support
+#'
+#' ellmer routes ollama via the OpenAI-compatible /v1/ endpoint, which ignores
+#' think=FALSE. This helper calls /api/chat directly where think is honoured.
+#'
+#' @keywords internal
+.llm_ollama_native <- function(text, system_prompt, model,
+                               think = TRUE,
+                               options = list(),
+                               base_url = Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")) {
+  body <- list(
+    model = model,
+    think = think,
+    stream = FALSE,
+    options = if (length(options)) options else NULL,
+    messages = list(
+      list(role = "system", content = system_prompt),
+      list(role = "user", content = text)
+    )
+  )
+  resp <- httr2::request(paste0(base_url, "/api/chat")) |>
+    httr2::req_body_json(body) |>
+    httr2::req_perform()
+  trimws(httr2::resp_body_json(resp)$message$content)
 }
 
 #' Convert structured LLM result to a data frame
