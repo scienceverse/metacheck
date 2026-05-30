@@ -18,11 +18,14 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a list
-repo_check <- function(paper) {
+repo_check <- function(paper, local_path = NULL) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
   pb$tick(0, list(what = "Starting Repo Check"))
+  if (!is.null(local_path)) {
+    pb$message("If folders are stored online, the check might be slow as all files need to be downloaded.")
+  }
   on.exit({
     pb$tick(0, list(what = "Repo Check Complete"))
     pb$terminate()
@@ -210,6 +213,19 @@ repo_check <- function(paper) {
     })
   }
 
+  ## Local files ----
+  local_files_df <- data.frame(repo_name = character(0))
+  if (!is.null(local_path)) {
+    local_files_df <- local_files(local_path)
+    local_repo <- data.frame(
+      paper_id = paper_id(paper),
+      repo_url = normalizePath(local_path),
+      repo_type = "local",
+      repo_error = NA_character_
+    )
+    repos <- dplyr::bind_rows(repos, local_repo)
+  }
+
   ## no repos found ----
   if (nrow(repos) == 0) {
     info <- list(
@@ -230,7 +246,7 @@ repo_check <- function(paper) {
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, zenodo_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, zenodo_files_df, local_files_df)
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)
@@ -259,6 +275,7 @@ repo_check <- function(paper) {
     )
     all_files$file_type[is_readme] <- "readme"
   }
+  all_files$repo_name <- basename(all_files$repo_url)
 
   repos <- dplyr::full_join(repos, all_files, by = "repo_url") |>
     dplyr::summarise(
@@ -332,7 +349,7 @@ repo_check <- function(paper) {
   }
 
   report_tbl <- all_files |>
-    dplyr::mutate(file = link(file_url, file_name)) |>
+    dplyr::mutate(file = dplyr::coalesce(link(file_url, file_name), file_name)) |>
     dplyr::select(Repository = repo_url,
                   File = file,
                   Size = file_size,

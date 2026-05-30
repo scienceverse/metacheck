@@ -473,6 +473,31 @@ demopaper <- function() {
   .read_bibr(file_path)
 }
 
+#' Create an empty paper for local-only checks
+#'
+#' Returns a minimal paper object with no content, for use with `code_check`
+#' when checking local files without a corresponding manuscript.
+#'
+#' @param id an optional paper ID (default "local")
+#'
+#' @returns a paper object
+#' @export
+#'
+#' @examples
+#' p <- no_paper()
+#' \dontrun{
+#'   module_run(p, "code_check", local_path = "C:/my_project")
+#' }
+no_paper <- function(id = "local") {
+  p <- paper(id = id)
+  p$info <- data.frame(
+    title = NA_character_,
+    file_hash = id,
+    input_format = "local"
+  )
+  p
+}
+
 #' Get a demo file
 #'
 #' Return the file path for various versions of the demo paper. Use `demopaper()` to directly read it as a paper object from the json file.
