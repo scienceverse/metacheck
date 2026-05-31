@@ -25,7 +25,7 @@ test_that("module_find", {
                "There were no modules that matched notamodule",
                fixed = TRUE )
   log <- lastlog()
-  expect_equal(log$module, "motamodule")
+  expect_equal(log$module, "notamodule")
   expect_equal(log$label, "module_find")
 
   # find built-in modules
