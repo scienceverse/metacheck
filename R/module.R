@@ -63,11 +63,13 @@ module_run <- function(paper, module, ...) {
     }
   }
 
-  orig_wd <- getwd()
-  on.exit(setwd(orig_wd))
-  dirname(module_path) |> setwd()
+  # can't pass relative paths to modules if you change the wd here
+  # orig_wd <- getwd()
+  # on.exit(setwd(orig_wd))
+  # dirname(module_path) |> setwd()
 
-  tryCatch(basename(module_path) |> source(local = TRUE),
+  #tryCatch(basename(module_path) |> source(local = TRUE),
+  tryCatch(module_path |> source(local = TRUE),
     error = function(e) {
       m <- basename(module) |> gsub("\\.R$", "", x = _)
       logger(m, list(paper = paper$paper_id,

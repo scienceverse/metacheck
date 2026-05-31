@@ -3,7 +3,8 @@
 #' Lists all files in a local directory recursively and returns a data frame
 #' compatible with the `repo_check` output table, for use with `code_check`.
 #'
-#' @param path path to a local directory
+#' @param path path to a local directory or file, or a vector of paths
+#' @param recursive whether to search the files recursively
 #'
 #' @returns a data frame with columns `repo_url`, `file_name`, `file_url`,
 #'   `file_location`, `file_size`, `file_type`
@@ -11,20 +12,27 @@
 #'
 #' @examples
 #' \dontrun{
-#'   local_files("C:/my_project")
+#'   local_files("my_project")
 #' }
-local_files <- function(path) {
+local_files <- function(path, recursive = FALSE) {
   if (length(path) > 1) {
-    return(dplyr::bind_rows(lapply(path, local_files)))
+    df <- lapply(path, local_files) |>
+      dplyr::bind_rows()
+    return(df)
   }
 
-  path <- normalizePath(path, mustWork = TRUE)
+  #path <- normalizePath(path, mustWork = TRUE)
 
-  if (!dir.exists(path)) {
-    stop("'", path, "' is not a directory")
+  # handle files and directories
+  if (dir.exists(path)) {
+    all_paths <- list.files(path, full.names = TRUE, recursive = recursive)
+    all_paths <- all_paths[!dir.exists(all_paths)]
+  } else if (file.exists(path)) {
+    all_paths <- path
+  } else {
+    all_paths <- character(0)
+    warning("This path does not exist: ", path)
   }
-
-  all_paths <- list.files(path, recursive = TRUE, full.names = TRUE)
 
   if (length(all_paths) == 0) {
     return(data.frame(
@@ -39,21 +47,14 @@ local_files <- function(path) {
 
   file_names <- basename(all_paths)
   file_sizes <- file.size(all_paths)
-
-  exts <- tolower(sub("^.*\\.", "", file_names))
-  exts[!grepl("\\.", file_names)] <- NA_character_
-
-  types <- metacheck::file_types$type[match(exts, metacheck::file_types$ext)]
-
-  is_readme <- grepl("readme|read[_ ]me", file_names, ignore.case = TRUE)
-  types[is_readme] <- "readme"
+  file_types <- file_category(file_names)$file_category
 
   data.frame(
     repo_url = path,
     file_name = file_names,
     file_url = NA_character_,
-    file_location = all_paths,
+    file_location = normalizePath(all_paths),
     file_size = file_sizes,
-    file_type = types
+    file_type = file_types
   )
 }

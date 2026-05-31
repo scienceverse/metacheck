@@ -18,13 +18,12 @@
 #' @import httr
 #' @import jsonlite
 #'
-#' @param paper a paper object or paperlist object, or NULL to check local files only (see [no_paper()])
-#' @param file_limit the maximum number of fiiles per reppository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
+#' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
+#' @param file_limit the maximum number of files per repository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
 #' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.
 #'
 #' @returns a list
 code_check <- function(paper, file_limit = 20, local_path = NULL) {
-  if (is.null(paper)) paper <- no_paper()
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]

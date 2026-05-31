@@ -4,10 +4,12 @@
 \alias{local_files}
 \title{List Local Files}
 \usage{
-local_files(path)
+local_files(path, recursive = FALSE)
 }
 \arguments{
-\item{path}{path to a local directory}
+\item{path}{path to a local directory or file, or a vector of paths}
+
+\item{recursive}{whether to search the files recursively}
 }
 \value{
 a data frame with columns \code{repo_url}, \code{file_name}, \code{file_url},
@@ -19,6 +21,6 @@ compatible with the \code{repo_check} output table, for use with \code{code_chec
 }
 \examples{
 \dontrun{
-  local_files("C:/my_project")
+  local_files("my_project")
 }
 }

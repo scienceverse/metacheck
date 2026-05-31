@@ -19,14 +19,13 @@
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL) {
-  if (is.null(paper)) paper <- no_paper()
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
   pb$tick(0, list(what = "Starting Repo Check"))
-  if (!is.null(local_path)) {
-    pb$message("If folders are stored online, the check might be slow as all files need to be downloaded.")
-  }
+  # if (!is.null(local_path)) {
+  #   pb$message("If folders are stored online, the check might be slow as all files need to be downloaded.")
+  # }
   on.exit({
     pb$tick(0, list(what = "Repo Check Complete"))
     pb$terminate()
@@ -70,7 +69,7 @@ repo_check <- function(paper, local_path = NULL) {
   if (length(osf_urls) > 0) {
     tryCatch({
       suppressWarnings({
-        .osf_info <- lapply(osf_urls, \(x) {
+        osf_info <- lapply(osf_urls, \(x) {
           osf_files <- osf_info(x, recursive = TRUE, pb = pb)
           osf_files$repo_name <- x
           osf_files
@@ -78,8 +77,8 @@ repo_check <- function(paper, local_path = NULL) {
       })
 
       # "kind" only in table if there are files
-      if ("kind" %in% names(.osf_info)) {
-        osf_file_list <- .osf_info |>
+      if ("kind" %in% names(osf_info)) {
+        osf_file_list <- osf_info |>
           dplyr::filter(kind == "file", !isFALSE(public))
 
         osf_files_df <- data.frame(
@@ -93,13 +92,13 @@ repo_check <- function(paper, local_path = NULL) {
       }
 
       # remove e.g., registrations from repos list
-      osf_to_remove <- .osf_info |>
+      osf_to_remove <- osf_info |>
         dplyr::filter(!osf_type %in% c("nodes", "files", "private")) |>
         _$osf_url
       repos <- repos[!repos$repo_url %in% osf_to_remove, ]
 
       # note private repos
-      private_repos <- .osf_info |>
+      private_repos <- osf_info |>
         dplyr::filter(osf_type %in% "private") |>
         _$osf_url
       if (length(private_repos)) {
@@ -121,11 +120,11 @@ repo_check <- function(paper, local_path = NULL) {
       github_file_list <- github_files(github_urls, recursive = TRUE) |>
         dplyr::filter(type != "dir")
 
-      github_files_df <- data.frame(
+      github_files_df <- dplyr::tibble(
         repo_url = github_file_list$repo,
         file_name = github_file_list$name,
         file_url = github_file_list$download_url,
-        file_location = rep(NA_character_, nrow(github_file_list)),
+        file_location = NA_character_,
         file_size = github_file_list$size,
         file_type = github_file_list$type
       )
@@ -217,10 +216,10 @@ repo_check <- function(paper, local_path = NULL) {
   ## Local files ----
   local_files_df <- data.frame(repo_name = character(0))
   if (!is.null(local_path)) {
-    local_files_df <- local_files(local_path)
+    local_files_df <- local_files(local_path, recursive = TRUE)
     local_repo <- data.frame(
-      paper_id = paper_id(paper),
-      repo_url = normalizePath(local_path),
+      paper_id = paper_id(paper)[[1]],
+      repo_url = local_path,
       repo_type = "local",
       repo_error = NA_character_
     )

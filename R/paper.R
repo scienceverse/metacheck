@@ -132,14 +132,15 @@ paperlist <- function(..., merge_duplicates = FALSE) {
 test_paper <- function(text = LETTERS, url = character(0)) {
   p <- paper()
 
-  p$text <- data.frame(
+  p$text <- dplyr::tibble(
     text_id = seq_along(text),
     section_id = 0,
     paragraph_id = 0,
-    text = as.character(text)
+    text = as.character(text),
+    formatted = as.character(text)
   )
 
-  p$section <- data.frame(
+  p$section <- dplyr::tibble(
     section_id = 0,
     header = "Test",
     parent_section_id = NA_integer_,
@@ -147,15 +148,15 @@ test_paper <- function(text = LETTERS, url = character(0)) {
     classification_score = 0
   )
 
-  p$info <- data.frame(
+  p$info <- dplyr::tibble(
     title = "Test Paper",
     file_hash = p$paper_id,
     input_format = "test"
   )
 
-  p$url <- data.frame(
+  p$url <- dplyr::tibble(
     href = url,
-    link_text = rep(NA_character_, length(url)),
+    link_text = NA_character_,
     text_id = seq_along(url)
   )
 
@@ -471,31 +472,6 @@ demopaper <- function() {
                            package = "metacheck")
 
   .read_bibr(file_path)
-}
-
-#' Create an empty paper for local-only checks
-#'
-#' Returns a minimal paper object with no content, for use with `code_check`
-#' when checking local files without a corresponding manuscript.
-#'
-#' @param id an optional paper ID (default "local")
-#'
-#' @returns a paper object
-#' @export
-#'
-#' @examples
-#' p <- no_paper()
-#' \dontrun{
-#'   module_run(p, "code_check", local_path = "C:/my_project")
-#' }
-no_paper <- function(id = "local") {
-  p <- paper(id = id)
-  p$info <- data.frame(
-    title = NA_character_,
-    file_hash = id,
-    input_format = "local"
-  )
-  p
 }
 
 #' Get a demo file

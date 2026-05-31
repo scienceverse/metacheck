@@ -3,6 +3,8 @@
 * Added functions from svutils back in. 
 * Reorganised some ML read-in functions (internal).
 * Ollama further support in `llm()` and vignette.
+* The code_check module handles local file with the argument `local_path`
+* New `local_files()` function
 
 # metacheck 0.0.0.9105
 
