@@ -175,5 +175,35 @@ test_that("power, with LLM", {
   expect_equal(mo$summary_table$power_complete, c(0,0))
 })
 
+test_that("power, with Ollama", {
+  module <- "power"
+  llm_use(TRUE)
+  llm_model("ollama/qwen2.5:3b")
+
+  power_text <- c(
+    "An a priori power analysis for an independent samples t-test, conducted using the pwr.t.test function from pwr (Champely, 2020), indicated that for a Cohen's d = 0.5, and a desired power level of 80% required at least 64 participants in each group.",
+    "A sensitivity power analysis for a paired samples t-test, conducted using G-Power, indicated that with 64 participants, an adequate power was reached for an effect size of d = 0.5."
+  )
+
+  paper <- paperlist(
+    test_paper(power_text[[1]]),
+    test_paper(power_text[[2]])
+  )
+  mo <- module_run(paper, module)
+  expect_equal(mo$traffic_light, "red")
+  expect_equal(nrow(mo$table), 2)
+  expect_equal(mo$table$power_type, c("apriori", "sensitivity"))
+  expect_equal(mo$table$statistical_test, c("unpaired t-test", "paired t-test"))
+ # expect_equal(mo$table$sample_size, c(128, 64)) # incorrect c(64, 64)
+  expect_equal(mo$table$alpha_level, c(NA, NA))
+  #expect_equal(mo$table$power, c(0.8, NA)) # incorrect c(0.8, 1.0)
+  expect_equal(mo$table$effect_size, c(0.5, 0.5))
+  expect_equal(mo$table$effect_size_metric, c("Cohen's d", "Cohen's d"))
+  expect_equal(mo$table$software, c("pwr", "G*Power"))
+  expect_equal(nrow(mo$summary_table), 2)
+  expect_equal(mo$summary_table$power_n, c(1, 1))
+  expect_equal(mo$summary_table$power_complete, c(0,0))
+})
+
 httptest2::stop_mocking()
 #httptest2::stop_capturing()

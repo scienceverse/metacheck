@@ -2,6 +2,7 @@
 
 * Added functions from svutils back in. 
 * Reorganised some ML read-in functions (internal).
+* Ollama further support in `llm()` and vignette.
 
 # metacheck 0.0.0.9105
 

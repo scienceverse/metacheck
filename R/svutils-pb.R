@@ -14,7 +14,7 @@
 #' :eta Estimated completion time in seconds.
 #' :percent Completion percentage.
 #' :rate Download rate, bytes per second.
-#' :tick_rate Similar to ⁠:rate⁠, but we don't assume that the units are bytes, we just print the raw number of ticks per second.
+#' :tick_rate Similar to :rate, but we don't assume that the units are bytes, we just print the raw number of ticks per second.
 #' :bytes Shows :current, formatted as bytes. Useful for downloads or file reads if you don't know the size of the file in advance.
 #' :spin Shows a spinner that updates even when progress is advanced by zero.
 #'
@@ -43,7 +43,7 @@ pb <- function(total, format = "[:bar] :current/:total") {
       format = format,
       show_after = 0
     )
-    pb$tick(0)
+    suppressWarnings(pb$tick(0))
   } else {
     # dummy functions so we don't have to call if (verbose())
     pb <- list(

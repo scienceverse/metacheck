@@ -79,7 +79,7 @@ power <- function(paper, seed = 8675309) {
     ## use LLM ----
 
     # define system prompt from JSON schema
-    preface <- "/no_think\n\nIdentify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
+    preface <- "Identify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
     # schema also defined below
     schema <- readLines("https://scienceverse.org/schema/power.json") |>
       paste(collapse = "\n")
@@ -100,6 +100,8 @@ power <- function(paper, seed = 8675309) {
 
     if ("power_type" %in% names(table)) {
       table <- dplyr::filter(table, power_type != "none")
+    } else {
+      table$power_type <- "unknown"
     }
 
     # check for NAs in LLM columns

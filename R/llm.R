@@ -68,40 +68,51 @@ llm <- function(text, system_prompt,
     params$temperature <- 0
   }
 
-  # detect ollama + think=FALSE before params is converted by ellmer::params()
-  # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it
-  use_ollama_native <- startsWith(model, "ollama/") && isFALSE(params$think)
-  ollama_model_name <- sub("^ollama/", "", model)
-  ollama_base_url <- Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+  # check if json schema type is set for a structured return
+  structured <- !is.null(type)
 
-  if (startsWith(model, "ollama/")) {
-    ok <- tryCatch({
-      httr2::request(paste0(ollama_base_url, "/api/tags")) |>
+  # ollama checks ----
+  use_ollama_native <- FALSE
+  if (grepl("^ollama", model)) {
+    # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it
+    use_ollama_native <- !isTRUE(params$think) %% !structured
+    if (use_ollama_native) {
+      ollama_options <- params
+      ollama_options$think <- NULL
+    }
+    ollama_base_url <- Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+    # check ollama is up
+    ollama_up <- tryCatch({
+      paste0(ollama_base_url, "/api/version") |>
+        httr2::request() |>
         httr2::req_timeout(3) |>
         httr2::req_perform()
       TRUE
     }, error = \(e) FALSE)
-    if (!ok) stop("Ollama is not running at ", ollama_base_url, ". Start ollama and try again.", call. = FALSE)
-  }
+    if (!ollama_up) stop("Ollama is not running at ", ollama_base_url,
+                         ". Start ollama and try again.", call. = FALSE)
 
-  # when routing to native ollama, save options and strip think before ellmer sees params
-  if (use_ollama_native) {
-    params$think <- NULL
-    ollama_options <- params  # raw params become ollama /api/chat options
-  } else {
-    ollama_options <- list()
-  }
-
-  tryCatch(
-    {
-      params <- do.call(ellmer::params, params)
-    },
-    error = \(e) {
-      stop("Misspecified params argument:\n", e$message, call. = FALSE)
+    # check model exists or set model if not specified
+    ollama_model <- sub("^ollama\\/?", "", model)
+    models <- ellmer::models_ollama(ollama_base_url)
+    if (nrow(models) == 0) {
+      stop("Ollama is installed, but there are no models loaded", call. = FALSE)
+    } else if (is.null(ollama_model) || ollama_model == "") {
+      ollama_model <- models$id[[1]]
+      message(paste0("Using model = \"", ollama_model, "\"."))
+    } else if (!ollama_model %in% models$id) {
+      stop("Ollama is installed, but the model ", ollama_model,
+           " is not available", call. = FALSE)
     }
-  )
+  }
 
-  structured <- !is.null(type)
+  # check params ----
+  tryCatch({
+    params <- do.call(ellmer::params, params)
+  }, error = \(e) {
+    stop("Misspecified params argument:\n", e$message, call. = FALSE)
+  })
 
   # set up progress bar ----
   label <- if (structured) "Extracting data" else "Querying LLM"
@@ -109,48 +120,49 @@ llm <- function(text, system_prompt,
 
   # iterate over the text ----
   responses <- lapply(seq_along(unique_text), function(i) {
-    tryCatch(
-      {
-        if (use_ollama_native && !structured) {
-          # native ollama API: think=FALSE is honoured here, unlike /v1/
-          answer <- .llm_ollama_native(
-            unique_text[i], system_prompt, ollama_model_name,
-            think = FALSE, options = ollama_options, base_url = ollama_base_url
-          )
-          pb$tick()
-          list(answer = answer)
-        } else {
-          # fresh chat per call to avoid context accumulation
+    tryCatch({
+      if (use_ollama_native) {
+        # native ollama API: think=FALSE is honoured here, unlike /v1/
+        answer <- .llm_ollama_native(
+          unique_text[i], system_prompt, ollama_model,
+          think = FALSE, options = ollama_options
+        )
+        pb$tick()
+        list(answer = answer)
+      } else {
+        # fresh chat per call to avoid context accumulation
+        msg <- utils::capture.output({
           chat <- ellmer::chat(
             name = model,
             system_prompt = system_prompt,
             params = params
           )
+        }, type = "message")
+        # only show message first time
+        if (length(msg) && i == 1) pb$message(msg)
 
-          if (structured) {
-            result <- chat$chat_structured(unique_text[i], type = type)
-            df <- .unnest_result(result)
-            df$.join_key. <- unique_text[i]
-            pb$tick()
-            df
-          } else {
-            answer <- chat$chat(unique_text[i], echo = FALSE)
-            pb$tick()
-            list(answer = trimws(answer))
-          }
-        }
-      },
-      error = function(e) {
-        pb$tick()
         if (structured) {
-          df <- data.frame(.error = TRUE, .error_msg = e$message)
+          result <- chat$chat_structured(unique_text[i], type = type)
+          df <- .unnest_result(result)
           df$.join_key. <- unique_text[i]
+          pb$tick()
           df
         } else {
-          list(answer = NA, error = TRUE, error_msg = e$message)
+          answer <- chat$chat(unique_text[i], echo = FALSE)
+          pb$tick()
+          list(answer = trimws(answer))
         }
       }
-    )
+    }, error = function(e) {
+      pb$tick()
+      if (structured) {
+        df <- data.frame(.error = TRUE, .error_msg = e$message)
+        df$.join_key. <- unique_text[i]
+        df
+      } else {
+        list(answer = NA, error = TRUE, error_msg = e$message)
+      }
+    })
   })
 
   # join responses back to input ----
@@ -205,11 +217,25 @@ llm <- function(text, system_prompt,
 #' ellmer routes ollama via the OpenAI-compatible /v1/ endpoint, which ignores
 #' think=FALSE. This helper calls /api/chat directly where think is honoured.
 #'
+#' @param text The text to send to the LLM (vector of strings, or data frame with the text in a column)
+#' @param system_prompt A system prompt to set the behavior of the assistant
+#' @param model the ollama model
+#' @param think whether to use thinking mode (very slow)
+#' @param options further options to pass to to the model
+#' @param base_url the local URL
+#'
+#' @export
 #' @keywords internal
-.llm_ollama_native <- function(text, system_prompt, model,
-                               think = TRUE,
+.llm_ollama_native <- function(text, system_prompt,
+                               model = NULL,
+                               think = FALSE,
                                options = list(),
                                base_url = Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")) {
+
+  if (isFALSE(think)) {
+    system_prompt <- paste0("/nothink\n\n", system_prompt)
+  }
+
   body <- list(
     model = model,
     think = think,
@@ -282,8 +308,9 @@ llm_model_list <- function(platform = NULL) {
     grep("models_.+", x = _, value = TRUE)
   names(ef) <- gsub("models_", "", ef)
   funcs <- lapply(ef, \(x) utils::getFromNamespace(x, "ellmer"))
-  # ellmer doesn't have a groq model function, so use ours
-  funcs$groq <- models_groq
+  # ellmer doesn't have a groq or ollama model functions, so use ours
+  funcs$groq <- .llm_model_list_groq
+  #funcs$ollama <- .llm_model_list_ollama
 
   # if null, return all available platforms
   if (is.null(platform)) platform <- names(funcs)
@@ -296,23 +323,20 @@ llm_model_list <- function(platform = NULL) {
 
   # get models and ignore errors, add platform name
   models <- lapply(platform, \(p) {
-    tryCatch(
-      {
+    tryCatch({
         # skip if google api key isn't set, otherwise it requests login
-        if (p %in% c("google_gemini", "google_vertex") &&
-          Sys.getenv("GOOGLE_API_KEY") == "") {
-          return(NULL)
-        }
+      if (p %in% c("google_gemini", "google_vertex") &&
+        Sys.getenv("GOOGLE_API_KEY") == "") {
+        return(NULL)
+      }
 
-        model_func <- funcs[[p]]
-        m <- model_func()
-        cols <- c("platform", names(m))
-        m$platform <- p
+      model_func <- funcs[[p]]
+      m <- model_func()
+      cols <- c("platform", names(m))
+      m$platform <- p
 
-        m
-      },
-      error = \(e) {}
-    )
+      m
+    }, error = \(e) {})
   })
 
   # reorder columns
@@ -334,7 +358,7 @@ llm_model_list <- function(platform = NULL) {
 #' @export
 #'
 #' @keywords internal
-models_groq <- function() {
+.llm_model_list_groq <- function() {
   API_KEY <- Sys.getenv("GROQ_API_KEY")
   url <- "https://api.groq.com/openai/v1/models"
 
@@ -404,10 +428,9 @@ llm_model <- function(model = NULL) {
 
 #' Set or get metacheck LLM use
 #'
-#' Mainly for use in optional LLM workflows in modules, also checks if the GROQ API key is set and returns false if it isn't.
+#' Mainly for use in optional LLM workflows in modules
 #'
 #' @param llm_use if logical, sets whether to use LLMs
-#' @param API_KEY your API key for the LLM
 #'
 #' @returns the current option value (logical)
 #' @export
@@ -418,31 +441,18 @@ llm_model <- function(model = NULL) {
 #' } else {
 #'   print("We will not use LLMs")
 #' }
-llm_use <- function(llm_use = NULL,
-                    API_KEY = Sys.getenv("GROQ_API_KEY")) {
+llm_use <- function(llm_use = NULL) {
   if (is.null(llm_use)) {
     use <- getOption("metacheck.llm.use")
     if (!use) {
       return(FALSE)
     }
 
-    # # check if API KEY set
-    # if (API_KEY == "") {
-    #   message("Set the environment variable GROQ_API_KEY to use LLMs")
-    #   return(FALSE)
-    # }
-    #
-    # # check if api online
-    # if (!online("api.groq.com")) {
-    #   message("api.groq.com is not available")
-    #   return(FALSE)
-    # }
-
     return(TRUE)
   } else if (as.logical(llm_use) %in% c(TRUE, FALSE)) {
     options(metacheck.llm.use = as.logical(llm_use))
     invisible(getOption("metacheck.llm.use"))
   } else {
-    stop("set llm_use with TRUE or FALSE")
+    stop("Set llm_use with TRUE or FALSE")
   }
 }

@@ -1,7 +1,7 @@
 {
-    "id": "chatcmpl-eb5ee33b-c944-423b-9a22-d085d62638b3",
+    "id": "chatcmpl-9d5c7b2d-0270-4400-b011-9738df94875e",
     "object": "chat.completion",
-    "created": 1778605105,
+    "created": 1780229930,
     "model": "llama-3.1-8b-instant",
     "choices": [
         {
@@ -15,19 +15,19 @@
         }
     ],
     "usage": {
-        "queue_time": 0.088501843,
+        "queue_time": 0.019649221,
         "prompt_tokens": 50,
-        "prompt_time": 0.002972686,
+        "prompt_time": 0.003482562,
         "completion_tokens": 2,
-        "completion_time": 0.008239622,
+        "completion_time": 0.008499083,
         "total_tokens": 52,
-        "total_time": 0.011212308
+        "total_time": 0.011981645
     },
     "usage_breakdown": null,
-    "system_fingerprint": "fp_4387d3edbb",
+    "system_fingerprint": "fp_6a1eabf260",
     "x_groq": {
-        "id": "req_01krej087yf02r3rfcgn1cfr9j",
-        "seed": 1807743592
+        "id": "req_01ksyzhzpafb5tkkk3jkb470xt",
+        "seed": 1636495554
     },
     "service_tier": "on_demand"
 }

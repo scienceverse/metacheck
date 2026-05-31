@@ -12,6 +12,7 @@
   # check available API keys and set default LLM provider
   api_keys <- c(
     # most common?
+    ollama = Sys.getenv("OLLAMA_BASE_URL"),
     groq = Sys.getenv("GROQ_API_KEY"),
     openai = Sys.getenv("OPENAI_API_KEY"),
     google_gemini = Sys.getenv("GEMINI_API_KEY"),
@@ -22,7 +23,6 @@
     deepseek = Sys.getenv("DEEPSEEK_API_KEY"),
     huggingface = Sys.getenv("HUGGINGFACE_API_KEY"),
     mistral = Sys.getenv("MISTRAL_API_KEY"),
-    ollama = Sys.getenv("OLLAMA_API_KEY"),
     openrouter = Sys.getenv("OPENROUTER_API_KEY"),
     perplexity = Sys.getenv("PERPLEXITY_API_KEY"),
     portkey = Sys.getenv("PORTKEY_API_KEY"),

@@ -30,7 +30,7 @@ They can be used in the format argument when creating the progress bar.
 :eta Estimated completion time in seconds.
 :percent Completion percentage.
 :rate Download rate, bytes per second.
-:tick_rate Similar to ⁠:rate⁠, but we don't assume that the units are bytes, we just print the raw number of ticks per second.
+:tick_rate Similar to :rate, but we don't assume that the units are bytes, we just print the raw number of ticks per second.
 :bytes Shows :current, formatted as bytes. Useful for downloads or file reads if you don't know the size of the file in advance.
 :spin Shows a spinner that updates even when progress is advanced by zero.
 }

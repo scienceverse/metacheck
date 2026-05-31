@@ -1,0 +1,16 @@
+{
+    "model": "qwen2.5:3b",
+    "created_at": "2026-05-31T12:56:33.291722Z",
+    "message": {
+        "role": "assistant",
+        "content": "```json\n[\n    {\n        \"text\": \"A sensitivity power analysis for a paired samples t-test, conducted using G-Power, indicated that with 64 participants, an adequate power was reached for an effect size of d = 0.5.\",\n        \"power_type\": \"sensitivity\",\n        \"statistical_test\": \"paired t-test\",\n        \"sample_size\": 64,\n        \"alpha_level\": null,\n        \"power\": 1,\n        \"effect_size\": 0.5,\n        \"effect_size_metric\": \"Cohen's d\",\n        \"software\": \"G*Power\"\n    }\n]\n```"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 3491205125,
+    "load_duration": 71438209,
+    "prompt_eval_count": 1073,
+    "prompt_eval_duration": 162544791,
+    "eval_count": 132,
+    "eval_duration": 3190938331
+}

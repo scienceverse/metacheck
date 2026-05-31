@@ -47,6 +47,7 @@ articles:
         - creating_modules
         # - articles/validate
         - articles/github
+        - articles/ollama
 
 reference:
 - title: Reading in Papers
