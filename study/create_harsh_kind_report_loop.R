@@ -163,7 +163,7 @@ for (report_num in seq_len(reports)) {
   )
 
   xml_path <- paste0(pdf_path, ".xml")
-  # paper    <- read(xml_path)
+  paper    <- read(xml_path)
 
   # # Get author contact info
   # email_grobid <- paper$authors[[1]][["email"]]
@@ -216,3 +216,4 @@ for (report_num in seq_len(reports)) {
 }
 
 cat(sprintf("\nDone! Generated %d reports starting from page %d.\n", reports, page))
+

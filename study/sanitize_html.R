@@ -57,16 +57,70 @@ sanitize_html <- function(html_path, output_path = html_path) {
       if (!is.null(cont)) headers <- xml_text(xml_find_all(cont, "//th"))
     }
 
-    # htmlwidgets DT stores data COLUMN-MAJOR: each top-level element is a
-    # column (list of cell values). Transpose to rows.
-    cols <- x$data
-    ncol <- length(cols)
-    nrow <- if (ncol > 0) max(vapply(cols, length, integer(1))) else 0
+    raw_data <- x$data
+
+    build_rows <- function(candidate_rows) {
+      nrow <- length(candidate_rows)
+      row_width <- if (nrow > 0) max(vapply(candidate_rows, length, integer(1))) else 0
+      list(rows = candidate_rows, nrow = nrow, ncol = row_width)
+    }
+
+    transpose_columns <- function(cols) {
+      ncol <- length(cols)
+      nrow <- if (ncol > 0) max(vapply(cols, length, integer(1))) else 0
+      if (nrow == 0 || ncol == 0) return(list())
+      lapply(seq_len(nrow), function(ri) {
+        lapply(seq_len(ncol), function(ci) {
+          col <- cols[[ci]]
+          if (ri <= length(col) && !is.null(col[[ri]])) col[[ri]] else ""
+        })
+      })
+    }
+
+    candidate_rows <- list()
+    if (is.data.frame(raw_data)) {
+      if (length(headers) == 0 && !is.null(names(raw_data))) {
+        headers <- names(raw_data)
+      }
+      nr <- nrow(raw_data)
+      if (nr > 0) {
+        candidate_rows <- lapply(seq_len(nr), function(i) as.list(raw_data[i, , drop = FALSE]))
+      }
+    } else if (is.matrix(raw_data)) {
+      if (length(headers) == 0 && !is.null(colnames(raw_data))) {
+        headers <- colnames(raw_data)
+      }
+      nr <- nrow(raw_data)
+      if (nr > 0) {
+        candidate_rows <- lapply(seq_len(nr), function(i) as.list(raw_data[i, ]))
+      }
+    } else if (is.list(raw_data) && length(raw_data) > 0) {
+      rows_as_is <- raw_data
+      rows_from_cols <- transpose_columns(raw_data)
+
+      if (length(headers) > 0) {
+        diff_as_is <- abs(max(vapply(rows_as_is, length, integer(1))) - length(headers))
+        diff_from_cols <- abs(max(vapply(rows_from_cols, length, integer(1))) - length(headers))
+        candidate_rows <- if (length(rows_from_cols) > 0 && diff_from_cols < diff_as_is) {
+          rows_from_cols
+        } else {
+          rows_as_is
+        }
+      } else {
+        candidate_rows <- if (length(rows_from_cols) > length(rows_as_is)) rows_from_cols else rows_as_is
+      }
+    }
+
+    built <- build_rows(candidate_rows)
+    rows <- built$rows
+    nrow <- built$nrow
+    ncol <- max(length(headers), built$ncol)
 
     getcell <- function(ci, ri) {
-      col <- cols[[ci]]
-      if (ri <= length(col) && !is.null(col[[ri]])) {
-        v <- col[[ri]]
+      if (ri > nrow) return("")
+      row <- rows[[ri]]
+      if (ci <= length(row) && !is.null(row[[ci]])) {
+        v <- row[[ci]]
         if (length(v) == 0) "" else esc(v)[1]
       } else {
         ""
