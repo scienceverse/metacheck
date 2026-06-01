@@ -4,11 +4,11 @@ library(devtools)
 library(svutils)
 library(metacheck)
 library(RDCOMClient)
-
+source("sanitize_html.R")   # wherever you save the file
 # ---- Settings ----------------------------------------------------------------
 
 page     <- 1            # Starting OSF API page (10 preprints per page; 1 = newest)
-reports  <- 50           # Total number of reports to generate
+reports  <- 1           # Total number of reports to generate
 log_file <- "c://preprint/report_log.tsv"  # Tab-delimited log of generated reports
 
 # Each report cycles through 3 types in order:
@@ -31,12 +31,12 @@ log_report <- function(log_file, preprint_id, filename, report_type) {
     report_type = report_type
   )
   write.table(row,
-    file      = log_file,
-    sep       = "\t",
-    row.names = FALSE,
-    col.names = !file.exists(log_file),
-    append    = TRUE,
-    quote     = FALSE
+              file      = log_file,
+              sep       = "\t",
+              row.names = FALSE,
+              col.names = !file.exists(log_file),
+              append    = TRUE,
+              quote     = FALSE
   )
 }
 
@@ -163,15 +163,15 @@ for (report_num in seq_len(reports)) {
   )
 
   xml_path <- paste0(pdf_path, ".xml")
-  paper    <- read(xml_path)
+  # paper    <- read(xml_path)
 
-  # Get author contact info
-  email_grobid <- paper$authors[[1]][["email"]]
-  email_grobid <- regmatches(email_grobid, regexpr("[[:alnum:]._%+-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}", email_grobid))
-  author_orcid <- svutils::get_orcid(paper$author$given[1], paper$author$family[1])
-  author_info  <- svutils::orcid_person(author_orcid)
-  author_email_orcid <- paste(author_info$email[1])
-  cat("Emails:", paste(c(email_grobid, author_email_orcid), collapse = ", "), "\n")
+  # # Get author contact info
+  # email_grobid <- paper$authors[[1]][["email"]]
+  # email_grobid <- regmatches(email_grobid, regexpr("[[:alnum:]._%+-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}", email_grobid))
+  # author_orcid <- svutils::get_orcid(paper$author$given[1], paper$author$family[1])
+  # author_info  <- svutils::orcid_person(author_orcid)
+  # author_email_orcid <- paste(author_info$email[1])
+  # cat("Emails:", paste(c(email_grobid, author_email_orcid), collapse = ", "), "\n")
 
   # Output paths
   output_qmd  <- paste0(pdf_path, "_", type_label, "_report.qmd")
@@ -179,18 +179,18 @@ for (report_num in seq_len(reports)) {
   # Generate report
   if (report_type == 1) {
     report_harsh(paper,
-      modules       = harsh_modules,
-      output_format = "qmd",
-      output_file   = output_qmd,
-      args          = list("power_harsh" = list(think = FALSE))
+                 modules       = harsh_modules,
+                 output_format = "qmd",
+                 output_file   = output_qmd,
+                 args          = list("power_harsh" = list(think = FALSE))
     )
 
   } else {
     report_kind(paper,
-      modules       = kind_modules,
-      output_format = "qmd",
-      output_file   = output_qmd,
-      args          = list("power_kind" = list(think = FALSE))
+                modules       = kind_modules,
+                output_format = "qmd",
+                output_file   = output_qmd,
+                args          = list("power_kind" = list(think = FALSE))
     )
 
     if (report_type == 2) {
@@ -200,6 +200,9 @@ for (report_num in seq_len(reports)) {
 
   # Render to HTML
   quarto::quarto_render(output_qmd, output_format = "html")
+
+  output_html <- sub("\\.qmd$", ".html", output_qmd)
+  sanitize_html(output_html)
 
   log_report(log_file, preprint_id, preprint_filename, type_label)
 
