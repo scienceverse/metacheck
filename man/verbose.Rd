@@ -18,3 +18,4 @@ Set or get verbosity
 \examples{
 verbose()
 }
+\keyword{internal}
