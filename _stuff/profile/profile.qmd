@@ -30,10 +30,10 @@ lineprof( refs <- concat_tables(papers, "bib") )
 lineprof( cite <- concat_tables(papers, "xrefs") )
 ```
 
-### search_text
+### text_search
 
 ```{r}
-lineprof( res <- search_text(papers, section = "results") )
+lineprof( res <- text_search(papers, section = "results") )
 ```
 
 ### stats
@@ -60,15 +60,15 @@ ps <- ps[1:30]
 ```
 
 ```{r}
-lineprof( text <- search_text(ps, "signif") )
+lineprof( text <- text_search(ps, "signif") )
 ```
 
 ```{r}
-lineprof( exp <- expand_text(text, ps) )
+lineprof( exp <- text_expand(text, ps) )
 ```
 
 ```{r}
-lineprof( exp1 <- expand_text(text, ps, plus = 1) )
+lineprof( exp1 <- text_expand(text, ps, plus = 1) )
 ```
 
 

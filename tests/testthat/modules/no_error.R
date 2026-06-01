@@ -6,6 +6,10 @@
 #' @details
 #' Demo details...
 #'
+#' <validation>
+#' Here is my demo validation information.
+#' </validation>
+#'
 #' @keywords results
 #'
 #' @author Lisa DeBruine (\email{debruine@gmail.com})
@@ -24,7 +28,7 @@
 pvals2 <- function(paper, demo_arg = "", ...) {
   # detailed table of results ----
   pattern <- "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?"
-  table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
+  table <- text_search(paper, pattern, return = "match", "perl" = TRUE)
 
   # summary output for paperlists ----
   summary_table <- dplyr::count(table, paper_id, name = "p_values")
@@ -39,7 +43,7 @@ pvals2 <- function(paper, demo_arg = "", ...) {
     na_replace = 0,
     traffic_light = tl,
     summary_text = paste0("summary text", demo_arg),
-    report = "report text"
+    report = "This is the report text."
   )
 }
 

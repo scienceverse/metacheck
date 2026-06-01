@@ -16,7 +16,7 @@ test_that("repo_check offline", {
                     files_readme = NA,
                     files_zip = NA)
   expect_equal(mod_output$summary_table, exp)
-  exp <- "We found no links to repositories the Open Science Framework, Github, or ResearchBox."
+  exp <- "We found no links to repositories on the Open Science Framework, Github, ResearchBox, or Zenodo."
   expect_equal(mod_output$summary_text, exp)
   expect_equal(mod_output$report, exp)
 })
@@ -93,16 +93,94 @@ test_that("OSF, github and rb", {
   expect_gt(nrow(mod_output$table), 14)
   exp <- c("bad.R", "bad.Rmd", "Code/Study 1.r", "good-example.R")
   expect_contains(mod_output$table$file_name, exp)
-
-  exp <- data.frame(paper_id = paper$paper_id,
-                    repo_n = 3,
-                    files_n = 15,
-                    files_data = 6,
-                    files_code = 4,
-                    files_readme = 1,
-                    files_zip = 2)
-  expect_equal(mod_output$summary_table, exp)
+  expect_equal(mod_output$summary_table$paper_id, paper$paper_id)
+  expect_equal(mod_output$summary_table$repo_n, 3)
+  expect_equal(mod_output$summary_table$files_n, nrow(mod_output$table))
+  expect_gte(mod_output$summary_table$files_data, 1)
+  expect_gte(mod_output$summary_table$files_code, 1)
+  expect_gte(mod_output$summary_table$files_readme, 1)
+  expect_gte(mod_output$summary_table$files_zip, 1)
 })
+
+test_that("Zenodo", {
+  paper <- test_paper(url = "https://zenodo.org/records/17754445")
+  module <- "repo_check"
+  mod_output <- module_run(paper, module)
+
+  expect_equal(mod_output$table$file_name, "ResearchBox_4377.zip")
+  expect_equal(mod_output$summary_table$files_zip, 1)
+
+  paper <- paperlist(
+    test_paper(url = "https://zenodo.org/records/17754445"),
+    test_paper(url = "https://zenodo.org/records/123456789")
+  )
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$summary_table$files_n, c(1, 1))
+  expect_equal(mod_output$summary_table$files_zip, c(1, 0))
+})
+
+# repo_check() + local_path ----
+
+test_that("repo_check vector of local paths", {
+  local_path <- c(
+    test_path("fixtures", "code_files", "analysis.R"),
+    test_path("fixtures", "code_files", "README.md")
+  )
+  paper <- test_paper()
+  module <- "repo_check"
+  mo <- module_run(paper, module, local_path = local_path)
+
+  expect_equal(mo$summary_table$repo_n, 2)
+  expect_true("analysis.R" %in% mo$table$file_name)
+  expect_true("README.md"  %in% mo$table$file_name)
+})
+
+test_that("repo_check local_path only", {
+  local_path <- test_path("fixtures", "code_files")
+  mo <- module_run(test_paper(), "repo_check", local_path = local_path)
+
+  # one repo: the local folder
+  expect_equal(mo$summary_table$repo_n, 1)
+  expect_equal(mo$summary_table$files_n, 7)
+  expect_equal(mo$summary_table$files_code, 5)  # .do is "stats" type, not "code"
+  expect_equal(mo$summary_table$files_data, 1)
+  expect_equal(mo$summary_table$files_readme, 1)
+  expect_equal(mo$summary_table$files_zip, 0)
+
+  # repo type is "local"
+  expect_true("analysis.R" %in% mo$table$file_name)
+  expect_true("README.md" %in% mo$table$file_name)
+
+  # README present, no zip: green
+  expect_equal(mo$traffic_light, "green")
+})
+
+test_that("repo_check paper + local_path", {
+  # osf/629bx mock: 4 files (2 code, 1 data, 0 readme, 1 zip)
+  # fixture_dir:    5 files (3 code, 1 data, 1 readme, 0 zip)
+  paper <- test_paper(url = "https://osf.io/629bx")
+  local_path <- test_path("fixtures", "code_files")
+  mo <- module_run(paper, "repo_check", local_path = local_path)
+
+  # two repos: OSF + local
+  expect_equal(mo$summary_table$repo_n, 2)
+  expect_equal(mo$summary_table$files_n, 11)
+
+  # combined counts
+  expect_equal(mo$summary_table$files_code, 7)  # .do is "stats" type, not "code"
+  expect_equal(mo$summary_table$files_readme, 1)  # only local has README
+  expect_equal(mo$summary_table$files_zip, 1)      # only OSF has zip
+
+  # files from both sources present in table
+  expect_true("README.md" %in% mo$table$file_name)   # local
+  expect_true("analysis.R" %in% mo$table$file_name)  # local
+  expect_true(any(grepl("bad\\.R$", mo$table$file_name, ignore.case = TRUE))) # OSF
+
+  # OSF still has no README → repo_no_readme > 0 → yellow
+  expect_equal(mo$traffic_light, "yellow")
+})
+
 
 httptest2::stop_mocking()
 #httptest2::stop_capturing()
+

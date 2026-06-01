@@ -19,11 +19,12 @@
 #' @import httr
 #' @import jsonlite
 #'
-#' @param paper a paper object or paperlist object
-#' @param file_limit the maximum number of fiiles per reppository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
+#' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
+#' @param file_limit the maximum number of files per repository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
+#' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.
 #'
 #' @returns a list
-code_check <- function(paper, file_limit = 20) {
+code_check <- function(paper, file_limit = 20, local_path = NULL) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -32,8 +33,12 @@ code_check <- function(paper, file_limit = 20) {
   
   all_files <- get_prev_outputs("repo_check", "table")
   if (is.null(all_files)) {
-    mo <- module_run(paper, "repo_check")
-    all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0)) # Ensure repo_url exists for dplyr::count(..., repo_url)
+    if (!is.null(local_path)) {
+      mo <- module_run(paper, "repo_check", local_path = local_path)
+    } else {
+      mo <- module_run(paper, "repo_check")
+    }
+    all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
   }
   
   ## find code files ----
@@ -80,13 +85,17 @@ code_check <- function(paper, file_limit = 20) {
   absolute_path_pattern <- '(?<![A-Za-z0-9_])(["\'])(?:(?!https?://)(?:[A-Za-z]:[\\\\/]|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/]|~[/\\\\]|/(?:Users|home|var|etc|opt|srv|mnt|Volumes|Library|Applications|gpfs|data|tmp|media|root)\\b)[^"\']*)\\1'
   
   # --- Process each code file (up to file_limit) ---
-  #maxfile <- min(nrow(code_files), file_limit)
+  pb_code <- pb(nrow(code_files), "(:spin) :what")
+  pb_code$tick(0, list(what = "Starting Code Check"))
+  on.exit(pb_code$terminate())
+
   collected <- lapply(seq_along(code_files$file_location), \(i) {
+    pb_code$tick(1, list(what = code_files$file_name[[i]]))
     tryCatch({
       collector <- list()
       # access via URL if not local
       if (!is.na(code_files$file_location[i])) {
-        con <- file(code_files$file_location[i], "r")
+        con <- file(code_files$file_location[i], "r", encoding = "latin1")
       } else {
         con <- url(code_files$file_url[i])
       }
@@ -104,9 +113,9 @@ code_check <- function(paper, file_limit = 20) {
         collector$parsing_error <- 1
         collector$parsing_error_message <- parsing_error_df$message
       }
-      
-      # read in files
-      file_lines <- readLines(con, warn = FALSE)
+
+      # read in files; skipNul handles UTF-16 LE encoded files (e.g. Stata on Windows)
+      file_lines <- readLines(con, warn = FALSE, skipNul = TRUE)
       close(con)
       
       is_rmd <- grepl("\\.(rmd|qmd)",
@@ -287,14 +296,14 @@ code_check <- function(paper, file_limit = 20) {
     report_table_parsable <- NULL
   } else {
     report_parsable <- sprintf(
-      "We encountered parsing issues when trying to read in R-type code files. The following error were found in %d code file%s:",
+      "We encountered parsing issues when trying to read in R-type code files. The following errors were found in %d code file%s:",
       length(parsing_issues),
       plural(length(parsing_issues))
     )
     summary_parsable <- "Parsing issues of R-type files were found."
     cols <- c("file_name", "parsing_error_message")
     report_table_parsable <- code_files[code_files$parsing_error == 1, cols]
-    colnames(report_table_absolute) <- c("File name", "Parsing Error Message")
+    colnames(report_table_parsable) <- c("File name", "Parsing Error Message")
   }
   
   report <- c(
@@ -603,7 +612,7 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
 }
 
 # Helper: Try parsing code and storing any resulting errors
-try_parse_code <- function(file_path, lang = lang) {
+try_parse_code <- function(file_path, lang = NA_character_) {
   
   # print("Running try_parse_code() now!")
   # print(paste0("lang seems to be: ", lang))

@@ -25,6 +25,22 @@ test_that("llm", {
 
 })
 
+test_that("llm_use", {
+  expect_true(is.function(metacheck::llm_use))
+  expect_no_error(helplist <- help(llm_use, metacheck))
+
+  expect_error(llm_use("no"))
+
+  obs <- llm_use(TRUE)
+  expect_true(obs)
+  expect_true(llm_use())
+
+  obs <- llm_use(FALSE)
+  expect_false(obs)
+  expect_false(llm_use())
+})
+
+
 
 test_that("llm_model", {
   expect_true(is.function(metacheck::llm_model))
@@ -78,7 +94,7 @@ test_that("llm_max_calls", {
 
 # tests that require api.groq.com
 
-# httptest2::start_capturing()
+#httptest2::start_capturing()
 httptest2::use_mock_api()
 
 test_that("llm_use TRUE", {
@@ -113,20 +129,28 @@ test_that("llm_model_list", {
 
   expect_error(llm_model_list("notamodel"), "Invalid platform")
 
-  #skip_llm()
+  o <- llm_model_list("ollama")
+  expect_equal(nrow(o), 2)
 
-  models <- llm_model_list("groq")
-  expect_contains(names(models), c("platform", "id", "created_at"))
-
-  groq_models <- models_groq()
-  expect_contains(names(groq_models), c("id", "created_at"))
-  expect_false("platform" %in% names(groq_models))
-  expect_true(inherits(groq_models$created_at, "Date"))
-
-  all <- llm_model_list()
-  expect_gt(unique(all$platform) |> length(), 1)
-  expect_contains(all$id, groq_models$id)
+  httptest2::without_internet({
+    o <- llm_model_list("ollama")
+    expect_equal(nrow(o), 0)
+  })
 })
+
+test_that(".llm_model_list_groq", {
+  expect_true(is.function(metacheck:::.llm_model_list_groq))
+
+  expect_error(.llm_model_list_groq(1))
+
+  g1 <- .llm_model_list_groq()
+  g2 <- llm_model_list("groq")
+  expect_in("platform", names(g2))
+  expect_disjoint(names(g1), "platform")
+  expect_setequal(g1$id, g2$id)
+  expect_true(inherits(g1$created_at, "Date"))
+})
+
 
 test_that("gemini", {
   #skip_llm()
@@ -153,5 +177,69 @@ test_that("openai", {
                as.character(c(T, F)))
 })
 
+test_that(".llm_ollama_native", {
+  expect_true(is.function(metacheck:::.llm_ollama_native))
+
+  text <- "A"
+  system_prompt <- "Is this a vowel? Answer only 'TRUE' or 'FALSE'."
+  model <- "qwen2.5:3b"
+  resp <- .llm_ollama_native(text, system_prompt, model)
+  expect_in(resp, c("TRUE", "FALSE"))
+
+  resp2 <- llm(text, system_prompt, model = "ollama/qwen2.5:3b")
+  expect_message(resp3 <- llm(text, system_prompt, model = "ollama"), "Using model")
+
+  expect_equal(names(resp2), c("text", "answer"))
+  expect_equal(names(resp3), c("text", "answer"))
+
+  expect_error(.llm_ollama_native(text, system_prompt, "notamodel"))
+
+  expect_error(llm(text, system_prompt, model = "ollama/notamodel"),
+               "Ollama is installed, but the model notamodel is not available")
+
+  # TODO: test thinking
+  # model <- "ollama/smollm:135m"
+  # default <- llm(text, system_prompt, model = model)
+  # think <- llm(text, system_prompt, model = model, params = list(think = TRUE))
+  # nothink <- llm(text, system_prompt, model = model, params = list(think = FALSE))
+})
+
 #httptest2::stop_capturing()
 httptest2::stop_mocking()
+
+# test_that("no internet", {
+#   httptest2::without_internet({
+#     expect_error(
+#       llm("A", "Is this a vowel?", model = "ollama"),
+#       "Ollama is not running"
+#     )
+#   })
+# })
+
+
+test_that(".unnest_result", {
+  expect_true(is.function(metacheck:::.unnest_result))
+
+  expect_error(.unnest_result(bad_arg))
+
+  # Structured extraction
+  # llm_use(TRUE)
+  # chat <- ellmer::chat(
+  #   name = "groq/openai/gpt-oss-safeguard-20b",
+  #   system_prompt = "Classify the input.",
+  #   params = list(temperature = 0)
+  # )
+  #
+  # type <- ellmer::type_object(
+  #   n_letters = ellmer::type_integer("How many letters in the input"),
+  #   is_number = ellmer::type_boolean("Whether the input is a number")
+  # )
+  #
+  # result <- chat$chat_structured("hello", type = type)
+
+  result <- list(n_letters = 5L, is_number = FALSE)
+  df <- .unnest_result(result)
+  exp <- data.frame(n_letters = 5, is_number = FALSE)
+  expect_equal(df, exp)
+})
+

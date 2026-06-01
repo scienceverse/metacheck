@@ -196,7 +196,7 @@ bibs <- concat_tables(paper, "bib") |>
 # consolidate xrefs, filter, and expand
 xrefs <- concat_tables(paper, "xrefs") |>
   inner_join(bibs, by = c("xref_id", "id")) |>
-  expand_text(paper, expand_to = "paragraph")
+  text_expand(paper, expand_to = "paragraph")
 ```
 
 

@@ -43,7 +43,7 @@ papers <- psychsci
 If you want to be completely thorough, you can manually code every single sentence in every single paper for your target concept.
 
 ```{r}
-text_all <- search_text(papers)
+text_all <- text_search(papers)
 ```
 
 Here, that results in `r nrow(text_all)` sentences. However, we can narrow that down a LOT with some simple text searches.
@@ -53,7 +53,7 @@ Here, that results in `r nrow(text_all)` sentences. However, we can narrow that 
 Let's start with a fixed search term: "power analysis". We'll keep track of our iteratively developed search terms by naming the resulting table `text_#`. 
 
 ```{r}
-text_1 <- search_text(papers, pattern = "power analysis")
+text_1 <- text_search(papers, pattern = "power analysis")
 ```
 
 Here we have `r nrow(text_1)` results. We'll just show the paper id and text columns for the first 10 rows of the returned table, but the table also provides the section type, header, and section, paragraph, and sentence numbers (div, p, and s).
@@ -66,7 +66,7 @@ mytable(text_1[1:10,])
 We caught a lot of sentences with that term, but are probably missing a few. Let's try a more general fixed search term: "power".
 
 ```{r}
-text_2 <- search_text(papers, pattern = "power")
+text_2 <- text_search(papers, pattern = "power")
 ```
 
 Here we have `r nrow(text_2)` results. Inspect the first 100 rows to see if there are any false positives.
@@ -100,7 +100,7 @@ grepl(pattern, no, ignore.case = TRUE)
 ```
 
 ```{r}
-text_3 <- search_text(papers, pattern)
+text_3 <- text_search(papers, pattern)
 ```
 
 Here we have `r nrow(text_3)` results. Inspect them for false positives again. 
@@ -134,7 +134,7 @@ outliers <- count(text_3, id, sort = TRUE) |>
 mytable(outliers)
 ```
 
-It looks like a lot of this text is about alpha/beta/theta oscillations. We can pipe our results to another `search_text()` function to return only sentences that do not contain the strings "beta", "theta" or "oscillat" (we won't exclude "alpha" because specifying your critical alpha threshold is part is good reporting for a power analysis).
+It looks like a lot of this text is about alpha/beta/theta oscillations. We can pipe our results to another `text_search()` function to return only sentences that do not contain the strings "beta", "theta" or "oscillat" (we won't exclude "alpha" because specifying your critical alpha threshold is part is good reporting for a power analysis).
 
 ```{r}
 # exclude outlier paper from sample
@@ -143,9 +143,9 @@ papers <- papers[!to_exclude]
 
 text_4 <- papers |>
   # search for power sentences
-  search_text("(\\b|G*)power(ed)?\\b") |>
+  text_search("(\\b|G*)power(ed)?\\b") |>
   # exclude oscillations sentences
-  search_text("^(?!.*\\b(beta|theta|oscillat)).*", perl = TRUE)
+  text_search("^(?!.*\\b(beta|theta|oscillat)).*", perl = TRUE)
 ```
 
 
@@ -202,9 +202,9 @@ To validate a module, you need to write your search term into a module. See the 
 power0 <- function(paper) {
   table <- paper |>
     # search for power sentences
-    search_text("(\\b|G*)power(ed)?\\b") |>
+    text_search("(\\b|G*)power(ed)?\\b") |>
     # exclude oscillations sentences
-    search_text("^(?!.*\\b(beta|theta|osscil)).*", perl = TRUE)
+    text_search("^(?!.*\\b(beta|theta|osscil)).*", perl = TRUE)
   
   summary_table <- dplyr::count(table, id, name = "n_power")
   
@@ -327,8 +327,8 @@ Let's try a two-step process for finding sentences with the word power that also
 
 ```{r, eval = FALSE}
 table <- papers |>
-    search_text("(\\b|G*)power(ed)?\\b") |> 
-    search_text("(\\.[0-9]|[0-9]%)")
+    text_search("(\\b|G*)power(ed)?\\b") |> 
+    text_search("(\\.[0-9]|[0-9]%)")
 ```
 
 ```{r}

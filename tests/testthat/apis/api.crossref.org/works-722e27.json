@@ -1,0 +1,161 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 1067,
+        "items": [
+            {
+                "institution": [
+                    {
+                        "name": "Comprehensive R Archive Network",
+                        "acronym": [
+                            "CRAN"
+                        ]
+                    }
+                ],
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2026,
+                            3,
+                            12
+                        ]
+                    ],
+                    "date-time": "2026-03-12T15:35:37Z",
+                    "timestamp": 1773329737061,
+                    "version": "3.50.1"
+                },
+                "description": "Create datasets with factorial structure through simulation by specifying variable parameters. Extended documentation at <https://www.scienceverse.org/faux/>. Described in DeBruine (2020) <doi:10.5281/zenodo.2669586>.",
+                "reference-count": 2,
+                "publisher": "The R Foundation",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "content-updated": {
+                    "date-parts": [
+                        [
+                            2026,
+                            3,
+                            11
+                        ]
+                    ]
+                },
+                "published-print": {
+                    "date-parts": [
+                        [
+                            2020,
+                            8,
+                            19
+                        ]
+                    ]
+                },
+                "DOI": "10.32614/cran.package.faux",
+                "type": "dataset",
+                "created": {
+                    "date-parts": [
+                        [
+                            2024,
+                            6,
+                            12
+                        ]
+                    ],
+                    "date-time": "2024-06-12T07:16:41Z",
+                    "timestamp": 1718176601000
+                },
+                "source": "Crossref",
+                "is-referenced-by-count": 14,
+                "title": [
+                    "faux: Simulation for Factorial Designs"
+                ],
+                "prefix": "10.32614",
+                "author": [
+                    {
+                        "ORCID": "https://orcid.org/0000-0002-7523-5539",
+                        "authenticated-orcid": true,
+                        "given": "Lisa",
+                        "family": "DeBruine",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ]
+                    }
+                ],
+                "member": "17266",
+                "content-created": {
+                    "date-parts": [
+                        [
+                            2020,
+                            8,
+                            19
+                        ]
+                    ]
+                },
+                "reference": [
+                    {
+                        "key": "ref1",
+                        "doi-asserted-by": "publisher",
+                        "unstructured": "DeBruine L (2026). _faux: Simulation for Factorial Designs_. <doi:10.5281/zenodo.2669586>, R package version 1.2.4, <https://www.scienceverse.org/faux/>.",
+                        "DOI": "10.5281/zenodo.2669586"
+                    },
+                    {
+                        "key": "ref2",
+                        "doi-asserted-by": "publisher",
+                        "DOI": "10.6084/m9.figshare.5047666"
+                    }
+                ],
+                "container-title": [
+                    "CRAN: Contributed Packages"
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2026,
+                            3,
+                            12
+                        ]
+                    ],
+                    "date-time": "2026-03-12T02:15:37Z",
+                    "timestamp": 1773281737000
+                },
+                "score": 70.38829,
+                "resource": {
+                    "primary": {
+                        "URL": "https://CRAN.R-project.org/package=faux"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2020,
+                            8,
+                            19
+                        ]
+                    ]
+                },
+                "references-count": 2,
+                "URL": "https://doi.org/10.32614/cran.package.faux",
+                "published": {
+                    "date-parts": [
+                        [
+                            2020,
+                            8,
+                            19
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

@@ -20,7 +20,7 @@
 pvals2 <- function(paper, ...) {
   # detailed table of results ----
   pattern <- "\\bp-?(value)?\\s*[<>=≤≥]{1,2}\\s*(n\\.?s\\.?|\\d?\\.\\d+)(e-\\d+)?"
-  table <- search_text(paper, pattern, return = "match", "perl" = TRUE)
+  table <- text_search(paper, pattern, return = "match", "perl" = TRUE)
 
   # summary output for paperlists ----
   summary_table <- dplyr::count(table, id, name = "p_values")

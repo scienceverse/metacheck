@@ -213,7 +213,7 @@ function(req, res) {
     if (!is.null(mp$fixed)) search_params$fixed <- as.logical(mp$fixed)
     if (!is.null(mp$perl)) search_params$perl <- as.logical(mp$perl)
 
-    do.call(search_text, search_params)
+    do.call(text_search, search_params)
 }
 
 

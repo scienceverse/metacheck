@@ -4,7 +4,7 @@
 # if TRUE, skip slow tests and those that need external connections
 quick <- TRUE
 
-testthat::set_max_fails(1)
+testthat::set_max_fails(5)
 
 email("metacheck@scienceverse.org")
 
@@ -12,9 +12,9 @@ httptest2::.mockPaths(NULL)
 apis <- normalizePath("apis")
 httptest2::.mockPaths(apis)
 
-# grobid_url <- "http://localhost:8070"
-grobid_url <- "https://grobid.metacheck.app"
-grobid_url <- "https://grobidorg-grobid.hf.space/"
+grobid_url <- "http://localhost:8070"
+# grobid_url <- "https://grobid.metacheck.app"
+# grobid_url <- "https://grobidorg-grobid.hf.space/"
 bibr_url <- "https://platform.metacheck.app"
 
 # change fancy quotes to straight for text matching with crossref

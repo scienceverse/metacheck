@@ -20,7 +20,7 @@ aspredicted <- function(paper) {
   if (nrow(links) == 0) {
     table <- data.frame(id = character(0), text = character(0))
   } else {
-    table <- aspredicted_retrieve(links)
+    table <- aspredicted_info(links)
   }
 
   # summary_table ----
@@ -43,7 +43,7 @@ aspredicted <- function(paper) {
     )
     report <- summary_text
 
-    if (is_paper(paper) | length(paper) == 1) {
+    if (.is_paper(paper) | length(paper) == 1) {
       ss_text <- paste(">", unique(table$AP_sample_size)) |>
         paste(collapse = "\n\n")
 

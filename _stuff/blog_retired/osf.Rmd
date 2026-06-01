@@ -1,0 +1,322 @@
+---
+title: "Checking OSF Data Repositories"
+output: rmarkdown::html_vignette
+bibliography: refs_osf.bib
+freeze: true
+vignette: >
+  %\VignetteIndexEntry{Checking OSF Data Repositories}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup}
+#| include: false
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+# devtools::install_github("scienceverse/metacheck")
+library(metacheck)
+library(tidyverse)
+
+mytable <- function(tbl) {
+  knitr::kable(tbl)
+}
+```
+
+*In this blog post we will explain how metacheck can automatically check the content of data repositories that are linked to in a scientific manuscript, using some metacheck functions for exploring OSF repositories to create a custom module.*
+
+
+There is an increasing awareness of the importance of open science practices, and widespread support among scientists for open science practices, such as data and code sharing [@ferguson_survey_2023]. As data and code sharing is a relatively new practice, and many scientists lack training in open science, it is common to see badly documented data repositories. Best practices exist, such as the [TIER protocol](https://www.projecttier.org/tier-protocol/protocol-4-0/), but not all researchers might be aware of best practices.
+
+At a minimum a data repository should contain a README file with instructions for how to reproduce the results. If data is shared, it should be stored in a 'data' folder, or at least have the word 'data' in the filename. Code or scripts should similarly be shared in a folder with that name, or at least with the word in the filename. Finally, if data is shared, there should be a codebook or data dictionary that explains which variables are in the dataset in order to allow others to re-use the data. Although it is easy to forget to organize a data repository well, it is also easy to automatically check. Here we demonstrate how [metacheck](https://scienceverse.github.io/metacheck/) can check if a README is present, whether data and/or code are shared, and if there is a codebook.
+
+Ideally peer reviewers or editors would check the contents of a data repository. In practice, time constraints mean that no one actually checks what is in a data repository. Automation can perform some of the checks that peers might otherwise perform manually. We provide an illustration of some checks that could be performed. Specifically 1) is any data that is shared clearly labeled as such, 2) is code that is shared clearly labeled as such, 3) is there a README file that explains to potential users which files are shared, where they can be found in the repository, and how the can be used to reproduce any reported results, and 4) is there a codebook or data dictionary?
+
+## Checking an OSF repository with metacheck
+
+We will illustrate the process of checking a data repository by focusing on projects on the [Open Science Framework](www.osf.io). For this illustration we use an open access paper published in Psychological Science that has already been converted to a metacheck object using GROBID. There are 250 open access papers in the metacheck object `psychsci`; we will choose one for this example.
+
+```{r example-paper}
+# paper to use in this example
+paper <- psychsci[[250]]
+```
+
+### Set up OSF functions
+
+You can only make 100 API requests per hour, unless you authorise your requests, when you can make 10K requests per day. The OSF functions in metacheck often make several requests per URL to get all of the info, so it's worthwhile setting your PAT. You can authorise them by creating an OSF token at <https://osf.io/settings/tokens> and including the following line in your .Renviron file (which you can open using `usethis::edit_r_environ()`):
+
+```
+OSF_PAT="replace-with-your-token-string"
+```
+
+The OSF API server is down a lot, so it's often good to check it before you run a bunch of OSF functions, we provide the function `osf_api_check()` for this. When the server is down, it can take several seconds to return an error, so scripts where you are checking many URLs can take a long time before you realise they aren't working.
+
+```{r api-check}
+osf_api_check()
+```
+
+### Find OSF Links
+
+We start by searching for OSF URLs using the `osf_links()` function.
+
+```{r search_osf}
+links <- osf_links(paper)
+```
+
+```{r tbl-search_osf}
+#| echo: false
+
+links |>
+  select(href) |>
+  mytable()
+```
+
+### Retrieve Link Info
+
+If valid, the link is processed, and the OSF Application Programming Interface (API) is used to retrieve whether the link points to a file, project, or registration. This is achieved through the `osf_info()` function.
+
+This function can take a vector of OSF IDs or URLs, or a table that contains them. If the IDs aren't in the first column, you will need to specify the name of the column. The function will return your table with added information. (You can quiet the output messages with `verbose(FALSE)`.)
+
+The function `osf_info()` will also retrieve all child components, files and folders if you set the argument `recursive = TRUE`. If there are duplicate IDs, it will only get the contents for each item once. If you set the argument `find_project = TRUE`, it will also look up the parent project of any links (but this requires more API calls).
+
+```{r osf_info}
+info <- osf_info(links, 
+                 id_col = "href", 
+                 recursive = TRUE, 
+                 find_project = TRUE)
+```
+
+```{r tbl-osf_info}
+#| echo: false
+info |>
+  filter(!is.na(href)) |>
+  select(osf_id, name, osf_type, project) |>
+  mytable()
+```
+
+There are multiple OSF links in this paper, but they are all part of the same overarching OSF project, with the project ID *`r info$project[[1]]`*.
+
+### Summarize Contents
+
+The OSF allows you to categorize components by category, and we can also determine file types using extensions.
+
+```{r tbl-info}
+#| echo: false
+info |>
+  filter(kind == "file") |>
+  select(osf_id, name, filetype) |>
+  mytable()
+```
+
+We can then use this information to determine if, for each file, the information about the files contains text that makes it easy to determine what is being shared. A simple regular expression text search for 'README', 'codebook', 'script', and 'data' (in a number of possible ways that these words can be written) is used to automatically detect what is shared.
+
+```{r summarize_osf_files}
+osf_files_summary <- file_category(info)
+```
+
+```{r}
+#| echo: false
+osf_files_summary |>
+  filter(osf_type == "files", kind == "file") |>
+  select(name, filetype, file_category) |>
+  mytable()
+```
+
+### Report Text
+
+Finally, we print a report that communicates to the user - for example, a researcher preparing their manuscript for submission - whether there are suggestions to improve their data repository. We provide feedback about whether any of the four categories could be automatically detected, and if not, provide additional information about what would have made the automated tool recognize the files of interest. The output gives a detailed overview of the information it could not find, alongside a suggestion for how to learn more about best practices in this domain. If researchers use this metacheck module before submission, they can improve the quality of their data repository in case any information is missing. metacheck might miss data and code that is shared, but not clearly named, but by indicating this, users might realize that the data repository can be improved by more clearly naming folders and files.
+
+```{r osf_report-func}
+osf_report <- function(summary) {
+  files <- dplyr::filter(summary, osf_type == "files")
+  data <- dplyr::filter(files, file_category == "data") |> nrow()
+  code <- dplyr::filter(files, file_category == "code") |> nrow()
+  codebook <- dplyr::filter(files, file_category == "codebook") |> nrow()
+  readme <- dplyr::filter(files, file_category == "readme") |> nrow()
+  
+  traffic_light <- dplyr::case_when(
+    data == 0 & code == 0 & readme == 0 ~ "red",
+    data == 0 | code == 0 | readme == 0 ~ "yellow",
+    data > 0 & code > 0 & readme > 0 ~ "green"
+  )
+  
+  data_report <- dplyr::case_when(
+    data == 0 ~ "\u26A0\uFE0F There was no data detected. Are you sure you cannot share any of the underlying data? If you did share the data, consider naming the file(s) or file folder with 'data'.",
+    data > 0 ~ "\u2705 Data file(s) were detected. Great job making your research more transparent and reproducible!"
+  )
+  
+  codebook_report <- dplyr::case_when(
+    codebook == 0 ~ "\u26A0\uFE0F️ No codebooks or data dictionaries were found. Consider adding one to make it easier for others to know which variables you have collected, and how to re-use them. The codebook package in R can automate a substantial part of the generation of a codebook: https://rubenarslan.github.io/codebook/",
+    codebook > 0 ~ "\u2705 Codebook(s) were detected. Well done!"
+  )
+  
+  code_report <- dplyr::case_when(
+    code == 0 ~ "\u26A0\uFE0F️ No code files were found. Are you sure there is no code related to this manuscript? If you shared code, consider naming the file or file folder with 'code' or 'script'.",
+    code > 0 ~ "\u2705 Code file(s) were detected. Great job making it easier to  reproduce your results!"
+  )
+  
+  readme_report <- dplyr::case_when(
+    readme == 0 ~ "\u26A0\uFE0F No README files were identified. A read me is best practice to facilitate re-use. If you have a README, please name it explicitly (e.g., README.txt or _readme.pdf).",
+    readme > 0 ~ "\u2705 README detected. Great job making it easier to understand how to re-use files in your repository!"
+  )
+  
+  summary_text <- dplyr::case_when(
+    !0 %in% c(data, code, codebook, readme) ~"We found data, code, codebooks, and readmes!",
+    .default = "Something was missing."
+  )
+  
+  report_message <- paste(
+    summary_text, 
+    readme_report,
+    data_report, 
+    codebook_report,
+    code_report,
+    "Learn more about reproducible data practices: https://www.projecttier.org/tier-protocol/",
+    sep = "\n\n"
+  )
+
+  return(list(
+    summary_text = summary_text,
+    traffic_light = traffic_light,
+    report = report_message
+  ))
+}
+```
+
+```{r osf_report-results}
+#| results: 'asis'
+report <- osf_report(osf_files_summary) 
+
+# print the report into a file
+module_report(report) |> cat()
+```
+
+### Checking the Contents of files
+
+So far we have used metacheck to automatically check whether certain types of files exist. But it is also possible to automatically download files, examine their contents, and provide feedback to users. This can be useful to examine datasets (e.g., do files contain IP addresses or other personal information), or code files. We will illustrate the latter by automatically checking the content of R scripts stored on the OSF, in repositories that are linked to in a scientific manuscript.
+
+We can check R files for good coding practices that improve reproducibility. We have created a check that examines 1) whether all libraries are loaded in one block, instead of throughout the R script, 2) whether relative paths are used that will also work when someone runs the code on a different computer (e.g., `data <- read.csv(file='../data/data_study_1.csv')` ) instead of fixed paths (e.g., `data <- read.csv(file='C:/data/data_study_1.csv')` ), and 3) whether information is provided about the software used (i.e., the R version), the version of packages that were used, and properties of the computer that the analyses were performed on. In R, this can be achieved by:
+
+```{r sessioninfo}
+sessionInfo()
+```
+
+As most scientists have not been taught how to code explicitly, it is common to see scripts that do not adhere to best coding practices. We are no exception ourselves (e.g., you will not find a sessioninfo.txt file in our repositories). Although code might be reproducible even if it takes time to figure out which versions of an R package was used, which R version was used, and by changing fixed paths, reproducibility is facilitated if best practices are used. The whole point of automated checks is to have algorithms that capture expertise make recommendations that improve how we currently work.
+
+```{r check_r_files-func}
+check_r_files <- function(summary) {
+  r_files <- summary |>
+    dplyr::filter(osf_type == "files",
+                  grepl("\\.R(md)?", name, ignore.case = TRUE)) |>
+    dplyr::mutate(abs_report = NA, 
+                  pkg_report = NA,
+                  session_report = NA)
+  
+  report <- lapply(r_files$osf_id, \(id) {
+    report <- dplyr::filter(r_files, osf_id == !!id)
+    # Try downloading the R file
+    file_url <- paste0("https://osf.io/download/", id)
+    r_code <- tryCatch(
+      readLines(url(file_url), warn = FALSE),
+      error = function(e) return(NULL)
+    )
+    
+    if (is.null(r_code)) return("")
+    
+    # absolute paths
+    abs_path <- grep("[\"\']([A-Z]:|\\/|~)", r_code)
+    report$abs <- dplyr::case_when(
+      length(abs_path) == 0 ~ "\u2705 No absolute paths were detected",
+      length(abs_path) > 0 ~ paste("\u274C Absolute paths found at lines: ",
+                                   paste(abs_path, collapse = ", "))
+    )
+    
+    # package loading
+    pkg <- grep("\\b(library|require)\\(", r_code)
+    report$pkg<- dplyr::case_when(
+      length(pkg) == 0 ~ "\u26A0\uFE0F️ No packages are specified in this script.",
+      length(pkg) == 1 ~ "\u2705 Packages are loaded in a single block.",
+      all(diff(pkg) < 5) ~ "\u2705 Packages are loaded in a single block.",
+      .default = paste(
+        "\u274C Packages are loaded in multiple places: lines " ,
+        paste(pkg, collapse = ", ")
+      )
+    )
+    
+    # session info 
+    session <- grep("\\bsession_?[Ii]nfo\\(", r_code)
+    report$session <- dplyr::case_when(
+      length(session) == 0 ~ "\u274C️ No session info was found in this script.",
+      length(session) > 0 ~ paste(
+        "\u2705 Session info was found on line", 
+        paste(session, collapse = ", "))
+    )
+    
+    return(report)
+  }) |>
+    do.call(dplyr::bind_rows, args = _)
+  
+  return(report)
+}
+```
+
+```{r check_r_files}
+r_file_results <- check_r_files(osf_files_summary)
+```
+
+```{r tbl-check_r_files}
+#| echo: false
+
+r_file_results |>
+  tidyr::pivot_longer(cols = c(abs, pkg, session), 
+                      names_to = "report", values_to = "feedback") |>
+  dplyr::select(name, report, feedback) |>
+  mytable()
+```
+
+## Put it All Together
+
+Let's put everything together in one block of code, and perform all automated checks for another open access paper in Psychological Science.
+
+```{r together}
+# Add this and the custom functions to a file called osf_file_check.R
+
+osf_file_check <- function(paper) {
+  links <- osf_links(paper)
+  info <- osf_info(links, 
+                       id_col = "href", 
+                       recursive = TRUE)
+  osf_files_summary <- file_category(info)
+  report <- osf_report(osf_files_summary)
+  r_file_results <- check_r_files(osf_files_summary)  
+  
+  list(
+    traffic_light = report$traffic_light,
+    table = r_file_results,
+    report = report$report,
+    summary = osf_files_summary
+  )
+}
+```
+
+```{r module-results}
+paper <- psychsci$`0956797620955209`
+module_results <- module_run(paper, "osf_file_check.R")
+```
+
+```{r module-print}
+#| results: 'asis'
+
+module_report(module_results, header = 4) |> cat()
+```
+
+## Future Developments
+
+We have demonstrated a rather basic workflow that can automatically check files stored on the Open Science Framework, and all the checks demonstrated here can be made more accurate or complete. At the same time, even the current simple automatic checks might already facilitate re-use by including information (e.g., a README) and improving how files are named. There are many obvious ways to expand these automated checks. First, the example can be expanded to other commonly used data repositories, such as GitHub, Dataverse, etc. Second, the checks can be expanded beyond the properties that are automatically checked now. If you are an expert on code reproducibility or data re-use and would like to add checks, do reach out to us. Third, we can check for other types of files. For example, we are collaborating with Attila Simko who is interested in identifying the files required to [reproduce deep learning models in the medical imaging literature](https://arxiv.org/abs/2210.11146). We believe there will be many such field-dependent checks that can be automated, as the ability to automatically examine and/or retrieve files that are linked to in a paper should be useful for a large range of use-cases.
+
+**These examples were created using papercheck version `r utils::packageVersion("metacheck")`.**
+
+## References

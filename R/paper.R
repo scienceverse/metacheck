@@ -4,11 +4,12 @@
 #'
 #' @returns The schema as a list
 #' @export
+#' @keywords internal
 #'
 #' @examples
-#' schema <- paper_schema()
+#' schema <- .paper_schema()
 #' schema$`$defs`$info$required
-paper_schema <- function() {
+.paper_schema <- function() {
   json <- system.file("schema/paper.json", package = "metacheck")
   schema <- jsonlite::read_json(json, simplifyVector = TRUE)
 
@@ -40,7 +41,7 @@ paper <- function(id = NULL, ...) {
   )
   class(paper) <- c("scivrs_paper", "list")
 
-  schema <- paper_schema()
+  schema <- .paper_schema()
 
   for (tbl in setdiff(schema$required, "paper_id")) {
     ref <- schema$properties[[tbl]]$`$ref` %||%
@@ -54,7 +55,7 @@ paper <- function(id = NULL, ...) {
     }
   }
 
-  paper <- paper_coerce(paper)
+  paper <- .paper_coerce(paper)
 
   invisible(paper)
 }
@@ -80,13 +81,13 @@ paper <- function(id = NULL, ...) {
 paperlist <- function(..., merge_duplicates = FALSE) {
   dots <- list(...)
 
-  if (is_paper_list(dots)) {
+  if (.is_paper_list(dots)) {
     paperlist <- dots
   } else {
-    is_paper <- sapply(dots, inherits, "scivrs_paper")
-    dots[is_paper] <- lapply(dots[is_paper], list)
-    is_paperlist <- sapply(dots, is_paper_list)
-    if (all(is_paperlist)) {
+    .is_paper <- sapply(dots, inherits, "scivrs_paper")
+    dots[.is_paper] <- lapply(dots[.is_paper], list)
+    .is_paperlist <- sapply(dots, .is_paper_list)
+    if (all(.is_paperlist)) {
       paperlist <- do.call(c, dots)
     } else {
       print(dots)
@@ -131,14 +132,15 @@ paperlist <- function(..., merge_duplicates = FALSE) {
 test_paper <- function(text = LETTERS, url = character(0)) {
   p <- paper()
 
-  p$text <- data.frame(
+  p$text <- dplyr::tibble(
     text_id = seq_along(text),
     section_id = 0,
     paragraph_id = 0,
-    text = as.character(text)
+    text = as.character(text),
+    formatted = as.character(text)
   )
 
-  p$section <- data.frame(
+  p$section <- dplyr::tibble(
     section_id = 0,
     header = "Test",
     parent_section_id = NA_integer_,
@@ -146,15 +148,15 @@ test_paper <- function(text = LETTERS, url = character(0)) {
     classification_score = 0
   )
 
-  p$info <- data.frame(
+  p$info <- dplyr::tibble(
     title = "Test Paper",
     file_hash = p$paper_id,
     input_format = "test"
   )
 
-  p$url <- data.frame(
+  p$url <- dplyr::tibble(
     href = url,
-    link_text = rep(NA_character_, length(url)),
+    link_text = NA_character_,
     text_id = seq_along(url)
   )
 
@@ -180,7 +182,7 @@ test_paper <- function(text = LETTERS, url = character(0)) {
 #' paper <- demopaper()
 #' paper_validate(paper)
 paper_validate <- function(paper) {
-  schema <- paper_schema()
+  schema <- .paper_schema()
   error_msg <- c()
   warning_msg <- c()
 
@@ -266,7 +268,7 @@ paper_validate <- function(paper) {
     stop(paste(error_msg, collapse = "\n"))
   }
 
-  # paper_check <- paper_coerce(paper)
+  # paper_check <- .paper_coerce(paper)
   # identical(paper, paper_check)
 
   return(TRUE)
@@ -281,14 +283,15 @@ paper_validate <- function(paper) {
 #'
 #' @returns a paper object
 #' @export
-paper_coerce <- function(paper) {
-  if (is_paper_list(paper)) {
-    papers <- lapply(paper, paper_coerce) |>
+#' @keywords internal
+.paper_coerce <- function(paper) {
+  if (.is_paper_list(paper)) {
+    papers <- lapply(paper, .paper_coerce) |>
       paperlist()
     return(papers)
   }
 
-  schema <- paper_schema()
+  schema <- .paper_schema()
 
   type_func <- list(
     "string" = as.character,
@@ -323,7 +326,7 @@ paper_coerce <- function(paper) {
         paper[[tbl]][[col]] <- tryCatch(
           type_func[[schema_type]](paper[[tbl]][[col]]),
           error = \(e) {
-            logger(label = "paper_coerce",
+            logger(label = ".paper_coerce",
                    list(table = tbl,
                         column = col,
                         error = e$message)
@@ -343,7 +346,7 @@ paper_coerce <- function(paper) {
             example <- orig[[convert_problems[1]]]
             if (length(example) == 0) example <- ""
 
-            logger(label = "paper_coerce",
+            logger(label = ".paper_coerce",
                    list(paper_id = paper$paper_id,
                         table = tbl,
                         column = col,
@@ -378,13 +381,13 @@ paper_coerce <- function(paper) {
 #' @returns logical
 #' @export
 #' @keywords internal
-is_paper <- function(paper) {
+.is_paper <- function(paper) {
   if (!is.list(paper)) {
     return(FALSE)
   }
-  is_paper <- inherits(paper, "scivrs_paper")
+  .is_paper <- inherits(paper, "scivrs_paper")
 
-  return(is_paper)
+  return(.is_paper)
 }
 
 #' Detect a list of paper objects
@@ -394,13 +397,13 @@ is_paper <- function(paper) {
 #' @returns logical
 #' @export
 #' @keywords internal
-is_paper_list <- function(paper) {
+.is_paper_list <- function(paper) {
   if (!is.list(paper)) {
     return(FALSE)
   }
 
-  is_paper <- sapply(paper, inherits, what = "scivrs_paper")
-  if (all(is_paper)) {
+  .is_paper <- sapply(paper, inherits, what = "scivrs_paper")
+  if (all(.is_paper)) {
     return(TRUE)
   }
 
@@ -468,7 +471,7 @@ demopaper <- function() {
   file_path <- system.file("demos/to_err_is_human.json",
                            package = "metacheck")
 
-  read_bibr(file_path)
+  .read_bibr(file_path)
 }
 
 #' Get a demo file
@@ -507,8 +510,8 @@ demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd")) {
 #' biblio <- paper_table(psychsci[1:10], "bib")
 #' xrefs <- paper_table(psychsci[1:10], "xref")
 paper_table <- function(paper, table, cols = NULL) {
-  if (!is_paper_list(paper)) {
-    if (!is_paper(paper)) stop("paper must be a paper or paperlist object.")
+  if (!.is_paper_list(paper)) {
+    if (!.is_paper(paper)) stop("paper must be a paper or paperlist object.")
     paper <- list(paper)
   }
 
@@ -536,13 +539,13 @@ paper_table <- function(paper, table, cols = NULL) {
 #'
 #' @param paper a paper or paperlist
 #'
-#' @returns a table with paper_id column
+#' @returns a vector of paper_ids
 #' @export
 #'
 #' @examples
 #' paper_id(psychsci)
 paper_id <- function(paper) {
-  paper_table(paper, "info", "paper_id")
+  paper_table(paper, "info", "paper_id")$paper_id
 }
 
 #' Reference and DOI table
@@ -602,7 +605,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
   save_path <- normalizePath(save_path)
   dir.create(save_path, showWarnings = FALSE, recursive = TRUE)
 
-  if (is_paper_list(paper)) {
+  if (.is_paper_list(paper)) {
     if (is.null(file_name)) file_name <- names(paper)
     pb <- pb(length(paper), ":what [:bar] :current/:total")
     pb$tick(0, list(what = "Saving..."))
@@ -612,7 +615,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
       jp
     }, paper, file_name, save_path)
 
-    return(json_paths)
+    return(invisible(json_paths))
   }
 
   if (is.null(file_name)) file_name <- paper$paper_id
@@ -625,7 +628,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
                        auto_unbox = TRUE,
                        pretty = TRUE)
 
-  return(json_path)
+  invisible(json_path)
 }
 
 

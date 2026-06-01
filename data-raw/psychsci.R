@@ -4,7 +4,7 @@
 pdf <- "data-raw/psychsci/pdf"
 files <- list.files(pdf, full.names = T)
 bibr <- "data-raw/psychsci/bibr"
-file_paths <- convert_bibr(files[1], bibr, backend = "scivrs")
+file_paths <- convert(files[1:10], bibr)
 
 psychsci <- read(bibr, include_images = FALSE)
 
@@ -31,7 +31,7 @@ convert_grobid(file_path[199:250], save_path, api_url)
 # # grobid to bibr ----
 grobid <- "data-raw/psychsci/grobid_0.9.0-crf"
 xml_file <- list.files(grobid, full.names = T)
-save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-crf2"
+save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-crf3"
 dir.create(save_path, showWarnings = FALSE)
 json_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
 psychsci <- read(save_path)
@@ -41,15 +41,14 @@ for ( i in 1:250) {
 }
 paper_write(psychsci, paste0(save_path, "/", names(psychsci)))
 
-# fix names
-names <- list.files(grobid) |> gsub("\\.xml", "", x = _)
-names(psychsci) <- names
-for (n in names) psychsci[[n]]$paper_id <- n
-
-all(sapply(psychsci, paper_validate))
-
-
-psychsci <- add_bib_match(psychsci)
+# # fix names
+# names <- list.files(grobid) |> gsub("\\.xml", "", x = _)
+# names(psychsci) <- names
+# for (n in names) psychsci[[n]]$paper_id <- n
+#
+# all(sapply(psychsci, paper_validate))
+#
+# psychsci <- add_bib_match(psychsci)
 
 usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
 
@@ -59,10 +58,10 @@ usethis::use_data(psychsci, overwrite = TRUE, compress = "xz")
 psychsci_full <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-full")
 psychsci_crf <- read("data-raw/psychsci/bibr_from_grobid_0.9.0-crf")
 
-abs_f <- search_text(psychsci_full) |>
+abs_f <- text_search(psychsci_full) |>
   dplyr::filter(section_type == "abstract") |>
   dplyr::select(paper_id, text, text_id)
-abs_c <- search_text(psychsci_crf) |>
+abs_c <- text_search(psychsci_crf) |>
   dplyr::filter(section_type == "abstract") |>
   dplyr::select(paper_id, text, text_id)
 

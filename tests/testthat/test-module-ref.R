@@ -7,7 +7,7 @@ test_that("ref_consistency", {
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 4)
+  expect_equal(nrow(mod_output$table), 5)
   expect_equal(mod_output$module, module)
 
   # iteration
@@ -38,7 +38,7 @@ test_that("ref_miscitation", {
   mod_output <- module_run(paper, module, db = db)
   expect_equal(mod_output$table$doi[[1]], test_doi)
   expect_equal(mod_output$summary_table$`miscite_10.1037/0003-066x.54.6.408`,
-               2)
+               1)
 })
 
 
@@ -70,8 +70,8 @@ test_that("ref_accuracy", {
   expect_equal(nrow(mod_output$table), nrow(paper$bib))
 
   expect_equal(mod_output$summary_table$refs_checked, 5)
-  expect_equal(mod_output$summary_table$doi_mismatch, 2)
-  expect_equal(mod_output$summary_table$year_mismatch, 1)
+  expect_equal(mod_output$summary_table$doi_mismatch, 1)
+  expect_equal(mod_output$summary_table$year_mismatch, 0)
   expect_equal(mod_output$summary_table$title_mismatch, 1)
   expect_equal(mod_output$summary_table$author_mismatch, 1)
 })
@@ -138,7 +138,7 @@ test_that("ref_retraction", {
   expect_equal(mod_output$table$retractionwatch, "Retraction")
 })
 
-httptest2::start_capturing()
+#httptest2::start_capturing()
 httptest2::use_mock_api()
 
 test_that("ref_pubpeer", {

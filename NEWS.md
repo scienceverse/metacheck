@@ -1,9 +1,45 @@
+# metacheck 0.0.0.9106
+
+* Added functions from svutils back in. 
+* Reorganised some ML read-in functions (internal).
+* Ollama further support in `llm()` and vignette.
+* The code_check module handles local file with the argument `local_path`
+* New `local_files()` function
+
+# metacheck 0.0.0.9105
+
+* Much less buggy `.grobid_to_bibr()` conversion, handling URLs in text, xrefs, url, and eq tables better.
+* `extract_equations()` renamed to `extract_eq()` and now extracts degrees of freedom (df column)
+* Improvements to `.tei_text()` to fix common problems with grobid handling of equations (e.g., "")
+* Corresponding paper schema changes
+* Updated `psychsci` and `demopaper()` and `demofile()` for new schema and read
+
+# metacheck 0.0.0.9104
+
+* Updated `file_types` to fix a bug that prepended X to all extensions starting with a number.
+* `paper_id()` now returns a vector, not a table, fixing modules that used it that way
+* `read()` no longer errors when reading an empty directory, just messages and returns an empty paperlist
+* `read()` only reads in the .json version if a .json and .xml file with the same name exist
+* `read()` has a new argument `recursive` (default FALSE) to recursively read a directory. This does not handle it well if individual files have the same paper_id, so don't do that.
+
+
+# metacheck 0.0.0.9103
+
+* converting grobid xml to bibr json now saves the file after each conversion, instead of at the end, making it better for large batches (although slightly less efficient by potentially duplicating crossref lookups shared between papers)
+* `convert()` has new arguments `crossref_lookup` (default FALSE) and `keep_xml` (default TRUE). It also saves XML and/or JSON files as they are converted, rather than at the end, in case of breaking failure. 
+* Updated the "open_practices" module, which is much faster than the ODDPub version of this module (about 40x faster), also returns open materials and registrations, and has a lower false negative rate, but also a higher false positive rate. This removes the oddpub dependency.
+* Restructured file names (not function names) for functions so all archive helper (e.g., osf, github, zenodo) start with "archive-" and database helpers (e.g., pubpeer, retractionwatch) start with "db-".
+* Restructured text functions to start with text_, so `search_text()` is now `text_search()` and `expand_text()` is now `text_expand()`. The old names will exist as aliases. 
+* Internal functions now prefaced with . to make it clearer for developers.
+* All `{archive}_retrieve()` functions now renamed to `{archive}_info()` and the old `{archive}_info()` internal functions are now `.{archive}_info()`
+
 # metacheck 0.0.0.9102
 
 * Shiny app improvements: you can now view HTML reports in the browser
 * Fixes the "prereg_check" module to address an error when there are more than 10 OSF registrations in a batch that caused unmergable data frames.
 * Fixes the "code_check" module to address an error when checking multiple files that have no repositories with code.
 * The module "code_check" now has an argument "file_limit" to control how many code files per repo are downloaded and processed. The default is 20.
+* Fixed a problem where invisible figures in grobid would mess up the text section ids
 
 # metacheck 0.0.0.9101
 

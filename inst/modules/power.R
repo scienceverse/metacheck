@@ -56,9 +56,9 @@ power <- function(paper, seed = 8675309) {
 
   # search for paragraphs with "power" and at least one power word
   potential_power <- paper |>
-    search_text(power_pattern, return = "paragraph") |>
-    search_text(power_words, return = "paragraph") |>
-    search_text(numeric_pattern, return = "paragraph", perl = TRUE)
+    text_search(power_pattern, return = "paragraph") |>
+    text_search(power_words, return = "paragraph") |>
+    text_search(numeric_pattern, return = "paragraph", perl = TRUE)
 
 
   # classify paragraphs ----
@@ -92,6 +92,13 @@ power <- function(paper, seed = 8675309) {
       params = list(seed = seed)
     )
 
+    # set up report text
+    llm_model_used <- attr(llm_results, "llm")$model
+    report_text <- sprintf("We used the LLM model '%s' to check the contents of %d paragraph%s that contained words suggesting they might contain power analyses.",
+                           llm_model_used,
+                           nrow(potential_power),
+                           plural(nrow(potential_power)))
+
     table <- llm_results |>
       json_expand(suffix = c("", ".power")) |>
       dplyr::rowwise() |>
@@ -100,6 +107,8 @@ power <- function(paper, seed = 8675309) {
 
     if ("power_type" %in% names(table)) {
       table <- dplyr::filter(table, power_type != "none")
+    } else {
+      table$power_type <- "unknown"
     }
 
     # check for NAs in LLM columns
@@ -112,16 +121,19 @@ power <- function(paper, seed = 8675309) {
     } else if (!any(has_na)) {
       # LLM found only complete power analyses
       tl <- "green"
-      report_text <- "All essential information could be detected."
+      report_text <- c(report_text, "All essential information could be detected.")
     } else {
       # LLM found incomplete power analyses
       tl <- "red"
 
       cols_with_na <- names(has_na)[has_na]
 
-      report_text <- sprintf(
-        "Some essential information could not be detected: %s",
-        paste(cols_with_na, collapse = ", ")
+      report_text <- c(
+        report_text,
+        sprintf(
+          "Some essential information could not be detected: %s",
+          paste(cols_with_na, collapse = ", ")
+        )
       )
     }
   } else if (nrow(potential_power) > 0) {
@@ -166,7 +178,7 @@ power <- function(paper, seed = 8675309) {
     summary_text <- "No power analyses were detected."
     report <- c(summary_text, collapse_section(guidance))
 
-    summary_table <- paper_id(paper)
+    summary_table <- data.frame(paper_id = paper_id(paper))
     summary_table$power_n <- 0
     summary_table$power_complete <- NA_integer_
   } else {

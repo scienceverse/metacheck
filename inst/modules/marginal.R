@@ -18,7 +18,7 @@
 marginal <- function(paper) {
   # table ----
   pattern <- "margin\\w* (?:\\w+\\s+){0,5}significan\\w*|trend\\w* (?:\\w+\\s+){0,1}significan\\w*|almost (?:\\w+\\s+){0,2}significan\\w*|approach\\w* (?:\\w+\\s+){0,2}significan\\w*|border\\w* (?:\\w+\\s+){0,2}significan\\w*|close to (?:\\w+\\s+){0,2}significan\\w*"
-  table <- search_text(paper, pattern)
+  table <- text_search(paper, pattern)
 
   # summary_table ----
   summary_table <- dplyr::count(table, paper_id, name = "marginal")

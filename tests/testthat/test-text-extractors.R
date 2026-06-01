@@ -112,11 +112,11 @@ test_that("extract_p_values", {
 })
 
 
-test_that("extract_equations", {
-  expect_true(is.function(metacheck::extract_equations))
-  expect_no_error(helplist <- help(extract_equations, metacheck))
+test_that("extract_eq", {
+  expect_true(is.function(metacheck::extract_eq))
+  expect_no_error(helplist <- help(extract_eq, metacheck))
 
-  expect_error(extract_equations(bad_arg))
+  expect_error(extract_eq(bad_arg))
 
   paper <- test_paper(c(
     "t(10) = 2.23, p = 0.005.",
@@ -125,26 +125,56 @@ test_that("extract_equations", {
     "p-value >= 0.2",
     "2 = p"
   ))
-  eq <- extract_equations(paper)
+  eq <- extract_eq(paper)
 
   exp <- dplyr::tribble(
-    ~text_id, ~grp_id, ~lhs,         ~comp, ~rhs,
-    1,        1,       "t(10)",      "=",   "2.23",
-    1,        1,       "p",          "=",   "0.005",
-    2,        2,       "F(1, 23)",   "=",   "9.23",
-    2,        2,       "p",          "=",   ".023",
-    3,        3,       "peta",       "=",   "2.3",
-    3,        3,       "p",          ">",   ".05",
-    3,        3,       "95% CI",     "=",   "[2, 4]",
-    4,        4,       "p-value",    ">=",  "0.2"
+    ~text_id, ~grp_id, ~lhs,         ~df,   ~comp, ~rhs,
+    1,        1,       "t",      "(10)",     "=",   "2.23",
+    1,        1,       "p",          NA,     "=",   "0.005",
+    2,        2,       "F",   "(1, 23)",     "=",   "9.23",
+    2,        2,       "p",          NA,     "=",   ".023",
+    3,        3,       "peta",       NA,     "=",   "2.3",
+    3,        3,       "p",          NA,     ">",   ".05",
+    3,        3,       "95% CI",     NA,     "=",   "[2, 4]",
+    4,        4,       "p-value",    NA,     ">=",  "0.2"
   )
   exp$paper_id <- paper$paper_id
 
   expect_equal(eq, exp)
 })
 
+test_that("extract_eq complex", {
+  paper <- test_paper("A Mantel-Cox log rank test indicated that the difference between conditions was significant, Mantel-Cox χ2 (1, N = 60) = 6.99, p = .008, with children waiting less in the unaware condition (M = 307.10 s, nonparametric bootstrapped 95% CI = [207.69, 406.51]) than in the unaware/additional rewards condition (M = 529.73 s, nonparametric bootstrapped 95% CI = [408.56, 650.91]).")
+  eq <- extract_eq(paper)
 
-test_that("bibr vs extract_equations", {
+  expect_equal(eq$lhs[[1]], "χ2")
+  expect_equal(eq$df[[1]], "(1, N = 60)")
+
+  # no stats
+  paper <- test_paper("No stats.")
+  eq <- extract_eq(paper)
+  expect_equal(nrow(eq), 0)
+  expect_setequal(names(eq), c("text_id", "grp_id", "lhs", "df", "comp", "rhs", "paper_id"))
+
+  # no df
+  paper <- test_paper("Stats are t = 2.4.")
+  eq <- extract_eq(paper)
+  expect_equal(eq$df, NA_character_)
+
+  # all eq
+  skip_if_quick()
+  #eq <- paper_table(psychsci, "eq")
+  eq <- extract_eq(psychsci)
+  lhs <- dplyr::count(eq, lhs, sort = TRUE)
+  num_lhs <- dplyr::filter(eq, grepl("^[0-9]$", lhs)) |>
+    expand_text(psychsci) |>
+    dplyr::rename(text = expanded) |>
+    text_search(".{10}\\d = [0-9\\.-].{10}", return = "match")
+  expect_equal(nrow(num_lhs), 0)
+})
+
+
+test_that("bibr vs extract_eq", {
   skip("Failures expected")
 
   eq_bibr <- paper_table(psychsci, "eq")
@@ -153,7 +183,7 @@ test_that("bibr vs extract_equations", {
   eq_bibr$bibr <- TRUE
   eq_bibr$eq_type <- NULL
 
-  eq_mc <- extract_equations(psychsci)
+  eq_mc <- extract_eq(psychsci)
   eq_mc$grp_id <- NULL
   eq_mc$eq_type <- NULL
   eq_mc$mc <- TRUE

@@ -116,7 +116,7 @@ All instances of uppercase P are not p-values.
 ```{r}
 all_p$table |>
   filter(grepl("P", text)) |>
-  expand_text(psychsci) |>
+  text_expand(psychsci) |>
   pull(expanded) |>
   unique()
 ```
@@ -177,7 +177,7 @@ https://github.com/scienceverse/metacheck/issues/24
 
 ```{r}
 pattern <- "\\b\\w+\\s+p(-| )?values?\\s+.{1,20}\\s+[0-9\\.]+"
-ptext <- search_text(psychsci, pattern, return = "match")
+ptext <- text_search(psychsci, pattern, return = "match")
   
 
 dplyr::count(ptext, text, sort = TRUE)

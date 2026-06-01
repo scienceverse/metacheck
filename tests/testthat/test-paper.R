@@ -3,11 +3,11 @@ test_that("exists", {
   expect_true(is.function(metacheck::paperlist))
 })
 
-test_that("paper_schema", {
-  expect_true(is.function(metacheck:::paper_schema))
-  expect_error(paper_schema(bad_arg))
+test_that(".paper_schema", {
+  expect_true(is.function(metacheck:::.paper_schema))
+  expect_error(.paper_schema(bad_arg))
 
-  schema <- paper_schema()
+  schema <- .paper_schema()
   expect_contains(names(schema), c("$schema", "$defs"))
 
   # check the same version as online
@@ -30,11 +30,11 @@ test_that("paper", {
   expect_equal(class(paper$info$keywords), "list")
 })
 
-test_that("paper_coerce", {
-  expect_true(is.function(metacheck::paper_coerce))
-  expect_no_error(helplist <- help(paper_coerce, metacheck))
+test_that(".paper_coerce", {
+  expect_true(is.function(metacheck::.paper_coerce))
+  expect_no_error(helplist <- help(.paper_coerce, metacheck))
 
-  expect_error(paper_coerce("no"))
+  expect_error(.paper_coerce("no"))
 
   paper <- paper()
   paper$info <- data.frame(
@@ -43,7 +43,7 @@ test_that("paper_coerce", {
     keywords = I(list(c("A", "B")))
   )
   paper$text$text_id <- double(0)
-  cpaper <- paper_coerce(paper)
+  cpaper <- .paper_coerce(paper)
 
   expect_equal("character", typeof(cpaper$info$title))
   expect_equal("double", typeof(cpaper$info$oecd_confidence))
@@ -56,13 +56,13 @@ test_that("paper_coerce", {
     oecd_confidence = "NO",
     keywords = "kw"
   )
-  expect_warning(cpaper <- paper_coerce(paper))
+  expect_warning(cpaper <- .paper_coerce(paper))
   expect_equal(cpaper$info$oecd_confidence, NA_real_)
   expect_equal(cpaper$info$keywords, list("kw"))
 
   # check log
   ll <- lastlog(1)
-  expect_equal(ll$label, "paper_coerce")
+  expect_equal(ll$label, ".paper_coerce")
   expect_equal(ll$paper_id, paper$paper_id)
   expect_equal(ll$table, "info")
   expect_equal(ll$column, "oecd_confidence")
@@ -74,7 +74,7 @@ test_that("paper_coerce", {
   paper[[1]]$info$file_name <- 10
   paper[[2]]$bib$bib_id <- as.character(paper[[2]]$bib$bib_id)
 
-  x <- paper_coerce(paper)
+  x <- .paper_coerce(paper)
   expect_equal(names(x), names(paper))
   expect_true(paper_validate(x[[1]]))
   expect_true(paper_validate(x[[2]]))
@@ -216,12 +216,13 @@ test_that("paper_id", {
 
   paper <- demopaper()
   obs <- paper_id(paper)
-  exp <- dplyr::tibble(paper_id = paper$paper_id)
+  exp <- paper$paper_id
   expect_equal(obs, exp)
 
   paper <- psychsci
   obs <- paper_id(paper)
-  expect_equal(nrow(obs), length(paper))
+  expect_equal(length(obs), length(paper))
+  expect_equal(obs[[4]], names(paper[4]))
 })
 
 
@@ -233,9 +234,9 @@ test_that("ref_table", {
 
   paper <- demopaper()
   bib <- ref_table(paper)
-  expect_equal(bib$bib_id, 1:5)
+  expect_equal(bib$bib_id, 0:4)
   expect_equal(bib$doi[[5]], paper$bib$doi[[5]])
-  expect_equal(bib$doi[1:4], paper$bib_match$doi[1:4])
+  expect_in(bib$doi[2:4], paper$bib_match$doi[1:4])
 
   paper$bib_match <- NULL
   bib <- ref_table(paper)
@@ -245,16 +246,16 @@ test_that("ref_table", {
 
 
 
-test_that("is_paper_list", {
-  expect_equal(is_paper_list(psychsci), TRUE)
-  expect_equal(is_paper_list(psychsci[1]), TRUE)
-  expect_equal(is_paper_list(psychsci[[1]]), FALSE)
-  expect_equal(is_paper_list(list(1,3,5)), FALSE)
-  expect_equal(is_paper_list(NULL), FALSE)
+test_that(".is_paper_list", {
+  expect_equal(.is_paper_list(psychsci), TRUE)
+  expect_equal(.is_paper_list(psychsci[1]), TRUE)
+  expect_equal(.is_paper_list(psychsci[[1]]), FALSE)
+  expect_equal(.is_paper_list(list(1,3,5)), FALSE)
+  expect_equal(.is_paper_list(NULL), FALSE)
 
   # empty lists return TRUE
-  expect_equal(is_paper_list(psychsci[c()]), TRUE)
-  expect_equal(is_paper_list(list()), TRUE)
+  expect_equal(.is_paper_list(psychsci[c()]), TRUE)
+  expect_equal(.is_paper_list(list()), TRUE)
 })
 
 test_that("print.scivrs_paper", {

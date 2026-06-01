@@ -36,7 +36,7 @@ articles:
     contents:
         - articles/intro
         - articles/jars
-        - articles/osf
+        # - articles/osf
         - articles/aspredicted
   - title: "Articles"
     contents:
@@ -47,6 +47,7 @@ articles:
         - creating_modules
         # - articles/validate
         - articles/github
+        - articles/ollama
 
 reference:
 - title: Reading in Papers
@@ -63,15 +64,13 @@ reference:
   - '`psychsci`'
   - '`test_paper`'
   - '`paper_id`'
-  - '`paper_coerce`'
-  - '`paper_schema`'
   - '`paper_write`'
   - '`paper_validate`'
 - title: Search Papers
   desc: ~
   contents:
-  - '`search_text`'
-  - '`expand_text`'
+  - '`text_search`'
+  - '`text_expand`'
   - '`paper_table`'
   - '`ref_table`'
 - title: Module Functions
@@ -132,20 +131,19 @@ reference:
 - title: OSF Functions
   desc: ~
   contents:
+  - '`osf_links`'
+  - '`osf_info`'
+  - '`osf_file_download`'
   - '`osf_api_calls`'
   - '`osf_api_check`'
   - '`osf_check_id`'
   - '`osf_delay`'
-  - '`osf_file_download`'
   - '`osf_get_all_pages`'
-  - '`osf_links`'
-  - '`osf_preprint_list`'
-  - '`osf_retrieve`'
   - '`osf_type`'
+  - '`osf_preprint_list`'
 - title: GitHub Functions
   desc: ~
   contents:
-  - '`github_config`'
   - '`github_links`'
   - '`github_repo`'
   - '`github_info`'
@@ -156,9 +154,13 @@ reference:
   desc: ~
   contents:
   - '`aspredicted_links`'
-  - '`aspredicted_retrieve`'
+  - '`aspredicted_info`'
   - '`rbox_links`'
-  - '`rbox_retrieve`'
+  - '`rbox_info`'
+  - '`rbox_file_download`'
+  - '`zenodo_links`'
+  - '`zenodo_info`'
+  - '`zenodo_file_download`'
 - title: Integrations
   desc: ~
   contents:
@@ -174,7 +176,7 @@ reference:
 - title: Extras
   desc: ~
   contents:
-  - '`extract_equations`'
+  - '`extract_eq`'
   - '`extract_p_values`'
   - '`extract_urls`'
   - '`stats`'

@@ -194,7 +194,7 @@ paper = read(xml_file)
 
 ```{r llm-paper, eval=FALSE}
 
-intro_text <- search_text(paper, section = "intro", return = "section")
+intro_text <- text_search(paper, section = "intro", return = "section")
 
 
 classification_prompt <- 'Based on this introduction, classify the study type. Only output pure JSON. Any NON JSON output counts as catastrophic failure. If no type is identified, set type as "FALSE" 
@@ -423,7 +423,7 @@ paper = read(xml_file)
 
 ```{r llm-advanced, eval=FALSE}
 
-intro_text <- search_text(paper, section = "intro", return = "section")
+intro_text <- text_search(paper, section = "intro", return = "section")
 
 
 classification_prompt <- 'Based on this introduction, classify the study type. Only output pure JSON. Any NON JSON output counts as catastrophic failure. If no type is identified, set type as "FALSE" 
@@ -480,8 +480,7 @@ comparison <- data.frame(
     "8GB+ (v)RAM recommended",
     "No (after download)",
     "Moderate (install + config)"
-  ),
-  stringsAsFactors = FALSE
+  )
 )
 
 knitr::kable(comparison, caption = "Groq vs Ollama Comparison")
@@ -652,8 +651,7 @@ log_llm_result <- function(result, log_file = "llm_log.csv") {
     max_tokens = if(!is.null(metadata$max_tokens)) metadata$max_tokens else NA,
     top_p = if(!is.null(metadata$top_p)) metadata$top_p else NA,
     error = if("error" %in% names(result)) result$error else FALSE,
-    error_msg = if("error_msg" %in% names(result)) result$error_msg else NA,
-    stringsAsFactors = FALSE
+    error_msg = if("error_msg" %in% names(result)) result$error_msg else NA
   )
   
   # Append to file (create if doesn't exist)
@@ -678,7 +676,7 @@ result <- llm(
 
 # Additional prompt that can be logged
 
-intro_text <- search_text(paper, section = "intro", return = "section")
+intro_text <- text_search(paper, section = "intro", return = "section")
 
 classification_prompt <- 'Based on this introduction, classify the study type. Only output pure JSON. Any NON JSON output counts as catastrophic failure. If no type is identified, set type as "FALSE" 
 Return JSON:
@@ -701,7 +699,7 @@ log_llm_result(result2)
 ```{r view-logs}
 # Read and analyze your logs
 if (file.exists("llm_log.csv")) {
-  logs <- read.csv("llm_log.csv", stringsAsFactors = FALSE)
+  logs <- read.csv("llm_log.csv")
   
   cat("Total queries logged:", nrow(logs), "\n")
   cat("Models used:", paste(unique(logs$model), collapse = ", "), "\n")

@@ -4,18 +4,16 @@
 \alias{llm_use}
 \title{Set or get metacheck LLM use}
 \usage{
-llm_use(llm_use = NULL, API_KEY = Sys.getenv("GROQ_API_KEY"))
+llm_use(llm_use = NULL)
 }
 \arguments{
 \item{llm_use}{if logical, sets whether to use LLMs}
-
-\item{API_KEY}{your API key for the LLM}
 }
 \value{
 the current option value (logical)
 }
 \description{
-Mainly for use in optional LLM workflows in modules, also checks if the GROQ API key is set and returns false if it isn't.
+Mainly for use in optional LLM workflows in modules
 }
 \examples{
 if (llm_use()) {

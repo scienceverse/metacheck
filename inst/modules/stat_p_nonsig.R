@@ -36,7 +36,7 @@ stat_p_nonsig <- function(paper) {
   table <- subset(table, significance == "nonsignificant")
 
   # Expand the sentences so the full sentence can be seen
-  table <- expand_text(
+  table <- text_expand(
     table,
     paper,
     expand_to = c("sentence")

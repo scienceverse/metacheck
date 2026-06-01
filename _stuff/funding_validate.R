@@ -13,6 +13,6 @@ pattern_fund <- c(
 )
 
 fund_text <- psychsci |>
-  search_text(pattern_fund)
+  text_search(pattern_fund)
 
 readr::write_csv(fund_text, "_stuff/fund_text.csv")

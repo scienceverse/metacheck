@@ -34,7 +34,7 @@ a data frame of results
 }
 \description{
 Ask a large language model (LLM) any question you want about a vector of
-text or the text from a search_text(). When \code{type} is provided, uses
+text or the text from a text_search(). When \code{type} is provided, uses
 ellmer's structured output API to guarantee output conforming to the type
 spec; otherwise returns free-text responses in an \code{answer} column.
 }

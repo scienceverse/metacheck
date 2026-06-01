@@ -33,18 +33,19 @@ modules <- c(
   # "stat_effect_size",
   # "repo_check",
   # "code_check",
-  # "stat_check",
-  "ref_accuracy",
-  "ref_replication",
-  "ref_retraction",
-  "ref_pubpeer",
-  "ref_summary"
+  "stat_check"
+  # "ref_accuracy",
+  # "ref_replication",
+  # "ref_retraction",
+  # "ref_pubpeer",
+  # "ref_summary"
 )
 
 # generate reports for a sample of n papers
-n <- 10
-output <- "html"
+n <- 1
+output <- "qmd"
 paper <- sample(psychsci, n)
+paper <- demopaper()
 
 # paper <- psychsci$`0956797620954815`
 # paper <- add_bib_match(paper)

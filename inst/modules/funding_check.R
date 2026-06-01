@@ -55,10 +55,10 @@ funding_check <- function(paper) {
   # likely_section <- c("funding", "annex", "acknowledgement")
   #
   # table <- paper |>
-  #   search_text(pattern_fund) |>
-  #   search_text(pattern_study) |>
+  #   text_search(pattern_fund) |>
+  #   text_search(pattern_study) |>
   #   # merge the text by section/id
-  #   search_text(return = "section") |>
+  #   text_search(return = "section") |>
   #   dplyr::filter(
   #     !any(section %in% likely_section) |
   #       section %in% likely_section,
@@ -66,7 +66,7 @@ funding_check <- function(paper) {
   #   )
 
   table <- paper |>
-    search_text() |>
+    text_search() |>
     dplyr::select(paper_id, text) |>
     dplyr::nest_by(paper_id) |>
     dplyr::rowwise() |>

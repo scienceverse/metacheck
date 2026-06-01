@@ -4,7 +4,7 @@
 #' This module retrieves information from repositories.
 #'
 #' @details
-#' The Repository Check module lists files on the OSF, GitHub, and ResearchBox based on links in the manuscript.
+#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, and Zenodo based on links in the manuscript.
 #'
 #' If you want to extend the package to be able to download files from additional data repositories reach out to the Metacheck development team.
 #'
@@ -18,11 +18,14 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a list
-repo_check <- function(paper) {
+repo_check <- function(paper, local_path = NULL) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
   pb$tick(0, list(what = "Starting Repo Check"))
+  # if (!is.null(local_path)) {
+  #   pb$message("If folders are stored online, the check might be slow as all files need to be downloaded.")
+  # }
   on.exit({
     pb$tick(0, list(what = "Repo Check Complete"))
     pb$terminate()
@@ -37,16 +40,19 @@ repo_check <- function(paper) {
   }
   github_links_found <- github_links(paper)
   rb_links_found <- rbox_links(paper)
+  zenodo_links_found <- zenodo_links(paper)
 
   ## organise repos in a table
   osf_links_found$repo_type <- "osf"
   github_links_found$repo_type <- "github"
   rb_links_found$repo_type <- "researchbox"
+  zenodo_links_found$repo_type <- "zenodo"
   cols <- c("paper_id", "href", "repo_type")
   repos <- dplyr::bind_rows(
     osf_links_found[, cols],
     github_links_found[, cols],
-    rb_links_found[, cols]
+    rb_links_found[, cols],
+    zenodo_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   repos$repo_error <- NA_character_
@@ -64,7 +70,7 @@ repo_check <- function(paper) {
     tryCatch({
       suppressWarnings({
         osf_info <- lapply(osf_urls, \(x) {
-          osf_files <- osf_retrieve(x, recursive = TRUE, pb = pb)
+          osf_files <- osf_info(x, recursive = TRUE, pb = pb)
           osf_files$repo_name <- x
           osf_files
         }) |> dplyr::bind_rows()
@@ -114,11 +120,11 @@ repo_check <- function(paper) {
       github_file_list <- github_files(github_urls, recursive = TRUE) |>
         dplyr::filter(type != "dir")
 
-      github_files_df <- data.frame(
+      github_files_df <- dplyr::tibble(
         repo_url = github_file_list$repo,
         file_name = github_file_list$name,
         file_url = github_file_list$download_url,
-        file_location = rep(NA_character_, nrow(github_file_list)),
+        file_location = NA_character_,
         file_size = github_file_list$size,
         file_type = github_file_list$type
       )
@@ -150,13 +156,83 @@ repo_check <- function(paper) {
     })
   }
 
+  ## Zenodo ----
+  zenodo_urls <- repos |>
+    dplyr::filter(repo_type == "zenodo") |>
+    _$repo_url |>
+    unique()
+  zenodo_files_df <- data.frame(repo_name = character(0))
+  if (length(zenodo_urls) > 0) {
+    tryCatch({
+      .zenodo_info <- suppressMessages(zenodo_info(zenodo_urls, pb = pb))
+
+      if (nrow(.zenodo_info) > 0 && "files" %in% names(.zenodo_info)) {
+        file_rows <- lapply(seq_len(nrow(.zenodo_info)), function(i) {
+          files_i <- .zenodo_info$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            file_url <- NA_character_
+            if (!is.null(f$links) && !is.null(f$links$self)) {
+              file_url <- as.character(f$links$self)
+            }
+
+            data.frame(
+              repo_url = as.character(.zenodo_info$zenodo_url[[i]]),
+              file_name = as.character(f$key %||% NA_character_),
+              file_url = file_url,
+              file_location = NA_character_,
+              file_size = as.numeric(f$size %||% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        zenodo_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(zenodo_files_df) > 0) {
+          zenodo_files_df$ext <- tolower(sub("^.*\\.", "", basename(zenodo_files_df$file_name)))
+          no_ext <- !is.na(zenodo_files_df$file_name) &
+            !grepl("\\.", basename(zenodo_files_df$file_name))
+          zenodo_files_df$ext[no_ext] <- NA_character_
+
+          zenodo_files_df <- zenodo_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          zenodo_files_df$ext <- NULL
+        } else {
+          zenodo_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # TODO: communicate errors to repos table
+    })
+  }
+
+  ## Local files ----
+  local_files_df <- data.frame(repo_name = character(0))
+  if (!is.null(local_path)) {
+    local_files_df <- local_files(local_path, recursive = TRUE)
+    local_repo <- data.frame(
+      paper_id = paper_id(paper)[[1]],
+      repo_url = local_path,
+      repo_type = "local",
+      repo_error = NA_character_
+    )
+    repos <- dplyr::bind_rows(repos, local_repo)
+  }
+
   ## no repos found ----
   if (nrow(repos) == 0) {
     info <- list(
       traffic_light = "na",
-      summary_text = "We found no links to repositories the Open Science Framework, Github, or ResearchBox.",
+      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, or Zenodo.",
       summary_table = data.frame(
-        paper_id = paper$paper_id,
+        paper_id = paper_id(paper),
         repo_n = 0,
         files_n = NA,
         files_data = NA,
@@ -170,7 +246,7 @@ repo_check <- function(paper) {
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, zenodo_files_df, local_files_df)
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)
@@ -199,6 +275,7 @@ repo_check <- function(paper) {
     )
     all_files$file_type[is_readme] <- "readme"
   }
+  all_files$repo_name <- basename(all_files$repo_url)
 
   repos <- dplyr::full_join(repos, all_files, by = "repo_url") |>
     dplyr::summarise(
@@ -248,7 +325,7 @@ repo_check <- function(paper) {
   )
 
   if (repo_no_readme > 0) {
-    report_readme <- "README files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or includeing 'README' in the name of your overview document."
+    report_readme <- "#### README Files\n\nREADME files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or including 'README' in the name of your overview document."
   } else {
     report_readme <- "README files were found in all repositories."
   }
@@ -256,9 +333,9 @@ repo_check <- function(paper) {
   ## zip files ----
   zip_n <- sum(repos$files_zip)
   if (zip_n > 0) {
-    zip_files <- all_files$file_name[all_files$file_type == "archive"]
+    zip_files <- all_files$file_name[!is.na(all_files$file_type) & all_files$file_type == "archive"]
     report_zip <- sprintf(
-      "The following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
+      "#### Archive Files\n\nThe following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
       paste(zip_files, collapse = ", ")
     )
     summary_zip <- sprintf(
@@ -272,7 +349,7 @@ repo_check <- function(paper) {
   }
 
   report_tbl <- all_files |>
-    dplyr::mutate(file = link(file_url, file_name)) |>
+    dplyr::mutate(file = dplyr::coalesce(link(file_url, file_name), file_name)) |>
     dplyr::select(Repository = repo_url,
                   File = file,
                   Size = file_size,
@@ -301,7 +378,9 @@ repo_check <- function(paper) {
 
   report <- c(
     report_repo,
+    ifelse(nrow(repo_tbl), "#### Repositories", NULL),
     scroll_table(repo_tbl, maxrows = 10),
+    ifelse(nrow(report_tbl), "#### Files", NULL),
     scroll_table(report_tbl, maxrows = 10),
     report_readme,
     report_zip
