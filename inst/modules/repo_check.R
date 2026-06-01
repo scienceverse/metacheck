@@ -325,7 +325,7 @@ repo_check <- function(paper, local_path = NULL) {
   )
 
   if (repo_no_readme > 0) {
-    report_readme <- "README files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or includeing 'README' in the name of your overview document."
+    report_readme <- "#### README Files\n\nREADME files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or including 'README' in the name of your overview document."
   } else {
     report_readme <- "README files were found in all repositories."
   }
@@ -335,7 +335,7 @@ repo_check <- function(paper, local_path = NULL) {
   if (zip_n > 0) {
     zip_files <- all_files$file_name[!is.na(all_files$file_type) & all_files$file_type == "archive"]
     report_zip <- sprintf(
-      "The following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
+      "#### Archive Files\n\nThe following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
       paste(zip_files, collapse = ", ")
     )
     summary_zip <- sprintf(
@@ -378,7 +378,9 @@ repo_check <- function(paper, local_path = NULL) {
 
   report <- c(
     report_repo,
+    ifelse(nrow(repo_tbl), "#### Repositories", NULL),
     scroll_table(repo_tbl, maxrows = 10),
+    ifelse(nrow(report_tbl), "#### Files", NULL),
     scroll_table(report_tbl, maxrows = 10),
     report_readme,
     report_zip
