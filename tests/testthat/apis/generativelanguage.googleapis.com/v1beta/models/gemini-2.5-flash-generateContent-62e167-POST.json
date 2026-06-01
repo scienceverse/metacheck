@@ -16,16 +16,16 @@
     "usageMetadata": {
         "promptTokenCount": 16,
         "candidatesTokenCount": 1,
-        "totalTokenCount": 191,
+        "totalTokenCount": 212,
         "promptTokensDetails": [
             {
                 "modality": "TEXT",
                 "tokenCount": 16
             }
         ],
-        "thoughtsTokenCount": 174,
+        "thoughtsTokenCount": 195,
         "serviceTier": "standard"
     },
     "modelVersion": "gemini-2.5-flash",
-    "responseId": "RVwDaoPrCpjjnsEPg_69wQQ"
+    "responseId": "1yccaqK0E5n2xN8P0tj0sAg"
 }

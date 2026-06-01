@@ -63,11 +63,13 @@ module_run <- function(paper, module, ...) {
     }
   }
 
-  orig_wd <- getwd()
-  on.exit(setwd(orig_wd))
-  dirname(module_path) |> setwd()
+  # can't pass relative paths to modules if you change the wd here
+  # orig_wd <- getwd()
+  # on.exit(setwd(orig_wd))
+  # dirname(module_path) |> setwd()
 
-  tryCatch(basename(module_path) |> source(local = TRUE),
+  #tryCatch(basename(module_path) |> source(local = TRUE),
+  tryCatch(module_path |> source(local = TRUE),
     error = function(e) {
       m <- basename(module) |> gsub("\\.R$", "", x = _)
       logger(m, list(paper = paper$paper_id,
@@ -177,12 +179,13 @@ module_find <- function(module) {
 
   module_names <- basename(module_paths) |> sub("\\.R$", "", x = _)
 
-  which_mod <- which(module_names == module)
+  which_mod <- which(module_names == module) # catches modules by name only
   if (length(which_mod) > 0) {
     module_path <- module_paths[which_mod[[1]]]
   } else if (file.exists(module)) {
     module_path <- module
   } else {
+    logger("module_find", list(module = module, error = "Can't find module"))
     stop("There were no modules that matched ", module,
       "\nuse module_list() to see a list of built-in modules.",
       call. = FALSE

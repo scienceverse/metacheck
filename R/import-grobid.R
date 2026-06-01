@@ -295,29 +295,31 @@ grobid_to_bibr <- function(xml_file,
     pb$tick(0, list(step = "", what = what))
   }
 
-  xml_text <- readLines(xml_file, warn = FALSE) |>
-    paste(collapse = "\n") |>
-    # fixes a glitch that stops grobid xml from being read
-    gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
-         x = _, fixed = TRUE
-    ) |>
-    gsub("Fig\\. (\\d{1,2})(\\s*\\.)?", "Fig \\1", x = _) |>
-    gsub("Figure\\. (\\d{1,2})(\\s*\\.)?", "Figure \\1", x = _) |>
-    gsub("Tab\\. (\\d{1,2})(\\s*\\.)?", "Tab \\1", x = _) |>
-    gsub("Table\\. (\\d{1,2})(\\s*\\.)?", "Table \\1", x = _)
+  # xml_text <- readLines(xml_file, warn = FALSE) |>
+  #   paste(collapse = "\n") |>
+  #   # fixes a glitch that stops grobid xml from being read
+  #   gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
+  #        x = _, fixed = TRUE
+  #   ) |>
+  #   gsub("Fig\\. (\\d{1,2})(\\s*\\.)?", "Fig \\1", x = _) |>
+  #   gsub("Figure\\. (\\d{1,2})(\\s*\\.)?", "Figure \\1", x = _) |>
+  #   gsub("Tab\\. (\\d{1,2})(\\s*\\.)?", "Tab \\1", x = _) |>
+  #   gsub("Table\\. (\\d{1,2})(\\s*\\.)?", "Table \\1", x = _)
+  #
+  # xml <- xml2::read_xml(xml_text)
 
-  xml <- xml2::read_xml(xml_text)
+  xml <- .xml_read_grobid(xml_file)
 
   file_hash <- substr(tools::md5sum(xml_file), 1, 16)[[1]]
   paper_id <- basename(xml_file) |> sub("\\.xml", "", x = _)
   paper <- paper(paper_id)
 
   # info ----
-  title <- xml_find1(xml, ".//titleStmt/title")
-  #abstract <- xml_find1(xml, ".//abstract")
-  keywords <- xml_find(xml, ".//textClass/keywords/term")
+  title <- .xml_find1_text(xml, ".//titleStmt/title")
+  #abstract <- .xml_find1_text(xml, ".//abstract")
+  keywords <- .xml_find_text(xml, ".//textClass/keywords/term")
   if (keywords[[1]] == "") keywords <- c()
-  doi <- xml_find1(xml, ".//idno[@type='DOI']")
+  doi <- .xml_find1_text(xml, ".//idno[@type='DOI']")
   grobid_version <- xml |>
     xml2::xml_find_first(".//application[@ident='GROBID']") |>
     xml2::xml_attr("version")
@@ -468,52 +470,13 @@ grobid_to_bibr <- function(xml_file,
 
   if (!is.null(full_text) && nrow(full_text) > 0) {
     # stop initials and abbreviations getting parsed as sentences
-    # full_text$text <- full_text$text |>
-    operators <- c(
-      "=", "<", ">", "~",
-      "\u2248", # ~~
-      "\u2260", # !=
-      "\u2264", # <=
-      "\u2265", # >=
-      "\u226A", # <<
-      "\u226B" # >>
-    ) |> paste(collapse = "")
-    num_pre_op <- sprintf("\\s+([\u00B20-9.]+\\s*[%s])", operators)
-
-
     full_text$formatted <- full_text$formatted |>
-      # fix common mangled stats
-      #gsub("\u00B2",                            "2", x = _) |>
-      gsub(num_pre_op, "\\1", x = _) |>
-      gsub("r\\s*p\\s*2",                  "rp\u00B2", x = _) |>
-      gsub("\u03C\\s*p\\s*2",              "\u03Cp\u00B2", x = _) |> # omega
-      gsub("\u03B7\\s*p\\s*[2\u00B2]",     "\u03B7p\u00B2", x = _) |> # eta
-      gsub("\u03B7\\s*G\\s*[2\u00B2]",     "\u03B7G\u00B2", x = _) |> # eta
-      gsub("\u03B7\\s*[2\u00B2]",          "\u03B7\u00B2", x = _) |> # eta
-      gsub("\u03C4\\s*[2\u00B2]",          "\u03C4\u00B2", x = _) |> # tau
-      gsub("\\br\\s*[2\u00B2](\\s*[=><])", "r\u00B2\\1", x = _) |>
-      gsub("\\bR\\s*[2\u00B2]\\s+M\\b",    "R\u00B2M", x = _) |>
-      gsub("\\bR\\s*[2\u00B2]\\b",         "R\u00B2", x = _) |>
-      gsub("\\bI\\s*[2\u00B2]\\b",         "I\u00B2", x = _) |>
-      gsub("\u03A7\\s*[2\u00B2]",          "\u03A7\u00B2", x = _) |> # chi
-      gsub("\\bf\\s*[2\u00B2](\\s*[=><])", "f\u00B2\\1", x = _) |>
-      gsub("\u03A7[2\u00B2]\\s*\\((\\s*\\d+)\\s*\\)", "\u03A7\u00B2(\\1)", x = _) |> # chi
-      gsub("\\br\\s*\\((\\s*\\d+)\\s*\\)", "r(\\1)", x = _) |>
-      gsub("\\bd\\s+z\\b",                 "dz", x = _) |>
-      gsub("\\bBF\\s+([10]{2})\\b",        "BF\\1", x = _) |> # BF 10; BF 01
 
-      gsub("(https?://)\\s+", "\\1", x = _) |> # whitespace in url
-      gsub("(\\d\\.)\\s+(\\d)", "\\1\\2", x = _) |> # #. #
-      gsub("\\b[Ff]ig\\. (\\D?\\d)", "Fig \\1", x = _) |>
-      gsub("\\b[Ff]igure\\. (\\d)", "Figure \\1", x = _) |>
-      gsub("\\b[Tt]ab\\. (\\d)", "Tab \\1", x = _) |>
-      gsub("\\b[Tt]able\\. (\\d)", "Table \\1", x = _) |>
       gsub("\\b([A-Z])\\.", "\\1$%", x = _) |> #initials (put back later)
       gsub("^<p>", "", x = _) |>
       gsub("</p>$", "", x = _) |>
       gsub("^<figDesc>", "", x = _) |>
       gsub("</figDesc>$", "", x = _) |>
-      gsub("</ref><ref", "</ref> <ref", x = _, fixed = TRUE) |>
       trimws()
 
     ft <- full_text |>
@@ -669,7 +632,7 @@ grobid_to_bibr <- function(xml_file,
       div <- divs[[i]]
       h <- xml2::xml_find_first(div, ".//head")
       header <- as.character(h)
-      paragraphs <- xml_find(div, ".//p")
+      paragraphs <- .xml_find_text(div, ".//p")
       x <- xml2::xml_find_all(div, ".//p")
       df <- dplyr::tibble(
         header = header,
@@ -704,7 +667,7 @@ grobid_to_bibr <- function(xml_file,
 
     dplyr::tibble(
       header = header,
-      #text = xml_find1(fig, ".//figDesc"),
+      #text = .xml_find1_text(fig, ".//figDesc"),
       formatted = as.character(formatted),
       section = sub("_\\d+$", "", x = figid),
       div = sub("^(fig|tab)_", "", x = figid) |> as.numeric()
@@ -779,11 +742,11 @@ grobid_to_bibr <- function(xml_file,
   authors <- lapply(seq_along(author_nodes), function(i) {
     a <- author_nodes[[i]]
 
-    given <- xml_find1(a, ".//forename")
-    family <- xml_find1(a, ".//surname")
-    email <- xml_find1(a, ".//email")
-    affiliation <- xml_find1(a, ".//affiliation")
-    orcid <- xml_find1(a, ".//idno[@type='ORCID']")
+    given <- .xml_find1_text(a, ".//forename")
+    family <- .xml_find1_text(a, ".//surname")
+    email <- .xml_find1_text(a, ".//email")
+    affiliation <- .xml_find1_text(a, ".//affiliation")
+    orcid <- .xml_find1_text(a, ".//idno[@type='ORCID']")
 
     list(
       author_id = i,
@@ -892,7 +855,7 @@ grobid_to_bibr <- function(xml_file,
       gsub("b", "", x = _) |>
       as.integer()
 
-    bib_table$bib_text <- xml_find(refs, ".//note[@type='raw_reference']") |>
+    bib_table$bib_text <- .xml_find_text(refs, ".//note[@type='raw_reference']") |>
       gsub("\\s+", " ", x = _) |>
       trimws()
 
@@ -928,36 +891,36 @@ grobid_to_bibr <- function(xml_file,
 .xml2bib <- function(ref) {
   b <- list(bib_type = "misc")
 
-  b$doi <- xml_find1(ref, ".//idno[@type='DOI']")
+  b$doi <- .xml_find1_text(ref, ".//idno[@type='DOI']")
 
-  b$title <- xml_find1(ref, ".//title[@level='a']")
+  b$title <- .xml_find1_text(ref, ".//title[@level='a']")
 
   b$authors <- xml2::xml_find_all(ref, ".//author //persName") |>
     lapply(\(a) {
-      forename <- xml_find(a, ".//forename", join = " ")
-      surname <- xml_find(a, ".//surname", join = " ")
+      forename <- .xml_find_text(a, ".//forename", join = " ")
+      surname <- .xml_find_text(a, ".//surname", join = " ")
 
       paste0(surname, ", ", forename)
     }) |> paste(collapse = "; ")
 
   b$editors <- xml2::xml_find_all(ref, ".//editor //persName") |>
     lapply(\(a) {
-      forename <- xml_find(a, ".//forename", join = " ")
-      surname <- xml_find(a, ".//surname", join = " ")
+      forename <- .xml_find_text(a, ".//forename", join = " ")
+      surname <- .xml_find_text(a, ".//surname", join = " ")
 
       paste0(surname, ", ", forename)
     }) |> paste(collapse = "; ")
 
-  b$journal <- xml_find1(ref, ".//title[@level='j']")
+  b$journal <- .xml_find1_text(ref, ".//title[@level='j']")
 
-  b$booktitle <- xml_find1(ref, ".//title[@level='m']")
+  b$booktitle <- .xml_find1_text(ref, ".//title[@level='m']")
 
   # imprint
   imprint <- xml2::xml_find_first(ref, ".//imprint")
-  b$publisher <- xml_find1(imprint, ".//publisher")
-  b$year <- xml_find1(imprint, ".//date[@type='published']")
-  b$volume <- xml_find1(imprint, ".//biblScope[@unit='volume']")
-  b$issue <- xml_find1(imprint, ".//biblScope[@unit='issue']")
+  b$publisher <- .xml_find1_text(imprint, ".//publisher")
+  b$year <- .xml_find1_text(imprint, ".//date[@type='published']")
+  b$volume <- .xml_find1_text(imprint, ".//biblScope[@unit='volume']")
+  b$issue <- .xml_find1_text(imprint, ".//biblScope[@unit='issue']")
   page_unit <- xml2::xml_find_first(imprint, ".//biblScope[@unit='page']")
   if (!is.na(page_unit)) {
     pages <- xml2::xml_text(page_unit)

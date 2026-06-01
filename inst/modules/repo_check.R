@@ -18,11 +18,14 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a list
-repo_check <- function(paper) {
+repo_check <- function(paper, local_path = NULL) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
   pb$tick(0, list(what = "Starting Repo Check"))
+  # if (!is.null(local_path)) {
+  #   pb$message("If folders are stored online, the check might be slow as all files need to be downloaded.")
+  # }
   on.exit({
     pb$tick(0, list(what = "Repo Check Complete"))
     pb$terminate()
@@ -66,7 +69,7 @@ repo_check <- function(paper) {
   if (length(osf_urls) > 0) {
     tryCatch({
       suppressWarnings({
-        .osf_info <- lapply(osf_urls, \(x) {
+        osf_info <- lapply(osf_urls, \(x) {
           osf_files <- osf_info(x, recursive = TRUE, pb = pb)
           osf_files$repo_name <- x
           osf_files
@@ -74,8 +77,8 @@ repo_check <- function(paper) {
       })
 
       # "kind" only in table if there are files
-      if ("kind" %in% names(.osf_info)) {
-        osf_file_list <- .osf_info |>
+      if ("kind" %in% names(osf_info)) {
+        osf_file_list <- osf_info |>
           dplyr::filter(kind == "file", !isFALSE(public))
 
         osf_files_df <- data.frame(
@@ -89,13 +92,13 @@ repo_check <- function(paper) {
       }
 
       # remove e.g., registrations from repos list
-      osf_to_remove <- .osf_info |>
+      osf_to_remove <- osf_info |>
         dplyr::filter(!osf_type %in% c("nodes", "files", "private")) |>
         _$osf_url
       repos <- repos[!repos$repo_url %in% osf_to_remove, ]
 
       # note private repos
-      private_repos <- .osf_info |>
+      private_repos <- osf_info |>
         dplyr::filter(osf_type %in% "private") |>
         _$osf_url
       if (length(private_repos)) {
@@ -117,11 +120,11 @@ repo_check <- function(paper) {
       github_file_list <- github_files(github_urls, recursive = TRUE) |>
         dplyr::filter(type != "dir")
 
-      github_files_df <- data.frame(
+      github_files_df <- dplyr::tibble(
         repo_url = github_file_list$repo,
         file_name = github_file_list$name,
         file_url = github_file_list$download_url,
-        file_location = rep(NA_character_, nrow(github_file_list)),
+        file_location = NA_character_,
         file_size = github_file_list$size,
         file_type = github_file_list$type
       )
@@ -210,6 +213,19 @@ repo_check <- function(paper) {
     })
   }
 
+  ## Local files ----
+  local_files_df <- data.frame(repo_name = character(0))
+  if (!is.null(local_path)) {
+    local_files_df <- local_files(local_path, recursive = TRUE)
+    local_repo <- data.frame(
+      paper_id = paper_id(paper)[[1]],
+      repo_url = local_path,
+      repo_type = "local",
+      repo_error = NA_character_
+    )
+    repos <- dplyr::bind_rows(repos, local_repo)
+  }
+
   ## no repos found ----
   if (nrow(repos) == 0) {
     info <- list(
@@ -230,7 +246,7 @@ repo_check <- function(paper) {
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, zenodo_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, zenodo_files_df, local_files_df)
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)
@@ -259,6 +275,7 @@ repo_check <- function(paper) {
     )
     all_files$file_type[is_readme] <- "readme"
   }
+  all_files$repo_name <- basename(all_files$repo_url)
 
   repos <- dplyr::full_join(repos, all_files, by = "repo_url") |>
     dplyr::summarise(
@@ -308,7 +325,7 @@ repo_check <- function(paper) {
   )
 
   if (repo_no_readme > 0) {
-    report_readme <- "README files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or includeing 'README' in the name of your overview document."
+    report_readme <- "#### README Files\n\nREADME files are a way to document the contents and structure of a folder, helping users locate the information they need. You can use a README to document changes to a repository, and explain how files are named. Please consider adding a README to each repository or including 'README' in the name of your overview document."
   } else {
     report_readme <- "README files were found in all repositories."
   }
@@ -318,7 +335,7 @@ repo_check <- function(paper) {
   if (zip_n > 0) {
     zip_files <- all_files$file_name[!is.na(all_files$file_type) & all_files$file_type == "archive"]
     report_zip <- sprintf(
-      "The following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
+      "#### Archive Files\n\nThe following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
       paste(zip_files, collapse = ", ")
     )
     summary_zip <- sprintf(
@@ -332,7 +349,7 @@ repo_check <- function(paper) {
   }
 
   report_tbl <- all_files |>
-    dplyr::mutate(file = link(file_url, file_name)) |>
+    dplyr::mutate(file = dplyr::coalesce(link(file_url, file_name), file_name)) |>
     dplyr::select(Repository = repo_url,
                   File = file,
                   Size = file_size,
@@ -361,7 +378,9 @@ repo_check <- function(paper) {
 
   report <- c(
     report_repo,
+    ifelse(nrow(repo_tbl), "#### Repositories", NULL),
     scroll_table(repo_tbl, maxrows = 10),
+    ifelse(nrow(report_tbl), "#### Files", NULL),
     scroll_table(report_tbl, maxrows = 10),
     report_readme,
     report_zip

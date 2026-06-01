@@ -1,5 +1,6 @@
 devtools::load_all(".")
 llm_use(TRUE)
+llm_model("ollama/qwen2.5:3b")
 paper <- demopaper()
 modules <- c(
   # local only
@@ -13,7 +14,7 @@ modules <- c(
   "funding_check",
   # need external services
   "prereg_check",
-  "causal_claims",
+  #"causal_claims",
   "power",
   "repo_check",
   "code_check",

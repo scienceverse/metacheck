@@ -1,0 +1,3350 @@
+{
+    "license": "Qwen RESEARCH LICENSE AGREEMENT\n\nQwen RESEARCH LICENSE AGREEMENT Release Date: September 19, 2024\n\nBy clicking to agree or by using or distributing any portion or element of the Qwen Materials, you will be deemed to have recognized and accepted the content of this Agreement, which is effective immediately.\n\n1. Definitions\n    a. This Qwen RESEARCH LICENSE AGREEMENT (this \"Agreement\") shall mean the terms and conditions for use, reproduction, distribution and modification of the Materials as defined by this Agreement.\n    b. \"We\" (or \"Us\") shall mean Alibaba Cloud.\n    c. \"You\" (or \"Your\") shall mean a natural person or legal entity exercising the rights granted by this Agreement and/or using the Materials for any purpose and in any field of use.\n    d. \"Third Parties\" shall mean individuals or legal entities that are not under common control with us or you.\n    e. \"Qwen\" shall mean the large language models, and software and algorithms, consisting of trained model weights, parameters (including optimizer states), machine-learning model code, inference-enabling code, training-enabling code, fine-tuning enabling code and other elements of the foregoing distributed by us.\n    f. \"Materials\" shall mean, collectively, Alibaba Cloud's proprietary Qwen and Documentation (and any portion thereof) made available under this Agreement.\n    g. \"Source\" form shall mean the preferred form for making modifications, including but not limited to model source code, documentation source, and configuration files.\n    h. \"Object\" form shall mean any form resulting from mechanical transformation or translation of a Source form, including but not limited to compiled object code, generated documentation, and conversions to other media types.\n    i. \"Non-Commercial\" shall mean for research or evaluation purposes only.\n\n2. Grant of Rights\n    a. You are granted a non-exclusive, worldwide, non-transferable and royalty-free limited license under Alibaba Cloud's intellectual property or other rights owned by us embodied in the Materials to use, reproduce, distribute, copy, create derivative works of, and make modifications to the Materials FOR NON-COMMERCIAL PURPOSES ONLY. \n    b. If you are commercially using the Materials, you shall request a license from us.\n\n3. Redistribution\nYou may distribute copies or make the Materials, or derivative works thereof, available as part of a product or service that contains any of them, with or without modifications, and in Source or Object form, provided that you meet the following conditions:\n    a. You shall give any other recipients of the Materials or derivative works a copy of this Agreement;\n    b. You shall cause any modified files to carry prominent notices stating that you changed the files;\n    c. You shall retain in all copies of the Materials that you distribute the following attribution notices within a \"Notice\" text file distributed as a part of such copies: \"Qwen is licensed under the Qwen RESEARCH LICENSE AGREEMENT, Copyright (c) Alibaba Cloud. All Rights Reserved.\"; and\n    d. You may add your own copyright statement to your modifications and may provide additional or different license terms and conditions for use, reproduction, or distribution of your modifications, or for any such derivative works as a whole, provided your use, reproduction, and distribution of the work otherwise complies with the terms and conditions of this Agreement.\n\n4. Rules of use\n    a. The Materials may be subject to export controls or restrictions in China, the United States or other countries or regions. You shall comply with applicable laws and regulations in your use of the Materials.\n    b. If you use the Materials or any outputs or results therefrom to create, train, fine-tune, or improve an AI model that is distributed or made available, you shall prominently display “Built with Qwen” or “Improved using Qwen” in the related product documentation.\n\n5. Intellectual Property\n    a. We retain ownership of all intellectual property rights in and to the Materials and derivatives made by or for us. Conditioned upon compliance with the terms and conditions of this Agreement, with respect to any derivative works and modifications of the Materials that are made by you, you are and will be the owner of such derivative works and modifications.\n    b. No trademark license is granted to use the trade names, trademarks, service marks, or product names of us, except as required to fulfill notice requirements under this Agreement or as required for reasonable and customary use in describing and redistributing the Materials.\n    c. If you commence a lawsuit or other proceedings (including a cross-claim or counterclaim in a lawsuit) against us or any entity alleging that the Materials or any output therefrom, or any part of the foregoing, infringe any intellectual property or other right owned or licensable by you, then all licenses granted to you under this Agreement shall terminate as of the date such lawsuit or other proceeding is commenced or brought.\n\n6. Disclaimer of Warranty and Limitation of Liability\n    a. We are not obligated to support, update, provide training for, or develop any further version of the Qwen Materials or to grant any license thereto.\n    b. THE MATERIALS ARE PROVIDED \"AS IS\" WITHOUT ANY EXPRESS OR IMPLIED WARRANTY OF ANY KIND INCLUDING WARRANTIES OF MERCHANTABILITY, NONINFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. WE MAKE NO WARRANTY AND ASSUME NO RESPONSIBILITY FOR THE SAFETY OR STABILITY OF THE MATERIALS AND ANY OUTPUT THEREFROM.\n    c. IN NO EVENT SHALL WE BE LIABLE TO YOU FOR ANY DAMAGES, INCLUDING, BUT NOT LIMITED TO ANY DIRECT, OR INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING FROM YOUR USE OR INABILITY TO USE THE MATERIALS OR ANY OUTPUT OF IT, NO MATTER HOW IT’S CAUSED.\n    d. You will defend, indemnify and hold harmless us from and against any claim by any third party arising out of or related to your use or distribution of the Materials.\n\n7. Survival and Termination.\n    a. The term of this Agreement shall commence upon your acceptance of this Agreement or access to the Materials and will continue in full force and effect until terminated in accordance with the terms and conditions herein.\n    b. We may terminate this Agreement if you breach any of the terms or conditions of this Agreement. Upon termination of this Agreement, you must delete and cease use of the Materials. Sections 6 and 8 shall survive the termination of this Agreement.\n\n8. Governing Law and Jurisdiction.\n    a. This Agreement and any dispute arising out of or relating to it will be governed by the laws of China, without regard to conflict of law principles, and the UN Convention on Contracts for the International Sale of Goods does not apply to this Agreement.\n    b. The People's Courts in Hangzhou City shall have exclusive jurisdiction over any dispute arising out of this Agreement.\n\n9. Other Terms and Conditions.\n    a. Any arrangements, understandings, or agreements regarding the Material not stated herein are separate from and independent of the terms and conditions of this Agreement. You shall request a separate license from us, if you use the Materials in ways not expressly agreed to in this Agreement. \n    b. We shall not be bound by any additional or different terms or conditions communicated by you unless expressly agreed.",
+    "modelfile": "# Modelfile generated by \"ollama show\"\n# To build a new Modelfile based on this, replace FROM with:\n# FROM qwen2.5:3b\n\nFROM /Users/debruine/.ollama/models/blobs/sha256-5ee4f07cdb9beadbbb293e85803c569b01bd37ed059d2715faa7bb405f31caa6\nTEMPLATE \"\"\"{{- if .Messages }}\n{{- if or .System .Tools }}<|im_start|>system\n{{- if .System }}\n{{ .System }}\n{{- end }}\n{{- if .Tools }}\n\n# Tools\n\nYou may call one or more functions to assist with the user query.\n\nYou are provided with function signatures within <tools><\/tools> XML tags:\n<tools>\n{{- range .Tools }}\n{\"type\": \"function\", \"function\": {{ .Function }}}\n{{- end }}\n<\/tools>\n\nFor each function call, return a json object with function name and arguments within <tool_call><\/tool_call> XML tags:\n<tool_call>\n{\"name\": <function-name>, \"arguments\": <args-json-object>}\n<\/tool_call>\n{{- end }}<|im_end|>\n{{ end }}\n{{- range $i, $_ := .Messages }}\n{{- $last := eq (len (slice $.Messages $i)) 1 -}}\n{{- if eq .Role \"user\" }}<|im_start|>user\n{{ .Content }}<|im_end|>\n{{ else if eq .Role \"assistant\" }}<|im_start|>assistant\n{{ if .Content }}{{ .Content }}\n{{- else if .ToolCalls }}<tool_call>\n{{ range .ToolCalls }}{\"name\": \"{{ .Function.Name }}\", \"arguments\": {{ .Function.Arguments }}}\n{{ end }}<\/tool_call>\n{{- end }}{{ if not $last }}<|im_end|>\n{{ end }}\n{{- else if eq .Role \"tool\" }}<|im_start|>user\n<tool_response>\n{{ .Content }}\n<\/tool_response><|im_end|>\n{{ end }}\n{{- if and (ne .Role \"assistant\") $last }}<|im_start|>assistant\n{{ end }}\n{{- end }}\n{{- else }}\n{{- if .System }}<|im_start|>system\n{{ .System }}<|im_end|>\n{{ end }}{{ if .Prompt }}<|im_start|>user\n{{ .Prompt }}<|im_end|>\n{{ end }}<|im_start|>assistant\n{{ end }}{{ .Response }}{{ if .Response }}<|im_end|>{{ end }}\"\"\"\nSYSTEM You are Qwen, created by Alibaba Cloud. You are a helpful assistant.\nLICENSE \"\"\"Qwen RESEARCH LICENSE AGREEMENT\n\nQwen RESEARCH LICENSE AGREEMENT Release Date: September 19, 2024\n\nBy clicking to agree or by using or distributing any portion or element of the Qwen Materials, you will be deemed to have recognized and accepted the content of this Agreement, which is effective immediately.\n\n1. Definitions\n    a. This Qwen RESEARCH LICENSE AGREEMENT (this \"Agreement\") shall mean the terms and conditions for use, reproduction, distribution and modification of the Materials as defined by this Agreement.\n    b. \"We\" (or \"Us\") shall mean Alibaba Cloud.\n    c. \"You\" (or \"Your\") shall mean a natural person or legal entity exercising the rights granted by this Agreement and/or using the Materials for any purpose and in any field of use.\n    d. \"Third Parties\" shall mean individuals or legal entities that are not under common control with us or you.\n    e. \"Qwen\" shall mean the large language models, and software and algorithms, consisting of trained model weights, parameters (including optimizer states), machine-learning model code, inference-enabling code, training-enabling code, fine-tuning enabling code and other elements of the foregoing distributed by us.\n    f. \"Materials\" shall mean, collectively, Alibaba Cloud's proprietary Qwen and Documentation (and any portion thereof) made available under this Agreement.\n    g. \"Source\" form shall mean the preferred form for making modifications, including but not limited to model source code, documentation source, and configuration files.\n    h. \"Object\" form shall mean any form resulting from mechanical transformation or translation of a Source form, including but not limited to compiled object code, generated documentation, and conversions to other media types.\n    i. \"Non-Commercial\" shall mean for research or evaluation purposes only.\n\n2. Grant of Rights\n    a. You are granted a non-exclusive, worldwide, non-transferable and royalty-free limited license under Alibaba Cloud's intellectual property or other rights owned by us embodied in the Materials to use, reproduce, distribute, copy, create derivative works of, and make modifications to the Materials FOR NON-COMMERCIAL PURPOSES ONLY. \n    b. If you are commercially using the Materials, you shall request a license from us.\n\n3. Redistribution\nYou may distribute copies or make the Materials, or derivative works thereof, available as part of a product or service that contains any of them, with or without modifications, and in Source or Object form, provided that you meet the following conditions:\n    a. You shall give any other recipients of the Materials or derivative works a copy of this Agreement;\n    b. You shall cause any modified files to carry prominent notices stating that you changed the files;\n    c. You shall retain in all copies of the Materials that you distribute the following attribution notices within a \"Notice\" text file distributed as a part of such copies: \"Qwen is licensed under the Qwen RESEARCH LICENSE AGREEMENT, Copyright (c) Alibaba Cloud. All Rights Reserved.\"; and\n    d. You may add your own copyright statement to your modifications and may provide additional or different license terms and conditions for use, reproduction, or distribution of your modifications, or for any such derivative works as a whole, provided your use, reproduction, and distribution of the work otherwise complies with the terms and conditions of this Agreement.\n\n4. Rules of use\n    a. The Materials may be subject to export controls or restrictions in China, the United States or other countries or regions. You shall comply with applicable laws and regulations in your use of the Materials.\n    b. If you use the Materials or any outputs or results therefrom to create, train, fine-tune, or improve an AI model that is distributed or made available, you shall prominently display “Built with Qwen” or “Improved using Qwen” in the related product documentation.\n\n5. Intellectual Property\n    a. We retain ownership of all intellectual property rights in and to the Materials and derivatives made by or for us. Conditioned upon compliance with the terms and conditions of this Agreement, with respect to any derivative works and modifications of the Materials that are made by you, you are and will be the owner of such derivative works and modifications.\n    b. No trademark license is granted to use the trade names, trademarks, service marks, or product names of us, except as required to fulfill notice requirements under this Agreement or as required for reasonable and customary use in describing and redistributing the Materials.\n    c. If you commence a lawsuit or other proceedings (including a cross-claim or counterclaim in a lawsuit) against us or any entity alleging that the Materials or any output therefrom, or any part of the foregoing, infringe any intellectual property or other right owned or licensable by you, then all licenses granted to you under this Agreement shall terminate as of the date such lawsuit or other proceeding is commenced or brought.\n\n6. Disclaimer of Warranty and Limitation of Liability\n    a. We are not obligated to support, update, provide training for, or develop any further version of the Qwen Materials or to grant any license thereto.\n    b. THE MATERIALS ARE PROVIDED \"AS IS\" WITHOUT ANY EXPRESS OR IMPLIED WARRANTY OF ANY KIND INCLUDING WARRANTIES OF MERCHANTABILITY, NONINFRINGEMENT, OR FITNESS FOR A PARTICULAR PURPOSE. WE MAKE NO WARRANTY AND ASSUME NO RESPONSIBILITY FOR THE SAFETY OR STABILITY OF THE MATERIALS AND ANY OUTPUT THEREFROM.\n    c. IN NO EVENT SHALL WE BE LIABLE TO YOU FOR ANY DAMAGES, INCLUDING, BUT NOT LIMITED TO ANY DIRECT, OR INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES ARISING FROM YOUR USE OR INABILITY TO USE THE MATERIALS OR ANY OUTPUT OF IT, NO MATTER HOW IT’S CAUSED.\n    d. You will defend, indemnify and hold harmless us from and against any claim by any third party arising out of or related to your use or distribution of the Materials.\n\n7. Survival and Termination.\n    a. The term of this Agreement shall commence upon your acceptance of this Agreement or access to the Materials and will continue in full force and effect until terminated in accordance with the terms and conditions herein.\n    b. We may terminate this Agreement if you breach any of the terms or conditions of this Agreement. Upon termination of this Agreement, you must delete and cease use of the Materials. Sections 6 and 8 shall survive the termination of this Agreement.\n\n8. Governing Law and Jurisdiction.\n    a. This Agreement and any dispute arising out of or relating to it will be governed by the laws of China, without regard to conflict of law principles, and the UN Convention on Contracts for the International Sale of Goods does not apply to this Agreement.\n    b. The People's Courts in Hangzhou City shall have exclusive jurisdiction over any dispute arising out of this Agreement.\n\n9. Other Terms and Conditions.\n    a. Any arrangements, understandings, or agreements regarding the Material not stated herein are separate from and independent of the terms and conditions of this Agreement. You shall request a separate license from us, if you use the Materials in ways not expressly agreed to in this Agreement. \n    b. We shall not be bound by any additional or different terms or conditions communicated by you unless expressly agreed.\"\"\"\n",
+    "template": "{{- if .Messages }}\n{{- if or .System .Tools }}<|im_start|>system\n{{- if .System }}\n{{ .System }}\n{{- end }}\n{{- if .Tools }}\n\n# Tools\n\nYou may call one or more functions to assist with the user query.\n\nYou are provided with function signatures within <tools><\/tools> XML tags:\n<tools>\n{{- range .Tools }}\n{\"type\": \"function\", \"function\": {{ .Function }}}\n{{- end }}\n<\/tools>\n\nFor each function call, return a json object with function name and arguments within <tool_call><\/tool_call> XML tags:\n<tool_call>\n{\"name\": <function-name>, \"arguments\": <args-json-object>}\n<\/tool_call>\n{{- end }}<|im_end|>\n{{ end }}\n{{- range $i, $_ := .Messages }}\n{{- $last := eq (len (slice $.Messages $i)) 1 -}}\n{{- if eq .Role \"user\" }}<|im_start|>user\n{{ .Content }}<|im_end|>\n{{ else if eq .Role \"assistant\" }}<|im_start|>assistant\n{{ if .Content }}{{ .Content }}\n{{- else if .ToolCalls }}<tool_call>\n{{ range .ToolCalls }}{\"name\": \"{{ .Function.Name }}\", \"arguments\": {{ .Function.Arguments }}}\n{{ end }}<\/tool_call>\n{{- end }}{{ if not $last }}<|im_end|>\n{{ end }}\n{{- else if eq .Role \"tool\" }}<|im_start|>user\n<tool_response>\n{{ .Content }}\n<\/tool_response><|im_end|>\n{{ end }}\n{{- if and (ne .Role \"assistant\") $last }}<|im_start|>assistant\n{{ end }}\n{{- end }}\n{{- else }}\n{{- if .System }}<|im_start|>system\n{{ .System }}<|im_end|>\n{{ end }}{{ if .Prompt }}<|im_start|>user\n{{ .Prompt }}<|im_end|>\n{{ end }}<|im_start|>assistant\n{{ end }}{{ .Response }}{{ if .Response }}<|im_end|>{{ end }}",
+    "system": "You are Qwen, created by Alibaba Cloud. You are a helpful assistant.",
+    "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen2",
+        "families": [
+            "qwen2"
+        ],
+        "parameter_size": "3.1B",
+        "quantization_level": "Q4_K_M"
+    },
+    "model_info": {
+        "general.architecture": "qwen2",
+        "general.base_model.0.name": "Qwen2.5 3B",
+        "general.base_model.0.organization": "Qwen",
+        "general.base_model.0.repo_url": "https://huggingface.co/Qwen/Qwen2.5-3B",
+        "general.base_model.count": 1,
+        "general.basename": "Qwen2.5",
+        "general.file_type": 15,
+        "general.finetune": "Instruct",
+        "general.languages": null,
+        "general.license": "other",
+        "general.license.link": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct/blob/main/LICENSE",
+        "general.license.name": "qwen-research",
+        "general.parameter_count": 3085938688,
+        "general.quantization_version": 2,
+        "general.size_label": "3B",
+        "general.tags": null,
+        "general.type": "model",
+        "qwen2.attention.head_count": 16,
+        "qwen2.attention.head_count_kv": 2,
+        "qwen2.attention.layer_norm_rms_epsilon": 0.000001,
+        "qwen2.block_count": 36,
+        "qwen2.context_length": 32768,
+        "qwen2.embedding_length": 2048,
+        "qwen2.feed_forward_length": 11008,
+        "qwen2.rope.freq_base": 1000000,
+        "tokenizer.ggml.add_bos_token": false,
+        "tokenizer.ggml.bos_token_id": 151643,
+        "tokenizer.ggml.eos_token_id": 151645,
+        "tokenizer.ggml.merges": null,
+        "tokenizer.ggml.model": "gpt2",
+        "tokenizer.ggml.padding_token_id": 151643,
+        "tokenizer.ggml.pre": "qwen2",
+        "tokenizer.ggml.token_type": null,
+        "tokenizer.ggml.tokens": null
+    },
+    "tensors": [
+        {
+            "name": "token_embd.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                151936
+            ]
+        },
+        {
+            "name": "blk.0.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.0.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.0.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.0.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.0.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.0.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.0.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.0.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.0.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.0.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.0.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.0.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.1.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.1.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.1.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.1.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.1.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.1.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.1.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.1.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.1.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.1.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.1.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.1.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.10.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.10.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.10.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.10.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.10.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.10.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.10.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.10.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.10.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.10.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.10.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.10.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.11.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.11.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.11.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.11.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.11.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.11.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.11.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.11.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.11.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.11.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.11.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.11.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.12.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.12.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.12.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.12.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.12.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.12.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.12.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.12.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.12.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.12.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.12.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.12.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.13.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.13.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.13.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.13.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.13.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.13.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.13.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.13.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.13.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.13.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.13.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.13.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.14.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.14.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.14.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.14.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.14.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.14.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.14.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.14.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.14.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.14.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.14.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.14.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.15.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.15.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.15.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.15.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.15.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.15.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.15.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.15.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.15.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.15.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.15.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.15.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.16.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.16.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.16.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.16.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.16.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.16.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.16.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.16.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.16.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.16.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.16.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.16.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.17.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.17.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.17.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.17.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.17.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.17.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.17.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.17.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.17.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.17.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.17.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.17.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.18.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.18.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.18.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.18.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.18.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.18.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.18.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.18.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.18.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.18.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.18.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.18.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.19.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.19.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.19.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.19.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.19.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.19.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.19.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.19.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.19.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.19.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.19.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.19.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.2.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.2.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.2.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.2.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.2.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.2.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.2.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.2.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.2.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.2.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.2.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.2.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.20.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.20.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.20.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.20.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.20.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.20.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.20.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.20.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.20.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.20.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.20.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.20.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.21.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.21.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.21.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.21.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.21.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.21.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.21.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.21.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.21.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.21.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.21.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.3.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.3.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.3.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.3.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.3.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.3.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.3.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.3.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.3.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.3.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.3.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.3.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.4.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.4.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.4.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.4.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.4.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.4.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.4.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.4.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.4.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.4.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.4.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.4.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.5.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.5.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.5.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.5.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.5.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.5.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.5.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.5.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.5.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.5.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.5.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.5.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.6.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.6.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.6.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.6.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.6.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.6.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.6.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.6.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.6.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.6.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.6.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.6.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.7.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.7.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.7.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.7.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.7.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.7.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.7.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.7.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.7.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.7.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.7.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.7.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.8.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.8.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.8.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.8.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.8.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.8.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.8.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.8.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.8.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.8.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.8.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.8.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.9.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.9.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.9.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.9.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.9.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.9.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.9.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.9.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.9.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.9.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.9.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.9.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.21.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.22.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.22.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.22.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.22.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.22.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.22.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.22.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.22.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.22.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.22.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.22.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.22.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.23.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.23.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.23.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.23.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.23.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.23.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.23.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.23.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.23.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.23.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.23.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.23.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.24.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.24.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.24.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.24.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.24.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.24.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.24.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.24.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.24.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.24.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.24.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.24.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.25.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.25.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.25.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.25.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.25.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.25.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.25.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.25.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.25.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.25.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.25.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.25.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.26.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.26.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.26.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.26.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.26.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.26.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.26.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.26.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.26.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.26.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.26.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.26.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.27.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.27.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.27.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.27.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.27.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.27.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.27.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.27.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.27.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.27.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.27.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.27.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.28.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.28.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.28.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.28.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.28.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.28.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.28.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.28.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.28.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.28.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.28.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.28.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.29.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.29.ffn_down.weight",
+            "type": "Q4_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.29.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.29.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.29.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.29.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.29.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.29.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.29.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.29.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.29.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.29.attn_v.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.30.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.30.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.30.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.30.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.30.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.30.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.30.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.30.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.30.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.30.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.30.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.30.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.31.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.31.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.31.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.31.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.31.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.31.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.31.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.31.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.31.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.31.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.31.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.31.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.32.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.32.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.32.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.32.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.32.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.32.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.32.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.32.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.32.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.32.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.32.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.32.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.33.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.33.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.33.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.33.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.33.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.33.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.33.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.33.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.33.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.33.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.33.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.33.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.34.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.34.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.34.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.34.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.34.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.34.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.34.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.34.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.34.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.34.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.34.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.34.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.35.attn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.35.ffn_down.weight",
+            "type": "Q6_K",
+            "shape": [
+                11008,
+                2048
+            ]
+        },
+        {
+            "name": "blk.35.ffn_gate.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.35.ffn_up.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                11008
+            ]
+        },
+        {
+            "name": "blk.35.ffn_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.35.attn_k.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.35.attn_k.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "blk.35.attn_output.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.35.attn_q.bias",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        },
+        {
+            "name": "blk.35.attn_q.weight",
+            "type": "Q4_K",
+            "shape": [
+                2048,
+                2048
+            ]
+        },
+        {
+            "name": "blk.35.attn_v.bias",
+            "type": "F32",
+            "shape": [
+                256
+            ]
+        },
+        {
+            "name": "blk.35.attn_v.weight",
+            "type": "Q6_K",
+            "shape": [
+                2048,
+                256
+            ]
+        },
+        {
+            "name": "output_norm.weight",
+            "type": "F32",
+            "shape": [
+                2048
+            ]
+        }
+    ],
+    "capabilities": [
+        "completion",
+        "tools"
+    ],
+    "modified_at": "2026-05-30T14:54:36.117370029+02:00"
+}
