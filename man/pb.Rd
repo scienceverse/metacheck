@@ -48,3 +48,4 @@ for (i in 1:5) {
 }
 bar$terminate()
 }
+\keyword{internal}

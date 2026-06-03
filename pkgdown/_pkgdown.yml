@@ -1,6 +1,11 @@
 url: https://scienceverse.github.io/metacheck/
 development:
   mode: auto
+
+repo:
+  exclude:
+    - CLAUDE.md
+    - LOCAL_FILES.md
 template:
   # includes:
   #   in_header: <!-- inserted at the end of the head -->
@@ -48,6 +53,8 @@ articles:
         # - articles/validate
         - articles/github
         - articles/ollama
+        - articles/local-files
+        - articles/stats
 
 reference:
 - title: Reading in Papers
@@ -153,6 +160,7 @@ reference:
 - title: Archive Functions
   desc: ~
   contents:
+  - '`local_files`'
   - '`aspredicted_links`'
   - '`aspredicted_info`'
   - '`rbox_links`'

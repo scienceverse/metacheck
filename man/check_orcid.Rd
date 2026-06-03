@@ -21,3 +21,4 @@ check_orcid("0000-0002-0247-239X")
 check_orcid("https://orcid.org/0000-0002-0247-239X")
 check_orcid("0000-0002-0247-2394") # incorrect, return FALSE
 }
+\keyword{internal}
