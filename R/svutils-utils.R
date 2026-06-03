@@ -45,6 +45,7 @@ rep_if <- function(x, y, replace = NULL) {
 #'
 #' @returns the current option value (logical)
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' verbose()
@@ -67,6 +68,7 @@ verbose <- function(verbose = NULL) {
 #'
 #' @returns boolean
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' online()

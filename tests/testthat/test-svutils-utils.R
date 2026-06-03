@@ -39,8 +39,8 @@ test_that("rep_if", {
 
 
 test_that("verbose", {
-  expect_true(is.function(svutils::verbose))
-  expect_no_error(helplist <- help(verbose, svutils))
+  expect_true(is.function(metacheck::verbose))
+  expect_no_error(helplist <- help(verbose, metacheck))
 
   expect_equal(verbose(FALSE), FALSE)
   expect_equal(verbose(), FALSE)
@@ -57,8 +57,8 @@ test_that("verbose", {
 })
 
 test_that("online", {
-  expect_true(is.function(svutils::online))
-  expect_no_error(helplist <- help(online, svutils))
+  expect_true(is.function(metacheck::online))
+  expect_no_error(helplist <- help(online, metacheck))
 
   skip_if_offline("google.com")
 

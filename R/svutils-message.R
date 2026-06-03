@@ -6,6 +6,7 @@
 #'
 #' @return TRUE
 #' @export
+#' @keywords internal
 message <- function(..., domain = NULL, appendLF = TRUE) {
   if (verbose()) {
     if (interactive()) {

@@ -22,3 +22,4 @@ Get ORCiD from Name
 get_orcid("DeBruine", "Lisa")
 }
 }
+\keyword{internal}
