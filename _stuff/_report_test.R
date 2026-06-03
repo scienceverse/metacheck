@@ -3,7 +3,7 @@ dir <- "_stuff/report-demo"
 dir.create(dir, showWarnings = FALSE)
 
 llm_use(TRUE)
-llm_model("groq/llama-3.1-8b-instant")
+llm_model("ollama/qwen2.5:3b")
 
 # choose modules to run
 # module_list()
@@ -31,9 +31,9 @@ modules <- c(
   # "stat_p_nonsig",
   # "marginal",
   # "stat_effect_size",
-  # "repo_check",
-  # "code_check",
-  "stat_check"
+  "repo_check",
+  "code_check"
+  # "stat_check",
   # "ref_accuracy",
   # "ref_replication",
   # "ref_retraction",
@@ -43,9 +43,10 @@ modules <- c(
 
 # generate reports for a sample of n papers
 n <- 1
-output <- "qmd"
+output <- "html"
 paper <- sample(psychsci, n)
-paper <- demopaper()
+#paper <- demopaper()
+# paper <- psychsci[[201]]
 
 # paper <- psychsci$`0956797620954815`
 # paper <- add_bib_match(paper)

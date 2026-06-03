@@ -378,9 +378,9 @@ repo_check <- function(paper, local_path = NULL) {
 
   report <- c(
     report_repo,
-    ifelse(nrow(repo_tbl), "#### Repositories", NULL),
+    if(nrow(repo_tbl)) "#### Repositories" else NULL,
     scroll_table(repo_tbl, maxrows = 10),
-    ifelse(nrow(report_tbl), "#### Files", NULL),
+    if (nrow(report_tbl)) "#### Files" else NULL,
     scroll_table(report_tbl, maxrows = 10),
     report_readme,
     report_zip

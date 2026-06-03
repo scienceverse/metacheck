@@ -24,6 +24,12 @@ test_that("repo_check offline", {
 #httptest2::start_capturing()
 httptest2::use_mock_api()
 
+test_that("OSF read_only link", {
+  osf_url <- "https://osf.io/t9j8e/?view_only=f171281f212f4435917b16a9e581a73b"
+  paper <- test_paper(url = osf_url)
+  obs <- osf_info(osf_url)
+})
+
 test_that("OSF no files", {
   # OSF but no R files
 

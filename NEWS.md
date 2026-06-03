@@ -1,10 +1,16 @@
+# metacheck 0.0.0.9107
+
+* code_check now checks if code is parseable (thanks @Raphael-Merz!)
+* many new `code_*()` functions abstracted out from the code_check module. These may eventually move to a new package specifically for codecheck
+
 # metacheck 0.0.0.9106
 
 * Added functions from svutils back in. 
+
 * Reorganised some ML read-in functions (internal).
 * Ollama further support in `llm()` and vignette.
 * The code_check module handles local file with the argument `local_path`
-* New `local_files()` function
+* New `local_files()` function (thanks @lakens!)
 
 # metacheck 0.0.0.9105
 

@@ -1,0 +1,13 @@
+---
+title: "Parse Errors OK"
+format: html
+---
+
+```{r}
+#| error: true
+
+# C1: this should give a parse error, but still render
+library(dplyr
+
+a <- 1 + 1
+```

@@ -1,0 +1,11 @@
+---
+title: "Knit Errors"
+outputhtml_document
+---
+
+```{r}
+# this should give no error
+a <- 1 + 1
+```
+
+

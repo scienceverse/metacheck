@@ -1,0 +1,28 @@
+---
+title: "No Parse Errors"
+format: html
+---
+
+This is not executable R code:
+
+``` r
+library(dplyr
+
+a <- 1 + 1
+```
+
+But this is:
+
+```{r}
+# this should not give a parse error
+# library(dplyr
+
+a <- 1 + 1
+```
+
+This is not detected yet as it's python:
+
+```{python}
+# also a parse error
+import numpy s np
+```

@@ -1,0 +1,23 @@
+---
+title: "Parse Errors"
+output: html_document
+---
+
+This is not executable R code:
+
+``` r
+library(dplyr
+
+a <- 1 + 1
+```
+
+But this is:
+
+```{r}
+# C1: this should give a parse error
+library(dplyr
+
+a <- 1 + 1
+```
+
+

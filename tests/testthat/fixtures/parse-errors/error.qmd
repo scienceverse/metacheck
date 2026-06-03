@@ -1,0 +1,29 @@
+---
+title: "Parse Errors"
+format: html
+---
+
+This is not executable R code:
+
+``` r
+library(dplyr
+
+a <- 1 + 1
+```
+
+But this is:
+
+```{r}
+# C1: this should give a parse error
+library(dplyr
+
+a <- 1 + 1
+x <- read.csv("/User/lisa/file.csv")
+```
+
+This is not detected yet as it's python:
+
+```{python}
+# also a parse error
+import numpy s np
+```
