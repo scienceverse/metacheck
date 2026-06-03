@@ -4,6 +4,7 @@
 #'
 #' @return list of roles
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' credit_roles()
@@ -65,6 +66,7 @@ credit_roles <- function(display = c("explain", "names", "abbr")) {
 #'
 #' @return a formatted 16-character ORCiD or FALSE
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' check_orcid("0000-0002-7523-5539")
@@ -113,6 +115,7 @@ check_orcid <- function(orcid) {
 #'
 #' @return A vector of matching ORCiDs
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' \donttest{
@@ -166,6 +169,7 @@ get_orcid <- function(family, given = "*") {
 #'
 #' @return A data frame of details
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' \donttest{

@@ -23,6 +23,7 @@
 #'
 #' @returns a function
 #' @export
+#' @keywords internal
 #' @examples
 #' bar <- pb(5)
 #' for (i in 1:5) {

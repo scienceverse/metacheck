@@ -1,6 +1,6 @@
 test_that("pb", {
-  expect_true(is.function(svutils::pb))
-  expect_no_error(helplist <- help(pb, svutils))
+  expect_true(is.function(metacheck::pb))
+  expect_no_error(helplist <- help(pb, metacheck))
 
   verbose(TRUE)
   expect_error(pb())

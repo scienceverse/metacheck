@@ -18,3 +18,4 @@ CRediT Roles
 \examples{
 credit_roles()
 }
+\keyword{internal}

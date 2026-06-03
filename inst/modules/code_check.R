@@ -13,6 +13,7 @@
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Raphael Merz (\email{r.t.p.merz@tue.nl})
 #'
 #' @import dplyr
 #' @import httr
@@ -29,7 +30,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
   # Many R files, some with library in different places. paper <- psychsci[[225]]
   # Best example, with many issues, for paper: paper <- psychsci[[233]]
   # ResearchBox and GitHub example (in full xml): paper <- xml[["09567976251333666"]]
-
+  
   all_files <- get_prev_outputs("repo_check", "table")
   if (is.null(all_files)) {
     if (!is.null(local_path)) {
@@ -39,28 +40,28 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
     }
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
   }
-
+  
   ## find code files ----
   code_ext <- grepl("\\.(r|rmd|qmd|sas|sps|do|ado)$",
                     all_files$file_name,
                     ignore.case = TRUE)
   code_files <- all_files[code_ext, , drop = FALSE]
-
+  
   summary_code <- sprintf(
     "We found %d R, SAS, SPSS, or Stata code file%s.",
     nrow(code_files),
     plural(nrow(code_files))
   )
-
+  
   # only look at first file_limit files in each repo
   n_files <- dplyr::count(code_files, repo_url)$n
-
+  
   if (any(n_files > file_limit)) {
     summary_code <- paste(summary_code, "Only the first", file_limit, "files per repository were analysed.")
-
+    
     code_files <- code_files |> dplyr::slice_head(n = file_limit, by = repo_url)
   }
-
+  
   # no relevant code files found ----
   if (nrow(code_files) == 0) {
     info <- list(
@@ -71,18 +72,18 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
         code_file_n = 0
       )
     )
-
+    
     return(info)
   }
-
+  
   # Check code ----
-
+  
   # Create list of all file names in repository
   files_in_repository <- basename(all_files$file_name)
-
+  
   # Shared absolute path pattern and quoted filename pattern
   absolute_path_pattern <- '(?<![A-Za-z0-9_])(["\'])(?:(?!https?://)(?:[A-Za-z]:[\\\\/]|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/]|~[/\\\\]|/(?:Users|home|var|etc|opt|srv|mnt|Volumes|Library|Applications|gpfs|data|tmp|media|root)\\b)[^"\']*)\\1'
-
+  
   # --- Process each code file (up to file_limit) ---
   pb_code <- pb(nrow(code_files), "(:spin) :what")
   pb_code$tick(0, list(what = "Starting Code Check"))
@@ -98,11 +99,25 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
       } else {
         con <- url(code_files$file_url[i])
       }
+      
+      # detect language (function below)
+      lang <- detect_lang(code_files$file_name[i])
+      collector$language <- lang
+      
+      # try parse R type code (function below)
+      parsing_error_df <- try_parse_code(file_path = con, lang = lang)
+      if (nrow(parsing_error_df) == 0){ # if no error --> code is parsable and there is no error message
+        collector$parsing_error <- 0
+        collector$parsing_error_message <- NA
+      } else if (nrow(parsing_error_df) == 1) { # if error --> code is not parsable and store error message
+        collector$parsing_error <- 1
+        collector$parsing_error_message <- parsing_error_df$message
+      }
 
       # read in files; skipNul handles UTF-16 LE encoded files (e.g. Stata on Windows)
       file_lines <- readLines(con, warn = FALSE, skipNul = TRUE)
       close(con)
-
+      
       is_rmd <- grepl("\\.(rmd|qmd)",
                       code_files$file_name[[i]],
                       ignore.case = TRUE)
@@ -112,31 +127,27 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
         old_knitr_opt <- getOption("knitr.duplicate.label")
         on.exit(options(knitr.duplicate.label = old_knitr_opt))
         options(knitr.duplicate.label = 'allow')
-
+        
         knitr::purl(
           text = file_lines,
           output = tmp_r,
           quiet = TRUE,
           documentation = 1 # 0 = only code,
-                            # 1 = chunk headers as comments
-                            # 2 = all text as roxygen comments
+          # 1 = chunk headers as comments
+          # 2 = all text as roxygen comments
         )
         file_lines <- readLines(tmp_r)
       }
-
-
+      
+      
       # Convert to UTF-8, replacing invalid characters
       file_lines <- iconv(file_lines, from = "UTF-8", to = "UTF-8", sub = "byte")
       # Remove any NA entries resulting from failed conversions
       file_lines <- file_lines[!is.na(file_lines)]
-
-      # detect language (function below)
-      lang <- detect_lang(code_files$file_name[i])
-      collector$language <- lang
-
+      
       # Create a comment-less version, per language
       file_nc <- remove_comments(file_lines, lang)
-
+      
       # get absolute paths based on grepl (on non-comment lines)
       absolute_paths <- grep(
         absolute_path_pattern,
@@ -146,10 +157,10 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
       )
       collector$code_abs_path <- length(absolute_paths)
       collector$absolute_paths <- paste(absolute_paths, collapse = ", ")
-
+      
       # Find lines where libraries/imports/includes are loaded  (function below)
       library_lines <- get_library_lines(file_nc, lang)
-
+      
       # If the import statements are at most 3 lines apart, we consider it OK
       collector$library_lines <- length(library_lines)
       if (length(library_lines) > 1) {
@@ -157,18 +168,18 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
       } else {
         collector$library_max_between <- NA
       }
-
+      
       # Get statistics about lines of code and comments  (function below)
       line_stats <- get_line_stats(file_lines, lang)
       collector$comment_lines <- line_stats$comment_lines
       collector$code_lines <- line_stats$code_lines
       collector$percentage_comment <- line_stats$percent_comments
-
+      
       # missing loaded files  (function below)
       missing_files <- get_missing_files(file_nc, lang, files_in_repository)
       collector$loaded_files_missing <- length(missing_files)
       collector$loaded_files_missing_names <- paste(missing_files, collapse = ", ")
-
+      
       return(collector)
     },
     error = \(e) {
@@ -176,12 +187,12 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
       return(collector)
     })
   }) # end of loop over code files
-
+  
   code_check <- dplyr::bind_rows(collected)
   code_files <- dplyr::bind_cols(code_files, code_check)
-
+  
   # Reporting ----
-
+  
   ## Libraries/imports grouping issues ----
   library_sep <- code_files$library_max_between > 3 &
     !is.na(code_files$library_max_between )
@@ -197,7 +208,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
     )
     summary_library <- "Libraries/imports were loaded in multiple places."
   }
-
+  
   ## absolute paths ----
   absolute_issues <- code_files$file_name[code_files$code_abs_path > 0]
   if (length(absolute_issues) == 0) {
@@ -215,7 +226,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
     report_table_absolute <- code_files[code_files$code_abs_path > 0, cols]
     colnames(report_table_absolute) <- c("File name", "Absolute paths found")
   }
-
+  
   ## Comments ----
   comment_issue <- code_files$file_name[code_files$percentage_comment == 0]
   if (length(comment_issue) == 0) {
@@ -236,7 +247,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
   colnames(report_table_comments) <- c(
     "File name", "Language", "Percent comments"
   )
-
+  
   ## Missing files ----
   missingfiles_issue <- code_files$file_name[code_files$loaded_files_missing > 0]
   if (length(missingfiles_issue) == 0) {
@@ -249,7 +260,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
       "%d file%s loaded in the code %s missing in the repository.",
       n_missing, plural(n_missing), plural(n_missing, "was", "were")
     )
-
+    
     report_missingfiles <- sprintf(
       "The scripts load files, but %d script%s loaded %d file%s that could not be automatically identified in the repository. Check if the following files are made available, so that others can reproduce your code, or that the files are missing:",
       length(missingfiles_issue),
@@ -257,13 +268,13 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
       n_missing,
       plural(n_missing)
     )
-
+    
     rows <- code_files$loaded_files_missing > 0
     cols <- c("file_name", "loaded_files_missing_names")
     report_table_files_missing <- code_files[rows, cols]
     colnames(report_table_files_missing) <- c("File name", "Missing Files")
   }
-
+  
   ## set up table of code file links ----
   cols <- c("file_name", "file_url",
             "percentage_comment",
@@ -276,7 +287,25 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
   report_table$file_url <- NULL
   report_table$percentage_comment <- sprintf("%.0f%%", report_table$percentage_comment * 100)
   names(report_table) <- c("File Name", "% Comments", "Missing Files", "Absolute Paths", "Code Between Libraries")
-
+  
+  ## Parsable Code ----
+  parsing_issues <- code_files$file_name[code_files$parsing_error == 1]
+  if (length(parsing_issues) == 0) {
+    report_parsable <- "All R-type code files (.R, .Rmd, .Qmd) could be read in. There were no parsing issues."
+    summary_parsable <- "No parsing issues of R-type files were found."
+    report_table_parsable <- NULL
+  } else {
+    report_parsable <- sprintf(
+      "We encountered parsing issues when trying to read in R-type code files. The following errors were found in %d code file%s:",
+      length(parsing_issues),
+      plural(length(parsing_issues))
+    )
+    summary_parsable <- "Parsing issues of R-type files were found."
+    cols <- c("file_name", "parsing_error_message")
+    report_table_parsable <- code_files[code_files$parsing_error == 1, cols]
+    colnames(report_table_parsable) <- c("File name", "Parsing Error Message")
+  }
+  
   report <- c(
     "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the code files below. This check may miss things or produce false positives if your scripts are less typical.",
     scroll_table(report_table, maxrows = 5),
@@ -289,43 +318,48 @@ code_check <- function(paper, file_limit = 20, local_path = NULL) {
     report_absolute,
     scroll_table(report_table_absolute, maxrows = 5),
     "#### Libraries / Imports",
-    report_library
+    report_library,
+    "#### Parsable code",
+    scroll_table(report_table_parsable)
   )
-
+  
   # traffic_light ----
   # green only if no issues across all code files
   if (length(missingfiles_issue) == 0 &&
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
-      length(library_issue) == 0) {
+      length(library_issue) == 0 &&
+      length(parsing_issues) == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"
   }
-
+  
   # Aggregate by project
   summary_table <- data.frame(
     paper_id = paper$paper_id,
     code_n = nrow(code_files),
     code_abs_path = sum(code_files$code_abs_path, na.rm = TRUE),
     code_missing_files = sum(code_files$loaded_files_missing, na.rm = TRUE),
-    code_min_comments = min(code_files$percentage_comment, na.rm = TRUE)
+    code_min_comments = min(code_files$percentage_comment, na.rm = TRUE),
+    code_not_parsable = sum(code_files$parsing_error, na.rm = TRUE)
   )
-
+  
   # summary_text ----
   summary_text <- c(
     summary_code,
     summary_comments,
     summary_missingfiles,
     summary_absolute,
-    summary_library
+    summary_library,
+    summary_parsable
   ) |>
     paste("\n- ", x = _, collapse = "")
-
+  
   # table ----
   table <- code_files
   table$file_location <- NULL
-
+  
   # return a list ----
   list(
     table = table,
@@ -407,7 +441,7 @@ remove_comments <- function(file_lines, lang) {
   } else {
     file_nc <- file_lines
   }
-
+  
   return(file_nc)
 }
 
@@ -415,7 +449,7 @@ get_line_stats <- function(file_lines, lang) {
   # remove blank lines
   file_lines <- file_lines[trimws(file_lines) != ""]
   total_lines <- length(file_lines)
-
+  
   if (lang == "R") {
     comment_lines <- sum(grepl("^\\s*#", file_lines))
     code_lines <- sum(!grepl("^\\s*#", file_lines))
@@ -468,9 +502,9 @@ get_line_stats <- function(file_lines, lang) {
     comment_lines <- sum(file_lines == "") # fallback; shouldn't happen
     code_lines <- sum(file_lines != "")
   }
-
+  
   percent_comments <- if (total_lines > 0) (comment_lines / total_lines) else NA
-
+  
   return(list(
     total_lines = total_lines,
     comment_lines = comment_lines,
@@ -487,13 +521,13 @@ get_library_lines <- function(file_nc, lang) {
     SPSS  = "\\b(INSERT|BEGIN\\s+PROGRAM|SET)\\b",
     Stata = "\\b(do|run|cd|adopath|net\\s+install|ssc\\s+install)\\b"
   )
-
+  
   import_regex <- lang_import_regex[[lang]]
   if (is.null(import_regex)) {
     return(integer(0))
   }
   lines <- grep(import_regex, file_nc, perl = TRUE)
-
+  
   return(lines)
 }
 
@@ -528,16 +562,16 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
   } else {
     character(0)
   }
-
+  
   # Quoted filenames
   quoted_filename_pattern <- "(['\"])(?!\\.\\1)[^'\"/\\\\]+\\.[A-Za-z0-9]{1,8}(?:\\.[A-Za-z0-9]{1,8})*\\1"
-
+  
   loaded_file <- unlist(regmatches(
     load_lines,
     gregexpr(quoted_filename_pattern, load_lines, perl = TRUE)
   ))
   loaded_file <- gsub("^['\"]|['\"]$", "", loaded_file)
-
+  
   # Unquoted captures (language-specific)
   lang_unquoted_captures <- list(
     R = list(), # quoted captures suffice for your R grepl_load
@@ -556,7 +590,7 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
       list(regex = "append\\b.*?using\\s+([^,\\s]+)", group = 1)
     )
   )
-
+  
   extra <- character(0)
   caps <- lang_unquoted_captures[[lang]]
   if (length(caps) > 0) {
@@ -571,9 +605,79 @@ get_missing_files <- function(file_nc, lang, files_in_repository) {
   }
   extra <- extra[!is.na(extra)]
   loaded_file <- basename(unique(c(loaded_file, extra)))
-
+  
   missing_files <- loaded_file[!tolower(loaded_file) %in% tolower(files_in_repository)]
-
+  
   return(missing_files)
 }
 
+# Helper: Try parsing code and storing any resulting errors
+try_parse_code <- function(file_path, lang = NA_character_) {
+  
+  # print("Running try_parse_code() now!")
+  # print(paste0("lang seems to be: ", lang))
+  
+  ### Initiate df to store results
+  parsing_error_df <- data.frame()
+  
+  ### Initiate errors_parsable list
+  errors_parsable <- list()
+  
+  ### Initialize tmp_file so finally() always knows it
+  tmp_file <- NULL
+  
+  if (lang == "R") {
+    
+    ext <- tools::file_ext(file_path)
+    ext <- tolower(ext)
+    
+    tryCatch(
+      {
+        if (ext == "r") {
+          
+          # print("Trying to parse normal .R file now!")
+          
+          parse(file = file_path, keep.source = TRUE)
+          
+          # print("Tried to parse R type code file.")
+          
+        } else if (ext %in% c("rmd", "qmd")) {
+          
+          # print("Converting Rmd/Qmd file now!")
+          
+          tmp_file <- tempfile(fileext = ".R")
+          
+          knitr::purl(
+            input = file_path,
+            output = tmp_file,
+            documentation = 0
+          )
+          
+          parse(file = tmp_file, keep.source = TRUE)
+          
+        }
+      },
+      
+      error = function(e_parse) {
+        
+        # print("Caught parsing error!")
+        # print(e_parse$message)
+        
+        errors_parsable[[length(errors_parsable) + 1]] <<- list(
+          path = file_path,
+          message = e_parse$message
+        )
+      },
+      
+      finally = {
+        
+        ### Remove temp file if it exists
+        if (!is.null(tmp_file) && file.exists(tmp_file)) {
+          file.remove(tmp_file)
+        }
+      }
+    )
+    parsing_error_df <- dplyr::bind_rows(errors_parsable)
+  }
+  return(parsing_error_df)
+}

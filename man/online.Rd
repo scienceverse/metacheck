@@ -18,3 +18,4 @@ Check if the host of a URL is online
 \examples{
 online()
 }
+\keyword{internal}

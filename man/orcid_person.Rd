@@ -21,3 +21,4 @@ orcids <- c("0000-0002-0247-239X", "0000-0002-7523-5539")
 orcid_person(orcids)
 }
 }
+\keyword{internal}
