@@ -24,4 +24,4 @@ remotes::install_github("scienceverse/metacheck")
 
 You may not contribute any code unless you also contribute a test of this code.
 
-Check tests/testthat/helper.R for custom test skip functions. By default, all tests requiring a web connection, LLM, or long tests are skipped or mocked. You can control this globally with the skip functions in this file (e.g., comment out the first `skip()` function in each custom function to run all tests of this type unless on cran/covr).
+Check tests/testthat/helper.R for custom test skip functions. All tests requiring a web connection, LLM, or long tests should be skipped or mocked. You can control this globally with the skip functions in this file (e.g., comment out the first `skip()` function in each custom function to run all tests of this type unless on cran/covr).
