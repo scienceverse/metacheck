@@ -1,17 +1,10 @@
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
-testthat::local_mocked_bindings(
-  online = \(...) TRUE
-)
-
 test_that("multiple prereg", {
   paper <- demopaper()
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 2)
   expect_equal(mo$table$template_name, c("OSF Preregistration", "AsPredicted"))
   expect_equal(mo$table$id, c("48ncu", "by8i8v"))
-})
+}, "mock")
 
 test_that("oer", {
   guid <- "5xysn"
@@ -21,7 +14,7 @@ test_that("oer", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Open-Ended Registration")
   expect_equal(mo$table$id, guid)
-})
+}, "mock")
 
 test_that("prc", {
   guid <- "jez3g"
@@ -31,7 +24,7 @@ test_that("prc", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Prereg Challenge")
   expect_equal(mo$table$id, guid)
-})
+}, "mock")
 
 test_that("osf_pr_28", {
   guid <- "g59u6"
@@ -41,7 +34,7 @@ test_that("osf_pr_28", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "OSF Preregistration")
   expect_equal(mo$table$id, guid)
-})
+}, "mock")
 
 test_that("osf_pr_31", {
   guid <- "7qcxa"
@@ -51,7 +44,7 @@ test_that("osf_pr_31", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "OSF Preregistration")
   expect_equal(mo$table$id, guid)
-})
+}, "mock")
 
 test_that("osf_pre", {
   guid <- "dr42m"
@@ -61,7 +54,7 @@ test_that("osf_pre", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "OSF-Standard Pre-Data Collection Registration")
   expect_equal(mo$table$id, guid)
-})
+}, "mock")
 
 test_that("prap", {
   guid <- "7v28u"
@@ -71,7 +64,7 @@ test_that("prap", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Preregistration Template from AsPredicted.org")
   expect_equal(mo$table$id, guid)
-})
+}, "mock")
 
 test_that("rrbrandt", {
   guid <- "vzb48"
@@ -81,7 +74,7 @@ test_that("rrbrandt", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$table$template_name, "Replication Recipe (Brandt et al., 2013): Pre-Registration")
   expect_equal(mo$table$id, guid)
-})
+}, "mock")
 
 test_that("multiple papers", {
   guid1 <- "48ncu"
@@ -104,7 +97,7 @@ test_that("multiple papers", {
   expect_setequal(mo$table$paper_id, ids)
   expect_setequal(mo$summary_table$paper_id, ids)
   expect_setequal(mo$summary_table$preregistration, c(1,1))
-})
+}, "mock")
 
 test_that("combine >10 OSF registrations", {
   # https://github.com/scienceverse/metacheck/issues/262
@@ -128,7 +121,4 @@ test_that("combine >10 OSF registrations", {
   expect_equal(mo$summary_table$preregistration, 11)
   expect_equal(nrow(mo$table), 11)
   expect_contains(names(mo$table), "paper_id")
-})
-
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
+}, "mock")

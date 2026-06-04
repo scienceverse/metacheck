@@ -1,12 +1,12 @@
 structure(list(method = "GET", url = "https://api.osf.io/v2/guids/629bx/?resolve=false", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Tue, 12 May 2026 14:02:57 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Thu, 04 Jun 2026 21:55:39 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         `content-length` = "501", vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
         `x-frame-options` = "DENY", `cache-control` = "no-cache, no-store, max-age=0, must-revalidate", 
         expires = "-1", pragma = "no-cache", via = "1.1 google", 
-        `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = "httr2_headers"), 
+        `alt-svc` = "h3=\":443\"; ma=2592000"), class = "httr2_headers"), 
     body = as.raw(c(0x7b, 0x22, 0x64, 0x61, 0x74, 0x61, 0x22, 
     0x3a, 0x7b, 0x22, 0x69, 0x64, 0x22, 0x3a, 0x22, 0x36, 0x32, 
     0x39, 0x62, 0x78, 0x22, 0x2c, 0x22, 0x74, 0x79, 0x70, 0x65, 
@@ -58,5 +58,5 @@ structure(list(method = "GET", url = "https://api.osf.io/v2/guids/629bx/?resolve
     0x6d, 0x65, 0x74, 0x61, 0x22, 0x3a, 0x7b, 0x22, 0x76, 0x65, 
     0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x3a, 0x22, 0x32, 0x2e, 
     0x30, 0x22, 0x7d, 0x7d)), timing = c(redirect = 0, namelookup = 0, 
-    connect = 0, pretransfer = 0.000271, starttransfer = 0.379485, 
-    total = 0.379991), cache = new.env(parent = emptyenv())), class = "httr2_response")
+    connect = 0, pretransfer = 0.000133, starttransfer = 0.344394, 
+    total = 0.344669), cache = new.env(parent = emptyenv())), class = "httr2_response")

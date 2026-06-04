@@ -8,6 +8,8 @@
 #'
 #' If you want to extend the package to detect effect sizes for additional tests, reach out to the Metacheck development team.
 #'
+#' <validation>In a sample of 161 papers with 1469 tests, this module correctly detected 1106 reported effect sizes (true positives) and correctly identified 295 cases where no effect size was present (true negatives). However, it missed 23 that were reported (false negatives), and incorrectly identified 45 effect sizes when none were reported (false positives). Among all instances detected by the module, 96% were true cases (positive predictive value).</validation>
+#'
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
