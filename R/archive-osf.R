@@ -1,156 +1,3 @@
-#' OSF Headers
-#'
-#' Adds OSF auth and accept headers to an httr2 request.
-#'
-#' @param req an httr2 request object
-#'
-#' @returns the modified request
-#' @export
-#' @keywords internal
-.osf_headers <- function(req) {
-  req <- req |>
-    httr2::req_headers(
-      `User-Agent` = "metacheck",
-      Accept = "application/vnd.api+json"
-    )
-  osf_pat <- Sys.getenv("OSF_PAT")
-  if (!nzchar(osf_pat)) {
-    return(req)
-  }
-
-  # PAT exists, check validation
-  req_pat <- req |>
-    httr2::req_headers(Authorization = sprintf("Bearer %s", osf_pat))
-
-  return(req_pat)
-}
-
-#' OSF PAT Validation
-#'
-#' Checks for validity of the OSF PAT and unsets it if needed.
-#'
-#' @param osf_pat the OSF PAT (read from renviron by default)
-#'
-#' @returns logical (TRUE if OSF_PAT is set and valid)
-#' @export
-#' @keywords internal
-.osf_pat_validate <- function(osf_pat = Sys.getenv("OSF_PAT")) {
-  if (osf_pat == "") return(FALSE)
-  if (!online("api.osf.io")) return(FALSE)
-
-  # check a publicly available preprint (Nosek badges)
-  probe <- "https://api.osf.io/v2/preprints/khbvy/"
-
-  req <- httr2::request(probe) |>
-    httr2::req_error(is_error = \(r) FALSE)  |>
-    # httr2::req_timeout(5) |>
-    httr2::req_headers(
-      `User-Agent` = "metacheck",
-      Accept = "application/vnd.api+json"
-    )
-
-  # try anonymously
-  sc_anon <- tryCatch(
-    req |> httr2::req_perform() |> httr2::resp_status(),
-    error = \(e) NA
-  )
-
-  # public file not available - something wrong
-  if (!sc_anon %in% 200L) {
-    warning(
-      "The OSF_PAT could not be validated because the test file is not avilable; the OSF may be down.",
-      call. = FALSE
-    )
-    return(FALSE)
-  }
-
-  # try with PAT authorisation
-  sc_auth <- tryCatch(
-    req |>
-      httr2::req_headers(Authorization = sprintf("Bearer %s", osf_pat)) |>
-      httr2::req_perform() |>
-      httr2::resp_status(),
-    error = \(e) NA
-  )
-
-  # authorised access success
-  if (sc_auth %in% 200L) {
-    return(TRUE)
-  }
-
-  if (sc_auth %in% c(401L, 403L)) {
-    # unset PAT if invalid
-    warning(
-      "The current OSF_PAT blocks access to public files. ",
-      "Clearing OSF_PAT for this session. ",
-      "Update or remove it in .Renviron.",
-      call. = FALSE
-    )
-    Sys.setenv(OSF_PAT = "")
-  }
-
-  return(FALSE)
-}
-
-#' Find OSF Links in Papers
-#'
-#' OSF links can be tricky to find in PDFs, since they can insert spaces in odd places, and view-only links that contain a ? are often interpreted as being split across sentences. This function is our best attempt at catching and fixing them all.
-#'
-#' @param paper a paper object or paperlist object
-#'
-#' @returns a table with the OSF url in the first (href) column
-#' @export
-#'
-#' @examples
-#' osf_links(psychsci)
-osf_links <- function(paper) {
-  href <- NULL
-
-  paper_table(paper, "url") |>
-    dplyr::filter(grepl("osf\\.io", href, ignore.case = TRUE))
-}
-# osf_links <- function(paper) {
-#   # get OSF links
-#   OSF_RGX <- "\\bosf\\s*\\.\\s*io\\s*/\\s*[a-z0-9]{5}\\s*/?\\s*\\??\\b"
-#   found_osf <- text_search(paper, OSF_RGX, return = "match")
-#
-#   # get ? links (often in next sentence)
-#   VO_RGX <- paste0(
-#     "\\bosf\\s*\\.\\s*io\\s*/", # osf.io
-#     "\\s*[a-z0-9]{5}", # 5-letter code
-#     "\\s*/\\s*\\?\\s*view_only\\s*=\\s*[0-9a-f]+" # vo-link
-#   )
-#
-#   has_quest <- grepl("\\?", found_osf$text)
-#   expanded_vo <- found_osf[has_quest, , drop = FALSE] |>
-#     text_expand(paper, plus = 1)
-#
-#   expanded_vo$old_text <- expanded_vo$text
-#   expanded_vo$text <- expanded_vo$expanded
-#
-#   found_vo <- expanded_vo |>
-#     text_search(VO_RGX, return = "match")
-#
-#   found_vo$expanded <- found_vo$text
-#   found_vo$text <- found_vo$old_text
-#   found_vo$old_text <- NULL
-#
-#   # combine
-#   all_osf <- dplyr::left_join(found_osf, found_vo,
-#     by = names(found_osf)
-#   )
-#   if (nrow(all_osf) > 0) {
-#     all_osf$text <- ifelse(
-#       is.na(all_osf$expanded),
-#       all_osf$text,
-#       all_osf$expanded
-#     )
-#   }
-#   all_osf$expanded <- NULL
-#
-#   return(all_osf)
-# }
-
 
 #' Check OSF API Server Status
 #'
@@ -163,35 +10,65 @@ osf_links <- function(paper) {
 #' OSF_PAT="replace-with-your-token-string"
 #'
 #' @param osf_api the OSF API to use (e.g., "https://api.osf.io/v2")
+#' @param on_error whether to stop, warn, or ignore errors
 #'
 #' @returns the OSF status
 #' @export
 #'
 #' @examples
 #' osf_api_check()
-osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
-  if (!curl::has_internet()) {
-    return("no internet")
+osf_api_check <- function(osf_api = getOption("metacheck.osf.api"),
+                          on_error = c("stop", "warn", "ignore")) {
+  on_error <- match.arg(on_error)
+  status_code <- 0
+  status <- tryCatch({
+    if (!curl::has_internet()) return("no internet")
+    resp <- httr2::request(osf_api) |>
+      .osf_headers() |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      # httr2::req_retry(
+      #   max_tries = 3,
+      #   is_transient = \(resp) httr2::resp_status(resp) == 429
+      # ) |>
+      httr2::req_perform()
+    status_code <- httr2::resp_status(resp)
+    httr2::resp_status_desc(resp)
+  }, error = \(e) {
+    return(e$message)
+  })
+
+  if (status_code != 200) {
+    logger("osf_api_check", list(error = status, code = status_code))
+    msg <- sprintf(
+      "The OSF API seems to be having a problem:\nError %d: %s\nCheck %s",
+      status_code, status, osf_api
+    )
+    if (on_error == "warn") {
+      warning(msg, call. = FALSE)
+    } else if (on_error == "stop") {
+      stop(msg, call. = FALSE)
+    }
   }
-  resp <- osf_request(osf_api) |>
-    httr2::req_perform()
-  .osf_api_calls_inc()
-  status <- dplyr::recode_values(
-    httr2::resp_status(resp),
-    200 ~ "ok",
-    204 ~ "no content",
-    400 ~ "bad request",
-    403 ~ "forbidden",
-    404 ~ "not found",
-    405 ~ "method not allowed",
-    409 ~ "conflict",
-    410 ~ "gone",
-    429 ~ "too many requests",
-    500:599 ~ "server error",
-    default = "unknown"
-  )
 
   return(status)
+}
+
+#' Find OSF Links in Papers
+#'
+#' Get all OSF links.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a table with the OSF url in the first (href) column
+#' @export
+#'
+#' @examples
+#' osf_links(psychsci)
+osf_links <- function(paper) {
+  urls <- paper_table(paper, "url")
+  urls$href <- gsub("\\s", "", urls$href) # temp fix for urls with spaces
+  osf <- grepl("osf\\.io", urls$href, ignore.case = TRUE)
+  urls[osf, ]
 }
 
 
@@ -200,7 +77,6 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
 #' @param osf_url an OSF ID or URL, or a table containing them
 #' @param id_col the index or name of the column that contains OSF IDs or URLs, if id is a table
 #' @param recursive whether to retrieve all children
-#' @param find_project DEPRECATED always TRUE now - find the top-level project associated with a file (adds 1+ API calls)
 #' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
@@ -210,25 +86,16 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api")) {
 #' # get info on one OSF node
 #' osf_info("pngda")
 #'
-#' # also get child nodes and files, and parent project
-#' osf_info("https://osf.io/6nt4v", TRUE, TRUE)
+#' # also get child nodes and files
+#' osf_info("https://osf.io/6nt4v", recursive = TRUE)
 #' }
 osf_info <- function(osf_url, id_col = 1,
-                         recursive = FALSE,
-                         find_project = FALSE,
-                         pb = NULL) {
+                     recursive = FALSE,
+                     pb = NULL) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
     pb$tick(0, list(what = "OSF Retrieve"))
     on.exit(pb$terminate())
-  }
-
-  api_check <- osf_api_check()
-  if (api_check != "ok") {
-    stop(
-      "The OSF API seems to be having a problem: ", api_check,
-      "\nCheck ", getOption("metacheck.osf.api")
-    )
   }
 
   # handle list of links
@@ -238,9 +105,7 @@ osf_info <- function(osf_url, id_col = 1,
     raw_osf_urls <- table[[id_col]]
   } else {
     id_col_name <- "osf_url"
-    raw_osf_urls <- unique(osf_url) |>
-      stats::na.omit() |>
-      as.character()
+    raw_osf_urls <- unique(osf_url) |> stats::na.omit() |> as.character()
     table <- data.frame(osf_url = raw_osf_urls)
   }
 
@@ -248,7 +113,7 @@ osf_info <- function(osf_url, id_col = 1,
   ids <- data.frame(
     osf_url = raw_osf_urls
   )
-  ids$osf_id <- osf_check_id(raw_osf_urls)
+  ids$osf_id <- osf_check_id(ids$osf_url)
   ids <- ids[!is.na(ids$osf_id), , drop = FALSE] |> unique()
 
   valid_ids <- unique(ids$osf_id)
@@ -284,43 +149,32 @@ osf_info <- function(osf_url, id_col = 1,
 
     children <- info
     child_collector <- data.frame()
-
-    while (nrow(children) > 0) {
-      node_ids <- children[children$osf_type == "nodes", ]$osf_id
-      children <- .osf_children(node_ids, pb = pb)
+    urls <- children$children[!is.na(children$children)]
+    while (length(urls) > 0) {
+      resp <- lapply(urls, osf_get_all_pages) |> dplyr::bind_rows()
+      children <- .osf_parse_response(resp)
+      # resps <- .batch_query(urls, msg = "OSF Child Info", req_func = .osf_headers)
+      # children <- lapply(resps, .osf_parse_response) |> dplyr::bind_rows()
       child_collector <- dplyr::bind_rows(child_collector, children)
+      urls <- children$children[!is.na(children$children)]
     }
 
     # get all new node IDs to search for files
     all_nodes <- dplyr::bind_rows(info, child_collector)
-    node_type <- all_nodes$osf_type %in% c("nodes", "registrations")
-    if ("kind" %in% names(all_nodes)) {
-      node_type <- node_type | all_nodes$kind == "folder"
-    }
-    node_type <- sapply(node_type, isTRUE)
-
-    folders <- all_nodes[node_type, c("osf_id", "osf_type", "project")] |> unique()
-
+    files <- all_nodes
+    urls <- files$files[!is.na(files$files)]
     file_collector <- data.frame()
-    while (nrow(folders) > 0) {
-      subfiles <- mapply(\(f, osf_type, proj_id) {
-        dat <- .osf_files(f, osf_type, pb = pb)
-        dat$project <- rep(proj_id, nrow(dat))
-        dat
-      }, folders$osf_id, folders$osf_type, folders$project, SIMPLIFY = FALSE) |>
-        do.call(dplyr::bind_rows, args = _)
-
-      if (nrow(subfiles) > 0 && "kind" %in% names(subfiles)) {
-        folders <- subfiles[subfiles$kind == "folder", c("osf_id", "osf_type", "project")]
-        # folders <- folders[!is.na(folders$osf_id), ]
-      } else {
-        folders <- data.frame()
-      }
-      file_collector <- dplyr::bind_rows(file_collector, subfiles)
+    while (length(urls) > 0) {
+      resp <- lapply(urls, osf_get_all_pages) |> dplyr::bind_rows()
+      files <- .osf_parse_response(resp)
+      # resps <- .batch_query(urls, msg = "OSF File Info", req_func = .osf_headers)
+      #files <- lapply(resps, .osf_parse_response) |> dplyr::bind_rows()
+      file_collector <- dplyr::bind_rows(file_collector, files)
+      urls <- files$files[!is.na(files$files)]
     }
 
     data <- list(data, child_collector, file_collector) |>
-      do.call(dplyr::bind_rows, args = _)
+     dplyr::bind_rows()
   }
 
   paste0("...OSF retrieval complete!")|>
@@ -331,314 +185,6 @@ osf_info <- function(osf_url, id_col = 1,
 }
 
 
-#' Build an OSF API request
-#'
-#' Helper that constructs a standard OSF API request with headers,
-#' error suppression, and retry on 429.
-#'
-#' @param url the full API URL
-#'
-#' @returns an httr2 request object
-#' @keywords internal
-osf_request <- function(url) {
-  httr2::request(url) |>
-    .osf_headers() |>
-    httr2::req_error(is_error = \(resp) FALSE) |>
-    httr2::req_retry(
-      max_tries = 3,
-      is_transient = \(resp) httr2::resp_status(resp) == 429
-    )
-}
-
-#' Retrieve info from the OSF by ID
-#'
-#' @param osf_ids an vector of OSF IDs or URLs
-#' @param pb a progress bar passed from another function
-#'
-#' @returns a data frame of information
-#' @export
-#' @keywords internal
-.osf_info <- function(osf_ids, pb = NULL) {
-  if (is.null(pb)) {
-    pb <- pb(NA, "(:spin) :what")
-    on.exit(pb$terminate())
-  }
-
-  valid_ids <- osf_check_id(osf_ids)
-
-  if (all(is.na(valid_ids))) {
-    return(data.frame(
-      osf_id = osf_ids,
-      osf_type = "invalid"
-    ))
-  }
-
-  osf_api <- getOption("metacheck.osf.api")
-
-  # Separate 5-char GUIDs from 24-char waterbutler IDs
-  is_guid <- nchar(valid_ids) %in% 5
-  guid_ids <- valid_ids[is_guid]
-  wb_ids <- valid_ids[!is_guid & !is.na(valid_ids)]
-
-  urls <- c(
-    sprintf("%s/guids/%s", osf_api, guid_ids),
-    sprintf("%s/files/%s", osf_api, wb_ids)
-  )
-
-  resps <- .batch_query(urls, msg = "OSF Info", req_func = .osf_headers)
-  all_ids <- c(guid_ids, wb_ids)
-  osf_api_calls(osf_api_calls() + length(resps))
-
-  # Process responses
-  results <- vector("list", length(resps))
-  for (i in seq_along(resps)) {
-    resp <- resps[[i]]
-    id <- all_ids[[i]]
-
-    results[[i]] <- tryCatch({
-      if (inherits(resp, "error")) {
-        warning(id, " resulted in an error", call. = FALSE)
-        data.frame(osf_id = id, osf_type = "error")
-      } else {
-        .osf_parse_response(resp, id, pb = pb)
-      }
-    }, error = \(e) {
-      data.frame(osf_id = id, osf_type = "error")
-    })
-  }
-
-  info_table <- do.call(dplyr::bind_rows, results)
-
-  if (any(is.na(valid_ids))) {
-    invalid <- data.frame(
-      osf_id = osf_ids[is.na(valid_ids)],
-      osf_type = "invalid"
-    )
-    info_table <- dplyr::bind_rows(info_table, invalid)
-  }
-
-  return(info_table)
-}
-
-#' Parse an OSF API response into a data frame
-#'
-#' @param resp an httr2 response
-#' @param id the OSF ID that was requested
-#' @param req_type the endpoint type used ("guids" or "files")
-#' @param pb a progress bar
-#'
-#' @returns a single-row data frame
-#' @keywords internal
-.osf_parse_response <- function(resp, id, req_type = "guids", pb = NULL) {
-  sc <- httr2::resp_status(resp)
-
-  if (sc == 200) {
-    content <- httr2::resp_body_json(resp, simplifyVector = TRUE)
-    data <- content$data
-    osf_type <- data$type
-
-    if (osf_type == "nodes") return(.osf_node_data(data))
-    if (osf_type == "files") return(.osf_file_data(data))
-    if (osf_type == "preprints") return(.osf_preprint_data(data))
-    if (osf_type == "registrations") return(.osf_reg_data(data))
-    if (osf_type == "users") return(.osf_user_data(data))
-
-    warning(id, " has unknown type: ", osf_type, call. = FALSE)
-    return(data.frame(osf_id = id, osf_type = "unknown"))
-  }
-
-  if (sc %in% c(401, 403)) {
-    return(data.frame(osf_id = id,
-                      osf_type = "private",
-                      public = FALSE))
-  }
-
-  if (sc == 429) {
-    warning("Too many requests", call. = FALSE)
-    return(data.frame(osf_id = id, osf_type = "too many requests"))
-  }
-
-  # TODO: remove req_type???
-  # if (sc == 404 && req_type == "files") {
-  #   # Waterbutler ID not a file — fall back to sequential lookup
-  #   return(.osf_info(id, pb = pb))
-  # }
-
-  warning(id, " could not be found", call. = FALSE)
-  data.frame(osf_id = id, osf_type = "unfound")
-}
-
-
-#' Structure OSF Node Data
-#'
-#' @param data the data object from an OSF API call
-#'
-#' @returns a data frame with a subset of data
-#' @export
-#' @keywords internal
-.osf_node_data <- function(data) {
-  if (is.null(data) | length(data) == 0) {
-    return(data.frame())
-  }
-
-  att <- data$attributes
-
-  obj <- data.frame(
-    osf_id = data$id,
-    name = att$title %||% NA_character_,
-    description = att$description %||% NA_character_,
-    osf_type = data$type,
-    public = att$public %||% NA,
-    category = att$category %||% NA_character_,
-    registration = att$registration %||% NA,
-    preprint = att$preprint %||% NA,
-    parent = data$relationships$parent$data$id %||% NA_character_,
-    project = data$relationships$root$data$id %||% NA_character_
-  )
-
-  return(obj)
-}
-
-#' Structure OSF File Data
-#'
-#' @param data the data object from an OSF API call
-#'
-#' @returns a data frame with a subset of data
-#' @export
-#' @keywords internal
-.osf_file_data <- function(data) {
-  if (is.null(data) | length(data) == 0) {
-    return(data.frame())
-  }
-
-  att <- data$attributes
-
-  if (is.null(att$guid)) {
-    osf_id <- data$id
-  } else {
-    osf_id <- ifelse(is.na(att$guid), data$id, att$guid)
-  }
-
-  obj <- data.frame(
-    osf_id = osf_id,
-    # osf_id = data$id,
-    name = att$name,
-    description = att$description %||% NA_character_,
-    osf_type = data$type,
-    kind = att$kind %||% NA_character_,
-    filetype = NA_character_,
-    public = att$public %||% NA,
-    category = att$category %||% NA_character_,
-    size = att$size %||% NA_integer_,
-    downloads = att$extra$downloads %||% NA_integer_,
-    download_url = data$links$download %||% NA_character_,
-    parent = data$relationships$target$data$id %||%
-      data$relationships$parent_folder$data$id %||%
-      NA_character_,
-    project = data$relationships$root$data$id %||% NA_character_
-  )
-
-  # guess file type
-  is_file <- obj$kind == "file"
-  obj$filetype[is_file] <- filetype(obj$name[is_file])
-
-  folders <- which(obj$kind == "folder")
-  if (length(folders) &&
-    !is.null(data$relationships$root_folder$data$id)) {
-    obj$osf_id[folders] <-
-      data$relationships$root_folder$data$id[folders]
-  }
-
-  return(obj)
-}
-
-#' Structure OSF Preprint Data
-#'
-#' @param data the data object from an OSF API call
-#'
-#' @returns a data frame with a subset of data
-#' @export
-#' @keywords internal
-.osf_preprint_data <- function(data) {
-  if (is.null(data) | length(data) == 0) {
-    return(data.frame())
-  }
-
-  att <- data$attributes
-
-  obj <- data.frame(
-    osf_id = data$id,
-    name = att$title,
-    description = att$description %||% NA_character_,
-    # tags = sapply(att$tags, paste, collapse = ";"),
-    osf_type = data$type,
-    provider = data$relationships$provider$data$id,
-    public = att$public %||% NA,
-    doi = att$doi %||% NA_character_,
-    version = att$version %||% NA_integer_,
-    is_published = att$is_published %||% NA,
-    date_created = att$date_created %||% NA_character_,
-    date_modified = att$date_modified %||% NA_character_,
-    parent = data$relationships$node$data$id %||% NA_character_,
-    project = data$relationships$root$data$id %||% NA_character_,
-    primary_file = data$relationships$primary_file$links$related$href %||% NA_character_
-  )
-
-  return(obj)
-}
-
-#' Structure OSF Registration Data
-#'
-#' @param data the data object from an OSF API call
-#'
-#' @returns a data frame with a subset of data
-#' @export
-#' @keywords internal
-.osf_reg_data <- function(data) {
-  if (is.null(data) | length(data) == 0) {
-    return(data.frame())
-  }
-
-  att <- data$attributes
-
-  obj <- data.frame(
-    osf_id = data$id,
-    name = att$title %||% NA_character_,
-    osf_type = data$type,
-    category = "registration",
-    registration = att$registration %||% NA,
-    preprint = data$attributes$preprint %||% NA,
-    parent = data$relationships$registered_from$data$id %||% NA_character_,
-    project = data$relationships$root$data$id %||% NA_character_
-  )
-
-  return(obj)
-}
-
-#' Structure OSF User Data
-#'
-#' @param data the data object from an OSF API call
-#'
-#' @returns a data frame with a subset of data
-#' @export
-#' @keywords internal
-.osf_user_data <- function(data) {
-  if (is.null(data) | length(data) == 0) {
-    return(data.frame())
-  }
-
-  att <- data$attributes
-
-  obj <- data.frame(
-    osf_id = data$id,
-    name = att$full_name %||% NA_character_,
-    osf_type = data$type,
-    public = TRUE,
-    orcid = att$social$orcid %||% NA_character_
-  )
-
-  return(obj)
-}
 
 #' Check OSF IDs
 #'
@@ -667,6 +213,9 @@ osf_check_id <- function(osf_id) {
         if (grepl("^[a-z0-9]{5}(_v\\d+)?$", id)) {
           return(id)
         }
+        if (grepl("^[a-z0-9]{5}(_v\\d+)?\\?view_only=.+$", id)) {
+          return(id)
+        }
         if (nchar(id) == 24 && grepl("^[a-z0-9]+$", id)) {
           return(id)
         }
@@ -679,8 +228,12 @@ osf_check_id <- function(osf_id) {
           fs::path_split() |>
           sapply(utils::tail, 1)
 
+
         # All OSF IDs are 5 or 24 characters
         if (grepl("^[a-z0-9]{5}(_v\\d+)?$", path)) {
+          if (!is.null(parsed$query$view_only)) {
+            path <- paste0(path, "?view_only=", parsed$query$view_only)
+          }
           return(path)
         }
         if (nchar(path) == 24) {
@@ -710,7 +263,6 @@ osf_check_id <- function(osf_id) {
   }, USE.NAMES = FALSE)
 }
 
-
 #' Get OSF GUID Type
 #'
 #' @param guid the 5-letter GUID
@@ -735,6 +287,9 @@ osf_type <- function(guid) {
 
   osf_api <- getOption("metacheck.osf.api")
   id <- osf_check_id(guid)
+
+  if (is.na(id)) return(NA_character_)
+
   url <- sprintf(
     "%s/guids/%s/?resolve=false",
     osf_api, id
@@ -745,6 +300,7 @@ osf_type <- function(guid) {
 
   otype %||% NA_character_
 }
+
 
 #' Get All OSF API Query Pages
 #'
@@ -765,33 +321,23 @@ osf_type <- function(guid) {
 osf_get_all_pages <- function(url, page_end = Inf) {
   Sys.sleep(osf_delay())
 
-  content <- tryCatch(
-    {
-      resp <- osf_request(url) |>
-        httr2::req_perform()
-      .osf_api_calls_inc()
-      httr2::resp_body_json(resp, simplifyVector = TRUE)
-    },
-    error = function(e) {
-      return(NULL)
-    }
-  )
+  content <- tryCatch({
+    resp <- httr2::request(url) |>
+      .osf_headers() |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_retry(
+        max_tries = 3,
+        is_transient = \(resp) httr2::resp_status(resp) == 429
+      ) |>
+      httr2::req_perform()
+    httr2::resp_body_json(resp, simplifyVector = TRUE)
+  },
+  error = function(e) {
+    return(NULL)
+  })
 
   next_url <- content$links$`next`
   last_url <- content$links$last
-
-  # m <- gregexpr("(?<=page=)\\d+", url, perl = TRUE)
-  # this_page <- regmatches(url, m)[[1]] |> as.numeric()
-  # if (length(this_page) == 0) this_page <- 1
-
-  # if (!is.null(last_url)) {
-  #   m <- gregexpr("(?<=page=)\\d+", last_url, perl = TRUE)
-  #   end <- regmatches(last_url, m)[[1]] |> as.numeric()
-  #
-  #   if (end < page_end) { page_end <- end }
-  #   message("Retrieving ", this_page, "/", page_end,
-  #           " of ", end, " pages")
-  # }
 
   subdata <- NULL
   if (!is.null(next_url)) {
@@ -802,134 +348,16 @@ osf_get_all_pages <- function(url, page_end = Inf) {
     }
   }
 
-  if (!is.null(subdata)) {
-    data <- dplyr::bind_rows(content$data, subdata)
-  } else {
-    data <- content$data
-  }
+  data <- tryCatch({
+    dplyr::bind_rows(content$data, subdata)
+  }, error = \(e) {
+    logger("osf_get_all_pages", list(url = url))
+    return(content$data)
+  })
 
   return(data)
 }
 
-#' List Files in an OSF Component
-#'
-#' @param osf_id an OSF ID
-#' @param osf_type the osf component type (usually nodes, registrations, or files)
-#' @param pb a progress bar passed from another function
-#'
-#' @returns a data frame with file info
-#' @export
-#' @keywords internal
-.osf_files <- function(osf_id,
-                      osf_type = NULL,
-                      pb = NULL) {
-  if (is.null(pb)) {
-    pb <- pb(NA, "(:spin) :what")
-    on.exit(pb$terminate())
-  }
-
-  osf_api <- getOption("metacheck.osf.api")
-  node_id <- osf_check_id(osf_id)
-
-  paste0("* Retrieving files for ", node_id, "...") |>
-    list(what = _) |>
-    pb$tick(0, tokens = _)
-
-  if (nchar(node_id) == 5) {
-    if (is.null(osf_type)) osf_type <- osf_type(node_id)
-    url <- sprintf("%s/%s/%s/files/", osf_api, osf_type, node_id)
-  } else {
-    url <- sprintf("%s/files/%s/", osf_api, node_id)
-  }
-
-  storage <- osf_get_all_pages(url)
-  file_links <- storage$relationships$files$links$related$href
-
-  obj <- lapply(file_links, \(url) {
-    data <- osf_get_all_pages(url)
-    obj <- .osf_file_data(data)
-    obj$parent <- rep(osf_id, nrow(obj))
-
-    return(obj)
-  }) |>
-    do.call(dplyr::bind_rows, args = _)
-
-  return(obj)
-}
-
-
-#' List Children of an OSF Component
-#'
-#' @param osf_id a vector of OSF IDs
-#' @param pb a progress bar passed from another function
-#'
-#' @returns a data frame with child info
-#' @export
-#' @keywords internal
-.osf_children <- function(osf_id, pb = NULL) {
-  if (is.null(pb)) {
-    pb <- pb(NA, "(:spin) :what")
-    on.exit(pb$terminate())
-  }
-
-  osf_api <- getOption("metacheck.osf.api")
-  node_id <- osf_check_id(osf_id)
-
-  if (length(node_id) == 0) {
-    return(data.frame())
-  }
-
-  paste0(
-    "* Retrieving children for ",
-    paste(node_id, collapse = ", "),
-    "..."
-  )|>
-    list(what = _) |>
-    pb$tick(0, tokens = _)
-
-  # url <- sprintf("%s/nodes/%s/children/",
-  #                osf_api, node_id)
-  # data <- osf_get_all_pages(url)
-  # obj <- .osf_node_data(data)
-
-  url <- sprintf(
-    "%s/nodes/?filter[id]=%s&embed=children",
-    osf_api, paste(node_id, collapse = ",")
-  )
-  data <- osf_get_all_pages(url)
-  children <- do.call(dplyr::bind_rows, data$embeds$children$data)
-  obj <- .osf_node_data(children)
-
-  return(obj)
-}
-
-#' Get OSF Parent Project
-#'
-#' @param osf_id an OSF ID
-#'
-#' @returns the ID of the parent project
-#' @export
-#' @keywords internal
-.osf_parent_project <- function(osf_id) {
-  valid_id <- osf_check_id(osf_id)
-  if (is.na(valid_id)) {
-    return(NA_character_)
-  }
-
-  # TODO: make this more efficient by just getting the parent
-  obj <- suppressMessages(.osf_info(valid_id))
-
-  if (!is.null(obj$project) && !is.na(obj$project)) {
-    return(obj$project)
-  }
-  if (is.null(obj$parent) || is.na(obj$parent)) {
-    return(osf_id)
-  }
-
-  parent <- .osf_parent_project(obj$parent)
-
-  return(parent)
-}
 
 
 #' Set the OSF delay
@@ -951,36 +379,6 @@ osf_delay <- function(delay = NULL) {
     invisible(getOption("metacheck.osf.delay"))
   } else {
     stop("set osf_delay with a numeric value for the number of seconds to wait between OSF calls")
-  }
-}
-
-#' Increment OSF API Call Count
-#'
-#' @returns NULL
-#' @export
-#' @keywords internal
-.osf_api_calls_inc <- function() {
-  n <- getOption("metacheck.osf.api.calls") |> as.integer()
-  options(metacheck.osf.api.calls = n + 1)
-}
-
-#' Get/set the OSF API Call Count
-#'
-#' @param calls the number of OSF calls made since the last reset
-#'
-#' @return NULL
-#' @export
-#'
-#' @examples
-#' osf_api_calls()
-osf_api_calls <- function(calls = NULL) {
-  if (is.null(calls)) {
-    return(getOption("metacheck.osf.api.calls"))
-  } else if (is.numeric(calls)) {
-    options(metacheck.osf.api.calls = calls)
-    invisible(getOption("metacheck.osf.api.calls"))
-  } else {
-    stop("set osf_api_calls with a numeric value (usually reset to 0)")
   }
 }
 
@@ -1075,7 +473,7 @@ osf_file_download <- function(osf_id,
   contents <- suppressMessages(
     osf_info(osf_id, recursive = TRUE, pb = pb)
   )
-  cols <- c("osf_id", "name", "parent", "kind", "size", "download_url") |>
+  cols <- c("osf_id", "name", "provider", "path", "kind", "size", "download_url", "parent", "project") |>
     intersect(names(contents))
   files <- contents[contents$osf_type == "files", cols, drop = FALSE]
 
@@ -1142,90 +540,106 @@ osf_file_download <- function(osf_id,
 
     files_to_download <- which(files$kind == "file")
 
-    urls <- files$download_url[files_to_download]
-    resps <- .batch_query(urls, msg = "Downloading Files", req_func = .osf_headers)
+    # urls <- files$download_url[files_to_download]
+    # resps <- .batch_query(urls, msg = "Downloading Files", req_func = .osf_headers)
 
     # save downloaded content to temp files
     for (j in seq_along(files_to_download)) {
       i <- files_to_download[[j]]
-      tryCatch(
-        {
-          resp <- resps[[j]]
-          if (!inherits(resp, "error") && httr2::resp_status(resp) == 200) {
-            writeBin(httr2::resp_body_raw(resp),
-                     file.path(temppath, files$osf_id[[i]]))
-          }
-        },
-        error = \(e) {}
-      )
+      sprintf("Downloading file %d/%d: %s",
+               j, length(files_to_download), files$name[[i]]) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+
+      url <- files$download_url[i]
+      tryCatch({
+        resp <- .batch_query(url, msg = NULL, req_func = .osf_headers)[[1]]
+        #resp <- resps[[j]]
+        if (!inherits(resp, "error") && httr2::resp_status(resp) == 200) {
+          writeBin(httr2::resp_body_raw(resp),
+                   file.path(temppath, files$osf_id[[i]]))
+        }
+      },
+      error = \(e) {
+        logger("osf_file_download", list(error = e$message, url = url))
+      })
     }
 
-    trunc_warning <- FALSE
+    "Setting up file structure" |>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
 
-    if (isTRUE(ignore_folder_structure)) {
-      files$path <- fs::path_sanitize(files$name)
-
-      while (duplicated(files$path) |> any()) {
-        # get all duplicated paths
-        d <- which(files$path %in% files$path[duplicated(files$path)])
-
-        dupes <- files$path[d]
-        parents <- files$parent[d]
-        ext <- fs::path_ext(dupes)
-        ext[ext != ""] <- paste0(".", ext[ext != ""])
-        base <- fs::path_ext_remove(dupes)
-        files$path[d] <- paste0(base, "_", parents, ext)
-      }
-    } else {
-      ## structure files into download_to ----
-      files$path <- ""
-
-      for (i in seq_along(files$osf_id)) {
-        item <- files[i, ]
-        if (is.na(item$parent) || item$parent == osf_id) {
-          files$path[[i]] <- item$name
+    ## determine parent folders ----
+    parent_folders <- sapply(seq_along(files$osf_id), \(i) {
+      item <- files[i, ]
+      parents <- data.frame()
+      last_parent <- item$project
+      while (last_parent != osf_id) {
+        next_parent <- contents[contents$osf_id == last_parent, ]
+        if (nrow(next_parent) == 0) {
+          last_parent <- osf_id
         } else {
-          parents <- data.frame()
-          last_parent <- item$parent
-          while (last_parent != osf_id) {
-            next_parent <- contents[contents$osf_id == last_parent, ]
-            if (nrow(next_parent) == 0) {
-              last_parent <- osf_id
-            } else {
-              parents <- dplyr::bind_rows(parents, next_parent)
-              last_parent <- parents[nrow(parents), "parent"]
-            }
-          }
-
-          # make sure file components <= max_folder_length
-          # TODO: handle windows limitations more gracefully
-          maxlen <- sapply(nchar(parents$name), min, max_folder_length)
-          newnames <- substr(parents$name, 1, maxlen)
-          if (!all(newnames == parents$name)) {
-            trunc_warning <- TRUE
-            parents$name <- newnames
-          }
-
-          files$path[[i]] <- rev(parents$name) |>
-            fs::path_sanitize() |>
-            paste(collapse = "/") |>
-            paste0("/", item$name)
+          parents <- dplyr::bind_rows(parents, next_parent)
+          last_parent <- parents[nrow(parents), "project"]
         }
       }
+      base_parent <- contents[contents$osf_id == osf_id, ]
+      parents <- dplyr::bind_rows(parents, base_parent)
+      #parents <- parents[!parents$path %in% "/", ]
 
-      # add base folder name
-      basename <- contents$name[[1]] |> fs::path_sanitize()
-      files$path <- file.path(basename, files$path)
+      pf <- rev(parents$name) |>
+        gsub("[^A-za-z0-9_\\-\\.]+", "_", x = _, perl = TRUE) |>
+        gsub("_+", "_", x = _, perl = TRUE) |>
+        fs::path_sanitize() |>
+        paste(collapse = "/")
+
+      pf
+    })
+
+    # workaround for when requesting a folder directly
+    folder_in_path <- mapply(\(folder, file) {
+      pattern <- sprintf("/%s/", folder)
+      regexpr(pattern, file, fixed = TRUE)[[1]]
+    }, parent_folders, files$path)
+    if (all(folder_in_path == 1)) {
+      parent_folders <- ""
     }
 
-    if (trunc_warning) {
-      warning("Some folder names were truncated to max_folder_length = ", max_folder_length, " characters")
+    files$save_path <- sprintf("%s%s%s%s", files$provider,
+                               ifelse(nzchar(parent_folders), "/", ""),
+                               parent_folders,
+                               files$path)
+
+    if (max_folder_length < Inf) {
+      # deal with dirname and basename not recognising that "/code/" is a directory
+      hacky_replace <- "--replace-this--"
+      hacky_fp <- ifelse(substring(files$save_path, nchar(files$save_path)) == "/",
+                         paste0(files$save_path, hacky_replace),
+                         files$save_path)
+      fp <- dirname(hacky_fp) |>
+        strsplit("/") |>
+        lapply(substr, start = 0, stop = max_folder_length) |>
+        sapply(paste0, collapse = "/") |>
+        paste0("/", basename(hacky_fp)) |>
+        gsub(hacky_replace, "", x = _, fixed = TRUE)
+      if (any(fp != files$save_path)) {
+        warning("Some folder names were truncated to max_folder_length = ", max_folder_length, " characters")
+      }
+      files$save_path <- fp
     }
 
     files_to_copy <- which(files$kind == "file")
+    if (isTRUE(ignore_folder_structure)) {
+      files$save_path[files_to_copy] <- fs::path_sanitize(files$name[files_to_copy])
+      dupes <- duplicated(files$save_path[files_to_copy])
+      files$save_path[files_to_copy][dupes] <-
+        paste0(files$osf_id[files_to_copy][dupes], "-",
+               files$name[files_to_copy][dupes])
+    }
+
     for (i in files_to_copy) {
       from <- file.path(temppath, files$osf_id[[i]])
-      to <- file.path(download_to, files$path[[i]])
+      to <- file.path(download_to, files$save_path[[i]])
       dir.create(dirname(to), showWarnings = FALSE, recursive = TRUE)
       file.copy(from, to)
     }
@@ -1240,17 +654,22 @@ osf_file_download <- function(osf_id,
   contents$folder <- basename(download_to)
   ret <- contents[
     contents$kind %in% "file",
-    c("folder", "osf_id", "name", "filetype", "size", "downloads")
+    c("folder", "osf_id", "name", "filetype", "size", "downloads", "provider")
   ]
 
   if (length(files_to_copy) > 0) {
-    copied <- files[files_to_copy, c("osf_id", "path")]
+    copied <- files[files_to_copy, c("osf_id", "save_path")]
+    names(copied)[[2]] <- "path"
     copied$downloaded <- TRUE
     ret <- dplyr::left_join(ret, copied, by = "osf_id")
     ret$downloaded <- ifelse(ret$downloaded %in% TRUE, TRUE, FALSE)
   } else {
     ret$downloaded <- FALSE
   }
+
+  sprintf("%d files downloaded!", sum(ret$downloaded)) |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
 
   invisible(ret)
 }

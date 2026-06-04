@@ -99,14 +99,27 @@ aspredicted_info <- function(ap_url, id_col = 1, wait = 1) {
     ap_url = ap_url
   )
   # get website
+  # resp <- httr2::request(ap_url) |>
+  #   httr2::req_error(is_error = \(resp) FALSE) |>
+  #   httr2::req_perform()
+  # resp <- .batch_query(ap_url, msg = NULL, accept = "text/html")[[1]]
+
   resp <- httr2::request(ap_url) |>
-    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_headers(
+      Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      `User-Agent` = paste(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "AppleWebKit/537.36 (KHTML, like Gecko)",
+        "Chrome/137.0.0.0 Safari/537.36",
+        "scienceverse/metacheck"
+      )
+    ) |>
     httr2::req_perform()
 
   # handle missing file
   if (httr2::resp_status(resp) != 200) {
-    warning(ap_url, " could not be found", call. = FALSE)
-    obj$error <- "unfound"
+    obj$error <- httr2::resp_status_desc(resp)
+    warning(ap_url, " error: " , obj$error, call. = FALSE)
     return(obj)
   }
 

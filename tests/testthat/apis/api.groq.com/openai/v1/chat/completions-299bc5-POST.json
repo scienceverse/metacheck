@@ -1,0 +1,33 @@
+{
+    "id": "chatcmpl-f4d7a02e-d7bb-4109-827c-c913c1d87cbb",
+    "object": "chat.completion",
+    "created": 1780591393,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "```json\n[\n  {\n    \"text\": \"An a priori power analysis for an independent samples t-test, conducted using the pwr.t.test function from pwr (Champely, 2020), indicated that for a Cohen's d = 0.5, an alpha level of 0.05, and a desired power level of 80% required at least 64 participants in each group.\",\n    \"power_type\": \"apriori\",\n    \"statistical_test\": \"unpaired t-test\",\n    \"statistical_test_other\": null,\n    \"sample_size\": 128,\n    \"alpha_level\": 0.05,\n    \"power\": 0.8,\n    \"effect_size\": 0.5,\n    \"effect_size_metric\": \"Cohen's d\",\n    \"effect_size_metric_other\": null,\n    \"software\": \"pwr\"\n  },\n  {\n    \"text\": \"A sensitivity power analysis for an independent samples t-test, conducted using G*Power, indicated that with 64 participants in each group, and an alpha level of 0.05, power of 0.91 was reached for an effect size of d = 0.5.\",\n    \"power_type\": \"sensitivity\",\n    \"statistical_test\": \"unpaired t-test\",\n    \"statistical_test_other\": null,\n    \"sample_size\": 128,\n    \"alpha_level\": 0.05,\n    \"power\": 0.91,\n    \"effect_size\": 0.5,\n    \"effect_size_metric\": \"Cohen's d\",\n    \"effect_size_metric_other\": null,\n    \"software\": \"G*Power\"\n  }\n]\n```"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "queue_time": 0.047796668,
+        "prompt_tokens": 1220,
+        "prompt_time": 0.065786817,
+        "completion_tokens": 350,
+        "completion_time": 0.524414561,
+        "total_tokens": 1570,
+        "total_time": 0.590201378
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_ce7bc1685b",
+    "x_groq": {
+        "id": "req_01kt9r8ydafjmrebvvrsfcswr5",
+        "seed": 8675309
+    },
+    "service_tier": "on_demand"
+}

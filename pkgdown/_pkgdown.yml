@@ -106,6 +106,18 @@ reference:
   - '`get_prev_outputs`'
   - '`format_bib_authors`'
   - '`fig_image_view`'
+- title: Code Check Helpers
+  desc: These functions help repo_check and code_check modules to assess code files.
+  contents:
+  - '`code_abs_path`'
+  - '`code_extract_r`'
+  - '`code_file_refs`'
+  - '`code_lang`'
+  - '`code_library_lines`'
+  - '`code_line_stats`'
+  - '`code_parse_r`'
+  - '`code_read`'
+  - '`code_remove_comments`'
 - title: LLM Functions
   desc: ~
   contents:
@@ -141,13 +153,12 @@ reference:
   - '`osf_links`'
   - '`osf_info`'
   - '`osf_file_download`'
-  - '`osf_api_calls`'
   - '`osf_api_check`'
   - '`osf_check_id`'
   - '`osf_delay`'
   - '`osf_get_all_pages`'
-  - '`osf_type`'
   - '`osf_preprint_list`'
+  - '`osf_type`'
 - title: GitHub Functions
   desc: ~
   contents:

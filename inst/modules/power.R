@@ -79,7 +79,7 @@ power <- function(paper, seed = 8675309) {
     ## use LLM ----
 
     # define system prompt from JSON schema
-    preface <- "Identify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. Return an array of objects as defined by the JSON schema below, bracketed by ```json and ```."
+    preface <- "Identify and classify power analyses from exerpts of scientific manuscripts. Use null when information is missing, do not invent values. Only use 'other' if a value not in the enumerated options can be identified. There may be no power analysis in the text, or more than one. If the paragraph only references a power analysis implied to be presented elsewhere in the paper, or explicitly states that no power analysis was run, classify power_type as 'none'. Return an array of objects, as defined by the JSON schema below, in the same order as in the paragraphs, bracketed by ```json and ```."
     # schema also defined below
     schema <- readLines("https://scienceverse.org/schema/power.json") |>
       paste(collapse = "\n")
@@ -280,7 +280,7 @@ schema <- r"({
     "power_type": {
       "description": "The type of power analysis. An 'apriori' power analysis is used to calculate the required sample size to achieve a desired level of statistical power given an effect size, statistical test, and alpha level. A 'sensitivity' analysis is used to estimate, given a sample size, which effect sizes a design has sufficient power (e.g., 80% or 90%) to detect, given a statistical test and alpha level. A 'posthoc' power analysis (also referred to as observed power, or retrospective power) uses an empirically observed effect size, and computes the achieved power for that empirically observed effect size, given a statistical test and alpha level.",
       "type": ["string", "null"],
-      "enum": ["apriori", "sensitivity", "posthoc", null]
+      "enum": ["apriori", "sensitivity", "posthoc", "unknown", "none", null]
     },
 
     "statistical_test": {

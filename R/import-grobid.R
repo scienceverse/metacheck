@@ -438,6 +438,8 @@ grobid_to_bibr <- function(xml_file,
   paper$url <- .tei_url(text_table = paper$text)
 
   # fix URLs in text that have rogue spaces
+  paper$url$href <- gsub("\\s", "", paper$url$href) # href should never have a space
+  paper$url$href <- gsub("\\.$", "", paper$url$href) # fix urls with . at end
   same <- gsub("^https?://", "", paper$url$href) ==
     gsub("^https?://", "", gsub("\\s", "", paper$url$link_text))
   for (i in seq_along(same)) {

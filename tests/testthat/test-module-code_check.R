@@ -16,10 +16,6 @@ test_that("code_check offline", {
 })
 
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
-
 test_that("OSF no files", {
   # OSF but no R files
 
@@ -33,7 +29,7 @@ test_that("OSF no files", {
   expect_equal(mo$summary_table, exp)
   expect_match(mo$summary_text, "0")
   expect_match(mo$report, "0")
-})
+}, "mock")
 
 test_that("no code files", {
   module <- "code_check"
@@ -47,9 +43,11 @@ test_that("no code files", {
   exp <- "We found 0 R, 0 SAS, 0 SPSS, and 0 Stata code files."
   expect_equal(mo$summary_text, exp)
   expect_equal(mo$report, exp)
-})
+}, "mock")
 
 test_that("OSF", {
+  skip_if_quick()
+
   module <- "code_check"
   paper <- test_paper(url = "https://osf.io/629bx")
   mo <- module_run(paper, module)
@@ -61,7 +59,7 @@ test_that("OSF", {
                     code_abs_path = 3,
                     code_missing_files = 2)
   expect_equal(mo$summary_table[, 1:5], exp[, 1:5])
-})
+}, "mock")
 
 test_that("file_limit", {
   # default limit
@@ -92,7 +90,7 @@ test_that("file_limit", {
   expect_equal(mo$summary_table$code_n, n_files+1)
   expect_equal(mo$summary_table$code_checked, 3)
   expect_setequal(mo$table$repo_url, local_path)
-})
+}, "mock")
 
 
 test_that("multiple paper issue", {
@@ -109,7 +107,7 @@ test_that("multiple paper issue", {
   mo <- module_run(paper, "code_check")
 
   expect_setequal(mo$summary_table$paper_id, paper_id(paper))
-})
+}, "mock")
 
 # code_check() + local_path ----
 
@@ -185,6 +183,8 @@ test_that("code_check local_path: files without comments are flagged", {
 })
 
 test_that("code_check paper + local_path", {
+  skip_if_quick()
+
   # OSF 629bx has 2 code files; fixture_dir has 5 (3 R + 2 Stata) → total 7
   local_path <- test_path("fixtures", "code_files")
   paper <- test_paper(url = "https://osf.io/629bx")
@@ -201,10 +201,8 @@ test_that("code_check paper + local_path", {
     unique(mo$table$repo_url),
     c("https://osf.io/629bx", local_path)
   )
-})
+}, "mock")
 
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
 
 # parse errors ----
 
@@ -239,7 +237,7 @@ test_that("parse errors", {
                         "line:4:1: unexpected symbol\n3: \n4: a\n   ^",
                         NA, NA, NA, NA),
     code_abs_path = c(0L, 0L, 0L, 1L, 0L, 0L, 0L, 0L),
-    absolute_paths = c("", "", "", "\"/User/lisa/file.csv\"", "", "", "", ""),
+    absolute_paths = c("", "", "", "/User/lisa/file.csv", "", "", "", ""),
     library_lines = c(1L, 1L, 1L, 1L, 0L, 3L, 0L, 0L),
     library_max_between = c(NA, NA, NA, NA, NA, 5L, NA, NA),
     comment_lines = c(1L, 1L, 1L, 3L, 1L, 2L, 4L, 4L),

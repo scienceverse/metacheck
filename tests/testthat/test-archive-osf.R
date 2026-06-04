@@ -1,65 +1,12 @@
-# options(metacheck.osf.api = "https://api.osf.io/v2/")
-# osf_delay(0)
-
-test_that(".osf_pat_validate", {
-  expect_true(is.function(metacheck::.osf_pat_validate))
-  osf_pat <- Sys.getenv("OSF_PAT")
-
-  # httptest2::without_internet({
-  #   expect_warning(obs <- .osf_pat_validate("BADPAT"),
-  #                  "could not be validated")
-  #   expect_false(obs)
-  # })
-
-  skip_if_not(online("https://api.osf.io/v2/preprints/khbvy/"))
-
-  # real PAT (if set)
-  if (osf_pat != "") {
-    obs <- .osf_pat_validate()
-    expect_true(obs)
-  }
-
-  # bad PAT - direct - resets env variable
-  expect_warning(obs <- .osf_pat_validate("BADPAT"))
-  expect_false(obs)
-  expect_equal(Sys.getenv("OSF_PAT"), "")
-
-  # unset PAT
-  withr::local_envvar(OSF_PAT = "")
-  obs <- .osf_pat_validate()
-  expect_false(obs)
-
-  # bad PAT - from env - resets env variable
-  withr::local_envvar(OSF_PAT = "NOTAREALPAT")
-  expect_warning(obs <- .osf_pat_validate())
-  expect_false(obs)
-  expect_equal(Sys.getenv("OSF_PAT"), "")
-
-})
-
-
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
-test_that("exists", {
-  expect_true(is.function(metacheck::osf_check_id))
-
+test_that("osf_links", {
   expect_true(is.function(metacheck::osf_links))
   expect_no_error(helplist <- help(osf_links, metacheck))
 
-  expect_true(is.function(metacheck::osf_info))
-  expect_no_error(helplist <- help(osf_info, metacheck))
-
-  expect_true(is.function(metacheck::.osf_info))
-  expect_no_error(helplist <- help(.osf_info, metacheck))
-
-  expect_true(is.function(metacheck::osf_delay))
-  expect_no_error(helplist <- help(osf_delay, metacheck))
-
-  expect_true(is.function(metacheck::osf_file_download))
-  expect_no_error(helplist <- help(osf_file_download, metacheck))
+  exp <- c("osf.io/e2aks", "osf.io/tvyxz/", "osf.com/nope")
+  paper <- test_paper(url = exp)
+  obs <- osf_links(paper)
+  expect_equal(obs$href, exp[1:2])
 })
-
 
 test_that("osf_type", {
   expect_true(is.function(metacheck::osf_type))
@@ -98,65 +45,11 @@ test_that("osf_type", {
 
   expect_warning(otype <- osf_type(examples$bad))
   expect_equal(otype, NA_character_)
-})
-
-test_that("osf_api_check", {
-  status <- osf_api_check()
-  possible <- c("ok", "too many requests",
-                "server error", "unknown", "no internet")
-  expect_true(status %in% possible)
-})
-
-test_that(".osf_headers", {
-  req <- httr2::request("https://api.osf.io")
-
-  # real PAT
-  osf_pat <- Sys.getenv("OSF_PAT")
-  if (osf_pat != "") {
-    obs <- .osf_headers(req)
-    x <- obs$headers$`Authorization`
-    expect_equal(typeof(x), "weakref")
-  }
-
-  # PAT unset
-  withr::local_envvar(OSF_PAT = "")
-  obs <- .osf_headers(req)
-  expect_s3_class(obs, "httr2_request")
-  expect_equal(obs$headers$`User-Agent`, "metacheck")
-  expect_null(obs$headers$`Authorization`)
-
-  # PAT set to fake PAT
-  withr::local_envvar(OSF_PAT = "NOPTAREALPAT")
-  obs <- .osf_headers(req)
-  expect_s3_class(obs, "httr2_request")
-  expect_equal(obs$headers$`User-Agent`, "metacheck")
-  x <- obs$headers$`Authorization`
-  expect_equal(typeof(x), "weakref")
-})
-
-
-test_that("osf_links", {
-  exp <- c("osf.io/e2aks", "osf.io/tvyxz/", "osf.com/nope")
-  paper <- test_paper()
-  paper$url <- data.frame(href = exp)
-  obs <- osf_links(paper)
-  expect_equal(obs$href, exp[1:2])
-
-  # # has view-only link across sentences
-  # paper <- test_paper(c(
-  #   "osf.io/t9j8e/?",
-  #   "view_only=f171281f212f4435917b16a9e581a73b"
-  # ))
-  # obs <- osf_links(paper)
-  # exp <- "osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"
-  # expect_equal(obs$text, exp)
-})
+}, "mock")
 
 test_that("osf_check_id", {
-  # check vo links
-  # info <- .osf_info("t9j8e")
-  # expect_equal(info$osf_type, "private")
-  # expect_equal(info$public, FALSE)
+  expect_true(is.function(metacheck::osf_check_id))
+  expect_no_error(helplist <- help(osf_check_id, metacheck))
 
   # 5-letter
   osf_id <- "pngda"
@@ -219,7 +112,7 @@ test_that("osf_check_id", {
   # view-only link
   osf_id <- "https://osf.io/pngda/?view_only=5acf039f24ac4ea28afec473548dd7f4"
   checked_id <- osf_check_id(osf_id)
-  expect_equal(checked_id, "pngda")
+  expect_equal(checked_id, "pngda?view_only=5acf039f24ac4ea28afec473548dd7f4")
 
   # vector
   osf_id <- c(
@@ -241,8 +134,35 @@ test_that("osf_check_id", {
   # produces two warnings
   expect_warning(expect_warning(obs <- osf_check_id(osf_id)))
   exp <- rep(c("6846ed88e49694cd45ab8375", "pngda", NA_character_), c(2, 9, 2))
+  exp[10:11] <- "pngda?view_only=5acf039f24ac4ea28afec473548dd7f4"
   expect_equal(obs, exp)
 })
+
+
+test_that("osf_delay", {
+  expect_true(is.function(metacheck::osf_delay))
+  expect_no_error(helplist <- help(osf_delay, metacheck))
+
+  expect_gte(osf_delay(), 0)
+
+  obs <- osf_delay(.005)
+  expect_equal(obs, .005)
+  expect_equal(osf_delay(), .005)
+
+  osf_delay(0)
+})
+
+test_that("osf_api_check", {
+  status <- osf_api_check()
+  expect_equal(status, "OK")
+
+  httptest2::without_internet({
+    expect_error(osf_api_check())
+    expect_warning(osf_api_check(on_error = "warn"))
+    expect_no_condition(osf_api_check(on_error = "ignore"))
+  })
+}, "mock")
+
 
 test_that("osf_get_all_pages", {
   osf_api <- getOption("metacheck.osf.api")
@@ -261,7 +181,7 @@ test_that("osf_get_all_pages", {
   # no results
   url <- sprintf("%s/nodes/y6a34/files/osfstorage/", osf_api)
   data <- osf_get_all_pages(url)
-  expect_equal(data, list())
+  expect_equal(data, dplyr::tibble())
 
   # limit pages
   url <- sprintf("%s/preprints/", osf_api)
@@ -274,172 +194,19 @@ test_that("osf_get_all_pages", {
   url <- sprintf("%s/preprints/?page=5", osf_api)
   data <- osf_get_all_pages(url, 5)
   expect_equal(nrow(data), 10)
-})
-
-test_that(".osf_files", {
-  expect_true(is.function(metacheck:::.osf_files))
-  expect_no_error(helplist <- help(.osf_files, metacheck))
-
-  osf_id <- "pngda"
-  data <- .osf_files(osf_id)
-  expect_equal(nrow(data), 3)
-
-  osf_id <- "pngda"
-  data <- .osf_files(osf_id, "nodes")
-  expect_equal(nrow(data), 3)
-
-  # wrong type
-  osf_id <- "pngda"
-  data <- .osf_files(osf_id, "registrations")
-  expect_equal(nrow(data), 0)
-
-  osf_id <- "yt32c"
-  data <- .osf_files(osf_id)
-  expect_equal(nrow(data), 14)
-  expect_equal(data$filetype, rep("data", 14))
-
-  osf_id <- "y6a34"
-  data <- .osf_files(osf_id)
-  expect_equal(nrow(data), 0)
-
-  # registration
-  osf_id <- "jqkg7"
-  files <- .osf_files(osf_id, osf_type = "registrations")
-  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
-
-  # look up osf_type
-  files <- .osf_files(osf_id)
-  expect_equal(files$osf_id, "5922fed2b83f69024e8f7aef")
-})
-
-test_that(".osf_children", {
-  osf_id <- "pngda"
-  data <- .osf_children(osf_id)
-  expect_equal(nrow(data), 5)
-
-  osf_id <- "y6a34"
-  data <- .osf_children(osf_id)
-  expect_equal(nrow(data), 0)
-})
-
-test_that(".osf_info", {
-  # waterbutler
-  osf_id <- "68472f93b21328dc7f539482"
-  info <- .osf_info(osf_id)
-  expect_equal(info$name, "test-folder")
-  expect_equal(info$osf_type, "files")
-  expect_equal(info$kind, "folder")
-
-  # project
-  osf_id <- "pngda"
-  osf_api_calls(0)
-  info <- .osf_info(osf_id)
-  expect_equal(osf_api_calls(), 1)
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "nodes")
-  expect_equal(info$name, "Papercheck Test")
-
-
-  # component
-  osf_id <- "6nt4v"
-  osf_api_calls(0)
-  info <- .osf_info(osf_id)
-  expect_equal(osf_api_calls(), 1)
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "nodes")
-  expect_equal(info$name, "Processed Data")
-
-  # file
-  osf_id <- "75qgk"
-  osf_api_calls(0)
-  info <- .osf_info(osf_id)
-  expect_equal(osf_api_calls(), 1) # checks nodes first
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "files")
-  expect_equal(info$kind, "file")
-  expect_equal(info$name, "processed-data.csv")
-
-  # preprint
-  osf_id <- "xp5cy"
-  osf_api_calls(0)
-  info <- .osf_info(osf_id)
-  expect_equal(osf_api_calls(), 1) # checks nodes & files first
-  expect_true(grepl(osf_id, info$osf_id))
-  expect_equal(info$osf_type, "preprints")
-  expect_equal(info$name, "Understanding mixed effects models through data simulation")
-
-  # reg
-  osf_id <- "8c3kb"
-  osf_api_calls(0)
-  info <- .osf_info(osf_id)
-  expect_equal(osf_api_calls(), 1) # checks nodes, files, preprints first
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "registrations")
-  expect_equal(info$name, "Understanding mixed effects models through data simulation")
-
-  # user
-  osf_id <- "4i578"
-  osf_api_calls(0)
-  info <- .osf_info(osf_id)
-  expect_equal(osf_api_calls(), 1) # checks nodes, files, preprints, reg first
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "users")
-  expect_equal(info$name, "Lisa DeBruine")
-
-  # private
-  osf_id <- "ybm3c"
-  info <- .osf_info(osf_id)
-  expect_equal(info$osf_id, osf_id)
-  #expect_equal(info$osf_type, "private")
-  expect_equal(info$public, FALSE)
-
-  # view-only (private)
-  osf_id <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
-  info <- .osf_info(osf_id)
-  expect_equal(info$osf_id, "ybm3c")
-  #expect_equal(info$osf_type, "private")
-
-  # view-only (public)
-  osf_id <- "https://osf.io/pngda/?view_only=5acf039f24ac4ea28afec473548dd7f4"
-  info <- .osf_info(osf_id)
-  expect_equal(info$osf_id, "pngda")
-  expect_equal(info$osf_type, "nodes")
-  expect_equal(info$name, "Papercheck Test")
-
-  # invalid
-  osf_id <- "xx"
-  expect_warning(info <- .osf_info(osf_id))
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "invalid")
-
-  # valid but not found
-  osf_id <- "xxxxx"
-  expect_warning(info <- .osf_info(osf_id))
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, "unfound")
-
-  # multiple nodes
-  osf_id <- c("mc45x", "y6a34")
-  info <- .osf_info(osf_id)
-  expect_equal(info$osf_id, osf_id)
-  expect_equal(info$osf_type, c("nodes", "nodes"))
-
-  # multiple different types
-  osf_id <- c("mc45x", "y6a34", "4i578")
-  info <- .osf_info(osf_id)
-  expect_equal(info$osf_type, c("nodes", "nodes", "users"))
-
-  #weird false positive of preprint/3j9rf_v1
-})
+}, "mock")
 
 
 test_that("osf_info", {
+  expect_true(is.function(metacheck::osf_info))
+  expect_no_error(helplist <- help(osf_info, metacheck))
+
   examples <- c(project = "pngda",
                 component = "https://osf.io/6nt4v",
                 private = "ybm3c",
                 file = "osf.io/75qgk",
                 preprint = "xp5cy",
-                #user = "4i578",
+                user = "4i578",
                 reg = "8c3kb",
                 duplicate = "6nt4v",
                 bad = "xx")
@@ -448,10 +215,22 @@ test_that("osf_info", {
     type = names(examples)
   )
   expect_warning(table <- osf_info(osf_url))
-  #expect_true(!"project" %in% names(table))
   expect_equal(table$url, osf_url$url)
   expect_equal(table$type, osf_url$type)
-  expect_equal(table[2, 3:10], table[7, 3:10], ignore_attr = TRUE)
+  expect_equal(table[2, 3:10], table[8, 3:10], ignore_attr = TRUE)
+
+  self <- c(
+    "https://api.osf.io/v2/nodes/pngda/",
+    "https://api.osf.io/v2/nodes/6nt4v/",
+    "https://api.osf.io/v2/nodes/ybm3c/",
+    "https://api.osf.io/v2/files/6846ed6a29684b023953943e/",
+    "https://api.osf.io/v2/preprints/xp5cy_v1/",
+    "https://api.osf.io/v2/users/4i578/",
+    "https://api.osf.io/v2/registrations/8c3kb/",
+    "https://api.osf.io/v2/nodes/6nt4v/",
+    NA
+  )
+  expect_equal(table$self, self)
 
   # vector
   osf_url <- "pngda"
@@ -459,58 +238,49 @@ test_that("osf_info", {
   expect_equal(table$osf_url, osf_url)
   expect_equal(table$name, "Papercheck Test")
 
-  # table with id_col, find project
+  # table with id_col
   osf_url <- data.frame(
     id = 100,
     osf_id = "pngda"
   )
   id_col <- "osf_id"
-  table <- osf_info(osf_url, id_col, find_project = TRUE)
+  table <- osf_info(osf_url, id_col)
   expect_equal(table$osf_id, osf_url$osf_id)
   expect_equal(table$name, "Papercheck Test")
   expect_equal(table$project, "pngda")
-
-  # recursive
-  osf_url <- "yt32c"
-  table <- osf_info(osf_url, recursive = TRUE)
-  expect_equal(nrow(table), 15)
-  expect_equal(table$parent, rep(c("ckjef", "yt32c"), c(1, 14)))
-
-  # recursive with duplicates and NA vector
-  osf_url <- c("yt32c", "yt32c", NA)
-  table <- osf_info(osf_url, recursive = TRUE)
-  expect_equal(nrow(table), 1 + 14)
-
-  # recursive with duplicates and NA table
-  osf_url <- data.frame(parent_id = c("yt32c", "yt32c", NA),
-                        n = 1:3)
-  expect_warning(table <- osf_info(osf_url, recursive = TRUE))
-  expect_equal(nrow(table), 3 + 14)
-  expect_equal(table$n, c(1:3, rep(NA, 14)))
 
   # only one URL
   osf_url <- "https://osf.io/pngda"
   table <- osf_info(osf_url)
   expect_equal(table$name, "Papercheck Test")
 
-  osf_url <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
-  table <- osf_info(osf_url)
-  expect_equal(table$osf_url, osf_url)
-  expect_equal(table$osf_id, "ybm3c")
-
-  # children of private
-  # osf_url <- "https://osf.io/ybm3c/?view_only=5acf039f24ac4ea28afec473548dd7f4"
-  # table <- osf_info(osf_url, recursive = TRUE)
-  # expect_equal(table$osf_url, osf_url)
-  # expect_equal(table$osf_id, "ybm3c")
-
   # no links
   paper <- test_paper("No links")
   osf_url <- osf_links(paper)
-  info <- osf_info(osf_url, recursive = TRUE, find_project = TRUE)
+  info <- osf_info(osf_url, recursive = TRUE)
   expect_equal(nrow(info), 0)
   expect_equal(osf_url, info)
-})
+}, "mock")
+
+test_that("osf_info - recursive", {
+  # recursive
+  osf_url <- "yt32c"
+  table <- osf_info(osf_url, recursive = TRUE)
+  expect_equal(nrow(table), 16)
+  expect_equal(table$parent[1:2], c("ckjef", "yt32c"))
+
+  # recursive with duplicates and NA vector
+  osf_url <- c("yt32c", "yt32c", NA)
+  table <- osf_info(osf_url, recursive = TRUE)
+  expect_equal(nrow(table), 1 + 15)
+
+  # recursive with duplicates and NA table
+  osf_url <- data.frame(parent_id = c("yt32c", "yt32c", NA),
+                        n = 1:3)
+  expect_warning(table <- osf_info(osf_url, recursive = TRUE))
+  expect_equal(nrow(table), 3 + 15)
+  expect_equal(table$n, c(1:3, rep(NA, 15)))
+}, "mock")
 
 test_that("osf_info recursive", {
   # folders can only have wb IDs,
@@ -522,47 +292,33 @@ test_that("osf_info recursive", {
   info <- osf_info(osf_url, recursive = TRUE)
   folders <- paste0("nest-", 1:4) |> c("empty")
   files <- paste0("test-", 1:4, ".txt")
-  expect_true(all(folders %in% info$name))
-  expect_true(all(files %in% info$name))
+  expect_in(folders, info$name)
+  expect_in(files, info$name)
+
+  folder_ids <- info$osf_id[info$kind %in% "folder"]
+  expect_in(folder_ids[1:5], info$parent)
 
   # contains github and osfstorage files
   osf_url <- "mc45x"
   info <- osf_info(osf_url, recursive = TRUE)
+  files <- sprintf("%02d.R", 1:10)
+  expect_in(files, info$name)
+}, "mock")
+
+test_that("osf_info - view_only", {
+  skip_if_offline("api.osf.io")
+
+  osf_id <- "iywec?view_only=f171281f212f4435917b16a9e581a73b"
+  self <- "https://api.osf.io/v2/nodes/iywec/?view_only=f171281f212f4435917b16a9e581a73b"
+
+  obs <- osf_info(osf_id)
+  expect_equal(obs$osf_type, "nodes")
+  expect_equal(obs$self, self)
+
+  skip_if_quick()
+
+  obs <- osf_info(osf_id, recursive = TRUE)
+  exp <- c("Objects", "osfstorage", "comb.jpg")
+  expect_contains(obs$name, exp)
 })
-
-test_that("osf_id vs wb_id", {
-  osf_id <- "k6gbt"
-  osf_info <- .osf_info(osf_id)
-
-  osf_id <- "6846ed88e49694cd45ab8375"
-  wb_info <- .osf_info(osf_id)
-
-  expect_equal(osf_info[, 1:11], wb_info[, 1:11])
-})
-
-test_that(".osf_parent_project", {
-  # has parent project
-  osf_id <- "yt32c"
-  parent <- .osf_parent_project(osf_id)
-  expect_equal(parent, "pngda")
-
-  # is a parent project
-  osf_id <- "pngda"
-  parent <- .osf_parent_project(osf_id)
-  expect_equal(parent, "pngda")
-
-  # preprint
-  osf_id <- "xp5cy"
-  parent <- .osf_parent_project(osf_id)
-  expect_equal(parent, "3cz2e")
-
-  # invalid ID
-  osf_id <- "pda"
-  expect_warning(parent <- .osf_parent_project(osf_id))
-  expect_true(is.na(parent))
-})
-
-
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
 

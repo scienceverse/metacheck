@@ -5,9 +5,6 @@ test_that("osf_preprint_list", {
   expect_error(osf_preprint_list(bad_arg))
 })
 
-# httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that("defaults", {
   pp <- osf_preprint_list()
   expect_equal(nrow(pp), 10)
@@ -50,7 +47,4 @@ test_that("defaults", {
                                  date_modified = date_modified)
   dates <- substr(psyarxiv2m$date_modified, 1, 10)
   expect_true(all(dates %in% date_modified))
-})
-
-httptest2::stop_mocking()
-# httptest2::stop_capturing()
+}, "mock")
