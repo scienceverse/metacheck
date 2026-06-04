@@ -23,7 +23,7 @@ test_that(".onLoad", {
 test_that(".onAttach", {
   op <- capture_message(metacheck:::.onAttach())
   expect_true(grepl("Welcome to metacheck", op))
-  expect_true(grepl("This is alpha software", op))
+  expect_true(grepl("This is beta software", op))
 })
 
 
