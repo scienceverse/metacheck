@@ -8,6 +8,8 @@
 #'
 #' We try to exclude figure and table notes like "* p < .05", but may not succeed at excluding all false positives.
 #'
+#' <validation>In a sample of 225 papers containing 405 instances of non-exact p-values, th module correctly detected 269 cases (true positives) and incorrectly identified 78 (false positives). It missed 136 instances of imprecisely reported p-values (false negatives) and correctly identified 4557 cases of precisely reported p-values (true negative). Additionally, 78% of positive detections were correct (positive predictive value).</validation>
+#'
 #'
 #' @keywords results
 #'

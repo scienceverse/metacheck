@@ -32,7 +32,7 @@ utf <- list(
   tl_yellow = "\uD83D\uDD0D",
   tl_red    = "\u26A0\uFE0F",
   tl_info   = "\u2139\uFE0F",
-  tl_na     = "\u26AA\uFE0F",
+  tl_na     = "\U00002B1C",
   tl_fail   = "\u2620\uFE0F",
 
   dot_green  = "\ud83d\udfe2",

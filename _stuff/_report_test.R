@@ -8,10 +8,6 @@ llm_model("ollama/qwen2.5:3b")
 # choose modules to run
 # module_list()
 modules <- c(
-  # superceded ----
-  # "retractionwatch",
-  # "aspredicted",
-
   # helper modules ----
   # "all_urls",
   # "all_p_values",
@@ -21,8 +17,8 @@ modules <- c(
   # "ref_consistency",
 
   # in reports ----
-  # "prereg_check",
-  # # "causal_claims",
+  "prereg_check"
+  # "causal_claims",
   # "open_practices",
   # "funding_check",
   # "coi_check",
@@ -31,8 +27,8 @@ modules <- c(
   # "stat_p_nonsig",
   # "marginal",
   # "stat_effect_size",
-  "repo_check",
-  "code_check"
+  # "repo_check",
+  # "code_check",
   # "stat_check",
   # "ref_accuracy",
   # "ref_replication",
@@ -45,16 +41,21 @@ modules <- c(
 n <- 1
 output <- "html"
 paper <- sample(psychsci, n)
+#paper <- psychsci$`09567976231223130`
 #paper <- demopaper()
 # paper <- psychsci[[201]]
 
-# paper <- psychsci$`0956797620954815`
+# paper <- psychsci$`09567976231223130`
 # paper <- add_bib_match(paper)
 #mo <- module_run(paper, "ref_accuracy")
 
 #paper <- psychsci$`09567976241260247` # has two different links to same repo
 # paper <- psychsci$`09567976211040491` # doi_check
 # paper <- psychsci$`09567976241239935` # code_check failed
+
+# notes beta
+# 09567976231180588 exact_p "We found no imprecise p values or p-values of exactly zero out of 15 detected."
+# 09567976231223130 prereg_check failed
 
 # paper <- demopaper()
 args <- list()

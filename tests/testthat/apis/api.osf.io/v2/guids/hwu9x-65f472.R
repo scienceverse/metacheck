@@ -1,6 +1,6 @@
 structure(list(method = "GET", url = "https://api.osf.io/v2/guids/hwu9x/?resolve=false", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Fri, 15 May 2026 13:19:56 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Thu, 04 Jun 2026 21:59:11 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
@@ -60,5 +60,5 @@ structure(list(method = "GET", url = "https://api.osf.io/v2/guids/hwu9x/?resolve
     0x7d, 0x7d, 0x2c, 0x22, 0x6d, 0x65, 0x74, 0x61, 0x22, 0x3a, 
     0x7b, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 
     0x3a, 0x22, 0x32, 0x2e, 0x30, 0x22, 0x7d, 0x7d)), timing = c(redirect = 0, 
-    namelookup = 0, connect = 0, pretransfer = 0.000103, starttransfer = 0.867797, 
-    total = 0.86807), cache = new.env(parent = emptyenv())), class = "httr2_response")
+    namelookup = 0, connect = 0, pretransfer = 0.000142, starttransfer = 0.401775, 
+    total = 0.401934), cache = new.env(parent = emptyenv())), class = "httr2_response")

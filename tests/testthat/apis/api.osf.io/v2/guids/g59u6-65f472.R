@@ -1,12 +1,12 @@
 structure(list(method = "GET", url = "https://api.osf.io/v2/guids/g59u6/?resolve=false", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Tue, 12 May 2026 14:04:05 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Thu, 04 Jun 2026 21:56:51 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
         `x-frame-options` = "DENY", `cache-control` = "no-cache, no-store, max-age=0, must-revalidate", 
         expires = "-1", pragma = "no-cache", `content-encoding` = "gzip", 
-        via = "1.1 google", `alt-svc` = "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"), class = "httr2_headers"), 
+        via = "1.1 google", `alt-svc` = "h3=\":443\"; ma=2592000"), class = "httr2_headers"), 
     body = as.raw(c(0x7b, 0x22, 0x64, 0x61, 0x74, 0x61, 0x22, 
     0x3a, 0x7b, 0x22, 0x69, 0x64, 0x22, 0x3a, 0x22, 0x67, 0x35, 
     0x39, 0x75, 0x36, 0x22, 0x2c, 0x22, 0x74, 0x79, 0x70, 0x65, 
@@ -60,5 +60,5 @@ structure(list(method = "GET", url = "https://api.osf.io/v2/guids/g59u6/?resolve
     0x7d, 0x7d, 0x2c, 0x22, 0x6d, 0x65, 0x74, 0x61, 0x22, 0x3a, 
     0x7b, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 
     0x3a, 0x22, 0x32, 0x2e, 0x30, 0x22, 0x7d, 0x7d)), timing = c(redirect = 0, 
-    namelookup = 0, connect = 0, pretransfer = 0.000178, starttransfer = 0.358341, 
-    total = 0.358613), cache = new.env(parent = emptyenv())), class = "httr2_response")
+    namelookup = 0, connect = 0, pretransfer = 0.000127, starttransfer = 0.416476, 
+    total = 0.416566), cache = new.env(parent = emptyenv())), class = "httr2_response")
