@@ -1,6 +1,3 @@
-# httptest2::start_capturing()
-httptest2::use_mock_api()
-
 # skip online checking in aspredicted_* functions
 testthat::local_mocked_bindings(
   online = \(...) TRUE
@@ -19,7 +16,7 @@ test_that("errors", {
   expect_equal(github_readme(repo), "")
   expect_null(github_languages(repo))
   expect_null(github_files(repo))
-})
+}, "mock")
 
 test_that("github_links", {
   expect_true(is.function(metacheck::github_links))
@@ -44,7 +41,7 @@ test_that("github_links", {
   )
   obs <- github_links(paper)
   expect_setequal(obs$href, exp)
-})
+}, "mock")
 
 
 test_that(".github_config", {
@@ -53,7 +50,7 @@ test_that(".github_config", {
 
   h <- .github_config(httr2::request("https://api.github.com"))
   expect_s3_class(h, "httr2_request")
-})
+}, "mock")
 
 test_that("github_repo", {
   expect_true(is.function(metacheck::github_repo))
@@ -85,7 +82,7 @@ test_that("github_repo", {
            "scienceverse/faux" = "scienceverse/faux",
            "scienceverse/metacheck.git" = "scienceverse/metacheck")
   expect_equal(exp, repo)
-})
+}, "mock")
 
 test_that("github_readme", {
   expect_true(is.function(metacheck::github_readme))
@@ -102,7 +99,7 @@ test_that("github_readme", {
   expect_equal(readme, readmes[[1]])
   expect_equal(length(readmes), 3)
   expect_equal(readmes[[2]], "")
-})
+}, "mock")
 
 test_that("github_languages", {
   lang <- github_languages("scienceverse/metacheck")
@@ -117,7 +114,7 @@ test_that("github_languages", {
   expect_true(repo[[1]] %in% langs$repo)
   expect_false(repo[[2]] %in% langs$repo)
   expect_true(repo[[3]] %in% langs$repo)
-})
+}, "mock")
 
 test_that("github_files", {
   expect_true(is.function(metacheck::github_files))
@@ -158,7 +155,7 @@ test_that("github_files", {
   files <- github_files(repo)
   expect_in(files$repo, repo)
   expect_in(files$clean_repo, repo)
-})
+}, "mock")
 
 test_that("github_info", {
   expect_true(is.function(metacheck::github_info))
@@ -180,7 +177,4 @@ test_that("github_info", {
   expect_true("R" %in% info$languages$language)
   expect_equal(names(info$languages), c("repo", "language", "bytes"))
   expect_true(all(repo == info$languages$repo))
-})
-
-httptest2::stop_mocking()
-# httptest2::stop_capturing()
+}, "mock")

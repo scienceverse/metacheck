@@ -4,10 +4,15 @@
 \alias{osf_api_check}
 \title{Check OSF API Server Status}
 \usage{
-osf_api_check(osf_api = getOption("metacheck.osf.api"))
+osf_api_check(
+  osf_api = getOption("metacheck.osf.api"),
+  on_error = c("stop", "warn", "ignore")
+)
 }
 \arguments{
 \item{osf_api}{the OSF API to use (e.g., "https://api.osf.io/v2")}
+
+\item{on_error}{whether to stop, warn, or ignore errors}
 }
 \value{
 the OSF status

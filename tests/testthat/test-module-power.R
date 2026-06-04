@@ -59,8 +59,6 @@ test_that("power, no LLM", {
   expect_equal(mo$summary_table$power_n, 1)
 })
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
 
 test_that("power, with LLM", {
   module <- "power"
@@ -173,7 +171,7 @@ test_that("power, with LLM", {
   expect_equal(nrow(mo$summary_table), 2)
   expect_equal(mo$summary_table$power_n, c(1, 1))
   expect_equal(mo$summary_table$power_complete, c(0,0))
-})
+}, "mock")
 
 test_that("power, with Ollama", {
   module <- "power"
@@ -203,7 +201,5 @@ test_that("power, with Ollama", {
   expect_equal(nrow(mo$summary_table), 2)
   expect_equal(mo$summary_table$power_n, c(1, 1))
   expect_equal(mo$summary_table$power_complete, c(0,0))
-})
+}, "mock")
 
-httptest2::stop_mocking()
-#httptest2::stop_capturing()

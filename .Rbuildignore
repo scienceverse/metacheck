@@ -21,7 +21,7 @@
 ^vignettes/.quarto$
 codecov.yml
 ^inst/plumber$
-^inst/templates/*.html
+inst/templates/_report.html
 ^\.positai$
 ^\.claude$
 ^tests$

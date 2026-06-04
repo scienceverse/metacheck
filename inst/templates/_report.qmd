@@ -17,7 +17,7 @@ format:
         <li class="yellow">🔍 something to check;</li> 
         <li class="green">✅️ no problems detected;</li>  
         <li class="info">ℹ️ informational only;</li>  
-        <li class="na">⚪️ not applicable;</li>  
+        <li class="na">⬜ not applicable;</li>  
         <li class="fail">☠️ check failed</li>
       <ul>
       <hr/>
@@ -102,7 +102,7 @@ library(metacheck)
 - 🔍 [Something to check](#module-2){.yellow}: Detected something you should check.
 - ⚠️ [Possible problems detected](#module-3){.red}: A possible poor practice detected.
 - ℹ️ [Informational only](#module-4){.info}: Info that isn't necessarily good/questionable/poor practice.
-- ⚪️ [Not applicable](#module-5){.na}: This check isn't relevant to this paper.
+- ⬜ [Not applicable](#module-5){.na}: This check isn't relevant to this paper.
 - ☠️ [Check failed](#module-6){.fail}: This is usually when something goes wrong and there is an uncaught error in the module.
 
 ## General Modules
@@ -281,7 +281,7 @@ This module was developed by Lisa DeBruine and Daniel Lakens
 
 ## Methods Modules
 
-### ⚪️ Module 5 {#module-5 .na}
+### ⬜ Module 5 {#module-5 .na}
 
 This check isn't relevant to this paper.
 

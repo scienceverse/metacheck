@@ -78,6 +78,22 @@
     )
   }
 
+  # check package version
+  v <- utils::packageVersion("metacheck")
+  gh_v <- tryCatch({
+    url <- "https://raw.githubusercontent.com/scienceverse/metacheck/refs/heads/main/DESCRIPTION"
+    gh <- readLines(url, n = 3)
+    m <- regexec("Version:\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)", gh[[3]])
+    regmatches(gh[[3]], m)[[1]][[2]]
+  }, error = \(e) { return("0.0.0.0")})
+  if (gh_v > v) {
+    new_version <- sprintf("\U0001F195 Install newer version %s using\n%s", gh_v,
+    "remotes::install_github(\"scienceverse/metacheck\")")
+  } else {
+    new_version <- "\u2728 Your version is up to date."
+  }
+
+
   stripe <- paste0(
     "\033[31m*****", # red
     "\033[33m*****", # yellow
@@ -89,23 +105,24 @@
 
   stripe <- paste0(
     "\033[32m",
-    rep("*", 43) |> paste(collapse = ""),
+    rep("*", 47) |> paste(collapse = ""),
     "\033[0m"
   )
 
   if (!interactive()) {
-    stripe <- rep("*", 43) |> paste(collapse = "")
+    stripe <- rep("*", 47) |> paste(collapse = "")
   }
   paste(
     "\n",
     stripe,
-    "\u2705 Welcome to metacheck",
-    "For support and examples visit:",
+    paste("\u2705 Welcome to metacheck beta version", v),
+    new_version,
+    "\n\u2139 For support and examples visit:",
     "https://scienceverse.github.io/metacheck/",
     mailset,
-    "\u203C\uFE0F This is alpha software; please check any",
-    "results. False positives and negatives will",
-    "occur at unknown rates.",
+    "\U0001F9EA This is beta software; please check any",
+    "results. Check module validation info for",
+    "false positive and negative rates.",
     stripe,
     sep = "\n"
   ) |> packageStartupMessage()

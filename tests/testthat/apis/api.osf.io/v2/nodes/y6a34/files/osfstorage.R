@@ -1,6 +1,6 @@
 structure(list(method = "GET", url = "https://api.osf.io/v2/nodes/y6a34/files/osfstorage/", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Tue, 12 May 2026 23:16:54 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        date = "Wed, 03 Jun 2026 18:03:40 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
         `content-length` = "128", vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
@@ -21,5 +21,5 @@ structure(list(method = "GET", url = "https://api.osf.io/v2/nodes/y6a34/files/os
     0x61, 0x22, 0x3a, 0x7b, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 
     0x6f, 0x6e, 0x22, 0x3a, 0x22, 0x32, 0x2e, 0x30, 0x22, 0x7d, 
     0x7d)), timing = c(redirect = 0, namelookup = 0, connect = 0, 
-    pretransfer = 0.000108, starttransfer = 0.45397, total = 0.454144
+    pretransfer = 0.000184, starttransfer = 0.186938, total = 0.187038
     ), cache = new.env(parent = emptyenv())), class = "httr2_response")

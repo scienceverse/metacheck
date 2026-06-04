@@ -230,11 +230,12 @@ report_module_run <- function(paper, modules, args = list()) {
   section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
   sections <- sapply(module_output, \(mo) mo$section)
   sections <- factor(sections, section_levels)
-  tl_levels <- c("red", "yellow", "green", "info", "na", "fail")
-  tls <- sapply(module_output, \(mo) mo$traffic_light %||% "info")
-  tls <- factor(tls, tl_levels)
-  # this seems hacky, but I can't figure out how to sort by 2 vectors
-  mod_order <- xtfrm(sections) * 10 + xtfrm(tls)
+  # tl_levels <- c("red", "yellow", "green", "info", "na", "fail")
+  # tls <- sapply(module_output, \(mo) mo$traffic_light %||% "info")
+  # tls <- factor(tls, tl_levels)
+  # # this seems hacky, but I can't figure out how to sort by 2 vectors
+  # mod_order <- xtfrm(sections) * 10 + xtfrm(tls)
+  mod_order <- xtfrm(sections)
   module_output <- sort_by(module_output, mod_order)
 
   return(module_output)

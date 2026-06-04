@@ -172,9 +172,7 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL) {
   # Build the URL
   zenodo_api_url <- paste0("https://zenodo.org/api/records/", zenodo_id)
 
-  resp <- httr2::request(zenodo_api_url) |>
-    httr2::req_error(is_error = \(resp) FALSE) |>
-    httr2::req_perform()
+  resp <- .batch_query(zenodo_api_url, msg = NULL)[[1]]
 
   if (httr2::resp_status(resp) != 200) {
     warning(zenodo_id, " could not be found", call. = FALSE)
@@ -191,40 +189,27 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL) {
     return(obj)
   }
 
-  metadata <- rec[["metadata"]]
-  stats <- rec[["stats"]]
-  resource_type <- metadata[["resource_type"]]
-  license <- metadata[["license"]]
-  if (is.list(license)) {
-    if (!is.null(license$id)) {
-      license <- license$id
-    } else if (!is.null(license$title)) {
-      license <- license$title
-    } else {
-      license <- NA_character_
-    }
-  }
-
-  if (is.null(license)) {
-    license <- NA_character_
-  }
+  metadata <- rec$metadata
 
   # Basic metadata
-  obj$title <-            metadata[["title"]] %||% NA_character_
-  obj$doi <-              rec[["doi"]] %||% NA_character_
-  obj$description <-      metadata[["description"]] %||% NA_character_
-  obj$publication_date <- metadata[["publication_date"]] %||% NA_character_
-  obj$updated_date <-     rec[["updated"]] %||% NA_character_
-  obj$creators <-         list(if (is.null(metadata[["creators"]])) list() else metadata[["creators"]])
-  obj$keywords <- list(if (is.null(metadata[["keywords"]])) list() else metadata[["keywords"]])
-  obj$resource_type <- if (is.null(resource_type[["type"]])) NA_character_ else resource_type[["type"]]
-  obj$journal <- list(if (is.null(metadata[["journal"]])) list() else metadata[["journal"]])
-  obj$owners <- list(if (is.null(rec[["owners"]])) list() else rec[["owners"]])
-  obj$license <- license
-  obj$downloads <- stats[["downloads"]] %||% NA_real_
-  obj$unique_downloads <- stats[["unique_downloads"]] %||% NA_real_
-  obj$views <- stats[["views"]] %||% NA_real_
-  obj$files <- list(if (is.null(rec[["files"]])) list() else rec[["files"]])
+  obj$title <-            metadata$title %||% NA_character_
+  obj$doi <-              rec$doi %||% NA_character_
+  obj$description <-      metadata$description %||% NA_character_
+  obj$publication_date <- metadata$publication_date %||% NA_character_
+  obj$updated_date <-     rec$updated %||% NA_character_
+  obj$creators <-         list(metadata$creators) %||% list(c())
+  obj$keywords <-         list(metadata$keywords) %||% list(c())
+  obj$resource_type <-    metadata$resource_type$type %||% NA_character_
+  obj$journal <-          list(metadata$journal) %||% list(c())
+  obj$owners <-           list(rec$owners) %||% list(c())
+  obj$license <-          metadata$license$id %||%
+                          metadata$license$title %||%
+                          metadata$license %||%
+                          NA_character_
+  obj$downloads <-        rec$stats$downloads %||% NA_real_
+  obj$unique_downloads <- rec$stats$unique_downloads %||% NA_real_
+  obj$views <-            rec$stats$views %||% NA_real_
+  obj$files <-            list(rec$files) %||% list(c())
 
   return(obj)
 }

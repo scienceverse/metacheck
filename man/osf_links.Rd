@@ -13,7 +13,7 @@ osf_links(paper)
 a table with the OSF url in the first (href) column
 }
 \description{
-OSF links can be tricky to find in PDFs, since they can insert spaces in odd places, and view-only links that contain a ? are often interpreted as being split across sentences. This function is our best attempt at catching and fixing them all.
+Get all OSF links.
 }
 \examples{
 osf_links(psychsci)

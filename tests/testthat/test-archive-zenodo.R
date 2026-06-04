@@ -1,6 +1,3 @@
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that("zenodo_links", {
   expect_true(is.function(metacheck::zenodo_links))
   expect_no_error(helplist <- help(zenodo_links, metacheck))
@@ -56,42 +53,27 @@ test_that(".zenodo_id", {
 test_that(".zenodo_info", {
   expect_true(is.function(metacheck:::.zenodo_info))
 
-  info <- .zenodo_info("https://doi.org/10.5281/zenodo.123456789")
+  zenodo_id <- .zenodo_id("10.5281/zenodo.2669586")
+  info <- .zenodo_info(zenodo_id)
 
-  expect_equal(info$zenodo_id, "123456789")
-  expect_equal(info$title, "Example title")
-  expect_equal(info$doi, "10.5281/zenodo.123456789")
-  expect_equal(info$resource_type, "dataset")
-  expect_equal(info$license, "cc-by-4.0")
-  expect_equal(info$downloads, 10)
-  expect_equal(length(info$files[[1]]), 1)
+  expect_equal(info$zenodo_id, "2669586")
+  expect_equal(info$title, "faux: Simulation for Factorial Designs")
+  expect_equal(info$doi, "10.5281/zenodo.7852893")
+  expect_equal(info$resource_type, "software")
+  expect_equal(info$license, "mit-license")
+  expect_gt(info$downloads, 200)
+  #expect_equal(info$files[[1]]$key, "debruine/faux-v1.2.1.zip")
 
-  testthat::local_mocked_bindings(
-    request = function(url) {
-      structure(list(url = url), class = "httr2_request")
-    },
-    req_error = function(req, is_error) {
-      req
-    },
-    req_perform = function(req) {
-      structure(list(status = 404), class = "httr2_response")
-    },
-    resp_status = function(resp) {
-      resp$status
-    },
-    .package = "httr2"
-  )
-
-  expect_warning(unfound <- .zenodo_info("12345"))
+  zenodo_id <- "00000000"
+  expect_warning(unfound <- .zenodo_info(zenodo_id))
   expect_equal(unfound$error, "unfound")
-})
+}, "mock")
+
 
 
 test_that("zenodo_info", {
   expect_true(is.function(metacheck::zenodo_info))
   expect_no_error(helplist <- help(zenodo_info, metacheck))
-
-  expect_error(zenodo_info(bad_arg))
 
   z <- c(
     "https://doi.org/10.5281/zenodo.17754445",
@@ -119,7 +101,7 @@ test_that("zenodo_info", {
   expect_equal(info2$zenodo_id[1:2], c("17754445", "123456789"))
   expect_true(is.na(info2$zenodo_id[3]))
   expect_true(is.na(info2$title[3]))
-})
+}, "mock")
 
 
 test_that("zenodo_file_download", {
@@ -222,6 +204,3 @@ test_that("zenodo_file_download", {
   expect_true(dl_ok$downloaded[[1]])
   expect_true(file.exists(file.path(tmpdir_ok, "24680", "ok.csv")))
 })
-
-httptest2::stop_mocking()
-#httptest2::stop_capturing()

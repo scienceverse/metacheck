@@ -1,0 +1,120 @@
+{
+    "created": "2023-04-21T14:00:05.851863+00:00",
+    "modified": "2023-04-21T14:26:41.592117+00:00",
+    "id": 7852893,
+    "conceptrecid": "2669586",
+    "doi": "10.5281/zenodo.7852893",
+    "conceptdoi": "10.5281/zenodo.2669586",
+    "doi_url": "https://doi.org/10.5281/zenodo.7852893",
+    "metadata": {
+        "title": "faux: Simulation for Factorial Designs",
+        "doi": "10.5281/zenodo.7852893",
+        "publication_date": "2023-02-03",
+        "description": "Create datasets with factorial structure through simulation by specifying variable parameters.",
+        "access_right": "open",
+        "creators": [
+            {
+                "name": "Lisa DeBruine",
+                "affiliation": "University of Glasgow",
+                "orcid": "0000-0002-7523-5539"
+            }
+        ],
+        "related_identifiers": [
+            {
+                "identifier": "https://debruine.github.io/faux/",
+                "relation": "isSupplementTo",
+                "scheme": "url"
+            }
+        ],
+        "version": "1.2.0",
+        "resource_type": {
+            "title": "Software",
+            "type": "software"
+        },
+        "license": {
+            "id": "mit-license"
+        },
+        "relations": {
+            "version": [
+                {
+                    "index": 8,
+                    "is_last": true,
+                    "parent": {
+                        "pid_type": "recid",
+                        "pid_value": "2669586"
+                    }
+                }
+            ]
+        }
+    },
+    "title": "faux: Simulation for Factorial Designs",
+    "links": {
+        "self": "https://zenodo.org/api/records/7852893",
+        "self_html": "https://zenodo.org/records/7852893",
+        "preview_html": "https://zenodo.org/records/7852893?preview=1",
+        "doi": "https://doi.org/10.5281/zenodo.7852893",
+        "self_doi": "https://doi.org/10.5281/zenodo.7852893",
+        "self_doi_html": "https://zenodo.org/doi/10.5281/zenodo.7852893",
+        "reserve_doi": "https://zenodo.org/api/records/7852893/draft/pids/doi",
+        "parent": "https://zenodo.org/api/records/2669586",
+        "parent_html": "https://zenodo.org/records/2669586",
+        "parent_doi": "https://doi.org/10.5281/zenodo.2669586",
+        "parent_doi_html": "https://zenodo.org/doi/10.5281/zenodo.2669586",
+        "self_iiif_manifest": "https://zenodo.org/api/iiif/record:7852893/manifest",
+        "self_iiif_sequence": "https://zenodo.org/api/iiif/record:7852893/sequence/default",
+        "files": "https://zenodo.org/api/records/7852893/files",
+        "media_files": "https://zenodo.org/api/records/7852893/media-files",
+        "archive": "https://zenodo.org/api/records/7852893/files-archive",
+        "archive_media": "https://zenodo.org/api/records/7852893/media-files-archive",
+        "latest": "https://zenodo.org/api/records/7852893/versions/latest",
+        "latest_html": "https://zenodo.org/records/7852893/latest",
+        "versions": "https://zenodo.org/api/records/7852893/versions",
+        "draft": "https://zenodo.org/api/records/7852893/draft",
+        "access_links": "https://zenodo.org/api/records/7852893/access/links",
+        "access_grants": "https://zenodo.org/api/records/7852893/access/grants",
+        "access_users": "https://zenodo.org/api/records/7852893/access/users",
+        "access_request": "https://zenodo.org/api/records/7852893/access/request",
+        "access": "https://zenodo.org/api/records/7852893/access",
+        "communities": "https://zenodo.org/api/records/7852893/communities",
+        "communities-suggestions": "https://zenodo.org/api/records/7852893/communities-suggestions",
+        "request_deletion": "https://zenodo.org/api/records/7852893/request-deletion",
+        "file_modification": "https://zenodo.org/api/records/7852893/file-modification",
+        "quota_increase": "https://zenodo.org/api/records/7852893/quota-increase",
+        "requests": "https://zenodo.org/api/records/7852893/requests"
+    },
+    "updated": "2023-04-21T14:26:41.592117+00:00",
+    "recid": "7852893",
+    "revision": 3,
+    "files": [
+        {
+            "id": "afdd0ef1-f366-4458-b5c8-36414d4b5490",
+            "key": "debruine/faux-v1.2.1.zip",
+            "size": 53373506,
+            "checksum": "md5:93da3f38cbc381bc5078e877a3fde0b4",
+            "links": {
+                "self": "https://zenodo.org/api/records/7852893/files/debruine/faux-v1.2.1.zip/content"
+            }
+        }
+    ],
+    "swh": {
+
+    },
+    "owners": [
+        {
+            "id": "39314"
+        }
+    ],
+    "status": "published",
+    "stats": {
+        "downloads": 286,
+        "unique_downloads": 271,
+        "views": 3116,
+        "unique_views": 2899,
+        "version_downloads": 158,
+        "version_unique_downloads": 145,
+        "version_unique_views": 1284,
+        "version_views": 1371
+    },
+    "state": "done",
+    "submitted": true
+}

@@ -12,6 +12,20 @@ httptest2::.mockPaths(NULL)
 apis <- normalizePath("apis")
 httptest2::.mockPaths(apis)
 
+# mock function
+test_that <- function(desc, code, mock = "none") {
+  if (mock == "mock") {
+    httptest2::use_mock_api()
+    on.exit(httptest2::stop_mocking())
+  } else if (mock == "capture") {
+    httptest2::start_capturing()
+    on.exit(httptest2::stop_capturing())
+  }
+  time <- system.time( testthat::test_that(desc, code) )
+  s <- round(time[['elapsed']], 1)
+  if (s > 4) message(s, ": ", desc)
+}
+
 grobid_url <- "http://localhost:8070"
 # grobid_url <- "https://grobid.metacheck.app"
 # grobid_url <- "https://grobidorg-grobid.hf.space/"

@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.0.9106
-Date: 2026-05-31
+Version: 0.0.1.0
+Date: 2026-06-04
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -36,21 +36,21 @@ Suggests:
     ggplot2,
     devtools,
     httptest2,
-    readr,
     rmarkdown,
-    shiny,
-    shiny.i18n,
-    shinydashboard,
     shinyjs,
     testthat (>= 3.0.0),
     rstudioapi,
-    knitr,
-    withr
+    withr,
+    shiny,
+    shiny.i18n,
+    shinydashboard
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 Imports: 
     dplyr,
     tidyr,
+    readr,
+    knitr,
     quarto,   
     DT,       
     bibtex,   

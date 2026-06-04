@@ -72,6 +72,8 @@ test_that("aspredicted_info pdf", {
 })
 
 test_that("aspredicted_info multiple", {
+  skip_if_quick()
+
   # multiple links in a table
   ap_url <- data.frame(link = c(
     "https://aspredicted.org/ve2qn.pdf",

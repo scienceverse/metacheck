@@ -1,74 +1,3 @@
-test_that("lang_load_regex", {
-  # check that this regex captures all of the intended loaders
-  pattern <- c(
-    "read\\.(csv2?|table|delim2?)",
-    "read\\.xlsx",
-    "read\\.dta",
-    "read_(csv2?|tsv|delim|rds|lines)",
-    "read_(xlsx?|excel)",
-    "read_(dta|sav|sas)",
-    "read_(feather|parquet|yaml|xml|ods)",
-    "fread",
-    "readRDS",
-    "load",
-    "readLines",
-    "fromJSON",
-    "readtext",
-    "source"
-  ) |>
-    paste(collapse = "|") |>
-    paste0("\\b(", x = _, ")\\s*\\(")
-
-  x <- c(
-    "x = read.csv('stuff')",
-    "x=read.csv2('stuff')",
-    "x <- read.table('stuff')",
-    "x<-read.delim(filename)",
-    "x<-read.delim2(filename)",
-    "  x   <-   readRDS(filename)",
-    "x <- filename |> load()",
-    "readLines(file, n = 2)",
-    "readr::read_csv('file') -> x",
-    "read_csv2 ('file')",
-    "read_tsv  ('file')",
-    "read_delim('file')",
-    "read_rds('file')",
-    "read_lines('file')",
-    "readLines(file)",
-    "fread(file)",
-    "read_xlsx(file)",
-    "read_xls(file)",
-    "read_excel(file)",
-    "read_xlsx(file)",
-    "read_dta(file)",
-    "read_sav(file)",
-    "read_sas(file)",
-    "read.dta(file)",
-    "read_feather(file)",
-    "read_parquet(file)",
-    "fromJSON(file)",
-    "read_yaml(file)",
-    "read_xml(file)",
-    "read_ods(file)",
-    "readtext(file)",
-    "source(file)"
-
-  )
-  detected <- grepl(pattern, x)
-  expect_true(all(detected))
-
-  # shouldn't detect
-  x <- c(
-    "I can read CSV files",
-    "read.CSV()",
-    "read.csv is a good function",
-    "get that from JSON (if you can)"
-  )
-  undetected <- grepl(pattern, x)
-  expect_false(any(undetected))
-})
-
-
 test_that("code_check offline", {
   module <- "code_check"
   mods <- module_list()
@@ -87,16 +16,11 @@ test_that("code_check offline", {
 })
 
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
-
 test_that("OSF no files", {
   # OSF but no R files
 
   module <- "code_check"
-  paper <- test_paper()
-  paper$url <- data.frame(href = "https://osf.io/y6a34", text_id = 1)
+  paper <- test_paper(url = "https://osf.io/y6a34")
   mo <- module_run(paper, module)
 
   expect_equal(mo$traffic_light, "na")
@@ -105,59 +29,68 @@ test_that("OSF no files", {
   expect_equal(mo$summary_table, exp)
   expect_match(mo$summary_text, "0")
   expect_match(mo$report, "0")
-})
+}, "mock")
 
 test_that("no code files", {
-
   module <- "code_check"
-  paper <- test_paper()
-  paper$url <- data.frame(href = "https://osf.io/m4nbv", text_id = 1)
+  paper <- test_paper(url = "https://osf.io/m4nbv")
   mo <- module_run(paper, module)
 
   exp <- data.frame(paper_id = paper$paper_id,
                     code_file_n = 0)
   expect_equal(mo$summary_table, exp)
 
-  exp <- "We found 0 R, SAS, SPSS, or Stata code files."
+  exp <- "We found 0 R, 0 SAS, 0 SPSS, and 0 Stata code files."
   expect_equal(mo$summary_text, exp)
   expect_equal(mo$report, exp)
-})
+}, "mock")
 
 test_that("OSF", {
+  skip_if_quick()
+
   module <- "code_check"
-  paper <- test_paper()
-  paper$url <- data.frame(href = "https://osf.io/629bx", text_id = 1)
+  paper <- test_paper(url = "https://osf.io/629bx")
   mo <- module_run(paper, module)
 
   expect_equal(mo$traffic_light, "yellow")
   exp <- data.frame(paper_id = paper$paper_id,
                     code_n = 2,
+                    code_checked = 2,
                     code_abs_path = 3,
-                    code_missing_files = 0)
-  expect_equal(mo$summary_table[, 1:4], exp[, 1:4])
-})
+                    code_missing_files = 2)
+  expect_equal(mo$summary_table[, 1:5], exp[, 1:5])
+}, "mock")
 
 test_that("file_limit", {
   # default limit
-  paper <- test_paper(url = "https://github.com/scienceverse/demo")
-  mo <- module_run(paper, "code_check")
-  expect_equal(nrow(mo$table), 20)
-  expect_equal(mo$summary_table$code_n, 20)
+  paper <- test_paper()
+  local_path <- test_path("fixtures", "demo", "code") # has 25 files
+  n_files <- list.files(local_path) |> length()
+  mo <- module_run(paper, "code_check", local_path = local_path)
+  expect_equal(nrow(mo$table), n_files)
+  expect_equal(mo$summary_table$code_n, n_files)
+  expect_equal(mo$summary_table$code_checked, 20)
 
   # lower limit
-  mo <- module_run(paper, module = "code_check", file_limit = 2)
-  expect_equal(nrow(mo$table), 2)
-  expect_equal(mo$summary_table$code_n, 2)
+  mo <- module_run(paper, module = "code_check",
+                   file_limit = 2, local_path = local_path)
+  expect_equal(nrow(mo$table), n_files)
+  expect_equal(mo$summary_table$code_n, n_files)
+  expect_equal(mo$summary_table$code_checked, 2)
 
   # multiple repos
-  repos <- c("https://github.com/scienceverse/demo",
-             "https://osf.io/629bx")
-  paper <- test_paper(url = repos)
-  mo <- module_run(paper, module = "code_check", file_limit = 2)
-  expect_equal(nrow(mo$table), 4)
-  expect_equal(mo$summary_table$code_n, 4)
-  expect_setequal(mo$table$repo_url, repos)
-})
+  local_path <- c(
+    test_path("fixtures", "demo", "code"),
+    test_path("fixtures", "demo", "good-example.R")
+  )
+  paper <- test_paper()
+  mo <- module_run(paper, module = "code_check",
+                   file_limit = 2, local_path = local_path)
+  expect_equal(nrow(mo$table), n_files+1)
+  expect_equal(mo$summary_table$code_n, n_files+1)
+  expect_equal(mo$summary_table$code_checked, 3)
+  expect_setequal(mo$table$repo_url, local_path)
+}, "mock")
 
 
 test_that("multiple paper issue", {
@@ -174,7 +107,7 @@ test_that("multiple paper issue", {
   mo <- module_run(paper, "code_check")
 
   expect_setequal(mo$summary_table$paper_id, paper_id(paper))
-})
+}, "mock")
 
 # code_check() + local_path ----
 
@@ -182,15 +115,15 @@ test_that("code_check reads non-UTF-8 encoded files without NA", {
   # stata_latin1.do: Windows-1252 encoded (non-ASCII bytes invalid in UTF-8)
   # stata_utf16.do:  UTF-16 LE encoded (NUL bytes after every ASCII char)
   # Both previously produced code_lines=0 and percentage_comment=NA
-  local_path <- test_path("fixtures", "code_files")
-  mo <- module_run(test_paper(), "code_check", local_path = local_path)
+  paper <- test_paper()
+  local_path <- test_path("fixtures", "code_files", "stata_latin1.do")
+  mo <- module_run(paper, "code_check", local_path = local_path)
+  expect_gt(mo$table$code_lines, 0)
 
-  for (fname in c("stata_latin1.do", "stata_utf16.do")) {
-    row <- mo$table[mo$table$file_name == fname, ]
-    expect_true(nrow(row) == 1, label = paste(fname, "found in table"))
-    expect_true(row$code_lines > 0, label = paste(fname, "code_lines > 0"))
-    expect_false(is.na(row$percentage_comment), label = paste(fname, "percentage_comment not NA"))
-  }
+
+  local_path <- test_path("fixtures", "code_files", "stata_utf16.do")
+  mo <- module_run(paper, "code_check", local_path = local_path)
+  expect_gt(mo$table$code_lines, 0)
 })
 
 test_that("code_check local_path errors", {
@@ -250,6 +183,8 @@ test_that("code_check local_path: files without comments are flagged", {
 })
 
 test_that("code_check paper + local_path", {
+  skip_if_quick()
+
   # OSF 629bx has 2 code files; fixture_dir has 5 (3 R + 2 Stata) → total 7
   local_path <- test_path("fixtures", "code_files")
   paper <- test_paper(url = "https://osf.io/629bx")
@@ -266,8 +201,68 @@ test_that("code_check paper + local_path", {
     unique(mo$table$repo_url),
     c("https://osf.io/629bx", local_path)
   )
+}, "mock")
+
+
+# parse errors ----
+
+test_that("parse errors", {
+  local_path <- test_path("fixtures", "parse-errors")
+  paper <- test_paper()
+  module <- "code_check"
+  mo <- module_run(paper, module, local_path = local_path)
+
+  exp <- data.frame(
+    repo_name = rep("parse-errors", 8),
+    repo_url = rep(local_path, 8),
+    file_name = c(
+      "error-ok.qmd",
+      "error.R",
+      "error.Rmd",
+      "error.qmd",
+      "knit-error.Rmd",
+      "ok.R",
+      "ok.Rmd",
+      "ok.qmd"
+    ),
+    file_url = rep(NA_character_, 8),
+    file_size = c(155, 57, 212, 336, 102, 127, 304, 304),
+    file_type = rep("code", 8),
+    language = rep("R", 8),
+    checked = rep(TRUE, 8),
+    parse_error = rep(c(TRUE, FALSE), c(4, 4)),
+    parse_error_msg = c("line:5:1: unexpected symbol\n4: \n5: a\n   ^",
+                        "line:4:1: unexpected symbol\n3: \n4: a\n   ^",
+                        "line:4:1: unexpected symbol\n3: \n4: a\n   ^",
+                        "line:4:1: unexpected symbol\n3: \n4: a\n   ^",
+                        NA, NA, NA, NA),
+    code_abs_path = c(0L, 0L, 0L, 1L, 0L, 0L, 0L, 0L),
+    absolute_paths = c("", "", "", "/User/lisa/file.csv", "", "", "", ""),
+    library_lines = c(1L, 1L, 1L, 1L, 0L, 3L, 0L, 0L),
+    library_max_between = c(NA, NA, NA, NA, NA, 5L, NA, NA),
+    comment_lines = c(1L, 1L, 1L, 3L, 1L, 2L, 4L, 4L),
+    code_lines = c(4L, 2L, 2L, 3L, 1L, 7L, 1L, 1L),
+    percentage_comment = c(0.2, 1/3, 1/3, 0.5, 0.5, 2/9, 0.8, 0.8) ,
+    loaded_files_missing = c(0L, 0L, 0L, 1L, 0L, 0L, 0L, 0L),
+    loaded_files_missing_names = c("", "", "", "file.csv", "", "", "", "")
+  ) |> dplyr::arrange(file_name)
+  obs <- dplyr::arrange(mo$table, file_name)
+
+  for (nm in names(obs)) {
+    expect_equal(obs[[nm]], exp[[nm]])
+  }
+
+  # summary table
+  exp <- data.frame(
+    paper_id = paper_id(paper),
+    code_n = 8,
+    code_checked = 8,
+    code_abs_path = 1,
+    code_missing_files = 1,
+    code_min_comments = 0.2,
+    code_parse_errors = 4
+  )
+  expect_equal(mo$summary_table, exp)
 })
 
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
 

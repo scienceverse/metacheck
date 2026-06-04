@@ -33,6 +33,13 @@ scroll_table <- function(table,
     return("")
   }
 
+  # replace line breaks with <br>
+  for (col in names(table)) {
+    if (is.character(table[[col]])) {
+      table[[col]] <- gsub("\n", "<br>", table[[col]])
+    }
+  }
+
   tbl_code <- paste(deparse(table), collapse = "\n")
 
   column_loc <- ""
@@ -103,6 +110,13 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
       list(targets = i - 1, width = x)
     })
     cd_code <- cd[!sapply(cd, is.null)]
+  }
+
+  # replace line breaks with <br>
+  for (col in names(table)) {
+    if (is.character(table[[col]])) {
+      table[[col]] <- gsub("\n", "<br>", table[[col]])
+    }
   }
 
   # let col names break at _

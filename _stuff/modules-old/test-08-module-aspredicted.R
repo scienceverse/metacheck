@@ -1,6 +1,3 @@
-# httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that("aspredicted", {
   module <- "aspredicted"
   mods <- module_list()
@@ -36,7 +33,4 @@ test_that("aspredicted", {
   report <- module_report(mod_output)
   exp <- "1 AsPredicted link was found and retrieved"
   expect_true(grepl(exp, report))
-})
-
-httptest2::stop_mocking()
-# httptest2::stop_capturing()
+}, "capture")

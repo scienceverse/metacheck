@@ -1,0 +1,28 @@
+---
+title: "No Parse Errors"
+output: html_document
+---
+
+This is not executable R code:
+
+``` r
+library(dplyr
+
+a <- 1 + 1
+```
+
+But this is:
+
+```{r}
+# C1: this should give no parse error
+
+a <- 2 + 2
+```
+
+```{r, eval = FALSE}
+# C2: this should give no parse error because it's not evaluated
+
+a <- 3  3
+```
+
+

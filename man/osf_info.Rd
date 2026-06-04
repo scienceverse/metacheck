@@ -4,13 +4,7 @@
 \alias{osf_info}
 \title{Retrieve info from the OSF by ID}
 \usage{
-osf_info(
-  osf_url,
-  id_col = 1,
-  recursive = FALSE,
-  find_project = FALSE,
-  pb = NULL
-)
+osf_info(osf_url, id_col = 1, recursive = FALSE, pb = NULL)
 }
 \arguments{
 \item{osf_url}{an OSF ID or URL, or a table containing them}
@@ -18,8 +12,6 @@ osf_info(
 \item{id_col}{the index or name of the column that contains OSF IDs or URLs, if id is a table}
 
 \item{recursive}{whether to retrieve all children}
-
-\item{find_project}{DEPRECATED always TRUE now - find the top-level project associated with a file (adds 1+ API calls)}
 
 \item{pb}{a progress bar passed from another function}
 }
@@ -34,7 +26,7 @@ Retrieve info from the OSF by ID
 # get info on one OSF node
 osf_info("pngda")
 
-# also get child nodes and files, and parent project
-osf_info("https://osf.io/6nt4v", TRUE, TRUE)
+# also get child nodes and files
+osf_info("https://osf.io/6nt4v", recursive = TRUE)
 }
 }
