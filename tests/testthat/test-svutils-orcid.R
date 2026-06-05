@@ -11,8 +11,6 @@ test_that("errors", {
   expect_error(orcid_person(bad_arg))
 })
 
-#httptest::start_capturing()
-httptest::use_mock_api()
 
 test_that("get_orcid", {
   skip_if_offline("pub.orcid.org")
@@ -33,7 +31,7 @@ test_that("get_orcid", {
   suppressMessages( obs <- get_orcid("DeBruine") )
   expect_true(length(obs) > 1)
   expect_true(exp %in% obs)
-})
+}, "mock")
 
 test_that("orcid_person", {
   skip_if_offline("pub.orcid.org")
@@ -45,7 +43,5 @@ test_that("orcid_person", {
   expect_equal(person$family, "DeBruine")
   expect_equal(person$country, "GB")
   expect_equal(person$email[[1]], c("lisa.debruine@glasgow.ac.uk", "debruine@gmail.com"))
-})
+}, "mock")
 
-httptest::stop_mocking()
-#httptest::stop_capturing()
