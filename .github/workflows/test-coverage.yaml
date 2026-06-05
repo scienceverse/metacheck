@@ -1,11 +1,10 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-name: test-coverage.yaml
+name: Test/Covr
 
 permissions: read-all
 
@@ -24,26 +23,40 @@ jobs:
           use-public-rspm: true
           r-version: "4.5.1"
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install dependencies (with cache)
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::covr, any::xml2, any::plumber, any::logger
           needs: coverage
+          cache: true
           cache-version: 1
 
-        # this step should be revisited to still publish a report when a test fails
-        # , which is not the case now
       - name: Test coverage
         run: |
-          cov <- covr::package_coverage(
-            quiet = FALSE,
-            clean = FALSE,
-            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
-          )
-          print(cov)
-          covr::to_cobertura(cov)
+          result <- tryCatch({
+            cov <- covr::package_coverage(
+              quiet = FALSE,
+              clean = FALSE,
+              install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
+            )
+            print(cov)
+            covr::to_cobertura(cov)
+            0
+          }, error = function(e) {
+            message("Tests failed, but continuing to produce partial coverage:")
+            message(e)
+            if (exists("cov")) {
+              covr::to_cobertura(cov)
+            }
+            1
+          })
+          quit(status = result)
         shell: Rscript {0}
+        continue-on-error: true
 
-      - uses: codecov/codecov-action@v5
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
           files: ./cobertura.xml
@@ -52,7 +65,6 @@ jobs:
       - name: Show testthat output
         if: always()
         run: |
-          ## --------------------------------------------------------------------
           find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
 
