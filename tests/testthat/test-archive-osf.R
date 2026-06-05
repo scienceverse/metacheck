@@ -12,6 +12,10 @@ test_that("osf_type", {
   expect_true(is.function(metacheck::osf_type))
   expect_no_error(helplist <- help(osf_type, metacheck))
 
+  skip_on_cran()
+  skip_on_covr()
+  skip_on_ci()
+
   examples <- list(project = "pngda",
                    component = "https://osf.io/6nt4v",
                    private = "ybm3c",
