@@ -136,6 +136,22 @@ table.dataTable tbody td.focus {
   box-shadow: none !important;
 }
 
+/* inline switchInput: label sits beside the toggle on one row */
+.shiny-input-container-inline {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0 !important;
+}
+.shiny-input-container-inline .control-label {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+/* prevent label inside bootstrap-switch from wrapping */
+.bootstrap-switch .bootstrap-switch-label {
+  white-space: nowrap;
+}
+
 /* traffic lights */
 h2.na::before { content: '⚪️ '; }
 h2.fail::before { content: '⚫️ '; }
