@@ -152,6 +152,34 @@ table.dataTable tbody td.focus {
   white-space: nowrap;
 }
 
+/* prevent control-label from wrapping inside inline switches */
+.shiny-input-container-inline .control-label {
+  white-space: nowrap !important;
+}
+
+/* PDF upload field — full green treatment */
+.create-pdf-upload .input-group {
+  border: 2px solid var(--green);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.create-pdf-upload .btn-file {
+  background-color: var(--green) !important;
+  color: #fff !important;
+  border: none;
+  font-weight: 600;
+}
+.create-pdf-upload .btn-file:hover,
+.create-pdf-upload .btn-file:focus {
+  background-color: #4a7d4c !important;
+  color: #fff !important;
+}
+.create-pdf-upload .form-control {
+  background-color: rgba(89, 147, 91, 0.08) !important;
+  border: none;
+  box-shadow: none;
+}
+
 /* traffic lights */
 h2.na::before { content: '⚪️ '; }
 h2.fail::before { content: '⚫️ '; }

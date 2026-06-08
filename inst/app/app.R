@@ -175,13 +175,23 @@ server <- function(input, output, session) {
         paper <- read(json)
 
         incProgress(0.2, detail = "Running modules...")
+        local_path <- trimws(input$create_local_path)
+        has_local  <- nzchar(local_path) &&
+                        (file.exists(local_path) || dir.exists(local_path))
         modules <- validated_modules
         if (!isTRUE(input$create_pubpeer)) modules <- setdiff(modules, "ref_pubpeer")
-        if (!isTRUE(input$create_repos))   modules <- setdiff(modules, c("repo_check", "code_check"))
+        if (!isTRUE(input$create_repos) && !has_local)
+          modules <- setdiff(modules, c("repo_check", "code_check"))
+        skip_online <- has_local && !isTRUE(input$create_repos)
+        module_args <- if (has_local) {
+          list(repo_check = list(local_path = local_path, local_only = skip_online),
+               code_check = list(local_path = local_path, local_only = skip_online))
+        } else list()
         report(paper,
                modules     = modules,
                output_file = qmdpath,
-               output_format = "qmd")
+               output_format = "qmd",
+               args        = module_args)
 
         incProgress(0.2, detail = "Rendering HTML...")
         quarto::quarto_render(input = qmdpath,
@@ -212,9 +222,9 @@ server <- function(input, output, session) {
     err     <- create_report_error()
 
     if (running) {
-      p(icon("spinner", class = "fa-spin"), " Generating report, please wait...")
+      shiny::p(icon("spinner", class = "fa-spin"), " Generating report, please wait...")
     } else if (nzchar(err)) {
-      p(style = "color: #c0392b;", icon("circle-xmark"), " Error: ", err)
+      shiny::p(style = "color: #c0392b;", icon("circle-xmark"), " Error: ", err)
     } else if (nzchar(path) && file.exists(path)) {
       fname        <- create_report_filename()
       json_name    <- sub("\\.[Pp][Dd][Ff]$", ".json", fname)
@@ -222,13 +232,23 @@ server <- function(input, output, session) {
       use_pubpeer  <- isTRUE(input$create_pubpeer)
       use_repos    <- isTRUE(input$create_repos)
       use_llm      <- isTRUE(input$create_use_llm)
+      local_path_snip <- trimws(input$create_local_path)
+      has_local_snip  <- nzchar(local_path_snip) &&
+                           (file.exists(local_path_snip) || dir.exists(local_path_snip))
       mods_used    <- validated_modules
       if (!use_pubpeer) mods_used <- setdiff(mods_used, "ref_pubpeer")
-      if (!use_repos)   mods_used <- setdiff(mods_used, c("repo_check", "code_check"))
+      if (!use_repos && !has_local_snip)
+        mods_used <- setdiff(mods_used, c("repo_check", "code_check"))
       crossref_arg <- if (use_crossref) ", crossref_lookup = TRUE" else ""
       mods_str     <- paste0('c(', paste0('"', mods_used, '"', collapse = ', '), ')')
       llm_code     <- if (use_llm) {
         'llm_use(TRUE)\nllm_model("ollama/qwen2.5:3b")\n\n'
+      } else ""
+      args_code    <- if (has_local_snip) {
+        lo_arg <- if (!use_repos) ", local_only = TRUE" else ""
+        paste0(',\n  args = list(\n',
+               '    repo_check = list(local_path = "', local_path_snip, '"', lo_arg, '),\n',
+               '    code_check = list(local_path = "', local_path_snip, '"', lo_arg, '))')
       } else ""
       code <- paste0(
         'library(metacheck)\n\n',
@@ -236,16 +256,16 @@ server <- function(input, output, session) {
         'convert("', fname, '"', crossref_arg, ')\n',
         'paper <- read("', json_name, '")\n\n',
         'report(paper,\n',
-        '  modules = ', mods_str, ')'
+        '  modules = ', mods_str, args_code, ')'
       )
       tagList(
-        p(style = "color: #27ae60;", icon("circle-check"),
+        shiny::p(style = "color: #27ae60;", icon("circle-check"),
           " Report generated successfully and opened in a new tab."),
         actionButton("create_report_view", "View Report Again",
                      icon = icon("eye")),
         downloadButton("create_report_dl", "Download HTML"),
         tags$hr(),
-        p(tags$strong("The following R code would create this report directly from R:")),
+        shiny::p(tags$strong("The following R code would create this report directly from R:")),
         tags$pre(tags$code(code))
       )
     } else {

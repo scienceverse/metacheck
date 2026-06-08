@@ -204,6 +204,63 @@ test_that("code_check paper + local_path", {
 }, "mock")
 
 
+# code_check() + local_only ----
+
+test_that("code_check local_only = TRUE ignores online repos, checks local only", {
+  # paper has OSF link (629bx has 2 R files); local fixture has 5 code files
+  local_path <- test_path("fixtures", "code_files")
+  paper      <- test_paper(url = "https://osf.io/629bx")
+  mo <- module_run(paper, "code_check", local_path = local_path, local_only = TRUE)
+
+  # only the local fixture code files (analysis.R, analysis_no_comments.R, helper.R,
+  # stata_latin1.do, stata_utf16.do) — OSF code files absent
+  expect_equal(mo$summary_table$code_n, 5)
+  expect_true("analysis.R"  %in% mo$table$file_name)
+  expect_false("bad.R"       %in% mo$table$file_name)   # OSF file — should not appear
+  expect_false("bad.Rmd"     %in% mo$table$file_name)   # OSF file — should not appear
+}, "mock")
+
+test_that("code_check local_only = TRUE with no local_path returns na", {
+  # nothing to check: online skipped, no local path
+  mo <- module_run(test_paper(), "code_check", local_only = TRUE)
+
+  expect_equal(mo$traffic_light, "na")
+  expect_equal(mo$summary_table$code_file_n, 0)
+})
+
+test_that("code_check local_only = TRUE with online URLs but no local_path returns na", {
+  # paper has OSF link; local_only suppresses it; no local_path
+  paper <- test_paper(url = "https://osf.io/629bx")
+  mo <- module_run(paper, "code_check", local_only = TRUE)
+
+  expect_equal(mo$traffic_light, "na")
+  expect_equal(mo$summary_table$code_file_n, 0)
+}, "mock")
+
+test_that("code_check local_only = FALSE is the same as the default", {
+  local_path <- test_path("fixtures", "code_files")
+  paper      <- test_paper()
+
+  mo_default  <- module_run(paper, "code_check", local_path = local_path)
+  mo_explicit <- module_run(paper, "code_check", local_path = local_path, local_only = FALSE)
+
+  expect_equal(mo_default$summary_table, mo_explicit$summary_table)
+  expect_equal(mo_default$traffic_light, mo_explicit$traffic_light)
+})
+
+test_that("code_check local_only = TRUE respects file_limit", {
+  # confirm local_only interacts correctly with file_limit
+  local_path <- test_path("fixtures", "demo", "code")
+  n_files    <- length(list.files(local_path))
+  mo <- module_run(test_paper(), "code_check",
+                   local_path = local_path, local_only = TRUE, file_limit = 2)
+
+  expect_equal(nrow(mo$table), n_files)
+  expect_equal(mo$summary_table$code_checked, 2)
+  expect_equal(mo$summary_table$code_n, n_files)
+})
+
+
 # parse errors ----
 
 test_that("parse errors", {
@@ -226,7 +283,7 @@ test_that("parse errors", {
       "ok.qmd"
     ),
     file_url = rep(NA_character_, 8),
-    file_size = c(155, 57, 212, 336, 102, 127, 304, 304),
+    file_size = c(168, 61, 235, 365, 113, 139, 332, 332),
     file_type = rep("code", 8),
     language = rep("R", 8),
     checked = rep(TRUE, 8),

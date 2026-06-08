@@ -8,7 +8,7 @@ run_demo_tab <- tabItem(
 
       tabPanel(
         "Demo Paper",
-        p("Load a single demo paper to explore metacheck."),
+        shiny::p("Load a single demo paper to explore metacheck."),
         actionButton("demo", "Load Demo Paper", icon = icon("file")),
         tags$br(), tags$br(),
         textOutput("demo_paper_status")
@@ -16,7 +16,7 @@ run_demo_tab <- tabItem(
 
       tabPanel(
         "PsychSci Batch",
-        p("Load all bundled Psychological Science papers for batch exploration."),
+        shiny::p("Load all bundled Psychological Science papers for batch exploration."),
         actionButton("batch_demo", "Load PsychSci Papers", icon = icon("layer-group")),
         tags$br(), tags$br(),
         textOutput("n_papers_loaded")
