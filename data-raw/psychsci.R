@@ -31,15 +31,27 @@ convert_grobid(file_path[199:250], save_path, api_url)
 # # grobid to bibr ----
 grobid <- "data-raw/psychsci/grobid_0.9.0-crf"
 xml_file <- list.files(grobid, full.names = T)
-save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-crf3"
+save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-crf4"
 dir.create(save_path, showWarnings = FALSE)
 json_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
 psychsci <- read(save_path)
 
+# add old bib_match
 for ( i in 1:250) {
   psychsci[[i]]$bib_match <- metacheck::psychsci[[i]]$bib_match
 }
 paper_write(psychsci, paste0(save_path, "/", names(psychsci)))
+
+# or new bib_match
+for (i in seq_along(psychsci)) {
+  print(i)
+  if (is.null(psychsci[[i]]$bib_match)) {
+    psychsci[[i]] <- add_bib_match(psychsci[[i]])
+    paper_write(psychsci[i], save_path = save_path)
+  }
+}
+# check 5 and 9 bib_match
+
 
 # # fix names
 # names <- list.files(grobid) |> gsub("\\.xml", "", x = _)

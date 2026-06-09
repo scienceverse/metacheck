@@ -97,6 +97,8 @@ extract_p_values <- function(paper) {
 #' paper <- demopaper()
 #' p_values <- extract_eq(paper)
 extract_eq <- function(paper) {
+  paper_id <- text_id <- grp_id <- NULL # CMD-check :(
+
   # set up pattern
   operators <- c(
     "=", "<", ">", "~",
@@ -127,7 +129,7 @@ extract_eq <- function(paper) {
   op <- operators |> paste(collapse = "")
   gr <- "\u0370-\u03FF" # greek |> paste(collapse = "")
   pattern <- paste0(
-    "(?:(Cronbach..|Cohen..|\\d{1,2}%)\\s+)?", # common prefix
+    "(?:(Hedge.{0,3}|Cronbach.{0,2}|Cohen.{0,2}|\\d{1,2}%)\\s+)?", # common prefix
     "[", gr, "\u00B2a-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
     "(?:\\([^)]*\\))?\\s*", # optional parentheses
     "[", op , "]{1,3}\\s*", # 1-3 operators
@@ -198,5 +200,8 @@ extract_eq <- function(paper) {
   cols <- c("text_id", "grp_id", "lhs", "df", "comp", "rhs", "paper_id")
   numeric_lhs <- grepl("^[0-9]$", eq$lhs)
 
-  return(eq[!numeric_lhs, cols])
+  eq <- eq[!numeric_lhs, cols] |>
+    dplyr::arrange(paper_id, text_id, grp_id)
+
+  return(eq)
 }
