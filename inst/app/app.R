@@ -161,7 +161,7 @@ server <- function(input, output, session) {
         incProgress(0.2, detail = "Converting PDF...")
         grobid_args <- switch(input$grobid_server_choice,
           "metacheck" = list(method = "grobid",
-                             api_url = "https://grobid.metacheck.app"),
+                             api_url = "https://grobid.hti.ieis.tue.nl"),
           "local"     = list(method = "grobid",
                              api_url = "http://localhost:8070"),
           list()  # "huggingface" — auto-discovery via priority list

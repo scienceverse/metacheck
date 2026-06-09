@@ -44,7 +44,7 @@ create_report_tab <- tabItem(
           "using all validated modules and will open in a new browser tab when ready."
         ),
         tags$p(style = "font-size: 0.9em;",
-          "To run Metacheck without sending data to an external server, use a local GROBID server, and leave the Query Crossref, Query PubPeer, and Query Code Repositories options to FALSE. You can manually download repositories and link to the local folder. The GDPR compliant GROBID server in The Netherlands will not store files."
+          "To run Metacheck without sending data to an external server, use a local GROBID server, and leave the Query Crossref, Query PubPeer, and Query Code Repositories options to FALSE. You can manually download repositories and link to the local folder. The GDPR compliant GROBID server at Eindhoven University of Technology will not store files."
         ),
         tags$div(
           style = "font-size: 0.9em;",
@@ -52,7 +52,7 @@ create_report_tab <- tabItem(
             "grobid_server_choice",
             "PDF Conversion Server:",
             choiceNames = list(
-              "Use GDPR compliant GROBID server in The Netherlands",
+              "Use GDPR compliant GROBID server at Eindhoven University of Technology",
               "Use HuggingFace server in the USA",
               tagList(
                 "Use local GROBID server through Docker — see ",
