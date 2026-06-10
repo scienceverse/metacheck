@@ -6,6 +6,7 @@
 * Fixed some bibliography parsing problems with non-articles.
 * Updated `psychsci` for the read-in improvements.
 * `retractionwatch` database updated
+* Updates to the effect_size module
 
 # metacheck 0.0.1.0
 

@@ -480,7 +480,7 @@
   ],
   "bib": [
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "10.32614/10.5281/zenodo.2669586",
       "title": "Faux: Simulation for Factorial Designs",
       "authors": "Debruine, Lisa",
@@ -489,9 +489,9 @@
       "year": 2025,
       "volume": "",
       "issue": "",
-      "container": "Zenodo",
       "first_page": null,
       "last_page": null,
+      "container": null,
       "bib_id": 0,
       "year_suffix": "",
       "text_id": 33
@@ -506,9 +506,9 @@
       "year": 1999,
       "volume": "54",
       "issue": "6",
-      "container": "American Psychologist",
       "first_page": "408",
       "last_page": "423",
+      "container": "American Psychologist",
       "bib_id": 1,
       "year_suffix": "",
       "text_id": 34
@@ -523,9 +523,9 @@
       "year": 2014,
       "volume": "25",
       "issue": "4",
-      "container": "Psychological Science",
       "first_page": "973",
       "last_page": "981",
+      "container": "Psychological Science",
       "bib_id": 2,
       "year_suffix": "",
       "text_id": 35
@@ -540,9 +540,9 @@
       "year": 2018,
       "volume": "1",
       "issue": "",
-      "container": "Psychological Science",
       "first_page": "259",
       "last_page": "270",
+      "container": "Psychological Science",
       "bib_id": 3,
       "year_suffix": "",
       "text_id": 36
@@ -557,9 +557,9 @@
       "year": 2021,
       "volume": "",
       "issue": "",
-      "container": "Journal of Journals",
       "first_page": null,
       "last_page": null,
+      "container": "Journal of Journals",
       "bib_id": 4,
       "year_suffix": "",
       "text_id": 37
@@ -694,6 +694,14 @@
       "rhs": "0.152"
     },
     {
+      "text_id": 17,
+      "grp_id": 5,
+      "lhs": "p",
+      "df": null,
+      "comp": ">",
+      "rhs": ".05"
+    },
+    {
       "text_id": 24,
       "grp_id": 3,
       "lhs": "N",
@@ -716,14 +724,6 @@
       "df": null,
       "comp": "=",
       "rhs": "0.8"
-    },
-    {
-      "text_id": 17,
-      "grp_id": 5,
-      "lhs": "p",
-      "df": null,
-      "comp": ">",
-      "rhs": ".05"
     }
   ],
   "bib_match": [
@@ -793,7 +793,7 @@
       "bib_id": 3,
       "service": "crossref",
       "service_id": null,
-      "score": 62.068,
+      "score": 61.7559,
       "bib_type": "article",
       "doi": "10.1177/2515245918770963",
       "title": "Equivalence Testing for Psychological Research: A Tutorial",
