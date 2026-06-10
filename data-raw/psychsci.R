@@ -31,15 +31,27 @@ convert_grobid(file_path[199:250], save_path, api_url)
 # # grobid to bibr ----
 grobid <- "data-raw/psychsci/grobid_0.9.0-crf"
 xml_file <- list.files(grobid, full.names = T)
-save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-crf3"
+save_path <- "data-raw/psychsci/bibr_from_grobid_0.9.0-crf4"
 dir.create(save_path, showWarnings = FALSE)
 json_paths <- grobid_to_bibr(xml_file, save_path, FALSE)
 psychsci <- read(save_path)
 
+# add old bib_match
 for ( i in 1:250) {
-  psychsci[[i]]$bib_match <- metacheck::psychsci[[i]]$bib_match
+  psychsci[[i]]$bib_match <- old_ps[[i]]$bib_match
 }
 paper_write(psychsci, paste0(save_path, "/", names(psychsci)))
+
+# or new bib_match
+for (i in seq_along(psychsci)) { # 164
+  print(i)
+  #if (is.null(psychsci[[i]]$bib_match)) {
+    psychsci[[i]] <- add_bib_match(psychsci[[i]])
+    paper_write(psychsci[i], save_path = save_path)
+ # }
+}
+# check bib_match 5, 9, 65, 103, 161,
+
 
 # # fix names
 # names <- list.files(grobid) |> gsub("\\.xml", "", x = _)
@@ -77,3 +89,35 @@ mo_c <- module_run(psychsci_crf, module)
 
 expect_equal(mo_f$summary_table, mo_c$summary_table)
 
+
+
+# - bib checks
+bm <- paper_table(psychsci, "bib_match")
+#saveRDS(bm, "~/Desktop/bm.rds")
+bib <- paper_table(psychsci, "bib")
+bib_bm <- inner_join(bib, bm, by = c("paper_id", "bib_id"))
+
+text <- paper_table(psychsci, "text") |>
+  select(text_id, paper_id, text)
+
+title_mis <- bib_bm |>
+  rowwise() |>
+  mutate(title.y = title.y |> gsub("\\s+", " ", x = _) |>
+           paste0("<p>", x = _, "</p>") |>
+           xml2::read_html() |> xml2::xml_text()) |>
+  ungroup() |>
+  tidyr::separate(title.x, c("title.x", "subtitle.x"), sep = ": ", extra = "merge", fill = "right") |>
+  tidyr::separate(title.y, c("title.y", "subtitle.y"), sep = ": ", extra = "merge", fill = "right") |>
+  rowwise() |>
+  mutate(adist = adist(tolower(title.x), tolower(title.y))[[1]]) |>
+  ungroup() |>
+  arrange(title.x != "", desc(adist)) |>
+  select(adist, starts_with("title"), paper_id, text_id) |>
+    left_join(text, by = c("paper_id", "text_id"))
+
+readr::write_excel_csv(title_mis, "~/Desktop/title-mis.csv")
+
+
+"data-raw/psychsci/grobid_0.9.0-crf/09567976221094782.xml" |> rstudioapi::documentOpen()
+
+)

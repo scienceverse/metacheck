@@ -4,10 +4,10 @@
 \alias{.grobid_to_bibr}
 \title{Convert grobid to Bibr format}
 \usage{
-.grobid_to_bibr(xml_file, pb = NULL)
+.grobid_to_bibr(xml_path, pb = NULL)
 }
 \arguments{
-\item{xml_file}{a singhle XML file}
+\item{xml_path}{path to a single XML file}
 
 \item{pb}{a progress bar passed from \code{grobid_to_bibr()}}
 }

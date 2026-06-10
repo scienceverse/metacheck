@@ -67,8 +67,8 @@
     #      x = _, fixed = TRUE
     # ) |>
     # fix common mangled stats
-    #gsub("\u00B2",                            "2", x = _) |>
-    gsub(num_pre_op, "\\1", x = _) |>
+    #gsub("\u00B2",  "2", x = _) |> # squared -> 2
+    gsub(num_pre_op, "\\1", x = _) |>    # "XX  2 = ?" -> "XX2 = ?"
     gsub("r\\s*p\\s*2",                  "rp\u00B2", x = _) |>
     gsub("\u03C\\s*p\\s*2",              "\u03Cp\u00B2", x = _) |> # omega
     gsub("\u03B7\\s*p\\s*[2\u00B2]",     "\u03B7p\u00B2", x = _) |> # eta
@@ -83,7 +83,8 @@
     gsub("\\bf\\s*[2\u00B2](\\s*[=><])", "f\u00B2\\1", x = _) |>
     gsub("\u03A7[2\u00B2]\\s*\\((\\s*\\d+)\\s*\\)", "\u03A7\u00B2(\\1)", x = _) |> # chi
     gsub("\\br\\s*\\((\\s*\\d+)\\s*\\)", "r(\\1)", x = _) |>
-    gsub("\\bd\\s+z\\b",                 "dz", x = _) |>
+    gsub("\\bd\\s+z\\b",                 "dz", x = _) |> # sz
+    gsub("\\bd\\g+z\\b",                 "gz", x = _) |># gz
     gsub("\\bBF\\s+([10]{2})\\b",        "BF\\1", x = _) |> # BF 10; BF 01
 
     gsub("(https?://)\\s+", "\\1", x = _) |> # whitespace in url
@@ -95,5 +96,5 @@
     gsub("</ref><ref", "</ref> <ref", x = _, fixed = TRUE)
 
   xml2::read_xml(xml_text) |>
-    xml2::xml_ns_strip()
+    xml2::xml_ns_strip() #strip tei namsapce to make find simpler
 }

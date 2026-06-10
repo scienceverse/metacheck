@@ -161,6 +161,14 @@ test_that("extract_eq complex", {
   eq <- extract_eq(paper)
   expect_equal(eq$df, NA_character_)
 
+  # possessive stats
+  paper <- test_paper(c(
+    "What if Cohen's d > 1.0?",
+    "(..., Hedges's g = 0.32, ...)"
+  ))
+  eq <- extract_eq(paper)
+  expect_equal(eq$lhs, c("Cohen's d", "Hedges's g"))
+
   # all eq
   skip_if_quick()
   #eq <- paper_table(psychsci, "eq")

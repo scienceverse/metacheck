@@ -114,6 +114,15 @@ test_that("add_bib_match", {
                                               "10.1177/1948550617697177"))
 })
 
+test_that('Error in `[.data.frame`(ref[[i]], , ref[[i]] != "")', {
+  paper <- psychsci[[1]]
+  ref <- paper$bib[6:7, ]
+  obs <- crossref_query(ref, min_score = 50)
+  exp <- c(NA, "Action mirroring and action understanding: an alternative account")
+  expect_equal(obs$title, exp)
+  #obs <- add_bib_match(paper)
+}, "mock")
+
 test_that("longer bib", {
   skip_if_quick()
   # skip_api("api.labs.crossref.org")
