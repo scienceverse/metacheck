@@ -420,7 +420,8 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     r <- if (is.character(ref[[i]])) {
       data.frame(ref = ref[[i]])
     } else {
-      ref[[i]][, ref[[i]]!=""] |>
+      nonblank <- !ref[[i]] %in% c("", NA_character_)
+      ref[[i]][, nonblank] |>
         paste(collapse = "; \\n") |>
         data.frame(ref = _)
     }
