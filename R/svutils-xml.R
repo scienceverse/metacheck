@@ -93,7 +93,7 @@
     gsub("\\b[Ff]igure\\. (\\d)", "Figure \\1", x = _) |>
     gsub("\\b[Tt]ab\\. (\\d)", "Tab \\1", x = _) |>
     gsub("\\b[Tt]able\\. (\\d)", "Table \\1", x = _) |>
-    gsub("</ref><ref", "</ref>&nbsp;<ref", x = _, fixed = TRUE)
+    gsub("</ref><ref", "</ref> <ref", x = _, fixed = TRUE)
 
   xml2::read_xml(xml_text) |>
     xml2::xml_ns_strip() #strip tei namsapce to make find simpler

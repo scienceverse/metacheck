@@ -542,4 +542,54 @@ test_that("p. 100", {
   obs <- .process_full_text(full_text)
   exp <- c("The authors used structural equation modeling (SEM) assuming linear relationships between the variables, and it is essential to test this assumption (Bentler & Chou, 1987, p. 86; Ullman, 2007, p. 683).")
   expect_equal(obs$text, exp)
+
+  # not in ref
+  fmt <- 'This research (Frith &amp; Singer, 2008, p. 3876).'
+  full_text <- data.frame(
+    p = 1,
+    div = 1,
+    section = 1,
+    header = "demo",
+    formatted = fmt
+  )
+
+  obs <- .process_full_text(full_text)
+  exp <- "This research (Frith & Singer, 2008, p. 3876)."
+  expect_equal(obs$text, exp)
+  expect_equal(obs$formatted, fmt)
+})
+
+
+test_that("<head>", {
+  xml_path <- test_path("fixtures/problems/0956797615569889.xml")
+
+  # remove from text, but keep in section list
+  paper <- grobid_to_bibr(xml_path, NULL)
+  expect_equal(grep("^Results$", paper$section$header) |> length(), 1)
+  expect_equal(grep("^Results$", paper$text$text) |> length(), 0)
+})
+
+test_that("bibstruct", {
+  xml_text <- '<listBibl><biblStruct status="extracted" xml:id="b37">
+	<monogr>
+		<title level="m" type="main">When are organizations punished for organizational misconduct? A review and research agenda</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Mcdonnell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Nurmohamed</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.riob.2021.100150</idno>
+		<ptr target="https://doi.org/10.1016/j.riob.2021.100150" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note>Research in Organizational Behavior, 41, Article 100150</note>
+	<note type="raw_reference">McDonnell, M. H., &amp; Nurmohamed, S. (2021). When are organizations punished for organizational misconduct? A review and research agenda. Research in Organizational Behavior, 41, Article 100150. https://doi.org/10.1016/j .riob.2021.100150</note>
+</biblStruct></listBibl>'
+  xml <- xml2::read_xml(xml_text)
+  bib <- .tei_bib(xml)
+  exp <- "When are organizations punished for organizational misconduct? A review and research agenda"
+  expect_equal(bib$title, exp)
 })

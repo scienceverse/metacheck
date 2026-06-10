@@ -17,7 +17,7 @@
 #'
 metacheck_app <- function(paper = NULL, quiet = FALSE, ...) {
   # check study
-  if (!is.null(paper) && !"scivrs_paper" %in% class(paper)) {
+  if (!.is_paper(paper) & !.is_paper_list(paper)) {
     stop("The first argument must be a paper object created by metacheck, or NULL to create it entirely in the app.")
   }
 
@@ -30,8 +30,8 @@ metacheck_app <- function(paper = NULL, quiet = FALSE, ...) {
   req_pckgs <- sapply(pckgs, requireNamespace, quietly = TRUE)
 
   if (all(req_pckgs)) {
-    .GlobalEnv$.app.study. <- paper
-    on.exit(rm(".app.study.", envir = .GlobalEnv))
+    .GlobalEnv$.app.paper. <- paper
+    on.exit(rm(".app.paper.", envir = .GlobalEnv))
 
     shiny::runApp(appDir = system.file("app", package = "metacheck"), quiet = quiet, ...) |> invisible()
   } else {

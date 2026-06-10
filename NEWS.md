@@ -2,7 +2,8 @@
 
 * `extract_eq` now catches "Hedges's g" (formaerly just "g") and returns values ordered by paper_id, text_id and group_id
 * Updated `xml_read_grobid()` (an internal helper function for reading Grobid XMLs) to handle some stats better (e.g., "... g z =" is now read as "... gz = ")
-* Updated grobid XML read-in to better handle URLs with ? in the middle (less likely to cause an incorrect sentence split).
+* Updated grobid XML read-in to better handle URLs with ? in the middle (less likely to cause an incorrect sentence split), and to remove no-content headers from the text table
+* Fixed some bibliography parsing problems with non-articles.
 * Updated `psychsci` for the read-in improvements.
 * `retractionwatch` database updated
 

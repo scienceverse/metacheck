@@ -352,9 +352,14 @@ grobid_to_bibr <- function(xml_path,
 
   # section ----
   sec <- dplyr::count(paper$text, section_id, header, section_type)
+
+  # remove empty headers and sectin columns
+  empty_headers <- (paper$text$formatted == paper$text$header) |> sapply(isTRUE)
+  paper$text <- paper$text[!empty_headers, ]
   paper$text$header <- NULL
   paper$text$section_type <- NULL
 
+  # turn headers into section list
   header <- sapply(sec$header, \(h) {
     if (is.na(h)) return(NA_character_)
 
@@ -474,7 +479,8 @@ grobid_to_bibr <- function(xml_path,
     # stop initials and abbreviations getting parsed as sentences
     full_text$formatted <- full_text$formatted |>
 
-      gsub("\\b([A-Z])\\.", "\\1$%", x = _) |> #initials (put back later)
+      gsub("\\b([A-Z])\\.", "\\1$%", x = _) |> # initials (put back later)
+      gsub("\\bp\\.\\s+(\\d)", "p$% \\1", x = _) |> # p. # (put back later)
       gsub("^<p>", "", x = _) |>
       gsub("</p>$", "", x = _) |>
       gsub("^<figDesc>", "", x = _) |>
@@ -528,9 +534,11 @@ grobid_to_bibr <- function(xml_path,
       })
     }, USE.NAMES = FALSE)
 
-    # return initials
+    # return initials and page
     ft$formatted <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$formatted)
     ft$text <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$text)
+    ft$formatted <- gsub("\\bp\\$%", "p\\.", x = ft$formatted)
+    ft$text <- gsub("\\bp\\$%", "p\\.", x = ft$text)
 
     # merge sentence frags
     no_end <- which(!grepl("[\\.\\?\\!\\\"]$", x = ft$text))
@@ -973,16 +981,16 @@ grobid_to_bibr <- function(xml_path,
   }
 
   b[is.na(b)] <- NULL
-  if (!is.null(b$journal)) {
+  if (!is.null(b$journal) & nzchar(b$journal)) {
     b$bib_type <- "article"
     b$container <- b$journal
-    if (is.null(b$year)) {
+    if (is.null(b$year) | !nzchar(b$year)) {
       # b$bibtype <- "unpublished"
       note <- xml2::xml_find_first(ref, ".//note") |> xml2::xml_text()
       b$year <- note %||% "no year"
     }
-  } else if (!is.null(b$booktitle)) {
-    if (is.null(b$title)) {
+  } else if (!is.null(b$booktitle) & nzchar(b$booktitle)) {
+    if (is.null(b$title) | !nzchar(b$title)) {
       b$bib_type <- "book"
       b$title <- b$booktitle
     } else {
