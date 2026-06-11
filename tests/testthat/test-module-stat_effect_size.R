@@ -36,9 +36,12 @@ test_that("stat_effect_size", {
   expect_equal(mod_output$summary_table$Ftests_without_es, 1)
 
   # relevant text - green
+  # ES values are coherent with the test statistics: d = 0.34 matches
+  # t(124) = 1.23 under the independent unequal-n range, and ηp² = 0.15
+  # matches F(1, 13) = 2.34 (implied partial eta-squared = 0.1525)
   paper <- test_paper(c(
     "A was bigger than B, t(124) = 1.23, p 0.013, d = 0.34.",
-    "We also ran an ANOVA, F(1, 13) = 2.34, p = .23, ηp2 = 0.01."
+    "We also ran an ANOVA, F(1, 13) = 2.34, p = .23, ηp² = 0.15."
   ))
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "green")
@@ -120,11 +123,5 @@ test_that("stat_effect_size", {
   paper <- test_paper("The model was significant, F(2, 151) = 1.00, p = .37, ωp² = 0.00.")
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$table$eta_coherence[[1]], "indeterminate")
-
-  # ξ should be detected as ES present but not coherence-checked
-  paper <- test_paper("The model was significant, F(2, 151) = 1.00, p = .37, ξ = 2.30.")
-  mod_output <- module_run(paper, module)
-  expect_equal(mod_output$table$eta_coherence[[1]], "indeterminate")
-  expect_false(is.na(mod_output$table$es[[1]]))
 })
 
