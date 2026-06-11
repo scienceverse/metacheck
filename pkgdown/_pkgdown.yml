@@ -1,6 +1,10 @@
 url: https://scienceverse.github.io/metacheck/
 development:
   mode: release
+home:
+  links:
+  - text: Contact the Team
+    href: mailto:metacheck.scienceverse@gmail.com
 
 template:
   # includes:
