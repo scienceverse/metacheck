@@ -165,6 +165,9 @@ llm <- function(text, system_prompt,
     })
   })
 
+  # terminate the progress bar so its line is closed off with a newline
+  pb$terminate()
+
   # join responses back to input ----
   if (structured) {
     response_df <- dplyr::bind_rows(responses)

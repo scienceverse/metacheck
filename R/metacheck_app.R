@@ -1,39 +1,67 @@
-#' Launch Shiny App
+#' Launch Create Report App
 #'
-#' Create a meta-study file interactively in a shiny app that runs locally in RStudio or your web browser (recommended).
+#' Launch the Create Report app: upload a PDF and generate a report with one
+#' click, with privacy options for what is sent to external servers.
 #'
-#' @param paper optional paper or paperlist to load
-#' @param quiet whether to show the debugging messages in the console
+#' @param quiet whether to show debugging messages in the console
 #' @param ... arguments to pass to shiny::runApp
 #'
 #' @export
 #'
-#' @returns A paper object created or edited by the app
+#' @returns NULL (invisibly)
 #'
 #' @examples
 #' \dontrun{
-#' s <- metacheck_app()
+#' create_report_app()
 #' }
 #'
-metacheck_app <- function(paper = NULL, quiet = FALSE, ...) {
-  # check study
-  if (!is.null(paper) && !"scivrs_paper" %in% class(paper)) {
-    stop("The first argument must be a paper object created by metacheck, or NULL to create it entirely in the app.")
-  }
-
-  # check required packages
-  pckgs <- c(
-    "shiny", "shinydashboard", "shinyjs",
-    "shiny.i18n", "DT"
-  )
+create_report_app <- function(quiet = FALSE, ...) {
+  pckgs <- c("shiny", "shinydashboard", "shinyjs", "DT")
   names(pckgs) <- pckgs
   req_pckgs <- sapply(pckgs, requireNamespace, quietly = TRUE)
 
   if (all(req_pckgs)) {
-    .GlobalEnv$.app.study. <- paper
-    on.exit(rm(".app.study.", envir = .GlobalEnv))
+    appdir <- system.file("app", package = "metacheck")
+    shiny::runApp(appDir = appdir, appFile = "create_report_app.R", quiet = quiet, ...) |> invisible()
+  } else {
+    warning(
+      "You need to install the following packages to run the app: ",
+      paste(names(req_pckgs[!req_pckgs]), collapse = ", ")
+    )
+  }
+}
 
-    shiny::runApp(appDir = system.file("app", package = "metacheck"), quiet = quiet, ...) |> invisible()
+#' Launch Demo App
+#'
+#' Launch the demo app with Upload/Demo, full module selection, and text search.
+#'
+#' @param paper optional paper or paperlist to load
+#' @param quiet whether to show debugging messages in the console
+#' @param ... arguments to pass to shiny::runApp
+#'
+#' @export
+#'
+#' @returns A paper object (invisibly)
+#'
+#' @examples
+#' \dontrun{
+#' demo_app()
+#' }
+#'
+demo_app <- function(paper = NULL, quiet = FALSE, ...) {
+  if (!is.null(paper) && !"scivrs_paper" %in% class(paper)) {
+    stop("The first argument must be a paper object created by metacheck, or NULL.")
+  }
+
+  pckgs <- c("shiny", "shinydashboard", "shinyjs", "DT")
+  names(pckgs) <- pckgs
+  req_pckgs <- sapply(pckgs, requireNamespace, quietly = TRUE)
+
+  if (all(req_pckgs)) {
+    .GlobalEnv$.app.paper. <- paper
+    on.exit(rm(".app.paper.", envir = .GlobalEnv))
+    appdir <- system.file("app", package = "metacheck")
+    shiny::runApp(appDir = appdir, appFile = "demo_app.R", quiet = quiet, ...) |> invisible()
   } else {
     warning(
       "You need to install the following packages to run the app: ",

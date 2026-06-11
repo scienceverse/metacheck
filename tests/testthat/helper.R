@@ -12,6 +12,29 @@ httptest2::.mockPaths(NULL)
 apis <- normalizePath("apis")
 httptest2::.mockPaths(apis)
 
+# Load the ui/server objects from a shiny app file in inst/app/ without
+# launching the app. The app files end in `shinyApp(ui, server)`; we source
+# everything before that line (with the working directory set to the app dir,
+# so their relative source() calls resolve) and return the environment holding
+# `ui` and `server` for use with shiny::testServer().
+load_app_env <- function(app_file) {
+  appdir <- system.file("app", package = "metacheck")
+  testthat::skip_if(appdir == "", "metacheck app dir not installed")
+  path <- file.path(appdir, app_file)
+  testthat::skip_if_not(file.exists(path), paste("missing app file:", app_file))
+
+  old <- setwd(appdir)
+  on.exit(setwd(old))
+
+  code <- readLines(path)
+  end  <- grep("^shinyApp", code)
+  if (length(end) == 0) end <- length(code) + 1
+
+  env <- new.env(parent = globalenv())
+  eval(parse(text = paste(code[seq_len(end - 1)], collapse = "\n")), envir = env)
+  env
+}
+
 # mock function
 test_that <- function(desc, code, mock = "none") {
   if (mock == "mock") {
