@@ -1,3 +1,8 @@
+# metacheck 0.0.1.9002
+
+* Updates to the effect_size module
+* New `report_app()` to make a report with all default modules in a GUI by just uploading a PDF
+
 # metacheck 0.0.1.9001
 
 * `extract_eq` now catches "Hedges's g" (formaerly just "g") and returns values ordered by paper_id, text_id and group_id
@@ -6,7 +11,7 @@
 * Fixed some bibliography parsing problems with non-articles.
 * Updated `psychsci` for the read-in improvements.
 * `retractionwatch` database updated
-* Updates to the effect_size module
+
 
 # metacheck 0.0.1.0
 

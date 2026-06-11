@@ -137,7 +137,7 @@ table.dataTable tbody td.focus {
 }
 
 /* grid layout for the options checkboxes */
-.create-report-checks {
+.report-checks {
   display: grid;
   grid-template-columns: max-content 1fr;
   align-items: center;
@@ -145,38 +145,39 @@ table.dataTable tbody td.focus {
   column-gap: 1em;
   margin-bottom: 0.5em;
 }
-.create-report-checks .shiny-input-container {
+.report-checks .shiny-input-container {
   white-space: nowrap;
   margin-bottom: 0;
 }
-.create-report-checks .checkbox label {
+.report-checks .checkbox label {
   font-weight: 600;
 }
 /* tint the checkbox green when checked (default is grey/unchecked) */
-.create-report-checks input[type="checkbox"] {
+.report-checks input[type="checkbox"] {
   accent-color: var(--green);
   width: 1.05em;
   height: 1.05em;
 }
 
 /* PDF upload field — full green treatment */
-.create-pdf-upload .input-group {
+.pdf-upload .input-group {
   border: 2px solid var(--green);
+  padding-left: 1px;
   border-radius: 4px;
   overflow: hidden;
 }
-.create-pdf-upload .btn-file {
+.pdf-upload .btn-file {
   background-color: var(--green) !important;
   color: #fff !important;
   border: none;
   font-weight: 600;
 }
-.create-pdf-upload .btn-file:hover,
-.create-pdf-upload .btn-file:focus {
+.pdf-upload .btn-file:hover,
+.pdf-upload .btn-file:focus {
   background-color: #4a7d4c !important;
   color: #fff !important;
 }
-.create-pdf-upload .form-control {
+.pdf-upload .form-control {
   background-color: rgba(89, 147, 91, 0.08) !important;
   border: none;
   box-shadow: none;
@@ -195,27 +196,14 @@ table.dataTable tbody td.focus {
   color: #fff !important;
 }
 
-/* GDPR and privacy message box + advanced-tab info box */
-.gdpr-privacy-box,
-.advanced-info-box {
-  background-color: #f1f3f5;
-  border-left: 4px solid #adb5bd;
-  border-radius: 4px;
-  padding: 0.75em 1em;
-  margin: 1em 0;
+
+#gdpr_privacy_ui ul {
+  padding-left: 0;
 }
-.advanced-info-box p {
-  margin-bottom: 0;
-}
-.gdpr-privacy-box h4 {
-  margin-top: 0;
-  font-weight: 600;
-}
-.gdpr-privacy-box p {
-  margin-bottom: 0.4em;
-}
-.gdpr-privacy-box p:last-child {
-  margin-bottom: 0;
+#gdpr_privacy_ui li {
+  list-style-type: none;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
 }
 
 /* traffic lights */

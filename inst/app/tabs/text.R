@@ -23,6 +23,6 @@ text_search_block <- tagList(
       actionButton("search_preset_n", "sample size")
   ),
   downloadButton("download_table", "Download Table"),
-  dataTableOutput("text_table")
+  DT::DTOutput("text_table")
 )
 

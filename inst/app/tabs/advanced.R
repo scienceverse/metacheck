@@ -49,7 +49,7 @@ advanced_explorer_box <-
     textOutput("mod_desc"),
     textOutput("mod_title", container = tags$h2),
     uiOutput("mod_summary"),
-    dataTableOutput("mod_table"),
+    DT::DTOutput("mod_table"),
     box(width = 12, collapsible = TRUE, collapsed = FALSE,
         title = "Module Details",
         uiOutput("mod_details"))

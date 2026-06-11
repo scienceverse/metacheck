@@ -3,9 +3,9 @@ suppressPackageStartupMessages({
   library(shiny)
   library(shinyjs)
   library(shinydashboard)
-  library(DT)
-  library(metacheck)
-  library(dplyr)
+  # library(DT)
+  # library(metacheck)
+  # library(dplyr)
 })
 
 source("R/constants.R")
@@ -342,7 +342,7 @@ server <- function(input, output, session) {
   ## text search ----
 
   ### text_table ----
-  output$text_table <- renderDT({
+  output$text_table <- DT::renderDT({
     tt <- text_table()
     if (nrow(tt) == 0) return(data.frame())
     cols <- c("text", "text_id", "paper_id", "header", "section_type")
@@ -590,7 +590,7 @@ server <- function(input, output, session) {
   })
 
   ### mod_table ----
-  output$mod_table <- renderDT({
+  output$mod_table <- DT::renderDT({
     mod_table()
   },
   selection = "none",

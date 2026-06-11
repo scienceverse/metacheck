@@ -56,8 +56,8 @@ reference:
 - title: Reading in Papers
   desc: ~
   contents:
-  - '`create_report_app`'
-  - '`demo_app`'
+  - '`report_app`'
+  - '`metacheck_app`'
   - '`convert`'
   - '`convert_bibr`'
   - '`convert_grobid`'

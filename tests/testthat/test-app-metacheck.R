@@ -1,12 +1,30 @@
-# Tests for the demo_app() shiny server logic, driven with shiny::testServer().
+# Tests for the metacheck_app() shiny server logic, driven with shiny::testServer().
 
 # the app's source("tabs/options_demo.R") puts demo_gating / demo_toggle_on in
 # the global env (same as when the app actually runs), so read them from there
+
+test_that("metacheck_app", {
+  expect_true(is.function(metacheck::metacheck_app))
+  expect_no_error(helplist <- help(metacheck_app, metacheck))
+
+  expect_error(metacheck_app(1))
+
+  with_mocked_bindings(
+    `requireNamespace` = function(...) FALSE,
+    {
+      expect_warning(metacheck_app(), "You need to install the following packages")
+    }
+  )
+
+
+
+})
+
 get_demo_obj <- function(name) get(name, envir = globalenv())
 
-test_that("demo_app server loads", {
-  skip_if_not_installed("shiny")
-  env <- load_app_env("demo_app.R")
+test_that("metacheck_app server loads", {
+  skip_shiny()
+  env <- load_app_env("metacheck_app.R")
   expect_true(is.function(env$server))
   expect_false(is.null(env$ui))
   # the gating map and helper are defined (sourced from options_demo.R)
@@ -15,8 +33,8 @@ test_that("demo_app server loads", {
 })
 
 test_that("demo_toggle_on handles checkboxes and the llm radio", {
-  skip_if_not_installed("shiny")
-  load_app_env("demo_app.R")
+  skip_shiny()
+  load_app_env("metacheck_app.R")
   f <- get_demo_obj("demo_toggle_on")
 
   # checkbox-style logicals
@@ -30,8 +48,8 @@ test_that("demo_toggle_on handles checkboxes and the llm radio", {
 })
 
 test_that("gating map covers the expected external modules", {
-  skip_if_not_installed("shiny")
-  load_app_env("demo_app.R")
+  skip_shiny()
+  load_app_env("metacheck_app.R")
   g <- get_demo_obj("demo_gating")
 
   expect_setequal(
@@ -52,8 +70,8 @@ test_that("gating map covers the expected external modules", {
 })
 
 test_that("loading the demo paper populates the paper and text search", {
-  skip_if_not_installed("shiny")
-  env <- load_app_env("demo_app.R")
+  skip_shiny()
+  env <- load_app_env("metacheck_app.R")
 
   shiny::testServer(env$server, {
     # seed module_list so its init observer doesn't error on an empty value
@@ -71,8 +89,8 @@ test_that("loading the demo paper populates the paper and text search", {
 })
 
 test_that("creating a report with no modules selected does not call report()", {
-  skip_if_not_installed("shiny")
-  env <- load_app_env("demo_app.R")
+  skip_shiny()
+  env <- load_app_env("metacheck_app.R")
 
   shiny::testServer(env$server, {
     session$setInputs(module_list = module_list()$name[[1]])

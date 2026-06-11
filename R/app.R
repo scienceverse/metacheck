@@ -1,6 +1,6 @@
-#' Launch Create Report App
+#' Launch Report App
 #'
-#' Launch the Create Report app: upload a PDF and generate a report with one
+#' Launch the Report app: upload a PDF and generate a report with one
 #' click, with privacy options for what is sent to external servers.
 #'
 #' @param quiet whether to show debugging messages in the console
@@ -12,17 +12,17 @@
 #'
 #' @examples
 #' \dontrun{
-#' create_report_app()
+#' report_app()
 #' }
 #'
-create_report_app <- function(quiet = FALSE, ...) {
+report_app <- function(quiet = FALSE, ...) {
   pckgs <- c("shiny", "shinydashboard", "shinyjs", "DT")
   names(pckgs) <- pckgs
   req_pckgs <- sapply(pckgs, requireNamespace, quietly = TRUE)
 
   if (all(req_pckgs)) {
-    appdir <- system.file("app", package = "metacheck")
-    shiny::runApp(appDir = appdir, appFile = "create_report_app.R", quiet = quiet, ...) |> invisible()
+    appdir <- system.file("app/report_app.R", package = "metacheck")
+    shiny::runApp(appDir = appdir, quiet = quiet, ...) |> invisible()
   } else {
     warning(
       "You need to install the following packages to run the app: ",
@@ -30,6 +30,8 @@ create_report_app <- function(quiet = FALSE, ...) {
     )
   }
 }
+
+requireNamespace <- NULL
 
 #' Launch Demo App
 #'
@@ -45,13 +47,13 @@ create_report_app <- function(quiet = FALSE, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' demo_app()
+#' metacheck_app()
 #' }
 #'
 
-demo_app <- function(paper = NULL, quiet = FALSE, ...) {
+metacheck_app <- function(paper = NULL, quiet = FALSE, ...) {
   # check study
-  if (!.is_paper(paper) & !.is_paper_list(paper)) {
+  if (!is.null(paper) & !.is_paper(paper) & !.is_paper_list(paper)) {
     stop("The first argument must be a paper object created by metacheck, or NULL")
 
   }
@@ -63,8 +65,8 @@ demo_app <- function(paper = NULL, quiet = FALSE, ...) {
   if (all(req_pckgs)) {
     .GlobalEnv$.app.paper. <- paper
     on.exit(rm(".app.paper.", envir = .GlobalEnv))
-    appdir <- system.file("app", package = "metacheck")
-    shiny::runApp(appDir = appdir, appFile = "demo_app.R", quiet = quiet, ...) |> invisible()
+    appdir <- system.file("app/metacheck_app.R", package = "metacheck")
+    shiny::runApp(appDir = appdir, quiet = quiet, ...) |> invisible()
   } else {
     warning(
       "You need to install the following packages to run the app: ",

@@ -31,7 +31,10 @@ load_app_env <- function(app_file) {
   if (length(end) == 0) end <- length(code) + 1
 
   env <- new.env(parent = globalenv())
-  eval(parse(text = paste(code[seq_len(end - 1)], collapse = "\n")), envir = env)
+  with_mocked_bindings(
+    llm_model_list = \(...) data.frame(),
+    eval(parse(text = paste(code[seq_len(end - 1)], collapse = "\n")), envir = env)
+  )
   env
 }
 
@@ -60,6 +63,14 @@ fix_fancy <- function(x) {
     gsub("[\u2018\u2019\u201A\u201B\u0060]", "'", x = _) |>
     gsub("[\u201C\u201D\u201E\u201F]", '"', x = _) |>
     gsub("–", "-", x = _)
+}
+
+skip_shiny <- function() {
+  skip_if_not_installed("shiny")
+  skip_if_not_installed("shinyjs")
+  skip_if_not_installed("shinydashboard")
+  skip_if_not_installed("DT")
+  skip_on_cran()
 }
 
 skip_api <- function(host = "google.com") {
