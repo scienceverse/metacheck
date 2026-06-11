@@ -187,6 +187,67 @@ test_that("repo_check paper + local_path", {
 })
 
 
+# repo_check() + local_only ----
+
+test_that("repo_check local_only = TRUE ignores online repos, checks local only", {
+  # paper has OSF link that would normally return 4 files
+  paper     <- test_paper(url = "https://osf.io/629bx")
+  local_path <- test_path("fixtures", "code_files")
+  mo <- module_run(paper, "repo_check", local_path = local_path, local_only = TRUE)
+
+  # only 1 repo: the local folder — OSF link silently skipped
+  expect_equal(mo$summary_table$repo_n, 1)
+  # all files come from the local fixture (7 files)
+  expect_equal(mo$summary_table$files_n, 7)
+  # no OSF URLs anywhere in the table
+  expect_false(any(grepl("osf\\.io", mo$table$repo_url, ignore.case = TRUE)))
+  # local files present
+  expect_true("analysis.R" %in% mo$table$file_name)
+  expect_true("README.md"  %in% mo$table$file_name)
+})
+
+test_that("repo_check local_only = TRUE with no local_path returns na", {
+  # nothing to check: online skipped, no local path provided
+  mo <- module_run(test_paper(), "repo_check", local_only = TRUE)
+
+  expect_equal(mo$traffic_light, "na")
+  expect_equal(mo$summary_table$repo_n, 0)
+})
+
+test_that("repo_check local_only = TRUE with online URLs but no local_path returns na", {
+  # paper has an OSF link, but local_only suppresses online lookup; no local_path given
+  paper <- test_paper(url = "https://osf.io/629bx")
+  mo <- module_run(paper, "repo_check", local_only = TRUE)
+
+  expect_equal(mo$traffic_light, "na")
+  expect_equal(mo$summary_table$repo_n, 0)
+})
+
+test_that("repo_check local_only = FALSE is the same as the default", {
+  # passing local_only = FALSE should produce identical output to omitting it
+  local_path <- test_path("fixtures", "code_files")
+  paper      <- test_paper()
+
+  mo_default  <- module_run(paper, "repo_check", local_path = local_path)
+  mo_explicit <- module_run(paper, "repo_check", local_path = local_path, local_only = FALSE)
+
+  expect_equal(mo_default$summary_table, mo_explicit$summary_table)
+  expect_equal(mo_default$table,         mo_explicit$table)
+  expect_equal(mo_default$traffic_light, mo_explicit$traffic_light)
+})
+
+test_that("repo_check local_only = TRUE without local_path ignores multiple online repo types", {
+  # paper has OSF, GitHub, and ResearchBox links — all should be skipped
+  text  <- c("osf.io/629bx", "github.com/scienceverse/demo", "https://researchbox.org/4377")
+  paper <- test_paper()
+  paper$url <- data.frame(href = text, text_id = 1:3)
+  mo <- module_run(paper, "repo_check", local_only = TRUE)
+
+  expect_equal(mo$traffic_light, "na")
+  expect_equal(mo$summary_table$repo_n, 0)
+})
+
+
 httptest2::stop_mocking()
 #httptest2::stop_capturing()
 

@@ -587,6 +587,9 @@
       "en": "6"
     },
     {
+      "en": "Advanced Mode"
+    },
+    {
       "en": "Code Check"
     },
     {
@@ -594,6 +597,9 @@
     },
     {
       "en": "COI Check (Overinclusive)"
+    },
+    {
+      "en": "Create Report"
     },
     {
       "en": "Effect Sizes in t-tests and F-tests"
@@ -617,19 +623,19 @@
       "en": "Load Demo Paper"
     },
     {
-      "en": "Load PsychSci"
+      "en": "Load PsychSci Papers"
     },
     {
       "en": "Miscitation"
-    },
-    {
-      "en": "Modules and External Resources"
     },
     {
       "en": "Non-Significant P Value Check"
     },
     {
       "en": "Open Practices Check"
+    },
+    {
+      "en": "Paper"
     },
     {
       "en": "paper_id"
@@ -656,13 +662,16 @@
       "en": "Repository Check"
     },
     {
+      "en": "Run Demo"
+    },
+    {
+      "en": "Select a PDF file below. The report will be generated automatically "
+    },
+    {
       "en": "StatCheck"
     },
     {
       "en": "Summarise References"
-    },
-    {
-      "en": "The report will only run on the first paper in a set. You can download the quarto file and render it yourself, or download an html version."
     },
     {
       "en": "View Report"
