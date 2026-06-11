@@ -48,9 +48,12 @@ create_report_app <- function(quiet = FALSE, ...) {
 #' demo_app()
 #' }
 #'
+
 demo_app <- function(paper = NULL, quiet = FALSE, ...) {
-  if (!is.null(paper) && !"scivrs_paper" %in% class(paper)) {
-    stop("The first argument must be a paper object created by metacheck, or NULL.")
+  # check study
+  if (!.is_paper(paper) & !.is_paper_list(paper)) {
+    stop("The first argument must be a paper object created by metacheck, or NULL")
+
   }
 
   pckgs <- c("shiny", "shinydashboard", "shinyjs", "DT")

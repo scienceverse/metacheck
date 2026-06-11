@@ -162,34 +162,34 @@ convert_grobid <- function(file_path, save_path = ".",
 
 #' Convert Grobid TEI XML file to bibr format
 #'
-#' @param xml_file the XML file
+#' @param xml_path the path to the XML file
 #' @param save_path directory or file path to save to; set to NULL to return a paper object
 #' @param crossref_lookup whether to look up references in crossref
 #'
 #' @returns a paper object
 #' @export
-grobid_to_bibr <- function(xml_file,
+grobid_to_bibr <- function(xml_path,
                            save_path = ".",
                            crossref_lookup = FALSE) {
   # handle directory or multiple files ----
-  if (length(xml_file) == 1 && dir.exists(xml_file)) {
-    dir_path <- xml_file
-    xml_file <- list.files(dir_path,
+  if (length(xml_path) == 1 && dir.exists(xml_path)) {
+    dir_path <- xml_path
+    xml_path <- list.files(dir_path,
                            pattern = "\\.xml$",
                            ignore.case = TRUE,
                            full.names = TRUE)
   }
 
-  pb <- pb(length(xml_file), "Converting :step [:bar] (:what) :current/:total")
+  pb <- pb(length(xml_path), "Converting :step [:bar] (:what) :current/:total")
   errors <- 0
-  paper <- lapply(xml_file, \(xml_file1) {
-    what <- basename(xml_file1)
+  paper <- lapply(xml_path, \(xml_path1) {
+    what <- basename(xml_path1)
     pb$tick(0, list(step = "", what = what))
     p <- tryCatch(
-      .grobid_to_bibr(xml_file = xml_file1, pb),
+      .grobid_to_bibr(xml_path = xml_path1, pb),
       error = \(e) {
         errors <<- errors + 1
-        logger("grobid_to_bibr", list(xml_path = xml_file1, error = e$message))
+        logger("grobid_to_bibr", list(xml_path = xml_path1, error = e$message))
         return(NULL)
       })
 
@@ -209,7 +209,7 @@ grobid_to_bibr <- function(xml_file,
 
     # or save paper and return file name
     # save here instead of after iteration so batches can be cancelled with partial return
-    file_name <- basename(xml_file1) |> gsub("\\.xml$", "", x = _)
+    file_name <- basename(xml_path1) |> gsub("\\.xml$", "", x = _)
     json_path <- paper_write(p, file_name, save_path)
     return(json_path)
   })
@@ -275,19 +275,19 @@ grobid_to_bibr <- function(xml_file,
 
 #' Convert grobid to Bibr format
 #'
-#' @param xml_file a singhle XML file
+#' @param xml_path path to a single XML file
 #' @param pb a progress bar passed from `grobid_to_bibr()`
 #'
 #' @returns a paper object
 #' @export
 #' @keywords internal
-.grobid_to_bibr <- function(xml_file, pb = NULL) {
+.grobid_to_bibr <- function(xml_path, pb = NULL) {
   header <- section_type <- NULL
 
   schema <- .paper_schema()
   m <- regexec("(?<=\\(v)[\\d\\.]+", schema$description, perl = TRUE)
   bibr_version = regmatches(schema$description, m)[[1]]
-  what <- basename(xml_file)
+  what <- basename(xml_path)
 
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) Converting (:what)")
@@ -295,7 +295,7 @@ grobid_to_bibr <- function(xml_file,
     pb$tick(0, list(step = "", what = what))
   }
 
-  # xml_text <- readLines(xml_file, warn = FALSE) |>
+  # xml_text <- readLines(xml_path, warn = FALSE) |>
   #   paste(collapse = "\n") |>
   #   # fixes a glitch that stops grobid xml from being read
   #   gsub(' xmlns="http://www.tei-c.org/ns/1.0"', "",
@@ -308,10 +308,10 @@ grobid_to_bibr <- function(xml_file,
   #
   # xml <- xml2::read_xml(xml_text)
 
-  xml <- .xml_read_grobid(xml_file)
+  xml <- .xml_read_grobid(xml_path)
 
-  file_hash <- substr(tools::md5sum(xml_file), 1, 16)[[1]]
-  paper_id <- basename(xml_file) |> sub("\\.xml", "", x = _)
+  file_hash <- substr(tools::md5sum(xml_path), 1, 16)[[1]]
+  paper_id <- basename(xml_path) |> sub("\\.xml", "", x = _)
   paper <- paper(paper_id)
 
   # info ----
@@ -335,7 +335,7 @@ grobid_to_bibr <- function(xml_file,
     doi = doi,
     file_hash = file_hash,
     input_format = input_format,
-    file_name = xml_file,
+    file_name = xml_path,
     bibr_version = bibr_version,
     paper_type = "unknown",
     paper_type_confidence = 0,
@@ -352,9 +352,14 @@ grobid_to_bibr <- function(xml_file,
 
   # section ----
   sec <- dplyr::count(paper$text, section_id, header, section_type)
+
+  # remove empty headers and sectin columns
+  empty_headers <- (paper$text$formatted == paper$text$header) |> sapply(isTRUE)
+  paper$text <- paper$text[!empty_headers, ]
   paper$text$header <- NULL
   paper$text$section_type <- NULL
 
+  # turn headers into section list
   header <- sapply(sec$header, \(h) {
     if (is.na(h)) return(NA_character_)
 
@@ -474,20 +479,54 @@ grobid_to_bibr <- function(xml_file,
     # stop initials and abbreviations getting parsed as sentences
     full_text$formatted <- full_text$formatted |>
 
-      gsub("\\b([A-Z])\\.", "\\1$%", x = _) |> #initials (put back later)
+      gsub("\\b([A-Z])\\.", "\\1$%", x = _) |> # initials (put back later)
+      gsub("\\bp\\.\\s+(\\d)", "p$% \\1", x = _) |> # p. # (put back later)
       gsub("^<p>", "", x = _) |>
       gsub("</p>$", "", x = _) |>
       gsub("^<figDesc>", "", x = _) |>
       gsub("</figDesc>$", "", x = _) |>
       trimws()
 
+    tryCatch({
+      pattern <- "<ref[^>]*>(?:(?!</ref>).)*</ref>"
+      fmt <- full_text$formatted
+      pull_refs <- regmatches(fmt, gregexpr(pattern, fmt, perl = TRUE))
+      for (i in seq_along(pull_refs)) {
+        for (j in seq_along(pull_refs[[i]])) {
+          url <- pull_refs[[i]][[j]]
+          ref <- sprintf("{{ref%d-%d}}", i, j)
+          fmt <- sub(url, ref, fmt, fixed = TRUE)
+        }
+      }
+      full_text$formatted <- fmt
+    }, error = \(e) {
+      logger(".process_full_text", list(msg = e$message))
+    })
+
     ft <- full_text |>
       tidytext::unnest_sentences(formatted, formatted, to_lower = FALSE)
+
+    # return refs
+    tryCatch({
+      fmt <- ft$formatted
+
+      for (i in seq_along(pull_refs)) {
+        for (j in seq_along(pull_refs[[i]])) {
+          url <- pull_refs[[i]][[j]]
+          ref <- sprintf("{{ref%d-%d}}", i, j)
+          fmt <- sub(ref, url,fmt, fixed = TRUE)
+        }
+      }
+      ft$formatted <- fmt
+    }, error = \(e) {
+      logger(".process_full_text", list(msg = e$message))
+    })
+
 
     ft$text <- sapply(ft$formatted, \(x) {
       tryCatch({
         x |> paste("<p>", x = _, "<p>") |>
-          xml2::read_html() |>
+          xml2::read_html(options = c("RECOVER", "NOERROR", "HUGE")) |>
           xml2::xml_text() |>
           trimws()
       }, error = \(e) {
@@ -495,9 +534,11 @@ grobid_to_bibr <- function(xml_file,
       })
     }, USE.NAMES = FALSE)
 
-    # return initials
+    # return initials and page
     ft$formatted <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$formatted)
     ft$text <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$text)
+    ft$formatted <- gsub("\\bp\\$%", "p\\.", x = ft$formatted)
+    ft$text <- gsub("\\bp\\$%", "p\\.", x = ft$text)
 
     # merge sentence frags
     no_end <- which(!grepl("[\\.\\?\\!\\\"]$", x = ft$text))
@@ -940,16 +981,16 @@ grobid_to_bibr <- function(xml_file,
   }
 
   b[is.na(b)] <- NULL
-  if (!is.null(b$journal)) {
+  if (!is.null(b$journal) & nzchar(b$journal)) {
     b$bib_type <- "article"
     b$container <- b$journal
-    if (is.null(b$year)) {
+    if (is.null(b$year) | !nzchar(b$year)) {
       # b$bibtype <- "unpublished"
       note <- xml2::xml_find_first(ref, ".//note") |> xml2::xml_text()
       b$year <- note %||% "no year"
     }
-  } else if (!is.null(b$booktitle)) {
-    if (is.null(b$title)) {
+  } else if (!is.null(b$booktitle) & nzchar(b$booktitle)) {
+    if (is.null(b$title) | !nzchar(b$title)) {
       b$bib_type <- "book"
       b$title <- b$booktitle
     } else {

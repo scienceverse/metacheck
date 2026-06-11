@@ -136,7 +136,7 @@
       "formatted": "There is strong evidence that an age-related slowing down occurs when performing various behavioral tasks <ref type=\"bibr\" target=\"#b56\">(Salthouse, 2000)<\/ref>."
     },
     {
-      "text": "There is also parallel evidence that age-related changes in the brain can slow down neural processing (Gazzaley et al., 2008;Nakamura et al., 2001;Rousselet et al.,2010Rousselet et al., , 2009;;Wiese, Schweinberger, & Hansen, 2008).",
+      "text": "There is also parallel evidence that age-related changes in the brain can slow down neural processing (Gazzaley et al., 2008; Nakamura et al., 2001; Rousselet et al.,2010 Rousselet et al., , 2009;; Wiese, Schweinberger, & Hansen, 2008).",
       "text_id": 8,
       "paragraph_id": 4,
       "section_id": 1,
@@ -576,7 +576,7 @@
       "formatted": null
     },
     {
-      "text": "However, we found similar ERP STD onsets in young (68 ms [64, 72]) and older (69 ms [62,75]) participants (Figure 3a), with a negligible difference between them (-0.5 ms [-7, 5]), which suggests that there is no clear evidence for a generic delay in the onset of cortical activity in response to visual stimuli in older participants.",
+      "text": "However, we found similar ERP STD onsets in young (68 ms [64, 72]) and older (69 ms [62, 75]) participants (Figure 3a), with a negligible difference between them (-0.5 ms [-7, 5]), which suggests that there is no clear evidence for a generic delay in the onset of cortical activity in response to visual stimuli in older participants.",
       "text_id": 63,
       "paragraph_id": 13,
       "section_id": 4,
@@ -584,7 +584,7 @@
       "formatted": "However, we found similar ERP STD onsets in young <ref type=\"bibr\">(68 ms [64, 72]<\/ref>) and older (69 ms <ref type=\"bibr\">[62,<\/ref> <ref type=\"bibr\">75]<\/ref>) participants (Figure <ref type=\"figure\">3a<\/ref>), with a negligible difference between them (-0.5 ms <ref type=\"bibr\">[-7, 5]<\/ref>), which suggests that there is no clear evidence for a generic delay in the onset of cortical activity in response to visual stimuli in older participants."
     },
     {
-      "text": "Despite no clear generic neural delay in older participants, their peak N170 response latencies to full faces on the right occipital electrode (RE) were delayed relative to the N170 response of young participants by 18 ms [9,24] (and by 23 ms [9,38], in response to the practice full noise trials; see Section 4.2).",
+      "text": "Despite no clear generic neural delay in older participants, their peak N170 response latencies to full faces on the right occipital electrode (RE) were delayed relative to the N170 response of young participants by 18 ms [9, 24] (and by 23 ms [9, 38], in response to the practice full noise trials; see Section 4.2).",
       "text_id": 64,
       "paragraph_id": 14,
       "section_id": 5,
@@ -592,7 +592,7 @@
       "formatted": "Despite no clear generic neural delay in older participants, their peak N170 response latencies to full faces on the right occipital electrode (RE) were delayed relative to the N170 response of young participants by 18 ms <ref type=\"bibr\">[9,<\/ref> <ref type=\"bibr\">24]<\/ref> (and by 23 ms <ref type=\"bibr\">[9,<\/ref> <ref type=\"bibr\">38]<\/ref>, in response to the practice full noise trials; see Section 4.2)."
     },
     {
-      "text": "These N170 peak delays on the RE were confirmed in bubbles trials that sampled face and noise information  (i.e., 22 ms [10, 32] and 18 ms [7,31], respectively, see Figure 3c; see Figure 3b for a summary topography).",
+      "text": "These N170 peak delays on the RE were confirmed in bubbles trials that sampled face and noise information  (i.e., 22 ms [10, 32] and 18 ms [7, 31], respectively, see Figure 3c; see Figure 3b for a summary topography).",
       "text_id": 65,
       "paragraph_id": 14,
       "section_id": 5,
@@ -632,7 +632,7 @@
       "formatted": null
     },
     {
-      "text": "To do this, we computed the MI relationship between <pixel visibility information; EEG activ-ity>, for each stimulus pixel, on the left (LE) and right (RE) electrode (see Section 4.5), every 2 ms between 0 and 400 ms post-stimulus.  [42,82] of that of young adults, see Figure 4b,c).",
+      "text": "To do this, we computed the MI relationship between <pixel visibility information; EEG activ-ity>, for each stimulus pixel, on the left (LE) and right (RE) electrode (see Section 4.5), every 2 ms between 0 and 400 ms post-stimulus.  [42, 82] of that of young adults, see Figure 4b,c).",
       "text_id": 70,
       "paragraph_id": 15,
       "section_id": 6,
@@ -648,7 +648,7 @@
       "formatted": "We then used the resulting images of brain information to compute their maximum MI across all time points and pixel locations (see Figure <ref type=\"figure\">4d<\/ref>)."
     },
     {
-      "text": "Peak EEG representation of the left eye occurred 40 ms [23,57] earlier in young adults relative to older adults (i.e., ~164 ms in young vs. ~204 ms in older adults).",
+      "text": "Peak EEG representation of the left eye occurred 40 ms [23, 57] earlier in young adults relative to older adults (i.e., ~164 ms in young vs. ~204 ms in older adults).",
       "text_id": 72,
       "paragraph_id": 16,
       "section_id": 6,
@@ -760,7 +760,7 @@
       "formatted": null
     },
     {
-      "text": "On the RE, we found a 46 ms [30,81] redundancy delay between the young and older participants (i.e., 165 ms peak [155,178] for young, and a 215 ms peak [196,246] for older adults; see Figure 4f).",
+      "text": "On the RE, we found a 46 ms [30, 81] redundancy delay between the young and older participants (i.e., 165 ms peak [155, 178] for young, and a 215 ms peak [196, 246] for older adults; see Figure 4f).",
       "text_id": 86,
       "paragraph_id": 20,
       "section_id": 7,
@@ -768,7 +768,7 @@
       "formatted": "On the RE, we found a 46 ms <ref type=\"bibr\">[30,<\/ref> <ref type=\"bibr\">81]<\/ref> redundancy delay between the young and older participants (i.e., 165 ms peak <ref type=\"bibr\">[155,<\/ref> <ref type=\"bibr\">178]<\/ref> for young, and a 215 ms peak <ref type=\"bibr\">[196,<\/ref> <ref type=\"bibr\">246]<\/ref> for older adults; see Figure <ref type=\"figure\">4f<\/ref>)."
     },
     {
-      "text": "We observed a similar 42 ms [20,86] delay between young and older participants on the LE, where right eye redundancy peaked at 172 ms [161,186] for young, and at 220 ms [196,261] for older adults (see Supplementary Figure S10).",
+      "text": "We observed a similar 42 ms [20, 86] delay between young and older participants on the LE, where right eye redundancy peaked at 172 ms [161, 186] for young, and at 220 ms [196, 261] for older adults (see Supplementary Figure S10).",
       "text_id": 87,
       "paragraph_id": 20,
       "section_id": 7,
@@ -920,7 +920,7 @@
       "formatted": null
     },
     {
-      "text": "As such, our results contrast with previously published findings that suggest that a differential use of horizontal versus vertical information might underlie the impairment of older adults when identifying faces (Chaby, Narme, & George, 2011;Obermeyer, Kolling, Schaich, & Knopf, 2012).",
+      "text": "As such, our results contrast with previously published findings that suggest that a differential use of horizontal versus vertical information might underlie the impairment of older adults when identifying faces (Chaby, Narme, & George, 2011; Obermeyer, Kolling, Schaich, & Knopf, 2012).",
       "text_id": 106,
       "paragraph_id": 25,
       "section_id": 9,
@@ -944,7 +944,7 @@
       "formatted": null
     },
     {
-      "text": "As such, it is possible that rather than inefficiently extracting information from faces, older adults were more conservative, detecting a face only when its eyes were visible (see also van Rijsbergen, Jaworska, Rousselet, & Schyns, 2014), although another possibility is that older adults relied more on local contrast information contained within the eye region of the face, in line with previous studies showing that they require more contrast to detect and discriminate faces (Lott, Haegerstrom-Portnoy, Schneck, & Brabyn, 2005;Owsley, Sekuler, & Boldt, 1981).",
+      "text": "As such, it is possible that rather than inefficiently extracting information from faces, older adults were more conservative, detecting a face only when its eyes were visible (see also van Rijsbergen, Jaworska, Rousselet, & Schyns, 2014), although another possibility is that older adults relied more on local contrast information contained within the eye region of the face, in line with previous studies showing that they require more contrast to detect and discriminate faces (Lott, Haegerstrom-Portnoy, Schneck, & Brabyn, 2005; Owsley, Sekuler, & Boldt, 1981).",
       "text_id": 109,
       "paragraph_id": 25,
       "section_id": 9,
@@ -952,7 +952,7 @@
       "formatted": "As such, it is possible that rather than inefficiently extracting information from faces, older adults were more conservative, detecting a face only when its eyes were visible (see also <ref type=\"bibr\" target=\"#b66\">van Rijsbergen, Jaworska, Rousselet, &amp; Schyns, 2014)<\/ref>, although another possibility is that older adults relied more on local contrast information contained within the eye region of the face, in line with previous studies showing that they require more contrast to detect and discriminate faces <ref type=\"bibr\" target=\"#b38\">(Lott, Haegerstrom-Portnoy, Schneck, &amp; Brabyn, 2005;<\/ref> <ref type=\"bibr\" target=\"#b43\">Owsley, Sekuler, &amp; Boldt, 1981)<\/ref>."
     },
     {
-      "text": "In any case, the uncovering of such difference was made possible by Bubbles sampling (Gosselin & Schyns, 2001), which limits researcher bias by not making a priori assumptions about the features that participants should use (Creighton, Bennett, & Sekuler, 2018;Éthier-Majcher, Joubert, & Gosselin, 2013;van Rijsbergen et al., 2014).",
+      "text": "In any case, the uncovering of such difference was made possible by Bubbles sampling (Gosselin & Schyns, 2001), which limits researcher bias by not making a priori assumptions about the features that participants should use (Creighton, Bennett, & Sekuler, 2018; Éthier-Majcher, Joubert, & Gosselin, 2013; van Rijsbergen et al., 2014).",
       "text_id": 110,
       "paragraph_id": 25,
       "section_id": 9,
@@ -984,7 +984,7 @@
       "formatted": null
     },
     {
-      "text": "This suggests that the reported delay occurred at the stages of cortical information processing, and was not due to precortical neural factors; thereby adding to the evidence that processing speed delays are unlikely to be due to bottom-up optical factors, such as senile miosis, contrast sensitivity (Bieniek, Bennett, Sekuler, & Rousselet, 2016;Bieniek, Frei, & Rousselet, 2013), or visual acuity (Price et al., 2017).",
+      "text": "This suggests that the reported delay occurred at the stages of cortical information processing, and was not due to precortical neural factors; thereby adding to the evidence that processing speed delays are unlikely to be due to bottom-up optical factors, such as senile miosis, contrast sensitivity (Bieniek, Bennett, Sekuler, & Rousselet, 2016; Bieniek, Frei, & Rousselet, 2013), or visual acuity (Price et al., 2017).",
       "text_id": 114,
       "paragraph_id": 26,
       "section_id": 9,
@@ -1000,7 +1000,7 @@
       "formatted": null
     },
     {
-      "text": "Although our stimuli were only frontal views of faces, it would be interesting to test side views, in line with previous studies showing age-related behavioral decrement on perception of faces across viewpoints (Habak, Wilkinson, & Wilson, 2008;Wilson, Mei, Habak, & Wilkinson, 2011).",
+      "text": "Although our stimuli were only frontal views of faces, it would be interesting to test side views, in line with previous studies showing age-related behavioral decrement on perception of faces across viewpoints (Habak, Wilkinson, & Wilson, 2008; Wilson, Mei, Habak, & Wilkinson, 2011).",
       "text_id": 116,
       "paragraph_id": 28,
       "section_id": 9,
@@ -1024,7 +1024,7 @@
       "formatted": "Whether aging affects different stages of viewpoint processing similarly would inform whether processing speed is delayed in a constant or cumulative manner along the visual cortical hierarchy <ref type=\"bibr\" target=\"#b49\">(Price et al., 2017)<\/ref>."
     },
     {
-      "text": "The age-related delay that we report here agrees with previous cross-sectional results, which suggest that face processing slows down from 20 years of age and onwards (Bieniek et al., 2013;Rousselet et al.,2010Rousselet et al., , 2009)).",
+      "text": "The age-related delay that we report here agrees with previous cross-sectional results, which suggest that face processing slows down from 20 years of age and onwards (Bieniek et al., 2013; Rousselet et al.,2010 Rousselet et al., , 2009)).",
       "text_id": 119,
       "paragraph_id": 29,
       "section_id": 9,
@@ -1032,7 +1032,7 @@
       "formatted": "The age-related delay that we report here agrees with previous cross-sectional results, which suggest that face processing slows down from 20 years of age and onwards <ref type=\"bibr\" target=\"#b5\">(Bieniek et al., 2013;<\/ref> <ref type=\"bibr\" target=\"#b52\">Rousselet et al.,2010<\/ref> <ref type=\"bibr\" target=\"#b53\">Rousselet et al., , 2009))<\/ref>."
     },
     {
-      "text": "However, previous studies could not ascribe these delays to the representation of task-relevant features, as reported here (see also Rousselet, Ince, van Rijsbergen, & Schyns, 2014;Schyns, Petro, & Smith, 2007;Smith, Gosselin, & Schyns, 2004).",
+      "text": "However, previous studies could not ascribe these delays to the representation of task-relevant features, as reported here (see also Rousselet, Ince, van Rijsbergen, & Schyns, 2014; Schyns, Petro, & Smith, 2007; Smith, Gosselin, & Schyns, 2004).",
       "text_id": 120,
       "paragraph_id": 29,
       "section_id": 9,
@@ -1048,7 +1048,7 @@
       "formatted": null
     },
     {
-      "text": "First, by demonstrating the neural representation of task-relevant face features in older adults, we can show that the reported delays (neural and behavioral) do not arise from an inability to inhibit the task-irrelevant information that increases with age (Gazzaley et al., 2008;Zanto, Toy, & Gazzaley, 2010).",
+      "text": "First, by demonstrating the neural representation of task-relevant face features in older adults, we can show that the reported delays (neural and behavioral) do not arise from an inability to inhibit the task-irrelevant information that increases with age (Gazzaley et al., 2008; Zanto, Toy, & Gazzaley, 2010).",
       "text_id": 122,
       "paragraph_id": 30,
       "section_id": 9,
@@ -1064,7 +1064,7 @@
       "formatted": "Second, we can use the direct evidence of neural representation of the same features to demonstrate that the N170 time window is functionally equivalent in young and older adults (cf. <ref type=\"bibr\" target=\"#b52\">Rousselet et al., 2010)<\/ref>."
     },
     {
-      "text": "The N170 is an early component of face processing (Bentin, Allison, Puce, Perez, & McCarthy, 1996;Itier, Alain, Sedore, & McIntosh, 2007;Rousselet et al., 2014) that is delayed in older participants (Gazzaley et al., 2008;Nakamura et al., 2001;Rousselet et al., 2009;Wiese et al., 2008).",
+      "text": "The N170 is an early component of face processing (Bentin, Allison, Puce, Perez, & McCarthy, 1996; Itier, Alain, Sedore, & McIntosh, 2007; Rousselet et al., 2014) that is delayed in older participants (Gazzaley et al., 2008; Nakamura et al., 2001; Rousselet et al., 2009; Wiese et al., 2008).",
       "text_id": 124,
       "paragraph_id": 30,
       "section_id": 9,
@@ -1088,7 +1088,7 @@
       "formatted": null
     },
     {
-      "text": "Here, we show that the N170 performs the same representation function in two age groups detecting faces, albeit with a delay in older adults (Rousselet et al., 2009;Schyns et al., 2007;Smith et al., 2004;van Rijsbergen & Schyns, 2009).",
+      "text": "Here, we show that the N170 performs the same representation function in two age groups detecting faces, albeit with a delay in older adults (Rousselet et al., 2009; Schyns et al., 2007; Smith et al., 2004; van Rijsbergen & Schyns, 2009).",
       "text_id": 127,
       "paragraph_id": 31,
       "section_id": 9,
@@ -1104,7 +1104,7 @@
       "formatted": null
     },
     {
-      "text": "We can thus trace the origin of the behavioral slowing to the early stages of stimulus processing, which could complement other studies that have indicated that slowing originates from motor response generation (Kolev, Falkenstein, & Yordanova, 2006;Yordanova, Kolev, Hohnsbein, & Falkenstein, 2004).",
+      "text": "We can thus trace the origin of the behavioral slowing to the early stages of stimulus processing, which could complement other studies that have indicated that slowing originates from motor response generation (Kolev, Falkenstein, & Yordanova, 2006; Yordanova, Kolev, Hohnsbein, & Falkenstein, 2004).",
       "text_id": 129,
       "paragraph_id": 31,
       "section_id": 9,
@@ -1216,7 +1216,7 @@
       "formatted": null
     },
     {
-      "text": "While face processing strategies might vary depending on the age of the observer relative to the age of the stimuli shown (own-age bias; van Rijsbergen et al., 2014;Anastasi & Rhodes, 2005;Wiese et al., 2008), we do not know whether these will affect N170 latencies or amplitudes (Komes, Schweinberger, & Wiese, 2015;Wiese et al., 2008).",
+      "text": "While face processing strategies might vary depending on the age of the observer relative to the age of the stimuli shown (own-age bias; van Rijsbergen et al., 2014; Anastasi & Rhodes, 2005; Wiese et al., 2008), we do not know whether these will affect N170 latencies or amplitudes (Komes, Schweinberger, & Wiese, 2015; Wiese et al., 2008).",
       "text_id": 143,
       "paragraph_id": 34,
       "section_id": 9,
@@ -1248,7 +1248,7 @@
       "formatted": "Recent evidence suggests that aging cannot be regarded as a unitary concept that affects functionally relevant brain regions in the same manner <ref type=\"bibr\" target=\"#b49\">(Price et al., 2017)<\/ref>."
     },
     {
-      "text": "Instead, whether the observed age-related delay is constant or cumulative, may depend on a variety of factors other than structural differences in brain regions (Peters, 2009;Price et al., 2017;Raz et al., 2005;Wang, Zhou, Ma, & Leventhal, 2005), such as the sensory modality, task, and stimulus complexity.",
+      "text": "Instead, whether the observed age-related delay is constant or cumulative, may depend on a variety of factors other than structural differences in brain regions (Peters, 2009; Price et al., 2017; Raz et al., 2005; Wang, Zhou, Ma, & Leventhal, 2005), such as the sensory modality, task, and stimulus complexity.",
       "text_id": 147,
       "paragraph_id": 35,
       "section_id": 9,
@@ -1286,14 +1286,6 @@
       "section_id": 9,
       "page_number": null,
       "formatted": null
-    },
-    {
-      "text": "| METHODS",
-      "text_id": 152,
-      "paragraph_id": 37,
-      "section_id": 10,
-      "page_number": null,
-      "formatted": "<head n=\"4\">| METHODS<\/head>"
     },
     {
       "text": "Eighteen young (nine females, median age = 23, min 20, max 36) and 19 older adults (seven females, median age = 66, min 60, max 86) participated in the study (data of 15 of the young participants were used in Rousselet et al. (2014)).",
@@ -1496,7 +1488,7 @@
       "formatted": "Face and noise images were revealed through \"bubble masks,\" that is, masks containing 10 two-dimensional Gaussian apertures (σ = 0.36 ), with the constraint that the center of the aperture remained in the face oval <ref type=\"bibr\" target=\"#b54\">(Rousselet et al., 2014)<\/ref>."
     },
     {
-      "text": "We wrote our experiments in MATLAB using the Psychophysics Toolbox extensions (Brainard, 1997;Kleiner, Brainard, & Pelli, 2007;Pelli, 1997).",
+      "text": "We wrote our experiments in MATLAB using the Psychophysics Toolbox extensions (Brainard, 1997; Kleiner, Brainard, & Pelli, 2007; Pelli, 1997).",
       "text_id": 178,
       "paragraph_id": 42,
       "section_id": 12,
@@ -1688,7 +1680,7 @@
       "formatted": null
     },
     {
-      "text": "EEG data were preprocessed using MATLAB 2013b and the opensource EEGLAB toolbox (Delorme et al., 2011;Delorme & Makeig, 2004).",
+      "text": "EEG data were preprocessed using MATLAB 2013b and the opensource EEGLAB toolbox (Delorme et al., 2011; Delorme & Makeig, 2004).",
       "text_id": 202,
       "paragraph_id": 50,
       "section_id": 14,
@@ -1720,7 +1712,7 @@
       "formatted": null
     },
     {
-      "text": "Independently, another dataset was created in which data were preprocessed with fourth-order Butterworth filters: a high-pass causal filter at 2 Hz and a low-pass noncausal filter at 30 Hz, to preserve accurate timing of onsets (Acunzo, MacKenzie, & van Rossum, 2012;Luck, 2005;Rousselet, 2012;Widmann & Schröger, 2012).",
+      "text": "Independently, another dataset was created in which data were preprocessed with fourth-order Butterworth filters: a high-pass causal filter at 2 Hz and a low-pass noncausal filter at 30 Hz, to preserve accurate timing of onsets (Acunzo, MacKenzie, & van Rossum, 2012; Luck, 2005; Rousselet, 2012; Widmann & Schröger, 2012).",
       "text_id": 206,
       "paragraph_id": 50,
       "section_id": 14,
@@ -1744,7 +1736,7 @@
       "formatted": "Mean baseline was removed from the causal-filtered data, and channel mean was removed from each channel in the noncausal-filtered data in order to increase the reliability of independent component analysis (ICA) <ref type=\"bibr\" target=\"#b20\">(Groppe, Makeig, &amp; Kutas, 2009)<\/ref>."
     },
     {
-      "text": "Noisy electrodes and trials Subsequently, we performed ICA on the noncausal filtered dataset using the Infomax algorithm as implemented in the runica function in EEGLAB (Delorme & Makeig, 2004;Delorme, Sejnowski, & Makeig, 2007).",
+      "text": "Noisy electrodes and trials Subsequently, we performed ICA on the noncausal filtered dataset using the Infomax algorithm as implemented in the runica function in EEGLAB (Delorme & Makeig, 2004; Delorme, Sejnowski, & Makeig, 2007).",
       "text_id": 209,
       "paragraph_id": 51,
       "section_id": 14,
@@ -1752,7 +1744,7 @@
       "formatted": "Noisy electrodes and trials Subsequently, we performed ICA on the noncausal filtered dataset using the Infomax algorithm as implemented in the runica function in EEGLAB <ref type=\"bibr\" target=\"#b10\">(Delorme &amp; Makeig, 2004;<\/ref> <ref type=\"bibr\" target=\"#b12\">Delorme, Sejnowski, &amp; Makeig, 2007)<\/ref>."
     },
     {
-      "text": "The ICA weights were then applied to the causal filtered dataset to ensure removal of the same components, and artifactual the CSD toolbox (Kayser, 2009;Tenke & Kayser, 2012).",
+      "text": "The ICA weights were then applied to the causal filtered dataset to ensure removal of the same components, and artifactual the CSD toolbox (Kayser, 2009; Tenke & Kayser, 2012).",
       "text_id": 210,
       "paragraph_id": 51,
       "section_id": 14,
@@ -1792,7 +1784,7 @@
       "formatted": null
     },
     {
-      "text": "We performed detailed analyses on the subset of four posterior midline electrodes that are sensitive to face features or conjunction of features: from top to bottom CPz, Pz, POz, and Oz (Rousselet et al., 2014;Schyns, Thut, & Gross, 2011).",
+      "text": "We performed detailed analyses on the subset of four posterior midline electrodes that are sensitive to face features or conjunction of features: from top to bottom CPz, Pz, POz, and Oz (Rousselet et al., 2014; Schyns, Thut, & Gross, 2011).",
       "text_id": 215,
       "paragraph_id": 52,
       "section_id": 15,
@@ -1880,7 +1872,7 @@
       "formatted": "Unless otherwise stated, median values are Harrell-Davis estimates of the second quartile <ref type=\"bibr\" target=\"#b22\">(Harrell &amp; Davis, 1982)<\/ref>."
     },
     {
-      "text": "We used MI to quantify the dependence between stimulus features and behavioral and brain responses (Ince et al., 2017;Ince, Petersen, Swan, & Panzeri, 2009;Kayser, Ince, Gross, & Kayser, 2015;Park, Ince, Schyns, Thut, & Gross, 2015;Schyns et al., 2011).",
+      "text": "We used MI to quantify the dependence between stimulus features and behavioral and brain responses (Ince et al., 2017; Ince, Petersen, Swan, & Panzeri, 2009; Kayser, Ince, Gross, & Kayser, 2015; Park, Ince, Schyns, Thut, & Gross, 2015; Schyns et al., 2011).",
       "text_id": 226,
       "paragraph_id": 55,
       "section_id": 18,
@@ -1976,7 +1968,7 @@
       "formatted": "To establish the statistical significance of the classification image pixels while controlling for multiple comparisons arising from testing at multiple pixels, we performed a permutation test coupled with the threshold-free cluster enhancement technique <ref type=\"bibr\" target=\"#b62\">(Smith &amp; Nichols, 2009)<\/ref> on individual participants' data <ref type=\"bibr\" target=\"#b54\">(Rousselet et al., 2014)<\/ref>."
     },
     {
-      "text": "We computed coinformation (coI) (Bell, 2003) (equivalent to interaction information (McGill, 1954) but with opposite sign for three variables) to quantify the triple dependence between eye visibility, RTs, and brain responses (Ince, 2017;Ince et al.,2017Ince et al., ,2016Ince et al., ,2015; Zhan, Ince, Van Rijsbergen, & Schyns, 2018), that is, coI(eye; RT; EEG).",
+      "text": "We computed coinformation (coI) (Bell, 2003) (equivalent to interaction information (McGill, 1954) but with opposite sign for three variables) to quantify the triple dependence between eye visibility, RTs, and brain responses (Ince, 2017; Ince et al.,2017 Ince et al., ,2016 Ince et al., ,2015; Zhan, Ince, Van Rijsbergen, & Schyns, 2018), that is, coI(eye; RT; EEG).",
       "text_id": 238,
       "paragraph_id": 59,
       "section_id": 21,
@@ -2040,7 +2032,7 @@
       "formatted": null
     },
     {
-      "text": "For these analyses, we quantized RT and peak redundancy time into three equally populated bins (splitting on tertiles of the distribution across participants) and calculated MI from the standard discrete definition (Cover & Thomas, 2005;Ince et al., 2017).",
+      "text": "For these analyses, we quantized RT and peak redundancy time into three equally populated bins (splitting on tertiles of the distribution across participants) and calculated MI from the standard discrete definition (Cover & Thomas, 2005; Ince et al., 2017).",
       "text_id": 246,
       "paragraph_id": 62,
       "section_id": 22,
@@ -2072,7 +2064,7 @@
       "formatted": null
     },
     {
-      "text": "To control for multiple comparisons, we used a bootstrap temporal clustering technique as implemented in LIMO EEG (Pernet et al., 2011;Pernet, Latinus, Nichols, & Rousselet, 2015).",
+      "text": "To control for multiple comparisons, we used a bootstrap temporal clustering technique as implemented in LIMO EEG (Pernet et al., 2011; Pernet, Latinus, Nichols, & Rousselet, 2015).",
       "text_id": 250,
       "paragraph_id": 63,
       "section_id": 23,
@@ -2200,7 +2192,7 @@
       "formatted": null
     },
     {
-      "text": "This work has been funded by the U.K. Biotechnology and Biological Sciences Research Council (BBSRC) grant BB/J018929/1 awarded to N.J.V.R., G.A.R., and P.G.S. K.J. was supported by the BBSRCDoctoral Training Partnership (WestBio) Studentship.",
+      "text": "This work has been funded by the U.K. Biotechnology and Biological Sciences Research Council (BBSRC) grant BB/J018929/1 awarded to N.J.V.R., G.A.R., and P.G.S. K.J. was supported by the BBSRC Doctoral Training Partnership (WestBio) Studentship.",
       "text_id": 266,
       "paragraph_id": 69,
       "section_id": 27,
@@ -3399,7 +3391,7 @@
       "text_id": 303
     },
     {
-      "bib_type": "article",
+      "bib_type": "incollection",
       "doi": "",
       "title": "The co-information lattice",
       "authors": "Bell, A J",
@@ -3410,7 +3402,7 @@
       "issue": "",
       "first_page": "921",
       "last_page": "926",
-      "container": "",
+      "container": "Proceedings of the 4th International Symposium on Independent Component Analysis and Blind Signal Separation (ICA2003)",
       "bib_id": 2,
       "year_suffix": "",
       "text_id": 304
@@ -3501,9 +3493,9 @@
       "text_id": 309
     },
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "10.1002/047174882X",
-      "title": "",
+      "title": "Elements of information theory",
       "authors": "Cover, T M; Thomas, J A",
       "editors": "",
       "publisher": "Wiley-Interscience",
@@ -3512,7 +3504,7 @@
       "issue": "",
       "first_page": null,
       "last_page": null,
-      "container": "",
+      "container": null,
       "bib_id": 8,
       "year_suffix": "",
       "text_id": 310
@@ -3739,9 +3731,9 @@
       "text_id": 323
     },
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "",
-      "title": "",
+      "title": "A new distribution-free quantile estimator",
       "authors": "Harrell, F E; Davis, C E",
       "editors": "",
       "publisher": "",
@@ -3750,7 +3742,7 @@
       "issue": "",
       "first_page": null,
       "last_page": null,
-      "container": "",
+      "container": null,
       "bib_id": 22,
       "year_suffix": "",
       "text_id": 324
@@ -3762,14 +3754,14 @@
       "authors": "",
       "editors": "",
       "publisher": "",
-      "year": null,
+      "year": 1093,
       "volume": "69",
       "issue": "3",
       "first_page": "635",
       "last_page": "640",
       "container": "Biometrika",
       "bib_id": 23,
-      "year_suffix": null,
+      "year_suffix": "",
       "text_id": 325
     },
     {
@@ -3892,9 +3884,9 @@
       "text_id": 332
     },
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "",
-      "title": "",
+      "title": "ARESLab: Adaptive Regression Splines toolbox for Matlab/Octave",
       "authors": "Jekabsons, G",
       "editors": "",
       "publisher": "",
@@ -3903,15 +3895,15 @@
       "issue": "",
       "first_page": null,
       "last_page": null,
-      "container": "",
+      "container": null,
       "bib_id": 31,
       "year_suffix": "",
       "text_id": 333
     },
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "",
-      "title": "",
+      "title": "Current source density (CSD) interpolation using spherical splines -CSD Toolbox (Version 1.1)",
       "authors": "Kayser, J",
       "editors": "",
       "publisher": "Division of Cognitive Neuroscience",
@@ -3920,7 +3912,7 @@
       "issue": "",
       "first_page": null,
       "last_page": null,
-      "container": "",
+      "container": null,
       "bib_id": 32,
       "year_suffix": "",
       "text_id": 334
@@ -3960,9 +3952,9 @@
       "text_id": 336
     },
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "",
-      "title": "",
+      "title": "What's new in Psychtoolbox-3? Perception",
       "authors": "Kleiner, M; Brainard, D H; Pelli, D",
       "editors": "",
       "publisher": "ECVP Abstract Supplement",
@@ -3971,7 +3963,7 @@
       "issue": "",
       "first_page": null,
       "last_page": null,
-      "container": "",
+      "container": null,
       "bib_id": 35,
       "year_suffix": "",
       "text_id": 337
@@ -4028,9 +4020,9 @@
       "text_id": 340
     },
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "",
-      "title": "",
+      "title": "An introduction to the event-related potential technique",
       "authors": "Luck, S J",
       "editors": "",
       "publisher": "MIT Press",
@@ -4039,7 +4031,7 @@
       "issue": "",
       "first_page": null,
       "last_page": null,
-      "container": "",
+      "container": null,
       "bib_id": 39,
       "year_suffix": "",
       "text_id": 341
@@ -4436,9 +4428,9 @@
       "text_id": 364
     },
     {
-      "bib_type": "article",
+      "bib_type": "book",
       "doi": "",
-      "title": "",
+      "title": "Biometry: The principles and practice of statistics in biological research",
       "authors": "Sokal, R R; Rohlf, F J",
       "editors": "",
       "publisher": "W.H. Freeman",
@@ -4447,7 +4439,7 @@
       "issue": "",
       "first_page": null,
       "last_page": null,
-      "container": "",
+      "container": null,
       "bib_id": 63,
       "year_suffix": "",
       "text_id": 365
@@ -5655,6 +5647,38 @@
   "table": [],
   "eq": [
     {
+      "text_id": 5,
+      "grp_id": 14,
+      "lhs": "behavior",
+      "df": null,
+      "comp": "~",
+      "rhs": "170"
+    },
+    {
+      "text_id": 62,
+      "grp_id": 15,
+      "lhs": "by",
+      "df": null,
+      "comp": "~",
+      "rhs": "20"
+    },
+    {
+      "text_id": 72,
+      "grp_id": 16,
+      "lhs": "vs.",
+      "df": null,
+      "comp": "~",
+      "rhs": "204"
+    },
+    {
+      "text_id": 81,
+      "grp_id": 17,
+      "lhs": "a",
+      "df": null,
+      "comp": "~",
+      "rhs": "200"
+    },
+    {
       "text_id": 153,
       "grp_id": 1,
       "lhs": "age",
@@ -5671,12 +5695,28 @@
       "rhs": "66"
     },
     {
+      "text_id": 154,
+      "grp_id": 13,
+      "lhs": "was",
+      "df": null,
+      "comp": ">",
+      "rhs": "80"
+    },
+    {
       "text_id": 177,
       "grp_id": 2,
       "lhs": "σ",
       "df": null,
       "comp": "=",
       "rhs": "0.36"
+    },
+    {
+      "text_id": 190,
+      "grp_id": 18,
+      "lhs": "of",
+      "df": null,
+      "comp": "~",
+      "rhs": "43"
     },
     {
       "text_id": 211,
@@ -5957,54 +5997,6 @@
       "df": null,
       "comp": "=",
       "rhs": "0.07"
-    },
-    {
-      "text_id": 154,
-      "grp_id": 13,
-      "lhs": "was",
-      "df": null,
-      "comp": ">",
-      "rhs": "80"
-    },
-    {
-      "text_id": 5,
-      "grp_id": 14,
-      "lhs": "behavior",
-      "df": null,
-      "comp": "~",
-      "rhs": "170"
-    },
-    {
-      "text_id": 62,
-      "grp_id": 15,
-      "lhs": "by",
-      "df": null,
-      "comp": "~",
-      "rhs": "20"
-    },
-    {
-      "text_id": 72,
-      "grp_id": 16,
-      "lhs": "vs.",
-      "df": null,
-      "comp": "~",
-      "rhs": "204"
-    },
-    {
-      "text_id": 81,
-      "grp_id": 17,
-      "lhs": "a",
-      "df": null,
-      "comp": "~",
-      "rhs": "200"
-    },
-    {
-      "text_id": 190,
-      "grp_id": 18,
-      "lhs": "of",
-      "df": null,
-      "comp": "~",
-      "rhs": "43"
     }
   ]
 }

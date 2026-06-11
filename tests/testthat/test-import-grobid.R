@@ -495,3 +495,101 @@ test_that("URL in text", {
   text2 <- .tei_text(xml)
 #   grep("doi", text$text, fixed = TRUE)
 })
+
+test_that("OSF view_only links", {
+  xml_path <- test_path("fixtures", "problems", "0956797615569889.xml")
+  xml <- .xml_read_grobid(xml_path)
+  paper <- grobid_to_bibr(xml_path, NULL)
+  obs <- text_search(paper, "view_only")$text
+  exp <- "The stimuli used in the main think/no-think task reported in this article are available at https://osf.io/t9j8e/?view_only=f171281f212f4435917b16a9e581a73b."
+  expect_equal(obs, exp)
+
+  # .tei_text (retains rogue spaces)
+  text <- .tei_text(xml)
+  obs <- text_search(text, "view_only")$text
+  exp <- "The stimuli used in the main think/no-think task reported in this article are available at https://osf.io/t9j8e/?view_only=f171 281f212f4435917b16a9e581a73b."
+  expect_equal(obs, exp)
+
+  # .process_full_text
+  full_text <- data.frame(
+    p = 1,
+    div = 1,
+    section = 1,
+    header = "demo",
+    formatted = c("<p>The stimuli used in the main think/no-think task reported in this article are available at <ref type=\"url\" target=\"https://osf.io/t9j8e/?view_only=f171281f212f4435917b16a9e581a73b\">https://osf.io/t9j8e/?view_only=f171  281f212f4435917b16a9e581a73b</ref>. The complete Open Practices Disclosure for this article can be found at <ref type=\"url\" target=\"http://pss.sagepub.com/content/by/supplemental-data\">http://pss.sagepub  .com/content/by/supplemental-data</ref>.</p>",
+    "<p>No urls here!</p>",
+    "<p>A non-problematic <ref type=\"url\" target=\"https://osf.io/t9j8e\">URL</ref>.</p>"
+  ))
+
+  text <- .process_full_text(full_text)
+  exp <- c("The stimuli used in the main think/no-think task reported in this article are available at https://osf.io/t9j8e/?view_only=f171  281f212f4435917b16a9e581a73b.",
+           "The complete Open Practices Disclosure for this article can be found at http://pss.sagepub  .com/content/by/supplemental-data.",
+           "No urls here!",
+           "A non-problematic URL.")
+  expect_equal(text$text, exp)
+})
+
+test_that("p. 100", {
+  full_text <- data.frame(
+    p = 1,
+    div = 1,
+    section = 1,
+    header = "demo",
+    formatted = c(
+      '<p>The authors used structural equation modeling (SEM) assuming linear relationships between the variables, and it is essential to test this assumption <ref type="bibr">(Bentler &amp; Chou, 1987, p. 86;</ref> <ref type="bibr">Ullman, 2007, p. 683)</ref>.</p>'
+    ))
+
+  obs <- .process_full_text(full_text)
+  exp <- c("The authors used structural equation modeling (SEM) assuming linear relationships between the variables, and it is essential to test this assumption (Bentler & Chou, 1987, p. 86; Ullman, 2007, p. 683).")
+  expect_equal(obs$text, exp)
+
+  # not in ref
+  fmt <- 'This research (Frith &amp; Singer, 2008, p. 3876).'
+  full_text <- data.frame(
+    p = 1,
+    div = 1,
+    section = 1,
+    header = "demo",
+    formatted = fmt
+  )
+
+  obs <- .process_full_text(full_text)
+  exp <- "This research (Frith & Singer, 2008, p. 3876)."
+  expect_equal(obs$text, exp)
+  expect_equal(obs$formatted, fmt)
+})
+
+
+test_that("<head>", {
+  xml_path <- test_path("fixtures/problems/0956797615569889.xml")
+
+  # remove from text, but keep in section list
+  paper <- grobid_to_bibr(xml_path, NULL)
+  expect_equal(grep("^Results$", paper$section$header) |> length(), 1)
+  expect_equal(grep("^Results$", paper$text$text) |> length(), 0)
+})
+
+test_that("bibstruct", {
+  xml_text <- '<listBibl><biblStruct status="extracted" xml:id="b37">
+	<monogr>
+		<title level="m" type="main">When are organizations punished for organizational misconduct? A review and research agenda</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Mcdonnell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Nurmohamed</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.riob.2021.100150</idno>
+		<ptr target="https://doi.org/10.1016/j.riob.2021.100150" />
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+	<note>Research in Organizational Behavior, 41, Article 100150</note>
+	<note type="raw_reference">McDonnell, M. H., &amp; Nurmohamed, S. (2021). When are organizations punished for organizational misconduct? A review and research agenda. Research in Organizational Behavior, 41, Article 100150. https://doi.org/10.1016/j .riob.2021.100150</note>
+</biblStruct></listBibl>'
+  xml <- xml2::read_xml(xml_text)
+  bib <- .tei_bib(xml)
+  exp <- "When are organizations punished for organizational misconduct? A review and research agenda"
+  expect_equal(bib$title, exp)
+})

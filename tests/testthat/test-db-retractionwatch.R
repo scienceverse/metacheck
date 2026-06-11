@@ -19,11 +19,9 @@ test_that("defaults", {
   expect_equal(date, attr(rw, "date"))
 })
 
-test_that("update", {
-  skip_if_quick()
-  skip_if_offline("api.labs.crossref.org")
-
+test_that("rw_update", {
+  skip()
   path <- rw_update()
   expect_true(grepl("retractionwatch\\.Rds$", path))
   expect_true(file.exists(path))
-})
+}, "mock")

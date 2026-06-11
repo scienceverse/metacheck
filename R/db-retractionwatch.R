@@ -66,7 +66,12 @@ rw_update <- function() {
 
   tmp <- tempfile(fileext = ".csv")
   url <- paste0("https://api.labs.crossref.org/data/retractionwatch?", email())
-  utils::download.file(url, destfile = tmp)
+  # utils::download.file(url, destfile = tmp)
+
+  httr2::request(url) |>
+    httr2::req_error(is_error = ~ FALSE) |>  # optional: don't auto-stop
+    httr2::req_perform(path = tmp)
+
   on.exit(unlink(tmp))
 
   # decrease size
@@ -76,8 +81,9 @@ rw_update <- function() {
       # pmid = OriginalPaperPubMedID,
       retractionwatch = RetractionNature
     ) |>
-    dplyr::filter(doi != "unavailable") |>
-    dplyr::summarise(retractionwatch = unique(retractionwatch) |> paste(collapse = ";"), .by = doi)
+    dplyr::filter(doi != "unavailable", retractionwatch != "") |>
+    dplyr::summarise(retractionwatch = unique(retractionwatch) |>
+                       paste(collapse = ";"), .by = doi)
 
   attr(retractionwatch, "date") <- Sys.Date()
 

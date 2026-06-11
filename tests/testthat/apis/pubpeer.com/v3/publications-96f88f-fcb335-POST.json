@@ -1,0 +1,135 @@
+{
+    "status": "good",
+    "feedbacks": [
+        {
+            "id": "10.1146/annurev.neuro.29.051605.113038",
+            "title": "The neural basis of decision making",
+            "journals": [
+                {
+                    "title": "Annual review of neuroscience",
+                    "publisher": "Annual Reviews"
+                }
+            ],
+            "total_comments": 1,
+            "total_peeriodical_comments": 0,
+            "peeriodical_links": [
+
+            ],
+            "last_commented_at": "2018-09-17 06:37:48",
+            "users": "Lydia M. Maniatis",
+            "url": "https://pubpeer.com/publications/B3B39D1BF4CBC82F550C93A816D262",
+            "updates": [
+
+            ]
+        },
+        {
+            "id": "10.1177/0956797612460406",
+            "title": "Mental- and physical-health effects of acute exposure to media images of the September 11, 2001, attacks and the Iraq War",
+            "journals": [
+                {
+                    "title": "Psychological science",
+                    "publisher": "SAGE Publications"
+                },
+                {
+                    "title": "Psychological science",
+                    "publisher": "SAGE Publications"
+                }
+            ],
+            "total_comments": 1,
+            "total_peeriodical_comments": 0,
+            "peeriodical_links": [
+
+            ],
+            "last_commented_at": "2016-09-21 10:00:44",
+            "users": "Statcheck ",
+            "url": "https://pubpeer.com/publications/12617B1FBD30A1FE8477A32CD66C0D",
+            "updates": [
+
+            ]
+        },
+        {
+            "id": "10.1037/0096-3445.129.1.126",
+            "title": "Working memory and the vividness of imagery",
+            "journals": [
+                {
+                    "title": "Journal of Experimental Psychology General",
+                    "publisher": "American Psychological Association (APA)"
+                },
+                {
+                    "title": "Journal of Experimental Psychology General",
+                    "publisher": "American Psychological Association (APA)"
+                }
+            ],
+            "total_comments": 1,
+            "total_peeriodical_comments": 0,
+            "peeriodical_links": [
+
+            ],
+            "last_commented_at": "2016-09-06 02:51:32",
+            "users": "Statcheck ",
+            "url": "https://pubpeer.com/publications/51BEC70FA11F781FFF1A124D76BE29",
+            "updates": [
+
+            ]
+        },
+        {
+            "id": "10.1038/nature08637",
+            "title": "Preventing the return of fear in humans using reconsolidation update mechanisms",
+            "journals": [
+                {
+                    "title": "Nature",
+                    "publisher": "Springer Science and Business Media LLC"
+                },
+                {
+                    "title": "Nature",
+                    "publisher": "Springer Science and Business Media LLC"
+                }
+            ],
+            "total_comments": 5,
+            "total_peeriodical_comments": 0,
+            "peeriodical_links": [
+
+            ],
+            "last_commented_at": "2021-09-01 19:13:23",
+            "users": "Phyllariopsis Brevipes, Mucuna Rostrata, Gentiana Lutea, Tom Beckers, Haliastur Indus",
+            "url": "https://pubpeer.com/publications/2976998EF09960537E5C95DA22D649",
+            "updates": [
+                {
+                    "type": "ADDENDUM",
+                    "content": {
+                        "timestamp": 1532563200000,
+                        "identifier": {
+                            "doi": "10.1038/nature08637"
+                        },
+                        "type": "addendum"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "10.1037/a0033722",
+            "title": "Episodic memory, perceptual memory, and their interaction: foundations for a theory of posttraumatic stress disorder",
+            "journals": [
+                {
+                    "title": "Psychological Bulletin",
+                    "publisher": "American Psychological Association (APA)"
+                },
+                {
+                    "title": "Psychological Bulletin",
+                    "publisher": "American Psychological Association (APA)"
+                }
+            ],
+            "total_comments": 1,
+            "total_peeriodical_comments": 0,
+            "peeriodical_links": [
+
+            ],
+            "last_commented_at": "2016-09-06 01:46:14",
+            "users": "Statcheck ",
+            "url": "https://pubpeer.com/publications/B415C15F7F8664BF36C027E45EA294",
+            "updates": [
+
+            ]
+        }
+    ]
+}

@@ -4,10 +4,10 @@
 \alias{grobid_to_bibr}
 \title{Convert Grobid TEI XML file to bibr format}
 \usage{
-grobid_to_bibr(xml_file, save_path = ".", crossref_lookup = FALSE)
+grobid_to_bibr(xml_path, save_path = ".", crossref_lookup = FALSE)
 }
 \arguments{
-\item{xml_file}{the XML file}
+\item{xml_path}{the path to the XML file}
 
 \item{save_path}{directory or file path to save to; set to NULL to return a paper object}
 
