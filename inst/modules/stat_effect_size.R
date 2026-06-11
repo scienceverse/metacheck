@@ -136,10 +136,12 @@ stat_effect_size <- function(paper) {
         "non_checkable"
       } else if (grepl("^f2?$", raw_label) || grepl("cohen", raw_label)) {
         "cohens_f"
-      } else if ((grepl("ω", raw_label) || grepl("omega", raw_label)) &&
-                 (grepl("partial", raw_label) || grepl("p", raw_label))) {
-        "partial_omega_squared"
       } else if (grepl("ω", raw_label) || grepl("omega", raw_label)) {
+        # Omega squared (partial or not) depends on the total sample size N,
+        # which cannot be recovered from F and the dfs without knowing the
+        # design (one-way vs factorial vs repeated-measures). Unlike partial
+        # eta squared, it is therefore not verifiable here and is treated as
+        # indeterminate.
         "non_checkable"
       } else if ((grepl("η", raw_label) || grepl("eta", raw_label)) &&
                  (grepl("partial", raw_label) || grepl("p", raw_label))) {
