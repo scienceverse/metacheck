@@ -195,6 +195,11 @@ reference:
   - '`extract_eq`'
   - '`extract_p_values`'
   - '`extract_urls`'
+  - '`path_sanitize`'
   - '`stats`'
   - '`emojis`'
+- title: "Internal functions"
+  desc: "Functions for developers"
+  contents:
+  - has_keyword("internal")
 

@@ -1,9 +1,12 @@
-# metacheck 0.0.1.9002
+# metacheck 0.1.0
 
+* Actual beta release with proper number and Zenodo citation!
 * PDF conversion with `convert()` or `convert_grobid()` now defaults to the new GDPR-compliant server at TUE
 * Updates to the effect_size module
 * New `report_app()` to make a report with all default modules in a GUI by just uploading a PDF
 * Improvements to unit tests
+* Removed {fs} dependency and added custom `path_sanitize()` 
+* Added internal functions to the website for developer reference
 
 # metacheck 0.0.1.9001
 

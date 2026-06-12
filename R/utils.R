@@ -114,6 +114,47 @@ email <- function(email = NULL) {
 }
 
 
+
+#' Sanitize File Path
+#'
+#' Make sure user-input file names are not problematic.
+#'
+#' @param path the path to sanitize (can be a vector of paths)
+#' @param replacement the character to replace invalid characters with
+#' @param remove_whitespace whether to include whitespace as a problem
+#' @param keep_sep whether to keep the path separator /
+#'
+#' @returns the sanitized vector
+#' @export
+#'
+#' @examples
+#' path <- "/My Files/x><y.pdf"
+#' path_sanitize(path)
+#' path_sanitize(path, replacement = "~")
+#' path_sanitize(path, remove_whitespace = FALSE)
+#' path_sanitize(path, keep_sep = FALSE)
+path_sanitize <- function(path, replacement = "_",
+                          remove_whitespace = TRUE,
+                          keep_sep = TRUE) {
+  rep_plus <- paste0(replacement, "+")
+  invalid <- '[\\:*?"<>|]'
+  sep <- ifelse(keep_sep, replacement, "\\/")
+  ws <- ifelse(remove_whitespace, "\\s", replacement)
+
+  path |>
+    trimws() |>
+    gsub("[[:cntrl:]]", "", x = _) |>      # remove control chars
+    gsub(invalid, replacement, x = _) |>   # replace invalid chars
+    gsub(sep, replacement, x = _) |>       # replace sep
+    gsub(ws, replacement, x = _) |>        # replace whitespace
+    gsub(rep_plus, replacement, x = _) |>  # condense replacements
+    trimws()                               # trim spaces
+}
+
+
+
+# psychsci ----
+
 #' Psychological Science Open Access Paper Set
 #'
 #' 250 open access papers from Psychological Science.

@@ -93,3 +93,32 @@ test_that(".batch_query", {
   expect_equal(obs[[2]]$status_code, 404)
   expect_equal(obs[[3]]$status_code, 200)
 }, "mock")
+
+
+test_that("path_sanitize", {
+  expect_true(is.function(metacheck::path_sanitize))
+  expect_no_error(helplist <- help(path_sanitize, metacheck))
+
+  expect_error(path_sanitize())
+
+  # defaults
+  path <- " has/ spaces/\\backslashes/><|?chars/.dot.is.ok "
+  obs <- path_sanitize(path)
+  exp <- "has/_spaces/_backslashes/_chars/.dot.is.ok"
+  expect_equal(exp, obs)
+
+  # replacement
+  obs <- path_sanitize(path, replacement = "~")
+  exp <- "has/~spaces/~backslashes/~chars/.dot.is.ok"
+  expect_equal(exp, obs)
+
+  # remove_whitespace
+  obs <- path_sanitize(path, remove_whitespace = FALSE)
+  exp <- "has/ spaces/_backslashes/_chars/.dot.is.ok"
+  expect_equal(exp, obs)
+
+  # keep_sep
+  obs <- path_sanitize(path, keep_sep = FALSE)
+  exp <- "has_spaces_backslashes_chars_.dot.is.ok"
+  expect_equal(exp, obs)
+})

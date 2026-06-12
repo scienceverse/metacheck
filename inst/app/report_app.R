@@ -141,6 +141,8 @@ server <- function(input, output, session) {
 
         incProgress(0.15, detail = "Converting PDF...")
         grobid_args <- switch(input$grobid_server_choice,
+          "huggingface" = list(method = "grobid",
+                             api_url = "https://grobidOrg-grobid.hf.space"),
           "metacheck" = list(method = "grobid",
                              api_url = "https://grobid.hti.ieis.tue.nl"),
           "local"     = list(method = "grobid",

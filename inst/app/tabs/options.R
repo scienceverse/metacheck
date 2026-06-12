@@ -18,10 +18,10 @@ options_tab <- tabItem(
       "grobid_server_choice",
       "PDF Conversion Server:",
       choiceNames = list(
-        "Use GDPR compliant GROBID server at Eindhoven University of Technology",
-        "Use HuggingFace server in the USA",
+        "Use GDPR compliant GROBID 0.8.2 server at Eindhoven University of Technology",
+        "Use Full GROBID 0.9.0 via HuggingFace (USA)",
         tagList(
-          "Use local GROBID server through Docker — see ",
+          "Use local GROBID server via Docker — see ",
           tags$a("metacheck docs",
             href = paste0("https://www.scienceverse.org/metacheck/",
                           "articles/metacheck.html#load-from-pdf"),
