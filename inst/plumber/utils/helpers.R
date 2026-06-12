@@ -44,28 +44,31 @@ error_response <- function(res, status, message) {
 }
 
 
-#' Read a paper from GROBID XML file
+#' Read a paper from a bibr JSON file
 #'
-#' @param file_path Path to GROBID XML file
+#' @param file_path Path to bibr JSON file
 #' @param request_id Request ID for logging
 #' @return List with success status and either paper object or error message
 read_paper <- function(file_path, request_id) {
   logger::log_info("Reading paper: {request_id}")
 
-  # Read paper with error handling
+  # .read_bibr directly, NOT read(): read() swallows per-file errors into
+  # NULL, after which paperlist() throws a misleading error and print()s the
+  # parsed structure into the logs. The internal reader surfaces the real
+  # parse error so error_response() can return it to the client.
   result <- tryCatch(
     {
-      logger::log_info("Reading GROBID XML file")
-      metacheck::read_grobid(file_path)
+      logger::log_info("Reading bibr JSON file")
+      metacheck:::.read_bibr(file_path)
     },
     error = function(e) {
-      logger::log_error("Error reading paper: {e$message}")
+      logger::log_error("Error reading paper: {conditionMessage(e)}")
       e
     }
   )
 
   if (inherits(result, "error")) {
-    return(list(success = FALSE, error = result$message))
+    return(list(success = FALSE, error = conditionMessage(result)))
   }
 
   logger::log_info("Paper read successfully: {request_id}")

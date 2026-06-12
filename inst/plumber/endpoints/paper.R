@@ -1,5 +1,5 @@
 # endpoints/paper.R
-# Paper analysis endpoints - can work with uploaded PDFs or GROBID XML
+# Paper analysis endpoints - accept bibr JSON uploads
 
 library(metacheck)
 library(logger)
@@ -19,7 +19,7 @@ logger::log_info("Loaded {length(AVAILABLE_MODULES)} modules: {paste(AVAILABLE_M
 
 #* Process a paper and return info table
 #* @post /info
-#* @param file:file GROBID XML file to process
+#* @param file:file bibr JSON file to process
 #* @param fields:[string] Comma-separated fields to include (optional, e.g., "title,keywords,doi,description")
 #* @serializer json
 function(req, res) {
@@ -39,16 +39,16 @@ function(req, res) {
     #
     # This block may seem redundant to have in every endpoint, but harder than
     # expected to abstract it away
-    tmp_xml <- tempfile(fileext = ".xml")
-    on.exit(unlink(tmp_xml), add = TRUE)
-    file.copy(uploaded_file, tmp_xml)
-    uploaded_file <- tmp_xml
+    tmp_json <- tempfile(fileext = ".json")
+    on.exit(unlink(tmp_json), add = TRUE)
+    file.copy(uploaded_file, tmp_json)
+    uploaded_file <- tmp_json
 
 
     # Read paper
     paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
-        return(error_response(res, 500, paper_obj$error))
+        return(error_response(res, 400, paper_obj$error))
     }
 
     # Parse fields parameter
@@ -63,7 +63,7 @@ function(req, res) {
 
 #* Get author table from a paper
 #* @post /authors
-#* @param file:file GROBID XML file to process
+#* @param file:file bibr JSON file to process
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -81,15 +81,15 @@ function(req, res) {
     #
     # This block may seem redundant to have in every endpoint, but harder than
     # expected to abstract it away
-    tmp_xml <- tempfile(fileext = ".xml")
-    on.exit(unlink(tmp_xml), add = TRUE)
-    file.copy(uploaded_file, tmp_xml)
-    uploaded_file <- tmp_xml
+    tmp_json <- tempfile(fileext = ".json")
+    on.exit(unlink(tmp_json), add = TRUE)
+    file.copy(uploaded_file, tmp_json)
+    uploaded_file <- tmp_json
 
 
     paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
-        return(error_response(res, 500, paper_obj$error))
+        return(error_response(res, 400, paper_obj$error))
     }
 
     paper_table(paper_obj$paper, "author")
@@ -97,7 +97,7 @@ function(req, res) {
 
 #* Get references from a paper
 #* @post /references
-#* @param file:file GROBID XML file to process
+#* @param file:file bibr JSON file to process
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -115,14 +115,14 @@ function(req, res) {
     # expected to abstract it away
     #
     # Save the uploaded file as a temporary file, then unlink after processing
-    tmp_xml <- tempfile(fileext = ".xml")
-    on.exit(unlink(tmp_xml), add = TRUE)
-    file.copy(uploaded_file, tmp_xml)
-    uploaded_file <- tmp_xml
+    tmp_json <- tempfile(fileext = ".json")
+    on.exit(unlink(tmp_json), add = TRUE)
+    file.copy(uploaded_file, tmp_json)
+    uploaded_file <- tmp_json
 
     paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
-        return(error_response(res, 500, paper_obj$error))
+        return(error_response(res, 400, paper_obj$error))
     }
 
     paper_obj$paper$bib
@@ -130,7 +130,7 @@ function(req, res) {
 
 #* Get cross-references from a paper
 #* @post /cross-references
-#* @param file:file GROBID XML file to process
+#* @param file:file bibr JSON file to process
 #* @serializer json
 function(req, res) {
     request_id <- uuid::UUIDgenerate()
@@ -148,14 +148,14 @@ function(req, res) {
     #
     # This block may seem redundant to have in every endpoint, but harder than
     # expected to abstract it away
-    tmp_xml <- tempfile(fileext = ".xml")
-    on.exit(unlink(tmp_xml), add = TRUE)
-    file.copy(uploaded_file, tmp_xml)
-    uploaded_file <- tmp_xml
+    tmp_json <- tempfile(fileext = ".json")
+    on.exit(unlink(tmp_json), add = TRUE)
+    file.copy(uploaded_file, tmp_json)
+    uploaded_file <- tmp_json
 
     paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
-        return(error_response(res, 500, paper_obj$error))
+        return(error_response(res, 400, paper_obj$error))
     }
 
     paper_obj$paper$xref
@@ -163,7 +163,7 @@ function(req, res) {
 
 #* Search text in a paper
 #* @post /search
-#* @param file:file GROBID XML file to process
+#* @param file:file bibr JSON file to process
 #* @param pattern the regex pattern to search for (required)
 #* @param section the section(s) to search in (optional)
 #* @param return the kind of text to return: "sentence", "paragraph", "div", "section", "match", or "paper_id" (optional, defaults to "sentence")
@@ -187,10 +187,10 @@ function(req, res) {
     #
     # This block may seem redundant to have in every endpoint, but harder than
     # expected to abstract it away
-    tmp_xml <- tempfile(fileext = ".xml")
-    on.exit(unlink(tmp_xml), add = TRUE)
-    file.copy(uploaded_file, tmp_xml)
-    uploaded_file <- tmp_xml
+    tmp_json <- tempfile(fileext = ".json")
+    on.exit(unlink(tmp_json), add = TRUE)
+    file.copy(uploaded_file, tmp_json)
+    uploaded_file <- tmp_json
 
     if (is.null(mp$pattern) || mp$pattern == "") {
         return(error_response(res, 400, "Query parameter 'pattern' is required"))
@@ -198,7 +198,7 @@ function(req, res) {
 
     paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
-        return(error_response(res, 500, paper_obj$error))
+        return(error_response(res, 400, paper_obj$error))
     }
 
     # Prepare optional parameters with defaults
@@ -219,7 +219,7 @@ function(req, res) {
 
 #* Run a specific module on the paper
 #* @post /module
-#* @param file:file GROBID XML file to process
+#* @param file:file bibr JSON file to process
 #* @param name:[string] Name of the module to run (required)
 #* @serializer json
 function(req, res) {
@@ -238,10 +238,10 @@ function(req, res) {
     #
     # This block may seem redundant to have in every endpoint, but harder than
     # expected to abstract it away
-    tmp_xml <- tempfile(fileext = ".xml")
-    on.exit(unlink(tmp_xml), add = TRUE)
-    file.copy(uploaded_file, tmp_xml)
-    uploaded_file <- tmp_xml
+    tmp_json <- tempfile(fileext = ".json")
+    on.exit(unlink(tmp_json), add = TRUE)
+    file.copy(uploaded_file, tmp_json)
+    uploaded_file <- tmp_json
 
     if (is.null(mp$name) || mp$name == "") {
         return(error_response(res, 400, "Module name parameter 'name' is required"))
@@ -253,7 +253,7 @@ function(req, res) {
 
     paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
-        return(error_response(res, 500, paper_obj$error))
+        return(error_response(res, 400, paper_obj$error))
     }
 
     # Dynamically source and run the module
@@ -280,7 +280,7 @@ function(req, res) {
 
 #* Get all relevant metadata from a paper, and run metacheck modules on it
 #* @post /check
-#* @param file:file GROBID XML file to process
+#* @param file:file bibr JSON file to process
 #* @param modules:[string] Comma-separated list of modules to run (optional, defaults to all)
 #* @serializer json
 function(req, res) {
@@ -299,10 +299,10 @@ function(req, res) {
     #
     # This block may seem redundant to have in every endpoint, but harder than
     # expected to abstract it away
-    tmp_xml <- tempfile(fileext = ".xml")
-    on.exit(unlink(tmp_xml), add = TRUE)
-    file.copy(uploaded_file, tmp_xml)
-    uploaded_file <- tmp_xml
+    tmp_json <- tempfile(fileext = ".json")
+    on.exit(unlink(tmp_json), add = TRUE)
+    file.copy(uploaded_file, tmp_json)
+    uploaded_file <- tmp_json
 
     # Parse modules parameter
     modules <- if (!is.null(mp$modules) && mp$modules != "") {
@@ -319,7 +319,7 @@ function(req, res) {
 
     paper_obj <- read_paper(uploaded_file, request_id)
     if (!paper_obj$success) {
-        return(error_response(res, 500, paper_obj$error))
+        return(error_response(res, 400, paper_obj$error))
     }
 
     logger::log_info("Paper processed successfully, extracting metadata: {request_id}")
