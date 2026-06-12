@@ -1,8 +1,9 @@
 # test-11-api.R
 # Tests for the metacheck Plumber API
 
-# GET test files
-test_xml <- system.file("grobid", "prereg.xml", package = "metacheck")
+# GET test files (bibr JSON — the API no longer accepts GROBID XML)
+test_json <- system.file("demos", "to_err_is_human.json", package = "metacheck")
+golden_json <- system.file("demos", "golden_bibr_10_2.json", package = "metacheck")
 
 # API base URL
 api_url <- "http://localhost:2005"
@@ -49,7 +50,7 @@ test_that("/paper/info returns paper info", {
   skip_if_no_api()
 
   resp <- httr2::request(paste0(api_url, "/paper/info")) |>
-    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_body_multipart(file = curl::form_file(test_json)) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
     httr2::req_perform()
 
@@ -67,7 +68,7 @@ test_that("/paper/authors returns author table", {
   skip_if_no_api()
 
   resp <- httr2::request(paste0(api_url, "/paper/authors")) |>
-    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_body_multipart(file = curl::form_file(test_json)) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
     httr2::req_perform()
 
@@ -83,7 +84,7 @@ test_that("/paper/references returns references", {
   skip_if_no_api()
 
   resp <- httr2::request(paste0(api_url, "/paper/references")) |>
-    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_body_multipart(file = curl::form_file(test_json)) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
     httr2::req_perform()
 
@@ -99,7 +100,7 @@ test_that("/paper/cross-references returns cross-references", {
   skip_if_no_api()
 
   resp <- httr2::request(paste0(api_url, "/paper/cross-references")) |>
-    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_body_multipart(file = curl::form_file(test_json)) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
     httr2::req_perform()
 
@@ -115,7 +116,7 @@ test_that("/paper/search finds text in paper", {
 
   resp <- httr2::request(paste0(api_url, "/paper/search")) |>
     httr2::req_body_multipart(
-      file = curl::form_file(test_xml),
+      file = curl::form_file(test_json),
       pattern = "pre-register"
     ) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
@@ -132,7 +133,7 @@ test_that("/paper/search requires query parameter", {
   skip_if_no_api()
 
   resp <- httr2::request(paste0(api_url, "/paper/search")) |>
-    httr2::req_body_multipart(file = curl::form_file(test_xml)) |>
+    httr2::req_body_multipart(file = curl::form_file(test_json)) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
     httr2::req_perform()
 
@@ -171,6 +172,35 @@ test_that("Endpoints return 400 for invalid XML", {
 
   expect_equal(httr2::resp_status(resp), 400)
 
+  content <- httr2::resp_body_json(resp)
+  expect_true("error" %in% names(content))
+})
+
+# Current bibr (10.2) golden file parses and checks
+test_that("/paper/info handles a 10.2-shaped bibr JSON", {
+  skip_if_no_api()
+
+  resp <- httr2::request(paste0(api_url, "/paper/info")) |>
+    httr2::req_body_multipart(file = curl::form_file(golden_json)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
+
+  expect_equal(httr2::resp_status(resp), 200)
+})
+
+# Malformed JSON is a client error with the real parse message
+test_that("/paper/info rejects malformed JSON with 400", {
+  skip_if_no_api()
+
+  bad <- tempfile(fileext = ".json")
+  writeLines("this is not json {", bad)
+
+  resp <- httr2::request(paste0(api_url, "/paper/info")) |>
+    httr2::req_body_multipart(file = curl::form_file(bad)) |>
+    httr2::req_error(is_error = \(resp) FALSE) |>
+    httr2::req_perform()
+
+  expect_equal(httr2::resp_status(resp), 400)
   content <- httr2::resp_body_json(resp)
   expect_true("error" %in% names(content))
 })

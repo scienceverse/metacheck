@@ -1,0 +1,111 @@
+{
+  "paper_id": "golden-demo",
+  "info": {
+    "bibr_version": "10.2.0",
+    "title": "To Err Is Human: A Golden Contract Demonstration",
+    "doi": "10.0000/golden.demo",
+    "keywords": [
+      "errors",
+      "statistics",
+      "contract-test"
+    ],
+    "description": "Synthetic fixture pinning the bibr JSON contract."
+  },
+  "author": [
+    {
+      "given": "Jane",
+      "surname": "Doe",
+      "orcid": "0000-0000-0000-0001"
+    },
+    {
+      "given": "Joe",
+      "surname": "Bloggs",
+      "orcid": null
+    }
+  ],
+  "text": [
+    {
+      "text": "We tested whether errors are human.",
+      "section": "intro",
+      "header": "Introduction",
+      "div": 1,
+      "p": 1,
+      "s": 1
+    },
+    {
+      "text": "The effect was significant, t(48) = 2.10, p = 0.041.",
+      "section": "results",
+      "header": "Results",
+      "div": 2,
+      "p": 1,
+      "s": 1
+    },
+    {
+      "text": "Data are available at https://osf.io/golden.",
+      "section": "results",
+      "header": "Results",
+      "div": 2,
+      "p": 2,
+      "s": 1
+    }
+  ],
+  "section": [
+    {
+      "section": "intro",
+      "header": "Introduction",
+      "div": 1
+    },
+    {
+      "section": "results",
+      "header": "Results",
+      "div": 2
+    }
+  ],
+  "url": [
+    {
+      "section": "results",
+      "div": 2,
+      "href": "https://osf.io/golden"
+    }
+  ],
+  "bib": [
+    {
+      "bib_id": 1,
+      "ref": "Doe, J. (2020). Prior work. Journal of Demos, 1(1), 1-10.",
+      "doi": "10.1000/xyz",
+      "title": "Prior work",
+      "year": 2020
+    }
+  ],
+  "xref": [
+    {
+      "bib_id": 1,
+      "text": "(Doe, 2020)",
+      "div": 1,
+      "p": 1,
+      "s": 1
+    }
+  ],
+  "figure": [
+    {
+      "figure_id": 1,
+      "caption": "A demonstration figure.",
+      "image": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    }
+  ],
+  "table": [],
+  "eq": [],
+  "bib_match": [],
+  "processing_warnings": [],
+  "_regions": [
+    {
+      "page": 1,
+      "bbox": [
+        0,
+        0,
+        100,
+        100
+      ]
+    }
+  ]
+}
