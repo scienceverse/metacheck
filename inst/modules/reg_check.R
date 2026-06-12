@@ -53,6 +53,9 @@ reg_check <- function(paper,
                       client = "ollama",
                       base_url = NULL,
                       dimensions = NULL) {
+  # paper <- psychsci[["09567976231223130"]] # to test (1 AsPredicted prereg)
+  # chained: paper |> module_run("prereg_check") |> module_run("reg_check")
+
   # get prereg info ----
   # from a chained prereg_check run, or by running prereg_check now
   prereg_info <- get_prev_outputs("prereg_check", "table")
@@ -103,7 +106,7 @@ reg_check <- function(paper,
 
     if (inherits(rc, "error")) {
       rc_error <- conditionMessage(rc)
-      warning("RegCheck comparison failed: ", rc_error, call. = FALSE)
+      message("RegCheck comparison failed: ", rc_error)
       break
     }
 
@@ -133,7 +136,7 @@ reg_check <- function(paper,
     return(resp)
   }
 
-  regcheck_table <- do.call(rbind, rc_list)
+  regcheck_table <- do.call(dplyr::bind_rows, rc_list)
 
   # traffic light ----
   # judgements are LLM-generated information for human review, never an
@@ -150,14 +153,12 @@ reg_check <- function(paper,
     paper_id = regcheck_table$paper_id,
     j = j
   ) |>
-    dplyr::group_by(paper_id) |>
     dplyr::summarise(
+      .by = "paper_id",
       regcheck_deviations = sum(j == "yes"),
       regcheck_consistent = sum(j == "no"),
-      regcheck_unclear = sum(j == "missing"),
-      .groups = "drop"
-    ) |>
-    as.data.frame()
+      regcheck_unclear = sum(j == "missing")
+    )
 
   # summary text ----
   summary_text <- sprintf(
@@ -175,9 +176,9 @@ reg_check <- function(paper,
   )
 
   judgement_label <- c(
-    yes = "⚠️ potential deviation",
-    no = "✅ consistent",
-    missing = "❓ insufficient information"
+    yes = "potential deviation",
+    no = "consistent",
+    missing = "insufficient information"
   )
 
   prereg_sections <- lapply(
@@ -214,9 +215,9 @@ reg_check <- function(paper,
   guidance <- c(
     "RegCheck was developed by Jamie Cummins (<https://github.com/JamieCummins/regcheck>); the local Ollama version is at <https://github.com/Matilda03/regcheck-fork>.",
     "For metascientific articles demonstrating the rate of deviations from preregistrations, see:",
-    format_ref(vandenAkker2024_rc),
+    format_ref(vandenAkker2024),
     "For educational material on how to report deviations from preregistrations, see:",
-    format_ref(Lakens2024_rc)
+    format_ref(Lakens2024)
   )
 
   report <- c(
@@ -254,9 +255,9 @@ prereg_row_text <- function(row) {
   paste(out, collapse = "\n\n")
 }
 
-# references ----
+# references
 
-vandenAkker2024_rc <- bibentry(
+vandenAkker2024 <- bibentry(
   bibtype = "Article",
   title = "The potential of preregistration in psychology: Assessing preregistration producibility and preregistration-study consistency",
   author = c(
@@ -286,7 +287,7 @@ vandenAkker2024_rc <- bibentry(
   doi = "10.1037/met0000687"
 )
 
-Lakens2024_rc <- bibentry(
+Lakens2024 <- bibentry(
   bibtype = "Article",
   author  = "Lakens, Daniël",
   year    = 2024,

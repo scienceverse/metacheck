@@ -108,7 +108,7 @@ test_that("regcheck failure returns an error light", {
 
   guid <- "5xysn"
   paper <- test_paper(url = paste0("https://osf.io/", guid))
-  expect_warning(
+  expect_message(
     mo <- module_run(paper, "reg_check"),
     "RegCheck comparison failed"
   )
