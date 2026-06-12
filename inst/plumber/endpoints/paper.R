@@ -364,6 +364,7 @@ function(req, res) {
     logger::log_info("Request completed successfully: {request_id}")
     # Return the aggregated report
     list(
+        metacheck_version = as.character(utils::packageVersion("metacheck")),
         paper_info = info_fields(
             paper_obj$paper,
             c("title", "keywords", "doi", "submission", "received", "accepted")
