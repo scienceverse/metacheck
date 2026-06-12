@@ -157,13 +157,13 @@ test_that("Endpoints return 400 when no file is uploaded", {
   expect_true("error" %in% names(content))
 })
 
-# Test error handling: invalid XML file
-test_that("Endpoints return 400 for invalid XML", {
+# Test error handling: invalid JSON file
+test_that("Endpoints return 400 for non-JSON file", {
   skip_if_no_api()
 
-  # Create a temporary non-XML file
+  # Create a temporary non-JSON file
   tmp_file <- withr::local_tempfile(fileext = ".txt")
-  writeLines("This is not XML", tmp_file)
+  writeLines("This is not JSON", tmp_file)
 
   resp <- httr2::request(paste0(api_url, "/paper/info")) |>
     httr2::req_body_multipart(file = curl::form_file(tmp_file)) |>
@@ -192,7 +192,7 @@ test_that("/paper/info handles a 10.2-shaped bibr JSON", {
 test_that("/paper/info rejects malformed JSON with 400", {
   skip_if_no_api()
 
-  bad <- tempfile(fileext = ".json")
+  bad <- withr::local_tempfile(fileext = ".json")
   writeLines("this is not json {", bad)
 
   resp <- httr2::request(paste0(api_url, "/paper/info")) |>

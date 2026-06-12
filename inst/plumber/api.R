@@ -15,11 +15,13 @@ library(metacheck)
 # google_gemini is the provider that works with AI-Studio keys.
 if (nzchar(Sys.getenv("GEMINI_API_KEY"))) {
   metacheck::llm_use(TRUE)
-  metacheck::llm_model(Sys.getenv("METACHECK_LLM_MODEL",
-                                  "google_gemini/gemini-3.1-flash-lite-preview"))
+  model_str <- Sys.getenv("METACHECK_LLM_MODEL", "")
+  metacheck::llm_model(if (nzchar(model_str)) model_str
+                       else "google_gemini/gemini-3.1-flash-lite-preview")
   # default llm_max_calls is 30 and llm() *errors* (not truncates) past it —
   # too low for big papers
-  metacheck::llm_max_calls(as.integer(Sys.getenv("METACHECK_LLM_MAX_CALLS", "200")))
+  max_calls_str <- Sys.getenv("METACHECK_LLM_MAX_CALLS", "")
+  metacheck::llm_max_calls(if (nzchar(max_calls_str)) as.integer(max_calls_str) else 200L)
   logger::log_info("LLM enabled: {metacheck::llm_model()}")
 } else {
   logger::log_info("GEMINI_API_KEY not set — LLM modules will use fallbacks")

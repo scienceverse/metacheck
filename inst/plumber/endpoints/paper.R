@@ -58,7 +58,7 @@ function(req, res) {
         c("title", "keywords", "doi", "description")
     }
 
-    info_table(paper_obj$paper, fields)
+    info_fields(paper_obj$paper, fields)
 }
 
 #* Get author table from a paper
@@ -364,7 +364,7 @@ function(req, res) {
     logger::log_info("Request completed successfully: {request_id}")
     # Return the aggregated report
     list(
-        paper_info = info_table(
+        paper_info = info_fields(
             paper_obj$paper,
             c("title", "keywords", "doi", "submission", "received", "accepted")
         ),
