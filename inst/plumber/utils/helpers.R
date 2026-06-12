@@ -44,6 +44,32 @@ error_response <- function(res, status, message) {
 }
 
 
+#' Extract named info fields from a paper object
+#'
+#' Replacement for the removed package-level `info_table()`. Uses
+#' `paper_table(paper, "info")` to get all info fields, then subsets to the
+#' requested `fields`, tolerating any that are absent in the data.
+#'
+#' @param paper a paper object (scivrs_paper)
+#' @param fields character vector of field names to return
+#' @return a one-row tibble with paper_id plus the requested fields (NA for
+#'   missing fields)
+info_fields <- function(paper, fields) {
+  tbl <- paper_table(paper, "info")
+
+  # Add any requested columns that are absent in the table (e.g. "submission",
+  # "received", "accepted" are not present in every bibr output)
+  missing_cols <- setdiff(fields, names(tbl))
+  for (col in missing_cols) {
+    tbl[[col]] <- NA_character_
+  }
+
+  # Always prepend paper_id; then keep only requested fields
+  keep <- intersect(c("paper_id", fields), names(tbl))
+  tbl[, keep, drop = FALSE]
+}
+
+
 #' Read a paper from a bibr JSON file
 #'
 #' @param file_path Path to bibr JSON file
