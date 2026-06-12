@@ -55,8 +55,9 @@
     pb <- pb(n, format = format)
   }
 
-  parallel <- TRUE # set to false during mocking capture
-  if (parallel) {
+  # set to false during mocking capture
+  mocking <- isTRUE(Sys.getenv("MOCK_CAPTURE") == "TRUE")
+  if (!mocking) {
     for (b in seq_along(batches)) {
       idx <- batches[[b]]
       valid_idx <- !sapply(reqs[idx], is.null) # skip errors

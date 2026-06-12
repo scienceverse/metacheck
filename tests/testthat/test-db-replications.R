@@ -20,14 +20,10 @@ test_that("FLoRA", {
   expect_equal(attr(f, "date"), d)
 })
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that("update", {
+  skip_if_quick()
+
   path <- FLoRA_update()
   expect_true(grepl("FLoRA\\.Rds$", path))
   expect_true(file.exists(path))
-})
-
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
+}, "mock")

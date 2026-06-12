@@ -21,14 +21,14 @@ test_that("repo_check offline", {
   expect_equal(mod_output$report, exp)
 })
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
 
 test_that("OSF view_only link", {
   osf_url <- "https://osf.io/t9j8e/? view_only=f171281f212f4435917b16a9e581a73b"
   paper <- test_paper(url = osf_url)
   obs <- module_run(paper, "repo_check")
-})
+
+  expect_in(obs$table$repo_url, osf_url)
+}, "mock")
 
 test_that("OSF no files", {
   # OSF but no R files
@@ -49,7 +49,7 @@ test_that("OSF no files", {
   expect_equal(mod_output$summary_table, exp)
   exp <- " 0 files "
   expect_true(grepl(exp, mod_output$summary_text))
-})
+}, "mock")
 
 test_that("no code files", {
   module <- "repo_check"
@@ -66,7 +66,7 @@ test_that("no code files", {
                     files_readme = 1,
                     files_zip = 1)
   expect_equal(mod_output$summary_table, exp)
-})
+}, "mock")
 
 test_that("OSF", {
   module <- "repo_check"
@@ -83,7 +83,7 @@ test_that("OSF", {
                     files_readme = 0,
                     files_zip = 1)
   expect_equal(mod_output$summary_table, exp)
-})
+}, "mock")
 
 test_that("OSF, github and rb", {
   # relevant text - info
@@ -106,7 +106,7 @@ test_that("OSF, github and rb", {
   expect_gte(mod_output$summary_table$files_code, 1)
   expect_gte(mod_output$summary_table$files_readme, 1)
   expect_gte(mod_output$summary_table$files_zip, 1)
-})
+}, "mock")
 
 test_that("Zenodo", {
   paper <- test_paper(url = "https://zenodo.org/records/17754445")
@@ -123,7 +123,7 @@ test_that("Zenodo", {
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$summary_table$files_n, c(1, 1))
   expect_equal(mod_output$summary_table$files_zip, c(1, 0))
-})
+}, "mock")
 
 # repo_check() + local_path ----
 
@@ -184,7 +184,7 @@ test_that("repo_check paper + local_path", {
 
   # OSF still has no README → repo_no_readme > 0 → yellow
   expect_equal(mo$traffic_light, "yellow")
-})
+}, "mock")
 
 
 # repo_check() + local_only ----
@@ -234,7 +234,7 @@ test_that("repo_check local_only = FALSE is the same as the default", {
   expect_equal(mo_default$summary_table, mo_explicit$summary_table)
   expect_equal(mo_default$table,         mo_explicit$table)
   expect_equal(mo_default$traffic_light, mo_explicit$traffic_light)
-})
+}, "mock")
 
 test_that("repo_check local_only = TRUE without local_path ignores multiple online repo types", {
   # paper has OSF, GitHub, and ResearchBox links — all should be skipped
@@ -246,8 +246,3 @@ test_that("repo_check local_only = TRUE without local_path ignores multiple onli
   expect_equal(mo$traffic_light, "na")
   expect_equal(mo$summary_table$repo_n, 0)
 })
-
-
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
-

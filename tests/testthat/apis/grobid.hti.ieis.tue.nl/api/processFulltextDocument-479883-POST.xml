@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main"></title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">E2F9A83B2D35B14F12EB57E0EE760B7C</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.2" ident="GROBID" when="2026-06-12T09:55+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">a91ee48</label>
+					<label type="parameters">startPage=2, endPage=3, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=true, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], sentenceSegmentation=false, flavor=null</label>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<abstract/>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p>expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Data Availability</head><p>Data and analysis code is available on GitHub from <ref type="url" target="https://github.com/Lak-">https://github.com/Lak-</ref>ens/to_err_is_human and from <ref type="url" target="https://researchbox.org/4377">https://researchbox.org/4377</ref>.</p><p>Data is also available from <ref type="url" target="https://osf.io/5tbm9">https://osf.io/5tbm9</ref> and code is also available from <ref type="url" target="https://osf.io/629bx">https://osf.io/629bx</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Power Analysis</head><p>We conducted a sensitivity power analysis 2 to determine that a Cohen's d of 0.50 is the smallest effect size that we could detect with N = 50 participants in each group and 80% power.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>We simulated the data using Faux (DeBruine 2025) (Table <ref type="table" target="#tab_0">1</ref>, Figure <ref type="figure" target="#fig_0">1</ref>). 2 The code we used for this analysis is as follows. pwr::pwr.t.test(n = 50, power = 0.8, alternative = "greater") On average researchers in the experimental (app) condition made fewer mistakes (M = 9.12) than researchers in the control (checklist) condition (M = 10.9), t(97.7) = 2.9, p = 0.005, d = 0.59.</p><p>On average researchers in the experimental condition found the app marginally significantly more useful (M = 5.06) than researchers in the control condition found the checklist (M = 4.5), t(97.2) = -1.96, p = 0.152.</p><p>There was no effect of experience on the reduction in errors when using the tool (p &gt; .05), as the correlation was non-significant (Figure <ref type="figure" target="#fig_1">2</ref>). </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Discussion</head><p>Since our data are simulated for demonstration purposes, of course they confirm our hypotheses. It seems automated tools can help prevent errors by providing researchers with feedback about potential mistakes, and researchers feel the app</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: The simulated data.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: The effect of experience on the reduction in errors.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table 1 :</head><label>1</label><figDesc>The average number of mistakes and usefulness score for the control and experimental conditions.</figDesc><table><row><cell>Condition</cell><cell cols="2">Mistakes Usefulness</cell></row><row><cell>control</cell><cell>10.90</cell><cell>4.50</cell></row><row><cell>experimental</cell><cell>9.12</cell><cell>5.06</cell></row></table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl/>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -62,9 +62,6 @@ test_that("email", {
 })
 
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that(".batch_query", {
   expect_true(is.function(metacheck:::.batch_query))
 
@@ -95,7 +92,4 @@ test_that(".batch_query", {
   expect_equal(obs[[1]]$status_code, 429)
   expect_equal(obs[[2]]$status_code, 404)
   expect_equal(obs[[3]]$status_code, 200)
-})
-
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
+}, "mock")

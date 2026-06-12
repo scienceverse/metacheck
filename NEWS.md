@@ -1,11 +1,13 @@
 # metacheck 0.0.1.9002
 
+* PDF conversion with `convert()` or `convert_grobid()` now defaults to the new GDPR-compliant server at TUE
 * Updates to the effect_size module
 * New `report_app()` to make a report with all default modules in a GUI by just uploading a PDF
+* Improvements to unit tests
 
 # metacheck 0.0.1.9001
 
-* `extract_eq` now catches "Hedges's g" (formaerly just "g") and returns values ordered by paper_id, text_id and group_id
+* `extract_eq` now catches "Hedges's g" (formerly just "g") and returns values ordered by paper_id, text_id and group_id
 * Updated `xml_read_grobid()` (an internal helper function for reading Grobid XMLs) to handle some stats better (e.g., "... g z =" is now read as "... gz = ")
 * Updated grobid XML read-in to better handle URLs with ? in the middle (less likely to cause an incorrect sentence split), and to remove no-content headers from the text table
 * Fixed some bibliography parsing problems with non-articles.

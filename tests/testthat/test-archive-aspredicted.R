@@ -45,9 +45,6 @@ test_that("aspredicted_links", {
   expect_true(any(grepl("/3kq9y", links$href)))
 })
 
-# httptest2::start_capturing()
-httptest2::use_mock_api()
-
 # skip online checking in aspredicted_* functions
 testthat::local_mocked_bindings(
   online = \(...) TRUE
@@ -60,7 +57,7 @@ test_that("aspredicted_info blind", {
   expect_equal(info$ap_url, ap_url)
   exp_auth <- "This pre-registration is currently anonymous to enable blind peer-review.\nIt has one author."
   expect_equal(info$AP_authors, exp_auth)
-})
+}, "mock")
 
 test_that("aspredicted_info pdf", {
   # single pdf
@@ -69,10 +66,10 @@ test_that("aspredicted_info pdf", {
   expect_equal(info$ap_url, ap_url)
   exp <- "How infants encode unexpected events: a SSVEP study"
   expect_equal(info$AP_title, exp)
-})
+}, "mock")
 
 test_that("aspredicted_info multiple", {
-  skip_if_quick()
+  skip_if_quick() # testing wait time
 
   # multiple links in a table
   ap_url <- data.frame(link = c(
@@ -85,7 +82,7 @@ test_that("aspredicted_info multiple", {
   })
   expect_true(time1[["elapsed"]] > 2)
   expect_true(time3[["elapsed"]] > 6)
-})
+}, "mock")
 
 test_that(".aspredicted_info proj", {
   ap_url <- "https://aspredicted.org/Y2F_6B7"
@@ -96,7 +93,7 @@ test_that(".aspredicted_info proj", {
   expect_equal(info$ap_url, ap_url)
   expect_equal(info$AP_title, title)
   expect_equal(info$AP_authors, authors)
-})
+}, "mock")
 
 
 test_that(".aspredicted_info pdf", {
@@ -112,7 +109,7 @@ test_that(".aspredicted_info pdf", {
   expect_equal(info$ap_url, ap_url)
   expect_equal(info$AP_title, title)
   expect_equal(info$AP_authors, authors)
-})
+}, "mock")
 
 test_that(".aspredicted_info blind", {
   ap_url <- "https://aspredicted.org/blind.php?x=nq4xa3"
@@ -137,7 +134,4 @@ test_that(".aspredicted_info blind", {
   expect_equal(info$AP_sample_size, "800 Mturkers.")
   expect_equal(info$AP_anything_else, "")
   expect_equal(info$AP_version, "2.00")
-})
-
-httptest2::stop_mocking()
-# httptest2::stop_capturing()
+}, "mock")

@@ -44,8 +44,6 @@ test_that("XML-grobid", {
 })
 
 test_that("XML-crossref", {
-  skip_api("api.labs.crossref.org")
-
   file_path <- demofile("xml")
   save_path <- withr::local_tempdir()
 
@@ -56,12 +54,9 @@ test_that("XML-crossref", {
   paper <- read(obs)
   expect_true(paper_validate(paper))
   expect_in("bib_match", names(paper))
-})
+}, "mock")
 
 test_that("PDF-auto", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   file_path <- demofile("pdf")
   save_path <- withr::local_tempdir()
 
@@ -71,12 +66,9 @@ test_that("PDF-auto", {
 
   paper <- read(obs)
   expect_true(paper_validate(paper))
-})
+}, "mock")
 
 test_that("PDF-grobid", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   file_path <- demofile("pdf")
   save_path <- withr::local_tempdir()
   method <- "grobid"
@@ -90,12 +82,9 @@ test_that("PDF-grobid", {
 
   paper <- read(obs)
   expect_true(paper_validate(paper))
-})
+}, "mock")
 
 test_that("PDF-XML-grobid keep_xml = TRUE", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   file_path <- demofile("pdf")
   save_path <- withr::local_tempdir()
   method <- "grobid"
@@ -109,12 +98,9 @@ test_that("PDF-XML-grobid keep_xml = TRUE", {
 
   paper <- read(obs)
   expect_true(paper_validate(paper))
-})
+}, "mock")
 
 test_that("PDF-XML-grobid keep_xml = FALSE", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   file_path <- demofile("pdf")
   save_path <- withr::local_tempdir()
   method <- "grobid"
@@ -128,7 +114,7 @@ test_that("PDF-XML-grobid keep_xml = FALSE", {
 
   paper <- read(obs)
   expect_true(paper_validate(paper))
-})
+}, "mock")
 
 test_that("PDF-bibr", {
   skip_api(bibr_url)

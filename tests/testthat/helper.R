@@ -40,10 +40,12 @@ load_app_env <- function(app_file) {
 
 # mock function
 test_that <- function(desc, code, mock = "none") {
+  Sys.setenv("MOCK_CAPTURE" = "FALSE")
   if (mock == "mock") {
     httptest2::use_mock_api()
     on.exit(httptest2::stop_mocking())
   } else if (mock == "capture") {
+    Sys.setenv("MOCK_CAPTURE" = "TRUE")
     httptest2::start_capturing()
     on.exit(httptest2::stop_capturing())
   }
@@ -52,8 +54,8 @@ test_that <- function(desc, code, mock = "none") {
   if (s > 4) message(s, ": ", desc)
 }
 
-grobid_url <- "http://localhost:8070"
-# grobid_url <- "https://grobid.metacheck.app"
+# grobid_url <- "http://localhost:8070"
+grobid_url <- "https://grobid.hti.ieis.tue.nl"
 # grobid_url <- "https://grobidorg-grobid.hf.space/"
 bibr_url <- "https://platform.metacheck.app"
 

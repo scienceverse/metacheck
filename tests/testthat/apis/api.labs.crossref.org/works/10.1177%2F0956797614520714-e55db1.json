@@ -108,6 +108,12 @@
                     {
                         "name": "Harvard Business School, Harvard University"
                     }
+                ],
+                "role": [
+                    {
+                        "role": "author",
+                        "vocabulary": "crossref"
+                    }
                 ]
             },
             {
@@ -117,6 +123,12 @@
                 "affiliation": [
                     {
                         "name": "Marshall School of Business, University of Southern California"
+                    }
+                ],
+                "role": [
+                    {
+                        "role": "author",
+                        "vocabulary": "crossref"
                     }
                 ]
             }
