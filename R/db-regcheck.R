@@ -288,14 +288,12 @@ regcheck_compare <- function(paper_text,
   }
   if (!is.null(registration_id)) fields$registration_id <- registration_id
   if (!is.null(dimensions)) {
-    # the multipart endpoint takes dimensions as CSV text
-    fields$dimensions <- paste(
-      c("dimension,definition",
-        sprintf('"%s","%s"',
-                gsub('"', '""', dimensions$dimension),
-                gsub('"', '""', dimensions$definition))),
-      collapse = "\n"
-    )
+    # the multipart endpoint takes dimensions as a JSON array of
+    # {dimension, definition} objects
+    fields$dimensions <- jsonlite::toJSON(
+      dimensions[, c("dimension", "definition")],
+      auto_unbox = TRUE
+    ) |> as.character()
   }
 
   httr2::request(paste0(url, "/api/v1/comparisons")) |>
