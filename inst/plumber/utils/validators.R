@@ -1,25 +1,21 @@
 # validators.R
-# Validation functions for plumber API
+# Validation functions for plumber API (bibr JSON input)
 
-#' Check if a file is a valid XML
+# Sized against bibr JSON *output* (text-heavy JSON from a 30MB PDF), not the
+# platform's PDF upload cap. The platform strips base64 figures before
+# POSTing, so real payloads stay in single-digit MB.
+MAX_UPLOAD_BYTES <- 50 * 1024 * 1024
+
+#' Validate file upload (bibr JSON)
 #'
-#' @param file_path Path to the file to check
-#' @return Logical indicating if file is a valid XML
-is_xml_file <- function(file_path) {
-  tryCatch(
-    {
-      xml2::read_xml(file_path)
-      TRUE
-    },
-    error = function(e) FALSE
-  )
-}
-
-#' Validate file upload (XML only)
+#' Cheap structural checks only — JSON validity is established by the single
+#' parse inside read_paper() (parsing a 50MB body twice in a single-threaded
+#' process is a real cost), and parse errors surface through error_response().
 #'
 #' @param file_path Path to the uploaded file
+#' @param max_bytes Maximum allowed file size in bytes
 #' @return List with valid (logical), and optionally status and message
-validate_file_upload <- function(file_path) {
+validate_file_upload <- function(file_path, max_bytes = MAX_UPLOAD_BYTES) {
   if (is.null(file_path)) {
     logger::log_warn("Request rejected: No file uploaded")
     return(list(
@@ -29,7 +25,6 @@ validate_file_upload <- function(file_path) {
     ))
   }
 
-  # Check if multiple files were uploaded
   if (length(file_path) > 1) {
     logger::log_warn("Request rejected: Multiple files uploaded")
     return(list(
@@ -48,26 +43,15 @@ validate_file_upload <- function(file_path) {
     ))
   }
 
-  if (file.size(file_path) > 3 * 1024 * 1024) { # 3MB limit
+  if (file.size(file_path) > max_bytes) {
     logger::log_warn("Request rejected: File too large ({file.size(file_path)} bytes)")
     return(list(
       valid = FALSE,
       status = 413,
-      message = "File too large. Maximum size is 3MB."
+      message = sprintf("File too large. Maximum size is %dMB.", max_bytes %/% (1024 * 1024))
     ))
   }
 
-  is_xml <- is_xml_file(file_path)
-
-  if (!is_xml) {
-    logger::log_warn("Request rejected: Invalid file type (not GROBID XML)")
-    return(list(
-      valid = FALSE,
-      status = 400,
-      message = "Uploaded file is not a valid GROBID XML file."
-    ))
-  }
-
-  logger::log_info("File uploaded: size={file.size(file_path)} bytes, type=XML")
+  logger::log_info("File uploaded: size={file.size(file_path)} bytes, type=JSON")
   list(valid = TRUE)
 }
