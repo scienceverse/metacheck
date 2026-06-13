@@ -328,38 +328,51 @@ function(req, res) {
     cross_references <- paper_obj$paper$xref
 
     logger::log_info("Running {length(modules)} module(s): {paste(modules, collapse = ', ')} - {request_id}")
-    # Run all requested modules using module_run
-    module_output <- lapply(modules, function(module_name) {
+    # Run each module once, keeping the FULL metacheck_module_output object: the
+    # HTML report renderer needs fields (e.g. $section) that the JSON-safe view
+    # below drops. A per-module failure is contained as a synthetic fail object,
+    # so one bad module sinks neither the JSON response nor the rendered report.
+    full_output <- lapply(modules, function(module_name) {
         tryCatch(
-            {
-                result <- module_run(paper_obj$paper, module_name)
-                # Convert metacheck_module_output to plain list for JSON serialization
-                list(
-                    module = result$module,
-                    title = result$title,
-                    table = result$table,
-                    summary_table = result$summary_table,
-                    summary_text = result$summary_text,
-                    report = result$report,
-                    traffic_light = result$traffic_light
-                )
-            },
+            module_run(paper_obj$paper, module_name),
             error = function(e) {
-                list(
-                    module = module_name,
-                    title = module_name,
-                    table = NULL,
-                    summary_table = NULL,
-                    summary_text = "Error running module",
-                    report = paste0("Error running module '", module_name, "': ", e$message),
-                    traffic_light = "fail"
+                structure(
+                    list(
+                        module = module_name,
+                        title = module_name,
+                        table = NULL,
+                        summary_table = NULL,
+                        summary_text = "Error running module",
+                        report = paste0("Error running module '", module_name, "': ", e$message),
+                        traffic_light = "fail",
+                        section = "general"
+                    ),
+                    class = "metacheck_module_output"
                 )
             }
         )
     })
+    names(full_output) <- modules
 
-    # Set module names as keys
-    names(module_output) <- modules
+    # JSON-safe view for the API response: plain lists with only the
+    # serialisable fields (metacheck_module_output objects don't round-trip).
+    module_output <- lapply(full_output, function(result) {
+        list(
+            module = result$module,
+            title = result$title,
+            table = result$table,
+            summary_table = result$summary_table,
+            summary_text = result$summary_text,
+            report = result$report,
+            traffic_light = result$traffic_light
+        )
+    })
+
+    # metacheck's native HTML report, rendered from the modules just run (NO
+    # re-run, no extra LLM calls). Best-effort: "" when Quarto can't render it,
+    # which the platform treats as "no HTML available" (the JSON check is
+    # unaffected).
+    report_html <- render_report_html(full_output, paper_obj$paper, request_id)
 
     logger::log_info("Request completed successfully: {request_id}")
     # Return the aggregated report
@@ -373,6 +386,7 @@ function(req, res) {
         references = references,
         cross_references = cross_references,
         modules_run = modules,
-        results = module_output
+        results = module_output,
+        report_html = report_html
     )
 }
