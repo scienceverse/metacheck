@@ -270,7 +270,9 @@ function(req, res) {
     tryCatch(
         {
             result <- get(mp$name)(paper_obj$paper)
-            result
+            # Strip S3 classes jsonlite can't encode (e.g. `ellmer_output`
+            # columns from LLM modules) before the response is serialized.
+            json_safe(result)
         },
         error = function(e) {
             error_response(res, 500, paste0("Error running module '", mp$name, "': ", e$message))
@@ -356,8 +358,11 @@ function(req, res) {
 
     # JSON-safe view for the API response: plain lists with only the
     # serialisable fields (metacheck_module_output objects don't round-trip).
+    # json_safe() also strips S3 classes jsonlite can't encode (e.g. the
+    # `ellmer_output` columns LLM modules embed in their tables) — without it
+    # the whole response aborts with "No method asJSON S3 class: ellmer_output".
     module_output <- lapply(full_output, function(result) {
-        list(
+        json_safe(list(
             module = result$module,
             title = result$title,
             table = result$table,
@@ -365,7 +370,7 @@ function(req, res) {
             summary_text = result$summary_text,
             report = result$report,
             traffic_light = result$traffic_light
-        )
+        ))
     })
 
     # metacheck's native HTML report, rendered from the modules just run (NO
