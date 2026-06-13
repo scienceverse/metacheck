@@ -18,7 +18,7 @@ options_tab <- tabItem(
       "grobid_server_choice",
       "PDF Conversion Server:",
       choiceNames = list(
-        "Use GDPR compliant GROBID 0.8.2 server at Eindhoven University of Technology",
+        "Use GDPR compliant GROBID 0.9.0 server at Eindhoven University of Technology",
         "Use Full GROBID 0.9.0 via HuggingFace (USA)",
         tagList(
           "Use local GROBID server via Docker — see ",
