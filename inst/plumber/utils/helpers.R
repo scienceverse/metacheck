@@ -9,6 +9,43 @@ nz <- function(x) {
   if (is.null(x) || length(x) == 0) NULL else x
 }
 
+# Classes the JSON serializer (jsonlite, via plumber's `@serializer json`)
+# knows how to encode. Anything else must be stripped before it reaches the
+# response or serialization aborts the whole request.
+.JSON_SAFE_CLASSES <- c(
+  "logical", "integer", "numeric", "double", "character",
+  "factor", "Date", "POSIXct", "POSIXt", "data.frame", "list"
+)
+
+#' Make a value safe for JSON serialization
+#'
+#' Module outputs can embed values carrying S3 classes jsonlite has no `asJSON`
+#' method for — notably `ellmer_output`, attached by ellmer's structured LLM
+#' extraction to columns inside a module's `table`/`summary_table`. metacheck
+#' keeps these classes for R-side display (DT/`report_table`), but serializing
+#' them aborts the request with "No method asJSON S3 class: ellmer_output".
+#'
+#' This walks the structure and drops any class outside `.JSON_SAFE_CLASSES`
+#' down to its underlying type (e.g. an `ellmer_output` character vector becomes
+#' a plain character vector), recursing into data frames, list columns, and
+#' nested lists. Base types, factors, dates, and data frames pass through
+#' unchanged.
+#'
+#' @param x Any value destined for a JSON response
+#' @return The same value with unserializable S3 classes stripped
+json_safe <- function(x) {
+  if (is.data.frame(x)) {
+    x[] <- lapply(x, json_safe)
+    return(x)
+  }
+  if (length(setdiff(class(x), .JSON_SAFE_CLASSES))) {
+    x <- unclass(x)
+    if (!is.null(attr(x, "class"))) x <- as.character(x)
+  }
+  if (is.list(x)) x <- lapply(x, json_safe)
+  x
+}
+
 #' Extract uploaded file path from multipart form data
 #'
 #' @param mp Parsed multipart form data
