@@ -125,3 +125,33 @@ test_that("stat_effect_size", {
   expect_equal(mod_output$table$eta_coherence[[1]], "indeterminate")
 })
 
+test_that("stat_effect_size emits no warnings for a paper with no stats (#308)", {
+  paper <- test_paper("There are no stats.")
+  expect_no_warning(mod_output <- module_run(paper, "stat_effect_size"))
+  expect_equal(mod_output$traffic_light, "na")
+  expect_equal(nrow(mod_output$table), 0)
+})
+
+test_that("stat_effect_size reports the sample sizes behind a d coherence match", {
+  module <- "stat_effect_size"
+
+  # equal-n: t(48) = 2.00 implies d = 0.566 for n1 = n2 = 25 (N = 50)
+  mod_output <- module_run(test_paper("t(48) = 2.00, d = 0.57."), module)
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "independent_equal_n")
+  expect_equal(mod_output$table$d_implied_n[[1]], "n1 = n2 = 25, N = 50")
+  expect_match(mod_output$table$d_coherence_note[[1]], "n1 = n2 = 25, N = 50", fixed = TRUE)
+
+  # unequal-n: closest split is reported as n1, n2 and N
+  mod_output <- module_run(test_paper("t(38) = 2.10, d = 0.68."), module)
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "independent_unequal_n_range")
+  expect_equal(mod_output$table$d_implied_n[[1]], "n1 = 16, n2 = 24, N = 40")
+  expect_match(mod_output$table$d_coherence_note[[1]], "n1 = 16, n2 = 24, N = 40", fixed = TRUE)
+
+  # paired dz: n recorded (n = df + 1) but not added to the note
+  mod_output <- module_run(test_paper("t(23) = 2.73, d = 0.56."), module)
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "paired_dz")
+  expect_equal(mod_output$table$d_implied_n[[1]], "n = 24")
+  expect_equal(mod_output$table$d_coherence_note[[1]],
+               "Match under paired-samples dz assumption.")
+})
+

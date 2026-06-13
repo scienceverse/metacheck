@@ -137,11 +137,7 @@ stat_effect_size <- function(paper) {
       } else if (grepl("^f2?$", raw_label) || grepl("cohen", raw_label)) {
         "cohens_f"
       } else if (grepl("ω", raw_label) || grepl("omega", raw_label)) {
-        # Omega squared (partial or not) depends on the total sample size N,
-        # which cannot be recovered from F and the dfs without knowing the
-        # design (one-way vs factorial vs repeated-measures). Unlike partial
-        # eta squared, it is therefore not verifiable here and is treated as
-        # indeterminate.
+        # Omega squared (partial or not) depends on the total sample size N which cannot yet be recovered. 
         "non_checkable"
       } else if ((grepl("η", raw_label) || grepl("eta", raw_label)) &&
                  (grepl("partial", raw_label) || grepl("p", raw_label))) {
@@ -159,74 +155,10 @@ stat_effect_size <- function(paper) {
     dplyr::bind_rows(vals)
   }
 
-  expand_multi_f_rows <- function(df) {
-    if (nrow(df) == 0) {
-      return(df)
-    }
-
-    rows <- lapply(seq_len(nrow(df)), function(i) {
-      row <- df[i, , drop = FALSE]
-      if (is.na(row$test) || row$test != "F-test") {
-        return(row)
-      }
-
-      f_stats   <- parse_f_stats(row$test_text)
-      eta_stats <- parse_eta_stats(row$es)
-
-      n_f   <- nrow(f_stats)
-      n_eta <- nrow(eta_stats)
-      if (n_f > 1 && n_f == n_eta) {
-        expanded <- lapply(seq_len(n_f), function(j) {
-          new_row <- row
-          new_row$test_text <- f_stats$match_text[j]
-          new_row$es        <- eta_stats$eta_text[j]
-          new_row
-        })
-        return(dplyr::bind_rows(expanded))
-      }
-
-      row
-    })
-
-    dplyr::bind_rows(rows)
-  }
-
-  expand_multi_t_rows <- function(df) {
-    if (nrow(df) == 0) {
-      return(df)
-    }
-
-    rows <- lapply(seq_len(nrow(df)), function(i) {
-      row <- df[i, , drop = FALSE]
-      if (is.na(row$test) || row$test != "t-test") {
-        return(row)
-      }
-
-      t_stats <- parse_t_stats(row$test_text)
-      d_stats <- parse_d_stats(row$es)
-
-      n_t <- nrow(t_stats)
-      n_d <- nrow(d_stats)
-      if (n_t > 1 && n_t == n_d) {
-        expanded <- lapply(seq_len(n_t), function(j) {
-          new_row <- row
-          new_row$test_text <- t_stats$match_text[j]
-          new_row$es <- d_stats$d_text[j]
-          new_row
-        })
-        return(dplyr::bind_rows(expanded))
-      }
-
-      row
-    })
-
-    dplyr::bind_rows(rows)
-  }
-
 
   # tol = 0.01 rationale: for 2dp reporting, rounding of reported d contributes ±0.005 and
   # propagated rounding of t (dd/dt = d/t) adds at most ~0.003 at small n — combined max ~0.008.
-  classify_d_coherence <- function(test, test_text, es_text, sentence_text = NULL, tol = 0.01) {
+  classify_d_coherence <- function(test, test_text, es_text, tol = 0.01) {
     out <- list(
       d_reported = NA_character_,
       d_reported_text = NA_character_,
@@ -237,6 +169,7 @@ stat_effect_size <- function(paper) {
       d_implied_indep_equal_n = NA_character_,
       d_implied_indep_unequal_min = NA_character_,
       d_implied_indep_unequal_max = NA_character_,
+      d_implied_n = NA_character_,
       d_coherence = NA_character_,
       d_coherence_assumption = NA_character_,
       d_coherence_note = NA_character_
@@ -252,69 +185,6 @@ stat_effect_size <- function(paper) {
       out$d_coherence <- "indeterminate"
       out$d_coherence_assumption <- "none"
       out$d_coherence_note <- "No parseable t(df)=value found."
-      return(out)
-    }
-
-    if (nrow(t_stats) > 1) {
-      if (is.null(sentence_text)) {
-        out$d_coherence <- "indeterminate"
-        out$d_coherence_assumption <- "none"
-        out$d_coherence_note <- "Multiple t(df)=value tests in one sentence."
-        return(out)
-      }
-
-      # Each t-test owns the first d that appears after it, before the next t-test
-      t_patt <- "\\bt\\s*\\(\\s*([0-9]+(?:\\.[0-9]+)?)\\s*\\)\\s*=\\s*([-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?)"
-      d_patt <- paste0(
-        "(?i)\\b(cohen(?:'|')?s\\s+d\\s*z|cohen(?:'|')?s\\s+d|d\\s*z|d|ds)\\b\\s*",
-        "[=≈<>≤≥]{1,3}\\s*",
-        "([-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?)"
-      )
-      t_m   <- gregexpr(t_patt, sentence_text, perl = TRUE)[[1]]
-      d_m   <- gregexpr(d_patt, sentence_text, perl = TRUE)[[1]]
-      t_pos <- as.integer(t_m)
-      t_len <- attr(t_m, "match.length")
-      d_pos <- if (d_m[1] == -1L) integer(0) else as.integer(d_m)
-      d_len <- if (length(d_pos) == 0) integer(0) else attr(d_m, "match.length")
-
-      n_t     <- length(t_pos)
-      results <- vector("list", n_t)
-
-      for (j in seq_len(n_t)) {
-        window_start <- t_pos[j] + t_len[j]
-        window_end   <- if (j < n_t) t_pos[j + 1L] - 1L else nchar(sentence_text)
-        d_idx        <- which(d_pos >= window_start & d_pos <= window_end)
-
-        if (length(d_idx) == 0) {
-          results[[j]] <- out  # all-NA template; set coherence fields only
-          results[[j]]$d_coherence           <- "indeterminate"
-          results[[j]]$d_coherence_assumption <- "none"
-          results[[j]]$d_coherence_note       <- "No d found after this t-test."
-        } else {
-          t_text_j     <- substr(sentence_text, t_pos[j],        t_pos[j]        + t_len[j]        - 1L)
-          d_text_j     <- substr(sentence_text, d_pos[d_idx[1]], d_pos[d_idx[1]] + d_len[d_idx[1]] - 1L)
-          results[[j]] <- classify_d_coherence(test = test, test_text = t_text_j, es_text = d_text_j, tol = tol)
-        }
-      }
-
-      paste_num <- function(field) {
-        vals <- sapply(results, function(r) r[[field]])
-        vals <- vals[!is.na(vals)]
-        if (length(vals) == 0) NA_character_ else paste(vals, collapse = "; ")
-      }
-
-      out$d_coherence                 <- paste(sapply(results, `[[`, "d_coherence"),            collapse = "; ")
-      out$d_coherence_assumption      <- paste(sapply(results, `[[`, "d_coherence_assumption"), collapse = "; ")
-      out$d_coherence_note            <- paste(sapply(results, `[[`, "d_coherence_note"),        collapse = "; ")
-      out$d_reported                  <- paste_num("d_reported")
-      out$d_reported_text             <- paste_num("d_reported_text")
-      out$t_value                     <- paste_num("t_value")
-      out$df                          <- paste_num("df")
-      out$d_implied_paired_dz         <- paste_num("d_implied_paired_dz")
-      out$d_implied_paired_drm_r05    <- paste_num("d_implied_paired_drm_r05")
-      out$d_implied_indep_equal_n     <- paste_num("d_implied_indep_equal_n")
-      out$d_implied_indep_unequal_min <- paste_num("d_implied_indep_unequal_min")
-      out$d_implied_indep_unequal_max <- paste_num("d_implied_indep_unequal_max")
       return(out)
     }
 
@@ -391,17 +261,37 @@ stat_effect_size <- function(paper) {
     }
 
     if (paired_match) {
+      # Within-subjects design: n = df + 1. This is obvious from the df, so it
+      # is recorded but not spelled out in the note.
       out$d_coherence <- "match_under_assumptions"
       out$d_coherence_assumption <- "paired_dz"
+      out$d_implied_n <- sprintf("n = %d", as.integer(df + 1))
       out$d_coherence_note <- "Match under paired-samples dz assumption."
     } else if (equal_match) {
+      # Two equal-sized independent groups: N = df + 2, so n1 = n2 = (df + 2) / 2.
       out$d_coherence <- "match_under_assumptions"
       out$d_coherence_assumption <- "independent_equal_n"
-      out$d_coherence_note <- "Match under independent-samples equal-n assumption."
+      n_total_eq <- df + 2
+      n_each <- n_total_eq / 2
+      out$d_implied_n <- sprintf("n1 = n2 = %s, N = %s", format(n_each), format(n_total_eq))
+      out$d_coherence_note <- sprintf(
+        "Match under independent-samples equal-n assumption (n1 = n2 = %s, N = %s).",
+        format(n_each), format(n_total_eq)
+      )
     } else if (unequal_match) {
+      # Report the single group-size split whose implied d is closest to the
+      # reported d, so users can manually check the assumed sample sizes.
       out$d_coherence <- "match_under_assumptions"
       out$d_coherence_assumption <- "independent_unequal_n_range"
-      out$d_coherence_note <- "Match under independent-samples unequal-n range assumption."
+      matched_d <- d_stats$abs_d[
+        d_stats$abs_d >= (d_unequal_min - tol) & d_stats$abs_d <= (d_unequal_max + tol)
+      ][1]
+      best <- which.min(abs(d_vals - matched_d))
+      out$d_implied_n <- sprintf("n1 = %d, n2 = %d, N = %d", n1[best], n2[best], n_total)
+      out$d_coherence_note <- sprintf(
+        "Match under independent-samples unequal-n range assumption (closest split n1 = %d, n2 = %d, N = %d).",
+        n1[best], n2[best], n_total
+      )
     } else {
       out$d_coherence <- "no_match"
       out$d_coherence_assumption <- "none"
@@ -416,7 +306,7 @@ stat_effect_size <- function(paper) {
 
   # tol = 0.01 rationale: for 2dp reporting, rounding of reported ηp²/ωp² contributes ±0.005 and
   # propagated rounding of F (dη/dF = df1·df2/(df1·F+df2)²) adds at most ~0.001 — combined max ~0.006.
-  classify_f_coherence <- function(test, test_text, es_text, sentence_text = NULL, tol = 0.01) {
+  classify_f_coherence <- function(test, test_text, es_text, tol = 0.01) {
     out <- list(
       f_reported = NA_character_,
       f_reported_text = NA_character_,
@@ -438,75 +328,6 @@ stat_effect_size <- function(paper) {
       out$eta_coherence <- "indeterminate"
       out$eta_coherence_assumption <- "none"
       out$eta_coherence_note <- "No parseable F(df1,df2)=value found."
-      return(out)
-    }
-
-    if (nrow(f_stats) > 1) {
-      if (is.null(sentence_text)) {
-        out$eta_coherence <- "indeterminate"
-        out$eta_coherence_assumption <- "none"
-        out$eta_coherence_note <- "Multiple F(df1,df2)=value tests in one sentence."
-        return(out)
-      }
-
-      f_patt <- "\\bF\\s*\\(\\s*([0-9]+(?:\\.[0-9]+)?)\\s*,\\s*([0-9]+(?:\\.[0-9]+)?)\\s*\\)\\s*=\\s*([-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?)"
-      eta_potentials <- c(
-        "η\\s*p*\\s*(2|²)", "(P|p)artial\\s+η\\s*(2|²)",
-        "(O|o)mega\\s*(2|²)?", "ω\\s*(2|²)?",
-        "(C|c)ohen(‘|’)?s\\s+f", "f\\s*(2|²)?",
-        "(C|c)ohen(‘|’)?s\\s+d", "d", "β",
-        "η\\s*G\\s*(2|²)", "R\\s*(2|²)", "R", "r",
-        "ω\\s*p\\s*(2|²)?"
-      )
-      eta_patt <- paste0(
-        "(?<![a-zA-Z0-9_])",
-        "(", paste(eta_potentials, collapse = "|"), ")",
-        "\\s*[=≈<>≤≥]{1,3}\\s*",
-        "([-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?)"
-      )
-
-      f_m   <- gregexpr(f_patt,   sentence_text, perl = TRUE)[[1]]
-      eta_m <- gregexpr(eta_patt, sentence_text, perl = TRUE)[[1]]
-
-      f_pos   <- as.integer(f_m);   f_len   <- attr(f_m,   "match.length")
-      eta_pos <- if (eta_m[1] == -1L) integer(0) else as.integer(eta_m)
-      eta_len <- if (length(eta_pos) == 0) integer(0) else attr(eta_m, "match.length")
-
-      n_f <- length(f_pos)
-      results <- vector("list", n_f)
-
-      for (j in seq_len(n_f)) {
-        window_start <- f_pos[j] + f_len[j]
-        window_end   <- if (j < n_f) f_pos[j + 1L] - 1L else nchar(sentence_text)
-        eta_idx      <- which(eta_pos >= window_start & eta_pos <= window_end)
-
-        f_text_j <- substr(sentence_text, f_pos[j], f_pos[j] + f_len[j] - 1L)
-        if (length(eta_idx) == 0) {
-          results[[j]] <- classify_f_coherence(test = test, test_text = f_text_j, es_text = NA_character_, tol = tol)
-          results[[j]]$eta_coherence           <- "indeterminate"
-          results[[j]]$eta_coherence_assumption <- "none"
-          results[[j]]$eta_coherence_note       <- "No effect size found after this F-test."
-        } else {
-          eta_text_j <- substr(sentence_text, eta_pos[eta_idx[1]], eta_pos[eta_idx[1]] + eta_len[eta_idx[1]] - 1L)
-          results[[j]] <- classify_f_coherence(test = test, test_text = f_text_j, es_text = eta_text_j, tol = tol)
-        }
-      }
-
-      paste_num <- function(field) {
-        vals <- sapply(results, function(r) r[[field]])
-        vals <- vals[!is.na(vals)]
-        if (length(vals) == 0) NA_character_ else paste(vals, collapse = "; ")
-      }
-
-      out$eta_coherence            <- paste(sapply(results, `[[`, "eta_coherence"),            collapse = "; ")
-      out$eta_coherence_assumption <- paste(sapply(results, `[[`, "eta_coherence_assumption"), collapse = "; ")
-      out$eta_coherence_note       <- paste(sapply(results, `[[`, "eta_coherence_note"),        collapse = "; ")
-      out$f_reported               <- paste_num("f_reported")
-      out$f_reported_text          <- paste_num("f_reported_text")
-      out$df1                      <- paste_num("df1")
-      out$df2                      <- paste_num("df2")
-      out$eta_implied_partial      <- paste_num("eta_implied_partial")
-      out$omega_implied_partial    <- paste_num("omega_implied_partial")
       return(out)
     }
 
@@ -622,139 +443,117 @@ stat_effect_size <- function(paper) {
     out
   }
 
-  # Narrow down to sentences that could contain stats
-  stat_sentences <- paper |>
-    text_search("=") |> # sentences with an equal sign
-    text_search("[0-9]") # sentences with numbers
-
-  # t-tests ----
-
-  ## detect tests ----
-  test_regex <- paste0(
-    "\\bt\\s*", # word border and t
-    "(\\(\\s*\\d+(\\.\\d+)?\\s*\\))?", # optional df
-    "\\s*=\\s*", # comparator
-    "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
-  )
-  text_found_test <- stat_sentences |>
-    text_search(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(paper_id, text, section_id, paragraph_id, text_id)
-
-  ## detect relevant effect sizes ----
-  potentials <- c(
-    "cohen('|\u2019)?s\\s+d",
-    "cohen('|\u2019)?s\\s+d\\s*z",
-    "d", "d\\s*z", "ds",
-    "hedges?('|\u2019)?s?\\s+g",
-    "g", "b", "r", "β",
-    "ξ"
-  )
-
-  es_regex <- paste0(
-    "(?<![a-zA-Z0-9_])", # not preceded by ASCII word char (handles Unicode symbols like xi, beta)
-    "(", paste(potentials, collapse = "|"), ")",
-    "(?![a-zA-Z0-9_])", # not followed by ASCII word char
-    "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
-    "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
-  )
-
+  # detect tests and effect sizes ----
+  # extract_eq() already pulls every "name <comparator> value" out of the text,
+  # so tests (t, F) and effect sizes are read from there rather than re-scanned.
   by <- c("paper_id", "section_id", "paragraph_id", "text_id")
-  text_found_es <- text_search(text_found_test, es_regex,
-    return = "match", perl = TRUE
-  ) |>
-    dplyr::summarise(
-      es = paste(text, collapse = "; "),
-      .by = dplyr::all_of(by)
+  text_tbl <- paper |>
+    text_search("[0-9]") |>
+    dplyr::select(dplyr::all_of(c(by, "text")))
+
+  eq <- extract_eq(paper)
+
+  # label each equation row as a test, an effect size, or neither. The specific
+  # effect-size type (d vs eta) is re-derived from the text by the coherence
+  # checks below, so here we only need "test or effect size?". F-tests are only
+  # recognised with a two-integer (df1, df2), matching the validated detection.
+  label_lhs <- function(lhs, df) {
+    if (grepl("^t$", lhs)) return("t-test")
+    if (grepl("^F$", lhs)) {
+      return(if (!is.na(df) && grepl("^\\(\\s*[0-9]+\\s*,\\s*[0-9]+\\s*\\)$", df)) {
+        "F-test"
+      } else {
+        NA_character_
+      })
+    }
+    raw <- gsub("[[:space:]]+", "", tolower(lhs))
+    raw <- gsub("²", "2", raw) # squared symbol to 2
+    is_es <-
+      grepl("^(cohen.{0,3})?d(_?(z|s|av|rm))?$", raw) || # Cohen's d / dz / ds / dav / drm
+      grepl("^(hedge.{0,3})?g$", raw) ||                 # Hedges' g
+      grepl("^f2?$", raw) || grepl("cohen", raw) ||      # Cohen's f
+      grepl("ω|omega", raw) ||                           # omega
+      grepl("η|eta", raw) ||                             # eta family
+      grepl("^ξ$|^β$|^b$|^r$", raw)                      # xi, beta, b, r
+    if (is_es) "es" else NA_character_ # p, df, and anything else: ignore
+  }
+
+  # build one row per test from the equations in a single sentence.
+  # When a sentence lists several tests and the same number of effect sizes
+  # (e.g. "t(23)=2.7; t(23)=3.0, d=.56; d=.61"), they are paired by position.
+  # Otherwise every test carries all the effect sizes in the sentence.
+  build_rows <- function(rows) {
+    is_test <- rows$kind %in% c("t-test", "F-test")
+    is_es   <- !is.na(rows$kind) & !is_test
+    tests   <- rows[is_test, , drop = FALSE]
+    es      <- rows[is_es, , drop = FALSE]
+    if (nrow(tests) == 0) return(NULL)
+
+    df_part <- ifelse(is.na(tests$df), "", tests$df)
+    test_text <- paste0(tests$lhs, df_part, " ", tests$comp, " ", tests$rhs)
+    es_text   <- if (nrow(es) == 0) {
+      character(0)
+    } else {
+      paste0(es$lhs, " ", es$comp, " ", es$rhs)
+    }
+
+    paired <- nrow(tests) > 1 && nrow(tests) == length(es_text)
+    es_col <- if (paired) {
+      es_text
+    } else if (length(es_text) == 0) {
+      rep(NA_character_, nrow(tests))
+    } else {
+      rep(paste(es_text, collapse = "; "), nrow(tests))
+    }
+
+    data.frame(
+      paper_id  = tests$paper_id,
+      text_id   = tests$text_id,
+      test      = tests$kind,
+      test_text = test_text,
+      es        = es_col
     )
+  }
 
-  ## add exact text ----
-  test_match <- text_search(text_found_test, test_regex,
-    return = "match",
-    perl = TRUE, ignore.case = FALSE
-  ) |>
-    dplyr::summarise(
-      test_text = paste(text, collapse = "; "),
-      .by = dplyr::all_of(by)
-    )
-  t_table <- text_found_test |>
-    dplyr::left_join(text_found_es, by = by) |>
-    dplyr::left_join(test_match, by = by)
-  t_table$test <- "t-test"
+  if (nrow(eq) == 0) {
+    table <- data.frame()
+  } else {
+    eq$kind <- mapply(label_lhs, eq$lhs, eq$df, USE.NAMES = FALSE)
+    # process each sentence in turn (split preserves within-sentence row order),
+    # then restore the original paper/sentence order, which extract_eq() and
+    # split() would otherwise reorder by paper_id.
+    paper_order <- unique(text_tbl$paper_id)
+    table <- eq |>
+      split(~ paper_id + text_id, drop = TRUE) |>
+      lapply(build_rows) |>
+      dplyr::bind_rows() |>
+      dplyr::left_join(text_tbl, by = c("paper_id", "text_id"))
+    table <- table[order(match(table$paper_id, paper_order), table$text_id), , drop = FALSE]
+    rownames(table) <- NULL
+  }
 
-  # F-tests -----
 
-  ## detect tests ----
-  test_regex <- paste0(
-    "\\bF\\s*", # word border and F
-    "\\(\\s*\\d+\\s*,\\s*\\d+\\s*\\)", # df (must be 2 integers)
-    "\\s*=\\s*", # comparator
-    "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
-  )
-
-  # sentences with a relevant test
-  text_found_test <- stat_sentences |>
-    text_search(test_regex, perl = TRUE, ignore.case = FALSE) |>
-    dplyr::select(paper_id, text, section_id, paragraph_id, text_id)
-
-  ## detect relevant effect sizes ----
-  potentials <- c(
-    "(C|c)ohen('|\u2019)?s\\s+f",
-    "f\\s*(2|²)?",
-    "η\\s*p*\\s*(2|²)",
-    "(P|p)artial\\s+η\\s*(2|²)",
-    "(O|o)mega\\s*(2|²)?",
-    "ω\\s*(2|²)?",
-    "(C|c)ohen('|\u2019)?s\\s+d",
-    "d",
-    "β",
-    "η\\s*G\\s*(2|²)",
-    "R\\s*(2|²)",
-    "R", "r",
-    "ω\\s*p\\s*(2|²)?"
-  )
-
-  es_regex <- paste0(
-    "(?<![a-zA-Z0-9_])", # not preceded by ASCII word char (handles Unicode symbols like η, ω, ξ)
-    "(", paste(potentials, collapse = "|"), ")",
-    "\\s*[=≈<>\u2264\u2265]{1,3}\\s*", # comparators
-    "[-+]?(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?" # number
-  )
-
-  text_found_es <- text_search(text_found_test, es_regex,
-    return = "match", perl = TRUE
-  ) |>
-    dplyr::summarise(
-      es = paste(text, collapse = "; "),
-      .by = dplyr::all_of(by)
-    )
-
-  ## add exact text ----
-  test_match <- text_search(text_found_test, test_regex,
-    return = "match",
-    perl = TRUE, ignore.case = FALSE
-  ) |>
-    dplyr::summarise(
-      test_text = paste(text, collapse = "; "),
-      .by = dplyr::all_of(by)
-    )
-  f_table <- text_found_test |>
-    dplyr::left_join(text_found_es, by = by) |>
-    dplyr::left_join(test_match, by = by)
-  f_table$test <- "F-test"
-
-  # combine tests ----
-  table <- dplyr::bind_rows(t_table, f_table)
-
-  table <- expand_multi_t_rows(table)
-  table <- expand_multi_f_rows(table)
+  # handle no detected t-tests or F-tests ----
+  # Return early so the coherence pipeline below (which assumes coherence
+  # columns exist) never runs on an empty table.
+  if (nrow(table) == 0) {
+    msg <- "No t-tests or F-tests were detected."
+    return(list(
+      table = data.frame(),
+      summary_table = data.frame(paper_id = paper$paper_id),
+      na_replace = 0,
+      traffic_light = "na",
+      summary_text = msg,
+      report = msg
+    ))
+  }
 
   # Coherence checks for effect sizes in t-tests and F-tests ----
   coherence <- lapply(seq_len(nrow(table)), function(i) {
     classify_d_coherence(
       test = table$test[i],
       test_text = table$test_text[i],
-      es_text = table$es[i],
-      sentence_text = table$text[i]
+      es_text = table$es[i]
     )
   })
 
@@ -762,8 +561,7 @@ stat_effect_size <- function(paper) {
     classify_f_coherence(
       test = table$test[i],
       test_text = table$test_text[i],
-      es_text = table$es[i],
-      sentence_text = table$text[i]
+      es_text = table$es[i]
     )
   })
 
