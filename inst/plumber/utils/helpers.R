@@ -100,3 +100,45 @@ read_paper <- function(file_path, request_id) {
   logger::log_info("Paper read successfully: {request_id}")
   list(success = TRUE, paper = result)
 }
+
+
+#' Render metacheck's native HTML report from already-run module outputs
+#'
+#' Reuses the module outputs `/check` just computed (NO module re-run, no extra
+#' LLM calls): builds the report qmd with `report_qmd()` and renders it to a
+#' single self-contained HTML file with Quarto. The report template sets
+#' `embed-resources: true`, so the output is one standalone file.
+#'
+#' Best-effort by contract: any failure (Quarto missing, render error, an
+#' unexpected paper/module shape) returns "" so the JSON `/check` response is
+#' never affected. The caller includes whatever this returns as `report_html`.
+#'
+#' @param module_output named list of `metacheck_module_output` objects
+#' @param paper the paper object (`scivrs_paper`)
+#' @param request_id request id, for logging
+#' @return the rendered HTML as a single string, or "" if rendering failed
+render_report_html <- function(module_output, paper, request_id = "") {
+  tryCatch(
+    {
+      report_text <- metacheck::report_qmd(module_output, paper)
+
+      qmd <- tempfile(fileext = ".qmd")
+      html <- sub("\\.qmd$", ".html", qmd)
+      on.exit(unlink(c(qmd, html)), add = TRUE)
+      writeLines(report_text, qmd)
+
+      # quarto writes the .html next to the input .qmd (both in tempdir)
+      quarto::quarto_render(input = qmd, output_format = "html", quiet = TRUE)
+
+      if (!file.exists(html)) {
+        logger::log_warn("report html not produced ({request_id})")
+        return("")
+      }
+      paste(readLines(html, warn = FALSE), collapse = "\n")
+    },
+    error = function(e) {
+      logger::log_warn("report render failed ({request_id}): {conditionMessage(e)}")
+      ""
+    }
+  )
+}
