@@ -20,8 +20,8 @@
 #' `paper |> module_run("prereg_check") |> module_run("reg_check")`. If you
 #' run `reg_check` on its own, it runs `prereg_check` for you first.
 #'
-#' By default the comparison uses a locally running
-#' [RegCheck fork](https://github.com/Matilda03/regcheck-fork) with Ollama
+#' By default the comparison uses the locally running
+#' RegCheck server bundled inside metacheck with Ollama
 #' (`client = "ollama"`, `http://localhost:8000`), so no text leaves your
 #' machine. Set `client` to "groq", "openai" or "deepseek" to use the hosted
 #' RegCheck app instead; note that this sends the full paper and
@@ -53,7 +53,6 @@ reg_check <- function(paper,
                       client = "ollama",
                       base_url = NULL,
                       dimensions = NULL) {
-  # paper <- psychsci[["09567976231223130"]] # to test (1 AsPredicted prereg)
   # chained: paper |> module_run("prereg_check") |> module_run("reg_check")
 
   # get prereg info ----
@@ -106,8 +105,9 @@ reg_check <- function(paper,
 
     if (inherits(rc, "error")) {
       rc_error <- conditionMessage(rc)
-      message("RegCheck comparison failed: ", rc_error)
-      break
+      message("RegCheck comparison failed for preregistration ",
+              prereg_info$id[[i]], ": ", rc_error)
+      next
     }
 
     if (nrow(rc) > 0) {
@@ -162,7 +162,7 @@ reg_check <- function(paper,
 
   # summary text ----
   summary_text <- sprintf(
-    "RegCheck compared the paper with %d preregistration%s on %d dimension%s, and flagged %d potential deviation%s (%d dimension%s could not be assessed).",
+    "RegCheck compared the paper with %d preregistration%s on %d dimension%s, and flagged %d potential deviation%s (%d dimension%s not specified in the preregistration).",
     n_prereg_compared, plural(n_prereg_compared),
     nrow(regcheck_table), plural(nrow(regcheck_table)),
     n_dev, plural(n_dev),
@@ -176,10 +176,12 @@ reg_check <- function(paper,
   )
 
   judgement_label <- c(
-    yes = "potential deviation",
+    yes = "deviation",
     no = "consistent",
-    missing = "insufficient information"
+    missing = "unclear"
   )
+
+  strip_refs <- function(x) gsub("\\s*\\[[A-Z_0-9,; ]+\\]", "", x)
 
   prereg_sections <- lapply(
     unique(regcheck_table$prereg_id), \(rid) {
@@ -191,14 +193,14 @@ reg_check <- function(paper,
       judgement_table <- data.frame(
         dimension = sub$dimension,
         judgement = unname(labels),
-        explanation = sub$deviation_information
+        explanation = strip_refs(sub$deviation_information)
       )
       evidence_table <- data.frame(
-        dimension = sub$dimension,
-        paper_summary = sub$paper_summary,
-        prereg_summary = sub$prereg_summary,
-        paper_quotes = sub$paper_quotes,
-        prereg_quotes = sub$prereg_quotes
+        dimension    = sub$dimension,
+        paper_summary   = strip_refs(sub$paper_summary),
+        prereg_summary  = strip_refs(sub$prereg_summary),
+        paper_quotes    = strip_refs(sub$paper_quotes),
+        prereg_quotes   = strip_refs(sub$prereg_quotes)
       )
       c(
         sprintf("Comparison with preregistration %s:", rid),
@@ -213,7 +215,7 @@ reg_check <- function(paper,
 
   ## guidance ----
   guidance <- c(
-    "RegCheck was developed by Jamie Cummins (<https://github.com/JamieCummins/regcheck>); the local Ollama version is at <https://github.com/Matilda03/regcheck-fork>.",
+    "RegCheck was developed by Jamie Cummins (<https://github.com/JamieCummins/regcheck>); the local Ollama server bundled in metacheck is inspired by the Ollama integration work of Matilda Gustafsson (<https://github.com/Matilda03>).",
     "For metascientific articles demonstrating the rate of deviations from preregistrations, see:",
     format_ref(vandenAkker2024),
     "For educational material on how to report deviations from preregistrations, see:",

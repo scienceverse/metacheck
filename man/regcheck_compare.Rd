@@ -10,7 +10,7 @@ regcheck_compare(
   registration_id = NULL,
   client = c("ollama", "groq", "openai", "deepseek"),
   base_url = NULL,
-  api_token = Sys.getenv("REGCHECK_API_TOKEN"),
+  api_token = NULL,
   dimensions = NULL,
   reasoning_effort = "medium",
   poll_interval = 5,
@@ -60,10 +60,9 @@ exclusion criteria) and judge for each dimension whether the paper deviates
 from the registration.
 }
 \details{
-By default this uses the locally running
-\href{https://github.com/Matilda03/regcheck-fork}{RegCheck fork} with Ollama
-(\code{client = "ollama"}, \verb{http://localhost:8000}), so no text leaves your
-machine. Set \code{client} to \code{"groq"}, \code{"openai"} or \code{"deepseek"} to use the
+By default this uses the locally running RegCheck server bundled in metacheck
+with Ollama (\code{client = "ollama"}, \verb{http://localhost:8000}), so no text
+leaves your machine. Set \code{client} to \code{"groq"}, \code{"openai"} or \code{"deepseek"} to use the
 hosted RegCheck app instead; note that this sends the full paper and
 registration text to that server and the corresponding LLM provider.
 

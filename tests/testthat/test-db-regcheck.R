@@ -53,9 +53,9 @@ test_that("regcheck_base_url defaults", {
 })
 
 test_that("regcheck_compare input validation", {
-  # no token
+  # no token for a hosted client that requires one
   withr::local_envvar(REGCHECK_API_TOKEN = "")
-  expect_error(regcheck_compare("paper text", "prereg text"),
+  expect_error(regcheck_compare("paper text", "prereg text", client = "groq"),
                "REGCHECK_API_TOKEN")
 
   withr::local_envvar(REGCHECK_API_TOKEN = "test-token")
@@ -93,6 +93,74 @@ test_that(".regcheck_sanitize makes text latin-1 safe", {
   # latin-1 text (including accents) passes through unchanged
   expect_equal(metacheck:::.regcheck_sanitize("Daniël Lakens"),
                "Daniël Lakens")
+})
+
+test_that("unknown client gives a friendly error", {
+  withr::local_envvar(REGCHECK_API_TOKEN = "tok")
+  expect_error(
+    regcheck_compare("paper text", "prereg text", client = "gpt5"),
+    regexp = "groq|openai|deepseek",
+    ignore.case = TRUE
+  )
+  expect_error(
+    regcheck_compare("paper text", "prereg text", client = "gpt5"),
+    regexp = "regcheck",
+    ignore.case = TRUE
+  )
+})
+
+test_that("missing token for hosted client gives a friendly error", {
+  withr::local_envvar(REGCHECK_API_TOKEN = "")
+  expect_error(
+    regcheck_compare("paper text", "prereg text", client = "groq"),
+    regexp = "REGCHECK_API_TOKEN"
+  )
+  expect_error(
+    regcheck_compare("paper text", "prereg text", client = "groq"),
+    regexp = "edit_r_environ"
+  )
+})
+
+test_that("401 for ollama points to regcheck_start_local", {
+  withr::local_envvar(REGCHECK_API_TOKEN = "bad-token")
+  testthat::local_mocked_bindings(
+    req_perform = function(...) {
+      rlang::abort("HTTP 401 Unauthorized", class = c("httr2_http_401", "httr2_http", "error"))
+    },
+    .package = "httr2"
+  )
+  expect_error(
+    regcheck_compare("paper text", "prereg text", client = "ollama"),
+    regexp = "local RegCheck server rejected"
+  )
+})
+
+test_that("401 for hosted client points to .Renviron", {
+  withr::local_envvar(REGCHECK_API_TOKEN = "bad-token")
+  testthat::local_mocked_bindings(
+    req_perform = function(...) {
+      rlang::abort("HTTP 401 Unauthorized", class = c("httr2_http_401", "httr2_http", "error"))
+    },
+    .package = "httr2"
+  )
+  expect_error(
+    regcheck_compare("paper text", "prereg text", client = "groq"),
+    regexp = "REGCHECK_API_TOKEN"
+  )
+})
+
+test_that("connection refused for ollama points to regcheck_start_local", {
+  withr::local_envvar(REGCHECK_API_TOKEN = "tok")
+  testthat::local_mocked_bindings(
+    req_perform = function(...) {
+      rlang::abort("Could not connect to server", class = c("httr2_failure", "error"))
+    },
+    .package = "httr2"
+  )
+  expect_error(
+    regcheck_compare("paper text", "prereg text", client = "ollama"),
+    regexp = "regcheck_start_local"
+  )
 })
 
 test_that("regcheck_tidy", {

@@ -17,7 +17,7 @@ the base URL with any trailing slash removed
 \description{
 Returns the base URL to use for a given RegCheck client. An explicit
 \code{base_url} always wins, then the \code{REGCHECK_BASE_URL} environment variable,
-then a client-specific default: the local RegCheck fork
+then a client-specific default: the bundled local RegCheck server
 (\verb{http://localhost:8000}) for \code{"ollama"}, and the hosted RegCheck app for
 the API-based clients (\code{"groq"}, \code{"openai"}, \code{"deepseek"}).
 }
