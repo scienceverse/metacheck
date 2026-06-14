@@ -176,7 +176,7 @@ without fetching it twice.
 
 The same comparison can run entirely on your own machine. Metacheck bundles
 a minimal local RegCheck server (inspired by the Ollama integration work by
-[Matilda Gustafsson](https://github.com/Matilda03)) together with
+[Matilda Fogato](https://github.com/Matilda03/regcheck-fork)) together with
 [Ollama](https://ollama.com). No text leaves your machine, which makes it
 suitable for confidential work and GDPR-sensitive contexts.
 
@@ -225,7 +225,7 @@ To generate a report from a local run, use the same `report()` call with
 ```{r}
 paper <- demopaper()
 
-regcheck_start_local()
+regcheck_start_local(model = "qwen3.5:4b")
 
 report(paper,
        modules     = c("prereg_check", "reg_check"),
@@ -417,4 +417,4 @@ or the most careful judgements, the hosted option is preferable.
 * Lakens, D. (2024). When and How to Deviate From a Preregistration.
   *Collabra: Psychology*, 10(1), 117094. doi: 10.1525/collabra.117094
 * RegCheck: Cummins, J., <https://github.com/JamieCummins/regcheck>
-* Local Ollama integration (inspiration): Gustafsson, M., <https://github.com/Matilda03>
+* Local Ollama integration (inspiration): Fogato, M., <https://github.com/Matilda03/regcheck-fork>
