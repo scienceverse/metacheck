@@ -1,0 +1,40 @@
+<div class="modal fade" id="mobileNoticeModal" tabindex="-1" aria-labelledby="mobileNoticeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="mobileNoticeLabel">Heads up</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        RegCheck is optimized for desktop. On mobile, layouts may appear misaligned and some features may be harder to use. For the best experience, switch to a desktop or laptop.
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (() => {
+    const STORAGE_KEY = "regcheckMobileNoticeSeen";
+    const shouldShow = () => {
+      const seen = localStorage.getItem(STORAGE_KEY);
+      if (seen === "true") return false;
+      return window.matchMedia("(max-width: 767px)").matches;
+    };
+    const showModal = () => {
+      const modalEl = document.getElementById("mobileNoticeModal");
+      if (!modalEl || !window.bootstrap || !window.bootstrap.Modal) return;
+      const modal = new window.bootstrap.Modal(modalEl, { backdrop: "static" });
+      modal.show();
+      modalEl.addEventListener("hidden.bs.modal", () => {
+        localStorage.setItem(STORAGE_KEY, "true");
+      }, { once: true });
+    };
+    window.addEventListener("load", () => {
+      if (shouldShow()) {
+        showModal();
+      }
+    });
+  })();
+</script>

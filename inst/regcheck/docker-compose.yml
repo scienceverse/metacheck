@@ -1,0 +1,13 @@
+services:
+  regcheck:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - REGCHECK_API_TOKEN=metacheck-local
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+      - OLLAMA_EMBEDDING_MODEL=nomic-embed-text-v2-moe
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en" class="h-100" data-bs-theme="auto">
+<head>
+    {% set static_version = '20240519' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% include '_partials/head_assets.html' %}
+    <title>RegCheck — Batch Clinical Comparison</title>
+    <meta name="description" content="Batch clinical trial comparison with RegCheck.">
+    <meta name="robots" content="noindex,nofollow">
+    <style>
+        .batch-form-card {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+{% set nav_active = 'tools' %}
+<body class="d-flex text-center text-bg-dark page-shell">
+  <div class="cover-container d-flex w-100 min-vh-100 p-3 mx-auto flex-column">
+    <header class="mb-auto">
+      {% include '_partials/navbar.html' %}
+    </header>
+
+    <main class="px-3 py-4 text-start">
+      <div class="batch-form-card">
+        <h2 class="mb-1">Batch Clinical Comparison</h2>
+        <p class="text-secondary mb-4">
+          Upload multiple PDFs. An NCT ID is extracted from each file automatically,
+          the trial is fetched from ClinicalTrials.gov, and a comparison is run per
+          paper. Download all results as a single ZIP when the batch finishes.
+        </p>
+
+        <form method="post" action="/batch" enctype="multipart/form-data" id="batch-form">
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="papers-input">Paper PDFs</label>
+            <input type="file" name="papers" id="papers-input"
+                   multiple accept=".pdf" class="form-control" required>
+            <div class="form-text" id="file-count-text">No files selected.</div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="client-select">LLM Provider</label>
+              <select name="client" id="client-select" class="form-select">
+                <option value="groq">Groq</option>
+                <option value="openai">OpenAI</option>
+                <option value="deepseek">DeepSeek</option>
+                <option value="ollama">Ollama (local)</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="parser-select">PDF Parser</label>
+              <select name="parser_choice" id="parser-select" class="form-select">
+                <option value="grobid">GROBID</option>
+                <option value="dpt2">DPT2</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4" id="reasoning-group">
+            <label class="form-label fw-semibold" for="reasoning-select">Reasoning Effort</label>
+            <select name="reasoning_effort" id="reasoning-select" class="form-select">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+            <div class="form-text">Applies to OpenAI models only.</div>
+          </div>
+
+          <div class="mb-4 form-check text-start">
+            <input type="checkbox" name="append_previous_output" value="yes"
+                   class="form-check-input" id="append-prev">
+            <label class="form-check-label" for="append-prev">
+              Pass previous dimension results into context (append output)
+            </label>
+          </div>
+
+          <input type="hidden" name="dimensions_data" id="dimensions-data" value="[]">
+
+          <div class="d-flex align-items-center gap-3">
+            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+              Start Batch
+            </button>
+            <span class="text-secondary small" id="dim-status">Loading dimensions…</span>
+          </div>
+
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}?v={{ static_version }}"></script>
+  <script>
+    var dimensionsLoaded = false;
+    var submitBtn = document.getElementById('submit-btn');
+
+    // Clinical dimensions are injected server-side (mirrors the main comparison form).
+    var defaultDimensionSets = {{ default_dimension_sets | default({}) | tojson }};
+
+    (function loadDimensions() {
+      var dims = defaultDimensionSets.clinical_trials || [];
+      if (dims.length > 0) {
+        document.getElementById('dimensions-data').value = JSON.stringify(dims);
+        document.getElementById('dim-status').textContent = dims.length + ' dimensions loaded.';
+        dimensionsLoaded = true;
+        submitBtn.disabled = false;
+      } else {
+        document.getElementById('dim-status').textContent = 'Failed to load dimensions — please refresh.';
+      }
+    })();
+
+    // Show file count
+    document.getElementById('papers-input').addEventListener('change', function() {
+      var n = this.files.length;
+      document.getElementById('file-count-text').textContent =
+        n === 0 ? 'No files selected.' : n + ' file' + (n === 1 ? '' : 's') + ' selected.';
+    });
+
+    // Show reasoning effort only for OpenAI
+    var clientSelect = document.getElementById('client-select');
+    var reasoningGroup = document.getElementById('reasoning-group');
+    function updateReasoningVisibility() {
+      reasoningGroup.style.display = clientSelect.value === 'openai' ? '' : 'none';
+    }
+    clientSelect.addEventListener('change', updateReasoningVisibility);
+    updateReasoningVisibility();
+
+    // Block submit if dimensions failed to load
+    document.getElementById('batch-form').addEventListener('submit', function(e) {
+      if (!dimensionsLoaded) {
+        e.preventDefault();
+        alert('Dimensions have not loaded yet. Please refresh and try again.');
+      }
+    });
+  </script>
+</body>
+</html>

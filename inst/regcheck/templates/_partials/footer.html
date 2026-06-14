@@ -1,0 +1,19 @@
+<footer class="mt-auto text-white-50 custom-footer-padding">
+  <p class="mb-2">
+    Powered by the Parity Engine<br>
+    Psychology of Digitalisation, University of Bern, 2026
+  </p>
+  <div class="footer-funding" aria-label="Funding acknowledgement">
+    <img
+      class="footer-funding__logo"
+      src="{{ url_for('static', path='assets/snsf_logo_neg_e.png') }}?v={{ static_version }}"
+      alt="Swiss National Science Foundation logo"
+    >
+    <span>Funded by the Swiss National Science Foundation (SNSF)</span>
+  </div>
+  <p class="mb-0">
+    <a class="footer-link" href="{{ url_for('faq') }}">FAQ</a>
+    <span aria-hidden="true"> · </span>
+    <a class="footer-link" href="{{ url_for('privacy') }}">Privacy Policy</a>
+  </p>
+</footer>

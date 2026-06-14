@@ -3,8 +3,8 @@
 # RegCheck (https://github.com/JamieCummins/regcheck) compares a study
 # registration with the corresponding published paper using an LLM, one
 # comparison per "dimension" (e.g. sample size, hypotheses, exclusion
-# criteria). A fork (https://github.com/Matilda03/regcheck-fork) adds fully
-# local inference via Ollama, so comparisons can run without any data leaving
+# criteria). A minimal server is bundled in inst/regcheck/, enabling fully
+# local inference via Ollama so comparisons can run without any data leaving
 # your machine.
 
 # default server locations per client
@@ -15,7 +15,7 @@
 #'
 #' Returns the base URL to use for a given RegCheck client. An explicit
 #' `base_url` always wins, then the `REGCHECK_BASE_URL` environment variable,
-#' then a client-specific default: the local RegCheck fork
+#' then a client-specific default: the bundled local RegCheck server
 #' (`http://localhost:8000`) for `"ollama"`, and the hosted RegCheck app for
 #' the API-based clients (`"groq"`, `"openai"`, `"deepseek"`).
 #'
@@ -47,10 +47,9 @@ regcheck_base_url <- function(client = "ollama", base_url = NULL) {
 #' from the registration.
 #'
 #' @details
-#' By default this uses the locally running
-#' [RegCheck fork](https://github.com/Matilda03/regcheck-fork) with Ollama
-#' (`client = "ollama"`, `http://localhost:8000`), so no text leaves your
-#' machine. Set `client` to `"groq"`, `"openai"` or `"deepseek"` to use the
+#' By default this uses the locally running RegCheck server bundled in metacheck
+#' with Ollama (`client = "ollama"`, `http://localhost:8000`), so no text
+#' leaves your machine. Set `client` to `"groq"`, `"openai"` or `"deepseek"` to use the
 #' hosted RegCheck app instead; note that this sends the full paper and
 #' registration text to that server and the corresponding LLM provider.
 #'
@@ -102,17 +101,41 @@ regcheck_compare <- function(paper_text,
                              registration_id = NULL,
                              client = c("ollama", "groq", "openai", "deepseek"),
                              base_url = NULL,
-                             api_token = Sys.getenv("REGCHECK_API_TOKEN"),
+                             api_token = NULL,
                              dimensions = NULL,
                              reasoning_effort = "medium",
                              poll_interval = 5,
                              timeout = 3600) {
-  client <- match.arg(client)
+  client <- tryCatch(
+    match.arg(client),
+    error = function(e) {
+      stop(
+        "Unknown RegCheck client '", client, "'. ",
+        "Use one of: \"ollama\" (local server), \"groq\", \"openai\", or \"deepseek\".\n",
+        "See vignette(\"regcheck\", package = \"metacheck\") for setup instructions.",
+        call. = FALSE
+      )
+    }
+  )
 
-  # validate inputs ----
+  # resolve API token ----
+  # for local ollama use, fall back to the bundled default so users never have
+  # to configure a token manually; for hosted clients a real token is required
+  if (is.null(api_token) || !nzchar(api_token)) {
+    api_token <- Sys.getenv("REGCHECK_API_TOKEN")
+  }
   if (!nzchar(api_token)) {
-    stop("RegCheck requires an API token. Set REGCHECK_API_TOKEN in your ",
-         ".Renviron (see ?regcheck_compare).", call. = FALSE)
+    if (identical(client, "ollama")) {
+      api_token <- .regcheck_default_token
+    } else {
+      stop(
+        "RegCheck requires an API token for the '", client, "' client.\n",
+        "Set REGCHECK_API_TOKEN in your .Renviron:\n",
+        "  usethis::edit_r_environ()  # add: REGCHECK_API_TOKEN=\"your_token\"\n",
+        "See vignette(\"regcheck\", package = \"metacheck\") for details.",
+        call. = FALSE
+      )
+    }
   }
   if (!is.character(paper_text) || length(paper_text) != 1 ||
       !nzchar(trimws(paper_text))) {
@@ -239,8 +262,31 @@ regcheck_compare <- function(paper_text,
 
   resp <- tryCatch(
     httr2::req_perform(req),
+    httr2_http_401 = function(e) {
+      if (identical(client, "ollama")) {
+        stop("The local RegCheck server rejected the API token.\n",
+             "This should not happen with regcheck_start_local() — ",
+             "try stopping and restarting the server with regcheck_start_local().",
+             call. = FALSE)
+      }
+      stop(
+        "The RegCheck server rejected your API token (401 Unauthorized).\n",
+        "Check that REGCHECK_API_TOKEN in your .Renviron is correct.\n",
+        "See vignette(\"regcheck\", package = \"metacheck\") for details.",
+        call. = FALSE
+      )
+    },
     httr2_http_404 = function(e) NULL,
-    httr2_http_405 = function(e) NULL
+    httr2_http_405 = function(e) NULL,
+    httr2_failure = function(e) {
+      if (identical(client, "ollama")) {
+        stop("Could not connect to the local RegCheck server at ", url, ".\n",
+             "Start it first with regcheck_start_local(), then try again.\n",
+             "See vignette(\"regcheck\", package = \"metacheck\") for setup instructions.",
+             call. = FALSE)
+      }
+      stop(conditionMessage(e), call. = FALSE)
+    }
   )
 
   if (is.null(resp)) {

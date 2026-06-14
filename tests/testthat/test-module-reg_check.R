@@ -100,7 +100,49 @@ test_that("duplicate prereg links are compared only once", {
   expect_equal(unique(mo$table$prereg_id), "5xysn")
 }, "mock")
 
-test_that("regcheck failure returns an error light", {
+local({
+  # source the module to access module-local helpers like prereg_row_text
+  mod_env <- new.env(parent = asNamespace("metacheck"))
+  source(system.file("modules", "reg_check.R", package = "metacheck"),
+         local = mod_env)
+
+  test_that("prereg_row_text flattens a prereg row to text", {
+    row <- data.frame(
+      paper_id = "p1",
+      id = "abc123",
+      link = "https://osf.io/abc123",
+      ia_url = "https://web.archive.org/abc",
+      hypotheses = "We predict A > B.",
+      sample_size = "N = 100"
+    )
+    txt <- mod_env$prereg_row_text(row)
+
+    # paper_id, link, ia_url are excluded
+    expect_false(grepl("paper_id", txt))
+    expect_false(grepl("osf.io", txt))
+    expect_false(grepl("web.archive", txt))
+
+    # content fields appear with their name as a header
+    expect_match(txt, "hypotheses")
+    expect_match(txt, "We predict A > B\\.")
+    expect_match(txt, "sample_size")
+    expect_match(txt, "N = 100")
+  })
+
+  test_that("prereg_row_text skips NA and empty fields", {
+    row <- data.frame(
+      paper_id = "p1",
+      link = NA_character_,
+      ia_url = "",
+      hypotheses = NA_character_,
+      sample_size = "   "
+    )
+    txt <- mod_env$prereg_row_text(row)
+    expect_equal(txt, "")
+  })
+})
+
+test_that("all comparisons failing returns an error light", {
   testthat::local_mocked_bindings(
     regcheck_compare = function(...) stop("RegCheck server unreachable"),
     .package = "metacheck"
@@ -116,4 +158,28 @@ test_that("regcheck failure returns an error light", {
   expect_equal(mo$traffic_light, "error")
   expect_match(mo$summary_text, "RegCheck comparison failed")
   expect_true(is.na(mo$summary_table$regcheck_deviations))
+}, "mock")
+
+test_that("partial failure: successful comparisons are still returned", {
+  calls <- 0
+  testthat::local_mocked_bindings(
+    regcheck_compare = function(...) {
+      calls <<- calls + 1
+      if (calls == 1) mock_regcheck_table else stop("second prereg failed")
+    },
+    .package = "metacheck"
+  )
+
+  paper <- demopaper()  # has 2 preregistrations: 48ncu and by8i8v
+  expect_message(
+    mo <- paper |>
+      module_run("prereg_check") |>
+      module_run("reg_check"),
+    "RegCheck comparison failed"
+  )
+
+  # one succeeded, one failed -> results from the successful one are returned
+  expect_equal(mo$traffic_light, "info")
+  expect_equal(nrow(mo$table), 3)
+  expect_equal(length(unique(mo$table$prereg_id)), 1)
 }, "mock")

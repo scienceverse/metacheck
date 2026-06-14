@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% set static_version = '20260119' %}
+    {% include '_partials/head_assets.html' %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="description" content="RegCheck is an AI tool to compare preregistrations with papers instantly."/>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="author" content="Jamie Cummins">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegCheck Results</title>
+    <style>
+        .results-page .results-table__cell--prereg,
+        .results-page .results-table__cell--paper {
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+
+        .results-page .results-table {
+            table-layout: auto;
+        }
+
+        /*
+         * Note: overflow on <td> is inconsistently supported across browsers.
+         * Wrap long content in a block-level div and scroll that instead.
+         */
+        .results-table__scroll {
+            max-height: 15rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .results-page #results-table thead th:nth-child(1),
+        .results-page #results-table tbody tr.results-table__row--main td:nth-child(1) {
+            width: 18%;
+            min-width: 10.5rem;
+        }
+
+        .results-page #results-table thead th:nth-child(2),
+        .results-page #results-table tbody tr.results-table__row--main td:nth-child(2),
+        .results-page #results-table thead th:nth-child(3),
+        .results-page #results-table tbody tr.results-table__row--main td:nth-child(3) {
+            width: 41%;
+        }
+
+        .results-page .results-table__cell--paper {
+            border-top-right-radius: 16px;
+        }
+
+        .results-page .results-table__row--main .results-table__cell {
+            border-bottom: 0 !important;
+        }
+
+        .results-page .results-table__row--main .results-table__cell--dimension {
+            border-bottom-left-radius: 0;
+        }
+
+        .results-page .results-table__row--main .results-table__cell--paper {
+            border-bottom-right-radius: 0;
+        }
+
+        .results-page .results-table__cell--deviation {
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            border-left: 3px solid rgba(255, 255, 255, 0.1) !important;
+            border-right: 3px solid rgba(255, 255, 255, 0.1) !important;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            color: #e9ecff;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .results-page .results-table__deviation-label {
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .results-page .results-subtitle {
+            color: #aeb6d9 !important;
+        }
+
+        .results-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .results-toggle-select {
+            width: auto;
+            min-width: 10.5rem;
+            background: #0c0f1a;
+            color: #f5f7ff;
+            border: 1px solid #2a3148;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            padding: 0.35rem 1.6rem 0.35rem 0.75rem;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f5f7ff' d='M1.41 0 6 4.58 10.59 0 12 1.41 6 7.41 0 1.41z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.55rem center;
+            background-size: 0.6rem;
+            cursor: pointer;
+            box-shadow: none;
+            transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .content-variant {
+            display: none;
+        }
+
+        .content-variant.active {
+            display: block;
+        }
+
+        .results-toggle-select:focus {
+            outline: none;
+            border-bottom-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .results-toggle-select:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .results-page .cover-container {
+            padding-top: 1rem !important; /* match Bootstrap p-3 top padding used sitewide */
+        }
+
+        .results-page #results-page-tagline {
+            margin: 0;
+            letter-spacing: 0.04em;
+            padding: 0;
+        }
+
+        .results-page .results-main {
+            margin-top: 0.3rem;
+        }
+
+        .results-page header.mb-auto {
+            margin-bottom: 0 !important;
+        }
+
+        .results-page .results-meta {
+            margin: 0.25rem auto 0.5rem;
+            max-width: 100%;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .results-page .results-log {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .results-page .workflow-log-inline {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            flex-wrap: nowrap;
+        }
+
+        .results-page .workflow-log-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .results-page .copy-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #dfe4ff;
+            padding: 0.16rem 0.45rem;
+            font-size: 0.7rem;
+            line-height: 1;
+        }
+
+        .results-page .copy-link-btn:hover,
+        .results-page .copy-link-btn:focus {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .results-page .copy-link-btn__icon {
+            display: inline-flex;
+            width: 0.75rem;
+            height: 0.75rem;
+        }
+
+        .results-page .copy-link-btn__icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        .results-page #workflow-log-line {
+            word-break: break-word;
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .results-page #workflow-log-container {
+            margin-top: 0;
+        }
+
+        .results-page #processing-status-note {
+            margin-bottom: 0.15rem;
+        }
+
+        @media (max-width: 768px) {
+            .results-page .results-meta {
+                max-width: 100%;
+                min-width: 0;
+            }
+
+            .results-page .results-log {
+                align-items: flex-start;
+                text-align: left;
+                max-width: 100%;
+            }
+
+        }
+    </style>
+</head>
+<body class="d-flex h-100 text-center text-bg-dark results-page page-shell">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="mb-auto">
+            {% include '_partials/navbar.html' %}
+        </header>
+        {% include '_partials/mobile_notice.html' %}
+
+        <main class="px-3 results-main">
+            <h1 class="text-center" id="results-page-tagline">Your RegCheck Report</h1>
+            <p class="small mb-1 results-subtitle" style="max-width: 720px; margin: 0.35rem auto 0.5rem;">
+                RegCheck reports may take a few minutes to generate—don’t worry, it’s running. Leaving this page won’t stop your report.
+            </p>
+                <div class="results-meta d-flex justify-content-center">
+                    <div class="results-log text-center">
+                        <div class="workflow-log-inline">
+                            <div class="workflow-log-header">
+                                <p class="small text-uppercase fw-semibold mb-0">Workflow log</p>
+                                <div id="workflow-spinner" class="spinner-border spinner-border-sm text-info" role="status" aria-hidden="true"></div>
+                                <button type="button" class="copy-link-btn" id="copy-report-link-btn" title="Copy report link" aria-label="Copy report link">
+                                    <span class="copy-link-btn__icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                                            <path d="M15.5 2A5.5 5.5 0 0 0 10 7.5V9h2V7.5a3.5 3.5 0 0 1 7 0v3a3.5 3.5 0 0 1-3.5 3.5H14v2h1.5A5.5 5.5 0 0 0 21 10.5v-3A5.5 5.5 0 0 0 15.5 2Zm-7 6A5.5 5.5 0 0 0 3 13.5v3A5.5 5.5 0 0 0 8.5 22H10v-2H8.5a3.5 3.5 0 0 1-3.5-3.5v-3a3.5 3.5 0 0 1 3.5-3.5H10V8H8.5Zm1.5 5v2h4v-2h-4Z"/>
+                                        </svg>
+                                    </span>
+                                    <span id="copy-report-link-label">Copy report link</span>
+                                </button>
+                            </div>
+                            <p id="workflow-log-line" class="small mb-0 font-monospace text-info"></p>
+                        </div>
+                        <p id="processing-status-note" class="small mb-0"></p>
+                    </div>
+                </div>
+            <div class="d-flex align-items-center justify-content-between flex-wrap mb-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <label for="quote-limit-select" class="small mb-0">Quotes shown per cell:</label>
+                    <select id="quote-limit-select" class="form-select form-select-sm" style="width: auto; min-width: 6rem; font-size: 0.8rem;">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="all">All available</option>
+                    </select>
+                </div>
+                <!-- Legend explaining row colors -->
+                <div class="results-legend mb-0" aria-label="Legend: row color meanings">
+                    <span class="legend-item"><span class="legend-swatch legend-swatch--red"></span> Deviation found</span>
+                    <span class="legend-item"><span class="legend-swatch legend-swatch--blue"></span> No deviation</span>
+                    <span class="legend-item"><span class="legend-swatch legend-swatch--amber"></span> Missing information / No information found</span>
+                </div>
+            </div>
+
+            <!-- Result container, will be dynamically updated -->
+            <div id="result-container" class="table-responsive results-table-wrapper">
+                <table id="results-table" class="results-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Dimension</th>
+                            <th>
+                                <div class="results-toggle">
+                                    <select id="prereg-view-toggle" class="form-select form-select-sm results-toggle-select" aria-label="Preregistration view">
+                                        <option value="quotes" selected>PREREGISTRATION — DIRECT QUOTES</option>
+                                        <option value="summary">PREREGISTRATION — SUMMARY</option>
+                                    </select>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="results-toggle">
+                                    <select id="paper-view-toggle" class="form-select form-select-sm results-toggle-select" aria-label="Paper view">
+                                        <option value="quotes" selected>PAPER — DIRECT QUOTES</option>
+                                        <option value="summary">PAPER — SUMMARY</option>
+                                    </select>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center">
+                <button class="btn btn-primary btn-submit" id="app-download-btn">Download as CSV</button>
+            </div>
+        </main>
+
+        {% include '_partials/footer.html' %}
+    </div>
+
+    <script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}?v={{ static_version }}"></script>
+    <script>
+        (function() {
+        })();
+    </script>
+<script>
+    function createResultsCell(content, extraClass = "") {
+        const cell = document.createElement("td");
+        cell.className = `results-table__cell ${extraClass}`.trim();
+
+        // For long text columns, wrap content in a scrollable div
+        const needsScroll = extraClass.includes("results-table__cell--prereg")
+            || extraClass.includes("results-table__cell--paper");
+
+        if (needsScroll) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "results-table__scroll";
+            wrapper.innerHTML = content || "";
+            cell.appendChild(wrapper);
+        } else {
+            cell.innerHTML = content || "";
+        }
+        return cell;
+    }
+
+    function getDeviationLabel(deviationJudgement) {
+        const normalized = (deviationJudgement || "").toString().trim().toLowerCase();
+        if (normalized === "yes") return "Deviation";
+        if (normalized === "no") return "No Deviation";
+        return "Inconclusive";
+    }
+
+    function createDeviationCell(content, deviationJudgement) {
+        const cell = document.createElement("td");
+        cell.className = "results-table__cell results-table__cell--deviation";
+        cell.setAttribute("colspan", "3");
+
+        const label = document.createElement("span");
+        label.className = "results-table__deviation-label";
+        label.textContent = `${getDeviationLabel(deviationJudgement)}:`;
+
+        const details = document.createElement("span");
+        const text = (content || "").toString().trim() || "No deviation information found.";
+        details.textContent = ` ${text}`;
+
+        cell.appendChild(label);
+        cell.appendChild(details);
+        return cell;
+    }
+
+    function applyVariantToCell(cell, variant) {
+        const variants = cell.querySelectorAll(".content-variant");
+        variants.forEach((el) => el.classList.remove("active"));
+        const target = cell.querySelector(`.content-variant--${variant}`);
+        if (target) {
+            target.classList.add("active");
+        } else if (variants.length > 0) {
+            variants[0].classList.add("active");
+        }
+    }
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return "";
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function parseQuotes(quotes) {
+        if (!quotes) return [];
+        const parts = [];
+        const regex = /\[((?:PREREG|PAPER)_(\d+)),\s*relevance_score=([0-9.]+)\]\s*([\s\S]*?)(?=(\[(?:PREREG|PAPER)_[0-9]{4,}[^\]]*\])|$)/g;
+        let match;
+        while ((match = regex.exec(quotes)) !== null) {
+            const chunk = (match[0] || "").trim();
+            if (!chunk) continue;
+            const id = match[1] || "";
+            const num = parseInt(match[2], 10);
+            const score = parseFloat(match[3]);
+            const text = (match[4] || "").trim();
+            parts.push({
+                id,
+                num: Number.isFinite(num) ? num : 0,
+                score: Number.isFinite(score) ? score : 0,
+                text,
+                raw: chunk,
+            });
+        }
+        if (parts.length === 0) {
+            // Fallback: treat blank lines as separators
+            const fallback = quotes.split(/\n\s*\n/);
+            return fallback
+                .map(p => p.trim())
+                .filter(Boolean)
+                .map((t, idx) => ({
+                    id: `QUOTE_${idx + 1}`,
+                    num: idx + 1,
+                    score: 0,
+                    text: t,
+                    raw: t,
+                }));
+        }
+        return parts;
+    }
+
+    function renderQuotes(quotesList, limit) {
+        if (!Array.isArray(quotesList) || quotesList.length === 0) return "";
+
+        // Sort by relevance (score desc) to select, then by doc order (id num asc) to display
+        let sorted = [...quotesList].sort((a, b) => (b.score || 0) - (a.score || 0));
+        if (typeof limit === "number" && limit > 0) {
+            sorted = sorted.slice(0, limit);
+        }
+        sorted.sort((a, b) => (a.num || 0) - (b.num || 0));
+
+        return sorted
+            .map(q => {
+                let label = "";
+                if (q.id) {
+                    const scoreStr =
+                        Number.isFinite(q.score) && q.score !== null
+                            ? `, relevance_score=${q.score.toFixed(3)}`
+                            : "";
+                    label = `[${escapeHtml(q.id)}${scoreStr}] `;
+                }
+                return label + escapeHtml(q.text || q.raw || "");
+            })
+            .join("<br><br>");
+    }
+
+    function renderQuotesPlain(quotesList, limit) {
+        if (!Array.isArray(quotesList) || quotesList.length === 0) return "";
+        let sorted = [...quotesList].sort((a, b) => (b.score || 0) - (a.score || 0));
+        if (typeof limit === "number" && limit > 0) {
+            sorted = sorted.slice(0, limit);
+        }
+        sorted.sort((a, b) => (a.num || 0) - (b.num || 0));
+        return sorted
+            .map((q) => {
+                let label = "";
+                if (q.id) {
+                    const scoreStr =
+                        Number.isFinite(q.score) && q.score !== null
+                            ? `, relevance_score=${q.score.toFixed(3)}`
+                            : "";
+                    label = `[${q.id}${scoreStr}] `;
+                }
+                return `${label}${(q.text || q.raw || "").toString().trim()}`.trim();
+            })
+            .join("\n\n");
+    }
+
+    function applyQuoteLimitAll() {
+        const limit = window.quoteLimit;
+        document.querySelectorAll(".content-variant--quotes").forEach(div => {
+            const quotesList = div._quotesList || [];
+            div.innerHTML = renderQuotes(quotesList, limit);
+        });
+    }
+
+    function createToggleCell({ quotes, summary, section }) {
+        const cell = document.createElement("td");
+        const sectionClass = section === "paper" ? "results-table__cell--paper" : "results-table__cell--prereg";
+        cell.className = `results-table__cell ${sectionClass}`.trim();
+        cell.dataset.section = section;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "results-table__scroll";
+
+        const quotesDiv = document.createElement("div");
+        quotesDiv.className = "content-variant content-variant--quotes";
+        const quotesList = parseQuotes(quotes);
+        quotesDiv._quotesList = quotesList;
+        quotesDiv.innerHTML = renderQuotes(quotesList, window.quoteLimit);
+
+        const summaryDiv = document.createElement("div");
+        summaryDiv.className = "content-variant content-variant--summary";
+        summaryDiv.innerHTML = summary || "";
+
+        wrapper.appendChild(quotesDiv);
+        wrapper.appendChild(summaryDiv);
+        cell.appendChild(wrapper);
+
+        const view = section === "paper" ? window.paperView || "quotes" : window.preregView || "quotes";
+        applyVariantToCell(cell, view);
+        return cell;
+    }
+
+    function updateSectionView(section, variant) {
+        const cells = document.querySelectorAll(`td[data-section="${section}"]`);
+        cells.forEach((cell) => applyVariantToCell(cell, variant));
+    }
+
+    function csvEscape(value) {
+        const text = (value === null || value === undefined ? "" : value).toString();
+        return `"${text.replace(/"/g, "\"\"")}"`;
+    }
+
+    function getSectionSummaryCsvText(item, section) {
+        return (section === "paper" ? item.paper_content_summary : item.registration_content_summary) || "";
+    }
+
+    function getSectionQuotesCsvText(item, section) {
+        const quotes = (section === "paper" ? item.paper_content_quotes : item.registration_content_quotes) || "";
+        return renderQuotesPlain(parseQuotes(quotes), undefined);
+    }
+
+    function getOrderedResultItems() {
+        const ordered = [];
+        const rows = document.querySelectorAll("#results-table tbody tr.results-table__row--main");
+        rows.forEach((row) => {
+            const key = row.getAttribute("data-key") || "";
+            const item = window.latestResultItemsByKey.get(key);
+            if (item) {
+                ordered.push(item);
+            }
+        });
+        if (ordered.length > 0) return ordered;
+        return Array.from(window.latestResultItemsByKey.values());
+    }
+
+    function downloadCsv() {
+        const rows = [[
+            "Dimension",
+            "Preregistration Direct Quotes",
+            "Preregistration Summary",
+            "Paper Direct Quotes",
+            "Paper Summary",
+            "Deviation Information",
+            "Deviation Judgement",
+        ]];
+
+        getOrderedResultItems().forEach((item) => {
+            rows.push([
+                item.dimension || "",
+                getSectionQuotesCsvText(item, "prereg"),
+                getSectionSummaryCsvText(item, "prereg"),
+                getSectionQuotesCsvText(item, "paper"),
+                getSectionSummaryCsvText(item, "paper"),
+                item.deviation_information || "",
+                item.deviation_judgement || "",
+            ]);
+        });
+
+        const csvText = rows.map((row) => row.map(csvEscape).join(",")).join("\n");
+        const csvFile = new Blob(["\uFEFF", csvText], { type: "text/csv;charset=utf-8;" });
+        const downloadLink = document.createElement("a");
+        downloadLink.download = "output.csv";
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    window.preregView = "quotes";
+    window.paperView = "quotes";
+    window.quoteLimit = 3;
+    window.latestResultItemsByKey = new Map();
+
+    const preregToggle = document.getElementById("prereg-view-toggle");
+    const paperToggle = document.getElementById("paper-view-toggle");
+
+    if (preregToggle) {
+        preregToggle.addEventListener("change", (event) => {
+            window.preregView = event.target.value || "quotes";
+            updateSectionView("prereg", window.preregView);
+        });
+    }
+
+    if (paperToggle) {
+        paperToggle.addEventListener("change", (event) => {
+            window.paperView = event.target.value || "quotes";
+            updateSectionView("paper", window.paperView);
+        });
+    }
+
+    const quoteLimitSelect = document.getElementById("quote-limit-select");
+    if (quoteLimitSelect) {
+        quoteLimitSelect.addEventListener("change", (event) => {
+            const value = event.target.value;
+            if (value === "all") {
+                window.quoteLimit = undefined;
+            } else {
+                const parsed = parseInt(value, 10);
+                window.quoteLimit = Number.isFinite(parsed) && parsed > 0 ? parsed : 3;
+            }
+            applyQuoteLimitAll();
+        });
+    }
+
+    const downloadButton = document.getElementById("app-download-btn");
+    if (downloadButton) {
+        downloadButton.addEventListener("click", downloadCsv);
+    }
+
+    async function copyReportLink() {
+        const link = window.location.href;
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(link);
+                return true;
+            } catch (error) {
+                // Fall through to legacy copy path.
+            }
+        }
+        const fallback = document.createElement("textarea");
+        fallback.value = link;
+        fallback.style.position = "fixed";
+        fallback.style.left = "-9999px";
+        document.body.appendChild(fallback);
+        fallback.focus();
+        fallback.select();
+        let copied = false;
+        try {
+            copied = document.execCommand("copy");
+        } catch (error) {
+            copied = false;
+        }
+        document.body.removeChild(fallback);
+        return copied;
+    }
+
+    const copyReportLinkButton = document.getElementById("copy-report-link-btn");
+    const copyReportLinkLabel = document.getElementById("copy-report-link-label");
+    let copyReportLinkResetHandle = null;
+    if (copyReportLinkButton) {
+        copyReportLinkButton.addEventListener("click", async () => {
+            const copied = await copyReportLink();
+            if (copyReportLinkLabel) {
+                copyReportLinkLabel.textContent = copied ? "Copied" : "Copy failed";
+                if (copyReportLinkResetHandle) {
+                    window.clearTimeout(copyReportLinkResetHandle);
+                }
+                copyReportLinkResetHandle = window.setTimeout(() => {
+                    copyReportLinkLabel.textContent = "Copy report link";
+                }, 1600);
+            }
+        });
+    }
+
+    function getDeviationRowClass(deviation) {
+        const normalized = (deviation || "").toString().trim().toLowerCase();
+        if (normalized === "yes") return "results-table__row--dev-yes";
+        if (normalized === "no") return "results-table__row--dev-no";
+        // Prepare for potential future states like missing/unknown
+        if (normalized === "unknown" || normalized === "missing" || normalized === "no information found" || normalized === "information missing") {
+            return "results-table__row--dev-unknown";
+        }
+        return "";
+    }
+
+    let lastWorkflowStatus = null;
+    window.latestWorkflowStatus = "";
+    const workflowSpinner = document.getElementById("workflow-spinner");
+
+    function appendWorkflowLog(statusText) {
+        if (!statusText) return;
+        if (statusText === lastWorkflowStatus) return;
+        lastWorkflowStatus = statusText;
+        window.latestWorkflowStatus = statusText;
+        const logLine = document.getElementById("workflow-log-line");
+        if (!logLine) return;
+        const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        logLine.textContent = `[${timestamp}] ${statusText}`;
+    }
+
+    async function pollTaskStatus() {
+        const taskId = "{{ task_id }}";
+        const resultContainer = document.getElementById("result-container");
+        const loadingMessage = document.getElementById("loading-message");
+        const processedCounter = document.getElementById("processed-count");
+        const totalCounter = document.getElementById("total-count");
+        const statusNote = document.getElementById("processing-status-note");
+
+        const coerceCount = (value) => {
+            if (value === null || value === undefined) {
+                return null;
+            }
+            if (typeof value === "number" && Number.isFinite(value)) {
+                return value;
+            }
+            if (typeof value === "string") {
+                const parsed = Number.parseInt(value.trim(), 10);
+                if (!Number.isNaN(parsed)) {
+                    return parsed;
+                }
+            }
+            return null;
+        };
+
+        function updateProgress(processed, total, state) {
+            if (processedCounter && processed !== null) {
+                processedCounter.textContent = processed;
+            }
+            if (totalCounter && total !== null) {
+                totalCounter.textContent = total;
+            }
+            if (statusNote) {
+                statusNote.classList.remove("text-danger", "text-success", "text-muted");
+                if (state === "SUCCESS") {
+                    statusNote.textContent = "";
+                    statusNote.classList.add("text-success");
+                } else if (state === "FAILURE") {
+                    statusNote.textContent = window.latestWorkflowStatus || "An error occurred while processing your request.";
+                    statusNote.classList.add("text-danger");
+                } else {
+                    statusNote.textContent = "";
+                    statusNote.classList.add("text-muted");
+                }
+            }
+            if (loadingMessage) {
+                loadingMessage.dataset.state = state || "PENDING";
+            }
+
+            if (workflowSpinner) {
+                if (state === "SUCCESS" || state === "FAILURE") {
+                    workflowSpinner.classList.add("d-none");
+                    workflowSpinner.setAttribute("aria-hidden", "true");
+                } else {
+                    workflowSpinner.classList.remove("d-none");
+                    workflowSpinner.removeAttribute("aria-hidden");
+                }
+            }
+
+            const logLine = document.getElementById("workflow-log-line");
+            if (logLine) {
+                logLine.className = "small mb-0 font-monospace";
+                if (state === "SUCCESS") {
+                    logLine.classList.add("text-success");
+                } else {
+                    logLine.classList.add("text-info");
+                }
+            }
+        }
+
+        async function checkStatus() {
+            try {
+                const response = await fetch(`/task_status/${taskId}`);
+                const data = await response.json();
+                appendWorkflowLog(data.status || data.state || "");
+
+                let processedCount = coerceCount(data.processed_dimensions);
+                let totalCount = coerceCount(data.total_dimensions);
+
+                if (data.result && Array.isArray(data.result.items)) {
+                    const resultsTableBody = document.querySelector("#results-table tbody");
+                    const existingKeys = new Set();
+                    if (resultsTableBody) {
+                        for (const row of resultsTableBody.querySelectorAll("tr.results-table__row--main")) {
+                            const key = row.getAttribute("data-key");
+                            if (key) {
+                                existingKeys.add(key);
+                            }
+                        }
+                    }
+                    const uniqueDimensions = new Set();
+                    data.result.items.forEach(item => {
+                        const rawDimension = item && typeof item.dimension === "string" ? item.dimension : "";
+                        const key = `${rawDimension}`;
+                        uniqueDimensions.add(key);
+                        if (!existingKeys.has(key)) {
+                            window.latestResultItemsByKey.set(key, item || {});
+                            const tr = document.createElement("tr");
+                            tr.setAttribute("data-key", key);
+                            tr.classList.add("results-table__row", "results-table__row--main");
+                            const rowClass = getDeviationRowClass(item.deviation_judgement);
+                            if (rowClass) tr.classList.add(rowClass);
+
+                            const dimensionCell = createResultsCell(item.dimension || "", "results-table__cell--dimension");
+                            const preregCell = createToggleCell({
+                                quotes: item.registration_content_quotes || "",
+                                summary: item.registration_content_summary || "",
+                                section: "prereg"
+                            });
+                            const paperCell = createToggleCell({
+                                quotes: item.paper_content_quotes || "",
+                                summary: item.paper_content_summary || "",
+                                section: "paper"
+                            });
+
+                            tr.appendChild(dimensionCell);
+                            tr.appendChild(preregCell);
+                            tr.appendChild(paperCell);
+
+                            const deviationTr = document.createElement("tr");
+                            deviationTr.classList.add("results-table__row", "results-table__row--deviation");
+                            if (rowClass) deviationTr.classList.add(rowClass);
+                            deviationTr.appendChild(
+                                createDeviationCell(item.deviation_information || "", item.deviation_judgement || "")
+                            );
+
+                            if (resultsTableBody) {
+                                resultsTableBody.appendChild(tr);
+                                resultsTableBody.appendChild(deviationTr);
+                                existingKeys.add(key);
+                            }
+                        }
+                    });
+                    if (processedCount === null) {
+                        processedCount = uniqueDimensions.size;
+                    }
+                    if (totalCount === null && uniqueDimensions.size > 0) {
+                        totalCount = uniqueDimensions.size;
+                    }
+                }
+
+                if (processedCount === null && processedCounter) {
+                    const existingProcessed = coerceCount(processedCounter.textContent);
+                    if (existingProcessed !== null) {
+                        processedCount = existingProcessed;
+                    } else {
+                        processedCount = 0;
+                    }
+                }
+                if (totalCount === null && totalCounter) {
+                    const existingTotal = coerceCount(totalCounter.textContent);
+                    if (existingTotal !== null) {
+                        totalCount = existingTotal;
+                    } else if (processedCount !== null) {
+                        totalCount = processedCount;
+                    }
+                }
+
+                updateProgress(processedCount, totalCount, data.state);
+
+                if (data.state === "FAILURE") {
+                    resultContainer.innerHTML = "<p class='text-danger'>An error occurred while processing your request.</p>";
+                    return;
+                }
+
+                if (data.state !== "SUCCESS") {
+                    setTimeout(checkStatus, 3000);
+                }
+            } catch (e) {
+                resultContainer.innerHTML = "<p class='text-danger'>Failed to fetch status. Please refresh the page.</p>";
+                updateProgress(null, null, "FAILURE");
+            }
+        }
+        checkStatus();
+    }
+    window.onload = pollTaskStatus;
+    </script>
+</body>
+</html>

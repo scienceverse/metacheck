@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    {% set static_version = '20260420' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% include '_partials/head_assets.html' %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="description" content="RegCheck FAQ and output interpretation guidance."/>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="author" content="Jamie Cummins">
+    <title>RegCheck FAQ</title>
+    <style>
+      header {
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+      }
+
+      main {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+      }
+    </style>
+</head>
+{% set nav_active = 'faq' %}
+<body class="d-flex text-center text-bg-dark page-shell">
+  <div class="cover-container d-flex w-100 min-vh-100 p-3 mx-auto flex-column">
+      <header class="mb-auto">
+          {% include '_partials/navbar.html' %}
+      </header>
+    {% include '_partials/mobile_notice.html' %}
+
+    <main class="px-3">
+      <div class="mx-auto text-start" style="max-width: 900px;">
+        <h1>Frequently Asked Questions</h1>
+
+        <h2>What do the deviation labels mean?</h2>
+        <ul>
+          <li><strong>Deviation found:</strong> The model judged that the paper diverges from the preregistered plan for that dimension.</li>
+          <li><strong>No deviation:</strong> The model judged that the paper is consistent with the preregistration for that dimension.</li>
+          <li><strong>Missing information / No information found:</strong> There was not enough evidence in the provided text to make a reliable judgement.</li>
+        </ul>
+
+        <h2>What is a 'relevance score'?</h2>
+        <p>Each quote is tagged with a relevance score. This is the semantic similarity between that text chunk and the selected comparison dimension, based on embedding retrieval. Higher values mean the chunk is more strongly semantically related to the dimension of comparison.</p>
+
+        <h2>What is shown in direct quotes vs summary?</h2>
+        <p><strong>Direct quotes</strong> displays retrieved source excerpts with evidence IDs and relevance scores. <strong>Summary</strong> displays the model’s concise synthesis of those excerpts.</p>
+
+        <h2>Can I share report links?</h2>
+        <p>Yes. Anyone with the report link can view it. Do not share links publicly if uploads contain sensitive information.</p>
+
+        <h2>Where can I read about data handling?</h2>
+        <p>See the <a class="footer-link" href="{{ url_for('privacy') }}">Privacy Policy</a> for storage, retention, and deletion details.</p>
+      </div>
+    </main>
+
+    {% include '_partials/footer.html' %}
+  </div>
+  <script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}?v={{ static_version }}"></script>
+</body>
+</html>

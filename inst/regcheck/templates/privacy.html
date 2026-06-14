@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    {% set static_version = '20260122' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% include '_partials/head_assets.html' %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="description" content="RegCheck is an AI tool to compare preregistrations with papers instantly."/>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="author" content="Jamie Cummins">
+    <title>RegCheck Privacy Policy</title>
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/cover/">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+    <style>
+      header {
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+      }
+
+      main {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+      }
+    </style>
+</head>
+{% set nav_active = '' %}
+<body class="d-flex text-center text-bg-dark page-shell">
+  <div class="cover-container d-flex w-100 min-vh-100 p-3 mx-auto flex-column">
+      <header class="mb-auto">
+          {% include '_partials/navbar.html' %}
+      </header>
+    {% include '_partials/mobile_notice.html' %}
+
+    <main class="px-3">
+      <div class="mx-auto text-start" style="max-width: 900px;">
+        <h1>RegCheck Privacy Policy</h1>
+        <p class="lead">Effective date: 22/01/2026</p>
+        <p>This Privacy Policy explains how RegCheck (“RegCheck”, “we”, “us”) collects and processes personal data when you use our website and services (the “Service”).</p>
+
+        <h2>1) Data controller and contact</h2>
+        <p><strong>Data controller:</strong> Dr. Jamie Cummins, Fabrikstrasse 8, 3012 Bern, Switzerland.</p>
+        <p><strong>Contact for privacy questions or deletion requests:</strong> <a class="footer-link" href="mailto:jamie.cummins@unibe.ch">jamie.cummins@unibe.ch</a></p>
+        <p>We do not currently appoint a data protection officer (DPO).</p>
+        <p>We act as the data controller for personal data processed to operate the Service. Our cloud infrastructure providers and the model provider you select generally act as processors (or sub-processors) when processing data on our behalf; in some cases they may act as independent controllers under their own terms.</p>
+
+        <h2>2) Scope and important note about uploaded documents</h2>
+        <p>The Service is intended for academic use. You may upload documents (e.g., papers, preregistrations) that can contain personal data (names, emails, acknowledgements, participant information, etc.).</p>
+        <p>Please do not upload sensitive personal data (e.g., health data, political opinions) unless you have a lawful basis to do so and it is strictly necessary. If feasible, redact sensitive content before uploading.</p>
+        <p><strong>Data minimisation:</strong> Upload only what is necessary for the comparison and report generation.</p>
+
+        <h2>3) Personal data we process and why</h2>
+        <p>We process the following categories of data:</p>
+
+        <h3>A. Content you upload (documents)</h3>
+        <p><strong>What:</strong> Papers, preregistrations, and related files you upload.</p>
+        <p><strong>Why:</strong> To run the comparison and generate your report.</p>
+        <p><strong>Temporary storage under load:</strong> Under high traffic, uploaded files may be temporarily written to AWS S3 to support reliable processing. Files remain in S3 only while the comparison process is running and are automatically deleted once processing finishes. We do not intentionally create backups of uploaded files (subject to the underlying cloud provider’s standard technical operations).</p>
+
+        <h3>B. Model prompts and outputs (processing data)</h3>
+        <p><strong>What:</strong> Prompts derived from your uploaded content and the resulting model outputs needed to generate the report.</p>
+        <p><strong>Why:</strong> To generate report findings and quotations.</p>
+        <p><strong>Where this goes:</strong> We send prompts/inputs to the model provider you select (see Section 5).</p>
+
+        <h3>C. Reports and shareable report data (persistence)</h3>
+        <p><strong>What:</strong> Report content and quotations shown in the report viewer and any shareable report link.</p>
+        <p><strong>Why:</strong> To let you view and share reports after processing.</p>
+        <p>We store this in an encrypted Redis database so that reports can remain accessible via their link until you request deletion.</p>
+
+        <h3>D. Optional survey responses</h3>
+        <p><strong>What:</strong> Any feedback or survey responses you voluntarily submit.</p>
+        <p><strong>Why:</strong> Product improvement and research/quality feedback.</p>
+        <p>Survey responses are stored separately and we do not intentionally link survey responses to specific uploads or report links. Please avoid including identifying or sensitive information in free-text fields.</p>
+
+        <h3>E. Minimal operational and security data (logs)</h3>
+        <p><strong>What:</strong> Basic server and application logs (e.g., timestamps, request paths, error traces; may include IP addresses and user-agent strings as part of standard web/server operation).</p>
+        <p><strong>Why:</strong> Security, abuse prevention, debugging, and reliability.</p>
+        <p>We do not use third-party analytics. We do not use advertising cookies. We do not require user accounts.</p>
+
+        <h3>F. Local storage (device preferences)</h3>
+        <p><strong>What:</strong> Client-side local storage (e.g., UI preferences) and similar browser technologies.</p>
+        <p><strong>Why:</strong> Convenience and usability.</p>
+        <p>We do not use advertising cookies.</p>
+
+        <h2>4) Legal bases (GDPR/UK GDPR)</h2>
+        <p>Where GDPR/UK GDPR applies, our legal bases are:</p>
+        <ul>
+          <li><strong>Performance of a contract</strong> (Art. 6(1)(b)): to provide the Service you request (processing uploads, sending prompts to your chosen model provider, generating and displaying reports, enabling report sharing).</li>
+          <li><strong>Legitimate interests</strong> (Art. 6(1)(f)): to maintain security, prevent abuse, troubleshoot, and ensure service reliability (including minimal logging).</li>
+          <li><strong>Consent</strong> (Art. 6(1)(a)): for optional survey responses (you can choose not to provide them).</li>
+        </ul>
+        <p>We do not intentionally process special categories of personal data (Art. 9). If you upload such data, you are responsible for ensuring you have a lawful basis to do so.</p>
+        <p><strong>Switzerland:</strong> We are based in Switzerland and process personal data in accordance with the Swiss Federal Act on Data Protection (nFADP), in addition to any other applicable laws.</p>
+
+        <h2>5) Model providers and how they handle data</h2>
+        <p>When you run a comparison, you choose which language model provider receives the prompts/inputs derived from your uploaded documents. These providers may process data in different jurisdictions and under different terms. Providers’ practices can change; you should review the provider documentation before choosing a provider.</p>
+        <ul>
+          <li><strong>OpenAI (API):</strong> OpenAI states that API inputs/outputs are not used to train models by default; it also describes retention of certain abuse monitoring logs. See <a class="footer-link" target="_blank" href="https://openai.com/enterprise-privacy/">https://openai.com/enterprise-privacy/</a> and <a class="footer-link" target="_blank" href="https://platform.openai.com/docs/guides/your-data">https://platform.openai.com/docs/guides/your-data</a>.</li>
+          <li><strong>Groq (hosting Llama 3.3):</strong> Groq describes its retention approach and a Zero Data Retention (ZDR) option, and states it does not use inputs/outputs to train or fine-tune models unless explicitly permitted. See <a class="footer-link" target="_blank" href="https://console.groq.com/docs/your-data">https://console.groq.com/docs/your-data</a>.</li>
+          <li><strong>DeepSeek:</strong> DeepSeek describes its data handling and jurisdictions in its documentation/policies, including that data may be processed in the People’s Republic of China (PRC). See <a class="footer-link" target="_blank" href="https://platform.deepseek.com/privacy">https://platform.deepseek.com/privacy</a> and <a class="footer-link" target="_blank" href="https://chat.deepseek.com/privacy-policy">https://chat.deepseek.com/privacy-policy</a>.</li>
+        </ul>
+
+        <h2>6) Sharing and public access via report links</h2>
+        <p>Reports may be accessible via a long, random token link (an “unguessable URL”). Anyone with the link can access the report.</p>
+        <p>Do not share report links publicly or include sensitive information in uploads if you plan to share the resulting report.</p>
+
+        <h2>7) Retention</h2>
+        <ul>
+          <li><strong>Uploaded files in S3 (when used):</strong> stored only while the comparison process runs; deleted automatically when processing finishes.</li>
+          <li><strong>Reports and quotations in Redis:</strong> retained indefinitely to keep reports accessible and shareable until you request deletion.</li>
+          <li><strong>Survey responses:</strong> retained indefinitely unless you request deletion.</li>
+          <li><strong>Server logs:</strong> retained for 1 day, then deleted.</li>
+        </ul>
+        <p>Because we do not use user accounts, we may not be able to locate a specific report or survey record without the report link or other identifying details you provide.</p>
+
+        <h2>8) Security</h2>
+        <p>We use reasonable technical and organisational measures, including:</p>
+        <ul>
+          <li>Encryption in transit (TLS) where supported.</li>
+          <li>Encrypted Redis storage for persisted reports.</li>
+          <li>Access controls limited to essential systems/personnel.</li>
+        </ul>
+        <p>No method of transmission or storage is 100% secure; however, we aim to use safeguards appropriate to the risk.</p>
+
+        <h2>9) International data transfers</h2>
+        <p>RegCheck is operated from Switzerland, but data may be processed in other countries depending on the infrastructure and the model provider you choose.</p>
+        <p>Where required, we rely on appropriate transfer mechanisms (e.g., contractual safeguards offered by providers). If you choose a provider that processes data in jurisdictions without an adequacy decision, your use of that provider may involve additional risks, and the transfer may be necessary to provide the Service you request using that provider.</p>
+
+        <h2>10) Your rights and choices</h2>
+        <p>Depending on your location and applicable law (including GDPR/UK GDPR and Swiss nFADP), you may have the right to:</p>
+        <ul>
+          <li>Request access to personal data we hold about you,</li>
+          <li>Request deletion,</li>
+          <li>Request correction (where applicable),</li>
+          <li>Object to or request restriction of certain processing (where applicable),</li>
+          <li>Withdraw consent for optional survey processing at any time (without affecting processing already performed).</li>
+        </ul>
+        <p><strong>Response timeline:</strong> Where required, we aim to respond to rights requests within 30 days.</p>
+        <p><strong>Deletion requests:</strong> Email <a class="footer-link" href="mailto:jamie.cummins@unibe.ch">jamie.cummins@unibe.ch</a> with the report link (or identifying details) and we will delete the relevant persisted report data and/or survey responses.</p>
+        <p><strong>Local storage:</strong> You can clear local storage via your browser settings.</p>
+        <p><strong>Complaints:</strong> You may lodge a complaint with your local supervisory authority. In Switzerland, this is the Federal Data Protection and Information Commissioner (FDPIC): <a class="footer-link" target="_blank" href="https://www.edoeb.admin.ch/edoeb/en/home.html">https://www.edoeb.admin.ch/edoeb/en/home.html</a>.</p>
+
+        <h2>11) Changes to this policy</h2>
+        <p>We may update this Policy from time to time. We will post the updated version and change the effective date above.</p>
+      </div>
+    </main>
+
+    {% include '_partials/footer.html' %}
+  </div>
+  <script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}?v={{ static_version }}"></script>
+</body>
+</html>

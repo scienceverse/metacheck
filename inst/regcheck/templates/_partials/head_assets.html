@@ -1,0 +1,26 @@
+{% set version = static_version | default('20240519') %}
+{% set base_url = (request.url.scheme ~ '://' ~ request.url.netloc) if request is defined else 'https://www.regcheck.app' %}
+{% set og_title = og_title | default('RegCheck') %}
+{% set og_description = og_description | default('RegCheck is an AI tool to compare preregistrations with papers instantly.') %}
+{% set og_image = og_image | default(base_url ~ url_for('static', path='assets/logo_social.png')) %}
+{% set og_url = og_url | default(request.url if request is defined else base_url) %}
+<script src="{{ url_for('static', path='js/color-modes.js') }}?v={{ version }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', path='css/bootstrap.min.css') }}?v={{ version }}">
+<link rel="stylesheet" href="{{ url_for('static', path='css/custom-styles.css') }}?v={{ version }}">
+<link rel="stylesheet" href="{{ url_for('static', path='css/cover.css') }}?v={{ version }}">
+<link rel="icon" href="{{ url_for('static', path='assets/favicon.ico') }}?v={{ version }}" type="image/x-icon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Open Graph -->
+<meta property="og:title" content="{{ og_title }}">
+<meta property="og:description" content="{{ og_description }}">
+<meta property="og:image" content="{{ og_image }}">
+<meta property="og:url" content="{{ og_url }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RegCheck">
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ og_title }}">
+<meta name="twitter:description" content="{{ og_description }}">
+<meta name="twitter:image" content="{{ og_image }}">
+<meta name="twitter:creator" content="@jamiecummins.bsky.social">

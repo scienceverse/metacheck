@@ -18,59 +18,44 @@ knitr::opts_chunk$set(
 
 ```{r, eval = TRUE, include = FALSE}
 library(metacheck)
+load(system.file("extdata", "regcheck_examples.rda", package = "metacheck"))
 ```
 
 ## Why check preregistrations?
 
-When researchers *preregister* a study, they write down their plan — how
-many participants they will collect, what they predict, how they will
-analyse the data — **before** they collect the data. This makes it possible
-to distinguish between analyses that were planned in advance (confirmatory)
-and analyses that emerged when looking at the data (exploratory).
+When researchers *preregister* a study, they write down their plan — how many participants they will collect, what they predict, how they will analyse the data — **before** they collect the data. 
+This makes it possible to distinguish between analyses that were planned in advance (confirmatory) and analyses that emerged when looking at the data (exploratory). 
+Preregistration - when done well - has many benefits (Lakens, Mesquida, Rasti, & Ditroilo, 2024).  
 
-But a preregistration only helps if readers actually compare it against the
-published paper. Meta-scientific research shows this rarely happens:
-deviations from preregistrations are common, often undisclosed, and most
-frequently concern the sample size (van den Akker et al., 2024). Checking a
-preregistration by hand is real work — you have to find it, read it, and
-compare it line by line with the paper.
+But a preregistration only helps if readers actually compare it against the published paper. 
+Meta-scientific research shows this rarely happens: deviations from preregistrations are common, often undisclosed, and most
+frequently concern the sample size (van den Akker et al., 2024). 
+Checking a preregistration takes time. 
 
 Metacheck offers two modules that make this work easier:
 
-* **`prereg_check`** finds preregistration links in a paper, retrieves the
-  preregistration, and organizes its content into a standard structure.
-* **`reg_check`** goes one step further: it sends the preregistration and
-  the paper to [RegCheck](https://github.com/JamieCummins/regcheck), a tool
-  by Jamie Cummins that uses a large language model (LLM) to compare the two
-  documents dimension by dimension, and flags where the paper might deviate
-  from the plan.
+* **`prereg_check`** finds preregistration links in a paper, retrieves the preregistration, and organizes its content into a standard structure.
+* **`reg_check`** sends the preregistration and the paper to [RegCheck](https://github.com/JamieCummins/regcheck), a tool
+  by Jamie Cummins that uses a large language model (LLM) to compare the two documents dimension by dimension, and flags where the paper might deviate from the plan.
 
-**Important:** the LLM judgements from `reg_check` are *pointers for your
-own checking*, not verdicts. Metacheck never automates quality evaluation —
-a human always needs to verify the flagged deviations against the actual
-documents.
+**Important:** the LLM judgements from `reg_check` are *suggestions to consider*, not verdicts. Metacheck never automates quality evaluation — a human always needs to verify the flagged deviations against the actual documents. When Regcheck does a good job, it can assist researchers in spotting deviations more easily - but it is still the responsibility of a researcher to verify these deviations are actually present. 
 
-## Step 1: Retrieve a preregistration with prereg_check
+## Example 1: AsPredicted preregistration
 
-The `psychsci` dataset that comes with metacheck contains 250 open-access
-papers from *Psychological Science*. Several of them link to
-preregistrations on AsPredicted or the OSF. We use one of them here: a paper
-that links to one AsPredicted preregistration.
+The `psychsci` dataset contains 250 open-access papers from *Psychological Science*. We start with a paper that links to one AsPredicted preregistration (`sn9xs`).
+
+### Step 1: Retrieve the preregistration
 
 ```{r}
-paper <- psychsci[["09567976231223130"]]
+paper_ap <- psychsci[["09567976231223130"]]
 
-prereg <- module_run(paper, "prereg_check")
+prereg <- module_run(paper_ap, "prereg_check")
 prereg
 ```
 
 ```
 #> We found 1 preregistration.
 ```
-
-The module found one preregistration (AsPredicted `sn9xs`), retrieved it,
-and organized its content into named fields. The most useful ones for a
-quick check:
 
 ```{r}
 prereg$table[, c("id", "template_name", "sample_size")]
@@ -84,161 +69,331 @@ data.frame(
 ) |> knitr::kable()
 ```
 
-The full preregistration text is in `prereg$table` (one column per field of
-the preregistration template: hypotheses, dependent variables, analyses,
-exclusions, and so on). The module report shows all of this with links, so
-you can verify everything at the source.
+### Step 2: Compare with reg_check (hosted server)
 
-At this point you could compare the preregistration with the paper by hand
-— and for any serious assessment, you should. But a first automated pass
-can point you to the places worth looking at. That is what `reg_check`
-does.
-
-## Step 2: Compare paper and preregistration with reg_check
-
-RegCheck compares the two documents on a set of *dimensions* — sample size,
-hypotheses, exclusion criteria, statistical models, and so on. For each
-dimension, an LLM reads the relevant passages from both documents and
-judges:
-
-* `"no"` — no deviation: paper and preregistration are consistent
-* `"yes"` — potential deviation: the documents seem to differ
-* `"missing"` — not enough information to judge
-
-You can chain the two modules, so the preregistration is only retrieved
-once:
+Chain the two modules so the preregistration is retrieved once:
 
 ```{r}
-check <- paper |>
+check_ap <- paper_ap |>
   module_run("prereg_check") |>
-  module_run("reg_check", client = "groq")
+  module_run("reg_check", client = "openai")
 ```
 
-This takes a while (about a minute with the hosted server, longer locally)
-because the LLM makes one comparison per dimension. Here is the real result
-for our example paper:
+The `client` argument tells the hosted RegCheck server which LLM to use
+for the comparison. The server supports three cloud backends:
+
+| `client`     | Model used                  |
+|:-------------|:----------------------------|
+| `"openai"`   | GPT-5 (via OpenAI)          |
+| `"groq"`     | Llama 3.3 70B (via Groq)    |
+| `"deepseek"` | DeepSeek Reasoner           |
+
+All three options send text to the hosted RegCheck server; the only
+difference is which LLM processes it. We use `"openai"` here to get the
+most capable model. The default client is `"ollama"`, which skips the
+hosted server entirely and runs locally instead — covered in Example 3
+below.
+
+This takes roughly a minute on the hosted server. Here are the real results:
 
 ```{r}
-check$table[, c("dimension", "deviation_judgement")]
+check_ap$table[, c("dimension", "deviation_judgement")]
 ```
 
 ```{r, eval = TRUE, echo = FALSE}
-data.frame(
-  dimension = c("Sample size", "Data source", "Inclusion criteria",
-                "Exclusion criteria", "Incomplete and missing data",
-                "Hypotheses", "Manipulated variables", "Measured variables",
-                "Transformations", "Statistical models"),
-  deviation_judgement = c("no", "yes", "yes", "no", "no", "no", "no", "no",
-                          "missing", "yes")
-) |> knitr::kable()
+check_ap$table[, c("dimension", "deviation_judgement")] |>
+  knitr::kable()
 ```
 
+```{r, eval = TRUE, echo = FALSE}
+cat(check_ap$summary_text)
 ```
-#> RegCheck compared the paper with 1 preregistration on 10 dimensions,
-#> and flagged 3 potential deviations (1 dimension could not be assessed).
+
+RegCheck flagged **1 potential deviation** (Statistical models) and found
+3 dimensions with insufficient information to judge. The statistical models
+dimension is a meaningful flag: the paper reports repeated-measures ANOVAs
+with factor combinations that the preregistration did not fully specify.
+The missing-information judgements for Data source, Inclusion criteria, and
+Transformations reflect *omissions in the preregistration* rather than changed
+plans — the LLM flags a gap, and the human decides what it means.
+
+For every dimension, `check_ap$table` also contains `deviation_information`,
+`paper_summary`, `prereg_summary`, `paper_quotes`, and `prereg_quotes` — the
+evidence the LLM used. Always check these before drawing conclusions.
+
+## Example 2: OSF preregistration
+
+Now a paper that links to an OSF preregistration (`7qcxa`, using the
+"OSF Preregistration" template):
+
+```{r}
+paper_osf <- psychsci[["0956797620904990"]]
+
+check_osf <- paper_osf |>
+  module_run("prereg_check") |>
+  module_run("reg_check", client = "openai")
 ```
 
-### Reading the results — and why you must verify them
+```{r}
+check_osf$table[, c("dimension", "deviation_judgement")]
+```
 
-For every dimension, `check$table` also contains a written explanation
-(`deviation_information`), summaries of what each document says, and the
-exact quotes the judgement is based on. The module report presents all of
-this, with the evidence in a collapsible section.
+```{r, eval = TRUE, echo = FALSE}
+check_osf$table[, c("dimension", "deviation_judgement")] |>
+  knitr::kable()
+```
 
-Look at the three flagged deviations in our example:
+```{r, eval = TRUE, echo = FALSE}
+cat(check_osf$summary_text)
+```
 
-* **Statistical models** (`yes`): the paper reports repeated-measures
-  ANOVAs with factor combinations that the preregistration did not fully
-  specify. That is exactly the kind of deviation worth checking — and worth
-  reporting transparently (Lakens, 2024).
-* **Data source** and **Inclusion criteria** (`yes`): RegCheck notes that
-  the *paper* mentions undergraduate students and Mechanical Turk, while
-  the *preregistration does not mention the data source at all*. Is that a
-  "deviation"? Arguably it is an *omission in the preregistration* rather
-  than a changed plan. This is a perfect example of why the judgements are
-  pointers, not conclusions: the LLM flags a difference, and the human
-  decides what it means.
-* **Transformations** (`missing`): the preregistration says nothing about
-  data transformations, so there is nothing to compare.
+RegCheck flagged **5 potential deviations** for this paper, including sample
+size, hypotheses, measured variables, transformations, and statistical models.
+As always, verify each flag against the quoted evidence and the original
+documents — some flags may reflect ambiguous wording in the preregistration
+rather than true deviations.
+
+## Generating a report
+
+Once you have run `reg_check`, you can generate a standalone HTML report
+with just the RegCheck section. Pass the paper to `report()` and specify
+only the modules you want:
+
+```{r}
+paper <- psychsci[["09567976231223130"]]
+
+report(paper,
+       modules     = c("prereg_check", "reg_check"),
+       args        = list(reg_check = list(client = "openai")),
+       output_file = "regcheck_report_openai.html")
+```
+
+`report()` opens the report in your browser. Include `"prereg_check"` in
+the module list so that `reg_check` can reuse the retrieved preregistration
+without fetching it twice.
+
+## Example 3: Running locally with Ollama
+
+The same comparison can run entirely on your own machine. Metacheck bundles
+a minimal local RegCheck server (inspired by the Ollama integration work by
+[Matilda Gustafsson](https://github.com/Matilda03)) together with
+[Ollama](https://ollama.com). No text leaves your machine, which makes it
+suitable for confidential work and GDPR-sensitive contexts.
+
+```{r}
+check_local <- paper_ap |>
+  module_run("prereg_check") |>
+  module_run("reg_check")   # client = "ollama" is the default
+```
+
+Here are the real results from a local run on the same AsPredicted paper,
+using `qwen3.5:9b` (a ~6 GB model):
+
+```{r}
+check_local$table[, c("dimension", "deviation_judgement")]
+```
+
+```{r, eval = TRUE, echo = FALSE}
+check_local$table[, c("dimension", "deviation_judgement")] |>
+  knitr::kable()
+```
+
+```{r, eval = TRUE, echo = FALSE}
+cat(check_local$summary_text)
+```
+
+Several things to note when comparing the local and hosted results:
+
+* **Different dimension labels.** The local model derived its own dimension
+  names from the preregistration content, rather than using the standard
+  RegCheck set (sample size, hypotheses, exclusion criteria, …). The standard
+  set is defined server-side; small local models may ignore or rephrase it.
+* **Blank judgements.** Several rows have an empty `deviation_judgement`.
+  This happens when the local model does not follow the structured output
+  format exactly — a known limitation of smaller models.
+* **Where agreement holds.** For the dimensions where the local model did
+  produce a valid judgement, it agreed with the hosted result on flagging
+  statistical analysis / statistical models as a deviation (`yes`).
+
+Local runs took 25–90 seconds per dimension on a 6 GB GPU, so a full
+10-dimension comparison takes roughly 5–15 minutes — compared to under a
+minute for the hosted server.
+
+To generate a report from a local run, use the same `report()` call with
+`client = "ollama"` (the default) and start the local server first:
+
+```{r}
+paper <- demopaper()
+
+regcheck_start_local()
+
+report(paper,
+       modules     = c("prereg_check", "reg_check"),
+       output_file = "regcheck_report_ollama.html")
+```
 
 ## Two ways to run RegCheck
 
 ### Option A: the hosted RegCheck server
 
-The simplest option is the hosted RegCheck app (`client = "groq"` or
-`"openai"`), which `reg_check` uses automatically when you pick one of
-those clients. In our test, a full 10-dimension comparison took about 40
-seconds.
-
-The hosted server requires an **API token** in your `.Renviron` file (use
-`usethis::edit_r_environ()` to open it):
+Use `client = "groq"`, `"openai"`, or `"deepseek"`. The hosted server
+requires an **API token** in your `.Renviron` file:
 
 ```
 REGCHECK_API_TOKEN="your_token_here"
 ```
 
-Tokens are not publicly available: you currently need to request one from
-the RegCheck team. Note that the hosted option sends the full paper and
-preregistration text to the RegCheck server and the LLM provider behind it
-(e.g., Groq) — do not use it for confidential manuscripts.
+Use `usethis::edit_r_environ()` to open the file. Tokens are not publicly
+available: contact the RegCheck team. Note that the hosted option sends the
+full paper and preregistration text to the RegCheck server and the
+corresponding LLM provider — do not use it for confidential manuscripts.
 
 ### Option B: a local RegCheck server with Ollama
 
-A [fork of RegCheck](https://github.com/Matilda03/regcheck-fork) can run
-the comparison entirely on your own computer, using
-[Ollama](https://ollama.com) — the same free tool that metacheck uses for
-other local LLM tasks (see the
-[Local AI with Ollama](ollama.html) article). With this option, **no text
-leaves your machine**, which makes it suitable for confidential work and
-GDPR-sensitive contexts.
+The RegCheck server is bundled inside metacheck, so there is nothing to
+clone or configure separately. You need two external tools installed once:
+[Ollama](https://ollama.com/download) and either
+[Docker](https://www.docker.com/get-started/) (easiest) or
+[Python 3.12+](https://www.python.org/downloads/).
 
-The local option is the default in `reg_check`:
+No API token configuration is needed — metacheck uses a built-in default
+token for local use automatically.
 
-```{r}
-check <- paper |>
-  module_run("prereg_check") |>
-  module_run("reg_check")   # client = "ollama" is the default
+#### Option B1: Docker (recommended)
+
+Docker gives you a fully isolated, reproducible environment with no Python
+installation needed beyond what Docker manages.
+
+**Step 1: Install Docker**
+
+Download Docker Desktop from <https://www.docker.com/get-started/> and
+start it. Verify the install by running `docker --version` in a terminal.
+
+**Step 2: Install Ollama and pull the models**
+
+Download from <https://ollama.com/download>. Then pull the embedding model
+(required) and a language model of your choice:
+
+```bash
+ollama pull nomic-embed-text-v2-moe
+ollama pull llama3.2
 ```
 
-Setting up the local server (once):
+**Which language model to use?** Larger models produce better judgements —
+use the largest one that fits in your GPU memory. A few options from the
+[Ollama library](https://ollama.com/library):
 
-1. Install [Ollama](https://ollama.com/download) and pull a model, e.g.
-   `ollama pull llama3.1:8b` in a terminal.
-2. Clone the fork: `git clone https://github.com/Matilda03/regcheck-fork`
-3. Follow its README to install the Python dependencies and start the
-   server (it runs at `http://localhost:8000`).
-4. Choose any token, configure it on the server as `REGCHECK_API_TOKEN`,
-   and put the same token in your `.Renviron`. Yes — the local server also
-   requires a token; it just stays on your machine.
+| Model               | Size   | Minimum VRAM |
+|:--------------------|:-------|:-------------|
+| `llama3.2`          | 3B     | ~4 GB        |
+| `mistral`           | 7B     | ~8 GB        |
+| `llama3.1`          | 8B     | ~8 GB        |
+| `llama3.3`          | 70B    | ~48 GB (or run on CPU, slowly) |
+
+Replace `llama3.2` with your chosen model name. To tell the local server
+which model to use, pass it when starting (see Step 3).
+
+The embedding model (`nomic-embed-text-v2-moe`) is required regardless of
+which language model you pick.
+
+**Step 3: Start the server from R**
+
+```{r}
+regcheck_start_local()                         # uses llama3.2 by default
+regcheck_start_local(model = "llama3.1")       # use a different model
+```
+
+The first run builds the Docker image (roughly 5 minutes, once only).
+After that, `regcheck_start_local()` is instant. The server runs at
+`http://localhost:8000`. Stop it when you are done:
+
+```{r}
+regcheck_stop_local()
+```
+
+Then run the comparison as usual (the default `client = "ollama"` uses
+your local server):
+
+```{r}
+paper <- demopaper()
+check <- paper |>
+  module_run("prereg_check") |>
+  module_run("reg_check")
+```
+
+#### Option B2: Manual Python (no Docker)
+
+If you prefer not to install Docker, you can run the server directly with
+Python.
+
+**Step 1: Install Python 3.12+**
+
+Download from <https://www.python.org/downloads/> and make sure `python3`
+(or `python` on Windows) is on your PATH.
+
+**Step 2: Install Ollama and pull models**
+
+Download from <https://ollama.com/download>. Pull the embedding model and
+your chosen language model (see the table in Option B1 above for guidance
+on which model to pick):
+
+```bash
+ollama pull nomic-embed-text-v2-moe
+ollama pull llama3.2          # or any larger model you prefer
+```
+
+**Step 3: Set up the server from R (once)**
+
+```{r}
+regcheck_setup_local()
+```
+
+This creates a Python virtual environment inside the metacheck package
+directory, installs all dependencies (no Redis required — the bundled
+server uses an in-memory store), and downloads the NLTK data.
+
+**Step 4: Start the server**
+
+Each R session, before running `reg_check`:
+
+```{r}
+regcheck_start_local(method = "python")
+```
+
+The server runs at `http://localhost:8000`. Stop it when you are done:
+
+```{r}
+regcheck_stop_local()
+```
+
+Then run the comparison:
+
+```{r}
+paper <- demopaper()
+check <- paper |>
+  module_run("prereg_check") |>
+  module_run("reg_check")
+```
 
 ### Is a small local model good enough?
 
 The hosted server uses large commercial models. A local model that fits on
-a normal laptop or desktop GPU is much smaller — is it up to the task?
+a typical laptop or desktop GPU is much smaller — is it up to the task?
 
-We probed this with the largest model installed on our test machine
-(`qwen3.5:9b`, 6.6 GB), giving it the same comparison task RegCheck uses
-(same prompt structure, same judgement format) for three dimensions of our
-example paper. The result:
+Based on our real-world test above (Example 3):
 
-* It produced valid, structured judgements on every call.
-* Its judgements **agreed with the hosted model** on all three probed
-  dimensions, with accurate, dimension-specific explanations (for example,
-  it correctly identified the "first 30 non-excluded participants" rule in
-  the sample size comparison).
-* It took 25–55 seconds per dimension on a 6 GB GPU, so a full
-  10-dimension comparison takes roughly 5–9 minutes per preregistration —
-  compared to under a minute for the hosted server.
+* A ~8–9B model produces valid judgements on most dimensions, and its
+  judgements can agree with the hosted model on clear-cut cases.
+* Small models frequently do not respect the structured output format,
+  leaving `deviation_judgement` blank for some rows.
+* Small models tend to derive their own dimension labels rather than
+  following the server's standard set, making results harder to compare
+  across papers.
+* A full comparison takes 5–15 minutes locally vs. under a minute hosted.
 
-Two caveats. First, small models have a limited *context window*: they can
-only read a limited amount of text at once. In our probe, feeding the whole
-paper at once silently broke the comparison — the model must be given short
-relevant excerpts, which is exactly what the RegCheck pipeline's retrieval
-step does. Second, our probe covered three clear-cut dimensions; subtler
-judgements (like the statistical-models deviation above) may favour larger
-models. Our overall assessment: a ~8–9B local model is adequate for a first
-screening pass, and the hosted option is preferable when you need the most
-careful judgements and the manuscript is not confidential.
+**Our overall assessment:** a local model is adequate for a first
+exploratory pass on confidential manuscripts. For systematic screening
+or the most careful judgements, the hosted option is preferable.
 
 ## Responsible use
 
@@ -258,7 +413,8 @@ careful judgements and the manuscript is not confidential.
   psychology: Assessing preregistration producibility and
   preregistration-study consistency. *Psychological Methods*.
   doi: 10.1037/met0000687
+* Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports.           Evidence-Based Toxicology, 2(1). https://doi.org/10.1080/2833373X.2024.2376046
 * Lakens, D. (2024). When and How to Deviate From a Preregistration.
   *Collabra: Psychology*, 10(1), 117094. doi: 10.1525/collabra.117094
-* RegCheck: Cummins, J., <https://github.com/JamieCummins/regcheck>;
-  local Ollama fork: <https://github.com/Matilda03/regcheck-fork>
+* RegCheck: Cummins, J., <https://github.com/JamieCummins/regcheck>
+* Local Ollama integration (inspiration): Gustafsson, M., <https://github.com/Matilda03>
