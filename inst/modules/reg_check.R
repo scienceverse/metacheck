@@ -215,7 +215,7 @@ reg_check <- function(paper,
 
   ## guidance ----
   guidance <- c(
-    "RegCheck was developed by Jamie Cummins (<https://github.com/JamieCummins/regcheck>); the local Ollama server bundled in metacheck is inspired by the Ollama integration work of Matilda Gustafsson (<https://github.com/Matilda03>).",
+    "RegCheck was developed by Jamie Cummins (<https://github.com/JamieCummins/regcheck>); the local Ollama server bundled in metacheck is inspired by the Ollama integration work of Matilda Fogato (<https://github.com/Matilda03/regcheck-fork>).",
     "For metascientific articles demonstrating the rate of deviations from preregistrations, see:",
     format_ref(vandenAkker2024),
     "For educational material on how to report deviations from preregistrations, see:",
