@@ -1,6 +1,8 @@
 # metacheck
 
 <!-- badges: start -->
+[![DOI](https://zenodo.org/badge/926991536.svg)](https://doi.org/10.5281/zenodo.20704754)
+
 ![Made in Europe](https://img.shields.io/badge/Made_in_Europe-003399?logo=european-union&logoColor=FFCC00)
 
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)

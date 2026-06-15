@@ -3,26 +3,18 @@
 
 # metacheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
 
-<!-- badges: start -->
-
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![Codecov test
-coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)
-<!-- badges: end -->
-
 Metacheck provides extendable and integrated tools for automated checks
 of research outputs for best practices. (formerly named papercheck)
 
 Inspired by practices in software development, where automated checks
 (e.g., CRAN checks for R packages) are used to identify issues before
-release, metacheck screens scientific manuscripts to identify potential
+release, Metacheck screens scientific manuscripts to identify potential
 issues or areas for improvement and guide researchers in adopting best
 practices. It can also assist with processing large numbers of papers
 for metascientific enquiry.
 
 These check are meant to assist, but not replace, human expertise. For
-example, metacheck can identify incorrect citations, add missing DOIs,
+example, Metacheck can identify incorrect citations, add missing DOIs,
 and cross-reference citations against Retraction Watch, PubPeer, and the
 FLoRA replication database. It can also identify commonly misreported
 aspects, such as power analyses, and provide general advice. However,
@@ -32,7 +24,8 @@ advice in context.
 See [Get Started](articles/metacheck.html) for the basics,
 [Articles](articles/) for more detailed examples of what you can do, or
 our [introductory blog post](articles/intro.html) for a more conceptual
-overview.
+overview. You can contact the Metacheck team at:
+<metacheck.scienceverse@gmail.com>.
 
 ## Our Values
 
