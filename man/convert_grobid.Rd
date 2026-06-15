@@ -7,7 +7,7 @@
 convert_grobid(
   file_path,
   save_path = ".",
-  api_url = "http://localhost:8070",
+  api_url = "https://grobid.hti.ieis.tue.nl",
   start_page = -1,
   end_page = -1,
   consolidate_citations = 0,
@@ -36,8 +36,8 @@ convert_grobid(
 XML object
 }
 \description{
-This function uses a public grobid server maintained by Patrice Lopez. You can set up your own local grobid server following instructions from \url{https://grobid.readthedocs.io/} and set the argument \code{api_url} to its path (probably \url{http://localhost:8070})
+This function uses a GDPR-compliant public grobid server maintained by Eindhoven Technical University. You can set up your own local grobid server following instructions from \url{https://grobid.readthedocs.io/} and set the argument \code{api_url} to its path (probably \url{http://localhost:8070}). See \url{https://github.com/grobidOrg/grobid#demo} for other publicly available servers (we cannot guarantee their privay).
 }
 \details{
-Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see \url{https://grobid.readthedocs.io/en/latest/Consolidation/}). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep.
+Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see \url{https://grobid.readthedocs.io/en/latest/Consolidation/}). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep. We recommend you leave these defaults at 0 and use crossref_loookup = TRUE when converting from grobid XML to bibr JSON format with the convert() function.
 }

@@ -1,9 +1,7 @@
-### text_tab ----
-text_tab <- tabItem(
-  tabName = "text_tab",
-
+### text search block (composed into the single main tab) ----
+text_search_block <- tagList(
   box(width = 12, collapsible = TRUE, collapsed = FALSE,
-      title = "Search",
+      title = "Search Text",
       fluidRow(
         column(width = 12, textAreaInput("search_pattern", "Pattern", "*", "100%"))
       ),
@@ -25,6 +23,6 @@ text_tab <- tabItem(
       actionButton("search_preset_n", "sample size")
   ),
   downloadButton("download_table", "Download Table"),
-  dataTableOutput("text_table")
+  DT::DTOutput("text_table")
 )
 

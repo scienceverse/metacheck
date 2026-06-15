@@ -60,6 +60,7 @@ reference:
 - title: Reading in Papers
   desc: ~
   contents:
+  - '`report_app`'
   - '`metacheck_app`'
   - '`convert`'
   - '`convert_bibr`'
@@ -198,6 +199,11 @@ reference:
   - '`extract_eq`'
   - '`extract_p_values`'
   - '`extract_urls`'
+  - '`path_sanitize`'
   - '`stats`'
   - '`emojis`'
+- title: "Internal functions"
+  desc: "Functions for developers"
+  contents:
+  - has_keyword("internal")
 

@@ -10,13 +10,13 @@
             "date-parts": [
                 [
                     2026,
-                    5,
-                    6
+                    6,
+                    4
                 ]
             ],
-            "date-time": "2026-05-06T20:22:50Z",
-            "timestamp": 1778098970103,
-            "version": "3.51.4"
+            "date-time": "2026-06-04T22:37:59Z",
+            "timestamp": 1780612679194,
+            "version": "3.54.1"
         },
         "reference-count": 0,
         "publisher": "American Psychological Association (APA)",
@@ -45,7 +45,7 @@
         },
         "page": "408-423",
         "source": "Crossref",
-        "is-referenced-by-count": 1295,
+        "is-referenced-by-count": 1305,
         "title": [
             "The origins of sex differences in human behavior: Evolved dispositions versus social roles."
         ],
@@ -58,6 +58,12 @@
                 "sequence": "first",
                 "affiliation": [
 
+                ],
+                "role": [
+                    {
+                        "vocabulary": "crossref",
+                        "role": "author"
+                    }
                 ]
             },
             {
@@ -66,6 +72,12 @@
                 "sequence": "additional",
                 "affiliation": [
 
+                ],
+                "role": [
+                    {
+                        "vocabulary": "crossref",
+                        "role": "author"
+                    }
                 ]
             }
         ],

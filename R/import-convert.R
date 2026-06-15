@@ -6,7 +6,7 @@
 #'
 #' @param file_path Path to the document file, or a directory of documents
 #' @param save_path Path to a directory in which to save the JSON file
-#' @param method whether to use bibr, grobid, or grobid_to_bibr to convert a file (see Details)
+#' @param method whether to use bibr, grobid, or xml (grobid_to_bibr) to convert a file (see Details)
 #' @param crossref_lookup whether to add the bib_match table from crossref
 #' @param keep_xml if the method is grobid, whether to keep intermediate XML files
 #' @param ... further arguments to pass to convert_bibr, convert_grobid, or grobid_to_bibr
@@ -21,7 +21,7 @@ convert <- function(file_path,
                     ...) {
   args <- list(...)
 
-  # check file types (xml/pdf/doc/docx)
+  # check file types (xml/pdf/doc/docx) ----
   if (length(file_path) == 1 && dir.exists(file_path)) {
     files <- list.files(file_path)
   } else {
@@ -41,7 +41,8 @@ convert <- function(file_path,
     stop("No PDF, XML, DOC or DOCX files detected.")
   }
 
-  # auto-detect method (local grobid > local bibr > online priority list)
+  # auto-detect method ----
+  # (local grobid > local bibr > online priority list)
   method <- match.arg(method)
   if (method == "auto") {
     grobid_local_url <- "http://localhost:8070"
@@ -61,7 +62,7 @@ convert <- function(file_path,
     }
   }
 
-  # check server priority list
+  # check server priority list ----
   if (method == "auto" || is.null(args$api_url)) {
     servers_url <- "https://www.scienceverse.org/metacheck/convert.json"
 
@@ -92,37 +93,34 @@ convert <- function(file_path,
     }
   }
 
-
-
-  # set up args
+  # set up args ----
   args$file_path <- file_path
   args$save_path <- save_path
 
+  # convert ----
   if (method == "xml") {
-    # convert XML to bibr
-    bib_path <- grobid_to_bibr(file_path, save_path, crossref_lookup)
+    ## xml: convert XML to bibr ----
+    bibr_path <- grobid_to_bibr(file_path, save_path, crossref_lookup)
   } else if (method == "grobid") {
+    ## grobid: convert PDF to XML ----
     if (keep_xml) {
       args$save_path <- sub("\\.json$", "\\.xml", save_path)
     } else {
       tmp_xml <- tempfile(fileext = ".xml")
       args$save_path <- tmp_xml
+      on.exit(unlink(tmp_xml))
     }
 
-    # convert PDF to XML
     grobid_args <- c("file_path", "save_path", "api_url", "start_page", "end_page")
     valid_args <- intersect(names(args), grobid_args)
     tmp_xml <- do.call(convert_grobid, args[valid_args])
-
-    # convert to bibr
-    bib_path <- grobid_to_bibr(tmp_xml, save_path, crossref_lookup)
-    if (!keep_xml) unlink(tmp_xml)
+    bibr_path <- grobid_to_bibr(tmp_xml, save_path, crossref_lookup)
   } else if (method == "bibr") {
-    # convert PDF or DOC to bibr
+    ## bibr: convert PDF or DOC to bibr ----
     bibr_args <- formals(convert_bibr) |> names()
     valid_args <- intersect(names(args), bibr_args)
-    bib_path <- do.call(convert_bibr, valid_args)
+    bibr_path <- do.call(convert_bibr, valid_args)
   }
 
-  return(bib_path)
+  return(bibr_path)
 }

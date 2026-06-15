@@ -5,8 +5,6 @@ test_that("exists", {
   expect_error(pubpeer_comments(bad_arg))
 })
 
-# httptest2::start_capturing()
-httptest2::use_mock_api()
 
 test_that("defaults", {
   # both with comments
@@ -51,7 +49,4 @@ test_that("defaults", {
   # empty doi
   pp <- pubpeer_comments(c())
   expect_null(pp)
-})
-
-httptest2::stop_mocking()
-# httptest2::stop_capturing()
+}, "mock")

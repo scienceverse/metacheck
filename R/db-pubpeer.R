@@ -31,7 +31,7 @@ pubpeer_comments <- function(doi) {
         doi = fb$id,
         total_comments = fb$total_comments,
         url = fb$url,
-        users = trimws(fb$users)
+        users = paste(trimws(fb$users), collapse = ", ")
       )
     }) |>
       do.call(dplyr::bind_rows, args = _)

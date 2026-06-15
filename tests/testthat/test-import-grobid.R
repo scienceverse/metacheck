@@ -1,8 +1,5 @@
 # grobid_to_bibr ----
 
-# httptest2::start_capturing()
-httptest2::use_mock_api()
-
 testthat::local_mocked_bindings(
   online = \(...) TRUE
 )
@@ -13,13 +10,13 @@ test_that("grobid_to_bibr", {
   expect_no_error(helplist <- help(grobid_to_bibr, metacheck))
 
   expect_error(grobid_to_bibr(1))
-})
+}, "mock")
 
 test_that("1 paper, fail", {
   xml_file <- test_path("fixtures", "problems", "corrupt.xml")
   expect_warning(paper <- grobid_to_bibr(xml_file, NULL))
   expect_null(paper)
-})
+}, "mock")
 
 test_that("multiple paper, one fails", {
   xml_file <- c(
@@ -29,7 +26,7 @@ test_that("multiple paper, one fails", {
   expect_warning( paper <- grobid_to_bibr(xml_file, NULL) )
   expect_equal(length(paper), 1)
   expect_equal(paper[[1]]$info$file_name, xml_file[[1]])
-})
+}, "mock")
 
 
 test_that("1 paper, NULL save_path, no CR lookup", {
@@ -53,7 +50,7 @@ test_that("1 paper, NULL save_path, no CR lookup", {
   expect_equal(paper$figure$figure_id, 1:2)
   fig_sec <-paper$section[paper$section$section_id %in% paper$figure$section_id, ]$section_type
   expect_in(fig_sec, "figure")
-})
+}, "mock")
 
 
 test_that("1 paper, save_path, no CR lookup", {
@@ -97,7 +94,7 @@ test_that("1 paper, save_path, no CR lookup", {
     p1bib$authors <- NULL; p2bib$authors <- NULL
     compare_shared(p1bib, p2bib)
   })
-})
+}, "mock")
 
 
 test_that("multiple papers, NULL save_path, no CR lookup", {
@@ -110,7 +107,7 @@ test_that("multiple papers, NULL save_path, no CR lookup", {
   expect_s3_class(papers, "scivrs_paperlist")
   expect_true(paper_validate(papers[[1]]))
   expect_true(paper_validate(papers[[2]]))
-})
+}, "mock")
 
 
 test_that("multiple papers, save_path, no CR lookup", {
@@ -123,7 +120,7 @@ test_that("multiple papers, save_path, no CR lookup", {
   expect_equal(length(zip_path), 2)
   papers <- read(zip_path)
   expect_s3_class(papers, "scivrs_paperlist")
-})
+}, "mock")
 
 
 test_that("1 paper, NULL save_path, CR lookup", {
@@ -131,7 +128,7 @@ test_that("1 paper, NULL save_path, CR lookup", {
   xml_file <- demofile("xml")
   paper_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_equal(paper_cr$bib_match$service[[1]], "crossref")
-})
+}, "mock")
 
 
 test_that("multiple papers, NULL save_path, CR lookup", {
@@ -144,7 +141,7 @@ test_that("multiple papers, NULL save_path, CR lookup", {
   papers_cr <- grobid_to_bibr(xml_file, NULL, TRUE)
   expect_equal(papers_cr[[1]]$bib_match$service[[1]], "crossref")
   expect_equal(papers_cr[[2]]$bib_match$service[[2]], "crossref")
-})
+}, "mock")
 
 # read ----
 
@@ -212,7 +209,7 @@ test_that("convert_grobid", {
 
   filename <- c("wrongfile.pdf", "wrongfile.pdf")
   expect_error(convert_grobid(filename), "Files do not exist")
-})
+}, "mock")
 
 test_that("invalid URL error", {
   filename <- demofile("pdf")
@@ -224,13 +221,13 @@ test_that("invalid URL error", {
   expect_error(suppressWarnings(
     convert_grobid(filename, api_url = "kermitt2-grobid.hf.space")
     ))
-})
+}, "mock")
 
 
 test_that("non-Grobid URL rejected", {
   filename <- demofile("pdf")
   expect_error(convert_grobid(filename, api_url = "https://google.com"))
-})
+}, "mock")
 
 
 test_that("bad PDF", {
@@ -243,13 +240,10 @@ test_that("bad PDF", {
   # exp <- c(NA_character_, NA_character_)
   # names(exp) <- filename2
   # expect_equal(x, exp)
-})
+}, "mock")
 
 
 test_that("makes missing save directory - single", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # single file, path with uncreated dir
@@ -259,12 +253,9 @@ test_that("makes missing save directory - single", {
                              api_url = grobid_url)
   expect_true(dir.exists(newdir))
   expect_equal(obs_path, save_path)
-})
+}, "mock")
 
 test_that("makes missing save directory - multiple", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   save_path <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir
@@ -280,12 +271,9 @@ test_that("makes missing save directory - multiple", {
   expect_equal(obs_path, exp_path)
   expect_true(file.exists(exp_path[[1]]))
   expect_true(file.exists(exp_path[[2]]))
-})
+}, "mock")
 
 test_that("makes missing save directory - specific", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   newdir <- file.path(withr::local_tempdir(), "testnewdir")
 
   # multiple files with uncreated dir and specific file names (no .xml)
@@ -299,12 +287,9 @@ test_that("makes missing save directory - specific", {
   expect_equal(obs_path, exp_path)
   expect_true(file.exists(exp_path[[1]]))
   expect_true(file.exists(exp_path[[2]]))
-})
+}, "mock")
 
 test_that("defaults", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   pdf <- demofile("pdf")
   paper <- convert_grobid(pdf, NULL, api_url = grobid_url)
   expect_s3_class(paper, "scivrs_paper")
@@ -332,12 +317,9 @@ test_that("defaults", {
     generateIDs=0,
     flavor=NULL # https://grobid.readthedocs.io/en/latest/Grobid-specialized-processes/
   )
-})
+}, "mock")
 
 test_that("reference consolidation", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   xml_file <- demofile("xml")
   xml_text <- readLines(xml_file, warn = FALSE) |>
     paste(collapse = "\n") |>
@@ -364,12 +346,9 @@ test_that("reference consolidation", {
   expect_equal(paper0$bib$authors[[ref_n]], wrongauthors)
   expect_equal(paper1$bib$authors[[ref_n]], rightauthors)
   expect_equal(paper2$bib$authors[[ref_n]], wrongauthors)
-})
+}, "mock")
 
 test_that("change start and end pages", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   save_path <- withr::local_tempdir()
   pdf <- demofile("pdf")
   xml_path <- convert_grobid(pdf, save_path, api_url = grobid_url,
@@ -386,12 +365,9 @@ test_that("change start and end pages", {
   expect_true(grepl(p2, body, fixed = TRUE))
   expect_true(grepl(p3, body, fixed = TRUE))
   expect_false(grepl(p4, body, fixed = TRUE))
-})
+}, "mock")
 
 test_that("batch - directory", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   grobid_dir <- test_path("fixtures", "debruine")
   save_path <- withr::local_tempdir()
 
@@ -399,12 +375,9 @@ test_that("batch - directory", {
   actual <- list.files(save_path, "\\.xml")
   expected <- list.files(grobid_dir, "\\.xml")
   expect_equal(actual, expected)
-})
+}, "mock")
 
 test_that("batch - multiple filenames", {
-  skip_if_not(.grobid_isalive(grobid_url, error = FALSE),
-              message = "grobid not available")
-
   grobid_dir <- test_path("fixtures", "debruine")
   save_path <- withr::local_tempdir()
 
@@ -413,7 +386,7 @@ test_that("batch - multiple filenames", {
   actual <- list.files(save_path, "\\.xml")
   expected <- list.files(grobid_dir, "\\.xml")[2:3]
   expect_equal(actual, expected)
-})
+}, "mock")
 
 test_that(".grobid_isalive", {
   expect_true(is.function(metacheck:::.grobid_isalive))
@@ -433,11 +406,7 @@ test_that(".grobid_isalive", {
   api_url <- grobid_url
   alive <- .grobid_isalive(api_url, error = FALSE)
   expect_in(alive, c(TRUE, FALSE))
-})
-
-httptest2::stop_mocking()
-# httptest2::stop_capturing()
-
+}, "mock")
 
 test_that("null section import", {
   xml_file <- test_path("fixtures", "problems", "203020.xml")
@@ -593,3 +562,4 @@ test_that("bibstruct", {
   exp <- "When are organizations punished for organizational misconduct? A review and research agenda"
   expect_equal(bib$title, exp)
 })
+

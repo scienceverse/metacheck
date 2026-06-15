@@ -1,6 +1,3 @@
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
 # skip online checking in aspredicted_* functions
 testthat::local_mocked_bindings(
   online = \(...) TRUE
@@ -112,7 +109,7 @@ test_that("add_bib_match", {
                                               "10.1098/rspb.2004.3003"))
   expect_equal(paper_bm[[2]]$bib_match$doi, c("10.1098/rspb.2004.3003",
                                               "10.1177/1948550617697177"))
-})
+}, "mock")
 
 test_that('Error in `[.data.frame`(ref[[i]], , ref[[i]] != "")', {
   paper <- psychsci[[1]]
@@ -125,7 +122,6 @@ test_that('Error in `[.data.frame`(ref[[i]], , ref[[i]] != "")', {
 
 test_that("longer bib", {
   skip_if_quick()
-  # skip_api("api.labs.crossref.org")
 
   xml_file <- test_path("fixtures", "formats", "published.pdf.tei.xml")
   paper <- grobid_to_bibr(xml_file, save_path = NULL, FALSE)
@@ -139,17 +135,13 @@ test_that("longer bib", {
   bm_dois <- bm$doi.bm[!is.na(bm$doi.bib)]
   match_pcnt <- mean(bib_dois %in% bm_dois)
   expect_true(match_pcnt > .85)
-})
-
-
-
+}, "mock")
 
 
 test_that("crossref_query", {
   expect_true(is.function(metacheck::crossref_query))
   expect_no_error(helplist <- help(crossref_query, metacheck))
 
-  # skip_api("api.labs.crossref.org")
 
   ref <- "Lakens, D., Mesquida, C., Rasti, S., & Ditroilo, M. (2024). The benefits of preregistration and Registered Reports. Evidence-Based Toxicology, 2(1)."
 
@@ -207,7 +199,7 @@ test_that("crossref_query", {
   obs <- crossref_query(ref)
   exp <- "10.1098/rspb.1998.0266"
   expect_equal(obs$DOI, exp)
-})
+}, "mock")
 
 test_that("crossref_query batch", {
   skip("Broken!")
@@ -274,7 +266,7 @@ test_that("crossref_doi", {
   doi <- psychsci[1:2]
   cr4 <- crossref_doi(doi, c("DOI", "title"))
   expect_equal(cr4$DOI, cr2$DOI)
-})
+}, "mock")
 
 test_that("datacite_doi", {
   expect_true(is.function(metacheck::datacite_doi))
@@ -313,7 +305,7 @@ test_that("datacite_doi", {
   info <- datacite_doi(doi)
   expect_equal(info$title, c("faux: Simulation for Factorial Designs",
                              "Data Skills for Reproducible Science"))
-})
+}, "mock")
 
 test_that("openalex_doi", {
   expect_true(is.function(metacheck::openalex_doi))
@@ -369,7 +361,7 @@ test_that("openalex_doi", {
   doi <- "10.1177/0956797614520714"
   oa <- openalex_doi(doi, select = "is_retracted")
   expect_equal(oa[[1]]$is_retracted, TRUE)
-})
+}, "mock")
 
 test_that("openalex_query", {
   expect_true(is.function(metacheck::openalex_query))
@@ -387,8 +379,5 @@ test_that("openalex_query", {
   expect_equal(nrow(b), 1)
   expect_equal(b$display_name, title)
   expect_equal(b$doi, doi)
-})
+}, "mock")
 
-
-httptest2::stop_mocking()
-#httptest2::stop_capturing()

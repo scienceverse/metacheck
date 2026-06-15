@@ -45,10 +45,10 @@ paper_write(psychsci, paste0(save_path, "/", names(psychsci)))
 # or new bib_match
 for (i in seq_along(psychsci)) { # 164
   print(i)
-  #if (is.null(psychsci[[i]]$bib_match)) {
+  if (is.null(psychsci[[i]]$bib_match)) {
     psychsci[[i]] <- add_bib_match(psychsci[[i]])
     paper_write(psychsci[i], save_path = save_path)
- # }
+  }
 }
 # check bib_match 5, 9, 65, 103, 161,
 
@@ -120,4 +120,3 @@ readr::write_excel_csv(title_mis, "~/Desktop/title-mis.csv")
 
 "data-raw/psychsci/grobid_0.9.0-crf/09567976221094782.xml" |> rstudioapi::documentOpen()
 
-)
