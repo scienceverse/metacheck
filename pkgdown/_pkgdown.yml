@@ -2,6 +2,19 @@ url: https://scienceverse.github.io/metacheck/
 development:
   mode: release
 home:
+  sidebar:
+    structure: [badges, citation, license, community, links, funding]
+    components:
+      badges:
+        title: ""
+        text: >
+          [![DOI](https://zenodo.org/badge/926991536.svg)](https://doi.org/10.5281/zenodo.20704754)
+          [![Made in Europe](https://img.shields.io/badge/Made_in_Europe-003399?logo=european-union&logoColor=FFCC00)]()
+          [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+          [![Codecov test coverage](https://codecov.io/gh/scienceverse/metacheck/graph/badge.svg)](https://app.codecov.io/gh/scienceverse/metacheck)
+      funding:
+        title: "Funding"
+        text: Metacheck is partly financed by the Dutch Research Council (NWO) via the Thematic Digital Competence Centre Social Sciences & Humanities (TDCC-SSH) as part of the project Research Transparency Check with file number ICT.001.TDCC.018 under the grant <https://doi.org/10.61686/ENWVD61320>.
   links:
   - text: Contact the Team
     href: mailto:metacheck.scienceverse@gmail.com

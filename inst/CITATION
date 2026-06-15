@@ -1,0 +1,31 @@
+bibentry(
+  bibtype = "Manual",
+  title = "metacheck: Check Research Outputs for Best Practices",
+  author = c(
+    person(  given = "Lisa",
+             family = "DeBruine",
+             role = c("aut", "cre"),
+             email = "debruine@gmail.com",
+             comment = c(ORCID = "0000-0002-7523-5539")),
+    person(  given = "Cristian",
+             family = "Mesquida",
+             role = c("aut"),
+             email = "cristianmesquida@gmail.com",
+             comment = c(ORCID = "0000-0002-1542-8355")),
+    person(  given = "Jakub",
+             family = "Werner",
+             role = c("aut"),
+             email = "jakub@jakubwerner.com",
+             comment = c(ORCID = "0009-0004-0388-0362")),
+    person(  given = "Daniel",
+             family = "Lakens",
+             role = c("aut", "cre"),
+             email = "lakens@gmail.com",
+             comment = c(ORCID = "0000-0002-0247-239X"))
+  ),
+  year = 2026,
+  note = "R package version 0.1.0",
+  url = "https://scienceverse.org/metacheck",
+  doi = "10.5281/zenodo.20704754",
+  key = "metacheck-package"
+)
