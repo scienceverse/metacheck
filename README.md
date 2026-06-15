@@ -15,13 +15,9 @@ The goal of metacheck is to automatically check research outputs for best practi
 You can install the development version of metacheck from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("scienceverse/metacheck")
+pak::pkg_install("scienceverse/metacheck")
 ```
 
-## API (optional)
-
-To run metacheck as a REST API either using plumber or Docker, see [`inst/plumber/README.md`](inst/plumber/README.md) for instructions and documentation.
 
 
 ## Notes for Developers
