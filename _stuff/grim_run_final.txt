@@ -1,0 +1,173 @@
+=== GRIM on psychsci (250 papers) ===
+Papers with checkable means: 49 
+Checkable means: 160 
+  by n source:
+
+       df paragraph  sentence 
+       72        34        54 
+Flagged inconsistent: 42 
+  by n source:
+
+       df paragraph  sentence 
+       11        21        10 
+  of which consistent at items 2-4: 38 
+  inconsistent at any items 1-4: 4 
+
+=== All flagged sentences (for manual precision review) ===
+[1] 0956797617702699 | M = 0.84 | n=65, 66 (df) | items=2
+    They agreed with our own division of the words into a set of words conveying brightness (rated darkness: M = 0.84, SD = 0.2) and a set of words conveying darkness (rated darkness: M = 3.00, SD = 0.24), t(64) = 36.43, p < .001 (independent-samples t test).
+
+[2] 0956797620968789 | M = 4.80 | n=21, 22 (df) | items=2
+    Bimodal bilinguals indicated that they use Dutch (M = 4.80, SD = 0.41) more often than NGT (M = 3.65, SD = 0.93), paired-samples t test: t(20) = -5.21, p < .001, Cohen's d = -1.59 (effect sizes were calculated using the effsize package; Version 0.7.6; Torchiano, 2019).
+
+[3] 0956797620968789 | M = 3.65 | n=21, 22 (df) | items=3
+    Bimodal bilinguals indicated that they use Dutch (M = 4.80, SD = 0.41) more often than NGT (M = 3.65, SD = 0.93), paired-samples t test: t(20) = -5.21, p < .001, Cohen's d = -1.59 (effect sizes were calculated using the effsize package; Version 0.7.6; Torchiano, 2019).
+
+[4] 0956797620968789 | M = 3.85 | n=21, 22 (df) | items=3
+    All bimodal bilinguals rated their proficiency for production in NGT and Dutch to be somewhere between advanced and native-like, although scores were significantly higher for Dutch (M = 4.55, SD = 0.51) than for NGT (M = 3.85, SD = 0.93), paired-samples t test: t(20) = -2.77, p =
+
+[5] 0956797620968789 | M = 4.75 | n=21, 22 (df) | items=2
+    For comprehension, bimodal bilinguals rated themselves as almost native in both Dutch (M = 4.75, SD = 0.44) and NGT (M = 4.50, SD = 0.69), paired-samples t test: t(20) = -1.56, p = .14, Cohen's d = -0.43.
+
+[6] 0956797620970548 | M = 7.95 | n=27, 28 (df) | items=2
+    Specifically, medium-fear odor (M = 7.95, SD = 13.82) elicited a greater amygdala response than low-fear odor (M = 1.71, SD = 13.53), t(26), p = .017, d = 0.46, 95% CI = [-0.07, 0.98], yet high-fear odor (M = 2.04, SD = 14.68) evoked a smaller amygdala response than medium-fear o
+
+[7] 0956797621991548 | M = 0.72 | n=55, 56 (df) | items=2
+    This effect was replicated in cohort B (negative: M = -0.12, SD = 1.16; neutral: M = 0.72, SD = 1.11), t(54) = 4.62, p < .001, d = 0.62 (see Fig. 3, left).
+
+[8] 09567976221086513 | M = 0.35 | n=27, 28 (df) | items=2
+    However, there was a significant main effect of CS type, F(1, 26) = 5.24, p = .03, η² = .01; irrespective of percept modality, SCR was greater to the CS+ (M = 0.35, SD = 0.27) than the CS-(M = 0.29, SD = 0.23), t(26) = 2.29, p = .03, d = 0.44.
+
+[9] 09567976221086513 | M = 0.28 | n=27, 28 (df) | items=2
+    There was also a significant main effect of percept modality, F(1, 26) = 7.37, p = .01, η² = .02; irrespective of CS type, SCR was greater during imagine trials (M = 0.37, SD = 0.25) than view trials (M = 0.28, SD = 0.25), t(26) = 2.72, p = .01, d = 0.52 (Fig. 4, bottom left; see
+
+[10] 09567976221131519 | M = 43.85 | n=29, 30 (df) | items=2
+    This is explained by lower trustworthiness ratings for faces in the systole-self condition (M = 43.85, SD = 5.88, 95% CI = [41.62.00, 46.09]) compared with those in the other-slow (M = 46.40, SD = 5.30, 95% CI = [44.38, 48.41]), t(28) = -3.78, p = .001, Cohen's d = 0.70, and othe
+
+[11] 09567976231177968 | M = 1.46 | n=15, 16 (df) | items=3
+    Replicating the findings of Experiment 1, results showed that the audio cues of left and right motion made a significant difference in infants' eye-movement velocity when the random motion stimulus was presented (left cue: M = -1.11°/s, SD = 3.26, 95% CI = [-2.91, 0.70]; right cu
+
+[12] 0956797614522816 | M = 4.34 | n=27, 28 (paragraph) | items=2
+    In contrast, there was a similar numerical pattern but no significant difference for classrooms (basic: M = 3.57; subordinate: M = 4.34) and roads (basic: M = 2.69; subordinate: M = 3.09), ts < 1.415, ps > .169.
+
+[13] 0956797614522816 | M = 2.69 | n=27, 28 (paragraph) | items=2
+    In contrast, there was a similar numerical pattern but no significant difference for classrooms (basic: M = 3.57; subordinate: M = 4.34) and roads (basic: M = 2.69; subordinate: M = 3.09), ts < 1.415, ps > .169.
+
+[14] 0956797614522816 | M = 3.09 | n=27, 28 (paragraph) | items=2
+    In contrast, there was a similar numerical pattern but no significant difference for classrooms (basic: M = 3.57; subordinate: M = 4.34) and roads (basic: M = 2.69; subordinate: M = 3.09), ts < 1.415, ps > .169.
+
+[15] 0956797615569889 | M = -0.03 | n=9 (paragraph) | items=4
+    We found that within the PTSD group, suppression-induced forgetting (i.e., difference in memory performance between baseline and suppress items) was never found in either the low-BDI-II group (mean BDI-II score = 15.1, SD = 8.8) or the high-BDI-II group (mean BDI-II score = 35.7,
+
+[16] 0956797615569889 | M = 1.35 | n=9 (paragraph) | items=>4
+    They also showed highly significant suppression-induced forgetting on the details measure-low group: M = 1.35, F(1, 6) = 11.631, p = .014, ηp² = .660; high group: M = 1.03, F(1, 6) = 27.222, p = .002, ηp² = .819.
+
+[17] 0956797615569889 | M = 1.03 | n=9 (paragraph) | items=4
+    They also showed highly significant suppression-induced forgetting on the details measure-low group: M = 1.35, F(1, 6) = 11.631, p = .014, ηp² = .660; high group: M = 1.03, F(1, 6) = 27.222, p = .002, ηp² = .819.
+
+[18] 0956797617702699 | M = 3.21 | n=30 (paragraph) | items=3
+    The positive and negative words were matched on lexical frequency (positive: M = 3.21, SD = 0.76; negative: M = 3.26, SD = 0.53) and visual intensity (positive: M = 1.15 × 10 6, SD = 3.47 × 10 5 ; negative: M = 1.15 × 10 6, SD = 3.48 × 10 5 ), and none of the words had any obviou
+
+[19] 0956797617702699 | M = 3.26 | n=30 (paragraph) | items=3
+    The positive and negative words were matched on lexical frequency (positive: M = 3.21, SD = 0.76; negative: M = 3.26, SD = 0.53) and visual intensity (positive: M = 1.15 × 10 6, SD = 3.47 × 10 5 ; negative: M = 1.15 × 10 6, SD = 3.48 × 10 5 ), and none of the words had any obviou
+
+[20] 0956797617702699 | M = 1.15 | n=30 (paragraph) | items=2
+    The positive and negative words were matched on lexical frequency (positive: M = 3.21, SD = 0.76; negative: M = 3.26, SD = 0.53) and visual intensity (positive: M = 1.15 × 10 6, SD = 3.47 × 10 5 ; negative: M = 1.15 × 10 6, SD = 3.48 × 10 5 ), and none of the words had any obviou
+
+[21] 0956797617702699 | M = 1.15 | n=30 (paragraph) | items=2
+    The positive and negative words were matched on lexical frequency (positive: M = 3.21, SD = 0.76; negative: M = 3.26, SD = 0.53) and visual intensity (positive: M = 1.15 × 10 6, SD = 3.47 × 10 5 ; negative: M = 1.15 × 10 6, SD = 3.48 × 10 5 ), and none of the words had any obviou
+
+[22] 0956797620967261 | M = 4.09 | n=10 (paragraph) | items=>4
+    After reverse-coding three items (e.g., "I have the sense that time is running out"), we averaged the 10 items to create an overall FTP score, with higher scores indicating more expansive futures (α = .93, M = 4.09, SD = 1.35).
+
+[23] 0956797620967261 | M = 4.02 | n=10 (paragraph) | items=4
+    On the basis of a recent factor analysis by Rohr, John, Fung, and Lang (2017) suggesting that the FTP scale reflects three related but separate constructs, we calculated scores for each subscale: Extension (subjective sense of time left in life; α = .87, M = 4.02, SD = 1.91), Opp
+
+[24] 0956797620967261 | M = 4.73 | n=10 (paragraph) | items=3
+    On the basis of a recent factor analysis by Rohr, John, Fung, and Lang (2017) suggesting that the FTP scale reflects three related but separate constructs, we calculated scores for each subscale: Extension (subjective sense of time left in life; α = .87, M = 4.02, SD = 1.91), Opp
+
+[25] 0956797620967261 | M = 3.74 | n=10 (paragraph) | items=>4
+    On the basis of a recent factor analysis by Rohr, John, Fung, and Lang (2017) suggesting that the FTP scale reflects three related but separate constructs, we calculated scores for each subscale: Extension (subjective sense of time left in life; α = .87, M = 4.02, SD = 1.91), Opp
+
+[26] 0956797620967261 | M = 2.36 | n=10 (paragraph) | items=>4
+    Using a 6-point scale (0 = no risk,1 = very low risk,2 = low risk,3 = moderate risk,4 = high risk, and5 = very high risk), participants rated their own risk of contracting coronavirus (M = 2.36, SD = 1.11) as well as their risk of complications from coronavirus given their curren
+
+[27] 0956797620967261 | M = 2.45 | n=10 (paragraph) | items=2
+    Using a 6-point scale (0 = no risk,1 = very low risk,2 = low risk,3 = moderate risk,4 = high risk, and5 = very high risk), participants rated their own risk of contracting coronavirus (M = 2.36, SD = 1.11) as well as their risk of complications from coronavirus given their curren
+
+[28] 0956797620967261 | M = 2.97 | n=10 (paragraph) | items=3
+    Participants used the same 6-point scale to rate the risk of contracting coronavirus in the general population (M = 2.97, SD = 0.94).
+
+[29] 0956797620968789 | M = 33.25 years | n=15 (paragraph) | items=4
+    Dutch (11 female; age: M = 33.25 years, SD = 10.95) and 20 deaf native NGT signers (16 female; age: M = 34 years, SD = 2.5) were recruited as control groups.
+
+[30] 09567976211055375 | M = 0.94 | n=28, 29 (paragraph) | items=3
+    Accuracy in the perceptual-comparison conditions was near ceiling (shape task: M = 0.94, SD = 0.05 for the same-side probe, M = 0.89, SD = 0.07 for the oppositeside probe; color task: M = 0.95, SD = 0.04 for the same-side probe, M = 0.92, SD = 0.04 for the oppositeside probe), th
+
+[31] 09567976211055375 | M = 0.95 | n=28, 29 (paragraph) | items=2
+    Accuracy in the perceptual-comparison conditions was near ceiling (shape task: M = 0.94, SD = 0.05 for the same-side probe, M = 0.89, SD = 0.07 for the oppositeside probe; color task: M = 0.95, SD = 0.04 for the same-side probe, M = 0.92, SD = 0.04 for the oppositeside probe), th
+
+[32] 09567976211055375 | M = 0.92 | n=28, 29 (paragraph) | items=3
+    Accuracy in the perceptual-comparison conditions was near ceiling (shape task: M = 0.94, SD = 0.05 for the same-side probe, M = 0.89, SD = 0.07 for the oppositeside probe; color task: M = 0.95, SD = 0.04 for the same-side probe, M = 0.92, SD = 0.04 for the oppositeside probe), th
+
+[33] 0956797616634654 | mean age = 23.94 years | n=59 (sentence) | items=2
+    Fifty-nine healthy volunteers (24 males, 35 females; mean age = 23.94 years, age range 19-35) from the University College London Subject Pool were recruited to take part in the experiment.
+
+[34] 0956797616667447 | M = 2.63 | n=22, 31 (sentence) | items=2
+    We found a significant gender difference in task performance: Girls (M = 3.03, SD = 0.64, n = 22) scored higher on working memory than boys did (M = 2.63, SD = 0.74, n = 31), t(51) = -2.06, p =.045.
+
+[35] 0956797619844231 | M = 3.49 | n=56 (sentence) | items=2
+    Participants (N = 56) perceived emotional reactions to distinctive images as more intense than control images (distinctive: M = 3.49, SD = 2.87; pallid: M = 3.12, SD = 2.82), t(23.92) = 2.45, b = 0.38, 95% CI = [0.08, 0.68], p = .022.
+
+[36] 0956797620915887 | M = 24.52 years | n=12, 24, 34 (sentence) | items=2
+    Overall, 152 participants took part in this study for course credit or payment (~$10): There were 12 participants in Experiment 1a (3 women; 11 right-handed; age: M = 25.91 years, SD = 2.02), 24 in Experiment 1b (15 women; 20 right-handed; age: M = 24.52 years, SD = 1.73), 24 in 
+
+[37] 0956797620960011 | M = 36.29 years | n=30 (sentence) | items=3
+    Four hundred thirty individuals (56.28% male; age: M = 36.29 years, SD = 10.99) participated in exchange for $2.00.
+
+[38] 09567976211030630 | M = 21.55 years | n=48 (sentence) | items=2
+    Forty-eight young adults (44 female; age: M = 21.55 years, SD = 4.90, range = 17-42) and forty-eight 6-to 12-month-old infants (20 female; age: M = 261.17 days, SD = 51.85, range = 180-363) were recruited from the Ryerson Psychology Research Pool and from the Ryerson Infant and C
+
+[39] 09567976211049439 | M = 2.75 | n=94 (sentence) | items=2
+    From this sample, 94 participants with high social self-esteem (positiveself-view group; M = 2.75, SD = 0.29) and 111 participants with low social self-esteem (negative-self-view group; M = 1.24, SD = 0.32) took part in the actual study-the feedback-selection task.
+
+[40] 09567976221114055 | mean age = 19.08 years | n=45 (sentence) | items=2
+    Forty-five young adults (mean age = 19.08 years, SD = 0.84) participated in exchange for credit in an introductory psychology class at the University of Toronto.
+
+[41] 09567976221121348 | mean age = 20.52 years | n=49 (sentence) | items=2
+    In Experiment 1b, 49 undergraduates (35 women; mean age = 20.52 years) from UC San Diego took part in this online study in exchange for course credit.
+
+[42] 09567976221147259 | M = 23.46 years | n=30 (sentence) | items=3
+    To do so, we recruited another group of 30 participants (age: M = 23.46 years, range = 20-36; 24 right-handed; 13 women) with no history of neurological or psychiatric disorders and who provided written informed consent to take part in our behavioral study.
+
+=== Sample of PASSED rows (extraction sanity) ===
+OK M = 23.35 years | n=90, 20, 50
+   Ninety subjects participated in three experiments for payment or course credit: 20 participants in Experiment 1 (14 female; age: M = 24.35 years, SD = 3.88; all right handed; sample size in this more 
+OK M = 2.56 | n=55, 56, 53, 54, 51, 52
+   A series of t tests showed that participants who watched Song of the Sea experienced greater feelings of awe (M = 3.04, SD = 1.29) than of joy (M = 2.56, SD = 1.15), t(54) = -2.78, p = .007, Cohen's d
+OK M = 2.35 | n=55, 56
+   This effect was replicated in cohort B (negative: M = 3.02, SD = 0.83; neutral: M = 2.35, SD = 0.82), t(54) = 6.80, p < .001, d = 0.92 (see Fig. 2, which shows accuracy scores to ease interpretation).
+OK M = 3.68 | n=80, 97
+   Participants in the time-pressure condition (n = 80; M = 3.86, SD = 1.65) did not report significantly higher die-roll outcomes than participants in the self-paced condition (n = 97; M = 3.68, SD = 1.
+OK M = 0.59 | n=57, 58
+   A paired-samples t test (preregistered) showed that participants were less accurate in associative recognition in the negative (M = 0.56, SD = 0.24) relative to the neutral (M = 0.59, SD = 0.23) condi
+OK M = 3.04 | n=55, 56, 53, 54, 51, 52
+   A series of t tests showed that participants who watched Song of the Sea experienced greater feelings of awe (M = 3.04, SD = 1.29) than of joy (M = 2.56, SD = 1.15), t(54) = -2.78, p = .007, Cohen's d
+OK M = 22.67 years | n=45
+   A total of 45 individuals (age: M = 22.67 years, SD = 2.5; 36 female, 9 male) with normal or corrected-to-normal vision and without neurological, cardiovascular, or psychiatric conditions participated
+OK mean age = 24.59 years | n=56
+   This resulted in the planned sample size of 56 participants (49 women and 7 men, mean age = 24.59 years, SD = 2.77).
+OK M = 22.52 | n=40
+   Individuals were excluded from participation if they met any of the following criteria: any acute illnesses or a lifetime history of psychiatric or neurological conditions, current use of medication, 
+OK M = 3.86 | n=80, 97
+   Participants in the time-pressure condition (n = 80; M = 3.86, SD = 1.65) did not report significantly higher die-roll outcomes than participants in the self-paced condition (n = 97; M = 3.68, SD = 1.
+OK M = 0.75 | n=57, 58
+   A paired-samples t test showed that participants in cohort A performed better in the negative (M = 0.14, SD = 1.58) relative to the neutral (M = 0.75, SD = 1.36) condition, t(56) = 3.62, p = .001, d =
+OK M = 20.69 | n=68, 69
+   A paired t test (two-tailed) comparing estimates of the pot total in high-synchrony trials with estimates of the pot total in low-synchrony trials revealed that participants estimated the pot total wa
+OK M = 30.66 | n=35, 36
+   People less often chose faces synchronized with their own heart as more trustworthy (M = 28.26, SD = 3.66, 95% confidence interval [CI] = [27.00, 29.51]) than faces synchronized with other-slow (M = 3
+OK M = 4.55 | n=21, 22
+   All bimodal bilinguals rated their proficiency for production in NGT and Dutch to be somewhere between advanced and native-like, although scores were significantly higher for Dutch (M = 4.55, SD = 0.5
+OK M = 4.59 | n=29
+   From 10 different scenarios, participants found the "thumbtack-inthe-heel" scenario (see below) to be both highly aversive (M = 4.24, SD = 0.79, on a scale from 1 to 5) and vividly imaginable (M = 4.5

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GRIM Mean Context",
+  "description": "Information about a target mean reported in a paragraph of a scientific paper, needed to assess GRIM testability.",
+  "type": "object",
+  "properties": {
+    "n": {
+      "description": "The sample size the TARGET mean was computed over. Only report a number if it is stated in this text or unambiguously inferable from it. Use null if the sample size is not in this text.",
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "n_quote": {
+      "description": "Verbatim quote from the text supporting the value of n, or null.",
+      "type": ["string", "null"]
+    },
+    "scale_items": {
+      "description": "The number of items of the scale or measure that were averaged to produce each observation, if stated in this text (e.g., 'we averaged the 10 items' -> 10; a single rating -> 1). Use null if not stated.",
+      "type": ["integer", "null"],
+      "minimum": 1
+    },
+    "items_quote": {
+      "description": "Verbatim quote supporting scale_items, or null.",
+      "type": ["string", "null"]
+    },
+    "measure_type": {
+      "description": "What kind of quantity the TARGET mean summarises.",
+      "type": ["string", "null"],
+      "enum": [
+        "age_years",
+        "count",
+        "single_likert_item",
+        "multi_item_scale_mean",
+        "sum_score",
+        "percentage_or_proportion",
+        "continuous_measurement",
+        "stimulus_property",
+        "unknown",
+        null
+      ]
+    },
+    "integer_data": {
+      "description": "Whether the individual underlying values are whole numbers (true for Likert responses, counts, age in whole years; false for reaction times, amplitudes, difference scores, proportions of trials).",
+      "type": ["boolean", "null"]
+    }
+  },
+  "required": ["n", "n_quote", "scale_items", "items_quote", "measure_type", "integer_data"],
+  "additionalProperties": false
+}
