@@ -5,6 +5,7 @@
 options_tab <- tabItem(
   tabName = "options_tab",
   h2("Options"),
+
   tags$p(
     "These settings control what metacheck sends to, or retrieves from, ",
     "external servers when generating a report. You can leave them at ",

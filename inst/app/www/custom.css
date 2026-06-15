@@ -1,12 +1,7 @@
 :root {
-  --red: #dd4b39;
-  --pink: #983E82;   /* hsl(315, 42%, 42%) */
-  --orange: #E2A458; /* hsl( 33, 70%, 62%) */
-  --yellow: #ebcb3d; /* hsl( 49, 87%, 70%) */
-  --green: #59935B;  /* hsl(122, 25%, 46%) */
-  --blue: #467AAC;   /* hsl(209, 42%, 47%) */
-  --purple: #61589C; /* hsl(248, 28%, 48%) */
-  --grey: #222d32;
+  --green: #59935B;
+  --medgreen: #4a7d4c;
+  --darkgreen: #15342A;
 }
 
 body {
@@ -56,80 +51,7 @@ h3.box-title,
   background-color: var(--green);
 }
 
-#shiny-tab-study_tab .box-header,
-.sidebar-menu>li.active>a[data-value=study_tab],
-.sidebar-menu>li:hover>a[data-value=study_tab] {
-  border-left-color: var(--red);
-  background-color: var(--red);
-}
-
-#shiny-tab-aut_tab .box-header,
-.sidebar-menu>li.active>a[data-value=aut_tab],
-.sidebar-menu>li:hover>a[data-value=aut_tab] {
-  border-left-color: var(--orange);
-  background-color: var(--orange);
-}
-
-#shiny-tab-hyp_tab .box-header,
-.sidebar-menu>li.active>a[data-value=hyp_tab],
-.sidebar-menu>li:hover>a[data-value=hyp_tab] {
-  border-left-color: var(--yellow);
-  background-color: var(--yellow);
-}
-
-#shiny-tab-met_tab .box-header,
-.sidebar-menu>li.active>a[data-value=met_tab],
-.sidebar-menu>li:hover>a[data-value=met_tab] {
-  border-left-color: var(--green);
-  background-color: var(--green);
-}
-
-#shiny-tab-dat_tab .box-header,
-.sidebar-menu>li.active>a[data-value=dat_tab],
-.sidebar-menu>li:hover>a[data-value=dat_tab] {
-  border-left-color: var(--blue);
-  background-color: var(--blue);
-}
-
-#shiny-tab-ana_tab .box-header,
-.sidebar-menu>li.active>a[data-value=ana_tab],
-.sidebar-menu>li:hover>a[data-value=ana_tab] {
-  border-left-color: var(--purple);
-  background-color: var(--purple);
-}
-
-#shiny-tab-out_tab .box-header,
-.sidebar-menu>li.active>a[data-value=out_tab],
-.sidebar-menu>li:hover>a[data-value=out_tab] {
-  border-left-color: var(--pink);
-  background-color: var(--pink);
-}
-
 textarea { width: 100%; }
-
-.warning { border: 1px solid red; background-color: #FF9999 !important; }
-#met_text.warning { background-color: #f5ea9a !important; }
-.shiny-notification { border-color: red !important; }
-
-#var_list button.selected { background-color: blue; }
-code {
-  background-color: #EDF0F5;
-  background-color: hsla(218, 94%, 20%, .05);
-  color: #032763;
-}
-
-#met_text, #ana_code, #n, #mu, #sd, #r {
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
-}
-
-
-#roles label.checkbox-inline {
-  min-width: 14em;
-}
-
-#roles label.checkbox-inline:first-child {
-  margin-left: 10px;
-}
 
 /* override keytable style */
 table.dataTable tbody td.focus {
@@ -152,9 +74,10 @@ table.dataTable tbody td.focus {
 .report-checks .checkbox label {
   font-weight: 600;
 }
+
 /* tint the checkbox green when checked (default is grey/unchecked) */
-.report-checks input[type="checkbox"] {
-  accent-color: var(--green);
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--green) !important;
   width: 1.05em;
   height: 1.05em;
 }
@@ -174,7 +97,7 @@ table.dataTable tbody td.focus {
 }
 .pdf-upload .btn-file:hover,
 .pdf-upload .btn-file:focus {
-  background-color: #4a7d4c !important;
+  background-color: var(--medgreen) !important;
   color: #fff !important;
 }
 .pdf-upload .form-control {
@@ -192,7 +115,7 @@ table.dataTable tbody td.focus {
 }
 .btn-options-done:hover,
 .btn-options-done:focus {
-  background-color: #4a7d4c !important;
+  background-color: var(--medgreen) !important;
   color: #fff !important;
 }
 
@@ -205,11 +128,3 @@ table.dataTable tbody td.focus {
   padding-left: 1.5em;
   text-indent: -1.5em;
 }
-
-/* traffic lights */
-h2.na::before { content: '⚪️ '; }
-h2.fail::before { content: '⚫️ '; }
-h2.info::before { content: '🔵 '; }
-h2.red::before { content: '🔴 '; }
-h2.yellow::before { content: '🟡 '; }
-h2.green::before { content: '🟢 '; }

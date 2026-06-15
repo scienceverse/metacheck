@@ -7,6 +7,7 @@
 * Improvements to unit tests
 * Removed {fs} dependency and added custom `path_sanitize()` 
 * Added internal functions to the website for developer reference
+* Updated the vignette on creating modules to explain validation text.
 
 # metacheck 0.0.1.9001
 

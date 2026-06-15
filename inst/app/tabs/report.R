@@ -20,11 +20,16 @@ report_tab <- tabItem(
   ),
 
   # GDPR and privacy message, driven by the current Options settings
-  box(title = "GDPR and privacy",
+  box(title = "GDPR and Privacy",
       collapsible = TRUE,
       width = 12,
       tags$p("Change the settings in the 'Options' tab to enable or disable modules that use external servers."),
-      uiOutput("gdpr_privacy_ui")
+      uiOutput("gdpr_privacy_ui"),
+      actionButton(
+        "options_update", "Update Options",
+        icon = icon("arrow-right"),
+        class = "btn-options-done"
+      )
   ),
 
   box(title = "R Code",

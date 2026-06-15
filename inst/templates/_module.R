@@ -4,7 +4,19 @@
 #' A short description of the module.
 #'
 #' @details
-#' This text will show when you use module_info() and in the "How It Works" collapse box after the module report. It can be multiple paragraphs and is styled with markdown.
+#' This text will show when you use module_info()
+#' and in the "How It Works" collapse box after the module report.
+#' It can be multiple paragraphs and is styled with markdown.
+#'
+#' <validation>
+#' In a sample of P papers with I instances of {thing you are checking},
+#' TP were correctly detected (true positives),
+#' FN were missed (false negatives) and
+#' FP were incorrectly detected (false positives).
+#' Overall, among all instances flagged as {thing},
+#' (TP/(TP+FP))% were correct (positive predictive value) and
+#' (TP/I)% of true instances were detected (sensitivity).
+#' </validation>
 #'
 #' @keywords general|intro|method|results|discussion|reference
 #'

@@ -3,13 +3,23 @@ suppressPackageStartupMessages({
   library(shiny)
   library(shinyjs)
   library(shinydashboard)
-  # library(DT)
-  # library(metacheck)
-  # library(dplyr)
 })
 
-source("R/constants.R")
-source("R/funcs.R")
+options(shiny.maxRequestSize = 100 * 1024^2,
+        scipen = 10,
+        digits = 4)
+
+debug_msg <- function(...) {
+  is_local <- Sys.getenv('SHINY_PORT') == ""
+  if (is_local) {
+    message(...)
+    #} else {
+    list(...) |>
+      toString() |>
+      shinyjs::logjs()
+  }
+}
+
 source("tabs/report.R")
 source("tabs/options.R")
 
@@ -44,8 +54,6 @@ ui <- dashboardPage(
 
 ## server ----
 server <- function(input, output, session) {
-  options(shiny.maxRequestSize = 100 * 1024^2)
-
   ## reactiveVals ----
   report_path     <- reactiveVal("")
   report_running  <- reactiveVal(FALSE)
@@ -61,6 +69,11 @@ server <- function(input, output, session) {
   ### options_done — return to the Report tab ----
   observeEvent(input$options_done, {
     updateTabItems(session, "tabs", "report_tab")
+  })
+
+  ### options_update — go to the Options tab ----
+  observeEvent(input$options_update, {
+    updateTabItems(session, "tabs", "options_tab")
   })
 
   ### gdpr_privacy_ui ----
@@ -310,6 +323,18 @@ server <- function(input, output, session) {
     } else {
       llm_use(TRUE)
       llm_model(model_id)
+    }
+  })
+
+  observeEvent(input$grobid_server_choice, {
+    if (input$grobid_server_choice == "local") {
+      up <- .grobid_isalive("http://localhost:8070", error = FALSE)
+      if (!up)  {
+        showNotification(
+          "The local Grobid server does not seem to be running. Check http://localhost:8070",
+          type = "warning", duration = NULL
+        )
+      }
     }
   })
 
