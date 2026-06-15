@@ -1,0 +1,5 @@
+# Test fixtures are hashed byte-for-byte (file_hash = md5sum of the raw file),
+# so they must use stable LF line endings on every platform. Without this,
+# Windows checkouts get CRLF and the recomputed hash no longer matches the
+# value stored in the fixture JSON, producing a phantom diff after each test run.
+tests/testthat/fixtures/** text eol=lf

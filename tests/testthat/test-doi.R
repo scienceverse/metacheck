@@ -1,6 +1,3 @@
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that("doi_lookup", {
   expect_true(is.function(metacheck::doi_lookup))
   expect_no_error(helplist <- help(doi_lookup, metacheck))
@@ -39,7 +36,7 @@ test_that("doi_lookup", {
   exp <- c("Improving Transparency, Falsifiability, and Rigor by Making Hypothesis Tests Machine-Readable",
            "The origins of sex differences in human behavior: Evolved dispositions versus social roles.")
   expect_equal(info$title, exp)
-})
+}, "mock")
 
 test_that("doi_clean", {
   expect_true(is.function(metacheck::doi_clean))
@@ -108,7 +105,7 @@ test_that("doi_clean", {
   doi <- "10.1234/mypaper/full"
   clean <- doi_clean(doi)
   expect_equal(clean, "10.1234/mypaper")
-})
+}, "mock")
 
 test_that("doi_valid_format", {
   expect_true(is.function(metacheck::doi_valid_format))
@@ -136,7 +133,7 @@ test_that("doi_valid_format", {
   doi <- "10.1002/(SICI)1099-1611(200001/02)9:1<11::AID-PON424>3.0.CO;2-Z"
   v <- doi_valid_format(doi)
   expect_equal(v, T)
-})
+}, "mock")
 
 test_that("doi_resolves", {
   expect_true(is.function(metacheck::doi_resolves))
@@ -197,7 +194,5 @@ test_that("doi_resolves", {
   #   check <- doi_resolves(doi)
   #   expect_equal(check, c(NA, NA, NA, F))
   # })
-})
+}, "mock")
 
-httptest2::stop_mocking()
-#httptest2::stop_capturing()

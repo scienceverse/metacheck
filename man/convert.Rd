@@ -18,7 +18,7 @@ convert(
 
 \item{save_path}{Path to a directory in which to save the JSON file}
 
-\item{method}{whether to use bibr, grobid, or grobid_to_bibr to convert a file (see Details)}
+\item{method}{whether to use bibr, grobid, or xml (grobid_to_bibr) to convert a file (see Details)}
 
 \item{crossref_lookup}{whether to add the bib_match table from crossref}
 

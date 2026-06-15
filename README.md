@@ -15,8 +15,7 @@ The goal of metacheck is to automatically check research outputs for best practi
 You can install the development version of metacheck from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("scienceverse/metacheck")
+pak::pkg_install("scienceverse/metacheck")
 ```
 
 

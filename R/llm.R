@@ -165,6 +165,9 @@ llm <- function(text, system_prompt,
     })
   })
 
+  # terminate the progress bar so its line is closed off with a newline
+  pb$terminate()
+
   # join responses back to input ----
   if (structured) {
     response_df <- dplyr::bind_rows(responses)
@@ -323,6 +326,9 @@ llm_model_list <- function(platform = NULL) {
 
   # get models and ignore errors, add platform name
   models <- lapply(platform, \(p) {
+    if (p != "ollama" && !online()) {
+      return(NULL)
+    }
     tryCatch({
         # skip if google api key isn't set, otherwise it requests login
       if (p %in% c("google_gemini", "google_vertex") &&
@@ -332,7 +338,7 @@ llm_model_list <- function(platform = NULL) {
 
       model_func <- funcs[[p]]
       m <- model_func()
-      cols <- c("platform", names(m))
+      #cols <- c("platform", names(m))
       m$platform <- p
 
       m

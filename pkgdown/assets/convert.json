@@ -1,5 +1,11 @@
 [
   {
+    "id": "TUE grobid 0.8.2",
+    "service": "grobid",
+    "version": "0.8.2",
+    "url": "https://grobid.hti.ieis.tue.nl"
+  },
+  {
     "id": "Grobid FULL 0.9.0",
     "service": "grobid",
     "version": "0.9.0",

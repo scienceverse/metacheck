@@ -18,7 +18,7 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a list
-repo_check <- function(paper, local_path = NULL) {
+repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
@@ -32,21 +32,29 @@ repo_check <- function(paper, local_path = NULL) {
   })
 
   ## get links ----
-  osf_links_found <- osf_links(paper)
-  # exclude psychsci badges
-  if ("href" %in% names(osf_links_found)) {
-    osf_links_found <- osf_links_found |>
-      dplyr::filter(!grepl("tvyxz", href))
+  if (isTRUE(local_only)) {
+    empty_links        <- dplyr::tibble(paper_id = character(), href = character(), repo_type = character())
+    osf_links_found    <- empty_links
+    github_links_found <- empty_links
+    rb_links_found     <- empty_links
+    zenodo_links_found <- empty_links
+  } else {
+    osf_links_found <- osf_links(paper)
+    # exclude psychsci badges
+    if ("href" %in% names(osf_links_found)) {
+      osf_links_found <- osf_links_found |>
+        dplyr::filter(!grepl("tvyxz", href))
+    }
+    osf_links_found$repo_type    <- "osf"
+    github_links_found <- github_links(paper)
+    github_links_found$repo_type <- "github"
+    rb_links_found     <- rbox_links(paper)
+    rb_links_found$repo_type     <- "researchbox"
+    zenodo_links_found <- zenodo_links(paper)
+    zenodo_links_found$repo_type <- "zenodo"
   }
-  github_links_found <- github_links(paper)
-  rb_links_found <- rbox_links(paper)
-  zenodo_links_found <- zenodo_links(paper)
 
   ## organise repos in a table
-  osf_links_found$repo_type <- "osf"
-  github_links_found$repo_type <- "github"
-  rb_links_found$repo_type <- "researchbox"
-  zenodo_links_found$repo_type <- "zenodo"
   cols <- c("paper_id", "href", "repo_type")
   repos <- dplyr::bind_rows(
     osf_links_found[, cols],

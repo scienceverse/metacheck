@@ -13,12 +13,7 @@ test_that("rbox_links", {
 })
 
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that(".rbox_info", {
-  #skip_api("researchbox.org")
-
   url <- "https://researchbox.org/801"
   info <- .rbox_info(url)
 
@@ -46,10 +41,9 @@ test_that(".rbox_info", {
   info <- .rbox_info(rb_url)
   expect_equal(info$rb_url, rb_url)
   expect_equal(info$RB_public, "October 07, 2024")
-})
+}, "mock")
 
 test_that("rbox_info", {
-  #skip_api("researchbox.org")
   testthat::local_mocked_bindings(
     online = \(...) TRUE
   )
@@ -66,9 +60,7 @@ test_that("rbox_info", {
 
   expect_equal(info$href, links$href)
   expect_equal(info$RB_public, public)
-})
+}, "mock")
 
-httptest2::stop_mocking()
-#httptest2::stop_capturing()
 
 

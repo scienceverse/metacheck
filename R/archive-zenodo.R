@@ -366,7 +366,8 @@ zenodo_file_download <- function(zenodo_id,
   }
 
   # --- target directory (avoid overwrite) ----
-  download_to <- fs::path_abs(download_to)
+  # download_to <- fs::path_abs(download_to)
+  download_to <- normalizePath(download_to, winslash = "/", mustWork = FALSE)
   if (dir.exists(download_to)) {
     download_to <- file.path(download_to, as.character(zenodo_id))
   }
@@ -382,7 +383,9 @@ zenodo_file_download <- function(zenodo_id,
     pb$tick(0, tokens = _)
 
   # --- download into temp, then copy to target ----
-  temppath <- fs::file_temp()
+  # temppath <- fs::file_temp()
+  temppath <- tempfile()
+  on.exit(unlink(temppath, recursive = TRUE))
   dir.create(temppath)
 
   n <- nrow(files)
@@ -423,9 +426,6 @@ zenodo_file_download <- function(zenodo_id,
       file.copy(from, to, overwrite = TRUE)
     }
   }
-
-  # clean up
-  unlink(temppath, recursive = TRUE)
 
   # --- return table ----
   files$folder    <- basename(download_to)

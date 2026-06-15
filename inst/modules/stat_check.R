@@ -38,8 +38,8 @@ stat_check <- function(paper) {
       summary_table = data.frame(paper_id = paper$paper_id),
       table = data.frame(),
       traffic_light = "na",
-      report = "No detectable statistics. StatCheck currently only detects statistics written in APA format.",
-      summary_text = "No detectable statistics"
+      report = "No detectable t- or F-tests. StatCheck currently only detects statistics written in APA format.",
+      summary_text = "No detectable t- or F-tests. StatCheck currently only detects statistics written in APA format."
     )
 
     return(ret)

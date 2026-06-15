@@ -94,11 +94,8 @@ test_that("llm_max_calls", {
 
 # tests that require api.groq.com
 
-#httptest2::start_capturing()
-httptest2::use_mock_api()
-
 test_that("llm_use TRUE", {
-  #skip_llm()
+  skip_if(Sys.getenv("GROQ_API_KEY") == "")
   llm_use(TRUE)
   llm_model("groq")
 
@@ -120,7 +117,7 @@ test_that("llm_use TRUE", {
   expect_equal(is_letter$text, text)
   expect_equal(is_letter$answer[[1]], is_letter$answer[[2]])
   expect_equal(is_letter$answer[[3]], is_letter$answer[[4]])
-})
+}, "mock")
 
 
 test_that("llm_model_list", {
@@ -136,7 +133,7 @@ test_that("llm_model_list", {
     o <- llm_model_list("ollama")
     expect_equal(nrow(o), 0)
   })
-})
+}, "mock")
 
 test_that(".llm_model_list_groq", {
   expect_true(is.function(metacheck:::.llm_model_list_groq))
@@ -149,7 +146,7 @@ test_that(".llm_model_list_groq", {
   expect_disjoint(names(g1), "platform")
   expect_setequal(g1$id, g2$id)
   expect_true(inherits(g1$created_at, "Date"))
-})
+}, "mock")
 
 
 test_that("gemini", {
@@ -162,20 +159,8 @@ test_that("gemini", {
   obs <- llm(text, system_prompt, model = model)
   expect_equal(unclass(obs$answer),
                as.character(c(T, F)))
-})
+}, "mock")
 
-test_that("openai", {
-  skip("No KEY")
-  #skip_llm()
-  llm_use(TRUE)
-
-  text <- LETTERS[1:2]
-  system_prompt <- "Is this a vowel? Answer only 'TRUE' or 'FALSE'."
-  model <- "openai"
-  obs <- llm(text, system_prompt, model = model)
-  expect_equal(unclass(obs$answer),
-               as.character(c(T, F)))
-})
 
 test_that(".llm_ollama_native", {
   expect_true(is.function(metacheck:::.llm_ollama_native))
@@ -202,10 +187,8 @@ test_that(".llm_ollama_native", {
   # default <- llm(text, system_prompt, model = model)
   # think <- llm(text, system_prompt, model = model, params = list(think = TRUE))
   # nothink <- llm(text, system_prompt, model = model, params = list(think = FALSE))
-})
+}, "mock")
 
-#httptest2::stop_capturing()
-httptest2::stop_mocking()
 
 # test_that("no internet", {
 #   httptest2::without_internet({

@@ -225,9 +225,8 @@ osf_check_id <- function(osf_id) {
         if (is.null(parsed)) stop()
 
         path <- parsed$path |>
-          fs::path_split() |>
+          strsplit("/", fixed = TRUE) |> # fs::path_split() |>
           sapply(utils::tail, 1)
-
 
         # All OSF IDs are 5 or 24 characters
         if (grepl("^[a-z0-9]{5}(_v\\d+)?$", path)) {
@@ -517,7 +516,8 @@ osf_file_download <- function(osf_id,
 
   ## set up download directory (make sure it doesn't overwrite anything)
   # On the OSF you can nest folders and give long folder names, but windows has a 260 character folder name limit.
-  download_to <- fs::path_abs(download_to)
+  # download_to <- fs::path_abs(download_to)
+  download_to <- normalizePath(download_to, winslash = "/", mustWork = FALSE)
   if (dir.exists(download_to)) {
     download_to <- file.path(download_to, osf_id)
   }
@@ -535,7 +535,9 @@ osf_file_download <- function(osf_id,
 
   if (sum(files$kind == "file") > 0) {
     ## download all to temp folder ----
-    temppath <- fs::file_temp()
+    # temppath <- fs::file_temp()
+    temppath <- tempfile()
+    on.exit(unlink(temppath, recursive = TRUE))
     dir.create(temppath)
 
     files_to_download <- which(files$kind == "file")
@@ -588,9 +590,9 @@ osf_file_download <- function(osf_id,
       #parents <- parents[!parents$path %in% "/", ]
 
       pf <- rev(parents$name) |>
-        gsub("[^A-za-z0-9_\\-\\.]+", "_", x = _, perl = TRUE) |>
-        gsub("_+", "_", x = _, perl = TRUE) |>
-        fs::path_sanitize() |>
+        # gsub("[^A-za-z0-9_\\-\\.]+", "_", x = _, perl = TRUE) |>
+        # gsub("_+", "_", x = _, perl = TRUE) |>
+        path_sanitize() |>
         paste(collapse = "/")
 
       pf
@@ -630,7 +632,7 @@ osf_file_download <- function(osf_id,
 
     files_to_copy <- which(files$kind == "file")
     if (isTRUE(ignore_folder_structure)) {
-      files$save_path[files_to_copy] <- fs::path_sanitize(files$name[files_to_copy])
+      files$save_path[files_to_copy] <- path_sanitize(files$name[files_to_copy], keep_sep = FALSE)
       dupes <- duplicated(files$save_path[files_to_copy])
       files$save_path[files_to_copy][dupes] <-
         paste0(files$osf_id[files_to_copy][dupes], "-",
@@ -643,9 +645,6 @@ osf_file_download <- function(osf_id,
       dir.create(dirname(to), showWarnings = FALSE, recursive = TRUE)
       file.copy(from, to)
     }
-
-    ## clean up temp dir
-    unlink(temppath, recursive = TRUE)
   } else {
     files_to_copy <- c()
   }

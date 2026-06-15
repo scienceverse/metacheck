@@ -1,21 +1,16 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.0.1.9001
-Date: 2026-06-10
+Version: 0.1.0
+Date: 2026-06-16
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
            role = c("aut", "cre"),
            email = "debruine@gmail.com",
            comment = c(ORCID = "0000-0002-7523-5539")),
-  person(  given = "Daniel",
-           family = "Lakens",
-           role = c("aut"),
-           email = "lakens@gmail.com",
-           comment = c(ORCID = "0000-0002-0247-239X")),
   person(  given = "Cristian",
            family = "Mesquida",
-           role = c("ctb"),
+           role = c("aut"),
            email = "cristianmesquida@gmail.com",
            comment = c(ORCID = "0000-0002-1542-8355")),
   person(  given = "Jakub",
@@ -23,11 +18,21 @@ Authors@R: c(
            role = c("aut"),
            email = "jakub@jakubwerner.com",
            comment = c(ORCID = "0009-0004-0388-0362")),
+  person(  given = "Raphael",
+           family = "Merz",
+           role = c("ctb"),
+           email = "r.t.p.merz@tue.nl",
+           comment = c(ORCID = "0000-0002-9474-3379")),
   person(  given = "Lukas",
            family = "Wallrich",
            role = c("ctb"),
            email = "l.wallrich@bbk.ac.uk",
-           comment = c(ORCID = "0000-0003-2121-5177")))
+           comment = c(ORCID = "0000-0003-2121-5177")),
+  person(  given = "Daniel",
+           family = "Lakens",
+           role = c("aut", "cre"),
+           email = "lakens@gmail.com",
+           comment = c(ORCID = "0000-0002-0247-239X")))
 Description: A modular, extendable system for checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
 License: AGPL (>= 3)
 Encoding: UTF-8
@@ -37,12 +42,11 @@ Suggests:
     devtools,
     httptest2,
     rmarkdown,
-    shinyjs,
     testthat (>= 3.0.0),
     rstudioapi,
     withr,
     shiny,
-    shiny.i18n,
+    shinyjs,
     shinydashboard
 Config/testthat/edition: 3
 Config/testthat/parallel: false
@@ -51,17 +55,16 @@ Imports:
     tidyr,
     readr,
     knitr,
-    quarto,   
-    DT,       
-    bibtex,   
-    ellmer,   
+    quarto,
+    DT,
+    bibtex,
+    ellmer,
     jsonlite,
     xml2,
     curl,
     httr2,
-    rvest,    
-    fs,       
-    rappdirs, 
+    rvest,
+    rappdirs,
     tidytext,
     statcheck,
     base64enc,

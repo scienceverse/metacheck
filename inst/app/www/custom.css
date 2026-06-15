@@ -1,12 +1,7 @@
 :root {
-  --red: #dd4b39;
-  --pink: #983E82;   /* hsl(315, 42%, 42%) */
-  --orange: #E2A458; /* hsl( 33, 70%, 62%) */
-  --yellow: #ebcb3d; /* hsl( 49, 87%, 70%) */
-  --green: #59935B;  /* hsl(122, 25%, 46%) */
-  --blue: #467AAC;   /* hsl(209, 42%, 47%) */
-  --purple: #61589C; /* hsl(248, 28%, 48%) */
-  --grey: #222d32;
+  --green: #59935B;
+  --medgreen: #4a7d4c;
+  --darkgreen: #15342A;
 }
 
 body {
@@ -56,90 +51,80 @@ h3.box-title,
   background-color: var(--green);
 }
 
-#shiny-tab-study_tab .box-header,
-.sidebar-menu>li.active>a[data-value=study_tab],
-.sidebar-menu>li:hover>a[data-value=study_tab] {
-  border-left-color: var(--red);
-  background-color: var(--red);
-}
-
-#shiny-tab-aut_tab .box-header,
-.sidebar-menu>li.active>a[data-value=aut_tab],
-.sidebar-menu>li:hover>a[data-value=aut_tab] {
-  border-left-color: var(--orange);
-  background-color: var(--orange);
-}
-
-#shiny-tab-hyp_tab .box-header,
-.sidebar-menu>li.active>a[data-value=hyp_tab],
-.sidebar-menu>li:hover>a[data-value=hyp_tab] {
-  border-left-color: var(--yellow);
-  background-color: var(--yellow);
-}
-
-#shiny-tab-met_tab .box-header,
-.sidebar-menu>li.active>a[data-value=met_tab],
-.sidebar-menu>li:hover>a[data-value=met_tab] {
-  border-left-color: var(--green);
-  background-color: var(--green);
-}
-
-#shiny-tab-dat_tab .box-header,
-.sidebar-menu>li.active>a[data-value=dat_tab],
-.sidebar-menu>li:hover>a[data-value=dat_tab] {
-  border-left-color: var(--blue);
-  background-color: var(--blue);
-}
-
-#shiny-tab-ana_tab .box-header,
-.sidebar-menu>li.active>a[data-value=ana_tab],
-.sidebar-menu>li:hover>a[data-value=ana_tab] {
-  border-left-color: var(--purple);
-  background-color: var(--purple);
-}
-
-#shiny-tab-out_tab .box-header,
-.sidebar-menu>li.active>a[data-value=out_tab],
-.sidebar-menu>li:hover>a[data-value=out_tab] {
-  border-left-color: var(--pink);
-  background-color: var(--pink);
-}
-
 textarea { width: 100%; }
-
-.warning { border: 1px solid red; background-color: #FF9999 !important; }
-#met_text.warning { background-color: #f5ea9a !important; }
-.shiny-notification { border-color: red !important; }
-
-#var_list button.selected { background-color: blue; }
-code {
-  background-color: #EDF0F5;
-  background-color: hsla(218, 94%, 20%, .05);
-  color: #032763;
-}
-
-#met_text, #ana_code, #n, #mu, #sd, #r {
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
-}
-
-
-#roles label.checkbox-inline {
-  min-width: 14em;
-}
-
-#roles label.checkbox-inline:first-child {
-  margin-left: 10px;
-}
 
 /* override keytable style */
 table.dataTable tbody td.focus {
   box-shadow: none !important;
 }
 
-/* traffic lights */
-h2.na::before { content: '⚪️ '; }
-h2.fail::before { content: '⚫️ '; }
-h2.info::before { content: '🔵 '; }
-h2.red::before { content: '🔴 '; }
-h2.yellow::before { content: '🟡 '; }
-h2.green::before { content: '🟢 '; }
+/* grid layout for the options checkboxes */
+.report-checks {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  row-gap: 0.4em;
+  column-gap: 1em;
+  margin-bottom: 0.5em;
+}
+.report-checks .shiny-input-container {
+  white-space: nowrap;
+  margin-bottom: 0;
+}
+.report-checks .checkbox label {
+  font-weight: 600;
+}
+
+/* tint the checkbox green when checked (default is grey/unchecked) */
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--green) !important;
+  width: 1.05em;
+  height: 1.05em;
+}
+
+/* PDF upload field — full green treatment */
+.pdf-upload .input-group {
+  border: 2px solid var(--green);
+  padding-left: 1px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.pdf-upload .btn-file {
+  background-color: var(--green) !important;
+  color: #fff !important;
+  border: none;
+  font-weight: 600;
+}
+.pdf-upload .btn-file:hover,
+.pdf-upload .btn-file:focus {
+  background-color: var(--medgreen) !important;
+  color: #fff !important;
+}
+.pdf-upload .form-control {
+  background-color: rgba(89, 147, 91, 0.08) !important;
+  border: none;
+  box-shadow: none;
+}
+
+/* Options "Done" button */
+.btn-options-done {
+  background-color: var(--green) !important;
+  color: #fff !important;
+  border: none;
+  font-weight: 600;
+}
+.btn-options-done:hover,
+.btn-options-done:focus {
+  background-color: var(--medgreen) !important;
+  color: #fff !important;
+}
+
+
+#gdpr_privacy_ui ul {
+  padding-left: 0;
+}
+#gdpr_privacy_ui li {
+  list-style-type: none;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+}

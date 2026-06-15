@@ -6,6 +6,7 @@
 #' @returns NULL
 #' @export
 #' @keywords internal
+#' @noRd
 .onLoad <- function(libname, pkgname) {
   op <- options()
 
@@ -65,6 +66,7 @@
 #' @returns startup message
 #' @export
 #' @keywords internal
+#' @noRd
 .onAttach <- function(libname, pkgname) {
   # check if email is set
   email <- getOption("metacheck.email") %||% ""
@@ -89,8 +91,10 @@
   if (gh_v > v) {
     new_version <- sprintf("\U0001F195 Install newer version %s using\n%s", gh_v,
     "remotes::install_github(\"scienceverse/metacheck\")")
+  } else if (v > gh_v) {
+    new_version <- "\u2728 Your version newer than the current release"
   } else {
-    new_version <- "\u2728 Your version is up to date."
+    new_version <- "\u2728 Your version is up to date"
   }
 
 

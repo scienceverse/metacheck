@@ -72,20 +72,19 @@ Report Created: {{< meta metacheck.report-created >}}
 %s <!-- doi, if exists -->
 :::
 
-[Metacheck](https://www.scienceverse.org/metacheck/) is a tool that screens scientific manuscripts and aims to identify potential issues for improvement, thereby guiding researchers towards best practices. Metacheck is developed to help researchers correctly and completely report statistical results, automatically retrieve possible relevant information about citations, and improve how researchers share data, code, and preregistrations.
+[Metacheck](https://www.scienceverse.org/metacheck/) is a tool that screens scientific manuscripts and aims to identify potential issues for improvement. Our goal is to guide researchers towards best practices, especially with respect to practices that researchers easily forget, or might not have learned about yet. Metacheck is developed to help researchers correctly and completely report statistical results, will point to possibly relevant information about citations, and provides feedback about data and code sharing.
 
-Metacheck combines existing and new checks in a module-based tool. It mainly relies on text search or retrieving information from external sources through API’s or web-scraping, but some modules also incorporate tools that use machine learning classifiers or large language models. The use of LLM's is always optional and opt-in. The development of Metacheck is guided by our [values statement](https://www.scienceverse.org/metacheck/#our-values). 
-
+Metacheck combines existing and new checks in a module-based tool. It is open source, and anyone can contribute modules. It mainly relies on text search or retrieving information from external sources through API’s or web-scraping, but the power modules can optionally use large language models. The use of LLM's is always optional and opt-in. The development of Metacheck is guided by our [values statement](https://www.scienceverse.org/metacheck/#our-values).
 
 ::: {.validation}
-Our modules are validated on sets of open-access papers. In each validated module, there will be a sentence explaining the prevalence of false positives (incorrect detection/classification) and false negatives (incorrect omission). For example, if a hypothetical module detects the inappropriate practice of "woozling", the sentence might read:
+In light with our values, our modules are validated on sets of open-access papers. In each validated module, there will be a sentence explaining the prevalence of false positives (incorrect detection/classification) and false negatives (incorrect omission). For example, if a hypothetical module detects the inappropriate practice of "woozling", the sentence might read:
 
 > In a sample of 250 papers from the *Journal of X*, there were 350 instances of woozling. This module correctly detected 340 of them, and incorrectly identified 7. Therefore 3% of true instances are missed, and 2% of detections are false positives.
 
 There is an inherent tradeoff between false positives and false negatives. Many of our modules are designed like "smoke detectors", where they are more likely to detect a practice that needs attention, but also more likely to incorrectly flag something. Therefore, you need to check the output of each module, keeping the validated error rates in mind.
 :::
 
-Metacheck is under continuous development. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to [metacheck@scienceverse.org](mailto:metacheck@scienceverse.org).
+Metacheck is under continuous development. It can be surprisingly difficult to automatically retrieve information from papers, and there is a large amount of edge-cases where our tool might not yet work accurately. By using our tool, and providing us with feedback about what we can't get right yet, you will help to improve the tool for all other users. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to [metacheck@scienceverse.org](mailto:metacheck@scienceverse.org).
 
 <!-- Demo -->
 
@@ -98,12 +97,12 @@ library(metacheck)
 
 ## Summary
 
-- ✅️ [No problems detected](#module-1){.green} Detected evidence of good practice or no evidence of poor practice.
+- ✅️ [No problems detected](#module-1){.green} Detected evidence of good practice.
 - 🔍 [Something to check](#module-2){.yellow}: Detected something you should check.
-- ⚠️ [Possible problems detected](#module-3){.red}: A possible poor practice detected.
-- ℹ️ [Informational only](#module-4){.info}: Info that isn't necessarily good/questionable/poor practice.
+- ⚠️ [Possible problems detected](#module-3){.red}: A possible issue that you might want to improve detected.
+- ℹ️ [Informational only](#module-4){.info}: Information that is not checked, but might help to improve the paper.
 - ⬜ [Not applicable](#module-5){.na}: This check isn't relevant to this paper.
-- ☠️ [Check failed](#module-6){.fail}: This is usually when something goes wrong and there is an uncaught error in the module.
+- ☠️ [Check failed](#module-6){.fail}: Something went wrong and there is an uncaught error in the module. Please let us known.
 
 ## General Modules
 
