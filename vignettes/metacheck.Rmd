@@ -39,7 +39,7 @@ devtools::load_all(".")
 You can launch a simple shiny app that creates a report from a PDF, with options to control what information is sent to or retrieved from external servers.
 
 ``` r
-metacheck::create_report_app()
+metacheck::report_app()
 ```
 
 
