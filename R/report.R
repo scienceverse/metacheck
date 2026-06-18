@@ -103,7 +103,7 @@ report <- function(paper,
 
   ## check paper has required things
   if (!"scivrs_paper" %in% class(paper)) {
-    stop("The paper argument must be a paper object (e.g., created with `read()`)", .call = FALSE)
+    stop("The paper argument must be a paper object (e.g., created with `read()`)", call. = FALSE)
   }
 
   # run modules ----
