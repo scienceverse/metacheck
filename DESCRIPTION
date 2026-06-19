@@ -30,7 +30,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0003-2121-5177")),
   person(  given = "Daniel",
            family = "Lakens",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "lakens@gmail.com",
            comment = c(ORCID = "0000-0002-0247-239X")))
 Description: A modular, extendable system for checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.

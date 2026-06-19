@@ -1,0 +1,40 @@
+{
+  "@context": "http://dublincore.org/documents/dcmi-terms/",
+  "@type": "Dataset",
+  "dc:title": "Judgment and Decision Making - Complete Open-Access Corpus (2006-2022)",
+  "dc:creator": "Lakens, Daniel",
+  "dc:subject": [
+    "judgment",
+    "decision making",
+    "open access",
+    "natural language processing",
+    "AI validation",
+    "text mining"
+  ],
+  "dc:description": "A complete corpus of 855 open-access articles published in Judgment and Decision Making (2006-2022), converted to metacheck paperlist objects for validation of AI and text-mining tools. DOIs were matched via CrossRef title search and manual verification for pre-2008 papers not indexed in CrossRef.",
+  "dc:publisher": "scienceverse/papers (GitHub)",
+  "dc:date": "2026-06-17",
+  "dc:type": "Dataset",
+  "dc:format": [
+    "application/pdf",
+    "application/x-r-rds",
+    "text/xml"
+  ],
+  "dc:identifier": "https://github.com/scienceverse/papers/tree/main/jdm",
+  "dc:source": "Judgment and Decision Making, ISSN 1930-2975, https://jbaron.org/journal/",
+  "dc:language": "en",
+  "dc:relation": [
+    "https://jbaron.org/journal/",
+    "https://github.com/scienceverse/metacheck"
+  ],
+  "dc:coverage": "2006-01-01/2022-12-31",
+  "dc:rights": "CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+  "dc:provenance": {
+    "pdf_source": "https://jbaron.org/journal/ (scraped)",
+    "conversion_tool": "GROBID 0.8",
+    "conversion_endpoint": "https://grobid.hti.ieis.tue.nl",
+    "paperlist_tool": "metacheck::grobid_to_bibr()",
+    "doi_matching": "CrossRef title search + manual verification (2026-06-17)",
+    "conversion_date": "2026-06-17"
+  }
+}

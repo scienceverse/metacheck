@@ -68,6 +68,7 @@ articles:
         - articles/ollama
         - articles/local-files
         - articles/stats
+        - articles/papers-databases
 
 reference:
 - title: Reading in Papers
@@ -86,6 +87,13 @@ reference:
   - '`paper_id`'
   - '`paper_write`'
   - '`paper_validate`'
+- title: Paper Database Corpora
+  desc: ~
+  contents:
+  - '`papers_available`'
+  - '`papers_load`'
+  - '`papers_remove`'
+  - '`papers_metadata`'
 - title: Search Papers
   desc: ~
   contents:
