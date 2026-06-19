@@ -1,0 +1,45 @@
+[
+  {
+    "tag_name": "demo-2026-06-20",
+    "published_at": "2026-06-20T10:00:00Z",
+    "assets": [
+      {
+        "name": "demo.rds",
+        "size": 2000,
+        "browser_download_url": "https://github.com/scienceverse/retagtest/releases/download/demo-2026-06-20/demo.rds"
+      }
+    ]
+  },
+  {
+    "tag_name": "demo-2026-06-18",
+    "published_at": "2026-06-18T08:00:00Z",
+    "assets": [
+      {
+        "name": "demo.rds",
+        "size": 1000,
+        "browser_download_url": "https://github.com/scienceverse/retagtest/releases/download/demo-2026-06-18/demo.rds"
+      }
+    ]
+  },
+  {
+    "tag_name": "other-2026-06-01",
+    "published_at": "2026-06-01T08:00:00Z",
+    "assets": [
+      {
+        "name": "other.rds",
+        "size": 500,
+        "browser_download_url": "https://github.com/scienceverse/retagtest/releases/download/other-2026-06-01/other.rds"
+      },
+      {
+        "name": "manifest.csv",
+        "size": 50,
+        "browser_download_url": "https://github.com/scienceverse/retagtest/releases/download/other-2026-06-01/manifest.csv"
+      }
+    ]
+  },
+  {
+    "tag_name": "empty-release-2026-01-01",
+    "published_at": "2026-01-01T00:00:00Z",
+    "assets": []
+  }
+]

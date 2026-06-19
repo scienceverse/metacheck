@@ -116,6 +116,8 @@ convert_grobid <- function(file_path, save_path = ".",
       consolidateFunders = as.character(consolidate_funders),
       includeRawCitations = "1"
     ) |>
+    httr2::req_timeout(180) |>
+    httr2::req_options(connecttimeout = 10, ssl_options = 2) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
     httr2::req_perform()
 
@@ -247,6 +249,8 @@ grobid_to_bibr <- function(xml_path,
     {
       httr2::request(api_url) |>
         httr2::req_url_path("/api/isalive") |>
+        httr2::req_timeout(15) |>
+        httr2::req_options(connecttimeout = 10, ssl_options = 2) |>
         httr2::req_error(is_error = \(resp) FALSE) |>
         httr2::req_perform()
     },
