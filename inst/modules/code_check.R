@@ -43,7 +43,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
   all_files$language <- code_lang(all_files$file_name)
 
   ## find relevant code files ----
-  relevant <- all_files$lang %in% c("R", "SAS", "SPSS", "Stata")
+  relevant <- all_files$language %in% c("R", "SAS", "SPSS", "Stata")
   code_files <- all_files[relevant, , drop = FALSE]
 
   summary_code <- sprintf(
@@ -115,7 +115,9 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
         file_lines <- code_read(file_path)
       }
 
-      # try to parse R-type code
+      # try to parse R-type code; NA (not assessed) for other languages
+      the_file$parse_error <- NA
+      the_file$parse_error_msg <- NA_character_
       if (the_file$language == "R") {
         parse_check <- code_parse_r(text = file_lines)
         the_file$parse_error <- parse_check$error
@@ -314,16 +316,17 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
     tl <- "yellow"
   }
 
-  # Aggregate by project
-  summary_table <- data.frame(
-    paper_id = paper$paper_id,
-    code_n = nrow(code_files),
-    code_checked = sum(code_files$checked, na.rm = TRUE),
-    code_abs_path = sum(code_files$code_abs_path, na.rm = TRUE),
-    code_missing_files = sum(code_files$loaded_files_missing, na.rm = TRUE),
-    code_min_comments = min(code_files$percentage_comment, na.rm = TRUE),
-    code_parse_errors = sum(code_files$parse_error, na.rm = TRUE)
-  )
+  # Aggregate by paper
+  summary_table <- code_files |>
+    dplyr::summarise(
+      code_n = dplyr::n(),
+      code_checked = sum(checked, na.rm = TRUE),
+      code_abs_path = sum(code_abs_path, na.rm = TRUE),
+      code_missing_files = sum(loaded_files_missing, na.rm = TRUE),
+      code_min_comments = min(percentage_comment, na.rm = TRUE),
+      code_parse_errors = sum(parse_error, na.rm = TRUE),
+      .by = paper_id
+    )
 
   # summary_text ----
   summary_text <- c(
