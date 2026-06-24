@@ -1,0 +1,15 @@
+structure(list(method = "GET", url = "https://raw.githubusercontent.com/scienceverse/papers/main/doesnotexist999/metadata.json", 
+    status_code = 404L, headers = structure(list(`content-security-policy` = "default-src 'none'; style-src 'unsafe-inline'; sandbox", 
+        `strict-transport-security` = "max-age=31536000", `x-content-type-options` = "nosniff", 
+        `x-frame-options` = "deny", `x-xss-protection` = "1; mode=block", 
+        `content-type` = "text/plain; charset=utf-8", `x-github-request-id` = "A2F0:383161:22EAD3F:2676021:6A34E1CF", 
+        `accept-ranges` = "bytes", date = "Fri, 19 Jun 2026 06:29:35 GMT", 
+        via = "1.1 varnish", `x-served-by` = "cache-rtm-ehrd2290032-RTM", 
+        `x-cache` = "MISS", `x-cache-hits` = "0", `x-timer` = "S1781850576.800400,VS0,VE124", 
+        vary = "Authorization,Accept-Encoding", `access-control-allow-origin` = "*", 
+        `cross-origin-resource-policy` = "cross-origin", `x-fastly-request-id` = "536db611318f39f7742ae9d1b89cdd939a99e951", 
+        expires = "Fri, 19 Jun 2026 06:34:35 GMT", `source-age` = "0", 
+        `content-length` = "14"), class = "httr2_headers"), body = charToRaw("404: Not Found"), 
+    timing = c(redirect = 0, namelookup = 0.001693, connect = 0.022114, 
+    pretransfer = 0.031202, starttransfer = 0.159769, total = 0.159894
+    ), cache = new.env(parent = emptyenv())), class = "httr2_response")
