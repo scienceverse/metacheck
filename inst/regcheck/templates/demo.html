@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% set static_version = '20260119' %}
+    {% include '_partials/head_assets.html' %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="description" content="RegCheck is an AI tool to compare preregistrations with papers instantly."/>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="author" content="Jamie Cummins">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegCheck Demo</title>
+    <style>
+        .results-page .results-table__cell--prereg,
+        .results-page .results-table__cell--paper,
+        .results-page .results-table__cell--notes {
+            font-size: 0.75rem;
+            line-height: 1.25;
+        }
+
+        .results-page .results-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .results-page .results-table {
+            width: 100%;
+            min-width: 60rem;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .results-page .results-table th,
+        .results-page .results-table td {
+            white-space: normal;
+            word-break: break-word;
+            vertical-align: top;
+        }
+
+        .results-page .results-table th {
+            line-height: 1.2;
+            padding: 0.75rem 0.65rem;
+        }
+
+        .results-column-title {
+            display: inline-block;
+            width: 100%;
+        }
+
+        .results-page .results-table__cell {
+            padding: 0.75rem 0.65rem;
+        }
+
+        /*
+         * Note: overflow on <td> is inconsistently supported across browsers.
+         * Wrap long content in a block-level div and scroll that instead.
+         */
+        .results-table__scroll {
+            max-height: 13rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 0.35rem;
+            word-break: break-word;
+        }
+
+        .results-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .results-toggle-select {
+            width: auto;
+            min-width: 10.5rem;
+            background: #0c0f1a;
+            color: #f5f7ff;
+            border: 1px solid #2a3148;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            padding: 0.35rem 1.6rem 0.35rem 0.75rem;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f5f7ff' d='M1.41 0 6 4.58 10.59 0 12 1.41 6 7.41 0 1.41z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.55rem center;
+            background-size: 0.6rem;
+            cursor: pointer;
+            box-shadow: none;
+            transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .content-variant {
+            display: none;
+        }
+
+        .content-variant.active {
+            display: block;
+        }
+
+        .results-toggle-select:focus {
+            outline: none;
+            border-bottom-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .results-toggle-select:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        @media (max-width: 992px) {
+            .results-page .results-table {
+                min-width: 52rem;
+            }
+
+            .results-page .results-table th,
+            .results-page .results-table__cell {
+                padding: 0.65rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .results-page #results-page-tagline {
+                font-size: 1.75rem;
+            }
+
+            .results-page .results-table-wrapper {
+                margin: 0 -0.75rem;
+                padding: 0 0.75rem;
+            }
+
+            .results-page .results-table {
+                min-width: 46rem;
+                table-layout: fixed;
+            }
+
+            .results-page .results-table th,
+            .results-page .results-table td {
+                min-width: 8rem;
+                padding: 0.6rem 0.45rem;
+            }
+
+            .results-page .results-table td,
+            .results-page .results-table__cell,
+            .results-table__scroll {
+                font-size: 0.68rem;
+                line-height: 1.2;
+            }
+
+            .results-table__scroll {
+                max-height: 8.5rem;
+                overflow-y: auto;
+            }
+
+            .results-page .results-table th,
+            .results-column-title {
+                font-size: 0.55rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .results-page .results-table {
+                min-width: 40rem;
+            }
+
+            .results-page .results-table th,
+            .results-page .results-table td {
+                padding: 0.55rem 0.4rem;
+            }
+
+            .results-page .results-table td,
+            .results-page .results-table__cell,
+            .results-table__scroll {
+                font-size: 0.64rem;
+            }
+
+            .results-table__scroll {
+                max-height: 7.5rem;
+            }
+
+            .results-page .results-legend {
+                display: flex;
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.35rem;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+    {% set nav_active = 'demo' %}
+    <body class="d-flex h-100 text-center text-bg-dark results-page page-shell">
+        <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+            <header class="mb-auto">
+                {% include '_partials/navbar.html' %}
+            </header>
+        {% include '_partials/mobile_notice.html' %}
+
+        <main class="px-3">
+            <h1 class="text-center" id="results-page-tagline">Demo Output Preview</h1>
+            <p class="mb-4">This static example mirrors the layout of a completed RegCheck comparison.</p>
+            <div class="results-legend" aria-label="Legend: row color meanings">
+                <span class="legend-item"><span class="legend-swatch legend-swatch--red"></span> Deviation found</span>
+                <span class="legend-item"><span class="legend-swatch legend-swatch--blue"></span> No deviation</span>
+                <span class="legend-item"><span class="legend-swatch legend-swatch--amber"></span> Missing information / No information found</span>
+            </div>
+            <div id="result-container" class="table-responsive results-table-wrapper">
+                <table id="results-table" class="results-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Dimension</th>
+                            <th>
+                                <div class="results-toggle">
+                                    <select id="prereg-view-toggle" class="form-select form-select-sm results-toggle-select" aria-label="Preregistration view">
+                                        <option value="quotes" selected>Preregistration — Direct quotes</option>
+                                        <option value="summary">Preregistration — Summary</option>
+                                    </select>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="results-toggle">
+                                    <select id="paper-view-toggle" class="form-select form-select-sm results-toggle-select" aria-label="Paper view">
+                                        <option value="quotes" selected>Paper — Direct quotes</option>
+                                        <option value="summary">Paper — Summary</option>
+                                    </select>
+                                </div>
+                            </th>
+                            <th>Deviation Information</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-key="Sample size" class="results-table__row results-table__row--dev-yes"><td class="results-table__cell results-table__cell--dimension">Sample size</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"The data consisted of 21060 participants in total who completed and met the screening criteria for at least one measure in the overall study."
+
+"we reserved 10% of the total sample for exclusive use in the code development process (i.e., the “training” dataset)."
+
+"Sample
+	The sample used for these analyses was taken from Bar-Anan &amp; Nosek’s (2014) data, collected via the Project Implicit website."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration specifies a total of 21,060 participants meeting screening criteria and states that 10% of this total would be reserved exclusively for code development (a training set), implying analyses would use the remaining 90%. The data come from Bar‑Anan &amp; Nosek (2014) via Project Implicit.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"The data used in our analytic sample, composed of participants who completed at least one measure in the overall study and met common accuracy and latency performance exclusion criteria (full details in supplementary materials), leading to 21060 observations in total (i.e., some participants may have completed more than one of the measures)."
+
+"A total of 23,413 unique individuals participated in this study (63% women, 36% men, 1% unknown; mean age = 29.1, SD = 12.0)."
+
+"Sample
+	The sample used for these analyses was taken from Bar-Anan &amp; Nosek’s (2014) data, collected via the Project Implicit website."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper reports an analytic sample with 21,060 observations after exclusions and notes that 23,413 unique individuals participated overall. It does not mention holding out any portion of the data for code development. The data source is the Bar‑Anan &amp; Nosek (2014) Project Implicit dataset.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">The preregistration identifies 21,060 participants and precommits to reserving 10% of the total sample for code development, implying analyses on ~90% of the data. The paper instead reports 21,060 observations in the analytic sample and 23,413 unique individuals overall, without mentioning any 10% holdout. This creates two discrepancies: (1) the unit and count differ (registration: 21,060 participants; paper: 21,060 observations and 23,413 unique participants), and (2) the preregistered 10% training/holdout split is not reported or reflected in the paper’s analytic sample size. These inconsistencies suggest the paper may have deviated from the preregistered sample handling and counting, which could affect the effective sample size used for analyses and the independence/unit-of-analysis assumptions.</div></td></tr><tr data-key="Data source" class="results-table__row results-table__row--dev-no"><td class="results-table__cell results-table__cell--dimension">Data source</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"The sample used for these analyses was taken from Bar-Anan &amp; Nosek’s (2014) data, collected via the Project Implicit website. Detailed information regarding the collection of these data can be found in Bar-Anan and Nosek (2014)."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration plans to use the existing dataset collected by Bar‑Anan &amp; Nosek (2014) via the Project Implicit website, referring readers to that source for data collection details. No new data collection is planned.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"This study uses openly available data collected on Project Implicit (https://implicit.harvard.edu), originally collected by Bar-Anan and Nosek (2014; data available from osf.io/qf9jx)."
+
+"Detailed information regarding the collection of these data can be found in Bar-Anan and Nosek (2014)."
+
+"Consent to participate: Not applicable (use of existing, openly-available data)."
+
+"Additionally, it is certainly the norm in modern implicit measures research that data be collected via online samples; indeed, the data analysed here were from Project Implicit, which is the largest source of data for implicit measures in the field."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper states that the data were obtained from the existing, openly available Project Implicit dataset originally collected by Bar‑Anan &amp; Nosek (2014), with no new participant recruitment. It emphasizes online collection via Project Implicit and notes that consent is not applicable due to secondary use of open data.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">The registration and paper both describe using an existing dataset collected via Project Implicit (Bar‑Anan &amp; Nosek, 2014) and do not indicate any new participant recruitment. The paper further notes the data are openly available and that consent is not applicable due to secondary use. These statements are consistent with the preregistered data source.</div></td></tr><tr data-key="Inclusion criteria" class="results-table__row results-table__row--dev-no"><td class="results-table__cell results-table__cell--dimension">Inclusion criteria</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"The data consisted of 21060 participants in total who completed and met the screening criteria for at least one measure in the overall study."
+
+"The sample used for these analyses was taken from Bar-Anan &amp; Nosek’s (2014) data, collected via the Project Implicit website."
+
+"However, we also invite the reader to inspect our fully preregistered code for precise specifications on all aspects of the analyses."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration plans to include participants who completed at least one measure and met screening criteria, using the Bar‑Anan &amp; Nosek (2014) Project Implicit dataset. Specific screening details are deferred to the preregistered code rather than listed in text.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"The data used in our analytic sample, composed of participants who completed at least one measure in the overall study and met common accuracy and latency performance exclusion criteria (full details in supplementary materials), leading to 21060 observations in total (i.e., some participants may have completed more than one of the measures)."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper includes individuals who completed at least one measure and who passed common accuracy and latency performance exclusion criteria, with details provided in the supplementary materials.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">Both documents define inclusion similarly: participants must have completed at least one measure and satisfy performance-based screening/exclusion criteria. The paper specifies these as common accuracy and latency criteria (details in the supplement), while the preregistration refers generally to screening criteria and points to preregistered code for specifics. Although the paper reports counts in terms of observations and the registration mentions participants, the eligibility criteria themselves are aligned; no substantive deviation is evident for inclusion criteria.</div></td></tr><tr data-key="Exclusion criteria" class="results-table__row results-table__row--dev-unknown"><td class="results-table__cell results-table__cell--dimension">Exclusion criteria</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"The data consisted of 21060 participants in total who completed and met the screening criteria for at least one measure in the overall study."
+
+"Other than for the purposes of data processing (i.e., running the processing.Rmd script to produce the full processed dataset before splitting it 10%/90%), we did not look at or run any analyses on the testing dataset prior to preregistration (i.e., the analyses.Rmd has been developed and run only on the training dataset)."
+
+"For this and all subsequent analyses, if proportions of 0 or 1 or variances of 0 were present they were offset by 0.001."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration notes that participants had to meet unspecified screening criteria and references a processing script used to create the processed dataset before the train/test split. It does not specify concrete exclusion thresholds (e.g., accuracy or latency cutoffs).</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"The data used in our analytic sample, composed of participants who completed at least one measure in the overall study and met common accuracy and latency performance exclusion criteria (full details in supplementary materials), leading to 21060 observations in total (i.e., some participants may have completed more than one of the measures)."
+
+"Data processing 
+Scoring algorithm
+The implicit measures we compared typically use different methods and metrics for scoring."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper states that participants were excluded based on common accuracy and latency performance criteria, with full details in the supplementary materials. This filtering produced an analytic set of 21,060 observations.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">The paper explicitly reports using common accuracy and latency performance exclusion criteria (details in the supplement), whereas the preregistration text only refers to generic screening criteria and a processing script without detailing specific exclusion rules. Because the preregistration excerpt does not enumerate the exclusion criteria, it is not possible to confirm whether the exclusions applied in the paper match the preregistered plan.</div></td></tr><tr data-key="Incomplete and missing data" class="results-table__row results-table__row--dev-unknown"><td class="results-table__cell results-table__cell--dimension">Incomplete and missing data</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"For this and all subsequent analyses, if proportions of 0 or 1 or variances of 0 were present they were offset by 0.001."
+
+"The data consisted of 21060 participants in total who completed and met the screening criteria for at least one measure in the overall study."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration specifies a boundary adjustment for analyses: any proportions of 0 or 1 or variances of 0 are offset by 0.001. It notes inclusion of participants who completed at least one measure. It does not detail any strategy for handling missing or incomplete data (e.g., missing trials/items, listwise deletion, imputation, or available-case decisions).</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"The data used in our analytic sample, composed of participants who completed at least one measure in the overall study and met common accuracy and latency performance exclusion criteria (full details in supplementary materials), leading to 21060 observations in total (i.e., some participants may have completed more than one of the measures)."
+
+"For this and all subsequent analyses, if proportions of 0 or 1 or variances of 0 were obtained, these values were offset by 0.001 in order to allow for meta-analysis."
+
+"There were minor deviations from the preregistration (for details see Supplementary Table 1)."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper indicates an available-case approach across measures by analyzing participants who completed at least one measure. It also applies a boundary adjustment: proportions of 0 or 1 and variances of 0 are offset by 0.001 to permit meta-analysis. It does not otherwise specify how missing or incomplete data (e.g., item- or trial-level missingness, listwise vs. pairwise deletion, imputation) were handled.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">Both documents mention the same boundary adjustment (offsetting 0/1 proportions and zero variances by 0.001), which is consistent. The paper further implies an available-case approach by including participants who completed at least one measure, which the registration also mentions at a high level. However, neither the preregistration nor the paper provides explicit procedures for handling incomplete or missing data beyond this (e.g., item- or trial-level missingness, listwise vs. pairwise deletion, imputation). Because the preregistration lacks a clear plan and the paper does not provide sufficient detail, there is insufficient information to evaluate consistency on missing-data handling.</div></td></tr><tr data-key="Hypotheses" class="results-table__row results-table__row--dev-no"><td class="results-table__cell results-table__cell--dimension">Hypotheses</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"We addressed three primary research questions in this study. We investigated, for each measure and across domains, the proportion of participants who demonstrated a detectable effect (i.e., whose scores defected from the neutral point)."
+
+"The first research question related to the relative ability of different measures to detect effects for individual participants."
+
+"95% CIs on individuals’ scores were used to assess whether each individual excluded the neutral point of zero effect on the task (i.e., PI = 0.50). Meta-analytic model 
+	The individual level proportions were logit transformed and entered into a similar linear mixed-effects model as the previous one: proportion_discriminable_logit ~ 1 + measure + (1 | domain), weights = 1/variance."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration outlines three primary research questions rather than directional hypotheses: (1) the proportion of individuals showing detectable non-zero effects; (2) the relative ability of measures to detect effects within individuals; and (3) related evaluations based on individual-level CIs and meta-analysis of logit-transformed proportions across measures and domains. No explicit predicted direction or magnitude differences are stated.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"Preregistration information: The hypotheses and analysis plan/code were preregistered (https://osf.io/qk9ar) on 31/08/2022, prior to the commencement of the analysis of the data."
+
+"In this preregistered study, we specifically set out to determine (i) how well measures can detect non-zero effects within individuals; (ii) how well measures could discriminate between individuals, and (iii) the width of the range of scores that the confidence intervals of individual’s scores tended to cover."
+
+"The upper third of the plot shows the meta-analytic model for the proportion of participants whose scores differed detectably from zero; the middle third of the plot shows the meta-analytic model for the probability of detectable difference between two participants; and the lower third shows the meta-analytic model for the coverage of the confidence intervals."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper states that hypotheses and the analysis plan were preregistered, and it frames its aims as three questions: assessing within-person detectability of non-zero effects, between-person discriminability, and the typical width/coverage of individual-level confidence intervals. No explicit directional predictions (e.g., one measure outperforming another) are articulated; the focus is on evaluating these quantities across measures and domains.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">Both the preregistration and the paper frame the work around the same three primary questions: detectability of non-zero effects within individuals, discriminability between individuals, and CI coverage/width. Neither source articulates specific directional hypotheses favoring particular measures; the paper’s statement that “hypotheses” were preregistered appears to refer to these aims/questions. Given that the substantive expectations are non-directional and aligned across documents, there is no evident deviation regarding hypotheses.</div></td></tr><tr data-key="Manipulated variables" class="results-table__row results-table__row--dev-no"><td class="results-table__cell results-table__cell--dimension">Manipulated variables</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"proportion_diff_zero_logit ~ 1 + measure + (1 | domain),
+weights = 1/variance"
+
+"That is, we entered measure as a fixed effect in order to estimate differences between these specific measures (i.e., measures are an exhaustive set for our purposes). We investigated, for each measure and across domains, the proportion of participants who demonstrated a detectable effect (i.e., whose scores defected from the neutral point)."
+
+"Method
+Sample
+	The sample used for these analyses was taken from Bar-Anan &amp; Nosek’s (2014) data, collected via the Project Implicit website."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration specifies meta-analytic models comparing measures by including measure as a fixed effect and domain as a random intercept, using archival Project Implicit data. It does not propose any experimental manipulation; measure is an analytic factor, not a manipulated variable.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"Meta-analytic model
+	In order to compare the proportion of detectable effects between measures, the data from individuals was meta-analyzed."
+
+"Specifically, recall that Project Implicit uses the values of 0, 0.15, 0.35, and 0.65 to denote, no bias, small bias, moderate bias, and strong bias, respectively."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper describes meta-analyzing existing data to compare outcomes across different measures; it does not report any experimental manipulation or randomized assignment. Comparisons are observational across archival measures/domains rather than manipulated treatments.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">Both the preregistration and the paper indicate that there are no experimentally manipulated variables. The study uses archival Project Implicit data and compares outcomes across existing measures via meta-analytic models, treating measure as an analytic fixed effect rather than a manipulated treatment. Therefore, there is no deviation regarding manipulated variables (none were planned, and none were implemented).</div></td></tr>
+                    <tr data-key="Measured variables" class="results-table__row results-table__row--dev-unknown"><td class="results-table__cell results-table__cell--dimension">Measured variables</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"The Wilkinson notation for the model was as follows: 
+proportion_diff_zero_logit ~ 1 + measure + (1 | domain),
+weights = 1/variance
+That is, we entered measure as a fixed effect in order to estimate differences between these specific measures (i.e., measures are an exhaustive set for our purposes)." 
+
+"We investigated, for each measure and across domains, the proportion of participants who demonstrated a detectable effect (i.e., whose scores defected from the neutral point)."
+
+"Calculation of scores
+	95% CIs on individuals’ scores were used to assess whether each individual excluded the neutral point of zero effect on the task (i.e., PI = 0.50)."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration treats the measured variables as predictors (measure fixed effect; domain random intercept) and outcomes (PI-based detectable-effect proportions, logit-transformed for modeling), emphasizing how they are scored and compared across measures/domains.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"Measures
+	For more detailed descriptions, see Bar-Anan and Nosek (2014) and the associated references provided under each measure. In this preregistered study, we specifically set out to determine (i) how well measures can detect non-zero effects within individuals; (ii) how well measures could discriminate between individuals, and (iii) the width of the range of scores that the confidence intervals of individual’s scores tended to cover." 
+
+"PI scores also provide a standardized method of scoring data from tasks that are typically derived from different properties of participants' responses (e.g., accuracy, response times), providing an ideal scoring method to compare multiple measures (see also Cummins et al., 2021)." 
+
+"Proportion of effects detectable from zero effect"</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper uses PI scores with measure as a fixed effect and domain as a random intercept, reporting three measured constructs: detectability of non-zero effects, between-person discriminability, and CI width/coverage.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">Measured variables across preregistration and paper largely align (PI scoring; measure and domain factors). The paper explicitly reports CI width/coverage, which the preregistration excerpts only imply, leaving some uncertainty about complete preregistered coverage.</div></td></tr><tr data-key="Transformations" class="results-table__row results-table__row--dev-yes"><td class="results-table__cell results-table__cell--dimension">Transformations</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"Results were back transformed from logits to proportions for plotting and reporting."
+
+"For this and all subsequent analyses, if proportions of 0 or 1 or variances of 0 were present they were offset by 0.001."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration commits to logit-transforming proportion outcomes, weighting by inverse variance, back-transforming results, and applying a 0.001 boundary offset.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"proportion_discriminable ~ 1 + measure + (1 | domain),
+weights = 1/variance"
+
+"For this and all subsequent analyses, if proportions of 0 or 1 or variances of 0 were obtained, these values were offset by 0.001 in order to allow for meta-analysis."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper presents models on the proportion scale and notes the 0.001 offset but does not mention logit-transformations or back-transforming.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">Both sources apply the 0.001 boundary adjustment. Only the preregistration explicitly specifies logit-transforming and back-transforming proportions; the paper omits these transformation details, indicating a possible deviation or unreported step.</div></td></tr>
+<tr data-key="Statistical models" class="results-table__row results-table__row--dev-yes"><td class="results-table__cell results-table__cell--dimension">Statistical models</td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">"Meta-analytic model
+	In order to compare the proportion of detectable effects between measures, the data from individuals was transformed and meta-analyzed. Meta-analytic model
+	The individual level proportions were logit transformed and entered into a similar linear mixed-effects model as the previous one:
+proportion_discriminable_logit ~ 1 + measure + (1 | domain),
+weights = 1/variance
+Results were back transformed from logits to proportions for plotting and reporting. Meta-analytic model
+	The proportions were logit transformed and entered into a similar linear mixed-effects model as the previous two: 
+ci_width_proportion_mean_logit ~ 1 + measure + (1 | domain),
+weights = 1/variance
+Results were back transformed from logits to proportions for plotting and reporting. The Wilkinson notation for the model was as follows: 
+proportion_diff_zero_logit ~ 1 + measure + (1 | domain),
+weights = 1/variance
+That is, we entered measure as a fixed effect in order to estimate differences between these specific measures (i.e., measures are an exhaustive set for our purposes). We then logit transformed this proportion and entered it into a linear mixed-effects model using the R package lme4. We weighted by inverse variance, as is common in meta-analytic models. Results reported below are based on analyses for the 90% testing dataset only. Analytic Plan 
+	Below, we briefly describe our data processing and analysis steps. Results from the forest plot (i.e., the meta-analytic estimates) were interpreted with the aid of pairwise comparisons between the measures. For each measure and domain, we calculated the proportion of detectable effects and its variance. ... For this and all subsequent analyses, if proportions of 0 or 1 or variances of 0 were present they were offset by 0.001."</div></td><td class="results-table__cell results-table__cell--prereg"><div class="results-table__scroll">The preregistration specifies inverse-variance-weighted linear mixed-effects meta-analytic models (fit with lme4) for three outcomes, with measure as a fixed effect and domain as a random intercept. Crucially, all proportion outcomes are to be logit transformed before modeling, with results back-transformed to the proportion scale for reporting. It also preplans pairwise comparisons between measures to interpret meta-analytic results, applies a 0.001 offset for boundary cases (proportions 0 or 1; variances 0), and states that reported analyses will use only the 90% testing dataset after a 10%/90% split.</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">"Meta-analytic model
+	In order to compare the proportion of detectable effects between measures, the data from individuals was meta-analyzed. The upper third of the plot shows the meta-analytic model for the proportion of participants whose scores differed detectably from zero; the middle third of the plot shows the meta-analytic model for the probability of detectable difference between two participants; and the lower third shows the meta-analytic model for the coverage of the confidence intervals."
+
+"Meta-analytic model
+	The individual level proportions were entered into a similar linear mixed-effects model to the previous one:
+proportion_discriminable ~ 1 + measure + (1 | domain),
+weights = 1/variance"
+
+"The Wilkinson notation for the model was as follows: 
+proportion_diff_zero ~ 1 + measure + (1 | domain),
+weights = 1/variance
+That is, we entered measure as a fixed effect in order to estimate the proportions for each measure and make inferences about differences between them (i.e., measures are an exhaustive set for our purposes)."
+
+"Meta-analytic model
+	The proportions were entered into a similar linear mixed-effects model to the previous two: 
+ci_width_proportion_mean ~ 1 + measure + (1 | domain),
+weights = 1/variance"
+
+"We then entered the proportions into a linear mixed-effects model using the R package lme4 (Bates et al., 2015)."
+
+"For this and all subsequent analyses, if proportions of 0 or 1 or variances of 0 were obtained, these values were offset by 0.001 in order to allow for meta-analysis."</div></td><td class="results-table__cell results-table__cell--paper"><div class="results-table__scroll">The paper analyzes three outcomes (detectability from zero, between-person discriminability, and CI coverage/width) using inverse-variance-weighted linear mixed-effects meta-analytic models fit with lme4. Each model includes measure as a fixed effect and domain as a random intercept. The formulas are shown on the proportion scale (no explicit logit transform mentioned). The paper notes using an offset of 0.001 for proportions of 0 or 1 and variances of 0. Pairwise comparisons and any back-transformations from a link scale are not described in the quoted sections, and no train/test split is referenced in the model description.</div></td><td class="results-table__cell results-table__cell--notes"><div class="results-table__scroll">Core structure aligns: both sources describe inverse-variance-weighted linear mixed-effects meta-analytic models with measure as a fixed effect, domain as a random intercept, implemented in lme4, and both apply a 0.001 offset for boundary values. However, there are notable deviations/omissions: (1) Transformation/link: the preregistration explicitly commits to logit-transforming all proportion outcomes and back-transforming results, whereas the paper presents formulas and text on the raw proportion scale (no mention of logit or back-transformation), suggesting either a change in the link/scale or an undeclared reporting omission. (2) Planned pairwise comparisons between measures are specified in the preregistration but are not reported in the quoted paper text. (3) The preregistration states that results would be based on the 90% testing dataset after a holdout split; the paper’s model description does not mention this split. These discrepancies indicate deviations in the reported statistical modeling and inferential procedures relative to the preregistered plan.</div></td></tr></tbody>
+                </table>
+            </div>
+        </main>
+
+        {% include '_partials/footer.html' %}
+
+    </div>
+
+    <script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}?v={{ static_version }}"></script>
+    <script>
+        function applyVariantToCell(cell, variant) {
+            const variants = cell.querySelectorAll(".content-variant");
+            variants.forEach((el) => el.classList.remove("active"));
+            const target = cell.querySelector(`.content-variant--${variant}`);
+            if (target) {
+                target.classList.add("active");
+            } else if (variants.length > 0) {
+                variants[0].classList.add("active");
+            }
+        }
+
+        function createToggleCell({ quotes, summary, section }) {
+            const cell = document.createElement("td");
+            const sectionClass = section === "paper" ? "results-table__cell--paper" : "results-table__cell--prereg";
+            cell.className = `results-table__cell ${sectionClass}`.trim();
+            cell.dataset.section = section;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "results-table__scroll";
+
+            const quotesDiv = document.createElement("div");
+            quotesDiv.className = "content-variant content-variant--quotes";
+            quotesDiv.innerHTML = quotes || "";
+
+            const summaryDiv = document.createElement("div");
+            summaryDiv.className = "content-variant content-variant--summary";
+            summaryDiv.innerHTML = summary || "";
+
+            wrapper.appendChild(quotesDiv);
+            wrapper.appendChild(summaryDiv);
+            cell.appendChild(wrapper);
+
+            const view = section === "paper" ? window.paperView || "quotes" : window.preregView || "quotes";
+            applyVariantToCell(cell, view);
+            return cell;
+        }
+
+        function updateSectionView(section, variant) {
+            document.querySelectorAll(`td[data-section="${section}"]`).forEach((cell) => applyVariantToCell(cell, variant));
+        }
+
+        function rebuildDemoRows() {
+            const rows = document.querySelectorAll("#results-table tbody tr");
+            rows.forEach((row) => {
+                const cells = row.querySelectorAll("td");
+                if (cells.length < 6) return;
+
+                const dimensionCell = cells[0];
+                const preregQuotesCell = cells[1];
+                const preregSummaryCell = cells[2];
+                const paperQuotesCell = cells[3];
+                const paperSummaryCell = cells[4];
+                const notesCell = cells[5];
+
+                const preregQuotesContent = (preregQuotesCell.querySelector(".results-table__scroll") || preregQuotesCell).innerHTML;
+                const preregSummaryContent = (preregSummaryCell.querySelector(".results-table__scroll") || preregSummaryCell).innerHTML;
+                const paperQuotesContent = (paperQuotesCell.querySelector(".results-table__scroll") || paperQuotesCell).innerHTML;
+                const paperSummaryContent = (paperSummaryCell.querySelector(".results-table__scroll") || paperSummaryCell).innerHTML;
+
+                const preregCell = createToggleCell({
+                    quotes: preregQuotesContent,
+                    summary: preregSummaryContent,
+                    section: "prereg"
+                });
+                const paperCell = createToggleCell({
+                    quotes: paperQuotesContent,
+                    summary: paperSummaryContent,
+                    section: "paper"
+                });
+
+                row.replaceChildren(dimensionCell, preregCell, paperCell, notesCell);
+            });
+        }
+
+        function bindToggle(selectEl, section) {
+            if (!selectEl) return;
+            selectEl.addEventListener("change", (event) => {
+                const value = event.target.value || "quotes";
+                if (section === "prereg") {
+                    window.preregView = value;
+                } else {
+                    window.paperView = value;
+                }
+                updateSectionView(section, value);
+            });
+        }
+
+        window.preregView = "quotes";
+        window.paperView = "quotes";
+
+        rebuildDemoRows();
+
+        bindToggle(document.getElementById("prereg-view-toggle"), "prereg");
+        bindToggle(document.getElementById("paper-view-toggle"), "paper");
+    </script>
+</body>
+</html>

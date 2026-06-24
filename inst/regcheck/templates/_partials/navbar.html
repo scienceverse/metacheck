@@ -1,0 +1,43 @@
+{% set nav_active = nav_active|default('') %}
+<nav class="navbar navbar-expand-lg navbar-dark p-0">
+    <div class="container-fluid px-0">
+        <a class="navbar-brand d-flex align-items-center fw-semibold" href="{{ url_for('index') }}">
+            <span>RegCheck</span>
+            <img class="header-logo ms-2" src="{{ url_for('static', path='assets/logo.png') }}?v={{ static_version }}" alt="RegCheck logo">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#primaryNav" aria-controls="primaryNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center justify-content-lg-end" id="primaryNav">
+            <ul class="navbar-nav nav-masthead align-items-lg-center">
+                <li class="nav-item">
+                    <a class="nav-link fw-bold py-1 px-0 {{ 'active' if nav_active == 'home' else '' }}" href="{{ url_for('index') }}">Home</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link fw-bold py-1 px-0 dropdown-toggle {{ 'active' if nav_active in ['tools', 'demo'] else '' }}" href="#" id="appDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Tools
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="appDropdown">
+                        <li><a class="dropdown-item {{ 'active' if nav_active == 'demo' else '' }}" href="{{ url_for('demo') }}">Demo</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('compare') }}">Registration-Paper Comparison </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('batch') }}">Batch Clinical Comparison</a></li>
+                        <li><a class="dropdown-item locked-option" href="#">Code-Paper Comparison <img class="locked-image" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/White_lock.svg/1024px-White_lock.svg.png" alt=""></a></li>
+                        <li><a class="dropdown-item locked-option" href="#">Evaluate Registration Quality <img class="locked-image" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/White_lock.svg/1024px-White_lock.svg.png" alt=""></a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold py-1 px-0 {{ 'active' if nav_active == 'team' else '' }}" href="{{ url_for('team') }}">Team</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold py-1 px-0 {{ 'active' if nav_active == 'research' else '' }}" href="https://arxiv.org/abs/2601.13330" target="_blank" rel="noopener noreferrer">Research</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold py-1 px-0 {{ 'active' if nav_active == 'contact' else '' }}" href="{{ url_for('contact') }}">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold py-1 px-0 {{ 'active' if nav_active == 'faq' else '' }}" href="{{ url_for('faq') }}">FAQ</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

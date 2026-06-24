@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="en" class="h-100" data-bs-theme="auto">
+<head>
+    {% set static_version = '20260119' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% include '_partials/head_assets.html' %}
+    <script src="{{ url_for('static', path='js/custom.js') }}?v={{ static_version }}"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="description" content="RegCheck is an AI tool to compare preregistrations with papers instantly."/>
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="author" content="Jamie Cummins">
+    <title>RegCheck Compare</title>
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/cover/">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+    <style>
+        .form-step {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease;
+            max-height: 0;
+            overflow: hidden;
+            margin-bottom: 0;
+            padding: 0;
+        }
+
+        .form-step.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            height: 100%;
+            max-height: 100%;
+            margin: 0;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1rem 0 1.5rem;
+            overflow: auto;
+        }
+
+        .helper-copy {
+            max-width: 70ch;
+            line-height: 1.45;
+            text-align: center;
+        }
+
+        .form-step.active > * {
+            flex: 0 0 auto;
+            width: 100%;
+        }
+
+        .form-step-wrapper {
+            width: min(1100px, 100%);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-step-heading {
+            display: none;
+        }
+
+        /* Make the upload strip full-bleed inside the step */
+        .form-step.active #openai_inputs,
+        .form-step.active #groq_inputs,
+        .form-step.active #deepseek_inputs {
+            width: var(--upload-strip-width);
+            max-width: var(--upload-strip-width);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 900px) {
+            .form-step.active #openai_inputs,
+            .form-step.active #groq_inputs,
+            .form-step.active #deepseek_inputs {
+                width: 100%;
+                max-width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .form-step.active {
+                align-items: stretch;
+                padding: 0.5rem 0 1rem;
+            }
+
+            .form-step-wrapper {
+                width: 100%;
+                gap: 0.75rem;
+            }
+
+            .helper-copy {
+                text-align: left;
+                font-size: 0.95rem;
+            }
+
+            .quick-mode {
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .quick-mode .btn {
+                width: 100%;
+            }
+
+            .step-controls {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .step-controls__left,
+            .step-controls__right {
+                justify-self: stretch;
+                width: 100%;
+                font-size: 0.95rem;
+                padding: 0.55rem 0.75rem;
+            }
+
+            .step-header__title {
+                text-align: center;
+                font-size: clamp(1rem, 2.5vw + 0.6rem, 1.25rem);
+                line-height: 1.25;
+            }
+        }
+
+        .form-step[data-step="1"] h1 {
+            text-align: center;
+        }
+
+        .quick-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            align-items: center;
+            margin-top: 1.25rem;
+        }
+
+        .quick-mode .btn {
+            min-width: 12rem;
+        }
+
+        .quick-mode .btn-outline-light:hover,
+        .quick-mode .btn-outline-light:focus,
+        #step-back.btn-outline-light:hover,
+        #step-back.btn-outline-light:focus {
+            color: #0a1023;
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.35);
+        }
+
+        .quick-mode .helper-copy {
+            text-align: center;
+            color: #c4c9e8;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .form-step[data-step="4"] .form-group {
+            align-items: stretch;
+            text-align: left;
+            gap: 0.5rem;
+        }
+
+        .form-step[data-step="4"] label {
+            text-align: left;
+            color: inherit;
+        }
+
+        .form-step[data-step="4"] .table-responsive {
+            flex: 1 1 auto;
+            width: 100%;
+            transform: none;
+            margin: 0 auto;
+            max-height: min(22rem, max(14rem, calc(60vh - 6rem)));
+            overflow-y: auto;
+            padding-bottom: clamp(1.8rem, 3vh, 2.6rem);
+        }
+
+        .form-step[data-step="4"] .table {
+            width: 100%;
+            table-layout: fixed;
+            font-size: clamp(0.4rem, 0.35vw + 0.4rem, 0.85rem);
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .form-step[data-step="4"] .table-responsive {
+                max-height: none;
+                overflow-y: visible;
+            }
+
+            .form-step[data-step="4"] .table {
+                min-width: 38rem;
+            }
+        }
+
+        .form-step[data-step="4"] .drag-handle-cell {
+            width: 5%;
+            min-width: 2.5rem;
+            text-align: center;
+            vertical-align: middle;
+            color: #adb5bd;
+        }
+
+        .form-step[data-step="4"] .drag-handle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            cursor: grab;
+            border-radius: 0.4rem;
+        }
+
+        .form-step[data-step="4"] .drag-handle:active,
+        .form-step[data-step="4"] tr.dragging .drag-handle {
+            cursor: grabbing;
+        }
+
+        .form-step[data-step="4"] .drag-handle::before {
+            content: '';
+            display: inline-block;
+            width: 0.3rem;
+            height: 0.3rem;
+            border-radius: 50%;
+            background-color: currentColor;
+            box-shadow:
+                0 0.4rem 0 0 currentColor,
+                0 0.8rem 0 0 currentColor,
+                0.45rem 0 0 0 currentColor,
+                0.45rem 0.4rem 0 0 currentColor,
+                0.45rem 0.8rem 0 0 currentColor;
+        }
+
+        .form-step[data-step="4"] tr.dragging {
+            opacity: 0.6;
+        }
+
+        .form-step[data-step="4"] .dimension-name,
+        .form-step[data-step="4"] .dimension-definition,
+        .form-step[data-step="4"] .dimension-definition::placeholder {
+            font-size: clamp(0.65rem, 0.3vw + 0.55rem, 0.8rem);
+        }
+
+        .form-step[data-step="4"] .form-control {
+            font-size: clamp(0.65rem, 0.3vw + 0.55rem, 0.8rem);
+        }
+
+        .form-step[data-step="4"] .dimension-definition {
+            min-height: 3rem;
+            padding: 0.35rem 0.5rem;
+            overflow: auto;
+            resize: vertical;
+            font-size: clamp(0.7rem, 0.3vw + 0.6rem, 0.85rem);
+        }
+
+        .form-step[data-step="4"] .dimension-name {
+            min-height: 2.4rem;
+            padding: 0.35rem 0.5rem;
+            overflow: auto;
+            resize: vertical;
+            font-size: clamp(0.7rem, 0.3vw + 0.6rem, 0.85rem);
+        }
+
+        .form-step[data-step="4"] .dimension-name::placeholder,
+        .form-step[data-step="4"] .dimension-definition::placeholder {
+            font-size: clamp(0.68rem, 0.3vw + 0.58rem, 0.82rem);
+        }
+
+        .form-step[data-step="4"] .dimension-name {
+            padding: 0.35rem 0.5rem;
+            min-height: 2rem;
+        }
+
+        .form-step[data-step="4"] .delete-dimension {
+            padding: 0.3rem 0.55rem;
+            font-size: clamp(0.62rem, 0.24vw + 0.58rem, 0.72rem);
+            border: none;
+            box-shadow: none;
+            background: var(--rc-gradient-secondary);
+            color: #0a1023;
+        }
+
+        .form-step[data-step="4"] .delete-dimension:hover,
+        .form-step[data-step="4"] .delete-dimension:focus {
+            color: #0a1023;
+            box-shadow: 0 6px 14px rgba(242, 82, 92, 0.35);
+        }
+
+        .form-step[data-step="4"] th,
+        .form-step[data-step="4"] td {
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        .form-step[data-step="4"] #dimensions-table col.col-drag {
+            width: 5%;
+            min-width: 2.5rem;
+        }
+
+        .form-step[data-step="4"] #dimensions-table col.col-name {
+            width: 15%;
+        }
+
+        .form-step[data-step="4"] #dimensions-table col.col-definition {
+            width: 58%;
+        }
+
+        .form-step[data-step="4"] #dimensions-table col.col-actions {
+            width: 12%;
+        }
+
+        .form-step[data-step="4"] #dimensions-table th:nth-child(2),
+        .form-step[data-step="4"] #dimensions-table th:nth-child(3) {
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .form-step[data-step="4"] .table-responsive {
+                max-height: min(20rem, max(14rem, calc(80vh - 8rem)));
+            }
+            .form-step[data-step="4"] #dimensions-table th {
+                font-size: 0.7rem;
+            }
+            .form-step[data-step="4"] .delete-dimension {
+                font-size: 0.6rem;
+                padding: 0.3rem 0.5rem;
+            }
+        }
+
+        .form-step[data-step="8"] .compare-action {
+            align-self: center;
+            width: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        #reasoning_effort_group {
+            text-align: center;
+        }
+
+        #reasoning_effort {
+            max-width: 14rem;
+            margin: 0 auto;
+            text-align: center;
+            text-align-last: center;
+        }
+
+        .form-step-heading {
+            font-size: clamp(1.35rem, 1vw + 1.1rem, 1.95rem);
+            font-weight: 600;
+            text-align: center;
+            margin: 0 0 0.75rem;
+            color: #f8f9fa;
+            letter-spacing: 0.03em;
+        }
+
+        .step-controls {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            width: 100%;
+            margin: 0.35rem 0 0.5rem;
+        }
+
+        .step-controls__left {
+            justify-self: start;
+        }
+
+        .step-controls__right {
+            justify-self: end;
+        }
+
+        .branch-pane {
+            display: none;
+            gap: 0.75rem;
+            width: 100%;
+            align-items: center;
+            text-shadow: none !important;
+            text-align: center;
+        }
+
+        .branch-pane.active {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .branch-pane * {
+            text-shadow: none !important;
+        }
+
+        #clinical-upload {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            max-width: clamp(18rem, 26vw, 28rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .clinical-input-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .clinical-input-wrapper .form-control {
+            text-align: center;
+            max-width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 0.95rem;
+        }
+
+        .upload-helper {
+            color: #adb5bd;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        .registration-helper {
+            color: #000;
+            font-size: 0.9rem;
+            margin-top: 0.35rem;
+            text-align: center;
+        }
+
+        .clinical-heading {
+            color: #000;
+            text-align: center;
+        }
+    </style>
+</head>
+{% set nav_active = 'tools' %}
+<body class="d-flex text-center text-bg-dark page-shell wizard-page">
+  <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+      <header class="mb-4">
+          {% include '_partials/navbar.html' %}
+      </header>
+      {% include '_partials/mobile_notice.html' %}
+      <main class="px-3">
+        <form method="post" action="{{ url_for('compare') }}" enctype="multipart/form-data">
+          <div class="form-step-wrapper">
+            <div class="step-controls">
+                  <button type="button" class="btn btn-outline-light btn-sm step-controls__left" id="step-back">Back</button>
+                  <h2 class="step-header__title" id="step-title"></h2>
+                  <button type="button" class="btn btn-primary btn-sm step-controls__right" id="step-forward">Next</button>
+              </div>
+              <div class="form-step active" data-step="1">
+                  <div class="form-group">
+                    <h1 class="form-step-heading">Compare registrations with papers.</h1>
+                    <p class="disclaimer-text">Note: this app is in <b>beta</b>. It has not yet been extensively tested.</p>
+                    <div class="quick-mode">
+                        <button type="button" class="btn btn-primary" id="default-mode">Use default settings</button>
+                        <button type="button" class="btn btn-outline-light" id="custom-mode">Customize settings</button>
+                    </div>
+                  </div>
+              </div>
+              <div class="form-step" data-step="2">
+                  <h2 class="form-step-heading">Choose A Parser</h2>
+                  <div class="form-group">
+                      <label for="parser_choice">This determines what method RegCheck uses to read your paper.</label>
+                      <p class="text-muted small mb-2 helper-copy">If the paper is already typeset to academic journal format, GROBID will perform best.<br>For other document types, DPT-2 will perform best.</p>
+                      <select class="form-control app-toggles" id="parser_choice" name="parser_choice">
+                          <option value="grobid">GROBID</option>
+                          <option value="dpt2">DPT2</option>
+                      </select>
+                  </div>
+              </div>
+		              <div class="form-step" data-step="3">
+		                  <h2 class="form-step-heading">Choose an LLM</h2>
+		                  <div class="form-group">
+		                      <label for="client">This determines which LLM is used for comparing text.</label>
+	                      <p class="text-muted small mb-2 helper-copy">ChatGPT is generally the most accurate (but can be slower with higher reasoning effort).<br>Llama 3.3b is typically fastest. DeepSeek can perform well but may be slower.<br>Exact model versions are configured on the server.</p>
+		                      <select class="form-control app-toggles llm-select" id="client" name="client">
+	                          <option value="openai">ChatGPT</option>
+	                          <option value="deepseek">DeepSeek</option>
+	                          <option value="groq">Llama 3.3b</option>
+	                          <option value="ollama">Ollama (local)</option>
+		                      </select>
+		                  </div>
+	                  <div class="form-group" id="reasoning_effort_group" style="display: none;">
+	                      <label for="reasoning_effort">Reasoning effort</label>
+	                      <select class="form-control" id="reasoning_effort" name="reasoning_effort" disabled>
+                          <option value="low">Low</option>
+                          <option value="medium" selected>Medium</option>
+                          <option value="high">High</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-step" data-step="4">
+                  <h2 class="form-step-heading" style="font-size: 90%;">Select Comparison Dimensions</h2>
+                  <div class="form-group">
+                      <div class="table-responsive">
+                          <table class="table table-dark table-striped align-middle" id="dimensions-table">
+                              <colgroup>
+                                  <col class="col-drag">
+                                  <col class="col-name">
+                                  <col class="col-definition">
+                                  <col class="col-actions">
+                              </colgroup>
+                              <thead>
+                                  <tr>
+                                      <th scope="col" class="text-center" aria-label="Reorder"></th>
+                                      <th scope="col">Dimension</th>
+                                      <th scope="col">Definition</th>
+                                      <th scope="col" class="text-center"></th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                              </tbody>
+                          </table>
+                      </div>
+                      <div class="table-action-row">
+                          <button type="button" class="btn btn-success" id="add-dimension">Add dimension</button>
+                      </div>
+                      <input type="hidden" id="dimensions-data" name="dimensions_data" value="[]">
+                  </div>
+              </div>
+              <div class="form-step" data-step="5">
+                  <h2 class="form-step-heading">Append previous outputs?</h2>
+                  <div class="form-group">
+                      <label for="append_previous_output">Should RegCheck include earlier dimension responses when prompting the model for later dimensions?</label>
+                      <p class="text-muted small mb-2 helper-copy">Selecting "Yes" will generally lead to better performance.<br>Selecting "No" keeps outputs independent, which might be desirable for research purposes.</p>
+                      <select class="form-control app-toggles" id="append_previous_output" name="append_previous_output">
+                          <option value="no">No</option>
+                          <option value="yes" selected>Yes</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-step" data-step="6">
+                  <h2 class="form-step-heading">Does the paper have multiple experiments?</h2>
+                  <div class="form-group">
+                      <label for="multiple_experiments">Giving this information helps RegCheck to know which study specifically to look at.</label>
+                      <select class="form-control app-toggles" id="multiple_experiments" name="multiple_experiments">
+                          <option value="no">No</option>
+                          <option value="yes">Yes</option>
+                      </select>
+                      <div id="experiment_number_group" style="display: none;">
+                          <p>Enter experiment number as stated in the paper (e.g., 1, 2B):</p>
+                          <input type="text" class="form-control" id="experiment_number" name="experiment_number" placeholder="e.g., 1 or 2B">
+                      </div>
+                  </div>
+              </div>
+              <div class="form-step" data-step="7">
+                  <h2 class="form-step-heading">Is your study registered on ClinicalTrials.gov?</h2>
+                  <div class="form-group">
+                      <label for="clinical_registration">Tell us where to look for your registration.</label>
+                      <p class="text-muted small mb-2 helper-copy">If you select "Yes", we will fetch the registration directly from ClinicalTrials.gov. Otherwise, please upload your preregistration file.</p>
+                      <select class="form-control app-toggles" id="clinical_registration" name="clinical_registration">
+                          <option value="no" selected>No</option>
+                          <option value="yes">Yes</option>
+                      </select>
+                  </div>
+              </div>
+              <div class="form-step" data-step="8">
+                  <h2 class="form-step-heading">Upload files</h2>
+                  <div id="openai_inputs" class="form-section">
+                      <div class="center-left">
+                          <div id="general-upload" class="branch-pane active">
+                              <div class="form-group">
+                                  <label class="file-identity-label" for="prereg_file"><b>Preregistration:</b></label>
+                                  <div class="custom-file-input-wrapper">
+                                      <input type="file" class="custom-file-input" id="prereg_file" name="preregistration" accept=".txt, .docx, .pdf">
+                                      <label class="custom-file-label" for="prereg_file">Choose file</label>
+                                      <span class="file-name">No file chosen</span>
+                                      <div class="osf-link-text tooltip-container" onclick="showTooltip(this)">
+                                          <img class="upload-icon" id="doi-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/DOI_logo.svg/640px-DOI_logo.svg.png">
+                                          or supply DOI
+                                          <div class="tooltip-text">Feature coming soon!</div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div id="clinical-upload" class="branch-pane d-none">
+                              <p class="mb-1 fw-semibold clinical-heading text-dark">Provide your ClinicalTrials.gov link or ID</p>
+                              <div class="clinical-input-wrapper">
+                                  <input type="text" class="form-control" id="registration_id" name="registration_id" placeholder="NCT01234567">
+                                  <p class="registration-helper">Enter a valid ClinicalTrials.gov identifier or URL so we can fetch the registration.</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="center-middle">
+                        <div><img class="app-logo" src="{{ url_for('static', path='assets/logo_dark_corners.png') }}?v={{ static_version }}" alt="RegCheck logo"></div>
+                        <p class="supported-files text-dark">Supported file types:<br>.pdf, .docx, and .txt</p>
+                      </div>
+                      <div class="center-right">
+                          <div class="form-group">
+                              <label class="file-identity-label" for="paper_file"><b>Paper:</b></label>
+                              <div class="custom-file-input-wrapper">
+                                  <input type="file" class="custom-file-input" id="paper_file" name="paper" accept=".txt, .docx, .pdf">
+                                  <label class="custom-file-label" for="paper_file">Choose file</label>
+                                  <span class="file-name">No file chosen</span>
+                                  <div class="osf-link-text tooltip-container" onclick="showTooltip(this)"><img class="upload-icon" id="doi-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/DOI_logo.svg/640px-DOI_logo.svg.png">or supply DOI<div class="tooltip-text">Feature coming soon!</div></div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="compare-action">
+                      <button type="submit" class="btn btn-secondary btn-submit d-none" id="app-compare-btn" disabled>Compare</button>
+                  </div>
+              </div>
+          </div>
+          <input type="hidden" id="experiment_text" name="experiment_text" value="">
+          <input type="hidden" id="comparison_type" name="comparison_type" value="general_preregistration">
+      </form>
+    </main>
+
+    {% include '_partials/footer.html' %}
+
+  </div>
+  <script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}?v={{ static_version }}"></script>
+  <script>
+    function showTooltip(element) {
+        var tooltip = element.querySelector('.tooltip-text');
+        if (tooltip.style.visibility === 'visible') {
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.opacity = '0';
+        } else {
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        var tooltips = document.querySelectorAll('.tooltip-text');
+        tooltips.forEach(function(tooltip) {
+            if (!event.target.closest('.tooltip-container')) {
+                tooltip.style.visibility = 'hidden';
+                tooltip.style.opacity = '0';
+            }
+        });
+    });
+
+    function autoResizeTextarea(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight + 4) + 'px';
+    }
+
+    function initializeDragContainer(tableBody) {
+        if (!tableBody || tableBody.dataset.dragEnabled === 'true') {
+            return;
+        }
+        tableBody.dataset.dragEnabled = 'true';
+        tableBody.addEventListener('dragover', function(event) {
+            var draggingRow = tableBody.querySelector('.dragging');
+            if (!draggingRow) {
+                return;
+            }
+            event.preventDefault();
+            var targetRow = event.target.closest('tr');
+            if (!targetRow || targetRow === draggingRow) {
+                return;
+            }
+            var targetRect = targetRow.getBoundingClientRect();
+            var shouldInsertBefore = event.clientY < targetRect.top + targetRect.height / 2;
+            if (shouldInsertBefore) {
+                tableBody.insertBefore(draggingRow, targetRow);
+            } else {
+                tableBody.insertBefore(draggingRow, targetRow.nextSibling);
+            }
+        });
+        tableBody.addEventListener('drop', function(event) {
+            event.preventDefault();
+        });
+    }
+
+    function activateRowDragHandle(row, handle) {
+        if (!row || !handle) {
+            return;
+        }
+        handle.draggable = true;
+        handle.addEventListener('dragstart', function(event) {
+            event.stopPropagation();
+            event.dataTransfer.effectAllowed = 'move';
+            try {
+                event.dataTransfer.setData('text/plain', '');
+            } catch (err) {
+                /* no-op */
+            }
+            row.classList.add('dragging');
+        });
+        handle.addEventListener('dragend', function() {
+            row.classList.remove('dragging');
+        });
+        handle.addEventListener('keydown', function(event) {
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var preregFileInput = document.getElementById('prereg_file');
+        var paperFileInput = document.getElementById('paper_file');
+        var registrationInput = document.getElementById('registration_id');
+        var comparisonSelect = document.getElementById('clinical_registration');
+        var comparisonTypeInput = document.getElementById('comparison_type');
+        var generalPane = document.getElementById('general-upload');
+        var clinicalPane = document.getElementById('clinical-upload');
+        var uploadHelper = document.getElementById('upload-helper-text');
+        var backButton = document.getElementById('step-back');
+        var forwardButton = document.getElementById('step-forward');
+        var submitButton = document.getElementById('app-compare-btn');
+        var parserSelect = document.getElementById('parser_choice');
+        var modelSelect = document.getElementById('client');
+        var reasoningEffortGroup = document.getElementById('reasoning_effort_group');
+        var reasoningEffortSelect = document.getElementById('reasoning_effort');
+        var defaultModeButton = document.getElementById('default-mode');
+        var customModeButton = document.getElementById('custom-mode');
+        var addDimensionButton = document.getElementById('add-dimension');
+        var dimensionsDataInput = document.getElementById('dimensions-data');
+        var tableBody = document.querySelector('#dimensions-table tbody');
+        var form = document.querySelector('form');
+        var stepTitle = document.getElementById('step-title');
+
+        var steps = Array.from(document.querySelectorAll('.form-step'));
+        var currentStep = 1;
+        var defaultModeActive = false;
+        var dimensionsTouched = false;
+        var currentPreset = 'general';
+
+        var defaultDimensionSets = {{ default_dimension_sets | default({}) | tojson }};
+        var generalDefaultDimensions = defaultDimensionSets.general_preregistration || [];
+        var clinicalDefaultDimensions = defaultDimensionSets.clinical_trials || [];
+
+        function setDimensionsTouched() {
+            dimensionsTouched = true;
+        }
+
+        function addDimensionRow(dimension = '', definition = '', markTouched = true) {
+            if (!tableBody) {
+                return;
+            }
+            initializeDragContainer(tableBody);
+            var row = document.createElement('tr');
+            row.className = 'dimension-row';
+
+            var dragCell = document.createElement('td');
+            dragCell.className = 'drag-handle-cell';
+            var dragHandle = document.createElement('span');
+            dragHandle.className = 'drag-handle';
+            dragHandle.setAttribute('role', 'button');
+            dragHandle.setAttribute('tabindex', '0');
+            dragHandle.setAttribute('aria-label', 'Drag to reorder dimension');
+            dragCell.appendChild(dragHandle);
+            row.appendChild(dragCell);
+
+            var dimensionCell = document.createElement('td');
+            var dimensionInput = document.createElement('textarea');
+            dimensionInput.className = 'form-control dimension-name';
+            dimensionInput.rows = 1;
+            dimensionInput.value = dimension;
+            dimensionInput.placeholder = 'e.g., Sample size';
+            autoResizeTextarea(dimensionInput);
+            dimensionInput.addEventListener('input', function() {
+                autoResizeTextarea(dimensionInput);
+                if (markTouched) setDimensionsTouched();
+            });
+            dimensionCell.appendChild(dimensionInput);
+
+            var definitionCell = document.createElement('td');
+            var definitionInput = document.createElement('textarea');
+            definitionInput.className = 'form-control dimension-definition';
+            definitionInput.rows = 2;
+            definitionInput.value = definition;
+            definitionInput.placeholder = 'Describe what should be compared for this dimension.';
+            autoResizeTextarea(definitionInput);
+            definitionInput.addEventListener('input', function() {
+                autoResizeTextarea(definitionInput);
+                if (markTouched) setDimensionsTouched();
+            });
+            definitionCell.appendChild(definitionInput);
+
+            row.appendChild(dimensionCell);
+            row.appendChild(definitionCell);
+            var actionsCell = document.createElement('td');
+            actionsCell.className = 'text-center align-middle';
+            var deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'btn btn-sm delete-dimension';
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', function() {
+                row.remove();
+                if (markTouched) setDimensionsTouched();
+            });
+            actionsCell.appendChild(deleteButton);
+            row.appendChild(actionsCell);
+            tableBody.appendChild(row);
+            activateRowDragHandle(row, dragHandle);
+
+            if (tableBody.parentElement) {
+                var container = tableBody.parentElement;
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+            row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function loadDimensionSet(items) {
+            if (!tableBody) {
+                return;
+            }
+            tableBody.innerHTML = '';
+            items.forEach(function(item) {
+                addDimensionRow(item.dimension, item.definition, false);
+            });
+            dimensionsTouched = false;
+        }
+
+        function updateReasoningEffortVisibility() {
+            if (!reasoningEffortGroup || !reasoningEffortSelect) {
+                return;
+            }
+            var isOpenAI = modelSelect && modelSelect.value === 'openai';
+            reasoningEffortGroup.style.display = isOpenAI ? '' : 'none';
+            reasoningEffortSelect.disabled = !isOpenAI;
+            if (isOpenAI && !reasoningEffortSelect.value) {
+                reasoningEffortSelect.value = 'medium';
+            }
+        }
+
+        function isClinicalSelected() {
+            return comparisonSelect && comparisonSelect.value === 'yes';
+        }
+
+        function setComparisonMode(isClinical) {
+            if (comparisonTypeInput) {
+                comparisonTypeInput.value = isClinical ? 'clinical_trials' : 'general_preregistration';
+            }
+            if (generalPane) {
+                generalPane.classList.toggle('active', !isClinical);
+                generalPane.classList.toggle('d-none', isClinical);
+                generalPane.style.removeProperty('align-items');
+            }
+            if (clinicalPane) {
+                clinicalPane.classList.toggle('active', isClinical);
+                clinicalPane.classList.toggle('d-none', !isClinical);
+            }
+            if (preregFileInput) {
+                preregFileInput.disabled = isClinical;
+            }
+            if (registrationInput) {
+                registrationInput.disabled = !isClinical;
+            }
+            if (uploadHelper) {
+                uploadHelper.textContent = isClinical
+                    ? 'Provide your ClinicalTrials.gov link or NCT ID, plus your paper.'
+                    : 'Upload your preregistration and the corresponding paper.';
+            }
+            if (!dimensionsTouched) {
+                loadDimensionSet(isClinical ? clinicalDefaultDimensions : generalDefaultDimensions);
+                currentPreset = isClinical ? 'clinical' : 'general';
+            } else {
+                currentPreset = isClinical ? 'clinical' : 'general';
+            }
+            checkFiles();
+        }
+
+        function checkFiles() {
+            var compareButton = submitButton;
+            if (!compareButton) {
+                return;
+            }
+            var hasPaper = paperFileInput && paperFileInput.files.length > 0;
+            var ready = false;
+            if (isClinicalSelected()) {
+                var hasRegistration = registrationInput && registrationInput.value.trim().length > 0;
+                ready = hasRegistration && hasPaper;
+            } else {
+                var hasPrereg = preregFileInput && preregFileInput.files.length > 0;
+                ready = hasPrereg && hasPaper;
+            }
+            compareButton.disabled = !ready;
+            compareButton.classList.toggle('btn-primary', ready);
+            compareButton.classList.toggle('btn-secondary', !ready);
+        }
+
+        function updateStepTitle(step) {
+            if (!stepTitle) return;
+            var activeStep = steps.find(function(el) {
+                return Number(el.dataset.step) === step;
+            });
+            var heading = activeStep ? activeStep.querySelector('.form-step-heading') : null;
+            stepTitle.textContent = heading ? heading.textContent.trim() : '';
+        }
+
+        function getActiveSequence() {
+            if (defaultModeActive) {
+                return [1, 6, 7, 8];
+            }
+            return [1, 2, 3, 4, 5, 6, 7, 8];
+        }
+
+        function goToStep(step) {
+            var sequence = getActiveSequence();
+            var targetStep = sequence.includes(step) ? step : sequence[sequence.length - 1];
+            steps.forEach(function(stepElement) {
+                var isTargetStep = Number(stepElement.dataset.step) === targetStep;
+                stepElement.classList.toggle('active', isTargetStep);
+
+                if (isTargetStep) {
+                    var focusable = stepElement.querySelector('input, select, textarea, button');
+                    if (focusable) {
+                        setTimeout(function() {
+                            focusable.focus();
+                        }, 150);
+                    }
+                    var definitionAreas = stepElement.querySelectorAll('.dimension-definition');
+                    definitionAreas.forEach(function(area) {
+                        autoResizeTextarea(area);
+                    });
+                }
+            });
+
+            currentStep = targetStep;
+            updateStepButtons();
+            updateStepTitle(currentStep);
+
+            if (currentStep === 8) {
+                checkFiles();
+                if (window.fitAllFileNameSpans) {
+                    window.fitAllFileNameSpans();
+                }
+            }
+        }
+
+        function goToNextStep() {
+            var sequence = getActiveSequence();
+            var idx = sequence.indexOf(currentStep);
+            if (idx === -1) {
+                goToStep(sequence[0]);
+                return;
+            }
+            if (idx < sequence.length - 1) {
+                goToStep(sequence[idx + 1]);
+            }
+        }
+
+        function goToPreviousStep() {
+            var sequence = getActiveSequence();
+            var idx = sequence.indexOf(currentStep);
+            if (idx > 0) {
+                goToStep(sequence[idx - 1]);
+            }
+        }
+
+        function updateStepButtons() {
+            var sequence = getActiveSequence();
+            var finalStep = sequence[sequence.length - 1];
+            if (backButton) {
+                var hideBack = currentStep === 1 || (defaultModeActive && currentStep === sequence[1]);
+                backButton.classList.toggle('invisible', hideBack);
+                backButton.disabled = hideBack;
+            }
+
+            if (forwardButton) {
+                var hideForward = currentStep === finalStep || currentStep === 1;
+                forwardButton.classList.toggle('invisible', hideForward);
+                forwardButton.disabled = hideForward;
+            }
+
+            if (submitButton) {
+                submitButton.classList.toggle('d-none', currentStep !== finalStep);
+                if (currentStep !== finalStep) {
+                    submitButton.classList.remove('btn-primary');
+                    submitButton.classList.add('btn-secondary');
+                }
+            }
+        }
+
+        if (backButton) {
+            backButton.addEventListener('click', function() {
+                goToPreviousStep();
+            });
+        }
+
+        if (forwardButton) {
+            forwardButton.addEventListener('click', function() {
+                goToNextStep();
+            });
+        }
+
+        if (parserSelect) {
+            parserSelect.addEventListener('change', function() {
+                goToStep(3);
+            });
+        }
+
+        if (modelSelect) {
+            modelSelect.addEventListener('change', function() {
+                updateReasoningEffortVisibility();
+                if (modelSelect.value !== 'openai') {
+                    goToStep(4);
+                }
+            });
+        }
+
+        if (reasoningEffortSelect) {
+            reasoningEffortSelect.addEventListener('change', function() {
+                if (modelSelect && modelSelect.value === 'openai') {
+                    goToStep(4);
+                }
+            });
+        }
+
+        if (defaultModeButton) {
+            defaultModeButton.addEventListener('click', function() {
+                if (parserSelect) parserSelect.value = 'grobid';
+                if (modelSelect) modelSelect.value = 'openai';
+                if (reasoningEffortSelect) reasoningEffortSelect.value = 'medium';
+                var appendSelect = document.getElementById('append_previous_output');
+                if (appendSelect) appendSelect.value = 'yes';
+                updateReasoningEffortVisibility();
+                defaultModeActive = true;
+                goToStep(6);
+            });
+        }
+
+        if (customModeButton) {
+            customModeButton.addEventListener('click', function() {
+                defaultModeActive = false;
+                goToStep(2);
+            });
+        }
+
+        if (comparisonSelect) {
+            comparisonSelect.addEventListener('change', function() {
+                setComparisonMode(isClinicalSelected());
+                if (currentStep === 7) {
+                    goToStep(8);
+                }
+            });
+        }
+
+        if (preregFileInput) {
+            preregFileInput.addEventListener('change', function() {
+                checkFiles();
+                if (window.fitAllFileNameSpans) {
+                    window.fitAllFileNameSpans();
+                }
+            });
+        }
+
+        if (paperFileInput) {
+            paperFileInput.addEventListener('change', function() {
+                checkFiles();
+                if (window.fitAllFileNameSpans) {
+                    window.fitAllFileNameSpans();
+                }
+            });
+        }
+
+        if (registrationInput) {
+            registrationInput.addEventListener('input', function() {
+                checkFiles();
+            });
+        }
+
+        if (addDimensionButton) {
+            addDimensionButton.addEventListener('click', function() {
+                addDimensionRow();
+                setDimensionsTouched();
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!tableBody || !dimensionsDataInput) {
+                    return;
+                }
+                var rows = tableBody.querySelectorAll('tr');
+                var dimensions = [];
+
+                rows.forEach(function(row) {
+                    var nameInput = row.querySelector('.dimension-name');
+                    var definitionInput = row.querySelector('.dimension-definition');
+
+                    var name = nameInput ? nameInput.value.trim() : '';
+                    var definition = definitionInput ? definitionInput.value.trim() : '';
+
+                    if (name !== '') {
+                        dimensions.push({
+                            dimension: name,
+                            definition: definition,
+                        });
+                    }
+                });
+
+                if (dimensions.length === 0) {
+                    event.preventDefault();
+                    alert('Please specify at least one dimension to compare.');
+                    return;
+                }
+
+                dimensionsDataInput.value = JSON.stringify(dimensions);
+            });
+        }
+
+        document.querySelectorAll('.dimension-definition').forEach(function(area) {
+            autoResizeTextarea(area);
+            area.addEventListener('input', function() {
+                autoResizeTextarea(area);
+                setDimensionsTouched();
+            });
+        });
+        document.querySelectorAll('.dimension-name').forEach(function(area) {
+            autoResizeTextarea(area);
+            area.addEventListener('input', function() {
+                autoResizeTextarea(area);
+                setDimensionsTouched();
+            });
+        });
+
+        loadDimensionSet(generalDefaultDimensions);
+        updateReasoningEffortVisibility();
+        setComparisonMode(isClinicalSelected());
+        updateStepTitle(currentStep);
+        goToStep(1);
+        if (window.fitAllFileNameSpans) {
+            window.fitAllFileNameSpans();
+        }
+    });
+
+</script>
+</body>
+</html>
