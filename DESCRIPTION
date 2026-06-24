@@ -37,10 +37,11 @@ Description: A modular, extendable system for checking research outputs for best
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-Suggests: 
+Suggests:
     ggplot2,
     devtools,
     httptest2,
+    processx,
     rmarkdown,
     testthat (>= 3.0.0),
     rstudioapi,
