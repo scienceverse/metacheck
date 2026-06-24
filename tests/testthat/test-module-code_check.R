@@ -270,6 +270,7 @@ test_that("parse errors", {
   mo <- module_run(paper, module, local_path = local_path)
 
   exp <- data.frame(
+    paper_id = rep(paper_id(paper), 8),
     repo_name = rep("parse-errors", 8),
     repo_url = rep(local_path, 8),
     file_name = c(

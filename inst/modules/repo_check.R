@@ -285,7 +285,16 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
   }
   all_files$repo_name <- basename(all_files$repo_url)
 
-  repos <- dplyr::full_join(repos, all_files, by = "repo_url") |>
+  # attach paper_id so downstream modules (e.g., code_check) know which
+  # paper each file belongs to, even when a repo is shared across papers
+  all_files <- dplyr::left_join(
+    all_files,
+    repos[, c("paper_id", "repo_url")],
+    by = "repo_url",
+    relationship = "many-to-many"
+  )
+
+  repos <- dplyr::full_join(repos, all_files, by = c("paper_id", "repo_url"), relationship = "many-to-many") |>
     dplyr::summarise(
       files_n = sum(!is.na(file_name)),
       files_data = sum(file_type %in% "data"),
