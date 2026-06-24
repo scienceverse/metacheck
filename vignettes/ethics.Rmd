@@ -1,0 +1,114 @@
+---
+title: "Ethics Check"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ethics Approval at Scale}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+```{r}
+#| label: setup
+#| message: false
+devtools::load_all(".")
+library(dplyr)
+```
+
+This vignette shows how to run the `ethics_check` module, first on a single paper and then on the built-in `psychsci` corpus of 250 open-access papers from Psychological Science.
+
+## Running `ethics_check`
+
+`ethics_check` searches each paper for ethics approval statements and for signals of live data collection from human or animal participants. It returns a standard module list with a `summary_table` that records, per paper:
+
+- `ethics_approved` — whether an ethics statement was found
+- `ethics_statements` — the matching ethics-related sentence(s), if any
+- `needs_ethics` — whether live data collection was detected (so ethics approval would be expected)
+- `live_data_statements` — the matching live-data-collection sentence(s), if any
+
+```{r}
+paper <- psychsci$`0956797620955209`
+result <- module_run(paper, "ethics_check")
+
+result$summary_table
+```
+
+The `report` explains the verdict by quoting the relevant sentence(s) — the live-data sentence that triggered the expectation of an ethics statement, and the ethics statement itself if one was found.
+
+```{r, results = 'asis'}
+cat(result$report)
+```
+
+## Generating a report
+
+You can also generate a standalone report for a paper that includes only the `ethics_check` module, by passing it as the only entry in the `modules` argument of `report()`.
+
+```{r, eval = FALSE}
+paper2 <- psychsci$`0956797614522816`
+report(paper2, modules = "ethics_check")
+```
+
+This writes an HTML file (by default named after the paper's `paper_id`) to the working directory; the saved path is available as `attr(result, "save_path")`. Use `output_format = "qmd"` if you want the editable Quarto source instead of rendered HTML.
+
+## Running on the `psychsci` corpus
+
+```{r}
+result_ps <- module_run(psychsci, "ethics_check")
+```
+
+The `summary_table` has one row per paper.
+
+```{r}
+result_ps$summary_table |> head()
+```
+
+The traffic light gives an overall verdict for the corpus, and `summary_text` a human-readable count.
+
+```{r}
+result_ps$traffic_light
+result_ps$summary_text
+```
+
+## Examining papers without ethics statements
+
+To inspect individual papers that appear to involve live data collection but lack an ethics approval statement:
+
+```{r}
+missing_ps <- result_ps$summary_table |>
+  filter(needs_ethics & !ethics_approved)
+
+nrow(missing_ps)
+missing_ps$paper_id
+```
+
+The `live_data_statements` column shows the sentence(s) that triggered the expectation of an ethics statement for each of these papers.
+
+```{r}
+missing_ps$live_data_statements[1:3]
+```
+
+You can also look at the detected sentences for any of these papers by filtering the full `table` output.
+
+```{r}
+result_ps$table |>
+  filter(paper_id == missing_ps$paper_id[1])
+```
+
+## Validation against other corpora
+
+The patterns in `ethics_check` were validated against two corpora that are not bundled with the package: 749 papers from *Collabra: Psychology* and 855 papers from the *Judgment and Decision Making* journal. These corpora were chosen because they sit outside the Psychological Science distribution the patterns were originally developed on, so they provide an independent check on generalization.
+
+Validation proceeded in three rounds:
+
+- **Round 1.** `ethics_check` was run on both full corpora, and a stratified sample of 106 papers (57 Collabra, 49 JDM) was drawn across the four cells of `ethics_approved` x `needs_ethics`. Each sampled paper's full text was read and independently labeled with a ground-truth `manual_ethics_approved` and `manual_needs_ethics` verdict plus a free-text justification, in batches of about 10 papers at a time. Comparing module output to these manual labels gave a combined "missing ethics" flag (`needs_ethics & !ethics_approved`) accuracy of 80.2% (7 false positives, 14 false negatives out of 106). The largest error source was the short committee abbreviations REC/REB/DEC colliding with unrelated jargon (e.g. "REC" as a recognition-heuristic model name, "DEC" as a decision-task label), which inflated `ethics_approved` false positives.
+- **Fix.** The REC/REB/DEC/ERB patterns were constrained to only match when an ethics/approval/committee/board/panel/institutional/protocol word appears within about 30 characters in the same sentence (IRB and IEC were left unconstrained, since they were not observed to collide in practice).
+- **Round 2.** A fresh stratified sample of 100 papers (43 Collabra, 57 JDM), excluding all round-1 papers, was drawn and manually labeled the same way. Combined-flag accuracy rose to 91% (8 false positives, 1 false negative out of 100); `ethics_approved` accuracy was 96% and `needs_ethics` accuracy was 93%. Remaining disagreements were genuinely ambiguous cases (e.g. secondary analyses of other researchers' data, methods-guidance articles instructing future authors to obtain their own approval, and one borderline case with no formal "approved by" sentence but compliance language plus informed consent).
+- **Round 3.** With the fixes in place, `ethics_check` was re-run on the full corpora to confirm the sample-level improvements held at scale: 420 of 749 Collabra papers and 30 of 855 JDM papers were flagged `ethics_approved`, with 649 and 776 papers respectively flagged `needs_ethics`.
+
+This validation work (scripts, sampled data, and manual annotations) lives in `_stuff/ethics_sample/` in the package source repository and is not part of the installed package.

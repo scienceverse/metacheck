@@ -203,3 +203,79 @@ extract_eq <- function(paper) {
 
   return(eq)
 }
+
+
+#' Detect Live Data Collection
+#'
+#' Search a paper or paperlist for sentences indicating that data were collected
+#' directly from human or animal participants. Returns a table of matching
+#' sentences in the same format as [text_search()].
+#'
+#' Patterns cover:
+#' - Participant/subject/volunteer actions ("participants were recruited", "were randomised")
+#' - Researcher actions ("we recruited", "we collected data from participants")
+#' - Informed consent ("gave informed consent", "signed consent", "consent was obtained")
+#' - Online recruitment platforms (MTurk, Prolific, SONA, CloudResearch)
+#' - Student participant pools
+#' - Inclusion/exclusion criteria combined with participant language
+#' - "Our participants" / "our subjects"
+#' - Animal data collection ("mice were housed", "were anesthetized")
+#'
+#' Patterns intentionally avoid:
+#' - "respondents" alone (common in economics/social science secondary survey analysis)
+#' - "were tested" alone (triggers on algorithm/model evaluation in CS/AI papers)
+#' - "we conducted experiments" (triggers on computational experiments in AI/CS)
+#' - "data were collected from" alone (triggers on existing database/dataset studies)
+#' - "our sample" alone (too generic; present in all empirical work including meta-analyses)
+#'
+#' Used by the `ethics_check` module to determine whether an ethics statement is expected.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a data frame of matching sentences (same structure as [text_search()])
+#' @keywords internal
+.detect_live_data <- function(paper) {
+  live_words <- c(
+    # participant/subject/volunteer actions — strong verbs indicating direct recruitment
+    "(participants?|subjects?|volunteers?)\\s+(were|are|had|gave|provided|completed|filled|signed|took\\s+part|participated|recruited|paid|compensated|randomly\\s+assigned|assigned\\s+to|enrolled|debriefed)",
+    # respondents only with strong recruitment verbs (not just "were asked" / "were grouped")
+    "respondents?\\s+(were|are)\\s+(recruited|interviewed|enrolled|randomly\\s+assigned|compensated|paid|debriefed)",
+    # researcher actively recruiting
+    "we\\s+(recruited|enrolled|debriefed|ran\\s+(participants?|subjects?))",
+    # researcher collecting data from live humans (require participant/subject/human qualifier)
+    "we\\s+collected\\s+data\\s+from\\s+(participants?|subjects?|volunteers?|humans?|patients?|children|students?)",
+    "we\\s+conducted\\s+(the\\s+)?(study|survey|interview|clinical\\s+trial)",
+    "were\\s+recruited",
+    "were\\s+enrolled",
+    "were\\s+debriefed",
+    "were\\s+randomis(ed|ing)",
+    "were\\s+randomiz(ed|ing)",
+    # consent
+    "(gave|give|given|signed|provided)\\s+(written\\s+|oral\\s+|verbal\\s+)?informed\\s+consent",
+    "signed\\s+(informed\\s+)?consent",
+    "consent\\s+was\\s+obtained",
+    "informed\\s+consent\\s+was\\s+(obtained|provided|given|collected)",
+    # online recruitment platforms — imply live, direct recruitment
+    "\\bmturk\\b",
+    "mechanical\\s+turk",
+    "prolific\\s+academic",
+    "\\bprolific\\b",
+    "cloudresearch",
+    "turkprime",
+    "sona\\s+systems?",
+    "research\\s+participation\\s+scheme",
+    "(subject|participant)\\s+pool",
+    # student samples
+    "(undergraduate|graduate|university|college)\\s+students?\\s+(who|were|participated|completed|filled|took\\s+part)",
+    # inclusion/exclusion criteria paired with participant/patient language
+    "(participant|patient|subject)\\s+(inclusion|exclusion)\\s+criteri",
+    "(inclusion|exclusion)\\s+criteri.{0,60}(participants?|patients?|subjects?)",
+    # "our participants" / "our subjects" (not "our sample" alone — too generic)
+    "our\\s+(participants?|subjects?|volunteers?)",
+    # animal data collection
+    "(mice|rats?|monkeys?|pigeons?|zebrafish|ferrets?|rabbits?|hamsters?|gerbils?|guinea\\s+pigs?|macaques?|marmosets?)\\s+(were|had)\\s+(used|housed|trained|tested|implanted|injected|anesthetized|anaesthetized|sacrificed|perfused|killed)",
+    "were\\s+(implanted|surgically\\s+prepared|injected|anesthetized|anaesthetized|sacrificed|perfused)"
+  )
+
+  text_search(paper, live_words)
+}
