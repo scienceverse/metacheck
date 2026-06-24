@@ -1,0 +1,135 @@
+---
+title: "Using the Paper Database Corpora"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using the Paper Database Corpora}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(metacheck)
+```
+
+The [scienceverse/papers](https://github.com/scienceverse/papers) GitHub repository hosts pre-built `paperlist` corpora -- collections of open-access articles already converted to metacheck's internal format with GROBID, ready to load to run modules on a set of papers. The goal of these paper databases is to provide a set of open access scientific papers that modules can be validated against. These databases are useful when developing new modules in Metacheck, but also to test different automated screening tools like MEtacheck against each other. This vignette shows how to discover, download, and use these corpora, and demonstrates three fast text-based modules on real papers from each one.
+
+## Discovering available corpora
+
+`papers_available()` queries the GitHub Releases API and lists every corpus currently published, along with its size and whether you already have a cached local copy.
+
+```{r}
+papers_available()
+```
+
+## Loading a corpus
+
+`papers_load()` downloads the corpus and returns it as a `paperlist` object. By default (`cache = FALSE`), the file is downloaded to a temporary location and discarded once loaded -- the right choice if you only need the corpus for a single session.
+
+```{r}
+#| eval: false
+jdm <- papers_load("jdm")
+length(jdm)
+```
+
+If you expect to use a corpus repeatedly across sessions -- for example, while developing and testing a new module -- set `cache = TRUE` so the file is saved to your user data directory and reused on subsequent calls instead of being re-downloaded every time:
+
+```{r}
+#| eval: false
+jdm <- papers_load("jdm", cache = TRUE)
+```
+
+Calling `papers_load("jdm", cache = TRUE)` again later in the same or a different session will load instantly from the cached copy rather than contacting GitHub. Pass `overwrite = TRUE` if you want to force a fresh download (e.g. after a corpus has been updated):
+
+```{r}
+#| eval: false
+jdm <- papers_load("jdm", cache = TRUE, overwrite = TRUE)
+```
+
+Use `papers_remove()` to delete a cached copy and free up disk space:
+
+```{r}
+#| eval: false
+papers_remove("jdm")
+```
+
+## Corpus metadata
+
+The corpus `.rds` file itself is just a list of papers -- it carries no metadata about how it was built, what it covers, or its license. That provenance lives in a `metadata.json` file alongside each corpus on the [papers repository](https://github.com/scienceverse/papers), following the [Dublin Core](http://dublincore.org/documents/dcmi-terms/) metadata standard. `papers_metadata()` fetches and parses it for you:
+
+```{r}
+meta <- papers_metadata("jdm")
+meta$dc_title
+meta$dc_coverage
+meta$dc_rights
+```
+
+Conversion provenance (which GROBID version, which tool, when) is nested under `dc_provenance`:
+
+```{r}
+meta$dc_provenance$conversion_tool
+meta$dc_provenance$doi_matching
+```
+
+`papers_metadata()` only covers the structured fields above. For the full narrative -- known gaps, data-quality caveats, exact sampling procedure -- see each corpus's `README.md` on the papers repository, or fetch it directly with `github_readme("scienceverse/papers")`.
+
+
+## Three fast, local modules
+
+The modules below only search the paper's text with regular expressions -- no external API calls, no LLM queries -- so they run quickly even across hundreds of papers.
+
+| Module | What it checks |
+|---|---|
+| `stat_check` | Recomputes p-values from reported test statistics (t-tests, F-tests) and flags inconsistencies |
+| `stat_effect_size` | Checks whether t-tests and F-tests are reported with an effect size |
+| `stat_p_nonsig` | Surfaces non-significant p-values for manual review of their interpretation |
+
+All three return a list with `$traffic_light` ("green", "yellow", "red", or "na"), `$summary_text`, and `$table` with row-level detail. See `vignette("stats", package = "metacheck")` for a fuller walkthrough of all five statistical-reporting modules using the bundled `psychsci` dataset.
+
+---
+
+### `stat_check` on JDM
+
+`stat_check` runs [StatCheck](https://statcheck.io/) on every t-test and F-test it finds and reports whether the stated p-value is mathematically consistent with the test statistic and degrees of freedom. The code below performs this check only on the first 20 papers in the paper database. 
+
+```{r}
+result <- module_run(jdm[1:20], "stat_check")
+result$summary_text
+```
+We can see that errors can be small, but of course, statistics should be reported adequately.  
+
+```{r}
+# the inconsistent test statistic and the sentence it appeared in
+result$table[result$table$error, c("raw", "computed_p", "text")]
+```
+
+We can repeat this analysis on a journal in medicine: 
+
+```{r}
+#| eval: false
+plosmed <- papers_load("plosmed")
+length(plosmed)
+
+result <- module_run(plosmed[1:20], "stat_check")
+result$summary_text
+
+```
+We see why  it is useful to compare how modules work across literatures. Statcheck only detects statistics written in APA format, but this reporting style is limited to psychological journals. 
+### `stat_p_nonsig` across corpora
+
+`stat_p_nonsig` finds every non-significant p-value (p >= .05) so a reader can check whether the surrounding text correctly avoids interpreting it as evidence of no effect. The module makes no judgment on its own -- it only surfaces the sentences.
+
+```{r}
+result_nonsig <- module_run(plosmed, "stat_p_nonsig")
+result_effect_size <- module_run(plosmed, "stat_effect_size")
+
+result_nonsig$summary_text
+result_effect_size$summary_text
+```
+We see that these modules identify some tests in a medical journal, but medical journals might also rely much more on other analyses than t-tests and F-tests. This highlights how we need to validate modules across domains, and clearly communicate the domain within which modules are validated. 
