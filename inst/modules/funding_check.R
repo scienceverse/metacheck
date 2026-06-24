@@ -68,11 +68,7 @@ funding_check <- function(paper) {
   table <- paper |>
     text_search() |>
     dplyr::select(paper_id, text) |>
-    dplyr::nest_by(paper_id) |>
-    dplyr::rowwise() |>
-    dplyr::mutate(text = rtransparent_funding(data$text)) |>
-    dplyr::ungroup() |>
-    dplyr::select(-data) |>
+    dplyr::summarise(text = rtransparent_funding(text), .by = paper_id) |>
     dplyr::filter(!is.na(text) & nzchar(text))
 
   # summary_table ----

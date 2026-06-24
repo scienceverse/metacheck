@@ -27,11 +27,7 @@ coi_check <- function(paper) {
   table <- paper |>
     text_search() |>
     dplyr::select(paper_id, text) |>
-    dplyr::nest_by(paper_id) |>
-    dplyr::rowwise() |>
-    dplyr::mutate(text = rtransparent_coi(data$text)) |>
-    dplyr::ungroup() |>
-    dplyr::select(-data) |>
+    dplyr::summarise(text = rtransparent_coi(text), .by = paper_id) |>
     dplyr::filter(!is.na(text) & nzchar(text))
 
   # summary_table ----
@@ -120,7 +116,7 @@ rtransparent_coi <- function(splitted) {
     the_conflicts <- the_conflicts[!is.na(the_conflicts)]
   }
 
-  index <- unique(c(the_conflicts, is_disclosure, is_finance, is_declare, is_dual)) %>% sort()
+  index <- unique(c(the_conflicts, is_disclosure, is_finance, is_declare, is_dual)) |> sort()
 
   # Try to protect from mentions of words in other sections of text
   # If a hit ends with interest or starts with Disclosure, more likely to be COI
@@ -140,9 +136,9 @@ rtransparent_coi <- function(splitted) {
     }
   }
 
-  coi_text <- splitted[index] %>%
-    unlist() %>%
-    paste(., collapse = " ")
+  coi_text <- splitted[index] |>
+    unlist() |>
+    paste(collapse = " ")
 
   # Identify text that may have been  missed because it was in a new line
   if (length(index) == 1) {
