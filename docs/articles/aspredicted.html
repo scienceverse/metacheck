@@ -43,10 +43,8 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/metacheck.html">Get Started</a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://www.scienceverse.org/metacheck_book/">Metacheck Manual</a></li>
 <li class="nav-item"><a class="nav-link" href="../report-example.html">Example Report</a></li>
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -80,11 +78,11 @@ studies <span class="citation">(Spitzer and Mueller 2023; Imai et al.
 2025)</span>. As it is a new practice, and not all researchers are
 trained in how to preregister, it is not surprising that the quality of
 preregistration is not always sufficient to allow others to identify
-opportunistic flexibility in the data analysis <span class="citation">(Akker et al. 2024)</span>. Reviewers could check
-whether researchers adhere to the preregistration, but this requires
-some effort. Automation can provide a partial solution be making
-information more easily available, and perhaps even performing automated
-checks.</p>
+opportunistic flexibility in the data analysis <span class="citation">(<span class="nocase">Akker et al.</span> 2024)</span>.
+Reviewers could check whether researchers adhere to the preregistration,
+but this requires some effort. Automation can provide a partial solution
+be making information more easily available, and perhaps even performing
+automated checks.</p>
 <p>Here we demonstrate how <a href="https://scienceverse.github.io/metacheck/">metacheck</a>, our
 software to perform automated checks on scientific manuscripts, can also
 retrieve the content of a preregistration. The preregistration can then
@@ -210,12 +208,13 @@ preregistration on AsPredicted.</p>
 <div class="section level2">
 <h2 id="sample-size">Sample Size<a class="anchor" aria-label="anchor" href="#sample-size"></a>
 </h2>
-<p>Recent studies into how preregistrations are performed <span class="citation">(Akker et al. 2024)</span> have shown that one of the
-most common deviations from a preregistration is a difference in the
-planned sample size, and the achieved sample size. This is not
-necessarily problematic, as a difference might be only a single
-datapoint. Nevertheless, researchers should discuss the deviation, and
-evaluate whether the deviation impacts the severity of the test <span class="citation">(Lakens 2024)</span>.</p>
+<p>Recent studies into how preregistrations are performed <span class="citation">(<span class="nocase">Akker et al.</span> 2024)</span>
+have shown that one of the most common deviations from a preregistration
+is a difference in the planned sample size, and the achieved sample
+size. This is not necessarily problematic, as a difference might be only
+a single datapoint. Nevertheless, researchers should discuss the
+deviation, and evaluate whether the deviation impacts the severity of
+the test <span class="citation">(Lakens 2024)</span>.</p>
 <p>Checking the sample size of a study against the preregistration is
 some effort, as the preregistration document needs to be opened, the
 correct entry located, and the corresponding text in the manuscript
@@ -358,8 +357,8 @@ an LLM.</p>
 <p>The authors deviated from their preregistration. They planned to test
 a minimum of 10 and a maximum of 15 individuals for each species, but
 they tested 10 individuals for three species (ruffed lemurs, Coquerel’s
-sifakas, and ring-tailed lemurs) and 9 individuals for the mongoose
-lemur species.</p>
+sifakas, and ring-tailed lemurs) and 9 individuals for the fourth
+species (mongoose lemur).</p>
 </blockquote>
 <p>As we see, the LLM does a very good job evaluating whether the
 authors adhered to their preregistration in terms of the sample size.
@@ -421,8 +420,8 @@ and must be fluent in English (to ensure instruction comprehension).</p>
 <blockquote>
 <p>The authors deviated from their preregistration. According to the
 text, the researchers planned to collect data from 60 participants in
-each cohort, but they only collected data from 60 participants in cohort
-A and 56 participants in cohort B due to the COVID-19 pandemic.</p>
+each cohort, but they only collected data from 56 participants in cohort
+B due to the COVID-19 pandemic.</p>
 </blockquote>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># manual check - no LLM</span></span>
@@ -633,8 +632,8 @@ any significant</p>
 <p>LLM Assessment:</p>
 <p>The authors deviated from their preregistration.</p>
 <p>According to the text, the researchers planned to collect data from
-60 participants in each cohort. However, in cohort B, they only
-collected data from 56 participants due to the COVID-19 pandemic.</p>
+60 participants in each cohort, but they only collected data from 60
+participants in cohort A and 56 participants in cohort B.</p>
 <p>It fails gracefully if there are no links.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paper</span> <span class="op">&lt;-</span> <span class="va">psychsci</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -650,20 +649,18 @@ work well with multi-study papers that contain multiple
 preregistrations. If you are interested in developing this metacheck
 module further, or performing such a validation study, do reach out to
 us.</p>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-vandenakker_potential_2024" class="csl-entry">
-Akker, Olmo R. van den, Marjan Bakker, Marcel A. L. M. van Assen,
-Charlotte R. Pennington, Leone Verweij, Mahmoud M. Elsherif, Aline
-Claesen, et al. 2024. <span>“The Potential of Preregistration in
-Psychology: Assessing Preregistration Producibility and
-Preregistration-Study Consistency.”</span> <em>Psychological
-Methods</em>, October. <a href="https://doi.org/10.1037/met0000687" class="external-link">https://doi.org/10.1037/met0000687</a>.
+<span class="nocase">Akker, Olmo R. van den, Marjan Bakker, Marcel A. L.
+M. van Assen, et al.</span> 2024. <span>“The Potential of
+Preregistration in Psychology: Assessing Preregistration Producibility
+and Preregistration-Study Consistency.”</span> <em>Psychological
+Methods</em>, ahead of print, October. <a href="https://doi.org/10.1037/met0000687" class="external-link">https://doi.org/10.1037/met0000687</a>.
 </div>
 <div id="ref-imai_preregistration_2025" class="csl-entry">
-Imai, Taisuke, Séverine Toussaert, Aurélien Baillon, Anna Dreber, Seda
-Ertaç, Magnus Johannesson, Levent Neyse, and Marie Claire Villeval.
-2025. <em>Pre-Registration and Pre-Analysis Plans in Experimental
-Economics</em>. 220. I4R Discussion Paper Series. <a href="https://www.econstor.eu/handle/10419/315047" class="external-link">https://www.econstor.eu/handle/10419/315047</a>.
+Imai, Taisuke, Séverine Toussaert, Aurélien Baillon, et al. 2025.
+<em>Pre-Registration and Pre-Analysis Plans in Experimental
+Economics</em>. I4R Discussion Paper Series. <a href="https://www.econstor.eu/handle/10419/315047" class="external-link">https://www.econstor.eu/handle/10419/315047</a>.
 </div>
 <div id="ref-lakens_when_2024" class="csl-entry">
 Lakens, Daniël. 2024. <span>“When and How to Deviate from a

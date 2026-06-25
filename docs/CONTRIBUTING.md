@@ -168,6 +168,7 @@ directly.) This will save files to tests/testthat/apis/ to mock the
 response without needing a web connection.
 
 ``` r
+
 test_that("describe", {
   # code
 }, mock = "capture")
@@ -181,6 +182,7 @@ to check the status of the resource, you will need to locally mock this
 function as below.
 
 ``` r
+
 testthat::local_mocked_bindings(
   online = \(...) TRUE
 )

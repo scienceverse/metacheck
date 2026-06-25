@@ -40,11 +40,11 @@ template:
 
 navbar:
   structure:
-    left: [home, gs, external, reference, articles, news]
+    left: [home, manual, external, news]
   components:
-    gs:
-      text: Get Started
-      href: articles/metacheck.html
+    manual:
+      text: Metacheck Manual
+      href: https://www.scienceverse.org/metacheck_book/
     external:
       text: Example Report
       href: report-example.html

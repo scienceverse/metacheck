@@ -1,12 +1,13 @@
 # Checking Statistical Reporting
 
 ``` r
+
 library(metacheck)
 #> 
 #> 
 #> ***********************************************
-#> ✅ Welcome to metacheck beta version 0.0.1.9001
-#> ✨ Your version is up to date.
+#> ✅ Welcome to metacheck beta version 0.1.0
+#> ✨ Your version newer than the current release
 #> 
 #> ℹ For support and examples visit:
 #> https://scienceverse.github.io/metacheck/
@@ -60,25 +61,30 @@ has 6 detected p-values, all exact, all t-tests and F-tests paired with
 effect sizes, and no consistency errors flagged by StatCheck.
 
 ``` r
+
 paper_clean <- psychsci[["0956797613520608"]]
 ```
 
 ``` r
+
 module_run(paper_clean, "all_p_values")$summary_text
 #> [1] "We found 6 p-values"
 ```
 
 ``` r
+
 module_run(paper_clean, "stat_p_exact")$traffic_light
 #> [1] "green"
 ```
 
 ``` r
+
 module_run(paper_clean, "stat_effect_size")$traffic_light
 #> [1] "red"
 ```
 
 ``` r
+
 module_run(paper_clean, "stat_check")$traffic_light
 #> [1] "green"
 ```
@@ -107,6 +113,7 @@ Paper `0956797619842261` has 60 detected p-values, 59 of which are
 exact. One is imprecise:
 
 ``` r
+
 paper_imprecise <- psychsci[["0956797619842261"]]
 result_exact <- module_run(paper_imprecise, "stat_p_exact")
 
@@ -117,6 +124,7 @@ result_exact$summary_text
 ```
 
 ``` r
+
 # The flagged p-value and its context
 result_exact$table[result_exact$table$p_comp != "=", c("text", "p_comp", "p_value", "expanded")]
 #> # A tibble: 13 × 4
@@ -159,26 +167,28 @@ The same paper as above (`0956797619842261`) also has one test without
 an effect size:
 
 ``` r
+
 result_es <- module_run(paper_imprecise, "stat_effect_size")
 
 result_es$traffic_light
 #> [1] "red"
 result_es$summary_text
-#> [1] "We found 1 t-test and/or F-test where effect sizes are not reported. Check these tests in the table below, and consider adding effect sizes"
+#> [1] "We found 2 t-tests and/or F-tests where effect sizes are not reported. Check these tests in the table below, and consider adding effect sizes"
 ```
 
 ``` r
+
 # The test that is missing an effect size
 result_es$table[result_es$table$es == FALSE, c("text", "test")]
-#> # A tibble: 1 × 2
-#>   text  test 
-#>   <chr> <chr>
-#> 1 NA    NA
+#>      text test
+#> NA   <NA> <NA>
+#> NA.1 <NA> <NA>
 ```
 
 A clean paper for comparison — all tests have effect sizes:
 
 ``` r
+
 module_run(paper_clean, "stat_effect_size")$summary_text
 #> [1] "All effect sizes were reported, but some appear inconsistent with the test statistic. This can be because the effect size is not clearly labeled (e.g., d, instead of d_rm), because the effect sizes is not reported with enough precisions (e.g., 0.3 instead of 0.32), or because the effect size is incorrectly reported."
 ```
@@ -199,6 +209,7 @@ interpretation — it surfaces the sentences so researchers can review
 them. Paper `0956797618772822` has 28 such sentences:
 
 ``` r
+
 paper_nonsig <- psychsci[["0956797618772822"]]
 result_nonsig <- module_run(paper_nonsig, "stat_p_nonsig")
 
@@ -209,6 +220,7 @@ result_nonsig$summary_text
 ```
 
 ``` r
+
 # A sample of sentences with non-significant p-values
 head(result_nonsig$table[, c("text", "p_value")], 3)
 #> # A tibble: 3 × 2
@@ -231,6 +243,7 @@ The `marginal` module detects these phrases.
 The same paper `0956797619842261` contains two such sentences:
 
 ``` r
+
 result_marginal <- module_run(paper_imprecise, "marginal")
 
 result_marginal$traffic_light
@@ -240,6 +253,7 @@ result_marginal$summary_text
 ```
 
 ``` r
+
 result_marginal$table[, "text"]
 #> # A tibble: 2 × 1
 #>   text                                                                          
@@ -267,6 +281,7 @@ validation details.
 The clean paper returns green:
 
 ``` r
+
 module_run(paper_clean, "stat_check")$summary_text
 #> [1] "We detected no errors in t-tests or F-tests."
 ```
@@ -274,6 +289,7 @@ module_run(paper_clean, "stat_check")$summary_text
 Paper `09567976231223130` triggers multiple flags:
 
 ``` r
+
 paper_statcheck <- psychsci[["09567976231223130"]]
 result_sc <- module_run(paper_statcheck, "stat_check")
 
@@ -284,6 +300,7 @@ result_sc$summary_text
 ```
 
 ``` r
+
 # Rows where an error was flagged — verify manually before concluding anything
 errors <- result_sc$table[result_sc$table$error == TRUE,
                           c("raw", "reported_p", "computed_p", "decision_error")]
@@ -308,6 +325,7 @@ module as the input to the next. The `summary_table` accumulates across
 modules:
 
 ``` r
+
 result <- psychsci[["0956797619842261"]] |>
   module_run("stat_p_exact") |>
   module_run("stat_effect_size") |>

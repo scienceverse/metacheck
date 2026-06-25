@@ -145,8 +145,7 @@ to start using metacheck to help us.
 
 ## metacheck 0.0.0.9101
 
-- [`metacheck_app()`](https://scienceverse.github.io/metacheck/reference/metacheck_app.html)
-  the shiny app is back!
+- `metacheck_app()` the shiny app is back!
 - `grobid_convert()` now reads in the url table more accurately
 - [`extract_urls()`](https://scienceverse.github.io/metacheck/reference/extract_urls.md)
   uses a simplified regex that seems better at catching full URLs

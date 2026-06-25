@@ -6,10 +6,12 @@ You can install the development version of metacheck from
 [GitHub](https://github.com/scienceverse/metacheck) with:
 
 ``` r
+
 pak::pkg_install("scienceverse/metacheck")
 ```
 
 ``` r
+
 library(metacheck)
 ```
 
@@ -18,6 +20,7 @@ options to control what information is sent to or retrieved from
 external servers.
 
 ``` r
+
 metacheck::report_app()
 ```
 
@@ -40,6 +43,7 @@ you can always add it later with the
 function.
 
 ``` r
+
 pdf_file <- demofile("pdf")
 json_file <- convert(file_path = pdf_file, 
                      save_path = "converted",
@@ -60,6 +64,7 @@ api_url,
 will default to a local server if one is detected.
 
 ``` r
+
 json_file <- convert(file_path = pdf_file, 
                      save_path = "converted",
                      method = "grobid",
@@ -73,6 +78,7 @@ The function
 can read converted JSON files.
 
 ``` r
+
 paper <- read(json_file)
 ```
 
@@ -100,6 +106,7 @@ references, and citations.
 ### Info
 
 ``` r
+
 paper$info
 ```
 
@@ -117,6 +124,7 @@ paper$info
 The bibliography is provided in a tabular format.
 
 ``` r
+
 paper$bib
 ```
 
@@ -134,6 +142,7 @@ Cross-references are also provided in a tabular format, with `xref_id`
 to match the bibliography table.
 
 ``` r
+
 paper$xref
 ```
 
@@ -160,6 +169,7 @@ There are functions to combine the information from a list of papers,
 like `psychsci`.
 
 ``` r
+
 paper_table(psychsci[1:5], "info", c("title", "doi"))
 ```
 
@@ -173,6 +183,7 @@ paper_table(psychsci[1:5], "info", c("title", "doi"))
     #> 5 Emotional Vocalizations Are Recognized Across Cultures Regardl… 10.1… 0956797…
 
 ``` r
+
 paper_table(psychsci[1:5], "bib") |>
   dplyr::filter(!is.na(doi), doi != "")
 ```
@@ -200,6 +211,7 @@ section type is a best guess from the headers, so may not always be
 accurate.)
 
 ``` r
+
 text <- text_search(paper)
 ```
 
@@ -219,6 +231,7 @@ argument. The pattern is a regex string by default; set `fixed = TRUE`
 if you want to find exact text matches.
 
 ``` r
+
 text <- text_search(paper, pattern = "metacheck")
 ```
 
@@ -233,6 +246,7 @@ Set `return` to one of “sentence”, “paragraph”, “section”, or “mat
 control what gets returned.
 
 ``` r
+
 text <- text_search(paper, "GitHub", 
                     return = "paragraph")
 ```
@@ -251,6 +265,7 @@ are passed to [`grep()`](https://rdrr.io/r/base/grep.html), so
 `perl = TRUE` allows you to use more complex regex, like below.
 
 ``` r
+
 pattern <- "[a-zA-Z]\\S*\\s*(=|<)\\s*[0-9\\.,-]*\\d"
 text <- text_search(paper, pattern, return = "match", perl = TRUE)
 ```
@@ -278,6 +293,7 @@ or a module with
 [`text_expand()`](https://scienceverse.github.io/metacheck/reference/text_expand.md).
 
 ``` r
+
 marginal <- text_search(paper, "marginal") |>
   text_expand(paper, plus = 1, minus = 1)
 
@@ -324,6 +340,7 @@ article for full setup instructions. In brief:
 3.  In R, set metacheck to use it:
 
 ``` r
+
 llm_model("ollama/llama3.2")
 llm_use(TRUE)
 ```
@@ -349,20 +366,13 @@ When metacheck starts it checks for API keys in `.Renviron` and sets the
 model automatically. You can also set it manually:
 
 ``` r
+
 llm_model()                              # check which model is currently set
 llm_model("groq")                        # use ellmer's default Groq model
 llm_model("groq/llama-3.3-70b-versatile") # use a specific model
 ```
 
 A list of available models for a provider:
-
-| platform | id | object | owned_by | context_window | max_completion_tokens | created_at |
-|:---|:---|:---|:---|---:|---:|:---|
-| groq | openai/gpt-oss-20b | model | OpenAI | 131072 | 65536 | 2025-08-05 |
-| groq | canopylabs/orpheus-arabic-saudi | model | Canopy Labs | 4000 | 50000 | 2025-12-17 |
-| groq | meta-llama/llama-prompt-guard-2-22m | model | Meta | 512 | 512 | 2025-05-30 |
-| groq | openai/gpt-oss-safeguard-20b | model | OpenAI | 131072 | 65536 | 2025-10-29 |
-| groq | canopylabs/orpheus-v1-english | model | Canopy Labs | 4000 | 50000 | 2025-12-20 |
 
 ### LLM Queries
 
@@ -380,6 +390,7 @@ to determine if this is an a priori power analysis, and if so, to return
 some relevant values in a JSON-structured format.
 
 ``` r
+
 power <- psychsci[1:10] |>
   # sentences containing the word power
   text_search("power") |>
@@ -417,6 +428,7 @@ deals with it gracefully (sets an ‘error’ column to “parsing error”) if
 there are errors. It also fixes column data types, if possible.
 
 ``` r
+
 llm_response <- json_expand(llm_power, "answer") |>
   dplyr::select(text, apriori:es_metric)
 ```
@@ -449,6 +461,7 @@ errors in your code, a default limit of 30 queries is set, which you can
 change:
 
 ``` r
+
 llm_max_calls(30)
 ```
 
@@ -481,6 +494,7 @@ articles for more detail on those two sources.
 Get any OSF links from a paper or list of papers.
 
 ``` r
+
 links <- osf_links(psychsci)
 
 links$href |> unique() |> head()
@@ -501,6 +515,7 @@ as well as the 25-character waterbutler IDs) and converts them to short
 IDs.
 
 ``` r
+
 osf_ids <- osf_check_id(links$href) |> unique()
 
 head(osf_ids)
@@ -525,6 +540,7 @@ osf_type (nodes, files, preprints, registrations, users, set to
 the ), whether it is public
 
 ``` r
+
 info <- osf_info(links[1:6, "href"])
 
 info[, c("href","osf_id", "osf_type", "public", "category")]
@@ -547,6 +563,7 @@ You can set the argument `recursive = TRUE` to also retrieve information
 about all nodes and files that are contained by the OSF link.
 
 ``` r
+
 all_contents <- osf_info(links$href[1], recursive = TRUE)
 
 all_contents[, c("osf_id", "name")]
@@ -583,6 +600,7 @@ component names and downloading all files smaller than `max_file_size`
 to 100 MB).
 
 ``` r
+
 osf_file_download(osf_id = "pngda",
                   download_to = ".", 
                   max_file_size = 1, 
@@ -594,6 +612,7 @@ osf_file_download(osf_id = "pngda",
     Downloading files [=====================] 24/24 00:00:35
 
 ``` r
+
 list.files("pngda", recursive = TRUE)
 ```
 
@@ -627,6 +646,7 @@ The same pattern — find links, retrieve file lists, optionally download
 — applies to the other three services.
 
 ``` r
+
 # GitHub
 gh_links  <- github_links(paper)
 gh_files  <- github_files(gh_links$href, recursive = TRUE)
@@ -652,6 +672,7 @@ authors used a service not yet supported — you can point metacheck at a
 local folder instead.
 
 ``` r
+
 result <- module_run(test_paper(), "code_check",
                      local_path = "path/to/downloaded/files")
 ```
@@ -672,6 +693,7 @@ will share more modules.
 You can see the list of built-in modules with the function below.
 
 ``` r
+
 module_list()
 ```
 
@@ -720,6 +742,7 @@ module_list()
 To run a built-in module on a paper, you can reference it by name.
 
 ``` r
+
 p <- module_run(paper, "all_p_values")
 ```
 
@@ -744,6 +767,7 @@ You can generate a report from any set of modules. Check the function
 help for the default set.
 
 ``` r
+
 report(paper, output_format = "qmd")
 ```
 

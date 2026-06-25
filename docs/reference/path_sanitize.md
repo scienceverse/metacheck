@@ -40,11 +40,11 @@ the sanitized vector
 ``` r
 path <- "/My Files/x><y.pdf"
 path_sanitize(path)
-#> Error in path_sanitize(path): could not find function "path_sanitize"
+#> [1] "/My_Files/x_y.pdf"
 path_sanitize(path, replacement = "~")
-#> Error in path_sanitize(path, replacement = "~"): could not find function "path_sanitize"
+#> [1] "/My~Files/x~y.pdf"
 path_sanitize(path, remove_whitespace = FALSE)
-#> Error in path_sanitize(path, remove_whitespace = FALSE): could not find function "path_sanitize"
+#> [1] "/My Files/x_y.pdf"
 path_sanitize(path, keep_sep = FALSE)
-#> Error in path_sanitize(path, keep_sep = FALSE): could not find function "path_sanitize"
+#> [1] "_My_Files_x_y.pdf"
 ```

@@ -26,6 +26,7 @@ An object with class scivrs_paperlist
 ## Examples
 
 ``` r
+
 p1 <- psychsci[[1]]
 p2 <- psychsci[[2]]
 plist <- paperlist(p1, p2)

@@ -1,6 +1,7 @@
 # Checking Local Files with repo_check and code_check
 
 ``` r
+
 library(metacheck)
 ```
 
@@ -33,6 +34,7 @@ useful when:
 Load the package and note the path format for your operating system:
 
 ``` r
+
 library(metacheck)
 ```
 
@@ -70,6 +72,7 @@ unextracted archives, and `"yellow"` otherwise.
 ### Checking a single folder
 
 ``` r
+
 repo <- module_run(test_paper(), "repo_check",
                    local_path = "C:/projects/reaction_time_study_2024")
 
@@ -116,6 +119,7 @@ Pass a vector of paths to check several folders at once. Each is treated
 as a separate repository, so you get one summary row per folder:
 
 ``` r
+
 paths <- c(
   "C:/projects/study_1_power_analysis",
   "C:/projects/study_2_replication",
@@ -162,6 +166,7 @@ You have finished a project and want to review the quality of your
 scripts before sharing:
 
 ``` r
+
 result <- module_run(test_paper(), "code_check",
                      local_path = "C:/projects/reaction_time_study_2024")
 
@@ -188,6 +193,7 @@ result$report
 ### Checking multiple projects
 
 ``` r
+
 paths <- c(
   "C:/projects/study_1_power_analysis",
   "C:/projects/study_2_replication",
@@ -218,6 +224,7 @@ repository. If your folder has more code files than that and you want
 them all checked, raise the limit or remove it entirely:
 
 ``` r
+
 # analyse up to 100 code files per folder
 result <- module_run(test_paper(), "code_check",
                      local_path = "C:/projects/large_project",
@@ -241,6 +248,7 @@ file attached to the submission. Once you unzip it, you have a local
 folder:
 
 ``` r
+
 # After unzipping the submission to a folder:
 result <- module_run(test_paper(), "code_check",
                      local_path = "C:/peer_review/garcia_2024_submission")
@@ -264,6 +272,7 @@ The workflow is the same for all of them:
 4.  Run `code_check`
 
 ``` r
+
 # Author shared code on GitLab — you downloaded or cloned it locally
 result <- module_run(test_paper(), "code_check",
                      local_path = "C:/downloads/lee_2023_gitlab_code")
@@ -282,6 +291,7 @@ example, the main data is on OSF but additional analysis scripts were
 sent as a zip by the editor. You can check both at once:
 
 ``` r
+
 paper <- read("garcia_2024.pdf")
 
 # repo_check fetches the OSF files AND lists the local folder
@@ -297,6 +307,7 @@ glance whether the README and zip issues are in the online repo or the
 local folder:
 
 ``` r
+
 repo <- module_run(paper, "repo_check",
                    local_path = "C:/peer_review/garcia_2024_extra_scripts")
 
@@ -316,6 +327,7 @@ steps. When you pass a `repo_check` result as the first argument to
 `code_check`, the file list is reused — the folder is not re-read:
 
 ``` r
+
 path <- "C:/projects/reaction_time_study_2024"
 
 # Step 1: inventory and organisational checks

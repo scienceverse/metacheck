@@ -42,6 +42,7 @@ the same link in multiple places, so we will just show you the unique
 links here, returned in the “href” column.
 
 ``` r
+
 links <- aspredicted_links(psychsci)
 
 unique(links$href)
@@ -114,6 +115,7 @@ Lemurs](https://journals.sagepub.com/doi/10.1177/09567976221082938)”,
 which contains a single preregistration on AsPredicted.
 
 ``` r
+
 paper <- psychsci$`09567976221082938`
 
 links <- aspredicted_links(paper)
@@ -125,6 +127,7 @@ prereg <- aspredicted_info(links, id_col = "href")
 ```
 
 ``` r
+
 # get just the AsPredicted columns
 cols <- names(prereg)
 ap_cols <- cols[grepl("^AP_", cols)]
@@ -176,6 +179,7 @@ You can access the sample size plan from the results of
 under the column name `AP_sample_size`.
 
 ``` r
+
 # get the sample size section from AsPredicted
 prereg_sample_size <- unique(prereg$AP_sample_size)
 
@@ -217,6 +221,7 @@ paragraph. We can use metacheck’s inbuilt
 function. For this paper, we see this simple approach works well.
 
 ``` r
+
 # match "sample" or "# particip..."
 regex_sample <- "\\bsample\\b|\\d+\\s+particip\\w+"
 
@@ -271,6 +276,7 @@ down by including only paragraphs that contain a number (including the
 word forms for small numbers).
 
 ``` r
+
 regex_sample <- "subject|sample|particip"
 regex_numbers <- "[0-9]|one|two|three|four|five|six|seven|eight|nine|ten"
 methres <- text_search(paper, regex_sample,
@@ -286,6 +292,7 @@ Metacheck has a custom function to send text and a system prompt to an
 LLM.
 
 ``` r
+
 system_prompt_template <- "The following text is part of a scientific article. It describes a performed study. Part of this text should correspond to what researchers planned to do. Before data collection, the researchers stated they would:
 
 %s
@@ -309,7 +316,7 @@ llm_response$answer |> cat("> ", x = _)
 > a minimum of 10 and a maximum of 15 individuals for each species, but
 > they tested 10 individuals for three species (ruffed lemurs,
 > Coquerel’s sifakas, and ring-tailed lemurs) and 9 individuals for the
-> mongoose lemur species.
+> fourth species (mongoose lemur).
 
 As we see, the LLM does a very good job evaluating whether the authors
 adhered to their preregistration in terms of the sample size. The
@@ -337,6 +344,7 @@ the method section that contain the words ‘sample’ or ‘particip…’ reve
 the misclassification by the LLM.
 
 ``` r
+
 paper <- psychsci$`0956797621991548`
 links <- aspredicted_links(paper)
 prereg <- aspredicted_info(links, id_col = "href")
@@ -357,6 +365,7 @@ prereg_sample_size |> cat("> ", x = _)
 > comprehension).
 
 ``` r
+
 # LLM workflow - send potentially relevant paragraphs
 regex_sample <- "subject|sample|particip"
 regex_numbers <- "[0-9]|one|two|three|four|five|six|seven|eight|nine|ten"
@@ -374,10 +383,11 @@ llm_response$answer |> cat("> ", x = _)
 
 > The authors deviated from their preregistration. According to the
 > text, the researchers planned to collect data from 60 participants in
-> each cohort, but they only collected data from 60 participants in
-> cohort A and 56 participants in cohort B due to the COVID-19 pandemic.
+> each cohort, but they only collected data from 56 participants in
+> cohort B due to the COVID-19 pandemic.
 
 ``` r
+
 # manual check - no LLM
 regex_sample <- "\\bsample\\b|\\d+\\s+particip\\w+"
 
@@ -429,6 +439,7 @@ module](https://scienceverse.github.io/metacheck/articles/creating_modules.html)
 by using (or improving) the following code:
 
 ``` r
+
 # save to a file aspredicted_sample.R
 # and use like module_run(paper, "aspredicted_sample.R")
 
@@ -496,6 +507,7 @@ aspredicted_sample <- function(paper, use_llm = FALSE) {
 Test on the paper from above.
 
 ``` r
+
 paper <- psychsci$`0956797621991548`
 ap <- aspredicted_sample(paper)
 #> Starting AsPredicted retrieval for 1 file...
@@ -552,6 +564,7 @@ LLM Assessment:
 LLM not run
 
 ``` r
+
 paper <- psychsci$`0956797621991548`
 ap_with_llm <- aspredicted_sample(paper, use_llm = TRUE)
 #> Starting AsPredicted retrieval for 1 file...
@@ -609,12 +622,13 @@ LLM Assessment:
 The authors deviated from their preregistration.
 
 According to the text, the researchers planned to collect data from 60
-participants in each cohort. However, in cohort B, they only collected
-data from 56 participants due to the COVID-19 pandemic.
+participants in each cohort, but they only collected data from 60
+participants in cohort A and 56 participants in cohort B.
 
 It fails gracefully if there are no links.
 
 ``` r
+
 paper <- psychsci[[1]]
 ap_no_links <- aspredicted_sample(paper)
 ```
@@ -632,18 +646,15 @@ preregistrations. If you are interested in developing this metacheck
 module further, or performing such a validation study, do reach out to
 us.
 
-Akker, Olmo R. van den, Marjan Bakker, Marcel A. L. M. van Assen,
-Charlotte R. Pennington, Leone Verweij, Mahmoud M. Elsherif, Aline
-Claesen, et al. 2024. “The Potential of Preregistration in Psychology:
-Assessing Preregistration Producibility and Preregistration-Study
-Consistency.” *Psychological Methods*, October.
+Akker, Olmo R. van den, Marjan Bakker, Marcel A. L. M. van Assen, et al.
+2024. “The Potential of Preregistration in Psychology: Assessing
+Preregistration Producibility and Preregistration-Study Consistency.”
+*Psychological Methods*, ahead of print, October.
 <https://doi.org/10.1037/met0000687>.
 
-Imai, Taisuke, Séverine Toussaert, Aurélien Baillon, Anna Dreber, Seda
-Ertaç, Magnus Johannesson, Levent Neyse, and Marie Claire Villeval.
-2025. *Pre-Registration and Pre-Analysis Plans in Experimental
-Economics*. 220. I4R Discussion Paper Series.
-<https://www.econstor.eu/handle/10419/315047>.
+Imai, Taisuke, Séverine Toussaert, Aurélien Baillon, et al. 2025.
+*Pre-Registration and Pre-Analysis Plans in Experimental Economics*. I4R
+Discussion Paper Series. <https://www.econstor.eu/handle/10419/315047>.
 
 Lakens, Daniël. 2024. “When and How to Deviate from a Preregistration.”
 *Collabra: Psychology* 10 (1): 117094.
