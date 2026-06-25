@@ -1,168 +1,83 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+
+
 # metacheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
 
-Metacheck provides extendable and integrated tools for automated checks
-of research outputs for best practices. (formerly named papercheck)
 
-Inspired by practices in software development, where automated checks
-(e.g., CRAN checks for R packages) are used to identify issues before
-release, Metacheck screens scientific manuscripts to identify potential
-issues or areas for improvement and guide researchers in adopting best
-practices. It can also assist with processing large numbers of papers
-for metascientific enquiry.
 
-These check are meant to assist, but not replace, human expertise. For
-example, Metacheck can identify incorrect citations, add missing DOIs,
-and cross-reference citations against Retraction Watch, PubPeer, and the
-FLoRA replication database. It can also identify commonly misreported
-aspects, such as power analyses, and provide general advice. However,
-actioning this advice is always up to a human who can interpret the
-advice in context.
+Metacheck provides extendable and integrated tools for automated checks of research outputs for best practices. (formerly named papercheck)
 
-See [Get Started](articles/metacheck.html) for the basics,
-[Articles](articles/) for more detailed examples of what you can do, or
-our [introductory blog post](articles/intro.html) for a more conceptual
-overview. You can contact the Metacheck team at:
-<metacheck.scienceverse@gmail.com>.
+Inspired by practices in software development, where automated checks (e.g., CRAN checks for R packages) are used to identify issues before release, Metacheck screens scientific manuscripts to identify potential issues or areas for improvement and guide researchers in adopting best practices. It can also assist with processing large numbers of papers for metascientific enquiry.
+
+These check are meant to assist, but not replace, human expertise. For example, Metacheck can identify incorrect citations, add missing DOIs, and cross-reference citations against Retraction Watch, PubPeer, and the FLoRA replication database. It can also identify commonly misreported aspects, such as power analyses, and provide general advice. However, actioning this advice is always up to a human who can interpret the advice in context. 
+
+See the [Metacheck Manual](https://www.scienceverse.org/metacheck_book/) for the basics, worked examples, and a conceptual overview of what you can do. You can contact the Metacheck team at: [metacheck.scienceverse@gmail.com](mailto:metacheck.scienceverse@gmail.com).
 
 ## Our Values
 
-The values below guide our priorities and decision-making for all
-Scienceverse projects.
+The values below guide our priorities and decision-making for all Scienceverse projects.
 
-1.  **Quality Control**: The knowledge, data, code and software we
-    create will be verified for accuracy, using publicly available
-    methods and measures, such that users have enough context to
-    interpret the results.
+1. **Quality Control**: The knowledge, data, code and software we create will be verified for accuracy, using publicly available methods and measures, such that users have enough context to interpret the results.
 
-2.  **Transparency**: We are committed to open source software and open
-    access datasets for validation.
+2. **Transparency**: We are committed to open source software and open access datasets for validation.
 
-3.  **AI Optional**: The use of large language models (LLMs) will be
-    restricted to classification of existing text, not evaluation of the
-    quality of practice. The use of LLMs will always be opt-in and
-    transparently declared. We will prioritise non-LLM functions where
-    possible, and limit use to cases where it provides substantial
-    benefits that cannot be realised with other methods, such as regular
-    expressions.
+3. **AI Optional**: The use of large language models (LLMs) will be restricted to classification of existing text, not evaluation of the quality of practice. The use of LLMs will always be opt-in and transparently declared. We will prioritise non-LLM functions where possible, and limit use to cases where it provides substantial benefits that cannot be realised with other methods, such as regular expressions. 
 
-4.  **No Automated Evaluation**: While our software is designed to
-    assist the evaluation of research by highlighting aspects where
-    practice may be improved, we will never support automated quality
-    assessments, rankings or scoring.
+4. **No Automated Evaluation**: While our software is designed to assist the evaluation of research by highlighting aspects where practice may be improved, we will never support automated quality assessments, rankings or scoring.
 
-5.  **Data Privacy**: We will be fully transparent about what data we
-    have access to and how those data will be used, as well as what will
-    be shared with external services. Wherever possible, we will
-    prioritise functions that share minimal data and services that have
-    robust data protection. We will meet all EU data privacy
-    regulations.
+5. **Data Privacy**: We will be fully transparent about what data we have access to and how those data will be used, as well as what will be shared with external services. Wherever possible, we will prioritise functions that share minimal data and services that have robust data protection. We will meet all EU data privacy regulations. 
 
-6.  **Accessibility**: We will provide our knowledge, data, code and
-    software to all potential users with minimal barriers to access. We
-    will prioritise access that is not unduly limited by wealth,
-    disability or technical knowledge.
+6. **Accessibility**: We will provide our knowledge, data, code and software to all potential users with minimal barriers to access. We will prioritise access that is not unduly limited by wealth, disability or technical knowledge.
 
-7.  **Community Engagement**: Our work will reflect and respect the
-    needs of a diverse range of research communities, and benefit their
-    research practices. We are open to critique from the research
-    community.
+7. **Community Engagement**: Our work will reflect and respect the needs of a diverse range of research communities, and benefit their research practices. We are open to critique from the research community.
 
-8.  **Sustainability**: We are committed to the long-term viability of
-    our work. We will actively protect and future-proof our work through
-    technical maintenance, governance structures and strategic planning
-    to make it a durable and relevant public good.
+8. **Sustainability**: We are committed to the long-term viability of our work. We will actively protect and future-proof our work through technical maintenance, governance structures and strategic planning to make it a durable and relevant public good.
 
-9.  **Fair Recognition and Reward**: Contributions to knowledge, data,
-    code, and software will be uniquely and persistently identified, and
-    benefit a diverse range of contributors.
+9. **Fair Recognition and Reward**: Contributions to knowledge, data, code, and software will be uniquely and persistently identified, and benefit a diverse range of contributors. 
+
 
 ## The Team
 
-Metacheck is developed by a collaborative team of researchers,
-consisting of [Lisa DeBruine](https://debruine.github.io) (developer and
-maintainer, UofG), [Daniël
-Lakens](https://sites.google.com/site/lakens2/Home) (developer, TU/e),
-[Cristian
-Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/)
-(postdoctoral researcher, TU/e), [Jakub
-Werner](https://nl.linkedin.com/in/jakubwerner) (RA, TUE), [Lavinia
-Ion](https://nl.linkedin.com/in/lavinia-i-05275636b) (RA, TU/e), [Hadeel
-Khawatmy](https://nl.linkedin.com/in/hadeel-khawatmy-a720021a2) (RA,
-TU/e), Levi Baruch (RA, TU/e), Mink Veltman (RA, TU/e) [René
-Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator
-and PI of [Transparency
-Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check),
-VUE), and [Max
-Littel](https://nl.linkedin.com/in/max-littel-a0620a233/nl) (RA, VUE).
+Metacheck is developed by a collaborative team of researchers, consisting of 
+[Lisa DeBruine](https://debruine.github.io) (developer and maintainer, UofG), 
+[Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer, TU/e), 
+[Cristian Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/) (postdoctoral researcher, TU/e), 
+[Jakub Werner](https://nl.linkedin.com/in/jakubwerner) (RA, TUE), 
+[Lavinia Ion](https://nl.linkedin.com/in/lavinia-i-05275636b) (RA, TU/e),
+[Hadeel Khawatmy](https://nl.linkedin.com/in/hadeel-khawatmy-a720021a2) (RA, TU/e), 
+Levi Baruch (RA, TU/e), 
+Mink Veltman (RA, TU/e)
+[René Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator and PI of [Transparency Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check), VUE), and
+[Max Littel](https://nl.linkedin.com/in/max-littel-a0620a233/nl) (RA, VUE). 
 
-Metacheck was initially developed by Lisa and Daniël in 2024 during
-Lisa’s visiting professorship at the Eindhoven Artificial Intelligence
-Systems Institute
-([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)).
+Metacheck was initially developed by Lisa and Daniël in 2024 during Lisa’s visiting professorship at the Eindhoven Artificial Intelligence Systems Institute ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)). 
 
-<div class="people" layout-ncol="5">
+::: {.people layout-ncol=5}
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/debruine.jpg"
-alt="Lisa DeBruine" />
-<figcaption aria-hidden="true">Lisa DeBruine</figcaption>
-</figure>
+![Lisa DeBruine](https://scienceverse.github.io/images/people/debruine.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/lakens.jpg"
-alt="Daniël Lakens" />
-<figcaption aria-hidden="true">Daniël Lakens</figcaption>
-</figure>
+![Daniël Lakens](https://scienceverse.github.io/images/people/lakens.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/mesquida.jpg"
-alt="Cristian Mesquida" />
-<figcaption aria-hidden="true">Cristian Mesquida</figcaption>
-</figure>
+![Cristian Mesquida](https://scienceverse.github.io/images/people/mesquida.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/werner.jpg"
-alt="Jakub Werner" />
-<figcaption aria-hidden="true">Jakub Werner</figcaption>
-</figure>
+![Jakub Werner](https://scienceverse.github.io/images/people/werner.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/ion.jpg"
-alt="Lavinia Ion" />
-<figcaption aria-hidden="true">Lavinia Ion</figcaption>
-</figure>
+![Lavinia Ion](https://scienceverse.github.io/images/people/ion.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/khawatmy.jpg"
-alt="Hadeel Khawatmy" />
-<figcaption aria-hidden="true">Hadeel Khawatmy</figcaption>
-</figure>
+![Hadeel Khawatmy](https://scienceverse.github.io/images/people/khawatmy.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/baruch.jpg"
-alt="Levi Baruch" />
-<figcaption aria-hidden="true">Levi Baruch</figcaption>
-</figure>
+![Levi Baruch](https://scienceverse.github.io/images/people/baruch.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/mink.jpg"
-alt="Mink Veltman" />
-<figcaption aria-hidden="true">Mink Veltman</figcaption>
-</figure>
+![Mink Veltman](https://scienceverse.github.io/images/people/mink.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/bekkers.jpg"
-alt="René Bekkers" />
-<figcaption aria-hidden="true">René Bekkers</figcaption>
-</figure>
+![René Bekkers](https://scienceverse.github.io/images/people/bekkers.jpg)
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/littel.jpg"
-alt="Max Littel" />
-<figcaption aria-hidden="true">Max Littel</figcaption>
-</figure>
+![Max Littel](https://scienceverse.github.io/images/people/littel.jpg)
 
-</div>
+:::
+
