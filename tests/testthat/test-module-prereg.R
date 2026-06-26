@@ -76,6 +76,67 @@ test_that("rrbrandt", {
   expect_equal(mo$table$id, guid)
 }, "mock")
 
+test_that("vant veer (prsp)", {
+  guid <- "r5bme"
+  text <- paste0("https://osf.io/", guid)
+  paper <- test_paper(url = text)
+  mo <- module_run(paper, "prereg_check")
+  expect_equal(nrow(mo$table), 1)
+  expect_equal(
+    mo$table$template_name,
+    "Pre-Registration in Social Psychology (van 't Veer & Giner-Sorolla, 2016): Pre-Registration"
+  )
+  expect_equal(mo$table$id, guid)
+}, "mock")
+
+# The unified, schema-driven extractor reads each field's label from the
+# registration's schema (display_text for blocks-format, question title for
+# pages-format) and maps it onto canonical prereg_schema fields. These tests
+# check that the mapped fields hold the expected content, across both formats.
+
+test_that("blocks-format extraction maps to canonical fields", {
+  # 9h2pj is a current OSF Preregistration (v4, blocks-format)
+  paper <- test_paper(url = "https://osf.io/9h2pj")
+  mo <- module_run(paper, "prereg_check")
+
+  expect_equal(nrow(mo$table), 1)
+  expect_equal(mo$table$template_name, "OSF Preregistration")
+
+  # research-core fields are recognised and populated
+  expect_contains(
+    names(mo$table),
+    c("research_questions", "sample_size", "statistical_tests",
+      "inference_criteria", "data_exclusion_criteria")
+  )
+  expect_equal(mo$table$sample_size, "The total sample size will be 400.")
+}, "mock")
+
+test_that("pages-format extraction maps to canonical fields", {
+  # g59u6 is an older OSF Preregistration (pages-format, qN keys)
+  paper <- test_paper(url = "https://osf.io/g59u6")
+  mo <- module_run(paper, "prereg_check")
+
+  # the same canonical field names are produced from the pages schema's titles
+  expect_contains(
+    names(mo$table),
+    c("research_questions", "sample_size", "statistical_tests")
+  )
+  expect_true(nzchar(mo$table$sample_size))
+}, "mock")
+
+test_that("AsPredicted-on-OSF extraction maps to canonical fields", {
+  # 7v28u is an AsPredicted-on-OSF registration (pages, semantic word keys).
+  # Its word-style keys (hypothesis, sample, ...) map onto canonical fields.
+  paper <- test_paper(url = "https://osf.io/7v28u")
+  mo <- module_run(paper, "prereg_check")
+
+  expect_contains(
+    names(mo$table),
+    c("research_questions", "sample_size")
+  )
+  expect_true(nzchar(mo$table$sample_size))
+}, "mock")
+
 test_that("multiple papers", {
   guid1 <- "48ncu"
   text1 <- paste0("https://osf.io/", guid1)

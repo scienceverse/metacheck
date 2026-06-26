@@ -92,29 +92,7 @@ prereg_check <- function(paper) {
     if (length(reg_info) == 0) return(NULL)
 
     info <- reg_info
-    template <- info$attributes$registration_supplement
-    osf31 <- info$attributes$registration_responses$q25
-
-    if (info$attributes$withdrawn) {
-      withdrawn(info)
-    } else if (template == "OSF Preregistration" &&
-      !is.null(osf31) && !is.na(osf31)) {
-      osf_pr_31(info)
-    } else if (template == "OSF Preregistration") {
-      osf_pr_28(info)
-    } else if (template == "Open-Ended Registration") {
-      oer(info)
-    } else if (template == "Prereg Challenge") {
-      prc(info)
-    } else if (template == "Preregistration Template from AsPredicted.org") {
-      prap(info)
-    } else if (template == "Pre-Registration in Social Psychology (van 't Veer & Giner-Sorolla, 2016): Pre-Registration") {
-      prsp(info)
-    } else if (template == "Replication Recipe (Brandt et al., 2013): Pre-Registration") {
-      rrbrandt(info)
-    } else if (template == "OSF-Standard Pre-Data Collection Registration") {
-      osfpre(info)
-    }
+    osf_prereg_extract(info)
   })
 
   # make sure all items are not lists
@@ -259,6 +237,289 @@ Lakens2024 <- bibentry(
 
 # helper functions ----
 
+## OSF preregistration dispatch ----
+
+# Identify a registration by its schema_id, then extract its responses. Each OSF
+# registration template has a permanent schema_id
+# (info$relationships$registration_schema$data$id). The schema *name*
+# (registration_supplement) is not a reliable key because the OSF revises
+# templates under the same name with incompatible response-key formats.
+#
+# Almost all templates are handled by one generic, schema-driven extractor
+# (osf_pr_schema), which reads each field's human-readable label from the schema
+# and maps it to a canonical field. This works for both schema formats:
+# - "blocks" (modern): responses keyed by block position ("344-2"); label is the
+#   question-label display_text.
+# - "pages" (legacy): responses keyed by qid ("q19"); label is the question title.
+# The only exceptions are schemas whose answers are nested too deeply to carry a
+# usable label at the response-key level (see osf_special_handlers).
+osf_prereg_extract <- function(info) {
+  if (isTRUE(info$attributes$withdrawn)) {
+    return(withdrawn(info))
+  }
+
+  schema_id <- info$relationships$registration_schema$data$id %||% NA_character_
+
+  # A few schemas store answers under deeply nested, section-relative keys with
+  # no usable field label at the response-key level (e.g. the original pages
+  # version of the van 't Veer template). These need dedicated extractors.
+  handler <- osf_special_handlers()[[schema_id]]
+  if (!is.null(handler)) {
+    return(handler(info))
+  }
+
+  # Everything else is read generically from the schema's field labels, which
+  # works for both blocks-format and flat pages-format schemas (old and new).
+  osf_pr_schema(info)
+}
+
+# map of schema_id -> dedicated extractor, for schemas the generic, label-driven
+# extractor cannot handle (deeply nested, unlabelled-at-key-level). Wrapped in a
+# function so it is evaluated at dispatch time, after the extractors are defined.
+osf_special_handlers <- function() {
+  list(
+    # Pre-Registration in Social Psychology (van 't Veer & Giner-Sorolla, 2016)
+    "5730e99a9ad5a102c5745a8a" = prsp  # original pages version (deeply nested)
+  )
+}
+
+## Generic schema-driven extractor ----
+
+# Extract responses from any registration whose schema carries human-readable
+# field labels, for both schema formats:
+# - blocks: response key "<grp>-<pos>"; label = the question-label display_text
+#   preceding the input block at position <pos>.
+# - pages (flat): response key is the question qid (possibly with a ".question"
+#   /".uploader" sub-key); label = that question's title.
+# Labels are mapped to canonical prereg_schema fields via osf_label_to_field().
+# Deeply nested pages schemas (e.g. old van 't Veer) have no usable label at the
+# response-key level and are handled by dedicated functions instead.
+osf_pr_schema <- function(info) {
+  common <- common_osf(info)
+
+  responses <- info$attributes$registration_responses
+  if (length(responses) == 0) {
+    return(common)
+  }
+
+  # response key -> human-readable label, from the schema
+  key_labels <- osf_schema_labels(info)
+  if (length(key_labels) == 0) {
+    return(common) # couldn't fetch schema; return common info only
+  }
+
+  keys <- names(responses)
+
+  # reserved names set by common_osf() take precedence over schema fields, so a
+  # schema field labelled e.g. "Title" cannot collide with the registration's
+  # own title (which would create a duplicate column downstream).
+  reserved <- names(common)
+
+  extra <- list()
+  for (i in seq_along(keys)) {
+    # pages keys match directly; blocks keys ("<grp>-<pos>") match on position
+    lookup <- function(k) if (k %in% names(key_labels)) key_labels[[k]] else NULL
+    label <- lookup(keys[i])
+    if (is.null(label)) {
+      label <- lookup(sub("^.*-", "", keys[i]))
+    }
+    if (is.null(label) || is.na(label) || !nzchar(label)) next
+
+    field <- osf_label_to_field(label)
+    if (field %in% reserved) next
+
+    value <- responses[[keys[i]]]
+    value <- paste(unlist(value), collapse = " ") |> trimws()
+    if (!nzchar(value)) next
+
+    # if several labels map to the same canonical field, join them
+    if (is.null(extra[[field]])) {
+      extra[[field]] <- value
+    } else {
+      extra[[field]] <- paste(extra[[field]], value, sep = " ")
+    }
+  }
+
+  c(common, extra)
+}
+
+# Fetch a registration's schema and return a named character vector mapping each
+# possible response key to its human-readable field label. Handles both schema
+# formats (blocks via display_text, pages via question titles).
+osf_schema_labels <- function(info) {
+  schema_url <- info$relationships$registration_schema$links$related$href
+  if (is.null(schema_url)) return(character(0))
+
+  schema <- tryCatch(
+    httr2::request(schema_url) |>
+      .osf_headers() |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_retry(
+        max_tries = 3,
+        is_transient = \(resp) httr2::resp_status(resp) == 429
+      ) |>
+      httr2::req_perform() |>
+      httr2::resp_body_json(simplifyVector = FALSE),
+    error = \(e) NULL
+  )
+  schema <- schema$data$attributes$schema
+
+  if (!is.null(schema$blocks)) {
+    return(osf_blocks_labels(schema$blocks))
+  }
+  if (!is.null(schema$pages)) {
+    return(osf_pages_labels(schema$pages))
+  }
+  character(0)
+}
+
+# blocks format: key = "<grp>-<pos>" -> the question-label display_text that
+# precedes the input block at 0-indexed position <pos>. Keyed by position
+# (the "<grp>-" prefix is constant within a registration), with a duplicate
+# entry under the bare position so either form resolves.
+osf_blocks_labels <- function(blocks) {
+  input_types <- c(
+    "long-text-input", "short-text-input", "single-select-input",
+    "multi-select-input", "file-input", "contributors-input"
+  )
+
+  labels <- character(0)
+  last_label <- NA_character_
+  for (i in seq_along(blocks)) {
+    bt <- blocks[[i]]$block_type %||% NA_character_
+    if (isTRUE(bt == "question-label")) {
+      last_label <- blocks[[i]]$display_text %||% NA_character_
+    }
+    if (bt %in% input_types) {
+      labels[[as.character(i - 1L)]] <- last_label
+    }
+  }
+  labels
+}
+
+# pages format: key = question qid -> a usable field label. The schema title is
+# preferred, but some templates (e.g. AsPredicted) use long full-sentence titles
+# as prompts while giving the qid a clean semantic name ("sample", "analyses");
+# in that case the qid is the better label. Object-type questions store answers
+# under "<qid>.question"/"<qid>.uploader" sub-keys, so map those too.
+osf_pages_labels <- function(pages) {
+  labels <- character(0)
+  for (p in pages) {
+    for (q in p$questions) {
+      qid <- q$qid %||% NA_character_
+      if (is.na(qid)) next
+      title <- q$title %||% NA_character_
+
+      # prefer a short title; fall back to the qid when the title is missing or
+      # is a long sentence (a prompt rather than a field name)
+      title_is_label <- !is.na(title) && nzchar(title) &&
+        nchar(title) <= 40 && !grepl("[?]", title)
+      label <- if (title_is_label) title else qid
+
+      labels[[qid]] <- label
+      labels[[paste0(qid, ".question")]] <- label
+      labels[[paste0(qid, ".uploader")]] <- label
+    }
+  }
+  labels
+}
+
+# Map a schema field label (display_text) to a canonical prereg_schema field.
+# Research-core labels (in their various OSF casings) map to shared canonical
+# names so the same concept lines up across templates; unmapped labels fall
+# back to a slugified version so no information is dropped.
+osf_label_to_field <- function(label) {
+  key <- tolower(trimws(label))
+  if (key %in% names(osf_label_field)) {
+    return(unname(osf_label_field[[key]]))
+  }
+
+  # slug fallback: lowercase, non-alphanumerics -> "_", trim repeats
+  slug <- gsub("[^a-z0-9]+", "_", key)
+  slug <- gsub("^_+|_+$", "", slug)
+  if (!nzchar(slug)) "field" else slug
+}
+
+# Dictionary of research-core field labels -> canonical prereg_schema fields.
+# Keys are lowercased display_text; multiple labels (and casings) intentionally
+# collapse onto the same canonical field.
+osf_label_field <- c(
+  # research questions / hypotheses
+  "research question"                  = "research_questions",
+  "research questions"                 = "research_questions",
+  "research question(s)"               = "research_questions",
+  "primary research question(s)"       = "research_questions",
+  "research questions or hypotheses"   = "research_questions",
+  "research questions or hypothesis"   = "research_questions",
+  "hypothesis"                         = "research_questions",
+  "hypotheses"                         = "research_questions",
+  "expectations / hypotheses"          = "research_questions",
+  # description / background
+  "description"                        = "description",
+  "study description"                  = "description",
+  "background"                         = "description",
+  "summary"                            = "description",
+  # study design / type
+  "study design"                       = "study_design_overview",
+  "study type"                         = "study_type",
+  "number of conditions"               = "study_design_overview",
+  "conditions"                         = "study_design_overview",
+  # variables
+  "manipulated variables"              = "manipulated_variables",
+  "measured variables"                 = "measured_variables",
+  "independent variables"              = "design_independent_variables",
+  "dependent variables"                = "design_dependent_variables",
+  "dependent variable"                 = "design_dependent_variables",
+  "dependent"                          = "design_dependent_variables",
+  "indices"                            = "indices",
+  # blinding / randomisation
+  "blinding of experimental treatments" = "blinding",
+  "randomization"                      = "randomization",
+  # data
+  "existing data"                      = "existing_data",
+  "explanation of existing data"       = "existing_data_explanation",
+  "data collection procedures"         = "data_collection_procedures",
+  "data collection"                    = "data_collection_started",
+  "data"                               = "data_collection_started",
+  # sample size
+  "sample size"                        = "sample_size",
+  "sample size rationale"              = "sample_size_rationale",
+  "sampling and sample size"           = "sample_size",
+  "my target sample size is"           = "sample_size",
+  "the rationale for my sample size is" = "sample_size_rationale",
+  "sample"                             = "sample_size",
+  "stopping rule"                      = "stopping_rule",
+  "stopping criteria"                  = "stopping_rule",
+  "starting and stopping rules"        = "stopping_rule",
+  # analysis
+  "statistical models"                 = "statistical_tests",
+  "statistical technique"              = "statistical_tests",
+  "analyses"                           = "statistical_tests",
+  "analyses2"                          = "additional_analyses",
+  "transformations"                    = "transformations",
+  "data transformations"               = "transformations",
+  "planned data transformations"       = "transformations",
+  "inference criteria"                 = "inference_criteria",
+  "method of correction"               = "multiple_testing_correction",
+  "reliability criteria"               = "reliability_criteria",
+  "exploratory analysis"               = "exploratory_analyses",
+  "other planned analysis"             = "exploratory_analyses",
+  # exclusions / missing data / outliers
+  "data exclusion"                     = "data_exclusion_criteria",
+  "data inclusion and exclusion"       = "data_exclusion_criteria",
+  "inclusion and exclusion criteria"   = "data_exclusion_criteria",
+  "specific exclusion criteria"        = "data_exclusion_criteria",
+  "outliers"                           = "outliers_and_exclusions",
+  "outliers and exclusions"            = "outliers_and_exclusions",
+  "missing data"                       = "missing_data_handling",
+  # replication
+  "replication importance"             = "replication_importance",
+  # other
+  "other"                              = "additional_comments",
+  "additional information"             = "additional_comments",
+  "context and additional information" = "additional_comments"
+)
+
 ## AsPredicted Schema
 
 ap_schema <- function(table_ap) {
@@ -313,181 +574,6 @@ withdrawn <- function(info) {
   common <- common_osf(info)
   extra <- list(
     description = "WITHDRAWN"
-  )
-
-  c(common, extra)
-}
-
-## OSF-Standard Pre-Data Collection Registration ----
-osfpre <- function(info) {
-  ra <- info$attributes
-  prereg_answers <- ra$registration_responses
-
-  common <- common_osf(info)
-
-  extra <- list(
-    data_collection_started = prereg_answers$datacompletion,
-    data_looked = prereg_answers$looked,
-    additional_comments = prereg_answers$comments
-  )
-
-  c(common, extra)
-}
-
-## Open-Ended Registration ----
-oer <- function(info) {
-  ra <- info$attributes
-  prereg_answers <- ra$registration_responses
-
-  common <- common_osf(info)
-
-  extra <- list(
-    description = prereg_answers$summary,
-    sample_size = "The authors did not use a template. See the full preregistration for the sample size."
-  )
-
-  c(common, extra)
-}
-
-## Preregistration Template from AsPredicted.org ----
-prap <- function(info) {
-  ra <- info$attributes
-  prereg_answers <- ra$registration_responses
-
-  common <- common_osf(info)
-
-  extra <- list(
-    data_collection_started = prereg_answers$data,
-    research_questions = prereg_answers$hypothesis,
-    design_dependent_variables = prereg_answers$dependent,
-    study_design_overview = prereg_answers$conditions,
-    statistical_tests = prereg_answers$analyses,
-    outliers_and_exclusions = prereg_answers$outliers,
-    sample_size = prereg_answers$sample,
-    study_type = paste(c(
-      prereg_answers$study_type,
-      prereg_answers$study_type_other
-    ), collapse = " "),
-    additional_comments = prereg_answers$other
-  )
-
-  c(common, extra)
-}
-
-
-## OSF Preregistration 31 ----
-
-osf_pr_31 <- function(info) {
-  ra <- info$attributes
-  prereg_answers <- ra$registration_responses
-
-  common <- common_osf(info)
-
-  extra <- list(
-    authors = prereg_answers$q2,
-    description = prereg_answers$q3,
-    research_questions = prereg_answers$q4,
-    study_type = prereg_answers$q5,
-    blinding = paste(c(
-      prereg_answers$q6,
-      prereg_answers$q7
-    ), collapse = " "),
-    study_design_overview = prereg_answers$q8.question,
-    randomization = prereg_answers$q9,
-    data_collection_started = prereg_answers$q10,
-    existing_data_explanation = prereg_answers$q11,
-    data_collection_procedures = prereg_answers$q12.question,
-    sample_size = prereg_answers$q13,
-    sample_size_rationale = prereg_answers$q14,
-    stopping_rule = prereg_answers$q15,
-    design_independent_variables = prereg_answers$q16.question,
-    design_dependent_variables = prereg_answers$q17.question,
-    indices = prereg_answers$q18.question,
-    statistical_tests = prereg_answers$q19.question,
-    transformations = prereg_answers$q20,
-    inference_criteria = prereg_answers$q21,
-    data_exclusion_criteria = prereg_answers$q22,
-    outliers_and_exclusions = prereg_answers$q23,
-    exploratory_analyses = prereg_answers$q24,
-    additional_comments = prereg_answers$q25
-  )
-
-  c(common, extra)
-}
-
-## OSF Preregistration 28 ----
-osf_pr_28 <- function(info) {
-  ra <- info$attributes
-  prereg_answers <- ra$registration_responses
-
-  common <- common_osf(info)
-
-  extra <- list(
-    description = prereg_answers$q2,
-    # research_questions = prereg_answers$q3,
-    study_type = prereg_answers$q3,
-    blinding = paste(c(
-      prereg_answers$q4,
-      prereg_answers$q5
-    ), collapse = " "),
-    study_design_overview = prereg_answers$q6.question,
-    # randomization = prereg_answers$q9,
-    data_collection_started = prereg_answers$q8,
-    existing_data_explanation = prereg_answers$q9,
-    data_collection_procedures = prereg_answers$q10.question,
-    sample_size = prereg_answers$q11,
-    sample_size_rationale = prereg_answers$q12,
-    stopping_rule = prereg_answers$q13,
-    design_independent_variables = prereg_answers$q14.question,
-    design_dependent_variables = prereg_answers$q15.question,
-    indices = prereg_answers$q16.question,
-    statistical_tests = prereg_answers$q17.question,
-    # statistical_tests = prereg_answers$q20,
-    inference_criteria = prereg_answers$q19,
-    data_exclusion_criteria = prereg_answers$q20,
-    outliers_and_exclusions = prereg_answers$q21,
-    exploratory_analyses = prereg_answers$q22,
-    additional_comments = prereg_answers$q23
-  )
-
-  c(common, extra)
-}
-
-## Prereg Challenge ----
-prc <- function(info) {
-  ra <- info$attributes
-  prereg_answers <- ra$registration_responses
-
-  blinding <- {
-    x <- unlist(prereg_answers$q15, use.names = FALSE)
-    if (length(x) == 0) NA_character_ else paste(x, collapse = " ")
-  }
-
-  common <- common_osf(info)
-
-  extra <- list(
-    description = prereg_answers$q3,
-    research_questions = prereg_answers$q4,
-    data_collection_started = prereg_answers$q5,
-    existing_data_explanation = prereg_answers$q6,
-    data_collection_procedures = prereg_answers$q7.question,
-    sample_size = prereg_answers$q8,
-    sample_size_rationale = prereg_answers$q9,
-    stopping_rule = prereg_answers$q10,
-    design_independent_variables = prereg_answers$q11.question,
-    design_dependent_variables = prereg_answers$q12.question,
-    indices = prereg_answers$q13.question,
-    study_type = prereg_answers$q14,
-    blinding = blinding,
-    study_design_overview = prereg_answers$q16.question,
-    randomization = prereg_answers$q17,
-    statistical_tests = prereg_answers$q19.question,
-    transformations = prereg_answers$q20,
-    additional_analyses = prereg_answers$q21,
-    inference_criteria = prereg_answers$q22,
-    data_exclusion_criteria = prereg_answers$q23,
-    outliers_and_exclusions = prereg_answers$q24,
-    exploratory_analyses = prereg_answers$q25
   )
 
   c(common, extra)
@@ -665,52 +751,6 @@ prsp <- function(info) {
 
   c(common, extra)
 }
-
-## Replication Recipe (Brandt et al., 2013): Pre-Registration" ----
-rrbrandt <- function(info) {
-  ra <- info$attributes
-  prereg_answers <- ra$registration_responses
-
-  common <- common_osf(info)
-
-  extra <- list(
-    description = prereg_answers$item1,
-    replication_importance = prereg_answers$item2,
-    effect_size_original = prereg_answers$item3,
-    confidence_interval_original = prereg_answers$item4,
-    original_sample_size = prereg_answers$item5,
-    original_study_conducted = prereg_answers$item6,
-    region = prereg_answers$item7,
-    original_population = prereg_answers$item8,
-    original_data_collection = prereg_answers$item9,
-    original_materials_available = prereg_answers$item10,
-    assumptions_and_contingencies = prereg_answers$item11,
-    data_collection_location = prereg_answers$item12,
-    blinding = paste(
-      prereg_answers$item13,
-      prereg_answers$item14
-    ),
-    sample_size = prereg_answers$item15,
-    sample_size_rationale = prereg_answers$item16,
-    instruction_similarities = prereg_answers$item17,
-    measure_similarities = prereg_answers$item18,
-    stimuli_similarities = prereg_answers$item19,
-    procedure_similarities = prereg_answers$item20,
-    location_similarities = prereg_answers$item21,
-    remuneration_similarities = prereg_answers$item22,
-    participant_similarities = prereg_answers$item23,
-    differences_influencing_effects = paste(
-      prereg_answers$item24,
-      prereg_answers$item25
-    ),
-    data_exclusion_criteria = prereg_answers$item26,
-    statistical_tests = prereg_answers$item27,
-    inference_criteria = prereg_answers$item28
-  )
-
-  c(common, extra)
-}
-
 
 # prereg schema ----
 prereg_schema <- data.frame(
