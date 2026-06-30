@@ -7,7 +7,7 @@ test_that("ref_consistency", {
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 5)
+  expect_equal(nrow(mod_output$table), 4)
   expect_equal(mod_output$module, module)
 
   # iteration
@@ -63,17 +63,41 @@ test_that("ref_accuracy", {
   expect_null(mod_output$table)
   expect_match(mod_output$summary_text, "add_bib_match")
 
-  # relevant references - info
+  # relevant references
   paper <- demopaper()
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "yellow")
   expect_equal(nrow(mod_output$table), nrow(paper$bib))
 
-  expect_equal(mod_output$summary_table$refs_checked, 5)
-  expect_equal(mod_output$summary_table$doi_mismatch, 1)
-  expect_equal(mod_output$summary_table$year_mismatch, 0)
-  expect_equal(mod_output$summary_table$title_mismatch, 1)
-  expect_equal(mod_output$summary_table$author_mismatch, 1)
+  # only references that supplied their own DOI are checked; the rest are
+  # reported as references without a DOI
+  st <- mod_output$summary_table
+  expect_equal(st$refs_checked, 2)
+  expect_equal(st$no_doi, 3)
+
+  # none of the demopaper references are incoherent, so the module stays green
+  expect_equal(st$incoherent, 0)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_false(any(mod_output$table$incoherent %in% TRUE))
+
+  # a checked reference (one with its own DOI) whose cited journal differs from
+  # the record its DOI points to is incoherent. Corrupt the journal of a
+  # checked reference and confirm it is flagged.
+  checked_id <- mod_output$table$bib_id[mod_output$table$tier == "provided"][[1]]
+  bad <- demopaper()
+  bad$bib$container[bad$bib$bib_id == checked_id] <-
+    "A Completely Different Journal Name"
+  bad_out <- module_run(bad, module)
+  expect_equal(bad_out$traffic_light, "yellow")
+  expect_equal(bad_out$summary_table$incoherent, 1)
+
+  # min_mismatches controls whether a single title/author mismatch flags. A lone
+  # author mismatch is not enough by default (2) but flags with min_mismatches=1.
+  auth <- demopaper()
+  auth$bib$authors[auth$bib$bib_id == checked_id] <- "Nonexistent, A; Madeup, B"
+  strict <- module_run(auth, module)                       # default = 2
+  loose  <- module_run(auth, module, min_mismatches = 1)   # sensitive
+  expect_equal(strict$summary_table$incoherent, 0)
+  expect_equal(loose$summary_table$incoherent, 1)
 })
 
 test_that("ref_replication", {
