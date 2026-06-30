@@ -61,9 +61,10 @@ server <- function(input, output, session) {
   report_filename <- reactiveVal("")
 
   validated_modules <- c(
-    "power", "marginal", "prereg_check",
-    "ref_pubpeer", "ref_retraction", "ref_replication",
-    "stat_check", "stat_p_exact", "stat_p_nonsig", "repo_check", "code_check"
+    "power", "marginal", "prereg_check", "ethics_check",
+    "ref_pubpeer", "ref_retraction", "ref_replication", "ref_accuracy",
+    "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size",
+    "repo_check", "code_check"
   )
 
   ### options_done — return to the Report tab ----
@@ -184,6 +185,8 @@ server <- function(input, output, session) {
                         (file.exists(local_path) || dir.exists(local_path))
         modules <- validated_modules
         if (!isTRUE(input$query_pubpeer)) modules <- setdiff(modules, "ref_pubpeer")
+        # ref_accuracy needs the CrossRef bib_match table to compare against
+        if (!use_crossref) modules <- setdiff(modules, "ref_accuracy")
         if (!isTRUE(input$query_repos) && !has_local)
           modules <- setdiff(modules, c("repo_check", "code_check"))
         skip_online <- has_local && !isTRUE(input$query_repos)
