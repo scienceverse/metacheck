@@ -32,11 +32,23 @@
       httr2::request(url) |>
         httr2::req_headers(Accept = accept) |>
         req_func() |>
-        #httr2::req_throttle(rate = 30 / 1) |>
-        httr2::req_retry(max_tries = 3, is_transient = \(resp) {
-          status <- httr2::resp_status(resp)
-          status %in% c(429, 500, 502, 503)
-        }) |>
+        # Throttle to stay under the API rate limit. CrossRef's polite pool
+        # allows ~10 requests/second; exceeding it returns 429 and, in bursts,
+        # the retries get 429'd too. httr2 shares one token bucket across
+        # requests (by host), so this paces the whole batch. 8/s leaves a
+        # margin under the limit.
+        httr2::req_throttle(capacity = 8, fill_time_s = 1) |>
+        # retry transient statuses and connection-level failures (timeouts,
+        # dropped connections). retry_on_failure covers the latter, which a
+        # status-only is_transient would otherwise miss.
+        httr2::req_retry(
+          max_tries = 5,
+          retry_on_failure = TRUE,
+          is_transient = \(resp) {
+            status <- httr2::resp_status(resp)
+            status %in% c(429, 500, 502, 503, 504)
+          }
+        ) |>
         httr2::req_error(is_error = \(resp) FALSE)
     }, error = \(e) {
       warning("Bad URL: ", url, call. = FALSE)
@@ -62,7 +74,10 @@
       idx <- batches[[b]]
       valid_idx <- !sapply(reqs[idx], is.null) # skip errors
 
-      resps[idx][valid_idx] <- httr2::req_perform_parallel(
+      # sequential rather than parallel: req_perform_parallel does not honour
+      # req_throttle, so parallel bursts exceed the API rate limit and get 429s.
+      # req_perform_sequential respects the throttle, keeping us under the limit.
+      resps[idx][valid_idx] <- httr2::req_perform_sequential(
         reqs[idx][valid_idx],
         on_error = "continue",
         progress = FALSE

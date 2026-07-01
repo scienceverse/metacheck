@@ -87,7 +87,11 @@ ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
             "container")
   ref_table <- ref_table(paper)
   ref_table$doi <- NULL
-  table <- dplyr::inner_join(
+  # left join so every reference is kept, including those with no CrossRef
+  # record. A reference that printed a DOI which does not resolve produces no
+  # bib_match row; an inner join would silently drop it (and lose its cited
+  # DOI), mislabelling it as a reference without a DOI.
+  table <- dplyr::left_join(
     bib[, cols], bib_match[, cols],
     by = c("paper_id", "bib_id"),
     suffix = c(".orig", ".match")
@@ -248,20 +252,30 @@ ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
      }, last_names, table$authors.orig)
   }
 
-  # tier: how did we get the DOI we are checking against?
-  #  "provided" - the reference printed its own DOI; we compare the cited
-  #               details against the record that exact DOI points to. Firm.
-  #  "crossref" - the reference had no DOI and CrossRef supplied one via fuzzy
-  #               title/author search; we check the coherence of the OTHER
-  #               fields against that record, but the match itself may be wrong,
-  #               so these findings are tentative. (The DOI itself is not
-  #               checked here - there was no cited DOI to verify.)
+  # tier: how did we get the record we are checking against?
+  #  "provided"   - the reference printed its own DOI and CrossRef returned a
+  #                 record for it; we compare the cited details against that
+  #                 exact record. Firm.
+  #  "unresolved" - the reference printed a DOI, but CrossRef returned no record
+  #                 for it, so the cited DOI could not be found. Flagged.
+  #                 add_bib_match() warns separately if any lookup failed for
+  #                 network reasons, so a missing record here is taken to mean
+  #                 the DOI genuinely does not resolve, not a connection problem.
+  #  "crossref"   - the reference had no DOI and CrossRef supplied one via fuzzy
+  #                 title/author search; the match may be wrong, so we do not
+  #                 flag it.
+  #  "none"       - no DOI at all.
   has_own_doi <- !is.na(table$doi.orig) & nzchar(table$doi.orig)
+  has_record  <- !is.na(table$title.match) & nzchar(table$title.match)
   table$tier <- dplyr::case_when(
-    has_own_doi ~ "provided",
-    !is.na(table$doi.match) & nzchar(table$doi.match) ~ "crossref",
-    .default = "none"
+    has_own_doi & has_record   ~ "provided",
+    has_own_doi                ~ "unresolved",
+    has_record                 ~ "crossref",
+    .default                   = "none"
   )
+  # no_match: the reference could not be matched to a retrieved record (kept for
+  # downstream modules such as ref_summary that group on it)
+  table$no_match <- !has_record
 
   # incoherence: cited details disagree with the record the reference's OWN DOI
   # points to. We only flag references in the "provided" tier (the reference
@@ -278,46 +292,37 @@ ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
             (table$container_mismatch %in% TRUE)
   n_parsing_mismatch <- (table$title_mismatch %in% TRUE) +
                         (table$author_mismatch %in% TRUE)
-  table$incoherent <- (table$tier == "provided") &
-    (strong | n_parsing_mismatch >= min_mismatches)
-
-  # add unmatched references (no CrossRef record found at all): these could not
-  # be checked, so they join the "none" tier alongside no-DOI references.
-  unmatched <- dplyr::anti_join(
-    ref_table, table,
-    by = c("paper_id", "bib_id")
-  )
-  table$no_match <- FALSE
-  if (nrow(unmatched)) {
-    unmatched$no_match <- TRUE
-    unmatched$tier <- "none"
-    unmatched$incoherent <- FALSE
-    table <- dplyr::bind_rows(table, unmatched)
-  }
-
+  # a reference is incoherent when it printed its own DOI and either that DOI
+  # could not be found (tier "unresolved") or the retrieved record disagrees
+  # with the cited details (tier "provided").
+  table$incoherent <- (table$tier == "unresolved") |
+    ((table$tier == "provided") &
+       (strong | n_parsing_mismatch >= min_mismatches))
 
   # traffic_light ----
   tl <- if (any(table$incoherent %in% TRUE)) "yellow" else "green"
 
   # summary_table ----
-  # only references that printed their own DOI are checked for incoherence;
-  # references without a DOI are reported separately so the user can add one.
-  table$no_doi <- table$tier != "provided"
+  # references that printed a DOI (tiers "provided" and "unresolved") are
+  # checked; references with no DOI at all are reported separately so the user
+  # can add one.
+  table$no_doi <- table$tier == "none"
   summary_table <- dplyr::summarise(table,
     .by = paper_id,
-    refs_checked = sum(tier == "provided", na.rm = TRUE),
+    refs_checked = sum(tier %in% c("provided", "unresolved"), na.rm = TRUE),
     incoherent   = sum(incoherent, na.rm = TRUE),
     no_doi       = sum(no_doi, na.rm = TRUE)
   )
 
   # summary_text
-  n_checked <- sum(table$tier == "provided", na.rm = TRUE)
-  n_inc     <- sum(table$incoherent, na.rm = TRUE)
-  n_nodoi   <- sum(table$no_doi, na.rm = TRUE)
+  n_checked  <- sum(table$tier %in% c("provided", "unresolved"), na.rm = TRUE)
+  n_inc      <- sum(table$incoherent, na.rm = TRUE)
+  n_nodoi    <- sum(table$no_doi, na.rm = TRUE)
   summary_text <- sprintf(
-    "We checked the %d reference%s that supplied a DOI against the record that DOI points to, and found %d incoherent reference%s to check for parsing errors or mistakes. %d reference%s had no DOI and could not be checked. Incoherent references are mostly PDF parsing errors (we are working on improving reference parsing).",
+    "We checked the %d reference%s that supplied a DOI against the record that DOI points to, and found %d incoherent reference%s to check for parsing errors or mistakes. %d reference%s had no DOI and could not be checked. Incoherent references are mostly PDF parsing errors (we are working on improving reference parsing).%s",
     n_checked, plural(n_checked), n_inc, plural(n_inc),
-    n_nodoi, plural(n_nodoi)
+    n_nodoi, plural(n_nodoi),
+    if (n_nodoi > 0) " Adding a DOI to every reference that has one lets the other reference checks (retraction, PubPeer, and replication) run on them too." else ""
   )
 
   guidance <- "The references below supplied a DOI, but one or more of the cited details (title, authors, journal, or year) does not match the record that DOI points to. Such an incoherent is most often an error in reading the reference from the PDF, but it could be a mistake, ar an AI generated reference. Check each against the original source. Incoherent references are mostly PDF parsing errors (we are working on improving reference parsing)."
@@ -345,6 +350,12 @@ ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
     sprintf("<b>%s:</b> %s &rarr; %s", label, strike(cited), record)
   }
   discrepancies <- function(r) {
+    # an unresolved cited DOI has no record to compare against
+    if (r$tier == "unresolved") {
+      return(sprintf(
+        "<b>DOI:</b> the cited DOI %s could not be found in CrossRef",
+        strike(r$doi.orig)))
+    }
     parts <- c(
       if (isTRUE(r$title_mismatch))
         correction("title", r$title.orig, r$title.match),
@@ -364,13 +375,16 @@ ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
   inc_rows <- table[table$incoherent %in% TRUE, ]
   incoherent_report <- NULL
   if (nrow(inc_rows) > 0) {
+    # link to the retrieved record; for an unresolved DOI there is no record, so
+    # show the cited (non-resolving) DOI instead
+    rec_doi <- ifelse(is.na(inc_rows$doi.match) | !nzchar(inc_rows$doi.match),
+                      inc_rows$doi.orig, inc_rows$doi.match)
     out <- data.frame(
       Reference = inc_rows$text,
       `What is wrong (cited → record)` =
         vapply(seq_len(nrow(inc_rows)), \(i) discrepancies(inc_rows[i, ]),
                character(1)),
-      Record = link(paste0("https://doi.org/", inc_rows$doi.match),
-                    inc_rows$doi.match),
+      Record = link(paste0("https://doi.org/", rec_doi), rec_doi),
       check.names = FALSE
     )
     incoherent_report <- scroll_table(out, 5, colwidths = c(.45, .4, .15))
@@ -398,9 +412,13 @@ ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
 
   report <- c(
     guidance,
-    if (!is.null(incoherent_report)) incoherent_report,
+    if (!is.null(incoherent_report))
+      c("### Incoherent references\n",
+        "The cited details of these references do not match the record their DOI points to.\n",
+        incoherent_report),
     if (!is.null(nodoi_report))
-      c("**References without a DOI** (these could not be checked; add a DOI where one exists. A suggested DOI is shown only when CrossRef found a confident match):",
+      c("### References without a DOI\n",
+        "These references have no DOI, so they could not be checked here, and they also cannot be checked by the other reference modules (retraction, PubPeer, and replication checks all rely on the DOI). We searched CrossRef for a matching DOI; where a confident match was found it is suggested below. We recommend adding a DOI to every reference that has one: it lets these checks run and makes each cited work easier to find and verify.\n",
         nodoi_report)
   )
 
