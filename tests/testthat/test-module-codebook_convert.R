@@ -194,3 +194,43 @@ test_that("convert_codebook skips gracefully when output exists without overwrit
   expect_true(isTRUE(res$existed))
   expect_equal(res$n_studies, 0L)
 })
+
+test_that("convert_codebook carries identified scales into its outputs", {
+  labels <- data.frame(
+    source_file = "s.csv", column_name = c("panas_1", "panas_2", "age"),
+    label = c("Interested", "Distressed", NA_character_),
+    label_status = c("labelled", "labelled", "unlabelled"),
+    scale = c("PANAS", "PANAS", NA_character_),
+    scale_confidence = c("high", "high", NA_character_),
+    stringsAsFactors = FALSE)
+  var_names <- c("panas_1", "panas_2", "age")
+
+  # Dataset-level scales list (name + members), mirroring DDI varGrp membership.
+  sc <- metacheck:::.codebook_scales(labels, var_names)
+  expect_length(sc, 1)
+  expect_equal(sc[[1]]$name, "PANAS")
+  expect_setequal(unlist(sc[[1]]$variables), c("panas_1", "panas_2"))
+
+  # Per-column scale attribute on the labelled data frame (preserved in the rds).
+  df   <- data.frame(panas_1 = 1:3, panas_2 = 1:3, age = 20:22)
+  cols <- data.frame(source_file = "s.csv", column_name = var_names,
+                     col_type = "ordinal", stringsAsFactors = FALSE)
+  lab_df <- metacheck:::.codebook_label_df(df, cols, labels)
+  expect_equal(attr(lab_df$panas_1, "scale"), "PANAS")
+  expect_null(attr(lab_df$age, "scale"))
+
+  # measurementTechnique in the JSON-LD codebook metadata.
+  tf <- withr::local_tempfile(fileext = ".json")
+  scale_of <- function(v) {
+    s <- labels$scale[labels$column_name == v & !is.na(labels$scale)]
+    if (length(s)) s[[1]] else NA_character_
+  }
+  metacheck:::.codebook_write_jsonld(list(name = "x", description = "y"),
+                                     var_names, tf, scale_of = scale_of)
+  j <- jsonlite::fromJSON(tf, simplifyVector = FALSE)
+  vm <- j[["variableMeasured"]]
+  panas <- Filter(function(v) v$name == "panas_1", vm)[[1]]
+  expect_equal(panas[["measurementTechnique"]], "PANAS")
+  age <- Filter(function(v) v$name == "age", vm)[[1]]
+  expect_null(age[["measurementTechnique"]])
+})

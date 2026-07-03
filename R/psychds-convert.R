@@ -4,13 +4,12 @@
 # 3_psychds_convert.R, but driven by metacheck's data_check / codebook_check
 # outputs and the paper object (no GROBID XML / CrossRef enrichment).
 
-# Column types that receive a numeric statistics block in variableMeasured.
-.psychds_numeric_types <- c("continuous", "continuous_comma_decimal",
-                            "continuous_outliers_excluded")
-# Column types that receive a valuePattern in variableMeasured.
-.psychds_categorical_types <- c("categorical", "binary", "ordinal")
-# Column types that get no variableMeasured entry at all.
-.psychds_excluded_types <- c("empty")
+# Representation that receives a numeric statistics block in variableMeasured.
+.psychds_numeric_reps <- c("numeric")
+# Measurement levels that receive a valuePattern (their distinct values matter).
+.psychds_categorical_levels <- c("nominal", "ordinal")
+# Quality states that get no variableMeasured entry at all (no measured content).
+.psychds_excluded_quality <- c("empty")
 
 # Build the variableMeasured list for one set of columns. `cols` is a subset of
 # data_check's columns table; `labels` is codebook_check's labels table (or
@@ -22,19 +21,46 @@
   if (!is.null(labels) && nrow(labels) > 0 &&
       all(c("source_file", "column_name") %in% names(labels))) {
     keep <- c("source_file", "column_name", "label", "label_status",
-              "label_source", "label_method", "codebook_variable")
+              "label_source", "label_method", "codebook_variable",
+              "scale", "scale_confidence",
+              "value_labels", "missing_values", "question", "universe")
     labels <- labels[, intersect(keep, names(labels)), drop = FALSE]
     cols <- merge(cols, labels, by = c("source_file", "column_name"),
                   all.x = TRUE, suffixes = c("", ".lbl"))
   }
 
-  cols <- cols[!(tolower(cols$col_type %||% "") %in% .psychds_excluded_types), ,
-               drop = FALSE]
+  # Drop columns with no measured content (empty). Support both the facet schema
+  # (representation/quality/measurement_level/concept/unit) and, for an older
+  # data_check table, a legacy `col_type` column mapped onto the facets.
+  qual <- if ("quality" %in% names(cols)) tolower(cols$quality %||% "") else
+    ifelse(tolower(cols$col_type %||% "") == "empty", "empty", "ok")
+  cols <- cols[!(qual %in% .psychds_excluded_quality), , drop = FALSE]
   if (nrow(cols) == 0) return(list())
+
+  # Legacy fallback: derive representation from a col_type-only table.
+  legacy_rep <- function(ct) {
+    ct <- tolower(ct %||% "")
+    if (ct %in% c("continuous", "continuous_comma_decimal",
+                  "continuous_outliers_excluded")) "numeric"
+    else if (ct == "date") "datetime" else if (ct == "id") "text"
+    else if (ct %in% c("binary", "categorical", "ordinal")) "code"
+    else "text"
+  }
+  legacy_level <- function(ct) {
+    ct <- tolower(ct %||% "")
+    if (ct %in% c("binary", "categorical")) "nominal"
+    else if (ct == "ordinal") "ordinal"
+    else if (ct %in% c("continuous", "continuous_comma_decimal",
+                       "continuous_outliers_excluded")) "ratio"
+    else NA_character_
+  }
 
   lapply(seq_len(nrow(cols)), function(i) {
     row <- cols[i, ]
-    ct  <- row$col_type %||% NA_character_
+    rep_ <- if ("representation" %in% names(row)) row$representation %||% NA_character_
+            else legacy_rep(row$col_type)
+    lvl  <- if ("measurement_level" %in% names(row)) row$measurement_level %||% NA_character_
+            else legacy_level(row$col_type)
     pv  <- list(`@type` = "PropertyValue", name = row$column_name)
 
     # Variable description from the codebook, when documented.
@@ -46,8 +72,58 @@
       pv[["metacheck:codebook_variable"]] <- row$codebook_variable
     }
 
-    # Numeric statistics block.
-    if (!is.na(ct) && ct %in% .psychds_numeric_types) {
+    # Psychometric scale membership (from codebook_check's LLM scale
+    # identification). The scale NAME goes in schema.org's native
+    # `measurementTechnique` (its intended use — the instrument a variable was
+    # measured with); the grouping/confidence go in a namespaced extension, as
+    # schema.org has no compositional grouping property. This mirrors DDI's
+    # `analysis` variable-group concept ("variables combined into the same
+    # index") within Psych-DS's JSON-LD.
+    if ("scale" %in% names(row) && !is.na(row$scale) && nzchar(row$scale)) {
+      pv[["measurementTechnique"]] <- row$scale
+      pv[["metacheck:scale"]] <- Filter(Negate(is.null), list(
+        name       = row$scale,
+        confidence = if ("scale_confidence" %in% names(row) &&
+                         !is.na(row$scale_confidence)) row$scale_confidence else NULL
+      ))
+    }
+
+    # Measurement level → schema.org has no native property, so record it in a
+    # namespaced extension (DDI @classificationLevel). Unit → schema.org
+    # `unitText`. Concept → namespaced extension (DDI Variable→Concept).
+    if (!is.na(lvl)) pv[["metacheck:measurementLevel"]] <- lvl
+    concept <- if ("concept" %in% names(row)) row$concept %||% NA_character_ else NA_character_
+    if (!is.na(concept) && nzchar(concept)) pv[["metacheck:concept"]] <- concept
+    unit <- if ("unit" %in% names(row)) row$unit %||% NA_character_ else NA_character_
+    if (!is.na(unit) && nzchar(unit)) pv[["unitText"]] <- unit
+    role <- if ("role" %in% names(row)) row$role %||% NA_character_ else NA_character_
+    if (!is.na(role) && nzchar(role)) pv[["metacheck:role"]] <- role
+
+    # Question text + universe/filter (DDI QuestionText, Universe).
+    question <- if ("question" %in% names(row)) row$question %||% NA_character_ else NA_character_
+    if (!is.na(question) && nzchar(question)) pv[["metacheck:question"]] <- question
+    universe <- if ("universe" %in% names(row)) row$universe %||% NA_character_ else NA_character_
+    if (!is.na(universe) && nzchar(universe)) pv[["metacheck:universe"]] <- universe
+
+    # Value labels / code list (DDI CodeList): emit as schema.org PropertyValue
+    # children so each code->label pair is machine-readable. The raw JSON is also
+    # kept in a namespaced field for round-tripping.
+    vl_json <- if ("value_labels" %in% names(row)) row$value_labels %||% NA_character_ else NA_character_
+    vl <- .decode_value_labels(vl_json)
+    if (!is.null(vl) && length(vl) > 0) {
+      pv[["metacheck:valueLabels"]] <- vl_json
+      pv[["metacheck:codeList"]] <- unname(lapply(seq_along(vl), function(k)
+        list(`@type` = "PropertyValue", value = names(vl)[k], name = unname(vl)[k])))
+    }
+
+    # Missing-value scheme (DDI MissingValues): which codes denote missingness,
+    # distinguishing sentinels from real values.
+    mv_json <- if ("missing_values" %in% names(row)) row$missing_values %||% NA_character_ else NA_character_
+    if (!is.na(mv_json) && nzchar(mv_json))
+      pv[["metacheck:missingValues"]] <- mv_json
+
+    # Numeric statistics block (numeric representation).
+    if (identical(rep_, "numeric")) {
       if ("min" %in% names(row) && !is.na(row$min)) pv[["minValue"]] <- row$min
       if ("max" %in% names(row) && !is.na(row$max)) pv[["maxValue"]] <- row$max
       stat_fields <- c("n", "n_missing", "mean", "sd", "se", "median",
@@ -59,8 +135,9 @@
       if (length(stat_block) > 0) pv[["metacheck:statistics"]] <- stat_block
     }
 
-    # Value pattern for categorical columns.
-    if (!is.na(ct) && ct %in% .psychds_categorical_types &&
+    # Value pattern for categorical (nominal/ordinal, non-numeric) columns.
+    if (!is.na(lvl) && lvl %in% .psychds_categorical_levels &&
+        !identical(rep_, "numeric") &&
         "sample_values" %in% names(row) && !is.na(row$sample_values) &&
         nzchar(row$sample_values)) {
       vals <- unique(trimws(strsplit(row$sample_values, "\\|")[[1]]))
@@ -68,7 +145,7 @@
       if (length(vals) > 0) pv[["valuePattern"]] <- paste(vals, collapse = "|")
     }
 
-    if (!is.na(ct)) pv[["metacheck:col_type"]] <- ct
+    if (!is.na(rep_)) pv[["metacheck:representation"]] <- rep_
     if (!is.na(row$source_file)) pv[["metacheck:source_file"]] <- row$source_file
     Filter(Negate(is.null), pv)
   })

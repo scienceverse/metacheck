@@ -11,6 +11,27 @@
 #' and open typed free-text fields), reported as "review before sharing" prompts
 #' without echoing the matching values.
 #'
+#' It also reports an inventory of the **demographic columns** (age, gender/sex,
+#' race/ethnicity) detected in the data — the variables studies typically report
+#' about their sample — using `data_check`'s name+value tag (or recomputing it
+#' from the previews). This is informational, not a problem flag.
+#'
+#' For **Qualtrics survey exports** it summarises the response metadata that is
+#' reliably extractable from any Qualtrics file: how many rows are previews /
+#' unfinished responses that likely need dropping, the completion-time
+#' distribution (with a count of implausibly fast responses), the
+#' data-collection window, and which Qualtrics fields carry personal information
+#' to review before sharing. The substantive question columns are not interpreted
+#' here (that is the scale-block detection's job).
+#'
+#' For survey data it additionally screens for **careless responding**. When a
+#' file contains a block of Likert-type items (a run of adjacent columns sharing
+#' a response scale and a variable-name prefix) together with an identifier
+#' column, the `careless` package's longstring and IRV indices are computed per
+#' scale block, and respondents that straightline or answer unusually flatly /
+#' erratically are flagged by their id. This check is skipped (with a note) when
+#' the optional `careless` package is not installed.
+#'
 #' @details
 #' The Data Validate module consumes the columns and the full data frames read by
 #' `data_check`. For each numeric column it applies a Tukey (1.5×IQR) outlier
@@ -170,6 +191,125 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
       }
     }
   }
+  # ── 2a. Demographic columns (age / gender / race) ───────────────────────────
+  # Report which files contain the demographic variables almost every study
+  # collects. Prefer data_check's precomputed `concept` facet (name+value
+  # agreement); fall back to computing it here from the previews so this works
+  # even against an older data_check run whose table predates the facet.
+  demo_specs <- list()
+  demo_tagged <- !is.null(columns_df) &&
+    all(c("source_file", "column_name", "concept") %in% names(columns_df))
+  for (file in names(previews)) {
+    df <- previews[[file]]
+    if (is.null(df) || ncol(df) == 0) next
+    for (col in names(df)) {
+      kind <- if (demo_tagged) {
+        hit <- columns_df$source_file == file & columns_df$column_name == col
+        v <- if (any(hit)) columns_df$concept[which(hit)[1]] else NA_character_
+        if (is.na(v) || !nzchar(v)) NA_character_ else v
+      } else {
+        data_check_demographic(col, df[[col]])
+      }
+      # The `concept` facet also carries non-demographic concepts (reaction_time,
+      # likert, Qualtrics tags, ...); keep only the demographic ones here.
+      if (!is.na(kind) && !kind %in% c("age", "gender", "race"))
+        kind <- NA_character_
+      if (!is.na(kind))
+        demo_specs[[length(demo_specs) + 1L]] <- data.frame(
+          source_file = file, column = col, demographic = kind)
+    }
+  }
+  demo_df <- if (length(demo_specs) > 0) dplyr::bind_rows(demo_specs) else
+    data.frame(source_file = character(0), column = character(0),
+               demographic = character(0))
+
+  # ── 2a2. Qualtrics survey metadata ──────────────────────────────────────────
+  # For each file that is a Qualtrics export, summarise the things reliably
+  # extractable from its response-metadata columns: how many rows are previews /
+  # unfinished (and should likely be dropped), the completion-time distribution
+  # (with implausibly fast responses), the data-collection window, and which
+  # Qualtrics PII fields are present. Nothing here interprets the substantive
+  # question columns — that is out of scope.
+  qualtrics_specs <- list()
+  for (file in names(previews)) {
+    df <- previews[[file]]
+    if (is.null(df) || ncol(df) == 0) next
+    if (!data_check_is_qualtrics(df)) next
+    s <- .dv_qualtrics_summary(df)
+    if (!is.null(s)) {
+      s$source_file <- file
+      qualtrics_specs[[length(qualtrics_specs) + 1L]] <- s
+    }
+  }
+
+  # ── 2b. Careless responding (survey data only) ──────────────────────────────
+  # For files that contain a block of Likert-type items AND an identifier column,
+  # run careless-response indices (longstring + IRV) per scale block and flag the
+  # respondents that look careless. Needs the `careless` package; skipped (with a
+  # note) when it is not installed. Findings feed the same per-column tally as a
+  # "Careless responding" check, one row per (file, flagged respondent).
+  careless_specs <- list()   # per flagged respondent, for the report table
+  careless_note  <- NULL
+  careless_avail <- requireNamespace("careless", quietly = TRUE)
+  n_careless_files <- 0L
+  for (file in names(previews)) {
+    df <- previews[[file]]
+    if (is.null(df) || ncol(df) < .dv_careless_min_items ||
+        nrow(df) < .dv_careless_min_rows) next
+    blocks <- .detect_scale_blocks(df)
+    if (length(blocks) == 0) next
+
+    # An identifier column: prefer data_check's `identifier` role for this
+    # file; fall back to a name-pattern match; else use row numbers.
+    id_col <- NULL
+    if (!is.null(columns_df) &&
+        all(c("source_file", "column_name", "role") %in% names(columns_df))) {
+      idc <- columns_df$column_name[columns_df$source_file == file &
+                                      columns_df$role %in% "identifier"]
+      idc <- idc[idc %in% names(df)]
+      if (length(idc) > 0) id_col <- idc[[1]]
+    }
+    if (is.null(id_col)) {
+      hit <- grep("(?i)(^id$|participant|subject|respond|_id$|prolific|mturk|worker)",
+                  names(df), perl = TRUE)
+      if (length(hit) > 0) id_col <- names(df)[hit[[1]]]
+    }
+    has_id <- !is.null(id_col)
+    if (!has_id) next            # careless findings are only actionable with an ID
+    n_careless_files <- n_careless_files + 1L
+    if (!careless_avail) next    # count the opportunity, but cannot compute
+
+    ids <- as.character(df[[id_col]])
+    for (cols in blocks) {
+      scale  <- .scale_block_range(df[, cols, drop = FALSE])
+      # Prefer a named scale identified by codebook_check (e.g. "PANAS") over the
+      # bare variable-name prefix, when available for these columns.
+      prefix <- .scale_name_prefix(names(df)[cols[[1]]])
+      if (!is.null(labels_df) && all(c("source_file", "column_name", "scale")
+                                     %in% names(labels_df))) {
+        hit <- labels_df$source_file == file &
+          labels_df$column_name %in% names(df)[cols] &
+          !is.na(labels_df$scale) & nzchar(labels_df$scale %||% "")
+        if (any(hit)) prefix <- labels_df$scale[which(hit)[1]]
+      }
+      res <- tryCatch(.dv_careless_block(df[, cols, drop = FALSE], ids, scale, prefix),
+                      error = function(e) NULL)
+      if (!is.null(res) && nrow(res) > 0) {
+        res$source_file <- file
+        careless_specs[[length(careless_specs) + 1L]] <- res
+      }
+    }
+  }
+  if (n_careless_files > 0 && !careless_avail)
+    careless_note <- sprintf(
+      "%d file%s contain survey data with an identifier, but careless-response checks were skipped because the `careless` package is not installed. Install it with `install.packages(\"careless\")` to screen for straightlining and other careless responding.",
+      n_careless_files, plural(n_careless_files))
+
+  careless_df <- if (length(careless_specs) > 0) dplyr::bind_rows(careless_specs) else
+    data.frame(source_file = character(0), scale = character(0),
+               respondent = character(0), longstring = integer(0),
+               irv = numeric(0), reason = character(0))
+
   findings_df <- if (length(findings) > 0) dplyr::bind_rows(findings) else
     data.frame(source_file = character(0), column = character(0),
                label = character(0), check = character(0), detail = character(0))
@@ -213,6 +353,9 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   tl <- if (n_flagged == 0) "green"
         else if (frac_flagged < 0.25) "yellow"
         else "red"
+  # Careless-responding findings are respondent-level (not counted in the column
+  # tally); if any were found, the result is at least yellow.
+  if (nrow(careless_df) > 0 && tl == "green") tl <- "yellow"
 
   # ── 4. Report ────────────────────────────────────────────────────────────────
   summary_text <- if (n_flagged == 0) {
@@ -232,6 +375,29 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
             n_columns, plural(n_columns), n_flagged, plural(n_flagged),
             if (n_flagged == 1) "has" else "have",
             paste(parts, collapse = "; "))
+  }
+  if (nrow(careless_df) > 0) {
+    n_car <- nrow(careless_df)
+    summary_text <- paste0(summary_text,
+      sprintf(" %d survey respondent%s %s flagged for possible careless responding.",
+              n_car, plural(n_car), if (n_car == 1) "was" else "were"))
+  }
+  if (nrow(demo_df) > 0) {
+    kinds <- sort(unique(demo_df$demographic))
+    summary_text <- paste0(summary_text,
+      sprintf(" We detected demographic column%s for %s.",
+              plural(length(kinds)),
+              paste(tools::toTitleCase(kinds), collapse = ", ")))
+  }
+  if (length(qualtrics_specs) > 0) {
+    n_drop <- sum(vapply(qualtrics_specs, function(s) s$n_drop %||% 0L, integer(1)))
+    summary_text <- paste0(summary_text,
+      sprintf(" %d file%s %s a Qualtrics survey export%s.",
+              length(qualtrics_specs), plural(length(qualtrics_specs)),
+              if (length(qualtrics_specs) == 1) "is" else "are",
+              if (n_drop > 0)
+                sprintf(" (%d row%s look like previews/unfinished responses to review)",
+                        n_drop, plural(n_drop)) else ""))
   }
 
   report <- c(
@@ -297,6 +463,51 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
       "*Install the `ggplot2` package to see the distribution histograms.*")
   }
 
+  # Qualtrics survey metadata: for each detected Qualtrics export, a summary of
+  # the reliably-extractable response metadata — preview/unfinished rows to drop,
+  # completion-time distribution, data-collection window, and PII fields present.
+  if (length(qualtrics_specs) > 0) {
+    report <- c(report, .dv_qualtrics_report(qualtrics_specs, length(previews)))
+  }
+
+  # Demographic columns: an informational inventory of the age / gender / race
+  # variables detected in the data (not a problem flag). Helps a reviewer see at
+  # a glance whether the shared data documents its sample's demographics.
+  if (nrow(demo_df) > 0) {
+    demo_tbl <- demo_df |>
+      dplyr::transmute(
+        File = .data$source_file, Column = .data$column,
+        Demographic = tools::toTitleCase(.data$demographic))
+    kinds <- sort(unique(demo_df$demographic))
+    report <- c(report,
+      "#### Demographic Variables",
+      sprintf("We detected %d demographic column%s (%s) across the data file%s. These are the age/gender/race variables studies typically report; this is an inventory, not a problem flag.",
+              nrow(demo_df), plural(nrow(demo_df)),
+              paste(tools::toTitleCase(kinds), collapse = ", "),
+              plural(length(previews))),
+      scroll_table(demo_tbl, maxrows = 20))
+  }
+
+  # Careless responding: respondents flagged by longstring / IRV on a survey
+  # scale block. Reported per respondent (with the scale and reason), so a
+  # reviewer can inspect those rows in the raw data.
+  if (nrow(careless_df) > 0) {
+    car_tbl <- careless_df |>
+      dplyr::transmute(
+        File = .data$source_file, Scale = .data$scale,
+        Respondent = .data$respondent,
+        Longstring = .data$longstring, IRV = .data$irv,
+        Reason = .data$reason)
+    n_car <- nrow(careless_df)
+    report <- c(report,
+      "#### Careless Responding",
+      sprintf("%d respondent%s across the survey scales show signs of careless responding (straightlining, or unusually flat/erratic answering). These are prompts to inspect those rows, not definitive judgements.",
+              n_car, plural(n_car)),
+      scroll_table(car_tbl, maxrows = 20))
+  } else if (!is.null(careless_note)) {
+    report <- c(report, "#### Careless Responding", careless_note)
+  }
+
   # ── 5. Summary table + return ────────────────────────────────────────────────
   summary_table <- data.frame(
     paper_id  = .pid(columns_df),
@@ -304,14 +515,212 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     flagged_n = n_flagged
   )
 
+  qualtrics_df <- if (length(qualtrics_specs) > 0)
+    dplyr::bind_rows(lapply(qualtrics_specs, function(s) data.frame(
+      source_file = s$source_file, n_rows = s$n_rows,
+      n_drop = s$n_drop, median_seconds = s$median_seconds,
+      n_fast = s$n_fast, date_min = s$date_min, date_max = s$date_max,
+      pii_fields = paste(s$pii_fields, collapse = ", ")))) else
+    data.frame()
+
   list(
     table = findings_df,
+    careless = careless_df,
+    demographics = demo_df,
+    qualtrics = qualtrics_df,
     summary_table = summary_table,
     na_replace = c(column_n = 0, flagged_n = 0),
     traffic_light = tl,
     report = report,
     summary_text = summary_text
   )
+}
+
+# ── Careless-responding helpers ───────────────────────────────────────────────
+
+# Minimum respondents before careless indices are computed. (The minimum items
+# per scale block is `.scale_min_items`, shared with codebook_check via the
+# scale-block detection helpers in data_check_helpers.R.)
+.dv_careless_min_items <- .scale_min_items
+.dv_careless_min_rows  <- 30L
+
+# Scale-block detection is shared with codebook_check: see .detect_scale_blocks,
+# .scale_name_prefix and .scale_block_range in R/data_check_helpers.R.
+
+# Run careless indices (longstring + IRV) on one scale block and return the
+# respondents that look careless. `block` is a numeric data frame of items;
+# `ids` is the identifier column aligned to its rows (or row numbers).
+#
+# A respondent is flagged when EITHER:
+#   * their longest string of identical consecutive answers covers a large
+#     fraction of the block (straightlining), OR
+#   * their IRV (SD of responses) is an extreme low/high outlier for the block.
+# Thresholds are relative to the block so a short scale is not over-flagged.
+.dv_careless_block <- function(block, ids, scale, prefix) {
+  block <- as.data.frame(lapply(block, function(x)
+    suppressWarnings(as.numeric(as.character(x)))))
+  n_items <- ncol(block)
+  ls <- careless::longstring(block)
+  iv <- careless::irv(block, na.rm = TRUE)
+
+  # Straightlining: same answer for >= 80% of items (and at least 5 in a row).
+  straight_cut <- max(5L, ceiling(0.8 * n_items))
+  is_straight  <- !is.na(ls) & ls >= straight_cut
+  # IRV outliers: Tukey fence on the block's IRV distribution (both tails —
+  # near-zero = flat responding, very high = erratic/alternating).
+  o <- data_check_outliers(iv, k = 1.5)
+  is_irv_out <- !is.na(iv) &
+    ((!is.na(o$lower) & iv < o$lower) | (!is.na(o$upper) & iv > o$upper))
+
+  flagged <- which(is_straight | is_irv_out)
+  if (length(flagged) == 0) return(NULL)
+  reason <- ifelse(is_straight[flagged] & is_irv_out[flagged], "straightlining + IRV outlier",
+             ifelse(is_straight[flagged], "straightlining", "IRV outlier"))
+  data.frame(
+    scale      = paste0(prefix, " (", scale, ", ", n_items, " items)"),
+    respondent = as.character(ids[flagged]),
+    longstring = ls[flagged],
+    irv        = round(iv[flagged], 2),
+    reason     = reason
+  )
+}
+
+# ── Qualtrics metadata helpers ────────────────────────────────────────────────
+
+# Locate a Qualtrics metadata column by its semantic tag (see
+# .qualtrics_meta_cols in data_check_helpers.R); returns the column vector or
+# NULL. Matching is by tag, so a renamed-but-recognised column is still found.
+.dv_q_col <- function(df, tag) {
+  tags <- .qualtrics_tag_cols(names(df))
+  hit <- which(tags == tag)
+  if (length(hit) == 0) NULL else df[[hit[1]]]
+}
+
+# Parse a Qualtrics datetime column (ISO "YYYY-MM-DD HH:MM:SS") to POSIXct.
+# Returns all-NA (never errors) when the values are not datetimes: as.POSIXct
+# with tryFormats *errors* rather than warns when no format matches, so we parse
+# per-format and coalesce, guarded by tryCatch.
+.dv_q_datetime <- function(x) {
+  if (is.null(x)) return(NULL)
+  xc <- as.character(x)
+  out <- as.POSIXct(rep(NA_real_, length(xc)), tz = "UTC", origin = "1970-01-01")
+  for (fmt in c("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")) {
+    miss <- is.na(out)
+    if (!any(miss)) break
+    parsed <- tryCatch(
+      as.POSIXct(xc[miss], tz = "UTC", format = fmt),
+      error = function(e) as.POSIXct(rep(NA_real_, sum(miss)), tz = "UTC",
+                                     origin = "1970-01-01"))
+    out[miss] <- parsed
+  }
+  out
+}
+
+# Summarise one Qualtrics export's response metadata. Returns a list of the
+# reliably-extractable facts (or NULL if the file carries none of them):
+#   n_rows, n_drop (preview/spam/unfinished rows), median_seconds, n_fast
+#   (implausibly fast completions), date_min/date_max (collection window),
+#   pii_fields (which Qualtrics PII columns are present).
+.dv_qualtrics_summary <- function(df) {
+  n_rows <- nrow(df)
+
+  # Rows to review/drop: Status marks previews (1) and spam (2/8); Finished == 0
+  # / FALSE and Progress < 100 mark incomplete responses. Any one qualifies.
+  status <- .dv_q_col(df, "qualtrics_status")
+  finished <- .dv_q_col(df, "qualtrics_finished")
+  progress <- .dv_q_col(df, "qualtrics_progress")
+  drop <- rep(FALSE, n_rows)
+  if (!is.null(status)) {
+    s <- suppressWarnings(as.numeric(as.character(status)))
+    st <- tolower(trimws(as.character(status)))
+    # Numeric coding (0 = real IP response) or text labels ("Survey Preview").
+    drop <- drop | (!is.na(s) & s %in% c(1, 2, 8)) |
+      grepl("preview|spam", st)
+  }
+  if (!is.null(finished)) {
+    f <- tolower(trimws(as.character(finished)))
+    drop <- drop | f %in% c("0", "false", "no")
+  }
+  if (!is.null(progress)) {
+    p <- suppressWarnings(as.numeric(as.character(progress)))
+    drop <- drop | (!is.na(p) & p < 100)
+  }
+  n_drop <- sum(drop)
+
+  # Completion time: Duration (in seconds); fall back to EndDate - StartDate.
+  dur <- suppressWarnings(as.numeric(as.character(.dv_q_col(df, "qualtrics_duration"))))
+  if (all(is.na(dur))) {
+    sd <- .dv_q_datetime(.dv_q_col(df, "qualtrics_start"))
+    ed <- .dv_q_datetime(.dv_q_col(df, "qualtrics_end"))
+    if (!is.null(sd) && !is.null(ed))
+      dur <- as.numeric(difftime(ed, sd, units = "secs"))
+  }
+  dur <- dur[!is.na(dur) & dur >= 0]
+  median_seconds <- if (length(dur) > 0) stats::median(dur) else NA_real_
+  # Implausibly fast: under half the median AND under 2 minutes (a heuristic
+  # speeding flag; only meaningful with enough completed responses).
+  n_fast <- if (length(dur) >= 10 && !is.na(median_seconds))
+    sum(dur < pmin(0.5 * median_seconds, 120)) else NA_integer_
+
+  # Collection window: prefer RecordedDate, else StartDate.
+  dt <- .dv_q_datetime(.dv_q_col(df, "qualtrics_recorded"))
+  if (is.null(dt) || all(is.na(dt))) dt <- .dv_q_datetime(.dv_q_col(df, "qualtrics_start"))
+  date_min <- date_max <- NA_character_
+  if (!is.null(dt) && any(!is.na(dt))) {
+    date_min <- format(min(dt, na.rm = TRUE), "%Y-%m-%d")
+    date_max <- format(max(dt, na.rm = TRUE), "%Y-%m-%d")
+  }
+
+  # Which Qualtrics PII fields are present (drives a before-sharing prompt).
+  pii_tags <- c(qualtrics_ip = "IP address", qualtrics_email = "email",
+                qualtrics_lat = "location", qualtrics_lon = "location",
+                qualtrics_externalref = "external reference (e.g. panel ID)",
+                qualtrics_recipient = "recipient name")
+  present <- unique(unname(pii_tags[intersect(
+    .qualtrics_tag_cols(names(df)), names(pii_tags))]))
+
+  list(n_rows = n_rows, n_drop = n_drop, median_seconds = median_seconds,
+       n_fast = n_fast, date_min = date_min, date_max = date_max,
+       pii_fields = present)
+}
+
+# Build the "Qualtrics Survey Metadata" report section from the per-file
+# summaries produced by .dv_qualtrics_summary().
+.dv_qualtrics_report <- function(specs, n_previews) {
+  fmt_dur <- function(sec) {
+    if (is.na(sec)) return("—")
+    if (sec < 90) sprintf("%.0f s", sec)
+    else if (sec < 5400) sprintf("%.1f min", sec / 60)
+    else sprintf("%.1f h", sec / 3600)
+  }
+  rows <- lapply(specs, function(s) data.frame(
+    File = s$source_file,
+    Responses = s$n_rows,
+    `Preview/unfinished` = s$n_drop,
+    `Median time` = fmt_dur(s$median_seconds),
+    `Very fast` = if (is.na(s$n_fast)) "—" else as.character(s$n_fast),
+    `Collected` = if (is.na(s$date_min)) "—" else
+      if (identical(s$date_min, s$date_max)) s$date_min else
+        paste(s$date_min, "to", s$date_max),
+    `PII fields` = if (length(s$pii_fields) == 0) "none" else
+      paste(s$pii_fields, collapse = ", "),
+    check.names = FALSE))
+  tbl <- dplyr::bind_rows(rows)
+
+  n_files <- length(specs)
+  total_drop <- sum(vapply(specs, function(s) s$n_drop, integer(1)))
+  intro <- sprintf(
+    "%d of the %d data file%s %s a Qualtrics survey export. The table below summarises the response metadata Qualtrics records for every survey (not the substantive question columns): how many rows look like previews or unfinished responses that usually need dropping before analysis, the typical completion time (with a count of implausibly fast responses), the data-collection window, and which Qualtrics fields carry personal information to review before sharing.",
+    n_files, n_previews, plural(n_previews),
+    if (n_files == 1) "is" else "are")
+  note <- if (total_drop > 0)
+    sprintf(" Across these files, %d row%s %s flagged as a preview, spam, or unfinished response — check whether they should be excluded.",
+            total_drop, plural(total_drop),
+            if (total_drop == 1) "is" else "are") else ""
+
+  c("#### Qualtrics Survey Metadata",
+    paste0(intro, note),
+    scroll_table(tbl, maxrows = 20))
 }
 
 # ── Module-local helper ───────────────────────────────────────────────────────

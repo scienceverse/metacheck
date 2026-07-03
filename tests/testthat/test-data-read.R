@@ -31,6 +31,31 @@ test_that("data_read_head returns NULL for unsupported formats", {
   expect_null(data_read_head(f))
 })
 
+test_that("data_read_head recovers a data frame from an .RData workspace", {
+  skip_if_not_installed("processx")
+  f <- withr::local_tempfile(fileext = ".RData")
+  study_data <- data.frame(id = 1:5, score = rnorm(5))
+  a_model <- lm(score ~ id, study_data)   # a non-data object alongside the data
+  save(study_data, a_model, file = f)
+
+  df <- data_read_head(f, n_rows = Inf)
+  expect_s3_class(df, "data.frame")
+  expect_equal(names(df), c("id", "score"))
+  expect_equal(nrow(df), 5)
+})
+
+test_that("data_read_head returns NULL for an .RData with no data frame", {
+  skip_if_not_installed("processx")
+  # A workspace of only non-data objects (a model, a vector) -> no reusable
+  # tabular data -> NULL (data_check turns this into a sharing recommendation).
+  f <- withr::local_tempfile(fileext = ".RData")
+  a_model <- lm(mpg ~ cyl, mtcars)
+  some_numbers <- 1:100
+  save(a_model, some_numbers, file = f)
+
+  expect_null(data_read_head(f, n_rows = Inf))
+})
+
 test_that("data_read_head sanitises invalid-UTF-8 column names when present", {
   # When a data frame comes back carrying a header with an invalid-UTF-8 byte
   # (a stray Latin-1 / BOM byte some readers tolerate), data_read_head must
@@ -55,4 +80,52 @@ test_that("data_col_type survives an invalid-UTF-8 column name", {
   bad <- paste0(rawToChar(as.raw(0xef)), "PeronalData_fullname")
   expect_no_error(res <- data_col_type(bad, 1:10))
   expect_type(res, "list")
+})
+
+# ── Qualtrics multi-row header handling ───────────────────────────────────────
+
+# Write a minimal Qualtrics "use choice text" export: machine-name header, a
+# question-text row, an ImportId JSON row, then `n` data rows.
+.write_qualtrics <- function(path, n = 6, status = NULL, finished = NULL,
+                             durations = NULL) {
+  q <- function(...) paste0('"', c(...), '"', collapse = ",")
+  hdr  <- q("StartDate", "EndDate", "Status", "IPAddress", "Progress",
+            "Duration (in seconds)", "Finished", "RecordedDate", "ResponseId")
+  qtxt <- q("Start Date", "End Date", "Response Type", "IP Address", "Progress",
+            "Duration (in seconds)", "Finished", "Recorded Date", "Response ID")
+  imp  <- q('{"ImportId":"startDate"}', '{"ImportId":"endDate"}',
+            '{"ImportId":"status"}', '{"ImportId":"ipAddress"}',
+            '{"ImportId":"progress"}', '{"ImportId":"duration"}',
+            '{"ImportId":"finished"}', '{"ImportId":"recordedDate"}',
+            '{"ImportId":"_recordId"}')
+  status    <- status    %||% rep(0, n)
+  finished  <- finished  %||% rep(1, n)
+  durations <- durations %||% rep(300, n)
+  rows <- vapply(seq_len(n), function(i) q(
+    sprintf("2021-05-%02d 10:00:00", i), sprintf("2021-05-%02d 10:05:00", i),
+    status[i], sprintf("192.168.0.%d", i), 100, durations[i], finished[i],
+    sprintf("2021-05-%02d 10:05:00", i),
+    sprintf("R_%s", paste(sample(c(letters, 0:9), 8, TRUE), collapse = ""))),
+    character(1))
+  writeLines(c(hdr, qtxt, imp, rows), path)
+}
+
+test_that("data_read_head strips Qualtrics header rows and re-types columns", {
+  csv <- withr::local_tempfile(fileext = ".csv")
+  .write_qualtrics(csv, n = 6)
+  df <- data_read_head(csv, n_rows = Inf)
+  # The question-text and ImportId rows are gone: 6 data rows remain.
+  expect_equal(nrow(df), 6)
+  # Numeric metadata columns are numeric again (the junk rows had forced text).
+  expect_true(is.numeric(df[["Duration (in seconds)"]]))
+  expect_true(is.numeric(df[["Progress"]]))
+  expect_equal(df[["Duration (in seconds)"]], rep(300, 6))
+})
+
+test_that("data_read_head leaves a non-Qualtrics CSV untouched", {
+  csv <- withr::local_tempfile(fileext = ".csv")
+  utils::write.csv(data.frame(id = 1:5, StartDate = Sys.Date() + 0:4,
+                              score = rnorm(5)), csv, row.names = FALSE)
+  df <- data_read_head(csv, n_rows = Inf)
+  expect_equal(nrow(df), 5)          # a lone StartDate is not a Qualtrics export
 })

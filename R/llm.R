@@ -74,8 +74,10 @@ llm <- function(text, system_prompt,
   # ollama checks ----
   use_ollama_native <- FALSE
   if (grepl("^ollama", model)) {
-    # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it
-    use_ollama_native <- !isTRUE(params$think) %% !structured
+    # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it.
+    # Use the native path only for unstructured calls that are not "thinking";
+    # structured output goes through the /v1/ endpoint (ellmer type schema).
+    use_ollama_native <- !isTRUE(params$think) && !structured
     if (use_ollama_native) {
       ollama_options <- params
       ollama_options$think <- NULL

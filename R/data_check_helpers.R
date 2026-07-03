@@ -435,6 +435,11 @@ data_read_head <- function(path, n_rows = 5) {
         }
         if (!hdr && !is.null(df) && ncol(df) > 0)
           names(df) <- paste0("col_", seq_len(ncol(df)))
+        # Qualtrics "use choice text" exports carry extra header rows (question
+        # text, ImportId JSON) as the first data rows, which force every column
+        # to character. Strip them and re-type so the rest of data_check works.
+        if (!is.null(df) && data_check_is_qualtrics(df))
+          df <- data_strip_qualtrics_header(df)
         df
       },
       xlsx = , xls = {
@@ -445,7 +450,10 @@ data_read_head <- function(path, n_rows = 5) {
         # got a date"): a mixed column can emit one per row (hundreds on a wide
         # sheet). We re-classify column types ourselves via data_col_type(), so
         # readxl's guess is not relied upon.
-        suppressWarnings(as.data.frame(readxl::read_excel(path, n_max = nmax)))
+        df <- suppressWarnings(as.data.frame(readxl::read_excel(path, n_max = nmax)))
+        if (!is.null(df) && data_check_is_qualtrics(df))
+          df <- data_strip_qualtrics_header(df)
+        df
       },
       sav = , dta = , sas7bdat = {
         if (!requireNamespace("haven", quietly = TRUE))
@@ -461,10 +469,14 @@ data_read_head <- function(path, n_rows = 5) {
         if (is.data.frame(obj)) utils::head(obj, n_rows) else NULL
       },
       rda = , rdata = {
-        env <- new.env()
-        load(path, envir = env)
-        dfs <- Filter(is.data.frame, as.list(env))
-        if (length(dfs) > 0) utils::head(dfs[[1]], n_rows) else NULL
+        # An .RData/.rda workspace can hold arbitrary objects — fitted models,
+        # session state — not just data frames. Restoring a model that
+        # references an uninstalled package (e.g. robustlmm, effects) makes
+        # load() print namespace/restore diagnostics at the C level (not
+        # suppressible from R) and can crash. We read it in an isolated
+        # subprocess (.read_rdata_isolated), which returns the first data frame
+        # or NULL, plus a "reusability" verdict for data_check's reporting.
+        .read_rdata_isolated(path, n_rows)
       },
       NULL
     )
@@ -488,6 +500,49 @@ data_read_head <- function(path, n_rows = 5) {
     warning("Could not read ", basename(path), ": ", conditionMessage(e))
     NULL
   })
+}
+
+# Read an .RData/.rda workspace in an ISOLATED subprocess and return its first
+# data frame (head of `n_rows`), or NULL. Isolation is essential: restoring
+# model/session objects that reference uninstalled packages prints C-level
+# diagnostics and can crash the process — none of which must reach the caller.
+# A NULL return means the workspace holds no reusable tabular data (only models
+# / session objects, or it could not be restored at all); data_check turns that
+# into a sharing recommendation.
+.read_rdata_isolated <- function(path, n_rows = 5) {
+  out_rds <- tempfile(fileext = ".rds")
+  on.exit(unlink(out_rds), add = TRUE)
+  nmax <- if (is.finite(n_rows)) n_rows else Inf
+
+  # The child loads the workspace with its message stream sunk to null, then
+  # writes the first data frame (or NULL) to out_rds. It never errors to the
+  # parent, so a model-heavy or broken workspace cannot make noise or crash.
+  script <- sprintf(paste(
+    "con <- file(nullfile(), open='wt'); sink(con, type='message')",
+    "e <- new.env()",
+    "ok <- tryCatch({ load(%s, envir = e); TRUE }, error = function(x) FALSE)",
+    "sink(type='message'); close(con)",
+    "df <- NULL",
+    "if (ok) { dfs <- Filter(is.data.frame, as.list(e))",
+    "  if (length(dfs) > 0) { d <- as.data.frame(dfs[[1]]); n <- %s",
+    "    df <- if (is.finite(n)) utils::head(d, n) else d } }",
+    "saveRDS(df, %s)",
+    sep = "\n"),
+    deparse(path), if (is.finite(nmax)) nmax else "Inf", deparse(out_rds))
+
+  tryCatch(
+    processx::run(rscript_path(), args = c("-e", script),
+                  error_on_status = FALSE, timeout = 60),
+    error = function(e) NULL)
+
+  if (!file.exists(out_rds)) return(NULL)
+  tryCatch(readRDS(out_rds), error = function(e) NULL)
+}
+
+# Path to the Rscript executable of the current R installation.
+rscript_path <- function() {
+  file.path(R.home("bin"),
+            if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
 }
 
 # ── Column-type classification (rules only) ──────────────────────────────────
@@ -719,13 +774,153 @@ normalize_label <- function(x) {
   list(var_col = var_col, lab_col = lab_col)
 }
 
-# Empty codebook-variable table (the canonical column set).
+# Empty codebook-variable table (the canonical column set). The DDI-derived
+# per-variable properties (value_labels, missing_values, question, universe) are
+# carried as extra columns; they default to NA and only populate when a source
+# supplies them.
 .empty_codebook_vars <- function() {
   data.frame(
     codebook_variable = character(0), label = character(0),
     codebook_source = character(0), group = character(0),
+    value_labels = character(0), missing_values = character(0),
+    question = character(0), universe = character(0),
     parse_method = character(0)
   )
+}
+
+# ── Value labels / code lists + missing-value scheme (DDI ValueDomain) ─────────
+# A categorical variable's meaning lives in its code list — the mapping
+# 1="Strongly disagree" ... 5="Strongly agree" — and in which codes denote
+# missingness (-99="refused"). DDI models these as CodeList / ValueDomain and
+# MissingValues. We serialise a code list as a compact JSON object keyed by code
+# ("{\"1\":\"Male\",\"2\":\"Female\"}") so it survives as a single data.frame
+# column and round-trips through the label-matching machinery unchanged.
+
+# Encode a named code->label mapping as a JSON string. `codes` are the values,
+# `labels` the human labels (same length). Returns NA when empty.
+.encode_value_labels <- function(codes, labels) {
+  keep <- !is.na(codes) & !is.na(labels) & nzchar(trimws(as.character(labels)))
+  if (!any(keep)) return(NA_character_)
+  obj <- as.list(as.character(labels[keep]))
+  names(obj) <- as.character(codes[keep])
+  tryCatch(as.character(jsonlite::toJSON(obj, auto_unbox = TRUE)),
+           error = function(e) NA_character_)
+}
+
+# Decode a value-labels JSON string back to a named character vector
+# (names = codes, values = labels). Returns NULL on failure / NA.
+.decode_value_labels <- function(s) {
+  if (is.null(s) || length(s) != 1 || is.na(s) || !nzchar(s)) return(NULL)
+  out <- tryCatch(jsonlite::fromJSON(s), error = function(e) NULL)
+  if (is.null(out) || length(out) == 0) return(NULL)
+  v <- unlist(out); v[!is.na(v)]
+}
+
+# Encode a set of missing-value codes (optionally with reasons) as JSON. `codes`
+# is a vector of the sentinel codes; `reasons` an optional same-length vector of
+# labels ("refused", "not applicable"). Returns NA when empty.
+.encode_missing_values <- function(codes, reasons = NULL) {
+  codes <- codes[!is.na(codes)]
+  if (length(codes) == 0) return(NA_character_)
+  if (is.null(reasons)) {
+    tryCatch(as.character(jsonlite::toJSON(as.character(codes))),
+             error = function(e) NA_character_)
+  } else {
+    .encode_value_labels(codes, reasons)
+  }
+}
+
+# Extract value labels + declared missing values from one haven column. Returns
+# list(value_labels = <json|NA>, missing_values = <json|NA>). haven puts the
+# code list in attr(,"labels") and SPSS-declared missings in attr(,"na_values")
+# / attr(,"na_range"); a labelled code whose label names it missing (e.g.
+# "Refused", "N/A") is also treated as a missing code.
+.haven_value_labels <- function(col) {
+  labs <- attr(col, "labels")
+  na_values <- attr(col, "na_values")
+  na_range  <- attr(col, "na_range")
+  vl <- NA_character_
+  miss_codes <- numeric(0); miss_reasons <- character(0)
+
+  if (!is.null(labs) && length(labs) > 0) {
+    codes  <- unname(labs)
+    reasons <- names(labs)
+    vl <- .encode_value_labels(codes, reasons)
+    # Labels that read as missingness → sentinel missing codes.
+    is_miss <- grepl("(?i)(missing|refus|declined|no answer|not applicable|n/?a|prefer not|don'?t know|unknown|skipped)",
+                     reasons, perl = TRUE)
+    if (any(is_miss)) {
+      miss_codes  <- c(miss_codes, codes[is_miss])
+      miss_reasons <- c(miss_reasons, reasons[is_miss])
+    }
+  }
+  if (!is.null(na_values)) {
+    miss_codes  <- c(miss_codes, na_values)
+    miss_reasons <- c(miss_reasons, rep(NA_character_, length(na_values)))
+  }
+  if (!is.null(na_range) && length(na_range) == 2 && all(is.finite(na_range))) {
+    # A declared missing RANGE: record its endpoints as a compact note.
+    miss_codes  <- c(miss_codes, na_range)
+    miss_reasons <- c(miss_reasons, rep("range", 2))
+  }
+  mv <- if (length(miss_codes) > 0) {
+    keep <- !duplicated(miss_codes)
+    r <- miss_reasons[keep]
+    if (all(is.na(r))) .encode_missing_values(miss_codes[keep])
+    else .encode_value_labels(miss_codes[keep], r)
+  } else NA_character_
+
+  list(value_labels = vl %||% NA_character_, missing_values = mv %||% NA_character_)
+}
+
+# Parse a codebook "values" cell into value labels. Handles the common textual
+# encodings authors use: "1 = Male; 2 = Female", "1=Male, 2=Female",
+# "0: no | 1: yes", newline-separated. Returns a value-labels JSON string or NA.
+.parse_value_label_text <- function(s) {
+  if (is.null(s) || is.na(s) || !nzchar(trimws(s))) return(NA_character_)
+  s <- as.character(s)
+  # Split into entries on ; | newline (comma too, but only when not inside a
+  # decimal — handled by requiring a code=label shape per entry).
+  parts <- unlist(strsplit(s, "\\s*[;|\\n]\\s*|\\s*,\\s*(?=\\s*-?\\d+(\\.\\d+)?\\s*[:=])", perl = TRUE))
+  parts <- trimws(parts[nzchar(trimws(parts))])
+  if (length(parts) == 0) return(NA_character_)
+  codes <- character(0); labels <- character(0)
+  for (p in parts) {
+    m <- regmatches(p, regexec("^\\s*(-?\\d+(?:\\.\\d+)?)\\s*[:=]\\s*(.+?)\\s*$", p, perl = TRUE))[[1]]
+    if (length(m) == 3) { codes <- c(codes, m[2]); labels <- c(labels, m[3]) }
+  }
+  if (length(codes) < 2) return(NA_character_)   # need a real mapping, not one pair
+  .encode_value_labels(codes, labels)
+}
+
+# From a value-labels JSON string, derive the missing-value scheme: the codes
+# whose label reads as missingness ("refused", "n/a", "prefer not to answer").
+# Returns a missing-values JSON string or NA. Used so a code list from a text
+# codebook contributes to the missing scheme, matching the haven path.
+.missing_from_value_labels <- function(vl_json) {
+  vl <- .decode_value_labels(vl_json)
+  if (is.null(vl) || length(vl) == 0) return(NA_character_)
+  is_miss <- grepl("(?i)(missing|refus|declined|no answer|not applicable|n/?a|prefer not|don'?t know|unknown|skipped)",
+                   unname(vl), perl = TRUE)
+  if (!any(is_miss)) return(NA_character_)
+  .encode_value_labels(names(vl)[is_miss], unname(vl)[is_miss])
+}
+
+# Find a "value labels" / "coding" column in a structured codebook's headers.
+.find_value_label_col <- function(col_names) {
+  grep(paste0("(?i)^(value[_ ]?labels?|values?|codes?|coding|categor(y|ies)|",
+              "response[_ ]?options?|levels?|value[_ ]?meanings?)$"),
+       col_names, perl = TRUE, value = TRUE)[1]
+}
+
+# Find a "question text" column and a "universe"/"filter" column in a codebook.
+.find_question_col <- function(col_names) {
+  grep("(?i)^(question|question[_ ]?text|item[_ ]?text|prompt|wording|item[_ ]?wording|survey[_ ]?question)$",
+       col_names, perl = TRUE, value = TRUE)[1]
+}
+.find_universe_col <- function(col_names) {
+  grep("(?i)^(universe|population|applies[_ ]?to|filter|skip[_ ]?logic|asked[_ ]?of|base|subset|condition[_ ]?asked)$",
+       col_names, perl = TRUE, value = TRUE)[1]
 }
 
 # Extract variable-label pairs from a structured data.frame (CSV/Excel rows).
@@ -736,11 +931,30 @@ normalize_label <- function(x) {
   if (is.null(cols)) return(NULL)
   rows <- df[nzchar(trimws(as.character(df[[cols$var_col]]))), , drop = FALSE]
   if (nrow(rows) == 0) return(NULL)
+
+  # Optional DDI-derived columns: value labels / coding, question text,
+  # universe/filter. Each is parsed per row when its column is present.
+  val_col <- .find_value_label_col(names(df))
+  q_col   <- .find_question_col(names(df))
+  u_col   <- .find_universe_col(names(df))
+  na_str  <- function(x) { x <- trimws(as.character(x)); ifelse(nzchar(x), x, NA_character_) }
+
+  value_labels <- if (!is.na(val_col))
+    vapply(as.character(rows[[val_col]]), .parse_value_label_text, character(1),
+           USE.NAMES = FALSE) else rep(NA_character_, nrow(rows))
+  # Missing scheme from any code whose label reads as missingness.
+  missing_values <- vapply(value_labels, .missing_from_value_labels,
+                           character(1), USE.NAMES = FALSE)
+
   data.frame(
     codebook_variable = as.character(rows[[cols$var_col]]),
     label             = as.character(rows[[cols$lab_col]]),
     codebook_source   = src,
-    group             = NA_character_
+    group             = NA_character_,
+    value_labels      = value_labels,
+    missing_values    = missing_values,
+    question          = if (!is.na(q_col)) na_str(rows[[q_col]]) else NA_character_,
+    universe          = if (!is.na(u_col)) na_str(rows[[u_col]]) else NA_character_
   )
 }
 
@@ -751,13 +965,24 @@ normalize_label <- function(x) {
     lbl <- attr(df[[col]], "label")
     if (is.null(lbl)) NA_character_ else trimws(as.character(lbl[1]))
   }, character(1))
-  has_label <- !is.na(labels) & nzchar(labels)
-  if (!any(has_label)) return(NULL)
+  # Value labels + declared missing values are useful even for columns without a
+  # variable label, so harvest them for every column and keep any column that has
+  # EITHER a label or a code list.
+  vlmv <- lapply(names(df), function(col) .haven_value_labels(df[[col]]))
+  value_labels   <- vapply(vlmv, function(x) x$value_labels %||% NA_character_, character(1))
+  missing_values <- vapply(vlmv, function(x) x$missing_values %||% NA_character_, character(1))
+
+  keep <- (!is.na(labels) & nzchar(labels)) | !is.na(value_labels)
+  if (!any(keep)) return(NULL)
   data.frame(
-    codebook_variable = names(df)[has_label],
-    label             = labels[has_label],
+    codebook_variable = names(df)[keep],
+    label             = labels[keep],
     codebook_source   = src,
-    group             = NA_character_
+    group             = NA_character_,
+    value_labels      = value_labels[keep],
+    missing_values    = missing_values[keep],
+    question          = NA_character_,
+    universe          = NA_character_
   )
 }
 
@@ -990,7 +1215,11 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
       codebook_variable = NA_character_,
       label_source      = NA_character_,
       label_status      = status,
-      label_method      = NA_character_
+      label_method      = NA_character_,
+      value_labels      = NA_character_,
+      missing_values    = NA_character_,
+      question          = NA_character_,
+      universe          = NA_character_
     )
   }
 
@@ -1028,6 +1257,15 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   n <- nrow(columns_df)
   label_out <- cbk_var_out <- src_out <- label_method_out <- rep(NA_character_, n)
   status_out <- rep("unlabelled", n)
+  # DDI-derived per-variable properties carried from the matched codebook rows.
+  vl_out <- mv_out <- q_out <- univ_out <- rep(NA_character_, n)
+  # First non-NA value of a codebook column across the applicable matches (used
+  # to carry value_labels/missing_values/question/universe onto the data column).
+  first_present <- function(rows, col)
+    if (col %in% names(rows)) {
+      v <- rows[[col]][!is.na(rows[[col]]) & nzchar(as.character(rows[[col]]))]
+      if (length(v) > 0) as.character(v[1]) else NA_character_
+    } else NA_character_
 
   for (i in seq_len(n)) {
     name_idx <- which(norm_var == norm_col[i])
@@ -1082,6 +1320,14 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
       cbk_var_out[i] <- applicable$codebook_variable[1]
       src_out[i]     <- paste(unique(applicable$codebook_source), collapse = " | ")
     }
+
+    # Carry the DDI-derived properties from the matched codebook rows onto the
+    # data column (independent of which label won: a variable's code list /
+    # question / universe are the same whichever source described it).
+    vl_out[i]   <- first_present(applicable, "value_labels")
+    mv_out[i]   <- first_present(applicable, "missing_values")
+    q_out[i]    <- first_present(applicable, "question")
+    univ_out[i] <- first_present(applicable, "universe")
   }
 
   label_method_out[status_out == "labelled" & is.na(label_method_out)] <- "rules"
@@ -1095,8 +1341,92 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     codebook_variable = cbk_var_out,
     label_source      = src_out,
     label_status      = status_out,
-    label_method      = label_method_out
+    label_method      = label_method_out,
+    value_labels      = vl_out,
+    missing_values    = mv_out,
+    question          = q_out,
+    universe          = univ_out
   )
+}
+
+# ── Analysis unit (DDI analysisUnit) ──────────────────────────────────────────
+# DDI records the unit of observation a data file describes: what one row IS — a
+# person, a trial, a dyad, a session/time-point. It matters because it tells a
+# reviewer whether rows are independent (one per participant) or nested (many
+# trials per participant), which changes how the data should be analysed, and a
+# repository that mixes person-level and trial-level files without saying so is a
+# common source of confusion. We infer it from structure: which columns are
+# identifiers (from the `role` facet or a name pattern), whether they are unique
+# per row, and whether a trial/stimulus/session column is present.
+
+# Column-name patterns for the units, used alongside the identifier role.
+.analysis_unit_patterns <- list(
+  trial   = "(?i)(^|[_.])(trial|item|stimulus|stim|trialnum|itemnum|trial_?id|item_?id|rt|response)([_.]|$)",
+  session = "(?i)(^|[_.])(session|wave|timepoint|time_?point|visit|day|block|run|occasion|measurement)([_.]|$)",
+  dyad    = "(?i)(^|[_.])(dyad|couple|partner|actor|target|pair|group_?id|team)([_.]|$)"
+)
+
+#' Infer the analysis unit (unit of observation) of a data file
+#'
+#' Rule-based inference of what one row of a data frame represents — `"person"`,
+#' `"trial"`, `"session"`, `"dyad"`, or `NA` when unclear (DDI `analysisUnit`).
+#' Uses the identifier column(s) and their uniqueness: a unique-per-row id with
+#' no repeat structure is person-level (wide); a repeating id together with a
+#' trial/stimulus column is trial-level (long); a repeating id with a
+#' session/wave column is a repeated-measures session unit; two distinct id-like
+#' columns suggest a dyad. Needs enough rows to judge repetition.
+#'
+#' @param df a data.frame (the read data file)
+#' @param id_cols optional character vector of identifier column names (e.g. from
+#'   data_check's `role == "identifier"`); when NULL, inferred by name pattern
+#'
+#' @returns a list with `unit` (one of the above or NA) and `reason` (a short
+#'   human-readable explanation).
+#' @export
+#' @keywords internal
+data_analysis_unit <- function(df, id_cols = NULL) {
+  none <- list(unit = NA_character_, reason = "could not determine the unit of observation")
+  if (is.null(df) || nrow(df) < 3 || ncol(df) == 0) return(none)
+  nm <- names(df)
+
+  # Identifier columns: caller-supplied (from the role facet) or by name.
+  if (is.null(id_cols) || length(id_cols) == 0) {
+    id_pat <- "(?i)(^id$|_id$|^id_|participant|subject|subj|respondent|^pp$|^ppt$|^pid$|prolific|mturk|worker)"
+    id_cols <- nm[grepl(id_pat, nm, perl = TRUE)]
+  }
+  id_cols <- id_cols[id_cols %in% nm]
+
+  has_col <- function(kind) any(grepl(.analysis_unit_patterns[[kind]], nm, perl = TRUE))
+  trial_col   <- has_col("trial")
+  session_col <- has_col("session")
+  dyad_col    <- has_col("dyad")
+
+  # Two or more distinct identifier columns → likely a dyad/relational unit.
+  if (length(id_cols) >= 2 || dyad_col)
+    return(list(unit = "dyad",
+                reason = "two identifier columns (or a dyad/partner column) suggest a relational unit"))
+
+  if (length(id_cols) == 1) {
+    ids <- df[[id_cols[1]]]
+    frac_unique <- length(unique(ids[!is.na(ids)])) / sum(!is.na(ids))
+    if (frac_unique >= 0.98)
+      return(list(unit = "person",
+                  reason = sprintf("the identifier '%s' is unique per row (one row per participant)", id_cols[1])))
+    # Repeating id → nested/long. Distinguish trial vs session by the co-column.
+    if (trial_col)
+      return(list(unit = "trial",
+                  reason = sprintf("the identifier '%s' repeats and a trial/item column is present (long format)", id_cols[1])))
+    if (session_col)
+      return(list(unit = "session",
+                  reason = sprintf("the identifier '%s' repeats and a session/wave column is present (repeated measures)", id_cols[1])))
+    return(list(unit = "trial",
+                reason = sprintf("the identifier '%s' repeats across rows (multiple rows per participant)", id_cols[1])))
+  }
+
+  # No id column: fall back to the presence of a trial/session structure.
+  if (trial_col)   return(list(unit = "trial",   reason = "a trial/item column is present but no participant identifier"))
+  if (session_col) return(list(unit = "session", reason = "a session/wave column is present but no participant identifier"))
+  none
 }
 
 # ── Data-quality checks (native, used by data_validate) ───────────────────────
@@ -1573,4 +1903,620 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
        message = sprintf("Free-text column (median %.0f characters, %.0f%% distinct) may contain names or other personal detail. Review before sharing.",
                          med, 100 * uniq_frac),
        values = NULL)
+}
+
+# ── Demographic-column detection ──────────────────────────────────────────────
+# Detect the three demographic variables that almost every human-subjects study
+# collects: age, gender/sex, and race/ethnicity. Used by data_check (to tag the
+# column) and data_validate (to report which demographics a file contains).
+#
+# Detection requires NAME and VALUES to agree: the column NAME must look like the
+# demographic, AND the VALUES must be consistent with it. Name alone is too weak
+# (a column literally called "age" that holds free text is not usable age data)
+# and values alone are ambiguous (a 1/2 column is as likely a condition code as
+# a sex code). Requiring both keeps false positives low — the aim is a column a
+# reviewer can trust is really participant age / gender / race.
+
+# Column-name tokens per demographic, matched against the normalised name
+# (lowercase, punctuation stripped). Whole-name match OR a word-boundary token
+# match, so `participant_age` and `age_years` hit but `page` / `agent` do not
+# (handled by the boundary regex below, not these bare tokens).
+.demographic_name_tokens <- list(
+  age    = c("age", "agejaren", "ageyears", "ageyrs", "leeftijd", "alter"),
+  gender = c("gender", "sex", "geslacht", "genderidentity", "sexgender",
+             "gendersex"),
+  race   = c("race", "ethnicity", "ethnic", "raceethnicity", "ethnicgroup",
+             "raceeth", "hispanic", "raza", "etnia")
+)
+
+# Anchored name regexes: the token must be the whole name or a standalone word
+# within it (separated by _ . - space or a case boundary), so it does not fire
+# inside unrelated words. Built once from the token lists above.
+.demographic_name_regex <- list(
+  # age: exclude common false friends where "age" is a substring (percentage,
+  # image, page, average, agent, storage, damage, usage, coverage, language).
+  age    = "(?i)(^|[^a-z])(age|leeftijd|alter)([^a-z]|$)|(?i)age[_.-]?(years|yrs|jaren)|(?i)(years|yrs)[_.-]?age",
+  gender = "(?i)(^|[^a-z])(gender|sex|geslacht)([^a-z]|$)",
+  race   = "(?i)(^|[^a-z])(race|ethnicity|ethnic|hispanic|raza|etnia)([^a-z]|$)"
+)
+
+# Do a column's VALUES look like this demographic? Conservative value checks
+# that CONFIRM a name match; they are not used to detect on their own.
+.demographic_values_ok <- function(kind, x) {
+  x_chr <- trimws(as.character(x))
+  x_chr <- x_chr[!is.na(x_chr) & nzchar(x_chr)]
+  if (length(x_chr) < 3) return(TRUE)   # too few values to contradict the name
+
+  if (kind == "age") {
+    # Numeric (allow comma decimals) and almost all within a human-age range.
+    num <- suppressWarnings(as.numeric(gsub(",", ".", x_chr, fixed = TRUE)))
+    frac_num <- mean(!is.na(num))
+    if (frac_num < 0.8) return(FALSE)
+    v <- num[!is.na(num)]
+    # Drop common missing-data sentinels before the range test so a genuine age
+    # column carrying a -99 / 999 code is not rejected by that single value.
+    v <- v[!v %in% .data_missing_sentinels]
+    if (length(v) == 0) return(FALSE)
+    # Ages are 0-120; allow a small tail of remaining miscodes.
+    mean(v >= 0 & v <= 120) >= 0.9
+  } else if (kind == "gender") {
+    # Either a small set of textual categories that read as sex/gender, or a
+    # low-cardinality numeric coding (1/2, 0/1/2, ...).
+    u <- unique(tolower(x_chr))
+    gender_words <- c("m", "f", "male", "female", "man", "woman", "men",
+                      "women", "boy", "girl", "nonbinary", "non-binary",
+                      "nb", "other", "trans", "transgender", "genderqueer",
+                      "prefer not to say", "prefernottosay", "pnts", "n/a",
+                      "unknown", "d", "diverse", "man/vrouw", "vrouw", "man",
+                      "intersex", "agender", "fluid", "questioning")
+    hit_frac <- mean(u %in% gender_words)
+    is_lowcard_numeric <- {
+      num <- suppressWarnings(as.numeric(x_chr))
+      all(!is.na(num)) && length(unique(num)) <= 4 &&
+        all(num == round(num)) && all(num >= 0 & num <= 9)
+    }
+    hit_frac >= 0.6 || is_lowcard_numeric
+  } else if (kind == "race") {
+    # Race/ethnicity is categorical with a modest number of levels; if numeric,
+    # a low-cardinality coding. Reject long free text and high-cardinality.
+    x2 <- x_chr
+    if (length(unique(x2)) > 30) return(FALSE)
+    med_chars <- stats::median(nchar(x2))
+    if (med_chars > 60) return(FALSE)   # long prose is not a race category
+    num <- suppressWarnings(as.numeric(x2))
+    if (all(!is.na(num)))
+      return(length(unique(num)) <= 25 && all(num == round(num)))
+    TRUE
+  } else {
+    FALSE
+  }
+}
+
+#' Detect whether a column holds participant age, gender/sex, or race/ethnicity
+#'
+#' A content-based classifier for the three demographic variables collected by
+#' almost every human-subjects study. A column is tagged only when its NAME
+#' looks like the demographic AND its VALUES are consistent with it (see
+#' [.demographic_values_ok]), which keeps false positives low: a `condition`
+#' column coded 1/2 is not flagged as gender, and an `age` column of free text
+#' is not treated as usable age data.
+#'
+#' Complements [data_col_type()] (which gives a structural type such as
+#' continuous/categorical): this adds a *semantic* label used by `data_check`
+#' (reported in the column table) and `data_validate` (which reports the
+#' demographics a file contains). Detection is name-driven, so a demographic
+#' under a cryptic name (e.g. `q3`) is intentionally not caught here — that is
+#' the LLM classifier's job.
+#'
+#' @param col_name the column's name
+#' @param x the column's values
+#'
+#' @returns `"age"`, `"gender"`, or `"race"` when the column matches one of
+#'   them, else `NA_character_`.
+#' @export
+#' @keywords internal
+#'
+#' @examples
+#' data_check_demographic("age", c(23, 45, 31, 29))
+#' data_check_demographic("gender", c("Male", "Female", "Female", "Male"))
+#' data_check_demographic("condition", c(1, 2, 1, 2))   # NA (name does not match)
+data_check_demographic <- function(col_name, x) {
+  if (is.null(col_name) || length(col_name) != 1 || is.na(col_name) ||
+      !nzchar(col_name)) return(NA_character_)
+  # Guard against a non-UTF-8 name reaching the perl regexes below.
+  if (is.na(iconv(col_name, "UTF-8", "UTF-8")))
+    col_name <- iconv(col_name, "latin1", "UTF-8", sub = "")
+
+  for (kind in names(.demographic_name_regex)) {
+    if (grepl(.demographic_name_regex[[kind]], col_name, perl = TRUE) &&
+        .demographic_values_ok(kind, x))
+      return(kind)
+  }
+  NA_character_
+}
+
+# ── Column facets (orthogonal properties, DDI-style) ──────────────────────────
+# A data column has several INDEPENDENT properties, and collapsing them into one
+# `col_type` enum (the old model) conflated things that are not alternatives:
+# how the value is stored, what measurement level it is on, and what it actually
+# measures. Following DDI (which separates RepresentedVariable representation,
+# @classificationLevel, the Variable→Concept link, VariableRole and UnitType) we
+# describe each column with orthogonal facets instead:
+#
+#   representation     numeric | text | datetime | code | empty
+#                      (how the value is stored/represented)
+#   measurement_level  nominal | ordinal | interval | ratio | NA
+#                      (Stevens level; DDI @classificationLevel)
+#   concept            reaction_time | accuracy | age | gender | race | likert |
+#                      condition | id | date | timestamp | NA
+#                      (what the column measures; DDI Variable→Concept)
+#   role               identifier | measure | condition | timestamp | measure
+#                      (how it functions in the dataset; DDI VariableRole)
+#   unit               seconds | milliseconds | years | NA (DDI UnitType)
+#   quality            ok | empty | constant | near_constant (data state)
+#   parse_note         NA | comma_decimal | mostly_numeric
+#                      (a representation quirk, NOT a type — was a fake col_type)
+#
+# `data_col_facets()` derives these from the existing rule primitive
+# `data_col_type()` (kept internal so its battle-tested edge cases — UTF-8
+# guard, date threshold, comma-decimal, text-length — are preserved) plus the
+# concept detectors below. Rules run always; the LLM (in data_check) only fills
+# facets the rules left NA.
+
+# Concept detector: name+value agreement, same discipline as the demographic
+# detector. Returns a concept code or NA. Order matters — the first match wins,
+# so specific concepts (reaction_time) are tried before generic ones.
+
+# Reaction/response time: a numeric column named rt/latency/response time whose
+# values are plausible durations. We do not fix the unit here (ms vs s); that is
+# the `unit` facet, inferred separately.
+.concept_is_rt <- function(col_name, x) {
+  nm <- .qualtrics_key(col_name)   # lowercase, alnum-only
+  # Require an explicit RT-ish name token so we do not match every "time" column
+  # (a clock timestamp is a different concept). `.qualtrics_key` has stripped
+  # separators, so match tokens rather than word boundaries.
+  name_ok <- grepl("(^rt$|^rts$|reactiontime|responsetime|responselatency|latency|rtms|rtsec|^rt|rt$)", nm)
+  if (!name_ok) return(FALSE)
+  num <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x), fixed = TRUE)))
+  num <- num[!is.na(num)]
+  if (length(num) < 3) return(TRUE)          # name is strong enough on its own
+  # Durations are non-negative; a column with many negatives is not an RT.
+  mean(num >= 0) >= 0.95
+}
+
+# Accuracy/correctness: a 0/1 (or boolean, or correct/incorrect) column named
+# acc/correct/hit/error.
+.concept_is_accuracy <- function(col_name, x) {
+  nm <- .qualtrics_key(col_name)
+  if (!grepl("(^acc$|accuracy|iscorrect|correct|incorrect|^hit$|iserror|^error$|errorrate)", nm))
+    return(FALSE)
+  v <- tolower(trimws(as.character(x)))
+  v <- v[!is.na(v) & nzchar(v)]
+  if (length(v) < 3) return(TRUE)
+  u <- unique(v)
+  num <- suppressWarnings(as.numeric(u))
+  is01 <- all(!is.na(num)) && all(num %in% c(0, 1))
+  is_bool <- all(u %in% c("true", "false", "correct", "incorrect", "hit",
+                          "miss", "yes", "no", "right", "wrong"))
+  is01 || is_bool
+}
+
+# Condition/group assignment: a low-cardinality column named condition/group/
+# treatment/arm/cond. Kept deliberately name-driven (values look like any other
+# categorical), so it never steals a genuine gender/accuracy column.
+.concept_is_condition <- function(col_name, x) {
+  nm <- .qualtrics_key(col_name)
+  grepl("(^cond$|condition|^group$|treatment|^arm$|manipulation|between|within)", nm)
+}
+
+# Timestamp (a clock time / datetime the event happened) vs a plain date. Both
+# have representation `datetime`; the concept distinguishes a full timestamp
+# (has a time component) from a calendar date.
+.concept_is_timestamp <- function(col_name, x) {
+  nm <- .qualtrics_key(col_name)
+  name_ok <- grepl("(time|timestamp|datetime|onset|startdate|enddate|recordeddate)", nm)
+  if (!name_ok) return(FALSE)
+  v <- as.character(x)
+  v <- v[!is.na(v) & nzchar(v)]
+  if (length(v) == 0) return(FALSE)
+  # A time component (HH:MM) present in most values → timestamp, not bare date.
+  mean(grepl("\\d{1,2}:\\d{2}", v)) >= 0.5
+}
+
+#' Detect the substantive concept a column measures
+#'
+#' A content classifier for the *concept* facet (what the column measures),
+#' independent of how it is stored or its measurement level. Uses name+value
+#' agreement like [data_check_demographic()], which it wraps for the demographic
+#' concepts. Rules-only and deterministic; concepts under cryptic names are left
+#' `NA` for the LLM tier in `data_check` to fill.
+#'
+#' @param col_name the column's name
+#' @param x the column's values
+#'
+#' @returns one of `"reaction_time"`, `"accuracy"`, `"condition"`, `"age"`,
+#'   `"gender"`, `"race"`, `"timestamp"`, or `NA_character_`. (`id`, `date` and
+#'   `likert` concepts are assigned by [data_col_facets()] from the role /
+#'   representation / measurement level, not here.)
+#' @export
+#' @keywords internal
+data_col_concept <- function(col_name, x) {
+  if (is.null(col_name) || length(col_name) != 1 || is.na(col_name) ||
+      !nzchar(col_name)) return(NA_character_)
+  if (is.na(iconv(col_name, "UTF-8", "UTF-8")))
+    col_name <- iconv(col_name, "latin1", "UTF-8", sub = "")
+
+  if (.concept_is_rt(col_name, x))        return("reaction_time")
+  if (.concept_is_accuracy(col_name, x))  return("accuracy")
+  demo <- data_check_demographic(col_name, x)
+  if (!is.na(demo))                       return(demo)
+  if (.concept_is_timestamp(col_name, x)) return("timestamp")
+  if (.concept_is_condition(col_name, x)) return("condition")
+  NA_character_
+}
+
+# Map the old rule primitive's col_type onto a (representation, level) pair.
+# This is where the conflated enum is untangled into two orthogonal facets.
+.coltype_to_facets <- function(ct, is_numeric_hint) {
+  switch(ct %||% "unknown",
+    empty       = c(rep = "empty",    lvl = NA_character_),
+    constant    = c(rep = NA_character_, lvl = NA_character_),  # rep unknown w/o values
+    binary      = c(rep = NA_character_, lvl = "nominal"),
+    date        = c(rep = "datetime", lvl = NA_character_),
+    text        = c(rep = "text",     lvl = NA_character_),
+    id          = c(rep = "text",     lvl = "nominal"),
+    continuous                    = c(rep = "numeric", lvl = "ratio"),
+    continuous_comma_decimal      = c(rep = "numeric", lvl = "ratio"),
+    continuous_outliers_excluded  = c(rep = "numeric", lvl = "ratio"),
+    c(rep = NA_character_, lvl = NA_character_)
+  )
+}
+
+#' Describe a data column as orthogonal facets (DDI-style)
+#'
+#' Replaces the single `col_type` enum with independent properties, so the
+#' numeric character of a column (how it is stored, its measurement level) is
+#' kept separate from what it measures (its concept) and how it functions (its
+#' role). See the facet vocabulary in the "Column facets" section of this file.
+#'
+#' Derives representation, measurement level, role, quality and a parse note from
+#' the rule primitive [data_col_type()] (preserving its edge cases), and the
+#' concept from [data_col_concept()]. The `likert` concept is inferred here from
+#' an ordinal integer measurement level; `id`/`date` concepts from the role /
+#' representation. `unit` is left `NA` for concepts whose unit is not implied
+#' (an LLM/codebook can fill it); `reaction_time` seeds `seconds`/`milliseconds`
+#' from the value magnitude.
+#'
+#' @param col_name the column's name
+#' @param values the column's values
+#'
+#' @returns a list with `representation`, `measurement_level`, `concept`,
+#'   `role`, `unit`, `quality`, `parse_note`, plus the numeric helpers carried
+#'   over from [data_col_type()] (`numeric_values`, `n_coerced`, `is_numeric`,
+#'   `ambiguous`) so `data_check` can compute statistics and target the LLM.
+#' @export
+#' @keywords internal
+#'
+#' @examples
+#' data_col_facets("RT", c(543, 612, 498, 701))
+#' data_col_facets("subject_id", c("s01", "s02", "s03"))
+data_col_facets <- function(col_name, values) {
+  prim <- data_col_type(col_name, values)      # the rule primitive
+  ct   <- prim$col_type
+  x_noNA <- values[!is.na(values)]
+  n_noNA <- length(x_noNA)
+  n_unique <- length(unique(x_noNA))
+
+  # representation + measurement_level from the (untangled) col_type.
+  f <- .coltype_to_facets(ct, prim$is_numeric)
+  representation <- unname(f["rep"])
+  measurement_level <- unname(f["lvl"])
+
+  # A constant/binary column's representation is decided by its actual storage.
+  if (is.na(representation) && n_noNA > 0) {
+    num <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA),
+                                            fixed = TRUE)))
+    representation <- if (mean(!is.na(num)) >= 0.8) "numeric" else "text"
+  }
+
+  # quality: constant/empty are a data STATE, not a type. (near_constant is a
+  # data_validate finding; here we surface the exact-constant/empty case.)
+  quality <- if (identical(ct, "empty") || n_noNA == 0) "empty"
+             else if (identical(ct, "constant") || n_unique == 1) "constant"
+             else "ok"
+
+  # concept (rules); fall through to structural concepts.
+  concept <- data_col_concept(col_name, values)
+
+  # role: an id column is an identifier; a timestamp/date column is temporal;
+  # everything else defaults to a measure. condition concept → condition role.
+  role <- if (identical(ct, "id")) "identifier"
+          else if (identical(concept, "timestamp") || identical(ct, "date")) "timestamp"
+          else if (identical(concept, "condition")) "condition"
+          else "measure"
+
+  # Structural concepts that follow from other facets rather than name+value:
+  if (is.na(concept)) {
+    if (identical(role, "identifier")) concept <- "id"
+    else if (identical(ct, "date"))    concept <- "date"
+    else if (identical(representation, "datetime")) concept <- "timestamp"
+  }
+
+  # Likert: an ordinal-looking integer column (the rules mark these "ambiguous"
+  # integers with 3–20 unique values). Only claim it when nothing more specific
+  # was found, and set the ordinal level.
+  if (is.na(concept) && isTRUE(prim$ambiguous) && isTRUE(prim$is_numeric)) {
+    if (.is_likert_item(values)) {
+      concept <- "likert"
+      measurement_level <- "ordinal"
+    }
+  }
+
+  # Concept-implied measurement level: a categorical concept is nominal even
+  # when the rules could not decide the level from values alone (e.g. a gender
+  # column with >2 spellings did not hit the binary rule).
+  if (is.na(measurement_level) &&
+      concept %in% c("gender", "race", "accuracy", "condition"))
+    measurement_level <- "nominal"
+
+  # unit: implied by a few concepts; NA otherwise.
+  unit <- NA_character_
+  if (identical(concept, "reaction_time")) {
+    num <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA),
+                                            fixed = TRUE)))
+    num <- num[!is.na(num) & num > 0]
+    # Median RT above ~100 is almost certainly milliseconds; below, seconds.
+    unit <- if (length(num) > 0 && stats::median(num) >= 100) "milliseconds"
+            else if (length(num) > 0) "seconds" else NA_character_
+    if (is.na(measurement_level)) measurement_level <- "ratio"
+  } else if (identical(concept, "age")) {
+    unit <- "years"
+    if (is.na(measurement_level)) measurement_level <- "ratio"
+  }
+
+  # parse_note: the representation quirk the old fake col_types encoded.
+  parse_note <- if (identical(ct, "continuous_comma_decimal")) "comma_decimal"
+                else if (identical(ct, "continuous_outliers_excluded")) "mostly_numeric"
+                else NA_character_
+
+  list(
+    representation    = representation,
+    measurement_level = measurement_level,
+    concept           = concept,
+    role              = role,
+    unit              = unit,
+    quality           = quality,
+    parse_note        = parse_note,
+    # carried over for data_check's statistics + LLM targeting:
+    numeric_values = prim$numeric_values,
+    n_coerced      = prim$n_coerced,
+    is_numeric     = prim$is_numeric,
+    ambiguous      = prim$ambiguous
+  )
+}
+
+# ── Qualtrics survey-export detection ─────────────────────────────────────────
+# Qualtrics CSV/TSV exports have a fixed, distinctive shape: a set of reserved
+# response-metadata columns (StartDate, Duration (in seconds), Finished, ...)
+# that are the same across every survey, and — for the "use choice text" export
+# — a multi-row header (machine names, then human question text, then an
+# `ImportId` JSON row). We detect the file as Qualtrics from those metadata
+# names and/or the ImportId row, strip the junk header rows so the data types
+# correctly, and tag the metadata columns so data_validate can report the things
+# that ARE reliably extractable from any Qualtrics file (completion time,
+# preview/unfinished rows, recording window, which PII fields are present).
+#
+# We deliberately do NOT try to interpret the substantive question/scale columns
+# here — that is the scale-block detector's job (a different unit).
+
+# Reserved Qualtrics metadata column names, mapped to a semantic tag. Names are
+# matched case-insensitively after stripping non-alphanumerics, so "Duration (in
+# seconds)" and "Duration..in.seconds." (R-mangled) both hit. The tag drives both
+# reporting and the multi-row-header fix.
+.qualtrics_meta_cols <- c(
+  startdate            = "qualtrics_start",
+  enddate              = "qualtrics_end",
+  status               = "qualtrics_status",
+  ipaddress            = "qualtrics_ip",
+  progress             = "qualtrics_progress",
+  durationinseconds    = "qualtrics_duration",
+  finished             = "qualtrics_finished",
+  recordeddate         = "qualtrics_recorded",
+  responseid           = "qualtrics_responseid",
+  recipientlastname    = "qualtrics_recipient",
+  recipientfirstname   = "qualtrics_recipient",
+  recipientemail       = "qualtrics_email",
+  externaldatareference = "qualtrics_externalref",
+  externalreference    = "qualtrics_externalref",
+  locationlatitude     = "qualtrics_lat",
+  locationlongitude    = "qualtrics_lon",
+  distributionchannel  = "qualtrics_channel",
+  userlanguage         = "qualtrics_language"
+)
+
+# Normalise a column name to its Qualtrics lookup key: lowercase, drop anything
+# non-alphanumeric. "Duration (in seconds)" -> "durationinseconds".
+.qualtrics_key <- function(nm) gsub("[^a-z0-9]", "", tolower(nm))
+
+# Map each column name of a data frame to its Qualtrics metadata tag (or NA).
+.qualtrics_tag_cols <- function(col_names) {
+  keys <- vapply(col_names, .qualtrics_key, character(1), USE.NAMES = FALSE)
+  unname(.qualtrics_meta_cols[keys])
+}
+
+#' Detect whether a data frame is a Qualtrics survey export
+#'
+#' Fires when the columns include enough of Qualtrics' reserved response-metadata
+#' names (StartDate, EndDate, Progress, Duration (in seconds), Finished,
+#' RecordedDate, ResponseId, DistributionChannel, ...) that the file is
+#' unambiguously a Qualtrics export — these exact names essentially never
+#' co-occur outside Qualtrics. The `ResponseId` column (values like `R_xxxxx`)
+#' or a leftover `ImportId` JSON header cell is treated as corroborating.
+#'
+#' @param df a data.frame (a read tabular file)
+#' @param min_meta minimum number of distinct metadata columns required
+#'
+#' @returns `TRUE` when `df` looks like a Qualtrics export, else `FALSE`.
+#' @export
+#' @keywords internal
+data_check_is_qualtrics <- function(df, min_meta = 4L) {
+  if (is.null(df) || ncol(df) == 0) return(FALSE)
+  tags <- .qualtrics_tag_cols(names(df))
+  n_meta <- length(unique(stats::na.omit(tags)))
+  if (n_meta >= min_meta) return(TRUE)
+  # Corroboration for borderline files (a heavily-renamed export): a ResponseId
+  # column whose values are Qualtrics response ids (R_ + base62), or an ImportId
+  # JSON cell surviving in the first rows.
+  if (n_meta >= 2L) {
+    rid <- names(df)[.qualtrics_key(names(df)) == "responseid"]
+    if (length(rid) > 0) {
+      v <- as.character(df[[rid[1]]])
+      v <- v[!is.na(v) & nzchar(v)]
+      if (length(v) > 0 && mean(grepl("^R_[A-Za-z0-9]{6,}$", v)) >= 0.5)
+        return(TRUE)
+    }
+    # An ImportId cell survives in the first rows. read.delim strips the
+    # surrounding quotes, so match the bare token, not a quoted one.
+    if (any(vapply(df, function(col)
+      any(grepl("ImportId", as.character(utils::head(col, 3)), fixed = TRUE)),
+      logical(1)))) return(TRUE)
+  }
+  FALSE
+}
+
+# Is a row a Qualtrics secondary-header row (not real data)? The "use choice
+# text" export writes, below the machine-name header: (row 1) the human question
+# text, and (row 2) an `{"ImportId":...}` JSON blob. Read as data, these force
+# every column to character. We detect such a row so data_read_head can drop it.
+#
+# A row is a secondary header when it carries the ImportId JSON, OR when it
+# repeats the reserved metadata *labels* (e.g. a cell literally reading
+# "Duration (in seconds)" or "Start Date") that Qualtrics puts in the question-
+# text row for its own metadata columns.
+.qualtrics_is_header_row <- function(row_vals) {
+  vals <- trimws(as.character(row_vals))
+  vals <- vals[!is.na(vals) & nzchar(vals)]
+  if (length(vals) == 0) return(FALSE)
+  # `ImportId` marks the JSON row. read.delim strips the JSON's quotes, so match
+  # the bare token rather than the quoted `"ImportId"`.
+  if (any(grepl("ImportId", vals, fixed = TRUE))) return(TRUE)
+  # Question-text row: Qualtrics labels its own metadata columns with prose
+  # versions of their names. If several cells match those labels, it's a header.
+  label_keys <- .qualtrics_key(vals)
+  mean(label_keys %in% names(.qualtrics_meta_cols)) >= 0.3
+}
+
+#' Strip Qualtrics secondary-header rows and re-type the columns
+#'
+#' A Qualtrics "use choice text" export has extra header rows (human question
+#' text, then an `ImportId` JSON row) directly under the machine-name header.
+#' `read.delim` reads the machine names as the header but keeps those two rows as
+#' the first data rows, which forces every column to character. This drops any
+#' leading rows that look like Qualtrics header rows (see
+#' [.qualtrics_is_header_row]) and coerces columns that are now fully numeric
+#' back to numeric, so the rest of `data_check` types the file correctly.
+#'
+#' @param df a data.frame read from a Qualtrics export (machine names as header)
+#' @param max_strip maximum number of leading rows to consider stripping
+#'
+#' @returns the cleaned data.frame (unchanged if no header rows are found).
+#' @export
+#' @keywords internal
+data_strip_qualtrics_header <- function(df, max_strip = 2L) {
+  if (is.null(df) || nrow(df) == 0) return(df)
+  drop <- 0L
+  for (i in seq_len(min(max_strip, nrow(df)))) {
+    if (.qualtrics_is_header_row(df[i, , drop = TRUE])) drop <- i else break
+  }
+  if (drop == 0L) return(df)
+  df <- df[-seq_len(drop), , drop = FALSE]
+  rownames(df) <- NULL
+  # Columns that are now fully numeric (the junk text row was what made them
+  # character) get coerced back, so data_col_type / stats treat them as numeric.
+  for (j in seq_along(df)) {
+    if (!is.character(df[[j]])) next
+    v <- trimws(df[[j]])
+    nonempty <- v[!is.na(v) & nzchar(v)]
+    if (length(nonempty) == 0) next
+    num <- suppressWarnings(as.numeric(nonempty))
+    if (all(!is.na(num))) df[[j]] <- suppressWarnings(as.numeric(v))
+  }
+  df
+}
+
+# ── Likert scale-block detection ──────────────────────────────────────────────
+# Shared by data_validate (careless responding) and codebook_check (LLM scale
+# identification). A "scale block" is a run of adjacent Likert-type columns that
+# share a variable-name prefix, i.e. one psychometric scale (PANAS_1..10).
+
+# Minimum items for a block to count as a scale. Chosen empirically from the OSF
+# corpus: real short psychological scales run ~5-7 items, so 5 keeps genuine
+# short scales while dropping 3-4 item fragments that are too noisy to interpret.
+.scale_min_items <- 5L
+
+# Is a column a plausible Likert item? Integer-valued, 3-11 distinct levels (2
+# is binary, not Likert), spanning a narrow range within a plausible bound.
+#
+# Deliberately does NOT key on the exact observed min-max: within one scale,
+# different items reach different extremes, so per-column range varies (item A
+# 1-4, item B 2-5) even on a shared metric. Keying on exact range would split a
+# single scale into fragments; membership is decided by name prefix instead.
+.is_likert_item <- function(x) {
+  if (!is.numeric(x)) {
+    xn <- suppressWarnings(as.numeric(as.character(x)))
+    if (mean(is.na(xn)) > 0.2) return(FALSE)
+    x <- xn
+  }
+  x <- x[!is.na(x)]
+  if (length(x) < 10) return(FALSE)
+  if (any(x != round(x))) return(FALSE)
+  u <- unique(x)
+  length(u) >= 3 && length(u) <= 11 &&
+    diff(range(u)) <= 12 && min(u) >= -5 && max(u) <= 100
+}
+
+# Variable-name prefix: strip a trailing item number (bfi_1 -> bfi, RSE10 -> rse)
+# so PANAS_1..10 and RSE_1..5 are recognised as two scales even when adjacent
+# and on the same response range.
+.scale_name_prefix <- function(nm) {
+  p <- sub("[._-]?[0-9]+$", "", nm)
+  p <- sub("[._-]+$", "", p)
+  tolower(p)
+}
+
+# Pooled response range of a set of item columns, as a "min-max" label (e.g.
+# "1-7").
+.scale_block_range <- function(block) {
+  v <- unlist(lapply(block, function(x)
+    suppressWarnings(as.numeric(as.character(x)))), use.names = FALSE)
+  v <- v[!is.na(v)]
+  if (length(v) == 0) return("?")
+  paste0(min(v), "-", max(v))
+}
+
+# Detect Likert scale blocks in a data frame: maximal runs of adjacent Likert
+# columns sharing a name prefix. Returns a list of integer column-index vectors,
+# one per block of at least `min_items` items. Scales are assumed contiguous
+# (holds for typical survey exports, Q1_1, Q1_2, ...); a prefix change or a
+# non-Likert column breaks a run.
+.detect_scale_blocks <- function(df, min_items = .scale_min_items) {
+  ok <- vapply(df, .is_likert_item, logical(1))
+  nm <- names(df)
+  blocks <- list(); start <- NA_integer_; cur_pre <- NA_character_
+  flush <- function(endi) {
+    if (is.na(start)) return(invisible())
+    if (endi - start + 1L >= min_items)
+      blocks[[length(blocks) + 1L]] <<- seq.int(start, endi)
+  }
+  for (j in seq_along(ok)) {
+    p <- if (isTRUE(ok[[j]])) .scale_name_prefix(nm[[j]]) else NA_character_
+    same <- !is.na(p) && identical(p, cur_pre)
+    if (!same) {
+      flush(j - 1L)
+      cur_pre <- p
+      start <- if (!is.na(p)) j else NA_integer_
+    }
+  }
+  flush(length(ok))
+  blocks
 }

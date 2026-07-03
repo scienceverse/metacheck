@@ -21,7 +21,8 @@
   # Attach labels by source_file + column_name when available.
   if (!is.null(labels) && nrow(labels) > 0 &&
       all(c("source_file", "column_name") %in% names(labels))) {
-    keep <- c("source_file", "column_name", "label", "label_status")
+    keep <- c("source_file", "column_name", "label", "label_status",
+              "scale", "scale_confidence")
     labels <- labels[, intersect(keep, names(labels)), drop = FALSE]
     cols <- merge(cols, labels, by = c("source_file", "column_name"),
                   all.x = TRUE, suffixes = c("", ".lbl"))
@@ -43,6 +44,15 @@
       attr(df[[nm]], "label") <- as.character(row$label)
     }
 
+    # Scale membership (from codebook_check's LLM scale identification): keep it
+    # on the column so it is preserved in the saved labelled data frame and can
+    # be reported / reused. The scale name is the item's measurement instrument.
+    if ("scale" %in% names(row) && !is.na(row$scale) && nzchar(row$scale)) {
+      attr(df[[nm]], "scale") <- as.character(row$scale)
+      if ("scale_confidence" %in% names(row) && !is.na(row$scale_confidence))
+        attr(df[[nm]], "scale_confidence") <- as.character(row$scale_confidence)
+    }
+
     # We deliberately do NOT synthesise value labels from `sample_values`: those
     # are the raw observed values, so a label built from them equals the code
     # (e.g. 0 -> "0"), carrying no information. Worse, they are always character,
@@ -51,6 +61,27 @@
     # supplied to a continuous scale"). Genuine value labels already embedded in
     # the data (e.g. haven labels on an SPSS/Stata column) are correctly typed
     # and are preserved untouched below.
+    #
+    # Value labels codebook_check DECODED from a codebook (a real code->label
+    # map, DDI CodeList) are different: they carry information. Attach them as a
+    # haven-style `labels` attribute, typing the codes to match the column so the
+    # codebook package renders them without the numeric/character clash above.
+    if ("value_labels" %in% names(row) && !is.na(row$value_labels) &&
+        nzchar(row$value_labels) && is.null(attr(df[[nm]], "labels"))) {
+      vl <- .decode_value_labels(row$value_labels)   # names = codes, vals = labels
+      if (!is.null(vl) && length(vl) > 0) {
+        codes <- names(vl)
+        if (is.numeric(df[[nm]])) {
+          num <- suppressWarnings(as.numeric(codes))
+          if (!any(is.na(num))) {
+            lab_vec <- stats::setNames(num, unname(vl))
+            attr(df[[nm]], "labels") <- lab_vec
+          }
+        } else {
+          attr(df[[nm]], "labels") <- stats::setNames(codes, unname(vl))
+        }
+      }
+    }
   }
 
   # Any embedded haven value labels already on real columns (reading a .sav/.dta
@@ -98,14 +129,44 @@
   Filter(Negate(is.null), meta)
 }
 
+# Build a dataset-level list of identified scales for the codebook metadata,
+# from codebook_check's labels table restricted to the columns in this study.
+# One entry per scale: its name and the member variables (mirroring DDI's
+# `varGrp` membership; see the manual's discussion of scale representation).
+# Returns NULL when no scale was identified.
+.codebook_scales <- function(labels, var_names) {
+  if (is.null(labels) || nrow(labels) == 0 ||
+      !all(c("column_name", "scale") %in% names(labels))) return(NULL)
+  keep <- labels[labels$column_name %in% var_names &
+                   !is.na(labels$scale) & nzchar(labels$scale), , drop = FALSE]
+  if (nrow(keep) == 0) return(NULL)
+  scales <- unique(keep$scale)
+  lapply(scales, function(s) {
+    vars <- unique(keep$column_name[keep$scale == s])
+    conf <- keep$scale_confidence[keep$scale == s][1]
+    Filter(Negate(is.null), list(
+      name       = s,
+      confidence = if (!is.null(conf) && !is.na(conf)) conf else NULL,
+      variables  = as.list(vars)
+    ))
+  })
+}
+
 # Serialize a metadata list + column names as a schema.org Dataset JSON-LD, so a
-# machine-readable codebook exists even without the `codebook` package.
-.codebook_write_jsonld <- function(meta, var_names, path) {
+# machine-readable codebook exists even without the `codebook` package. When a
+# variable was matched to an identified scale, its name goes in schema.org's
+# native `measurementTechnique` (as in the Psych-DS output). `scale_of` maps a
+# variable name to its scale name (or returns NA).
+.codebook_write_jsonld <- function(meta, var_names, path, scale_of = NULL) {
   obj <- c(
     list(`@context` = "https://schema.org/", `@type` = "Dataset"),
     meta,
-    list(variableMeasured = lapply(var_names, function(v)
-      list(`@type` = "PropertyValue", name = v)))
+    list(variableMeasured = lapply(var_names, function(v) {
+      pv <- list(`@type` = "PropertyValue", name = v)
+      sc <- if (is.function(scale_of)) scale_of(v) else NA_character_
+      if (!is.null(sc) && !is.na(sc) && nzchar(sc)) pv[["measurementTechnique"]] <- sc
+      pv
+    }))
   )
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
   json <- jsonlite::toJSON(obj, auto_unbox = TRUE, pretty = TRUE, na = "null")
@@ -343,6 +404,8 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
 
     var_names <- names(cb_df)
     meta <- .codebook_metadata(paper, study_label, var_names)
+    scales <- .codebook_scales(labels_df, var_names)
+    if (!is.null(scales)) meta[["metacheck:scales"]] <- scales
     cb_df <- .codebook_label_df(cb_df, root_cols, labels_df, meta)
 
     # Write the artefacts for this study root.
@@ -355,7 +418,16 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
     rmd_files <- c(rmd_files, rmd_path)
 
     json_path <- file.path(sub_dir, "codebook_metadata.json")
-    .codebook_write_jsonld(meta, var_names, json_path)
+    scale_of <- local({
+      ld <- labels_df
+      function(v) {
+        if (is.null(ld) || !all(c("column_name", "scale") %in% names(ld)))
+          return(NA_character_)
+        s <- ld$scale[ld$column_name == v & !is.na(ld$scale)]
+        if (length(s) > 0) s[[1]] else NA_character_
+      }
+    })
+    .codebook_write_jsonld(meta, var_names, json_path, scale_of = scale_of)
     meta_files <- c(meta_files, json_path)
 
     if (can_render) {

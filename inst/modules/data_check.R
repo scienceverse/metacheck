@@ -13,10 +13,21 @@
 #' names matching README / codebook patterns win first, then an extension
 #' crosswalk, then format-locked extension overrides. For every file classified
 #' as tabular `data` that is available locally, the module reads the file head,
-#' assigns a column type to each column with `data_col_type()` (all-NA → empty,
-#' ID name → id, 1 unique → constant, 2 unique → binary, date-parseable → date,
-#' long strings → text, numeric → continuous, comma-decimal → continuous
-#' variants), and computes summary statistics for numeric columns.
+#' describes each column with `data_col_facets()` and computes summary statistics
+#' for numeric columns. Following DDI, a column is described by orthogonal facets
+#' rather than a single type: `representation` (numeric/text/datetime/code — how
+#' it is stored), `measurement_level` (Stevens: nominal/ordinal/interval/ratio),
+#' `concept` (what it measures: reaction_time/age/gender/likert/id/…), `role`
+#' (identifier/measure/condition/timestamp), `unit`, and a `quality` state
+#' (ok/empty/constant). Concepts are detected by name+value rules (the demographic
+#' concepts via `data_check_demographic()`); when `llm_use(TRUE)` the model fills
+#' concepts and measurement levels the rules left blank. Each data file also gets
+#' an inferred **analysis unit** (DDI `analysisUnit`: person/trial/session/dyad,
+#' from `data_analysis_unit()`), and the report flags a repository that mixes
+#' units of observation. Qualtrics
+#' survey exports are recognised (`data_check_is_qualtrics()`): their extra
+#' header rows are stripped so columns type correctly, and the reserved
+#' response-metadata columns (StartDate, Duration, Finished, ...) are tagged.
 #'
 #' The module defaults to **rules-only** when `llm_use(FALSE)`: columns the
 #' rules cannot resolve (ambiguous 3–20-unique integers, ambiguous character
@@ -315,6 +326,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # File names detected as manifests (a table-of-contents listing other repo
   # files) rather than real data; demoted to "supplemental" after extraction.
   manifest_files <- character(0)
+  # .RData/.rda workspaces that held no reusable tabular data (only fitted
+  # models / session objects, or could not be restored). Flagged as a
+  # data-sharing recommendation: share the underlying data as CSV + codebook.
+  workspace_files <- character(0)
 
   # ── 4. Extract columns + stats from each local tabular data file ─────────────
   columns_df <- NULL
@@ -330,7 +345,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       f <- data_files[i, ]
       pb_cols$tick(1, list(what = f$file_name))
       df <- data_read_head(f$file_location, n_rows = Inf)
-      if (is.null(df) || ncol(df) == 0) return(NULL)
+      if (is.null(df) || ncol(df) == 0) {
+        # An .RData/.rda that yielded no data frame is an analysis workspace,
+        # not reusable shared data — record it for a sharing recommendation.
+        if (tolower(tools::file_ext(f$file_name)) %in% c("rdata", "rda"))
+          workspace_files <<- c(workspace_files, f$file_name)
+        return(NULL)
+      }
 
       # Skip a file manifest / table-of-contents disguised as tabular data:
       # its cells name other files in the repository (see data_is_manifest()).
@@ -343,11 +364,30 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
       file_previews[[f$file_name]] <<- df
 
-      cls <- lapply(seq_along(df), function(j) data_col_type(names(df)[j], df[[j]]))
-      col_types <- vapply(cls, function(c)
-        if (is.null(c$col_type) || is.na(c$col_type)) NA_character_ else c$col_type,
-        character(1))
+      # Describe each column as orthogonal facets (DDI-style) instead of a single
+      # col_type: how it is stored (representation), its measurement level, what
+      # it measures (concept), how it functions (role), its unit and data-quality
+      # state. See data_col_facets() in data_check_helpers.R.
+      cls <- lapply(seq_along(df), function(j) data_col_facets(names(df)[j], df[[j]]))
+      getf <- function(field) vapply(cls, function(c) {
+        v <- c[[field]]; if (is.null(v) || is.na(v)) NA_character_ else v
+      }, character(1))
       is_numeric <- vapply(cls, function(c) isTRUE(c$is_numeric), logical(1))
+
+      # Qualtrics response-metadata columns get a concept tag from the export's
+      # reserved names (StartDate, Duration, Finished, ...), which is a stronger
+      # signal than the value-based rules for those columns.
+      concept <- getf("concept")
+      if (data_check_is_qualtrics(df)) {
+        qtags <- .qualtrics_tag_cols(names(df))
+        concept[!is.na(qtags)] <- qtags[!is.na(qtags)]
+      }
+
+      # Analysis unit (DDI analysisUnit): what one row of this file represents
+      # (person/trial/session/dyad), inferred from the identifier column(s) and
+      # their uniqueness. A file-level property, so it is the same for every row.
+      id_cols <- names(df)[getf("role") == "identifier"]
+      au <- data_analysis_unit(df, id_cols)
 
       stats_mat <- do.call(rbind, lapply(seq_along(df), function(j) {
         c <- cls[[j]]
@@ -363,15 +403,22 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       }, character(1))
 
       data.frame(
-        paper_id      = f$paper_id %||% .pid(all_files),
-        repo_url      = f$repo_url,
-        source_file   = f$file_name,
-        group         = f$group %||% NA_character_,
-        column_name   = names(df),
-        col_type      = col_types,
-        ambiguous     = vapply(cls, function(c) isTRUE(c$ambiguous), logical(1)),
-        is_numeric    = is_numeric,
-        sample_values = sample_vals,
+        paper_id          = f$paper_id %||% .pid(all_files),
+        repo_url          = f$repo_url,
+        source_file       = f$file_name,
+        group             = f$group %||% NA_character_,
+        column_name       = names(df),
+        representation    = getf("representation"),
+        measurement_level = getf("measurement_level"),
+        concept           = concept,
+        role              = getf("role"),
+        unit              = getf("unit"),
+        quality           = getf("quality"),
+        parse_note        = getf("parse_note"),
+        analysis_unit     = au$unit %||% NA_character_,
+        ambiguous         = vapply(cls, function(c) isTRUE(c$ambiguous), logical(1)),
+        is_numeric        = is_numeric,
+        sample_values     = sample_vals,
         stats_mat
       )
     })
@@ -389,52 +436,80 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_no_local    <- sum(is_tabular_data & !has_local)
     }
 
+    # LLM tier (rules-first, LLM fills gaps): for columns whose *concept* the
+    # rules left NA, ask the model what the column measures. Concepts under
+    # cryptic names (q3 = a reaction time) are exactly what the rules cannot get.
+    # The LLM also gives a measurement level, used only to fill an NA level.
     if (!is.null(columns_df) && nrow(columns_df) > 0 && llm_use()) {
-      amb_idx <- which((is.na(columns_df$col_type) | columns_df$col_type == "unknown") & columns_df$ambiguous %in% TRUE)
-      if (length(amb_idx) > 0) {
-        col_text <- vapply(amb_idx, function(i) {
-          sprintf(
-            "column_name: %s\nsample_values: %s\nis_numeric: %s",
-            columns_df$column_name[[i]] %||% "",
-            columns_df$sample_values[[i]] %||% "",
-            ifelse(isTRUE(columns_df$is_numeric[[i]]), "TRUE", "FALSE")
-          )
-        }, character(1))
+      gap_idx <- which(is.na(columns_df$concept) | columns_df$ambiguous %in% TRUE)
+      if (length(gap_idx) > 0) {
+        col_text <- vapply(gap_idx, function(i) sprintf(
+          "column_name: %s\nsample_values: %s\nis_numeric: %s",
+          columns_df$column_name[[i]] %||% "",
+          columns_df$sample_values[[i]] %||% "",
+          ifelse(isTRUE(columns_df$is_numeric[[i]]), "TRUE", "FALSE")),
+          character(1))
 
-        col_prompt <- paste(
-          "Classify each dataset column into one type:",
-          "continuous, categorical, ordinal, text, id, date, unknown.",
-          "Use only the provided sample and name.",
-          "Return one result per numbered input line, echoing its index and the",
-          "best single type as `value`. Return unknown when uncertain."
+        # Concept classification.
+        concept_levels <- c("reaction_time", "accuracy", "age", "gender",
+                            "race", "likert", "condition", "id", "date",
+                            "timestamp", "measure", "other")
+        concept_prompt <- paste(
+          "Each line describes one column of a psychology dataset. Say what the",
+          "column MEASURES (its concept), independent of how it is stored. Use",
+          "exactly one of:",
+          paste(concept_levels, collapse = ", "), ".",
+          "'likert' = a rating-scale item; 'measure' = a substantive numeric",
+          "measurement with no more specific concept; 'other' when unsure.",
+          "Return one {index, value} per numbered line, echoing its index."
         )
-
-        col_levels <- c("continuous", "categorical", "ordinal", "text", "id",
-                        "date", "unknown")
-        # Batched, index-mapped classification: a wide dataset would otherwise
-        # make one LLM call per ambiguous column (hundreds/thousands of calls).
-        pred <- .llm_classify_batched(col_text, col_prompt,
-                                      value_desc = "Best single column type",
-                                      valid = col_levels,
-                                      model = model, params = params)
+        pred_concept <- .llm_classify_batched(
+          col_text, concept_prompt, value_desc = "Best single concept",
+          valid = concept_levels, model = model, params = params)
         if (is.na(llm_model_used))
-          llm_model_used <- attr(pred, "llm_model") %||% NA_character_
+          llm_model_used <- attr(pred_concept, "llm_model") %||% NA_character_
+        # 'measure'/'other' are non-informative concepts → leave NA.
+        fill <- !is.na(pred_concept) & !pred_concept %in% c("measure", "other") &
+          is.na(columns_df$concept[gap_idx])
+        if (any(fill)) {
+          columns_df$concept[gap_idx[fill]] <- pred_concept[fill]
+          llm_col_updates <- sum(fill)
+        }
 
-        ok <- !is.na(pred)
-        if (any(ok)) {
-          columns_df$col_type[amb_idx[ok]] <- pred[ok]
-          llm_col_updates <- sum(ok)
+        # Measurement level for still-ambiguous numeric columns.
+        lvl_idx <- gap_idx[columns_df$ambiguous[gap_idx] %in% TRUE &
+                             is.na(columns_df$measurement_level[gap_idx])]
+        if (length(lvl_idx) > 0) {
+          lvl_text <- vapply(lvl_idx, function(i) sprintf(
+            "column_name: %s\nsample_values: %s",
+            columns_df$column_name[[i]] %||% "",
+            columns_df$sample_values[[i]] %||% ""), character(1))
+          lvl_levels <- c("nominal", "ordinal", "interval", "ratio")
+          lvl_prompt <- paste(
+            "Give the measurement level (Stevens) of each numeric column:",
+            "nominal, ordinal, interval, or ratio. A coded category is nominal;",
+            "a rating scale is ordinal; a count/magnitude is ratio.",
+            "Return one {index, value} per numbered line, echoing its index.")
+          pred_lvl <- .llm_classify_batched(
+            lvl_text, lvl_prompt, value_desc = "Stevens measurement level",
+            valid = lvl_levels, model = model, params = params)
+          ok <- !is.na(pred_lvl)
+          if (any(ok)) columns_df$measurement_level[lvl_idx[ok]] <- pred_lvl[ok]
         }
       }
     }
 
-    # rules-only fallbacks for columns the rules left ambiguous
+    # Rules-only fallbacks for facets the rules could not resolve. Missing
+    # representation → decide from is_numeric; missing measurement level on a
+    # numeric column → ratio (a bare integer count), on a character column →
+    # nominal. Concept legitimately stays NA (not every column has a named one).
     if (!is.null(columns_df) && nrow(columns_df) > 0) {
-      num_ambig  <- is.na(columns_df$col_type) & columns_df$is_numeric
-      char_ambig <- is.na(columns_df$col_type) & !columns_df$is_numeric
-      columns_df$col_type[num_ambig]  <- "continuous"
-      columns_df$col_type[char_ambig] <- "text"
-      columns_df$col_type[is.na(columns_df$col_type)] <- "unknown"
+      rep_na <- is.na(columns_df$representation)
+      columns_df$representation[rep_na & columns_df$is_numeric]  <- "numeric"
+      columns_df$representation[rep_na & !columns_df$is_numeric] <- "text"
+      columns_df$representation[is.na(columns_df$representation)] <- "text"
+      lvl_na <- is.na(columns_df$measurement_level)
+      columns_df$measurement_level[lvl_na & columns_df$representation == "numeric"] <- "ratio"
       columns_df$ambiguous <- NULL
       columns_df$is_numeric <- NULL
     }
@@ -482,6 +557,19 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       "Set `download = TRUE`, or pass `local_path` to point at a local copy, to analyse them."
   ) else NULL
 
+  # .RData/.rda workspaces with no reusable data: a sharing recommendation.
+  n_workspace <- length(unique(workspace_files))
+  summary_workspace <- if (n_workspace > 0) sprintf(
+    paste0("%d R workspace file%s (`.RData`/`.rda`) contain%s no reusable ",
+           "tabular data — only fitted models or saved session objects. Such ",
+           "files need R (and the exact packages used) to open and are not ",
+           "machine-readable. Share the underlying data as CSV (or a documented ",
+           "`.sav`/`.dta`) with a codebook so it can be reused without R: %s."),
+    n_workspace, plural(n_workspace),
+    if (n_workspace == 1) "s" else "",
+    paste(unique(workspace_files), collapse = ", ")
+  ) else NULL
+
   # file inventory table
   file_tbl <- all_files |>
     dplyr::count(Type = data_type, name = "Files") |>
@@ -514,7 +602,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       dplyr::transmute(
         .data$source_file,
         Column = .data$column_name,
-        `Column Type` = .data$col_type,
+        Representation = .data$representation,
+        Level = dplyr::coalesce(.data$measurement_level, ""),
+        Concept = dplyr::coalesce(.data$concept, ""),
+        Role = dplyr::coalesce(.data$role, ""),
+        Unit = dplyr::coalesce(.data$unit, ""),
         Rows = .data$n + .data$n_missing,
         `% Missing` = dplyr::if_else(
           (.data$n + .data$n_missing) > 0,
@@ -538,6 +630,29 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       ),
       desc_file_tabset(desc_all)
     )
+
+    # Analysis unit (DDI analysisUnit): one row per data file. Flag when a repo
+    # mixes units (e.g. a person-level and a trial-level file), which changes how
+    # the data must be analysed and is a common source of confusion.
+    if ("analysis_unit" %in% names(columns_df)) {
+      au_tbl <- columns_df |>
+        dplyr::filter(!is.na(.data$analysis_unit)) |>
+        dplyr::distinct(.data$source_file, .data$analysis_unit)
+      if (nrow(au_tbl) > 0) {
+        units <- sort(unique(au_tbl$analysis_unit))
+        mixed <- length(units) > 1
+        au_show <- au_tbl |>
+          dplyr::transmute(File = .data$source_file,
+                           `Unit of observation` = .data$analysis_unit)
+        report <- c(report, "#### Unit of Observation",
+          sprintf("We inferred what one row of each data file represents (person, trial, session, or dyad). %s",
+                  if (mixed)
+                    sprintf("**This repository mixes units of observation (%s)** — check that files at different levels (e.g. one row per participant vs. one row per trial) are not combined without aggregation.",
+                            paste(units, collapse = ", "))
+                  else sprintf("All files are at the **%s** level.", units[1])),
+          scroll_table(au_show, maxrows = 20))
+      }
+    }
   }
 
   if (llm_use()) {
@@ -558,11 +673,12 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         else if (n_no_local > 0) "yellow"
         else "green"
 
-  # per-paper column-type counts (wide)
+  # per-paper representation counts (wide). Representation is the primary
+  # structural facet; concept/level are reported in the descriptives table.
   coltype_wide <- if (n_columns > 0) {
     columns_df |>
-      dplyr::count(paper_id, col_type) |>
-      tidyr::pivot_wider(names_from = col_type, values_from = n,
+      dplyr::count(paper_id, representation) |>
+      tidyr::pivot_wider(names_from = representation, values_from = n,
                          names_prefix = "col_", values_fill = 0)
   } else {
     data.frame(paper_id = .pid(all_files))
@@ -576,7 +692,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     dplyr::left_join(coltype_wide, by = "paper_id")
 
   summary_text <- c(summary_files, summary_data, summary_nolocal,
-                     summary_omitted) |>
+                     summary_omitted, summary_workspace) |>
     paste("\n- ", x = _, collapse = "")
 
   # ── 7. Return ────────────────────────────────────────────────────────────────

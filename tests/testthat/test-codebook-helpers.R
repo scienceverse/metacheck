@@ -25,6 +25,78 @@ test_that("parse_codebook reads a structured CSV codebook", {
   expect_equal(res$parse_method[[1]], "structured")
 })
 
+# ── DDI: value labels / code lists, missing scheme, question, universe ─────────
+
+test_that("value-label JSON round-trips through encode/decode", {
+  s <- metacheck:::.encode_value_labels(c(1, 2, -99),
+                                        c("Male", "Female", "Refused"))
+  expect_true(grepl("Male", s))
+  vl <- metacheck:::.decode_value_labels(s)
+  expect_equal(unname(vl[["1"]]), "Male")
+  expect_equal(unname(vl[["-99"]]), "Refused")
+  expect_null(metacheck:::.decode_value_labels(NA_character_))
+})
+
+test_that(".parse_value_label_text parses common coding encodings", {
+  expect_equal(
+    metacheck:::.decode_value_labels(
+      metacheck:::.parse_value_label_text("1 = Male; 2 = Female"))[["2"]],
+    "Female")
+  expect_equal(
+    metacheck:::.decode_value_labels(
+      metacheck:::.parse_value_label_text("0: no | 1: yes"))[["1"]],
+    "yes")
+  # A single pair is not a real mapping.
+  expect_true(is.na(metacheck:::.parse_value_label_text("1 = only")))
+  expect_true(is.na(metacheck:::.parse_value_label_text("")))
+})
+
+test_that(".extract_haven_labels harvests value labels and missing codes", {
+  skip_if_not_installed("haven")
+  df <- data.frame(x = 1:6)
+  df$sex <- haven::labelled_spss(
+    c(1, 2, -99, 1, 2, -99), labels = c(Male = 1, Female = 2, Refused = -99),
+    na_values = -99, label = "Sex")
+  res <- metacheck:::.extract_haven_labels(df, "study.sav")
+  srow <- res[res$codebook_variable == "sex", ]
+  expect_equal(metacheck:::.decode_value_labels(srow$value_labels)[["1"]], "Male")
+  # -99 is a declared missing (and named "Refused") → in the missing scheme.
+  expect_false(is.na(srow$missing_values))
+  expect_true(grepl("-99", srow$missing_values))
+})
+
+test_that(".extract_structured_codebook reads values / question columns", {
+  cb <- data.frame(
+    variable = c("sex", "age"),
+    label    = c("Sex", "Age"),
+    values   = c("1 = Male; 2 = Female; -99 = Refused", ""),
+    question = c("What is your sex?", "How old are you?"),
+    stringsAsFactors = FALSE)
+  res <- metacheck:::.extract_structured_codebook(cb, "cb.csv")
+  expect_equal(metacheck:::.decode_value_labels(res$value_labels[1])[["1"]], "Male")
+  expect_true(is.na(res$value_labels[2]))
+  expect_equal(res$question[1], "What is your sex?")
+  # "-99 = Refused" contributes to the missing scheme from a text codebook.
+  expect_false(is.na(res$missing_values[1]))
+  expect_true(grepl("-99", res$missing_values[1]))
+})
+
+test_that("match_column_labels carries DDI properties onto data columns", {
+  cols <- data.frame(paper_id = "p", source_file = "d.csv",
+                     column_name = "sex", stringsAsFactors = FALSE)
+  cbk <- data.frame(
+    codebook_variable = "sex", label = "Sex", codebook_source = "cb.csv",
+    group = NA_character_,
+    value_labels = '{"1":"Male","2":"Female"}',
+    missing_values = NA_character_,
+    question = "What is your sex?", universe = "All respondents",
+    parse_method = "structured", stringsAsFactors = FALSE)
+  res <- match_column_labels(cols, cbk)
+  expect_equal(res$value_labels, '{"1":"Male","2":"Female"}')
+  expect_equal(res$question, "What is your sex?")
+  expect_equal(res$universe, "All respondents")
+})
+
 test_that("parse_codebook returns text lines for unstructured files", {
   d <- tempfile(fileext = ".txt")
   writeLines(c("This is a prose readme.", "No variable table here."), d)
