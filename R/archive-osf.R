@@ -72,7 +72,36 @@ osf_links <- function(paper) {
 }
 
 
+# Session cache for OSF listings. The OSF directory traversal (osf_info with
+# recursive = TRUE) makes many API calls and is not otherwise cached, so a
+# second run in the same session (e.g. report() then convert_psychds()) would
+# re-list the whole repository and risk hitting OSF's rate limit. This memoises
+# the result by (osf_url, recursive) for the session. Cleared by
+# osf_cache_clear(); disable with options(metacheck.osf.cache = FALSE).
+.osf_listing_cache <- new.env(parent = emptyenv())
+
+.osf_cache_key <- function(osf_url, recursive) {
+  ids <- if (is.data.frame(osf_url)) unlist(osf_url, use.names = FALSE) else osf_url
+  paste0(paste(sort(unique(as.character(ids))), collapse = "|"),
+         "::recursive=", isTRUE(recursive))
+}
+
+#' Clear the session cache of OSF listings
+#'
+#' @returns the number of cached listings removed, invisibly
+#' @export
+osf_cache_clear <- function() {
+  n <- length(ls(.osf_listing_cache))
+  rm(list = ls(.osf_listing_cache), envir = .osf_listing_cache)
+  invisible(n)
+}
+
 #' Retrieve info from the OSF by ID
+#'
+#' Repository listings are cached for the session (keyed by URL and
+#' `recursive`), so repeated calls do not re-query the OSF API; clear the cache
+#' with [osf_cache_clear()] or disable it with
+#' `options(metacheck.osf.cache = FALSE)`.
 #'
 #' @param osf_url an OSF ID or URL, or a table containing them
 #' @param id_col the index or name of the column that contains OSF IDs or URLs, if id is a table
@@ -92,6 +121,15 @@ osf_links <- function(paper) {
 osf_info <- function(osf_url, id_col = 1,
                      recursive = FALSE,
                      pb = NULL) {
+  # Reuse a cached listing for this session, so a second pass over the same
+  # repository (e.g. report() then convert_psychds()) doesn't re-query OSF.
+  use_cache <- isTRUE(getOption("metacheck.osf.cache", TRUE))
+  cache_key <- if (use_cache) .osf_cache_key(osf_url, recursive) else NULL
+  if (use_cache && exists(cache_key, envir = .osf_listing_cache, inherits = FALSE)) {
+    if (!is.null(pb)) pb$tick(0, list(what = "OSF listing (cached)"))
+    return(get(cache_key, envir = .osf_listing_cache, inherits = FALSE))
+  }
+
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
     pb$tick(0, list(what = "OSF Retrieve"))
@@ -181,6 +219,7 @@ osf_info <- function(osf_url, id_col = 1,
     list(what = _) |>
     pb$tick(0, tokens = _)
 
+  if (use_cache) assign(cache_key, data, envir = .osf_listing_cache)
   return(data)
 }
 

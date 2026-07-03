@@ -223,6 +223,11 @@ report_module_run <- function(paper, modules, args = list()) {
   # pull last module output out
   module_output <- op$prev_outputs
   op$prev_outputs <- NULL
+  # Keep one copy of the paper as an attribute of the returned list (the per-
+  # module $paper slots are stripped to keep the object flat), so downstream
+  # consumers — e.g. convert_psychds() / convert_codebook() reusing a captured
+  # result — can recover the paper without re-reading it.
+  paper_obj <- op$paper
   op$paper <- NULL
   module_output[[op$module]] <- op
 
@@ -238,6 +243,7 @@ report_module_run <- function(paper, modules, args = list()) {
   mod_order <- xtfrm(sections)
   module_output <- sort_by(module_output, mod_order)
 
+  attr(module_output, "paper") <- paper_obj
   return(module_output)
 }
 

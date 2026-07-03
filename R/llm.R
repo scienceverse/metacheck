@@ -118,8 +118,23 @@ llm <- function(text, system_prompt,
   label <- if (structured) "Extracting data" else "Querying LLM"
   pb <- pb(ncalls, paste0(label, " [:bar] :current/:total :elapsedfull"))
 
+  # response cache ----
+  # A call at temperature 0 is deterministic in (model, prompt, text, type,
+  # params), so replay a stored result instead of re-issuing (and re-billing)
+  # the request. Errors are never cached. See R/llm-cache.R.
+  use_cache <- llm_cache()
+
   # iterate over the text ----
   responses <- lapply(seq_along(unique_text), function(i) {
+    key <- if (use_cache)
+      .llm_cache_key(unique_text[i], system_prompt, type, model, params) else NULL
+    if (!is.null(key)) {
+      hit <- .llm_cache_get(key)
+      if (!is.null(hit)) {
+        pb$tick()
+        return(hit$df)
+      }
+    }
     tryCatch({
       if (use_ollama_native) {
         # native ollama API: think=FALSE is honoured here, unlike /v1/
@@ -128,7 +143,9 @@ llm <- function(text, system_prompt,
           think = FALSE, options = ollama_options
         )
         pb$tick()
-        list(answer = answer)
+        out <- list(answer = answer)
+        if (!is.null(key)) .llm_cache_put(key, out)
+        out
       } else {
         # fresh chat per call to avoid context accumulation
         msg <- utils::capture.output({
@@ -144,13 +161,22 @@ llm <- function(text, system_prompt,
         if (structured) {
           result <- chat$chat_structured(unique_text[i], type = type)
           df <- .unnest_result(result)
-          df$.join_key. <- unique_text[i]
+          # An empty result (e.g. the model returned an empty array, meaning
+          # "nothing found") unnests to a 0-row frame; assigning a length-1
+          # join key to a 0-row column errors, so only set it when there are
+          # rows. A 0-row df drops out of the downstream left_join cleanly.
+          if (nrow(df) > 0) df$.join_key. <- unique_text[i]
           pb$tick()
+          # store the unnested df plus the raw result (which carries any
+          # provider-returned reasoning content) for later inspection
+          if (!is.null(key)) .llm_cache_put(key, df, raw = result)
           df
         } else {
           answer <- chat$chat(unique_text[i], echo = FALSE)
           pb$tick()
-          list(answer = trimws(answer))
+          out <- list(answer = trimws(answer))
+          if (!is.null(key)) .llm_cache_put(key, out)
+          out
         }
       }
     }, error = function(e) {
@@ -172,6 +198,11 @@ llm <- function(text, system_prompt,
   if (structured) {
     response_df <- dplyr::bind_rows(responses)
     text$.join_key. <- text[[text_col]]
+    # When every response was empty (the model found nothing in any input),
+    # response_df has no `.join_key.` column, which would break the join. Add an
+    # empty one so the left_join yields all-NA extracted columns instead.
+    if (!".join_key." %in% names(response_df))
+      response_df$.join_key. <- character(0)
     answer_df <- dplyr::left_join(text, response_df, by = ".join_key.",
                                   suffix = c("", ".extracted"))
     answer_df$.join_key. <- NULL
@@ -194,9 +225,16 @@ llm <- function(text, system_prompt,
     error_rows <- which(!is.na(answer_df$.error) & answer_df$.error)
     if (length(error_rows) > 0) {
       msgs <- unique(answer_df$.error_msg[error_rows])
-      warning("There were extraction errors in rows: ",
-              paste(error_rows, collapse = ", "),
-              "\n", paste("  *", msgs, collapse = "\n"))
+      n_ok <- nrow(answer_df) - length(error_rows)
+      warning(
+        sprintf(
+          "Note (not fatal): %d of %d LLM extraction%s failed and %s left blank; the other %d succeeded and all checks continued.\nRow%s %s: %s\n  %s",
+          length(error_rows), nrow(answer_df), plural(nrow(answer_df)),
+          if (length(error_rows) == 1) "was" else "were", n_ok,
+          plural(length(error_rows)), paste(error_rows, collapse = ", "),
+          if (length(error_rows) == 1) "reason" else "reasons",
+          paste(msgs, collapse = "\n  ")),
+        call. = FALSE)
     }
   } else if (!structured) {
     error_indices <- isTRUE(answer_df$error)

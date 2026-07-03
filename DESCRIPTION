@@ -39,6 +39,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Suggests:
     ggplot2,
+    codebook,
     devtools,
     httptest2,
     processx,
@@ -69,7 +70,7 @@ Imports:
     tidytext,
     statcheck,
     base64enc,
-    gitcreds, 
+    gitcreds,
     roxygen2, 
     jpeg,
     progress

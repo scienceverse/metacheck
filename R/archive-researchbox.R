@@ -224,47 +224,50 @@ rbox_file_download <- function(rb_url, pb = NULL) {
     list(what = _) |>
     pb$tick(0, tokens = _)
 
-  # Download a ZIP to a temp dir
-  tmp_dir <- file.path(tempdir(), paste0("rbx_", as.integer(Sys.time())))
+  # Download the ZIP into a persistent cache keyed by the ResearchBox URL, so
+  # re-runs reuse the already-downloaded/unzipped files instead of re-fetching.
+  tmp_dir <- .repo_cache_subdir(rb_url)
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
-  # Create a path for the ZIP file
-  zip_path <- file.path(tmp_dir, basename(rb_url))
-  if (!grepl("\\.zip$", zip_path, ignore.case = TRUE)) {
-    zip_path <- file.path(tmp_dir, "archive.zip")
-  }
-
-  # download (use binary mode on Windows)
-  paste0("Downloading to: ", zip_path) |>
-    list(what = _) |>
-    pb$tick(0, tokens = _)
+  zip_path <- file.path(tmp_dir, "archive.zip")
+  out_dir  <- file.path(tmp_dir, "unzipped")
 
   url_researchbox <- paste0(
     "https://s3.wasabisys.com/zipballs.researchbox.org/ResearchBox_",
     sub("^https://researchbox.org/", "", rb_url),
     ".zip"
   )
-  tryCatch({
-    utils::download.file(url_researchbox,
-      destfile = zip_path,
-      mode = "wb",
-      quiet = TRUE
-    )
-  }, error = \(e) {})
 
-  if (!file.exists(zip_path) || file.size(zip_path) == 0) {
-    warning("Download failed or resulted in an empty file: ", zip_path)
-    return(NULL)
+  # Reuse a previous successful download/unzip when present.
+  already_unzipped <- dir.exists(out_dir) &&
+    length(list.files(out_dir, recursive = TRUE)) > 0
+
+  if (!already_unzipped) {
+    paste0("Downloading to: ", zip_path) |>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
+
+    tryCatch({
+      utils::download.file(url_researchbox,
+        destfile = zip_path,
+        mode = "wb",
+        quiet = TRUE
+      )
+    }, error = \(e) {})
+
+    if (!file.exists(zip_path) || file.size(zip_path) == 0) {
+      warning("Download failed or resulted in an empty file: ", zip_path)
+      return(NULL)
+    }
+
+    dir.create(out_dir, showWarnings = FALSE)
+    paste0("Unzipping into: ", out_dir) |>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
+    utils::unzip(zip_path, exdir = out_dir)
   }
 
-  # unzip into a subfolder
-  out_dir <- file.path(tmp_dir, "unzipped")
-  dir.create(out_dir, showWarnings = FALSE)
-
-  paste0("Unzipping into: ", out_dir) |>
-    list(what = _) |>
-    pb$tick(0, tokens = _)
-  unzipped_files <- utils::unzip(zip_path, exdir = out_dir)
+  unzipped_files <- list.files(out_dir, recursive = TRUE, full.names = TRUE)
 
   if (length(unzipped_files) == 0) {
     warning("Unzip produced no files. The archive might be corrupt.")

@@ -226,3 +226,35 @@ test_that(".unnest_result", {
   expect_equal(df, exp)
 })
 
+test_that("llm handles an empty structured result without error", {
+  # A wrapped empty array ({variables: []}) unnests to 0 rows; the join must
+  # not error and inputs should come back with NA extracted columns.
+  withr::local_options(metacheck.llm.use = TRUE, metacheck.llm.cache = FALSE)
+  ts <- ellmer::type_object(variables = ellmer::type_array(
+    ellmer::type_object(variable_name = ellmer::type_string(),
+                        label = ellmer::type_string())))
+
+  # every call empty
+  testthat::local_mocked_bindings(
+    chat = function(...) structure(list(
+      chat_structured = function(text, type) list(variables = list())),
+      class = "Chat"), .package = "ellmer")
+  res <- llm(text = data.frame(text = c("a", "b")), text_col = "text",
+             system_prompt = "x", type = ts, model = "groq/x")
+  expect_equal(nrow(res), 2)
+  expect_false(any(c("variable_name", "label") %in% names(res)) &&
+                 any(!is.na(res$variable_name)))
+
+  # mixed: first input returns a row, second is empty
+  n <- 0
+  testthat::local_mocked_bindings(
+    chat = function(...) structure(list(chat_structured = function(text, type) {
+      n <<- n + 1
+      if (n == 1) list(variables = list(list(variable_name = "dv", label = "outcome")))
+      else list(variables = list())
+    }), class = "Chat"), .package = "ellmer")
+  res2 <- llm(text = data.frame(text = c("has", "empty")), text_col = "text",
+              system_prompt = "x", type = ts, model = "groq/x")
+  expect_equal(res2$variable_name, c("dv", NA))
+})
+

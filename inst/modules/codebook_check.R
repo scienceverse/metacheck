@@ -1,0 +1,567 @@
+#' Codebook Check
+#'
+#' @description
+#' This module checks whether the data columns in a repository are documented in
+#' a codebook or README. It locates codebook/readme files, extracts the variable
+#' definitions they contain, matches those definitions against the data columns
+#' extracted by `data_check`, and reports documentation coverage: how many data
+#' columns are documented, and which documented variables are never used.
+#'
+#' @details
+#' The Codebook Check module consumes the columns and file classification
+#' produced by `data_check` (and, transitively, `repo_check`). Files classified
+#' as `codebook` or `readme` are parsed with `parse_codebook()`, which reads
+#' structured tables (CSV/TSV/Excel with a variable-name column and a label
+#' column), embedded labels in haven files (SPSS/Stata/SAS), and plain text from
+#' rich-text formats (docx/pdf/rtf/odt). Embedded haven labels from data files
+#' are also harvested directly.
+#'
+#' Each data column is then matched against the parsed variable definitions with
+#' `match_column_labels()`, using normalised-name matching with experiment-group
+#' scoping, haven-label priority, and rule-based label-equivalence merging.
+#'
+#' The module defaults to **rules-only** when `llm_use(FALSE)`. When
+#' `llm_use(TRUE)`, three optional LLM tiers run: parsing unstructured codebook
+#' text that the rules could not handle, fuzzy-matching still-unlabelled columns
+#' to still-unmatched codebook variables, and merging conflicting label
+#' definitions into a single canonical label.
+#'
+#' @keywords results
+#'
+#' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#'
+#' @import dplyr
+#'
+#' @param paper a paper object or paperlist object, or NULL to check local
+#'   files only (see [test_paper()])
+#' @param local_path optional path to a local directory, passed through to
+#'   `data_check` / `repo_check` when their output is not already available
+#' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
+#' @param model the LLM model name (see `llm_model_list()`) used only when
+#'   `llm_use(TRUE)`
+#' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
+#'
+#' @returns a list
+codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
+                           model = llm_model(),
+                           params = list()) {
+
+  .codebook_types <- c("codebook", "readme")
+  .haven_exts     <- c("sav", "dta", "sas7bdat")
+  max_llm_chunks  <- 10L   # per unstructured codebook file
+
+  # Resolve a usable paper_id from whatever tables we have.
+  .pid <- function(...) {
+    id <- paper_id(paper)
+    for (df in list(...)) {
+      if (length(id) > 0) break
+      if (!is.null(df) && "paper_id" %in% names(df))
+        id <- unique(df$paper_id)
+    }
+    if (length(id) == 0) return(NA_character_)
+    id[[1]]
+  }
+
+  # ── 1. Get columns + file classification from data_check ─────────────────────
+  columns_df <- get_prev_outputs("data_check", "table")
+  structure_df <- get_prev_outputs("data_check", "structure")
+  if (is.null(columns_df) || is.null(structure_df)) {
+    mo <- if (!is.null(local_path)) {
+      module_run(paper, "data_check", local_path = local_path,
+                 local_only = local_only)
+    } else {
+      module_run(paper, "data_check", local_only = local_only)
+    }
+    columns_df   <- mo$table
+    structure_df <- mo$structure
+  }
+
+  empty_summary <- function(text) {
+    list(
+      table = data.frame(),
+      summary_table = data.frame(
+        paper_id = .pid(columns_df, structure_df),
+        column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
+        conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0
+      ),
+      na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
+                     conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0),
+      traffic_light = "na",
+      summary_text = text
+    )
+  }
+
+  if (is.null(columns_df) || nrow(columns_df) == 0)
+    return(empty_summary("We found no extracted data columns to check against a codebook."))
+
+  # ── 2. Locate codebook/readme files with a local copy ────────────────────────
+  cb_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
+    structure_df[
+      structure_df$data_type %in% .codebook_types &
+        !is.na(structure_df$file_location) &
+        nzchar(structure_df$file_location) &
+        file.exists(structure_df$file_location %||% ""),
+      , drop = FALSE
+    ]
+  } else structure_df[0, , drop = FALSE]
+
+  # Data files carrying embedded haven labels (SPSS/Stata/SAS).
+  haven_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
+    structure_df[
+      !is.na(structure_df$data_type) & structure_df$data_type == "data" &
+        tolower(tools::file_ext(structure_df$file_name)) %in% .haven_exts &
+        !is.na(structure_df$file_location) &
+        file.exists(structure_df$file_location %||% ""),
+      , drop = FALSE
+    ]
+  } else structure_df[0, , drop = FALSE]
+
+  # ── 3. Parse codebook files (rules, then optional LLM) ───────────────────────
+  llm_model_used  <- NA_character_
+  llm_parse_files <- 0L
+  llm_match_cols  <- 0L
+  llm_merge_cols  <- 0L
+
+  parsed_list <- list()
+  if (nrow(cb_rows) > 0) {
+    for (p in cb_rows$file_location) {
+      pv <- parse_codebook(p)
+      if (is.data.frame(pv) && nrow(pv) > 0) {
+        parsed_list[[length(parsed_list) + 1L]] <- pv
+      } else if (is.character(pv) && length(pv) > 0 && llm_use()) {
+        # Unstructured text: send to the LLM in chunks.
+        llm_out <- codebook_parse_llm(pv, basename(p), model, params,
+                                      max_chunks = max_llm_chunks)
+        if (!is.null(llm_out) && nrow(llm_out) > 0) {
+          parsed_list[[length(parsed_list) + 1L]] <- llm_out
+          llm_parse_files <- llm_parse_files + 1L
+          if (is.na(llm_model_used))
+            llm_model_used <- attr(llm_out, "llm_model") %||% NA_character_
+        }
+      }
+    }
+  }
+
+  # Harvest embedded haven labels directly from data files.
+  if (nrow(haven_rows) > 0 && requireNamespace("haven", quietly = TRUE)) {
+    for (p in haven_rows$file_location) {
+      ext <- tolower(tools::file_ext(p))
+      df <- tryCatch(switch(ext,
+        sav      = as.data.frame(haven::read_sav(p, n_max = 0L)),
+        dta      = as.data.frame(haven::read_dta(p, n_max = 0L)),
+        sas7bdat = as.data.frame(haven::read_sas(p, n_max = 0L))
+      ), error = function(e) NULL)
+      if (is.null(df)) next
+      res <- .extract_haven_labels(df, basename(p))
+      if (is.null(res)) next
+      res$parse_method <- "haven"
+      parsed_list[[length(parsed_list) + 1L]] <- res
+    }
+  }
+
+  codebook_vars_df <- if (length(parsed_list) > 0) {
+    v <- dplyr::bind_rows(parsed_list)
+    # Drop exact duplicate definitions (same normalised name + label + group).
+    dup_key <- paste(normalize_varname(v$codebook_variable), v$label,
+                     ifelse(is.na(v$group), "", v$group), sep = "\x01")
+    v[!duplicated(dup_key), , drop = FALSE]
+  } else {
+    .empty_codebook_vars()
+  }
+
+  # ── 4. Match columns against codebook variables (rules, then optional LLM) ───
+  labels_df <- match_column_labels(columns_df, codebook_vars_df)
+
+  if (llm_use() && nrow(codebook_vars_df) > 0) {
+    merged <- codebook_match_llm(labels_df, columns_df, codebook_vars_df,
+                                 model, params)
+    labels_df      <- merged$labels_df
+    llm_match_cols <- merged$n_matched
+    llm_merge_cols <- merged$n_merged
+    if (is.na(llm_model_used)) llm_model_used <- merged$model %||% NA_character_
+  }
+
+  # ── 5. Coverage tallies ──────────────────────────────────────────────────────
+  # Two distinct questions, kept separate:
+  #   matched  — did the column match a codebook entry by name? (data coverage)
+  #   clean    — did the column also get a single usable label? (label quality)
+  # A conflicting/ambiguous column IS matched (it appears in the codebook) but
+  # its label needs resolution, so it counts toward coverage but not clean.
+  clean      <- labels_df$label_status %in% c("labelled", "llm")
+  conflicted <- labels_df$label_status %in% c("conflicting_definition",
+                                              "ambiguous_experiment")
+  matched    <- clean | conflicted
+
+  n_columns    <- nrow(labels_df)
+  n_matched    <- sum(matched)
+  n_unmatched  <- n_columns - n_matched
+  n_clean      <- sum(clean)
+  n_conflicted <- sum(conflicted)
+
+  # A codebook variable is "used" if any data column matched its name — whether
+  # or not the resulting label was clean. This keeps a conflicted-but-present
+  # variable out of the "unused" list. Conflicting/ambiguous rows can list
+  # several codebook variables (" | "-joined), so split before normalising.
+  matched_norm <- unique(normalize_varname(
+    unlist(strsplit(
+      labels_df$codebook_variable[matched & !is.na(labels_df$codebook_variable)],
+      " | ", fixed = TRUE))
+  ))
+  n_codebook_vars <- nrow(codebook_vars_df)
+  used_var <- if (n_codebook_vars > 0)
+    normalize_varname(codebook_vars_df$codebook_variable) %in% matched_norm else
+    logical(0)
+  n_unused <- sum(!used_var)
+
+  pct_matched <- if (n_columns > 0)
+    round(100 * n_matched / n_columns) else 0L
+
+  # ── 6. Traffic light ─────────────────────────────────────────────────────────
+  # Coverage (unmatched columns) and label quality (conflicts) are separate
+  # concerns; either can lower the light.
+  tl <- if (n_codebook_vars == 0) "red"           # no codebook at all
+        else if (n_unmatched == 0 && n_conflicted == 0) "green"  # all matched, all clean
+        else if (pct_matched >= 80) "yellow"      # mostly matched, or only conflicts
+        else "red"                                # substantial coverage gaps
+
+  # ── 7. Report ────────────────────────────────────────────────────────────────
+  if (n_codebook_vars == 0) {
+    summary_text <- sprintf(
+      "We found no codebook or README documentation for the %d extracted data column%s.",
+      n_columns, plural(n_columns)
+    )
+  } else {
+    summary_text <- c(
+      sprintf("We parsed %d variable definition%s from codebook/README files.",
+              n_codebook_vars, plural(n_codebook_vars)),
+      sprintf("%d of %d data column%s (%d%%) %s documented in a codebook; %d %s not.",
+              n_matched, n_columns, plural(n_columns), pct_matched,
+              if (n_matched == 1) "is" else "are",
+              n_unmatched, if (n_unmatched == 1) "is" else "are"),
+      if (n_conflicted > 0) sprintf(
+        "%d matched column%s %s a conflicting or ambiguous label that needs resolution.",
+        n_conflicted, plural(n_conflicted), if (n_conflicted == 1) "has" else "have"),
+      if (n_unused > 0) sprintf(
+        "%d documented variable%s never appear%s in the data.",
+        n_unused, plural(n_unused), if (n_unused == 1) "s" else "")
+    ) |> paste("\n- ", x = _, collapse = "")
+  }
+
+  report <- c(
+    "This module checks whether each extracted data column is documented in a codebook or README, and flags documented variables that never appear in the data."
+  )
+
+  n_cb_files <- nrow(cb_rows) + nrow(haven_rows)
+  report <- c(report, sprintf(
+    "We examined %d codebook/README/label source%s and %d data column%s across %d file%s.",
+    n_cb_files, plural(n_cb_files),
+    n_columns, plural(n_columns),
+    length(unique(labels_df$source_file)), plural(length(unique(labels_df$source_file)))
+  ))
+
+  if (n_codebook_vars == 0) {
+    report <- c(report,
+      "No codebook or README documentation was found, so no data columns could be matched to variable definitions.")
+  } else {
+    # Coverage table, one tab per data file. Documented is three-state:
+    # "yes" (clean label), "conflict" (matched but unresolved), "no" (unmatched).
+    doc_state <- ifelse(clean, "yes", ifelse(conflicted, "conflict", "no"))
+    label_tbl <- labels_df |>
+      dplyr::mutate(Documented = doc_state) |>
+      dplyr::transmute(
+        .data$source_file,
+        Column      = .data$column_name,
+        Documented  = .data$Documented,
+        Label       = .data$label,
+        `Codebook Variable` = .data$codebook_variable,
+        Source      = .data$label_source,
+        Status      = .data$label_status
+      ) |>
+      dplyr::arrange(.data$Documented, .data$Column)
+
+    report <- c(
+      report,
+      "#### Column Documentation",
+      codebook_file_tabset(label_tbl)
+    )
+
+    # Conflicting / ambiguous definitions — matched, but the label is not usable
+    # as-is. Surface these explicitly so a label typo across codebooks is not
+    # buried in the undocumented count. (With llm_use(TRUE) the merge tier
+    # resolves most of these before this point.)
+    if (n_conflicted > 0) {
+      conflict_tbl <- labels_df[conflicted, , drop = FALSE] |>
+        dplyr::transmute(
+          File     = .data$source_file,
+          Column   = .data$column_name,
+          `Conflicting Labels` = .data$label,
+          Sources  = .data$label_source,
+          Issue    = .data$label_status
+        )
+      report <- c(
+        report,
+        sprintf("#### Conflicting or Ambiguous Definitions\n\n%d matched column%s %s more than one codebook definition, or a definition scoped to a different experiment. These are matched to a codebook but need manual resolution before the label can be trusted.",
+                n_conflicted, plural(n_conflicted),
+                if (n_conflicted == 1) "has" else "have"),
+        scroll_table(conflict_tbl, maxrows = 15)
+      )
+    }
+
+    # Unused codebook variables.
+    if (n_unused > 0) {
+      unused_tbl <- codebook_vars_df[!used_var, , drop = FALSE] |>
+        dplyr::transmute(
+          Variable = .data$codebook_variable,
+          Label    = .data$label,
+          Source   = .data$codebook_source
+        )
+      report <- c(
+        report,
+        sprintf("#### Documented but Unused Variables\n\n%d documented variable%s %s not matched to any data column.",
+                n_unused, plural(n_unused), if (n_unused == 1) "was" else "were"),
+        scroll_table(unused_tbl, maxrows = 15)
+      )
+    }
+  }
+
+  if (llm_use()) {
+    llm_text <- sprintf(
+      "%sreviewed ambiguous cases (parsed %d file%s, matched %d column%s, merged %d label%s).",
+      if (!is.na(llm_model_used)) sprintf("LLM model '%s' ", llm_model_used) else "LLM ",
+      llm_parse_files, plural(llm_parse_files),
+      llm_match_cols, plural(llm_match_cols),
+      llm_merge_cols, plural(llm_merge_cols)
+    )
+    report <- c(report, llm_text)
+  }
+
+  # ── 8. Summary table + return ────────────────────────────────────────────────
+  pid <- .pid(labels_df, columns_df, structure_df)
+  summary_table <- data.frame(
+    paper_id       = pid,
+    column_n       = n_columns,
+    matched_n      = n_matched,
+    unmatched_n    = n_unmatched,
+    clean_n        = n_clean,
+    conflicted_n   = n_conflicted,
+    codebook_var_n = n_codebook_vars,
+    unused_var_n   = n_unused
+  )
+
+  list(
+    table = labels_df,
+    codebook_vars = codebook_vars_df,
+    summary_table = summary_table,
+    na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
+                   conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0),
+    traffic_light = tl,
+    report = report,
+    summary_text = summary_text
+  )
+}
+
+# ── Module-local helpers ──────────────────────────────────────────────────────
+
+# One column-documentation table per source file inside a Quarto tabset (mirrors
+# data_check's file_tabset). `tbl` must include a `source_file` column.
+codebook_file_tabset <- function(tbl) {
+  files <- unique(tbl$source_file)
+  if (length(files) == 0) return(NULL)
+  # Blank-line-separate every block so Pandoc parses each `## file` as a tab
+  # heading rather than swallowing it into the preceding table block.
+  tabs <- vapply(files, function(f) {
+    sub <- tbl[tbl$source_file == f, setdiff(names(tbl), "source_file"),
+               drop = FALSE]
+    paste(c(paste0("## ", f), scroll_table(sub, maxrows = 25)), collapse = "\n\n")
+  }, character(1))
+  paste(c("::: {.panel-tabset}", tabs, ":::"), collapse = "\n\n")
+}
+
+# LLM tier 1: parse unstructured codebook text (a character vector of lines) into
+# variable definitions. Returns a data.frame (with an "llm_model" attribute) or
+# NULL. Chunks lines in blocks of 100, capped at `max_chunks` calls.
+codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
+  chunks <- split(lines, ceiling(seq_along(lines) / 100))
+  chunks <- chunks[seq_len(min(length(chunks), max_chunks))]
+
+  # Wrap the array in a single-field object: Groq's gpt-oss-20b rejects a
+  # top-level bare array schema (HTTP 400 json_validate_failed). llm()'s
+  # .unnest_result() unwraps the single field back into rows.
+  type_spec <- ellmer::type_object(
+    variables = ellmer::type_array(
+      ellmer::type_object(
+        variable_name = ellmer::type_string("Exact variable name/code in the data file"),
+        label         = ellmer::type_string("Verbatim description text from the codebook"),
+        experiment_context = ellmer::type_string(
+          "Experiment/study heading if stated, else empty", required = FALSE)
+      )
+    )
+  )
+  prompt <- paste(
+    "You are extracting variable definitions from a psychology research codebook or README.",
+    "For each variable that has both a name and a verbatim description, return the exact",
+    "variable name, the description copied verbatim (do not paraphrase), and the experiment",
+    "or study heading it appears under (empty if none). Omit variables without a description."
+  )
+
+  out <- list()
+  model_used <- NA_character_
+  for (ch in chunks) {
+    txt <- paste(ch, collapse = "\n")
+    resp <- tryCatch(
+      llm(text = data.frame(text = txt), text_col = "text",
+          system_prompt = prompt, type = type_spec, model = model,
+          params = params),
+      error = function(e) NULL
+    )
+    resp <- .strip_llm_wrapper(resp, "variables")
+    if (is.null(resp) || nrow(resp) == 0) next
+    if (is.na(model_used)) model_used <- attr(resp, "llm")$model %||% NA_character_
+    vn <- resp$variable_name %||% character(0)
+    keep <- !is.na(vn) & nzchar(trimws(vn))
+    if (!any(keep)) next
+    ec <- if ("experiment_context" %in% names(resp))
+      as.character(resp$experiment_context[keep]) else NA_character_
+    out[[length(out) + 1L]] <- data.frame(
+      codebook_variable = as.character(vn[keep]),
+      label             = as.character(resp$label[keep]),
+      codebook_source   = src,
+      group             = .infer_group(ec),
+      parse_method      = "llm"
+    )
+  }
+  if (length(out) == 0) return(NULL)
+  res <- dplyr::bind_rows(out)
+  attr(res, "llm_model") <- model_used
+  res
+}
+
+# LLM tiers 2+3: fuzzy-match still-unlabelled columns to still-unmatched codebook
+# variables, and merge conflicting label definitions into a canonical label.
+# Returns list(labels_df, n_matched, n_merged, model).
+codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
+                               model, params) {
+  n_matched <- 0L
+  n_merged  <- 0L
+  model_used <- NA_character_
+  norm_col <- normalize_varname(labels_df$column_name)
+
+  # Tier: merge conflicting definitions.
+  conflict_idx <- which(labels_df$label_status == "conflicting_definition")
+  if (length(conflict_idx) > 0) {
+    conflict_cols <- unique(labels_df$column_name[conflict_idx])
+    type_spec <- ellmer::type_object(
+      equivalent = ellmer::type_boolean("Whether all labels describe the same construct"),
+      canonical  = ellmer::type_string("Best single label if equivalent, else empty",
+                                        required = FALSE)
+    )
+    prompt <- paste(
+      "You are reviewing whether multiple label definitions for the same variable in a",
+      "psychology dataset describe the same construct. If they do, return equivalent=true and",
+      "the most human-readable single label as canonical; otherwise equivalent=false."
+    )
+    for (cn in conflict_cols) {
+      idx1 <- conflict_idx[labels_df$column_name[conflict_idx] == cn][1]
+      labs <- strsplit(labels_df$label[idx1], " | ", fixed = TRUE)[[1]]
+      txt <- sprintf("Column: %s\nCandidate labels:\n%s", cn,
+                     paste0("- ", labs, collapse = "\n"))
+      resp <- tryCatch(
+        llm(text = data.frame(text = txt), text_col = "text",
+            system_prompt = prompt, type = type_spec, model = model,
+            params = params),
+        error = function(e) NULL
+      )
+      if (is.null(resp) || nrow(resp) == 0) next
+      if (is.na(model_used)) model_used <- attr(resp, "llm")$model %||% NA_character_
+      if (!isTRUE(resp$equivalent[1])) next
+      canonical <- resp$canonical[1] %||% ""
+      if (is.na(canonical) || !nzchar(canonical)) next
+      apply_idx <- conflict_idx[labels_df$column_name[conflict_idx] == cn]
+      labels_df$label[apply_idx]        <- canonical
+      labels_df$label_status[apply_idx] <- "labelled"
+      labels_df$label_method[apply_idx] <- "merged_llm"
+      n_merged <- n_merged + length(apply_idx)
+    }
+  }
+
+  # Tier: fuzzy-match unlabelled columns to unmatched codebook variables.
+  documented <- labels_df$label_status %in% c("labelled", "llm")
+  unlabelled_idx <- which(labels_df$label_status == "unlabelled")
+  matched_norm <- unique(normalize_varname(
+    labels_df$codebook_variable[documented & !is.na(labels_df$codebook_variable)]
+  ))
+  unmatched_vars <- codebook_vars_df[
+    !normalize_varname(codebook_vars_df$codebook_variable) %in% matched_norm,
+    , drop = FALSE
+  ]
+
+  if (length(unlabelled_idx) > 0 && nrow(unmatched_vars) > 0) {
+    unlab_cols <- unique(labels_df$column_name[unlabelled_idx])
+    # Object-wrapped array (see note above): gpt-oss-20b 400s on a bare array.
+    type_spec <- ellmer::type_object(
+      matches = ellmer::type_array(
+        ellmer::type_object(
+          column_name       = ellmer::type_string("Exact column name from the data list"),
+          codebook_variable = ellmer::type_string("Exact variable name from the codebook list")
+        )
+      )
+    )
+    prompt <- paste(
+      "You are matching data column names to codebook variable names for a psychology dataset.",
+      "Return only confident pairings referring to the same construct (abbreviations, naming",
+      "conventions, underscores vs spaces). Do not guess; both names must appear verbatim in",
+      "the lists provided."
+    )
+    norm_unmatched <- normalize_varname(unmatched_vars$codebook_variable)
+
+    # Batch both sides so a large repo (hundreds of unlabelled columns and/or
+    # codebook variables) never sends one oversized request -> HTTP 400. Each
+    # call pairs a block of columns against a block of codebook variables; the
+    # response indices are validated against the verbatim names anyway, so the
+    # cross-batch product still matches correctly.
+    col_batches <- split(seq_along(unlab_cols),
+                         ceiling(seq_along(unlab_cols) / 50))
+    var_batches <- split(seq_len(nrow(unmatched_vars)),
+                         ceiling(seq_len(nrow(unmatched_vars)) / 50))
+
+    for (ci in col_batches) {
+      cols_b <- unlab_cols[ci]
+      for (vi in var_batches) {
+        vars_b <- unmatched_vars$codebook_variable[vi]
+        txt <- paste0(
+          "Data columns (unlabelled):\n",
+          paste(seq_along(cols_b), cols_b, sep = ". ", collapse = "\n"),
+          "\n\nCodebook variables (unmatched):\n",
+          paste(seq_along(vars_b), vars_b, sep = ". ", collapse = "\n")
+        )
+        resp <- tryCatch(
+          llm(text = data.frame(text = txt), text_col = "text",
+              system_prompt = prompt, type = type_spec, model = model,
+              params = params),
+          error = function(e) NULL
+        )
+        resp <- .strip_llm_wrapper(resp, "matches")
+        if (is.null(resp) || nrow(resp) == 0 ||
+            !all(c("column_name", "codebook_variable") %in% names(resp))) next
+        if (is.na(model_used)) model_used <- attr(resp, "llm")$model %||% NA_character_
+        for (k in seq_len(nrow(resp))) {
+          pnc <- normalize_varname(resp$column_name[k])
+          pnv <- normalize_varname(resp$codebook_variable[k])
+          if (!pnc %in% norm_col[unlabelled_idx] || !pnv %in% norm_unmatched) next
+          var_row <- which(norm_unmatched == pnv)[1]
+          rows <- which(norm_col == pnc & labels_df$label_status == "unlabelled")
+          if (length(rows) == 0 || is.na(var_row)) next
+          labels_df$label[rows]             <- unmatched_vars$label[var_row]
+          labels_df$codebook_variable[rows] <- unmatched_vars$codebook_variable[var_row]
+          labels_df$label_source[rows]      <- unmatched_vars$codebook_source[var_row]
+          labels_df$label_status[rows]      <- "llm"
+          labels_df$label_method[rows]      <- "llm"
+          n_matched <- n_matched + length(rows)
+        }
+      }
+    }
+  }
+
+  list(labels_df = labels_df, n_matched = n_matched, n_merged = n_merged,
+       model = model_used)
+}

@@ -22,9 +22,15 @@
 #' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
 #' @param file_limit the maximum number of files per repository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
 #' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.
+#' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
+#' @param download if TRUE (default), download the code files to be checked from online repositories into a shared cache so they are read locally and reused on later runs. Set FALSE to stream each file from its URL instead.
+#' @param max_file_size largest single file to download, in MB (default 10)
+#' @param max_download_size largest total download per repository, in MB (default 100)
 #'
 #' @returns a list
-code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = FALSE) {
+code_check <- function(paper, file_limit = 20, local_path = NULL,
+                        local_only = FALSE, download = TRUE,
+                        max_file_size = 10, max_download_size = 100) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -80,6 +86,22 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
     )
 
     return(info)
+  }
+
+  # Download the code files we will check into the shared cache so their
+  # contents are read locally (and reused on later runs) rather than streamed
+  # from the repository URL each time. Files without a local copy fall back to
+  # streaming from file_url below.
+  if (isTRUE(download) && "file_url" %in% names(checked_files)) {
+    need_dl <- (is.na(checked_files$file_location) |
+                  !nzchar(checked_files$file_location %||% "")) &
+      !is.na(checked_files$file_url) & nzchar(checked_files$file_url %||% "")
+    if (any(need_dl)) {
+      dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
+                                max_file_size = max_file_size,
+                                max_download_size = max_download_size)
+      checked_files$file_location[need_dl] <- dl$file_location
+    }
   }
 
   # Check code ----
@@ -341,6 +363,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
 
   # table ----
   table <- code_files
+  table$file_path <- NULL
   table$file_location <- NULL
 
   # return a list ----

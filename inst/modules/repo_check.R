@@ -92,6 +92,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
         osf_files_df <- data.frame(
           repo_url = osf_file_list$repo_name,
           file_name = osf_file_list$name,
+          file_path = gsub("^/+", "", osf_file_list$path),
           file_url = osf_file_list$download_url,
           file_location = rep(NA_character_, nrow(osf_file_list)),
           file_size = osf_file_list$size,
@@ -131,6 +132,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
       github_files_df <- dplyr::tibble(
         repo_url = github_file_list$repo,
         file_name = github_file_list$name,
+        file_path = github_file_list$path,
         file_url = github_file_list$download_url,
         file_location = NA_character_,
         file_size = github_file_list$size,
@@ -154,6 +156,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
       rb_files_df <- data.frame(
         repo_url = rb_file_list$rb_url,
         file_name = rb_file_list$name,
+        file_path = rb_file_list$name,
         file_url = rb_file_list$rb_url,
         file_location = rb_file_list$file_location,
         file_size = rb_file_list$size,
@@ -190,6 +193,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
             data.frame(
               repo_url = as.character(.zenodo_info$zenodo_url[[i]]),
               file_name = as.character(f$key %||% NA_character_),
+              file_path = as.character(f$key %||% NA_character_),
               file_url = file_url,
               file_location = NA_character_,
               file_size = as.numeric(f$size %||% NA_real_)
@@ -225,6 +229,26 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
   local_files_df <- data.frame(repo_name = character(0))
   if (!is.null(local_path)) {
     local_files_df <- local_files(local_path, recursive = TRUE)
+    if (nrow(local_files_df) > 0) {
+      local_files_df$file_path <- vapply(seq_len(nrow(local_files_df)), function(i) {
+        loc <- local_files_df$file_location[[i]]
+        root <- local_files_df$repo_url[[i]]
+        if (is.na(loc) || !nzchar(loc) || is.na(root) || !nzchar(root)) {
+          return(local_files_df$file_name[[i]])
+        }
+        loc_norm <- normalizePath(loc, winslash = "/", mustWork = FALSE)
+        root_norm <- normalizePath(root, winslash = "/", mustWork = FALSE)
+        prefix <- paste0(root_norm, "/")
+        rel <- if (startsWith(loc_norm, prefix)) {
+          substr(loc_norm, nchar(prefix) + 1L, nchar(loc_norm))
+        } else if (identical(loc_norm, root_norm)) {
+          basename(loc_norm)
+        } else {
+          local_files_df$file_name[[i]]
+        }
+        if (!nzchar(rel)) local_files_df$file_name[[i]] else rel
+      }, character(1))
+    }
     local_repo <- data.frame(
       paper_id = paper_id(paper)[[1]],
       repo_url = local_path,
@@ -270,12 +294,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
   if (nrow(all_files) == 0) {
     all_files$repo_url <- character(0)
     all_files$file_name <- character(0)
+    all_files$file_path <- character(0)
     all_files$file_url <- character(0)
     all_files$file_location <- character(0)
     all_files$file_size <- numeric(0)
     all_files$file_type <- character(0)
     is_readme <- logical(0)
   } else {
+    if (!"file_path" %in% names(all_files)) {
+      all_files$file_path <- all_files$file_name
+    }
+    all_files$file_path[is.na(all_files$file_path) | !nzchar(all_files$file_path)] <- all_files$file_name[is.na(all_files$file_path) | !nzchar(all_files$file_path)]
     is_readme <- grepl(
       "readme|read[_ ]me",
       all_files$file_name,
