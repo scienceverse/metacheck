@@ -9,6 +9,17 @@
 #'
 #' The module can’t extract information from non-structured preregistration templates (i.e., where the preregistration is uploaded in a single text field) and it can’t retrieve information in preregistrations that are stored as text documents on the OSF.
 #'
+#' OSF "Open-Ended Registration" objects are ambiguous: the template is used both to preregister a study and simply to archive data or materials, so the presence of an Open-Ended Registration does not on its own establish that a study was preregistered (see \doi{10.1177/25152459241296031}). The `oer` argument controls how these are treated:
+#'
+#' \describe{
+#'   \item{`"include"`}{(default) every Open-Ended Registration is counted as a preregistration. This preserves the historical behaviour, but over-counts: in a development sample of 71 open-ended registrations from psychology papers it treated all of them as preregistrations while 15 (about one in five) were data/materials archives. `"text"` or `"llm"` are recommended for accuracy.}
+#'   \item{`"text"`}{an Open-Ended Registration is counted as a preregistration only if the sentence describing its link in the manuscript contains an explicit, non-negated preregistration label (or pre-analysis plan / study protocol), attributed to that link so a preregistration at a different link does not count. High precision, so it rarely miscounts an archive, but it under-counts some genuine preregistrations. No API needed.}
+#'   \item{`"text_broad"`}{as `"text"` but with broader keywords that match any registration mention (including trial registries and retrospectively registered studies). Higher recall, lower specificity - use when you would rather over-flag registrations for a human to review than miss any. No API needed.}
+#'   \item{`"llm"`}{an LLM classifies each Open-Ended Registration, using the manuscript's description of its link as the primary signal and the registration's own OSF description as a fallback when the manuscript is uninformative. It was the most accurate mode in the development sample, but it requires an API key (`llm_use(TRUE)`) and is not deterministic; it falls back to `"text"` when LLM use is not enabled (the report states which method ran).}
+#' }
+#'
+#' Dedicated preregistration templates (e.g. OSF Preregistration, AsPredicted) and AsPredicted links are always counted regardless of `oer`. Open-Ended Registrations that are not counted are still listed in the report so they can be checked manually.
+#'
 #' If you want to extend the package to be able to download information from other preregistration sites, reach out to the Metacheck development team.
 
 #'
@@ -23,9 +34,11 @@
 #' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object
+#' @param oer how to treat OSF "Open-Ended Registration" objects: `"include"` (count all, the default), `"text"` (count only when the manuscript describes the link as a preregistration), `"text_broad"` (as `"text"` but with broader, higher-recall keywords), or `"llm"` (classify with an LLM, requires `llm_use(TRUE)`). See Details.
 #'
 #' @returns a list
-prereg_check <- function(paper) {
+prereg_check <- function(paper, oer = c("include", "text", "text_broad", "llm")) {
+  oer <- match.arg(oer)
   # paper <- psychsci[[218]] # to test
   # and paper <- xml[["09567976251396084"]] for multiple aspredicted
   # osf: paper <- xml[["09567976221114055"]]
@@ -55,9 +68,15 @@ prereg_check <- function(paper) {
   ap_schema_table <- ap_schema(table_ap)
 
   ## OSF prereg ----
-  osf_ids <- links_osf$href |>
-    osf_check_id() |>
-    unique()
+  # keep the paper -> guid mapping so OER gating can check the manuscript that
+  # actually linked the registration (matters for paperlists)
+  osf_link_map <- data.frame(
+    paper_id = links_osf$paper_id,
+    guid = osf_check_id(links_osf$href),
+    stringsAsFactors = FALSE
+  )
+  osf_link_map <- osf_link_map[!is.na(osf_link_map$guid), , drop = FALSE]
+  osf_ids <- unique(osf_link_map$guid)
   link_types <- osf_type(osf_ids)
   reg_ids <- osf_ids[link_types == "registrations" & !is.na(link_types)]
 
@@ -103,7 +122,7 @@ prereg_check <- function(paper) {
     } else if (template == "OSF Preregistration") {
       osf_pr_28(info)
     } else if (template == "Open-Ended Registration") {
-      oer(info)
+      oer_schema(info)
     } else if (template == "Prereg Challenge") {
       prc(info)
     } else if (template == "Preregistration Template from AsPredicted.org") {
@@ -116,6 +135,39 @@ prereg_check <- function(paper) {
       osfpre(info)
     }
   })
+
+  ## OER gating ----
+  # "Open-Ended Registration" is ambiguous (preregistration vs data/materials
+  # archive). Depending on `oer`, only count it when the manuscript corroborates
+  # it (or, for "llm", when the classifier does). Each schema carries its own
+  # template_name, id and (for OERs) description, so we gate off the schema list.
+  templates <- vapply(ps, function(s) {
+    if (is.null(s)) NA_character_ else as.character(s$template_name %||% NA_character_)[1]
+  }, character(1))
+  guids <- vapply(ps, function(s) {
+    if (is.null(s)) NA_character_ else as.character(s$id %||% NA_character_)[1]
+  }, character(1))
+  is_oer <- !is.na(templates) & templates == "Open-Ended Registration"
+
+  reg_confirmed <- rep(TRUE, length(ps))
+  if (any(is_oer) && oer %in% c("text", "text_broad")) {
+    kw <- if (oer == "text_broad") PREREG_KW_BROAD else PREREG_KW
+    neg <- if (oer == "text_broad") NEG_PREREG_BROAD else NEG_PREREG
+    reg_confirmed <- vapply(seq_along(ps), function(i) {
+      if (!is_oer[i]) return(TRUE)
+      linking <- osf_link_map$paper_id[osf_link_map$guid == guids[i]]
+      has_nonneg_prereg(oer_link_sentence(paper, guids[i], linking), kw, neg)
+    }, logical(1))
+  } else if (any(is_oer) && oer == "llm") {
+    reg_confirmed <- oer_llm_confirmed(paper, ps, is_oer, guids, osf_link_map)
+  }
+  # which method actually ran ("llm" falls back to "text" when llm_use() is off)
+  oer_used <- if (oer == "llm" && !llm_use()) "text" else oer
+
+  # confirmed registrations (+ AsPredicted) are counted; unconfirmed Open-Ended
+  # Registrations are surfaced separately for manual review
+  unconfirmed_schemas <- ps[is_oer & !reg_confirmed]
+  ps <- ps[reg_confirmed]
 
   # make sure all items are not lists
   prereg_schemas <- c(ps, list(ap_schema_table)) |>
@@ -130,6 +182,72 @@ prereg_check <- function(paper) {
     paper_ids$link <- gsub("^(https://)?", "https://", paper_ids$link)
 
     prereg_info <- dplyr::left_join(prereg_info, paper_ids, by = "link")
+  }
+
+  ## unconfirmed Open-Ended Registrations + guidance ----
+  collapse_schema <- function(schemas) {
+    if (length(schemas) == 0) return(data.frame())
+    do.call(dplyr::bind_rows,
+      lapply(schemas, \(x) lapply(x, paste, collapse = "\n\n")))
+  }
+  unconfirmed_info <- collapse_schema(unconfirmed_schemas)
+
+  guidance <- c(
+    "For metascientific articles demonstrating the rate of deviations from preregistrations, see:",
+    format_ref(vandenAkker2024),
+    "For educational material on how to report deviations from preregistrations, see:",
+    format_ref(Lakens2024),
+    "On how OSF registrations (including open-ended ones) are created and shared, see:",
+    format_ref(Ensinck2025)
+  )
+
+  unconfirmed_note <- NULL
+  if (nrow(unconfirmed_info) > 0) {
+    unconfirmed_link_table <- data.frame(
+      id = link(unconfirmed_info$link, unconfirmed_info$id),
+      title = unconfirmed_info$title,
+      template = unconfirmed_info$template_name
+    )
+    reason <- if (oer_used == "llm") {
+      "an LLM did not classify them as preregistrations"
+    } else {
+      sprintf(
+        "the manuscript does not describe %s as a preregistration",
+        ifelse(nrow(unconfirmed_info) == 1, "its link", "their links")
+      )
+    }
+    unconfirmed_note <- c(
+      sprintf(
+        "We found %d OSF Open-Ended Registration%s that %s not counted as a preregistration because %s. Open-Ended Registrations are often used to archive data or materials rather than to preregister a study, so please check %s manually.",
+        nrow(unconfirmed_info), nrow(unconfirmed_info) |> plural(),
+        ifelse(nrow(unconfirmed_info) == 1, "is", "are"), reason,
+        ifelse(nrow(unconfirmed_info) == 1, "it", "them")
+      ),
+      scroll_table(unconfirmed_link_table)
+    )
+  }
+
+  ## no confirmed preregistrations ----
+  if (nrow(prereg_info) == 0) {
+    resp <- list(
+      traffic_light = "na",
+      summary_text = if (nrow(unconfirmed_info) == 0) {
+        "We found registrations, but none could be confirmed as preregistrations."
+      } else {
+        sprintf(
+          "We found %d OSF Open-Ended Registration%s, but could not confirm %s as a preregistration.",
+          nrow(unconfirmed_info), nrow(unconfirmed_info) |> plural(),
+          ifelse(nrow(unconfirmed_info) == 1, "it", "them")
+        )
+      },
+      na_replace = 0,
+      summary_table = data.frame(
+        paper_id = paper_id(paper),
+        preregistration = 0
+      ),
+      report = c(unconfirmed_note, collapse_section(guidance))
+    )
+    return(resp)
   }
 
   # traffic light ----
@@ -182,19 +300,12 @@ prereg_check <- function(paper) {
   n_prereg <- ncol(prereg_table) - 1 # subtract the 'Field' column
   colnames(prereg_table)[-1] <- paste0("Preregistration ", seq_len(n_prereg))
 
-  ## guidance ----
-  guidance <- c(
-    "For metascientific articles demonstrating the rate of deviations from preregistrations, see:",
-    format_ref(vandenAkker2024),
-    "For educational material on how to report deviations from preregistrations, see:",
-    format_ref(Lakens2024)
-  )
-
   report <- c(
     summary_text,
     scroll_table(prereg_link_table),
     report_text,
     scroll_table(samplesize_table),
+    unconfirmed_note,
     collapse_section(
       scroll_table(prereg_table, maxrows = 5),
       "Full Preregistration"
@@ -257,7 +368,128 @@ Lakens2024 <- bibentry(
   doi     = "10.1525/collabra.117094"
 )
 
+Ensinck2025 <- bibentry(
+  bibtype = "Article",
+  author  = c(
+    person(c("Eline", "N.", "F."), "Ensinck"),
+    person("Daniël", "Lakens")
+  ),
+  year    = 2025,
+  title   = "An Inception-Cohort Study Quantifying How Many Registered Studies Are Publicly Shared",
+  journal = "Advances in Methods and Practices in Psychological Science",
+  volume  = 8,
+  number  = 1,
+  doi     = "10.1177/25152459241296031"
+)
+
 # helper functions ----
+
+## Open-Ended Registration gating ----
+# Positive keywords for a preregistration-like object: explicit preregistration
+# labels, AsPredicted, pre-analysis plans, and (scoped) study/registered
+# protocols. NEG_PREREG marks negated mentions ("not preregistered").
+PREREG_KW <- "pre[-\\s]*regist|aspredicted|registered on the osf|osf\\s+registration|time-?stamped (?:hypothes|preregist)|pre[-\\s]?analysis plan|(?:study|registered|trial)\\s+protocol"
+NEG_PREREG <- "(\\bno(?:ne|t)?\\b|\\bnon-?\\b|\\bnever\\b|\\bwithout\\b|\\bneither\\b|wasn'?t|weren'?t|did not|was not|were not|not been)[^.;]{0,40}pre[-\\s]*regist|non-?pre[-\\s]*regist|pre[-\\s]*regist[^.;]{0,25}\\b(was|were)\\b[^.;]{0,15}\\b(not|none)\\b"
+# broad keywords for oer = "text_broad": any registration mention (also matches
+# trial registries, trading specificity for recall). The negation also excludes
+# explicitly post-hoc / retrospective registrations, which are not preregistrations.
+PREREG_KW_BROAD <- "regist|aspredicted|analysis plan|time-?stamped hypothes"
+NEG_PREREG_BROAD <- "(\\bno(?:ne|t)?\\b|\\bnon-?\\b|\\bnever\\b|\\bwithout\\b|\\bneither\\b|wasn'?t|weren'?t|did not|was not|were not|not been)[^.;]{0,40}regist|non-?regist|regist[^.;]{0,25}\\b(was|were)\\b[^.;]{0,15}\\b(not|none)\\b|(?:post[-\\s]?hoc|retrospective(?:ly)?)[^.;]{0,25}regist|regist[^.;]{0,25}(?:post[-\\s]?hoc|retrospective)"
+
+# TRUE if the evidence text contains an explicit, non-negated preregistration
+# statement (negation is kept sentence-local so a nearby unrelated "not" does
+# not cancel a genuine statement).
+has_nonneg_prereg <- function(text_vec, kw = PREREG_KW, neg = NEG_PREREG) {
+  if (length(text_vec) == 0) {
+    return(FALSE)
+  }
+  sents <- unlist(strsplit(paste(text_vec, collapse = " "),
+    "(?<=[.!?])\\s+",
+    perl = TRUE
+  ))
+  sents <- sents[grepl(kw, sents, perl = TRUE, ignore.case = TRUE)]
+  if (length(sents) == 0) {
+    return(FALSE)
+  }
+  any(!grepl(neg, sents, perl = TRUE, ignore.case = TRUE))
+}
+
+# Manuscript evidence for a specific link: the full sentence(s) that mention it in
+# the linking paper(s), used by BOTH the text gate and the LLM. A whole sentence
+# keeps a coordinated shared subject ("The initial registration ... and an update
+# ...") with the link, while a neighbouring sentence about a different object is
+# excluded. Returns character(0) when the link is not in the body text (footnote /
+# reference target). References excluded.
+oer_link_sentence <- function(paper, guid, linking_ids) {
+  para <- text_search(paper, guid, return = "paragraph")
+  if (is.null(para) || nrow(para) == 0) return(character(0))
+  id_col <- if ("paper_id" %in% names(para)) "paper_id" else "id"
+  para <- para[para[[id_col]] %in% linking_ids, , drop = FALSE]
+  sect_col <- intersect(c("section_type", "section"), names(para))
+  if (length(sect_col)) {
+    s <- para[[sect_col[1]]]
+    para <- para[is.na(s) | s != "references", , drop = FALSE]
+  }
+  if (nrow(para) == 0) return(character(0))
+  text <- paste(para$text, collapse = " ")
+  # de-space URLs GROBID may have broken ("osf. io/") so a link (and its sentence)
+  # stays intact through sentence-splitting
+  text <- gsub("https?\\s*:\\s*/\\s*/\\s*", "https://", text, ignore.case = TRUE)
+  text <- gsub("osf\\s*\\.\\s*io\\s*/\\s*", "osf.io/", text, ignore.case = TRUE)
+  sents <- unlist(strsplit(text, "(?<=[.!?])\\s+", perl = TRUE))
+  # case-insensitive: OSF links also appear uppercase / in DOI form (OSF.IO/2F6QS)
+  unique(trimws(sents[grepl(tolower(guid), tolower(sents), fixed = TRUE)]))
+}
+
+# Ask an LLM to classify each Open-Ended Registration as a preregistration vs a
+# data/materials archive, from its OSF description plus the manuscript sentence
+# describing its link. `schemas` is the list of registration schema objects and
+# `guids`/`is_oer` are aligned to it. Returns a logical vector aligned to
+# `schemas`. Requires llm_use(TRUE); falls back to the text gate when not enabled.
+oer_llm_confirmed <- function(paper, schemas, is_oer, guids, osf_link_map) {
+  conf <- rep(TRUE, length(schemas))
+  idx <- which(is_oer)
+  if (length(idx) == 0) {
+    return(conf)
+  }
+
+  if (!llm_use()) {
+    message("oer = 'llm' requires llm_use(TRUE); falling back to oer = 'text'.")
+    conf[idx] <- vapply(idx, function(i) {
+      linking <- osf_link_map$paper_id[osf_link_map$guid == guids[i]]
+      has_nonneg_prereg(oer_link_sentence(paper, guids[i], linking))
+    }, logical(1))
+    return(conf)
+  }
+
+  texts <- vapply(idx, function(i) {
+    descr <- paste(schemas[[i]]$description %||% "", collapse = " ")
+    linking <- osf_link_map$paper_id[osf_link_map$guid == guids[i]]
+    ev <- paste(oer_link_sentence(paper, guids[i], linking), collapse = " ")
+    paste0(
+      "OSF object description: ", descr,
+      "\n\nManuscript text describing THIS link: ", ev
+    )
+  }, character(1))
+
+  system_prompt <- paste(
+    "Decide whether a specific OSF link is used as a PREREGISTRATION or is just an ARCHIVE of data/materials.",
+    "Base the decision primarily on the MANUSCRIPT text describing this link:",
+    "(1) If the manuscript describes this link's content (data, code, materials, supplement) and does NOT call it",
+    "a preregistration, pre-analysis plan, or study/registered protocol, answer FALSE - even if the OSF description",
+    "mentions a preregistration, which may refer to the broader project or a different link.",
+    "(2) If the manuscript labels this link a preregistration / pre-analysis plan / protocol, answer TRUE; trust the",
+    "authors' explicit label (do not judge whether it was methodologically ideal).",
+    "(3) Only if the manuscript text is uninformative about this link (e.g. a bare URL) fall back to the OSF",
+    "description: answer TRUE if that description is itself a preregistration (states hypotheses and/or an analysis",
+    "plan set in advance) or labels the object as one; otherwise FALSE.",
+    "Answer FALSE if the preregistration mention is negated. Answer with exactly one word: TRUE or FALSE."
+  )
+
+  res <- llm(texts, system_prompt, params = list(seed = 1))
+  conf[idx] <- grepl("^TRUE", toupper(trimws(res$answer)))
+  conf
+}
 
 ## AsPredicted Schema
 
@@ -335,7 +567,7 @@ osfpre <- function(info) {
 }
 
 ## Open-Ended Registration ----
-oer <- function(info) {
+oer_schema <- function(info) {
   ra <- info$attributes
   prereg_answers <- ra$registration_responses
 

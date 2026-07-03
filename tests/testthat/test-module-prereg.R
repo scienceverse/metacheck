@@ -122,3 +122,53 @@ test_that("combine >10 OSF registrations", {
   expect_equal(nrow(mo$table), 11)
   expect_contains(names(mo$table), "paper_id")
 }, "mock")
+
+test_that("oer text-gate excludes an uncorroborated open-ended registration", {
+  guid <- "5xysn"
+  url <- paste0("https://osf.io/", guid)
+  paper <- test_paper(text = paste("Data and materials are available at", url),
+                      url = url)
+  mo <- module_run(paper, "prereg_check", oer = "text")
+  expect_null(mo$table)
+  expect_equal(mo$summary_table$preregistration, 0)
+}, "mock")
+
+test_that("oer text-gate counts a corroborated open-ended registration", {
+  guid <- "5xysn"
+  url <- paste0("https://osf.io/", guid)
+  paper <- test_paper(
+    text = paste("The hypotheses and analyses were preregistered at", url),
+    url = url)
+  mo <- module_run(paper, "prereg_check", oer = "text")
+  expect_equal(nrow(mo$table), 1)
+  expect_equal(mo$table$id, guid)
+}, "mock")
+
+test_that("oer text-gate attributes to the link (a prereg elsewhere does not count)", {
+  guid <- "5xysn"
+  url <- paste0("https://osf.io/", guid)
+  paper <- test_paper(
+    text = c("The analyses were preregistered on AsPredicted.",
+             paste("Data and materials are available at", url)),
+    url = url)
+  mo <- module_run(paper, "prereg_check", oer = "text")
+  expect_null(mo$table)
+}, "mock")
+
+test_that("oer text_broad counts a bare 'registered' statement that strict excludes", {
+  guid <- "5xysn"
+  url <- paste0("https://osf.io/", guid)
+  paper <- test_paper(text = paste("The study was registered at", url), url = url)
+  expect_null(module_run(paper, "prereg_check", oer = "text")$table)
+  mo_broad <- module_run(paper, "prereg_check", oer = "text_broad")
+  expect_equal(nrow(mo_broad$table), 1)
+}, "mock")
+
+test_that("oer = 'llm' falls back to text-gating when llm_use is off", {
+  guid <- "5xysn"
+  url <- paste0("https://osf.io/", guid)
+  paper <- test_paper(text = paste("Data at", url), url = url)
+  llm_use(FALSE)
+  mo <- suppressMessages(module_run(paper, "prereg_check", oer = "llm"))
+  expect_null(mo$table)
+}, "mock")

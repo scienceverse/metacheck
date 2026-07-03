@@ -1,3 +1,7 @@
+# metacheck 0.1.0.9000
+
+* `prereg_check()` gains an `oer` argument controlling how OSF "Open-Ended Registrations" are treated (`"include"`, the default; `"text"`, count only when the manuscript describes the link as a preregistration; `"text_broad"`, higher-recall keyword variant; or `"llm"`), addressing over-counting of archival open-ended registrations (#324)
+
 # metacheck 0.1.0
 
 * Actual beta release with proper number and Zenodo citation!
