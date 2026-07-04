@@ -71,11 +71,25 @@ llm <- function(text, system_prompt,
   # check if json schema type is set for a structured return
   structured <- !is.null(type)
 
+  # check params early: catches typos/bad values before any provider or
+  # network work (the raw `params` list is still needed for the ollama path,
+  # so only the converted copy is kept for the ellmer chat below)
+  tryCatch({
+    checked_params <- do.call(ellmer::params, params)
+  }, error = \(e) {
+    stop("Misspecified params argument:\n", e$message, call. = FALSE)
+  })
+
+  if (is.null(model) || length(model) == 0 || !nzchar(model[[1]])) {
+    stop("No LLM model is set; pass `model` or set a default with llm_model()",
+         call. = FALSE)
+  }
+
   # ollama checks ----
   use_ollama_native <- FALSE
   if (grepl("^ollama", model)) {
     # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it
-    use_ollama_native <- !isTRUE(params$think) %% !structured
+    use_ollama_native <- !isTRUE(params$think) && !structured
     if (use_ollama_native) {
       ollama_options <- params
       ollama_options$think <- NULL
@@ -107,12 +121,8 @@ llm <- function(text, system_prompt,
     }
   }
 
-  # check params ----
-  tryCatch({
-    params <- do.call(ellmer::params, params)
-  }, error = \(e) {
-    stop("Misspecified params argument:\n", e$message, call. = FALSE)
-  })
+  # params were validated above, before the provider checks
+  params <- checked_params
 
   # set up progress bar ----
   label <- if (structured) "Extracting data" else "Querying LLM"
@@ -420,10 +430,12 @@ llm_max_calls <- function(n = NULL) {
 #' @return NULL
 #' @export
 #'
-llm_model <- function(model = NULL) {
-  if (is.null(model)) {
+llm_model <- function(model) {
+  # missing() rather than a NULL default so llm_model(NULL) can RESET the
+  # option (restoring a saved value that happened to be NULL round-trips)
+  if (missing(model)) {
     return(getOption("metacheck.llm.model"))
-  } else if (is.character(model)) {
+  } else if (is.null(model) || is.character(model)) {
     options(metacheck.llm.model = model)
     invisible(getOption("metacheck.llm.model"))
   } else {

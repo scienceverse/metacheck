@@ -4,7 +4,7 @@
 \alias{llm_model}
 \title{Set the default LLM model}
 \usage{
-llm_model(model = NULL)
+llm_model(model)
 }
 \arguments{
 \item{model}{the name of the model}
