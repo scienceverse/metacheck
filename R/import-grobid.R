@@ -451,7 +451,11 @@ grobid_to_bibr <- function(xml_path,
   paper$url$href <- gsub("\\.$", "", paper$url$href) # fix urls with . at end
   same <- gsub("^https?://", "", paper$url$href) ==
     gsub("^https?://", "", gsub("\\s", "", paper$url$link_text))
-  for (i in seq_along(same)) {
+  same <- !is.na(same) & same
+  # only normalize anchors that ARE the URL (modulo spaces/protocol):
+  # substituting arbitrary anchor text with its href rewrites every match of
+  # that text in the whole paper (e.g. anchor "Fig" clobbering "Fig. 2")
+  for (i in which(same)) {
     paper$text$text <- gsub(paper$url$link_text[[i]],
          paper$url$href[[i]],
          paper$text$text, fixed = TRUE)
