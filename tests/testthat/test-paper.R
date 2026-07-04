@@ -15,6 +15,21 @@ test_that(".paper_schema", {
   skip_on_cran()
   url <- "https://scienceverse.org/schema/paper.json"
   sv_schema <- jsonlite::read_json(url, simplifyVector = TRUE)
+
+  # metacheck bundles the published schema with ONE deliberate relaxation:
+  # `schema_version` is dropped from info.required so that papers produced by
+  # pre-10.5 bibr (which do not emit it) still validate. Pin that this is the
+  # *only* difference, then compare everything else for exact drift.
+  relaxed <- "schema_version"
+  expect_setequal(
+    setdiff(sv_schema$`$defs`$info$required, schema$`$defs`$info$required),
+    relaxed
+  )
+  expect_length(
+    setdiff(schema$`$defs`$info$required, sv_schema$`$defs`$info$required), 0
+  )
+  sv_schema$`$defs`$info$required <-
+    setdiff(sv_schema$`$defs`$info$required, relaxed)
   expect_equal(schema, sv_schema)
 })
 
