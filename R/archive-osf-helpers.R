@@ -43,7 +43,9 @@
 
   req <- httr2::request(probe) |>
     httr2::req_error(is_error = \(r) FALSE)  |>
-    # httr2::req_timeout(5) |>
+    # bounded: .onLoad() runs this whenever OSF_PAT is set, so a hanging OSF
+    # endpoint would otherwise block every R session/worker start
+    httr2::req_timeout(5) |>
     httr2::req_headers(
       `User-Agent` = "metacheck",
       Accept = "application/vnd.api+json"

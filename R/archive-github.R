@@ -276,10 +276,18 @@ github_files <- function(repo, dir = "",
 #'
 #' @keywords internal
 .github_config <- function(req) {
-  token <- tryCatch(
-    gitcreds::gitcreds_get(),
-    error = function(e) NULL
-  )
+  # env vars first (the gh-package convention): headless deploys (Docker/CI)
+  # have no git credential store for gitcreds to read, and unauthenticated
+  # GitHub clients are capped at 60 requests/hour/IP
+  pat <- Sys.getenv("GITHUB_PAT", Sys.getenv("GITHUB_TOKEN"))
+  token <- if (nzchar(pat)) {
+    list(password = pat)
+  } else {
+    tryCatch(
+      gitcreds::gitcreds_get(),
+      error = function(e) NULL
+    )
+  }
 
   req <- req |>
     httr2::req_headers(
