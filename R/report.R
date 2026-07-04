@@ -193,7 +193,10 @@ report_module_run <- function(paper, modules, args = list()) {
   # module_output <- lapply(modules, \(module) {
   op <- paper
   for (module in modules) {
-    pb$tick(tokens = list(what = module))
+    # Label the bar with the module about to run (zero-advance) so a slow module
+    # — e.g. one making LLM calls — is attributed to its own name, not the next
+    # module's. The bar advances only after the module returns (below).
+    pb$tick(0, tokens = list(what = module))
     mod_args <- args[[module]] %||% list()
     mod_args$paper <- op
     mod_args$module <- module
@@ -218,6 +221,9 @@ report_module_run <- function(paper, modules, args = list()) {
         return(report_items)
       }
     )
+    # Advance now that the module has finished, so its elapsed time is charged to
+    # its own label rather than bleeding into the next module's.
+    pb$tick(tokens = list(what = module))
   }
 
   # pull last module output out

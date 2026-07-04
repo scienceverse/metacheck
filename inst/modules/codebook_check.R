@@ -47,18 +47,26 @@
 #' @param local_path optional path to a local directory, passed through to
 #'   `data_check` / `repo_check` when their output is not already available
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
+#' @param codebook_max_calls the maximum number of LLM calls a single tier will
+#'   make (default 40): the number of 100-line text blocks per unstructured
+#'   codebook file, and the number of distinct survey layouts sent for scale
+#'   identification. This is an upfront gate: if a tier would need more calls
+#'   than this, the whole tier is skipped (not truncated) with a message naming
+#'   `codebook_max_calls` and the number needed.
 #' @param model the LLM model name (see `llm_model_list()`) used only when
 #'   `llm_use(TRUE)`
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
 #'
 #' @returns a list
 codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
+                           codebook_max_calls = 40L,
                            model = llm_model(),
                            params = list()) {
 
   .codebook_types <- c("codebook", "readme")
   .haven_exts     <- c("sav", "dta", "sas7bdat")
-  max_llm_chunks  <- 10L   # per unstructured codebook file
+  max_llm_chunks  <- codebook_max_calls   # per unstructured codebook file
+  gate_msgs       <- character(0)          # cap refusals to surface in the report
 
   # Resolve a usable paper_id from whatever tables we have.
   .pid <- function(...) {
@@ -141,14 +149,34 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (is.data.frame(pv) && nrow(pv) > 0) {
         parsed_list[[length(parsed_list) + 1L]] <- pv
       } else if (is.character(pv) && length(pv) > 0 && llm_use()) {
-        # Unstructured text: send to the LLM in chunks.
-        llm_out <- codebook_parse_llm(pv, basename(p), model, params,
-                                      max_chunks = max_llm_chunks)
-        if (!is.null(llm_out) && nrow(llm_out) > 0) {
-          parsed_list[[length(parsed_list) + 1L]] <- llm_out
-          llm_parse_files <- llm_parse_files + 1L
-          if (is.na(llm_model_used))
-            llm_model_used <- attr(llm_out, "llm_model") %||% NA_character_
+        # Unstructured text: send to the LLM in 100-line chunks. Upfront gate —
+        # if this file needs more chunks (calls) than the cap allows, skip its
+        # LLM parse entirely rather than silently truncating to the first N.
+        n_chunks <- ceiling(length(pv) / 100)
+        gate <- cap_gate_count(n_chunks, "codebook_max_calls", max_llm_chunks,
+                               "text block", context = basename(p),
+                               action = "parse")
+        # Ask (interactive, not auto) whether to skip this file's LLM parse or
+        # raise the budget. Under auto()/non-interactive: report inline + skip.
+        parse_cap <- max_llm_chunks
+        if (!is.null(gate)) {
+          ans <- cap_prompt(gate, param = "codebook_max_calls", needed = n_chunks,
+                            current = max_llm_chunks, items = NULL)
+          if (identical(ans$action, "raise") && !is.na(ans$value))
+            parse_cap <- ans$value
+          else gate_msgs <- c(gate_msgs, gate)
+        }
+        if (!is.null(gate) && parse_cap == max_llm_chunks) {
+          # skipped (declined the raise): do nothing for this file
+        } else {
+          llm_out <- codebook_parse_llm(pv, basename(p), model, params,
+                                        max_chunks = parse_cap)
+          if (!is.null(llm_out) && nrow(llm_out) > 0) {
+            parsed_list[[length(parsed_list) + 1L]] <- llm_out
+            llm_parse_files <- llm_parse_files + 1L
+            if (is.na(llm_model_used))
+              llm_model_used <- attr(llm_out, "llm_model") %||% NA_character_
+          }
         }
       }
     }
@@ -206,7 +234,22 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_scale_unnamed    <- 0L   # of those files, how many yielded no named scale
   if (llm_use() && !is.null(previews) && length(previews) > 0) {
     sc <- codebook_identify_scales(previews, labels_df, model, params,
-                                   paper = paper)
+                                   paper = paper, max_calls = codebook_max_calls)
+    scale_gate <- attr(sc, "gated")
+    if (!is.null(scale_gate)) {
+      # Ask (interactive, not auto) whether to skip scale identification or raise
+      # the budget. Under auto()/non-interactive: report inline + skip.
+      n_needed <- attr(sc, "n_needed") %||% codebook_max_calls
+      ans <- cap_prompt(scale_gate, param = "codebook_max_calls",
+                        needed = n_needed, current = codebook_max_calls,
+                        items = NULL)
+      if (identical(ans$action, "raise") && !is.na(ans$value)) {
+        sc <- codebook_identify_scales(previews, labels_df, model, params,
+                                       paper = paper, max_calls = ans$value)
+      } else {
+        gate_msgs <- c(gate_msgs, scale_gate)
+      }
+    }
     n_scale_files <- attr(sc, "n_detected") %||% 0L
     if (!is.null(sc) && nrow(sc) > 0) {
       # Merge scale assignments back onto labels_df by (source_file, column_name).
@@ -417,6 +460,11 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     report <- c(report, llm_text)
   }
 
+  # Tiers refused by the LLM call budget: name the parameter and the value to
+  # lift it (upfront gate — the tier was skipped, not partially processed).
+  if (length(gate_msgs) > 0)
+    report <- c(report, paste0("- ", gate_msgs))
+
   # ── 8. Summary table + return ────────────────────────────────────────────────
   pid <- .pid(labels_df, columns_df, structure_df)
   summary_table <- data.frame(
@@ -493,7 +541,7 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
     resp <- tryCatch(
       llm(text = data.frame(text = txt), text_col = "text",
           system_prompt = prompt, type = type_spec, model = model,
-          params = params),
+          params = params, phase = "Parsing codebook"),
       error = function(e) NULL
     )
     resp <- .strip_llm_wrapper(resp, "variables")
@@ -654,23 +702,44 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
   # Deduplicate by signature: identify once per distinct survey layout.
   sigs      <- vapply(file_items, function(x) x$sig, character(1))
   uniq_sigs <- unique(sigs)
-  out <- list(); model_used <- NA_character_; n_skipped <- 0L; n_calls <- 0L
 
-  for (sig in uniq_sigs) {
+  # Which signatures actually have a basis to identify (would cost an LLM call)?
+  # A signature with no wording and only generic names is skipped for free.
+  has_basis <- function(sig) {
+    it  <- file_items[[names(file_items)[sigs == sig][[1]]]]
+    prefixes    <- vapply(it$nms, .scale_name_prefix, character(1))
+    has_wording <- sum(!is.na(it$labs) & nzchar(it$labs)) >= 2L
+    all_generic <- all(!nzchar(prefixes) |
+                       grepl("^(v|q|x|col|var|item|value)$", prefixes))
+    has_wording || !all_generic
+  }
+  callable_sigs <- Filter(has_basis, uniq_sigs)
+  n_skipped     <- length(uniq_sigs) - length(callable_sigs)
+
+  # Upfront gate: if identifying every distinct survey layout would exceed the
+  # call budget, skip the whole scale tier (do not identify a partial subset).
+  if (length(callable_sigs) > max_calls) {
+    res <- data.frame(source_file = character(), column_name = character(),
+                      scale = character(), confidence = character())
+    attr(res, "llm_model")  <- NA_character_
+    attr(res, "n_detected") <- n_detected
+    attr(res, "n_skipped")  <- n_skipped
+    attr(res, "gated")      <- cap_gate_count(
+      length(callable_sigs), "codebook_max_calls", max_calls,
+      "survey layout", context = "scale identification", action = "identify")
+    attr(res, "n_needed")   <- length(callable_sigs)
+    return(res)
+  }
+
+  out <- list(); model_used <- NA_character_
+
+  for (sig in callable_sigs) {
     files_here <- names(file_items)[sigs == sig]
     rep_file   <- files_here[[1]]
     it <- file_items[[rep_file]]
     nms <- it$nms; labs <- it$labs
 
-    # If none of these columns has wording AND every name is generic, there is
-    # no basis to identify — skip the call (counts toward guidance).
     prefixes <- vapply(nms, .scale_name_prefix, character(1))
-    has_wording <- sum(!is.na(labs) & nzchar(labs)) >= 2L
-    all_generic <- all(!nzchar(prefixes) |
-                       grepl("^(v|q|x|col|var|item|value)$", prefixes))
-    if (!has_wording && all_generic) { n_skipped <- n_skipped + 1L; next }
-    if (n_calls >= max_calls) break
-    n_calls <- n_calls + 1L
 
     items   <- ifelse(!is.na(labs) & nzchar(labs), paste0(nms, ": ", labs), nms)
     listing <- paste(seq_along(items), items, sep = ". ", collapse = "\n")
@@ -690,7 +759,7 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
     resp <- tryCatch(
       llm(text = data.frame(text = text_in), text_col = "text",
           system_prompt = prompt, type = type_spec, model = model,
-          params = params),
+          params = params, phase = "Identifying scales"),
       error = function(e) NULL)
     resp <- .strip_llm_wrapper(resp, "scales")
     if (is.null(resp) || nrow(resp) == 0 || !"scale" %in% names(resp)) next
@@ -765,7 +834,7 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
       resp <- tryCatch(
         llm(text = data.frame(text = txt), text_col = "text",
             system_prompt = prompt, type = type_spec, model = model,
-            params = params),
+            params = params, phase = "Matching codebook columns"),
         error = function(e) NULL
       )
       if (is.null(resp) || nrow(resp) == 0) next
@@ -834,7 +903,7 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
         resp <- tryCatch(
           llm(text = data.frame(text = txt), text_col = "text",
               system_prompt = prompt, type = type_spec, model = model,
-              params = params),
+              params = params, phase = "Matching codebook columns"),
           error = function(e) NULL
         )
         resp <- .strip_llm_wrapper(resp, "matches")

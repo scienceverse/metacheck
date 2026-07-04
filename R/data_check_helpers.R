@@ -184,6 +184,101 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 # classifier in data_check so batch size is tuned in one place.
 .data_check_llm_batch <- 50L
 
+# Write a per-paper file manifest (JSON) recording every repository file and
+# whether it was downloaded — the provenance needed to audit a corpus or rebuild
+# a data archive without re-querying every repo. `files` is data_check's finalised
+# `all_files`; `want` is the logical vector of files this run tried to download;
+# `gated` is the download gate table (repos refused by the size caps).
+#
+# Sizes are completed here: a downloaded file's real size comes from disk, and a
+# wanted file the listing left unsized (OSF returns NA for some files, often the
+# large ones) is resolved with a cheap HEAD probe — so the manifest carries a
+# real size for choosing the archive's size ceiling. Only NA-sized wanted files
+# are probed, and only when a manifest is requested, so normal runs pay nothing.
+.data_check_write_manifest <- function(manifest, files, want, gated,
+                                       paper_id, download,
+                                       max_file_size, max_download_size) {
+  # Resolve the output path: a directory → "<paper_id>.manifest.json" inside it;
+  # a ".json" path is used verbatim.
+  path <- manifest
+  if (!grepl("\\.json$", path, ignore.case = TRUE)) {
+    dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    pid <- if (length(paper_id) && !is.na(paper_id[[1]])) paper_id[[1]] else "manifest"
+    path <- file.path(path, paste0(pid, ".manifest.json"))
+  } else {
+    dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  }
+
+  n <- nrow(files)
+  loc <- files$file_location %||% rep(NA_character_, n)
+  downloaded <- !is.na(loc) & nzchar(loc) & file.exists(loc %||% "")
+  gated_urls <- if (!is.null(gated) && nrow(gated) > 0) gated$repo_url else character(0)
+
+  # Complete the sizes. A downloaded file's real size is on disk. For a wanted
+  # file the listing left unsized (OSF returns NA for some files — exactly the
+  # large ones), resolve it with a cheap HEAD probe so the manifest carries a
+  # real size for ceiling planning. This runs only when a manifest is requested
+  # (opt-in) and only for the NA-sized wanted files, so normal runs pay nothing.
+  file_size <- as.numeric(files$file_size)
+  on_disk_size <- ifelse(downloaded, suppressWarnings(file.size(loc)), NA_real_)
+  file_size <- ifelse(!is.na(on_disk_size), on_disk_size, file_size)
+
+  url <- files$file_url %||% rep(NA_character_, n)
+  probe <- which(is.na(file_size) & (want %in% TRUE) &
+                   !is.na(url) & nzchar(url) & !downloaded)
+  if (length(probe) > 0) {
+    pb_probe <- pb(length(probe),
+                   "Sizing files (HEAD) [:bar] :current/:total")
+    on.exit(pb_probe$terminate(), add = TRUE)
+    for (i in probe) {
+      file_size[i] <- .remote_size(url[i])
+      pb_probe$tick()
+    }
+  }
+
+  # Why was a file not downloaded? Ordered from most to least specific.
+  reason <- vapply(seq_len(n), function(i) {
+    if (downloaded[i]) return(NA_character_)
+    url <- files$file_url[i] %||% NA_character_
+    if (identical(download, "none")) return("download = \"none\"")
+    if (!isTRUE(want[i]))
+      return("not a data/codebook/README file (use download = \"all\")")
+    if (is.na(url) || !nzchar(url)) return("no download URL in the listing")
+    if (files$repo_url[i] %in% gated_urls)
+      return("repository refused by the size caps")
+    "download failed"
+  }, character(1))
+
+  entries <- lapply(seq_len(n), function(i) {
+    Filter(Negate(is.null), list(
+      file_name    = files$file_name[i],
+      file_path    = files$file_path[i] %||% files$file_name[i],
+      repo_url     = files$repo_url[i],
+      file_url     = files$file_url[i] %||% NA_character_,
+      file_size    = if (!is.na(file_size[i])) file_size[i] else NULL,
+      data_type    = files$data_type[i] %||% NA_character_,
+      data_format  = files$data_format[i] %||% NA_character_,
+      downloaded   = downloaded[i],
+      skip_reason  = if (downloaded[i]) NULL else reason[i]
+    ))
+  })
+
+  doc <- list(
+    paper_id  = if (length(paper_id)) paper_id[[1]] else NA_character_,
+    generated = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    download  = download,
+    caps      = list(max_file_size_mb = max_file_size,
+                     max_download_size_mb = max_download_size),
+    n_files      = n,
+    n_downloaded = sum(downloaded),
+    files        = entries
+  )
+
+  json <- jsonlite::toJSON(doc, auto_unbox = TRUE, pretty = TRUE, na = "null")
+  writeLines(json, path, useBytes = TRUE)
+  invisible(path)
+}
+
 # Classify a vector of items with an LLM in index-mapped batches. Each batch
 # sends a numbered listing of `item_texts` and expects an object-wrapped array
 # of {index, value} objects back; results are mapped to positions by index, so a
@@ -195,7 +290,8 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 # restricts accepted values (others become NA). Runs only when llm_use(TRUE).
 .llm_classify_batched <- function(item_texts, system_prompt, value_desc,
                                   valid = NULL, batch_size = .data_check_llm_batch,
-                                  model = llm_model(), params = list()) {
+                                  model = llm_model(), params = list(),
+                                  phase = NULL) {
   n <- length(item_texts)
   out <- rep(NA_character_, n)
   if (n == 0) return(out)
@@ -219,7 +315,7 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
     resp <- tryCatch(
       llm(text = data.frame(text = listing), text_col = "text",
           system_prompt = system_prompt, type = type_spec, model = model,
-          params = params),
+          params = params, phase = phase),
       error = function(e) NULL
     )
     resp <- .strip_llm_wrapper(resp, "results")
@@ -333,7 +429,7 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
     resp <- tryCatch(
       llm(text = data.frame(text = listing), text_col = "text",
           system_prompt = prompt, type = type_spec, model = model,
-          params = params),
+          params = params, phase = "Assigning study groups"),
       error = function(e) NULL
     )
     resp <- .strip_llm_wrapper(resp, "assignments")
@@ -1408,7 +1504,10 @@ data_analysis_unit <- function(df, id_cols = NULL) {
 
   if (length(id_cols) == 1) {
     ids <- df[[id_cols[1]]]
-    frac_unique <- length(unique(ids[!is.na(ids)])) / sum(!is.na(ids))
+    # An id column that is entirely NA gives 0/0 = NaN; treat it as non-unique
+    # so the `>= 0.98` test below doesn't error on a missing value.
+    n_ids <- sum(!is.na(ids))
+    frac_unique <- if (n_ids == 0) 0 else length(unique(ids[!is.na(ids)])) / n_ids
     if (frac_unique >= 0.98)
       return(list(unit = "person",
                   reason = sprintf("the identifier '%s' is unique per row (one row per participant)", id_cols[1])))

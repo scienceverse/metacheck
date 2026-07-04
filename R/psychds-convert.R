@@ -29,38 +29,16 @@
                   all.x = TRUE, suffixes = c("", ".lbl"))
   }
 
-  # Drop columns with no measured content (empty). Support both the facet schema
-  # (representation/quality/measurement_level/concept/unit) and, for an older
-  # data_check table, a legacy `col_type` column mapped onto the facets.
-  qual <- if ("quality" %in% names(cols)) tolower(cols$quality %||% "") else
-    ifelse(tolower(cols$col_type %||% "") == "empty", "empty", "ok")
+  # Drop columns with no measured content (empty). The facet schema
+  # (representation/quality/measurement_level/concept/unit) is expected.
+  qual <- tolower(cols$quality %||% "")
   cols <- cols[!(qual %in% .psychds_excluded_quality), , drop = FALSE]
   if (nrow(cols) == 0) return(list())
 
-  # Legacy fallback: derive representation from a col_type-only table.
-  legacy_rep <- function(ct) {
-    ct <- tolower(ct %||% "")
-    if (ct %in% c("continuous", "continuous_comma_decimal",
-                  "continuous_outliers_excluded")) "numeric"
-    else if (ct == "date") "datetime" else if (ct == "id") "text"
-    else if (ct %in% c("binary", "categorical", "ordinal")) "code"
-    else "text"
-  }
-  legacy_level <- function(ct) {
-    ct <- tolower(ct %||% "")
-    if (ct %in% c("binary", "categorical")) "nominal"
-    else if (ct == "ordinal") "ordinal"
-    else if (ct %in% c("continuous", "continuous_comma_decimal",
-                       "continuous_outliers_excluded")) "ratio"
-    else NA_character_
-  }
-
   lapply(seq_len(nrow(cols)), function(i) {
     row <- cols[i, ]
-    rep_ <- if ("representation" %in% names(row)) row$representation %||% NA_character_
-            else legacy_rep(row$col_type)
-    lvl  <- if ("measurement_level" %in% names(row)) row$measurement_level %||% NA_character_
-            else legacy_level(row$col_type)
+    rep_ <- row$representation %||% NA_character_
+    lvl  <- row$measurement_level %||% NA_character_
     pv  <- list(`@type` = "PropertyValue", name = row$column_name)
 
     # Variable description from the codebook, when documented.
@@ -435,12 +413,15 @@ convert_psychds <- function(paper, output_dir = NULL,
   loc <- setNames(structure_df$file_location, structure_df$file_name)
 
   # ── Copy files to their target locations ────────────────────────────────────
-  n_copied <- 0L
-  skipped  <- character(0)
+  n_copied    <- 0L
+  skipped     <- character(0) # files not on disk (never downloaded)
+  skipped_i   <- integer(0)   # their plan-row indices, to group by type below
+  copy_failed <- character(0) # files on disk that failed to copy (I/O error)
   for (i in seq_len(nrow(plan))) {
     src <- loc[[plan$file_name[i]]]
     if (is.null(src) || is.na(src) || !nzchar(src) || !file.exists(src)) {
-      skipped <- c(skipped, plan$file_name[i])
+      skipped   <- c(skipped, plan$file_name[i])
+      skipped_i <- c(skipped_i, i)
       next
     }
     dest <- file.path(output_dir, plan$target_path[i])
@@ -451,9 +432,11 @@ convert_psychds <- function(paper, output_dir = NULL,
         grepl("^(study-[^/]+/)?data/", plan$target_path[i])) {
       ok <- .psychds_copy_no_bom(src, dest)
       if (ok) n_copied <- n_copied + 1L
-      else skipped <- c(skipped, plan$file_name[i])
+      else copy_failed <- c(copy_failed, plan$file_name[i])
     } else if (file.copy(src, dest, overwrite = TRUE)) {
       n_copied <- n_copied + 1L
+    } else {
+      copy_failed <- c(copy_failed, plan$file_name[i])
     }
   }
 
@@ -500,10 +483,35 @@ convert_psychds <- function(paper, output_dir = NULL,
                  changes_dest)
   }
 
-  if (length(skipped) > 0)
-    message(length(skipped), " file(s) skipped (no local copy to convert): ",
-            paste(utils::head(skipped, 5), collapse = ", "),
-            if (length(skipped) > 5) ", ..." else "")
+  # Explain the files that were NOT placed in the dataset. The common case is
+  # not an error: `data_check(download = "data")` (the default) fetches only the
+  # machine-readable files (tabular data + codebook/README), so code, materials,
+  # PDFs and other assets were never downloaded and cannot be copied. Say so
+  # plainly, break the count down by file type, and point to `download = "all"`.
+  if (length(skipped) > 0) {
+    n_total <- nrow(plan)
+    types   <- tolower(plan$data_type[skipped_i] %||% "other")
+    types[is.na(types) | !nzchar(types)] <- "other"
+    by_type <- sort(table(types), decreasing = TRUE)
+    breakdown <- paste(sprintf("%d %s", by_type, names(by_type)), collapse = ", ")
+    message(
+      sprintf(paste0(
+        "%d of %d repository file%s %s not added to the Psych-DS dataset ",
+        "because they were not downloaded (by type: %s).\n",
+        "  data_check downloads only machine-readable data + codebook/README ",
+        "files by default. To include every repository file in the dataset, ",
+        "rebuild with data_check(download = \"all\")."),
+        length(skipped), n_total, plural(length(skipped)),
+        if (length(skipped) == 1) "was" else "were", breakdown))
+  }
+
+  if (length(copy_failed) > 0)
+    message(
+      sprintf("%d file%s could not be copied despite being downloaded ",
+              length(copy_failed), plural(length(copy_failed))),
+      "(a read/write error): ",
+      paste(utils::head(copy_failed, 5), collapse = ", "),
+      if (length(copy_failed) > 5) ", ..." else "")
 
   message("Wrote Psych-DS dataset to ", normalizePath(output_dir, mustWork = FALSE),
           " (", n_copied, " file(s), ", length(descriptions),
@@ -514,6 +522,7 @@ convert_psychds <- function(paper, output_dir = NULL,
     n_files_copied = n_copied,
     n_studies      = length(study_roots),
     descriptions   = descriptions,
-    skipped        = skipped
+    skipped        = skipped,
+    copy_failed    = copy_failed
   ))
 }

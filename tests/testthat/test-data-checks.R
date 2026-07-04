@@ -179,6 +179,13 @@ test_that("data_analysis_unit infers the unit of observation", {
 
   # id inferred by name when not supplied.
   expect_equal(data_analysis_unit(persons)$unit, "person")
+
+  # All-NA id column: 0/0 unique fraction must not error (regression: an id
+  # column with no non-NA values gave frac_unique = NaN and `if (NaN >= 0.98)`
+  # threw "missing value where TRUE/FALSE needed").
+  na_ids <- data.frame(subject_id = rep(NA_character_, 5), value = 1:5)
+  expect_no_error(res <- data_analysis_unit(na_ids, "subject_id"))
+  expect_false(identical(res$unit, "person"))
 })
 
 test_that("data_col_stats returns numeric summaries", {

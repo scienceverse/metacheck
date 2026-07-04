@@ -61,11 +61,16 @@
 #'   already available
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
 #' @param outlier_k the IQR multiplier for the Tukey outlier rule (default 1.5)
+#' @param max_facets the maximum number of numeric columns drawn in the combined
+#'   distribution figure (default 40); beyond this the facet grid becomes
+#'   unreadable. This is a display limit (all columns are still checked): when
+#'   more columns exist, the figure shows the first `max_facets` and a note names
+#'   the parameter and how many were omitted.
 #' @param model,params passed to `data_check` when `llm_use(TRUE)`
 #'
 #' @returns a list
 data_validate <- function(paper, local_path = NULL, local_only = FALSE,
-                          outlier_k = 1.5,
+                          outlier_k = 1.5, max_facets = .dv_max_facets,
                           model = llm_model(), params = list()) {
 
   .pid <- function(...) {
@@ -457,7 +462,7 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   # so the figure stays legible.
   if (length(plot_specs) > 0 && requireNamespace("ggplot2", quietly = TRUE)) {
     report <- c(report, "#### Distributions",
-                data_validate_dist_facets(plot_specs))
+                data_validate_dist_facets(plot_specs, max_facets = max_facets))
   } else if (length(plot_specs) > 0) {
     report <- c(report,
       "*Install the `ggplot2` package to see the distribution histograms.*")
@@ -787,7 +792,9 @@ data_validate_dist_facets <- function(plot_specs, max_facets = .dv_max_facets) {
   if (is.na(uri)) return("*Distribution figure could not be rendered.*")
   img <- sprintf("<img src=\"%s\" alt=\"Column distributions\" style=\"max-width:100%%\"/>", uri)
   note <- if (n_total > length(specs))
-    sprintf("\n\n*Showing the first %d of %d numeric columns.*",
-            length(specs), n_total) else ""
+    sprintf(paste0("\n\n*Showing the first %d of %d numeric columns (all were ",
+                   "checked; only the figure is limited). Set `max_facets = %d` ",
+                   "to plot them all.*"),
+            length(specs), n_total, n_total) else ""
   paste0(img, note)
 }

@@ -20,17 +20,17 @@
 #' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
-#' @param file_limit the maximum number of files per repository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
+#' @param file_limit the maximum number of code files per repository to assess. This is an upfront gate: a repository with more code files than the limit is skipped wholesale (not sliced to the first `file_limit`) with a message naming `file_limit` and the count needed to include it.
 #' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
 #' @param download if TRUE (default), download the code files to be checked from online repositories into a shared cache so they are read locally and reused on later runs. Set FALSE to stream each file from its URL instead.
-#' @param max_file_size largest single file to download, in MB (default 10)
-#' @param max_download_size largest total download per repository, in MB (default 100)
+#' @param max_file_size largest single file to download, in MB (default 100). Size caps are an upfront, all-or-nothing gate per repository; set `Inf` for no cap.
+#' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
 #'
 #' @returns a list
 code_check <- function(paper, file_limit = 20, local_path = NULL,
                         local_only = FALSE, download = TRUE,
-                        max_file_size = 10, max_download_size = 100) {
+                        max_file_size = 100, max_download_size = 500) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -61,15 +61,30 @@ code_check <- function(paper, file_limit = 20, local_path = NULL,
     plural(nrow(code_files))
   )
 
-  # only look at first file_limit files in each repo
-  n_files <- dplyr::count(code_files, repo_url)$n
-
-  if (any(n_files > file_limit)) {
-    summary_code <- paste(summary_code, "Only the first", file_limit, "files per repository were analysed.")
-
-    checked_files <- dplyr::slice_head(code_files,
-                                       n = file_limit,
-                                       by = repo_url)
+  # file_limit as an upfront gate: a repository with more code files than the
+  # cap is refused wholesale (not sliced to the first `file_limit`), with a
+  # message naming file_limit and the count needed.
+  if (nrow(code_files) > 0 && is.finite(file_limit)) {
+    per_repo <- table(code_files$repo_url)
+    over <- names(per_repo)[per_repo > file_limit]
+    skip_repos <- character(0)
+    for (repo in over) {
+      n_repo <- as.integer(per_repo[[repo]])
+      msg <- cap_gate_count(n_repo, "file_limit", file_limit, "code file",
+                            context = repo, action = "analyse")
+      # Ask (interactive, not auto) whether to skip this repo or raise the limit.
+      ans <- cap_prompt(msg, param = "file_limit", needed = n_repo,
+                        current = file_limit, items = NULL)
+      if (!identical(ans$action, "raise")) {
+        summary_code <- paste(summary_code, msg)
+        skip_repos <- c(skip_repos, repo)
+      } else if (!is.na(ans$value) && n_repo > ans$value) {
+        keep <- utils::head(which(code_files$repo_url == repo), ans$value)
+        drop <- setdiff(which(code_files$repo_url == repo), keep)
+        if (length(drop)) code_files <- code_files[-drop, , drop = FALSE]
+      }
+    }
+    checked_files <- code_files[!code_files$repo_url %in% skip_repos, , drop = FALSE]
   } else {
     checked_files <- code_files
   }
@@ -101,6 +116,14 @@ code_check <- function(paper, file_limit = 20, local_path = NULL,
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size)
       checked_files$file_location[need_dl] <- dl$file_location
+      # Repositories refused by the size caps: surface each refusal.
+      gated <- attr(dl, "gated")
+      if (!is.null(gated) && nrow(gated) > 0) {
+        for (m in gated$message) {
+          summary_code <- paste(summary_code, m)
+          warning(m, call. = FALSE)
+        }
+      }
     }
   }
 
@@ -110,9 +133,11 @@ code_check <- function(paper, file_limit = 20, local_path = NULL,
   # TODO: iterate this by repo so file names don't bleed over
 
   # --- Process each code file (up to file_limit) ---
-  pb_code <- pb(nrow(checked_files), ":what [:bar] :current/:total")
-  pb_code$tick(0, list(what = ""))
-  on.exit(pb_code$terminate())
+  if (nrow(checked_files) > 0) {
+    pb_code <- pb(nrow(checked_files), ":what [:bar] :current/:total")
+    pb_code$tick(0, list(what = ""))
+    on.exit(pb_code$terminate())
+  }
 
   collected <- lapply(seq_along(checked_files$file_location), \(i) {
     the_file <- checked_files[i, ]
@@ -191,7 +216,20 @@ code_check <- function(paper, file_limit = 20, local_path = NULL,
   }) # end of loop over code files
 
   code_check <- dplyr::bind_rows(collected)
-  code_files <- dplyr::left_join(code_files, code_check, by = names(code_files))
+  # When every repository was gated (nothing analysed), `collected` is empty and
+  # `code_check` has no columns to join on. Seed the per-file analysis columns as
+  # NA so the reporting below still finds them; all files are simply unchecked.
+  if (ncol(code_check) == 0) {
+    analysis_cols <- c("checked", "parse_error", "parse_error_msg",
+                       "code_abs_path", "absolute_paths", "library_lines",
+                       "library_max_between", "comment_lines", "code_lines",
+                       "percentage_comment", "loaded_files_missing",
+                       "loaded_files_missing_names", "error")
+    for (col in analysis_cols)
+      if (!col %in% names(code_files)) code_files[[col]] <- NA
+  } else {
+    code_files <- dplyr::left_join(code_files, code_check, by = names(code_files))
+  }
   code_files$checked[is.na(code_files$checked)] <- FALSE
 
   # Reporting ----

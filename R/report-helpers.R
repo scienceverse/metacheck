@@ -189,6 +189,121 @@ plural <- function(n, singular = "", plural = "s") {
 }
 
 
+# Format a number for a cap message: whole numbers plainly (no scientific
+# notation, even for large MB values like 31908), fractional numbers to one
+# decimal (34.4). Never uses exponent form, which reads badly for file sizes.
+.cap_num <- function(x) {
+  if (is.na(x)) return("unknown")
+  if (!is.finite(x)) return("Inf")
+  if (isTRUE(all.equal(x, round(x))))
+    format(round(x), trim = TRUE, scientific = FALSE, big.mark = "")
+  else formatC(x, format = "f", digits = 1)
+}
+
+#' Build a "cannot download this repository" size-cap message
+#'
+#' Caps are an upfront, all-or-nothing gate: when a repository cannot be
+#' downloaded *in full* within the size limits, the whole repository is refused
+#' rather than partially downloaded. This builds the warning that names both
+#' size parameters, their current values, the offending files, and the values
+#' needed to proceed. Returns `NULL` when the repository fits (so the caller can
+#' treat `NULL` as "go ahead").
+#'
+#' @param repo the repository URL (for the message)
+#' @param n_files number of files that would be downloaded
+#' @param total_mb total size of the download in MB (known sizes)
+#' @param oversized a data.frame with columns `name` and `size_mb` for files
+#'   individually larger than `max_file_size` (may be empty)
+#' @param max_file_size the per-file cap in MB
+#' @param max_download_size the per-repository total cap in MB
+#'
+#' @returns a single string, or `NULL` when the repository fits within the caps
+#' @export
+#' @keywords internal
+cap_gate_size <- function(repo, n_files, total_mb, oversized,
+                          max_file_size, max_download_size) {
+  over_file  <- !is.null(oversized) && nrow(oversized) > 0
+  over_total <- is.finite(max_download_size) && total_mb > max_download_size
+  if (!over_file && !over_total) return(NULL)
+
+  reasons <- character(0)
+  need_file <- max_file_size
+  if (over_file) {
+    biggest <- max(oversized$size_mb, na.rm = TRUE)
+    need_file <- ceiling(biggest)
+    reasons <- c(reasons, sprintf(
+      "%d file%s exceed%s the %s MB per-file limit (largest %s MB)",
+      nrow(oversized), plural(nrow(oversized)),
+      if (nrow(oversized) == 1) "s" else "",
+      .cap_num(max_file_size), .cap_num(biggest)))
+  }
+  need_total <- ceiling(total_mb)
+  if (over_total) {
+    reasons <- c(reasons, sprintf(
+      "the total (%s MB across %d file%s) exceeds the %s MB per-repository limit",
+      .cap_num(total_mb), n_files, plural(n_files), .cap_num(max_download_size)))
+  }
+
+  sprintf(
+    paste0("Repository %s was not downloaded: %s. ",
+           "Set `max_file_size >= %s` and `max_download_size >= %s` to download it."),
+    repo, paste(reasons, collapse = "; "),
+    .cap_num(need_file), .cap_num(need_total))
+}
+
+#' Build a "cannot process this many items" count-cap message
+#'
+#' The count analogue of [cap_gate_size()]: when a unit of work (a repository, a
+#' codebook file, a survey) has more items than a count cap allows, the whole
+#' unit is skipped rather than truncated. Returns `NULL` when within the cap.
+#'
+#' @param n_needed the number of items the unit actually has
+#' @param param the name of the parameter that caps this (e.g. `"file_limit"`)
+#' @param current the current value of that parameter
+#' @param unit a noun for one item (e.g. `"tabular data file"`)
+#' @param context a label for the unit of work skipped (e.g. the repo URL)
+#' @param action the verb for what was skipped (e.g. `"extract"`, `"analyse"`)
+#'
+#' @returns a single string, or `NULL` when `n_needed <= current`
+#' @export
+#' @keywords internal
+cap_gate_count <- function(n_needed, param, current, unit = "item",
+                           context = NULL, action = "process") {
+  if (is.null(n_needed) || is.na(n_needed) || n_needed <= current) return(NULL)
+  where <- if (!is.null(context) && nzchar(context)) sprintf(" for %s", context) else ""
+  sprintf(
+    paste0("%d %s%s%s exceed%s the `%s` cap of %s. ",
+           "Set `%s >= %d` to %s them; %s was skipped."),
+    n_needed, unit, plural(n_needed), where,
+    if (n_needed == 1) "s" else "",
+    param, .cap_num(current),
+    param, n_needed, action,
+    if (!is.null(context) && nzchar(context)) context else "this unit")
+}
+
+#' Build a "cannot determine this file's size" message
+#'
+#' The escape hatch for the rare file whose size cannot be established from the
+#' repository manifest *or* a `Content-Length` header (e.g. a chunked/dynamic
+#' download endpoint). Rather than stream it blindly, the repository is refused
+#' and the user is told they must lift the caps to unlimited to attempt it.
+#'
+#' @param repo the repository URL
+#' @param file the file whose size could not be determined
+#'
+#' @returns a single string
+#' @export
+#' @keywords internal
+cap_gate_unknown <- function(repo, file) {
+  sprintf(
+    paste0("Repository %s was not downloaded: the size of `%s` could not be ",
+           "determined (no size in the listing and no Content-Length header). ",
+           "Set `max_file_size = Inf` and `max_download_size = Inf` to download ",
+           "it — note this may fetch a very large file."),
+    repo, file)
+}
+
+
 #' Make an html link
 #'
 #' @param url the URL to link to

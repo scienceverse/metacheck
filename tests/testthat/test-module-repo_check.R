@@ -127,6 +127,24 @@ test_that("Zenodo", {
 
 # repo_check() + local_path ----
 
+test_that("repo_check tolerates files with an unknown (NA) size", {
+  # Regression: OSF sometimes returns no size for a file. The size column was
+  # formatted with utils:::format.object_size(), whose `if (x <= 0)` errors on
+  # NA ("missing value where TRUE/FALSE needed"), crashing repo_check for the
+  # whole paper. Stub file.size() to NA so a local file flows the missing-size
+  # path (archive_local() sets file_size from file.size()).
+  d <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+  paper <- test_paper()
+
+  local_mocked_bindings(file.size = function(...) NA_real_, .package = "base")
+  expect_no_error(mo <- module_run(paper, "repo_check", local_path = d))
+
+  # The unknown size flows through and renders as the placeholder, not a crash.
+  expect_true(is.na(mo$table$file_size))
+  expect_true(any(grepl("—", mo$report)))
+})
+
 test_that("repo_check vector of local paths", {
   local_path <- c(
     test_path("fixtures", "code_files", "analysis.R"),

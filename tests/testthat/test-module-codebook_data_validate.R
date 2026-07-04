@@ -94,6 +94,46 @@ test_that("codebook_check adds empty scale columns without an LLM", {
   expect_true(all(is.na(tbl$scale)))
 })
 
+test_that("scale identification is gated when it would exceed codebook_max_calls", {
+  # Three data files, each a distinct 8-item scale layout → three callable
+  # survey layouts. With codebook_max_calls = 1 the whole scale tier is gated
+  # (nothing identified) and the refusal names the parameter and the count
+  # needed. The scale tier gates BEFORE its own LLM calls, so no scale is found.
+  llm_use(TRUE)
+  # Mock llm() to a harmless empty structured response so data_check's own LLM
+  # tiers don't hit the network; the scale tier should never even reach here.
+  fake_llm <- function(text, text_col = "text", ...) {
+    n <- length(unique(text[[text_col]]))
+    df <- data.frame(results.index = seq_len(n), results.value = rep("other", n))
+    class(df) <- c("metacheck_llm", "data.frame")
+    attr(df, "llm") <- list(model = "mock")
+    df
+  }
+  testthat::local_mocked_bindings(llm = fake_llm)
+
+  d <- file.path(tempdir(), "cb_scale_gate"); unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  set.seed(3)
+  mk <- function(prefix, file) {
+    items <- as.data.frame(matrix(sample(1:5, 40 * 8, replace = TRUE), nrow = 40))
+    names(items) <- paste0(prefix, "_", 1:8)
+    utils::write.csv(cbind(id = 1:40, items),
+                     file.path(d, "data", file), row.names = FALSE)
+  }
+  mk("panas", "a.csv"); mk("rosenberg", "b.csv"); mk("bigfive", "c.csv")
+
+  ops <- suppressWarnings(report_module_run(
+    test_paper("x"), c("data_check", "codebook_check"),
+    args = list(
+      data_check     = list(local_path = d, local_only = TRUE),
+      codebook_check = list(codebook_max_calls = 1))))
+  cb <- ops[["codebook_check"]]
+
+  expect_true(all(is.na(cb$table$scale)))        # scale tier gated → nothing found
+  expect_match(paste(cb$report, collapse = "\n"),
+               "codebook_max_calls", fixed = TRUE)
+})
+
 test_that("scale metadata is emitted into Psych-DS variableMeasured", {
   # The PropertyValue builder puts the scale name in schema.org's native
   # measurementTechnique and the grouping in a namespaced metacheck:scale block.
@@ -148,21 +188,6 @@ test_that("psychds variableMeasured emits DDI code list, missing, question", {
   expect_true(grepl("Refused", pv[["metacheck:missingValues"]]))
   expect_equal(pv[["metacheck:question"]], "What is your sex?")
   expect_equal(pv[["metacheck:universe"]], "All respondents")
-})
-
-test_that("psychds variableMeasured still reads a legacy col_type table", {
-  # Back-compat: an older data_check table (col_type only, no facets) must still
-  # produce a numeric statistics block and be usable.
-  cols <- data.frame(
-    source_file = "s.csv", column_name = c("rt", "cond"),
-    col_type = c("continuous", "binary"), min = c(200, 1), max = c(900, 2),
-    n = 40, mean = c(550, NA), stringsAsFactors = FALSE)
-  vm <- metacheck:::.psychds_variable_measured(cols, NULL)
-  # continuous → numeric representation → stats block.
-  expect_equal(vm[[1]][["metacheck:representation"]], "numeric")
-  expect_false(is.null(vm[[1]][["metacheck:statistics"]]))
-  # binary → nominal level.
-  expect_equal(vm[[2]][["metacheck:measurementLevel"]], "nominal")
 })
 
 test_that("codebook_check advises enabling an LLM for scale identification", {

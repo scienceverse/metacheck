@@ -61,34 +61,44 @@ test_that("OSF", {
   expect_equal(mo$summary_table[, 1:5], exp[, 1:5])
 }, "mock")
 
-test_that("file_limit", {
-  # default limit
+test_that("file_limit gates an over-limit repository wholesale", {
+  # file_limit is an upfront gate: a repo with more code files than the limit
+  # is skipped entirely (not sliced to the first `file_limit`), with a warning
+  # naming file_limit and the count needed. Files still appear in the table
+  # (checked = FALSE); code_checked counts only the analysed files.
+
+  # default limit 20, one repo of 25 files → repo gated, nothing checked
   paper <- test_paper()
   local_path <- test_path("fixtures", "demo", "code") # has 25 files
   n_files <- list.files(local_path) |> length()
-  mo <- module_run(paper, "code_check", local_path = local_path)
-  expect_equal(nrow(mo$table), n_files)
+  expect_warning(
+    mo <- module_run(paper, "code_check", local_path = local_path),
+    "file_limit"
+  )
+  expect_equal(nrow(mo$table), n_files)      # all files still listed
   expect_equal(mo$summary_table$code_n, n_files)
-  expect_equal(mo$summary_table$code_checked, 20)
+  expect_equal(mo$summary_table$code_checked, 0)  # whole repo gated
 
-  # lower limit
-  mo <- module_run(paper, module = "code_check",
-                   file_limit = 2, local_path = local_path)
-  expect_equal(nrow(mo$table), n_files)
-  expect_equal(mo$summary_table$code_n, n_files)
-  expect_equal(mo$summary_table$code_checked, 2)
+  # lower limit → still gated
+  suppressWarnings(
+    mo <- module_run(paper, module = "code_check",
+                     file_limit = 2, local_path = local_path)
+  )
+  expect_equal(mo$summary_table$code_checked, 0)
 
-  # multiple repos
+  # multiple repos: the 25-file repo is gated, the 1-file repo passes
   local_path <- c(
     test_path("fixtures", "demo", "code"),
     test_path("fixtures", "demo", "good-example.R")
   )
   paper <- test_paper()
-  mo <- module_run(paper, module = "code_check",
-                   file_limit = 2, local_path = local_path)
-  expect_equal(nrow(mo$table), n_files+1)
-  expect_equal(mo$summary_table$code_n, n_files+1)
-  expect_equal(mo$summary_table$code_checked, 3)
+  suppressWarnings(
+    mo <- module_run(paper, module = "code_check",
+                     file_limit = 2, local_path = local_path)
+  )
+  expect_equal(nrow(mo$table), n_files + 1)          # all files listed
+  expect_equal(mo$summary_table$code_n, n_files + 1)
+  expect_equal(mo$summary_table$code_checked, 1)     # only the 1-file repo
   expect_setequal(mo$table$repo_url, local_path)
 }, "mock")
 
@@ -249,14 +259,17 @@ test_that("code_check local_only = FALSE is the same as the default", {
 })
 
 test_that("code_check local_only = TRUE respects file_limit", {
-  # confirm local_only interacts correctly with file_limit
+  # confirm local_only interacts correctly with the file_limit gate: a repo over
+  # the limit is gated wholesale, so nothing is checked.
   local_path <- test_path("fixtures", "demo", "code")
   n_files    <- length(list.files(local_path))
-  mo <- module_run(test_paper(), "code_check",
-                   local_path = local_path, local_only = TRUE, file_limit = 2)
+  suppressWarnings(
+    mo <- module_run(test_paper(), "code_check",
+                     local_path = local_path, local_only = TRUE, file_limit = 2)
+  )
 
-  expect_equal(nrow(mo$table), n_files)
-  expect_equal(mo$summary_table$code_checked, 2)
+  expect_equal(nrow(mo$table), n_files)          # all files still listed
+  expect_equal(mo$summary_table$code_checked, 0) # repo gated
   expect_equal(mo$summary_table$code_n, n_files)
 })
 

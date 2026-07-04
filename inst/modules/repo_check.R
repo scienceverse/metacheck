@@ -401,14 +401,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
                   Size = file_size,
                   Type = file_type)
 
-  # human-readable sizes
-  report_tbl$Size <- sapply(
-    report_tbl$Size,
-    utils:::format.object_size,
-    units = "auto",
-    standard = "SI",
-    digits = 1
-  )
+  # human-readable sizes. Some repos (e.g. OSF) return no size for a file, so
+  # guard against NA/non-positive values: format.object_size() does `if (x <= 0)`
+  # and errors on NA. Unknown sizes are shown as "—".
+  report_tbl$Size <- vapply(report_tbl$Size, function(x) {
+    if (is.na(x) || !is.finite(x) || x < 0) return("—")
+    utils:::format.object_size(x, units = "auto", standard = "SI", digits = 1)
+  }, character(1))
 
   # set up summary table of repositories
   repo_tbl <- repos

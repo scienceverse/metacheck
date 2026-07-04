@@ -340,6 +340,19 @@ osf_type <- function(guid) {
 }
 
 
+# The OSF actually allows us to return 10 times more results than we thought.
+# This is an important change to prevent API blocks by the OSF.
+#
+# Ask OSF for the largest page it allows (100 items) instead of the default 10,
+# so listing a repository takes ~10x fewer sequential API calls. Only added when
+# the URL doesn't already carry a page[size], and left off the `next` links OSF
+# returns (those already encode the page size).
+.osf_max_page_size <- function(url) {
+  if (grepl("page%5Bsize%5D|page\\[size\\]", url)) return(url)
+  sep <- if (grepl("?", url, fixed = TRUE)) "&" else "?"
+  paste0(url, sep, "page[size]=100")
+}
+
 #' Get All OSF API Query Pages
 #'
 #' OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them
@@ -360,7 +373,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
   Sys.sleep(osf_delay())
 
   content <- tryCatch({
-    resp <- httr2::request(url) |>
+    resp <- httr2::request(.osf_max_page_size(url)) |>
       .osf_headers() |>
       httr2::req_error(is_error = \(resp) FALSE) |>
       httr2::req_retry(

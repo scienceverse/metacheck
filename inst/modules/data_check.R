@@ -56,15 +56,34 @@
 #'   found via `repo_check`, and give the module local copies to column-extract.
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
 #' @param file_limit the maximum number of tabular data files to column-extract
-#'   per repository (guards against hundreds of per-participant files)
-#' @param download if TRUE (default), download the readable files (tabular data
-#'   and codebook/README) from online repositories (OSF/GitHub/Zenodo) into a
-#'   shared cache so their contents can be analysed. Downloads are reused on
-#'   later runs. Set FALSE to only classify files by name without downloading.
-#' @param max_file_size largest single file to download, in MB (default 10);
-#'   larger files are skipped and reported
+#'   per repository (guards against hundreds of per-participant files). This is
+#'   an upfront gate: a repository with more tabular data files than the limit is
+#'   skipped wholesale (not sliced to the first `file_limit`) with a message
+#'   naming `file_limit` and the count needed to include it.
+#' @param download what to download from online repositories (OSF/GitHub/Zenodo)
+#'   into the shared cache:
+#'   * `"data"` (the default) fetches only the machine-readable files the checks
+#'     analyse — tabular data plus codebook/README files.
+#'   * `"all"` fetches **every** file in the repository (code, materials, PDFs,
+#'     assets, ...), the right choice when building a complete data archive with
+#'     `convert_psychds()`. Still subject to the size caps below.
+#'   * `FALSE` (or `"none"`) downloads nothing — files are only classified by
+#'     name. `TRUE` is accepted as a synonym for `"data"`.
+#'   Downloads are reused on later runs.
+#' @param max_file_size largest single file to download, in MB (default 100).
+#'   The size caps are an upfront, all-or-nothing gate: if any file in a
+#'   repository exceeds this, the whole repository is refused (nothing
+#'   downloaded) with a message naming the size to lift it. Set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB
-#'   (default 100); once exceeded, the largest remaining files are skipped
+#'   (default 500). If a repository's total exceeds this, the whole repository is
+#'   refused (nothing downloaded) with a message naming the size to lift it. Set
+#'   `Inf` for no cap.
+#' @param manifest optional path to write a per-paper file manifest as JSON: the
+#'   full list of repository files with their download URL, size, type, Psych-DS
+#'   target path, and whether each was downloaded (and if not, why). A directory
+#'   path writes `<paper_id>.manifest.json` inside it; a path ending in `.json`
+#'   is used verbatim. `NULL` (the default) writes nothing. Useful for auditing a
+#'   corpus (what exists, what was fetched) and for building a data archive.
 #' @param model the LLM model name (see `llm_model_list()`) used only when
 #'   `llm_use(TRUE)`
 #' @param params a named list passed to `llm()` (e.g., `list(seed = 123)`),
@@ -73,11 +92,18 @@
 #' @returns a list
 data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        file_limit = 30,
-                       download = TRUE,
-                       max_file_size = 10,
-                       max_download_size = 100,
+                       download = "data",
+                       max_file_size = 100,
+                       max_download_size = 500,
+                       manifest = NULL,
                        model = llm_model(),
                        params = list()) {
+
+  # Normalise `download` to one of "none" / "data" / "all". Accept the legacy
+  # logical form (TRUE = "data", FALSE = "none").
+  download <- if (isTRUE(download)) "data"
+              else if (isFALSE(download)) "none"
+              else match.arg(as.character(download), c("data", "all", "none"))
 
   repo_tree_lines <- function(paths) {
     paths <- unique(paths[!is.na(paths) & nzchar(paths)])
@@ -216,6 +242,21 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── 2. Classify every file into a data_check semantic type ───────────────────
   if (nrow(all_files) == 0) {
+    # Still write an (empty) manifest when one was requested, so every paper —
+    # including those with no accessible repository — has a manifest entry and a
+    # corpus audit can tell "no repo" apart from "not yet processed".
+    if (!is.null(manifest)) {
+      empty_files <- data.frame(
+        file_name = character(0), file_path = character(0),
+        repo_url = character(0), file_url = character(0),
+        file_size = numeric(0), data_type = character(0),
+        data_format = character(0), file_location = character(0),
+        stringsAsFactors = FALSE)
+      .data_check_write_manifest(
+        manifest, empty_files, logical(0), NULL,
+        paper_id = .pid(all_files), download = download,
+        max_file_size = max_file_size, max_download_size = max_download_size)
+    }
     return(list(
       traffic_light = "na",
       summary_text = "We found no files to analyse.",
@@ -262,7 +303,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       pred <- .llm_classify_batched(file_text, file_prompt,
                                     value_desc = "Best single semantic file type",
                                     valid = file_levels,
-                                    model = model, params = params)
+                                    model = model, params = params,
+                                    phase = "Classifying file types")
       if (is.na(llm_model_used))
         llm_model_used <- attr(pred, "llm_model") %||% NA_character_
 
@@ -286,14 +328,23 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   # ── 2c. Download the files this module (and codebook_check) will read ─────────
-  # repo_check lists OSF/GitHub/Zenodo files without fetching them. Download the
-  # readable subset (tabular data + codebook/readme) into the shared cache so
-  # their contents can be analysed; assets and non-tabular data are skipped.
-  omitted_files <- NULL
-  if (isTRUE(download)) {
-    want <- (all_files$data_type == "data" &
-               !is.na(all_files$data_format) & all_files$data_format == "tabular") |
-            all_files$data_type %in% c("codebook", "readme")
+  # repo_check lists OSF/GitHub/Zenodo files without fetching them. With
+  # download = "data" (default) fetch only the readable subset the checks analyse
+  # (tabular data + codebook/readme); with download = "all" fetch every file, for
+  # building a complete data archive. Repos refused by the size caps (upfront,
+  # all-or-nothing per repo).
+  gated_repos <- NULL
+  # Which files this run WANTS to download (kept in scope for the manifest).
+  want <- if (download == "all") {
+    rep(TRUE, nrow(all_files))
+  } else if (download == "data") {
+    (all_files$data_type == "data" &
+       !is.na(all_files$data_format) & all_files$data_format == "tabular") |
+      all_files$data_type %in% c("codebook", "readme")
+  } else {
+    rep(FALSE, nrow(all_files))   # download = "none"
+  }
+  if (download != "none") {
     need_dl <- want &
       (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
       !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
@@ -302,7 +353,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size)
       all_files$file_location[need_dl] <- dl$file_location
-      omitted_files <- attr(dl, "omitted")
+      # Files in a gated repo keep file_location = NA, so they fall out of the
+      # has_local extraction filter naturally. The refusal was already reported
+      # inline (and warned) by cap_prompt inside download_repo_files.
+      gated_repos <- attr(dl, "gated")
     }
   }
 
@@ -315,9 +369,36 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   data_files <- all_files[is_tabular_data & has_local, , drop = FALSE]
 
-  # cap per repo to avoid runaway extraction
+  # Per-repo file_limit as an upfront gate: a repository with more tabular data
+  # files than the cap is refused wholesale (not silently sliced to the first
+  # `file_limit`), with a message naming file_limit and the count needed.
+  file_limit_gated <- character(0)
   if (nrow(data_files) > 0 && is.finite(file_limit)) {
-    data_files <- dplyr::slice_head(data_files, n = file_limit, by = repo_url)
+    per_repo <- table(data_files$repo_url)
+    over <- names(per_repo)[per_repo > file_limit]
+    skip_repos <- character(0)
+    for (repo in over) {
+      n_repo <- as.integer(per_repo[[repo]])
+      msg <- cap_gate_count(n_repo, "file_limit", file_limit,
+                            "tabular data file", context = repo,
+                            action = "extract")
+      # Ask (interactive, not auto) whether to skip this repo or raise the limit.
+      # Under auto()/non-interactive this reports inline and skips.
+      ans <- cap_prompt(msg, param = "file_limit", needed = n_repo,
+                        current = file_limit, items = NULL)
+      if (!identical(ans$action, "raise")) {
+        file_limit_gated <- c(file_limit_gated, msg)
+        skip_repos <- c(skip_repos, repo)
+      } else if (!is.na(ans$value) && n_repo > ans$value) {
+        # User raised, but not enough for this repo → keep only the first N.
+        keep <- utils::head(which(data_files$repo_url == repo), ans$value)
+        drop <- setdiff(which(data_files$repo_url == repo), keep)
+        if (length(drop)) data_files <- data_files[-drop, , drop = FALSE]
+      }
+      # else: raised to >= n_repo → keep all of this repo's files.
+    }
+    if (length(skip_repos) > 0)
+      data_files <- data_files[!data_files$repo_url %in% skip_repos, , drop = FALSE]
   }
 
   n_tabular_all <- sum(is_tabular_data)
@@ -465,7 +546,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         )
         pred_concept <- .llm_classify_batched(
           col_text, concept_prompt, value_desc = "Best single concept",
-          valid = concept_levels, model = model, params = params)
+          valid = concept_levels, model = model, params = params,
+          phase = "Classifying column concepts")
         if (is.na(llm_model_used))
           llm_model_used <- attr(pred_concept, "llm_model") %||% NA_character_
         # 'measure'/'other' are non-informative concepts → leave NA.
@@ -492,7 +574,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
             "Return one {index, value} per numbered line, echoing its index.")
           pred_lvl <- .llm_classify_batched(
             lvl_text, lvl_prompt, value_desc = "Stevens measurement level",
-            valid = lvl_levels, model = model, params = params)
+            valid = lvl_levels, model = model, params = params,
+            phase = "Classifying measurement levels")
           ok <- !is.na(pred_lvl)
           if (any(ok)) columns_df$measurement_level[lvl_idx[ok]] <- pred_lvl[ok]
         }
@@ -534,15 +617,15 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_columns, plural(n_columns), n_extracted
   )
 
-  # Files skipped by the download size caps: tell the user how to raise them.
-  n_omitted <- if (!is.null(omitted_files)) nrow(omitted_files) else 0L
-  summary_omitted <- if (n_omitted > 0) sprintf(
-    paste0("%d file%s exceeded the download size limits and %s not analysed. ",
-           "Raise `max_file_size` (currently %g MB per file) or ",
-           "`max_download_size` (currently %g MB total) to include them."),
-    n_omitted, plural(n_omitted), if (n_omitted == 1) "was" else "were",
-    max_file_size, max_download_size
-  ) else NULL
+  # Repositories refused by the caps (size gate on download, or file_limit on
+  # extraction). Each message already names the parameter and the value to lift
+  # it, so we surface them verbatim.
+  gate_msgs <- c(
+    if (!is.null(gated_repos)) gated_repos$message else character(0),
+    file_limit_gated
+  )
+  summary_omitted <- if (length(gate_msgs) > 0)
+    paste(gate_msgs, collapse = "\n\n") else NULL
 
   # Tabular data files with no readable copy (download off, no URL, or fetch
   # failed). These are counted but not column-extracted.
@@ -551,10 +634,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
            "%s"),
     n_no_local, plural(n_no_local),
     if (n_no_local == 1) "it was" else "they were",
-    if (isTRUE(download))
+    if (download != "none")
       "This can happen for private repositories or failed downloads; you can also pass `local_path` to point at a local copy."
     else
-      "Set `download = TRUE`, or pass `local_path` to point at a local copy, to analyse them."
+      "Set `download = \"data\"`, or pass `local_path` to point at a local copy, to analyse them."
   ) else NULL
 
   # .RData/.rda workspaces with no reusable data: a sharing recommendation.
@@ -694,6 +777,17 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_text <- c(summary_files, summary_data, summary_nolocal,
                      summary_omitted, summary_workspace) |>
     paste("\n- ", x = _, collapse = "")
+
+  # ── 6b. Optional file manifest ───────────────────────────────────────────────
+  # Persist the full file list (URLs, sizes, types) with the download outcome per
+  # file, so a corpus can be audited (what exists vs what was fetched) and a data
+  # archive rebuilt without re-querying every repository.
+  if (!is.null(manifest)) {
+    .data_check_write_manifest(
+      manifest, all_files, want, gated_repos,
+      paper_id = .pid(all_files), download = download,
+      max_file_size = max_file_size, max_download_size = max_download_size)
+  }
 
   # ── 7. Return ────────────────────────────────────────────────────────────────
   list(

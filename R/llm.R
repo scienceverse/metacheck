@@ -20,6 +20,7 @@
 #' @param text_col The name of the text column if text is a data frame
 #' @param model the LLM model name (see `llm_model_list()`) in the format "provider" or "provider/model"
 #' @param params a named list to pass to `ellmer::params()`
+#' @param phase optional label naming the calling step (e.g. "Identifying scales") shown in the progress bar so a slow LLM pass is identifiable; the model name is appended automatically
 #'
 #' @return a data frame of results
 #'
@@ -41,7 +42,8 @@ llm <- function(text, system_prompt,
                 type = NULL,
                 text_col = "text",
                 model = llm_model(),
-                params = list()) {
+                params = list(),
+                phase = NULL) {
   ## error detection ----
   if (!llm_use()) {
     stop("Set llm_use(TRUE) to use LLM functions")
@@ -59,7 +61,8 @@ llm <- function(text, system_prompt,
 
   if (ncalls == 0) stop("No calls to the LLM")
   if (ncalls > llm_max_calls()) {
-    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(), ". Use `llm_max_calls()` to change this.", call. = FALSE)
+    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(),
+         ". Set `llm_max_calls(", ncalls, ")` (or higher) to allow this call.", call. = FALSE)
   }
 
   # Set up the llm ----
@@ -117,7 +120,12 @@ llm <- function(text, system_prompt,
   })
 
   # set up progress bar ----
-  label <- if (structured) "Extracting data" else "Querying LLM"
+  # `phase` names the calling step (e.g. "Identifying scales") so a slow LLM
+  # pass is visible for what it is, rather than a generic "Extracting data".
+  # The model is appended so the user sees which LLM is being queried.
+  base_label <- if (structured) "Extracting data" else "Querying LLM"
+  label <- if (!is.null(phase) && nzchar(phase)) phase else base_label
+  if (!is.null(model) && nzchar(model)) label <- sprintf("%s (%s)", label, model)
   pb <- pb(ncalls, paste0(label, " [:bar] :current/:total :elapsedfull"))
 
   # response cache ----

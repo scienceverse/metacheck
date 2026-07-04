@@ -28,7 +28,7 @@ test_that("download_repo_files downloads and populates file_location", {
   dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
   expect_equal(sum(!is.na(dl$file_location)), 2)
   expect_true(all(file.exists(dl$file_location)))
-  expect_equal(nrow(attr(dl, "omitted")), 0)
+  expect_equal(nrow(attr(dl, "gated")), 0)
 })
 
 test_that("download_repo_files reuses the cache without re-downloading", {
@@ -43,14 +43,52 @@ test_that("download_repo_files reuses the cache without re-downloading", {
   expect_true(all(file.exists(dl2$file_location)))
 })
 
-test_that("download_repo_files omits files over the per-file size cap", {
+test_that("a file over the per-file cap gates the whole repository", {
   files <- make_dl_files()
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
-  # cap far below the file size → both omitted
+  # cap far below the file size → the repo is refused, nothing downloaded
   dl <- download_repo_files(files, max_file_size = 0.00001,
                             max_download_size = 100)
   expect_equal(sum(!is.na(dl$file_location)), 0)
-  expect_equal(nrow(attr(dl, "omitted")), 2)
+  gated <- attr(dl, "gated")
+  expect_equal(nrow(gated), 1)
+  expect_match(gated$message, "per-file limit")
+  expect_match(gated$message, "max_file_size >=")
+})
+
+test_that("a repo over the total cap is gated (nothing downloaded)", {
+  files <- make_dl_files(sizes = c(2000, 2000))  # ~2 KB each on disk
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  # per-file cap generous, total cap tiny → total gate fires
+  total_mb <- sum(files$file_size) / (1024 * 1024)
+  dl <- download_repo_files(files, max_file_size = 100,
+                            max_download_size = total_mb / 2)
+  expect_equal(sum(!is.na(dl$file_location)), 0)
+  expect_match(attr(dl, "gated")$message, "per-repository limit")
+})
+
+test_that("NA manifest size falls back to a HEAD Content-Length probe", {
+  files <- make_dl_files()
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  files$file_size <- NA_real_   # force the probe path
+
+  # Stub .remote_size to report a huge size → repo gated without downloading.
+  local_mocked_bindings(.remote_size = function(url) 6e9)  # 6 GB
+  dl <- download_repo_files(files, max_file_size = 100, max_download_size = 500)
+  expect_equal(sum(!is.na(dl$file_location)), 0)
+  expect_match(attr(dl, "gated")$message, "per-file limit")
+})
+
+test_that("an undeterminable size gates the repo with the Inf instruction", {
+  files <- make_dl_files()
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  files$file_size <- NA_real_
+
+  local_mocked_bindings(.remote_size = function(url) NA_real_)  # no header
+  dl <- download_repo_files(files, max_file_size = 100, max_download_size = 500)
+  expect_equal(sum(!is.na(dl$file_location)), 0)
+  expect_match(attr(dl, "gated")$message, "could not be determined")
+  expect_match(attr(dl, "gated")$message, "max_file_size = Inf")
 })
 
 test_that("cache paths are stable and per-repo", {

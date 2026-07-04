@@ -6,31 +6,41 @@
 \usage{
 download_repo_files(
   files,
-  max_file_size = 10,
-  max_download_size = 100,
+  max_file_size = 100,
+  max_download_size = 500,
   pb = NULL
 )
 }
 \arguments{
 \item{files}{a data.frame of file rows to download}
 
-\item{max_file_size}{largest single file to download, in MB (\code{NULL} = no cap)}
+\item{max_file_size}{largest single file to download, in MB (\code{Inf} = no cap)}
 
-\item{max_download_size}{largest total download per repo, in MB (\code{NULL} = no
-cap); the cap counts only files not already cached}
+\item{max_download_size}{largest total download per repository, in MB
+(\code{Inf} = no cap); counts only files not already cached}
 
 \item{pb}{an optional progress bar}
 }
 \value{
 \code{files} with \code{file_location} set to the cache path for each
-downloaded (or already-cached) file, and \code{NA} for omitted/failed files. An
-attribute \code{"omitted"} holds a data.frame of files skipped by the caps.
+downloaded (or already-cached) file, and \code{NA} for files in gated
+repositories or without a URL. An attribute \code{"gated"} holds a data.frame
+(\code{repo_url}, \code{message}) of repositories refused by the caps.
 }
 \description{
 Given file rows from \code{repo_check} (with \code{repo_url}, \code{file_url}, \code{file_path},
-\code{file_size}), download only those files, honouring per-file and total-size
-caps, into a persistent cache keyed by repo URL. Files already present in the
-cache are reused (never re-downloaded); files omitted by the caps or missing
-a download URL are left for a later run to retry.
+\code{file_size}), download the files of a repository into a persistent cache keyed
+by repo URL. Files already present in the cache are reused (never
+re-downloaded).
+}
+\details{
+Size caps are an \strong{upfront, all-or-nothing gate per repository}: before
+downloading, the full set of not-yet-cached files for a repository is measured
+(using the manifest \code{file_size}, or a \code{HEAD} \code{Content-Length} probe when that
+is missing) and checked against the caps. If any file exceeds \code{max_file_size},
+or the repository's total exceeds \code{max_download_size}, \strong{none} of that
+repository's files are downloaded and a message explaining how to raise the
+caps is attached (rather than silently downloading a partial subset). A file
+whose size cannot be determined at all also gates its repository.
 }
 \keyword{internal}
