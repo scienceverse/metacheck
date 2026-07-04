@@ -62,6 +62,7 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
 
     summary_text <- sprintf("We found %d citation%s to papers that are commonly miscited.", nrow(table), plural(nrow(table)))
 
+    report <- character(0)
     for (i in seq_along(to_warn$doi)) {
       warn_doi <- to_warn$doi[[i]]
       all_instances <- xrefs$citation[xrefs$doi == warn_doi]
@@ -74,7 +75,8 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
         sprintf("%i", n_head)
       )
 
-      report <- sprintf(
+      # accumulate: one block per miscited DOI (assignment would keep only the last)
+      report <- c(report, sprintf(
         "**%s**\n\n%s\n\n%s\n\n*%s Instance%s:*\n\n%s",
         warn_doi,
         to_warn$reftext[[i]],
@@ -82,7 +84,7 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
         instance_n,
         plural(length(all_instances)),
         paste(">", instances, collapse = "\n\n")
-      )
+      ))
     }
   }
 

@@ -16,8 +16,6 @@
 #' @author Raphael Merz (\email{r.t.p.merz@tue.nl})
 #'
 #' @import dplyr
-#' @import httr
-#' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
 #' @param file_limit the maximum number of files per repository to assess. This prevents downloading and processing hundreds of .R files from, e.g., an R package repo.
@@ -282,7 +280,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
     )
     summary_parse <- "Parsing issues of R-type files were found."
     cols <- c("file_name", "parse_error_msg")
-    report_table_parse <- code_files[isTRUE(code_files$parse_error), cols]
+    report_table_parse <- code_files[code_files$parse_error %in% TRUE, cols]
     colnames(report_table_parse) <- c("File name", "Error Message")
   }
 
@@ -310,7 +308,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
       length(library_issue) == 0 &&
-      length(parse_issues) == 0) {
+      parse_issues == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"

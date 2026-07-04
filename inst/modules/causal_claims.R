@@ -119,7 +119,7 @@ causal_claims <- function(paper) {
     summary_text_title <- "Causal claims were detected in the title."
     report_causal_title <- c(
       summary_text_title,
-      scroll_table(causal_title[, c("sentence", "cause", "effect")]), 1
+      scroll_table(causal_title[, c("sentence", "cause", "effect")], 1)
     )
   }
 
