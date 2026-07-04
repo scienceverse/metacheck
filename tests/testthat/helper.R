@@ -49,7 +49,10 @@ test_that <- function(desc, code, mock = "none") {
     httptest2::start_capturing()
     on.exit(httptest2::stop_capturing())
   }
-  time <- system.time( testthat::test_that(desc, code) )
+  # rebuild the call with the literal braced expression: forwarding the `code`
+  # promise makes testthat warn ("must be a braced expression") on every test
+  call <- bquote(testthat::test_that(.(desc), .(substitute(code))))
+  time <- system.time( eval.parent(call) )
   s <- round(time[['elapsed']], 1)
   if (s > 4) message(s, ": ", desc)
 }
@@ -58,6 +61,12 @@ test_that <- function(desc, code, mock = "none") {
 grobid_url <- "https://grobid.hti.ieis.tue.nl"
 # grobid_url <- "https://grobidorg-grobid.hf.space/"
 bibr_url <- "https://platform.metacheck.app"
+
+# expect no overlap between x and y (used across several test files;
+# testthat provides no such expectation)
+expect_disjoint <- function(x, y) {
+  testthat::expect_length(intersect(x, y), 0)
+}
 
 # change fancy quotes to straight for text matching with crossref
 fix_fancy <- function(x) {

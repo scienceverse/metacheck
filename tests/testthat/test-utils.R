@@ -1,23 +1,28 @@
 test_that(".onLoad", {
+  # metacheck.llm.model is checked separately below: .onLoad() derives it
+  # from whichever LLM API keys are configured (NULL when there are none),
+  # so its value is environment-dependent by design
   op.defaults <- c(
     metacheck.verbose = TRUE,
     metacheck.llm_max_calls = 30L,
     metacheck.llm.use = FALSE,
-    metacheck.llm.model = "groq",
     metacheck.osf.delay = 0,
     metacheck.osf.api = "https://api.osf.io/v2",
     metacheck.osf.api.calls = 0
   )
 
-  # op.current <- names(op.defaults) |> sapply(getOption)
-  names(op.defaults) |> sapply(\(o) options(setNames(list(NULL), o)))
-  op.null <- names(op.defaults) |> sapply(getOption)
+  op.names <- c(names(op.defaults), "metacheck.llm.model")
+  op.names |> sapply(\(o) options(setNames(list(NULL), o)))
+  op.null <- op.names |> sapply(getOption)
   expect_true(sapply(op.null, is.null) |> all())
 
   metacheck:::.onLoad()
   op.reset <- names(op.defaults) |> sapply(getOption)
   expect_false(sapply(op.reset, is.null) |> any())
   expect_equal(op.reset, op.defaults)
+
+  model <- getOption("metacheck.llm.model")
+  expect_true(is.null(model) || (is.character(model) && length(model) == 1))
 })
 
 test_that(".onAttach", {
