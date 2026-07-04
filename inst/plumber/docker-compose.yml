@@ -5,5 +5,16 @@ services:
       dockerfile: inst/plumber/Dockerfile
     ports:
       - "2005:2005"
-    volumes:
-      - .:/srv/metacheck
+    # Match the runtime the Dockerfile's cache-dir ENV is written for: an
+    # immutable root filesystem with only /tmp (a tmpfs) writable, where Quarto/
+    # Deno caches and parsed uploads go. Keeps the image's installed package
+    # authoritative (no source bind-mount shadowing /srv/metacheck).
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m
+    # Optional LLM config, passed through from the host environment. Without
+    # GEMINI_API_KEY the LLM-backed modules fall back to non-LLM behaviour.
+    environment:
+      - GEMINI_API_KEY
+      - METACHECK_LLM_MODEL
+      - METACHECK_LLM_MAX_CALLS

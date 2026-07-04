@@ -29,18 +29,20 @@ RUN R -e "remotes::install_cran(c('dplyr', 'tidyr', 'logger', 'progress', 'tidyt
 # Quarto CLI — report() renders the HTML report via quarto::quarto_render().
 # The `quarto` R package (installed above) is only a wrapper around this binary,
 # which rocker/r-ver does not ship. Download it with R (libcurl) so we don't add
-# a curl CLI to the image; resolve the latest release via the GitHub API. The
-# `quarto --version` at the end fails the build loudly if the install is broken.
-# HTML-only output → no TinyTeX/LaTeX needed.
-RUN R -e "v <- sub('^v', '', jsonlite::fromJSON('https://api.github.com/repos/quarto-dev/quarto-cli/releases/latest')[['tag_name']]); download.file(sprintf('https://github.com/quarto-dev/quarto-cli/releases/download/v%s/quarto-%s-linux-amd64.deb', v, v), '/tmp/quarto.deb', quiet = TRUE)" \
+# a curl CLI to the image. The version is pinned for reproducible builds (bump
+# QUARTO_VERSION deliberately); the `quarto --version` at the end fails the build
+# loudly if the install is broken. HTML-only output → no TinyTeX/LaTeX needed.
+ARG QUARTO_VERSION=1.9.38
+RUN R -e "download.file('https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb', '/tmp/quarto.deb', quiet = TRUE)" \
     && apt-get update && apt-get install -y /tmp/quarto.deb \
     && rm -rf /var/lib/apt/lists/* /tmp/quarto.deb \
     && quarto --version
 
-# The container runs read-only with only /tmp writable (see compose), so point
-# every transient Quarto/Deno write at the tmpfs. Without this, quarto_render
-# can't create its caches at runtime and the HTML render fails (gracefully — the
-# JSON check still succeeds — but no report is produced).
+# In the production deployment the container runs with a read-only root
+# filesystem and only /tmp writable (a tmpfs — see docker-compose.yml), so point
+# every transient Quarto/Deno write at it. Without this, quarto_render can't
+# create its caches at runtime and the HTML render fails (gracefully — the JSON
+# check still succeeds — but no report is produced).
 ENV XDG_CACHE_HOME=/tmp/.cache \
     DENO_DIR=/tmp/.deno \
     TMPDIR=/tmp
