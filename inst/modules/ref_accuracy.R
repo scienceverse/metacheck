@@ -36,7 +36,9 @@ ref_accuracy <- function(paper) {
 
   if (nrow(bib_match) == 0) {
     norefs <- list(
-      traffic_light = "error",
+      # "na": the check can't run without bib_match ("error" is not a valid
+      # traffic light — report rendering has no tl_error emoji)
+      traffic_light = "na",
       summary_text = "We found no bib_match entries. You may need to add them with `add_bib_match()`."
     )
     return(norefs)

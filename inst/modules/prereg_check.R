@@ -19,8 +19,6 @@
 #'
 #' @import dplyr
 #' @import tidyr
-#' @import httr
-#' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object
 #'

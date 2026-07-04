@@ -55,11 +55,12 @@ test_that("ref_accuracy", {
   expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
 
-  # no bib_match
+  # no bib_match: "na" like the no-refs case ("error" is not a renderable
+  # traffic light — there is no tl_error emoji)
   paper <- demopaper()
   paper$bib_match <- NULL
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "error")
+  expect_equal(mod_output$traffic_light, "na")
   expect_null(mod_output$table)
   expect_match(mod_output$summary_text, "add_bib_match")
 
