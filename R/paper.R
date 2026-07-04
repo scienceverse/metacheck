@@ -646,9 +646,12 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
 #' fig_image_view(paper, 2)
 fig_image_view <- function(paper, figure_id = 1) {
   figs <- paper$figure
-  b64 <- figs[figs$figure_id == figure_id[[1]], "image"]
+  # which() drops NAs; [[1]] guards against duplicated figure_ids, where a
+  # length->1 vector would error inside if()
+  b64 <- figs$image[which(figs$figure_id == figure_id[[1]])]
 
-  if (length(b64) == 0 || is.na(b64)) return(NULL)
+  if (length(b64) == 0 || is.na(b64[[1]])) return(NULL)
+  b64 <- b64[[1]]
 
   img_binary <- sub("^data:image/[^;]+;base64,", "", b64) |>
     base64enc::base64decode()

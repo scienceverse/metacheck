@@ -245,6 +245,7 @@ format_ref <- function(bib) {
   if (!all(sapply(bib, inherits, "bibentry"))) {
     # try parsing as bibtex
     tmpfile <- tempfile(fileext = ".bib")
+    on.exit(unlink(tmpfile), add = TRUE)
     writeLines(bib, tmpfile)
     bib <- tryCatch(bibtex::read.bib(tmpfile),
       error = \(e) {
