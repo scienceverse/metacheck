@@ -1,14 +1,6 @@
 # helpers.R
 # Helper functions for plumber API
 
-#' Normalize zero-length values to NULL
-#'
-#' @param x Value to normalize
-#' @return NULL if x is NULL or has length 0, otherwise x
-nz <- function(x) {
-  if (is.null(x) || length(x) == 0) NULL else x
-}
-
 # Classes the JSON serializer (jsonlite, via plumber's `@serializer json`)
 # knows how to encode. Anything else must be stripped before it reaches the
 # response or serialization aborts the whole request.
@@ -81,6 +73,25 @@ error_response <- function(res, status, message) {
 }
 
 
+#' Parse a multipart string parameter into a logical
+#'
+#' Multipart form fields arrive as strings; this accepts the usual truthy/falsy
+#' spellings ("true"/"false"/"1"/"0"/"yes"/"no", any case) and returns
+#' `default` when the value is absent or unrecognised. (Base `as.logical()`
+#' returns NA for "0"/"1"/"yes"/"no", which is why we don't lean on it here.)
+#'
+#' @param x the raw parameter value (character or NULL)
+#' @param default logical to return when `x` is missing or unparseable
+#' @return a single logical
+parse_bool <- function(x, default = TRUE) {
+  if (is.null(x) || length(x) == 0 || !nzchar(x[1])) return(default)
+  v <- tolower(trimws(as.character(x)[1]))
+  if (v %in% c("true", "t", "1", "yes", "y")) return(TRUE)
+  if (v %in% c("false", "f", "0", "no", "n")) return(FALSE)
+  default
+}
+
+
 #' Extract named info fields from a paper object
 #'
 #' Replacement for the removed package-level `info_table()`. Uses
@@ -136,6 +147,57 @@ read_paper <- function(file_path, request_id) {
 
   logger::log_info("Paper read successfully: {request_id}")
   list(success = TRUE, paper = result)
+}
+
+
+#' Run an endpoint handler against an uploaded, parsed paper
+#'
+#' Centralises the pipeline every paper endpoint used to repeat by hand: a
+#' request id (+ start log), multipart parse, file extraction, upload
+#' validation, and the bibr parse — returning the right `error_response()` at
+#' each failure point.
+#'
+#' The upload is read straight from the tempfile `mime::parse_multipart()`
+#' already wrote — no second copy (that doubled I/O on payloads up to the 50MB
+#' cap) — and is `unlink()`ed when the request returns, so parsed uploads don't
+#' accumulate in the session tempdir.
+#'
+#' `prevalidate` (optional) runs after the multipart parse but BEFORE the
+#' (expensive) bibr parse, so an endpoint can reject bad parameters without
+#' paying the parse cost. It receives `mp` and returns NULL to proceed, or a
+#' `list(status=, message=)` to abort the request with that error.
+#'
+#' @param req,res plumber request/response objects
+#' @param endpoint short endpoint name, for logging
+#' @param handler function(paper, mp, request_id) producing the response body
+#' @param prevalidate optional function(mp) -> NULL | list(status, message)
+#' @return the handler's value, or an `error_response()` list
+with_uploaded_paper <- function(req, res, endpoint, handler, prevalidate = NULL) {
+  request_id <- uuid::UUIDgenerate()
+  logger::log_info("Request started ({endpoint}): {request_id}")
+
+  mp <- mime::parse_multipart(req)
+  uploaded_file <- extract_uploaded_file(mp)
+  # mime leaves its multipart tempfile(s) in the session tempdir; clean them up
+  # when the request returns (the response body is already in memory by then).
+  on.exit(if (!is.null(uploaded_file)) unlink(uploaded_file), add = TRUE)
+
+  validation <- validate_file_upload(uploaded_file)
+  if (!validation$valid) {
+    return(error_response(res, validation$status, validation$message))
+  }
+
+  if (!is.null(prevalidate)) {
+    pv <- prevalidate(mp)
+    if (!is.null(pv)) return(error_response(res, pv$status, pv$message))
+  }
+
+  paper_obj <- read_paper(uploaded_file, request_id)
+  if (!paper_obj$success) {
+    return(error_response(res, 400, paper_obj$error))
+  }
+
+  handler(paper_obj$paper, mp, request_id)
 }
 
 

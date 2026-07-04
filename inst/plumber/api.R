@@ -32,8 +32,22 @@ if (nzchar(Sys.getenv("GEMINI_API_KEY"))) {
 
 #* @plumber
 function(pr) {
-  # Paper analysis endpoints - upload bibr JSON to analyze
-  plumber::pr_mount(pr, "/paper", plumber::pr("endpoints/paper.R"))
+  # Paper analysis endpoints - upload bibr JSON to analyze.
+  #
+  # The restricted parser set is load-bearing: each handler parses the
+  # multipart upload itself (mime::parse_multipart) and reads the file with
+  # .read_bibr. "multi" must stay registered — plumber's body-read step feeds
+  # rook.input, and without it mime sees an empty body and every upload 500s
+  # (the "none" parser breaks exactly this way). Restricting the inner parsers
+  # to "octet" keeps file parts as raw bytes: with plumber's defaults the
+  # application/json file part (the Content-Type clients set for a .json
+  # upload) would be JSON-parsed a *second* time — wasteful on payloads up to
+  # the 50MB cap — and a malformed body would throw an uncaught 500 in
+  # plumber's parse phase, before the handler's read_paper()/error_response()
+  # can turn it into a clean 400.
+  paper_pr <- plumber::pr("endpoints/paper.R")
+  plumber::pr_set_parsers(paper_pr, c("multi", "octet"))
+  plumber::pr_mount(pr, "/paper", paper_pr)
 }
 
 #* Health check endpoint

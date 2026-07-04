@@ -50,15 +50,16 @@ inst/plumber/
 
 ### Paper Analysis (`/paper/*`)
 
-These endpoints all accept **uploaded bibr JSON files** for analysis:
+All `POST` endpoints accept **uploaded bibr JSON files** for analysis:
 
+- `GET  /paper/modules` - List the metacheck modules this API can run (no upload)
 - `POST /paper/info` - Extract paper information (title, keywords, DOI, etc.)
 - `POST /paper/authors` - Get author table
 - `POST /paper/references` - Get bibliography/references
 - `POST /paper/cross-references` - Get in-text citation cross-references
-- `POST /paper/search` - Search text within the paper (requires `q` parameter)
+- `POST /paper/search` - Search text within the paper (requires `pattern` parameter)
 - `POST /paper/module` - Run a specific metacheck module on the paper (requires `name` parameter)
-- `POST /paper/check` - Get all metadata + run all/select metacheck modules on the paper (optional `modules` parameter)
+- `POST /paper/check` - Get all metadata + run all/select metacheck modules on the paper (optional `modules` and `report` parameters)
 
 
 ## Key Features
@@ -74,8 +75,10 @@ still reads it via `read()`).
 ### Module Support
 
 Shadows the available metacheck modules as API endpoints.
-The `/paper/module` endpoint allows you to run any metacheck module dynamically. Available modules are automatically detected from the package installation.
+The `/paper/module` endpoint allows you to run any metacheck module dynamically. Available modules are automatically detected from the package installation, and `GET /paper/modules` returns that list (the same names `/module` and `/check` validate against).
 You can also use the `/paper/check` endpoint to run multiple/all available checking modules at once.
+
+By default `/paper/check` also renders metacheck's native HTML report (via Quarto) and returns it as `report_html`. This is the most expensive part of the call; pass `report=false` to skip the render and get the JSON results only.
 
 ## LLM configuration
 
@@ -85,6 +88,12 @@ Set `GEMINI_API_KEY` to enable LLM-backed modules (provider
 (default 200). Without the key, LLM modules fall back to non-LLM behavior.
 
 ## Example Usage
+
+### List Available Modules
+
+```bash
+curl http://localhost:2005/paper/modules
+```
 
 ### Analyze a bibr JSON File
 
@@ -128,6 +137,11 @@ curl -X POST http://localhost:2005/paper/check \
 curl -X POST http://localhost:2005/paper/check \
   -F "file=@paper.json" \
   -F "modules=stat_p_exact,stat_check"
+
+# Skip the (expensive) HTML report render — JSON results only
+curl -X POST http://localhost:2005/paper/check \
+  -F "file=@paper.json" \
+  -F "report=false"
 ```
 
 
