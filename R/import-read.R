@@ -72,7 +72,6 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   info[zeros] <- NA
   paper$info <- as.data.frame(info)
   paper$info$keywords <- I(list(keywords))
-  paper$info$abstract <- NULL # TODO: remove after bibr fixed
 
   # author ----
   if (!is.null(data$author) && length(data$author) > 0) {
@@ -100,7 +99,6 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
     if (!include_images) {
       paper$figure$image <- NA_character_
     }
-    paper$figure$caption <- NULL #tempfix
   }
 
   # url ----
@@ -118,7 +116,6 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   # table ----
   if (!is.null(data$table) && length(data$table) > 0) {
     paper$table <- as.data.frame(data$table)
-    paper$table$caption <- NULL #tempfix
   }
 
   # text ----
