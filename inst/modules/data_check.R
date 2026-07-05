@@ -55,11 +55,6 @@
 #'   files in it (recursively) are added to the file list alongside any files
 #'   found via `repo_check`, and give the module local copies to column-extract.
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
-#' @param file_limit the maximum number of tabular data files to column-extract
-#'   per repository (guards against hundreds of per-participant files). This is
-#'   an upfront gate: a repository with more tabular data files than the limit is
-#'   skipped wholesale (not sliced to the first `file_limit`) with a message
-#'   naming `file_limit` and the count needed to include it.
 #' @param download what to download from online repositories (OSF/GitHub/Zenodo)
 #'   into the shared cache:
 #'   * `"data"` (the default) fetches only the machine-readable files the checks
@@ -70,6 +65,16 @@
 #'   * `FALSE` (or `"none"`) downloads nothing — files are only classified by
 #'     name. `TRUE` is accepted as a synonym for `"data"`.
 #'   Downloads are reused on later runs.
+#' @param skip_types an optional character vector of `data_type`s never to
+#'   download even under `download = "all"` — e.g. `"asset"` for stimuli/media a
+#'   release links to rather than mirrors. Skipped files are still listed (with a
+#'   reason) in the manifest. Types: `"data"`, `"code"`, `"codebook"`, `"readme"`,
+#'   `"asset"`, `"supplemental"`, `"software"`, `"output"`, `"other"`.
+#' @param peek_zips if TRUE, look inside each `.zip` (via an HTTP range request,
+#'   without downloading it — see [zip_peek()]) and only fetch zips that contain
+#'   actual data or a codebook. A zip of only stimuli/materials is left for the
+#'   release to link to rather than mirror. Zips whose contents cannot be peeked
+#'   are downloaded as usual. Off by default.
 #' @param max_file_size largest single file to download, in MB (default 100).
 #'   The size caps are an upfront, all-or-nothing gate: if any file in a
 #'   repository exceeds this, the whole repository is refused (nothing
@@ -91,8 +96,9 @@
 #'
 #' @returns a list
 data_check <- function(paper, local_path = NULL, local_only = FALSE,
-                       file_limit = 30,
                        download = "data",
+                       skip_types = NULL,
+                       peek_zips = FALSE,
                        max_file_size = 100,
                        max_download_size = 500,
                        manifest = NULL,
@@ -255,7 +261,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       .data_check_write_manifest(
         manifest, empty_files, logical(0), NULL,
         paper_id = .pid(all_files), download = download,
-        max_file_size = max_file_size, max_download_size = max_download_size)
+        max_file_size = max_file_size, max_download_size = max_download_size,
+        skip_types = skip_types)
     }
     return(list(
       traffic_light = "na",
@@ -344,6 +351,31 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else {
     rep(FALSE, nrow(all_files))   # download = "none"
   }
+  # Never fetch excluded types (e.g. skip_types = "asset": stimuli/media that a
+  # release links to rather than mirrors). Applies on top of `download`.
+  if (!is.null(skip_types) && length(skip_types) > 0)
+    want <- want & !(all_files$data_type %in% skip_types)
+
+  # Peek inside zips (HTTP range request, no full download) and only keep those
+  # that hold actual data/codebook content; a zip of only stimuli is left to be
+  # linked, not mirrored. Zips we cannot peek are kept (downloaded as usual).
+  zip_peek_reason <- rep(NA_character_, nrow(all_files))
+  if (isTRUE(peek_zips) && download != "none") {
+    is_zip <- want & grepl("[.]zip$", all_files$file_name, ignore.case = TRUE) &
+      !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+    if (any(is_zip)) {
+      zpb <- pb(sum(is_zip), "Peeking into zips [:bar] :current/:total")
+      on.exit(zpb$terminate(), add = TRUE)
+      for (i in which(is_zip)) {
+        d <- zip_decision(all_files$file_url[i], skip_types = skip_types %||% "asset")
+        if (isFALSE(d$worth)) {
+          want[i] <- FALSE
+          zip_peek_reason[i] <- paste0("zip skipped: ", d$reason)
+        }
+        zpb$tick()
+      }
+    }
+  }
   if (download != "none") {
     need_dl <- want &
       (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
@@ -355,8 +387,30 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       all_files$file_location[need_dl] <- dl$file_location
       # Files in a gated repo keep file_location = NA, so they fall out of the
       # has_local extraction filter naturally. The refusal was already reported
-      # inline (and warned) by cap_prompt inside download_repo_files.
+      # inline (and warned) by cap_report inside download_repo_files.
       gated_repos <- attr(dl, "gated")
+    }
+
+    # Expand downloaded zips: unzip, classify the inner files, add the data ones
+    # to the file list (dropping inner assets), and demote the zip itself to a
+    # container so it is not treated as data. The original zip stays the "link".
+    if (isTRUE(peek_zips)) {
+      dz <- which(grepl("[.]zip$", all_files$file_name, ignore.case = TRUE) &
+                    !is.na(all_files$file_location) &
+                    nzchar(all_files$file_location %||% "") &
+                    file.exists(all_files$file_location %||% ""))
+      if (length(dz) > 0) {
+        extracted <- list()
+        for (i in dz) {
+          rows <- .expand_zip(all_files$file_location[i], all_files[i, , drop = FALSE],
+                              skip_types = skip_types %||% "asset")
+          if (nrow(rows) > 0) extracted[[length(extracted) + 1L]] <- rows
+        }
+        # Demote the zip rows so the zip file itself isn't extracted as data.
+        all_files$data_type[dz] <- "archive"
+        if (length(extracted) > 0)
+          all_files <- dplyr::bind_rows(all_files, dplyr::bind_rows(extracted))
+      }
     }
   }
 
@@ -368,38 +422,6 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     file.exists(all_files$file_location %||% "")
 
   data_files <- all_files[is_tabular_data & has_local, , drop = FALSE]
-
-  # Per-repo file_limit as an upfront gate: a repository with more tabular data
-  # files than the cap is refused wholesale (not silently sliced to the first
-  # `file_limit`), with a message naming file_limit and the count needed.
-  file_limit_gated <- character(0)
-  if (nrow(data_files) > 0 && is.finite(file_limit)) {
-    per_repo <- table(data_files$repo_url)
-    over <- names(per_repo)[per_repo > file_limit]
-    skip_repos <- character(0)
-    for (repo in over) {
-      n_repo <- as.integer(per_repo[[repo]])
-      msg <- cap_gate_count(n_repo, "file_limit", file_limit,
-                            "tabular data file", context = repo,
-                            action = "extract")
-      # Ask (interactive, not auto) whether to skip this repo or raise the limit.
-      # Under auto()/non-interactive this reports inline and skips.
-      ans <- cap_prompt(msg, param = "file_limit", needed = n_repo,
-                        current = file_limit, items = NULL)
-      if (!identical(ans$action, "raise")) {
-        file_limit_gated <- c(file_limit_gated, msg)
-        skip_repos <- c(skip_repos, repo)
-      } else if (!is.na(ans$value) && n_repo > ans$value) {
-        # User raised, but not enough for this repo → keep only the first N.
-        keep <- utils::head(which(data_files$repo_url == repo), ans$value)
-        drop <- setdiff(which(data_files$repo_url == repo), keep)
-        if (length(drop)) data_files <- data_files[-drop, , drop = FALSE]
-      }
-      # else: raised to >= n_repo → keep all of this repo's files.
-    }
-    if (length(skip_repos) > 0)
-      data_files <- data_files[!data_files$repo_url %in% skip_repos, , drop = FALSE]
-  }
 
   n_tabular_all <- sum(is_tabular_data)
   n_no_local <- sum(is_tabular_data & !has_local)
@@ -617,13 +639,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_columns, plural(n_columns), n_extracted
   )
 
-  # Repositories refused by the caps (size gate on download, or file_limit on
-  # extraction). Each message already names the parameter and the value to lift
-  # it, so we surface them verbatim.
-  gate_msgs <- c(
-    if (!is.null(gated_repos)) gated_repos$message else character(0),
-    file_limit_gated
-  )
+  # Repositories refused by the download size caps. Each message already names
+  # the parameter and the value to lift it, so we surface them verbatim.
+  gate_msgs <- if (!is.null(gated_repos)) gated_repos$message else character(0)
   summary_omitted <- if (length(gate_msgs) > 0)
     paste(gate_msgs, collapse = "\n\n") else NULL
 
@@ -786,7 +804,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     .data_check_write_manifest(
       manifest, all_files, want, gated_repos,
       paper_id = .pid(all_files), download = download,
-      max_file_size = max_file_size, max_download_size = max_download_size)
+      max_file_size = max_file_size, max_download_size = max_download_size,
+      skip_types = skip_types)
   }
 
   # ── 7. Return ────────────────────────────────────────────────────────────────

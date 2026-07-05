@@ -40,14 +40,14 @@ test_that("cap_gate_size does not cap total when max_download_size is Inf", {
 })
 
 test_that("cap_gate_count returns NULL within the cap and a message over it", {
-  expect_null(cap_gate_count(30, "file_limit", 30, "tabular data file",
-                             context = "repo-x", action = "extract"))
-  msg <- cap_gate_count(71, "file_limit", 30, "tabular data file",
-                        context = "https://osf.io/abc", action = "extract")
-  expect_match(msg, "file_limit` cap of 30")
-  expect_match(msg, "file_limit >= 71")
-  expect_match(msg, "extract them")
-  expect_match(msg, "https://osf.io/abc")
+  expect_null(cap_gate_count(30, "codebook_max_calls", 30, "text block",
+                             context = "cb.csv", action = "parse"))
+  msg <- cap_gate_count(71, "codebook_max_calls", 30, "text block",
+                        context = "cb.csv", action = "parse")
+  expect_match(msg, "codebook_max_calls` cap of 30")
+  expect_match(msg, "codebook_max_calls >= 71")
+  expect_match(msg, "parse them")
+  expect_match(msg, "cb.csv")
 })
 
 test_that("cap_gate_unknown names the file and the Inf instruction", {

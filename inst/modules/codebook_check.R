@@ -156,21 +156,13 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
         gate <- cap_gate_count(n_chunks, "codebook_max_calls", max_llm_chunks,
                                "text block", context = basename(p),
                                action = "parse")
-        # Ask (interactive, not auto) whether to skip this file's LLM parse or
-        # raise the budget. Under auto()/non-interactive: report inline + skip.
-        parse_cap <- max_llm_chunks
+        # Over the budget → report and skip this file's LLM parse.
         if (!is.null(gate)) {
-          ans <- cap_prompt(gate, param = "codebook_max_calls", needed = n_chunks,
-                            current = max_llm_chunks, items = NULL)
-          if (identical(ans$action, "raise") && !is.na(ans$value))
-            parse_cap <- ans$value
-          else gate_msgs <- c(gate_msgs, gate)
-        }
-        if (!is.null(gate) && parse_cap == max_llm_chunks) {
-          # skipped (declined the raise): do nothing for this file
+          cap_report(gate)
+          gate_msgs <- c(gate_msgs, gate)
         } else {
           llm_out <- codebook_parse_llm(pv, basename(p), model, params,
-                                        max_chunks = parse_cap)
+                                        max_chunks = max_llm_chunks)
           if (!is.null(llm_out) && nrow(llm_out) > 0) {
             parsed_list[[length(parsed_list) + 1L]] <- llm_out
             llm_parse_files <- llm_parse_files + 1L
@@ -237,18 +229,9 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
                                    paper = paper, max_calls = codebook_max_calls)
     scale_gate <- attr(sc, "gated")
     if (!is.null(scale_gate)) {
-      # Ask (interactive, not auto) whether to skip scale identification or raise
-      # the budget. Under auto()/non-interactive: report inline + skip.
-      n_needed <- attr(sc, "n_needed") %||% codebook_max_calls
-      ans <- cap_prompt(scale_gate, param = "codebook_max_calls",
-                        needed = n_needed, current = codebook_max_calls,
-                        items = NULL)
-      if (identical(ans$action, "raise") && !is.na(ans$value)) {
-        sc <- codebook_identify_scales(previews, labels_df, model, params,
-                                       paper = paper, max_calls = ans$value)
-      } else {
-        gate_msgs <- c(gate_msgs, scale_gate)
-      }
+      # Over the budget → report and skip scale identification.
+      cap_report(scale_gate)
+      gate_msgs <- c(gate_msgs, scale_gate)
     }
     n_scale_files <- attr(sc, "n_detected") %||% 0L
     if (!is.null(sc) && nrow(sc) > 0) {

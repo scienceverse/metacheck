@@ -129,3 +129,20 @@ test_that("data_read_head leaves a non-Qualtrics CSV untouched", {
   df <- data_read_head(csv, n_rows = Inf)
   expect_equal(nrow(df), 5)          # a lone StartDate is not a Qualtrics export
 })
+
+test_that("data_read_head skips a single-big-field (blob) file quickly", {
+  # A .csv that is really one giant value under a single header (JSON, XML, ...)
+  # is not tabular. It must be skipped (NULL) — and cheaply, not via a slow read.
+  blob <- withr::local_tempfile(fileext = ".csv")
+  json <- paste0("\"{", paste(sprintf("\"\"k%d\"\":%d", 1:5000, 1:5000),
+                              collapse = ","), "}\"")
+  writeLines(c("studyRunData", json), blob)
+  t <- system.time(df <- data_read_head(blob, n_rows = Inf))
+  expect_null(df)
+  expect_lt(t[["elapsed"]], 2)       # cheap bail, not the multi-second read
+
+  # A genuine one-column CSV with short rows must NOT be caught.
+  ok <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c("score", as.character(round(rnorm(20), 3))), ok)
+  expect_equal(nrow(data_read_head(ok, n_rows = Inf)), 20)
+})

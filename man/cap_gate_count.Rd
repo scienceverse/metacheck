@@ -16,7 +16,7 @@ cap_gate_count(
 \arguments{
 \item{n_needed}{the number of items the unit actually has}
 
-\item{param}{the name of the parameter that caps this (e.g. \code{"file_limit"})}
+\item{param}{the name of the parameter that caps this (e.g. \code{"codebook_max_calls"})}
 
 \item{current}{the current value of that parameter}
 

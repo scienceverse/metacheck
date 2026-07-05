@@ -48,7 +48,12 @@
   bat = "software", cmd = "software", ps1 = "software",
   dll = "software", so = "software", dylib = "software",
   lua = "software", psyexp = "software", osexp = "software",
-  spv = "output", fig = "output"
+  spv = "output", fig = "output",
+  # Binary scientific-data containers that name-based rules miss (they would
+  # otherwise fall through to "other"). These hold research data, not assets.
+  npy = "data", npz = "data", h5 = "data", hdf5 = "data", hdf = "data",
+  fif = "data", pkl = "data", pickle = "data", pk = "data",
+  ft = "data", feather = "data", parquet = "data", textgrid = "data"
 )
 
 #' Classify repository files into data_check semantic types
@@ -197,7 +202,8 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 # are probed, and only when a manifest is requested, so normal runs pay nothing.
 .data_check_write_manifest <- function(manifest, files, want, gated,
                                        paper_id, download,
-                                       max_file_size, max_download_size) {
+                                       max_file_size, max_download_size,
+                                       skip_types = NULL) {
   # Resolve the output path: a directory → "<paper_id>.manifest.json" inside it;
   # a ".json" path is used verbatim.
   path <- manifest
@@ -237,10 +243,13 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   }
 
   # Why was a file not downloaded? Ordered from most to least specific.
+  dtype <- files$data_type %||% rep(NA_character_, n)
   reason <- vapply(seq_len(n), function(i) {
     if (downloaded[i]) return(NA_character_)
     url <- files$file_url[i] %||% NA_character_
     if (identical(download, "none")) return("download = \"none\"")
+    if (!is.null(skip_types) && dtype[i] %in% skip_types)
+      return(sprintf("excluded type '%s' (linked, not mirrored)", dtype[i]))
     if (!isTRUE(want[i]))
       return("not a data/codebook/README file (use download = \"all\")")
     if (is.na(url) || !nzchar(url)) return("no download URL in the listing")
@@ -509,6 +518,50 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 #' @returns a data.frame, or `NULL` on failure / unsupported format.
 #' @export
 #' @keywords internal
+# Cheaply detect a "single big field" file — a .csv/.txt/.dat whose content is
+# really one large value stuffed into a single column, not a table. This covers
+# any such file, whatever the value is (a JSON blob, an XML document, a base64
+# string, a serialised log, ...): the giveaway is format-independent — the data
+# is a *single column* whose rows are *huge*. A real one-column dataset has short
+# rows (one value each); a blob-in-a-cell has an enormous row. Such files are
+# pathologically slow to parse with read.delim and carry no tabular data, so
+# data_read_head() skips them. Reads only the first two lines, so the check is
+# effectively free versus the multi-second (sometimes minute-long) read.
+#
+# We count fields quote-aware (a delimiter inside a quoted value does not split a
+# field), so a fully-quoted blob containing thousands of commas is still one
+# column. The row-size threshold keeps genuinely narrow one-column CSVs safe.
+.blob_row_min_bytes <- 4096L
+
+.count_fields <- function(line, sep) {
+  # Number of top-level fields: split on `sep` only when outside double quotes.
+  chars <- strsplit(line, "", fixed = TRUE)[[1]]
+  if (length(chars) == 0) return(0L)
+  in_quote <- FALSE
+  fields <- 1L
+  for (ch in chars) {
+    if (ch == "\"") in_quote <- !in_quote
+    else if (!in_quote && ch == sep) fields <- fields + 1L
+  }
+  fields
+}
+
+.is_single_field_blob <- function(path, sep) {
+  con <- file(path, "r")
+  on.exit(close(con))
+  first2 <- tryCatch(readLines(con, n = 2, warn = FALSE),
+                     error = function(e) character(0))
+  if (length(first2) < 2) return(FALSE)
+  header <- first2[[1]]
+  row1   <- first2[[2]]
+  # A single-column header AND an oversized first data row = one big field, not
+  # a table. Field counts are quote-aware so a quoted value's inner delimiters
+  # don't inflate the count.
+  .count_fields(header, sep) <= 1L &&
+    .count_fields(row1, sep) <= 1L &&
+    nchar(row1, type = "bytes") >= .blob_row_min_bytes
+}
+
 data_read_head <- function(path, n_rows = 5) {
   ext <- tolower(tools::file_ext(path))
   tryCatch({
@@ -516,6 +569,12 @@ data_read_head <- function(path, n_rows = 5) {
       csv = , txt = , tsv = , dat = {
         sep <- if (ext == "tsv") "\t" else .sniff_delimiter(path)
         hdr <- .detect_header(path, sep)
+        # Cheap bail-out for a non-tabular file disguised as .csv: one big field
+        # (e.g. a JSON blob dumped under a single header). Reading it with
+        # read.delim is pathologically slow (one huge quoted field), and it
+        # yields a useless 1-column "table". Detect it from the first two lines
+        # only and skip the expensive read. See .is_single_field_blob().
+        if (.is_single_field_blob(path, sep)) return(NULL)
         df <- suppressWarnings(
           utils::read.delim(path, sep = sep, header = hdr, nrows = n_rows,
                             check.names = FALSE)

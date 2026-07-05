@@ -258,7 +258,7 @@ cap_gate_size <- function(repo, n_files, total_mb, oversized,
 #' unit is skipped rather than truncated. Returns `NULL` when within the cap.
 #'
 #' @param n_needed the number of items the unit actually has
-#' @param param the name of the parameter that caps this (e.g. `"file_limit"`)
+#' @param param the name of the parameter that caps this (e.g. `"codebook_max_calls"`)
 #' @param current the current value of that parameter
 #' @param unit a noun for one item (e.g. `"tabular data file"`)
 #' @param context a label for the unit of work skipped (e.g. the repo URL)

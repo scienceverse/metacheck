@@ -20,7 +20,6 @@
 #' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
-#' @param file_limit the maximum number of code files per repository to assess. This is an upfront gate: a repository with more code files than the limit is skipped wholesale (not sliced to the first `file_limit`) with a message naming `file_limit` and the count needed to include it.
 #' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
 #' @param download if TRUE (default), download the code files to be checked from online repositories into a shared cache so they are read locally and reused on later runs. Set FALSE to stream each file from its URL instead.
@@ -28,7 +27,7 @@
 #' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
 #'
 #' @returns a list
-code_check <- function(paper, file_limit = 20, local_path = NULL,
+code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
                         max_file_size = 100, max_download_size = 500) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
@@ -61,33 +60,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL,
     plural(nrow(code_files))
   )
 
-  # file_limit as an upfront gate: a repository with more code files than the
-  # cap is refused wholesale (not sliced to the first `file_limit`), with a
-  # message naming file_limit and the count needed.
-  if (nrow(code_files) > 0 && is.finite(file_limit)) {
-    per_repo <- table(code_files$repo_url)
-    over <- names(per_repo)[per_repo > file_limit]
-    skip_repos <- character(0)
-    for (repo in over) {
-      n_repo <- as.integer(per_repo[[repo]])
-      msg <- cap_gate_count(n_repo, "file_limit", file_limit, "code file",
-                            context = repo, action = "analyse")
-      # Ask (interactive, not auto) whether to skip this repo or raise the limit.
-      ans <- cap_prompt(msg, param = "file_limit", needed = n_repo,
-                        current = file_limit, items = NULL)
-      if (!identical(ans$action, "raise")) {
-        summary_code <- paste(summary_code, msg)
-        skip_repos <- c(skip_repos, repo)
-      } else if (!is.na(ans$value) && n_repo > ans$value) {
-        keep <- utils::head(which(code_files$repo_url == repo), ans$value)
-        drop <- setdiff(which(code_files$repo_url == repo), keep)
-        if (length(drop)) code_files <- code_files[-drop, , drop = FALSE]
-      }
-    }
-    checked_files <- code_files[!code_files$repo_url %in% skip_repos, , drop = FALSE]
-  } else {
-    checked_files <- code_files
-  }
+  checked_files <- code_files
 
   # no relevant code files found ----
   if (nrow(code_files) == 0) {
@@ -132,7 +105,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL,
   # Create list of all file names in repository
   # TODO: iterate this by repo so file names don't bleed over
 
-  # --- Process each code file (up to file_limit) ---
+  # --- Process each code file ---
   if (nrow(checked_files) > 0) {
     pb_code <- pb(nrow(checked_files), ":what [:bar] :current/:total")
     pb_code$tick(0, list(what = ""))

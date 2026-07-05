@@ -14,18 +14,21 @@ download_repo_files(
 \arguments{
 \item{files}{a data.frame of file rows to download}
 
-\item{max_file_size}{largest single file to download, in MB (\code{Inf} = no cap)}
+\item{max_file_size}{largest single file to download, in MB (\code{Inf} = no cap);
+larger files are skipped individually}
 
 \item{max_download_size}{largest total download per repository, in MB
-(\code{Inf} = no cap); counts only files not already cached}
+(\code{Inf} = no cap); measured after the per-file filter, and if exceeded the
+whole repository is skipped}
 
 \item{pb}{an optional progress bar}
 }
 \value{
 \code{files} with \code{file_location} set to the cache path for each
-downloaded (or already-cached) file, and \code{NA} for files in gated
-repositories or without a URL. An attribute \code{"gated"} holds a data.frame
-(\code{repo_url}, \code{message}) of repositories refused by the caps.
+downloaded (or already-cached) file, and \code{NA} otherwise. Attribute
+\code{"gated"} is a data.frame (\code{repo_url}, \code{message}) of repositories skipped by
+the total cap; attribute \code{"oversize_skipped"} is a data.frame (\code{repo_url},
+\code{file_name}, \code{file_size}) of individual files skipped by the per-file cap.
 }
 \description{
 Given file rows from \code{repo_check} (with \code{repo_url}, \code{file_url}, \code{file_path},
@@ -34,13 +37,13 @@ by repo URL. Files already present in the cache are reused (never
 re-downloaded).
 }
 \details{
-Size caps are an \strong{upfront, all-or-nothing gate per repository}: before
-downloading, the full set of not-yet-cached files for a repository is measured
-(using the manifest \code{file_size}, or a \code{HEAD} \code{Content-Length} probe when that
-is missing) and checked against the caps. If any file exceeds \code{max_file_size},
-or the repository's total exceeds \code{max_download_size}, \strong{none} of that
-repository's files are downloaded and a message explaining how to raise the
-caps is attached (rather than silently downloading a partial subset). A file
-whose size cannot be determined at all also gates its repository.
+The two size caps work differently. \code{max_file_size} is a \strong{per-file filter}:
+any single file larger than it is skipped individually, while the rest of the
+repository still downloads. \code{max_download_size} is a \strong{per-repository gate}:
+if the total of the files that would download (i.e. after the per-file filter)
+exceeds it, the \strong{whole} repository is skipped. Sizes come from the manifest
+\code{file_size}, or a \code{HEAD} \code{Content-Length} probe when that is missing; a file
+whose size cannot be determined at all gates its repository (we refuse to
+stream a file of unknown size).
 }
 \keyword{internal}

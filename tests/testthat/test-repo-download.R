@@ -43,17 +43,19 @@ test_that("download_repo_files reuses the cache without re-downloading", {
   expect_true(all(file.exists(dl2$file_location)))
 })
 
-test_that("a file over the per-file cap gates the whole repository", {
-  files <- make_dl_files()
+test_that("a file over the per-file cap is skipped, the rest downloads", {
+  # max_file_size is a per-file filter: the oversized file is left out but the
+  # rest of the repository still downloads (the repo is NOT gated).
+  files <- make_dl_files(sizes = c(50, 5000))   # 2nd file much larger on disk
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
-  # cap far below the file size → the repo is refused, nothing downloaded
-  dl <- download_repo_files(files, max_file_size = 0.00001,
+  cap_mb <- files$file_size[2] / (1024 * 1024) * 0.5   # between the two sizes
+  dl <- download_repo_files(files, max_file_size = cap_mb,
                             max_download_size = 100)
-  expect_equal(sum(!is.na(dl$file_location)), 0)
-  gated <- attr(dl, "gated")
-  expect_equal(nrow(gated), 1)
-  expect_match(gated$message, "per-file limit")
-  expect_match(gated$message, "max_file_size >=")
+  expect_equal(sum(!is.na(dl$file_location)), 1)        # the small one only
+  expect_equal(nrow(attr(dl, "gated")), 0)              # repo not gated
+  os <- attr(dl, "oversize_skipped")
+  expect_equal(nrow(os), 1)
+  expect_equal(os$file_name, "f2.csv")
 })
 
 test_that("a repo over the total cap is gated (nothing downloaded)", {
@@ -72,11 +74,13 @@ test_that("NA manifest size falls back to a HEAD Content-Length probe", {
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
   files$file_size <- NA_real_   # force the probe path
 
-  # Stub .remote_size to report a huge size → repo gated without downloading.
+  # Stub .remote_size so both files resolve to 6 GB (> the 100 MB per-file cap):
+  # both are filtered out individually, so nothing downloads but the repo is not
+  # "gated" — it's the per-file filter, recorded in oversize_skipped.
   local_mocked_bindings(.remote_size = function(url) 6e9)  # 6 GB
   dl <- download_repo_files(files, max_file_size = 100, max_download_size = 500)
   expect_equal(sum(!is.na(dl$file_location)), 0)
-  expect_match(attr(dl, "gated")$message, "per-file limit")
+  expect_equal(nrow(attr(dl, "oversize_skipped")), 2)
 })
 
 test_that("an undeterminable size gates the repo with the Inf instruction", {
