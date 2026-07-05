@@ -562,6 +562,13 @@ osf_file_download <- function(osf_id,
         }
       }
 
+      if (nrow(parents) == 0) {
+        base_parent <- contents[contents$osf_id == osf_id, ]
+        if (nrow(base_parent) > 0) {
+          parents <- dplyr::bind_rows(parents, base_parent)
+        }
+      }
+
       rev(parents$name) |>
         path_sanitize() |>
         paste(collapse = "/")
