@@ -150,7 +150,10 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       ext <- tools::file_ext(name)
       paste0(prefix, if (nzchar(ext)) paste0("README.", ext) else "README")
     } else {
-      sub <- type_to_subdir[[dt]] %||% "documentation"
+      # Single-bracket lookup: an unknown data_type (e.g. "archive") returns NA
+      # rather than throwing "subscript out of bounds" as `[[` would.
+      sub <- unname(type_to_subdir[dt])
+      if (is.na(sub)) sub <- "documentation"
       paste0(prefix, sub, "/", name)
     }
   }

@@ -54,6 +54,53 @@ test_that("data_check_whitespace flags padded values", {
   expect_false(data_check_whitespace(c(1, 2, 3))$problem)
 })
 
+test_that("data_check_colname flags file-illegal, padded, and over-long names", {
+  # File-illegal characters (the Emergent .dat header-as-name case).
+  emergent <- "_H:\t$Name\t%Input[4:0,0,0,0]<4:1,8,1,1>\t%Input[4:0,1,0,0]"
+  r <- data_check_colname(emergent)
+  expect_true(r$problem)
+  expect_true(":" %in% r$values)
+  expect_true("\t" %in% r$values)
+
+  # Each illegal character class flags on its own.
+  expect_true(data_check_colname("score:pre")$problem)
+  expect_true(data_check_colname("a\tb")$problem)           # control char
+  expect_true(data_check_colname('he said "hi"')$problem)   # quote
+  expect_true(data_check_colname("ratio a/b")$problem)      # slash
+
+  # Padding flags.
+  expect_true(data_check_colname(" score ")$problem)
+
+  # Length: over 64 characters flags (SPSS's maximum variable-name length);
+  # 64 or under does not.
+  expect_true(data_check_colname(strrep("a", 65))$problem)
+  expect_false(data_check_colname(strrep("a", 64))$problem)
+
+  # Ordinary names — including spaces, dots and unicode — are fine.
+  expect_false(data_check_colname("reaction_time")$problem)
+  expect_false(data_check_colname("orginal hip.go value")$problem)
+  expect_false(data_check_colname("âge")$problem)
+  expect_false(data_check_colname(NA_character_)$problem)
+})
+
+test_that("data_check_colname_collisions finds names that sanitize identically", {
+  # IPA phoneme columns: "t'" and "t̪" (t + combining dental diacritic)
+  # both sanitize to "t_" (the codebook / make.names collision case).
+  r <- data_check_colname_collisions(c("t'", "t̪", "score", "kw"))
+  expect_setequal(names(r), c("t'", "t̪"))
+  expect_match(r[["t'"]], "cannot tell these columns apart")
+
+  # Identical duplicate names collide too.
+  d <- data_check_colname_collisions(c("id", "id", "x"))
+  expect_true("id" %in% names(d))
+  expect_match(d[["id"]], "identically named column")
+
+  # Distinct-after-sanitization names do not collide; unicode letters are
+  # kept, so "k" and "kʷ" (kʷ, modifier letter) stay distinct.
+  expect_length(data_check_colname_collisions(c("a", "b", "a_1")), 0)
+  expect_length(data_check_colname_collisions(c("k", "kʷ")), 0)
+})
+
 test_that("data_check_numeric_in_text flags contaminated numeric columns", {
   r <- data_check_numeric_in_text(c(as.character(1:20), "n/a", ">100"))
   expect_true(r$problem)

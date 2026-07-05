@@ -408,8 +408,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         }
         # Demote the zip rows so the zip file itself isn't extracted as data.
         all_files$data_type[dz] <- "archive"
-        if (length(extracted) > 0)
-          all_files <- dplyr::bind_rows(all_files, dplyr::bind_rows(extracted))
+        if (length(extracted) > 0) {
+          added <- dplyr::bind_rows(extracted)
+          all_files <- dplyr::bind_rows(all_files, added)
+          # Keep `want` aligned with `all_files`: inner files from accepted zips
+          # are part of the mirrored data/codebook payload.
+          want <- c(want, rep(TRUE, nrow(added)))
+        }
       }
     }
   }
@@ -505,6 +510,14 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (length(v) == 0) "" else paste(utils::head(v, 5), collapse = " | ")
       }, character(1))
 
+      # Values data_read_head had to re-interpret as Latin-1 because their
+      # bytes were not valid UTF-8 (see the "utf8_repaired" attribute): the
+      # count per column, 0 when the column needed no repair. data_validate
+      # turns nonzero counts into an encoding warning.
+      rep_counts <- attr(df, "utf8_repaired") %||% integer(0)
+      utf8_fixed <- ifelse(names(df) %in% names(rep_counts),
+                           as.integer(rep_counts[names(df)]), 0L)
+
       data.frame(
         paper_id          = f$paper_id %||% .pid(all_files),
         repo_url          = f$repo_url,
@@ -522,10 +535,25 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         ambiguous         = vapply(cls, function(c) isTRUE(c$ambiguous), logical(1)),
         is_numeric        = is_numeric,
         sample_values     = sample_vals,
+        utf8_repaired     = utf8_fixed,
         stats_mat
       )
     })
     columns_df <- dplyr::bind_rows(Filter(Negate(is.null), per_file))
+
+    # Header signature per source file: the sorted set of its column names. Files
+    # that share a signature have the same schema (e.g. pp1.csv … pp30.csv), so a
+    # column's LLM-derived concept/level is identical across them and need be
+    # classified only once. A file with a different header (one_summary.csv) gets
+    # its own signature and is classified on its own. Broadcasting per signature
+    # collapses the repeated LLM questions in same-schema repositories.
+    if (!is.null(columns_df) && nrow(columns_df) > 0) {
+      sig_by_file <- vapply(
+        split(columns_df$column_name, columns_df$source_file),
+        function(cols) paste(sort(unique(cols)), collapse = "\r"),
+        character(1))
+      columns_df$header_sig <- unname(sig_by_file[columns_df$source_file])
+    }
 
     # Demote any detected manifests to supplemental and refresh the tabular
     # flags/counts so they are reported as supplemental, not data.
@@ -544,7 +572,18 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # cryptic names (q3 = a reaction time) are exactly what the rules cannot get.
     # The LLM also gives a measurement level, used only to fill an NA level.
     if (!is.null(columns_df) && nrow(columns_df) > 0 && llm_use()) {
-      gap_idx <- which(is.na(columns_df$concept) | columns_df$ambiguous %in% TRUE)
+      # Header-signature dedup: classify only the FIRST file of each schema
+      # group (the representative) and broadcast its concept/level to the
+      # identical-header files afterwards. In a repo of pp1.csv … pp30.csv this
+      # turns 30 repeated LLM questions per ambiguous column into one.
+      rep_file <- if ("header_sig" %in% names(columns_df)) {
+        first_file <- tapply(columns_df$source_file, columns_df$header_sig,
+                             function(x) x[[1]])
+        columns_df$source_file == first_file[columns_df$header_sig]
+      } else rep(TRUE, nrow(columns_df))
+
+      gap_idx <- which((is.na(columns_df$concept) |
+                          columns_df$ambiguous %in% TRUE) & rep_file)
       if (length(gap_idx) > 0) {
         col_text <- vapply(gap_idx, function(i) sprintf(
           "column_name: %s\nsample_values: %s\nis_numeric: %s",
@@ -601,6 +640,23 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
           ok <- !is.na(pred_lvl)
           if (any(ok)) columns_df$measurement_level[lvl_idx[ok]] <- pred_lvl[ok]
         }
+
+        # Broadcast the representative's LLM-filled concept/level to the other
+        # files that share its header signature. Match on (header_sig,
+        # column_name); a column keeps its own value when the rules already set
+        # it (only NA cells are filled), so a file whose rules resolved a column
+        # differently is never overwritten.
+        if ("header_sig" %in% names(columns_df) && any(!rep_file)) {
+          key <- paste(columns_df$header_sig, columns_df$column_name, sep = "\r")
+          rep_key <- key[rep_file]
+          for (facet in c("concept", "measurement_level")) {
+            rep_val  <- columns_df[[facet]][rep_file]
+            donor    <- rep_val[match(key, rep_key)]  # value from the rep file
+            fill_row <- !rep_file & is.na(columns_df[[facet]]) & !is.na(donor)
+            if (any(fill_row))
+              columns_df[[facet]][fill_row] <- donor[fill_row]
+          }
+        }
       }
     }
 
@@ -617,6 +673,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       columns_df$measurement_level[lvl_na & columns_df$representation == "numeric"] <- "ratio"
       columns_df$ambiguous <- NULL
       columns_df$is_numeric <- NULL
+      columns_df$header_sig <- NULL   # internal dedup key, not part of output
     }
   }
 

@@ -47,17 +47,35 @@
   }, error = function(e) NA_real_)
 }
 
-# Download one file to `dest`. Returns TRUE on success. Files are size-gated
-# upfront by the caller, so this just fetches.
+# Download one file to `dest`. Returns NA_character_ on success, or a short
+# error description on failure (for the caller's failure report). Files are
+# size-gated upfront by the caller, so this just fetches. Transient server
+# refusals — OSF rate-limits bursts with 429, and 503s happen — are retried
+# with backoff (Retry-After is honoured), because a batch of many small
+# requests otherwise loses files at random.
 .download_one <- function(url, dest) {
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   tryCatch({
-    req <- httr2::request(url) |> httr2::req_progress()
+    # Throttle realm = the host (explicit: the default derivation errors on
+    # host-less URLs such as file://, which the tests use).
+    host <- tryCatch(httr2::url_parse(url)$hostname, error = function(e) NULL)
+    if (is.null(host) || !length(host) || is.na(host) || !nzchar(host))
+      host <- "local"
+    req <- httr2::request(url) |>
+      # Pace the requests instead of firing the whole batch back-to-back: a
+      # leaky bucket per host that allows a short burst of 10, then sustains
+      # ~1 request/second. Downloads are sequential either way; this only
+      # inserts waits when the burst budget is spent, which is what keeps OSF
+      # from answering 429.
+      httr2::req_throttle(capacity = 10, fill_time_s = 10, realm = host) |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
+      httr2::req_progress()
     httr2::req_perform(req, path = dest)
-    file.exists(dest) && file.size(dest) > 0
+    if (file.exists(dest) && file.size(dest) > 0) NA_character_
+    else "empty response"
   }, error = function(e) {
     if (file.exists(dest)) unlink(dest)
-    FALSE
+    conditionMessage(e)
   })
 }
 
@@ -85,11 +103,20 @@
 #'   whole repository is skipped
 #' @param pb an optional progress bar
 #'
+#' Downloads are paced (a short burst, then ~1 request/second per host) and
+#' transient refusals (HTTP 429/503, dropped connections) are retried with
+#' backoff, honouring `Retry-After`. A file that still fails after the retries
+#' is reported with a message (one per repository) and recorded in the
+#' `"failed"` attribute; because the cache is reused, re-running fetches only
+#' the files that are still missing.
+#'
 #' @returns `files` with `file_location` set to the cache path for each
 #'   downloaded (or already-cached) file, and `NA` otherwise. Attribute
 #'   `"gated"` is a data.frame (`repo_url`, `message`) of repositories skipped by
 #'   the total cap; attribute `"oversize_skipped"` is a data.frame (`repo_url`,
-#'   `file_name`, `file_size`) of individual files skipped by the per-file cap.
+#'   `file_name`, `file_size`) of individual files skipped by the per-file cap;
+#'   attribute `"failed"` is a data.frame (`repo_url`, `file_name`, `error`) of
+#'   files whose download failed after retries.
 #' @export
 #' @keywords internal
 download_repo_files <- function(files,
@@ -139,10 +166,12 @@ download_repo_files <- function(files,
     # know whether it fits, and refuse to stream blindly).
     unknown <- which(is.na(sizes))
     if (length(unknown) > 0) {
+      msg <- cap_gate_unknown(repo, files$file_name[idx[unknown[1]]])
+      # Report it like the total-size gate does — this refusal used to be
+      # recorded only in the manifest, so a repo could silently come up empty.
+      cap_report(msg)
       gated <- rbind(gated, data.frame(
-        repo_url = repo,
-        message  = cap_gate_unknown(repo, files$file_name[idx[unknown[1]]]),
-        stringsAsFactors = FALSE))
+        repo_url = repo, message = msg, stringsAsFactors = FALSE))
       next
     }
 
@@ -198,20 +227,44 @@ download_repo_files <- function(files,
   }
 
   # ── Download the files of repositories that passed the gate ─────────────────
+  failed <- data.frame(repo_url = character(0), file_name = character(0),
+                       error = character(0), stringsAsFactors = FALSE)
   if (length(to_get) > 0) {
     if (is.null(pb)) {
       pb <- pb(length(to_get), "Downloading files [:bar] :current/:total")
       on.exit(pb$terminate())
     }
     for (i in to_get) {
-      if (.download_one(files$file_url[i], files$.cache_path[i]))
+      err <- .download_one(files$file_url[i], files$.cache_path[i])
+      if (is.na(err)) {
         files$file_location[i] <- files$.cache_path[i]
+      } else {
+        failed <- rbind(failed, data.frame(
+          repo_url = files$repo_url[i], file_name = files$file_name[i],
+          error = err, stringsAsFactors = FALSE))
+      }
       if (!is.null(pb)) pb$tick()
+    }
+  }
+
+  # Report the failures instead of swallowing them: without this, a transient
+  # refusal (e.g. OSF rate-limiting a burst) looks like a complete download —
+  # the progress bar reaches N/N and the files are just silently absent.
+  if (nrow(failed) > 0) {
+    for (repo in unique(failed$repo_url)) {
+      frows <- failed[failed$repo_url == repo, ]
+      message(sprintf(
+        paste0("%d download%s from %s failed after retries (e.g. %s: %s). ",
+               "Re-run to retry: cached files are reused, only the missing ",
+               "files are fetched."),
+        nrow(frows), plural(nrow(frows)), repo,
+        frows$file_name[1], sub("\n.*", "", frows$error[1])))
     }
   }
 
   files$.cache_path <- NULL
   attr(files, "gated") <- gated
   attr(files, "oversize_skipped") <- oversize_skipped
+  attr(files, "failed") <- failed
   files
 }

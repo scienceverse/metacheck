@@ -82,6 +82,31 @@ test_that("data_col_type survives an invalid-UTF-8 column name", {
   expect_type(res, "list")
 })
 
+test_that("data_read_head repairs invalid-UTF-8 values, not just names", {
+  # A Latin-1 byte inside a value of a nominally-UTF-8 CSV (here 0xEA, "ê",
+  # from a mis-encoded apostrophe — the openmind.opmia00203 case) survives
+  # fread's encoding = "UTF-8" as an invalid-UTF-8 string, and the first base
+  # regex call in data_check then dies with "input string N is invalid UTF-8".
+  # data_read_head must return values that are all valid UTF-8, with the
+  # invalid bytes reinterpreted as Latin-1 rather than dropped.
+  csv <- withr::local_tempfile(fileext = ".csv")
+  con <- file(csv, open = "wb")
+  writeLines(c("id,sentence", "1,ok", "2,ok"), con, useBytes = TRUE)
+  writeBin(charToRaw("3,She\xead like\n"), con)
+  close(con)
+
+  df <- data_read_head(csv, n_rows = Inf)
+  expect_s3_class(df, "data.frame")
+  expect_true(all(validUTF8(df$sentence)))
+  expect_no_error(grepl("a", df$sentence))
+  # The Latin-1 byte is preserved as its UTF-8 equivalent (0xEA -> U+00EA),
+  # not stripped.
+  expect_identical(df$sentence[3], "She\u00ead like")
+  # The repair is recorded per column, so data_check can carry it into its
+  # table and data_validate can raise the "Mixed encoding" warning.
+  expect_identical(attr(df, "utf8_repaired"), c(sentence = 1L))
+})
+
 # ── Qualtrics multi-row header handling ───────────────────────────────────────
 
 # Write a minimal Qualtrics "use choice text" export: machine-name header, a
@@ -145,4 +170,22 @@ test_that("data_read_head skips a single-big-field (blob) file quickly", {
   ok <- withr::local_tempfile(fileext = ".csv")
   writeLines(c("score", as.character(round(rnorm(20), 3))), ok)
   expect_equal(nrow(data_read_head(ok, n_rows = Inf)), 20)
+})
+
+test_that("data_read_head reads a table with large quoted cells fast", {
+  # A real table whose cells hold big quoted values full of commas (e.g. numpy
+  # array dumps) is genuinely tabular but murders base read.delim's quote scanner
+  # (minutes). fread handles it in a moment; verify it reads correctly and fast.
+  skip_if_not_installed("data.table")
+  f <- withr::local_tempfile(fileext = ".csv")
+  # column 3 is a large quoted field containing thousands of commas.
+  blob_cell <- paste0("\"[", paste(rep("1.0", 5000), collapse = ","), "]\"")
+  cells <- vapply(1:5, function(i)
+    sprintf("%d,r%d,%s", i, i, blob_cell), character(1))
+  writeLines(c("id,label,arr", cells), f)
+  t <- system.time(df <- data_read_head(f, n_rows = Inf))
+  expect_false(is.null(df))
+  expect_equal(nrow(df), 5)
+  expect_equal(names(df), c("id", "label", "arr"))
+  expect_lt(t[["elapsed"]], 5)   # seconds, not minutes
 })

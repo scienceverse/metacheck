@@ -4,7 +4,9 @@
 #' This module runs automated data-quality checks on the tabular data files
 #' extracted by `data_check`, flagging likely problems (miscoded missing values,
 #' outliers, constant or near-constant columns, inconsistent category casing,
-#' sparse categories) and drawing a per-column outlier visualization so reviewers
+#' sparse categories, column names that cannot be reused as file or variable
+#' names, text values stored in a legacy non-UTF-8 encoding) and drawing a
+#' per-column outlier visualization so reviewers
 #' can spot suspicious values at a glance. It also screens columns for personal
 #' information that should not be shared openly (emails, IP addresses, national
 #' IDs, credit-card numbers, identifying column names, geographic coordinates,
@@ -38,7 +40,23 @@
 #' rule and a miscoded-missing-value check; for each categorical column it checks
 #' for constant columns, case-only duplicate categories, sparsely populated
 #' levels, leading/trailing whitespace, and mostly-numeric columns contaminated
-#' by a few non-numeric values. Findings are reported per file, alongside a
+#' by a few non-numeric values. Column *names* are checked too: names carrying
+#' characters that are illegal in file names (`< > : " / \ | ? *`), control
+#' characters, or more than 64 characters break when reused — as file names,
+#' in analysis scripts, or on import into other statistical packages (64 bytes
+#' is the most SPSS accepts for a variable name; SAS and Stata stop at 32).
+#' Very long names additionally prevent generating the codebook's per-variable
+#' figures (the file path exceeds Windows' 260-character limit), and a
+#' garbled name usually means the file's header row was not exported or
+#' parsed as intended. Sibling columns whose names differ *only* in special
+#' characters (e.g. `t'` next to a t-with-diacritic) are flagged as colliding:
+#' tools that sanitize names on import cannot tell them apart. Text values
+#' whose bytes are not valid UTF-8 (a legacy Latin-1/Windows-1252 export, or a
+#' file that mixes encodings) are flagged as **mixed encoding**, with
+#' instructions to re-save the file as UTF-8 — such characters corrupt
+#' silently on other systems; metacheck itself reads on by re-interpreting the
+#' affected values as Latin-1. Findings are
+#' reported per file, alongside a
 #' boxplot + histogram of each numeric column with outliers highlighted.
 #'
 #' The checks are intentionally generic and run on every extracted column.
@@ -121,6 +139,18 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     if (any(hit)) labels_df$label[which(hit)[1]] else NA_character_
   }
 
+  # Values whose bytes were not valid UTF-8 and had to be re-interpreted as
+  # Latin-1 at read time (recorded by data_check per column; the repaired
+  # preview values no longer show it). 0 when absent or from an older
+  # data_check run without the column.
+  utf8_repaired_of <- function(file, col) {
+    if (is.null(columns_df) || !all(c("source_file", "column_name",
+                                      "utf8_repaired") %in% names(columns_df)))
+      return(0L)
+    hit <- columns_df$source_file == file & columns_df$column_name == col
+    if (any(hit)) columns_df$utf8_repaired[which(hit)[1]] %||% 0L else 0L
+  }
+
   # ── 2. Run checks per column ─────────────────────────────────────────────────
   findings <- list()
   plot_specs    <- list()   # per numeric column: values + bounds for the distribution facet
@@ -128,29 +158,35 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   for (file in names(previews)) {
     df <- previews[[file]]
     if (is.null(df) || ncol(df) == 0) next
+    # Names that become identical once special characters are sanitized away
+    # (computed per file: collisions are between sibling columns).
+    coll <- data_check_colname_collisions(names(df))
     for (col in names(df)) {
       x <- df[[col]]
       lbl <- label_of(file, col)
       col_finds <- list()
 
       if (is.numeric(x)) {
-        o <- data_check_outliers(x, k = outlier_k)
+        # Normalize numeric vectors to base doubles so integer64 columns from
+        # fread/readxl do not cause type conflicts in downstream bind_rows().
+        x_num <- suppressWarnings(as.numeric(x))
+        o <- data_check_outliers(x_num, k = outlier_k)
         if (o$problem) col_finds[["Outliers"]] <- o$message
-        m <- data_check_miscoded_missing(x)
+        m <- data_check_miscoded_missing(x_num)
         if (m$problem) col_finds[["Miscoded missing"]] <- m$message
         # Keep numeric vectors (capped) for the combined distribution figure.
-        v <- x[!is.na(x) & !is.nan(x)]
+        v <- x_num[!is.na(x_num) & !is.nan(x_num)]
         if (length(v) >= 4 && length(unique(v)) > 1) {
           plot_specs[[length(plot_specs) + 1L]] <- list(
             file = file, col = col, values = utils::head(v, 5000),
-            lower = o$lower, upper = o$upper)
+            lower = as.numeric(o$lower), upper = as.numeric(o$upper))
           # One row per column that actually has outliers, for the outlier table.
           if (o$problem) {
-            ex <- utils::head(sort(o$values), 8)
+            ex <- utils::head(sort(suppressWarnings(as.numeric(o$values))), 8)
             outlier_specs[[length(outlier_specs) + 1L]] <- data.frame(
               source_file = file, column = col, label = lbl,
               n_outliers = length(o$values),
-              lower = o$lower, upper = o$upper,
+              lower = as.numeric(o$lower), upper = as.numeric(o$upper),
               examples = paste(signif(ex, 4), collapse = ", "))
           }
         }
@@ -173,6 +209,26 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
       }
       cst <- data_check_constant(x)
       if (cst$problem) col_finds[["Constant"]] <- cst$message
+
+      # Column-name quality: names with file-illegal characters, control
+      # characters, padding, or excessive length break downstream reuse (figure
+      # file names, scripts, metadata keys) and often signal a misparsed header.
+      cn <- data_check_colname(col)
+      if (cn$problem) col_finds[["Problematic column name"]] <- cn$message
+      if (!is.null(coll[[col]]))
+        col_finds[["Colliding column names"]] <- coll[[col]]
+
+      # Mixed / legacy encoding: values whose bytes were not valid UTF-8 at
+      # read time. metacheck re-interpreted them as Latin-1 to continue, but
+      # on other systems these characters silently corrupt (é becomes "Ã©" or
+      # "�"), so the researcher should re-save the file as UTF-8.
+      n_enc <- utf8_repaired_of(file, col)
+      if (!is.na(n_enc) && n_enc > 0) {
+        col_finds[["Mixed encoding"]] <- sprintf(
+          "%d value%s %s not valid UTF-8 (bytes from a legacy encoding such as Latin-1/Windows-1252, e.g. a mis-encoded accent or apostrophe); metacheck re-interpreted %s as Latin-1 to continue. Such characters corrupt silently when the file is opened on another system. Re-save the file with UTF-8 encoding: in Excel use 'Save As > CSV UTF-8 (Comma delimited)'; in R, write.csv(..., fileEncoding = \"UTF-8\"); in SPSS, 'Save as type: CSV' with Encoding 'UTF-8'.",
+          n_enc, plural(n_enc), if (n_enc == 1) "is" else "are",
+          if (n_enc == 1) "it" else "them")
+      }
 
       # Personal / disclosure information (PII): flag columns that may hold
       # data that should not be shared openly. Reported as "review before
@@ -347,6 +403,9 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     "Sparse levels"     = "with sparsely populated categories",
     Whitespace          = "with leading/trailing whitespace",
     "Numeric as text"   = "with numeric values stored as text",
+    "Problematic column name" = "whose name contains file-illegal characters or is excessively long",
+    "Colliding column names" = "whose names become identical when special characters are removed",
+    "Mixed encoding"    = "with values in a legacy (non-UTF-8) encoding",
     "Personal info (values)"      = "whose values look like personal information",
     "Personal info (column name)" = "whose name suggests personal information",
     "Geographic coordinates"      = "that look like geographic coordinates",
@@ -406,7 +465,7 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   report <- c(
-    "This module runs automated data-quality checks (outliers, miscoded missing values, constant columns, category casing, sparse levels) on the extracted data files.",
+    "This module runs automated data-quality checks (outliers, miscoded missing values, constant columns, category casing, sparse levels, problematic column names, mixed text encodings) on the extracted data files.",
     sprintf("We examined %d column%s across %d data file%s.",
             n_columns, plural(n_columns),
             length(previews), plural(length(previews)))

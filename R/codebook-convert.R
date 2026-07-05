@@ -184,6 +184,13 @@
     "  html_document:",
     "    toc: true",
     "    toc_float: true",
+    # Column names that differ only in special characters (e.g. "t'" vs a
+    # t-with-diacritic) sanitize to the same section id, and pandoc then warns
+    # "Duplicate identifier" once per section — hundreds of lines on a wide
+    # dataset. The ids still work (links go to the first occurrence);
+    # data_validate flags the colliding names themselves, so the render need
+    # not repeat the warning.
+    '    pandoc_args: ["--quiet"]',
     "---",
     "",
     "```{r setup, include=FALSE}",
@@ -402,6 +409,41 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
       cb_df <- cb_df[, keep_col, drop = FALSE]
     }
 
+    # Drop columns whose names would break the codebook's figure files. The
+    # codebook package writes one figure per variable to
+    # <sub_dir>/codebook_files/figure-html/cb_codebook_data_<name>_distribution-<n>-1.png,
+    # where <name> is the column name with every non-alphanumeric character
+    # replaced by "_" (codebook:::safe_name, via rmdpartials::partial). That
+    # sanitization is one-to-one, so file-illegal characters never reach png()
+    # — but the name's LENGTH survives, and when the absolute figure path
+    # passes Windows' 260-character limit png() cannot create the file and the
+    # whole render aborts. The room left for a name depends on how deep the
+    # output dir sits, so the budget is computed from the actual path rather
+    # than a fixed constant. We deliberately skip rather than truncate —
+    # data_validate flags these names ("Problematic column name") so the
+    # researcher is warned to rename them in the source data.
+    if (ncol(cb_df) > 0) {
+      fig_dir <- file.path(normalizePath(sub_dir, mustWork = FALSE),
+                           "codebook_files", "figure-html")
+      name_budget <- 259L - nchar(fig_dir, type = "bytes") -
+        nchar("/cb_codebook_data__distribution-9999-1.png")
+      bad <- vapply(names(cb_df), function(nm)
+        nchar(nm, type = "bytes") > name_budget, logical(1))
+      if (any(bad)) {
+        shown <- utils::head(names(cb_df)[bad], 3)
+        shown <- sprintf('"%s%s"', substr(shown, 1, 40),
+                         ifelse(nchar(shown) > 40, "...", ""))
+        message(sum(bad), " column", plural(sum(bad)),
+                " excluded from the codebook: the name", plural(sum(bad)),
+                " (over ", name_budget, " characters) would push the",
+                " codebook's figure file paths past Windows' 260-character",
+                " limit (", paste(shown, collapse = ", "),
+                "). See data_validate's 'Problematic column name' check;",
+                " rename the column", plural(sum(bad)), " in the source data.")
+        cb_df <- cb_df[, !bad, drop = FALSE]
+      }
+    }
+
     var_names <- names(cb_df)
     meta <- .codebook_metadata(paper, study_label, var_names)
     scales <- .codebook_scales(labels_df, var_names)
@@ -431,6 +473,14 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
     meta_files <- c(meta_files, json_path)
 
     if (can_render) {
+      # The codebook package computes a distribution/plot for every variable, so
+      # a wide dataset can take minutes with no console output. Announce the start
+      # (with the variable count, which drives the time) and report elapsed time
+      # on completion, so a long silent render is not mistaken for a hang.
+      grp_label <- if (length(roots) > 1) paste0(" [", grp, "]") else ""
+      message("Rendering codebook HTML", grp_label, " (", length(var_names),
+              " variables) - this can take a few minutes ...")
+      t0 <- Sys.time()
       html_out <- tryCatch(
         rmarkdown::render(rmd_path, output_file = "codebook.html",
                           quiet = TRUE, envir = new.env()),
@@ -438,6 +488,8 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
       if (!is.null(html_out) && file.exists(html_out)) {
         html_files <- c(html_files, html_out)
         rendered <- TRUE
+        message("  done in ",
+                format(round(difftime(Sys.time(), t0, units = "secs"), 1)), ".")
       }
     }
   }

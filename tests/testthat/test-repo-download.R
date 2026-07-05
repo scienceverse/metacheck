@@ -95,6 +95,27 @@ test_that("an undeterminable size gates the repo with the Inf instruction", {
   expect_match(attr(dl, "gated")$message, "max_file_size = Inf")
 })
 
+test_that("failed downloads are reported and recorded, not swallowed", {
+  # One good local file, one URL that cannot resolve: the good file downloads,
+  # the bad one lands in the "failed" attribute and a message names it (the
+  # old behaviour was a silent FALSE — the batch looked complete while files
+  # were missing).
+  files <- make_dl_files()
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  files$file_url[2] <- "file:///nonexistent/never/there.csv"
+
+  expect_message(
+    dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100),
+    "failed after retries"
+  )
+  expect_false(is.na(dl$file_location[1]))
+  expect_true(is.na(dl$file_location[2]))
+  fa <- attr(dl, "failed")
+  expect_equal(nrow(fa), 1)
+  expect_equal(fa$file_name, "f2.csv")
+  expect_true(nzchar(fa$error))
+})
+
 test_that("cache paths are stable and per-repo", {
   a <- metacheck:::.repo_cache_subdir("https://osf.io/abc")
   b <- metacheck:::.repo_cache_subdir("https://osf.io/abc")

@@ -216,6 +216,16 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   }
 
   n <- nrow(files)
+  # `files` can grow after zip expansion; normalize `want` so all logical
+  # operations below are length-stable and NA-free.
+  if (length(want) == 0) {
+    want <- rep(FALSE, n)
+  } else if (length(want) != n) {
+    want <- rep_len(want, n)
+  }
+  want <- as.logical(want)
+  want[is.na(want)] <- FALSE
+
   loc <- files$file_location %||% rep(NA_character_, n)
   downloaded <- !is.na(loc) & nzchar(loc) & file.exists(loc %||% "")
   gated_urls <- if (!is.null(gated) && nrow(gated) > 0) gated$repo_url else character(0)
@@ -230,7 +240,7 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   file_size <- ifelse(!is.na(on_disk_size), on_disk_size, file_size)
 
   url <- files$file_url %||% rep(NA_character_, n)
-  probe <- which(is.na(file_size) & (want %in% TRUE) &
+  probe <- which(is.na(file_size) & want &
                    !is.na(url) & nzchar(url) & !downloaded)
   if (length(probe) > 0) {
     pb_probe <- pb(length(probe),
@@ -562,6 +572,43 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
     nchar(row1, type = "bytes") >= .blob_row_min_bytes
 }
 
+# Read a delimited file into a data.frame. Uses data.table::fread when available
+# — orders of magnitude faster than utils::read.delim on files with large or
+# awkward quoted fields (e.g. cells holding multi-line numpy-array dumps), which
+# make base R's quote-scanning pathologically slow (minutes per file). Falls back
+# to read.delim (with a latin1 retry for invalid UTF-8) when data.table is not
+# installed. `n_rows = Inf` reads the whole file.
+.read_delim_fast <- function(path, sep, header, n_rows = Inf) {
+  nmax <- if (is.finite(n_rows)) n_rows else Inf
+  if (requireNamespace("data.table", quietly = TRUE)) {
+    # fread self-corrects quoting/field-count quirks but warns while doing so
+    # (as read.delim does); suppress those, matching the read.delim path.
+    df <- tryCatch(
+      suppressWarnings(as.data.frame(
+        data.table::fread(
+          path, sep = sep, header = header,
+          nrows = if (is.finite(nmax)) nmax else -1L,
+          showProgress = FALSE, data.table = FALSE,
+          check.names = FALSE, encoding = "UTF-8"),
+        check.names = FALSE)),
+      error = function(e) NULL)
+    if (!is.null(df)) return(df)
+    # fall through to read.delim on any fread failure
+  }
+  df <- suppressWarnings(
+    utils::read.delim(path, sep = sep, header = header, nrows = n_rows,
+                      check.names = FALSE))
+  has_invalid <- any(vapply(df, function(col) {
+    is.character(col) && any(is.na(iconv(col, from = "UTF-8", to = "UTF-8")))
+  }, logical(1)))
+  if (has_invalid) {
+    df <- suppressWarnings(
+      utils::read.delim(path, sep = sep, header = header, nrows = n_rows,
+                        check.names = FALSE, fileEncoding = "latin1"))
+  }
+  df
+}
+
 data_read_head <- function(path, n_rows = 5) {
   ext <- tolower(tools::file_ext(path))
   tryCatch({
@@ -570,24 +617,11 @@ data_read_head <- function(path, n_rows = 5) {
         sep <- if (ext == "tsv") "\t" else .sniff_delimiter(path)
         hdr <- .detect_header(path, sep)
         # Cheap bail-out for a non-tabular file disguised as .csv: one big field
-        # (e.g. a JSON blob dumped under a single header). Reading it with
-        # read.delim is pathologically slow (one huge quoted field), and it
-        # yields a useless 1-column "table". Detect it from the first two lines
-        # only and skip the expensive read. See .is_single_field_blob().
+        # (e.g. a JSON blob dumped under a single header). It yields a useless
+        # 1-column "table" and there is nothing to extract. Detect it from the
+        # first two lines only. See .is_single_field_blob().
         if (.is_single_field_blob(path, sep)) return(NULL)
-        df <- suppressWarnings(
-          utils::read.delim(path, sep = sep, header = hdr, nrows = n_rows,
-                            check.names = FALSE)
-        )
-        has_invalid <- any(vapply(df, function(col) {
-          is.character(col) && any(is.na(iconv(col, from = "UTF-8", to = "UTF-8")))
-        }, logical(1)))
-        if (has_invalid) {
-          df <- suppressWarnings(
-            utils::read.delim(path, sep = sep, header = hdr, nrows = n_rows,
-                              check.names = FALSE, fileEncoding = "latin1")
-          )
-        }
+        df <- .read_delim_fast(path, sep = sep, header = hdr, n_rows = n_rows)
         if (!hdr && !is.null(df) && ncol(df) > 0)
           names(df) <- paste0("col_", seq_len(ncol(df)))
         # Qualtrics "use choice text" exports carry extra header rows (question
@@ -648,6 +682,40 @@ data_read_head <- function(path, n_rows = 5) {
         nm[bad] <- fixed
         names(df) <- nm
       }
+    }
+    # Coerce character VALUES to valid UTF-8 too. fread reads with
+    # encoding = "UTF-8", which marks strings as UTF-8 without validating, so a
+    # Latin-1 byte in a nominally-UTF-8 file (a mis-encoded apostrophe, °, µ,
+    # é ...) yields strings that crash the base regex calls data_check runs on
+    # every column ("input string N is invalid UTF-8"). Reinterpret only the
+    # invalid entries as Latin-1 — a conversion that cannot fail, since every
+    # byte is a valid Latin-1 character — and leave valid values untouched.
+    # The per-column repair counts are recorded in the "utf8_repaired"
+    # attribute so data_check can carry them into its columns table and
+    # data_validate can warn the researcher about the file's mixed encoding
+    # (the repaired values themselves no longer show it).
+    if (!is.null(df) && ncol(df) > 0) {
+      repaired <- integer(0)
+      for (j in seq_along(df)) {
+        x <- df[[j]]
+        if (is.character(x)) {
+          bad <- !is.na(x) & !validUTF8(x)
+          if (any(bad)) {
+            x[bad] <- iconv(x[bad], from = "latin1", to = "UTF-8")
+            df[[j]] <- x
+            repaired[names(df)[j]] <- sum(bad)
+          }
+        } else if (is.factor(x)) {
+          lv <- levels(x)
+          bad <- !is.na(lv) & !validUTF8(lv)
+          if (any(bad)) {
+            lv[bad] <- iconv(lv[bad], from = "latin1", to = "UTF-8")
+            levels(df[[j]]) <- lv
+            repaired[names(df)[j]] <- sum(bad)
+          }
+        }
+      }
+      if (length(repaired) > 0) attr(df, "utf8_repaired") <- repaired
     }
     df
   }, error = function(e) {
@@ -1798,6 +1866,124 @@ data_check_numeric_in_text <- function(x, threshold = 0.8, n_max = 10) {
        values = bad)
 }
 
+#' Flag a problematic column name
+#'
+#' Column names travel: they become variable names in analysis scripts, chunk
+#' labels and figure file names in generated codebooks, and keys in metadata
+#' files. A name that contains characters that are illegal in file names
+#' (`< > : " / \ | ? *`), control characters (tabs, newlines), leading/trailing
+#' whitespace, or that runs to hundreds of characters cannot be used in those
+#' places without modification — tools either fail (e.g. a figure file cannot
+#' be created on Windows) or silently rename the variable so it no longer
+#' matches the shared data. Good practice is short names built from letters,
+#' digits and underscores.
+#'
+#' Such names typically signal an upstream problem: a file whose header was not
+#' parsed as intended (e.g. a whole header line captured as a single "name"),
+#' or export settings that leaked formatting into the header.
+#'
+#' The length threshold is not arbitrary: 64 bytes is the maximum variable-name
+#' length SPSS supports
+#' (<https://www.ibm.com/docs/en/spss-statistics/32.0.0?topic=view-variable-names>),
+#' and SAS and Stata cap names at 32 characters
+#' (<https://www.stata.com/manuals/rlimits.pdf>), so a name over 64 characters
+#' cannot be imported into any of the three major statistical packages without
+#' being renamed — after which it no longer matches the shared data or its
+#' documentation. (DDI-Codebook's `var@name` documentation still notes names
+#' are "usually up to eight characters, following the rules of SAS and SPSS" —
+#' a legacy of those systems' old limits, not a modern recommendation, so DDI
+#' imposes no constraint of its own.)
+#'
+#' This check only warns; nothing is renamed or dropped. ([convert_codebook()]
+#' separately excludes columns whose name would push a generated figure's file
+#' path past Windows' 260-character limit — the one case where a name makes
+#' rendering impossible; that budget depends on the output path, so it is
+#' computed there, not here.)
+#'
+#' @param col_name the column name
+#' @param max_chars names longer than this are flagged as excessively long;
+#'   the default is SPSS's 64-byte maximum variable-name length (see Details)
+#' @returns list(problem, message, values)
+#' @export
+#' @keywords internal
+data_check_colname <- function(col_name, max_chars = 64L) {
+  none <- list(problem = FALSE, message = "", values = NULL)
+  nm <- as.character(col_name)
+  if (length(nm) != 1 || is.na(nm)) return(none)
+
+  issues <- character(0)
+  # Characters that are illegal in Windows file names (and unsafe everywhere).
+  illegal <- regmatches(nm, gregexpr('[<>:"/\\\\|?*]', nm))[[1]]
+  # Control characters (tab, newline, carriage return, ...).
+  ctrl <- regmatches(nm, gregexpr("[[:cntrl:]]", nm))[[1]]
+  if (length(illegal) > 0)
+    issues <- c(issues, sprintf("characters not allowed in file names (%s)",
+                                paste(unique(sprintf('"%s"', illegal)),
+                                      collapse = ", ")))
+  if (length(ctrl) > 0)
+    issues <- c(issues, sprintf("%d control character%s (tab/newline)",
+                                length(ctrl), plural(length(ctrl))))
+  if (nm != trimws(nm))
+    issues <- c(issues, "leading/trailing whitespace")
+  if (nchar(nm) > max_chars)
+    issues <- c(issues, sprintf(
+      "a length of %d characters (SPSS allows at most 64, SAS and Stata 32, so this name cannot be imported there without renaming)",
+      nchar(nm)))
+  if (length(issues) == 0) return(none)
+
+  bad_chars <- unique(c(illegal, ctrl))
+  list(problem = TRUE,
+       message = sprintf(
+         "Column name has %s. Such names break when reused as file names or in code; prefer short names of letters, digits and underscores.%s",
+         paste(issues, collapse = "; "),
+         if (length(bad_chars) > 0)
+           " A name like this can also mean the file's header was not parsed as intended." else ""),
+       values = if (length(bad_chars) > 0) bad_chars else NULL)
+}
+
+#' Flag column names that collide after sanitization
+#'
+#' Many tools replace the special characters in a variable name with `_` or
+#' drop them: R's `make.names()`, SPSS/SAS/Stata on import, and generated
+#' codebooks (section ids, figure file names). Two columns whose names differ
+#' *only* in special characters — e.g. the phoneme symbols `t'` and a
+#' t-with-diacritic, which both sanitize to `t_` — therefore become
+#' indistinguishable the moment the data leave the original file, and links or
+#' merged results silently point at the wrong variable. Identical duplicate
+#' names collide trivially and are flagged too.
+#'
+#' The sanitization mirrored here (every character that is not a Unicode
+#' letter or digit becomes `_`) is the one the codebook package uses for its
+#' section ids, where collisions surface as pandoc "Duplicate identifier"
+#' warnings.
+#'
+#' @param col_names character vector of a file's column names
+#' @returns a named list mapping each colliding column name to a message
+#'   (empty list when all names stay distinct)
+#' @export
+#' @keywords internal
+data_check_colname_collisions <- function(col_names) {
+  nms <- as.character(col_names)
+  key <- gsub("[^\\p{L}\\p{N}]", "_", nms, perl = TRUE)
+  out <- list()
+  for (k in unique(key[duplicated(key)])) {
+    members <- nms[key == k]
+    for (i in which(key == k)) {
+      others <- unique(members[members != nms[i]])
+      out[[nms[i]]] <- sprintf(
+        "Column name becomes \"%s\" when special characters are replaced, the same as %s: tools that sanitize names (R's make.names(), SPSS/SAS/Stata import, codebook section links) cannot tell these columns apart.",
+        k,
+        if (length(others) == 0)
+          sprintf("%d other identically named column%s",
+                  sum(members == nms[i]) - 1L,
+                  plural(sum(members == nms[i]) - 1L))
+        else
+          paste(sprintf('"%s"', utils::head(others, 5)), collapse = ", "))
+    }
+  }
+  out
+}
+
 # ── Personal / disclosure information ─────────────────────────────────────────
 # These checks flag columns that may hold information that should not be shared
 # openly (personally identifiable information, PII). They are intentionally
@@ -2622,7 +2808,9 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 .is_likert_item <- function(x) {
   if (!is.numeric(x)) {
     xn <- suppressWarnings(as.numeric(as.character(x)))
-    if (mean(is.na(xn)) > 0.2) return(FALSE)
+    if (length(xn) == 0) return(FALSE)
+    na_frac <- mean(is.na(xn))
+    if (!is.finite(na_frac) || na_frac > 0.2) return(FALSE)
     x <- xn
   }
   x <- x[!is.na(x)]

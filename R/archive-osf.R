@@ -440,7 +440,9 @@ osf_delay <- function(delay = NULL) {
 #'
 #' Some differences may exist because the OSF allows longer file names with characters that may not be allowed on a file system, so these are cleaned up when downloading.
 #'
-#' You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+#' In the default `mode = "files"`, you can limit downloads to only files under a specific size (defaults to 10MB). Files over `max_file_size` are omitted individually, while `max_download_size` is an all-or-nothing gate for the remaining repository total. Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+#'
+#' In `mode = "zip"`, OSF's Waterbutler API serves the requested folder as one generated zip archive. In this mode, `max_download_size` applies to the archive as a whole when the server reports a `Content-Length`, but `max_file_size` cannot filter files inside the archive before download. The archive can either be kept as a zip or unzipped after download.
 #'
 #' @param osf_id an OSF ID or URL
 #' @param download_to path to download to
@@ -448,6 +450,8 @@ osf_delay <- function(delay = NULL) {
 #' @param max_download_size maximum total size to download
 #' @param max_folder_length maximum folder name length (set to make sure paths are <260 character on some Windows OS)
 #' @param ignore_folder_structure if TRUE, download all files into a single folder
+#' @param mode download individual files (`"files"`, the default) or request a Waterbutler zip of the whole folder/repository (`"zip"`)
+#' @param unzip if `TRUE` and `mode = "zip"`, unzip the downloaded archive into the output folder; if `FALSE`, keep the zip file as-is
 #' @param pb a progress bar passed from another function
 #'
 #' @returns data frame of file info
@@ -463,8 +467,11 @@ osf_file_download <- function(osf_id,
                               max_download_size = 100,
                               max_folder_length = Inf,
                               ignore_folder_structure = FALSE,
+                              mode = c("files", "zip"),
+                              unzip = TRUE,
                               pb = NULL) {
   ## error checking ----
+  mode <- match.arg(mode)
   osf_id <- osf_check_id(osf_id) |>
     stats::na.omit() |>
     unique()
@@ -495,7 +502,9 @@ osf_file_download <- function(osf_id,
             max_file_size,
             max_download_size,
             max_folder_length,
-            ignore_folder_structure
+            ignore_folder_structure,
+            mode,
+            unzip
           )
         },
         error = function(e) {
@@ -535,35 +544,164 @@ osf_file_download <- function(osf_id,
     return(NULL)
   }
 
-  ## restrict file size ----
-  if (!is.null(max_file_size) && max_file_size > 0) {
-    too_big_files <- which(files$size > max_file_size * 1024 * 1024)
-    if (length(too_big_files) > 0) {
-      for (i in too_big_files) {
-        paste0(
-          "- omitting ", files$name[[i]],
-          " (", round(files$size[[i]] / 1024 / 1024, 1), "MB)"
-        )|>
-          list(what = _) |>
-          pb$tick(0, tokens = _)
+  mb <- 1024 * 1024
+
+  .osf_prepare_save_paths <- function(files, contents, osf_id, max_folder_length,
+                                      ignore_folder_structure) {
+    parent_folders <- sapply(seq_along(files$osf_id), \(i) {
+      item <- files[i, ]
+      parents <- data.frame()
+      last_parent <- item$project
+      while (length(last_parent) > 0 && !is.na(last_parent) && last_parent != osf_id) {
+        next_parent <- contents[contents$osf_id == last_parent, ]
+        if (nrow(next_parent) == 0) {
+          break
+        } else {
+          parents <- dplyr::bind_rows(parents, next_parent)
+          last_parent <- parents[nrow(parents), "project"]
+        }
       }
 
-      files <- files[-too_big_files, ]
+      rev(parents$name) |>
+        path_sanitize() |>
+        paste(collapse = "/")
+    })
+
+    folder_in_path <- mapply(\(folder, file) {
+      pattern <- sprintf("/%s/", folder)
+      regexpr(pattern, file, fixed = TRUE)[[1]]
+    }, parent_folders, files$path)
+    if (length(folder_in_path) > 0 && all(folder_in_path == 1)) {
+      parent_folders <- ""
+    }
+
+    files$save_path <- sprintf("%s%s%s%s", files$provider,
+                               ifelse(nzchar(parent_folders), "/", ""),
+                               parent_folders,
+                               files$path)
+
+    if (max_folder_length < Inf) {
+      hacky_replace <- "--replace-this--"
+      hacky_fp <- ifelse(substring(files$save_path, nchar(files$save_path)) == "/",
+                         paste0(files$save_path, hacky_replace),
+                         files$save_path)
+      fp <- dirname(hacky_fp) |>
+        strsplit("/") |>
+        lapply(substr, start = 0, stop = max_folder_length) |>
+        sapply(paste0, collapse = "/") |>
+        paste0("/", basename(hacky_fp)) |>
+        gsub(hacky_replace, "", x = _, fixed = TRUE)
+      if (any(fp != files$save_path)) {
+        warning("Some folder names were truncated to max_folder_length = ", max_folder_length, " characters")
+      }
+      files$save_path <- fp
+    }
+
+    files_to_copy <- which(files$kind == "file")
+    if (isTRUE(ignore_folder_structure) && length(files_to_copy) > 0) {
+      files$save_path[files_to_copy] <- path_sanitize(files$name[files_to_copy], keep_sep = FALSE)
+      dupes <- duplicated(files$save_path[files_to_copy])
+      files$save_path[files_to_copy][dupes] <-
+        paste0(files$osf_id[files_to_copy][dupes], "-",
+               files$name[files_to_copy][dupes])
+    }
+
+    files
+  }
+
+  .osf_copy_files <- function(files, from_dir, to_dir) {
+    files_to_copy <- which(files$kind == "file")
+    if (length(files_to_copy) == 0) return(integer(0))
+
+    for (i in files_to_copy) {
+      from <- file.path(from_dir, files$osf_id[[i]])
+      to <- file.path(to_dir, files$save_path[[i]])
+      dir.create(dirname(to), showWarnings = FALSE, recursive = TRUE)
+      file.copy(from, to)
+    }
+
+    files_to_copy
+  }
+
+  .osf_relocate_unzipped <- function(files, unzip_dir, to_dir) {
+    files_to_copy <- which(files$kind == "file")
+    if (length(files_to_copy) == 0) return(integer(0))
+
+    copied <- integer(0)
+    for (i in files_to_copy) {
+      rel_in_zip <- sub("^/+", "", files$path[[i]])
+      from <- file.path(unzip_dir, rel_in_zip)
+      if (!file.exists(from)) next
+      to <- file.path(to_dir, files$save_path[[i]])
+      dir.create(dirname(to), showWarnings = FALSE, recursive = TRUE)
+      file.copy(from, to, overwrite = TRUE)
+      copied <- c(copied, i)
+    }
+
+    copied
+  }
+
+  .osf_zip_url <- function(osf_id) {
+    sprintf("https://files.osf.io/v1/resources/%s/providers/osfstorage/?zip=", osf_id)
+  }
+
+  .osf_zip_content_length <- function(url) {
+    resp <- tryCatch({
+      httr2::request(url) |>
+        .osf_headers() |>
+        httr2::req_method("HEAD") |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
+    }, error = \(e) NULL)
+
+    if (is.null(resp)) return(NA_real_)
+    if (httr2::resp_status(resp) >= 400) return(NA_real_)
+    val <- tryCatch(httr2::resp_header(resp, "content-length"), error = \(e) NA_character_)
+    suppressWarnings(as.numeric(val))
+  }
+
+  .osf_download_zip <- function(zip_url, zip_path) {
+    resp <- .batch_query(zip_url, msg = NULL, req_func = .osf_headers)[[1]]
+    if (inherits(resp, "error") || httr2::resp_status(resp) != 200) {
+      stop(sprintf("OSF zip download failed for %s", zip_url), call. = FALSE)
+    }
+    writeBin(httr2::resp_body_raw(resp), zip_path)
+    invisible(zip_path)
+  }
+
+  ## restrict file size ----
+  if (identical(mode, "files") && !is.null(max_file_size) && max_file_size > 0) {
+    too_big_files <- which(files$size > max_file_size * mb)
+    if (length(too_big_files) > 0) {
+      paste0(
+        length(too_big_files), " file", plural(length(too_big_files)),
+        " in ", osf_id, " exceeded the ", .cap_num(max_file_size),
+        " MB per-file limit and ", if (length(too_big_files) == 1) "was" else "were",
+        " skipped (the rest of the repository was downloaded). Largest: ",
+        sprintf("%s (%s MB)",
+                files$name[too_big_files][order(-files$size[too_big_files])][1],
+                .cap_num(round(max(files$size[too_big_files], na.rm = TRUE) / mb))),
+        ". Raise max_file_size to include them."
+      ) |>
+        message()
+
+      files <- files[-too_big_files, , drop = FALSE]
     }
   }
 
   ## restrict total download size ----
-  while (sum(files$size, na.rm = TRUE) > max_download_size * 1024 * 1024) {
-    max_file <- which(files$size == max(files$size, na.rm = TRUE))
-
-    paste0(
-      "- omitting ", files$name[[max_file]],
-      " (", round(files$size[[max_file]] / 1024 / 1024, 1), "MB)"
-    )|>
-      list(what = _) |>
-      pb$tick(0, tokens = _)
-
-    files <- files[-max_file, ]
+  repo_total_mb <- sum(files$size, na.rm = TRUE) / mb
+  if (identical(mode, "files") && is.finite(max_download_size) && repo_total_mb > max_download_size) {
+    need_total <- ceiling(repo_total_mb)
+    msg <- sprintf(
+      paste0("Repository %s was not downloaded: its %d file%s total %s MB, ",
+             "over the %s MB per-repository limit. ",
+             "Set `max_download_size >= %s` to download it."),
+      osf_id, nrow(files), plural(nrow(files)),
+      .cap_num(need_total), .cap_num(max_download_size), .cap_num(need_total)
+    )
+    cap_report(msg)
+    files <- files[0, , drop = FALSE]
   }
 
   ## set up download directory (make sure it doesn't overwrite anything)
@@ -585,7 +723,8 @@ osf_file_download <- function(osf_id,
     list(what = _) |>
     pb$tick(0, tokens = _)
 
-  if (sum(files$kind == "file") > 0) {
+  files_to_copy <- integer(0)
+  if (sum(files$kind == "file") > 0 && identical(mode, "files")) {
     ## download all to temp folder ----
     # temppath <- fs::file_temp()
     temppath <- tempfile()
@@ -623,82 +762,46 @@ osf_file_download <- function(osf_id,
       list(what = _) |>
       pb$tick(0, tokens = _)
 
-    ## determine parent folders ----
-    parent_folders <- sapply(seq_along(files$osf_id), \(i) {
-      item <- files[i, ]
-      parents <- data.frame()
-      last_parent <- item$project
-      while (last_parent != osf_id) {
-        next_parent <- contents[contents$osf_id == last_parent, ]
-        if (nrow(next_parent) == 0) {
-          last_parent <- osf_id
-        } else {
-          parents <- dplyr::bind_rows(parents, next_parent)
-          last_parent <- parents[nrow(parents), "project"]
-        }
+    files <- .osf_prepare_save_paths(files, contents, osf_id,
+                                     max_folder_length,
+                                     ignore_folder_structure)
+    files_to_copy <- .osf_copy_files(files, temppath, download_to)
+  } else if (sum(files$kind == "file") > 0 && identical(mode, "zip")) {
+    zip_url <- .osf_zip_url(osf_id)
+    zip_size <- .osf_zip_content_length(zip_url)
+    files <- .osf_prepare_save_paths(files, contents, osf_id,
+                                     max_folder_length,
+                                     ignore_folder_structure)
+
+    if (is.finite(max_download_size) && !is.na(zip_size) && zip_size > max_download_size * mb) {
+      need_total <- ceiling(zip_size / mb)
+      msg <- sprintf(
+        paste0("Repository %s was not downloaded: its zip archive totals %s MB, ",
+               "over the %s MB per-repository limit. ",
+               "Set `max_download_size >= %s` to download it."),
+        osf_id, .cap_num(need_total), .cap_num(max_download_size), .cap_num(need_total)
+      )
+      cap_report(msg)
+    } else {
+      zip_name <- paste0(path_sanitize(osf_id, keep_sep = FALSE), ".zip")
+      zip_path <- file.path(download_to, zip_name)
+      sprintf("Downloading zip archive for %s", osf_id) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+      .osf_download_zip(zip_url, zip_path)
+
+      if (isTRUE(unzip)) {
+        unzip_dir <- tempfile(pattern = "osf-zip-")
+        dir.create(unzip_dir)
+        on.exit(unlink(unzip_dir, recursive = TRUE), add = TRUE)
+        "Unzipping archive" |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+        utils::unzip(zip_path, exdir = unzip_dir)
+        files_to_copy <- .osf_relocate_unzipped(files, unzip_dir, download_to)
+        unlink(zip_path)
       }
-      base_parent <- contents[contents$osf_id == osf_id, ]
-      parents <- dplyr::bind_rows(parents, base_parent)
-      #parents <- parents[!parents$path %in% "/", ]
-
-      pf <- rev(parents$name) |>
-        # gsub("[^A-za-z0-9_\\-\\.]+", "_", x = _, perl = TRUE) |>
-        # gsub("_+", "_", x = _, perl = TRUE) |>
-        path_sanitize() |>
-        paste(collapse = "/")
-
-      pf
-    })
-
-    # workaround for when requesting a folder directly
-    folder_in_path <- mapply(\(folder, file) {
-      pattern <- sprintf("/%s/", folder)
-      regexpr(pattern, file, fixed = TRUE)[[1]]
-    }, parent_folders, files$path)
-    if (all(folder_in_path == 1)) {
-      parent_folders <- ""
     }
-
-    files$save_path <- sprintf("%s%s%s%s", files$provider,
-                               ifelse(nzchar(parent_folders), "/", ""),
-                               parent_folders,
-                               files$path)
-
-    if (max_folder_length < Inf) {
-      # deal with dirname and basename not recognising that "/code/" is a directory
-      hacky_replace <- "--replace-this--"
-      hacky_fp <- ifelse(substring(files$save_path, nchar(files$save_path)) == "/",
-                         paste0(files$save_path, hacky_replace),
-                         files$save_path)
-      fp <- dirname(hacky_fp) |>
-        strsplit("/") |>
-        lapply(substr, start = 0, stop = max_folder_length) |>
-        sapply(paste0, collapse = "/") |>
-        paste0("/", basename(hacky_fp)) |>
-        gsub(hacky_replace, "", x = _, fixed = TRUE)
-      if (any(fp != files$save_path)) {
-        warning("Some folder names were truncated to max_folder_length = ", max_folder_length, " characters")
-      }
-      files$save_path <- fp
-    }
-
-    files_to_copy <- which(files$kind == "file")
-    if (isTRUE(ignore_folder_structure)) {
-      files$save_path[files_to_copy] <- path_sanitize(files$name[files_to_copy], keep_sep = FALSE)
-      dupes <- duplicated(files$save_path[files_to_copy])
-      files$save_path[files_to_copy][dupes] <-
-        paste0(files$osf_id[files_to_copy][dupes], "-",
-               files$name[files_to_copy][dupes])
-    }
-
-    for (i in files_to_copy) {
-      from <- file.path(temppath, files$osf_id[[i]])
-      to <- file.path(download_to, files$save_path[[i]])
-      dir.create(dirname(to), showWarnings = FALSE, recursive = TRUE)
-      file.copy(from, to)
-    }
-  } else {
-    files_to_copy <- c()
   }
 
   ## set up return table ----
@@ -708,12 +811,23 @@ osf_file_download <- function(osf_id,
     c("folder", "osf_id", "name", "filetype", "size", "downloads", "provider")
   ]
 
-  if (length(files_to_copy) > 0) {
+  if (identical(mode, "files") && length(files_to_copy) > 0) {
     copied <- files[files_to_copy, c("osf_id", "save_path")]
     names(copied)[[2]] <- "path"
     copied$downloaded <- TRUE
     ret <- dplyr::left_join(ret, copied, by = "osf_id")
     ret$downloaded <- ifelse(ret$downloaded %in% TRUE, TRUE, FALSE)
+  } else if (identical(mode, "zip") && sum(files$kind == "file") > 0) {
+    if (isTRUE(unzip) && length(files_to_copy) > 0) {
+      copied <- files[files_to_copy, c("osf_id", "save_path")]
+      names(copied)[[2]] <- "path"
+      copied$downloaded <- TRUE
+      ret <- dplyr::left_join(ret, copied, by = "osf_id")
+      ret$downloaded <- ifelse(ret$downloaded %in% TRUE, TRUE, FALSE)
+    } else {
+      ret$path <- paste0(path_sanitize(osf_id, keep_sep = FALSE), ".zip")
+      ret$downloaded <- file.exists(file.path(download_to, paste0(path_sanitize(osf_id, keep_sep = FALSE), ".zip")))
+    }
   } else {
     ret$downloaded <- FALSE
   }

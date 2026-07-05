@@ -204,14 +204,22 @@ report_module_run <- function(paper, modules, args = list()) {
     op <- tryCatch(do.call(module_run, mod_args),
       error = function(e) {
         warning("Error in ", module, call. = FALSE)
-        prev <- mod_args$paper$prev_outputs
+        prev <- list()
+        if (inherits(mod_args$paper, "metacheck_module_output")) {
+          prev <- mod_args$paper$prev_outputs %||% list()
+          this_out <- mod_args$paper
+          this_out$prev_outputs <- NULL
+          this_out$paper <- NULL
+          prev[[this_out$module]] <- this_out
+        }
         report_items <- list(
           module = module,
           title = module,
           table = NULL,
           report = e$message,
           summary_text = "This module failed to run",
-          summary_table = mod_args$paper$summary_table,
+          summary_table = mod_args$paper$summary_table %||% data.frame(
+            paper_id = paper$paper_id),
           traffic_light = "fail",
           paper = paper,
           prev_outputs = prev
