@@ -193,7 +193,24 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 # whether it was downloaded — the provenance needed to audit a corpus or rebuild
 # a data archive without re-querying every repo. `files` is data_check's finalised
 # `all_files`; `want` is the logical vector of files this run tried to download;
-# `gated` is the download gate table (repos refused by the size caps).
+# `gated` is the download gate table (repos refused by the size caps);
+# `oversize` / `failed` are download_repo_files()'s "oversize_skipped" and
+# "failed" attributes; `zip_peek` the per-row zip-peek skip reasons; `model` the
+# LLM model string the run used.
+#
+# Every file not downloaded is classified as **intentional** (a policy decision:
+# download mode, skip_types, zip peek, the size caps — re-running changes
+# nothing unless the settings change) or **unintentional** (the run wanted the
+# file and could not fetch it: transient download failure, missing URL — a
+# re-run with the same settings retries exactly these, since cached files are
+# reused). The top-level `not_downloaded` block separates the two and sets
+# `rerun_recommended`, so a corpus audit can find incomplete papers mechanically.
+#
+# The `provenance` block records what is needed to reproduce the archive: the
+# metacheck version, R version and platform, the production timestamp, and the
+# LLM model (when LLM assistance was on). Field names map onto DDI-Codebook 2.5
+# elements and the mapping ships inside the manifest (provenance$ddi_mapping) so
+# the JSON is self-describing.
 #
 # Sizes are completed here: a downloaded file's real size comes from disk, and a
 # wanted file the listing left unsized (OSF returns NA for some files, often the
@@ -203,7 +220,9 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 .data_check_write_manifest <- function(manifest, files, want, gated,
                                        paper_id, download,
                                        max_file_size, max_download_size,
-                                       skip_types = NULL) {
+                                       skip_types = NULL,
+                                       oversize = NULL, failed = NULL,
+                                       zip_peek = NULL, model = NULL) {
   # Resolve the output path: a directory → "<paper_id>.manifest.json" inside it;
   # a ".json" path is used verbatim.
   path <- manifest
@@ -252,21 +271,51 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
     }
   }
 
-  # Why was a file not downloaded? Ordered from most to least specific.
+  # Why was a file not downloaded? Ordered from most to least specific, and
+  # classified: intentional = a policy decision (re-running changes nothing
+  # unless settings change); unintentional = wanted but not fetched (a re-run
+  # with the same settings retries exactly these).
   dtype <- files$data_type %||% rep(NA_character_, n)
-  reason <- vapply(seq_len(n), function(i) {
-    if (downloaded[i]) return(NA_character_)
+  if (is.null(zip_peek) || length(zip_peek) != n)
+    zip_peek <- c(zip_peek, rep(NA_character_, n))[seq_len(n)]
+  over_key <- if (!is.null(oversize) && nrow(oversize) > 0)
+    paste(oversize$repo_url, oversize$file_name) else character(0)
+  fail_err <- if (!is.null(failed) && nrow(failed) > 0)
+    stats::setNames(sub("\n.*", "", failed$error),
+                    paste(failed$repo_url, failed$file_name)) else character(0)
+
+  reason      <- rep(NA_character_, n)
+  intentional <- rep(NA, n)
+  for (i in which(!downloaded)) {
+    key <- paste(files$repo_url[i], files$file_name[i])
     url <- files$file_url[i] %||% NA_character_
-    if (identical(download, "none")) return("download = \"none\"")
-    if (!is.null(skip_types) && dtype[i] %in% skip_types)
-      return(sprintf("excluded type '%s' (linked, not mirrored)", dtype[i]))
-    if (!isTRUE(want[i]))
-      return("not a data/codebook/README file (use download = \"all\")")
-    if (is.na(url) || !nzchar(url)) return("no download URL in the listing")
-    if (files$repo_url[i] %in% gated_urls)
-      return("repository refused by the size caps")
-    "download failed"
-  }, character(1))
+    if (identical(download, "none")) {
+      reason[i] <- "download = \"none\""; intentional[i] <- TRUE
+    } else if (!is.null(skip_types) && dtype[i] %in% skip_types) {
+      reason[i] <- sprintf("excluded type '%s' (linked, not mirrored)", dtype[i])
+      intentional[i] <- TRUE
+    } else if (!is.na(zip_peek[i]) && nzchar(zip_peek[i])) {
+      reason[i] <- zip_peek[i]; intentional[i] <- TRUE
+    } else if (!isTRUE(want[i])) {
+      reason[i] <- "not a data/codebook/README file (use download = \"all\")"
+      intentional[i] <- TRUE
+    } else if (is.na(url) || !nzchar(url)) {
+      reason[i] <- "no download URL in the listing"; intentional[i] <- FALSE
+    } else if (key %in% over_key) {
+      reason[i] <- sprintf("exceeds max_file_size (%s MB): skipped by the per-file cap",
+                           .cap_num(max_file_size))
+      intentional[i] <- TRUE
+    } else if (files$repo_url[i] %in% gated_urls) {
+      reason[i] <- "repository refused by the size caps"; intentional[i] <- TRUE
+    } else if (key %in% names(fail_err)) {
+      reason[i] <- paste0("download failed after retries: ", fail_err[[key]])
+      intentional[i] <- FALSE
+    } else {
+      reason[i] <- "download failed"; intentional[i] <- FALSE
+    }
+  }
+  status <- ifelse(downloaded, "downloaded",
+                   ifelse(intentional %in% TRUE, "skipped", "failed"))
 
   entries <- lapply(seq_len(n), function(i) {
     Filter(Negate(is.null), list(
@@ -278,20 +327,63 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
       data_type    = files$data_type[i] %||% NA_character_,
       data_format  = files$data_format[i] %||% NA_character_,
       downloaded   = downloaded[i],
-      skip_reason  = if (downloaded[i]) NULL else reason[i]
+      status       = status[i],
+      skip_reason  = if (downloaded[i]) NULL else reason[i],
+      skip_intentional = if (downloaded[i]) NULL else intentional[i]
     ))
   })
 
+  generated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  unint <- which(!downloaded & intentional %in% FALSE)
+  intent <- which(!downloaded & intentional %in% TRUE)
+
+  # Reproducibility metadata. Field names map onto DDI-Codebook 2.5 elements;
+  # ddi_mapping documents the correspondence inside the manifest itself.
+  provenance <- list(
+    software  = list(name = "metacheck", version = tryCatch(
+      as.character(utils::packageVersion("metacheck")),
+      error = function(e) NA_character_)),
+    r_version = R.version.string,
+    platform  = R.version$platform,
+    prod_date = generated,
+    llm       = if (isTRUE(llm_use()))
+      list(used = TRUE, model = model %||% llm_model())
+    else list(used = FALSE),
+    ddi_mapping = list(
+      "provenance.software"  = "docDscr/citation/prodStmt/software (@version)",
+      "provenance.prod_date" = "docDscr/citation/prodStmt/prodDate",
+      "files[].file_name"    = "fileDscr/fileTxt/fileName",
+      "files[].file_url"     = "fileDscr/@URI",
+      "files[].data_type"    = "fileDscr/fileTxt/fileCont",
+      "files[].status"       = "fileDscr/fileTxt/ProcStat",
+      "files[].skip_reason"  = "fileDscr/notes"
+    )
+  )
+
   doc <- list(
     paper_id  = if (length(paper_id)) paper_id[[1]] else NA_character_,
-    generated = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    generated = generated,
     download  = download,
+    skip_types = if (length(skip_types)) as.list(skip_types) else NULL,
     caps      = list(max_file_size_mb = max_file_size,
                      max_download_size_mb = max_download_size),
+    provenance   = provenance,
     n_files      = n,
     n_downloaded = sum(downloaded),
+    not_downloaded = list(
+      intentional_n   = length(intent),
+      unintentional_n = length(unint),
+      # The unintentional list is the re-run signal: these are the files a
+      # re-run with the same settings will retry (cache reuse skips the rest).
+      unintentional_files = lapply(unint, function(i) list(
+        file_name = files$file_name[i],
+        repo_url  = files$repo_url[i],
+        reason    = reason[i])),
+      rerun_recommended = length(unint) > 0
+    ),
     files        = entries
   )
+  doc <- Filter(Negate(is.null), doc)
 
   json <- jsonlite::toJSON(doc, auto_unbox = TRUE, pretty = TRUE, na = "null")
   writeLines(json, path, useBytes = TRUE)

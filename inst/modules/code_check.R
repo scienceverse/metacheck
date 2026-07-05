@@ -22,14 +22,16 @@
 #' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
 #' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
-#' @param download if TRUE (default), download the code files to be checked from online repositories into a shared cache so they are read locally and reused on later runs. Set FALSE to stream each file from its URL instead.
+#' @param download if TRUE (default), download the code files to be checked from online repositories so they are read locally. Set FALSE to stream each file from its URL instead.
 #' @param max_file_size largest single file to download, in MB (default 100). Size caps are an upfront, all-or-nothing gate per repository; set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
+#' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
 #'
 #' @returns a list
 code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
-                        max_file_size = 100, max_download_size = 500) {
+                        max_file_size = 100, max_download_size = 500,
+                        cache = FALSE) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -87,7 +89,8 @@ code_check <- function(paper, local_path = NULL,
     if (any(need_dl)) {
       dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
-                                max_download_size = max_download_size)
+                                max_download_size = max_download_size,
+                                cache = cache)
       checked_files$file_location[need_dl] <- dl$file_location
       # Repositories refused by the size caps: surface each refusal.
       gated <- attr(dl, "gated")

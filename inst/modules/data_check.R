@@ -83,6 +83,16 @@
 #'   (default 500). If a repository's total exceeds this, the whole repository is
 #'   refused (nothing downloaded) with a message naming the size to lift it. Set
 #'   `Inf` for no cap.
+#' @param cache if `TRUE`, keep downloaded files in a persistent on-disk cache
+#'   (see [repo_cache_dir()]) so they are reused on later runs. If `FALSE` (the
+#'   default), download to a temporary directory that is discarded when the R
+#'   session ends — nothing accumulates on disk. Use `cache = TRUE` when
+#'   repeatedly checking the same repositories or building an archive across
+#'   runs; clear the cache with [repo_cache_clear()].
+#' @param github_gate if TRUE (default), gate large GitHub repositories during
+#'   `repo_check` before recursive listing. If `NULL`, defaults to
+#'   `download != "all"`, so `download = "all"` forces full GitHub listing.
+#' @param github_max_files GitHub gate threshold for total file count (default 1000)
 #' @param manifest optional path to write a per-paper file manifest as JSON: the
 #'   full list of repository files with their download URL, size, type, Psych-DS
 #'   target path, and whether each was downloaded (and if not, why). A directory
@@ -101,6 +111,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        peek_zips = FALSE,
                        max_file_size = 100,
                        max_download_size = 500,
+                       cache = FALSE,
+                       github_gate = NULL,
+                       github_max_files = 1000,
                        manifest = NULL,
                        model = llm_model(),
                        params = list()) {
@@ -110,6 +123,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   download <- if (isTRUE(download)) "data"
               else if (isFALSE(download)) "none"
               else match.arg(as.character(download), c("data", "all", "none"))
+  if (is.null(github_gate)) github_gate <- (download != "all")
 
   repo_tree_lines <- function(paths) {
     paths <- unique(paths[!is.na(paths) & nzchar(paths)])
@@ -233,17 +247,27 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── 1. Get the file list from repo_check ────────────────────────────────────
   all_files <- get_prev_outputs("repo_check", "table")
+  # Repositories found but not listable (size-gated GitHub, private OSF, ...);
+  # kept so a downstream converter can explain why a paper yielded no files.
+  listing_gated <- get_prev_outputs("repo_check", "gated_repos")
   if (is.null(all_files)) {
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path,
-                       local_only = local_only)
+                       local_only = local_only,
+                       github_gate = github_gate,
+                       github_max_repo_size_mb = max_download_size,
+                       github_max_files = github_max_files)
     } else {
-      mo <- module_run(paper, "repo_check", local_only = local_only)
+      mo <- module_run(paper, "repo_check", local_only = local_only,
+                       github_gate = github_gate,
+                       github_max_repo_size_mb = max_download_size,
+                       github_max_files = github_max_files)
     }
     all_files <- mo$table %||% data.frame(
       file_name = character(0), repo_url = character(0),
       file_location = character(0)
     )
+    listing_gated <- mo$gated_repos
   }
 
   # ── 2. Classify every file into a data_check semantic type ───────────────────
@@ -267,6 +291,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     return(list(
       traffic_light = "na",
       summary_text = "We found no files to analyse.",
+      gated_repos = listing_gated,
       summary_table = data.frame(
         paper_id = .pid(all_files),
         data_file_n = 0, column_n = 0
@@ -341,6 +366,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # building a complete data archive. Repos refused by the size caps (upfront,
   # all-or-nothing per repo).
   gated_repos <- NULL
+  oversize_files <- NULL
+  failed_files   <- NULL
   # Which files this run WANTS to download (kept in scope for the manifest).
   want <- if (download == "all") {
     rep(TRUE, nrow(all_files))
@@ -383,12 +410,18 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (any(need_dl)) {
       dl <- download_repo_files(all_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
-                                max_download_size = max_download_size)
+                                max_download_size = max_download_size,
+                                cache = cache)
       all_files$file_location[need_dl] <- dl$file_location
       # Files in a gated repo keep file_location = NA, so they fall out of the
       # has_local extraction filter naturally. The refusal was already reported
       # inline (and warned) by cap_report inside download_repo_files.
       gated_repos <- attr(dl, "gated")
+      # Kept for the manifest: which files the per-file cap skipped
+      # (intentional) and which downloads failed after retries (unintentional —
+      # the re-run signal).
+      oversize_files <- attr(dl, "oversize_skipped")
+      failed_files   <- attr(dl, "failed")
     }
 
     # Expand downloaded zips: unzip, classify the inner files, add the data ones
@@ -862,7 +895,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       manifest, all_files, want, gated_repos,
       paper_id = .pid(all_files), download = download,
       max_file_size = max_file_size, max_download_size = max_download_size,
-      skip_types = skip_types)
+      skip_types = skip_types,
+      oversize = oversize_files, failed = failed_files,
+      zip_peek = zip_peek_reason, model = model)
   }
 
   # ── 7. Return ────────────────────────────────────────────────────────────────
@@ -870,6 +905,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     table = columns_df %||% data.frame(),
     structure = all_files,          # per-file classification, for codebook_check
     previews = file_previews,       # full read data frames, for data_validate
+    gated_repos = listing_gated,    # repos found but not listable (size gate, ...)
     summary_table = summary_table,
     na_replace = c(data_file_n = 0, column_n = 0),
     traffic_light = tl,

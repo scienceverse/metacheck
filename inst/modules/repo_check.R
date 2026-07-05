@@ -16,9 +16,15 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
+#' @param github_gate if TRUE, gate large GitHub repos before recursive listing
+#' @param github_max_repo_size_mb gate threshold for GitHub repository size (MB)
+#' @param github_max_files gate threshold for GitHub repository file count
 #'
 #' @returns a list
-repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
+repo_check <- function(paper, local_path = NULL, local_only = FALSE,
+                       github_gate = TRUE,
+                       github_max_repo_size_mb = 500,
+                       github_max_files = 1000) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
@@ -125,22 +131,55 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
     unique()
   github_files_df <- data.frame(repo_name = character(0))
   if (length(github_urls) > 0) {
-    tryCatch({
-      github_file_list <- github_files(github_urls, recursive = TRUE) |>
-        dplyr::filter(type != "dir")
-
-      github_files_df <- dplyr::tibble(
-        repo_url = github_file_list$repo,
-        file_name = github_file_list$name,
-        file_path = github_file_list$path,
-        file_url = github_file_list$download_url,
-        file_location = NA_character_,
-        file_size = github_file_list$size,
-        file_type = github_file_list$type
-      )
-    }, error = \(e) {
-      # TODO: communicate errors to repos table
+    # github_tree_files() fetches repo metadata + full tree in 2 API requests
+    # (vs. N recursive /contents/ calls) and gates large repos before any file
+    # listing happens.
+    gh_results <- lapply(github_urls, function(url) {
+      tryCatch(
+        github_tree_files(
+          url,
+          max_repo_size_mb = github_max_repo_size_mb,
+          max_files = github_max_files,
+          gate = github_gate
+        ),
+        error = \(e) list(gated = TRUE, reason = conditionMessage(e),
+                          files = NULL, default_branch = NA_character_))
     })
+    names(gh_results) <- github_urls
+
+    for (url in github_urls) {
+      r <- gh_results[[url]]
+      if (isTRUE(r$gated)) {
+        repos$repo_error[repos$repo_url == url] <- r$reason
+        warning(sprintf(
+          paste0("Repository %s was not listed: %s. ",
+                 "Set `github_gate = FALSE` to force full recursive listing."),
+          url, r$reason
+        ), call. = FALSE)
+        paste0("Skipping GitHub repo (", r$reason, "): ", url) |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+      }
+    }
+
+    good_files <- Filter(Negate(is.null),
+                         lapply(gh_results, \(r) if (!isTRUE(r$gated)) r$files else NULL))
+    if (length(good_files) > 0) {
+      github_file_list <- dplyr::bind_rows(good_files)
+      github_file_list <- github_file_list[
+        !is.na(github_file_list$type) & github_file_list$type != "dir", , drop = FALSE]
+      if (nrow(github_file_list) > 0) {
+        github_files_df <- dplyr::tibble(
+          repo_url      = github_file_list$repo,
+          file_name     = github_file_list$name,
+          file_path     = github_file_list$path,
+          file_url      = github_file_list$download_url,
+          file_location = NA_character_,
+          file_size     = github_file_list$size,
+          file_type     = github_file_list$type
+        )
+      }
+    }
   }
 
   ## ResearchBox ----
@@ -286,8 +325,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
     dupes <- duplicated(all_files$file_url) &
       duplicated(all_files$file_name)
     all_files <- all_files[!dupes, ]
-    # remove repos that were only duplicates
-    in_files <- repos$repo_url %in% all_files$repo_url
+    # keep repos with explicit errors (e.g. gated/private) in summary/reporting
+    in_files <- repos$repo_url %in% all_files$repo_url | !is.na(repos$repo_error)
     repos <- repos[in_files, ]
   }
 
@@ -455,10 +494,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE) {
   ) |>
     paste("\n- ", x = _, collapse = "")
 
+  # Repositories that were found but could not be listed (e.g. a GitHub repo
+  # over the size gate, or a private OSF component). Carried out of the module
+  # so downstream converters can explain *why* a paper produced no files,
+  # instead of reporting "no repository".
+  gated_repos <- repos[!is.na(repos$repo_error),
+                       c("repo_url", "repo_type", "repo_error"), drop = FALSE]
+
   # return a list ----
   list(
     table = all_files,
     summary_table = summary_table,
+    gated_repos = gated_repos,
     na_replace = 0,
     traffic_light = tl,
     report = report,

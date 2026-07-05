@@ -178,3 +178,30 @@ test_that("convert_psychds reuses a captured report result without re-running", 
   expect_gt(res4$n_files_copied, 0)
   expect_true(psychds_validate(out4)$valid)
 })
+
+test_that("gated-repo hint explains a skipped repo with recovery steps", {
+  # A repo was found but not listable (e.g. a GitHub repo over the size gate):
+  # the converter's empty-plan / no-columns error must name the repo, the
+  # reason, and how to include it, instead of reporting "no repository".
+  ops <- list(data_check = list(gated_repos = data.frame(
+    repo_url = c("https://github.com/a/b/tree/master/x",
+                 "https://github.com/a/b/tree/master/y"),
+    repo_type = "github",
+    repo_error = "GitHub repo size ~638 MB exceeds the 500 MB gate",
+    stringsAsFactors = FALSE)))
+  hint <- metacheck:::.converter_gated_hint(ops)
+  expect_match(hint, "found but not downloaded")
+  expect_match(hint, "638 MB exceeds")
+  expect_match(hint, "local_path", fixed = TRUE)
+  expect_match(hint, "github_gate", fixed = TRUE)
+  # The two deep URLs for the same repo collapse to one root line.
+  expect_equal(
+    lengths(regmatches(hint, gregexpr("github.com/a/b", hint, fixed = TRUE))), 1)
+  expect_false(grepl("tree/master", hint))
+
+  # No gated repo → no hint (a genuine "no repository" case).
+  expect_equal(metacheck:::.converter_gated_hint(list()), "")
+  expect_equal(
+    metacheck:::.converter_gated_hint(
+      list(data_check = list(gated_repos = data.frame()))), "")
+})

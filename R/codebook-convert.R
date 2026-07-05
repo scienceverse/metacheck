@@ -319,7 +319,7 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
 
   if (is.null(columns_df) || nrow(columns_df) == 0)
     stop("No extracted data columns to build a codebook from. Run data_check first.",
-         call. = FALSE)
+         .converter_gated_hint(ops), call. = FALSE)
 
   pid <- resolved$pid
   if (is.null(output_dir)) output_dir <- file.path("codebook", pid)

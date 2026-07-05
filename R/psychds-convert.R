@@ -290,6 +290,35 @@
   list(ops = ops, paper = real_paper, pid = pid)
 }
 
+# Build the "why is there nothing to convert" explanation. When a paper linked
+# a repository that was found but could not be *listed* (a GitHub repo over the
+# size gate, a private OSF component), the bare "no repository" / "empty plan"
+# message is misleading — the repository exists, it was just skipped. This spells
+# out which repo, why, and how to include it: raise the caps to fetch it, or
+# download it manually and point data_check at the local copy. `ops` is the
+# resolved module-output list; returns "" when no repo was gated.
+.converter_gated_hint <- function(ops) {
+  g <- ops[["data_check"]]$gated_repos %||% ops[["repo_check"]]$gated_repos
+  if (is.null(g) || nrow(g) == 0) return("")
+  # One paper often links the same repo by several deep URLs (…/tree/master/x,
+  # …/tree/master/y); collapse to the repo root so each is reported once.
+  g$root <- sub("/(tree|blob)/.*$", "", g$repo_url)
+  g <- g[!duplicated(paste(g$root, g$repo_error)), , drop = FALSE]
+  lines <- vapply(seq_len(nrow(g)), function(i) {
+    sprintf("  - %s: %s", g$root[i],
+            g$repo_error[i] %||% "could not be listed")
+  }, character(1))
+  paste0(
+    "\n\nA linked repository was found but not downloaded, so there were no ",
+    "files to process:\n",
+    paste(lines, collapse = "\n"),
+    "\n\nTo include it, either raise the size limits (e.g. ",
+    "`max_download_size` / `max_file_size`, or `github_gate = FALSE` for a ",
+    "GitHub repo) and re-run, or download the repository manually and pass its ",
+    "folder to data_check as a local repository: ",
+    "`data_check(paper, local_path = \"/path/to/downloaded/repo\")`.")
+}
+
 .psychds_write_json <- function(obj, path) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
   json <- jsonlite::toJSON(obj, auto_unbox = TRUE, pretty = TRUE, na = "null")
@@ -393,7 +422,8 @@ convert_psychds <- function(paper, output_dir = NULL,
   plan      <- ops[["psychds_check"]]$table
 
   if (is.null(plan) || nrow(plan) == 0)
-    stop("No files to convert: psychds_check returned an empty plan.", call. = FALSE)
+    stop("No files to convert: psychds_check returned an empty plan.",
+         .converter_gated_hint(ops), call. = FALSE)
 
   pid <- resolved$pid
   if (is.null(output_dir)) output_dir <- file.path("psychds", pid)
