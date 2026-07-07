@@ -16,6 +16,36 @@ test_that("data_check_outliers flags Tukey outliers", {
   expect_false(data_check_outliers(c("a", "b"))$problem)
 })
 
+test_that("data_check_out_of_range flags bounded columns, ignores continuous", {
+  set.seed(1)
+  # Likert 1-5 with a stray 55 and a -9: both flagged, band is [1, 5].
+  r <- data_check_out_of_range(c(sample(1:5, 200, TRUE), 55, -9))
+  expect_true(r$problem)
+  expect_setequal(r$values, c(-9, 55))
+  expect_equal(c(r$lower, r$upper), c(1, 5))
+
+  # Clean bounded columns are not flagged, and a legitimate rare count value
+  # (a Poisson tail barely beyond the core) is tolerated — only FAR-out values
+  # (a data-entry error) are flagged.
+  expect_false(data_check_out_of_range(sample(1:7, 200, TRUE))$problem)
+  expect_false(data_check_out_of_range(sample(0:1, 200, TRUE))$problem)
+  expect_false(data_check_out_of_range(rpois(200, 3))$problem)
+  expect_false(data_check_out_of_range(c(rpois(199, 3), 10))$problem)
+
+  # A far-out value on a small-range column (e.g. an age typo) IS flagged.
+  expect_true(data_check_out_of_range(c(sample(18:30, 200, TRUE), 250))$problem)
+
+  # Continuous columns (non-integer, or many distinct integer values) have no
+  # fixed range and are NOT checked — a long tail there is normal.
+  expect_false(data_check_out_of_range(round(rnorm(200, 120, 15)))$problem) # BP
+  expect_false(data_check_out_of_range(rnorm(200))$problem)                 # non-integer
+  expect_false(data_check_out_of_range(sample(1:100, 200, TRUE))$problem)   # >max_levels
+
+  # Guards: too few values, non-numeric.
+  expect_false(data_check_out_of_range(c(1, 2, 55))$problem)
+  expect_false(data_check_out_of_range(c("a", "b"))$problem)
+})
+
 test_that("data_check_miscoded_missing flags recurring extreme sentinels", {
   x <- c(rnorm(50, 20, 3), -99, -99)
   r <- data_check_miscoded_missing(x)

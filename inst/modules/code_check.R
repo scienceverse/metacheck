@@ -153,8 +153,12 @@ code_check <- function(paper, local_path = NULL,
       # get absolute paths based on grepl (on non-comment lines)
       absolute_paths <- code_abs_path(file_nc)
       the_file$code_abs_path <- nrow(absolute_paths)
+      # Join with " | " (not "\n"): a path can contain spaces, and a newline
+      # separator is collapsed to a space downstream (in reports / CSVs), which
+      # would fragment a space-containing path into unreadable pieces. " | " is
+      # an unambiguous, single-line-safe delimiter.
       the_file$absolute_paths <- paste(absolute_paths$abs_path,
-                                       collapse = "\n")
+                                       collapse = " | ")
 
       # Find lines where libraries/imports/includes are loaded
       library_lines <- code_library_lines(file_nc, the_file$language)

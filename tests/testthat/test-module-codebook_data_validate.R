@@ -217,10 +217,31 @@ test_that("scale-block detection groups items and splits by prefix", {
   blocks <- metacheck:::.detect_scale_blocks(df)
   expect_length(blocks, 2)
   expect_equal(vapply(blocks, length, integer(1)), c(8L, 6L))
-  # a 4-item block is below the minimum and is not returned
+  # 4 items is the minimum, so a 4-item block IS returned ...
   df2 <- as.data.frame(matrix(sample(1:5, 30 * 4, replace = TRUE), nrow = 30))
   names(df2) <- paste0("x_", 1:4)
-  expect_length(metacheck:::.detect_scale_blocks(df2), 0)
+  expect_length(metacheck:::.detect_scale_blocks(df2), 1)
+  # ... but a 3-item block is below the minimum and is not returned.
+  df3 <- as.data.frame(matrix(sample(1:5, 30 * 3, replace = TRUE), nrow = 30))
+  names(df3) <- paste0("y_", 1:3)
+  expect_length(metacheck:::.detect_scale_blocks(df3), 0)
+})
+
+test_that("paper-text scan finds named instruments and ignores unrelated text", {
+  p <- test_paper(c(
+    "We administered the 20-item PANAS and the Rosenberg Self-Esteem Scale.",
+    "Personality was measured with the HEXACO inventory."))
+  hits <- .cb_env$.scan_paper_for_scales(p)
+  expect_true(all(c("PANAS", "Rosenberg Self-Esteem", "HEXACO") %in% hits))
+
+  # No instruments mentioned -> no hits; a bare paper -> empty, no error.
+  none <- test_paper(c("We recorded reaction times.", "No surveys were used."))
+  expect_length(.cb_env$.scan_paper_for_scales(none), 0)
+  expect_length(.cb_env$.scan_paper_for_scales(NULL), 0)
+
+  # Acronym-only mention is enough (word-boundary, not a substring of a word).
+  acr <- test_paper("Stress was indexed by the PSS.")
+  expect_true("Perceived Stress Scale" %in% .cb_env$.scan_paper_for_scales(acr))
 })
 
 test_that("data_validate flags planted data-quality issues", {
@@ -228,10 +249,10 @@ test_that("data_validate flags planted data-quality issues", {
   d <- file.path(tempdir(), "dv_planted"); unlink(d, recursive = TRUE)
   dir.create(file.path(d, "data"), recursive = TRUE)
   utils::write.csv(data.frame(
-    id    = 1:30,
-    score = c(rnorm(29, 50, 5), 500),                 # outlier
-    grp   = c(rep("Ctrl", 15), rep("ctrl", 14), "X"), # case + sparse
-    flat  = rep(1, 30)                                 # constant
+    id     = 1:30,
+    likert = c(sample(1:5, 29, replace = TRUE), 55),   # out-of-range (1–5 + 55)
+    grp    = c(rep("Ctrl", 15), rep("ctrl", 14), "X"), # case + sparse
+    flat   = rep(1, 30)                                 # constant
   ), file.path(d, "data", "study.csv"), row.names = FALSE)
 
   ops <- report_module_run(
@@ -241,7 +262,7 @@ test_that("data_validate flags planted data-quality issues", {
 
   expect_true("data_validate" %in% module_list()$name)
   checks <- dv$table$check
-  expect_true("Outliers" %in% checks)
+  expect_true("Out-of-range values" %in% checks)
   expect_true("Case issues" %in% checks)
   expect_true("Constant" %in% checks)
   expect_equal(dv$traffic_light, "red")   # several columns flagged
@@ -252,12 +273,12 @@ test_that("data_validate reports outliers as a table and one combined figure", {
   llm_use(FALSE)
   d <- file.path(tempdir(), "dv_report"); unlink(d, recursive = TRUE)
   dir.create(file.path(d, "data"), recursive = TRUE)
-  # Two numeric columns, each with a planted outlier -> both listed in the table
-  # and drawn as facets in a single combined figure.
+  # Two bounded columns, each with a planted out-of-range value -> both listed
+  # in the table; all numeric columns are drawn as facets in one figure.
   utils::write.csv(data.frame(
     id = 1:40,
-    a  = c(rnorm(39, 10, 1), 100),
-    b  = c(rnorm(39, 0, 1), -50)
+    a  = c(sample(1:5, 39, replace = TRUE), 55),   # 1–5 scale + stray 55
+    b  = c(sample(1:7, 39, replace = TRUE), -9)    # 1–7 scale + stray -9
   ), file.path(d, "data", "study.csv"), row.names = FALSE)
 
   ops <- report_module_run(
@@ -266,9 +287,9 @@ test_that("data_validate reports outliers as a table and one combined figure", {
   dv <- ops[["data_validate"]]
   report <- paste(dv$report, collapse = "\n")
 
-  # An Outliers section with a per-column summary sentence.
-  expect_true(any(grepl("#### Outliers", dv$report, fixed = TRUE)))
-  expect_true(grepl("IQR fences", report))
+  # An Out-of-Range Values section with a per-column summary sentence.
+  expect_true(any(grepl("#### Out-of-Range Values", dv$report, fixed = TRUE)))
+  expect_true(grepl("data-entry error", report))
 
   # A single combined distribution figure: exactly one embedded <img>, not one
   # per column (the old behaviour rendered a plot per numeric column).
@@ -354,12 +375,17 @@ test_that("data_validate flags careless survey responders", {
 
   expect_true("careless" %in% names(dv))
   expect_gt(nrow(dv$careless), 0)
-  # The straightliner (last-but-one respondent) is flagged for straightlining.
+  # One row per respondent now (aggregated across blocks), with these columns.
+  expect_true(all(c("respondent", "n_blocks_flagged", "reasons",
+                    "max_longstring", "short_scale_only") %in% names(dv$careless)))
+  expect_equal(anyDuplicated(dv$careless$respondent), 0L)
+  # The straightliner (last-but-one respondent) is flagged for straightlining,
+  # with a longstring equal to the full 10-item block.
   straight_id <- as.character(51)
   hit <- dv$careless[dv$careless$respondent == straight_id, ]
-  expect_true(any(grepl("straightlining", hit$reason)))
-  # Its longstring equals the full block; its IRV is (near) zero.
-  expect_equal(max(hit$longstring), 10)
+  expect_equal(nrow(hit), 1L)
+  expect_true(grepl("straightlining", hit$reasons))
+  expect_equal(hit$max_longstring, 10)
   # Report carries a Careless Responding section and the summary_text mentions it.
   expect_true(any(grepl("#### Careless Responding", dv$report, fixed = TRUE)))
   expect_match(dv$summary_text, "careless responding")

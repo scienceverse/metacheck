@@ -36,8 +36,11 @@
 #'
 #' @details
 #' The Data Validate module consumes the columns and the full data frames read by
-#' `data_check`. For each numeric column it applies a Tukey (1.5×IQR) outlier
-#' rule and a miscoded-missing-value check; for each categorical column it checks
+#' `data_check`. For each numeric column it checks for out-of-range values (on
+#' bounded, few-level columns: a value far outside the column's apparent range,
+#' the signature of a data-entry error or unrecoded missing code — continuous
+#' columns like reaction times are not range-checked, since a long tail is
+#' normal) and miscoded missing values; for each categorical column it checks
 #' for constant columns, case-only duplicate categories, sparsely populated
 #' levels, leading/trailing whitespace, and mostly-numeric columns contaminated
 #' by a few non-numeric values. Column *names* are checked too: names carrying
@@ -170,23 +173,29 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
         # Normalize numeric vectors to base doubles so integer64 columns from
         # fread/readxl do not cause type conflicts in downstream bind_rows().
         x_num <- suppressWarnings(as.numeric(x))
-        o <- data_check_outliers(x_num, k = outlier_k)
-        if (o$problem) col_finds[["Outliers"]] <- o$message
+        # Out-of-range values (data-entry errors on bounded columns), NOT
+        # generic statistical outliers — a value past the Tukey fence is usually
+        # normal on RT / physiological / score columns and only created noise.
+        oor <- data_check_out_of_range(x_num)
+        if (oor$problem) col_finds[["Out-of-range values"]] <- oor$message
         m <- data_check_miscoded_missing(x_num)
         if (m$problem) col_finds[["Miscoded missing"]] <- m$message
-        # Keep numeric vectors (capped) for the combined distribution figure.
+        # The distribution figure still uses the Tukey fences as visual context
+        # (dashed lines), even though we no longer emit a per-column "outlier"
+        # finding — the fences help a reader eyeball a distribution.
+        o <- data_check_outliers(x_num, k = outlier_k)
         v <- x_num[!is.na(x_num) & !is.nan(x_num)]
         if (length(v) >= 4 && length(unique(v)) > 1) {
           plot_specs[[length(plot_specs) + 1L]] <- list(
             file = file, col = col, values = utils::head(v, 5000),
             lower = as.numeric(o$lower), upper = as.numeric(o$upper))
-          # One row per column that actually has outliers, for the outlier table.
-          if (o$problem) {
-            ex <- utils::head(sort(suppressWarnings(as.numeric(o$values))), 8)
+          # One row per column with out-of-range values, for the summary table.
+          if (oor$problem) {
+            ex <- utils::head(sort(suppressWarnings(as.numeric(oor$values))), 8)
             outlier_specs[[length(outlier_specs) + 1L]] <- data.frame(
               source_file = file, column = col, label = lbl,
-              n_outliers = length(o$values),
-              lower = as.numeric(o$lower), upper = as.numeric(o$upper),
+              n_outliers = length(oor$values),
+              lower = as.numeric(oor$lower), upper = as.numeric(oor$upper),
               examples = paste(signif(ex, 4), collapse = ", "))
           }
         }
@@ -366,10 +375,19 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
       "%d file%s contain survey data with an identifier, but careless-response checks were skipped because the `careless` package is not installed. Install it with `install.packages(\"careless\")` to screen for straightlining and other careless responding.",
       n_careless_files, plural(n_careless_files))
 
-  careless_df <- if (length(careless_specs) > 0) dplyr::bind_rows(careless_specs) else
+  careless_block_df <- if (length(careless_specs) > 0) dplyr::bind_rows(careless_specs) else
     data.frame(source_file = character(0), scale = character(0),
                respondent = character(0), longstring = integer(0),
                irv = numeric(0), reason = character(0))
+
+  # Aggregate to ONE ROW PER RESPONDENT (the per-block table double-counts a
+  # person flagged in several scale blocks). For each respondent we record how
+  # many blocks flagged them out of how many they appear in, the flag reasons,
+  # and whether every flag is short-scale straightlining — which on a short,
+  # unidirectional scale is often normal, coherent answering rather than
+  # carelessness, so those respondents should be read with caution.
+  careless_df <- .dv_careless_by_respondent(careless_block_df, previews,
+                                            columns_df)
 
   findings_df <- if (length(findings) > 0) dplyr::bind_rows(findings) else
     data.frame(source_file = character(0), column = character(0),
@@ -396,7 +414,7 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   # Human-readable phrasing for each check. Noun phrases ("... with potential
   # outliers") so they read correctly after any count, singular or plural.
   check_phrase <- c(
-    Outliers            = "with potential outliers",
+    "Out-of-range values" = "with values outside the column's apparent range (likely data-entry errors)",
     "Miscoded missing"  = "with miscoded missing values",
     Constant            = "with a single constant value",
     "Case issues"       = "with inconsistent category casing",
@@ -441,10 +459,14 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
             paste(parts, collapse = "; "))
   }
   if (nrow(careless_df) > 0) {
-    n_car <- nrow(careless_df)
+    n_car   <- nrow(careless_df)                 # distinct respondents
+    n_short <- sum(careless_df$short_scale_only %in% TRUE)
     summary_text <- paste0(summary_text,
-      sprintf(" %d survey respondent%s %s flagged for possible careless responding.",
-              n_car, plural(n_car), if (n_car == 1) "was" else "were"))
+      sprintf(" %d survey respondent%s %s flagged for possible careless responding%s.",
+              n_car, plural(n_car), if (n_car == 1) "was" else "were",
+              if (n_short > 0) sprintf(
+                " (%d of them only via short-scale straightlining, which can be normal answering)",
+                n_short) else ""))
   }
   if (nrow(demo_df) > 0) {
     kinds <- sort(unique(demo_df$demographic))
@@ -493,25 +515,27 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
                 scroll_table(finds_tbl, maxrows = 20))
   }
 
-  # Outliers: one table row per numeric column that has values outside the
-  # Tukey fences, rather than one plot per column. Bounds + a few example values
-  # let a reviewer judge each column without scanning hundreds of figures.
+  # Out-of-range values: one row per bounded (integer, few-level) column that
+  # has values outside its apparent range — the signature of a data-entry error
+  # or unrecoded missing code, not a statistical outlier. The apparent range and
+  # a few example values let a reviewer judge each column at a glance.
   if (nrow(outlier_df) > 0) {
     out_tbl <- outlier_df |>
       dplyr::arrange(dplyr::desc(.data$n_outliers)) |>
       dplyr::transmute(
         File = .data$source_file, Column = .data$column, Label = .data$label,
-        `N outliers` = .data$n_outliers,
-        `Range [low, high]` = sprintf("[%.3g, %.3g]", .data$lower, .data$upper),
-        `Example values` = .data$examples)
+        `N out-of-range` = .data$n_outliers,
+        `Apparent range` = sprintf("[%g, %g]", .data$lower, .data$upper),
+        `Out-of-range values` = .data$examples)
     n_out_cols <- nrow(outlier_df)
     n_out_vals <- sum(outlier_df$n_outliers)
     report <- c(report,
-      "#### Outliers",
-      sprintf("%d numeric column%s %s %d value%s outside the %.1f×IQR fences.",
+      "#### Out-of-Range Values",
+      sprintf("%d bounded numeric column%s %s %d value%s outside %s apparent range — likely a data-entry error or an unrecoded missing code (e.g. a stray 99 in a 1–7 scale). Continuous columns (reaction times, scores, physiological measures) are not checked here, since a long tail is normal there.",
               n_out_cols, plural(n_out_cols),
               if (n_out_cols == 1) "has" else "have",
-              n_out_vals, plural(n_out_vals), outlier_k),
+              n_out_vals, plural(n_out_vals),
+              if (n_out_cols == 1) "its" else "their"),
       scroll_table(out_tbl, maxrows = 20))
   }
 
@@ -558,15 +582,24 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   if (nrow(careless_df) > 0) {
     car_tbl <- careless_df |>
       dplyr::transmute(
-        File = .data$source_file, Scale = .data$scale,
         Respondent = .data$respondent,
-        Longstring = .data$longstring, IRV = .data$irv,
-        Reason = .data$reason)
-    n_car <- nrow(careless_df)
+        `Blocks flagged` = .data$n_blocks_flagged,
+        Scales = .data$scales,
+        Reasons = .data$reasons,
+        `Max longstring` = .data$max_longstring,
+        IRV = .data$irv,
+        `Short-scale only` = ifelse(.data$short_scale_only %in% TRUE,
+                                    "yes", "no"))
+    n_car   <- nrow(careless_df)
+    n_short <- sum(careless_df$short_scale_only %in% TRUE)
     report <- c(report,
       "#### Careless Responding",
-      sprintf("%d respondent%s across the survey scales show signs of careless responding (straightlining, or unusually flat/erratic answering). These are prompts to inspect those rows, not definitive judgements.",
+      sprintf("%d distinct respondent%s show signs of careless responding — straightlining (long runs of the same answer) or unusually flat/erratic answering — in at least one survey scale. One respondent can be flagged in several scales; the table below is **one row per person**, with how many scale blocks flagged them.",
               n_car, plural(n_car)),
+      if (n_short > 0) sprintf(
+        "Of these, **%d were flagged *only* by short-scale straightlining** (a run of identical answers on a scale of %d items or fewer). On a short, one-directional scale, answering consistently is often normal, coherent responding rather than carelessness — treat these as weak signals and inspect the actual responses before excluding anyone.",
+        n_short, .dv_short_scale_max) else NULL,
+      "These are prompts to inspect those rows, not definitive judgements.",
       scroll_table(car_tbl, maxrows = 20))
   } else if (!is.null(careless_note)) {
     report <- c(report, "#### Careless Responding", careless_note)
@@ -647,6 +680,57 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     irv        = round(iv[flagged], 2),
     reason     = reason
   )
+}
+
+# Item count of a "prefix (min-max, N items)" scale label, or NA.
+.dv_scale_n_items <- function(scale_label) {
+  m <- regmatches(scale_label, regexpr("([0-9]+) items", scale_label))
+  suppressWarnings(as.integer(sub(" items$", "", m)))
+}
+
+# A block is "short" (straightlining is weak evidence there) when it has few
+# items — a run of identical answers is common and often coherent on a short
+# unidirectional scale.
+.dv_short_scale_max <- 7L
+
+# Collapse the per-(respondent x block) careless table to one row per
+# respondent. Columns: paper-level respondent id, source_file(s), how many
+# blocks flagged them and on which scales, the distinct reasons, worst
+# longstring / most extreme IRV, and `short_scale_only` — TRUE when every flag
+# is short-scale straightlining (likely-benign consistent answering, not clear
+# carelessness). Returns a zero-row frame with the same columns when empty.
+.dv_careless_by_respondent <- function(block_df, previews = NULL,
+                                       columns_df = NULL) {
+  cols0 <- c("respondent", "source_file", "n_blocks_flagged", "scales",
+             "reasons", "max_longstring", "irv", "short_scale_only")
+  if (is.null(block_df) || nrow(block_df) == 0)
+    return(stats::setNames(
+      data.frame(matrix(nrow = 0, ncol = length(cols0))), cols0))
+
+  block_df$.n_items   <- .dv_scale_n_items(block_df$scale)
+  block_df$.is_short_straight <-
+    grepl("straightlin", block_df$reason) &
+    !grepl("IRV", block_df$reason) &
+    !is.na(block_df$.n_items) & block_df$.n_items <= .dv_short_scale_max
+
+  parts <- lapply(split(block_df, block_df$respondent), function(g) {
+    data.frame(
+      respondent       = g$respondent[1],
+      source_file      = paste(sort(unique(g$source_file)), collapse = "; "),
+      n_blocks_flagged = nrow(g),
+      scales           = paste(sort(unique(g$scale)), collapse = "; "),
+      reasons          = paste(sort(unique(g$reason)), collapse = "; "),
+      max_longstring   = max(g$longstring, na.rm = TRUE),
+      # The IRV furthest from a typical value (most diagnostic single number).
+      irv              = g$irv[which.max(abs(g$irv - stats::median(g$irv, na.rm = TRUE)))][1],
+      # TRUE only if EVERY block that flagged this person is short-scale
+      # straightlining — i.e. no long-scale or IRV-based flag corroborates it.
+      short_scale_only = all(g$.is_short_straight),
+      stringsAsFactors = FALSE)
+  })
+  out <- dplyr::bind_rows(parts)
+  # Most-flagged first.
+  out[order(-out$n_blocks_flagged, -out$max_longstring), , drop = FALSE]
 }
 
 # ── Qualtrics metadata helpers ────────────────────────────────────────────────

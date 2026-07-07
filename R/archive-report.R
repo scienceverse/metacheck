@@ -92,13 +92,118 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
   invisible(inv)
 }
 
+# Modules whose `table` is a per-column/per-file INVENTORY, not a list of
+# flagged issues — one row per column (data_check) or per documented variable
+# (codebook_check). Left whole they dominate _all_findings.csv (hundreds of
+# thousands of rows, with bloated free-text like data_check$sample_values), so
+# they are reduced to their genuine problem rows below rather than dumped.
+.inventory_modules <- c("data_check", "codebook_check", "repo_check")
+
+# Columns never useful in a findings file (large free-text / per-value dumps
+# that inflate the CSV and can carry embedded commas/quotes).
+.findings_drop_cols <- c("sample_values", "value_labels", "missing_values",
+                         "universe", "question")
+
+# Some modules return RESULTS in named list elements OTHER than `table` — a
+# data.frame per element — that the report should also collect. Each entry maps
+# `module -> c(element_name = "check label")`; every row of that element becomes
+# a finding tagged with the given `check`. (data_check's structure/previews/
+# gated_repos are intentionally NOT here: those are inter-module plumbing, not
+# results.)
+.extra_finding_elements <- list(
+  data_validate = c(careless     = "Careless responding",
+                    demographics = "Demographic column",
+                    qualtrics    = "Qualtrics survey metadata"),
+  codebook_check = c(codebook_vars = "Unused codebook variable")
+)
+
+# Max bytes for any single character cell in the findings CSV. A finding's
+# free text (e.g. data_validate's `detail`) is a human-readable pointer, so a
+# few hundred characters is plenty; anything longer is truncated. Without this,
+# a single pathological cell (e.g. every distinct value of a column of large
+# array-valued cells) can be megabytes and blow up the CSV.
+.finding_cell_max <- 500L
+
+# Clean one character vector for a CSV cell: collapse embedded newlines/tabs/
+# carriage returns to spaces (they otherwise break row alignment even when
+# quoted, and corrupt downstream readers), squeeze runs of whitespace, then cap
+# the length. Applied to every character column before binding/writing.
+.clean_cell <- function(col) {
+  if (!is.character(col)) return(col)
+  # Drop invalid-UTF-8 bytes so nchar()/write.csv() do not choke (some data
+  # cells carry latin1/garbage bytes).
+  col <- iconv(col, to = "UTF-8", sub = "")
+  # Collapse control chars (newlines/tabs/CR and other C0) to spaces, and turn
+  # double quotes into single quotes: both otherwise break CSV row alignment.
+  col <- gsub("[[:cntrl:]]+", " ", col)
+  col <- gsub('"', "'", col, fixed = TRUE)
+  col <- gsub(" {2,}", " ", col)
+  col <- trimws(col)
+  long <- !is.na(col) & nchar(col, type = "bytes") > .finding_cell_max
+  if (any(long))
+    col[long] <- paste0(substr(col[long], 1, .finding_cell_max), " ... [truncated]")
+  col
+}
+
+# Reduce an inventory module's table to only the rows that represent an actual
+# problem, so the findings file stays about issues. Returns NULL when the module
+# contributes no issue rows.
+.inventory_findings <- function(nm, tbl) {
+  if (identical(nm, "data_check")) {
+    # The one flagged data_check issue: values that had to be repaired from a
+    # legacy (non-UTF-8) encoding.
+    if ("utf8_repaired" %in% names(tbl)) {
+      n <- suppressWarnings(as.numeric(tbl$utf8_repaired))
+      keep <- !is.na(n) & n > 0
+      if (any(keep)) {
+        out <- tbl[keep, intersect(c("source_file", "column_name",
+                                     "utf8_repaired"), names(tbl)), drop = FALSE]
+        out$check <- "Mixed encoding"
+        return(out)
+      }
+    }
+    return(NULL)
+  }
+  if (identical(nm, "codebook_check")) {
+    parts <- list()
+    # Issue: undocumented variables (no usable label).
+    if ("label_status" %in% names(tbl)) {
+      keep <- tbl$label_status %in% c("unlabelled", "", NA)
+      if (any(keep)) {
+        u <- tbl[keep, intersect(c("source_file", "column_name",
+                                   "label_status"), names(tbl)), drop = FALSE]
+        u$check <- "Undocumented variable"
+        parts[[length(parts) + 1L]] <- u
+      }
+    }
+    # Informational: identified psychometric scales (one row per scale member).
+    # Not a problem, but a result worth surfacing corpus-wide.
+    if ("scale" %in% names(tbl)) {
+      has <- !is.na(tbl$scale) & nzchar(tbl$scale)
+      if (any(has)) {
+        s <- tbl[has, intersect(c("source_file", "column_name", "scale",
+                                  "scale_confidence"), names(tbl)), drop = FALSE]
+        s$check <- "Identified scale"
+        parts[[length(parts) + 1L]] <- s
+      }
+    }
+    if (length(parts) == 0) return(NULL)
+    return(dplyr::bind_rows(parts))
+  }
+  # repo_check: a file listing, not issues.
+  NULL
+}
+
 # Flatten one paper's module-output chain (from report_module_run()) into two
 # tidy pieces for on-disk capture during a run:
 #   * checks:   one row per module — paper_id, module, traffic_light,
 #               summary_text, and the module's summary_table count columns
 #               (JSON-encoded so a single column holds a variable set of counts).
-#   * findings: one row per row of each module's `table` (the row-level flagged
-#               items), tagged with paper_id + module.
+#   * findings: one row per FLAGGED ISSUE. Issue modules (data_validate,
+#               excel_check, code_check, psychds_check) contribute their table
+#               rows directly; inventory modules (data_check, codebook_check)
+#               contribute only their genuine problem rows (see
+#               .inventory_findings). Tagged with paper_id + module.
 # Returned as a list(checks = df, findings = df). Used by capture_check_results()
 # and consumed later by collect_check_results().
 .flatten_check_chain <- function(chain, paper_id = NULL) {
@@ -121,6 +226,20 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
   }
   pid_of <- function(mo) chain_pid %||% NA_character_
 
+  # report_module_run() strips summary_table from every module EXCEPT the last,
+  # whose summary_table is the COMBINED wide row (all modules' count columns
+  # merged, e.g. data_file_n + matched_n + scale_blocks_n + required_met + ...).
+  # So a module's own summary_table is usually NULL here; fall back to this
+  # combined row so per-module counts are not lost. (dplyr's join suffixes a
+  # duplicated name as "<col>.<module>"; those are kept as-is.)
+  combined_summary <- NULL
+  for (mo in mods) {
+    st <- mo$summary_table
+    if (!is.null(st) && is.data.frame(st) && nrow(st) > 0 &&
+        ncol(st) > ncol(combined_summary %||% st[, 0, drop = FALSE]))
+      combined_summary <- st
+  }
+
   checks <- list()
   findings <- list()
   for (nm in names(mods)) {
@@ -128,7 +247,8 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
     if (is.null(mo)) next
     pid <- pid_of(mo)
 
-    st <- mo$summary_table
+    # Prefer the module's own summary_table; fall back to the combined one.
+    st <- mo$summary_table %||% combined_summary
     counts <- if (!is.null(st) && nrow(st) > 0) {
       keep <- setdiff(names(st), "paper_id")
       if (length(keep)) jsonlite::toJSON(as.list(st[1, keep, drop = FALSE]),
@@ -145,18 +265,45 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
 
     tbl <- mo$table
     if (!is.null(tbl) && is.data.frame(tbl) && nrow(tbl) > 0) {
-      tbl <- as.data.frame(lapply(tbl, function(col)
-        if (is.list(col)) vapply(col, function(x)
-          paste(as.character(x), collapse = "; "), character(1))
-        else col), stringsAsFactors = FALSE)
-      # Force the chain's single paper id so findings join to the check rows
-      # (a module's own table may carry a hash id or none).
-      tbl$paper_id <- pid
-      tbl$module <- nm
-      # paper_id + module first, for readability.
-      front <- c("paper_id", "module")
-      tbl <- tbl[, c(front, setdiff(names(tbl), front)), drop = FALSE]
-      findings[[length(findings) + 1L]] <- tbl
+      # Inventory modules: keep only genuine problem rows, not every column.
+      if (nm %in% .inventory_modules) tbl <- .inventory_findings(nm, tbl)
+      if (!is.null(tbl) && nrow(tbl) > 0) {
+        # Drop large free-text/per-value columns that bloat the findings CSV.
+        tbl <- tbl[, setdiff(names(tbl), .findings_drop_cols), drop = FALSE]
+        tbl <- as.data.frame(lapply(tbl, function(col)
+          if (is.list(col)) vapply(col, function(x)
+            paste(as.character(x), collapse = "; "), character(1))
+          else col), stringsAsFactors = FALSE)
+        # Clean + cap every character cell (embedded newlines break CSV row
+        # alignment; a finding's free text must never reach megabytes). See
+        # .clean_cell.
+        tbl <- as.data.frame(lapply(tbl, .clean_cell), stringsAsFactors = FALSE)
+        # Force the chain's single paper id so findings join to the check rows
+        # (a module's own table may carry a hash id or none).
+        tbl$paper_id <- pid
+        tbl$module <- nm
+        # paper_id + module first, for readability.
+        front <- c("paper_id", "module")
+        tbl <- tbl[, c(front, setdiff(names(tbl), front)), drop = FALSE]
+        findings[[length(findings) + 1L]] <- tbl
+      }
+    }
+
+    # Results some modules return in named elements OTHER than `table`
+    # (careless, demographics, qualtrics, codebook_vars): capture each as
+    # findings tagged with its check label. See .extra_finding_elements.
+    extras <- .extra_finding_elements[[nm]]
+    for (el in names(extras)) {
+      ed <- mo[[el]]
+      if (is.null(ed) || !is.data.frame(ed) || nrow(ed) == 0) next
+      ed <- ed[, setdiff(names(ed), .findings_drop_cols), drop = FALSE]
+      ed <- as.data.frame(lapply(ed, .clean_cell), stringsAsFactors = FALSE)
+      ed$paper_id <- pid
+      ed$module   <- nm
+      ed$check    <- unname(extras[[el]])
+      front <- c("paper_id", "module", "check")
+      ed <- ed[, c(front, setdiff(names(ed), front)), drop = FALSE]
+      findings[[length(findings) + 1L]] <- ed
     }
   }
 
@@ -262,8 +409,13 @@ collect_check_results <- function(results_dir, out_dir = NULL) {
       checks_l[[length(checks_l) + 1L]] <- ck
     }
     if (!is.null(j$findings) && is.data.frame(j$findings) &&
-        nrow(j$findings) > 0)
-      finds_l[[length(finds_l) + 1L]] <- j$findings
+        nrow(j$findings) > 0) {
+      # Clean + cap character cells here too, so a .checks.json written before
+      # the capture-time cleaning existed cannot still corrupt/bloat the CSV.
+      fnd <- as.data.frame(lapply(j$findings, .clean_cell),
+                           stringsAsFactors = FALSE)
+      finds_l[[length(finds_l) + 1L]] <- fnd
+    }
   }
 
   checks <- if (length(checks_l)) dplyr::bind_rows(checks_l) else data.frame()

@@ -145,6 +145,10 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (dt == "data") {
       stem <- keyword_slug(tools::file_path_sans_ext(name))
       if (!nzchar(stem)) stem <- paste0("file", i)
+      # Every data file gets a Psych-DS *_data.csv target. When the source is
+      # NOT already a CSV (xlsx/sav/dta/...), the converter writes a real CSV
+      # here (not a renamed copy of the original) AND keeps the original file
+      # beside it (see original_target_of); see convert_psychds().
       paste0(prefix, "data/source-", stem, "_data.csv")
     } else if (dt == "readme") {
       ext <- tools::file_ext(name)
@@ -161,6 +165,38 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   current_path <- gsub("\\\\", "/", structure_df$file_path %||% structure_df$file_name)
   current_path <- ifelse(is.na(current_path), structure_df$file_name, current_path)
   misplaced    <- current_path != target_path
+
+  # A TABULAR data file whose source is not already a CSV (xlsx/xls/tsv/dat/
+  # sav/dta/sas7bdat) is CONVERTED to CSV for its _data.csv target (rather than
+  # having its bytes renamed, which would be an invalid CSV), and its ORIGINAL
+  # kept alongside so the release retains the authored artifact (an .xlsx carries
+  # formatting/sheets, a .sav/.dta carries value labels). `convert` marks those
+  # rows; `original_target` is where the untouched original goes (same data/
+  # dir, original extension).
+  #
+  # A RAW (non-tabular) data file — .npy/.h5/.pickle/.fif/... — cannot be read
+  # as a table, so it is neither converted nor renamed to .csv: it is copied
+  # with its true extension to a raw_target and does NOT claim a _data.csv path.
+  src_ext        <- tolower(tools::file_ext(structure_df$file_name))
+  # Extensions data_read_head() can read as a table (minus csv, which is fine
+  # as-is). Mirrors .tabular_extensions in data_check_helpers.R.
+  convertible_ext <- c("tsv", "txt", "dat", "xlsx", "xls",
+                       "sav", "dta", "sas7bdat")
+  needs_convert  <- is_data & src_ext %in% convertible_ext
+  is_raw_data    <- is_data & nzchar(src_ext) & src_ext != "csv" & !needs_convert
+
+  # Convertible: keep the _data.csv target, add original alongside.
+  original_target <- ifelse(
+    needs_convert,
+    paste0(sub("_data\\.csv$", "", target_path), ".", src_ext),
+    NA_character_)
+  # Raw: replace the (wrong) _data.csv target with the original extension, and
+  # do not treat it as a CSV to write.
+  raw_target <- ifelse(
+    is_raw_data,
+    paste0(sub("_data\\.csv$", "", target_path), ".", src_ext),
+    NA_character_)
+  target_path <- ifelse(is_raw_data, raw_target, target_path)
 
   # ── 4. Required / recommended compliance items ───────────────────────────────
   file_names_lc <- tolower(basename(current_path))
@@ -330,12 +366,16 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   list(
     table = data.frame(
-      file_name    = structure_df$file_name,
-      data_type    = structure_df$data_type,
-      group        = groups,
-      current_path = current_path,
-      target_path  = target_path,
-      status       = ifelse(misplaced, "move", "present")
+      file_name       = structure_df$file_name,
+      data_type       = structure_df$data_type,
+      group           = groups,
+      current_path    = current_path,
+      target_path     = target_path,
+      status          = ifelse(misplaced, "move", "present"),
+      # convert = TRUE → converter writes a real CSV at target_path from the
+      # read data; original_target = where to also copy the untouched original.
+      convert         = needs_convert,
+      original_target = original_target
     ),
     summary_table = summary_table,
     na_replace = c(required_met = 0, required_missing = 0,

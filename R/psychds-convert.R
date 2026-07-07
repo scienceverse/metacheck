@@ -345,6 +345,29 @@
   }, error = function(e) FALSE)
 }
 
+# Robustly coerce a plan column to logical (it may arrive as logical, or as
+# character "TRUE"/"FALSE" after a JSON round-trip).
+isTRUE_vec <- function(x) {
+  if (is.logical(x)) return(!is.na(x) & x)
+  tolower(as.character(x)) %in% c("true", "1")
+}
+
+# Write a genuine, Psych-DS-clean CSV from a non-CSV data source (xlsx, sav,
+# dta, ...). Reads the file in full via data_read_head() — the same reader
+# data_check uses, so the columns match variableMeasured — and writes UTF-8,
+# BOM-free, no row names. Returns FALSE if the source cannot be read as a table.
+.psychds_write_data_csv <- function(src, dest) {
+  tryCatch({
+    df <- data_read_head(src, n_rows = Inf)
+    if (is.null(df) || !is.data.frame(df) || ncol(df) == 0) return(FALSE)
+    # write.csv adds no BOM; force UTF-8 for non-ASCII headers/values.
+    con <- file(dest, open = "wb", encoding = "UTF-8")
+    on.exit(close(con), add = TRUE)
+    utils::write.csv(df, con, row.names = FALSE, na = "")
+    TRUE
+  }, error = function(e) FALSE)
+}
+
 #' Generate a Psych-DS-compliant copy of a repository
 #'
 #' Writes a [Psych-DS](https://psych-ds.github.io/) dataset directory for a
@@ -447,6 +470,12 @@ convert_psychds <- function(paper, output_dir = NULL,
   skipped     <- character(0) # files not on disk (never downloaded)
   skipped_i   <- integer(0)   # their plan-row indices, to group by type below
   copy_failed <- character(0) # files on disk that failed to copy (I/O error)
+  # Does the plan mark this file for CSV conversion (a non-CSV data source)?
+  plan_convert <- if ("convert" %in% names(plan)) isTRUE_vec(plan$convert) else
+    rep(FALSE, nrow(plan))
+  plan_orig_target <- if ("original_target" %in% names(plan))
+    plan$original_target else rep(NA_character_, nrow(plan))
+
   for (i in seq_len(nrow(plan))) {
     src <- loc[[plan$file_name[i]]]
     if (is.null(src) || is.na(src) || !nzchar(src) || !file.exists(src)) {
@@ -456,10 +485,27 @@ convert_psychds <- function(paper, output_dir = NULL,
     }
     dest <- file.path(output_dir, plan$target_path[i])
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
-    # Data CSVs must be BOM-free: a UTF-8 BOM makes the first column header read
-    # as "﻿id", which then mismatches variableMeasured (a Psych-DS error).
-    if (grepl("\\.csv$", dest, ignore.case = TRUE) &&
+
+    if (isTRUE(plan_convert[i])) {
+      # Non-CSV data source (xlsx/sav/dta/...): write a REAL CSV at the _data.csv
+      # target from the fully-read data (not a byte copy of the original, which
+      # would be an invalid CSV), and keep the untouched original beside it so
+      # the release retains the authored artifact.
+      wrote_csv <- .psychds_write_data_csv(src, dest)
+      if (wrote_csv) n_copied <- n_copied + 1L
+      else copy_failed <- c(copy_failed, plan$file_name[i])
+      # Copy the original alongside (original extension).
+      if (!is.na(plan_orig_target[i]) && nzchar(plan_orig_target[i])) {
+        odest <- file.path(output_dir, plan_orig_target[i])
+        dir.create(dirname(odest), recursive = TRUE, showWarnings = FALSE)
+        if (file.copy(src, odest, overwrite = TRUE)) n_copied <- n_copied + 1L
+        else copy_failed <- c(copy_failed, plan$file_name[i])
+      }
+    } else if (grepl("\\.csv$", dest, ignore.case = TRUE) &&
         grepl("^(study-[^/]+/)?data/", plan$target_path[i])) {
+      # Data CSVs must be BOM-free: a UTF-8 BOM makes the first column header
+      # read as "﻿id", which then mismatches variableMeasured (a Psych-DS
+      # error).
       ok <- .psychds_copy_no_bom(src, dest)
       if (ok) n_copied <- n_copied + 1L
       else copy_failed <- c(copy_failed, plan$file_name[i])

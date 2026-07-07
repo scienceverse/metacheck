@@ -411,16 +411,29 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
                 n_scales_found, plural(n_scales_found)),
         scroll_table(scale_tbl, maxrows = 20))
     }
-    # Guidance for blocks that look like a scale but could not be named.
-    if (n_scale_unnamed > 0) {
-      scale_report <- c(scale_report,
-        sprintf("%d data file%s with survey-item blocks could not be matched to a named instrument.",
-                n_scale_unnamed, plural(n_scale_unnamed)),
+    # Guidance whenever a block was NOT identified with high confidence — either
+    # unnamed, or named only tentatively (medium confidence). Tell the researcher
+    # exactly what to add so a future run (or a human reader) can identify the
+    # scale with certainty.
+    n_low_conf <- length(unique(labels_df$source_file[
+      !is.na(labels_df$scale) & nzchar(labels_df$scale) &
+        labels_df$scale_confidence %in% "medium"]))
+    if (n_scale_unnamed > 0 || n_low_conf > 0) {
+      parts <- character(0)
+      if (n_scale_unnamed > 0)
+        parts <- c(parts, sprintf(
+          "%d data file%s with survey-item blocks could not be matched to a named instrument.",
+          n_scale_unnamed, plural(n_scale_unnamed)))
+      if (n_low_conf > 0)
+        parts <- c(parts, sprintf(
+          "%d file%s had a scale identified only tentatively (medium confidence).",
+          n_low_conf, plural(n_low_conf)))
+      scale_report <- c(scale_report, paste(parts, collapse = " "),
         paste(
-          "To make these scales identifiable — by this tool and by anyone reusing the data — consider:",
-          "\n- **Name variables after the instrument**: use a consistent prefix per scale (e.g. `panas_1 … panas_10`, `rse_1 … rse_10`) rather than generic `Q1`, `V3`, or `item5`.",
-          "\n- **Document the item wording** in a codebook (a `variable, description` table, or embedded value labels in SPSS/Stata files): the exact item text is what identifies a scale.",
-          "\n- **State the scale name and reference** in the codebook or README, including the response options (e.g. 1 = *Strongly disagree* … 5 = *Strongly agree*) and any reverse-coded items.",
+          "To let this tool (and anyone reusing the data) identify these scales with **high confidence**, add any of the following — each alone often suffices:",
+          "\n- **Use the established instrument name** in your variable names or codebook: a consistent prefix per scale (`panas_1 … panas_10`, `rse_1 … rse_10`) rather than generic `Q1`, `V3`, `item5`. The instrument's standard name/acronym is the strongest signal.",
+          "\n- **Add a detailed codebook** (a `variable, description` table, or embedded value labels in SPSS/Stata files) giving the **exact item wording**: the verbatim item text is what pins down which published scale it is.",
+          "\n- **State the scale name and citation in the README or manuscript**, with the response options (e.g. 1 = *Strongly disagree* … 5 = *Strongly agree*) and any reverse-coded items. metacheck reads the paper text and confirms a scale the manuscript names outright, so naming it there directly raises confidence to high.",
           sep = ""))
     }
     report <- c(report, scale_report)
@@ -458,7 +471,14 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     clean_n        = n_clean,
     conflicted_n   = n_conflicted,
     codebook_var_n = n_codebook_vars,
-    unused_var_n   = n_unused
+    unused_var_n   = n_unused,
+    # Scale detection vs. naming: how many data files held a scale-like item
+    # block (rule-based detection), how many distinct instruments were named
+    # (LLM), and how many detected blocks stayed unnamed. The gap between the
+    # first and the last is the "looks like a scale but we can't name it" set.
+    scale_blocks_n  = n_scale_files,
+    scale_named_n   = n_scales_found,
+    scale_unnamed_n = n_scale_unnamed
   )
 
   list(
@@ -466,7 +486,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     codebook_vars = codebook_vars_df,
     summary_table = summary_table,
     na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
-                   conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0),
+                   conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0,
+                   scale_blocks_n = 0, scale_named_n = 0, scale_unnamed_n = 0),
     traffic_light = tl,
     report = report,
     summary_text = summary_text
@@ -600,6 +621,51 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   utils::head(s, max_sent)
 }
 
+# Well-known psychometric instruments: each entry is a regex matching the
+# instrument's name and/or acronym as a whole word in running text. Used to scan
+# the paper for scales the authors mention by name, so the LLM can CONFIRM a
+# stated instrument rather than guess one from item wording alone (the surest
+# route to a high-confidence identification). Kept deliberately conservative —
+# distinctive acronyms and full names, not generic words — to avoid false hits.
+.known_scale_patterns <- c(
+  "PANAS"                    = "\\bPANAS\\b|positive and negative affect schedule",
+  "Rosenberg Self-Esteem"    = "\\bRSES?\\b|rosenberg self.?esteem",
+  "Big Five Inventory"       = "\\bBFI(?:-2|-44|-10)?\\b|big five inventory",
+  "Ten-Item Personality Inventory" = "\\bTIPI\\b|ten.?item personality",
+  "HEXACO"                   = "\\bHEXACO\\b",
+  "NEO-PI"                   = "\\bNEO-?(PI-?R|FFI)?\\b|neo personality inventory",
+  "Perceived Stress Scale"   = "\\bPSS\\b|perceived stress scale",
+  "Satisfaction With Life"   = "\\bSWLS\\b|satisfaction with life",
+  "Beck Depression Inventory"= "\\bBDI(?:-II)?\\b|beck depression",
+  "PHQ-9"                    = "\\bPHQ-?9\\b|patient health questionnaire",
+  "GAD-7"                    = "\\bGAD-?7\\b|generali[sz]ed anxiety disorder.?7",
+  "STAI"                     = "\\bSTAI\\b|state.?trait anxiety",
+  "Need for Cognition"       = "\\bNF?C\\b|need for cognition",
+  "Interpersonal Reactivity Index" = "\\bIRI\\b|interpersonal reactivity",
+  "Social Value Orientation" = "\\bSVO\\b|social value orientation",
+  "Vividness of Visual Imagery" = "\\bVVIQ\\b|vividness of visual imagery",
+  "Regulatory Focus"         = "regulatory focus questionnaire|\\bRFQ\\b",
+  "Dark Triad / Dirty Dozen" = "dark triad|dirty dozen|\\bSD3\\b",
+  "UCLA Loneliness"          = "ucla loneliness|\\bUCLA-?LS\\b",
+  "Autism Quotient"          = "autism.?spectrum quotient|\\bAQ\\b",
+  "Cognitive Reflection Test"= "cognitive reflection test|\\bCRT\\b"
+)
+
+# Scan the paper's full text for known instruments mentioned by name/acronym.
+# Returns a character vector of scale names found (the dictionary keys), to
+# offer the LLM as candidates it can confirm. Empty when no paper text or no
+# hit. Cheap (regex over the text table), so it runs whenever a paper is given.
+.scan_paper_for_scales <- function(paper) {
+  if (!.is_paper(paper) || is.null(paper$text) || nrow(paper$text) == 0)
+    return(character(0))
+  hay <- paste(as.character(paper$text$text), collapse = " \n ")
+  hits <- names(.known_scale_patterns)[vapply(
+    .known_scale_patterns,
+    function(p) grepl(p, hay, perl = TRUE, ignore.case = TRUE),
+    logical(1))]
+  unique(hits)
+}
+
 # Common words to exclude from "distinctive item word" searches.
 .scale_stopwords <- c("scale","agree","disagree","strongly","never","always",
   "sometimes","often","rarely","please","following","statement","question",
@@ -631,6 +697,12 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
   }
   have_paper_text <- .is_paper(paper) &&
     !is.null(paper$text) && nrow(paper$text) > 0
+
+  # Scales the paper names outright (regex over the full text). Offering these
+  # as candidates lets the model CONFIRM a stated instrument — far more reliable
+  # than guessing from item wording — so they lift identifications to high
+  # confidence when the columns match.
+  paper_scales <- if (have_paper_text) .scan_paper_for_scales(paper) else character(0)
 
   # Per file: the Likert-eligible columns (flattened across blocks) and their
   # wording, plus a signature (ordered column names) for cross-file dedup.
@@ -673,13 +745,18 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
     "Split these columns into the distinct psychometric scales they form, and",
     "name each scale. For every scale you recognise, return its common published",
     "name (e.g. PANAS, Rosenberg Self-Esteem Scale, Big Five Inventory, SVO",
-    "Slider), a confidence (high/medium/low), and the exact list of its member",
-    "column names. Use the item wording when present; you MAY also recognise a",
-    "scale from a well-known variable-name prefix (RSE, PANAS, BFI, PSS, DOS).",
-    "If sentences from the paper are provided, use them — they often name the",
-    "instrument outright (e.g. 'the 20-item PANAS'); prefer the name stated in",
-    "the paper. Omit any columns you cannot confidently assign to a named scale",
-    "— do not invent scales for generic names like Q1, V3, item5."
+    "Slider), a confidence, and the exact list of its member column names.",
+    "Base identification on: the item wording; a well-known variable-name prefix",
+    "(RSE, PANAS, BFI, PSS, DOS); and — most reliably — any instruments named in",
+    "the paper's text or sentences provided below. When the paper names an",
+    "instrument and the items plausibly match it, confirm that instrument.",
+    "",
+    "Only report a scale you are REASONABLY CERTAIN of: use confidence 'high'",
+    "when the paper names the instrument or the items are an unmistakable match,",
+    "'medium' when the name/wording strongly implies a specific published",
+    "instrument, and DO NOT report the scale at all (omit it) when you would only",
+    "be guessing. Never invent a scale for generic names like Q1, V3, item5, and",
+    "never report 'low' confidence — omit those instead."
   )
 
   # Deduplicate by signature: identify once per distinct survey layout.
@@ -733,11 +810,17 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
     # lets the model confirm rather than guess. Only when a paper is available.
     ctx <- if (have_paper_text)
       .scale_paper_context(paper, prefixes, labs) else character(0)
-    text_in <- if (length(ctx) > 0)
-      paste0(listing,
-             "\n\nRelevant sentences from the paper (may name the instrument):\n",
-             paste("-", ctx, collapse = "\n"))
-    else listing
+    text_in <- listing
+    if (length(paper_scales) > 0)
+      text_in <- paste0(
+        text_in,
+        "\n\nInstruments named in the paper's text (candidates to confirm if the",
+        " items match one of them): ", paste(paper_scales, collapse = ", "))
+    if (length(ctx) > 0)
+      text_in <- paste0(
+        text_in,
+        "\n\nRelevant sentences from the paper (may name the instrument):\n",
+        paste("-", ctx, collapse = "\n"))
 
     resp <- tryCatch(
       llm(text = data.frame(text = text_in), text_col = "text",
@@ -763,10 +846,12 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
       cols_k <- cols_k[cols_k %in% nms]                 # only real columns
       if (length(cols_k) < .scale_min_items) next       # ignore tiny fragments
       # Corroboration: if the identified scale name (or its acronym) appears in
-      # the retrieved paper sentences, the manuscript itself names this
-      # instrument — promote to high confidence.
+      # the retrieved paper sentences OR matches an instrument the regex scan
+      # found named in the paper, the manuscript itself names this instrument —
+      # promote to high confidence.
       final_conf <- if (nzchar(conf)) conf else "medium"
-      if (length(ctx) > 0 && .scale_name_in_text(scale, ctx))
+      if ((length(ctx) > 0 && .scale_name_in_text(scale, ctx)) ||
+          (length(paper_scales) > 0 && .scale_name_in_text(scale, paper_scales)))
         final_conf <- "high"
       # Apply this identification to EVERY file sharing the signature.
       for (f in files_here)

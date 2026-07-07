@@ -1826,6 +1826,89 @@ data_check_outliers <- function(x, k = 1.5, n_max = 10) {
        values = out, lower = lower, upper = upper)
 }
 
+#' Flag impossible / out-of-range values in a bounded numeric column
+#'
+#' A statistical outlier (a value past the Tukey fence) is usually NOT a data
+#' problem — reaction times, physiological measures and sum scores all have
+#' legitimate long tails. What *is* a problem is a value that falls outside a
+#' column's evident **bounded range**: the tell-tale sign of a data-entry error
+#' or an unrecoded missing code (e.g. a Likert item coded 1–5 with a stray 55 or
+#' -9; an age of 250; a proportion of 3).
+#'
+#' This flags only such values, and only for columns that plausibly have a fixed
+#' range. A column qualifies when it is **integer-valued with few distinct
+#' levels** (Likert / categorical-coded / count-like): its "in-range" band is the
+#' contiguous run of levels that covers the vast majority of the data, and any
+#' value outside that band — or negative where the rest are non-negative — is
+#' flagged. Continuous columns (many distinct values, non-integer) have no
+#' natural bound and are not flagged here; use the distribution figure to inspect
+#' those visually.
+#'
+#' @param x a numeric vector
+#' @param max_levels a column with more than this many distinct integer values
+#'   is treated as continuous (no fixed range) and not checked (default 20)
+#' @param core_frac the in-range band is the shortest contiguous integer range
+#'   covering at least this fraction of the data (default 0.995); values outside
+#'   it are candidates for a data-entry error
+#' @param n_max max number of flagged values to list in the message
+#' @returns list(problem, message, values, lower, upper)
+#' @export
+#' @keywords internal
+data_check_out_of_range <- function(x, max_levels = 20L, core_frac = 0.995,
+                                    n_max = 10) {
+  none <- list(problem = FALSE, message = "", values = NULL,
+               lower = NA_real_, upper = NA_real_)
+  if (!is.numeric(x)) return(none)
+  x <- x[!is.na(x) & !is.nan(x) & is.finite(x)]
+  if (length(x) < 20) return(none)                 # need enough data to bound
+  # Only bounded-range (integer, few-level) columns have a meaningful "range".
+  if (any(x != round(x))) return(none)             # non-integer -> continuous
+  u <- sort(unique(x))
+  if (length(u) < 2 || length(u) > max_levels) return(none)
+
+  # The in-range band is the DENSE core of the distribution: trim a tail level
+  # ONLY when it is both (a) rare AND (b) separated from the core by a GAP — the
+  # signature of a data-entry error or unrecoded missing code (a stray 55 or a
+  # -9 in a 1–5 column, detached from the 1..5 run). A tail level that is
+  # contiguous with the core (no gap) is kept — a Poisson/count column's high
+  # values trail off smoothly and are legitimate. `gap_min` is how far detached a
+  # level must be to count as a break; `rare_frac` is the sparsity cut.
+  tab   <- table(x)
+  lv    <- as.integer(names(tab))
+  cnt   <- as.integer(tab)
+  n     <- length(x)
+  rare_frac <- max(1 - core_frac, 0.001)
+  is_rare <- function(k) cnt[k] <= max(rare_frac * n, 2L)
+
+  # First pass: trim only rare, gapped levels off each tail to find the CORE
+  # (the dense contiguous run). This tolerates a smoothly-trailing count tail
+  # (each step is 1 apart, so nothing is trimmed) but isolates a detached level.
+  lo_i <- 1L; hi_i <- length(lv)
+  while (lo_i < hi_i && is_rare(lo_i) &&
+         (lv[lo_i + 1L] - lv[lo_i]) >= 2L) lo_i <- lo_i + 1L
+  while (hi_i > lo_i && is_rare(hi_i) &&
+         (lv[hi_i] - lv[hi_i - 1L]) >= 2L) hi_i <- hi_i - 1L
+  lo <- lv[lo_i]; hi <- lv[hi_i]
+
+  # Only report values that are FAR outside the core, not merely one gap away: a
+  # data-entry error (55 in a 1–5 scale) is many core-widths out, whereas a
+  # legitimate rare count (a 10 trailing a 0–8 Poisson) is barely beyond it. The
+  # tolerance is one core width past each edge (min 3), so 1–5 tolerates up to
+  # ~9 but flags 55; 0–8 tolerates up to ~16 so a stray 10 is NOT flagged.
+  core_w <- max(hi - lo, 3L)
+  out <- unique(x[x < (lo - core_w) | x > (hi + core_w)])
+  if (length(out) == 0) return(list(problem = FALSE, message = "",
+                                    values = NULL, lower = lo, upper = hi))
+  shown <- utils::head(sort(out), n_max)
+  list(problem = TRUE,
+       message = sprintf(
+         "%d value%s outside the column's apparent range [%g, %g] (%.1f%% of values sit in that range) — likely a data-entry error or unrecoded missing code: %s%s",
+         length(out), plural(length(out)), lo, hi, 100 * core_frac,
+         paste(signif(shown, 6), collapse = ", "),
+         if (length(out) > n_max) ", ..." else ""),
+       values = out, lower = lo, upper = hi)
+}
+
 #' Flag a constant or near-constant column
 #'
 #' @param x a vector
@@ -2885,10 +2968,10 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 # identification). A "scale block" is a run of adjacent Likert-type columns that
 # share a variable-name prefix, i.e. one psychometric scale (PANAS_1..10).
 
-# Minimum items for a block to count as a scale. Chosen empirically from the OSF
-# corpus: real short psychological scales run ~5-7 items, so 5 keeps genuine
-# short scales while dropping 3-4 item fragments that are too noisy to interpret.
-.scale_min_items <- 5L
+# Minimum items for a block to count as a scale. Set to 4 to catch genuine short
+# scales (e.g. 4-item measures) at the cost of a few more noisy 4-item fragments;
+# the LLM naming stage filters those out.
+.scale_min_items <- 4L
 
 # Is a column a plausible Likert item? Integer-valued, 3-11 distinct levels (2
 # is binary, not Likert), spanning a narrow range within a plausible bound.

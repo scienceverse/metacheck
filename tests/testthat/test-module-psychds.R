@@ -205,3 +205,47 @@ test_that("gated-repo hint explains a skipped repo with recovery steps", {
     metacheck:::.converter_gated_hint(
       list(data_check = list(gated_repos = data.frame()))), "")
 })
+
+test_that("non-CSV data files are converted to CSV and the original is kept", {
+  skip_if_not_installed("writexl")
+  withr::local_options(metacheck.llm.use = FALSE)
+
+  # A repo with one .xlsx data file (plus the standard fixture files).
+  d <- make_fixture_repo()
+  df <- data.frame(id = 1:5, score = c(2.1, 3.4, 1.9, 4.0, 2.8),
+                   cond = c("a", "b", "a", "b", "a"))
+  writexl::write_xlsx(df, file.path(d, "data", "survey.xlsx"))
+
+  chain <- report_module_run(
+    test_paper("x"),
+    c("repo_check", "data_check", "codebook_check", "psychds_check"),
+    args = list(data_check = list(local_path = d, local_only = TRUE)))
+
+  # psychds_check plans a convert + an original_target for the xlsx.
+  plan <- chain$psychds_check$table
+  xrow <- plan[grepl("survey", plan$file_name), ]
+  expect_true(isTRUE(as.logical(xrow$convert[1])))
+  expect_match(xrow$target_path[1], "_data\\.csv$")
+  expect_match(xrow$original_target[1], "\\.xlsx$")
+
+  out <- withr::local_tempdir()
+  suppressMessages(convert_psychds(chain, output_dir = out, overwrite = TRUE))
+
+  data_dir <- if (dir.exists(file.path(out, "data"))) file.path(out, "data")
+              else list.files(out, pattern = "^study-", full.names = TRUE)[1] |>
+                file.path("data")
+  files <- list.files(data_dir)
+  # Both a real converted CSV and the untouched original are present.
+  csv <- grep("survey.*_data\\.csv$", files, value = TRUE)
+  xls <- grep("survey.*\\.xlsx$", files, value = TRUE)
+  expect_length(csv, 1)
+  expect_length(xls, 1)
+
+  # The converted CSV is genuine, readable, and preserves the data.
+  back <- utils::read.csv(file.path(data_dir, csv))
+  expect_equal(nrow(back), 5)
+  expect_true(all(c("id", "score", "cond") %in% names(back)))
+
+  # The bundle still validates as Psych-DS.
+  expect_true(psychds_validate(out)$valid)
+})

@@ -240,6 +240,30 @@ test_that("code_abs_path", {
 
   obs <- code_abs_path(code_text)
   expect_equal(obs$abs_path, "/plots/x.csv")
+
+  # Regex escapes must NOT be mistaken for UNC paths. A backslash string in
+  # code is almost always a regex ("\\d+", "\\1-\\2", "\\-A[MF12]+"), which a
+  # naive "starts with \\" rule wrongly flagged as a \\server path. These write
+  # doubled backslashes in R source (single on disk); build them via a temp
+  # file so the reader sees the real bytes.
+  # Build the on-disk bytes directly with rawToChar so there is no ambiguity
+  # about R string escaping. A regex in a code file has ONE backslash before
+  # the metacharacter ("\d+"); a UNC path has TWO leading backslashes then a
+  # host and share ("\\host\share").
+  bs <- "\\"                                   # a single backslash
+  regex_code <- paste0(
+    'x <- gsub("', bs, 'd+', bs, '.', bs, 'd*", "", y)\n',
+    'z <- gsub("', bs, '1-', bs, '2", "", z)\n',
+    'a <- strsplit(v, "', bs, '-A[MF12]+")')
+  obs <- code_abs_path(regex_code)
+  expect_equal(nrow(obs), 0L)                  # no regex flagged as a path
+
+  # A GENUINE UNC path (\\host\share\...) is still flagged.
+  unc_code <- paste0('read.csv("', bs, bs, 'fileserver', bs, 'share',
+                     bs, 'data.csv")')
+  obs <- code_abs_path(unc_code)
+  expect_equal(nrow(obs), 1L)
+  expect_true(startsWith(obs$abs_path, paste0(bs, bs, "fileserver")))
 })
 
 test_that("code_remove_comments", {

@@ -178,12 +178,20 @@ code_abs_path <- function(code_text) {
   # Shared absolute path pattern and quoted filename pattern
   # absolute_path_pattern <- '(?<![A-Za-z0-9_])(["\'])(?:(?!https?://)(?:[A-Za-z]:[\\\\/]|(?:\\\\\\\\|//)[^\\\\/]+[\\\\/]|~[/\\\\]|/(?:Users|home|var|etc|opt|srv|mnt|Volumes|Library|Applications|gpfs|data|tmp|media|root)\\b)[^"\']*)\\1'
 
+  # A quoted string that is an absolute filesystem path. The UNC branch is
+  # deliberately strict: a bare backslash string is far more often a regex
+  # escape ("\d+", "\1-\2", "\-A[MF12]+") than a network path, so we require the
+  # real UNC shape \\host\share — two leading backslashes, a host name
+  # (letters/digits/dots/hyphens), then a single backslash and a share — which
+  # regex escapes do not have (a regex has a metacharacter/digit right after the
+  # backslashes, not host\share). In a PCRE pattern each literal backslash is
+  # written "\\", so the on-disk bytes \\host\ become "\\\\[host]\\" below.
   absolute_path_pattern <- paste0(
     "([\"'])", # start quote
     "(?:~/(?:[^\\n'\"]+)|", # e.g., ~/Desktop/...
     "/(?!/)[^\\n'\"]+|",    # e.g., /User/...
     "[A-Za-z]:[\\\\/][^\\n'\"]+|", # e.g., C:/... or D:\...
-    "\\\\\\\\[^\\n'\"]+)", # e.g., \\server
+    "\\\\\\\\[A-Za-z0-9._-]+\\\\[^\\n'\"]+)", # UNC \\host\share\...
     "\\1" # end matching quote
   )
 

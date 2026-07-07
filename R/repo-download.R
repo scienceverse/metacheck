@@ -4,14 +4,13 @@
 # files a module needs, into a shared persistent cache, so downloads are reused
 # across modules and R sessions.
 
-# Root cache directory for downloaded repository files. Honours the
-# `metacheck.repo_cache.dir` option so tests (and users who want a project-local
-# cache) can redirect it away from the shared rappdirs location.
+# Root cache directory for downloaded repository files. Defaults to
+# ".metacheck_repo_cache" in the working directory (see .metacheck_cache_subdir);
+# the `metacheck.repo_cache.dir` option overrides just this cache, and
+# `metacheck.cache.dir` relocates both caches together.
 .repo_cache_dir <- function() {
-  dir <- getOption("metacheck.repo_cache.dir",
-                   rappdirs::user_cache_dir("metacheck/repo_files", "scienceverse"))
-  dir.create(dir, showWarnings = FALSE, recursive = TRUE)
-  normalizePath(dir, winslash = "/", mustWork = FALSE)
+  .metacheck_cache_subdir(".metacheck_repo_cache",
+                          override = getOption("metacheck.repo_cache.dir"))
 }
 
 # Stable per-repo cache subdirectory. Keyed by a filesystem-safe encoding of the
@@ -94,11 +93,7 @@ repo_cache_dir <- function() {
 #' format(structure(repo_cache_size(), class = "object_size"), units = "auto")
 #' }
 repo_cache_size <- function() {
-  dir <- .repo_cache_dir()
-  files <- list.files(dir, recursive = TRUE, full.names = TRUE, all.files = TRUE,
-                      no.. = TRUE)
-  if (length(files) == 0) return(0)
-  sum(file.size(files), na.rm = TRUE)
+  .metacheck_dir_size(.repo_cache_dir())
 }
 
 #' Delete the downloaded-repository file cache
@@ -129,6 +124,21 @@ repo_cache_size <- function() {
 #' repo_cache_clear("https://osf.io/abcde")
 #' }
 repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
+  # Safety guard: refuse to delete a real cache while tests are running unless
+  # the test has redirected the cache location (via metacheck.repo_cache.dir or
+  # the shared metacheck.cache.dir) to a temp dir. Without this, a test that
+  # forgets to redirect would wipe whatever cache is in the working directory.
+  # Guards the whole-cache clear only — a targeted repo_url clear is scoped.
+  if (is.null(repo_url) &&
+      identical(Sys.getenv("TESTTHAT"), "true") &&
+      is.null(getOption("metacheck.repo_cache.dir")) &&
+      is.null(getOption("metacheck.cache.dir"))) {
+    stop("repo_cache_clear() refused to empty the cache during tests without a ",
+         "redirected location. Set one first, e.g. ",
+         "withr::local_options(metacheck.cache.dir = withr::local_tempdir()).",
+         call. = FALSE)
+  }
+
   targets <- if (is.null(repo_url)) .repo_cache_dir()
              else vapply(repo_url, .repo_cache_subdir, character(1))
   targets <- unique(targets[dir.exists(targets)])

@@ -55,13 +55,13 @@ llm_cache_clear <- function() {
   invisible(length(files))
 }
 
-# Root directory for cached LLM responses. The METACHECK_LLM_CACHE_DIR env var
-# overrides the default location (used by tests to stay out of the user cache).
+# Root directory for cached LLM responses. Defaults to ".metacheck_llm_cache" in
+# the working directory (see .metacheck_cache_subdir). The METACHECK_LLM_CACHE_DIR
+# env var overrides just this cache; `metacheck.cache.dir` relocates both caches.
 .llm_cache_dir <- function() {
-  dir <- Sys.getenv("METACHECK_LLM_CACHE_DIR", "")
-  if (!nzchar(dir)) dir <- rappdirs::user_cache_dir("metacheck/llm", "scienceverse")
-  if (!dir.exists(dir)) dir.create(dir, recursive = TRUE, showWarnings = FALSE)
-  dir
+  override <- Sys.getenv("METACHECK_LLM_CACHE_DIR", "")
+  .metacheck_cache_subdir(".metacheck_llm_cache",
+                          override = if (nzchar(override)) override else NULL)
 }
 
 # Hash the inputs that fully determine an LLM response into a stable key.
