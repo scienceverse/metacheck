@@ -39,10 +39,10 @@
 #' - Spanish: "Comité de ética en experimentación animal" / CEEA
 #'
 #' **Approval phrasing**
-#' - "Ethics/Ethical (approval|clearance) [was] (granted|obtained|received|given|secured)"
+#' - `Ethics/Ethical (approval|clearance) [was] (granted|obtained|received|given|secured)`
 #' - "Ethically approved"
 #' - "Approved by the (ethics|irb|institutional|independent|local|review|research) ..."
-#' - "This/The study/protocol/experiment/procedures/methods/research [was] (approved|reviewed) by"
+#' - `This/The study/protocol/experiment/procedures/methods/research [was] (approved|reviewed) by`
 #' - "Study was ethically approved"
 #' - "(Followed|met|follow) the ethical (guidelines|standards|requirements)"
 #' - "In accordance with ... ethical (guidelines|standards)"
