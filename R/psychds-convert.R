@@ -17,12 +17,19 @@
 .psychds_variable_measured <- function(cols, labels = NULL) {
   if (is.null(cols) || nrow(cols) == 0) return(list())
 
+  # Scale dictionary for the OSD code cross-reference (loaded once).
+  .osd_dict <- tryCatch(get("scales", envir = asNamespace("metacheck")),
+                        error = function(e) NULL)
+  if (is.null(.osd_dict))
+    .osd_dict <- data.frame(name = character(), acronym = character(),
+                            code = character(), source = character())
+
   # Attach labels by source_file + column_name when available.
   if (!is.null(labels) && nrow(labels) > 0 &&
       all(c("source_file", "column_name") %in% names(labels))) {
     keep <- c("source_file", "column_name", "label", "label_status",
               "label_source", "label_method", "codebook_variable",
-              "scale", "scale_confidence",
+              "scale", "scale_confidence", "scale_source",
               "value_labels", "missing_values", "question", "universe")
     labels <- labels[, intersect(keep, names(labels)), drop = FALSE]
     cols <- merge(cols, labels, by = c("source_file", "column_name"),
@@ -59,8 +66,17 @@
     # index") within Psych-DS's JSON-LD.
     if ("scale" %in% names(row) && !is.na(row$scale) && nzchar(row$scale)) {
       pv[["measurementTechnique"]] <- row$scale
+      # Cross-reference to the exported OSD scale definition: the same code the
+      # .osd file is written under (scales/{CODE}/{CODE}.osd), so a reader can
+      # jump from a variable to its instrument definition. scale_source also
+      # marks how the scale was identified (dictionary/manuscript/generated).
+      ssrc <- if ("scale_source" %in% names(row) && !is.na(row$scale_source))
+        row$scale_source else NA_character_
+      cp <- .osd_code_and_provenance(row$scale, row$column_name, ssrc, .osd_dict)
       pv[["metacheck:scale"]] <- Filter(Negate(is.null), list(
         name       = row$scale,
+        code       = cp$code,
+        source     = cp$source,
         confidence = if ("scale_confidence" %in% names(row) &&
                          !is.na(row$scale_confidence)) row$scale_confidence else NULL
       ))
@@ -382,7 +398,7 @@ isTRUE_vec <- function(x) {
 #' self-contained Psych-DS dataset, plus a `study-shared/` directory. Original
 #' files whose contents cannot be read (no local copy) are skipped with a note.
 #'
-#' @param paper a paper object (see [read_paper()]), **or** a captured result of
+#' @param paper a paper object (see [read()]), **or** a captured result of
 #'   `report(paper, ...)` / `report_module_run(paper, ...)`. When a captured
 #'   result containing all of `data_check` / `codebook_check` / `psychds_check`
 #'   is passed, those outputs are reused (with the paper recovered from the
@@ -395,7 +411,7 @@ isTRUE_vec <- function(x) {
 #'   re-query (and risk being throttled by) the OSF API. Set `TRUE` to force a
 #'   fresh listing. Downloaded file contents are cached on disk regardless.
 #' @param local_path,local_only passed to `data_check` when its output is not
-#'   already available (see [data_check()])
+#'   already available (see `data_check()`)
 #' @param model,params passed to the underlying modules when `llm_use(TRUE)`
 #' @param overwrite whether to overwrite an existing `output_dir`. When `FALSE`
 #'   (the default) and `output_dir` already exists, the function messages and
@@ -442,14 +458,24 @@ convert_psychds <- function(paper, output_dir = NULL,
   structure_df <- dc$structure
   columns_df   <- dc$table
   labels_df <- ops[["codebook_check"]]$table
+  scales_osd <- ops[["codebook_check"]]$scales_osd
   plan      <- ops[["psychds_check"]]$table
-
-  if (is.null(plan) || nrow(plan) == 0)
-    stop("No files to convert: psychds_check returned an empty plan.",
-         .converter_gated_hint(ops), call. = FALSE)
-
   pid <- resolved$pid
   if (is.null(output_dir)) output_dir <- file.path("psychds", pid)
+
+  if (is.null(plan) || nrow(plan) == 0) {
+    message("No files to convert: psychds_check returned an empty plan.",
+            .converter_gated_hint(ops))
+    return(invisible(list(
+      output_dir = output_dir,
+      n_files_copied = 0L,
+      n_studies = 0L,
+      descriptions = character(0),
+      skipped = character(0),
+      copy_failed = character(0),
+      empty_plan = TRUE
+    )))
+  }
 
   if (dir.exists(output_dir) && !overwrite) {
     message("Psych-DS output already exists, skipping: ", output_dir,
@@ -469,6 +495,7 @@ convert_psychds <- function(paper, output_dir = NULL,
   n_copied    <- 0L
   skipped     <- character(0) # files not on disk (never downloaded)
   skipped_i   <- integer(0)   # their plan-row indices, to group by type below
+  copied_i    <- integer(0)   # plan rows actually written into the dataset
   copy_failed <- character(0) # files on disk that failed to copy (I/O error)
   # Does the plan mark this file for CSV conversion (a non-CSV data source)?
   plan_convert <- if ("convert" %in% names(plan)) isTRUE_vec(plan$convert) else
@@ -492,14 +519,18 @@ convert_psychds <- function(paper, output_dir = NULL,
       # would be an invalid CSV), and keep the untouched original beside it so
       # the release retains the authored artifact.
       wrote_csv <- .psychds_write_data_csv(src, dest)
-      if (wrote_csv) n_copied <- n_copied + 1L
-      else copy_failed <- c(copy_failed, plan$file_name[i])
+      if (wrote_csv) {
+        n_copied <- n_copied + 1L
+        copied_i <- c(copied_i, i)
+      } else copy_failed <- c(copy_failed, plan$file_name[i])
       # Copy the original alongside (original extension).
       if (!is.na(plan_orig_target[i]) && nzchar(plan_orig_target[i])) {
         odest <- file.path(output_dir, plan_orig_target[i])
         dir.create(dirname(odest), recursive = TRUE, showWarnings = FALSE)
-        if (file.copy(src, odest, overwrite = TRUE)) n_copied <- n_copied + 1L
-        else copy_failed <- c(copy_failed, plan$file_name[i])
+        if (file.copy(src, odest, overwrite = TRUE)) {
+          n_copied <- n_copied + 1L
+          if (!wrote_csv) copied_i <- c(copied_i, i)
+        } else copy_failed <- c(copy_failed, plan$file_name[i])
       }
     } else if (grepl("\\.csv$", dest, ignore.case = TRUE) &&
         grepl("^(study-[^/]+/)?data/", plan$target_path[i])) {
@@ -507,19 +538,38 @@ convert_psychds <- function(paper, output_dir = NULL,
       # read as "﻿id", which then mismatches variableMeasured (a Psych-DS
       # error).
       ok <- .psychds_copy_no_bom(src, dest)
-      if (ok) n_copied <- n_copied + 1L
-      else copy_failed <- c(copy_failed, plan$file_name[i])
+      if (ok) {
+        n_copied <- n_copied + 1L
+        copied_i <- c(copied_i, i)
+      } else copy_failed <- c(copy_failed, plan$file_name[i])
     } else if (file.copy(src, dest, overwrite = TRUE)) {
       n_copied <- n_copied + 1L
+      copied_i <- c(copied_i, i)
     } else {
       copy_failed <- c(copy_failed, plan$file_name[i])
     }
   }
 
   # ── Study roots: derive from the target paths' study-<group>/ prefixes ───────
+  # Only from plan rows whose file actually landed on disk: a study group whose
+  # every file was skipped (never downloaded) must not become a directory
+  # holding nothing but a generated dataset_description.json with an empty
+  # variableMeasured — that is noise, not a dataset.
+  planned_dirs <- unique(sub("^(study-[^/]+)/.*$", "\\1",
+                             grep("^study-", plan$target_path, value = TRUE)))
   study_dirs <- unique(sub("^(study-[^/]+)/.*$", "\\1",
-                           grep("^study-", plan$target_path, value = TRUE)))
-  study_roots <- if (length(study_dirs) > 0) study_dirs else ""
+                           grep("^study-", plan$target_path[copied_i],
+                                value = TRUE)))
+  empty_study_dirs <- setdiff(planned_dirs, study_dirs)
+  if (length(empty_study_dirs) > 0)
+    message(sprintf(paste0(
+      "%d planned study director%s omitted because none of %s files were ",
+      "available on disk: %s."),
+      length(empty_study_dirs),
+      if (length(empty_study_dirs) == 1) "y was" else "ies were",
+      if (length(empty_study_dirs) == 1) "its" else "their",
+      paste(empty_study_dirs, collapse = ", ")))
+  study_roots <- if (length(planned_dirs) > 0) study_dirs else ""
 
   # ── Write dataset_description.json per study root ───────────────────────────
   descriptions <- character(0)
@@ -563,6 +613,12 @@ convert_psychds <- function(paper, output_dir = NULL,
         changes_dest)
   }
 
+  # ── Write identified scales as OpenScales OSD files ─────────────────────────
+  # One .osd per NAMED scale under scales/{CODE}/{CODE}.osd, plus a section in the
+  # dataset-root README explaining the provenance markers. Unnamed detections are
+  # skipped (they are not scales). See .scales_to_osd() / .osd_write_scales().
+  n_scales_written <- .osd_write_scales(scales_osd, output_dir)
+
   # Explain the files that were NOT placed in the dataset. A file is not added
   # when it was not downloaded — which can be intentional (an asset the release
   # links to rather than mirrors, via `skip_types`), or because `download` was
@@ -603,14 +659,81 @@ convert_psychds <- function(paper, output_dir = NULL,
 
   message("Wrote Psych-DS dataset to ", normalizePath(output_dir, mustWork = FALSE),
           " (", n_copied, " file(s), ", length(descriptions),
-          " dataset description(s)).\n")
+          " dataset description(s)",
+          if (n_scales_written > 0) paste0(", ", n_scales_written, " scale(s)") else "",
+          ").\n")
 
   invisible(list(
     output_dir     = output_dir,
     n_files_copied = n_copied,
     n_studies      = length(study_roots),
     descriptions   = descriptions,
+    n_scales       = n_scales_written,
     skipped        = skipped,
     copy_failed    = copy_failed
   ))
+}
+
+# Write the identified scales as OpenScales OSD files under output_dir/scales/,
+# one directory per named scale (scales/{CODE}/{CODE}.osd), and append a
+# provenance-explaining section to the dataset-root README.md. Objects flagged
+# `write = FALSE` (unnamed detections) are skipped. Returns the number written.
+.osd_write_scales <- function(scales_osd, output_dir) {
+  if (is.null(scales_osd) || !length(scales_osd)) return(0L)
+  writeable <- Filter(function(o) isTRUE(attr(o, "write")), scales_osd)
+  if (!length(writeable)) return(0L)
+
+  index <- list()   # rows for the README: code, name, source, provenance
+  for (osd in writeable) {
+    code <- attr(osd, "code") %||% "SCALE"
+    dir  <- file.path(output_dir, "scales", code)
+    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    json <- jsonlite::toJSON(osd, auto_unbox = TRUE, pretty = TRUE, null = "null")
+    writeLines(json, file.path(dir, paste0(code, ".osd")), useBytes = TRUE)
+    mc <- osd$definition$metacheck %||% list()
+    index[[length(index) + 1L]] <- list(
+      code = code,
+      name = osd$definition$scale_info$name %||% "",
+      source = mc$scale_source %||% "",
+      provenance = mc$provenance %||% "")
+  }
+
+  .osd_write_readme_section(index, file.path(output_dir, "README.md"))
+  length(writeable)
+}
+
+# Append (or create) a "Psychometric scales" section to the dataset-root README,
+# listing each written scale and explaining the three provenance markers so the
+# archive is not mistaken for an authoritative registry.
+.osd_write_readme_section <- function(index, readme_path) {
+  if (!length(index)) return(invisible())
+  lines <- c(
+    "",
+    "## Psychometric scales",
+    "",
+    paste0("metacheck identified ", length(index), " psychometric scale",
+           plural(length(index)),
+           " in this dataset and exported each as an OpenScales OSD file under ",
+           "`scales/{CODE}/{CODE}.osd`. This is an archive of what metacheck ",
+           "*found*, not an authoritative scale registry — the code prefix marks ",
+           "how confidently each scale was identified:"),
+    "",
+    "- **`CODE`** (no prefix) — matched a known instrument in the OpenScales-derived dictionary; this is its official OpenScales code.",
+    "- **`METACHECK-CODE`** — a named instrument identified from the manuscript text but not in the OpenScales registry; the code is minted by metacheck.",
+    "- **`METACHECK-GEN-CODE`** — a construct label *generated by metacheck* from the item wording. This is **not** a recognised named instrument, only metacheck's inference of what the items measure. Treat it as a starting point, not a definition.",
+    "",
+    "| Code | Scale | Provenance |",
+    "|------|-------|------------|")
+  rows <- vapply(index, function(r) sprintf("| `%s` | %s | %s |",
+    r$code, if (nzchar(r$name)) r$name else "(unnamed)",
+    switch(r$source,
+      dictionary = "dictionary match",
+      manuscript = "named in manuscript",
+      self_generated = "metacheck-generated label",
+      r$source)), character(1))
+
+  con_lines <- if (file.exists(readme_path))
+    readLines(readme_path, warn = FALSE) else character(0)
+  writeLines(c(con_lines, lines, rows, ""), readme_path, useBytes = TRUE)
+  invisible()
 }

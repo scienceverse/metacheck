@@ -195,6 +195,28 @@ test_that("convert_codebook skips gracefully when output exists without overwrit
   expect_equal(res$n_studies, 0L)
 })
 
+test_that("convert_codebook skips gracefully when no extracted columns exist", {
+  llm_use(FALSE)
+
+  chain <- report_module_run(
+    test_paper("x"),
+    c("data_check", "codebook_check"),
+    args = list(data_check = list(download = "none", local_only = TRUE)))
+
+  out <- file.path(tempdir(), "cb_empty_columns")
+  expect_message(
+    res <- convert_codebook(chain, output_dir = out, render = FALSE, overwrite = TRUE),
+    "No extracted data columns")
+
+  expect_true(isTRUE(res$empty_columns))
+  expect_equal(res$n_studies, 0L)
+  expect_false(res$rendered)
+  expect_length(res$rds_files, 0)
+  expect_length(res$rmd_files, 0)
+  expect_length(res$metadata_files, 0)
+  expect_length(res$html_files, 0)
+})
+
 test_that("convert_codebook carries identified scales into its outputs", {
   labels <- data.frame(
     source_file = "s.csv", column_name = c("panas_1", "panas_2", "age"),

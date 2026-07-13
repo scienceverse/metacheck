@@ -25,6 +25,109 @@ test_that("llm", {
 
 })
 
+test_that("llm fails fast when model is unset or params are malformed", {
+  withr::local_options(metacheck.llm.use = TRUE)
+  model0 <- llm_model()
+  withr::defer(llm_model(model0))
+
+  llm_model(NULL)
+  expect_error(
+    llm("hi", "repeat this"),
+    "No LLM model set",
+    fixed = TRUE
+  )
+
+  expect_error(
+    llm("hi", "repeat this", model = "groq/llama-3.1-8b-instant", params = 1),
+    "params must be a named list",
+    fixed = TRUE
+  )
+})
+
+test_that(".llm_error_message surfaces the provider's error body", {
+  # A bare "HTTP 400 Bad Request." hides the provider's actual reason (e.g.
+  # Groq's oversized-prompt message); when the condition carries the httr2
+  # response — directly or via its parent, as ellmer wraps it — the body's
+  # error message is appended.
+  resp <- httr2::response_json(
+    status_code = 400,
+    body = list(error = list(message = "Please reduce the length of the messages."))
+  )
+  e <- simpleError("HTTP 400 Bad Request.")
+  e$resp <- resp
+  msg <- metacheck:::.llm_error_message(e)
+  expect_match(msg, "HTTP 400 Bad Request", fixed = TRUE)
+  expect_match(msg, "Please reduce the length of the messages", fixed = TRUE)
+
+  # response on the parent condition (ellmer-style wrapping)
+  wrapper <- simpleError("Failed to call chat API.")
+  wrapper$parent <- e
+  expect_match(metacheck:::.llm_error_message(wrapper),
+               "Please reduce the length of the messages", fixed = TRUE)
+
+  # no response attached: the original message comes back unchanged
+  plain <- simpleError("boom")
+  expect_identical(metacheck:::.llm_error_message(plain), "boom")
+})
+
+test_that(".llm_json_retryable catches JSON parse/code-fence failures", {
+  e1 <- simpleError("Failed to generate JSON")
+  expect_true(metacheck:::.llm_json_retryable(e1))
+
+  e2 <- simpleError(
+    "lexical error: invalid char in json text. ```json { \"studies\": [] }"
+  )
+  expect_true(metacheck:::.llm_json_retryable(e2))
+
+  e3 <- simpleError("HTTP 401 Unauthorized")
+  expect_false(metacheck:::.llm_json_retryable(e3))
+})
+
+test_that("llm routes vllm/<model> through chat_vllm", {
+  withr::local_options(
+    metacheck.llm.use = TRUE,
+    metacheck.llm.cache = FALSE,
+    metacheck.llm.vllm.base_url = "https://example.test/v1"
+  )
+
+  called <- FALSE
+  seen <- list()
+  testthat::local_mocked_bindings(
+    chat_vllm = function(model, base_url, credentials,
+                         system_prompt, params, ...) {
+      called <<- TRUE
+      seen$model <<- model
+      seen$base_url <<- base_url
+      seen$token <<- credentials()
+      structure(list(
+        chat = function(text, echo = FALSE) "TRUE"
+      ), class = "Chat")
+    },
+    .package = "ellmer"
+  )
+
+  withr::local_envvar(VLLM_API_KEY = "test-key")
+  out <- llm("hello", "Answer TRUE", model = "vllm/GLM-5.2-NVFP4")
+
+  expect_true(called)
+  expect_identical(seen$model, "GLM-5.2-NVFP4")
+  expect_identical(seen$base_url, "https://example.test/v1")
+  expect_identical(seen$token, "test-key")
+  expect_identical(out$answer[[1]], "TRUE")
+})
+
+test_that("llm reports clear error when vllm base URL is not configured", {
+  withr::local_options(
+    metacheck.llm.use = TRUE,
+    metacheck.llm.cache = FALSE,
+    metacheck.llm.vllm.base_url = NULL
+  )
+
+  out <- suppressWarnings(llm("hello", "Answer TRUE", model = "vllm/GLM-5.2-NVFP4"))
+  expect_true(out$error[[1]])
+  expect_match(out$error_msg[[1]], "metacheck.llm.vllm.base_url", fixed = TRUE)
+})
+
 test_that("llm_use", {
   expect_true(is.function(metacheck::llm_use))
   expect_no_error(helplist <- help(llm_use, metacheck))
@@ -55,6 +158,9 @@ test_that("llm_model", {
   llm_model(model)
   expect_equal(llm_model(), model)
 
+  llm_model(NULL)
+  expect_null(llm_model())
+
   llm_model(orig_model)
   expect_equal(llm_model(), orig_model)
 })
@@ -62,6 +168,10 @@ test_that("llm_model", {
 test_that("llm_max_calls", {
   expect_true(is.function(metacheck::llm_max_calls))
   expect_no_error(helplist <- help(llm_max_calls, metacheck))
+
+  model0 <- llm_model()
+  withr::defer(llm_model(model0))
+  llm_model("groq/llama-3.1-8b-instant")
 
   n <- getOption("metacheck.llm_max_calls")
   n2 <- llm_max_calls()

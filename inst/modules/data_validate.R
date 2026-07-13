@@ -3,8 +3,8 @@
 #' @description
 #' This module runs automated data-quality checks on the tabular data files
 #' extracted by `data_check`, flagging likely problems (miscoded missing values,
-#' outliers, constant or near-constant columns, inconsistent category casing,
-#' sparse categories, column names that cannot be reused as file or variable
+#' outliers, empty and constant columns, SPSS filter variables, inconsistent
+#' category casing, column names that cannot be reused as file or variable
 #' names, text values stored in a legacy non-UTF-8 encoding) and drawing a
 #' per-column outlier visualization so reviewers
 #' can spot suspicious values at a glance. It also screens columns for personal
@@ -41,9 +41,12 @@
 #' the signature of a data-entry error or unrecoded missing code — continuous
 #' columns like reaction times are not range-checked, since a long tail is
 #' normal) and miscoded missing values; for each categorical column it checks
-#' for constant columns, case-only duplicate categories, sparsely populated
-#' levels, leading/trailing whitespace, and mostly-numeric columns contaminated
-#' by a few non-numeric values. Column *names* are checked too: names carrying
+#' for case-only duplicate categories, leading/trailing whitespace, and
+#' mostly-numeric columns contaminated by a few non-numeric values. Empty
+#' columns, constant columns (tiered: numeric or design-named constants are
+#' flagged, constant text is listed as likely file-level metadata), and SPSS
+#' "Select Cases" filter variables are flagged for every column type.
+#' Column *names* are checked too: names carrying
 #' characters that are illegal in file names (`< > : " / \ | ? *`), control
 #' characters, or more than 64 characters break when reused — as file names,
 #' in analysis scripts, or on import into other statistical packages (64 bytes
@@ -82,6 +85,7 @@
 #'   already available
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
 #' @param outlier_k the IQR multiplier for the Tukey outlier rule (default 1.5)
+#' @param plot_distributions create plots of distributions of columns (default `FALSE`)
 #' @param max_facets the maximum number of numeric columns drawn in the combined
 #'   distribution figure (default 40); beyond this the facet grid becomes
 #'   unreadable. This is a display limit (all columns are still checked): when
@@ -91,7 +95,7 @@
 #'
 #' @returns a list
 data_validate <- function(paper, local_path = NULL, local_only = FALSE,
-                          outlier_k = 1.5, max_facets = .dv_max_facets,
+                          outlier_k = 1.5, plot_distributions = FALSE, max_facets = .dv_max_facets,
                           model = llm_model(), params = list()) {
 
   .pid <- function(...) {
@@ -142,6 +146,32 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     if (any(hit)) labels_df$label[which(hit)[1]] else NA_character_
   }
 
+  # Codebook ground truth for a column: the enumerated valid codes (value
+  # labels) and the declared missing codes, decoded from the codebook_check
+  # table's JSON columns. These override inference in the numeric checks: a
+  # documented 1-5 value set makes a 6 out-of-range; a declared -99 is flagged
+  # as missing directly. Returns numeric vectors (or NULL when undocumented /
+  # codebook_check has not run).
+  codebook_of <- function(file, col) {
+    empty <- list(valid_values = NULL, missing_values = NULL)
+    if (is.null(labels_df) ||
+        !all(c("source_file", "column_name") %in% names(labels_df)))
+      return(empty)
+    hit <- which(labels_df$source_file == file & labels_df$column_name == col)
+    if (!length(hit)) return(empty)
+    i <- hit[[1]]
+    num_codes <- function(json) {
+      if (!length(json) || is.na(json) || !nzchar(json)) return(NULL)
+      kv <- .decode_value_labels(json)
+      codes <- suppressWarnings(as.numeric(names(kv) %||% kv))
+      codes <- codes[!is.na(codes)]
+      if (length(codes)) codes else NULL
+    }
+    vl <- if ("value_labels"   %in% names(labels_df)) labels_df$value_labels[i]   else NA
+    mv <- if ("missing_values" %in% names(labels_df)) labels_df$missing_values[i] else NA
+    list(valid_values = num_codes(vl), missing_values = num_codes(mv))
+  }
+
   # Values whose bytes were not valid UTF-8 and had to be re-interpreted as
   # Latin-1 at read time (recorded by data_check per column; the repaired
   # preview values no longer show it). 0 when absent or from an older
@@ -158,6 +188,7 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   findings <- list()
   plot_specs    <- list()   # per numeric column: values + bounds for the distribution facet
   outlier_specs <- list()   # per numeric column with outliers: row for the outlier table
+  meta_const_specs <- list()  # constant text columns that look like file-level metadata
   for (file in names(previews)) {
     df <- previews[[file]]
     if (is.null(df) || ncol(df) == 0) next
@@ -173,51 +204,82 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
         # Normalize numeric vectors to base doubles so integer64 columns from
         # fread/readxl do not cause type conflicts in downstream bind_rows().
         x_num <- suppressWarnings(as.numeric(x))
-        # Out-of-range values (data-entry errors on bounded columns), NOT
-        # generic statistical outliers — a value past the Tukey fence is usually
-        # normal on RT / physiological / score columns and only created noise.
-        oor <- data_check_out_of_range(x_num)
-        if (oor$problem) col_finds[["Out-of-range values"]] <- oor$message
-        m <- data_check_miscoded_missing(x_num)
-        if (m$problem) col_finds[["Miscoded missing"]] <- m$message
+        # Values outside a rating scale's valid range — the only reliable
+        # column-level "impossible value" signal (unbounded columns like RT/age
+        # have no principled range; their extreme values are not flagged here).
+        # One detector run classifies each out-of-scale value as a missing code,
+        # a keying typo, or unexplained. Ground truth (codebook value labels /
+        # declared missing codes) overrides inference.
+        cbk <- codebook_of(file, col)
+        sv <- data_check_scale_values(x_num, declared = cbk$missing_values,
+                                      valid_values = cbk$valid_values)
+        if (sv$problem) col_finds[["Values outside the scale"]] <- sv$message
         # The distribution figure still uses the Tukey fences as visual context
-        # (dashed lines), even though we no longer emit a per-column "outlier"
-        # finding — the fences help a reader eyeball a distribution.
+        # (dashed lines); they help a reader eyeball a distribution but are no
+        # longer emitted as a per-column finding.
         o <- data_check_outliers(x_num, k = outlier_k)
         v <- x_num[!is.na(x_num) & !is.nan(x_num)]
         if (length(v) >= 4 && length(unique(v)) > 1) {
           plot_specs[[length(plot_specs) + 1L]] <- list(
             file = file, col = col, values = utils::head(v, 5000),
             lower = as.numeric(o$lower), upper = as.numeric(o$upper))
-          # One row per column with out-of-range values, for the summary table.
-          if (oor$problem) {
-            ex <- utils::head(sort(suppressWarnings(as.numeric(oor$values))), 8)
+          # One row per column with out-of-scale values, for the summary table.
+          if (sv$problem) {
+            ex <- utils::head(sort(suppressWarnings(as.numeric(sv$values))), 8)
             outlier_specs[[length(outlier_specs) + 1L]] <- data.frame(
               source_file = file, column = col, label = lbl,
-              n_outliers = length(oor$values),
-              lower = as.numeric(oor$lower), upper = as.numeric(oor$upper),
+              n_outliers = length(sv$values),
+              lower = as.numeric(sv$lower), upper = as.numeric(sv$upper),
               examples = paste(signif(ex, 4), collapse = ", "))
           }
         }
       } else {
         # A mostly-numeric column stored as text is really a contaminated
-        # numeric column, not a genuine categorical — so if that fires, skip the
-        # categorical-quality checks (sparse levels / case), which would treat
-        # every distinct number as a spurious "level".
+        # numeric column, not a genuine categorical — so if that fires, skip
+        # the case check, which would treat every distinct number as a
+        # spurious "level".
         nt <- data_check_numeric_in_text(x)
         if (nt$problem) {
           col_finds[["Numeric as text"]] <- nt$message
         } else {
           cc <- data_check_case_issues(x)
           if (cc$problem) col_finds[["Case issues"]] <- cc$message
-          sp <- data_check_sparse_levels(x)
-          if (sp$problem) col_finds[["Sparse levels"]] <- sp$message
         }
         ws <- data_check_whitespace(x)
         if (ws$problem) col_finds[["Whitespace"]] <- ws$message
       }
-      cst <- data_check_constant(x)
-      if (cst$problem) col_finds[["Constant"]] <- cst$message
+      # Empty and constant columns, tiered by how likely they are to signal a
+      # real problem. An all-missing column (a variable that never recorded)
+      # is always flagged. A constant column is flagged when it is numeric or
+      # when its name looks like a design/condition variable — one value there
+      # suggests the file was filtered to a single condition before export. A
+      # constant *text* column is usually intentional file-level metadata
+      # ("version 3", a language code) and is only listed in an informational
+      # note, not counted as an issue. Near-constant columns are only
+      # suspicious for design-named columns: rare-event outcomes and exclusion
+      # flags are legitimately 99% one value.
+      emp <- data_check_empty(x)
+      if (emp$problem) {
+        col_finds[["Empty column"]] <- emp$message
+      } else {
+        cst <- data_check_constant(x)
+        if (cst$problem) {
+          if (data_check_design_name(col)) {
+            col_finds[["Constant"]] <- paste(cst$message,
+              "The name suggests a design/condition variable; if the study had more than one condition, the file may have been filtered before export.")
+          } else if (!cst$near && is.numeric(x)) {
+            col_finds[["Constant"]] <- cst$message
+          } else if (!cst$near) {
+            meta_const_specs[[length(meta_const_specs) + 1L]] <- data.frame(
+              source_file = file, column = col, value = cst$values[[1]])
+          }
+        }
+      }
+      # An SPSS "Select Cases" filter variable matters whether or not it is
+      # constant: constant-1 means the file is a pre-filtered subset; varying
+      # means analyses likely used only the selected rows.
+      fl <- data_check_spss_filter(col, x)
+      if (fl$problem) col_finds[["SPSS filter variable"]] <- fl$message
 
       # Column-name quality: names with file-illegal characters, control
       # characters, padding, or excessive length break downstream reuse (figure
@@ -398,6 +460,11 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
                label = character(0), n_outliers = integer(0),
                lower = numeric(0), upper = numeric(0), examples = character(0))
 
+  meta_const_df <- if (length(meta_const_specs) > 0)
+    dplyr::bind_rows(meta_const_specs) else
+    data.frame(source_file = character(0), column = character(0),
+               value = character(0))
+
   n_columns <- if (!is.null(columns_df)) nrow(columns_df) else
     sum(vapply(previews, ncol, integer(1)))
   n_flagged <- length(unique(paste(findings_df$source_file, findings_df$column)))
@@ -417,8 +484,9 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     "Out-of-range values" = "with values outside the column's apparent range (likely data-entry errors)",
     "Miscoded missing"  = "with miscoded missing values",
     Constant            = "with a single constant value",
+    "Empty column"      = "with no observed values (entirely empty)",
+    "SPSS filter variable" = "holding an SPSS \"Select Cases\" filter (analyses may have used only a subset of rows)",
     "Case issues"       = "with inconsistent category casing",
-    "Sparse levels"     = "with sparsely populated categories",
     Whitespace          = "with leading/trailing whitespace",
     "Numeric as text"   = "with numeric values stored as text",
     "Problematic column name" = "whose name contains file-illegal characters or is excessively long",
@@ -487,7 +555,7 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   report <- c(
-    "This module runs automated data-quality checks (outliers, miscoded missing values, constant columns, category casing, sparse levels, problematic column names, mixed text encodings) on the extracted data files.",
+    "This module runs automated data-quality checks (outliers, miscoded missing values, empty and constant columns, SPSS filter variables, category casing, problematic column names, mixed text encodings) on the extracted data files.",
     sprintf("We examined %d column%s across %d data file%s.",
             n_columns, plural(n_columns),
             length(previews), plural(length(previews)))
@@ -513,6 +581,23 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
         Label = .data$label, Check = .data$check, Detail = .data$detail)
     report <- c(report, "#### Potential Issues (per column)",
                 scroll_table(finds_tbl, maxrows = 20))
+  }
+
+  # Constant text columns that look like intentional file-level metadata
+  # (version numbers, language codes, study labels). Listed so a reviewer can
+  # scan them for anything that should vary, but not counted as issues.
+  if (nrow(meta_const_df) > 0) {
+    items <- sprintf("%s: %s = \"%s\"", meta_const_df$source_file,
+                     meta_const_df$column, meta_const_df$value)
+    n_meta <- length(items)
+    shown <- utils::head(items, 15)
+    report <- c(report, sprintf(
+      "%d text column%s hold%s a single constant value and look%s like file-level metadata rather than a data problem (not counted as an issue): %s%s.",
+      n_meta, plural(n_meta),
+      if (n_meta == 1) "s" else "", if (n_meta == 1) "s" else "",
+      paste(shown, collapse = "; "),
+      if (n_meta > length(shown))
+        sprintf(" and %d more", n_meta - length(shown)) else ""))
   }
 
   # Out-of-range values: one row per bounded (integer, few-level) column that
@@ -543,10 +628,10 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   # column (outlier fences drawn as dashed lines), instead of a separate plot
   # per column. One render call keeps wide files fast; the facet count is capped
   # so the figure stays legible.
-  if (length(plot_specs) > 0 && requireNamespace("ggplot2", quietly = TRUE)) {
+  if (length(plot_specs) > 0 && requireNamespace("ggplot2", quietly = TRUE) && plot_distributions == TRUE) {
     report <- c(report, "#### Distributions",
                 data_validate_dist_facets(plot_specs, max_facets = max_facets))
-  } else if (length(plot_specs) > 0) {
+  } else if (length(plot_specs) > 0 && plot_distributions == TRUE) {
     report <- c(report,
       "*Install the `ggplot2` package to see the distribution histograms.*")
   }

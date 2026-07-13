@@ -103,6 +103,19 @@ excel_check <- function(paper, local_path = NULL, local_only = FALSE,
     path  <- xl_rows$file_location[i]
     ext   <- tolower(tools::file_ext(fname))
 
+    # data_check flagged this file as not a usable rectangular dataset (a coding
+    # worksheet: mostly free text and/or almost all empty). It is still inspected
+    # for formatting below; here we add the structural note so the author knows
+    # the file needs restructuring, not just reformatting.
+    if (isFALSE(xl_rows$tabular_usable[i])) {
+      reason <- xl_rows$non_tabular_reason[i] %||% NA_character_
+      findings[[length(findings) + 1L]] <- data.frame(
+        File = fname, Sheet = NA_character_, Issue = "Not a rectangular dataset",
+        Detail = sprintf(
+          "This file reads as a table but is not a usable dataset%s. Store the data as a plain rectangular table (one header row, one column per variable) with a codebook.",
+          if (!is.na(reason)) sprintf(" (%s)", reason) else ""))
+    }
+
     if (ext == "xls") {
       findings[[length(findings) + 1L]] <- data.frame(
         File = fname, Sheet = NA_character_, Issue = "Un-inspectable (.xls)",

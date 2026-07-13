@@ -75,11 +75,13 @@ test_that("codebook_check is red when no codebook documentation exists", {
   expect_equal(cc$summary_table$codebook_var_n, 0)
 })
 
-test_that("codebook_check adds empty scale columns without an LLM", {
+test_that("rules matcher identifies a dictionary scale without an LLM", {
   llm_use(FALSE)
   d <- file.path(tempdir(), "cb_scale_off"); unlink(d, recursive = TRUE)
   dir.create(file.path(d, "data"), recursive = TRUE)
-  # a 10-item Likert block (would be a scale) but no LLM to identify it
+  # a 10-item Likert block whose prefix IS a dictionary acronym (PANAS): the
+  # rules matcher names it from the `scales` dictionary with no LLM. (Before the
+  # dictionary rewrite, scale identification was LLM-only and this was all-NA.)
   set.seed(1)
   items <- as.data.frame(matrix(sample(1:5, 40 * 10, replace = TRUE), nrow = 40))
   names(items) <- paste0("panas_", 1:10)
@@ -89,16 +91,18 @@ test_that("codebook_check adds empty scale columns without an LLM", {
     test_paper("x"), c("data_check", "codebook_check"),
     args = list(data_check = list(local_path = d, local_only = TRUE)))
   tbl <- ops[["codebook_check"]]$table
-  # Schema is stable: the columns exist, and are all NA when no LLM ran.
-  expect_true(all(c("scale", "scale_confidence") %in% names(tbl)))
-  expect_true(all(is.na(tbl$scale)))
+  # Schema is stable (incl. the new scale_source), and PANAS is identified.
+  expect_true(all(c("scale", "scale_confidence", "scale_source") %in% names(tbl)))
+  named <- !is.na(tbl$scale) & nzchar(tbl$scale)
+  expect_true(any(named))
+  expect_true(all(tbl$scale[named] == "Positive and Negative Affect Schedule"))
+  expect_true(all(tbl$scale_source[named] == "matched"))
 })
 
-test_that("scale identification is gated when it would exceed codebook_max_calls", {
-  # Three data files, each a distinct 8-item scale layout → three callable
-  # survey layouts. With codebook_max_calls = 1 the whole scale tier is gated
-  # (nothing identified) and the refusal names the parameter and the count
-  # needed. The scale tier gates BEFORE its own LLM calls, so no scale is found.
+test_that("no scale is named when neither dictionary nor manuscript identifies it", {
+  # Three data files with non-dictionary prefixes and no paper naming; the LLM is
+  # mocked to an unusable response. No scale is named, but the column groups are
+  # still detected and reported (with a low call budget honoured throughout).
   llm_use(TRUE)
   # Mock llm() to a harmless empty structured response so data_check's own LLM
   # tiers don't hit the network; the scale tier should never even reach here.
@@ -120,7 +124,11 @@ test_that("scale identification is gated when it would exceed codebook_max_calls
     utils::write.csv(cbind(id = 1:40, items),
                      file.path(d, "data", file), row.names = FALSE)
   }
-  mk("panas", "a.csv"); mk("rosenberg", "b.csv"); mk("bigfive", "c.csv")
+  # Prefixes that are NOT dictionary acronyms and cannot be named from the text,
+  # and the LLM is mocked to an unusable shape: no scale is named. (The manuscript
+  # matcher is one LLM call per file, bounded by codebook_max_calls; there is no
+  # separate upfront gate message any more.)
+  mk("blockx", "a.csv"); mk("blocky", "b.csv"); mk("blockz", "c.csv")
 
   ops <- suppressWarnings(report_module_run(
     test_paper("x"), c("data_check", "codebook_check"),
@@ -129,9 +137,10 @@ test_that("scale identification is gated when it would exceed codebook_max_calls
       codebook_check = list(codebook_max_calls = 1))))
   cb <- ops[["codebook_check"]]
 
-  expect_true(all(is.na(cb$table$scale)))        # scale tier gated → nothing found
-  expect_match(paste(cb$report, collapse = "\n"),
-               "codebook_max_calls", fixed = TRUE)
+  # No dictionary match and no manuscript naming → nothing named, but the groups
+  # are still detected and reported.
+  expect_true(all(is.na(cb$table$scale)))
+  expect_match(paste(cb$report, collapse = "\n"), "#### Scales", fixed = TRUE)
 })
 
 test_that("scale metadata is emitted into Psych-DS variableMeasured", {
@@ -190,12 +199,13 @@ test_that("psychds variableMeasured emits DDI code list, missing, question", {
   expect_equal(pv[["metacheck:universe"]], "All respondents")
 })
 
-test_that("codebook_check advises enabling an LLM for scale identification", {
+test_that("codebook_check reports identified scales and advises reaching high confidence", {
   llm_use(FALSE)
   d <- file.path(tempdir(), "cb_scale_note"); unlink(d, recursive = TRUE)
   dir.create(file.path(d, "data"), recursive = TRUE)
-  # A 10-item Likert block exists, but without an LLM it cannot be identified;
-  # the report should tell the user how to enable identification.
+  # A 10-item PANAS block: the rules matcher identifies it from the dictionary
+  # even without an LLM. With no paper text to confirm the instrument, it is
+  # medium confidence, and the report advises how to reach high confidence.
   set.seed(1)
   items <- as.data.frame(matrix(sample(1:5, 40 * 10, replace = TRUE), nrow = 40))
   names(items) <- paste0("panas_", 1:10)
@@ -206,7 +216,9 @@ test_that("codebook_check advises enabling an LLM for scale identification", {
     args = list(data_check = list(local_path = d, local_only = TRUE)))
   report <- paste(ops[["codebook_check"]]$report, collapse = "\n")
   expect_true(grepl("#### Scales", report, fixed = TRUE))
-  expect_match(report, "skipped without an LLM")
+  # A scale was identified (no longer "skipped without an LLM"), and the report
+  # guides the user toward high-confidence identification.
+  expect_match(report, "high confidence")
 })
 
 test_that("scale-block detection groups items and splits by prefix", {
@@ -232,7 +244,11 @@ test_that("paper-text scan finds named instruments and ignores unrelated text", 
     "We administered the 20-item PANAS and the Rosenberg Self-Esteem Scale.",
     "Personality was measured with the HEXACO inventory."))
   hits <- .cb_env$.scan_paper_for_scales(p)
-  expect_true(all(c("PANAS", "Rosenberg Self-Esteem", "HEXACO") %in% hits))
+  # The scan now returns canonical dictionary names (from `scales`), not the old
+  # hardcoded keys.
+  expect_true(all(c("Positive and Negative Affect Schedule",
+                    "Rosenberg Self-Esteem Scale",
+                    "HEXACO Personality Inventory") %in% hits))
 
   # No instruments mentioned -> no hits; a bare paper -> empty, no error.
   none <- test_paper(c("We recorded reaction times.", "No surveys were used."))
@@ -251,7 +267,7 @@ test_that("data_validate flags planted data-quality issues", {
   utils::write.csv(data.frame(
     id     = 1:30,
     likert = c(sample(1:5, 29, replace = TRUE), 55),   # out-of-range (1–5 + 55)
-    grp    = c(rep("Ctrl", 15), rep("ctrl", 14), "X"), # case + sparse
+    grp    = c(rep("Ctrl", 15), rep("ctrl", 14), "X"), # case issues
     flat   = rep(1, 30)                                 # constant
   ), file.path(d, "data", "study.csv"), row.names = FALSE)
 
@@ -262,10 +278,41 @@ test_that("data_validate flags planted data-quality issues", {
 
   expect_true("data_validate" %in% module_list()$name)
   checks <- dv$table$check
-  expect_true("Out-of-range values" %in% checks)
+  expect_true("Values outside the scale" %in% checks)
   expect_true("Case issues" %in% checks)
   expect_true("Constant" %in% checks)
   expect_equal(dv$traffic_light, "red")   # several columns flagged
+})
+
+test_that("data_validate tiers constant columns and flags SPSS filters", {
+  llm_use(FALSE)
+  d <- file.path(tempdir(), "dv_constant"); unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  df <- data.frame(
+    id        = 1:30,
+    condition = rep("control", 30),  # constant design variable -> flagged
+    version   = rep("v3", 30),       # constant text metadata -> note only
+    nothing   = rep(NA, 30),         # empty column -> flagged
+    flat      = rep(7, 30)           # constant numeric -> flagged
+  )
+  df[["filter_$"]] <- rep(1, 30)     # SPSS Select Cases filter -> flagged
+  utils::write.csv(df, file.path(d, "data", "study.csv"), row.names = FALSE)
+
+  ops <- report_module_run(
+    test_paper("x"), c("data_check", "data_validate"),
+    args = list(data_check = list(local_path = d, local_only = TRUE)))
+  dv <- ops[["data_validate"]]
+
+  expect_true("Empty column" %in% dv$table$check)
+  expect_true("SPSS filter variable" %in% dv$table$check)
+  const_cols <- dv$table$column[dv$table$check == "Constant"]
+  expect_true(all(c("condition", "flat") %in% const_cols))
+  # The constant text column is not counted as an issue...
+  expect_false("version" %in% const_cols)
+  # ...but is listed in the informational metadata note.
+  report <- paste(dv$report, collapse = "\n")
+  expect_true(grepl("file-level metadata", report))
+  expect_true(grepl("version = \"v3\"", report, fixed = TRUE))
 })
 
 test_that("data_validate reports outliers as a table and one combined figure", {
@@ -283,7 +330,8 @@ test_that("data_validate reports outliers as a table and one combined figure", {
 
   ops <- report_module_run(
     test_paper("x"), c("data_check", "data_validate"),
-    args = list(data_check = list(local_path = d, local_only = TRUE)))
+    args = list(data_check = list(local_path = d, local_only = TRUE),
+                data_validate = list(plot_distributions = TRUE)))
   dv <- ops[["data_validate"]]
   report <- paste(dv$report, collapse = "\n")
 
@@ -313,7 +361,8 @@ test_that("data_validate distribution figure caps the number of facets", {
 
   ops <- report_module_run(
     test_paper("x"), c("data_check", "data_validate"),
-    args = list(data_check = list(local_path = d, local_only = TRUE)))
+    args = list(data_check = list(local_path = d, local_only = TRUE),
+                data_validate = list(plot_distributions = TRUE)))
   report <- paste(ops[["data_validate"]]$report, collapse = "\n")
 
   expect_true(grepl("Showing the first", report))

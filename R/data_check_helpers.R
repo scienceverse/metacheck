@@ -65,7 +65,7 @@
 #'
 #' @param file_name a character vector of file names (basenames)
 #'
-#' @returns a character vector of data_check types (see [.data_check_types]);
+#' @returns a character vector of data_check types (see `.data_check_types`);
 #'   `"other"` when no rule fires.
 #' @export
 #' @keywords internal
@@ -455,8 +455,12 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 #' Only files that will actually be analysed or placed (data, codebooks, code,
 #' readmes, supplemental/output/other) are sent to the model; assets (images,
 #' PDFs, and other non-analysable files) are never grouped and default to
-#' `shared`. The sent files are batched (see `.data_check_llm_batch`) so large
-#' repositories do not exceed the model's request/output limits.
+#' `shared`. Paths that name their study outright ("Experiment 1/",
+#' "study2a_data.csv") are grouped by a deterministic regex first and skip the
+#' model entirely; LLM-returned codes are normalized and validated against the
+#' scheme, so a malformed code can never become a study directory name. The
+#' sent files are batched (see `.data_check_llm_batch`) so large repositories
+#' do not exceed the model's request/output limits.
 #'
 #' @param files a data.frame of files (needs `file_path` or `file_name`; an
 #'   optional `data_type` column is used to skip assets)
@@ -471,6 +475,50 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 data_group_llm <- function(files, model = llm_model(), params = list(),
                            batch_size = .data_check_llm_batch) {
   return(.data_group_llm_impl(files, model, params, batch_size))
+}
+
+# Deterministically derive a study group from a file path, or NA when the path
+# names no study. Filenames and folder names very often carry the study label
+# verbatim — "Experiment 1/", "study2a_data.csv", even smashed together without
+# separators ("...dataexperiment1creplication...") — and a regex reads those
+# more reliably than a small LLM, which has misread exactly such names. The
+# filename is searched first, then the enclosing folders from innermost to
+# outermost. The short prefixes ("ex", "exp") must not be preceded by a letter
+# (so "index1"/"flex2" don't match), while the full words match even embedded
+# in smashed-together names. A trailing letter counts as a sub-study suffix
+# only when it ends its token ("study2a_data" -> ex2a), not when the next word
+# merely starts with a letter ("experiment3explicit" -> ex3).
+.data_group_from_path <- function(paths) {
+  ex_pat <- paste0(
+    "(?:experiment|study|(?<![a-z])expt?|(?<![a-z])ex)",
+    "[ ._-]?([0-9]{1,2})([a-z](?![a-z]))?"
+  )
+  pilot_pat <- "(?<![a-z])pilot[ ._-]?([0-9]{1,2})?"
+  vapply(paths, function(path) {
+    if (is.na(path) || !nzchar(path)) return(NA_character_)
+    parts <- rev(strsplit(tolower(path), "/", fixed = TRUE)[[1]])
+    for (part in parts) {
+      m <- regmatches(part, regexec(ex_pat, part, perl = TRUE))[[1]]
+      if (length(m) > 0) return(paste0("ex", m[2], m[3]))
+      m <- regmatches(part, regexec(pilot_pat, part, perl = TRUE))[[1]]
+      if (length(m) > 0)
+        return(paste0("pilot", if (nzchar(m[2])) m[2] else "1"))
+    }
+    NA_character_
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# Normalize an LLM-returned study-group code to the documented scheme and
+# reject anything outside it (NA). The model occasionally answers in prose
+# variants ("Experiment 1", "study 2a") or with a bare "pilot"; anything that
+# still doesn't fit ex<N><letter?>/pilot<N>/shared after normalization is a
+# hallucination and must not leak into study directory names.
+.data_group_normalize <- function(x) {
+  x <- tolower(trimws(as.character(x)))
+  x <- gsub("[ ._-]", "", x)
+  x <- sub("^(experiment|study|expt|exp)(?=[0-9])", "ex", x, perl = TRUE)
+  x[x == "pilot"] <- "pilot1"
+  ifelse(grepl("^(ex|pilot)[0-9]{1,2}[a-z]?$|^shared$", x), x, NA_character_)
 }
 
 # When a structured schema wraps its array in a single object field (needed
@@ -501,7 +549,22 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
   dtype <- if ("data_type" %in% names(files))
     tolower(as.character(files$data_type)) else rep(NA_character_, length(paths))
   send <- if (all(is.na(dtype))) rep(TRUE, length(paths)) else dtype %in% placeable
-  if (!any(send)) return(data.frame(group = rep("shared", length(paths))))
+
+  # Deterministic pre-pass: a path that names its study outright ("Experiment
+  # 1/", "study2a_data.csv", "...experiment1creplication...") is grouped by
+  # regex and never sent to the model — the regex is exact where a small LLM
+  # has misread such names. Only the genuinely ambiguous files go to the LLM.
+  group <- rep("shared", length(paths))
+  pre <- .data_group_from_path(paths)
+  fixed <- send & !is.na(pre)
+  group[fixed] <- pre[fixed]
+  send <- send & is.na(pre)
+
+  if (!any(send)) {
+    out <- data.frame(group = group)
+    attr(out, "model") <- NA_character_
+    return(out)
+  }
 
   prompt <- paste(
     "You are grouping the files of a psychology research repository by study.",
@@ -532,7 +595,6 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
   send_rows <- which(send)
   batches <- split(send_rows, ceiling(seq_along(send_rows) / batch_size))
 
-  group <- rep("shared", length(paths))
   any_ok <- FALSE
   used_model <- NA_character_
   for (rows in batches) {
@@ -547,15 +609,20 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
     if (is.null(resp) || nrow(resp) == 0 ||
         !all(c("index", "group") %in% names(resp))) next
     idx <- suppressWarnings(as.integer(resp$index))
-    grp <- tolower(trimws(as.character(resp$group)))
-    ok  <- !is.na(idx) & idx >= 1 & idx <= length(rows) & nzchar(grp)
+    # Normalize the model's codes to the documented scheme and drop anything
+    # that still doesn't fit (a hallucinated code like "pilot" for a file whose
+    # name says "experiment3" must not become a study directory name).
+    grp <- .data_group_normalize(resp$group)
+    ok  <- !is.na(idx) & idx >= 1 & idx <= length(rows) & !is.na(grp)
     if (any(ok)) {
       group[rows[idx[ok]]] <- grp[ok]
       any_ok <- TRUE
     }
     if (is.na(used_model)) used_model <- attr(resp, "llm")$model %||% NA_character_
   }
-  if (!any_ok) return(NULL)
+  # Regex-derived groups are still worth returning when every LLM batch failed;
+  # only give up when neither pass produced anything.
+  if (!any_ok && !any(fixed)) return(NULL)
 
   out <- data.frame(group = group)
   attr(out, "model") <- used_model
@@ -566,12 +633,26 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 
 # Sniff the field delimiter of a delimited text file from its first
 # non-blank, non-comment line.
+# Reinterpret invalid-UTF-8 bytes in freshly read lines as Latin-1 (a
+# conversion that cannot fail, since every byte is a valid Latin-1 character).
+# The pre-read sniffers below run string ops (trimws, strsplit, gsub) on raw
+# readLines() output, and any of those errors with "input string 1 is invalid
+# UTF-8" when a Latin-1-encoded file has a non-ASCII byte in its first lines —
+# which used to make the whole file unreadable before the readers' own
+# encoding tolerance ever got a chance.
+.utf8_lines <- function(x) {
+  if (length(x) == 0) return(x)
+  bad <- !validUTF8(x)
+  if (any(bad)) x[bad] <- iconv(x[bad], from = "latin1", to = "UTF-8")
+  x
+}
+
 .sniff_delimiter <- function(path) {
   line <- character(0)
   con  <- file(path, "r")
   on.exit(close(con))
   for (i in seq_len(10)) {
-    line <- readLines(con, n = 1, warn = FALSE)
+    line <- .utf8_lines(readLines(con, n = 1, warn = FALSE))
     if (length(line) == 0) break
     l <- trimws(line)
     if (nchar(l) > 0 && !startsWith(l, "#")) break
@@ -592,7 +673,7 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
   on.exit(close(con))
   lines <- character(0)
   while (length(lines) < 2) {
-    l <- readLines(con, n = 1, warn = FALSE)
+    l <- .utf8_lines(readLines(con, n = 1, warn = FALSE))
     if (length(l) == 0) break
     if (nzchar(trimws(l)) && !startsWith(trimws(l), "#")) lines <- c(lines, l)
   }
@@ -651,7 +732,7 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 .is_single_field_blob <- function(path, sep) {
   con <- file(path, "r")
   on.exit(close(con))
-  first2 <- tryCatch(readLines(con, n = 2, warn = FALSE),
+  first2 <- tryCatch(.utf8_lines(readLines(con, n = 2, warn = FALSE)),
                      error = function(e) character(0))
   if (length(first2) < 2) return(FALSE)
   header <- first2[[1]]
@@ -701,6 +782,60 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
   df
 }
 
+# Coerce a just-read data frame to valid UTF-8, names first, then values.
+# A stray non-UTF-8 byte in a header (e.g. a Latin-1 or BOM byte the file's
+# own read tolerated) otherwise crashes downstream `grepl(..., perl = TRUE)`
+# name checks with "invalid multibyte string"; sub out invalid bytes rather
+# than dropping the column. For character VALUES: fread reads with
+# encoding = "UTF-8", which marks strings as UTF-8 without validating, so a
+# Latin-1 byte in a nominally-UTF-8 file (a mis-encoded apostrophe, °, µ,
+# é ...) yields strings that crash the base regex calls data_check runs on
+# every column ("input string N is invalid UTF-8"). Reinterpret only the
+# invalid entries as Latin-1 — a conversion that cannot fail, since every
+# byte is a valid Latin-1 character — and leave valid values untouched.
+# The per-column repair counts are recorded in the "utf8_repaired" attribute
+# so data_check can carry them into its columns table and data_validate can
+# warn the researcher about the file's mixed encoding (the repaired values
+# themselves no longer show it). Idempotent: a second pass finds nothing
+# invalid and leaves both the data and the attribute untouched.
+.utf8_repair_df <- function(df) {
+  if (is.null(df)) return(df)
+  if (!is.null(names(df))) {
+    nm <- names(df)
+    bad <- is.na(iconv(nm, from = "UTF-8", to = "UTF-8"))
+    if (any(bad)) {
+      fixed <- iconv(nm[bad], from = "latin1", to = "UTF-8", sub = "")
+      fixed[is.na(fixed) | !nzchar(fixed)] <- paste0("col_", which(bad))[is.na(fixed) | !nzchar(fixed)]
+      nm[bad] <- fixed
+      names(df) <- nm
+    }
+  }
+  if (ncol(df) > 0) {
+    repaired <- integer(0)
+    for (j in seq_along(df)) {
+      x <- df[[j]]
+      if (is.character(x)) {
+        bad <- !is.na(x) & !validUTF8(x)
+        if (any(bad)) {
+          x[bad] <- iconv(x[bad], from = "latin1", to = "UTF-8")
+          df[[j]] <- x
+          repaired[names(df)[j]] <- sum(bad)
+        }
+      } else if (is.factor(x)) {
+        lv <- levels(x)
+        bad <- !is.na(lv) & !validUTF8(lv)
+        if (any(bad)) {
+          lv[bad] <- iconv(lv[bad], from = "latin1", to = "UTF-8")
+          levels(df[[j]]) <- lv
+          repaired[names(df)[j]] <- sum(bad)
+        }
+      }
+    }
+    if (length(repaired) > 0) attr(df, "utf8_repaired") <- repaired
+  }
+  df
+}
+
 data_read_head <- function(path, n_rows = 5) {
   ext <- tolower(tools::file_ext(path))
   tryCatch({
@@ -716,6 +851,11 @@ data_read_head <- function(path, n_rows = 5) {
         df <- .read_delim_fast(path, sep = sep, header = hdr, n_rows = n_rows)
         if (!hdr && !is.null(df) && ncol(df) > 0)
           names(df) <- paste0("col_", seq_len(ncol(df)))
+        # Repair invalid UTF-8 before the Qualtrics detection below, whose
+        # regex calls on names and head values would otherwise error/warn on a
+        # Latin-1 byte in the first rows. (The repair after the switch is then
+        # a no-op for this branch.)
+        df <- .utf8_repair_df(df)
         # Qualtrics "use choice text" exports carry extra header rows (question
         # text, ImportId JSON) as the first data rows, which force every column
         # to character. Strip them and re-type so the rest of data_check works.
@@ -761,55 +901,7 @@ data_read_head <- function(path, n_rows = 5) {
       },
       NULL
     )
-    # Coerce column names to valid UTF-8. A stray non-UTF-8 byte in a header
-    # (e.g. a Latin-1 or BOM byte the file's own read tolerated) otherwise
-    # crashes downstream `grepl(..., perl = TRUE)` name checks with "invalid
-    # multibyte string". Sub out invalid bytes rather than dropping the column.
-    if (!is.null(df) && !is.null(names(df))) {
-      nm <- names(df)
-      bad <- is.na(iconv(nm, from = "UTF-8", to = "UTF-8"))
-      if (any(bad)) {
-        fixed <- iconv(nm[bad], from = "latin1", to = "UTF-8", sub = "")
-        fixed[is.na(fixed) | !nzchar(fixed)] <- paste0("col_", which(bad))[is.na(fixed) | !nzchar(fixed)]
-        nm[bad] <- fixed
-        names(df) <- nm
-      }
-    }
-    # Coerce character VALUES to valid UTF-8 too. fread reads with
-    # encoding = "UTF-8", which marks strings as UTF-8 without validating, so a
-    # Latin-1 byte in a nominally-UTF-8 file (a mis-encoded apostrophe, °, µ,
-    # é ...) yields strings that crash the base regex calls data_check runs on
-    # every column ("input string N is invalid UTF-8"). Reinterpret only the
-    # invalid entries as Latin-1 — a conversion that cannot fail, since every
-    # byte is a valid Latin-1 character — and leave valid values untouched.
-    # The per-column repair counts are recorded in the "utf8_repaired"
-    # attribute so data_check can carry them into its columns table and
-    # data_validate can warn the researcher about the file's mixed encoding
-    # (the repaired values themselves no longer show it).
-    if (!is.null(df) && ncol(df) > 0) {
-      repaired <- integer(0)
-      for (j in seq_along(df)) {
-        x <- df[[j]]
-        if (is.character(x)) {
-          bad <- !is.na(x) & !validUTF8(x)
-          if (any(bad)) {
-            x[bad] <- iconv(x[bad], from = "latin1", to = "UTF-8")
-            df[[j]] <- x
-            repaired[names(df)[j]] <- sum(bad)
-          }
-        } else if (is.factor(x)) {
-          lv <- levels(x)
-          bad <- !is.na(lv) & !validUTF8(lv)
-          if (any(bad)) {
-            lv[bad] <- iconv(lv[bad], from = "latin1", to = "UTF-8")
-            levels(df[[j]]) <- lv
-            repaired[names(df)[j]] <- sum(bad)
-          }
-        }
-      }
-      if (length(repaired) > 0) attr(df, "utf8_repaired") <- repaired
-    }
-    df
+    .utf8_repair_df(df)
   }, error = function(e) {
     if (grepl("time limit", conditionMessage(e), ignore.case = TRUE)) stop(e)
     warning("Could not read ", basename(path), ": ", conditionMessage(e))
@@ -862,11 +954,143 @@ rscript_path <- function() {
 
 # ── Column-type classification (rules only) ──────────────────────────────────
 
+# Detect a Likert / rating scale in a numeric column and infer its valid range.
+#
+# A scale is a small set of CONSECUTIVE integers spanning a plausible range
+# (0-based, 1-based, or symmetric bipolar). The column is expected to be
+# CONTAMINATED — the whole reason to detect the scale is to surface the weird
+# values (a stray 99, a mistyped 33) as being outside the valid range. So the
+# range must be inferred robustly, from the DENSE core of common consecutive
+# levels, not from min()/max() (which one outlier destroys).
+#
+# Method (hybrid "E"): find the dense consecutive core (mode-anchored, bridging
+# small interior gaps, stopping at a rare+gapped level), then anchor the FLOOR
+# to the natural scale start (1, or 0 if a 0 is observed) — reporting that
+# inference — and take the CEILING as the top core level. Everything outside the
+# accepted [lo, hi] is returned as `suspects` for the out-of-range / miscoded
+# checks to interpret.
+#
+# Returns NULL when the column is not a scale (too many levels, non-integer,
+# core too short, or the core does not explain enough of the data). Otherwise a
+# list: lo, hi, levels_present, coverage, suspects, floor_inferred (the
+# levels we inferred below the lowest observed), note (human-readable).
+#
+# `min_core` = minimum consecutive core levels to count as a scale (default 3).
+# `min_coverage` = the accepted range must explain at least this fraction of the
+# non-missing values (default 0.90); the leftover are the suspects.
+# `common_frac` = a level counts as a real (bridgeable) response level at this
+# fraction of the data, absolute floor 2 (default 0.01); rarer gapped levels are
+# treated as detached contaminants and left as suspects.
+.detect_likert_scale <- function(x, max_levels = 23L, min_core = 3L,
+                                  min_coverage = 0.90, common_frac = 0.01) {
+  x <- x[!is.na(x) & !is.nan(x) & is.finite(x)]
+  if (length(x) < 20) return(NULL)          # need enough data to bound a scale
+  if (any(x != round(x)))  return(NULL)     # non-integer -> continuous
+  x <- as.integer(round(x))
+  u <- sort(unique(x))
+  # A scale lives within [-11, 11]; a spread of distinct levels beyond ~23 is a
+  # count/continuous column, not a rating scale.
+  if (length(u) < 2L || length(u) > max_levels) return(NULL)
+
+  tab <- table(x)
+  lv  <- as.integer(names(tab))
+  cnt <- as.integer(tab)
+  n   <- length(x)
+  mode_i <- which.max(cnt)
+
+  # A level is "common" if it holds a non-trivial share of the data; "rare"
+  # otherwise. Only used to decide whether a GAPPED level is an interior scale
+  # level to bridge, or a detached contaminant (99, 33) to leave as a suspect.
+  # A level counts as common at `common_frac` of the data, with an absolute
+  # floor of 2 so a single stray value can never read as a real response level.
+  common_floor <- max(common_frac * n, 2)
+  is_common <- cnt >= common_floor
+
+  # Grow a consecutive-integer core outward from the modal level. Bridge a single
+  # missing interior level (a 1-7 scale where nobody picked 4 is still 1-7), but
+  # stop when the next OCCURRING level is both rare and separated by a gap >= 2
+  # (a detached contaminant), or when there is a gap of >= 3 (clearly not part of
+  # the run).
+  # The scale is the run of CONSECUTIVE occupied integer levels around the mode.
+  # An ADJACENT occupied level (step 1) is always part of the scale, however
+  # rare: a lone 6 next to a 1-5 core means the scale really goes to 6 and that
+  # level was just rarely used — it is NOT a typo. A value beyond a GAP (a 99, a
+  # mistyped 33, an 8 after 1-6) cannot be a quiet extension (there would be a
+  # hole), so the core stops and that value becomes a suspect.
+  #
+  # Small interior gaps are bridged when both sides are common levels (a 1-7
+  # scale showing {1,2,5,6,7} has an empty 3-4 but is still 1-7); a gap into a
+  # rare far side is treated as the boundary.
+  present <- lv                       # occupied levels, sorted
+  hi <- lo <- lv[mode_i]
+  extend <- function(dir) {
+    repeat {
+      cand <- if (dir > 0) present[present > hi] else present[present < lo]
+      if (length(cand) == 0) break
+      nextlv <- if (dir > 0) min(cand) else max(cand)
+      gap    <- abs(nextlv - if (dir > 0) hi else lo)
+      ni     <- which(lv == nextlv)
+      if (gap == 1L) {                       # adjacent -> always extend
+        if (dir > 0) hi <<- nextlv else lo <<- nextlv
+      } else if (is_common[ni] && nextlv >= -11L && nextlv <= 11L) {
+        # an interior gap (empty middle levels) to a COMMON far side that is
+        # still inside the scale envelope: bridge it. A 1-7 scale showing
+        # {1,2,5,6,7} bridges the empty 3-4. A detached rare contaminant (99,
+        # 33) is NOT common, so it is never bridged.
+        if (dir > 0) hi <<- nextlv else lo <<- nextlv
+      } else break                            # gap into rare/detached -> stop
+    }
+  }
+  extend(+1); extend(-1)
+
+  core_levels <- lo:hi
+  if (length(core_levels) < min_core) return(NULL)
+
+  # Floor anchoring: scales start at 0 or 1. Infer as little as possible, and
+  # record what we infer. If the observed floor is 2 or 3, snap down to the
+  # natural start — 0 when a 0 is present anywhere, else 1 — but never below the
+  # data's actual minimum-minus-a-little (we only fill the small gap to 0/1).
+  floor_inferred <- integer(0)
+  natural_floor <- if (0L %in% u) 0L else 1L
+  if (lo > natural_floor && lo <= natural_floor + 2L &&
+      natural_floor >= -11L) {
+    floor_inferred <- setdiff(natural_floor:(lo - 1L), u)
+    lo <- natural_floor
+  }
+  # Bipolar symmetry: if the core is symmetric-ish around 0 (a -k..k scale) keep
+  # it as observed; no floor anchoring applies (natural_floor logic above only
+  # fires for non-negative cores because natural_floor is 0/1).
+
+  if (lo < -11L || hi > 11L) return(NULL)    # outside the scale envelope
+
+  accepted <- lo:hi
+  in_range <- x %in% accepted
+  coverage <- mean(in_range)
+  if (coverage < min_coverage) return(NULL)  # core doesn't explain the column
+
+  suspects <- sort(unique(x[!in_range]))
+
+  note <- {
+    obs_lo <- min(u); obs_hi <- max(u)
+    inf <- if (length(floor_inferred))
+      sprintf("; inferred the unobserved floor value%s %s to make it a %d-based scale",
+              plural(length(floor_inferred)),
+              paste(floor_inferred, collapse = ", "), natural_floor) else ""
+    sprintf("Detected a %d–%d rating scale (levels observed: %s%s).",
+            lo, hi, paste(intersect(accepted, u), collapse = ", "), inf)
+  }
+
+  list(lo = lo, hi = hi,
+       levels_present = intersect(accepted, u),
+       coverage = coverage, suspects = suspects,
+       floor_inferred = floor_inferred, note = note)
+}
+
 # data_check column types. The LLM-only refinements (ordinal/categorical for
 # ambiguous integer columns) are not produced by the rules path; ambiguous
 # columns fall back to continuous (numeric) or text (character).
 .data_check_col_types <- c(
-  "continuous", "binary", "categorical", "ordinal", "date", "id",
+  "continuous", "binary", "categorical", "ordinal", "likert", "date", "id",
   "text", "continuous_comma_decimal", "continuous_outliers_excluded",
   "empty", "constant", "unknown"
 )
@@ -881,7 +1105,7 @@ rscript_path <- function() {
 #' @param col_name the column's name (drives the ID-pattern rule)
 #' @param values the column's values (a vector)
 #'
-#' @returns a list with `col_type` (a value from [.data_check_col_types], or
+#' @returns a list with `col_type` (a value from `.data_check_col_types`, or
 #'   `NA` when only the LLM could decide), `ambiguous` (whether the LLM should
 #'   be consulted), `numeric_values` (numeric vector for stats, or `NULL`),
 #'   `n_coerced`, and `is_numeric`.
@@ -999,7 +1223,13 @@ data_col_stats <- function(x_for_stats, x_raw) {
     return(empty_stats(n_val, n_miss))
   }
 
-  x <- as.numeric(x_for_stats)
+  # x_for_stats may hold non-numeric text (e.g. a coding sheet's long free-text
+  # column pushed through here): as.numeric() would emit "NAs introduced by
+  # coercion" — surfaced as `In FUN(X[[i]], ...)` because this runs inside
+  # data_check's per-column lapply. The NAs are expected and discarded on the
+  # next line, so the warning is pure noise; suppress it, matching every other
+  # coercion of raw column values in this file.
+  x <- suppressWarnings(as.numeric(x_for_stats))
   x <- x[!is.na(x) & !is.nan(x)]
   n <- length(x)
   n_miss <- sum(is.na(x_for_stats))
@@ -1101,6 +1331,60 @@ normalize_label <- function(x) {
     question = character(0), universe = character(0),
     parse_method = character(0)
   )
+}
+
+# A code valid under the OpenScales OSD spec: uppercase letters, digits, and
+# hyphens only.
+.osd_safe_code <- function(x) {
+  x <- toupper(gsub("[^A-Za-z0-9]+", "-", x %||% ""))
+  x <- gsub("^-+|-+$", "", x)
+  if (!nzchar(x)) "SCALE" else x
+}
+
+# Mint the OSD `code` and provenance for one identified scale, marking three
+# levels of trust so the exported archive is not mistaken for an authoritative
+# registry:
+#   * dictionary     — matched a known instrument; keep its OFFICIAL OpenScales
+#                      code (bare, e.g. "BFI").
+#   * manuscript     — a real instrument named in the paper but not in the
+#                      registry; minted code prefixed "METACHECK-".
+#   * self_generated — an LLM-inferred construct label, NOT a named instrument;
+#                      minted code prefixed "METACHECK-GEN-" so it is
+#                      unmistakable as metacheck's own inference.
+# `prefix` is the column abbreviation, used to form the code when the scale has
+# no name (falls back to the name otherwise). Shared by codebook_check (writing
+# .osd files) and psychds-convert (cross-referencing variables to a scale code),
+# so it lives here rather than in the module. Returns list(code, source,
+# provenance).
+.osd_code_and_provenance <- function(scale, prefix, scale_source, dict) {
+  src <- scale_source %||% ""
+  # Dictionary membership and official code are separate: a curated entry is IN
+  # the dictionary but carries no OpenScales code. Only an OpenScales entry keeps
+  # its bare official code; a curated match still mints a METACHECK- code but is
+  # marked as a dictionary (not manuscript) identification.
+  official <- ""; in_dict <- FALSE
+  if (!is.na(scale) && nzchar(scale)) {
+    i <- which(tolower(dict$name) == tolower(scale))
+    if (length(i)) {
+      in_dict <- TRUE
+      if (nzchar(dict$code[i[1]] %||% "")) official <- dict$code[i[1]]
+    }
+  }
+  base <- .osd_safe_code(if (!is.na(scale) && nzchar(scale)) scale else prefix)
+
+  if (nzchar(official)) {
+    list(code = official, source = "dictionary",
+         provenance = "Matched a known instrument in the OpenScales-derived dictionary; this is its official OpenScales code.")
+  } else if (in_dict) {
+    list(code = paste0("METACHECK-", base), source = "dictionary",
+         provenance = "Matched a curated instrument in metacheck's scale dictionary (not in the OpenScales registry, so the code is minted by metacheck).")
+  } else if (identical(src, "self_generated")) {
+    list(code = paste0("METACHECK-GEN-", base), source = "self_generated",
+         provenance = "This label was GENERATED BY metacheck from the item wording. It is NOT a recognised named instrument, only metacheck's inference of what the items measure.")
+  } else {
+    list(code = paste0("METACHECK-", base), source = "manuscript",
+         provenance = "A named instrument identified from the manuscript text but not present in the OpenScales registry; the code is minted by metacheck.")
+  }
 }
 
 # ── Value labels / code lists + missing-value scheme (DDI ValueDomain) ─────────
@@ -1755,40 +2039,179 @@ data_analysis_unit <- function(df, id_cols = NULL) {
 # equivalent checks in the dataReporter package are GPL-2 and pull in
 # robustbase + an S3 framework; the logic itself is small, so we own it here).
 
-# Common sentinel values that disguise missingness in shared data.
-.data_missing_sentinels <- c(-99, -999, -9999, 99, 999, 9999, -1)
+# Conventional numeric codes that disguise missingness in shared data. These are
+# only ever flagged when they sit OUTSIDE the column's real data (a scale's valid
+# range, or far from the bulk) — the list nominates candidates; the "detached
+# from the data" test in data_check_scale_values decides. So codes that are
+# plausible real values (97 in a 0-100 score, 99 in an age) do not fire unless
+# they are genuinely out of place.
+#
+# Three real-world families, scaled by field width:
+#   - 9x-block: consecutive high codes for don't-know / refused / not-applicable
+#     (memisc 97/98/99; SPSS defaults; many social-science surveys)
+#   - repeated-digit 8- and 7-families (Statistics Canada, WVS: 8=DK, 7=skip)
+#   - extreme repeated placeholders at wide widths
+# Deliberately EXCLUDED: single digits 7/8/9 (valid Likert points — the scale
+# detector catches an out-of-range 9 in context), -1 (very often a legitimate
+# score, e.g. a difference score or a bipolar scale point), and single-digit
+# negatives -7/-8/-9 (legitimate values on bipolar -k..k rating scales).
+# Only -99 and -999 are kept from the negative family: they are the two forms
+# actually attested as common user codings (SPSS/Stata guidance); the wider and
+# 9x/8x negative variants had no source and are omitted.
+.data_missing_sentinels <- c(
+  # 9x-block (don't know / refused / not applicable)
+  97, 98, 99,
+  997, 998, 999,
+  9997, 9998, 9999,
+  99997, 99998, 99999,
+  # repeated-digit 8- and 7-families
+  88, 888, 8888, 88888,
+  77, 777, 7777, 77777,
+  # extreme repeated placeholders at wide field widths
+  999999, 888888, 777777, 99999999,
+  # the two attested negative codings
+  -99, -999
+)
 
-#' Flag values that look like miscoded missing data
+# Could an out-of-scale value `v` be a keying TYPO of an in-scale value? Returns
+# the most plausible intended value (inside [lo, hi]) or NA. Covers the common
+# fat-finger patterns: a repeated digit (33 -> 3, 55 -> 5), a doubled/trailing
+# digit (25 -> 2 or 5), a dropped/added minus, or an extra leading digit.
+.scale_typo_of <- function(v, lo, hi) {
+  if (is.na(v) || v %in% lo:hi) return(NA_integer_)
+  cand <- integer(0)
+  av <- abs(v)
+  ds <- strsplit(as.character(av), "")[[1]]
+  if (length(ds) >= 2) {
+    # each single digit (33->3, 25->2 or 5, 105->1/0/5)
+    cand <- c(cand, as.integer(ds))
+    # drop the leading digit (25 -> 5, 105 -> 5), drop the trailing (25 -> 2)
+    cand <- c(cand, as.integer(substring(as.character(av), 2)),
+              as.integer(substring(as.character(av), 1, nchar(as.character(av)) - 1)))
+  }
+  # sign flip (a -3 typed on a 1..7 scale, or a 3 that should be -3 on a bipolar)
+  cand <- c(cand, -v)
+  cand <- unique(cand[!is.na(cand)])
+  inside <- cand[cand >= lo & cand <= hi]
+  if (!length(inside)) return(NA_integer_)
+  # prefer the candidate closest to v's magnitude order (single digit of v)
+  inside[which.min(abs(inside - (av %% 10)))]
+}
+
+#' Flag values that fall outside a rating scale's valid range
+#'
+#' A rating scale (Likert / rating item) has a small set of consecutive valid
+#' integer levels. Any value outside that set is a data problem, and this check
+#' both flags it and, for each value, offers the most likely explanation:
+#' \itemize{
+#'   \item a **missing-data code** left as a number (a `-99` / `999` in the
+#'     sentinel list, or a codebook-**declared** missing code) — recode to `NA`;
+#'   \item a **keying typo** of an in-scale value (a `33` for `3`, a `55` for
+#'     `5`) — the probable intended value is named;
+#'   \item otherwise an **unexplained** out-of-range value to review.
+#' }
+#' The valid range is ground truth when `valid_values` / `valid_range` are
+#' supplied (e.g. from a codebook), otherwise inferred by `.detect_likert_scale`.
+#' A column that is not a rating scale (continuous, many-level, non-integer, too
+#' few rows) has no fixed range and is not flagged here — unbounded variables
+#' (age, reaction time) have no principled "valid range" to violate.
+#'
+#' This unifies the former `data_check_out_of_range` and
+#' `data_check_miscoded_missing`: one detector run, one finding per column.
 #'
 #' @param x a numeric vector
-#' @param sentinels candidate sentinel values
-#' @returns list(problem, message, values)
+#' @param sentinels candidate missing-data sentinel codes
+#' @param declared optional codebook-declared missing codes (ground truth)
+#' @param valid_values optional enumerated valid codes (ground truth)
+#' @param valid_range optional `c(lo, hi)` valid range (ground truth)
+#' @param n_max max number of values to list in the message
+#' @returns list(problem, message, values, lower, upper, classes) where `classes`
+#'   labels each flagged value "missing", "typo:<intended>", or "unexplained"
 #' @export
 #' @keywords internal
-data_check_miscoded_missing <- function(x, sentinels = .data_missing_sentinels) {
-  if (!is.numeric(x)) return(list(problem = FALSE, message = "", values = NULL))
-  x <- x[!is.na(x)]
-  if (length(x) == 0) return(list(problem = FALSE, message = "", values = NULL))
-  # A sentinel is suspicious only if it sits far from the bulk of the data: an
-  # isolated extreme repeated value. Require it to be an outlier and to recur.
-  found <- sentinels[vapply(sentinels, function(s) {
-    n_s <- sum(x == s)
-    n_s >= 2 && (s < stats::quantile(x, 0.05) || s > stats::quantile(x, 0.95))
-  }, logical(1))]
-  if (length(found) == 0) return(list(problem = FALSE, message = "", values = NULL))
-  # Report each flagged code with how often it occurs, framed as a "this is
-  # probably a missing-data placeholder that was left as a number, and should
-  # likely be NA" warning — not a claim that the value itself is wrong.
-  parts <- vapply(found, function(s)
-    sprintf("%s (appears %d times)", s, sum(x == s)), character(1))
-  lead <- if (length(found) == 1)
-    "A value far outside the data range looks like" else
-    "Values far outside the data range look like"
-  list(problem = TRUE,
-       message = sprintf(
-         "%s a missing-data code left as a number and may need to be recoded to NA: %s.",
-         lead, paste(parts, collapse = ", ")),
-       values = found)
+data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
+                                    declared = NULL, valid_values = NULL,
+                                    valid_range = NULL, n_max = 10) {
+  none <- list(problem = FALSE, message = "", values = NULL,
+               lower = NA_real_, upper = NA_real_, classes = character(0))
+  if (!is.numeric(x)) return(none)
+  xv <- x[!is.na(x) & !is.nan(x) & is.finite(x)]
+  if (length(xv) == 0) return(none)
+
+  # ── Establish the valid range: ground truth, else inferred scale ────────────
+  if (!is.null(valid_values) && length(valid_values)) {
+    vv <- sort(unique(as.numeric(valid_values)))
+    vv <- vv[is.finite(vv)]
+    if (length(vv) == 0) return(none)
+
+    # Some codebooks carry only endpoints (e.g., 1 and 9) for a bounded
+    # rating scale. If interior integer values are actually present, interpret
+    # that as a contiguous scale range rather than two literal valid codes.
+    vv_int <- all(vv == round(vv))
+    if (vv_int && length(vv) == 2L && diff(vv) >= 2L) {
+      x_int <- sort(unique(xv[xv == round(xv)]))
+      has_interior <- any(x_int > vv[1] & x_int < vv[2])
+      valid_set <- if (has_interior) seq.int(vv[1], vv[2]) else vv
+    } else {
+      valid_set <- vv
+    }
+
+    lo <- min(valid_set); hi <- max(valid_set)
+
+    # For contiguous non-negative rating scales, anchor a sparsely observed
+    # floor to the natural start (0 when 0 is observed, otherwise 1).
+    is_contig_int <- all(valid_set == round(valid_set)) &&
+      length(valid_set) >= 2L && all(diff(valid_set) == 1)
+    if (is_contig_int && lo >= 0) {
+      x_int <- sort(unique(xv[xv == round(xv)]))
+      natural_floor <- if (0 %in% x_int) 0 else 1
+      if (lo > natural_floor && lo <= natural_floor + 2L) {
+        lo <- natural_floor
+        valid_set <- seq.int(lo, hi)
+      }
+    }
+  } else if (!is.null(valid_range) && length(valid_range) == 2 &&
+             all(is.finite(valid_range))) {
+    lo <- min(valid_range); hi <- max(valid_range)
+    valid_set <- lo:hi
+  } else {
+    sc <- .detect_likert_scale(xv)
+    if (is.null(sc)) return(none)          # not a scale -> no range to violate
+    lo <- sc$lo; hi <- sc$hi
+    valid_set <- lo:hi
+  }
+
+  out <- sort(unique(xv[!(xv %in% valid_set)]))
+  if (length(out) == 0)
+    return(list(problem = FALSE, message = "", values = NULL,
+                lower = lo, upper = hi, classes = character(0)))
+
+  # ── Classify each out-of-scale value ────────────────────────────────────────
+  declared_num <- if (!is.null(declared)) as.numeric(declared) else numeric(0)
+  classify <- function(v) {
+    if (v %in% declared_num) return("missing")
+    if (v %in% sentinels)    return("missing")
+    typo <- .scale_typo_of(v, lo, hi)
+    if (!is.na(typo))        return(paste0("typo:", typo))
+    "unexplained"
+  }
+  classes <- vapply(out, classify, character(1))
+
+  describe <- function(v, cls) {
+    if (cls == "missing") sprintf("%s (looks like a missing-data code → recode to NA)", v)
+    else if (startsWith(cls, "typo:"))
+      sprintf("%s (looks like a typo of %s)", v, sub("^typo:", "", cls))
+    else sprintf("%s (outside the scale, cause unclear)", v)
+  }
+  shown_i <- seq_len(min(length(out), n_max))
+  parts <- vapply(shown_i, function(i) describe(out[i], classes[i]), character(1))
+  msg <- sprintf(
+    "%d value%s outside the %d–%d scale: %s%s",
+    length(out), plural(length(out)), lo, hi,
+    paste(parts, collapse = ", "),
+    if (length(out) > n_max) ", ..." else "")
+  list(problem = TRUE, message = msg, values = out,
+       lower = lo, upper = hi, classes = classes)
 }
 
 #' Flag Tukey (IQR) outliers in a numeric vector
@@ -1826,89 +2249,6 @@ data_check_outliers <- function(x, k = 1.5, n_max = 10) {
        values = out, lower = lower, upper = upper)
 }
 
-#' Flag impossible / out-of-range values in a bounded numeric column
-#'
-#' A statistical outlier (a value past the Tukey fence) is usually NOT a data
-#' problem — reaction times, physiological measures and sum scores all have
-#' legitimate long tails. What *is* a problem is a value that falls outside a
-#' column's evident **bounded range**: the tell-tale sign of a data-entry error
-#' or an unrecoded missing code (e.g. a Likert item coded 1–5 with a stray 55 or
-#' -9; an age of 250; a proportion of 3).
-#'
-#' This flags only such values, and only for columns that plausibly have a fixed
-#' range. A column qualifies when it is **integer-valued with few distinct
-#' levels** (Likert / categorical-coded / count-like): its "in-range" band is the
-#' contiguous run of levels that covers the vast majority of the data, and any
-#' value outside that band — or negative where the rest are non-negative — is
-#' flagged. Continuous columns (many distinct values, non-integer) have no
-#' natural bound and are not flagged here; use the distribution figure to inspect
-#' those visually.
-#'
-#' @param x a numeric vector
-#' @param max_levels a column with more than this many distinct integer values
-#'   is treated as continuous (no fixed range) and not checked (default 20)
-#' @param core_frac the in-range band is the shortest contiguous integer range
-#'   covering at least this fraction of the data (default 0.995); values outside
-#'   it are candidates for a data-entry error
-#' @param n_max max number of flagged values to list in the message
-#' @returns list(problem, message, values, lower, upper)
-#' @export
-#' @keywords internal
-data_check_out_of_range <- function(x, max_levels = 20L, core_frac = 0.995,
-                                    n_max = 10) {
-  none <- list(problem = FALSE, message = "", values = NULL,
-               lower = NA_real_, upper = NA_real_)
-  if (!is.numeric(x)) return(none)
-  x <- x[!is.na(x) & !is.nan(x) & is.finite(x)]
-  if (length(x) < 20) return(none)                 # need enough data to bound
-  # Only bounded-range (integer, few-level) columns have a meaningful "range".
-  if (any(x != round(x))) return(none)             # non-integer -> continuous
-  u <- sort(unique(x))
-  if (length(u) < 2 || length(u) > max_levels) return(none)
-
-  # The in-range band is the DENSE core of the distribution: trim a tail level
-  # ONLY when it is both (a) rare AND (b) separated from the core by a GAP — the
-  # signature of a data-entry error or unrecoded missing code (a stray 55 or a
-  # -9 in a 1–5 column, detached from the 1..5 run). A tail level that is
-  # contiguous with the core (no gap) is kept — a Poisson/count column's high
-  # values trail off smoothly and are legitimate. `gap_min` is how far detached a
-  # level must be to count as a break; `rare_frac` is the sparsity cut.
-  tab   <- table(x)
-  lv    <- as.integer(names(tab))
-  cnt   <- as.integer(tab)
-  n     <- length(x)
-  rare_frac <- max(1 - core_frac, 0.001)
-  is_rare <- function(k) cnt[k] <= max(rare_frac * n, 2L)
-
-  # First pass: trim only rare, gapped levels off each tail to find the CORE
-  # (the dense contiguous run). This tolerates a smoothly-trailing count tail
-  # (each step is 1 apart, so nothing is trimmed) but isolates a detached level.
-  lo_i <- 1L; hi_i <- length(lv)
-  while (lo_i < hi_i && is_rare(lo_i) &&
-         (lv[lo_i + 1L] - lv[lo_i]) >= 2L) lo_i <- lo_i + 1L
-  while (hi_i > lo_i && is_rare(hi_i) &&
-         (lv[hi_i] - lv[hi_i - 1L]) >= 2L) hi_i <- hi_i - 1L
-  lo <- lv[lo_i]; hi <- lv[hi_i]
-
-  # Only report values that are FAR outside the core, not merely one gap away: a
-  # data-entry error (55 in a 1–5 scale) is many core-widths out, whereas a
-  # legitimate rare count (a 10 trailing a 0–8 Poisson) is barely beyond it. The
-  # tolerance is one core width past each edge (min 3), so 1–5 tolerates up to
-  # ~9 but flags 55; 0–8 tolerates up to ~16 so a stray 10 is NOT flagged.
-  core_w <- max(hi - lo, 3L)
-  out <- unique(x[x < (lo - core_w) | x > (hi + core_w)])
-  if (length(out) == 0) return(list(problem = FALSE, message = "",
-                                    values = NULL, lower = lo, upper = hi))
-  shown <- utils::head(sort(out), n_max)
-  list(problem = TRUE,
-       message = sprintf(
-         "%d value%s outside the column's apparent range [%g, %g] (%.1f%% of values sit in that range) — likely a data-entry error or unrecoded missing code: %s%s",
-         length(out), plural(length(out)), lo, hi, 100 * core_frac,
-         paste(signif(shown, 6), collapse = ", "),
-         if (length(out) > n_max) ", ..." else ""),
-       values = out, lower = lo, upper = hi)
-}
-
 #' Flag a constant or near-constant column
 #'
 #' @param x a vector
@@ -1919,18 +2259,92 @@ data_check_out_of_range <- function(x, max_levels = 20L, core_frac = 0.995,
 #' @keywords internal
 data_check_constant <- function(x, threshold = 0.99) {
   x <- x[!is.na(x)]
-  if (length(x) == 0) return(list(problem = FALSE, message = "", values = NULL))
+  if (length(x) == 0)
+    return(list(problem = FALSE, message = "", values = NULL, near = FALSE))
   tab <- sort(table(x), decreasing = TRUE)
   top_frac <- tab[[1]] / length(x)
   if (length(tab) == 1)
-    return(list(problem = TRUE, message = "Column is constant (one unique value).",
-                values = names(tab)[1]))
+    return(list(problem = TRUE,
+                message = sprintf("Column is constant: every value is \"%s\".",
+                                  names(tab)[1]),
+                values = names(tab)[1], near = FALSE))
   if (top_frac >= threshold)
     return(list(problem = TRUE,
                 message = sprintf("Near-constant: %.0f%% of values are \"%s\".",
                                  100 * top_frac, names(tab)[1]),
-                values = names(tab)[1]))
-  list(problem = FALSE, message = "", values = NULL)
+                values = names(tab)[1], near = TRUE))
+  list(problem = FALSE, message = "", values = NULL, near = FALSE)
+}
+
+#' Flag a column with no observed values
+#'
+#' All values are NA (or, for text, blank/whitespace-only). Such a column
+#' usually means a variable that never recorded anything or an export
+#' artifact, and it is invisible to [data_check_constant()] which strips NAs.
+#'
+#' @param x a vector
+#' @returns list(problem, message, values)
+#' @export
+#' @keywords internal
+data_check_empty <- function(x) {
+  none <- list(problem = FALSE, message = "", values = NULL)
+  n <- length(x)
+  if (n == 0) return(none)
+  filled <- if (is.numeric(x)) !is.na(x) else
+    !is.na(x) & nzchar(trimws(as.character(x)))
+  if (any(filled)) return(none)
+  list(problem = TRUE,
+       message = sprintf("Column is empty: all %d value%s %s missing.",
+                         n, plural(n), if (n == 1) "is" else "are"),
+       values = NULL)
+}
+
+#' Does a column name look like an experimental design variable?
+#'
+#' Matches names built from design/condition tokens (condition, group,
+#' treatment, arm, dose, manipulation, intervention), requiring a word
+#' boundary so e.g. "charm" does not match "arm". Used to decide whether a
+#' constant column is suspicious: a design variable with one value suggests
+#' the file was filtered to a single condition before export.
+#'
+#' @param col a column name
+#' @returns logical
+#' @export
+#' @keywords internal
+data_check_design_name <- function(col) {
+  grepl("(?i)(^|[._ -])(cond(ition)?|grp|group|treat(ment)?|arm|dose|manip(ulation)?|intervention)([._ -]|[0-9]|$)",
+        col, perl = TRUE)
+}
+
+#' Flag an SPSS "Select Cases" filter variable
+#'
+#' SPSS's Select Cases dialog creates a 0/1 variable named `filter_$`
+#' (mangled to `filter_.` or `filter_` by some importers). Its presence
+#' matters to a re-user either way: if it is constant at 1 the file was
+#' saved after deleting unselected cases, so the shared data are a
+#' pre-filtered subset; if it varies, the reported analyses likely used only
+#' the selected rows and the filter must be re-applied to reproduce them.
+#'
+#' @param col the column name
+#' @param x the column's values
+#' @returns list(problem, message, values)
+#' @export
+#' @keywords internal
+data_check_spss_filter <- function(col, x) {
+  none <- list(problem = FALSE, message = "", values = NULL)
+  if (!grepl("(?i)^filter_[$._]?$", col, perl = TRUE)) return(none)
+  v <- suppressWarnings(as.numeric(x))
+  v <- v[!is.na(v)]
+  if (length(v) == 0) return(none)
+  n_sel <- sum(v == 1)
+  msg <- if (n_sel == length(v)) {
+    "SPSS \"Select Cases\" filter variable: every row is selected (value 1), so the file appears to have been saved after deleting unselected cases — the shared data are a pre-filtered subset of what was collected."
+  } else {
+    sprintf("SPSS \"Select Cases\" filter variable: %d of %d rows are selected (value 1). The reported analyses likely used only the selected rows; re-apply this filter to reproduce them.",
+            n_sel, length(v))
+  }
+  list(problem = TRUE, message = msg,
+       values = c(selected = n_sel, total = length(v)))
 }
 
 #' Flag categorical levels that differ only by letter case
@@ -1956,29 +2370,6 @@ data_check_case_issues <- function(x) {
        message = sprintf("Categories differing only by case: %s",
                          paste(groups, collapse = "; ")),
        values = groups)
-}
-
-#' Flag sparsely represented categorical levels
-#'
-#' @param x a character or factor vector
-#' @param min_n levels with fewer than this many observations are flagged
-#' @returns list(problem, message, values)
-#' @export
-#' @keywords internal
-data_check_sparse_levels <- function(x, min_n = 2L) {
-  none <- list(problem = FALSE, message = "", values = NULL)
-  if (is.numeric(x)) return(none)
-  x <- x[!is.na(x)]
-  if (length(x) == 0) return(none)
-  tab <- table(x)
-  sparse <- names(tab)[tab < min_n]
-  if (length(sparse) == 0) return(none)
-  list(problem = TRUE,
-       message = sprintf("%d level%s with fewer than %d observation%s: %s",
-                         length(sparse), plural(length(sparse)), min_n,
-                         plural(min_n),
-                         paste(utils::head(sparse, 10), collapse = ", ")),
-       values = sparse)
 }
 
 #' Flag values with leading or trailing whitespace
@@ -2516,7 +2907,7 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
 #' A content-based classifier for the three demographic variables collected by
 #' almost every human-subjects study. A column is tagged only when its NAME
 #' looks like the demographic AND its VALUES are consistent with it (see
-#' [.demographic_values_ok]), which keeps false positives low: a `condition`
+#' `.demographic_values_ok`), which keeps false positives low: a `condition`
 #' column coded 1/2 is not flagged as gender, and an `age` column of free text
 #' is not treated as usable age data.
 #'
@@ -2814,6 +3205,81 @@ data_col_facets <- function(col_name, values) {
   )
 }
 
+# Thresholds for the "is this a usable rectangular dataset?" test below. Named
+# so they can be tuned as the check is run on more repositories. Derived from a
+# set of human-coded qualitative worksheets (prose columns ~45-50%, missingness
+# ~90%+) versus their study's real dataset (~3% prose, ~2% missing).
+.tabular_prose_high  <- 0.70   # overwhelmingly free-text → not a dataset on its own
+.tabular_miss_high   <- 0.90   # almost entirely empty → nothing to check on its own
+.tabular_prose_mid   <- 0.40   # the coding-sheet middle ground: both must hold
+.tabular_miss_mid    <- 0.40
+
+#' Is a read-in data frame a usable rectangular dataset?
+#'
+#' `readxl`/`read.delim` will happily read a human-formatted coding worksheet
+#' (interleaved "Code N: description" free-text columns + sparse 0/1 indicators,
+#' summary/legend rows at the bottom) into a data frame — but the result is not a
+#' rectangular *dataset*: most "columns" are prose annotations and most cells are
+#' structurally empty. Extracting columns from such a file yields junk (the
+#' "Code"-prefixed columns) and sending them to the LLM wastes calls on non-data.
+#'
+#' This detects that case from facets `data_check` has already computed, using
+#' two signals combined with tiered rules (not a single AND-gate, so an extreme
+#' value on one axis can exclude a file on its own):
+#'
+#' * **prose fraction** — share of columns that are free text: `representation`
+#'   is `"text"`, the `concept` is not a recognised text kind (id/date/timestamp),
+#'   and the column is high-cardinality (distinct/non-missing > 0.5), i.e. a
+#'   genuine free-text field, not a small set of category labels.
+#' * **missingness fraction** — share of columns that are >50% missing.
+#'
+#' Exclude when the file is almost entirely empty, or overwhelmingly free text,
+#' or moderately both. A file with an ordinary structure (a few open-response
+#' columns, or a legitimately sparse but numeric design) trips none of these.
+#'
+#' @param facets a list of per-column facet lists, as produced by
+#'   [data_col_facets()] (one per column, in column order).
+#' @param df the read-in data frame the facets describe.
+#'
+#' @returns a list with `usable` (logical) and, when `FALSE`, a human-readable
+#'   `reason` naming the signals that fired.
+#' @export
+#' @keywords internal
+.tabular_usable <- function(facets, df) {
+  p <- length(facets)
+  if (p == 0 || is.null(df) || nrow(df) == 0)
+    return(list(usable = FALSE, reason = "the file has no data rows or columns"))
+
+  is_prose <- vapply(seq_len(p), function(j) {
+    f <- facets[[j]]
+    if (!identical(f$representation, "text")) return(FALSE)
+    if (isTRUE(f$concept %in% c("id", "date", "timestamp"))) return(FALSE)
+    x <- df[[j]]
+    nonNA <- x[!is.na(x)]
+    length(nonNA) > 0 && (length(unique(nonNA)) / length(nonNA)) > 0.5
+  }, logical(1))
+
+  miss_hi <- vapply(seq_len(p), function(j) mean(is.na(df[[j]])) > 0.5, logical(1))
+
+  prose_frac <- mean(is_prose)
+  miss_frac  <- mean(miss_hi)
+  pct <- function(x) sprintf("%.0f%%", 100 * x)
+
+  # Tiered rules: extreme on one axis excludes alone; otherwise both, moderate.
+  if (miss_frac >= .tabular_miss_high)
+    return(list(usable = FALSE, reason = sprintf(
+      "%s of columns are almost entirely empty", pct(miss_frac))))
+  if (prose_frac >= .tabular_prose_high)
+    return(list(usable = FALSE, reason = sprintf(
+      "%s of columns are free text, not variables", pct(prose_frac))))
+  if (prose_frac >= .tabular_prose_mid && miss_frac >= .tabular_miss_mid)
+    return(list(usable = FALSE, reason = sprintf(
+      "%s of columns are free text and %s are mostly empty — this looks like a coding worksheet, not a rectangular dataset",
+      pct(prose_frac), pct(miss_frac))))
+
+  list(usable = TRUE, reason = NA_character_)
+}
+
 # ── Qualtrics survey-export detection ─────────────────────────────────────────
 # Qualtrics CSV/TSV exports have a fixed, distinctive shape: a set of reserved
 # response-metadata columns (StartDate, Duration (in seconds), Finished, ...)
@@ -2932,7 +3398,7 @@ data_check_is_qualtrics <- function(df, min_meta = 4L) {
 #' `read.delim` reads the machine names as the header but keeps those two rows as
 #' the first data rows, which forces every column to character. This drops any
 #' leading rows that look like Qualtrics header rows (see
-#' [.qualtrics_is_header_row]) and coerces columns that are now fully numeric
+#' `.qualtrics_is_header_row`) and coerces columns that are now fully numeric
 #' back to numeric, so the rest of `data_check` types the file correctly.
 #'
 #' @param df a data.frame read from a Qualtrics export (machine names as header)

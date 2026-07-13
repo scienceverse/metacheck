@@ -523,13 +523,21 @@ stat_effect_size <- function(paper) {
     # then restore the original paper/sentence order, which extract_eq() and
     # split() would otherwise reorder by paper_id.
     paper_order <- unique(text_tbl$paper_id)
-    table <- eq |>
+    built <- eq |>
       split(~ paper_id + text_id, drop = TRUE) |>
       lapply(build_rows) |>
-      dplyr::bind_rows() |>
-      dplyr::left_join(text_tbl, by = c("paper_id", "text_id"))
-    table <- table[order(match(table$paper_id, paper_order), table$text_id), , drop = FALSE]
-    rownames(table) <- NULL
+      dplyr::bind_rows()
+    # build_rows() returns NULL for a sentence with effect sizes but no t/F
+    # test; when every sentence is NULL, bind_rows() yields a 0-column frame
+    # with no join keys, so guard the join (and skip to the empty-table return
+    # below) instead of erroring in left_join().
+    if (nrow(built) == 0 || !all(c("paper_id", "text_id") %in% names(built))) {
+      table <- data.frame()
+    } else {
+      table <- dplyr::left_join(built, text_tbl, by = c("paper_id", "text_id"))
+      table <- table[order(match(table$paper_id, paper_order), table$text_id), , drop = FALSE]
+      rownames(table) <- NULL
+    }
   }
 
 

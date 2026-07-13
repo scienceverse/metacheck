@@ -97,7 +97,7 @@
 #'   full list of repository files with their download URL, size, type, Psych-DS
 #'   target path, and whether each was downloaded (and if not, why). A directory
 #'   path writes `<paper_id>.manifest.json` inside it; a path ending in `.json`
-#'   is used verbatim. `NULL` (the default) writes nothing. Useful for auditing a
+#'   is used verbatim. `NULL` (the default) writes nothing. `"."` writes to the working folder. Useful for auditing a
 #'   corpus (what exists, what was fetched) and for building a data archive.
 #' @param model the LLM model name (see `llm_model_list()`) used only when
 #'   `llm_use(TRUE)`
@@ -471,6 +471,12 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # models / session objects, or could not be restored). Flagged as a
   # data-sharing recommendation: share the underlying data as CSV + codebook.
   workspace_files <- character(0)
+  # Files that read as a data frame but are not a usable rectangular dataset
+  # (human-formatted coding worksheets: mostly free-text columns and/or almost
+  # entirely empty; see .tabular_usable()). Columns are NOT extracted from these
+  # and they are NOT sent to the LLM, but they stay in the file classification so
+  # excel_check still inspects them for formatting issues. name -> reason.
+  non_tabular_files <- character(0)
 
   # ── 4. Extract columns + stats from each local tabular data file ─────────────
   columns_df <- NULL
@@ -503,13 +509,24 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         return(NULL)
       }
 
-      file_previews[[f$file_name]] <<- df
-
       # Describe each column as orthogonal facets (DDI-style) instead of a single
       # col_type: how it is stored (representation), its measurement level, what
       # it measures (concept), how it functions (role), its unit and data-quality
       # state. See data_col_facets() in data_check_helpers.R.
       cls <- lapply(seq_along(df), function(j) data_col_facets(names(df)[j], df[[j]]))
+
+      # Skip a file that read as a data frame but is not a usable rectangular
+      # dataset (a human coding worksheet: mostly free text and/or almost all
+      # empty). No columns are extracted and nothing is sent to the LLM, but the
+      # file stays classified as data so excel_check still checks its formatting.
+      usable <- .tabular_usable(cls, df)
+      if (!isTRUE(usable$usable)) {
+        non_tabular_files[[f$file_name]] <<- usable$reason
+        return(NULL)
+      }
+
+      file_previews[[f$file_name]] <<- df
+
       getf <- function(field) vapply(cls, function(c) {
         v <- c[[field]]; if (is.null(v) || is.na(v)) NA_character_ else v
       }, character(1))
@@ -712,6 +729,19 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   n_columns <- if (!is.null(columns_df)) nrow(columns_df) else 0L
 
+  # Carry the non-tabular verdict into the file classification so downstream
+  # modules can react: excel_check still inspects these for formatting but adds a
+  # "not a rectangular dataset" note. The column always exists (default TRUE) so
+  # consumers can rely on it. non_tabular_files is name -> reason.
+  all_files$tabular_usable <- TRUE
+  all_files$non_tabular_reason <- NA_character_
+  if (length(non_tabular_files) > 0) {
+    nt <- all_files$file_name %in% names(non_tabular_files)
+    all_files$tabular_usable[nt] <- FALSE
+    all_files$non_tabular_reason[nt] <-
+      unlist(non_tabular_files[all_files$file_name[nt]], use.names = FALSE)
+  }
+
   # ── 5. Reporting ─────────────────────────────────────────────────────────────
   type_counts <- table(factor(all_files$data_type, levels = .data_check_types))
 
@@ -722,7 +752,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                   names(type_counts)[type_counts > 0]), collapse = ", ")
   )
 
-  n_extracted <- nrow(data_files) - length(manifest_files)
+  n_extracted <- nrow(data_files) - length(manifest_files) -
+    length(non_tabular_files)
   summary_data <- sprintf(
     "We found %d tabular data file%s and extracted %d column%s from %d of them.",
     n_tabular_all, plural(n_tabular_all),
@@ -759,6 +790,24 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_workspace, plural(n_workspace),
     if (n_workspace == 1) "s" else "",
     paste(unique(workspace_files), collapse = ", ")
+  ) else NULL
+
+  # Files that read as a table but are not usable rectangular datasets (coding
+  # worksheets: mostly free text and/or almost all empty). Columns were not
+  # extracted; recommend sharing the real data as CSV + codebook. The file's
+  # own reason is quoted so the author sees which signal fired.
+  n_nontab <- length(non_tabular_files)
+  summary_nontabular <- if (n_nontab > 0) sprintf(
+    paste0("%d file%s read as a table but %s not a usable rectangular dataset ",
+           "(%s). No columns were extracted and they were not sent to the LLM. ",
+           "Share the underlying data as a plain rectangular table (one header ",
+           "row, one column per variable) with a codebook: %s."),
+    n_nontab, plural(n_nontab),
+    if (n_nontab == 1) "is" else "are",
+    paste(sprintf("%s: %s", names(non_tabular_files),
+                  unlist(non_tabular_files, use.names = FALSE)),
+          collapse = "; "),
+    paste(names(non_tabular_files), collapse = ", ")
   ) else NULL
 
   # file inventory table
@@ -883,7 +932,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     dplyr::left_join(coltype_wide, by = "paper_id")
 
   summary_text <- c(summary_files, summary_data, summary_nolocal,
-                     summary_omitted, summary_workspace) |>
+                     summary_omitted, summary_workspace, summary_nontabular) |>
     paste("\n- ", x = _, collapse = "")
 
   # ── 6b. Optional file manifest ───────────────────────────────────────────────

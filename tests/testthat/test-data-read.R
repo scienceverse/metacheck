@@ -107,6 +107,28 @@ test_that("data_read_head repairs invalid-UTF-8 values, not just names", {
   expect_identical(attr(df, "utf8_repaired"), c(sentence = 1L))
 })
 
+test_that("data_read_head reads a CSV with Latin-1 bytes in its first lines", {
+  # The collabra.102 corpus case: a Latin-1 byte in the header or the FIRST
+  # data row (unlike the row-3 byte above) hits the pre-read sniffers —
+  # .sniff_delimiter / .detect_header / .is_single_field_blob run trimws /
+  # strsplit on raw readLines() output — which used to error with "input
+  # string 1 is invalid UTF-8", so the whole file was skipped before fread's
+  # tolerant read and the post-read repair ever ran.
+  csv <- withr::local_tempfile(fileext = ".csv")
+  con <- file(csv, open = "wb")
+  writeBin(charToRaw("id,caf\xe9\n1,caf\xe9 study\n2,plain\n"), con)
+  close(con)
+
+  expect_no_warning(df <- data_read_head(csv, n_rows = Inf))
+  expect_s3_class(df, "data.frame")
+  expect_identical(nrow(df), 2L)
+  # Header and values come back as valid UTF-8 with the byte reinterpreted as
+  # Latin-1 (0xE9 -> U+00E9), not dropped.
+  expect_identical(names(df)[2], "caf\u00e9")
+  expect_identical(df[[2]][1], "caf\u00e9 study")
+  expect_true(all(validUTF8(df[[2]])))
+})
+
 # ── Qualtrics multi-row header handling ───────────────────────────────────────
 
 # Write a minimal Qualtrics "use choice text" export: machine-name header, a

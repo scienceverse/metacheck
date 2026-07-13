@@ -24,7 +24,7 @@
 
 #' Build a corpus-wide file inventory from per-paper manifests
 #'
-#' Reads every `*.manifest.json` in `manifest_dir` (written by [data_check()]
+#' Reads every `*.manifest.json` in `manifest_dir` (written by `data_check()`
 #' when its `manifest` argument is set) and flattens them into a single table:
 #' one row per repository file across all papers, with its download status and
 #' skip reason. This is the whole-archive view of what exists versus what was
@@ -44,7 +44,7 @@
 #'   `repo_url`, `file_name`, `file_path`, `file_url`, `file_size`,
 #'   `file_size_mb`, `data_type`, `downloaded`, `status`, `skip_intentional`,
 #'   `skip_reason`.
-#' @seealso [collect_check_results()], [data_check()]
+#' @seealso [collect_check_results()], `data_check()`
 #' @export
 #' @examples
 #' \dontrun{
@@ -274,10 +274,14 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
           if (is.list(col)) vapply(col, function(x)
             paste(as.character(x), collapse = "; "), character(1))
           else col), stringsAsFactors = FALSE)
-        # Clean + cap every character cell (embedded newlines break CSV row
-        # alignment; a finding's free text must never reach megabytes). See
-        # .clean_cell.
-        tbl <- as.data.frame(lapply(tbl, .clean_cell), stringsAsFactors = FALSE)
+        # Clean + cap every cell (embedded newlines break CSV row alignment; a
+        # finding's free text must never reach megabytes), coercing everything
+        # to character so findings from different papers/modules always bind
+        # (a numeric-looking column like df1 must not be double in one paper
+        # and character in another). See .clean_cell.
+        tbl <- as.data.frame(
+          lapply(tbl, function(col) .clean_cell(as.character(col))),
+          stringsAsFactors = FALSE)
         # Force the chain's single paper id so findings join to the check rows
         # (a module's own table may carry a hash id or none).
         tbl$paper_id <- pid
@@ -297,7 +301,9 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
       ed <- mo[[el]]
       if (is.null(ed) || !is.data.frame(ed) || nrow(ed) == 0) next
       ed <- ed[, setdiff(names(ed), .findings_drop_cols), drop = FALSE]
-      ed <- as.data.frame(lapply(ed, .clean_cell), stringsAsFactors = FALSE)
+      ed <- as.data.frame(
+        lapply(ed, function(col) .clean_cell(as.character(col))),
+        stringsAsFactors = FALSE)
       ed$paper_id <- pid
       ed$module   <- nm
       ed$check    <- unname(extras[[el]])
@@ -350,6 +356,134 @@ capture_check_results <- function(chain, results_dir, paper_id = NULL) {
                            na = "null", null = "null")
   writeLines(json, path, useBytes = TRUE)
   invisible(path)
+}
+
+# Non-result list elements of a metacheck_module_output: inter-module plumbing
+# and the paper itself, none of which belong in a saved results object. Every
+# OTHER element (table, summary_table, and any module-specific result frame like
+# data_validate's careless/demographics/qualtrics) is kept as-is.
+.module_output_plumbing <- c("paper", "prev_outputs", "module", "title",
+                             "section")
+
+#' Save one paper's FULL module outputs to disk (lossless)
+#'
+#' Writes every module's complete output — the full row-level `table`, the
+#' `summary_table`, the `traffic_light`, the `summary_text`, and any extra
+#' result frames a module returns (e.g. `data_validate`'s `careless` /
+#' `demographics` / `qualtrics`) — as a single per-paper `<paper_id>.rds`. Unlike
+#' [capture_check_results()], nothing is reduced, dropped, truncated, or coerced:
+#' the object round-trips exactly (list-columns, numeric types, factors), so the
+#' saved file is a faithful record you can reload and analyse later without
+#' re-running the checks.
+#'
+#' Only the module *results* are kept; inter-module plumbing (`prev_outputs`,
+#' `paper`, and the routing fields `module`/`title`/`section`) is stripped so the
+#' file stays small and self-contained.
+#'
+#' Call it alongside [capture_check_results()] in a batch loop: the JSON keeps a
+#' slim, portable summary for quick inspection and the corpus CSVs, while the RDS
+#' keeps everything for later work.
+#'
+#' @param chain a module-output chain from [report_module_run()].
+#' @param results_dir directory to write the per-paper `*.rds` into (created if
+#'   needed).
+#' @param paper_id optional paper id, used to name the file when it cannot be
+#'   recovered from the chain's summary tables.
+#'
+#' @returns the written path, invisibly.
+#' @seealso [capture_check_results()], [collect_module_tables()]
+#' @export
+capture_module_tables <- function(chain, results_dir, paper_id = NULL) {
+  mods <- Filter(function(x) inherits(x, "metacheck_module_output"), chain)
+  if (length(mods) == 0) mods <- chain
+
+  # Recover one paper id for the file name (same logic as the flat capture).
+  chain_pid <- paper_id
+  if (is.null(chain_pid) || is.na(chain_pid) || !nzchar(chain_pid %||% "")) {
+    for (mo in mods) {
+      st <- mo$summary_table
+      if (!is.null(st) && "paper_id" %in% names(st) && nrow(st) > 0) {
+        cand <- as.character(st$paper_id[[1]])
+        if (!is.na(cand) && nzchar(cand)) { chain_pid <- cand; break }
+      }
+    }
+  }
+  pid <- chain_pid %||% "paper"
+  if (is.na(pid) || !nzchar(pid)) pid <- paper_id %||% "paper"
+
+  # Keep every result element of each module, drop only the plumbing.
+  outputs <- lapply(mods, function(mo) {
+    keep <- setdiff(names(mo), .module_output_plumbing)
+    mo[keep]
+  })
+
+  # report_module_run() strips each module's own summary_table and left-joins
+  # them all into ONE wide row carried by the last module (duplicate names
+  # suffixed ".<module>"). So a mid-chain module's `summary_table` slot is
+  # usually empty here; store that combined wide row once at the top level so
+  # every module's per-paper counts are recoverable (this is what
+  # collect_check_results() unpacks into _all_checks.csv). The per-module
+  # `table`s are untouched and complete.
+  combined_summary <- NULL
+  for (mo in mods) {
+    st <- mo$summary_table
+    if (!is.null(st) && is.data.frame(st) && nrow(st) > 0 &&
+        ncol(st) > ncol(combined_summary %||% st[, 0, drop = FALSE]))
+      combined_summary <- st
+  }
+
+  dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+  path <- file.path(results_dir, paste0(pid, ".rds"))
+  saveRDS(list(paper_id = pid,
+               generated = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+               summary_table = combined_summary,
+               modules = outputs),
+          path)
+  invisible(path)
+}
+
+#' Stack one module's full tables across every saved paper
+#'
+#' Reads every `<paper_id>.rds` written by [capture_module_tables()] and binds a
+#' chosen element (default `"table"`; also e.g. `"summary_table"`, or a module's
+#' extra frame like `"careless"`) of ONE module across all papers into a single
+#' data frame, tagged with `paper_id`. This is the corpus-level view of a
+#' module's real output, with full fidelity — no truncation or type coercion.
+#'
+#' @param results_dir directory holding the per-paper `*.rds` files.
+#' @param module the module name to extract (e.g. `"data_validate"`).
+#' @param element which list element of that module to bind (default `"table"`).
+#'
+#' @returns a data.frame of the stacked element across papers (empty if none had
+#'   it), with a leading `paper_id` column.
+#' @seealso [capture_module_tables()]
+#' @export
+#' @examples
+#' \dontrun{
+#' collect_module_tables("output/collabra/_tables", "data_validate")
+#' collect_module_tables("output/collabra/_tables", "codebook_check",
+#'                       element = "summary_table")
+#' }
+collect_module_tables <- function(results_dir, module, element = "table") {
+  rfiles <- list.files(results_dir, pattern = "[.]rds$", full.names = TRUE)
+  if (length(rfiles) == 0) {
+    warning("No *.rds files found in ", results_dir,
+            ". Did the run call capture_module_tables()?", call. = FALSE)
+    return(data.frame())
+  }
+  parts <- lapply(rfiles, function(f) {
+    j <- tryCatch(readRDS(f), error = function(e) NULL)
+    if (is.null(j) || is.null(j$modules[[module]])) return(NULL)
+    el <- j$modules[[module]][[element]]
+    if (is.null(el) || !is.data.frame(el) || nrow(el) == 0) return(NULL)
+    if (!"paper_id" %in% names(el)) el$paper_id <- j$paper_id
+    el
+  })
+  parts <- Filter(Negate(is.null), parts)
+  if (length(parts) == 0) return(data.frame())
+  out <- dplyr::bind_rows(parts)
+  front <- intersect("paper_id", names(out))
+  out[, c(front, setdiff(names(out), front)), drop = FALSE]
 }
 
 #' Collect a run's check results into corpus-wide CSVs
@@ -410,10 +544,13 @@ collect_check_results <- function(results_dir, out_dir = NULL) {
     }
     if (!is.null(j$findings) && is.data.frame(j$findings) &&
         nrow(j$findings) > 0) {
-      # Clean + cap character cells here too, so a .checks.json written before
-      # the capture-time cleaning existed cannot still corrupt/bloat the CSV.
-      fnd <- as.data.frame(lapply(j$findings, .clean_cell),
-                           stringsAsFactors = FALSE)
+      # Clean + cap cells here too, so a .checks.json written before the
+      # capture-time cleaning existed cannot still corrupt/bloat the CSV.
+      # Coerce every column to character: fromJSON() guesses types per paper,
+      # so the same findings column (e.g. df1) can come back double for one
+      # paper and character for another, which would break the bind below.
+      fnd <- as.data.frame(lapply(j$findings, function(col)
+        .clean_cell(as.character(col))), stringsAsFactors = FALSE)
       finds_l[[length(finds_l) + 1L]] <- fnd
     }
   }

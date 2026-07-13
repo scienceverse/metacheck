@@ -37,7 +37,11 @@ an LLM; callers keep \code{group = NA} when \code{llm_use(FALSE)}.
 Only files that will actually be analysed or placed (data, codebooks, code,
 readmes, supplemental/output/other) are sent to the model; assets (images,
 PDFs, and other non-analysable files) are never grouped and default to
-\code{shared}. The sent files are batched (see \code{.data_check_llm_batch}) so large
-repositories do not exceed the model's request/output limits.
+\code{shared}. Paths that name their study outright ("Experiment 1/",
+"study2a_data.csv") are grouped by a deterministic regex first and skip the
+model entirely; LLM-returned codes are normalized and validated against the
+scheme, so a malformed code can never become a study directory name. The
+sent files are batched (see \code{.data_check_llm_batch}) so large repositories
+do not exceed the model's request/output limits.
 }
 \keyword{internal}

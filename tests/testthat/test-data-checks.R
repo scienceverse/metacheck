@@ -16,51 +16,163 @@ test_that("data_check_outliers flags Tukey outliers", {
   expect_false(data_check_outliers(c("a", "b"))$problem)
 })
 
-test_that("data_check_out_of_range flags bounded columns, ignores continuous", {
+test_that(".detect_likert_scale infers scale ranges robustly", {
   set.seed(1)
-  # Likert 1-5 with a stray 55 and a -9: both flagged, band is [1, 5].
-  r <- data_check_out_of_range(c(sample(1:5, 200, TRUE), 55, -9))
-  expect_true(r$problem)
-  expect_setequal(r$values, c(-9, 55))
-  expect_equal(c(r$lower, r$upper), c(1, 5))
+  f <- metacheck:::.detect_likert_scale
 
-  # Clean bounded columns are not flagged, and a legitimate rare count value
-  # (a Poisson tail barely beyond the core) is tolerated — only FAR-out values
-  # (a data-entry error) are flagged.
-  expect_false(data_check_out_of_range(sample(1:7, 200, TRUE))$problem)
-  expect_false(data_check_out_of_range(sample(0:1, 200, TRUE))$problem)
-  expect_false(data_check_out_of_range(rpois(200, 3))$problem)
-  expect_false(data_check_out_of_range(c(rpois(199, 3), 10))$problem)
+  # Clean scales across the target envelope (0-based, 1-based, bipolar).
+  expect_equal(f(sample(1:5, 200, TRUE))[c("lo","hi")],  list(lo = 1L, hi = 5L))
+  expect_equal(f(sample(1:7, 200, TRUE))[c("lo","hi")],  list(lo = 1L, hi = 7L))
+  expect_equal(f(sample(0:10, 300, TRUE))[c("lo","hi")], list(lo = 0L, hi = 10L))
+  expect_equal(f(sample(-5:5, 300, TRUE))[c("lo","hi")], list(lo = -5L, hi = 5L))
+  expect_equal(f(sample(-11:11, 400, TRUE))[c("lo","hi")], list(lo = -11L, hi = 11L))
 
-  # A far-out value on a small-range column (e.g. an age typo) IS flagged.
-  expect_true(data_check_out_of_range(c(sample(18:30, 200, TRUE), 250))$problem)
+  # Sparse coverage: an unobserved floor is inferred down to the natural start
+  # (1, or 0 when a 0 is present), and the inference is reported.
+  r <- f(sample(2:5, 200, TRUE))
+  expect_equal(c(r$lo, r$hi), c(1L, 5L))
+  expect_equal(r$floor_inferred, 1L)
+  r <- f(sample(3:5, 200, TRUE))
+  expect_equal(r$floor_inferred, c(1L, 2L))
+  expect_equal(f(sample(c(0,2,3,4,5), 200, TRUE))[c("lo","hi")], list(lo = 0L, hi = 5L))
 
-  # Continuous columns (non-integer, or many distinct integer values) have no
-  # fixed range and are NOT checked — a long tail there is normal.
-  expect_false(data_check_out_of_range(round(rnorm(200, 120, 15)))$problem) # BP
-  expect_false(data_check_out_of_range(rnorm(200))$problem)                 # non-integer
-  expect_false(data_check_out_of_range(sample(1:100, 200, TRUE))$problem)   # >max_levels
+  # Interior gaps are bridged (a 1-7 scale where nobody picked 3 or 4).
+  expect_equal(f(sample(c(1,2,5,6,7), 200, TRUE))[c("lo","hi")], list(lo = 1L, hi = 7L))
 
-  # Guards: too few values, non-numeric.
-  expect_false(data_check_out_of_range(c(1, 2, 55))$problem)
-  expect_false(data_check_out_of_range(c("a", "b"))$problem)
+  # Contaminants become suspects, not part of the range.
+  expect_equal(f(c(sample(1:5, 200, TRUE), 99))$suspects, 99)
+  expect_equal(f(c(sample(1:7, 200, TRUE), 33))$suspects, 33)   # mistyped 3->33
+  expect_equal(f(c(sample(1:6, 200, TRUE), 8))$suspects, 8)     # gapped overshoot
+  expect_equal(f(c(sample(1:5, 200, TRUE), -99, -99))$suspects, -99)
+
+  # A lone ADJACENT overshoot extends the scale (a 6 next to 1-5 means it goes
+  # to 6, rarely used) — it is NOT a suspect.
+  r <- f(c(sample(1:5, 200, TRUE), 6))
+  expect_equal(c(r$lo, r$hi), c(1L, 6L))
+  expect_length(r$suspects, 0)
+
+  # Non-scales are rejected.
+  expect_null(f(sample(18:65, 200, TRUE)))              # age (wide)
+  expect_null(f(round(rlnorm(200, log(650), .35))))     # continuous RT
+  expect_null(f(sample(c(10, 20, 30), 200, TRUE)))      # coded groups (gapped, non-consecutive)
+  expect_null(f(rpois(200, 8)))                         # count
+  expect_null(f(rnorm(200)))                            # non-integer
+  expect_null(f(c(1, 2, 3)))                            # too few values
 })
 
-test_that("data_check_miscoded_missing flags recurring extreme sentinels", {
-  x <- c(rnorm(50, 20, 3), -99, -99)
-  r <- data_check_miscoded_missing(x)
+test_that("data_check_scale_values flags out-of-scale values and classifies them", {
+  set.seed(1)
+  # Likert 1-5 with a stray 55 (typo of 5) and -99 (missing code): both flagged,
+  # range [1, 5], each classified.
+  r <- data_check_scale_values(c(sample(1:5, 200, TRUE), 55, -99))
   expect_true(r$problem)
-  expect_true(-99 %in% r$values)
-  # a single sentinel is not flagged (ambiguous)
-  expect_false(data_check_miscoded_missing(c(rnorm(50, 20, 3), -99))$problem)
-  # no sentinels
-  expect_false(data_check_miscoded_missing(rnorm(50))$problem)
+  expect_setequal(r$values, c(-99, 55))
+  expect_equal(c(r$lower, r$upper), c(1, 5))
+  expect_equal(r$classes[r$values == -99], "missing")
+  expect_equal(r$classes[r$values == 55], "typo:5")
+
+  # A mistyped 33 on a 1-7 scale is recognized as a typo of 3.
+  r <- data_check_scale_values(c(sample(1:7, 200, TRUE), 33))
+  expect_equal(r$classes, "typo:3")
+
+  # A stray 9 on a 1-7 scale is out of scale but not a digit-typo -> unexplained.
+  expect_equal(data_check_scale_values(c(sample(1:7, 200, TRUE), 9))$classes,
+               "unexplained")
+
+  # Clean scales, and a lone ADJACENT overshoot (6 next to 1-5 -> scale is 1-6),
+  # are not flagged.
+  expect_false(data_check_scale_values(sample(1:7, 200, TRUE))$problem)
+  expect_false(data_check_scale_values(c(sample(1:5, 200, TRUE), 6))$problem)
+
+  # Non-scale numeric columns have no valid range and are out of scope.
+  expect_false(data_check_scale_values(round(rnorm(200, 120, 15)))$problem) # BP
+  expect_false(data_check_scale_values(rnorm(200))$problem)                 # non-integer
+  expect_false(data_check_scale_values(sample(18:65, 200, TRUE))$problem)   # age
+  expect_false(data_check_scale_values(rpois(200, 3))$problem)              # count
+
+  # Ground truth overrides inference.
+  expect_true(data_check_scale_values(c(sample(1:5, 200, TRUE), 6),
+                                      valid_values = 1:5)$problem)   # 6 flagged
+  expect_false(data_check_scale_values(c(sample(1:5, 200, TRUE), 6),
+                                       valid_values = 1:6)$problem)  # 6 declared valid
+  expect_true(data_check_scale_values(c(sample(1:7, 60, TRUE), 9),
+                                      valid_range = c(1, 7))$problem)
+
+  # Declared missing codes (codebook ground truth) are classified as missing,
+  # even outside the hardcoded sentinel list (77, -8), and only when present.
+  r <- data_check_scale_values(c(sample(1:5, 200, TRUE), 77), declared = 77)
+  expect_equal(r$classes, "missing")
+  expect_true(data_check_scale_values(c(sample(1:7, 200, TRUE), -8),
+                                      declared = -8)$problem)
+  expect_false(data_check_scale_values(sample(1:5, 200, TRUE),
+                                       declared = 77)$problem)
+
+  # Endpoint-only valid values (e.g., 2 and 8) are interpreted as a bounded
+  # contiguous range when interior values are observed; floor anchors to 1.
+  r <- data_check_scale_values(sample(2:8, 200, TRUE), valid_values = c(2, 8))
+  expect_false(r$problem)
+  expect_equal(c(r$lower, r$upper), c(1, 8))
+
+  # Interior observed values are not mislabeled as out-of-scale, while true
+  # detached values still are.
+  r <- data_check_scale_values(c(sample(2:8, 200, TRUE), 9999),
+                               valid_values = c(2, 8))
+  expect_true(r$problem)
+  expect_setequal(r$values, 9999)
+  expect_equal(c(r$lower, r$upper), c(1, 8))
+
+  # Consecutive valid values that start above 1 are also floor-anchored.
+  r <- data_check_scale_values(sample(2:8, 200, TRUE), valid_values = 2:8)
+  expect_false(r$problem)
+  expect_equal(c(r$lower, r$upper), c(1, 8))
+
+  # Guards.
+  expect_false(data_check_scale_values(c("a", "b"))$problem)
+  expect_false(data_check_scale_values(numeric(0))$problem)
 })
 
 test_that("data_check_constant flags constant and near-constant columns", {
-  expect_true(data_check_constant(rep(5, 10))$problem)
-  expect_true(data_check_constant(c(rep("a", 99), "b"))$problem)
+  r <- data_check_constant(rep(5, 10))
+  expect_true(r$problem)
+  expect_false(r$near)
+  # Near-constant results are marked as such, so callers can treat them
+  # differently (rare outcomes are legitimately 99% one value).
+  r <- data_check_constant(c(rep("a", 99), "b"))
+  expect_true(r$problem)
+  expect_true(r$near)
   expect_false(data_check_constant(c(rep("a", 5), rep("b", 5)))$problem)
+})
+
+test_that("data_check_empty flags all-missing columns", {
+  expect_true(data_check_empty(rep(NA_real_, 5))$problem)
+  # Blank / whitespace-only text counts as missing.
+  expect_true(data_check_empty(c(NA, "", "  "))$problem)
+  expect_false(data_check_empty(c(NA, 1))$problem)
+  expect_false(data_check_empty(numeric(0))$problem)
+})
+
+test_that("data_check_design_name detects design/condition variable names", {
+  expect_true(data_check_design_name("condition"))
+  expect_true(data_check_design_name("exp_cond"))
+  expect_true(data_check_design_name("Group"))
+  expect_true(data_check_design_name("treatment_arm"))
+  expect_true(data_check_design_name("cond1"))
+  expect_false(data_check_design_name("age"))
+  expect_false(data_check_design_name("charm"))    # 'arm' needs a word boundary
+  expect_false(data_check_design_name("response"))
+})
+
+test_that("data_check_spss_filter flags SPSS Select Cases filter columns", {
+  # Constant at 1: the file was saved after deleting unselected cases.
+  r <- data_check_spss_filter("filter_$", rep(1, 10))
+  expect_true(r$problem)
+  expect_true(grepl("pre-filtered", r$message))
+  # Varying: analyses likely used only the selected rows.
+  r <- data_check_spss_filter("filter_.", c(1, 1, 1, 0, 0))
+  expect_true(r$problem)
+  expect_true(grepl("3 of 5", r$message))
+  # Only the SPSS default name matches, not arbitrary columns of 0/1.
+  expect_false(data_check_spss_filter("excluded", c(1, 1, 0))$problem)
 })
 
 test_that("data_check_case_issues flags case-only duplicate categories", {
@@ -68,13 +180,6 @@ test_that("data_check_case_issues flags case-only duplicate categories", {
   expect_true(r$problem)
   expect_false(data_check_case_issues(c("Male", "Female"))$problem)
   expect_false(data_check_case_issues(c(1, 2, 3))$problem)
-})
-
-test_that("data_check_sparse_levels flags rare categories", {
-  r <- data_check_sparse_levels(c(rep("a", 20), "b"))
-  expect_true(r$problem)
-  expect_true("b" %in% r$values)
-  expect_false(data_check_sparse_levels(c(rep("a", 10), rep("b", 10)))$problem)
 })
 
 test_that("data_check_whitespace flags padded values", {

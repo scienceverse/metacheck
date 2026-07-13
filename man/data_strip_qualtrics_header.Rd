@@ -20,7 +20,7 @@ text, then an \code{ImportId} JSON row) directly under the machine-name header.
 \code{read.delim} reads the machine names as the header but keeps those two rows as
 the first data rows, which forces every column to character. This drops any
 leading rows that look like Qualtrics header rows (see
-\link{.qualtrics_is_header_row}) and coerces columns that are now fully numeric
+\code{.qualtrics_is_header_row}) and coerces columns that are now fully numeric
 back to numeric, so the rest of \code{data_check} types the file correctly.
 }
 \keyword{internal}

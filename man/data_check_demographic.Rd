@@ -19,7 +19,7 @@ them, else \code{NA_character_}.
 A content-based classifier for the three demographic variables collected by
 almost every human-subjects study. A column is tagged only when its NAME
 looks like the demographic AND its VALUES are consistent with it (see
-\link{.demographic_values_ok}), which keeps false positives low: a \code{condition}
+\code{.demographic_values_ok}), which keeps false positives low: a \code{condition}
 column coded 1/2 is not flagged as gender, and an \code{age} column of free text
 is not treated as usable age data.
 }

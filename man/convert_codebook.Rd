@@ -17,7 +17,7 @@ convert_codebook(
 )
 }
 \arguments{
-\item{paper}{a paper object (see \code{\link[=read_paper]{read_paper()}}), \strong{or} a captured result of
+\item{paper}{a paper object (see \code{\link[=read]{read()}}), \strong{or} a captured result of
 \code{report(paper, ...)} / \code{report_module_run(paper, ...)}. When a captured
 result containing both \code{data_check} and \code{codebook_check} is passed, those
 outputs are reused (with the paper recovered from the result) instead of
@@ -34,7 +34,7 @@ render is skipped regardless.}
 \code{\link[=convert_psychds]{convert_psychds()}}); the default (\code{FALSE}) reuses the session's listing.}
 
 \item{local_path, local_only}{passed to \code{data_check} when its output is not
-already available (see \code{\link[=data_check]{data_check()}})}
+already available (see \code{data_check()})}
 
 \item{model, params}{passed to the underlying modules when \code{llm_use(TRUE)}}
 
@@ -59,7 +59,7 @@ plus a ready-to-run R Markdown document for the
 }
 \details{
 For each study the function assembles a data frame whose columns carry the
-variable labels matched by \code{\link[=codebook_check]{codebook_check()}} (plus any value labels already
+variable labels matched by \code{codebook_check()} (plus any value labels already
 embedded in the data, e.g. from SPSS/Stata files), and whose dataset-level
 \code{metadata} attribute holds the title, description, authors, DOI and keywords
 from the paper. It writes:

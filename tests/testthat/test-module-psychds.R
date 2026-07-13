@@ -249,3 +249,24 @@ test_that("non-CSV data files are converted to CSV and the original is kept", {
   # The bundle still validates as Psych-DS.
   expect_true(psychds_validate(out)$valid)
 })
+
+test_that("convert_psychds skips gracefully when psychds_check plan is empty", {
+  llm_use(FALSE)
+
+  # No local repository and download = "none" produce an empty data/placement
+  # plan; conversion should return a no-op result rather than erroring.
+  chain <- report_module_run(
+    test_paper("x"),
+    c("data_check", "codebook_check", "psychds_check"),
+    args = list(data_check = list(download = "none", local_only = TRUE)))
+
+  out <- file.path(tempdir(), "pd_empty_plan")
+  expect_message(
+    res <- convert_psychds(chain, output_dir = out, overwrite = TRUE),
+    "empty plan")
+
+  expect_true(isTRUE(res$empty_plan))
+  expect_equal(res$n_files_copied, 0L)
+  expect_equal(res$n_studies, 0L)
+  expect_length(res$descriptions, 0)
+})

@@ -213,42 +213,104 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (is.na(llm_model_used)) llm_model_used <- merged$model %||% NA_character_
   }
 
-  # ── 4b. Identify psychometric scales (LLM) ───────────────────────────────────
-  # Detect blocks of Likert items and ask the LLM which named instrument each is
-  # (PANAS, Rosenberg Self-Esteem, ...). Adds `scale` + `scale_confidence` to
-  # every item column of a confidently identified block. Only runs with an LLM
-  # and readable data (previews); otherwise the columns are added empty so the
-  # table schema is stable.
+  # ── 4b. Identify psychometric scales (manuscript-first) ──────────────────────
+  # The dataset's own column names are the primary signal: columns sharing a
+  # leading abbreviation (BSQ_*, MBSC_*, DEM_*) are almost always one instrument,
+  # and the paper text names what the abbreviation stands for. Stages:
+  #   1. Prefix-group + one-call LLM matcher (primary): group columns by
+  #      abbreviation, retrieve paper sentences mentioning them, and ask the LLM
+  #      (ONE call per file) to name each group FROM THE TEXT. scale_source =
+  #      "manuscript". Every group is kept — unmatched ones stay unnamed.
+  #   2. Dictionary rules matcher (fallback, incl. llm_use(FALSE)): for still-
+  #      unnamed blocks, match a block prefix to the `scales` dictionary and
+  #      confirm the FULL NAME in the text (never a bare acronym). scale_source =
+  #      "matched".
+  #   3. LLM self-generated fallback: coherent blocks matching no instrument get
+  #      a construct label from the item/paper wording. scale_source =
+  #      "self_generated".
+  #   4. Prefix propagation to same-prefix sibling columns.
+  # The full per-group inventory (named + unnamed) is also exported in the
+  # OpenScales OSD JSON structure (`scales_osd`).
   labels_df$scale            <- NA_character_
   labels_df$scale_confidence <- NA_character_
-  n_scales_found     <- 0L   # distinct named scales identified
-  n_scale_files      <- 0L   # data files that contain scale-like item blocks
-  n_scale_unnamed    <- 0L   # of those files, how many yielded no named scale
-  if (llm_use() && !is.null(previews) && length(previews) > 0) {
-    sc <- codebook_identify_scales(previews, labels_df, model, params,
-                                   paper = paper, max_calls = codebook_max_calls)
-    scale_gate <- attr(sc, "gated")
-    if (!is.null(scale_gate)) {
-      # Over the budget → report and skip scale identification.
-      cap_report(scale_gate)
-      gate_msgs <- c(gate_msgs, scale_gate)
-    }
-    n_scale_files <- attr(sc, "n_detected") %||% 0L
-    if (!is.null(sc) && nrow(sc) > 0) {
-      # Merge scale assignments back onto labels_df by (source_file, column_name).
-      key      <- paste(labels_df$source_file, labels_df$column_name, sep = "\x01")
-      sc_key   <- paste(sc$source_file, sc$column_name, sep = "\x01")
-      m        <- match(key, sc_key)
-      labels_df$scale[!is.na(m)]            <- sc$scale[m[!is.na(m)]]
-      labels_df$scale_confidence[!is.na(m)] <- sc$confidence[m[!is.na(m)]]
-      n_scales_found <- length(unique(sc$scale[!is.na(sc$scale) & nzchar(sc$scale)]))
-    }
-    # Files that had scale-like blocks but ended up with no identified scale.
-    files_named <- unique(labels_df$source_file[!is.na(labels_df$scale)])
-    n_scale_unnamed <- max(0L, n_scale_files - length(files_named))
-    if (is.na(llm_model_used))
-      llm_model_used <- attr(sc, "llm_model") %||% NA_character_
+  labels_df$scale_source     <- NA_character_
+  n_scales_found     <- 0L
+  n_scale_files      <- 0L
+  n_scale_unnamed    <- 0L
+  n_scale_selfgen    <- 0L
+  scale_groups       <- NULL   # per-group inventory (for OSD + report)
+  have_previews <- !is.null(previews) && length(previews) > 0
+
+  apply_scale <- function(sc, source = "matched") {
+    # Fill scale/confidence/source from a PER-COLUMN result, without overwriting
+    # a scale already set (earlier stages win; later only fill gaps).
+    if (is.null(sc) || !nrow(sc)) return(invisible())
+    key    <- paste(labels_df$source_file, labels_df$column_name, sep = "\x01")
+    sc_key <- paste(sc$source_file, sc$column_name, sep = "\x01")
+    m      <- match(key, sc_key)
+    fill   <- !is.na(m) & (is.na(labels_df$scale) | !nzchar(labels_df$scale))
+    src    <- if ("scale_source" %in% names(sc)) sc$scale_source[m[fill]] else source
+    labels_df$scale[fill]            <<- sc$scale[m[fill]]
+    labels_df$scale_confidence[fill] <<- sc$confidence[m[fill]]
+    labels_df$scale_source[fill]     <<- src
   }
+
+  # Stage 1: prefix-group + one-call LLM matcher (the primary namer).
+  if (have_previews) {
+    scale_groups <- .identify_scales_prefix_llm(
+      previews, labels_df, paper, model, params, max_calls = codebook_max_calls)
+    if (!is.null(scale_groups) && nrow(scale_groups) > 0) {
+      n_scale_files <- length(unique(scale_groups$source_file))
+      # Expand named groups to per-column rows for apply_scale.
+      named_grp <- scale_groups[!is.na(scale_groups$scale) &
+                                nzchar(scale_groups$scale), , drop = FALSE]
+      if (nrow(named_grp) > 0) {
+        per_col <- do.call(rbind, lapply(seq_len(nrow(named_grp)), function(i) {
+          r <- named_grp[i, ]; cols <- r$columns[[1]]
+          data.frame(source_file = r$source_file, column_name = cols,
+                     scale = r$scale, confidence = r$confidence,
+                     scale_source = "manuscript", stringsAsFactors = FALSE)
+        }))
+        apply_scale(per_col)
+      }
+      if (is.na(llm_model_used))
+        llm_model_used <- attr(scale_groups, "llm_model") %||% NA_character_
+    }
+  }
+
+  # Stage 2: dictionary rules matcher (fallback; also the only namer w/o an LLM).
+  if (have_previews) {
+    scr <- .identify_scales_rules(previews, labels_df, paper)
+    if (!is.null(attr(scr, "n_detected")))
+      n_scale_files <- max(n_scale_files, attr(scr, "n_detected"))
+    apply_scale(scr, source = "matched")
+  }
+
+  # Stage 3: LLM self-generated fallback.
+  if (llm_use() && have_previews) {
+    sg <- .identify_scales_selfgen(previews, labels_df, paper, model, params,
+                                   max_calls = codebook_max_calls)
+    if (!is.null(sg) && nrow(sg) > 0) {
+      apply_scale(sg, source = "self_generated")
+      n_scale_selfgen <- length(unique(paste(sg$source_file, sg$scale)))
+      if (is.na(llm_model_used))
+        llm_model_used <- attr(sg, "llm_model") %||% NA_character_
+    }
+  }
+
+  # Stage 4: propagate to same-prefix siblings.
+  labels_df <- .propagate_scale_by_prefix(labels_df)
+
+  # OSD export of the full per-group inventory (named + unmatched groups kept).
+  # Response scale lets the codebook lead (columns_df = data_check stats fallback,
+  # labels_df = codebook value labels + item wording).
+  scales_osd <- if (!is.null(scale_groups) && nrow(scale_groups) > 0)
+    .scales_to_osd(scale_groups, columns_df, labels_df) else list()
+
+  named <- !is.na(labels_df$scale) & nzchar(labels_df$scale)
+  n_scales_found <- length(unique(labels_df$scale[named]))
+  files_named    <- unique(labels_df$source_file[named])
+  n_scale_unnamed <- max(0L, n_scale_files - length(files_named))
 
   # ── 5. Coverage tallies ──────────────────────────────────────────────────────
   # Two distinct questions, kept separate:
@@ -394,55 +456,41 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   # ── Scales ───────────────────────────────────────────────────────────────────
-  # Report identified psychometric scales, and — when item-blocks look like
-  # scales but could not be named — tell the user what to improve so a future
-  # run (or a human reader) can identify them.
-  if (n_scale_files > 0 || n_scales_found > 0) {
-    scale_report <- "#### Scales"
-    if (n_scales_found > 0) {
-      scale_tbl <- labels_df[!is.na(labels_df$scale) & nzchar(labels_df$scale), ,
-                             drop = FALSE]
-      scale_tbl <- scale_tbl |>
-        dplyr::distinct(.data$source_file, .data$scale, .data$scale_confidence) |>
-        dplyr::transmute(File = .data$source_file, Scale = .data$scale,
-                         Confidence = .data$scale_confidence)
-      scale_report <- c(scale_report,
-        sprintf("We identified %d psychometric scale%s in the data (schema.org `measurementTechnique` in the Psych-DS output).",
-                n_scales_found, plural(n_scales_found)),
-        scroll_table(scale_tbl, maxrows = 20))
-    }
-    # Guidance whenever a block was NOT identified with high confidence — either
-    # unnamed, or named only tentatively (medium confidence). Tell the researcher
-    # exactly what to add so a future run (or a human reader) can identify the
-    # scale with certainty.
-    n_low_conf <- length(unique(labels_df$source_file[
-      !is.na(labels_df$scale) & nzchar(labels_df$scale) &
-        labels_df$scale_confidence %in% "medium"]))
-    if (n_scale_unnamed > 0 || n_low_conf > 0) {
-      parts <- character(0)
-      if (n_scale_unnamed > 0)
-        parts <- c(parts, sprintf(
-          "%d data file%s with survey-item blocks could not be matched to a named instrument.",
-          n_scale_unnamed, plural(n_scale_unnamed)))
-      if (n_low_conf > 0)
-        parts <- c(parts, sprintf(
-          "%d file%s had a scale identified only tentatively (medium confidence).",
-          n_low_conf, plural(n_low_conf)))
-      scale_report <- c(scale_report, paste(parts, collapse = " "),
-        paste(
-          "To let this tool (and anyone reusing the data) identify these scales with **high confidence**, add any of the following — each alone often suffices:",
-          "\n- **Use the established instrument name** in your variable names or codebook: a consistent prefix per scale (`panas_1 … panas_10`, `rse_1 … rse_10`) rather than generic `Q1`, `V3`, `item5`. The instrument's standard name/acronym is the strongest signal.",
-          "\n- **Add a detailed codebook** (a `variable, description` table, or embedded value labels in SPSS/Stata files) giving the **exact item wording**: the verbatim item text is what pins down which published scale it is.",
-          "\n- **State the scale name and citation in the README or manuscript**, with the response options (e.g. 1 = *Strongly disagree* … 5 = *Strongly agree*) and any reverse-coded items. metacheck reads the paper text and confirms a scale the manuscript names outright, so naming it there directly raises confidence to high.",
-          sep = ""))
-    }
-    report <- c(report, scale_report)
-  } else if (llm_use() && !is.null(previews) && length(previews) > 0) {
-    # LLM ran but found no scale-like item blocks at all — nothing to advise.
-  } else if (!llm_use()) {
-    report <- c(report,
-      "#### Scales",
-      "Psychometric-scale identification is skipped without an LLM. Enable one with `llm_use(TRUE)` to detect which named instruments (PANAS, Rosenberg Self-Esteem, ...) the survey items form.")
+  # Report the scale-group inventory: every column group detected by its shared
+  # abbreviation, with the instrument it was matched to (from the manuscript /
+  # dictionary) or "not matched" when the text did not name it. Unmatched groups
+  # are shown too — a real column family we saw but could not name.
+  if (!is.null(scale_groups) && nrow(scale_groups) > 0) {
+    sg <- scale_groups
+    sg$Matched <- ifelse(!is.na(sg$scale) & nzchar(sg$scale),
+                         sg$scale, "— not matched to a named scale —")
+    inv_tbl <- data.frame(
+      File        = sg$source_file,
+      Abbrev      = sg$prefix,
+      Columns     = sg$n_columns,
+      `Max item`  = ifelse(is.na(sg$max_item), "?", as.character(sg$max_item)),
+      Scale       = sg$Matched,
+      Confidence  = ifelse(is.na(sg$confidence), "", sg$confidence),
+      Source      = ifelse(is.na(sg$scale_source), "", sg$scale_source),
+      check.names = FALSE, stringsAsFactors = FALSE)
+    n_grp   <- nrow(sg)
+    n_named <- sum(!is.na(sg$scale) & nzchar(sg$scale))
+    report <- c(report, "#### Scales",
+      sprintf("We detected %d column group%s (by shared abbreviation) that look like scales; %d %s matched to a named instrument from the paper text or dictionary. Groups we could not name are listed too — they are real scale-like column families whose instrument the manuscript did not identify. Identified scales are exported in the OpenScales OSD structure.",
+              n_grp, plural(n_grp), n_named, if (n_named == 1) "was" else "were"),
+      scroll_table(inv_tbl, maxrows = 40))
+    # Guidance when some groups are unnamed or only tentatively named.
+    n_unnamed <- n_grp - n_named
+    n_low <- sum(sg$confidence %in% c("medium","low"))
+    if (n_unnamed > 0 || n_low > 0)
+      report <- c(report, paste(
+        "To let this tool (and anyone reusing the data) identify these scales with **high confidence**:",
+        "\n- **Name the instrument in the manuscript with its abbreviation** — e.g. \"the Breakup Distress Scale (BDS)\" — matching the column prefix.",
+        "\n- **Add a codebook** giving the item wording, or state the number of items (\"a 15-item scale\").",
+        sep = ""))
+  } else if (!llm_use() && !is.null(previews) && length(previews) > 0) {
+    report <- c(report, "#### Scales",
+      "Scale naming from the manuscript needs an LLM (enable with `llm_use(TRUE)`); the dictionary rules matcher still names instruments whose abbreviation matches a known scale.")
   }
 
   if (llm_use()) {
@@ -484,6 +532,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   list(
     table = labels_df,
     codebook_vars = codebook_vars_df,
+    scales_osd = scales_osd,           # per-group inventory in OpenScales OSD form
     summary_table = summary_table,
     na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
                    conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0,
@@ -621,49 +670,56 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   utils::head(s, max_sent)
 }
 
-# Well-known psychometric instruments: each entry is a regex matching the
-# instrument's name and/or acronym as a whole word in running text. Used to scan
-# the paper for scales the authors mention by name, so the LLM can CONFIRM a
-# stated instrument rather than guess one from item wording alone (the surest
-# route to a high-confidence identification). Kept deliberately conservative —
-# distinctive acronyms and full names, not generic words — to avoid false hits.
-.known_scale_patterns <- c(
-  "PANAS"                    = "\\bPANAS\\b|positive and negative affect schedule",
-  "Rosenberg Self-Esteem"    = "\\bRSES?\\b|rosenberg self.?esteem",
-  "Big Five Inventory"       = "\\bBFI(?:-2|-44|-10)?\\b|big five inventory",
-  "Ten-Item Personality Inventory" = "\\bTIPI\\b|ten.?item personality",
-  "HEXACO"                   = "\\bHEXACO\\b",
-  "NEO-PI"                   = "\\bNEO-?(PI-?R|FFI)?\\b|neo personality inventory",
-  "Perceived Stress Scale"   = "\\bPSS\\b|perceived stress scale",
-  "Satisfaction With Life"   = "\\bSWLS\\b|satisfaction with life",
-  "Beck Depression Inventory"= "\\bBDI(?:-II)?\\b|beck depression",
-  "PHQ-9"                    = "\\bPHQ-?9\\b|patient health questionnaire",
-  "GAD-7"                    = "\\bGAD-?7\\b|generali[sz]ed anxiety disorder.?7",
-  "STAI"                     = "\\bSTAI\\b|state.?trait anxiety",
-  "Need for Cognition"       = "\\bNF?C\\b|need for cognition",
-  "Interpersonal Reactivity Index" = "\\bIRI\\b|interpersonal reactivity",
-  "Social Value Orientation" = "\\bSVO\\b|social value orientation",
-  "Vividness of Visual Imagery" = "\\bVVIQ\\b|vividness of visual imagery",
-  "Regulatory Focus"         = "regulatory focus questionnaire|\\bRFQ\\b",
-  "Dark Triad / Dirty Dozen" = "dark triad|dirty dozen|\\bSD3\\b",
-  "UCLA Loneliness"          = "ucla loneliness|\\bUCLA-?LS\\b",
-  "Autism Quotient"          = "autism.?spectrum quotient|\\bAQ\\b",
-  "Cognitive Reflection Test"= "cognitive reflection test|\\bCRT\\b"
-)
+# Scale dictionary: the curated `scales` dataset (see R/scales.R / data-raw/
+# scales.R), one row per instrument with name / acronym / code / source. Loaded
+# once and cached. Acronyms may collide (AQ, MFQ, SDS, ...); the matcher
+# disambiguates a collision from the codebook and paper text.
+.scale_dictionary <- local({
+  cached <- NULL
+  function() {
+    if (!is.null(cached)) return(cached)
+    d <- tryCatch(get("scales", envir = asNamespace("metacheck")),
+                  error = function(e) NULL)
+    if (is.null(d)) d <- tryCatch(get("scales"), error = function(e) NULL)
+    if (is.null(d)) d <- data.frame(name = character(), acronym = character(),
+                                    code = character(), source = character())
+    cached <<- d
+    d
+  }
+})
 
-# Scan the paper's full text for known instruments mentioned by name/acronym.
-# Returns a character vector of scale names found (the dictionary keys), to
-# offer the LLM as candidates it can confirm. Empty when no paper text or no
-# hit. Cheap (regex over the text table), so it runs whenever a paper is given.
+# Regex matching an instrument in running text: its full name (tolerant of
+# spacing/dash/punctuation) OR its acronym as a whole word. Built per dictionary
+# row. NA acronym -> name only.
+.scale_text_pattern <- function(name, acronym) {
+  toks <- unlist(strsplit(name, "[^A-Za-z0-9]+"))
+  toks <- toks[nzchar(toks)]
+  name_pat <- paste(vapply(toks, function(t)
+    gsub("([][{}().^$*+?|\\\\-])", "\\\\\\1", t), character(1)),
+    collapse = "[\\s._/-]*")
+  parts <- name_pat
+  if (!is.na(acronym) && nzchar(acronym)) {
+    a <- gsub("([][{}().^$*+?|\\\\-])", "\\\\\\1", acronym)
+    parts <- c(parts, paste0("\\b", a, "\\b"))
+  }
+  paste(parts, collapse = "|")
+}
+
+# Scan the paper's full text for dictionary instruments mentioned by name or
+# acronym. Returns the canonical names found, to corroborate a data-proposed
+# scale (and to offer the LLM confirmable candidates). Cheap regex over the text.
 .scan_paper_for_scales <- function(paper) {
   if (!.is_paper(paper) || is.null(paper$text) || nrow(paper$text) == 0)
     return(character(0))
+  dict <- .scale_dictionary()
+  if (nrow(dict) == 0) return(character(0))
   hay <- paste(as.character(paper$text$text), collapse = " \n ")
-  hits <- names(.known_scale_patterns)[vapply(
-    .known_scale_patterns,
-    function(p) grepl(p, hay, perl = TRUE, ignore.case = TRUE),
-    logical(1))]
-  unique(hits)
+  hit <- vapply(seq_len(nrow(dict)), function(i) {
+    pat <- .scale_text_pattern(dict$name[i], dict$acronym[i])
+    isTRUE(tryCatch(grepl(pat, hay, perl = TRUE, ignore.case = TRUE),
+                    error = function(e) FALSE))
+  }, logical(1))
+  unique(dict$name[hit])
 }
 
 # Common words to exclude from "distinctive item word" searches.
@@ -685,6 +741,578 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
                tolower(sub("\\s*\\(.*\\)\\s*$", "", scale)))  # name without acronym
   needles <- unique(needles[nchar(needles) >= 3])
   any(vapply(needles, function(n) grepl(n, hay, fixed = TRUE), logical(1)))
+}
+
+# Propagate a named scale across same-file, same-prefix sibling columns. The
+# LLM (or the rules namer) often names a block but echoes back only some of its
+# item columns, leaving a few unnamed; and a codebook match may cover only part
+# of a family. For each source_file, every unnamed column whose name-prefix
+# matches a NAMED column's prefix inherits that column's scale + confidence
+# (verbatim — same prefix, same instrument, same block). Only fills empty cells,
+# never overwrites; when two named prefixes would both apply (they cannot, a
+# prefix is unique per column) the first is used. Deterministic, no LLM.
+.propagate_scale_by_prefix <- function(labels_df) {
+  if (is.null(labels_df) || !nrow(labels_df) ||
+      !all(c("source_file", "column_name", "scale") %in% names(labels_df)))
+    return(labels_df)
+  named <- !is.na(labels_df$scale) & nzchar(labels_df$scale)
+  if (!any(named)) return(labels_df)
+  has_source <- "scale_source" %in% names(labels_df)
+  pref <- .scale_name_prefix(labels_df$column_name)
+  for (f in unique(labels_df$source_file[named])) {
+    in_f <- labels_df$source_file == f
+    # prefix -> (scale, confidence, source) from this file's named columns
+    nk <- in_f & named
+    key <- pref[nk]
+    # first named occurrence per prefix
+    first <- !duplicated(key)
+    map_scale <- stats::setNames(labels_df$scale[nk][first], key[first])
+    map_conf  <- stats::setNames(labels_df$scale_confidence[nk][first], key[first])
+    map_src   <- if (has_source)
+      stats::setNames(labels_df$scale_source[nk][first], key[first]) else NULL
+    # fill unnamed columns in this file whose prefix is a named one
+    fill <- in_f & !named & pref %in% names(map_scale)
+    if (any(fill)) {
+      labels_df$scale[fill]            <- unname(map_scale[pref[fill]])
+      labels_df$scale_confidence[fill] <- unname(map_conf[pref[fill]])
+      if (has_source)
+        labels_df$scale_source[fill]   <- unname(map_src[pref[fill]])
+    }
+  }
+  labels_df
+}
+
+# Rules-only scale namer (no LLM), against the `scales` dictionary. The DATA
+# proposes: a detected Likert block's shared name-prefix is matched to the
+# dictionary's acronyms/names; the codebook item wording and the paper text then
+# CONFIRM or DISAMBIGUATE the candidate(s). Conservative by design — a wrong
+# scale label is worse than a missing one.
+#
+# For each block:
+#   1. Propose candidates whose acronym (or a name token) equals the block prefix.
+#   2. Corroborate each candidate: does the instrument's name/acronym appear in
+#      (a) the codebook item wording of these columns [checked first], or
+#      (b) the paper text?
+#   3. Resolve:
+#        * exactly one candidate corroborated  -> name it, confidence "high".
+#        * one candidate, no corroboration, but the prefix is a "safe" acronym
+#          (>= 4 chars) -> name it, confidence "medium" (data-only).
+#        * zero candidates, or >= 2 candidates and not exactly one corroborated,
+#          or a single short-acronym candidate with no corroboration -> ABSTAIN.
+# Returns (source_file, column_name, scale, confidence, scale_source="matched"),
+# with an "n_detected" attribute (files with scale-like blocks).
+.identify_scales_rules <- function(previews, labels_df, paper) {
+  empty <- structure(
+    data.frame(source_file = character(), column_name = character(),
+               scale = character(), confidence = character(),
+               scale_source = character()),
+    n_detected = 0L)
+  if (is.null(previews) || !length(previews)) return(empty)
+  dict <- .scale_dictionary()
+  if (nrow(dict) == 0) return(empty)
+
+  # Fast prefix -> candidate dictionary rows. Key on the acronym AND on the
+  # first content token of the name, both normalized like a variable prefix.
+  norm_pref <- function(x) tolower(gsub("[^a-z0-9]", "", tolower(x)))
+  dict$.akey <- norm_pref(dict$acronym)
+  cand_for_prefix <- function(pfx) {
+    p <- norm_pref(pfx)
+    if (!nzchar(p)) return(integer(0))
+    which(dict$.akey == p)          # acronym-prefix match (collisions -> several)
+  }
+
+  # Per-column codebook wording (label + question), for corroboration.
+  lbl_key <- paste(labels_df$source_file, labels_df$column_name, sep = "\x01")
+  wording_of <- function(file, cols) {
+    i <- match(paste(file, cols, sep = "\x01"), lbl_key)
+    i <- i[!is.na(i)]
+    if (!length(i)) return("")
+    parts <- c(labels_df$label[i],
+               if ("question" %in% names(labels_df)) labels_df$question[i])
+    paste(parts[!is.na(parts) & nzchar(parts)], collapse = " ")
+  }
+
+  have_paper <- .is_paper(paper) && !is.null(paper$text) && nrow(paper$text) > 0
+  paper_hay  <- if (have_paper)
+    paste(as.character(paper$text$text), collapse = " \n ") else ""
+
+  # Does instrument `i`'s FULL NAME appear in `hay`? Corroboration deliberately
+  # requires the full name, NOT the bare acronym: an acronym like "BES" in a
+  # paper may stand for a different instrument (Breakup Emotions Scale, not the
+  # dictionary's Binge Eating Scale), so a bare-acronym hit must never confirm a
+  # dictionary expansion. (The manuscript-first prefix matcher handles the
+  # acronym-defined-in-text case correctly; this rules fallback stays strict.)
+  corroborates <- function(i, hay) {
+    if (!nzchar(hay)) return(FALSE)
+    pat <- .scale_text_pattern(dict$name[i], NA_character_)   # name only
+    isTRUE(tryCatch(grepl(pat, hay, perl = TRUE, ignore.case = TRUE),
+                    error = function(e) FALSE))
+  }
+
+  out <- list(); n_detected <- 0L
+  for (file in names(previews)) {
+    df <- previews[[file]]
+    if (is.null(df) || ncol(df) < .scale_min_items) next
+    blocks <- .detect_scale_blocks(df)
+    if (length(blocks) == 0) next
+    n_detected <- n_detected + 1L
+
+    for (cols in blocks) {
+      nms    <- names(df)[cols]
+      prefix <- .scale_name_prefix(nms[[1]])
+      cand   <- cand_for_prefix(prefix)
+      if (length(cand) == 0) next               # data proposes nothing
+
+      cb_hay <- wording_of(file, nms)           # codebook wording FIRST
+      # Corroborate each candidate: codebook, then paper.
+      cb_ok <- vapply(cand, corroborates, logical(1), hay = cb_hay)
+      pp_ok <- vapply(cand, corroborates, logical(1), hay = paper_hay)
+      corr  <- cb_ok | pp_ok
+
+      pick <- NA_integer_; conf <- NA_character_
+      if (sum(corr) == 1L) {
+        pick <- cand[corr]; conf <- "high"      # unambiguous, text-confirmed
+      } else if (sum(corr) == 0L && length(cand) == 1L &&
+                 nchar(norm_pref(dict$acronym[cand])) >= 4L) {
+        pick <- cand; conf <- "medium"          # data-only, safe acronym
+      }
+      # else: 0 candidates left, several corroborated (still ambiguous), or a
+      # lone short-acronym with no corroboration -> ABSTAIN.
+
+      if (!is.na(pick))
+        out[[length(out) + 1L]] <- data.frame(
+          source_file = file, column_name = nms,
+          scale = dict$name[pick], confidence = conf,
+          scale_source = "matched")
+    }
+  }
+
+  res <- if (length(out)) dplyr::bind_rows(out) else empty
+  attr(res, "n_detected") <- n_detected
+  res
+}
+
+# ── Prefix-group scale pipeline ───────────────────────────────────────────────
+# A dataset's own COLUMN NAMES are the most reliable scale signal available: a
+# run of columns sharing a leading abbreviation (BSQ_*, MBSC_*, BDS_*, DEM_*) is
+# almost always one instrument, and the paper text names what the abbreviation
+# stands for. This pipeline is manuscript-first and dictionary-independent:
+#   1. group columns by leading abbreviation (any consistent PREFIX_*, not just
+#      Likert blocks) -> candidate scales, with column count + max item number;
+#   2. search the paper for each abbreviation (text_search) -> sentences;
+#   3. ONE LLM call maps groups -> named scales from those sentences (with the
+#      dictionary offered only as a hint). Unmatched groups are KEPT, unnamed.
+# This fixes the failure where BES_* (Breakup Emotions Scale, named in the paper)
+# was mislabelled "Binge Eating Scale" by a bare-acronym dictionary match.
+
+# The leading abbreviation of a column name: the first token before an
+# underscore/dot/dash/space, or a trailing-number split when there is no
+# separator (Q1 -> Q, panas1 -> panas). Lower-cased for grouping; the display
+# form keeps the original case of the first column.
+.scale_prefix_of <- function(nm) {
+  x <- trimws(nm)
+  # token before the first separator (underscore, dot, dash or space)
+  seg <- sub("[_. -].*$", "", x)
+  if (identical(seg, x)) {
+    # no separator: strip a trailing number (panas1 -> panas, Q1 -> Q)
+    seg <- sub("[0-9]+$", "", x)
+  }
+  seg
+}
+
+# Group a data file's columns by leading abbreviation. Returns a list, one entry
+# per prefix with >= min_cols columns, carrying the column names, the count, and
+# the maximum numeric suffix seen across the columns (tentative item count vs.
+# declared length — kept separate, they can disagree when subscale/computed
+# columns inflate the count). Not restricted to Likert columns (DEM_* etc. count).
+.scale_prefix_groups <- function(df, min_cols = .scale_min_items) {
+  nms <- names(df)
+  pfx <- vapply(nms, .scale_prefix_of, character(1))
+  # A prefix is a candidate abbreviation only if it is short-ish and alnum
+  # (BSQ, MBSC, DEM_RACE would collapse to DEM). Drop empty / very long prefixes.
+  keep <- nzchar(pfx) & nchar(pfx) <= 12
+  groups <- split(nms[keep], tolower(pfx[keep]))
+  out <- list()
+  for (g in names(groups)) {
+    cols <- groups[[g]]
+    if (length(cols) < min_cols) next
+    # max numeric suffix across the columns (BSQ_43 -> 43): the declared length.
+    nums <- suppressWarnings(as.integer(sub(".*?([0-9]+)$", "\\1",
+             grep("[0-9]+$", cols, value = TRUE))))
+    max_item <- if (length(nums)) max(nums, na.rm = TRUE) else NA_integer_
+    out[[g]] <- list(
+      prefix     = g,
+      display    = .scale_prefix_of(cols[[1]]),   # original-case abbreviation
+      columns    = cols,
+      n_columns  = length(cols),
+      max_item   = max_item)
+  }
+  out
+}
+
+# Retrieve paper sentences mentioning an abbreviation (whole-word) or its
+# spaced-out form, via metacheck's text_search. Returns unique sentences.
+.scale_prefix_sentences <- function(paper, prefixes, max_sent = 40L) {
+  if (!.is_paper(paper) || is.null(paper$text) || nrow(paper$text) == 0)
+    return(character(0))
+  pfx <- unique(prefixes[nzchar(prefixes)])
+  if (length(pfx) == 0) return(character(0))
+  esc <- function(x) gsub("([][{}().^$*+?|\\\\-])", "\\\\\\1", x)
+  pats <- sprintf("\\b%s\\b", esc(pfx))
+  sents <- tryCatch(
+    text_search(paper, pattern = pats, return = "sentence",
+                ignore.case = TRUE, perl = TRUE),
+    error = function(e) NULL)
+  if (is.null(sents) || !nrow(sents)) return(character(0))
+  s <- unique(trimws(as.character(sents$text)))
+  utils::head(s[nzchar(s)], max_sent)
+}
+
+# ONE-CALL LLM matcher: given every prefix group in a file (with column counts,
+# max item numbers, and item wording) plus every paper sentence that mentions
+# those abbreviations, ask the model to name each group's instrument FROM THE
+# TEXT. The scale dictionary is offered only as a hint. A group the text does not
+# name is returned with an empty scale (kept, unnamed). Returns a data.frame
+# (source_file, prefix, columns list-col, scale, scale_full, confidence,
+# scale_source, n_columns, max_item), one row per group, or NULL.
+.identify_scales_prefix_llm <- function(previews, labels_df, paper, model, params,
+                                        max_calls = 40L) {
+  if (is.null(previews) || !length(previews)) return(NULL)
+  dict <- .scale_dictionary()
+  lbl_key <- if (all(c("source_file","column_name") %in% names(labels_df)))
+    paste(labels_df$source_file, labels_df$column_name, sep = "\x01") else character(0)
+  wording_of <- function(file, cols) {
+    if (!length(lbl_key)) return(character(0))
+    i <- match(paste(file, cols, sep = "\x01"), lbl_key)
+    i <- i[!is.na(i)]
+    if (!length(i)) return(character(0))
+    w <- c(labels_df$label[i],
+           if ("question" %in% names(labels_df)) labels_df$question[i])
+    unique(w[!is.na(w) & nzchar(w)])
+  }
+
+  type_spec <- ellmer::type_object(
+    scales = ellmer::type_array(ellmer::type_object(
+      prefix     = ellmer::type_string("The column-name abbreviation, exactly as given."),
+      scale_name = ellmer::type_string(
+        "The instrument this abbreviation stands for, named or clearly described in the provided sentences (e.g. 'Breakup Distress Scale'). Empty if the text does not identify it."),
+      confidence = ellmer::type_string("high, medium, or low."))))
+  prompt <- paste(
+    "A dataset's columns are grouped by a leading abbreviation; each group is",
+    "likely one questionnaire/scale. You are given, for each group, its",
+    "abbreviation, how many columns it has, the highest item number, and (if any)",
+    "the item wording; plus sentences from the paper that mention these",
+    "abbreviations, and an optional list of known instruments. For EACH group,",
+    "give the instrument the abbreviation stands for, taken from the paper",
+    "sentences (an abbreviation is often defined as 'Name of Scale (ABBR)'). Use",
+    "the item counts to disambiguate (e.g. a 'X-item scale' in the text). If the",
+    "text does not identify the group, return an empty scale_name for it — do NOT",
+    "guess and do NOT force a known instrument. Return one entry per group.")
+
+  out <- list(); model_used <- NA_character_; n_calls <- 0L
+  for (file in names(previews)) {
+    df <- previews[[file]]
+    if (is.null(df) || ncol(df) == 0) next
+    groups <- .scale_prefix_groups(df)
+    if (length(groups) == 0) next
+
+    # Sentences mentioning ANY of this file's abbreviations (one search per file).
+    prefixes <- vapply(groups, function(g) g$display, character(1))
+    sents <- if (.is_paper(paper))
+      .scale_prefix_sentences(paper, prefixes) else character(0)
+
+    # Dictionary hints: known instruments whose acronym equals a group prefix.
+    hint_rows <- dict[toupper(gsub("[^A-Za-z0-9]","",dict$acronym)) %in%
+                        toupper(prefixes) & nzchar(dict$acronym), , drop = FALSE]
+    hints <- if (nrow(hint_rows))
+      paste(sprintf("%s = %s", hint_rows$acronym, hint_rows$name), collapse = "; ") else ""
+
+    # Build the group listing sent to the model.
+    grp_txt <- vapply(names(groups), function(g) {
+      gg <- groups[[g]]
+      wd <- wording_of(file, gg$columns)
+      sprintf("- %s: %d columns, highest item number %s%s",
+              gg$display, gg$n_columns,
+              if (is.na(gg$max_item)) "unknown" else as.character(gg$max_item),
+              if (length(wd)) paste0("; item wording: ",
+                paste(utils::head(wd, 6), collapse = " | ")) else "")
+    }, character(1))
+
+    text_in <- paste0(
+      "Column groups in this data file:\n", paste(grp_txt, collapse = "\n"),
+      if (length(sents)) paste0("\n\nSentences from the paper mentioning these abbreviations:\n",
+        paste("-", sents, collapse = "\n")) else "\n\n(No paper sentences mention these abbreviations.)",
+      if (nzchar(hints)) paste0("\n\nKnown instruments (hints only, confirm from the text): ", hints) else "")
+
+    resp <- NULL
+    if (llm_use() && n_calls < max_calls) {
+      n_calls <- n_calls + 1L
+      resp <- tryCatch(
+        llm(text = data.frame(text = text_in), text_col = "text",
+            system_prompt = prompt, type = type_spec, model = model,
+            params = params, phase = "Matching scales to text"),
+        error = function(e) NULL)
+      resp <- .strip_llm_wrapper(resp, "scales")
+      if (!is.null(resp) && is.na(model_used))
+        model_used <- attr(resp, "llm")$model %||% NA_character_
+    }
+
+    # Map LLM answers back to groups by prefix; keep EVERY group (named or not).
+    named <- stats::setNames(rep(NA_character_, length(groups)), names(groups))
+    conf  <- stats::setNames(rep(NA_character_, length(groups)), names(groups))
+    if (!is.null(resp) && nrow(resp) && "prefix" %in% names(resp)) {
+      rk <- tolower(trimws(as.character(resp$prefix)))
+      for (k in names(groups)) {
+        j <- which(rk == k)
+        if (!length(j)) next
+        sn <- trimws(as.character(resp$scale_name[j[1]] %||% ""))
+        if (!is.na(sn) && nzchar(sn) &&
+            !tolower(sn) %in% c("unknown","unclear","na","none")) {
+          named[k] <- sn
+          cf <- tolower(trimws(as.character(resp$confidence[j[1]] %||% "medium")))
+          conf[k] <- if (cf %in% c("high","medium","low")) cf else "medium"
+        }
+      }
+    }
+
+    for (k in names(groups)) {
+      gg <- groups[[k]]
+      out[[length(out) + 1L]] <- data.frame(
+        source_file = file, prefix = gg$display,
+        scale = named[k] %||% NA_character_,
+        confidence = conf[k] %||% NA_character_,
+        scale_source = if (!is.na(named[k])) "manuscript" else NA_character_,
+        n_columns = gg$n_columns, max_item = gg$max_item,
+        columns = I(list(gg$columns)), stringsAsFactors = FALSE)
+    }
+    if (n_calls >= max_calls) break
+  }
+
+  res <- if (length(out)) do.call(rbind, out) else NULL
+  if (!is.null(res)) attr(res, "llm_model") <- model_used
+  res
+}
+
+# Response scale for a block of columns, letting the CODEBOOK LEAD:
+#   1. If the codebook gives value labels for the block's columns, take the
+#      numeric codes (excluding declared missings) as the range and the label
+#      strings as the anchor labels — ground truth.
+#   2. Otherwise fall back to the OBSERVED min/max/n_unique from data_check's
+#      column statistics, with no anchor labels (we do not know them).
+#   3. If neither yields a coherent integer-like scale, return NULL and the
+#      caller omits `likert_options` (no invention).
+.osd_likert_options <- function(cols, source_file, columns_df, labels_df) {
+  key <- function(df) paste(df$source_file, df$column_name, sep = "\x01")
+  want <- paste(source_file, cols, sep = "\x01")
+
+  # 1. Codebook value labels (per column); use the first column that has them,
+  #    since a block shares one response scale.
+  if (!is.null(labels_df) && nrow(labels_df) > 0 &&
+      all(c("source_file", "column_name") %in% names(labels_df)) &&
+      "value_labels" %in% names(labels_df)) {
+    lk <- key(labels_df)
+    for (w in want) {
+      i <- match(w, lk)
+      if (is.na(i)) next
+      vl <- .decode_value_labels(labels_df$value_labels[i])
+      if (is.null(vl) || !length(vl)) next
+      codes <- suppressWarnings(as.integer(names(vl)))
+      miss  <- .decode_value_labels(labels_df$missing_values[i] %||% NA_character_)
+      if (!is.null(miss)) {
+        drop <- names(vl) %in% names(miss)
+        codes <- codes[!drop]; vl <- vl[!drop]
+      }
+      keep <- !is.na(codes)
+      codes <- codes[keep]; vl <- vl[keep]
+      if (length(codes) >= 2)
+        return(Filter(Negate(is.null), list(
+          points = length(codes), min = min(codes), max = max(codes),
+          labels = unname(as.character(vl)),
+          order  = "ascending", source = "codebook")))
+    }
+  }
+
+  # 2. Observed statistics from data_check.
+  if (!is.null(columns_df) && nrow(columns_df) > 0 &&
+      all(c("source_file", "column_name", "min", "max", "n_unique") %in% names(columns_df))) {
+    ck <- key(columns_df)
+    idx <- which(ck %in% want)
+    if (length(idx)) {
+      mn <- suppressWarnings(min(columns_df$min[idx], na.rm = TRUE))
+      mx <- suppressWarnings(max(columns_df$max[idx], na.rm = TRUE))
+      nu <- suppressWarnings(max(columns_df$n_unique[idx], na.rm = TRUE))
+      # Only claim a scale when the range is a small integer-like span.
+      if (is.finite(mn) && is.finite(mx) && mx > mn &&
+          mn == round(mn) && mx == round(mx) && (mx - mn) <= 20) {
+        return(list(points = if (is.finite(nu)) nu else (mx - mn + 1L),
+                    min = mn, max = mx, order = "ascending", source = "observed"))
+      }
+    }
+  }
+  NULL
+}
+
+# Express identified scales in the OpenScales OSD JSON structure, as faithfully
+# as the available evidence allows — one object per (file, scale-group). The
+# response scale lets the codebook lead (see .osd_likert_options); item wording
+# comes from the codebook labels and is placed in `translations` (with each
+# item's `text_key` pointing at it, per the spec) — absent when undocumented.
+# metacheck-specific facts (source file, provenance, confidence) live in a
+# namespaced `definition.metacheck` block so the spec objects stay clean.
+#
+# Every named group yields an object; unnamed groups are returned too (for the
+# in-memory inventory / report) but carry `write = FALSE` so the file writer
+# skips them — an unnamed block is an unresolved detection, not a scale.
+.scales_to_osd <- function(scale_groups, columns_df = NULL, labels_df = NULL,
+                           dict = .scale_dictionary()) {
+  if (is.null(scale_groups) || !nrow(scale_groups)) return(list())
+
+  # Codebook label lookup for translations (id -> item wording).
+  lbl_key <- if (!is.null(labels_df) && nrow(labels_df) > 0 &&
+                 all(c("source_file", "column_name") %in% names(labels_df)))
+    paste(labels_df$source_file, labels_df$column_name, sep = "\x01") else character(0)
+  label_of <- function(file, col) {
+    if (!length(lbl_key)) return(NA_character_)
+    i <- match(paste(file, col, sep = "\x01"), lbl_key)
+    if (is.na(i)) return(NA_character_)
+    w <- labels_df$label[i]
+    if (!is.na(w) && nzchar(w)) return(w)
+    if ("question" %in% names(labels_df) && !is.na(labels_df$question[i]) &&
+        nzchar(labels_df$question[i])) return(labels_df$question[i])
+    NA_character_
+  }
+
+  lapply(seq_len(nrow(scale_groups)), function(i) {
+    r <- scale_groups[i, ]
+    cols <- r$columns[[1]]
+    named <- !is.na(r$scale) && nzchar(r$scale)
+    cp <- .osd_code_and_provenance(r$scale, r$prefix, r$scale_source, dict)
+
+    # Item wording -> translations; text_key points at the id when documented.
+    wording <- stats::setNames(vapply(cols, function(c) label_of(r$source_file, c),
+                                      character(1)), cols)
+    translations_en <- as.list(wording[!is.na(wording) & nzchar(wording)])
+
+    lopts <- .osd_likert_options(cols, r$source_file, columns_df, labels_df)
+
+    scale_info <- Filter(Negate(is.null), list(
+      name         = if (named) r$scale else "",
+      code         = cp$code,
+      abbreviation = r$prefix))
+
+    definition <- list(scale_info = scale_info)
+    if (!is.null(lopts)) definition$likert_options <- lopts
+    definition$items <- lapply(seq_along(cols), function(k) {
+      it <- list(id = cols[k], text_key = cols[k])
+      if (!is.null(lopts)) it$type <- "likert"
+      it
+    })
+    # metacheck provenance extension (kept out of the spec's scale_info).
+    definition$metacheck <- Filter(Negate(is.null), list(
+      scale_source    = cp$source,
+      provenance      = cp$provenance,
+      confidence      = if (!is.na(r$confidence)) r$confidence else NULL,
+      source_file     = r$source_file,
+      n_columns       = r$n_columns,
+      declared_length = if (!is.na(r$max_item)) r$max_item else NULL))
+
+    osd <- list(osd_version = "1.0", definition = definition)
+    if (length(translations_en))
+      osd$translations <- list(en = translations_en)
+    # Marker for the writer: only named scales become files.
+    attr(osd, "write") <- named
+    attr(osd, "code")  <- cp$code
+    osd
+  })
+}
+
+# LLM self-generated scale labels. For scale-like blocks that matched NO known
+# instrument (still unnamed in labels_df), generate a short CONSTRUCT label from
+# the evidence — the codebook item wording of the block's columns and paper
+# sentences that mention the block's variables. This is a distinct category from
+# a dictionary match: scale_source = "self_generated". It is GROUNDED — the model
+# is told to use only the provided text and to return nothing when the text does
+# not describe what the items measure, so it never invents a construct from bare
+# column names. Only runs with an LLM. Returns (source_file, column_name, scale,
+# confidence, scale_source), or an empty frame; NULL is treated as empty.
+.identify_scales_selfgen <- function(previews, labels_df, paper, model, params,
+                                     max_calls = 40L) {
+  empty <- data.frame(source_file = character(), column_name = character(),
+                      scale = character(), confidence = character(),
+                      scale_source = character())
+  if (is.null(previews) || !length(previews)) return(empty)
+
+  named_key <- if (all(c("source_file","column_name","scale") %in% names(labels_df)))
+    paste(labels_df$source_file, labels_df$column_name,
+          sep = "\x01")[!is.na(labels_df$scale) & nzchar(labels_df$scale %||% "")] else
+    character(0)
+  lbl_key <- paste(labels_df$source_file, labels_df$column_name, sep = "\x01")
+  wording_of <- function(file, cols) {
+    i <- match(paste(file, cols, sep = "\x01"), lbl_key)
+    i <- i[!is.na(i)]
+    if (!length(i)) return(character(0))
+    w <- c(labels_df$label[i],
+           if ("question" %in% names(labels_df)) labels_df$question[i])
+    w[!is.na(w) & nzchar(w)]
+  }
+  have_paper <- .is_paper(paper) && !is.null(paper$text) && nrow(paper$text) > 0
+
+  type_spec <- ellmer::type_object(
+    construct = ellmer::type_string(
+      "Short construct label for what these items measure (e.g. 'Institutional Trust', 'Environmental Concern'), or empty if the text does not say."),
+    confidence = ellmer::type_string("high, medium, or low."))
+  prompt <- paste(
+    "You are given the item wording of ONE block of survey items from a dataset,",
+    "and (optionally) sentences from the paper that mention these variables.",
+    "These items do NOT match a known published instrument. Give a short, natural",
+    "CONSTRUCT LABEL for what the block measures, based ONLY on the provided text.",
+    "If the provided text does not clearly indicate what the items measure, return",
+    "an empty construct — do NOT guess from variable names alone. Never invent a",
+    "published scale name; describe the construct in plain words.")
+
+  out <- list(); model_used <- NA_character_; n_calls <- 0L
+  for (file in names(previews)) {
+    df <- previews[[file]]
+    if (is.null(df) || ncol(df) < .scale_min_items) next
+    for (cols in .detect_scale_blocks(df)) {
+      nms <- names(df)[cols]
+      keys <- paste(file, nms, sep = "\x01")
+      if (any(keys %in% named_key)) next          # already named — skip
+      wording <- wording_of(file, nms)
+      ctx <- if (have_paper)
+        .scale_paper_context(paper, .scale_name_prefix(nms[[1]]), wording) else
+        character(0)
+      # Need SOME descriptive evidence — never label from bare names.
+      if (length(wording) == 0 && length(ctx) == 0) next
+      if (n_calls >= max_calls) break
+      n_calls <- n_calls + 1L
+
+      text_in <- paste0(
+        "Item wording:\n",
+        if (length(wording)) paste("-", wording, collapse = "\n") else "(none)",
+        if (length(ctx)) paste0(
+          "\n\nRelevant paper sentences:\n", paste("-", ctx, collapse = "\n")) else "")
+      resp <- tryCatch(
+        llm(text = data.frame(text = text_in), text_col = "text",
+            system_prompt = prompt, type = type_spec, model = model,
+            params = params, phase = "Labelling scales"),
+        error = function(e) NULL)
+      if (is.null(resp) || nrow(resp) == 0 || !"construct" %in% names(resp)) next
+      if (is.na(model_used)) model_used <- attr(resp, "llm")$model %||% NA_character_
+      construct <- trimws(as.character(resp$construct[[1]] %||% ""))
+      if (is.na(construct) || !nzchar(construct) ||
+          tolower(construct) %in% c("unknown","unclear","na","none")) next
+      conf <- tolower(trimws(as.character(resp$confidence[[1]] %||% "medium")))
+      if (!conf %in% c("high","medium","low")) conf <- "medium"
+      out[[length(out) + 1L]] <- data.frame(
+        source_file = file, column_name = nms,
+        scale = construct, confidence = conf, scale_source = "self_generated")
+    }
+    if (n_calls >= max_calls) break
+  }
+  res <- if (length(out)) dplyr::bind_rows(out) else empty
+  attr(res, "llm_model") <- model_used
+  res
 }
 
 codebook_identify_scales <- function(previews, labels_df, model, params,

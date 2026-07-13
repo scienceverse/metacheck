@@ -208,7 +208,14 @@ code_check <- function(paper, local_path = NULL,
     for (col in analysis_cols)
       if (!col %in% names(code_files)) code_files[[col]] <- NA
   } else {
-    code_files <- dplyr::left_join(code_files, code_check, by = names(code_files))
+    # `collected` holds one row per checked file (the error path returns its
+    # row too), so `code_check` already is code_files plus the analysis
+    # columns. Do NOT left_join it back onto code_files by the original
+    # columns: the download step above updates file_location in
+    # checked_files, so every downloaded file would mismatch on that key and
+    # get all-NA analysis columns (absolute paths and missing files then
+    # vanish from the report).
+    code_files <- code_check
   }
   code_files$checked[is.na(code_files$checked)] <- FALSE
 
@@ -230,7 +237,10 @@ code_check <- function(paper, local_path = NULL,
   }
 
   ## absolute paths ----
-  absolute_issues <- code_files$file_name[code_files$code_abs_path > 0]
+  # which() throughout: an unchecked/errored file has NA analysis values, and
+  # indexing by `NA > 0` would inject phantom NA entries into the issue lists
+  # (inflating their length and filling the report tables with NA rows).
+  absolute_issues <- code_files$file_name[which(code_files$code_abs_path > 0)]
   if (length(absolute_issues) == 0) {
     report_absolute <- "Best programming practice is to use relative file paths (e.g., './files') instead of absolute file paths (e.g., 'C://Lakens/project_dir/files') as these folder names do not exist on other computers. No absolute file paths were found in any of the code files."
     summary_absolute <- "No absolute file paths were found."
@@ -243,12 +253,12 @@ code_check <- function(paper, local_path = NULL,
     )
     summary_absolute <- "Absolute file paths were found."
     cols <- c("file_name", "absolute_paths")
-    report_table_absolute <- code_files[code_files$code_abs_path > 0, cols]
+    report_table_absolute <- code_files[which(code_files$code_abs_path > 0), cols]
     colnames(report_table_absolute) <- c("File name", "Absolute paths found")
   }
 
   ## Comments ----
-  comment_issue <- code_files$file_name[code_files$percentage_comment == 0]
+  comment_issue <- code_files$file_name[which(code_files$percentage_comment == 0)]
   if (length(comment_issue) == 0) {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). All your code files had comments."
     summary_comments <- "All your code files had comments."
@@ -269,7 +279,7 @@ code_check <- function(paper, local_path = NULL,
   )
 
   ## Missing files ----
-  missingfiles_issue <- code_files$file_name[code_files$loaded_files_missing > 0]
+  missingfiles_issue <- code_files$file_name[which(code_files$loaded_files_missing > 0)]
   if (length(missingfiles_issue) == 0) {
     summary_missingfiles <- "All files loaded in the code were present in the repository."
     report_missingfiles <- summary_missingfiles
@@ -289,7 +299,7 @@ code_check <- function(paper, local_path = NULL,
       plural(n_missing)
     )
 
-    rows <- code_files$loaded_files_missing > 0
+    rows <- which(code_files$loaded_files_missing > 0)
     cols <- c("file_name", "loaded_files_missing_names")
     report_table_files_missing <- code_files[rows, cols]
     colnames(report_table_files_missing) <- c("File name", "Missing Files")
@@ -322,7 +332,9 @@ code_check <- function(paper, local_path = NULL,
     )
     summary_parse <- "Parsing issues of R-type files were found."
     cols <- c("file_name", "parse_error_msg")
-    report_table_parse <- code_files[isTRUE(code_files$parse_error), cols]
+    # which(), not isTRUE(): isTRUE() on the whole column is FALSE for any
+    # multi-file paper, which emptied this table even when errors were found.
+    report_table_parse <- code_files[which(code_files$parse_error), cols]
     colnames(report_table_parse) <- c("File name", "Error Message")
   }
 
@@ -333,7 +345,7 @@ code_check <- function(paper, local_path = NULL,
     report_comments,
     "#### Missing Files",
     report_missingfiles,
-    scroll_table(report_table_files_missing, maxrows = 5),
+      scroll_table(report_table_files_missing, maxrows = 5),
     "#### Absolute Paths",
     report_absolute,
     scroll_table(report_table_absolute, maxrows = 5),
@@ -346,11 +358,13 @@ code_check <- function(paper, local_path = NULL,
 
   # traffic_light ----
   # green only if no issues across all code files
+  # parse_issues is a count, not a vector: length() on it is always 1, which
+  # made green unreachable however clean the code was.
   if (length(missingfiles_issue) == 0 &&
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
       length(library_issue) == 0 &&
-      length(parse_issues) == 0) {
+      parse_issues == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"
@@ -363,7 +377,10 @@ code_check <- function(paper, local_path = NULL,
       code_checked = sum(checked, na.rm = TRUE),
       code_abs_path = sum(code_abs_path, na.rm = TRUE),
       code_missing_files = sum(loaded_files_missing, na.rm = TRUE),
-      code_min_comments = min(percentage_comment, na.rm = TRUE),
+      # Guard the all-NA group (e.g. a file with no parseable code lines):
+      # min(na.rm = TRUE) would warn and return Inf, so fall back to NA.
+      code_min_comments = if (any(!is.na(percentage_comment)))
+        min(percentage_comment, na.rm = TRUE) else NA_real_,
       code_parse_errors = sum(parse_error, na.rm = TRUE),
       .by = paper_id
     )

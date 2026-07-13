@@ -43,6 +43,7 @@
     metacheck.verbose = TRUE,
     metacheck.llm_max_calls = 30L,
     metacheck.llm.model = llm_model,
+    metacheck.llm.vllm.base_url = NULL,
     metacheck.llm.use = FALSE,
     metacheck.llm.cache = TRUE,
     metacheck.osf.delay = 0,

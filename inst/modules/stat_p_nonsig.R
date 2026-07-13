@@ -85,7 +85,7 @@ stat_p_nonsig <- function(paper) {
     # report text
     report <- c(
       explanation,
-      scroll_table(report_table, colwidths = c(.1, .9)),
+      scroll_table(report_table, colwidths = c(.1, .9), maxrows = 10),
       collapse_section(guidance)
     ) |> paste(collapse = "\n\n")
   }

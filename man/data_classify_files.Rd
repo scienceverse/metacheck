@@ -10,7 +10,7 @@ data_classify_files(file_name)
 \item{file_name}{a character vector of file names (basenames)}
 }
 \value{
-a character vector of data_check types (see \link{.data_check_types});
+a character vector of data_check types (see \code{.data_check_types});
 \code{"other"} when no rule fires.
 }
 \description{

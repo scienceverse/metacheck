@@ -233,7 +233,7 @@
 #' [codebook](https://github.com/rubenarslan/codebook) package.
 #'
 #' For each study the function assembles a data frame whose columns carry the
-#' variable labels matched by [codebook_check()] (plus any value labels already
+#' variable labels matched by `codebook_check()` (plus any value labels already
 #' embedded in the data, e.g. from SPSS/Stata files), and whose dataset-level
 #' `metadata` attribute holds the title, description, authors, DOI and keywords
 #' from the paper. It writes:
@@ -256,7 +256,7 @@
 #' here is discoverability metadata for the codebook, not a Psych-DS descriptor.
 #' Use [convert_psychds()] for a validation-passing dataset.
 #'
-#' @param paper a paper object (see [read_paper()]), **or** a captured result of
+#' @param paper a paper object (see [read()]), **or** a captured result of
 #'   `report(paper, ...)` / `report_module_run(paper, ...)`. When a captured
 #'   result containing both `data_check` and `codebook_check` is passed, those
 #'   outputs are reused (with the paper recovered from the result) instead of
@@ -269,7 +269,7 @@
 #' @param refresh_osf whether to fetch a fresh OSF file listing (see
 #'   [convert_psychds()]); the default (`FALSE`) reuses the session's listing.
 #' @param local_path,local_only passed to `data_check` when its output is not
-#'   already available (see [data_check()])
+#'   already available (see `data_check()`)
 #' @param model,params passed to the underlying modules when `llm_use(TRUE)`
 #' @param overwrite whether to overwrite an existing `output_dir`. When `FALSE`
 #'   (the default) and `output_dir` already exists, the function messages and
@@ -316,13 +316,23 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
   structure_df <- dc$structure
   previews <- dc$previews %||% list()
   labels_df <- ops[["codebook_check"]]$table
-
-  if (is.null(columns_df) || nrow(columns_df) == 0)
-    stop("No extracted data columns to build a codebook from. Run data_check first.",
-         .converter_gated_hint(ops), call. = FALSE)
-
   pid <- resolved$pid
   if (is.null(output_dir)) output_dir <- file.path("codebook", pid)
+
+  if (is.null(columns_df) || nrow(columns_df) == 0) {
+    message("No extracted data columns to build a codebook from. Run data_check first.",
+            .converter_gated_hint(ops))
+    return(invisible(list(
+      output_dir = output_dir,
+      n_studies = 0L,
+      rds_files = character(0),
+      rmd_files = character(0),
+      metadata_files = character(0),
+      html_files = character(0),
+      rendered = FALSE,
+      empty_columns = TRUE
+    )))
+  }
 
   if (dir.exists(output_dir) && !overwrite) {
     message("Codebook output already exists, skipping: ", output_dir,

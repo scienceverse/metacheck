@@ -1,0 +1,15 @@
+type,section,description,"file name"
+Code,"Study 1","R Code","Study 1.r"
+Codebook,"Study 1",csv,"Study 1.csv___CODEBOOK.csv"
+Codebook,"Study 1","csv - dataset 1","Study 1 - csv - dataset 1.csv___CODEBOOK.csv"
+Data,"Study 1",csv,"Study 1.csv"
+Data,"Study 1","csv - dataset 1","Study 1 - csv - dataset 1.csv"
+Materials,"Study 1","test txt file","Study 1 - test txt file.txt"
+
+
+"This zip file was created on Nov 28, 2025, at 19:32 (UTC)."
+"At that time the box contained 6 files, of which 6 were included."
+
+
+"This ResearchBox is available from:"
+https://researchbox.org/4377

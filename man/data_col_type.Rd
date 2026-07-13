@@ -12,7 +12,7 @@ data_col_type(col_name, values)
 \item{values}{the column's values (a vector)}
 }
 \value{
-a list with \code{col_type} (a value from \link{.data_check_col_types}, or
+a list with \code{col_type} (a value from \code{.data_check_col_types}, or
 \code{NA} when only the LLM could decide), \code{ambiguous} (whether the LLM should
 be consulted), \code{numeric_values} (numeric vector for stats, or \code{NULL}),
 \code{n_coerced}, and \code{is_numeric}.

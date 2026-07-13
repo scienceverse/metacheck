@@ -396,67 +396,96 @@ download_repo_files <- function(files,
                                  file_size = numeric(0), stringsAsFactors = FALSE)
   to_get <- integer(0)
 
-  # ── Per-repository gate + per-file size filter ──────────────────────────────
+  # ── Per-repository budget + per-file size filter ────────────────────────────
   # max_file_size is a PER-FILE filter: files over it are skipped individually,
-  # the rest of the repo still downloads. max_download_size is a REPO gate: if
-  # the total of the files that WOULD download (after removing oversized ones)
-  # exceeds it, the whole repository is skipped.
-  for (repo in unique(files$repo_url[has_url & !already])) {
-    idx <- which(files$repo_url == repo & has_url & !already)
+  # the rest of the repo still downloads. max_download_size is a REPO BUDGET on
+  # the TOTAL cached footprint of the repo (already-cached + newly-downloaded),
+  # NOT on a single run's increment. So re-running never grows a repo's cache
+  # beyond the budget: the canonical set of files "we ever download" is fixed —
+  # already-cached files are kept for free, then the smallest still-missing files
+  # are added until the next one would exceed the budget. A repo whose kept data
+  # is under the budget downloads fully; a larger one downloads its smallest
+  # files up to the cap (partial fill), the same set every run.
+  #
+  # The budget is computed over ALL kept files (cached + missing), so the loop
+  # runs for every repo with URLs, not only those with missing files.
+  for (repo in unique(files$repo_url[has_url])) {
+    idx <- which(files$repo_url == repo & has_url)
     if (length(idx) == 0) next
+    is_cached <- already[idx]
 
-    # Resolve sizes (bytes): manifest size, else a HEAD Content-Length probe.
+    # Resolve sizes (bytes): manifest size; for a cached file the on-disk size;
+    # else a HEAD Content-Length probe for a still-missing file.
     sizes <- as.numeric(files$file_size[idx])
-    need_probe <- which(is.na(sizes))
-    for (k in need_probe) sizes[k] <- .remote_size(files$file_url[idx[k]])
-
-    # A file whose size we still cannot determine gates the whole repo (we can't
-    # know whether it fits, and refuse to stream blindly).
-    unknown <- which(is.na(sizes))
-    if (length(unknown) > 0) {
-      msg <- cap_gate_unknown(repo, files$file_name[idx[unknown[1]]])
-      # Report it like the total-size gate does — this refusal used to be
-      # recorded only in the manifest, so a repo could silently come up empty.
-      cap_report(msg)
-      gated <- rbind(gated, data.frame(
-        repo_url = repo, message = msg, stringsAsFactors = FALSE))
-      next
+    for (k in which(is.na(sizes))) {
+      if (is_cached[k]) {
+        sz <- tryCatch(file.size(files$.cache_path[idx[k]]), error = function(e) NA_real_)
+        sizes[k] <- if (is.finite(sz)) sz else NA_real_
+      } else {
+        sizes[k] <- .remote_size(files$file_url[idx[k]])
+      }
     }
 
     repo_file_cap  <- max_file_size
     repo_total_cap <- max_download_size
 
-    # Per-file filter: drop files over the per-file cap (keep the rest).
-    over <- if (is.finite(repo_file_cap)) sizes > repo_file_cap * mb
+    # Per-file filter: drop files over the per-file cap (keep the rest). Reported
+    # only for missing files — a cached oversize file is already on disk.
+    over <- if (is.finite(repo_file_cap)) !is.na(sizes) & sizes > repo_file_cap * mb
             else rep(FALSE, length(idx))
-    if (any(over)) {
+    if (any(over & !is_cached)) {
+      o <- over & !is_cached
       oversize_skipped <- rbind(oversize_skipped, data.frame(
         repo_url  = repo,
-        file_name = files$file_name[idx[over]],
-        file_size = sizes[over],
+        file_name = files$file_name[idx[o]],
+        file_size = sizes[o],
         stringsAsFactors = FALSE))
     }
-    keep_idx  <- idx[!over]
-    keep_size <- sizes[!over]
-    if (length(keep_idx) == 0) next   # nothing left after the filter
 
-    # Repo gate on the SURVIVORS' total.
-    total_mb <- sum(keep_size) / mb
-    if (is.finite(repo_total_cap) && total_mb > repo_total_cap) {
-      need_total <- ceiling(total_mb)
+    # Unknown-size files are excluded from the candidate set (we cannot budget
+    # them), rather than gating the whole repo. Candidates = kept, known-size.
+    cand <- !over & !is.na(sizes)
+    if (!any(cand)) next
+    c_idx    <- idx[cand]
+    c_size   <- sizes[cand]
+    c_cached <- is_cached[cand]
+
+    # Canonical "ever-download" set under the budget. Cached files are kept for
+    # free (never re-downloaded, never re-counted against a run), then the
+    # smallest still-missing files are added until the budget is spent. This
+    # makes the set deterministic and idempotent: the same repo yields the same
+    # set every run, so re-running only tops up toward the cap, never past it.
+    cap_bytes <- if (is.finite(repo_total_cap)) repo_total_cap * mb else Inf
+    used <- sum(c_size[c_cached])                       # cached footprint (kept)
+    missing_order <- which(!c_cached)
+    missing_order <- missing_order[order(c_size[missing_order],
+                                         files$.cache_path[c_idx[missing_order]])]
+    take_missing <- integer(0)
+    for (k in missing_order) {
+      if (used + c_size[k] <= cap_bytes) {
+        take_missing <- c(take_missing, k)
+        used <- used + c_size[k]
+      }
+      # keep scanning: a later, smaller file may still fit under the budget
+    }
+
+    # Download only the newly-selected (still-missing) members of the set.
+    to_get <- c(to_get, c_idx[take_missing])
+
+    # Report a partial fill: some kept files were left out because the budget was
+    # reached (distinct from the per-file oversize skips reported separately).
+    omitted <- setdiff(missing_order, take_missing)
+    if (length(omitted) > 0 && is.finite(cap_bytes)) {
       msg <- sprintf(
-        paste0("Repository %s was not downloaded: its %d file%s total %s MB, ",
-               "over the %s MB per-repository limit. ",
-               "Set `max_download_size >= %s` to download it."),
-        repo, length(keep_idx), plural(length(keep_idx)),
-        .cap_num(need_total), .cap_num(repo_total_cap), .cap_num(need_total))
+        paste0("Repository %s exceeds the %s MB per-repository budget: ",
+               "downloaded the smallest files up to the cap, %d file%s omitted. ",
+               "Raise `max_download_size` to include more."),
+        repo, .cap_num(repo_total_cap),
+        length(omitted), plural(length(omitted)))
       cap_report(msg)
       gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
                                        stringsAsFactors = FALSE))
-      next
     }
-
-    to_get <- c(to_get, keep_idx)   # repo fits: download the surviving files
   }
 
   # Report the individually-skipped oversized files (one message per repo).

@@ -246,6 +246,11 @@ osf_check_id <- function(osf_id) {
     tolower()
 
   sapply(clean_id, \(id) {
+    # NA in (e.g. a missing link column) is NA out — not worth a warning
+    if (is.na(id)) return(NA_character_)
+    # A link to the OSF platform itself carries no ID by construction (papers
+    # often cite osf.io generically), so skip it silently too.
+    if (grepl("^(https?://)?(www\\.)?osf\\.io/?$", id)) return(NA_character_)
     tryCatch(
       {
         # for plain IDs (not URLs), check directly

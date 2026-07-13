@@ -16,7 +16,7 @@ convert_psychds(
 )
 }
 \arguments{
-\item{paper}{a paper object (see \code{\link[=read_paper]{read_paper()}}), \strong{or} a captured result of
+\item{paper}{a paper object (see \code{\link[=read]{read()}}), \strong{or} a captured result of
 \code{report(paper, ...)} / \code{report_module_run(paper, ...)}. When a captured
 result containing all of \code{data_check} / \code{codebook_check} / \code{psychds_check}
 is passed, those outputs are reused (with the paper recovered from the
@@ -32,7 +32,7 @@ re-query (and risk being throttled by) the OSF API. Set \code{TRUE} to force a
 fresh listing. Downloaded file contents are cached on disk regardless.}
 
 \item{local_path, local_only}{passed to \code{data_check} when its output is not
-already available (see \code{\link[=data_check]{data_check()}})}
+already available (see \code{data_check()})}
 
 \item{model, params}{passed to the underlying modules when \code{llm_use(TRUE)}}
 

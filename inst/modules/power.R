@@ -249,7 +249,7 @@ power <- function(paper, seed = 8675309) {
       report_text,
       scroll_table(info_table, maxrows = 5),
       observed_power_text,
-      scroll_table(text_table, maxrows = 1),
+      scroll_table(text_table, maxrows = 5),
       collapse_section(guidance)
     )
   }

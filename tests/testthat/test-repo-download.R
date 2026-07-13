@@ -73,15 +73,22 @@ test_that("a file over the per-file cap is skipped, the rest downloads", {
   expect_equal(os$file_name, "f2.csv")
 })
 
-test_that("a repo over the total cap is gated (nothing downloaded)", {
-  files <- make_dl_files(sizes = c(2000, 2000))  # ~2 KB each on disk
+test_that("a repo over the total cap downloads the smallest files up to the budget", {
+  # The per-repository budget is a cap on the repo's total cached footprint, met
+  # by taking the SMALLEST files first until the next would exceed it (partial
+  # fill), rather than skipping the whole repo. Two files, budget between one and
+  # two of them → exactly one (the smaller/first) downloads, one is omitted.
+  files <- make_dl_files(sizes = c(1000, 3000))  # ~1 KB and ~3 KB on disk
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
-  # per-file cap generous, total cap tiny → total gate fires
+  small_mb <- files$file_size[1] / (1024 * 1024)
   total_mb <- sum(files$file_size) / (1024 * 1024)
-  dl <- download_repo_files(files, max_file_size = 100,
-                            max_download_size = total_mb / 2)
-  expect_equal(sum(!is.na(dl$file_location)), 0)
-  expect_match(attr(dl, "gated")$message, "per-repository limit")
+  # budget fits the small file but not both.
+  cap <- (small_mb + total_mb) / 2
+  dl <- download_repo_files(files, max_file_size = 100, max_download_size = cap)
+  expect_equal(sum(!is.na(dl$file_location)), 1)     # smallest file downloaded
+  # a partial-fill note is recorded (the larger file omitted).
+  expect_true(nrow(attr(dl, "gated")) >= 1)
+  expect_match(attr(dl, "gated")$message, "per-repository budget")
 })
 
 test_that("NA manifest size falls back to a HEAD Content-Length probe", {
@@ -98,16 +105,17 @@ test_that("NA manifest size falls back to a HEAD Content-Length probe", {
   expect_equal(nrow(attr(dl, "oversize_skipped")), 2)
 })
 
-test_that("an undeterminable size gates the repo with the Inf instruction", {
+test_that("a file whose size cannot be determined is excluded, not gating the repo", {
+  # An unknown-size file cannot be budgeted, so it is left out of the candidate
+  # set (rather than gating the whole repository). With BOTH files unknown-size,
+  # nothing downloads, but the repo is not "gated".
   files <- make_dl_files()
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
   files$file_size <- NA_real_
 
   local_mocked_bindings(.remote_size = function(url) NA_real_)  # no header
   dl <- download_repo_files(files, max_file_size = 100, max_download_size = 500)
-  expect_equal(sum(!is.na(dl$file_location)), 0)
-  expect_match(attr(dl, "gated")$message, "could not be determined")
-  expect_match(attr(dl, "gated")$message, "max_file_size = Inf")
+  expect_equal(sum(!is.na(dl$file_location)), 0)   # excluded, nothing downloaded
 })
 
 test_that("failed downloads are reported and recorded, not swallowed", {

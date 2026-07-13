@@ -49,6 +49,19 @@ llm <- function(text, system_prompt,
     stop("Set llm_use(TRUE) to use LLM functions")
   }
 
+  if (is.null(model) || !is.character(model) || length(model) != 1 || !nzchar(model)) {
+    stop(
+      "No LLM model set. Use llm_model('provider/model') or pass model = 'provider/model'",
+      call. = FALSE
+    )
+  }
+
+  if (!is.list(params)) {
+    stop("params must be a named list", call. = FALSE)
+  }
+
+  params_list <- params
+
   # make a data frame if text is a vector
   if (!is.data.frame(text)) {
     text <- data.frame(text = text)
@@ -67,9 +80,16 @@ llm <- function(text, system_prompt,
 
   # Set up the llm ----
   # default temperature to 0 for deterministic extraction/classification
-  if (is.null(params$temperature)) {
-    params$temperature <- 0
+  if (is.null(params_list$temperature)) {
+    params_list$temperature <- 0
   }
+
+  # check params early so malformed params fail before provider/network work
+  params <- tryCatch({
+    do.call(ellmer::params, params_list)
+  }, error = \(e) {
+    stop("Misspecified params argument:\n", e$message, call. = FALSE)
+  })
 
   # check if json schema type is set for a structured return
   structured <- !is.null(type)
@@ -80,9 +100,9 @@ llm <- function(text, system_prompt,
     # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it.
     # Use the native path only for unstructured calls that are not "thinking";
     # structured output goes through the /v1/ endpoint (ellmer type schema).
-    use_ollama_native <- !isTRUE(params$think) && !structured
+    use_ollama_native <- !isTRUE(params_list$think) && !structured
     if (use_ollama_native) {
-      ollama_options <- params
+      ollama_options <- params_list
       ollama_options$think <- NULL
     }
     ollama_base_url <- Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -112,12 +132,37 @@ llm <- function(text, system_prompt,
     }
   }
 
-  # check params ----
-  tryCatch({
-    params <- do.call(ellmer::params, params)
-  }, error = \(e) {
-    stop("Misspecified params argument:\n", e$message, call. = FALSE)
-  })
+  # route vllm/<model> through chat_vllm() so custom endpoints can be used
+  make_chat <- function() {
+    if (startsWith(model, "vllm/")) {
+      vllm_model <- sub("^vllm/", "", model)
+      vllm_base_url <- getOption("metacheck.llm.vllm.base_url")
+
+      if (!nzchar(vllm_model)) {
+        stop("For vllm, set model as 'vllm/<model-name>'", call. = FALSE)
+      }
+      if (is.null(vllm_base_url) || !nzchar(vllm_base_url)) {
+        stop(
+          "Set options(metacheck.llm.vllm.base_url = '<vllm-endpoint>/v1') to use vllm models",
+          call. = FALSE
+        )
+      }
+
+      return(ellmer::chat_vllm(
+        model = vllm_model,
+        base_url = vllm_base_url,
+        credentials = function() Sys.getenv("VLLM_API_KEY"),
+        system_prompt = system_prompt,
+        params = params
+      ))
+    }
+
+    ellmer::chat(
+      name = model,
+      system_prompt = system_prompt,
+      params = params
+    )
+  }
 
   # set up progress bar ----
   # `phase` names the calling step (e.g. "Identifying scales") so a slow LLM
@@ -159,17 +204,28 @@ llm <- function(text, system_prompt,
       } else {
         # fresh chat per call to avoid context accumulation
         msg <- utils::capture.output({
-          chat <- ellmer::chat(
-            name = model,
-            system_prompt = system_prompt,
-            params = params
-          )
+          chat <- make_chat()
         }, type = "message")
         # only show message first time
         if (length(msg) && i == 1) pb$message(msg)
 
         if (structured) {
-          result <- chat$chat_structured(unique_text[i], type = type)
+          # Groq's structured-output mode sometimes rejects its own generation
+          # (HTTP 400, "Failed to generate/validate JSON") when the model emits
+          # JSON that does not match the schema. Generation is not
+          # bit-reproducible server-side, so an identical retry usually
+          # succeeds; allow two before recording the row as failed. Each retry
+          # gets a fresh chat so the failed exchange cannot pollute the next
+          # attempt.
+          for (attempt in 1:3) {
+            result <- tryCatch(
+              chat$chat_structured(unique_text[i], type = type),
+              error = function(e) e
+            )
+            if (!inherits(result, "condition")) break
+            if (attempt == 3 || !.llm_json_retryable(result)) stop(result)
+            chat <- make_chat()
+          }
           df <- .unnest_result(result)
           # An empty result (e.g. the model returned an empty array, meaning
           # "nothing found") unnests to a 0-row frame; assigning a length-1
@@ -191,12 +247,22 @@ llm <- function(text, system_prompt,
       }
     }, error = function(e) {
       pb$tick()
+      msg <- .llm_error_message(e)
+      # A systemic failure (bad auth, server down, unreachable endpoint) means
+      # every call this run will fail and checks fall back to rules only. Say so
+      # loudly and immediately, once per session, so the run is not silently
+      # label-blind — the per-row warnings below still record each failure.
+      if (.llm_is_systemic_error(e))
+        .llm_systemic_notice$trip(paste0(
+          "LLM appears unavailable this run — checks will fall back to ",
+          "RULES ONLY (no LLM inference). Check the endpoint and API key ",
+          "(vllm reads Sys.getenv(\"VLLM_API_KEY\")).\n  First error: ", msg))
       if (structured) {
-        df <- data.frame(.error = TRUE, .error_msg = e$message)
+        df <- data.frame(.error = TRUE, .error_msg = msg)
         df$.join_key. <- unique_text[i]
         df
       } else {
-        list(answer = NA, error = TRUE, error_msg = e$message)
+        list(answer = NA, error = TRUE, error_msg = msg)
       }
     })
   })
@@ -301,6 +367,102 @@ llm <- function(text, system_prompt,
     httr2::req_body_json(body) |>
     httr2::req_perform()
   trimws(httr2::resp_body_json(resp)$message$content)
+}
+
+# Build the message recorded for a failed LLM call. ellmer/httr2 HTTP errors
+# carry the response object (on the condition itself or its parent), and its
+# body holds the provider's actual reason — e.g. behind a bare "HTTP 400 Bad
+# Request", Groq says "Please reduce the length of the messages or completion".
+# Without it a user cannot tell an oversized prompt from a malformed schema.
+# TRUE when a structured-output failure is worth retrying verbatim: Groq
+# returns HTTP 400 "Failed to generate JSON" / "Failed to validate JSON" when
+# the model's output does not match the requested schema, and since generation
+# is not deterministic server-side the same request usually succeeds on a
+# second attempt. Genuine request errors (bad key, oversized prompt, rate
+# limit) do not match and fail immediately as before.
+.llm_json_retryable <- function(e) {
+  msg <- .llm_error_message(e)
+  grepl(
+    paste(
+      "Failed to (generate|validate) JSON",
+      # jsonlite lexical/parse errors: the model returned text that is not valid
+      # JSON (a prose list, a truncated object, a bare number). Generation is not
+      # deterministic, so a fresh attempt usually yields schema-valid JSON. Covers
+      # "invalid char in json text", "malformed number ...", "premature EOF",
+      # "unallowed token", etc.
+      "lexical error",
+      "malformed number",
+      "premature EOF",
+      "parse error",
+      "```json",
+      sep = "|"
+    ),
+    msg,
+    ignore.case = TRUE
+  )
+}
+
+# Does this error mean the LLM is SYSTEMICALLY unavailable — i.e. every LLM call
+# this run will fail the same way, so all checks silently fall back to rules
+# only? Three such classes: an authentication failure (HTTP 401/403, e.g. a
+# missing/expired API key), the endpoint erroring server-side (HTTP >= 500), or a
+# genuine transport failure (DNS, connection refused, timeout — the endpoint is
+# unreachable). Distinguished from a transient single-call failure (a one-off 400
+# or a malformed-JSON reply), which is NOT systemic and keeps only its per-row
+# warning.
+#
+# The subtle case: an error with NO response object is usually transport-level,
+# BUT a jsonlite parse error (the request returned 200, the body just was not
+# valid JSON) also has no response — and is per-call, not systemic. So a
+# no-response error only counts as systemic when it is NOT a retryable JSON/parse
+# failure and its message looks like a real connection problem.
+.llm_is_systemic_error <- function(e) {
+  resp <- e$resp %||% e$parent$resp
+  status <- tryCatch(httr2::resp_status(resp), error = function(e2) NA_integer_)
+  if (isTRUE(status %in% c(401L, 403L))) return(TRUE)   # auth: every call fails
+  if (isTRUE(status >= 500L)) return(TRUE)              # server down / erroring
+  if (!is.null(resp)) return(FALSE)                     # got a response: per-call
+  # No response object. A malformed-JSON reply also has none — that is a per-call
+  # model hiccup, not the endpoint being down, so exclude it.
+  if (.llm_json_retryable(e)) return(FALSE)
+  # Otherwise treat it as systemic only if the message names a transport failure.
+  transport <- paste(
+    "could not resolve", "connection refused", "couldn't connect", "timed out",
+    "timeout", "connection reset", "network is unreachable", "no route to host",
+    "failed to connect", "empty reply from server", "handshake", "ssl",
+    sep = "|")
+  grepl(transport, conditionMessage(e), ignore.case = TRUE)
+}
+
+# Emit an explicit, immediate notice the FIRST time the LLM looks systemically
+# unavailable in a session, then stay quiet — the per-call warnings still record
+# every failure for warnings(). Uses message() (prints to stderr immediately),
+# not warning() (which R queues and shows only at the end, deduplicated and
+# capped at 50 — invisible mid-run, which is exactly the failure we are fixing).
+.llm_systemic_notice <- local({
+  done <- FALSE
+  list(
+    trip  = function(msg) { if (!done) { message(msg); done <<- TRUE }; invisible() },
+    reset = function() done <<- FALSE
+  )
+})
+
+.llm_error_message <- function(e) {
+  msg <- conditionMessage(e)
+  resp <- e$resp %||% e$parent$resp
+  if (is.null(resp)) return(msg)
+  detail <- tryCatch({
+    body <- httr2::resp_body_json(resp, check_type = FALSE)
+    err <- body$error
+    if (is.character(err)) err[1] else err$message %||% body$message
+  }, error = function(e2) NULL)
+  if (is.null(detail))
+    detail <- tryCatch(httr2::resp_body_string(resp), error = function(e2) NULL)
+  if (!is.character(detail) || length(detail) == 0 || !nzchar(detail[1]))
+    return(msg)
+  detail <- detail[1]
+  if (nchar(detail) > 500) detail <- paste0(substr(detail, 1, 500), " [truncated]")
+  paste0(msg, "\n  Provider says: ", detail)
 }
 
 #' Convert structured LLM result to a data frame
@@ -469,8 +631,11 @@ llm_max_calls <- function(n = NULL) {
 #' @export
 #'
 llm_model <- function(model = NULL) {
-  if (is.null(model)) {
+  if (missing(model)) {
     return(getOption("metacheck.llm.model"))
+  } else if (is.null(model)) {
+    options(metacheck.llm.model = NULL)
+    invisible(getOption("metacheck.llm.model"))
   } else if (is.character(model)) {
     options(metacheck.llm.model = model)
     invisible(getOption("metacheck.llm.model"))

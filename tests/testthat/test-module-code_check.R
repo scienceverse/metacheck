@@ -89,6 +89,64 @@ test_that("multiple paper issue", {
   expect_setequal(mo$summary_table$paper_id, paper_id(paper))
 }, "mock")
 
+test_that("downloaded files keep their analysis results (join regression)", {
+  # Code files listed remotely (file_location = NA) are downloaded before the
+  # analysis loop, which updates file_location in the checked copies. Results
+  # were then joined back onto the original rows by every column — so every
+  # downloaded file mismatched on file_location and got all-NA analysis
+  # columns: the report claimed "N scripts loaded 0 files" and printed no
+  # absolute paths (the collabra.102 case). Offline via a file:// URL.
+  withr::local_options(
+    metacheck.repo_cache.notified = TRUE,
+    metacheck.repo_cache.dir = file.path(tempdir(), "mc-test-codecheck-cache"),
+    metacheck.repo_cache.session_dir = file.path(tempdir(), "mc-test-codecheck-session"))
+
+  src <- withr::local_tempfile(fileext = ".R")
+  writeLines(c(
+    "# read the data",
+    'dat <- read.csv("C:/Users/lisa/project/data.csv")',
+    'other <- read.csv("not_in_repo.csv")'
+  ), src)
+
+  paper <- test_paper()
+  # same shape as a repo_check table row (paper_id is required: the summary
+  # step aggregates with .by = paper_id)
+  files <- data.frame(
+    paper_id = paper_id(paper),
+    repo_name = "code-join-regression",
+    repo_url = "https://example.org/code-join-regression",
+    file_name = "analysis.R",
+    file_path = "code/analysis.R",
+    file_url = paste0("file:///", gsub("\\\\", "/", src)),
+    file_size = file.info(src)$size,
+    file_type = "code",
+    file_location = NA_character_
+  )
+  # hand code_check a repo_check result via the module pipeline, so it takes
+  # the download path instead of a local_path
+  fake_repo <- list(
+    module = "repo_check",
+    table = files,
+    summary_table = data.frame(paper_id = paper_id(paper)),
+    paper = paper
+  )
+  class(fake_repo) <- "metacheck_module_output"
+
+  mo <- module_run(fake_repo, "code_check", download = TRUE)
+
+  row <- mo$table[mo$table$file_name == "analysis.R", ]
+  expect_true(row$checked)
+  expect_gte(row$code_abs_path, 1L)
+  expect_match(row$absolute_paths, "lisa")
+  expect_equal(row$loaded_files_missing, 2L)
+  expect_match(row$loaded_files_missing_names, "not_in_repo.csv")
+  expect_gte(mo$summary_table$code_abs_path, 1)
+  expect_equal(mo$summary_table$code_missing_files, 2)
+  # the report carries the actual paths and counts, not NA
+  expect_true(any(grepl("lisa", mo$report, fixed = TRUE)))
+  expect_false(any(grepl("loaded 0 files", mo$report, fixed = TRUE)))
+})
+
 # code_check() + local_path ----
 
 test_that("code_check reads non-UTF-8 encoded files without NA", {

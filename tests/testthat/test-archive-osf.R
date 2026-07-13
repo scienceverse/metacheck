@@ -142,6 +142,17 @@ test_that("osf_check_id", {
   expect_equal(obs, exp)
 })
 
+test_that("osf_check_id is silent for NA and bare osf.io platform links", {
+  # NA identifiers and links to the OSF homepage (no project ID by
+  # construction — papers often cite osf.io generically) are NA out with no
+  # warning; the warning is reserved for strings that look like they should
+  # carry an ID but don't.
+  ids <- c(NA, "http://osf.io", "https://osf.io/", "osf.io",
+           "https://www.osf.io/", "pngda")
+  expect_no_warning(obs <- osf_check_id(ids))
+  expect_equal(obs, c(rep(NA_character_, 5), "pngda"))
+})
+
 
 test_that("osf_delay", {
   expect_true(is.function(metacheck::osf_delay))
@@ -278,10 +289,12 @@ test_that("osf_info - recursive", {
   table <- osf_info(osf_url, recursive = TRUE)
   expect_equal(nrow(table), 1 + 15)
 
-  # recursive with duplicates and NA table
+  # recursive with duplicates and NA table. A missing id (NA) is treated as
+  # "no link supplied" and returns NA silently, without a warning (only a
+  # supplied-but-malformed id warns) — see osf_check_id().
   osf_url <- data.frame(parent_id = c("yt32c", "yt32c", NA),
                         n = 1:3)
-  expect_warning(table <- osf_info(osf_url, recursive = TRUE))
+  expect_no_warning(table <- osf_info(osf_url, recursive = TRUE))
   expect_equal(nrow(table), 3 + 15)
   expect_equal(table$n, c(1:3, rep(NA, 15)))
 }, "mock")
