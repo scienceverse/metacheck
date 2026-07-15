@@ -289,6 +289,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Stage 3: LLM self-generated fallback.
   if (llm_use() && have_previews) {
     sg <- .identify_scales_selfgen(previews, labels_df, paper, model, params,
+                                   columns_df = columns_df,
                                    max_calls = codebook_max_calls)
     if (!is.null(sg) && nrow(sg) > 0) {
       apply_scale(sg, source = "self_generated")
@@ -300,6 +301,35 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # Stage 4: propagate to same-prefix siblings.
   labels_df <- .propagate_scale_by_prefix(labels_df)
+
+  # Backfill scale_groups$scale from the FINAL labels_df. scale_groups was set by
+  # Stage 1 (manuscript LLM) only; the dictionary (Stage 2) and self-generated
+  # (Stage 3) tiers write their names into labels_df, NOT scale_groups. Without
+  # this, a block named by the dictionary or self-gen tier counts as named
+  # (scale_named_n) but its OSD entry keeps write = FALSE, so no .osd file is
+  # written. Copy each group's column-level name (and its source) back so
+  # .scales_to_osd() sees every named block.
+  if (!is.null(scale_groups) && nrow(scale_groups) > 0 &&
+      !is.null(labels_df) && nrow(labels_df) > 0) {
+    lk <- paste(labels_df$source_file, labels_df$column_name, sep = "\x01")
+    for (i in seq_len(nrow(scale_groups))) {
+      cur <- scale_groups$scale[i]
+      if (!is.na(cur) && nzchar(cur)) next          # Stage 1 already named it
+      cols <- scale_groups$columns[[i]]
+      idx  <- match(paste(scale_groups$source_file[i], cols, sep = "\x01"), lk)
+      idx  <- idx[!is.na(idx)]
+      nm   <- labels_df$scale[idx]
+      nm   <- nm[!is.na(nm) & nzchar(nm)]
+      if (length(nm)) {
+        scale_groups$scale[i] <- nm[[1]]
+        if ("scale_source" %in% names(labels_df)) {
+          ss <- labels_df$scale_source[idx]
+          ss <- ss[!is.na(ss) & nzchar(ss)]
+          if (length(ss)) scale_groups$scale_source[i] <- ss[[1]]
+        }
+      }
+    }
+  }
 
   # OSD export of the full per-group inventory (named + unmatched groups kept).
   # Response scale lets the codebook lead (columns_df = data_check stats fallback,
@@ -347,6 +377,32 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   pct_matched <- if (n_columns > 0)
     round(100 * n_matched / n_columns) else 0L
 
+  # A codebook that WAS parsed but almost none of whose variables line up with
+  # the data columns: the documentation exists but cannot be linked automatically
+  # (e.g. the data holds computed scores like `neoImagination` while the codebook
+  # documents the underlying items `neo1`…`neo120`, or the names simply differ).
+  # Flag it so the author knows their codebook was found but not usable as-is, and
+  # how to organise it so it can be. Require a codebook of real size and a very
+  # low match rate, so an ordinary partial-coverage codebook is not flagged.
+  codebook_misaligned <- n_codebook_vars >= 5L && n_columns > 0 &&
+    pct_matched < 20 && n_unused >= 0.8 * n_codebook_vars
+  misalign_msg <- if (isTRUE(codebook_misaligned)) {
+    ex_cb  <- utils::head(codebook_vars_df$codebook_variable[!used_var], 3)
+    ex_col <- utils::head(labels_df$column_name[!matched], 3)
+    sprintf(paste0(
+      "A codebook was found and parsed (%d variable definition%s), but its ",
+      "variable names do not match the data columns, so the documentation could ",
+      "not be linked automatically (only %d%% of columns matched). For example, ",
+      "the codebook documents %s while the data has %s. This often means the data ",
+      "holds computed scores or subscales while the codebook lists the underlying ",
+      "items. To make the codebook usable automatically, document variables under ",
+      "the exact names used in the data file (one row per data column), with a ",
+      "label and, for rating items, the response scale."),
+      n_codebook_vars, plural(n_codebook_vars), pct_matched,
+      paste(sprintf("`%s`", ex_cb), collapse = ", "),
+      paste(sprintf("`%s`", ex_col), collapse = ", "))
+  } else NULL
+
   # ── 6. Traffic light ─────────────────────────────────────────────────────────
   # Coverage (unmatched columns) and label quality (conflicts) are separate
   # concerns; either can lower the light.
@@ -374,7 +430,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
         n_conflicted, plural(n_conflicted), if (n_conflicted == 1) "has" else "have"),
       if (n_unused > 0) sprintf(
         "%d documented variable%s never appear%s in the data.",
-        n_unused, plural(n_unused), if (n_unused == 1) "s" else "")
+        n_unused, plural(n_unused), if (n_unused == 1) "s" else ""),
+      misalign_msg
     ) |> paste("\n- ", x = _, collapse = "")
   }
 
@@ -394,6 +451,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     report <- c(report,
       "No codebook or README documentation was found, so no data columns could be matched to variable definitions.")
   } else {
+    if (!is.null(misalign_msg))
+      report <- c(report, paste0("**", misalign_msg, "**"))
     # Coverage table, one tab per data file. Documented is three-state:
     # "yes" (clean label), "conflict" (matched but unresolved), "no" (unmatched).
     doc_state <- ifelse(clean, "yes", ifelse(conflicted, "conflict", "no"))
@@ -479,6 +538,30 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       sprintf("We detected %d column group%s (by shared abbreviation) that look like scales; %d %s matched to a named instrument from the paper text or dictionary. Groups we could not name are listed too — they are real scale-like column families whose instrument the manuscript did not identify. Identified scales are exported in the OpenScales OSD structure.",
               n_grp, plural(n_grp), n_named, if (n_named == 1) "was" else "were"),
       scroll_table(inv_tbl, maxrows = 40))
+    # Orphan totals: a totals-only block whose scale has no genuine item block
+    # anywhere (matched by name). Warn — we found the score but not the items.
+    if ("totals_only" %in% names(sg)) {
+      tot <- !is.na(sg$totals_only) & sg$totals_only &
+             !is.na(sg$scale) & nzchar(sg$scale)
+      have_items <- unique(tolower(sg$scale[!tot & !is.na(sg$scale) &
+                                            nzchar(sg$scale)]))
+      orphan <- tot & !(tolower(sg$scale) %in% have_items)
+      if (any(orphan)) {
+        ot <- sg[orphan, , drop = FALSE]
+        lines <- vapply(seq_len(nrow(ot)), function(j)
+          sprintf("- **%s** (columns `%s` in %s)", ot$scale[j],
+                  paste(utils::head(ot$columns[[j]], 6), collapse = "`, `"),
+                  ot$source_file[j]), character(1))
+        report <- c(report, paste0(
+          "**Scale totals without item-level data.** For the following, we ",
+          "identified what looks like the total or average score, but found ",
+          "**no individual item columns**. The items may not be shared, or are ",
+          "labelled differently. Consider sharing the item-level data, or ",
+          "labelling items clearly, so the scale can be verified:"),
+          lines)
+      }
+    }
+
     # Guidance when some groups are unnamed or only tentatively named.
     n_unnamed <- n_grp - n_named
     n_low <- sum(sg$confidence %in% c("medium","low"))
@@ -920,32 +1003,278 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   seg
 }
 
-# Group a data file's columns by leading abbreviation. Returns a list, one entry
-# per prefix with >= min_cols columns, carrying the column names, the count, and
-# the maximum numeric suffix seen across the columns (tentative item count vs.
-# declared length — kept separate, they can disagree when subscale/computed
-# columns inflate the count). Not restricted to Likert columns (DEM_* etc. count).
-.scale_prefix_groups <- function(df, min_cols = .scale_min_items) {
+# Group a data file's columns into scale blocks by the SHARED LEADING STRING that
+# ADJACENT columns have in common — not by guessing each column's prefix in
+# isolation. This recognises a block however its items are named: neoNeuroticism
+# /neoAnxiety/neoAnger (camelCase word suffix), PANASPositive/PANASNegative
+# (all-caps + word), bfi_1/bfi_2 (separator + number), panas1/panas2 (number),
+# all collapse to their common stem (neo, PANAS, bfi, panas). The old approach
+# only worked when a per-column rule (cut at separator / strip trailing digits)
+# happened to extract the same stem, so it missed prefix+word conventions.
+#
+# Two guards keep the shared-stem idea from over-grouping:
+#   * ADJACENCY — a block is a RUN of consecutive columns. Real item batteries
+#     are exported in order, so two different instruments that merely share their
+#     first characters (panasX at col 3, panicY at col 80) cannot merge.
+#   * SEPARATOR BREAK — when the shared stem contains a separator (_ . - space),
+#     the stem ends at the first separator (bfi_1/bfi_2 -> bfi, not bfi_), which
+#     also prevents panas_* and panic_* running past their "panas"/"panic" stems.
+# The residual case (two adjacent instruments named with no separator and sharing
+# >= min_chars, e.g. panasPos1 next to panicFreq) is accepted as vanishingly rare.
+.scale_group_min_chars <- 3L
+
+# Leading stem shared by two names: the full common leading run, with only a
+# TRAILING separator trimmed (the item delimiter). We must NOT cut at the FIRST
+# separator: a stem like "Q1.RR_P_" (shared by Q1.RR_P_1/Q1.RR_P_2) has its first
+# separator right after "Q1", and cutting there would collapse every Q1.* column
+# into one "Q1" blob and break real subscales. Trailing-only trim gives
+# "Q1.RR_P_" -> "Q1.RR_P" and "bfi_" -> "bfi", both correct.
+.scale_shared_stem <- function(a, b) {
+  n <- min(nchar(a), nchar(b))
+  if (n == 0) return("")
+  ca <- substr(a, 1, n); cb <- substr(b, 1, n)
+  k <- 0L
+  for (i in seq_len(n)) {
+    if (substr(ca, i, i) != substr(cb, i, i)) break
+    k <- i
+  }
+  if (k == 0L) return("")
+  sub("[^A-Za-z0-9]+$", "", substr(a, 1, k))
+}
+
+# Alphabetic scale prefix: the leading run of a name up to (not including) the
+# first digit, with a trailing separator trimmed. Used to MERGE adjacent runs
+# that a zero-padded numbering split into two stems: AQ01..AQ09 share stem "AQ0"
+# and AQ10..AQ20 share "AQ1", but both have alpha-prefix "AQ", so they are one
+# scale. Sub-scale names that carry a word segment (CRS_EXP, CRS_IDE) keep that
+# segment because it is alphabetic, so those stay correctly separate.
+.scale_alpha_prefix <- function(nm) {
+  p <- sub("[0-9].*$", "", nm)        # cut at the first digit
+  p <- sub("[._ -]+$", "", p)         # trim a trailing separator
+  tolower(p)
+}
+
+# Do two adjacent columns belong to the SAME instrument/subscale, i.e. do they
+# differ ONLY by item number? True when, after their shared leading stem, BOTH
+# remainders are just an item number (optional separator + digits, to the end).
+# This keeps a real numbering run together (matwarmth1/matwarmth2, AQ01/AQ10 ->
+# same) while SPLITTING two different word-stems that merely share leading letters
+# (matwarmth6/mataggr1 -> different constructs; neighdev/neighcur -> two
+# subscales; Q1.RR_P_1/Q1.SS_X_2 -> different subscales). A remainder that still
+# contains a LETTER means a different word segment, so the columns are NOT the
+# same construct and the run must break.
+.scale_same_number_run <- function(a, b) {
+  stem <- .scale_shared_stem(a, b)
+  if (!nzchar(stem)) return(FALSE)
+  ra <- substring(a, nchar(stem) + 1L)
+  rb <- substring(b, nchar(stem) + 1L)
+  num_only <- function(r) grepl("^[._ -]?[0-9]*$", r)   # sep? + digits, to end
+  num_only(ra) && num_only(rb)
+}
+
+# Within one prefix block, split the columns into genuine scale ITEMS and DERIVED
+# columns (a summed/averaged score, a mean, an attention check) that authors
+# named with the same prefix but that are NOT items. Two independent signals,
+# assessed relative to the block's own majority:
+#
+#   1. NAMING ANOMALY. When most columns end in a number (the item-numbering
+#      convention, AQ01..AQ20), a column that does NOT — i.e. it ends in a WORD
+#      (AQ_SUM, AQ_CHILD, CRT_Check) — breaks the pattern and is suspect. A word
+#      suffix matching a known aggregate token (sum/mean/total/score/avg/index/
+#      check/count) is treated as derived outright, even without the number test.
+#   2. VALUE ANOMALY, from the preview values: relative to the item columns, a
+#      column is derived when it is NON-INTEGER while the items are integer (a
+#      MEAN like 4.3 among 1-5 ratings), or its observed range is much wider than
+#      the block's typical item range (a 0-7 SUM among 0-1 items).
+#
+# Returns list(items = <col names>, derived = <col names>, totals_only = <lgl>).
+# A block with too few columns, or where the split would leave < min_items items,
+# is left intact (all columns treated as items) to avoid over-pruning a small
+# genuine scale. `totals_only` is TRUE when the block has NO genuine item columns
+# — every (or nearly every) column looks like an aggregated total/average — so it
+# is an orphan score block, not an item battery (e.g. IERQ_pos/persp/sooth/model,
+# four subscale totals with no items shared).
+.AGG_TOKEN_RE <- "(sum|mean|total|score|avg|average|index|composite|check|count)$"
+
+# Does one column, on its own values, look like a TOTAL or AVERAGE rather than a
+# raw rating item? Two absolute signals (no item block needed to compare against):
+#   * AVERAGE-like: it carries non-integer values (4.666, 4.25) — a raw Likert
+#     item is integer, a mean is not.
+#   * TOTAL-like: its observed spread (max - min) exceeds 10 — wider than any
+#     plausible single rating item, i.e. a summed score.
+# `st` is list(rng, int) as computed in .scale_split_items; NULL (no data) -> NA.
+.col_looks_like_total <- function(st) {
+  if (is.null(st)) return(NA)
+  (!isTRUE(st$int)) || (is.finite(st$rng) && st$rng > 10)
+}
+
+.scale_split_items <- function(cols, df = NULL, min_items = .scale_min_items) {
+  keep_all <- function(totals_only = FALSE)
+    list(items = cols, derived = character(0), totals_only = totals_only)
+  if (length(cols) < min_items) return(keep_all())
+
+  suffix <- sub("^.*?[._ -]", "", cols)            # segment after first separator
+  ends_num  <- grepl("[0-9]$", cols)
+  is_word   <- grepl("[A-Za-z]$", cols)
+  agg_token <- grepl(.AGG_TOKEN_RE, tolower(suffix)) | grepl(.AGG_TOKEN_RE, tolower(cols))
+
+  # Naming anomaly only fires when a clear numbering convention exists: the
+  # MAJORITY of columns end in a number. Then word-suffix columns are anomalies.
+  numbered_block <- mean(ends_num) >= 0.5
+  name_flag <- agg_token | (numbered_block & is_word & !ends_num)
+
+  # Value anomaly, when preview values are available for these columns.
+  value_flag <- rep(FALSE, length(cols))
+  abs_total  <- rep(NA, length(cols))              # per-column absolute total test
+  if (!is.null(df) && all(cols %in% names(df))) {
+    numify <- function(x) suppressWarnings(as.numeric(as.character(x)))
+    stats <- lapply(cols, function(c) {
+      v <- numify(df[[c]]); v <- v[is.finite(v)]
+      if (!length(v)) return(NULL)
+      list(rng = diff(range(v)), int = all(v == round(v)))
+    })
+    abs_total <- vapply(stats, .col_looks_like_total, logical(1))
+    item_idx <- which(!name_flag)                  # provisional items set the norm
+    if (length(item_idx) >= 2) {
+      item_rngs <- vapply(item_idx, function(i)
+        if (is.null(stats[[i]])) NA_real_ else stats[[i]]$rng, numeric(1))
+      item_int  <- vapply(item_idx, function(i)
+        if (is.null(stats[[i]])) NA else stats[[i]]$int, logical(1))
+      med_rng   <- stats::median(item_rngs, na.rm = TRUE)
+      items_are_integer <- isTRUE(mean(item_int, na.rm = TRUE) >= 0.5)
+      for (j in seq_along(cols)) {
+        st <- stats[[j]]; if (is.null(st)) next
+        wider   <- is.finite(med_rng) && med_rng > 0 && st$rng > 1.5 * med_rng
+        non_int <- items_are_integer && !st$int
+        if (wider || non_int) value_flag[j] <- TRUE
+      }
+    }
+  }
+
+  # totals-only: after removing name-flagged aggregates, do the REMAINING columns
+  # still all look like totals/averages? Then there is no item battery here — the
+  # whole block is orphan score columns. Requires the value evidence (abs_total)
+  # to be present and to cover >= 80% of the remaining columns.
+  rest <- which(!name_flag)
+  totals_only <- FALSE
+  if (length(rest)) {
+    at <- abs_total[rest]
+    if (all(!is.na(at)) && mean(at) >= 0.8) totals_only <- TRUE
+  }
+
+  derived_mask <- name_flag | value_flag
+  # Never strip so much that a real scale falls below the item minimum: if the
+  # remaining items are too few, keep everything (better a slightly noisy block
+  # than a dropped scale). The totals_only verdict still rides along, so a block
+  # of all-totals is flagged even though its columns are kept.
+  if (sum(!derived_mask) < min_items)
+    return(keep_all(totals_only = totals_only))
+  list(items = cols[!derived_mask], derived = cols[derived_mask],
+       totals_only = totals_only)
+}
+
+.scale_prefix_groups <- function(df, min_cols = .scale_min_items,
+                                 min_chars = .scale_group_min_chars) {
   nms <- names(df)
-  pfx <- vapply(nms, .scale_prefix_of, character(1))
-  # A prefix is a candidate abbreviation only if it is short-ish and alnum
-  # (BSQ, MBSC, DEM_RACE would collapse to DEM). Drop empty / very long prefixes.
-  keep <- nzchar(pfx) & nchar(pfx) <= 12
-  groups <- split(nms[keep], tolower(pfx[keep]))
+  if (length(nms) < min_cols) return(list())
+
+  # Walk columns in order, extending a run while each next column shares a
+  # >= min_chars stem with the run's stem. Emit a block when a run is long enough.
+  # Pass 1: collect maximal runs of adjacent columns sharing a >= min_chars stem.
+  runs <- list()
+  push_run <- function(cols, stem) {
+    if (length(cols)) runs[[length(runs) + 1L]] <<- list(cols = cols, stem = stem)
+  }
+  run_cols <- character(0); run_stem <- ""
+  for (nm in nms) {
+    if (is.na(nm) || !nzchar(nm)) { push_run(run_cols, run_stem); run_cols <- character(0); run_stem <- ""; next }
+    if (length(run_cols) == 0) { run_cols <- nm; run_stem <- nm; next }
+    stem <- .scale_shared_stem(run_stem, nm)
+    # Extend only when the run shares a long-enough stem AND the new column
+    # differs from the run's LAST column by item number alone (same word-stem).
+    # The last-column comparison catches an alphabetic break at the boundary
+    # (matwarmth6 -> mataggr1, neighdev7 -> neighcur1) that the progressively
+    # shortened run stem would otherwise hide.
+    same_word <- .scale_same_number_run(run_cols[[length(run_cols)]], nm)
+    if (nchar(stem) >= min_chars && same_word) {
+      run_cols <- c(run_cols, nm); run_stem <- stem
+    } else {
+      push_run(run_cols, run_stem)
+      run_cols <- nm; run_stem <- nm
+    }
+  }
+  push_run(run_cols, run_stem)
+
+  # Pass 2: MERGE adjacent runs whose alphabetic prefix matches. Zero-padded
+  # numbering splits one scale into two stems ("AQ0" for AQ01..AQ09, "AQ1" for
+  # AQ10..AQ20); both share alpha-prefix "AQ", so they are one instrument. Merged
+  # runs adopt the alpha-prefix as their stem so the block is named "AQ", not
+  # "AQ0". Only NON-EMPTY alpha-prefixes merge (a purely numeric stem does not).
+  merged <- list()
+  for (r in runs) {
+    ap <- .scale_alpha_prefix(r$cols[[1]])
+    if (length(merged)) {
+      last <- merged[[length(merged)]]
+      if (nzchar(ap) && identical(ap, last$ap)) {
+        last$cols <- c(last$cols, r$cols)
+        merged[[length(merged)]] <- last
+        next
+      }
+    }
+    merged[[length(merged) + 1L]] <- list(cols = r$cols, stem = r$stem, ap = ap)
+  }
+
   out <- list()
-  for (g in names(groups)) {
-    cols <- groups[[g]]
-    if (length(cols) < min_cols) next
-    # max numeric suffix across the columns (BSQ_43 -> 43): the declared length.
+  emit <- function(cols, stem, min_stem = min_chars) {
+    if (length(cols) < min_cols || nchar(stem) < min_stem) return(invisible())
+    # The stem must be a real variable-name prefix: it has to START WITH A LETTER
+    # and contain at least two letters. This rejects placeholder / auto-named
+    # columns that read.csv/readxl invent for BLANK headers ("...13", "...14" ->
+    # stem "...1"), spreadsheet fillers ("X.1", "V1"), and pure-digit/punctuation
+    # stems — none of which are scale items. Without this guard, a block of
+    # unnamed columns is mistaken for a scale and (once an LLM names it) written
+    # as a bogus scale definition.
+    if (!grepl("^[A-Za-z]", stem) ||
+        sum(grepl("[A-Za-z]", strsplit(stem, "")[[1]])) < 2) return(invisible())
+    # Separate genuine items from derived/aggregate columns (AQ_SUM, CRS_MEAN,
+    # CRT_Check) that share the prefix but are not items. Items drive naming and
+    # likert_options; derived columns are recorded but not counted as items.
+    split   <- .scale_split_items(cols, df, min_items = min_cols)
+    items   <- split$items
+    if (length(items) < min_cols) return(invisible())
+    # A "totals-only" block (no genuine items, only aggregated scores) is only
+    # flagged when the prefix is a plausible instrument abbreviation: >= 3 leading
+    # letters. This guards against short coincidental prefixes (RT reaction times,
+    # ID) whose wide/non-integer values are not scale totals.
+    n_lead_letters <- nchar(sub("^([A-Za-z]+).*$", "\\1", stem))
+    totals_only <- isTRUE(split$totals_only) && n_lead_letters >= 3L
     nums <- suppressWarnings(as.integer(sub(".*?([0-9]+)$", "\\1",
-             grep("[0-9]+$", cols, value = TRUE))))
-    max_item <- if (length(nums)) max(nums, na.rm = TRUE) else NA_integer_
-    out[[g]] <- list(
-      prefix     = g,
-      display    = .scale_prefix_of(cols[[1]]),   # original-case abbreviation
-      columns    = cols,
-      n_columns  = length(cols),
-      max_item   = max_item)
+             grep("[0-9]+$", items, value = TRUE))))
+    # Key per emitted run (not per stem): a stem that recurs in a second,
+    # non-adjacent run must NOT overwrite the first block. Suffix on collision.
+    key <- tolower(stem); base <- key; i <- 2L
+    while (!is.null(out[[key]])) { key <- paste0(base, "#", i); i <- i + 1L }
+    out[[key]] <<- list(
+      prefix      = base,               # the stem (shared by same-name runs)
+      display     = stem,               # original-case shared stem
+      columns     = items,              # genuine items only
+      derived     = split$derived,      # aggregate/score/check columns excluded
+      totals_only = totals_only,        # block is orphan totals, no items found
+      n_columns   = length(items),
+      max_item    = if (length(nums)) max(nums, na.rm = TRUE) else NA_integer_)
+  }
+
+  for (m in merged) {
+    # A merged block is displayed by its alpha-prefix (AQ); an unmerged run keeps
+    # its shared stem. A genuine alpha-prefix from numbered items (AQ, RSE) may be
+    # only 2 chars, so relax the stem-length floor to 2 for it; the "at least two
+    # letters" guard in emit() still rejects junk stems.
+    if (nzchar(m$ap) && grepl("^[A-Za-z]{2,}$", m$ap)) {
+      stem <- toupper(substr(m$cols[[1]], 1, nchar(m$ap)))
+      emit(m$cols, stem, min_stem = 2L)
+    } else {
+      emit(m$cols, m$stem)
+    }
   }
   out
 }
@@ -966,6 +1295,41 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   if (is.null(sents) || !nrow(sents)) return(character(0))
   s <- unique(trimws(as.character(sents$text)))
   utils::head(s[nzchar(s)], max_sent)
+}
+
+# Words that signal a sentence is DESCRIBING a measurement instrument. Retrieving
+# on these (as well as on the column prefix) surfaces the manuscript's own scale
+# descriptions even when the abbreviation the authors used differs from the data
+# column names — e.g. a 98-column block named "Response.*" whose instrument the
+# text calls the "Teleological Beliefs Scale (TBS)". Without this, the sentence
+# that says "the TBS contains 98 statements across six categories" is never
+# retrieved (no "Response" token), so the block stays unnamed.
+.SCALE_SIGNAL_WORDS <- c(
+  "scale", "scales", "subscale", "subscales", "questionnaire", "questionnaires",
+  "inventory", "inventories", "measure", "measures", "instrument", "instruments",
+  "test", "battery", "index", "items", "item")
+
+# Retrieve sentences that DESCRIBE a scale: those containing a scale-signalling
+# word AND at least one Capitalized multi-word name or a parenthetical acronym
+# (the two ways instruments are introduced: "Teleological Beliefs Scale (TBS)").
+# Kept separate from the prefix search so the two sets can be pooled and capped.
+.scale_description_sentences <- function(paper, max_sent = 30L) {
+  if (!.is_paper(paper) || is.null(paper$text) || nrow(paper$text) == 0)
+    return(character(0))
+  signal <- paste0("\\b(", paste(.SCALE_SIGNAL_WORDS, collapse = "|"), ")\\b")
+  sents <- tryCatch(
+    text_search(paper, pattern = signal, return = "sentence",
+                ignore.case = TRUE, perl = TRUE),
+    error = function(e) NULL)
+  if (is.null(sents) || !nrow(sents)) return(character(0))
+  s <- unique(trimws(as.character(sents$text)))
+  s <- s[nzchar(s)]
+  # Keep sentences that also carry a proper-noun instrument name: a run of >= 2
+  # Capitalized words, or a parenthetical ALL-CAPS acronym. This filters generic
+  # uses of "items"/"measure" that name no instrument.
+  named <- grepl("([A-Z][A-Za-z]+ ){1,}[A-Z][A-Za-z]+", s) |
+           grepl("\\([A-Z][A-Za-z-]*[A-Z]\\)", s)
+  utils::head(s[named], max_sent)
 }
 
 # ONE-CALL LLM matcher: given every prefix group in a file (with column counts,
@@ -1001,13 +1365,27 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
     "A dataset's columns are grouped by a leading abbreviation; each group is",
     "likely one questionnaire/scale. You are given, for each group, its",
     "abbreviation, how many columns it has, the highest item number, and (if any)",
-    "the item wording; plus sentences from the paper that mention these",
-    "abbreviations, and an optional list of known instruments. For EACH group,",
-    "give the instrument the abbreviation stands for, taken from the paper",
-    "sentences (an abbreviation is often defined as 'Name of Scale (ABBR)'). Use",
-    "the item counts to disambiguate (e.g. a 'X-item scale' in the text). If the",
-    "text does not identify the group, return an empty scale_name for it — do NOT",
-    "guess and do NOT force a known instrument. Return one entry per group.")
+    "the item wording; plus sentences from the paper (some mention the group's",
+    "abbreviation, others describe an instrument), and an optional list of known",
+    "instruments. For EACH group, give the instrument the abbreviation stands",
+    "for, taken from the paper sentences.",
+    "GUIDANCE:",
+    "(1) A scale/questionnaire/test is almost always referred to by a proper name",
+    "in Capitalised Words, e.g. 'Anthropomorphism Questionnaire', 'Teleological",
+    "Beliefs Scale', 'Centrality of Religiosity Scale' — often defined once as",
+    "'Full Name of Scale (ABBR)'. Return that Capitalised name, not a lowercase",
+    "paraphrase.",
+    "(2) An author-year citation like 'Neave et al., 2015' or 'Huber & Huber,",
+    "2012' is the REFERENCE for a scale, NOT the scale's name. Never return an",
+    "author name as the scale_name.",
+    "(3) Use the counts to match: a group's column count (and highest item",
+    "number) should line up with a count stated in the text (e.g. 'the AQ",
+    "contains 20 items', or 'the scale has 98 statements across six categories of",
+    "14, 14, 25, 10, 25, and 10'). Prefer the instrument whose stated size matches",
+    "the group's size, even if the abbreviation differs from the column prefix.",
+    "(4) If the text does not identify the group, return an empty scale_name for",
+    "it — do NOT guess and do NOT force a known instrument. Return one entry per",
+    "group.")
 
   out <- list(); model_used <- NA_character_; n_calls <- 0L
   for (file in names(previews)) {
@@ -1016,10 +1394,16 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
     groups <- .scale_prefix_groups(df)
     if (length(groups) == 0) next
 
-    # Sentences mentioning ANY of this file's abbreviations (one search per file).
+    # Sentences to give the model: (a) those mentioning this file's abbreviations,
+    # PLUS (b) sentences that describe an instrument by name (Capitalised name /
+    # acronym near a scale-signalling word). (b) is essential when the column
+    # prefix differs from the manuscript's abbreviation (e.g. "Response.*" columns
+    # described as the "Teleological Beliefs Scale") — otherwise that description
+    # is never retrieved. Pooled and de-duplicated; prefix sentences come first.
     prefixes <- vapply(groups, function(g) g$display, character(1))
     sents <- if (.is_paper(paper))
-      .scale_prefix_sentences(paper, prefixes) else character(0)
+      unique(c(.scale_prefix_sentences(paper, prefixes),
+               .scale_description_sentences(paper))) else character(0)
 
     # Dictionary hints: known instruments whose acronym equals a group prefix.
     hint_rows <- dict[toupper(gsub("[^A-Za-z0-9]","",dict$acronym)) %in%
@@ -1038,10 +1422,11 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
                 paste(utils::head(wd, 6), collapse = " | ")) else "")
     }, character(1))
 
+    sents <- utils::head(sents, 60L)   # cap the pooled evidence
     text_in <- paste0(
       "Column groups in this data file:\n", paste(grp_txt, collapse = "\n"),
-      if (length(sents)) paste0("\n\nSentences from the paper mentioning these abbreviations:\n",
-        paste("-", sents, collapse = "\n")) else "\n\n(No paper sentences mention these abbreviations.)",
+      if (length(sents)) paste0("\n\nSentences from the paper (abbreviation mentions and instrument descriptions):\n",
+        paste("-", sents, collapse = "\n")) else "\n\n(No relevant paper sentences found.)",
       if (nzchar(hints)) paste0("\n\nKnown instruments (hints only, confirm from the text): ", hints) else "")
 
     resp <- NULL
@@ -1083,6 +1468,7 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
         confidence = conf[k] %||% NA_character_,
         scale_source = if (!is.na(named[k])) "manuscript" else NA_character_,
         n_columns = gg$n_columns, max_item = gg$max_item,
+        totals_only = isTRUE(gg$totals_only),
         columns = I(list(gg$columns)), stringsAsFactors = FALSE)
     }
     if (n_calls >= max_calls) break
@@ -1132,19 +1518,28 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
     }
   }
 
-  # 2. Observed statistics from data_check.
+  # 2. Observed statistics from data_check. Use the MEDIAN of each column's min
+  #    and max across the block, not the block-wide min/max — a scale block is
+  #    often contaminated by a few aggregate columns the authors named with the
+  #    same prefix (e.g. a summed neoTotal alongside the 1-5 items). Those totals
+  #    have a much wider range and would dominate a min/max/n_unique aggregate
+  #    (that is where a bogus "points: 85" came from). The median is robust to a
+  #    minority of such columns and reflects the range the bulk of items share.
+  #    `points` is the RANGE (max - min + 1), never n_unique (distinct observed
+  #    values != response options for a score column).
   if (!is.null(columns_df) && nrow(columns_df) > 0 &&
-      all(c("source_file", "column_name", "min", "max", "n_unique") %in% names(columns_df))) {
+      all(c("source_file", "column_name", "min", "max") %in% names(columns_df))) {
     ck <- key(columns_df)
     idx <- which(ck %in% want)
     if (length(idx)) {
-      mn <- suppressWarnings(min(columns_df$min[idx], na.rm = TRUE))
-      mx <- suppressWarnings(max(columns_df$max[idx], na.rm = TRUE))
-      nu <- suppressWarnings(max(columns_df$n_unique[idx], na.rm = TRUE))
-      # Only claim a scale when the range is a small integer-like span.
+      mn <- suppressWarnings(stats::median(columns_df$min[idx], na.rm = TRUE))
+      mx <- suppressWarnings(stats::median(columns_df$max[idx], na.rm = TRUE))
+      # Only claim a scale when the median range is a small integer-like span
+      # (a plausible rating scale). A score-dominated block whose median range
+      # is wide emits NOTHING rather than a wrong likert_options.
       if (is.finite(mn) && is.finite(mx) && mx > mn &&
-          mn == round(mn) && mx == round(mx) && (mx - mn) <= 20) {
-        return(list(points = if (is.finite(nu)) nu else (mx - mn + 1L),
+          mn == round(mn) && mx == round(mx) && (mx - mn) <= 12) {
+        return(list(points = as.integer(mx - mn + 1L),
                     min = mn, max = mx, order = "ascending", source = "observed"))
       }
     }
@@ -1171,22 +1566,51 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   lbl_key <- if (!is.null(labels_df) && nrow(labels_df) > 0 &&
                  all(c("source_file", "column_name") %in% names(labels_df)))
     paste(labels_df$source_file, labels_df$column_name, sep = "\x01") else character(0)
+  # Non-empty scalar or NA — guards a missing column (NULL) or NA cell, so
+  # `if (...)` never sees a zero-length/NA condition.
+  ok <- function(x) length(x) == 1L && !is.na(x) && nzchar(x)
   label_of <- function(file, col) {
     if (!length(lbl_key)) return(NA_character_)
     i <- match(paste(file, col, sep = "\x01"), lbl_key)
     if (is.na(i)) return(NA_character_)
-    w <- labels_df$label[i]
-    if (!is.na(w) && nzchar(w)) return(w)
-    if ("question" %in% names(labels_df) && !is.na(labels_df$question[i]) &&
-        nzchar(labels_df$question[i])) return(labels_df$question[i])
+    w <- if ("label" %in% names(labels_df)) labels_df$label[i] else NA_character_
+    if (ok(w)) return(w)
+    if ("question" %in% names(labels_df) && ok(labels_df$question[i]))
+      return(labels_df$question[i])
     NA_character_
   }
 
-  lapply(seq_len(nrow(scale_groups)), function(i) {
+  # Scale names (across the whole paper) that HAVE a genuine item block — a named
+  # group that is NOT totals-only. A totals-only group whose scale name is in this
+  # set is the redundant aggregate of items we already exported, so it is skipped;
+  # one with a name NOT in the set is an orphan total (items not shared) and is
+  # written with a warning. Matched by scale NAME, so it works across files.
+  tot_col <- if ("totals_only" %in% names(scale_groups))
+    !is.na(scale_groups$totals_only) & scale_groups$totals_only else
+    rep(FALSE, nrow(scale_groups))
+  has_items_for <- {
+    nm <- scale_groups$scale
+    real <- !is.na(nm) & nzchar(nm) & !tot_col
+    unique(tolower(nm[real]))
+  }
+
+  out <- lapply(seq_len(nrow(scale_groups)), function(i) {
     r <- scale_groups[i, ]
     cols <- r$columns[[1]]
     named <- !is.na(r$scale) && nzchar(r$scale)
-    cp <- .osd_code_and_provenance(r$scale, r$prefix, r$scale_source, dict)
+    totals_only <- "totals_only" %in% names(r) && isTRUE(r$totals_only)
+    # A totals-only block whose scale ALSO has a real item block elsewhere is the
+    # redundant aggregate of those items — drop it (report-only, not written).
+    redundant_total <- totals_only && named &&
+      tolower(r$scale) %in% has_items_for
+    # A group with no name is still WRITTEN when it is a coherent rating-like
+    # block (0-100 sliders, Likert, etc.) — recorded for its structure under an
+    # "unnamed_block" provenance. Non-scale prefix groups (probability triplets,
+    # unbounded model parameters) fail the gate and stay report-only.
+    rating_like <- !named &&
+      .scale_block_is_ratinglike(cols, r$source_file, columns_df)
+    eff_source  <- if (named) r$scale_source else if (rating_like) "unnamed_block" else r$scale_source
+    cp <- .osd_code_and_provenance(r$scale, r$prefix, eff_source, dict)
 
     # Item wording -> translations; text_key points at the id when documented.
     wording <- stats::setNames(vapply(cols, function(c) label_of(r$source_file, c),
@@ -1207,23 +1631,77 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       if (!is.null(lopts)) it$type <- "likert"
       it
     })
+    # A totals-only block with NO item block anywhere: an orphan aggregate score.
+    # We still record it (it names a scale that was clearly measured), but flag it
+    # as total-only and warn that the items were not found.
+    orphan_total <- totals_only && !redundant_total
+    total_note <- if (orphan_total)
+      paste("Detected as the total/average score for this scale, but no",
+            "item-level columns were found. The individual items may not be",
+            "shared, or are labelled differently. Consider sharing item-level",
+            "data or labelling items clearly so the scale can be verified.") else NULL
+
     # metacheck provenance extension (kept out of the spec's scale_info).
+    # source_files is always a list: one entry now, extended when the same scale
+    # is found in other data files (see .osd_dedup_by_source).
     definition$metacheck <- Filter(Negate(is.null), list(
       scale_source    = cp$source,
       provenance      = cp$provenance,
       confidence      = if (!is.na(r$confidence)) r$confidence else NULL,
-      source_file     = r$source_file,
+      kind            = if (orphan_total) "scale_total_only" else NULL,
+      note            = total_note,
+      source_files    = as.list(r$source_file),
       n_columns       = r$n_columns,
       declared_length = if (!is.na(r$max_item)) r$max_item else NULL))
 
     osd <- list(osd_version = "1.0", definition = definition)
     if (length(translations_en))
       osd$translations <- list(en = translations_en)
-    # Marker for the writer: only named scales become files.
-    attr(osd, "write") <- named
+    # Marker for the writer: named scales AND unnamed-but-rating-like blocks
+    # become files; other unnamed prefix groups stay report-only. A totals-only
+    # block redundant with an exported item block is NOT written; an orphan total
+    # IS written (flagged), so the record + warning survive.
+    attr(osd, "write") <- (named || rating_like) && !redundant_total
     attr(osd, "code")  <- cp$code
+    attr(osd, "orphan_total") <- orphan_total
+    attr(osd, "scale") <- if (named) r$scale else NA_character_
+    # Identity for cross-file de-duplication: the same instrument administered in
+    # several data files repeats the same columns (FightN155.csv, FightN127.csv).
+    # Key on scale name (or code) + the exact item set, so "same scale, different
+    # file" collapses to one definition while "same name, different items" stays
+    # separate.
+    attr(osd, "dedup_key") <- paste(tolower(cp$code),
+                                     paste(sort(cols), collapse = "\x01"),
+                                     sep = "\x02")
     osd
   })
+
+  .osd_dedup_by_source(Filter(Negate(is.null), out))
+}
+
+# Collapse OSD objects that describe the SAME scale seen in multiple source files
+# (identical dedup_key) into a single definition, recording every file it appears
+# in under definition$metacheck$source_files. The first occurrence is kept; later
+# duplicates only contribute their source file(s). Non-duplicate scales pass
+# through unchanged (source_files stays length 1).
+.osd_dedup_by_source <- function(osds) {
+  if (!length(osds)) return(osds)
+  keys <- vapply(osds, function(o) attr(o, "dedup_key") %||% "", character(1))
+  kept <- list(); seen <- list()   # key -> index into kept
+  for (i in seq_along(osds)) {
+    o <- osds[[i]]; k <- keys[[i]]
+    if (nzchar(k) && !is.null(seen[[k]])) {
+      j <- seen[[k]]
+      mc <- kept[[j]]$definition$metacheck
+      mc$source_files <- as.list(unique(c(unlist(mc$source_files),
+                                          unlist(o$definition$metacheck$source_files))))
+      kept[[j]]$definition$metacheck <- mc
+      next
+    }
+    kept[[length(kept) + 1L]] <- o
+    if (nzchar(k)) seen[[k]] <- length(kept)
+  }
+  kept
 }
 
 # LLM self-generated scale labels. For scale-like blocks that matched NO known
@@ -1236,7 +1714,7 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
 # column names. Only runs with an LLM. Returns (source_file, column_name, scale,
 # confidence, scale_source), or an empty frame; NULL is treated as empty.
 .identify_scales_selfgen <- function(previews, labels_df, paper, model, params,
-                                     max_calls = 40L) {
+                                     columns_df = NULL, max_calls = 40L) {
   empty <- data.frame(source_file = character(), column_name = character(),
                       scale = character(), confidence = character(),
                       scale_source = character())
@@ -1262,34 +1740,59 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       "Short construct label for what these items measure (e.g. 'Institutional Trust', 'Environmental Concern'), or empty if the text does not say."),
     confidence = ellmer::type_string("high, medium, or low."))
   prompt <- paste(
-    "You are given the item wording of ONE block of survey items from a dataset,",
-    "and (optionally) sentences from the paper that mention these variables.",
-    "These items do NOT match a known published instrument. Give a short, natural",
-    "CONSTRUCT LABEL for what the block measures, based ONLY on the provided text.",
-    "If the provided text does not clearly indicate what the items measure, return",
-    "an empty construct — do NOT guess from variable names alone. Never invent a",
+    "You are given ONE block of survey/rating items from a dataset: their column",
+    "names (which often contain meaningful words), any documented item wording,",
+    "and (optionally) sentences from the paper that mention these variables. The",
+    "block does NOT match a known published instrument. Give a short, natural",
+    "CONSTRUCT LABEL for what the block measures (e.g. 'Positive trait ratings',",
+    "'Environmental Concern'). Base it on the provided evidence — you MAY use",
+    "meaningful words in the column names (including non-English words, e.g.",
+    "Spanish 'buena'=good, 'mala'=bad) together with the wording and sentences.",
+    "Only return an empty construct if the column names are opaque codes with no",
+    "interpretable words AND there is no wording or paper text. Never invent a",
     "published scale name; describe the construct in plain words.")
+
+  # Candidate blocks per file: the strict Likert blocks PLUS rating-like prefix
+  # groups (0-100 sliders etc.) the Likert detector misses. Each entry is the
+  # block's column names; deduplicated by the column set so a block found by both
+  # detectors is asked about once.
+  candidate_blocks <- function(df, file) {
+    blocks <- lapply(.detect_scale_blocks(df), function(ci) names(df)[ci])
+    for (g in .scale_prefix_groups(df)) {
+      if (.scale_block_is_ratinglike(g$columns, file, columns_df))
+        blocks[[length(blocks) + 1L]] <- g$columns
+    }
+    unique(blocks)
+  }
 
   out <- list(); model_used <- NA_character_; n_calls <- 0L
   for (file in names(previews)) {
     df <- previews[[file]]
     if (is.null(df) || ncol(df) < .scale_min_items) next
-    for (cols in .detect_scale_blocks(df)) {
-      nms <- names(df)[cols]
+    for (nms in candidate_blocks(df, file)) {
       keys <- paste(file, nms, sep = "\x01")
       if (any(keys %in% named_key)) next          # already named — skip
       wording <- wording_of(file, nms)
       ctx <- if (have_paper)
         .scale_paper_context(paper, .scale_name_prefix(nms[[1]]), wording) else
         character(0)
-      # Need SOME descriptive evidence — never label from bare names.
-      if (length(wording) == 0 && length(ctx) == 0) next
+      # Descriptive words in the column names themselves (letters-only tokens of
+      # >= 3 chars, minus a stray item-index token). A block whose names carry
+      # real words CAN be labelled from them; a block of opaque codes cannot.
+      name_tokens <- unique(unlist(strsplit(tolower(nms), "[^a-z]+")))
+      name_tokens <- name_tokens[nchar(name_tokens) >= 3L]
+      # Need SOME evidence: wording, paper context, or interpretable name tokens.
+      if (length(wording) == 0 && length(ctx) == 0 && length(name_tokens) == 0)
+        next
+      # A tokens-only identification is inherently weaker; cap its confidence.
+      tokens_only <- length(wording) == 0 && length(ctx) == 0
       if (n_calls >= max_calls) break
       n_calls <- n_calls + 1L
 
       text_in <- paste0(
-        "Item wording:\n",
-        if (length(wording)) paste("-", wording, collapse = "\n") else "(none)",
+        "Column names:\n", paste("-", nms, collapse = "\n"),
+        "\n\nItem wording:\n",
+        if (length(wording)) paste("-", wording, collapse = "\n") else "(none documented)",
         if (length(ctx)) paste0(
           "\n\nRelevant paper sentences:\n", paste("-", ctx, collapse = "\n")) else "")
       resp <- tryCatch(
@@ -1304,6 +1807,7 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
           tolower(construct) %in% c("unknown","unclear","na","none")) next
       conf <- tolower(trimws(as.character(resp$confidence[[1]] %||% "medium")))
       if (!conf %in% c("high","medium","low")) conf <- "medium"
+      if (tokens_only) conf <- "low"
       out[[length(out) + 1L]] <- data.frame(
         source_file = file, column_name = nms,
         scale = construct, confidence = conf, scale_source = "self_generated")

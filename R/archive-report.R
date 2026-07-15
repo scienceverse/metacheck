@@ -537,7 +537,11 @@ collect_check_results <- function(results_dir, out_dir = NULL) {
       all_names <- unique(unlist(lapply(count_cols, names)))
       for (nm in all_names)
         ck[[nm]] <- vapply(count_cols, function(cc) {
-          v <- cc[[nm]]; if (is.null(v)) NA_real_ else as.numeric(v)[1]
+          v <- cc[[nm]]
+          # A count field can hold a non-numeric value (a label/category rather
+          # than a number); coercing it to NA is intended (see the NA_real_
+          # fallback), so the "NAs introduced by coercion" warning is pure noise.
+          if (is.null(v)) NA_real_ else suppressWarnings(as.numeric(v)[1])
         }, numeric(1))
       ck$counts <- NULL
       checks_l[[length(checks_l) + 1L]] <- ck

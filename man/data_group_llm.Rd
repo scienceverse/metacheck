@@ -8,7 +8,8 @@ data_group_llm(
   files,
   model = llm_model(),
   params = list(),
-  batch_size = .data_check_llm_batch
+  batch_size = .data_check_llm_batch,
+  paper = NULL
 )
 }
 \arguments{

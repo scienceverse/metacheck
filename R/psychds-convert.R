@@ -8,8 +8,12 @@
 .psychds_numeric_reps <- c("numeric")
 # Measurement levels that receive a valuePattern (their distinct values matter).
 .psychds_categorical_levels <- c("nominal", "ordinal")
-# Quality states that get no variableMeasured entry at all (no measured content).
-.psychds_excluded_quality <- c("empty")
+# Quality states that hold no measured content. These columns still get a
+# variableMeasured entry (Psych-DS requires every CSV column to be described, so
+# omitting them makes the dataset fail validation with CsvColumnMissingFromMetadata),
+# but the entry is a minimal stub marked empty rather than a full facet block —
+# an all-NA column has no statistics, value pattern, or measurement level to report.
+.psychds_empty_quality <- c("empty")
 
 # Build the variableMeasured list for one set of columns. `cols` is a subset of
 # data_check's columns table; `labels` is codebook_check's labels table (or
@@ -36,14 +40,29 @@
                   all.x = TRUE, suffixes = c("", ".lbl"))
   }
 
-  # Drop columns with no measured content (empty). The facet schema
-  # (representation/quality/measurement_level/concept/unit) is expected.
+  # Every column is described (Psych-DS requires each CSV column to appear in
+  # variableMeasured). An empty (all-NA) column gets a minimal stub entry — it
+  # has no content to describe beyond "this column exists and holds no data" —
+  # while the rest get the full facet schema
+  # (representation/quality/measurement_level/concept/unit).
   qual <- tolower(cols$quality %||% "")
-  cols <- cols[!(qual %in% .psychds_excluded_quality), , drop = FALSE]
   if (nrow(cols) == 0) return(list())
 
   lapply(seq_len(nrow(cols)), function(i) {
     row <- cols[i, ]
+
+    # Empty column: a minimal PropertyValue naming it and flagging it empty, so
+    # the CSV column is documented without inventing statistics for all-NA data.
+    if (qual[i] %in% .psychds_empty_quality) {
+      return(Filter(Negate(is.null), list(
+        `@type` = "PropertyValue",
+        name    = row$column_name,
+        description = "Empty column (no observed values in the shared data).",
+        `metacheck:quality` = "empty",
+        `metacheck:source_file` = if (!is.na(row$source_file)) row$source_file else NULL
+      )))
+    }
+
     rep_ <- row$representation %||% NA_character_
     lvl  <- row$measurement_level %||% NA_character_
     pv  <- list(`@type` = "PropertyValue", name = row$column_name)
@@ -67,9 +86,9 @@
     if ("scale" %in% names(row) && !is.na(row$scale) && nzchar(row$scale)) {
       pv[["measurementTechnique"]] <- row$scale
       # Cross-reference to the exported OSD scale definition: the same code the
-      # .osd file is written under (scales/{CODE}/{CODE}.osd), so a reader can
-      # jump from a variable to its instrument definition. scale_source also
-      # marks how the scale was identified (dictionary/manuscript/generated).
+      # .osd file is written under (scales/{code}.osd), so a reader can jump from
+      # a variable to its instrument definition. scale_source also marks how the
+      # scale was identified (dictionary/manuscript/generated).
       ssrc <- if ("scale_source" %in% names(row) && !is.na(row$scale_source))
         row$scale_source else NA_character_
       cp <- .osd_code_and_provenance(row$scale, row$column_name, ssrc, .osd_dict)
@@ -145,6 +164,23 @@
   })
 }
 
+# Normalise a keywords value into a flat list of scalar strings for JSON. On a
+# scivrs_paper, paper$info$keywords is an AsIs list-column of length 1 whose one
+# element is the character vector of keywords — so a naive as.list() keeps the
+# outer wrapper and serialises as a nested array [["a","b"]] instead of the
+# schema.org-correct ["a","b"]. Unwrap a single list/AsIs cell to its contents,
+# then split into scalars. Returns NULL when there are no keywords.
+.psychds_keywords <- function(kw) {
+  if (is.null(kw) || length(kw) == 0) return(NULL)
+  # Unwrap an AsIs / list cell (length-1 holding the real vector).
+  if (is.list(kw) && length(kw) == 1) kw <- kw[[1]]
+  kw <- unlist(kw, use.names = FALSE)
+  kw <- as.character(kw)
+  kw <- kw[!is.na(kw) & nzchar(kw)]
+  if (length(kw) == 0) return(NULL)
+  as.list(kw)
+}
+
 # Build the dataset_description.json object for one study.
 .psychds_dataset_description <- function(paper, study_label, property_values) {
   info <- paper$info %||% list()
@@ -181,12 +217,101 @@
   doi <- ival("doi") %||% NA_character_
   if (!is.na(doi) && nzchar(doi))
     desc[["identifier"]] <- paste0("https://doi.org/", sub("^https?://doi.org/", "", doi))
-  kw <- ival("keywords")
-  if (!is.null(kw) && length(kw) > 0)
-    desc[["keywords"]] <- as.list(kw)
+  kw <- .psychds_keywords(ival("keywords"))
+  if (!is.null(kw)) desc[["keywords"]] <- kw
 
   desc[["metacheck:generated"]] <- format(Sys.Date(), "%Y-%m-%d")
   Filter(Negate(is.null), desc)
+}
+
+# Build and write the multi-study collection metadata as `collection.json` at the
+# output root. It is schema.org JSON-LD with @type "Collection" (a schema.org
+# type), so any schema.org reader — and Google Dataset Search — can consume it,
+# and it uses the same vocabulary Psych-DS itself speaks. It is deliberately NOT
+# named dataset_description.json, so the Psych-DS validator (which only opens a
+# file of that exact name) never validates it, and the root stays a non-dataset
+# collection (Option A).
+#
+# hasPart indexes every part that exists: each study-<group>/ dataset (with its
+# variable count), each root-level shared file, the paper full text, and the
+# logs. `study_roots` are the "study-<group>" prefixes; `shared_files` the plan
+# target paths that carry no study prefix; `fulltext_rel`/`logs_rel` the
+# root-relative paths of those generated artifacts. Returns the written path.
+.psychds_collection_json <- function(paper, output_dir, pid, study_roots,
+                                     columns_df = NULL, labels_df = NULL,
+                                     shared_files = character(0),
+                                     fulltext_rel = character(0),
+                                     logs_rel = character(0)) {
+  info <- paper$info %||% list()
+  ival <- function(field) {
+    v <- if (field %in% names(info)) info[[field]] else NULL
+    if (length(v) == 0) NULL else v
+  }
+
+  title <- ival("title")
+  name <- if (!is.null(title) && nzchar(title)) title else
+    paste0("Data collection (", pid, ")")
+
+  # hasPart: one Dataset entry per study root, carrying its variable count.
+  parts <- lapply(study_roots, function(sr) {
+    grp <- sub("^study-", "", sr)
+    n_vars <- if (!is.null(columns_df) && "group" %in% names(columns_df))
+      sum(!is.na(columns_df$group) & columns_df$group == grp) else NA_integer_
+    Filter(Negate(is.null), list(
+      `@type`   = "Dataset",
+      name      = paste("Study", toupper(grp)),
+      # A relative reference to the sub-dataset's own metadata file.
+      identifier = paste0(sr, "/"),
+      `metacheck:datasetDescription` = paste0(sr, "/dataset_description.json"),
+      `metacheck:variableCount` = if (!is.na(n_vars)) n_vars else NULL))
+  })
+
+  # hasPart: root-level shared files (codebooks, materials, documentation), the
+  # paper full text, and the provenance logs — as CreativeWork references.
+  ref_parts <- function(paths, type, note = NULL) {
+    paths <- unique(paths[!is.na(paths) & nzchar(paths)])
+    lapply(paths, function(p) Filter(Negate(is.null), list(
+      `@type` = type, name = basename(p),
+      `metacheck:path` = p,
+      `metacheck:role` = note)))
+  }
+  parts <- c(parts,
+             ref_parts(shared_files, "CreativeWork", "shared across studies"),
+             ref_parts(fulltext_rel, "CreativeWork", "paper full text"),
+             ref_parts(logs_rel, "CreativeWork", "metacheck provenance log"))
+
+  coll <- list(
+    `@context`  = "https://schema.org/",
+    `@type`     = "Collection",
+    name        = name,
+    description = paste0(
+      "A collection of ", length(study_roots), " Psych-DS datasets (one per ",
+      "study) generated by metacheck. Each study-*/ part is an independently ",
+      "valid Psych-DS dataset; this collection root is intentionally not itself ",
+      "a Psych-DS dataset."),
+    hasPart     = parts)
+
+  # Authors, DOI, keywords — same extraction as the per-study description.
+  if (!is.null(paper$author) && nrow(paper$author) > 0) {
+    nm <- trimws(paste(paper$author$given %||% "", paper$author$family %||% ""))
+    nm <- nm[nzchar(nm)]
+    if (length(nm) > 0)
+      coll[["author"]] <- lapply(nm, function(x) list(`@type` = "Person", name = x))
+  }
+  doi <- ival("doi") %||% NA_character_
+  if (!is.na(doi) && nzchar(doi))
+    coll[["identifier"]] <- paste0("https://doi.org/",
+                                   sub("^https?://doi.org/", "", doi))
+  kw <- .psychds_keywords(ival("keywords"))
+  if (!is.null(kw)) coll[["keywords"]] <- kw
+
+  coll[["dateCreated"]]        <- format(Sys.Date(), "%Y-%m-%d")
+  coll[["metacheck:generated"]] <- format(Sys.Date(), "%Y-%m-%d")
+  coll <- Filter(Negate(is.null), coll)
+
+  path <- file.path(output_dir, "collection.json")
+  .psychds_write_json(coll, path)
+  invisible(path)
 }
 
 # Resolve the module outputs a converter needs, reusing anything already
@@ -214,7 +339,18 @@
   chain <- paper
 
   if (inherits(chain, "metacheck_module_output")) {
-    reuse <- stats::setNames(list(chain), chain$module %||% "unknown")
+    # report_module_run() returns the LAST module's output, with every EARLIER
+    # module nested in $prev_outputs. Reuse them ALL — not just the last one —
+    # so the converter uses the data_check result the chain already produced
+    # (with its download="all" file_locations) instead of re-running data_check
+    # with default args (download="data"), which would leave code/supplemental
+    # files with file_location = NA and make the converter drop them as "not
+    # downloaded". This was the cause of code/supplemental files (e.g. .Rmd
+    # analysis scripts) missing from the Psych-DS output.
+    reuse <- chain$prev_outputs %||% list()
+    this <- chain
+    this$prev_outputs <- NULL
+    reuse[[chain$module %||% "unknown"]] <- this
   } else if (is.list(chain) && !inherits(chain, "scivrs_paper") &&
              any(needed %in% names(chain))) {
     reuse <- chain           # already a named list of module outputs
@@ -303,7 +439,15 @@
   # dataset-metadata builders have a valid paper object (empty title/authors).
   if (is.null(real_paper)) real_paper <- paper(id = pid)
 
-  list(ops = ops, paper = real_paper, pid = pid)
+  # `ops` is the subset the converter needs (data_check/codebook_check/
+  # psychds_check). `all_ops` is EVERY captured module output when a full chain
+  # was handed in (reuse holds them all) — used for the provenance logs so the
+  # logs/ RDS + checks JSON record the whole run, not just the converter's three
+  # modules. When modules were re-run from a bare paper (no reuse), the full set
+  # is just `ops`.
+  all_ops <- if (length(reuse)) reuse else ops
+
+  list(ops = ops, all_ops = all_ops, paper = real_paper, pid = pid)
 }
 
 # Build the "why is there nothing to convert" explanation. When a paper linked
@@ -340,6 +484,218 @@
   json <- jsonlite::toJSON(obj, auto_unbox = TRUE, pretty = TRUE, na = "null")
   writeLines(json, path, useBytes = TRUE)
   invisible(path)
+}
+
+# Write the paper's extracted full text as a plain UTF-8 text file under the
+# dataset root's `documentation/` folder, so the release carries the manuscript
+# prose the checks were run against (not just the data). The per-unit text table
+# is read via paper_table(paper, "text") — the same accessor search_text() uses —
+# and joined to paper_table(paper, "section") for section headers; we reconstruct
+# readable text by ordering on text_id and emitting a "# <header>" line whenever
+# the section changes. Returns the written path, or NULL when the paper carries no
+# full text (e.g. a stub paper recovered from a captured result).
+#
+# `documentation/` always sits at the true output root. In a flat (single-study)
+# dataset that folder is unambiguous, so the file is `fulltext.txt`. In a
+# multi-study dataset the studies live in `study-*/` subtrees and the root
+# `documentation/` is shared context, so the file is pid-qualified
+# (`<pid>_fulltext.txt`) to keep it identifiable.
+.psychds_write_paper_text <- function(paper, output_dir, pid, multi_study) {
+  if (!.is_paper(paper)) return(NULL)
+  ft <- tryCatch(paper_table(paper, "text"), error = function(e) NULL)
+  if (is.null(ft) || !is.data.frame(ft) || nrow(ft) == 0) return(NULL)
+  if (!"text" %in% names(ft)) return(NULL)
+
+  # Attach section headers the same way search_text() does, when available.
+  sections <- tryCatch(paper_table(paper, "section"), error = function(e) NULL)
+  scols <- c("section_id", "paper_id", "header", "section_type")
+  if (!is.null(sections) && is.data.frame(sections) &&
+      all(scols %in% names(sections)) && "section_id" %in% names(ft)) {
+    ft <- dplyr::left_join(ft, sections[, scols],
+                           by = intersect(c("section_id", "paper_id"), names(ft)),
+                           relationship = "many-to-many")
+  }
+
+  # Order by reading order when available; otherwise keep the given order.
+  if ("text_id" %in% names(ft)) ft <- ft[order(ft$text_id), , drop = FALSE]
+
+  header <- if ("header" %in% names(ft)) ft$header else rep(NA_character_, nrow(ft))
+  lines <- character(0)
+  last_header <- NA_character_
+  for (i in seq_len(nrow(ft))) {
+    txt <- ft$text[i]
+    if (is.na(txt) || !nzchar(trimws(txt))) next
+    h <- header[i]
+    # Emit a section header line when the header changes (and is real text that
+    # is not just a repeat of the paragraph itself).
+    if (!is.na(h) && nzchar(trimws(h)) &&
+        !identical(h, last_header) && !identical(trimws(h), trimws(txt))) {
+      if (length(lines) > 0) lines <- c(lines, "")
+      lines <- c(lines, paste0("# ", trimws(h)), "")
+      last_header <- h
+    }
+    lines <- c(lines, trimws(txt))
+  }
+  if (length(lines) == 0) return(NULL)
+
+  doc_dir <- file.path(output_dir, "documentation")
+  dir.create(doc_dir, recursive = TRUE, showWarnings = FALSE)
+  fname <- if (isTRUE(multi_study)) paste0(pid, "_fulltext.txt") else "fulltext.txt"
+  path <- file.path(doc_dir, fname)
+  # UTF-8, BOM-free (writeLines with a UTF-8 connection adds no BOM).
+  con <- file(path, open = "wb", encoding = "UTF-8")
+  on.exit(close(con), add = TRUE)
+  writeLines(lines, con, useBytes = FALSE)
+  invisible(path)
+}
+
+# Build a REDUCED file manifest from data_check's structure table, for when no
+# full manifest was written at run time (data_check's `manifest` arg unset). The
+# full manifest (.data_check_write_manifest) needs run-time state the module
+# output does not carry — the download gate tables, per-file skip reasons, HEAD
+# size probes — so this fallback records only what the finished output knows: the
+# file inventory with each file's downloaded/not-downloaded status, plus the same
+# `provenance` block. It writes the same top-level shape (files[] + provenance)
+# so write_file_manifest() can still read it. Returns the written path.
+.psychds_reduced_manifest <- function(structure_df, pid, path) {
+  cols <- function(nm) if (!is.null(structure_df[[nm]])) structure_df[[nm]] else
+    rep(NA_character_, nrow(structure_df))
+  loc  <- cols("file_location")
+  downloaded <- !is.na(loc) & nzchar(loc) & file.exists(loc %||% "")
+
+  entries <- lapply(seq_len(nrow(structure_df)), function(i) {
+    sz <- suppressWarnings(as.numeric(cols("file_size")[i]))
+    if (isTRUE(downloaded[i])) {
+      on_disk <- suppressWarnings(file.size(loc[i]))
+      if (!is.na(on_disk)) sz <- on_disk
+    }
+    Filter(Negate(is.null), list(
+      file_name   = cols("file_name")[i],
+      file_path   = cols("file_path")[i] %||% cols("file_name")[i],
+      repo_url    = cols("repo_url")[i],
+      file_url    = cols("file_url")[i],
+      file_size   = if (!is.na(sz)) sz else NULL,
+      data_type   = cols("data_type")[i],
+      data_format = cols("data_format")[i],
+      downloaded  = downloaded[i],
+      status      = if (isTRUE(downloaded[i])) "downloaded" else "not_downloaded"
+    ))
+  })
+
+  provenance <- list(
+    software  = list(name = "metacheck", version = tryCatch(
+      as.character(utils::packageVersion("metacheck")),
+      error = function(e) NA_character_)),
+    r_version = R.version.string,
+    platform  = R.version$platform,
+    prod_date = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    llm       = if (isTRUE(llm_use()))
+      list(used = TRUE, model = llm_model()) else list(used = FALSE),
+    # This manifest is the reduced form: it lacks the full manifest's per-file
+    # skip reasons and gate details (those need data_check's run-time state).
+    manifest_kind = "reduced"
+  )
+
+  doc <- Filter(Negate(is.null), list(
+    paper_id     = pid,
+    generated    = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    provenance   = provenance,
+    n_files      = nrow(structure_df),
+    n_downloaded = sum(downloaded),
+    files        = entries
+  ))
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  json <- jsonlite::toJSON(doc, auto_unbox = TRUE, pretty = TRUE, na = "null")
+  writeLines(json, path, useBytes = TRUE)
+  invisible(path)
+}
+
+# Write the provenance `logs/` folder for a converted dataset and return a named
+# character vector of the files written (name = one-line description, for the
+# README). Folds the three previously-separate artifacts into the conversion:
+#   * <pid>.manifest.json — the file inventory. The FULL manifest is reused when
+#     data_check wrote one this run (ops$data_check$manifest_path exists on disk);
+#     otherwise a reduced manifest is built from the structure table.
+#   * <pid>.checks.json    — per-paper check summaries + findings, when any check
+#     module ran (capture_check_results on the module-output list).
+#   * <pid>.rds            — full lossless module tables, when a module produced a
+#     non-empty table (capture_module_tables).
+# `ops` is convert_psychds's resolved named list of module outputs (a chain the
+# capture_* functions accept directly). logs/ always sits at the dataset root.
+.psychds_write_logs <- function(ops, structure_df, pid, output_dir,
+                                all_ops = NULL) {
+  logs_dir <- file.path(output_dir, "logs")
+  dir.create(logs_dir, recursive = TRUE, showWarnings = FALSE)
+  written <- character(0)
+  # The checks JSON and module-tables RDS record the WHOLE run, so use every
+  # captured module (all_ops) when available; the converter's `ops` is only the
+  # 3 modules it needs to build the archive. The manifest below stays on `ops`
+  # (it is data_check-specific). Falls back to `ops` when no full set was passed.
+  log_ops <- if (!is.null(all_ops) && length(all_ops)) all_ops else ops
+
+  # 1. Manifest — always. Reuse the full one if present, else reduced.
+  manifest_dest <- file.path(logs_dir, paste0(pid, ".manifest.json"))
+  full <- ops[["data_check"]]$manifest_path
+  if (!is.null(full) && length(full) && file.exists(full[[1]])) {
+    file.copy(full[[1]], manifest_dest, overwrite = TRUE)
+    written[manifest_dest] <-
+      "File inventory recording every repository file and whether it was downloaded (full manifest, with per-file skip reasons)."
+  } else if (!is.null(structure_df) && is.data.frame(structure_df) &&
+             nrow(structure_df) > 0) {
+    .psychds_reduced_manifest(structure_df, pid, manifest_dest)
+    written[manifest_dest] <-
+      "File inventory recording every repository file and whether it was downloaded (reduced manifest)."
+  }
+
+  # 2. Checks JSON — when any module output is present (the checks that ran).
+  has_modules <- any(vapply(log_ops, function(mo)
+    inherits(mo, "metacheck_module_output") || is.list(mo), logical(1)))
+  if (length(log_ops) > 0 && has_modules) {
+    checks_path <- tryCatch(
+      capture_check_results(log_ops, logs_dir, paper_id = pid),
+      error = function(e) NULL)
+    if (!is.null(checks_path) && file.exists(checks_path))
+      written[checks_path] <-
+        "Per-paper results of the metacheck checks that were run: each module's outcome plus its individual findings."
+  }
+
+  # 3. Tables RDS — when at least one module produced a non-empty table.
+  has_table <- any(vapply(log_ops, function(mo)
+    is.data.frame(mo$table) && nrow(mo$table) > 0, logical(1)))
+  if (has_table) {
+    rds_path <- tryCatch(
+      capture_module_tables(log_ops, logs_dir, paper_id = pid),
+      error = function(e) NULL)
+    if (!is.null(rds_path) && file.exists(rds_path))
+      written[rds_path] <-
+        "Full, lossless module output tables (R data file) for later reloading and analysis without re-running the checks."
+  }
+
+  written
+}
+
+# Append (or create) a "Provenance logs" section to the dataset-root README,
+# listing each file written into logs/ and what it holds. `logs_written` is the
+# named vector from .psychds_write_logs() (name = path, value = description).
+.psychds_write_logs_readme <- function(logs_written, output_dir, readme_path) {
+  if (!length(logs_written)) return(invisible())
+  # logs/ always sits at the dataset root, so the README-relative path of each
+  # file is just "logs/<basename>".
+  rel <- file.path("logs", basename(names(logs_written)))
+  lines <- c(
+    "",
+    "## Provenance logs",
+    "",
+    paste0("The `logs/` folder holds the metacheck records behind this ",
+           "conversion — the provenance of what was checked and packaged:"),
+    "",
+    vapply(seq_along(logs_written), function(i)
+      sprintf("- **`%s`** — %s", rel[i], unname(logs_written)[i]), character(1)),
+    "")
+  con_lines <- if (file.exists(readme_path))
+    readLines(readme_path, warn = FALSE) else character(0)
+  writeLines(c(con_lines, lines), readme_path, useBytes = TRUE)
+  invisible()
 }
 
 # Copy a file, dropping a leading UTF-8 BOM (EF BB BF) if present. Byte-level so
@@ -384,6 +740,32 @@ isTRUE_vec <- function(x) {
   }, error = function(e) FALSE)
 }
 
+# Recover the analyses from a .jasp as a readable code artifact: a numbered,
+# human-readable summary (one line per analysis) followed by the verbatim
+# analyses.json for completeness. Returns TRUE if written. The analyses are the
+# closest thing a .jasp has to "code" — a structured record of the tests run.
+.psychds_write_jasp_code <- function(src, dest) {
+  tryCatch({
+    j <- read_jasp(src)
+    summary <- .jasp_analyses_summary(j$analyses)
+    if (!length(summary) && is.null(j$analyses)) return(FALSE)
+    raw <- tryCatch(jsonlite::toJSON(j$analyses, auto_unbox = TRUE, pretty = TRUE),
+                    error = function(e) NULL)
+    lines <- c(
+      paste0("# Analyses recovered from ", basename(src)),
+      "# These are the JASP analyses stored in the file (not runnable R code).",
+      "",
+      if (length(summary)) summary else "(no analyses recorded)",
+      "",
+      "# --- Raw analyses.json ---",
+      if (!is.null(raw)) raw else "(unavailable)")
+    con <- file(dest, open = "wb", encoding = "UTF-8")
+    on.exit(close(con), add = TRUE)
+    writeLines(lines, con, useBytes = TRUE)
+    TRUE
+  }, error = function(e) FALSE)
+}
+
 #' Generate a Psych-DS-compliant copy of a repository
 #'
 #' Writes a [Psych-DS](https://psych-ds.github.io/) dataset directory for a
@@ -395,8 +777,15 @@ isTRUE_vec <- function(x) {
 #'
 #' Multi-study repositories (when `data_check` assigned study groups under
 #' `llm_use(TRUE)`) are written as `study-<group>/` subdirectories, each a
-#' self-contained Psych-DS dataset, plus a `study-shared/` directory. Original
-#' files whose contents cannot be read (no local copy) are skipped with a note.
+#' self-contained, independently-valid Psych-DS dataset. Files that belong to no
+#' single study (a whole-repo README/codebook, shared materials) sit at the
+#' collection root beside the study folders (following BIDS, which places shared
+#' content at the root rather than in a pseudo-subject). The root is then a
+#' *collection* of datasets, not itself a Psych-DS dataset, so it carries a
+#' machine-readable `collection.json` (schema.org JSON-LD, `@type` `Collection`)
+#' instead of a root `dataset_description.json` — validate each `study-*/` folder.
+#' Original files whose contents cannot be read (no local copy) are skipped with
+#' a note.
 #'
 #' @param paper a paper object (see [read()]), **or** a captured result of
 #'   `report(paper, ...)` / `report_module_run(paper, ...)`. When a captured
@@ -418,9 +807,13 @@ isTRUE_vec <- function(x) {
 #'   skips rather than erroring (the returned list has `existed = TRUE`).
 #'
 #' @returns (invisibly) a list with `output_dir`, `n_files_copied`,
-#'   `n_studies`, and `descriptions` (paths of written dataset_description.json
-#'   files). When an existing `output_dir` was skipped, the list additionally
-#'   contains `existed = TRUE` and the counts are zero.
+#'   `n_studies`, `descriptions` (paths of written dataset_description.json
+#'   files), `collection` (path of the root `collection.json` for a multi-study
+#'   collection, else empty), `fulltext` (path of the paper's full-text file
+#'   under `documentation/`, if written), and `logs` (paths written into
+#'   `logs/`: the file manifest, and the check results / module tables when those
+#'   modules ran). When an existing `output_dir` was skipped, the list
+#'   additionally contains `existed = TRUE` and the counts are zero.
 #' @export
 #' @examples
 #' \dontrun{
@@ -452,7 +845,8 @@ convert_psychds <- function(paper, output_dir = NULL,
   resolved <- .converter_resolve(paper, needed,
                                  local_path = local_path, local_only = local_only,
                                  model = model, params = params)
-  ops   <- resolved$ops
+  ops     <- resolved$ops
+  all_ops <- resolved$all_ops %||% ops   # full run for the provenance logs
   paper <- resolved$paper
   dc <- ops[["data_check"]]
   structure_df <- dc$structure
@@ -488,8 +882,35 @@ convert_psychds <- function(paper, output_dir = NULL,
   if (dir.exists(output_dir) && overwrite) unlink(output_dir, recursive = TRUE)
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-  # A local copy is needed to copy the file's bytes.
-  loc <- setNames(structure_df$file_location, structure_df$file_name)
+  # A local copy is needed to copy the file's bytes. Resolve each plan row to its
+  # source POSITIONALLY: psychds_check builds its table straight from
+  # structure_df (one row per file, same order), so plan row i is structure row i.
+  #
+  # A name-keyed lookup (setNames(file_location, file_name)) is WRONG here and
+  # silently corrupts the output: `file_name` is a basename and is NOT unique
+  # across a paper's repositories — several OSF components each ship their own
+  # `demographics.csv` / `learning_2.csv`. `loc[[name]]` returns only the FIRST
+  # match, so every study's copy of a duplicated name got the same (first)
+  # component's bytes: study-ex2/data/demographics.csv contained study 1's
+  # participants. No column is unique enough to key on (in one real paper: 138
+  # rows, 68 distinct file_name, 102 distinct file_path, 118 distinct
+  # file_location), so the row index is the only correct identifier.
+  #
+  # Fall back to the name map only if the plan is NOT row-aligned with
+  # structure_df (a caller passing a filtered/re-ordered plan), where positional
+  # lookup would be worse than an imperfect name match.
+  row_aligned <- nrow(plan) == nrow(structure_df) &&
+    identical(as.character(plan$file_name), as.character(structure_df$file_name))
+  loc_fallback <- stats::setNames(structure_df$file_location,
+                                  structure_df$file_name)
+  src_of <- function(i) {
+    if (row_aligned) structure_df$file_location[i]
+    else loc_fallback[[plan$file_name[i]]]
+  }
+  if (!row_aligned)
+    warning("The conversion plan is not row-aligned with the file structure; ",
+            "falling back to a file-name lookup, which cannot tell apart ",
+            "same-named files from different repositories.", call. = FALSE)
 
   # ── Copy files to their target locations ────────────────────────────────────
   n_copied    <- 0L
@@ -504,7 +925,7 @@ convert_psychds <- function(paper, output_dir = NULL,
     plan$original_target else rep(NA_character_, nrow(plan))
 
   for (i in seq_len(nrow(plan))) {
-    src <- loc[[plan$file_name[i]]]
+    src <- src_of(i)
     if (is.null(src) || is.na(src) || !nzchar(src) || !file.exists(src)) {
       skipped   <- c(skipped, plan$file_name[i])
       skipped_i <- c(skipped_i, i)
@@ -523,6 +944,11 @@ convert_psychds <- function(paper, output_dir = NULL,
         n_copied <- n_copied + 1L
         copied_i <- c(copied_i, i)
       } else copy_failed <- c(copy_failed, plan$file_name[i])
+      # A .jasp also bundles the ANALYSES that were run: recover them as a
+      # readable code artifact beside the data CSV, so the release carries both
+      # the data (CSV) and the analysis provenance (the "code").
+      if (grepl("\\.jasp$", src, ignore.case = TRUE))
+        .psychds_write_jasp_code(src, sub("_data\\.csv$", "_jasp_code.txt", dest))
       # Copy the original alongside (original extension).
       if (!is.na(plan_orig_target[i]) && nzchar(plan_orig_target[i])) {
         odest <- file.path(output_dir, plan_orig_target[i])
@@ -613,11 +1039,98 @@ convert_psychds <- function(paper, output_dir = NULL,
         changes_dest)
   }
 
+  # ── Multi-study collection root ─────────────────────────────────────────────
+  # In a multi-study repository the output root is a COLLECTION of datasets (each
+  # study-<group>/), not itself a Psych-DS dataset — so it gets NO root
+  # dataset_description.json (Option A: a Psych-DS validator run on the root
+  # correctly reports it is not a dataset; validate each study-<group>/ instead).
+  # It does get BIDS-style root README/CHANGES, and a machine-readable
+  # collection.json (schema.org JSON-LD, @type Collection). collection.json is
+  # deliberately NOT named dataset_description.json, so the Psych-DS validator —
+  # which only ever opens a file of that exact name — never sees it.
+  multi_study <- length(planned_dirs) > 0
+  if (multi_study) {
+    root_has_root <- function(pat) any(grepl(pat,
+      basename(plan$target_path[!grepl("^study-", plan$target_path)]),
+      ignore.case = TRUE))
+    readme_dest  <- file.path(output_dir, "README.md")
+    changes_dest <- file.path(output_dir, "CHANGES.md")
+    if (!root_has_root("^README") && !file.exists(readme_dest))
+      writeLines(c(
+        "# Multi-study data collection",
+        "",
+        paste0("This folder is a collection of ", length(study_roots),
+               " Psych-DS datasets, one per study, generated by metacheck. Each ",
+               "`study-*/` subfolder is a complete, independently-valid Psych-DS ",
+               "dataset with its own `dataset_description.json`. Files shared ",
+               "across studies (this README, cross-study codebooks and ",
+               "materials) live here at the collection root."),
+        "",
+        paste0("See `collection.json` for a machine-readable description of the ",
+               "collection and its parts."),
+        "",
+        paste0("**Note:** the collection root is intentionally *not* itself a ",
+               "Psych-DS dataset (it has no root `dataset_description.json`). To ",
+               "validate, point the validator at each `study-*/` folder.")),
+        readme_dest)
+    if (!root_has_root("^CHANGES") && !file.exists(changes_dest))
+      writeLines(c(paste0(
+        format(Sys.Date(), "%Y-%m-%d"),
+        " - Collection assembled by ",
+        "[Metacheck](https://www.scienceverse.org/metacheck/). CHANGES.md ",
+        "added to log the version history of the collection.")),
+        changes_dest)
+  }
+  # collection.json itself is written near the end, once the full text and logs
+  # exist, so it can index them as parts too (see below).
+
   # ── Write identified scales as OpenScales OSD files ─────────────────────────
-  # One .osd per NAMED scale under scales/{CODE}/{CODE}.osd, plus a section in the
+  # One .osd per NAMED scale, flat at scales/{code}.osd, plus a section in the
   # dataset-root README explaining the provenance markers. Unnamed detections are
   # skipped (they are not scales). See .scales_to_osd() / .osd_write_scales().
   n_scales_written <- .osd_write_scales(scales_osd, output_dir)
+
+  # ── Write the paper's full text into documentation/ (always at the root) ─────
+  # The release should carry the manuscript prose the checks read, not just the
+  # data. multi_study is true when the plan produced study-<group>/ subtrees, in
+  # which case the shared root documentation/ file is pid-qualified.
+  fulltext_path <- .psychds_write_paper_text(
+    paper, output_dir, pid, multi_study = length(planned_dirs) > 0)
+
+  # ── Write the provenance logs/ folder (manifest, checks, tables) ─────────────
+  # Fold the previously-separate manifest / checks / tables artifacts into the
+  # conversion: the manifest is always written (full one reused when data_check
+  # produced it, else reduced), the checks/tables are written when the modules
+  # that generate them ran. Each written file is explained in the root README.
+  logs_written <- .psychds_write_logs(ops, structure_df, pid, output_dir,
+                                      all_ops = all_ops)
+  .psychds_write_logs_readme(logs_written, output_dir,
+                             file.path(output_dir, "README.md"))
+
+  # ── Multi-study collection metadata (collection.json) ───────────────────────
+  # Written last so it can index every part that exists: each study dataset, the
+  # root-level shared files (codebooks/materials/documentation), the paper full
+  # text, and the logs. Not named dataset_description.json, so the Psych-DS
+  # validator ignores it. Single-study (flat) datasets get no collection.json —
+  # their root dataset_description.json already describes them.
+  collection_path <- NULL
+  if (length(planned_dirs) > 0) {
+    # Paths of the extra generated artifacts, relative to the output root.
+    root_norm <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
+    to_rel <- function(p) {
+      if (is.null(p) || !length(p)) return(character(0))
+      pn <- normalizePath(p, winslash = "/", mustWork = FALSE)
+      ifelse(startsWith(pn, paste0(root_norm, "/")),
+             substring(pn, nchar(root_norm) + 2L), pn)
+    }
+    collection_path <- .psychds_collection_json(
+      paper, output_dir, pid, study_roots,
+      columns_df = columns_df, labels_df = labels_df,
+      shared_files = grep("^study-", plan$target_path, value = TRUE,
+                          invert = TRUE),
+      fulltext_rel = to_rel(fulltext_path),
+      logs_rel     = to_rel(names(logs_written)))
+  }
 
   # Explain the files that were NOT placed in the dataset. A file is not added
   # when it was not downloaded — which can be intentional (an asset the release
@@ -657,25 +1170,37 @@ convert_psychds <- function(paper, output_dir = NULL,
       paste(utils::head(copy_failed, 5), collapse = ", "),
       if (length(copy_failed) > 5) ", ..." else "")
 
-  message("Wrote Psych-DS dataset to ", normalizePath(output_dir, mustWork = FALSE),
+  message("Wrote Psych-DS ",
+          if (!is.null(collection_path)) "collection" else "dataset",
+          " to ", normalizePath(output_dir, mustWork = FALSE),
           " (", n_copied, " file(s), ", length(descriptions),
           " dataset description(s)",
+          if (!is.null(collection_path)) ", collection.json" else "",
           if (n_scales_written > 0) paste0(", ", n_scales_written, " scale(s)") else "",
+          if (!is.null(fulltext_path)) ", paper full text" else "",
+          if (length(logs_written) > 0)
+            paste0(", ", length(logs_written), " log file(s)") else "",
           ").\n")
+  if (!is.null(collection_path))
+    message("  The collection root is not itself a Psych-DS dataset; ",
+            "validate each study-*/ folder (see collection.json / README).")
 
   invisible(list(
     output_dir     = output_dir,
     n_files_copied = n_copied,
     n_studies      = length(study_roots),
     descriptions   = descriptions,
+    collection     = collection_path %||% character(0),
     n_scales       = n_scales_written,
+    fulltext       = fulltext_path %||% character(0),
+    logs           = names(logs_written),
     skipped        = skipped,
     copy_failed    = copy_failed
   ))
 }
 
 # Write the identified scales as OpenScales OSD files under output_dir/scales/,
-# one directory per named scale (scales/{CODE}/{CODE}.osd), and append a
+# one file per named scale, flat at scales/{code}.osd, and append a
 # provenance-explaining section to the dataset-root README.md. Objects flagged
 # `write = FALSE` (unnamed detections) are skipped. Returns the number written.
 .osd_write_scales <- function(scales_osd, output_dir) {
@@ -684,12 +1209,29 @@ convert_psychds <- function(paper, output_dir = NULL,
   if (!length(writeable)) return(0L)
 
   index <- list()   # rows for the README: code, name, source, provenance
+  used <- character(0)   # codes already written, to disambiguate collisions
   for (osd in writeable) {
     code <- attr(osd, "code") %||% "SCALE"
-    dir  <- file.path(output_dir, "scales", code)
-    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    # Disambiguate a repeated code so a later scale does not overwrite an earlier
+    # one at scales/{code}.osd. This is common for unnamed blocks, where several
+    # non-adjacent same-prefix runs (e.g. three "response" blocks) all slug to the
+    # same name. Suffix -2, -3, ... on collision, and keep the OSD's own
+    # scale_info$code in sync with the path it is written to.
+    if (code %in% used) {
+      i <- 2L
+      while (paste0(code, "-", i) %in% used) i <- i + 1L
+      code <- paste0(code, "-", i)
+      osd$definition$scale_info$code <- code
+    }
+    used <- c(used, code)
+    # Files live flat, next to each other: scales/<code>.osd (no per-scale
+    # subfolder). Guard against over-long paths (OneDrive/Windows' ~260-char
+    # limit); .safe_write_path shortens + warns.
+    osd_path <- .safe_write_path(file.path(output_dir, "scales",
+                                           paste0(code, ".osd")))
+    dir.create(dirname(osd_path), recursive = TRUE, showWarnings = FALSE)
     json <- jsonlite::toJSON(osd, auto_unbox = TRUE, pretty = TRUE, null = "null")
-    writeLines(json, file.path(dir, paste0(code, ".osd")), useBytes = TRUE)
+    writeLines(json, osd_path, useBytes = TRUE)
     mc <- osd$definition$metacheck %||% list()
     index[[length(index) + 1L]] <- list(
       code = code,
@@ -714,13 +1256,14 @@ convert_psychds <- function(paper, output_dir = NULL,
     paste0("metacheck identified ", length(index), " psychometric scale",
            plural(length(index)),
            " in this dataset and exported each as an OpenScales OSD file under ",
-           "`scales/{CODE}/{CODE}.osd`. This is an archive of what metacheck ",
-           "*found*, not an authoritative scale registry — the code prefix marks ",
-           "how confidently each scale was identified:"),
+           "`scales/{code}.osd`. This is an archive of what metacheck *found*, ",
+           "not an authoritative scale registry. The **Provenance** column below ",
+           "marks how confidently each scale was identified:"),
     "",
-    "- **`CODE`** (no prefix) — matched a known instrument in the OpenScales-derived dictionary; this is its official OpenScales code.",
-    "- **`METACHECK-CODE`** — a named instrument identified from the manuscript text but not in the OpenScales registry; the code is minted by metacheck.",
-    "- **`METACHECK-GEN-CODE`** — a construct label *generated by metacheck* from the item wording. This is **not** a recognised named instrument, only metacheck's inference of what the items measure. Treat it as a starting point, not a definition.",
+    "- **dictionary match** — matched a known instrument in metacheck's scale dictionary (OpenScales-derived or curated).",
+    "- **named in manuscript** — a named instrument identified from the manuscript text, not in the dictionary.",
+    "- **metacheck-generated label** — a construct label *generated by metacheck* from the item wording. This is **not** a recognised named instrument, only metacheck's inference of what the items measure. Treat it as a starting point, not a definition.",
+    "- **detected block, unnamed** — a coherent block of same-prefix rating columns that metacheck could **not** name. Recorded for its structure (its items and response scale) only.",
     "",
     "| Code | Scale | Provenance |",
     "|------|-------|------------|")
@@ -730,6 +1273,7 @@ convert_psychds <- function(paper, output_dir = NULL,
       dictionary = "dictionary match",
       manuscript = "named in manuscript",
       self_generated = "metacheck-generated label",
+      unnamed_block = "detected block, unnamed",
       r$source)), character(1))
 
   con_lines <- if (file.exists(readme_path))

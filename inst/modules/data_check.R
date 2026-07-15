@@ -282,7 +282,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         file_size = numeric(0), data_type = character(0),
         data_format = character(0), file_location = character(0),
         stringsAsFactors = FALSE)
-      .data_check_write_manifest(
+      manifest_path <- .data_check_write_manifest(
         manifest, empty_files, logical(0), NULL,
         paper_id = .pid(all_files), download = download,
         max_file_size = max_file_size, max_download_size = max_download_size,
@@ -292,6 +292,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       traffic_light = "na",
       summary_text = "We found no files to analyse.",
       gated_repos = listing_gated,
+      manifest_path = if (!is.null(manifest)) manifest_path else NULL,
       summary_table = data.frame(
         paper_id = .pid(all_files),
         data_file_n = 0, column_n = 0
@@ -311,6 +312,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   llm_file_updates <- 0L
   llm_col_updates <- 0L
   llm_group_updates <- 0L
+  roster_check      <- NULL
+  group_unresolved  <- character(0)
   llm_model_used <- NA_character_
 
   # Optional LLM pass for files still unresolved after rules.
@@ -347,16 +350,22 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       }
     }
 
-    # Study-group pass: classify each analysable file into a study group from
-    # its path context (folder + name). data_group_llm skips assets and batches
-    # the rest, so this scales to large repositories. Only runs with an LLM;
-    # group stays NA otherwise.
-    grp <- data_group_llm(all_files, model = model, params = params)
-    if (!is.null(grp)) {
-      all_files$group <- grp$group
-      llm_group_updates <- sum(!is.na(grp$group) & grp$group != "shared")
-      if (is.na(llm_model_used)) llm_model_used <- grp$model %||% NA_character_
-    }
+  }
+
+  # ── 2b. Study groups ─────────────────────────────────────────────────────────
+  # Classify each analysable file into a study group. This is DETERMINISTIC where
+  # the evidence allows — the source repository, a path that names its study, the
+  # data a script reads/writes, and the studies the manuscript names — so it runs
+  # whether or not an LLM is enabled. data_group_llm() falls back to the model
+  # only for files none of that evidence can place (and only when llm_use(TRUE)).
+  grp <- data_group_llm(all_files, model = model, params = params,
+                        paper = paper)
+  if (!is.null(grp)) {
+    all_files$group <- grp$group
+    llm_group_updates <- sum(!is.na(grp$group) & grp$group != "shared")
+    if (is.na(llm_model_used)) llm_model_used <- grp$model %||% NA_character_
+    roster_check <- attr(grp, "roster_check")
+    group_unresolved <- attr(grp, "unresolved") %||% character(0)
   }
 
   # ── 2c. Download the files this module (and codebook_check) will read ─────────
@@ -760,6 +769,35 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_columns, plural(n_columns), n_extracted
   )
 
+  # Study grouping, when the files split into studies. Purely descriptive: how
+  # many studies the files fall into and what they are called. Files that belong
+  # to no single study (a whole-repo README or codebook) are counted separately
+  # as shared, so the numbers add up for the reader.
+  study_grp <- if ("group" %in% names(all_files))
+    all_files$group else rep(NA_character_, nrow(all_files))
+  studies <- unique(study_grp[!is.na(study_grp) & study_grp != "shared"])
+  summary_studies <- if (length(studies) > 0) {
+    n_shared <- sum(!is.na(study_grp) & study_grp == "shared")
+    sprintf(
+      "We grouped the files into %d study group%s (%s)%s.",
+      length(studies), plural(length(studies)),
+      paste(sort(studies), collapse = ", "),
+      if (n_shared > 0) sprintf(", plus %d file%s shared across studies",
+                                n_shared, plural(n_shared)) else ""
+    )
+  } else character(0)
+
+  # Files the study-group model never answered for, even after retrying in
+  # smaller batches — an intermittent provider failure, not a real verdict. Say
+  # so, so a silently degraded grouping cannot be mistaken for a confident one.
+  summary_ungrouped <- if (length(group_unresolved) > 0) {
+    sprintf(paste0("The study-group step did not get an answer for %d file%s ",
+                   "(the model request failed); %s grouped by the fallback rules ",
+                   "instead."),
+            length(group_unresolved), plural(length(group_unresolved)),
+            if (length(group_unresolved) == 1) "it was" else "they were")
+  } else character(0)
+
   # Repositories refused by the download size caps. Each message already names
   # the parameter and the value to lift it, so we surface them verbatim.
   gate_msgs <- if (!is.null(gated_repos)) gated_repos$message else character(0)
@@ -862,11 +900,22 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       dplyr::arrange(dplyr::desc(.data$`% Missing`), .data$Column)
 
     n_missing_cols <- sum(!is.na(columns_df$n_missing) & columns_df$n_missing > 0)
+    # Fully empty (all-NA) columns: no observed values at all. Flagged like
+    # excel_check's "empty columns" — they carry no information, do not survive a
+    # meaningful analysis, and are documented (but marked empty) in a Psych-DS
+    # export rather than silently dropped.
+    empty_cols <- if ("quality" %in% names(columns_df))
+      sum(tolower(columns_df$quality %||% "") == "empty", na.rm = TRUE) else 0L
+    empty_note <- if (empty_cols > 0)
+      sprintf(" %d column%s %s empty (no values in any row); store data without empty columns.",
+              empty_cols, plural(empty_cols),
+              if (empty_cols == 1) "is" else "are")
+    else ""
     report <- c(
       report,
       sprintf(
-        "#### Descriptives Overview\n\nWe found %d column%s with at least one missing value.",
-        n_missing_cols, plural(n_missing_cols)
+        "#### Descriptives Overview\n\nWe found %d column%s with at least one missing value.%s",
+        n_missing_cols, plural(n_missing_cols), empty_note
       ),
       desc_file_tabset(desc_all)
     )
@@ -924,23 +973,28 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     data.frame(paper_id = .pid(all_files))
   }
 
+  empty_col_n <- if (n_columns > 0 && "quality" %in% names(columns_df))
+    sum(tolower(columns_df$quality %||% "") == "empty", na.rm = TRUE) else 0L
   summary_table <- data.frame(
     paper_id = .pid(all_files),
     data_file_n = n_tabular_all,
-    column_n = n_columns
+    column_n = n_columns,
+    empty_col_n = empty_col_n
   ) |>
     dplyr::left_join(coltype_wide, by = "paper_id")
 
-  summary_text <- c(summary_files, summary_data, summary_nolocal,
-                     summary_omitted, summary_workspace, summary_nontabular) |>
+  summary_text <- c(summary_files, summary_data, summary_studies,
+                     summary_ungrouped, summary_nolocal, summary_omitted,
+                     summary_workspace, summary_nontabular) |>
     paste("\n- ", x = _, collapse = "")
 
   # ── 6b. Optional file manifest ───────────────────────────────────────────────
   # Persist the full file list (URLs, sizes, types) with the download outcome per
   # file, so a corpus can be audited (what exists vs what was fetched) and a data
   # archive rebuilt without re-querying every repository.
+  manifest_path <- NULL
   if (!is.null(manifest)) {
-    .data_check_write_manifest(
+    manifest_path <- .data_check_write_manifest(
       manifest, all_files, want, gated_repos,
       paper_id = .pid(all_files), download = download,
       max_file_size = max_file_size, max_download_size = max_download_size,
@@ -955,8 +1009,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     structure = all_files,          # per-file classification, for codebook_check
     previews = file_previews,       # full read data frames, for data_validate
     gated_repos = listing_gated,    # repos found but not listable (size gate, ...)
+    manifest_path = manifest_path,  # full manifest path, when one was written
     summary_table = summary_table,
-    na_replace = c(data_file_n = 0, column_n = 0),
+    na_replace = c(data_file_n = 0, column_n = 0, empty_col_n = 0),
     traffic_light = tl,
     report = report,
     summary_text = summary_text

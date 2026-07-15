@@ -42,9 +42,13 @@ skips rather than erroring (the returned list has \code{existed = TRUE}).}
 }
 \value{
 (invisibly) a list with \code{output_dir}, \code{n_files_copied},
-\code{n_studies}, and \code{descriptions} (paths of written dataset_description.json
-files). When an existing \code{output_dir} was skipped, the list additionally
-contains \code{existed = TRUE} and the counts are zero.
+\code{n_studies}, \code{descriptions} (paths of written dataset_description.json
+files), \code{collection} (path of the root \code{collection.json} for a multi-study
+collection, else empty), \code{fulltext} (path of the paper's full-text file
+under \verb{documentation/}, if written), and \code{logs} (paths written into
+\verb{logs/}: the file manifest, and the check results / module tables when those
+modules ran). When an existing \code{output_dir} was skipped, the list
+additionally contains \code{existed = TRUE} and the counts are zero.
 }
 \description{
 Writes a \href{https://psych-ds.github.io/}{Psych-DS} dataset directory for a
@@ -57,8 +61,15 @@ are added when missing. This is the generator counterpart of the
 \details{
 Multi-study repositories (when \code{data_check} assigned study groups under
 \code{llm_use(TRUE)}) are written as \verb{study-<group>/} subdirectories, each a
-self-contained Psych-DS dataset, plus a \verb{study-shared/} directory. Original
-files whose contents cannot be read (no local copy) are skipped with a note.
+self-contained, independently-valid Psych-DS dataset. Files that belong to no
+single study (a whole-repo README/codebook, shared materials) sit at the
+collection root beside the study folders (following BIDS, which places shared
+content at the root rather than in a pseudo-subject). The root is then a
+\emph{collection} of datasets, not itself a Psych-DS dataset, so it carries a
+machine-readable \code{collection.json} (schema.org JSON-LD, \verb{@type} \code{Collection})
+instead of a root \code{dataset_description.json} — validate each \verb{study-*/} folder.
+Original files whose contents cannot be read (no local copy) are skipped with
+a note.
 }
 \examples{
 \dontrun{

@@ -50,19 +50,25 @@ code_check <- function(paper, local_path = NULL,
   all_files$language <- code_lang(all_files$file_name)
 
   ## find relevant code files ----
-  relevant <- all_files$language %in% c("R", "SAS", "SPSS", "Stata")
+  # JASP files are counted and listed, but not analysed: a .jasp is a binary
+  # (zip) archive, so the text-based checks below (comments, absolute paths,
+  # library lines) cannot read it.
+  listed_langs <- c("R", "SAS", "SPSS", "Stata", "JASP")
+  checked_langs <- setdiff(listed_langs, "JASP")
+
+  relevant <- all_files$language %in% listed_langs
   code_files <- all_files[relevant, , drop = FALSE]
 
+  lang_counts <- sapply(listed_langs, \(l) sum(code_files$language == l))
+  lang_parts <- sprintf("%d %s", lang_counts, names(lang_counts))
   summary_code <- sprintf(
-    "We found %d R, %d SAS, %d SPSS, and %d Stata code file%s.",
-    sum(code_files$language == "R"),
-    sum(code_files$language == "SAS"),
-    sum(code_files$language == "SPSS"),
-    sum(code_files$language == "Stata"),
+    "We found %s code file%s.",
+    paste0(paste(lang_parts[-length(lang_parts)], collapse = ", "),
+           ", and ", lang_parts[length(lang_parts)]),
     plural(nrow(code_files))
   )
 
-  checked_files <- code_files
+  checked_files <- code_files[code_files$language %in% checked_langs, , drop = FALSE]
 
   # no relevant code files found ----
   if (nrow(code_files) == 0) {
@@ -209,13 +215,18 @@ code_check <- function(paper, local_path = NULL,
       if (!col %in% names(code_files)) code_files[[col]] <- NA
   } else {
     # `collected` holds one row per checked file (the error path returns its
-    # row too), so `code_check` already is code_files plus the analysis
+    # row too), so `code_check` already is checked_files plus the analysis
     # columns. Do NOT left_join it back onto code_files by the original
     # columns: the download step above updates file_location in
     # checked_files, so every downloaded file would mismatch on that key and
     # get all-NA analysis columns (absolute paths and missing files then
     # vanish from the report).
-    code_files <- code_check
+    #
+    # Listed-but-unanalysed files (JASP) are not in `collected`, so append them
+    # back: bind_rows fills their analysis columns with NA, and `checked` is
+    # set FALSE below. Without this they would vanish from the file listing.
+    unchecked <- code_files[!code_files$language %in% checked_langs, , drop = FALSE]
+    code_files <- dplyr::bind_rows(code_check, unchecked)
   }
   code_files$checked[is.na(code_files$checked)] <- FALSE
 
@@ -258,8 +269,15 @@ code_check <- function(paper, local_path = NULL,
   }
 
   ## Comments ----
+  # Only files we actually read can support a claim about comments. A paper with
+  # only listed-but-unanalysed files (JASP) would otherwise be told "all your
+  # code files had comments" about files that were never opened.
+  n_analysed <- sum(!is.na(code_files$percentage_comment))
   comment_issue <- code_files$file_name[which(code_files$percentage_comment == 0)]
-  if (length(comment_issue) == 0) {
+  if (n_analysed == 0) {
+    report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). None of the files found could be checked for comments."
+    summary_comments <- "No code files could be checked for comments."
+  } else if (length(comment_issue) == 0) {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). All your code files had comments."
     summary_comments <- "All your code files had comments."
   } else {
@@ -315,7 +333,12 @@ code_check <- function(paper, local_path = NULL,
   report_table <- unique(code_files[, cols])
   report_table$file_name <- link(report_table$file_url, report_table$file_name)
   report_table$file_url <- NULL
-  report_table$percentage_comment <- sprintf("%.0f%%", report_table$percentage_comment * 100)
+  # Unanalysed files (JASP) have no comment percentage; sprintf() would print a
+  # literal "NA%" for them, so show an empty cell instead.
+  report_table$percentage_comment <- ifelse(
+    is.na(report_table$percentage_comment), "",
+    sprintf("%.0f%%", report_table$percentage_comment * 100)
+  )
   names(report_table) <- c("File Name", "% Comments", "Missing Files", "Absolute Paths", "Code Between Libraries")
 
   ## Parsable Code ----
@@ -360,7 +383,12 @@ code_check <- function(paper, local_path = NULL,
   # green only if no issues across all code files
   # parse_issues is a count, not a vector: length() on it is always 1, which
   # made green unreachable however clean the code was.
-  if (length(missingfiles_issue) == 0 &&
+  # A green light means "we checked and found no issues", so it needs at least
+  # one analysed file: a paper with only listed-but-unanalysed files (JASP) has
+  # nothing to be green about.
+  if (n_analysed == 0) {
+    tl <- "na"
+  } else if (length(missingfiles_issue) == 0 &&
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
       length(library_issue) == 0 &&

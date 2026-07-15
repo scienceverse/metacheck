@@ -246,3 +246,103 @@ path_sanitize <- function(path, replacement = "_",
 #
 #   dplyr::bind_rows(x, y, .id = .id)
 # }
+
+# Conservative maximum ABSOLUTE path length metacheck will write to. Windows'
+# classic MAX_PATH is 260; long-path support is unreliable to detect, so we keep
+# a safe margin. On other platforms the effective limit is far higher (per-
+# component 255), so we only guard the total on Windows but still cap absurd
+# single components everywhere.
+.max_path_chars <- if (.Platform$OS.type == "windows") 250L else 4000L
+.max_component_chars <- 255L    # per-directory / filename limit on all platforms
+
+# Make a path safe to write: if its ABSOLUTE form (or any single component)
+# exceeds the filesystem limit, shorten the over-long component(s) by truncating
+# and appending a short hash of the original, so the result stays unique and
+# collisions between two long names cannot happen. Warns once per shortened path,
+# naming the original so the change is visible. Directories/filename are shortened
+# but the parent structure is preserved; the extension is kept on the leaf.
+#
+# Returns the (possibly shortened) path. Callers should use the RETURNED path for
+# both dir.create and the write, and record it as the file's location, so the
+# on-disk name and the recorded name always agree.
+.safe_write_path <- function(path) {
+  if (is.null(path) || length(path) != 1 || is.na(path) || !nzchar(path))
+    return(path)
+
+  # Short deterministic hash (dependency-free), 8 hex chars, so two different
+  # long names never collide after truncation. A polynomial rolling hash kept in
+  # double precision (exact for integers < 2^53), reduced modulo a large prime so
+  # it never overflows R's numeric range.
+  short_hash <- function(s) {
+    b <- as.numeric(charToRaw(s))
+    m <- 2147483647                       # 2^31 - 1 (Mersenne prime)
+    h <- 0
+    for (x in b) h <- (h * 131 + x) %% m
+    sprintf("%08x", as.integer(h))
+  }
+
+  shorten_component <- function(comp, budget) {
+    # budget = max chars allowed for this component. Keep an extension on files.
+    if (nchar(comp) <= budget) return(comp)
+    ext <- sub("^.*(\\.[A-Za-z0-9]{1,8})$", "\\1", comp)
+    if (identical(ext, comp)) ext <- ""            # no extension
+    h <- paste0("-", short_hash(comp))
+    keep <- max(1L, budget - nchar(h) - nchar(ext))
+    paste0(substr(comp, 1, keep), h, ext)
+  }
+
+  parts <- strsplit(path, "[/\\\\]")[[1]]
+  changed <- FALSE
+
+  # Per-component cap first (cheap, platform-wide): shorten any single directory
+  # or filename that is itself too long.
+  parts <- vapply(parts, function(p) {
+    if (nzchar(p) && nchar(p) > .max_component_chars) { changed <<- TRUE
+      shorten_component(p, .max_component_chars) } else p
+  }, character(1), USE.NAMES = FALSE)
+
+  # Total absolute-length cap. When the absolute path is over the limit, shorten
+  # over-long components (directory or leaf) — several deep components can each
+  # contribute (the scale case has a long directory AND a long filename). We cap
+  # every component longer than `long_comp` first, then, if still over, keep
+  # tightening the longest one. A floor keeps a component from collapsing below a
+  # usable stub+hash.
+  long_comp <- 40L
+  min_comp  <- 16L
+  abs_len <- function() tryCatch(
+    nchar(normalizePath(paste(parts, collapse = "/"), winslash = "/", mustWork = FALSE)),
+    error = function(e) nchar(paste(parts, collapse = "/")))
+  if (abs_len() > .max_path_chars) {
+    for (j in seq_along(parts)) {
+      if (nchar(parts[j]) > long_comp) {
+        parts[j] <- shorten_component(parts[j], long_comp); changed <- TRUE
+      }
+    }
+    # Still over (very deep tree of moderate components): tighten the longest.
+    while (abs_len() > .max_path_chars) {
+      j <- which.max(nchar(parts))
+      if (nchar(parts[j]) <= min_comp) break
+      parts[j] <- shorten_component(parts[j], nchar(parts[j]) - 1L)
+      changed <- TRUE
+    }
+  }
+  new_path <- paste(parts, collapse = "/")
+
+  still_over <- abs_len() > .max_path_chars
+  if (still_over) {
+    # Could not get under the limit (e.g. a very deeply nested tree of moderate
+    # names). Warn strongly — the write may fail — so the cause is not a cryptic
+    # "cannot open file" error. Callers keep the shortened path (best effort).
+    warning("Path is still too long after shortening and the write may fail: ",
+            new_path, " (absolute length ", abs_len(), " > ", .max_path_chars,
+            "). This usually means a very deeply nested output/repo tree; ",
+            "use a shorter output directory or a path outside OneDrive.",
+            call. = FALSE)
+  } else if (changed) {
+    warning("Path too long for the filesystem; shortened it (a hash keeps it ",
+            "unique). Original: ", path, " -> ", new_path,
+            ". Deeply nested repos or very long names on OneDrive/Windows hit ",
+            "the ~260-character limit.", call. = FALSE)
+  }
+  new_path
+}

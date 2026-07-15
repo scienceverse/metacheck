@@ -70,6 +70,13 @@ llm <- function(text, system_prompt,
 
   # set up answer data frame to return ----
   unique_text <- unique(text[[text_col]])
+  # Sanitise before anything downstream keys on the text (cache key, request
+  # body). Research data routinely carries invalid UTF-8 (a mis-encoded
+  # apostrophe/°/é in a free-text survey answer) and stray control bytes; ellmer
+  # serialises those into a JSON request body the provider then cannot parse
+  # (Mistral: HTTP 400 "There was an error parsing the body"). One guard here
+  # protects every caller and every provider. See .llm_sanitise_text().
+  unique_text <- .llm_sanitise_text(unique_text)
   ncalls <- length(unique_text)
 
   if (ncalls == 0) stop("No calls to the LLM")
@@ -446,6 +453,30 @@ llm <- function(text, system_prompt,
     reset = function() done <<- FALSE
   )
 })
+
+# Make text safe to serialise into a JSON request body for any LLM provider.
+# Two problems, both common in research data:
+#   * invalid UTF-8 — a mis-encoded byte (a Latin-1 apostrophe/°/é a nominally-
+#     UTF-8 file never validated) makes the JSON body unparseable. We reinterpret
+#     invalid entries as Latin-1, a conversion that cannot fail (every byte is a
+#     valid Latin-1 character), leaving valid text untouched.
+#   * control characters — raw NUL / C0 control bytes (except tab/newline) are
+#     illegal in JSON strings; strip them.
+# Applied to the vector of prompts before caching or sending, so no malformed
+# text reaches the provider regardless of which upstream path built it.
+.llm_sanitise_text <- function(x) {
+  if (is.null(x) || !length(x)) return(x)
+  x <- as.character(x)
+  bad <- !is.na(x) & !validUTF8(x)
+  if (any(bad)) x[bad] <- iconv(x[bad], from = "latin1", to = "UTF-8", sub = "")
+  # Any residue still invalid (rare): drop the invalid bytes rather than fail.
+  still <- !is.na(x) & !validUTF8(x)
+  if (any(still)) x[still] <- iconv(x[still], from = "UTF-8", to = "UTF-8", sub = "")
+  # Strip C0 control chars except tab (\t) and newline (\n). \x00 (NUL) cannot
+  # appear in an R character string, so the range \x01-\x1f covers all that can.
+  x <- gsub("[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F]", "", x, perl = TRUE)
+  x
+}
 
 .llm_error_message <- function(e) {
   msg <- conditionMessage(e)

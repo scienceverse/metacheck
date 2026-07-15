@@ -11,22 +11,26 @@
 #' Psych-DS 1.5 expects, at minimum, a root `dataset_description.json` metadata
 #' file, a `data/` directory, and at least one `*_data.csv` file; it recommends
 #' a `README`, a `CHANGES` file, and conventional subdirectories (`analysis/`,
-#' `materials/`, `documentation/`, `codebooks/`). This module compares those
+#' `materials/`, `documentation/`, `documentation/codebooks/`). This module
+#' compares those
 #' expectations against the repository's actual files, using the classification
 #' and columns from `data_check` and the variable documentation from
 #' `codebook_check`.
 #'
 #' Each repository file is mapped to its Psych-DS destination by type: data →
-#' `data/`, code → `analysis/`, codebook → `codebooks/`, asset → `materials/`,
-#' supplemental/other → `documentation/`, readme → root `README`. The module
+#' `data/`, code → `analysis/`, codebook → `documentation/codebooks/`, asset →
+#' `materials/`, supplemental/other → `documentation/`, readme → root `README`.
+#' The module
 #' then renders the target tree, marking files that are **present**, **missing**
 #' (required but absent — shown in red), or **misplaced** (present but at the
 #' wrong path — shown at the target location annotated with their current
 #' location).
 #'
 #' When `data_check` assigned study groups (only possible with `llm_use(TRUE)`),
-#' a multi-study repository is modelled with `study-<group>/` directories and a
-#' `study-shared/` directory. Without an LLM the study grouping is unknown, so a
+#' a multi-study repository is modelled with a `study-<group>/` directory per
+#' study (each a complete Psych-DS dataset), while files that belong to no single
+#' study (a whole-repo README/codebook, shared materials) sit at the collection
+#' root beside them. Without an LLM the study grouping is unknown, so a
 #' single-rooted tree is shown together with a note that subgrouping could not
 #' be detected.
 #'
@@ -58,7 +62,7 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     code         = "analysis",
     software     = "software",
     output       = "outputs",
-    codebook     = "codebooks",
+    codebook     = "documentation/codebooks",
     supplemental = "documentation",
     other        = "documentation",
     asset        = "materials"
@@ -133,14 +137,21 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # Only a repository with >=2 detected study groups uses the study-<group>/
   # layout; a single study (or unknown grouping) is a flat single dataset.
+  #
+  # Files that belong to a specific study go under study-<group>/ (a complete,
+  # valid Psych-DS dataset). Files that belong to NO single study — a whole-repo
+  # README/codebook, shared materials, or a file the grouping could not place —
+  # get NO study prefix: they live at the dataset root, beside the study-*/
+  # folders. This follows BIDS (shared content sits at the root, never in a
+  # pseudo-subject like sub-shared/) and keeps every study-*/ a real dataset,
+  # instead of the old study-shared/ folder that was a Psych-DS dataset shell
+  # with an empty variableMeasured and no data/.
   target_of <- function(i) {
     dt   <- structure_df$data_type[i] %||% "other"
     name <- basename(gsub("\\\\", "/", structure_df$file_name[i]))
     grp  <- groups[i]
-    prefix <- if (multi_study) {
-      if (!is.na(grp) && grp != "shared") paste0("study-", grp, "/")
-      else "study-shared/"
-    } else ""
+    prefix <- if (multi_study && !is.na(grp) && grp != "shared")
+      paste0("study-", grp, "/") else ""
 
     if (dt == "data") {
       stem <- keyword_slug(tools::file_path_sans_ext(name))
@@ -181,7 +192,7 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Extensions data_read_head() can read as a table (minus csv, which is fine
   # as-is). Mirrors .tabular_extensions in data_check_helpers.R.
   convertible_ext <- c("tsv", "txt", "dat", "xlsx", "xls",
-                       "sav", "dta", "sas7bdat")
+                       "sav", "dta", "sas7bdat", "jasp")
   needs_convert  <- is_data & src_ext %in% convertible_ext
   is_raw_data    <- is_data & nzchar(src_ext) & src_ext != "csv" & !needs_convert
 
@@ -254,22 +265,31 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     stringsAsFactors = FALSE
   )
 
-  # Required scaffolding that must appear even if absent.
-  scaffold <- function(prefix = "") {
+  # Required scaffolding that must appear even if absent. `is_dataset` marks a
+  # root that is a real Psych-DS dataset (needs dataset_description.json); the
+  # collection root of a multi-study repository is NOT a dataset, so it gets only
+  # the BIDS-style root README/CHANGES, no dataset_description.json.
+  scaffold <- function(prefix = "", is_dataset = TRUE) {
     rows <- list(
-      c(path = paste0(prefix, "dataset_description.json"), req = !has_dataset_desc),
       c(path = paste0(prefix, "README"),  req = !has_readme),
       c(path = paste0(prefix, "CHANGES"), req = !has_changes)
     )
+    if (is_dataset)
+      rows <- c(list(c(path = paste0(prefix, "dataset_description.json"),
+                       req = !has_dataset_desc)), rows)
     do.call(rbind, lapply(rows, function(r) data.frame(
       path = r[["path"]],
       status = if (isTRUE(as.logical(r[["req"]]))) "missing" else "present-scaffold",
       note = "", stringsAsFactors = FALSE)))
   }
-  # Scaffolding lives at each study root (or the single root).
-  roots <- if (multi_study) c(paste0("study-", study_groups, "/"),
-                              "study-shared/") else ""
-  scaffold_nodes <- do.call(rbind, lapply(roots, scaffold))
+  # Scaffolding: in a multi-study repo, each study-<group>/ is a full dataset,
+  # and the collection root gets README/CHANGES only (no dataset_description.json,
+  # since the root is a collection of datasets, not itself one — see Option A in
+  # convert_psychds). A single study is one flat dataset at the root.
+  scaffold_nodes <- if (multi_study)
+    rbind(do.call(rbind, lapply(paste0("study-", study_groups, "/"), scaffold)),
+          scaffold("", is_dataset = FALSE))
+  else scaffold("")
   # Only show missing scaffolding (present README/desc already appear as files).
   scaffold_nodes <- scaffold_nodes[scaffold_nodes$status == "missing", , drop = FALSE]
 

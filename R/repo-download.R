@@ -379,7 +379,11 @@ download_repo_files <- function(files,
   rel_path <- files$file_path %||% files$file_name
   rel_path <- ifelse(is.na(rel_path), files$file_name, rel_path)
   files$.cache_path <- vapply(seq_len(nrow(files)), function(i) {
-    cache_path(files$repo_url[i], rel_path[i])
+    # Guard the cache path against the OS path-length limit (a deeply nested repo
+    # file under a long OneDrive root can exceed ~260 chars). .safe_write_path
+    # shortens + warns; using its result for BOTH the download target and the
+    # recorded file_location keeps the on-disk name and the record in agreement.
+    .safe_write_path(cache_path(files$repo_url[i], rel_path[i]))
   }, character(1))
 
   already <- file.exists(files$.cache_path)

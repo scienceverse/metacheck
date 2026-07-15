@@ -94,6 +94,22 @@ data_classify_files <- function(file_name) {
   # README filename → readme (belt-and-braces; file_category usually catches it)
   type[grepl("^readme($|\\.)", tolower(file_name))] <- "readme"
 
+  # A preregistration document belongs in documentation/, not data/. A file named
+  # "preregistration" / "pre-registration" (or the abbreviation "prereg") is
+  # treated as `supplemental` (which targets documentation/) so it is never
+  # converted to a data CSV or filed as code — a prereg .csv/.tsv/.html would
+  # otherwise be misrouted. Genuine analysis SCRIPTS named after the prereg keep
+  # their `code` type (a script is still a script); everything else named prereg
+  # is reclassified. The pattern matches "prereg", "pre-reg", "preregistration",
+  # and "pre-registration" as a word (a leading boundary stops false hits inside
+  # unrelated words).
+  # Match "prereg" / "pre-reg" / "preregistration" / "pre-registration" only as a
+  # whole token: bounded on the left (start or a non-letter) and on the right by a
+  # non-letter or end-of-token — so "preregional" / "preregnancy" do NOT match.
+  is_prereg <- grepl("(^|[^a-z])pre[ _-]?reg(istration)?([^a-z]|$)",
+                     tolower(basename(file_name)))
+  type[is_prereg & !type %in% c("code", "readme")] <- "supplemental"
+
   type[is.na(type)] <- "other"
   type
 }
@@ -101,7 +117,7 @@ data_classify_files <- function(file_name) {
 # ── Data format (tabular vs raw) ─────────────────────────────────────────────
 
 .tabular_extensions <- c("csv", "tsv", "txt", "dat", "xlsx", "xls",
-                         "sav", "dta", "sas7bdat")
+                         "sav", "dta", "sas7bdat", "jasp")
 .raw_extensions <- c(
   # EEG / physiological
   "edf", "bdf", "acq", "gdf", "rec", "cnt", "vhdr", "vmrk", "eeg", "mff",
@@ -188,6 +204,11 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 # while cutting call count ~50x versus one-call-per-item. Used by every batched
 # classifier in data_check so batch size is tuned in one place.
 .data_check_llm_batch <- 50L
+
+# Default sampler seed for the study-group pass. Fixed (not random) so repeated
+# runs of the same paper ask the provider for the same sampling path; callers can
+# override via params$seed. Best-effort — see .data_group_llm_impl().
+.data_group_seed <- 8675309L
 
 # Write a per-paper file manifest (JSON) recording every repository file and
 # whether it was downloaded — the provenance needed to audit a corpus or rebuild
@@ -473,8 +494,98 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 #' @export
 #' @keywords internal
 data_group_llm <- function(files, model = llm_model(), params = list(),
-                           batch_size = .data_check_llm_batch) {
-  return(.data_group_llm_impl(files, model, params, batch_size))
+                           batch_size = .data_check_llm_batch, paper = NULL) {
+  return(.data_group_llm_impl(files, model, params, batch_size, paper))
+}
+
+#' Study roster named in a paper's text
+#'
+#' Reads the manuscript for the studies it names — "Experiment 1", "Study 2a",
+#' "Pilot 2" — and returns them as normalised group codes (`ex1`, `ex2a`,
+#' `pilot2`). This is the AUTHORITATIVE list of a paper's studies: the authors
+#' say how many there are and what they are called, so it both names the groups
+#' and gives a count to validate any file grouping against (see
+#' `.data_group_check_roster`). Deterministic and free — a regex over text we
+#' already extracted — so it runs BEFORE any LLM.
+#'
+#' Only mentions of the form <word><optional space/punct><number><optional
+#' single letter> count; a bare "the experiment" names no specific study and is
+#' ignored. Sorted by number then letter, so the order is stable.
+#'
+#' @param paper a paper object
+#'
+#' @returns a character vector of group codes, or `character(0)` when the text
+#'   names no numbered study.
+#' @export
+#' @keywords internal
+data_study_roster <- function(paper) {
+  if (!.is_paper(paper)) return(character(0))
+  hits <- tryCatch(
+    text_search(paper, "\\b(?:study|experiment|pilot)[ ._-]?[0-9]{1,2}[a-z]?\\b",
+                return = "match", ignore.case = TRUE, perl = TRUE),
+    error = function(e) NULL)
+  if (is.null(hits) || !nrow(hits)) return(character(0))
+  m <- tolower(gsub("[ ._-]", "", as.character(hits$text)))
+  # A trailing letter is a sub-study suffix ("2a"); anything else is dropped by
+  # the normalizer, which also maps experiment/study -> ex and keeps pilot.
+  code <- .data_group_normalize(m)
+  code <- unique(code[!is.na(code) & code != "shared"])
+  if (!length(code)) return(character(0))
+  # Stable order: by number, then by sub-study letter.
+  num <- suppressWarnings(as.integer(sub("^(ex|pilot)([0-9]{1,2})[a-z]?$", "\\2", code)))
+  suf <- sub("^(ex|pilot)[0-9]{1,2}([a-z]?)$", "\\2", code)
+  code[order(num, suf)]
+}
+
+# Compare a file grouping to the manuscript's study roster and report the
+# agreement. The roster is what the AUTHORS say exists; the grouping is what we
+# inferred from the files. A mismatch means the structure we are about to write
+# contradicts the paper — worth surfacing rather than silently emitting. Returns
+# list(roster, found, missing, extra, agrees).
+.data_group_check_roster <- function(groups, roster) {
+  found <- unique(groups[!is.na(groups) & groups != "shared"])
+  list(roster  = roster,
+       found   = found,
+       missing = setdiff(roster, found),   # named in the paper, not in the files
+       extra   = setdiff(found, roster),   # in the files, not named in the paper
+       agrees  = length(roster) > 0 && setequal(roster, found))
+}
+
+# Data files referenced by a code file. A script names the data it reads and
+# writes — read_csv("raw/x.csv"), readRDS("../data/processed/y.rds"),
+# write_csv(df, "processed/z.csv") — which is HARD evidence that the script and
+# those files belong to the same study: no guessing, no LLM. Returns the
+# referenced paths' basenames (lowercased), or character(0).
+#
+# Matching on basenames deliberately ignores the relative prefix: a script's
+# "../data/processed/trial_level.csv" and the repository's
+# "processed/trial_level.csv" are the same file seen from different working
+# directories, and reconciling those prefixes reliably is not worth it when the
+# basename already identifies the file within its repository.
+.CODE_READ_FNS <- paste(
+  "read_csv2?", "read\\.csv2?", "read_tsv", "read_delim", "read\\.delim",
+  "read_table2?", "read\\.table", "readRDS", "read_rds", "read_excel",
+  "read_xlsx", "read_xls", "read_sav", "read_dta", "read_sas", "read_spss",
+  "fread", "read_json", "fromJSON", "read_feather", "read_parquet",
+  "write_csv2?", "write\\.csv2?", "write_tsv", "write_delim", "saveRDS",
+  "write_rds", "write_xlsx", "write_sav", "write_dta", "write_feather",
+  "write_parquet", "load", "save",
+  sep = "|")
+
+.data_code_refs <- function(path, max_bytes = 2e6) {
+  if (is.na(path) || !nzchar(path) || !file.exists(path)) return(character(0))
+  if (file.size(path) > max_bytes) return(character(0))   # not a script
+  txt <- tryCatch(paste(readLines(path, warn = FALSE), collapse = "\n"),
+                  error = function(e) NULL)
+  if (is.null(txt) || !nzchar(txt)) return(character(0))
+  # <fn>( ... "<path>"  — the first quoted string of a read/write call. Allows
+  # arguments before the path (write_csv(df, "out.csv")).
+  pat <- paste0("(?:", .CODE_READ_FNS, ")\\s*\\([^)\"']*[\"']([^\"']+)[\"']")
+  m <- regmatches(txt, gregexpr(pat, txt, perl = TRUE, ignore.case = TRUE))[[1]]
+  if (!length(m)) return(character(0))
+  refs <- sub(paste0("^.*?[\"']([^\"']+)[\"'].*$"), "\\1", m)
+  refs <- refs[grepl("\\.[A-Za-z0-9]{1,6}$", refs)]   # must look like a file
+  unique(tolower(basename(gsub("\\\\", "/", refs))))
 }
 
 # Deterministically derive a study group from a file path, or NA when the path
@@ -533,12 +644,71 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
   df
 }
 
+# Separate a paper's files into studies BY SOURCE REPOSITORY. A paper often links
+# several independent repositories (multiple OSF components, a Zenodo archive, a
+# GitHub repo); when those repos hold DIFFERENT files, each is a distinct study —
+# a far more reliable signal than the file paths, which frequently name only a
+# processing stage ("raw/", "processed/") and no study at all. Returns a per-file
+# base study code (`ex1`, `ex2`, ... by first appearance of each qualifying repo),
+# or all-NA when there is only one repository or the repos are mirrors of each
+# other (near-identical file sets — not separate studies).
+#
+# The "files differ" guard compares each pair of repos' basename sets by Jaccard
+# overlap; repos that overlap >= `mirror_overlap` are treated as one study (the
+# earlier slot), so a duplicated/mirrored component does not spawn a bogus study.
+.data_group_from_repo <- function(repo, paths, mirror_overlap = 0.9) {
+  n <- length(paths)
+  if (n == 0) return(character(0))
+  repo <- as.character(repo)
+  repo[is.na(repo) | !nzchar(repo)] <- NA_character_
+  distinct <- unique(repo[!is.na(repo)])
+  if (length(distinct) < 2) return(rep(NA_character_, n))   # single (or no) repo
+
+  base <- tolower(basename(gsub("\\\\", "/", paths)))
+  files_of <- lapply(distinct, function(r) unique(base[!is.na(repo) & repo == r]))
+  names(files_of) <- distinct
+
+  # Assign each distinct repo a study slot, merging repos that mirror an earlier
+  # one (near-identical file sets) into that earlier slot.
+  slot_of <- stats::setNames(rep(NA_integer_, length(distinct)), distinct)
+  next_slot <- 0L
+  for (r in distinct) {
+    merged_into <- NA_integer_
+    for (prev in distinct) {
+      if (identical(prev, r) || is.na(slot_of[prev])) next
+      a <- files_of[[r]]; b <- files_of[[prev]]
+      inter <- length(intersect(a, b)); uni <- length(union(a, b))
+      if (uni > 0 && inter / uni >= mirror_overlap) { merged_into <- slot_of[prev]; break }
+    }
+    if (!is.na(merged_into)) slot_of[r] <- merged_into
+    else { next_slot <- next_slot + 1L; slot_of[r] <- next_slot }
+  }
+  if (max(slot_of, na.rm = TRUE) < 2) return(rep(NA_character_, n))  # all one study
+
+  out <- rep(NA_character_, n)
+  have <- !is.na(repo)
+  out[have] <- paste0("ex", slot_of[repo[have]])
+  out
+}
+
 .data_group_llm_impl <- function(files, model = llm_model(), params = list(),
-                                 batch_size = 30) {
+                                 batch_size = 30, paper = NULL) {
   if (is.null(files) || nrow(files) == 0) return(NULL)
+  # Pin the sampler unless the caller chose otherwise. llm() already defaults to
+  # temperature 0, but on a SERVED model that alone does not guarantee a
+  # reproducible answer (request batching, KV-cache state and GPU floating-point
+  # non-associativity all perturb the logits), and study groups decide the
+  # dataset's directory structure — a run-to-run flip silently reshapes the
+  # output. Providers document `seed` as best-effort rather than a promise, so
+  # this narrows the variance, it does not eliminate it; the deterministic passes
+  # above are what actually make the common cases reproducible.
+  if (is.null(params$seed)) params$seed <- .data_group_seed
   paths <- if ("file_path" %in% names(files)) files$file_path else files$file_name
   paths <- ifelse(is.na(paths) | !nzchar(paths), files$file_name, paths)
   paths <- gsub("\\\\", "/", paths)
+  repo  <- if ("repo_url" %in% names(files)) files$repo_url else
+           if ("repo_name" %in% names(files)) files$repo_name else
+           rep(NA_character_, length(paths))
 
   # Only group files that will actually be analysed or placed into a study
   # directory: data files, codebooks, code, and readmes. Assets, generic
@@ -550,31 +720,68 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
     tolower(as.character(files$data_type)) else rep(NA_character_, length(paths))
   send <- if (all(is.na(dtype))) rep(TRUE, length(paths)) else dtype %in% placeable
 
+  # Base group by SOURCE REPOSITORY: a paper that links several repos with
+  # different files is multi-study, one study per repo (see .data_group_from_repo).
+  # This seeds the default so unrecognised files fall to their repo's study, not
+  # to 'shared'. NA (single repo / mirrors) keeps the old 'shared' default.
+  repo_grp <- .data_group_from_repo(repo, paths)
+  multi_repo <- any(!is.na(repo_grp))
+  group <- ifelse(is.na(repo_grp), "shared", repo_grp)
+
   # Deterministic pre-pass: a path that names its study outright ("Experiment
-  # 1/", "study2a_data.csv", "...experiment1creplication...") is grouped by
-  # regex and never sent to the model — the regex is exact where a small LLM
-  # has misread such names. Only the genuinely ambiguous files go to the LLM.
-  group <- rep("shared", length(paths))
+  # 1/", "study2a_data.csv", "...experiment1creplication...") overrides the repo
+  # base — an explicit study name in the path is more specific than "which repo".
+  # The regex is exact where a small LLM has misread such names. Files still
+  # ambiguous AFTER both repo and path passes go to the LLM.
   pre <- .data_group_from_path(paths)
   fixed <- send & !is.na(pre)
   group[fixed] <- pre[fixed]
-  send <- send & is.na(pre)
 
-  if (!any(send)) {
-    out <- data.frame(group = group)
-    attr(out, "model") <- NA_character_
-    return(out)
+  # CODE-REFERENCE pass: a script names the data it reads and writes, so every
+  # file it references belongs to the script's study. This is hard evidence (no
+  # guessing) and rescues data files whose own path names no study — the common
+  # case, where paths describe a processing stage ("raw/", "processed/") rather
+  # than a study. Only fills files still unplaced by the repo/path passes, and
+  # only from scripts that ARE placed, so it propagates a known group outward
+  # rather than inventing one.
+  loc <- if ("file_location" %in% names(files)) files$file_location else
+    rep(NA_character_, length(paths))
+  is_code <- dtype %in% c("code", "software")
+  placed  <- !is.na(group) & group != "shared"
+  script_i <- which(is_code & placed & !is.na(loc))
+  if (length(script_i)) {
+    base_of <- tolower(basename(paths))
+    for (si in script_i) {
+      refs <- .data_code_refs(loc[si])
+      if (!length(refs)) next
+      # Files this script references that are still unplaced -> the script's group.
+      hit <- base_of %in% refs & (is.na(group) | group == "shared")
+      if (any(hit)) group[hit] <- group[si]
+    }
   }
 
+  # When the repository already separates studies, trust it: only send files the
+  # repo pass could NOT place (single-repo case) to the LLM. This avoids the LLM
+  # re-scattering repo-separated files to 'shared'.
+  send <- send & is.na(pre) & (!multi_repo | is.na(repo_grp)) &
+    (is.na(group) | group == "shared")
+
+  # The LLM is the LAST resort: it only sees files the deterministic passes
+  # (repository, path regex, code references) could not place. When they placed
+  # everything — the common case for a multi-repo paper — no call is made at all.
+  # NB: this must not return early; the roster relabelling and the "data is never
+  # shared" guard below still have to run.
   prompt <- paste(
     "You are grouping the files of a psychology research repository by study.",
     "Many repositories contain multiple studies (Experiment 1, Study 2a, a",
     "pilot, ...). Assign each numbered file to a study group using these codes:",
     "'ex1','ex2','ex2a',... for experiments/studies, 'pilot1','pilot2',... for",
-    "pilots, and 'shared' for files that belong to no single study (top-level",
-    "READMEs, shared materials, whole-repo codebooks). Infer groups from folder",
-    "names and filenames. If the repository is a single study, use 'shared' for",
-    "everything. Return one entry per input file, in the same order."
+    "pilots. Infer groups from folder names and filenames. A DATA file always",
+    "belongs to a study — never leave a data file ungrouped. Use 'shared' ONLY",
+    "for repository-wide NON-DATA files that genuinely serve every study (a",
+    "top-level README, a whole-repo codebook, shared materials). If the whole",
+    "repository is a single study, put every file in 'ex1' (not 'shared').",
+    "Return one entry per input file, in the same order."
   )
   # Wrap the array in a single-field object. Some providers (notably Groq's
   # gpt-oss-20b) reject a top-level bare JSON array schema with HTTP 400
@@ -597,7 +804,17 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 
   any_ok <- FALSE
   used_model <- NA_character_
-  for (rows in batches) {
+  unresolved <- integer(0)   # rows no batch (or retry) ever answered for
+
+  # Ask the model about one batch of rows; returns the rows it could NOT place.
+  # A batch can fail outright (network error, HTTP 400 json_validate_failed —
+  # providers reject a structured response they cannot validate, which happens
+  # more often on LONG arrays) or come back partial. Either way the rows left
+  # over are reported back so the caller can retry them in smaller pieces rather
+  # than silently leaving them at their default — the old behaviour, which made
+  # an intermittent provider error look exactly like "the model said 'shared'"
+  # and was the main source of run-to-run instability.
+  ask_batch <- function(rows) {
     listing <- paste(seq_along(rows), paths[rows], sep = ". ", collapse = "\n")
     resp <- tryCatch(
       llm(text = data.frame(text = listing), text_col = "text",
@@ -607,7 +824,7 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
     )
     resp <- .strip_llm_wrapper(resp, "assignments")
     if (is.null(resp) || nrow(resp) == 0 ||
-        !all(c("index", "group") %in% names(resp))) next
+        !all(c("index", "group") %in% names(resp))) return(rows)
     idx <- suppressWarnings(as.integer(resp$index))
     # Normalize the model's codes to the documented scheme and drop anything
     # that still doesn't fit (a hallucinated code like "pilot" for a file whose
@@ -615,17 +832,89 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
     grp <- .data_group_normalize(resp$group)
     ok  <- !is.na(idx) & idx >= 1 & idx <= length(rows) & !is.na(grp)
     if (any(ok)) {
-      group[rows[idx[ok]]] <- grp[ok]
-      any_ok <- TRUE
+      group[rows[idx[ok]]] <<- grp[ok]
+      any_ok <<- TRUE
     }
-    if (is.na(used_model)) used_model <- attr(resp, "llm")$model %||% NA_character_
+    if (is.na(used_model))
+      used_model <<- attr(resp, "llm")$model %||% NA_character_
+    rows[setdiff(seq_along(rows), idx[ok])]   # rows still unanswered
   }
-  # Regex-derived groups are still worth returning when every LLM batch failed;
-  # only give up when neither pass produced anything.
-  if (!any_ok && !any(fixed)) return(NULL)
 
+  for (rows in batches) {
+    left <- ask_batch(rows)
+    # ONE retry, at half the batch size. A provider that rejects a batch usually
+    # does so because the structured response was too long, and halving fixes
+    # that; if the halves still fail the request itself is the problem and
+    # splitting further will not help. Deliberately bounded: retrying down to
+    # single files would cost ~2n calls per failed batch (~100 for a 50-file
+    # batch) to place files the fallback rules below place for free.
+    if (length(left) > 1L) {
+      chunks <- split(left, ceiling(seq_along(left) / max(1L, length(left) %/% 2L)))
+      left <- unlist(lapply(chunks, ask_batch), use.names = FALSE)
+      if (is.null(left)) left <- integer(0)
+    }
+    if (length(left) > 0) unresolved <- c(unresolved, left)
+  }
+  # Regex- or repo-derived groups are worth returning even when every LLM batch
+  # failed; only give up when NO pass produced anything (no repo split, no path
+  # match, no LLM answer).
+  if (!any_ok && !any(fixed) && !multi_repo) return(NULL)
+
+  # A DATA file must NEVER be 'shared' — data always belongs to a study. Fall any
+  # still-'shared' data file back to a study: its own repo's study when the repo
+  # pass placed it, else the sole study when exactly one exists (a single-study
+  # repo whose data the LLM wrongly called 'shared'). Only genuinely repo-wide
+  # NON-DATA (README, codebook, materials) may remain 'shared'. This runs BEFORE
+  # the roster relabelling below so it works with the raw slot labels.
+  is_data <- dtype == "data"
+  study_codes <- unique(group[grepl("^(ex|pilot)[0-9]", group)])
+  stray <- is_data & group == "shared"
+  if (any(stray)) {
+    group[stray & !is.na(repo_grp)] <- repo_grp[stray & !is.na(repo_grp)]
+    still <- is_data & group == "shared"
+    if (any(still) && length(study_codes) == 1L) group[still] <- study_codes[[1]]
+    # No study exists at all (single-study repo, LLM gave only 'shared'): every
+    # data file becomes ex1 so nothing lands at the collection root as data.
+    still <- is_data & group == "shared"
+    if (any(still) && length(study_codes) == 0L) group[still] <- "ex1"
+  }
+
+  # RELABEL from the manuscript's study roster. The authors say what their
+  # studies are called ("Experiment 1, 2a, 2b, 3"); our partition may be
+  # structurally right but named by slot (ex1..ex4 from four repositories). When
+  # the partition has exactly as many groups as the paper names studies, adopt
+  # the authors' labels — the paper is authoritative for naming.
+  #
+  # Groups already carrying a roster label (a path that literally said
+  # "Experiment 2a") are left alone and their label is taken out of the pool, so
+  # only the slot-named groups are renamed. Mapping is by first appearance, which
+  # matches how both lists are ordered (repo order / study order) but is a
+  # heuristic: when the counts differ we do NOT rename at all, and the roster
+  # check below reports the disagreement instead of guessing.
+  roster <- if (!is.null(paper)) data_study_roster(paper) else character(0)
+  if (length(roster)) {
+    found <- unique(group[!is.na(group) & group != "shared"])
+    already <- intersect(found, roster)              # correctly named already
+    to_name <- setdiff(found, roster)                # slot-named (ex1, ex2, ...)
+    avail   <- setdiff(roster, already)
+    if (length(to_name) > 0 && length(to_name) == length(avail)) {
+      # Order both by first appearance so the mapping is stable.
+      ord <- to_name[order(match(to_name, group[!is.na(group)]))]
+      map <- stats::setNames(avail, ord)
+      hit <- !is.na(group) & group %in% ord
+      group[hit] <- unname(map[group[hit]])
+    }
+  }
   out <- data.frame(group = group)
   attr(out, "model") <- used_model
+  attr(out, "roster") <- roster
+  attr(out, "roster_check") <- .data_group_check_roster(group, roster)
+  # Files the model never answered for, even after retries. They keep whatever
+  # default they had (the safety net below still guarantees no data file stays
+  # 'shared'), but the caller is told so an intermittent provider failure is
+  # visible instead of masquerading as a real 'shared' verdict.
+  attr(out, "unresolved") <- if (length(unresolved))
+    paths[sort(unique(unresolved))] else character(0)
   out
 }
 
@@ -884,6 +1173,14 @@ data_read_head <- function(path, n_rows = 5) {
           sav      = haven::read_sav(path, n_max = nmax),
           dta      = haven::read_dta(path, n_max = nmax),
           sas7bdat = haven::read_sas(path, n_max = nmax)))
+      },
+      jasp = {
+        # A .jasp bundles a labelled data frame (like SPSS): read_jasp() returns
+        # the columns with haven-style label/labels attributes, so the rest of
+        # data_check (and the CSV conversion in psychds-convert) treats it exactly
+        # like a .sav. Both the old binary and modern SQLite formats are handled.
+        df <- read_jasp(path)$data
+        if (is.data.frame(df) && is.finite(n_rows)) utils::head(df, n_rows) else df
       },
       rds = {
         obj <- readRDS(path)
@@ -1333,57 +1630,82 @@ normalize_label <- function(x) {
   )
 }
 
+# A short, human-readable slug used as BOTH the OSD `code` and the on-disk file
+# name (scales/<slug>.osd). Lowercase words joined by underscores, from the scale
+# NAME when it has one (PANAS -> "positive_and_negative_affect_schedule"), else
+# from the column prefix/abbreviation (unnamed block -> "response"). Capped at a
+# word boundary so the file name stays reasonable; the full name is kept in
+# scale_info$name. Provenance is NOT encoded in the slug (it lives in
+# metacheck$scale_source) — the slug is just a stable, readable identifier.
+.osd_slug <- function(name = NULL, prefix = NULL, max_chars = 60L) {
+  x <- if (!is.null(name) && !is.na(name) && nzchar(name)) name else prefix %||% ""
+  x <- tolower(gsub("[^A-Za-z0-9]+", "_", x))
+  x <- gsub("^_+|_+$", "", x)
+  if (!nzchar(x)) return("scale")
+  if (nchar(x) > max_chars) {
+    trunc <- substr(x, 1, max_chars)
+    at <- regexpr("_[^_]*$", trunc)          # trim back to last full word
+    if (at > 1) trunc <- substr(trunc, 1, at - 1L)
+    x <- gsub("_+$", "", trunc)
+  }
+  if (!nzchar(x)) "scale" else x
+}
+
 # A code valid under the OpenScales OSD spec: uppercase letters, digits, and
-# hyphens only.
-.osd_safe_code <- function(x) {
+# hyphens only. Capped at 40 characters (at a hyphen boundary where possible):
+# an over-long "code" comes from a self-generated LLM label that is really a
+# sentence, not an instrument name — the full text is kept in scale_info$name.
+.osd_safe_code <- function(x, max_chars = 40L) {
   x <- toupper(gsub("[^A-Za-z0-9]+", "-", x %||% ""))
   x <- gsub("^-+|-+$", "", x)
+  if (!nzchar(x)) return("SCALE")
+  if (nchar(x) > max_chars) {
+    trunc <- substr(x, 1, max_chars)
+    at <- regexpr("-[^-]*$", trunc)          # trim back to last full token
+    if (at > 1) trunc <- substr(trunc, 1, at - 1L)
+    x <- gsub("-+$", "", trunc)
+  }
   if (!nzchar(x)) "SCALE" else x
 }
 
-# Mint the OSD `code` and provenance for one identified scale, marking three
-# levels of trust so the exported archive is not mistaken for an authoritative
-# registry:
-#   * dictionary     — matched a known instrument; keep its OFFICIAL OpenScales
-#                      code (bare, e.g. "BFI").
-#   * manuscript     — a real instrument named in the paper but not in the
-#                      registry; minted code prefixed "METACHECK-".
-#   * self_generated — an LLM-inferred construct label, NOT a named instrument;
-#                      minted code prefixed "METACHECK-GEN-" so it is
-#                      unmistakable as metacheck's own inference.
-# `prefix` is the column abbreviation, used to form the code when the scale has
-# no name (falls back to the name otherwise). Shared by codebook_check (writing
-# .osd files) and psychds-convert (cross-referencing variables to a scale code),
-# so it lives here rather than in the module. Returns list(code, source,
-# provenance).
+# Mint the OSD `code` and provenance for one identified scale. The `code` is a
+# short, readable slug used as BOTH scale_info$code and the on-disk file name
+# (scales/<code>.osd): the scale NAME when it has one (PANAS ->
+# "positive_and_negative_affect_schedule"), else the column prefix (unnamed block
+# -> "response"). Provenance is NOT encoded in the slug — it is carried in the
+# returned `source` (dictionary / manuscript / self_generated / unnamed_block),
+# which the .osd's metacheck block and the README record. Three levels of trust:
+#   * dictionary     — matched a known instrument (OpenScales / curated).
+#   * manuscript     — a real instrument named in the paper.
+#   * self_generated — an LLM-inferred construct label, NOT a named instrument.
+#   * unnamed_block  — a coherent same-prefix rating block, unnamed.
+# `prefix` is the column abbreviation, used when the scale has no name. Shared by
+# codebook_check (writing .osd files) and psychds-convert (cross-referencing
+# variables to a scale code), so it lives here rather than in the module. Returns
+# list(code, source, provenance).
 .osd_code_and_provenance <- function(scale, prefix, scale_source, dict) {
   src <- scale_source %||% ""
-  # Dictionary membership and official code are separate: a curated entry is IN
-  # the dictionary but carries no OpenScales code. Only an OpenScales entry keeps
-  # its bare official code; a curated match still mints a METACHECK- code but is
-  # marked as a dictionary (not manuscript) identification.
-  official <- ""; in_dict <- FALSE
+  in_dict <- FALSE
   if (!is.na(scale) && nzchar(scale)) {
     i <- which(tolower(dict$name) == tolower(scale))
-    if (length(i)) {
-      in_dict <- TRUE
-      if (nzchar(dict$code[i[1]] %||% "")) official <- dict$code[i[1]]
-    }
+    if (length(i)) in_dict <- TRUE
   }
-  base <- .osd_safe_code(if (!is.na(scale) && nzchar(scale)) scale else prefix)
+  # Slug from the name when present, else the column prefix. Same value regardless
+  # of provenance — the slug is a readable identifier, not a trust marker.
+  code <- .osd_slug(name = scale, prefix = prefix)
 
-  if (nzchar(official)) {
-    list(code = official, source = "dictionary",
-         provenance = "Matched a known instrument in the OpenScales-derived dictionary; this is its official OpenScales code.")
-  } else if (in_dict) {
-    list(code = paste0("METACHECK-", base), source = "dictionary",
-         provenance = "Matched a curated instrument in metacheck's scale dictionary (not in the OpenScales registry, so the code is minted by metacheck).")
+  if (in_dict) {
+    list(code = code, source = "dictionary",
+         provenance = "Matched a known instrument in metacheck's scale dictionary (OpenScales-derived or curated).")
   } else if (identical(src, "self_generated")) {
-    list(code = paste0("METACHECK-GEN-", base), source = "self_generated",
+    list(code = code, source = "self_generated",
          provenance = "This label was GENERATED BY metacheck from the item wording. It is NOT a recognised named instrument, only metacheck's inference of what the items measure.")
+  } else if (identical(src, "unnamed_block")) {
+    list(code = code, source = "unnamed_block",
+         provenance = "A coherent block of same-prefix rating columns detected in the data, but NOT named: neither a known instrument nor a construct metacheck could infer from the available text. Recorded for its structure (items + response scale) only.")
   } else {
-    list(code = paste0("METACHECK-", base), source = "manuscript",
-         provenance = "A named instrument identified from the manuscript text but not present in the OpenScales registry; the code is minted by metacheck.")
+    list(code = code, source = "manuscript",
+         provenance = "A named instrument identified from the manuscript text but not present in the OpenScales registry.")
   }
 }
 
@@ -1524,6 +1846,83 @@ normalize_label <- function(x) {
 
 # Extract variable-label pairs from a structured data.frame (CSV/Excel rows).
 # Returns NULL when no matching header columns are found.
+# Does a character vector look like variable NAMES (short, no spaces, mostly
+# alnum/underscore — neo1, BFI_3, q07)? Used by the positional layout detector.
+.looks_like_varnames <- function(x) {
+  x <- trimws(as.character(x)); x <- x[nzchar(x) & !is.na(x)]
+  if (length(x) < 3) return(FALSE)
+  ok <- grepl("^[A-Za-z][A-Za-z0-9_.]{0,30}$", x) & !grepl("\\s", x)
+  mean(ok) >= 0.8 && length(unique(x)) >= 0.8 * length(x)   # mostly ids, mostly unique
+}
+
+# Does a character vector look like item WORDING (sentence-like: has spaces, some
+# length, not all identical)?
+.looks_like_wording <- function(x) {
+  x <- trimws(as.character(x)); x <- x[nzchar(x) & !is.na(x)]
+  if (length(x) < 3) return(FALSE)
+  mean(grepl("\\s", x)) >= 0.6 && stats::median(nchar(x)) >= 8
+}
+
+# Positional codebook extractor for sheets/files with NO usable header row (a
+# prose title instead of column names, e.g. an IPIP-NEO sheet whose columns are
+# item-id | wording | anchor1 | anchor2 | ...). Scans for a column that looks
+# like variable names with an adjacent column that looks like item wording; any
+# further columns whose values look like "1 - Label" anchors are gathered into a
+# value-labels code list. Returns a codebook-vars data.frame or NULL.
+.extract_codebook_positional <- function(df, src) {
+  if (is.null(df) || nrow(df) < 3 || ncol(df) < 2) return(NULL)
+  raw <- as.data.frame(lapply(df, as.character), stringsAsFactors = FALSE)
+  p <- ncol(raw)
+
+  var_j <- NA_integer_; lab_j <- NA_integer_
+  for (j in seq_len(p - 1L)) {
+    if (.looks_like_varnames(raw[[j]]) && .looks_like_wording(raw[[j + 1L]])) {
+      var_j <- j; lab_j <- j + 1L; break
+    }
+  }
+  if (is.na(var_j)) return(NULL)
+
+  keep <- nzchar(trimws(raw[[var_j]])) & !is.na(raw[[var_j]])
+  rows <- raw[keep, , drop = FALSE]
+  if (nrow(rows) < 3) return(NULL)
+
+  # Anchor columns: columns after the label whose cells look like "N - Label".
+  anchor_js <- integer(0)
+  for (j in seq.int(lab_j + 1L, p)) {
+    if (j > p) break
+    vals <- trimws(rows[[j]]); vals <- vals[nzchar(vals) & !is.na(vals)]
+    if (length(vals) && mean(grepl("^[0-9]+\\s*[-=:.)]", vals)) >= 0.6)
+      anchor_js <- c(anchor_js, j)
+  }
+  value_labels <- rep(NA_character_, nrow(rows))
+  if (length(anchor_js)) {
+    # A scale block shares one anchor set; build it once from the first data row
+    # that has anchors, as JSON {code: label}.
+    for (i in seq_len(nrow(rows))) {
+      cells <- trimws(as.character(rows[i, anchor_js]))
+      cells <- cells[nzchar(cells) & !is.na(cells)]
+      m <- regmatches(cells, regexec("^([0-9]+)\\s*[-=:.)]\\s*(.+)$", cells))
+      codes <- vapply(m, function(z) if (length(z) == 3) z[2] else NA_character_, character(1))
+      labs  <- vapply(m, function(z) if (length(z) == 3) trimws(z[3]) else NA_character_, character(1))
+      ok <- !is.na(codes)
+      if (any(ok))
+        value_labels[i] <- .encode_value_labels(codes[ok], labs[ok])
+    }
+  }
+
+  data.frame(
+    codebook_variable = trimws(rows[[var_j]]),
+    label             = trimws(rows[[lab_j]]),
+    codebook_source   = src,
+    group             = NA_character_,
+    value_labels      = value_labels,
+    missing_values    = vapply(value_labels, .missing_from_value_labels,
+                               character(1), USE.NAMES = FALSE),
+    question          = NA_character_,
+    universe          = NA_character_
+  )
+}
+
 .extract_structured_codebook <- function(df, src) {
   if (is.null(df) || nrow(df) == 0 || ncol(df) < 2) return(NULL)
   cols <- .find_codebook_cols(names(df))
@@ -1719,9 +2118,27 @@ parse_codebook <- function(path, header_lookahead = 5L) {
         if (!requireNamespace("readxl", quietly = TRUE)) {
           NULL
         } else {
-          df <- tryCatch(as.data.frame(readxl::read_excel(path)),
-                         error = function(e) NULL)
-          .extract_structured_codebook(df, src)
+          # Explore EVERY sheet, not just the first: a codebook often keeps its
+          # scale item lists on separate tabs (e.g. an IPIP-NEO sheet beside a
+          # general "Codebook" sheet). For each sheet try the named-header parser
+          # first, then a positional fallback for sheets whose header is a prose
+          # title rather than column names. Combine everything that parses; the
+          # source records the sheet so a variable can be traced back.
+          sheets <- tryCatch(readxl::excel_sheets(path), error = function(e) character(0))
+          if (length(sheets) == 0) sheets <- NA_character_   # single default read
+          parsed <- list()
+          for (sh in sheets) {
+            df <- tryCatch(
+              if (is.na(sh)) as.data.frame(readxl::read_excel(path))
+              else as.data.frame(readxl::read_excel(path, sheet = sh)),
+              error = function(e) NULL)
+            if (is.null(df)) next
+            ssrc <- if (is.na(sh)) src else paste0(src, " [", sh, "]")
+            one <- .extract_structured_codebook(df, ssrc)
+            if (is.null(one)) one <- .extract_codebook_positional(df, ssrc)
+            if (!is.null(one) && nrow(one) > 0) parsed[[length(parsed) + 1L]] <- one
+          }
+          if (length(parsed) > 0) dplyr::bind_rows(parsed) else NULL
         }
       },
       sav = , dta = , sas7bdat = {
@@ -1733,6 +2150,17 @@ parse_codebook <- function(path, header_lookahead = 5L) {
             dta      = haven::read_dta(path),
             sas7bdat = haven::read_sas(path))
           res <- .extract_haven_labels(as.data.frame(df), src)
+          if (!is.null(res)) attr(res, ".is_haven") <- TRUE
+          res
+        }
+      },
+      jasp = {
+        # A .jasp carries its own variable/value labels (measurement level +
+        # value coding), so it serves as its own codebook. read_jasp() attaches
+        # haven-style attributes, so the SAME extractor used for .sav applies.
+        df <- tryCatch(read_jasp(path)$data, error = function(e) NULL)
+        if (is.null(df)) NULL else {
+          res <- .extract_haven_labels(df, src)
           if (!is.null(res)) attr(res, ".is_haven") <- TRUE
           res
         }
@@ -3210,9 +3638,8 @@ data_col_facets <- function(col_name, values) {
 # set of human-coded qualitative worksheets (prose columns ~45-50%, missingness
 # ~90%+) versus their study's real dataset (~3% prose, ~2% missing).
 .tabular_prose_high  <- 0.70   # overwhelmingly free-text → not a dataset on its own
-.tabular_miss_high   <- 0.90   # almost entirely empty → nothing to check on its own
 .tabular_prose_mid   <- 0.40   # the coding-sheet middle ground: both must hold
-.tabular_miss_mid    <- 0.40
+.tabular_miss_mid    <- 0.40   # (missingness only corroborates prose; never alone)
 
 #' Is a read-in data frame a usable rectangular dataset?
 #'
@@ -3265,10 +3692,13 @@ data_col_facets <- function(col_name, values) {
   miss_frac  <- mean(miss_hi)
   pct <- function(x) sprintf("%.0f%%", 100 * x)
 
-  # Tiered rules: extreme on one axis excludes alone; otherwise both, moderate.
-  if (miss_frac >= .tabular_miss_high)
-    return(list(usable = FALSE, reason = sprintf(
-      "%s of columns are almost entirely empty", pct(miss_frac))))
+  # Tiered rules. NOTE: high missingness ALONE does NOT exclude. Legitimate
+  # branched / planned-missing surveys (e.g. a Qualtrics export where each
+  # respondent sees only their condition's questions) are 90%+ missing but are
+  # real NUMERIC data — excluding them drops the actual dataset (and its scales).
+  # We exclude only when the file is overwhelmingly FREE TEXT, or moderately free
+  # text AND mostly empty (the human coding-worksheet signature). Missingness is
+  # corroborating, never sufficient.
   if (prose_frac >= .tabular_prose_high)
     return(list(usable = FALSE, reason = sprintf(
       "%s of columns are free text, not variables", pct(prose_frac))))
@@ -3434,10 +3864,12 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 # identification). A "scale block" is a run of adjacent Likert-type columns that
 # share a variable-name prefix, i.e. one psychometric scale (PANAS_1..10).
 
-# Minimum items for a block to count as a scale. Set to 4 to catch genuine short
-# scales (e.g. 4-item measures) at the cost of a few more noisy 4-item fragments;
-# the LLM naming stage filters those out.
-.scale_min_items <- 4L
+# Minimum items for a block to count as a scale. Set to 3 to catch genuine short
+# scales (e.g. 3-item subscales) at the cost of a few more noisy small fragments;
+# the dictionary/LLM naming stage filters those out (an un-nameable group stays
+# unnamed rather than becoming a false scale). Shared by scale grouping and the
+# careless-responding detector (.dv_careless_min_items).
+.scale_min_items <- 3L
 
 # Is a column a plausible Likert item? Integer-valued, 3-11 distinct levels (2
 # is binary, not Likert), spanning a narrow range within a plausible bound.
@@ -3506,4 +3938,44 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
   }
   flush(length(ok))
   blocks
+}
+
+# Is a prefix group a RATING-LIKE block, judged from data_check's per-column
+# statistics (no file re-read)? This is broader than `.detect_scale_blocks`,
+# which only accepts small-integer Likert items and so misses 0-100 slider /
+# percentage rating scales (values like 11, 95, 71). It exists to gate what the
+# OSD exporter is allowed to WRITE — named or unnamed — so that a coherent rating
+# block is kept while genuine non-scales (probabilities, model parameters) are
+# rejected.
+#
+# A block qualifies when, pooled across its columns:
+#   * at least 60% of its columns are numeric (a scale block is numeric ratings,
+#     not free text / ids);
+#   * the pooled minimum is >= -1 — rejects unbounded model parameters that go
+#     negative (e.g. alpha/beta weights spanning -52 .. +10);
+#   * the pooled maximum is > 1 — rejects [0,1] quantities (probabilities,
+#     posterior means) that are NOT ratings, and
+#   * the pooled maximum is <= 100 — the upper bound of a plausible rating
+#     envelope (0-100 sliders, 1-7 Likert, 0-10 scales all pass; a summed total
+#     or a count that runs into the hundreds does not).
+# `cols` are the block's column names; `source_file` scopes the lookup so a
+# same-named column in another file is not mixed in.
+.scale_block_is_ratinglike <- function(cols, source_file, columns_df) {
+  if (is.null(columns_df) || !nrow(columns_df) ||
+      !all(c("source_file", "column_name", "min", "max") %in% names(columns_df)))
+    return(FALSE)
+  key  <- paste(columns_df$source_file, columns_df$column_name, sep = "\x01")
+  want <- paste(source_file, cols, sep = "\x01")
+  idx  <- which(key %in% want)
+  if (length(idx) < .scale_min_items) return(FALSE)
+
+  mn <- suppressWarnings(as.numeric(columns_df$min[idx]))
+  mx <- suppressWarnings(as.numeric(columns_df$max[idx]))
+  numeric_frac <- mean(is.finite(mn) & is.finite(mx))
+  if (!is.finite(numeric_frac) || numeric_frac < 0.6) return(FALSE)
+
+  lo <- suppressWarnings(min(mn, na.rm = TRUE))
+  hi <- suppressWarnings(max(mx, na.rm = TRUE))
+  if (!is.finite(lo) || !is.finite(hi)) return(FALSE)
+  lo >= -1 && hi > 1 && hi <= 100
 }
