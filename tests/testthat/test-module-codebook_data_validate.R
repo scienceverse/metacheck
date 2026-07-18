@@ -229,14 +229,19 @@ test_that("scale-block detection groups items and splits by prefix", {
   blocks <- metacheck:::.detect_scale_blocks(df)
   expect_length(blocks, 2)
   expect_equal(vapply(blocks, length, integer(1)), c(8L, 6L))
-  # 4 items is the minimum, so a 4-item block IS returned ...
+  # `.scale_min_items` is 3, deliberately: it catches genuine short scales
+  # (3-item subscales) and the naming stage filters the noisier small fragments
+  # out. So both a 4-item and a 3-item block are returned ...
   df2 <- as.data.frame(matrix(sample(1:5, 30 * 4, replace = TRUE), nrow = 30))
   names(df2) <- paste0("x_", 1:4)
   expect_length(metacheck:::.detect_scale_blocks(df2), 1)
-  # ... but a 3-item block is below the minimum and is not returned.
   df3 <- as.data.frame(matrix(sample(1:5, 30 * 3, replace = TRUE), nrow = 30))
   names(df3) <- paste0("y_", 1:3)
-  expect_length(metacheck:::.detect_scale_blocks(df3), 0)
+  expect_length(metacheck:::.detect_scale_blocks(df3), 1)
+  # ... and a 2-item block is below the minimum and is not returned.
+  df4 <- as.data.frame(matrix(sample(1:5, 30 * 2, replace = TRUE), nrow = 30))
+  names(df4) <- paste0("z_", 1:2)
+  expect_length(metacheck:::.detect_scale_blocks(df4), 0)
 })
 
 test_that("paper-text scan finds named instruments and ignores unrelated text", {

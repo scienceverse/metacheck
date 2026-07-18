@@ -90,14 +90,23 @@ test_that("psychds_validate flags a non-Dataset @type", {
 
 # ── data_check study grouping ─────────────────────────────────────────────────
 
-test_that("data_check leaves study group NA without an LLM", {
-  skip_if_not(getOption("metacheck.llm.use", FALSE) == FALSE || TRUE)
+test_that("data_check groups studies deterministically without an LLM", {
   llm_use(FALSE)
   d <- make_fixture_repo()
   mo <- module_run(test_paper("x"), "data_check",
                    local_path = d, local_only = TRUE)
   expect_true("group" %in% names(mo$structure))
-  expect_true(all(is.na(mo$structure$group)))
+  # Study grouping is NOT LLM-only. `.data_group_from_path()` reads the study
+  # from the file path ("study1.csv" -> ex1) and runs before any LLM call,
+  # deliberately: a filename states the study more reliably than a small model
+  # infers it. So the group is populated even with llm_use(FALSE); only files
+  # the deterministic passes cannot place need the LLM.
+  grp <- mo$structure$group
+  expect_false(all(is.na(grp)))
+  # the data file names its study in the path
+  expect_equal(grp[mo$structure$file_name == "study1.csv"], "ex1")
+  # non-data repo-wide files stay 'shared'
+  expect_equal(grp[mo$structure$file_name == "README.txt"], "shared")
 })
 
 # ── psychds_check ─────────────────────────────────────────────────────────────
@@ -116,7 +125,26 @@ test_that("psychds_check reports the compliance gap for a raw repo", {
   # dataset_description.json is absent in the raw repo → a required item missing
   expect_gt(op$summary_table$required_missing, 0)
   expect_true(any(grepl("Target Psych-DS", op$report)))
-  # No LLM → the "subgrouping unknown" note is present
+  # The fixture's "study1.csv" is placed in ex1 by the deterministic path pass,
+  # so study groups ARE detected even with llm_use(FALSE), and the
+  # "subgrouping unknown" note must NOT appear. The note is for the case where
+  # no pass could place anything (see .data_group_from_path).
+  expect_false(any(grepl("subgrouping could not be detected", op$report)))
+})
+
+test_that("psychds_check notes unknown subgrouping when nothing can be placed", {
+  llm_use(FALSE)
+  # A repo whose paths name no study: the deterministic passes place nothing,
+  # so the report should say so rather than imply a single-study layout.
+  d <- withr::local_tempdir()
+  writeLines("id,x\n1,2", file.path(d, "measures.csv"))
+  writeLines("notes", file.path(d, "README.txt"))
+  report_module_run(test_paper("x"),
+                    c("data_check", "codebook_check", "psychds_check"),
+                    args = list(data_check = list(local_path = d,
+                                                  local_only = TRUE)))
+  op <- module_run(test_paper("x"), "psychds_check",
+                   local_path = d, local_only = TRUE)
   expect_true(any(grepl("subgrouping could not be detected", op$report)))
 })
 

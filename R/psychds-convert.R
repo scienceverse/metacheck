@@ -181,8 +181,67 @@
   as.list(kw)
 }
 
-# Build the dataset_description.json object for one study.
-.psychds_dataset_description <- function(paper, study_label, property_values) {
+# Resolve the online download URL for a source file from data_check's structure
+# table. Prefer the direct file URI (file_url, e.g. an OSF download link); fall
+# back to the repository URL (repo_url) when there is no direct link (e.g.
+# ResearchBox, which exposes no per-file download URL). Returns NA when neither
+# is known. `structure_df` is data_check's per-file structure table.
+.psychds_source_url <- function(file_name, structure_df) {
+  if (is.null(structure_df) || !nrow(structure_df) ||
+      !"file_name" %in% names(structure_df)) return(NA_character_)
+  # Basename match. file_name is NOT unique across a paper's repositories (see
+  # the copy loop's warning), so a duplicated basename resolves to the FIRST
+  # matching row — acceptable for a "jump to the source online" link.
+  i <- match(file_name, structure_df$file_name)
+  if (is.na(i)) return(NA_character_)
+  fu <- if ("file_url" %in% names(structure_df)) structure_df$file_url[i] else NA_character_
+  if (!is.na(fu) && nzchar(fu)) return(fu)
+  ru <- if ("repo_url" %in% names(structure_df)) structure_df$repo_url[i] else NA_character_
+  if (!is.na(ru) && nzchar(ru)) return(ru)
+  NA_character_
+}
+
+# MIME type for a source file's extension, for a DataDownload's encodingFormat.
+# Returns NULL for an unknown extension, so the field is simply omitted.
+.psychds_encoding_format <- function(file_name) {
+  ext <- tolower(tools::file_ext(file_name))
+  mimes <- c(csv = "text/csv", tsv = "text/tab-separated-values",
+             txt = "text/plain", json = "application/json",
+             xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+             xls = "application/vnd.ms-excel",
+             sav = "application/x-spss-sav", dta = "application/x-stata-dta",
+             rds = "application/x-r-rds", rdata = "application/x-r-data",
+             sas7bdat = "application/x-sas-data", por = "application/x-spss-por",
+             jasp = "application/x-jasp")
+  if (ext %in% names(mimes)) unname(mimes[[ext]]) else NULL
+}
+
+# Build the schema.org `distribution` array (a list of DataDownload objects) for
+# a study root: one entry per source data file that has a resolvable online URL.
+# `data_files` are the source file names (basenames) landing in this root's
+# data/; `structure_df` supplies their URLs. Returns NULL when none resolve, so
+# `distribution` is dropped rather than emitted empty.
+.psychds_distribution <- function(data_files, structure_df) {
+  data_files <- unique(data_files[!is.na(data_files) & nzchar(data_files)])
+  if (!length(data_files)) return(NULL)
+  entries <- lapply(data_files, function(fn) {
+    url <- .psychds_source_url(fn, structure_df)
+    if (is.na(url)) return(NULL)
+    Filter(Negate(is.null), list(
+      `@type`        = "DataDownload",
+      name           = fn,
+      contentUrl     = url,
+      encodingFormat = .psychds_encoding_format(fn)))
+  })
+  entries <- Filter(Negate(is.null), entries)
+  if (!length(entries)) NULL else entries
+}
+
+# Build the dataset_description.json object for one study. `distribution` is the
+# optional schema.org DataDownload list (built by .psychds_distribution) linking
+# each source data file to its online download URL; NULL omits the field.
+.psychds_dataset_description <- function(paper, study_label, property_values,
+                                         distribution = NULL) {
   info <- paper$info %||% list()
   # paper$info may be a tibble; `$` on a missing tibble column warns, so look up
   # fields by name and return NULL when absent (or empty, e.g. a stub paper).
@@ -206,6 +265,11 @@
     variableMeasured = property_values,
     schemaVersion    = "Psych-DS 1.5.1"
   )
+
+  # Where the source data files can be downloaded online (schema.org). One
+  # DataDownload per source file with a resolvable URL; omitted when none.
+  if (!is.null(distribution) && length(distribution))
+    desc[["distribution"]] <- distribution
 
   # Authors from the paper object.
   if (!is.null(paper$author) && nrow(paper$author) > 0) {
@@ -241,7 +305,8 @@
                                      columns_df = NULL, labels_df = NULL,
                                      shared_files = character(0),
                                      fulltext_rel = character(0),
-                                     logs_rel = character(0)) {
+                                     logs_rel = character(0),
+                                     paradata = list()) {
   info <- paper$info %||% list()
   ival <- function(field) {
     v <- if (field %in% names(info)) info[[field]] else NULL
@@ -279,6 +344,18 @@
              ref_parts(shared_files, "CreativeWork", "shared across studies"),
              ref_parts(fulltext_rel, "CreativeWork", "paper full text"),
              ref_parts(logs_rel, "CreativeWork", "metacheck provenance log"))
+
+  # hasPart: one Dataset entry per Behaverse paradata file — the trial-level
+  # (response time / stimulus / option) data for an instrument, cross-referenced
+  # to the matching scale (OSD) on the canonical instrument id.
+  parts <- c(parts, lapply(paradata, function(pd) Filter(Negate(is.null), list(
+    `@type`   = "Dataset",
+    name      = paste("Paradata:", pd$instrument_id),
+    identifier = pd$path,
+    `metacheck:instrument_id` = pd$instrument_id,
+    `metacheck:sourceFormat`  = if (nzchar(pd$format %||% "")) pd$format else NULL,
+    `metacheck:responseCount` = pd$n_responses,
+    `metacheck:scale`         = if (!is.na(pd$osd_link)) pd$osd_link else NULL))))
 
   coll <- list(
     `@context`  = "https://schema.org/",
@@ -1012,7 +1089,16 @@ convert_psychds <- function(paper, output_dir = NULL,
       study_label <- ""
     }
     pv <- .psychds_variable_measured(root_cols, labels_df)
-    desc <- .psychds_dataset_description(paper, study_label, pv)
+    # Source data files landing in this root's data/ folder, resolved to their
+    # online download URLs. The plan is row-aligned with structure_df (see the
+    # copy loop), so a data-target plan row i maps to structure row i, whose
+    # file_name is the source basename that carries the URL.
+    data_prefix <- paste0(if (nzchar(sr)) paste0(sr, "/") else "", "data/")
+    is_root_data <- startsWith(plan$target_path, data_prefix)
+    root_data_files <- if (row_aligned)
+      structure_df$file_name[is_root_data] else plan$file_name[is_root_data]
+    distribution <- .psychds_distribution(root_data_files, structure_df)
+    desc <- .psychds_dataset_description(paper, study_label, pv, distribution)
     dest <- file.path(output_dir, sr, "dataset_description.json")
     .psychds_write_json(desc, dest)
     descriptions <- c(descriptions, dest)
@@ -1088,7 +1174,20 @@ convert_psychds <- function(paper, output_dir = NULL,
   # One .osd per NAMED scale, flat at scales/{code}.osd, plus a section in the
   # dataset-root README explaining the provenance markers. Unnamed detections are
   # skipped (they are not scales). See .scales_to_osd() / .osd_write_scales().
-  n_scales_written <- .osd_write_scales(scales_osd, output_dir)
+  #
+  # Trial-level PARADATA (response times, trial/stimulus channels from Behaverse /
+  # Inquisit / E-Prime / jsPsych source files) is normalised to Behaverse `trial`
+  # documents at paradata/<instrument>.json (see R/behaverse-convert.R) — one file
+  # per instrument, the full response data, nothing deleted. The OSD and the
+  # paradata file cross-reference each other on the canonical instrument id, so we
+  # pre-scan the paradata instrument keys, write the OSDs (which embed the link),
+  # then write the paradata (linking back to the matching OSDs).
+  paradata_keys <- .bh_paradata_keys(output_dir)
+  osd_codes     <- .osd_write_scales(scales_osd, output_dir, structure_df,
+                                     paradata_keys = paradata_keys)
+  n_scales_written <- attr(osd_codes, "n_written") %||% 0L
+  paradata_index <- .osd_write_paradata(output_dir, osd_codes = as.character(osd_codes),
+                                        study_name = pid)
 
   # ── Write the paper's full text into documentation/ (always at the root) ─────
   # The release should carry the manuscript prose the checks read, not just the
@@ -1129,7 +1228,8 @@ convert_psychds <- function(paper, output_dir = NULL,
       shared_files = grep("^study-", plan$target_path, value = TRUE,
                           invert = TRUE),
       fulltext_rel = to_rel(fulltext_path),
-      logs_rel     = to_rel(names(logs_written)))
+      logs_rel     = to_rel(names(logs_written)),
+      paradata     = paradata_index)
   }
 
   # Explain the files that were NOT placed in the dataset. A file is not added
@@ -1177,6 +1277,8 @@ convert_psychds <- function(paper, output_dir = NULL,
           " dataset description(s)",
           if (!is.null(collection_path)) ", collection.json" else "",
           if (n_scales_written > 0) paste0(", ", n_scales_written, " scale(s)") else "",
+          if (length(paradata_index) > 0)
+            paste0(", ", length(paradata_index), " paradata file(s)") else "",
           if (!is.null(fulltext_path)) ", paper full text" else "",
           if (length(logs_written) > 0)
             paste0(", ", length(logs_written), " log file(s)") else "",
@@ -1192,6 +1294,7 @@ convert_psychds <- function(paper, output_dir = NULL,
     descriptions   = descriptions,
     collection     = collection_path %||% character(0),
     n_scales       = n_scales_written,
+    n_paradata     = length(paradata_index),
     fulltext       = fulltext_path %||% character(0),
     logs           = names(logs_written),
     skipped        = skipped,
@@ -1203,10 +1306,12 @@ convert_psychds <- function(paper, output_dir = NULL,
 # one file per named scale, flat at scales/{code}.osd, and append a
 # provenance-explaining section to the dataset-root README.md. Objects flagged
 # `write = FALSE` (unnamed detections) are skipped. Returns the number written.
-.osd_write_scales <- function(scales_osd, output_dir) {
-  if (is.null(scales_osd) || !length(scales_osd)) return(0L)
+.osd_write_scales <- function(scales_osd, output_dir, structure_df = NULL,
+                              paradata_keys = character(0)) {
+  if (is.null(scales_osd) || !length(scales_osd))
+    return(structure(character(0), n_written = 0L))
   writeable <- Filter(function(o) isTRUE(attr(o, "write")), scales_osd)
-  if (!length(writeable)) return(0L)
+  if (!length(writeable)) return(structure(character(0), n_written = 0L))
 
   index <- list()   # rows for the README: code, name, source, provenance
   used <- character(0)   # codes already written, to disambiguate collisions
@@ -1224,11 +1329,36 @@ convert_psychds <- function(paper, output_dir = NULL,
       osd$definition$scale_info$code <- code
     }
     used <- c(used, code)
+    # Attach the online download URL of each source data file next to the scale's
+    # existing source_files list, so a reader of the .osd can jump to the data the
+    # scale was extracted from. Same file_url-then-repo_url rule as the dataset
+    # distribution. Parallel to source_files; omitted when no URL resolves.
+    src_files <- osd$definition$metacheck$source_files
+    if (!is.null(src_files) && length(src_files)) {
+      urls <- vapply(unlist(src_files, use.names = FALSE),
+                     function(fn) .psychds_source_url(fn, structure_df) %||% NA_character_,
+                     character(1))
+      urls <- urls[!is.na(urls) & nzchar(urls)]
+      if (length(urls))
+        osd$definition$metacheck$source_urls <- as.list(unname(urls))
+    }
     # Files live flat, next to each other: scales/<code>.osd (no per-scale
     # subfolder). Guard against over-long paths (OneDrive/Windows' ~260-char
     # limit); .safe_write_path shortens + warns.
     osd_path <- .safe_write_path(file.path(output_dir, "scales",
                                            paste0(code, ".osd")))
+    # Cross-reference to the instrument's Behaverse paradata file, when trial-
+    # level paradata for this instrument was (or will be) written. The join key is
+    # the canonical instrument id; the OSD points at ../paradata/<key>.json and the
+    # Behaverse Instrument.link points back here. Emitted as namespaced keys the
+    # OSD spec ignores (same mechanism as metacheck:reference_item).
+    key <- .bh_instrument_key(code)
+    if (key %in% paradata_keys) {
+      osd$definition$scale_info[["metacheck:behaverse_instrument_id"]] <- key
+      osd$definition$scale_info[["metacheck:paradata"]] <-
+        paste0("../paradata/", key, ".json")
+    }
+
     dir.create(dirname(osd_path), recursive = TRUE, showWarnings = FALSE)
     json <- jsonlite::toJSON(osd, auto_unbox = TRUE, pretty = TRUE, null = "null")
     writeLines(json, osd_path, useBytes = TRUE)
@@ -1241,7 +1371,10 @@ convert_psychds <- function(paper, output_dir = NULL,
   }
 
   .osd_write_readme_section(index, file.path(output_dir, "README.md"))
-  length(writeable)
+  # The canonical instrument keys of the scales written, so paradata linking uses
+  # exactly the same key set.
+  attr(used, "n_written") <- length(writeable)
+  used
 }
 
 # Append (or create) a "Psychometric scales" section to the dataset-root README,

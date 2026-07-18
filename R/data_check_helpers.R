@@ -49,11 +49,23 @@
   dll = "software", so = "software", dylib = "software",
   lua = "software", psyexp = "software", osexp = "software",
   spv = "output", fig = "output",
+  # A Qualtrics survey-definition file (.qsf) is the survey's own codebook: it
+  # carries every question's wording and its response options with coded values
+  # (see parse_qsf()). Classing it as "codebook" makes it download under the
+  # default `download = "data"` and routes it into codebook_check's parser.
+  qsf = "codebook",
   # Binary scientific-data containers that name-based rules miss (they would
   # otherwise fall through to "other"). These hold research data, not assets.
   npy = "data", npz = "data", h5 = "data", hdf5 = "data", hdf = "data",
   fif = "data", pkl = "data", pickle = "data", pk = "data",
-  ft = "data", feather = "data", parquet = "data", textgrid = "data"
+  ft = "data", feather = "data", parquet = "data", textgrid = "data",
+  # Trial-level behavioural-task data files. These are the raw per-participant
+  # logs of experiment software (Inquisit .iqdat, E-Prime .edat/.edat2), i.e.
+  # research data — without this they classify as "other" and are never fetched
+  # under the default `download = "data"`, so their paradata could not be read.
+  # E-Prime also exports plain .txt, which is too ambiguous for an extension rule
+  # and is detected from content instead (see .eprime_is_export()).
+  iqdat = "data", edat = "data", edat2 = "data"
 )
 
 #' Classify repository files into data_check semantic types
@@ -117,7 +129,7 @@ data_classify_files <- function(file_name) {
 # ── Data format (tabular vs raw) ─────────────────────────────────────────────
 
 .tabular_extensions <- c("csv", "tsv", "txt", "dat", "xlsx", "xls",
-                         "sav", "dta", "sas7bdat", "jasp")
+                         "sav", "dta", "sas7bdat", "jasp", "omv")
 .raw_extensions <- c(
   # EEG / physiological
   "edf", "bdf", "acq", "gdf", "rec", "cnt", "vhdr", "vmrk", "eeg", "mff",
@@ -857,8 +869,15 @@ data_study_roster <- function(paper) {
   }
   # Regex- or repo-derived groups are worth returning even when every LLM batch
   # failed; only give up when NO pass produced anything (no repo split, no path
-  # match, no LLM answer).
-  if (!any_ok && !any(fixed) && !multi_repo) return(NULL)
+  # match, no LLM answer) AND there was nothing to place to begin with.
+  #
+  # `!any(send)` is the "nothing needed grouping" case and must NOT be treated as
+  # failure: a repository of only assets (figures, photos, a PDF manual) has no
+  # placeable file, so no pass runs and no LLM call is made, yet every file
+  # already carries its correct default group of 'shared'. Returning NULL there
+  # threw away a complete, correct answer and made the caller believe grouping
+  # had failed.
+  if (!any_ok && !any(fixed) && !multi_repo && any(send)) return(NULL)
 
   # A DATA file must NEVER be 'shared' — data always belongs to a study. Fall any
   # still-'shared' data file back to a study: its own repo's study when the repo
@@ -934,6 +953,124 @@ data_study_roster <- function(paper) {
   bad <- !validUTF8(x)
   if (any(bad)) x[bad] <- iconv(x[bad], from = "latin1", to = "UTF-8")
   x
+}
+
+#' Peek at the first lines of a text file
+#'
+#' Reads the first `n` lines of a file as text, tolerating the encodings research
+#' data actually ships in: a UTF-8/UTF-16 BOM, UTF-16 (E-Prime exports), and
+#' Latin-1 bytes that would otherwise make `readLines()` output error in later
+#' string operations. Intended for cheap format sniffing — deciding *what* a file
+#' is before committing to a reader — not for reading data.
+#'
+#' Returns `character(0)` for a missing, empty or unreadable file rather than
+#' erroring, so a caller can treat "cannot peek" as "not my format".
+#'
+#' @param path path to a file.
+#' @param n maximum number of lines to read.
+#'
+#' @returns a character vector of at most `n` lines (UTF-8), or `character(0)`.
+#' @export
+#' @keywords internal
+#'
+#' @examples
+#' f <- tempfile(fileext = ".txt")
+#' writeLines(c("*** Header Start ***", "Experiment: naming"), f)
+#' text_peek(f, n = 2)
+text_peek <- function(path, n = 20L) {
+  if (length(path) != 1L || is.na(path) || !file.exists(path)) return(character(0))
+  if (isTRUE(file.info(path)$isdir)) return(character(0))
+  size <- file.info(path)$size
+  if (is.na(size) || size == 0) return(character(0))
+
+  # Read a bounded chunk rather than the whole file when only the first n lines
+  # are wanted (the sniffing case). `n = Inf` reads it all — callers that need
+  # every line (e.g. parsing a whole E-Prime export) must not be silently
+  # truncated. 64 KB covers any plausible 20-line header, doubled for UTF-16.
+  want <- if (is.finite(n)) min(size, 65536) else size
+  raw <- tryCatch(readBin(path, "raw", n = want), error = function(e) raw(0))
+  if (!length(raw)) return(character(0))
+
+  # UTF-16 (E-Prime writes it, with a BOM): every other byte of ASCII text is a
+  # NUL, which is the reliable tell. iconv converts; a failed conversion returns
+  # NA and falls through to the 8-bit path.
+  has_nul <- any(raw[seq_len(min(length(raw), 1000L))] == as.raw(0))
+  txt <- NA_character_
+  if (has_nul) {
+    for (enc in c("UTF-16", "UTF-16LE", "UTF-16BE")) {
+      t <- tryCatch(iconv(list(raw), from = enc, to = "UTF-8"),
+                    error = function(e) NA_character_)
+      if (length(t) == 1L && !is.na(t) && nzchar(t)) { txt <- t; break }
+    }
+  }
+  if (is.na(txt)) {
+    t <- tryCatch(rawToChar(raw), error = function(e) NA_character_)
+    if (!is.na(t)) txt <- t
+  }
+  if (is.na(txt)) return(character(0))
+
+  txt <- sub("^﻿", "", txt)                    # strip a BOM
+  lines <- strsplit(txt, "\r\n|\n|\r")[[1]]
+  utils::head(.utf8_lines(lines), n)
+}
+
+#' Classify a downloaded .txt file from its content
+#'
+#' A `.txt` extension says nothing about what a file holds: research repositories
+#' ship experiment data (E-Prime exports, Ibex/task logs), codebooks, and plain
+#' prose notes all as `.txt`. The name-based classifier
+#' ([data_classify_files()]) runs on remote file names *before* download, so it
+#' cannot tell these apart and settles on a conservative guess. Once the file is
+#' on disk, its content can. This is the same fetch-then-reclassify pattern the
+#' module already uses for zips.
+#'
+#' Returns the data_check type the content implies:
+#' - `"data"` for an E-Prime export (its fixed `*** Header Start ***` /
+#'   `LevelName:` header), or for a delimited table with a real header row;
+#' - `NA_character_` when the content is not recognised, meaning "keep whatever
+#'   the name-based classifier decided" — never a downgrade on a guess.
+#'
+#' The file is only read, never modified or removed: the download cache is
+#' persistent by design (see [repo_cache_dir()]), so classification decides how a
+#' file is *used*, not whether it survives.
+#'
+#' @param path path to a local `.txt` file.
+#'
+#' @returns a single data_check type, or `NA_character_` when undecided.
+#' @export
+#' @keywords internal
+txt_classify_content <- function(path) {
+  head_lines <- text_peek(path, n = 30L)
+  if (!length(head_lines)) return(NA_character_)
+
+  # E-Prime export: a fixed header block that no prose file carries.
+  if (any(grepl("^\\*\\*\\*\\s*Header Start", head_lines)) ||
+      (any(grepl("^(Experiment|Subject):", head_lines)) &&
+         any(grepl("^LevelName:", head_lines))))
+    return("data")
+
+  # A delimited table: a consistent delimiter across the first rows AND a header
+  # row. Requires >= 2 columns and >= 2 rows, so a prose file with the odd comma
+  # (or a one-line note) is not mistaken for data.
+  sep <- tryCatch(.sniff_delimiter(path), error = function(e) NA_character_)
+  if (!is.na(sep)) {
+    rows <- head_lines[nzchar(trimws(head_lines))]
+    rows <- rows[!startsWith(trimws(rows), "#")]
+    if (length(rows) >= 2) {
+      counts <- vapply(utils::head(rows, 5), function(l)
+        length(strsplit(l, sep, fixed = TRUE)[[1]]), integer(1))
+      consistent <- length(unique(counts)) == 1L && counts[[1]] >= 2L
+      if (consistent && isTRUE(tryCatch(.detect_header(path, sep),
+                                        error = function(e) FALSE)))
+        return("data")
+    }
+  }
+  # Space/whitespace-delimited data is deliberately NOT detected. It is rare in the
+  # corpus (essentially one study's bespoke logs) and irregular (a metadata line,
+  # then stimulus-filename rows, then numeric rows, with shifting column counts),
+  # so a space-delimiter rule adds false-positive risk for little coverage. Such
+  # files stay unclassified (NA) rather than being forced to "data".
+  NA_character_
 }
 
 .sniff_delimiter <- function(path) {
@@ -1180,6 +1317,12 @@ data_read_head <- function(path, n_rows = 5) {
         # data_check (and the CSV conversion in psychds-convert) treats it exactly
         # like a .sav. Both the old binary and modern SQLite formats are handled.
         df <- read_jasp(path)$data
+        if (is.data.frame(df) && is.finite(n_rows)) utils::head(df, n_rows) else df
+      },
+      omv = {
+        # A .omv (jamovi) is the JASP counterpart — read_omv() returns the same
+        # labelled data frame, so it is treated exactly like a .jasp / .sav.
+        df <- read_omv(path)$data
         if (is.data.frame(df) && is.finite(n_rows)) utils::head(df, n_rows) else df
       },
       rds = {
@@ -1693,20 +1836,129 @@ normalize_label <- function(x) {
   # Slug from the name when present, else the column prefix. Same value regardless
   # of provenance — the slug is a readable identifier, not a trust marker.
   code <- .osd_slug(name = scale, prefix = prefix)
+  # The UPSTREAM OpenScales code, when this scale has a reference definition.
+  # Kept separate from `code`: the slug names the file and stays readable and
+  # stable for every scale, while ref_code is a join key into scale_meta /
+  # scale_items and exists only for dictionary instruments.
+  ref_code <- .scale_ref_code(scale, dict)
 
   if (in_dict) {
-    list(code = code, source = "dictionary",
+    list(code = code, ref_code = ref_code, source = "dictionary",
          provenance = "Matched a known instrument in metacheck's scale dictionary (OpenScales-derived or curated).")
   } else if (identical(src, "self_generated")) {
-    list(code = code, source = "self_generated",
+    list(code = code, ref_code = NA_character_, source = "self_generated",
          provenance = "This label was GENERATED BY metacheck from the item wording. It is NOT a recognised named instrument, only metacheck's inference of what the items measure.")
   } else if (identical(src, "unnamed_block")) {
-    list(code = code, source = "unnamed_block",
+    list(code = code, ref_code = NA_character_, source = "unnamed_block",
          provenance = "A coherent block of same-prefix rating columns detected in the data, but NOT named: neither a known instrument nor a construct metacheck could infer from the available text. Recorded for its structure (items + response scale) only.")
   } else {
-    list(code = code, source = "manuscript",
+    list(code = code, ref_code = ref_code, source = "manuscript",
          provenance = "A named instrument identified from the manuscript text but not present in the OpenScales registry.")
   }
+}
+
+# ── Reference instrument lookup (OpenScales item-level data) ──────────────────
+# `scales` identifies an instrument by NAME; `scale_meta` / `scale_items` /
+# `scale_scoring` (see data-raw/scale_items.R) describe what that instrument
+# actually contains. These helpers join the two, so a scale detected in shared
+# data can be compared against the published original: how many items it should
+# have, which of them are reverse-keyed, and its reported reliability.
+#
+# The join path is scale NAME -> scales$code -> scale_meta$code. Only the ~200
+# dictionary rows carrying an OpenScales code can resolve; curated additions
+# (code == "") have no upstream definition and return NULL. That is a property
+# of the dictionary, not of the item data.
+#
+# Lazily loaded and cached: the datasets live in the package, but a module may
+# run against a partially-installed namespace, so every access is guarded.
+.scale_ref_data <- local({
+  cached <- NULL
+  function() {
+    if (!is.null(cached)) return(cached)
+    get_ds <- function(nm) {
+      d <- tryCatch(get(nm, envir = asNamespace("metacheck")), error = function(e) NULL)
+      if (is.null(d)) d <- tryCatch(get(nm), error = function(e) NULL)
+      d
+    }
+    cached <<- list(meta    = get_ds("scale_meta"),
+                    items   = get_ds("scale_items"),
+                    scoring = get_ds("scale_scoring"))
+    cached
+  }
+})
+
+# The OpenScales code for a scale NAME, or NA when the name is not a dictionary
+# instrument or the dictionary row carries no code (a curated addition).
+.scale_ref_code <- function(scale, dict) {
+  if (is.null(scale) || length(scale) != 1L || is.na(scale) || !nzchar(scale))
+    return(NA_character_)
+  i <- which(tolower(dict$name) == tolower(scale))
+  if (!length(i)) return(NA_character_)
+  code <- dict$code[i[1]]
+  if (is.na(code) || !nzchar(code)) return(NA_character_)
+  ref <- .scale_ref_data()$meta
+  if (is.null(ref) || !(code %in% ref$code)) return(NA_character_)
+  code
+}
+
+# Everything known upstream about instrument `code`: the registry record plus
+# its items and subscales. NULL when the code has no reference definition.
+.scale_reference <- function(code) {
+  if (is.null(code) || length(code) != 1L || is.na(code) || !nzchar(code))
+    return(NULL)
+  d <- .scale_ref_data()
+  if (is.null(d$meta) || is.null(d$items)) return(NULL)
+  m <- d$meta[d$meta$code == code, , drop = FALSE]
+  if (!nrow(m)) return(NULL)
+  items <- d$items[d$items$code == code, , drop = FALSE]
+  if (!nrow(items)) return(NULL)
+  scoring <- if (!is.null(d$scoring))
+    d$scoring[d$scoring$code == code, , drop = FALSE] else NULL
+  list(meta = m[1, , drop = FALSE], items = items, scoring = scoring)
+}
+
+# Normalised item wording for comparison: lowercase, punctuation and HTML
+# stripped, whitespace collapsed. Item text is copied between codebooks with
+# cosmetic drift ("I don't like crowds" / "I do not like crowds."), so an exact
+# string test under-matches badly.
+.item_text_key <- function(x) {
+  x <- gsub("<[^>]*>", " ", x %||% "")            # codebook labels carry markup
+  x <- tolower(x)
+  x <- gsub("n't\\b", " not", x)                  # don't -> do not
+  x <- gsub("[^a-z0-9]+", " ", x)
+  trimws(gsub("\\s+", " ", x))
+}
+
+# Match a detected block's item wording against a reference instrument.
+#
+# `wording` is a named character vector: column name -> codebook item text.
+# Returns one row per detected column with the reference item it matched (by
+# normalised wording) and that item's `reverse` flag, or NULL when the block has
+# no usable wording at all.
+#
+# DELIBERATELY exact-on-normalised-text, not fuzzy: a wrong item->item link
+# would attach a wrong reverse flag, which is worse than no flag. Columns that
+# do not match a reference item come back with reverse = NA (unknown), never
+# FALSE — absence of a match is not evidence the item is forward-keyed.
+.scale_match_items <- function(wording, reference) {
+  if (is.null(reference) || is.null(wording) || !length(wording)) return(NULL)
+  wording <- wording[!is.na(wording) & nzchar(wording)]
+  if (!length(wording)) return(NULL)
+
+  ref_key <- .item_text_key(reference$items$text)
+  # Ambiguous wording (the same text twice in one instrument) cannot identify an
+  # item, so it is dropped rather than guessed at.
+  dup <- duplicated(ref_key) | duplicated(ref_key, fromLast = TRUE)
+  ref_key[dup] <- NA_character_
+
+  i <- match(.item_text_key(wording), ref_key)
+  data.frame(
+    column_name  = names(wording),
+    ref_item_id  = reference$items$item_id[i],
+    ref_text     = reference$items$text[i],
+    ref_reverse  = reference$items$reverse[i],
+    ref_dimension = reference$items$dimension[i]
+  )
 }
 
 # ── Value labels / code lists + missing-value scheme (DDI ValueDomain) ─────────
@@ -2165,6 +2417,23 @@ parse_codebook <- function(path, header_lookahead = 5L) {
           res
         }
       },
+      omv = {
+        # A .omv (jamovi) carries its own variable/value labels too, exactly like
+        # a .jasp — read_omv() attaches the same haven-style attributes, so the
+        # shared .extract_haven_labels() extractor applies with no special-casing.
+        df <- tryCatch(read_omv(path)$data, error = function(e) NULL)
+        if (is.null(df)) NULL else {
+          res <- .extract_haven_labels(df, src)
+          if (!is.null(res)) attr(res, ".is_haven") <- TRUE
+          res
+        }
+      },
+      qsf = {
+        # A Qualtrics survey-definition file: parse_qsf() reads the question
+        # wording and response options straight from the survey object. It sets
+        # its own parse_method ("qsf"), preserved by the override below.
+        parse_qsf(path)
+      },
       docx = , pdf = , rtf = , odt = {
         text <- .extract_rich_text(path, ext)
         if (nchar(trimws(text)) < 10) NULL else strsplit(text, "\n")[[1]]
@@ -2178,14 +2447,177 @@ parse_codebook <- function(path, header_lookahead = 5L) {
   if (is.character(result) && !is.data.frame(result)) return(result)
 
   if (!is.null(result) && is.data.frame(result) && nrow(result) > 0) {
-    result$parse_method <- if (isTRUE(attr(result, ".is_haven"))) "haven"
-                           else "structured"
+    # A parser that already stamped its own method (e.g. parse_qsf → "qsf")
+    # keeps it; otherwise haven files are "haven" and the rest "structured".
+    if (!"parse_method" %in% names(result) ||
+        all(is.na(result$parse_method)))
+      result$parse_method <- if (isTRUE(attr(result, ".is_haven"))) "haven"
+                             else "structured"
     attr(result, ".is_haven") <- NULL
     return(result)
   }
 
   # No structured definitions: return raw lines so the caller can try the LLM.
   tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+}
+
+# ── Qualtrics survey-definition (.qsf) parsing ────────────────────────────────
+# A .qsf is JSON: one object with SurveyEntry (survey metadata) and
+# SurveyElements (an array of elements). The question elements have
+# Element == "SQ"; their Payload carries the wording and response options. The
+# exported data column name is the Payload's DataExportTag; matrix / multi-answer
+# questions expand into one column per Choice, named <DataExportTag>_<choiceKey>
+# (an explicit ChoiceDataExportTags overrides the suffix). We reconstruct those
+# names so the labels join data_check's columns, but the reconstruction is not
+# guaranteed to match every export version's headers (Qualtrics has inserted an
+# "x" into some matrix column names — see ropensci/qualtRics#144); a row that
+# finds no matching data column simply contributes no label. Everything here is
+# deterministic — no LLM, no network, jsonlite only.
+
+# Strip HTML tags / entities from Qualtrics display text to plain prose.
+.qsf_strip_html <- function(x) {
+  if (is.null(x) || length(x) == 0) return(NA_character_)
+  x <- as.character(x)[1]
+  if (is.na(x)) return(NA_character_)
+  x <- gsub("<[^>]+>", " ", x)          # tags
+  x <- gsub("&nbsp;", " ", x, fixed = TRUE)
+  x <- gsub("&amp;", "&", x, fixed = TRUE)
+  x <- gsub("&lt;", "<", x, fixed = TRUE)
+  x <- gsub("&gt;", ">", x, fixed = TRUE)
+  x <- gsub("[[:space:]]+", " ", x)     # collapse whitespace (incl. newlines)
+  x <- trimws(x)
+  if (nzchar(x)) x else NA_character_
+}
+
+# The display text of a Qualtrics Choices / Answers option object. Each option is
+# keyed by its code and holds a `Display` string (occasionally a nested list).
+.qsf_option_display <- function(opt) {
+  d <- opt$Display %||% opt$display %||% NULL
+  if (is.list(d)) d <- unlist(d, use.names = FALSE)[1]
+  .qsf_strip_html(d)
+}
+
+# Encode a Choices- or Answers-style option list (code -> option object) as the
+# same value-labels JSON haven uses ({"1":"Strongly disagree",...}), so it flows
+# through the identical codebook / OSD machinery.
+.qsf_value_labels <- function(opts) {
+  if (is.null(opts) || !length(opts)) return(NA_character_)
+  codes  <- names(opts)
+  labels <- vapply(opts, .qsf_option_display, character(1))
+  .encode_value_labels(codes, labels)
+}
+
+#' Parse a Qualtrics survey-definition file (.qsf) into codebook variables
+#'
+#' Reads the survey object's questions and returns one row per data column the
+#' export would produce, carrying the item wording and the coded response
+#' options — the same shape as the other `parse_codebook()` back-ends, so the
+#' rows join the codebook / scale pipeline unchanged. The `group` column holds
+#' each question's `DataExportTag` stem, a high-confidence scale-block signal.
+#'
+#' Column-name reconstruction: simple questions use the `DataExportTag`; matrix
+#' and multi-answer questions expand to `<DataExportTag>_<choiceCode>` (honouring
+#' `ChoiceDataExportTags` when present). For a matrix (Likert) question the
+#' `Choices` are the items (one column each) and the `Answers` are the shared
+#' response scale points (the value labels); for single/multiple choice the
+#' `Choices` are themselves the value labels.
+#'
+#' @param path path to a `.qsf` file
+#'
+#' @returns a data.frame of variable definitions (`codebook_variable`, `label`,
+#'   `codebook_source`, `group`, `value_labels`, `missing_values`, `question`,
+#'   `universe`, `parse_method`), or `NULL` when the file is not a parseable QSF
+#'   or yields no questions.
+#' @export
+#' @keywords internal
+parse_qsf <- function(path) {
+  if (!file.exists(path)) return(NULL)
+  src <- basename(path)
+  j <- tryCatch(
+    jsonlite::fromJSON(readChar(path, file.info(path)$size, useBytes = TRUE),
+                       simplifyVector = FALSE),
+    error = function(e) NULL)
+  if (is.null(j) || is.null(j$SurveyElements)) return(NULL)
+
+  sq <- Filter(function(e) identical(e$Element, "SQ"), j$SurveyElements)
+  if (!length(sq)) return(NULL)
+
+  rows <- list()
+  # `label` is the concise per-column wording (the matrix item, the choice), used
+  # for matching and OSD translations; `question` is the full question stem
+  # (shared across a matrix's items). For a simple question the two coincide.
+  # `scale_group` is the DataExportTag stem — the authoritative scale-block
+  # signal. It is deliberately NOT the `group` column: `group` means the
+  # experiment/study scope to match_column_labels, and the stem is not that.
+  add <- function(var, label, scale_group, value_labels = NA_character_,
+                  question = NULL) {
+    var <- trimws(as.character(var))
+    if (!nzchar(var)) return(invisible())
+    rows[[length(rows) + 1L]] <<- data.frame(
+      codebook_variable = var,
+      label             = label %||% NA_character_,
+      codebook_source   = src,
+      group             = NA_character_,
+      value_labels      = value_labels %||% NA_character_,
+      missing_values    = NA_character_,
+      question          = question %||% label %||% NA_character_,
+      universe          = NA_character_,
+      scale_group       = scale_group %||% NA_character_
+    )
+  }
+
+  for (e in sq) {
+    p <- e$Payload
+    if (is.null(p)) next
+    tag <- p$DataExportTag %||% p$QuestionID %||% NULL
+    if (is.null(tag) || !nzchar(trimws(as.character(tag)))) next
+    tag <- trimws(as.character(tag))
+    qtext <- .qsf_strip_html(p$QuestionText)
+    qtype <- as.character(p$QuestionType %||% "")
+    selector <- as.character(p$Selector %||% "")
+    choices <- p$Choices
+    answers <- p$Answers
+    # Per-choice export tags override the numeric suffix when present.
+    ctags <- p$ChoiceDataExportTags
+    suffix_of <- function(code) {
+      if (is.list(ctags) && !is.null(ctags[[code]]) &&
+          nzchar(trimws(as.character(ctags[[code]]))))
+        trimws(as.character(ctags[[code]])) else code
+    }
+
+    is_matrix <- grepl("matrix", qtype, ignore.case = TRUE)
+    is_multi  <- grepl("MAVR|MACOL|MSB", selector, ignore.case = TRUE)
+
+    if (is_matrix && !is.null(choices) && length(choices)) {
+      # One column per item (Choice); shared response labels come from Answers.
+      # label = the item statement; question = the shared stem.
+      vl <- .qsf_value_labels(answers)
+      for (code in names(choices)) {
+        stmt <- .qsf_option_display(choices[[code]])
+        add(paste0(tag, "_", suffix_of(code)), stmt %||% qtext, tag, vl,
+            question = qtext)
+      }
+    } else if (is_multi && !is.null(choices) && length(choices)) {
+      # Check-all-that-apply: one binary column per selectable choice.
+      # label = the choice; question = the shared stem.
+      for (code in names(choices)) {
+        opt <- .qsf_option_display(choices[[code]])
+        add(paste0(tag, "_", suffix_of(code)), opt %||% qtext, tag,
+            question = qtext)
+      }
+    } else if (!is.null(choices) && length(choices)) {
+      # Single-answer choice question: one column, Choices are the value labels.
+      add(tag, qtext, tag, .qsf_value_labels(choices))
+    } else {
+      # Text entry / other: wording only, no coded options.
+      add(tag, qtext, tag)
+    }
+  }
+
+  if (!length(rows)) return(NULL)
+  out <- dplyr::bind_rows(rows)
+  out$parse_method <- "qsf"
+  out
 }
 
 # Map free-text experiment context strings to canonical group codes, e.g.
@@ -2246,7 +2678,8 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
       value_labels      = NA_character_,
       missing_values    = NA_character_,
       question          = NA_character_,
-      universe          = NA_character_
+      universe          = NA_character_,
+      scale_group       = NA_character_
     )
   }
 
@@ -2286,6 +2719,8 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   status_out <- rep("unlabelled", n)
   # DDI-derived per-variable properties carried from the matched codebook rows.
   vl_out <- mv_out <- q_out <- univ_out <- rep(NA_character_, n)
+  # QSF scale-block stem (parse_qsf's scale_group), carried onto the data column.
+  sg_out <- rep(NA_character_, n)
   # First non-NA value of a codebook column across the applicable matches (used
   # to carry value_labels/missing_values/question/universe onto the data column).
   first_present <- function(rows, col)
@@ -2355,6 +2790,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     mv_out[i]   <- first_present(applicable, "missing_values")
     q_out[i]    <- first_present(applicable, "question")
     univ_out[i] <- first_present(applicable, "universe")
+    sg_out[i]   <- first_present(applicable, "scale_group")
   }
 
   label_method_out[status_out == "labelled" & is.na(label_method_out)] <- "rules"
@@ -2372,7 +2808,8 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     value_labels      = vl_out,
     missing_values    = mv_out,
     question          = q_out,
-    universe          = univ_out
+    universe          = univ_out,
+    scale_group       = sg_out
   )
 }
 
@@ -3859,10 +4296,79 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
   df
 }
 
+# ── Trial-level (paradata) source-format detection ────────────────────────────
+# Several data formats record per-trial PARADATA (response times, trial/stimulus
+# indices) alongside each response. Detected here so codebook_check can route that
+# paradata to a Behaverse `trial` document (see R/behaverse-convert.R) instead of
+# mislabelling it as psychometric scales. Each detector keys on the reserved
+# column vocabulary that identifies its format, mirroring data_check_is_qualtrics.
+
+#' Detect trial-level behavioural-data source formats
+#'
+#' Each function reports whether a data frame is an export from a particular
+#' trial-level format, from its reserved column names. Used by codebook_check to
+#' recognise paradata (response times, trial/stimulus channels) and normalise it
+#' to the Behaverse `trial` schema rather than treating it as scale items.
+#'
+#' - `data_check_is_behaverse()` — native Behaverse tidy long form (an
+#'   `instrument_id` column plus Response channels such as `response_numeric`,
+#'   `response_time`, `trial_index`).
+#' - `data_check_is_inquisit()` — Millisecond Inquisit `.iqdat` (`subject`,
+#'   `blockcode`, `trialcode`, `latency`).
+#' - `data_check_is_jspsych()` — jsPsych (`trial_type`, `rt`, and `trial_index`
+#'   or `time_elapsed`).
+#'
+#' E-Prime is detected from file text, not a data frame (see
+#' `.bh_parse_eprime()`), because its export is a header + `Level: 3` frames
+#' rather than a flat table.
+#'
+#' @param df a data.frame (a read tabular file)
+#'
+#' @returns `TRUE` when `df` matches the format, else `FALSE`.
+#' @export
+#' @keywords internal
+data_check_is_behaverse <- function(df) {
+  if (is.null(df) || ncol(df) == 0) return(FALSE)
+  nm <- names(df)
+  has <- function(x) x %in% nm
+  # instrument_id plus at least one Behaverse Response channel, OR the wide-pivot
+  # channel suffix (<item>_response_numeric_i1) that a wide Behaverse export uses.
+  channels <- c("response_numeric", "response_time", "response_validation_time",
+                "trial_index", "response_option_index", "stimulus_type")
+  if (has("instrument_id") && any(vapply(channels, has, logical(1))))
+    return(TRUE)
+  any(grepl("_response_numeric_i[0-9]+$", nm)) &&
+    any(grepl("_(response_time|trial_index)_i[0-9]+$", nm))
+}
+
+#' @rdname data_check_is_behaverse
+#' @export
+#' @keywords internal
+data_check_is_inquisit <- function(df) {
+  if (is.null(df) || ncol(df) == 0) return(FALSE)
+  nm <- tolower(names(df))
+  # Inquisit's fixed per-trial columns co-occur essentially only in .iqdat files.
+  sum(c("subject", "blockcode", "trialcode", "latency") %in% nm) >= 3L
+}
+
+#' @rdname data_check_is_behaverse
+#' @export
+#' @keywords internal
+data_check_is_jspsych <- function(df) {
+  if (is.null(df) || ncol(df) == 0) return(FALSE)
+  nm <- names(df)
+  "trial_type" %in% nm && "rt" %in% nm &&
+    any(c("trial_index", "time_elapsed", "internal_node_id") %in% nm)
+}
+
 # ── Likert scale-block detection ──────────────────────────────────────────────
 # Shared by data_validate (careless responding) and codebook_check (LLM scale
 # identification). A "scale block" is a run of adjacent Likert-type columns that
 # share a variable-name prefix, i.e. one psychometric scale (PANAS_1..10).
+#
+# See also "Task column detection" below, which is the behavioural-task
+# counterpart: tasks do not produce Likert blocks, so they are invisible here
+# and need their own detector.
 
 # Minimum items for a block to count as a scale. Set to 3 to catch genuine short
 # scales (e.g. 3-item subscales) at the cost of a few more noisy small fragments;
@@ -3892,6 +4398,167 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
   u <- unique(x)
   length(u) >= 3 && length(u) <= 11 &&
     diff(range(u)) <= 12 && min(u) >= -5 && max(u) <= 100
+}
+
+# ── Task column detection (reaction time / accuracy) ──────────────────────────
+# A behavioural task does not produce a Likert block, so `.detect_scale_blocks`
+# cannot see one: task data is either one row per TRIAL (subject, trial,
+# condition, rt, correct) or one aggregated column per condition
+# (stroop_rt_congruent). These helpers detect the two column kinds a task
+# almost always yields, so codebook_check can recognise a task in the data the
+# way it recognises a scale.
+#
+# The detection is deliberately name-AND-value based. A name alone is too weak
+# ("correct" could be anything) and values alone are too weak (any positive
+# continuous column resembles an RT). Both must agree.
+
+# Name patterns. `\brt\b` needs the word boundary: "start", "sort" and "party"
+# all contain "rt" as a substring.
+.RT_NAME_RE  <- "(^|[^a-z])(rt|reaction[._ -]?time|response[._ -]?time|latency|resp[._ -]?time)([^a-z]|$)"
+.ACC_NAME_RE <- "(^|[^a-z])(acc|accuracy|correct|iscorrect|is[._ -]?correct|error|errors|hit|hits|miss|misses)([^a-z]|$)"
+
+# Does a column look like a REACTION TIME by its values?
+# Positive, continuous-ish, right-skewed and wide — the inverse of the Likert
+# signature in `.is_likert_item`. Deliberately does not test skew directly: a
+# small trial count makes skew unstable, whereas "many distinct positive values
+# over a wide range" is robust.
+.looks_like_rt <- function(x) {
+  if (!is.numeric(x)) {
+    xn <- suppressWarnings(as.numeric(as.character(x)))
+    if (length(xn) == 0 || mean(is.na(xn)) > 0.2) return(FALSE)
+    x <- xn
+  }
+  x <- x[!is.na(x) & is.finite(x)]
+  if (length(x) < 10) return(FALSE)
+  if (any(x < 0)) return(FALSE)                 # RTs are never negative
+  u <- unique(x)
+  # Many distinct values, and a spread no rating scale reaches. Accepts both
+  # milliseconds (200-3000) and seconds (0.2-3.0), hence the two-armed test.
+  if (length(u) < 10) return(FALSE)
+  rng <- diff(range(x))
+  frac_distinct <- length(u) / length(x)
+  (rng > 12 && stats::median(x) > 20) ||        # ms-like
+    (any(x != round(x)) && rng > 0.05 && stats::median(x) < 60)  # s-like
+}
+
+# Does a column look like ACCURACY by its values?
+# Either binary correctness (0/1, TRUE/FALSE) or a proportion in [0, 1].
+.looks_like_accuracy <- function(x) {
+  if (is.logical(x)) return(sum(!is.na(x)) >= 10)
+  if (!is.numeric(x)) {
+    xn <- suppressWarnings(as.numeric(as.character(x)))
+    if (length(xn) == 0 || mean(is.na(xn)) > 0.2) return(FALSE)
+    x <- xn
+  }
+  x <- x[!is.na(x) & is.finite(x)]
+  if (length(x) < 10) return(FALSE)
+  u <- unique(x)
+  if (all(u %in% c(0, 1))) return(TRUE)                       # binary correct
+  all(x >= 0 & x <= 1) && length(u) > 2                       # proportion
+}
+
+# Classify every column of `df` as an RT / accuracy / condition column, or not a
+# task column at all. Returns a data.frame with one row per column:
+#   column_name, kind ("rt" | "accuracy" | "condition" | ""), by_name, by_value
+#
+# `kind` is only set when the NAME and the VALUES agree, except for `condition`,
+# which is name-and-shape based (a low-cardinality non-numeric column whose name
+# says condition/block/trial_type).
+.detect_task_columns <- function(df) {
+  empty <- data.frame(column_name = character(0), kind = character(0),
+                      by_name = logical(0), by_value = logical(0))
+  if (is.null(df) || !is.data.frame(df) || ncol(df) == 0) return(empty)
+  nm  <- names(df)
+  key <- tolower(nm)
+
+  rt_name  <- grepl(.RT_NAME_RE,  key, perl = TRUE)
+  acc_name <- grepl(.ACC_NAME_RE, key, perl = TRUE)
+  rt_val   <- vapply(df, .looks_like_rt,       logical(1))
+  acc_val  <- vapply(df, .looks_like_accuracy, logical(1))
+
+  # A condition column: named like one, few distinct values, many rows.
+  cond_name <- grepl("(^|[^a-z])(condition|cond|block|trial[._ -]?type|congruen\\w*|stimulus[._ -]?type)([^a-z]|$)",
+                     key, perl = TRUE)
+  cond_shape <- vapply(df, function(x) {
+    v <- x[!is.na(x)]
+    length(v) >= 10 && length(unique(v)) >= 2 && length(unique(v)) <= 8
+  }, logical(1))
+
+  kind <- rep("", length(nm))
+  # Order matters: accuracy is tested first because an `acc` column of 0/1 also
+  # passes no RT test, but an `rt` column of small seconds could look like a
+  # proportion. Requiring the NAME to agree keeps the two apart.
+  kind[acc_name & acc_val]  <- "accuracy"
+  kind[rt_name  & rt_val]   <- "rt"
+  kind[cond_name & cond_shape & kind == ""] <- "condition"
+
+  data.frame(column_name = nm, kind = kind,
+             by_name  = rt_name | acc_name | cond_name,
+             by_value = rt_val | acc_val)[kind != "", , drop = FALSE]
+}
+
+# Is a column a plausible per-trial ACCURACY item — one column per trial, scored
+# right/wrong? The task analogue of `.is_likert_item`, and deliberately its
+# complement: `.is_likert_item` requires >= 3 distinct values, so a binary
+# column fails it and a block of them is invisible to `.detect_scale_blocks`.
+# That is the gap this closes: `raven_1..18` or `iat_1..20` scored 0/1 is a real
+# item battery that the scale detector cannot see.
+#
+# Binary only (0/1, TRUE/FALSE). A 2-level column that is not 0/1 (e.g. 1/2
+# coding, or "left"/"right") is NOT accepted: it is as likely to be a group
+# variable, and mistaking a condition for an accuracy item would be worse than
+# missing it.
+.is_accuracy_item <- function(x) {
+  if (is.logical(x)) return(sum(!is.na(x)) >= 10)
+  if (!is.numeric(x)) {
+    xn <- suppressWarnings(as.numeric(as.character(x)))
+    if (length(xn) == 0 || mean(is.na(xn)) > 0.2) return(FALSE)
+    x <- xn
+  }
+  x <- x[!is.na(x)]
+  if (length(x) < 10) return(FALSE)
+  u <- sort(unique(x))
+  identical(as.numeric(u), c(0, 1))
+}
+
+# Detect ACCURACY BLOCKS: maximal runs of adjacent binary columns sharing a name
+# prefix (raven_1..18, iat_1..20). Mirrors `.detect_scale_blocks` exactly —
+# same contiguity assumption, same prefix rule, same minimum size — but keyed on
+# `.is_accuracy_item` instead of `.is_likert_item`.
+#
+# A minimum of `.task_acc_min_items` (8) applies rather than `.scale_min_items`
+# (3), because binary columns are common in survey data for reasons that have
+# nothing to do with tasks: three adjacent yes/no demographics would otherwise
+# be read as a 3-item accuracy battery. A real trial-level battery is long.
+.task_acc_min_items <- 8L
+
+.detect_accuracy_blocks <- function(df, min_items = .task_acc_min_items) {
+  if (is.null(df) || !is.data.frame(df) || ncol(df) == 0) return(list())
+  ok <- vapply(df, .is_accuracy_item, logical(1))
+  nm <- names(df)
+  blocks <- list(); start <- NA_integer_; cur_pre <- NA_character_
+  flush <- function(endi) {
+    if (!is.na(start) && (endi - start + 1L) >= min_items)
+      blocks[[length(blocks) + 1L]] <<- seq.int(start, endi)
+    start <<- NA_integer_; cur_pre <<- NA_character_
+  }
+  for (i in seq_along(nm)) {
+    if (!ok[[i]]) { flush(i - 1L); next }
+    pre <- .scale_name_prefix(nm[[i]])
+    if (is.na(start)) { start <- i; cur_pre <- pre; next }
+    if (!identical(pre, cur_pre)) { flush(i - 1L); start <- i; cur_pre <- pre }
+  }
+  flush(length(nm))
+  blocks
+}
+
+# Does `df` look like task data at all? TRUE when it has an RT or accuracy
+# column, or an accuracy block. Used to decide whether to run the task matcher
+# on a file.
+.is_task_data <- function(df) {
+  tc <- .detect_task_columns(df)
+  if (any(tc$kind %in% c("rt", "accuracy"))) return(TRUE)
+  length(.detect_accuracy_blocks(df)) > 0
 }
 
 # Variable-name prefix: strip a trailing item number (bfi_1 -> bfi, RSE10 -> rse)

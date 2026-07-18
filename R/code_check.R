@@ -68,10 +68,14 @@ code_lang <- function(file_name) {
   if (grepl("\\.(do|ado)$", lname)) {
     return("Stata")
   }
-  # A .jasp bundles a dataset with its analyses. It is a binary (zip) archive,
-  # so none of the text-based checks below apply; it is listed, not analysed.
+  # A .jasp / .omv bundles a dataset with its analyses. It is a binary (zip)
+  # archive, so none of the text-based checks below apply; it is listed, not
+  # analysed. (read_jasp()/read_omv() recover the analysis syntax separately.)
   if (grepl("\\.jasp$", lname)) {
     return("JASP")
+  }
+  if (grepl("\\.omv$", lname)) {
+    return("jamovi")
   }
   return(NA_character_)
 }
