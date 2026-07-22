@@ -127,6 +127,69 @@ zip_peek <- function(url, tail_bytes = 131072) {
   NULL
 }
 
+# ── Archive-format classification ────────────────────────────────────────────
+# Which archive/compression formats metacheck can OPEN with base R alone:
+#   * zip            → utils::unzip                (also peekable without download)
+#   * tar family     → utils::untar                (.tar[.gz|.bz2|.xz], .tgz, ...)
+#   * single-file gz → gz/bz2/xz connection        (one compressed file, no index)
+# Everything else archive-shaped (.7z, .rar, .cab, .arj, .lzma, ...) needs an
+# external binary or the libarchive-backed `archive` package, which metacheck
+# does NOT depend on — those are left as `other` (never fetched) and repo_check
+# warns the author to re-upload as .zip. `untar` FAILS on a bare .gz that is not
+# a tarball ("Missing type keyword"), so single-file compressions are a distinct
+# class handled by connection, not by untar.
+.is_zip <- function(name)
+  grepl("[.]zip$", name, ignore.case = TRUE)
+.is_tar_archive <- function(name)
+  grepl("[.](tar|tar[.]gz|tgz|tar[.]bz2|tbz2?|tar[.]xz|txz)$", name,
+        ignore.case = TRUE)
+# Bare single-file compressions (NOT .tar.*): one file inside, classified by the
+# name with the compression suffix stripped (results.csv.gz → results.csv).
+.is_single_compress <- function(name)
+  grepl("[.](gz|bz2|xz)$", name, ignore.case = TRUE) & !.is_tar_archive(name)
+# Archives base R can read (and therefore worth downloading despite `other`).
+.is_readable_archive <- function(name)
+  .is_zip(name) | .is_tar_archive(name) | .is_single_compress(name)
+
+# Shared back end for the three .expand_* functions. Called AFTER extraction: it
+# walks what is actually on disk under `dest` (rather than trusting the archive's
+# listed member names, which tar may rewrite — stripping drive letters or leading
+# "/"/"./" — so listed paths need not match the extracted ones), classifies each
+# file, keeps only data/codebook/readme content (never skip_types), and builds
+# rows inheriting `archive_row`'s repo/paper/group fields. `label` prefixes
+# file_path for provenance (the container name). Returns a 0-row frame when
+# nothing worth keeping is inside — which is how an archive of only assets ends
+# up contributing nothing, exactly as if it had not been downloaded.
+.archive_rows <- function(dest, archive_row, label, skip_types) {
+  empty <- archive_row[0, , drop = FALSE]
+  if (!dir.exists(dest)) return(empty)
+
+  # Paths relative to the extraction root (no full.names → no prefix to strip,
+  # so no fragile path-regex). loc is rebuilt with file.path for the real files.
+  rel <- list.files(dest, recursive = TRUE, all.files = TRUE)
+  rel <- rel[!grepl("(^|/)__MACOSX/", rel)]           # drop mac resource forks
+  if (length(rel) == 0) return(empty)
+  loc <- file.path(dest, rel)
+
+  types <- data_classify_files(basename(loc))
+  fmt   <- data_format(tolower(tools::file_ext(loc)))
+  keep  <- types %in% c("data", "codebook", "readme") & !(types %in% skip_types)
+  if (!any(keep)) return(empty)
+
+  loc <- loc[keep]; rel <- rel[keep]; types <- types[keep]; fmt <- fmt[keep]
+
+  rows <- archive_row[rep(1, length(loc)), , drop = FALSE]
+  rows$file_name     <- basename(loc)
+  rows$file_path     <- file.path(label, rel)   # inner path, prefixed for context
+  rows$file_location <- loc
+  rows$file_size     <- suppressWarnings(file.size(loc))
+  if ("data_type" %in% names(rows))   rows$data_type   <- types
+  if ("data_format" %in% names(rows)) rows$data_format <- fmt
+  # Inner files came from a local extraction, not a remote URL of their own.
+  if ("file_url" %in% names(rows))    rows$file_url    <- NA_character_
+  rows
+}
+
 # Expand a downloaded zip and return rows for its DATA-type inner files, ready to
 # bind into data_check's `all_files`. The zip is extracted once to a cache dir
 # beside the zip; each inner file is classified, and only files whose type is
@@ -149,36 +212,62 @@ zip_peek <- function(url, tail_bytes = 131072) {
     tryCatch(utils::unzip(zip_path, exdir = dest),
              error = function(e) NULL)
 
-  inner <- entries$Name
-  inner <- inner[!grepl("/$", inner)]                 # drop directory entries
-  inner <- inner[!grepl("(^|/)__MACOSX/", inner)]     # drop mac resource forks
-  if (length(inner) == 0) return(empty)
+  .archive_rows(dest, zip_row, basename(zip_path), skip_types)
+}
 
-  types  <- data_classify_files(basename(inner))
-  fmt    <- data_format(tolower(tools::file_ext(inner)))
-  # Keep only genuinely archivable data/codebook/readme content; never keep
-  # skip_types (e.g. asset) inner files.
-  keep <- types %in% c("data", "codebook", "readme") & !(types %in% skip_types)
-  if (!any(keep)) return(empty)
+# Expand a downloaded tar-family archive (.tar / .tar.gz / .tgz / .tar.bz2 /
+# .tar.xz / ...). Mirror of .expand_zip using base R's utils::untar (no extra
+# dependency). Peeking is impossible for tar (no tail index), so the caller must
+# have downloaded it first; the size caps still bound what gets fetched. A tar we
+# cannot read (corrupt, or an unusual variant) degrades to a 0-row frame rather
+# than erroring the run.
+.expand_tar <- function(tar_path, tar_row, skip_types = "asset") {
+  empty <- tar_row[0, , drop = FALSE]
+  if (is.null(tar_path) || is.na(tar_path) || !file.exists(tar_path)) return(empty)
 
-  inner <- inner[keep]; types <- types[keep]; fmt <- fmt[keep]
-  loc <- file.path(dest, inner)
-  ok  <- file.exists(loc)
-  inner <- inner[ok]; types <- types[ok]; fmt <- fmt[ok]; loc <- loc[ok]
-  if (length(inner) == 0) return(empty)
+  dest <- paste0(tar_path, ".contents")
+  entries <- tryCatch(utils::untar(tar_path, list = TRUE), error = function(e) NULL,
+                      warning = function(w) NULL)
+  if (is.null(entries) || length(entries) == 0) return(empty)
+  if (!dir.exists(dest))
+    tryCatch(utils::untar(tar_path, exdir = dest),
+             error = function(e) NULL, warning = function(w) NULL)
 
-  # Build rows inheriting the zip's repo/paper/group, with the inner path.
-  rows <- zip_row[rep(1, length(inner)), , drop = FALSE]
-  rows$file_name     <- basename(inner)
-  # Record the inner path within the zip, prefixed with the zip name for context.
-  rows$file_path     <- file.path(paste0(basename(zip_path)), inner)
-  rows$file_location <- loc
-  rows$file_size     <- suppressWarnings(file.size(loc))
-  if ("data_type" %in% names(rows))   rows$data_type   <- types
-  if ("data_format" %in% names(rows)) rows$data_format <- fmt
-  # These inner files came from a local extraction, not a remote URL of their own.
-  if ("file_url" %in% names(rows))    rows$file_url    <- NA_character_
-  rows
+  .archive_rows(dest, tar_row, basename(tar_path), skip_types)
+}
+
+# Expand a downloaded single-file compression (.gz / .bz2 / .xz that is NOT a
+# .tar.*). These wrap exactly ONE file; there is no listing, so we decompress the
+# stream to the name with the compression suffix stripped (results.csv.gz →
+# results.csv) and classify that one file. Uses base R connections only.
+.expand_compressed <- function(gz_path, gz_row, skip_types = "asset") {
+  empty <- gz_row[0, , drop = FALSE]
+  if (is.null(gz_path) || is.na(gz_path) || !file.exists(gz_path)) return(empty)
+
+  ext <- tolower(tools::file_ext(gz_path))
+  open_con <- switch(ext,
+    gz  = gzfile, bz2 = bzfile, xz = xzfile, NULL)
+  if (is.null(open_con)) return(empty)
+
+  dest <- paste0(gz_path, ".contents")
+  inner_name <- sub("[.](gz|bz2|xz)$", "", basename(gz_path), ignore.case = TRUE)
+  out <- file.path(dest, inner_name)
+  if (!file.exists(out)) {
+    ok <- tryCatch({
+      if (!dir.exists(dest)) dir.create(dest, recursive = TRUE, showWarnings = FALSE)
+      con <- open_con(gz_path, "rb"); on.exit(close(con), add = TRUE)
+      oc  <- file(out, "wb"); on.exit(close(oc), add = TRUE)
+      repeat {
+        chunk <- readBin(con, "raw", n = 1048576L)
+        if (length(chunk) == 0) break
+        writeBin(chunk, oc)
+      }
+      TRUE
+    }, error = function(e) FALSE, warning = function(w) FALSE)
+    if (!isTRUE(ok)) return(empty)
+  }
+
+  .archive_rows(dest, gz_row, basename(gz_path), skip_types)
 }
 
 #' Decide whether a remote ZIP is worth downloading for a data archive

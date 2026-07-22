@@ -672,12 +672,44 @@ osf_file_download <- function(osf_id,
     suppressWarnings(as.numeric(val))
   }
 
-  .osf_download_zip <- function(zip_url, zip_path) {
-    resp <- .batch_query(zip_url, msg = NULL, req_func = .osf_headers)[[1]]
-    if (inherits(resp, "error") || httr2::resp_status(resp) != 200) {
+  .osf_download_zip <- function(zip_url, zip_path, zip_size = NA_real_,
+                                timeout_s = 1800) {
+    # TEMP verbose diagnostics (remove later): OSF's Waterbutler GENERATES the zip
+    # on the fly for a whole-repo request, which for a big repo (thousands of
+    # files) can take minutes before a single byte streams — so a silent buffered
+    # read looks hung and hits the curl timeout. We stream straight to disk with a
+    # progress bar and a generous timeout, and print each stage so a slow/failed
+    # download is visible instead of mysterious.
+    t0 <- Sys.time()
+    sz <- if (is.finite(zip_size)) sprintf("%.1f MB", zip_size / (1024^2)) else "unknown size"
+    message(sprintf("[zip] requesting archive: %s (%s)", zip_url, sz))
+    message("[zip] OSF builds the archive server-side first; for a large repo ",
+            "this can take several minutes before download starts. Streaming to:")
+    message("[zip]   ", zip_path)
+
+    req <- httr2::request(zip_url) |>
+      .osf_headers() |>
+      httr2::req_timeout(timeout_s) |>
+      httr2::req_progress(type = "down")
+
+    resp <- tryCatch(
+      httr2::req_perform(req, path = zip_path),   # STREAM to disk, not memory
+      error = function(e) e)
+
+    elapsed <- round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
+    if (inherits(resp, "error")) {
+      message(sprintf("[zip] FAILED after %ss: %s", elapsed, conditionMessage(resp)))
       stop(sprintf("OSF zip download failed for %s", zip_url), call. = FALSE)
     }
-    writeBin(httr2::resp_body_raw(resp), zip_path)
+    if (httr2::resp_status(resp) != 200) {
+      message(sprintf("[zip] FAILED after %ss: HTTP %s", elapsed,
+                      httr2::resp_status(resp)))
+      stop(sprintf("OSF zip download failed for %s (HTTP %s)",
+                   zip_url, httr2::resp_status(resp)), call. = FALSE)
+    }
+    got <- if (file.exists(zip_path)) file.info(zip_path)$size else 0
+    message(sprintf("[zip] downloaded %.1f MB in %ss -> %s",
+                    got / (1024^2), elapsed, basename(zip_path)))
     invisible(zip_path)
   }
 
@@ -780,7 +812,12 @@ osf_file_download <- function(osf_id,
     files_to_copy <- .osf_copy_files(files, temppath, download_to)
   } else if (sum(files$kind == "file") > 0 && identical(mode, "zip")) {
     zip_url <- .osf_zip_url(osf_id)
+    message("[zip] ", osf_id, ": requesting archive size (HEAD) ...")
     zip_size <- .osf_zip_content_length(zip_url)
+    message(sprintf("[zip] %s: %d file(s), archive size %s",
+      osf_id, sum(files$kind == "file"),
+      if (is.finite(zip_size)) sprintf("%.1f MB", zip_size / mb) else
+        "not reported by server (will stream blind)"))
     files <- .osf_prepare_save_paths(files, contents, osf_id,
                                      max_folder_length,
                                      ignore_folder_structure)
@@ -800,17 +837,22 @@ osf_file_download <- function(osf_id,
       sprintf("Downloading zip archive for %s", osf_id) |>
         list(what = _) |>
         pb$tick(0, tokens = _)
-      .osf_download_zip(zip_url, zip_path)
+      .osf_download_zip(zip_url, zip_path, zip_size = zip_size)
 
       if (isTRUE(unzip)) {
         unzip_dir <- tempfile(pattern = "osf-zip-")
         dir.create(unzip_dir)
         on.exit(unlink(unzip_dir, recursive = TRUE), add = TRUE)
+        message("[zip] unzipping ", basename(zip_path), " ...")
         "Unzipping archive" |>
           list(what = _) |>
           pb$tick(0, tokens = _)
         utils::unzip(zip_path, exdir = unzip_dir)
+        nf <- length(list.files(unzip_dir, recursive = TRUE))
+        message(sprintf("[zip] unzipped %d file(s); relocating into place ...", nf))
         files_to_copy <- .osf_relocate_unzipped(files, unzip_dir, download_to)
+        message(sprintf("[zip] relocated %d file(s) to %s",
+                        length(files_to_copy), basename(download_to)))
         unlink(zip_path)
       }
     }

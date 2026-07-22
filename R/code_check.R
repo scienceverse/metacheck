@@ -230,6 +230,57 @@ code_abs_path <- function(code_text) {
 }
 
 
+#' Find setwd() calls in code
+#'
+#' A `setwd()` call in analysis code is a portability problem: it hardcodes an
+#' assumption about the working directory the code runs in (frequently an
+#' absolute path on the author's own machine), mutates global state, and makes a
+#' script depend on being run from a particular place. Best practice is to keep
+#' the working directory as the caller sets it and use relative paths. This scans
+#' the (comment-free) code for `setwd(...)` calls and returns one row per call,
+#' with the argument as written. R-only (the construct is R's; other languages
+#' have their own, e.g. Stata `cd`, which this does not scan).
+#'
+#' @param code_text the code text for a single file (character vector), ideally
+#'   comment-free (as produced by [code_remove_comments()])
+#'
+#' @returns a data frame with columns `setwd_call` (the `setwd(...)` text as
+#'   written) and `line` (its line number). Empty frame when none are found.
+#' @export
+#'
+#' @examples
+#' code_text <- c(
+#'   "setwd('D:/Dropbox/project')",
+#'   "x <- read.csv('data.csv')"
+#' )
+#' code_setwd(code_text)
+code_setwd <- function(code_text) {
+  text_id <- NULL # fix cmd check note
+  # A setwd( call: the token at a call position, capturing to the LAST closing
+  # paren on the line (greedy `.*`), so a nested argument like setwd(getwd()) or
+  # setwd(dirname(path)) is shown in full. A setwd argument spanning lines is
+  # rare and left to the simple line scan. Matched on the whole line so the
+  # report can show the call as written.
+  setwd_pattern <- "setwd\\s*\\(.*\\)"
+
+  code_lines <- dplyr::tibble(
+    text = strsplit(code_text, "\n+") |> unlist()
+  )
+  code_lines$text_id <- seq_along(code_lines$text)
+
+  setwd_matches <- search_text(
+    code_lines,
+    setwd_pattern,
+    perl = TRUE,
+    return = "match"
+  )
+  if (nrow(setwd_matches) == 0)
+    return(data.frame(setwd_call = character(0), line = integer(0)))
+
+  dplyr::select(setwd_matches, setwd_call = text, line = text_id)
+}
+
+
 #' Remove comments from code text
 #'
 #' @param code_text the code text for a single file
@@ -370,6 +421,149 @@ code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
   lines <- search_text(df, lang_import_regex[[lang]], perl = TRUE)[, c("code", "line")]
 
   return(lines)
+}
+
+#' Get package names loaded in code
+#'
+#' Extracts the names of the packages/libraries a code file loads. Where
+#' [code_library_lines()] only reports the lines on which imports occur (to check
+#' they are grouped), this returns the actual package identifiers so they can be
+#' catalogued and searched, or written to a `requirements.txt`.
+#'
+#' For R this captures `library()` / `require()` / `requireNamespace()` (bare or
+#' quoted argument), pacman's `p_load()` (which may list several packages at
+#' once), namespace-qualified calls (`pkg::fun` / `pkg:::fun`), and
+#' `install.packages()` / `renv::install()`. For Python it captures `import a`,
+#' `import a as b`, `import a, b`, and `from a.b import c` (recording the
+#' top-level package `a`). SAS / SPSS / Stata have no package concept, so an
+#' empty frame is returned.
+#'
+#' The extraction is regex-based (like the rest of the module) so it degrades
+#' gracefully on files that will not parse. It can therefore miss dynamically
+#' constructed package names, and does not know which *version* was used — only
+#' the names appear in the source.
+#'
+#' @param code_text the code text for a single file
+#' @param lang the language (R, Python, SPSS, SAS, Stata)
+#'
+#' @returns a data frame with columns `package`, `source` (how the package was
+#'   referenced: `library`, `require`, `requireNamespace`, `p_load`, `namespace`,
+#'   `install`, or `import`), and `line` (the line number). Rows are unique on
+#'   `package` + `source` + `line`. An empty frame (same columns) when none found.
+#' @export
+#'
+#' @examples
+#' code_text <- c(
+#'   "library(dplyr)",
+#'   "require('tidyr')",
+#'   "pacman::p_load(ggplot2, readr)",
+#'   "x <- stringr::str_trim(' a ')"
+#' )
+#' code_library_names(code_text, "R")
+code_library_names <- function(code_text,
+                               lang = c("R", "Python", "SPSS", "SAS", "Stata")) {
+  lang <- match.arg(lang)
+  empty <- data.frame(package = character(0), source = character(0),
+                      line = integer(0))
+
+  # SAS / SPSS / Stata: no package/library concept to extract.
+  if (lang %in% c("SPSS", "SAS", "Stata")) return(empty)
+
+  # Strip comments. code_remove_comments() does not know Python, so handle its
+  # `#` line comments directly; R (and R-in-Rmd/qmd) goes through the shared
+  # helper for consistency with the rest of the module.
+  if (lang == "Python") {
+    code_text <- unlist(strsplit(code_text, "\n"))
+    code_text <- sub("#.*$", "", code_text)
+  } else {
+    code_text <- code_remove_comments(code_text, lang)
+  }
+  if (length(code_text) == 0) return(empty)
+
+  # A single record of (package, source, line); collected then row-bound.
+  hits <- list()
+  add <- function(pkgs, source, line) {
+    pkgs <- trimws(gsub("^['\"]|['\"]$", "", pkgs))   # strip quotes
+    pkgs <- pkgs[nzchar(pkgs)]
+    if (length(pkgs) == 0) return(invisible())
+    hits[[length(hits) + 1L]] <<- data.frame(
+      package = pkgs, source = source, line = line)
+  }
+
+  # Pull the first capture group of `regex` out of one line, applied per line so
+  # the originating line number is preserved.
+  cap <- function(regex, line, i) {
+    m <- regmatches(line, regexec(regex, line, perl = TRUE))[[1]]
+    if (length(m) >= i + 1L && nzchar(m[i + 1L])) m[i + 1L] else NA_character_
+  }
+
+  for (ln in seq_along(code_text)) {
+    L <- code_text[ln]
+
+    if (lang == "R") {
+      # library(x) / library("x") / require(x) / requireNamespace("x")
+      for (fn in c("library", "require", "requireNamespace")) {
+        g <- cap(sprintf("\\b%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)", fn), L, 1)
+        if (!is.na(g)) add(g, fn, ln)
+      }
+      # pacman::p_load(a, b, c) — one or more comma-separated packages
+      pl <- cap("\\bp_load\\s*\\(([^)]*)\\)", L, 1)
+      if (!is.na(pl)) add(strsplit(pl, "\\s*,\\s*")[[1]], "p_load", ln)
+      # install.packages("x") / renv::install("x")
+      for (fn in c("install\\.packages", "install")) {
+        g <- cap(sprintf("\\b%s\\s*\\(\\s*(c\\()?\\s*([A-Za-z0-9._'\", ]+?)\\s*\\)",
+                         fn), L, 2)
+        if (!is.na(g)) add(strsplit(g, "\\s*,\\s*")[[1]], "install", ln)
+      }
+      # pkg::fun / pkg:::fun namespace-qualified calls (all on the line)
+      ns <- regmatches(L, gregexpr("\\b([A-Za-z][A-Za-z0-9._]*):{2,3}", L,
+                                   perl = TRUE))[[1]]
+      if (length(ns) > 0) add(sub(":{2,3}$", "", ns), "namespace", ln)
+
+    } else if (lang == "Python") {
+      # from a.b import c  ->  top-level package a
+      fr <- cap("^\\s*from\\s+([A-Za-z0-9_.]+)\\s+import\\b", L, 1)
+      if (!is.na(fr)) add(sub("\\..*$", "", fr), "import", ln)
+      # import a, b.c as d  ->  top-level a, b (drop "as alias" and submodules)
+      im <- cap("^\\s*import\\s+(.+)$", L, 1)
+      if (!is.na(im)) {
+        parts <- strsplit(im, "\\s*,\\s*")[[1]]
+        top <- sub("\\..*$", "", sub("\\s+as\\s+.*$", "", trimws(parts)))
+        add(top, "import", ln)
+      }
+    }
+  }
+
+  if (length(hits) == 0) return(empty)
+  out <- dplyr::bind_rows(hits)
+  # Drop non-identifier captures (e.g. a stray operator) and de-duplicate.
+  out <- out[grepl("^[A-Za-z][A-Za-z0-9._]*$", out$package), , drop = FALSE]
+  unique(out)
+}
+
+#' Distinct packages from a code_check table
+#'
+#' The `code_check` module stores the packages each code file loads as a
+#' comma-joined string in its `table$packages` column. This returns the sorted,
+#' de-duplicated union across a set of those rows — the paper-level dependency
+#' list used for the module summary, the manifest `code` section, and the
+#' `requirements.txt` written into a Psych-DS archive by [convert_psychds()].
+#'
+#' @param packages a character vector of comma-joined package strings (e.g.
+#'   `code_check(...)$table$packages`), or a `code_check` table (data frame with
+#'   a `packages` column).
+#'
+#' @returns a sorted character vector of distinct package names (possibly empty)
+#' @export
+#'
+#' @examples
+#' code_packages(c("dplyr, ggplot2", "", "dplyr, tidyr"))
+code_packages <- function(packages) {
+  if (is.data.frame(packages)) packages <- packages$packages
+  packages <- packages[!is.na(packages) & nzchar(packages)]
+  if (length(packages) == 0) return(character(0))
+  strsplit(paste(packages, collapse = ", "), "\\s*,\\s*")[[1]] |>
+    unique() |> sort()
 }
 
 #' Get files referenced in code

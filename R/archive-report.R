@@ -77,6 +77,7 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
       file_name = col(d, "file_name"), file_path = col(d, "file_path"),
       file_url = col(d, "file_url"), file_size = fs,
       file_size_mb = round(fs / 1024^2, 3),
+      provider = col(d, "provider"),
       data_type = col(d, "data_type"), downloaded = col(d, "downloaded"),
       status = col(d, "status"), skip_intentional = col(d, "skip_intentional"),
       skip_reason = col(d, "skip_reason"), stringsAsFactors = FALSE)

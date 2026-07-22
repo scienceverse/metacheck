@@ -164,9 +164,21 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     } else if (dt == "readme") {
       ext <- tools::file_ext(name)
       paste0(prefix, if (nzchar(ext)) paste0("README.", ext) else "README")
+    } else if (dt == "archive") {
+      # An `archive` row is a container (.zip/.tar/.gz) that data_check has ALREADY
+      # opened: its inner data/codebook/readme files were extracted and added as
+      # their own rows (which get real data/ targets above), and the container was
+      # demoted to `archive`. Copying the container too would duplicate that data
+      # in the release — the extracted CSVs in data/ AND the original zip in
+      # documentation/ — bloating the archive (e.g. a Project Implicit node shipped
+      # ~465 MB of redundant CSV-bundle zips beside the data already in data/).
+      # Return NA to EXCLUDE it from the plan: the container has been consumed, and
+      # any inner assets it also held stay linked via the original repo, not
+      # mirrored. NA-target rows are skipped by convert_psychds()'s copy loop.
+      NA_character_
     } else {
-      # Single-bracket lookup: an unknown data_type (e.g. "archive") returns NA
-      # rather than throwing "subscript out of bounds" as `[[` would.
+      # Single-bracket lookup: an unmapped data_type returns NA rather than
+      # throwing "subscript out of bounds" as `[[` would.
       sub <- unname(type_to_subdir[dt])
       if (is.na(sub)) sub <- "documentation"
       paste0(prefix, sub, "/", name)
@@ -175,7 +187,11 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   target_path  <- vapply(seq_len(n_files), target_of, character(1))
   current_path <- gsub("\\\\", "/", structure_df$file_path %||% structure_df$file_name)
   current_path <- ifelse(is.na(current_path), structure_df$file_name, current_path)
-  misplaced    <- current_path != target_path
+  # Rows target_of() gave an NA target are EXCLUDED from the release (consumed
+  # `archive` containers; see target_of). They are neither present nor misplaced:
+  # force misplaced = FALSE so the NA does not poison sum(misplaced) below.
+  is_excluded  <- is.na(target_path)
+  misplaced    <- !is_excluded & current_path != target_path
 
   # A TABULAR data file whose source is not already a CSV (xlsx/xls/tsv/dat/
   # sav/dta/sas7bdat) is CONVERTED to CSV for its _data.csv target (rather than
@@ -192,7 +208,7 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Extensions data_read_head() can read as a table (minus csv, which is fine
   # as-is). Mirrors .tabular_extensions in data_check_helpers.R.
   convertible_ext <- c("tsv", "txt", "dat", "xlsx", "xls",
-                       "sav", "dta", "sas7bdat", "jasp")
+                       "sav", "dta", "sas7bdat", "jasp", "omv")
   needs_convert  <- is_data & src_ext %in% convertible_ext
   is_raw_data    <- is_data & nzchar(src_ext) & src_ext != "csv" & !needs_convert
 
@@ -359,8 +375,17 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
               "The tree below shows the Psych-DS layout this repository should have. Files in <span style=\"color:#c0392b\">red</span> are required but missing; files annotated *(move from ...)* exist but need relocating.",
               tree_html)
   if (!have_groups) {
+    # Grouping is not LLM-only: file paths and repository splits are read first
+    # (.data_group_from_path / .data_group_from_repo), so reaching here means
+    # those found nothing either — not simply that the LLM was off.
     report <- c(report,
-      "*Study subgrouping could not be detected because no LLM was used. If this repository contains multiple studies, run with `llm_use(TRUE)` to detect study groups and model a multi-study Psych-DS layout.*")
+      paste0("*Study subgrouping could not be detected: no file path or ",
+             "repository split names a study",
+             if (!llm_use()) ", and no LLM was used" else "",
+             ". If this repository contains multiple studies, name the study in ",
+             "the file or folder names (`study1/`, `experiment2_data.csv`)",
+             if (!llm_use()) " or run with `llm_use(TRUE)`" else "",
+             " so a multi-study Psych-DS layout can be modelled.*"))
   }
 
   # Suggestions.
@@ -391,7 +416,9 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       group           = groups,
       current_path    = current_path,
       target_path     = target_path,
-      status          = ifelse(misplaced, "move", "present"),
+      # `excluded` = consumed archive container (NA target); it is not copied.
+      status          = ifelse(is_excluded, "excluded",
+                               ifelse(misplaced, "move", "present")),
       # convert = TRUE → converter writes a real CSV at target_path from the
       # read data; original_target = where to also copy the untouched original.
       convert         = needs_convert,

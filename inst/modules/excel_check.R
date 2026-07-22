@@ -131,6 +131,18 @@ excel_check <- function(paper, local_path = NULL, local_only = FALSE,
       next
     }
 
+    # Offset header: a banner / blank / units row above the real column header, so
+    # the file does not read as a clean table. Reported so the AUTHOR removes the
+    # junk row(s) at source; metacheck also repairs it in-memory for its own checks.
+    oh <- tryCatch(.excel_offset_header(path), error = function(e) NULL)
+    if (!is.null(oh)) {
+      findings[[length(findings) + 1L]] <- data.frame(
+        File = fname, Sheet = NA_character_, Issue = "Header not on first row",
+        Detail = sprintf(
+          "The column header is on row %d; above it is %s. Remove the row%s above the header so the first row of the sheet is the column header — otherwise the file reads with invented column names (…1, …4) and the data mis-types.",
+          oh$header_row, oh$detail, plural(oh$n_above)))
+    }
+
     fc <- c(color = 0L, merge = 0L, empty_row = 0L, empty_col = 0L)
     for (s in insp$sheets) {
       if (s$color_cells > 0) {
@@ -243,6 +255,45 @@ excel_check <- function(paper, local_path = NULL, local_only = FALSE,
 }
 
 # ── Module-local helpers ──────────────────────────────────────────────────────
+
+# Detect an OFFSET HEADER: a banner / blank / units / repeated-label row sitting
+# ABOVE the real column header, so the file does not read as a clean rectangular
+# table (the reader takes the junk row as the header and invents …N names, or
+# spreads one label — CDA merged across 110 columns — into CDA…1 … CDA…110).
+#
+# Reuses the same detector as the read-time repair (data_promote_header_row /
+# .detect_header_row) so the flag and the repair cannot disagree about where the
+# header is. Returns NULL when the header is already row 1, else a one-line human
+# description of what sits above it, for the researcher to remove at source.
+.excel_offset_header <- function(path) {
+  raw <- tryCatch(as.data.frame(suppressWarnings(readxl::read_excel(
+           path, col_names = FALSE, n_max = 6L, col_types = "text",
+           .name_repair = "minimal"))), error = function(e) NULL)
+  if (is.null(raw) || nrow(raw) < 2 || ncol(raw) < 2) return(NULL)
+  rows <- lapply(seq_len(nrow(raw)), function(i) as.character(raw[i, , drop = TRUE]))
+  det  <- .detect_header_row(rows)
+  if (det$header_row <= 1L || length(det$stripped) == 0) return(NULL)
+
+  # Describe each stripped row: a repeated banner ("CDA" × 110), a near-empty
+  # spacer, or a stale placeholder header. Keep it short and concrete.
+  describe <- function(v) {
+    vals <- trimws(as.character(v)); nz <- vals[nzchar(vals) & !is.na(vals)]
+    if (length(nz) == 0) return("an empty row")
+    dup <- .row_duplication(v)
+    if (dup >= 0.6 && length(unique(nz)) <= 3)
+      return(sprintf("\"%s\" repeated across %d column%s",
+                     paste(unique(nz), collapse = "\"/\""),
+                     length(nz), plural(length(nz))))
+    if (mean(.is_placeholder_name(v)) >= 0.5)
+      return("a row of placeholder names from an earlier mis-read")
+    sprintf("a partial label row (%s%s)",
+            paste(utils::head(nz, 3), collapse = ", "),
+            if (length(nz) > 3) ", …" else "")
+  }
+  descr <- vapply(det$stripped, describe, character(1))
+  list(header_row = det$header_row, n_above = length(det$stripped),
+       detail = paste(descr, collapse = "; then "))
+}
 
 # Inspect one .xlsx file by reading it as a zip of XML parts. Returns a list with
 # `sheets`, each a list(name, color_cells, merges, empty_rows, empty_cols), or

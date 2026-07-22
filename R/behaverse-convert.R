@@ -133,14 +133,15 @@
 # relative path to the paired OSD file, set on the ONLY outward-pointing field
 # the Behaverse Instrument class permits (its additionalProperties is false).
 .bh_instrument_row <- function(instrument_id, name = NULL, version = NULL,
-                               link = NULL) {
+                               link = NULL, description = NULL) {
   Filter(Negate(is.null), list(
     instrument_id = instrument_id,
     timeline_id   = instrument_id,
     block_id      = instrument_id,
     name          = name %||% instrument_id,
     version       = version,
-    link          = link))
+    link          = link,
+    description   = description))
 }
 
 # Assemble a full TrialData document from a list of Response rows for ONE
@@ -148,9 +149,10 @@
 # note recorded under a namespaced key the schema ignores.
 .bh_trialdata <- function(responses, instrument_id, name = NULL,
                           version = NULL, link = NULL, fidelity = NULL,
-                          source_format = NULL) {
+                          source_format = NULL, description = NULL) {
   doc <- list(
-    Instrument = list(.bh_instrument_row(instrument_id, name, version, link)),
+    Instrument = list(.bh_instrument_row(instrument_id, name, version, link,
+                                         description)),
     Response   = responses)
   if (!is.null(source_format)) doc[["metacheck:source_format"]] <- source_format
   if (!is.null(fidelity))      doc[["metacheck:fidelity"]] <- fidelity
@@ -179,6 +181,70 @@
       response_validation_time = .bh_num(g("response_validation_time")[i])),
       rid = i)
   })
+}
+
+# ── Per-platform export-MACHINERY vocabulary ──────────────────────────────────
+# The columns each trial-level platform ADDS that are export bookkeeping, not
+# data a researcher analyses: browser/OS diagnostics, media-load flags, screen
+# geometry, DOM node ids, per-trial pauses/timeouts, stimulus geometry. This is a
+# DENYLIST, deliberately: a jsPsych/Inquisit export also carries the researcher's
+# OWN custom columns (stim, resp1, correct_response, stimcolor, ...), which are
+# often the most important data — an allowlist of "known platform columns" would
+# wrongly drop those. So we enumerate only the KNOWN housekeeping and keep
+# everything else. Kept here, in Behaverse, so the converter and the scale-
+# detection filter (.scale_is_nonanalytic_col) share one definition; add a
+# platform's machinery names once and both benefit. Matched case-insensitively.
+.BH_MACHINERY_COLS <- list(
+  # jsPsych core + common browser-check/plugin bookkeeping.
+  jspsych  = c("success", "timeout", "failed_images", "failed_audio",
+               "failed_video", "trial_index", "time_elapsed", "internal_node_id",
+               "width", "height", "webaudio", "browser", "browser_version",
+               "mobile", "os", "fullscreen", "vsync_rate", "webcam", "microphone",
+               "view_history", "plugin_version"),
+  # Inquisit reserved columns (the numbered stimulus geometry is added by RE).
+  inquisit = c("date", "time", "build", "pretrialpause", "posttrialpause",
+               "windowcenter", "trialduration", "trialtimeout", "blocktimeout",
+               "inwindow"),
+  # Native Behaverse paradata channels other than the substantive response.
+  behaverse = c("stimulus_onset", "response_validation_time", "validation_time")
+)
+
+# Inquisit numbered stimulus channels: the ITEM is data (the shown content), the
+# geometry (vertical/horizontal position, onset time, internal number) is
+# machinery. Only the geometry families are matched here; stimulusitem<n> is kept.
+.BH_INQUISIT_STIM_MACHINE_RE <- "^stimulus(number|vpos|hpos|onset)[0-9]+$"
+
+# PsychoPy machinery is SUFFIX-based, not a fixed name list: component/loop names
+# are study-specific (serialport_cue6_2.started, edloop.thisRepN), so the machine
+# columns are recognised by their trailing role. Loop counters (.thisN/.thisIndex
+# /.thisRepN/.thisTrialN/.ran) and component timing (.started/.stopped) are
+# machinery; the RESPONSE channels (.rt/.keys/.corr/.response) are data and are
+# NOT matched here, so they survive. Plus PsychoPy's fixed run-metadata columns.
+.BH_PSYCHOPY_MACHINE_RE <- "[.](this(n|index|repn|trialn)|ran|started|stopped)$"
+.BH_PSYCHOPY_META_COLS  <- c("psychopyversion", "framerate", "expname", "date",
+                             "os", "session", "expstart")
+
+# Given a trial-level file's column names and its detected `format` (one of
+# jspsych/inquisit/behaverse/eprime), which columns are export MACHINERY? A
+# column is machinery only when it is a KNOWN housekeeping name for that platform
+# (or an Inquisit stimulus-geometry channel). Every other column — including the
+# researcher's custom experimental columns — is kept. `response` and `stimulus`
+# are never in the denylist. Returns a logical the length of `col_names`. Caller
+# must have confirmed the platform (data_check_is_jspsych/inquisit/behaverse);
+# for an unrecognised format nothing is flagged.
+.bh_is_machinery_col <- function(col_names, format) {
+  n <- length(col_names)
+  if (n == 0 || is.null(format) || !nzchar(format)) return(rep(FALSE, n))
+  deny <- .BH_MACHINERY_COLS[[format]]
+  low  <- tolower(trimws(col_names))
+  machinery <- if (is.null(deny)) rep(FALSE, n) else low %in% tolower(deny)
+  if (identical(format, "inquisit"))
+    machinery <- machinery | grepl(.BH_INQUISIT_STIM_MACHINE_RE, low, perl = TRUE)
+  if (identical(format, "psychopy"))
+    machinery <- machinery |
+      grepl(.BH_PSYCHOPY_MACHINE_RE, low, perl = TRUE) |
+      low %in% .BH_PSYCHOPY_META_COLS
+  machinery
 }
 
 # ── Reader: Inquisit .iqdat ───────────────────────────────────────────────────
@@ -261,16 +327,24 @@
     p <- kv(lines[i]); if (!is.null(p)) header[names(p)] <- p
     i <- i + 1L
   }
+  # Trial frames are delimited by E-Prime's LogFrame markers
+  # (`*** LogFrame Start ***` ... `*** LogFrame End ***`). The `Level: N` number
+  # is only the frame's nesting depth and varies by experiment (a trial is
+  # `Level: 2` in a Session/Block/Trial design), so the old `^Level:\s*3` rule
+  # parsed real exports to ZERO trials. Each frame accumulates its `Field: value`
+  # lines; a frame is kept only if it carries fields.
   trials <- list(); cur <- NULL
   for (l in lines) {
-    if (grepl("^Level:\\s*3", l)) {
-      if (!is.null(cur)) trials[[length(trials) + 1L]] <- cur
+    if (grepl("\\*\\*\\*\\s*LogFrame Start", l)) {
       cur <- list()
+    } else if (grepl("\\*\\*\\*\\s*LogFrame End", l)) {
+      if (!is.null(cur) && length(cur)) trials[[length(trials) + 1L]] <- cur
+      cur <- NULL
     } else if (!is.null(cur)) {
       p <- kv(l); if (!is.null(p)) cur[names(p)] <- p
     }
   }
-  if (!is.null(cur)) trials[[length(trials) + 1L]] <- cur
+  if (!is.null(cur) && length(cur)) trials[[length(trials) + 1L]] <- cur
   list(header = header, trials = trials)
 }
 
@@ -362,6 +436,12 @@
   if (length(path) != 1L || is.na(path) || !file.exists(path)) return(FALSE)
   ext <- tolower(tools::file_ext(path))
   if (ext %in% c("txt", "edat", "edat2") && .eprime_is_export(path)) return(TRUE)
+  # Only DELIMITED-TEXT files can be a trial-level table, so only those are worth
+  # a read.csv sniff. Reading a binary/document (.docx/.pdf/.sav/.xlsx/...) as CSV
+  # produces "invalid input / embedded nulls" warnings and can return garbage, so
+  # gate on the extension first. (E-Prime's own extensions were handled above.)
+  .bh_sniff_exts <- c("csv", "tsv", "dat", "iqdat", "log", "txt")
+  if (!ext %in% .bh_sniff_exts) return(FALSE)
   # A one-row header read is enough for the data-frame detectors.
   hdr <- tryCatch(
     utils::read.csv(path, check.names = FALSE, nrows = 1L,
@@ -500,6 +580,73 @@ convert_behaverse <- function(path, study_name = "unknown") {
              pattern = "\\.(csv|tsv|txt|iqdat|edat2?)$", ignore.case = TRUE)
 }
 
+# Inquisit .iqx scripts anywhere in the converted output (definition files that
+# describe the task producing the .iqdat data). Read once, keyed by the canonical
+# instrument key of the script's filename stem, so an instrument's paradata can be
+# enriched with the real task name/description (Feed B) — .iqdat output is named
+# <script-stem>_<subject>_<datetime>.iqdat, so the .iqx stem pairs with the
+# instrument key. Best-effort: when the output was renamed at runtime the stems
+# do not match and no enrichment happens.
+.bh_iqx_by_key <- function(output_dir) {
+  iqx <- list.files(output_dir, pattern = "\\.iqx$", full.names = TRUE,
+                    recursive = TRUE, ignore.case = TRUE)
+  out <- list()
+  for (f in iqx) {
+    r <- tryCatch(read_iqx(f), error = function(e) NULL)
+    if (is.null(r)) next
+    key <- .bh_instrument_key(r$stem)
+    if (nzchar(key) && is.null(out[[key]])) out[[key]] <- r
+  }
+  out
+}
+
+# Feed A: infer a task NAME for an instrument from its paired .iqx when the .iqx
+# title is weak/generic but it carries item wording. One grounded LLM call over
+# the .iqx description + items (the same construct-from-wording approach the
+# codebook module uses for self_generated scale labels). Gated on llm_use(): with
+# the LLM off, returns NULL and the caller falls back to the .iqx title or the
+# instrument code. Returns a short task name, or NULL.
+#
+# A title is "weak" when it is empty, or an opaque/administrative code (a bare
+# block name like "batch"/"block_1", or the instrument key itself) — those do not
+# describe what the task measures, so the items are the better naming evidence.
+.iqx_title_is_weak <- function(title, key) {
+  if (is.null(title) || is.na(title) || !nzchar(trimws(title))) return(TRUE)
+  t <- tolower(trimws(title))
+  t == tolower(key) || grepl("^(block|batch|part|phase|trial|task)[ _]?[0-9]*$", t) ||
+    nchar(t) < 4
+}
+
+.iqx_llm_name <- function(def, key, model, params) {
+  if (!isTRUE(tryCatch(llm_use(), error = function(e) FALSE))) return(NULL)
+  items <- def$items
+  if (length(items) == 0) return(NULL)
+  type_spec <- ellmer::type_object(
+    task = ellmer::type_string(
+      paste("Short natural name for the behavioural task or instrument these",
+            "stimuli/items come from (e.g. 'Implicit Association Test',",
+            "'Go/No-Go Task'), or empty if the items do not say.")))
+  prompt <- paste(
+    "You are given the DESCRIPTION and STIMULUS/ITEM wording of one behavioural",
+    "task from an experiment script. Give a short, natural NAME for the task or",
+    "instrument, grounded ONLY in the provided text. Never invent a published",
+    "instrument name you cannot support; return empty if the text is uninformative.")
+  text_in <- paste0(
+    if (!is.na(def$description) && nzchar(def$description))
+      paste0("Description:\n", def$description, "\n\n") else "",
+    "Stimuli / items:\n", paste("-", utils::head(items, 30), collapse = "\n"))
+  resp <- tryCatch(
+    llm(text = data.frame(text = text_in), text_col = "text",
+        system_prompt = prompt, type = type_spec, model = model,
+        params = params, phase = "Naming tasks"),
+    error = function(e) NULL)
+  if (is.null(resp) || nrow(resp) == 0 || !"task" %in% names(resp)) return(NULL)
+  nm <- trimws(as.character(resp$task[[1]] %||% ""))
+  if (is.na(nm) || !nzchar(nm) || tolower(nm) %in% c("unknown", "unclear", "na", "none"))
+    return(NULL)
+  nm
+}
+
 # Canonical instrument keys that WILL have a paradata file, scanned before the
 # OSD files are written so each OSD can embed the cross-reference. Light: reads
 # each file and collects instrument keys, without building/validating documents.
@@ -534,10 +681,15 @@ convert_behaverse <- function(path, study_name = "unknown") {
 # for OSD cross-refs and collection.json. Never deletes source data; the full
 # response data is always written, however large.
 .osd_write_paradata <- function(output_dir, osd_codes = character(0),
-                                study_name = NULL) {
+                                study_name = NULL, model = NULL, params = list()) {
   files <- .bh_data_files(output_dir)
   if (!length(files)) return(list())
   study <- study_name %||% basename(output_dir)
+
+  # Feed B: Inquisit .iqx definitions, keyed by instrument, to enrich the paradata
+  # instrument with a real task name/description (the .iqdat carries only an opaque
+  # block code). Best-effort — an instrument with no matching .iqx keeps its code.
+  iqx <- .bh_iqx_by_key(output_dir)
 
   # Pass 1: accumulate Response rows per instrument across every source file.
   rows <- list()      # instrument key -> list of Response rows
@@ -558,13 +710,27 @@ convert_behaverse <- function(path, study_name = "unknown") {
   index <- list()
   for (key in names(rows)) {
     m <- meta[[key]]
+    # Feed B: prefer the .iqx task title/description when a script pairs with this
+    # instrument (by filename stem); else keep the format reader's name.
+    def  <- iqx[[key]]
+    nm   <- if (!is.null(def) && !is.na(def$title) && nzchar(def$title))
+      def$title else m$name
+    desc <- if (!is.null(def) && !is.na(def$description) && nzchar(def$description))
+      def$description else NULL
+    # Feed A: when the .iqx title is weak/generic but it has item wording, let the
+    # LLM infer the task name from the stimuli (gated on llm_use(); no-op when off).
+    if (!is.null(def) && .iqx_title_is_weak(nm, key)) {
+      llm_nm <- .iqx_llm_name(def, key, model, params)
+      if (!is.null(llm_nm)) nm <- llm_nm
+    }
     doc <- .bh_trialdata(
       responses     = rows[[key]],
       instrument_id = key,
-      name          = m$name,
+      name          = nm,
       link          = if (key %in% osd_codes) paste0("../scales/", key, ".osd") else NULL,
       fidelity      = m$fidelity,
-      source_format = m$format)
+      source_format = m$format,
+      description   = desc)
 
     chk <- tryCatch(behaverse_validate(doc), error = function(e) NULL)
     if (!is.null(chk) && !isTRUE(chk$valid)) {

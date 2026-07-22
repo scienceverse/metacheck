@@ -104,3 +104,46 @@ test_that("manifest records the LLM model when LLM assistance is on", {
   expect_true(m$provenance$llm$used)
   expect_equal(m$provenance$llm$model, "groq/test-model")
 })
+
+test_that("manifest_merge creates, overlays, and preserves sections", {
+  path <- withr::local_tempfile(fileext = ".json")
+
+  # No file yet -> creates one holding just the patch.
+  manifest_merge(path, list(code = list(packages = list("dplyr", "tidyr"))))
+  m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  expect_equal(unlist(m$code$packages), c("dplyr", "tidyr"))
+
+  # A second writer patching a different key must not drop the first's section.
+  manifest_merge(path, list(files = list(list(file_name = "a.csv"))))
+  m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  expect_equal(unlist(m$code$packages), c("dplyr", "tidyr"))   # preserved
+  expect_equal(m$files[[1]]$file_name, "a.csv")                # added
+
+  # Re-patching a key replaces that key wholesale, others untouched.
+  manifest_merge(path, list(code = list(packages = list("readr"))))
+  m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  expect_equal(unlist(m$code$packages), "readr")
+  expect_equal(m$files[[1]]$file_name, "a.csv")
+})
+
+test_that("data_check manifest write preserves a code section", {
+  # A code_check-style `code` section written first must survive a later
+  # data_check manifest write (section ownership, not overwrite).
+  withr::local_options(metacheck.llm.use = FALSE)
+  path <- withr::local_tempfile(fileext = ".json")
+  manifest_merge(path, list(code = list(packages = list("dplyr"))))
+
+  files <- data.frame(
+    repo_url = "https://osf.io/xxxxx", file_name = "a.csv", file_path = "a.csv",
+    file_url = "https://osf.io/download/x/", file_size = 10,
+    data_type = "data", data_format = "tabular",
+    file_location = NA_character_, stringsAsFactors = FALSE
+  )
+  metacheck:::.data_check_write_manifest(
+    path, files, want = TRUE, gated = NULL, paper_id = "p1", download = "none",
+    max_file_size = 100, max_download_size = 500)
+
+  m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  expect_equal(unlist(m$code$packages), "dplyr")   # code section survived
+  expect_equal(m$provenance$software$name, "metacheck")  # data_check section present
+})

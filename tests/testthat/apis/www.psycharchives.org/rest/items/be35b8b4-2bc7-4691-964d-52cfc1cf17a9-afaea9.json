@@ -1,0 +1,335 @@
+{
+    "uuid": "be35b8b4-2bc7-4691-964d-52cfc1cf17a9",
+    "name": "Items, psychometrica data and automatic item generators from the International Cognitive Ability Resource (ICAR) project",
+    "handle": "20.500.12034/17526",
+    "type": "item",
+    "expand": [
+        "parentCollection",
+        "parentCollectionList",
+        "parentCommunityList",
+        "bitstreams",
+        "all"
+    ],
+    "lastModified": "2026-06-02 18:10:16.832",
+    "parentCollection": null,
+    "parentCollectionList": null,
+    "parentCommunityList": null,
+    "bitstreams": null,
+    "withdrawn": "false",
+    "archived": "true",
+    "link": "/rest/items/be35b8b4-2bc7-4691-964d-52cfc1cf17a9",
+    "metadata": [
+        {
+            "key": "dc.rights.license",
+            "value": "Terms for individual files apply",
+            "language": null,
+            "element": "rights",
+            "qualifier": "license",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Doebler, Philipp",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Revelle, William",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Condon, David",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Holling, Heinz",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Gühne, Daniela",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Rust, John",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Stillwell, David",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Sun, Luning",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Chan, Fiona",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.author",
+            "value": "Loe, Baosheng",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "author",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.other",
+            "value": "Dutry, M.",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "other",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.other",
+            "value": "Verhallen, R.J.",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "other",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.other",
+            "value": "Mollon, J.D.",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "other",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.other",
+            "value": "Blum, G.D.",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "other",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.other",
+            "value": "Harrison, P. M. C.",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "other",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.contributor.other",
+            "value": "Müllensiefen, D.",
+            "language": null,
+            "element": "contributor",
+            "qualifier": "other",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.date.accessioned",
+            "value": "2026-06-02T16:00:43Z",
+            "language": null,
+            "element": "date",
+            "qualifier": "accessioned",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.date.available",
+            "value": "2026-06-02T16:00:43Z",
+            "language": null,
+            "element": "date",
+            "qualifier": "available",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.date.issued",
+            "value": "2026-06-02",
+            "language": null,
+            "element": "date",
+            "qualifier": "issued",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.identifier.citation",
+            "value": "Please see the individual tests for the preferred citation.",
+            "language": null,
+            "element": "identifier",
+            "qualifier": "citation",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.identifier.uri",
+            "value": "https://hdl.handle.net/20.500.12034/17526",
+            "language": null,
+            "element": "identifier",
+            "qualifier": "uri",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.identifier.uri",
+            "value": "http://dx.doi.org/10.23668/psycharchives.22167",
+            "language": null,
+            "element": "identifier",
+            "qualifier": "uri",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.description.abstract",
+            "value": "Items and Tests from the International Cognitive Ability Resource (ICAR). Core team (in alphabetical order): F. Chan, D. Condon, P. Doebler, D. Gühne,  H. Holling, B. Loe, E. Masoudi, J. Rust, W. Revelle, D. Stillwell & L. Sun. Please see readme.txt for funding notes and further ICAR contributors.",
+            "language": "en",
+            "element": "description",
+            "qualifier": "abstract",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.description.sponsorship",
+            "value": "The original ICAR project was jointly funded by the National Science Foundation (NSF) in the US, the Deutsche Forschungsgemeinschaft (DFG) in Germany, and the Economic and Social Research Council (ESRC) in the UK as part of the Open Research Area Plus for the Social Sciences (NSF: SMA-1419324; DFG: DO 1789/1-1, ESRC: ES/L016591/1). We acknowledge funding for the continued improvement of the ICAR by The Eric and Wendy Schmidt Fund for Strategic Innovation.",
+            "language": null,
+            "element": "description",
+            "qualifier": "sponsorship",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.language.iso",
+            "value": "eng",
+            "language": null,
+            "element": "language",
+            "qualifier": "iso",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.publisher",
+            "value": "PsychArchives",
+            "language": null,
+            "element": "publisher",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.rights",
+            "value": "restrictedAccess",
+            "language": null,
+            "element": "rights",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.rights.uri",
+            "value": "https://www.psycharchives.org/individualterms",
+            "language": null,
+            "element": "rights",
+            "qualifier": "uri",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.subject",
+            "value": "automatic item generation",
+            "language": null,
+            "element": "subject",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.subject",
+            "value": "cognitive abilities",
+            "language": null,
+            "element": "subject",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.subject.ddc",
+            "value": "150",
+            "language": null,
+            "element": "subject",
+            "qualifier": "ddc",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.title",
+            "value": "Items, psychometrica data and automatic item generators from the International Cognitive Ability Resource (ICAR) project",
+            "language": "en",
+            "element": "title",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.type",
+            "value": "test",
+            "language": null,
+            "element": "type",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.type",
+            "value": "code",
+            "language": null,
+            "element": "type",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.type",
+            "value": "conferenceObject",
+            "language": null,
+            "element": "type",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.type",
+            "value": "sound",
+            "language": null,
+            "element": "type",
+            "qualifier": null,
+            "schema": "dc"
+        },
+        {
+            "key": "dc.description.review",
+            "value": "unknown",
+            "language": null,
+            "element": "description",
+            "qualifier": "review",
+            "schema": "dc"
+        },
+        {
+            "key": "dc.description.pubstatus",
+            "value": "unknown",
+            "language": null,
+            "element": "description",
+            "qualifier": "pubstatus",
+            "schema": "dc"
+        }
+    ]
+}

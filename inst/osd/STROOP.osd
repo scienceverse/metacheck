@@ -1,0 +1,302 @@
+{
+  "osd_version": "1.1.0",
+  "definition": {
+    "scale_info": {
+      "name": "Color-Word Stroop Task",
+      "code": "STROOP",
+      "abbreviation": "Stroop",
+      "description": "A task in which single words (including names of colors) are presented in colored ink, and the subject is asked to name the color of the ink as quickly as possible. The ink color may either match or conflict with the color name. Accuracy an",
+      "citation": "Stroop, J. R. (1935). Studies of interference in serial verbal reactions. Journal of Experimental Psychology, 18(6), 643-662. https://doi.org/10.1037/h0054651",
+      "license": "Public Domain",
+      "version": "1.0",
+      "url": "https://www.cognitiveatlas.org/task/id/trm_4b1968619b00b/",
+      "domain": "Cognition"
+    },
+    "parameters": {
+      "isi_ms": {
+        "type": "integer",
+        "default": 1000,
+        "description": "Inter-stimulus interval (ms)."
+      },
+      "soa_ms": {
+        "type": "integer",
+        "default": 0,
+        "description": "Stimulus onset asynchrony (ms); 0 = simultaneous."
+      },
+      "feedback_delay_ms": {
+        "type": "integer",
+        "default": 0,
+        "description": "Delay before feedback (ms)."
+      },
+      "n_trials": {
+        "type": "integer",
+        "default": 100,
+        "description": "Trials per block."
+      },
+      "n_stimuli": {
+        "type": "integer",
+        "default": 4,
+        "description": "Distinct stimuli (colour words)."
+      },
+      "n_response_options": {
+        "type": "integer",
+        "default": 4,
+        "description": "Action-space complexity."
+      },
+      "working_memory_load": {
+        "type": "integer",
+        "default": 0,
+        "description": "Items held in mind (0 = none)."
+      },
+      "rule_complexity": {
+        "type": "integer",
+        "default": 1,
+        "description": "Number of S-R rules."
+      },
+      "task_switching": {
+        "type": "boolean",
+        "default": false,
+        "description": "Operator/rule changes within a block."
+      },
+      "stimulus_modality": {
+        "type": "choice",
+        "default": "visual",
+        "options": [
+          "visual",
+          "auditory",
+          "tactile",
+          "audiovisual"
+        ]
+      },
+      "response_modality": {
+        "type": "choice",
+        "default": "keypress",
+        "options": [
+          "keypress",
+          "vocal",
+          "mouse",
+          "saccade"
+        ]
+      },
+      "response_timing": {
+        "type": "choice",
+        "default": "speeded",
+        "options": [
+          "speeded",
+          "self_paced",
+          "deadline"
+        ]
+      },
+      "predictability": {
+        "type": "choice",
+        "default": "unpredictable",
+        "options": [
+          "predictable",
+          "unpredictable",
+          "cued"
+        ]
+      },
+      "signal_quality": {
+        "type": "choice",
+        "default": "clear",
+        "options": [
+          "clear",
+          "degraded",
+          "masked"
+        ]
+      },
+      "feedback": {
+        "type": "choice",
+        "default": "none",
+        "options": [
+          "none",
+          "trial",
+          "block",
+          "monetary"
+        ]
+      },
+      "workload": {
+        "type": "choice",
+        "default": "single_task",
+        "options": [
+          "single_task",
+          "dual_task"
+        ]
+      },
+      "environmental_dynamics": {
+        "type": "choice",
+        "default": "static",
+        "options": [
+          "static",
+          "dynamic",
+          "adaptive"
+        ]
+      },
+      "shuffle_questions": {
+        "type": "boolean",
+        "default": true,
+        "description": "Reserved name (spec 6): randomise trial order."
+      }
+    },
+    "dimensions": [
+      {
+        "id": "rt_congruent",
+        "name": "RT, congruent trials",
+        "description": "Mean RT (ms), congruent."
+      },
+      {
+        "id": "rt_incongruent",
+        "name": "RT, incongruent trials",
+        "description": "Mean RT (ms), incongruent."
+      },
+      {
+        "id": "rt_neutral",
+        "name": "RT, neutral trials",
+        "description": "Mean RT (ms), neutral."
+      },
+      {
+        "id": "acc_incongruent",
+        "name": "Accuracy, incongruent",
+        "description": "Proportion correct."
+      },
+      {
+        "id": "stroop_effect",
+        "name": "Stroop interference effect",
+        "description": "RT incongruent minus RT congruent (ms); higher = more interference."
+      }
+    ],
+    "items": [
+      {
+        "id": "instructions",
+        "text_key": "inst_main",
+        "type": "inst",
+        "random_group": 0
+      },
+      {
+        "id": "trial_congruent",
+        "text_key": "cond_congruent",
+        "type": "multi",
+        "option_set": "colors",
+        "dimension": "rt_congruent",
+        "random_group": 1
+      },
+      {
+        "id": "trial_incongruent",
+        "text_key": "cond_incongruent",
+        "type": "multi",
+        "option_set": "colors",
+        "dimension": "rt_incongruent",
+        "random_group": 1
+      },
+      {
+        "id": "trial_neutral",
+        "text_key": "cond_neutral",
+        "type": "multi",
+        "option_set": "colors",
+        "dimension": "rt_neutral",
+        "random_group": 1
+      }
+    ],
+    "option_sets": {
+      "colors": [
+        {
+          "text_key": "opt_red",
+          "value": 1
+        },
+        {
+          "text_key": "opt_green",
+          "value": 2
+        },
+        {
+          "text_key": "opt_blue",
+          "value": 3
+        },
+        {
+          "text_key": "opt_yellow",
+          "value": 4
+        }
+      ]
+    },
+    "likert_options": null,
+    "scoring": {
+      "rt_congruent": {
+        "method": "mean_coded",
+        "items": [
+          "trial_congruent"
+        ],
+        "description": "Mean RT on congruent trials."
+      },
+      "rt_incongruent": {
+        "method": "mean_coded",
+        "items": [
+          "trial_incongruent"
+        ],
+        "description": "Mean RT on incongruent trials."
+      },
+      "rt_neutral": {
+        "method": "mean_coded",
+        "items": [
+          "trial_neutral"
+        ],
+        "description": "Mean RT on neutral trials."
+      },
+      "acc_incongruent": {
+        "method": "sum_correct",
+        "items": [
+          "trial_incongruent"
+        ],
+        "correct_answers": {
+          "trial_incongruent": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "description": "Count correct on incongruent trials."
+      },
+      "stroop_effect": {
+        "method": "sum_coded",
+        "scores": [
+          "rt_incongruent",
+          "rt_congruent"
+        ],
+        "items": {
+          "rt_incongruent": 1,
+          "rt_congruent": -1
+        },
+        "description": "RT incongruent - RT congruent (ms).",
+        "norms": {
+          "thresholds": [
+            {
+              "min": 0,
+              "max": 50,
+              "label": "Small interference"
+            },
+            {
+              "min": 51,
+              "max": 150,
+              "label": "Typical interference"
+            }
+          ]
+        }
+      }
+    },
+    "data_output": {
+      "columns": "subnum,order,timestamp,question_id,text_key,dimension,coding,response,rt"
+    }
+  },
+  "translations": {
+    "en": {
+      "inst_main": "Name the COLOUR of the ink, as quickly as you can.",
+      "cond_congruent": "The word names the colour it is printed in.",
+      "cond_incongruent": "The word names a different colour than its ink.",
+      "cond_neutral": "A non-colour word printed in colour.",
+      "opt_red": "Red",
+      "opt_green": "Green",
+      "opt_blue": "Blue",
+      "opt_yellow": "Yellow",
+      "debrief": "Thank you for completing this task."
+    }
+  }
+}

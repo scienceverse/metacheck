@@ -1,0 +1,17 @@
+{
+    "$id": "https://raw.githubusercontent.com/ISA-tools/isa-api/master/isatools/resources/schemas/isa_model_version_1_0_schemas/core/material_attribute_schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title" : "ISA material attribute schema",
+    "name" : "ISA Material Attribute schema",
+    "description" : "JSON-schema representing a characteristics category (what appears between the brackets in Characteristics[]) in the ISA model",
+    "type" : "object",
+    "properties" : {
+        "@id": { "type": "string", "format": "uri-reference" },
+        "@context": { "type": "string", "format": "uri-reference"},
+        "@type" : { "type": "string", "enum": ["MaterialAttribute"] },
+        "characteristicType": {
+            "$ref": "ontology_annotation_schema.json"
+        }
+    },
+    "additionalProperties": false
+}

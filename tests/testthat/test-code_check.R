@@ -587,3 +587,78 @@ test_that("code_library_lines", {
 })
 
 
+test_that("code_library_names R", {
+  expect_true(is.function(metacheck::code_library_names))
+  expect_no_error(helplist <- help(code_library_names, metacheck))
+
+  code_text <- c(
+    "library(dplyr)",
+    "require('tidyr')",
+    "requireNamespace(\"purrr\")",
+    "pacman::p_load(ggplot2, readr)",
+    "x <- stringr::str_trim(' a ')",
+    "renv::install('metacheck')",
+    "install.packages(c('a', 'b'))",
+    "# library(commented)"        # comment: must be ignored
+  )
+  obs <- code_library_names(code_text, "R")
+
+  # package + source pairs, order-independent
+  expect_setequal(
+    paste(obs$package, obs$source),
+    c("dplyr library", "tidyr require", "purrr requireNamespace",
+      "ggplot2 p_load", "readr p_load", "pacman namespace",
+      "stringr namespace", "metacheck install", "renv namespace",
+      "a install", "b install")
+  )
+  # the commented-out library is not captured
+  expect_false("commented" %in% obs$package)
+  # columns are exactly package, source, line
+  expect_equal(names(obs), c("package", "source", "line"))
+})
+
+
+test_that("code_library_names Python", {
+  code_text <- c(
+    "import numpy",
+    "import pandas as pd",
+    "import os, sys",
+    "from sklearn.linear_model import LinearRegression",
+    "from . import local",          # relative import: no package name
+    "import matplotlib  # inline comment"
+  )
+  obs <- code_library_names(code_text, "Python")
+  # top-level package names only; submodules and aliases stripped; the relative
+  # `from . import` yields nothing.
+  expect_setequal(obs$package,
+                  c("numpy", "pandas", "os", "sys", "sklearn", "matplotlib"))
+  expect_true(all(obs$source == "import"))
+})
+
+
+test_that("code_library_names other languages return empty", {
+  empty <- data.frame(package = character(0), source = character(0),
+                      line = integer(0))
+  for (lang in c("SPSS", "SAS", "Stata")) {
+    expect_equal(code_library_names("anything", lang), empty)
+  }
+  # no imports at all -> empty (same columns)
+  expect_equal(code_library_names(c("a <- 1", "b <- 2"), "R"), empty)
+})
+
+
+test_that("code_packages unions comma-joined strings", {
+  # sorted, de-duplicated union; blanks and NA ignored
+  expect_equal(
+    code_packages(c("dplyr, ggplot2", "", NA, "dplyr, tidyr")),
+    c("dplyr", "ggplot2", "tidyr")
+  )
+  # accepts a code_check-style table (packages column)
+  tbl <- data.frame(packages = c("readr, dplyr", ""))
+  expect_equal(code_packages(tbl), c("dplyr", "readr"))
+  # empty input -> empty character
+  expect_equal(code_packages(character(0)), character(0))
+  expect_equal(code_packages(c("", NA)), character(0))
+})
+
+

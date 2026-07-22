@@ -1,0 +1,20 @@
+{
+    "$id": "https://raw.githubusercontent.com/ISA-tools/isa-api/master/isatools/resources/schemas/isa_model_version_1_0_schemas/core/comment_schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "ISA Comment schema - it corresponds to ISA Comment[] construct",
+    "name" : "ISA Comment schema",
+    "description": "JSON-schema representing an ISA model Comment object",
+    "type": "object",
+    "properties": {
+        "@id": { "type": "string", "format": "uri-reference" },
+        "@context": { "type": "string", "format": "uri-reference"},
+        "@type" : { "type": "string", "enum": ["Comment"] },
+        "name": {
+            "type": "string"
+        },
+        "value": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false
+}

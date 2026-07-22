@@ -245,7 +245,9 @@ test_that("zip timeout is passed to zip transport", {
 
   local_mocked_bindings(
     osf_check_id = function(x) "abcde",
-    .remote_content_length = function(url) NA_real_,
+    # A concrete (small) zip size passes the zip-vs-file-by-file size gate, so
+    # the zip transport path — which forwards zip_timeout_s — actually runs.
+    .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s) {
       expect_equal(timeout_s, 7)
@@ -260,7 +262,7 @@ test_that("zip timeout is passed to zip transport", {
   expect_false(is.na(dl$file_location[1]))
 })
 
-test_that("warns when archive transport is larger than selected files", {
+test_that("reports when archive transport is larger than selected files", {
   files <- data.frame(
     repo_url = "https://osf.io/abcde",
     file_name = "a.csv",
@@ -283,9 +285,12 @@ test_that("warns when archive transport is larger than selected files", {
     .package = "metacheck"
   )
 
-  expect_warning(
+  # The whole-node zip being larger than the selected files is expected/by-design
+  # (the ?zip= endpoint always zips the whole node), so it is now reported as a
+  # message rather than a warning.
+  expect_message(
     dl <- download_repo_files(files, max_file_size = 10, max_download_size = 500),
-    "larger archive transport"
+    "downloads as one archive"
   )
   expect_false(is.na(dl$file_location[1]))
 })
@@ -308,7 +313,9 @@ test_that("OSF non-osfstorage rows fall back to file-by-file", {
   fallback_n <- 0L
   local_mocked_bindings(
     osf_check_id = function(x) "abcde",
-    .remote_content_length = function(url) NA_real_,
+    # A concrete (small) zip size passes the size gate so the osfstorage row
+    # takes the zip; only the non-osfstorage (dropbox) row falls back.
+    .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s) {
       # zip transport should only cover the osfstorage row

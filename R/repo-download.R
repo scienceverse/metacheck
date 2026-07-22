@@ -521,13 +521,22 @@ download_repo_files <- function(files,
     # ── OSF: Waterbutler zip ────────────────────────────────────────────────────
     osf_repos <- unique(files$repo_url[
       remaining[grepl("osf\\.io", files$repo_url[remaining], ignore.case = TRUE)]])
+    # Is a file on OSF's osfstorage (the only provider the ?zip= endpoint
+    # covers)? Authoritative source is the `provider` column repo_check now
+    # carries; fall back to the file_url form for older rows that predate it.
+    is_osfstorage <- function(i) {
+      if ("provider" %in% names(files) && !is.na(files$provider[i]))
+        return(identical(tolower(files$provider[i]), "osfstorage"))
+      url <- files$file_url[i]
+      if (is.na(url) || !nzchar(url)) return(FALSE)
+      grepl("/providers/osfstorage/", url, ignore.case = TRUE)
+    }
     for (repo in osf_repos) {
       ridx <- intersect(remaining, which(files$repo_url == repo))
       if (length(ridx) == 0) next
       # Waterbutler zip only covers osfstorage. Non-osfstorage rows fall through
       # to file-by-file download below as a complement path.
-      ridx_zip <- ridx[grepl("/providers/osfstorage/", files$file_url[ridx],
-                             ignore.case = TRUE)]
+      ridx_zip <- ridx[vapply(ridx, is_osfstorage, logical(1))]
       if (length(ridx_zip) == 0) next
       osf_id <- tryCatch(osf_check_id(repo), error = \(e) NA_character_)
       # Only use zip for 5-char node GUIDs (not waterbutler folder IDs)
@@ -535,20 +544,49 @@ download_repo_files <- function(files,
       zip_url <- sprintf(
         "https://files.osf.io/v1/resources/%s/providers/osfstorage/?zip=", osf_id)
       zip_bytes <- .remote_content_length(zip_url)
+
+      # ── Zip-vs-file-by-file decision ─────────────────────────────────────────
+      # The ?zip= endpoint is all-or-nothing: it always zips the WHOLE node's
+      # osfstorage, not just the files we want. So it is only worth taking when
+      # the one-shot transport is not wildly bigger than what we'd fetch
+      # individually. Take the zip when BOTH:
+      #   (1) size: the zip is <= 2x the per-repo budget (a one-request transport
+      #       earns a 2x allowance over the per-run download budget); AND
+      #   (2) worth it: EITHER we want more than 50 files from this node (at that
+      #       many individual requests the per-request latency + OSF rate-limiting
+      #       make the zip faster regardless of a little wasted data), OR the node
+      #       holds no more than 2x the files we actually want (so the zip drags
+      #       in at most one unwanted file per wanted one).
+      # `node_osf_n` counts EVERY osfstorage file in the node (the zip's real
+      # payload), not just the wanted subset, so the waste ratio is honest for
+      # mixed / partially-filtered nodes. When zip_bytes is unknown the size gate
+      # cannot be checked, so we do not risk an unbounded transport: fall back.
+      n_wanted   <- length(ridx_zip)
+      node_osf_n <- sum(files$repo_url == repo &
+                        vapply(seq_len(nrow(files)), is_osfstorage, logical(1)))
+      size_ok  <- !is.na(zip_bytes) &&
+        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
+      worth_it <- n_wanted > 50L || node_osf_n <= 2L * n_wanted
+      if (!isTRUE(size_ok && worth_it)) {
+        why <- if (!size_ok)
+          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
+                  if (is.na(zip_bytes)) "unknown" else
+                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
+        else
+          sprintf("node holds %d osfstorage files for %d wanted (>2x) and wanted <= 50",
+                  node_osf_n, n_wanted)
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          repo, why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
+
       expected_bytes <- sum(as.numeric(files$file_size[ridx_zip]), na.rm = TRUE)
       if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
-        warning(sprintf(
-          paste0("Repository %s will be downloaded as a larger archive transport ",
-                 "(%s MB) than the selected file estimate (%s MB)."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))
-        ), call. = FALSE)
-      }
-      if (!is.na(zip_bytes) && is.finite(max_download_size) && zip_bytes > max_download_size * mb) {
-        warning(sprintf(
-          paste0("Repository %s archive transport is %s MB, above max_download_size ",
-                 "(%s MB). Continuing by design because transport is one-shot zip."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size)
-        ), call. = FALSE)
+        message(sprintf(
+          paste0("Repository %s downloads as one archive of %s MB to extract ",
+                 "%s MB of selected files (whole-node osfstorage zip)."),
+          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
       }
       message(sprintf("Downloading %s as zip (%d file%s)...",
                       repo, length(ridx_zip), plural(length(ridx_zip))))

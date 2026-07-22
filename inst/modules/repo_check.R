@@ -4,7 +4,7 @@
 #' This module retrieves information from repositories.
 #'
 #' @details
-#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, and Zenodo based on links in the manuscript.
+#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, PsychArchives, and Zenodo based on links in the manuscript.
 #'
 #' If you want to extend the package to be able to download files from additional data repositories reach out to the Metacheck development team.
 #'
@@ -43,6 +43,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     osf_links_found    <- empty_links
     github_links_found <- empty_links
     rb_links_found     <- empty_links
+    pa_links_found     <- empty_links
     zenodo_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
@@ -56,6 +57,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     github_links_found$repo_type <- "github"
     rb_links_found     <- rbox_links(paper)
     rb_links_found$repo_type     <- "researchbox"
+    pa_links_found     <- psycharchives_links(paper)
+    pa_links_found$repo_type     <- "psycharchives"
     zenodo_links_found <- zenodo_links(paper)
     zenodo_links_found$repo_type <- "zenodo"
   }
@@ -66,6 +69,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     osf_links_found[, cols],
     github_links_found[, cols],
     rb_links_found[, cols],
+    pa_links_found[, cols],
     zenodo_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
@@ -102,7 +106,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           file_url = osf_file_list$download_url,
           file_location = rep(NA_character_, nrow(osf_file_list)),
           file_size = osf_file_list$size,
-          file_type = osf_file_list$filetype
+          file_type = osf_file_list$filetype,
+          # provider (osfstorage / dropbox / github / ...) drives the
+          # Waterbutler-zip decision in download_repo_files(): only osfstorage is
+          # coverable by the node's ?zip= endpoint. NULL when osf_info did not
+          # return the column, which download_repo_files() falls back on gracefully.
+          provider = osf_file_list$provider %||% NA_character_
         )
       }
 
@@ -206,6 +215,53 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
+  ## PsychArchives ----
+  # Unlike ResearchBox, PsychArchives lists public files via its DSpace REST API
+  # without downloading them, so this only fills file_url / file_size and leaves
+  # file_location = NA; download_repo_files() fetches the bytes later (deferred,
+  # like Zenodo/OSF), which keeps the per-file/per-repo size caps in force.
+  pa_urls <- repos |>
+    dplyr::filter(repo_type == "psycharchives") |>
+    _$repo_url |>
+    unique()
+  pa_files_df <- data.frame(repo_name = character(0))
+  if (length(pa_urls) > 0) {
+    tryCatch({
+      pa_file_list <- psycharchives_file_download(pa_urls, pb = pb)
+
+      # Flag items whose DSpace rights are restricted/embargoed. The REST API
+      # only lists publicly retrievable bitstreams, so restricted files never
+      # appear in pa_files_df — the item's rights flag is the only signal that
+      # some files are machine-inaccessible. Reuses the rights attribute
+      # psycharchives_file_download() carries out (no extra API call).
+      pa_rights <- attr(pa_file_list, "rights")
+      if (length(pa_rights) > 0) {
+        restricted <- names(pa_rights)[
+          !is.na(pa_rights) &
+            grepl("restricted|embargo", pa_rights, ignore.case = TRUE)]
+        if (length(restricted) > 0) {
+          repos$repo_error[repos$repo_url %in% restricted] <-
+            "restricted access"
+        }
+      }
+
+      if (!is.null(pa_file_list) && nrow(pa_file_list) > 0) {
+        pa_file_list <- pa_file_list |> dplyr::filter(!isdir)
+        pa_files_df <- data.frame(
+          repo_url = pa_file_list$pa_url,
+          file_name = pa_file_list$name,
+          file_path = pa_file_list$name,
+          file_url = pa_file_list$file_url,
+          file_location = pa_file_list$file_location,
+          file_size = pa_file_list$size,
+          file_type = pa_file_list$type
+        )
+      }
+    }, error = \(e) {
+      # TODO: communicate errors to repos table
+    })
+  }
+
   ## Zenodo ----
   zenodo_urls <- repos |>
     dplyr::filter(repo_type == "zenodo") |>
@@ -301,7 +357,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (nrow(repos) == 0) {
     info <- list(
       traffic_light = "na",
-      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, or Zenodo.",
+      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, PsychArchives, or Zenodo.",
       summary_table = data.frame(
         paper_id = paper_id(paper),
         repo_n = 0,
@@ -317,7 +373,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, zenodo_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, pa_files_df, zenodo_files_df, local_files_df)
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)
@@ -419,10 +475,25 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   zip_n <- sum(repos$files_zip)
   if (zip_n > 0) {
     zip_files <- all_files$file_name[!is.na(all_files$file_type) & all_files$file_type == "archive"]
+    # Split archives by format. Only ZIP can be peeked (its file listing sits in a
+    # tail index reachable by an HTTP range request); every other archive format
+    # must be downloaded in full before its contents can be read, and .7z/.rar and
+    # similar cannot be read by metacheck at all. So non-zip archives get a
+    # recommendation to re-upload as .zip.
+    nonzip_files <- zip_files[!grepl("[.]zip$", zip_files, ignore.case = TRUE)]
     report_zip <- sprintf(
       "#### Archive Files\n\nThe following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
       paste(zip_files, collapse = ", ")
     )
+    if (length(nonzip_files) > 0) {
+      report_zip <- paste0(
+        report_zip,
+        sprintf(
+          "\n\nSome of these are not ZIP archives (%s). We recommend the `.zip` format for archives: only ZIP stores its file listing in a way that lets a tool inspect the contents without downloading the whole archive, so a `.zip` is more discoverable and re-usable than a `.7z`, `.rar`, or `.tar.gz`.",
+          paste(nonzip_files, collapse = ", ")
+        )
+      )
+    }
     summary_zip <- sprintf(
       "We found %d archive file%s.",
       zip_n,
@@ -431,6 +502,60 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else {
     summary_zip <- NULL
     report_zip <- NULL
+  }
+
+  ## proprietary E-Prime binary files ----
+  # E-Prime .edat/.edat2 (and the .emrg/.emrg2 merge files) are proprietary
+  # BINARY formats that metacheck cannot read and does not download — only the
+  # experiment software can open them. The analysable data is in E-Prime's plain
+  # .txt export. Warn when the repo has .edat but is MISSING the matching .txt, so
+  # authors know to also upload the readable export.
+  edat_files <- all_files$file_name[
+    !is.na(all_files$file_name) &
+      grepl("[.](edat2?|emrg2?)$", all_files$file_name, ignore.case = TRUE)]
+  if (length(edat_files) > 0) {
+    txt_stems <- tolower(tools::file_path_sans_ext(
+      all_files$file_name[grepl("[.]txt$", all_files$file_name, ignore.case = TRUE)]))
+    edat_stems <- tolower(tools::file_path_sans_ext(edat_files))
+    missing_txt <- edat_files[!(edat_stems %in% txt_stems)]
+    report_edat <- sprintf(
+      "#### Proprietary E-Prime Files\n\nThe repository contains %d E-Prime file%s (%s). These are proprietary **binary** formats that only the E-Prime software can open, so metacheck does not download or read them and other researchers cannot reuse them directly.",
+      length(edat_files), plural(length(edat_files)),
+      paste(utils::head(edat_files, 8), collapse = ", "))
+    report_edat <- if (length(missing_txt) > 0) paste0(
+      report_edat,
+      sprintf(" %d of them ha%s no matching plain-text export. Please also upload the E-Prime **.txt export** (File → Export in E-Prime) for each, so the trial-level data is readable without the proprietary software.",
+              length(missing_txt), if (length(missing_txt) == 1) "s" else "ve"))
+    else paste0(report_edat,
+      " A matching .txt export was found for each, which is the readable form metacheck uses — good. Keep including the .txt export alongside any .edat file.")
+    summary_edat <- sprintf("We found %d proprietary E-Prime file%s.",
+                            length(edat_files), plural(length(edat_files)))
+  } else {
+    report_edat <- NULL
+    summary_edat <- NULL
+  }
+
+  ## restricted-access repositories ----
+  # A PsychArchives item flagged restrictedAccess/embargoedAccess hides its
+  # protected bitstreams behind institutional (SSO) login, so those files cannot
+  # be fetched by a machine. Warn that this limits reuse. repo_error was set to
+  # "restricted access" in the PsychArchives block above.
+  restricted_repos <- repos$repo_url[
+    !is.na(repos$repo_error) & repos$repo_error == "restricted access"]
+  if (length(restricted_repos) > 0) {
+    report_restricted <- sprintf(
+      "#### Restricted-Access Files\n\n%d %s (%s) %s files behind restricted or embargoed access. These files require a login and cannot be downloaded programmatically, so metacheck cannot examine them and other researchers cannot reuse them without requesting access. Consider making the files openly available to improve their reusability.",
+      length(restricted_repos),
+      plural(length(restricted_repos), "repository", "repositories"),
+      paste(restricted_repos, collapse = ", "),
+      if (length(restricted_repos) == 1) "contains" else "contain")
+    summary_restricted <- sprintf(
+      "We found %d %s with restricted-access files.",
+      length(restricted_repos),
+      plural(length(restricted_repos), "repository", "repositories"))
+  } else {
+    report_restricted <- NULL
+    summary_restricted <- NULL
   }
 
   report_tbl <- all_files |>
@@ -467,7 +592,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (nrow(report_tbl)) "#### Files" else NULL,
     scroll_table(report_tbl, maxrows = 10),
     report_readme,
-    report_zip
+    report_zip,
+    report_edat,
+    report_restricted
   )
 
   # traffic_light ----
@@ -490,7 +617,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_repo,
     summary_files,
     summary_readme,
-    summary_zip
+    summary_zip,
+    summary_edat,
+    summary_restricted
   ) |>
     paste("\n- ", x = _, collapse = "")
 

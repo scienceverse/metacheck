@@ -1,0 +1,71 @@
+{
+  "$id": "https://raw.githubusercontent.com/ISA-tools/isa-api/master/isatools/resources/schemas/isa_model_version_1_0_schemas/core/assay_schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ISA Assay JSON Schema",
+  "name": "ISA Assay JSON Schema",
+  "description": "JSON Schema describing an ISA model Assay object",
+  "type": "object",
+  "properties": {
+    "@id": { "type": "string", "format": "uri-reference" },
+    "@context": { "type": "string", "format": "uri-reference"},
+    "@type" : { "type": "string", "enum": ["Assay"] },
+    "filename" : { "type" : "string" },
+    "measurementType" : {
+      "$ref": "ontology_annotation_schema.json"
+    },
+    "technologyType" : {
+          "$ref": "ontology_annotation_schema.json"
+    },
+    "technologyPlatform" : { "type" : "string"},
+    "dataFiles" : {
+      "type": "array",
+      "items" : {
+        "$ref": "data_schema.json"
+      }
+    },
+    "materials": {
+      "type": "object",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "sample_schema.json"
+          }
+        },
+        "otherMaterials": {
+          "type": "array",
+          "items": {
+            "$ref": "material_schema.json"
+          }
+        }
+      }
+    },
+    "characteristicCategories": {
+      "description": "List of all the characteristics categories (or material attributes) defined in the study, used to avoid duplication of their declaration when each material_attribute_value is created. ",
+      "type": "array",
+      "items": {
+        "$ref": "material_attribute_schema.json"
+      }
+    },
+    "unitCategories": {
+      "description": "List of all the unitsdefined in the study, used to avoid duplication of their declaration when each value is created. ",
+      "type": "array",
+      "items": {
+        "$ref": "ontology_annotation_schema.json"
+      }
+    },
+    "processSequence": {
+      "type": "array",
+      "items" : {
+        "$ref" : "process_schema.json"
+      }
+    },
+    "comments" : {
+      "type": "array",
+      "items": {
+        "$ref": "comment_schema.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

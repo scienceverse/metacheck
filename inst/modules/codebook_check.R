@@ -64,7 +64,12 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
                            params = list()) {
 
   .codebook_types <- c("codebook", "readme")
+  # Data formats that carry embedded variable/value labels we can harvest as a
+  # codebook. SPSS/Stata/SAS expose them via haven; JASP (.jasp) and jamovi
+  # (.omv) carry the same haven-style label/labels attributes, exposed by
+  # read_jasp()/read_omv(), so the SAME .extract_haven_labels() consumes them.
   .haven_exts     <- c("sav", "dta", "sas7bdat")
+  .labelled_exts  <- c(.haven_exts, "jasp", "omv")
   max_llm_chunks  <- codebook_max_calls   # per unstructured codebook file
   gate_msgs       <- character(0)          # cap refusals to surface in the report
 
@@ -107,12 +112,22 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
                      conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0),
       traffic_light = "na",
-      summary_text = text
+      summary_text = text,
+      report = character(0)
     )
   }
 
+  # With no shared data there is nothing to match a scale against, and we do NOT
+  # archive scales inferred from prose alone. Return before naming scales from the
+  # manuscript so the LLM is not called on a paper with no data file.
   if (is.null(columns_df) || nrow(columns_df) == 0)
     return(empty_summary("We found no extracted data columns to check against a codebook."))
+
+  # ── 1b. Scales named in the MANUSCRIPT ───────────────────────────────────────
+  # Runs only once we know data columns exist (above). It reads the paper text to
+  # name instruments the authors describe, so the report can flag scales whose
+  # item-level data was not shared alongside the data that WAS.
+  text_scales <- .identify_scales_text_llm(paper, model, params)
 
   # ── 2. Locate codebook/readme files with a local copy ────────────────────────
   cb_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
@@ -125,11 +140,12 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     ]
   } else structure_df[0, , drop = FALSE]
 
-  # Data files carrying embedded haven labels (SPSS/Stata/SAS).
+  # Data files carrying embedded variable/value labels (SPSS/Stata/SAS via
+  # haven, plus JASP/jamovi via read_jasp()/read_omv()).
   haven_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
     structure_df[
       !is.na(structure_df$data_type) & structure_df$data_type == "data" &
-        tolower(tools::file_ext(structure_df$file_name)) %in% .haven_exts &
+        tolower(tools::file_ext(structure_df$file_name)) %in% .labelled_exts &
         !is.na(structure_df$file_location) &
         file.exists(structure_df$file_location %||% ""),
       , drop = FALSE
@@ -174,18 +190,32 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
   }
 
-  # Harvest embedded haven labels directly from data files.
-  if (nrow(haven_rows) > 0 && requireNamespace("haven", quietly = TRUE)) {
+  # Harvest embedded labels directly from data files. haven files (sav/dta/
+  # sas7bdat) are read labels-only (n_max = 0L) and need the haven package;
+  # .jasp/.omv carry the same haven-style attributes but are decoded by their
+  # own readers (no labels-only mode, so the full data is read) and need no
+  # haven. All feed the SAME .extract_haven_labels() extractor.
+  if (nrow(haven_rows) > 0) {
+    have_haven <- requireNamespace("haven", quietly = TRUE)
     for (p in haven_rows$file_location) {
       ext <- tolower(tools::file_ext(p))
       df <- tryCatch(switch(ext,
-        sav      = as.data.frame(haven::read_sav(p, n_max = 0L)),
-        dta      = as.data.frame(haven::read_dta(p, n_max = 0L)),
-        sas7bdat = as.data.frame(haven::read_sas(p, n_max = 0L))
+        sav      = if (have_haven) as.data.frame(haven::read_sav(p, n_max = 0L)),
+        dta      = if (have_haven) as.data.frame(haven::read_dta(p, n_max = 0L)),
+        sas7bdat = if (have_haven) as.data.frame(haven::read_sas(p, n_max = 0L)),
+        jasp     = read_jasp(p)$data,
+        omv      = read_omv(p)$data
       ), error = function(e) NULL)
       if (is.null(df)) next
       res <- .extract_haven_labels(df, basename(p))
       if (is.null(res)) next
+      # parse_method = "haven" for ALL embedded data-file labels (sav/dta/sas AND
+      # jasp/omv). These labels live inside the data file, so downstream logic
+      # that treats an embedded label as authoritative — e.g. the "haven_priority"
+      # tie-breaker in match_column_labels() that lets an embedded label win a
+      # label conflict — must apply to jasp/omv equally. Keying them all as
+      # "haven" (the codebase's name for an embedded data-file label) gives them
+      # that shared authority without touching every haven-keyed call site.
       res$parse_method <- "haven"
       parsed_list[[length(parsed_list) + 1L]] <- res
     }
@@ -203,6 +233,20 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── 4. Match columns against codebook variables (rules, then optional LLM) ───
   labels_df <- match_column_labels(columns_df, codebook_vars_df)
+
+  # Self-label export MACHINERY columns (paradata channels, survey-platform
+  # metadata, display-order, trial-level task housekeeping) so they are NOT sent
+  # to the codebook-matching LLM. A machinery column matches no codebook variable
+  # and would otherwise stay `unlabelled` and pour into codebook_match_llm's
+  # fuzzy-match tier — the wide-export fan-out this whole path guards against.
+  # Marking them `labelled` with a deterministic, rule-assigned label keeps them
+  # OUT of the LLM while still giving each a real variableMeasured description, so
+  # Psych-DS compliance (every column described) is preserved. Only touches
+  # columns still `unlabelled` — a machinery column the codebook DID document
+  # keeps its real label. Uses the per-file preview so platform detection
+  # (jsPsych/Inquisit/Behaverse) and Qualtrics/paradata name rules apply exactly
+  # as in scale detection.
+  labels_df <- .codebook_label_machinery(labels_df, previews)
 
   if (llm_use() && nrow(codebook_vars_df) > 0) {
     merged <- codebook_match_llm(labels_df, columns_df, codebook_vars_df,
@@ -238,6 +282,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_scale_files      <- 0L
   n_scale_unnamed    <- 0L
   n_scale_selfgen    <- 0L
+  n_tasks_found      <- 0L     # behavioural tasks named from the data
+  n_task_files       <- 0L     # files whose columns look task-like (rt/accuracy)
   scale_groups       <- NULL   # per-group inventory (for OSD + report)
   have_previews <- !is.null(previews) && length(previews) > 0
 
@@ -286,10 +332,26 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     apply_scale(scr, source = "matched")
   }
 
+  # Stage 2b: task matcher. Runs on the same previews but detects the OTHER
+  # shape of instrument — a behavioural task (Stroop, IAT, n-back), whose data
+  # is trial-level rt/accuracy rather than a Likert block, so Stage 2 cannot
+  # see it. Deliberately after Stage 2: apply_scale() never overwrites a name an
+  # earlier stage set, so a file holding both a questionnaire and a task keeps
+  # the questionnaire's naming for its Likert columns.
+  if (have_previews) {
+    tkr <- .identify_tasks_rules(previews, labels_df, paper)
+    if (nrow(tkr) > 0) {
+      apply_scale(tkr, source = "task_matched")
+      n_tasks_found <- length(unique(paste(tkr$source_file, tkr$scale)))
+    }
+    n_task_files <- attr(tkr, "n_detected") %||% 0L
+  }
+
   # Stage 3: LLM self-generated fallback.
   if (llm_use() && have_previews) {
     sg <- .identify_scales_selfgen(previews, labels_df, paper, model, params,
                                    columns_df = columns_df,
+                                   text_scales = text_scales,
                                    max_calls = codebook_max_calls)
     if (!is.null(sg) && nrow(sg) > 0) {
       apply_scale(sg, source = "self_generated")
@@ -327,6 +389,18 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
           ss <- ss[!is.na(ss) & nzchar(ss)]
           if (length(ss)) scale_groups$scale_source[i] <- ss[[1]]
         }
+        # Confidence must ride along with the name. Without this a scale named
+        # by the dictionary or self-gen tier reached the report with an EMPTY
+        # confidence: it showed as blank in the inventory table, and — because
+        # the guidance block counts `confidence %in% c("medium","low")` — a
+        # medium-confidence match silently suppressed the "how to make this
+        # high confidence" advice that the match was supposed to trigger.
+        if ("scale_confidence" %in% names(labels_df) &&
+            "confidence" %in% names(scale_groups)) {
+          cf <- labels_df$scale_confidence[idx]
+          cf <- cf[!is.na(cf) & nzchar(cf)]
+          if (length(cf)) scale_groups$confidence[i] <- cf[[1]]
+        }
       }
     }
   }
@@ -341,6 +415,17 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_scales_found <- length(unique(labels_df$scale[named]))
   files_named    <- unique(labels_df$source_file[named])
   n_scale_unnamed <- max(0L, n_scale_files - length(files_named))
+
+  # Tasks named in the manuscript but absent from the data. A task is often
+  # described in the methods and its trial-level data never shared, so this is
+  # the "measured but not shared" signal — the task counterpart of an orphan
+  # total. Reported, never treated as an error: a task may legitimately live in
+  # a file we could not read, and not finding a task in the data is common.
+  tasks_in_paper <- .scan_paper_for_tasks(paper)
+  tasks_in_data  <- unique(labels_df$scale[named &
+                     labels_df$scale_source %in% "task_matched"])
+  tasks_paper_only <- setdiff(tasks_in_paper, tasks_in_data)
+  n_tasks_paper_only <- length(tasks_paper_only)
 
   # ── 5. Coverage tallies ──────────────────────────────────────────────────────
   # Two distinct questions, kept separate:
@@ -576,6 +661,44 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       "Scale naming from the manuscript needs an LLM (enable with `llm_use(TRUE)`); the dictionary rules matcher still names instruments whose abbreviation matches a known scale.")
   }
 
+  # Instruments the manuscript describes but the shared data does not carry.
+  # `.scale_prefix_groups()` only sees column families with a shared leading
+  # abbreviation, so scales whose columns are item-content words are invisible to
+  # every stage above no matter how well the data is documented.
+  report <- c(report,
+              .scale_text_report(text_scales,
+                                 matched = unique(labels_df$scale[named])))
+
+  # ── Tasks ───────────────────────────────────────────────────────────────────
+  # Reported separately from scales because the evidence is different: a task is
+  # recognised from rt/accuracy columns rather than a Likert block, and a task
+  # named in the paper with no data behind it is a routine, reportable state
+  # rather than a fault.
+  if (n_task_files > 0 || n_tasks_paper_only > 0) {
+    task_lines <- character(0)
+    if (n_task_files > 0)
+      task_lines <- c(task_lines, sprintf(
+        "%d data file%s contain%s columns that look like a behavioural task (reaction times, accuracy, or a block of correct/incorrect items). %s named to a known task.",
+        n_task_files, plural(n_task_files),
+        if (n_task_files == 1) "s" else "",
+        if (n_tasks_found > 0)
+          sprintf("%d distinct task%s %s", n_tasks_found, plural(n_tasks_found),
+                  if (n_tasks_found == 1) "was" else "were")
+        else "None could be"))
+    if (n_tasks_paper_only > 0)
+      task_lines <- c(task_lines, paste0(
+        sprintf("**%d task%s named in the manuscript %s no matching data.** ",
+                n_tasks_paper_only, plural(n_tasks_paper_only),
+                if (n_tasks_paper_only == 1) "has" else "have"),
+        "The trial-level data may not be shared, may live in a file we could ",
+        "not read, or may use column names we did not recognise. Sharing ",
+        "trial-level data (one row per trial, with condition, response time ",
+        "and accuracy) would let the task be verified:"),
+        paste0("- ", tasks_paper_only))
+    if (length(task_lines))
+      report <- c(report, "#### Tasks", task_lines)
+  }
+
   if (llm_use()) {
     llm_text <- sprintf(
       "%sreviewed ambiguous cases (parsed %d file%s, matched %d column%s, merged %d label%s).",
@@ -586,6 +709,14 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     )
     report <- c(report, llm_text)
   }
+
+  # Data-quality warning: files whose column names are duplicated (a survey
+  # loop/merge export that did not number its repeated blocks). Surfaced per file
+  # so authors can re-export; never a hard failure.
+  dup_warnings <- .codebook_duplicate_name_warnings(previews)
+  if (length(dup_warnings) > 0)
+    report <- c(report, "#### Duplicated Column Names",
+                paste0("- ", dup_warnings))
 
   # Tiers refused by the LLM call budget: name the parameter and the value to
   # lift it (upfront gate — the tier was skipped, not partially processed).
@@ -609,7 +740,14 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     # first and the last is the "looks like a scale but we can't name it" set.
     scale_blocks_n  = n_scale_files,
     scale_named_n   = n_scales_found,
-    scale_unnamed_n = n_scale_unnamed
+    scale_unnamed_n = n_scale_unnamed,
+    # Behavioural tasks (Stroop, IAT, n-back). Detected from a different data
+    # signature than scales — rt/accuracy columns rather than a Likert block —
+    # so counted separately. `task_paper_only_n` is the task named in the
+    # manuscript with no matching data: measured but seemingly not shared.
+    task_files_n     = n_task_files,
+    task_named_n     = n_tasks_found,
+    task_paper_only_n = n_tasks_paper_only
   )
 
   list(
@@ -619,7 +757,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_table = summary_table,
     na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
                    conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0,
-                   scale_blocks_n = 0, scale_named_n = 0, scale_unnamed_n = 0),
+                   scale_blocks_n = 0, scale_named_n = 0, scale_unnamed_n = 0,
+                   task_files_n = 0, task_named_n = 0, task_paper_only_n = 0),
     traffic_light = tl,
     report = report,
     summary_text = summary_text
@@ -771,15 +910,42 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   }
 })
 
+# Task dictionary: the `tasks` dataset (see R/tasks.R / data-raw/tasks.R), one
+# row per behavioural task with name / acronym / code / atlas_id. Same shape and
+# same role as `.scale_dictionary()`, so the text-matching helpers below work on
+# either without modification.
+.task_dictionary <- local({
+  cached <- NULL
+  function() {
+    if (!is.null(cached)) return(cached)
+    d <- tryCatch(get("tasks", envir = asNamespace("metacheck")),
+                  error = function(e) NULL)
+    if (is.null(d)) d <- tryCatch(get("tasks"), error = function(e) NULL)
+    if (is.null(d)) d <- data.frame(name = character(), acronym = character(),
+                                    code = character(), atlas_id = character())
+    cached <<- d
+    d
+  }
+})
+
 # Regex matching an instrument in running text: its full name (tolerant of
 # spacing/dash/punctuation) OR its acronym as a whole word. Built per dictionary
 # row. NA acronym -> name only.
+#
+# The separator class must include BOTH apostrophes. The name is split on
+# non-alphanumerics, so "Raven's" becomes the tokens Raven + s, and rejoining
+# them with a class that lacks an apostrophe produces `Raven[\s._/-]*s`, which
+# cannot match the literal "Raven's". That silently made every possessive
+# instrument unmatchable in paper text — 19 of them across the two dictionaries
+# (Raven's Advanced Progressive Matrices, Children's Depression Inventory,
+# Addenbrooke's Cognitive Examination, ...). Both the ASCII (') and typographic
+# (’) forms are included because manuscripts and the dictionaries use both.
 .scale_text_pattern <- function(name, acronym) {
   toks <- unlist(strsplit(name, "[^A-Za-z0-9]+"))
   toks <- toks[nzchar(toks)]
   name_pat <- paste(vapply(toks, function(t)
     gsub("([][{}().^$*+?|\\\\-])", "\\\\\\1", t), character(1)),
-    collapse = "[\\s._/-]*")
+    collapse = "[\\s._/'’-]*")
   parts <- name_pat
   if (!is.na(acronym) && nzchar(acronym)) {
     a <- gsub("([][{}().^$*+?|\\\\-])", "\\\\\\1", acronym)
@@ -792,10 +958,17 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
 # acronym. Returns the canonical names found, to corroborate a data-proposed
 # scale (and to offer the LLM confirmable candidates). Cheap regex over the text.
 .scan_paper_for_scales <- function(paper) {
+  .scan_paper_with_dict(paper, .scale_dictionary())
+}
+
+# Scan a paper's text for any dictionary's instruments. Factored out of
+# .scan_paper_for_scales so the SAME matching applies to tasks: a task is
+# named in a manuscript exactly the way a scale is ("participants completed a
+# Stroop task"), and the `tasks` dataset carries the same name/acronym columns.
+.scan_paper_with_dict <- function(paper, dict) {
   if (!.is_paper(paper) || is.null(paper$text) || nrow(paper$text) == 0)
     return(character(0))
-  dict <- .scale_dictionary()
-  if (nrow(dict) == 0) return(character(0))
+  if (is.null(dict) || nrow(dict) == 0) return(character(0))
   hay <- paste(as.character(paper$text$text), collapse = " \n ")
   hit <- vapply(seq_len(nrow(dict)), function(i) {
     pat <- .scale_text_pattern(dict$name[i], dict$acronym[i])
@@ -803,6 +976,14 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
                     error = function(e) FALSE))
   }, logical(1))
   unique(dict$name[hit])
+}
+
+# Task names mentioned in the paper text. Used to corroborate a task proposed by
+# the data, and reported on its own: a task named in the manuscript but absent
+# from the data is exactly the "measured but not shared" signal codebook_check
+# already reports for scales.
+.scan_paper_for_tasks <- function(paper) {
+  .scan_paper_with_dict(paper, .task_dictionary())
 }
 
 # Common words to exclude from "distinctive item word" searches.
@@ -932,6 +1113,28 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
                     error = function(e) FALSE))
   }
 
+  # How many of this block's items are the reference instrument's OWN items,
+  # matched by wording? A signal INDEPENDENT of the name: the name test asks
+  # "does the paper mention the PANAS?", this asks "are these actually the
+  # PANAS's items?". Used only to break a tie the name test could not (several
+  # candidates corroborated, or an acronym collision like AQ), never to make a
+  # match the name test rejected. 0 when the codebook records no item wording,
+  # which is the common case and correctly contributes nothing.
+  n_items_matched <- function(i, file, cols) {
+    ref <- .scale_reference(.scale_ref_code(dict$name[i], dict))
+    if (is.null(ref)) return(0L)
+    w <- stats::setNames(vapply(cols, function(c) {
+      j <- match(paste(file, c, sep = "\x01"), lbl_key)
+      if (is.na(j)) return(NA_character_)
+      parts <- c(labels_df$label[j],
+                 if ("question" %in% names(labels_df)) labels_df$question[j])
+      parts <- parts[!is.na(parts) & nzchar(parts)]
+      if (!length(parts)) NA_character_ else parts[1]
+    }, character(1)), cols)
+    m <- .scale_match_items(w, ref)
+    if (is.null(m)) 0L else sum(!is.na(m$ref_item_id))
+  }
+
   out <- list(); n_detected <- 0L
   for (file in names(previews)) {
     df <- previews[[file]]
@@ -955,18 +1158,144 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       pick <- NA_integer_; conf <- NA_character_
       if (sum(corr) == 1L) {
         pick <- cand[corr]; conf <- "high"      # unambiguous, text-confirmed
+      } else if (sum(corr) > 1L) {
+        # Several candidates named in the text (an acronym collision: AQ =
+        # Autism Spectrum Quotient AND Aggression Questionnaire). The name test
+        # cannot separate them. Item wording can: whichever candidate's OWN
+        # items are in this block is the one administered. Requires a clear
+        # winner on >= 2 matched items — a single shared item is the kind of
+        # generic wording ("I feel calm") that two instruments both contain.
+        hits <- vapply(cand[corr], n_items_matched, integer(1),
+                       file = file, cols = nms)
+        if (max(hits) >= 2L && sum(hits == max(hits)) == 1L) {
+          pick <- cand[corr][which.max(hits)]
+          conf <- "high"                        # confirmed by the items themselves
+        }
       } else if (sum(corr) == 0L && length(cand) == 1L &&
                  nchar(norm_pref(dict$acronym[cand])) >= 4L) {
         pick <- cand; conf <- "medium"          # data-only, safe acronym
       }
-      # else: 0 candidates left, several corroborated (still ambiguous), or a
-      # lone short-acronym with no corroboration -> ABSTAIN.
+      # else: 0 candidates left, several still tied on item evidence, or a lone
+      # short-acronym with no corroboration -> ABSTAIN.
 
       if (!is.na(pick))
         out[[length(out) + 1L]] <- data.frame(
           source_file = file, column_name = nms,
           scale = dict$name[pick], confidence = conf,
           scale_source = "matched")
+    }
+  }
+
+  res <- if (length(out)) dplyr::bind_rows(out) else empty
+  attr(res, "n_detected") <- n_detected
+  res
+}
+
+# ── Task identification (data side) ───────────────────────────────────────────
+# The scale matcher keys on a Likert block sharing a name prefix. A behavioural
+# task produces nothing of the kind: its data is either one row per TRIAL
+# (subject, trial, condition, rt, correct) or one aggregated column per
+# condition (stroop_rt_congruent), and reaction times fail the Likert gate by
+# construction. So tasks need their own matcher over the same contract:
+# per-column rows of (source_file, column_name, scale, confidence,
+# scale_source) that `apply_scale()` folds into labels_df.
+#
+# Evidence is combined from three places, and a task is named only when the DATA
+# says "a task is here" AND the NAME is corroborated:
+#   * the data: an rt/accuracy column, or a block of 0/1 accuracy items
+#     (.detect_task_columns / .detect_accuracy_blocks in data_check_helpers.R)
+#   * the column names: a task acronym or name token as a prefix (iat_*, stroop_*)
+#   * the paper text: the task's full name, never a bare acronym
+#
+# Abstention is cheap and deliberate. A task that goes unrecognised costs a
+# report line; a task named wrongly asserts that a paper ran a paradigm it did
+# not. When the evidence does not converge, no name is emitted and the columns
+# are still reported as task-like but unnamed.
+.identify_tasks_rules <- function(previews, labels_df, paper) {
+  empty <- structure(
+    data.frame(source_file = character(), column_name = character(),
+               scale = character(), confidence = character(),
+               scale_source = character()),
+    n_detected = 0L)
+  if (is.null(previews) || !length(previews)) return(empty)
+  dict <- .task_dictionary()
+  if (nrow(dict) == 0) return(empty)
+
+  norm_pref <- function(x) tolower(gsub("[^a-z0-9]", "", tolower(x)))
+  dict$.akey <- norm_pref(dict$acronym)
+  # Also key on the first content token of the name, so a `stroop_*` prefix
+  # reaches "color-word stroop task" even though its acronym is empty.
+  first_tok <- function(nm) {
+    toks <- unlist(strsplit(tolower(nm), "[^a-z0-9]+"))
+    toks <- toks[nzchar(toks) & !(toks %in% c("the","a","an","of","task","test"))]
+    if (length(toks)) toks[1] else ""
+  }
+  dict$.nkey <- vapply(dict$name, first_tok, character(1))
+
+  have_paper <- .is_paper(paper) && !is.null(paper$text) && nrow(paper$text) > 0
+  paper_hay  <- if (have_paper)
+    paste(as.character(paper$text$text), collapse = " \n ") else ""
+
+  # Corroboration requires the FULL NAME in the text, never a bare acronym —
+  # the same rule the scale matcher uses, and for the same reason: "IAT" and
+  # "CRT" are ambiguous outside their context.
+  corroborates <- function(i) {
+    if (!nzchar(paper_hay)) return(FALSE)
+    pat <- .scale_text_pattern(dict$name[i], NA_character_)
+    isTRUE(tryCatch(grepl(pat, paper_hay, perl = TRUE, ignore.case = TRUE),
+                    error = function(e) FALSE))
+  }
+
+  out <- list(); n_detected <- 0L
+  for (file in names(previews)) {
+    df <- previews[[file]]
+    if (is.null(df) || !is.data.frame(df) || !ncol(df)) next
+    if (!.is_task_data(df)) next          # no rt / accuracy signal in this file
+    n_detected <- n_detected + 1L
+
+    task_cols <- .detect_task_columns(df)
+    acc_blocks <- .detect_accuracy_blocks(df)
+
+    # Candidate column groups: each rt/accuracy column on its own, plus each
+    # accuracy block as a unit. A group's prefix is what we try to name.
+    groups <- list()
+    for (k in seq_len(nrow(task_cols)))
+      groups[[length(groups) + 1L]] <- task_cols$column_name[k]
+    for (b in acc_blocks)
+      groups[[length(groups) + 1L]] <- names(df)[b]
+
+    for (cols in groups) {
+      # Strip the rt/acc/condition marker to leave the task's own prefix:
+      # "stroop_rt_congruent" -> "stroop", "raven_1" -> "raven".
+      pfx <- .scale_name_prefix(cols[[1]])
+      pfx <- sub(paste0("[._ -]?(", "rt|reaction[._ -]?time|response[._ -]?time|",
+                        "latency|acc|accuracy|correct|error|hit|miss",
+                        ")([._ -].*)?$"), "", pfx, perl = TRUE)
+      pfx <- gsub("[._ -]+$", "", pfx)
+      p <- norm_pref(pfx)
+      if (!nzchar(p) || nchar(p) < 3L) next   # "rt" alone names no task
+
+      cand <- which(dict$.akey == p | norm_pref(dict$.nkey) == p)
+      if (!length(cand)) next
+
+      corr <- vapply(cand, corroborates, logical(1))
+      pick <- NA_integer_; conf <- NA_character_
+      if (sum(corr) == 1L) {
+        pick <- cand[corr]; conf <- "high"     # data + text agree
+      } else if (sum(corr) > 1L) {
+        # Several task names corroborated by one prefix (8 Stroop variants, 8
+        # n-backs). The text cannot separate them and neither can the columns,
+        # so abstain rather than pick the alphabetically-first paradigm.
+        next
+      } else if (length(cand) == 1L && nchar(p) >= 4L) {
+        pick <- cand; conf <- "medium"         # data-only, distinctive prefix
+      }
+      if (is.na(pick)) next
+
+      out[[length(out) + 1L]] <- data.frame(
+        source_file = file, column_name = cols,
+        scale = dict$name[pick], confidence = conf,
+        scale_source = "task_matched")
     }
   }
 
@@ -1054,6 +1383,26 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   tolower(p)
 }
 
+# Collapse a loop/stimulus index out of a block stem, so the SAME instrument
+# repeated across many stimuli or loop iterations maps to one canonical stem.
+# A wide survey that shows one matrix for N stimuli exports N stem families that
+# differ only by an embedded index: POWER.PP1, POWER.PP2, ... POWER.PP170 (or
+# Q3_1_, Q3_2_, ...). Each is the SAME questionnaire, so they should be one
+# block, not 170. This strips a trailing `<sep><letters><digits>` or `<sep><digits>`
+# index token (`.PP170`, `_2`, `-stim12`) from the stem's tail, returning the
+# instrument base (`power`, `q3`). Returns the lowercased stem unchanged when no
+# such trailing index is present, so a stem that is a plain instrument name
+# (`PANAS`, `BFI`) is never altered. The alphabetic base must remain >= 2 letters,
+# so we never collapse a stem down to nothing.
+.scale_loop_base <- function(stem) {
+  s <- tolower(stem)
+  # peel a trailing index token: optional separator, optional letters, digits.
+  base <- sub("[._ -]?[a-z]*[0-9]+$", "", s, perl = TRUE)
+  base <- sub("[._ -]+$", "", base)
+  # only accept the collapse when a real alphabetic base survives.
+  if (sum(grepl("[a-z]", strsplit(base, "")[[1]])) >= 2) base else s
+}
+
 # Do two adjacent columns belong to the SAME instrument/subscale, i.e. do they
 # differ ONLY by item number? True when, after their shared leading stem, BOTH
 # remainders are just an item number (optional separator + digits, to the end).
@@ -1111,6 +1460,14 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
 .scale_split_items <- function(cols, df = NULL, min_items = .scale_min_items) {
   keep_all <- function(totals_only = FALSE)
     list(items = cols, derived = character(0), totals_only = totals_only)
+
+  # Reader-invented placeholder names (…N, STEM…N, V1, X.1, col_N) are NOT scale
+  # items — they are what read.csv/readxl fabricate for blank/duplicate headers
+  # (e.g. a "CDA" banner row spread into CDA…4 … CDA…113). Drop them BEFORE any
+  # item logic, so a block made of them loses its items and never becomes a scale.
+  # Uses the same .is_placeholder_name() as the read-time header repair, so the two
+  # cannot disagree about what counts as a fabricated name.
+  cols <- cols[!.is_placeholder_name(cols)]
   if (length(cols) < min_items) return(keep_all())
 
   suffix <- sub("^.*?[._ -]", "", cols)            # segment after first separator
@@ -1173,10 +1530,209 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
        totals_only = totals_only)
 }
 
+# .qualtrics_col_stem() lives in R/data_check_helpers.R so it is in the package
+# namespace: match_column_labels() (an R/ function) needs it for the Qualtrics
+# stem fallback, and R/ functions are not in scope for module-only definitions.
+
+# Build the QSF/Qualtrics arguments for .scale_prefix_groups() for one file: the
+# authoritative column -> block-stem map from a parsed .qsf (labels_df$scale_group
+# scoped to this file), and whether the data frame is a Qualtrics export (used
+# only when no .qsf map is available). Returns list(scale_group=, qualtrics=).
+.scale_group_args <- function(df, file, labels_df) {
+  sg <- NULL
+  if (!is.null(labels_df) && "scale_group" %in% names(labels_df) &&
+      all(c("source_file", "column_name") %in% names(labels_df))) {
+    fr <- labels_df[!is.na(labels_df$scale_group) & nzchar(labels_df$scale_group) &
+                      labels_df$source_file == file, , drop = FALSE]
+    if (nrow(fr) > 0)
+      sg <- stats::setNames(fr$scale_group, fr$column_name)
+  }
+  list(scale_group = sg,
+       qualtrics = is.null(sg) && data_check_is_qualtrics(df))
+}
+
+# `scale_group`: an optional named character vector (column name -> authoritative
+# block stem, from a parsed .qsf via labels_df$scale_group). When supplied, those
+# stems define blocks directly (the reliable signal), and the character-run
+# heuristic is applied only to the columns no stem claims. `qualtrics`: when TRUE
+# and no scale_group is given, blocks are recovered from the Qualtrics <stem>_<N>
+# export-naming convention (.qualtrics_col_stem) before the heuristic runs.
+# Paradata channel tokens: trial-level metadata (response times, trial/stimulus/
+# option channels) that some formats (Behaverse wide pivots, Qualtrics timing)
+# attach to every item column. These are NOT scale items — they are recognised
+# here and EXCLUDED from scale grouping so they do not become junk "scales". The
+# data is not discarded: it is routed to Behaverse `trial` paradata files (see
+# R/behaverse-convert.R). Matched as whole, delimiter-bounded segments so an
+# answer channel (response_numeric) and construct words are never caught.
+.PARADATA_CHANNEL_RE <- paste0(
+  "(^|[_. -])(",
+  "trial_index|stimulus_type|stimulus_description|response_time|",
+  "response_validation_time|validation_time|response_option_index|",
+  "response_description|first[_ ]?click|last[_ ]?click|page[_ ]?submit|",
+  "click[_ ]?count|timing|timer|reaction[_ ]?time",
+  ")([_. -]|$)")
+
+# Qualtrics PAGE-TIMER columns. When a survey has a Timing question, Qualtrics
+# exports four fixed channels per timed page — First Click, Last Click, Page
+# Submit, Click Count — and GLUES the "timing" stem straight onto the item name
+# with no delimiter, in dot-separated CamelCase: `eraitem16timing_First.Click`,
+# `Q8timing_Page.Submit`. The delimiter-bounded .PARADATA_CHANNEL_RE misses
+# these because there is no boundary before "timing" and the two-word channels
+# are dot-joined (First.Click), not underscore/space. This closed, unambiguous
+# Qualtrics vocabulary is matched here regardless of the preceding character, so
+# a real item does not drag its three/four timer columns into a "scale". The
+# channels are only ever timer metadata, so relaxing the left boundary for them
+# cannot swallow a substantive item.
+.QUALTRICS_TIMER_RE <- paste0(
+  # The four page-timer channels, dot/underscore/space joined, appearing anywhere
+  # in the name. Qualtrics attaches them under a `time`/`timing` stem that is
+  # itself glued to the item name (`demo1time_First.Click`,
+  # `eraitem16timing_Page.Submit`), so the channel words are the reliable anchor.
+  "(first[_. -]?click|last[_. -]?click|page[_. -]?submit|click[_. -]?count)([_. -]|$)|",
+  # The `time`/`timing` timer stem when immediately followed by a channel word,
+  # OR a delimiter-terminated `timing`. NOT a bare `time`: that is a legitimate
+  # substantive variable (`sleep_time`, `time_spent`), and only the `timing`
+  # spelling or a following channel word is an unambiguous Qualtrics timer.
+  "tim(e|ing)[_. -]*(first|last|page|click)|timing([_. -]|$)")
+
+# Is a column name a paradata channel (not a scale item)? The Behaverse ANSWER
+# channel `response_numeric` is deliberately NOT matched, so real items survive.
+.scale_is_paradata_col <- function(nm) {
+  x <- tolower(nm)
+  (grepl(.PARADATA_CHANNEL_RE, x, perl = TRUE) |
+     grepl(.QUALTRICS_TIMER_RE, x, perl = TRUE)) &
+    !grepl("response_numeric", x, fixed = TRUE)
+}
+
+# Is each column of `df` non-analytic survey/export MACHINERY rather than a
+# substantive measurement — so it must be kept out of SCALE DETECTION (and hence
+# the LLM), though it is still DESCRIBED elsewhere in the inventory? Covers:
+#   * paradata channels (response/validation times, click/timing channels);
+#   * reserved survey-platform metadata (StartDate, Duration, ResponseId, ...);
+#   * Qualtrics display-order/randomisation columns (`<Q>_DO_<...>`);
+#   * free-text-entry overflow columns (`*_TEXT`);
+#   * trial-level task machinery (jsPsych browser/media/geometry diagnostics,
+#     Inquisit stimulus geometry / pauses / timeouts, ...) via Behaverse's
+#     per-platform substantive-column vocabulary (.bh_is_machinery_col), applied
+#     only when the file is DETECTED as that platform so a survey column named
+#     "browser" or "response" elsewhere is never touched.
+# This is the "not everything in a data file is data" filter: an instrument is
+# never named from these, so a wide export does not spend one LLM group per
+# housekeeping column. Side-effect free; it removes columns from grouping only.
+.scale_is_nonanalytic_col <- function(df) {
+  nm <- names(df)
+  out <- .scale_is_paradata_col(nm) |
+    !is.na(.qualtrics_tag_cols(nm)) |          # reserved platform metadata
+    .qualtrics_is_display_order(nm) |          # `_DO_` randomisation order
+    grepl("_TEXT$", nm, perl = TRUE)           # free-text-entry overflow
+
+  # Trial-level task machinery, gated on per-file platform detection.
+  fmt <- if (data_check_is_jspsych(df)) "jspsych"
+         else if (data_check_is_inquisit(df)) "inquisit"
+         else if (data_check_is_psychopy(df)) "psychopy"
+         else if (data_check_is_behaverse(df)) "behaverse"
+         else NULL
+  if (!is.null(fmt)) out <- out | .bh_is_machinery_col(nm, fmt)
+  out
+}
+
+# Self-label export MACHINERY columns in labels_df so they are excluded from the
+# codebook-matching LLM while still being fully described (Psych-DS compliant).
+# For each source file present in `previews`, computes the machinery mask with
+# the SAME rule scale detection uses (.scale_is_nonanalytic_col, which covers
+# paradata, survey-platform metadata, display-order, and platform task
+# housekeeping), and for every still-`unlabelled` machinery column sets a
+# deterministic label. `label_status = "labelled"` removes it from the LLM tiers
+# (which only see `unlabelled`/`conflicting_definition`); `label_method` records
+# it was a rule, not the model. A column the codebook actually documented is left
+# untouched. Files with no preview are skipped (nothing to detect from).
+.codebook_label_machinery <- function(labels_df, previews) {
+  if (is.null(labels_df) || nrow(labels_df) == 0 ||
+      is.null(previews) || length(previews) == 0) return(labels_df)
+  if (!all(c("source_file", "column_name", "label_status") %in% names(labels_df)))
+    return(labels_df)
+
+  for (f in intersect(unique(labels_df$source_file), names(previews))) {
+    df <- previews[[f]]
+    if (is.null(df) || ncol(df) == 0) next
+    mask <- .scale_is_nonanalytic_col(df)
+    machine_cols <- names(df)[mask]
+    if (!length(machine_cols)) next
+    rows <- labels_df$source_file == f &
+      labels_df$column_name %in% machine_cols &
+      labels_df$label_status == "unlabelled"
+    if (!any(rows)) next
+    labels_df$label[rows]        <- "Export machinery / paradata column (not a measured variable)."
+    labels_df$label_status[rows] <- "labelled"
+    labels_df$label_method[rows] <- "paradata_rule"
+    if ("codebook_variable" %in% names(labels_df))
+      labels_df$codebook_variable[rows] <- labels_df$column_name[rows]
+  }
+  labels_df
+}
+
+# Per-file warning for DUPLICATED column names. A survey export whose loop/merge
+# iterations are not encoded into the column name repeats the same header many
+# times (e.g. POWER.PP1_1 appearing 171×, once per stimulus). The reader keeps
+# them, but they cannot be told apart, so a codebook can document the name only
+# once and every analysis has to guess which repetition is which. This is a
+# data-quality signal for the authors, not a metacheck error — so it is surfaced
+# as a warning naming the worst-repeated columns, never a hard failure. Returns a
+# character vector of warning lines (one per affected file), empty when none.
+# `min_repeat` is the count at which a repeated name is worth flagging.
+.codebook_duplicate_name_warnings <- function(previews, min_repeat = 2L) {
+  if (is.null(previews) || length(previews) == 0) return(character(0))
+  out <- character(0)
+  for (f in names(previews)) {
+    df <- previews[[f]]
+    if (is.null(df) || ncol(df) == 0) next
+    tab <- table(names(df))
+    dup <- tab[tab >= min_repeat]
+    if (!length(dup)) next
+    dup <- sort(dup, decreasing = TRUE)
+    ex  <- utils::head(names(dup), 5)
+    out <- c(out, sprintf(
+      "**Duplicated column names in `%s`.** %d column name%s appear%s more than once (worst: %s), so %d of the file's %d columns share a name with another. This usually means a survey loop/merge exported repeated blocks without numbering each iteration; the repeats cannot be told apart and can only be documented once. Consider re-exporting with per-iteration column names.",
+      f, length(dup), plural(length(dup)), if (length(dup) == 1) "s" else "",
+      paste(sprintf("`%s`×%d", ex, as.integer(dup[ex])), collapse = ", "),
+      sum(as.integer(dup)), ncol(df)))
+  }
+  out
+}
+
 .scale_prefix_groups <- function(df, min_cols = .scale_min_items,
-                                 min_chars = .scale_group_min_chars) {
-  nms <- names(df)
-  if (length(nms) < min_cols) return(list())
+                                 min_chars = .scale_group_min_chars,
+                                 scale_group = NULL, qualtrics = FALSE) {
+  # Drop non-analytic MACHINERY columns before grouping — paradata channels,
+  # reserved survey-platform metadata, Qualtrics display-order/randomisation, and
+  # free-text overflow. None is a scale item, so none should reach scale naming
+  # or the LLM; they are still described elsewhere in the inventory. This is what
+  # stops a wide Qualtrics/Behaverse export's thousands of housekeeping columns
+  # from becoming junk "scales" (or one LLM group each), and unsplits real
+  # instruments the interleaved channels had fragmented.
+  nonanalytic <- .scale_is_nonanalytic_col(df)
+  if (any(nonanalytic)) df <- df[, !nonanalytic, drop = FALSE]
+  all_nms <- names(df)
+  if (length(all_nms) < min_cols) return(list())
+
+  # Authoritative block claims: column -> block stem. From a parsed .qsf
+  # (scale_group) when available, else the Qualtrics <stem>_<N> naming shape.
+  # These columns are grouped by the claim and excluded from the character-run
+  # heuristic below, which only sees the columns no claim covers.
+  claim <- stats::setNames(rep(NA_character_, length(all_nms)), all_nms)
+  if (!is.null(scale_group)) {
+    hit <- intersect(all_nms, names(scale_group))
+    claim[hit] <- as.character(scale_group[hit])
+  } else if (isTRUE(qualtrics)) {
+    claim[] <- vapply(all_nms, .qualtrics_col_stem, character(1))
+  }
+  # A claim is only kept when its stem covers at least min_cols columns here — a
+  # lone claimed column is not a block, and should fall through to the heuristic.
+  claimed_stems <- names(which(table(claim[!is.na(claim)]) >= min_cols))
+  claim[!(claim %in% claimed_stems)] <- NA_character_
+
+  # The heuristic walks only the UNCLAIMED columns, in original order.
+  nms <- all_nms[is.na(claim[all_nms])]
 
   # Walk columns in order, extending a run while each next column shares a
   # >= min_chars stem with the run's stem. Emit a block when a run is long enough.
@@ -1222,6 +1778,35 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       }
     }
     merged[[length(merged) + 1L]] <- list(cols = r$cols, stem = r$stem, ap = ap)
+  }
+
+  # Pass 2.5: COLLAPSE loop/stimulus repetitions. One instrument shown for many
+  # stimuli exports many stem families differing only by an embedded index
+  # (POWER.PP1, POWER.PP2, ... -> base "power"). Group the merged runs by their
+  # loop-collapsed base and union each group's columns, so the repeated matrix
+  # becomes ONE block instead of N. Only collapses when >= 2 runs share a base
+  # AND that base is shorter than the stems (i.e. a real index was stripped), so
+  # distinct instruments that merely share leading letters are never merged. The
+  # kept display stem is the collapsed base (upper-cased from the first column).
+  if (length(merged) > 1) {
+    bases <- vapply(merged, function(m) .scale_loop_base(m$stem), character(1))
+    collapsed <- list()
+    for (b in unique(bases)) {
+      grp <- merged[bases == b]
+      # A collapse is real only if >= 2 runs share the base and the base is
+      # genuinely shorter than the stems it came from (an index was removed).
+      shortened <- any(nchar(b) < vapply(grp, function(m) nchar(tolower(m$stem)),
+                                         integer(1)))
+      if (length(grp) >= 2 && shortened) {
+        cols <- unlist(lapply(grp, `[[`, "cols"), use.names = FALSE)
+        disp <- toupper(substr(grp[[1]]$cols[[1]], 1, nchar(b)))
+        collapsed[[length(collapsed) + 1L]] <-
+          list(cols = cols, stem = disp, ap = .scale_alpha_prefix(disp))
+      } else {
+        for (m in grp) collapsed[[length(collapsed) + 1L]] <- m
+      }
+    }
+    merged <- collapsed
   }
 
   out <- list()
@@ -1276,6 +1861,15 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       emit(m$cols, m$stem)
     }
   }
+
+  # Authoritative claimed blocks (QSF / Qualtrics), emitted through the SAME
+  # emit() so item/derived splitting and the stem guards apply identically. Each
+  # claimed stem's columns are kept in their data-frame order. min_stem = 2 so a
+  # short-but-real export tag (e.g. "AQ") is not rejected on length alone.
+  for (stem in claimed_stems) {
+    cols <- all_nms[!is.na(claim[all_nms]) & claim[all_nms] == stem]
+    emit(cols, stem, min_stem = 2L)
+  }
   out
 }
 
@@ -1313,7 +1907,7 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
 # word AND at least one Capitalized multi-word name or a parenthetical acronym
 # (the two ways instruments are introduced: "Teleological Beliefs Scale (TBS)").
 # Kept separate from the prefix search so the two sets can be pooled and capped.
-.scale_description_sentences <- function(paper, max_sent = 30L) {
+.scale_description_sentences <- function(paper, max_sent = 60L) {
   if (!.is_paper(paper) || is.null(paper$text) || nrow(paper$text) == 0)
     return(character(0))
   signal <- paste0("\\b(", paste(.SCALE_SIGNAL_WORDS, collapse = "|"), ")\\b")
@@ -1324,12 +1918,131 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   if (is.null(sents) || !nrow(sents)) return(character(0))
   s <- unique(trimws(as.character(sents$text)))
   s <- s[nzchar(s)]
-  # Keep sentences that also carry a proper-noun instrument name: a run of >= 2
-  # Capitalized words, or a parenthetical ALL-CAPS acronym. This filters generic
-  # uses of "items"/"measure" that name no instrument.
-  named <- grepl("([A-Z][A-Za-z]+ ){1,}[A-Z][A-Za-z]+", s) |
-           grepl("\\([A-Z][A-Za-z-]*[A-Z]\\)", s)
-  utils::head(s[named], max_sent)
+  # Send every scale-signal sentence to the LLM; do NOT pre-filter on surface
+  # form. Whether a sentence names an instrument is the LLM's judgement, not the
+  # regex's — a scale in lower case ("the grit scale") or described without a
+  # proper-noun name would otherwise be removed before the model ever sees it.
+  # The capitals/acronym cue now lives in the prompt as guidance instead.
+  utils::head(s, max_sent)
+}
+
+# TEXT-ONLY scale detection: name the instruments the MANUSCRIPT describes, with
+# no reference to the data. `.identify_scales_prefix_llm()` can only name a scale
+# that surfaced as a column group sharing a leading abbreviation, so it is blind
+# to instruments whose columns are named after item content (`accomplished`,
+# `snobbish`, ...) — the AP-HP and PANAS-X blocks in collabra.38634 are exactly
+# that, and produce no group at all. This reads the paper instead, so the report
+# can tell an author which instruments have no item-level data to match.
+#
+# Recall is deliberately favoured over precision: an instrument that is only
+# cited (not administered) is returned with administered = "unclear" rather than
+# dropped, and the REPORT (not this function) applies the capitalisation gate.
+# Returns a data.frame (scale_name, acronym, n_items, administered, confidence)
+# or NULL.
+.identify_scales_text_llm <- function(paper, model, params) {
+  if (!llm_use() || !.is_paper(paper)) return(NULL)
+  sents <- .scale_description_sentences(paper, max_sent = 30L)
+  if (!length(sents)) return(NULL)
+
+  type_spec <- ellmer::type_object(
+    scales = ellmer::type_array(ellmer::type_object(
+      scale_name = ellmer::type_string(
+        "Full name of the instrument, exactly as capitalised in the text."),
+      acronym    = ellmer::type_string("Its acronym as given in the text, or empty."),
+      n_items    = ellmer::type_string("Number of items if stated, else empty."),
+      administered = ellmer::type_string(
+        "Did the authors administer this to their own participants? yes, unclear, or no."),
+      confidence = ellmer::type_string("high, medium, or low."))))
+
+  prompt <- paste(
+    "You are given sentences from a research paper. List every psychometric",
+    "instrument (scale, questionnaire, inventory, test) that the AUTHORS",
+    "ADMINISTERED TO PARTICIPANTS in this study.",
+    "GUIDANCE:",
+    "(1) Instrument names are FREQUENTLY written in Capitalised Words, often",
+    "defined once as 'Full Name of Scale (ABBR)', and a parenthetical ALL-CAPS",
+    "acronym is a strong signal. But capitalisation is NOT required: an instrument",
+    "named in lower case ('the grit scale', 'a life-orientation test') or",
+    "described without a formal proper name ('a seven-item measure of perceived",
+    "stress') still counts. Judge from meaning, not capitalisation. Return each",
+    "distinct instrument once, using the fullest name the text gives it.",
+    "(2) An author-year citation ('Gentile et al., 2013') is the REFERENCE for a",
+    "scale, NOT its name. Never return an author name as the scale_name.",
+    "(3) Prefer instruments the authors ADMINISTERED TO PARTICIPANTS in this",
+    "study. When it is unclear whether an instrument was administered here or",
+    "only cited from prior work, INCLUDE it and mark confidence 'low'. Recall",
+    "matters more than precision: it is better to list a scale that turns out not",
+    "to have been administered than to miss one that was.",
+    "(4) Use 'administered' to record whether the text shows the authors gave this",
+    "instrument to their own participants: 'yes', 'unclear', or 'no'.")
+
+  resp <- tryCatch(
+    llm(text = data.frame(text = paste("-", sents, collapse = "\n")),
+        text_col = "text", system_prompt = prompt, type = type_spec,
+        model = model, params = params,
+        phase = "Identifying scales in the manuscript"),
+    error = function(e) NULL)
+  resp <- .strip_llm_wrapper(resp, "scales")
+  if (is.null(resp) || !nrow(resp) || !"scale_name" %in% names(resp)) return(NULL)
+
+  keep <- c("scale_name", "acronym", "n_items", "administered", "confidence")
+  resp <- resp[, intersect(keep, names(resp)), drop = FALSE]
+  resp$scale_name <- trimws(as.character(resp$scale_name))
+  resp <- resp[nzchar(resp$scale_name), , drop = FALSE]
+  resp <- resp[!duplicated(tolower(resp$scale_name)), , drop = FALSE]
+  if (!nrow(resp)) return(NULL)
+  resp
+}
+
+# Build the "#### Scales in the manuscript" report section from text-detected
+# instruments. `matched` = scale names already accounted for in the data (from
+# labels_df), so a scale whose items ARE shared is not warned about; pass
+# character(0) when there is no data at all, and every detected scale is
+# reported. Returns character(0) when the LLM named no instruments.
+.scale_text_report <- function(text_scales, matched = character(0)) {
+  if (is.null(text_scales) || !nrow(text_scales)) return(character(0))
+  # Trust the LLM's judgement of what is an instrument: do NOT re-filter its
+  # output on capitalisation. Scale names are not always capitalised ("the grit
+  # scale"), and the model was asked to return lower-case instruments too, so a
+  # capitalisation gate here would silently discard exactly those.
+  ts <- text_scales[nzchar(trimws(text_scales$scale_name)), , drop = FALSE]
+  if (!nrow(ts)) return(character(0))
+
+  # Drop instruments already identified in the shared data: same name, or the
+  # detected acronym matches a matched scale name (BFI/NPI vs the data's BIG/NARC
+  # column prefixes, which .scales_to_osd() names in full).
+  if (length(matched)) {
+    m <- tolower(matched)
+    hit <- tolower(ts$scale_name) %in% m |
+      vapply(seq_len(nrow(ts)), function(i) {
+        a <- tolower(trimws(ts$acronym[i] %||% ""))
+        nzchar(a) && any(grepl(paste0("\\b", a, "\\b"), m))
+      }, logical(1))
+    ts <- ts[!hit, , drop = FALSE]
+  }
+  if (!nrow(ts)) return(character(0))
+
+  lines <- vapply(seq_len(nrow(ts)), function(i) {
+    bits <- c(
+      if (nzchar(trimws(ts$acronym[i] %||% ""))) paste0(trimws(ts$acronym[i])),
+      if (nzchar(trimws(ts$n_items[i] %||% ""))) paste0(trimws(ts$n_items[i]), " items"),
+      if (identical(tolower(trimws(ts$administered[i] %||% "")), "unclear"))
+        "possibly not administered here")
+    sprintf("- **%s**%s", ts$scale_name[i],
+            if (length(bits)) paste0(" (", paste(bits, collapse = "; "), ")") else "")
+  }, character(1))
+
+  c("#### Scales in the manuscript",
+    sprintf(paste0(
+      "The manuscript describes %d instrument%s whose item-level data we could ",
+      "not find. De-identified item-level responses are far more valuable to ",
+      "share than total scores: they let others check the scoring, the ",
+      "reverse-coding, and the reliability, and let the items be reused. ",
+      "Consider sharing the raw item responses for:"),
+      nrow(ts), plural(nrow(ts))),
+    lines,
+    paste0("(Detected from the manuscript text; an instrument mentioned only in ",
+           "passing may be listed here in error.)"))
 }
 
 # ONE-CALL LLM matcher: given every prefix group in a file (with column counts,
@@ -1391,7 +2104,9 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   for (file in names(previews)) {
     df <- previews[[file]]
     if (is.null(df) || ncol(df) == 0) next
-    groups <- .scale_prefix_groups(df)
+    sga <- .scale_group_args(df, file, labels_df)
+    groups <- .scale_prefix_groups(df, scale_group = sga$scale_group,
+                                   qualtrics = sga$qualtrics)
     if (length(groups) == 0) next
 
     # Sentences to give the model: (a) those mentioning this file's abbreviations,
@@ -1624,13 +2339,82 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       code         = cp$code,
       abbreviation = r$prefix))
 
+    # Reference instrument (OpenScales), when this scale is a known one. Gives
+    # the published item text, item count and reverse-keying to compare the
+    # shared data against. NULL for manuscript-only / self-generated labels.
+    reference <- .scale_reference(cp$ref_code)
+    ref_match <- .scale_match_items(wording, reference)
+
+    # The OSD spec (section 3) makes scale_info, likert_options, dimensions,
+    # items and scoring ALL required; likert_options may be null when no item
+    # uses the likert type, and dimensions/scoring may be empty for an unscored
+    # instrument. Emit all five so the file is conformant.
     definition <- list(scale_info = scale_info)
-    if (!is.null(lopts)) definition$likert_options <- lopts
+    # `definition$likert_options <- NULL` would DELETE the key rather than set
+    # it to null, and the spec requires the key to be present. Single-bracket
+    # assignment of list(NULL) keeps it, and jsonlite(null = "null") then
+    # writes `"likert_options": null`.
+    definition["likert_options"] <- list(lopts)
+
     definition$items <- lapply(seq_along(cols), function(k) {
       it <- list(id = cols[k], text_key = cols[k])
       if (!is.null(lopts)) it$type <- "likert"
+      # Reverse-keying is NOT written here. The spec declares it via signed
+      # weights in `scoring` (see below) and marks the per-item boolean
+      # deprecated, so a `reverse` field on the item would be silently ignored
+      # by a conformant reader. The link back to the reference instrument is
+      # metacheck's own information, so it lives under a namespaced key that
+      # other readers skip (spec section 1, unknown keys are ignored).
+      if (!is.null(ref_match)) {
+        j <- match(cols[k], ref_match$column_name)
+        if (!is.na(j) && !is.na(ref_match$ref_item_id[j]))
+          it$`metacheck:reference_item` <- unname(ref_match$ref_item_id[j])
+      }
       it
     })
+
+    # ── dimensions + scoring (spec sections 7 and 9) ─────────────────────────
+    # Reverse-keying belongs here, as a signed coding map: 1 = forward,
+    # -1 = reverse. This is the spec's authoritative form and the only one a
+    # conformant runner acts on. It also defines what reverse MEANS
+    # numerically: contribution = likert_options.min + likert_options.max -
+    # response, which is why an emitted -1 is only meaningful alongside the
+    # likert_options we write above.
+    #
+    # Only items whose wording matched the reference instrument can be coded,
+    # because only those have a known direction. When nothing matched there is
+    # no defensible scoring block, so both dimensions and scoring are emitted
+    # EMPTY (an empty array / object, which the spec explicitly permits) rather
+    # than guessing that every item is forward-coded.
+    coding <- NULL
+    if (!is.null(ref_match)) {
+      m <- ref_match[!is.na(ref_match$ref_reverse), , drop = FALSE]
+      if (nrow(m))
+        coding <- stats::setNames(
+          as.list(ifelse(m$ref_reverse, -1L, 1L)), m$column_name)
+    }
+
+    if (!is.null(coding) && length(coding)) {
+      dim_id <- .osd_safe_code(if (named) r$scale else r$prefix)
+      dim_id <- tolower(gsub("-", "_", dim_id))
+      definition$dimensions <- list(list(
+        id   = dim_id,
+        name = if (named) r$scale else r$prefix,
+        description = sprintf(
+          "Total score over the %d item%s matched to the reference instrument. %d reverse-keyed.",
+          length(coding), plural(length(coding)),
+          sum(unlist(coding) == -1L))))
+      definition$scoring <- stats::setNames(list(list(
+        method = "sum_coded",
+        items  = coding,
+        description = paste("Reverse-coding taken from the reference",
+                            "instrument's published scoring, not inferred",
+                            "from the data."))), dim_id)
+    } else {
+      # Spec: dimensions may be an empty array, scoring an empty object.
+      definition$dimensions <- list()
+      definition$scoring    <- stats::setNames(list(), character(0))
+    }
     # A totals-only block with NO item block anywhere: an orphan aggregate score.
     # We still record it (it names a scale that was clearly measured), but flag it
     # as total-only and warn that the items were not found.
@@ -1641,6 +2425,42 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
             "shared, or are labelled differently. Consider sharing item-level",
             "data or labelling items clearly so the scale can be verified.") else NULL
 
+    # Link to the published instrument, when there is one. `items_matched` is
+    # how many of THIS block's columns were identified in the reference by their
+    # wording; when it is short of the reference's `n_items`, the scale looks
+    # incompletely shared (or the items are worded differently) — recorded, not
+    # silently reconciled. Observed data is never overwritten by the registry.
+    ref_block <- if (!is.null(reference)) {
+      n_matched <- if (is.null(ref_match)) 0L else sum(!is.na(ref_match$ref_item_id))
+      rm_meta <- reference$meta
+      # Reliabilities are per-subscale; report the range rather than a single
+      # number, since most instruments here have several dimensions.
+      alphas <- if (!is.null(reference$scoring)) reference$scoring$alpha else NULL
+      alphas <- alphas[!is.na(alphas)]
+      Filter(Negate(is.null), list(
+        registry      = "OpenScales",
+        code          = rm_meta$code,
+        name          = rm_meta$name,
+        license       = if (nzchar(rm_meta$license)) rm_meta$license else NULL,
+        citation      = if (nzchar(rm_meta$citation)) rm_meta$citation else NULL,
+        url           = if (nzchar(rm_meta$url)) rm_meta$url else NULL,
+        n_items       = rm_meta$n_items,
+        n_reverse     = rm_meta$n_reverse,
+        items_matched = n_matched,
+        alpha_range   = if (length(alphas))
+          list(min = min(alphas), max = max(alphas)) else NULL,
+        note = if (n_matched > 0L && n_matched < rm_meta$n_items)
+          sprintf(paste("Matched %d of the reference instrument's %d items by",
+                        "wording. The remaining items may not be shared, or may",
+                        "be worded differently in this codebook."),
+                  n_matched, rm_meta$n_items)
+        else if (n_matched == 0L)
+          paste("The scale NAME matches a known instrument, but no item wording",
+                "could be matched to it — the codebook may not record item text,",
+                "or this may be a different version of the instrument.")
+        else NULL))
+    } else NULL
+
     # metacheck provenance extension (kept out of the spec's scale_info).
     # source_files is always a list: one entry now, extended when the same scale
     # is found in other data files (see .osd_dedup_by_source).
@@ -1650,6 +2470,7 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       confidence      = if (!is.na(r$confidence)) r$confidence else NULL,
       kind            = if (orphan_total) "scale_total_only" else NULL,
       note            = total_note,
+      reference       = ref_block,
       source_files    = as.list(r$source_file),
       n_columns       = r$n_columns,
       declared_length = if (!is.na(r$max_item)) r$max_item else NULL))
@@ -1661,7 +2482,19 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
     # become files; other unnamed prefix groups stay report-only. A totals-only
     # block redundant with an exported item block is NOT written; an orphan total
     # IS written (flagged), so the record + warning survive.
-    attr(osd, "write") <- (named || rating_like) && !redundant_total
+    #
+    # Size backstop for INFERRED labels. A self-generated or unnamed block that,
+    # after item/derived splitting, holds fewer than .scale_min_items genuine
+    # items is not a scale — it is one survey question that some export machinery
+    # (e.g. glued-on Qualtrics timer columns the paradata filter did not strip)
+    # inflated to block size. We refuse to mint an .osd for it. Dictionary and
+    # manuscript matches are exempt: a recognised instrument can legitimately be
+    # short (a validated 2-item scale), and its name is evidence in its own right.
+    n_items_block <- length(intersect(cols, names(translations_en)))
+    if (n_items_block == 0L) n_items_block <- length(cols)  # no wording -> count cols
+    inferred    <- eff_source %in% c("self_generated", "unnamed_block")
+    too_small   <- inferred && n_items_block < .scale_min_items
+    attr(osd, "write") <- (named || rating_like) && !redundant_total && !too_small
     attr(osd, "code")  <- cp$code
     attr(osd, "orphan_total") <- orphan_total
     attr(osd, "scale") <- if (named) r$scale else NA_character_
@@ -1714,7 +2547,8 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
 # column names. Only runs with an LLM. Returns (source_file, column_name, scale,
 # confidence, scale_source), or an empty frame; NULL is treated as empty.
 .identify_scales_selfgen <- function(previews, labels_df, paper, model, params,
-                                     columns_df = NULL, max_calls = 40L) {
+                                     columns_df = NULL, text_scales = NULL,
+                                     max_calls = 40L) {
   empty <- data.frame(source_file = character(), column_name = character(),
                       scale = character(), confidence = character(),
                       scale_source = character())
@@ -1758,7 +2592,9 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   # detectors is asked about once.
   candidate_blocks <- function(df, file) {
     blocks <- lapply(.detect_scale_blocks(df), function(ci) names(df)[ci])
-    for (g in .scale_prefix_groups(df)) {
+    sga <- .scale_group_args(df, file, labels_df)
+    for (g in .scale_prefix_groups(df, scale_group = sga$scale_group,
+                                   qualtrics = sga$qualtrics)) {
       if (.scale_block_is_ratinglike(g$columns, file, columns_df))
         blocks[[length(blocks) + 1L]] <- g$columns
     }
@@ -1815,7 +2651,59 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
     if (n_calls >= max_calls) break
   }
   res <- if (length(out)) dplyr::bind_rows(out) else empty
+  res <- .selfgen_merge_synonyms(res)
   attr(res, "llm_model") <- model_used
+  res
+}
+
+# Collapse SYNONYMOUS self-generated labels WITHIN a file. When one underlying
+# construct is exported as several stem-families (or the LLM, asked once per
+# block, returns near-identical wording — "Emotion Recognition",
+# "Emotion Recognition Empathic Accuracy", "Emotion Identification"), the paper
+# ends up with dozens of almost-duplicate .osd files for what is really one
+# task. This pass merges such rows so one construct becomes one scale.
+#
+# The merge rule is deliberately CONSERVATIVE — it only unites two labels when
+# one's word set is a SUBSET of (or equal to) the other's, after dropping
+# stopwords. So "emotion recognition" folds into "emotion recognition empathic
+# accuracy" (subset), but "relationship satisfaction" and "emotion recognition"
+# stay separate (disjoint word sets). Fuzzy/partial-overlap matching is avoided
+# on purpose: over-merging would silently fuse genuinely different scales, a
+# worse error than leaving two near-duplicates. The winning label is the SHORTER
+# one (the more general construct name), and every merged block's columns keep
+# their rows, only their `scale` value is rewritten to the winner.
+.selfgen_merge_synonyms <- function(res) {
+  if (is.null(res) || !nrow(res) || !"scale" %in% names(res)) return(res)
+  stop_words <- c("scale","score","scores","ratings","rating","assessment",
+                  "task","level","levels","during","the","of","a","an","and",
+                  "or","for","to","in","on","data","metrics","measure")
+  toks <- function(s) {
+    t <- unique(strsplit(tolower(gsub("[^a-z ]+", " ", s)), "\\s+")[[1]])
+    t <- t[nchar(t) > 0 & !t %in% stop_words]
+    t
+  }
+  for (f in unique(res$source_file)) {
+    idx <- which(res$source_file == f)
+    if (length(idx) < 2L) next
+    names_f <- unique(res$scale[idx])
+    if (length(names_f) < 2L) next
+    tk <- lapply(names_f, toks)
+    # Order candidates by token-set size so shorter (more general) names win and
+    # absorb their supersets. canon maps each name -> the label it collapses to.
+    ord   <- order(vapply(tk, length, integer(1)))
+    canon <- stats::setNames(names_f, names_f)
+    for (a in ord) {
+      for (b in ord) {
+        if (a == b) next
+        # b is a superset of a (a's words all appear in b) -> b collapses to a's
+        # canonical label. Skip empty token sets (opaque names) — never merge on
+        # "no evidence".
+        if (length(tk[[a]]) && all(tk[[a]] %in% tk[[b]]))
+          canon[[names_f[b]]] <- canon[[names_f[a]]]
+      }
+    }
+    res$scale[idx] <- unname(canon[res$scale[idx]])
+  }
   res
 }
 
@@ -1830,11 +2718,25 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
   have_paper_text <- .is_paper(paper) &&
     !is.null(paper$text) && nrow(paper$text) > 0
 
-  # Scales the paper names outright (regex over the full text). Offering these
-  # as candidates lets the model CONFIRM a stated instrument — far more reliable
-  # than guessing from item wording — so they lift identifications to high
-  # confidence when the columns match.
-  paper_scales <- if (have_paper_text) .scan_paper_for_scales(paper) else character(0)
+  # Scales the paper names outright. Offering these as candidates lets the model
+  # CONFIRM a stated instrument — far more reliable than guessing from item
+  # wording — so they lift identifications to high confidence when the columns
+  # match. Two sources, unioned:
+  #   text_scales — the manuscript read by an LLM (passed in; already computed
+  #     once for the report warning, so this costs no extra call). Finds
+  #     instruments no dictionary holds, e.g. a scale the authors built.
+  #   .scan_paper_for_scales — dictionary regex. Kept as a floor: it still works
+  #     with llm_use(FALSE), and catches a dictionary instrument the LLM omitted.
+  llm_named <- if (!is.null(text_scales) && nrow(text_scales)) {
+    text_scales$scale_name
+  } else {
+    character(0)
+  }
+  paper_scales <- if (have_paper_text) {
+    union(llm_named, .scan_paper_for_scales(paper))
+  } else {
+    character(0)
+  }
 
   # Per file: the Likert-eligible columns (flattened across blocks) and their
   # wording, plus a signature (ordered column names) for cross-file dedup.

@@ -67,9 +67,13 @@
 #'   Downloads are reused on later runs.
 #' @param skip_types an optional character vector of `data_type`s never to
 #'   download even under `download = "all"` — e.g. `"asset"` for stimuli/media a
-#'   release links to rather than mirrors. Skipped files are still listed (with a
-#'   reason) in the manifest. Types: `"data"`, `"code"`, `"codebook"`, `"readme"`,
-#'   `"asset"`, `"supplemental"`, `"software"`, `"output"`, `"other"`.
+#'   release links to rather than mirrors. When `NULL` (the default), `"asset"`
+#'   and `"other"` are skipped (media, and the classifier's junk drawer of
+#'   manuscripts / logs / unrecognised archives, which would only inflate an
+#'   archive); pass an explicit vector to override this, or `character(0)` to
+#'   download every type. Skipped files are still listed (with a reason) in the
+#'   manifest. Types: `"data"`, `"code"`, `"codebook"`, `"readme"`, `"asset"`,
+#'   `"supplemental"`, `"software"`, `"output"`, `"other"`.
 #' @param peek_zips if TRUE, look inside each `.zip` (via an HTTP range request,
 #'   without downloading it — see [zip_peek()]) and only fetch zips that contain
 #'   actual data or a codebook. A zip of only stimuli/materials is left for the
@@ -381,16 +385,40 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   want <- if (download == "all") {
     rep(TRUE, nrow(all_files))
   } else if (download == "data") {
+    # Always fetch .txt, whatever the name-based classifier guessed. A .txt can
+    # hold experiment data (E-Prime exports, task logs), a codebook, or plain
+    # prose, and the classifier only sees the remote FILE NAME — it cannot tell
+    # them apart before the file is on disk. Fetching them all and reclassifying
+    # from content afterwards (see .txt_reclassify below) is the only way to find
+    # trial-level data that is published as .txt. They are cheap: ~169 KB mean
+    # across the corpus cache, and the per-file / per-repo size caps still apply.
     (all_files$data_type == "data" &
        !is.na(all_files$data_format) & all_files$data_format == "tabular") |
-      all_files$data_type %in% c("codebook", "readme")
+      all_files$data_type %in% c("codebook", "readme") |
+      grepl("[.]txt$", all_files$file_name, ignore.case = TRUE)
   } else {
     rep(FALSE, nrow(all_files))   # download = "none"
   }
-  # Never fetch excluded types (e.g. skip_types = "asset": stimuli/media that a
-  # release links to rather than mirrors). Applies on top of `download`.
-  if (!is.null(skip_types) && length(skip_types) > 0)
-    want <- want & !(all_files$data_type %in% skip_types)
+  # Never fetch excluded types. When the caller does not pass `skip_types`, two
+  # types are excluded BY DEFAULT even under download = "all": `asset`
+  # (stimuli/media a release links to rather than mirrors) and `other` (the
+  # classifier's junk drawer — manuscripts, logs, unrecognised archives, with no
+  # analytic value that would inflate an archive). Files worth keeping are rescued
+  # OUT of `other` upstream, before this gate: by the name rules in
+  # data_classify_files() (prereg/readme/codebook) and by the LLM file-type pass
+  # above. A caller who really wants everything can pass skip_types = character(0).
+  never_fetch <- if (is.null(skip_types)) c("asset", "other") else skip_types
+  if (length(never_fetch) > 0) {
+    # A readable archive (.zip / tar family / single-file .gz|.bz2|.xz) is itself
+    # typed `other` (an archive is not, by name, data), but its CONTENTS may be
+    # data/codebook — the whole point of the peek/expand machinery is to open it
+    # and keep the inner data. So the `other` exclusion must NOT strip a container
+    # we can open, or we would silently drop every zipped/tarred dataset. Archives
+    # base R CANNOT open (.7z/.rar/...) are not carved out: they stay excluded and
+    # repo_check warns the author to re-upload as .zip.
+    keep_archive <- .is_readable_archive(all_files$file_name)
+    want <- want & (!(all_files$data_type %in% never_fetch) | keep_archive)
+  }
 
   # Peek inside zips (HTTP range request, no full download) and only keep those
   # that hold actual data/codebook content; a zip of only stimuli is left to be
@@ -433,29 +461,70 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       failed_files   <- attr(dl, "failed")
     }
 
-    # Expand downloaded zips: unzip, classify the inner files, add the data ones
-    # to the file list (dropping inner assets), and demote the zip itself to a
-    # container so it is not treated as data. The original zip stays the "link".
-    if (isTRUE(peek_zips)) {
-      dz <- which(grepl("[.]zip$", all_files$file_name, ignore.case = TRUE) &
-                    !is.na(all_files$file_location) &
-                    nzchar(all_files$file_location %||% "") &
-                    file.exists(all_files$file_location %||% ""))
-      if (length(dz) > 0) {
-        extracted <- list()
-        for (i in dz) {
-          rows <- .expand_zip(all_files$file_location[i], all_files[i, , drop = FALSE],
-                              skip_types = skip_types %||% "asset")
-          if (nrow(rows) > 0) extracted[[length(extracted) + 1L]] <- rows
-        }
-        # Demote the zip rows so the zip file itself isn't extracted as data.
-        all_files$data_type[dz] <- "archive"
-        if (length(extracted) > 0) {
-          added <- dplyr::bind_rows(extracted)
-          all_files <- dplyr::bind_rows(all_files, added)
-          # Keep `want` aligned with `all_files`: inner files from accepted zips
-          # are part of the mirrored data/codebook payload.
-          want <- c(want, rep(TRUE, nrow(added)))
+    # Expand downloaded archives we can OPEN with base R (zip, tar family, and
+    # single-file .gz/.bz2/.xz): unpack, classify the inner files, add the
+    # data/codebook/readme ones to the file list (dropping inner assets), and
+    # demote the archive row itself to a container so it is not treated as data
+    # (and, being `other`, is not mirrored into the release). The original archive
+    # stays the "link" for any inner assets. An archive of only assets contributes
+    # no rows, i.e. it is dropped as if it had not been downloaded.
+    #
+    # Zip expansion is gated on peek_zips (its pre-download peek is the paired
+    # optimisation); tar/gz have no peek, so they always expand when downloaded.
+    # .7z/.rar are NOT here — base R cannot read them (repo_check warns instead).
+    on_disk <- !is.na(all_files$file_location) &
+      nzchar(all_files$file_location %||% "") &
+      file.exists(all_files$file_location %||% "")
+    da_zip <- if (isTRUE(peek_zips))
+      which(on_disk & .is_zip(all_files$file_name)) else integer(0)
+    da_tar <- which(on_disk & .is_tar_archive(all_files$file_name))
+    da_gz  <- which(on_disk & .is_single_compress(all_files$file_name))
+    da <- c(da_zip, da_tar, da_gz)
+    if (length(da) > 0) {
+      extracted <- list()
+      for (i in da) {
+        row1 <- all_files[i, , drop = FALSE]
+        loc  <- all_files$file_location[i]
+        st   <- skip_types %||% "asset"
+        rows <- if (i %in% da_zip) .expand_zip(loc, row1, skip_types = st)
+                else if (i %in% da_tar) .expand_tar(loc, row1, skip_types = st)
+                else .expand_compressed(loc, row1, skip_types = st)
+        if (nrow(rows) > 0) extracted[[length(extracted) + 1L]] <- rows
+      }
+      # Demote the archive rows so the container itself isn't treated as data.
+      all_files$data_type[da] <- "archive"
+      if (length(extracted) > 0) {
+        added <- dplyr::bind_rows(extracted)
+        all_files <- dplyr::bind_rows(all_files, added)
+        # Keep `want` aligned with `all_files`: inner files from accepted archives
+        # are part of the mirrored data/codebook payload.
+        want <- c(want, rep(TRUE, nrow(added)))
+      }
+    }
+    # Reclassify downloaded .txt files from their CONTENT. The name-based
+    # classifier ran on remote file names, where a .txt is ambiguous — an E-Prime
+    # export, a task log, a codebook and a prose note are indistinguishable. Now
+    # that the bytes are local, txt_classify_content() can tell data from prose,
+    # so trial-level data published as .txt is found instead of being filed as
+    # supplemental. Only ever an UPGRADE to "data": an unrecognised .txt keeps
+    # whatever the name implied, so prose is never mistaken for data. The file
+    # itself is untouched — the cache is persistent by design, and classification
+    # decides how a file is USED, not whether it is kept.
+    # A name-based READMEcodebook verdict is authoritative and is never
+    # overridden: "README.txt" is a readme even if it holds a delimiter-rich
+    # table, and a codebook stays a codebook (codebook_check parses it). Only the
+    # ambiguous leftovers ("other"/"supplemental") are eligible for the upgrade.
+    is_txt <- grepl("[.]txt$", all_files$file_name, ignore.case = TRUE) &
+      all_files$data_type %in% c("other", "supplemental") &
+      !is.na(all_files$file_location) & nzchar(all_files$file_location %||% "") &
+      file.exists(all_files$file_location %||% "")
+    if (any(is_txt)) {
+      for (i in which(is_txt)) {
+        ct <- tryCatch(txt_classify_content(all_files$file_location[i]),
+                       error = function(e) NA_character_)
+        if (identical(ct, "data")) {
+          all_files$data_type[i]   <- "data"
+          all_files$data_format[i] <- data_format("txt")
         }
       }
     }
@@ -468,9 +537,24 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     nzchar(all_files$file_location) &
     file.exists(all_files$file_location %||% "")
 
-  data_files <- all_files[is_tabular_data & has_local, , drop = FALSE]
+  # Hold trial-level files (E-Prime / Inquisit / jsPsych / native Behaverse) OUT
+  # of the per-file tabular extractor. These formats publish one file PER
+  # PARTICIPANT per block, so treating each as its own dataset would produce
+  # hundreds of fragmented "datasets" for what is one instrument. They are instead
+  # normalised and MERGED per instrument into Behaverse paradata/<instrument>.json
+  # by convert_psychds() (.osd_write_paradata). Detection is header-only (cheap),
+  # so screening many files is fast. They are recorded for the manifest and never
+  # deleted — only routed away from the tabular path.
+  is_trial_level <- is_tabular_data & has_local &
+    vapply(all_files$file_location, function(p)
+      isTRUE(tryCatch(.bh_is_trial_level_file(p), error = function(e) FALSE)),
+      logical(1))
+  trial_level_files <- all_files$file_name[is_trial_level]
 
-  n_tabular_all <- sum(is_tabular_data)
+  data_files <- all_files[is_tabular_data & has_local & !is_trial_level, ,
+                          drop = FALSE]
+
+  n_tabular_all <- sum(is_tabular_data & !is_trial_level)
   n_no_local <- sum(is_tabular_data & !has_local)
 
   # File names detected as manifests (a table-of-contents listing other repo
@@ -545,10 +629,18 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # reserved names (StartDate, Duration, Finished, ...), which is a stronger
       # signal than the value-based rules for those columns.
       concept <- getf("concept")
-      if (data_check_is_qualtrics(df)) {
+      file_is_qualtrics <- data_check_is_qualtrics(df)
+      if (file_is_qualtrics) {
         qtags <- .qualtrics_tag_cols(names(df))
         concept[!is.na(qtags)] <- qtags[!is.na(qtags)]
       }
+      # Qualtrics display-order (`<Q>_DO_<...>`) columns are export-only
+      # randomisation metadata with no entry in the .qsf and no analytic value.
+      # Marked here (only for genuine Qualtrics exports) so codebook_check can
+      # exclude them from name-matching and from the LLM instead of treating
+      # each as an unlabelled column. Non-Qualtrics files are never marked.
+      qualtrics_display_order <- file_is_qualtrics &
+        .qualtrics_is_display_order(names(df))
 
       # Analysis unit (DDI analysisUnit): what one row of this file represents
       # (person/trial/session/dyad), inferred from the identifier column(s) and
@@ -593,6 +685,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         analysis_unit     = au$unit %||% NA_character_,
         ambiguous         = vapply(cls, function(c) isTRUE(c$ambiguous), logical(1)),
         is_numeric        = is_numeric,
+        is_qualtrics      = file_is_qualtrics,
+        qualtrics_display_order = qualtrics_display_order,
         sample_values     = sample_vals,
         utf8_repaired     = utf8_fixed,
         stats_mat
@@ -848,6 +942,21 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     paste(names(non_tabular_files), collapse = ", ")
   ) else NULL
 
+  # Trial-level files (E-Prime / Inquisit / jsPsych / Behaverse) held out of the
+  # per-file tabular extraction: they are per-participant fragments of an
+  # instrument, merged per instrument into Behaverse paradata/<instrument>.json by
+  # convert_psychds() rather than reported as many separate datasets.
+  n_trial_level <- length(unique(trial_level_files))
+  summary_trial_level <- if (n_trial_level > 0) sprintf(
+    paste0("%d trial-level data file%s (E-Prime / Inquisit / jsPsych / Behaverse) ",
+           "%s recognised. These are per-participant records of a behavioural task, ",
+           "so they are not listed as separate datasets — convert_psychds() merges ",
+           "them per instrument into Behaverse `paradata/<instrument>.json` (one ",
+           "file per instrument, all participants). Nothing is deleted."),
+    n_trial_level, plural(n_trial_level),
+    if (n_trial_level == 1) "was" else "were"
+  ) else NULL
+
   # file inventory table
   file_tbl <- all_files |>
     dplyr::count(Type = data_type, name = "Files") |>
@@ -985,7 +1094,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   summary_text <- c(summary_files, summary_data, summary_studies,
                      summary_ungrouped, summary_nolocal, summary_omitted,
-                     summary_workspace, summary_nontabular) |>
+                     summary_workspace, summary_nontabular, summary_trial_level) |>
     paste("\n- ", x = _, collapse = "")
 
   # ── 6b. Optional file manifest ───────────────────────────────────────────────

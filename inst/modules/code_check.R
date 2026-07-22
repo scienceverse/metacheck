@@ -26,12 +26,13 @@
 #' @param max_file_size largest single file to download, in MB (default 100). Size caps are an upfront, all-or-nothing gate per repository; set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
+#' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code` section (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
 #'
 #' @returns a list
 code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
                         max_file_size = 100, max_download_size = 500,
-                        cache = FALSE) {
+                        cache = FALSE, manifest = NULL) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -166,6 +167,14 @@ code_check <- function(paper, local_path = NULL,
       the_file$absolute_paths <- paste(absolute_paths$abs_path,
                                        collapse = " | ")
 
+      # get setwd() calls (R only; the construct is R's). Same " | " delimiter
+      # as absolute_paths above, for the same single-line-safe reason.
+      setwd_calls <- if (the_file$language == "R")
+        code_setwd(file_nc) else
+        data.frame(setwd_call = character(0), line = integer(0))
+      the_file$code_setwd <- nrow(setwd_calls)
+      the_file$setwd_calls <- paste(setwd_calls$setwd_call, collapse = " | ")
+
       # Find lines where libraries/imports/includes are loaded
       library_lines <- code_library_lines(file_nc, the_file$language)
 
@@ -176,6 +185,14 @@ code_check <- function(paper, local_path = NULL,
       } else {
         the_file$library_max_between <- NA_integer_
       }
+
+      # Names of the packages/libraries loaded, for cataloguing and for a
+      # requirements.txt. Stored comma-joined (like absolute_paths above);
+      # non-R languages return none. Sorted + de-duplicated per file.
+      pkgs <- code_library_names(file_nc, the_file$language)$package |>
+        unique() |> sort()
+      the_file$packages_n <- length(pkgs)
+      the_file$packages <- paste(pkgs, collapse = ", ")
 
       # Get statistics about lines of code and comments
       line_stats <- code_line_stats(file_lines, the_file$language)
@@ -207,8 +224,10 @@ code_check <- function(paper, local_path = NULL,
   # NA so the reporting below still finds them; all files are simply unchecked.
   if (ncol(code_check) == 0) {
     analysis_cols <- c("checked", "parse_error", "parse_error_msg",
-                       "code_abs_path", "absolute_paths", "library_lines",
-                       "library_max_between", "comment_lines", "code_lines",
+                       "code_abs_path", "absolute_paths",
+                       "code_setwd", "setwd_calls", "library_lines",
+                       "library_max_between", "packages_n", "packages",
+                       "comment_lines", "code_lines",
                        "percentage_comment", "loaded_files_missing",
                        "loaded_files_missing_names", "error")
     for (col in analysis_cols)
@@ -266,6 +285,26 @@ code_check <- function(paper, local_path = NULL,
     cols <- c("file_name", "absolute_paths")
     report_table_absolute <- code_files[which(code_files$code_abs_path > 0), cols]
     colnames(report_table_absolute) <- c("File name", "Absolute paths found")
+  }
+
+  ## setwd() ----
+  # which() (not logical indexing) for the same NA-safety reason as above.
+  setwd_issues <- if ("code_setwd" %in% names(code_files))
+    code_files$file_name[which(code_files$code_setwd > 0)] else character(0)
+  if (length(setwd_issues) == 0) {
+    report_setwd <- "Best programming practice is to avoid `setwd()` in analysis code: it hardcodes an assumption about the working directory (often an absolute path on the author's own machine), so the code breaks when run anywhere else. Keep the working directory as the caller sets it and use relative paths. No `setwd()` calls were found in any of the code files."
+    summary_setwd <- "No setwd() calls were found."
+    report_table_setwd <- NULL
+  } else {
+    report_setwd <- sprintf(
+      "Best programming practice is to avoid `setwd()` in analysis code: it hardcodes an assumption about the working directory (often an absolute path on the author's own machine), so the code breaks when run anywhere else. Keep the working directory as the caller sets it and use relative paths. `setwd()` calls were found in %d code file%s.",
+      length(setwd_issues),
+      plural(length(setwd_issues))
+    )
+    summary_setwd <- "setwd() calls were found."
+    cols <- c("file_name", "setwd_calls")
+    report_table_setwd <- code_files[which(code_files$code_setwd > 0), cols]
+    colnames(report_table_setwd) <- c("File name", "setwd() calls found")
   }
 
   ## Comments ----
@@ -361,6 +400,47 @@ code_check <- function(paper, local_path = NULL,
     colnames(report_table_parse) <- c("File name", "Error Message")
   }
 
+  ## Packages / dependencies ----
+  # The sorted, de-duplicated union of the packages loaded by a set of files,
+  # via the shared code_packages() helper (also used by convert_psychds()).
+  pkg_union <- function(rows) code_packages(code_files$packages[rows])
+
+  all_packages <- pkg_union(seq_len(nrow(code_files)))
+  if (length(all_packages) == 0) {
+    report_packages <- "No packages/libraries were detected as loaded in the code files. (This check reads R and Python imports; other languages are not scanned for packages.)"
+    summary_packages <- "No packages/libraries were detected in the code."
+  } else {
+    report_packages <- sprintf(
+      "The code files load %d distinct package%s/librar%s: %s. These are the names found in the source (no version information is available from static analysis).",
+      length(all_packages), plural(length(all_packages)),
+      if (length(all_packages) == 1) "y" else "ies",
+      paste(all_packages, collapse = ", ")
+    )
+    summary_packages <- sprintf(
+      "The code loaded %d distinct package%s.",
+      length(all_packages), plural(length(all_packages))
+    )
+  }
+
+  ## merge packages into the manifest ----
+  if (!is.null(manifest) && length(all_packages) > 0) {
+    path <- manifest
+    if (!grepl("\\.json$", path, ignore.case = TRUE)) {
+      pid <- paper_id(paper)
+      pid <- if (length(pid) && !is.na(pid[[1]])) pid[[1]] else "manifest"
+      path <- file.path(path, paste0(pid, ".manifest.json"))
+    }
+    tryCatch(
+      manifest_merge(path, list(code = list(
+        packages = as.list(all_packages),
+        ddi_mapping = list(
+          "code.packages" = "otherMat/software (loaded packages)"
+        )
+      ))),
+      error = function(e) NULL
+    )
+  }
+
   report <- c(
     "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the code files below. This check may miss things or produce false positives if your scripts are less typical.",
     scroll_table(report_table, maxrows = 5),
@@ -372,8 +452,13 @@ code_check <- function(paper, local_path = NULL,
     "#### Absolute Paths",
     report_absolute,
     scroll_table(report_table_absolute, maxrows = 5),
+    "#### Working Directory (setwd)",
+    report_setwd,
+    scroll_table(report_table_setwd, maxrows = 5),
     "#### Libraries / Imports",
     report_library,
+    "#### Packages / Dependencies",
+    report_packages,
     "#### Parsable code",
     report_parse,
     scroll_table(report_table_parse)
@@ -391,6 +476,7 @@ code_check <- function(paper, local_path = NULL,
   } else if (length(missingfiles_issue) == 0 &&
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
+      length(setwd_issues) == 0 &&
       length(library_issue) == 0 &&
       parse_issues == 0) {
     tl <- "green"
@@ -404,6 +490,8 @@ code_check <- function(paper, local_path = NULL,
       code_n = dplyr::n(),
       code_checked = sum(checked, na.rm = TRUE),
       code_abs_path = sum(code_abs_path, na.rm = TRUE),
+      code_setwd = if ("code_setwd" %in% names(code_files))
+        sum(code_setwd, na.rm = TRUE) else 0L,
       code_missing_files = sum(loaded_files_missing, na.rm = TRUE),
       # Guard the all-NA group (e.g. a file with no parseable code lines):
       # min(na.rm = TRUE) would warn and return Inf, so fall back to NA.
@@ -412,6 +500,17 @@ code_check <- function(paper, local_path = NULL,
       code_parse_errors = sum(parse_error, na.rm = TRUE),
       .by = paper_id
     )
+  # Distinct packages per paper (union over that paper's files). Done as a
+  # separate step (not inside summarise) because the union needs to split and
+  # de-duplicate the comma-joined strings, which is awkward in a grouped
+  # summarise; a small join keeps it correct for multi-paper paperlists.
+  pkg_counts <- vapply(
+    split(seq_len(nrow(code_files)), code_files$paper_id),
+    function(rows) length(pkg_union(rows)), integer(1)
+  )
+  summary_table$code_packages_n <-
+    pkg_counts[as.character(summary_table$paper_id)] |> unname()
+  summary_table$code_packages_n[is.na(summary_table$code_packages_n)] <- 0L
 
   # summary_text ----
   summary_text <- c(
@@ -419,7 +518,9 @@ code_check <- function(paper, local_path = NULL,
     summary_comments,
     summary_missingfiles,
     summary_absolute,
+    summary_setwd,
     summary_library,
+    summary_packages,
     summary_parse
   ) |>
     paste("\n- ", x = _, collapse = "")

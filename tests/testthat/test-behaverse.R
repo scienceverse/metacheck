@@ -137,15 +137,20 @@ test_that("convert_behaverse returns empty for a non-trial-level file", {
 # ── E-Prime text parsing ──────────────────────────────────────────────────────
 
 test_that("convert_behaverse reads an E-Prime text export", {
+  # Real E-Prime export shape: a header block, then LogFrame-delimited trial
+  # frames (`*** LogFrame Start ***` ... `*** LogFrame End ***`) whose nesting is
+  # `Level: 2` in a Session/Block/Trial design. Field/timing names follow the
+  # `<object>.RT` / `.ACC` / `.RESP` convention. Modelled on a verified 2008
+  # export (PowerfulPowerlessRightLeft).
   d <- withr::local_tempdir()
   f <- file.path(d, "naming-1-1.txt")
   writeLines(c(
     "*** Header Start ***", "Experiment: naming", "Subject: 1", "Session: 1",
     "*** Header End ***",
-    "\t\tLevel: 3", "\t\tRunning: BlockA", "\t\tProcedure: proc",
-    "\t\tstimulus_TYPE: word", "\t\timage: a.bmp",
-    "\t\tstim.OnsetTime: 1000", "\t\tstim.RTTime: 1500", "\t\tstim.RT: 500",
-    "\t\tstim.ACC: 1", "\t\tstim.RESP: l"),
+    "\tLevel: 2", "\t*** LogFrame Start ***",
+    "\tStimWord: CHIRURG", "\tRunning: BlockA", "\tProcedure: proc",
+    "\tstim.OnsetTime: 1000", "\tstim.RTTime: 1500", "\tstim.RT: 500",
+    "\tstim.ACC: 1", "\tstim.RESP: l", "\t*** LogFrame End ***"),
     f)
   docs <- convert_behaverse(f, study_name = "test")
   expect_true("naming" %in% names(docs))
@@ -172,9 +177,13 @@ test_that("text_peek reads a UTF-16 file (the E-Prime encoding)", {
   expect_true(any(grepl("Header Start", peeked)))
 })
 
-test_that("Inquisit and E-Prime data files classify as downloadable data", {
+test_that("Inquisit .iqdat is downloadable data; binary E-Prime .edat/.edat2 are not", {
+  # .iqdat is tab-delimited TEXT (readable), so it is downloadable research data.
+  # .edat/.edat2 are proprietary BINARY (OLE compound documents) that metacheck
+  # cannot parse, so they classify as "asset" and are never downloaded — the
+  # analysable data comes from E-Prime's plain-.txt export instead.
   x <- c("gen_1_49.iqdat", "naming-264-1.edat2", "run.edat")
-  expect_equal(unname(data_classify_files(x)), rep("data", 3))
+  expect_equal(unname(data_classify_files(x)), c("data", "asset", "asset"))
 })
 
 test_that("txt_classify_content recognises an E-Prime export as data", {

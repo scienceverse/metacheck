@@ -59,13 +59,18 @@
   npy = "data", npz = "data", h5 = "data", hdf5 = "data", hdf = "data",
   fif = "data", pkl = "data", pickle = "data", pk = "data",
   ft = "data", feather = "data", parquet = "data", textgrid = "data",
-  # Trial-level behavioural-task data files. These are the raw per-participant
-  # logs of experiment software (Inquisit .iqdat, E-Prime .edat/.edat2), i.e.
-  # research data — without this they classify as "other" and are never fetched
-  # under the default `download = "data"`, so their paradata could not be read.
-  # E-Prime also exports plain .txt, which is too ambiguous for an extension rule
-  # and is detected from content instead (see .eprime_is_export()).
-  iqdat = "data", edat = "data", edat2 = "data"
+  # Trial-level behavioural-task data files. Inquisit .iqdat is tab-delimited
+  # TEXT, so it is real, readable research data and downloads under the default
+  # `download = "data"`; its paradata can be extracted.
+  iqdat = "data",
+  # E-Prime .edat/.edat2 are the OPPOSITE: proprietary BINARY (OLE compound
+  # documents) that metacheck cannot read at all — .eprime_is_export() rejects
+  # them, so a downloaded .edat always fails to parse and yields nothing. The
+  # analysable data lives in E-Prime's plain-.txt export (detected from content
+  # via .eprime_is_export()). So .edat/.edat2 are classed "asset": recorded in
+  # the manifest as present in the repo, but never downloaded (nothing to do with
+  # the bytes). This avoids fetching hundreds of unreadable binaries per study.
+  edat = "asset", edat2 = "asset"
 )
 
 #' Classify repository files into data_check semantic types
@@ -356,6 +361,12 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
       file_path    = files$file_path[i] %||% files$file_name[i],
       repo_url     = files$repo_url[i],
       file_url     = files$file_url[i] %||% NA_character_,
+      # Storage provider (osfstorage / dropbox / github / ...), from repo_check.
+      # Recorded so a re-run reconstructing rows from the manifest keeps the
+      # Waterbutler-zip eligibility that download_repo_files() keys on. NULL for
+      # non-OSF hosts (they have their own zip/file-by-file paths).
+      provider     = if (!is.null(files$provider) && !is.na(files$provider[i]))
+                       files$provider[i] else NULL,
       file_size    = if (!is.na(file_size[i])) file_size[i] else NULL,
       data_type    = files$data_type[i] %||% NA_character_,
       data_format  = files$data_format[i] %||% NA_character_,
@@ -418,7 +429,46 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   )
   doc <- Filter(Negate(is.null), doc)
 
-  json <- jsonlite::toJSON(doc, auto_unbox = TRUE, pretty = TRUE, na = "null")
+  # Merge (not overwrite): the manifest is a shared metacheck file. data_check
+  # owns every key it builds here; code_check owns a separate `code` section
+  # (packages). Each writer passes only its own keys, so a re-run of one module
+  # never drops the other's section (see manifest_merge()).
+  manifest_merge(path, doc)
+  invisible(path)
+}
+
+#' Merge fields into a metacheck manifest, preserving other sections
+#'
+#' The per-paper `*.manifest.json` is written by more than one module:
+#' `data_check` records the files/provenance, and `code_check` records the
+#' packages the code loads (a `code` section). Because each module rebuilds only
+#' its own part of the document, a plain overwrite would let whichever module ran
+#' last erase the other's section. This helper reads any existing manifest,
+#' overlays `patch` at the top level (each key in `patch` replaces that key
+#' wholesale; keys not in `patch` are kept untouched), and writes it back.
+#'
+#' The rule that makes this safe against run order: each writer's `patch` must
+#' contain only the keys it owns. `data_check` patches everything except `code`;
+#' `code_check` patches only `code`. Overlapping keys would still clobber.
+#'
+#' @param path the manifest file path (`*.manifest.json`)
+#' @param patch a named list of top-level keys to set
+#'
+#' @returns (invisibly) the manifest path
+#' @export
+manifest_merge <- function(path, patch) {
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  existing <- list()
+  if (file.exists(path)) {
+    existing <- tryCatch(
+      jsonlite::fromJSON(path, simplifyVector = FALSE),
+      error = function(e) list())
+    if (!is.list(existing)) existing <- list()
+  }
+  # Overlay each patched key; a NULL value removes that key.
+  for (nm in names(patch)) existing[[nm]] <- patch[[nm]]
+  json <- jsonlite::toJSON(existing, auto_unbox = TRUE, pretty = TRUE,
+                           na = "null")
   writeLines(json, path, useBytes = TRUE)
   invisible(path)
 }
@@ -1287,6 +1337,20 @@ data_read_head <- function(path, n_rows = 5) {
         # to character. Strip them and re-type so the rest of data_check works.
         if (!is.null(df) && data_check_is_qualtrics(df))
           df <- data_strip_qualtrics_header(df)
+        # Promote a mis-placed header (banner / blank / units / repeated-label row
+        # read as the header). The detector needs to SEE the row the reader took
+        # as the header, so re-read the first few rows WITHOUT a header as the scan
+        # window (raw_rows). Cheap: a handful of rows only.
+        if (!is.null(df) && nrow(df) >= 1) {
+          raw <- tryCatch(.utf8_repair_df(.read_delim_fast(
+                   path, sep = sep, header = FALSE, n_rows = 6L)),
+                 error = function(e) NULL)
+          if (!is.null(raw) && nrow(raw) >= 2) {
+            raw_rows <- lapply(seq_len(nrow(raw)),
+                               function(i) as.character(raw[i, , drop = TRUE]))
+            df <- data_promote_header_row(df, raw_rows = raw_rows)$df
+          }
+        }
         df
       },
       xlsx = , xls = {
@@ -1297,9 +1361,39 @@ data_read_head <- function(path, n_rows = 5) {
         # got a date"): a mixed column can emit one per row (hundreds on a wide
         # sheet). We re-classify column types ourselves via data_col_type(), so
         # readxl's guess is not relied upon.
-        df <- suppressWarnings(as.data.frame(readxl::read_excel(path, n_max = nmax)))
+        # .name_repair = "unique_quiet": readxl still renames blank/duplicate
+        # headers (…1, K…3, …) — we handle names ourselves — but without printing
+        # the "New names:" message on every such sheet.
+        df <- suppressWarnings(as.data.frame(
+          readxl::read_excel(path, n_max = nmax, .name_repair = "unique_quiet")))
         if (!is.null(df) && data_check_is_qualtrics(df))
           df <- data_strip_qualtrics_header(df)
+        # A mis-placed header (banner / blank / units / repeated-label row above the
+        # real header). Read the first few rows WITHOUT a header (col_names = FALSE)
+        # as the scan window so the detector sees the row readxl swallowed as the
+        # header, then RE-READ the sheet with skip = k so readxl re-infers column
+        # types natively rather than coercing character back to numeric. Falls back
+        # to in-memory promotion if the re-read fails.
+        if (!is.null(df) && ncol(df) > 1) {
+          raw <- tryCatch(.utf8_repair_df(as.data.frame(suppressWarnings(
+                   readxl::read_excel(path, col_names = FALSE, n_max = 6L,
+                     col_types = "text", .name_repair = "minimal")))),
+                 error = function(e) NULL)
+          if (!is.null(raw) && nrow(raw) >= 2) {
+            raw_rows <- lapply(seq_len(nrow(raw)),
+                               function(i) as.character(raw[i, , drop = TRUE]))
+            prom <- data_promote_header_row(df, raw_rows = raw_rows)
+            if (prom$promoted > 0L) {
+              k <- prom$promoted
+              nmax2 <- if (is.finite(nmax)) nmax + k else Inf
+              reread <- tryCatch(suppressWarnings(as.data.frame(
+                readxl::read_excel(path, skip = k, n_max = nmax2,
+                                   .name_repair = "unique_quiet"))),
+                error = function(e) NULL)
+              df <- if (!is.null(reread) && ncol(reread) > 0) reread else prom$df
+            }
+          }
+        }
         df
       },
       sav = , dta = , sas7bdat = {
@@ -2381,8 +2475,11 @@ parse_codebook <- function(path, header_lookahead = 5L) {
           parsed <- list()
           for (sh in sheets) {
             df <- tryCatch(
-              if (is.na(sh)) as.data.frame(readxl::read_excel(path))
-              else as.data.frame(readxl::read_excel(path, sheet = sh)),
+              if (is.na(sh))
+                as.data.frame(readxl::read_excel(path, .name_repair = "unique_quiet"))
+              else
+                as.data.frame(readxl::read_excel(path, sheet = sh,
+                                                 .name_repair = "unique_quiet")),
               error = function(e) NULL)
             if (is.null(df)) next
             ssrc <- if (is.na(sh)) src else paste0(src, " [", sh, "]")
@@ -2507,6 +2604,42 @@ parse_codebook <- function(path, header_lookahead = 5L) {
   .encode_value_labels(codes, labels)
 }
 
+# Reconstruct the export column name for one choice of a matrix / multi-answer
+# question, matching exactly what Qualtrics writes to the CSV header. `tag` is
+# the question DataExportTag ("SV", "POWER.PP1"); `choice_tag` is that choice's
+# ChoiceDataExportTag when present (else NA); `code` is the raw choice key.
+# Qualtrics stores the choice tag in one of two shapes:
+#   (a) the FULL column name Qualtrics exports for this choice — which may or may
+#       not share the question's prefix. Examples: "SV_1" (shares stem "SV"),
+#       "POWER.PP1_1" (shares "POWER.PP1"), and — critically — "STATUS.PP1_8"
+#       for a question tagged "POWER.PP1" (a matrix whose choice tags carry a
+#       DIFFERENT alpha stem than the question). All three ARE the CSV column.
+#   (b) a bare per-choice suffix: a pure number ("1", "12") or a short reserved
+#       token ("TEXT"), which must be appended to the question tag: "Q3_1".
+# The old rule only recognised (a) when the choice tag started with the question
+# tag, so a differently-stemmed choice tag ("STATUS.PP1_8") was wrongly prefixed
+# to "POWER.PP1_STATUS.PP1_8" and never matched the data. Correct test: a choice
+# tag is a FULL column name when it carries its OWN alphabetic stem (a letter
+# followed later by a separator), i.e. it is more than a bare numeric/reserved
+# suffix. Then use it verbatim; otherwise append it to the question tag.
+.qsf_export_col <- function(tag, choice_tag, code) {
+  tag <- trimws(as.character(tag))
+  if (!is.na(choice_tag) && nzchar(choice_tag)) {
+    ct <- trimws(choice_tag)
+    # (a1) shares the question's stem -> full column name, verbatim.
+    if (startsWith(tolower(ct), tolower(paste0(tag, "_"))) ||
+        identical(tolower(ct), tolower(tag)))
+      return(ct)
+    # (a2) carries its OWN alpha stem then a separator (STATUS.PP1_8, Q17_2):
+    # this IS the exported column name even though it does not share `tag`.
+    if (grepl("[A-Za-z].*[._-]", ct, perl = TRUE))
+      return(ct)
+    # (b) a bare numeric/reserved suffix -> append to the question tag.
+    return(paste0(tag, "_", ct))
+  }
+  paste0(tag, "_", code)
+}
+
 #' Parse a Qualtrics survey-definition file (.qsf) into codebook variables
 #'
 #' Reads the survey object's questions and returns one row per data column the
@@ -2577,12 +2710,22 @@ parse_qsf <- function(path) {
     selector <- as.character(p$Selector %||% "")
     choices <- p$Choices
     answers <- p$Answers
-    # Per-choice export tags override the numeric suffix when present.
+    # Per-choice export tags carry the export column suffix. Build the full
+    # export column name from the question tag and the choice tag exactly as
+    # Qualtrics writes it to the CSV. Qualtrics stores ChoiceDataExportTags in
+    # one of two shapes: the FULL column name already including the stem
+    # ("SV_1", "POWER.PP1_1") or a bare per-choice suffix ("1"). The previous
+    # code always did paste0(tag, "_", choicetag), which doubled the stem for
+    # the first shape ("SV" + "SV_1" -> "SV_SV_1") so those columns never
+    # matched the data. .qsf_export_col() reconciles both shapes: when the
+    # choice tag already begins with the question tag it IS the column name;
+    # otherwise the tag is prepended. Bare numeric codes fall back to tag_code.
     ctags <- p$ChoiceDataExportTags
-    suffix_of <- function(code) {
-      if (is.list(ctags) && !is.null(ctags[[code]]) &&
-          nzchar(trimws(as.character(ctags[[code]]))))
-        trimws(as.character(ctags[[code]])) else code
+    export_col <- function(code) {
+      ct <- if (is.list(ctags) && !is.null(ctags[[code]]) &&
+                nzchar(trimws(as.character(ctags[[code]]))))
+        trimws(as.character(ctags[[code]])) else NA_character_
+      .qsf_export_col(tag, ct, code)
     }
 
     is_matrix <- grepl("matrix", qtype, ignore.case = TRUE)
@@ -2594,7 +2737,7 @@ parse_qsf <- function(path) {
       vl <- .qsf_value_labels(answers)
       for (code in names(choices)) {
         stmt <- .qsf_option_display(choices[[code]])
-        add(paste0(tag, "_", suffix_of(code)), stmt %||% qtext, tag, vl,
+        add(export_col(code), stmt %||% qtext, tag, vl,
             question = qtext)
       }
     } else if (is_multi && !is.null(choices) && length(choices)) {
@@ -2602,7 +2745,7 @@ parse_qsf <- function(path) {
       # label = the choice; question = the shared stem.
       for (code in names(choices)) {
         opt <- .qsf_option_display(choices[[code]])
-        add(paste0(tag, "_", suffix_of(code)), opt %||% qtext, tag,
+        add(export_col(code), opt %||% qtext, tag,
             question = qtext)
       }
     } else if (!is.null(choices) && length(choices)) {
@@ -2791,6 +2934,54 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     q_out[i]    <- first_present(applicable, "question")
     univ_out[i] <- first_present(applicable, "universe")
     sg_out[i]   <- first_present(applicable, "scale_group")
+  }
+
+  # ── Deterministic .qsf QUESTION-TAG fallback ────────────────────────────────
+  # A Qualtrics matrix / text-entry question exports one column per cell, and the
+  # export cell naming does not always match the .qsf's reconstructed item name
+  # (a text-entry matrix Q1914 exports Q1914_1_1, Q1914_2_1, ... while the .qsf
+  # records Q1914_4, Q1914_5). Exact-name matching then leaves those columns
+  # unlabelled. But the .qsf still tells us, with CERTAINTY, which QUESTION the
+  # column belongs to: its `scale_group` is the question's DataExportTag, and the
+  # column name begins with that tag. So we match on the question TAG (a prefix
+  # relationship), not the exact item name, and assign the QUESTION-level label
+  # and value labels. This never guesses a specific wrong item — it claims only
+  # the question, which the shared tag makes certain. Uses the LONGEST matching
+  # .qsf tag so a column is attributed to the most specific question. Runs only on
+  # still-unlabelled columns and only against .qsf-sourced scale_group tags.
+  qsf_tags <- if (all(c("scale_group", "question") %in% names(codebook_vars_df))) {
+    keep <- if ("parse_method" %in% names(codebook_vars_df))
+      !is.na(codebook_vars_df$parse_method) &
+        codebook_vars_df$parse_method == "qsf" else
+      rep(TRUE, nrow(codebook_vars_df))
+    sg <- codebook_vars_df$scale_group
+    keep <- keep & !is.na(sg) & nzchar(sg)
+    unique(sg[keep])
+  } else character(0)
+
+  if (length(qsf_tags) > 0) {
+    # First codebook row per tag carries the question wording / value labels.
+    tag_row <- match(qsf_tags, codebook_vars_df$scale_group)
+    # Try longest tags first so the most specific question wins.
+    ord <- order(nchar(qsf_tags), decreasing = TRUE)
+    for (i in which(status_out == "unlabelled")) {
+      cn <- columns_df$column_name[i]
+      hit <- NA_integer_
+      for (t in ord) {
+        tg <- qsf_tags[t]
+        if (startsWith(cn, paste0(tg, "_")) || identical(cn, tg)) { hit <- t; break }
+      }
+      if (is.na(hit)) next
+      r <- tag_row[hit]
+      status_out[i]       <- "labelled"
+      label_out[i]        <- codebook_vars_df$question[r] %||% codebook_vars_df$label[r]
+      cbk_var_out[i]      <- qsf_tags[hit]
+      src_out[i]          <- codebook_vars_df$codebook_source[r]
+      label_method_out[i] <- "qsf_question_tag"
+      vl_out[i]   <- codebook_vars_df$value_labels[r]
+      q_out[i]    <- codebook_vars_df$question[r]
+      sg_out[i]   <- qsf_tags[hit]
+    }
   }
 
   label_method_out[status_out == "labelled" & is.na(label_method_out)] <- "rules"
@@ -4196,6 +4387,32 @@ data_col_facets <- function(col_name, values) {
   unname(.qualtrics_meta_cols[keys])
 }
 
+# Recover the scale-block stem of a Qualtrics export column from its name alone,
+# for a file that has NO .qsf. Qualtrics matrix/multi questions export as
+# <stem>_<int> (TIPI_1, BSQ_10); the shared <stem> is the block. Returns the stem
+# for a "<letters...>_<digits>" name whose stem starts with >= 2 letters, else NA.
+# Reserved Qualtrics metadata columns (StartDate, Duration, ...) are never items.
+.qualtrics_col_stem <- function(nm) {
+  if (is.na(nm) || !nzchar(nm)) return(NA_character_)
+  if (!is.na(.qualtrics_tag_cols(nm))) return(NA_character_)  # metadata column
+  m <- regmatches(nm, regexec("^(.*[A-Za-z].*)_([0-9]+)$", nm))[[1]]
+  if (length(m) != 3) return(NA_character_)
+  stem <- m[2]
+  if (sum(grepl("[A-Za-z]", strsplit(stem, "")[[1]])) < 2) return(NA_character_)
+  stem
+}
+
+# Which columns are Qualtrics display-order (randomisation) metadata? Qualtrics
+# writes one `<Question>_DO_<...>` column per question whose choices/loops were
+# randomised, recording the presentation order. These are export-only: they have
+# no SQ entry in the .qsf and no analytic value, so they should not be matched to
+# a codebook or sent to the LLM. Matched as a delimiter-bounded `_DO_` segment so
+# a substantive column that merely contains the letters "do" is never caught.
+# Caller must gate on data_check_is_qualtrics() — this is a name test only.
+.qualtrics_is_display_order <- function(col_names) {
+  grepl("_DO(_|$)", col_names, perl = TRUE)
+}
+
 #' Detect whether a data frame is a Qualtrics survey export
 #'
 #' Fires when the columns include enough of Qualtrics' reserved response-metadata
@@ -4296,6 +4513,276 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
   df
 }
 
+# ── Leading metadata-row / offset-header repair ───────────────────────────────
+# The Qualtrics strip above handles junk rows BELOW a correct header. The inverse
+# defect is common too: the real header sits one or more rows DOWN because the top
+# of the sheet is a banner, a blank row, or a units row. The reader then takes
+# that top row as the header — inventing placeholder names (…4, V3, Unnamed: 2)
+# for its blank cells, or promoting a units row to names — and every downstream
+# check (typing, scale detection, data_validate, PII) sees a corrupted table.
+#
+# The CDA (contralateral delay activity) EEG files are the motivating case: the
+# true header (Participant, Reject, Condition, then millisecond time points) is in
+# row 2, so the reader produced CDA…4 … CDA…113 from one stray top-row label
+# spread across blank-header columns, and the wide time series was mistaken for an
+# 80-item psychometric scale.
+
+# Coerce to numeric without erroring on invalid UTF-8 bytes. data_read_head()
+# repairs UTF-8 before calling the promotion, but the helper stays self-defensive
+# so it cannot error a whole read when handed unrepaired text.
+.as_num_safe <- function(x) {
+  suppressWarnings(as.numeric(iconv(x, to = "UTF-8", sub = "")))
+}
+
+# Column names a reader invents for BLANK/duplicate headers: readxl/tidyverse
+# `…N`, base R `V1`/`X.1`/`X`, this file's own `col_N` fallback, and pandas
+# `Unnamed: N`. A high share of these is the signature of a blank or partial top
+# row read as the header.
+.is_placeholder_name <- function(x) {
+  x <- trimws(as.character(x))
+  grepl("^.*\\.\\.\\.\\d+$", x) |                     # readxl `…N` (incl. STEM…N,
+                                                       # where one real top-row cell
+                                                       # was spread across blanks:
+                                                       # CDA…4, CDA…5, …)
+    grepl("^(V\\d+|X(\\.\\d+)?|col_\\d+)$", x) |       # base R make.names / fallback
+    grepl("^Unnamed:?\\.?\\s*\\d+$", x, ignore.case = TRUE) |  # pandas
+    !nzchar(x)                                          # bare blank
+}
+
+# Fraction of columns that are internally type-CONSISTENT over the given rows: a
+# column counts when its non-empty cells are ALL numeric or ALL non-numeric. This
+# is the core signal for locating a header. A header cell is a type-outlier at the
+# top of its column (a text label above a numeric column), so a table read WITHOUT
+# a header — with the real header row still sitting in the body — has LOW
+# consistency; removing exactly the header row makes the columns consistent.
+#
+# We measure clean-numeric fraction specifically, because the offset defect this
+# repairs (banner/units/blank row above the header) leaves the columns below as
+# genuine numeric data. An all-text table (a codebook) has 0 numeric columns at
+# every drop, so no drop improves it and nothing is promoted — the correct outcome.
+.numeric_col_fraction <- function(df) {
+  if (is.null(df) || ncol(df) == 0 || nrow(df) == 0) return(0)
+  ok <- vapply(df, function(col) {
+    v <- trimws(as.character(col))
+    v <- v[nzchar(v) & !is.na(v)]
+    if (length(v) == 0) return(FALSE)
+    all(!is.na(.as_num_safe(v)))
+  }, logical(1))
+  mean(ok)
+}
+
+# Fraction of a row's non-empty cells that repeat another cell in the same row.
+# A real header is near-unique (~0); a banner row (one label written/merged across
+# many columns, e.g. CDA…CDA×110) is near-1. Used only to DESCRIBE what was
+# stripped, for the researcher-facing message — not to decide the header.
+.row_duplication <- function(vals) {
+  v <- trimws(as.character(vals)); v <- v[nzchar(v) & !is.na(v)]
+  if (length(v) == 0) return(0)
+  1 - length(unique(v)) / length(v)
+}
+
+# Is a single row JUNK sitting above the real header — a banner / blank / title /
+# units row, or a stale reader-mangled header rather than a real column header? A
+# header names columns: it is well filled, near-unique, and free of reader
+# placeholders. Junk fails one of those in a characteristic way:
+#  - near-empty: almost all cells blank (a spacer row, or a title in one cell);
+#  - heavily duplicated: one label repeated across many columns (CDA…CDA×110), a
+#    banner or a merged cell read unmerged;
+#  - mostly placeholders: a stale mangled header baked into a converted file
+#    (…1, …2, CDA…4, CDA…5 — a prior read's invented names saved as row 1).
+# `body_numeric` is the type-consistency of the data below; a row is only junk in
+# CONTEXT of a consistent body, so an all-text table (codebook) is never stripped.
+.is_junk_above_header <- function(vals, body_numeric,
+                                  max_filled = 0.5, min_dup = 0.6,
+                                  min_placeholder = 0.5) {
+  filled <- mean(nzchar(trimws(as.character(vals))) & !is.na(vals))
+  dup    <- .row_duplication(vals)
+  ph     <- mean(.is_placeholder_name(vals))
+  # Only strip rows above a body that is itself reasonably well-typed — otherwise
+  # we have no evidence the columns below are real data (guards all-text files).
+  if (body_numeric < 0.3) return(FALSE)
+  filled <= max_filled || dup >= min_dup || ph >= min_placeholder
+}
+
+#' Locate the true header row of a table read WITHOUT a header
+#'
+#' Given the first several physical rows of a file (each a character vector, the
+#' file read so that NO row was consumed as a header), find which row is the real
+#' column header. Combines two signals, because no single one covers every file:
+#'
+#'  1. **Type-consistency of the body below.** A text/banner/units row on top of
+#'     numeric columns makes them look mixed; dropping it makes them cleanly
+#'     numeric (see [.numeric_col_fraction()]). Strong when the data are numeric
+#'     (the CDA/behavior sheets), weak when the body is mostly text.
+#'  2. **Junk rows above.** A banner (one label repeated across columns) or a
+#'     near-empty spacer row is not a header (see [.is_junk_above_header()]). This
+#'     carries the cases where the numeric jump is weak — e.g. the CDA banner row
+#'     of `CDA` × 110 sitting above a header that only relabels 3 of 113 columns.
+#'
+#' The header is the SMALLEST `h` such that every row above `h` is junk, the body
+#' below `h` is type-consistent, and promoting `h` does not make the typing worse.
+#' When no leading row is junk, the header is row 1 (already correct).
+#'
+#' @param rows a list of character vectors (one per physical row), all the same
+#'   length; typically the first `max_scan + 1` rows of a headerless read.
+#' @param max_scan how many leading rows to consider stripping as metadata.
+#'
+#' @returns a list: `header_row` (1-based index of the true header, 1 = already
+#'   correct / no offset), `stripped` (character vectors of the metadata rows
+#'   above it), and `improved` (body type-consistency gained by the promotion).
+#' @export
+#' @keywords internal
+.detect_header_row <- function(rows, max_scan = 4L) {
+  n <- length(rows)
+  if (n < 2) return(list(header_row = 1L, stripped = list(), improved = 0))
+  ncols <- length(rows[[1]])
+  if (ncols < 2) return(list(header_row = 1L, stripped = list(), improved = 0))
+
+  as_df <- function(rs) {
+    m <- do.call(rbind, lapply(rs, function(r) {
+      length(r) <- ncols; as.character(r)
+    }))
+    as.data.frame(m, stringsAsFactors = FALSE)
+  }
+  # body_numeric(h) = type-consistency of the rows strictly below candidate header
+  # h, for h = 1..scan_n. h = 1 means "row 1 is the header".
+  scan_n <- min(as.integer(max_scan) + 1L, n - 1L)
+  body_numeric <- vapply(seq_len(scan_n), function(h) {
+    body <- rows[(h + 1L):n]
+    if (length(body) == 0) return(NA_real_)
+    .numeric_col_fraction(as_df(body))
+  }, numeric(1))
+
+  # Walk down from the top: strip a leading row only while it is junk, judged
+  # against the body that would remain if the NEXT row were the header. Stop at
+  # the first non-junk row — that is the true header.
+  strip <- 0L
+  while (strip < scan_n - 1L &&
+         .is_junk_above_header(rows[[strip + 1L]], body_numeric[strip + 2L])) {
+    strip <- strip + 1L
+  }
+  if (strip < 1L)
+    return(list(header_row = 1L, stripped = list(), improved = 0))
+
+  # The row we would PROMOTE must itself look like a header: it needs real
+  # variable NAMES — non-empty, non-numeric, non-placeholder tokens. A headerless
+  # numeric file (every row is data, e.g. 1|1|3|2 or a column-index row NA|1|2|3)
+  # has no such row, so stripping its first row and using the next (numeric) row as
+  # names would FABRICATE a header. Refuse unless the promoted row is textual.
+  hdr_vals <- trimws(as.character(rows[[strip + 1L]]))
+  hdr_real <- hdr_vals[nzchar(hdr_vals) & !is.na(hdr_vals) &
+                         !toupper(hdr_vals) %in%
+                           c("NA", "NAN", "NULL", "N/A", "INF", "-INF", ".") &
+                         !.is_placeholder_name(hdr_vals)]
+  # A token is textual (a real name) only when it does NOT parse as a number.
+  # `.as_num_safe("NaN")` returns NaN — itself NA under is.na() — so a numeric NaN
+  # cell must not be mistaken for text; the NA-like filter above already drops it.
+  num <- .as_num_safe(hdr_real)
+  hdr_text <- hdr_real[is.na(num) & !is.nan(num)]
+  if (length(hdr_text) < 2L)
+    return(list(header_row = 1L, stripped = list(), improved = 0))
+
+  # Only accept if the promotion did not WORSEN typing (it may merely relabel a
+  # few columns, as in CDA, so we require >= not >).
+  base_numeric <- body_numeric[1]                       # body if row 1 were header
+  new_numeric  <- body_numeric[strip + 1L]              # body below the true header
+  if (is.na(new_numeric) || new_numeric < base_numeric)
+    return(list(header_row = 1L, stripped = list(), improved = 0))
+
+  list(header_row = strip + 1L,
+       stripped   = rows[seq_len(strip)],
+       improved   = new_numeric - base_numeric)
+}
+
+#' Promote a mis-placed header row and drop leading metadata rows
+#'
+#' When a banner / blank / units / repeated-label row sits ABOVE the real header,
+#' the reader takes that top row as the header (inventing `…N` names, or spreading
+#' one label — `CDA` merged across 110 columns — into `CDA…1 … CDA…110`). This
+#' finds the true header among the first few rows via [.detect_header_row()],
+#' promotes it to the column names, drops it and everything above, and re-types the
+#' freed columns. It is the inverse of [data_strip_qualtrics_header()] (which
+#' strips junk rows BELOW a correct header).
+#'
+#' The input must be read so that the real header is still a DATA row (i.e. read
+#' headerless, or with the reader's own header as row-0 metadata). Pass the rows
+#' via `raw_rows` (the file re-read headerless as character) so the detector can
+#' see the row the reader swallowed as the header; without it the function falls
+#' back to treating `df`'s own first rows as the scan window.
+#'
+#' @param df the data.frame as normally read (reader-assigned names)
+#' @param raw_rows optional list of character vectors: the first rows of the file
+#'   read WITHOUT a header, so the reader-swallowed header row is visible. When
+#'   supplied it is the authoritative scan window.
+#' @param max_scan how many leading rows to consider as metadata above the header
+#'
+#' @returns a list with `df` (possibly re-headed), `promoted` (1-based count of
+#'   metadata rows removed above the header, 0 = unchanged), and `stripped`
+#'   (character vectors of those removed rows, for reporting).
+#' @export
+#' @keywords internal
+data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
+  if (is.null(df) || nrow(df) < 2 || ncol(df) < 2)
+    return(list(df = df, promoted = 0L, stripped = list()))
+
+  # Scan window: the headerless rows if given (so the reader's own header row is
+  # included as a candidate), else the reader-headed frame's first rows.
+  if (!is.null(raw_rows) && length(raw_rows) >= 2) {
+    rows <- lapply(raw_rows, as.character)
+    det  <- .detect_header_row(rows, max_scan = max_scan)
+    if (det$header_row <= 1L)
+      return(list(df = df, promoted = 0L, stripped = list()))
+    # header_row is 1-based over raw_rows; rows above it (header_row - 1) are the
+    # reader-swallowed header + any metadata. The new names come from that row.
+    hdr <- det$header_row
+    new_names <- as.character(rows[[hdr]])
+  } else {
+    # Fallback: the reader already consumed a header, so df's row i corresponds to
+    # raw row i+1. Prepend the current names as the row-0 header candidate.
+    header_as_row <- as.character(names(df))
+    body_rows <- lapply(seq_len(min(max_scan, nrow(df))),
+                        function(i) as.character(df[i, , drop = TRUE]))
+    rows <- c(list(header_as_row), body_rows)
+    det  <- .detect_header_row(rows, max_scan = max_scan)
+    if (det$header_row <= 1L)
+      return(list(df = df, promoted = 0L, stripped = list()))
+    hdr <- det$header_row
+    new_names <- as.character(rows[[hdr]])
+  }
+
+  n_strip   <- length(det$stripped)
+  new_names <- trimws(new_names)
+  new_names[is.na(new_names) | !nzchar(new_names)] <- ""
+  new_names <- make.unique(ifelse(nzchar(new_names),
+                                  new_names, paste0("V", seq_along(new_names))))
+
+  # Rebuild the body from the rows below the true header. Prefer the authoritative
+  # raw_rows path (re-read below the header); otherwise slice df.
+  if (!is.null(raw_rows) && length(raw_rows) >= 2) {
+    # df was read with the WRONG header, so df row j = raw row j+1. The true
+    # header is raw row `hdr`, so keep df rows from (hdr - 1) onward, dropping the
+    # header row itself: df rows (hdr) .. end.
+    keep_from <- hdr                      # df index of first true data row
+    candidate <- df[keep_from:nrow(df), , drop = FALSE]
+  } else {
+    candidate <- df[hdr:nrow(df), , drop = FALSE]
+  }
+  if (length(new_names) == ncol(candidate)) names(candidate) <- new_names
+  rownames(candidate) <- NULL
+
+  # Re-coerce columns that are now fully numeric (the metadata rows above were what
+  # forced them to character). Mirrors data_strip_qualtrics_header().
+  for (j in seq_along(candidate)) {
+    if (!is.character(candidate[[j]])) next
+    v <- trimws(candidate[[j]]); ne <- v[!is.na(v) & nzchar(v)]
+    if (length(ne) == 0) next
+    if (all(!is.na(.as_num_safe(ne))))
+      candidate[[j]] <- .as_num_safe(v)
+  }
+
+  list(df = candidate, promoted = n_strip, stripped = det$stripped)
+}
+
 # ── Trial-level (paradata) source-format detection ────────────────────────────
 # Several data formats record per-trial PARADATA (response times, trial/stimulus
 # indices) alongside each response. Detected here so codebook_check can route that
@@ -4317,6 +4804,10 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 #'   `blockcode`, `trialcode`, `latency`).
 #' - `data_check_is_jspsych()` — jsPsych (`trial_type`, `rt`, and `trial_index`
 #'   or `time_elapsed`).
+#' - `data_check_is_psychopy()` — PsychoPy Builder (`<loop>.thisN`/`.thisRepN`
+#'   loop counters, `<comp>.started`/`.stopped` timing, or `psychopyVersion` /
+#'   `frameRate` / `expName`); machinery is matched by these suffixes, not a
+#'   fixed column list, because PsychoPy column names are study-specific.
 #'
 #' E-Prime is detected from file text, not a data frame (see
 #' `.bh_parse_eprime()`), because its export is a header + `Level: 3` frames
@@ -4359,6 +4850,23 @@ data_check_is_jspsych <- function(df) {
   nm <- names(df)
   "trial_type" %in% nm && "rt" %in% nm &&
     any(c("trial_index", "time_elapsed", "internal_node_id") %in% nm)
+}
+
+#' @rdname data_check_is_behaverse
+#' @export
+#' @keywords internal
+data_check_is_psychopy <- function(df) {
+  if (is.null(df) || ncol(df) == 0) return(FALSE)
+  nm <- names(df)
+  # PsychoPy Builder output is unmistakable from its component/loop naming: a
+  # loop-counter suffix (<loop>.thisN / .thisIndex / .thisRepN / .thisTrialN) or
+  # a component timing suffix (<comp>.started / .stopped), or the run-metadata
+  # columns PsychoPy always writes (psychopyVersion / frameRate / expName). The
+  # column names are study-specific, so PsychoPy is recognised by these SUFFIXES
+  # and reserved names, not a fixed column list.
+  any(grepl("[.]this(N|Index|RepN|TrialN)$", nm)) ||
+    any(grepl("[.](started|stopped)$", nm)) ||
+    any(c("psychopyVersion", "frameRate", "expName") %in% nm)
 }
 
 # ── Likert scale-block detection ──────────────────────────────────────────────

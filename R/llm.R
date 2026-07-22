@@ -91,6 +91,11 @@ llm <- function(text, system_prompt,
     params_list$temperature <- 0
   }
 
+  # default max_tokens high enough for structured JSON
+  if (is.null(params_list$max_tokens)) {
+    params_list$max_tokens <- 4096   # or 8192 for Groq models
+  }
+
   # check params early so malformed params fail before provider/network work
   params <- tryCatch({
     do.call(ellmer::params, params_list)

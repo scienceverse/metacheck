@@ -1,0 +1,230 @@
+ 79  p
+ 44  Lower
+ 44  Upper
+ 42  df
+ 20  χ²
+ 19  SE
+ 18  Value
+ 16  F
+ 15  Model
+ 14  Estimate
+ 12  Statistic
+ 11  Mean
+ 11  Z
+ 10  Effect Size
+ 10  Mean difference
+ 10  Predictor
+ 10  SD
+  8  Median
+  8  df1
+  8  df2
+  7  Assumption Checks
+  7  BIC
+  7  Estimated Marginal Means
+  7  Mean Square
+  7  Normality Test (Shapiro-Wilk)
+  7  SE difference
+  7  Sum of Squares
+  7  ±%
+  6  AIC
+  6  Descriptives
+  6  Model Fit Measures
+  6  N
+  6  Plots
+  6  Stand. Estimate
+  5  Homogeneity of Variances Test (Levene's)
+  5  Model Comparisons
+  5  Model Specific Results
+  5  Post Hoc Tests
+  5  W
+  5  η²
+  5  ω²
+  4  Deviance
+  4  Odds ratio
+  4  Omnibus Likelihood Ratio Tests
+  4  Q-Q Plot
+  4  Residuals
+  4  R²<sub>CS</sub>
+  4  R²<sub>McF</sub>
+  4  R²<sub>N</sub>
+  4  value
+  4  η²<sub>G</sub>
+  4  η²<sub>p</sub>
+  3  ($key)
+  3  Contingency Tables
+  3  Contrasts
+  3  Contrasts - $key
+  3  Cook's Distance
+  3  Count
+  3  Max
+  3  Min
+  3  Proportion
+  3  Sphericity Correction
+  3  `Model Coefficients - ${dep}`
+  3  error %
+  2  $key
+  2  % of Variance
+  2  1
+  2  Assumptions
+  2  Collinearity Statistics
+  2  Component
+  2  Correlation Matrix
+  2  Cronbach's α
+  2  Cumulative %
+  2  Data Summary
+  2  Exploratory Factor Analysis
+  2  Gamma
+  2  Group
+  2  Group Descriptives
+  2  Independent Samples T-Test
+  2  Level
+  2  Mahalanobis Distance
+  2  McDonald's ω
+  2  Model Fit
+  2  One Sample T-Test
+  2  One-Way ANOVA
+  2  Paired Samples T-Test
+  2  Pairwise comparisons - $key
+  2  Predicted values
+  2  RMSEA
+  2  TLI
+  2  Tolerance
+  2  VIF
+  2  t
+  1  ANCOVA
+  1  ANOVA
+  1  AUC
+  1  Accuracy
+  1  Adjusted R²
+  1  Autocorrelation
+  1  Bartlett's Test of Sphericity
+  1  Bayes factor₁₀
+  1  Between Subjects Effects
+  1  Binomial Logistic Regression
+  1  Binomial Test
+  1  Box's Homogeneity of Covariance Matrices Test
+  1  Box-Tidwell Test for Linearity of the Logit
+  1  CFI
+  1  Classification Table
+  1  Comparative Measures
+  1  Component Loadings
+  1  Component Statistics
+  1  Confirmatory Factor Analysis
+  1  Cook's distance
+  1  Correlation
+  1  Correlation Heatmap
+  1  Cut-Off Plot
+  1  DW Statistic
+  1  Dependent Variable
+  1  Descriptive Plot
+  1  Dunn's pairwise comparisons
+  1  Durbin–Watson Test for Autocorrelation
+  1  Dwass-Steel-Critchlow-Fligner pairwise comparisons
+  1  Eigenvalue
+  1  Eigenvalues
+  1  Excluded
+  1  Extreme Values
+  1  Extreme values of $key
+  1  Factor
+  1  Factor Covariances
+  1  Factor Estimates
+  1  Factor Intercepts
+  1  Factor Loadings
+  1  Factor Loadings – Modification Indices
+  1  Factor scores
+  1  Fit Measures
+  1  Frequencies
+  1  Frequencies of $key
+  1  Friedman
+  1  Greenhouse-Geisser ε
+  1  Group Summary
+  1  Huynh-Feldt ε
+  1  Indicator
+  1  Initial Eigenvalues
+  1  Inter-Component Correlations
+  1  Item Reliability Statistics
+  1  Item-rest correlation
+  1  KMO Measure of Sampling Adequacy
+  1  Kendall's Tau-B
+  1  Kendall's Tau-b
+  1  Kruskal-Wallis
+  1  Linear Regression
+  1  Log-Linear Regression
+  1  MANCOVA
+  1  MSA
+  1  Mantel-Haenszel Test for Trend
+  1  Mauchly's W
+  1  McNemar Test
+  1  Mean score
+  1  Model Coefficients
+  1  Model Thresholds
+  1  Modification Indices
+  1  Multinomial Logistic Regression
+  1  Multivariate Tests
+  1  Nominal
+  1  Omnibus ANOVA Test
+  1  One-Way ANOVA (Non-parametric)
+  1  Ordinal Logistic Regression
+  1  Paired Samples Contingency Tables
+  1  Pairwise Comparisons (Durbin-Conover)
+  1  Partial Correlation
+  1  Participants (rows) below p-threshold
+  1  Path Diagram
+  1  Plot
+  1  Post Hoc Tests – $key
+  1  Post-Hoc Model Performance
+  1  Posterior Plots
+  1  Prediction
+  1  Predictive Measures
+  1  Principal Component Analysis
+  1  Proportion Test (2 Outcomes)
+  1  Proportion Test (N Outcomes)
+  1  Q-Q Plot Assessing Multivariate Normality
+  1  Q-Q plots
+  1  R
+  1  RMSE
+  1  ROC Curve
+  1  Rate ratio
+  1  Reliability Analysis
+  1  Repeated Measures ANOVA
+  1  Repeated Measures ANOVA (Non-parametric)
+  1  Residual Covariances
+  1  Residual Covariances – Modification Indices
+  1  Residual Estimates
+  1  Residual Intercepts
+  1  Residuals Plots
+  1  Residuals for Observed Correlation Matrix
+  1  Results
+  1  Row number
+  1  R²
+  1  R²<sub>T</sub>
+  1  SRMR
+  1  SS Loadings
+  1  Scale Reliability Statistics
+  1  Scree Plot
+  1  Sensitivity
+  1  Shapiro-Wilk Multivariate Normality Test
+  1  Specificity
+  1  Standard Error
+  1  Sum score
+  1  Summary
+  1  Test for Exact Fit
+  1  Tests of Sphericity
+  1  Threshold
+  1  Total
+  1  Uniqueness
+  1  Univariate Tests
+  1  Weights
+  1  Within Subjects Effects
+  1  `ANCOVA - ${dep}`
+  1  `ANOVA - ${dep}`
+  1  `Model Coefficients - ${ dep }`
+  1  `Proportions - ${var}`
+  1  p<sub>(Bonferroni)</sub>
+  1  p<sub>(unadj)</sub>
+  1  statistic
+  1  ΔR²
+  1  ε²
+  1  η²p
+  1  χ² Goodness of Fit
+  1  χ² Tests

@@ -4,6 +4,7 @@
 \alias{data_check_is_behaverse}
 \alias{data_check_is_inquisit}
 \alias{data_check_is_jspsych}
+\alias{data_check_is_psychopy}
 \title{Detect trial-level behavioural-data source formats}
 \usage{
 data_check_is_behaverse(df)
@@ -11,6 +12,8 @@ data_check_is_behaverse(df)
 data_check_is_inquisit(df)
 
 data_check_is_jspsych(df)
+
+data_check_is_psychopy(df)
 }
 \arguments{
 \item{df}{a data.frame (a read tabular file)}
@@ -33,6 +36,10 @@ to the Behaverse \code{trial} schema rather than treating it as scale items.
 \code{blockcode}, \code{trialcode}, \code{latency}).
 \item \code{data_check_is_jspsych()} — jsPsych (\code{trial_type}, \code{rt}, and \code{trial_index}
 or \code{time_elapsed}).
+\item \code{data_check_is_psychopy()} — PsychoPy Builder (\verb{<loop>.thisN}/\code{.thisRepN}
+loop counters, \verb{<comp>.started}/\code{.stopped} timing, or \code{psychopyVersion} /
+\code{frameRate} / \code{expName}); machinery is matched by these suffixes, not a
+fixed column list, because PsychoPy column names are study-specific.
 }
 
 E-Prime is detected from file text, not a data frame (see

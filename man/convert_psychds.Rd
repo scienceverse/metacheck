@@ -12,7 +12,13 @@ convert_psychds(
   local_only = FALSE,
   model = llm_model(),
   params = list(),
-  overwrite = FALSE
+  overwrite = FALSE,
+  download = "all",
+  skip_types = NULL,
+  peek_zips = FALSE,
+  max_file_size = 100,
+  max_download_size = 500,
+  cache = FALSE
 )
 }
 \arguments{
@@ -39,6 +45,14 @@ already available (see \code{data_check()})}
 \item{overwrite}{whether to overwrite an existing \code{output_dir}. When \code{FALSE}
 (the default) and \code{output_dir} already exists, the function messages and
 skips rather than erroring (the returned list has \code{existed = TRUE}).}
+
+\item{download, skip_types, peek_zips, max_file_size, max_download_size, cache}{passed to \code{data_check} \strong{only when the modules must be re-run} (i.e. when
+\code{paper} is a bare paper or a captured chain missing a needed module). They
+are ignored when the chain already carries \code{data_check}/\code{codebook_check}/
+\code{psychds_check}, whose downloaded files are reused as-is. Defaults match
+\code{data_check}, except \code{download} defaults to \code{"all"} (the archive should
+carry every file, not only the readable data subset); the \code{max_file_size}
+and \code{max_download_size} caps still gate and warn about large files/repos.}
 }
 \value{
 (invisibly) a list with \code{output_dir}, \code{n_files_copied},

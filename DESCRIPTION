@@ -40,18 +40,23 @@ Roxygen: list(markdown = TRUE)
 Suggests:
     ggplot2,
     careless,
+    callr,
     codebook,
     data.table,
     devtools,
     httptest2,
     processx,
+    remotes,
     rmarkdown,
     testthat (>= 3.0.0),
     rstudioapi,
     withr,
     shiny,
     shinyjs,
-    shinydashboard
+    shinydashboard,
+    bslib,
+    DBI,
+    RSQLite
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 Imports: 

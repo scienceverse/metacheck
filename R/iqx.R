@@ -61,6 +61,7 @@ read_iqx <- function(path) {
   desc <- desc[nzchar(desc) & !grepl("^[*_=-]+$", desc) & !grepl("^\\*+\\s*$", desc)]
   desc <- gsub("^\\*+\\s*|\\s*\\*+$", "", desc)        # trim asterisk borders
   desc <- desc[nzchar(desc)]
+  desc <- desc[!grepl("^\\s*title\\s*:", desc, ignore.case = TRUE)]  # title is separate
   if (is.na(title) && length(desc)) title <- desc[[1]]
   description <- if (length(desc)) paste(utils::head(desc, 8), collapse = " ") else NA_character_
 
@@ -85,16 +86,19 @@ read_iqx <- function(path) {
 # spaces/punctuation) and Inquisit template tokens (<% ... %>). Returns unique,
 # trimmed wording strings.
 .iqx_items <- function(txt) {
-  blocks <- regmatches(txt, gregexpr("<item\\b[^>]*>.*?</item>", txt,
-                                     ignore.case = TRUE, perl = TRUE))[[1]]
+  # (?s) = dotall so an item block spans its lines; [^>]* not \b after <item
+  # (perl \b behaved inconsistently here). (?i) for case-insensitive tags.
+  blocks <- regmatches(txt, gregexpr("(?si)<item[^>]*>.*?</item>", txt,
+                                     perl = TRUE))[[1]]
   if (!length(blocks)) return(character(0))
   vals <- unlist(lapply(blocks, function(b)
     regmatches(b, gregexpr('=\\s*"([^"]*)"', b, perl = TRUE))[[1]]))
   vals <- sub('^=\\s*"', "", vals); vals <- sub('"$', "", vals)
   vals <- trimws(vals)
-  # Drop pure element-reference values (one bare token, e.g. "statements_A") and
-  # empties; keep real wording (has a space, or punctuation, or >1 word of text).
-  keep <- nzchar(vals) & (grepl("[[:space:]]", vals) | grepl("[[:punct:]]", vals))
+  # <item> block values are genuine stimuli (the element-reference tokens live in
+  # <text> blocks, which we do not parse). Keep them all, dropping only empties
+  # and pure Inquisit template tokens (<% ... %> with nothing else).
+  keep <- nzchar(vals) & !grepl("^<%[^>]*%>$", vals)
   unique(vals[keep])
 }
 

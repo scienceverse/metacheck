@@ -207,6 +207,54 @@ test_that("convert_psychds reuses a captured report result without re-running", 
   expect_true(psychds_validate(out4)$valid)
 })
 
+test_that("convert_psychds writes requirements.txt from the code's packages", {
+  llm_use(FALSE)
+  d <- make_fixture_repo()
+  # Give the fixture's analysis script real library() calls so code_check finds
+  # packages to list.
+  writeLines(c("library(dplyr)", "library(ggplot2)", "x <- 1"),
+             file.path(d, "Code", "analysis.R"))
+
+  out <- file.path(tempdir(), "pd_requirements"); unlink(out, recursive = TRUE)
+  suppressMessages(
+    convert_psychds(test_paper("x"), output_dir = out,
+                    local_path = d, local_only = TRUE, overwrite = TRUE))
+
+  req <- file.path(out, "requirements.txt")
+  expect_true(file.exists(req))
+  body <- readLines(req)
+  expect_true(all(c("dplyr", "ggplot2") %in% body))
+  # header documents provenance and the names-only limitation
+  expect_true(any(grepl("metacheck", body)))
+  expect_true(any(grepl("not pinned versions", body)))
+})
+
+test_that(".psychds_write_requirements never clobbers an existing dep file", {
+  # The guard: a real requirements.txt / renv.lock / DESCRIPTION already at the
+  # archive root wins (an authors' file is not overwritten). Tested directly on
+  # the helper because convert_psychds(overwrite = TRUE) rebuilds the whole dir.
+  out <- withr::local_tempdir()
+  writeLines("SENTINEL", file.path(out, "renv.lock"))
+  cc <- list(table = data.frame(packages = "dplyr, ggplot2"))
+  ops <- list(code_check = cc)
+
+  res <- metacheck:::.psychds_write_requirements(ops, out)
+  expect_null(res)                                    # nothing written
+  expect_false(file.exists(file.path(out, "requirements.txt")))
+  expect_equal(readLines(file.path(out, "renv.lock")), "SENTINEL")
+
+  # With no pre-existing dep file, it writes and returns the path.
+  out2 <- withr::local_tempdir()
+  res2 <- metacheck:::.psychds_write_requirements(ops, out2)
+  expect_equal(res2, file.path(out2, "requirements.txt"))
+  expect_true(all(c("dplyr", "ggplot2") %in% readLines(res2)))
+
+  # No packages -> nothing written.
+  out3 <- withr::local_tempdir()
+  empty_ops <- list(code_check = list(table = data.frame(packages = character(0))))
+  expect_null(metacheck:::.psychds_write_requirements(empty_ops, out3))
+})
+
 test_that("gated-repo hint explains a skipped repo with recovery steps", {
   # A repo was found but not listable (e.g. a GitHub repo over the size gate):
   # the converter's empty-plan / no-columns error must name the repo, the
@@ -291,7 +339,7 @@ test_that("convert_psychds skips gracefully when psychds_check plan is empty", {
   out <- file.path(tempdir(), "pd_empty_plan")
   expect_message(
     res <- convert_psychds(chain, output_dir = out, overwrite = TRUE),
-    "empty plan")
+    "No data files to convert")
 
   expect_true(isTRUE(res$empty_plan))
   expect_equal(res$n_files_copied, 0L)

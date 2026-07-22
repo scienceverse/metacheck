@@ -2,18 +2,40 @@
 # codebook_check to identify scales in shared data. One row per instrument.
 #
 # Sources:
-#   * OpenScales community repo (fetched live, like file_types.R): ~200 open,
-#     permissively-licensed instruments with a code, name and abbreviation.
+#   * The `scale_meta` dataset (data-raw/scale_items.R), harvested from the
+#     OpenScales .osd definition files: ~1,061 instruments, of which the ones
+#     safe to match against prose (`text_ok`) become dictionary rows.
 #   * Curated additions (embedded below): widely-used instruments not in
 #     OpenScales, hand-selected from published scale indexes (arabpsychology.com
 #     CC-BY list; Wikipedia list of psychiatric rating scales).
 #
+# Why scale_meta and not manifest.json: the manifest lists ~204 instruments,
+# while the repo ships ~1,095 .osd definitions. Building from the manifest left
+# 862 instruments (70,070 items, 2,838 reverse-keyed) with item-level data that
+# NO name lookup could reach — `code` resolved for only 199 rows. Sourcing both
+# tables from the same place keeps `scales$code` a working join key into
+# scale_meta / scale_items / scale_scoring by construction.
+#
+# `text_ok` gates entry: it is FALSE for short/generic names and for ALL PhenX
+# entries, which are named after the construct measured ("Insomnia", "General
+# Well-being") rather than the instrument. Those are real measures with usable
+# items, but their names match ordinary methods prose, so they must never enter
+# a dictionary that is regex-scanned against a manuscript. Their items stay
+# reachable by `code` for anything that already knows which instrument it has.
+#
 # Columns:
 #   name    canonical full name (used to build a tolerant name-match regex)
 #   acronym short trigger (>= 2 chars, not a common English word); "" when none
-#   code    OpenScales code ("" for curated additions) — for future subscale /
-#           reverse-coding linkage to the OpenScales .osd files
+#   code    OpenScales code ("" for curated additions); joins to `scale_meta`,
+#           `scale_items` and `scale_scoring` for item wording, subscales and
+#           reverse-coding — see data-raw/scale_items.R
 #   source  "openscales" | "curated"
+#
+# NOTE: the manifest fetched here is METADATA ONLY (~204 records, no items).
+# The OpenScales repo itself ships ~1,095 .osd definitions carrying item text,
+# subscale structure and per-item scoring weights. Those are harvested
+# separately by data-raw/scale_items.R; this file stays name/acronym-only
+# because that is all codebook_check's matcher needs.
 #
 # Acronyms are kept even when they COLLIDE (e.g. AQ = Autism Spectrum Quotient
 # and Aggression Questionnaire): codebook_check disambiguates a collision from
@@ -21,18 +43,25 @@
 # Duplicates (same instrument under a slightly different name) ARE removed;
 # genuine different-instrument collisions are KEPT.
 
-# ── OpenScales manifest (live fetch) ──────────────────────────────────────────
-manifest_url <- "https://raw.githubusercontent.com/stmueller/OpenScales/main/manifest.json"
-osd <- jsonlite::read_json(manifest_url, simplifyVector = TRUE)
+# ── OpenScales instruments (from the harvested .osd definitions) ──────────────
+# Run data-raw/scale_items.R first: it builds `scale_meta` from the .osd files.
+# Falls back to the installed dataset so this script can be run on its own.
+`%||%` <- function(a, b) if (is.null(a)) b else a
+if (!exists("scale_meta")) {
+  f <- file.path("data", "scale_meta.rda")
+  if (file.exists(f)) load(f) else
+    stop("scale_meta not found. Run data-raw/scale_items.R first.")
+}
 
+# Only instruments safe to match against running text (see `text_ok` above).
 open_df <- data.frame(
-  name    = as.character(osd$name    %||% ""),
-  acronym = as.character(osd$abbreviation %||% ""),
-  code    = as.character(osd$code    %||% ""),
-  source  = "openscales",
-  stringsAsFactors = FALSE
-)
+  name    = as.character(scale_meta$name),
+  acronym = as.character(scale_meta$acronym),
+  code    = as.character(scale_meta$code),
+  source  = "openscales"
+)[scale_meta$text_ok, , drop = FALSE]
 open_df <- open_df[nzchar(trimws(open_df$name)), , drop = FALSE]
+rownames(open_df) <- NULL
 
 # ── Curated additions (widely-used instruments not in OpenScales) ─────────────
 # Collisions intentional (AQ, MFQ, RAS, SDS, SSS, ...). Duplicates of OpenScales
@@ -217,7 +246,6 @@ curated$source <- "curated"
 curated <- as.data.frame(curated, stringsAsFactors = FALSE)
 
 # ── Curation helpers (kept identical in spirit to codebook_check's matcher) ────
-`%||%` <- function(a, b) if (is.null(a)) b else a
 
 # Common English / ambiguous 2-3 letter tokens that are never a usable acronym.
 common_words <- c("ACE","AIM","CARE","COPE","FACE","FEAR","GAIN","HOPE","LIFE",
@@ -288,6 +316,8 @@ rownames(scales) <- NULL
 message(sprintf("scales: %d total (%d openscales + %d curated) | %d with acronym",
                 nrow(scales), sum(scales$source == "openscales"),
                 sum(scales$source == "curated"), sum(nzchar(scales$acronym))))
+message(sprintf("        %d rows carry a code that resolves to item-level data",
+                sum(nzchar(scales$code) & scales$code %in% scale_meta$code)))
 
 usethis::use_data(scales, overwrite = TRUE, compress = "xz")
 usethis::use_r("scales")

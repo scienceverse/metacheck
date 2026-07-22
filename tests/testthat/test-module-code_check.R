@@ -222,6 +222,42 @@ test_that("code_check local_path: files without comments are flagged", {
   expect_equal(no_comments_row$percentage_comment, 0)
 })
 
+test_that("code_check records loaded packages per file and per paper", {
+  local_path <- test_path("fixtures", "code_files")
+  mo <- module_run(test_paper(), "code_check", local_path = local_path)
+
+  # analysis.R loads dplyr + ggplot2; analysis_no_comments.R loads dplyr;
+  # the Stata / helper files load nothing.
+  by_name <- stats::setNames(mo$table$packages, mo$table$file_name)
+  expect_equal(by_name[["analysis.R"]], "dplyr, ggplot2")
+  expect_equal(by_name[["analysis_no_comments.R"]], "dplyr")
+  expect_equal(by_name[["stata_latin1.do"]], "")
+
+  n_by_name <- stats::setNames(mo$table$packages_n, mo$table$file_name)
+  expect_equal(n_by_name[["analysis.R"]], 2L)
+  expect_equal(n_by_name[["helper.R"]], 0L)
+
+  # paper-level distinct union: dplyr + ggplot2 = 2
+  expect_equal(mo$summary_table$code_packages_n, 2L)
+  expect_match(mo$summary_text, "2 distinct packages")
+  expect_match(paste(mo$report, collapse = "\n"), "ggplot2")
+})
+
+test_that("code_check merges packages into a supplied manifest", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  local_path <- test_path("fixtures", "code_files")
+  mdir <- withr::local_tempdir()
+
+  mo <- module_run(test_paper(), "code_check",
+                   local_path = local_path, manifest = mdir)
+
+  mf <- list.files(mdir, pattern = "\\.manifest\\.json$", full.names = TRUE)
+  expect_length(mf, 1)
+  m <- jsonlite::fromJSON(mf[[1]], simplifyVector = FALSE)
+  expect_setequal(unlist(m$code$packages), c("dplyr", "ggplot2"))
+})
+
+
 test_that("code_check paper + local_path", {
   skip_if_quick()
 
@@ -338,8 +374,18 @@ test_that("parse errors", {
                         NA, NA, NA, NA),
     code_abs_path = c(0L, 0L, 0L, 1L, 0L, 0L, 0L, 0L),
     absolute_paths = c("", "", "", "/User/lisa/file.csv", "", "", "", ""),
+    # none of the fixture files call setwd()
+    code_setwd = rep(0L, 8),
+    setwd_calls = rep("", 8),
     library_lines = c(1L, 1L, 1L, 1L, 0L, 3L, 0L, 0L),
     library_max_between = c(NA, NA, NA, NA, NA, 5L, NA, NA),
+    # packages/packages_n are alphabetical by file_name (see arrange() below):
+    # error-ok.qmd, error.R, error.Rmd, error.qmd each load dplyr (the malformed
+    # `library(dplyr` still yields the name); knit-error.Rmd/ok.Rmd/ok.qmd load
+    # none; ok.R loads dplyr + tidyr.
+    packages_n = c(1L, 1L, 1L, 1L, 0L, 2L, 0L, 0L),
+    packages = c("dplyr", "dplyr", "dplyr", "dplyr", "",
+                 "dplyr, tidyr", "", ""),
     comment_lines = c(1L, 1L, 1L, 3L, 1L, 2L, 4L, 4L),
     code_lines = c(4L, 2L, 2L, 3L, 1L, 7L, 1L, 1L),
     percentage_comment = c(0.2, 1/3, 1/3, 0.5, 0.5, 2/9, 0.8, 0.8) ,
@@ -364,9 +410,12 @@ test_that("parse errors", {
     code_n = 8,
     code_checked = 8,
     code_abs_path = 1,
+    code_setwd = 0L,
     code_missing_files = 1,
     code_min_comments = 0.2,
-    code_parse_errors = 4
+    code_parse_errors = 4,
+    # distinct packages across all 8 files: dplyr + tidyr (from ok.R)
+    code_packages_n = 2L
   )
   expect_equal(mo$summary_table, exp)
 })
