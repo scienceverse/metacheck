@@ -154,7 +154,7 @@
     Instrument = list(.bh_instrument_row(instrument_id, name, version, link,
                                          description)),
     Response   = responses)
-  if (!is.null(source_format)) doc[["metacheck:source_format"]] <- source_format
+  if (!is.null(source_format)) doc[["metacheck:sourceFormat"]] <- source_format
   if (!is.null(fidelity))      doc[["metacheck:fidelity"]] <- fidelity
   doc
 }

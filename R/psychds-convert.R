@@ -72,8 +72,8 @@
         row$label_status %in% c("labelled", "llm") &&
         !is.na(row$label) && nzchar(row$label)) {
       pv[["description"]]                 <- row$label
-      pv[["metacheck:label_source"]]      <- row$label_source
-      pv[["metacheck:codebook_variable"]] <- row$codebook_variable
+      pv[["metacheck:labelSource"]]      <- row$label_source
+      pv[["metacheck:codebookVariable"]] <- row$codebook_variable
     }
 
     # Psychometric scale membership (from codebook_check's LLM scale
@@ -159,7 +159,7 @@
     }
 
     if (!is.na(rep_)) pv[["metacheck:representation"]] <- rep_
-    if (!is.na(row$source_file)) pv[["metacheck:source_file"]] <- row$source_file
+    if (!is.na(row$source_file)) pv[["metacheck:sourceFile"]] <- row$source_file
     Filter(Negate(is.null), pv)
   })
 }
@@ -332,26 +332,480 @@
     materials = get1("materials_open"), prereg = get1("prereg_open"))
 }
 
-# Build and write the multi-study collection metadata as `collection.json` at the
-# output root. It is schema.org JSON-LD with @type "Collection" (a schema.org
-# type), so any schema.org reader — and Google Dataset Search — can consume it,
-# and it uses the same vocabulary Psych-DS itself speaks. It is deliberately NOT
-# named dataset_description.json, so the Psych-DS validator (which only opens a
-# file of that exact name) never validates it, and the root stays a non-dataset
+# The literal placeholder written into any RO-Crate/DDI field metacheck cannot
+# currently extract, so a researcher can grep the file for it and knows exactly
+# what to fill in by hand.
+.psychds_unknown <- "unknown"
+
+# Wrap a scalar string as a one-element JSON array (the shape every DDI-derived
+# field in the RO-Crate uses, e.g. purpose / populationOfConcern), without
+# inventing sentence/list boundaries in free text that isn't actually
+# structured as a list. NULL/NA/"" collapses to the single-element "unknown"
+# array, so the field is always present and always an array.
+.psychds_ddi_array <- function(x) {
+  x <- if (length(x) == 0) NA_character_ else x[1]
+  if (is.na(x) || !nzchar(trimws(x))) x <- .psychds_unknown
+  list(x)
+}
+
+# Look up one field of the paper's preregistration (prereg_check's `table`,
+# long-format: ONE ROW PER LINKED REGISTRATION, columns matching prereg_schema).
+# Returns NA when prereg_check did not run (ops has no "prereg_check" entry —
+# never forced to run by the converter, only reused opportunistically when the
+# caller's chain already included it), or the paper has no linked
+# preregistration, or the field is empty.
+#
+# Returns NA when a paper links MORE THAN ONE registration. Papers routinely
+# register each study separately, and those registrations genuinely differ:
+# 09567976221098594 has three, of which the one titled "... (Study 3)" declares
+# a sample_size of 1500 while the other two declare 2104. An earlier version
+# took vals[1], which stamped one arbitrary registration's numbers onto every
+# study — a confidently-wrong number, worse than an absent one.
+#
+# Matching a registration to the study it covers is a real inference problem,
+# not a title regex: across the corpus most multi-registration papers have
+# IDENTICAL titles for every registration, the study cues that do appear vary
+# ("... (Study 3)", "... (Study 2).", "... (schemaVR4)", a bare "Study 3"), and
+# the counts often do not line up with the data's study groups at all (one
+# paper has 3 registrations against a single group; another 3 against four).
+# Until that matching exists (reg_check does some of this), pre-filling is
+# limited to the unambiguous single-registration case and everything else stays
+# "unknown".
+.psychds_prereg_field <- function(ops, pid, field) {
+  pr <- ops[["prereg_check"]]$table
+  if (is.null(pr) || !is.data.frame(pr) || !nrow(pr) ||
+      !all(c("paper_id", field) %in% names(pr))) return(NA_character_)
+  rows <- pr[!is.na(pr$paper_id) & pr$paper_id == pid, , drop = FALSE]
+  if (nrow(rows) != 1L) return(NA_character_)
+  v <- rows[[field]][1]
+  if (is.na(v) || !nzchar(trimws(v %||% ""))) return(NA_character_)
+  v
+}
+
+# Build the study-level contextual entity #study-design: how the study was run.
+#
+# ONE entity, deliberately. An earlier version split this across #study-design,
+# #population and #sampling-plan, which produced three problems: (a)
+# populationOfConcern and samplingMethod each appeared TWICE with different
+# meanings — a {"@id": ...} pointer on #study-design and prose content on the
+# target — so one property name did two incompatible jobs; (b) #population
+# carried both populationOfConcern and description, which restated the same
+# fact twice; (c) the split was speculative — the two sub-entities were each
+# referenced exactly once, by #study-design, and nothing else ever pointed at
+# them. Splitting is worth it when a definition is genuinely shared (DDI's
+# Universe is reusable across a study series); it is not worth it to hold nine
+# fields read in one sitting. Fields are grouped by theme instead: what kind of
+# study, who it was about, how they were reached, how many were obtained.
+#
+# EVERY field below is a real element of DDI-Lifecycle 3.3 or schema.org —
+# there are no metacheck-invented terms in this file. The mapping, and the
+# checking behind it:
+#   dataCollectionMethodology -> ddi:DataCollectionMethodology (Methodology).
+#       DDI has no dedicated "study design" element; this is its nearest
+#       ("primary or secondary, qualitative or quantitative, mixed method").
+#   purpose             -> ddi:Purpose (StudyUnit), "why the study took place".
+#   populationOfConcern -> ddi:PopulationOfConcern (Sampling).
+#   isInclusive         -> ddi:IsInclusive (Universe): whether the population
+#       description is phrased as who is INCLUDED or who is EXCLUDED. DDI
+#       deliberately uses one description plus this flag rather than separate
+#       inclusion/exclusion fields, which is also how prereg templates ask.
+#   samplingMethod      -> ddi:SamplingProcedure (Methodology).
+#   samplingFrame       -> ddi:SampleFrame (Sampling).
+#   targetSampleSize    -> ddi:OverallTargetSampleSize (Sampling) — PLANNED n.
+#   sampleSize          -> ddi:SampleSize        (ResponseRate) — approached.
+#   numberOfResponses   -> ddi:NumberOfResponses (ResponseRate) — completed.
+#   specificResponseRate-> ddi:SpecificResponseRate (ResponseRate).
+# The last four are four distinct numbers, from two different DDI modules: a
+# sampling plan's target, and the ResponseRate triple. They coincide in a
+# simple experiment where everyone randomised completes, which is informative
+# (nobody was lost) rather than redundant; they diverge for any survey or any
+# study with attrition, which is where the distinction earns its place.
+# An earlier version declared several of these as custom `ssrc:` terms; that
+# was wrong — DDI defines them (ResponseRate even names NumberOfResponses
+# identically), and they are now mapped to the real elements.
+#
+# Sourced from a linked preregistration when prereg_check already ran (see
+# .psychds_prereg_field()), else "unknown", so a researcher filling the file in
+# by hand knows exactly what is missing.
+# `purpose` and `funder` are deliberately NOT here — they live on the root
+# Dataset instead. Neither is a fact about how the study was RUN (which is what
+# this entity holds): purpose is what the whole package is for, and funder is
+# bibliographic attribution belonging beside author and identifier. Both
+# standards agree: funder is a native schema.org CreativeWork property, and
+# ddi:Purpose sits on StudyUnit, DDI's top-level study record — our root.
+#
+# ONE ENTITY PER STUDY PART when a paper has several (`sr` is a "study-<group>"
+# prefix; NULL gives a single unqualified #study-design for a single-study
+# paper). Different experiments in one paper routinely have different samples,
+# recruitment and N — study 1 sixty undergraduates in a lab, study 3 four
+# hundred from Prolific — and a single shared block cannot express that, which
+# left a researcher having to pick one study's numbers or cram all of them into
+# one string. This matches how the #lifecycle-* and CRediT #role-* entities
+# are already scoped.
+#
+# PREREG PRE-FILL: purpose / study_design_overview / sample_size /
+# data_exclusion_criteria are pre-filled from a linked preregistration ONLY
+# when the paper links exactly one — see .psychds_prereg_field(). Papers do
+# register per study, and those registrations differ, but nothing currently
+# maps a registration to the study it covers, so with 2+ registrations every
+# field stays "unknown" rather than carrying one arbitrary study's numbers.
+# When that matching is built, this is where it plugs in.
+.psychds_study_design_entity <- function(ops, pid, sr = NULL) {
+  get_f <- function(field) .psychds_prereg_field(ops, pid, field)
+  grp   <- if (is.null(sr)) NULL else sub("^study-", "", sr)
+  label <- if (is.null(grp)) NULL else paste("Study", toupper(grp))
+  list(
+    `@id`   = if (is.null(grp)) "#study-design" else paste0("#study-design-", grp),
+    `@type` = "ResearchProject",
+    name    = if (is.null(label)) "Study design" else paste0("Study design (", label, ")"),
+    # What this study was for, and what kind of study it was. `purpose` sits
+    # here rather than on the root because each experiment in a multi-study
+    # paper usually tests its own question.
+    purpose                   = .psychds_ddi_array(get_f("research_questions")),
+    dataCollectionMethodology = .psychds_ddi_array(get_f("study_design_overview")),
+    # Who it was about. One description plus a flag, per DDI's Universe.
+    populationOfConcern = .psychds_ddi_array(get_f("data_exclusion_criteria")),
+    isInclusive         = .psychds_unknown,
+    # How they were reached.
+    samplingMethod = .psychds_ddi_array(.psychds_unknown),
+    samplingFrame  = .psychds_ddi_array(.psychds_unknown),
+    # How many: planned, approached, completed, and the resulting rate.
+    targetSampleSize     = .psychds_ddi_array(get_f("sample_size")),
+    sampleSize           = .psychds_ddi_array(.psychds_unknown),
+    numberOfResponses    = .psychds_ddi_array(.psychds_unknown),
+    specificResponseRate = .psychds_ddi_array(.psychds_unknown))
+}
+
+# One collection event per study: WHEN, under WHAT CIRCUMSTANCES and HOW the
+# data was obtained, and who outside the author list collected it.
+#
+# This is DDI's `CollectionEvent` — "a specific event in the collection or
+# capture process" — and every field below is one of its documented children,
+# so the entity is named for the standard it reproduces rather than invented:
+#   obtainedDate        -> ddi:DataCollectionDate, "a date or range of dates
+#                          for the described data collection event".
+#   collectionSituation -> ddi:CollectionSituation, "the situation in which the
+#                          data collection event takes place". Broader than a
+#                          geographic point, and deliberately so: whether a
+#                          session was supervised, individual or group, or ran
+#                          during an exam period affects the data in ways a
+#                          building name does not. An earlier version used
+#                          schema.org locationCreated, which only carries the
+#                          physical place.
+#   modeOfCollection    -> ddi:ModeOfCollection, the platform or mode
+#                          ("Qualtrics", "jsPsych on lab machines"). Kept
+#                          separate from the situation because a platform is
+#                          not a circumstance; one field carrying both was
+#                          ambiguous.
+#   contributor         -> schema.org, "a secondary contributor to the
+#                          CreativeWork" — the non-author RA/staff concept,
+#                          matching ddi:DataCollectorOrganizationReference
+#                          ("organization or individual responsible for the
+#                          data collection"). Takes Person/Organization
+#                          entities so collectors become identified, creditable
+#                          people rather than a free-text sentence; emitted as
+#                          an empty array for the team to populate.
+#
+# This is the FIRST of the study's lifecycle events (see
+# .psychds_lifecycle_events() below), carrying the collection-specific fields
+# the later stages do not need. It is not called "provenance": in RO-Crate and
+# W3C PROV that word denotes the derivation chain (object -> activity ->
+# result), which the script-derived events record.
+#
+# An earlier version carried AsCollected's `dataId`, `additionalInfo` and
+# `cleanedWithCode` — dropped: the first two are that web form's own
+# bookkeeping (an internal tracking id, a catch-all free-text box) with no
+# meaning outside it, and the third (a yes/no "was cleaning done with code") is
+# answered far more precisely by the script events, which name the exact file.
+#
+# metacheck has NO extraction path for any of these — when, under what
+# circumstances and how data was collected is not recoverable from a repository
+# scan or manuscript parse. They are pre-labelled, pre-linked slots.
+.psychds_collection_event_entity <- function(sr) {
+  grp <- sub("^study-", "", sr)
+  list(
+    `@id`   = paste0("#lifecycle-", grp, "-collection"),
+    `@type` = "CreateAction",
+    name    = paste("Raw data obtained: Study", toupper(grp)),
+    eventType           = "raw data obtained",
+    startTime           = .psychds_unknown,
+    agent               = .psychds_unknown,
+    obtainedDate        = .psychds_ddi_array(.psychds_unknown),
+    collectionSituation = .psychds_ddi_array(.psychds_unknown),
+    modeOfCollection    = .psychds_ddi_array(.psychds_unknown),
+    contributor         = list())
+}
+
+# The remaining fixed lifecycle stages for one study. Together with the
+# collection event above and the script-derived events
+# (.psychds_provenance_entities()), these are the study's LifecycleEvent list.
+#
+# Shape follows DDI's `LifecycleEvent` — "a listing of events in the life cycle
+# of a data set, with identification, date, agency and descriptive information
+# for each" — whose three components are what took place, when, and who was
+# involved. Here: `eventType` (what), `startTime` (when), `agent` (who).
+# schema.org's CreateAction already defines agent/startTime, so no custom terms
+# are needed and the script-derived events use the SAME shape, just with
+# instrument/object/result additionally auto-filled.
+#
+# The stage LIST is AsCollected's, not DDI's. DDI leaves the event list
+# open-ended — you document whatever was significant — which records nothing in
+# advance and so prompts a team for nothing; the stages that go undocumented
+# are exactly the manual ones. AsCollected instead fixes the stages (raw data,
+# cleaning, analysis) and asks who did each. Pre-generating those stubs means a
+# team is asked about every stage and can delete what does not apply, rather
+# than being asked about none. Collection is emitted separately above because
+# it carries extra fields; cleaning and analysis need only what/when/who.
+.psychds_lifecycle_stages <- c(
+  cleaning = "data cleaning",
+  analysis = "data analysis")
+
+.psychds_lifecycle_events <- function(sr) {
+  grp <- sub("^study-", "", sr)
+  lapply(names(.psychds_lifecycle_stages), function(k) list(
+    `@id`     = paste0("#lifecycle-", grp, "-", k),
+    `@type`   = "CreateAction",
+    name      = paste0(
+      toupper(substring(.psychds_lifecycle_stages[[k]], 1, 1)),
+      substring(.psychds_lifecycle_stages[[k]], 2),
+      ": Study ", toupper(grp)),
+    eventType = unname(.psychds_lifecycle_stages[[k]]),
+    startTime = .psychds_unknown,
+    agent     = .psychds_unknown))
+}
+
+# CRediT (ANSI/NISO Z39.104-2022) contributor roles, by their persistent NISO
+# URIs. Replaces an earlier invented 9-value vocabulary ("obtained raw data",
+# "has copy of raw data", ...) modelled on AsCollected's checkbox grid: CRediT
+# is the actual standard for "who did what" on a research output, is already
+# what journals collect, and gives each role a resolvable identifier instead of
+# a metacheck-local string. The three AsCollected checkboxes with no CRediT
+# equivalent ("has a copy of the raw/final data") were dropped rather than
+# preserved as custom terms — they are that platform's fraud-deterrence
+# bookkeeping, not a property of the dataset.
+#
+# All 14 roles are emitted. `agent` is always "unknown": metacheck cannot
+# attribute contributions among co-authors, so each role is one stub the team
+# fills in with the applicable author's @id (or deletes if nobody held it).
+#
+# Roles are emitted PER STUDY PART when a paper has several, with the study
+# named in the human-readable `name` ("Validation (Study EX2)") and carried
+# machine-readably by `about`. schema.org's Role type exists precisely to
+# "attach additional information to the Role" (its own words) — so `about`
+# already IS the scoping mechanism, and an earlier custom `roleScope` property
+# duplicating it was removed as redundant. CRediT itself defines no scoping
+# qualifier, so the canonical role URI stays untouched in `roleName` and the
+# scope lives entirely in schema.org's own machinery. A single-study paper gets
+# one unqualified set pointing at the root Dataset: plain conventional CRediT.
+.psychds_credit_roles <- c(
+  "conceptualization", "data-curation", "formal-analysis", "funding-acquisition",
+  "investigation", "methodology", "project-administration", "resources",
+  "software", "supervision", "validation", "visualization",
+  "writing-original-draft", "writing-review-editing")
+
+# Title-case a CRediT slug for the human-readable label: "formal-analysis" ->
+# "Formal analysis", matching CRediT's own capitalisation of its role names.
+.psychds_credit_label <- function(slug) {
+  words <- strsplit(gsub("-", " ", slug), " ")[[1]]
+  paste0(toupper(substring(words[1], 1, 1)), substring(words[1], 2),
+         if (length(words) > 1) paste0(" ", paste(words[-1], collapse = " ")) else "")
+}
+
+# `sr` is a "study-<group>" prefix, or NULL for a paper-level (unscoped) set.
+.psychds_credit_role_entities <- function(sr = NULL) {
+  grp   <- if (is.null(sr)) NULL else sub("^study-", "", sr)
+  label <- if (is.null(grp)) NULL else paste("Study", toupper(grp))
+  lapply(.psychds_credit_roles, function(r) Filter(Negate(is.null), list(
+    `@id`    = if (is.null(grp)) paste0("#role-", r) else paste0("#role-", grp, "-", r),
+    `@type`  = "Role",
+    name     = if (is.null(label)) .psychds_credit_label(r)
+               else paste0(.psychds_credit_label(r), " (", label, ")"),
+    roleName = list(`@id` = paste0("https://credit.niso.org/contributor-roles/", r, "/")),
+    about    = if (is.null(grp)) list(`@id` = "./") else list(`@id` = paste0(sr, "/")),
+    agent    = .psychds_unknown)))
+}
+
+# Decode a missing_values JSON string (see .encode_missing_values() in
+# R/data_check_helpers.R) into a named character vector (names = sentinel
+# codes, values = reason labels, possibly NA when no reason was declared). The
+# stored JSON is EITHER a bare array of codes (no reason known) OR a
+# code->reason object — .decode_value_labels() only handles the object shape,
+# so an array is normalised here to code-named entries with an NA reason.
+.psychds_decode_missing <- function(s) {
+  if (is.null(s) || length(s) != 1 || is.na(s) || !nzchar(s)) return(NULL)
+  out <- tryCatch(jsonlite::fromJSON(s), error = function(e) NULL)
+  if (is.null(out) || length(out) == 0) return(NULL)
+  v <- unlist(out)
+  if (is.null(names(v)) || !any(nzchar(names(v))))
+    v <- stats::setNames(rep(NA_character_, length(v)), as.character(v))
+  v[!is.na(names(v)) & nzchar(names(v))]
+}
+
+# Build the paper-wide missing-value DefinedTermSet: one entity pooling every
+# DISTINCT (code, reason) pair found anywhere across the whole paper's
+# variables, deduplicated. Deliberately a SINGLE shared entity, not one per
+# variable or per study — real papers were checked and essentially never use
+# more than one or two genuinely distinct conventions (see the corpus scan
+# behind this design), and where a paper's codebook does show more than one,
+# that reads as inconsistent practice worth pooling into one canonical scheme
+# rather than modelling as deliberate multi-scheme design. `labels_df` is
+# codebook_check's full (unfiltered by study) labels table. Returns NULL when
+# no variable anywhere in the paper declares a missing-value code, so the
+# entity — and any reference to it — is omitted entirely rather than emitted
+# empty.
+.psychds_missing_scheme_entity <- function(labels_df) {
+  if (is.null(labels_df) || !nrow(labels_df) ||
+      !"missing_values" %in% names(labels_df)) return(NULL)
+  mv_strings <- labels_df$missing_values
+  mv_strings <- mv_strings[!is.na(mv_strings) & nzchar(mv_strings)]
+  if (!length(mv_strings)) return(NULL)
+
+  pooled <- character(0)   # named by code, value = reason (possibly NA)
+  for (s in mv_strings) {
+    v <- .psychds_decode_missing(s)
+    if (is.null(v)) next
+    pooled <- c(pooled, v)
+  }
+  if (!length(pooled)) return(NULL)
+
+  # Deduplicate by (code, reason) pair — the same code with two DIFFERENT
+  # reasons across the paper both survive as distinct terms; an exact repeat
+  # collapses to one.
+  key <- paste0(names(pooled), "", ifelse(is.na(pooled), "", pooled))
+  pooled <- pooled[!duplicated(key)]
+
+  terms <- Map(function(code, reason) Filter(Negate(is.null), list(
+    `@type`   = "DefinedTerm",
+    termCode  = code,
+    name      = if (!is.na(reason)) reason else NULL)),
+    names(pooled), unname(pooled))
+
+  list(
+    `@id`   = "#missingvalues",
+    `@type` = "DefinedTermSet",
+    name    = "Missing-value scheme",
+    description = paste0(
+      "Sentinel codes used across this paper's data to denote a missing ",
+      "response, pooled from every variable's declared missing-value codes ",
+      "into one canonical scheme."),
+    hasDefinedTerm = unname(terms))
+}
+
+# Build one RO-Crate CreateAction per code file that reproducibility_check
+# analysed, recording which data file(s) it reads (object), the code file
+# itself (instrument), and which file(s) it writes (result) — schema.org's
+# standard action pattern, and the RO-Crate-native alternative to inventing a
+# custom "provenance" vocabulary. Uses reproducibility_check's `reads`/
+# `writes` list-columns (added to its table specifically for this — see
+# repro_file_io() in R/reproducibility_check.R), which are basenames only, so
+# they are resolved against the psychds_check placement `plan` (file_name ->
+# target_path) to get real @ids into this graph. Only emitted when
+# reproducibility_check already ran (opportunistic, like .psychds_prereg_field
+# — never forces a new run) AND `plan` is available (the multi-study data
+# conversion path); returns list() otherwise, or when no code file resolves to
+# at least one placed read/write (an action linking to nothing is not useful
+# provenance). isBasedOn is also set on the AFFECTED file entities themselves
+# (schema.org's direct derived-from property, equivalent to prov:wasDerivedFrom)
+# so a reader following hasPart doesn't need to open the CreateAction to see
+# what a file was derived from.
+.psychds_provenance_entities <- function(ops, plan) {
+  repro <- ops[["reproducibility_check"]]$table
+  if (is.null(repro) || !is.data.frame(repro) || !nrow(repro) ||
+      !all(c("file_name", "reads", "writes") %in% names(repro))) return(list())
+  if (is.null(plan) || !is.data.frame(plan) || !nrow(plan) ||
+      !all(c("file_name", "target_path") %in% names(plan))) return(list())
+
+  plan_base <- tolower(basename(plan$file_name))
+  resolve <- function(basenames) {
+    basenames <- basenames[!is.na(basenames) & nzchar(basenames)]
+    if (!length(basenames)) return(character(0))
+    i <- match(tolower(basenames), plan_base)
+    tp <- plan$target_path[i]
+    unique(tp[!is.na(tp) & nzchar(tp)])
+  }
+
+  # @id from the script's own filename ("01_clean.R" -> "#provenance-01-clean-r")
+  # rather than a bare counter, so the identifier says which script it
+  # describes — the same self-describing style as the CRediT role ids
+  # (#role-ex1-validation). Non-alphanumerics collapse to "-" because an @id is
+  # a URI fragment; a numeric suffix disambiguates the case where two studies
+  # each contain a same-named script (a shared "clean.R"), which would
+  # otherwise collide.
+  slug <- function(fn) {
+    s <- tolower(gsub("[^A-Za-z0-9]+", "-", basename(fn)))
+    gsub("(^-|-$)", "", s)
+  }
+
+  entities <- list()
+  used <- character(0)
+  for (i in seq_len(nrow(repro))) {
+    code_target <- resolve(repro$file_name[i])
+    if (!length(code_target)) next   # the code file itself was not placed
+    object_targets <- resolve(unlist(repro$reads[i]))
+    result_targets <- resolve(unlist(repro$writes[i]))
+    if (!length(object_targets) && !length(result_targets)) next
+
+    base <- slug(repro$file_name[i])
+    if (!nzchar(base)) base <- as.character(i)
+    id <- base
+    n  <- 1L
+    while (id %in% used) { n <- n + 1L; id <- paste0(base, "-", n) }
+    used <- c(used, id)
+
+    run_pos <- if ("run_order" %in% names(repro)) repro$run_order[i] else NA
+    run_pos <- suppressWarnings(as.integer(run_pos))
+
+    entities[[length(entities) + 1]] <- Filter(Negate(is.null), list(
+      `@id`       = paste0("#lifecycle-", id),
+      `@type`     = "CreateAction",
+      name        = paste("Script run:", basename(repro$file_name[i])),
+      # Same what/when/who shape as the manual lifecycle stages; the difference
+      # is only that a script performed this one, so instrument/object/result
+      # are auto-filled while startTime/agent still need a human.
+      eventType   = "script run",
+      startTime   = .psychds_unknown,
+      agent       = .psychds_unknown,
+      # reproducibility_check's inferred run order (it computes this to decide
+      # what can run first). schema.org's native `position`. A PARTIAL order:
+      # scripts with no dependency between them share a position, so ties are
+      # expected and mean "either order". Omitted when the module could not
+      # place a file.
+      position    = if (!is.na(run_pos)) run_pos else NULL,
+      instrument  = list(`@id` = code_target[1]),
+      object      = if (length(object_targets)) lapply(object_targets, function(p) list(`@id` = p)) else NULL,
+      result      = if (length(result_targets)) lapply(result_targets, function(p) list(`@id` = p)) else NULL))
+  }
+  entities
+}
+
+# Build and write the multi-study collection metadata as an RO-Crate 1.3
+# `ro-crate-metadata.json` at the output root. It layers a custom JSON-LD
+# context (the `metacheck`/`ddi` terms below) over the standard RO-Crate
+# context, so generic RO-Crate tooling reads the graph while the DDI-Lifecycle
+# study-design concepts (populationOfConcern, samplingMethod, ...) stay
+# machine-readable rather than hidden in namespaced schema.org extensions. It
+# is deliberately NOT named
+# dataset_description.json, so the Psych-DS validator (which only opens a file
+# of that exact name) never validates it, and the root stays a non-dataset
 # collection (Option A).
 #
-# hasPart indexes every part that exists: each study-<group>/ dataset (with its
-# variable count), each root-level shared file, the paper full text, and the
-# logs. `study_roots` are the "study-<group>" prefixes; `shared_files` the plan
-# target paths that carry no study prefix; `fulltext_rel`/`logs_rel` the
-# root-relative paths of those generated artifacts. Returns the written path.
-.psychds_collection_json <- function(paper, output_dir, pid, study_roots,
-                                     columns_df = NULL, labels_df = NULL,
-                                     shared_files = character(0),
-                                     fulltext_rel = character(0),
-                                     logs_rel = character(0),
-                                     paradata = list(),
-                                     open_flags = logical(0)) {
+# The @graph's root Dataset (./) lists every part that exists via hasPart: each
+# study-<group>/ dataset (named and linked only — ALL variable-level detail,
+# including how many there are, stays in that study's own
+# dataset_description.json), each root-level shared file, the paper full text,
+# and the logs. `study_roots` are the "study-<group>" prefixes; `shared_files`
+# the plan target paths that carry no study prefix; `fulltext_rel`/`logs_rel`
+# the root-relative paths of those generated artifacts. Returns the written
+# path.
+.psychds_rocrate_json <- function(paper, output_dir, pid, study_roots,
+                                  labels_df = NULL,
+                                  shared_files = character(0),
+                                  fulltext_rel = character(0),
+                                  logs_rel = character(0),
+                                  paradata = list(),
+                                  open_flags = logical(0),
+                                  ops = list(),
+                                  plan = NULL) {
   info <- paper$info %||% list()
   ival <- function(field) {
     v <- if (field %in% names(info)) info[[field]] else NULL
@@ -362,45 +816,75 @@
   name <- if (!is.null(title) && nzchar(title)) title else
     paste0("Data collection (", pid, ")")
 
-  # hasPart: one Dataset entry per study root, carrying its variable count.
-  parts <- lapply(study_roots, function(sr) {
+  # One Dataset entity per study root, carrying a variable COUNT only. Full
+  # per-variable detail (label, question, scale, missing values, stats) already
+  # lives in that study's own dataset_description.json variableMeasured array
+  # (built by .psychds_variable_measured()) — duplicating every PropertyValue
+  # into the root graph as well produced a root file with one entity per column
+  # across the whole paper (thousands, for wide survey data) that was pure
+  # redundant duplication of data already on disk, not something a researcher
+  # could usefully scan. The study's own metadata file is the cross-reference
+  # target for variable-level detail.
+  study_parts <- lapply(study_roots, function(sr) {
     grp <- sub("^study-", "", sr)
-    n_vars <- if (!is.null(columns_df) && "group" %in% names(columns_df))
-      sum(!is.na(columns_df$group) & columns_df$group == grp) else NA_integer_
     Filter(Negate(is.null), list(
-      `@type`   = "Dataset",
-      name      = paste("Study", toupper(grp)),
-      # A relative reference to the sub-dataset's own metadata file.
-      identifier = paste0(sr, "/"),
-      `metacheck:datasetDescription` = paste0(sr, "/dataset_description.json"),
-      `metacheck:variableCount` = if (!is.na(n_vars)) n_vars else NULL))
+      `@id`   = paste0(sr, "/"),
+      `@type` = "Dataset",
+      name    = paste("Study", toupper(grp)),
+      about     = c(
+        list(list(`@id` = if (length(study_roots) > 1)
+          paste0("#study-design-", grp) else "#study-design")),
+        list(list(`@id` = paste0("#lifecycle-", grp, "-collection"))),
+        lapply(names(.psychds_lifecycle_stages), function(k)
+          list(`@id` = paste0("#lifecycle-", grp, "-", k))))))
   })
 
+  # Per study part: one #study-design for how the study was run, the fixed
+  # lifecycle-event stubs (raw data obtained / cleaning / analysis, each with
+  # what-when-who), and the 14 CRediT contributor roles. All are scoped per
+  # study when a paper has several and unscoped/paper-level when there is only
+  # one — a 13-study paper otherwise got 13 collection events and 182 role
+  # stubs but a SINGLE shared design block, so one sampleSize had to cover 13
+  # different experiments. Script-derived lifecycle events are added separately
+  # (they come from reproducibility_check, not from the study list).
+  lifecycle_entities <- unlist(lapply(study_roots, function(sr)
+    c(list(.psychds_collection_event_entity(sr)), .psychds_lifecycle_events(sr))),
+    recursive = FALSE)
+  multi <- length(study_roots) > 1
+  design_entities <- if (multi)
+    lapply(study_roots, function(sr) .psychds_study_design_entity(ops, pid, sr))
+  else list(.psychds_study_design_entity(ops, pid))
+  role_entities <- if (multi)
+    unlist(lapply(study_roots, .psychds_credit_role_entities), recursive = FALSE)
+  else .psychds_credit_role_entities()
+
   # hasPart: root-level shared files (codebooks, materials, documentation), the
-  # paper full text, and the provenance logs — as CreativeWork references.
-  ref_parts <- function(paths, type, note = NULL) {
+  # paper full text, and the provenance logs. Each is just its @id, @type and
+  # name — an earlier version also carried a `metacheck:role` label ("paper
+  # full text", "metacheck provenance log"), dropped because it restated what
+  # the path already says: everything under logs/ is a log, and the file under
+  # documentation/ ending _fulltext.txt is the paper text. A custom term that
+  # re-encodes a directory convention is not metadata, it is duplication.
+  ref_parts <- function(paths, type) {
     paths <- unique(paths[!is.na(paths) & nzchar(paths)])
-    lapply(paths, function(p) Filter(Negate(is.null), list(
-      `@type` = type, name = basename(p),
-      `metacheck:path` = p,
-      `metacheck:role` = note)))
+    lapply(paths, function(p) list(
+      `@id` = p, `@type` = type, name = basename(p)))
   }
-  parts <- c(parts,
-             ref_parts(shared_files, "CreativeWork", "shared across studies"),
-             ref_parts(fulltext_rel, "CreativeWork", "paper full text"),
-             ref_parts(logs_rel, "CreativeWork", "metacheck provenance log"))
+  file_parts <- c(ref_parts(shared_files, "File"),
+                  ref_parts(fulltext_rel, "CreativeWork"),
+                  ref_parts(logs_rel, "CreativeWork"))
 
   # hasPart: one Dataset entry per Behaverse paradata file — the trial-level
   # (response time / stimulus / option) data for an instrument, cross-referenced
   # to the matching scale (OSD) on the canonical instrument id.
-  parts <- c(parts, lapply(paradata, function(pd) Filter(Negate(is.null), list(
+  paradata_parts <- lapply(paradata, function(pd) Filter(Negate(is.null), list(
+    `@id`     = pd$path,
     `@type`   = "Dataset",
     name      = paste("Paradata:", pd$instrument_id),
-    identifier = pd$path,
     `metacheck:instrument_id` = pd$instrument_id,
     `metacheck:sourceFormat`  = if (nzchar(pd$format %||% "")) pd$format else NULL,
     `metacheck:responseCount` = pd$n_responses,
-    `metacheck:scale`         = if (!is.na(pd$osd_link)) pd$osd_link else NULL))))
+    `metacheck:scale`         = if (!is.na(pd$osd_link)) pd$osd_link else NULL)))
 
   # Prefer the paper's own abstract as the human-readable description (makes the
   # corpus text-searchable); fall back to a factual sentence about the structure.
@@ -411,12 +895,52 @@
     "valid Psych-DS dataset; this collection root is intentionally not itself ",
     "a Psych-DS dataset.")
 
-  coll <- list(
-    `@context`  = "https://schema.org/",
-    `@type`     = "Collection",
+  # Authors as RO-Crate Person contextual entities. An ORCID iD (when GROBID
+  # extracted one) becomes the entity's own @id, per RO-Crate convention
+  # (https://orcid.org/... is a resolvable, globally unique identifier); authors
+  # without one get a document-local @id instead. Affiliation is carried as free
+  # text (metacheck has no ROR resolution) rather than "unknown", since an
+  # absent affiliation is not the same gap as an unresolved one.
+  author_entities <- list()
+  author_refs <- list()
+  if (!is.null(paper$author) && nrow(paper$author) > 0) {
+    au <- paper$author
+    for (i in seq_len(nrow(au))) {
+      nm <- trimws(paste(au$given[i] %||% "", au$family[i] %||% ""))
+      if (!nzchar(nm)) next
+      orcid <- au$orcid[i] %||% NA_character_
+      aid <- if (!is.na(orcid) && nzchar(orcid)) orcid
+      else paste0("#author-", i)
+      aff <- au$affiliation[i] %||% NA_character_
+      author_entities[[length(author_entities) + 1]] <- Filter(Negate(is.null), list(
+        `@id` = aid, `@type` = "Person", name = nm,
+        affiliation = if (!is.na(aff) && nzchar(aff)) aff else NULL))
+      author_refs[[length(author_refs) + 1]] <- list(`@id` = aid)
+    }
+  }
+
+  # Root Dataset entity (RO-Crate's Root Data Entity), @id "./".
+  # funder sits here rather than on #study-design: it is bibliographic
+  # attribution about the work as a whole, belonging beside author and
+  # identifier, not a how-it-was-run detail. It has no extraction path and is
+  # always "unknown". `purpose` was briefly here too but moved to the per-study
+  # #study-design — each experiment in a multi-study paper usually tests its
+  # own question, and one paper-level purpose cannot express that.
+  root <- Filter(Negate(is.null), list(
+    `@id`       = "./",
+    `@type`     = "Dataset",
     name        = name,
     description = description,
-    hasPart     = parts)
+    funder      = .psychds_unknown,
+    author      = if (length(author_refs)) author_refs else NULL,
+    hasPart     = c(study_parts, file_parts, paradata_parts)))
+
+  doi <- ival("doi") %||% NA_character_
+  if (!is.na(doi) && nzchar(doi))
+    root[["identifier"]] <- paste0("https://doi.org/",
+                                   sub("^https?://doi.org/", "", doi))
+  kw <- .psychds_keywords(ival("keywords"))
+  if (!is.null(kw)) root[["keywords"]] <- kw
 
   # Open-practices check outcomes as filterable metadata, so the corpus can be
   # queried (e.g. "papers with no shared data") without opening each log. Only
@@ -427,29 +951,85 @@
                 prereg = "metacheck:isPreregistered")
   for (k in names(flag_map)) {
     v <- if (k %in% names(open_flags)) open_flags[[k]] else NA
-    if (!is.na(v)) coll[[flag_map[[k]]]] <- isTRUE(v)
+    if (!is.na(v)) root[[flag_map[[k]]]] <- isTRUE(v)
   }
 
-  # Authors, DOI, keywords — same extraction as the per-study description.
-  if (!is.null(paper$author) && nrow(paper$author) > 0) {
-    nm <- trimws(paste(paper$author$given %||% "", paper$author$family %||% ""))
-    nm <- nm[nzchar(nm)]
-    if (length(nm) > 0)
-      coll[["author"]] <- lapply(nm, function(x) list(`@type` = "Person", name = x))
-  }
-  doi <- ival("doi") %||% NA_character_
-  if (!is.na(doi) && nzchar(doi))
-    coll[["identifier"]] <- paste0("https://doi.org/",
-                                   sub("^https?://doi.org/", "", doi))
-  kw <- .psychds_keywords(ival("keywords"))
-  if (!is.null(kw)) coll[["keywords"]] <- kw
+  # dateCreated is schema.org's own property for "when this dataset/file was
+  # generated" — metacheck:generated duplicated it under a namespaced name for
+  # no reason, since there is no distinct concept it was adding.
+  root[["dateCreated"]] <- format(Sys.Date(), "%Y-%m-%d")
 
-  coll[["dateCreated"]]        <- format(Sys.Date(), "%Y-%m-%d")
-  coll[["metacheck:generated"]] <- format(Sys.Date(), "%Y-%m-%d")
-  coll <- Filter(Negate(is.null), coll)
+  # Missing-value scheme: one entity pooling every distinct sentinel code
+  # found anywhere in the paper (see .psychds_missing_scheme_entity()), or
+  # NULL when no variable declares one — in which case it is omitted from
+  # both hasPart/about and the graph, rather than emitted empty.
+  missing_entity <- .psychds_missing_scheme_entity(labels_df)
 
-  path <- file.path(output_dir, "collection.json")
-  .psychds_write_json(coll, path)
+  # Code -> data provenance: one CreateAction per code file reproducibility_check
+  # analysed (see .psychds_provenance_entities()), only when that module already
+  # ran and at least one read/write resolved to a placed file. list() when
+  # neither holds, so nothing is added to about/graph.
+  provenance_entities <- .psychds_provenance_entities(ops, plan)
+
+  # Each per-study #study-design is reachable from its own study part's
+  # `about`, so the root only names the paper-level one (single-study papers).
+  root[["about"]] <- c(if (!multi) list(list(`@id` = "#study-design")),
+                       if (!is.null(missing_entity)) list(list(`@id` = "#missingvalues")),
+                       lapply(provenance_entities, function(e) list(`@id` = e$`@id`)))
+  root <- Filter(Negate(is.null), root)
+
+  descriptor <- list(
+    `@id`   = "ro-crate-metadata.json",
+    `@type` = "CreativeWork",
+    conformsTo = list(`@id` = "https://w3id.org/ro/crate/1.3"),
+    about      = list(`@id` = "./"))
+
+  graph <- c(list(descriptor, root),
+             design_entities,
+             if (!is.null(missing_entity)) list(missing_entity),
+             lifecycle_entities,
+             provenance_entities,
+             role_entities,
+             author_entities)
+
+  crate <- list(
+    `@context` = list(
+      "https://w3id.org/ro/crate/1.3/context",
+      list(
+        # metacheck's own prefix, for the metacheck:* properties used across
+        # the graph (variableCount, hasSharedData, ...). Previously UNDECLARED,
+        # which meant strict JSON-LD expansion silently DROPPED every one of
+        # them. Points at the namespace this project already uses for its
+        # schemas (see inst/schema/*.json `$id`), not an invented one.
+        metacheck = "https://scienceverse.org/schema/metacheck/terms/",
+        ddi       = "https://ddialliance.org/Specification/DDI-Lifecycle/3.3/",
+        # Every term below is a REAL DDI-Lifecycle 3.3 element. There are no
+        # metacheck-invented terms in this context: an earlier version
+        # declared eight of these under a fabricated `ssrc:` namespace whose
+        # URL 404s, and several of those (notably NumberOfResponses, which DDI
+        # names identically) were standard all along.
+        populationOfConcern       = "ddi:PopulationOfConcern",
+        samplingMethod            = "ddi:SamplingProcedure",
+        samplingFrame             = "ddi:SampleFrame",
+        targetSampleSize          = "ddi:OverallTargetSampleSize",
+        obtainedDate              = "ddi:DataCollectionDate",
+        modeOfCollection          = "ddi:ModeOfCollection",
+        collectionSituation       = "ddi:CollectionSituation",
+        eventType                 = "ddi:EventType",
+        dataCollectionMethodology = "ddi:DataCollectionMethodology",
+        purpose                   = "ddi:Purpose",
+        sampleSize                = "ddi:SampleSize",
+        numberOfResponses         = "ddi:NumberOfResponses",
+        specificResponseRate      = "ddi:SpecificResponseRate",
+        isInclusive               = "ddi:IsInclusive"
+        # description, contributor, agent, startTime, funder, roleName, about
+        # and agent are schema.org natives already supplied by the RO-Crate
+        # context above, so they need no declaration here.
+        )),
+    `@graph` = graph)
+
+  path <- file.path(output_dir, "ro-crate-metadata.json")
+  .psychds_write_json(crate, path)
   invisible(path)
 }
 
@@ -1043,7 +1623,8 @@ isTRUE_vec <- function(x) {
 #' collection root beside the study folders (following BIDS, which places shared
 #' content at the root rather than in a pseudo-subject). The root is then a
 #' *collection* of datasets, not itself a Psych-DS dataset, so it carries a
-#' machine-readable `collection.json` (schema.org JSON-LD, `@type` `Collection`)
+#' machine-readable `ro-crate-metadata.json` (RO-Crate 1.3 JSON-LD, with a
+#' custom context for DDI-Lifecycle-inspired study-design/variable terms)
 #' instead of a root `dataset_description.json` — validate each `study-*/` folder.
 #' Original files whose contents cannot be read (no local copy) are skipped with
 #' a note.
@@ -1077,8 +1658,8 @@ isTRUE_vec <- function(x) {
 #'
 #' @returns (invisibly) a list with `output_dir`, `n_files_copied`,
 #'   `n_studies`, `descriptions` (paths of written dataset_description.json
-#'   files), `collection` (path of the root `collection.json` for a multi-study
-#'   collection, else empty), `fulltext` (path of the paper's full-text file
+#'   files), `collection` (path of the root `ro-crate-metadata.json` for a
+#'   multi-study collection, else empty), `fulltext` (path of the paper's full-text file
 #'   under `documentation/`, if written), and `logs` (paths written into
 #'   `logs/`: the file manifest, and the check results / module tables when those
 #'   modules ran). When an existing `output_dir` was skipped, the list
@@ -1138,11 +1719,13 @@ convert_psychds <- function(paper, output_dir = NULL,
   if (is.null(plan) || nrow(plan) == 0) {
     # No shared data to convert, but the paper is still worth archiving: write a
     # metadata-only collection carrying the manuscript full text and the
-    # provenance logs (checks + manifest). The root gets a `collection.json`
+    # provenance logs (checks + manifest). The root gets an `ro-crate-metadata.json`
     # (with zero study parts) — the SAME uniform shape every metacheck paper root
-    # has, so trove_find_collections() (which keys on collection.json) discovers
-    # it. We do NOT write scales here — text-only scales inferred from prose are
-    # not archived.
+    # has. NOTE: trove_find_collections() still keys on the old `collection.json`
+    # filename and will not discover roots written under the new name; it is
+    # superseded by scienceverse and left as-is pending its own removal. We do
+    # NOT write scales here — text-only scales inferred from prose are not
+    # archived.
     message("No data files to convert: writing a metadata-only collection ",
             "(manuscript full text + logs).", .converter_gated_hint(ops))
 
@@ -1172,7 +1755,7 @@ convert_psychds <- function(paper, output_dir = NULL,
     .psychds_write_requirements(all_ops, output_dir, paper = paper,
                                 local_path = local_path, local_only = local_only)
 
-    # Root collection.json indexing the full text and logs (no study parts).
+    # Root ro-crate-metadata.json indexing the full text and logs (no study parts).
     root_norm <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
     to_rel <- function(p) {
       if (is.null(p) || !length(p)) return(character(0))
@@ -1180,15 +1763,16 @@ convert_psychds <- function(paper, output_dir = NULL,
       ifelse(startsWith(pn, paste0(root_norm, "/")),
              substring(pn, nchar(root_norm) + 2L), pn)
     }
-    collection_path <- .psychds_collection_json(
+    collection_path <- .psychds_rocrate_json(
       paper, output_dir, pid, study_roots = character(0),
       fulltext_rel = to_rel(fulltext_path),
       logs_rel     = to_rel(names(logs_written)),
-      open_flags   = .psychds_open_flags(all_ops))
+      open_flags   = .psychds_open_flags(all_ops),
+      ops          = all_ops)
 
     message("Wrote metadata-only Psych-DS collection to ",
             normalizePath(output_dir, mustWork = FALSE),
-            " (0 data file(s), collection.json",
+            " (0 data file(s), ro-crate-metadata.json",
             if (!is.null(fulltext_path)) ", paper full text" else "",
             if (length(logs_written) > 0)
               paste0(", ", length(logs_written), " log file(s)") else "",
@@ -1404,9 +1988,10 @@ convert_psychds <- function(paper, output_dir = NULL,
   # dataset_description.json (Option A: a Psych-DS validator run on the root
   # correctly reports it is not a dataset; validate each study-<group>/ instead).
   # It does get BIDS-style root README/CHANGES, and a machine-readable
-  # collection.json (schema.org JSON-LD, @type Collection). collection.json is
-  # deliberately NOT named dataset_description.json, so the Psych-DS validator —
-  # which only ever opens a file of that exact name — never sees it.
+  # ro-crate-metadata.json (RO-Crate 1.3 JSON-LD, with a custom metacheck/ddi context
+  # for DDI-Lifecycle-inspired study-design/variable terms). ro-crate-metadata.json
+  # is deliberately NOT named dataset_description.json, so the Psych-DS
+  # validator — which only ever opens a file of that exact name — never sees it.
   multi_study <- length(planned_dirs) > 0
   if (multi_study) {
     root_has_root <- function(pat) any(grepl(pat,
@@ -1425,8 +2010,8 @@ convert_psychds <- function(paper, output_dir = NULL,
                "across studies (this README, cross-study codebooks and ",
                "materials) live here at the collection root."),
         "",
-        paste0("See `collection.json` for a machine-readable description of the ",
-               "collection and its parts."),
+        paste0("See `ro-crate-metadata.json` for a machine-readable description ",
+               "of the collection and its parts (RO-Crate 1.3 JSON-LD)."),
         "",
         paste0("**Note:** the collection root is intentionally *not* itself a ",
                "Psych-DS dataset (it has no root `dataset_description.json`). To ",
@@ -1440,8 +2025,8 @@ convert_psychds <- function(paper, output_dir = NULL,
         "added to log the version history of the collection.")),
         changes_dest)
   }
-  # collection.json itself is written near the end, once the full text and logs
-  # exist, so it can index them as parts too (see below).
+  # ro-crate-metadata.json itself is written near the end, once the full text
+  # and logs exist, so it can index them as parts too (see below).
 
   # ── Write identified scales as OpenScales OSD files ─────────────────────────
   # One .osd per NAMED scale, flat at scales/{code}.osd, plus a section in the
@@ -1483,12 +2068,13 @@ convert_psychds <- function(paper, output_dir = NULL,
   .psychds_write_requirements(all_ops, output_dir, paper = paper,
                               local_path = local_path, local_only = local_only)
 
-  # ── Multi-study collection metadata (collection.json) ───────────────────────
+  # ── Multi-study collection metadata (ro-crate-metadata.json) ────────────────
   # Written last so it can index every part that exists: each study dataset, the
   # root-level shared files (codebooks/materials/documentation), the paper full
   # text, and the logs. Not named dataset_description.json, so the Psych-DS
-  # validator ignores it. Single-study (flat) datasets get no collection.json —
-  # their root dataset_description.json already describes them.
+  # validator ignores it. Single-study (flat) datasets get no
+  # ro-crate-metadata.json — their root dataset_description.json already
+  # describes them.
   collection_path <- NULL
   if (length(planned_dirs) > 0) {
     # Paths of the extra generated artifacts, relative to the output root.
@@ -1499,15 +2085,17 @@ convert_psychds <- function(paper, output_dir = NULL,
       ifelse(startsWith(pn, paste0(root_norm, "/")),
              substring(pn, nchar(root_norm) + 2L), pn)
     }
-    collection_path <- .psychds_collection_json(
+    collection_path <- .psychds_rocrate_json(
       paper, output_dir, pid, study_roots,
-      columns_df = columns_df, labels_df = labels_df,
+      labels_df = labels_df,
       shared_files = grep("^study-", plan$target_path, value = TRUE,
                           invert = TRUE),
       fulltext_rel = to_rel(fulltext_path),
       logs_rel     = to_rel(names(logs_written)),
       paradata     = paradata_index,
-      open_flags   = .psychds_open_flags(all_ops))
+      open_flags   = .psychds_open_flags(all_ops),
+      ops          = all_ops,
+      plan         = plan)
   }
 
   # Explain the files that were NOT placed in the dataset. A file is not added
@@ -1553,7 +2141,7 @@ convert_psychds <- function(paper, output_dir = NULL,
           " to ", normalizePath(output_dir, mustWork = FALSE),
           " (", n_copied, " file(s), ", length(descriptions),
           " dataset description(s)",
-          if (!is.null(collection_path)) ", collection.json" else "",
+          if (!is.null(collection_path)) ", ro-crate-metadata.json" else "",
           if (n_scales_written > 0) paste0(", ", n_scales_written, " scale(s)") else "",
           if (length(paradata_index) > 0)
             paste0(", ", length(paradata_index), " paradata file(s)") else "",
@@ -1563,7 +2151,7 @@ convert_psychds <- function(paper, output_dir = NULL,
           ").\n")
   if (!is.null(collection_path))
     message("  The collection root is not itself a Psych-DS dataset; ",
-            "validate each study-*/ folder (see collection.json / README).")
+            "validate each study-*/ folder (see ro-crate-metadata.json / README).")
 
   invisible(list(
     output_dir     = output_dir,
@@ -1632,7 +2220,7 @@ convert_psychds <- function(paper, output_dir = NULL,
     # OSD spec ignores (same mechanism as metacheck:reference_item).
     key <- .bh_instrument_key(code)
     if (key %in% paradata_keys) {
-      osd$definition$scale_info[["metacheck:behaverse_instrument_id"]] <- key
+      osd$definition$scale_info[["metacheck:behaverseInstrumentId"]] <- key
       osd$definition$scale_info[["metacheck:paradata"]] <-
         paste0("../paradata/", key, ".json")
     }

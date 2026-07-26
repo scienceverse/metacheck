@@ -24,11 +24,15 @@
 
 # `%||%` and `plural()` are defined elsewhere in the package namespace.
 
-# Default archive location: one canonical scienceverse.sqlite in the same
-# rappdirs data dir the rest of the package uses (import-papers, db-*).
+# Default archive location: getOption("metacheck.scienceverse.db") when set
+# (e.g. in .Rprofile, so a chosen archive — such as one kept in a synced folder
+# instead of the rappdirs cache — does not need to be retyped every session),
+# else the canonical scienceverse.sqlite in the same rappdirs data dir the rest
+# of the package uses (import-papers, db-*).
 .sv_default_db <- function() {
-  file.path(rappdirs::user_data_dir("metacheck", "scienceverse"),
-            "scienceverse.sqlite")
+  getOption("metacheck.scienceverse.db") %||%
+    file.path(rappdirs::user_data_dir("metacheck", "scienceverse"),
+              "scienceverse.sqlite")
 }
 
 # Guard the suggested database packages: this feature is optional, so DBI and
@@ -332,7 +336,7 @@
         level          = .sv_chr(v, "metacheck:measurementLevel"),
         role           = .sv_chr(v, "metacheck:role"),
         representation = .sv_chr(v, "metacheck:representation"),
-        source_file    = .sv_chr(v, "metacheck:source_file"),
+        source_file    = .sv_chr(v, "metacheck:sourceFile"),
         scale          = .sv_chr(scale, "name"),
         scale_code     = .sv_chr(scale, "code"),
         technique      = .sv_chr(v, "measurementTechnique"),
@@ -721,7 +725,8 @@ scienceverse_checks <- function(con, doi) {
 #'   (a single-study Psych-DS dataset), as written by [convert_psychds()]. A
 #'   character vector adds several in one call.
 #' @param db_path path to the SQLite file to create or append to. Created (with
-#'   parent directories) if it does not exist. Defaults to a canonical
+#'   parent directories) if it does not exist. Defaults to
+#'   `getOption("metacheck.scienceverse.db")` when set, else a canonical
 #'   `scienceverse.sqlite` in the package's rappdirs data directory
 #'   (`rappdirs::user_data_dir("metacheck", "scienceverse")`), so repeated calls
 #'   accumulate into one shared archive.

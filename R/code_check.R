@@ -570,6 +570,11 @@ code_packages <- function(packages) {
 #'
 #' @param code_text the code text for a single file
 #' @param lang the language (we only currently handle R, SPSS, SAS, Stata)
+#' @param include_writes also return files the code *writes* (R only). Off by
+#'   default: callers that ask "which referenced inputs are missing from the
+#'   repository?" (e.g. `code_check`) must not see a written file as a missing
+#'   input. [repro_file_io()] turns this on so a file produced by one script can
+#'   be recognised as the input another script consumes.
 #'
 #' @returns a vector of files that are referenced in the code
 #' @export
@@ -583,7 +588,8 @@ code_packages <- function(packages) {
 #' code_file_refs(code_text, "R")
 #'
 code_file_refs <- function(code_text,
-                           lang = c("R", "SPSS", "SAS", "Stata")) {
+                           lang = c("R", "SPSS", "SAS", "Stata"),
+                           include_writes = FALSE) {
   lang <- match.arg(lang)
   code_text <- code_remove_comments(code_text, lang)
 
@@ -617,6 +623,26 @@ code_file_refs <- function(code_text,
     Stata = "\\b(use|import\\s+delimited|insheet|merge|append)\\b"
   )
   grepl_load <- lang_load_regex[[lang]]
+
+  # Write calls are *not* part of the default reference set: a written file is an
+  # output, and the main consumer (code_check) reports referenced files that are
+  # absent from the repository — an output would be a false "missing input"
+  # there. Reproducibility ordering does need them, so they are opt-in.
+  if (isTRUE(include_writes) && identical(lang, "R")) {
+    write_call_regex <- c(
+      "write[\\._][A-Za-z\\._0-9]*", # write.csv, write_csv, write.table, ...
+      "saveRDS",
+      "save",                        # save(), and save.image() via the \\.? below
+      "save\\.image",
+      "ggsave",
+      "export",
+      "fwrite"
+    ) |>
+      paste(collapse = "|") |>
+      paste0("\\b(", x = _, ")\\s*\\(")
+    grepl_load <- paste0(grepl_load, "|", write_call_regex)
+  }
+
   load_lines <- grep(grepl_load, code_text, value = TRUE, perl = TRUE)
 
   # Quoted filenames

@@ -23,7 +23,7 @@ Writes every module's complete output — the full row-level \code{table}, the
 \code{summary_table}, the \code{traffic_light}, the \code{summary_text}, and any extra
 result frames a module returns (e.g. \code{data_validate}'s \code{careless} /
 \code{demographics} / \code{qualtrics}) — as a single per-paper \verb{<paper_id>.rds}. Unlike
-\code{\link[=capture_check_results]{capture_check_results()}}, nothing is reduced, dropped, truncated, or coerced:
+\code{\link[=capture_check_results]{capture_check_results()}}, result data is not reduced, truncated, or coerced:
 the object round-trips exactly (list-columns, numeric types, factors), so the
 saved file is a faithful record you can reload and analyse later without
 re-running the checks.
@@ -31,7 +31,11 @@ re-running the checks.
 \details{
 Only the module \emph{results} are kept; inter-module plumbing (\code{prev_outputs},
 \code{paper}, and the routing fields \code{module}/\code{title}/\code{section}) is stripped so the
-file stays small and self-contained.
+file stays small and self-contained. \code{data_check}'s \code{previews} element (the
+full data of every tabular file, kept only so \code{data_validate} can read it
+back mid-chain) is also dropped, since it is not a reduced/derived result but
+a near-complete copy of the paper's raw data files and can be arbitrarily
+large; it remains available to the live chain, just not persisted here.
 
 Call it alongside \code{\link[=capture_check_results]{capture_check_results()}} in a batch loop: the JSON keeps a
 slim, portable summary for quick inspection and the corpus CSVs, while the RDS

@@ -47,7 +47,14 @@ read_jasp <- function(path) {
   tmp <- tempfile("jasp_")
   dir.create(tmp)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
-  files <- tryCatch(utils::unzip(path, exdir = tmp), error = function(e) character(0))
+  # unzip() on a non-zip file raises a WARNING ("error 1 in extracting from zip
+  # file"), not an error, and still returns NULL/character(0) — so both
+  # conditions are caught here and folded into the same empty-result path,
+  # letting the stop() below (a real error) be the one condition read_jasp()
+  # actually signals to the caller.
+  files <- withCallingHandlers(
+    tryCatch(utils::unzip(path, exdir = tmp), error = function(e) character(0)),
+    warning = function(w) invokeRestart("muffleWarning"))
   if (!length(files)) stop("Could not open '", basename(path), "' as a .jasp (zip) archive.")
   base <- basename(files)
 

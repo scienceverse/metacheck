@@ -366,20 +366,34 @@ capture_check_results <- function(chain, results_dir, paper_id = NULL) {
 .module_output_plumbing <- c("paper", "prev_outputs", "module", "title",
                              "section")
 
+# data_check's `previews` holds the FULL read data frame of every tabular data
+# file (not a truncated preview; the row cap only applies when the report
+# renders it), purely so data_validate can read it back via get_prev_outputs()
+# from the LIVE chain. Nothing reads it back from a saved archive, so keeping
+# it in the persisted RDS just balloons the file with a near-complete copy of
+# every dataset the paper shipped (seen in practice: a 130-file paper produced
+# a 420MB .rds, dominated entirely by this one element). Drop it here; it stays
+# available to the live chain untouched.
+.module_output_archive_exclude <- c("previews")
+
 #' Save one paper's FULL module outputs to disk (lossless)
 #'
 #' Writes every module's complete output — the full row-level `table`, the
 #' `summary_table`, the `traffic_light`, the `summary_text`, and any extra
 #' result frames a module returns (e.g. `data_validate`'s `careless` /
 #' `demographics` / `qualtrics`) — as a single per-paper `<paper_id>.rds`. Unlike
-#' [capture_check_results()], nothing is reduced, dropped, truncated, or coerced:
+#' [capture_check_results()], result data is not reduced, truncated, or coerced:
 #' the object round-trips exactly (list-columns, numeric types, factors), so the
 #' saved file is a faithful record you can reload and analyse later without
 #' re-running the checks.
 #'
 #' Only the module *results* are kept; inter-module plumbing (`prev_outputs`,
 #' `paper`, and the routing fields `module`/`title`/`section`) is stripped so the
-#' file stays small and self-contained.
+#' file stays small and self-contained. `data_check`'s `previews` element (the
+#' full data of every tabular file, kept only so `data_validate` can read it
+#' back mid-chain) is also dropped, since it is not a reduced/derived result but
+#' a near-complete copy of the paper's raw data files and can be arbitrarily
+#' large; it remains available to the live chain, just not persisted here.
 #'
 #' Call it alongside [capture_check_results()] in a batch loop: the JSON keeps a
 #' slim, portable summary for quick inspection and the corpus CSVs, while the RDS
@@ -412,9 +426,11 @@ capture_module_tables <- function(chain, results_dir, paper_id = NULL) {
   pid <- chain_pid %||% "paper"
   if (is.na(pid) || !nzchar(pid)) pid <- paper_id %||% "paper"
 
-  # Keep every result element of each module, drop only the plumbing.
+  # Keep every result element of each module, drop the plumbing and the
+  # explicitly excluded large/non-archival elements (e.g. data_check's previews).
   outputs <- lapply(mods, function(mo) {
-    keep <- setdiff(names(mo), .module_output_plumbing)
+    keep <- setdiff(names(mo),
+                    c(.module_output_plumbing, .module_output_archive_exclude))
     mo[keep]
   })
 

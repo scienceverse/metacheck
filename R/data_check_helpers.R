@@ -2097,6 +2097,73 @@ normalize_label <- function(x) {
   }
 }
 
+# Regex identifying a value-label's TEXT as a missing-data sentinel (e.g.
+# "Refused", "N/A", "Prefer not to answer") rather than a genuine substantive
+# response category. Every alternative is \b-word-boundary-anchored: an
+# earlier unanchored version matched "na"/"unknown" as bare substrings of
+# ordinary words and text (e.g. "Argenti-NA", "Native Americans", "Other or
+# Unknown" as a real ethnicity category), misclassifying whole country lists
+# and Likert-scale anchor sets as missing-value schemes. The bare "unknown"
+# alternative was dropped entirely — a value literally labelled "Unknown" is
+# usually a genuine "respondent didn't know their own [ethnicity/status/etc.]"
+# response option, not evidence the field is unanswered, and no amount of
+# anchoring makes that single word unambiguous. Shared by .haven_value_labels()
+# (SPSS/Stata haven attributes) and .missing_from_value_labels() (codebook-text
+# derived value labels) so both paths classify identically.
+#
+# "na"/"n/a" gets its OWN, stricter sub-pattern rather than joining the
+# word-boundary alternation below: \b alone isn't enough, because "na" is a
+# short, ordinary word in other languages (Polish "na" = "on/for"), so
+# \bna\b still matches real prose like "na czym polega" ("what it involves")
+# or "na co zasluguje" ("what [they] deserve") in a genuine, non-missing
+# response option. Requiring the token to be the WHOLE label (bare "N/A",
+# "n/a", "N/A.") or the LAST word after - or : ("ID12345 - N/A") keeps genuine
+# abbreviation uses while excluding "na" embedded mid-sentence in running
+# prose. "N/A (some reason)" is deliberately NOT matched — a parenthetical
+# reason after N/A means the researcher gave that code a substantive meaning
+# ("N/A — I live alone"), not a bare missingness sentinel, so it is not
+# accepted as a valid missing-value declaration here.
+.missing_na_re <- paste0(
+  "(?i)^\\s*n/?a\\.?\\s*$|",
+  "(?i)[-:]\\s*n/?a\\s*[.)]?\\s*$"
+)
+
+.missing_label_re <- paste0(
+  "(?i)\\b(",
+  "missing|",
+  "refus(ed|al)?|",
+  "declin(ed|e)?|",
+  "no\\s*(answer|response|data)|",
+  "did\\s*not\\s*respond|",
+  "not\\s*(applicable|asked|reported|answered)|",
+  "prefer\\s*not\\s*to\\s*(answer|say|respond)|",
+  "don'?t\\s*know|",
+  "skip(ped)?|",
+  "unanswered|",
+  "(left\\s*)?blank|",
+  "withheld|",
+  "system\\s*missing",
+  ")\\b"
+)
+
+# Does a set of value-label TEXTS look like free-text survey responses rather
+# than a controlled category vocabulary? A genuine codebook's category names —
+# even a long one, like a 239-country pick-list or a detailed occupation
+# taxonomy — stay short, proper-noun-like phrases. JASP/jamovi auto-
+# factorizes ANY nominal-text column (assigning one integer level per UNIQUE
+# observed value, then storing that level->string map exactly like a haven
+# `attr(,"labels")`), so an open-ended comments field arrives looking like a
+# codebook whose "categories" are full sentences, participant IDs, and typos —
+# label count alone can't distinguish the two cases (a real country list can
+# be far larger than a small free-text field's unique-response count), but
+# label LENGTH can: category names are short, free-text responses run long.
+.looks_like_freetext_labels <- function(labs) {
+  txt <- trimws(as.character(labs))
+  txt <- txt[nzchar(txt)]
+  if (length(txt) < 5) return(FALSE)   # too few to judge reliably
+  mean(nchar(txt) > 40) > 0.2          # a meaningful fraction are long prose
+}
+
 # Extract value labels + declared missing values from one haven column. Returns
 # list(value_labels = <json|NA>, missing_values = <json|NA>). haven puts the
 # code list in attr(,"labels") and SPSS-declared missings in attr(,"na_values")
@@ -2109,13 +2176,21 @@ normalize_label <- function(x) {
   vl <- NA_character_
   miss_codes <- numeric(0); miss_reasons <- character(0)
 
+  # A JASP/omv free-text column factorized to one level per unique value: skip
+  # entirely rather than encode it as a bogus "codebook" (see
+  # .looks_like_freetext_labels() above) — checked on the LABEL TEXT, not the
+  # label COUNT, since a real codebook (a country pick-list) can legitimately
+  # have far more entries than a small free-text field has unique responses.
+  if (!is.null(labs) && length(labs) > 0 && .looks_like_freetext_labels(names(labs)))
+    labs <- NULL
+
   if (!is.null(labs) && length(labs) > 0) {
     codes  <- unname(labs)
     reasons <- names(labs)
     vl <- .encode_value_labels(codes, reasons)
     # Labels that read as missingness → sentinel missing codes.
-    is_miss <- grepl("(?i)(missing|refus|declined|no answer|not applicable|n/?a|prefer not|don'?t know|unknown|skipped)",
-                     reasons, perl = TRUE)
+    is_miss <- grepl(.missing_label_re, reasons, perl = TRUE) |
+               grepl(.missing_na_re, reasons, perl = TRUE)
     if (any(is_miss)) {
       miss_codes  <- c(miss_codes, codes[is_miss])
       miss_reasons <- c(miss_reasons, reasons[is_miss])
@@ -2167,8 +2242,8 @@ normalize_label <- function(x) {
 .missing_from_value_labels <- function(vl_json) {
   vl <- .decode_value_labels(vl_json)
   if (is.null(vl) || length(vl) == 0) return(NA_character_)
-  is_miss <- grepl("(?i)(missing|refus|declined|no answer|not applicable|n/?a|prefer not|don'?t know|unknown|skipped)",
-                   unname(vl), perl = TRUE)
+  is_miss <- grepl(.missing_label_re, unname(vl), perl = TRUE) |
+             grepl(.missing_na_re, unname(vl), perl = TRUE)
   if (!any(is_miss)) return(NA_character_)
   .encode_value_labels(names(vl)[is_miss], unname(vl)[is_miss])
 }
@@ -2304,7 +2379,16 @@ normalize_label <- function(x) {
 
 # Extract embedded variable labels from a haven-read data.frame (SPSS/Stata/SAS).
 # Returns NULL if no labelled columns found. Caller adds parse_method = "haven".
-.extract_haven_labels <- function(df, src) {
+# `group` scopes these labels to the ONE study/file they were embedded in
+# (data_check's structure_df$group for this file) — passing NA_character_
+# (the default) leaves them unscoped, which match_column_labels() then applies
+# to every column of that name PAPER-WIDE regardless of source file. That is
+# correct when a genuinely paper-wide label truly applies everywhere, but it
+# also means one file's mislabelled/anomalous embedded label (e.g. a JASP
+# free-text factorization the .looks_like_freetext_labels() guard missed)
+# would otherwise leak onto unrelated files' same-named columns in a
+# different study. Callers that know the file's group should pass it.
+.extract_haven_labels <- function(df, src, group = NA_character_) {
   labels <- vapply(names(df), function(col) {
     lbl <- attr(df[[col]], "label")
     if (is.null(lbl)) NA_character_ else trimws(as.character(lbl[1]))
@@ -2322,7 +2406,7 @@ normalize_label <- function(x) {
     codebook_variable = names(df)[keep],
     label             = labels[keep],
     codebook_source   = src,
-    group             = NA_character_,
+    group             = group,
     value_labels      = value_labels[keep],
     missing_values    = missing_values[keep],
     question          = NA_character_,
@@ -4032,17 +4116,29 @@ data_check_demographic <- function(col_name, x) {
 # Concept detector: name+value agreement, same discipline as the demographic
 # detector. Returns a concept code or NA. Order matters — the first match wins,
 # so specific concepts (reaction_time) are tried before generic ones.
+#
+# All four name checks below match against the LOWERCASED but UN-stripped
+# column name, with (^|[^a-z])...([^a-z]|$) boundary anchoring — the same
+# style already used by .RT_NAME_RE/.ACC_NAME_RE/cond_name in
+# .detect_task_columns() below (which .concept_is_rt/.concept_is_accuracy now
+# call directly, rather than maintaining a second, divergent copy of the same
+# pattern). An earlier version matched against .qualtrics_key(col_name) —
+# fully alnum-stripped, which destroys every separator a real column name has
+# (e.g. "response_time_break" -> "responsetimebreak"), so word-boundary
+# anchoring was IMPOSSIBLE on that stripped form; bare "rt"/"time"/"condition"
+# substrings matched inside ordinary words ("effort", "Thwart", "cohort",
+# "Timeline", "conditions_diabetes") purely because those substrings happened
+# to appear. Verified against ~40,000 real column names from the cached
+# corpus: the old patterns false-matched dozens of unrelated columns per
+# concept (e.g. every "*Thwart" scale item as reaction_time, a medical-history
+# checklist "conditions_asthma"/"conditions_diabetes"/... as condition/group
+# assignment); this fix eliminates those without losing genuine matches.
 
 # Reaction/response time: a numeric column named rt/latency/response time whose
 # values are plausible durations. We do not fix the unit here (ms vs s); that is
 # the `unit` facet, inferred separately.
 .concept_is_rt <- function(col_name, x) {
-  nm <- .qualtrics_key(col_name)   # lowercase, alnum-only
-  # Require an explicit RT-ish name token so we do not match every "time" column
-  # (a clock timestamp is a different concept). `.qualtrics_key` has stripped
-  # separators, so match tokens rather than word boundaries.
-  name_ok <- grepl("(^rt$|^rts$|reactiontime|responsetime|responselatency|latency|rtms|rtsec|^rt|rt$)", nm)
-  if (!name_ok) return(FALSE)
+  if (!grepl(.RT_NAME_RE, tolower(col_name), perl = TRUE)) return(FALSE)
   num <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x), fixed = TRUE)))
   num <- num[!is.na(num)]
   if (length(num) < 3) return(TRUE)          # name is strong enough on its own
@@ -4053,9 +4149,7 @@ data_check_demographic <- function(col_name, x) {
 # Accuracy/correctness: a 0/1 (or boolean, or correct/incorrect) column named
 # acc/correct/hit/error.
 .concept_is_accuracy <- function(col_name, x) {
-  nm <- .qualtrics_key(col_name)
-  if (!grepl("(^acc$|accuracy|iscorrect|correct|incorrect|^hit$|iserror|^error$|errorrate)", nm))
-    return(FALSE)
+  if (!grepl(.ACC_NAME_RE, tolower(col_name), perl = TRUE)) return(FALSE)
   v <- tolower(trimws(as.character(x)))
   v <- v[!is.na(v) & nzchar(v)]
   if (length(v) < 3) return(TRUE)
@@ -4071,16 +4165,16 @@ data_check_demographic <- function(col_name, x) {
 # treatment/arm/cond. Kept deliberately name-driven (values look like any other
 # categorical), so it never steals a genuine gender/accuracy column.
 .concept_is_condition <- function(col_name, x) {
-  nm <- .qualtrics_key(col_name)
-  grepl("(^cond$|condition|^group$|treatment|^arm$|manipulation|between|within)", nm)
+  grepl("(^|[^a-z])(cond|condition|group|treatment|arm|manipulation|between|within)([^a-z]|$)",
+        tolower(col_name), perl = TRUE)
 }
 
 # Timestamp (a clock time / datetime the event happened) vs a plain date. Both
 # have representation `datetime`; the concept distinguishes a full timestamp
 # (has a time component) from a calendar date.
 .concept_is_timestamp <- function(col_name, x) {
-  nm <- .qualtrics_key(col_name)
-  name_ok <- grepl("(time|timestamp|datetime|onset|startdate|enddate|recordeddate)", nm)
+  name_ok <- grepl("(^|[^a-z])(time|timestamp|datetime|onset|startdate|enddate|recordeddate)([^a-z]|$)",
+                   tolower(col_name), perl = TRUE)
   if (!name_ok) return(FALSE)
   v <- as.character(x)
   v <- v[!is.na(v) & nzchar(v)]

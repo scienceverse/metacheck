@@ -91,8 +91,11 @@ trove_app <- function(root = ".", quiet = FALSE, ...) {
 #' than 5 or p below .05), Scales & Tasks, and Files (the download manifest).
 #' Text boxes use the same Google-style `field:value` grammar as [trove_app()].
 #'
-#' @param db_path path to the SQLite archive. Defaults to the canonical archive
-#'   [add_to_scienceverse()] writes to.
+#' @param db_path path to the SQLite archive. Defaults to
+#'   `getOption("metacheck.scienceverse.db")` when set, else the canonical
+#'   archive [add_to_scienceverse()] writes to. Set the option once (e.g. in
+#'   `.Rprofile`) to always launch against a chosen archive without passing
+#'   `db_path` every time.
 #' @param quiet whether to show debugging messages in the console.
 #' @param ... arguments passed to [shiny::runApp()].
 #'
@@ -104,6 +107,10 @@ trove_app <- function(root = ".", quiet = FALSE, ...) {
 #' \dontrun{
 #' scienceverse_app()                       # the default archive
 #' scienceverse_app("my_archive.sqlite")    # a specific one
+#'
+#' # or set once per session / in .Rprofile:
+#' options(metacheck.scienceverse.db = "C:/path/to/scienceverse.sqlite")
+#' scienceverse_app()
 #' }
 #'
 scienceverse_app <- function(db_path = .sv_default_db(), quiet = FALSE, ...) {

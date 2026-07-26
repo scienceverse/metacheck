@@ -175,7 +175,7 @@ trove_index_collection <- function(path) {
         level         = .trove_chr(v, "metacheck:measurementLevel"),
         role          = .trove_chr(v, "metacheck:role"),
         representation = .trove_chr(v, "metacheck:representation"),
-        source_file   = .trove_chr(v, "metacheck:source_file"),
+        source_file   = .trove_chr(v, "metacheck:sourceFile"),
         scale         = .trove_chr(scale, "name"),
         scale_code    = .trove_chr(scale, "code"),
         technique     = .trove_chr(v, "measurementTechnique"),

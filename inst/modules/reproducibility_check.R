@@ -363,12 +363,41 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # resolve (matched or produced upstream), and it is placeable in the order.
   parses <- if ("parse_error" %in% names(r_files))
     !isTRUE_vec(r_files$parse_error) else rep(TRUE, n_code)
-  placeable <- !is.na(order_tbl$order[match(r_files$file_name, order_tbl$file_name)])
-  file_unresolved <- vapply(rewrite_list, function(d)
-    if (nrow(d)) any(!d$matched &
-                       !(tolower(d$basename) %in% produced)) else FALSE, logical(1))
+  file_order <- order_tbl$order[match(r_files$file_name, order_tbl$file_name)]
+  placeable <- !is.na(file_order)
+
+  # "Produced upstream" must respect the run order: a file counts as available
+  # to script S only when some script that runs *before* S writes it. The flat
+  # pool of all writes would also excuse a file that is only produced later,
+  # which cannot help S actually run.
+  writes_by_file <- io$writes %||% list()
+  names(writes_by_file) <- io$file_name %||% names(writes_by_file)
+  produced_before <- lapply(seq_len(n_code), function(i) {
+    ord_i <- file_order[i]
+    if (is.na(ord_i)) return(character(0))
+    earlier <- r_files$file_name[!is.na(file_order) & file_order < ord_i]
+    unique(tolower(unlist(writes_by_file[earlier], use.names = FALSE)))
+  })
+
+  # Per-file unresolved inputs, kept as names so the table can say *why* a file
+  # is not runnable rather than only that it is not.
+  unresolved_list <- lapply(seq_len(n_code), function(i) {
+    d <- rewrite_list[[i]]
+    if (!nrow(d)) return(character(0))
+    unique(tolower(d$basename)[!d$matched &
+                                 !(tolower(d$basename) %in% produced_before[[i]])])
+  })
+  file_unresolved <- lengths(unresolved_list) > 0L
   runnable <- parses & placeable & !file_unresolved
   n_runnable <- sum(runnable)
+
+  # Why each file is not runnable, in the order the conditions are applied.
+  not_runnable_reason <- ifelse(
+    runnable, NA_character_,
+    ifelse(!parses, "parse_error",
+           ifelse(!placeable, "unplaceable", "missing_input")))
+  unresolved_inputs <- vapply(unresolved_list, function(x)
+    if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
   # ── 7. Traffic light (static part) ──────────────────────────────────────────
   # Static red is the "code cannot run only because size-gated inputs were
@@ -540,6 +569,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     run_tbl$setwd_removed[match(r_files$file_name, run_tbl$file_name)] else
     rep(NA_integer_, n_code)
 
+  # Per-file data reads/writes (the code<->data provenance link), aligned by
+  # file_name from repro_file_io()'s `io`. Computed above (line 329) for run-
+  # ordering only and previously dropped before reaching `table` — surfaced
+  # here as list-columns of basenames so a caller (e.g. the RO-Crate
+  # provenance builder in R/psychds-convert.R) can build a real object/
+  # instrument/result CreateAction per code file instead of recomputing this.
+  match_io <- match(r_files$file_name, io$file_name)
+  reads_of  <- if ("reads"  %in% names(io)) io$reads[match_io]  else rep(list(character(0)), n_code)
+  writes_of <- if ("writes" %in% names(io)) io$writes[match_io] else rep(list(character(0)), n_code)
+  reads_of[is.na(match_io)]  <- list(character(0))
+  writes_of[is.na(match_io)] <- list(character(0))
+
   table <- data.frame(
     paper_id       = if ("paper_id" %in% names(r_files)) r_files$paper_id else .pid(),
     file_name      = r_files$file_name,
@@ -551,10 +592,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     paths_ambiguous = ambiguous_n,
     setwd_removed  = setwd_of,
     runnable       = runnable,
+    not_runnable_reason = not_runnable_reason,
+    unresolved_inputs   = unresolved_inputs,
     outcome        = outcome_of,
     error_type     = errtype_of,
     undefined_var  = undefvar_of
   )
+  table$reads  <- reads_of
+  table$writes <- writes_of
 
   # ── 9. Report ───────────────────────────────────────────────────────────────
   intro <- if (isTRUE(execute))

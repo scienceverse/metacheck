@@ -402,7 +402,13 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
       if (length(idc) > 0) id_col <- idc[[1]]
     }
     if (is.null(id_col)) {
-      hit <- grep("(?i)(^id$|participant|subject|respond|_id$|prolific|mturk|worker)",
+      # Word-boundary anchored: an unanchored "subject"/"participant" substring
+      # match hit real response columns whose names happen to start with that
+      # stem — "SubjectiveSES", "subjective_aware", "subject_cond",
+      # "subject_parity" are Likert/condition items about a participant's
+      # subjective state, not identifier columns — verified against the
+      # cached corpus, same bug class as .concept_is_rt/.missing_label_re.
+      hit <- grep("(?i)(^id$|\\bparticipant|\\bsubject\\b|\\brespond|_id$|\\bprolific|\\bmturk|\\bworker)",
                   names(df), perl = TRUE)
       if (length(hit) > 0) id_col <- names(df)[hit[[1]]]
     }

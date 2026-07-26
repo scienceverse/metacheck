@@ -197,7 +197,13 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   # haven. All feed the SAME .extract_haven_labels() extractor.
   if (nrow(haven_rows) > 0) {
     have_haven <- requireNamespace("haven", quietly = TRUE)
-    for (p in haven_rows$file_location) {
+    for (i in seq_len(nrow(haven_rows))) {
+      p <- haven_rows$file_location[i]
+      # Scope these embedded labels to the file's OWN study group (data_check's
+      # per-file assignment), not paper-wide — see .extract_haven_labels()'s
+      # `group` argument for why this matters (stops one file's anomalous
+      # embedded labels leaking onto same-named columns in a different study).
+      file_group <- if ("group" %in% names(haven_rows)) haven_rows$group[i] else NA_character_
       ext <- tolower(tools::file_ext(p))
       df <- tryCatch(switch(ext,
         sav      = if (have_haven) as.data.frame(haven::read_sav(p, n_max = 0L)),
@@ -207,7 +213,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
         omv      = read_omv(p)$data
       ), error = function(e) NULL)
       if (is.null(df)) next
-      res <- .extract_haven_labels(df, basename(p))
+      res <- .extract_haven_labels(df, basename(p), group = file_group)
       if (is.null(res)) next
       # parse_method = "haven" for ALL embedded data-file labels (sav/dta/sas AND
       # jasp/omv). These labels live inside the data file, so downstream logic
@@ -993,18 +999,36 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   "other","because","being")
 
 # Does the identified scale name (or a parenthesised acronym within it) appear
-# in the retrieved paper sentences? Used to corroborate an identification.
+# in the retrieved paper sentences? Used to corroborate an identification (a
+# hit here promotes the identification's confidence to "high").
+#
+# Full multi-word names are matched as a bare (fixed) substring — safe, since
+# a specific multi-word phrase colliding by accident with unrelated prose is
+# implausible. A bare 3-letter ACRONYM is a different risk entirely: as an
+# unanchored substring it matches inside ordinary words too (verified against
+# real text: "MES" inside "ti-MES", "EAS" inside "incr-EAS-ed", "RES" inside
+# "the r-ES-ults" all falsely "corroborated" an unrelated identification under
+# the old code) — the same class of bug fixed in .missing_label_re/
+# .concept_is_rt elsewhere in this codebase. The acronym is therefore matched
+# with \b...\b word-boundary anchoring, mirroring .scale_text_pattern()'s
+# already-correct acronym handling (used a few lines above for the paper-wide
+# regex scan), instead of joining the other needles' `fixed = TRUE` search.
 .scale_name_in_text <- function(scale, sentences) {
   if (!nzchar(scale) || length(sentences) == 0) return(FALSE)
   hay <- tolower(paste(sentences, collapse = " \n "))
-  # The full name, and any ALL-CAPS acronym in parentheses (e.g. "(PANAS)").
-  needles <- tolower(scale)
+  # The full name (with and without a parenthesised acronym suffix).
+  name_needles <- unique(tolower(c(scale, sub("\\s*\\(.*\\)\\s*$", "", scale))))
+  name_needles <- name_needles[nchar(name_needles) >= 3]
+  if (any(vapply(name_needles, function(n) grepl(n, hay, fixed = TRUE), logical(1))))
+    return(TRUE)
+  # Any ALL-CAPS acronym in parentheses (e.g. "(PANAS)"), word-boundary matched.
   acr <- regmatches(scale, gregexpr("\\(([A-Z][A-Za-z0-9-]{1,})\\)", scale))[[1]]
-  acr <- gsub("[()]", "", acr)
-  needles <- c(needles, tolower(acr),
-               tolower(sub("\\s*\\(.*\\)\\s*$", "", scale)))  # name without acronym
-  needles <- unique(needles[nchar(needles) >= 3])
-  any(vapply(needles, function(n) grepl(n, hay, fixed = TRUE), logical(1)))
+  acr <- unique(tolower(gsub("[()]", "", acr)))
+  acr <- acr[nchar(acr) >= 2]
+  if (!length(acr)) return(FALSE)
+  pat <- paste0("\\b(", paste(gsub("([][{}().^$*+?|\\\\-])", "\\\\\\1", acr),
+                              collapse = "|"), ")\\b")
+  grepl(pat, hay, perl = TRUE)
 }
 
 # Propagate a named scale across same-file, same-prefix sibling columns. The

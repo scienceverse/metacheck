@@ -382,23 +382,32 @@ repro_file_io <- function(code_text_list) {
   fname <- names(code_text_list) %||% as.character(seq_along(code_text_list))
 
   # A read call vs a write call, from the call name preceding the quoted path.
-  write_fns <- "write[._]|save(RDS|_rds)?|write_(csv2?|tsv|delim|xlsx|sav|dta|feather|parquet)"
+  write_fns <- "\\b(write[._][A-Za-z._0-9]*|saveRDS|save|save\\.image|ggsave|export|fwrite)\\s*\\("
   src_pat <- "source\\s*\\(\\s*['\"]([^'\"]+)['\"]"
 
   rows <- lapply(seq_along(code_text_list), function(k) {
     ct <- code_text_list[[k]]
     nc <- code_remove_comments(ct, "R")
-    all_refs <- code_file_refs(nc, "R")
+    # include_writes = TRUE: outputs must be visible here, because a file one
+    # script writes is the input the next script reads. Without them `writes` is
+    # always empty and every intermediate looks like a missing input.
+    all_refs <- code_file_refs(nc, "R", include_writes = TRUE)
     joined <- paste(nc, collapse = "\n")
 
-    # Classify each ref as write when it sits in a write-call line, else read.
-    is_write <- vapply(all_refs, function(r) {
-      # A line that both writes and names this file.
-      lines <- grep(r, nc, fixed = TRUE, value = TRUE)
-      any(grepl(write_fns, lines, perl = TRUE, ignore.case = TRUE))
-    }, logical(1))
-    reads  <- tolower(basename(gsub("\\\\", "/", all_refs[!is_write])))
-    writes <- tolower(basename(gsub("\\\\", "/", all_refs[is_write])))
+    # Classify each ref per *occurrence*, not per file: a file can be written on
+    # one line and read back on another (a cached intermediate), and it must then
+    # count as both. Taking any-write-wins would drop such a file from `reads`.
+    ref_base <- tolower(basename(gsub("\\\\", "/", all_refs)))
+    is_write <- rep(FALSE, length(all_refs))
+    is_read  <- rep(FALSE, length(all_refs))
+    for (i in seq_along(all_refs)) {
+      lines <- grep(all_refs[i], nc, fixed = TRUE, value = TRUE)
+      w <- grepl(write_fns, lines, perl = TRUE, ignore.case = TRUE)
+      is_write[i] <- any(w)
+      is_read[i]  <- any(!w)
+    }
+    reads  <- ref_base[is_read]
+    writes <- ref_base[is_write]
 
     srcs <- regmatches(joined, gregexpr(src_pat, joined, perl = TRUE))[[1]]
     srcs <- sub(src_pat, "\\1", srcs, perl = TRUE)

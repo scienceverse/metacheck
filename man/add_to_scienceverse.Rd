@@ -12,11 +12,14 @@ add_to_scienceverse(
 )
 }
 \arguments{
-\item{collection_root}{path to a metacheck collection root (a folder
-containing \code{collection.json}). A character vector adds several in one call.}
+\item{collection_root}{path to a metacheck output root — a folder containing
+\code{collection.json} (a multi-study collection) or \code{dataset_description.json}
+(a single-study Psych-DS dataset), as written by \code{\link[=convert_psychds]{convert_psychds()}}. A
+character vector adds several in one call.}
 
 \item{db_path}{path to the SQLite file to create or append to. Created (with
-parent directories) if it does not exist. Defaults to a canonical
+parent directories) if it does not exist. Defaults to
+\code{getOption("metacheck.scienceverse.db")} when set, else a canonical
 \code{scienceverse.sqlite} in the package's rappdirs data directory
 (\code{rappdirs::user_data_dir("metacheck", "scienceverse")}), so repeated calls
 accumulate into one shared archive.}
