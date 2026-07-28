@@ -44,6 +44,12 @@
   do = "code", sps = "code", sas = "code",
   exe = "software", dmg = "software", app = "software", jar = "software",
   msi = "software", deb = "software", rpm = "software",
+  # Compiled binaries / installer packages, not source: same kind as exe/dmg/
+  # jar above, just missing from the original list. elf is a compiled Linux
+  # binary; msix/msixbundle are Windows installer packages; jnlp is a Java Web
+  # Start launcher (XML pointing at a Java app to fetch and run).
+  elf = "software", msix = "software", msixbundle = "software",
+  jnlp = "software",
   sh = "software", bash = "software", zsh = "software",
   bat = "software", cmd = "software", ps1 = "software",
   dll = "software", so = "software", dylib = "software",
@@ -133,40 +139,51 @@ data_classify_files <- function(file_name) {
 
 # ── Data format (tabular vs raw) ─────────────────────────────────────────────
 
-.tabular_extensions <- c("csv", "tsv", "txt", "dat", "xlsx", "xls",
-                         "sav", "dta", "sas7bdat", "jasp", "omv")
-.raw_extensions <- c(
-  # EEG / physiological
-  "edf", "bdf", "acq", "gdf", "rec", "cnt", "vhdr", "vmrk", "eeg", "mff",
-  "set", "fdt", "fif",
-  # Neuroimaging
-  "nii", "img", "hdr", "mgh", "mgz", "mnc", "dcm",
-  # Motion capture
-  "c3d", "trc", "mot", "sto",
-  # Array / scientific formats
-  "mat", "h5", "hdf5", "hdf", "nc", "cdf", "npy", "npz", "pkl", "pickle",
-  # Eye-tracking
-  "asc",
-  # Audio / video
-  "wav", "mp3", "flac", "ogg", "m4a", "aiff", "aif", "au", "wma",
-  "mp4", "avi", "mov", "mkv", "wmv", "m4v", "flv", "webm", "3gp",
-  # Generic binary + documents (guard against a PDF classed as data)
-  "bin", "raw", "pdf", "docx", "doc", "odt", "rtf"
+# The SINGLE source of truth for "can metacheck read this as a table": every
+# extension with a branch in data_read_head()'s switch, and nothing else. Keep
+# the two in lockstep — adding a reader branch without adding its extension here
+# leaves the format downloaded but never read; adding it here without a reader
+# branch makes data_read_head() return NULL for a file we promised was tabular.
+#
+# Three separate behaviours are derived from this one vector, which is why it
+# must be capability-based rather than a hand-maintained wish list:
+#   * data_format()  -> "tabular"/"raw", which gates DOWNLOADING in data_check
+#   * psychds_check  -> which data files are converted to a Psych-DS _data.csv
+#   * .psychds_write_data_csv() -> the converter that actually reads the bytes
+# Previously these were three divergent hardcoded lists (plus a dead
+# .tabular_extensions), so .ods was readable but never converted, and formats
+# with no reader branch were downloaded and then silently read as NULL.
+.readable_extensions <- c(
+  # Delimited text (.dat/.txt are sniffed for their delimiter)
+  "csv", "tsv", "txt", "dat",
+  # Spreadsheets
+  "xlsx", "xls", "ods", "fods",
+  # Statistics packages (labelled data)
+  "sav", "dta", "sas7bdat", "jasp", "omv",
+  # R serialisation (.rda/.rdata yields the first data frame, if any)
+  "rds", "rda", "rdata"
 )
 
 #' Classify a data file as tabular or raw
 #'
-#' @param ext a character vector of lowercase file extensions (no leading dot)
+#' `"tabular"` means metacheck has a reader for the format (see
+#' `.readable_extensions`), so the file can be downloaded, parsed for columns,
+#' and converted to a Psych-DS CSV. Everything else is `"raw"`: it is recorded
+#' and archived with its true extension, but never parsed as a table.
+#'
+#' @param ext a character vector of file extensions (no leading dot); case is
+#'   ignored.
 #'
 #' @returns `"tabular"` or `"raw"` for each element (never `NA`; unknown
-#'   extensions fall back to `"tabular"`).
+#'   extensions fall back to `"raw"`, since an unrecognised format has no
+#'   reader).
 #' @export
 #' @keywords internal
 #'
 #' @examples
 #' data_format(c("csv", "edf", "mp4", "sav"))
 data_format <- function(ext) {
-  ifelse(tolower(ext) %in% .raw_extensions, "raw", "tabular")
+  ifelse(tolower(ext) %in% .readable_extensions, "tabular", "raw")
 }
 
 #' Detect a file manifest / table-of-contents masquerading as tabular data
@@ -1168,8 +1185,10 @@ txt_classify_content <- function(path) {
 #' Read the head of a data file regardless of format
 #'
 #' Reads the first `n_rows` of a tabular data file (csv/tsv/txt/dat/xlsx/xls/
-#' sav/dta/sas7bdat/rds/rda/rdata). Delimiter and header presence are
+#' ods/fods/sav/dta/sas7bdat/rds/rda/rdata). Delimiter and header presence are
 #' auto-detected for delimited text; invalid UTF-8 triggers a latin1 retry.
+#' Reading `.ods`/`.fods` needs the suggested `readODS` package; without it the
+#' function returns `NULL` for those formats.
 #'
 #' @param path path to a data file
 #' @param n_rows number of rows to read (`Inf` for all)
@@ -1312,6 +1331,10 @@ txt_classify_content <- function(path) {
   df
 }
 
+# The set of extensions handled by the switch below IS the package's definition
+# of "tabular", exported through .readable_extensions / data_format(). Any new
+# branch added here must be added there too, or the format will never be
+# downloaded and this reader will never be reached.
 data_read_head <- function(path, n_rows = 5) {
   ext <- tolower(tools::file_ext(path))
   tryCatch({
@@ -1389,6 +1412,52 @@ data_read_head <- function(path, n_rows = 5) {
               reread <- tryCatch(suppressWarnings(as.data.frame(
                 readxl::read_excel(path, skip = k, n_max = nmax2,
                                    .name_repair = "unique_quiet"))),
+                error = function(e) NULL)
+              df <- if (!is.null(reread) && ncol(reread) > 0) reread else prom$df
+            }
+          }
+        }
+        df
+      },
+      ods = , fods = {
+        # OpenDocument spreadsheet — LibreOffice/OpenOffice's native format, and
+        # the default for anyone not using Excel. Structurally the same as .xlsx
+        # (sheets of rows with a header row), so this mirrors the xlsx branch
+        # above step for step; only the reader differs.
+        #
+        # readODS is in Suggests (not Imports): a missing package returns NULL
+        # rather than stopping, so the file is reported as unreadable and the
+        # rest of the run continues. (The xlsx branch stop()s because readxl is
+        # reachable through the same optional-dependency policy but is far more
+        # commonly installed; returning NULL here keeps .ods degradation soft.)
+        if (!requireNamespace("readODS", quietly = TRUE)) return(NULL)
+        nmax <- if (is.finite(n_rows)) n_rows else Inf
+        # A fixed `range=` is deliberately NOT used in this branch: it silently
+        # truncates wide sheets to the named column bound (a 30-column sheet read
+        # with range "A1:Z6" comes back with 26). `n_max` caps rows only, which
+        # is what we want.
+        df <- suppressWarnings(as.data.frame(
+          readODS::read_ods(path, n_max = nmax, .name_repair = "unique_quiet")))
+        if (!is.null(df) && data_check_is_qualtrics(df))
+          df <- data_strip_qualtrics_header(df)
+        # Mis-placed header, exactly as for .xlsx: scan the first rows WITHOUT a
+        # header so the detector sees the row the reader swallowed, then re-read
+        # with skip = k so column types are re-inferred natively.
+        if (!is.null(df) && ncol(df) > 1) {
+          raw <- tryCatch(.utf8_repair_df(as.data.frame(suppressWarnings(
+                   readODS::read_ods(path, col_names = FALSE, n_max = 6L,
+                     col_types = NA, .name_repair = "minimal")))),
+                 error = function(e) NULL)
+          if (!is.null(raw) && nrow(raw) >= 2) {
+            raw_rows <- lapply(seq_len(nrow(raw)),
+                               function(i) as.character(raw[i, , drop = TRUE]))
+            prom <- data_promote_header_row(df, raw_rows = raw_rows)
+            if (prom$promoted > 0L) {
+              k <- prom$promoted
+              nmax2 <- if (is.finite(nmax)) nmax + k else Inf
+              reread <- tryCatch(suppressWarnings(as.data.frame(
+                readODS::read_ods(path, skip = k, n_max = nmax2,
+                                  .name_repair = "unique_quiet"))),
                 error = function(e) NULL)
               df <- if (!is.null(reread) && ncol(reread) > 0) reread else prom$df
             }
@@ -1838,23 +1907,61 @@ normalize_label <- function(x) {
 
 # Scan a data.frame's headers for a "variable name" column and a "label" column.
 # Returns list(var_col, lab_col) or NULL.
+# Normalise a header cell for matching: lowercase, and collapse EVERY run of
+# punctuation/whitespace to one space. This is what makes the matching
+# separator-insensitive, so "variable_name", "variable name", "variable-name"
+# and "Variable.Name" are one case rather than four alternations. Harvesting the
+# real headers from the corpus showed 968 distinct spellings across 2280 header
+# cells, so enumerating literal forms does not scale — normalise, then match a
+# compact word set.
+.normalize_header <- function(x) {
+  x <- tolower(trimws(as.character(x)))
+  x <- gsub("[^a-z0-9]+", " ", x)
+  trimws(gsub("\\s+", " ", x))
+}
+
+# Header words naming the VARIABLE column and the LABEL column. Both are matched
+# against .normalize_header() output, and both tolerate an optional plural — real
+# codebooks write "Variable Names" (the whole Project Implicit IAT corpus) as
+# often as "Variable Name".
+#
+# The two sets are deliberately DISJOINT except for "label", which is genuinely
+# ambiguous in the wild ("Variable Names | Label" means label; "Variable | Label"
+# could mean either). It is assigned to the LABEL role because in every corpus
+# file carrying a bare "label" header there is also a separate, more specific
+# variable column, so reading it as the label is correct there and the variable
+# column is still found. Keep any new word in exactly one of these.
+.cb_var_header_re <- paste0(
+  "^(variable|variables|var|vars|varname|varnames|item|items|",
+  "field|fields|column|columns|name|names|code|codes|id)$",
+  "|^(variable|var|item|field|column|col) (name|names)$")
+# "question" and "questions" are label words in their own right (a codebook whose
+# only text column is the item's question), not just qualifiers — the original
+# list carried bare "question", and dropping it silently pushed such files onto
+# the positional fallback.
+.cb_lab_header_re <- paste0(
+  "^((variable|var|item|question|response|full|general|specific|short|long) )?",
+  "(label|labels|description|descriptions|desc|definition|definitions|meaning|",
+  "explanation|explanations|text|wording|interpretation|details|content)$",
+  "|^(questions?)$",
+  # "full name" is a LABEL ("Variable | Full name | Scale" in the corpus), but
+  # bare "name" is a VARIABLE word, so it cannot be reached via the qualifier
+  # group above without making every "* name" a label. Listed explicitly.
+  "|^((full|long|complete) names?)$")
+
 .find_codebook_cols <- function(col_names) {
-  var_col <- grep(
-    "(?i)^(var(iable)?|name|column|field|variable[_ ]?name|varname|item)$",
-    col_names, perl = TRUE, value = TRUE
-  )[1]
-  lab_col <- grep(
-    paste0("(?i)^(label|description|desc|definition|meaning|explanation|text|",
-           "label[_ ]?text|question|question[_ ]?text|variable[_ ]?description|",
-           "variable[_ ]?label|var[_ ]?label)$"),
-    col_names, perl = TRUE, value = TRUE
-  )[1]
+  nm <- .normalize_header(col_names)
+  # The variable column must not also read as a label ("variable label" names a
+  # label, not the variable itself), so label-matching names are excluded first.
+  is_lab <- grepl(.cb_lab_header_re, nm, perl = TRUE)
+  var_col <- col_names[grepl(.cb_var_header_re, nm, perl = TRUE) & !is_lab][1]
+  lab_col <- col_names[is_lab][1]
   if (is.na(var_col) || is.na(lab_col)) return(NULL)
   list(var_col = var_col, lab_col = lab_col)
 }
 
 # Empty codebook-variable table (the canonical column set). The DDI-derived
-# per-variable properties (value_labels, missing_values, question, universe) are
+# per-variable properties (value_labels, missing_values, question,
 # carried as extra columns; they default to NA and only populate when a source
 # supplies them.
 .empty_codebook_vars <- function() {
@@ -1862,7 +1969,8 @@ normalize_label <- function(x) {
     codebook_variable = character(0), label = character(0),
     codebook_source = character(0), group = character(0),
     value_labels = character(0), missing_values = character(0),
-    question = character(0), universe = character(0),
+    question = character(0),
+    coding_instructions = character(0),
     parse_method = character(0)
   )
 }
@@ -2215,23 +2323,99 @@ normalize_label <- function(x) {
   list(value_labels = vl %||% NA_character_, missing_values = mv %||% NA_character_)
 }
 
-# Parse a codebook "values" cell into value labels. Handles the common textual
-# encodings authors use: "1 = Male; 2 = Female", "1=Male, 2=Female",
-# "0: no | 1: yes", newline-separated. Returns a value-labels JSON string or NA.
-.parse_value_label_text <- function(s) {
-  if (is.null(s) || is.na(s) || !nzchar(trimws(s))) return(NA_character_)
-  s <- as.character(s)
-  # Split into entries on ; | newline (comma too, but only when not inside a
-  # decimal — handled by requiring a code=label shape per entry).
-  parts <- unlist(strsplit(s, "\\s*[;|\\n]\\s*|\\s*,\\s*(?=\\s*-?\\d+(\\.\\d+)?\\s*[:=])", perl = TRUE))
-  parts <- trimws(parts[nzchar(trimws(parts))])
-  if (length(parts) == 0) return(NA_character_)
-  codes <- character(0); labels <- character(0)
-  for (p in parts) {
-    m <- regmatches(p, regexec("^\\s*(-?\\d+(?:\\.\\d+)?)\\s*[:=]\\s*(.+?)\\s*$", p, perl = TRUE))[[1]]
-    if (length(m) == 3) { codes <- c(codes, m[2]); labels <- c(labels, m[3]) }
+# Is this string a bare number? Used to find the CODE side of a value-label pair.
+.vl_is_numeric <- function(x) grepl("^-?\\d+(\\.\\d+)?$", trimws(x))
+
+# Split a codebook "values" cell into raw left/right halves of each entry.
+# Direction is NOT decided here — see .parse_value_label_text().
+.vl_split_pairs <- function(s) {
+  # Scale ANCHORS written as "1 (very negative) to 7 (very positive)" — by far
+  # the most common way authors label only the two ends of a rating scale, and
+  # the joiner is a word ("to") or a dash rather than a list separator, so the
+  # generic entry-splitting below cannot reach it. Handled first, and only when
+  # EVERY parenthesised group is preceded by a number, so ordinary prose that
+  # merely contains brackets is not mistaken for a code list.
+  anchors <- regmatches(s, gregexpr(
+    "(-?\\d+(?:\\.\\d+)?)\\s*\\(([^)]{1,60})\\)", s, perl = TRUE))[[1]]
+  if (length(anchors) >= 2) {
+    am <- regmatches(anchors, regexec(
+      "^(-?\\d+(?:\\.\\d+)?)\\s*\\(([^)]{1,60})\\)$", anchors, perl = TRUE))
+    good <- lengths(am) == 3
+    if (sum(good) >= 2) {
+      return(list(lhs = vapply(am[good], `[`, character(1), 2L),
+                  rhs = trimws(vapply(am[good], `[`, character(1), 3L))))
+    }
   }
-  if (length(codes) < 2) return(NA_character_)   # need a real mapping, not one pair
+
+  # Entries separate on ; | newline. A comma also separates, but only when the
+  # next entry starts with a code — checked for BOTH directions, since a comma
+  # inside a label ("Counselors, Social workers=21") must not split.
+  parts <- unlist(strsplit(
+    s,
+    paste0("\\s*[;|\\n]\\s*",
+           "|\\s*,\\s*(?=\\s*-?\\d+(\\.\\d+)?\\s*[:=])",
+           "|\\s*,\\s*(?=[^,;|=:]{1,40}[:=]\\s*-?\\d+(\\.\\d+)?\\s*(,|;|\\||$))"),
+    perl = TRUE))
+  parts <- trimws(parts[nzchar(trimws(parts))])
+  if (!length(parts)) return(NULL)
+  m <- regmatches(parts, regexec("^\\s*(.+?)\\s*[:=]\\s*(.+?)\\s*$", parts, perl = TRUE))
+  ok <- lengths(m) == 3
+  if (!any(ok)) {
+    # No ":"/"=" anywhere. Authors also write "1-Male", "1. Male", "1) Male"
+    # and "1 Male" — the same convention .extract_codebook_positional() already
+    # accepts for anchor columns. Only a NUMERIC code is allowed here: with text
+    # on both sides ("High vs. Low") there is no separator to mark the split, so
+    # such a string is prose, not a code list. A bare "1,2,3" has no labels at
+    # all and is correctly left unparsed by the >=2-pairs rule below.
+    m <- regmatches(parts, regexec(
+      "^\\s*(-?\\d+(?:\\.\\d+)?)\\s*(?:[-–—).]\\s*|\\s+)([A-Za-z].*?)\\s*$",
+      parts, perl = TRUE))
+    ok <- lengths(m) == 3
+    if (!any(ok)) return(NULL)
+  }
+  list(lhs = vapply(m[ok], `[`, character(1), 2L),
+       rhs = vapply(m[ok], `[`, character(1), 3L))
+}
+
+# Parse a codebook "values" cell into value labels. Handles the textual encodings
+# authors actually use, in EITHER direction:
+#   "1 = Male; 2 = Female"      (code = label)
+#   "Male = 1; Female = 2"      (label = code)  <- more common in practice
+#   "M = Male; F = Female"      (text = text)   <- needs `observed` to resolve
+#
+# Direction is decided ONCE PER CELL, never per pair: a cell that mixes
+# "1=Male" with "Female=2" would otherwise produce a scrambled mapping. The
+# numeric side is the code whenever exactly one side is consistently numeric.
+#
+# When NEITHER side is numeric the string alone is ambiguous — "M = Male" and
+# "Male = M" are structurally identical. `observed` (a sample of the actual data
+# column's values, e.g. data_check's `sample_values`) resolves it: whichever side
+# matches what is really stored in the column is the code. Without `observed`
+# such a cell is left unparsed rather than guessed, since inventing a direction
+# would silently invert every label for that variable.
+#
+# Returns a value-labels JSON string or NA.
+.parse_value_label_text <- function(s, observed = NULL) {
+  if (is.null(s) || is.na(s) || !nzchar(trimws(s))) return(NA_character_)
+  pr <- .vl_split_pairs(as.character(s))
+  if (is.null(pr) || length(pr$lhs) < 2) return(NA_character_)  # need a real mapping
+
+  l_num <- mean(.vl_is_numeric(pr$lhs))
+  r_num <- mean(.vl_is_numeric(pr$rhs))
+  codes <- NULL; labels <- NULL
+  if (l_num >= 0.8 && r_num < 0.8) {
+    codes <- pr$lhs; labels <- pr$rhs
+  } else if (r_num >= 0.8 && l_num < 0.8) {
+    codes <- pr$rhs; labels <- pr$lhs
+  } else if (!is.null(observed) && length(observed)) {
+    ov <- unique(trimws(as.character(observed)))
+    ov <- ov[!is.na(ov) & nzchar(ov)]
+    hit_l <- mean(trimws(pr$lhs) %in% ov)
+    hit_r <- mean(trimws(pr$rhs) %in% ov)
+    if (hit_l > hit_r) { codes <- pr$lhs; labels <- pr$rhs }
+    else if (hit_r > hit_l) { codes <- pr$rhs; labels <- pr$lhs }
+  }
+  if (is.null(codes)) return(NA_character_)
   .encode_value_labels(codes, labels)
 }
 
@@ -2248,21 +2432,82 @@ normalize_label <- function(x) {
   .encode_value_labels(names(vl)[is_miss], unname(vl)[is_miss])
 }
 
-# Find a "value labels" / "coding" column in a structured codebook's headers.
-.find_value_label_col <- function(col_names) {
-  grep(paste0("(?i)^(value[_ ]?labels?|values?|codes?|coding|categor(y|ies)|",
-              "response[_ ]?options?|levels?|value[_ ]?meanings?)$"),
-       col_names, perl = TRUE, value = TRUE)[1]
+# Find a dedicated "missing values" column. Kept separate from the value-label
+# finder because missingness is its OWN field: a codebook may declare sentinel
+# codes ("-9 = not answered") without listing any ordinary value labels, and
+# folding the two together would record a missing code as a real category.
+.find_missing_value_col <- function(col_names) {
+  # "assigned missing values" is the wording in Lewis's template and in
+  # datamgmtinedresearch.com Table 8.1, both of which list it as a REQUIRED
+  # data-dictionary field.
+  re <- paste0("^((assigned|declared|defined) )?(missing|missings|",
+               "missing values?|missing codes?|missing data|",
+               "na values?|na codes?|missing value codes?)$")
+  col_names[grepl(re, .normalize_header(col_names), perl = TRUE)][1]
 }
 
-# Find a "question text" column and a "universe"/"filter" column in a codebook.
-.find_question_col <- function(col_names) {
-  grep("(?i)^(question|question[_ ]?text|item[_ ]?text|prompt|wording|item[_ ]?wording|survey[_ ]?question)$",
-       col_names, perl = TRUE, value = TRUE)[1]
+# Find a "value labels" / "coding" column in a structured codebook's headers.
+.find_value_label_col <- function(col_names) {
+  # Separator-insensitive like .find_codebook_cols(). "code"/"codes" are NOT
+  # here: they name the VARIABLE column in real codebooks (an item's code), and
+  # a word must belong to exactly one role.
+  # "variable levels", "allowed values" and "possible values" were each found in
+  # the corpus naming a code list that no pattern matched.
+  #
+  # "missing values" is deliberately NOT here, even though it appears in real
+  # codebooks: missingness is a SEPARATE field (`missing_values`), derived from
+  # value labels whose text reads as missingness. Accepting it as a value-label
+  # header means that in a codebook with no values column it would be chosen as
+  # THE code list, so "-99 = Refused" would be recorded as an ordinary value
+  # label rather than a missing code — a silent semantic error.
+  #
+  # "response options (see second sheet)" is likewise NOT accepted: the codes
+  # live elsewhere, so the cell holds a cross-reference rather than a mapping.
+  # "allowable values" is the wording used by Crystal Lewis's widely-shared
+  # data-dictionary template and by datamgmtinedresearch.com Table 8.1, which
+  # both list it as a REQUIRED field ("allowable values/range, including labels
+  # associated with categorical codes").
+  re <- paste0("^(value labels?|values?|coding|categor(y|ies)|",
+               "response options?|response codes?|levels?|value meanings?|",
+               "valid values|value codes?|scoring|answers|",
+               "variable levels|allowe?d values|allowable values|",
+               "possible values|permitted values)$")
+  col_names[grepl(re, .normalize_header(col_names), perl = TRUE)][1]
 }
-.find_universe_col <- function(col_names) {
-  grep("(?i)^(universe|population|applies[_ ]?to|filter|skip[_ ]?logic|asked[_ ]?of|base|subset|condition[_ ]?asked)$",
-       col_names, perl = TRUE, value = TRUE)[1]
+
+# Find a "question text" column in a codebook.
+.find_question_col <- function(col_names) {
+  # "question in survey" / "question wording" / "question translated" all occur
+  # in the corpus, so a trailing qualifier is allowed after "question".
+  re <- paste0("^(question|questions|question text|question wording|",
+               "question in survey|item text|item wording|prompt|",
+               "survey question|item description)$")
+  col_names[grepl(re, .normalize_header(col_names), perl = TRUE)][1]
+}
+# Find a "coding instructions" column: how this variable's values came about.
+#
+# DDI models this two ways — `codingInstructions` (with `typeOfCodingInstruction`,
+# an OPEN conceptType with no fixed vocabulary) for processing rules, and
+# `var/derivation` (`drvdesc` prose + `drvcmd` syntax) for a variable computed
+# from others. Crystal Lewis's template calls the column `transformations`
+# ("Recodings or calculations"), and datamgmtinedresearch.com Table 8.1 lists
+# "Transformations" as a REQUIRED data-dictionary field.
+#
+# This is the single most useful optional field because it answers "where did
+# this number come from?" — covering scale scores ("mean of items 1-10"),
+# reverse scoring ("6 - bds_3"), exclusions, and transformations in one place.
+# It is also the only home DDI offers for REVERSE KEYING: no standard checked
+# (DDI-Codebook 2.6, DDI Lifecycle, Psych-DS) has a reverse/polarity element,
+# and DDI's own schema example uses `<typeOfCodingInstruction>recode</...>`.
+#
+# Stored as free text and deliberately NOT parsed: `typeOfCodingInstruction` is
+# an open vocabulary, so there is no canonical wording to match against.
+.find_coding_instruction_col <- function(col_names) {
+  re <- paste0("^(coding instructions?|coding instruction|instructions?|",
+               "transformations?|recodings?|recoding|calculations?|",
+               "calculation recoding|derivations?|derived|derivation description|",
+               "computations?|computed|how computed|scoring|scoring instructions?)$")
+  col_names[grepl(re, .normalize_header(col_names), perl = TRUE)][1]
 }
 
 # Extract variable-label pairs from a structured data.frame (CSV/Excel rows).
@@ -2340,11 +2585,198 @@ normalize_label <- function(x) {
     missing_values    = vapply(value_labels, .missing_from_value_labels,
                                character(1), USE.NAMES = FALSE),
     question          = NA_character_,
-    universe          = NA_character_
+    coding_instructions = NA_character_
   )
 }
 
-.extract_structured_codebook <- function(df, src) {
+# Parse a GitHub-flavoured markdown table into a codebook. A README that carries
+# its data dictionary as a pipe table is a real convention — TidyTuesday ships
+# every dataset this way ("|variable |class |description |") — and the table is
+# fully structured, so it should never reach the LLM. Scans for a separator rule
+# ("|---|---|") whose preceding row is a codebook header, then reads rows until
+# the table ends. Returns a codebook-vars data.frame or NULL.
+.extract_markdown_codebook <- function(path, src, observed = list()) {
+  ln <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+  if (is.null(ln) || !length(ln)) return(NULL)
+  ln <- iconv(ln, to = "UTF-8", sub = "")
+  ln[is.na(ln)] <- ""
+  rule_re <- "^[[:space:]]*[|][[:space:]:-]*[-][[:space:]:|-]*$"
+  rules <- grep(rule_re, ln)
+  rules <- rules[rules > 1L]
+  if (!length(rules)) return(NULL)
+
+  cells <- function(x) {
+    x <- sub("^[[:space:]]*[|]", "", x)
+    x <- sub("[|][[:space:]]*$", "", x)
+    trimws(unlist(strsplit(x, "[|]", fixed = FALSE)))
+  }
+  out <- list()
+  for (i in rules) {
+    hdr <- cells(ln[i - 1L])
+    hdr <- hdr[nzchar(hdr)]
+    if (length(hdr) < 2L || is.null(.find_codebook_cols(hdr))) next
+    body <- list()
+    j <- i + 1L
+    while (j <= length(ln) && grepl("[|]", ln[j])) {
+      rw <- cells(ln[j])
+      if (any(nzchar(rw))) {
+        length(rw) <- length(hdr)          # pad/truncate to the header width
+        body[[length(body) + 1L]] <- rw
+      }
+      j <- j + 1L
+    }
+    if (!length(body)) next
+    df <- as.data.frame(do.call(rbind, body), stringsAsFactors = FALSE)
+    names(df) <- hdr
+    df[] <- lapply(df, function(z) { z[is.na(z)] <- ""; z })
+    one <- .extract_structured_codebook(df, src, observed)
+    if (!is.null(one) && nrow(one) > 0) out[[length(out) + 1L]] <- one
+  }
+  if (!length(out)) return(NULL)
+  dplyr::bind_rows(out)
+}
+
+# First non-empty scalar among a set of candidate field names, case-insensitively.
+.json_field <- function(entry, names_want) {
+  nm <- names(entry)
+  if (is.null(nm)) return(NA_character_)
+  for (w in names_want) {
+    j <- which(tolower(nm) == w)
+    if (!length(j)) next
+    v <- entry[[j[1]]]
+    if (is.null(v) || length(v) != 1 || is.list(v)) next
+    v <- trimws(as.character(v))
+    if (!is.na(v) && nzchar(v)) return(v)
+  }
+  NA_character_
+}
+
+# Encode a JSON codebook's value-label field. Real files use several shapes:
+#   [{"name": "1", "label": "Male"}, ...]   (name = code, label = meaning)
+#   {"1": "Male", "2": "Female"}            (plain object)
+#   ["1 = Male", "2 = Female"]              (strings)
+# In the corpus the per-entry `label` is FREQUENTLY EMPTY and the meaning lives
+# in `name` ("ja"/"nein"), so an empty label falls back to using `name` as its
+# own label rather than dropping the pair.
+.json_value_labels <- function(vl) {
+  if (is.null(vl) || length(vl) == 0) return(NA_character_)
+  if (is.list(vl) && !is.null(names(vl)) && !any(vapply(vl, is.list, logical(1)))) {
+    return(.encode_value_labels(names(vl), unlist(vl, use.names = FALSE)))
+  }
+  codes <- character(0); labs <- character(0)
+  for (v in vl) {
+    if (is.list(v)) {
+      cd <- .json_field(v, c("name", "value", "code", "level"))
+      lb <- .json_field(v, c("label", "meaning", "text"))
+      if (is.na(cd)) next
+      codes <- c(codes, cd)
+      labs  <- c(labs, if (is.na(lb)) cd else lb)   # empty label -> code names itself
+    } else if (length(v) == 1 && !is.na(v)) {
+      pr <- .vl_split_pairs(as.character(v))
+      if (!is.null(pr) && length(pr$lhs)) { codes <- c(codes, pr$lhs); labs <- c(labs, pr$rhs) }
+    }
+  }
+  if (length(codes) < 1) return(NA_character_)
+  .encode_value_labels(codes, labs)
+}
+
+# Parse a JSON codebook: an array of per-variable objects, or an object wrapping
+# one under a key such as "variables" / "variableMeasured" (schema.org, as the
+# `codebook` R package and Psych-DS emit). Field names are matched leniently
+# because no single convention dominates. Returns a codebook-vars data.frame or
+# NULL when the file is not a per-variable codebook.
+.extract_json_codebook <- function(path, src) {
+  j <- tryCatch(jsonlite::fromJSON(path, simplifyVector = FALSE),
+                error = function(e) NULL)
+  if (is.null(j)) return(NULL)
+  # Unwrap a container object; schema.org puts the list under variableMeasured.
+  if (is.list(j) && !is.null(names(j))) {
+    for (k in c("variableMeasured", "variables", "columns", "fields",
+                "codebook", "items")) {
+      hit <- which(tolower(names(j)) == tolower(k))
+      if (length(hit) && is.list(j[[hit[1]]])) { j <- j[[hit[1]]]; break }
+    }
+  }
+  if (!is.list(j) || length(j) == 0) return(NULL)
+  entries <- Filter(function(e) is.list(e) && !is.null(names(e)), j)
+  if (length(entries) < 2) return(NULL)
+
+  var <- vapply(entries, .json_field, character(1),
+                c("name", "variable", "variable_name", "varname", "column", "id"))
+  lab <- vapply(entries, .json_field, character(1),
+                c("label", "description", "title", "variable_label", "definition"))
+  itm <- vapply(entries, .json_field, character(1),
+                c("item_text", "question", "question_text", "wording", "prompt"))
+  # A label may be absent while the item wording carries the meaning.
+  lab <- ifelse(is.na(lab) & !is.na(itm), itm, lab)
+  keep <- !is.na(var) & nzchar(var) & !is.na(lab) & nzchar(lab)
+  if (sum(keep) < 2) return(NULL)
+
+  vl <- vapply(entries, function(e) {
+    f <- names(e)[tolower(names(e)) %in% c("value_label", "value_labels",
+                                           "values", "levels", "categories")]
+    if (!length(f)) return(NA_character_)
+    .json_value_labels(e[[f[1]]])
+  }, character(1))
+
+  data.frame(
+    codebook_variable = var[keep],
+    label             = lab[keep],
+    codebook_source   = src,
+    group             = NA_character_,
+    value_labels      = vl[keep],
+    missing_values    = vapply(vl[keep], .missing_from_value_labels,
+                               character(1), USE.NAMES = FALSE),
+    question          = itm[keep],
+    coding_instructions = NA_character_
+  )
+}
+
+# Parse a multi-sheet spreadsheet codebook, format-agnostically.
+#
+# Excel (.xlsx/.xls, via readxl) and OpenDocument (.ods, via readODS) codebooks
+# are structurally identical — several sheets, a header row, one variable per
+# row — so all of the logic lives here and only the READER differs. `sheets()`
+# returns sheet names; `read(sheet, header)` returns one sheet as a data.frame,
+# with `header = FALSE` giving the un-headered grid.
+#
+# Every sheet is explored, not just the first: a codebook often keeps its scale
+# item lists on separate tabs (an IPIP-NEO sheet beside a general "Codebook"
+# sheet). Per sheet: try the named-header parser, then a header-row lookahead
+# for sheets whose first row is a prose title ("Codebook for Studies 1-4",
+# "NOTES") which pushes the real header down, then a positional fallback.
+# Results are combined and `src` records the sheet so a variable can be traced.
+.extract_spreadsheet_codebook <- function(sheets, read, src, observed,
+                                          header_lookahead) {
+  sh_names <- tryCatch(sheets(), error = function(e) character(0))
+  if (length(sh_names) == 0) sh_names <- NA_character_   # single default read
+  parsed <- list()
+  for (sh in sh_names) {
+    df <- tryCatch(read(sh, TRUE), error = function(e) NULL)
+    if (is.null(df)) next
+    ssrc <- if (is.na(sh)) src else paste0(src, " [", sh, "]")
+    one <- .extract_structured_codebook(df, ssrc, observed)
+    if (is.null(one)) {
+      hdrless <- tryCatch(read(sh, FALSE), error = function(e) NULL)
+      if (!is.null(hdrless) && nrow(hdrless) > 1) {
+        for (k in seq_len(min(nrow(hdrless) - 1L, header_lookahead))) {
+          hdr <- trimws(as.character(unlist(hdrless[k, ])))
+          if (is.null(.find_codebook_cols(hdr))) next
+          sub <- hdrless[seq(k + 1L, nrow(hdrless)), , drop = FALSE]
+          names(sub) <- hdr
+          rownames(sub) <- NULL
+          one <- .extract_structured_codebook(sub, ssrc, observed)
+          if (!is.null(one)) break
+        }
+      }
+    }
+    if (is.null(one)) one <- .extract_codebook_positional(df, ssrc)
+    if (!is.null(one) && nrow(one) > 0) parsed[[length(parsed) + 1L]] <- one
+  }
+  if (length(parsed) > 0) dplyr::bind_rows(parsed) else NULL
+}
+
+.extract_structured_codebook <- function(df, src, observed = list()) {
   if (is.null(df) || nrow(df) == 0 || ncol(df) < 2) return(NULL)
   cols <- .find_codebook_cols(names(df))
   if (is.null(cols)) return(NULL)
@@ -2352,18 +2784,47 @@ normalize_label <- function(x) {
   if (nrow(rows) == 0) return(NULL)
 
   # Optional DDI-derived columns: value labels / coding, question text,
-  # universe/filter. Each is parsed per row when its column is present.
+  # Each is parsed per row when its column is present.
   val_col <- .find_value_label_col(names(df))
   q_col   <- .find_question_col(names(df))
-  u_col   <- .find_universe_col(names(df))
+  ci_col  <- .find_coding_instruction_col(names(df))
   na_str  <- function(x) { x <- trimws(as.character(x)); ifelse(nzchar(x), x, NA_character_) }
 
-  value_labels <- if (!is.na(val_col))
-    vapply(as.character(rows[[val_col]]), .parse_value_label_text, character(1),
-           USE.NAMES = FALSE) else rep(NA_character_, nrow(rows))
-  # Missing scheme from any code whose label reads as missingness.
+  # `observed` maps a variable name -> a sample of that column's real values, so
+  # a text-coded cell ("M = Male") can be resolved against the data instead of
+  # guessed. Absent (the usual case here, since a codebook file is parsed before
+  # any data is read), such cells stay unparsed.
+  value_labels <- if (!is.na(val_col)) {
+    vn <- trimws(as.character(rows[[cols$var_col]]))
+    vapply(seq_len(nrow(rows)), function(i) {
+      .parse_value_label_text(as.character(rows[[val_col]])[i], observed[[vn[i]]])
+    }, character(1))
+  } else rep(NA_character_, nrow(rows))
+  # Missing scheme: any code whose LABEL reads as missingness ("99 = Refused"),
+  # plus a dedicated missing-values column when the codebook declares one
+  # ("-9 = not answered"). The explicit column wins where both are present,
+  # since it states the author's intent rather than inferring it from wording.
   missing_values <- vapply(value_labels, .missing_from_value_labels,
                            character(1), USE.NAMES = FALSE)
+  m_col <- .find_missing_value_col(names(df))
+  if (!is.na(m_col)) {
+    declared <- vapply(as.character(rows[[m_col]]), function(x) {
+      if (is.na(x) || !nzchar(trimws(x))) return(NA_character_)
+      # "-9 = not answered" -> a coded scheme; a bare "-9" -> codes only.
+      pr <- .vl_split_pairs(x)
+      if (!is.null(pr) && length(pr$lhs)) {
+        num_l <- mean(.vl_is_numeric(pr$lhs))
+        if (num_l >= 0.8) return(.encode_value_labels(pr$lhs, pr$rhs))
+        if (mean(.vl_is_numeric(pr$rhs)) >= 0.8)
+          return(.encode_value_labels(pr$rhs, pr$lhs))
+      }
+      codes <- trimws(unlist(strsplit(x, "\\s*[;,|]\\s*")))
+      codes <- codes[nzchar(codes) & .vl_is_numeric(codes)]
+      if (!length(codes)) return(NA_character_)
+      .encode_missing_values(codes)
+    }, character(1), USE.NAMES = FALSE)
+    missing_values <- ifelse(is.na(declared), missing_values, declared)
+  }
 
   data.frame(
     codebook_variable = as.character(rows[[cols$var_col]]),
@@ -2373,7 +2834,7 @@ normalize_label <- function(x) {
     value_labels      = value_labels,
     missing_values    = missing_values,
     question          = if (!is.na(q_col)) na_str(rows[[q_col]]) else NA_character_,
-    universe          = if (!is.na(u_col)) na_str(rows[[u_col]]) else NA_character_
+    coding_instructions = if (!is.na(ci_col)) na_str(rows[[ci_col]]) else NA_character_
   )
 }
 
@@ -2410,8 +2871,64 @@ normalize_label <- function(x) {
     value_labels      = value_labels[keep],
     missing_values    = missing_values[keep],
     question          = NA_character_,
-    universe          = NA_character_
+    coding_instructions = NA_character_
   )
+}
+
+# Does a line look like a codebook DEFINITION — a short leading identifier, a
+# separator (colon, equals, tab, or a 2+ space column gap), then descriptive
+# text? Used to decide whether a PDF is worth sending to the LLM at all.
+.cb_is_definition_line <- function(x) {
+  grepl("^[ ]{0,8}[A-Za-z_][A-Za-z0-9_.$#-]{0,40}[ ]*([:=]|[ ]{2,}|\t)[ ]*[^ ].{3,}$",
+        x, perl = TRUE)
+}
+
+# Decide whether a PDF's text is worth sending to the LLM, and return it if so.
+#
+# A PDF is only processed when its FIRST `probe_pages` pages already contain at
+# least `min_defs` definition-looking lines on some page. Rationale: an LLM call
+# on a PDF is the most expensive route we have, and a document whose opening
+# pages hold no variable definitions is overwhelmingly a narrative coding manual,
+# a survey printout, or a 375-page institutional report — not a codebook we can
+# use. Refusing those outright is deliberate policy, not an approximation: we do
+# not send a huge PDF anywhere on the chance something useful appears late.
+#
+# The test counts definition lines rather than measuring their PROPORTION. That
+# distinction matters: PDF codebooks are frequently wrapped multi-column tables
+# where one variable's row spans a dozen physical lines, only the first of which
+# looks like a definition. A proportion-based threshold reads those continuation
+# lines as noise and rejects exactly the value-label content that makes a PDF
+# codebook worth reading; a count does not.
+#
+# Returns the file's non-blank lines when the gate passes, or character(0) when
+# the PDF should be skipped.
+.pdf_codebook_lines <- function(path, probe_pages = 5L, min_defs = 5L,
+                                max_pages = 60L) {
+  if (!requireNamespace("pdftools", quietly = TRUE)) return(character(0))
+  pages <- tryCatch(pdftools::pdf_text(path), error = function(e) NULL)
+  if (is.null(pages) || !length(pages)) return(character(0))
+
+  # Hard page ceiling, checked BEFORE the content probe. A book-length PDF is
+  # never worth sending: the two 375-page WVS reports and the 232-page GIPO
+  # codebooks in the corpus would each cost 50-200 LLM calls. The probe alone
+  # cannot catch them — the WVS report's page 2 is a centred TITLE page whose
+  # layout incidentally matches the definition pattern 6 times, which is over
+  # the threshold, so it passed the content gate while being exactly the file
+  # we least want to send.
+  if (length(pages) > max_pages) return(character(0))
+
+  # pdf_text() is a single LOCAL read — the whole gate costs no API calls.
+  probe <- utils::head(pages, probe_pages)
+  n_def <- vapply(probe, function(t) {
+    ln <- unlist(strsplit(t, "\n"))
+    ln <- ln[nzchar(trimws(ln))]
+    if (!length(ln)) return(0L)
+    sum(.cb_is_definition_line(ln))
+  }, integer(1))
+  if (max(c(0L, n_def)) < min_defs) return(character(0))
+
+  ln <- unlist(strsplit(paste(pages, collapse = "\n"), "\n"))
+  ln[nzchar(trimws(ln))]
 }
 
 # Strip RTF control codes from a string, returning plain text.
@@ -2482,18 +2999,53 @@ normalize_label <- function(x) {
 #'   lines when only unstructured text is available; or `NULL` on failure.
 #' @export
 #' @keywords internal
-parse_codebook <- function(path, header_lookahead = 5L) {
+parse_codebook <- function(path, header_lookahead = 5L, observed = list()) {
   if (!file.exists(path)) return(NULL)
   ext <- tolower(tools::file_ext(path))
   src <- basename(path)
 
   result <- tryCatch(
     switch(ext,
+      json = {
+        .extract_json_codebook(path, src)
+      },
+      md = , markdown = , rmd = , qmd = {
+        # A pipe table in a README/vignette is fully structured; parse it rather
+        # than sending the prose to the LLM. Falls through to raw lines when the
+        # file has no codebook table.
+        .extract_markdown_codebook(path, src, observed)
+      },
       csv = , tsv = , dat = {
+        # A JSON codebook is sometimes shipped with a .csv extension (both
+        # codebook_rawdata.csv and .json in the corpus are byte-identical JSON).
+        # Sniff the first non-blank character and route rather than handing a
+        # perfectly structured file to the LLM as raw text.
+        first <- tryCatch({
+          h <- readLines(path, n = 5L, warn = FALSE)
+          h <- trimws(h[nzchar(trimws(h))])
+          if (length(h)) substr(h[1], 1, 1) else ""
+        }, error = function(e) "")
+        if (first %in% c("[", "{")) {
+          jres <- .extract_json_codebook(path, src)
+          if (!is.null(jres)) return(within(jres, parse_method <- "structured"))
+        }
         sep <- if (ext == "tsv") "\t" else .sniff_delimiter(path)
+        # A UTF-8 BOM (EF BB BF) must be declared, not repaired downstream. It is
+        # valid UTF-8, so the invalid-encoding check below does NOT fire on it,
+        # but the three bytes stay glued to the first header cell — turning
+        # "Name" into "﻿Name", which no header pattern matches. Reading with
+        # "UTF-8-BOM" strips it. (Before this, the BOM bytes made iconv() report
+        # invalid input, triggering the latin1 re-read below, which re-encoded
+        # them as the visible "ï»¿" and broke header detection outright: files
+        # with an identical header parsed or failed purely on BOM presence.)
+        enc <- {
+          b <- tryCatch(readBin(path, "raw", 3L), error = function(e) raw(0))
+          if (length(b) == 3L && b[1] == as.raw(0xef) &&
+              b[2] == as.raw(0xbb) && b[3] == as.raw(0xbf)) "UTF-8-BOM" else ""
+        }
         raw <- tryCatch(
           utils::read.delim(path, sep = sep, header = FALSE,
-                            check.names = FALSE),
+                            check.names = FALSE, fileEncoding = enc),
           error = function(e) NULL
         )
         if (is.null(raw) || nrow(raw) == 0) {
@@ -2539,39 +3091,45 @@ parse_codebook <- function(path, header_lookahead = 5L) {
               names(raw) <- trimws(as.character(raw[header_row, ]))
               df <- raw[seq(header_row + 1L, nrow(raw)), , drop = FALSE]
               rownames(df) <- NULL
-              .extract_structured_codebook(df, src)
+              .extract_structured_codebook(df, src, observed)
             }
           }
+        }
+      },
+      ods = , fods = {
+        # OpenDocument spreadsheet — LibreOffice/OpenOffice's native format and
+        # the default for anyone not using Excel. Same structure as .xlsx, so it
+        # shares .extract_spreadsheet_codebook(); only the reader differs.
+        # readODS is optional: without it the file falls through to the LLM tier.
+        #
+        # NOTE .ods (spreadsheet) is not .odt (text document); .odt is handled
+        # with the rich-text formats, where only prose can be recovered.
+        if (!requireNamespace("readODS", quietly = TRUE)) {
+          NULL
+        } else {
+          .extract_spreadsheet_codebook(
+            sheets = function() readODS::list_ods_sheets(path),
+            read = function(sh, header)
+              as.data.frame(readODS::read_ods(
+                path, sheet = if (is.na(sh)) 1 else sh, col_names = header,
+                .name_repair = "unique_quiet")),
+            src = src, observed = observed, header_lookahead = header_lookahead)
         }
       },
       xlsx = , xls = {
         if (!requireNamespace("readxl", quietly = TRUE)) {
           NULL
         } else {
-          # Explore EVERY sheet, not just the first: a codebook often keeps its
-          # scale item lists on separate tabs (e.g. an IPIP-NEO sheet beside a
-          # general "Codebook" sheet). For each sheet try the named-header parser
-          # first, then a positional fallback for sheets whose header is a prose
-          # title rather than column names. Combine everything that parses; the
-          # source records the sheet so a variable can be traced back.
-          sheets <- tryCatch(readxl::excel_sheets(path), error = function(e) character(0))
-          if (length(sheets) == 0) sheets <- NA_character_   # single default read
-          parsed <- list()
-          for (sh in sheets) {
-            df <- tryCatch(
-              if (is.na(sh))
-                as.data.frame(readxl::read_excel(path, .name_repair = "unique_quiet"))
+          .extract_spreadsheet_codebook(
+            sheets = function() readxl::excel_sheets(path),
+            read = function(sh, header)
+              as.data.frame(if (is.na(sh))
+                readxl::read_excel(path, col_names = header,
+                                   .name_repair = "unique_quiet")
               else
-                as.data.frame(readxl::read_excel(path, sheet = sh,
-                                                 .name_repair = "unique_quiet")),
-              error = function(e) NULL)
-            if (is.null(df)) next
-            ssrc <- if (is.na(sh)) src else paste0(src, " [", sh, "]")
-            one <- .extract_structured_codebook(df, ssrc)
-            if (is.null(one)) one <- .extract_codebook_positional(df, ssrc)
-            if (!is.null(one) && nrow(one) > 0) parsed[[length(parsed) + 1L]] <- one
-          }
-          if (length(parsed) > 0) dplyr::bind_rows(parsed) else NULL
+                readxl::read_excel(path, sheet = sh, col_names = header,
+                                   .name_repair = "unique_quiet")),
+            src = src, observed = observed, header_lookahead = header_lookahead)
         }
       },
       sav = , dta = , sas7bdat = {
@@ -2615,7 +3173,15 @@ parse_codebook <- function(path, header_lookahead = 5L) {
         # its own parse_method ("qsf"), preserved by the override below.
         parse_qsf(path)
       },
-      docx = , pdf = , rtf = , odt = {
+      pdf = {
+        # Gated: only PDFs whose opening pages already show variable definitions
+        # are handed to the LLM (see .pdf_codebook_lines). character(0) means
+        # "deliberately skipped", and is returned as such so the caller does
+        # not fall through to the readLines() text dump at the end of this
+        # function.
+        .pdf_codebook_lines(path)
+      },
+      docx = , rtf = , odt = {
         text <- .extract_rich_text(path, ext)
         if (nchar(trimws(text)) < 10) NULL else strsplit(text, "\n")[[1]]
       },
@@ -2743,7 +3309,7 @@ parse_codebook <- function(path, header_lookahead = 5L) {
 #'
 #' @returns a data.frame of variable definitions (`codebook_variable`, `label`,
 #'   `codebook_source`, `group`, `value_labels`, `missing_values`, `question`,
-#'   `universe`, `parse_method`), or `NULL` when the file is not a parseable QSF
+#'   `parse_method`), or `NULL` when the file is not a parseable QSF
 #'   or yields no questions.
 #' @export
 #' @keywords internal
@@ -2778,7 +3344,7 @@ parse_qsf <- function(path) {
       value_labels      = value_labels %||% NA_character_,
       missing_values    = NA_character_,
       question          = question %||% label %||% NA_character_,
-      universe          = NA_character_,
+      coding_instructions = NA_character_,
       scale_group       = scale_group %||% NA_character_
     )
   }
@@ -2905,7 +3471,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
       value_labels      = NA_character_,
       missing_values    = NA_character_,
       question          = NA_character_,
-      universe          = NA_character_,
+      coding_instructions = NA_character_,
       scale_group       = NA_character_
     )
   }
@@ -2945,11 +3511,11 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   label_out <- cbk_var_out <- src_out <- label_method_out <- rep(NA_character_, n)
   status_out <- rep("unlabelled", n)
   # DDI-derived per-variable properties carried from the matched codebook rows.
-  vl_out <- mv_out <- q_out <- univ_out <- rep(NA_character_, n)
+  vl_out <- mv_out <- q_out <- ci_out <- rep(NA_character_, n)
   # QSF scale-block stem (parse_qsf's scale_group), carried onto the data column.
   sg_out <- rep(NA_character_, n)
   # First non-NA value of a codebook column across the applicable matches (used
-  # to carry value_labels/missing_values/question/universe onto the data column).
+  # to carry value_labels/missing_values/question onto the data column).
   first_present <- function(rows, col)
     if (col %in% names(rows)) {
       v <- rows[[col]][!is.na(rows[[col]]) & nzchar(as.character(rows[[col]]))]
@@ -3012,11 +3578,11 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 
     # Carry the DDI-derived properties from the matched codebook rows onto the
     # data column (independent of which label won: a variable's code list /
-    # question / universe are the same whichever source described it).
+    # question is the same whichever source described it).
     vl_out[i]   <- first_present(applicable, "value_labels")
     mv_out[i]   <- first_present(applicable, "missing_values")
     q_out[i]    <- first_present(applicable, "question")
-    univ_out[i] <- first_present(applicable, "universe")
+    ci_out[i]   <- first_present(applicable, "coding_instructions")
     sg_out[i]   <- first_present(applicable, "scale_group")
   }
 
@@ -3083,7 +3649,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     value_labels      = vl_out,
     missing_values    = mv_out,
     question          = q_out,
-    universe          = univ_out,
+    coding_instructions = ci_out,
     scale_group       = sg_out
   )
 }

@@ -25,7 +25,7 @@ test_that("parse_codebook reads a structured CSV codebook", {
   expect_equal(res$parse_method[[1]], "structured")
 })
 
-# ── DDI: value labels / code lists, missing scheme, question, universe ─────────
+# ── DDI: value labels / code lists, missing scheme, question ──────────────────
 
 test_that("value-label JSON round-trips through encode/decode", {
   s <- metacheck:::.encode_value_labels(c(1, 2, -99),
@@ -89,12 +89,13 @@ test_that("match_column_labels carries DDI properties onto data columns", {
     group = NA_character_,
     value_labels = '{"1":"Male","2":"Female"}',
     missing_values = NA_character_,
-    question = "What is your sex?", universe = "All respondents",
+    question = "What is your sex?",
+    coding_instructions = "recoded from raw gender field",
     parse_method = "structured", stringsAsFactors = FALSE)
   res <- match_column_labels(cols, cbk)
   expect_equal(res$value_labels, '{"1":"Male","2":"Female"}')
   expect_equal(res$question, "What is your sex?")
-  expect_equal(res$universe, "All respondents")
+  expect_equal(res$coding_instructions, "recoded from raw gender field")
 })
 
 test_that("parse_codebook returns text lines for unstructured files", {

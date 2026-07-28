@@ -12,7 +12,7 @@ parse_qsf(path)
 \value{
 a data.frame of variable definitions (\code{codebook_variable}, \code{label},
 \code{codebook_source}, \code{group}, \code{value_labels}, \code{missing_values}, \code{question},
-\code{universe}, \code{parse_method}), or \code{NULL} when the file is not a parseable QSF
+\code{parse_method}), or \code{NULL} when the file is not a parseable QSF
 or yields no questions.
 }
 \description{

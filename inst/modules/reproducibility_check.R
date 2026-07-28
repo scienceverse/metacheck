@@ -68,16 +68,35 @@
 #'   declared dependencies into a throwaway temp library before running (CRAN via
 #'   `install.packages`, GitHub/URL via `remotes`). Default FALSE: a script
 #'   needing an absent package simply errors, recorded as its outcome.
+#' @param cran_install_main if TRUE (and `install_missing` and `execute` are
+#'   both TRUE), CRAN-source dependencies are installed into your DEFAULT R
+#'   library instead of the throwaway one, and so persist after the run — see
+#'   [repro_install_deps()]. Useful when calling `reproducibility_check()` over
+#'   many papers in one script: a CRAN package installed for an early paper is
+#'   already present (and skipped) for every later paper needing it, instead of
+#'   being reinstalled into a fresh throwaway library each time. GitHub/URL
+#'   sources are unaffected — always installed into the throwaway library.
+#'   Default FALSE (everything throwaway, nothing persists).
 #' @param timeout per-script timeout in seconds for the execute phase
 #'   (default 600).
-#' @param keep_sandbox if TRUE, do not delete the temp layout/library after an
-#'   execute run, and return its path as attribute `"sandbox"` on the result — so
-#'   you can inspect exactly what ran. Default FALSE (cleaned up).
+#' @param keep_sandbox if TRUE, do not delete the temp materialised layout
+#'   (data/, statistical_output/, and — when `execute = TRUE` — the rewritten
+#'   scripts + temp library) after the run, and return its path as attribute
+#'   `"sandbox"` on the result — so you can inspect exactly what ran. Default
+#'   FALSE (cleaned up). A materialised layout (and so `statistical_output/`) is
+#'   built whenever there is any extracted statistical output (a `.jasp`/`.omv`
+#'   file, or — with `execute = TRUE` — executed R code that printed results),
+#'   independent of `execute`. **Set `keep_sandbox = TRUE` if you want
+#'   [convert_psychds()] to include `statistical_output/` in the archive it
+#'   builds** — it copies the folder from `attr(result, "sandbox")` when
+#'   present, and silently omits it otherwise (it does not run
+#'   `reproducibility_check` itself, so it cannot force this for you).
 #'
 #' @returns a list
 reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   model = llm_model(), params = list(),
                                   execute = FALSE, install_missing = FALSE,
+                                  cran_install_main = FALSE,
                                   timeout = 600, keep_sandbox = FALSE) {
   # paper <- psychsci[[233]] # to test (many code files, several issues)
 
@@ -207,6 +226,25 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
   }
 
+  # ── Materialised root for the statistical_output/ folder ────────────────────
+  # Any extracted statistical output (JASP/jamovi here; executed R console
+  # output is added to `stat_output` further down when execute = TRUE) is
+  # written to disk as a dedicated statistical_output/ folder, sibling to a
+  # data/ copy — same materialised-layout idea repro_materialize_layout()
+  # already uses for the execute phase, reused here (and, when execute = TRUE,
+  # SHARED with it — see below — rather than building two roots). Built
+  # unconditionally so a JASP/jamovi-only paper (execute = FALSE, no R code at
+  # all) still gets the folder; cleaned up on exit unless keep_sandbox = TRUE,
+  # exactly like the execute-phase sandbox.
+  sandbox_root <- NULL
+  if (length(stat_output) > 0) {
+    sandbox_root <- tempfile("repro_sandbox_")
+    if (!isTRUE(keep_sandbox))
+      on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
+    repro_materialize_layout(plan, structure_df, sandbox_root)
+    stat_output_write(stat_output, sandbox_root)
+  }
+
   empty <- function(text, tl = "na", extra_report = NULL) {
     resp <- list(
       table = data.frame(),
@@ -224,6 +262,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       report = c(extra_report, self_repro_report),
       stat_output = stat_output
     )
+    if (!is.null(sandbox_root)) attr(resp, "sandbox") <- sandbox_root
     resp
   }
 
@@ -423,7 +462,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # timed-out script forces red (see after the block).
   run_results <- NULL
   install_results <- NULL
-  sandbox_root <- NULL
   if (isTRUE(execute)) {
     # ── DEBUG tracing (TEMPORARY — remove before release). Prints every step of
     # the execute phase so a hang is attributable to the exact operation. ───────
@@ -431,11 +469,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     .dbg("execute = TRUE. install_missing = ", install_missing,
          ", timeout = ", timeout, "s, keep_sandbox = ", keep_sandbox)
 
-    sandbox_root <- tempfile("repro_sandbox_")
+    # Reuse the root the JASP/jamovi step already materialised (if any stat
+    # output existed above), so data/ and statistical_output/ end up in the
+    # SAME tree the executed scripts also run against, rather than two roots.
+    if (is.null(sandbox_root)) {
+      sandbox_root <- tempfile("repro_sandbox_")
+      if (!isTRUE(keep_sandbox))
+        on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
+    }
     lib_dir <- file.path(sandbox_root, "_lib")
     .dbg("sandbox root: ", sandbox_root)
-    if (!isTRUE(keep_sandbox))
-      on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
 
     # 1. Build the data tree the plan describes, and write the scripts into it.
     .dbg("materialising Psych-DS layout from plan (", nrow(plan %||% data.frame()),
@@ -447,12 +490,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root)
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
-    # 2. Optionally install dependencies into the throwaway library.
+    # 2. Optionally install dependencies (CRAN sources into your main library
+    #    when cran_install_main = TRUE, else — like GitHub/URL always — into
+    #    the throwaway library).
     if (isTRUE(install_missing) && n_deps > 0) {
-      .dbg("installing ", n_deps, " dependenc(y/ies) into throwaway lib: ",
-           paste(install_deps$package, collapse = ", "))
+      .dbg("installing ", n_deps, " dependenc(y/ies) (cran_install_main = ",
+           cran_install_main, "): ", paste(install_deps$package, collapse = ", "))
       .dbg("  repos = ", paste(getOption("repos"), collapse = "; "))
-      install_results <- repro_install_deps(install_deps, lib_dir)
+      install_results <- repro_install_deps(install_deps, lib_dir,
+                                            cran_to_main_lib = cran_install_main)
       .dbg("  install done: ", sum(install_results$installed), " ok, ",
            sum(!install_results$installed), " failed.")
     } else {
@@ -530,14 +576,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Parse each script's captured CONSOLE OUTPUT into statistical results, the
     # same way JASP/jamovi files are handled — so RUN R code contributes to the
     # statistical_output too (t.test/lm/aov/... printed to stdout). Reuses the
-    # STATO typing + ISA-JSON emitter. Appended to stat_output alongside any
-    # JASP/jamovi results.
+    # STATO typing + ISA-JSON emitter. script_lines (the executed script's own
+    # text, from repro_run_scripts()'s echo = TRUE run) lets read_r_output()
+    # attach the source LINE each result came from. Appended to stat_output
+    # alongside any JASP/jamovi results.
     r_stat_output <- lapply(seq_len(nrow(run_results)), function(i) {
       so <- run_results$stdout[i]
       if (is.null(so) || !nzchar(so)) return(NULL)
       fn <- run_results$file_name[i]
-      tabs <- tryCatch(read_r_output(so, source_label = fn),
-                       error = function(e) list())
+      exec_lines <- run_results$script_lines[[i]]
+      tabs <- tryCatch(
+        read_r_output(so, source_label = fn,
+                      code_lines = if (length(exec_lines)) exec_lines else NULL),
+        error = function(e) list())
       if (!length(tabs)) return(NULL)
       list(file = fn, n_tables = length(tabs), source = "r_output",
            isa  = stat_output_isa(tabs, paper_id = .pid(structure_df, code_tbl),
@@ -550,6 +601,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       stat_output <- c(stat_output %||% list(), r_stat_output)
       .dbg("extracted statistical output from ", length(r_stat_output),
            " script(s)' console output.")
+    }
+
+    # Re-write statistical_output/ now that executed-script results (if any)
+    # have joined stat_output — the earlier write (above, before this block)
+    # only had JASP/jamovi results available. repro_materialize_layout()'s
+    # data/ copy is idempotent (file.copy(overwrite = TRUE)), so re-running it
+    # via step 1 above already refreshed data/; this just refreshes the
+    # statistical_output/ files to match the now-complete stat_output.
+    if (length(stat_output) > 0) {
+      if (is.null(sandbox_root)) sandbox_root <- tempfile("repro_sandbox_")
+      stat_output_write(stat_output, sandbox_root)
     }
   }
 
@@ -908,8 +970,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     stat_output = stat_output
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
-  # exactly what ran (data tree + rewritten scripts + temp library).
-  if (isTRUE(execute) && isTRUE(keep_sandbox) && !is.null(sandbox_root))
+  # exactly what ran (data/, statistical_output/, and — when execute = TRUE —
+  # the rewritten scripts + temp library). Not gated on execute: a JASP/jamovi
+  # -only paper (execute = FALSE) also materialises a root, for
+  # statistical_output/ alone.
+  if (isTRUE(keep_sandbox) && !is.null(sandbox_root))
     attr(out, "sandbox") <- sandbox_root
   out
 }

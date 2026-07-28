@@ -2,9 +2,15 @@
 # tables — the same tidy shape read_stat_tables() produces for JASP/jamovi, so it
 # feeds the SAME STATO-typing + ISA-JSON pipeline (R/stato-map.R, R/stat-output.R).
 #
-# The reproducibility execute phase (repro_run_scripts) already RUNS each script
-# and captures its stdout; this turns that captured text into results. R output
-# comes in two shapes, handled separately then merged:
+# The reproducibility execute phase (repro_run_scripts) RUNS each script with
+# source(script, echo = TRUE) and captures its stdout; the echo means the output
+# is interleaved with "> <source statement>" / "+ <continuation>" prompt lines,
+# one run of which precedes each top-level statement's output. .r_echo_chunks()
+# splits that stream back into (source lines, output lines) per statement, and
+# matches the source text against the script's own line-indexed text
+# (code_lines) to recover the statement's starting line number — this is the
+# only place a line number is ever attached to an extracted result. R output
+# itself comes in two shapes, handled separately then merged:
 #   1. one-line tests  — "t = 2.34, df = 48, p-value = 0.02" (t.test, cor.test,
 #      chisq.test, prop.test, shapiro.test). Parsed with the SAME statistic
 #      pattern extract_eq() uses on manuscript prose (.r_stat_pattern).
@@ -32,32 +38,93 @@
 
 #' Extract statistical results from captured R console output
 #'
-#' Parses the text an R script prints (as captured from stdout) into tidy result
-#' tables. Handles both one-line test output (`t.test`, `cor.test`, ...) and
-#' fixed-width text tables (`summary(lm)`, `aov`, `anova`). The result matches the
-#' shape of [read_stat_tables()], so it flows into the same STATO typing and
-#' ISA-JSON export.
+#' Parses the text an R script prints (as captured from `source(script, echo =
+#' TRUE)`) into tidy result tables, one per detected result block. Handles both
+#' one-line test output (`t.test`, `cor.test`, ...) and fixed-width text tables
+#' (`summary(lm)`, `aov`, `anova`). The result matches the shape of
+#' [read_stat_tables()], so it flows into the same STATO typing and ISA-JSON
+#' export.
+#'
+#' When `code_lines` is supplied (the script's own text, one element per source
+#' line — what a run's `code_text_list[[file]]` already is), each result is
+#' additionally tagged with the 1-based source `line` it came from, recovered by
+#' matching the echoed `> `/`+ ` statement text against the script. A single
+#' statement that prints several results (e.g. a `for` loop calling `t.test()`
+#' each iteration) yields several results sharing one `line`; these are
+#' distinguished by `line_seq` (1, 2, 3, ... within that line). Without
+#' `code_lines` the echo is not parsed and `line`/`line_seq` are `NA`.
 #'
 #' @param text the captured console output: a character vector of lines, or a
 #'   single string with embedded newlines
 #' @param source_label optional label (e.g. the script name) recorded as the
 #'   analysis for one-line results
+#' @param code_lines optional character vector of the script's source lines (one
+#'   element per line), used to recover the source `line` of each result via the
+#'   echoed statement text. `NULL` (default) skips line attribution.
 #'
 #' @returns a list with one element per detected result block, each a list of
-#'   `analysis` (the test/section label), `title`, and `data` (a tidy
-#'   data.frame) — the same structure [read_stat_tables()] returns.
+#'   `analysis` (the test/section label), `title`, `data` (a tidy data.frame),
+#'   `line` (1-based source line, or `NA` when `code_lines` was not supplied),
+#'   and `line_seq` (1-based counter of results sharing that `line`, or `NA`) —
+#'   the same structure [read_stat_tables()] returns, plus these two fields.
 #' @export
-read_r_output <- function(text, source_label = NA_character_) {
+read_r_output <- function(text, source_label = NA_character_, code_lines = NULL) {
   if (is.null(text)) return(list())
   lines <- if (length(text) == 1) strsplit(text, "\n", fixed = TRUE)[[1]] else text
   lines <- as.character(lines)
   if (!length(lines)) return(list())
 
-  out <- c(
-    .r_output_tables(lines),            # fixed-width text tables
-    .r_output_oneline(lines, source_label)  # one-line "name = value" tests
-  )
-  Filter(function(t) !is.null(t) && nrow(t$data) > 0, out)
+  parse_chunk <- function(chunk_lines, line) {
+    out <- c(
+      .r_output_tables(chunk_lines),
+      .r_output_oneline(chunk_lines, source_label)
+    )
+    out <- Filter(function(t) !is.null(t) && nrow(t$data) > 0, out)
+    for (k in seq_along(out)) {
+      out[[k]]$line <- line
+      out[[k]]$line_seq <- k
+    }
+    out
+  }
+
+  if (is.null(code_lines)) return(parse_chunk(lines, NA_integer_))
+
+  chunks <- .r_echo_chunks(lines, code_lines)
+  if (!length(chunks)) return(parse_chunk(lines, NA_integer_))
+  unlist(lapply(chunks, function(ch) parse_chunk(ch$output, ch$line)),
+        recursive = FALSE, use.names = FALSE)
+}
+
+# Split echo = TRUE stdout into one chunk per top-level statement: a run of
+# "> "/"+ " prompt lines (the echoed statement, possibly multi-line) followed by
+# whatever it printed, up to the next "> " prompt or end of output. Comments and
+# blank source lines are not echoed by source(), so this only ever sees
+# statements that actually ran. Returns a list of list(line, output) — `line` is
+# the 1-based position of the statement's FIRST line in `code_lines` (NA if no
+# match), `output` the non-prompt lines that followed it.
+.r_echo_chunks <- function(lines, code_lines) {
+  is_prompt <- grepl("^(>|\\+) ?", lines)
+  if (!any(is_prompt)) return(list())
+
+  starts <- which(is_prompt & c(TRUE, !is_prompt[-length(is_prompt)]))
+  ends <- c(starts[-1] - 1L, length(lines))
+
+  norm <- function(x) trimws(x)
+  code_norm <- norm(code_lines)
+
+  chunks <- lapply(seq_along(starts), function(k) {
+    seg <- lines[starts[k]:ends[k]]
+    prompt_n <- sum(grepl("^(>|\\+) ?", seg))
+    stmt <- norm(sub("^(>|\\+) ?", "", seg[seq_len(prompt_n)]))
+    output <- if (prompt_n < length(seg)) seg[(prompt_n + 1L):length(seg)] else character(0)
+    first_stmt_line <- stmt[nzchar(stmt)][1]
+    line <- if (!is.na(first_stmt_line) && length(first_stmt_line)) {
+      m <- which(code_norm == first_stmt_line)
+      if (length(m)) m[[1]] else NA_integer_
+    } else NA_integer_
+    list(line = line, output = output)
+  })
+  Filter(function(ch) length(ch$output) > 0, chunks)
 }
 
 # ── One-line tests ────────────────────────────────────────────────────────────

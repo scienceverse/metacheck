@@ -7,14 +7,19 @@
 data_format(ext)
 }
 \arguments{
-\item{ext}{a character vector of lowercase file extensions (no leading dot)}
+\item{ext}{a character vector of file extensions (no leading dot); case is
+ignored.}
 }
 \value{
 \code{"tabular"} or \code{"raw"} for each element (never \code{NA}; unknown
-extensions fall back to \code{"tabular"}).
+extensions fall back to \code{"raw"}, since an unrecognised format has no
+reader).
 }
 \description{
-Classify a data file as tabular or raw
+\code{"tabular"} means metacheck has a reader for the format (see
+\code{.readable_extensions}), so the file can be downloaded, parsed for columns,
+and converted to a Psych-DS CSV. Everything else is \code{"raw"}: it is recorded
+and archived with its true extension, but never parsed as a table.
 }
 \examples{
 data_format(c("csv", "edf", "mp4", "sav"))

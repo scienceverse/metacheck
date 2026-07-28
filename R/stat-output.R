@@ -8,6 +8,31 @@
 #     characteristics are STATO-typed values) for the run logs.
 # Column -> STATO typing is via stato_type_column() (R/stato-map.R): STATO IRI
 # where a class exists, else the header text as a nominal label (never dropped).
+#
+# Every result table also gets a stable result_id, via .stat_result_ids(): the
+# CODENAME (source_file) that produced it plus a locator —
+#   * an executed R script: the source LINE the statement started on
+#     (`#L<line>`), from read_r_output()'s echo-based line attribution;
+#   * a JASP/jamovi extraction: the analysis heading (`#<analysis>`), since
+#     there is no source line for a GUI-driven analysis.
+# When several results share the same locator (a loop producing several
+# results on one line; a heading repeated across tables), `_1`/`_2`/... is
+# appended in table order so every id stays unique within its source file.
+
+# One result_id per element of `tables` (read_stat_tables()/read_r_output()'s
+# return shape), stamped in the SAME order those tables are walked elsewhere in
+# this file (stat_results_long, stat_output_isa) so ids line up across both
+# serialisations of one extraction.
+.stat_result_ids <- function(tables) {
+  locator <- vapply(tables, function(tb) {
+    if (!is.null(tb$line) && !is.na(tb$line)) paste0("L", tb$line)
+    else if (!is.null(tb$analysis) && !is.na(tb$analysis) && nzchar(tb$analysis))
+      tb$analysis
+    else "result"
+  }, character(1))
+  ave(locator, locator, FUN = function(x)
+    if (length(x) == 1) x else paste0(x, "_", seq_along(x)))
+}
 
 # Which columns of a result table are STATISTICS (vs row-label / structural
 # columns). JASP/jamovi lay tables out differently PER TEST — the label
@@ -42,26 +67,38 @@
 #' typing. This is the form stored in the scienceverse SQLite database, and the
 #' basis for later matching of extracted results against the manuscript.
 #'
-#' @param tables the list returned by [read_stat_tables()]
+#' @param tables the list returned by [read_stat_tables()] or [read_r_output()]
 #' @param paper_id optional paper id / DOI to stamp on every row
 #' @param source_file optional name of the file the tables were extracted from
 #'   (e.g. the `.jasp`/`.omv` basename, or the script name for run-R output),
-#'   recorded on every row as provenance for downstream matching
+#'   recorded on every row as provenance for downstream matching, and as the
+#'   `result_id` prefix (see below)
 #'
-#' @returns a data.frame with columns `paper_id`, `source_file`, `analysis`,
-#'   `table_title`, `row_label`, `statistic`, `stato_label`, `stato_iri`, and
-#'   `value`. Empty frame (same columns) when there is nothing to flatten.
+#' @returns a data.frame with columns `paper_id`, `source_file`, `result_id`,
+#'   `analysis`, `table_title`, `row_label`, `statistic`, `stato_label`,
+#'   `stato_iri`, and `value`. `result_id` identifies the CODE that produced a
+#'   result: `<source_file>#L<line>` for an executed R script (from
+#'   [read_r_output()]'s echo-based line attribution), or
+#'   `<source_file>#<analysis heading>` for a JASP/jamovi extraction (no source
+#'   line exists there); `_1`/`_2`/... is appended when several results share
+#'   one locator (e.g. a loop, or a repeated heading). Empty frame (same
+#'   columns) when there is nothing to flatten.
 #' @export
 stat_results_long <- function(tables, paper_id = NA_character_,
                               source_file = NA_character_) {
   empty <- data.frame(paper_id = character(0), source_file = character(0),
-                      analysis = character(0),
+                      result_id = character(0), analysis = character(0),
                       table_title = character(0), row_label = character(0),
                       statistic = character(0), stato_label = character(0),
                       stato_iri = character(0), value = character(0))
   if (is.null(tables) || length(tables) == 0) return(empty)
 
-  rows <- lapply(tables, function(tb) {
+  result_ids <- .stat_result_ids(tables)
+  full_ids <- if (!is.na(source_file) && nzchar(source_file))
+    paste0(source_file, "#", result_ids) else result_ids
+
+  rows <- lapply(seq_along(tables), function(ti) {
+    tb <- tables[[ti]]
     df <- tb$data
     if (is.null(df) || !nrow(df) || !ncol(df)) return(NULL)
     headers <- names(df)
@@ -81,6 +118,7 @@ stat_results_long <- function(tables, paper_id = NA_character_,
         typ <- stato_type_column(headers[[ci]])
         data.frame(paper_id = paper_id,
                    source_file = source_file,
+                   result_id = full_ids[[ti]],
                    analysis = tb$analysis %||% NA_character_,
                    table_title = tb$title %||% NA_character_,
                    row_label = row_label,
@@ -106,13 +144,17 @@ stat_results_long <- function(tables, paper_id = NA_character_,
 #' STATO-typed statistic values (via [stato_type_column()]). The document
 #' validates against the bundled ISA v1.0 schemas (`inst/schema/isa-json/`).
 #'
-#' @param tables the list returned by [read_stat_tables()]
+#' @param tables the list returned by [read_stat_tables()] or [read_r_output()]
 #' @param paper_id paper id / DOI, used in identifiers and the study title
-#' @param source_file basename of the originating `.jasp`/`.omv`, recorded as the
-#'   assay's data file and technology platform
+#' @param source_file basename of the originating `.jasp`/`.omv`, or the R
+#'   script name for run-R output, recorded as the assay's data file and
+#'   technology platform, and as the `result_id` prefix (see below)
 #'
 #' @returns a list (ISA Investigation) ready to serialise with
-#'   `jsonlite::toJSON(auto_unbox = TRUE)`. `NULL` when there are no tables.
+#'   `jsonlite::toJSON(auto_unbox = TRUE)`. `NULL` when there are no tables. Each
+#'   Material carries a `"result_id"` `Comment` identifying the CODE that
+#'   produced its table — see [stat_results_long()] for the id format (shared
+#'   between both serialisations of one extraction).
 #' @export
 stat_output_isa <- function(tables, paper_id = "metacheck",
                             source_file = NA_character_) {
@@ -124,6 +166,10 @@ stat_output_isa <- function(tables, paper_id = "metacheck",
   oa <- function(av, ts = "", ta = "")
     list(`@type` = "OntologyAnnotation", annotationValue = av,
          termSource = ts, termAccession = ta)
+
+  result_ids <- .stat_result_ids(tables)
+  full_ids <- if (!is.na(source_file) && nzchar(source_file))
+    paste0(source_file, "#", result_ids) else result_ids
 
   # One Material per result row, characteristics = STATO-typed statistic cells.
   materials <- list(); processes <- list(); mat_refs <- list(); proc_i <- 0L
@@ -162,7 +208,9 @@ stat_output_isa <- function(tables, paper_id = "metacheck",
         `@id` = mid, `@type` = "Material",
         name = paste0(tb$analysis %||% "result",
                       if (nzchar(row_label)) paste0(": ", row_label) else ""),
-        type = "Extract Name", characteristics = chars, comments = list())
+        type = "Extract Name", characteristics = chars,
+        comments = list(list(`@type` = "Comment", name = "result_id",
+                             value = full_ids[[ti]])))
       row_mat_ids <- c(row_mat_ids, mid)
     }
     if (!length(row_mat_ids)) next
@@ -259,4 +307,55 @@ stat_output_validate <- function(isa) {
   else jsonlite::toJSON(isa, auto_unbox = TRUE, null = "null")
   v <- jsonvalidate::json_validator(schema, engine = "ajv")
   v(json, verbose = TRUE, greedy = TRUE)
+}
+
+#' Write extracted statistical output to a dedicated folder
+#'
+#' Writes `reproducibility_check`'s accumulated `stat_output` (one element per
+#' source file: JASP/jamovi files via [read_stat_tables()], executed R scripts
+#' via [read_r_output()]) to `<root>/statistical_output/`, a folder sibling to
+#' the materialised `data/` — so the extracted statistics sit alongside the data
+#' and code that produced them. Two views are written from the SAME extraction:
+#' one combined `results_long.csv` (every source file's [stat_results_long()]
+#' rows stacked, one row per extracted statistic, easiest to load and filter),
+#' and one `<codename>.statistical_output.json` per source file (its
+#' [stat_output_isa()] document). Called from inside `reproducibility_check`
+#' itself (not from the later psychds/scienceverse conversion step), so the
+#' folder exists at the same point in the pipeline the data/code files do.
+#'
+#' @param stat_output a list as accumulated by `reproducibility_check` — each
+#'   element a list with `file` (source file name), `isa`
+#'   ([stat_output_isa()]'s document), and `long` ([stat_results_long()]'s
+#'   table)
+#' @param root the materialised layout root (the same directory `data/` is
+#'   copied into); `statistical_output/` is created under it
+#'
+#' @returns the path to `statistical_output/`, invisibly, or `NULL` (nothing
+#'   written) when `stat_output` is empty or carries no rows/documents.
+#' @export
+stat_output_write <- function(stat_output, root) {
+  if (is.null(stat_output) || !length(stat_output)) return(invisible(NULL))
+
+  longs <- Filter(function(s) is.data.frame(s$long) && nrow(s$long) > 0,
+                  stat_output)
+  isas  <- Filter(function(s) !is.null(s$isa), stat_output)
+  if (!length(longs) && !length(isas)) return(invisible(NULL))
+
+  out_dir <- file.path(root, "statistical_output")
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+  if (length(longs)) {
+    combined <- dplyr::bind_rows(lapply(longs, `[[`, "long"))
+    utils::write.csv(combined, file.path(out_dir, "results_long.csv"),
+                     row.names = FALSE, na = "")
+  }
+
+  for (s in isas) {
+    fn <- sub("[.][^.]+$", "", basename(s$file %||% "result"))
+    json_path <- file.path(out_dir, paste0(fn, ".statistical_output.json"))
+    writeLines(jsonlite::toJSON(s$isa, auto_unbox = TRUE, pretty = TRUE,
+                                null = "null"), json_path)
+  }
+
+  invisible(out_dir)
 }

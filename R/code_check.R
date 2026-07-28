@@ -596,14 +596,21 @@ code_file_refs <- function(code_text,
   # Examine files loaded, but missing in repo
   lang_load_regex <- list(
     R = c(
-      "read[\\._][A-Za-z\\._0-9]+", # generic read.* or read_*
-      # "read\\.(csv2?|table|delim2?)",
-      # "read\\.xlsx",
-      # "read\\.dta",
-      # "read_(csv2?|tsv|delim|rds|lines)",
-      # "read_(xlsx?|excel)",
-      # "read_(dta|sav|sas)",
-      # "read_(feather|parquet|yaml|xml|ods)",
+      # Generic read.* / read_*, which covers read.csv, read.spss, read_excel,
+      # read_ods, read_sav, read_parquet, ... — i.e. nearly every reader in the
+      # R ecosystem, whatever the file format. (An earlier version enumerated
+      # each reader by name; those lines were redundant once this pattern went
+      # in, so they are gone rather than left commented out.)
+      "read[\\._][A-Za-z\\._0-9]+",
+      # rio's readers are the notable loaders that do NOT begin with "read":
+      # import() dispatches on the file extension, so a script can load .csv,
+      # .xlsx, .ods or .sav through it. Without this, files loaded via rio were
+      # invisible to the missing-file check below and a repository that had
+      # simply failed to upload its data still reported "all files present".
+      # Matching is safe because a hit only yields a reference when the call
+      # also contains a QUOTED string with a file extension: the Python-bridge
+      # sense, reticulate::import("numpy"), captures nothing.
+      "import(_list)?",
       "fread",
       "readRDS",
       "load",

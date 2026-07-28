@@ -103,7 +103,7 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
 # Columns never useful in a findings file (large free-text / per-value dumps
 # that inflate the CSV and can carry embedded commas/quotes).
 .findings_drop_cols <- c("sample_values", "value_labels", "missing_values",
-                         "universe", "question")
+ "question")
 
 # Some modules return RESULTS in named list elements OTHER than `table` — a
 # data.frame per element — that the report should also collect. Each entry maps
@@ -201,7 +201,7 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
 #               summary_text, and the module's summary_table count columns
 #               (JSON-encoded so a single column holds a variable set of counts).
 #   * findings: one row per FLAGGED ISSUE. Issue modules (data_validate,
-#               excel_check, code_check, psychds_check) contribute their table
+#               spreadsheet_check, code_check, psychds_check) contribute their table
 #               rows directly; inventory modules (data_check, codebook_check)
 #               contribute only their genuine problem rows (see
 #               .inventory_findings). Tagged with paper_id + module.

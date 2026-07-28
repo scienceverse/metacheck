@@ -35,8 +35,11 @@ a data frame with \code{file_name}, \code{outcome} (one of \code{ran_ok},
 \code{errored}, \code{timed_out}, \code{not_parsed}, \code{skipped_missing_inputs}), \code{error}
 (message or ""), \code{error_type} (\code{undefined_variable}, \code{timeout}, \code{runtime},
 or NA), \code{undefined_var} (the missing variable name when
-\code{error_type == "undefined_variable"}, else NA), \code{stdout}, \code{stderr}, and
-\code{elapsed} (seconds).
+\code{error_type == "undefined_variable"}, else NA), \code{stdout}, \code{stderr},
+\code{elapsed} (seconds), and \code{script_lines} (list-column: the EXECUTED script's
+own text, one element per source line — the exact text \code{stdout}'s echoed
+statements were run from, so \code{\link[=read_r_output]{read_r_output()}} can match them back to a
+line number; empty character(0) for a script that did not run).
 }
 \description{
 Runs each script with \code{\link[callr:r]{callr::r()}} from \code{run_dir}, with \code{lib_dir} prepended to

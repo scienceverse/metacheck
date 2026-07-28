@@ -34,7 +34,7 @@
     keep <- c("source_file", "column_name", "label", "label_status",
               "label_source", "label_method", "codebook_variable",
               "scale", "scale_confidence", "scale_source",
-              "value_labels", "missing_values", "question", "universe")
+              "value_labels", "missing_values", "question")
     labels <- labels[, intersect(keep, names(labels)), drop = FALSE]
     cols <- merge(cols, labels, by = c("source_file", "column_name"),
                   all.x = TRUE, suffixes = c("", ".lbl"))
@@ -112,11 +112,9 @@
     role <- if ("role" %in% names(row)) row$role %||% NA_character_ else NA_character_
     if (!is.na(role) && nzchar(role)) pv[["metacheck:role"]] <- role
 
-    # Question text + universe/filter (DDI QuestionText, Universe).
+    # Question text (DDI QuestionText).
     question <- if ("question" %in% names(row)) row$question %||% NA_character_ else NA_character_
     if (!is.na(question) && nzchar(question)) pv[["metacheck:question"]] <- question
-    universe <- if ("universe" %in% names(row)) row$universe %||% NA_character_ else NA_character_
-    if (!is.na(universe) && nzchar(universe)) pv[["metacheck:universe"]] <- universe
 
     # Value labels / code list (DDI CodeList): emit as schema.org PropertyValue
     # children so each code->label pair is machine-readable. The raw JSON is also
@@ -209,6 +207,8 @@
              txt = "text/plain", json = "application/json",
              xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
              xls = "application/vnd.ms-excel",
+             ods = "application/vnd.oasis.opendocument.spreadsheet",
+             fods = "application/vnd.oasis.opendocument.spreadsheet",
              sav = "application/x-spss-sav", dta = "application/x-stata-dta",
              rds = "application/x-r-rds", rdata = "application/x-r-data",
              sas7bdat = "application/x-sas-data", por = "application/x-spss-por",
@@ -1424,24 +1424,26 @@
         "Full, lossless module output tables (R data file) for later reloading and analysis without re-running the checks."
   }
 
-  # 4. Statistical output ISA-JSON — reproducibility_check extracts the result
-  # tables from any JASP/jamovi file and types them with the STATO ontology. Each
-  # file's full ISA-JSON is written here as the statistical_output artifact.
-  stat_out <- log_ops[["reproducibility_check"]]$stat_output
-  if (!is.null(stat_out) && length(stat_out)) {
-    isa_docs <- Filter(Negate(is.null), lapply(stat_out, function(s) s$isa))
-    if (length(isa_docs)) {
-      # One document per source file (a study each); wrap >1 in an array.
-      payload <- if (length(isa_docs) == 1) isa_docs[[1]] else isa_docs
-      stat_path <- file.path(logs_dir, paste0(pid, ".statistical_output.json"))
-      ok <- tryCatch({
-        writeLines(jsonlite::toJSON(payload, auto_unbox = TRUE, pretty = TRUE,
-                                    null = "null"), stat_path)
-        TRUE
-      }, error = function(e) FALSE)
-      if (isTRUE(ok) && file.exists(stat_path))
-        written[stat_path] <-
-          "Statistical results extracted from the paper's JASP/jamovi file(s), typed with the STATO ontology and serialised as ISA-JSON."
+  # 4. Statistical output — reproducibility_check() now writes this ITSELF, as a
+  # statistical_output/ folder (results_long.csv + one ISA-JSON per source file)
+  # sibling to data/ in its own materialised layout (R/stat-output.R's
+  # stat_output_write(), called from inst/modules/reproducibility_check.R). That
+  # folder only persists on disk when the module ran with keep_sandbox = TRUE,
+  # surfaced as attr(reproducibility_check_output, "sandbox"); when present, we
+  # copy it here into the FINAL archive, sibling to output_dir/data/, so it
+  # survives alongside the rest of the converted dataset.
+  repro_out <- log_ops[["reproducibility_check"]]
+  sandbox <- if (!is.null(repro_out)) attr(repro_out, "sandbox") else NULL
+  if (!is.null(sandbox) && length(sandbox) == 1 && !is.na(sandbox)) {
+    src_dir <- file.path(sandbox, "statistical_output")
+    if (dir.exists(src_dir)) {
+      dest_dir <- file.path(output_dir, "statistical_output")
+      dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
+      copied <- file.copy(list.files(src_dir, full.names = TRUE), dest_dir,
+                          overwrite = TRUE)
+      if (any(copied))
+        written[dest_dir] <-
+          "Statistical results extracted from the paper's JASP/jamovi file(s) and/or executed R code, typed with the STATO ontology: one combined results_long.csv (one row per extracted statistic, each with a result_id identifying the code — file + source line, or file + analysis heading — that produced it) and one ISA-JSON document per source file."
     }
   }
 
@@ -1664,6 +1666,17 @@ isTRUE_vec <- function(x) {
 #'   `logs/`: the file manifest, and the check results / module tables when those
 #'   modules ran). When an existing `output_dir` was skipped, the list
 #'   additionally contains `existed = TRUE` and the counts are zero.
+#'
+#' @details
+#' If the reused/re-run chain includes `reproducibility_check`'s result AND that
+#' call was made with `keep_sandbox = TRUE`, its `statistical_output/` folder
+#' (extracted, STATO-typed statistics — see [reproducibility_check()]) is copied
+#' into `output_dir/statistical_output/`, sibling to `output_dir/data/`. This
+#' converter does **not** run `reproducibility_check` itself and does not force
+#' `keep_sandbox = TRUE` on your behalf (doing so would mean every conversion
+#' also runs — or even executes — the paper's code, whether or not you asked
+#' for statistical output); when the chain does not carry a kept sandbox, this
+#' folder is silently omitted from the archive.
 #' @export
 #' @examples
 #' \dontrun{

@@ -246,6 +246,49 @@ test_that(".osd_write_paradata accumulates per-participant files into one file",
                   c("01", "02"))
 })
 
+test_that(".osd_write_paradata merges per-participant jsPsych files with no task column", {
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  # Three participants, each their own per-participant-hash-named jsPsych export
+  # (no `task` column) running the identical timeline — as many jsPsych online
+  # studies publish. Without a shared key, these would become 3 instruments.
+  for (s in c("aaa111", "bbb222", "ccc333")) {
+    utils::write.csv(
+      data.frame(trial_type = c("preload", "instructions", "html-keyboard-response"),
+                rt = c(NA, NA, 452), trial_index = 0:2,
+                participant_id = s),
+      file.path(d, "data", paste0("source_", s, ".csv")), row.names = FALSE)
+  }
+  idx <- metacheck:::.osd_write_paradata(d, study_name = "test")
+  # ONE instrument -> ONE file, not one per participant file.
+  expect_length(idx, 1L)
+  expect_equal(idx[[1]]$n_responses, 9L)          # 3 participants x 3 trials
+  expect_length(list.files(file.path(d, "paradata")), 1L)
+  doc <- jsonlite::fromJSON(list.files(file.path(d, "paradata"), full.names = TRUE),
+                            simplifyVector = FALSE)
+  expect_setequal(unique(vapply(doc$Response, function(r) r$agent_id, character(1))),
+                  c("aaa111", "bbb222", "ccc333"))
+  # Row-level instrument_id matches the Instrument block / filename key exactly
+  # (no raw-vs-canonicalized mismatch).
+  expect_true(all(vapply(doc$Response, function(r) r$instrument_id, character(1)) ==
+                    doc$Instrument[[1]]$instrument_id))
+})
+
+test_that(".osd_write_paradata keeps genuinely different jsPsych timelines separate", {
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  utils::write.csv(
+    data.frame(trial_type = c("preload", "html-keyboard-response"),
+              rt = c(NA, 400), trial_index = 0:1, participant_id = "p1"),
+    file.path(d, "data", "source_p1.csv"), row.names = FALSE)
+  utils::write.csv(
+    data.frame(trial_type = c("survey-text", "survey-text"),
+              rt = c(3000, 2500), trial_index = 0:1, participant_id = "p2"),
+    file.path(d, "data", "source_p2.csv"), row.names = FALSE)
+  idx <- metacheck:::.osd_write_paradata(d, study_name = "test")
+  expect_length(idx, 2L)
+})
+
 # ── trial-level file detection (held out of the tabular extractor) ────────────
 
 test_that(".bh_is_trial_level_file recognises trial-level formats by header", {

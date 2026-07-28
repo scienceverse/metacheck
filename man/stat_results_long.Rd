@@ -11,18 +11,25 @@ stat_results_long(
 )
 }
 \arguments{
-\item{tables}{the list returned by \code{\link[=read_stat_tables]{read_stat_tables()}}}
+\item{tables}{the list returned by \code{\link[=read_stat_tables]{read_stat_tables()}} or \code{\link[=read_r_output]{read_r_output()}}}
 
 \item{paper_id}{optional paper id / DOI to stamp on every row}
 
 \item{source_file}{optional name of the file the tables were extracted from
 (e.g. the \code{.jasp}/\code{.omv} basename, or the script name for run-R output),
-recorded on every row as provenance for downstream matching}
+recorded on every row as provenance for downstream matching, and as the
+\code{result_id} prefix (see below)}
 }
 \value{
-a data.frame with columns \code{paper_id}, \code{source_file}, \code{analysis},
-\code{table_title}, \code{row_label}, \code{statistic}, \code{stato_label}, \code{stato_iri}, and
-\code{value}. Empty frame (same columns) when there is nothing to flatten.
+a data.frame with columns \code{paper_id}, \code{source_file}, \code{result_id},
+\code{analysis}, \code{table_title}, \code{row_label}, \code{statistic}, \code{stato_label},
+\code{stato_iri}, and \code{value}. \code{result_id} identifies the CODE that produced a
+result: \verb{<source_file>#L<line>} for an executed R script (from
+\code{\link[=read_r_output]{read_r_output()}}'s echo-based line attribution), or
+\verb{<source_file>#<analysis heading>} for a JASP/jamovi extraction (no source
+line exists there); \verb{_1}/\verb{_2}/... is appended when several results share
+one locator (e.g. a loop, or a repeated heading). Empty frame (same
+columns) when there is nothing to flatten.
 }
 \description{
 Turns the nested output of \code{\link[=read_stat_tables]{read_stat_tables()}} into a tidy long table: one

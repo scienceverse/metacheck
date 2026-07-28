@@ -138,7 +138,7 @@ regcheck_start_local <- function(method = c("docker", "python"),
 
   # the local server always uses the built-in default token; set it in this R
   # session so regcheck_compare() picks it up automatically
-  Sys.setenv(REGCHECK_API_TOKEN = .regcheck_default_token)
+  Sys.setenv(REGCHECK_API_TOKEN = "rc_live_NGry_iEpcCDQGUs_Ykz44DuYY3ByyU_DKmYKtRNcACI")
 
   # auto-select model if not specified ----
   if (is.null(model)) {

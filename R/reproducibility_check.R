@@ -706,12 +706,26 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
 #'
 #' @param install_deps the module's `install_deps` frame (`package`, `source`,
 #'   `ref`), base packages already excluded
-#' @param lib_dir the throwaway library path (created if absent)
+#' @param lib_dir the throwaway library path (created if absent); ignored for
+#'   CRAN-source packages when `cran_to_main_lib = TRUE` (see below)
+#' @param cran_to_main_lib if `TRUE`, CRAN-source packages are installed into
+#'   your DEFAULT library (no `lib` argument — same as calling
+#'   `install.packages(pkg)` yourself) instead of the throwaway `lib_dir`, and so
+#'   PERSIST after the run rather than being deleted with the sandbox. This
+#'   trades a one-time, permanent change to your R library for install work that
+#'   is shared across every later call needing the same package (useful when
+#'   `reproducibility_check()` runs across many papers in one session/script: a
+#'   CRAN package installed for an early paper is already present, and skipped
+#'   as already-installed, for every later one). GitHub/URL sources are
+#'   deliberately excluded from this and always go into the throwaway `lib_dir`
+#'   regardless of this argument — those are arbitrary, unreviewed code you
+#'   likely do not want permanently in your main library. Default `FALSE`
+#'   (everything throwaway, the original behaviour).
 #'
 #' @returns a data frame with `package`, `source`, `installed` (logical), and
 #'   `message` (error text on failure, else "").
 #' @export
-repro_install_deps <- function(install_deps, lib_dir) {
+repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0))
   if (is.null(install_deps) || nrow(install_deps) == 0) return(empty)
@@ -725,9 +739,19 @@ repro_install_deps <- function(install_deps, lib_dir) {
     pkg <- install_deps$package[i]
     src <- install_deps$source[i]
     ref <- install_deps$ref[i]
+    # A CRAN package already installed anywhere on .libPaths() (main library
+    # included) needs no work — this is what makes cran_to_main_lib's reuse
+    # across papers actually pay off, instead of every call re-confirming it.
+    cran_main <- identical(src, "cran") && isTRUE(cran_to_main_lib)
+    if (cran_main && requireNamespace(pkg, quietly = TRUE)) {
+      message("[repro]     '", pkg, "' already installed (main library); skipping.")
+      return(data.frame(package = pkg, source = src, installed = TRUE, message = ""))
+    }
     # DEBUG (TEMPORARY — remove before release): quiet = FALSE so compilation
     # progress is visible; a slow install then reads as work, not a hang.
-    message("[repro]     installing '", pkg, "' (source: ", src, ") ...")
+    message("[repro]     installing '", pkg, "' (source: ", src,
+            if (cran_main) ", into main library" else ", into throwaway library",
+            ") ...")
     res <- tryCatch({
       if (identical(src, "github")) {
         if (!gh_avail) stop("the 'remotes' package is needed to install GitHub sources")
@@ -735,10 +759,13 @@ repro_install_deps <- function(install_deps, lib_dir) {
                                 quiet = FALSE)
       } else if (identical(src, "url")) {
         utils::install.packages(ref, lib = lib_dir, repos = NULL, quiet = FALSE)
+      } else if (cran_main) {
+        utils::install.packages(pkg, quiet = FALSE)   # no lib= -> default library
       } else {
         utils::install.packages(pkg, lib = lib_dir, quiet = FALSE)
       }
-      # Confirm it can actually be loaded from the temp library.
+      # Confirm it can actually be loaded (main library needs no lib.loc; the
+      # throwaway paths were already prepended to .libPaths() above).
       if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
           !requireNamespace(pkg, quietly = TRUE))
         stop("installed but package '", pkg, "' is not loadable")
@@ -774,8 +801,11 @@ repro_install_deps <- function(install_deps, lib_dir) {
 #'   `errored`, `timed_out`, `not_parsed`, `skipped_missing_inputs`), `error`
 #'   (message or ""), `error_type` (`undefined_variable`, `timeout`, `runtime`,
 #'   or NA), `undefined_var` (the missing variable name when
-#'   `error_type == "undefined_variable"`, else NA), `stdout`, `stderr`, and
-#'   `elapsed` (seconds).
+#'   `error_type == "undefined_variable"`, else NA), `stdout`, `stderr`,
+#'   `elapsed` (seconds), and `script_lines` (list-column: the EXECUTED script's
+#'   own text, one element per source line — the exact text `stdout`'s echoed
+#'   statements were run from, so [read_r_output()] can match them back to a
+#'   line number; empty character(0) for a script that did not run).
 #' @export
 repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
                               skip = character(0), parses = NULL) {
@@ -783,7 +813,8 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
     return(data.frame(file_name = character(0), outcome = character(0),
                       error = character(0), error_type = character(0),
                       undefined_var = character(0), stdout = character(0),
-                      stderr = character(0), elapsed = numeric(0)))
+                      stderr = character(0), elapsed = numeric(0)) |>
+             dplyr::mutate(script_lines = list()))
   if (!requireNamespace("callr", quietly = TRUE))
     stop("the 'callr' package is required to execute code (execute = TRUE).",
          call. = FALSE)
@@ -801,15 +832,24 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
     pb_run$tick(1, list(what = fn))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
 
+    no_lines <- function(df) dplyr::mutate(df, script_lines = list(character(0)))
     if (!is.null(parses) && fn %in% names(parses) && !isTRUE(parses[[fn]]))
-      return(data.frame(file_name = fn, outcome = "not_parsed", error = "",
+      return(no_lines(data.frame(file_name = fn, outcome = "not_parsed", error = "",
                         error_type = NA_character_, undefined_var = NA_character_,
-                        stdout = "", stderr = "", elapsed = 0))
+                        stdout = "", stderr = "", elapsed = 0)))
     if (fn %in% skip)
-      return(data.frame(file_name = fn, outcome = "skipped_missing_inputs",
+      return(no_lines(data.frame(file_name = fn, outcome = "skipped_missing_inputs",
                         error = "", error_type = NA_character_,
                         undefined_var = NA_character_,
-                        stdout = "", stderr = "", elapsed = 0))
+                        stdout = "", stderr = "", elapsed = 0)))
+
+    # The EXECUTED script's own text (path-rewritten, setwd()-commented — what
+    # actually ran), one element per source line: this is what read_r_output()
+    # matches echoed statements against to recover a line number, so it must be
+    # read from script_path (not the pre-rewrite code_text_list) to stay aligned
+    # with what the echo in stdout actually shows.
+    exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
+                           error = function(e) character(0))
 
     # DEBUG (TEMPORARY — remove before release): announce each script as it starts
     # and finishes, so a hang is pinned to the exact script and its wall time.
@@ -829,7 +869,7 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
         # callr::r() has no working-directory argument, so set it INSIDE the
         # subprocess before sourcing, so the script's relative paths resolve
         # against the materialised layout root.
-        function(script, wd) { setwd(wd); source(script, echo = FALSE) },
+        function(script, wd) { setwd(wd); source(script, echo = TRUE) },
         args = list(script = row$script_path, wd = row$run_dir),
         libpath = libs,
         timeout = timeout, error = "error",
@@ -872,11 +912,13 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
       data.frame(file_name = fn,
                  outcome = if (is_timeout) "timed_out" else "errored",
                  error = msg, error_type = etype, undefined_var = undef_var,
-                 stdout = so, stderr = se, elapsed = elapsed)
+                 stdout = so, stderr = se, elapsed = elapsed) |>
+        dplyr::mutate(script_lines = list(exec_lines))
     } else {
       data.frame(file_name = fn, outcome = "ran_ok", error = "",
                  error_type = NA_character_, undefined_var = NA_character_,
-                 stdout = so, stderr = se, elapsed = elapsed)
+                 stdout = so, stderr = se, elapsed = elapsed) |>
+        dplyr::mutate(script_lines = list(exec_lines))
     }
   })
   dplyr::bind_rows(rows)

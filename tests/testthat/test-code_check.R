@@ -563,6 +563,38 @@ test_that("code file refs full", {
   expect_equal(obs, character(0))
 })
 
+test_that("code_file_refs detects rio import()/import_list()", {
+  # rio's readers are the loaders that do NOT start with "read", so they are
+  # listed explicitly in the load pattern. import() dispatches on the file
+  # extension, so it must be caught for every format, not just one.
+  code_text <- c(
+    "d1 <- import('file1.csv')",
+    "d2 <- rio::import('file2.ods')",
+    "d3 <- import('file3.xlsx')",
+    "d4 <- import('file4.sav')",
+    "d5 <- import_list('file5.xlsx')"
+  )
+  expect_equal(code_file_refs(code_text, "R"), paste0("file", 1:5,
+    c(".csv", ".ods", ".xlsx", ".sav", ".xlsx")))
+
+  # The Python-bridge sense of import() must NOT yield a file reference: a hit
+  # only becomes a reference when the call holds a quoted string with a file
+  # extension, and a module name has none. Substrings of ordinary identifiers
+  # ("importance") must not match the call pattern at all.
+  code_text_no <- c(
+    "np <- reticulate::import('numpy')",
+    "os <- import('os')",
+    "x <- import(pkg)",
+    "importance <- varImp(fit)",
+    "imported_data <- 3"
+  )
+  expect_equal(code_file_refs(code_text_no, "R"), character(0))
+
+  # rio's WRITE function is an output, not an input: including it by default
+  # would report a produced file as a missing input.
+  expect_equal(code_file_refs("export(d, 'out.csv')", "R"), character(0))
+})
+
 test_that("code_library_lines", {
   expect_true(is.function(metacheck::code_library_lines))
   expect_no_error(helplist <- help(code_library_lines, metacheck))

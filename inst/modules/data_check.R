@@ -385,17 +385,28 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   want <- if (download == "all") {
     rep(TRUE, nrow(all_files))
   } else if (download == "data") {
-    # Always fetch .txt, whatever the name-based classifier guessed. A .txt can
-    # hold experiment data (E-Prime exports, task logs), a codebook, or plain
-    # prose, and the classifier only sees the remote FILE NAME — it cannot tell
-    # them apart before the file is on disk. Fetching them all and reclassifying
-    # from content afterwards (see .txt_reclassify below) is the only way to find
-    # trial-level data that is published as .txt. They are cheap: ~169 KB mean
-    # across the corpus cache, and the per-file / per-repo size caps still apply.
+    # Always fetch .txt and .iqdat, whatever the name-based classifier guessed,
+    # and whatever data_format() said. Both carry TRIAL-LEVEL data that is read
+    # by the Behaverse path (.bh_read_file), NOT by data_read_head — so neither
+    # is "tabular" in the sense the first clause tests, and gating them on it
+    # would mean never fetching them.
+    #   * .txt is ambiguous: it can hold experiment data (E-Prime exports, task
+    #     logs), a codebook, or plain prose, and the classifier only sees the
+    #     remote FILE NAME. Fetching them all and reclassifying from content
+    #     afterwards (see .txt_reclassify below) is the only way to find
+    #     trial-level data published as .txt.
+    #   * .iqdat is unambiguous (Inquisit output) but has no data_read_head()
+    #     branch, so data_format() correctly calls it "raw". It must still be on
+    #     disk for .bh_is_trial_level_file() to screen it and for the psychds
+    #     release to carry it into data/, where .bh_data_files() finds it.
+    # Both are cheap tab/comma-delimited text: ~169 KB mean for .txt across the
+    # corpus cache, and the per-file / per-repo size caps still apply. Note a
+    # study can publish one .iqdat PER PARTICIPANT per block (439 in one corpus
+    # study for a single task), which the caps are there to bound.
     (all_files$data_type == "data" &
        !is.na(all_files$data_format) & all_files$data_format == "tabular") |
       all_files$data_type %in% c("codebook", "readme") |
-      grepl("[.]txt$", all_files$file_name, ignore.case = TRUE)
+      grepl("[.](txt|iqdat)$", all_files$file_name, ignore.case = TRUE)
   } else {
     rep(FALSE, nrow(all_files))   # download = "none"
   }
@@ -545,11 +556,25 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # by convert_psychds() (.osd_write_paradata). Detection is header-only (cheap),
   # so screening many files is fast. They are recorded for the manifest and never
   # deleted — only routed away from the tabular path.
-  is_trial_level <- is_tabular_data & has_local &
+  #
+  # NOT gated on is_tabular_data: these files are read by .bh_read_file(), a
+  # reader separate from data_read_head(), so "can data_read_head() parse it" is
+  # the wrong question here. .iqdat has no data_read_head() branch, so
+  # data_format() correctly returns "raw" for it — gating this screen on
+  # is_tabular_data would mean an .iqdat downloaded via the rescue above (gate 1)
+  # is then never screened here (gate 2), landing nowhere: not in the tabular
+  # path, not in the Behaverse path.
+  is_trial_level <- has_local &
     vapply(all_files$file_location, function(p)
       isTRUE(tryCatch(.bh_is_trial_level_file(p), error = function(e) FALSE)),
       logical(1))
   trial_level_files <- all_files$file_name[is_trial_level]
+  # Make the manifest honest about these: they are not unread "raw" data, they
+  # are processed by the Behaverse path and merged into paradata/<instrument>.json
+  # by convert_psychds(). psychds_check calls data_format() fresh on the
+  # EXTENSION (not this column) to plan conversions, so relabelling here cannot
+  # misroute anything — it only changes what the manifest reports.
+  all_files$data_format[is_trial_level] <- "trial_level"
 
   data_files <- all_files[is_tabular_data & has_local & !is_trial_level, ,
                           drop = FALSE]
@@ -568,7 +593,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # (human-formatted coding worksheets: mostly free-text columns and/or almost
   # entirely empty; see .tabular_usable()). Columns are NOT extracted from these
   # and they are NOT sent to the LLM, but they stay in the file classification so
-  # excel_check still inspects them for formatting issues. name -> reason.
+  # spreadsheet_check still inspects them for formatting issues. name -> reason.
   non_tabular_files <- character(0)
 
   # ── 4. Extract columns + stats from each local tabular data file ─────────────
@@ -611,7 +636,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # Skip a file that read as a data frame but is not a usable rectangular
       # dataset (a human coding worksheet: mostly free text and/or almost all
       # empty). No columns are extracted and nothing is sent to the LLM, but the
-      # file stays classified as data so excel_check still checks its formatting.
+      # file stays classified as data so spreadsheet_check still checks its formatting.
       usable <- .tabular_usable(cls, df)
       if (!isTRUE(usable$usable)) {
         non_tabular_files[[f$file_name]] <<- usable$reason
@@ -833,7 +858,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_columns <- if (!is.null(columns_df)) nrow(columns_df) else 0L
 
   # Carry the non-tabular verdict into the file classification so downstream
-  # modules can react: excel_check still inspects these for formatting but adds a
+  # modules can react: spreadsheet_check still inspects these for formatting but adds a
   # "not a rectangular dataset" note. The column always exists (default TRUE) so
   # consumers can rely on it. non_tabular_files is name -> reason.
   all_files$tabular_usable <- TRUE
@@ -1010,7 +1035,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
     n_missing_cols <- sum(!is.na(columns_df$n_missing) & columns_df$n_missing > 0)
     # Fully empty (all-NA) columns: no observed values at all. Flagged like
-    # excel_check's "empty columns" — they carry no information, do not survive a
+    # spreadsheet_check's "empty columns" — they carry no information, do not survive a
     # meaningful analysis, and are documented (but marked empty) in a Psych-DS
     # export rather than silently dropped.
     empty_cols <- if ("quality" %in% names(columns_df))

@@ -193,23 +193,31 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   is_excluded  <- is.na(target_path)
   misplaced    <- !is_excluded & current_path != target_path
 
-  # A TABULAR data file whose source is not already a CSV (xlsx/xls/tsv/dat/
-  # sav/dta/sas7bdat) is CONVERTED to CSV for its _data.csv target (rather than
-  # having its bytes renamed, which would be an invalid CSV), and its ORIGINAL
-  # kept alongside so the release retains the authored artifact (an .xlsx carries
-  # formatting/sheets, a .sav/.dta carries value labels). `convert` marks those
-  # rows; `original_target` is where the untouched original goes (same data/
-  # dir, original extension).
+  # A TABULAR data file whose source is not already a CSV (xlsx/xls/ods/tsv/dat/
+  # sav/dta/sas7bdat/jasp/omv/rds/rdata) is CONVERTED to CSV for its _data.csv
+  # target (rather than having its bytes renamed, which would be an invalid
+  # CSV), and its ORIGINAL kept alongside so the release retains the authored
+  # artifact (an .xlsx carries formatting/sheets, a .sav/.dta carries value
+  # labels). `convert` marks those rows; `original_target` is where the untouched
+  # original goes (same data/ dir, original extension).
+  #
+  # Conversion is best-effort: a source that turns out to hold no table (an
+  # .rdata of fitted models only) makes .psychds_write_data_csv() return FALSE,
+  # and convert_psychds still copies the original to `original_target` — so the
+  # file is never dropped from the release, it just arrives without a CSV.
   #
   # A RAW (non-tabular) data file — .npy/.h5/.pickle/.fif/... — cannot be read
   # as a table, so it is neither converted nor renamed to .csv: it is copied
   # with its true extension to a raw_target and does NOT claim a _data.csv path.
   src_ext        <- tolower(tools::file_ext(structure_df$file_name))
-  # Extensions data_read_head() can read as a table (minus csv, which is fine
-  # as-is). Mirrors .tabular_extensions in data_check_helpers.R.
-  convertible_ext <- c("tsv", "txt", "dat", "xlsx", "xls",
-                       "sav", "dta", "sas7bdat", "jasp", "omv")
-  needs_convert  <- is_data & src_ext %in% convertible_ext
+  # "Convertible" is asked of data_format(), the package's single source of
+  # truth for what data_read_head() can parse — the same reader
+  # .psychds_write_data_csv() uses to do the conversion. A hardcoded list here
+  # would drift from the reader (it did: .ods/.fods were readable but copied
+  # raw). A .csv needs no conversion, so it is excluded even though it is
+  # tabular.
+  needs_convert  <- is_data & src_ext != "csv" &
+                    data_format(src_ext) == "tabular"
   is_raw_data    <- is_data & nzchar(src_ext) & src_ext != "csv" & !needs_convert
 
   # Convertible: keep the _data.csv target, add original alongside.

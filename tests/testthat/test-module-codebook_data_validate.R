@@ -186,7 +186,7 @@ test_that("psychds variableMeasured emits DDI code list, missing, question", {
     label_method = NA_character_, codebook_variable = "sex",
     value_labels = '{"1":"Male","2":"Female","-99":"Refused"}',
     missing_values = '{"-99":"Refused"}',
-    question = "What is your sex?", universe = "All respondents",
+    question = "What is your sex?",
     stringsAsFactors = FALSE)
   vm <- metacheck:::.psychds_variable_measured(cols, labels)
   pv <- vm[[1]]
@@ -196,7 +196,7 @@ test_that("psychds variableMeasured emits DDI code list, missing, question", {
   expect_equal(pv[["metacheck:codeList"]][[1]][["name"]], "Male")
   expect_true(grepl("Refused", pv[["metacheck:missingValues"]]))
   expect_equal(pv[["metacheck:question"]], "What is your sex?")
-  expect_equal(pv[["metacheck:universe"]], "All respondents")
+  expect_null(pv[["metacheck:universe"]])
 })
 
 test_that("codebook_check reports identified scales and advises reaching high confidence", {

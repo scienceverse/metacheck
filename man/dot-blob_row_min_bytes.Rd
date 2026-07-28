@@ -16,7 +16,9 @@ a data.frame, or \code{NULL} on failure / unsupported format.
 }
 \description{
 Reads the first \code{n_rows} of a tabular data file (csv/tsv/txt/dat/xlsx/xls/
-sav/dta/sas7bdat/rds/rda/rdata). Delimiter and header presence are
+ods/fods/sav/dta/sas7bdat/rds/rda/rdata). Delimiter and header presence are
 auto-detected for delimited text; invalid UTF-8 triggers a latin1 retry.
+Reading \code{.ods}/\code{.fods} needs the suggested \code{readODS} package; without it the
+function returns \code{NULL} for those formats.
 }
 \keyword{internal}

@@ -97,7 +97,14 @@
     study_name           = req(map$study_name, "unknown"),
     agent_id             = as.character(req(map$agent_id, "unknown")),
     session_id           = req(map$session_id, 1L),
-    instrument_id        = as.character(req(map$instrument_id, "unknown")),
+    # Canonicalized (not the raw source value): every downstream consumer —
+    # the Instrument block, the paradata filename, .osd_write_paradata's
+    # cross-file grouping — keys on .bh_instrument_key(), so a row whose
+    # instrument_id skipped that step would disagree with its own document
+    # (e.g. raw "RedBlue_IAT1" on the row vs. canonical "redblue_iat1" on the
+    # Instrument/filename). Canonicalizing once here, where every reader's
+    # row passes through, replaces fixing each reader individually.
+    instrument_id        = .bh_instrument_key(req(map$instrument_id, "unknown")),
     multitask_type       = req(map$multitask_type, "single_task"),
     block_index          = req(map$block_index, 1L),
     block_type           = req(map$block_type, "questionnaire"),
@@ -279,7 +286,8 @@
   g <- function(col) if (col %in% names(df)) df[[col]] else rep(NA, nrow(df))
   has_task <- "task" %in% names(df)
   lapply(seq_len(nrow(df)), function(i) {
-    inst <- if (has_task) (.bh_str(g("task")[i]) %||% instrument) else instrument
+    inst_raw <- if (has_task) (.bh_str(g("task")[i]) %||% instrument) else instrument
+    inst <- .bh_instrument_key(inst_raw)
     .bh_response_row(list(
       study_name           = study_name,
       agent_id             = .bh_str(g("participant_id")[i]) %||%
@@ -524,13 +532,28 @@
                 instruments = out, names = nm))
   }
   if (data_check_is_jspsych(df)) {
-    inst_raw <- if ("task" %in% names(df)) df[["task"]] else
-      sub("[_.-]?data$", "", tools::file_path_sans_ext(basename(path)))
+    has_task <- "task" %in% names(df)
+    file_stem <- sub("[_.-]?data$", "", tools::file_path_sans_ext(basename(path)))
+    # With no `task` column, a file's own name is the fallback instrument
+    # label — but when raw filenames are per-participant (a hash, a subject
+    # id), that fallback is unique per file and defeats cross-file merging
+    # (see .bh_jspsych_fingerprint). Key on the timeline fingerprint instead
+    # so participants who ran the same jsPsych script merge into one
+    # instrument; the filename stem is kept only as the human-readable name.
+    fp <- if (!has_task) .bh_jspsych_fingerprint(df) else NULL
+    inst_raw <- if (has_task) df[["task"]] else file_stem
     rows <- .bh_read_jspsych(df, instrument = as.character(inst_raw)[1], study_name)
-    # jsPsych rows carry their own instrument_id from the reader; split on it.
-    key <- vapply(rows, function(r) r$instrument_id, character(1))
-    out <- split(rows, .bh_instrument_key_vec(key))
-    nm  <- tapply(key, .bh_instrument_key_vec(key), function(x) x[1])
+    if (!has_task && !is.null(fp)) {
+      fp_key <- .bh_instrument_key(fp)
+      for (r in seq_along(rows)) rows[[r]]$instrument_id <- fp_key
+      out <- stats::setNames(list(rows), fp_key)
+      nm  <- stats::setNames(file_stem, fp_key)
+    } else {
+      # jsPsych rows carry their own instrument_id from the reader; split on it.
+      key <- vapply(rows, function(r) r$instrument_id, character(1))
+      out <- split(rows, .bh_instrument_key_vec(key))
+      nm  <- tapply(key, .bh_instrument_key_vec(key), function(x) x[1])
+    }
     return(list(format = "jspsych",
                 fidelity = "jsPsych; rt mapped to response_time (empty on non-response screens).",
                 instruments = out, names = nm))
@@ -541,6 +564,28 @@
 # Vectorised canonical instrument key, for splitting rows by instrument.
 .bh_instrument_key_vec <- function(x)
   vapply(x, .bh_instrument_key, character(1), USE.NAMES = FALSE)
+
+# A jsPsych export with no `task` column has no shared value to key an
+# instrument on: the caller's only remaining fallback is that FILE's own name,
+# which is unique per file whenever the raw filenames are per-participant (a
+# hash, a subject id) rather than per-task — so 144 participant files running
+# the identical timeline become 144 separate "instruments" instead of merging.
+# The jsPsych timeline (its ordered sequence of trial_type plugin names) is a
+# structural fingerprint of the TASK, not the participant: the same experiment
+# script produces the same sequence of screens for every participant who ran
+# it. Files whose fingerprint matches merge into one instrument; a file with a
+# different timeline (a different task) keeps a different key. This can still
+# wrongly merge two distinct tasks that happen to reuse an identical plugin
+# sequence (e.g. two separate surveys both built only from
+# html-keyboard-response + survey) — a real but rarer failure mode than the
+# guaranteed one-per-file fragmentation it replaces.
+.bh_jspsych_fingerprint <- function(df) {
+  if (!"trial_type" %in% names(df)) return(NULL)
+  types <- sort(unique(stats::na.omit(vapply(
+    df[["trial_type"]], function(x) .bh_str(x) %||% NA_character_, character(1)))))
+  if (!length(types)) return(NULL)
+  paste(types, collapse = "|")
+}
 
 #' Convert a data frame or file to Behaverse `trial` (TrialData) documents
 #'

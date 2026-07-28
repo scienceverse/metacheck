@@ -4,7 +4,7 @@
 \alias{parse_codebook}
 \title{Parse a codebook file into variable definitions}
 \usage{
-parse_codebook(path, header_lookahead = 5L)
+parse_codebook(path, header_lookahead = 5L, observed = list())
 }
 \arguments{
 \item{path}{path to a codebook/readme file}

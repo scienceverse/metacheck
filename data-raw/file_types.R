@@ -11,10 +11,9 @@ types$type[types$type == "sheet"] <- "data"
 extensions <- list()
 extensions[["code"]] <- data.frame(
   ext = c("R", "Rmd", "qmd", "quarto",
-          "rda", "Rd", "Rds",
-          "ado","dss", "jnlp",
-          "Rnw", "jl", "ipynb", "mat",
-          "app", "msix", "msixbundle", "elf",
+          "Rd", "Rds",
+          "ado","dss",
+          "Rnw", "jl", "ipynb",
           "ts", "dart", "sol", "vue", "svelte", "gradle")
 )
 extensions[["config"]] <- data.frame(
@@ -23,12 +22,16 @@ extensions[["config"]] <- data.frame(
           "bak", "tmp", "old", "orig", "swp")
 )
 extensions[["data"]] <- data.frame(
-  ext = c("rds", "RData", "sav", "zsav", "por",
+  ext = c("rds", "RData", "rda", "sav", "zsav", "por",
           "dta", "sas7bdat", "xpt", "sd7", "jasp",
           "omv", "arff", "sav.gz", "csv.sav", "gen",
           "gdt", "gdtb", "dft", "wf1",
           "dat", "json", "tsv", "csv",
-          "parquet", "feather", "orc", "ndjson", "geojson")
+          "parquet", "feather", "orc", "ndjson", "geojson",
+          # MATLAB binary array/workspace file. Not source code (MATLAB
+          # scripts are .m); it holds saved variables, so it belongs with the
+          # other scientific data containers below.
+          "mat")
 )
 extensions[["archive"]] <- data.frame(
   ext = c("z", "lzop", "sz")

@@ -26,7 +26,7 @@
 #' labels and from a codebook "values"/"coding" column), the **missing-value
 #' scheme** (which codes denote missingness, from haven declared missings and
 #' labels that read as "refused"/"n/a"), and **question text** and
-#' **universe/filter** columns when present. These are carried onto the matched
+#' columns when present. These are carried onto the matched
 #' data columns and exported into the Psych-DS `variableMeasured` (as a
 #' schema.org code list plus namespaced `metacheck:` fields).
 #'

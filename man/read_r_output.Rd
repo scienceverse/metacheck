@@ -4,7 +4,7 @@
 \alias{read_r_output}
 \title{Extract statistical results from captured R console output}
 \usage{
-read_r_output(text, source_label = NA_character_)
+read_r_output(text, source_label = NA_character_, code_lines = NULL)
 }
 \arguments{
 \item{text}{the captured console output: a character vector of lines, or a
@@ -12,16 +12,32 @@ single string with embedded newlines}
 
 \item{source_label}{optional label (e.g. the script name) recorded as the
 analysis for one-line results}
+
+\item{code_lines}{optional character vector of the script's source lines (one
+element per line), used to recover the source \code{line} of each result via the
+echoed statement text. \code{NULL} (default) skips line attribution.}
 }
 \value{
 a list with one element per detected result block, each a list of
-\code{analysis} (the test/section label), \code{title}, and \code{data} (a tidy
-data.frame) — the same structure \code{\link[=read_stat_tables]{read_stat_tables()}} returns.
+\code{analysis} (the test/section label), \code{title}, \code{data} (a tidy data.frame),
+\code{line} (1-based source line, or \code{NA} when \code{code_lines} was not supplied),
+and \code{line_seq} (1-based counter of results sharing that \code{line}, or \code{NA}) —
+the same structure \code{\link[=read_stat_tables]{read_stat_tables()}} returns, plus these two fields.
 }
 \description{
-Parses the text an R script prints (as captured from stdout) into tidy result
-tables. Handles both one-line test output (\code{t.test}, \code{cor.test}, ...) and
-fixed-width text tables (\code{summary(lm)}, \code{aov}, \code{anova}). The result matches the
-shape of \code{\link[=read_stat_tables]{read_stat_tables()}}, so it flows into the same STATO typing and
-ISA-JSON export.
+Parses the text an R script prints (as captured from \code{source(script, echo = TRUE)}) into tidy result tables, one per detected result block. Handles both
+one-line test output (\code{t.test}, \code{cor.test}, ...) and fixed-width text tables
+(\code{summary(lm)}, \code{aov}, \code{anova}). The result matches the shape of
+\code{\link[=read_stat_tables]{read_stat_tables()}}, so it flows into the same STATO typing and ISA-JSON
+export.
+}
+\details{
+When \code{code_lines} is supplied (the script's own text, one element per source
+line — what a run's \code{code_text_list[[file]]} already is), each result is
+additionally tagged with the 1-based source \code{line} it came from, recovered by
+matching the echoed \verb{> }/\verb{+ } statement text against the script. A single
+statement that prints several results (e.g. a \code{for} loop calling \code{t.test()}
+each iteration) yields several results sharing one \code{line}; these are
+distinguished by \code{line_seq} (1, 2, 3, ... within that line). Without
+\code{code_lines} the echo is not parsed and \code{line}/\code{line_seq} are \code{NA}.
 }

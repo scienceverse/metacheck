@@ -46,6 +46,7 @@ Suggests:
     devtools,
     httptest2,
     processx,
+    readODS,
     remotes,
     rmarkdown,
     testthat (>= 3.0.0),

@@ -7,16 +7,20 @@
 stat_output_isa(tables, paper_id = "metacheck", source_file = NA_character_)
 }
 \arguments{
-\item{tables}{the list returned by \code{\link[=read_stat_tables]{read_stat_tables()}}}
+\item{tables}{the list returned by \code{\link[=read_stat_tables]{read_stat_tables()}} or \code{\link[=read_r_output]{read_r_output()}}}
 
 \item{paper_id}{paper id / DOI, used in identifiers and the study title}
 
-\item{source_file}{basename of the originating \code{.jasp}/\code{.omv}, recorded as the
-assay's data file and technology platform}
+\item{source_file}{basename of the originating \code{.jasp}/\code{.omv}, or the R
+script name for run-R output, recorded as the assay's data file and
+technology platform, and as the \code{result_id} prefix (see below)}
 }
 \value{
 a list (ISA Investigation) ready to serialise with
-\code{jsonlite::toJSON(auto_unbox = TRUE)}. \code{NULL} when there are no tables.
+\code{jsonlite::toJSON(auto_unbox = TRUE)}. \code{NULL} when there are no tables. Each
+Material carries a \code{"result_id"} \code{Comment} identifying the CODE that
+produced its table — see \code{\link[=stat_results_long]{stat_results_long()}} for the id format (shared
+between both serialisations of one extraction).
 }
 \description{
 Builds a complete ISA-JSON Investigation from the result tables of ONE
