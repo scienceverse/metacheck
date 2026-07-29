@@ -4,13 +4,28 @@
 \alias{repro_install_deps}
 \title{Install a paper's declared dependencies into a throwaway library}
 \usage{
-repro_install_deps(install_deps, lib_dir)
+repro_install_deps(install_deps, lib_dir, cran_to_main_lib = FALSE)
 }
 \arguments{
 \item{install_deps}{the module's \code{install_deps} frame (\code{package}, \code{source},
 \code{ref}), base packages already excluded}
 
-\item{lib_dir}{the throwaway library path (created if absent)}
+\item{lib_dir}{the throwaway library path (created if absent); ignored for
+CRAN-source packages when \code{cran_to_main_lib = TRUE} (see below)}
+
+\item{cran_to_main_lib}{if \code{TRUE}, CRAN-source packages are installed into
+your DEFAULT library (no \code{lib} argument — same as calling
+\code{install.packages(pkg)} yourself) instead of the throwaway \code{lib_dir}, and so
+PERSIST after the run rather than being deleted with the sandbox. This
+trades a one-time, permanent change to your R library for install work that
+is shared across every later call needing the same package (useful when
+\code{reproducibility_check()} runs across many papers in one session/script: a
+CRAN package installed for an early paper is already present, and skipped
+as already-installed, for every later one). GitHub/URL sources are
+deliberately excluded from this and always go into the throwaway \code{lib_dir}
+regardless of this argument — those are arbitrary, unreviewed code you
+likely do not want permanently in your main library. Default \code{FALSE}
+(everything throwaway, the original behaviour).}
 }
 \value{
 a data frame with \code{package}, \code{source}, \code{installed} (logical), and

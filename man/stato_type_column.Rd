@@ -4,19 +4,33 @@
 \alias{stato_type_column}
 \title{Type a result-table column by its header, with a guaranteed fallback}
 \usage{
-stato_type_column(header)
+stato_type_column(header, call_fn = NULL)
 }
 \arguments{
 \item{header}{the column header string as rendered in the result table}
+
+\item{call_fn}{optional name of the R function that produced this result
+(e.g. \code{"shapiro.test"}), as carried by \code{\link[=read_r_output]{read_r_output()}}. When supplied it
+disambiguates headers that name different quantities in different tests —
+R prints a bare \code{W} for both Shapiro-Wilk's W and the Wilcoxon rank sum —
+which no header-only lookup can resolve. Ignored for GUI formats, which
+have no call.}
 }
 \value{
-a list with \code{annotationValue} (STATO label, or the header text when
-unmapped), \code{termSource} (\code{"STATO"} or \code{""}), and \code{termAccession} (the STATO
-IRI, or \code{""}). The shape matches an ISA \code{OntologyAnnotation}.
+a list with \code{annotationValue} (the canonical label, or the header
+text when unmapped), \code{termSource} (\code{"STATO"}, \code{"metacheck"}, or \code{""}), and
+\code{termAccession} (the term IRI, or \code{""}).
 }
 \description{
-Maps a JASP/jamovi result-table column header to a STATO ontology class when
-one exists; otherwise falls back to the header text itself as an untyped
-label. Every column therefore gets a type — semantic (STATO) or nominal — so
-no column is dropped from the ISA-JSON export.
+Maps a JASP/jamovi/R result-table column header to a STATO ontology class
+when one exists, then to a metacheck-minted statistic term for the standard
+statistics STATO has no class for, and otherwise falls back to the header
+text itself as an untyped label. Every column therefore gets a type, so no
+column is ever dropped from the statistical-output export.
+}
+\details{
+\code{termSource} says which vocabulary answered: \code{"STATO"} for a verified STATO
+class, \code{"metacheck"} for a minted term (see \code{.MC_STAT_LABELS} for what each
+one means and why STATO has no equivalent), or \code{""} when the header could
+not be typed at all.
 }

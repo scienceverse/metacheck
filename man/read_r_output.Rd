@@ -21,8 +21,11 @@ echoed statement text. \code{NULL} (default) skips line attribution.}
 a list with one element per detected result block, each a list of
 \code{analysis} (the test/section label), \code{title}, \code{data} (a tidy data.frame),
 \code{line} (1-based source line, or \code{NA} when \code{code_lines} was not supplied),
-and \code{line_seq} (1-based counter of results sharing that \code{line}, or \code{NA}) —
-the same structure \code{\link[=read_stat_tables]{read_stat_tables()}} returns, plus these two fields.
+\code{line_seq} (1-based counter of results sharing that \code{line}, or \code{NA}), and
+\code{call_fn} (the recognised statistical function that produced the block,
+e.g. \code{"shapiro.test"}, or \code{""}) — the same structure \code{\link[=read_stat_tables]{read_stat_tables()}}
+returns, plus these three fields. \code{call_fn} lets \code{\link[=stato_type_column]{stato_type_column()}}
+resolve statistic letters that are ambiguous in the printed output alone.
 }
 \description{
 Parses the text an R script prints (as captured from \code{source(script, echo = TRUE)}) into tidy result tables, one per detected result block. Handles both
