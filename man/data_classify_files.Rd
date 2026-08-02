@@ -4,14 +4,30 @@
 \alias{data_classify_files}
 \title{Classify repository files into data_check semantic types}
 \usage{
-data_classify_files(file_name)
+data_classify_files(file_name, file_path = NULL)
 }
 \arguments{
 \item{file_name}{a character vector of file names (basenames)}
+
+\item{file_path}{optional character vector, same length as \code{file_name}: the
+full repo-relative path of each file (e.g. \code{"ResearchBox 801/Materials/ Informant Survey_Redacted.pdf"}). When supplied, a path segment literally
+named \code{materials}/\code{stimuli}/\code{stimulus} reclassifies a file that would
+otherwise fall into the generic \code{"documentation"}/\code{"unknown"} bucket — a
+researcher's own folder naming is a stronger, more deliberate signal than
+a generic extension like \code{.pdf}/\code{.docx}/\code{.txt}, which could hold anything
+(a PDF questionnaire is materials; a PDF preprint is documentation; the
+extension alone cannot tell them apart, but the author's folder choice
+can). Does NOT override a format-locked type (\code{.fixed_ext_type}, or
+\code{file_category()}'s own readme/codebook/data/code rules): a genuine
+\code{.csv}/\code{.R}/\code{.sav} found under a mislabelled "Materials/" folder still
+classifies by its real format, since the extension is stronger evidence
+of what the file actually IS than a folder name is. \code{NULL} (the default)
+disables this layer entirely, unchanged from before.}
 }
 \value{
 a character vector of data_check types (see \code{.data_check_types});
-\code{"other"} when no rule fires.
+\code{"unknown"} when no rule fires. See \code{.data_doc_role()} for the finer
+readme/codebook/supplemental distinction within \code{"documentation"}.
 }
 \description{
 Rules-only classifier used by the \code{data_check} module when the LLM is off.

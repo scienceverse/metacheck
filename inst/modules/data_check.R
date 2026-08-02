@@ -66,14 +66,14 @@
 #'     name. `TRUE` is accepted as a synonym for `"data"`.
 #'   Downloads are reused on later runs.
 #' @param skip_types an optional character vector of `data_type`s never to
-#'   download even under `download = "all"` — e.g. `"asset"` for stimuli/media a
-#'   release links to rather than mirrors. When `NULL` (the default), `"asset"`
-#'   and `"other"` are skipped (media, and the classifier's junk drawer of
-#'   manuscripts / logs / unrecognised archives, which would only inflate an
-#'   archive); pass an explicit vector to override this, or `character(0)` to
-#'   download every type. Skipped files are still listed (with a reason) in the
-#'   manifest. Types: `"data"`, `"code"`, `"codebook"`, `"readme"`, `"asset"`,
-#'   `"supplemental"`, `"software"`, `"output"`, `"other"`.
+#'   download even under `download = "all"` — e.g. `"materials"` for stimuli/
+#'   media a release links to rather than mirrors. When `NULL` (the default),
+#'   `"materials"` and `"unknown"` are skipped (stimuli/software, and the
+#'   classifier's junk drawer of manuscripts / logs / unrecognised content,
+#'   which would only inflate an archive); pass an explicit vector to override
+#'   this, or `character(0)` to download every type. Skipped files are still
+#'   listed (with a reason) in the manifest. Types: `"data"`, `"code"`,
+#'   `"documentation"`, `"materials"`, `"output"`, `"unknown"`.
 #' @param peek_zips if TRUE, look inside each `.zip` (via an HTTP range request,
 #'   without downloading it — see [zip_peek()]) and only fetch zips that contain
 #'   actual data or a codebook. A zip of only stimuli/materials is left for the
@@ -304,14 +304,22 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     ))
   }
 
-  all_files$data_type <- data_classify_files(all_files$file_name)
+  all_files$data_type <- data_classify_files(all_files$file_name, all_files$file_path)
+  # Fine-grained documentation role (readme / codebook / supplemental), NA for
+  # non-documentation rows. Drives root-vs-per-study placement (readme is
+  # collection-level) and which files codebook_check parses.
+  all_files$doc_role <- .data_doc_role(all_files$file_name)
   ext <- tolower(tools::file_ext(all_files$file_name))
   all_files$data_format <- ifelse(all_files$data_type == "data",
                                   data_format(ext), NA_character_)
-  # Study-group assignment (ex1 / pilot2 / shared) is only attempted with an
-  # LLM; without one it stays NA ("unknown"), and psychds_check reports that
-  # subgrouping could not be detected.
+  # Study-group assignment (ex1 / pilot2) is only attempted with an LLM for the
+  # residual cases the deterministic passes leave unresolved; without an LLM it
+  # is still fully deterministic (see data_group_llm()). The root readme and
+  # root ro-crate-metadata.json are collection-level and are never assigned a
+  # group at all (see the exclusion below) — every OTHER file always resolves
+  # to a real study code, never NA and never a "shared" placeholder.
   all_files$group <- NA_character_
+  all_files$referenced_by <- vector("list", nrow(all_files))
 
   llm_file_updates <- 0L
   llm_col_updates <- 0L
@@ -322,7 +330,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # Optional LLM pass for files still unresolved after rules.
   if (llm_use()) {
-    amb_files <- which(all_files$data_type == "other")
+    amb_files <- which(all_files$data_type == "unknown")
     if (length(amb_files) > 0) {
       file_text <- vapply(amb_files, function(i) {
         fname <- all_files$file_name[[i]] %||% ""
@@ -332,13 +340,12 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
       file_prompt <- paste(
         "Classify each file into one type:",
-        "codebook, software, output, supplemental, asset, other.",
+        "documentation, materials, output, unknown.",
         "Return one result per numbered input line, echoing its index and the",
-        "best single type as `value`. Use 'other' when uncertain."
+        "best single type as `value`. Use 'unknown' when uncertain."
       )
 
-      file_levels <- c("codebook", "software", "output", "supplemental",
-                       "asset", "other")
+      file_levels <- c("documentation", "materials", "output", "unknown")
       pred <- .llm_classify_batched(file_text, file_prompt,
                                     value_desc = "Best single semantic file type",
                                     valid = file_levels,
@@ -362,14 +369,43 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # data a script reads/writes, and the studies the manuscript names — so it runs
   # whether or not an LLM is enabled. data_group_llm() falls back to the model
   # only for files none of that evidence can place (and only when llm_use(TRUE)).
-  grp <- data_group_llm(all_files, model = model, params = params,
-                        paper = paper)
+  #
+  # The root readme and root ro-crate-metadata.json are collection-level: they
+  # are never assigned a study, so they must never be sent to data_group_llm()
+  # at all (it treats every input row as needing exactly one study code). A
+  # readme is "root" here when nothing else already ties it to one specific
+  # study: its own path names no study, AND it is not inside a directory that
+  # (by name) already reads as a per-study folder. A repo with a genuine
+  # per-study README (e.g. study1/README.md) keeps that file grouped normally;
+  # only the true collection-wide readme is excluded.
+  # path_for_group is coalesced PER ELEMENT (not just when the whole column is
+  # NULL, which %||% alone would miss): a mixed multi-source file list can have
+  # individual rows where file_path is NA even though the column exists, which
+  # would otherwise make is_root_readme itself NA for that row.
+  path_for_group <- ifelse(
+    is.na(all_files$file_path) | !nzchar(all_files$file_path %||% ""),
+    all_files$file_name, all_files$file_path)
+  # A LICENSE is collection-level exactly like the readme (one licence for the
+  # whole deposit, never one per study), so it is excluded from per-study
+  # grouping the same way — see the "license" doc_role in .data_doc_role() and
+  # its root placement in psychds_check.R's target_of().
+  is_root_readme <- !is.na(all_files$doc_role) &
+    all_files$doc_role %in% c("readme", "license") &
+    is.na(.data_group_from_path(path_for_group)) &
+    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group))
+  is_root_readme[is.na(is_root_readme)] <- FALSE
+
+  grp <- data_group_llm(all_files[!is_root_readme, , drop = FALSE],
+                        model = model, params = params, paper = paper)
+  group_no_evidence <- FALSE
   if (!is.null(grp)) {
-    all_files$group <- grp$group
-    llm_group_updates <- sum(!is.na(grp$group) & grp$group != "shared")
+    all_files$group[!is_root_readme] <- grp$group
+    all_files$referenced_by[!is_root_readme] <- grp$referenced_by
+    llm_group_updates <- sum(!is.na(grp$group))
     if (is.na(llm_model_used)) llm_model_used <- grp$model %||% NA_character_
     roster_check <- attr(grp, "roster_check")
     group_unresolved <- attr(grp, "unresolved") %||% character(0)
+    group_no_evidence <- isTRUE(attr(grp, "no_evidence"))
   }
 
   # ── 2c. Download the files this module (and codebook_check) will read ─────────
@@ -405,35 +441,39 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # study for a single task), which the caps are there to bound.
     (all_files$data_type == "data" &
        !is.na(all_files$data_format) & all_files$data_format == "tabular") |
-      all_files$data_type %in% c("codebook", "readme") |
+      (all_files$data_type == "documentation" &
+         !is.na(all_files$doc_role) & all_files$doc_role %in% c("codebook", "readme")) |
       grepl("[.](txt|iqdat)$", all_files$file_name, ignore.case = TRUE)
   } else {
     rep(FALSE, nrow(all_files))   # download = "none"
   }
   # Never fetch excluded types. When the caller does not pass `skip_types`, two
-  # types are excluded BY DEFAULT even under download = "all": `asset`
-  # (stimuli/media a release links to rather than mirrors) and `other` (the
-  # classifier's junk drawer — manuscripts, logs, unrecognised archives, with no
-  # analytic value that would inflate an archive). Files worth keeping are rescued
-  # OUT of `other` upstream, before this gate: by the name rules in
-  # data_classify_files() (prereg/readme/codebook) and by the LLM file-type pass
-  # above. A caller who really wants everything can pass skip_types = character(0).
-  never_fetch <- if (is.null(skip_types)) c("asset", "other") else skip_types
+  # types are excluded BY DEFAULT even under download = "all": `materials`
+  # (stimuli/software a release links to rather than mirrors) and `unknown`
+  # (the classifier's junk drawer — manuscripts, logs, unrecognised content,
+  # with no analytic value that would inflate an archive). Files worth keeping
+  # are rescued OUT of `unknown` upstream, before this gate: by the name rules
+  # in data_classify_files() (prereg/readme/codebook) and by the LLM file-type
+  # pass above. A caller who really wants everything can pass
+  # skip_types = character(0).
+  never_fetch <- if (is.null(skip_types)) c("materials", "unknown") else skip_types
   if (length(never_fetch) > 0) {
-    # A readable archive (.zip / tar family / single-file .gz|.bz2|.xz) is itself
-    # typed `other` (an archive is not, by name, data), but its CONTENTS may be
-    # data/codebook — the whole point of the peek/expand machinery is to open it
-    # and keep the inner data. So the `other` exclusion must NOT strip a container
-    # we can open, or we would silently drop every zipped/tarred dataset. Archives
-    # base R CANNOT open (.7z/.rar/...) are not carved out: they stay excluded and
+    # A readable archive (.zip / tar family / single-file .gz|.bz2|.xz) is not
+    # itself a content type (an archive crosswalks to `unknown` only because it
+    # hasn't been opened yet), but its CONTENTS may be data/documentation — the
+    # whole point of the peek/expand machinery is to open it and keep the inner
+    # data. So the `unknown` exclusion must NOT strip a container we can open,
+    # or we would silently drop every zipped/tarred dataset. Archives base R
+    # CANNOT open (.7z/.rar/...) are not carved out: they stay excluded and
     # repo_check warns the author to re-upload as .zip.
     keep_archive <- .is_readable_archive(all_files$file_name)
     want <- want & (!(all_files$data_type %in% never_fetch) | keep_archive)
   }
 
   # Peek inside zips (HTTP range request, no full download) and only keep those
-  # that hold actual data/codebook content; a zip of only stimuli is left to be
-  # linked, not mirrored. Zips we cannot peek are kept (downloaded as usual).
+  # that hold actual data/documentation content; a zip of only materials is
+  # left to be linked, not mirrored. Zips we cannot peek are kept (downloaded
+  # as usual).
   zip_peek_reason <- rep(NA_character_, nrow(all_files))
   if (isTRUE(peek_zips) && download != "none") {
     is_zip <- want & grepl("[.]zip$", all_files$file_name, ignore.case = TRUE) &
@@ -442,7 +482,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       zpb <- pb(sum(is_zip), "Peeking into zips [:bar] :current/:total")
       on.exit(zpb$terminate(), add = TRUE)
       for (i in which(is_zip)) {
-        d <- zip_decision(all_files$file_url[i], skip_types = skip_types %||% "asset")
+        d <- zip_decision(all_files$file_url[i], skip_types = skip_types %||% "materials")
         if (isFALSE(d$worth)) {
           want[i] <- FALSE
           zip_peek_reason[i] <- paste0("zip skipped: ", d$reason)
@@ -472,13 +512,34 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       failed_files   <- attr(dl, "failed")
     }
 
+    # Unlike .spv/.smcl (unambiguously SPSS/Stata-specific), ".out" is a
+    # generic extension also used for compiled Unix binaries and unrelated
+    # tool logs, so classifying it "output" by extension alone (needed to
+    # get it downloaded in the first place) can be a false positive.
+    # Content can only be checked once the file is actually on disk, so
+    # reclassify any downloaded .out that fails the real Mplus-version-banner
+    # check (.mplus_is_genuine_output(), R/mplus.R) back to "unknown" here.
+    is_out <- all_files$data_type == "output" &
+      grepl("\\.out$", all_files$file_name, ignore.case = TRUE) &
+      !is.na(all_files$file_location) & nzchar(all_files$file_location %||% "") &
+      file.exists(all_files$file_location %||% "")
+    if (any(is_out)) {
+      not_mplus <- vapply(all_files$file_location[is_out], function(p)
+        !.mplus_is_genuine_output(p), logical(1))
+      all_files$data_type[which(is_out)[not_mplus]] <- "unknown"
+    }
+
     # Expand downloaded archives we can OPEN with base R (zip, tar family, and
     # single-file .gz/.bz2/.xz): unpack, classify the inner files, add the
-    # data/codebook/readme ones to the file list (dropping inner assets), and
-    # demote the archive row itself to a container so it is not treated as data
-    # (and, being `other`, is not mirrored into the release). The original archive
-    # stays the "link" for any inner assets. An archive of only assets contributes
-    # no rows, i.e. it is dropped as if it had not been downloaded.
+    # data/documentation ones to the file list (dropping inner materials), and
+    # DROP the archive's own row entirely — a zip/tar/gz is never itself a
+    # content type (only its contents are; a .csv.gz is, for every purpose, a
+    # .csv), so once its contents have been extracted and added as their own
+    # classified rows, the container row has served its purpose and is removed
+    # rather than kept around under some placeholder type. The original archive
+    # stays the "link" for any inner materials left un-extracted. An archive of
+    # only materials contributes no rows, i.e. it is dropped as if it had not
+    # been downloaded.
     #
     # Zip expansion is gated on peek_zips (its pre-download peek is the paired
     # optimisation); tar/gz have no peek, so they always expand when downloaded.
@@ -496,19 +557,21 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       for (i in da) {
         row1 <- all_files[i, , drop = FALSE]
         loc  <- all_files$file_location[i]
-        st   <- skip_types %||% "asset"
+        st   <- skip_types %||% "materials"
         rows <- if (i %in% da_zip) .expand_zip(loc, row1, skip_types = st)
                 else if (i %in% da_tar) .expand_tar(loc, row1, skip_types = st)
                 else .expand_compressed(loc, row1, skip_types = st)
         if (nrow(rows) > 0) extracted[[length(extracted) + 1L]] <- rows
       }
-      # Demote the archive rows so the container itself isn't treated as data.
-      all_files$data_type[da] <- "archive"
+      # Drop the consumed container rows (see comment above); `want` is kept
+      # aligned by dropping the same positions.
+      all_files <- all_files[-da, , drop = FALSE]
+      want <- want[-da]
       if (length(extracted) > 0) {
         added <- dplyr::bind_rows(extracted)
         all_files <- dplyr::bind_rows(all_files, added)
         # Keep `want` aligned with `all_files`: inner files from accepted archives
-        # are part of the mirrored data/codebook payload.
+        # are part of the mirrored data/documentation payload.
         want <- c(want, rep(TRUE, nrow(added)))
       }
     }
@@ -521,12 +584,15 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # whatever the name implied, so prose is never mistaken for data. The file
     # itself is untouched — the cache is persistent by design, and classification
     # decides how a file is USED, not whether it is kept.
-    # A name-based READMEcodebook verdict is authoritative and is never
+    # A name-based readme/codebook verdict is authoritative and is never
     # overridden: "README.txt" is a readme even if it holds a delimiter-rich
     # table, and a codebook stays a codebook (codebook_check parses it). Only the
-    # ambiguous leftovers ("other"/"supplemental") are eligible for the upgrade.
+    # ambiguous leftovers ("unknown", or documentation with doc_role
+    # "supplemental") are eligible for the upgrade.
     is_txt <- grepl("[.]txt$", all_files$file_name, ignore.case = TRUE) &
-      all_files$data_type %in% c("other", "supplemental") &
+      (all_files$data_type == "unknown" |
+         (all_files$data_type == "documentation" &
+            !is.na(all_files$doc_role) & all_files$doc_role == "supplemental")) &
       !is.na(all_files$file_location) & nzchar(all_files$file_location %||% "") &
       file.exists(all_files$file_location %||% "")
     if (any(is_txt)) {
@@ -583,7 +649,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_no_local <- sum(is_tabular_data & !has_local)
 
   # File names detected as manifests (a table-of-contents listing other repo
-  # files) rather than real data; demoted to "supplemental" after extraction.
+  # files) rather than real data; demoted to documentation (doc_role
+  # "supplemental") after extraction.
   manifest_files <- character(0)
   # .RData/.rda workspaces that held no reusable tabular data (only fitted
   # models / session objects, or could not be restored). Flagged as a
@@ -733,11 +800,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       columns_df$header_sig <- unname(sig_by_file[columns_df$source_file])
     }
 
-    # Demote any detected manifests to supplemental and refresh the tabular
-    # flags/counts so they are reported as supplemental, not data.
+    # Demote any detected manifests to documentation (doc_role "supplemental")
+    # and refresh the tabular flags/counts so they are reported as
+    # documentation, not data.
     if (length(manifest_files) > 0) {
       mrows <- all_files$file_name %in% manifest_files
-      all_files$data_type[mrows]   <- "supplemental"
+      all_files$data_type[mrows]   <- "documentation"
+      all_files$doc_role[mrows]    <- "supplemental"
       all_files$data_format[mrows] <- NA_character_
       is_tabular_data <- all_files$data_type == "data" &
         !is.na(all_files$data_format) & all_files$data_format == "tabular"
@@ -889,20 +958,27 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
 
   # Study grouping, when the files split into studies. Purely descriptive: how
-  # many studies the files fall into and what they are called. Files that belong
-  # to no single study (a whole-repo README or codebook) are counted separately
-  # as shared, so the numbers add up for the reader.
+  # many studies the files fall into and what they are called. Every file
+  # except the collection-level root README/ro-crate-metadata.json resolves to
+  # exactly one study — there is no "shared" bucket — so files reused across
+  # studies are reported separately, via referenced_by, rather than as a count
+  # of ungrouped files.
   study_grp <- if ("group" %in% names(all_files))
     all_files$group else rep(NA_character_, nrow(all_files))
-  studies <- unique(study_grp[!is.na(study_grp) & study_grp != "shared"])
+  studies <- unique(study_grp[!is.na(study_grp)])
+  n_root <- sum(is.na(study_grp) & !is.na(all_files$doc_role) &
+                 all_files$doc_role == "readme")
+  n_reused <- if ("referenced_by" %in% names(all_files))
+    sum(lengths(all_files$referenced_by) > 0) else 0L
   summary_studies <- if (length(studies) > 0) {
-    n_shared <- sum(!is.na(study_grp) & study_grp == "shared")
     sprintf(
-      "We grouped the files into %d study group%s (%s)%s.",
+      "We grouped the files into %d study group%s (%s)%s%s.",
       length(studies), plural(length(studies)),
       paste(sort(studies), collapse = ", "),
-      if (n_shared > 0) sprintf(", plus %d file%s shared across studies",
-                                n_shared, plural(n_shared)) else ""
+      if (n_root > 0) sprintf(", plus %d collection-level file%s (README/ro-crate metadata)",
+                              n_root, plural(n_root)) else "",
+      if (n_reused > 0) sprintf(", and %d file%s reused across studies (referenced, not duplicated)",
+                                n_reused, plural(n_reused)) else ""
     )
   } else character(0)
 
@@ -1079,8 +1155,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   if (llm_use()) {
-    n_groups <- length(unique(stats::na.omit(all_files$group[
-      !is.na(all_files$group) & all_files$group != "shared"])))
+    n_groups <- length(unique(stats::na.omit(all_files$group)))
     llm_text <- sprintf(
       "%sreviewed ambiguous cases (%d file%s, %d column%s) and assigned study groups (%d study group%s detected).",
       if (!is.na(llm_model_used)) sprintf("LLM model '%s' ", llm_model_used) else "LLM ",
@@ -1144,6 +1219,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     previews = file_previews,       # full read data frames, for data_validate
     gated_repos = listing_gated,    # repos found but not listable (size gate, ...)
     manifest_path = manifest_path,  # full manifest path, when one was written
+    # TRUE when no file's path/repository/code-reference/LLM evidence named a
+    # real study anywhere in this repository — every group came from the
+    # blanket "ex1" default rather than actual evidence. psychds_check surfaces
+    # this as a warning instead of implying real structure was detected.
+    group_no_evidence = group_no_evidence,
     summary_table = summary_table,
     na_replace = c(data_file_n = 0, column_n = 0, empty_col_n = 0),
     traffic_light = tl,

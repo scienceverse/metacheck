@@ -180,10 +180,10 @@ test_that("text_peek reads a UTF-16 file (the E-Prime encoding)", {
 test_that("Inquisit .iqdat is downloadable data; binary E-Prime .edat/.edat2 are not", {
   # .iqdat is tab-delimited TEXT (readable), so it is downloadable research data.
   # .edat/.edat2 are proprietary BINARY (OLE compound documents) that metacheck
-  # cannot parse, so they classify as "asset" and are never downloaded — the
-  # analysable data comes from E-Prime's plain-.txt export instead.
+  # cannot parse, so they classify as "materials" and are never downloaded —
+  # the analysable data comes from E-Prime's plain-.txt export instead.
   x <- c("gen_1_49.iqdat", "naming-264-1.edat2", "run.edat")
-  expect_equal(unname(data_classify_files(x)), c("data", "asset", "asset"))
+  expect_equal(unname(data_classify_files(x)), c("data", "materials", "materials"))
 })
 
 test_that("txt_classify_content recognises an E-Prime export as data", {

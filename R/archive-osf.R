@@ -55,7 +55,13 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api"),
 
 #' Find OSF Links in Papers
 #'
-#' Get all OSF links.
+#' Get all OSF links: real hyperlinks from the paper's own `url` table, plus a
+#' body-text fallback for a BARE mention like "osf.io/gms8z/" that the source
+#' PDF/HTML never encoded as an actual hyperlink (common in PDF-converted
+#' papers, where a plain-text URL mention loses its link formatting) — the
+#' `url` table only ever contains links the source document itself made
+#' clickable, so a repository this important cannot rely on that alone. Same
+#' two-tier approach `github_links()` already uses for GitHub.
 #'
 #' @param paper a paper object or paperlist object
 #'
@@ -65,10 +71,23 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api"),
 #' @examples
 #' osf_links(psychsci)
 osf_links <- function(paper) {
+  href <- text <- NULL
+
   urls <- paper_table(paper, "url")
   urls$href <- gsub("\\s", "", urls$href) # temp fix for urls with spaces
   osf <- grepl("osf\\.io", urls$href, ignore.case = TRUE)
-  urls[osf, ]
+  found_href <- urls[osf, ]
+
+  # Body-text fallback: a bare "osf.io/<id>" mention with no scheme and no
+  # real hyperlink. The OSF short-id is base62 (letters+digits), typically
+  # 5 characters but not fixed-width by design, so kept general; an optional
+  # trailing slash is common ("osf.io/gms8z/") and consumed so it is not left
+  # dangling on the end of the captured URL.
+  osf_bare_regex <- "(?:https?://)?osf\\.io/[A-Za-z0-9]+/?"
+  other_osf <- text_search(paper, osf_bare_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
+  dplyr::bind_rows(found_href, other_osf) |> unique()
 }
 
 

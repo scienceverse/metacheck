@@ -24,6 +24,10 @@
 # Unlike JASP (which switched to an embedded SQLite database at v0.17), jamovi
 # keeps the metadata.json + data.bin layout across archive versions, so there is a
 # single reader here rather than two.
+#
+# This file also provides export_omv_html(), which is unrelated to reading
+# data: it re-exports the archive's OWN rendered index.html (jamovi's output
+# view, tables and plots) as one portable, image-inlined HTML file.
 
 .OMV_INT_MIN <- -2147483648    # jamovi/JASP integer missing-value sentinel
 
@@ -31,8 +35,9 @@
 #'
 #' Extracts the dataset, its variable metadata (measurement level, value labels)
 #' and a summary of the analyses stored in a `.omv` archive. The jamovi
-#' counterpart of [read_jasp()], returning the same structure so downstream code
-#' (codebook extraction, data checks) treats an `.omv` like a `.jasp` or `.sav`.
+#' counterpart of [import_jasp()], returning the same structure so downstream
+#' code (codebook extraction, data checks) treats an `.omv` like a `.jasp` or
+#' `.sav`.
 #'
 #' @param path path to a `.omv` file
 #'
@@ -42,9 +47,10 @@
 #'   recoverable, the reproducible R syntax), `format` (`"jamovi"`), and
 #'   `data_file_path` (`NA`; jamovi does not record the original import path).
 #' @export
-#' @keywords internal
-read_omv <- function(path) {
+import_omv <- function(path) {
   if (!file.exists(path)) stop("File not found: ", path)
+  if (!grepl("\\.omv$", path, ignore.case = TRUE))
+    stop("Not a .omv file: ", path)
   tmp <- tempfile("omv_")
   dir.create(tmp)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
@@ -210,4 +216,67 @@ read_omv <- function(path) {
   }
   if (depth != 0L) return("")                        # unbalanced -> give up
   gsub("[[:space:]]+", " ", trimws(substr(txt, start, end)))
+}
+
+#' Export a jamovi (.omv) file's own rendered output as standalone HTML
+#'
+#' A `.omv` archive already bundles a fully rendered `index.html` -- jamovi's
+#' own output view, complete with result tables and any plots -- alongside the
+#' data (see the file header). This extracts that `index.html` as-is and
+#' inlines every plot it references (an `<img src="....png">` under one of
+#' the per-analysis `resources/` folders) as a base64 `data:` URI, so the
+#' result is a single, portable, self-contained file that looks exactly like
+#' jamovi's own output window, with no external image files to keep alongside
+#' it.
+#'
+#' @param path path to a `.omv` file
+#' @param out path to write the HTML file to; defaults to `path` with its
+#'   extension replaced by `.html`, written alongside the source file
+#'
+#' @returns the path written to, invisibly
+#' @export
+export_omv_html <- function(path, out = NULL) {
+  if (!file.exists(path)) stop("File not found: ", path)
+  if (!grepl("\\.omv$", path, ignore.case = TRUE))
+    stop("Not a .omv file: ", path)
+  if (is.null(out)) out <- sub("\\.omv$", ".html", path, ignore.case = TRUE)
+
+  tmp <- tempfile("omvexport_")
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+  files <- tryCatch(suppressWarnings(utils::unzip(path, exdir = tmp)),
+                    error = function(e) character(0))
+  if (!length(files)) stop("Could not open '", basename(path), "' as a .omv (zip) archive.")
+  base <- basename(files)
+
+  hp <- files[base == "index.html"]
+  if (!length(hp)) stop("No 'index.html' in ", basename(path), "; nothing to export.")
+
+  html <- readChar(hp[[1]], file.info(hp[[1]])$size, useBytes = TRUE)
+  writeLines(.html_inline_images(html, tmp), out, useBytes = TRUE)
+  invisible(out)
+}
+
+# Inline every <img src="..."> the HTML references as a resources-relative
+# path -- a URL-encoded path (jamovi's own resources folders can contain
+# spaces, e.g. "12 gamljGlmMixed/resources/...") is decoded before it is
+# treated as a filesystem path. Non-image src values (there are none in
+# practice, but a defensive check costs nothing) and missing files are left
+# untouched. Shared verbatim between export_omv_html() and export_jasp_html()
+# (R/jasp.R) rather than factored out, since each format's reader is meant to
+# stay a self-contained file.
+.html_inline_images <- function(html, root) {
+  srcs <- regmatches(html, gregexpr('src="([^"]+\\.(png|jpe?g|gif))"', html,
+                                    ignore.case = TRUE))[[1]]
+  for (src in unique(srcs)) {
+    rel <- sub('^src="(.*)"$', "\\1", src, ignore.case = TRUE)
+    if (grepl("^(https?:)?//|^data:", rel, ignore.case = TRUE)) next
+    img_path <- file.path(root, utils::URLdecode(rel))
+    if (!file.exists(img_path)) next
+    ext <- tolower(tools::file_ext(img_path))
+    mime <- if (ext == "png") "image/png" else if (ext == "gif") "image/gif" else "image/jpeg"
+    data_uri <- paste0("data:", mime, ";base64,", base64enc::base64encode(img_path))
+    html <- sub(src, paste0('src="', data_uri, '"'), html, fixed = TRUE)
+  }
+  html
 }

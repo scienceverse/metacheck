@@ -73,12 +73,17 @@ are added when missing. This is the generator counterpart of the
 \code{psychds_check} module — run the check first to preview the gap.
 }
 \details{
-Multi-study repositories (when \code{data_check} assigned study groups under
-\code{llm_use(TRUE)}) are written as \verb{study-<group>/} subdirectories, each a
-self-contained, independently-valid Psych-DS dataset. Files that belong to no
-single study (a whole-repo README/codebook, shared materials) sit at the
-collection root beside the study folders (following BIDS, which places shared
-content at the root rather than in a pseudo-subject). The root is then a
+Multi-study repositories (\code{data_check} assigns every file except the root
+readme/ro-crate-metadata.json to exactly one study, deterministically where
+possible and via an LLM only for the residual cases) are written as
+\verb{study-<group>/} subdirectories, each a self-contained, independently-valid
+Psych-DS dataset. Only the root readme (and, for a multi-study collection,
+this \code{ro-crate-metadata.json} itself) sit at the collection root beside the
+study folders (following BIDS, which places collection-level content at the
+root rather than in a pseudo-subject). A materials or documentation file
+genuinely reused across studies is still owned by exactly one study (its
+physical copy lives there); the other studies get a reference to it, not a
+copy, in their own \code{dataset_description.json}. The root is then a
 \emph{collection} of datasets, not itself a Psych-DS dataset, so it carries a
 machine-readable \code{ro-crate-metadata.json} (RO-Crate 1.3 JSON-LD, with a
 custom context for DDI-Lifecycle-inspired study-design/variable terms)
@@ -88,8 +93,8 @@ a note.
 
 If the reused/re-run chain includes \code{reproducibility_check}'s result AND that
 call was made with \code{keep_sandbox = TRUE}, its \verb{statistical_output/} folder
-(extracted, STATO-typed statistics — see \code{\link[=reproducibility_check]{reproducibility_check()}}) is copied
-into \verb{output_dir/statistical_output/}, sibling to \verb{output_dir/data/}. This
+(extracted, STATO-typed statistics — see the \code{reproducibility_check} module)
+is copied into \verb{output_dir/statistical_output/}, sibling to \verb{output_dir/data/}. This
 converter does \strong{not} run \code{reproducibility_check} itself and does not force
 \code{keep_sandbox = TRUE} on your behalf (doing so would mean every conversion
 also runs — or even executes — the paper's code, whether or not you asked

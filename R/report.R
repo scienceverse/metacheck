@@ -187,6 +187,7 @@ report_module_run <- function(paper, modules, args = list()) {
     length(modules),
     ":what [:bar] :current/:total :elapsedfull"
   )
+  on.exit(pb$terminate())
   pb$tick(0, tokens = list(what = "Running modules"))
 
   # run each module ----

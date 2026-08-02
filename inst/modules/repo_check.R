@@ -19,12 +19,17 @@
 #' @param github_gate if TRUE, gate large GitHub repos before recursive listing
 #' @param github_max_repo_size_mb gate threshold for GitHub repository size (MB)
 #' @param github_max_files gate threshold for GitHub repository file count
+#' @param model the LLM model name (see `llm_model_list()`), used only when
+#'   `llm_use(TRUE)` for study grouping the deterministic passes cannot place
+#' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        github_gate = TRUE,
                        github_max_repo_size_mb = 500,
-                       github_max_files = 1000) {
+                       github_max_files = 1000,
+                       model = llm_model(),
+                       params = list()) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
@@ -203,7 +208,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         dplyr::filter(!isdir)
       rb_files_df <- data.frame(
         repo_url = rb_file_list$rb_url,
-        file_name = rb_file_list$name,
+        # rb_file_list$name is the RELATIVE PATH within the unzipped
+        # ResearchBox archive (e.g. "ResearchBox 801/Materials/foo.pdf" —
+        # list.files(..., recursive = TRUE) in rbox_file_download()), not a
+        # bare basename. Every OTHER source (OSF, GitHub, PsychArchives)
+        # keeps file_name as the basename and file_path as the full relative
+        # path as two DIFFERENT values; ResearchBox previously set both to
+        # this same full path, which made file_name/file_path (and any
+        # report table showing both, e.g. repo_check's own "File
+        # Classification" section) look duplicated even though the data was
+        # correct — every row really was one file, just with two identically-
+        # valued columns.
+        file_name = basename(rb_file_list$name),
         file_path = rb_file_list$name,
         file_url = rb_file_list$rb_url,
         file_location = rb_file_list$file_location,
@@ -377,9 +393,20 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)
+  #
+  # Matched on file_url AND file_path (not file_name alone): file_name is only
+  # the basename, so two DIFFERENT files that happen to share a name (e.g.
+  # study1/analysis.R and study2/analysis.R, both local with no file_url — an
+  # ordinary multi-study repository) were previously treated as duplicates and
+  # silently dropped, since duplicated(NA) is TRUE for the second NA just like
+  # any other repeated value. file_path carries the distinguishing directory,
+  # so genuinely identical files (same URL, same path) are still deduped while
+  # same-named files in different folders are both kept.
   if (nrow(all_files) > 0) {
+    file_path_dedup <- if ("file_path" %in% names(all_files))
+      all_files$file_path else all_files$file_name
     dupes <- duplicated(all_files$file_url) &
-      duplicated(all_files$file_name)
+      duplicated(file_path_dedup)
     all_files <- all_files[!dupes, ]
     # keep repos with explicit errors (e.g. gated/private) in summary/reporting
     in_files <- repos$repo_url %in% all_files$repo_url | !is.na(repos$repo_error)
@@ -408,6 +435,52 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     all_files$file_type[is_readme] <- "readme"
   }
   all_files$repo_name <- basename(all_files$repo_url)
+
+  ## preliminary classification + study grouping ----
+  # A PRELIMINARY, name/path-only pass: repo_check never downloads files, so it
+  # can only classify from names/extensions (data_classify_files()) and group
+  # from paths/repo-splits/the manuscript roster (data_group_llm()) — the same
+  # deterministic-first machinery data_check uses, run independently here (not
+  # shared as a frozen seed) because data_check operates on a materially
+  # different, POST-download file set: it downloads, expands archives (adding
+  # rows that don't exist yet at this point), and reclassifies .txt content,
+  # none of which repo_check can see. This preliminary pass exists purely to
+  # power repo_check's OWN report (warnings, naming check, dropdown below);
+  # data_check's later classification is authoritative for placement.
+  all_files$data_type <- data_classify_files(all_files$file_name)
+  all_files$doc_role  <- .data_doc_role(all_files$file_name)
+
+  # Root readme / ro-crate-metadata.json are collection-level and are never
+  # assigned a study (see data_check.R for the identical exclusion rule).
+  # path_for_group is coalesced PER ELEMENT (not just when the whole column is
+  # NULL, which %||% alone would miss): a mixed multi-source file list (e.g.
+  # OSF + local) can have individual rows where file_path is NA even though
+  # the column itself exists, and an NA here would make is_root_readme itself
+  # NA for that row, tripping `if (any(!is_root_readme))` below.
+  path_for_group <- ifelse(
+    is.na(all_files$file_path) | !nzchar(all_files$file_path %||% ""),
+    all_files$file_name, all_files$file_path)
+  # A LICENSE is collection-level exactly like the readme (one licence for the
+  # whole deposit, never one per study), so it is excluded from per-study
+  # grouping the same way — see the "license" doc_role in .data_doc_role().
+  is_root_readme <- !is.na(all_files$doc_role) &
+    all_files$doc_role %in% c("readme", "license") &
+    is.na(.data_group_from_path(path_for_group)) &
+    !grepl("study[-_]?[0-9]|/ex[0-9]|/pilot[0-9]", tolower(path_for_group))
+  is_root_readme[is.na(is_root_readme)] <- FALSE
+
+  all_files$group <- rep(NA_character_, nrow(all_files))
+  roster_check <- NULL
+  group_no_evidence <- FALSE
+  if (nrow(all_files) > 0 && any(!is_root_readme)) {
+    grp <- data_group_llm(all_files[!is_root_readme, , drop = FALSE],
+                          model = model, params = params, paper = paper)
+    if (!is.null(grp)) {
+      all_files$group[!is_root_readme] <- grp$group
+      roster_check <- attr(grp, "roster_check")
+      group_no_evidence <- isTRUE(attr(grp, "no_evidence"))
+    }
+  }
 
   # attach paper_id so downstream modules (e.g., code_check) know which
   # paper each file belongs to, even when a repo is shared across papers
@@ -472,27 +545,26 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## zip files ----
+  # repo_check() only LISTS archive files here — it never opens one (peeking a
+  # .zip via HTTP range request, or downloading any archive, is data_check's
+  # job when peek_zips/download is enabled). So this report makes no claim
+  # about whether an archive's content was or wasn't examined; it only warns
+  # about the one thing repo_check itself can know from the file name alone:
+  # non-.zip archive FORMAT. Only .zip stores its file listing in a tail index
+  # reachable by an HTTP range request, so only .zip can be inspected without a
+  # full download; .7z/.rar/.tar.gz must be downloaded whole, and some formats
+  # (.7z/.rar) metacheck cannot read at all.
   zip_n <- sum(repos$files_zip)
   if (zip_n > 0) {
     zip_files <- all_files$file_name[!is.na(all_files$file_type) & all_files$file_type == "archive"]
-    # Split archives by format. Only ZIP can be peeked (its file listing sits in a
-    # tail index reachable by an HTTP range request); every other archive format
-    # must be downloaded in full before its contents can be read, and .7z/.rar and
-    # similar cannot be read by metacheck at all. So non-zip archives get a
-    # recommendation to re-upload as .zip.
     nonzip_files <- zip_files[!grepl("[.]zip$", zip_files, ignore.case = TRUE)]
-    report_zip <- sprintf(
-      "#### Archive Files\n\nThe following files are archives: %s. We did not examine their content. Consider uploading these individually to improve discoverability and re-use.",
-      paste(zip_files, collapse = ", ")
-    )
     if (length(nonzip_files) > 0) {
-      report_zip <- paste0(
-        report_zip,
-        sprintf(
-          "\n\nSome of these are not ZIP archives (%s). We recommend the `.zip` format for archives: only ZIP stores its file listing in a way that lets a tool inspect the contents without downloading the whole archive, so a `.zip` is more discoverable and re-usable than a `.7z`, `.rar`, or `.tar.gz`.",
-          paste(nonzip_files, collapse = ", ")
-        )
+      report_zip <- sprintf(
+        "#### Archive Files\n\nThe following files are not ZIP archives: %s. We recommend the `.zip` format for archives: only ZIP stores its file listing in a way that lets a tool inspect the contents without downloading the whole archive, so a `.zip` is more discoverable and re-usable than a `.7z`, `.rar`, or `.tar.gz`.",
+        paste(nonzip_files, collapse = ", ")
       )
+    } else {
+      report_zip <- NULL
     }
     summary_zip <- sprintf(
       "We found %d archive file%s.",
@@ -558,6 +630,119 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_restricted <- NULL
   }
 
+  ## unclassifiable files ----
+  # Files data_classify_files() could not place at all (data_type == "unknown"),
+  # each with the same concrete rename suggestion check_file_naming() gives for
+  # the "unclassifiable" rule.
+  unknown_files <- all_files$file_name[
+    !is.na(all_files$data_type) & all_files$data_type == "unknown"]
+  n_unknown <- length(unknown_files)
+  if (n_unknown > 0) {
+    report_unknown <- sprintf(
+      "#### Unclassified Files\n\nWe could not classify %d file%s by name or extension: %s. Add a recognisable keyword (`data`, `code`, `materials`, `documentation`, `output`) to the file name, or use a common extension, so both humans and machines can tell what kind of file it is.",
+      n_unknown, plural(n_unknown), paste(utils::head(unknown_files, 10), collapse = ", "))
+    summary_unknown <- sprintf("We could not classify %d file%s.",
+                               n_unknown, plural(n_unknown))
+  } else {
+    report_unknown <- NULL
+    summary_unknown <- NULL
+  }
+
+  ## study roster mismatch ----
+  # roster_check compares the studies the MANUSCRIPT names against the studies
+  # the FILES actually separate into (see .data_group_check_roster()). A
+  # mismatch means the repository structure and the paper disagree — worth
+  # surfacing rather than silently building a layout that contradicts the text.
+  # Only meaningful when the manuscript names at least one study: an empty
+  # roster (most single-study papers never say "Study 1" explicitly) has
+  # nothing to disagree with, so every file-derived group would trivially show
+  # up as "extra" — that is an absence of evidence, not a real mismatch.
+  if (!is.null(roster_check) && length(roster_check$roster) > 0 &&
+      (length(roster_check$missing) > 0 || length(roster_check$extra) > 0)) {
+    parts <- character(0)
+    if (length(roster_check$missing) > 0)
+      parts <- c(parts, sprintf(
+        "the manuscript names %s (%s) with no matching files in the repository",
+        plural(length(roster_check$missing), "a study", "studies"),
+        paste(roster_check$missing, collapse = ", ")))
+    if (length(roster_check$extra) > 0)
+      parts <- c(parts, sprintf(
+        "the repository separates out %s (%s) not named in the manuscript",
+        plural(length(roster_check$extra), "a study", "studies"),
+        paste(roster_check$extra, collapse = ", ")))
+    report_roster <- sprintf(
+      "#### Study/Repository Mismatch\n\nThe studies named in the manuscript do not match how the repository's files are grouped: %s. Check that every study has its own clearly-named folder or file prefix, and that the folder names match how the manuscript refers to each study.",
+      paste(parts, collapse = "; "))
+    summary_roster <- "The manuscript's studies and the repository's file groups do not match."
+  } else {
+    report_roster <- NULL
+    summary_roster <- NULL
+  }
+
+  ## file-naming conventions ----
+  naming_issues <- check_file_naming(
+    all_files$file_name,
+    file_path = all_files$file_path %||% all_files$file_name,
+    data_type = all_files$data_type)
+  naming_bad <- naming_issues[naming_issues$severity == "bad", , drop = FALSE]
+  naming_suggest <- naming_issues[naming_issues$severity == "suggestion", , drop = FALSE]
+  n_naming_bad <- nrow(naming_bad)
+  n_naming_suggest <- length(unique(naming_suggest$file_name))
+
+  if (nrow(naming_issues) > 0) {
+    naming_tbl <- naming_issues
+    names(naming_tbl) <- c("File", "Rule", "Severity", "Detail")
+    report_naming <- c(
+      "#### File Naming",
+      sprintf(
+        "%s We found %d naming problem%s that %s, and %d file%s with a naming suggestion (not required, but a good habit).",
+        if (n_naming_bad > 0)
+          "File names should be machine-parseable: no spaces or special characters, and every file should be classifiable by name or extension."
+        else
+          "File names are broadly machine-parseable.",
+        n_naming_bad, plural(n_naming_bad),
+        if (n_naming_bad == 1) "should be fixed" else "should be fixed",
+        n_naming_suggest, plural(n_naming_suggest)),
+      scroll_table(naming_tbl, maxrows = 10)
+    )
+    summary_naming <- if (n_naming_bad > 0) sprintf(
+      "We found %d file naming problem%s to fix.", n_naming_bad, plural(n_naming_bad)
+    ) else if (n_naming_suggest > 0) sprintf(
+      "We found %d file%s with a naming suggestion.", n_naming_suggest, plural(n_naming_suggest)
+    ) else NULL
+  } else {
+    report_naming <- NULL
+    summary_naming <- NULL
+  }
+
+  ## classification dropdown ----
+  # One row per data_type, listing every file assigned to it (name, resolved
+  # study group, path) — a full audit view of how repo_check classified and
+  # grouped every file in the repository.
+  class_rows <- all_files[!is.na(all_files$data_type), , drop = FALSE]
+  if (nrow(class_rows) > 0) {
+    by_type <- split(class_rows, class_rows$data_type)
+    class_sections <- lapply(names(by_type), function(dt) {
+      grp <- by_type[[dt]]
+      tbl <- data.frame(
+        File  = grp$file_name,
+        Group = ifelse(is.na(grp$group), "—", grp$group),
+        Path  = grp$file_path %||% grp$file_name
+      )
+      sprintf("**%s** (%d file%s)\n\n%s", dt, nrow(grp), plural(nrow(grp)),
+              scroll_table(tbl, maxrows = 10))
+    })
+    report_classification <- c(
+      "#### File Classification",
+      collapse_section(
+        unlist(class_sections),
+        title = "See how every file was classified and grouped",
+        callout = "note")
+    )
+  } else {
+    report_classification <- NULL
+  }
+
   report_tbl <- all_files |>
     dplyr::mutate(file = dplyr::coalesce(link(file_url, file_name), file_name)) |>
     dplyr::select(Repository = repo_url,
@@ -594,11 +779,20 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_readme,
     report_zip,
     report_edat,
-    report_restricted
+    report_restricted,
+    report_unknown,
+    report_roster,
+    report_naming,
+    report_classification
   )
 
   # traffic_light ----
-  if (zip_n == 0 && repo_no_readme == 0) {
+  # A repository where metacheck cannot tell how many studies exist, has files
+  # it cannot classify at all, or has real (non-suggestion) naming problems is
+  # exactly the kind of ambiguity this traffic light exists to flag, alongside
+  # the existing zip/README criteria.
+  if (zip_n == 0 && repo_no_readme == 0 && n_unknown == 0 &&
+      is.null(report_roster) && n_naming_bad == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"
@@ -611,6 +805,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       dplyr::across(files_n:files_zip, sum),
       .by = c(paper_id)
     )
+  summary_table$files_unknown <- n_unknown
+  summary_table$naming_issues <- n_naming_bad
+  summary_table$roster_mismatch <- !is.null(roster_check) &&
+    length(roster_check$roster) > 0 &&
+    (length(roster_check$missing) > 0 || length(roster_check$extra) > 0)
 
   # summary_text ----
   summary_text <- c(
@@ -619,7 +818,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_readme,
     summary_zip,
     summary_edat,
-    summary_restricted
+    summary_restricted,
+    summary_unknown,
+    summary_roster,
+    summary_naming
   ) |>
     paste("\n- ", x = _, collapse = "")
 
@@ -635,6 +837,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     table = all_files,
     summary_table = summary_table,
     gated_repos = gated_repos,
+    naming_issues = naming_issues,
+    roster_check = roster_check,
+    group_no_evidence = group_no_evidence,
     na_replace = 0,
     traffic_light = tl,
     report = report,

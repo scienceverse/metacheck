@@ -9,32 +9,55 @@
 
 # ── File-type crosswalk ──────────────────────────────────────────────────────
 
-# datacheck's semantic file types. Superset of metacheck's coarse
-# `file_types$type` vocabulary; `data_check` reports at this granularity.
+# data_check's semantic file types. A file's finer documentation ROLE (is this
+# row the root readme? a codebook? plain supplemental text?) is NOT part of
+# this vocabulary — that is `.data_doc_role()`, a separate, orthogonal column.
+# `data_type` answers "what kind of repository content is this" (drives
+# Psych-DS folder placement and the report grouping); `doc_role` answers "which
+# specific documentation artifact is this" (drives root-vs-per-study placement
+# and codebook-parser selection). Splitting these two axes avoids needing a
+# top-level slot for every documentation sub-kind, which is what the old 9-way
+# scheme did (readme/codebook/supplemental as three separate top-level types).
 .data_check_types <- c(
-  "data", "codebook", "code", "software", "output",
-  "supplemental", "readme", "asset", "other"
+  "data", "code", "documentation", "materials", "output", "unknown"
 )
 
 # Map metacheck's coarse `file_types$type` values onto data_check's semantic
 # types. Used as the fallback layer after the name-based rules in
 # `file_category()` (readme / codebook) have had first refusal.
+#
+# `materials` covers everything a participant/experimenter interacts with
+# directly rather than an analytic artifact: stimuli/media (audio/video/image/
+# 3D/font) AND runnable software (installers, experiment-runner scripts,
+# compiled binaries) — both are needed to REPLICATE the study procedure, as
+# opposed to `data`/`code`, which are needed to RE-USE or REPRODUCE results.
+# `documentation` covers everything that explains the data/study rather than
+# being data/code/materials itself: readme, codebook, and supplemental text
+# (preprints, slide decks, Word docs).
+#
+# Archives (.zip/.tar/...) are NOT a content type: a zip is a container, never
+# itself research content, so it crosswalks to `unknown` only for the case it
+# could not be opened/peeked (an unreadable format, or peeking disabled) — once
+# opened, its contents are classified normally and the container's own row is
+# dropped, not relabelled (see inst/modules/data_check.R's archive-expansion
+# step). A `.csv.gz` is, for every purpose, a `.csv` — the archive layer is
+# purely a delivery mechanism.
 .file_type_crosswalk <- c(
   data    = "data",
   code    = "code",
   stats   = "code",       # SPSS/SAS/Stata syntax → code
-  exec    = "software",   # exe/dll/app/... → software
-  config  = "software",   # yaml/ini/toml/... → software
-  audio   = "asset",
-  video   = "asset",
-  image   = "asset",
-  `3D`    = "asset",
-  font    = "asset",
-  book    = "supplemental",
-  slide   = "supplemental",
-  text    = "supplemental",
-  web     = "supplemental",
-  archive = "other"
+  exec    = "materials",  # exe/dll/app/... → materials (runnable, not analytic)
+  config  = "materials",  # yaml/ini/toml/... → materials
+  audio   = "materials",
+  video   = "materials",
+  image   = "materials",
+  `3D`    = "materials",
+  font    = "materials",
+  book    = "documentation",
+  slide   = "documentation",
+  text    = "documentation",
+  web     = "documentation",
+  archive = "unknown"
 )
 
 # Extensions whose data_check type is fixed by format, applied last to correct
@@ -42,26 +65,44 @@
 .fixed_ext_type <- c(
   r = "code", rmd = "code", qmd = "code", ipynb = "code",
   do = "code", sps = "code", sas = "code",
-  exe = "software", dmg = "software", app = "software", jar = "software",
-  msi = "software", deb = "software", rpm = "software",
+  # MATLAB source (.m) is code; MATLAB's own binary data container (.mat) is
+  # data, never code -- distinct extensions, no ambiguity between them (unlike
+  # .out below, whose reclassification-after-download logic does not apply
+  # here: nothing about a .mat's CONTENT could make it code, so no downstream
+  # content check is needed the way .out gets one).
+  m = "code", mat = "data",
+  exe = "materials", dmg = "materials", app = "materials", jar = "materials",
+  msi = "materials", deb = "materials", rpm = "materials",
   # Compiled binaries / installer packages, not source: same kind as exe/dmg/
   # jar above, just missing from the original list. elf is a compiled Linux
   # binary; msix/msixbundle are Windows installer packages; jnlp is a Java Web
   # Start launcher (XML pointing at a Java app to fetch and run).
-  elf = "software", msix = "software", msixbundle = "software",
-  jnlp = "software",
-  sh = "software", bash = "software", zsh = "software",
-  bat = "software", cmd = "software", ps1 = "software",
-  dll = "software", so = "software", dylib = "software",
-  lua = "software", psyexp = "software", osexp = "software",
-  spv = "output", fig = "output",
+  elf = "materials", msix = "materials", msixbundle = "materials",
+  jnlp = "materials",
+  sh = "materials", bash = "materials", zsh = "materials",
+  bat = "materials", cmd = "materials", ps1 = "materials",
+  dll = "materials", so = "materials", dylib = "materials",
+  lua = "materials", psyexp = "materials", osexp = "materials",
+  spv = "output", smcl = "output", fig = "output",
+  # A .out is Mplus's rendered output. Unlike .spv/.smcl (unambiguously
+  # SPSS/Stata-specific), ".out" is a generic extension also used for
+  # compiled Unix binaries and unrelated tool logs, so a false positive here
+  # is genuinely possible from extension alone -- classification still
+  # keys on the extension (content can't be checked before a file is
+  # downloaded), but data_check() reclassifies any downloaded .out back to
+  # "unknown" if .mplus_is_genuine_output() (R/mplus.R) rejects it. .inp is
+  # Mplus's own analysis-syntax extension (unambiguous: no other common
+  # research-data tool uses it), so it is classed "code" outright, the same
+  # as .sps/.do.
+  out = "output", inp = "code",
   # A Qualtrics survey-definition file (.qsf) is the survey's own codebook: it
   # carries every question's wording and its response options with coded values
-  # (see parse_qsf()). Classing it as "codebook" makes it download under the
-  # default `download = "data"` and routes it into codebook_check's parser.
-  qsf = "codebook",
+  # (see parse_qsf()). Classing it as documentation (with doc_role "codebook")
+  # makes it download under the default `download = "data"` and routes it into
+  # codebook_check's parser.
+  qsf = "documentation",
   # Binary scientific-data containers that name-based rules miss (they would
-  # otherwise fall through to "other"). These hold research data, not assets.
+  # otherwise fall through to "unknown"). These hold research data, not assets.
   npy = "data", npz = "data", h5 = "data", hdf5 = "data", hdf = "data",
   fif = "data", pkl = "data", pickle = "data", pk = "data",
   ft = "data", feather = "data", parquet = "data", textgrid = "data",
@@ -73,10 +114,11 @@
   # documents) that metacheck cannot read at all — .eprime_is_export() rejects
   # them, so a downloaded .edat always fails to parse and yields nothing. The
   # analysable data lives in E-Prime's plain-.txt export (detected from content
-  # via .eprime_is_export()). So .edat/.edat2 are classed "asset": recorded in
-  # the manifest as present in the repo, but never downloaded (nothing to do with
-  # the bytes). This avoids fetching hundreds of unreadable binaries per study.
-  edat = "asset", edat2 = "asset"
+  # via .eprime_is_export()). So .edat/.edat2 are classed "materials": recorded
+  # in the manifest as present in the repo, but never downloaded (nothing to do
+  # with the bytes). This avoids fetching hundreds of unreadable binaries per
+  # study.
+  edat = "materials", edat2 = "materials"
 )
 
 #' Classify repository files into data_check semantic types
@@ -87,20 +129,43 @@
 #' applies format-locked extension overrides.
 #'
 #' @param file_name a character vector of file names (basenames)
+#' @param file_path optional character vector, same length as `file_name`: the
+#'   full repo-relative path of each file (e.g. `"ResearchBox 801/Materials/
+#'   Informant Survey_Redacted.pdf"`). When supplied, a path segment literally
+#'   named `materials`/`stimuli`/`stimulus` reclassifies a file that would
+#'   otherwise fall into the generic `"documentation"`/`"unknown"` bucket — a
+#'   researcher's own folder naming is a stronger, more deliberate signal than
+#'   a generic extension like `.pdf`/`.docx`/`.txt`, which could hold anything
+#'   (a PDF questionnaire is materials; a PDF preprint is documentation; the
+#'   extension alone cannot tell them apart, but the author's folder choice
+#'   can). Does NOT override a format-locked type (`.fixed_ext_type`, or
+#'   `file_category()`'s own readme/codebook/data/code rules): a genuine
+#'   `.csv`/`.R`/`.sav` found under a mislabelled "Materials/" folder still
+#'   classifies by its real format, since the extension is stronger evidence
+#'   of what the file actually IS than a folder name is. `NULL` (the default)
+#'   disables this layer entirely, unchanged from before.
 #'
 #' @returns a character vector of data_check types (see `.data_check_types`);
-#'   `"other"` when no rule fires.
+#'   `"unknown"` when no rule fires. See `.data_doc_role()` for the finer
+#'   readme/codebook/supplemental distinction within `"documentation"`.
 #' @export
 #' @keywords internal
 #'
 #' @examples
 #' data_classify_files(c("data.csv", "analysis.R", "README.md", "codebook.xlsx"))
-data_classify_files <- function(file_name) {
+data_classify_files <- function(file_name, file_path = NULL) {
   n <- length(file_name)
   if (n == 0) return(character(0))
 
-  # Layer 1: metacheck name-based rules (readme / codebook / data / code)
-  cat <- file_category(file_name)$file_category
+  # Layer 1: metacheck name-based rules (readme / codebook / data / code).
+  # file_category() still returns its own old-style labels ("readme",
+  # "codebook") — translate them into the 6-way data_check vocabulary here so
+  # only this one place needs to know about that mapping.
+  cat_raw <- file_category(file_name)$file_category
+  cat <- dplyr::case_when(
+    cat_raw %in% c("readme", "codebook") ~ "documentation",
+    .default = cat_raw
+  )
 
   # Layer 2: extension crosswalk from metacheck::file_types
   ext <- tolower(tools::file_ext(file_name))
@@ -114,16 +179,42 @@ data_classify_files <- function(file_name) {
   fixed <- unname(.fixed_ext_type[ext])
   type <- ifelse(!is.na(fixed), fixed, type)
 
-  # README filename → readme (belt-and-braces; file_category usually catches it)
-  type[grepl("^readme($|\\.)", tolower(file_name))] <- "readme"
+  # A "Materials/"-style FOLDER name is a stronger signal than a generic
+  # extension guess for a file that otherwise landed in the catch-all
+  # "documentation"/"unknown" buckets — a PDF questionnaire filed under
+  # Materials/ is materials, not documentation, regardless of ".pdf" alone
+  # (which could just as easily be a preprint). Deliberately NOT applied when
+  # `fixed` already set a format-locked type (a real .csv/.R/.sav is still
+  # data/code even inside a mislabelled "Materials/" folder — the extension
+  # is stronger evidence of what the file actually IS than a folder name),
+  # and only ever MOVES a row out of the two catch-all types, never out of a
+  # confident file_category()/crosswalk classification (a genuine README.md
+  # placed under Materials/ by mistake stays documentation).
+  if (!is.null(file_path)) {
+    path_for_folder <- ifelse(is.na(file_path) | !nzchar(file_path %||% ""),
+                              file_name, file_path)
+    in_materials_folder <- grepl("(^|/)(materials|stimuli|stimulus)(/|$)",
+                                 tolower(path_for_folder))
+    movable <- is.na(fixed) & type %in% c("documentation", "unknown")
+    type[in_materials_folder & movable] <- "materials"
+  }
+
+  # README filename → documentation (belt-and-braces; file_category usually
+  # catches it via cat_raw == "readme" above).
+  type[grepl("^readme($|\\.)", tolower(file_name))] <- "documentation"
+
+  # ro-crate-metadata.json is collection-level documentation (see
+  # .data_doc_role()), never code or data — without this override its .json
+  # extension would crosswalk to "code"/"data" via the coarse file_types table.
+  type[grepl("^ro-crate-metadata\\.json$", tolower(basename(file_name)))] <- "documentation"
 
   # A preregistration document belongs in documentation/, not data/. A file named
   # "preregistration" / "pre-registration" (or the abbreviation "prereg") is
-  # treated as `supplemental` (which targets documentation/) so it is never
-  # converted to a data CSV or filed as code — a prereg .csv/.tsv/.html would
-  # otherwise be misrouted. Genuine analysis SCRIPTS named after the prereg keep
-  # their `code` type (a script is still a script); everything else named prereg
-  # is reclassified. The pattern matches "prereg", "pre-reg", "preregistration",
+  # treated as documentation (doc_role "supplemental") so it is never converted
+  # to a data CSV or filed as code — a prereg .csv/.tsv/.html would otherwise be
+  # misrouted. Genuine analysis SCRIPTS named after the prereg keep their `code`
+  # type (a script is still a script); everything else named prereg is
+  # reclassified. The pattern matches "prereg", "pre-reg", "preregistration",
   # and "pre-registration" as a word (a leading boundary stops false hits inside
   # unrelated words).
   # Match "prereg" / "pre-reg" / "preregistration" / "pre-registration" only as a
@@ -131,10 +222,117 @@ data_classify_files <- function(file_name) {
   # non-letter or end-of-token — so "preregional" / "preregnancy" do NOT match.
   is_prereg <- grepl("(^|[^a-z])pre[ _-]?reg(istration)?([^a-z]|$)",
                      tolower(basename(file_name)))
-  type[is_prereg & !type %in% c("code", "readme")] <- "supplemental"
+  type[is_prereg & type != "code"] <- "documentation"
 
-  type[is.na(type)] <- "other"
+  # An explicit "code"/"script" keyword in the FILENAME overrides whatever the
+  # extension crosswalk guessed. A researcher naming a file "Code SPSS
+  # Descriptive Statistics.pdf" or "Statistical code Latent Variable
+  # Model.zip" is telling you directly what the file is; a generic extension
+  # (.txt/.pdf/.zip can each hold anything) is a weaker, indirect signal and
+  # should not win over it. This only overrides — it never DEMOTES an already
+  # confident non-code classification into code by accident.
+  #
+  # EXCLUDES the "code[ _.-]?book" compound (the exact pattern file_category()
+  # uses for is_codebook) so "codebook.pdf" / "code-book.csv" / "code_book.xlsx"
+  # stay documentation: \bcode\b alone is NOT sufficient here, because a dash,
+  # underscore, or dot each count as a word boundary in regex terms, so
+  # "code-book.csv" would otherwise ALSO match \bcode\b (verified directly —
+  # this was caught only by testing the actual regex against that exact
+  # string, not by reasoning about it) and get wrongly pulled out of
+  # documentation into code. Reusing file_category()'s own is_codebook pattern
+  # (rather than a new, possibly-diverging one) keeps the two rules from ever
+  # disagreeing about what counts as a codebook compound.
+  #
+  # Deliberately does NOT extend the same override to a bare "data" keyword:
+  # "data" as a substring is far more likely to appear in genuine data files
+  # (meta_data.csv, encoding.csv) or plain documentation (data_appendix.pdf)
+  # than "code" is to appear in non-code files — the same false-positive risk
+  # already flagged for codebook name-matching in file_category() (see its
+  # is_codebook comment).
+  base_lc <- tolower(basename(file_name))
+  is_codebook_named <- grepl("code[ _.-]?book", base_lc)
+  is_code_named <- grepl("\\bcode\\b|\\bscript\\b", base_lc) & !is_codebook_named
+  type[is_code_named] <- "code"
+
+  # An ".html"/".htm" file is essentially never literally source code (it is
+  # always a rendered/compiled artifact of SOMETHING), unlike a real .R/.py
+  # file the "code"/"script" keyword rule above is designed for — so for this
+  # extension specifically, an explicit "output" in the name is the more
+  # accurate signal and is checked LAST, after (and so overriding) the
+  # code/script rule above. A real corpus example, "R code and output.html",
+  # matches BOTH keyword rules; "output" wins for html/htm files only. This is
+  # one of TWO independent ways an .html file reaches data_type = "output" —
+  # the other is content-sniffing after download (see .code_expand_html(),
+  # R/code_check.R, and R/html-output.R's file header for both signals and
+  # why neither alone is a format-locked answer the way .fixed_ext_type gives
+  # unambiguous extensions like .spv/.smcl).
+  is_html_named <- grepl("\\.html?$", base_lc)
+  # NOT \boutput\b: R regex's \b treats "_" as a WORD character (same class as
+  # letters/digits), so "_" gives NO boundary either side of "output" —
+  # "my_output_log.html" would silently fail to match \boutput\b (caught only
+  # by testing that exact string, not by reasoning about the regex). Real
+  # filenames separate words with "_"/"-"/"."/space at least as often as they
+  # rely on \b's letter-boundary sense, so match "output" preceded/followed by
+  # either a true \b OR one of those explicit separators (or string start/end).
+  is_output_named <- grepl("(^|[ _.-])output($|[ _.-])", base_lc)
+  type[is_html_named & is_output_named] <- "output"
+
+  # Everything else named ".html"/".htm" that reached here still carries
+  # whatever Layer 1-3 guessed (usually the crosswalk's generic "code" via the
+  # coarse file_types table's "code;web" entry for html — a real bug, since an
+  # .html file is not code by default either; content-sniffing after download
+  # is what actually resolves this case, not a name guess). Downgrade that
+  # default to "documentation" (matching "web"'s OWN crosswalk target,
+  # .file_type_crosswalk["web"]) rather than leave a plainly wrong "code"
+  # default in place for a file this ambiguous.
+  type[is_html_named & !is_output_named & type == "code"] <- "documentation"
+
+  type[is.na(type)] <- "unknown"
   type
+}
+
+#' Classify a documentation file's fine-grained role
+#'
+#' Within `data_classify_files()`'s coarse `"documentation"` type, distinguish
+#' the specific artifact: the (collection-level) readme, a codebook, or plain
+#' supplemental text (preprints, slide decks, Word docs). This is the axis
+#' `psychds_check` uses to decide root-vs-per-study placement and that
+#' `codebook_check` uses to select which files to parse — orthogonal to
+#' `data_type`, which only says "this is documentation of some kind."
+#'
+#' `ro-crate-metadata.json` is treated as a `"readme"` role: like a README, it
+#' is collection-level (root, singular), never assigned to a single study.
+#'
+#' @param file_name a character vector of file names (basenames)
+#'
+#' @returns a character vector: `"readme"`, `"license"`, `"codebook"`,
+#'   `"supplemental"`, or `NA` for files that are not
+#'   `data_type == "documentation"`.
+#' @keywords internal
+.data_doc_role <- function(file_name) {
+  n <- length(file_name)
+  if (n == 0) return(character(0))
+
+  is_doc <- data_classify_files(file_name) == "documentation"
+  cat_raw <- file_category(file_name)$file_category
+  ext <- tolower(tools::file_ext(file_name))
+  base <- basename(file_name)
+
+  role <- dplyr::case_when(
+    cat_raw == "readme" ~ "readme",
+    grepl("^ro-crate-metadata\\.json$", base, ignore.case = TRUE) ~ "readme",
+    grepl("^readme($|\\.)", tolower(base)) ~ "readme",
+    # A LICENSE file is collection-level, like the readme (one licence for the
+    # whole deposit, not per-study), so it gets the same root placement in
+    # convert_psychds()'s target_of() — see psychds_check.R.
+    grepl("^licen[sc]e($|\\.)", tolower(base)) ~ "license",
+    cat_raw == "codebook" ~ "codebook",
+    ext == "qsf" ~ "codebook",
+    is_doc ~ "supplemental",
+    .default = NA_character_
+  )
+  role[!is_doc & is.na(role)] <- NA_character_
+  role
 }
 
 # ── Data format (tabular vs raw) ─────────────────────────────────────────────
@@ -548,28 +746,40 @@ manifest_merge <- function(path, patch) {
 #' Classifies every file in a repository into a study group from its path
 #' (folder + name) context, so a multi-study repository can be split into
 #' `study-<group>/` directories (used by `psychds_check`). Group codes follow
-#' datacheck's scheme: `ex1`, `ex2a`, `pilot1`, ..., or `shared` for files that
-#' belong to no single study (READMEs, shared materials). Only meaningful with
-#' an LLM; callers keep `group = NA` when `llm_use(FALSE)`.
+#' datacheck's scheme: `ex1`, `ex2a`, `pilot1`, ... . Every file resolves to
+#' exactly one study — there is no `"shared"` group. The only files that stay
+#' collection-level (never grouped, `group` left `NA`) are the root README and
+#' the root `ro-crate-metadata.json` (see `.data_doc_role()`), which callers
+#' must exclude BEFORE calling this function (see `data_check.R`). Only
+#' meaningful with an LLM for the residual cases the deterministic passes leave
+#' unresolved; callers get a fully deterministic grouping when `llm_use(FALSE)`.
 #'
-#' Only files that will actually be analysed or placed (data, codebooks, code,
-#' readmes, supplemental/output/other) are sent to the model; assets (images,
-#' PDFs, and other non-analysable files) are never grouped and default to
-#' `shared`. Paths that name their study outright ("Experiment 1/",
-#' "study2a_data.csv") are grouped by a deterministic regex first and skip the
-#' model entirely; LLM-returned codes are normalized and validated against the
-#' scheme, so a malformed code can never become a study directory name. The
-#' sent files are batched (see `.data_check_llm_batch`) so large repositories
-#' do not exceed the model's request/output limits.
+#' Only files that will actually be analysed or placed (data, documentation,
+#' code, materials) are sent to the model; every one of them must end up with a
+#' real study code — a materials or documentation file reused across multiple
+#' studies is still assigned to exactly ONE owning study (whichever the
+#' deterministic passes or the model placed it in first); every other study
+#' that reuses it gets a reference recorded separately (see `referenced_by` in
+#' `data_check.R`), not a second group membership. Paths that name their study
+#' outright ("Experiment 1/", "study2a_data.csv") are grouped by a
+#' deterministic regex first and skip the model entirely; LLM-returned codes
+#' are normalized and validated against the scheme, so a malformed code can
+#' never become a study directory name. The sent files are batched (see
+#' `.data_check_llm_batch`) so large repositories do not exceed the model's
+#' request/output limits.
 #'
 #' @param files a data.frame of files (needs `file_path` or `file_name`; an
-#'   optional `data_type` column is used to skip assets)
+#'   optional `data_type` column limits which files are sent to the model —
+#'   see Details)
 #' @param model the LLM model name
 #' @param params a named list passed to `llm()`
 #' @param batch_size number of files per LLM call
 #'
-#' @returns a data.frame with a `group` column (one row per input file, same
-#'   order) and an `"model"` attribute, or `NULL` on failure.
+#' @returns a data.frame with `group` and `referenced_by` columns (one row per
+#'   input file, same order) and `"model"`/`"roster"`/`"roster_check"`/
+#'   `"unresolved"` attributes, or `NULL` only when `files` is empty/NULL.
+#'   Every placeable file resolves to a real study group — there is no
+#'   `"shared"` value and no partial-failure NULL return.
 #' @export
 #' @keywords internal
 data_group_llm <- function(files, model = llm_model(), params = list(),
@@ -608,12 +818,22 @@ data_study_roster <- function(paper) {
   # A trailing letter is a sub-study suffix ("2a"); anything else is dropped by
   # the normalizer, which also maps experiment/study -> ex and keeps pilot.
   code <- .data_group_normalize(m)
-  code <- unique(code[!is.na(code) & code != "shared"])
+  code <- unique(code[!is.na(code)])
   if (!length(code)) return(character(0))
   # Stable order: by number, then by sub-study letter.
-  num <- suppressWarnings(as.integer(sub("^(ex|pilot)([0-9]{1,2})[a-z]?$", "\\2", code)))
-  suf <- sub("^(ex|pilot)[0-9]{1,2}([a-z]?)$", "\\2", code)
-  code[order(num, suf)]
+  .data_group_sort(code)
+}
+
+# Stable sort for study group codes: by leading number, then by trailing
+# sub-study letter. Shared by data_study_roster()'s display order and the
+# grouping fallback that picks the lexicographically-first study when a
+# reused/unplaced file has no other evidence to go on (see
+# .data_group_llm_impl()).
+.data_group_sort <- function(codes) {
+  if (!length(codes)) return(codes)
+  num <- suppressWarnings(as.integer(sub("^(ex|pilot)([0-9]{1,2})[a-z]?$", "\\2", codes)))
+  suf <- sub("^(ex|pilot)[0-9]{1,2}([a-z]?)$", "\\2", codes)
+  codes[order(num, suf)]
 }
 
 # Compare a file grouping to the manuscript's study roster and report the
@@ -622,7 +842,7 @@ data_study_roster <- function(paper) {
 # contradicts the paper — worth surfacing rather than silently emitting. Returns
 # list(roster, found, missing, extra, agrees).
 .data_group_check_roster <- function(groups, roster) {
-  found <- unique(groups[!is.na(groups) & groups != "shared"])
+  found <- unique(groups[!is.na(groups)])
   list(roster  = roster,
        found   = found,
        missing = setdiff(roster, found),   # named in the paper, not in the files
@@ -653,7 +873,14 @@ data_study_roster <- function(paper) {
 
 .data_code_refs <- function(path, max_bytes = 2e6) {
   if (is.na(path) || !nzchar(path) || !file.exists(path)) return(character(0))
-  if (file.size(path) > max_bytes) return(character(0))   # not a script
+  # file.size() can still return NA here even after file.exists() passed (a
+  # broken symlink, a permissions/race edge case) — treat that as unreadable
+  # rather than letting `if (NA > max_bytes)` error out the whole grouping
+  # pass. Newly reachable now that repo_check() also calls into this code path
+  # with files that were never actually downloaded (file_location may point at
+  # something that doesn't survive a size check even though it "exists").
+  sz <- file.size(path)
+  if (is.na(sz) || sz > max_bytes) return(character(0))   # not a script
   txt <- tryCatch(paste(readLines(path, warn = FALSE), collapse = "\n"),
                   error = function(e) NULL)
   if (is.null(txt) || !nzchar(txt)) return(character(0))
@@ -701,14 +928,16 @@ data_study_roster <- function(paper) {
 # Normalize an LLM-returned study-group code to the documented scheme and
 # reject anything outside it (NA). The model occasionally answers in prose
 # variants ("Experiment 1", "study 2a") or with a bare "pilot"; anything that
-# still doesn't fit ex<N><letter?>/pilot<N>/shared after normalization is a
-# hallucination and must not leak into study directory names.
+# still doesn't fit ex<N><letter?>/pilot<N> after normalization is a
+# hallucination and must not leak into study directory names. "shared" is not
+# a legal code: every file belongs to exactly one study (see
+# .data_group_llm_impl()).
 .data_group_normalize <- function(x) {
   x <- tolower(trimws(as.character(x)))
   x <- gsub("[ ._-]", "", x)
   x <- sub("^(experiment|study|expt|exp)(?=[0-9])", "ex", x, perl = TRUE)
   x[x == "pilot"] <- "pilot1"
-  ifelse(grepl("^(ex|pilot)[0-9]{1,2}[a-z]?$|^shared$", x), x, NA_character_)
+  ifelse(grepl("^(ex|pilot)[0-9]{1,2}[a-z]?$", x), x, NA_character_)
 }
 
 # When a structured schema wraps its array in a single object field (needed
@@ -790,22 +1019,26 @@ data_study_roster <- function(paper) {
            rep(NA_character_, length(paths))
 
   # Only group files that will actually be analysed or placed into a study
-  # directory: data files, codebooks, code, and readmes. Assets, generic
-  # "other", and bulk output/supplemental files don't drive study structure, so
-  # we don't spend LLM calls on them; they default to 'shared'. When no
-  # data_type column is present we fall back to grouping everything.
-  placeable <- c("data", "codebook", "software", "code", "readme")
+  # directory: data, documentation, materials, code. When no data_type column
+  # is present we fall back to grouping everything. Note: the collection-level
+  # root readme / root ro-crate-metadata.json must already have been EXCLUDED
+  # from `files` by the caller (data_check.R) before this function runs — they
+  # are never assigned a study and never reach this function at all.
+  placeable <- c("data", "documentation", "materials", "code")
   dtype <- if ("data_type" %in% names(files))
     tolower(as.character(files$data_type)) else rep(NA_character_, length(paths))
   send <- if (all(is.na(dtype))) rep(TRUE, length(paths)) else dtype %in% placeable
 
   # Base group by SOURCE REPOSITORY: a paper that links several repos with
   # different files is multi-study, one study per repo (see .data_group_from_repo).
-  # This seeds the default so unrecognised files fall to their repo's study, not
-  # to 'shared'. NA (single repo / mirrors) keeps the old 'shared' default.
+  # This seeds the default so unrecognised files fall to their repo's study.
+  # NA (single repo / mirrors) keeps `group` unresolved (NA) for now — every
+  # remaining pass below tries to fill it, and the final fallback (no file is
+  # ever left unresolved) guarantees a real study code by the time this
+  # function returns.
   repo_grp <- .data_group_from_repo(repo, paths)
   multi_repo <- any(!is.na(repo_grp))
-  group <- ifelse(is.na(repo_grp), "shared", repo_grp)
+  group <- repo_grp
 
   # Deterministic pre-pass: a path that names its study outright ("Experiment
   # 1/", "study2a_data.csv", "...experiment1creplication...") overrides the repo
@@ -823,43 +1056,64 @@ data_study_roster <- function(paper) {
   # than a study. Only fills files still unplaced by the repo/path passes, and
   # only from scripts that ARE placed, so it propagates a known group outward
   # rather than inventing one.
+  #
+  # This is also the ONLY signal metacheck has for cross-study reuse: when a
+  # script belonging to a DIFFERENT study than the file's current owner also
+  # references it, that other study is recorded in `referenced_by` (a list
+  # column, one entry per file) instead of overwriting `group` — the file keeps
+  # its single owning study, and the other study gets a reference written into
+  # its own metadata later (see .psychds_dataset_description() /
+  # .psychds_rocrate_json() in psychds-convert.R). Reuse that is never named in
+  # any script's code (e.g. two studies described in prose as using "the same
+  # stimuli") is NOT detected — this is a known, accepted limitation, not a bug.
   loc <- if ("file_location" %in% names(files)) files$file_location else
     rep(NA_character_, length(paths))
-  is_code <- dtype %in% c("code", "software")
-  placed  <- !is.na(group) & group != "shared"
+  is_code <- dtype %in% c("code", "materials")
+  placed  <- !is.na(group)
   script_i <- which(is_code & placed & !is.na(loc))
+  referenced_by <- vector("list", length(paths))
   if (length(script_i)) {
     base_of <- tolower(basename(paths))
     for (si in script_i) {
       refs <- .data_code_refs(loc[si])
       if (!length(refs)) next
-      # Files this script references that are still unplaced -> the script's group.
-      hit <- base_of %in% refs & (is.na(group) | group == "shared")
-      if (any(hit)) group[hit] <- group[si]
+      hit <- base_of %in% refs
+      if (!any(hit)) next
+      # Files this script references that are still UNPLACED -> the script's
+      # group (propagating known structure outward, as before).
+      newly_placed <- hit & is.na(group)
+      if (any(newly_placed)) group[newly_placed] <- group[si]
+      # Files this script references that ALREADY belong to a DIFFERENT study
+      # -> cross-study reuse. Record the script's group as an additional
+      # referencing study, without changing the file's own group.
+      reused <- hit & !is.na(group) & group != group[si]
+      for (ri in which(reused))
+        referenced_by[[ri]] <- union(referenced_by[[ri]], group[si])
     }
   }
 
   # When the repository already separates studies, trust it: only send files the
   # repo pass could NOT place (single-repo case) to the LLM. This avoids the LLM
-  # re-scattering repo-separated files to 'shared'.
-  send <- send & is.na(pre) & (!multi_repo | is.na(repo_grp)) &
-    (is.na(group) | group == "shared")
+  # re-scattering repo-separated files to a generic slot.
+  send <- send & is.na(pre) & (!multi_repo | is.na(repo_grp)) & is.na(group)
 
   # The LLM is the LAST resort: it only sees files the deterministic passes
   # (repository, path regex, code references) could not place. When they placed
   # everything — the common case for a multi-repo paper — no call is made at all.
-  # NB: this must not return early; the roster relabelling and the "data is never
-  # shared" guard below still have to run.
+  # NB: this must not return early; the roster relabelling and the "every file
+  # gets a real study" guard below still have to run.
   prompt <- paste(
     "You are grouping the files of a psychology research repository by study.",
     "Many repositories contain multiple studies (Experiment 1, Study 2a, a",
     "pilot, ...). Assign each numbered file to a study group using these codes:",
     "'ex1','ex2','ex2a',... for experiments/studies, 'pilot1','pilot2',... for",
-    "pilots. Infer groups from folder names and filenames. A DATA file always",
-    "belongs to a study — never leave a data file ungrouped. Use 'shared' ONLY",
-    "for repository-wide NON-DATA files that genuinely serve every study (a",
-    "top-level README, a whole-repo codebook, shared materials). If the whole",
-    "repository is a single study, put every file in 'ex1' (not 'shared').",
+    "pilots. Infer groups from folder names and filenames. EVERY file belongs",
+    "to exactly one study — there is no 'shared' option. If the whole",
+    "repository is a single study, put every file in 'ex1'. If a file (e.g. a",
+    "shared codebook or a materials file) genuinely serves multiple studies,",
+    "assign it to whichever single study it is most closely associated with by",
+    "folder or filename, or to the first study by number if there is no such",
+    "association.",
     "Return one entry per input file, in the same order."
   )
   # Wrap the array in a single-field object. Some providers (notably Groq's
@@ -870,7 +1124,7 @@ data_study_roster <- function(paper) {
     assignments = ellmer::type_array(
       ellmer::type_object(
         index = ellmer::type_integer("The file's number in the list"),
-        group = ellmer::type_string("Study group code: ex1/ex2a/pilot1/shared")
+        group = ellmer::type_string("Study group code: ex1/ex2a/pilot1")
       )
     )
   )
@@ -934,35 +1188,45 @@ data_study_roster <- function(paper) {
     }
     if (length(left) > 0) unresolved <- c(unresolved, left)
   }
-  # Regex- or repo-derived groups are worth returning even when every LLM batch
-  # failed; only give up when NO pass produced anything (no repo split, no path
-  # match, no LLM answer) AND there was nothing to place to begin with.
-  #
-  # `!any(send)` is the "nothing needed grouping" case and must NOT be treated as
-  # failure: a repository of only assets (figures, photos, a PDF manual) has no
-  # placeable file, so no pass runs and no LLM call is made, yet every file
-  # already carries its correct default group of 'shared'. Returning NULL there
-  # threw away a complete, correct answer and made the caller believe grouping
-  # had failed.
-  if (!any_ok && !any(fixed) && !multi_repo && any(send)) return(NULL)
+  # Unlike the old scheme, there is no "give up and return NULL" case here: a
+  # NULL return would leave the caller's `group` at its NA default for every
+  # file, which is no longer a valid outcome — every placeable file MUST
+  # resolve to a real study group (there is no 'shared' escape hatch), even
+  # when every deterministic pass and every LLM batch failed. The fallback
+  # immediately below guarantees this unconditionally, so this function always
+  # returns a real data.frame from this point on, never NULL.
 
-  # A DATA file must NEVER be 'shared' — data always belongs to a study. Fall any
-  # still-'shared' data file back to a study: its own repo's study when the repo
-  # pass placed it, else the sole study when exactly one exists (a single-study
-  # repo whose data the LLM wrongly called 'shared'). Only genuinely repo-wide
-  # NON-DATA (README, codebook, materials) may remain 'shared'. This runs BEFORE
-  # the roster relabelling below so it works with the raw slot labels.
-  is_data <- dtype == "data"
+  # EVERY placeable file must resolve to a real study group — there is no
+  # 'shared' fallback. Generalizes the old "data is never shared" guarantee
+  # (previously data-only) to documentation, materials, and code as well: a
+  # file that reaches this point still unresolved (nothing placed it, and no
+  # LLM answer stuck) falls back, in order, to (1) its own repo's study when
+  # the repo pass placed it, (2) the sole study when exactly one exists, (3)
+  # 'ex1' when no study exists at all (a single-study repo), (4) the
+  # lexicographically-first study code when several studies exist and nothing
+  # else resolved it — e.g. a repo-root materials/ folder no script happens to
+  # reference. This runs BEFORE the roster relabelling below so it works with
+  # the raw slot labels.
+  is_placeable <- dtype %in% placeable
   study_codes <- unique(group[grepl("^(ex|pilot)[0-9]", group)])
-  stray <- is_data & group == "shared"
+  # No real evidence anywhere in this file set: no repo split, no path/code
+  # reference, no LLM answer ever produced a study code before reaching this
+  # fallback. Distinct from the "sole study" / "several studies" branches
+  # below, where AT LEAST ONE file had real evidence — just not this
+  # particular one. Exposed as an attribute so callers (psychds_check) can
+  # tell "grouped with real evidence" from "grouped by blanket default" rather
+  # than treating every non-NA group the same way.
+  no_evidence_at_all <- length(study_codes) == 0L
+  stray <- is_placeable & is.na(group)
   if (any(stray)) {
     group[stray & !is.na(repo_grp)] <- repo_grp[stray & !is.na(repo_grp)]
-    still <- is_data & group == "shared"
+    still <- is_placeable & is.na(group)
     if (any(still) && length(study_codes) == 1L) group[still] <- study_codes[[1]]
-    # No study exists at all (single-study repo, LLM gave only 'shared'): every
-    # data file becomes ex1 so nothing lands at the collection root as data.
-    still <- is_data & group == "shared"
+    still <- is_placeable & is.na(group)
     if (any(still) && length(study_codes) == 0L) group[still] <- "ex1"
+    still <- is_placeable & is.na(group)
+    if (any(still) && length(study_codes) > 1L)
+      group[still] <- .data_group_sort(study_codes)[[1]]
   }
 
   # RELABEL from the manuscript's study roster. The authors say what their
@@ -979,7 +1243,7 @@ data_study_roster <- function(paper) {
   # check below reports the disagreement instead of guessing.
   roster <- if (!is.null(paper)) data_study_roster(paper) else character(0)
   if (length(roster)) {
-    found <- unique(group[!is.na(group) & group != "shared"])
+    found <- unique(group[!is.na(group)])
     already <- intersect(found, roster)              # correctly named already
     to_name <- setdiff(found, roster)                # slot-named (ex1, ex2, ...)
     avail   <- setdiff(roster, already)
@@ -989,16 +1253,33 @@ data_study_roster <- function(paper) {
       map <- stats::setNames(avail, ord)
       hit <- !is.na(group) & group %in% ord
       group[hit] <- unname(map[group[hit]])
+      # The roster relabelling can rename the very group a reused file's
+      # referencing studies point at, and code-referenced study codes in
+      # `referenced_by` (built above, from the pre-relabel slot names) must be
+      # relabelled the same way so they still match `group`'s final values.
+      referenced_by <- lapply(referenced_by, function(r) {
+        if (is.null(r)) return(r)
+        hit_r <- r %in% ord
+        r[hit_r] <- unname(map[r[hit_r]])
+        r
+      })
     }
   }
   out <- data.frame(group = group)
+  out$referenced_by <- referenced_by
   attr(out, "model") <- used_model
   attr(out, "roster") <- roster
   attr(out, "roster_check") <- .data_group_check_roster(group, roster)
+  # TRUE when no file's path, repository split, code reference, or LLM answer
+  # ever named a real study anywhere in this file set — every group came from
+  # the blanket "ex1" default, not actual evidence. psychds_check uses this to
+  # warn that the grouping is a guess rather than implying real structure was
+  # detected.
+  attr(out, "no_evidence") <- no_evidence_at_all
   # Files the model never answered for, even after retries. They keep whatever
-  # default they had (the safety net below still guarantees no data file stays
-  # 'shared'), but the caller is told so an intermittent provider failure is
-  # visible instead of masquerading as a real 'shared' verdict.
+  # default they had (the fallback above still guarantees a real study group),
+  # but the caller is told so an intermittent provider failure is visible
+  # instead of masquerading as a confident verdict.
   attr(out, "unresolved") <- if (length(unresolved))
     paths[sort(unique(unresolved))] else character(0)
   out
@@ -1475,17 +1756,17 @@ data_read_head <- function(path, n_rows = 5) {
           sas7bdat = haven::read_sas(path, n_max = nmax)))
       },
       jasp = {
-        # A .jasp bundles a labelled data frame (like SPSS): read_jasp() returns
+        # A .jasp bundles a labelled data frame (like SPSS): import_jasp() returns
         # the columns with haven-style label/labels attributes, so the rest of
         # data_check (and the CSV conversion in psychds-convert) treats it exactly
         # like a .sav. Both the old binary and modern SQLite formats are handled.
-        df <- read_jasp(path)$data
+        df <- import_jasp(path)$data
         if (is.data.frame(df) && is.finite(n_rows)) utils::head(df, n_rows) else df
       },
       omv = {
-        # A .omv (jamovi) is the JASP counterpart — read_omv() returns the same
+        # A .omv (jamovi) is the JASP counterpart — import_omv() returns the same
         # labelled data frame, so it is treated exactly like a .jasp / .sav.
-        df <- read_omv(path)$data
+        df <- import_omv(path)$data
         if (is.data.frame(df) && is.finite(n_rows)) utils::head(df, n_rows) else df
       },
       rds = {
@@ -2782,6 +3063,24 @@ normalize_label <- function(x) {
   if (is.null(cols)) return(NULL)
   rows <- df[nzchar(trimws(as.character(df[[cols$var_col]]))), , drop = FALSE]
   if (nrow(rows) == 0) return(NULL)
+  # Drop a CONTENT-FREE repeat: a variable name that already appeared in an
+  # earlier row, restated here with a blank label. Some codebook exports
+  # duplicate their whole variable list many times over with the label column
+  # stripped on every repeat after the first (seen on a corrupted OSF
+  # README_VariableLegend.csv: ~65 real rows followed by ~1,000,000 blank rows,
+  # among which the same ~65 names recur every ~16,384 rows with an empty
+  # label) — inflating a real handful of variables into thousands of rows that
+  # add nothing, all the way through matching and any LLM tier downstream.
+  # Keeps the FIRST occurrence of every name regardless of its label (so a
+  # codebook that is genuinely sparse — one row per variable, sometimes with no
+  # description at all — is untouched), and keeps any row whose label is
+  # non-blank even when the name repeats (so real per-group restatements, e.g.
+  # the same variable documented again under a second study heading with its
+  # own real description, survive).
+  name_key <- trimws(as.character(rows[[cols$var_col]]))
+  lab_blank <- !nzchar(trimws(as.character(rows[[cols$lab_col]])))
+  rows <- rows[!(duplicated(name_key) & lab_blank), , drop = FALSE]
+  if (nrow(rows) == 0) return(NULL)
 
   # Optional DDI-derived columns: value labels / coding, question text,
   # Each is parsed per row when its column is present.
@@ -3147,9 +3446,9 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list()) {
       },
       jasp = {
         # A .jasp carries its own variable/value labels (measurement level +
-        # value coding), so it serves as its own codebook. read_jasp() attaches
+        # value coding), so it serves as its own codebook. import_jasp() attaches
         # haven-style attributes, so the SAME extractor used for .sav applies.
-        df <- tryCatch(read_jasp(path)$data, error = function(e) NULL)
+        df <- tryCatch(import_jasp(path)$data, error = function(e) NULL)
         if (is.null(df)) NULL else {
           res <- .extract_haven_labels(df, src)
           if (!is.null(res)) attr(res, ".is_haven") <- TRUE
@@ -3158,9 +3457,9 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list()) {
       },
       omv = {
         # A .omv (jamovi) carries its own variable/value labels too, exactly like
-        # a .jasp — read_omv() attaches the same haven-style attributes, so the
+        # a .jasp — import_omv() attaches the same haven-style attributes, so the
         # shared .extract_haven_labels() extractor applies with no special-casing.
-        df <- tryCatch(read_omv(path)$data, error = function(e) NULL)
+        df <- tryCatch(import_omv(path)$data, error = function(e) NULL)
         if (is.null(df)) NULL else {
           res <- .extract_haven_labels(df, src)
           if (!is.null(res)) attr(res, ".is_haven") <- TRUE
@@ -5272,10 +5571,10 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 #'
 #'  1. **Type-consistency of the body below.** A text/banner/units row on top of
 #'     numeric columns makes them look mixed; dropping it makes them cleanly
-#'     numeric (see [.numeric_col_fraction()]). Strong when the data are numeric
+#'     numeric (see `.numeric_col_fraction()`). Strong when the data are numeric
 #'     (the CDA/behavior sheets), weak when the body is mostly text.
 #'  2. **Junk rows above.** A banner (one label repeated across columns) or a
-#'     near-empty spacer row is not a header (see [.is_junk_above_header()]). This
+#'     near-empty spacer row is not a header (see `.is_junk_above_header()`). This
 #'     carries the cases where the numeric jump is weak — e.g. the CDA banner row
 #'     of `CDA` × 110 sitting above a header that only relabels 3 of 113 columns.
 #'

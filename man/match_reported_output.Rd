@@ -24,9 +24,12 @@ a data.frame, one row per recomposed reported test, with:
 \code{text_id}, \code{grp_id}, \code{reported} (the recomposed test as text, e.g.
 "W=183.5 p=.791 rb=-0.16"), \code{n_components}, \code{n_matched} (components found in
 the best-matching output analysis), \code{found} (logical), \code{match_values} (the
-matched output values), \code{source_file} / \code{analysis} (provenance of the match),
-and \code{confidence} ("full" all components matched / "partial" / "none").
-Attribute \code{"summary"} holds the roll-up.
+matched components as "name=value" pairs), \code{not_matched} (the UNMATCHED
+components of that same test, same "name=value" form — always populated
+alongside \code{match_values} for a partial match, so exactly which claim failed
+to reproduce is visible, not just a count), \code{source_file} / \code{analysis}
+(provenance of the match), and \code{confidence} ("full" all components matched
+/ "partial" / "none"). Attribute \code{"summary"} holds the roll-up.
 }
 \description{
 Recomposes the statistics a paper REPORTS (from \code{paper$eq}, grouped by the

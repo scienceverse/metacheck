@@ -250,8 +250,8 @@ ui <- page_navbar(
             textInput("files_query", NULL, width = "100%",
               placeholder = "e.g.  analysis   ·   file_name:.R   ·   status:downloaded")),
           selectInput("files_type", "Data type",
-            choices = c("(any)" = "", "code", "data", "codebook",
-                        "materials", "other"))),
+            choices = c("(any)" = "", "code", "data", "documentation",
+                        "materials", "output", "unknown"))),
         div(class = "count-note", textOutput("files_count", inline = TRUE)),
         DT::dataTableOutput("files_table")))),
 

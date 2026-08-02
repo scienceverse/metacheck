@@ -249,13 +249,29 @@ test_that("data_check_numeric_in_text flags contaminated numeric columns", {
 # ── File classification ───────────────────────────────────────────────────────
 
 test_that("data_classify_files classifies by name and extension", {
-  cl <- data_classify_files(c("data.csv", "analysis.R", "README.md",
-                              "codebook.xlsx", "photo.png"))
+  files <- c("data.csv", "analysis.R", "README.md", "codebook.xlsx",
+            "photo.png", "experiment.psyexp", "notes.pdf", "archive.zip")
+  cl <- data_classify_files(files)
   expect_equal(cl[[1]], "data")
   expect_equal(cl[[2]], "code")
-  expect_equal(cl[[3]], "readme")
-  expect_equal(cl[[5]], "asset")
+  expect_equal(cl[[3]], "documentation")   # readme folds into documentation
+  expect_equal(cl[[4]], "documentation")   # codebook folds into documentation
+  expect_equal(cl[[5]], "materials")       # asset folds into materials
+  expect_equal(cl[[6]], "materials")       # software (.psyexp) folds into materials
+  expect_equal(cl[[7]], "documentation")   # supplemental (PDF) folds into documentation
+  expect_equal(cl[[8]], "unknown")         # a never-opened archive has unknown content
   expect_equal(length(data_classify_files(character(0))), 0)
+
+  # doc_role distinguishes WHICH documentation artifact this is.
+  roles <- .data_doc_role(files)
+  expect_equal(roles[[3]], "readme")
+  expect_equal(roles[[4]], "codebook")
+  expect_equal(roles[[7]], "supplemental")
+  expect_true(is.na(roles[[1]]))    # not documentation at all
+  expect_true(is.na(roles[[5]]))
+
+  # ro-crate-metadata.json is treated as a readme role (collection-level).
+  expect_equal(.data_doc_role("ro-crate-metadata.json"), "readme")
 })
 
 test_that("data_format separates tabular from raw", {

@@ -50,11 +50,59 @@ code_check <- function(paper, local_path = NULL,
   }
   all_files$language <- code_lang(all_files$file_name)
 
+  # An .spv is SPSS's rendered OUTPUT (never itself checked as code), but its
+  # structure XML embeds the exact SPSS syntax that produced each result.
+  # Recover that syntax as a real .sps sibling file (written into a `code`
+  # subfolder next to the .spv) and add it to the file list so it is checked
+  # like any other .sps file below -- see .code_expand_spv() and
+  # .spv_export_syntax() (R/spv.R). Downloads .spv files that aren't
+  # already local using the same options this function already passes to
+  # download_repo_files() further down.
+  if (any(grepl("\\.spv$", all_files$file_name, ignore.case = TRUE))) {
+    all_files <- .code_expand_spv(all_files, max_file_size, max_download_size, cache)
+    all_files$language <- code_lang(all_files$file_name)
+  }
+
+  # A .smcl is Stata's rendered OUTPUT log (never itself checked as code),
+  # but every command it ran is echoed verbatim -- unlike .spv, this IS
+  # already the exact syntax with no separate structure to recover it from.
+  # Recover it as a real .do sibling file the same way .spv's syntax becomes
+  # a .sps file -- see .code_expand_smcl() and .smcl_export_syntax()
+  # (R/stata.R).
+  if (any(grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE))) {
+    all_files <- .code_expand_smcl(all_files, max_file_size, max_download_size, cache)
+    all_files$language <- code_lang(all_files$file_name)
+  }
+
+  # A .out is Mplus's rendered OUTPUT (never itself checked as code), but
+  # (like .smcl, and unlike .spv) its own "INPUT INSTRUCTIONS" section
+  # already holds the exact verbatim syntax that produced it, with no
+  # separate structure to decode it from. Recover it as a real .inp sibling
+  # file the same way .smcl's echoed commands become a .do file -- see
+  # .code_expand_mplus() and .mplus_export_syntax() (R/mplus.R).
+  if (any(grepl("\\.out$", all_files$file_name, ignore.case = TRUE))) {
+    all_files <- .code_expand_mplus(all_files, max_file_size, max_download_size, cache)
+    all_files$language <- code_lang(all_files$file_name)
+  }
+
+  # A ".html" carries no format-locked signal from its extension alone (unlike
+  # .spv/.smcl/.out) -- it needs downloading and content-sniffing to tell
+  # rendered R Markdown/Quarto analysis output apart from a task-runner page
+  # or documentation site. See .code_expand_html() and .html_sniff_kind()/
+  # .html_export_r_source() (R/html-output.R) for the full rationale.
+  if (any(grepl("\\.html?$", all_files$file_name, ignore.case = TRUE))) {
+    all_files <- .code_expand_html(all_files, max_file_size, max_download_size, cache)
+    all_files$language <- code_lang(all_files$file_name)
+  }
+
   ## find relevant code files ----
   # JASP files are counted and listed, but not analysed: a .jasp is a binary
   # (zip) archive, so the text-based checks below (comments, absolute paths,
-  # library lines) cannot read it.
-  listed_langs <- c("R", "SAS", "SPSS", "Stata", "JASP")
+  # library lines) cannot read it. MATLAB (.m) is plain text, so unlike JASP it
+  # IS checked here (comments, absolute paths, addpath()/import() "library"
+  # lines, referenced files) -- only ACTUALLY RUNNING the code stays out of
+  # scope, in reproducibility_check.
+  listed_langs <- c("R", "SAS", "SPSS", "Stata", "Mplus", "MATLAB", "JASP")
   checked_langs <- setdiff(listed_langs, "JASP")
 
   relevant <- all_files$language %in% listed_langs

@@ -45,7 +45,10 @@ test_that("OSF no files", {
                     files_data = 0,
                     files_code = 0,
                     files_readme = 0,
-                    files_zip = 0)
+                    files_zip = 0,
+                    files_unknown = 0L,
+                    naming_issues = 0L,
+                    roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
   exp <- " 0 files "
   expect_true(grepl(exp, mod_output$summary_text))
@@ -58,13 +61,20 @@ test_that("no code files", {
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 2 files ", mod_output$summary_text))
+  # One of the two files (the archive) is not classifiable by name/extension
+  # from repo_check's preliminary, name-only pass (data_classify_files()
+  # crosswalks an unopened archive to "unknown" — see R/data_check_helpers.R),
+  # which also trips the naming check's "unclassifiable" rule for that file.
   exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 2,
                     files_data = 0,
                     files_code = 0,
                     files_readme = 1,
-                    files_zip = 1)
+                    files_zip = 1,
+                    files_unknown = 1L,
+                    naming_issues = 1L,
+                    roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
 
@@ -75,13 +85,21 @@ test_that("OSF", {
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 4 files ", mod_output$summary_text))
+  # The fixture's Archive.zip is not classifiable by name/extension without
+  # opening it (repo_check never downloads), and test_paper()'s empty
+  # manuscript text names no studies at all, so roster_check$roster is empty —
+  # nothing for the file-derived "ex1" group to disagree with, hence FALSE
+  # (not a real mismatch, just an absence of roster evidence to compare).
   exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 4,
                     files_data = 1,
                     files_code = 2,
                     files_readme = 0,
-                    files_zip = 1)
+                    files_zip = 1,
+                    files_unknown = 1L,
+                    naming_issues = 1L,
+                    roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
 

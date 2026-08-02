@@ -1,7 +1,9 @@
 # Tests for the Psych-DS pipeline: data_check study grouping, psychds_check,
 # convert_psychds, and the native psychds_validate. All run offline and
 # deterministically by pointing test_paper() at a local fixture repo built in
-# tempdir() — no network, no LLM (grouping stays NA under llm_use(FALSE)).
+# tempdir() — no network, no LLM. Grouping is fully deterministic under
+# llm_use(FALSE): every file except the root readme/ro-crate-metadata.json
+# still resolves to a real study group (there is no "shared" placeholder).
 
 # Build a small, self-contained repository fixture on disk. Returns its path.
 make_fixture_repo <- function() {
@@ -102,11 +104,63 @@ test_that("data_check groups studies deterministically without an LLM", {
   # infers it. So the group is populated even with llm_use(FALSE); only files
   # the deterministic passes cannot place need the LLM.
   grp <- mo$structure$group
-  expect_false(all(is.na(grp)))
   # the data file names its study in the path
   expect_equal(grp[mo$structure$file_name == "study1.csv"], "ex1")
-  # non-data repo-wide files stay 'shared'
-  expect_equal(grp[mo$structure$file_name == "README.txt"], "shared")
+  # The root readme is collection-level: it is EXCLUDED from grouping
+  # entirely (never sent to data_group_llm()), not assigned a "shared"
+  # placeholder — its group stays NA.
+  expect_true(is.na(grp[mo$structure$file_name == "README.txt"]))
+  # Every OTHER file resolves to a real study — there is no "shared" bucket.
+  # A single-study repo's codebook and code file both fall back to the sole
+  # study that exists (ex1), even though neither path names it directly.
+  expect_false(any(is.na(grp[mo$structure$file_name != "README.txt"])))
+  expect_equal(grp[mo$structure$file_name == "codebook.csv"], "ex1")
+  expect_equal(grp[mo$structure$file_name == "analysis.R"], "ex1")
+})
+
+test_that("data_check assigns a genuinely-shipped ro-crate-metadata.json to the root, not a study", {
+  llm_use(FALSE)
+  d <- file.path(tempdir(), paste0("psychds_rocrate_fix_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+  utils::write.csv(data.frame(id = 1:3, x = c(1, 2, 3)),
+                   file.path(d, "data", "study1.csv"), row.names = FALSE)
+  writeLines("{}", file.path(d, "ro-crate-metadata.json"))
+  mo <- module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE)
+
+  role <- mo$structure$doc_role[mo$structure$file_name == "ro-crate-metadata.json"]
+  expect_equal(role, "readme")
+  grp <- mo$structure$group[mo$structure$file_name == "ro-crate-metadata.json"]
+  expect_true(is.na(grp))
+})
+
+test_that("data_check records cross-study reuse via a script's own references, not duplication", {
+  llm_use(FALSE)
+  d <- file.path(tempdir(), paste0("psychds_reuse_fix_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "study1"), recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(d, "study2"), recursive = TRUE, showWarnings = FALSE)
+  utils::write.csv(data.frame(id = 1:3, x = c(1, 2, 3)),
+                   file.path(d, "study1", "data.csv"), row.names = FALSE)
+  utils::write.csv(data.frame(id = 1:3, x = c(4, 5, 6)),
+                   file.path(d, "study2", "data.csv"), row.names = FALSE)
+  # A single stimulus file physically lives under study1/, but study2's own
+  # script also reads it directly — hard evidence of reuse. .data_code_refs()
+  # only recognises a fixed set of read/write function calls (read_csv,
+  # read.table, ...; see .CODE_READ_FNS), not arbitrary functions like
+  # readLines(), so the reference must use one of those recognised names.
+  writeLines("id\n1", file.path(d, "study1", "stimulus.txt"))
+  writeLines('df <- read.csv("data.csv")', file.path(d, "study1", "analysis.R"))
+  writeLines('stim <- read.csv("stimulus.txt"); df <- read.csv("data.csv")',
+             file.path(d, "study2", "analysis.R"))
+  mo <- module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE)
+
+  st <- mo$structure
+  stim_row <- st$file_name == "stimulus.txt"
+  # Owned by exactly one study (whichever the deterministic passes placed it
+  # in — here, its own path names study1).
+  expect_equal(st$group[stim_row], "ex1")
+  # study2's script referencing it by name is recorded as reuse, not as a
+  # second ownership claim.
+  expect_true("ex2" %in% (st$referenced_by[stim_row][[1]] %||% character(0)))
 })
 
 # ── psychds_check ─────────────────────────────────────────────────────────────

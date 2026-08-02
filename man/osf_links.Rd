@@ -13,7 +13,13 @@ osf_links(paper)
 a table with the OSF url in the first (href) column
 }
 \description{
-Get all OSF links.
+Get all OSF links: real hyperlinks from the paper's own \code{url} table, plus a
+body-text fallback for a BARE mention like "osf.io/gms8z/" that the source
+PDF/HTML never encoded as an actual hyperlink (common in PDF-converted
+papers, where a plain-text URL mention loses its link formatting) — the
+\code{url} table only ever contains links the source document itself made
+clickable, so a repository this important cannot rely on that alone. Same
+two-tier approach \code{github_links()} already uses for GitHub.
 }
 \examples{
 osf_links(psychsci)

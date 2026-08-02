@@ -241,7 +241,8 @@
 # optional schema.org DataDownload list (built by .psychds_distribution) linking
 # each source data file to its online download URL; NULL omits the field.
 .psychds_dataset_description <- function(paper, study_label, property_values,
-                                         distribution = NULL) {
+                                         distribution = NULL,
+                                         reused_materials = character(0)) {
   info <- paper$info %||% list()
   # paper$info may be a tibble; `$` on a missing tibble column warns, so look up
   # fields by name and return NULL when absent (or empty, e.g. a stub paper).
@@ -284,6 +285,21 @@
   kw <- .psychds_keywords(ival("keywords"))
   if (!is.null(kw)) desc[["keywords"]] <- kw
 
+  # Materials/documentation this study REUSES from another study's folder
+  # rather than owning physically (see .psychds_reused_by_group()). A plain
+  # relative-path string field, following the same precedent as
+  # .osd_write_paradata()'s `link` field (R/behaverse-convert.R) rather than a
+  # JSON-LD @id object: this file's @context is the bare
+  # "https://schema.org/" string (unlike ro-crate-metadata.json's richer
+  # context, which DOES declare a `metacheck:` prefix), so a namespaced term
+  # here would be undeclared and dropped under strict JSON-LD expansion —
+  # exactly the same latent situation `metacheck:generated` below already
+  # accepts. A plain, unprefixed key is consistent with that existing
+  # precedent, not a new inconsistency.
+  if (length(reused_materials))
+    desc[["reusedMaterials"]] <- lapply(reused_materials, function(p)
+      list(contentUrl = p, description = "Reused from another study in this collection."))
+
   desc[["metacheck:generated"]] <- format(Sys.Date(), "%Y-%m-%d")
   Filter(Negate(is.null), desc)
 }
@@ -314,22 +330,27 @@
   txt
 }
 
-# Read the open_practices summary flags (data/code/materials/prereg openness)
-# from a resolved module-output list, as a named logical vector. Returns an empty
-# vector when open_practices did not run. Used to surface the check outcomes as
-# `metacheck:*` collection properties so the corpus is filterable without opening
-# each paper's logs.
-.psychds_open_flags <- function(ops) {
-  op <- ops[["open_practices"]]
-  st <- op$summary_table
-  if (is.null(st) || !is.data.frame(st) || !nrow(st)) return(logical(0))
-  get1 <- function(f) {
-    if (!f %in% names(st)) return(NA)
-    v <- st[[f]][1]
-    if (is.logical(v)) v else NA
-  }
-  c(data = get1("data_open"), code = get1("code_open"),
-    materials = get1("materials_open"), prereg = get1("prereg_open"))
+# Whether a study actually shares data/code/materials, read from the files
+# metacheck already placed under it — not from open_practices' manuscript-text
+# detection, which only resolves at PAPER granularity (no column ties a
+# detected sentence to the study it covers). `plan` is psychds_check's own
+# table (file_name/data_type/group/target_path per file), already the thing
+# study_roots was derived from, so this is the same classification the
+# study-<group>/ layout itself is built from, not a new detector.
+#
+# isPreregistered has no equivalent signal: prereg_check's table lists
+# registration links at paper level only, with nothing linking a given
+# registration to the study it registers, so it stays the "unknown"
+# placeholder here until that matching exists (see .psychds_prereg_field()
+# above for the same gap on study-design fields).
+.psychds_study_open_flags <- function(plan, grp) {
+  dt <- if (is.null(plan) || !is.data.frame(plan) ||
+            !all(c("group", "data_type") %in% names(plan))) character(0) else
+    plan$data_type[!is.na(plan$group) & plan$group == grp]
+  list(data      = any(dt == "data", na.rm = TRUE),
+       code      = any(dt == "code", na.rm = TRUE),
+       materials = any(dt == "materials", na.rm = TRUE),
+       prereg    = .psychds_unknown)
 }
 
 # The literal placeholder written into any RO-Crate/DDI field metacheck cannot
@@ -778,6 +799,32 @@
   entities
 }
 
+# Resolve psychds_check's `referenced_by` column (per file: which OTHER
+# studies reuse it, from a script's own read/write references — see
+# data_group_llm()) into, per study group, the target paths of the files that
+# study reuses from elsewhere. A materials/documentation file is physically
+# copied into exactly ONE study (whichever `group` placed it — see the copy
+# loop); every OTHER study named in its `referenced_by` gets the file's real
+# target_path recorded here instead, so that study's own metadata can point at
+# it rather than duplicate it. Mirrors the resolve()-against-plan$target_path
+# pattern in .psychds_provenance_entities() above.
+#
+# Returns a named list, group code -> character vector of target paths (each
+# owned by a DIFFERENT study than the name under which it's returned), or
+# list() when `plan` carries no `referenced_by` column at all.
+.psychds_reused_by_group <- function(plan) {
+  if (is.null(plan) || !is.data.frame(plan) ||
+      !all(c("target_path", "referenced_by") %in% names(plan))) return(list())
+  out <- list()
+  for (i in seq_len(nrow(plan))) {
+    refs <- plan$referenced_by[[i]]
+    tp   <- plan$target_path[i]
+    if (!length(refs) || is.na(tp) || !nzchar(tp)) next
+    for (g in refs) out[[g]] <- c(out[[g]], tp)
+  }
+  out
+}
+
 # Build and write the multi-study collection metadata as an RO-Crate 1.3
 # `ro-crate-metadata.json` at the output root. It layers a custom JSON-LD
 # context (the `metacheck`/`ddi` terms below) over the standard RO-Crate
@@ -792,18 +839,20 @@
 # The @graph's root Dataset (./) lists every part that exists via hasPart: each
 # study-<group>/ dataset (named and linked only — ALL variable-level detail,
 # including how many there are, stays in that study's own
-# dataset_description.json), each root-level shared file, the paper full text,
-# and the logs. `study_roots` are the "study-<group>" prefixes; `shared_files`
-# the plan target paths that carry no study prefix; `fulltext_rel`/`logs_rel`
-# the root-relative paths of those generated artifacts. Returns the written
-# path.
+# dataset_description.json), each root-level file, the paper full text, and
+# the logs. `study_roots` are the "study-<group>" prefixes; `shared_files` the
+# plan target paths that carry no study prefix — under the current rule this
+# is ONLY ever the root readme and this ro-crate-metadata.json itself (every
+# other file always belongs to exactly one study; see data_group_llm()), so
+# the name is now slightly broader than what it actually contains, kept for
+# minimal churn. `fulltext_rel`/`logs_rel` the root-relative paths of those
+# generated artifacts. Returns the written path.
 .psychds_rocrate_json <- function(paper, output_dir, pid, study_roots,
                                   labels_df = NULL,
                                   shared_files = character(0),
                                   fulltext_rel = character(0),
                                   logs_rel = character(0),
                                   paradata = list(),
-                                  open_flags = logical(0),
                                   ops = list(),
                                   plan = NULL) {
   info <- paper$info %||% list()
@@ -825,12 +874,28 @@
   # redundant duplication of data already on disk, not something a researcher
   # could usefully scan. The study's own metadata file is the cross-reference
   # target for variable-level detail.
+  reused_by_group <- .psychds_reused_by_group(plan)
   study_parts <- lapply(study_roots, function(sr) {
     grp <- sub("^study-", "", sr)
+    open_flags <- .psychds_study_open_flags(plan, grp)
+    reused <- reused_by_group[[grp]] %||% character(0)
     Filter(Negate(is.null), list(
       `@id`   = paste0(sr, "/"),
       `@type` = "Dataset",
       name    = paste("Study", toupper(grp)),
+      `metacheck:hasSharedData`      = open_flags$data,
+      `metacheck:hasSharedCode`      = open_flags$code,
+      `metacheck:hasSharedMaterials` = open_flags$materials,
+      `metacheck:isPreregistered`    = open_flags$prereg,
+      # Materials/documentation this study reuses from ANOTHER study's folder
+      # (physically owned there — see .psychds_reused_by_group()), as @id
+      # pointers to that file's real target_path, following the same shape as
+      # hasPart/CreateAction object/result above. Sits under the metacheck:
+      # prefix already declared in this file's own @context (unlike the
+      # dataset_description.json-side field, which uses a plain key — see
+      # .psychds_dataset_description()).
+      `metacheck:reusesFile` = if (length(reused))
+        lapply(reused, function(p) list(`@id` = p)) else NULL,
       about     = c(
         list(list(`@id` = if (length(study_roots) > 1)
           paste0("#study-design-", grp) else "#study-design")),
@@ -858,8 +923,9 @@
     unlist(lapply(study_roots, .psychds_credit_role_entities), recursive = FALSE)
   else .psychds_credit_role_entities()
 
-  # hasPart: root-level shared files (codebooks, materials, documentation), the
-  # paper full text, and the provenance logs. Each is just its @id, @type and
+  # hasPart: root-level files (the readme; every other file always belongs to
+  # a specific study, see data_group_llm()), the paper full text, and the
+  # provenance logs. Each is just its @id, @type and
   # name — an earlier version also carried a `metacheck:role` label ("paper
   # full text", "metacheck provenance log"), dropped because it restated what
   # the path already says: everything under logs/ is a log, and the file under
@@ -941,18 +1007,6 @@
                                    sub("^https?://doi.org/", "", doi))
   kw <- .psychds_keywords(ival("keywords"))
   if (!is.null(kw)) root[["keywords"]] <- kw
-
-  # Open-practices check outcomes as filterable metadata, so the corpus can be
-  # queried (e.g. "papers with no shared data") without opening each log. Only
-  # emitted for flags open_practices actually resolved (non-NA).
-  flag_map <- c(data = "metacheck:hasSharedData",
-                code = "metacheck:hasSharedCode",
-                materials = "metacheck:hasSharedMaterials",
-                prereg = "metacheck:isPreregistered")
-  for (k in names(flag_map)) {
-    v <- if (k %in% names(open_flags)) open_flags[[k]] else NA
-    if (!is.na(v)) root[[flag_map[[k]]]] <- isTRUE(v)
-  }
 
   # dateCreated is schema.org's own property for "when this dataset/file was
   # generated" — metacheck:generated duplicated it under a namespaced name for
@@ -1424,26 +1478,31 @@
         "Full, lossless module output tables (R data file) for later reloading and analysis without re-running the checks."
   }
 
-  # 4. Statistical output — reproducibility_check() now writes this ITSELF, as a
-  # statistical_output/ folder (results_long.csv + one ISA-JSON per source file)
-  # sibling to data/ in its own materialised layout (R/stat-output.R's
-  # stat_output_write(), called from inst/modules/reproducibility_check.R). That
-  # folder only persists on disk when the module ran with keep_sandbox = TRUE,
-  # surfaced as attr(reproducibility_check_output, "sandbox"); when present, we
-  # copy it here into the FINAL archive, sibling to output_dir/data/, so it
-  # survives alongside the rest of the converted dataset.
+  # 4. Statistical output — reproducibility_check() writes this ITSELF, as a
+  # statistical_output/ folder (results_long.csv + one statistical-output JSON
+  # document per source file — a metacheck-native schema, NOT ISA-JSON; an
+  # earlier version borrowed ISA's vocabulary and that was dropped, see
+  # R/stat-output.R's file header) in its own materialised layout
+  # (R/stat-output.R's stat_output_write(), called from
+  # inst/modules/reproducibility_check.R). That folder only persists on disk
+  # when the module ran with keep_sandbox = TRUE, surfaced as
+  # reproducibility_check_output$sandbox (a named list element, not an
+  # attribute — module_run() rebuilds the module's return value into a fresh
+  # list and only carries named elements through, dropping any attribute set on
+  # the object itself). When present, copy its CONTENTS into logs_dir — this is
+  # provenance about the run, same as the checks JSON and manifest above, not
+  # part of the dataset itself, so it belongs in logs/ rather than a top-level
+  # folder sibling to output_dir/data/.
   repro_out <- log_ops[["reproducibility_check"]]
-  sandbox <- if (!is.null(repro_out)) attr(repro_out, "sandbox") else NULL
+  sandbox <- if (!is.null(repro_out)) repro_out$sandbox else NULL
   if (!is.null(sandbox) && length(sandbox) == 1 && !is.na(sandbox)) {
     src_dir <- file.path(sandbox, "statistical_output")
     if (dir.exists(src_dir)) {
-      dest_dir <- file.path(output_dir, "statistical_output")
-      dir.create(dest_dir, recursive = TRUE, showWarnings = FALSE)
-      copied <- file.copy(list.files(src_dir, full.names = TRUE), dest_dir,
+      copied <- file.copy(list.files(src_dir, full.names = TRUE), logs_dir,
                           overwrite = TRUE)
       if (any(copied))
-        written[dest_dir] <-
-          "Statistical results extracted from the paper's JASP/jamovi file(s) and/or executed R code, typed with the STATO ontology: one combined results_long.csv (one row per extracted statistic, each with a result_id identifying the code — file + source line, or file + analysis heading — that produced it) and one ISA-JSON document per source file."
+        written[file.path(logs_dir, "results_long.csv")] <-
+          "Statistical results extracted from the paper's JASP/jamovi file(s) and/or executed R code, typed with the STATO ontology: one combined results_long.csv (one row per extracted statistic, each with a result_id identifying the code — file + source line, or file + analysis heading — that produced it) and one statistical-output JSON document per source file."
     }
   }
 
@@ -1566,7 +1625,7 @@ isTRUE_vec <- function(x) {
 # closest thing a .jasp has to "code" — a structured record of the tests run.
 .psychds_write_jasp_code <- function(src, dest) {
   tryCatch({
-    j <- read_jasp(src)
+    j <- import_jasp(src)
     summary <- .jasp_analyses_summary(j$analyses)
     if (!length(summary) && is.null(j$analyses)) return(FALSE)
     raw <- tryCatch(jsonlite::toJSON(j$analyses, auto_unbox = TRUE, pretty = TRUE),
@@ -1587,14 +1646,14 @@ isTRUE_vec <- function(x) {
 }
 
 # Recover the analyses from a .omv as a readable code artifact — the jamovi
-# counterpart of .psychds_write_jasp_code. read_omv()$analyses is already a
+# counterpart of .psychds_write_jasp_code. import_omv()$analyses is already a
 # character vector (one line per analysis, each carrying the reproducible
 # R-syntax call when recoverable), so unlike JASP there is no nested
 # analyses.json to dump — the summary IS the recovered content. Returns TRUE if
 # written, FALSE when the file records no analyses.
 .psychds_write_omv_code <- function(src, dest) {
   tryCatch({
-    summary <- read_omv(src)$analyses
+    summary <- import_omv(src)$analyses
     if (!length(summary)) return(FALSE)
     lines <- c(
       paste0("# Analyses recovered from ", basename(src)),
@@ -1618,12 +1677,17 @@ isTRUE_vec <- function(x) {
 #' are added when missing. This is the generator counterpart of the
 #' `psychds_check` module — run the check first to preview the gap.
 #'
-#' Multi-study repositories (when `data_check` assigned study groups under
-#' `llm_use(TRUE)`) are written as `study-<group>/` subdirectories, each a
-#' self-contained, independently-valid Psych-DS dataset. Files that belong to no
-#' single study (a whole-repo README/codebook, shared materials) sit at the
-#' collection root beside the study folders (following BIDS, which places shared
-#' content at the root rather than in a pseudo-subject). The root is then a
+#' Multi-study repositories (`data_check` assigns every file except the root
+#' readme/ro-crate-metadata.json to exactly one study, deterministically where
+#' possible and via an LLM only for the residual cases) are written as
+#' `study-<group>/` subdirectories, each a self-contained, independently-valid
+#' Psych-DS dataset. Only the root readme (and, for a multi-study collection,
+#' this `ro-crate-metadata.json` itself) sit at the collection root beside the
+#' study folders (following BIDS, which places collection-level content at the
+#' root rather than in a pseudo-subject). A materials or documentation file
+#' genuinely reused across studies is still owned by exactly one study (its
+#' physical copy lives there); the other studies get a reference to it, not a
+#' copy, in their own `dataset_description.json`. The root is then a
 #' *collection* of datasets, not itself a Psych-DS dataset, so it carries a
 #' machine-readable `ro-crate-metadata.json` (RO-Crate 1.3 JSON-LD, with a
 #' custom context for DDI-Lifecycle-inspired study-design/variable terms)
@@ -1670,8 +1734,8 @@ isTRUE_vec <- function(x) {
 #' @details
 #' If the reused/re-run chain includes `reproducibility_check`'s result AND that
 #' call was made with `keep_sandbox = TRUE`, its `statistical_output/` folder
-#' (extracted, STATO-typed statistics — see [reproducibility_check()]) is copied
-#' into `output_dir/statistical_output/`, sibling to `output_dir/data/`. This
+#' (extracted, STATO-typed statistics — see the `reproducibility_check` module)
+#' is copied into `output_dir/statistical_output/`, sibling to `output_dir/data/`. This
 #' converter does **not** run `reproducibility_check` itself and does not force
 #' `keep_sandbox = TRUE` on your behalf (doing so would mean every conversion
 #' also runs — or even executes — the paper's code, whether or not you asked
@@ -1780,7 +1844,6 @@ convert_psychds <- function(paper, output_dir = NULL,
       paper, output_dir, pid, study_roots = character(0),
       fulltext_rel = to_rel(fulltext_path),
       logs_rel     = to_rel(names(logs_written)),
-      open_flags   = .psychds_open_flags(all_ops),
       ops          = all_ops)
 
     message("Wrote metadata-only Psych-DS collection to ",
@@ -1941,6 +2004,11 @@ convert_psychds <- function(paper, output_dir = NULL,
       paste(empty_study_dirs, collapse = ", ")))
   study_roots <- if (length(planned_dirs) > 0) study_dirs else ""
 
+  # Per-study-group target paths of files this study REUSES from another
+  # study's folder (owned there, referenced here) — see
+  # .psychds_reused_by_group(). Computed once outside the loop.
+  reused_by_group <- .psychds_reused_by_group(plan)
+
   # ── Write dataset_description.json per study root ───────────────────────────
   descriptions <- character(0)
   for (sr in study_roots) {
@@ -1951,9 +2019,11 @@ convert_psychds <- function(paper, output_dir = NULL,
         columns_df[!is.na(columns_df$group) & columns_df$group == grp, ,
                    drop = FALSE] else columns_df[0, , drop = FALSE]
       study_label <- paste("Study", toupper(grp))
+      reused_here <- reused_by_group[[grp]] %||% character(0)
     } else {
       root_cols <- columns_df
       study_label <- ""
+      reused_here <- character(0)
     }
     pv <- .psychds_variable_measured(root_cols, labels_df)
     # Source data files landing in this root's data/ folder, resolved to their
@@ -1968,7 +2038,8 @@ convert_psychds <- function(paper, output_dir = NULL,
     root_data_files <- if (row_aligned)
       structure_df$file_name[is_root_data] else plan$file_name[is_root_data]
     distribution <- .psychds_distribution(root_data_files, structure_df)
-    desc <- .psychds_dataset_description(paper, study_label, pv, distribution)
+    desc <- .psychds_dataset_description(paper, study_label, pv, distribution,
+                                         reused_materials = reused_here)
     dest <- file.path(output_dir, sr, "dataset_description.json")
     .psychds_write_json(desc, dest)
     descriptions <- c(descriptions, dest)
@@ -2082,12 +2153,11 @@ convert_psychds <- function(paper, output_dir = NULL,
                               local_path = local_path, local_only = local_only)
 
   # ── Multi-study collection metadata (ro-crate-metadata.json) ────────────────
-  # Written last so it can index every part that exists: each study dataset, the
-  # root-level shared files (codebooks/materials/documentation), the paper full
-  # text, and the logs. Not named dataset_description.json, so the Psych-DS
-  # validator ignores it. Single-study (flat) datasets get no
-  # ro-crate-metadata.json — their root dataset_description.json already
-  # describes them.
+  # Written last so it can index every part that exists: each study dataset,
+  # the root-level readme, the paper full text, and the logs. Not named
+  # dataset_description.json, so the Psych-DS validator ignores it.
+  # Single-study (flat) datasets get no ro-crate-metadata.json — their root
+  # dataset_description.json already describes them.
   collection_path <- NULL
   if (length(planned_dirs) > 0) {
     # Paths of the extra generated artifacts, relative to the output root.
@@ -2106,29 +2176,29 @@ convert_psychds <- function(paper, output_dir = NULL,
       fulltext_rel = to_rel(fulltext_path),
       logs_rel     = to_rel(names(logs_written)),
       paradata     = paradata_index,
-      open_flags   = .psychds_open_flags(all_ops),
       ops          = all_ops,
       plan         = plan)
   }
 
   # Explain the files that were NOT placed in the dataset. A file is not added
-  # when it was not downloaded — which can be intentional (an asset the release
-  # links to rather than mirrors, via `skip_types`), or because `download` was
-  # not `"all"`, or a size cap skipped it. The converter only sees "not on disk",
-  # so it states the fact and points to the manifest for the per-file reason,
-  # rather than prescribing a single (possibly wrong) fix. The breakdown by type
-  # usually makes the cause obvious (e.g. all assets => a deliberate skip_types).
+  # when it was not downloaded — which can be intentional (materials the
+  # release links to rather than mirrors, via `skip_types`), or because
+  # `download` was not `"all"`, or a size cap skipped it. The converter only
+  # sees "not on disk", so it states the fact and points to the manifest for
+  # the per-file reason, rather than prescribing a single (possibly wrong) fix.
+  # The breakdown by type usually makes the cause obvious (e.g. all materials
+  # => a deliberate skip_types).
   if (length(skipped) > 0) {
     n_total <- nrow(plan)
-    types   <- tolower(plan$data_type[skipped_i] %||% "other")
-    types[is.na(types) | !nzchar(types)] <- "other"
+    types   <- tolower(plan$data_type[skipped_i] %||% "unknown")
+    types[is.na(types) | !nzchar(types)] <- "unknown"
     by_type <- sort(table(types), decreasing = TRUE)
     breakdown <- paste(sprintf("%d %s", by_type, names(by_type)), collapse = ", ")
-    only_assets <- length(by_type) == 1 && names(by_type)[1] == "asset"
-    hint <- if (only_assets)
-      paste0("These are assets (stimuli/media); if you excluded them on purpose ",
-             "(skip_types = \"asset\") the release should link to them instead of ",
-             "hosting them.")
+    only_materials <- length(by_type) == 1 && names(by_type)[1] == "materials"
+    hint <- if (only_materials)
+      paste0("These are materials (stimuli/software); if you excluded them on ",
+             "purpose (skip_types = \"materials\") the release should link to ",
+             "them instead of hosting them.")
     else
       paste0("Files are only added when downloaded. Run data_check with ",
              "download = \"all\" (and without skip_types) to include more; a ",

@@ -31,10 +31,10 @@ test_that("zip_decision keeps a data zip and links a pure-asset zip", {
         data.frame(name = c("a.png", "b.jpg", "readme.txt"), size = c(1, 2, 3))
     }
   )
-  d1 <- zip_decision("http://x/data.zip", skip_types = "asset")
+  d1 <- zip_decision("http://x/data.zip", skip_types = "materials")
   expect_true(d1$worth)                       # has study.csv (data)
 
-  d2 <- zip_decision("http://x/stimuli.zip", skip_types = "asset")
+  d2 <- zip_decision("http://x/stimuli.zip", skip_types = "materials")
   expect_false(d2$worth)                       # only images + a readme, no data
   expect_match(d2$reason, "link")
 })
@@ -46,11 +46,11 @@ test_that("zip_decision returns NA when the peek fails", {
   expect_match(d$reason, "could not peek")
 })
 
-test_that(".expand_zip keeps inner data files and drops inner assets", {
+test_that(".expand_zip keeps inner data files and drops inner materials", {
   d <- withr::local_tempdir()
   writeLines("id,x\n1,2", file.path(d, "study.csv"))   # data
-  writeLines("img", file.path(d, "stim.png"))          # asset
-  writeLines("notes", file.path(d, "README.txt"))      # readme
+  writeLines("img", file.path(d, "stim.png"))          # materials
+  writeLines("notes", file.path(d, "README.txt"))      # documentation (readme)
   z <- file.path(d, "mixed.zip")
   withr::with_dir(d, utils::zip("mixed.zip",
                                 c("study.csv", "stim.png", "README.txt"),
@@ -61,13 +61,16 @@ test_that(".expand_zip keeps inner data files and drops inner assets", {
     repo_url = "r", file_name = "mixed.zip", file_path = "mixed.zip",
     file_url = "u", file_location = z, file_size = file.size(z),
     file_type = "archive", repo_name = "r", paper_id = "p.1",
-    data_type = "other", data_format = "tabular", group = NA_character_,
+    data_type = "unknown", doc_role = NA_character_,
+    data_format = "tabular", group = NA_character_,
     stringsAsFactors = FALSE)
 
-  rows <- metacheck:::.expand_zip(z, zip_row, skip_types = "asset")
+  rows <- metacheck:::.expand_zip(z, zip_row, skip_types = "materials")
   expect_setequal(rows$file_name, c("study.csv", "README.txt"))  # png dropped
   expect_false("stim.png" %in% rows$file_name)
   expect_equal(rows$data_type[rows$file_name == "study.csv"], "data")
+  expect_equal(rows$data_type[rows$file_name == "README.txt"], "documentation")
+  expect_equal(rows$doc_role[rows$file_name == "README.txt"], "readme")
   expect_true(all(file.exists(rows$file_location)))              # extracted
   # inner rows inherit the zip's repo/paper, lose their own URL
   expect_true(all(rows$paper_id == "p.1"))

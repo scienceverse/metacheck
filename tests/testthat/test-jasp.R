@@ -1,38 +1,38 @@
 # Tests for the JASP (.jasp) reader, against a small real published .jasp file
-# committed under fixtures/formats/. read_jasp() returns a labelled data frame
+# committed under fixtures/formats/. import_jasp() returns a labelled data frame
 # (haven-style label/labels attributes), a column table, and the parsed analyses,
-# so downstream codebook extraction treats a .jasp like a .sav. read_omv() is its
-# jamovi counterpart (see test-omv.R).
+# so downstream codebook extraction treats a .jasp like a .sav. import_omv() is
+# its jamovi counterpart (see test-omv.R).
 
-test_that("read_jasp reads a real binary-format .jasp file", {
-  r <- read_jasp(test_path("fixtures", "formats", "sample.jasp"))
+test_that("import_jasp reads a real binary-format .jasp file", {
+  r <- import_jasp(test_path("fixtures", "formats", "sample.jasp"))
   expect_equal(r$format, "binary")
   expect_equal(nrow(r$data), 32L)
   expect_equal(ncol(r$data), 40L)
   expect_true("Age" %in% names(r$data))
 })
 
-test_that("read_jasp attaches haven-style value labels", {
-  r <- read_jasp(test_path("fixtures", "formats", "sample.jasp"))
+test_that("import_jasp attaches haven-style value labels", {
+  r <- import_jasp(test_path("fixtures", "formats", "sample.jasp"))
   # Several columns carry value labels (measure type + coding), like a .sav.
   n_labelled <- sum(vapply(r$data,
     function(c) !is.null(attr(c, "labels")), logical(1)))
   expect_gt(n_labelled, 0L)
 })
 
-test_that("read_jasp recovers the stored analyses", {
-  r <- read_jasp(test_path("fixtures", "formats", "sample.jasp"))
+test_that("import_jasp recovers the stored analyses", {
+  r <- import_jasp(test_path("fixtures", "formats", "sample.jasp"))
   # JASP stores analyses.json as structured JSON; the reader returns it parsed.
   expect_false(is.null(r$analyses))
   summ <- .jasp_analyses_summary(r$analyses)
   expect_true(length(summ) >= 1L)
 })
 
-test_that("read_jasp errors on a non-jasp file", {
+test_that("import_jasp errors on a non-jasp file", {
   d <- withr::local_tempdir()
   f <- file.path(d, "not.jasp")
   writeLines("not a zip", f)
-  expect_error(read_jasp(f))
+  expect_error(import_jasp(f))
 })
 
 # ── modern SQLite format ──────────────────────────────────────────────────────
@@ -59,12 +59,12 @@ make_sqlite_jasp <- function(dir) {
   jasp
 }
 
-test_that("read_jasp reads the modern SQLite format", {
+test_that("import_jasp reads the modern SQLite format", {
   skip_if_not_installed("RSQLite")
   skip_if_not_installed("DBI")
   skip_if_not(nzchar(Sys.which("zip")), "zip utility not available")
   d <- withr::local_tempdir()
-  r <- read_jasp(make_sqlite_jasp(d))
+  r <- import_jasp(make_sqlite_jasp(d))
   expect_equal(r$format, "sqlite")
   expect_equal(nrow(r$data), 3L)
   expect_equal(r$data$grp, c(1L, 2L, 1L), ignore_attr = TRUE)

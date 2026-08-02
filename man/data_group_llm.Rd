@@ -14,7 +14,8 @@ data_group_llm(
 }
 \arguments{
 \item{files}{a data.frame of files (needs \code{file_path} or \code{file_name}; an
-optional \code{data_type} column is used to skip assets)}
+optional \code{data_type} column limits which files are sent to the model —
+see Details)}
 
 \item{model}{the LLM model name}
 
@@ -23,26 +24,37 @@ optional \code{data_type} column is used to skip assets)}
 \item{batch_size}{number of files per LLM call}
 }
 \value{
-a data.frame with a \code{group} column (one row per input file, same
-order) and an \code{"model"} attribute, or \code{NULL} on failure.
+a data.frame with \code{group} and \code{referenced_by} columns (one row per
+input file, same order) and \code{"model"}/\code{"roster"}/\code{"roster_check"}/
+\code{"unresolved"} attributes, or \code{NULL} only when \code{files} is empty/NULL.
+Every placeable file resolves to a real study group — there is no
+\code{"shared"} value and no partial-failure NULL return.
 }
 \description{
 Classifies every file in a repository into a study group from its path
 (folder + name) context, so a multi-study repository can be split into
 \verb{study-<group>/} directories (used by \code{psychds_check}). Group codes follow
-datacheck's scheme: \code{ex1}, \code{ex2a}, \code{pilot1}, ..., or \code{shared} for files that
-belong to no single study (READMEs, shared materials). Only meaningful with
-an LLM; callers keep \code{group = NA} when \code{llm_use(FALSE)}.
+datacheck's scheme: \code{ex1}, \code{ex2a}, \code{pilot1}, ... . Every file resolves to
+exactly one study — there is no \code{"shared"} group. The only files that stay
+collection-level (never grouped, \code{group} left \code{NA}) are the root README and
+the root \code{ro-crate-metadata.json} (see \code{.data_doc_role()}), which callers
+must exclude BEFORE calling this function (see \code{data_check.R}). Only
+meaningful with an LLM for the residual cases the deterministic passes leave
+unresolved; callers get a fully deterministic grouping when \code{llm_use(FALSE)}.
 }
 \details{
-Only files that will actually be analysed or placed (data, codebooks, code,
-readmes, supplemental/output/other) are sent to the model; assets (images,
-PDFs, and other non-analysable files) are never grouped and default to
-\code{shared}. Paths that name their study outright ("Experiment 1/",
-"study2a_data.csv") are grouped by a deterministic regex first and skip the
-model entirely; LLM-returned codes are normalized and validated against the
-scheme, so a malformed code can never become a study directory name. The
-sent files are batched (see \code{.data_check_llm_batch}) so large repositories
-do not exceed the model's request/output limits.
+Only files that will actually be analysed or placed (data, documentation,
+code, materials) are sent to the model; every one of them must end up with a
+real study code — a materials or documentation file reused across multiple
+studies is still assigned to exactly ONE owning study (whichever the
+deterministic passes or the model placed it in first); every other study
+that reuses it gets a reference recorded separately (see \code{referenced_by} in
+\code{data_check.R}), not a second group membership. Paths that name their study
+outright ("Experiment 1/", "study2a_data.csv") are grouped by a
+deterministic regex first and skip the model entirely; LLM-returned codes
+are normalized and validated against the scheme, so a malformed code can
+never become a study directory name. The sent files are batched (see
+\code{.data_check_llm_batch}) so large repositories do not exceed the model's
+request/output limits.
 }
 \keyword{internal}

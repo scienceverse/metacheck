@@ -1,5 +1,12 @@
 #' Find Zenodo Links in Papers
 #'
+#' Get all Zenodo links: real hyperlinks from the paper's own `url` table,
+#' plus a body-text fallback for a BARE mention (a DOI like
+#' "10.5281/zenodo.1234567" is routinely cited without any URL scheme at all)
+#' that the source PDF/HTML never encoded as an actual hyperlink — the `url`
+#' table only ever contains links the source document itself made clickable.
+#' Same two-tier approach `github_links()` uses for GitHub.
+#'
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a table with the Zenodo url in the first (text) column
@@ -8,10 +15,19 @@
 #' @examples
 #' zenodo_links(psychsci)
 zenodo_links <- function(paper) {
-  href <- NULL
+  href <- text <- NULL
 
-  links <- paper_table(paper, "url") |>
+  found_href <- paper_table(paper, "url") |>
     dplyr::filter(grepl("zenodo\\.org|10\\.5281/zenodo", href, ignore.case = TRUE))
+
+  zen_bare_regex <- paste0(
+    "(?:https?://)?zenodo\\.org/(?:record|records)/[0-9]+",
+    "|(?:https?://)?(?:doi\\.org/)?10\\.5281/zenodo\\.[0-9]+"
+  )
+  other_zen <- text_search(paper, zen_bare_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
+  links <- dplyr::bind_rows(found_href, other_zen) |> unique()
 
   links$zenodo_url <- links$href
   links$zenodo_id <- .zenodo_id(links$zenodo_url)

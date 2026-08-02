@@ -41,8 +41,9 @@ test_that("no code files", {
   expect_equal(mo$summary_table, exp)
 
   # JASP is listed alongside the analysed languages (see `listed_langs` in the
-  # module): a .jasp is a binary bundle we count but do not parse.
-  exp <- "We found 0 R, 0 SAS, 0 SPSS, 0 Stata, and 0 JASP code files."
+  # module): a .jasp is a binary bundle we count but do not parse. Mplus and
+  # MATLAB were added to `listed_langs` alongside JASP/R/SAS/SPSS/Stata.
+  exp <- "We found 0 R, 0 SAS, 0 SPSS, 0 Stata, 0 Mplus, 0 MATLAB, and 0 JASP code files."
   expect_equal(mo$summary_text, exp)
   expect_equal(mo$report, exp)
 }, "mock")

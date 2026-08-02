@@ -360,9 +360,11 @@ convert_codebook <- function(paper, output_dir = NULL, render = TRUE,
   }
 
   # ── One labelled data frame per study group (flat when no groups) ────────────
+  # Every file except the collection-level root readme/ro-crate-metadata.json
+  # resolves to exactly one study — there is no "shared" bucket to filter out.
   groups <- if ("group" %in% names(columns_df)) columns_df$group else
     rep(NA_character_, nrow(columns_df))
-  study_groups <- unique(groups[!is.na(groups) & groups != "shared"])
+  study_groups <- unique(groups[!is.na(groups)])
   multi_study  <- length(study_groups) > 1
   roots <- if (multi_study) study_groups else ""
 

@@ -1,5 +1,13 @@
 #' Find ResearchBox Links in Papers
 #'
+#' Get all ResearchBox links: real hyperlinks from the paper's own `url`
+#' table, plus a body-text fallback for a BARE mention like "researchbox.org/
+#' 801" that the source PDF/HTML never encoded as an actual hyperlink (common
+#' in PDF-converted papers, where a plain-text URL mention loses its link
+#' formatting) — the `url` table only ever contains links the source
+#' document itself made clickable. Same two-tier approach `github_links()`
+#' uses for GitHub.
+#'
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a table with the ResearchBox url in the first (href) column
@@ -8,10 +16,16 @@
 #' @examples
 #' rbox_links(psychsci)
 rbox_links <- function(paper) {
-  href <- NULL
+  href <- text <- NULL
 
-  paper_table(paper, "url") |>
+  found_href <- paper_table(paper, "url") |>
     dplyr::filter(grepl("researchbox\\.org", href, ignore.case = TRUE))
+
+  rb_bare_regex <- "(?:https?://)?researchbox\\.org/[0-9]+/?"
+  other_rb <- text_search(paper, rb_bare_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
+  dplyr::bind_rows(found_href, other_rb) |> unique()
 }
 
 #' Retrieve info from ResearchBox by URL

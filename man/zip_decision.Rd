@@ -4,13 +4,13 @@
 \alias{zip_decision}
 \title{Decide whether a remote ZIP is worth downloading for a data archive}
 \usage{
-zip_decision(url, skip_types = "asset")
+zip_decision(url, skip_types = "materials")
 }
 \arguments{
 \item{url}{the zip's download URL}
 
 \item{skip_types}{data_type(s) that don't count as worth-downloading content
-(e.g. \code{"asset"})}
+(e.g. \code{"materials"})}
 }
 \value{
 a list with \code{worth} (\code{TRUE}/\code{FALSE}, or \code{NA} when the peek failed so
@@ -20,6 +20,6 @@ the caller can fall back to downloading), \code{reason}, \code{n_entries}, \code
 \description{
 Peeks inside the zip (see \code{\link[=zip_peek]{zip_peek()}}) and classifies its entries. A zip is
 worth downloading if it contains actual data or a codebook; a zip of only
-stimuli/materials is better linked than mirrored.
+stimuli/software is better linked than mirrored.
 }
 \keyword{internal}

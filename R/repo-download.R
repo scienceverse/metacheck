@@ -287,12 +287,13 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   on.exit(unlink(zip_tmp), add = TRUE)
 
   dl_err <- tryCatch({
-    httr2::request(zip_url) |>
+    req <- httr2::request(zip_url) |>
       req_func() |>
       httr2::req_timeout(timeout_s) |>
       httr2::req_error(is_error = \(r) FALSE) |>
-      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
-      httr2::req_perform(path = zip_tmp)
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE)
+    if (verbose()) req <- httr2::req_progress(req, type = "down")
+    httr2::req_perform(req, path = zip_tmp)
     if (!file.exists(zip_tmp) || file.size(zip_tmp) == 0) "empty response"
     else NA_character_
   }, error = \(e) conditionMessage(e))
@@ -349,6 +350,45 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 }
 
 
+#' Download the files listed by `repo_check()`
+#'
+#' Fetches the bytes for a table of repository files (as produced by
+#' `repo_check()`), writing each into a per-session temp directory or a
+#' persistent on-disk cache, and fills in `file_location` for every file it
+#' successfully retrieves. Where a whole-repo zip download is available (OSF's
+#' Waterbutler `?zip=` endpoint, a GitHub zipball), it is used instead of one
+#' HTTP request per file; a repo whose zip download fails falls back to
+#' file-by-file fetching automatically.
+#'
+#' Two independent size gates apply: `max_file_size` skips oversize files
+#' individually (the rest of the repository still downloads); `max_download_size`
+#' is a budget on the repository's TOTAL cached footprint (already-cached plus
+#' newly-downloaded), not on a single run's increment — already-cached files are
+#' kept for free, then the smallest still-missing files are added until the next
+#' one would exceed the budget, so re-running never grows a repository's cache
+#' past the budget and the canonical "files we ever download" set is fixed.
+#'
+#' @param files a data.frame of files (as returned by `repo_check()`'s
+#'   `table`): needs `repo_url`, `file_url`, and `file_path` or `file_name`
+#' @param max_file_size largest single file to download, in MB
+#' @param max_download_size largest total cached footprint per repository, in MB
+#' @param zip_timeout_s timeout (seconds) for a whole-repo zip download attempt
+#'   before falling back to file-by-file fetching
+#' @param cache if `TRUE`, write into the persistent rappdirs cache (survives
+#'   across sessions, never cleared automatically — see `repo_cache_clear()`);
+#'   if `FALSE` (default), write into a per-session temp directory that R
+#'   removes on exit
+#' @param pb an optional progress bar object (see `pb()`), ticked as files
+#'   download
+#'
+#' @returns `files` with `file_location` filled in for every file retrieved
+#'   (unchanged, i.e. `NA`, for files that were skipped or failed), and three
+#'   attributes: `"gated"` (data.frame: `repo_url`, `message` — repositories
+#'   refused outright by the size caps), `"oversize_skipped"` (data.frame:
+#'   `repo_url`, `file_name`, `file_size` — individual files skipped under
+#'   `max_file_size`), and `"failed"` (data.frame: `repo_url`, `file_name`,
+#'   `error` — files whose download was attempted but errored, e.g. a
+#'   transient network failure).
 #' @export
 #' @keywords internal
 download_repo_files <- function(files,

@@ -3,35 +3,129 @@
 #   * stat_results_long()  -> a flat, queryable data.frame (one row per cell:
 #     analysis / row label / statistic / STATO iri / value) for the scienceverse
 #     SQLite DB, matching how other module output is flattened into it;
-#   * stat_output_isa()    -> a complete, VALIDATED ISA-JSON document (one file =
-#     one Sample; each analysis a Process; each result row a Material whose
-#     characteristics are STATO-typed values) for the run logs.
-# Column -> STATO typing is via stato_type_column() (R/stato-map.R): STATO IRI
-# where a class exists, else the header text as a nominal label (never dropped).
+#   * stat_output_json()   -> a complete, structured statistical-output document
+#     (schema/schema_version, paper_id, source_file, source_format, and an
+#     analyses[] array, each with results[] carrying result_id/row_label/values)
+#     for the run logs. This is a metacheck-NATIVE schema, in the character of
+#     OSD/DDI-Lifecycle/Psych-DS: a flat, self-describing JSON document with a
+#     small set of named sections, every field open. It replaced an earlier
+#     ISA-JSON-modelled version (Investigation/Study/Material vocabulary
+#     borrowed from the life-sciences ISA model) that validated against a real
+#     external schema but forced statistics into containers (a t-test result as
+#     a "Material") that vocabulary was never designed to hold — a repurposing
+#     metacheck itself invented, not an established convention. Dropping ISA
+#     removes that mismatch entirely; there is no external schema to conform to
+#     here, by design.
+# Column -> STATO typing is via stato_type_column() (R/stato-map.R): a verified
+# STATO class where one exists, else a metacheck-minted statistic term, else the
+# header text as a nominal label (never dropped).
 #
-# Every result table also gets a stable result_id, via .stat_result_ids(): the
-# CODENAME (source_file) that produced it plus a locator —
-#   * an executed R script: the source LINE the statement started on
-#     (`#L<line>`), from read_r_output()'s echo-based line attribution;
-#   * a JASP/jamovi extraction: the analysis heading (`#<analysis>`), since
-#     there is no source line for a GUI-driven analysis.
-# When several results share the same locator (a loop producing several
-# results on one line; a heading repeated across tables), `_1`/`_2`/... is
-# appended in table order so every id stays unique within its source file.
+# Every result ROW gets a stable result_id, via .stat_result_ids() (the TABLE's
+# base id) plus a per-row suffix added by each caller. The base id is the
+# CODENAME (source_file) that produced the table plus a POSITIONAL locator —
+#   * an executed R script: the source LINE the statement started on, from
+#     read_r_output()'s echo-based line attribution (`l<line>`), plus
+#     `line_seq` (that result TABLE's 1-based position among results sharing
+#     the SAME line — a loop calling t.test() each iteration prints several
+#     result tables off one source line);
+#   * a JASP/jamovi extraction: there is no source line for a GUI-driven
+#     analysis, so `table_index` (the table's 1-based ordinal position in the
+#     rendered document, from read_stat_tables()) plays the same role a line
+#     number plays for R.
+# Each caller then appends `_r<row>` (that row's 1-based position within the
+# table) to turn the table's base id into a unique per-ROW id — the level a
+# reader actually wants to trace ("which line/table produced THIS reported
+# t-value"), since one result table commonly holds several rows (one per
+# comparison/predictor/group).
+# The whole id is sanitised to lower-case letters/digits/underscores only —
+# every separator (the `#` that used to join source_file to the locator, `.`
+# in a filename, spaces in an analysis heading) becomes `_` — so result_id is
+# always a single safe token, usable as a filename or a column value without
+# further escaping.
+.stat_sanitize_id <- function(x) {
+  x <- tolower(trimws(as.character(x %||% "")))
+  x <- gsub("[^a-z0-9]+", "_", x)
+  sub("^_|_$", "", x)
+}
 
-# One result_id per element of `tables` (read_stat_tables()/read_r_output()'s
-# return shape), stamped in the SAME order those tables are walked elsewhere in
-# this file (stat_results_long, stat_output_isa) so ids line up across both
-# serialisations of one extraction.
-.stat_result_ids <- function(tables) {
+# One base (per-TABLE) result_id per element of `tables`
+# (read_stat_tables()/read_r_output()'s return shape), stamped in the SAME
+# order those tables are walked elsewhere in this file (stat_results_long,
+# stat_output_json). Callers append `_r<row>` per row to get the final,
+# per-result id. `source_file` is required (unlike before, where it was
+# appended by each caller separately) so the whole id can be sanitised as ONE
+# token here, in one place.
+.stat_result_ids <- function(tables, source_file = NA_character_) {
+  src <- .stat_sanitize_id(source_file %||% "result")
   locator <- vapply(tables, function(tb) {
-    if (!is.null(tb$line) && !is.na(tb$line)) paste0("L", tb$line)
-    else if (!is.null(tb$analysis) && !is.na(tb$analysis) && nzchar(tb$analysis))
+    if (!is.null(tb$line) && !is.na(tb$line)) {
+      seq_n <- tb$line_seq %||% 1L
+      paste0("l", tb$line, "_", seq_n)
+    } else if (!is.null(tb$table_index) && !is.na(tb$table_index)) {
+      paste0("t", tb$table_index)
+    } else if (!is.null(tb$analysis) && !is.na(tb$analysis) && nzchar(tb$analysis)) {
       tb$analysis
-    else "result"
+    } else "result"
   }, character(1))
-  ave(locator, locator, FUN = function(x)
+  ids <- paste0(src, "_", locator)
+  # A locator can still repeat across TABLES (e.g. the analysis-heading
+  # fallback with no line/table_index, if a heading recurs) — disambiguate
+  # with a trailing counter before row-suffixing, same intent as before.
+  ave(ids, ids, FUN = function(x)
     if (length(x) == 1) x else paste0(x, "_", seq_along(x)))
+}
+
+# The TEST-level grouping key: which statistics belong to the same analysis.
+#
+# `result_id` identifies one ROW of one table, which is already the right unit
+# for a test reported from a single call (an R t.test yields t, df, p, both
+# group means and the CI bounds under one id). But a GUI analysis is split
+# across several tables — JASP puts a regression's F-test in an "ANOVA" table,
+# its coefficients in "Coefficients", its R² in "Model Summary" — and a paper
+# reports those together. `test_id` is what re-unites them.
+#
+# It keys on the FORMAT'S OWN analysis identity, never on text:
+#   * JASP    — the `id` of the analysis in analyses.json (4, 5, 6, ...);
+#   * jamovi  — the AnalysisResponse's `analysisId` (104, 108, ...);
+#   * R       — the source line, since one statement is one analysis.
+# Using the format's id matters: five separate regressions in one .jasp all
+# carry the name "RegressionLinear", so grouping on the NAME would fuse five
+# distinct tests into one, while their ids (4-8) keep them apart.
+#
+# The row label is appended because one analysis' table can hold several
+# INDEPENDENT results — a Coefficients table has one row per predictor, and
+# each predictor's t/p/CI is its own reportable test. Without it, every
+# predictor in a model would collapse into a single group.
+.stat_test_id <- function(tb, source_file, base_id, row_label = "") {
+  aid <- tb$analysis_id %||% NA
+  anchor <- if (length(aid) == 1 && !is.na(aid) && nzchar(as.character(aid)))
+    paste0("a", as.character(aid))
+  else if (!is.null(tb$line) && !is.na(tb$line))
+    # `line_seq` must be part of the anchor, not just the line: a loop
+    # (`for (o in outcomes) print(t.test(...))`) prints SEVERAL independent
+    # tests from ONE source line, and grouping on the line alone would merge
+    # them into a single test. line_seq is exactly the within-line counter that
+    # keeps them apart.
+    paste0("l", tb$line, "_", tb$line_seq %||% 1L)
+  else sub("_r[0-9]+$", "", base_id)   # fall back to the table's own base id
+  .stat_sanitize_id(paste(.stat_sanitize_id(source_file %||% "result"),
+                          anchor, row_label, sep = "_"))
+}
+
+# Is this cell a PLACEHOLDER rather than a value? JASP renders an empty cell in
+# a result table as "." and jamovi as an em/en dash; a table for an analysis the
+# user set up but never completed is placeholder in EVERY cell. Emitting those
+# produces fully STATO-typed junk — a "p-value" whose value is "." — which is
+# worse than omitting them, because a downstream matcher sees a p that exists
+# but can never match anything. Treated exactly like the already-skipped empty
+# cell: the key is omitted, and a result left with no values at all is dropped.
+# Deliberately NARROW: only these exact markers (after trimming) count, so a
+# real value is never discarded.
+.STAT_PLACEHOLDERS <- c(".", "-", "—", "–", "−",
+                        "na", "nan", "null", "n/a")
+.stat_is_placeholder <- function(x) {
+  x <- trimws(as.character(x %||% ""))
+  !nzchar(x) || tolower(x) %in% .STAT_PLACEHOLDERS
 }
 
 # Which columns of a result table are STATISTICS (vs row-label / structural
@@ -42,10 +136,32 @@
 # row-LABEL when its non-empty cells are mostly non-numeric text; a statistic
 # column holds (mostly) numbers OR has a header that maps to a known statistic.
 # This adapts to every test automatically because it reads the actual column.
-.stat_is_label_col <- function(header, values) {
+# `role` is the source format's OWN declaration of what this column is, when it
+# makes one: jamovi's ResultsColumn carries type ("text" for a label column,
+# number/integer for a statistic) and format (which can name the quantity
+# outright, e.g. "pvalue"). A declaration beats any amount of guessing from cell
+# contents — a transposed t-test column mixes a variable name, a test name and
+# then numbers, which no content heuristic classifies correctly — so it is
+# consulted first. NULL for sources that declare nothing (the HTML path), which
+# falls through to the content test unchanged.
+.stat_is_label_col <- function(header, values, role = NULL) {
+  if (!is.null(role)) {
+    ty <- tolower(trimws(as.character(role$type %||% "")))
+    fm <- tolower(trimws(as.character(role$format %||% "")))
+    # A declared quantity in `format` (pvalue, zto, ...) means a statistic.
+    if (nzchar(fm)) return(FALSE)
+    if (ty %in% c("number", "integer")) return(FALSE)
+    if (identical(ty, "text")) return(TRUE)
+  }
   h <- tolower(trimws(header %||% ""))
   vals <- trimws(as.character(values %||% character(0)))
-  vals <- vals[nzchar(vals)]
+  # Placeholders ("." in JASP, an em dash in jamovi) are not content: an
+  # all-placeholder column carries no information either way. They must be
+  # dropped BEFORE the numeric-content test below, because that test's regex
+  # (`[0-9.]+`) matches a bare "." — so a column of JASP placeholders would
+  # otherwise look 100% numeric and be misclassified as a statistic column,
+  # producing a junk statistic keyed off an empty header.
+  vals <- vals[!vapply(vals, .stat_is_placeholder, logical(1))]
   # A header that types to a known statistic is a statistic column regardless of
   # content (e.g. a p column with "< .001" strings).
   if (nzchar(h) && !identical(stato_type_column(h)$termSource, ""))
@@ -76,56 +192,144 @@
 #'
 #' @returns a data.frame with columns `paper_id`, `source_file`, `result_id`,
 #'   `analysis`, `table_title`, `row_label`, `statistic`, `stato_label`,
-#'   `stato_iri`, and `value`. `result_id` identifies the CODE that produced a
-#'   result: `<source_file>#L<line>` for an executed R script (from
-#'   [read_r_output()]'s echo-based line attribution), or
-#'   `<source_file>#<analysis heading>` for a JASP/jamovi extraction (no source
-#'   line exists there); `_1`/`_2`/... is appended when several results share
-#'   one locator (e.g. a loop, or a repeated heading). Empty frame (same
-#'   columns) when there is nothing to flatten.
+#'   `stato_iri`, and `value`. `result_id` identifies ONE CELL — one statistic
+#'   of one code row — sanitised to lower-case letters/digits/underscores:
+#'   `<source_file>_l<line>_<line_seq>_r<row>_<statistic>` for an executed R
+#'   script (from [read_r_output()]'s echo-based line attribution), or
+#'   `<source_file>_t<table_index>_r<row>_<statistic>` for a JASP/jamovi
+#'   extraction (no source line exists there, so the table's ordinal position
+#'   in the rendered document stands in for one); `row` is the 1-based
+#'   position of this result within its table, and `statistic` is that cell's
+#'   own column header, sanitised the same way and disambiguated with a
+#'   trailing counter on the rare repeat within one row (a coefficients matrix
+#'   with a duplicated header). Every ROW's shared prefix (everything before
+#'   the trailing `_<statistic>`) is `.stat_test_id()`'s locator, so cells from
+#'   the same row share that prefix — only the final segment tells them apart.
+#'   Empty frame (same columns) when there is nothing to flatten.
 #' @export
 stat_results_long <- function(tables, paper_id = NA_character_,
                               source_file = NA_character_) {
   empty <- data.frame(paper_id = character(0), source_file = character(0),
-                      result_id = character(0), analysis = character(0),
+                      test_id = character(0), result_id = character(0),
+                      analysis = character(0),
                       table_title = character(0), row_label = character(0),
                       statistic = character(0), stato_label = character(0),
-                      stato_iri = character(0), value = character(0))
+                      stato_iri = character(0), value = character(0),
+                      model_ref = character(0))
   if (is.null(tables) || length(tables) == 0) return(empty)
 
-  result_ids <- .stat_result_ids(tables)
-  full_ids <- if (!is.na(source_file) && nzchar(source_file))
-    paste0(source_file, "#", result_ids) else result_ids
+  base_ids <- .stat_result_ids(tables, source_file)
 
   rows <- lapply(seq_along(tables), function(ti) {
     tb <- tables[[ti]]
     df <- tb$data
     if (is.null(df) || !nrow(df) || !ncol(df)) return(NULL)
+    # A .spv CHART entry (import_spv()'s is_chart = TRUE; see R/spv.R's
+    # .spv_decode_chart()) has `x`/`y` point-coordinate columns, not a result
+    # table -- extracting "statistics" from it would misread plot data as
+    # typed values. Chart entries are display-only and carry no statistic to
+    # match against a paper's reported results, so they are skipped here
+    # exactly like a table with no statistic columns at all.
+    if (isTRUE(tb$is_chart)) return(NULL)
     headers <- names(df)
+    # The source format's own per-column role declarations, when it made any
+    # (jamovi does; see read_stat_tables()). NULL entries fall back to content.
+    roles <- attr(df, "col_roles") %||% list()
     # Identify label columns (row keys) vs statistic columns.
     is_label <- vapply(seq_along(headers), function(c)
-      .stat_is_label_col(headers[[c]], df[[c]]), logical(1))
+      .stat_is_label_col(headers[[c]], df[[c]], roles[[headers[[c]]]]),
+      logical(1))
     label_cols <- which(is_label); stat_cols <- which(!is_label)
     if (!length(stat_cols)) return(NULL)
 
+    # An .spv table (see R/spv.R) is LONG/tidy: one column per
+    # row/column/layer DIMENSION holding that cell's category label, plus a
+    # single generic "value" column -- the statistic's own NAME sits as a
+    # cell value inside one of the label columns (conventionally one named
+    # "Statistics"), never as a column header the way JASP/jamovi/R report
+    # it. `tb$syntax` is set only for .spv-produced tables (see .spv_read()),
+    # so it doubles as the shape signal here without needing a separate flag.
+    # When present, the "Statistics"-named label column (falling back to the
+    # first label column if none is literally named that, since a table like
+    # UNIANOVA's "Between Subjects Factors" genuinely has no such column and
+    # types nothing) supplies the row's real statistic identity via
+    # .spv_stato_type_label(), and headers[[ci]] (always the literal string
+    # "value") is never used for typing.
+    is_spv <- !is.null(tb$syntax)
+    stats_col <- if (is_spv) {
+      exact <- label_cols[tolower(trimws(headers[label_cols])) == "statistics"]
+      if (length(exact)) exact[[1]] else NA_integer_
+    } else NA_integer_
+
     per_row <- lapply(seq_len(nrow(df)), function(ri) {
-      row_label <- paste(trimws(as.character(df[ri, label_cols, drop = TRUE])),
+      # For an .spv table, the "Statistics" column's own value IS the
+      # statistic name (typed separately below), not part of the row's
+      # identifying label — excluded here so a row_label reads "BlackChosen"
+      # rather than the redundant "Sig. (2-tailed) BlackChosen".
+      row_label_cols <- if (is_spv && !is.na(stats_col))
+        setdiff(label_cols, stats_col) else label_cols
+      row_label <- paste(trimws(as.character(df[ri, row_label_cols, drop = TRUE])),
                          collapse = " ")
       row_label <- trimws(gsub("\\s+", " ", row_label))
-      cells <- lapply(stat_cols, function(ci) {
+      row_id <- paste0(base_ids[[ti]], "_r", ri)
+      # Disambiguate a statistic name repeated within this ROW (e.g. a
+      # coefficients matrix with a duplicated header) with a trailing counter,
+      # same intent as .stat_result_ids()'s locator disambiguation above — so
+      # the per-cell id below is unique even in that edge case.
+      stat_slugs <- vapply(headers[stat_cols], .stat_sanitize_id, character(1))
+      stat_slugs <- ave(stat_slugs, stat_slugs, FUN = function(x)
+        if (length(x) == 1) x else paste0(x, "_", seq_along(x)))
+      cells <- lapply(seq_along(stat_cols), function(si) {
+        ci <- stat_cols[si]
         val <- trimws(as.character(df[ri, ci]))
-        if (!nzchar(val)) return(NULL)
-        typ <- stato_type_column(headers[[ci]])
+        if (.stat_is_placeholder(val)) return(NULL)
+        # .spv: type from the row's OWN "Statistics" cell value (there is no
+        # header to type — every stat_cols header is the literal "value").
+        # No such column (e.g. a factor-level listing table with no
+        # statistic identity at all) leaves it untyped, same guaranteed
+        # fallback stato_type_column() gives an unmapped header.
+        stat_name <- if (is_spv && !is.na(stats_col))
+          trimws(as.character(df[ri, stats_col])) else headers[[ci]]
+        typ <- if (is_spv)
+          (if (!is.na(stats_col)) .spv_stato_type_label(stat_name) else
+             list(annotationValue = "", termSource = "", termAccession = ""))
+          else stato_type_column(headers[[ci]], tb$call_fn)
+        # A model summary's "Correlation of Fixed Effects" table has one
+        # column PER PREDICTOR, header'd with that predictor's own (often
+        # R-truncated) name — "(Intr)", "abs_wn" for abs_own — never a
+        # statistic name a header lookup could recognise. Every cell in this
+        # table IS a correlation coefficient between two fixed effects, by
+        # the table's own heading, regardless of what its column happens to
+        # be called; only fired when the header lookup found nothing, so a
+        # column that DOES name a real statistic (unlikely here, but not
+        # impossible) still wins on its own merits.
+        if (!nzchar(typ$termSource) &&
+            identical(tb$analysis %||% "", "Correlation of Fixed Effects")) {
+          typ <- list(annotationValue = "Pearson's correlation coefficient",
+                     termSource = "STATO",
+                     termAccession = "http://purl.obolibrary.org/obo/STATO_0000280")
+        }
         data.frame(paper_id = paper_id,
                    source_file = source_file,
-                   result_id = full_ids[[ti]],
+                   test_id = .stat_test_id(tb, source_file, base_ids[[ti]],
+                                           row_label),
+                   # ONE CELL: the row's id plus this cell's own (disambiguated)
+                   # statistic slug, so every result in the file is unique —
+                   # not just every ROW (several statistics share one row).
+                   result_id = .stat_sanitize_id(paste0(row_id, "_", stat_slugs[si])),
                    analysis = tb$analysis %||% NA_character_,
                    table_title = tb$title %||% NA_character_,
                    row_label = row_label,
-                   statistic = headers[[ci]],
+                   statistic = stat_name,
                    stato_label = typ$annotationValue,
                    stato_iri = typ$termAccession,
-                   value = val)
+                   value = val,
+                   # The fitted-model object this table's call operated on
+                   # (e.g. "m_vid"), resolved through simple assignment chains
+                   # by read_r_output() — NA for JASP/jamovi tables (no R call
+                   # produced them) and for any R call read_r_output() could
+                   # not resolve to a bare object reference.
+                   model_ref = tb$model_ref %||% NA_character_)
       })
       dplyr::bind_rows(Filter(Negate(is.null), cells))
     })
@@ -135,178 +339,187 @@ stat_results_long <- function(tables, paper_id = NA_character_,
   if (!nrow(out)) empty else out
 }
 
-#' Serialise extracted result tables as a validated ISA-JSON document
+#' Serialise extracted result tables as a structured statistical-output document
 #'
-#' Builds a complete ISA-JSON Investigation from the result tables of ONE
-#' `.jasp`/`.omv` file, following the modelling validated for metacheck: one file
-#' = one dataset = one Sample; each analysis heading is a Protocol/Process on that
-#' shared Sample; each result row is a Material whose `characteristics` are the
-#' STATO-typed statistic values (via [stato_type_column()]). The document
-#' validates against the bundled ISA v1.0 schemas (`inst/schema/isa-json/`).
+#' Builds a complete statistical-output document from the result tables of ONE
+#' `.jasp`/`.omv` file or executed R script: one document per source file, with
+#' an `analyses` array (one element per analysis heading/table) each carrying a
+#' `results` array (one element per result row) of STATO-typed statistic values
+#' (via [stato_type_column()]). This is a metacheck-native schema — a flat,
+#' self-describing document in the character of OSD/DDI-Lifecycle/Psych-DS —
+#' not a repurposing of an unrelated external standard's vocabulary; there is
+#' no external schema this validates against.
 #'
 #' @param tables the list returned by [read_stat_tables()] or [read_r_output()]
-#' @param paper_id paper id / DOI, used in identifiers and the study title
+#' @param paper_id paper id / DOI, recorded on the document
 #' @param source_file basename of the originating `.jasp`/`.omv`, or the R
-#'   script name for run-R output, recorded as the assay's data file and
-#'   technology platform, and as the `result_id` prefix (see below)
+#'   script name for run-R output, recorded as `source_file` and used to derive
+#'   `source_format` and the `result_id` prefix (see below)
 #'
-#' @returns a list (ISA Investigation) ready to serialise with
-#'   `jsonlite::toJSON(auto_unbox = TRUE)`. `NULL` when there are no tables. Each
-#'   Material carries a `"result_id"` `Comment` identifying the CODE that
-#'   produced its table — see [stat_results_long()] for the id format (shared
-#'   between both serialisations of one extraction).
+#' @returns a list ready to serialise with `jsonlite::toJSON(auto_unbox =
+#'   TRUE)`, with elements `schema`, `schema_version`, `paper_id`,
+#'   `source_file`, `source_format`, and `analyses` (a list of `list(analysis,
+#'   results)`, where each result is `list(result_id, row_label, values)` and
+#'   `values` is a named list keyed by the statistic's own short name, e.g.
+#'   `t`/`df`/`p`/`d`, each a `list(value, stato_label, stato_iri)` —
+#'   `stato_label`/`stato_iri` omitted when [stato_type_column()] found no
+#'   class for that statistic). `NULL` when there are no tables or no
+#'   table yields any typed value. `result_id` identifies the CODE ROW that
+#'   produced it — see [stat_results_long()] for the id format (shared between
+#'   both serialisations of one extraction).
 #' @export
-stat_output_isa <- function(tables, paper_id = "metacheck",
+stat_output_json <- function(tables, paper_id = "metacheck",
                             source_file = NA_character_) {
   if (is.null(tables) || length(tables) == 0) return(NULL)
-  platform <- if (grepl("\\.omv$", source_file %||% "", ignore.case = TRUE))
+  source_format <- if (grepl("\\.omv$", source_file %||% "", ignore.case = TRUE))
     "jamovi" else if (grepl("\\.jasp$", source_file %||% "", ignore.case = TRUE))
-    "JASP" else "unknown"
+    "JASP" else if (grepl("\\.spv$", source_file %||% "", ignore.case = TRUE))
+    "SPSS" else if (grepl("\\.smcl$", source_file %||% "", ignore.case = TRUE))
+    "Stata" else if (grepl("\\.out$", source_file %||% "", ignore.case = TRUE))
+    "Mplus" else if (grepl("\\.[rR]$", source_file %||% "", ignore.case = TRUE))
+    "R" else "unknown"
 
-  oa <- function(av, ts = "", ta = "")
-    list(`@type` = "OntologyAnnotation", annotationValue = av,
-         termSource = ts, termAccession = ta)
+  base_ids <- .stat_result_ids(tables, source_file)
 
-  result_ids <- .stat_result_ids(tables)
-  full_ids <- if (!is.na(source_file) && nzchar(source_file))
-    paste0(source_file, "#", result_ids) else result_ids
-
-  # One Material per result row, characteristics = STATO-typed statistic cells.
-  materials <- list(); processes <- list(); mat_refs <- list(); proc_i <- 0L
+  analyses <- list()
   for (ti in seq_along(tables)) {
     tb <- tables[[ti]]; df <- tb$data
     if (is.null(df) || !nrow(df) || !ncol(df)) next
+    # A .spv CHART entry (is_chart = TRUE) has x/y point-coordinate columns,
+    # not a result table -- see the matching guard in stat_results_long().
+    if (isTRUE(tb$is_chart)) next
     headers <- names(df)
+    roles <- attr(df, "col_roles") %||% list()
     is_label <- vapply(seq_along(headers), function(c)
-      .stat_is_label_col(headers[[c]], df[[c]]), logical(1))
+      .stat_is_label_col(headers[[c]], df[[c]], roles[[headers[[c]]]]),
+      logical(1))
     stat_cols <- which(!is_label); label_cols <- which(is_label)
     if (!length(stat_cols)) next
 
-    row_mat_ids <- character(0)
+    results <- list()
     for (ri in seq_len(nrow(df))) {
-      chars <- lapply(stat_cols, function(ci) {
+      values <- list()
+      for (ci in stat_cols) {
         val <- trimws(as.character(df[ri, ci]))
-        if (!nzchar(val)) return(NULL)
-        typ <- stato_type_column(headers[[ci]])
+        if (.stat_is_placeholder(val)) next
+        typ <- stato_type_column(headers[[ci]], tb$call_fn)
         num <- suppressWarnings(as.numeric(val))
         # Keep the number when finite; otherwise keep the string as written.
         # JSON has no Inf/NaN, and JASP/jamovi emit "Inf", "< .001", "NaN" etc.
-        # as display strings — those stay strings (the schema's value allows it).
-        list(`@type` = "MaterialAttributeValue",
-             category = list(`@type` = "MaterialAttribute",
-                             characteristicType = oa(typ$annotationValue,
-                                                     typ$termSource,
-                                                     typ$termAccession)),
-             value = if (is.na(num) || !is.finite(num)) val else num)
-      })
-      chars <- Filter(Negate(is.null), chars)
-      if (!length(chars)) next
+        # as display strings — those stay strings.
+        entry <- list(value = if (is.na(num) || !is.finite(num)) val else num)
+        if (nzchar(typ$termAccession)) {
+          entry$stato_label <- typ$annotationValue
+          entry$stato_iri <- typ$termAccession
+        }
+        # Key by the statistic's own header text (lower-cased, sanitised) so
+        # every column type — even one with no ontology class — gets a stable,
+        # readable key rather than being dropped.
+        key <- .stat_sanitize_id(headers[[ci]])
+        if (!nzchar(key)) key <- paste0("v", ci)
+        values[[key]] <- entry
+      }
+      if (!length(values)) next
       row_label <- trimws(gsub("\\s+", " ",
         paste(as.character(df[ri, label_cols, drop = TRUE]), collapse = " ")))
-      mid <- sprintf("#material/t%d_r%d", ti, ri)
-      materials[[length(materials) + 1L]] <- list(
-        `@id` = mid, `@type` = "Material",
-        name = paste0(tb$analysis %||% "result",
-                      if (nzchar(row_label)) paste0(": ", row_label) else ""),
-        type = "Extract Name", characteristics = chars,
-        comments = list(list(`@type` = "Comment", name = "result_id",
-                             value = full_ids[[ti]])))
-      row_mat_ids <- c(row_mat_ids, mid)
+      results[[length(results) + 1L]] <- list(
+        result_id = .stat_sanitize_id(paste0(base_ids[[ti]], "_r", ri)),
+        # Which ANALYSIS this result belongs to. Results sharing a test_id were
+        # produced by one analysis and are reported together in a paper — a
+        # regression's F-test, coefficients and R² live in three separate JASP
+        # tables but one sentence. See .stat_test_id().
+        test_id = .stat_test_id(tb, source_file, base_ids[[ti]], row_label),
+        row_label = row_label,
+        values = values)
     }
-    if (!length(row_mat_ids)) next
-    proc_i <- proc_i + 1L
-    processes[[length(processes) + 1L]] <- list(
-      `@id` = sprintf("#process/analysis%d", ti),
-      `@type` = "Process",
-      name = tb$analysis %||% sprintf("analysis %d", ti),
-      executesProtocol = list(`@id` = "#protocol/statistical_analysis"),
-      parameterValues = list(),
-      inputs = list(list(`@id` = "#sample/dataset")),
-      outputs = lapply(row_mat_ids, function(x) list(`@id` = x)),
-      comments = list())
-    mat_refs <- c(mat_refs, lapply(row_mat_ids, function(x) list(`@id` = x)))
+    if (!length(results)) next
+    analyses[[length(analyses) + 1L]] <- list(
+      analysis = tb$analysis %||% NA_character_,
+      results = results)
   }
-  if (!length(materials)) return(NULL)
-
-  study <- list(
-    `@id` = "#study/stats", `@type` = "Study", filename = "s_study.json",
-    identifier = paper_id, title = paste0("Statistical results: ", paper_id),
-    description = paste0("Result tables extracted from ",
-                        source_file %||% "a statistics file",
-                        " and typed with the STATO ontology."),
-    submissionDate = "", publicReleaseDate = "",
-    publications = list(), people = list(), studyDesignDescriptors = list(),
-    protocols = list(list(
-      `@id` = "#protocol/statistical_analysis", `@type` = "Protocol",
-      name = "statistical analysis", protocolType = oa("data transformation"),
-      description = "", uri = "", version = "",
-      parameters = list(), components = list())),
-    materials = list(
-      sources = list(list(`@id` = "#source/participants", `@type` = "Source",
-                          name = paste0(source_file %||% paper_id, " dataset"),
-                          characteristics = list(), comments = list())),
-      samples = list(list(`@id` = "#sample/dataset", `@type` = "Sample",
-                          name = paste0(source_file %||% paper_id, " analysed data"),
-                          characteristics = list(), factorValues = list(),
-                          derivesFrom = list(list(`@id` = "#source/participants")),
-                          comments = list())),
-      otherMaterials = materials),
-    processSequence = processes,
-    assays = list(list(
-      `@id` = "#assay/results", `@type` = "Assay", filename = "a_assay.json",
-      measurementType = oa("hypothesis testing"),
-      technologyType = oa(""), technologyPlatform = platform,
-      dataFiles = if (!is.na(source_file)) list(list(
-        `@id` = "#data/source", `@type` = "Data",
-        name = source_file, type = "Derived Data File", comments = list())) else list(),
-      materials = list(samples = list(list(`@id` = "#sample/dataset")),
-                       otherMaterials = mat_refs),
-      characteristicCategories = list(), unitCategories = list(),
-      processSequence = list(), comments = list())),
-    factors = list(), characteristicCategories = list(),
-    unitCategories = list(), comments = list())
+  if (!length(analyses)) return(NULL)
 
   list(
-    `@id` = paste0("#investigation/", paper_id), `@type` = "Investigation",
-    filename = "i_investigation.json", identifier = paper_id,
-    title = paste0("Statistical output: ", paper_id),
-    description = "Statistical result tables extracted by metacheck, STATO-typed, as ISA-JSON.",
-    submissionDate = "", publicReleaseDate = "",
-    ontologySourceReferences = list(list(
-      `@type` = "OntologySourceReference", name = "STATO",
-      description = "Statistical Methods Ontology",
-      file = "http://purl.obolibrary.org/obo/stato.owl", version = "latest_release")),
-    publications = list(), people = list(), studies = list(study),
-    comments = list())
+    schema = "metacheck-statistical-output",
+    schema_version = "1.0",
+    paper_id = paper_id,
+    source_file = source_file,
+    source_format = source_format,
+    analyses = analyses)
 }
 
-#' Validate a statistical-output document against the bundled ISA-JSON schema
+#' Validate a statistical-output document's native shape
 #'
-#' Checks that a [stat_output_isa()] document (or any ISA Investigation) conforms
-#' to the ISA model v1.0 JSON Schema. Uses the single self-contained bundled
-#' schema (`inst/schema/isa-json/isa_bundled_schema.json`, all cross-file `$ref`s
-#' inlined under `$defs`) so validation needs no reference list and no network.
+#' Checks that a [stat_output_json()] document has the required top-level
+#' fields, that `analyses` is a list of `list(analysis, results)`, and that
+#' every result carries a `result_id` and a non-empty `values` object whose
+#' entries each have a `value`. This is a native structural check, not an
+#' executed external JSON Schema — there is no external standard this document
+#' conforms to, by design (see the file header comment). Mirrors
+#' [behaverse_validate()]'s and `psychds-validate.R`'s hand-rolled approach.
 #'
-#' @param isa an ISA Investigation list (as from [stat_output_isa()]) or a JSON
-#'   string / path to a `.json` file
+#' @param doc a statistical-output document as an R list (as from
+#'   [stat_output_json()]), or a length-1 character path / JSON string to parse
+#'   first.
 #'
-#' @returns `TRUE` when valid; otherwise `FALSE` with the validation errors in
-#'   the `"errors"` attribute. Errors (rather than returning) if `jsonvalidate`
-#'   is not installed.
+#' @returns a list with `valid` (`TRUE` when no issues), `issues` (a character
+#'   vector of problem descriptions), and `summary` (`n_errors`, `n_analyses`,
+#'   `n_results`).
 #' @export
-stat_output_validate <- function(isa) {
-  if (!requireNamespace("jsonvalidate", quietly = TRUE))
-    stop("validation needs the 'jsonvalidate' package.", call. = FALSE)
-  schema <- system.file("schema", "isa-json", "isa_bundled_schema.json",
-                        package = "metacheck")
-  if (!nzchar(schema) || !file.exists(schema))
-    stop("bundled ISA schema not found in the installed package.", call. = FALSE)
-  json <- if (is.character(isa) && length(isa) == 1 &&
-              (file.exists(isa) || grepl("^\\s*[\\[{]", isa)))
-    (if (file.exists(isa)) paste(readLines(isa, warn = FALSE), collapse = "\n") else isa)
-  else jsonlite::toJSON(isa, auto_unbox = TRUE, null = "null")
-  v <- jsonvalidate::json_validator(schema, engine = "ajv")
-  v(json, verbose = TRUE, greedy = TRUE)
+stat_output_validate <- function(doc) {
+  if (is.character(doc) && length(doc) == 1L) {
+    src <- if (file.exists(doc)) doc else textConnection(doc)
+    parsed <- tryCatch(jsonlite::fromJSON(src, simplifyVector = FALSE),
+                       error = function(e) NULL)
+    if (is.null(parsed))
+      return(list(valid = FALSE, issues = "Input is not valid JSON.",
+                  summary = list(n_errors = 1L, n_analyses = 0L, n_results = 0L)))
+    doc <- parsed
+  }
+
+  issues <- character(0)
+  add <- function(msg) issues <<- c(issues, msg)
+
+  required_top <- c("schema", "schema_version", "paper_id", "source_file",
+                    "source_format", "analyses")
+  missing_top <- setdiff(required_top, names(doc %||% list()))
+  if (length(missing_top))
+    add(sprintf("Document missing top-level field%s: %s.",
+                plural(length(missing_top)), paste(missing_top, collapse = ", ")))
+
+  analyses <- doc$analyses %||% list()
+  if (!is.list(analyses))
+    add("`analyses` must be a list.")
+
+  n_results <- 0L
+  for (a in analyses) {
+    if (is.null(a$analysis))
+      add("An analysis entry is missing `analysis`.")
+    results <- a$results %||% list()
+    if (!is.list(results) || !length(results)) {
+      add("An analysis entry has no `results`.")
+      next
+    }
+    for (r in results) {
+      n_results <- n_results + 1L
+      if (is.null(r$result_id) || !nzchar(r$result_id %||% ""))
+        add("A result is missing `result_id`.")
+      values <- r$values %||% list()
+      if (!is.list(values) || !length(values)) {
+        add(sprintf("Result \"%s\" has no `values`.", r$result_id %||% "?"))
+        next
+      }
+      for (vn in names(values)) {
+        if (is.null(values[[vn]]$value))
+          add(sprintf("Result \"%s\": value \"%s\" is missing `value`.",
+                      r$result_id %||% "?", vn))
+      }
+    }
+  }
+
+  list(valid = !length(issues), issues = issues,
+       summary = list(n_errors = length(issues), n_analyses = length(analyses),
+                      n_results = n_results))
 }
 
 #' Write extracted statistical output to a dedicated folder
@@ -319,13 +532,13 @@ stat_output_validate <- function(isa) {
 #' one combined `results_long.csv` (every source file's [stat_results_long()]
 #' rows stacked, one row per extracted statistic, easiest to load and filter),
 #' and one `<codename>.statistical_output.json` per source file (its
-#' [stat_output_isa()] document). Called from inside `reproducibility_check`
+#' [stat_output_json()] document). Called from inside `reproducibility_check`
 #' itself (not from the later psychds/scienceverse conversion step), so the
 #' folder exists at the same point in the pipeline the data/code files do.
 #'
 #' @param stat_output a list as accumulated by `reproducibility_check` — each
-#'   element a list with `file` (source file name), `isa`
-#'   ([stat_output_isa()]'s document), and `long` ([stat_results_long()]'s
+#'   element a list with `file` (source file name), `json`
+#'   ([stat_output_json()]'s document), and `long` ([stat_results_long()]'s
 #'   table)
 #' @param root the materialised layout root (the same directory `data/` is
 #'   copied into); `statistical_output/` is created under it
@@ -338,8 +551,8 @@ stat_output_write <- function(stat_output, root) {
 
   longs <- Filter(function(s) is.data.frame(s$long) && nrow(s$long) > 0,
                   stat_output)
-  isas  <- Filter(function(s) !is.null(s$isa), stat_output)
-  if (!length(longs) && !length(isas)) return(invisible(NULL))
+  jsons <- Filter(function(s) !is.null(s$json), stat_output)
+  if (!length(longs) && !length(jsons)) return(invisible(NULL))
 
   out_dir <- file.path(root, "statistical_output")
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
@@ -350,11 +563,16 @@ stat_output_write <- function(stat_output, root) {
                      row.names = FALSE, na = "")
   }
 
-  for (s in isas) {
+  for (s in jsons) {
     fn <- sub("[.][^.]+$", "", basename(s$file %||% "result"))
     json_path <- file.path(out_dir, paste0(fn, ".statistical_output.json"))
-    writeLines(jsonlite::toJSON(s$isa, auto_unbox = TRUE, pretty = TRUE,
-                                null = "null"), json_path)
+    # digits = NA means "use R's full double precision", NOT jsonlite's default
+    # of 4 SIGNIFICANT digits — which silently rounded p = 1.736e-05 to 0 and
+    # a t of -4.48010443545641 to -4.4801. Rounding here would throw away the
+    # exact values the object-capture path exists to preserve, and a p-value
+    # written as 0 is not a rounding error but a wrong number.
+    writeLines(jsonlite::toJSON(s$json, auto_unbox = TRUE, pretty = TRUE,
+                                null = "null", digits = NA), json_path)
   }
 
   invisible(out_dir)

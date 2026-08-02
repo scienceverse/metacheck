@@ -13,7 +13,12 @@ psycharchives_links(paper)
 a table with the PsychArchives url in the first (href) column
 }
 \description{
-Find PsychArchives Links in Papers
+Get all PsychArchives links: real hyperlinks from the paper's own \code{url}
+table, plus a body-text fallback for a BARE mention (a handle like
+"20.500.12034/17526" is routinely cited without any URL scheme at all)
+that the source PDF/HTML never encoded as an actual hyperlink — the \code{url}
+table only ever contains links the source document itself made clickable.
+Same two-tier approach \code{github_links()} uses for GitHub.
 }
 \examples{
 \dontrun{

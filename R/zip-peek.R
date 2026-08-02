@@ -147,7 +147,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # name with the compression suffix stripped (results.csv.gz → results.csv).
 .is_single_compress <- function(name)
   grepl("[.](gz|bz2|xz)$", name, ignore.case = TRUE) & !.is_tar_archive(name)
-# Archives base R can read (and therefore worth downloading despite `other`).
+# Archives base R can read (and therefore worth downloading despite `unknown`).
 .is_readable_archive <- function(name)
   .is_zip(name) | .is_tar_archive(name) | .is_single_compress(name)
 
@@ -155,11 +155,12 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # walks what is actually on disk under `dest` (rather than trusting the archive's
 # listed member names, which tar may rewrite — stripping drive letters or leading
 # "/"/"./" — so listed paths need not match the extracted ones), classifies each
-# file, keeps only data/codebook/readme content (never skip_types), and builds
-# rows inheriting `archive_row`'s repo/paper/group fields. `label` prefixes
-# file_path for provenance (the container name). Returns a 0-row frame when
-# nothing worth keeping is inside — which is how an archive of only assets ends
-# up contributing nothing, exactly as if it had not been downloaded.
+# file, keeps only data or documentation (readme/codebook, by doc_role) content
+# (never skip_types), and builds rows inheriting `archive_row`'s repo/paper/group
+# fields. `label` prefixes file_path for provenance (the container name).
+# Returns a 0-row frame when nothing worth keeping is inside — which is how an
+# archive of only materials ends up contributing nothing, exactly as if it had
+# not been downloaded.
 .archive_rows <- function(dest, archive_row, label, skip_types) {
   empty <- archive_row[0, , drop = FALSE]
   if (!dir.exists(dest)) return(empty)
@@ -172,11 +173,15 @@ zip_peek <- function(url, tail_bytes = 131072) {
   loc <- file.path(dest, rel)
 
   types <- data_classify_files(basename(loc))
+  roles <- .data_doc_role(basename(loc))
   fmt   <- data_format(tolower(tools::file_ext(loc)))
-  keep  <- types %in% c("data", "codebook", "readme") & !(types %in% skip_types)
+  keep  <- (types == "data" |
+              (types == "documentation" & !is.na(roles) & roles %in% c("codebook", "readme"))) &
+    !(types %in% skip_types)
   if (!any(keep)) return(empty)
 
-  loc <- loc[keep]; rel <- rel[keep]; types <- types[keep]; fmt <- fmt[keep]
+  loc <- loc[keep]; rel <- rel[keep]; types <- types[keep]
+  roles <- roles[keep]; fmt <- fmt[keep]
 
   rows <- archive_row[rep(1, length(loc)), , drop = FALSE]
   rows$file_name     <- basename(loc)
@@ -184,6 +189,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
   rows$file_location <- loc
   rows$file_size     <- suppressWarnings(file.size(loc))
   if ("data_type" %in% names(rows))   rows$data_type   <- types
+  if ("doc_role" %in% names(rows))    rows$doc_role    <- roles
   if ("data_format" %in% names(rows)) rows$data_format <- fmt
   # Inner files came from a local extraction, not a remote URL of their own.
   if ("file_url" %in% names(rows))    rows$file_url    <- NA_character_
@@ -193,14 +199,15 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # Expand a downloaded zip and return rows for its DATA-type inner files, ready to
 # bind into data_check's `all_files`. The zip is extracted once to a cache dir
 # beside the zip; each inner file is classified, and only files whose type is
-# data/codebook/readme (and not in skip_types) are returned — assets and other
-# inner content are left in the extraction dir but not added to the archive (the
-# original zip remains the link for them). `zip_row` is the zip's own row in
-# all_files, whose repo/paper/group fields the inner rows inherit.
+# data or documentation with doc_role readme/codebook (and not in skip_types)
+# are returned — materials and other inner content are left in the extraction
+# dir but not added to the archive (the original zip remains the link for
+# them). `zip_row` is the zip's own row in all_files, whose repo/paper/group
+# fields the inner rows inherit.
 #
 # Returns a data.frame with the same columns as `zip_row` (one per kept inner
 # file, file_location pointing at the extracted copy), or a 0-row frame.
-.expand_zip <- function(zip_path, zip_row, skip_types = "asset") {
+.expand_zip <- function(zip_path, zip_row, skip_types = "materials") {
   empty <- zip_row[0, , drop = FALSE]
   if (is.null(zip_path) || is.na(zip_path) || !file.exists(zip_path)) return(empty)
 
@@ -221,7 +228,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # have downloaded it first; the size caps still bound what gets fetched. A tar we
 # cannot read (corrupt, or an unusual variant) degrades to a 0-row frame rather
 # than erroring the run.
-.expand_tar <- function(tar_path, tar_row, skip_types = "asset") {
+.expand_tar <- function(tar_path, tar_row, skip_types = "materials") {
   empty <- tar_row[0, , drop = FALSE]
   if (is.null(tar_path) || is.na(tar_path) || !file.exists(tar_path)) return(empty)
 
@@ -240,7 +247,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # .tar.*). These wrap exactly ONE file; there is no listing, so we decompress the
 # stream to the name with the compression suffix stripped (results.csv.gz →
 # results.csv) and classify that one file. Uses base R connections only.
-.expand_compressed <- function(gz_path, gz_row, skip_types = "asset") {
+.expand_compressed <- function(gz_path, gz_row, skip_types = "materials") {
   empty <- gz_row[0, , drop = FALSE]
   if (is.null(gz_path) || is.na(gz_path) || !file.exists(gz_path)) return(empty)
 
@@ -274,27 +281,29 @@ zip_peek <- function(url, tail_bytes = 131072) {
 #'
 #' Peeks inside the zip (see [zip_peek()]) and classifies its entries. A zip is
 #' worth downloading if it contains actual data or a codebook; a zip of only
-#' stimuli/materials is better linked than mirrored.
+#' stimuli/software is better linked than mirrored.
 #'
 #' @param url the zip's download URL
 #' @param skip_types data_type(s) that don't count as worth-downloading content
-#'   (e.g. `"asset"`)
+#'   (e.g. `"materials"`)
 #'
 #' @returns a list with `worth` (`TRUE`/`FALSE`, or `NA` when the peek failed so
 #'   the caller can fall back to downloading), `reason`, `n_entries`, `types`
 #'   (table of inner types), and `contents` (the peeked data.frame or `NULL`).
 #' @export
 #' @keywords internal
-zip_decision <- function(url, skip_types = "asset") {
+zip_decision <- function(url, skip_types = "materials") {
   peek <- zip_peek(url)
   if (is.null(peek))
     return(list(worth = NA, reason = "could not peek (download to inspect)",
                 n_entries = NA_integer_, types = NULL, contents = NULL))
   types <- data_classify_files(basename(peek$name))
+  roles <- .data_doc_role(basename(peek$name))
   # "worth it" = contains actual research data or a codebook (not just stimuli,
-  # instructions, or media). A zip of only assets/readmes is linked, not
+  # instructions, or media). A zip of only materials/readmes is linked, not
   # mirrored, matching the archive intent "we host data, link to materials".
-  worth <- any(types %in% c("data", "codebook")) &&
+  worth <- any(types == "data" |
+                (types == "documentation" & !is.na(roles) & roles == "codebook")) &&
     !all(types %in% skip_types)
   list(
     worth     = worth,

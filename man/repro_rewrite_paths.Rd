@@ -33,11 +33,11 @@ lives, using the file→target plan \code{psychds_check} produced.
 \details{
 Matching is by \strong{basename} (a script's \code{../data/x.csv} and the repo's
 \code{raw/x.csv} are the same file seen from different working directories, so the
-prefix is ignored — the same choice \code{\link[=code_file_refs]{code_file_refs()}} makes). When several
+prefix is ignored — the same choice \code{code_file_refs()} makes). When several
 plan files share a basename (a \code{demographics.csv} in more than one study), the
 ambiguity is resolved by \strong{study group}: the candidate whose target path is
 in the same study as the script (derived from the paths via
-\code{\link[=.data_group_from_path]{.data_group_from_path()}}) is chosen. Only when that still leaves more than
+\code{.data_group_from_path()}) is chosen. Only when that still leaves more than
 one candidate is the reference left unrewritten and flagged.
 }
 \examples{

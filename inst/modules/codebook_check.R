@@ -63,11 +63,14 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
                            model = llm_model(),
                            params = list()) {
 
-  .codebook_types <- c("codebook", "readme")
+  # Documentation ROLES (not data_type values — codebook/readme are no longer
+  # top-level data_check types, see .data_doc_role()) that carry codebook-like
+  # content worth parsing.
+  .codebook_roles <- c("codebook", "readme")
   # Data formats that carry embedded variable/value labels we can harvest as a
   # codebook. SPSS/Stata/SAS expose them via haven; JASP (.jasp) and jamovi
   # (.omv) carry the same haven-style label/labels attributes, exposed by
-  # read_jasp()/read_omv(), so the SAME .extract_haven_labels() consumes them.
+  # import_jasp()/import_omv(), so the SAME .extract_haven_labels() consumes them.
   .haven_exts     <- c("sav", "dta", "sas7bdat")
   .labelled_exts  <- c(.haven_exts, "jasp", "omv")
   max_llm_chunks  <- codebook_max_calls   # per unstructured codebook file
@@ -130,9 +133,10 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   text_scales <- .identify_scales_text_llm(paper, model, params)
 
   # ── 2. Locate codebook/readme files with a local copy ────────────────────────
-  cb_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
+  cb_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0 &&
+                 "doc_role" %in% names(structure_df)) {
     structure_df[
-      structure_df$data_type %in% .codebook_types &
+      !is.na(structure_df$doc_role) & structure_df$doc_role %in% .codebook_roles &
         !is.na(structure_df$file_location) &
         nzchar(structure_df$file_location) &
         file.exists(structure_df$file_location %||% ""),
@@ -141,7 +145,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else structure_df[0, , drop = FALSE]
 
   # Data files carrying embedded variable/value labels (SPSS/Stata/SAS via
-  # haven, plus JASP/jamovi via read_jasp()/read_omv()).
+  # haven, plus JASP/jamovi via import_jasp()/import_omv()).
   haven_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
     structure_df[
       !is.na(structure_df$data_type) & structure_df$data_type == "data" &
@@ -209,8 +213,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
         sav      = if (have_haven) as.data.frame(haven::read_sav(p, n_max = 0L)),
         dta      = if (have_haven) as.data.frame(haven::read_dta(p, n_max = 0L)),
         sas7bdat = if (have_haven) as.data.frame(haven::read_sas(p, n_max = 0L)),
-        jasp     = read_jasp(p)$data,
-        omv      = read_omv(p)$data
+        jasp     = import_jasp(p)$data,
+        omv      = import_omv(p)$data
       ), error = function(e) NULL)
       if (is.null(df)) next
       res <- .extract_haven_labels(df, basename(p), group = file_group)

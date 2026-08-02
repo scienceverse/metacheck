@@ -15,7 +15,7 @@ test_that("manifest separates intentional and unintentional non-downloads", {
                   "lost.csv", "nourl.csv", "notes.pdf"),
     file_url  = c(rep("https://osf.io/download/x/", 4), NA, "https://osf.io/download/y/"),
     file_size = c(100, 5e8, 1e6, 100, 100, 100),
-    data_type = c("data", "data", "asset", "data", "data", "supplemental"),
+    data_type = c("data", "data", "materials", "data", "data", "documentation"),
     data_format = "tabular",
     file_location = c(real, NA, NA, NA, NA, NA),
     stringsAsFactors = FALSE
@@ -29,7 +29,7 @@ test_that("manifest separates intentional and unintentional non-downloads", {
   path <- withr::local_tempfile(fileext = ".json")
   metacheck:::.data_check_write_manifest(
     path, files, want, gated = NULL, paper_id = "p1", download = "data",
-    max_file_size = 100, max_download_size = 500, skip_types = "asset",
+    max_file_size = 100, max_download_size = 500, skip_types = "materials",
     oversize = oversize, failed = failed, model = "test-model")
 
   m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
@@ -51,7 +51,7 @@ test_that("manifest separates intentional and unintentional non-downloads", {
   expect_true(by_name$big.rdata$skip_intentional)
   expect_match(by_name$big.rdata$skip_reason, "max_file_size")
   expect_equal(by_name$stim.mp4$status, "skipped")
-  expect_match(by_name$stim.mp4$skip_reason, "excluded type 'asset'")
+  expect_match(by_name$stim.mp4$skip_reason, "excluded type 'materials'")
   expect_equal(by_name$lost.csv$status, "failed")
   expect_false(by_name$lost.csv$skip_intentional)
   expect_match(by_name$lost.csv$skip_reason, "429")
@@ -72,7 +72,7 @@ test_that("manifest records reproducibility provenance", {
   path <- withr::local_tempfile(fileext = ".json")
   metacheck:::.data_check_write_manifest(
     path, files, want = TRUE, gated = NULL, paper_id = "p1", download = "none",
-    max_file_size = 100, max_download_size = 500, skip_types = "asset")
+    max_file_size = 100, max_download_size = 500, skip_types = "materials")
 
   m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
   expect_equal(m$provenance$software$name, "metacheck")
@@ -80,7 +80,7 @@ test_that("manifest records reproducibility provenance", {
   expect_match(m$provenance$r_version, "^R version")
   expect_equal(m$provenance$prod_date, m$generated)
   expect_false(m$provenance$llm$used)
-  expect_equal(unlist(m$skip_types), "asset")
+  expect_equal(unlist(m$skip_types), "materials")
   # The DDI-Codebook mapping ships inside the manifest (self-describing).
   expect_match(m$provenance$ddi_mapping[["files[].status"]], "ProcStat")
   # download = "none" is an intentional skip, so no re-run is recommended.

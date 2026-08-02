@@ -234,42 +234,51 @@
     findings)
 }
 
-# Flatten the statistical_output ISA-JSON (from reproducibility_check's JASP/
-# jamovi extraction) into queryable rows for the scienceverse DB: one row per
-# extracted statistic, carrying its STATO type. The ISA doc nests each result as
-# a Material with STATO-typed characteristics; we walk that structure back into
-# a flat table. Accepts one ISA Investigation or an array of them.
+# Flatten a statistical-output document (from reproducibility_check's JASP/
+# jamovi/R extraction, written by stat_output_write()) into queryable rows for
+# the scienceverse DB: one row per extracted statistic, carrying its ontology
+# type. The document is metacheck's native schema (R/stat-output.R's
+# stat_output_json()): analyses[] -> results[] -> values{}, where each value is
+# keyed by the statistic's own short name and holds value/stato_label/stato_iri.
+# The stato_* columns carry whichever vocabulary typed the statistic — a STATO
+# class or a metacheck-minted term (see R/stato-map.R) — or NA when neither did.
+# Accepts one such document or a list of them.
 .sv_statistical_results <- function(doi, stat_out) {
   empty <- data.frame(doi = character(0), analysis = character(0),
                       result = character(0), statistic = character(0),
                       stato_label = character(0), stato_iri = character(0),
                       value = character(0))
   if (is.null(stat_out) || !length(stat_out)) return(empty)
-  # Normalise to a list of investigations.
-  invs <- if (!is.null(stat_out[["@type"]]) &&
-              identical(stat_out[["@type"]], "Investigation"))
-    list(stat_out) else stat_out
+  # Normalise to a list of documents: a single document is recognised by
+  # carrying `analyses` directly.
+  docs <- if (!is.null(stat_out[["analyses"]])) list(stat_out) else stat_out
 
   rows <- list()
-  for (inv in invs) {
-    studies <- inv[["studies"]] %||% list()
-    for (st in studies) {
-      mats <- st[["materials"]][["otherMaterials"]] %||% list()
-      for (m in mats) {
-        result <- .sv_chr(m, "name")
-        for (ch in m[["characteristics"]] %||% list()) {
-          ct <- ch[["category"]][["characteristicType"]] %||% list()
+  for (doc in docs) {
+    if (is.null(doc[["analyses"]])) next
+    for (an in doc[["analyses"]]) {
+      analysis <- .sv_chr(an, "analysis")
+      for (res in an[["results"]] %||% list()) {
+        # `result` identifies the specific result ROW: prefer its result_id
+        # (which also traces back to the code line / table that produced it),
+        # falling back to the row label when absent.
+        rid <- .sv_chr(res, "result_id")
+        rlab <- .sv_chr(res, "row_label")
+        result <- if (!is.na(rid) && nzchar(rid)) rid else rlab
+        values <- res[["values"]] %||% list()
+        for (stat_name in names(values)) {
+          v <- values[[stat_name]]
           rows[[length(rows) + 1L]] <- data.frame(
             doi = doi,
-            analysis = result,   # the Material name carries analysis + row label
+            analysis = analysis,
             result = result,
-            statistic = .sv_chr(ct, "annotationValue"),
-            stato_label = .sv_chr(ct, "annotationValue"),
-            stato_iri = .sv_chr(ct, "termAccession"),
+            statistic = stat_name,
+            stato_label = .sv_chr(v, "stato_label"),
+            stato_iri = .sv_chr(v, "stato_iri"),
             # value is stored as TEXT: it holds numbers AND reported strings
             # ("< .001", "Inf"), so a single character column is the only type
             # that fits every cell.
-            value = as.character(.sv_cell(ch[["value"]])))
+            value = as.character(.sv_cell(v[["value"]])))
         }
       }
     }
@@ -774,16 +783,24 @@ add_to_scienceverse <- function(collection_root, db_path = .sv_default_db(),
   # accept a single root or a vector; keep only real metacheck output roots. A
   # MULTI-study paper has a `collection.json`; a SINGLE-study paper is a flat
   # Psych-DS dataset with only `dataset_description.json` (convert_psychds writes
-  # no collection.json for it, by design). Accept EITHER — .sv_extract_collection
-  # already tolerates a missing collection.json (it falls back to the folder name
-  # as the DOI), so a single-study dataset ingests fine.
+  # no collection.json for it, by design). A paper with NO shareable data files
+  # gets a METADATA-ONLY root instead (manuscript text + logs only, see
+  # convert_psychds()'s "No data files to convert" branch in R/psychds-convert.R)
+  # — it carries neither of the above, only its own `ro-crate-metadata.json`.
+  # Accept ALL THREE — .sv_extract_collection() already tolerates a missing
+  # collection.json (falls back to the folder name as the DOI) and an empty
+  # study_dirs (every studies/variables table already handles zero rows), so a
+  # metadata-only root ingests fine; it just contributes empty studies/
+  # variables/scales tables alongside its (real) checks, manifest and fulltext.
   is_root <- vapply(roots, function(r)
     dir.exists(r) && (file.exists(file.path(r, "collection.json")) ||
-                        file.exists(file.path(r, "dataset_description.json"))),
+                        file.exists(file.path(r, "dataset_description.json")) ||
+                        file.exists(file.path(r, "ro-crate-metadata.json"))),
     logical(1))
   if (!any(is_root)) {
-    stop("No metacheck output roots found (a folder with a collection.json ",
-         "or dataset_description.json): ", paste(roots, collapse = ", "))
+    stop("No metacheck output roots found (a folder with a collection.json, ",
+         "dataset_description.json, or ro-crate-metadata.json): ",
+         paste(roots, collapse = ", "))
   }
   if (!all(is_root) && !quiet) {
     message("Skipping ", sum(!is_root), " path",

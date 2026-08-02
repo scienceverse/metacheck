@@ -114,6 +114,153 @@ repro_dependencies <- function(code_text, lang = "R") {
   else rownames(ip)
 }
 
+#' Find file paths built at runtime with sprintf()/paste()/paste0()/file.path()
+#'
+#' A path is sometimes not written as a literal string but assembled from
+#' variables — `read_csv(sprintf("%s/%s/x.csv", wd, wd_data))`. This is fragile
+#' authoring (it silently breaks whenever the code runs from a different
+#' working directory than the author's own), and it also defeats
+#' [code_file_refs()]'s literal-string extraction: the "reference" it returns
+#' is really the RAW FORMAT STRING (`"%s/%s/x.csv"`, placeholders and all), so a
+#' naive substring replacement of that text later corrupts the call — the
+#' surrounding `sprintf(...)` keeps its now-meaningless trailing arguments,
+#' `, wd, wd_data)`, uselessly attached after the plan's target path was
+#' spliced in as if it were the whole first argument.
+#'
+#' This finds every such call in a script, and reports enough to fix it
+#' properly: the call's own full text (so the whole expression, not just the
+#' quoted substring, can be replaced), the raw format string, and — when every
+#' placeholder's corresponding argument is a simple variable resolvable to a
+#' literal string via [.repro_simple_string_vars()] — the format string with
+#' those values substituted in, which is what basename-matching should key on
+#' instead of the placeholder-laden original.
+#'
+#' Only `%s`/`%d` placeholders (the common case in practice; a `sprintf` with a
+#' width/precision modifier like `%05d` is deliberately out of scope, since a
+#' zero-padded numeric ID is unlikely to appear in a bare data-file reference)
+#' are substituted; anything else in the format leaves that call unresolved
+#' (returned with `resolved = NA`), never guessed. The arguments after the
+#' format string are split on a plain comma, so an argument that is ITSELF a
+#' call containing a comma (`sprintf("%s.csv", paste0(a, b))`) is not split
+#' correctly either — this only means that argument then fails to resolve to
+#' any known variable (falling back to `resolved = NA`, the same safe
+#' unresolved outcome as any other unrecognised argument), never a wrong guess.
+#'
+#' @param code_text the code text for a single file (character vector)
+#'
+#' @returns a data frame with `call_text` (the full matched call, e.g.
+#'   `sprintf("%s/%s/x.csv", wd, wd_data)`), `fmt` (the raw format string),
+#'   `resolved` (the format string with resolvable placeholders substituted, or
+#'   NA if any placeholder could not be resolved), and `line` (1-based line
+#'   number the call starts on). Empty frame when the script has no such calls.
+#' @keywords internal
+.repro_format_call_refs <- function(code_text) {
+  empty <- data.frame(call_text = character(0), fmt = character(0),
+                      resolved = character(0), line = integer(0))
+  if (is.null(code_text) || length(code_text) == 0) return(empty)
+  nc <- code_remove_comments(code_text, "R")
+  joined <- paste(nc, collapse = "\n")
+
+  # A call to one of the format/join functions, containing a quoted string with
+  # a file-like extension somewhere in its arguments. Matched with a manual
+  # balanced-paren scan (not a single regex) because the argument list can
+  # itself contain nested parens (e.g. another function call as an argument).
+  fn_pat <- "\\b(sprintf|paste0|paste|file\\.path)\\s*\\("
+  starts <- gregexpr(fn_pat, joined, perl = TRUE)[[1]]
+  if (length(starts) == 1 && starts == -1) return(empty)
+  lens <- attr(starts, "match.length")
+
+  rows <- lapply(seq_along(starts), function(k) {
+    open_paren <- starts[k] + lens[k] - 1L   # index of the "(" itself
+    # Balanced scan from the "(" to its matching ")", respecting quotes so a
+    # ")" inside a quoted string is not mistaken for the call's own close.
+    depth <- 0L; i <- open_paren; n <- nchar(joined); in_str <- NA_character_
+    end <- NA_integer_
+    while (i <= n) {
+      ch <- substr(joined, i, i)
+      if (!is.na(in_str)) {
+        if (ch == "\\") i <- i + 1L   # skip an escaped char inside the string
+        else if (ch == in_str) in_str <- NA_character_
+      } else if (ch %in% c("'", '"')) in_str <- ch
+      else if (ch == "(") depth <- depth + 1L
+      else if (ch == ")") { depth <- depth - 1L; if (depth == 0L) { end <- i; break } }
+      i <- i + 1L
+    }
+    if (is.na(end)) return(NULL)   # unbalanced — leave alone, do not guess
+    call_text <- substr(joined, starts[k], end)
+    args_text <- substr(joined, open_paren + 1L, end - 1L)
+
+    # Only calls whose FIRST quoted string looks like a file reference (has an
+    # extension) are candidates — this is what makes a plain paste0("a", "b")
+    # elsewhere in the code invisible to this scan.
+    m <- regexpr("(['\"])((?:[^'\"\\\\]|\\\\.)*)\\1", args_text, perl = TRUE)
+    if (m == -1) return(NULL)
+    fmt <- regmatches(args_text, m)
+    quoted_len <- nchar(fmt)   # includes the surrounding quotes
+    fmt <- substr(fmt, 2, nchar(fmt) - 1)
+    if (!grepl("\\.[A-Za-z0-9]{1,8}$", fmt)) return(NULL)
+
+    # Only calls with EXTRA arguments AFTER the quoted format string are what
+    # this scan is for: a bare sprintf("Exp1A_Data.txt") with nothing else is a
+    # plain literal in a no-op wrapper — code_file_refs()'s plain-literal path
+    # already handles it correctly, and there is no trailing-argument-orphaning
+    # risk to fix. `args_text` still carries the quotes around fmt (unlike
+    # `fmt` itself, stripped above), so the remainder is found by skipping
+    # `quoted_len` characters rather than re-matching the (already-consumed)
+    # quoted text.
+    after_fmt <- substr(args_text, quoted_len + 1, nchar(args_text))
+    if (!grepl("^\\s*,", after_fmt, perl = TRUE)) return(NULL)
+
+    line <- 1L + lengths(regmatches(substr(joined, 1, starts[k]),
+                                    gregexpr("\n", substr(joined, 1, starts[k]))))[1]
+
+    # Attempt substitution of %s/%d placeholders with the values of simple
+    # top-level string-literal variables (wd <- "..."; wd_data <- "..."),
+    # taken in argument order after the format string.
+    extra_args <- trimws(strsplit(sub("^\\s*,\\s*", "", after_fmt, perl = TRUE),
+                                  ",")[[1]])
+    resolved <- NA_character_
+    if (grepl("%[sd]", fmt) && length(extra_args) > 0) {
+      vars <- .repro_simple_string_vars(nc)
+      vals <- vars[extra_args]
+      if (!any(is.na(vals)) && length(vals) == length(regmatches(
+        fmt, gregexpr("%[sd]", fmt))[[1]])) {
+        r <- fmt
+        for (v in vals) r <- sub("%[sd]", v, r, perl = TRUE)
+        resolved <- r
+      }
+    }
+    data.frame(call_text = call_text, fmt = fmt, resolved = resolved, line = line)
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (length(rows) == 0) return(empty)
+  dplyr::bind_rows(rows)
+}
+
+#' Simple top-level string-literal variable assignments in a script
+#'
+#' A minimal constant-folder: finds assignments of the exact shape
+#' `name <- "literal"` (or `=`/`<<-`) at the START of a (comment-free) line —
+#' the same "top level" approximation [repro_defined_vars()] uses — and returns
+#' the literal each name was last assigned. Only a bare quoted string is
+#' resolved (no concatenation, no function calls); anything else leaves that
+#' name absent from the result, so a caller asking for an unresolvable name
+#' gets `NA`, never a guess.
+#'
+#' @param code_text the code text for a single file, comments already stripped
+#'
+#' @returns a named character vector (name = literal value), possibly empty
+#' @keywords internal
+.repro_simple_string_vars <- function(code_text) {
+  pat <- "^([.a-zA-Z][.a-zA-Z0-9_]*)\\s*(?:<<-|<-|=)\\s*(['\"])((?:[^'\"\\\\]|\\\\.)*)\\2\\s*$"
+  m <- regmatches(code_text, regexec(pat, code_text, perl = TRUE))
+  hits <- Filter(function(x) length(x) == 4, m)
+  if (length(hits) == 0) return(character(0))
+  nm  <- vapply(hits, `[[`, character(1), 2)
+  val <- vapply(hits, `[[`, character(1), 4)
+  stats::setNames(val, nm)[!duplicated(nm, fromLast = TRUE)]
+}
+
 #' Rewrite a code file's data-file paths to the Psych-DS layout
 #'
 #' A script reads and writes data by relative path (`read_csv("raw/x.csv")`,
@@ -124,24 +271,51 @@ repro_dependencies <- function(code_text, lang = "R") {
 #'
 #' Matching is by **basename** (a script's `../data/x.csv` and the repo's
 #' `raw/x.csv` are the same file seen from different working directories, so the
-#' prefix is ignored — the same choice [code_file_refs()] makes). When several
+#' prefix is ignored — the same choice `code_file_refs()` makes). When several
 #' plan files share a basename (a `demographics.csv` in more than one study), the
 #' ambiguity is resolved by **study group**: the candidate whose target path is
 #' in the same study as the script (derived from the paths via
-#' [.data_group_from_path()]) is chosen. Only when that still leaves more than
+#' `.data_group_from_path()`) is chosen. Only when that still leaves more than
 #' one candidate is the reference left unrewritten and flagged.
+#'
+#' A plan row for a converted tabular file (`psychds_check`'s `convert`/
+#' `original_target` columns — a `.dta`/`.sav`/`.xlsx`/... source, whose
+#' `target_path` is the re-exported `_data.csv`, with the untouched original
+#' kept alongside at `original_target`) is matched **by the reference's own
+#' extension**: a reference ending in the original's extension (`read_dta(
+#' "math.dta")`) is rewritten to `original_target`, since a format-specific
+#' reader needs the real file, not the CSV re-export — using `target_path`
+#' there would silently point the reader at bytes it cannot correctly parse.
+#' A reference that already names the CSV form (`"math_data.csv"`, or a bare
+#' `.csv` extension) still rewrites to `target_path` as before.
+#'
+#' A path assembled at runtime with `sprintf()`/`paste()`/`paste0()`/
+#' `file.path()` (see [.repro_format_call_refs()]) is matched the same way,
+#' using the format string's own literal basename (with any resolvable
+#' placeholder substituted via [.repro_simple_string_vars()]) — but since the
+#' true "reference" there is the WHOLE call, not the quoted substring inside
+#' it, such rows carry `is_call = TRUE` and `ref` holds the full call text
+#' (`sprintf("%s/%s/x.csv", wd, wd_data)`), so [repro_write_scripts()] replaces
+#' the entire expression rather than corrupting it with a substring swap that
+#' would orphan the call's trailing arguments. A call whose placeholders could
+#' not all be resolved is reported unmatched (`matched = FALSE`) rather than
+#' guessed, and is separately flagged in the report as fragile authoring
+#' practice regardless of whether it resolved.
 #'
 #' @param code_text the code text for a single file (character vector)
 #' @param file_name the script's own name/path (used to derive its study group)
 #' @param plan the `psychds_check` table: one row per file with `file_name`,
-#'   `target_path`, and `current_path`
+#'   `target_path`, `current_path`, and (for converted tabular files)
+#'   `original_target`
 #' @param lang the language (only R is rewritten here)
 #'
 #' @returns a data frame with one row per referenced path, columns `ref` (the
-#'   path as written), `basename`, `matched` (logical, a plan file was found),
-#'   `target` (its Psych-DS path, or NA), `ambiguous` (logical, several plan
-#'   files matched and the study could not disambiguate), and `n_candidates`.
-#'   Empty frame when the script references no files.
+#'   path as written, or the full call text when `is_call`), `basename`,
+#'   `matched` (logical, a plan file was found), `target` (its Psych-DS path,
+#'   or NA), `ambiguous` (logical, several plan files matched and the study
+#'   could not disambiguate), `n_candidates`, and `is_call` (logical, TRUE when
+#'   `ref` is a whole `sprintf()`/`paste()`-family call rather than a literal
+#'   path — see above). Empty frame when the script references no files.
 #' @export
 #'
 #' @examples
@@ -156,19 +330,47 @@ repro_dependencies <- function(code_text, lang = "R") {
 repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R") {
   empty <- data.frame(ref = character(0), basename = character(0),
                       matched = logical(0), target = character(0),
-                      ambiguous = logical(0), n_candidates = integer(0))
+                      ambiguous = logical(0), n_candidates = integer(0),
+                      is_call = logical(0))
   if (!identical(lang, "R") || is.null(code_text)) return(empty)
   if (is.null(plan) || nrow(plan) == 0 ||
       !all(c("file_name", "target_path") %in% names(plan))) return(empty)
 
   refs <- code_file_refs(code_text, "R")
-  if (length(refs) == 0) return(empty)
+  # Format-string calls (sprintf()/paste()/paste0()/file.path()) are a SEPARATE
+  # source of references: code_file_refs() already returns their raw format
+  # string as a "reference" too (it matches the quoted-filename pattern), so
+  # basename-matching still finds the right plan row from the placeholder-laden
+  # text alone — but rewriting must replace the WHOLE call, not that substring,
+  # or the call's trailing arguments are orphaned (see .repro_format_call_refs()
+  # roxygen for the concrete case this fixes). Build the call rows here and
+  # drop their raw format string from `refs`, so each such reference is
+  # represented exactly once, as a call row.
+  call_refs <- .repro_format_call_refs(code_text)
+  if (nrow(call_refs) > 0) refs <- setdiff(refs, call_refs$fmt)
+  if (length(refs) == 0 && nrow(call_refs) == 0) return(empty)
   ref_base <- tolower(basename(gsub("\\\\", "/", refs)))
+  ref_ext  <- tolower(tools::file_ext(ref_base))
 
   # Candidate plan files by basename. Only rows with a real (non-NA) target are
   # reachable in the release; NA-target rows (consumed archives) are not.
   plan_base <- tolower(basename(gsub("\\\\", "/", plan$file_name)))
   has_target <- !is.na(plan$target_path) & nzchar(plan$target_path %||% "")
+
+  # A converted row's ORIGINAL extension, so a reference naming that same
+  # extension is known to want the original, not the CSV re-export.
+  orig_target <- if ("original_target" %in% names(plan))
+    plan$original_target else rep(NA_character_, nrow(plan))
+  orig_ext <- tolower(tools::file_ext(orig_target %||% ""))
+
+  # Pick the right column for a candidate row, given the reference's own
+  # extension: the original when the reference names the pre-conversion
+  # format, else the (possibly-CSV) target_path.
+  pick_target <- function(cand_i, ref_e) {
+    if (!is.na(orig_target[cand_i]) && nzchar(orig_target[cand_i]) &&
+        nzchar(ref_e) && ref_e == orig_ext[cand_i]) orig_target[cand_i]
+    else plan$target_path[cand_i]
+  }
 
   # The script's own study group, for disambiguation.
   script_grp <- .data_group_from_path(file_name)
@@ -179,16 +381,30 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R") {
     if (n == 0) {
       return(data.frame(ref = refs[i], basename = ref_base[i], matched = FALSE,
                         target = NA_character_, ambiguous = FALSE,
-                        n_candidates = 0L))
+                        n_candidates = 0L, is_call = FALSE))
     }
     if (n == 1) {
       return(data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
-                        target = plan$target_path[cand], ambiguous = FALSE,
-                        n_candidates = 1L))
+                        target = pick_target(cand, ref_ext[i]), ambiguous = FALSE,
+                        n_candidates = 1L, is_call = FALSE))
     }
-    # Several candidates share the basename: disambiguate by study group. Prefer
-    # the candidate whose target path is in the script's study; failing that,
-    # whose target is in the study the reference path itself names.
+    # Several PLAN ROWS share the basename, but that is not necessarily several
+    # possible TARGETS: the plan can list the same file more than once (e.g. it
+    # is referenced from several places in the repository listing), and every
+    # row still resolves to the identical Psych-DS path. That is not ambiguity —
+    # disambiguating would be solving a problem that does not exist, and the
+    # earlier code marked every such reference unresolved even though only one
+    # answer was ever possible.
+    cand_targets <- unique(vapply(cand, pick_target, character(1), ref_e = ref_ext[i]))
+    if (length(cand_targets) == 1) {
+      return(data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
+                        target = cand_targets, ambiguous = FALSE,
+                        n_candidates = n, is_call = FALSE))
+    }
+    # Several candidates share the basename AND disagree on target: disambiguate
+    # by study group. Prefer the candidate whose target path is in the script's
+    # study; failing that, whose target is in the study the reference path
+    # itself names.
     cand_grp <- .data_group_from_path(plan$target_path[cand])
     ref_grp <- .data_group_from_path(refs[i])
     pick <- integer(0)
@@ -197,16 +413,60 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R") {
       pick <- cand[cand_grp == ref_grp & !is.na(cand_grp)]
     if (length(pick) == 1) {
       data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
-                 target = plan$target_path[pick], ambiguous = FALSE,
-                 n_candidates = n)
+                 target = pick_target(pick, ref_ext[i]), ambiguous = FALSE,
+                 n_candidates = n, is_call = FALSE)
     } else {
       # Still ambiguous: do not guess. Flagged for the report; the script is run
       # unmodified for this reference.
       data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
-                 target = NA_character_, ambiguous = TRUE, n_candidates = n)
+                 target = NA_character_, ambiguous = TRUE, n_candidates = n,
+                 is_call = FALSE)
     }
   })
-  dplyr::bind_rows(rows)
+
+  # Format-string calls: match the SAME way, keyed on the resolved literal
+  # basename when every placeholder resolved, else the raw format string's own
+  # literal basename (works whenever the placeholders stand only for a
+  # directory prefix, as observed in practice — the filename portion is fully
+  # literal so basename-matching already finds the right plan row without
+  # needing the placeholder resolved at all). `ref` is the CALL TEXT, not the
+  # format string, so the caller replaces the whole expression.
+  call_rows <- if (nrow(call_refs) > 0) lapply(seq_len(nrow(call_refs)), function(i) {
+    key <- if (!is.na(call_refs$resolved[i])) call_refs$resolved[i] else call_refs$fmt[i]
+    key_base <- tolower(basename(gsub("\\\\", "/", key)))
+    key_ext  <- tolower(tools::file_ext(key_base))
+    cand <- which(plan_base == key_base & has_target)
+    n <- length(cand)
+    if (n == 0)
+      return(data.frame(ref = call_refs$call_text[i], basename = key_base,
+                        matched = FALSE, target = NA_character_,
+                        ambiguous = FALSE, n_candidates = 0L, is_call = TRUE))
+    if (n == 1)
+      return(data.frame(ref = call_refs$call_text[i], basename = key_base,
+                        matched = TRUE, target = pick_target(cand, key_ext),
+                        ambiguous = FALSE, n_candidates = 1L, is_call = TRUE))
+    cand_targets <- unique(vapply(cand, pick_target, character(1), ref_e = key_ext))
+    if (length(cand_targets) == 1)
+      return(data.frame(ref = call_refs$call_text[i], basename = key_base,
+                        matched = TRUE, target = cand_targets, ambiguous = FALSE,
+                        n_candidates = n, is_call = TRUE))
+    cand_grp <- .data_group_from_path(plan$target_path[cand])
+    key_grp <- .data_group_from_path(key)
+    pick <- integer(0)
+    if (!is.na(script_grp)) pick <- cand[cand_grp == script_grp & !is.na(cand_grp)]
+    if (length(pick) != 1 && !is.na(key_grp))
+      pick <- cand[cand_grp == key_grp & !is.na(cand_grp)]
+    if (length(pick) == 1)
+      data.frame(ref = call_refs$call_text[i], basename = key_base, matched = TRUE,
+                target = pick_target(pick, key_ext), ambiguous = FALSE,
+                n_candidates = n, is_call = TRUE)
+    else
+      data.frame(ref = call_refs$call_text[i], basename = key_base, matched = TRUE,
+                target = NA_character_, ambiguous = TRUE, n_candidates = n,
+                is_call = TRUE)
+  }) else list()
+
+  dplyr::bind_rows(c(rows, call_rows))
 }
 
 #' Determine the order code files must run in
@@ -660,12 +920,21 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
     txt <- code_text_list[[i]]
     rw  <- rewrite_list[[fn]]
     # Apply each resolved (matched, non-ambiguous, real target) rewrite as a
-    # literal replacement of the path as written. Fixed (non-regex) to avoid
-    # metacharacter surprises in file paths.
+    # literal replacement. Fixed (non-regex) to avoid metacharacter surprises
+    # in file paths. A plain reference replaces just the quoted path; an
+    # `is_call` row (sprintf()/paste()-family — see repro_rewrite_paths())
+    # replaces the ENTIRE call with a bare literal string, since `ref` there is
+    # the whole call text: substituting only a substring inside it would leave
+    # the call's other arguments (e.g. `wd, wd_data` after the format string)
+    # orphaned in a now-broken expression.
     if (!is.null(rw) && nrow(rw)) {
       good <- rw$matched & !rw$ambiguous & !is.na(rw$target) & nzchar(rw$target)
-      for (k in which(good))
-        txt <- gsub(rw$ref[k], rw$target[k], txt, fixed = TRUE)
+      is_call_col <- if ("is_call" %in% names(rw)) rw$is_call else rep(FALSE, nrow(rw))
+      for (k in which(good)) {
+        repl <- if (isTRUE(is_call_col[k]))
+          paste0('"', rw$target[k], '"') else rw$target[k]
+        txt <- gsub(rw$ref[k], repl, txt, fixed = TRUE)
+      }
     }
 
     # Comment out setwd() lines so they cannot override the sandbox wd. Record
@@ -722,16 +991,47 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
 #'   likely do not want permanently in your main library. Default `FALSE`
 #'   (everything throwaway, the original behaviour).
 #'
-#' @returns a data frame with `package`, `source`, `installed` (logical), and
-#'   `message` (error text on failure, else "").
+#' A CRAN-source package that `install.packages()` cannot find is not
+#' necessarily a broken dependency: CRAN removes (archives) packages that stop
+#' passing its checks, but every version ever published stays available as a
+#' source tarball under the CRAN Archive
+#' (`https://cran.r-project.org/src/contrib/Archive/<pkg>/`). When the live-CRAN
+#' install fails, this retries once from the Archive's most recent version
+#' before giving up — a package the paper's authors could install at the time
+#' (and that later dropped off live CRAN) still installs, instead of the run
+#' recording an "errored" script for a cause that has nothing to do with the
+#' paper's code. The retry is recorded in `via_archive` so the report can say
+#' the run used a stale-but-real version rather than the one the authors had.
+#'
+#' @returns a data frame with `package`, `source`, `installed` (logical),
+#'   `message` (error text on failure, else ""), and `via_archive` (logical,
+#'   TRUE when installed from the CRAN Archive after a live-CRAN failure).
 #' @export
 repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) {
   empty <- data.frame(package = character(0), source = character(0),
-                      installed = logical(0), message = character(0))
+                      installed = logical(0), message = character(0),
+                      via_archive = logical(0))
   if (is.null(install_deps) || nrow(install_deps) == 0) return(empty)
   dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
   old_lib <- .libPaths(); on.exit(.libPaths(old_lib), add = TRUE)
   .libPaths(c(lib_dir, old_lib))
+
+  # A non-interactive session (Rscript, a Quarto render, a CI job) has repos set
+  # to the unresolved placeholder "@CRAN@". Interactively R would prompt for a
+  # mirror; here install.packages() just fails with "trying to use CRAN without
+  # setting a mirror", so EVERY not-yet-installed dependency fails and the
+  # paper's scripts then error on library() — which reads as the paper being
+  # irreproducible when the real cause is this session's configuration. Set a
+  # mirror for the duration of the installs when none is configured.
+  repos <- getOption("repos")
+  if (is.null(repos) || !length(repos) ||
+      any(!nzchar(repos)) || any(repos == "@CRAN@")) {
+    old_repos <- getOption("repos")
+    on.exit(options(repos = old_repos), add = TRUE)
+    options(repos = c(CRAN = "https://cloud.r-project.org"))
+    message("[repro]     no CRAN mirror configured; using cloud.r-project.org ",
+            "for this install.")
+  }
 
   gh_avail <- requireNamespace("remotes", quietly = TRUE)
 
@@ -739,19 +1039,30 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
     pkg <- install_deps$package[i]
     src <- install_deps$source[i]
     ref <- install_deps$ref[i]
-    # A CRAN package already installed anywhere on .libPaths() (main library
-    # included) needs no work — this is what makes cran_to_main_lib's reuse
-    # across papers actually pay off, instead of every call re-confirming it.
+    # A CRAN package already installed in one of the REAL (pre-throwaway)
+    # library paths needs no work — this is what makes cran_to_main_lib's reuse
+    # across papers actually pay off, instead of every call re-installing it.
+    # Checked against `old_lib` specifically (not requireNamespace()'s default
+    # search), because requireNamespace() also returns TRUE for a namespace
+    # that is merely already LOADED in this R session — which happens after
+    # this function once installed a package into the throwaway `lib_dir` and
+    # loaded it from there. That throwaway directory is deleted at the end of
+    # the run, so a later call in the same session would report "already
+    # installed" for a package that no longer exists anywhere on disk, and a
+    # freshly spawned callr subprocess (which starts with none of this
+    # session's loaded namespaces) would then fail to find it at all.
     cran_main <- identical(src, "cran") && isTRUE(cran_to_main_lib)
-    if (cran_main && requireNamespace(pkg, quietly = TRUE)) {
+    if (cran_main && length(find.package(pkg, lib.loc = old_lib, quiet = TRUE)) > 0) {
       message("[repro]     '", pkg, "' already installed (main library); skipping.")
-      return(data.frame(package = pkg, source = src, installed = TRUE, message = ""))
+      return(data.frame(package = pkg, source = src, installed = TRUE, message = "",
+                        via_archive = FALSE))
     }
     # DEBUG (TEMPORARY — remove before release): quiet = FALSE so compilation
     # progress is visible; a slow install then reads as work, not a hang.
     message("[repro]     installing '", pkg, "' (source: ", src,
             if (cran_main) ", into main library" else ", into throwaway library",
             ") ...")
+    install_lib <- if (cran_main) old_lib[1] else lib_dir
     res <- tryCatch({
       if (identical(src, "github")) {
         if (!gh_avail) stop("the 'remotes' package is needed to install GitHub sources")
@@ -759,21 +1070,104 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
                                 quiet = FALSE)
       } else if (identical(src, "url")) {
         utils::install.packages(ref, lib = lib_dir, repos = NULL, quiet = FALSE)
-      } else if (cran_main) {
-        utils::install.packages(pkg, quiet = FALSE)   # no lib= -> default library
       } else {
-        utils::install.packages(pkg, lib = lib_dir, quiet = FALSE)
+        # Explicit lib=: .libPaths()[1] is `lib_dir` (the throwaway) at this
+        # point, not R's real user library, so an unqualified install.packages()
+        # call here would silently install into the throwaway and vanish at
+        # the end of the run — the bug this whole block works around above.
+        # old_lib[1] is the real library this session would install to
+        # normally (captured before the throwaway push).
+        utils::install.packages(pkg, lib = install_lib, quiet = FALSE)
       }
       # Confirm it can actually be loaded (main library needs no lib.loc; the
       # throwaway paths were already prepended to .libPaths() above).
       if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
           !requireNamespace(pkg, quietly = TRUE))
         stop("installed but package '", pkg, "' is not loadable")
-      list(ok = TRUE, msg = "")
-    }, error = function(e) list(ok = FALSE, msg = conditionMessage(e)))
-    data.frame(package = pkg, source = src, installed = res$ok, message = res$msg)
+      list(ok = TRUE, msg = "", via_archive = FALSE)
+    }, error = function(e) list(ok = FALSE, msg = conditionMessage(e), via_archive = FALSE))
+
+    # A CRAN-source package that failed is not necessarily broken code: CRAN
+    # may simply no longer be SERVING it (removed for a check failure, a
+    # dependency going away, ...) while every version it ever published still
+    # sits in the Archive. Retry once from there before accepting the failure —
+    # this is the one case worth a second attempt, since GitHub/URL failures
+    # already point at a specific, user-named source with nothing else to try.
+    if (!res$ok && identical(src, "cran")) {
+      message("[repro]     '", pkg, "' not available on live CRAN; trying the ",
+              "CRAN Archive (last published version) ...")
+      res2 <- .repro_cran_archive_install(pkg, install_lib, lib_dir)
+      if (res2$ok) {
+        message("[repro]     '", pkg, "' installed from the CRAN Archive (",
+                res2$version, ").")
+        res <- list(ok = TRUE, msg = "", via_archive = TRUE)
+      } else {
+        message("[repro]     '", pkg, "' could not be installed from the ",
+                "CRAN Archive either: ", res2$msg)
+        res$msg <- paste0(res$msg, " (CRAN Archive retry also failed: ", res2$msg, ")")
+      }
+    }
+    data.frame(package = pkg, source = src, installed = res$ok, message = res$msg,
+              via_archive = isTRUE(res$via_archive))
   })
   dplyr::bind_rows(rows)
+}
+
+#' Install a package's most recent CRAN Archive version
+#'
+#' Every package ever published to CRAN keeps its full version history under
+#' the CRAN Archive (`https://cran.r-project.org/src/contrib/Archive/<pkg>/`),
+#' even after the live repository stops serving it. This lists that directory,
+#' takes the most recent version by file modification time (the directory
+#' listing carries no other reliable ordering), and installs the source
+#' tarball directly — the one fallback worth trying automatically when a
+#' CRAN-source dependency is not on live CRAN, since it needs no extra
+#' service or paper-specific date, just the package name.
+#'
+#' @param pkg the package name
+#' @param install_lib the library to install into (the real library for
+#'   `cran_to_main_lib`, else the throwaway `lib_dir`)
+#' @param lib_dir the throwaway library (checked for loadability, same as the
+#'   caller's main install path)
+#'
+#' @returns a list `ok` (logical), `msg` (character, error text on failure),
+#'   `version` (the Archive version installed, or NA)
+#' @keywords internal
+.repro_cran_archive_install <- function(pkg, install_lib, lib_dir) {
+  fail <- function(msg) list(ok = FALSE, msg = msg, version = NA_character_)
+  archive_url <- paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/")
+  listing <- tryCatch(readLines(archive_url, warn = FALSE),
+                      error = function(e) NULL)
+  if (is.null(listing)) return(fail("could not reach the CRAN Archive listing"))
+
+  # The Archive's directory listing is an HTML index: each row names a source
+  # tarball "<pkg>_<version>.tar.gz" and its own modification date, which is
+  # the only ordering signal available (versions do not always sort
+  # lexically, e.g. "1.9" vs "1.10"). Take the row with the LATEST date.
+  tarball_pat <- paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz")
+  hit_lines <- grep(tarball_pat, listing, value = TRUE)
+  if (length(hit_lines) == 0)
+    return(fail("package not found in the CRAN Archive"))
+
+  date_pat <- "(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2})"
+  dates <- suppressWarnings(as.POSIXct(
+    sub(paste0(".*", date_pat, ".*"), "\\1", hit_lines), tz = "UTC"))
+  files <- regmatches(hit_lines, regexpr(tarball_pat, hit_lines))
+  ord <- if (all(!is.na(dates))) order(dates, decreasing = TRUE) else
+    order(files, decreasing = TRUE)
+  latest_file <- files[ord][1]
+  version <- sub(paste0("^", pkg, "_(.*)\\.tar\\.gz$"), "\\1", latest_file)
+
+  ok <- tryCatch({
+    utils::install.packages(paste0(archive_url, latest_file), lib = install_lib,
+                            repos = NULL, type = "source", quiet = FALSE)
+    if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
+        !requireNamespace(pkg, quietly = TRUE))
+      stop("installed but package '", pkg, "' is not loadable")
+    TRUE
+  }, error = function(e) conditionMessage(e))
+  if (isTRUE(ok)) list(ok = TRUE, msg = "", version = version)
+  else fail(ok)
 }
 
 #' Run the paper's scripts, in order, in isolated subprocesses
@@ -796,11 +1190,18 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
 #'   `skipped_missing_inputs` instead of running
 #' @param parses named logical (by file_name); a file that will not parse is
 #'   recorded `not_parsed` and not run
+#' @param failed_deps character vector of package names that
+#'   [repro_install_deps()] could not install (CRAN Archive retry included) —
+#'   used only to tell apart a script that failed because ITS OWN dependency is
+#'   genuinely unavailable (`dependency_unavailable`) from a script that failed
+#'   for any other reason (`errored`), so an unavailable package does not read
+#'   as a bug in the paper's code
 #'
 #' @returns a data frame with `file_name`, `outcome` (one of `ran_ok`,
-#'   `errored`, `timed_out`, `not_parsed`, `skipped_missing_inputs`), `error`
-#'   (message or ""), `error_type` (`undefined_variable`, `timeout`, `runtime`,
-#'   or NA), `undefined_var` (the missing variable name when
+#'   `errored`, `timed_out`, `not_parsed`, `skipped_missing_inputs`,
+#'   `dependency_unavailable`), `error` (message or ""), `error_type`
+#'   (`undefined_variable`, `timeout`, `dependency_unavailable`, `runtime`, or
+#'   NA), `undefined_var` (the missing variable name when
 #'   `error_type == "undefined_variable"`, else NA), `stdout`, `stderr`,
 #'   `elapsed` (seconds), and `script_lines` (list-column: the EXECUTED script's
 #'   own text, one element per source line — the exact text `stdout`'s echoed
@@ -808,13 +1209,14 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
 #'   line number; empty character(0) for a script that did not run).
 #' @export
 repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
-                              skip = character(0), parses = NULL) {
+                              skip = character(0), parses = NULL,
+                              failed_deps = character(0)) {
   if (is.null(run_tbl) || nrow(run_tbl) == 0)
     return(data.frame(file_name = character(0), outcome = character(0),
                       error = character(0), error_type = character(0),
                       undefined_var = character(0), stdout = character(0),
                       stderr = character(0), elapsed = numeric(0)) |>
-             dplyr::mutate(script_lines = list()))
+             dplyr::mutate(script_lines = list(), captures = list()))
   if (!requireNamespace("callr", quietly = TRUE))
     stop("the 'callr' package is required to execute code (execute = TRUE).",
          call. = FALSE)
@@ -832,7 +1234,8 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
     pb_run$tick(1, list(what = fn))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
 
-    no_lines <- function(df) dplyr::mutate(df, script_lines = list(character(0)))
+    no_lines <- function(df) dplyr::mutate(df, script_lines = list(character(0)),
+                                           captures = list(NULL))
     if (!is.null(parses) && fn %in% names(parses) && !isTRUE(parses[[fn]]))
       return(no_lines(data.frame(file_name = fn, outcome = "not_parsed", error = "",
                         error_type = NA_character_, undefined_var = NA_character_,
@@ -863,19 +1266,31 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
     # the run, and the output is still captured (read back below).
     out_file <- tempfile(fileext = ".out")
     err_file <- tempfile(fileext = ".err")
+    # Sidecar for CAPTURED RESULT OBJECTS (R/r-capture.R). A task callback in
+    # the child records each top-level statistical object — the object itself,
+    # not what it printed — so p-values, statistic identities and coefficient
+    # matrices come back exact instead of re-parsed from console text. Written
+    # by the child on exit; absent if the script died before writing, in which
+    # case the stdout path alone is used.
+    cap_file <- tempfile(fileext = ".rds")
     t0 <- Sys.time()
     out <- tryCatch(
       callr::r(
         # callr::r() has no working-directory argument, so set it INSIDE the
         # subprocess before sourcing, so the script's relative paths resolve
         # against the materialised layout root.
-        function(script, wd) { setwd(wd); source(script, echo = TRUE) },
-        args = list(script = row$script_path, wd = row$run_dir),
+        .r_capture_runner(),
+        args = list(script = row$script_path, wd = row$run_dir,
+                    capture_file = cap_file,
+                    helpers = .r_capture_helpers()),
         libpath = libs,
         timeout = timeout, error = "error",
         stdout = out_file, stderr = err_file),
       error = function(e) e)
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    captures <- if (file.exists(cap_file))
+      tryCatch(readRDS(cap_file), error = function(e) NULL) else NULL
+    unlink(cap_file)
 
     # Read whatever the child wrote before it finished / errored / timed out.
     read_cap <- function(f) if (file.exists(f))
@@ -906,19 +1321,41 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
       undef_var <- if (!is.na(undef_src))
         sub(paste0(".*", undef_pat, ".*"), "\\1",
             regmatches(undef_src, regexpr(undef_pat, undef_src))) else NA_character_
+
+      # A script that library()/require()s a package we already know FAILED to
+      # install (even after the CRAN Archive retry — see repro_install_deps())
+      # is not a bug in the paper's code: it never got the chance to run its
+      # real analysis. R's own error for this is "there is no package called
+      # 'x'" (from library()) or the same text via require()'s stop-on-failure
+      # form; match it against failed_deps rather than trusting the message's
+      # wording alone, so a script that merely REFERENCES an unavailable
+      # package's name elsewhere is not misclassified.
+      nopkg_pat <- "there is no package called ['\"]([^'\"]+)['\"]"
+      nopkg_src <- if (grepl(nopkg_pat, msg)) msg else
+        if (grepl(nopkg_pat, se)) se else NA_character_
+      nopkg_var <- if (!is.na(nopkg_src))
+        sub(paste0(".*", nopkg_pat, ".*"), "\\1",
+            regmatches(nopkg_src, regexpr(nopkg_pat, nopkg_src))) else NA_character_
+      dep_unavailable <- !is.na(nopkg_var) && nopkg_var %in% failed_deps
+
       etype <- if (is_timeout) "timeout"
+               else if (dep_unavailable) "dependency_unavailable"
                else if (!is.na(undef_var)) "undefined_variable"
                else "runtime"
-      data.frame(file_name = fn,
-                 outcome = if (is_timeout) "timed_out" else "errored",
+      outc <- if (is_timeout) "timed_out"
+              else if (dep_unavailable) "dependency_unavailable"
+              else "errored"
+      data.frame(file_name = fn, outcome = outc,
                  error = msg, error_type = etype, undefined_var = undef_var,
                  stdout = so, stderr = se, elapsed = elapsed) |>
-        dplyr::mutate(script_lines = list(exec_lines))
+        dplyr::mutate(script_lines = list(exec_lines),
+                      captures = list(captures))
     } else {
       data.frame(file_name = fn, outcome = "ran_ok", error = "",
                  error_type = NA_character_, undefined_var = NA_character_,
                  stdout = so, stderr = se, elapsed = elapsed) |>
-        dplyr::mutate(script_lines = list(exec_lines))
+        dplyr::mutate(script_lines = list(exec_lines),
+                      captures = list(captures))
     }
   })
   dplyr::bind_rows(rows)

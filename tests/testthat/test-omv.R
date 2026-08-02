@@ -1,7 +1,7 @@
 # Tests for the jamovi (.omv) reader. A .omv is a zip of binary blobs, so the
 # fixture is built here from the known on-disk format (metadata.json + data.bin +
-# strings.bin + an analysis blob) and round-tripped through read_omv(). This
-# mirrors read_jasp(), whose contract read_omv() reproduces.
+# strings.bin + an analysis blob) and round-tripped through import_omv(). This
+# mirrors import_jasp(), whose contract import_omv() reproduces.
 
 # Build a minimal but structurally real .omv archive on disk; return its path.
 # 3 rows, one column of each dataType: Integer (with a value label), Decimal, Text.
@@ -50,11 +50,11 @@ make_omv <- function(dir) {
   file.path(dir, "fixture.omv")
 }
 
-test_that("read_omv decodes Integer, Decimal and Text columns", {
+test_that("import_omv decodes Integer, Decimal and Text columns", {
   skip_if_not(nzchar(Sys.which("zip")), "zip utility not available")
   d <- withr::local_tempdir()
   omv <- make_omv(d)
-  r <- read_omv(omv)
+  r <- import_omv(omv)
   expect_equal(r$format, "jamovi")
   expect_equal(nrow(r$data), 3L)
   # ignore_attr: the grp/score columns correctly carry label/labels attributes;
@@ -64,19 +64,19 @@ test_that("read_omv decodes Integer, Decimal and Text columns", {
   expect_equal(r$data$note, c("yes", "no", "yes"))     # strings.bin resolved
 })
 
-test_that("read_omv attaches haven-style labels and variable label", {
+test_that("import_omv attaches haven-style labels and variable label", {
   skip_if_not(nzchar(Sys.which("zip")), "zip utility not available")
   d <- withr::local_tempdir()
-  r <- read_omv(make_omv(d))
+  r <- import_omv(make_omv(d))
   expect_equal(attr(r$data$grp, "labels"),
                stats::setNames(c(1, 2), c("Control", "Treatment")))
   expect_equal(attr(r$data$score, "label"), "Total score")
 })
 
-test_that("read_omv recovers the analysis R syntax (no framing byte)", {
+test_that("import_omv recovers the analysis R syntax (no framing byte)", {
   skip_if_not(nzchar(Sys.which("zip")), "zip utility not available")
   d <- withr::local_tempdir()
-  r <- read_omv(make_omv(d))
+  r <- import_omv(make_omv(d))
   expect_length(r$analyses, 1L)
   expect_match(r$analyses[[1]], "ttestIS", fixed = TRUE)
   expect_match(r$analyses[[1]], "jmv::ttestIS(", fixed = TRUE)
@@ -84,17 +84,17 @@ test_that("read_omv recovers the analysis R syntax (no framing byte)", {
   expect_match(r$analyses[[1]], "vars(score)", fixed = TRUE)   # nested paren kept
 })
 
-test_that("read_omv errors on a non-omv file", {
+test_that("import_omv errors on a non-omv file", {
   d <- withr::local_tempdir()
   f <- file.path(d, "not.omv")
   writeLines("not a zip", f)
-  expect_error(read_omv(f))
+  expect_error(import_omv(f))
 })
 
 # ── real fixture (a small published jamovi file, fixtures/formats/sample.omv) ──
 
-test_that("read_omv reads a real .omv file", {
-  r <- read_omv(test_path("fixtures", "formats", "sample.omv"))
+test_that("import_omv reads a real .omv file", {
+  r <- import_omv(test_path("fixtures", "formats", "sample.omv"))
   expect_equal(r$format, "jamovi")
   expect_equal(nrow(r$data), 218L)
   expect_equal(ncol(r$data), 9L)

@@ -34,7 +34,7 @@ code_read <- function(file_path) {
 
 #' Detect Code Language
 #'
-#' Detects code language used in files, only for languages metacheck currently processes (R, SAS, SPSS, Stata).
+#' Detects code language used in files, only for languages metacheck currently processes (R, SAS, SPSS, Stata, Mplus).
 #'
 #' @param file_name a vector of file names
 #'
@@ -68,16 +68,254 @@ code_lang <- function(file_name) {
   if (grepl("\\.(do|ado)$", lname)) {
     return("Stata")
   }
+  if (grepl("\\.inp$", lname)) {
+    return("Mplus")
+  }
   # A .jasp / .omv bundles a dataset with its analyses. It is a binary (zip)
   # archive, so none of the text-based checks below apply; it is listed, not
-  # analysed. (read_jasp()/read_omv() recover the analysis syntax separately.)
+  # analysed. (import_jasp()/import_omv() recover the analysis syntax separately.)
   if (grepl("\\.jasp$", lname)) {
     return("JASP")
   }
   if (grepl("\\.omv$", lname)) {
     return("jamovi")
   }
+  # ".m" is MATLAB source (Octave runs the same syntax). It also names
+  # Objective-C source elsewhere in the world, but a psychology-paper code
+  # repository overwhelmingly means MATLAB, and metacheck has no separate
+  # Objective-C handling to confuse it with.
+  if (grepl("\\.m$", lname)) {
+    return("MATLAB")
+  }
   return(NA_character_)
+}
+
+# For every ".spv" file in `all_files`, download it (reusing the same
+# download_repo_files() path/cache/size-cap options code_check() already
+# uses for .sps/.R/etc.), recover its embedded SPSS syntax as a sibling
+# ".sps" file (.spv_export_syntax(), R/spv.R), and append ONE synthetic
+# row per recovered ".sps" to the returned data.frame. That row then flows
+# through the REST of code_check() completely unmodified: code_lang()
+# already maps ".sps" -> "SPSS", so the recovered syntax is read, checked for
+# comments/absolute paths/library lines, etc. exactly like any author-saved
+# .sps file would be -- a .spv itself is still never checked as code (it
+# stays classed data_type = "output"; see .data_check_types()), only the
+# syntax RECOVERED from it becomes a checked code file.
+#
+# Files that fail to download, don't decode, or have no recoverable syntax
+# are silently skipped (no row added) -- an .spv with no usable syntax is not
+# an error, since most of its content is legitimately just rendered tables.
+.code_expand_spv <- function(all_files, max_file_size, max_download_size, cache) {
+  is_spv <- grepl("\\.spv$", all_files$file_name, ignore.case = TRUE)
+  if (!any(is_spv)) return(all_files)
+
+  spv_files <- all_files[is_spv, , drop = FALSE]
+  need_dl <- is.na(spv_files$file_location) | !nzchar(spv_files$file_location %||% "")
+  if (any(need_dl) && "file_url" %in% names(spv_files)) {
+    dl <- tryCatch(
+      download_repo_files(spv_files[need_dl, , drop = FALSE],
+                          max_file_size = max_file_size,
+                          max_download_size = max_download_size, cache = cache),
+      error = function(e) NULL)
+    if (!is.null(dl)) spv_files$file_location[need_dl] <- dl$file_location
+  }
+
+  new_rows <- list()
+  for (i in seq_len(nrow(spv_files))) {
+    loc <- spv_files$file_location[i]
+    if (is.na(loc) || !nzchar(loc) || !file.exists(loc)) next
+    sps_path <- tryCatch(.spv_export_syntax(loc), error = function(e) NA_character_)
+    if (is.na(sps_path)) next
+
+    row <- spv_files[i, , drop = FALSE]
+    row$file_name <- basename(sps_path)
+    row$file_path <- file.path(dirname(spv_files$file_path[i] %||% spv_files$file_name[i]),
+                               "code", basename(sps_path))
+    row$file_location <- sps_path
+    row$file_url <- NA_character_
+    row$file_size <- file.size(sps_path)
+    new_rows[[length(new_rows) + 1L]] <- row
+  }
+  if (!length(new_rows)) return(all_files)
+  dplyr::bind_rows(all_files, new_rows)
+}
+
+# For every ".smcl" file in `all_files`, download it (reusing the same
+# download_repo_files() path/cache/size-cap options code_check() already
+# uses for .sps/.R/etc.), recover its echoed Stata syntax as a sibling
+# ".do" file (.smcl_export_syntax(), R/stata.R), and append ONE synthetic
+# row per recovered ".do" to the returned data.frame. That row then flows
+# through the REST of code_check() completely unmodified: code_lang()
+# already maps ".do" -> "Stata", so the recovered syntax is read, checked
+# for comments/absolute paths/library lines, etc. exactly like any
+# author-saved .do file would be -- a .smcl itself is still never checked
+# as code (it stays classed data_type = "output"; see
+# .data_check_types()), only the syntax RECOVERED from it becomes a
+# checked code file. Mirrors .code_expand_spv() exactly; the one real
+# difference is that a .smcl's command echo IS its own verbatim syntax (no
+# separate structure element to recover it from, unlike .spv).
+#
+# Files that fail to download, don't parse, or have no recoverable syntax
+# are silently skipped (no row added) -- a .smcl with no usable syntax is
+# not an error, since most of its content is legitimately just rendered
+# tables and log bookkeeping.
+.code_expand_smcl <- function(all_files, max_file_size, max_download_size, cache) {
+  is_smcl <- grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE)
+  if (!any(is_smcl)) return(all_files)
+
+  smcl_files <- all_files[is_smcl, , drop = FALSE]
+  need_dl <- is.na(smcl_files$file_location) | !nzchar(smcl_files$file_location %||% "")
+  if (any(need_dl) && "file_url" %in% names(smcl_files)) {
+    dl <- tryCatch(
+      download_repo_files(smcl_files[need_dl, , drop = FALSE],
+                          max_file_size = max_file_size,
+                          max_download_size = max_download_size, cache = cache),
+      error = function(e) NULL)
+    if (!is.null(dl)) smcl_files$file_location[need_dl] <- dl$file_location
+  }
+
+  new_rows <- list()
+  for (i in seq_len(nrow(smcl_files))) {
+    loc <- smcl_files$file_location[i]
+    if (is.na(loc) || !nzchar(loc) || !file.exists(loc)) next
+    do_path <- tryCatch(.smcl_export_syntax(loc), error = function(e) NA_character_)
+    if (is.na(do_path)) next
+
+    row <- smcl_files[i, , drop = FALSE]
+    row$file_name <- basename(do_path)
+    row$file_path <- file.path(dirname(smcl_files$file_path[i] %||% smcl_files$file_name[i]),
+                               "code", basename(do_path))
+    row$file_location <- do_path
+    row$file_url <- NA_character_
+    row$file_size <- file.size(do_path)
+    new_rows[[length(new_rows) + 1L]] <- row
+  }
+  if (!length(new_rows)) return(all_files)
+  dplyr::bind_rows(all_files, new_rows)
+}
+
+# For every ".out" file in `all_files`, download it (reusing the same
+# download_repo_files() path/cache/size-cap options code_check() already
+# uses for .sps/.R/etc.), recover its own verbatim "INPUT INSTRUCTIONS"
+# block as a sibling ".inp" file (.mplus_export_syntax(), R/mplus.R), and
+# append ONE synthetic row per recovered ".inp" to the returned data.frame.
+# Mirrors .code_expand_spv()/.code_expand_smcl() exactly; like .smcl (and
+# unlike .spv), a .out's syntax is already verbatim text sitting right in
+# the file, not something decoded from a separate binary structure. A .out
+# itself is still never checked as code (it stays classed data_type =
+# "output"; see .fixed_ext_type in R/data_check_helpers.R), only the syntax
+# RECOVERED from it becomes a checked code file.
+#
+# Files that fail to download, don't parse, or have no recoverable syntax
+# are silently skipped (no row added) -- should not happen for a genuine
+# Mplus .out (INPUT INSTRUCTIONS is always present), but a malformed or
+# truncated download is not an error worth surfacing here.
+.code_expand_mplus <- function(all_files, max_file_size, max_download_size, cache) {
+  is_out <- grepl("\\.out$", all_files$file_name, ignore.case = TRUE)
+  if (!any(is_out)) return(all_files)
+
+  out_files <- all_files[is_out, , drop = FALSE]
+  need_dl <- is.na(out_files$file_location) | !nzchar(out_files$file_location %||% "")
+  if (any(need_dl) && "file_url" %in% names(out_files)) {
+    dl <- tryCatch(
+      download_repo_files(out_files[need_dl, , drop = FALSE],
+                          max_file_size = max_file_size,
+                          max_download_size = max_download_size, cache = cache),
+      error = function(e) NULL)
+    if (!is.null(dl)) out_files$file_location[need_dl] <- dl$file_location
+  }
+
+  new_rows <- list()
+  for (i in seq_len(nrow(out_files))) {
+    loc <- out_files$file_location[i]
+    if (is.na(loc) || !nzchar(loc) || !file.exists(loc)) next
+    inp_path <- tryCatch(.mplus_export_syntax(loc), error = function(e) NA_character_)
+    if (is.na(inp_path)) next
+
+    row <- out_files[i, , drop = FALSE]
+    row$file_name <- basename(inp_path)
+    row$file_path <- file.path(dirname(out_files$file_path[i] %||% out_files$file_name[i]),
+                               "code", basename(inp_path))
+    row$file_location <- inp_path
+    row$file_url <- NA_character_
+    row$file_size <- file.size(inp_path)
+    new_rows[[length(new_rows) + 1L]] <- row
+  }
+  if (!length(new_rows)) return(all_files)
+  dplyr::bind_rows(all_files, new_rows)
+}
+
+# For every ".html" file in `all_files`, download it (reusing the same
+# download_repo_files() path/cache/size-cap options code_check() already uses
+# for .sps/.R/etc.) and content-sniff it (.html_sniff_kind(), R/html-output.R)
+# to tell rendered R Markdown / Quarto (pandoc/knitr) analysis output apart
+# from a Stata log translated to HTML, a jsPsych/psiTurk task-runner page, or
+# a project documentation site — unlike .spv/.smcl/.out, ".html" carries NO
+# format-locked signal from its extension alone (see R/html-output.R's file
+# header), so every candidate is downloaded and checked rather than only ones
+# already classified some other way.
+#
+# For the "rmd" kind, the ORIGINAL R source sits verbatim inside the rendered
+# document and is recovered as a sibling ".R" file (.html_export_r_source(),
+# R/html-output.R) — the same "recover a checkable code file" idea as
+# .code_expand_spv()/.code_expand_smcl()/.code_expand_mplus(). For "stata",
+# NO recovery is attempted (the real markup has not been confirmed against a
+# genuine example; see R/html-output.R) — only the .html itself is
+# reclassified data_type = "output" downstream (R/data_check_helpers.R), same
+# as any other detected output. An .html that sniffs as neither kind is left
+# completely alone: no row is added, and its classification is whatever
+# data_classify_files() already gave it (see the name-based "output" rule
+# there for the OTHER trigger — a filename literally containing "output" —
+# which does not require downloading/sniffing at all).
+.code_expand_html <- function(all_files, max_file_size, max_download_size, cache) {
+  is_html <- grepl("\\.html?$", all_files$file_name, ignore.case = TRUE)
+  if (!any(is_html)) return(all_files)
+
+  html_files <- all_files[is_html, , drop = FALSE]
+  need_dl <- is.na(html_files$file_location) | !nzchar(html_files$file_location %||% "")
+  if (any(need_dl) && "file_url" %in% names(html_files)) {
+    dl <- tryCatch(
+      download_repo_files(html_files[need_dl, , drop = FALSE],
+                          max_file_size = max_file_size,
+                          max_download_size = max_download_size, cache = cache),
+      error = function(e) NULL)
+    if (!is.null(dl)) html_files$file_location[need_dl] <- dl$file_location
+  }
+
+  new_rows <- list()
+  html_kind <- rep(NA_character_, nrow(html_files))
+  for (i in seq_len(nrow(html_files))) {
+    loc <- html_files$file_location[i]
+    if (is.na(loc) || !nzchar(loc) || !file.exists(loc)) next
+    html_kind[i] <- tryCatch(.html_sniff_kind(loc), error = function(e) NA_character_)
+    if (is.na(html_kind[i]) || html_kind[i] != "rmd") next
+
+    r_path <- tryCatch(.html_export_r_source(loc), error = function(e) NA_character_)
+    if (is.na(r_path)) next
+
+    row <- html_files[i, , drop = FALSE]
+    row$file_name <- basename(r_path)
+    row$file_path <- file.path(dirname(html_files$file_path[i] %||% html_files$file_name[i]),
+                               "code", basename(r_path))
+    row$file_location <- r_path
+    row$file_url <- NA_character_
+    row$file_size <- file.size(r_path)
+    new_rows[[length(new_rows) + 1L]] <- row
+  }
+
+  # Reclassify each ORIGINAL .html row's data_type from its sniffed kind, when
+  # the table already carries that column (repo_check's table does not; a
+  # caller that ran data_check first, and so has data_type, gets it updated
+  # here too rather than only on the synthetic .R row's own — absent —
+  # classification). Both "rmd" and "stata" mean "this IS rendered output".
+  if ("data_type" %in% names(all_files)) {
+    sniffed <- !is.na(html_kind)
+    if (any(sniffed))
+      all_files$data_type[which(is_html)[sniffed]] <- "output"
+  }
+
+  if (!length(new_rows)) return(all_files)
+  dplyr::bind_rows(all_files, new_rows)
 }
 
 #' Convert Rmd/qmd files to R code only
@@ -284,7 +522,8 @@ code_setwd <- function(code_text) {
 #' Remove comments from code text
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata)
+#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
+#'   Mplus, MATLAB)
 #'
 #' @returns the code_text minus comment lines
 #' @export
@@ -296,7 +535,7 @@ code_setwd <- function(code_text) {
 #'   "x <- 'And this is code'"
 #' )
 #' code_text_nc <- code_remove_comments(code_text, "R")
-code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata")) {
+code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
   in_block <- FALSE
   code_text <- strsplit(code_text, "\n+") |> unlist()
@@ -339,6 +578,29 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
       }
       if (in_block && ends_block) in_block <- FALSE
     }
+  } else if (lang == "Mplus") {
+    # Mplus syntax comment is "!" to end of line; no block-comment syntax.
+    code_text_nc <- code_text[!grepl("^\\s*!", code_text)]
+    code_text_nc <- sub("!.*$", "", code_text_nc)
+  } else if (lang == "MATLAB") {
+    # MATLAB line comments are "%" to end of line; block comments are "%{"/"%}",
+    # each valid ONLY when alone on its own line (whitespace aside) -- a "%{"
+    # elsewhere on a line (e.g. inside a string, or as part of an expression)
+    # is not a block-comment start, unlike SAS/Stata's "/*" which is recognised
+    # anywhere on the line.
+    for (ln in seq_along(code_text)) {
+      L <- code_text[ln]
+      starts_block <- grepl("^\\s*%\\{\\s*$", L)
+      ends_block   <- grepl("^\\s*%\\}\\s*$", L)
+      if (!in_block && starts_block) { in_block <- TRUE; next }
+      if (in_block) { if (ends_block) in_block <- FALSE; next }
+      if (grepl("^\\s*%", L)) next   # whole-line comment
+      # Strip a trailing "%..." comment. Like the Stata "//" branch above, this
+      # does not know about string literals, so a literal "%" inside a quoted
+      # string (e.g. disp('100%')) is also truncated -- a pre-existing class of
+      # limitation in this function, not new here.
+      code_text_nc <- c(code_text_nc, sub("%.*$", "", L))
+    }
   } else {
     code_text_nc <- code_text
   }
@@ -349,7 +611,8 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
 #' Get Code Composition Stats
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata)
+#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
+#'   Mplus, MATLAB)
 #'
 #' @returns list with items `total_lines`, `comment_lines`, `code_lines`, and `percent_comment`
 #' @export
@@ -362,7 +625,7 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
 #'   "a <- 1"
 #' )
 #' code_line_stats(code_text, "R")
-code_line_stats <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata")) {
+code_line_stats <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
   code_text <- strsplit(code_text, "\n+") |> unlist()
 
@@ -386,7 +649,8 @@ code_line_stats <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata")) {
 #' Returns the lines on which library/require calls exist. This is a helper function for the code_check module.
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata)
+#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
+#'   Mplus, MATLAB)
 #'
 #' @returns a data frame with columns `code` and `line` (the line numbers on which library calls exist, after removing blank lines and comments)
 #' @export
@@ -400,7 +664,7 @@ code_line_stats <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata")) {
 #'   "renv::install('metacheck')"
 #' )
 #' code_library_lines(code_text, "R")
-code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata")) {
+code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
 
   # set up data frame
@@ -410,12 +674,26 @@ code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
     line = seq_along(code_text)
   )
 
-  # Language-specific regexes for imports and data loads
+  # Language-specific regexes for imports and data loads. Mplus has no
+  # library/import concept at all (like SAS/SPSS/Stata) -- its closest
+  # analogue is the DATA: command's own file reference, which
+  # code_file_refs() already extracts separately; matched against nothing
+  # here (this returns 0 rows for every Mplus file, by design, the same way
+  # code_library_names() below returns an empty frame for it).
+  #
+  # MATLAB has no package-manager concept either, but addpath()/toolboxdir()
+  # calls play the same role library()/require() do in R: bringing in code
+  # (local function files, or a licensed toolbox) not defined in the script
+  # itself -- the closest MATLAB analogue this check has, so it is what is
+  # matched here (mirroring code_library_names() below, which reports these
+  # same calls' argument as the "package" name).
   lang_import_regex <- list(
-    R     = "^[^#]*\\b(library|require|renv::install|p_load)\\s*\\(",
-    SAS   = "\\b(%include|libname|filename|options)\\b",
-    SPSS  = "\\b(INSERT|BEGIN\\s+PROGRAM|SET)\\b",
-    Stata = "\\b(do|run|cd|adopath|net\\s+install|ssc\\s+install)\\b"
+    R      = "^[^#]*\\b(library|require|renv::install|p_load)\\s*\\(",
+    SAS    = "\\b(%include|libname|filename|options)\\b",
+    SPSS   = "\\b(INSERT|BEGIN\\s+PROGRAM|SET)\\b",
+    Stata  = "\\b(do|run|cd|adopath|net\\s+install|ssc\\s+install)\\b",
+    Mplus  = "(?!)",
+    MATLAB = "\\b(addpath|import)\\s*\\("
   )
 
   lines <- search_text(df, lang_import_regex[[lang]], perl = TRUE)[, c("code", "line")]
@@ -444,7 +722,7 @@ code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
 #' the names appear in the source.
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (R, Python, SPSS, SAS, Stata)
+#' @param lang the language (R, Python, SPSS, SAS, Stata, Mplus, MATLAB)
 #'
 #' @returns a data frame with columns `package`, `source` (how the package was
 #'   referenced: `library`, `require`, `requireNamespace`, `p_load`, `namespace`,
@@ -461,13 +739,18 @@ code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
 #' )
 #' code_library_names(code_text, "R")
 code_library_names <- function(code_text,
-                               lang = c("R", "Python", "SPSS", "SAS", "Stata")) {
+                               lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
   empty <- data.frame(package = character(0), source = character(0),
                       line = integer(0))
 
-  # SAS / SPSS / Stata: no package/library concept to extract.
-  if (lang %in% c("SPSS", "SAS", "Stata")) return(empty)
+  # SAS / SPSS / Stata / Mplus / MATLAB: no INSTALLABLE package concept to
+  # extract (no CRAN/PyPI-style registry a requirements.txt could name).
+  # MATLAB's addpath()/import() name a local FOLDER or fully-qualified
+  # function, not an installable identifier -- already reported separately as
+  # a "library-line" by code_library_lines() above, so it is not duplicated
+  # here as a "package".
+  if (lang %in% c("SPSS", "SAS", "Stata", "Mplus", "MATLAB")) return(empty)
 
   # Strip comments. code_remove_comments() does not know Python, so handle its
   # `#` line comments directly; R (and R-in-Rmd/qmd) goes through the shared
@@ -569,7 +852,8 @@ code_packages <- function(packages) {
 #' Get files referenced in code
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata)
+#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
+#'   Mplus, MATLAB)
 #' @param include_writes also return files the code *writes* (R only). Off by
 #'   default: callers that ask "which referenced inputs are missing from the
 #'   repository?" (e.g. `code_check`) must not see a written file as a missing
@@ -588,7 +872,7 @@ code_packages <- function(packages) {
 #' code_file_refs(code_text, "R")
 #'
 code_file_refs <- function(code_text,
-                           lang = c("R", "SPSS", "SAS", "Stata"),
+                           lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB"),
                            include_writes = FALSE) {
   lang <- match.arg(lang)
   code_text <- code_remove_comments(code_text, lang)
@@ -627,7 +911,20 @@ code_file_refs <- function(code_text,
              "GET\\s+SAS\\s+DATA") |>
       paste(collapse = "|") |>
       paste0("\\b(", x = _, ")\\s*="),
-    Stata = "\\b(use|import\\s+delimited|insheet|merge|append)\\b"
+    Stata = "\\b(use|import\\s+delimited|insheet|merge|append)\\b",
+    # Mplus's DATA: command names its input file with "FILE = ...;" (seen
+    # verbatim in every real corpus file's INPUT INSTRUCTIONS, e.g.
+    # `FILE = "model_admir_child_....dat";`).
+    Mplus = "\\bFILE\\s*=",
+    # MATLAB's common data-reading functions, plus low-level fopen() and the
+    # script/function-calling `run` -- MATLAB has no source()-equivalent for
+    # code (a .m on the path is just called by name, no explicit "load this
+    # file" statement), so `run` here is the closest analogue: it DOES take an
+    # explicit script path, unlike an ordinary function call.
+    MATLAB = c("load", "csvread", "dlmread", "readtable", "readmatrix",
+              "readcell", "xlsread", "importdata", "fopen", "run") |>
+      paste(collapse = "|") |>
+      paste0("\\b(", x = _, ")\\s*\\(")
   )
   grepl_load <- lang_load_regex[[lang]]
 
@@ -678,7 +975,8 @@ code_file_refs <- function(code_text,
       list(regex = "insheet\\s+using\\s+([^,\\s]+)", group = 1),
       list(regex = "merge\\b.*?using\\s+([^,\\s]+)", group = 1),
       list(regex = "append\\b.*?using\\s+([^,\\s]+)", group = 1)
-    )
+    ),
+    Mplus = list() # FILE = "..." is always quoted; quoted-filename pattern suffices
   )
 
   extra <- character(0)

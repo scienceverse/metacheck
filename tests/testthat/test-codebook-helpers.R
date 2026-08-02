@@ -149,14 +149,17 @@ test_that(".infer_group maps experiment context to group codes", {
   expect_true(is.na(.infer_group("")))
 })
 
-test_that("data_group_llm skips grouping when there is nothing analysable", {
-  # Only assets -> no LLM call needed, everything defaults to 'shared'.
+test_that("data_group_llm falls back to a single study when there is no grouping evidence", {
+  # Materials files with no repo/path evidence are still sent toward grouping
+  # (every file needs a real study — there is no 'shared' bucket), but with no
+  # mocked LLM here the call fails gracefully and every file falls back to
+  # 'ex1', the single/default study, exactly as it would with llm_use(FALSE).
   f <- data.frame(
     file_name = c("fig1.png", "photo.jpg", "manual.pdf"),
-    data_type = c("asset", "asset", "asset"),
+    data_type = c("materials", "materials", "materials"),
     stringsAsFactors = FALSE)
   out <- data_group_llm(f)
-  expect_equal(out$group, rep("shared", 3))
+  expect_equal(out$group, rep("ex1", 3))
 })
 
 test_that("data_group_llm returns NULL on empty input", {
@@ -218,7 +221,7 @@ test_that(".llm_classify_batched drops values outside the valid set", {
 test_that(".strip_llm_wrapper removes the object-wrapper prefix", {
   # Providers that require an object-wrapped array return prefixed columns
   # (assignments.index); the helper restores the bare inner names.
-  df <- data.frame(assignments.index = 1:2, assignments.group = c("ex1", "shared"))
+  df <- data.frame(assignments.index = 1:2, assignments.group = c("ex1", "ex2"))
   out <- .strip_llm_wrapper(df, "assignments")
   expect_identical(names(out), c("index", "group"))
   # no-op when the prefix is absent, and NULL passes through

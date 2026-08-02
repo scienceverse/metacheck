@@ -18,21 +18,27 @@
 #' `codebook_check`.
 #'
 #' Each repository file is mapped to its Psych-DS destination by type: data →
-#' `data/`, code → `analysis/`, codebook → `documentation/codebooks/`, asset →
-#' `materials/`, supplemental/other → `documentation/`, readme → root `README`.
-#' The module
-#' then renders the target tree, marking files that are **present**, **missing**
+#' `data/`, code → `analysis/`, materials → `materials/`, documentation →
+#' `documentation/` (or `documentation/codebooks/` for `documentation` rows
+#' whose fine-grained `doc_role` is `"codebook"`), unknown → `documentation/`,
+#' the root readme (`doc_role == "readme"`) → root `README`. The module then
+#' renders the target tree, marking files that are **present**, **missing**
 #' (required but absent — shown in red), or **misplaced** (present but at the
 #' wrong path — shown at the target location annotated with their current
 #' location).
 #'
-#' When `data_check` assigned study groups (only possible with `llm_use(TRUE)`),
-#' a multi-study repository is modelled with a `study-<group>/` directory per
-#' study (each a complete Psych-DS dataset), while files that belong to no single
-#' study (a whole-repo README/codebook, shared materials) sit at the collection
-#' root beside them. Without an LLM the study grouping is unknown, so a
-#' single-rooted tree is shown together with a note that subgrouping could not
-#' be detected.
+#' `data_check` assigns every file except the collection-level root README/
+#' `ro-crate-metadata.json` to exactly one study group — deterministically
+#' where path/repository/code-reference evidence allows, and via an LLM only
+#' for the residual cases (see `data_group_llm()`). A multi-study repository is
+#' modelled with a `study-<group>/` directory per study (each a complete
+#' Psych-DS dataset); only the root readme and ro-crate metadata sit at the
+#' collection root beside them. When no evidence at all names a study (no
+#' path/repository split and no LLM), a single-rooted tree is shown together
+#' with a note that subgrouping could not be detected. A materials or
+#' documentation file genuinely reused across studies is still owned by
+#' exactly one study; the others get a reference to it (not a copy) written
+#' into their own metadata by `convert_psychds()`.
 #'
 #' This module only *checks* compliance; it does not modify the repository. The
 #' report points to a dedicated builder for generating a compliant copy.
@@ -57,15 +63,14 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
                           model = llm_model(),
                           params = list()) {
 
-  # File-type → Psych-DS subdirectory (data and readme handled separately).
+  # File-type → Psych-DS subdirectory (data and readme handled separately, by
+  # doc_role, below).
   type_to_subdir <- c(
-    code         = "analysis",
-    software     = "software",
-    output       = "outputs",
-    codebook     = "documentation/codebooks",
-    supplemental = "documentation",
-    other        = "documentation",
-    asset        = "materials"
+    code          = "analysis",
+    materials     = "materials",
+    output        = "outputs",
+    documentation = "documentation",
+    unknown       = "documentation"
   )
 
   .pid <- function(...) {
@@ -88,6 +93,7 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── 1. Inputs from data_check (+ codebook_check for documentation) ───────────
   structure_df <- get_prev_outputs("data_check", "structure")
   columns_df   <- get_prev_outputs("data_check", "table")
+  group_no_evidence <- get_prev_outputs("data_check", "group_no_evidence")
   if (is.null(structure_df)) {
     mo <- if (!is.null(local_path)) {
       module_run(paper, "data_check", local_path = local_path,
@@ -98,7 +104,9 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
     structure_df <- mo$structure
     columns_df   <- mo$table
+    group_no_evidence <- mo$group_no_evidence
   }
+  group_no_evidence <- isTRUE(group_no_evidence)
   labels_df <- get_prev_outputs("codebook_check", "table")
 
   empty <- function(text) {
@@ -124,9 +132,14 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_files <- nrow(structure_df)
 
   # ── 2. Do study groups exist? ────────────────────────────────────────────────
+  # Every file except the collection-level root README/ro-crate-metadata.json
+  # resolves to exactly one study — there is no "shared" bucket to filter out;
+  # those root files simply carry group = NA (see data_check.R).
   groups <- if ("group" %in% names(structure_df))
     structure_df$group else rep(NA_character_, n_files)
-  study_groups <- unique(groups[!is.na(groups) & groups != "shared"])
+  doc_role <- if ("doc_role" %in% names(structure_df))
+    structure_df$doc_role else rep(NA_character_, n_files)
+  study_groups <- unique(groups[!is.na(groups)])
   have_groups  <- length(study_groups) > 0
   multi_study  <- length(study_groups) > 1
 
@@ -139,18 +152,17 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   # layout; a single study (or unknown grouping) is a flat single dataset.
   #
   # Files that belong to a specific study go under study-<group>/ (a complete,
-  # valid Psych-DS dataset). Files that belong to NO single study — a whole-repo
-  # README/codebook, shared materials, or a file the grouping could not place —
-  # get NO study prefix: they live at the dataset root, beside the study-*/
-  # folders. This follows BIDS (shared content sits at the root, never in a
-  # pseudo-subject like sub-shared/) and keeps every study-*/ a real dataset,
-  # instead of the old study-shared/ folder that was a Psych-DS dataset shell
-  # with an empty variableMeasured and no data/.
+  # valid Psych-DS dataset). Only the root README/ro-crate-metadata.json (group
+  # is NA by construction — see data_check.R) get NO study prefix: they live at
+  # the dataset root, beside the study-*/ folders. This follows BIDS
+  # (collection-level content sits at the root, never in a pseudo-subject like
+  # sub-shared/) and keeps every study-*/ a real dataset.
   target_of <- function(i) {
-    dt   <- structure_df$data_type[i] %||% "other"
+    dt   <- structure_df$data_type[i] %||% "unknown"
+    role <- doc_role[i]
     name <- basename(gsub("\\\\", "/", structure_df$file_name[i]))
     grp  <- groups[i]
-    prefix <- if (multi_study && !is.na(grp) && grp != "shared")
+    prefix <- if (multi_study && !is.na(grp))
       paste0("study-", grp, "/") else ""
 
     if (dt == "data") {
@@ -161,21 +173,17 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       # here (not a renamed copy of the original) AND keeps the original file
       # beside it (see original_target_of); see convert_psychds().
       paste0(prefix, "data/source-", stem, "_data.csv")
-    } else if (dt == "readme") {
+    } else if (dt == "documentation" && !is.na(role) && role == "readme") {
+      # The root readme/ro-crate-metadata.json never carries a study prefix
+      # (grp is NA for these rows by construction); a PER-STUDY readme (rare,
+      # but possible if a study's own folder has its own README) still gets one.
       ext <- tools::file_ext(name)
       paste0(prefix, if (nzchar(ext)) paste0("README.", ext) else "README")
-    } else if (dt == "archive") {
-      # An `archive` row is a container (.zip/.tar/.gz) that data_check has ALREADY
-      # opened: its inner data/codebook/readme files were extracted and added as
-      # their own rows (which get real data/ targets above), and the container was
-      # demoted to `archive`. Copying the container too would duplicate that data
-      # in the release — the extracted CSVs in data/ AND the original zip in
-      # documentation/ — bloating the archive (e.g. a Project Implicit node shipped
-      # ~465 MB of redundant CSV-bundle zips beside the data already in data/).
-      # Return NA to EXCLUDE it from the plan: the container has been consumed, and
-      # any inner assets it also held stay linked via the original repo, not
-      # mirrored. NA-target rows are skipped by convert_psychds()'s copy loop.
-      NA_character_
+    } else if (dt == "documentation" && !is.na(role) && role == "license") {
+      # A LICENSE is collection-level, same as the readme: one licence covers
+      # the whole deposit, so it goes at the archive root with no study prefix.
+      ext <- tools::file_ext(name)
+      paste0(prefix, if (nzchar(ext)) paste0("LICENSE.", ext) else "LICENSE")
     } else {
       # Single-bracket lookup: an unmapped data_type returns NA rather than
       # throwing "subscript out of bounds" as `[[` would.
@@ -187,9 +195,11 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   target_path  <- vapply(seq_len(n_files), target_of, character(1))
   current_path <- gsub("\\\\", "/", structure_df$file_path %||% structure_df$file_name)
   current_path <- ifelse(is.na(current_path), structure_df$file_name, current_path)
-  # Rows target_of() gave an NA target are EXCLUDED from the release (consumed
-  # `archive` containers; see target_of). They are neither present nor misplaced:
-  # force misplaced = FALSE so the NA does not poison sum(misplaced) below.
+  # target_of() always returns a real path now (consumed archive containers
+  # never reach this table at all — data_check.R drops those rows once their
+  # contents are extracted, rather than keeping a placeholder row for them).
+  # This guard is kept defensively in case a future data_type slips through
+  # unmapped; it should never trigger in practice.
   is_excluded  <- is.na(target_path)
   misplaced    <- !is_excluded & current_path != target_path
 
@@ -237,8 +247,7 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   file_names_lc <- tolower(basename(current_path))
   has_dataset_desc <- any(file_names_lc == "dataset_description.json")
   has_data_files   <- any(is_data)
-  has_readme       <- any(!is.na(structure_df$data_type) &
-                            structure_df$data_type == "readme")
+  has_readme       <- any(!is.na(doc_role) & doc_role == "readme")
   has_changes      <- any(grepl("^changes(\\.|$)", file_names_lc))
 
   # Are the data columns describable (so a valid variableMeasured could exist)?
@@ -382,16 +391,21 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   report <- c(report, "#### Target Psych-DS Structure",
               "The tree below shows the Psych-DS layout this repository should have. Files in <span style=\"color:#c0392b\">red</span> are required but missing; files annotated *(move from ...)* exist but need relocating.",
               tree_html)
-  if (!have_groups) {
-    # Grouping is not LLM-only: file paths and repository splits are read first
-    # (.data_group_from_path / .data_group_from_repo), so reaching here means
-    # those found nothing either — not simply that the LLM was off.
+  if (group_no_evidence) {
+    # Every file always resolves to a real study group now (there is no
+    # "shared"/ungrouped state), so this can no longer mean "grouping failed" —
+    # it means grouping succeeded only via the blanket "ex1" default: no file
+    # path, repository split, code reference, or LLM answer named a study
+    # anywhere in this repository. Worth flagging distinctly from a genuinely
+    # detected single study, since the layout below is a guess, not evidence.
     report <- c(report,
       paste0("*Study subgrouping could not be detected: no file path or ",
              "repository split names a study",
              if (!llm_use()) ", and no LLM was used" else "",
-             ". If this repository contains multiple studies, name the study in ",
-             "the file or folder names (`study1/`, `experiment2_data.csv`)",
+             ". Every file was placed in a single default study (`ex1`) rather ",
+             "than from real evidence. If this repository contains multiple ",
+             "studies, name the study in the file or folder names ",
+             "(`study1/`, `experiment2_data.csv`)",
              if (!llm_use()) " or run with `llm_use(TRUE)`" else "",
              " so a multi-study Psych-DS layout can be modelled.*"))
   }
@@ -417,21 +431,31 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     misplaced_n         = n_misplaced
   )
 
+  # referenced_by: which OTHER studies reuse this file (cross-study reuse via
+  # a script's own read/write references — see data_group_llm()). A plain list
+  # column so convert_psychds() can write a reference into each of those
+  # studies' own metadata instead of copying the file (see
+  # .psychds_dataset_description() / .psychds_rocrate_json()).
+  plan_table <- data.frame(
+    file_name       = structure_df$file_name,
+    data_type       = structure_df$data_type,
+    group           = groups,
+    current_path    = current_path,
+    target_path     = target_path,
+    # `excluded` = a data_type target_of() could not map (should not occur in
+    # practice; see the comment above is_excluded).
+    status          = ifelse(is_excluded, "excluded",
+                             ifelse(misplaced, "move", "present")),
+    # convert = TRUE → converter writes a real CSV at target_path from the
+    # read data; original_target = where to also copy the untouched original.
+    convert         = needs_convert,
+    original_target = original_target
+  )
+  plan_table$referenced_by <- if ("referenced_by" %in% names(structure_df))
+    structure_df$referenced_by else vector("list", n_files)
+
   list(
-    table = data.frame(
-      file_name       = structure_df$file_name,
-      data_type       = structure_df$data_type,
-      group           = groups,
-      current_path    = current_path,
-      target_path     = target_path,
-      # `excluded` = consumed archive container (NA target); it is not copied.
-      status          = ifelse(is_excluded, "excluded",
-                               ifelse(misplaced, "move", "present")),
-      # convert = TRUE → converter writes a real CSV at target_path from the
-      # read data; original_target = where to also copy the untouched original.
-      convert         = needs_convert,
-      original_target = original_target
-    ),
+    table = plan_table,
     summary_table = summary_table,
     na_replace = c(required_met = 0, required_missing = 0,
                    recommended_met = 0, recommended_missing = 0,

@@ -26,10 +26,10 @@ column header. Combines two signals, because no single one covers every file:
 \enumerate{
 \item \strong{Type-consistency of the body below.} A text/banner/units row on top of
 numeric columns makes them look mixed; dropping it makes them cleanly
-numeric (see \code{\link[=.numeric_col_fraction]{.numeric_col_fraction()}}). Strong when the data are numeric
+numeric (see \code{.numeric_col_fraction()}). Strong when the data are numeric
 (the CDA/behavior sheets), weak when the body is mostly text.
 \item \strong{Junk rows above.} A banner (one label repeated across columns) or a
-near-empty spacer row is not a header (see \code{\link[=.is_junk_above_header]{.is_junk_above_header()}}). This
+near-empty spacer row is not a header (see \code{.is_junk_above_header()}). This
 carries the cases where the numeric jump is weak — e.g. the CDA banner row
 of \code{CDA} × 110 sitting above a header that only relabels 3 of 113 columns.
 }

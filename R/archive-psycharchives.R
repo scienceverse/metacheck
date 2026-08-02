@@ -26,6 +26,13 @@
 
 #' Find PsychArchives Links in Papers
 #'
+#' Get all PsychArchives links: real hyperlinks from the paper's own `url`
+#' table, plus a body-text fallback for a BARE mention (a handle like
+#' "20.500.12034/17526" is routinely cited without any URL scheme at all)
+#' that the source PDF/HTML never encoded as an actual hyperlink — the `url`
+#' table only ever contains links the source document itself made clickable.
+#' Same two-tier approach `github_links()` uses for GitHub.
+#'
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a table with the PsychArchives url in the first (href) column
@@ -36,13 +43,22 @@
 #' psycharchives_links(psychsci)
 #' }
 psycharchives_links <- function(paper) {
-  href <- NULL
+  href <- text <- NULL
 
   # Match both the psycharchives.org item pages and the hdl.handle.net handle
   # form (20.500.12034/...) that resolves to the same item.
-  paper_table(paper, "url") |>
+  found_href <- paper_table(paper, "url") |>
     dplyr::filter(grepl("psycharchives\\.org|20\\.500\\.12034/", href,
                         ignore.case = TRUE))
+
+  pa_bare_regex <- paste0(
+    "(?:https?://)?(?:www\\.)?psycharchives\\.org/[A-Za-z0-9/._-]+",
+    "|(?:https?://)?(?:hdl\\.handle\\.net/)?20\\.500\\.12034/[0-9]+"
+  )
+  other_pa <- text_search(paper, pa_bare_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
+  dplyr::bind_rows(found_href, other_pa) |> unique()
 }
 
 #' Retrieve info from PsychArchives by URL
