@@ -16,7 +16,7 @@ test_that("repo_check offline", {
                     files_readme = NA,
                     files_zip = NA)
   expect_equal(mod_output$summary_table, exp)
-  exp <- "We found no links to repositories on the Open Science Framework, Github, ResearchBox, or Zenodo."
+  exp <- "We found no links to repositories on the Open Science Framework, Github, ResearchBox, PsychArchives, or Zenodo."
   expect_equal(mod_output$summary_text, exp)
   expect_equal(mod_output$report, exp)
 })
@@ -45,7 +45,10 @@ test_that("OSF no files", {
                     files_data = 0,
                     files_code = 0,
                     files_readme = 0,
-                    files_zip = 0)
+                    files_zip = 0,
+                    files_unknown = 0L,
+                    naming_issues = 0L,
+                    roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
   exp <- " 0 files "
   expect_true(grepl(exp, mod_output$summary_text))
@@ -58,13 +61,24 @@ test_that("no code files", {
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 2 files ", mod_output$summary_text))
+  # Both files ARE classifiable from their names alone: README.md is the
+  # readme, and the archive is named "code.zip", which the name-based rule in
+  # data_classify_files() types as data_type "code" (see R/data_check_helpers.R
+  # — an archive's EXTENSION crosswalks to "unknown", but an explicit "code" in
+  # the file name overrides that). Nothing is left unclassifiable, so
+  # files_unknown is 0 and the naming check finds no issue either. files_code
+  # counts files whose file_type is code, which an archive's is not — hence 0
+  # there while data_type is "code".
   exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 2,
                     files_data = 0,
                     files_code = 0,
                     files_readme = 1,
-                    files_zip = 1)
+                    files_zip = 1,
+                    files_unknown = 0L,
+                    naming_issues = 0L,
+                    roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
 
@@ -75,13 +89,21 @@ test_that("OSF", {
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 4 files ", mod_output$summary_text))
+  # The fixture's Archive.zip is not classifiable by name/extension without
+  # opening it (repo_check never downloads), and test_paper()'s empty
+  # manuscript text names no studies at all, so roster_check$roster is empty —
+  # nothing for the file-derived "ex1" group to disagree with, hence FALSE
+  # (not a real mismatch, just an absence of roster evidence to compare).
   exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 4,
                     files_data = 1,
                     files_code = 2,
                     files_readme = 0,
-                    files_zip = 1)
+                    files_zip = 1,
+                    files_unknown = 1L,
+                    naming_issues = 1L,
+                    roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
 
@@ -97,8 +119,13 @@ test_that("OSF, github and rb", {
 
   expect_equal(mod_output$traffic_light, "yellow")
   expect_gt(nrow(mod_output$table), 14)
-  exp <- c("bad.R", "bad.Rmd", "Code/Study 1.r", "good-example.R")
+  # `file_name` holds the file's NAME; its position inside the repository (or
+  # inside an expanded archive) lives in `file_path`. The ResearchBox archive
+  # stores this script at "Code/Study 1.r", so the subfolder is asserted
+  # against file_path and the bare name against file_name.
+  exp <- c("bad.R", "bad.Rmd", "Study 1.r", "good-example.R")
   expect_contains(mod_output$table$file_name, exp)
+  expect_contains(mod_output$table$file_path, "Code/Study 1.r")
   expect_equal(mod_output$summary_table$paper_id, paper$paper_id)
   expect_equal(mod_output$summary_table$repo_n, 3)
   expect_equal(mod_output$summary_table$files_n, nrow(mod_output$table))
@@ -126,6 +153,24 @@ test_that("Zenodo", {
 }, "mock")
 
 # repo_check() + local_path ----
+
+test_that("repo_check tolerates files with an unknown (NA) size", {
+  # Regression: OSF sometimes returns no size for a file. The size column was
+  # formatted with utils:::format.object_size(), whose `if (x <= 0)` errors on
+  # NA ("missing value where TRUE/FALSE needed"), crashing repo_check for the
+  # whole paper. Stub file.size() to NA so a local file flows the missing-size
+  # path (archive_local() sets file_size from file.size()).
+  d <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+  paper <- test_paper()
+
+  local_mocked_bindings(file.size = function(...) NA_real_, .package = "base")
+  expect_no_error(mo <- module_run(paper, "repo_check", local_path = d))
+
+  # The unknown size flows through and renders as the placeholder, not a crash.
+  expect_true(is.na(mo$table$file_size))
+  expect_true(any(grepl("—", mo$report)))
+})
 
 test_that("repo_check vector of local paths", {
   local_path <- c(
