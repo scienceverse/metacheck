@@ -6,6 +6,8 @@
 #' @details
 #' The Effect Size check searches for regular expressions that match typical ways in which effect sizes are reported. It subsequently checks different ways in which Cohen's d, g, ηp2, and ωp2 can be computed against the reported value. If effects are missing, or might be incorrect, you the module provides a warning. The module was validated on APA reported statistical tests, and might miss effect sizes that were reported in other reporting styles. It was validated by the Metacheck team on papers published in Psychological Science.
 #'
+#' This module only checks statistical results reported in the running text of the manuscript. It cannot (yet) process statistics reported only in tables.
+#'
 #' <validation>In a sample of 161 papers with 1469 tests, this module correctly detected 1106 reported effect sizes (true positives) and correctly identified 295 cases where no effect size was present (true negatives). However, it missed 23 that were reported (false negatives), and incorrectly identified 45 effect sizes when none were reported (false positives). Among all instances detected by the module, 96% were true cases (positive predictive value). In a validation against 221 reported Cohen's d effect sizes, it correctly indicated coherence in 218 cases (99%). In a validation against 485 partial eta-squared effect sizes, it correctly indicated coherence in 480 (99%) </validation>
 #'
 #' @keywords results
@@ -523,13 +525,21 @@ stat_effect_size <- function(paper) {
     # then restore the original paper/sentence order, which extract_eq() and
     # split() would otherwise reorder by paper_id.
     paper_order <- unique(text_tbl$paper_id)
-    table <- eq |>
+    built <- eq |>
       split(~ paper_id + text_id, drop = TRUE) |>
       lapply(build_rows) |>
-      dplyr::bind_rows() |>
-      dplyr::left_join(text_tbl, by = c("paper_id", "text_id"))
-    table <- table[order(match(table$paper_id, paper_order), table$text_id), , drop = FALSE]
-    rownames(table) <- NULL
+      dplyr::bind_rows()
+    # build_rows() returns NULL for a sentence with effect sizes but no t/F
+    # test; when every sentence is NULL, bind_rows() yields a 0-column frame
+    # with no join keys, so guard the join (and skip to the empty-table return
+    # below) instead of erroring in left_join().
+    if (nrow(built) == 0 || !all(c("paper_id", "text_id") %in% names(built))) {
+      table <- data.frame()
+    } else {
+      table <- dplyr::left_join(built, text_tbl, by = c("paper_id", "text_id"))
+      table <- table[order(match(table$paper_id, paper_order), table$text_id), , drop = FALSE]
+      rownames(table) <- NULL
+    }
   }
 
 
