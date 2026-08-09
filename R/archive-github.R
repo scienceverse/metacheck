@@ -265,6 +265,139 @@ github_files <- function(repo, dir = "",
 }
 
 
+#' Get GitHub repository files via the Git Trees API
+#'
+#' Fetches the complete file tree of a GitHub repository in two API calls
+#' (repo metadata + recursive tree), rather than the N-request recursive
+#' \code{/contents/} crawl used by \code{github_files()}. Also gates large
+#' or software-dominated repositories before any recursive traversal.
+#'
+#' Returns a list with:
+#' \describe{
+#'   \item{\code{gated}}{logical}
+#'   \item{\code{reason}}{character reason for gating, or \code{NA}}
+#'   \item{\code{files}}{data.frame shaped like \code{github_files()} output,
+#'     or \code{NULL} when gated or when the tree could not be fetched}
+#'   \item{\code{default_branch}}{character}
+#' }
+#'
+#' @param repo GitHub repo URL or \code{"owner/repo"} string
+#' @param max_repo_size_mb gate: skip repos whose disk size exceeds this (MB;
+#'   from GitHub repo metadata)
+#' @param max_files gate: skip repos with more than this many files (default 1000)
+#' @param gate if FALSE, disable GitHub gates and use the legacy recursive
+#'   listing via [github_files()]
+#'
+#' @export
+#' @keywords internal
+github_tree_files <- function(repo,
+                              max_repo_size_mb = 500,
+                              max_files        = 1000,
+                              gate             = TRUE) {
+  clean_repo <- github_repo(repo)
+  if (is.null(clean_repo))
+    return(list(gated = TRUE,
+                reason = "invalid or inaccessible GitHub repository",
+                files  = NULL, default_branch = NA_character_))
+
+  if (!isTRUE(gate)) {
+    files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
+    return(list(gated = FALSE, reason = NA_character_,
+                files = files_df, default_branch = NA_character_))
+  }
+
+  # ── 1. Repo metadata (size + default branch, 1 request) ─────────────────────
+  meta_resp <- tryCatch(
+    httr2::request(sprintf("https://api.github.com/repos/%s", clean_repo)) |>
+      .github_config() |>
+      httr2::req_error(is_error = \(r) FALSE) |>
+      httr2::req_perform(),
+    error = \(e) NULL)
+  if (is.null(meta_resp) || httr2::resp_status(meta_resp) != 200) {
+    files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
+    return(list(gated = FALSE, reason = NA_character_,
+                files = files_df, default_branch = "main"))
+  }
+
+  meta           <- httr2::resp_body_json(meta_resp)
+  default_branch <- meta$default_branch %||% "main"
+  repo_size_kb   <- meta$size %||% 0L
+  repo_size_mb   <- as.numeric(repo_size_kb) / 1024
+
+  if (is.finite(max_repo_size_mb) && repo_size_mb > max_repo_size_mb)
+    return(list(
+      gated  = TRUE,
+      reason = sprintf(
+        "GitHub repo size ~%s MB exceeds the %s MB gate",
+        .cap_num(round(repo_size_mb)),
+        .cap_num(max_repo_size_mb)),
+      files  = NULL, default_branch = default_branch))
+
+  # ── 2. Git tree (recursive, 1 request) ──────────────────────────────────────
+  tree_resp <- tryCatch(
+    httr2::request(
+      sprintf("https://api.github.com/repos/%s/git/trees/%s?recursive=1",
+              clean_repo, default_branch)) |>
+      .github_config() |>
+      httr2::req_error(is_error = \(r) FALSE) |>
+      httr2::req_perform(),
+    error = \(e) NULL)
+  if (is.null(tree_resp) || httr2::resp_status(tree_resp) != 200) {
+    files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
+    return(list(gated = FALSE, reason = NA_character_,
+                files = files_df, default_branch = default_branch))
+  }
+
+  tree <- httr2::resp_body_json(tree_resp)
+
+  if (isTRUE(tree$truncated))
+    return(list(
+      gated  = TRUE,
+      reason = "GitHub repo tree truncated (>100 000 items); too large to list",
+      files  = NULL, default_branch = default_branch))
+
+  blobs   <- Filter(\(x) x$type == "blob", tree$tree %||% list())
+  n_files <- length(blobs)
+
+  if (is.finite(max_files) && n_files > max_files)
+    return(list(
+      gated  = TRUE,
+      reason = sprintf(
+        "GitHub repo has %d files (gate is %d)",
+        n_files, max_files),
+      files  = NULL, default_branch = default_branch))
+
+  # ── 3. Build file data.frame ─────────────────────────────────────────────────
+  paths <- vapply(blobs, \(x) x$path %||% "", character(1))
+  if (n_files == 0) {
+    files_df <- data.frame(
+      repo = character(0), clean_repo = character(0), name = character(0),
+      path = character(0), download_url = character(0), size = numeric(0),
+      type = character(0), stringsAsFactors = FALSE)
+  } else {
+    raw_base <- sprintf("https://raw.githubusercontent.com/%s/%s/",
+                        clean_repo, default_branch)
+    files_df <- data.frame(
+      repo         = repo,
+      clean_repo   = clean_repo,
+      name         = basename(paths),
+      path         = paths,
+      download_url = paste0(raw_base, paths),
+      size         = vapply(blobs, \(x) x$size %||% NA_real_, numeric(1)),
+      ft           = "file",
+      stringsAsFactors = FALSE)
+    files_df$ext  <- tolower(tools::file_ext(files_df$name))
+    files_df      <- dplyr::left_join(files_df, metacheck::file_types, by = "ext")
+    files_df$type[is.na(files_df$type)] <- files_df$ft[is.na(files_df$type)]
+    files_df$ft   <- NULL
+    files_df$ext  <- NULL
+  }
+
+  list(gated = FALSE, reason = NA_character_,
+       files = files_df, default_branch = default_branch)
+}
+
+
 #' GitHub Configuration
 #'
 #' Adds GitHub auth and accept headers to an httr2 request.
