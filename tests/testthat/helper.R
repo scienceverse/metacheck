@@ -12,6 +12,18 @@ httptest2::.mockPaths(NULL)
 apis <- normalizePath("apis")
 httptest2::.mockPaths(apis)
 
+# We now ask OSF for page[size]=100 on every listing request (10x fewer calls).
+# The recorded mocks predate that query param, and httptest2 hashes the query
+# string into the mock file name (build_mock_url), so the added param would miss
+# every fixture. httptest2 applies the current redactor to the request before
+# computing the mock path (mock_request: build_mock_url(get_current_redactor()(req))),
+# so a redactor that strips our page[size] makes the request resolve to the
+# pre-existing recording. The live request still carries the param.
+httptest2::set_redactor(function(req) {
+  req$url <- gsub("[?&]page(%5[Bb]size%5[Dd]|\\[size\\])=100", "", req$url)
+  req
+})
+
 # Load the ui/server objects from a shiny app file in inst/app/ without
 # launching the app. The app files end in `shinyApp(ui, server)`; we source
 # everything before that line (with the working directory set to the app dir,
