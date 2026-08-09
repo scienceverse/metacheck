@@ -79,7 +79,7 @@ ref_pubpeer <- function(paper) {
     names(report_table) <- c("Reference", "Comments", "PubPeer Link")
 
     ## report ----
-    report <- c(report_text, scroll_table(report_table))
+    report <- c(report_text, scroll_table(report_table, maxrows = 10))
   }
 
   # return a list ----
