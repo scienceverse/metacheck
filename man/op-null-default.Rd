@@ -5,7 +5,7 @@
 \alias{\%||\%}
 \title{Default value for \code{NULL}}
 \usage{
-x \%||\% y
+a \%||\% b
 }
 \arguments{
 \item{x, y}{If \code{x} is NULL, will return \code{y}; otherwise returns \code{x}.}
