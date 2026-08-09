@@ -126,10 +126,25 @@ extract_eq <- function(paper) {
 
   op <- operators |> paste(collapse = "")
   gr <- "\u0370-\u03FF" # greek |> paste(collapse = "")
+  # A real df-parenthetical is built from digits/commas/periods/whitespace,
+  # optionally interleaved with an "N = <number>" / "n = <number>" qualifier
+  # (as in "chi2(1, N = 200)") -- in EITHER order relative to the bare
+  # digits. What must NEVER appear inside is a DIFFERENT statistic's own
+  # name followed by its own operator (e.g. "beta = 0.74" or "t(260) ="),
+  # which is what an adjacent, unrelated clause parenthesised alongside this
+  # one looks like -- confirmed as a real bug: "significant (beta = 0.74,
+  # t(260) = 11.32)" matched the OLD unconstrained "(?:\\([^)]*\\))?" (any
+  # text up to the first literal ")", which is t(260)'s own close-paren, not
+  # the outer one) as if it were ONE statistic's df, fusing "significant",
+  # "beta = 0.74" and "t(260) =" into a single garbled, unrecognisable lhs
+  # and losing both real statistics entirely. Scoped narrowly (digits/N=
+  # only) so the still-common "chi2(1, N = 200)" shape keeps matching as one
+  # fragment exactly as before.
+  df_inner <- "(?:[0-9,\\.\\s]+|[nN]\\s*=\\s*[0-9]+)*"
   pattern <- paste0(
     "(?:(Hedge.{0,3}|Cronbach.{0,2}|Cohen.{0,2}|\\d{1,2}%)\\s+)?", # common prefix
     "[", gr, "\u00B2a-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
-    "(?:\\([^)]*\\))?\\s*", # optional parentheses
+    "(?:\\(", df_inner, "\\))?\\s*", # optional df-shaped parentheses
     "[", op , "]{1,3}\\s*", # 1-3 operators
     "([0-9\\.,+-]*[0-9]|\\[[^\\]]+\\]|n\\.?\\s*s\\.?)", # valid numbers or anything in [] or NS
     "\\s*(e\\s*-\\d+)?", # also match scientific notation
