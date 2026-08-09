@@ -13,7 +13,12 @@ zenodo_links(paper)
 a table with the Zenodo url in the first (text) column
 }
 \description{
-Find Zenodo Links in Papers
+Get all Zenodo links: real hyperlinks from the paper's own \code{url} table,
+plus a body-text fallback for a BARE mention (a DOI like
+"10.5281/zenodo.1234567" is routinely cited without any URL scheme at all)
+that the source PDF/HTML never encoded as an actual hyperlink — the \code{url}
+table only ever contains links the source document itself made clickable.
+Same two-tier approach \code{github_links()} uses for GitHub.
 }
 \examples{
 zenodo_links(psychsci)
