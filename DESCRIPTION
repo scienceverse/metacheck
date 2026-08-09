@@ -63,7 +63,7 @@ Imports:
     jsonlite,
     xml2,
     curl,
-    httr2,
+    httr2 (>= 1.1.0),
     rvest,
     rappdirs,
     tidytext,

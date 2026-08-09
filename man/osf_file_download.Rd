@@ -11,6 +11,8 @@ osf_file_download(
   max_download_size = 100,
   max_folder_length = Inf,
   ignore_folder_structure = FALSE,
+  mode = c("files", "zip"),
+  unzip = TRUE,
   pb = NULL
 )
 }
@@ -27,6 +29,10 @@ osf_file_download(
 
 \item{ignore_folder_structure}{if TRUE, download all files into a single folder}
 
+\item{mode}{download individual files (\code{"files"}, the default) or request a Waterbutler zip of the whole folder/repository (\code{"zip"})}
+
+\item{unzip}{if \code{TRUE} and \code{mode = "zip"}, unzip the downloaded archive into the output folder; if \code{FALSE}, keep the zip file as-is}
+
 \item{pb}{a progress bar passed from another function}
 }
 \value{
@@ -38,7 +44,9 @@ Creates a directory for the OSF ID and downloads all of the files using a folder
 \details{
 Some differences may exist because the OSF allows longer file names with characters that may not be allowed on a file system, so these are cleaned up when downloading.
 
-You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+In the default \code{mode = "files"}, you can limit downloads to only files under a specific size (defaults to 10MB). Files over \code{max_file_size} are omitted individually, while \code{max_download_size} is an all-or-nothing gate for the remaining repository total. Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+
+In \code{mode = "zip"}, OSF's Waterbutler API serves the requested folder as one generated zip archive. In this mode, \code{max_download_size} applies to the archive as a whole when the server reports a \code{Content-Length}, but \code{max_file_size} cannot filter files inside the archive before download. The archive can either be kept as a zip or unzipped after download.
 }
 \examples{
 \dontrun{
