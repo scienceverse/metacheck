@@ -70,6 +70,7 @@ Imports:
     bibtex,
     ellmer,
     jsonlite,
+    yaml,
     xml2,
     curl,
     httr2 (>= 1.1.0),
@@ -79,9 +80,11 @@ Imports:
     statcheck,
     base64enc,
     gitcreds,
-    roxygen2, 
+    roxygen2,
     jpeg,
-    progress
+    progress,
+    graphics,
+    grDevices
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
