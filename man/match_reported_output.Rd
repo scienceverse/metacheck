@@ -4,7 +4,12 @@
 \alias{match_reported_output}
 \title{Match reported statistical tests against the extracted analysis output}
 \usage{
-match_reported_output(paper, output, min_components = 2L)
+match_reported_output(
+  paper,
+  output,
+  include_tables = FALSE,
+  min_components = 1L
+)
 }
 \arguments{
 \item{paper}{a paper object (its \verb{$eq} is recomposed), or an eq data frame}
@@ -13,11 +18,26 @@ match_reported_output(paper, output, min_components = 2L)
 \code{stat_output} list a \code{reproducibility_check} result carries (its per-file
 \verb{$long} tables are combined, keeping each file's provenance)}
 
+\item{include_tables}{if TRUE and \code{paper} is a paper object, also build
+tests from statistics reported only in a results table's cells (e.g. from
+Grobid's table parsing — see \code{.tei_table_contents()} in
+R/import-grobid.R and the 5-tier header/caption/value-shape/row/matrix
+approach in R/match-table.R's \code{.table_tests()}) and add them to the set
+checked against \code{output}. Default FALSE: table-derived tests are opt-in,
+currently used only by \code{reproducibility_check}, so
+every other caller's matching behaviour is unchanged.}
+
 \item{min_components}{a test must have at least this many recognised components
-to be assessed (default 2, so a lone extracted number — a bare \code{p = .05} or
-\code{N = 218} with no accompanying statistic — is not treated as a matchable
-"test"; a single value cannot be matched as a test and only reintroduces
-coincidental matches). Set 1 to include single-component rows.}
+to be assessed (default 1, so a lone reported statistic — a bare
+correlation \code{r=-.27} or \code{d = 0.40} with no accompanying p/CI — is still checked against the
+output, TYPE-GATED the same as any other component: it only matches an
+output cell of the SAME family, at the site with the most co-occurring
+components, via \code{val_in()}. This carries a higher coincidence risk than a
+multi-component test (a single r rounding to the reported value at some
+site is more likely than a whole signature doing so by chance), so a
+single-component match is worth reading with that in mind — set to 2 to
+exclude single-component rows entirely, as this function used to by
+default.}
 }
 \value{
 a data.frame, one row per recomposed reported test, with:
@@ -28,8 +48,18 @@ matched components as "name=value" pairs), \code{not_matched} (the UNMATCHED
 components of that same test, same "name=value" form — always populated
 alongside \code{match_values} for a partial match, so exactly which claim failed
 to reproduce is visible, not just a count), \code{source_file} / \code{analysis}
-(provenance of the match), and \code{confidence} ("full" all components matched
-/ "partial" / "none"). Attribute \code{"summary"} holds the roll-up.
+(provenance of the match), \code{confidence} ("full" all components matched
+/ "partial" / "none"), and \code{plausible_split} — NA unless this test's
+grouping came from \code{.regroup_by_evidence()} re-deriving test boundaries
+from OUTPUT co-occurrence rather than trusting \code{extract_tests()}'s
+text-only guess (see that function's own header comment): TRUE when a
+component split away from its original reported neighbours landed at a
+site sharing a \code{row_label} token with theirs (the same underlying
+variable, reached via a different analysis — plausible), FALSE when no
+such link was found (the split is NOT hidden or downgraded, only
+flagged, so a reader can judge the match's plausibility from the
+\code{source_file}/\code{analysis} of every piece involved). Attribute
+\code{"summary"} holds the roll-up.
 }
 \description{
 Recomposes the statistics a paper REPORTS (from \code{paper$eq}, grouped by the

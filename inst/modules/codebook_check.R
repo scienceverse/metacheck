@@ -164,8 +164,14 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   parsed_list <- list()
   if (nrow(cb_rows) > 0) {
-    for (p in cb_rows$file_location) {
-      pv <- parse_codebook(p)
+    for (i in seq_len(nrow(cb_rows))) {
+      p <- cb_rows$file_location[i]
+      # Scope this codebook file's definitions to its OWN study group (data_check's
+      # per-file assignment), not paper-wide — same reasoning as haven_rows$group
+      # below: stops one study's codebook (e.g. condition coded 1-4) leaking onto
+      # a same-named column documented differently in another study's codebook.
+      cb_group <- if ("group" %in% names(cb_rows)) cb_rows$group[i] else NA_character_
+      pv <- parse_codebook(p, group = cb_group)
       if (is.data.frame(pv) && nrow(pv) > 0) {
         parsed_list[[length(parsed_list) + 1L]] <- pv
       } else if (is.character(pv) && length(pv) > 0 && llm_use()) {

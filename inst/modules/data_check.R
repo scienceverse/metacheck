@@ -129,67 +129,167 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
               else match.arg(as.character(download), c("data", "all", "none"))
   if (is.null(github_gate)) github_gate <- (download != "all")
 
-  repo_tree_lines <- function(paths) {
-    paths <- unique(paths[!is.na(paths) & nzchar(paths)])
-    if (length(paths) == 0) return(character(0))
+  # Icon shown in the "Classified as" column, by data_type (readme is a
+  # doc_role sub-kind of "documentation", checked first so a readme gets its
+  # own icon rather than the generic documentation one).
+  .tree_type_icon <- function(data_type, doc_role) {
+    ifelse(!is.na(doc_role) & doc_role == "readme", "\U0001F4C4",   # 📄
+    ifelse(data_type == "data", "\U0001F4CA",                       # 📊
+    ifelse(data_type == "code", "\U0001F4BB",                       # 💻
+    ifelse(data_type == "documentation", "\U0001F4D6",              # 📖
+    ifelse(data_type == "materials", "\U0001F4C1",                  # 📁
+    ifelse(data_type == "output", "\U0001F4C8",                     # 📈
+    "\U00002753"))))))                                              # ❓ unknown
+  }
+  .tree_type_label <- function(data_type, doc_role) {
+    ifelse(!is.na(doc_role) & doc_role == "readme", "readme", data_type)
+  }
+
+  # Walk a set of relative paths into tree rows. Unlike a plain text `tree`
+  # renderer, each row also carries which INPUT PATH (if any) it is the leaf
+  # of, via `leaf_idx` (index into `paths`, NA for a folder-only row) — so the
+  # caller can attach per-file columns (type, study, naming issue) to the
+  # right row without re-parsing the tree text. Two DISTINCT input rows that
+  # happen to share the exact same relative path (should not normally happen —
+  # repo_check dedupes by file_url + file_path before data_check sees this)
+  # collapse into one tree row, same as the original text-only renderer; only
+  # the first row's metadata is then shown for it.
+  repo_tree_rows <- function(paths) {
+    keep <- !is.na(paths) & nzchar(paths)
+    paths <- paths[keep]
+    orig_idx <- which(keep)
+    if (length(paths) == 0)
+      return(data.frame(text = character(0), leaf_idx = integer(0)))
     parts_list <- strsplit(gsub("\\\\", "/", paths), "/", fixed = FALSE)
     parts_list <- lapply(parts_list, function(x) x[nzchar(x)])
-    lines <- character(0)
+    out_text <- character(0)
+    out_leaf <- integer(0)
 
-    walk <- function(parts_subset, prefix = "") {
+    walk <- function(parts_subset, idx_subset, prefix = "") {
       heads <- vapply(parts_subset, function(x) x[[1]], character(1))
       head_order <- unique(heads)
       has_child <- vapply(head_order, function(head) {
-        idx <- heads == head
-        any(vapply(parts_subset[idx], length, integer(1)) > 1)
+        i <- heads == head
+        any(vapply(parts_subset[i], length, integer(1)) > 1)
       }, logical(1))
       head_order <- head_order[order(!has_child, tolower(head_order))]
 
       for (i in seq_along(head_order)) {
         head <- head_order[[i]]
-        idx <- heads == head
-        tails <- lapply(parts_subset[idx], function(x) x[-1])
+        sel <- heads == head
+        tails <- lapply(parts_subset[sel], function(x) x[-1])
+        tail_idx <- idx_subset[sel]
         is_last <- i == length(head_order)
         child_exists <- any(vapply(tails, length, integer(1)) > 0)
         branch <- if (is_last) "└── " else "├── "
         next_prefix <- paste0(prefix, if (is_last) "    " else "│   ")
-        lines <<- c(lines, paste0(prefix, branch, head, if (child_exists) "/" else ""))
-        next_subset <- tails[vapply(tails, length, integer(1)) > 0]
-        if (length(next_subset) > 0) walk(next_subset, next_prefix)
+        # A leaf row (no child_exists) is exactly one input path; a folder row
+        # (child_exists) is not itself an input path, so leaf_idx is NA.
+        this_leaf <- if (child_exists) NA_integer_ else tail_idx[[1]]
+        out_text <<- c(out_text, paste0(prefix, branch, head, if (child_exists) "/" else ""))
+        out_leaf <<- c(out_leaf, this_leaf)
+        next_subset  <- tails[vapply(tails, length, integer(1)) > 0]
+        next_tailidx <- tail_idx[vapply(tails, length, integer(1)) > 0]
+        if (length(next_subset) > 0) walk(next_subset, next_tailidx, next_prefix)
       }
     }
 
-    walk(parts_list)
-    lines
+    walk(parts_list, orig_idx)
+    data.frame(text = out_text, leaf_idx = out_leaf)
   }
 
-  repo_tree_block <- function(files) {
+  # Build the file tree as a real HTML table: Path (tree-indented, monospace) |
+  # Classified as (icon + type) | Study | Naming issue (hover for detail).
+  # Replaces the earlier plain-text `tree`-style code block with per-file
+  # metacheck findings attached directly to each row, instead of requiring a
+  # reader to cross-reference the separate File Classification / File Naming
+  # tables in repo_check's report.
+  repo_tree_block <- function(files, naming_issues = NULL) {
     if (is.null(files) || nrow(files) == 0) return(NULL)
     repo_urls <- unique(files$repo_url[!is.na(files$repo_url) & nzchar(files$repo_url)])
     if (length(repo_urls) == 0) return(NULL)
 
-    blocks <- vapply(repo_urls, function(repo) {
+    # Naming detail by file_name, first match only (a name flagged by several
+    # rules shows its first; the full list remains in repo_check's own table).
+    naming_of <- function(file_name) {
+      if (is.null(naming_issues) || nrow(naming_issues) == 0)
+        return(rep(NA_character_, length(file_name)))
+      hit <- match(file_name, naming_issues$file_name)
+      ifelse(is.na(hit), NA_character_, naming_issues$detail[hit])
+    }
+
+    blocks <- lapply(repo_urls, function(repo) {
       sub <- files[files$repo_url == repo, , drop = FALSE]
       rel_paths <- if ("file_path" %in% names(sub)) sub$file_path else sub$file_name
-      rel_paths <- rel_paths[!is.na(rel_paths) & nzchar(rel_paths)]
-      tree <- repo_tree_lines(rel_paths)
-      # Collapse each repo's block into one string so the tree lines stay
-      # together; module_report() joins report elements with "\n\n", which
-      # would otherwise blank-line-separate every tree line.
-      paste(
-        c(
-          paste0("Repository: ", repo),
-          "```",
-          if (length(tree) > 0) tree else "(no file tree available)",
-          "```"
-        ),
-        collapse = "\n"
+      rows <- repo_tree_rows(rel_paths)
+      if (nrow(rows) == 0) return(NULL)
+
+      data_type <- if ("data_type" %in% names(sub)) sub$data_type else NA_character_
+      doc_role  <- if ("doc_role"  %in% names(sub)) sub$doc_role  else NA_character_
+      group     <- if ("group"     %in% names(sub)) sub$group     else NA_character_
+      naming    <- naming_of(sub$file_name)
+
+      is_leaf <- !is.na(rows$leaf_idx)
+      # Path/type/study/naming text can all echo real, arbitrary file names —
+      # including names this very table exists to flag as containing unusual
+      # characters — so every value rendered into the HTML table is escaped:
+      # .spv_html_escape() (R/spv.R) for &/</>, plus an explicit quote escape
+      # for the two attributes below (title='...', class='...').
+      tbl <- data.frame(
+        Path = .spv_html_escape(rows$text),
+        `Classified as` = "", Study = "", `Naming issue` = "",
+        check.names = FALSE
       )
-    }, character(1))
+      type_label <- .spv_html_escape(.tree_type_label(
+        data_type[rows$leaf_idx[is_leaf]], doc_role[rows$leaf_idx[is_leaf]]))
+      tbl[["Classified as"]][is_leaf] <- sprintf(
+        "<span class='dv-tree-type'>%s %s</span>",
+        .tree_type_icon(data_type[rows$leaf_idx[is_leaf]], doc_role[rows$leaf_idx[is_leaf]]),
+        type_label
+      )
+      grp <- .spv_html_escape(group[rows$leaf_idx[is_leaf]])
+      tbl$Study[is_leaf] <- ifelse(is.na(group[rows$leaf_idx[is_leaf]]), "\U02014", grp)
+      nm <- naming[rows$leaf_idx[is_leaf]]
+      nm_esc <- gsub("'", "&#39;", .spv_html_escape(nm), fixed = TRUE)
+      tbl[["Naming issue"]][is_leaf] <- ifelse(
+        is.na(nm), "\U02014",
+        sprintf("<span class='dv-tree-naming' title='%s'>%s</span>", nm_esc, nm_esc))
+
+      list(repo = repo, table = tbl)
+    })
+    blocks <- Filter(Negate(is.null), blocks)
+    if (length(blocks) == 0) return(NULL)
+
+    # Minimal inline CSS scoped to this table: monospace path column, tight
+    # padding (no gap between the last path character and the next column),
+    # alternating white/light-grey rows. Written once per report; harmless if
+    # data_check runs more than once (the class names are stable/idempotent).
+    css <- paste(
+      "<style>",
+      ".dv-tree-table{border-collapse:collapse;width:100%;font-size:0.85em;}",
+      ".dv-tree-table td,.dv-tree-table th{padding:2px 8px;text-align:left;white-space:nowrap;}",
+      ".dv-tree-table td:first-child{font-family:monospace;padding-right:4px;}",
+      ".dv-tree-table tr:nth-child(odd){background:#ffffff;}",
+      ".dv-tree-table tr:nth-child(even){background:#f2f2f2;}",
+      ".dv-tree-naming{color:#b00020;text-decoration:underline dotted;cursor:help;}",
+      "</style>",
+      sep = "\n")
+
+    sections <- lapply(blocks, function(b) {
+      html <- sprintf(
+        "<table class='dv-tree-table'><thead><tr><th>Path</th><th>Classified as</th><th>Study</th><th>Naming issue</th></tr></thead><tbody>%s</tbody></table>",
+        paste(sprintf(
+          "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>",
+          b$table$Path, b$table[["Classified as"]], b$table$Study, b$table[["Naming issue"]]
+        ), collapse = "")
+      )
+      paste0("**Repository: ", b$repo, "**\n\n", html)
+    })
 
     collapse_section(
-      c("The tree below shows where files sit within each repository, using the relative paths available from repo_check.",
-        blocks),
+      c(css,
+        "The table below shows where files sit within each repository. Each file is tagged with how it was classified, which study it belongs to (when known), and any file-naming issue found by repo_check — hover an underlined naming issue for the reason it is flagged.",
+        unlist(sections)),
       title = "Data Tree",
       callout = "note"
     )
@@ -254,6 +354,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Repositories found but not listable (size-gated GitHub, private OSF, ...);
   # kept so a downstream converter can explain why a paper yielded no files.
   listing_gated <- get_prev_outputs("repo_check", "gated_repos")
+  # Per-file naming problems (spaces, special characters, unclassifiable, ...),
+  # for the "Naming issue" column in the file tree below. repo_check computes
+  # these from file_name/file_path/data_type, so re-fetch rather than recompute.
+  tree_naming_issues <- get_prev_outputs("repo_check", "naming_issues")
   if (is.null(all_files)) {
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path,
@@ -272,6 +376,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       file_location = character(0)
     )
     listing_gated <- mo$gated_repos
+    tree_naming_issues <- mo$naming_issues
   }
 
   # ── 2. Classify every file into a data_check semantic type ───────────────────
@@ -660,7 +765,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # (human-formatted coding worksheets: mostly free-text columns and/or almost
   # entirely empty; see .tabular_usable()). Columns are NOT extracted from these
   # and they are NOT sent to the LLM, but they stay in the file classification so
-  # spreadsheet_check still inspects them for formatting issues. name -> reason.
+  # data_validate's spreadsheet-formatting checks still inspect them. name -> reason.
   non_tabular_files <- character(0)
 
   # ── 4. Extract columns + stats from each local tabular data file ─────────────
@@ -703,7 +808,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # Skip a file that read as a data frame but is not a usable rectangular
       # dataset (a human coding worksheet: mostly free text and/or almost all
       # empty). No columns are extracted and nothing is sent to the LLM, but the
-      # file stays classified as data so spreadsheet_check still checks its formatting.
+      # file stays classified as data so data_validate's spreadsheet-formatting
+      # checks still check its formatting.
       usable <- .tabular_usable(cls, df)
       if (!isTRUE(usable$usable)) {
         non_tabular_files[[f$file_name]] <<- usable$reason
@@ -927,9 +1033,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_columns <- if (!is.null(columns_df)) nrow(columns_df) else 0L
 
   # Carry the non-tabular verdict into the file classification so downstream
-  # modules can react: spreadsheet_check still inspects these for formatting but adds a
-  # "not a rectangular dataset" note. The column always exists (default TRUE) so
-  # consumers can rely on it. non_tabular_files is name -> reason.
+  # modules can react: data_validate's spreadsheet-formatting checks still
+  # inspect these for formatting but add a "not a rectangular dataset" note.
+  # The column always exists (default TRUE) so consumers can rely on it.
+  # non_tabular_files is name -> reason.
   all_files$tabular_usable <- TRUE
   all_files$non_tabular_reason <- NA_character_
   if (length(non_tabular_files) > 0) {
@@ -1069,7 +1176,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     scroll_table(file_tbl, maxrows = 10)
   )
 
-  tree_block <- repo_tree_block(all_files)
+  tree_block <- repo_tree_block(all_files, tree_naming_issues)
   if (!is.null(tree_block)) {
     report <- c(report, tree_block)
   }
@@ -1111,9 +1218,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
     n_missing_cols <- sum(!is.na(columns_df$n_missing) & columns_df$n_missing > 0)
     # Fully empty (all-NA) columns: no observed values at all. Flagged like
-    # spreadsheet_check's "empty columns" — they carry no information, do not survive a
-    # meaningful analysis, and are documented (but marked empty) in a Psych-DS
-    # export rather than silently dropped.
+    # data_validate's spreadsheet "empty columns" check — they carry no
+    # information, do not survive a meaningful analysis, and are documented
+    # (but marked empty) in a Psych-DS export rather than silently dropped.
     empty_cols <- if ("quality" %in% names(columns_df))
       sum(tolower(columns_df$quality %||% "") == "empty", na.rm = TRUE) else 0L
     empty_note <- if (empty_cols > 0)

@@ -10,7 +10,8 @@ repro_run_scripts(
   lib_dir = NULL,
   timeout = 600,
   skip = character(0),
-  parses = NULL
+  parses = NULL,
+  failed_deps = character(0)
 )
 }
 \arguments{
@@ -29,12 +30,20 @@ are appended at the end in input order)}
 
 \item{parses}{named logical (by file_name); a file that will not parse is
 recorded \code{not_parsed} and not run}
+
+\item{failed_deps}{character vector of package names that
+\code{\link[=repro_install_deps]{repro_install_deps()}} could not install (CRAN Archive retry included) —
+used only to tell apart a script that failed because ITS OWN dependency is
+genuinely unavailable (\code{dependency_unavailable}) from a script that failed
+for any other reason (\code{errored}), so an unavailable package does not read
+as a bug in the paper's code}
 }
 \value{
 a data frame with \code{file_name}, \code{outcome} (one of \code{ran_ok},
-\code{errored}, \code{timed_out}, \code{not_parsed}, \code{skipped_missing_inputs}), \code{error}
-(message or ""), \code{error_type} (\code{undefined_variable}, \code{timeout}, \code{runtime},
-or NA), \code{undefined_var} (the missing variable name when
+\code{errored}, \code{timed_out}, \code{not_parsed}, \code{skipped_missing_inputs},
+\code{dependency_unavailable}), \code{error} (message or ""), \code{error_type}
+(\code{undefined_variable}, \code{timeout}, \code{dependency_unavailable}, \code{runtime}, or
+NA), \code{undefined_var} (the missing variable name when
 \code{error_type == "undefined_variable"}, else NA), \code{stdout}, \code{stderr},
 \code{elapsed} (seconds), and \code{script_lines} (list-column: the EXECUTED script's
 own text, one element per source line — the exact text \code{stdout}'s echoed

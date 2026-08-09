@@ -370,10 +370,15 @@ test_that("code_line_stats", {
     '   # space before comment'
   )
   obs <- code_line_stats(code_text, "R")
+  # https://github.com/scienceverse/metacheck/issues/261 -- a mixed
+  # code+comment line (line 1) is both a code line AND a comment line; it is
+  # no longer invisible to comment_lines just because it also counts as code.
+  # All 3 surviving (non-blank) lines here contain a comment: the inline one,
+  # plus the two whole-line ones.
   exp <- list(total_lines = 3L,
-              comment_lines = 2L,
+              comment_lines = 3L,
               code_lines = 1L,
-              percent_comments = 2/3)
+              percent_comments = 1)
   expect_equal(obs, exp)
 
   # SPSS
@@ -398,6 +403,74 @@ test_that("code_line_stats", {
               code_lines = 2L,
               percent_comments = 0.8)
   expect_equal(obs, exp)
+})
+
+test_that("code_line_stats counts mixed code+comment lines correctly (issue #261)", {
+  # https://github.com/scienceverse/metacheck/issues/261 -- comment_lines was
+  # derived as total_lines - blank_lines - code_lines, a pure line-count
+  # subtraction. A line with BOTH code and a trailing comment counted as
+  # exactly 1 code line either way, so its comment was invisible to
+  # comment_lines regardless of language. Reproduces the reported OSF file
+  # (osf.io/download/n85ez/, "2_2019_2020_analyses.R") pattern that made this
+  # concrete: repeated model-fitting calls with a trailing comment naming
+  # which model term each line represents, e.g.
+  #   model1_Pos <- lme(Pos ~ scale_ini_age,# Level 2: scale_ini_age;
+  #                      random=~1|id, ...)  #random intercept=id
+  # -- two lines, each with real code AND a trailing comment, both of which
+  # the old logic counted as pure code.
+  code_text <- c(
+    "model1_Pos <- lme(Pos ~ scale_ini_age,# Level 2: scale_ini_age;",
+    "                   random=~1|id, data=dat)  #random intercept=id",
+    "model2_Pos <- lme(Pos ~ scale_ini_age*covid,#Level 1: covid condition;",
+    "                   random=~1+covid|id, data=dat)  #random slope=covid"
+  )
+  obs <- code_line_stats(code_text, "R")
+  expect_equal(obs$total_lines, 4L)
+  expect_equal(obs$code_lines, 4L)      # every line still has real code
+  expect_equal(obs$comment_lines, 4L)   # every line ALSO has a trailing comment
+  expect_equal(obs$percent_comments, 1)
+
+  # the reported file's exact counts, reproduced directly:
+  # code_check reported comment_lines = 19 (whole-line only); manual count
+  # found "more than 30" (19 whole-line + 32 trailing = 51).
+  n_whole_line <- 19L
+  n_trailing <- 32L
+  total <- n_whole_line + n_trailing
+  synthetic <- c(
+    rep("# a whole-line comment", n_whole_line),
+    rep("x <- fit_model(y ~ z, data = dat) # a trailing comment", n_trailing)
+  )
+  obs2 <- code_line_stats(synthetic, "R")
+  expect_equal(obs2$comment_lines, total)
+  expect_equal(obs2$code_lines, n_trailing)
+})
+
+test_that("code_remove_comments strips trailing R comments (issue #261)", {
+  # R previously had NO trailing-comment handling at all, unlike Python/Stata/
+  # MATLAB which all already stripped a trailing comment via
+  # .code_strip_inline_comment(). This both fed the counting bug above and let
+  # comment TEXT leak into code_abs_path()/code_file_refs()/
+  # code_library_lines() as false positives (a comment mentioning a path,
+  # e.g. "# see C:/Users/x/data.csv", used to be read as if it were code).
+  code_text <- c(
+    "x <- 1 # a trailing comment",
+    "y <- read.csv('a#b.csv')",       # "#" inside a string: must survive
+    "z <- 'no # here either'",        # single-quoted string
+    "# a whole-line comment",
+    "w <- 2"
+  )
+  obs <- code_remove_comments(code_text, "R")
+  expect_equal(obs, c(
+    "x <- 1 ",
+    "y <- read.csv('a#b.csv')",
+    "z <- 'no # here either'",
+    "w <- 2"
+  ))
+
+  # A comment naming an absolute path is no longer read as a real one.
+  commented_path <- "# see C:/Users/example/data.csv for details"
+  nc <- code_remove_comments(c(commented_path, "x <- 1"), "R")
+  expect_equal(nrow(code_abs_path(nc)), 0L)
 })
 
 
@@ -691,6 +764,169 @@ test_that("code_packages unions comma-joined strings", {
   # empty input -> empty character
   expect_equal(code_packages(character(0)), character(0))
   expect_equal(code_packages(c("", NA)), character(0))
+})
+
+
+test_that("code_lang detects Python and notebook kernels", {
+  expect_equal(code_lang("analysis.py"), "Python")
+  expect_equal(code_lang("ANALYSIS.PY"), "Python")
+
+  # A .ipynb's language comes from the kernel declared INSIDE the file, not
+  # from the extension: Jupyter runs Python, R, Julia and more.
+  py_nb <- test_path("fixtures", "notebooks", "notebook_python.ipynb")
+  r_nb  <- test_path("fixtures", "notebooks", "notebook_r.ipynb")
+  expect_equal(code_lang(py_nb) |> unname(), "Python")
+  expect_equal(code_lang(r_nb) |> unname(), "R")
+
+  # Unreadable / not-yet-downloaded notebook falls back to Python (the more
+  # common kernel), rather than erroring.
+  expect_equal(code_lang("no_such_notebook.ipynb") |> unname(), "Python")
+})
+
+
+test_that("code_remove_comments Python", {
+  code_text <- c(
+    "# whole-line comment",
+    "",
+    "import os  # trailing comment",
+    "x = 1"
+  )
+  expect_equal(code_remove_comments(code_text, "Python"),
+               c("import os  ", "x = 1"))
+
+  # A "#" INSIDE a string literal is not a comment. Getting this wrong loses
+  # real file references (see .code_strip_inline_comment).
+  expect_equal(code_remove_comments("df = pd.read_csv('a#b.csv')", "Python"),
+               "df = pd.read_csv('a#b.csv')")
+  expect_equal(code_remove_comments("u = 'http://x.org/#frag'  # note", "Python"),
+               "u = 'http://x.org/#frag'  ")
+
+  # Docstrings / triple-quoted strings are deliberately NOT stripped.
+  expect_equal(code_remove_comments(c('"""doc"""', "y = 2"), "Python"),
+               c('"""doc"""', "y = 2"))
+
+  expect_equal(code_remove_comments(character(0), "Python"), character(0))
+})
+
+
+test_that("code_remove_comments keeps markers inside strings (Stata, MATLAB)", {
+  # Stata: "//" inside a quoted path is part of the path, not a comment. Before
+  # this was handled, these lines truncated to "https:" / "C:" and those junk
+  # fragments were reported to authors as missing files.
+  stata <- c(
+    'import delimited using "https://example.org//files/x.csv"',
+    'use "C://project//data//w1.dta"',
+    'summarize x  // a real comment'
+  )
+  expect_equal(code_remove_comments(stata, "Stata"),
+               c('import delimited using "https://example.org//files/x.csv"',
+                 'use "C://project//data//w1.dta"',
+                 'summarize x  '))
+  expect_equal(code_file_refs(code_remove_comments(stata, "Stata"), "Stata"),
+               c("https://example.org//files/x.csv", "C://project//data//w1.dta"))
+
+  # MATLAB: "%" inside a string (a URL-encoded filename) is not a comment.
+  matlab <- c("T = readtable('data/a%20b.csv');", "x = 1;  % real comment")
+  expect_equal(code_remove_comments(matlab, "MATLAB"),
+               c("T = readtable('data/a%20b.csv');", "x = 1;  "))
+  expect_equal(code_file_refs(code_remove_comments(matlab, "MATLAB"), "MATLAB"),
+               "data/a%20b.csv")
+})
+
+
+test_that("code_library_lines Python", {
+  code_text <- c(
+    "import os",
+    "from scipy import stats",
+    "x = 1",
+    "import pandas"
+  )
+  obs <- code_library_lines(code_text, "Python")
+  expect_equal(obs$line, c(1L, 2L, 4L))
+
+  # "import" as a method name or inside a string is not an import statement.
+  expect_equal(nrow(code_library_lines("df.import_csv('a.csv')", "Python")), 0L)
+})
+
+
+test_that("code_line_stats Python", {
+  # Note: code_line_stats() splits on "\n+", so a blank line between entries is
+  # dropped before counting -- total_lines is 3, not 4. That is pre-existing
+  # behaviour shared by every language, not specific to Python (the identical R
+  # input gives the identical counts).
+  #
+  # https://github.com/scienceverse/metacheck/issues/261 -- the trailing-
+  # commented line ("y = 2  # trailing") is both a code line AND a comment
+  # line: it still contributes real code (code_lines), but is no longer
+  # invisible to comment_lines just because it also counts as code.
+  code_text <- c("# comment", "", "x = 1", "y = 2  # trailing")
+  obs <- code_line_stats(code_text, "Python")
+  expect_equal(obs$total_lines, 3)
+  expect_equal(obs$code_lines, 2)
+  expect_equal(obs$comment_lines, 2)
+
+  # Python and R agree on the same shape of input.
+  r_obs <- code_line_stats(c("# comment", "", "x <- 1", "y <- 2  # trailing"), "R")
+  expect_equal(obs$code_lines, r_obs$code_lines)
+  expect_equal(obs$comment_lines, r_obs$comment_lines)
+})
+
+
+test_that("code_file_refs Python", {
+  code_text <- c(
+    "df = pd.read_csv('data/trials.csv')",
+    "arr = np.loadtxt('vals.txt')",
+    "m = scipy.io.loadmat('subj01.mat')",
+    "with open('notes.txt') as f: pass",
+    "d2 = pd.read_excel('sheets/x.xlsx')"
+  )
+  expect_setequal(code_file_refs(code_text, "Python"),
+                  c("data/trials.csv", "vals.txt", "subj01.mat",
+                    "notes.txt", "sheets/x.xlsx"))
+
+  # An import is NEVER a file reference (the mirror of the rio import() guard).
+  expect_equal(code_file_refs(c("import numpy", "from a.b import c"), "Python"),
+               character(0))
+})
+
+
+test_that("code_extract_py", {
+  expect_true(is.function(metacheck::code_extract_py))
+  expect_no_error(helplist <- help(code_extract_py, metacheck))
+
+  expect_error(code_extract_py(NULL))
+
+  file_path <- test_path("fixtures", "notebooks", "notebook_python.ipynb")
+  obs <- code_extract_py(file_path)
+
+  # Code cells only: the markdown cell's prose must not appear.
+  expect_false(any(grepl("^# Analysis", obs)))
+  # IPython magics and shell escapes are dropped (not statements in any kernel).
+  expect_false(any(grepl("^%matplotlib", obs)))
+  expect_false(any(grepl("^!pip", obs)))
+  # Real source survives, in document order.
+  expect_true("import pandas as pd" %in% obs)
+  expect_true("df = pd.read_csv('data/trials.csv')" %in% obs)
+  # A cell that was never run still contributes its source.
+  expect_true("x = 1  # never run" %in% obs)
+
+  # save_path writes and returns the path
+  save_path <- withr::local_tempfile(fileext = ".py")
+  expect_equal(code_extract_py(file_path, save_path), save_path)
+  expect_true(file.exists(save_path))
+
+  # An R-kernel notebook extracts its R source the same way.
+  r_nb <- test_path("fixtures", "notebooks", "notebook_r.ipynb")
+  r_src <- code_extract_py(r_nb)
+  expect_true("library(dplyr)" %in% r_src)
+  # ...and is then checked as R, finding R packages.
+  expect_setequal(code_library_names(r_src, "R")$package,
+                  c("dplyr", "ggplot2"))
+
+  # Not a notebook / no code cells -> empty, not an error.
+  bad <- withr::local_tempfile(fileext = ".ipynb")
+  writeLines('{"foo": 1}', bad)
+  expect_equal(code_extract_py(bad), character(0))
 })
 
 

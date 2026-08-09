@@ -19,7 +19,6 @@
 #'
 #' @import dplyr
 #' @import tidyr
-#' @import httr
 #' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object
@@ -60,9 +59,17 @@ prereg_check <- function(paper) {
     unique()
   link_types <- osf_type(osf_ids)
   reg_ids <- osf_ids[link_types == "registrations" & !is.na(link_types)]
+  # A link whose type could not be determined because the resource itself is
+  # private/embargoed/withdrawn/deleted (osf_type() returns "inaccessible" for
+  # exactly this, distinct from NA for a link that just isn't a valid OSF ID)
+  # might have been a registration -- we cannot know, since we could never
+  # read it. Track it separately so it is reported rather than silently
+  # treated as "not a registration" the same as an ordinary non-registration
+  # link (a project, a file, ...).
+  inaccessible_ids <- osf_ids[link_types == "inaccessible" & !is.na(link_types)]
 
   ## no registrations ----
-  if (length(reg_ids) == 0 & nrow(table_ap) == 0) {
+  if (length(reg_ids) == 0 & length(inaccessible_ids) == 0 & nrow(table_ap) == 0) {
     resp <- list(
       traffic_light = "na",
       summary_text = sprintf(
@@ -86,10 +93,23 @@ prereg_check <- function(paper) {
 
   # have to iterate, process then merge
   # because pagination > 10 usually returns unmergeable dfs
+  #
+  # inaccessible_regs collects registration URLs that could not be reached
+  # (private, embargoed, withdrawn, or deleted -- see osf_get_all_pages()'s
+  # osf_error attribute) so the report can say so, rather than silently
+  # dropping them exactly as it would a registration that genuinely has no
+  # data. Seeded with the links whose TYPE could not even be determined
+  # (inaccessible_ids above) -- those never became part of reg_ids/urls at
+  # all, so they would otherwise never be reported.
+  inaccessible_regs <- links_osf$href[osf_check_id(links_osf$href) %in% inaccessible_ids]
   ps <- lapply(urls, \(url) {
     reg_info <- osf_get_all_pages(url)
 
-    if (length(reg_info) == 0) return(NULL)
+    if (length(reg_info) == 0) {
+      if (!is.null(attr(reg_info, "osf_error")))
+        inaccessible_regs <<- c(inaccessible_regs, url)
+      return(NULL)
+    }
 
     info <- reg_info
     osf_prereg_extract(info)
@@ -118,6 +138,12 @@ prereg_check <- function(paper) {
     "We found %d preregistration%s.",
     nrow(prereg_info), nrow(prereg_info) |> plural()
   )
+  if (length(inaccessible_regs) > 0) {
+    summary_text <- c(summary_text, sprintf(
+      "%d registration link%s could not be accessed (private, embargoed, or withdrawn).",
+      length(inaccessible_regs), plural(length(inaccessible_regs))
+    ))
+  }
 
   # report ----
   has_sample_size <- "sample_size" %in% names(prereg_info)
@@ -168,10 +194,22 @@ prereg_check <- function(paper) {
     format_ref(Lakens2024)
   )
 
+  inaccessible_text <- if (length(inaccessible_regs) > 0) {
+    sprintf(
+      "The following registration link%s could not be accessed and %s not included above: %s",
+      plural(length(inaccessible_regs)),
+      if (length(inaccessible_regs) == 1) "was" else "were",
+      paste(inaccessible_regs, collapse = ", ")
+    )
+  } else {
+    NULL
+  }
+
   report <- c(
     summary_text,
     scroll_table(prereg_link_table),
     report_text,
+    inaccessible_text,
     scroll_table(samplesize_table),
     collapse_section(
       scroll_table(prereg_table, maxrows = 5),

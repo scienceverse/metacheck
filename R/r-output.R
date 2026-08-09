@@ -74,6 +74,29 @@
 #' @export
 read_r_output <- function(text, source_label = NA_character_, code_lines = NULL) {
   if (is.null(text)) return(list())
+  # A captured subprocess console can carry ANSI SGR colour codes (e.g.
+  # effectsize/insight's cli-coloured footnotes: "\033[36m...\033[39m"), and
+  # when the coloured text's own trailing newline is swallowed by the reset
+  # escape, the NEXT statement's echoed "> " prompt lands glued onto the end of
+  # that line instead of starting its own — confirmed against a real corpus
+  # paper's cohens_d() output: "...pooled SD.\033[39m> FR_No <- t.test(...)".
+  # .r_output_tables()'s data-gathering loop then reads that fused line as
+  # part of the CURRENT result's data (it has no blank line to stop at),
+  # pulling in the next statement's echoed source text as an extra "data" line
+  # whose length has nothing to do with the table's real column width —
+  # split_block()'s do.call(rbind, ...) then pads/rbinds lines of genuinely
+  # different shape and warns "number of columns of result is not a multiple
+  # of vector length". Splitting the prompt back onto its own line ONLY where
+  # it was directly preceded by a colour-reset escape (not any "> "/"+ "
+  # elsewhere in the text, which real output legitimately contains — e.g. a
+  # printed "x > 5" or "3 + 2" — and must not be split) repairs exactly the
+  # fusion this causes, before stripping the colour codes themselves.
+  strip_ansi <- function(x) {
+    x <- gsub("\033\\[[0-9;]*m(> |\\+ )", "\n\\1", x)
+    gsub("\033\\[[0-9;]*m", "", x)
+  }
+  text <- if (length(text) == 1) strip_ansi(text) else
+    vapply(text, strip_ansi, character(1), USE.NAMES = FALSE)
   lines <- if (length(text) == 1) strsplit(text, "\n", fixed = TRUE)[[1]] else text
   lines <- as.character(lines)
   if (!length(lines)) return(list())
@@ -93,7 +116,9 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
     if (.r_is_preview_call(call_text)) return(list())
     out <- c(
       .r_output_tables(chunk_lines),
-      .r_output_oneline(chunk_lines, source_label)
+      .r_output_oneline(chunk_lines, source_label),
+      .r_output_cohend(chunk_lines),
+      .r_output_effectsize_d(chunk_lines)
     )
     out <- Filter(function(t) !is.null(t) && nrow(t$data) > 0, out)
     fn <- .r_call_fn(call_text)
@@ -203,7 +228,15 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
                    "fisher.test", "mcnemar.test", "chisq.test", "prop.test",
                    "t.test", "cor.test", "var.test", "binom.test",
                    "ks.test", "friedman.test", "mood.test", "fligner.test",
-                   "ansari.test", "mantelhaen.test", "poisson.test")
+                   "ansari.test", "mantelhaen.test", "poisson.test",
+                   # effsize::cohen.d()'s printed "d" is ambiguous with
+                   # ks.test()'s "D" without knowing the call — see
+                   # .r_output_cohend() and .STATO_BY_CALL below.
+                   "cohen.d",
+                   # effectsize::cohens_d()/repeated_measures_d()'s printed "d"
+                   # column is the same ambiguity — see .r_output_effectsize_d()
+                   # and .STATO_BY_CALL below.
+                   "cohens_d", "repeated_measures_d")
 # rstatix wraps several of the same base tests under its OWN underscore-named
 # functions (t_test(), wilcox_test(), ...), printing a tidy tibble whose
 # generic "statistic"/"p" columns are the SAME quantities the base test
@@ -247,36 +280,130 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
     logical(1)))
 }
 
-# The R object a statement's FIRST call operates on — e.g. "m_vid" from
-# `summary(m_vid)`, `stdCoef.merMod(m_vid)`, or `r.squaredGLMM(m_vid)`; NA when
-# assigning a NEW object (`m_vid <- lmer(...)`) or when no plain identifier is
-# found. This is the shared thread across the several SEPARATE statements a
-# paper's one reported result often draws on together: a model is fit once
-# (`m_vid <- lmer(...)`), then summarised, standardised and CI'd in three
-# further calls that each take `m_vid` (or a value derived from it, e.g.
-# `r2_vid <- r.squaredGLMM(m_vid)[1,2]` then `CI.Rsq(r2_vid, ...)`) as their
-# first argument — each such call's OWN result rows are tagged with the same
-# ref, so match_reported_output() can unite them into one candidate site.
-# Deliberately narrow: only a bare identifier (letters/digits/._), not an
-# expression, a formula (contains "~"), a string, or a pure number — those are
-# either not object references or too ambiguous to link two calls by.
+# The R object a statement is ABOUT — e.g. "m_vid" from `summary(m_vid)`,
+# `stdCoef.merMod(m_vid)`, `r.squaredGLMM(m_vid)`, but also from shapes that
+# used to fall through to NA (see each branch below): a bare print
+# (`m_vid`), a pipe (`m_vid |> summary()`, `m_vid %>% eta_squared()`), a
+# field/index access (`eta_squared(mc_model$anova_table$F[1])` ->
+# "mc_model"), and an argument named or positioned anywhere other than
+# first (`emmeans(specs = "team", object = mc_model)`). NA when assigning a
+# NEW object (`m_vid <- lmer(...)`) or when no plain identifier is found
+# anywhere recognised. This is the shared thread across the several
+# SEPARATE statements a paper's one reported result often draws on together:
+# a model is fit once (`m_vid <- lmer(...)`), then summarised, standardised
+# and CI'd in further calls/prints that each name `m_vid` (or a value
+# derived from it, e.g. `r2_vid <- r.squaredGLMM(m_vid)[1,2]` then
+# `CI.Rsq(r2_vid, ...)`) — each such statement's OWN result rows are tagged
+# with the same ref, so match_reported_output() can unite them into one
+# candidate site.
+#
+# Confirmed as a real, live gap against a real corpus paper's script: an
+# `aov_car()` model was fit once, then its OWN Anova table printed by
+# bare `mc_model` (no call at all — case 1 below), its partial eta-squared
+# printed via `eta_squared(mc_model)$Eta2` (already resolved before this
+# fix), and its CI via `get.ci.partial.eta.squared(mc_model$anova_table$F[1],
+# mc_model$anova_table$`num Df`[1], ..., conf.level = .95)` (a field/index
+# expression, not a bare name — case 2 below). Of the three statements
+# describing ONE model, only the middle one resolved before this fix, so
+# the F/df/p table (bare print) and its own CI (field access) could never be
+# united into one candidate site even though `eta_squared()`'s ref was
+# right there — the F-table itself was the one link missing from the chain.
+#
+# Deliberately still narrow in what counts as "the same object": only a
+# bare identifier (letters/digits/._), optionally followed by a `$`/`[`
+# chain whose LEADING identifier is taken, never an arbitrary expression, a
+# formula (contains "~"), a string, or a pure number, and never through a
+# NESTED call (`summary(update(m_vid, ...))`, `eta_squared(car::Anova(
+# mc_model))`) — the object reaching the outer function there is genuinely
+# a NEW one (update()/Anova() return a different fitted object), so
+# resolving through it would risk uniting two actually-different models
+# under one ref, a false union that is worse than the status quo's false
+# non-match (see this function's own callers: match_reported_output()'s
+# whole design is built around never over-claiming a match). Left NA,
+# same as an unresolvable case, rather than guessed either way.
 .r_call_object_ref <- function(call_text) {
   if (is.null(call_text) || !nzchar(call_text)) return(NA_character_)
   ct <- trimws(call_text)
   # An assignment's target is a NEW object, not a reference to an existing
-  # one — the two calls this is meant to link (e.g. `summary(m_vid)`) never
+  # one — the calls this is meant to link (e.g. `summary(m_vid)`) never
   # assign, so excluding an assignment statement here avoids wrongly linking
-  # `m_vid <- lmer(...)` to a LATER, unrelated call that happens to also
-  # assign a bare-identifier first argument to some other object.
+  # `m_vid <- lmer(...)` to a LATER, unrelated statement that happens to also
+  # name a bare-identifier object that is really a different assignment target.
   if (grepl("<-|=(?!=)", ct, perl = TRUE) &&
       grepl("^[A-Za-z._][A-Za-z0-9._]*\\s*(<-|=(?!=))", ct, perl = TRUE))
     return(NA_character_)
-  # First (...) group after a function name, e.g. "m_vid" from
-  # "stdCoef.merMod(m_vid)" or "m_vid" from "summary(m_vid)".
-  m <- regmatches(ct, regexpr("(?<=\\()[^()]*(?=\\))", ct, perl = TRUE))
-  if (!length(m) || !nzchar(m)) return(NA_character_)
-  first_arg <- trimws(strsplit(m[[1]], ",")[[1]][1])
-  if (grepl("^[A-Za-z._][A-Za-z0-9._]*$", first_arg)) first_arg else NA_character_
+
+  # The leading identifier of a `$`/`[`-chain, e.g. "mc_model" from
+  # "mc_model$anova_table$F[1]" or from a bare "mc_model" with no chain at
+  # all. Used for every "is this text a reference to one object" check
+  # below, so a field/index access is recognised the same way a bare name
+  # already was, wherever it appears.
+  leading_ident <- function(x) {
+    x <- trimws(x)
+    m <- regmatches(x, regexpr("^[A-Za-z._][A-Za-z0-9._]*", x, perl = TRUE))
+    if (!length(m) || !nzchar(m)) return(NA_character_)
+    # Only accept when the REST of the text (after the identifier) is
+    # exclusively a `$name` / `[...]` / `[[...]]` chain — anything else
+    # (an operator, a second identifier, a function call `ident(...)`)
+    # means this was never a plain object reference to begin with.
+    rest <- substr(x, nchar(m) + 1L, nchar(x))
+    if (!nzchar(rest) || grepl("^(\\$[A-Za-z._][A-Za-z0-9._]*|\\[[^][]*\\]|\\[\\[[^][]*\\]\\])+$",
+                              rest, perl = TRUE)) m else NA_character_
+  }
+
+  # Case 1: a bare print / pipe LHS — the whole statement (for a plain
+  # print) or the text before the first `|>`/`%>%` (for a pipe) is itself
+  # nothing but an object reference. Checked FIRST: `mc_model` alone has no
+  # "(...)" at all for the case-2 scan below to find, and a pipe's true
+  # subject sits OUTSIDE any parens entirely (`mc_model |> summary()` names
+  # the object before the call, not inside it).
+  pipe_split <- regmatches(ct, regexpr("\\s*(\\|>|%>%)\\s*", ct, perl = TRUE))
+  lhs <- if (length(pipe_split) && nzchar(pipe_split))
+    sub("\\s*(\\|>|%>%).*$", "", ct, perl = TRUE) else ct
+  ref <- leading_ident(lhs)
+  if (!is.na(ref)) return(ref)
+
+  # Case 2: an argument inside the statement's FIRST top-level "(...)" —
+  # covers a plain call (`summary(m_vid)`), a field/index access as that
+  # argument (`get.ci.partial.eta.squared(mc_model$anova_table$F[1], ...)`),
+  # and an argument at ANY position, named or positional
+  # (`emmeans(specs = "team", object = mc_model)`), not just the first —
+  # scanned with .repro_split_args() (reproducibility_check.R), which splits
+  # on top-level commas only (respecting nested parens/brackets/quotes), so a
+  # nested call's OWN commas do not fracture this call's argument list.
+  # Deliberately does NOT look inside a NESTED call's own arguments
+  # (`summary(update(m_vid, ...))`) — see this function's own header comment
+  # for why resolving through one would be a guess, not a recovery.
+  open_paren <- regexpr("(", ct, fixed = TRUE)
+  if (open_paren == -1) return(NA_character_)
+  # Balanced scan from the first "(" to its matching ")", so a multi-arg
+  # call whose own arguments contain further parens is not truncated at the
+  # first INNER ")" — the same "must remain balanced" reasoning
+  # reproducibility_check.R's own call scanners already use.
+  depth <- 0L; i <- open_paren; n <- nchar(ct); in_str <- NA_character_
+  end <- NA_integer_
+  while (i <= n) {
+    chr <- substr(ct, i, i)
+    if (!is.na(in_str)) {
+      if (chr == "\\") i <- i + 1L
+      else if (chr == in_str) in_str <- NA_character_
+    } else if (chr %in% c("'", '"')) in_str <- chr
+    else if (chr == "(") depth <- depth + 1L
+    else if (chr == ")") { depth <- depth - 1L; if (depth == 0L) { end <- i; break } }
+    i <- i + 1L
+  }
+  if (is.na(end)) return(NA_character_)   # unbalanced — leave alone, do not guess
+  args_text <- substr(ct, open_paren + 1L, end - 1L)
+  args_list <- .repro_split_args(args_text)
+  for (arg in args_list) {
+    # Strip a leading `name = ` (named argument), same as
+    # .repro_redirect_writes()'s own argument scan — but NOT `==`, a
+    # comparison, which the negative lookahead excludes.
+    val <- sub("^[.a-zA-Z][.a-zA-Z0-9_]*\\s*=\\s*(?!=)", "", trimws(arg$text), perl = TRUE)
+    r <- leading_ident(val)
+    if (!is.na(r)) return(r)
+  }
+  NA_character_
 }
 
 # Trace "r2_vid" back to "m_vid" through a script's own assignments, e.g.
@@ -369,6 +496,101 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
   results
 }
 
+# ── effsize::cohen.d() ────────────────────────────────────────────────────────
+# effsize::cohen.d()'s auto-printed result is neither a "<stat> <op> <value>"
+# one-liner (.r_output_oneline) nor a header-plus-data-rows table
+# (.r_output_tables): its point estimate line uses a COLON ("d estimate: 0.18
+# (negligible)"), which neither parser's pattern matches at all, so a script
+# that computes and PRINTS Cohen's d this way (a common idiom — an unassigned
+# effsize::cohen.d(x, g) call, auto-printed by R's REPL) previously vanished
+# from the extracted output entirely: confirmed against a real corpus paper
+# where the value was verifiably computed and printed, yet absent from
+# stat_output. Reproduced directly against a real effsize install; the print
+# shape is:
+#   Cohen's d
+#
+#   d estimate: 0.1811285 (negligible)
+#   95 percent confidence interval:
+#       lower     upper
+#   -0.760357  1.122614
+.r_output_cohend <- function(lines) {
+  n <- length(lines)
+  out <- list()
+  for (i in seq_len(n)) {
+    m <- regmatches(lines[[i]], regexec(
+      "(?i)^\\s*d estimate:\\s*(-?[0-9.]+(?:e[-+]?[0-9]+)?)\\s*\\(([a-z]+)\\)\\s*$",
+      lines[[i]], perl = TRUE))[[1]]
+    if (length(m) < 3) next
+    d_val <- m[[2]]; magnitude <- m[[3]]
+    row <- stats::setNames(list(d_val), "d")
+    # The CI, when present, is the next TWO lines: a "NN percent confidence
+    # interval:" title, then a header/value pair ("    lower     upper" /
+    # "-0.76  1.12") — R prints a NAMED NUMERIC VECTOR this way, header then
+    # one data line, so a plain header/data column split (same fixed-width
+    # logic .r_output_tables() uses) recovers both bounds.
+    if (i + 2 <= n && grepl("(?i)confidence interval:\\s*$", lines[[i + 1]])) {
+      hdr <- lines[[i + 2]]; dat <- if (i + 3 <= n) lines[[i + 3]] else ""
+      hdr_toks <- strsplit(trimws(hdr), "\\s+")[[1]]
+      dat_toks <- strsplit(trimws(dat), "\\s+")[[1]]
+      if (length(hdr_toks) == 2 && length(dat_toks) == 2 &&
+          all(grepl("(?i)^(lower|upper)$", hdr_toks)) &&
+          all(grepl("^-?[0-9.]+(e[-+]?[0-9]+)?$", dat_toks, ignore.case = TRUE))) {
+        row <- c(row, stats::setNames(as.list(dat_toks), tolower(hdr_toks)))
+      }
+    }
+    df <- data.frame(row, check.names = FALSE, stringsAsFactors = FALSE)
+    out[[length(out) + 1L]] <- list(
+      analysis = "Cohen's d", title = sprintf("Cohen's d (%s)", magnitude),
+      data = df)
+  }
+  out
+}
+
+# ── effectsize::cohens_d() / repeated_measures_d() / hedges_g() / glass_delta()
+# These print a THREE-LINE pipe table that is neither a "<stat> <op> <value>"
+# one-liner (.r_output_oneline) nor a normal header-plus-data-rows block
+# (.r_output_tables can't see it as one: its data-gathering loop stops at the
+# first line matching "^---", so the block's OWN dashed separator line — not a
+# stray decoration, the table's actual header/body divider — is read as the
+# END of the table before any data row is ever collected):
+#   Cohen's d |        95% CI
+#   -------------------------
+#   -0.12     | [-0.73, 0.51]
+#
+#   - Estimated using pooled SD.
+# repeated_measures_d()/hedges_g()/glass_delta() share this exact shape, only
+# the header's first token differs ("d (rm)", "Hedges' g", "Glass' delta"),
+# and the trailing footnote varies ("- Adjusted for small sample bias.",
+# "- Deviation OMEGA...", none at all) — none of that changes the geometry
+# being parsed, so one function covers all four. Reproduced directly against
+# a real effectsize install; confirmed as the block that, before ANSI colour
+# codes were stripped upstream (see read_r_output()'s header comment), could
+# fuse with the NEXT echoed statement's prompt and corrupt split_block()'s
+# column-boundary detection for a real corpus paper's cohens_d() calls.
+.r_output_effectsize_d <- function(lines) {
+  n <- length(lines)
+  out <- list()
+  i <- 1L
+  while (i <= n) {
+    hdr <- lines[[i]]
+    m <- regmatches(hdr, regexec(
+      "^\\s*(Cohen's d|d \\(rm\\)|Hedges'? g|Glass'? delta)\\s*\\|\\s*(?:[0-9]+% CI)?\\s*$",
+      hdr, perl = TRUE, ignore.case = TRUE))[[1]]
+    if (length(m) < 2 || i + 2 > n || !grepl("^-+$", lines[[i + 1]])) { i <- i + 1L; next }
+    dat <- lines[[i + 2]]
+    dm <- regmatches(dat, regexec(
+      "^\\s*(-?[0-9.]+(?:e[-+]?[0-9]+)?)\\s*\\|\\s*\\[\\s*(-?[0-9.]+(?:e[-+]?[0-9]+)?)\\s*,\\s*(-?[0-9.]+(?:e[-+]?[0-9]+)?)\\s*\\]\\s*$",
+      dat, perl = TRUE))[[1]]
+    if (length(dm) < 4) { i <- i + 1L; next }
+    label <- trimws(m[[2]])
+    df <- data.frame(d = dm[[2]], ci_lower = dm[[3]], ci_upper = dm[[4]],
+                     check.names = FALSE, stringsAsFactors = FALSE)
+    out[[length(out) + 1L]] <- list(analysis = label, title = label, data = df)
+    i <- i + 3L   # step past header, separator, data row
+  }
+  out
+}
+
 # ── Fixed-width text tables ───────────────────────────────────────────────────
 # R prints tables FIXED-WIDTH, right-aligning each value under its header token:
 #             Estimate Std. Error t value Pr(>|t|)
@@ -435,6 +657,42 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
     grps <- strsplit(tl, "\\s+")[[1]]; grps <- grps[nzchar(grps)]
     length(grps) >= 2 && mean(is_numlike(grps)) < 0.4
   }
+  # A cell like "2, 560" (a COMBINED df1/df2 pair, printed as one cell by
+  # afex::aov_car()/aov_ez() and other ANOVA-table printers — confirmed
+  # common, not a one-off) contains an internal space after the comma that
+  # split_block()'s "blank in every line" gutter test cannot tell apart from
+  # a real column boundary: the header ("df") is narrower than the data
+  # ("2, 560"), so that internal space lines up with genuinely blank header
+  # space above it and gets read as a gutter, fracturing the one cell into
+  # two columns and shifting every later column over by one. Protected here
+  # by swapping the comma-space for a non-breaking space (never blank under
+  # `cc == " "`) before column splitting, then restored to a normal space in
+  # the extracted cell text afterward — .split_combined_df() (below,
+  # applied by the caller once the table is typed) parses the restored
+  # "2, 560" into df1/df2.
+  .NBSP <- " "
+  protect_combined_df <- function(x)
+    gsub("(?<=[0-9]),\\s+(?=[0-9])", paste0(",", .NBSP), x, perl = TRUE)
+  restore_combined_df <- function(x) gsub(.NBSP, " ", x, fixed = TRUE)
+
+  # A significance-code token (***/**/*/.) sitting as its own whitespace-
+  # delimited run ANYWHERE in a data line — not just at the line's own end,
+  # which is all the existing trailing-strip below ever covered. Sitting
+  # mid-row (e.g. "41.86 *** .130", the stars between an F value and the
+  # next real column) it occupies gutter space that a narrower header (a
+  # bare "F") does not, so the true F/ges boundary is misjudged the same
+  # way a combined df cell misjudges its own neighbour. R's own signif-code
+  # alphabet, per stats:::printCoefmat's default: 0 '***' 0.001 '**' 0.01
+  # '*' 0.05 '.' 0.1 ' ' 1. Blanked to EQUAL-WIDTH spaces (not deleted), so
+  # column alignment is preserved and only that position's blank-ness
+  # changes — deleting the token outright would shrink the line and merge
+  # the columns on either side of it instead of separating them correctly.
+  blank_sigcode <- function(x) {
+    m <- gregexpr("(?<=\\s)(\\*{1,3}|\\.)(?=\\s)", x, perl = TRUE)
+    regmatches(x, m) <- lapply(regmatches(x, m), function(v) strrep(" ", nchar(v)))
+    x
+  }
+
   # Split a set of block lines at columns blank in EVERY line.
   split_block <- function(block) {
     # Expand literal tabs to spaces first: formatC()'s width padding is based
@@ -446,6 +704,7 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
     # with "number of columns of result is not a multiple of vector length".
     # 8-space tab stops match the common terminal default.
     block <- gsub("\t", strrep(" ", 8), block, fixed = TRUE)
+    block <- blank_sigcode(protect_combined_df(block))
     w <- max(nchar(block))
     padded <- formatC(block, width = -w, flag = "-")   # left-justify to width w
     chars <- do.call(rbind, strsplit(padded, "", fixed = TRUE))
@@ -456,7 +715,7 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
     d <- diff(c(0L, as.integer(nb), 0L))
     starts <- which(d == 1L); ends <- which(d == -1L) - 1L
     lapply(seq_along(starts), function(k)
-      trimws(substr(padded, starts[k], ends[k])))
+      restore_combined_df(trimws(substr(padded, starts[k], ends[k]))))
   }
 
   n <- length(lines); i <- 1L; tables <- list(); section <- NA_character_
@@ -471,6 +730,18 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
       # is_tibble_type_row()'s comment above.
       j <- i + 1L
       if (j <= n && is_tibble_type_row(lines[[j]])) j <- j + 1L
+      # A lone all-dash divider sitting DIRECTLY under the header (statsmodels'
+      # OLS/Logit .summary(): "coef std err t P>|t| ..." header, then a "---"
+      # rule, THEN the data rows) is a header/body divider, not R's own
+      # footnote rule -- R's "---" only ever follows Signif. codes AFTER at
+      # least one data row was already printed, never immediately under a
+      # header with zero data collected yet. The stop condition below (`^---`)
+      # exists specifically for that AFTER-data case, so it must not also fire
+      # here or a statsmodels table is abandoned with zero data lines before
+      # ever reaching its real content. Confirmed against real statsmodels
+      # output from a Zenodo-sampled notebook (an OLS Regression Results
+      # table whose coefficient block was silently dropped without this).
+      if (j <= n && grepl("^-{3,}\\s*$", trimws(lines[[j]]))) j <- j + 1L
       # gather contiguous data lines (non-blank, containing a number, not prose)
       data_lines <- character(0)
       while (j <= n) {
@@ -487,6 +758,34 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
         if (!is.null(cols) && length(cols) >= 2) {
           header <- vapply(cols, `[[`, character(1), 1L)         # first row = header
           body   <- lapply(cols, function(cl) cl[-1])            # rest = data
+          # Mirror-image repair FIRST: a NARROW single-letter header ("F")
+          # under WIDE data ("41.86", or a combined "2, 560" df cell wider
+          # than its own "df" header) — the DATA spills past its narrow
+          # header's own position into what looks like the PRECEDING column,
+          # so the split lands the value in an ANONYMOUS column just before
+          # the real header's own (now-empty-data) column. Symptom: a column
+          # with an empty header but real data, immediately followed by a
+          # column with a real header but all-empty data — splice them,
+          # keeping the anonymous column's data under the following column's
+          # header. Confirmed against a real corpus paper's aov_car() output
+          # ("F" header over "41.86 ***" data — blank_sigcode() above already
+          # removes the "***" so it cannot itself absorb the mismatch, but
+          # the bare "F" header is still only one character wide against a
+          # 5-character value). MUST run before the wide-header/narrow-data
+          # repair below: that repair's own trigger (empty DATA, non-empty
+          # header on both sides) also matches an UNFIXED narrow-header
+          # column's real header sitting next to its own now-empty-until-
+          # spliced data cell, and would wrongly glue two real headers
+          # together (e.g. "F" + "ges" -> "F ges") before this repair ever
+          # gets a chance to fill "F"'s data in from its neighbour.
+          k <- 1L
+          while (k < length(body)) {
+            if (!nzchar(trimws(header[[k]])) && any(nzchar(trimws(body[[k]]))) &&
+                all(!nzchar(trimws(body[[k + 1L]]))) && nzchar(trimws(header[[k + 1L]]))) {
+              header[[k]] <- header[[k + 1L]]
+              header <- header[-(k + 1L)]; body <- body[-(k + 1L)]
+            } else k <- k + 1L
+          }
           # Repair a header word that a blank "river" wrongly split (e.g. a narrow
           # "F value" column: the value column is narrower than its 2-word header,
           # so a gutter appears mid-header). Symptom: a column whose DATA cells are

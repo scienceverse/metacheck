@@ -199,6 +199,23 @@ repro_dependencies <- function(code_text, lang = "R") {
     quoted_len <- nchar(fmt)   # includes the surrounding quotes
     fmt <- substr(fmt, 2, nchar(fmt) - 1)
     if (!grepl("\\.[A-Za-z0-9]{1,8}$", fmt)) return(NULL)
+    # A bare sprintf()-style format specifier ("%.2e", "%.3f", "%05.2f") also
+    # satisfies the "ends in a dotted extension-shape" check above by pure
+    # coincidence — its own "%" + digits + "." + conversion letter looks
+    # exactly like "<name>.<ext>". Checked on the BASENAME (not the whole
+    # `fmt`), since a real path with a placeholder ("data/%s_data.csv") must
+    # still be treated as a candidate — only the LAST path segment being a
+    # bare format spec (no directory content, no literal filename text at
+    # all) means this quoted string was never a file reference to begin with.
+    # Confirmed as a real false positive against a real corpus paper's script
+    # (sprintf("%.2e", est) reported "%.2e" as a file "not present in the
+    # repository") — the SAME bug .repro_format_call_refs()'s sibling scan in
+    # code_check.R's code_file_refs() was already fixed for; this is the
+    # other of two independent places a format specifier can be
+    # misidentified as a filename, missed the first time because this
+    # function has its own, separate quoted-string extraction.
+    if (grepl("^%[-+ 0#]*[0-9]*(\\.[0-9]+)?[diouxXeEfgGaAscp]$",
+             basename(gsub("\\\\", "/", fmt)), perl = TRUE)) return(NULL)
 
     # Only calls with EXTRA arguments AFTER the quoted format string are what
     # this scan is for: a bare sprintf("Exp1A_Data.txt") with nothing else is a
@@ -261,12 +278,227 @@ repro_dependencies <- function(code_text, lang = "R") {
   stats::setNames(val, nm)[!duplicated(nm, fromLast = TRUE)]
 }
 
+#' Find a script's WRITE calls and redirect their targets into the sandbox
+#'
+#' A script writes intermediate/output files by relative path
+#' (`write.csv("../Data/Cleaned/x.csv", ...)`, `saveRDS(m, "out/model.rds")`).
+#' [repro_rewrite_paths()] only ever rewrites READ calls (`code_file_refs()`'s
+#' `include_writes` defaults to `FALSE` there) — a write's own path is left
+#' exactly as the author wrote it, so when the materialised sandbox's directory
+#' layout does not match the original repo's (it is Psych-DS's layout, not the
+#' author's), the write's target directory frequently does not exist at all,
+#' and the write fails with "cannot open the connection" — a sandboxing
+#' artefact, not a real reproducibility finding, confirmed against a real
+#' corpus paper whose script wrote to `"../Data/Cleaned/..."` (a path that only
+#' resolves relative to the AUTHOR's own original working directory).
+#'
+#' Every detected write call is redirected to `file.path(output_dir,
+#' basename(...))` — a single flat folder inside the sandbox that
+#' [repro_materialize_layout()] always creates, so the write always succeeds
+#' regardless of the original relative structure. Two call shapes are handled:
+#'
+#' * a LITERAL quoted target (`write.csv("cleaned.csv", ...)`) — redirected
+#'   directly, keeping the literal's own basename;
+#' * a BARE VARIABLE target (`write.csv(cleaned_file_name, ...)`, the variable
+#'   assigned on an earlier line, e.g. `cleaned_file_name <- paste0("../Data/
+#'   Cleaned/task_level_", Sys.Date(), ".csv")`) — the ENTIRE write call is
+#'   replaced with a fixed literal path, using the VARIABLE's own name (not its
+#'   unknowable runtime value, which may depend on `Sys.Date()` or other
+#'   non-literal pieces this scan cannot evaluate) plus the extension its
+#'   assignment's own last quoted segment declares. This does not need to
+#'   resolve the variable's exact string value — only that its assignment
+#'   LOOKS like a file path (ends `.<ext>` in its last quoted piece) — so it
+#'   still succeeds even when a placeholder (`Sys.Date()`) makes the true
+#'   runtime value unknowable ahead of time.
+#'
+#' A write whose target cannot be traced to a literal or a simple top-level
+#' assignment (built from a loop variable, a function argument, a data value)
+#' is left UNREWRITTEN, the same "do not guess" policy
+#' [repro_rewrite_paths()] already follows for reads.
+#'
+#' @param code_text the code text for a single file (character vector)
+#'
+#' @returns a data frame with one row per detected write call: `call_text` (the
+#'   full original call), `replacement` (the full replacement call text, or
+#'   `NA` when unresolved), `redirected_name` (the basename the write now
+#'   targets, for the read-side basename search to also check), and `line`
+#'   (1-based line the call starts on). Empty frame when the script has no
+#'   resolvable write calls.
+#' @keywords internal
+.repro_redirect_writes <- function(code_text) {
+  empty <- data.frame(call_text = character(0), replacement = character(0),
+                      redirected_name = character(0), line = integer(0))
+  if (is.null(code_text) || length(code_text) == 0) return(empty)
+  nc <- code_remove_comments(code_text, "R")
+  joined <- paste(nc, collapse = "\n")
+
+  write_fns <- c("write[\\._][A-Za-z\\._0-9]*", "saveRDS", "save\\.image",
+                "save", "ggsave", "export", "fwrite")
+  fn_pat <- paste0("\\b(", paste(write_fns, collapse = "|"), ")\\s*\\(")
+  starts <- gregexpr(fn_pat, joined, perl = TRUE)[[1]]
+  if (length(starts) == 1 && starts == -1) return(empty)
+  lens <- attr(starts, "match.length")
+
+  # Does an arbitrary expression's TEXT look like it builds a file path — its
+  # LAST quoted segment ends in a dotted extension? Covers both a bare literal
+  # ("a.csv") and a paste0()/sprintf()-built path ("dir/", Sys.Date(), ".csv"),
+  # since only the FINAL quoted piece needs checking for a plain "prefix +
+  # <computed> + extension" shape either way — shared by the assignment-RHS
+  # scan below AND by a write call's own INLINE argument (`write.csv(df,
+  # paste0("dir/", Sys.Date(), ".csv"))`, no intermediate variable at all),
+  # since both are exactly the same "does this expression's text end with a
+  # file-shaped quoted piece" question, just applied to different text spans.
+  .repro_path_like_ext <- function(expr_text) {
+    qs <- regmatches(expr_text, gregexpr("(['\"])((?:[^'\"\\\\]|\\\\.)*)\\1",
+                                         expr_text, perl = TRUE))[[1]]
+    if (!length(qs)) return(NA_character_)
+    last_q <- substr(qs[[length(qs)]], 2, nchar(qs[[length(qs)]]) - 1)
+    if (grepl("\\.[A-Za-z0-9]{1,8}$", last_q))
+      sub(".*(\\.[A-Za-z0-9]{1,8})$", "\\1", last_q) else NA_character_
+  }
+
+  # Top-level assignments whose RHS looks path-like (see above) — covers
+  # `x <- "a.csv"` and `x <- paste0("dir/", Sys.Date(), ".csv")` alike.
+  assign_pat <- "^([.a-zA-Z][.a-zA-Z0-9_]*)\\s*(?:<<-|<-|=)\\s*(.+)$"
+  am <- regmatches(nc, regexec(assign_pat, nc, perl = TRUE))
+  assigns <- Filter(function(x) length(x) == 3, am)
+  path_like_vars <- character(0)
+  var_ext <- character(0)
+  for (a in assigns) {
+    ext <- .repro_path_like_ext(a[[3]])
+    if (!is.na(ext)) { path_like_vars[[a[[2]]]] <- TRUE; var_ext[[a[[2]]]] <- ext }
+  }
+
+  rows <- lapply(seq_along(starts), function(k) {
+    open_paren <- starts[k] + lens[k] - 1L
+    depth <- 0L; i <- open_paren; n <- nchar(joined); in_str <- NA_character_
+    end <- NA_integer_
+    while (i <= n) {
+      ch <- substr(joined, i, i)
+      if (!is.na(in_str)) {
+        if (ch == "\\") i <- i + 1L
+        else if (ch == in_str) in_str <- NA_character_
+      } else if (ch %in% c("'", '"')) in_str <- ch
+      else if (ch == "(") depth <- depth + 1L
+      else if (ch == ")") { depth <- depth - 1L; if (depth == 0L) { end <- i; break } }
+      i <- i + 1L
+    }
+    if (is.na(end)) return(NULL)   # unbalanced — leave alone, do not guess
+    call_text <- substr(joined, starts[k], end)
+    # The function name alone (just capture group 1) — sub(fn_pat, "\\1", ...)
+    # would be wrong here: it replaces only the MATCHED SPAN (fn name + "(")
+    # with the capture group, leaving the rest of call_text (the arguments)
+    # appended unchanged, not isolating the name at all.
+    fn_name <- regmatches(call_text, regexec(fn_pat, call_text, perl = TRUE))[[1]][2]
+    args_text <- substr(joined, open_paren + 1L, end - 1L)
+    line <- 1L + lengths(regmatches(substr(joined, 1, starts[k]),
+                                    gregexpr("\n", substr(joined, 1, starts[k]))))[1]
+
+    # Scan EVERY top-level (comma-separated) argument for the write target —
+    # NOT just the first: the path is the first positional argument for some
+    # write functions (write.csv(path, x)-style — actually rare), but the
+    # SECOND for write.csv(x, path)/write.csv(x, file = path), and a NAMED
+    # argument entirely for saveRDS(x, file = path). Scanning every argument
+    # position (positional value or the part after `name =`) for whichever one
+    # actually looks like a file target (a literal ending in an extension, or
+    # a bare variable already known to be path-like) finds the real target
+    # regardless of which argument position that particular function uses,
+    # without hardcoding a per-function argument index.
+    args_list <- .repro_split_args(args_text)
+    hit <- NULL
+    for (arg in args_list) {
+      val <- sub("^[.a-zA-Z][.a-zA-Z0-9_]*\\s*=\\s*(?!=)", "", trimws(arg$text), perl = TRUE)
+      val <- trimws(val)
+
+      lit <- regexpr("^(['\"])((?:[^'\"\\\\]|\\\\.)*)\\1$", val, perl = TRUE)
+      if (lit != -1) {
+        target <- substr(val, 2, nchar(val) - 1)
+        if (grepl("\\.[A-Za-z0-9]{1,8}$", target)) {
+          hit <- list(start = arg$start, end = arg$end,
+                      redirected = basename(gsub("\\\\", "/", target)))
+          break
+        }
+        next
+      }
+      if (grepl("^[.a-zA-Z][.a-zA-Z0-9_]*$", val) && !is.na(path_like_vars[val])) {
+        hit <- list(start = arg$start, end = arg$end,
+                    redirected = paste0(val, var_ext[[val]]))
+        break
+      }
+      # An INLINE path-building call as the argument itself — no intermediate
+      # variable at all (`write.csv(df, paste0("dir/", Sys.Date(), ".csv"))`,
+      # the common `%>% write.csv(paste0(...), ...)` pipe shape). Gated on the
+      # value actually being a call to one of the known path-building
+      # functions (not just "contains a quoted extension-shaped string
+      # somewhere"), so an unrelated call whose LAST argument happens to be
+      # such a string (rare, but not zero-risk) is not swept in by accident.
+      if (grepl("^(paste0|paste|sprintf|file\\.path)\\s*\\(", val, perl = TRUE)) {
+        ext <- .repro_path_like_ext(val)
+        if (!is.na(ext)) {
+          # No variable name to label the redirected file with (unlike the
+          # bare-variable branch above) — the call's own function name plus
+          # this write's position in the script is used instead, so two
+          # different inline-built writes in the same file do not collide on
+          # an identical redirected basename.
+          hit <- list(start = arg$start, end = arg$end,
+                      redirected = paste0("write_", k, ext))
+          break
+        }
+      }
+    }
+    if (is.null(hit)) return(NULL)   # no argument resolves to a file target — leave alone
+
+    replacement_arg <- sprintf('"{{REPRO_OUTPUT}}%s"', hit$redirected)
+    new_args <- paste0(substr(args_text, 1, hit$start - 1L), replacement_arg,
+                       substr(args_text, hit$end + 1L, nchar(args_text)))
+    data.frame(call_text = call_text,
+              replacement = paste0(fn_name, "(", new_args, ")"),
+              redirected_name = hit$redirected, line = line)
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (length(rows) == 0) return(empty)
+  dplyr::bind_rows(rows)
+}
+
+# Split an already-extracted argument-list string into its top-level (paren/
+# bracket/quote-depth-0) comma-delimited arguments. Shared by
+# .repro_redirect_writes()'s call parsing, which needs to scan every argument
+# for the write target (not just the first — write.csv(x, path), saveRDS(x,
+# file = path), and a first-argument path all occur in real code). Returns a
+# list of list(text, start, end) — start/end are 1-based character positions
+# WITHIN args_text (inclusive), so a caller can splice a replacement into the
+# original string without re-matching. Empty list if args_text is empty.
+.repro_split_args <- function(args_text) {
+  if (!nzchar(args_text)) return(list())
+  depth <- 0L; in_str <- NA_character_; n <- nchar(args_text)
+  arg_start <- 1L
+  args <- list()
+  i <- 1L
+  while (i <= n) {
+    ch <- substr(args_text, i, i)
+    if (!is.na(in_str)) {
+      if (ch == "\\") { i <- i + 2L; next }   # skip an escaped char inside the string
+      if (ch == in_str) in_str <- NA_character_
+    } else if (ch %in% c("'", '"')) in_str <- ch
+    else if (ch %in% c("(", "[", "{")) depth <- depth + 1L
+    else if (ch %in% c(")", "]", "}")) depth <- depth - 1L
+    else if (ch == "," && depth == 0L) {
+      args[[length(args) + 1L]] <- list(text = substr(args_text, arg_start, i - 1L),
+                                        start = arg_start, end = i - 1L)
+      arg_start <- i + 1L
+    }
+    i <- i + 1L
+  }
+  args[[length(args) + 1L]] <- list(text = substr(args_text, arg_start, n),
+                                    start = arg_start, end = n)
+  args
+}
+
 #' Rewrite a code file's data-file paths to the Psych-DS layout
 #'
 #' A script reads and writes data by relative path (`read_csv("raw/x.csv")`,
 #' `saveRDS(m, "../out/model.rds")`). When the release is re-laid-out to
 #' Psych-DS (data under `data/`, per-study `study-<group>/data/`), those paths no
-#' longer resolve. This rewrites each referenced path to where the file now
 #' lives, using the file→target plan `psychds_check` produced.
 #'
 #' Matching is by **basename** (a script's `../data/x.csv` and the repo's
@@ -302,12 +534,34 @@ repro_dependencies <- function(code_text, lang = "R") {
 #' guessed, and is separately flagged in the report as fragile authoring
 #' practice regardless of whether it resolved.
 #'
+#' A basename can also collide across plan rows for a reason that is NOT real
+#' ambiguity at all: a paper linking several OSF components that mirror each
+#' other (see [repro_materialize_layout()]'s own de-duplication for the
+#' execution-time counterpart of this) commonly lists the identical physical
+#' file more than once, and the study-grouping step can assign DIFFERENT
+#' (and for all-but-one, WRONG) groups to different mirrors of the same file
+#' — e.g. one mirror's folder structure carries a "Study 1" hint the others
+#' lack, so only that one gets grouped correctly. When `structure_df` is
+#' supplied, candidates are first collapsed by the CONTENT HASH of their
+#' resolved source files: byte-identical candidates count as ONE, using
+#' whichever one's own group agrees with the majority (ties broken by the
+#' first occurrence) — confirmed against a real corpus paper where 4 mirrors
+#' of the same `Anonymized_2024-08-23.csv` were grouped ex1/ex1/ex1/ex3, which
+#' made the existing "do all candidates already agree on one target"
+#' shortcut fail (3 way agree, 1 disagrees) and fell through to `ambiguous =
+#' TRUE` even though there was only ever one real file. Without
+#' `structure_df` (or when a candidate's source cannot be resolved/read),
+#' this collapsing step is skipped and candidates are compared as before.
+#'
 #' @param code_text the code text for a single file (character vector)
 #' @param file_name the script's own name/path (used to derive its study group)
 #' @param plan the `psychds_check` table: one row per file with `file_name`,
 #'   `target_path`, `current_path`, and (for converted tabular files)
 #'   `original_target`
 #' @param lang the language (only R is rewritten here)
+#' @param structure_df optional `data_check` structure table (`file_name`,
+#'   `file_location`) — when supplied, enables the content-hash mirror
+#'   collapsing described above. `NULL` (default) skips it.
 #'
 #' @returns a data frame with one row per referenced path, columns `ref` (the
 #'   path as written, or the full call text when `is_call`), `basename`,
@@ -321,13 +575,14 @@ repro_dependencies <- function(code_text, lang = "R") {
 #' @examples
 #' plan <- data.frame(
 #'   file_name = c("demographics.csv", "scores.csv"),
-#'   target_path = c("study-ex1/data/source-demographics_data.csv",
-#'                   "study-ex1/data/source-scores_data.csv"),
+#'   target_path = c("study-ex1/data/study-demographics_data.csv",
+#'                   "study-ex1/data/study-scores_data.csv"),
 #'   current_path = c("ex1/demographics.csv", "ex1/scores.csv")
 #' )
 #' code_text <- c('d <- read.csv("data/demographics.csv")')
 #' repro_rewrite_paths(code_text, "ex1/analysis.R", plan)
-repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R") {
+repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
+                                structure_df = NULL) {
   empty <- data.frame(ref = character(0), basename = character(0),
                       matched = logical(0), target = character(0),
                       ambiguous = logical(0), n_candidates = integer(0),
@@ -375,8 +630,62 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R") {
   # The script's own study group, for disambiguation.
   script_grp <- .data_group_from_path(file_name)
 
+  # Resolve each PLAN ROW's own on-disk source (by file_name, falling back to
+  # basename — same lookup shape repro_materialize_layout()'s find_source()
+  # already uses), for the content-hash mirror collapsing below. Only built
+  # when structure_df was supplied; NA everywhere otherwise (skips collapsing
+  # entirely, same as before this was added).
+  plan_source_path <- if (!is.null(structure_df) &&
+                          all(c("file_name", "file_location") %in% names(structure_df))) {
+    loc_lookup <- stats::setNames(structure_df$file_location, structure_df$file_name)
+    loc_base   <- stats::setNames(loc_lookup, tolower(basename(names(loc_lookup))))
+    vapply(plan$file_name, function(fn) {
+      if (fn %in% names(loc_lookup)) {
+        l <- loc_lookup[[fn]]
+        if (!is.na(l) && nzchar(l) && file.exists(l)) return(l)
+      }
+      b <- tolower(basename(fn))
+      if (b %in% names(loc_base)) {
+        l <- loc_base[[b]]
+        if (!is.na(l) && nzchar(l) && file.exists(l)) return(l)
+      }
+      NA_character_
+    }, character(1))
+  } else rep(NA_character_, nrow(plan))
+  plan_hash <- ifelse(is.na(plan_source_path), NA_character_,
+                      unname(tools::md5sum(plan_source_path)))
+
+  # Collapse candidates that are BYTE-IDENTICAL mirrors of the same real file
+  # into one representative before any target/group comparison runs — a
+  # basename-mirror duplicate whose study-grouping happened to disagree with
+  # its sibling mirrors is not genuine ambiguity (see this function's own
+  # roxygen for the confirmed real case). A hash-less candidate (structure_df
+  # not supplied, or its source unreadable) is never collapsed with anything
+  # — it keeps comparing exactly as before.
+  collapse_by_hash <- function(cand) {
+    h <- plan_hash[cand]
+    has_hash <- !is.na(h)
+    if (sum(has_hash) < 2) return(cand)   # nothing to collapse
+    keep <- cand[!has_hash]                # hash-less candidates: untouched
+    for (grp_h in unique(h[has_hash])) {
+      grp_cand <- cand[has_hash][h[has_hash] == grp_h]
+      if (length(grp_cand) == 1) { keep <- c(keep, grp_cand); next }
+      # Among byte-identical mirrors, prefer whichever group the MAJORITY
+      # agree on (a lone dissenting mirror is the mis-grouped one); ties (incl.
+      # all-NA groups) keep the first occurrence, same "do not guess further"
+      # spirit as the rest of this function.
+      grp_of <- .data_group_from_path(plan$target_path[grp_cand])
+      tab <- table(grp_of[!is.na(grp_of)])
+      rep_i <- if (length(tab) > 0) grp_cand[which(!is.na(grp_of) &
+                grp_of == names(tab)[which.max(tab)])[1]] else grp_cand[1]
+      keep <- c(keep, rep_i)
+    }
+    keep
+  }
+
   rows <- lapply(seq_along(refs), function(i) {
     cand <- which(plan_base == ref_base[i] & has_target)
+    cand <- collapse_by_hash(cand)
     n <- length(cand)
     if (n == 0) {
       return(data.frame(ref = refs[i], basename = ref_base[i], matched = FALSE,
@@ -816,6 +1125,12 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #' @export
 repro_materialize_layout <- function(plan, structure_df, root) {
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
+  # A flat folder every write call is redirected into (see
+  # .repro_redirect_writes(), applied in repro_write_scripts()) — created
+  # UNCONDITIONALLY, before the no-plan early return below, since a script can
+  # write output even for a paper with no psychds_check plan at all (no data
+  # files to lay out, but still code that writes a results file).
+  dir.create(file.path(root, "output"), recursive = TRUE, showWarnings = FALSE)
   done <- data.frame(target_path = character(0), source = character(0),
                      ok = logical(0))
   if (is.null(plan) || nrow(plan) == 0 ||
@@ -855,6 +1170,34 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     ok <- isTRUE(file.copy(src, dest, overwrite = TRUE))
     data.frame(target_path = tgt, source = src, ok = ok)
   })
+
+  # A converted tabular row (psychds_check's `convert`/`original_target`
+  # columns — see R/data_check_helpers.R and repro_rewrite_paths()'s own
+  # roxygen) ALSO needs its untouched ORIGINAL copied in, not just the
+  # `_data.csv` re-export above: repro_rewrite_paths() rewrites a script's
+  # read_dta()/read_sav()/read_excel() call to `original_target` specifically
+  # BECAUSE that reader needs the real file, not the CSV. Without this, the
+  # rewrite correctly names the right path, but nothing ever puts a file there
+  # — confirmed directly against a real paper (a read_dta("math.dta") call,
+  # correctly rewritten to "data/math.dta" (original_target keeps the file's
+  # own real basename — see psychds_check.R's same_dir_real_name()), still
+  # failed at execute time with "'data/math.dta' does not exist", because only
+  # the target_path loop above had ever populated the sandbox).
+  if ("original_target" %in% names(plan)) {
+    has_orig <- !is.na(plan$original_target) & nzchar(plan$original_target %||% "")
+    orig_rows <- lapply(which(has_orig), function(i) {
+      tgt <- plan$original_target[i]
+      src <- find_source(plan$file_name[i])
+      if (is.na(src))
+        return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
+      dest <- file.path(root, tgt)
+      dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+      ok <- isTRUE(file.copy(src, dest, overwrite = TRUE))
+      data.frame(target_path = tgt, source = src, ok = ok)
+    })
+    if (length(orig_rows)) rows <- c(rows, orig_rows)
+  }
+
   done <- if (length(rows)) dplyr::bind_rows(rows) else done
   invisible(structure(root, materialised = done))
 }
@@ -890,8 +1233,12 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'
 #' @returns a data frame with `file_name`, `script_path` (absolute path written),
 #'   `run_dir` (the working directory a run should use — always `root`),
-#'   `setwd_removed` (count of `setwd()` lines commented out), and
-#'   `setwd_paths` (comma-joined paths those calls named, for the warning).
+#'   `setwd_removed` (count of `setwd()` lines commented out),
+#'   `setwd_paths` (comma-joined paths those calls named, for the warning), and
+#'   `family_replaced` (count of `family =`/`base_family =` named-font
+#'   arguments replaced with `"sans"`, so a plot call does not fail with
+#'   "invalid font type" for a font not registered on the machine running the
+#'   sandbox).
 #' @export
 repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
   fnames <- names(code_text_list)
@@ -937,6 +1284,27 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
       }
     }
 
+    # Redirect WRITE calls into the sandbox's flat output/ folder (see
+    # .repro_redirect_writes()'s own roxygen for why: an unrewritten write
+    # commonly targets a relative directory that does not exist in the
+    # materialised layout — a sandboxing artefact, not a real reproducibility
+    # finding — confirmed against a real corpus paper's script writing to
+    # "../Data/Cleaned/..."). Applied on the WHOLE joined text (a write call
+    # can wrap across lines, e.g. piped into write.csv() on its own line), then
+    # re-split back into per-line form so the rest of this function's
+    # line-vector operations (setwd detection below) still work unchanged.
+    wr <- .repro_redirect_writes(txt)
+    if (nrow(wr) > 0) {
+      joined_txt <- paste(txt, collapse = "\n")
+      for (k in seq_len(nrow(wr))) {
+        repl <- gsub("{{REPRO_OUTPUT}}",
+                    paste0(gsub("\\\\", "/", file.path(root, "output")), "/"),
+                    wr$replacement[k], fixed = TRUE)
+        joined_txt <- sub(wr$call_text[k], repl, joined_txt, fixed = TRUE)
+      }
+      txt <- strsplit(joined_txt, "\n", fixed = TRUE)[[1]]
+    }
+
     # Comment out setwd() lines so they cannot override the sandbox wd. Record
     # how many, and the path each named, for the report's warning.
     is_setwd <- grepl(setwd_line, txt, perl = TRUE)
@@ -953,13 +1321,38 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
         perl = TRUE)
     }
 
+    # Replace a named font family (family = "Times New Roman", base_family =
+    # "Arial", ...) with grid's own universal fallback "sans" — a specific
+    # named font is very commonly NOT registered as usable on the machine
+    # actually running the sandboxed subprocess (no font-registration setup
+    # of its own, unlike the author's own interactive session where the OS
+    # font is simply present), so the plot call fails with "invalid font
+    # type" for a reason that has nothing to do with the analysis itself —
+    # confirmed against a real corpus paper's theme_few(base_family = "Times
+    # New Roman") failing exactly this way in the callr subprocess. "sans" is
+    # grid's own documented generic family name, resolved by every graphics
+    # device without needing the named font installed at all. Deliberately
+    # narrow: only a `family =` / `base_family =` NAMED argument is touched
+    # (not any quoted string that merely looks like a font name), the same
+    # "do not guess beyond what is clearly the thing in question" restraint
+    # the rest of this function's rewrites already follow.
+    family_pat <- "\\b(base_family|family)\\s*=\\s*(['\"])[^'\"]*\\2"
+    joined_for_family <- paste(txt, collapse = "\n")
+    family_n <- lengths(regmatches(joined_for_family,
+                                   gregexpr(family_pat, joined_for_family, perl = TRUE)))[1]
+    if (family_n > 0) {
+      joined_for_family <- gsub(family_pat, "\\1 = \"sans\"", joined_for_family, perl = TRUE)
+      txt <- strsplit(joined_for_family, "\n", fixed = TRUE)[[1]]
+    }
+
     tgt  <- script_target(fn)
     dest <- file.path(root, tgt)
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
     writeLines(txt, dest)
     data.frame(file_name = fn, script_path = dest, run_dir = root,
                setwd_removed = setwd_n,
-               setwd_paths = paste(setwd_paths, collapse = ", "))
+               setwd_paths = paste(setwd_paths, collapse = ", "),
+               family_replaced = family_n)
   })
   dplyr::bind_rows(rows)
 }
@@ -1157,10 +1550,29 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
     order(files, decreasing = TRUE)
   latest_file <- files[ord][1]
   version <- sub(paste0("^", pkg, "_(.*)\\.tar\\.gz$"), "\\1", latest_file)
+  tarball_url <- paste0(archive_url, latest_file)
 
   ok <- tryCatch({
-    utils::install.packages(paste0(archive_url, latest_file), lib = install_lib,
-                            repos = NULL, type = "source", quiet = FALSE)
+    if (requireNamespace("remotes", quietly = TRUE)) {
+      # remotes::install_url() resolves the tarball's OWN Imports/Depends from
+      # live CRAN before installing it; a plain install.packages(repos = NULL,
+      # type = "source") does not (repos = NULL disables all dependency
+      # resolution, since it means "this is a direct file, not a repository
+      # lookup") — confirmed as a real, general bug, not specific to one
+      # package: an archived package with ANY unmet CRAN dependency fails
+      # R CMD INSTALL with a non-zero exit status here, which read as "this
+      # package cannot be installed on this R version" even though the
+      # package itself installs fine once its dependencies are present
+      # (confirmed against dynamic 1.1.0's own missing `simstandard` import).
+      remotes::install_url(tarball_url, dependencies = NA, lib = install_lib,
+                           upgrade = "never", quiet = FALSE)
+    } else {
+      # No remotes: fall back to the old dependency-blind path rather than
+      # failing outright — still works for an archived package with no unmet
+      # dependencies of its own.
+      utils::install.packages(tarball_url, lib = install_lib,
+                              repos = NULL, type = "source", quiet = FALSE)
+    }
     if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
         !requireNamespace(pkg, quietly = TRUE))
       stop("installed but package '", pkg, "' is not loadable")

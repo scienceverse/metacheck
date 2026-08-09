@@ -143,7 +143,7 @@ psychds_validate <- function(dir) {
                 strsplit(stem, "_", fixed = TRUE)[[1]]))
     if (!keyword_ok)
       add("FilenameKeywordFormattingError", "error",
-          "Data file names must use key-value keyword formatting, e.g. source-x_data.csv.",
+          "Data file names must use key-value keyword formatting, e.g. study-x_data.csv.",
           rel)
 
     df <- tryCatch(

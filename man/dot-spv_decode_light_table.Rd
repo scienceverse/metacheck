@@ -19,7 +19,7 @@ Reads the raw bytes of a \code{"<n>_lightTableData.bin"} zip member (the modern,
 SPSS Statistics 21+ table-data format) and returns a rectangular table:
 one row per data cell, one column per row/column/layer dimension (holding
 that cell's category label) plus a \code{value} column (character, via
-\code{\link[=.stat_num_to_chr]{.stat_num_to_chr()}} for numeric cells so full precision survives). Layer
+\code{.stat_num_to_chr()} for numeric cells so full precision survives). Layer
 dimensions are included as columns too — filtering to the "current" layer,
 if desired, is left to the caller, since some multi-layer tables are
 genuinely all wanted (e.g. every group in a split-file analysis).

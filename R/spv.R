@@ -840,10 +840,10 @@
 #' from Zenodo/Figshare rather than any spec (`.spv` charts have none -- see
 #' the section header above): a `<point>` scatter mark, an `<interval>`
 #' histogram/bar mark (both resolved from `.spv_decode_legacy_data()`'s case
-#' data via [.spvviz_decode_xy()]), and a `<schema>` box-plot mark (its data
+#' data via `.spvviz_decode_xy()`), and a `<schema>` box-plot mark (its data
 #' resolved from EITHER an inline `<embeddedSource>` element or, when that
 #' is absent, the same case data the other two marks use -- see
-#' [.spvviz_decode_boxplot_source()] / [.spvviz_decode_boxplot_databin()]).
+#' `.spvviz_decode_boxplot_source()` / `.spvviz_decode_boxplot_databin()`).
 #' Any other mark (`<line>`/`<bar>`/`<area>`/...) is out of this version's
 #' scope.
 #'
@@ -864,7 +864,7 @@
 #'   resolved. Every shape carries attributes `spv_chart_title`,
 #'   `spv_chart_xlab`, `spv_chart_ylab` (character), and `spv_chart_type`
 #'   (`"point"`, `"interval"`, or `"boxplot"`); a `<point>` chart also
-#'   carries `spv_chart_fits` (a list of [.spvviz_function_guide()] results,
+#'   carries `spv_chart_fits` (a list of `.spvviz_function_guide()` results,
 #'   possibly empty) for the fitted trend lines SPSS itself already computed.
 #' @keywords internal
 .spv_decode_chart <- function(xml_raw, data, title = NA_character_) {
@@ -1510,7 +1510,7 @@
 #' SPSS Statistics 21+ table-data format) and returns a rectangular table:
 #' one row per data cell, one column per row/column/layer dimension (holding
 #' that cell's category label) plus a `value` column (character, via
-#' [.stat_num_to_chr()] for numeric cells so full precision survives). Layer
+#' `.stat_num_to_chr()` for numeric cells so full precision survives). Layer
 #' dimensions are included as columns too — filtering to the "current" layer,
 #' if desired, is left to the caller, since some multi-layer tables are
 #' genuinely all wanted (e.g. every group in a split-file analysis).
@@ -1852,7 +1852,7 @@ spv_assemble_table <- function(dims, axes, cells, title = NA_character_,
 
 #' Read the statistical result tables from an SPSS Viewer (.spv) file
 #'
-#' Ties the structure reader ([.spv_read_structure()], which table exists,
+#' Ties the structure reader (`.spv_read_structure()`, which table exists,
 #' what analysis produced it, which format its data is in) and the two
 #' decoders ([.spv_decode_light_table()] for modern tables,
 #' [.spv_decode_legacy_data()] + [.spv_decode_legacy_table()] for pre-21
@@ -1954,8 +1954,8 @@ import_spv <- function(path) {
 #' Recover an .spv file's SPSS syntax as a sibling .sps file
 #'
 #' A `.spv` file is SPSS's rendered OUTPUT, but its structure XML embeds the
-#' exact syntax that produced each result (see [.spv_read_structure()],
-#' [.spv_read()]'s `syntax` field) — the same commands a researcher would
+#' exact syntax that produced each result (see `.spv_read_structure()`,
+#' `.spv_read()`'s `syntax` field) — the same commands a researcher would
 #' normally save separately as a `.sps` syntax file, but here recovered from
 #' the output alone. Since `.spv` is classed `data_type = "output"` (see
 #' `.data_check_types()` / `.data_check_type()` in R/data_check_helpers.R),

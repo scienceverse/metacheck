@@ -20,8 +20,8 @@ at all).
 }
 \description{
 A \code{.spv} file is SPSS's rendered OUTPUT, but its structure XML embeds the
-exact syntax that produced each result (see \code{\link[=.spv_read_structure]{.spv_read_structure()}},
-\code{\link[=.spv_read]{.spv_read()}}'s \code{syntax} field) — the same commands a researcher would
+exact syntax that produced each result (see \code{.spv_read_structure()},
+\code{.spv_read()}'s \code{syntax} field) — the same commands a researcher would
 normally save separately as a \code{.sps} syntax file, but here recovered from
 the output alone. Since \code{.spv} is classed \code{data_type = "output"} (see
 \code{.data_check_types()} / \code{.data_check_type()} in R/data_check_helpers.R),

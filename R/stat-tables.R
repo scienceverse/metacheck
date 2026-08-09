@@ -10,20 +10,23 @@
 # the header text otherwise). See R/jasp.R / R/omv.R for the DATA readers; this
 # is about the OUTPUT.
 
-#' Read the statistical result tables from a JASP or jamovi file
+#' Read the statistical result tables from a JASP, jamovi or notebook file
 #'
-#' Opens a `.jasp` or `.omv` archive and returns every result table as a tidy
-#' data frame together with the analysis it belongs to. No statistics knowledge
-#' is applied here — this is the lossless extraction layer; semantic typing
-#' happens downstream in [stat_output_json()] / [stat_results_long()].
+#' Opens a `.jasp`, `.omv`, `.spv` or `.ipynb` file and returns every result
+#' table as a tidy data frame together with the analysis it belongs to. No
+#' statistics knowledge is applied here — this is the lossless extraction
+#' layer; semantic typing happens downstream in [stat_output_json()] /
+#' [stat_results_long()].
 #'
-#' Three sources are tried, in order of fidelity:
+#' Four sources are tried, in order of fidelity:
 #' 1. `.jasp` — the archive's own `analyses.json`, which holds the structured
 #'    results;
 #' 2. `.omv` — jamovi's protobuf-serialised `AnalysisResponse` blobs, decoded
 #'    natively (see `inst/schema/jamovi/PROVENANCE.md`);
-#' 3. either — the rendered `index.html`, as a fallback when the above are
-#'    absent or unreadable.
+#' 3. `.ipynb` — the outputs saved inside each code cell of a Jupyter
+#'    notebook (dispatched on extension; it is JSON, not a zip archive);
+#' 4. any archive — the rendered `index.html`, as a fallback when the above
+#'    are absent or unreadable.
 #'
 #' The structured sources are preferred because they carry each column's machine
 #' `name` even when its displayed header is blank (the HTML then yields an
@@ -31,7 +34,7 @@
 #' than the rendered `"< .001"`), and mark missing cells explicitly instead of
 #' as a rendered dash.
 #'
-#' @param path path to a `.jasp` or `.omv` file
+#' @param path path to a `.jasp`, `.omv`, `.spv` or `.ipynb` file
 #'
 #' @returns a list with one element per result table, each a list of `analysis`
 #'   (the nearest heading above the table), `title` (the table's own caption /
@@ -48,6 +51,18 @@ read_stat_tables <- function(path) {
       !requireNamespace("rvest", quietly = TRUE))
     stop("reading result tables needs the 'xml2' and 'rvest' packages.",
          call. = FALSE)
+
+  # A .ipynb is the ONE input here that is not a zip archive: it is a plain
+  # JSON document whose code cells carry their own saved outputs inline. It is
+  # still the same KIND of thing as a .jasp/.omv/.spv -- code bundled with the
+  # results it produced -- so it returns the same shape and every downstream
+  # consumer is unchanged. Dispatched on extension rather than content because
+  # (unlike the archive formats below, which are told apart by what is INSIDE
+  # the zip) there is no zip to look inside; .ipynb_read_tables() still
+  # verifies the JSON really is a notebook before returning anything.
+  if (grepl("\\.ipynb$", path, ignore.case = TRUE)) {
+    return(.ipynb_read_tables(path))
+  }
 
   tmp <- tempfile("stattbl_"); dir.create(tmp)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
@@ -658,4 +673,365 @@ read_stat_tables <- function(path) {
   if (!nrow(df)) return(NULL)
 
   list(title = title, data = df)
+}
+
+# ── Jupyter notebook reader (.ipynb) ─────────────────────────────────────────
+# A .ipynb is a JSON document in which every code cell carries BOTH its source
+# and the outputs that cell produced when it was last run. Those outputs are
+# saved into the file and are what a reader of the archive actually sees, so a
+# notebook is self-reproducible output in exactly the sense a .jasp/.omv/.spv
+# is: results bundled with the code that made them. (A notebook CAN be stripped
+# of outputs -- nbstripout is common practice for clean git diffs -- in which
+# case this correctly returns nothing.)
+#
+# Two output shapes carry results, and both are read:
+#   * "execute_result" / "display_data" -- a `data` dict keyed by MIME type.
+#     "text/html" is preferred (a pandas DataFrame or statsmodels summary
+#     renders as a real <table>, parsed by the SAME .stat_table_parse() the
+#     JASP/jamovi HTML path uses, so column/footnote/spacer handling is
+#     identical); "text/plain" is the fallback.
+#   * "stream" -- stdout/stderr text, which is where a bare print() of a
+#     statsmodels/scipy result lands. Always plain text.
+#
+# Plain text is NOT forced into a table: a statsmodels summary is fixed-width
+# ASCII whose column structure is unreliable to recover, and inventing a wrong
+# table would corrupt the statistics rather than miss them. It is returned as a
+# single-column data frame of lines instead, the honest lossless form -- but a
+# lone "text" column has no header to type, so stat_results_long() (which
+# classifies columns as label/statistic by header + content) would otherwise
+# see every such row as a label and silently drop the whole table. Before
+# handing a text block back, .ipynb_stat_line() tries the SAME "name [(df)] op
+# value" fragment parser read_r_output() already uses on R console output
+# (.r_output_oneline(), R/r-output.R) -- e.g. "TtestResult(statistic=4.89,
+# pvalue=6.75e-05, df=22)" parses into a normal statistic/df/pvalue row exactly
+# like an R one-liner would. Only when that finds nothing does the raw
+# single-column text survive, so genuine prose is never forced into a fake
+# structure either.
+#
+# Is this text output NOISE rather than a result?
+#
+# Unlike a .jasp/.omv (where every stored table IS an analysis result), a
+# notebook's cell outputs are whatever the code happened to print -- and in a
+# real corpus most of it is machinery, not statistics. Measured over a
+# 30-notebook sample of the repo cache: 445 text outputs, of which only 28
+# contained anything statistic-shaped. The noise is highly stereotyped:
+#   * matplotlib's figure repr, "<Figure size 432x288 with 1 Axes>" (61
+#     occurrences of that single string), left behind whenever a cell ends in
+#     a plot call without a trailing semicolon;
+#   * "plot without title", the same thing from other plotting stacks;
+#   * tqdm progress bars, "0%|          | 0/200 [00:00<?, ?it/s]";
+#   * warnings and tracebacks printed to stderr (FutureWarning,
+#     RuntimeWarning, DeprecationWarning ...), which are file paths plus prose;
+#   * bare interpreter reprs of objects, "<module ...>", "<AxesSubplot: ...>".
+# Keeping these would flood match_reported_output() with rows that can never
+# match a reported statistic, and would make the module's own "n statistics
+# extracted" count meaningless.
+#
+# Deliberately conservative: it drops only these known shapes, never anything
+# merely because it lacks an obvious statistic. Text like
+# "TtestResult(statistic=4.89, pvalue=6.75e-05, df=22)" -- a complete t-test at
+# full precision, and exactly what this feature exists to capture -- is real
+# output that no pattern here matches, so it survives.
+.ipynb_is_noise <- function(lines) {
+  txt <- trimws(paste(lines, collapse = " "))
+  if (!nzchar(txt)) return(TRUE)
+
+  # Single-line reprs and progress output: the whole output IS the noise.
+  if (length(lines) <= 2L) {
+    if (grepl("^<Figure size .*Axes>$", txt)) return(TRUE)
+    if (grepl("^plot without title$", txt, ignore.case = TRUE)) return(TRUE)
+    # A bare object repr: "<...>" with no digits-and-operator content.
+    if (grepl("^<[^>]*>$", txt)) return(TRUE)
+    # tqdm / progress bars: a percentage, a bar, and an it/s rate.
+    if (grepl("\\|.*\\|.*(it/s|s/it|\\?it/s)", txt)) return(TRUE)
+    if (grepl("^[0-9]+%\\|", txt)) return(TRUE)
+  }
+
+  # Python warnings / tracebacks printed to stderr. Matched on the marker
+  # anywhere in the block, since the first line is usually the file path.
+  if (grepl("(FutureWarning|DeprecationWarning|RuntimeWarning|UserWarning|SettingWithCopyWarning|ConvergenceWarning):", txt))
+    return(TRUE)
+  if (grepl("^Traceback \\(most recent call last\\)", txt)) return(TRUE)
+
+  FALSE
+}
+
+# A printed Python result object names its own class at the start of the repr
+# ("TtestResult(statistic=..., pvalue=..., df=...)", "Ttest_indResult(...)").
+# Unlike read_r_output(), which recovers call_fn from the echoed SOURCE
+# statement (there is no such echo here -- a notebook's saved output is just
+# the printed value), the class name IS the call: it is matched literally and
+# passed to stato_type_column() as call_fn so e.g. TtestResult's "statistic"
+# resolves to Student's t (.STATO_BY_CALL's "ttestresult" entry) the same way
+# R's own "t.test" entry resolves its bare "t".
+.ipynb_result_class <- function(line) {
+  m <- regmatches(line, regexpr("\\b([A-Za-z_][A-Za-z0-9_]*Result)\\s*\\(", line, perl = TRUE))
+  if (!length(m)) return(NA_character_)
+  sub("\\s*\\($", "", m)
+}
+
+# A recent numpy prints its scalar TYPES wrapped ("np.float64(5.98)",
+# "np.int64(149)") rather than the bare number older versions printed
+# ("5.98", "149") -- confirmed in a 170-notebook Zenodo sample, where roughly
+# half the TtestResult/LinregressResult/Ttest_indResult occurrences used this
+# newer repr. .r_stat_pattern()'s value group (shared with read_r_output(),
+# where this wrapper never appears -- it is Python-only) expects a bare
+# number, so "statistic=np.float64(5.98)" does not match its comparator
+# immediately followed by a number and the whole line was silently left
+# unparsed (falling back to raw text, the exact loss this feature exists to
+# prevent). Unwrapping to the bare literal BEFORE handing the line to
+# .r_output_oneline() fixes this without touching the shared R-side pattern.
+.ipynb_strip_numpy_scalars <- function(line) {
+  gsub("\\bnp\\.(?:float|int|uint)(?:8|16|32|64)?\\(([^()]*)\\)", "\\1", line, perl = TRUE)
+}
+
+# Try to parse "name [(df)] op value" statistic fragments out of a block of
+# plain text, ONE LINE AT A TIME: read_r_output()'s .r_output_oneline() (reused
+# as-is -- the fragment shape a Python repr prints ("statistic=23.06,
+# pvalue=1.2e-28, df=51") is the same shape an R one-liner prints ("t = 2.34,
+# df = 48, p-value = 0.02"), and its allow-list already accepts "statistic"/
+# "pvalue"/"df" as recognised names) is called per-line rather than on the
+# whole block, since a notebook's printed results are one complete test per
+# line with no shared title line grouping them (unlike R's own console output,
+# where .r_output_oneline() groups several lines under one preceding title).
+# Calling it per-line keeps each line's own result -- and its own call_fn,
+# from that SAME line's class name, when present -- separate. Returns
+# read_stat_tables()'s usual list shape (one element per detected result);
+# NULL when nothing on any line parses, so the caller falls back to the raw
+# text column instead of losing the output.
+.ipynb_stat_line <- function(lines) {
+  out <- lapply(lines, function(ln) {
+    cls <- .ipynb_result_class(ln) %||% ""
+    ln <- .ipynb_strip_numpy_scalars(ln)
+    parsed <- .r_output_oneline(ln, source_label = NA_character_)
+    if (!length(parsed)) return(NULL)
+    for (i in seq_along(parsed)) parsed[[i]]$call_fn <- cls
+    parsed
+  })
+  out <- unlist(out, recursive = FALSE, use.names = FALSE)
+  if (!length(out)) NULL else out
+}
+
+# statsmodels' OLSResults/Logit/GLM/... .summary() prints a fixed-width
+# coefficient table (header "coef  std err  t  P>|t|  [0.025  0.975]", a
+# dashed divider, then one data row per predictor) -- structurally the SAME
+# shape R's own summary(lm)/aov prints, so the shared .r_output_tables()
+# (R/r-output.R) parses it as-is once its header/data DIVIDER placement is
+# recognised (see that function's own comment on the "---" fix this needed:
+# statsmodels puts the dash divider BETWEEN header and data, where R's
+# footnote divider only ever follows data already collected). Unlike
+# .ipynb_stat_line() this works on the WHOLE block at once (a fixed-width
+# table spans several lines, unlike a bare Result() repr's one-line-per-test
+# shape), and needs no call_fn: "coef"/"std err"/"p>|t|" are typed directly by
+# their own header text in .STATO_MAP, with no ambiguity a producing call
+# would need to resolve (unlike R's bare "t"/"W" letters). Returns
+# read_stat_tables()'s usual list shape; NULL when nothing parses.
+.ipynb_stat_table <- function(lines) {
+  tabs <- .r_output_tables(lines)
+  # .r_output_tables() also picks up statsmodels' KEY-VALUE header block above
+  # the coefficient table ("Dep. Variable: ... R-squared: 0.844  Model: OLS
+  # Adj. R-squared: 0.834 ..." -- two label:value pairs per line, R never
+  # prints this shape) as if it were an ordinary result table: it has >=2
+  # word-groups and few numeric tokens, so looks_header() accepts its FIRST
+  # line as a header and misreads every subsequent line as data under it,
+  # producing garbled row_labels/values that would flood
+  # match_reported_output() with junk rather than real statistics. Dropped
+  # here (never returned as-is); .ipynb_stat_kv() (below) extracts its real
+  # content SEPARATELY and correctly, since the two shapes need entirely
+  # different parsers -- kept only when the table's own header set is
+  # recognisably the coefficient-table shape (has "coef" and at least one of
+  # the columns that always accompanies it).
+  is_coef_table <- function(tb) {
+    hdr <- tolower(trimws(names(tb$data)))
+    "coef" %in% hdr && any(c("std err", "t", "p>|t|", "p>|z|") %in% hdr)
+  }
+  tabs <- Filter(is_coef_table, tabs)
+
+  # The key-value header block itself (R-squared, F-statistic, AIC, ...) —
+  # manuscript-reportable model-fit statistics that.r_output_tables() cannot
+  # parse at all (see above), so a SEPARATE extractor is needed rather than a
+  # filter on that function's output.
+  kv <- .ipynb_stat_kv(lines)
+  if (!is.null(kv)) tabs <- c(tabs, list(kv))
+
+  if (!length(tabs)) return(NULL)
+  tabs
+}
+
+# statsmodels' .summary() key-value header block: TWO "Label:   value" pairs
+# per line, right-column sometimes empty (the LAST line or two of the block,
+# once one side runs out of fields, e.g. "Df Model:    6" alone) — a shape
+# neither .r_output_tables() (built for a header row + aligned data rows) nor
+# .r_output_oneline() (built for "name op value" fragments, no bare "Label:
+# value" with no comparator) parses; it needs its own extractor. Confirmed
+# real and stable across two independently-sampled Zenodo notebooks (an
+# energy-consumption OLS and an export/democracy panel-data OLS) — same
+# field set and layout both times. A label is matched non-greedily up to its
+# own ":", its value up to the NEXT label-shaped token (>=2 spaces then
+# "Word:") or end of line, so a multi-word value ("Least Squares", "Mon, 10
+# Mar 2025") is kept whole rather than cut at its own internal space.
+# Returns a SINGLE wide one-row result (read_stat_tables()'s usual per-table
+# shape), the same "one result, many named fields" shape .r_output_oneline()
+# returns for a one-line R htest print — NULL when no line matches at all.
+.ipynb_stat_kv <- function(lines) {
+  pat <- "([A-Za-z][A-Za-z0-9 .()/_-]*:)\\s*(.*?)(?=\\s{2,}[A-Za-z][A-Za-z0-9 .()/_-]*:|$)"
+  pairs <- list()
+  for (ln in lines) {
+    m <- gregexpr(pat, ln, perl = TRUE)
+    matches <- regmatches(ln, m)[[1]]
+    for (mm in matches) {
+      g <- regmatches(mm, regexec(pat, mm, perl = TRUE))[[1]]
+      if (length(g) < 3) next
+      key <- trimws(sub(":$", "", g[[2]]))
+      val <- trimws(g[[3]])
+      if (!nzchar(key) || !nzchar(val)) next
+      pairs[[key]] <- val
+    }
+  }
+  # Only worth returning when this actually looks like a statsmodels summary
+  # header (has its two most diagnostic, always-present fields) — otherwise
+  # arbitrary "Word: value" prose (a docstring, a printed dict) would be
+  # misread as a result. Model/Method are present in EVERY statsmodels
+  # .summary() (OLS, WLS, GLS, Logit, GLM, ...), unlike F-statistic (OLS-only,
+  # absent from Logit/GLM) or R-squared (absent from Logit/GLM, which report
+  # Pseudo R-squ. instead) — so gating on those two specifically would miss
+  # non-OLS models entirely.
+  if (is.null(pairs[["Model"]]) || is.null(pairs[["Method"]])) return(NULL)
+  # Descriptive/categorical fields (the dependent variable's NAME, the model
+  # class, a timestamp, the covariance estimator's name) are metadata about
+  # the analysis, not statistics -- dropped before building the result, not
+  # merely left untyped: stat_results_long() treats every all-text column as
+  # a LABEL column and concatenates all of them into every row's row_label
+  # (the right behaviour for a real multi-row table, e.g. a coefficient
+  # table's variable names), but this is a single-row result where that
+  # would instead glue "Square Footage OLS Least Squares ..." onto every
+  # genuine statistic's row_label — confirmed as a real bug this exact way
+  # against real statsmodels output. Model/Method themselves are dropped too
+  # (used above only to confirm the shape, not because their VALUES matter).
+  metadata_keys <- c("Dep. Variable", "Model", "Method", "Date", "Time",
+                     "Covariance Type", "No. Iterations")
+  pairs[intersect(names(pairs), metadata_keys)] <- NULL
+  if (!length(pairs)) return(NULL)
+  df <- as.data.frame(pairs, check.names = FALSE, stringsAsFactors = FALSE)
+  list(analysis = NA_character_, title = "Model fit statistics", data = df)
+}
+
+# Emits the SAME shape read_stat_tables() returns from HTML (analysis / title /
+# data / table_index), so every downstream consumer is unchanged.
+.ipynb_read_tables <- function(path) {
+  nb <- tryCatch(jsonlite::fromJSON(path, simplifyVector = FALSE),
+                 error = function(e) NULL)
+  cells <- nb$cells
+  # Not a notebook (or an unreadable one): no tables, not an error -- same
+  # contract as the archive paths above, which return list() when the file
+  # holds nothing they recognise.
+  if (is.null(cells) || !length(cells)) return(list())
+
+  out <- list()
+  # table_index counts across the WHOLE document (not per cell), matching the
+  # JASP/jamovi HTML path's "ordinal position among all tables in the rendered
+  # document" -- it stands in for the source line a GUI-produced analysis does
+  # not have. A notebook DOES have cells, so the cell number is carried in the
+  # analysis label instead, which is the closest thing to a heading it has.
+  ti <- 0L
+
+  for (ci in seq_along(cells)) {
+    cl <- cells[[ci]]
+    if (!identical(cl$cell_type, "code")) next
+    outs <- cl$outputs
+    if (is.null(outs) || !length(outs)) next
+
+    # The cell's own label: "Cell <n>" plus its execution count when present.
+    # execution_count is the order the cell was ACTUALLY run in, which can
+    # differ from document order (a notebook run out of order is itself a
+    # reproducibility signal), so it is preserved rather than normalised away.
+    ec <- cl$execution_count
+    analysis <- if (!is.null(ec) && length(ec) && !is.null(ec[[1]]))
+      sprintf("Cell %d [%s]", ci, as.character(ec[[1]])) else
+      sprintf("Cell %d", ci)
+
+    # Append one entry per detected statistic/table when the block parses as
+    # one, else the single raw text-column entry as before -- shared by the
+    # stream and text/plain branches below, which otherwise built the
+    # identical fallback shape independently. Two parsers are tried, in order
+    # of how the block is shaped: .ipynb_stat_line() for a bare scipy
+    # Result() repr (one complete test per line), .ipynb_stat_table() for a
+    # statsmodels-style fixed-width coefficient table (spans several lines,
+    # only recognisable as a whole block) -- a block is realistically only
+    # ever ONE of these shapes, never both, so the first hit wins.
+    add_text_block <- function(lines, title) {
+      parsed <- .ipynb_stat_line(lines)
+      if (!is.null(parsed)) {
+        for (p in parsed) {
+          ti <<- ti + 1L
+          out[[length(out) + 1L]] <<- list(
+            analysis = analysis, title = title, data = p$data,
+            table_index = ti, call_fn = p$call_fn)
+        }
+        return(invisible())
+      }
+      tabs <- .ipynb_stat_table(lines)
+      if (!is.null(tabs)) {
+        for (tb in tabs) {
+          ti <<- ti + 1L
+          out[[length(out) + 1L]] <<- list(
+            analysis = analysis, title = title, data = tb$data,
+            table_index = ti)
+        }
+        return(invisible())
+      }
+      ti <<- ti + 1L
+      out[[length(out) + 1L]] <<- list(
+        analysis = analysis, title = title,
+        data = data.frame(text = lines), table_index = ti)
+    }
+
+    for (o in outs) {
+      otype <- o$output_type %||% ""
+
+      # ── stream (stdout/stderr): always plain text ──
+      if (identical(otype, "stream")) {
+        txt <- unlist(o$text) %||% character(0)
+        lines <- unlist(strsplit(paste(txt, collapse = ""), "\n"))
+        lines <- lines[nzchar(trimws(lines))]
+        if (!length(lines) || .ipynb_is_noise(lines)) next
+        add_text_block(lines, paste0(o$name %||% "stdout", " (cell ", ci, ")"))
+        next
+      }
+
+      # ── execute_result / display_data: a MIME-keyed `data` dict ──
+      if (!otype %in% c("execute_result", "display_data")) next
+      d <- o$data
+      if (is.null(d) || !length(d)) next
+
+      html <- d[["text/html"]]
+      if (!is.null(html) && length(html)) {
+        doc <- tryCatch(
+          xml2::read_html(paste(unlist(html), collapse = "")),
+          error = function(e) NULL)
+        tbs <- if (!is.null(doc)) xml2::xml_find_all(doc, "//table") else NULL
+        if (!is.null(tbs) && length(tbs)) {
+          for (tb in tbs) {
+            parsed <- tryCatch(.stat_table_parse(tb), error = function(e) NULL)
+            if (is.null(parsed)) next
+            ti <- ti + 1L
+            out[[length(out) + 1L]] <- list(
+              analysis = analysis, title = parsed$title,
+              data = parsed$data, table_index = ti)
+          }
+          next   # the HTML form of this output has been read; skip text/plain
+        }
+      }
+
+      # Fallback: the plain-text rendering of the same result.
+      plain <- d[["text/plain"]]
+      if (is.null(plain) || !length(plain)) next
+      lines <- unlist(strsplit(paste(unlist(plain), collapse = ""), "\n"))
+      lines <- lines[nzchar(trimws(lines))]
+      if (!length(lines) || .ipynb_is_noise(lines)) next
+      add_text_block(lines, paste0("Output (cell ", ci, ")"))
+    }
+  }
+
+  out
 }

@@ -211,3 +211,19 @@ test_that("data_read_head reads a table with large quoted cells fast", {
   expect_equal(names(df), c("id", "label", "arr"))
   expect_lt(t[["elapsed"]], 5)   # seconds, not minutes
 })
+
+test_that("data_read_head reads .ods like .xlsx", {
+  skip_if_not_installed("readODS")
+  p <- file.path(tempdir(), paste0("rh_", as.integer(runif(1, 1, 1e6)), ".ods"))
+  readODS::write_ods(data.frame(id = 1:4, grp = c("a", "b", "a", "b")), p)
+
+  df <- data_read_head(p, n_rows = 3)
+  expect_s3_class(df, "data.frame")
+  expect_equal(nrow(df), 3)
+  expect_equal(names(df), c("id", "grp"))
+})
+
+test_that(".ods is treated as tabular data", {
+  expect_equal(data_format("ods"), "tabular")
+  expect_equal(data_format("fods"), "tabular")
+})

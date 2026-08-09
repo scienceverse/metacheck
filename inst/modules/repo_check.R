@@ -6,6 +6,13 @@
 #' @details
 #' The Repository Check module lists files on the OSF, GitHub, ResearchBox, PsychArchives, and Zenodo based on links in the manuscript.
 #'
+#' When a linked OSF page is a registration, its `registered_from` project (the
+#' one it was registered from, which the manuscript itself may never link
+#' directly) is also checked: if that project is public its files are listed
+#' under its own URL, and if it is closed or otherwise inaccessible the report
+#' flags it explicitly, since some registrations only describe their content
+#' rather than mirroring it.
+#'
 #' If you want to extend the package to be able to download files from additional data repositories reach out to the Metacheck development team.
 #'
 #' @keywords results
@@ -87,6 +94,35 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dplyr::filter(repo_type == "osf") |>
     _$repo_url |>
     unique()
+  # BUG FIX: captured before any row removal below. A paper whose ONLY OSF
+  # links are registrations (e.g. a Registered Report citing "Open-Ended
+  # Registration" entries) has every one of those rows stripped out of
+  # `repos` by the registration-removal filter further down (`osf_to_remove`)
+  # — that filter's intent is correct (a registration is never the real
+  # storage location, see the comments below), but it used to leave `repos`
+  # completely empty with nothing further downstream to add rows back onto.
+  # Reading `repos$paper_id[[1]]` at that point crashed with "subscript out
+  # of bounds", and before this fix existed, an emptied `repos` also tripped
+  # the module's early "no repos found" return further down, silently
+  # discarding every file repo_check HAD found (confirmed via a real paper
+  # with 4 registration links and 12 real files: `repo_check` reported
+  # traffic_light "na" / "no repositories found" even though the files were
+  # right there in osf_files_df). Caching paper_id here, before the filter
+  # runs, means new rows (parent projects, orphaned registrations) can always
+  # be added back later even when `repos` was emptied in between.
+  #
+  # The `[[1]]` must be guarded, not assumed: `repos` having no OSF rows AT
+  # ALL is an ordinary case, not an edge case, and indexing an empty vector
+  # throws the very "subscript out of bounds" this block exists to prevent.
+  # It happens for a paper with no repository links whatsoever (every
+  # test_paper() in the suite), and — the case that matters in production —
+  # for any real paper whose links are all GitHub/Zenodo/ResearchBox/
+  # PsychArchives with no OSF among them. Fall back to the paper's own id,
+  # which is what this value is for anyway (it labels rows added back later)
+  # and is exactly what every other row in `repos` carries.
+  osf_paper_ids <- repos$paper_id[repos$repo_type == "osf"]
+  osf_paper_id <- if (length(osf_paper_ids) > 0) osf_paper_ids[[1]] else
+    paper_id(paper)[[1]]
 
   osf_files_df <- data.frame(repo_name = character(0))
   if (length(osf_urls) > 0) {
@@ -99,13 +135,38 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         }) |> dplyr::bind_rows()
       })
 
+      # A registration is never itself the place files "live": either it
+      # mirrors files into its own storage (in which case those files really
+      # belong to the project it was registered from — see below), or it only
+      # describes what was shared and the real files live in that project.
+      # `parent` is `registered_from`, captured by .osf_reg_data(); a
+      # registration without one (should not normally happen) is left keyed
+      # to its own URL below so its files are never silently dropped.
+      reg_url_to_parent <- character(0)
+      if ("parent" %in% names(osf_info)) {
+        reg_rows <- osf_info |>
+          dplyr::filter(osf_type %in% "registrations", !is.na(parent), !is.na(osf_url))
+        if (nrow(reg_rows) > 0) {
+          reg_url_to_parent <- stats::setNames(
+            sprintf("https://osf.io/%s", reg_rows$parent), reg_rows$osf_url)
+        }
+      }
+
       # "kind" only in table if there are files
       if ("kind" %in% names(osf_info)) {
         osf_file_list <- osf_info |>
           dplyr::filter(kind == "file", !isFALSE(public))
 
+        # Files found via a registration are attributed to the project it was
+        # registered from (the real, reusable location), not the registration
+        # URL the manuscript happened to cite.
+        file_repo_url <- osf_file_list$repo_name
+        remapped <- reg_url_to_parent[file_repo_url]
+        has_parent <- !is.na(remapped)
+        file_repo_url[has_parent] <- remapped[has_parent]
+
         osf_files_df <- data.frame(
-          repo_url = osf_file_list$repo_name,
+          repo_url = file_repo_url,
           file_name = osf_file_list$name,
           file_path = gsub("^/+", "", osf_file_list$path),
           file_url = osf_file_list$download_url,
@@ -120,7 +181,24 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         )
       }
 
-      # remove e.g., registrations from repos list
+      # remove registrations (and other non-node/file types) from repos list —
+      # a registration is never the real storage location (see above); its
+      # parent project row is added below instead, public or closed.
+      #
+      # BUG THIS USED TO CAUSE: this filter (pre-existing, not new) drops
+      # EVERY registration URL from `repos`, including ones whose files WERE
+      # successfully listed into osf_files_df above. For a paper whose
+      # manuscript links are ALL registrations (a Registered Report citing
+      # OSF "Open-Ended Registration" entries for data/materials/scripts —
+      # the common case, since PsychSci-style badges link the registration,
+      # not the underlying project), this used to leave `repos` with ZERO
+      # rows. That tripped the module's early "no repos found" branch further
+      # down, so the whole module reported traffic_light "na" and "we found
+      # no links to repositories" — discarding files repo_check had actually
+      # already found. The block below (following `parent`/`registered_from`)
+      # exists specifically to give every removed registration's files a new
+      # home in `repos` (the project it was registered from) so they are
+      # never orphaned by this removal.
       osf_to_remove <- osf_info |>
         dplyr::filter(!osf_type %in% c("nodes", "files", "private")) |>
         _$osf_url
@@ -133,8 +211,132 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (length(private_repos)) {
         repos$repo_error[repos$repo_url %in% private_repos] <- "private"
       }
+
+      # follow registrations back to their origin project ----
+      # A registration is a locked snapshot; many "Open-Ended Registration"
+      # entries (esp. older OSF schemas) hold only a DESCRIPTION of what was
+      # shared, with the actual files living in the project it was registered
+      # from (`registered_from`, captured as `parent` by .osf_reg_data() and
+      # `reg_url_to_parent` above). That project was never linked in the
+      # manuscript, so osf_links() cannot find it — but if it is public, its
+      # files are exactly what the author meant to share, and if it is closed,
+      # the author should be told their registration points at content nobody
+      # can reach. Query only the parents not already directly linked (those
+      # already have a row and were already queried as part of osf_urls).
+      parent_urls_all <- unique(reg_url_to_parent)
+      parent_urls_new <- setdiff(parent_urls_all, osf_urls)
+
+      closed_parent_urls <- character(0)
+      if (length(parent_urls_new) > 0) {
+        parent_info <- suppressWarnings(
+          lapply(parent_urls_new, \(x) {
+            pf <- osf_info(x, recursive = TRUE, pb = pb)
+            pf$repo_name <- x
+            pf
+          }) |> dplyr::bind_rows()
+        )
+
+        # public parent: its files belong under the PARENT's real URL (the
+        # place a reader would actually need to look). Any file also reached
+        # directly via a registration is deduplicated later by the caller
+        # (same repo_url + file_url + file_path).
+        if ("kind" %in% names(parent_info)) {
+          parent_file_list <- parent_info |>
+            dplyr::filter(kind == "file", !isFALSE(public))
+          if (nrow(parent_file_list) > 0) {
+            osf_files_df <- dplyr::bind_rows(
+              osf_files_df,
+              data.frame(
+                repo_url = parent_file_list$repo_name,
+                file_name = parent_file_list$name,
+                file_path = gsub("^/+", "", parent_file_list$path),
+                file_url = parent_file_list$download_url,
+                file_location = rep(NA_character_, nrow(parent_file_list)),
+                file_size = parent_file_list$size,
+                file_type = parent_file_list$filetype,
+                provider = parent_file_list$provider %||% NA_character_
+              )
+            )
+          }
+        }
+
+        # The parent's OWN row (osf_url == its own URL, not a child/file row
+        # picked up by the recursive walk) tells us whether it is reachable.
+        closed_parent_urls <- parent_info |>
+          dplyr::filter(osf_url %in% parent_urls_new,
+                        is.na(osf_type) | osf_type %in% "private") |>
+          _$osf_url |>
+          unique()
+        # A parent osf_info() could not resolve at all (e.g. request failed)
+        # never gets its own row in parent_info; still flag it as closed
+        # rather than silently listing nothing for it.
+        closed_parent_urls <- union(closed_parent_urls,
+          setdiff(parent_urls_new, parent_info$osf_url))
+      }
+
+      # Every parent needs exactly one repos row: closed ones flagged, public
+      # ones plain (their files were just added above, or already existed if
+      # directly linked in the manuscript). A closed parent whose files were
+      # STILL found (mirrored into the registration's own storage — see
+      # reg_url_to_parent remapping above) is a milder note than one with no
+      # files anywhere: the content is not actually lost, just its permanent
+      # (parent-project) home is inaccessible.
+      if (length(parent_urls_all) > 0) {
+        missing_parent_rows <- setdiff(parent_urls_all, repos$repo_url)
+        if (length(missing_parent_rows) > 0) {
+          has_files <- missing_parent_rows %in% osf_files_df$repo_url
+          repo_err <- rep(NA_character_, length(missing_parent_rows))
+          is_closed <- missing_parent_rows %in% closed_parent_urls
+          # For the "files mirrored" case the report needs to name WHICH
+          # registration the files actually came from (reg_url_to_parent is
+          # keyed the other way round: registration URL -> parent URL), so
+          # invert it and fold the registration URL(s) into the error string
+          # itself — `repos` has no spare column to carry it separately
+          # without rippling into repo_tbl/summary_table construction below.
+          reg_for_parent <- vapply(missing_parent_rows, function(p) {
+            regs <- names(reg_url_to_parent)[reg_url_to_parent == p]
+            paste(regs, collapse = ", ")
+          }, character(1))
+          repo_err[is_closed & has_files]  <- paste0(
+            "closed registration source (files retrieved from registration: ",
+            reg_for_parent[is_closed & has_files], ")")
+          repo_err[is_closed & !has_files] <- "closed registration source"
+          repos <- dplyr::bind_rows(
+            repos,
+            data.frame(
+              paper_id = osf_paper_id,
+              repo_url = missing_parent_rows,
+              repo_type = "osf",
+              repo_error = repo_err
+            )
+          )
+        }
+      }
+
+      # Registrations with no `parent` at all (should not normally happen):
+      # their files were left keyed to the registration's own URL above, so
+      # give that URL back a repos row rather than losing it to the removal
+      # filter above with nowhere for its files to land.
+      orphan_reg_urls <- setdiff(
+        unique(osf_files_df$repo_url[osf_files_df$repo_url %in% osf_urls]),
+        repos$repo_url)
+      if (length(orphan_reg_urls) > 0) {
+        repos <- dplyr::bind_rows(
+          repos,
+          data.frame(paper_id = osf_paper_id, repo_url = orphan_reg_urls,
+                    repo_type = "osf", repo_error = NA_character_)
+        )
+      }
     }, error = \(e) {
-      # TODO: communicate errors to repos table
+      # A failure anywhere in this block (network error, auth failure, rate
+      # limit, ...) aborts before any OSF url below it gets a chance to be
+      # flagged, so on error every OSF url still lacking a repo_error is
+      # attributed to this failure -- otherwise it silently looks like an
+      # empty repository (0 files, no error) instead of a failed listing, and
+      # the repos-filter below (`in_files`) would drop it from the report
+      # entirely since it has neither files nor a repo_error.
+      unflagged <- osf_urls[is.na(repos$repo_error[match(osf_urls, repos$repo_url)])]
+      repos$repo_error[repos$repo_url %in% unflagged] <<- conditionMessage(e)
     })
   }
 
@@ -227,7 +429,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         file_type = rb_file_list$type
       )
     }, error = \(e) {
-      # TODO: communicate errors to repos table
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% rb_urls] <<- conditionMessage(e)
     })
   }
 
@@ -274,7 +477,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         )
       }
     }, error = \(e) {
-      # TODO: communicate errors to repos table
+      # See the OSF block above for why every url is flagged on failure.
+      # `restricted` (if the block got that far before failing) already has
+      # its own repo_error, so only backfill urls still unflagged.
+      unflagged <- pa_urls[is.na(repos$repo_error[match(pa_urls, repos$repo_url)])]
+      repos$repo_error[repos$repo_url %in% unflagged] <<- conditionMessage(e)
     })
   }
 
@@ -332,7 +539,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         }
       }
     }, error = \(e) {
-      # TODO: communicate errors to repos table
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% zenodo_urls] <<- conditionMessage(e)
     })
   }
 
@@ -630,6 +838,68 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_restricted <- NULL
   }
 
+  ## registrations pointing to a closed source project ----
+  # An OSF registration is a locked snapshot; several "Open-Ended Registration"
+  # entries hold only a description of what was shared, with the actual files
+  # living in the project it was registered from. repo_error was set in the
+  # OSF block above when that origin project could not be reached (private,
+  # or the request failed): "...(files retrieved from registration: <url>)"
+  # when the registration itself still held a working copy of the files (the
+  # files came from the REGISTRATION's own storage, not the closed project —
+  # nothing was actually lost, just the project's permanent home is
+  # inaccessible), or plain "closed registration source" when no copy could
+  # be found anywhere, including the registration.
+  mirror_rows <- !is.na(repos$repo_error) &
+    grepl("^closed registration source \\(files retrieved from registration: ",
+         repos$repo_error)
+  closed_reg_mirrored <- repos$repo_url[mirror_rows]
+  # Registration URL(s) the files actually came from, per closed parent —
+  # extracted back out of the repo_error string built in the OSF block above.
+  closed_reg_mirrored_source <- sub(
+    "^closed registration source \\(files retrieved from registration: (.+)\\)$",
+    "\\1", repos$repo_error[mirror_rows])
+  closed_reg_unreachable <- repos$repo_url[
+    !is.na(repos$repo_error) & repos$repo_error == "closed registration source"]
+
+  report_closed_reg <- NULL
+  summary_closed_reg <- NULL
+  if (length(closed_reg_unreachable) > 0) {
+    report_closed_reg <- c(report_closed_reg, sprintf(
+      "#### Registration Points to a Closed Project\n\n%d OSF %s (%s) %s referenced by a registration in this manuscript, but %s closed or inaccessible, and no copy of %s files could be found anywhere else. Some OSF registrations only describe what was shared, while the actual files live in the project they were registered from — if that project is closed and the registration holds no copy, metacheck cannot list or download its files, and other researchers cannot access them either. Consider making the source project openly available, or re-uploading its files directly into the registration.",
+      length(closed_reg_unreachable),
+      plural(length(closed_reg_unreachable), "project", "projects"),
+      paste(closed_reg_unreachable, collapse = ", "),
+      if (length(closed_reg_unreachable) == 1) "is" else "are",
+      if (length(closed_reg_unreachable) == 1) "it is" else "they are",
+      if (length(closed_reg_unreachable) == 1) "its" else "their"))
+    summary_closed_reg <- c(summary_closed_reg, sprintf(
+      "We found %d registration-linked OSF %s that %s closed with no files reachable anywhere.",
+      length(closed_reg_unreachable),
+      plural(length(closed_reg_unreachable), "project", "projects"),
+      if (length(closed_reg_unreachable) == 1) "is" else "are"))
+  }
+  if (length(closed_reg_mirrored) > 0) {
+    # One line per closed parent, explicitly naming the parent project (closed)
+    # and the registration its files were actually retrieved from — so the
+    # report never implies the closed project itself was read.
+    parent_lines <- sprintf(
+      "- **%s** is closed; its files were retrieved from the OSF registration %s.",
+      closed_reg_mirrored, closed_reg_mirrored_source)
+    report_closed_reg <- c(report_closed_reg, sprintf(
+      "#### Registration's Source Project Is Closed\n\n%d OSF source %s %s closed. The files metacheck lists below were not read from %s — they were retrieved from the OSF registration's own copy, which is separate from and unaffected by the project's access setting. Nothing is currently lost, but this is still worth fixing: a closed source project means the files only survive for as long as the registration's copy does, and anyone who follows the project link itself (rather than the registration) will find it inaccessible.\n\n%s\n\nConsider making the source project openly available.",
+      length(closed_reg_mirrored),
+      plural(length(closed_reg_mirrored), "project", "projects"),
+      if (length(closed_reg_mirrored) == 1) "is" else "are",
+      if (length(closed_reg_mirrored) == 1) "it" else "them",
+      paste(parent_lines, collapse = "\n")))
+    summary_closed_reg <- c(summary_closed_reg, sprintf(
+      "We found %d registration-linked OSF %s that %s closed; %s files were retrieved from the OSF registration instead.",
+      length(closed_reg_mirrored),
+      plural(length(closed_reg_mirrored), "project", "projects"),
+      if (length(closed_reg_mirrored) == 1) "is" else "are",
+      if (length(closed_reg_mirrored) == 1) "its" else "their"))
+  }
+
   ## unclassifiable files ----
   # Files data_classify_files() could not place at all (data_type == "unknown"),
   # each with the same concrete rename suggestion check_file_naming() gives for
@@ -780,6 +1050,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_zip,
     report_edat,
     report_restricted,
+    report_closed_reg,
     report_unknown,
     report_roster,
     report_naming,
@@ -792,7 +1063,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # exactly the kind of ambiguity this traffic light exists to flag, alongside
   # the existing zip/README criteria.
   if (zip_n == 0 && repo_no_readme == 0 && n_unknown == 0 &&
-      is.null(report_roster) && n_naming_bad == 0) {
+      is.null(report_roster) && n_naming_bad == 0 &&
+      length(closed_reg_unreachable) == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"
@@ -819,6 +1091,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_zip,
     summary_edat,
     summary_restricted,
+    summary_closed_reg,
     summary_unknown,
     summary_roster,
     summary_naming

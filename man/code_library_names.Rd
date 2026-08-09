@@ -4,12 +4,15 @@
 \alias{code_library_names}
 \title{Get package names loaded in code}
 \usage{
-code_library_names(code_text, lang = c("R", "Python", "SPSS", "SAS", "Stata"))
+code_library_names(
+  code_text,
+  lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")
+)
 }
 \arguments{
 \item{code_text}{the code text for a single file}
 
-\item{lang}{the language (R, Python, SPSS, SAS, Stata)}
+\item{lang}{the language (R, Python, SPSS, SAS, Stata, Mplus, MATLAB)}
 }
 \value{
 a data frame with columns \code{package}, \code{source} (how the package was

@@ -32,6 +32,137 @@ code_read <- function(file_path) {
 }
 
 
+# The language a Jupyter notebook's code cells are written in.
+#
+# Jupyter is kernel-agnostic: the same ".ipynb" extension is used for Python,
+# R, Julia, and others, and a psychology repository genuinely contains both
+# (in a real 144-notebook corpus: 126 Python, 7 R). The kernel is declared
+# INSIDE the file, in metadata$kernelspec$language (or, for older notebooks,
+# metadata$language_info$name), so it is read rather than guessed. Every one
+# of those 144 notebooks carried one of those two fields.
+#
+# Only the metadata is parsed, not the whole document: notebooks reach several
+# MB once outputs are stored, and reading a 2.4MB JSON just to learn one word
+# is wasteful when code_lang() is called on every file in a repository.
+#
+# Returns "Python" when the file cannot be read (a URL not yet downloaded, an
+# unreadable path) or declares a language metacheck has no checks for --
+# Python is both the most common kernel and the safe default, since a notebook
+# that reached this function is at minimum a notebook.
+#
+# @param file_name path to a .ipynb file
+# @returns "R" or "Python"
+.ipynb_lang <- function(file_name) {
+  if (length(file_name) != 1 || is.na(file_name) ||
+      !file.exists(file_name)) return("Python")
+
+  txt <- tryCatch(code_read(file_name), error = function(e) NULL)
+  if (is.null(txt) || !length(txt)) return("Python")
+
+  nb <- tryCatch(jsonlite::fromJSON(paste(txt, collapse = "\n"),
+                                    simplifyVector = FALSE),
+                 error = function(e) NULL)
+  if (is.null(nb)) return("Python")
+
+  lang <- nb$metadata$kernelspec$language %||%
+          nb$metadata$language_info$name %||% ""
+  lang <- tolower(as.character(lang)[[1]] %||% "")
+
+  # "ir" is the IRkernel's NAME rather than its language, seen in the wild on
+  # older notebooks whose kernelspec$language is absent.
+  if (lang %in% c("r", "ir")) return("R")
+  "Python"
+}
+
+# The language a Quarto document's code chunks are written in.
+#
+# Unlike .Rmd (an R Markdown document, R/knitr only by construction), .qmd is
+# Quarto's own extension and is explicitly polyglot: the same rendering
+# pipeline runs knitr (R) or Jupyter (Python, Julia, and other kernels)
+# depending on what the document declares, mirroring .ipynb's own
+# kernel-agnosticism (see .ipynb_lang() above) -- but unlike .ipynb, .qmd's
+# language was previously assumed to be "R" unconditionally via
+# .ext_registry's format lock (issue #180), so a Python-engine .qmd was
+# purled with code_extract_r()/knitr::purl(), which only recovers ```{r}
+# chunks and silently produced an empty or garbage R file for a paper that
+# never ran any R at all.
+#
+# No real corpus example of a non-R .qmd was found in the local repo cache
+# (every cached .qmd is R/knitr) -- this follows Quarto's own documented
+# language-selection rules rather than a corpus-confirmed case the way
+# .ipynb_lang() is:
+#   1. YAML front matter `engine: jupyter` + a `jupyter:` kernel/kernelspec
+#      field naming the language (e.g. `jupyter: python3`,
+#      `jupyter: {kernelspec: {language: python}}`) -- checked first, since
+#      it is the explicit, authoritative declaration when present.
+#   2. Absent that, the language of the FIRST executable chunk fence
+#      (```{python}, ```{r}, ```{julia}, ...) -- what Quarto itself infers
+#      the primary engine from when no YAML engine is declared.
+#   3. Absent both, "R": .qmd is RMarkdown's direct successor and the
+#       overwhelming majority of real documents (and every cached example)
+#      are knitr/R, so this stays the safe default -- also preserves the
+#      existing code_lang() unit test, which checks "file.qmd" (a file that
+#      does not exist on disk, so cannot be content-sniffed) and expects "R".
+#
+# Only R and Python are returned: those are the two languages metacheck's
+# code_check pipeline has extractors for (code_extract_r() / code_extract_py()).
+# A Julia/Observable-JS chunk fence is recognised as "not R" but reported as
+# "R" (the fallback), since there is no metacheck check for those languages
+# either way and misreporting the extractor to run is worse than running the
+# (wrong) default one silently -- same trade-off .ipynb_lang() makes by
+# collapsing every non-R kernel to "Python".
+#
+# @param file_name path to a .qmd file
+# @returns "R" or "Python"
+.qmd_lang <- function(file_name) {
+  if (length(file_name) != 1 || is.na(file_name) ||
+      !file.exists(file_name)) return("R")
+
+  txt <- tryCatch(code_read(file_name), error = function(e) NULL)
+  if (is.null(txt) || !length(txt)) return("R")
+
+  # YAML front matter is the block between the first "---" line and the next
+  # "---" line. Quarto (like R Markdown) requires it to open the file, so it
+  # is always the first fence if present at all.
+  yaml_lang <- NA_character_
+  if (grepl("^---\\s*$", txt[[1]])) {
+    end <- which(grepl("^---\\s*$", txt[-1]))[1]
+    if (!is.na(end)) {
+      front_matter <- txt[2:end]
+      yaml <- tryCatch(yaml::yaml.load(paste(front_matter, collapse = "\n")),
+                       error = function(e) NULL)
+      jupyter <- yaml$jupyter
+      # `jupyter:` may be a bare kernel name ("python3") or a list with its
+      # own kernelspec$language (the same shape .ipynb stores under
+      # metadata$kernelspec$language).
+      if (is.list(jupyter)) {
+        yaml_lang <- jupyter$kernelspec$language %||% jupyter$language %||% NA_character_
+      } else if (is.character(jupyter)) {
+        yaml_lang <- jupyter
+      }
+      yaml_lang <- tolower(as.character(yaml_lang)[[1]] %||% NA_character_)
+    }
+  }
+  if (!is.na(yaml_lang)) {
+    # Bare Jupyter kernel names ("python3", "ir") as well as language names
+    # ("python", "r") are both seen in the wild -- normalise both forms.
+    if (grepl("^py", yaml_lang)) return("Python")
+    if (yaml_lang %in% c("r", "ir")) return("R")
+  }
+
+  # No (or unrecognised) YAML engine: fall back to the first executable
+  # chunk fence, e.g. "```{python}" or "```{python 3}" (chunk options after
+  # the language are allowed, hence no closing brace in the pattern).
+  chunk <- grep("^```+\\s*\\{[a-zA-Z]+", txt, value = TRUE, perl = TRUE)[1]
+  if (!is.na(chunk)) {
+    chunk_lang <- regmatches(chunk, regexpr("(?<=\\{)[a-zA-Z]+", chunk, perl = TRUE))
+    chunk_lang <- tolower(chunk_lang)
+    if (length(chunk_lang) && grepl("^py", chunk_lang)) return("Python")
+  }
+
+  "R"
+}
+
 #' Detect Code Language
 #'
 #' Detects code language used in files, only for languages metacheck currently processes (R, SAS, SPSS, Stata, Mplus).
@@ -54,40 +185,87 @@ code_lang <- function(file_name) {
     return(character(0))
   }
 
-  lname <- tolower(file_name)
-  # TODO: actually detect language used in qmd files
-  if (grepl("\\.(r|rmd|qmd)$", lname)) {
-    return("R")
-  }
-  if (grepl("\\.sas$", lname)) {
-    return("SAS")
-  }
-  if (grepl("\\.sps$", lname)) {
-    return("SPSS")
-  }
-  if (grepl("\\.(do|ado)$", lname)) {
-    return("Stata")
-  }
-  if (grepl("\\.inp$", lname)) {
-    return("Mplus")
-  }
-  # A .jasp / .omv bundles a dataset with its analyses. It is a binary (zip)
-  # archive, so none of the text-based checks below apply; it is listed, not
-  # analysed. (import_jasp()/import_omv() recover the analysis syntax separately.)
-  if (grepl("\\.jasp$", lname)) {
-    return("JASP")
-  }
-  if (grepl("\\.omv$", lname)) {
-    return("jamovi")
-  }
-  # ".m" is MATLAB source (Octave runs the same syntax). It also names
-  # Objective-C source elsewhere in the world, but a psychology-paper code
-  # repository overwhelmingly means MATLAB, and metacheck has no separate
-  # Objective-C handling to confuse it with.
-  if (grepl("\\.m$", lname)) {
-    return("MATLAB")
-  }
-  return(NA_character_)
+  ext <- tolower(tools::file_ext(file_name))
+  # ".ipynb" is a Jupyter notebook: JSON holding source in its code cells,
+  # recovered by code_extract_py()/code_extract_r() the way an .Rmd/.qmd is
+  # purled. Jupyter runs MANY kernels, so the extension alone does NOT fix the
+  # language -- an .ipynb is as often R (the IRkernel) as Python in a
+  # psychology repository. Confirmed against a real corpus: of 144 cached
+  # notebooks, 126 declared Python and 7 declared R, every one of them via
+  # metadata INSIDE the file. Two of those R notebooks (OSF s83qn) opened with
+  # `library(rethinking)`, and calling them Python found zero packages in a
+  # file that plainly loads five.
+  #
+  # Extension alone therefore only gets us "a notebook" (.ext_registry's own
+  # code_lang column is NA for "ipynb" for exactly this reason);
+  # .ipynb_lang() reads the declared kernel from the file when it is
+  # available locally. This mirrors how a ".out" is classified by extension
+  # and then CORRECTED by content once downloaded (see .ext_registry,
+  # R/data_check_helpers.R) -- name first, content decides. Python is the
+  # fallback when the file cannot be read (a URL, not yet downloaded), since
+  # it is by far the more common kernel.
+  if (ext == "ipynb") return(.ipynb_lang(file_name))
+
+  # ".qmd" is Quarto, and (unlike ".Rmd") explicitly polyglot -- the extension
+  # alone only gets us "a Quarto document", the same way ".ipynb" only gets us
+  # "a notebook" above. .ext_registry's own code_lang column is NA for "qmd"
+  # for exactly this reason; .qmd_lang() reads the declared/inferred engine
+  # from the file when it is available locally (issue #180).
+  if (ext == "qmd") return(.qmd_lang(file_name))
+
+  lang <- .ext_registry$code_lang[match(ext, .ext_registry$ext)]
+  if (is.na(lang)) NA_character_ else lang
+}
+
+# code_check() previously called download_repo_files() up to five separate
+# times: once each inside .code_expand_spv()/.code_expand_smcl()/
+# .code_expand_mplus()/.code_expand_html() (each downloading only its own
+# extension's candidate rows), then again for the main `checked_files` set.
+# Every one of those calls hits the same on-disk cache keyed by
+# repo_url/file_path, so back-to-back calls do not re-download shared files --
+# but each is still a separate function call, a separate cap/gating pass, and
+# (for a repo close to its max_download_size budget) an ordering-dependent
+# partial fill, since download_repo_files() spends a repo's remaining budget
+# on whichever candidate set it sees first.
+#
+# .code_predownload() removes that ordering dependence and the redundant call
+# overhead: it unions the candidate rows for all five downstream steps (spv,
+# smcl, mplus, html, and every "checked" language) BEFORE any of them run,
+# and downloads that union in ONE download_repo_files() call. Each of the
+# four .code_expand_*() functions, and the main download step in
+# inst/modules/code_check.R, keep their own `need_dl` check afterwards -- with
+# file_location already populated here, that check simply finds nothing left
+# to do and is a no-op, so their standalone behaviour (including being
+# callable/testable on their own, outside code_check()) is unchanged.
+.code_predownload <- function(all_files, max_file_size, max_download_size, cache) {
+  # spv/smcl/out are output-typed formats whose embedded syntax the
+  # .code_expand_*() steps below recover as a sibling code file (see their own
+  # comments); html/htm is not in .ext_registry at all (an .html's data_check
+  # type is decided by keyword/content, never format-locked), so it stays an
+  # explicit extension check here rather than a registry lookup. The language
+  # set is every code_lang code_lang() can return, read from the registry
+  # (plus "Python", which .ipynb_lang()'s content-sniff can also produce, and
+  # "JASP"/"jamovi", which are archives never downloaded as checked CODE by
+  # code_check() -- excluded here on purpose, same as before this refactor).
+  code_langs <- setdiff(unique(stats::na.omit(.ext_registry$code_lang)),
+                        c("JASP", "jamovi"))
+  is_candidate <- grepl("\\.(spv|smcl|out|html?)$", all_files$file_name, ignore.case = TRUE) |
+    all_files$language %in% union(code_langs, "Python")
+  need_dl <- is_candidate &
+    (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
+    !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+  if (!any(need_dl)) return(all_files)
+
+  dl <- tryCatch(
+    download_repo_files(all_files[need_dl, , drop = FALSE],
+                        max_file_size = max_file_size,
+                        max_download_size = max_download_size, cache = cache),
+    error = function(e) NULL)
+  if (!is.null(dl)) all_files$file_location[need_dl] <- dl$file_location
+  attr(all_files, "gated") <- attr(dl, "gated")
+  attr(all_files, "oversize_skipped") <- attr(dl, "oversize_skipped")
+  attr(all_files, "failed") <- attr(dl, "failed")
+  all_files
 }
 
 # For every ".spv" file in `all_files`, download it (reusing the same
@@ -365,6 +543,154 @@ code_extract_r <- function(file_path = NULL, save_path = NULL, documentation = 0
   }
 }
 
+#' Convert a Jupyter notebook to code only
+#'
+#' A `.ipynb` is a JSON document, not a text script: its source lives in the
+#' `source` array of each `"code"` cell. This concatenates those cells in
+#' document order so the result can be checked by the same text-based helpers
+#' every other language goes through ([code_remove_comments()],
+#' [code_library_names()], [code_file_refs()], ...) — the notebook analogue of
+#' [code_extract_r()] purling an `.Rmd`/`.qmd`.
+#'
+#' Jupyter is kernel-agnostic, so a notebook's cells may be Python **or** R
+#' (or another language); this extracts the source whatever the kernel, and
+#' [code_lang()] is what reports which language it is. The function is named
+#' for the file type it reads, not for a language it assumes.
+#'
+#' Markdown and raw cells are dropped (they are prose, not code). Cell
+#' boundaries are preserved as blank lines so line counts stay meaningful, and
+#' IPython magics (`%matplotlib inline`) and shell escapes (`!pip install x`)
+#' are dropped: they are not statements in any kernel language and would only
+#' ever be noise to the checks downstream.
+#'
+#' The OUTPUTS a notebook stores alongside its code are not touched here — see
+#' [read_stat_tables()], which reads those as result tables the same way it
+#' reads a `.jasp`/`.omv` archive.
+#'
+#' @param file_path path to a `.ipynb` file
+#' @param save_path if NULL, returns a text vector, else a path to save to
+#' @param text alternative to file_path, pass the notebook JSON directly
+#'
+#' @returns a character vector of source lines (empty when the file has
+#'   no code cells or is not parseable JSON)
+#' @export
+code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
+  if (is.null(file_path) & is.null(text)) {
+    stop("You must specify one of file_path or text")
+  } else if (is.null(text)) {
+    text <- code_read(file_path)
+  }
+
+  nb <- tryCatch(jsonlite::fromJSON(paste(text, collapse = "\n"),
+                                    simplifyVector = FALSE),
+                 error = function(e) NULL)
+  cells <- nb$cells
+  if (is.null(cells) || !length(cells)) {
+    out <- character(0)
+    if (is.null(save_path)) return(out)
+    writeLines(out, save_path)
+    return(save_path)
+  }
+
+  src <- lapply(cells, function(cl) {
+    if (!identical(cl$cell_type, "code")) return(NULL)
+    # `source` is normally an array of lines (each keeping its trailing "\n"),
+    # but the schema also permits a single string -- handle both.
+    s <- cl$source
+    if (is.null(s) || !length(s)) return(NULL)
+    lines <- unlist(strsplit(paste(unlist(s), collapse = ""), "\n"))
+    # Drop IPython magics ("%cd ..", "%%timeit") and shell escapes ("!pip
+    # install x"): neither is Python, and both would otherwise be scanned for
+    # imports and file references as though they were.
+    lines <- lines[!grepl("^\\s*[%!]", lines)]
+    if (!length(lines)) return(NULL)
+    c(lines, "")   # blank line marks the cell boundary
+  })
+
+  out <- unlist(Filter(Negate(is.null), src)) %||% character(0)
+
+  if (is.null(save_path)) {
+    out
+  } else {
+    writeLines(out, save_path)
+    save_path
+  }
+}
+
+#' Extract Python chunks from a Quarto document
+#'
+#' A `.qmd` whose declared/inferred engine is Python (see [code_lang()]'s
+#' `.qmd_lang()`) cannot go through [code_extract_r()]: `knitr::purl()` only
+#' recovers ```` ```{r} ```` chunks, so a Python-engine document would purl to
+#' nothing. This is the `.qmd` analogue of [code_extract_r()] for that case —
+#' concatenating the body of every ```` ```{python} ```` fence in document
+#' order, the same "recover a checkable code file" idea [code_extract_py()]
+#' applies to a `.ipynb`'s code cells (chunk boundaries are preserved as a
+#' blank line so line counts stay meaningful).
+#'
+#' Unlike [code_extract_r()], this is a plain text/regex scan, not a real
+#' Pandoc/Quarto parse: a fence marker appearing inside a string literal or a
+#' displayed (non-executable) code block written with four backticks around a
+#' literal ```` ```{python} ```` would be misread as a real chunk. This
+#' mirrors the fence-based approach already used elsewhere in the module
+#' (e.g. `code_parse_r()`'s own `^---\\s*$` front-matter check) rather than
+#' introducing a new parsing dependency for a single edge case.
+#'
+#' @param file_path a path to a `.qmd` file
+#' @param save_path if NULL, returns a text vector, else a path to save to
+#' @param text alternative to file_path, pass text directly
+#'
+#' @returns a character vector of Python source lines (empty when the
+#'   document has no Python chunks)
+#' @export
+code_extract_qmd_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
+  if (is.null(file_path) & is.null(text)) {
+    stop("You must specify one of file_path or text")
+  } else if (is.null(text)) {
+    text <- code_read(file_path)
+  }
+
+  # A fenced chunk opens with one-or-more backticks + "{python...}" (chunk
+  # options after the language, e.g. "{python, echo=FALSE}", are permitted so
+  # not matched into the language itself) and closes with a line of backticks
+  # matching the SAME fence length -- Pandoc allows longer fences to nest
+  # shorter ones verbatim, so the close must match the open, not just be "any
+  # backtick line", or a nested example fence would end extraction early.
+  out <- character(0)
+  i <- 1L
+  n <- length(text)
+  while (i <= n) {
+    m <- regexec("^(```+)\\s*\\{python\\b", text[[i]], ignore.case = TRUE)
+    fence <- regmatches(text[[i]], m)[[1]]
+    if (length(fence) == 0) { i <- i + 1L; next }
+
+    open_fence <- fence[[2]]
+    close_pattern <- paste0("^", open_fence, "\\s*$")
+    j <- i + 1L
+    body <- character(0)
+    while (j <= n && !grepl(close_pattern, text[[j]])) {
+      body <- c(body, text[[j]])
+      j <- j + 1L
+    }
+    # Drop "#| option: value" chunk-option lines: renderer directives, not
+    # code, mirroring knitr::purl() dropping the equivalent `#|` lines from an
+    # {r} chunk (confirmed: purl() emits only "x <- 1" from a chunk opening
+    # with "#| echo: false" / "#| include: false"). Left in, these would read
+    # as real (if syntactically harmless, since "#" is also Python's comment
+    # marker) code lines to code_line_stats()/code_abs_path()/etc.
+    body <- body[!grepl("^\\s*#\\|", body)]
+    if (length(body)) out <- c(out, body, "")   # blank line marks chunk boundary
+    i <- j + 1L
+  }
+
+  if (is.null(save_path)) {
+    out
+  } else {
+    writeLines(out, save_path)
+    save_path
+  }
+}
+
 #' Parse code to check for errors
 #'
 #' @param file_path a vector of file paths to check
@@ -519,11 +845,63 @@ code_setwd <- function(code_text) {
 }
 
 
+# Strip a trailing end-of-line comment, ignoring any comment marker that falls
+# INSIDE a string literal.
+#
+# A naive sub("<marker>.*$", "", L) truncates at the first marker wherever it
+# appears, including inside a quoted path -- which loses real DATA FILE
+# references and, worse, leaves a junk fragment behind that is then reported to
+# the author as a referenced file missing from their repository. Confirmed
+# against all three languages that have an end-of-line comment marker:
+#   Stata  "//"  `use "C://project//data//w1.dta"`     -> ref "C:"
+#                `import delimited using "https://..."` -> ref "https:"
+#                `merge 1:1 id using "sub//b.dta"`      -> ref "sub"
+#   MATLAB "%"   `readtable('data/a%20b.csv')`          -> ref lost entirely
+#   Python "#"   `pd.read_csv('a#b.csv')`               -> ref lost entirely
+# (URL-encoded spaces, URL fragments, and doubled path separators are all
+# ordinary things to find in a real analysis script.)
+#
+# Scans character by character, tracking whether we are inside a single- or
+# double-quoted string, and only treats the marker as a comment when it occurs
+# outside one. Backslash escapes the next character. Returns the line
+# truncated at the first genuine comment marker, or unchanged when there is
+# none.
+#
+# @param L a single line of code
+# @param marker the comment marker ("//", "%", "#")
+# @returns the line, minus any trailing comment
+.code_strip_inline_comment <- function(L, marker) {
+  chars <- strsplit(L, "")[[1]]
+  if (!length(chars)) return(L)
+  mchars <- strsplit(marker, "")[[1]]
+  mlen <- length(mchars)
+  quote_ch <- NA_character_   # which quote type we are inside, NA if none
+  escaped <- FALSE
+  i <- 1L
+  while (i <= length(chars)) {
+    ch <- chars[[i]]
+    if (escaped) { escaped <- FALSE; i <- i + 1L; next }
+    if (ch == "\\") { escaped <- TRUE; i <- i + 1L; next }
+    if (is.na(quote_ch)) {
+      if (ch == "'" || ch == '"') {
+        quote_ch <- ch
+      } else if (i + mlen - 1L <= length(chars) &&
+                 identical(chars[i:(i + mlen - 1L)], mchars)) {
+        return(if (i == 1L) "" else paste(chars[seq_len(i - 1L)], collapse = ""))
+      }
+    } else if (ch == quote_ch) {
+      quote_ch <- NA_character_
+    }
+    i <- i + 1L
+  }
+  L
+}
+
 #' Remove comments from code text
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
-#'   Mplus, MATLAB)
+#' @param lang the language (we only currently handle R, Python, SPSS, SAS,
+#'   Stata, Mplus, MATLAB)
 #'
 #' @returns the code_text minus comment lines
 #' @export
@@ -535,7 +913,7 @@ code_setwd <- function(code_text) {
 #'   "x <- 'And this is code'"
 #' )
 #' code_text_nc <- code_remove_comments(code_text, "R")
-code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
+code_remove_comments <- function(code_text, lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
   in_block <- FALSE
   code_text <- strsplit(code_text, "\n+") |> unlist()
@@ -545,6 +923,34 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
     code_text_nc <- grep("^(\\s*$|\\s*#|```\\s*\\{r)",
                          code_text, invert = TRUE, value = TRUE)
     # code_text_nc <- grep("knitr::", file_nc, invert = TRUE, value = TRUE)
+    # Strip trailing "# ..." comments, skipping any "#" inside a string
+    # literal (a URL fragment, a column name df['#hits'], a filename
+    # 'a#b.csv') -- same syntax and same risk as Python's "#", handled the
+    # same way. Previously R kept a mixed code+comment line completely
+    # unstripped, which both let comment text leak into code_abs_path()/
+    # code_file_refs()/code_library_lines() false positives and (via
+    # code_line_stats(), see below) made every such line invisible to the
+    # comment count -- see issue #261.
+    code_text_nc <- vapply(code_text_nc, .code_strip_inline_comment, character(1),
+                           marker = "#", USE.NAMES = FALSE)
+  } else if (lang == "Python") {
+    # Python's only comment syntax is "#" to end of line -- there is no block
+    # comment (a triple-quoted string used as one is a STRING expression, and
+    # stripping it would also remove real docstrings AND any triple-quoted
+    # literal, so it is deliberately left alone).
+    code_text_nc <- code_text[!grepl("^\\s*#", code_text)]
+    # Strip trailing "# ..." comments, skipping any "#" inside a string
+    # literal (a URL fragment, a column name df['#hits'], a filename
+    # 'a#b.csv') -- see .code_strip_inline_comment() for why a naive sub()
+    # is not safe here.
+    code_text_nc <- vapply(code_text_nc, .code_strip_inline_comment, character(1),
+                           marker = "#", USE.NAMES = FALSE)
+    # Blank lines are dropped for the same reason R's branch drops them: they
+    # are neither code nor comment, and code_line_stats() counts them
+    # separately (it subtracts blanks AND this function's result from the
+    # total to get comment_lines -- leaving blanks in here would make every
+    # blank line count as a line of CODE, understating percent_comments).
+    code_text_nc <- code_text_nc[trimws(code_text_nc) != ""]
   } else if (lang == "SAS") {
     for (ln in seq_along(code_text)) {
       L <- code_text[ln]
@@ -573,7 +979,14 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
       if (!in_block && starts_block) in_block <- TRUE
       line_comment <- grepl("^\\s*\\*", L)
       if (!in_block && !line_comment) {
-        if (grepl("//", L)) L <- sub("//.*$", "", L) # strip end-of-line comments
+        # Strip end-of-line "//" comments, skipping any "//" inside a string
+        # literal. Stata paths routinely contain one -- a URL passed to
+        # `import delimited using "https://..."`, or a doubled Windows
+        # separator "C://project//data//w1.dta" -- and truncating there both
+        # loses the real reference AND leaves a junk fragment ("https:",
+        # "C:") that code_file_refs() then reports to the author as a
+        # missing file. See .code_strip_inline_comment().
+        if (grepl("//", L)) L <- .code_strip_inline_comment(L, "//")
           code_text_nc <- c(code_text_nc, L)
       }
       if (in_block && ends_block) in_block <- FALSE
@@ -595,11 +1008,12 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
       if (!in_block && starts_block) { in_block <- TRUE; next }
       if (in_block) { if (ends_block) in_block <- FALSE; next }
       if (grepl("^\\s*%", L)) next   # whole-line comment
-      # Strip a trailing "%..." comment. Like the Stata "//" branch above, this
-      # does not know about string literals, so a literal "%" inside a quoted
-      # string (e.g. disp('100%')) is also truncated -- a pre-existing class of
-      # limitation in this function, not new here.
-      code_text_nc <- c(code_text_nc, sub("%.*$", "", L))
+      # Strip a trailing "%..." comment, skipping any "%" inside a string
+      # literal -- disp('100% done'), and (the case that actually loses data)
+      # a URL-encoded filename such as readtable('data/a%20b.csv'), where
+      # truncating drops the file reference entirely. See
+      # .code_strip_inline_comment().
+      code_text_nc <- c(code_text_nc, .code_strip_inline_comment(L, "%"))
     }
   } else {
     code_text_nc <- code_text
@@ -608,11 +1022,96 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
   return(code_text_nc)
 }
 
+# Per-language, per-ORIGINAL-line detection of whether a line contains a
+# comment (whole-line OR trailing), mirroring code_remove_comments()'s own
+# block/line rules exactly so the two never disagree. Returns a logical
+# vector the same length as code_text.
+#
+# This exists separately from code_remove_comments() because that function's
+# return value only says which lines SURVIVE as code -- a mixed code+comment
+# line survives there too (just with its comment portion stripped), so its
+# length alone cannot distinguish "pure code" from "code with a comment
+# attached". Deriving comment_lines by subtracting length(code_remove_comments(...))
+# from total_lines (the previous approach) therefore made every mixed line
+# invisible to the comment count, regardless of language -- see issue #261.
+.code_comment_flags <- function(code_text, lang) {
+  n <- length(code_text)
+  has_comment <- rep(FALSE, n)
+  in_block <- FALSE
+
+  if (lang %in% c("R", "Python")) {
+    # Both languages use "#" to end of line, no block-comment syntax (a
+    # triple-quoted Python string used as a comment is a real string
+    # expression, not stripped -- see code_remove_comments()'s Python branch).
+    whole_line <- grepl("^\\s*#", code_text)
+    trailing <- vapply(code_text, function(L) {
+      !identical(.code_strip_inline_comment(L, "#"), L)
+    }, logical(1), USE.NAMES = FALSE)
+    has_comment <- whole_line | trailing
+  } else if (lang == "SAS") {
+    for (ln in seq_len(n)) {
+      L <- code_text[ln]
+      starts_block <- grepl("/\\*", L)
+      ends_block <- grepl("\\*/", L)
+      was_in_block <- in_block
+      if (!in_block && starts_block) in_block <- TRUE
+      line_comment <- grepl("^\\s*\\*.*;\\s*$", L)
+      has_comment[ln] <- was_in_block || line_comment || (!was_in_block && starts_block)
+      if (in_block && ends_block) in_block <- FALSE
+    }
+  } else if (lang == "SPSS") {
+    for (ln in seq_len(n)) {
+      L <- code_text[ln]
+      starts_block <- grepl("/\\*|COMMENT BEGIN", L)
+      ends_block <- grepl("\\*/|COMMENT END\\.", L)
+      was_in_block <- in_block
+      if (!in_block && starts_block) in_block <- TRUE
+      line_comment <- grepl("^\\s*(\\*|COMMENT)", L)
+      has_comment[ln] <- was_in_block || line_comment || (!was_in_block && starts_block)
+      if (in_block && ends_block) in_block <- FALSE
+    }
+  } else if (lang == "Stata") {
+    for (ln in seq_len(n)) {
+      L <- code_text[ln]
+      starts_block <- grepl("/\\*", L)
+      ends_block <- grepl("\\*/", L)
+      was_in_block <- in_block
+      if (!in_block && starts_block) in_block <- TRUE
+      line_comment <- grepl("^\\s*\\*", L)
+      trailing <- !was_in_block && !line_comment && grepl("//", L) &&
+        !identical(.code_strip_inline_comment(L, "//"), L)
+      has_comment[ln] <- was_in_block || line_comment || (!was_in_block && starts_block) || trailing
+      if (in_block && ends_block) in_block <- FALSE
+    }
+  } else if (lang == "Mplus") {
+    # Mplus syntax comment is "!" to end of line; no block-comment syntax.
+    has_comment <- grepl("!", code_text)
+  } else if (lang == "MATLAB") {
+    for (ln in seq_len(n)) {
+      L <- code_text[ln]
+      starts_block <- grepl("^\\s*%\\{\\s*$", L)
+      ends_block   <- grepl("^\\s*%\\}\\s*$", L)
+      was_in_block <- in_block
+      if (!in_block && starts_block) { in_block <- TRUE; has_comment[ln] <- TRUE; next }
+      if (was_in_block) { has_comment[ln] <- TRUE; if (ends_block) in_block <- FALSE; next }
+      whole_line <- grepl("^\\s*%", L)
+      trailing <- !whole_line && !identical(.code_strip_inline_comment(L, "%"), L)
+      has_comment[ln] <- whole_line || trailing
+    }
+  }
+  # SAS/SPSS/Stata's `line_comment` regexes only match a comment STARTING at
+  # the line, so a line already counted via was_in_block/line_comment/starts_block
+  # is correct as-is; no separate trailing check needed there (none of those
+  # three have trailing single-line comment syntax, only their block syntax and
+  # Stata's "//" which is handled above).
+  has_comment
+}
+
 #' Get Code Composition Stats
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
-#'   Mplus, MATLAB)
+#' @param lang the language (we only currently handle R, Python, SPSS, SAS,
+#'   Stata, Mplus, MATLAB)
 #'
 #' @returns list with items `total_lines`, `comment_lines`, `code_lines`, and `percent_comment`
 #' @export
@@ -625,14 +1124,19 @@ code_remove_comments <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata"
 #'   "a <- 1"
 #' )
 #' code_line_stats(code_text, "R")
-code_line_stats <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
+code_line_stats <- function(code_text, lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
   code_text <- strsplit(code_text, "\n+") |> unlist()
 
   total_lines <- length(code_text)
   blank_lines <- sum(trimws(code_text) == "")
   code_lines <- code_remove_comments(code_text, lang) |> length()
-  comment_lines <- total_lines - blank_lines - code_lines
+  # Lines actually CONTAINING a comment marker (whole-line or trailing),
+  # counted directly rather than derived by subtracting code_lines from
+  # total_lines -- a mixed code+comment line is real code (so it belongs in
+  # code_lines too) AND a real comment (so it must count here), and the two
+  # are not mutually exclusive. See .code_comment_flags().
+  comment_lines <- sum(.code_comment_flags(code_text, lang) & trimws(code_text) != "")
 
   percent_comments <- if (total_lines > 0) (comment_lines / total_lines) else NA_real_
 
@@ -649,8 +1153,8 @@ code_line_stats <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mp
 #' Returns the lines on which library/require calls exist. This is a helper function for the code_check module.
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
-#'   Mplus, MATLAB)
+#' @param lang the language (we only currently handle R, Python, SPSS, SAS,
+#'   Stata, Mplus, MATLAB)
 #'
 #' @returns a data frame with columns `code` and `line` (the line numbers on which library calls exist, after removing blank lines and comments)
 #' @export
@@ -664,7 +1168,7 @@ code_line_stats <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mp
 #'   "renv::install('metacheck')"
 #' )
 #' code_library_lines(code_text, "R")
-code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
+code_library_lines <- function(code_text, lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
 
   # set up data frame
@@ -689,6 +1193,13 @@ code_library_lines <- function(code_text, lang = c("R", "SPSS", "SAS", "Stata", 
   # same calls' argument as the "package" name).
   lang_import_regex <- list(
     R      = "^[^#]*\\b(library|require|renv::install|p_load)\\s*\\(",
+    # Python's "import x" / "from x import y" are the direct analogue of R's
+    # library() calls -- the same "are the imports grouped at the top?" check
+    # applies unchanged. Anchored at the start of the line (imports are
+    # statements, so a legal top-level import always begins its line, modulo
+    # indentation) to avoid matching the word "import" inside a string or a
+    # method name such as `df.import_csv`.
+    Python = "^\\s*(import|from)\\s+[A-Za-z_.]",
     SAS    = "\\b(%include|libname|filename|options)\\b",
     SPSS   = "\\b(INSERT|BEGIN\\s+PROGRAM|SET)\\b",
     Stata  = "\\b(do|run|cd|adopath|net\\s+install|ssc\\s+install)\\b",
@@ -752,15 +1263,7 @@ code_library_names <- function(code_text,
   # here as a "package".
   if (lang %in% c("SPSS", "SAS", "Stata", "Mplus", "MATLAB")) return(empty)
 
-  # Strip comments. code_remove_comments() does not know Python, so handle its
-  # `#` line comments directly; R (and R-in-Rmd/qmd) goes through the shared
-  # helper for consistency with the rest of the module.
-  if (lang == "Python") {
-    code_text <- unlist(strsplit(code_text, "\n"))
-    code_text <- sub("#.*$", "", code_text)
-  } else {
-    code_text <- code_remove_comments(code_text, lang)
-  }
+  code_text <- code_remove_comments(code_text, lang)
   if (length(code_text) == 0) return(empty)
 
   # A single record of (package, source, line); collected then row-bound.
@@ -784,10 +1287,23 @@ code_library_names <- function(code_text,
     L <- code_text[ln]
 
     if (lang == "R") {
-      # library(x) / library("x") / require(x) / requireNamespace("x")
+      # library(x) / library("x") / require(x) / requireNamespace("x") — ALL
+      # occurrences on the line, not just the first: authors commonly
+      # semicolon-chain a whole block of library() calls on one line
+      # ("library(a); library(b); library(c)"), and cap()'s regexec() only
+      # ever returns a single match per call. Confirmed as a real bug against
+      # a real corpus paper's script, which chained 14 library() calls on one
+      # line — only the first (its own package) was ever detected, so the
+      # other 13 (including one genuinely needed at runtime) were silently
+      # never installed, and the script errored on the first missing one.
       for (fn in c("library", "require", "requireNamespace")) {
-        g <- cap(sprintf("\\b%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)", fn), L, 1)
-        if (!is.na(g)) add(g, fn, ln)
+        m <- gregexpr(sprintf("\\b%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)", fn), L,
+                      perl = TRUE)
+        g <- regmatches(L, m)[[1]]
+        if (length(g) > 0) {
+          pkgs <- sub(sprintf("^%s\\s*\\(\\s*", fn), "", g, perl = TRUE)
+          add(pkgs, fn, ln)
+        }
       }
       # pacman::p_load(a, b, c) — one or more comma-separated packages
       pl <- cap("\\bp_load\\s*\\(([^)]*)\\)", L, 1)
@@ -849,11 +1365,215 @@ code_packages <- function(packages) {
     unique() |> sort()
 }
 
+#' Detect whether a paper pinned its R/package versions
+#'
+#' Checks a repository's files for the three ways authors commonly pin the
+#' environment their analysis depended on, so a later reproduction attempt
+#' knows which R and package versions were actually used rather than
+#' whatever happens to be current: an `renv.lock` file (parsed for the R
+#' version and every locked package + its version/source), a `sessionInfo()`
+#' / `sessioninfo::session_info()` text dump (matched by filename, since
+#' authors deposit these as a dedicated file rather than burying them in
+#' unrelated text — see `@details`), or a `groundhog::groundhog.library()` /
+#' `checkpoint::checkpoint()` call in the R code, which pin by date instead of
+#' a lockfile. Static analysis only: this reports what was DECLARED, not
+#' whether the declared versions still install today (that risk is what
+#' `repro_install_deps()`'s CRAN Archive fallback exists for).
+#'
+#' @details
+#' The `sessionInfo()` scan is filename-gated, not a blanket content scan of
+#' every text file in the repository: it looks at files whose name suggests
+#' they ARE such a dump (`sessioninfo`/`session_info`/`session-info`,
+#' case-insensitive, any extension — the two forms actually seen in a real
+#' corpus are `sessionInfo.txt` and `session_info.txt`) plus any `readme*`
+#' file, since authors sometimes paste the dump into a README instead of a
+#' dedicated file. A blanket scan of every `.txt`/`.md`/`.log` file was
+#' considered and rejected: it would also match a paper's own methods prose
+#' mentioning an R version in a sentence, which is not a pinned-environment
+#' record.
+#'
+#' `renv.lock` is matched by its fixed, case-sensitive filename (that is the
+#' one name `renv` itself ever writes) and searched for anywhere in the
+#' repository tree, not just the top level — a paper can deposit more than
+#' one (e.g. one per study folder), and all are reported.
+#'
+#' `groundhog`/`checkpoint` are detected by the PINNING CALL itself
+#' (`groundhog.library(pkg, "YYYY-MM-DD")`, `checkpoint("YYYY-MM-DD")`), not
+#' merely `library(groundhog)`/`library(checkpoint)`: loading the package is
+#' not evidence it was used to pin anything, so a bare `library()` call does
+#' not count.
+#'
+#' @param all_files the full repo file listing (`repo_check`'s table: needs
+#'   `file_name`, `file_url`, `repo_url`, `file_location` where available)
+#' @param code_text_list a named list of already-read R file text (names are
+#'   file_names) — reused for the groundhog/checkpoint scan so no file is
+#'   downloaded or read twice
+#' @param max_file_size passed to [download_repo_files()] for any candidate
+#'   file not yet local
+#' @param max_download_size passed to [download_repo_files()]
+#' @param cache passed to [download_repo_files()]
+#'
+#' @returns a list: `pinned` (logical, TRUE if any mechanism was found),
+#'   `mechanisms` (character vector, any of `renv.lock`, `sessionInfo`,
+#'   `groundhog`, `checkpoint`), `r_versions` (character vector of R version
+#'   strings found, one per source), `renv_files` (character vector of
+#'   `renv.lock` file_names found), `renv_packages` (data frame `file_name`,
+#'   `package`, `version`, `source` — one row per locked package, across all
+#'   `renv.lock` files found), `sessioninfo_files` (character vector of
+#'   matched file_names), `file_location` (named character vector, file_name
+#'   -> resolved local path, for every candidate file this call downloaded —
+#'   a caller re-checking a SUBSET of `all_files` per paper can splice these
+#'   back into its own copy of `all_files` first, so the same file is never
+#'   downloaded twice across repeat calls)
+#' @keywords internal
+.code_version_pin_check <- function(all_files, code_text_list = list(),
+                                    max_file_size = 100, max_download_size = 500,
+                                    cache = FALSE) {
+  out <- list(pinned = FALSE, mechanisms = character(0),
+             r_versions = character(0), renv_files = character(0),
+             renv_packages = data.frame(file_name = character(0),
+                                        package = character(0),
+                                        version = character(0),
+                                        source = character(0)),
+             sessioninfo_files = character(0),
+             file_location = character(0))
+  if (is.null(all_files) || nrow(all_files) == 0) return(out)
+
+  base_nm <- basename(gsub("\\\\", "/", all_files$file_name))
+
+  # ── renv.lock ────────────────────────────────────────────────────────────
+  is_renv <- base_nm == "renv.lock"
+  if (any(is_renv)) {
+    renv_rows <- all_files[is_renv, , drop = FALSE]
+    need_dl <- (is.na(renv_rows$file_location) | !nzchar(renv_rows$file_location %||% "")) &
+      !is.na(renv_rows$file_url) & nzchar(renv_rows$file_url %||% "")
+    if (any(need_dl)) {
+      dl <- tryCatch(
+        download_repo_files(renv_rows[need_dl, , drop = FALSE],
+                            max_file_size = max_file_size,
+                            max_download_size = max_download_size, cache = cache),
+        error = function(e) NULL)
+      if (!is.null(dl)) renv_rows$file_location[need_dl] <- dl$file_location
+    }
+    out$file_location <- c(out$file_location, stats::setNames(
+      renv_rows$file_location, renv_rows$file_name))
+    for (i in seq_len(nrow(renv_rows))) {
+      loc <- renv_rows$file_location[i]
+      if (is.na(loc) || !nzchar(loc) || !file.exists(loc)) next
+      lock <- tryCatch(jsonlite::fromJSON(loc, simplifyVector = FALSE),
+                       error = function(e) NULL)
+      if (is.null(lock)) next
+      out$renv_files <- c(out$renv_files, renv_rows$file_name[i])
+      rv <- lock$R$Version
+      if (!is.null(rv)) out$r_versions <- c(out$r_versions, as.character(rv))
+      pkgs <- lock$Packages
+      if (length(pkgs) > 0) {
+        pkg_rows <- lapply(pkgs, function(p) data.frame(
+          file_name = renv_rows$file_name[i],
+          package = p$Package %||% NA_character_,
+          version = p$Version %||% NA_character_,
+          source = p$Source %||% NA_character_))
+        out$renv_packages <- dplyr::bind_rows(out$renv_packages,
+                                              dplyr::bind_rows(pkg_rows))
+      }
+    }
+    if (length(out$renv_files) > 0) out$mechanisms <- c(out$mechanisms, "renv.lock")
+  }
+
+  # ── sessionInfo() / session_info() dump ─────────────────────────────────
+  # Filename-gated (see roxygen @details): a dedicated file, or a README that
+  # might embed the dump, downloaded only if not already local.
+  is_si_name <- grepl("session[_-]?info", base_nm, ignore.case = TRUE)
+  is_readme  <- grepl("^readme", base_nm, ignore.case = TRUE)
+  si_candidates <- is_si_name | is_readme
+  if (any(si_candidates)) {
+    si_rows <- all_files[si_candidates, , drop = FALSE]
+    need_dl <- (is.na(si_rows$file_location) | !nzchar(si_rows$file_location %||% "")) &
+      !is.na(si_rows$file_url) & nzchar(si_rows$file_url %||% "")
+    if (any(need_dl)) {
+      dl <- tryCatch(
+        download_repo_files(si_rows[need_dl, , drop = FALSE],
+                            max_file_size = max_file_size,
+                            max_download_size = max_download_size, cache = cache),
+        error = function(e) NULL)
+      if (!is.null(dl)) si_rows$file_location[need_dl] <- dl$file_location
+    }
+    out$file_location <- c(out$file_location, stats::setNames(
+      si_rows$file_location, si_rows$file_name))
+    # sessionInfo()'s own first line: "R version 4.4.2 (2024-10-31)". Matched
+    # against R's real print format (confirmed against real corpus files),
+    # not guessed.
+    rv_pat <- "R version ([0-9]+\\.[0-9]+\\.[0-9]+)"
+    for (i in seq_len(nrow(si_rows))) {
+      loc <- si_rows$file_location[i]
+      if (is.na(loc) || !nzchar(loc) || !file.exists(loc)) next
+      txt <- tryCatch(code_read(loc), error = function(e) NULL)
+      if (is.null(txt) || !length(txt)) next
+      # code_read() is documented to return one element per line, but is not
+      # trusted blindly here: for at least one real corpus file it returned
+      # the WHOLE file as a single element with embedded newline characters
+      # (an encoding/line-ending edge case neither readr::read_lines() nor
+      # its readLines() fallback split correctly) -- re-splitting on "\n"
+      # defensively is a no-op when txt is already one-line-per-element, and
+      # fixes the case when it is not. This is what surfaced the real bug:
+      # sub(".*pattern.*", "\\1", hit) on a MULTI-LINE hit (paste0(".*", ...)
+      # does not match "\n" by default) spliced together the LEADING text
+      # before "R version" with the version digits themselves, e.g.
+      # extracting "\n4.5.0" instead of "4.5.0" -- which then produced a
+      # Docker image tag with a literal embedded newline
+      # ("rocker/r-ver:\n4.5.0"), silently breaking every `docker run` call
+      # with "invalid reference format". Confirmed directly against a real
+      # failing run.
+      txt <- unlist(strsplit(txt, "\n", fixed = TRUE))
+      hit <- grep(rv_pat, txt, value = TRUE, perl = TRUE)[1]
+      if (!is.na(hit)) {
+        # regmatches() on the capture group directly, not a sub(".*x.*", "\\1")
+        # splice: immune to what surrounds the match on the SAME line, and
+        # cannot pull in any other line's text the way the splice did above.
+        m <- regexpr(rv_pat, hit, perl = TRUE)
+        version <- regmatches(hit, m)
+        version <- sub("^R version ", "", version)
+        out$sessioninfo_files <- c(out$sessioninfo_files, si_rows$file_name[i])
+        out$r_versions <- c(out$r_versions, version)
+      }
+    }
+    if (length(out$sessioninfo_files) > 0) out$mechanisms <- c(out$mechanisms, "sessionInfo")
+  }
+
+  # ── groundhog / checkpoint date-pinning calls ───────────────────────────
+  # The pinning CALL itself, with a date-shaped argument -- library(groundhog)
+  # / library(checkpoint) alone is not evidence anything was pinned (see
+  # roxygen @details).
+  # groundhog.library()'s first argument is often c("pkg1", "pkg2", ...) --
+  # one level of nested parens between the call's own "(" and the date
+  # argument, so a flat [^)]* (stops at the FIRST ")") missed every
+  # multi-package call. (?:[^()]|\([^()]*\))* tolerates exactly one level of
+  # nesting, which covers a plain c(...) argument list; confirmed against
+  # groundhog's own documented multi-package call shape.
+  gh_pat <- "groundhog(?:::)?\\.?library\\s*\\((?:[^()]|\\([^()]*\\))*[\"'](\\d{4}-\\d{2}-\\d{2})[\"']"
+  cp_pat <- "checkpoint(?:::checkpoint)?\\s*\\(\\s*[\"'](\\d{4}-\\d{2}-\\d{2})[\"']"
+  has_gh <- FALSE; has_cp <- FALSE
+  for (txt in code_text_list) {
+    if (!length(txt)) next
+    joined <- paste(txt, collapse = "\n")
+    if (!has_gh && grepl(gh_pat, joined, perl = TRUE)) has_gh <- TRUE
+    if (!has_cp && grepl(cp_pat, joined, perl = TRUE)) has_cp <- TRUE
+    if (has_gh && has_cp) break
+  }
+  if (has_gh) out$mechanisms <- c(out$mechanisms, "groundhog")
+  if (has_cp) out$mechanisms <- c(out$mechanisms, "checkpoint")
+
+  out$mechanisms <- unique(out$mechanisms)
+  out$r_versions <- unique(out$r_versions)
+  out$pinned <- length(out$mechanisms) > 0
+  out
+}
+
 #' Get files referenced in code
 #'
 #' @param code_text the code text for a single file
-#' @param lang the language (we only currently handle R, SPSS, SAS, Stata,
-#'   Mplus, MATLAB)
+#' @param lang the language (we only currently handle R, Python, SPSS, SAS,
+#'   Stata, Mplus, MATLAB)
 #' @param include_writes also return files the code *writes* (R only). Off by
 #'   default: callers that ask "which referenced inputs are missing from the
 #'   repository?" (e.g. `code_check`) must not see a written file as a missing
@@ -872,7 +1592,7 @@ code_packages <- function(packages) {
 #' code_file_refs(code_text, "R")
 #'
 code_file_refs <- function(code_text,
-                           lang = c("R", "SPSS", "SAS", "Stata", "Mplus", "MATLAB"),
+                           lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB"),
                            include_writes = FALSE) {
   lang <- match.arg(lang)
   code_text <- code_remove_comments(code_text, lang)
@@ -902,6 +1622,31 @@ code_file_refs <- function(code_text,
       "fromJSON",
       "readtext",
       "source"
+    ) |>
+      paste(collapse = "|") |>
+      paste0("\\b(", x = _, ")\\s*\\("),
+    # Python's readers, by library. pandas/polars supply the bulk as
+    # `read_<format>` (read_csv, read_excel, read_stata, read_spss, read_sas,
+    # read_parquet, read_pickle, read_json, ...), which the generic
+    # "read_[A-Za-z_0-9]+" covers the same way R's "read[\\._][A-Za-z...]" does
+    # -- NOT anchored to a `pd.` prefix, since `from pandas import read_csv`
+    # then calls it bare. The rest are named individually because they do not
+    # begin with "read": numpy (load/loadtxt/genfromtxt), pickle (load),
+    # json (load), scipy.io (loadmat), pyreadstat (read_* covered above),
+    # and Python's own open(). Like the R branch, a hit only YIELDS a
+    # reference when the call also contains a quoted string with a file
+    # extension, so `import numpy` can never be mistaken for a file
+    # reference here (the mirror image of the reticulate::import("numpy")
+    # false positive guarded against in the R branch above) -- but "import"
+    # is deliberately NOT in this list at all, so the question never arises.
+    Python = c(
+      "read_[A-Za-z_0-9]+",
+      "loadtxt",
+      "genfromtxt",
+      "loadmat",
+      "load",
+      "open",
+      "read_table"
     ) |>
       paste(collapse = "|") |>
       paste0("\\b(", x = _, ")\\s*\\("),
@@ -959,9 +1704,30 @@ code_file_refs <- function(code_text,
     unlist() |>
     gsub("^['\"]|['\"]$", "", x = _)
 
+  # A sprintf()/format()-style format specifier ("%.2e", "%.3f", "%5.2f", "%d")
+  # matches quoted_filename_pattern by coincidence: its own "%" + digits + "."
+  # + conversion letter looks exactly like "<name>.<ext>" to a pattern that
+  # only checks for A dot followed by 1-8 alphanumeric characters. Confirmed
+  # as a real false positive against a real corpus paper's script (which
+  # printed values with sprintf("%.2e", x)) — "%.2e" and "%.3f" were reported
+  # as referenced files "not present in the repository", entirely spurious
+  # since neither is a filename at all. Excluded here rather than tightening
+  # quoted_filename_pattern itself, since a real filename can legitimately
+  # contain "%" (URL-encoded characters, a literal percent in a name) and the
+  # format-specifier SHAPE (leading "%", then only digits/./conversion
+  # letters, nothing else) is what actually distinguishes the false positive.
+  is_format_spec <- grepl("^%[-+ 0#]*[0-9]*(\\.[0-9]+)?[diouxXeEfgGaAscp]$",
+                          loaded_file, perl = TRUE)
+  loaded_file <- loaded_file[!is_format_spec]
+
   # Unquoted captures (language-specific)
   lang_unquoted_captures <- list(
     R = list(), # quoted captures suffice
+    # Python has no bareword file paths -- every filename is a string literal
+    # (or an f-string / Path() composition, which the quoted-filename pattern
+    # picks up whenever a literal extension survives in the source). Same
+    # situation as Mplus below: quoted captures suffice.
+    Python = list(),
     SAS = list(
       list(regex = "infile\\s+([^\\s;]+)", group = 1),
       list(regex = "datafile\\s*=\\s*([^\\s;]+)", group = 1)

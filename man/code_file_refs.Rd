@@ -6,14 +6,15 @@
 \usage{
 code_file_refs(
   code_text,
-  lang = c("R", "SPSS", "SAS", "Stata"),
+  lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB"),
   include_writes = FALSE
 )
 }
 \arguments{
 \item{code_text}{the code text for a single file}
 
-\item{lang}{the language (we only currently handle R, SPSS, SAS, Stata)}
+\item{lang}{the language (we only currently handle R, Python, SPSS, SAS,
+Stata, Mplus, MATLAB)}
 
 \item{include_writes}{also return files the code \emph{writes} (R only). Off by
 default: callers that ask "which referenced inputs are missing from the

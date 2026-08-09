@@ -2,12 +2,12 @@
 % Please edit documentation in R/stat-tables.R
 \name{read_stat_tables}
 \alias{read_stat_tables}
-\title{Read the statistical result tables from a JASP or jamovi file}
+\title{Read the statistical result tables from a JASP, jamovi or notebook file}
 \usage{
 read_stat_tables(path)
 }
 \arguments{
-\item{path}{path to a \code{.jasp} or \code{.omv} file}
+\item{path}{path to a \code{.jasp}, \code{.omv}, \code{.spv} or \code{.ipynb} file}
 }
 \value{
 a list with one element per result table, each a list of \code{analysis}
@@ -20,20 +20,23 @@ GUI-produced). Empty list when the archive has no \code{index.html} or no
 tables.
 }
 \description{
-Opens a \code{.jasp} or \code{.omv} archive and returns every result table as a tidy
-data frame together with the analysis it belongs to. No statistics knowledge
-is applied here — this is the lossless extraction layer; semantic typing
-happens downstream in \code{\link[=stat_output_json]{stat_output_json()}} / \code{\link[=stat_results_long]{stat_results_long()}}.
+Opens a \code{.jasp}, \code{.omv}, \code{.spv} or \code{.ipynb} file and returns every result
+table as a tidy data frame together with the analysis it belongs to. No
+statistics knowledge is applied here — this is the lossless extraction
+layer; semantic typing happens downstream in \code{\link[=stat_output_json]{stat_output_json()}} /
+\code{\link[=stat_results_long]{stat_results_long()}}.
 }
 \details{
-Three sources are tried, in order of fidelity:
+Four sources are tried, in order of fidelity:
 \enumerate{
 \item \code{.jasp} — the archive's own \code{analyses.json}, which holds the structured
 results;
 \item \code{.omv} — jamovi's protobuf-serialised \code{AnalysisResponse} blobs, decoded
 natively (see \code{inst/schema/jamovi/PROVENANCE.md});
-\item either — the rendered \code{index.html}, as a fallback when the above are
-absent or unreadable.
+\item \code{.ipynb} — the outputs saved inside each code cell of a Jupyter
+notebook (dispatched on extension; it is JSON, not a zip archive);
+\item any archive — the rendered \code{index.html}, as a fallback when the above
+are absent or unreadable.
 }
 
 The structured sources are preferred because they carry each column's machine

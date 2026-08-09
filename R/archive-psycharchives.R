@@ -58,7 +58,13 @@ psycharchives_links <- function(paper) {
   other_pa <- text_search(paper, pa_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
-  dplyr::bind_rows(found_href, other_pa) |> unique()
+  # See osf_links() for why this normalization is needed: a real hyperlink and
+  # a bare body-text mention of the same repo commonly differ only by a
+  # trailing slash, and left un-normalized that turns one repo into two
+  # throughout repo_check.
+  dplyr::bind_rows(found_href, other_pa) |>
+    dplyr::mutate(href = sub("/+$", "", href)) |>
+    unique()
 }
 
 #' Retrieve info from PsychArchives by URL

@@ -10,7 +10,8 @@ data_check_scale_values(
   declared = NULL,
   valid_values = NULL,
   valid_range = NULL,
-  n_max = 10
+  n_max = 10,
+  min_ground_truth_coverage = 0.5
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ data_check_scale_values(
 \item{valid_range}{optional \code{c(lo, hi)} valid range (ground truth)}
 
 \item{n_max}{max number of values to list in the message}
+
+\item{min_ground_truth_coverage}{minimum fraction of non-missing values that
+must already fall inside a declared \code{valid_values}/\code{valid_range} for it to
+be trusted; below this, ground truth is discarded in favour of inference}
 }
 \value{
 list(problem, message, values, lower, upper, classes) where \code{classes}
@@ -48,6 +53,18 @@ few rows) has no fixed range and is not flagged here — unbounded variables
 (age, reaction time) have no principled "valid range" to violate.
 }
 \details{
+Ground truth is trusted only when it is actually PLAUSIBLE for this column's
+data: at least \code{min_ground_truth_coverage} of the non-missing values must
+already fall inside the declared range. A codebook/\code{.qsf} variable can be
+mismatched to the wrong data column (a cross-study name collision, or a
+Qualtrics timing/paradata column inheriting its question's response codes —
+see the \code{.qsf} question-tag fallback in \code{match_column_labels()}); when that
+happens the declared range explains almost none of the data, and trusting it
+anyway turns nearly every real value into a false "out of range" flag. When
+coverage is too low, ground truth is DISCARDED for this column (not merely
+widened) and the range falls back to \code{.detect_likert_scale} inference, same
+as if no ground truth had been supplied at all.
+
 This unifies the former \code{data_check_out_of_range} and
 \code{data_check_miscoded_missing}: one detector run, one finding per column.
 }

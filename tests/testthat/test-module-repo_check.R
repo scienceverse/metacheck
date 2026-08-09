@@ -61,10 +61,14 @@ test_that("no code files", {
   mod_output <- module_run(paper, module)
 
   expect_true(grepl("We found 2 files ", mod_output$summary_text))
-  # One of the two files (the archive) is not classifiable by name/extension
-  # from repo_check's preliminary, name-only pass (data_classify_files()
-  # crosswalks an unopened archive to "unknown" — see R/data_check_helpers.R),
-  # which also trips the naming check's "unclassifiable" rule for that file.
+  # Both files ARE classifiable from their names alone: README.md is the
+  # readme, and the archive is named "code.zip", which the name-based rule in
+  # data_classify_files() types as data_type "code" (see R/data_check_helpers.R
+  # — an archive's EXTENSION crosswalks to "unknown", but an explicit "code" in
+  # the file name overrides that). Nothing is left unclassifiable, so
+  # files_unknown is 0 and the naming check finds no issue either. files_code
+  # counts files whose file_type is code, which an archive's is not — hence 0
+  # there while data_type is "code".
   exp <- data.frame(paper_id = paper$paper_id,
                     repo_n = 1,
                     files_n = 2,
@@ -72,8 +76,8 @@ test_that("no code files", {
                     files_code = 0,
                     files_readme = 1,
                     files_zip = 1,
-                    files_unknown = 1L,
-                    naming_issues = 1L,
+                    files_unknown = 0L,
+                    naming_issues = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
@@ -115,8 +119,13 @@ test_that("OSF, github and rb", {
 
   expect_equal(mod_output$traffic_light, "yellow")
   expect_gt(nrow(mod_output$table), 14)
-  exp <- c("bad.R", "bad.Rmd", "Code/Study 1.r", "good-example.R")
+  # `file_name` holds the file's NAME; its position inside the repository (or
+  # inside an expanded archive) lives in `file_path`. The ResearchBox archive
+  # stores this script at "Code/Study 1.r", so the subfolder is asserted
+  # against file_path and the bare name against file_name.
+  exp <- c("bad.R", "bad.Rmd", "Study 1.r", "good-example.R")
   expect_contains(mod_output$table$file_name, exp)
+  expect_contains(mod_output$table$file_path, "Code/Study 1.r")
   expect_equal(mod_output$summary_table$paper_id, paper$paper_id)
   expect_equal(mod_output$summary_table$repo_n, 3)
   expect_equal(mod_output$summary_table$files_n, nrow(mod_output$table))

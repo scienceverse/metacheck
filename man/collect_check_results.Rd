@@ -24,7 +24,7 @@ Reads every \verb{<paper_id>.checks.json} in \code{results_dir} (written by
 \item \verb{_all_checks.csv} — one row per paper per module: the module's
 \code{traffic_light}, its \code{summary_text}, and its per-paper count columns
 (unpacked from the module's \code{summary_table}, so e.g. \code{code_check}'s
-\code{code_file_n} or \code{data_validate}'s \code{flagged_n} become their own columns).
+\code{code_n} or \code{data_validate}'s \code{flagged_n} become their own columns).
 \item \verb{_all_findings.csv} — one row per individual flagged item across all papers
 and modules (the row-level \code{table} each module returns), tagged with
 \code{paper_id} and \code{module}.

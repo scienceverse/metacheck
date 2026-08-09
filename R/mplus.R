@@ -398,22 +398,22 @@
 #'
 #' Handles Mplus's two real table shapes, found across the local corpus: (1)
 #' a "Model Results"-style table with a stat-vocabulary column header
-#' ([.mplus_read_grouped_table()]) over rows split into named groups (e.g.
+#' (`.mplus_read_grouped_table()`) over rows split into named groups (e.g.
 #' "Within Level" / "Between Level", then within each " IW       |" / "
 #' Variances" / " Residual Variances"); and (2) a correlation/covariance
 #' matrix table with a variable-name header and an underline row
-#' ([.mplus_read_matrix_table()]). The two shapes are genuinely
+#' (`.mplus_read_matrix_table()`). The two shapes are genuinely
 #' distinguishable only by trying the stat-vocabulary header match first,
 #' since a bare group-label line (" SW       WITH") and a real one-line
 #' header are otherwise indistinguishable by shape alone -- see
-#' [.mplus_is_stat_header_line()].
+#' `.mplus_is_stat_header_line()`.
 #'
 #' @param lines character vector: one section's lines (from
 #'   [.mplus_sections()])
 #' @return a list of `list(title, data)`, one per detected table, plus a
 #'   `consumed` logical vector (same length as `lines`) marking every line
 #'   used by a successfully-extracted table -- passed to
-#'   [.mplus_output_labelvalue()] so it never re-parses (and mangles) rows
+#'   `.mplus_output_labelvalue()` so it never re-parses (and mangles) rows
 #'   already captured here, e.g. a "MODEL RESULTS" data row like "IW
 #'   0.151  0.022  6.887  0.000" otherwise also matches the generic
 #'   label/one-trailing-value regex on its LAST column alone.

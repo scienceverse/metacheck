@@ -53,6 +53,10 @@
   "STATO:0000639" = "percentage",
   "STATO:0000565" = "regression coefficient",
   "STATO:0000471" = "estimate",
+  "STATO:0000656" = "slope",
+  "STATO:0000657" = "intercept",
+  "STATO:0000562" = "standard error of estimate",
+  "STATO:0000550" = "log likelihood",
   "STATO:0000033" = "mode",
   "STATO:0000035" = "range",
   "STATO:0000068" = "skewness",
@@ -180,6 +184,15 @@
   "wilcoxonV"              = "Wilcoxon signed rank statistic",
   "spearmanS"              = "Spearman's S statistic",
   "kolmogorovSmirnovD"     = "Kolmogorov-Smirnov D statistic",
+  # Same gap, for scipy.stats' printed result objects (see .STATO_BY_CALL's
+  # "mannwhitneyuresult"/"kruskalresult" entries): OLS4 has "Mann-Whitney
+  # U-test" (STATO:0000076) and "Kruskal Wallis test" (STATO:0000094), the
+  # TESTS, but no class for the U or H statistic VALUES themselves -- verified
+  # directly against OLS4's search (no result for "U statistic"/"H statistic"
+  # beyond the test classes already found). Observed in a real ~220-notebook
+  # Zenodo sample of scipy.stats/statsmodels/pingouin-using papers.
+  "mannWhitneyU"           = "Mann-Whitney U statistic",
+  "kruskalWallisH"         = "Kruskal-Wallis H statistic",
   # JASP reports "error %" beside a Bayes factor: the proportional error of the
   # numerical/Monte-Carlo integration used to compute it, i.e. how precisely the
   # BF itself is known. OLS4 has no class for it ("Monte Carlo error" returns
@@ -270,6 +283,7 @@
   "adj. r²"                 = "adjustedRSquared",
   "adjusted r²"             = "adjustedRSquared",
   "adjusted r square"       = "adjustedRSquared",   # SPSS's own spelling
+  "adj. r-squared"          = "adjustedRSquared",   # statsmodels' .summary() spelling
   "noncent. parameter"      = "noncentralityParameter",
   "nagelkerke r square"     = "nagelkerkeRSquared",
   "cox & snell r square"    = "coxSnellRSquared",
@@ -361,6 +375,24 @@
   "correlation coefficient" = "STATO:0000142",
   "correlated item-total correlation" = "STATO:0000142",   # reliability analysis
   "corrected item-total correlation"  = "STATO:0000142",
+  # scipy.stats.linregress()'s printed field names (a LinregressResult repr,
+  # read via .ipynb_stat_line() in R/stat-tables.R): "rvalue" is the same
+  # Pearson's r the "r"/"pearson's r" keys above already map, just under
+  # scipy's own field name. "slope"/"intercept" are verified STATO classes in
+  # their own right (OLS4 search: "slope" -> STATO:0000656, "intercept" ->
+  # STATO:0000657 — general graph/line-fit quantities, not regression-specific
+  # classes, but a semantic match for a fitted line's own slope/intercept).
+  # "stderr" is linregress's name for the slope estimate's standard error —
+  # distinct from the SAMPLE-MEAN standard error "se"/"standard error" already
+  # map to (STATO:0000037) above, so it cannot reuse that key without a
+  # category mismatch; OLS4 has no regression-slope-specific SE class, so this
+  # uses the general "standard error of estimate" (STATO:0000562), verified as
+  # the closest class whose own definition is explicitly quantity-agnostic
+  # ("uncertainty associated with the estimate", not tied to a sample mean).
+  "rvalue"                  = "STATO:0000280",
+  "slope"                   = "STATO:0000656",
+  "intercept"               = "STATO:0000657",
+  "stderr"                  = "STATO:0000562",
   # bayesian
   "bf₁₀"         = "STATO:0000266",   # BF10
   "bf₀₁"         = "STATO:0000266",   # BF01
@@ -372,6 +404,39 @@
   "f value"                 = "STATO:0000282",   # aov/anova F column
   "pr(>|t|)"                = "STATO:0000700",   # lm p column
   "pr(>|z|)"                = "STATO:0000700",   # glm p column
+  # statsmodels' OLSResults/Logit/GLM .summary() printed text (parsed via the
+  # shared .r_output_tables() fixed-width parser, R/r-output.R, reused as-is
+  # for this Python output the same way .r_output_oneline() is reused for
+  # bare scipy Result reprs) — its OWN column spellings, different from R's
+  # equivalent lm/glm output above ("coef" not "estimate", "std err" not
+  # "std. error", bare "t"/"p>|t|" not "t value"/"pr(>|t|)"). Confirmed real
+  # via a Zenodo-sampled notebook's OLS Regression Results table.
+  "coef"                    = "STATO:0000471",   # generic estimate, same as R's "estimate"
+  "std err"                 = "STATO:0000037",
+  "p>|t|"                   = "STATO:0000700",   # OLS/WLS/GLS t-based p column
+  "p>|z|"                   = "STATO:0000700",   # Logit/GLM z-based p column
+  # statsmodels' .summary() KEY-VALUE header block (parsed by .ipynb_stat_kv(),
+  # R/stat-tables.R — a two-"Label: value"-pairs-per-line shape neither
+  # .r_output_tables() nor .r_output_oneline() can parse, so it needs its own
+  # extractor; see that function's own comment). Manuscript-reportable
+  # model-fit statistics ("the model explained significant variance, R² =
+  # .84, F(6, 93) = 84.18, p < .001") that were previously not extracted at
+  # all. Confirmed real and stable across two independently-sampled Zenodo
+  # notebooks' OLS output.
+  "r-squared"               = "STATO:0000564",
+  "f-statistic"             = "STATO:0000282",
+  "prob (f-statistic)"      = "STATO:0000700",
+  "log-likelihood"          = "STATO:0000550",
+  "no. observations"        = "STATO:0000088",
+  "df residuals"            = "STATO:0000069",
+  # "adj. r-squared" is METACHECK-minted (.MC_STAT_MAP's "adjustedRSquared" —
+  # see .MC_STAT_LABELS's own comment on why OLS4 has no adjusted-R² class),
+  # not listed here; "df model" and "covariance type" have no verified STATO/
+  # metacheck term and stay untyped nominal labels (df model is a model-level
+  # PREDICTOR COUNT, not a test's own degrees of freedom — reusing STATO:0000069
+  # for it would be the same category error the file header warns against;
+  # covariance type, e.g. "nonrobust"/"cluster"/"HC1", is a categorical
+  # setting, not a statistic at all).
   "pr(>f)"                  = "STATO:0000700",   # aov/anova p column
   "pr(>chi)"                = "STATO:0000700",
   "pr(>chisq)"              = "STATO:0000700",
@@ -706,7 +771,65 @@
                       z = "STATO:0000376"),
   "var.test"      = c(f = "STATO:0000282", statistic = "STATO:0000282"),
   "t.test"        = c(t = "STATO:0000176", statistic = "STATO:0000176"),
-  "ks.test"       = c(d = "mcSTAT:kolmogorovSmirnovD", statistic = "mcSTAT:kolmogorovSmirnovD")
+  "ks.test"       = c(d = "mcSTAT:kolmogorovSmirnovD", statistic = "mcSTAT:kolmogorovSmirnovD"),
+  # effsize::cohen.d()'s printed "d estimate" — see .r_output_cohend()
+  # (R/r-output.R), which names its recovered column plainly "d". Without this,
+  # bare "d" is ambiguous with ks.test()'s Kolmogorov-Smirnov D above.
+  "cohen.d"       = c(d = "STATO:0000618"),
+  # effectsize::cohens_d()/repeated_measures_d() — see .r_output_effectsize_d()
+  # (R/r-output.R), a different package's different print shape for the same
+  # Cohen's d statistic, also named plainly "d" and so needing the same
+  # disambiguation from ks.test()'s D.
+  "cohens_d"            = c(d = "STATO:0000618"),
+  "repeated_measures_d" = c(d = "STATO:0000618"),
+  # ── scipy.stats' printed repr (Python, not R) ──────────────────────────────
+  # A notebook's saved cell output prints e.g. "TtestResult(statistic=23.06,
+  # pvalue=1.2e-28, df=51)" — read by .ipynb_read_tables() (R/stat-tables.R),
+  # which parses this same "name=value" fragment shape via the shared
+  # .r_output_oneline() (R/r-output.R). The class name IS the call, unlike R's
+  # echoed statement text, so it is matched literally (.ipynb_result_class())
+  # rather than recovered from a preceding call. Every class below was
+  # confirmed to actually occur across two independent Zenodo samples (170 +
+  # 51 real notebooks, from a generic search and a scipy.stats/statsmodels/
+  # pingouin-targeted search respectively) — not a guess at scipy's full API
+  # surface; expand further only as more classes are actually observed.
+  # ttest_1samp()/ttest_ind()/ttest_rel() all return a TtestResult/
+  # Ttest_indResult, all Student's t — unambiguous, same reasoning as R's own
+  # "t.test" entry above.
+  "ttestresult"        = c(statistic = "STATO:0000176"),
+  "ttest_indresult"    = c(statistic = "STATO:0000176"),
+  # linregress()'s rvalue/slope/intercept/stderr are typed directly by their
+  # OWN header text in .STATO_MAP (no call-based disambiguation needed — none
+  # of those names collides with another statistic family the way bare "W" or
+  # "statistic" do), so no entry is needed here for them; only "pvalue" is
+  # generic enough to need no call either (already typed via .STATO_MAP's
+  # "pvalue" key). Listed here only for discoverability — linregressresult
+  # itself needs NO entry.
+  #
+  # mannwhitneyu()'s statistic is the rank-sum U (independent samples) — the
+  # same family R's wilcox.test() calls "W" for two independent samples
+  # (mcSTAT:wilcoxonW; see wilcox.test's entry above and its own header
+  # comment on why "statistic" is deliberately absent there — R's wilcox.test
+  # is ambiguous between W and V depending on design, but scipy splits that
+  # into two separate, unambiguous functions/classes instead).
+  "mannwhitneyuresult" = c(statistic = "mcSTAT:mannWhitneyU"),
+  # wilcoxon()'s statistic is the signed-rank statistic (paired/one-sample) —
+  # confirmed directly against scipy's own docs: "the sum of the ranks of the
+  # differences", the same quantity R's wilcox.test calls "V" in that design.
+  "wilcoxonresult"     = c(statistic = "mcSTAT:wilcoxonV"),
+  # kruskal()'s statistic is the H statistic. OLS4 has "Kruskal Wallis test"
+  # (STATO:0000094, the TEST) but no class for the H value itself — verified
+  # directly against OLS4's search, the same test-vs-statistic gap R's own
+  # kruskal.test() entry above already works around with a metacheck term
+  # (there STATO:0000030, chi-squared, since R prints it AS a chi-squared
+  # statistic; scipy's own H is the more standard name for the same quantity).
+  "kruskalresult"      = c(statistic = "mcSTAT:kruskalWallisH"),
+  # kstest()'s statistic is the same Kolmogorov-Smirnov D that R's ks.test()
+  # entry above already resolves; scipy additionally returns
+  # statistic_location/statistic_sign (newer scipy versions), for which no
+  # verified STATO/metacheck term exists yet and which stay untyped nominal
+  # labels (the guaranteed stato_type_column() fallback) rather than guessed.
+  "kstestresult"       = c(statistic = "mcSTAT:kolmogorovSmirnovD")
 )
 
 # Resolve a header GIVEN the producing call. Returns a "STATO:..." id, a
@@ -768,7 +891,14 @@ stato_type_column <- function(header, call_fn = NULL) {
   # "<fun> (<variable>)" — e.g. "mean (y)" — so several aggregated variables
   # stay distinct in one table. The STATISTIC is the function; the parenthesised
   # variable is which column it was computed on, and is recorded in the label.
-  if (grepl("^[a-z._]+ \\([^)]+\\)$", key)) key <- sub(" \\(.*$", "", key)
+  # Skipped when the FULL key (unstripped) is already a known statsmodels
+  # header of the exact same shape ("prob (f-statistic)") — that parenthetical
+  # names WHICH quantity's p-value this is, not a variable a function was
+  # computed over, so stripping it would collapse a real, mapped key ("prob
+  # (f-statistic)" -> STATO:0000700) down to a bare "prob" with no entry at
+  # all, silently losing a real, verified mapping to the R-capture heuristic.
+  if (!key %in% names(.STATO_MAP) && grepl("^[a-z._]+ \\([^)]+\\)$", key))
+    key <- sub(" \\(.*$", "", key)
   if (!nzchar(key))
     return(list(annotationValue = "", termSource = "", termAccession = ""))
 
@@ -788,6 +918,30 @@ stato_type_column <- function(header, call_fn = NULL) {
                 termAccession = paste0("http://purl.obolibrary.org/obo/",
                                        sub(":", "_", hit))))
   }
+
+  # jamovi's t-test tables (ttestOneS/ttestIS/ttestPS) name their primary
+  # test-statistic column literally "stat", with the bracket naming WHICH
+  # test produced it. Unlike f[gg]/p[hf]/df[stud]/md[stud]/es[stud] — where
+  # the bracket names a correction/variant of the SAME quantity, so stripping
+  # it and looking up the bare key is correct — here the bracket changes what
+  # the quantity IS, so it must be resolved before the generic strip-and-
+  # lookup below discards it (a bare "stat" has no entry in either vocabulary
+  # at all). Tags confirmed against a real corpus paper's ttestOneS/ttestIS
+  # output (stat[stud], stat[welc]) and this codebase's own note on the third
+  # jamovi variant (R/stat-tables.R's "stud/welc/mann/bf" comment): stud/welc
+  # are both Student's/Welch's t; mann is Mann-Whitney's U, for which STATO
+  # has only the TEST class (STATO:0000076) and no statistic class — the same
+  # gap already documented above for wilcox.test(), so it reuses that same
+  # minted term (mcSTAT:wilcoxonW — R's wilcox.test() prints the identical
+  # rank-sum statistic for two independent samples).
+  if (grepl("^stat\\[(stud|welc)\\]$", key))
+    return(list(annotationValue = unname(.STATO_LABELS[["STATO:0000176"]]),
+                termSource = "STATO",
+                termAccession = "http://purl.obolibrary.org/obo/STATO_0000176"))
+  if (identical(key, "stat[mann]"))
+    return(list(annotationValue = unname(.MC_STAT_LABELS[["wilcoxonW"]]),
+                termSource = "metacheck",
+                termAccession = paste0(.MC_STAT_NS, "wilcoxonW")))
 
   # Candidate keys: the header as written, then the same with a trailing
   # variant/correction suffix removed (f[gg], p[hf]) — see

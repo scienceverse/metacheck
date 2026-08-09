@@ -16,7 +16,7 @@ produced the table, when recoverable). Empty list if the archive has no
 structure XML or no tables decode.
 }
 \description{
-Ties the structure reader (\code{\link[=.spv_read_structure]{.spv_read_structure()}}, which table exists,
+Ties the structure reader (\code{.spv_read_structure()}, which table exists,
 what analysis produced it, which format its data is in) and the two
 decoders (\code{\link[=.spv_decode_light_table]{.spv_decode_light_table()}} for modern tables,
 \code{\link[=.spv_decode_legacy_data]{.spv_decode_legacy_data()}} + \code{\link[=.spv_decode_legacy_table]{.spv_decode_legacy_table()}} for pre-21

@@ -202,32 +202,65 @@ test_that("llm_max_calls", {
 })
 
 
-# tests that require api.groq.com
+# https://github.com/scienceverse/metacheck/issues/337 -- these tests used to
+# rely on recorded HTTP fixtures under tests/testthat/apis/api.groq.com/,
+# which drifted out of sync (a bare "groq" model resolves to whichever model
+# ellmer/Groq currently default to -- openai/gpt-oss-20b at the time of this
+# fix -- and no fixture was ever recorded for that specific model, so every
+# request hashed to "unexpected request" and silently fell through to a real
+# network call, or NA on failure). Mocking ellmer::chat() directly (as
+# "llm handles an empty structured result without error" below already does
+# for the structured path) tests the same llm() logic without depending on
+# live network access, a real API key, or fixture files staying in sync with
+# whatever Groq's current default model happens to be.
+
+test_that("llm warns on an unrecognised provider", {
+  # ellmer rejects an unknown provider before any network call is made, so
+  # this needs no mock -- kept in its own test (not inside "llm_use TRUE"
+  # below) so an active local_mocked_bindings(chat = ...) elsewhere can never
+  # accidentally swallow this real ellmer::chat() dispatch behaviour.
+  withr::local_options(metacheck.llm.use = TRUE, metacheck.llm.cache = FALSE)
+  expect_warning(x <- llm("hi", "repeat this", model = "not a model"),
+               "Can't find provider")
+})
 
 test_that("llm_use TRUE", {
-  skip_if(Sys.getenv("GROQ_API_KEY") == "")
-  llm_use(TRUE)
-  llm_model("groq")
+  withr::local_options(metacheck.llm.use = TRUE, metacheck.llm.cache = FALSE)
+
+  testthat::local_mocked_bindings(
+    chat = function(...) structure(list(
+      chat = function(text, echo = FALSE) {
+        is_num <- !is.na(suppressWarnings(as.numeric(text)))
+        if (is_num) "TRUE" else "FALSE"
+      }
+    ), class = "Chat"), .package = "ellmer")
 
   text <- c("hello", "number", "ten", 12)
   system_prompt <- "Is this a number? Answer only 'TRUE' or 'FALSE'"
-  is_number <- llm(text, system_prompt)
+  is_number <- llm(text, system_prompt, model = "groq/x")
   expect_equal(is_number$text, text)
   expect_equal(is_number$answer[[1]], "FALSE")
   expect_equal(is_number$answer[[4]], "TRUE")
 
-  expect_warning(x <- llm("hi", "repeat this", model = "not a model"),
-               "Can't find provider")
+  # duplicates should only generate 1 call per unique text
+  call_count <- 0
+  testthat::local_mocked_bindings(
+    chat = function(...) structure(list(
+      chat = function(text, echo = FALSE) {
+        call_count <<- call_count + 1
+        if (grepl("^[A-Za-z]$", text)) "TRUE" else "FALSE"
+      }
+    ), class = "Chat"), .package = "ellmer")
 
-  # duplicates should only generate 1 system_prompt
   text <- c("A", "A", 1, 1)
   system_prompt <- "Is this a letter A-Z? Answer only 'TRUE' or 'FALSE'"
-  is_letter <- llm(text, system_prompt)
+  is_letter <- llm(text, system_prompt, model = "groq/x")
 
   expect_equal(is_letter$text, text)
   expect_equal(is_letter$answer[[1]], is_letter$answer[[2]])
   expect_equal(is_letter$answer[[3]], is_letter$answer[[4]])
-}, "mock")
+  expect_equal(call_count, 2) # 4 inputs, 2 unique texts
+})
 
 
 test_that("llm_model_list", {
@@ -260,8 +293,16 @@ test_that(".llm_model_list_groq", {
 
 
 test_that("gemini", {
-  #skip_llm()
-  llm_use(TRUE)
+  # See the issue-337 note above test-llm.R:205 -- same stale-fixture problem,
+  # different provider (Gemini instead of Groq).
+  withr::local_options(metacheck.llm.use = TRUE, metacheck.llm.cache = FALSE)
+
+  testthat::local_mocked_bindings(
+    chat = function(...) structure(list(
+      chat = function(text, echo = FALSE) {
+        if (text %in% c("A", "E", "I", "O", "U")) "TRUE" else "FALSE"
+      }
+    ), class = "Chat"), .package = "ellmer")
 
   text <- LETTERS[1:2]
   system_prompt <- "Is this a vowel? Answer only 'TRUE' or 'FALSE'."
@@ -269,7 +310,7 @@ test_that("gemini", {
   obs <- llm(text, system_prompt, model = model)
   expect_equal(unclass(obs$answer),
                as.character(c(T, F)))
-}, "mock")
+})
 
 
 test_that(".llm_ollama_native", {

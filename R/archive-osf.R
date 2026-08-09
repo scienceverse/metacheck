@@ -87,7 +87,16 @@ osf_links <- function(paper) {
   other_osf <- text_search(paper, osf_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
-  dplyr::bind_rows(found_href, other_osf) |> unique()
+  # A real hyperlink and a bare body-text mention of the SAME project commonly
+  # differ only by a trailing slash (e.g. a hyperlink "osf.io/e6hps" vs. a
+  # plain-text mention "osf.io/e6hps/", captured by the trailing "/?" above).
+  # Left un-normalized, unique() below treats them as two different repos,
+  # which then gets queried, listed, and reported as two separate rows
+  # downstream (repo_check's own dedup only matches identical strings). Strip
+  # trailing slashes here, before dedup, so both spellings collapse to one row.
+  dplyr::bind_rows(found_href, other_osf) |>
+    dplyr::mutate(href = sub("/+$", "", href)) |>
+    unique()
 }
 
 
@@ -329,7 +338,10 @@ osf_check_id <- function(osf_id) {
 #'
 #' @param guid the 5-letter GUID
 #'
-#' @returns the type
+#' @returns the type, or `"inaccessible"` when the GUID is a validly-formed
+#'   OSF ID but the resource itself could not be reached (private, embargoed,
+#'   withdrawn, or deleted) -- distinct from `NA`, which means the input was
+#'   not a valid OSF ID at all
 #' @export
 #'
 #' @examples
@@ -358,6 +370,8 @@ osf_type <- function(guid) {
   )
   info <- osf_get_all_pages(url)
 
+  if (!is.null(attr(info, "osf_error"))) return("inaccessible")
+
   otype <- info$relationships$referent$links$related$meta$type
 
   otype %||% NA_character_
@@ -377,6 +391,27 @@ osf_type <- function(guid) {
   paste0(url, sep, "page[size]=100")
 }
 
+# Classify an HTTP status from the OSF API as an osf_error kind, or NULL for
+# a status that is not an error (2xx, or a transient one already retried by
+# req_retry()). Pulled out of osf_get_all_pages() as a pure function so the
+# status -> kind mapping is directly testable without mocking HTTP at all.
+.osf_status_error <- function(status) {
+  if (status %in% c(401, 403)) "forbidden"
+  else if (status == 404) "not_found"
+  else if (status == 410) "gone"
+  else if (status >= 400) "request_failed"
+  else NULL
+}
+
+# NULL cannot carry an attribute (attr(NULL, x) <- y errors), so an
+# osf_get_all_pages() failure is represented as an empty list() instead --
+# still length() == 0 for every existing caller, but able to carry osf_error.
+.osf_error_result <- function(kind) {
+  out <- list()
+  attr(out, "osf_error") <- kind
+  out
+}
+
 #' Get All OSF API Query Pages
 #'
 #' OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them
@@ -384,7 +419,15 @@ osf_type <- function(guid) {
 #' @param url the OSF API URL
 #' @param page_end The last page to get
 #'
-#' @returns a table of the returned data
+#' @returns a table of the returned data. When the request could not be
+#'   completed (e.g. a private, embargoed, withdrawn, or deleted resource, or
+#'   a network failure), this is an empty `list()` with an `osf_error`
+#'   attribute set to `"forbidden"`, `"not_found"`, `"gone"`, or
+#'   `"request_failed"` (a bare `NULL` cannot carry attributes in R, so it
+#'   would silently discard this) -- callers that only check
+#'   `length(result) == 0` keep working unchanged, and callers that need to
+#'   tell "inaccessible" apart from "genuinely empty" can check
+#'   `attr(result, "osf_error")`.
 #' @export
 #' @examples
 #' # get the 20 newest preprints
@@ -396,7 +439,90 @@ osf_type <- function(guid) {
 osf_get_all_pages <- function(url, page_end = Inf) {
   Sys.sleep(osf_delay())
 
-  content <- tryCatch({
+  content <- .osf_get_one_page(url)
+  if (!is.null(attr(content, "osf_error"))) return(content)
+
+  # A JSON array of resources (a listing) is auto-simplified by
+  # resp_body_json(simplifyVector = TRUE) into a data.frame already; a single
+  # resource (e.g. /guids/{id}/) stays a flat named list (one element per JSON
+  # field, of differing lengths) and must NOT be passed through bind_rows() --
+  # it would try to treat those fields as columns to recycle to equal length
+  # and error. Only a data.frame-shaped `data` (including a genuinely empty
+  # listing, `list()`) goes through the tibble-normalizing bind_rows() below;
+  # a single flat resource is returned as-is, unchanged from before.
+  next_url <- content$links$`next`
+  if (is.null(next_url)) {
+    if (is.data.frame(content$data) || length(content$data) == 0) {
+      return(dplyr::bind_rows(content$data))
+    }
+    return(content$data)
+  }
+
+  # `url` is not necessarily page 1 -- osf_preprint_list(page_start = N) starts
+  # from an arbitrary page, and page_end is the LAST page to fetch (absolute
+  # page number), not a page COUNT from wherever `url` started. next_url always
+  # encodes the page right after the current one, so current_page = next - 1;
+  # every later page's URL is then computable up front by substituting that
+  # number, no need to wait for each response before requesting the next one.
+  # api.osf.io does not need proactive throttling (10,000 requests/day
+  # authenticated; see the throttle decision log in .batch_query()), so the
+  # remaining pages are fetched in parallel instead of one-at-a-time. Falls
+  # back to the previous one-page-at-a-time recursion when total/per_page are
+  # not reported, so behaviour is unchanged for any response shape this hasn't
+  # been checked against.
+  next_page_num <- regmatches(next_url, regexpr("(?<=page=)\\d+", next_url, perl = TRUE))
+  next_page_num <- suppressWarnings(as.numeric(next_page_num))
+  total <- content$links$meta$total %||% content$meta$total
+  per_page <- content$links$meta$per_page %||% content$meta$per_page
+  if (!length(next_page_num) || is.na(next_page_num) ||
+      is.null(total) || is.null(per_page) || per_page <= 0) {
+    subdata <- osf_get_all_pages(next_url, page_end)
+    if (!is.null(attr(subdata, "osf_error"))) subdata <- NULL
+    return(tryCatch(dplyr::bind_rows(content$data, subdata), error = \(e) {
+      logger("osf_get_all_pages", list(url = url))
+      dplyr::bind_rows(content$data)
+    }))
+  }
+
+  current_page <- next_page_num - 1
+  last_page <- min(ceiling(total / per_page), page_end)
+  if (last_page < next_page_num) return(dplyr::bind_rows(content$data))
+
+  page_urls <- vapply(next_page_num:last_page,
+                      \(p) sub("page=\\d+", paste0("page=", p), next_url),
+                      character(1))
+
+  Sys.sleep(osf_delay())
+  # httptest2's mock-API mode does not fake req_perform_parallel() (see the
+  # note at the top of utils.R) -- same reason .batch_query() always uses
+  # req_perform_sequential(). .osf_get_one_page() covers one URL at a time
+  # only, so under testthat every remaining page is fetched with plain
+  # req_perform() in a loop (still avoids waiting on each page's `next` link,
+  # just not concurrent); for real runs the pages are fetched in parallel.
+  mocking <- isTRUE(Sys.getenv("TESTTHAT") == "true")
+  more_pages <- if (mocking) {
+    lapply(page_urls, .osf_get_one_page)
+  } else {
+    .osf_get_pages_parallel(page_urls)
+  }
+  # A later page failing does not invalidate the pages already collected; drop
+  # only the failed ones, same tolerance the previous recursive version had.
+  more_data <- lapply(more_pages, \(p) if (is.null(attr(p, "osf_error"))) p$data else NULL)
+
+  tryCatch(
+    do.call(dplyr::bind_rows, c(list(content$data), more_data)),
+    error = \(e) {
+      logger("osf_get_all_pages", list(url = url))
+      dplyr::bind_rows(content$data)
+    })
+}
+
+# Fetch and parse a single OSF API page. Returns the parsed content (a list
+# with $data and $links), or an .osf_error_result() list on failure -- pulled
+# out of osf_get_all_pages() so both the first page and the parallel-fetched
+# remaining pages share identical error handling.
+.osf_get_one_page <- function(url) {
+  tryCatch({
     resp <- httr2::request(.osf_max_page_size(url)) |>
       .osf_headers() |>
       httr2::req_error(is_error = \(resp) FALSE) |>
@@ -405,32 +531,47 @@ osf_get_all_pages <- function(url, page_end = Inf) {
         is_transient = \(resp) httr2::resp_status(resp) == 429
       ) |>
       httr2::req_perform()
+    sc <- httr2::resp_status(resp)
+    # A private, embargoed, withdrawn, or deleted OSF resource is a normal
+    # HTTP response (403/404/410), not a request failure -- req_error() above
+    # is told not to raise on it so the status can be read here and reported,
+    # rather than parsing whatever body the error page happens to carry as if
+    # it were real data (which used to silently look identical to "this
+    # resource genuinely has no data").
+    err <- .osf_status_error(sc)
+    if (!is.null(err)) {
+      logger("osf_get_all_pages", list(url = url, status = sc))
+      return(.osf_error_result(err))
+    }
     httr2::resp_body_json(resp, simplifyVector = TRUE)
   },
-  error = function(e) {
-    return(NULL)
+  error = function(e) .osf_error_result("request_failed"))
+}
+
+# Fetch several OSF API pages in parallel. Same per-URL return contract as
+# .osf_get_one_page() (a parsed content list, or an .osf_error_result() on
+# failure), so callers can treat the two interchangeably.
+.osf_get_pages_parallel <- function(urls) {
+  reqs <- lapply(urls, \(url) {
+    httr2::request(.osf_max_page_size(url)) |>
+      .osf_headers() |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_retry(max_tries = 3, is_transient = \(resp) httr2::resp_status(resp) == 429)
   })
+  resps <- httr2::req_perform_parallel(reqs, on_error = "continue", progress = FALSE)
 
-  next_url <- content$links$`next`
-  last_url <- content$links$last
-
-  subdata <- NULL
-  if (!is.null(next_url)) {
-    m <- gregexpr("(?<=page=)\\d+", next_url, perl = TRUE)
-    page <- regmatches(next_url, m)[[1]] |> as.numeric()
-    if (length(page) && page <= page_end) {
-      subdata <- osf_get_all_pages(next_url, page_end)
+  lapply(seq_along(urls), \(i) {
+    r <- resps[[i]]
+    if (inherits(r, "error")) return(.osf_error_result("request_failed"))
+    sc <- httr2::resp_status(r)
+    err <- .osf_status_error(sc)
+    if (!is.null(err)) {
+      logger("osf_get_all_pages", list(url = urls[i], status = sc))
+      return(.osf_error_result(err))
     }
-  }
-
-  data <- tryCatch({
-    dplyr::bind_rows(content$data, subdata)
-  }, error = \(e) {
-    logger("osf_get_all_pages", list(url = url))
-    return(content$data)
+    tryCatch(httr2::resp_body_json(r, simplifyVector = TRUE),
+             error = \(e) .osf_error_result("request_failed"))
   })
-
-  return(data)
 }
 
 
@@ -796,29 +937,32 @@ osf_file_download <- function(osf_id,
 
     files_to_download <- which(files$kind == "file")
 
-    # urls <- files$download_url[files_to_download]
-    # resps <- .batch_query(urls, msg = "Downloading Files", req_func = .osf_headers)
-
-    # save downloaded content to temp files
-    for (j in seq_along(files_to_download)) {
-      i <- files_to_download[[j]]
-      sprintf("Downloading file %d/%d: %s",
-               j, length(files_to_download), files$name[[i]]) |>
-        list(what = _) |>
-        pb$tick(0, tokens = _)
-
-      url <- files$download_url[i]
-      tryCatch({
-        resp <- .batch_query(url, msg = NULL, req_func = .osf_headers)[[1]]
-        #resp <- resps[[j]]
-        if (!inherits(resp, "error") && httr2::resp_status(resp) == 200) {
-          writeBin(httr2::resp_body_raw(resp),
-                   file.path(temppath, files$osf_id[[i]]))
-        }
-      },
-      error = \(e) {
-        logger("osf_file_download", list(error = e$message, url = url))
-      })
+    # OSF's download_url redirects (per file) to a pre-signed cloud-storage URL
+    # (Google Cloud Storage), not a shared, rate-limited endpoint -- a live burst
+    # of 23 concurrent requests returned all-200 with no rate-limit headers
+    # (checked 2026-08-08; see .download_many_parallel()'s comment in
+    # repo-download.R for the same finding). Fetch in parallel instead of one
+    # request at a time.
+    "Downloading files" |>
+      list(what = _) |>
+      pb$tick(0, tokens = _)
+    urls <- files$download_url[files_to_download]
+    dests <- file.path(temppath, files$osf_id[files_to_download])
+    errs <- .download_many_parallel(urls, dests, files$size[files_to_download])
+    failed_j <- which(!is.na(errs))
+    for (j in failed_j) {
+      logger("osf_file_download",
+             list(error = errs[j], url = urls[j]))
+    }
+    # Report failures instead of only logging them -- without this, a file
+    # that failed after retries looks the same as a complete download (the
+    # progress bar reaches N/N and it is silently absent from the result).
+    if (length(failed_j) > 0) {
+      message(sprintf(
+        "%d of %d file%s from %s failed to download after retries (e.g. %s: %s).",
+        length(failed_j), length(files_to_download),
+        plural(length(files_to_download)), osf_id,
+        basename(urls[failed_j[1]]), errs[failed_j[1]]))
     }
 
     "Setting up file structure" |>

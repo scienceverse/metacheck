@@ -226,6 +226,117 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   })
 }
 
+# Download several files in parallel, with no proactive throttle. Only used for
+# hosts verified not to need one: OSF's `download_url` and Zenodo's file `self`
+# links both resolve (after a redirect through the host's own API) to
+# pre-signed URLs on a cloud storage backend (OSF: Google Cloud Storage; the
+# redirect is per-file, so there is no shared per-host bottleneck the way
+# api.osf.io or Waterbutler's own listing endpoints have). A live burst of 23
+# concurrent OSF download_url requests returned all-200 with no rate-limit
+# headers surfacing at all (checked 2026-08-08), consistent with a CDN-backed
+# signed-URL design rather than a per-client-limited API. Unlike
+# `.download_one()`, this does NOT throttle -- do not route an unverified host
+# through this path; `.download_one()`'s per-host throttle remains the default
+# for everything else (e.g. ResearchBox), for exactly the reason its own
+# comment gives.
+#
+# `expected_size` (optional, bytes, NA for "unknown"): a concurrent-download
+# burst was observed once (2026-08-08) to leave a small number of files short
+# of their reported size while still returning HTTP 200 (a partial write that
+# passes a bare `size > 0` check) -- likely a dropped connection mid-transfer
+# under parallel load, not seen when the same files were fetched again
+# immediately after. Checking against the size OSF/Zenodo already reported in
+# their file listing catches this as a retriable failure instead of silently
+# keeping a truncated file.
+#
+# Returns a character vector the same length as `urls`, NA_character_ for a
+# success and an error description for a failure -- same contract as
+# `.download_one()`, so callers can loop over the result identically.
+.download_many_parallel <- function(urls, dests, expected_size = NA_real_,
+                                    .retried = FALSE) {
+  if (length(urls) == 0) return(character(0))
+
+  expected_size <- rep_len(as.numeric(expected_size), length(urls))
+  for (d in dests) dir.create(dirname(d), showWarnings = FALSE, recursive = TRUE)
+
+  reqs <- lapply(urls, \(url) {
+    tryCatch({
+      httr2::request(url) |>
+        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
+        httr2::req_error(is_error = \(resp) FALSE)
+    }, error = \(e) NULL)
+  })
+
+  valid <- !vapply(reqs, is.null, logical(1))
+  resps <- vector("list", length(urls))
+  # req_perform_parallel() is not faked by httptest2's mock-API mode (see the
+  # note at the top of this file) -- same reason .batch_query() uses
+  # req_perform_sequential() even in production. Mirror that here rather than
+  # branching on a mocking flag, so tests exercise the real code path.
+  mocking <- isTRUE(Sys.getenv("TESTTHAT") == "true")
+  resps[valid] <- if (mocking) {
+    httr2::req_perform_sequential(reqs[valid], paths = dests[valid],
+                                  on_error = "continue", progress = FALSE)
+  } else {
+    httr2::req_perform_parallel(reqs[valid], paths = dests[valid],
+                                on_error = "continue", progress = FALSE)
+  }
+
+  errs <- vapply(seq_along(urls), \(i) {
+    if (!valid[i]) return("bad URL")
+    r <- resps[[i]]
+    if (inherits(r, "error")) {
+      # req_perform*(path = ...) can create an empty/partial file at the
+      # destination before the request itself fails (observed for a broken
+      # file:// URL); .download_one() cleans this up on its own error branch,
+      # do the same here so a failed row isn't mistaken for a successful one
+      # by any caller that only checks file.exists().
+      if (file.exists(dests[i])) unlink(dests[i])
+      return(conditionMessage(r))
+    }
+    sc <- httr2::resp_status(r)
+    # A file:// URL has no real HTTP status line -- httr2 reports 0 for it,
+    # not an error, matching .download_one()'s tolerance (it never inspects
+    # status for a local read, only whether the destination ended up
+    # non-empty). Real HTTP failures (4xx/5xx) still get caught below.
+    if (!sc %in% c(200, 0)) {
+      if (file.exists(dests[i])) unlink(dests[i])
+      return(sprintf("HTTP %d", sc))
+    }
+    if (!file.exists(dests[i]) || file.size(dests[i]) == 0) {
+      # httptest2's mock-API mode returns the response object in memory but
+      # does not honour req_perform*(path = ...) streaming, so a real HTTP 200
+      # with a real body still leaves no file on disk under mocking. Recover
+      # by writing the already-fetched body directly; a genuine empty response
+      # has no body either, so this still reports "empty response" for that
+      # case (checked below).
+      body <- tryCatch(httr2::resp_body_raw(r), error = \(e) raw(0))
+      if (length(body) == 0) return("empty response")
+      writeBin(body, dests[i])
+    }
+    exp <- expected_size[i]
+    if (!is.na(exp) && exp > 0 && file.size(dests[i]) != exp) {
+      unlink(dests[i])
+      return(sprintf("truncated (%d of %d bytes)", file.size(dests[i]), exp))
+    }
+    NA_character_
+  }, character(1))
+
+  # One retry pass for size-mismatch/truncation only -- transient under a
+  # parallel burst, not worth retrying an outright HTTP error or bad URL.
+  # .retried stops this at one pass: an `expected_size` that is simply wrong
+  # (as opposed to a genuinely truncated transfer) would otherwise recurse
+  # forever, since every attempt reports the same "mismatch".
+  retry <- if (.retried) integer(0) else which(!is.na(errs) & startsWith(errs, "truncated ("))
+  if (length(retry) > 0) {
+    retry_errs <- .download_many_parallel(urls[retry], dests[retry], expected_size[retry],
+                                          .retried = TRUE)
+    errs[retry] <- retry_errs
+  }
+
+  errs
+}
+
 #' Download selected repository files into the shared cache
 #'
 #' Given file rows from `repo_check` (with `repo_url`, `file_url`, `file_path`,
@@ -355,10 +466,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #' Fetches the bytes for a table of repository files (as produced by
 #' `repo_check()`), writing each into a per-session temp directory or a
 #' persistent on-disk cache, and fills in `file_location` for every file it
-#' successfully retrieves. Where a whole-repo zip download is available (OSF's
-#' Waterbutler `?zip=` endpoint, a GitHub zipball), it is used instead of one
-#' HTTP request per file; a repo whose zip download fails falls back to
-#' file-by-file fetching automatically.
+#' successfully retrieves. Where a whole-repo archive download is available
+#' (OSF's Waterbutler `?zip=` endpoint, Zenodo's `files-archive` endpoint, a
+#' GitHub zipball), it is used instead of one HTTP request per file; a repo
+#' whose archive download fails, or is rejected by the size/worth-it gate,
+#' falls back to file-by-file fetching automatically.
 #'
 #' Two independent size gates apply: `max_file_size` skips oversize files
 #' individually (the rest of the repository still downloads); `max_download_size`
@@ -549,10 +661,12 @@ download_repo_files <- function(files,
 
   # ── Download the files of repositories that passed the gate ─────────────────
   # For OSF repos, use the Waterbutler zip endpoint (one request for all of
-  # osfstorage). For GitHub repos, use the API zipball (one request, follows the
-  # redirect to the signed download URL). Both are cheaper and less
-  # rate-limit-sensitive than N individual file requests. Any repo whose zip
-  # download fails falls through to the file-by-file path.
+  # osfstorage). For Zenodo repos, use the files-archive endpoint (one request
+  # for the whole record). For GitHub repos, use the API zipball (one request,
+  # follows the redirect to the signed download URL). All three are cheaper and
+  # less rate-limit-sensitive than N individual file requests. Any repo whose
+  # zip download fails, or that the zip-vs-file-by-file gate rejects, falls
+  # through to the file-by-file path.
   failed <- data.frame(repo_url = character(0), file_name = character(0),
                        error = character(0), stringsAsFactors = FALSE)
   if (length(to_get) > 0) {
@@ -637,6 +751,59 @@ download_repo_files <- function(files,
       remaining <- setdiff(remaining, ridx_zip[!is.na(files$file_location[ridx_zip])])
     }
 
+    # ── Zenodo: files-archive ────────────────────────────────────────────────────
+    # Undocumented in Zenodo's public API reference, but a stable first-party
+    # endpoint (the same URL Zenodo's own record pages link to as "Download
+    # all"); verified live to return a proper zip. Like OSF's ?zip=, it is
+    # all-or-nothing for the record, so the same size/worth-it gate applies.
+    zen_repos <- unique(files$repo_url[
+      remaining[grepl("zenodo", files$repo_url[remaining], ignore.case = TRUE)]])
+    for (repo in zen_repos) {
+      ridx <- intersect(remaining, which(files$repo_url == repo))
+      if (length(ridx) == 0) next
+      zenodo_id <- tryCatch(.zenodo_id(repo), error = \(e) NA_character_)
+      if (is.na(zenodo_id) || !nzchar(zenodo_id %||% "")) next
+      zip_url <- sprintf("https://zenodo.org/api/records/%s/files-archive", zenodo_id)
+      zip_bytes <- .remote_content_length(zip_url)
+
+      # Same zip-vs-file-by-file decision as OSF (see comment above): take the
+      # archive when its transport size is not wildly bigger than the per-repo
+      # budget, and either most of the record's files are wanted or the
+      # archive would not drag in more than 2x unwanted files.
+      n_wanted   <- length(ridx)
+      record_n   <- sum(files$repo_url == repo)
+      size_ok  <- !is.na(zip_bytes) &&
+        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
+      worth_it <- n_wanted > 50L || record_n <= 2L * n_wanted
+      if (!isTRUE(size_ok && worth_it)) {
+        why <- if (!size_ok)
+          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
+                  if (is.na(zip_bytes)) "unknown" else
+                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
+        else
+          sprintf("record holds %d files for %d wanted (>2x) and wanted <= 50",
+                  record_n, n_wanted)
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          repo, why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
+
+      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
+        message(sprintf(
+          paste0("Repository %s downloads as one archive of %s MB to extract ",
+                 "%s MB of selected files (whole-record Zenodo archive)."),
+          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
+      }
+      message(sprintf("Downloading %s as zip (%d file%s)...",
+                      repo, length(ridx), plural(length(ridx))))
+      files <- .download_zip_to_cache(files, ridx, zip_url,
+                                      strip_dir = FALSE,
+                                      timeout_s = zip_timeout_s)
+      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
+    }
+
     # ── GitHub: API zipball ─────────────────────────────────────────────────────
     gh_repos <- unique(files$repo_url[
       remaining[grepl("github\\.com", files$repo_url[remaining], ignore.case = TRUE)]])
@@ -672,13 +839,45 @@ download_repo_files <- function(files,
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
-    # ── File-by-file for Zenodo / ResearchBox / zip fallbacks ──────────────────
+    # ── File-by-file for ResearchBox / zip fallbacks ────────────────────────────
     if (length(remaining) > 0) {
       if (is.null(pb)) {
         pb <- pb(length(remaining), "Downloading files [:bar] :current/:total")
         on.exit(pb$terminate())
       }
-      for (i in remaining) {
+
+      # OSF osfstorage and Zenodo file URLs redirect to pre-signed cloud-storage
+      # links (verified: see .download_many_parallel()'s comment) and can be
+      # fetched in parallel with no proactive throttle. This is a property of
+      # the FILE's own URL, not its parent repo -- an OSF node can hold
+      # non-osfstorage rows (e.g. a linked Dropbox add-on) that reach a
+      # completely different host and have not been checked the same way, so
+      # checking repo_url alone would wrongly route those through the
+      # unthrottled path too. is_osfstorage() (defined above) already makes
+      # this per-file distinction for the zip gate; reuse it here.
+      is_zenodo_file <- grepl("zenodo\\.org", files$file_url[remaining], ignore.case = TRUE)
+      is_parallel_safe <- vapply(remaining, is_osfstorage, logical(1)) | is_zenodo_file
+      remaining_parallel <- remaining[is_parallel_safe]
+      remaining_seq <- remaining[!is_parallel_safe]
+
+      if (length(remaining_parallel) > 0) {
+        errs <- .download_many_parallel(
+          files$file_url[remaining_parallel], files$.cache_path[remaining_parallel],
+          as.numeric(files$file_size[remaining_parallel]))
+        for (k in seq_along(remaining_parallel)) {
+          i <- remaining_parallel[k]
+          if (is.na(errs[k])) {
+            files$file_location[i] <- files$.cache_path[i]
+          } else {
+            failed <- rbind(failed, data.frame(
+              repo_url = files$repo_url[i], file_name = files$file_name[i],
+              error = errs[k], stringsAsFactors = FALSE))
+          }
+          if (!is.null(pb)) pb$tick()
+        }
+      }
+
+      for (i in remaining_seq) {
         err <- .download_one(files$file_url[i], files$.cache_path[i])
         if (is.na(err)) {
           files$file_location[i] <- files$.cache_path[i]

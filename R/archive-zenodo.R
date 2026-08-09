@@ -27,7 +27,13 @@ zenodo_links <- function(paper) {
   other_zen <- text_search(paper, zen_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
-  links <- dplyr::bind_rows(found_href, other_zen) |> unique()
+  # See osf_links() for why this normalization is needed: a real hyperlink and
+  # a bare body-text mention of the same repo commonly differ only by a
+  # trailing slash, and left un-normalized that turns one repo into two
+  # throughout repo_check.
+  links <- dplyr::bind_rows(found_href, other_zen) |>
+    dplyr::mutate(href = sub("/+$", "", href)) |>
+    unique()
 
   links$zenodo_url <- links$href
   links$zenodo_id <- .zenodo_id(links$zenodo_url)
@@ -407,29 +413,77 @@ zenodo_file_download <- function(zenodo_id,
   n <- nrow(files)
   files$downloaded <- FALSE
 
-  for (i in seq_len(n)) {
-    ok <- FALSE
-    if (!is.na(files$self[[i]]) && nzchar(files$self[[i]])) {
-      # write to a stable temp filename (use Zenodo file `id`)
-      target_path <- file.path(temppath, files$id[[i]])
-      resp <- tryCatch(
-        {
-          httr2::request(files$self[[i]]) |>
-            httr2::req_timeout(600) |>
-            httr2::req_error(is_error = \(resp) FALSE) |>
-            httr2::req_perform()
-        },
-        error = \(e) NULL
-      )
-      if (!is.null(resp) && httr2::resp_status(resp) == 200) {
-        writeBin(httr2::resp_body_raw(resp), target_path)
-        ok <- TRUE
+  # --- bulk archive, when every file in the record survived the size filters ---
+  # files-archive is all-or-nothing for the record (undocumented in Zenodo's API
+  # reference, but a stable first-party endpoint -- the same URL Zenodo's own
+  # record pages link to as "Download all"). It is only used here when nothing
+  # was filtered out above, so the archive's contents are exactly the files we
+  # want -- no wasted transport, unlike the general download_repo_files() case
+  # where a caller may want only a subset of a record.
+  used_bulk <- FALSE
+  n_in_record <- length(files_list)
+  if (n == n_in_record) {
+    zip_url <- sprintf("https://zenodo.org/api/records/%s/files-archive", zenodo_id)
+    zip_path <- file.path(temppath, "archive.zip")
+    dl_ok <- tryCatch({
+      resp <- httr2::request(zip_url) |>
+        httr2::req_timeout(600) |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
+        httr2::req_perform(path = zip_path)
+      httr2::resp_status(resp) == 200 && file.exists(zip_path) && file.size(zip_path) > 0
+    }, error = \(e) FALSE)
+
+    if (isTRUE(dl_ok)) {
+      entries <- tryCatch(utils::unzip(zip_path, list = TRUE), error = \(e) NULL)
+      if (!is.null(entries) && nrow(entries) > 0) {
+        extract_dir <- file.path(temppath, "extracted")
+        dir.create(extract_dir)
+        tryCatch(utils::unzip(zip_path, exdir = extract_dir), error = \(e) NULL)
+        for (i in seq_len(n)) {
+          src <- file.path(extract_dir, files$key[[i]])
+          if (file.exists(src) && file.size(src) > 0) {
+            file.copy(src, file.path(temppath, files$id[[i]]))
+            files$downloaded[i] <- TRUE
+          }
+        }
+        used_bulk <- all(files$downloaded)
       }
     }
-    files$downloaded[i] <- isTRUE(ok)
-    paste0("Downloading file ", i, " of ", n) |>
+    unlink(zip_path)
+    "Downloaded as one archive" |>
       list(what = _) |>
       pb$tick(0, tokens = _)
+  }
+
+  # --- file-by-file fallback (used when the bulk archive was skipped, or
+  # extraction did not account for every wanted file) ----
+  if (!used_bulk) {
+    for (i in seq_len(n)) {
+      if (isTRUE(files$downloaded[i])) next   # already extracted from the archive
+      ok <- FALSE
+      if (!is.na(files$self[[i]]) && nzchar(files$self[[i]])) {
+        # write to a stable temp filename (use Zenodo file `id`)
+        target_path <- file.path(temppath, files$id[[i]])
+        resp <- tryCatch(
+          {
+            httr2::request(files$self[[i]]) |>
+              httr2::req_timeout(600) |>
+              httr2::req_error(is_error = \(resp) FALSE) |>
+              httr2::req_perform()
+          },
+          error = \(e) NULL
+        )
+        if (!is.null(resp) && httr2::resp_status(resp) == 200) {
+          writeBin(httr2::resp_body_raw(resp), target_path)
+          ok <- TRUE
+        }
+      }
+      files$downloaded[i] <- isTRUE(ok)
+      paste0("Downloading file ", i, " of ", n) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+    }
   }
 
   # copy to flat target directory using original filename if available

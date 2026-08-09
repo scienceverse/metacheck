@@ -9,7 +9,7 @@ test_that("code_check offline", {
   expect_equal(mo$traffic_light, "na")
   expect_null(mo$table)
   exp <- data.frame(paper_id = paper$paper_id,
-                    code_file_n = 0)
+                    code_n = 0)
   expect_equal(mo$summary_table, exp)
   expect_match(mo$summary_text, "0")
   expect_match(mo$report, "0")
@@ -25,7 +25,7 @@ test_that("OSF no files", {
 
   expect_equal(mo$traffic_light, "na")
   exp <- data.frame(paper_id = paper$paper_id,
-                    code_file_n = 0)
+                    code_n = 0)
   expect_equal(mo$summary_table, exp)
   expect_match(mo$summary_text, "0")
   expect_match(mo$report, "0")
@@ -37,13 +37,14 @@ test_that("no code files", {
   mo <- module_run(paper, module)
 
   exp <- data.frame(paper_id = paper$paper_id,
-                    code_file_n = 0)
+                    code_n = 0)
   expect_equal(mo$summary_table, exp)
 
   # JASP is listed alongside the analysed languages (see `listed_langs` in the
   # module): a .jasp is a binary bundle we count but do not parse. Mplus and
-  # MATLAB were added to `listed_langs` alongside JASP/R/SAS/SPSS/Stata.
-  exp <- "We found 0 R, 0 SAS, 0 SPSS, 0 Stata, 0 Mplus, 0 MATLAB, and 0 JASP code files."
+  # MATLAB were added to `listed_langs` alongside JASP/R/SAS/SPSS/Stata, and
+  # Python (.py and .ipynb) after them.
+  exp <- "We found 0 R, 0 Python, 0 SAS, 0 SPSS, 0 Stata, 0 Mplus, 0 MATLAB, and 0 JASP code files."
   expect_equal(mo$summary_text, exp)
   expect_equal(mo$report, exp)
 }, "mock")
@@ -182,7 +183,7 @@ test_that("code_check local_path no code files", {
   mo <- module_run(test_paper(), "code_check", local_path = tmp)
 
   expect_equal(mo$traffic_light, "na")
-  expect_equal(mo$summary_table$code_file_n, 0)
+  expect_equal(mo$summary_table$code_n, 0)
 })
 
 test_that("code_check local_path finds code files", {
@@ -244,6 +245,89 @@ test_that("code_check records loaded packages per file and per paper", {
   expect_match(paste(mo$report, collapse = "\n"), "ggplot2")
 })
 
+test_that("code_check flags no pinned environment as a reproducibility gap", {
+  tmp <- withr::local_tempdir()
+  writeLines(c("library(dplyr)", "x <- 1"), file.path(tmp, "analysis.R"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+
+  expect_false(mo$summary_table$code_version_pinned)
+  expect_match(mo$summary_text, "No pinned")
+  expect_true(any(grepl("renv.lock", mo$report, fixed = TRUE)))
+})
+
+test_that("code_check detects a renv.lock and its R version + locked packages", {
+  tmp <- withr::local_tempdir()
+  writeLines(c("library(dplyr)", "x <- 1"), file.path(tmp, "analysis.R"))
+  writeLines(jsonlite::toJSON(list(
+    R = list(Version = "4.3.1",
+            Repositories = list(list(Name = "CRAN", URL = "https://cran.rstudio.com"))),
+    Packages = list(
+      dplyr = list(Package = "dplyr", Version = "1.1.3",
+                  Source = "Repository", Repository = "CRAN")
+    )
+  ), auto_unbox = TRUE, pretty = TRUE), file.path(tmp, "renv.lock"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+
+  expect_true(mo$summary_table$code_version_pinned)
+  expect_match(mo$summary_text, "pinned R/package environment")
+  report_txt <- paste(mo$report, collapse = "\n")
+  expect_match(report_txt, "renv.lock", fixed = TRUE)
+  expect_match(report_txt, "4.3.1", fixed = TRUE)
+  expect_match(report_txt, "dplyr", fixed = TRUE)
+})
+
+test_that("code_check detects a sessionInfo.txt dump by filename + content", {
+  tmp <- withr::local_tempdir()
+  writeLines(c("library(dplyr)", "x <- 1"), file.path(tmp, "analysis.R"))
+  writeLines(c(
+    "R version 4.4.2 (2024-10-31)",
+    "Platform: aarch64-apple-darwin20",
+    "Running under: macOS Sequoia 15.1"
+  ), file.path(tmp, "sessionInfo.txt"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+
+  expect_true(mo$summary_table$code_version_pinned)
+  report_txt <- paste(mo$report, collapse = "\n")
+  expect_match(report_txt, "sessionInfo", fixed = TRUE)
+  expect_match(report_txt, "4.4.2", fixed = TRUE)
+})
+
+test_that("code_check requires an actual groundhog/checkpoint pin, not just library()", {
+  tmp <- withr::local_tempdir()
+  # library(groundhog) alone does not pin anything -- must not count.
+  writeLines(c("library(groundhog)", "x <- 1"), file.path(tmp, "analysis.R"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_false(mo$summary_table$code_version_pinned)
+})
+
+test_that("code_check detects a real groundhog.library() date-pin", {
+  tmp <- withr::local_tempdir()
+  writeLines(c(
+    'groundhog.library("dplyr", "2022-01-01")',
+    "x <- 1"
+  ), file.path(tmp, "analysis.R"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_true(mo$summary_table$code_version_pinned)
+  expect_match(paste(mo$report, collapse = "\n"), "groundhog", fixed = TRUE)
+})
+
+test_that("code_check detects a real checkpoint() date-pin", {
+  tmp <- withr::local_tempdir()
+  writeLines(c(
+    'checkpoint("2022-01-01")',
+    "x <- 1"
+  ), file.path(tmp, "analysis.R"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_true(mo$summary_table$code_version_pinned)
+  expect_match(paste(mo$report, collapse = "\n"), "checkpoint", fixed = TRUE)
+})
+
 test_that("code_check merges packages into a supplied manifest", {
   withr::local_options(metacheck.llm.use = FALSE)
   local_path <- test_path("fixtures", "code_files")
@@ -302,7 +386,7 @@ test_that("code_check local_only = TRUE with no local_path returns na", {
   mo <- module_run(test_paper(), "code_check", local_only = TRUE)
 
   expect_equal(mo$traffic_light, "na")
-  expect_equal(mo$summary_table$code_file_n, 0)
+  expect_equal(mo$summary_table$code_n, 0)
 })
 
 test_that("code_check local_only = TRUE with online URLs but no local_path returns na", {
@@ -311,7 +395,7 @@ test_that("code_check local_only = TRUE with online URLs but no local_path retur
   mo <- module_run(paper, "code_check", local_only = TRUE)
 
   expect_equal(mo$traffic_light, "na")
-  expect_equal(mo$summary_table$code_file_n, 0)
+  expect_equal(mo$summary_table$code_n, 0)
 }, "mock")
 
 test_that("code_check local_only = FALSE is the same as the default", {
@@ -360,11 +444,27 @@ test_that("parse errors", {
       "ok.qmd"
     ),
     file_url = rep(NA_character_, 8),
-    # file_size is intentionally omitted: the exact byte count depends on the
-    # line endings of the checked-out fixtures (LF vs CRLF), which differs by
-    # platform/git config. It is asserted separately below in an OS-independent
-    # way rather than matched against hard-coded bytes.
+    # file_size and file_location are intentionally omitted: file_size's exact
+    # byte count depends on the line endings of the checked-out fixtures (LF vs
+    # CRLF), which differs by platform/git config, and file_location is an
+    # absolute path that depends on where the repo is checked out. Both are
+    # asserted separately below in an environment-independent way rather than
+    # matched against hard-coded values.
+    # file_path: each fixture file sits directly in local_path with no
+    # subdirectory, so it is identical to file_name here.
+    file_path = c(
+      "error-ok.qmd", "error.R", "error.Rmd", "error.qmd",
+      "knit-error.Rmd", "ok.R", "ok.Rmd", "ok.qmd"
+    ),
     file_type = rep("code", 8),
+    # data_type / doc_role / group come from the data_check classification
+    # layer that repo_check now carries through (data_classify_files() and the
+    # study-grouping pass): every fixture here is a plain code file in a single
+    # unnamed study, so the type is "code", there is no documentation role, and
+    # all rows share one group.
+    data_type = rep("code", 8),
+    doc_role = rep(NA_character_, 8),
+    group = rep("ex1", 8),
     language = rep("R", 8),
     checked = rep(TRUE, 8),
     parse_error = rep(c(TRUE, FALSE), c(4, 4)),
@@ -395,8 +495,10 @@ test_that("parse errors", {
   ) |> dplyr::arrange(file_name)
   obs <- dplyr::arrange(mo$table, file_name)
 
-  # compare every column except file_size (line-ending / OS dependent)
-  for (nm in setdiff(names(obs), "file_size")) {
+  # compare every column except file_size (line-ending / OS dependent) and
+  # file_location (an absolute path that depends on where the repo checkout
+  # lives)
+  for (nm in setdiff(names(obs), c("file_size", "file_location"))) {
     expect_equal(obs[[nm]], exp[[nm]])
   }
 
@@ -404,6 +506,11 @@ test_that("parse errors", {
   # depending on the exact byte count (which varies with LF vs CRLF endings)
   expect_true(all(obs$file_size > 0))
   expect_equal(length(obs$file_size), 8)
+
+  # file_location: each fixture file was read locally, so every row should
+  # resolve to an existing path on disk (the absolute value itself depends on
+  # the checkout location, so it is not matched against a hard-coded string)
+  expect_true(all(file.exists(obs$file_location)))
 
   # summary table
   exp <- data.frame(
@@ -416,7 +523,10 @@ test_that("parse errors", {
     code_min_comments = 0.2,
     code_parse_errors = 4,
     # distinct packages across all 8 files: dplyr + tidyr (from ok.R)
-    code_packages_n = 2L
+    code_packages_n = 2L,
+    # none of these fixtures pin an R/package environment (no renv.lock,
+    # sessionInfo.txt, or groundhog/checkpoint date-pin call)
+    code_version_pinned = FALSE
   )
   expect_equal(mo$summary_table, exp)
 })

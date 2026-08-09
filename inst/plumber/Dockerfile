@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
 
 # install R dependencies (pre-cache heavy packages for better Docker layer caching)
 RUN R -e "install.packages(c('remotes', 'plumber'))"
-RUN R -e "remotes::install_cran(c('dplyr', 'tidyr', 'logger', 'progress', 'tidytext', 'SnowballC', 'xml2', 'statcheck', 'httr', 'httr2', 'jsonlite', 'quarto', 'knitr', 'arrow', 'ellmer', 'rvest', 'officer', 'DT', 'bibtex', 'bib2df', 'roxygen2', 'gitcreds', 'anytime', 'htmltools', 'base64enc', 'urltools', 'fs', 'rappdirs', 'curl'))"
+RUN R -e "remotes::install_cran(c('dplyr', 'tidyr', 'logger', 'progress', 'tidytext', 'SnowballC', 'xml2', 'statcheck', 'httr2', 'jsonlite', 'quarto', 'knitr', 'arrow', 'ellmer', 'rvest', 'officer', 'DT', 'bibtex', 'bib2df', 'roxygen2', 'gitcreds', 'anytime', 'htmltools', 'base64enc', 'urltools', 'fs', 'rappdirs', 'curl'))"
 
 # copy app
 COPY . /srv/metacheck

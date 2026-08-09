@@ -6,6 +6,27 @@ test_that("report_app", {
   expect_no_error(helplist <- help(report_app, metacheck))
 })
 
+test_that("report_app.R attaches metacheck itself", {
+  # https://github.com/scienceverse/metacheck/issues/320 -- shiny::runApp()
+  # sources report_app.R (and the tab files it source()s in turn) into the
+  # GLOBAL environment, not metacheck's own namespace. The tab files call
+  # metacheck's exported functions unqualified (e.g. llm_model_list() in
+  # tabs/options.R) -- those only resolve if metacheck happens to already be
+  # on the search path, which was never guaranteed: metacheck::report_app()
+  # (as opposed to library(metacheck); report_app()) failed with "could not
+  # find function" because only shiny/shinyjs/shinydashboard were attached,
+  # never metacheck itself. A source-level check (not a live detach/reattach,
+  # which would corrupt every other test's session) since callr::r() would
+  # run against whatever metacheck happens to be INSTALLED, not the source
+  # tree under test.
+  app_path <- system.file("app", "report_app.R", package = "metacheck")
+  testthat::skip_if(app_path == "", "metacheck app dir not installed")
+  lines <- readLines(app_path)
+  attach_block_end <- grep("^\\}\\)", lines)[1]
+  attach_block <- lines[seq_len(attach_block_end)]
+  expect_true(any(grepl("^\\s*library\\(metacheck\\)\\s*$", attach_block)))
+})
+
 
 test_that("report_app server loads", {
   skip_shiny()

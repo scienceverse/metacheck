@@ -66,23 +66,52 @@
 #' @param model the LLM model name used only when `llm_use(TRUE)` (passed to the
 #'   upstream modules whose study grouping the path rewrite relies on)
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
-#' @param execute if TRUE, actually RUN the paper's code (in isolated
-#'   subprocesses, against a throwaway copy of the Psych-DS layout). This runs
-#'   downloaded code on your machine and is off by default; it is a deliberate,
-#'   opt-in action. `callr` is required.
+#' @param execute if TRUE, actually RUN the paper's code (against a throwaway
+#'   copy of the Psych-DS layout). This runs downloaded code on your machine
+#'   and is off by default; it is a deliberate, opt-in action. See `sandbox`
+#'   for how it is isolated.
+#' @param sandbox how `execute = TRUE` runs each script. `"process"`
+#'   (default) runs it in an isolated `callr` subprocess on this machine —
+#'   this isolates a CRASH, but NOT the filesystem or network: the code can
+#'   still read/write/delete anywhere this R session can, and reach the
+#'   network freely. `"docker"` runs it inside a locked-down Docker container
+#'   instead (network disabled, filesystem read-only outside the sandbox, a
+#'   non-root user) — a real containment boundary, appropriate for running
+#'   code you do not trust. Requires Docker to be installed and running (see
+#'   [repro_docker_available()]). By default (see `docker_use_declared_version`)
+#'   the base image is `ghcr.io/scienceverse/metacheck_r:latest`, a
+#'   pre-built image with the ~750 most common corpus packages already
+#'   installed, so most papers skip most of the install phase entirely
+#'   rather than reinstalling their dependencies from scratch on every run.
+#'   `"process"` needs `callr`; `"docker"` needs `processx`.
+#' @param docker_use_declared_version if TRUE (and `sandbox = "docker"`), use
+#'   the R version `code_check`'s version-pinning detection found declared in
+#'   the repository (an `renv.lock`/`sessionInfo()` record) instead of the
+#'   pre-built `metacheck_r` image — `rocker/r-ver:<declared version>`, a
+#'   bare image with no packages pre-installed. Slower (every dependency is
+#'   installed from scratch, from source, in that run — see
+#'   [repro_install_deps_docker()]) but matches the R version the paper's
+#'   authors actually used. Default FALSE: always use the fast pre-built
+#'   image regardless of what a paper declared. When FALSE and a paper DID
+#'   declare a version, a warning is issued once per call naming the
+#'   mismatch and how to opt into the slower, version-matched path — so this
+#'   is never a silent substitution.
 #' @param install_missing if TRUE (and `execute = TRUE`), install the code's
 #'   declared dependencies into a throwaway temp library before running (CRAN via
 #'   `install.packages`, GitHub/URL via `remotes`). Default FALSE: a script
 #'   needing an absent package simply errors, recorded as its outcome.
 #' @param cran_install_main if TRUE (and `install_missing` and `execute` are
-#'   both TRUE), CRAN-source dependencies are installed into your DEFAULT R
-#'   library instead of the throwaway one, and so persist after the run — see
-#'   [repro_install_deps()]. Useful when calling `reproducibility_check()` over
-#'   many papers in one script: a CRAN package installed for an early paper is
-#'   already present (and skipped) for every later paper needing it, instead of
-#'   being reinstalled into a fresh throwaway library each time. GitHub/URL
-#'   sources are unaffected — always installed into the throwaway library.
-#'   Default FALSE (everything throwaway, nothing persists).
+#'   both TRUE, and `sandbox = "process"`), CRAN-source dependencies are
+#'   installed into your DEFAULT R library instead of the throwaway one, and so
+#'   persist after the run — see [repro_install_deps()]. Useful when calling
+#'   `reproducibility_check()` over many papers in one script: a CRAN package
+#'   installed for an early paper is already present (and skipped) for every
+#'   later paper needing it, instead of being reinstalled into a fresh
+#'   throwaway library each time. GitHub/URL sources are unaffected — always
+#'   installed into the throwaway library. Default FALSE (everything throwaway,
+#'   nothing persists). Ignored when `sandbox = "docker"`: a container has no
+#'   access to the host's main library, so every install always goes into the
+#'   throwaway library regardless of this argument.
 #' @param timeout per-script timeout in seconds for the execute phase
 #'   (default 600).
 #' @param keep_sandbox if TRUE, do not delete the temp materialised layout
@@ -101,17 +130,31 @@
 #' @returns a list
 reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   model = llm_model(), params = list(),
-                                  execute = FALSE, install_missing = FALSE,
+                                  execute = FALSE, sandbox = c("process", "docker"),
+                                  docker_use_declared_version = FALSE,
+                                  install_missing = FALSE,
                                   cran_install_main = FALSE,
                                   timeout = 600, keep_sandbox = FALSE) {
   # paper <- psychsci[[233]] # to test (many code files, several issues)
+  sandbox <- match.arg(sandbox)
 
   # Executing downloaded code runs it on this machine: gate it behind an explicit
-  # opt-in and make callr's presence a hard requirement (it isolates crashes).
-  if (isTRUE(execute) && !requireNamespace("callr", quietly = TRUE))
-    stop("execute = TRUE needs the 'callr' package (it runs each script in an ",
-         "isolated subprocess). Install callr, or leave execute = FALSE.",
-         call. = FALSE)
+  # opt-in. sandbox = "process" (default) isolates a CRASH via callr, not the
+  # filesystem/network -- code can still write/delete/reach the network freely.
+  # sandbox = "docker" is the actual containment boundary (network off, read-only
+  # filesystem, non-root user during the run phase -- see
+  # R/reproducibility_check_docker.R's header comment); use it for untrusted
+  # downloaded code.
+  if (isTRUE(execute) && sandbox == "process" &&
+      !requireNamespace("callr", quietly = TRUE))
+    stop("execute = TRUE with sandbox = \"process\" needs the 'callr' package ",
+         "(it runs each script in an isolated subprocess). Install callr, ",
+         "or use sandbox = \"docker\".", call. = FALSE)
+  if (isTRUE(execute) && sandbox == "docker") {
+    docker_ok <- repro_docker_available()
+    if (!docker_ok$ok)
+      stop("execute = TRUE with sandbox = \"docker\": ", docker_ok$msg, call. = FALSE)
+  }
 
   .pid <- function(...) {
     id <- paper_id(paper)
@@ -130,6 +173,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   code_tbl     <- get_prev_outputs("code_check", "table")
   plan         <- get_prev_outputs("psychds_check", "table")
   structure_df <- get_prev_outputs("data_check", "structure")
+  # code_check's declared-version detection (renv.lock/sessionInfo/groundhog/
+  # checkpoint — see .code_version_pin_check()), reused by the Docker backend
+  # below to pick the base image's R version. NULL until code_tbl's source is
+  # resolved (either already cached, or freshly run just below).
+  version_pin  <- get_prev_outputs("code_check", "version_pin")
 
   run_missing <- function(mod) {
     # model / params only go to the modules that accept them (data_check,
@@ -150,6 +198,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   if (is.null(code_tbl)) {
     cc <- run_missing("code_check"); code_tbl <- cc$table
+    version_pin <- cc$version_pin
   }
 
   # ── SPSS / Stata data without syntax ─────────────────────────────────────────
@@ -191,9 +240,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       "reproduced from the deposit. This is treated as a reproducibility failure ",
       "(red).", rec))
     else c("#### SPSS data", paste0(
-      "SPSS data and syntax (`.sav` + `.sps`) are present. Note this module runs ",
-      "only R, so it cannot execute the SPSS syntax — the syntax is at least ",
-      "documented, but not run here.", rec))
+      "SPSS data and syntax (`.sav` + `.sps`) are present. This module does not ",
+      "execute SPSS syntax itself — the syntax is at least documented, but not ",
+      "run here. If an SPSS-Viewer file (`.spv`) is also deposited, its results ",
+      "are extracted directly (no execution needed); consider adding one if not.",
+      rec))
   } else NULL
 
   # Same logic, for Stata: a .dta with no .do means the analysis code was not
@@ -215,12 +266,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       "commands that were run)."))
     else c("#### Stata data", paste0(
       "Stata data and syntax (`.dta` + `.do`, or a `.smcl` output log with the ",
-      "syntax recovered from it) are present. Note this module runs only R, so ",
-      "it cannot execute the Stata syntax — the syntax is at least documented, ",
-      "but not run here."))
+      "syntax recovered from it) are present. This module does not execute Stata ",
+      "syntax itself — the syntax is at least documented, but not run here. If a ",
+      "`.smcl`/`.log` output file is also deposited, its results are extracted ",
+      "directly (no Stata needed); consider adding one if not."))
   } else NULL
 
-  # ── JASP / jamovi / SPSS Viewer self-reproducible output ────────────────────
+  # ── JASP / jamovi / SPSS Viewer / notebook self-reproducible output ─────────
   # A .jasp/.omv/.spv file bundles the data AND its analyses+results together
   # (an .spv's own structure XML stores each table's dimension/cell structure
   # directly in the archive, exactly like .jasp/.omv -- see R/spv.R), so it is
@@ -232,11 +284,21 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # form (stat_results_long, for the scienceverse DB) and a full structured
   # document (stat_output_json, for the logs). This runs regardless of
   # whether the paper also has R code.
+  #
+  # A .ipynb belongs here for the same reason: a Jupyter notebook saves the
+  # outputs each code cell produced INTO the file, so the statistics a Python
+  # analysis reported are recoverable from the notebook alone, with no Python
+  # installed and nothing run. It is the only member of this set that is not a
+  # zip archive (it is JSON), which read_stat_tables() handles by dispatching
+  # .ipynb on extension -- see .ipynb_read_tables() (R/stat-tables.R). Note the
+  # asymmetry with a plain .py, which has NO output counterpart at all (Python
+  # has no equivalent of .spv/.smcl/.out -- whatever a script printed went to a
+  # terminal nobody saved), so a .py is checked only as code, never here.
   stat_output <- NULL          # per-file: list(file, n_tables, json, long)
   self_repro_report <- NULL
   jasp_omv <- if (!is.null(structure_df) &&
                   all(c("file_name", "file_location") %in% names(structure_df))) {
-    hit <- grepl("\\.(jasp|omv|spv)$", structure_df$file_name, ignore.case = TRUE)
+    hit <- grepl("\\.(jasp|omv|spv|ipynb)$", structure_df$file_name, ignore.case = TRUE)
     data.frame(file_name = structure_df$file_name[hit],
                file_location = structure_df$file_location[hit],
                stringsAsFactors = FALSE)
@@ -261,15 +323,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_files  <- length(stat_output)
       n_tables <- sum(vapply(stat_output, `[[`, integer(1), "n_tables"))
       n_stats  <- sum(vapply(stat_output, function(s) nrow(s$long), integer(1)))
-      self_repro_report <- c("#### Self-reproducible output (JASP / jamovi / SPSS Viewer)",
+      self_repro_report <- c("#### Self-reproducible output (JASP / jamovi / SPSS Viewer / Jupyter notebook)",
         sprintf(paste0(
-          "%d JASP/jamovi/SPSS-Viewer file%s bundle%s the data and its analyses ",
-          "together, so %s reproducible from the file itself. We extracted %d ",
-          "result table%s (%d individual statistic%s), typed with the STATO ",
+          "%d JASP/jamovi/SPSS-Viewer/notebook file%s bundle%s the analyses and ",
+          "their saved results together, so the reported statistics are ",
+          "recoverable from the file%s itself, with nothing re-run. We extracted ",
+          "%d result table%s (%d individual statistic%s), typed with the STATO ",
           "ontology, and export them as a statistical-output JSON document (in ",
           "the logs) and as queryable rows."),
           n_files, plural(n_files), plural(n_files, "s", ""),
-          plural(n_files, "it is", "they are"), n_tables, plural(n_tables),
+          plural(n_files), n_tables, plural(n_tables),
           n_stats, plural(n_stats)))
     }
   }
@@ -397,24 +460,272 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     stat_output_write(stat_output, sandbox_root)
   }
 
+  # ── Non-R code with no way to check its results ─────────────────────────────
+  # spss_report/stata_report above cover "data present, syntax withheld"
+  # (has_sav/has_dta with no .sps/.do) and "data + syntax present, neither run"
+  # (has_sav+has_sps / has_dta+has_do). Neither covers the MIRROR gap: syntax
+  # DEPOSITED with no data and no output of any kind, so not even the numbers
+  # the syntax originally produced are recoverable from this deposit — as real
+  # as "data without syntax", just the opposite half missing. Confirmed as a
+  # live gap: a corpus paper depositing 7 Stata .do files with no .dta and no
+  # .smcl fell through EVERY existing check (spss_red/stata_red both require
+  # data present; has_self_repro requires JASP/jamovi/.spv/.smcl/.out) straight
+  # to the generic "no R code" na-branch below, so it never told the reader who
+  # the missing piece even was — this section exists to name it explicitly,
+  # per language, with what a self-reproducible-output deposit would look like
+  # for THAT language specifically.
+  #
+  # code_tbl$language is code_check's own code_lang() classification (already
+  # computed there — reused rather than re-detecting file extensions here) so
+  # "R"/"JASP"/"jamovi" rows are excluded: R is the module's own code-execution
+  # path (handled entirely separately below), and JASP/jamovi files are the
+  # SELF-REPRODUCIBLE OUTPUT itself (already covered by self_repro_report),
+  # never "code with no output" — a .omv/.jasp IS both at once.
+  nonr_lang <- if (!is.null(code_tbl) && "language" %in% names(code_tbl))
+    code_tbl$language[!is.na(code_tbl$language) &
+                      !code_tbl$language %in% c("R", "JASP", "jamovi")] else character(0)
+  nonr_report <- NULL
+  if (length(nonr_lang) > 0) {
+    lang_counts <- table(nonr_lang)
+    has_self_repro_now <- length(stat_output) > 0
+    for (lang in names(lang_counts)) {
+      n <- as.integer(lang_counts[[lang]])
+      # Per-language: does EITHER that language's own recognised output
+      # format exist, OR (for SAS/MATLAB, which have no such format in
+      # metacheck at all) any self-reproducible output exists from ANY
+      # source? The Stata/SPSS cases are also already fully handled by
+      # spss_report/stata_report whenever data (.sav/.dta) is present too —
+      # this block only needs to fire for the DATA-ABSENT half of those two,
+      # since the data-present half already has its own message above.
+      skip <- FALSE
+      block <- NULL
+      if (identical(lang, "Stata")) {
+        if (has_dta) skip <- TRUE   # already covered by stata_report above
+        else {
+          has_smcl_out <- any(grepl("\\.smcl$", fnames_all, ignore.case = TRUE))
+          # NOT ".smcl or .log": a plain .log is Stata's OTHER, unmarked-up
+          # log format, and import_stata_smcl() (R/stata.R) specifically
+          # parses .smcl's own markup codes ({com}/{txt}/...) -- a .log has
+          # none of those, so it is not something this reads. Only .smcl is
+          # ever recommended.
+          if (!has_smcl_out) block <- c("#### Stata code without data or output", sprintf(
+            paste0(
+              "%d Stata syntax file%s (`.do`) %s present, but no output log ",
+              "(`.smcl`) was found. Without output, we cannot compare the ",
+              "results from the software against those reported in the ",
+              "manuscript to check whether all results can be reproduced ",
+              "based on the shared data, code, and results. Consider ",
+              "depositing a `.smcl` output file."),
+            n, plural(n), plural(n, "is", "are")))
+        }
+      } else if (identical(lang, "SPSS")) {
+        if (has_sav) skip <- TRUE   # already covered by spss_report above
+        else {
+          has_spv_out <- any(grepl("\\.spv$", fnames_all, ignore.case = TRUE))
+          if (!has_spv_out) block <- c("#### SPSS syntax without data or output", sprintf(
+            paste0(
+              "%d SPSS syntax file%s (`.sps`) %s present, but no output ",
+              "(`.spv`) was found. Without output, we cannot compare the ",
+              "results from the software against those reported in the ",
+              "manuscript to check whether all results can be reproduced ",
+              "based on the shared data, code, and results. Consider ",
+              "depositing an `.spv` file instead of (or alongside) the ",
+              "`.sav`/`.sps` pair — it bundles the data and analyses together ",
+              "and is fully self-reproducible from the file itself."),
+            n, plural(n), plural(n, "is", "are")))
+        }
+      } else if (identical(lang, "SAS")) {
+        if (!has_self_repro_now) block <- c("#### SAS code, no reproducible output", sprintf(
+          paste0(
+            "%d SAS code file%s %s present, but this module has no way to ",
+            "extract statistics from SAS output, and no self-reproducible ",
+            "output (JASP/jamovi, SPSS-Viewer, a Stata output log, or Mplus ",
+            "output) was found to fall back on. Consider re-running the ",
+            "analysis in **jamovi** or **JASP** (free; the `.omv`/`.jasp` ",
+            "file bundles data and results together) or depositing SAS's ",
+            "own output log if one exists."),
+          n, plural(n), plural(n, "is", "are")))
+      } else if (identical(lang, "MATLAB")) {
+        if (!has_self_repro_now) block <- c("#### MATLAB code, no reproducible output", sprintf(
+          paste0(
+            "%d MATLAB code file%s %s present, but this module has no way to ",
+            "extract statistics from MATLAB output, and no self-reproducible ",
+            "output (JASP/jamovi, SPSS-Viewer, a Stata output log, or Mplus ",
+            "output) was found to fall back on. Readers without a MATLAB ",
+            "license cannot currently see what the code produced. Consider ",
+            "depositing the results as well, so they are visible without ",
+            "MATLAB installed: run `diary('output.txt')` (or `diary on`) ",
+            "before the analysis and `diary off` after to save a plain-text ",
+            "transcript of everything printed to the Command Window, or use ",
+            "`publish('script.m', 'pdf')` (or the Live Editor's Export/Save ",
+            "As) to generate a single readable document with the code, its ",
+            "output, and any figures together."),
+          n, plural(n), plural(n, "is", "are")))
+      } else if (!has_self_repro_now) {
+        # Generic fallback: any OTHER code_lang() result (Python, Julia, Java,
+        # C/C++, SQL — see code_check.R's non_r_code_pat) with no output at
+        # all. Deliberately generic rather than naming a specific missing
+        # output format, since none of these languages has one metacheck
+        # recognises.
+        block <- c(sprintf("#### %s code, no reproducible output", lang), sprintf(
+          paste0(
+            "%d %s code file%s %s present, but this module has no way to ",
+            "extract statistics from %s output, and no self-reproducible ",
+            "output (JASP/jamovi, SPSS-Viewer, a Stata output log, or Mplus ",
+            "output) was found to fall back on. Consider depositing the ",
+            "analysis output (a rendered results/log file), or re-running ",
+            "the analysis in **jamovi** or **JASP** (free; the `.omv`/",
+            "`.jasp` file bundles data and results together)."),
+          n, lang, plural(n), plural(n, "is", "are"), lang))
+      }
+      if (!skip && !is.null(block)) nonr_report <- c(nonr_report, block)
+    }
+  }
+
+  # Run the SAME reported-vs-reproduced matching the R-code path runs further
+  # down (see "## Reported vs. reproduced" below), here too — a paper with NO
+  # R code but real self-reproducible output (JASP/jamovi/.spv/.smcl/Mplus
+  # .out) previously returned from empty() BEFORE that matching code ever ran,
+  # so the paper's REPORTED numbers were never actually checked against the
+  # data extracted from those files: the module extracted 1500+ statistics but
+  # never answered the question it exists to answer for them. Confirmed as a
+  # real, live gap — a corpus paper's 6 .omv files went through full
+  # extraction (self_repro_report/stat_output above) but the matching step,
+  # the report's "Reported vs. reproduced" section, and every summary sentence
+  # about it were all skipped, because the R-only early return happened first.
+  .empty_match <- function() {
+    out <- list(report = NULL, summary = NULL)
+    if (length(stat_output) == 0) return(out)
+    # include_tables = TRUE: also check statistics reported only in a results
+    # table's cells (extract_eq_table(), via paper$table$contents) against the
+    # extracted output — see match_reported_output()'s own comment on why this
+    # is opt-in rather than the default for every caller.
+    matched <- tryCatch(match_reported_output(paper, stat_output,
+                                              include_tables = TRUE),
+                        error = function(e) NULL)
+    if (is.null(matched) || nrow(matched) == 0) return(out)
+    ms <- attr(matched, "summary")
+    match_report <- sprintf(
+      paste0("%d statistical test%s reported in the manuscript text %s ",
+             "checked against the extracted analysis output: %d matched ",
+             "(%d fully, %d partially) — %s%% found."),
+      ms$n_tests, plural(ms$n_tests), plural(ms$n_tests, "was", "were"),
+      ms$n_found, ms$n_full, ms$n_partial, ms$pct_found)
+    # A single-value match ("Plausible" = FALSE) is genuinely weaker evidence
+    # than a multi-component one: match_reported_output() explains why in its
+    # own docs (a lone value rounding to the reported number is far likelier
+    # by chance than a whole signature doing so), and .regroup_by_evidence()
+    # adds a second, sharper case of the same risk — a component split away
+    # from the OTHER values it was originally reported alongside, with no
+    # shared row_label linking its new site back to theirs. Explained ONCE
+    # here, generally, rather than per-row, so a reader knows what the
+    # Plausible column means before they hit a FALSE.
+    n_flagged <- sum(!is.na(matched$plausible_split))
+    if (n_flagged > 0) match_report <- c(match_report, paste(
+      "Some reported values were only found alongside OTHER components",
+      "after being separated from their own originally-reported neighbours",
+      "(e.g. a mean split from its own confidence interval). The",
+      "\"Plausible\" column marks whether that split is well-supported: TRUE",
+      "when the pieces still trace back to the same underlying variable (via",
+      "the output's own row labels), FALSE when no such link was found — a",
+      "FALSE match is not necessarily wrong, but is worth checking against",
+      "its own Source file/Analysis columns before treating it as confirmed."))
+    match_table <- data.frame(
+      Reported   = matched$reported,
+      Found      = matched$found,
+      Confidence = matched$confidence,
+      Plausible  = ifelse(is.na(matched$plausible_split), "",
+                          ifelse(matched$plausible_split, "yes", "no")),
+      `Matched values` = ifelse(is.na(matched$match_values), "", matched$match_values),
+      `Not matched` = ifelse(is.na(matched$not_matched), "", matched$not_matched),
+      `Source file` = ifelse(is.na(matched$source_file), "", matched$source_file),
+      Analysis   = ifelse(is.na(matched$analysis), "", matched$analysis),
+      check.names = FALSE)
+    list(report = c("#### Reported vs. reproduced", match_report,
+                    scroll_table(match_table, maxrows = 15)),
+         summary = ms, table_raw = matched)
+  }
+
   empty <- function(text, tl = "na", extra_report = NULL) {
+    em <- .empty_match()
+    n_output_stats <- sum(vapply(stat_output, function(s) nrow(s$long), integer(1)))
+    has_self_repro_here <- length(stat_output) > 0
+
+    # The HEADLINE summary must not read as a null result when reproduction
+    # actually succeeded via self-reproducible output — "no R code" is true
+    # but, on its own, implies nothing was assessed, which is false whenever
+    # has_self_repro_here. Lead with what was actually found; the "no R code"
+    # fact becomes a secondary note (still present, since R-code absence is
+    # real information — e.g. it means the analysis is not independently
+    # re-runnable even though its recorded results are).
+    #
+    # The SAME reasoning applies to nonr_report: when it has content, the
+    # module found something SPECIFIC and actionable (e.g. "7 Stata syntax
+    # files, no output log") — leading with the generic "we found no R code
+    # files... this phase only runs R code" is actively misleading there, not
+    # just uninformative: it reads as "nothing to report" immediately above a
+    # section that names exactly what's missing and what would fix it.
+    # Confirmed as a real, live problem — a corpus paper with 7 orphaned
+    # Stata .do files (no .dta, no .smcl) produced a summary bullet reading
+    # "We found no R code files... (only R is supported)... see the sections
+    # above" while the ACTUAL finding — Stata code without output — sat
+    # below it in a section the summary bullet never named.
+    headline <- if (has_self_repro_here) sprintf(
+      "We assessed %d self-reproducible output file%s (JASP/jamovi/SPSS-Viewer/Mplus) instead of R code.",
+      length(stat_output), plural(length(stat_output))) else if (!is.null(nonr_report))
+      "We found no R code to run, but did find other code with no reproducible output to check it against — see below." else text
+    # `text` (the generic "we found no R code files..." line) is dropped
+    # entirely, not just demoted, when nonr_report exists: unlike the
+    # has_self_repro_here case (where `text`'s "no R code" fact is still new
+    # information alongside a DIFFERENT headline about extracted output),
+    # here `text` says nothing the headline above and the detailed section
+    # below don't already say better — keeping it produced two redundant,
+    # near-identical bullets in a row (confirmed against a real corpus
+    # paper), which is worse than the original single-bullet problem this
+    # was meant to fix.
+    secondary <- if (has_self_repro_here) text else NULL
+
+    summary_text <- c(
+      headline,
+      if (has_self_repro_here) sprintf(
+        "%d statistic%s stored from the extracted output.",
+        n_output_stats, plural(n_output_stats)),
+      if (!is.null(em$summary)) sprintf(
+        "%d of %d reported test%s matched (%s%%).",
+        em$summary$n_found, em$summary$n_tests, plural(em$summary$n_tests),
+        em$summary$pct_found),
+      secondary
+    ) |> paste("\n- ", x = _, collapse = "")
+
     resp <- list(
       table = data.frame(),
       summary_table = data.frame(
         paper_id = .pid(structure_df, code_tbl),
         repro_code_n = 0L, repro_runnable = 0L,
-        repro_missing_inputs = 0L, repro_deps = 0L
+        repro_missing_inputs = 0L, repro_deps = 0L,
+        repro_tests_reported = if (!is.null(em$summary)) em$summary$n_tests else NA_integer_,
+        repro_tests_matched  = if (!is.null(em$summary)) em$summary$n_found else NA_integer_
       ),
       na_replace = c(repro_code_n = 0, repro_runnable = 0,
                      repro_missing_inputs = 0, repro_deps = 0),
       traffic_light = tl,
-      summary_text = text,
+      summary_text = summary_text,
       # Even a no-R-code paper can have self-reproducible JASP/jamovi output —
-      # carry the extracted results (and its report section) out.
-      report = c(extra_report, self_repro_report),
-      stat_output = stat_output
+      # carry the extracted results, the reported-vs-reproduced match, and
+      # both reports out.
+      report = c(extra_report, self_repro_report, em$report),
+      stat_output = stat_output,
+      match_table = em$table_raw %||% NULL
     )
-    if (!is.null(sandbox_root)) attr(resp, "sandbox") <- sandbox_root
+    # A NAMED LIST ELEMENT, not an attribute -- see the main return path's own
+    # comment near the end of this function for why: module_run() copies only
+    # named elements when repackaging a module's return value, silently
+    # dropping any attribute set on the object itself. This empty() path
+    # (JASP/jamovi-only, SPSS/Stata-without-syntax, or no-R-code papers) used
+    # attr(resp, "sandbox") <- ... here until this was caught as the same bug
+    # already fixed on the main path -- keep_sandbox = TRUE was silently
+    # inert for every paper that returns via empty() specifically.
+    if (isTRUE(keep_sandbox) && !is.null(sandbox_root)) resp$sandbox <- sandbox_root
     resp
   }
 
@@ -436,15 +747,25 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # `jasp`/`omv`/`spv`/`smcl`/`out` (self-contained output, already extracted
   # above). `mat` (MATLAB's pure-data container) never belonged in a CODE list
   # at all — split out below as data, distinct from `m` (real MATLAB code).
-  non_r_code_pat <- "\\.(py|ipynb|jl|m|sas|sps|spss|do|ado|java|cpp|c|sql|inp)$"
+  # `ipynb` is NOT in this list, for exactly the reason `jasp`/`omv`/`spv`
+  # are not: a notebook's saved cell outputs ARE already assessed, via the
+  # self-reproducible-output path above (self_repro_report/stat_output).
+  # Counting it here as well would tell the reader it holds "non-R code this
+  # phase does not assess" in the same report that just extracted its
+  # statistics. A plain `py` stays, since a Python SCRIPT genuinely is
+  # unassessed code with no output counterpart to recover.
+  non_r_code_pat <- "\\.(py|jl|m|sas|sps|spss|do|ado|java|cpp|c|sql|inp)$"
   non_r_data_pat <- "\\.(mat)$"
   n_non_r <- if (!is.null(structure_df) && "file_name" %in% names(structure_df))
     sum(grepl(non_r_code_pat, structure_df$file_name, ignore.case = TRUE)) else 0L
   n_non_r_data <- if (!is.null(structure_df) && "file_name" %in% names(structure_df))
     sum(grepl(non_r_data_pat, structure_df$file_name, ignore.case = TRUE)) else 0L
   non_r_note <- if (n_non_r > 0) sprintf(
-    " The repository does contain %d non-R code file%s, which this phase does not assess (only R is supported).",
-    n_non_r, plural(n_non_r)) else ""
+    paste0(
+      " The repository does contain %d non-R code file%s; this phase only ",
+      "RUNS R code (see the section%s above for what we found and could — or ",
+      "could not — check for those files)."),
+    n_non_r, plural(n_non_r), plural(length(nonr_lang %||% character(0)))) else ""
   non_r_note <- paste0(non_r_note, if (n_non_r_data > 0) sprintf(
     " It also contains %d MATLAB data file%s (`.mat`), which %s not code and %s not assessed here either.",
     n_non_r_data, plural(n_non_r_data), plural(n_non_r_data, "is", "are"),
@@ -462,14 +783,38 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # genuinely empty modules, or a real finding never reaches the rendered
   # report despite being computed. A true no-code, no-SPSS, no-Stata paper
   # still has nothing to say and stays na.
-  empty_tl <- if (spss_red || stata_red) "red" else if (has_sav || has_dta) "yellow" else "na"
+  #
+  # The SAME risk applies to self-reproducible JASP/jamovi/SPSS-Viewer output
+  # (self_repro_report/stat_output, computed above): a paper whose only
+  # analysis artifacts are e.g. .omv files has no R code to assess (correctly
+  # "na" for THIS reason) but DOES have a real, substantive finding — 100+
+  # extracted result tables, hundreds of typed statistics — that must not be
+  # silently dropped by report.R's na/fail filter either. Confirmed as a real,
+  # live bug: a corpus paper with 6 real .omv files and 1562 extracted
+  # statistics rendered a "na"-flagged, entirely EMPTY reproducibility section
+  # in its actual report.qmd output — the module's own `report` field had the
+  # "Self-reproducible output" section computed correctly, but report.R's
+  # section builder threw it away before render because traffic_light was "na".
+  # nonr_report (built above) is the SAME "real finding must not be dropped
+  # by na" risk as spss_report/stata_report/self_repro_report already guard
+  # against, for the language-without-output cases they don't cover — so it
+  # gets the SAME treatment: na is reserved for a module with truly nothing
+  # to say, and any of these four report sources having content forces at
+  # least "info" (nonr_report specifically is guidance, not a pass/fail
+  # verdict — see this module's own call site above for why "info" rather
+  # than "yellow" was chosen for it).
+  has_self_repro <- length(stat_output) > 0
+  empty_tl <- if (spss_red || stata_red) "red"
+              else if (has_sav || has_dta || has_self_repro) "yellow"
+              else if (!is.null(nonr_report)) "info"
+              else "na"
 
   # Only R is handled in this phase.
   if (is.null(code_tbl) || nrow(code_tbl) == 0 ||
       !"language" %in% names(code_tbl))
     return(empty(paste0(
       "We found no R code files to assess for reproducibility.", non_r_note),
-      tl = empty_tl, extra_report = c(spss_report, stata_report)))
+      tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
 
   r_files <- code_tbl[!is.na(code_tbl$language) & code_tbl$language == "R", ,
                       drop = FALSE]
@@ -479,22 +824,31 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                             ignore.case = TRUE), , drop = FALSE]
   if (nrow(r_files) == 0)
     return(empty(paste0(
-      "We found no R code files to assess for reproducibility (only R is supported in this phase).",
-      non_r_note), tl = empty_tl, extra_report = c(spss_report, stata_report)))
+      "We found no R code files to assess for reproducibility (this phase runs R code only).",
+      non_r_note), tl = empty_tl, extra_report = c(spss_report, stata_report, nonr_report)))
 
   n_code <- nrow(r_files)
 
   # ── 2. Resolve each R file to its on-disk location and read its text ─────────
-  # code_check drops file_location from its table, so resolve the path from
-  # data_check's structure table (which keeps it), by file_name; fall back to
-  # code_check's file_url when structure has no local copy. Basename keying is
-  # imperfect for duplicated names across repos (a documented limitation), but is
-  # the only shared key the two tables have.
+  # code_check() keeps file_location in its own table (r_files IS code_tbl,
+  # filtered to language == "R"), so a code file's local path is usually
+  # already sitting on the row itself -- checked FIRST, by row index, since
+  # r_files$file_name commonly repeats across mirrors and any name-keyed
+  # lookup can only ever return one row's path for all of them (see the
+  # dedup comment below). data_check's structure table is consulted next (by
+  # file_name, with a basename fallback) only because a file can, in some
+  # configurations, be present there and not in code_tbl (e.g. a code file
+  # data_check happened to also fetch under download = "all"). file_url
+  # (streaming, no local copy) is the last resort either way.
   loc_lookup <- if (!is.null(structure_df) &&
                     all(c("file_name", "file_location") %in% names(structure_df)))
     stats::setNames(structure_df$file_location, structure_df$file_name) else
     character(0)
-  resolve_path <- function(fn) {
+  resolve_row_path <- function(i) {
+    own <- r_files$file_location[i] %||% NA_character_
+    if (!is.na(own) && nzchar(own) && file.exists(own)) return(own)
+
+    fn <- r_files$file_name[i]
     loc <- if (fn %in% names(loc_lookup)) loc_lookup[[fn]] else NA_character_
     if (!is.na(loc) && nzchar(loc) && file.exists(loc)) return(loc)
     # basename fallback (file_name in the two tables may differ by directory)
@@ -505,7 +859,85 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (!is.na(l) && nzchar(l) && file.exists(l)) return(l)
       }
     }
+
+    url <- r_files$file_url[i] %||% NA_character_
+    if (!is.na(url) && nzchar(url)) return(url)
     NA_character_
+  }
+
+  # ── 1b. Drop byte-identical duplicate files across repo mirrors ─────────────
+  # A paper can link several OSF components that mirror each other (a "live"
+  # component, an "Archive of OSF Storage" snapshot, a view-only anonymised
+  # link) -- code_check() lists each mirror's copy of a script as its OWN row,
+  # so the SAME analysis file is run once per mirror. Confirmed against a real
+  # corpus paper linking 4 OSF components: CFA.Rmd and utils.R each had a
+  # byte-identical copy in two of them, so every script in the run silently
+  # ran 2x (some 4-6x, when a name also recurred within one mirror's own
+  # subfolders) -- wasted execution time, and a report cluttered with
+  # duplicate "ran/errored" rows for what is really one script.
+  #
+  # Hashed by CONTENT, not by basename or file_name: two files sharing a name
+  # are only true duplicates when their bytes match -- a same-named script
+  # that genuinely differs between mirrors (a later revision pushed to one but
+  # not the other) must still run once per version, since those are different
+  # analyses in every sense that matters here.
+  #
+  # resolve_row_path() resolves by ROW, not by file_name: r_files$file_name
+  # commonly has DUPLICATE values (several mirrors sharing the same
+  # basename), and each such row can carry its OWN location/URL even when the
+  # name repeats -- looking the path up by name (e.g. via match()) would
+  # always return the FIRST row's path for every duplicate-named row,
+  # silently hashing the same content for all of them and making two
+  # genuinely DIFFERENT same-named files (a real, if rare, possibility)
+  # impossible to tell apart. code_read()/code_extract_r() already accept a
+  # URL transparently (used the same way just below for the real read), so
+  # hashing the CONTENT they return (rather than requiring a literal local
+  # file for tools::md5sum()) works identically whether the source resolved
+  # to a local path or a URL.
+  #
+  # This dedup step is why resolve_row_path() must check r_files$file_location
+  # itself, not only structure_df: before code_check() kept its own
+  # file_location (see code_check.R's table-return step), structure_df was
+  # the ONLY source of a local path, but data_check() populates it only for
+  # DATA files by default (download = "data") -- an R script's location lived
+  # in code_check()'s own file_url instead. Confirmed as a real bug when that
+  # was the only path available: resolve_path() returned NA for every code
+  # file here (0/24 resolved against a real corpus paper), so md5sum() on
+  # those NAs was never even reached, dedup silently did nothing, and every
+  # mirror still ran -- 4 near-simultaneous copies of the SAME script sharing
+  # one materialised sandbox then raced on that shared file, producing a
+  # spurious "cannot open the connection" that had nothing to do with the
+  # paper's own code.
+  hash_source <- function(i) {
+    path <- resolve_row_path(i)
+    if (is.na(path)) return(NA_character_)
+    txt <- tryCatch(code_read(path), error = function(e) NULL)
+    if (is.null(txt) || !length(txt)) return(NA_character_)
+    digest_txt <- paste(txt, collapse = "\n")
+    unname(tools::md5sum(local({
+      tf <- tempfile(); writeLines(digest_txt, tf, useBytes = TRUE); tf
+    })))
+  }
+  hashes <- vapply(seq_len(nrow(r_files)), hash_source, character(1))
+  dup <- !is.na(hashes) & duplicated(hashes)
+  n_dup <- sum(dup)
+  dup_report <- NULL
+  if (n_dup > 0) {
+    # For the report: which kept file each dropped duplicate mirrors.
+    dup_of <- vapply(which(dup), function(i)
+      r_files$file_name[which(hashes == hashes[i])[1]], character(1))
+    dup_report <- c("#### Duplicate files across repo mirrors", sprintf(
+      paste0(
+        "%d file%s %s byte-identical to another file already in the run ",
+        "(the paper links more than one repository/component that mirrors ",
+        "the same materials). %s only run once, from its first occurrence, ",
+        "to avoid wasted duplicate execution: %s."),
+      n_dup, plural(n_dup), plural(n_dup, "is", "are"),
+      plural(n_dup, "It was", "They were"),
+      paste(sprintf("`%s` (same as `%s`)", r_files$file_name[dup], dup_of),
+            collapse = "; ")))
+    r_files <- r_files[!dup, , drop = FALSE]
+    n_code <- nrow(r_files)
   }
 
   pb_read <- pb(n_code, ":what [:bar] :current/:total")
@@ -515,10 +947,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   code_text_list <- lapply(seq_len(n_code), function(i) {
     the_file <- r_files[i, ]
     pb_read$tick(1, list(what = the_file$file_name))
-    path <- resolve_path(the_file$file_name)
-    if (is.na(path) && "file_url" %in% names(the_file) &&
-        !is.na(the_file$file_url) && nzchar(the_file$file_url))
-      path <- the_file$file_url
+    path <- resolve_row_path(i)
     if (is.na(path)) return(character(0))
     is_rmd <- grepl("\\.(rmd|qmd)$", the_file$file_name, ignore.case = TRUE)
     tryCatch(
@@ -550,7 +979,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   io <- repro_file_io(code_text_list)
 
   rewrite_list <- lapply(seq_len(n_code), function(i)
-    repro_rewrite_paths(code_text_list[[i]], r_files$file_name[i], plan, "R"))
+    repro_rewrite_paths(code_text_list[[i]], r_files$file_name[i], plan, "R",
+                       structure_df = structure_df))
   names(rewrite_list) <- r_files$file_name
 
   # Per-file rewrite counts + unresolved reads (referenced, not matched in plan).
@@ -660,7 +1090,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # ── DEBUG tracing (TEMPORARY — remove before release). Prints every step of
     # the execute phase so a hang is attributable to the exact operation. ───────
     .dbg <- function(...) message("[repro] ", ...)
-    .dbg("execute = TRUE. install_missing = ", install_missing,
+    .dbg("execute = TRUE (sandbox = ", sandbox, "). install_missing = ", install_missing,
          ", timeout = ", timeout, "s, keep_sandbox = ", keep_sandbox)
 
     # Reuse the root the JASP/jamovi step already materialised (if any stat
@@ -674,6 +1104,30 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     lib_dir <- file.path(sandbox_root, "_lib")
     .dbg("sandbox root: ", sandbox_root)
 
+    # Docker base image: by default the pre-built metacheck_r image (fast --
+    # most dependencies already installed), regardless of what R version the
+    # paper declared. docker_use_declared_version = TRUE opts into matching
+    # the paper's own declared R version instead (rocker/r-ver:<version>, a
+    # bare image with nothing pre-installed -- slower, since every
+    # dependency installs from scratch). When docker_use_declared_version is
+    # FALSE (the default) and the paper DID declare a version, warn once so
+    # this is never a silent substitution of one R version for another.
+    docker_image <- if (sandbox == "docker") {
+      declared_v <- version_pin$r_versions %||% character(0)
+      if (!isTRUE(docker_use_declared_version) && length(declared_v) > 0) {
+        warning(
+          "reproducibility_check(sandbox = \"docker\"): this paper declared R ",
+          "version ", declared_v[[1]], ", but docker_use_declared_version = FALSE ",
+          "(the default), so the run uses the pre-built metacheck_r image's own ",
+          "R version instead, for speed. Set docker_use_declared_version = TRUE ",
+          "to match the paper's declared version exactly -- slower, since every ",
+          "dependency then installs from scratch rather than using the ",
+          "pre-built image.", call. = FALSE)
+      }
+      .repro_docker_image_for(declared_v, use_declared_version = docker_use_declared_version)
+    } else NULL
+    if (sandbox == "docker") .dbg("docker image: ", docker_image)
+
     # 1. Build the data tree the plan describes, and write the scripts into it.
     .dbg("materialising Psych-DS layout from plan (", nrow(plan %||% data.frame()),
          " plan rows) ...")
@@ -684,16 +1138,24 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root)
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
-    # 2. Optionally install dependencies (CRAN sources into your main library
-    #    when cran_install_main = TRUE, else — like GitHub/URL always — into
-    #    the throwaway library).
+    # 2. Optionally install dependencies. sandbox = "process": CRAN sources
+    #    into your main library when cran_install_main = TRUE, else (like
+    #    GitHub/URL always) into the throwaway library. sandbox = "docker":
+    #    always the throwaway library — a container has no access to (and
+    #    must not be given access to) the host's real R library, so
+    #    cran_install_main has no meaning there and is silently ignored.
     failed_deps <- character(0)
     if (isTRUE(install_missing) && n_deps > 0) {
-      .dbg("installing ", n_deps, " dependenc(y/ies) (cran_install_main = ",
-           cran_install_main, "): ", paste(install_deps$package, collapse = ", "))
-      .dbg("  repos = ", paste(getOption("repos"), collapse = "; "))
-      install_results <- repro_install_deps(install_deps, lib_dir,
-                                            cran_to_main_lib = cran_install_main)
+      .dbg("installing ", n_deps, " dependenc(y/ies)",
+           if (sandbox == "process") paste0(" (cran_install_main = ", cran_install_main, ")") else "",
+           ": ", paste(install_deps$package, collapse = ", "))
+      install_results <- if (sandbox == "docker") {
+        repro_install_deps_docker(install_deps, lib_dir, image = docker_image,
+                                  timeout = timeout)
+      } else {
+        .dbg("  repos = ", paste(getOption("repos"), collapse = "; "))
+        repro_install_deps(install_deps, lib_dir, cran_to_main_lib = cran_install_main)
+      }
       .dbg("  install done: ", sum(install_results$installed), " ok, ",
            sum(!install_results$installed), " failed.")
       # A dependency this call could not install (live CRAN AND the Archive
@@ -713,11 +1175,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     run_order_names <- order_tbl$file_name[order(order_tbl$order)]
     .dbg("running ", length(run_order_names), " script(s) in order: ",
          paste(run_order_names, collapse = " -> "))
-    run_results <- repro_run_scripts(
-      run_tbl, run_order_names,
-      lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
-      timeout = timeout, skip = skip_files, parses = parses_named,
-      failed_deps = failed_deps)
+    run_results <- if (sandbox == "docker") {
+      repro_run_scripts_docker(
+        run_tbl, run_order_names, sandbox_root = sandbox_root,
+        lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
+        image = docker_image, timeout = timeout, skip = skip_files,
+        parses = parses_named, failed_deps = failed_deps)
+    } else {
+      repro_run_scripts(
+        run_tbl, run_order_names,
+        lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
+        timeout = timeout, skip = skip_files, parses = parses_named,
+        failed_deps = failed_deps)
+    }
     .dbg("execution finished (pass 1). outcomes: ",
          paste(sprintf("%s=%s", run_results$file_name, run_results$outcome),
                collapse = "; "))
@@ -756,11 +1226,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         run_order2 <- order_tbl2$file_name[order(order_tbl2$order)]
         .dbg("re-running ", length(run_order2), " script(s) in corrected order: ",
              paste(run_order2, collapse = " -> "))
-        run_results <- repro_run_scripts(
-          run_tbl, run_order2,
-          lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
-          timeout = timeout, skip = skip_files, parses = parses_named,
-          failed_deps = failed_deps)
+        run_results <- if (sandbox == "docker") {
+          repro_run_scripts_docker(
+            run_tbl, run_order2, sandbox_root = sandbox_root,
+            lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
+            image = docker_image, timeout = timeout, skip = skip_files,
+            parses = parses_named, failed_deps = failed_deps)
+        } else {
+          repro_run_scripts(
+            run_tbl, run_order2,
+            lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
+            timeout = timeout, skip = skip_files, parses = parses_named,
+            failed_deps = failed_deps)
+        }
         order_tbl <- order_tbl2   # report the corrected order
         reran <- TRUE
         .dbg("execution finished (pass 2). outcomes: ",
@@ -1174,11 +1652,22 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # finding about THIS section.
   match_report <- NULL
   match_summary <- NULL
+  match_table_raw <- NULL   # exported in the return list, below — the FULL
+  # per-test match_reported_output() result (not the report's own prettified
+  # `match_table`, which blanks NA to "" and renames columns for display),
+  # so a caller can inspect exactly which reported test matched what without
+  # re-running the match from scratch. Previously computed here and used only
+  # to build report TEXT, then discarded — absent from the module's own
+  # returned list and so absent from any saved .rds of the result, which meant
+  # re-auditing match quality needed a live re-run against the paper object.
   n_output_stats <- sum(vapply(stat_output, function(s) nrow(s$long), integer(1)))
   if (length(stat_output) > 0) {
-    matched <- tryCatch(match_reported_output(paper, stat_output),
+    # include_tables = TRUE: see .empty_match()'s identical call above for why.
+    matched <- tryCatch(match_reported_output(paper, stat_output,
+                                              include_tables = TRUE),
                         error = function(e) NULL)
     if (!is.null(matched) && nrow(matched) > 0) {
+      match_table_raw <- matched
       ms <- attr(matched, "summary")
       match_summary <- ms
       match_report <- sprintf(
@@ -1187,10 +1676,26 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                "(%d fully, %d partially) — %s%% found."),
         ms$n_tests, plural(ms$n_tests), plural(ms$n_tests, "was", "were"),
         ms$n_found, ms$n_full, ms$n_partial, ms$pct_found)
+      # See .empty_match()'s identical block above for the full rationale —
+      # this is the same "Plausible" explanation, duplicated here because
+      # this code path and that one are themselves an intentional duplicate
+      # (see that function's own header comment for why).
+      n_flagged <- sum(!is.na(matched$plausible_split))
+      if (n_flagged > 0) match_report <- c(match_report, paste(
+        "Some reported values were only found alongside OTHER components",
+        "after being separated from their own originally-reported neighbours",
+        "(e.g. a mean split from its own confidence interval). The",
+        "\"Plausible\" column marks whether that split is well-supported: TRUE",
+        "when the pieces still trace back to the same underlying variable (via",
+        "the output's own row labels), FALSE when no such link was found — a",
+        "FALSE match is not necessarily wrong, but is worth checking against",
+        "its own Source file/Analysis columns before treating it as confirmed."))
       match_table <- data.frame(
         Reported   = matched$reported,
         Found      = matched$found,
         Confidence = matched$confidence,
+        Plausible  = ifelse(is.na(matched$plausible_split), "",
+                            ifelse(matched$plausible_split, "yes", "no")),
         `Matched values` = ifelse(is.na(matched$match_values), "",
                                   matched$match_values),
         `Not matched` = ifelse(is.na(matched$not_matched), "",
@@ -1216,6 +1721,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_code, plural(n_code)),
     sprintf("%d file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
             n_runnable, plural(n_runnable), if (n_runnable == 1) "s" else ""),
+    if (n_dup > 0) sprintf(
+      "%d file%s skipped as byte-identical duplicate%s of another file already in the run (the paper links more than one repository/component).",
+      n_dup, plural(n_dup), plural(n_dup)),
     if (isTRUE(execute) && !is.null(run_results)) sprintf(
       "%d of %d script%s ran without error when executed.",
       n_ran_ok, nrow(run_results), plural(nrow(run_results))),
@@ -1251,6 +1759,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Self-reproducible JASP/jamovi/SPSS-Viewer output, and Stata .smcl output
   # logs (extracted result tables, STATO-typed).
   if (!is.null(self_repro_report)) report <- c(report, self_repro_report)
+  # Non-R code (Stata/SPSS without data+output, SAS, MATLAB, or any other
+  # code_lang()) with no reproducible output to fall back on — appended here
+  # too, not just in empty()'s early-return paths, so a paper with BOTH R
+  # code (this path) AND e.g. orphaned SAS files still surfaces the SAS gap,
+  # not just papers with no R code at all.
+  if (!is.null(nonr_report)) report <- c(report, nonr_report)
+  # Byte-identical duplicate files across repo mirrors, skipped before the run
+  # (see the dedup step in section 2 above) — surfaced so a reader knows why
+  # fewer scripts ran than code_check listed, rather than it looking like some
+  # were silently missed.
+  if (!is.null(dup_report)) report <- c(report, dup_report)
 
   out <- list(
     table = table,
@@ -1267,7 +1786,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # JSON (R/stat-output.R's stat_output_json(); a metacheck-native schema,
     # not ISA-JSON — an earlier version borrowed ISA's vocabulary and that was
     # dropped, see R/stat-output.R's file header) + flat rows.
-    stat_output = stat_output
+    stat_output = stat_output,
+    # The full match_reported_output() result (one row per reported test —
+    # see match_table_raw's own comment above), NULL when there was no output
+    # to match against at all.
+    match_table = match_table_raw
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

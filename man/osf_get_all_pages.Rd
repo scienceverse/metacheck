@@ -12,7 +12,15 @@ osf_get_all_pages(url, page_end = Inf)
 \item{page_end}{The last page to get}
 }
 \value{
-a table of the returned data
+a table of the returned data. When the request could not be
+completed (e.g. a private, embargoed, withdrawn, or deleted resource, or
+a network failure), this is an empty \code{list()} with an \code{osf_error}
+attribute set to \code{"forbidden"}, \code{"not_found"}, \code{"gone"}, or
+\code{"request_failed"} (a bare \code{NULL} cannot carry attributes in R, so it
+would silently discard this) -- callers that only check
+\code{length(result) == 0} keep working unchanged, and callers that need to
+tell "inaccessible" apart from "genuinely empty" can check
+\code{attr(result, "osf_error")}.
 }
 \description{
 OSF API queries only return up to 10 items per page, so this helper functions checks for extra pages and returns all of them

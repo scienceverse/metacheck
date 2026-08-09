@@ -137,10 +137,10 @@
 #'
 #' Printed console OUTPUT (`## `-prefixed lines pandoc/knitr interleave after
 #' each chunk) is deliberately NOT included: this produces a re-runnable `.R`
-#' script for [code_check()]/[reproducibility_check()], and a `##`-prefixed
-#' line is a comment in R syntax anyway, so leaving it out changes nothing a
-#' parse would see — it is dropped here only to keep the recovered file to
-#' actual code.
+#' script for `code_check`/`reproducibility_check` (the modules in
+#' `inst/modules/`), and a `##`-prefixed line is a comment in R syntax anyway,
+#' so leaving it out changes nothing a parse would see — it is dropped here
+#' only to keep the recovered file to actual code.
 #'
 #' @param html_path path to a local `.html` file already confirmed (by
 #'   [.html_sniff_kind()]) to be `"rmd"`

@@ -60,65 +60,376 @@
   archive = "unknown"
 )
 
-# Extensions whose data_check type is fixed by format, applied last to correct
-# any coarser guess (ported from 0_index.R FIXED_EXT_TYPE). Lowercase, no dot.
-.fixed_ext_type <- c(
-  r = "code", rmd = "code", qmd = "code", ipynb = "code",
-  do = "code", sps = "code", sas = "code",
-  # MATLAB source (.m) is code; MATLAB's own binary data container (.mat) is
-  # data, never code -- distinct extensions, no ambiguity between them (unlike
-  # .out below, whose reclassification-after-download logic does not apply
-  # here: nothing about a .mat's CONTENT could make it code, so no downstream
-  # content check is needed the way .out gets one).
-  m = "code", mat = "data",
-  exe = "materials", dmg = "materials", app = "materials", jar = "materials",
-  msi = "materials", deb = "materials", rpm = "materials",
-  # Compiled binaries / installer packages, not source: same kind as exe/dmg/
-  # jar above, just missing from the original list. elf is a compiled Linux
-  # binary; msix/msixbundle are Windows installer packages; jnlp is a Java Web
-  # Start launcher (XML pointing at a Java app to fetch and run).
-  elf = "materials", msix = "materials", msixbundle = "materials",
-  jnlp = "materials",
-  sh = "materials", bash = "materials", zsh = "materials",
-  bat = "materials", cmd = "materials", ps1 = "materials",
-  dll = "materials", so = "materials", dylib = "materials",
-  lua = "materials", psyexp = "materials", osexp = "materials",
-  spv = "output", smcl = "output", fig = "output",
-  # A .out is Mplus's rendered output. Unlike .spv/.smcl (unambiguously
-  # SPSS/Stata-specific), ".out" is a generic extension also used for
-  # compiled Unix binaries and unrelated tool logs, so a false positive here
-  # is genuinely possible from extension alone -- classification still
-  # keys on the extension (content can't be checked before a file is
-  # downloaded), but data_check() reclassifies any downloaded .out back to
-  # "unknown" if .mplus_is_genuine_output() (R/mplus.R) rejects it. .inp is
-  # Mplus's own analysis-syntax extension (unambiguous: no other common
-  # research-data tool uses it), so it is classed "code" outright, the same
-  # as .sps/.do.
-  out = "output", inp = "code",
-  # A Qualtrics survey-definition file (.qsf) is the survey's own codebook: it
-  # carries every question's wording and its response options with coded values
-  # (see parse_qsf()). Classing it as documentation (with doc_role "codebook")
-  # makes it download under the default `download = "data"` and routes it into
-  # codebook_check's parser.
-  qsf = "documentation",
-  # Binary scientific-data containers that name-based rules miss (they would
-  # otherwise fall through to "unknown"). These hold research data, not assets.
-  npy = "data", npz = "data", h5 = "data", hdf5 = "data", hdf = "data",
-  fif = "data", pkl = "data", pickle = "data", pk = "data",
-  ft = "data", feather = "data", parquet = "data", textgrid = "data",
-  # Trial-level behavioural-task data files. Inquisit .iqdat is tab-delimited
-  # TEXT, so it is real, readable research data and downloads under the default
-  # `download = "data"`; its paradata can be extracted.
-  iqdat = "data",
-  # E-Prime .edat/.edat2 are the OPPOSITE: proprietary BINARY (OLE compound
-  # documents) that metacheck cannot read at all — .eprime_is_export() rejects
-  # them, so a downloaded .edat always fails to parse and yields nothing. The
-  # analysable data lives in E-Prime's plain-.txt export (detected from content
-  # via .eprime_is_export()). So .edat/.edat2 are classed "materials": recorded
-  # in the manifest as present in the repo, but never downloaded (nothing to do
-  # with the bytes). This avoids fetching hundreds of unreadable binaries per
-  # study.
-  edat = "materials", edat2 = "materials"
+# ── Unified extension registry ───────────────────────────────────────────────
+#
+# ONE table, keyed by extension, replacing what used to be six independent
+# hardcoded lists that could (and did) silently disagree: .fixed_ext_type,
+# .readable_extensions, code_lang()'s grepl chain (R/code_check.R),
+# .code_predownload()'s candidate regex (R/code_check.R), and
+# .psychds_encoding_format()'s mimes vector (R/psychds-convert.R). Two real
+# disagreements this merge fixes: .psychds_encoding_format() had no entry for
+# "omv" even though .jasp and .omv are treated as siblings everywhere else in
+# the package (a jamovi file got no schema.org MIME type while its JASP
+# counterpart did); and "por" (SPSS portable) had a MIME type asserted with no
+# reader anywhere (now real: haven::read_por(), see data_read_head()).
+#
+# Columns:
+#   ext       - lowercase extension, no dot (registry key)
+#   data_type - data_check semantic type (see .data_check_types); replaces
+#               .fixed_ext_type. NA when format alone does not fix the type
+#               (data_classify_files() falls through to keyword/crosswalk).
+#   readable  - TRUE when metacheck has an actual tabular reader for this
+#               format (data_read_head()'s switch); replaces
+#               .readable_extensions. A new reader branch added there must
+#               get readable = TRUE here, or the format is downloaded but
+#               never parsed.
+#   code_lang - the programming language code_check treats this extension as;
+#               replaces code_lang()'s grepl chain. NA for non-code formats.
+#   mime      - schema.org encodingFormat for Psych-DS DataDownload entries;
+#               replaces .psychds_encoding_format()'s mimes vector. NA when
+#               no standard MIME type applies/is asserted.
+#
+# A row's `data_type` is FORMAT-LOCKED: nothing past Tier 1 of
+# data_classify_files() (no filename/folder keyword, no coarse crosswalk) can
+# override it -- the extension is stronger evidence of what a file actually
+# IS than any name is (a real .csv/.R/.sav found under a mislabelled
+# "Materials/" folder is still data/code).
+.ext_registry <- (function() {
+  r <- function(ext, data_type = NA_character_, readable = FALSE,
+               code_lang = NA_character_, mime = NA_character_) {
+    data.frame(ext = ext, data_type = data_type, readable = readable,
+              code_lang = code_lang, mime = mime, stringsAsFactors = FALSE)
+  }
+  dplyr::bind_rows(
+    # ── Code ──────────────────────────────────────────────────────────────
+    # .ipynb's LANGUAGE is content-dependent (see code_lang()'s own roxygen:
+    # of 144 real corpus notebooks, 126 declared Python and 7 declared R via
+    # in-file metadata) -- registered as data_type "code" (format-locked
+    # regardless of kernel) but code_lang left NA here; code_lang() keeps its
+    # own .ipynb_lang() content-sniff as a post-lookup special case.
+    #
+    # .qmd is Quarto, and (unlike .Rmd, which is R/knitr by construction)
+    # explicitly polyglot -- the same document can run knitr (R) or Jupyter
+    # (Python, Julia, ...) depending on its YAML `engine`/`jupyter:` field or
+    # chunk fences. Previously format-locked to code_lang = "R" here, which
+    # meant every .qmd was purled with the R-only code_extract_r()/
+    # knitr::purl() regardless of its actual engine (issue #180). code_lang
+    # left NA, same treatment as .ipynb: code_lang()'s own .qmd_lang()
+    # content-sniff decides R vs Python when the file is available locally,
+    # falling back to "R" (Quarto's and this registry's own prior default)
+    # when it is not.
+    r("r",    "code", readable = FALSE, code_lang = "R",    mime = "text/x-r-source"),
+    r("rmd",  "code", readable = FALSE, code_lang = "R"),
+    r("qmd",  "code", readable = FALSE, code_lang = NA),
+    r("ipynb","code", readable = FALSE, code_lang = NA),
+    r("py",   "code", readable = FALSE, code_lang = "Python", mime = "text/x-python"),
+    r("do",   "code", readable = FALSE, code_lang = "Stata"),
+    r("ado",  "code", readable = FALSE, code_lang = "Stata"),
+    r("sps",  "code", readable = FALSE, code_lang = "SPSS"),
+    r("sas",  "code", readable = FALSE, code_lang = "SAS"),
+    r("inp",  "code", readable = FALSE, code_lang = "Mplus"),
+    r("m",    "code", readable = FALSE, code_lang = "MATLAB"),
+    # Probabilistic-programming / cognitive-modelling source, confirmed
+    # against real corpus examples: .stan (Stan model code), .wppl (WebPPL,
+    # confirmed as source under a node_modules/ package, not data), .mpt
+    # (MultiTree cognitive-model files). .sbatch/.sbt are build/job scripts
+    # (SLURM batch job; Scala build tool).
+    r("stan", "code"), r("wppl", "code"), r("mpt", "code"),
+    r("sbatch","code"), r("sbt", "code"),
+    # .mjs/.cjs are JavaScript module-system variants, sibling to .js
+    # (confirmed against real corpus source files, e.g. WebGazer's
+    # src/dom_util.mjs). .typ is Typst source (confirmed under a Quarto
+    # apaquarto extension's typst/ folder). .spwb is IBM SPSS Statistics'
+    # modern Workbook format (v28+, a ZIP container bundling syntax +
+    # descriptive text -- successor to the older plain-text .sps).
+    r("mjs", "code"), r("cjs", "code"), r("typ", "code"), r("spwb", "code"),
+    # A .jasp/.omv bundles a dataset with its analyses -- a binary (zip)
+    # archive, so it is both a code_lang() ("JASP"/"jamovi", listed not
+    # analysed) AND readable as data (import_jasp()/import_omv() recover a
+    # labelled data frame, treated exactly like .sav). data_type stays "data"
+    # (file_category()'s sure_class already keys ft=="data;stats" -> "data";
+    # the dataset is the primary artifact, the bundled analyses are recovered
+    # separately as the code file).
+    r("jasp", "data", readable = TRUE,  code_lang = "JASP",   mime = "application/x-jasp"),
+    r("omv",  "data", readable = TRUE,  code_lang = "jamovi", mime = "application/x-jamovi"),
+    # Reproducibility/build config for a code project -- goes WITH the .Rmd/
+    # .qmd it configures (a _quarto.yml, an .Rproj, an renv.lock) rather than
+    # documentation or materials. Previously these fell through to the coarse
+    # "config" crosswalk category, which lands on "materials" -- wrong: a
+    # .lock/.yaml/.Rproj is project scaffolding for the ANALYSIS, not
+    # participant-facing stimuli/software.
+    r("yaml", "code"), r("yml", "code"), r("toml", "code"),
+    r("ini",  "code"), r("lock","code"), r("rproj","code"),
+
+    # ── Data ──────────────────────────────────────────────────────────────
+    # MATLAB source (.m) is code; MATLAB's own binary data container (.mat)
+    # is data, never code -- distinct extensions, no ambiguity between them
+    # (unlike .out below, whose reclassification-after-download logic does
+    # not apply here: nothing about a .mat's CONTENT could make it code, so
+    # no downstream content check is needed the way .out gets one).
+    r("mat",  "data", readable = FALSE),
+    # csv/tsv/dat/xlsx/xls/ods/fods are deliberately NOT format-locked here
+    # (data_type = NA): each is readable as a table (readable = TRUE feeds
+    # .readable_extensions/data_format()) but the file's data_check TYPE stays
+    # decided by file_category()'s coarse crosswalk (csv/dat/xls/xlsx/ods all
+    # already resolve to "data" there via metacheck::file_types' own coarse
+    # "data" category -- confirmed in data/file_types.rda) and Tier 2 keyword
+    # rules, exactly as before this registry existed: a real corpus
+    # "README.txt" or "codebook.xlsx" must still reach the keyword layer, the
+    # same way a genuine ".csv" named "Materials - Exp 2.csv" should still
+    # become "materials", not get force-locked to "data" by extension alone.
+    # .txt is a stronger case of the same thing: its OWN coarse type is "text"
+    # (documentation-leaning), not "data", so locking it here would have been
+    # wrong in the other direction too.
+    r("csv",  NA,     readable = TRUE,  mime = "text/csv"),
+    r("tsv",  NA,     readable = TRUE,  mime = "text/tab-separated-values"),
+    r("txt",  NA,     readable = TRUE,  mime = "text/plain"),
+    r("dat",  NA,     readable = TRUE),
+    r("json", NA,     readable = FALSE, mime = "application/json"),
+    r("xlsx", NA,     readable = TRUE,
+      mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    r("xls",  NA,     readable = TRUE,  mime = "application/vnd.ms-excel"),
+    r("ods",  NA,     readable = TRUE,
+      mime = "application/vnd.oasis.opendocument.spreadsheet"),
+    r("fods", NA,     readable = TRUE,
+      mime = "application/vnd.oasis.opendocument.spreadsheet"),
+    r("sav",  "data", readable = TRUE,  mime = "application/x-spss-sav"),
+    r("dta",  "data", readable = TRUE,  mime = "application/x-stata-dta"),
+    r("sas7bdat", "data", readable = TRUE, mime = "application/x-sas-data"),
+    # SPSS portable format: real reader via haven::read_por() (added to
+    # data_read_head()'s switch alongside sav/dta/sas7bdat) -- previously had
+    # a MIME type asserted with no reader anywhere in the package.
+    r("por",  "data", readable = TRUE,  mime = "application/x-spss-por"),
+    r("rds",  "data", readable = TRUE,  mime = "application/x-r-rds"),
+    r("rda",  "data", readable = TRUE,  mime = "application/x-r-data"),
+    r("rdata","data", readable = TRUE,  mime = "application/x-r-data"),
+    # Binary scientific-data containers that name-based rules miss (they
+    # would otherwise fall through to "unknown"). These hold research data,
+    # not assets. None have a metacheck reader (readable = FALSE) yet.
+    r("npy",  "data", readable = FALSE),
+    r("npz",  "data", readable = FALSE),
+    r("h5",   "data", readable = FALSE),
+    r("hdf5", "data", readable = FALSE),
+    r("hdf",  "data", readable = FALSE),
+    r("fif",  "data", readable = FALSE),
+    r("pkl",  "data", readable = FALSE),
+    r("pickle","data",readable = FALSE),
+    r("pk",   "data", readable = FALSE),
+    r("ft",   "data", readable = FALSE),
+    r("feather","data",readable = FALSE),
+    r("parquet","data",readable = FALSE),
+    r("textgrid","data",readable = FALSE),
+    # Trial-level behavioural-task data. Inquisit .iqdat is tab-delimited
+    # TEXT, so it is real, readable research data and downloads under the
+    # default `download = "data"`; its paradata can be extracted.
+    r("iqdat","data", readable = FALSE),
+    # Per-participant / per-tool research data confirmed from real corpus
+    # examples (.metacheck_repo_cache, 849 cached repositories): .topd (raw
+    # per-participant behavioural files, e.g. "plt_10mo/01-1-1009.topd"),
+    # .psydat (PsychoPy's own binary per-participant data file), .set
+    # (EEGLAB dataset, paired with .fdt), .numbers (Apple Numbers
+    # spreadsheet, same family as .xlsx/.ods -- no metacheck reader yet).
+    r("topd",  "data", readable = FALSE),
+    r("psydat","data", readable = FALSE),
+    r("set",   "data", readable = FALSE),
+    r("numbers","data",readable = FALSE),
+    # E-Prime MERGED data output (sibling of .edat/.edat2, but the merged
+    # multi-participant export rather than a single-participant recording).
+    r("emrg2", "data", readable = FALSE),
+    # NVivo (qualitative analysis software) project file: bundles coded
+    # qualitative source content (text/audio/video/image) plus the
+    # researcher's analytic annotations on it.
+    r("nvp",   "data", readable = FALSE),
+    # Other qualitative-analysis-software project files -- same treatment as
+    # .nvp (coded source content + analytic annotations). NOT corpus-
+    # confirmed (see the EEG/neuroimaging block above for why); .qdpx is the
+    # REFI-QDA vendor-neutral exchange format used across ATLAS.ti/MAXQDA/
+    # NVivo/Dedoose alike, so it is the single most likely of these to
+    # actually appear in an open-science deposit.
+    r("qdpx",   "data", readable = FALSE),  # REFI-QDA exchange format
+    r("atlproj","data", readable = FALSE),  # ATLAS.ti project
+    # Physiological/EEG recording formats. .edf is European Data Format;
+    # .vmrk/.vhdr are BrainVision's marker/header files (paired with a
+    # binary .eeg data file); .acq is BIOPAC AcqKnowledge data (confirmed
+    # against uwmadison-chm/bioread's own test fixtures).
+    r("edf",  "data", readable = FALSE),
+    r("vmrk", "data", readable = FALSE),
+    r("vhdr", "data", readable = FALSE),
+    r("acq",  "data", readable = FALSE),
+    # NLP parse/annotation formats (confirmed against the naturalstories
+    # corpus: languageMIT/naturalstories/parses/{penn,stanford,ud}/...) --
+    # derived linguistic data, not source code.
+    r("conllx","data",readable = FALSE),
+    r("tok",  "data", readable = FALSE),
+    r("t2c",  "data", readable = FALSE),
+    r("consfeatures","data",readable = FALSE),
+    r("depfeatures","data",readable = FALSE),
+    # EEG/physiological/neuroimaging RAW DATA formats. UNLIKE every other row
+    # in this registry, these are NOT confirmed against a real example in
+    # .metacheck_repo_cache (a dedicated search found zero occurrences across
+    # all 849 cached repositories -- this corpus skews behavioural/survey,
+    # not neuroimaging/EEG-hardware studies). Added anyway because they are
+    # standardised, unambiguous formats with essentially no collision risk
+    # against anything else in this registry (.fif is the one overlap, and it
+    # already resolves to "data" above for the same reason). Revisit/verify
+    # against a real example if one turns up.
+    r("bdf",  "data", readable = FALSE),  # BioSemi EEG
+    r("cnt",  "data", readable = FALSE),  # Neuroscan/ANT Neuro EEG
+    r("gdf",  "data", readable = FALSE),  # g.tec EEG
+    r("mff",  "data", readable = FALSE),  # EGI Netstation EEG
+    r("xdf",  "data", readable = FALSE),  # Lab Streaming Layer
+    r("nii",  "data", readable = FALSE),  # NIfTI (fMRI)
+    r("dcm",  "data", readable = FALSE),  # DICOM (medical imaging)
+    r("mnc",  "data", readable = FALSE),  # MINC (neuroimaging)
+    r("mgz",  "data", readable = FALSE),  # FreeSurfer
+    r("mgh",  "data", readable = FALSE),  # FreeSurfer
+    r("gii",  "data", readable = FALSE),  # GIFTI (surface neuroimaging)
+    # Database files holding real research data (psiturk participant
+    # records, WebGazer training data).
+    r("db",     "data", readable = FALSE),
+    r("sqlite", "data", readable = FALSE),
+    # .asc is generic ASCII text; in real corpus context it is an SR
+    # Research EyeLink eye-tracking data export (confirmed under an
+    # "Eye-Tracking/data/" folder).
+    r("asc", "data", readable = FALSE),
+
+    # ── Materials ─────────────────────────────────────────────────────────
+    r("exe",  "materials"), r("dmg",  "materials"), r("app",  "materials"),
+    r("jar",  "materials"), r("msi",  "materials"), r("deb",  "materials"),
+    r("rpm",  "materials"),
+    # Compiled binaries / installer packages, not source: elf is a compiled
+    # Linux binary; msix/msixbundle are Windows installer packages; jnlp is a
+    # Java Web Start launcher (XML pointing at a Java app to fetch and run).
+    r("elf",  "materials"), r("msix", "materials"), r("msixbundle", "materials"),
+    r("jnlp", "materials"),
+    r("sh",   "materials"), r("bash", "materials"), r("zsh",  "materials"),
+    r("bat",  "materials"), r("cmd",  "materials"), r("ps1",  "materials"),
+    r("dll",  "materials"), r("so",   "materials"), r("dylib","materials"),
+    r("lua",  "materials"), r("psyexp","materials"), r("osexp","materials"),
+    # E-Prime .edat/.edat2 are proprietary BINARY (OLE compound documents)
+    # that metacheck cannot read at all -- .eprime_is_export() rejects them,
+    # so a downloaded .edat always fails to parse and yields nothing. The
+    # analysable data lives in E-Prime's plain-.txt export (detected from
+    # content via .eprime_is_export()). So .edat/.edat2 are classed
+    # "materials": recorded in the manifest as present, but never downloaded.
+    r("edat", "materials"), r("edat2","materials"),
+    # Experiment-runner project/task files confirmed against real corpus
+    # examples: .iqx is Inquisit's own experiment-script format (sibling to
+    # .iqdat's data output); .resx/.pdb/.manifest/.cache/.myapp/.settings/
+    # .sln/.user/.vbproj/.suo are Visual Studio IDE/build scaffolding bundled
+    # alongside one corpus study's custom VB experiment program (not research
+    # content, but part of the runnable software); .a7p/.ebs/.ebs2/.es/.es2/
+    # .wndpos/.exp are DirectRT/Inquisit-family task-definition files;
+    # .pde is a Processing/DMDX-style stimulus-presentation file; .mexw64 is
+    # a compiled MATLAB MEX binary (Windows); .binarypb is a compiled
+    # MediaPipe model binary (WebGazer eye-tracking). .opf is Datavyu (video
+    # coding tool, Databrary spinoff) -- confirmed via databrary/pyvyu, a
+    # library built specifically to parse Datavyu .opf files; the sampled
+    # "costly_template.opf" name suggests a coding-scheme template
+    # (apparatus) rather than coded results.
+    r("iqx",      "materials"), r("resources", "materials"),
+    r("resx",     "materials"), r("pdb",       "materials"),
+    r("manifest", "materials"), r("cache",     "materials"),
+    r("myapp",    "materials"), r("settings",  "materials"),
+    r("sln",      "materials"), r("user",      "materials"),
+    r("vbproj",   "materials"), r("suo",       "materials"),
+    r("a7p",      "materials"), r("ebs",       "materials"),
+    r("ebs2",     "materials"), r("es",        "materials"),
+    r("es2",      "materials"), r("wndpos",    "materials"),
+    r("exp",      "materials"), r("pde",       "materials"),
+    r("mexw64",   "materials"), r("binarypb",  "materials"),
+    r("opf",      "materials"),
+    # Build/cache artifacts: automatically generated byproducts of running
+    # code, not authored content or research data -- .pyc (Python bytecode,
+    # confirmed under __pycache__/), .map (JS source maps for vendor
+    # libraries like Bootstrap/jQuery, confirmed under a docs/deps/ folder),
+    # .rdb/.rdx (R's own knitr lazy-load cache pair, confirmed via knitr's
+    # own cache.R source using tools:::makeLazyLoadDB). Filed as materials
+    # (the "bundled with the software/tooling, not itself analytic content"
+    # bucket), matching the earlier IDE/build-scaffolding batch above.
+    r("pyc", "materials"), r("map", "materials"),
+    r("rdb", "materials"), r("rdx", "materials"),
+
+    # ── Output ────────────────────────────────────────────────────────────
+    # .spv/.smcl have full readers (import_stat_output()/import_stata_smcl(),
+    # R/spv.R, R/stata.R) that recover their embedded analysis syntax as a
+    # sibling code file -- the .spv/.smcl row ITSELF still stays data_type
+    # "output" (see .code_expand_spv()/.code_expand_smcl(), R/code_check.R);
+    # only the recovered syntax becomes a checked code file.
+    r("spv",  "output", readable = FALSE),
+    r("smcl", "output", readable = FALSE),
+    r("fig",  "output", readable = FALSE),
+    # A .out is Mplus's rendered output. Unlike .spv/.smcl (unambiguously
+    # SPSS/Stata-specific), ".out" is a generic extension also used for
+    # compiled Unix binaries and unrelated tool logs, so a false positive
+    # here is genuinely possible from extension alone -- classification
+    # still keys on the extension (content can't be checked before a file is
+    # downloaded), but data_check() reclassifies any downloaded .out back to
+    # "unknown" if .mplus_is_genuine_output() (R/mplus.R) rejects it.
+    r("out",  "output", readable = FALSE),
+    # .rout is an R console transcript (Rscript's own ".Rout" convention,
+    # confirmed against real corpus examples under a "PACE R_Code..." study)
+    # -- a rendered run log, not source. .amosoutput/.amp/.amw/.bk1/.bk2/
+    # .amosp are AMOS SEM software's own output-file family (confirmed
+    # against one corpus study's CFA_AMOS/ folder). .afdesign (Affinity
+    # Designer) and .pt (PyTorch torch.save() model checkpoint) are both
+    # GENERATED artifacts from running analysis/training code -- an editable
+    # source figure and a trained-model checkpoint respectively, not raw
+    # collected data.
+    r("rout",       "output"), r("amosoutput", "output"),
+    r("amp",        "output"), r("amw",        "output"),
+    r("bk1",        "output"), r("bk2",        "output"),
+    r("amosp",      "output"), r("afdesign",   "output"),
+    r("pt",         "output"),
+
+    # ── Documentation ─────────────────────────────────────────────────────
+    # A Qualtrics survey-definition file (.qsf) is the survey's own codebook:
+    # it carries every question's wording and its response options with
+    # coded values (see parse_qsf()). Classing it as documentation (with
+    # doc_role "codebook") makes it download under the default
+    # `download = "data"` and routes it into codebook_check's parser.
+    r("qsf",  "documentation"),
+    # A Stata plain-text log (`log using foo.log`, the un-marked-up sibling
+    # of .smcl -- both come from Stata's own `log using` command) is treated
+    # as documentation for now: no confirmed real-corpus example exists to
+    # validate a "is this genuinely Stata output" sniffer against (unlike
+    # .out, which DOES have .mplus_is_genuine_output() built and verified).
+    # Revisit if/when a real .log example turns up.
+    r("log",  "documentation"),
+    # Bibliography / manuscript-typesetting support files (LaTeX/citation
+    # tooling), confirmed against real corpus examples (bibliography/
+    # library.bib, apa.csl, plos2015.bst, wlscirep.cls, jabbrv.sty) --
+    # explanatory/reference material for the manuscript, not analytic
+    # content. .cff is the Citation File Format; .gdoc/.url are shortcut
+    # files pointing at external documents (Google Docs, OSF links); .aux/
+    # .fff/.thmx are LaTeX/Office build byproducts of a rendered document;
+    # .dcf is an R-package-style DESCRIPTION-format metadata file; .drawio
+    # is diagram source. .key (Apple Keynote) is locked to documentation
+    # here rather than left to the materials/ folder-keyword rule: it is
+    # fundamentally a slide-deck format like .pptx, even though some corpus
+    # examples sit inside a "Materials/" folder.
+    r("bib", "documentation"), r("csl", "documentation"),
+    r("bst", "documentation"), r("cls", "documentation"),
+    r("sty", "documentation"), r("cff", "documentation"),
+    r("gdoc","documentation"), r("url", "documentation"),
+    r("aux", "documentation"), r("fff", "documentation"),
+    r("thmx","documentation"), r("dcf", "documentation"),
+    r("drawio","documentation"), r("key", "documentation"),
+    # .cgi is a generic Common-Gateway-Interface script marker; in real
+    # corpus context it names a saved Ovid literature-search results
+    # webpage ("ovidweb.cgi"), not an executable script -- reference
+    # material for a literature search, not analytic content.
+    r("cgi", "documentation")
+  )
+})()
+
+# Format-locked lookup used by data_classify_files() Tier 1. Kept as a plain
+# named vector (not the full data frame) so existing `.fixed_ext_type[ext]`
+# call sites are untouched; built from .ext_registry so it can never drift
+# from the readable/code_lang/mime columns derived from the same rows.
+.fixed_ext_type <- stats::setNames(
+  .ext_registry$data_type[!is.na(.ext_registry$data_type)],
+  .ext_registry$ext[!is.na(.ext_registry$data_type)]
 )
 
 #' Classify repository files into data_check semantic types
@@ -131,18 +442,18 @@
 #' @param file_name a character vector of file names (basenames)
 #' @param file_path optional character vector, same length as `file_name`: the
 #'   full repo-relative path of each file (e.g. `"ResearchBox 801/Materials/
-#'   Informant Survey_Redacted.pdf"`). When supplied, a path segment literally
-#'   named `materials`/`stimuli`/`stimulus` reclassifies a file that would
-#'   otherwise fall into the generic `"documentation"`/`"unknown"` bucket — a
-#'   researcher's own folder naming is a stronger, more deliberate signal than
-#'   a generic extension like `.pdf`/`.docx`/`.txt`, which could hold anything
-#'   (a PDF questionnaire is materials; a PDF preprint is documentation; the
-#'   extension alone cannot tell them apart, but the author's folder choice
-#'   can). Does NOT override a format-locked type (`.fixed_ext_type`, or
-#'   `file_category()`'s own readme/codebook/data/code rules): a genuine
+#'   Informant Survey_Redacted.pdf"`). When supplied, a keyword found ANYWHERE
+#'   in the path (a folder segment OR the filename itself — see the Tier 2
+#'   keyword table below) reclassifies a file. A researcher's own naming,
+#'   whether the folder or the file, is a stronger, more deliberate signal
+#'   than a generic extension like `.pdf`/`.docx`/`.txt`, which could hold
+#'   anything (a PDF questionnaire is materials; a PDF preprint is
+#'   documentation; the extension alone cannot tell them apart, but the
+#'   author's own naming can). Does NOT override a format-locked type
+#'   (`.fixed_ext_type`, or `file_category()`'s own hard rules): a genuine
 #'   `.csv`/`.R`/`.sav` found under a mislabelled "Materials/" folder still
 #'   classifies by its real format, since the extension is stronger evidence
-#'   of what the file actually IS than a folder name is. `NULL` (the default)
+#'   of what the file actually IS than a name is. `NULL` (the default)
 #'   disables this layer entirely, unchanged from before.
 #'
 #' @returns a character vector of data_check types (see `.data_check_types`);
@@ -157,135 +468,76 @@ data_classify_files <- function(file_name, file_path = NULL) {
   n <- length(file_name)
   if (n == 0) return(character(0))
 
-  # Layer 1: metacheck name-based rules (readme / codebook / data / code).
-  # file_category() still returns its own old-style labels ("readme",
-  # "codebook") — translate them into the 6-way data_check vocabulary here so
-  # only this one place needs to know about that mapping.
+  # ── Tier 1: format-locked classification ──────────────────────────────────
+  # Nothing below this point can override a Tier 1 result. `file_category()`'s
+  # hard rules (sure_class: stats/data/code, and the .jasp/.por data+stats
+  # compound) key on the file's actual FORMAT, not its name — translate its
+  # old-style labels ("readme", "codebook") into the 6-way data_check
+  # vocabulary here so only this one place needs to know about that mapping.
   cat_raw <- file_category(file_name)$file_category
   cat <- dplyr::case_when(
     cat_raw %in% c("readme", "codebook") ~ "documentation",
     .default = cat_raw
   )
-
-  # Layer 2: extension crosswalk from metacheck::file_types
   ext <- tolower(tools::file_ext(file_name))
-  coarse <- filetype(file_name)                 # named vector, may be "a;b"
-  coarse_first <- sub(";.*$", "", unname(coarse))
-  crosswalked <- unname(.file_type_crosswalk[coarse_first])
-
-  type <- ifelse(!is.na(cat), cat, crosswalked)
-
-  # Layer 3: format-locked extension overrides (highest priority)
   fixed <- unname(.fixed_ext_type[ext])
-  type <- ifelse(!is.na(fixed), fixed, type)
+  locked <- dplyr::coalesce(fixed, cat)          # fixed extension wins over cat_raw
 
-  # A "Materials/"-style FOLDER name is a stronger signal than a generic
-  # extension guess for a file that otherwise landed in the catch-all
-  # "documentation"/"unknown" buckets — a PDF questionnaire filed under
-  # Materials/ is materials, not documentation, regardless of ".pdf" alone
-  # (which could just as easily be a preprint). Deliberately NOT applied when
-  # `fixed` already set a format-locked type (a real .csv/.R/.sav is still
-  # data/code even inside a mislabelled "Materials/" folder — the extension
-  # is stronger evidence of what the file actually IS than a folder name),
-  # and only ever MOVES a row out of the two catch-all types, never out of a
-  # confident file_category()/crosswalk classification (a genuine README.md
-  # placed under Materials/ by mistake stays documentation).
-  if (!is.null(file_path)) {
-    path_for_folder <- ifelse(is.na(file_path) | !nzchar(file_path %||% ""),
-                              file_name, file_path)
-    in_materials_folder <- grepl("(^|/)(materials|stimuli|stimulus)(/|$)",
-                                 tolower(path_for_folder))
-    movable <- is.na(fixed) & type %in% c("documentation", "unknown")
-    type[in_materials_folder & movable] <- "materials"
+  # ── Tier 2: keyword-in-name overrides ─────────────────────────────────────
+  # An explicit category word in the researcher's own folder or file naming
+  # ("Materials/", "Results.docx", "analysis_code.zip") is a more deliberate,
+  # direct signal than a generic extension like .pdf/.docx/.txt/.html/.zip,
+  # each of which could hold almost anything. Checked as whole NAME TOKENS —
+  # bounded by "/", "_", "-", ".", space, or start/end of string — never as a
+  # bare substring: R regex's \b treats "_" as a word character, so \b alone
+  # would silently miss "my_output_log.html" (verified directly against that
+  # string, not by reasoning about the regex), and a bare substring match
+  # would wrongly fire on "metadata.csv" or "encoding.csv" for "data".
+  # Ordered most-specific-first so a compound (codebook, prereg) is claimed
+  # before a shorter generic word (code, data) could grab part of it.
+  path_for_kw <- if (!is.null(file_path)) {
+    ifelse(is.na(file_path) | !nzchar(file_path %||% ""), file_name, file_path)
+  } else file_name
+  path_lc <- tolower(path_for_kw)
+
+  tok <- function(pattern) paste0("(^|[/_. -])(", pattern, ")($|[/_. -])")
+  keyword_rules <- list(
+    list(type = "documentation", pattern = "readme"),
+    list(type = "documentation", pattern = "code[ _.-]?book"),
+    list(type = "documentation", pattern = "pre[ _-]?reg(istration)?"),
+    list(type = "materials",     pattern = "materials|stimuli|stimulus"),
+    list(type = "data",          pattern = "data"),
+    list(type = "code",          pattern = "code|script"),
+    list(type = "output",        pattern = "output|results")
+  )
+
+  # FIRST match wins: once a rule has claimed a row (type != locked), a LATER
+  # rule must not overwrite it -- e.g. "code_book.csv" matches BOTH the
+  # codebook pattern (rule 2) and the bare code|script pattern (rule 6), and
+  # without this guard rule 6 would silently clobber rule 2's correct
+  # "documentation" back to the wrong "code" on every subsequent iteration
+  # (caught by testing the exact string "code_book.csv", not by reasoning
+  # about the loop).
+  type <- locked
+  claimed <- !is.na(locked)
+  for (rule in keyword_rules) {
+    hit <- grepl(tok(rule$pattern), path_lc) & is.na(fixed) & !claimed
+    type[hit] <- rule$type
+    claimed <- claimed | hit
   }
 
-  # README filename → documentation (belt-and-braces; file_category usually
-  # catches it via cat_raw == "readme" above).
-  type[grepl("^readme($|\\.)", tolower(file_name))] <- "documentation"
+  # ── Tier 3: coarse crosswalk fallback ─────────────────────────────────────
+  # Whatever Tier 1/2 left unresolved falls back to metacheck::file_types via
+  # .file_type_crosswalk (e.g. image -> materials, text -> documentation).
+  coarse <- filetype(file_name)                  # named vector, may be "a;b"
+  coarse_first <- sub(";.*$", "", unname(coarse))
+  crosswalked <- unname(.file_type_crosswalk[coarse_first])
+  type <- ifelse(is.na(type), crosswalked, type)
 
   # ro-crate-metadata.json is collection-level documentation (see
   # .data_doc_role()), never code or data — without this override its .json
   # extension would crosswalk to "code"/"data" via the coarse file_types table.
   type[grepl("^ro-crate-metadata\\.json$", tolower(basename(file_name)))] <- "documentation"
-
-  # A preregistration document belongs in documentation/, not data/. A file named
-  # "preregistration" / "pre-registration" (or the abbreviation "prereg") is
-  # treated as documentation (doc_role "supplemental") so it is never converted
-  # to a data CSV or filed as code — a prereg .csv/.tsv/.html would otherwise be
-  # misrouted. Genuine analysis SCRIPTS named after the prereg keep their `code`
-  # type (a script is still a script); everything else named prereg is
-  # reclassified. The pattern matches "prereg", "pre-reg", "preregistration",
-  # and "pre-registration" as a word (a leading boundary stops false hits inside
-  # unrelated words).
-  # Match "prereg" / "pre-reg" / "preregistration" / "pre-registration" only as a
-  # whole token: bounded on the left (start or a non-letter) and on the right by a
-  # non-letter or end-of-token — so "preregional" / "preregnancy" do NOT match.
-  is_prereg <- grepl("(^|[^a-z])pre[ _-]?reg(istration)?([^a-z]|$)",
-                     tolower(basename(file_name)))
-  type[is_prereg & type != "code"] <- "documentation"
-
-  # An explicit "code"/"script" keyword in the FILENAME overrides whatever the
-  # extension crosswalk guessed. A researcher naming a file "Code SPSS
-  # Descriptive Statistics.pdf" or "Statistical code Latent Variable
-  # Model.zip" is telling you directly what the file is; a generic extension
-  # (.txt/.pdf/.zip can each hold anything) is a weaker, indirect signal and
-  # should not win over it. This only overrides — it never DEMOTES an already
-  # confident non-code classification into code by accident.
-  #
-  # EXCLUDES the "code[ _.-]?book" compound (the exact pattern file_category()
-  # uses for is_codebook) so "codebook.pdf" / "code-book.csv" / "code_book.xlsx"
-  # stay documentation: \bcode\b alone is NOT sufficient here, because a dash,
-  # underscore, or dot each count as a word boundary in regex terms, so
-  # "code-book.csv" would otherwise ALSO match \bcode\b (verified directly —
-  # this was caught only by testing the actual regex against that exact
-  # string, not by reasoning about it) and get wrongly pulled out of
-  # documentation into code. Reusing file_category()'s own is_codebook pattern
-  # (rather than a new, possibly-diverging one) keeps the two rules from ever
-  # disagreeing about what counts as a codebook compound.
-  #
-  # Deliberately does NOT extend the same override to a bare "data" keyword:
-  # "data" as a substring is far more likely to appear in genuine data files
-  # (meta_data.csv, encoding.csv) or plain documentation (data_appendix.pdf)
-  # than "code" is to appear in non-code files — the same false-positive risk
-  # already flagged for codebook name-matching in file_category() (see its
-  # is_codebook comment).
-  base_lc <- tolower(basename(file_name))
-  is_codebook_named <- grepl("code[ _.-]?book", base_lc)
-  is_code_named <- grepl("\\bcode\\b|\\bscript\\b", base_lc) & !is_codebook_named
-  type[is_code_named] <- "code"
-
-  # An ".html"/".htm" file is essentially never literally source code (it is
-  # always a rendered/compiled artifact of SOMETHING), unlike a real .R/.py
-  # file the "code"/"script" keyword rule above is designed for — so for this
-  # extension specifically, an explicit "output" in the name is the more
-  # accurate signal and is checked LAST, after (and so overriding) the
-  # code/script rule above. A real corpus example, "R code and output.html",
-  # matches BOTH keyword rules; "output" wins for html/htm files only. This is
-  # one of TWO independent ways an .html file reaches data_type = "output" —
-  # the other is content-sniffing after download (see .code_expand_html(),
-  # R/code_check.R, and R/html-output.R's file header for both signals and
-  # why neither alone is a format-locked answer the way .fixed_ext_type gives
-  # unambiguous extensions like .spv/.smcl).
-  is_html_named <- grepl("\\.html?$", base_lc)
-  # NOT \boutput\b: R regex's \b treats "_" as a WORD character (same class as
-  # letters/digits), so "_" gives NO boundary either side of "output" —
-  # "my_output_log.html" would silently fail to match \boutput\b (caught only
-  # by testing that exact string, not by reasoning about the regex). Real
-  # filenames separate words with "_"/"-"/"."/space at least as often as they
-  # rely on \b's letter-boundary sense, so match "output" preceded/followed by
-  # either a true \b OR one of those explicit separators (or string start/end).
-  is_output_named <- grepl("(^|[ _.-])output($|[ _.-])", base_lc)
-  type[is_html_named & is_output_named] <- "output"
-
-  # Everything else named ".html"/".htm" that reached here still carries
-  # whatever Layer 1-3 guessed (usually the crosswalk's generic "code" via the
-  # coarse file_types table's "code;web" entry for html — a real bug, since an
-  # .html file is not code by default either; content-sniffing after download
-  # is what actually resolves this case, not a name guess). Downgrade that
-  # default to "documentation" (matching "web"'s OWN crosswalk target,
-  # .file_type_crosswalk["web"]) rather than leave a plainly wrong "code"
-  # default in place for a file this ambiguous.
-  type[is_html_named & !is_output_named & type == "code"] <- "documentation"
 
   type[is.na(type)] <- "unknown"
   type
@@ -340,27 +592,21 @@ data_classify_files <- function(file_name, file_path = NULL) {
 # The SINGLE source of truth for "can metacheck read this as a table": every
 # extension with a branch in data_read_head()'s switch, and nothing else. Keep
 # the two in lockstep — adding a reader branch without adding its extension here
-# leaves the format downloaded but never read; adding it here without a reader
-# branch makes data_read_head() return NULL for a file we promised was tabular.
+# (via .ext_registry's `readable` column) leaves the format downloaded but
+# never read; adding it here without a reader branch makes data_read_head()
+# return NULL for a file we promised was tabular.
 #
 # Three separate behaviours are derived from this one vector, which is why it
 # must be capability-based rather than a hand-maintained wish list:
 #   * data_format()  -> "tabular"/"raw", which gates DOWNLOADING in data_check
 #   * psychds_check  -> which data files are converted to a Psych-DS _data.csv
 #   * .psychds_write_data_csv() -> the converter that actually reads the bytes
-# Previously these were three divergent hardcoded lists (plus a dead
-# .tabular_extensions), so .ods was readable but never converted, and formats
-# with no reader branch were downloaded and then silently read as NULL.
-.readable_extensions <- c(
-  # Delimited text (.dat/.txt are sniffed for their delimiter)
-  "csv", "tsv", "txt", "dat",
-  # Spreadsheets
-  "xlsx", "xls", "ods", "fods",
-  # Statistics packages (labelled data)
-  "sav", "dta", "sas7bdat", "jasp", "omv",
-  # R serialisation (.rda/.rdata yields the first data frame, if any)
-  "rds", "rda", "rdata"
-)
+# Previously this was maintained as its own hand-typed vector, itself already
+# a fix for three EARLIER divergent lists (.ods was readable but never
+# converted; formats with no reader branch were downloaded and silently read
+# as NULL) — now derived from .ext_registry so a new reader branch only needs
+# updating in one place (the registry's `readable` column) instead of two.
+.readable_extensions <- .ext_registry$ext[.ext_registry$readable]
 
 #' Classify a data file as tabular or raw
 #'
@@ -1746,14 +1992,16 @@ data_read_head <- function(path, n_rows = 5) {
         }
         df
       },
-      sav = , dta = , sas7bdat = {
+      sav = , dta = , sas7bdat = , por = {
         if (!requireNamespace("haven", quietly = TRUE))
           stop("The 'haven' package is required to read SPSS/Stata/SAS files.")
         nmax <- if (is.finite(n_rows)) n_rows else Inf
         as.data.frame(switch(ext,
           sav      = haven::read_sav(path, n_max = nmax),
           dta      = haven::read_dta(path, n_max = nmax),
-          sas7bdat = haven::read_sas(path, n_max = nmax)))
+          sas7bdat = haven::read_sas(path, n_max = nmax),
+          # SPSS portable format: an older, ASCII-transport variant of .sav.
+          por      = haven::read_por(path, n_max = nmax)))
       },
       jasp = {
         # A .jasp bundles a labelled data frame (like SPSS): import_jasp() returns
@@ -3292,13 +3540,23 @@ normalize_label <- function(x) {
 #'
 #' @param path path to a codebook/readme file
 #' @param header_lookahead rows to scan for a header in multi-level CSVs
+#' @param group the file's study/experiment group (data_check's
+#'   `structure_df$group` for this file), scoping the definitions it yields to
+#'   that ONE study. `NA_character_` (the default) leaves them unscoped, which
+#'   `match_column_labels()` then applies to every same-named column
+#'   PAPER-WIDE — correct for a genuinely paper-wide codebook, but it also lets
+#'   one study's codebook (e.g. a `condition` variable coded 1-4 in Study A)
+#'   leak onto an unrelated same-named column in Study B (coded 1-6). Callers
+#'   that know the file's group should pass it. Mirrors `.extract_haven_labels`'s
+#'   `group` argument.
 #'
 #' @returns a data.frame of variable definitions (`codebook_variable`, `label`,
 #'   `codebook_source`, `group`, `parse_method`); a character vector of text
 #'   lines when only unstructured text is available; or `NULL` on failure.
 #' @export
 #' @keywords internal
-parse_codebook <- function(path, header_lookahead = 5L, observed = list()) {
+parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
+                           group = NA_character_) {
   if (!file.exists(path)) return(NULL)
   ext <- tolower(tools::file_ext(path))
   src <- basename(path)
@@ -3500,6 +3758,13 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list()) {
       result$parse_method <- if (isTRUE(attr(result, ".is_haven"))) "haven"
                              else "structured"
     attr(result, ".is_haven") <- NULL
+    # Scope every definition from this file to the caller-supplied study group
+    # (see the `group` parameter doc above) — every extractor above sets its own
+    # `group` column to NA_character_ internally, so stamping it here in ONE
+    # place, after dispatch, is simpler than threading `group` through each of
+    # them individually.
+    if ("group" %in% names(result) && !is.na(group) && nzchar(group))
+      result$group <- group
     return(result)
   }
 
@@ -3898,6 +4163,17 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   # the question, which the shared tag makes certain. Uses the LONGEST matching
   # .qsf tag so a column is attributed to the most specific question. Runs only on
   # still-unlabelled columns and only against .qsf-sourced scale_group tags.
+  #
+  # EXCEPT: Qualtrics also auto-exports per-question PARADATA columns under the
+  # same tag prefix — <tag>_First.Click / _Last.Click / _Page.Submit /
+  # _Click.Count record response TIMING in seconds, not an answer. They are not
+  # "the question" in any sense the label/value_labels could correctly describe
+  # (claiming the question's response codes, e.g. a 1-4 Likert range, onto a
+  # column of continuous seconds produces a false "out of range" flag on nearly
+  # every value downstream in data_check_scale_values()). These suffixes are
+  # Qualtrics-reserved and never legitimate item suffixes, so they are excluded
+  # from the tag match entirely rather than mislabelled.
+  qsf_paradata_re <- "_(First\\.Click|Last\\.Click|Page\\.Submit|Click\\.Count)$"
   qsf_tags <- if (all(c("scale_group", "question") %in% names(codebook_vars_df))) {
     keep <- if ("parse_method" %in% names(codebook_vars_df))
       !is.na(codebook_vars_df$parse_method) &
@@ -3915,6 +4191,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     ord <- order(nchar(qsf_tags), decreasing = TRUE)
     for (i in which(status_out == "unlabelled")) {
       cn <- columns_df$column_name[i]
+      if (grepl(qsf_paradata_re, cn, perl = TRUE, ignore.case = TRUE)) next
       hit <- NA_integer_
       for (t in ord) {
         tg <- qsf_tags[t]
@@ -4086,15 +4363,27 @@ data_analysis_unit <- function(df, id_cols = NULL) {
   if (is.na(v) || v %in% lo:hi) return(NA_integer_)
   cand <- integer(0)
   av <- abs(v)
-  ds <- strsplit(as.character(av), "")[[1]]
-  if (length(ds) >= 2) {
-    # each single digit (33->3, 25->2 or 5, 105->1/0/5)
-    cand <- c(cand, as.integer(ds))
-    # drop the leading digit (25 -> 5, 105 -> 5), drop the trailing (25 -> 2)
-    cand <- c(cand, as.integer(substring(as.character(av), 2)),
-              as.integer(substring(as.character(av), 1, nchar(as.character(av)) - 1)))
+  # The digit-manipulation candidates below (each single digit; drop the
+  # leading/trailing digit) only make sense for an INTEGER-valued typo (a `33`
+  # keyed instead of `3`) — restricted to whole-number v, since as.character()
+  # on a non-integer includes the literal decimal point ("3.5" -> "3", ".",
+  # "5"), and as.integer(".") throws "NAs introduced by coercion". Confirmed as
+  # a real, reachable warning: data_check_scale_values() passes every
+  # out-of-range value here regardless of whether it is a whole number, so a
+  # column with a stray decimal value (e.g. 3.5 on an otherwise-integer 1-7
+  # scale) hit this on every run.
+  if (v == round(v)) {
+    ds <- strsplit(as.character(av), "")[[1]]
+    if (length(ds) >= 2) {
+      # each single digit (33->3, 25->2 or 5, 105->1/0/5)
+      cand <- c(cand, as.integer(ds))
+      # drop the leading digit (25 -> 5, 105 -> 5), drop the trailing (25 -> 2)
+      cand <- c(cand, as.integer(substring(as.character(av), 2)),
+                as.integer(substring(as.character(av), 1, nchar(as.character(av)) - 1)))
+    }
   }
   # sign flip (a -3 typed on a 1..7 scale, or a 3 that should be -3 on a bipolar)
+  # — still meaningful for a non-integer v, so not gated above.
   cand <- c(cand, -v)
   cand <- unique(cand[!is.na(cand)])
   inside <- cand[cand >= lo & cand <= hi]
@@ -4121,6 +4410,18 @@ data_analysis_unit <- function(df, id_cols = NULL) {
 #' few rows) has no fixed range and is not flagged here — unbounded variables
 #' (age, reaction time) have no principled "valid range" to violate.
 #'
+#' Ground truth is trusted only when it is actually PLAUSIBLE for this column's
+#' data: at least `min_ground_truth_coverage` of the non-missing values must
+#' already fall inside the declared range. A codebook/`.qsf` variable can be
+#' mismatched to the wrong data column (a cross-study name collision, or a
+#' Qualtrics timing/paradata column inheriting its question's response codes —
+#' see the `.qsf` question-tag fallback in `match_column_labels()`); when that
+#' happens the declared range explains almost none of the data, and trusting it
+#' anyway turns nearly every real value into a false "out of range" flag. When
+#' coverage is too low, ground truth is DISCARDED for this column (not merely
+#' widened) and the range falls back to `.detect_likert_scale` inference, same
+#' as if no ground truth had been supplied at all.
+#'
 #' This unifies the former `data_check_out_of_range` and
 #' `data_check_miscoded_missing`: one detector run, one finding per column.
 #'
@@ -4130,13 +4431,17 @@ data_analysis_unit <- function(df, id_cols = NULL) {
 #' @param valid_values optional enumerated valid codes (ground truth)
 #' @param valid_range optional `c(lo, hi)` valid range (ground truth)
 #' @param n_max max number of values to list in the message
+#' @param min_ground_truth_coverage minimum fraction of non-missing values that
+#'   must already fall inside a declared `valid_values`/`valid_range` for it to
+#'   be trusted; below this, ground truth is discarded in favour of inference
 #' @returns list(problem, message, values, lower, upper, classes) where `classes`
 #'   labels each flagged value "missing", "typo:<intended>", or "unexplained"
 #' @export
 #' @keywords internal
 data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
                                     declared = NULL, valid_values = NULL,
-                                    valid_range = NULL, n_max = 10) {
+                                    valid_range = NULL, n_max = 10,
+                                    min_ground_truth_coverage = 0.5) {
   none <- list(problem = FALSE, message = "", values = NULL,
                lower = NA_real_, upper = NA_real_, classes = character(0))
   if (!is.numeric(x)) return(none)
@@ -4149,14 +4454,18 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
     vv <- vv[is.finite(vv)]
     if (length(vv) == 0) return(none)
 
-    # Some codebooks carry only endpoints (e.g., 1 and 9) for a bounded
-    # rating scale. If interior integer values are actually present, interpret
-    # that as a contiguous scale range rather than two literal valid codes.
+    # Some codebooks carry only the labeled anchor points of a bounded rating
+    # scale (e.g., 1/9 for a 1-9 semantic differential, or 1/5/9 when a middle
+    # point is also labeled) rather than every level. If interior integer
+    # values not in `vv` are actually present in the data, interpret that as a
+    # contiguous scale range rather than a literal discrete code set — otherwise
+    # every unlisted interior value (2, 3, 4, 6, 7, 8) gets flagged as "outside"
+    # a range whose own reported bounds (lo/hi = min/max(vv)) contain it.
     vv_int <- all(vv == round(vv))
-    if (vv_int && length(vv) == 2L && diff(vv) >= 2L) {
+    if (vv_int && length(vv) >= 2L && diff(range(vv)) >= 2L) {
       x_int <- sort(unique(xv[xv == round(xv)]))
-      has_interior <- any(x_int > vv[1] & x_int < vv[2])
-      valid_set <- if (has_interior) seq.int(vv[1], vv[2]) else vv
+      has_interior <- any(x_int > min(vv) & x_int < max(vv) & !(x_int %in% vv))
+      valid_set <- if (has_interior) seq.int(min(vv), max(vv)) else vv
     } else {
       valid_set <- vv
     }
@@ -4180,6 +4489,18 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
     lo <- min(valid_range); hi <- max(valid_range)
     valid_set <- lo:hi
   } else {
+    lo <- hi <- valid_set <- NULL   # signals "run inference below"
+  }
+
+  # ── Ground truth must actually explain most of the data ─────────────────────
+  # A declared range that covers only a small slice of the column is very likely
+  # attached to the WRONG column (see the function doc), not evidence that most
+  # of the data is broken. Discard it and fall back to inference rather than
+  # flagging the majority of the column.
+  if (!is.null(valid_set) && mean(xv %in% valid_set) < min_ground_truth_coverage)
+    lo <- hi <- valid_set <- NULL
+
+  if (is.null(valid_set)) {
     sc <- .detect_likert_scale(xv)
     if (is.null(sc)) return(none)          # not a scale -> no range to violate
     lo <- sc$lo; hi <- sc$hi

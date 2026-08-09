@@ -334,3 +334,88 @@ test_that("OSF non-osfstorage rows fall back to file-by-file", {
   expect_equal(fallback_n, 1L)
   expect_true(all(!is.na(dl$file_location)))
 })
+
+test_that(".download_many_parallel reports HTTP errors and retries a truncated download", {
+  # Real (non-mocked) file:// downloads, exercising the actual success path,
+  # HTTP-status-derived failure path, and expected_size mismatch -> retry path.
+  # Deliberately placed before any test that mocks .download_many_parallel
+  # itself (see the routing test below), so this always calls the real
+  # implementation regardless of local_mocked_bindings() cleanup ordering.
+  d1 <- tempfile(fileext = ".csv"); writeLines("a,b\n1,2", d1)
+  ok_url <- paste0("file:///", gsub("\\\\", "/", d1))
+  bad_url <- "file:///nonexistent/never/there.csv"
+
+  tmp <- withr::local_tempdir()
+  dests <- file.path(tmp, c("ok.csv", "bad.csv"))
+
+  errs <- .download_many_parallel(c(ok_url, bad_url), dests)
+  expect_true(is.na(errs[1]))
+  expect_true(file.exists(dests[1]))
+  expect_false(is.na(errs[2]))
+  expect_false(file.exists(dests[2]))
+
+  # expected_size mismatch is treated as a truncated download: retried once,
+  # and since the retried fetch reports the same (correct, but "wrong" per the
+  # bogus expected_size) byte count again, it is reported as truncated rather
+  # than silently accepted -- proves the size check is load-bearing, not
+  # decorative.
+  real_size <- file.size(d1)
+  errs2 <- .download_many_parallel(ok_url, file.path(tmp, "ok2.csv"),
+                                   expected_size = real_size + 1)
+  expect_true(grepl("^truncated \\(", errs2))
+})
+
+test_that("osfstorage and Zenodo file-by-file rows use the parallel path, others don't", {
+  # The zip-vs-file-by-file gate is skipped here (no .remote_content_length /
+  # .download_zip_to_cache mock), so every row goes to the file-by-file
+  # section. Routing within it must be decided per FILE (provider / file_url),
+  # not per repo -- an osfstorage row and a Zenodo row should both reach
+  # .download_many_parallel(), while a same-repo non-osfstorage row (e.g. a
+  # Dropbox add-on file living in an OSF node) must still go through
+  # .download_one(), because only the first two have been verified not to need
+  # .download_one()'s per-host throttle.
+  files <- data.frame(
+    repo_url = c("https://osf.io/abcde", "https://osf.io/abcde",
+                "https://doi.org/10.5281/zenodo.123456"),
+    file_name = c("a.csv", "b.csv", "c.csv"),
+    file_path = c("a.csv", "b.csv", "c.csv"),
+    file_url = c(
+      "https://files.osf.io/v1/resources/abcde/providers/osfstorage/a.csv",
+      "https://files.osf.io/v1/resources/abcde/providers/dropbox/b.csv",
+      "https://zenodo.org/api/records/123456/files/c.csv/content"
+    ),
+    file_size = c(1024, 1024, 1024),
+    file_location = rep(NA_character_, 3),
+    stringsAsFactors = FALSE
+  )
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[3]), recursive = TRUE)
+
+  parallel_urls <- character(0)
+  sequential_urls <- character(0)
+  local_mocked_bindings(
+    # Force the zip-vs-file-by-file gate to skip the zip transport for both
+    # OSF and Zenodo (both consult .remote_content_length() for the archive
+    # size; NA fails the gate's size_ok check), so every row reaches the
+    # file-by-file section this test is actually about.
+    .remote_content_length = function(url) NA_real_,
+    .download_many_parallel = function(urls, dests, expected_size = NA_real_) {
+      parallel_urls <<- c(parallel_urls, urls)
+      for (d in dests) { dir.create(dirname(d), showWarnings = FALSE, recursive = TRUE); writeBin(raw(1), d) }
+      rep(NA_character_, length(urls))
+    },
+    .download_one = function(url, dest) {
+      sequential_urls <<- c(sequential_urls, url)
+      dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
+      writeBin(raw(1), dest)
+      NA_character_
+    },
+    .package = "metacheck"
+  )
+
+  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
+
+  expect_setequal(parallel_urls, files$file_url[c(1, 3)])
+  expect_equal(sequential_urls, files$file_url[2])
+  expect_true(all(!is.na(dl$file_location)))
+})

@@ -4,12 +4,27 @@
 \alias{parse_codebook}
 \title{Parse a codebook file into variable definitions}
 \usage{
-parse_codebook(path, header_lookahead = 5L, observed = list())
+parse_codebook(
+  path,
+  header_lookahead = 5L,
+  observed = list(),
+  group = NA_character_
+)
 }
 \arguments{
 \item{path}{path to a codebook/readme file}
 
 \item{header_lookahead}{rows to scan for a header in multi-level CSVs}
+
+\item{group}{the file's study/experiment group (data_check's
+\code{structure_df$group} for this file), scoping the definitions it yields to
+that ONE study. \code{NA_character_} (the default) leaves them unscoped, which
+\code{match_column_labels()} then applies to every same-named column
+PAPER-WIDE — correct for a genuinely paper-wide codebook, but it also lets
+one study's codebook (e.g. a \code{condition} variable coded 1-4 in Study A)
+leak onto an unrelated same-named column in Study B (coded 1-6). Callers
+that know the file's group should pass it. Mirrors \code{.extract_haven_labels}'s
+\code{group} argument.}
 }
 \value{
 a data.frame of variable definitions (\code{codebook_variable}, \code{label},

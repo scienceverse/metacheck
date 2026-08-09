@@ -120,7 +120,20 @@ test_that("osf_file_download zip keep archive", {
         req
       },
       req_error = function(req, is_error) req,
-      req_perform = function(req) {
+      req_timeout = function(req, seconds) req,
+      req_progress = function(req, ...) req,
+      # .osf_zip_content_length() HEADs the archive first (no `path`, wants a
+      # content-length header); .osf_download_zip() then streams the archive's
+      # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
+      # body is written to disk, not returned in-memory) -- one mock has to
+      # serve both calls the real function makes, in order.
+      req_perform = function(req, path = NULL) {
+        if (identical(req$method, "HEAD")) {
+          return(structure(
+            list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
+            class = "httr2_response"))
+        }
+        if (!is.null(path)) writeBin(zip_raw, path)
         structure(list(status = 200, headers = list(), body = raw()), class = "httr2_response")
       },
       resp_status = function(resp) resp$status,
@@ -129,9 +142,6 @@ test_that("osf_file_download zip keep archive", {
       .package = "httr2"
     ),
     osf_info = function(...) contents,
-    .batch_query = function(...) {
-      list(structure(list(status = 200, body = zip_raw), class = "httr2_response"))
-    },
     .package = "metacheck"
   )
 
@@ -179,7 +189,20 @@ test_that("osf_file_download zip unzip preserves structure", {
         req
       },
       req_error = function(req, is_error) req,
-      req_perform = function(req) {
+      req_timeout = function(req, seconds) req,
+      req_progress = function(req, ...) req,
+      # .osf_zip_content_length() HEADs the archive first (no `path`, wants a
+      # content-length header); .osf_download_zip() then streams the archive's
+      # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
+      # body is written to disk, not returned in-memory) -- one mock has to
+      # serve both calls the real function makes, in order.
+      req_perform = function(req, path = NULL) {
+        if (identical(req$method, "HEAD")) {
+          return(structure(
+            list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
+            class = "httr2_response"))
+        }
+        if (!is.null(path)) writeBin(zip_raw, path)
         structure(list(status = 200, headers = list(), body = raw()), class = "httr2_response")
       },
       resp_status = function(resp) resp$status,
@@ -188,9 +211,6 @@ test_that("osf_file_download zip unzip preserves structure", {
       .package = "httr2"
     ),
     osf_info = function(...) contents,
-    .batch_query = function(...) {
-      list(structure(list(status = 200, body = zip_raw), class = "httr2_response"))
-    },
     .package = "metacheck"
   )
 
@@ -242,7 +262,20 @@ test_that("osf_file_download zip unzip can flatten structure", {
         req
       },
       req_error = function(req, is_error) req,
-      req_perform = function(req) {
+      req_timeout = function(req, seconds) req,
+      req_progress = function(req, ...) req,
+      # .osf_zip_content_length() HEADs the archive first (no `path`, wants a
+      # content-length header); .osf_download_zip() then streams the archive's
+      # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
+      # body is written to disk, not returned in-memory) -- one mock has to
+      # serve both calls the real function makes, in order.
+      req_perform = function(req, path = NULL) {
+        if (identical(req$method, "HEAD")) {
+          return(structure(
+            list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
+            class = "httr2_response"))
+        }
+        if (!is.null(path)) writeBin(zip_raw, path)
         structure(list(status = 200, headers = list(), body = raw()), class = "httr2_response")
       },
       resp_status = function(resp) resp$status,
@@ -251,9 +284,6 @@ test_that("osf_file_download zip unzip can flatten structure", {
       .package = "httr2"
     ),
     osf_info = function(...) contents,
-    .batch_query = function(...) {
-      list(structure(list(status = 200, body = zip_raw), class = "httr2_response"))
-    },
     .package = "metacheck"
   )
 

@@ -8,6 +8,8 @@
 #'
 #' The regular expressions can miss information in code files, or falsely detect parts of the code as a fixed file path. Libraries/imports might be loaded in one block, even if there are more than 3 intermittent lines. The package was validated internally on papers published in Psychological Science. There might be valid reasons why some loaded files can’t be shared, but the module can’t evaluate these reasons, and always gives a warning.
 #'
+#' The module also checks whether the repository pins the R/package versions the analysis actually depended on: an `renv.lock` file (parsed for the R version and every locked package + its version/source), a `sessionInfo()`/`sessioninfo::session_info()` text dump (matched by filename — `sessionInfo.txt`/`session_info.txt` and similar, or embedded in a README), or a `groundhog::groundhog.library()`/`checkpoint::checkpoint()` date-pin call in the code (a bare `library(groundhog)`/`library(checkpoint)` does not count — the pinning call itself must be present). When none of these is found, the report flags it as a reproducibility gap: package versions may drift between when the analysis was run and any later reproduction attempt.
+#'
 #' If you want to extend the package to perform additional checks on code files, or make the checks work on other types of code files, reach out to the Metacheck development team.
 #'
 #' @keywords results
@@ -16,7 +18,6 @@
 #' @author Raphael Merz (\email{r.t.p.merz@tue.nl})
 #'
 #' @import dplyr
-#' @import httr
 #' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
@@ -39,7 +40,12 @@ code_check <- function(paper, local_path = NULL,
   # Best example, with many issues, for paper: paper <- psychsci[[233]]
   # ResearchBox and GitHub example (in full xml): paper <- xml[["09567976251333666"]]
 
-  all_files <- get_prev_outputs("repo_check", "table")
+  # A cached repo_check output (from an earlier module_run() in the same
+  # pipeline) never encodes which local_path, if any, it was called with. If
+  # local_path is given here, a cached result from a run without it (or with
+  # a different one) would silently omit those local files, so local_path
+  # forces a fresh repo_check call rather than trusting the cache.
+  all_files <- if (is.null(local_path)) get_prev_outputs("repo_check", "table") else NULL
   if (is.null(all_files)) {
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only)
@@ -49,6 +55,17 @@ code_check <- function(paper, local_path = NULL,
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
   }
   all_files$language <- code_lang(all_files$file_name)
+
+  # Download every file the steps below might need (spv/smcl/mplus/html
+  # candidates, plus every checked-language file) in ONE call, instead of
+  # each step downloading its own subset separately -- see .code_predownload()
+  # for why. Each step's own need_dl check afterwards then finds file_location
+  # already populated and is a no-op.
+  predl_gated <- NULL
+  if (isTRUE(download)) {
+    all_files <- .code_predownload(all_files, max_file_size, max_download_size, cache)
+    predl_gated <- attr(all_files, "gated")
+  }
 
   # An .spv is SPSS's rendered OUTPUT (never itself checked as code), but its
   # structure XML embeds the exact SPSS syntax that produced each result.
@@ -102,7 +119,13 @@ code_check <- function(paper, local_path = NULL,
   # IS checked here (comments, absolute paths, addpath()/import() "library"
   # lines, referenced files) -- only ACTUALLY RUNNING the code stays out of
   # scope, in reproducibility_check.
-  listed_langs <- c("R", "SAS", "SPSS", "Stata", "Mplus", "MATLAB", "JASP")
+  #
+  # Python (.py and .ipynb) is checked on the same terms as MATLAB: it is text
+  # (a .ipynb is JSON, whose code cells are recovered as text by
+  # code_extract_py() below, exactly as .Rmd/.qmd are purled by
+  # code_extract_r()), so every text-based check applies. RUNNING it stays out
+  # of scope in reproducibility_check, which is R-only.
+  listed_langs <- c("R", "Python", "SAS", "SPSS", "Stata", "Mplus", "MATLAB", "JASP")
   checked_langs <- setdiff(listed_langs, "JASP")
 
   relevant <- all_files$language %in% listed_langs
@@ -124,19 +147,31 @@ code_check <- function(paper, local_path = NULL,
     info <- list(
       traffic_light = "na",
       summary_text = summary_code,
+      # code_n (not code_file_n): must match the normal-path summary_table's
+      # column name below, or a corpus batch mixing papers with and without
+      # code files ends up with two disjoint, sparsely-populated columns
+      # after being combined across papers (e.g. by capture_check_results()/
+      # collect_checks_csv()-style aggregation) instead of one code_n column.
+      # na_replace backfills the other normal-path count columns to 0 the
+      # same way it already does for a paper with code_n = 0 sitting inside
+      # a mixed paperlist that takes the normal path.
       summary_table = data.frame(
         paper_id = paper_id(paper),
-        code_file_n = 0
-      )
+        code_n = 0
+      ),
+      na_replace = c(code_n = 0)
     )
 
     return(info)
   }
 
-  # Download the code files we will check into the shared cache so their
-  # contents are read locally (and reused on later runs) rather than streamed
-  # from the repository URL each time. Files without a local copy fall back to
-  # streaming from file_url below.
+  # Download any remaining code files into the shared cache so their contents
+  # are read locally (and reused on later runs) rather than streamed from the
+  # repository URL each time. .code_predownload() above already fetched every
+  # checked-language file it could; this only catches rows that weren't yet
+  # classified (and so weren't in its candidate set) when it ran -- e.g. new
+  # rows appended by the expand steps between here and there. Files without a
+  # local copy fall back to streaming from file_url below.
   if (isTRUE(download) && "file_url" %in% names(checked_files)) {
     need_dl <- (is.na(checked_files$file_location) |
                   !nzchar(checked_files$file_location %||% "")) &
@@ -147,14 +182,15 @@ code_check <- function(paper, local_path = NULL,
                                 max_download_size = max_download_size,
                                 cache = cache)
       checked_files$file_location[need_dl] <- dl$file_location
-      # Repositories refused by the size caps: surface each refusal.
-      gated <- attr(dl, "gated")
-      if (!is.null(gated) && nrow(gated) > 0) {
-        for (m in gated$message) {
-          summary_code <- paste(summary_code, m)
-          warning(m, call. = FALSE)
-        }
-      }
+      predl_gated <- dplyr::bind_rows(predl_gated, attr(dl, "gated"))
+    }
+  }
+  # Repositories refused by the size caps (from the pre-pass and/or the
+  # catch-up download above): surface each refusal once.
+  if (!is.null(predl_gated) && nrow(predl_gated) > 0) {
+    for (m in unique(predl_gated$message)) {
+      summary_code <- paste(summary_code, m)
+      warning(m, call. = FALSE)
     }
   }
 
@@ -170,6 +206,15 @@ code_check <- function(paper, local_path = NULL,
     on.exit(pb_code$terminate())
   }
 
+  # R file text, keyed by paper_id then file_name -- collected as a side
+  # effect of the loop below so .code_version_pin_check()'s groundhog/
+  # checkpoint scan can reuse it afterwards without re-reading every file.
+  # Nested by paper_id (not a single flat list) because file_name can repeat
+  # ACROSS papers in a paperlist (two papers can each have "analysis.R"), and
+  # the per-paper summary_table split below must not let one paper's
+  # groundhog/checkpoint call count toward another's.
+  r_text_by_paper <- list()
+
   collected <- lapply(seq_along(checked_files$file_location), \(i) {
     the_file <- checked_files[i, ]
     the_file$checked <- TRUE
@@ -184,13 +229,43 @@ code_check <- function(paper, local_path = NULL,
       }
 
       # read in files
-      is_rmd <- grepl("\\.(rmd|qmd)",
-                      the_file$file_name,
-                      ignore.case = TRUE)
-      if (is_rmd) {
+      is_rmd <- grepl("\\.rmd$", the_file$file_name, ignore.case = TRUE)
+      # .qmd is Quarto, and (unlike .Rmd) explicitly polyglot: code_lang()'s
+      # .qmd_lang() has already read its declared/inferred engine (issue
+      # #180), so which extractor runs here follows THAT, not the extension --
+      # a Python-engine .qmd purled with code_extract_r()/knitr::purl() would
+      # silently yield nothing, since purl() only recovers ```{r} chunks.
+      is_qmd <- grepl("\\.qmd$", the_file$file_name, ignore.case = TRUE)
+      is_qmd_py <- is_qmd && identical(the_file$language, "Python")
+      # A .ipynb is JSON, not a text script: its source lives in the `source`
+      # array of each code cell, so it needs extracting before any text-based
+      # check can read it -- the same treatment .Rmd/.qmd get above. This
+      # holds whatever kernel the notebook declares (code_lang() has already
+      # read that from the file), so an R notebook is extracted here and then
+      # checked as R. (The OUTPUTS a notebook also stores are read separately,
+      # by read_stat_tables() in reproducibility_check.)
+      is_ipynb <- grepl("\\.ipynb$", the_file$file_name, ignore.case = TRUE)
+      if (is_rmd || (is_qmd && !is_qmd_py)) {
         file_lines <- code_extract_r(file_path)
+      } else if (is_qmd_py) {
+        file_lines <- code_extract_qmd_py(file_path)
+      } else if (is_ipynb) {
+        file_lines <- code_extract_py(file_path)
       } else {
         file_lines <- code_read(file_path)
+      }
+
+      # Side-collect R text for the version-pinning scan after this loop
+      # (.code_version_pin_check()'s groundhog/checkpoint detection), keyed
+      # by paper_id first so file_name collisions across papers in a
+      # paperlist cannot leak one paper's pin into another's. <<- since this
+      # is inside lapply()'s own function scope.
+      if (the_file$language == "R") {
+        pid_here <- if ("paper_id" %in% names(the_file))
+          as.character(the_file$paper_id) else "_all"
+        lst <- r_text_by_paper[[pid_here]] %||% list()
+        lst[[the_file$file_name]] <- file_lines
+        r_text_by_paper[[pid_here]] <<- lst
       }
 
       # try to parse R-type code; NA (not assessed) for other languages
@@ -266,11 +341,11 @@ code_check <- function(paper, local_path = NULL,
     })
   }) # end of loop over code files
 
-  code_check <- dplyr::bind_rows(collected)
+  collected_df <- dplyr::bind_rows(collected)
   # When every repository was gated (nothing analysed), `collected` is empty and
-  # `code_check` has no columns to join on. Seed the per-file analysis columns as
+  # `collected_df` has no columns to join on. Seed the per-file analysis columns as
   # NA so the reporting below still finds them; all files are simply unchecked.
-  if (ncol(code_check) == 0) {
+  if (ncol(collected_df) == 0) {
     analysis_cols <- c("checked", "parse_error", "parse_error_msg",
                        "code_abs_path", "absolute_paths",
                        "code_setwd", "setwd_calls", "library_lines",
@@ -282,7 +357,7 @@ code_check <- function(paper, local_path = NULL,
       if (!col %in% names(code_files)) code_files[[col]] <- NA
   } else {
     # `collected` holds one row per checked file (the error path returns its
-    # row too), so `code_check` already is checked_files plus the analysis
+    # row too), so `collected_df` already is checked_files plus the analysis
     # columns. Do NOT left_join it back onto code_files by the original
     # columns: the download step above updates file_location in
     # checked_files, so every downloaded file would mismatch on that key and
@@ -293,7 +368,7 @@ code_check <- function(paper, local_path = NULL,
     # back: bind_rows fills their analysis columns with NA, and `checked` is
     # set FALSE below. Without this they would vanish from the file listing.
     unchecked <- code_files[!code_files$language %in% checked_langs, , drop = FALSE]
-    code_files <- dplyr::bind_rows(code_check, unchecked)
+    code_files <- dplyr::bind_rows(collected_df, unchecked)
   }
   code_files$checked[is.na(code_files$checked)] <- FALSE
 
@@ -411,22 +486,32 @@ code_check <- function(paper, local_path = NULL,
   }
 
   ## set up table of code file links ----
-  cols <- c("file_name", "file_url",
-            "percentage_comment",
-            "loaded_files_missing",
-            "code_abs_path",
-            "library_max_between") |>
-    intersect(names(code_files))
+  # Named vector, not a positional c(...) assignment: if a checked language
+  # errors on every one of its files (e.g. all unreadable/undecodable), the
+  # analysis columns below can be genuinely absent from code_files rather than
+  # just NA-filled, and a positional names() assignment would then mismatch
+  # length and error. Labelling only the columns actually present keeps this
+  # safe regardless of which analysis columns survived.
+  col_labels <- c(
+    file_name             = "File Name",
+    percentage_comment    = "% Comments",
+    loaded_files_missing  = "Missing Files",
+    code_abs_path         = "Absolute Paths",
+    library_max_between   = "Code Between Libraries"
+  )
+  cols <- c(names(col_labels), "file_url") |> intersect(names(code_files))
   report_table <- unique(code_files[, cols])
   report_table$file_name <- link(report_table$file_url, report_table$file_name)
   report_table$file_url <- NULL
   # Unanalysed files (JASP) have no comment percentage; sprintf() would print a
   # literal "NA%" for them, so show an empty cell instead.
-  report_table$percentage_comment <- ifelse(
-    is.na(report_table$percentage_comment), "",
-    sprintf("%.0f%%", report_table$percentage_comment * 100)
-  )
-  names(report_table) <- c("File Name", "% Comments", "Missing Files", "Absolute Paths", "Code Between Libraries")
+  if ("percentage_comment" %in% names(report_table)) {
+    report_table$percentage_comment <- ifelse(
+      is.na(report_table$percentage_comment), "",
+      sprintf("%.0f%%", report_table$percentage_comment * 100)
+    )
+  }
+  names(report_table) <- col_labels[names(report_table)]
 
   ## Parsable Code ----
   parse_issues <- sum(code_files$parse_error, na.rm = TRUE)
@@ -455,7 +540,7 @@ code_check <- function(paper, local_path = NULL,
 
   all_packages <- pkg_union(seq_len(nrow(code_files)))
   if (length(all_packages) == 0) {
-    report_packages <- "No packages/libraries were detected as loaded in the code files. (This check reads R and Python imports; other languages are not scanned for packages.)"
+    report_packages <- "No packages/libraries were detected as loaded in the code files. (This check reads R and Python imports; other languages are not scanned for packages.) Even when no imports are detected, it is good practice to record the exact package versions the analysis depended on — see \"Reproducible Environment\" below."
     summary_packages <- "No packages/libraries were detected in the code."
   } else {
     report_packages <- sprintf(
@@ -468,6 +553,52 @@ code_check <- function(paper, local_path = NULL,
       "The code loaded %d distinct package%s.",
       length(all_packages), plural(length(all_packages))
     )
+  }
+
+  ## Reproducible environment (version pinning) ----
+  # Was the R version / package set actually PINNED anywhere (renv.lock,
+  # a sessionInfo() dump, or a groundhog/checkpoint date-pin call)? Static
+  # analysis only -- see .code_version_pin_check()'s own roxygen for what
+  # each mechanism does and does not establish.
+  version_pin <- .code_version_pin_check(
+    all_files, code_text_list = unlist(r_text_by_paper, recursive = FALSE),
+    max_file_size = max_file_size, max_download_size = max_download_size,
+    cache = cache)
+  # Splice resolved locations back into all_files so the per-paper re-check
+  # below (summary_table$code_version_pinned) finds every candidate file
+  # already local and downloads nothing a second time.
+  if (length(version_pin$file_location) > 0) {
+    m <- match(names(version_pin$file_location), all_files$file_name)
+    hit <- !is.na(m) & nzchar(version_pin$file_location %||% "")
+    all_files$file_location[m[hit]] <- version_pin$file_location[hit]
+  }
+
+  if (!version_pin$pinned) {
+    report_version_pin <- "No `renv.lock` file, `sessionInfo()`/`session_info()` record, or `groundhog`/`checkpoint` date-pin call was found anywhere in the repository. Without one of these, the exact R and package versions used for the analysis are not recoverable, and package versions may drift between when this analysis was run and any later reproduction attempt. Consider depositing an `renv.lock` (via the `renv` package), a `sessionInfo()` text dump, or (for R) a `groundhog`/`checkpoint` date-pin alongside the code — or, for Python code, a `requirements.txt` (not currently checked for by this module, but still good practice to include)."
+    summary_version_pin <- "No pinned R/package environment (renv.lock, sessionInfo(), or groundhog/checkpoint) was found."
+    report_table_version_pin <- NULL
+  } else {
+    mech_labels <- c(renv.lock = "an `renv.lock` file", sessionInfo = "a `sessionInfo()` record",
+                     groundhog = "a `groundhog` date-pin", checkpoint = "a `checkpoint` date-pin")
+    found_txt <- paste(mech_labels[version_pin$mechanisms], collapse = ", ")
+    rv_txt <- if (length(version_pin$r_versions) > 0)
+      sprintf(" Declared R version%s: %s.", plural(length(version_pin$r_versions)),
+             paste(version_pin$r_versions, collapse = ", ")) else ""
+    report_version_pin <- paste0(
+      "The repository pins its analysis environment via ", found_txt, ".", rv_txt,
+      if (nrow(version_pin$renv_packages) > 0) sprintf(
+        " The `renv.lock` file%s lock%s %d package version%s.",
+        plural(length(version_pin$renv_files)),
+        if (length(version_pin$renv_files) == 1) "s" else "",
+        nrow(version_pin$renv_packages), plural(nrow(version_pin$renv_packages))) else "")
+    summary_version_pin <- sprintf(
+      "A pinned R/package environment was found (%s).",
+      paste(version_pin$mechanisms, collapse = ", "))
+    report_table_version_pin <- if (nrow(version_pin$renv_packages) > 0) {
+      tb <- version_pin$renv_packages
+      colnames(tb) <- c("Lockfile", "Package", "Version", "Source")
+      tb
+    } else NULL
   }
 
   ## merge packages into the manifest ----
@@ -507,6 +638,9 @@ code_check <- function(paper, local_path = NULL,
     report_library,
     "#### Packages / Dependencies",
     report_packages,
+    "#### Reproducible Environment",
+    report_version_pin,
+    scroll_table(report_table_version_pin, maxrows = 10),
     "#### Parsable code",
     report_parse,
     scroll_table(report_table_parse)
@@ -526,7 +660,8 @@ code_check <- function(paper, local_path = NULL,
       length(absolute_issues) == 0 &&
       length(setwd_issues) == 0 &&
       length(library_issue) == 0 &&
-      parse_issues == 0) {
+      parse_issues == 0 &&
+      version_pin$pinned) {
     tl <- "green"
   } else {
     tl <- "yellow"
@@ -560,6 +695,28 @@ code_check <- function(paper, local_path = NULL,
     pkg_counts[as.character(summary_table$paper_id)] |> unname()
   summary_table$code_packages_n[is.na(summary_table$code_packages_n)] <- 0L
 
+  # Version-pinning is genuinely per-paper (renv.lock/sessionInfo.txt belong to
+  # ONE paper's repository, unlike the whole-run `version_pin` used for the
+  # report text above), so it needs its own per-paper split -- same shape as
+  # pkg_counts just above, but keyed on all_files (renv.lock/sessionInfo.txt
+  # are not in code_files at all, since code_lang() never classifies them).
+  if ("paper_id" %in% names(all_files)) {
+    pin_by_paper <- vapply(
+      split(seq_len(nrow(all_files)), all_files$paper_id),
+      function(rows) {
+        pid_here <- as.character(all_files$paper_id[rows[1]])
+        isTRUE(.code_version_pin_check(
+          all_files[rows, , drop = FALSE],
+          code_text_list = r_text_by_paper[[pid_here]] %||% list())$pinned)
+      },
+      logical(1))
+    summary_table$code_version_pinned <-
+      pin_by_paper[as.character(summary_table$paper_id)] |> unname()
+  } else {
+    summary_table$code_version_pinned <- version_pin$pinned
+  }
+  summary_table$code_version_pinned[is.na(summary_table$code_version_pinned)] <- FALSE
+
   # summary_text ----
   summary_text <- c(
     summary_code,
@@ -569,14 +726,18 @@ code_check <- function(paper, local_path = NULL,
     summary_setwd,
     summary_library,
     summary_packages,
+    summary_version_pin,
     summary_parse
   ) |>
     paste("\n- ", x = _, collapse = "")
 
   # table ----
+  # file_location/file_path are kept (unlike earlier versions of this module):
+  # reproducibility_check and other downstream consumers need a code file's
+  # local path directly from this table, rather than re-deriving it from
+  # data_check's structure table (which by default never downloads code
+  # files at all -- see resolve_path() in reproducibility_check.R).
   table <- code_files
-  table$file_path <- NULL
-  table$file_location <- NULL
 
   # return a list ----
   list(
@@ -585,6 +746,11 @@ code_check <- function(paper, local_path = NULL,
     na_replace = c(code_n = 0),
     traffic_light = tl,
     report = report,
-    summary_text = summary_text
+    summary_text = summary_text,
+    # Exposed for reproducibility_check()'s Docker backend: picks the base
+    # image's R version from version_pin$r_versions when this check found a
+    # declared one (renv.lock/sessionInfo), falling back to "latest"
+    # otherwise -- see .repro_docker_image_for() (R/reproducibility_check_docker.R).
+    version_pin = version_pin
   )
 }

@@ -34,6 +34,18 @@
 #' erratically are flagged by their id. This check is skipped (with a note) when
 #' the optional `careless` package is not installed.
 #'
+#' For every **spreadsheet file** (`.xlsx`, `.xls`, OpenDocument `.ods`/`.fods`)
+#' it also inspects the raw workbook for formatting practices that hurt
+#' machine-readability and do not survive a plain CSV export: cells that use
+#' fill colour to encode information, merged cells, fully empty rows, empty or
+#' unnamed (blank-header) columns, and a header row that is not the first row of
+#' the sheet. This runs on the workbook file itself (via `data_check`'s file
+#' classification), independently of whether the file could be extracted into a
+#' clean tabular preview — a merged banner cell or an offset header is often
+#' exactly why extraction failed. Legacy `.xls` is a binary format with no XML to
+#' inspect, so it is checked only for an offset header and reported as
+#' un-inspectable for the rest, with conversion to `.xlsx`/`.ods` recommended.
+#'
 #' @details
 #' The Data Validate module consumes the columns and the full data frames read by
 #' `data_check`. For each numeric column it checks for out-of-range values (on
@@ -108,8 +120,9 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   # ── 1. Inputs from data_check ───────────────────────────────────────────────
-  columns_df <- get_prev_outputs("data_check", "table")
-  previews   <- get_prev_outputs("data_check", "previews")
+  columns_df   <- get_prev_outputs("data_check", "table")
+  previews     <- get_prev_outputs("data_check", "previews")
+  structure_df <- get_prev_outputs("data_check", "structure")
   if (is.null(previews)) {
     mo <- if (!is.null(local_path)) {
       module_run(paper, "data_check", local_path = local_path,
@@ -118,19 +131,41 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
       module_run(paper, "data_check", local_only = local_only,
                  model = model, params = params)
     }
-    columns_df <- mo$table
-    previews   <- mo$previews
+    columns_df   <- mo$table
+    previews     <- mo$previews
+    structure_df <- mo$structure
   }
   labels_df <- get_prev_outputs("codebook_check", "table")
 
+  # ── 1b. Spreadsheet formatting checks (.xlsx/.xls/.ods/.fods) ──────────────
+  # Runs on the RAW workbook file via structure_df$file_location, independently
+  # of whether data_check could extract a clean `preview` from it: a merged
+  # banner cell or an offset header is often exactly why extraction failed, so
+  # this must not depend on previews existing. See .dv_spreadsheet_findings()
+  # below (ported from the former spreadsheet_check module) for what each check
+  # covers (colour coding, merged cells, empty rows/columns, offset header,
+  # non-rectangular data, un-inspectable legacy .xls).
+  spreadsheet_result <- .dv_spreadsheet_findings(structure_df)
+  spreadsheet_findings_df <- spreadsheet_result$findings
+  n_spreadsheet_files <- spreadsheet_result$n_files
+
   empty <- function(text) {
+    n_flagged_files_spreadsheet <- length(unique(spreadsheet_findings_df$source_file))
     list(
-      table = data.frame(),
+      table = spreadsheet_findings_df,
       summary_table = data.frame(
-        paper_id = .pid(columns_df), column_n = 0, flagged_n = 0),
-      na_replace = c(column_n = 0, flagged_n = 0),
-      traffic_light = "na",
-      summary_text = text
+        paper_id = .pid(columns_df, structure_df), column_n = 0, flagged_n = 0,
+        spreadsheet_file_n = n_spreadsheet_files,
+        spreadsheet_flagged_file_n = n_flagged_files_spreadsheet),
+      na_replace = c(column_n = 0, flagged_n = 0,
+                     spreadsheet_file_n = 0, spreadsheet_flagged_file_n = 0),
+      traffic_light = if (nrow(spreadsheet_findings_df) > 0) "yellow" else "na",
+      summary_text = if (nrow(spreadsheet_findings_df) > 0)
+        paste(text, .dv_spreadsheet_summary_text(spreadsheet_findings_df, n_spreadsheet_files))
+      else text,
+      report = if (nrow(spreadsheet_findings_df) > 0)
+        .dv_spreadsheet_report(spreadsheet_findings_df, n_spreadsheet_files)
+      else NULL
     )
   }
 
@@ -460,6 +495,12 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   findings_df <- if (length(findings) > 0) dplyr::bind_rows(findings) else
     data.frame(source_file = character(0), column = character(0),
                label = character(0), check = character(0), detail = character(0))
+  # Spreadsheet-formatting findings (file/sheet-level: colour, merges, empty
+  # rows/columns, offset header, ...) join the same table. They carry
+  # column = NA (the issue is not about one column), so they show up in the
+  # "Potential Issues" table but are excluded from n_flagged/check_counts
+  # below, which are column-level tallies.
+  findings_df <- dplyr::bind_rows(findings_df, spreadsheet_findings_df)
 
   outlier_df <- if (length(outlier_specs) > 0) dplyr::bind_rows(outlier_specs) else
     data.frame(source_file = character(0), column = character(0),
@@ -473,12 +514,17 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
 
   n_columns <- if (!is.null(columns_df)) nrow(columns_df) else
     sum(vapply(previews, ncol, integer(1)))
-  n_flagged <- length(unique(paste(findings_df$source_file, findings_df$column)))
+  # Column-level findings only (spreadsheet findings carry column = NA and are
+  # a file/sheet-level concern, not a column one — tallied separately below).
+  column_findings_df <- findings_df[!is.na(findings_df$column), , drop = FALSE]
+  n_flagged <- length(unique(paste(column_findings_df$source_file,
+                                   column_findings_df$column)))
+  n_flagged_files_spreadsheet <- length(unique(spreadsheet_findings_df$source_file))
 
   # Per-check tally: how many distinct columns each check flagged (a column can
   # be flagged by several checks, so these overlap and need not sum to n_flagged).
-  check_counts <- if (nrow(findings_df) > 0) {
-    findings_df |>
+  check_counts <- if (nrow(column_findings_df) > 0) {
+    column_findings_df |>
       dplyr::distinct(.data$source_file, .data$column, .data$check) |>
       dplyr::count(.data$check, name = "columns", sort = TRUE)
   } else {
@@ -512,6 +558,10 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   # Careless-responding findings are respondent-level (not counted in the column
   # tally); if any were found, the result is at least yellow.
   if (nrow(careless_df) > 0 && tl == "green") tl <- "yellow"
+  # Spreadsheet-formatting findings are file-level (not counted in the column
+  # tally either); if any were found, the result is at least yellow (matches
+  # the former spreadsheet_check module, which never went red on its own).
+  if (nrow(spreadsheet_findings_df) > 0 && tl == "green") tl <- "yellow"
 
   # ── 4. Report ────────────────────────────────────────────────────────────────
   summary_text <- if (n_flagged == 0) {
@@ -559,34 +609,43 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
                 sprintf(" (%d row%s look like previews/unfinished responses to review)",
                         n_drop, plural(n_drop)) else ""))
   }
+  if (nrow(spreadsheet_findings_df) > 0) {
+    summary_text <- paste(summary_text,
+      .dv_spreadsheet_summary_text(spreadsheet_findings_df, n_spreadsheet_files))
+  }
 
   report <- c(
-    "This module runs automated data-quality checks (outliers, miscoded missing values, empty and constant columns, SPSS filter variables, category casing, problematic column names, mixed text encodings) on the extracted data files.",
+    "This module runs automated data-quality checks (outliers, miscoded missing values, empty and constant columns, SPSS filter variables, category casing, problematic column names, mixed text encodings, spreadsheet formatting) on the extracted data files.",
     sprintf("We examined %d column%s across %d data file%s.",
             n_columns, plural(n_columns),
             length(previews), plural(length(previews)))
   )
 
-  if (nrow(check_counts) > 0) {
-    # Issue-type breakdown first: for large files, this is the headline — how
-    # many columns each kind of problem affects — before the full per-column list.
-    breakdown_tbl <- check_counts |>
-      dplyr::transmute(
-        Issue = .data$check,
-        `Columns affected` = .data$columns)
-    report <- c(report, "#### Issues by Type",
-                sprintf("Number of columns affected by each type of issue (a column can be flagged by more than one check, so these need not sum to %d).",
-                        n_flagged),
-                scroll_table(breakdown_tbl, maxrows = 10))
-  }
-
-  if (nrow(findings_df) > 0) {
-    finds_tbl <- findings_df |>
-      dplyr::transmute(
-        File = .data$source_file, Column = .data$column,
-        Label = .data$label, Check = .data$check, Detail = .data$detail)
-    report <- c(report, "#### Potential Issues (per column)",
-                scroll_table(finds_tbl, maxrows = 20))
+  # Single "Issues identified" table: one row per (file, column) that has at
+  # least one issue, one cell listing every issue found for it (icon + short
+  # label, hover for the full detail sentence). PII findings — "Personal info
+  # (values)" and "Personal info (column name)" are two independent detectors
+  # (one scans cell contents, one scans the column name) but are merged to a
+  # single displayed "Personally Identifying Information" label here, since the
+  # distinction is not one readers need — see .dv_issue_cell().
+  # Spreadsheet-formatting findings (column = NA) join the same table: their
+  # "column" cell shows the sheet name instead.
+  all_issue_findings <- dplyr::bind_rows(column_findings_df, spreadsheet_findings_df)
+  if (nrow(all_issue_findings) > 0) {
+    issues_tbl <- all_issue_findings |>
+      dplyr::mutate(.col_display = ifelse(is.na(.data$column), .data$label, .data$column)) |>
+      dplyr::arrange(.data$source_file, .data$.col_display) |>
+      dplyr::summarise(
+        Issues = .dv_issue_cell(.data$check, .data$detail),
+        .by = c(source_file, .col_display)
+      ) |>
+      dplyr::transmute(File = .data$source_file, Column = .data$.col_display,
+                       Issues = .data$Issues)
+    report <- c(report, "#### Issues Identified",
+                sprintf("%d file/column combination%s %s at least one issue.",
+                        nrow(issues_tbl), plural(nrow(issues_tbl)),
+                        if (nrow(issues_tbl) == 1) "has" else "have"),
+                scroll_table(issues_tbl, maxrows = 20, escape = FALSE))
   }
 
   # Constant text columns that look like intentional file-level metadata
@@ -649,23 +708,10 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     report <- c(report, .dv_qualtrics_report(qualtrics_specs, length(previews)))
   }
 
-  # Demographic columns: an informational inventory of the age / gender / race
-  # variables detected in the data (not a problem flag). Helps a reviewer see at
-  # a glance whether the shared data documents its sample's demographics.
-  if (nrow(demo_df) > 0) {
-    demo_tbl <- demo_df |>
-      dplyr::transmute(
-        File = .data$source_file, Column = .data$column,
-        Demographic = tools::toTitleCase(.data$demographic))
-    kinds <- sort(unique(demo_df$demographic))
-    report <- c(report,
-      "#### Demographic Variables",
-      sprintf("We detected %d demographic column%s (%s) across the data file%s. These are the age/gender/race variables studies typically report; this is an inventory, not a problem flag.",
-              nrow(demo_df), plural(nrow(demo_df)),
-              paste(tools::toTitleCase(kinds), collapse = ", "),
-              plural(length(previews))),
-      scroll_table(demo_tbl, maxrows = 20))
-  }
+  # Demographic columns (age/gender/race) are still computed into `demo_df`
+  # and returned via the `demographics` field for programmatic consumers, but
+  # are no longer rendered as their own report section — they are informational
+  # rather than an issue, and do not belong in the "Issues Identified" table.
 
   # Careless responding: respondents flagged by longstring / IRV on a survey
   # scale block. Reported per respondent (with the scale and reason), so a
@@ -700,7 +746,9 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
   summary_table <- data.frame(
     paper_id  = .pid(columns_df),
     column_n  = n_columns,
-    flagged_n = n_flagged
+    flagged_n = n_flagged,
+    spreadsheet_file_n = n_spreadsheet_files,
+    spreadsheet_flagged_file_n = n_flagged_files_spreadsheet
   )
 
   qualtrics_df <- if (length(qualtrics_specs) > 0)
@@ -717,7 +765,8 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     demographics = demo_df,
     qualtrics = qualtrics_df,
     summary_table = summary_table,
-    na_replace = c(column_n = 0, flagged_n = 0),
+    na_replace = c(column_n = 0, flagged_n = 0,
+                   spreadsheet_file_n = 0, spreadsheet_flagged_file_n = 0),
     traffic_light = tl,
     report = report,
     summary_text = summary_text
@@ -962,6 +1011,103 @@ data_validate <- function(paper, local_path = NULL, local_only = FALSE,
     scroll_table(tbl, maxrows = 20))
 }
 
+# ── Issues Identified table (single-column display) ───────────────────────────
+
+# Icon shown before each issue's short label in the "Issues Identified" table.
+# "Personal info (values)" and "Personal info (column name)" are two
+# independent detectors (data_check_pii_values() scans cell contents,
+# data_check_pii_name() scans only the column name — a column can trip either
+# without the other) but share one icon/label here: the distinction between
+# "the data itself looks sensitive" and "the name suggests it might be" is not
+# one a reader of this table needs, both mean the same thing — review before
+# sharing. The two checks themselves are untouched; only this DISPLAY mapping
+# merges them.
+.dv_issue_icon <- c(
+  "Values outside the scale"       = "\U0001F4C8",  # 📈 out-of-range
+  "Miscoded missing"                = "\U00002753",  # ❓
+  "Constant"                        = "\U0001F7F0",  # 🟰
+  "Empty column"                    = "\U00002B1C",  # ⬜
+  "SPSS filter variable"            = "\U0001F9EE",  # 🧮
+  "Case issues"                     = "\U0001F524",  # 🔤
+  "Whitespace"                      = "\U00002194\U0000FE0F",  # ↔️
+  "Numeric as text"                 = "#\U0000FE0F\U000020E3",  # #️⃣
+  "Problematic column name"         = "\U0001F3F7\U0000FE0F",  # 🏷️
+  "Colliding column names"          = "\U0001F465",  # 👥
+  "Mixed encoding"                  = "\U0001F523",  # 🔣
+  "Personal info (values)"          = "\U0001F512",  # 🔒
+  "Personal info (column name)"     = "\U0001F512",  # 🔒
+  "Geographic coordinates"          = "\U0001F30D",  # 🌍
+  "Free-text (may hold PII)"        = "\U0001F512",  # 🔒
+  "Not a rectangular dataset"       = "\U0001F4D0",  # 📐
+  "Header not on first row"         = "\U0001F4CB",  # 📋
+  "Un-inspectable (.xls)"           = "\U000026A0\U0000FE0F",  # ⚠️
+  "Unreadable"                      = "\U000026A0\U0000FE0F",  # ⚠️
+  "Colour coding"                   = "\U0001F3A8",  # 🎨
+  "Merged cells"                    = "\U0001F517",  # 🔗
+  "Empty rows"                      = "\U00002B1C",  # ⬜
+  "Empty or unnamed columns"        = "\U00002B1C"   # ⬜
+)
+
+# Checks whose displayed label/icon should collapse together (PII, values vs.
+# name) — every key in this vector maps to the same shown label.
+.dv_issue_merge_label <- c(
+  "Personal info (values)"      = "Personally Identifying Information",
+  "Personal info (column name)" = "Personally Identifying Information",
+  "Free-text (may hold PII)"    = "Personally Identifying Information"
+)
+
+# Build the "Issues" cell HTML for one (file, column) group: one line per
+# issue (icon + short label), each wrapped in a span whose `title` attribute
+# carries the full original `detail` sentence(s) for hover. Several issues on
+# the same column stack as several lines in the same cell (via <br>, since
+# scroll_table() replaces "\n" with "<br>" — see report-helpers.R). Checks that
+# share a merged display label (the PII trio) collapse to ONE line.
+.dv_issue_cell <- function(check, detail) {
+  # dplyr::summarise() calls this once per (source_file, column) GROUP, with
+  # `check`/`detail` as the group's vectors — build one cell string per group.
+  #
+  # Checks that share a merged display label (currently just the PII trio —
+  # see .dv_issue_merge_label) are grouped FIRST, by that label, before
+  # building any HTML: two PII detectors firing on the same column must become
+  # ONE line with both details in its tooltip, not two lines that only look
+  # identical by accident (their `detail` text differs even though the label
+  # is shared, so de-duplicating the finished HTML strings would not catch
+  # this — grouping by label upfront is what makes the merge actually happen).
+  display_label <- ifelse(!is.na(.dv_issue_merge_label[check]),
+                          unname(.dv_issue_merge_label[check]), check)
+  groups <- split(seq_along(check), display_label)
+
+  lines <- vapply(groups, function(idx) {
+    lbl <- display_label[idx[[1]]]
+    # One icon per group: the first check's icon (all PII checks share one
+    # anyway; a future merge group with genuinely different icons would still
+    # need a single glyph here, so "first wins" is the deliberate rule).
+    icon <- .dv_issue_icon[check[idx[[1]]]]
+    icon <- if (is.na(icon)) "\U00002139\U0000FE0F" else unname(icon)
+    # First clause of each detail (up to the first period/semicolon), capped
+    # in length, as the scannable summary; the full sentence(s) go in the
+    # hover title below instead.
+    short <- vapply(idx, function(i)
+      sub("[.;].*$", "", detail[[i]]), character(1))
+    short <- short[!is.na(short) & nzchar(trimws(short))]
+    short <- unique(short)
+    short <- ifelse(nchar(short) > 70, paste0(substr(short, 1, 67), "..."), short)
+    short_txt <- if (length(short) > 0)
+      paste0(" — ", paste(short, collapse = "; ")) else ""
+    # Full sentences from every finding in the group, for the hover tooltip.
+    full_detail <- paste(unique(detail[idx]), collapse = " ")
+    # detail/label can echo values read from the paper's own data (a category
+    # string, a file name, ...), so both are HTML-escaped before going into
+    # the report: .spv_html_escape() (R/spv.R) handles &/</>; the title
+    # attribute is single-quoted, so a single quote needs its own escape too.
+    detail_esc <- gsub("'", "&#39;", .spv_html_escape(full_detail), fixed = TRUE)
+    text_esc   <- .spv_html_escape(paste0(lbl, short_txt))
+    sprintf("<span title='%s'>%s %s</span>", detail_esc, icon, text_esc)
+  }, character(1))
+
+  paste(lines, collapse = "\n")
+}
+
 # ── Module-local helper ───────────────────────────────────────────────────────
 
 # Maximum number of numeric columns drawn in the combined distribution figure.
@@ -1031,4 +1177,575 @@ data_validate_dist_facets <- function(plot_specs, max_facets = .dv_max_facets) {
                    "to plot them all.*"),
             length(specs), n_total, n_total) else ""
   paste0(img, note)
+}
+
+# ── Spreadsheet formatting checks ─────────────────────────────────────────────
+#
+# Formerly the standalone `spreadsheet_check` module; merged into data_validate
+# because both check "additional categories of things that can be wrong" with a
+# data file — this half just inspects the raw workbook CONTAINER (colour, merges,
+# empty rows/columns, offset headers) rather than the CONTENT data_validate's
+# other checks read from data_check's already-parsed `previews`. Those file-level
+# facts (e.g. a cell's fill colour) are gone by the time a file becomes a data
+# frame, so this reads the raw .xlsx/.ods zip/XML directly via structure_df's
+# file_location, same as before.
+#
+# Findings are returned in data_validate's shared findings shape (source_file,
+# column, label, check, detail) — column = NA for these, since the issue is
+# file/sheet-level, not about one column — so they merge into the same
+# `findings_df` / "Potential Issues" reporting path as every other check here.
+
+.dv_spreadsheet_exts <- c("xlsx", "xls", "ods", "fods")
+
+# Run the spreadsheet-formatting checks over every spreadsheet file in
+# structure_df (data_check's file-classification table) that has a readable
+# local copy. Returns list(findings, n_files): `findings` in the shared
+# (source_file, column, label, check, detail) shape (0 rows when none found or
+# no spreadsheet files exist), `n_files` the count of spreadsheet files examined
+# (0 when none).
+.dv_spreadsheet_findings <- function(structure_df) {
+  empty_findings <- data.frame(source_file = character(0), column = character(0),
+                               label = character(0), check = character(0),
+                               detail = character(0))
+
+  xl_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
+    structure_df[
+      tolower(tools::file_ext(structure_df$file_name)) %in% .dv_spreadsheet_exts &
+        !is.na(structure_df$file_location) &
+        nzchar(structure_df$file_location) &
+        file.exists(structure_df$file_location %||% ""),
+      , drop = FALSE
+    ]
+  } else structure_df[0, , drop = FALSE]
+
+  if (is.null(xl_rows) || nrow(xl_rows) == 0)
+    return(list(findings = empty_findings, n_files = 0L))
+
+  n_files <- nrow(xl_rows)
+  findings <- list()
+
+  for (i in seq_len(n_files)) {
+    fname <- xl_rows$file_name[i]
+    path  <- xl_rows$file_location[i]
+    ext   <- tolower(tools::file_ext(fname))
+
+    # data_check flagged this file as not a usable rectangular dataset (a coding
+    # worksheet: mostly free text and/or almost all empty). It is still inspected
+    # for formatting below; here we add the structural note so the author knows
+    # the file needs restructuring, not just reformatting.
+    if (isFALSE(xl_rows$tabular_usable[i])) {
+      reason <- xl_rows$non_tabular_reason[i] %||% NA_character_
+      findings[[length(findings) + 1L]] <- data.frame(
+        source_file = fname, column = NA_character_, label = NA_character_,
+        check = "Not a rectangular dataset",
+        detail = sprintf(
+          "This file reads as a table but is not a usable dataset%s. Store the data as a plain rectangular table (one header row, one column per variable) with a codebook.",
+          if (!is.na(reason)) sprintf(" (%s)", reason) else ""))
+    }
+
+    # Offset header: a banner / blank / units row above the real column header, so
+    # the file does not read as a clean table. Reported so the AUTHOR removes the
+    # junk row(s) at source; metacheck also repairs it in-memory for its own checks.
+    #
+    # This runs for EVERY format, including .xls: it reads the first rows through
+    # readxl/readODS rather than the XML, so it does not need the zipped-XML
+    # structure the style-level checks below require.
+    oh <- tryCatch(.dv_spreadsheet_offset_header(path, ext), error = function(e) NULL)
+    if (!is.null(oh)) {
+      findings[[length(findings) + 1L]] <- data.frame(
+        source_file = fname, column = NA_character_, label = NA_character_,
+        check = "Header not on first row",
+        detail = sprintf(
+          "The column header is on row %d; above it is %s. Remove the row%s above the header so the first row of the sheet is the column header — otherwise the file reads with invented column names (…1, …4) and the data mis-types.",
+          oh$header_row, oh$detail, plural(oh$n_above)))
+    }
+
+    # Style-level checks (colour, merges, empty rows/columns) need the document
+    # XML. .xlsx and .ods/.fods both provide it; binary .xls does not.
+    if (ext == "xls") {
+      findings[[length(findings) + 1L]] <- data.frame(
+        source_file = fname, column = NA_character_, label = NA_character_,
+        check = "Un-inspectable (.xls)",
+        detail = "Legacy .xls format: colour, merged cells and empty rows/columns cannot be inspected. Convert to .xlsx or .ods for a full check.")
+      next
+    }
+
+    insp <- tryCatch(
+      if (ext %in% c("ods", "fods")) .dv_ods_inspect(path) else .dv_excel_inspect(path),
+      error = function(e) NULL)
+    if (is.null(insp)) {
+      findings[[length(findings) + 1L]] <- data.frame(
+        source_file = fname, column = NA_character_, label = NA_character_,
+        check = "Unreadable",
+        detail = sprintf("The file could not be parsed as a %s workbook.",
+                         if (ext %in% c("ods", "fods")) "OpenDocument" else ".xlsx"))
+      next
+    }
+
+    for (s in insp$sheets) {
+      if (s$color_cells > 0) {
+        findings[[length(findings) + 1L]] <- data.frame(
+          source_file = fname, column = NA_character_, label = s$name,
+          check = "Colour coding",
+          detail = sprintf("%d cell%s use fill colour to encode information; colour is lost on CSV export.",
+                           s$color_cells, plural(s$color_cells)))
+      }
+      if (length(s$merges) > 0) {
+        findings[[length(findings) + 1L]] <- data.frame(
+          source_file = fname, column = NA_character_, label = s$name,
+          check = "Merged cells",
+          detail = sprintf("%d merged range%s (%s) break the rectangular grid.",
+                           length(s$merges), plural(length(s$merges)),
+                           paste(utils::head(s$merges, 5), collapse = ", ")))
+      }
+      if (s$empty_rows > 0) {
+        findings[[length(findings) + 1L]] <- data.frame(
+          source_file = fname, column = NA_character_, label = s$name,
+          check = "Empty rows",
+          detail = sprintf("%d fully empty row%s inside the data range.",
+                           s$empty_rows, plural(s$empty_rows)))
+      }
+      if (s$empty_cols > 0) {
+        findings[[length(findings) + 1L]] <- data.frame(
+          source_file = fname, column = NA_character_, label = s$name,
+          check = "Empty or unnamed columns",
+          detail = sprintf("%d column%s %s empty or have a blank header.",
+                           s$empty_cols, plural(s$empty_cols),
+                           if (s$empty_cols == 1) "is" else "are"))
+      }
+    }
+  }
+
+  findings_df <- if (length(findings) > 0) dplyr::bind_rows(findings) else empty_findings
+  list(findings = findings_df, n_files = n_files)
+}
+
+# Human-readable rollup of the spreadsheet findings, appended to data_validate's
+# summary_text. Mirrors the former spreadsheet_check module's summary wording.
+.dv_spreadsheet_summary_text <- function(findings_df, n_files) {
+  n_flagged_files <- length(unique(findings_df$source_file))
+  sprintf("%d of %d spreadsheet file%s %s at least one formatting issue (colour coding, merged cells, empty rows/columns, or an offset header).",
+          n_flagged_files, n_files, plural(n_files),
+          if (n_flagged_files == 1) "has" else "have")
+}
+
+# Report section for spreadsheet-formatting findings, appended after the
+# per-column "Potential Issues" table.
+.dv_spreadsheet_report <- function(findings_df, n_files) {
+  n_flagged_files <- length(unique(findings_df$source_file))
+  tbl <- findings_df |>
+    dplyr::transmute(File = .data$source_file, Sheet = .data$label,
+                     Issue = .data$check, Detail = .data$detail)
+  c("#### Spreadsheet Formatting",
+    sprintf("We examined %d spreadsheet file%s in the repository; %d %s at least one formatting issue.",
+            n_files, plural(n_files), n_flagged_files,
+            if (n_flagged_files == 1) "has" else "have"),
+    scroll_table(tbl, maxrows = 20),
+    "Spreadsheet formatting such as colour, merged cells, and blank rows/columns is not preserved when data are read programmatically or exported to CSV. Store data as a plain rectangular table (one header row, one column per variable, no colour-encoded meaning) so it is machine-readable.")
+}
+
+# Detect an OFFSET HEADER: a banner / blank / units / repeated-label row sitting
+# ABOVE the real column header, so the file does not read as a clean rectangular
+# table (the reader takes the junk row as the header and invents …N names, or
+# spreads one label — CDA merged across 110 columns — into CDA…1 … CDA…110).
+#
+# Reuses the same detector as the read-time repair (data_promote_header_row /
+# .detect_header_row) so the flag and the repair cannot disagree about where the
+# header is. Returns NULL when the header is already row 1, else a one-line human
+# description of what sits above it, for the researcher to remove at source.
+.dv_spreadsheet_offset_header <- function(path, ext = tolower(tools::file_ext(path))) {
+  raw <- if (ext %in% c("ods", "fods")) {
+    # readODS is in Suggests: without it an .ods simply skips this check (the
+    # xml2-based style checks still run), rather than erroring.
+    if (!requireNamespace("readODS", quietly = TRUE)) return(NULL)
+    # No `range=`: a fixed range like "A1:Z6" silently TRUNCATES the sheet to 26
+    # columns, which would hide the header on a wide export (a 30-column sheet
+    # reads back as 26). Read the sheet and cap the rows in R instead.
+    tryCatch({
+      d <- as.data.frame(suppressWarnings(readODS::read_ods(
+        path, col_names = FALSE, .name_repair = "minimal")))
+      utils::head(d, 6L)
+    }, error = function(e) NULL)
+  } else {
+    tryCatch(as.data.frame(suppressWarnings(readxl::read_excel(
+      path, col_names = FALSE, n_max = 6L, col_types = "text",
+      .name_repair = "minimal"))), error = function(e) NULL)
+  }
+  if (is.null(raw) || nrow(raw) < 2 || ncol(raw) < 2) return(NULL)
+  rows <- lapply(seq_len(nrow(raw)), function(i) as.character(raw[i, , drop = TRUE]))
+  det  <- .detect_header_row(rows)
+  if (det$header_row <= 1L || length(det$stripped) == 0) return(NULL)
+
+  # Describe each stripped row: a repeated banner ("CDA" × 110), a near-empty
+  # spacer, or a stale placeholder header. Keep it short and concrete.
+  describe <- function(v) {
+    vals <- trimws(as.character(v)); nz <- vals[nzchar(vals) & !is.na(vals)]
+    if (length(nz) == 0) return("an empty row")
+    dup <- .row_duplication(v)
+    if (dup >= 0.6 && length(unique(nz)) <= 3)
+      return(sprintf("\"%s\" repeated across %d column%s",
+                     paste(unique(nz), collapse = "\"/\""),
+                     length(nz), plural(length(nz))))
+    if (mean(.is_placeholder_name(v)) >= 0.5)
+      return("a row of placeholder names from an earlier mis-read")
+    sprintf("a partial label row (%s%s)",
+            paste(utils::head(nz, 3), collapse = ", "),
+            if (length(nz) > 3) ", …" else "")
+  }
+  descr <- vapply(det$stripped, describe, character(1))
+  list(header_row = det$header_row, n_above = length(det$stripped),
+       detail = paste(descr, collapse = "; then "))
+}
+
+# Inspect one .xlsx file by reading it as a zip of XML parts. Returns a list with
+# `sheets`, each a list(name, color_cells, merges, empty_rows, empty_cols), or
+# NULL on failure. Uses only xml2 (no readxl/openxlsx dependency for the
+# style-level checks); the empty-row/column checks read cell values from the
+# sheet XML directly.
+.dv_excel_inspect <- function(path) {
+  if (!file.exists(path)) return(NULL)
+  tmp <- tempfile("xlsx_")
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+  ok <- tryCatch({ utils::unzip(path, exdir = tmp); TRUE },
+                 error = function(e) FALSE)
+  if (!ok) return(NULL)
+
+  xl <- file.path(tmp, "xl")
+  if (!dir.exists(xl)) return(NULL)
+
+  # Which cell style indices (s=) reference a non-default fill colour?
+  colored_styles <- .dv_excel_colored_styles(file.path(xl, "styles.xml"))
+
+  # Sheet name + file mapping (workbook order matches sheetN.xml order well
+  # enough for reporting; fall back to the file stem).
+  wb_path <- file.path(xl, "workbook.xml")
+  sheet_names <- if (file.exists(wb_path)) {
+    wb <- tryCatch(xml2::read_xml(wb_path), error = function(e) NULL)
+    if (is.null(wb)) character(0) else {
+      xml2::xml_attr(xml2::xml_find_all(wb, ".//*[local-name()='sheet']"), "name")
+    }
+  } else character(0)
+
+  sheet_files <- sort(list.files(file.path(xl, "worksheets"),
+                                 pattern = "^sheet[0-9]+\\.xml$",
+                                 full.names = TRUE))
+  sheets <- list()
+  for (j in seq_along(sheet_files)) {
+    nm <- if (j <= length(sheet_names)) sheet_names[[j]] else
+      tools::file_path_sans_ext(basename(sheet_files[[j]]))
+    sheets[[length(sheets) + 1L]] <-
+      .dv_excel_inspect_sheet(sheet_files[[j]], nm, colored_styles)
+  }
+
+  list(sheets = sheets)
+}
+
+# Return the 0-based cell-style indices (positions in cellXfs) whose fill is a
+# non-default colour. Default fills are patternType none/gray125 or black/white
+# fgColor; anything else counts as colour coding.
+.dv_excel_colored_styles <- function(styles_path) {
+  if (!file.exists(styles_path)) return(integer(0))
+  st <- tryCatch(xml2::read_xml(styles_path), error = function(e) NULL)
+  if (is.null(st)) return(integer(0))
+
+  fills <- xml2::xml_find_all(st, ".//*[local-name()='fills']/*[local-name()='fill']")
+  fill_is_color <- vapply(fills, function(fl) {
+    fg <- xml2::xml_find_first(fl, ".//*[local-name()='fgColor']")
+    if (inherits(fg, "xml_missing")) return(FALSE)
+    rgb <- xml2::xml_attr(fg, "rgb")
+    # A themed colour (no rgb) or a plain black/white fill is not "colour coding".
+    !is.na(rgb) && nzchar(rgb) &&
+      !toupper(rgb) %in% c("FF000000", "FFFFFFFF", "00000000")
+  }, logical(1))
+  colored_fill_ids <- which(fill_is_color) - 1L    # 0-based fillId
+
+  if (length(colored_fill_ids) == 0) return(integer(0))
+
+  xfs <- xml2::xml_find_all(st, ".//*[local-name()='cellXfs']/*[local-name()='xf']")
+  xf_fill <- suppressWarnings(as.integer(xml2::xml_attr(xfs, "fillId")))
+  which(xf_fill %in% colored_fill_ids) - 1L         # 0-based style index (s=)
+}
+
+# Inspect one worksheet XML: count colour-coded cells, merged ranges, fully
+# empty rows, and empty/unnamed columns. `colored_styles` is the set of 0-based
+# style indices that use a colour fill.
+#
+# All cell-level facts are extracted with a handful of whole-document xml2 calls
+# and then reduced with base-R vector ops. A previous version ran an XPath query
+# per cell to test whether it held a value, which is O(rows x cols) XPath
+# evaluations — minutes on a wide (e.g. 300 x 2000) Qualtrics export. Here the
+# populated cells come from a single `.//c[v|is]` query, and row/column identity
+# is parsed from the vector of cell references.
+.dv_excel_inspect_sheet <- function(sheet_path, name, colored_styles) {
+  blank <- list(name = name, color_cells = 0L, merges = character(0),
+                empty_rows = 0L, empty_cols = 0L)
+  sh <- tryCatch(xml2::read_xml(sheet_path), error = function(e) NULL)
+  if (is.null(sh)) return(blank)
+
+  # Every cell, and its reference (e.g. "B12"). One query for all cells.
+  cells    <- xml2::xml_find_all(sh, ".//*[local-name()='c']")
+  cell_ref <- xml2::xml_attr(cells, "r")
+
+  # Populated cells: those with a <v> (value) or <is> (inline string) child.
+  # One query returns exactly the non-empty cells, avoiding per-cell XPath.
+  val_cells <- xml2::xml_find_all(
+    sh, ".//*[local-name()='c'][*[local-name()='v'] or *[local-name()='is']]")
+  val_ref <- xml2::xml_attr(val_cells, "r")
+
+  # Colour-coded cells: cells whose style index is in colored_styles.
+  color_cells <- 0L
+  if (length(colored_styles) > 0 && length(cells) > 0) {
+    cell_s <- suppressWarnings(as.integer(xml2::xml_attr(cells, "s")))
+    color_cells <- sum(cell_s %in% colored_styles, na.rm = TRUE)
+  }
+
+  # Merged ranges.
+  merges <- xml2::xml_attr(
+    xml2::xml_find_all(sh, ".//*[local-name()='mergeCell']"), "ref")
+  merges <- merges[!is.na(merges)]
+
+  # Split cell references into column letters and row numbers (vectorised).
+  ref_col <- function(ref) sub("[0-9]+$", "", ref)
+  ref_row <- function(ref) suppressWarnings(as.integer(sub("^[A-Za-z]+", "", ref)))
+  val_col <- ref_col(val_ref)
+  val_rownum <- ref_row(val_ref)
+
+  # Empty rows: rows inside the populated range that carry no value. Only blanks
+  # that fall between the first and last populated row are counted (trailing
+  # blank <row> elements in the XML are rare and not meaningful).
+  empty_rows <- 0L
+  if (length(val_rownum) > 0) {
+    populated <- sort(unique(val_rownum))
+    if (length(populated) > 1)
+      empty_rows <- (max(populated) - min(populated) + 1L) - length(populated)
+  }
+
+  # Empty / unnamed columns. The header is the first populated row; a column is
+  # problematic if its header cell is blank, or it has a header but no value in
+  # any row below. Column identity is the letter part of the cell reference.
+  empty_cols <- 0L
+  if (length(val_ref) > 0) {
+    hdr_row  <- min(val_rownum)
+    hdr_cols <- val_col[val_rownum == hdr_row]                 # cols with a header value
+    all_cols <- unique(ref_col(cell_ref))                      # every column that appears
+    body_cols <- unique(val_col[val_rownum > hdr_row])         # cols with a body value
+    blank_header  <- setdiff(all_cols, hdr_cols)               # column present but no header
+    header_no_body <- setdiff(hdr_cols, body_cols)             # header but empty below
+    empty_cols <- length(unique(c(blank_header, header_no_body)))
+  }
+
+  list(name = name, color_cells = color_cells, merges = merges,
+       empty_rows = empty_rows, empty_cols = empty_cols)
+}
+
+# ── OpenDocument (.ods / .fods) ───────────────────────────────────────────────
+#
+# ODF stores the same facts as OOXML but in a structurally different way, so the
+# .dv_excel_* parsers above cannot simply be pointed at it:
+#
+#   * ALL sheets live in one content.xml (not one sheetN.xml per sheet);
+#   * cells carry NO reference attribute (no r="B12") — position is IMPLICIT in
+#     document order, so row/column indices must be reconstructed by counting;
+#   * blank runs are COMPRESSED: `table:number-columns-repeated="3"` stands for
+#     three cells and `table:number-rows-repeated="5"` for five rows. Counting
+#     elements naively would report one empty row where there are five;
+#   * colour is `fo:background-color` on a named cell style, not a fillId;
+#   * merges are `table:number-columns-spanned`/`-rows-spanned` on the anchor
+#     cell (followed by <table:covered-table-cell> placeholders), not a
+#     ready-made "A1:B1" range string — so the range label is synthesised here
+#     to match the xlsx report wording.
+#
+# Returns the SAME shape as .dv_excel_inspect(): list(sheets = list(list(name,
+# color_cells, merges, empty_rows, empty_cols))), so the module body treats the
+# two formats identically.
+.dv_ods_inspect <- function(path) {
+  if (!file.exists(path)) return(NULL)
+
+  # .fods is a single flat XML file; .ods is a zip whose content.xml holds it.
+  ext <- tolower(tools::file_ext(path))
+  doc <- if (identical(ext, "fods")) {
+    tryCatch(xml2::read_xml(path), error = function(e) NULL)
+  } else {
+    tmp <- tempfile("ods_")
+    dir.create(tmp)
+    on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+    ok <- tryCatch({ utils::unzip(path, exdir = tmp); TRUE },
+                   error = function(e) FALSE)
+    if (!ok) return(NULL)
+    cx <- file.path(tmp, "content.xml")
+    if (!file.exists(cx)) return(NULL)
+    tryCatch(xml2::read_xml(cx), error = function(e) NULL)
+  }
+  if (is.null(doc)) return(NULL)
+
+  colored <- .dv_ods_colored_styles(doc)
+
+  # One <table:table> per sheet, in workbook order.
+  tables <- xml2::xml_find_all(doc, ".//*[local-name()='table']")
+  # Guard: nested tables (a table inside a cell) would double-count. Keep only
+  # tables whose parent is the spreadsheet body.
+  keep <- vapply(tables, function(tb) {
+    p <- xml2::xml_parent(tb)
+    identical(xml2::xml_name(p), "spreadsheet")
+  }, logical(1))
+  tables <- tables[keep]
+  if (length(tables) == 0) return(list(sheets = list()))
+
+  sheets <- lapply(seq_along(tables), function(j) {
+    nm <- xml2::xml_attr(tables[[j]], "name")
+    if (is.na(nm) || !nzchar(nm)) nm <- paste0("Sheet", j)
+    .dv_ods_inspect_sheet(tables[[j]], nm, colored)
+  })
+  list(sheets = sheets)
+}
+
+# Names of cell styles whose background is a real colour. Mirrors
+# .dv_excel_colored_styles(): a style counts only if it sets an explicit
+# background that is not the default/neutral (transparent, white, black). Both
+# the automatic styles (used by cells) and any common styles are scanned.
+.dv_ods_colored_styles <- function(doc) {
+  sty <- xml2::xml_find_all(
+    doc, ".//*[local-name()='style'][@*[local-name()='family']='table-cell']")
+  if (length(sty) == 0) return(character(0))
+  nm <- xml2::xml_attr(sty, "name")
+  bg <- vapply(sty, function(s) {
+    p <- xml2::xml_find_first(s, ".//*[local-name()='table-cell-properties']")
+    if (inherits(p, "xml_missing")) return(NA_character_)
+    xml2::xml_attr(p, "background-color")
+  }, character(1))
+  is_col <- !is.na(bg) & nzchar(bg) &
+    !tolower(bg) %in% c("transparent", "none", "#ffffff", "#fff",
+                        "#000000", "#000")
+  nm[is_col & !is.na(nm)]
+}
+
+# Convert a 1-based column index to spreadsheet letters (1 -> A, 27 -> AA), so
+# merged ranges can be reported as "A1:B1" exactly like the xlsx path.
+.dv_ods_col_letter <- function(i) {
+  out <- character(length(i))
+  for (k in seq_along(i)) {
+    n <- i[[k]]; s <- ""
+    while (n > 0) {
+      r <- (n - 1L) %% 26L
+      s <- paste0(LETTERS[r + 1L], s)
+      n <- (n - 1L) %/% 26L
+    }
+    out[[k]] <- s
+  }
+  out
+}
+
+# Inspect one <table:table>. Walks rows/cells in document order, expanding the
+# repeat counters, and records for each populated cell its (row, col) position —
+# reconstructing the coordinates OOXML gives for free. Downstream logic then
+# matches .dv_excel_inspect_sheet() exactly.
+.dv_ods_inspect_sheet <- function(tbl, name, colored) {
+  blank <- list(name = name, color_cells = 0L, merges = character(0),
+                empty_rows = 0L, empty_cols = 0L)
+
+  rows <- xml2::xml_find_all(tbl, "./*[local-name()='table-row']")
+  if (length(rows) == 0) return(blank)
+
+  int_attr <- function(node, a, default = 1L) {
+    v <- suppressWarnings(as.integer(xml2::xml_attr(node, a)))
+    if (is.na(v) || v < 1L) default else v
+  }
+
+  val_row <- integer(0); val_col <- integer(0)   # populated cell coordinates
+  seen_col <- integer(0)                          # every column that appears
+  color_cells <- 0L
+  merges <- character(0)
+  r <- 0L   # 1-based row cursor
+
+  # A trailing run of empty rows is padding (LibreOffice writes rows out to the
+  # sheet limit, e.g. number-rows-repeated="1048570"); it is not data structure,
+  # and the empty-row count below only looks BETWEEN populated rows anyway.
+  for (ri in seq_along(rows)) {
+    row <- rows[[ri]]
+    rep_r <- int_attr(row, "number-rows-repeated")
+    cells <- xml2::xml_find_all(
+      row, "./*[local-name()='table-cell' or local-name()='covered-table-cell']")
+
+    cc <- 0L   # 1-based column cursor within this row
+    for (ci in seq_along(cells)) {
+      cell  <- cells[[ci]]
+      rep_c <- int_attr(cell, "number-columns-repeated")
+      # Populated = has a value type or any text content (matches the xlsx rule
+      # of "<v> or <is> present").
+      vt <- xml2::xml_attr(cell, "value-type")
+      txt <- trimws(xml2::xml_text(cell))
+      populated <- (!is.na(vt) && nzchar(vt)) || nzchar(txt)
+
+      # A huge repeat count on an EMPTY cell is right-padding to the sheet limit;
+      # it does not mean thousands of real columns. Only count padding runs when
+      # the cell actually holds something.
+      span_c <- if (populated) rep_c else min(rep_c, 1024L)
+
+      idx <- cc + seq_len(span_c)
+      seen_col <- c(seen_col, idx)
+
+      if (populated) {
+        # The same value repeated across `rep_c` columns occupies each of them.
+        for (rr in seq_len(rep_r)) {
+          val_row <- c(val_row, rep(r + rr, span_c))
+          val_col <- c(val_col, idx)
+        }
+        sn <- xml2::xml_attr(cell, "style-name")
+        if (!is.na(sn) && sn %in% colored)
+          color_cells <- color_cells + (span_c * rep_r)
+      } else {
+        sn <- xml2::xml_attr(cell, "style-name")
+        # A colour-filled but EMPTY cell still encodes information visually
+        # (a shaded block marking a group), so it counts — but only when the
+        # run is a plausible real range, not sheet-limit padding.
+        if (!is.na(sn) && sn %in% colored)
+          color_cells <- color_cells + (span_c * rep_r)
+      }
+
+      # Merge anchor: spans recorded on the cell that starts the range.
+      sc <- suppressWarnings(as.integer(
+        xml2::xml_attr(cell, "number-columns-spanned")))
+      sr <- suppressWarnings(as.integer(
+        xml2::xml_attr(cell, "number-rows-spanned")))
+      sc <- if (is.na(sc)) 1L else sc
+      sr <- if (is.na(sr)) 1L else sr
+      if (sc > 1L || sr > 1L) {
+        merges <- c(merges, sprintf(
+          "%s%d:%s%d",
+          .dv_ods_col_letter(cc + 1L), r + 1L,
+          .dv_ods_col_letter(cc + sc), r + sr))
+      }
+
+      cc <- cc + span_c
+    }
+    r <- r + rep_r
+  }
+
+  # Empty rows: blank rows BETWEEN the first and last populated row (identical
+  # rule to the xlsx path — trailing padding is not counted).
+  empty_rows <- 0L
+  if (length(val_row) > 0) {
+    populated <- sort(unique(val_row))
+    if (length(populated) > 1)
+      empty_rows <- (max(populated) - min(populated) + 1L) - length(populated)
+  }
+
+  # Empty / unnamed columns: header is the first populated row; a column is
+  # problematic if it has no header value, or a header but nothing below it.
+  empty_cols <- 0L
+  if (length(val_col) > 0) {
+    hdr_row  <- min(val_row)
+    hdr_cols <- unique(val_col[val_row == hdr_row])
+    body_cols <- unique(val_col[val_row > hdr_row])
+    # Only consider columns within the used range; padding beyond the last
+    # populated column is not a missing column.
+    all_cols <- unique(seen_col[seen_col <= max(val_col)])
+    blank_header   <- setdiff(all_cols, hdr_cols)
+    header_no_body <- setdiff(hdr_cols, body_cols)
+    empty_cols <- length(unique(c(blank_header, header_no_body)))
+  }
+
+  list(name = name, color_cells = color_cells, merges = merges,
+       empty_rows = empty_rows, empty_cols = empty_cols)
 }

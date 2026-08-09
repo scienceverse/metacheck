@@ -207,6 +207,34 @@
 #'   the same row share that prefix — only the final segment tells them apart.
 #'   Empty frame (same columns) when there is nothing to flatten.
 #' @export
+
+# A column that typed to plain "df" (a single degrees-of-freedom, STATO
+# STATO:0000069 — see .STATO_MAP in stato-map.R) but whose CELL holds a
+# comma-separated pair ("2, 560") is really an F-test's numerator/
+# denominator df printed as one string — afex::aov_car()/aov_ez() and
+# similar ANOVA-table printers do this; jamovi/JASP give df1/df2 their own
+# columns instead, so this only ever fires for R-console-sourced tables.
+# Returns a list of list(name, value, typ) — one entry per half, each
+# re-typed via stato_type_column() against "df1"/"df2" (already-mapped
+# keys) — or NULL when `val` is not this shape, or when `typ` is not
+# already a plain "df" (so a genuinely different column that merely
+# CONTAINS a comma, e.g. a row-label-shaped cell, is never mistaken for
+# this). Guarded on BOTH halves parsing as real numbers, so a value like
+# "a, b" (not degrees of freedom at all) is left untouched, consistent with
+# every other "do not guess" boundary in this file.
+.split_combined_df <- function(val, typ) {
+  if (is.null(typ) || !identical(typ$termAccession,
+      "http://purl.obolibrary.org/obo/STATO_0000069")) return(NULL)
+  m <- regmatches(val, regexec("^([0-9.]+)\\s*,\\s*([0-9.]+)$", val))[[1]]
+  if (length(m) != 3) return(NULL)
+  if (is.na(suppressWarnings(as.numeric(m[[2]]))) ||
+      is.na(suppressWarnings(as.numeric(m[[3]])))) return(NULL)
+  list(
+    list(name = "df1", value = m[[2]], typ = stato_type_column("df1")),
+    list(name = "df2", value = m[[3]], typ = stato_type_column("df2"))
+  )
+}
+
 stat_results_long <- function(tables, paper_id = NA_character_,
                               source_file = NA_character_) {
   empty <- data.frame(paper_id = character(0), source_file = character(0),
@@ -308,6 +336,37 @@ stat_results_long <- function(tables, paper_id = NA_character_,
           typ <- list(annotationValue = "Pearson's correlation coefficient",
                      termSource = "STATO",
                      termAccession = "http://purl.obolibrary.org/obo/STATO_0000280")
+        }
+        # A combined df cell ("2, 560" — afex::aov_car()/aov_ez() and similar
+        # ANOVA-table printers show numerator/denominator df as ONE cell
+        # under a single "df" header, unlike jamovi/JASP, which give df1/df2
+        # their own columns). Detected on the CELL VALUE, not the header
+        # alone: a column that already typed to plain "df" (STATO:0000069,
+        # a single degrees-of-freedom) but whose value is "N, M" is split
+        # into two cells, re-typed as df1/df2 (already-mapped STATO keys —
+        # see .STATO_MAP) so match_reported_output() can compare each half
+        # against a reported df1=.../df2=... component independently, the
+        # same way an F-test's df ever matches at all. .r_output_tables()
+        # (R/r-output.R) already protects the cell's own internal comma-space
+        # from being misread as a column gutter during extraction, so by the
+        # time this function sees it, "2, 560" is intact as one string.
+        combined_df <- .split_combined_df(val, typ)
+        if (!is.null(combined_df)) {
+          return(dplyr::bind_rows(lapply(combined_df, function(cd)
+            data.frame(paper_id = paper_id,
+                       source_file = source_file,
+                       test_id = .stat_test_id(tb, source_file, base_ids[[ti]],
+                                               row_label),
+                       result_id = .stat_sanitize_id(paste0(
+                         row_id, "_", stat_slugs[si], "_", cd$name)),
+                       analysis = tb$analysis %||% NA_character_,
+                       table_title = tb$title %||% NA_character_,
+                       row_label = row_label,
+                       statistic = cd$name,
+                       stato_label = cd$typ$annotationValue,
+                       stato_iri = cd$typ$termAccession,
+                       value = cd$value,
+                       model_ref = tb$model_ref %||% NA_character_))))
         }
         data.frame(paper_id = paper_id,
                    source_file = source_file,

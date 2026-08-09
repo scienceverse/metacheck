@@ -8,6 +8,30 @@
 # httptest2::stop_capturing()
 
 
+# Decision log (throttle_capacity/throttle_fill_time_s, added after PR #326):
+# PR #326 hardcoded req_throttle(capacity = 8, fill_time_s = 1) here for every
+# caller, to fix CrossRef 429s. But .batch_query() is shared by CrossRef,
+# DataCite, OSF, Zenodo and doi.org, each with different (or undocumented)
+# limits, so one hardcoded number was CrossRef-specific logic silently applied
+# to hosts it was never derived for. Checked each host's published limit
+# (Aug 2026): CrossRef polite pool is 10 req/s for single-record lookups, 3
+# req/s for list/search queries (changed 2025-12-01, so the PR's blended 8/s no
+# longer matches either figure); DataCite is ~3.3 req/s (1000/5min,
+# identified); OSF is 10,000/day authenticated; Zenodo's only published number
+# (30/min) is for its search endpoint, not the single-record GET used here;
+# doi.org has no confirmed public number. Only CrossRef's volume/limit ratio
+# makes proactive throttling worth its cost, so throttling is now opt-in
+# (default NULL = off) and only the CrossRef call sites in R/db-crossref.R
+# pass a value, split by endpoint type. Every other host relies on the
+# existing req_retry() backoff for the rare 429 rather than a guessed number.
+#
+# `delay` (the flat Sys.sleep between batches, below) stays unconditional
+# rather than being skipped when a throttle is set. For throttled calls it's a
+# small extra courtesy gap on top of req_throttle's per-request pacing
+# (negligible next to network round-trip time); for unthrottled calls it is
+# the only pacing they have. Making it conditional on throttle_capacity would
+# silently change delay's effect for any future caller that sets both, which
+# is a worse trade than the redundancy it would remove.
 #' Batch query
 #'
 #' @param urls A vector of URLs
@@ -15,6 +39,13 @@
 #' @param msg Message to show in progress bar - set to NULL to omit progressbar
 #' @param delay Courtesy delay between batches (in seconds)
 #' @param accept The header type to accept
+#' @param throttle_capacity requests per `throttle_fill_time_s` to allow, or
+#'   NULL (default) for no throttling. Only set this for a host known to
+#'   rate-limit (e.g. CrossRef); for others, req_retry's backoff already
+#'   handles the rare 429 and a proactive throttle would just slow things down
+#'   for no benefit.
+#' @param throttle_fill_time_s time window (seconds) `throttle_capacity`
+#'   applies to. Ignored when `throttle_capacity` is NULL.
 #'
 #' @returns a list of responses
 #' @keywords internal
@@ -23,21 +54,27 @@
                          msg = "Batch Query",
                          delay = 0.5,
                          accept = "application/json",
-                         req_func = \(req) {req}) {
+                         req_func = \(req) {req},
+                         throttle_capacity = NULL,
+                         throttle_fill_time_s = 1) {
   if (length(urls) == 0) return(list())
 
   # set up requests from urls
   reqs <- lapply(urls, \(url) {
     tryCatch({
-      httr2::request(url) |>
+      req <- httr2::request(url) |>
         httr2::req_headers(Accept = accept) |>
-        req_func() |>
-        # Throttle to stay under the API rate limit. CrossRef's polite pool
-        # allows ~10 requests/second; exceeding it returns 429 and, in bursts,
-        # the retries get 429'd too. httr2 shares one token bucket across
-        # requests (by host), so this paces the whole batch. 8/s leaves a
-        # margin under the limit.
-        httr2::req_throttle(capacity = 8, fill_time_s = 1) |>
+        req_func()
+      if (!is.null(throttle_capacity)) {
+        # Throttle to stay under the host's rate limit; exceeding it returns
+        # 429 and, in bursts, the retries get 429'd too. httr2 shares one
+        # token bucket across requests (by host), so this paces the whole
+        # batch. req_perform_sequential (below) is what makes this effective:
+        # req_perform_parallel does not honour req_throttle.
+        req <- req |> httr2::req_throttle(capacity = throttle_capacity,
+                                          fill_time_s = throttle_fill_time_s)
+      }
+      req |>
         # retry transient statuses and connection-level failures (timeouts,
         # dropped connections). retry_on_failure covers the latter, which a
         # status-only is_transient would otherwise miss.

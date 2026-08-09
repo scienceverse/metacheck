@@ -200,9 +200,10 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
 #   * checks:   one row per module — paper_id, module, traffic_light,
 #               summary_text, and the module's summary_table count columns
 #               (JSON-encoded so a single column holds a variable set of counts).
-#   * findings: one row per FLAGGED ISSUE. Issue modules (data_validate,
-#               spreadsheet_check, code_check, psychds_check) contribute their table
-#               rows directly; inventory modules (data_check, codebook_check)
+#   * findings: one row per FLAGGED ISSUE. Issue modules (data_validate — which
+#               also covers the former spreadsheet_check's formatting checks,
+#               code_check, psychds_check) contribute their table rows
+#               directly; inventory modules (data_check, codebook_check)
 #               contribute only their genuine problem rows (see
 #               .inventory_findings). Tagged with paper_id + module.
 # Returned as a list(checks = df, findings = df). Used by capture_check_results()
@@ -511,7 +512,7 @@ collect_module_tables <- function(results_dir, module, element = "table") {
 #' * `_all_checks.csv` — one row per paper per module: the module's
 #'   `traffic_light`, its `summary_text`, and its per-paper count columns
 #'   (unpacked from the module's `summary_table`, so e.g. `code_check`'s
-#'   `code_file_n` or `data_validate`'s `flagged_n` become their own columns).
+#'   `code_n` or `data_validate`'s `flagged_n` become their own columns).
 #' * `_all_findings.csv` — one row per individual flagged item across all papers
 #'   and modules (the row-level `table` each module returns), tagged with
 #'   `paper_id` and `module`.

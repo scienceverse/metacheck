@@ -25,11 +25,24 @@ as already-installed, for every later one). GitHub/URL sources are
 deliberately excluded from this and always go into the throwaway \code{lib_dir}
 regardless of this argument — those are arbitrary, unreviewed code you
 likely do not want permanently in your main library. Default \code{FALSE}
-(everything throwaway, the original behaviour).}
+(everything throwaway, the original behaviour).
+
+A CRAN-source package that \code{install.packages()} cannot find is not
+necessarily a broken dependency: CRAN removes (archives) packages that stop
+passing its checks, but every version ever published stays available as a
+source tarball under the CRAN Archive
+(\verb{https://cran.r-project.org/src/contrib/Archive/<pkg>/}). When the live-CRAN
+install fails, this retries once from the Archive's most recent version
+before giving up — a package the paper's authors could install at the time
+(and that later dropped off live CRAN) still installs, instead of the run
+recording an "errored" script for a cause that has nothing to do with the
+paper's code. The retry is recorded in \code{via_archive} so the report can say
+the run used a stale-but-real version rather than the one the authors had.}
 }
 \value{
-a data frame with \code{package}, \code{source}, \code{installed} (logical), and
-\code{message} (error text on failure, else "").
+a data frame with \code{package}, \code{source}, \code{installed} (logical),
+\code{message} (error text on failure, else ""), and \code{via_archive} (logical,
+TRUE when installed from the CRAN Archive after a live-CRAN failure).
 }
 \description{
 Installs each non-base dependency into \code{lib_dir} (a temp library, never the

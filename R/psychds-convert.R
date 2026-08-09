@@ -201,19 +201,15 @@
 
 # MIME type for a source file's extension, for a DataDownload's encodingFormat.
 # Returns NULL for an unknown extension, so the field is simply omitted.
+# Sourced from .ext_registry (R/data_check_helpers.R) so this never again
+# silently diverges from the readable/data_type columns derived from the same
+# rows (this table previously had no "omv" entry even though .jasp and .omv
+# are siblings everywhere else in the package, and asserted a MIME type for
+# "por" with no reader anywhere -- both fixed at the registry, not here).
 .psychds_encoding_format <- function(file_name) {
   ext <- tolower(tools::file_ext(file_name))
-  mimes <- c(csv = "text/csv", tsv = "text/tab-separated-values",
-             txt = "text/plain", json = "application/json",
-             xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-             xls = "application/vnd.ms-excel",
-             ods = "application/vnd.oasis.opendocument.spreadsheet",
-             fods = "application/vnd.oasis.opendocument.spreadsheet",
-             sav = "application/x-spss-sav", dta = "application/x-stata-dta",
-             rds = "application/x-r-rds", rdata = "application/x-r-data",
-             sas7bdat = "application/x-sas-data", por = "application/x-spss-por",
-             jasp = "application/x-jasp")
-  if (ext %in% names(mimes)) unname(mimes[[ext]]) else NULL
+  mime <- .ext_registry$mime[match(ext, .ext_registry$ext)]
+  if (length(mime) == 1 && !is.na(mime)) mime else NULL
 }
 
 # Build the schema.org `distribution` array (a list of DataDownload objects) for

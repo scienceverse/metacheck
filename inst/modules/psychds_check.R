@@ -20,8 +20,11 @@
 #' Each repository file is mapped to its Psych-DS destination by type: data →
 #' `data/`, code → `analysis/`, materials → `materials/`, documentation →
 #' `documentation/` (or `documentation/codebooks/` for `documentation` rows
-#' whose fine-grained `doc_role` is `"codebook"`), unknown → `documentation/`,
-#' the root readme (`doc_role == "readme"`) → root `README`. The module then
+#' whose fine-grained `doc_role` is `"codebook"`), unknown → `unknown/` (a
+#' visible junk drawer for files `data_check` could not place at all — rename
+#' the file to include a data/code/materials/output/documentation keyword to
+#' get it classified), the root readme (`doc_role == "readme"`) → root
+#' `README`. The module then
 #' renders the target tree, marking files that are **present**, **missing**
 #' (required but absent — shown in red), or **misplaced** (present but at the
 #' wrong path — shown at the target location annotated with their current
@@ -65,12 +68,22 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # File-type → Psych-DS subdirectory (data and readme handled separately, by
   # doc_role, below).
+  #
+  # "unknown" gets its OWN subdirectory rather than being folded into
+  # documentation/: data_classify_files() could not place these files by
+  # format, folder, or filename keyword at all (see .ext_registry,
+  # R/data_check_helpers.R) — silently filing them under documentation/ hid
+  # that gap. A visible unknown/ folder is an actionable signal: a
+  # researcher (or metacheck's own maintainer) can see exactly what wasn't
+  # recognized and rename the file to include a data/code/materials/output/
+  # documentation keyword, which data_classify_files()'s Tier 2 keyword rules
+  # will then pick up correctly on a re-run.
   type_to_subdir <- c(
     code          = "analysis",
     materials     = "materials",
     output        = "outputs",
     documentation = "documentation",
-    unknown       = "documentation"
+    unknown       = "unknown"
   )
 
   .pid <- function(...) {
@@ -82,12 +95,19 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(id) == 0) NA_character_ else id[[1]]
   }
 
-  # Psych-DS keyword values are alphanumeric (key-value_..._data.csv). Slugify a
-  # filename stem: lowercase, non-alphanumeric runs → nothing, spaces dropped.
+  # Psych-DS's OWN validator rule for a datafile name is the regex
+  # '([a-z]+-[a-zA-Z0-9]+)(_[a-z]+-[a-zA-Z0-9]+)*_data\.(csv|tsv)' (schema_model/
+  # versions/*/rules/files/tabular_data/data.yaml, "Datafile", verified directly
+  # against the psych-ds/psych-ds GitHub repo — not assumed from the prose docs
+  # alone): a KEY is lowercase-alpha-only, but a VALUE is "upper- and lowercase
+  # alphanumeric" — case is explicitly allowed in the value, so keep it. Only
+  # strip what the value pattern actually disallows (anything that is not a
+  # letter or digit); this used to also lowercase and was therefore stripping
+  # more than the spec requires — confirmed by reading the validator rule
+  # directly, not by assumption, after the user questioned whether the
+  # aggressive slugification was really a Psych-DS requirement.
   keyword_slug <- function(x) {
-    x <- tolower(x)
-    x <- gsub("[^a-z0-9]+", "", x)
-    x
+    gsub("[^a-zA-Z0-9]+", "", x)
   }
 
   # ── 1. Inputs from data_check (+ codebook_check for documentation) ───────────
@@ -168,11 +188,21 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (dt == "data") {
       stem <- keyword_slug(tools::file_path_sans_ext(name))
       if (!nzchar(stem)) stem <- paste0("file", i)
-      # Every data file gets a Psych-DS *_data.csv target. When the source is
-      # NOT already a CSV (xlsx/sav/dta/...), the converter writes a real CSV
+      # Every data file gets a Psych-DS *_data.csv target: the fileRegex
+      # requires AT LEAST ONE key-value pair before "_data.csv" (there is no
+      # valid zero-pairs form), so some wrapper key is unavoidable. "study" is
+      # used here — a REAL, official Psych-DS keyword (schema_model/versions/
+      # */meta/context.yaml's own controlled keyword list: study, site,
+      # subject, session, task, condition, trial, stimulus, description),
+      # unlike an invented "source" key this used to use, which is not a
+      # Psych-DS keyword at all and was also actively misleading: metacheck
+      # WRITES this CSV (converting from .sav/.xlsx/... when needed), so
+      # calling it the "source" backwards-labels the file that is the
+      # OUTPUT of that conversion, not its source. When the source is NOT
+      # already a CSV (xlsx/sav/dta/...), the converter writes a real CSV
       # here (not a renamed copy of the original) AND keeps the original file
       # beside it (see original_target_of); see convert_psychds().
-      paste0(prefix, "data/source-", stem, "_data.csv")
+      paste0(prefix, "data/study-", stem, "_data.csv")
     } else if (dt == "documentation" && !is.na(role) && role == "readme") {
       # The root readme/ro-crate-metadata.json never carries a study prefix
       # (grp is NA for these rows by construction); a PER-STUDY readme (rare,
@@ -230,17 +260,35 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
                     data_format(src_ext) == "tabular"
   is_raw_data    <- is_data & nzchar(src_ext) & src_ext != "csv" & !needs_convert
 
-  # Convertible: keep the _data.csv target, add original alongside.
-  original_target <- ifelse(
-    needs_convert,
-    paste0(sub("_data\\.csv$", "", target_path), ".", src_ext),
-    NA_character_)
-  # Raw: replace the (wrong) _data.csv target with the original extension, and
-  # do not treat it as a CSV to write.
-  raw_target <- ifelse(
-    is_raw_data,
-    paste0(sub("_data\\.csv$", "", target_path), ".", src_ext),
-    NA_character_)
+  # Psych-DS's Datafile naming rule (the fileRegex checked above target_of())
+  # applies ONLY to the ".csv"/".tsv" files the "Datafile" validator rule looks
+  # for — it says nothing about any OTHER file sitting in data/. The untouched
+  # original (kept purely so the release retains what the author actually
+  # deposited) and a raw/non-tabular data file (which never claims a _data.csv
+  # path at all — it isn't the thing that rule is checking for) are both
+  # exactly that "other file" case, so neither needs the study-<slug> keyword
+  # wrapper target_of() built for the _data.csv target: each gets its OWN real
+  # basename, verified directly against the actual Psych-DS validator rule
+  # (schema_model/versions/*/rules/files/tabular_data/data.yaml) rather than
+  # assumed — that rule's `extensions: [".csv", ".tsv"]` scopes it to the
+  # datafile itself, and none of the other schema_model rules constrain
+  # filenames elsewhere under data/.
+  same_dir_real_name <- function(tp, i) {
+    # Same directory as the (possibly study-prefixed) _data.csv target, but the
+    # file's OWN real basename — not derived from the slugified target_path.
+    real_name <- basename(gsub("\\\\", "/", structure_df$file_name[i]))
+    file.path(dirname(tp), real_name)
+  }
+
+  # Convertible: keep the _data.csv target, add original alongside (real name).
+  original_target <- vapply(seq_len(n_files), function(i)
+    if (isTRUE(needs_convert[i])) same_dir_real_name(target_path[i], i) else NA_character_,
+    character(1))
+  # Raw: replace the (wrong) _data.csv target with the file's own real name,
+  # and do not treat it as a CSV to write.
+  raw_target <- vapply(seq_len(n_files), function(i)
+    if (isTRUE(is_raw_data[i])) same_dir_real_name(target_path[i], i) else NA_character_,
+    character(1))
   target_path <- ifelse(is_raw_data, raw_target, target_path)
 
   # ── 4. Required / recommended compliance items ───────────────────────────────

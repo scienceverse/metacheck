@@ -1,3 +1,24 @@
+#' Headers Needed to Access ResearchBox
+#'
+#' ResearchBox sits behind Cloudflare, which returns a 406 for httr2's
+#' default User-Agent (the same issue archive-aspredicted.R works around).
+#' Used for both the page GET in `.rbox_info()` and the file-list POST in
+#' `rbox_file_download()`.
+#'
+#' @returns a named list of headers
+#' @keywords internal
+.rbox_headers <- function() {
+  list(
+    Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    `User-Agent` = paste(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+      "AppleWebKit/537.36 (KHTML, like Gecko)",
+      "Chrome/137.0.0.0 Safari/537.36",
+      "scienceverse/metacheck"
+    )
+  )
+}
+
 #' Find ResearchBox Links in Papers
 #'
 #' Get all ResearchBox links: real hyperlinks from the paper's own `url`
@@ -25,7 +46,13 @@ rbox_links <- function(paper) {
   other_rb <- text_search(paper, rb_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
-  dplyr::bind_rows(found_href, other_rb) |> unique()
+  # See osf_links() for why this normalization is needed: a real hyperlink and
+  # a bare body-text mention of the same repo commonly differ only by a
+  # trailing slash (captured by the "/?" above), and left un-normalized that
+  # turns one repo into two throughout repo_check.
+  dplyr::bind_rows(found_href, other_rb) |>
+    dplyr::mutate(href = sub("/+$", "", href)) |>
+    unique()
 }
 
 #' Retrieve info from ResearchBox by URL
@@ -136,8 +163,10 @@ rbox_info <- function(rb_url, id_col = 1, pb = NULL) {
   obj <- data.frame(
     rb_url = rb_url
   )
+
   # get website
   resp <- httr2::request(rb_url) |>
+    httr2::req_headers(!!!.rbox_headers()) |>
     httr2::req_error(is_error = \(resp) FALSE) |>
     httr2::req_perform()
 
@@ -150,6 +179,7 @@ rbox_info <- function(rb_url, id_col = 1, pb = NULL) {
       redirect_url <- regmatches(body_text, matches)
 
       resp <- httr2::request(redirect_url[[1]]) |>
+        httr2::req_headers(!!!.rbox_headers()) |>
         httr2::req_error(is_error = \(resp) FALSE) |>
         httr2::req_perform()
     }
@@ -172,11 +202,28 @@ rbox_info <- function(rb_url, id_col = 1, pb = NULL) {
   # filedesc <- xml2::xml_find_all(html, "//p [@class='preview_link']") |> # blocked out, seems gone after website redesign?
   #   xml2::xml_text()
   # filedesc <- filedesc[filedesc!=""]
+
+  # Each downloadable file has a checkbox <input type="checkbox"
+  # name="fileN" value="<file_id>"> in the same document order as the
+  # file_name <p> tags above, so they're paired positionally. These file_ids
+  # (plus box_id and reference below) are what download_files.php needs to
+  # generate the zip -- see rbox_file_download().
+  file_ids <- xml2::xml_find_all(
+    html, "//input[@type='checkbox'][starts-with(@name, 'file')]"
+  ) |>
+    xml2::xml_attr("value")
+
   file_list <- data.frame(
-    name = file_names
+    name = file_names,
+    file_id = if (length(file_ids) == length(file_names)) file_ids else NA_character_
     # description = filedesc
   )
   obj$files <- list(file_list)
+
+  obj$box_id <- xml2::xml_find_first(html, "//input[@id='box_id']") |>
+    xml2::xml_attr("value")
+  obj$reference <- xml2::xml_find_first(html, "//input[@id='reference']") |>
+    xml2::xml_attr("value")
 
   # get info from bottom table
   body <- xml2::xml_find_all(html, "//body") |>
@@ -246,30 +293,50 @@ rbox_file_download <- function(rb_url, pb = NULL) {
   zip_path <- file.path(tmp_dir, "archive.zip")
   out_dir  <- file.path(tmp_dir, "unzipped")
 
-  url_researchbox <- paste0(
-    "https://s3.wasabisys.com/zipballs.researchbox.org/ResearchBox_",
-    sub("^https://researchbox.org/", "", rb_url),
-    ".zip"
-  )
-
   # Reuse a previous successful download/unzip when present.
   already_unzipped <- dir.exists(out_dir) &&
     length(list.files(out_dir, recursive = TRUE)) > 0
 
   if (!already_unzipped) {
+    # ResearchBox no longer serves a static zip URL (the old
+    # s3.wasabisys.com guess in earlier versions of this function now 404s,
+    # see issue #186). The site instead generates the zip on request from a
+    # POST to download_files.php, given the box_id, reference token, and the
+    # numeric ids of the files to include -- all of which are scraped off
+    # the box's own page by .rbox_info(), so we reuse that here instead of
+    # re-scraping.
+    info <- .rbox_info(rb_url, pb = pb)
+    if ("error" %in% names(info)) {
+      # .rbox_info() already warns for this case
+      return(NULL)
+    }
+
+    file_ids <- info$files[[1]]$file_id
+    file_ids <- file_ids[!is.na(file_ids)]
+    if (length(file_ids) == 0 || is.na(info$box_id) || is.na(info$reference)) {
+      warning("Could not find downloadable files for: ", rb_url)
+      return(NULL)
+    }
+
     paste0("Downloading to: ", zip_path) |>
       list(what = _) |>
       pb$tick(0, tokens = _)
 
-    tryCatch({
-      utils::download.file(url_researchbox,
-        destfile = zip_path,
-        mode = "wb",
-        quiet = TRUE
-      )
-    }, error = \(e) {})
+    dl_status <- tryCatch({
+      resp <- httr2::request("https://researchbox.org/download_files.php") |>
+        httr2::req_headers(!!!.rbox_headers()) |>
+        httr2::req_body_json(list(
+          files = as.numeric(file_ids),
+          box_id = info$box_id,
+          reference = info$reference
+        )) |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform(path = zip_path)
+      httr2::resp_status(resp)
+    }, error = \(e) NA_integer_)
 
-    if (!file.exists(zip_path) || file.size(zip_path) == 0) {
+    if (!identical(dl_status, 200L) ||
+        !file.exists(zip_path) || file.size(zip_path) == 0) {
       warning("Download failed or resulted in an empty file: ", zip_path)
       return(NULL)
     }

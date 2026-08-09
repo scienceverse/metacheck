@@ -2,7 +2,7 @@
 % Please edit documentation in R/spv.R
 \name{export_spv_html}
 \alias{export_spv_html}
-\title{Export an SPSS Viewer (.spv) file's tables as standalone HTML}
+\title{Export an SPSS Viewer (.spv) file's tables and charts as standalone HTML}
 \usage{
 export_spv_html(path, out = NULL)
 }
@@ -19,10 +19,11 @@ the path written to, invisibly
 Unlike \code{.jasp}/\code{.omv}, a \code{.spv} archive carries no rendered view of its
 own (see the file header) -- so, unlike \code{\link[=export_jasp_html]{export_jasp_html()}} and
 \code{\link[=export_omv_html]{export_omv_html()}}, this does not re-export an existing document. It
-builds a new minimal HTML page from the tables \code{\link[=import_spv]{import_spv()}} already
-decodes: one heading per analysis (its recovered SPSS syntax shown
-underneath, when recoverable) and one \verb{<table>} per result, styled simply
-to read like an SPSS Viewer output window. No figures are included, since
-\code{.spv} charts are stored as declarative structure-XML items rendered only
-by SPSS/PSPP itself, not as shipped image data (see the file header).
+builds a new HTML page from what \code{\link[=import_spv]{import_spv()}} already decodes: one
+heading per analysis (its recovered SPSS syntax shown underneath, when
+recoverable), one \verb{<table>} per result table, and -- for a chart entry
+(\code{import_spv()}'s \code{is_chart = TRUE}) -- a scatter plot rendered from its
+own decoded \verb{(x, y)} points with any fitted trend lines SPSS itself
+computed drawn over it (see \code{\link[=.spv_decode_chart]{.spv_decode_chart()}}), embedded as a base64
+PNG the same way \code{\link[=export_jasp_html]{export_jasp_html()}} inlines its own plots.
 }

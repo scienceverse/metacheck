@@ -64,7 +64,7 @@
 #' to absolute column `N`, `{hline N}` draws `N` (default 1 screen width's
 #' worth, capped at 78 as Stata's own default window width) `-` characters,
 #' `{space N}` inserts `N` literal spaces, `{c NAME}` substitutes a
-#' box-drawing / literal-brace character (see [.SMCL_C_CODES]), a syntax-2/4
+#' box-drawing / literal-brace character (see `.SMCL_C_CODES`), a syntax-2/4
 #' directive (`{res:text}`, `{ralign 12:text}`) keeps just `text` (rendered
 #' according to its own rule when one applies, e.g. right-alignment), and
 #' every other directive (a style/mode marker, a link directive such as

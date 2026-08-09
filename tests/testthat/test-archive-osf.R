@@ -5,7 +5,10 @@ test_that("osf_links", {
   exp <- c("osf.io/e2aks", "osf.io/tvyxz/", "osf.com/nope")
   paper <- test_paper(url = exp)
   obs <- osf_links(paper)
-  expect_equal(obs$href, exp[1:2])
+  # osf_links() strips trailing slashes so a hyperlink and a bare body-text
+  # mention of the same project (which commonly differ only by a trailing
+  # slash) dedupe to one row -- see its own roxygen for the rationale.
+  expect_equal(obs$href, sub("/+$", "", exp[1:2]))
 })
 
 test_that("osf_type", {
@@ -211,6 +214,52 @@ test_that("osf_get_all_pages", {
   expect_equal(nrow(data), 10)
 }, "mock")
 
+test_that(".osf_status_error classifies OSF's HTTP error statuses", {
+  # https://github.com/scienceverse/metacheck/issues/338 -- a private,
+  # embargoed, withdrawn, or deleted OSF resource returns a real HTTP error
+  # status (403/404/410); osf_get_all_pages() used to disable httr2's error
+  # handling entirely and parse whatever body came back as if it were real
+  # data, making an inaccessible resource indistinguishable from one that
+  # genuinely has no data. This is the status -> osf_error classification
+  # osf_get_all_pages() now uses to tell the two apart, pulled out as its own
+  # pure function so it is testable without mocking HTTP (this project's
+  # custom test_that() wrapper in helper.R does not play well with
+  # testthat::local_mocked_bindings() on shared httr2 internals like
+  # req_perform() -- it leaked into unrelated tests later in this same file
+  # when tried that way).
+  expect_equal(metacheck:::.osf_status_error(403), "forbidden")
+  expect_equal(metacheck:::.osf_status_error(401), "forbidden")
+  expect_equal(metacheck:::.osf_status_error(404), "not_found")
+  expect_equal(metacheck:::.osf_status_error(410), "gone")
+  expect_equal(metacheck:::.osf_status_error(500), "request_failed")
+  expect_equal(metacheck:::.osf_status_error(400), "request_failed")
+  # not an error: 2xx and 3xx are NULL (not converted to an osf_error result)
+  expect_null(metacheck:::.osf_status_error(200))
+  expect_null(metacheck:::.osf_status_error(201))
+  expect_null(metacheck:::.osf_status_error(304))
+})
+
+test_that(".osf_error_result carries osf_error without breaking length() == 0 checks", {
+  # NULL cannot carry an attribute in R (attr(NULL, x) <- y errors) -- this
+  # confirms the empty-list() substitute behaves like NULL for every existing
+  # caller that only checks length(result) == 0, while still carrying the
+  # attribute those that check `attr(result, "osf_error")` need.
+  out <- metacheck:::.osf_error_result("not_found")
+  expect_equal(length(out), 0)
+  expect_equal(attr(out, "osf_error"), "not_found")
+  expect_false(is.null(out)) # is.null(out) is FALSE -- callers must check length()/attr(), not is.null()
+})
+
+test_that("osf_get_all_pages callers only need length() == 0, no crash on an error result", {
+  # A caller like prereg_check() does `if (length(reg_info) == 0) return(NULL)`
+  # -- confirm that keeps working unchanged against the new error-result shape.
+  out <- metacheck:::.osf_error_result("forbidden")
+  expect_equal(length(out), 0)
+  # dplyr::bind_rows() (used by osf_info()'s recursive children/files loop)
+  # must silently skip it like it already does for NULL
+  combined <- dplyr::bind_rows(data.frame(a = 1), out, data.frame(a = 2))
+  expect_equal(nrow(combined), 2)
+})
 
 test_that("osf_info", {
   expect_true(is.function(metacheck::osf_info))

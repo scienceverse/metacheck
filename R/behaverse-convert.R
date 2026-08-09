@@ -448,7 +448,12 @@
   # a read.csv sniff. Reading a binary/document (.docx/.pdf/.sav/.xlsx/...) as CSV
   # produces "invalid input / embedded nulls" warnings and can return garbage, so
   # gate on the extension first. (E-Prime's own extensions were handled above.)
-  .bh_sniff_exts <- c("csv", "tsv", "dat", "iqdat", "log", "txt")
+  # NOT ".log": a Stata plain-text log genuinely could be a trial-level table by
+  # this extension alone, but no real corpus example has ever been found to
+  # confirm a sniffer against, so .log is left out here and classed
+  # "documentation" in .ext_registry (R/data_check_helpers.R) instead of
+  # guessed at.
+  .bh_sniff_exts <- c("csv", "tsv", "dat", "iqdat", "txt")
   if (!ext %in% .bh_sniff_exts) return(FALSE)
   # A one-row header read is enough for the data-frame detectors.
   hdr <- tryCatch(

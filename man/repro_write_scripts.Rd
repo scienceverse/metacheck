@@ -18,8 +18,12 @@ repro_write_scripts(code_text_list, rewrite_list, plan, root)
 \value{
 a data frame with \code{file_name}, \code{script_path} (absolute path written),
 \code{run_dir} (the working directory a run should use — always \code{root}),
-\code{setwd_removed} (count of \code{setwd()} lines commented out), and
-\code{setwd_paths} (comma-joined paths those calls named, for the warning).
+\code{setwd_removed} (count of \code{setwd()} lines commented out),
+\code{setwd_paths} (comma-joined paths those calls named, for the warning), and
+\code{family_replaced} (count of \verb{family =}/\verb{base_family =} named-font
+arguments replaced with \code{"sans"}, so a plot call does not fail with
+"invalid font type" for a font not registered on the machine running the
+sandbox).
 }
 \description{
 Each script's referenced data paths are rewritten to their Psych-DS target
