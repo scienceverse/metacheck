@@ -10,7 +10,8 @@ llm(
   type = NULL,
   text_col = "text",
   model = llm_model(),
-  params = list()
+  params = list(),
+  phase = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ free text.}
 \item{model}{the LLM model name (see \code{llm_model_list()}) in the format "provider" or "provider/model"}
 
 \item{params}{a named list to pass to \code{ellmer::params()}}
+
+\item{phase}{optional label naming the calling step (e.g. "Identifying scales") shown in the progress bar so a slow LLM pass is identifiable; the model name is appended automatically}
 }
 \value{
 a data frame of results
