@@ -72,6 +72,7 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   info[zeros] <- NA
   paper$info <- as.data.frame(info)
   paper$info$keywords <- I(list(keywords))
+  paper$info$abstract <- NULL # TODO: remove after bibr fixed
 
   # author ----
   if (!is.null(data$author) && length(data$author) > 0) {
@@ -99,6 +100,7 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
     if (!include_images) {
       paper$figure$image <- NA_character_
     }
+    paper$figure$caption <- NULL #tempfix
   }
 
   # url ----
@@ -116,6 +118,42 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   # table ----
   if (!is.null(data$table) && length(data$table) > 0) {
     paper$table <- as.data.frame(data$table)
+    paper$table$caption <- NULL #tempfix
+
+    # `contents` is a RAGGED array of arrays (one row per table row, itself an
+    # array of cell strings — see .tei_table_contents() in R/import-grobid.R).
+    # The main read above uses simplifyVector/simplifyDataFrame = TRUE (needed
+    # for every OTHER field to come back as plain data frames), but jsonlite's
+    # simplifier reshapes THIS field into a 2D character matrix per table
+    # instead of preserving list(header_row, data_row, ...) — confirmed
+    # directly against a real corpus paper's table: a 16-row x 10-cell table
+    # round-tripped through simplifyVector = TRUE came back as a `chr[16,10]`
+    # matrix, not a 16-element list of 10-cell vectors, which broke
+    # extract_eq_table()'s row/header indexing silently (no error, just wrong
+    # results). Re-read ONLY the table section unsimplified and splice its
+    # `contents` back in, which keeps every other field's existing (correct)
+    # simplified shape untouched.
+    raw_tables <- tryCatch(
+      jsonlite::read_json(file_path, simplifyVector = FALSE)$table,
+      error = function(e) NULL)
+    if (!is.null(raw_tables) && length(raw_tables) == nrow(paper$table)) {
+      paper$table$contents <- lapply(raw_tables, function(t) {
+        rows <- t$contents
+        if (is.null(rows)) return(NULL)
+        # jsonlite::read_json(simplifyVector = FALSE) keeps EVERY JSON array
+        # as a list, never simplified — so each row comes back as a list of
+        # length-1 character strings, not a plain character vector. Every
+        # downstream table reader (.table_typed_cells(), .table_matrix_cols(),
+        # both in R/match-table.R) does VECTORISED string ops on a row
+        # (strsplit(header, ...), grepl() across a whole row at once), which
+        # error on a list rather than a character vector — confirmed as a
+        # real crash against a real corpus paper's table ("non-character
+        # argument" from strsplit()). unlist() each row back to a character
+        # vector, one level only (so a genuinely ragged/nested cell, if Grobid
+        # ever produced one, is not silently flattened further than this).
+        lapply(rows, function(r) unlist(r, use.names = FALSE))
+      })
+    }
   }
 
   # text ----
