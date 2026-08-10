@@ -8,6 +8,8 @@
 #'
 #' In the future, the Metacheck team aims to incorporate a machine learning classifier to only return sentences likely to contain misinterpretations. If you want to help to improve the module, reach out to the Metacheck development team.
 #'
+#' This module only checks p-values reported in the running text of the manuscript. It cannot (yet) process p-values reported only in tables.
+#'
 #' <validation>In a sample of 194 papers with 1602 instances of non-significant p-values, this module correctly detected 1486 of them, and incorrectly identified 153. Additionally, 91% of detections were true instances (positive predictive value). That is, when this module flags non-significant p-values in a paper, it correctly identifies an issue 91% of the time.</validation>
 #'
 #'
@@ -16,8 +18,9 @@
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
 #'
 #' @references
-#' # Appelbaum, M., Cooper, H., Kline, R. B., Mayo-Wilson, E., Nezu, A. M., & Rao, S. M. (2018). Journal article reporting standards for quantitative research in psychology: The APA Publications and Communications Board task force report. American Psychologist, 73(1), 3–25. https://doi.org/10.1037/amp0000191
-#' # Murphy, S. L., Merz, R., Reimann, L.-E., & Fernández, A. (2025). Nonsignificance misinterpreted as an effect’s absence in psychology: Prevalence and temporal analyses. Royal Society Open Science, 12(3), 242167. https://doi.org/10.1098/rsos.242167
+#' Appelbaum, M., Cooper, H., Kline, R. B., Mayo-Wilson, E., Nezu, A. M., & Rao, S. M. (2018). Journal article reporting standards for quantitative research in psychology: The APA Publications and Communications Board task force report. American Psychologist, 73(1), 3–25. https://doi.org/10.1037/amp0000191
+#'
+#' Murphy, S. L., Merz, R., Reimann, L.-E., & Fernández, A. (2025). Nonsignificance misinterpreted as an effect’s absence in psychology: Prevalence and temporal analyses. Royal Society Open Science, 12(3), 242167. https://doi.org/10.1098/rsos.242167
 #'
 #' @import dplyr
 #'
@@ -85,7 +88,7 @@ stat_p_nonsig <- function(paper) {
     # report text
     report <- c(
       explanation,
-      scroll_table(report_table, colwidths = c(.1, .9)),
+      scroll_table(report_table, colwidths = c(.1, .9), maxrows = 10),
       collapse_section(guidance)
     ) |> paste(collapse = "\n\n")
   }
