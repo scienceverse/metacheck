@@ -20,6 +20,7 @@
 #' @param text_col The name of the text column if text is a data frame
 #' @param model the LLM model name (see `llm_model_list()`) in the format "provider" or "provider/model"
 #' @param params a named list to pass to `ellmer::params()`
+#' @param phase optional label naming the calling step (e.g. "Identifying scales") shown in the progress bar so a slow LLM pass is identifiable; the model name is appended automatically
 #'
 #' @return a data frame of results
 #'
@@ -41,11 +42,25 @@ llm <- function(text, system_prompt,
                 type = NULL,
                 text_col = "text",
                 model = llm_model(),
-                params = list()) {
+                params = list(),
+                phase = NULL) {
   ## error detection ----
   if (!llm_use()) {
     stop("Set llm_use(TRUE) to use LLM functions")
   }
+
+  if (is.null(model) || !is.character(model) || length(model) != 1 || !nzchar(model)) {
+    stop(
+      "No LLM model set. Use llm_model('provider/model') or pass model = 'provider/model'",
+      call. = FALSE
+    )
+  }
+
+  if (!is.list(params)) {
+    stop("params must be a named list", call. = FALSE)
+  }
+
+  params_list <- params
 
   # make a data frame if text is a vector
   if (!is.data.frame(text)) {
@@ -55,18 +70,55 @@ llm <- function(text, system_prompt,
 
   # set up answer data frame to return ----
   unique_text <- unique(text[[text_col]])
+  # Sanitise before anything downstream keys on the text (cache key, request
+  # body). Research data routinely carries invalid UTF-8 (a mis-encoded
+  # apostrophe/°/é in a free-text survey answer) and stray control bytes; ellmer
+  # serialises those into a JSON request body the provider then cannot parse
+  # (Mistral: HTTP 400 "There was an error parsing the body"). One guard here
+  # protects every caller and every provider. See .llm_sanitise_text().
+  unique_text <- .llm_sanitise_text(unique_text)
   ncalls <- length(unique_text)
 
   if (ncalls == 0) stop("No calls to the LLM")
   if (ncalls > llm_max_calls()) {
-    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(), ". Use `llm_max_calls()` to change this.", call. = FALSE)
+    stop("This would make ", ncalls, " calls to the LLM, but your maximum number of calls is set to ", llm_max_calls(),
+         ". Set `llm_max_calls(", ncalls, ")` (or higher) to allow this call.", call. = FALSE)
   }
 
   # Set up the llm ----
   # default temperature to 0 for deterministic extraction/classification
-  if (is.null(params$temperature)) {
-    params$temperature <- 0
+  if (is.null(params_list$temperature)) {
+    params_list$temperature <- 0
   }
+
+  # default max_tokens high enough for structured JSON. A caller's own
+  # explicit params$max_tokens always wins; failing that, the session-wide
+  # default set via llm_max_tokens() (so a script hitting truncation on ANY
+  # module can raise it once, rather than passing params = list(max_tokens =
+  # ...) into every module's own args individually); failing that, 4096.
+  if (is.null(params_list$max_tokens)) {
+    params_list$max_tokens <- llm_max_tokens() %||% 4096   # or 8192 for Groq models
+  }
+
+  # session-wide reasoning-effort default (llm_reasoning()), translated to
+  # whichever parameter/channel the ACTIVE model family actually understands —
+  # see .llm_apply_reasoning()'s own roxygen for why this is not a single
+  # cross-provider knob, and specifically why "reasoning_effort" must travel
+  # as `api_args` (a request-body override reaching Groq/OpenAI-compatible
+  # providers directly) rather than through `params_list`/ellmer::params(),
+  # which silently drops it for these providers today. A caller's own
+  # explicit params$think / api_args always wins; a model family this does
+  # not recognise is left untouched.
+  reasoning <- .llm_apply_reasoning(params_list, model, api_args = list())
+  params_list <- reasoning$params_list
+  reasoning_api_args <- reasoning$api_args
+
+  # check params early so malformed params fail before provider/network work
+  params <- tryCatch({
+    do.call(ellmer::params, params_list)
+  }, error = \(e) {
+    stop("Misspecified params argument:\n", e$message, call. = FALSE)
+  })
 
   # check if json schema type is set for a structured return
   structured <- !is.null(type)
@@ -74,10 +126,12 @@ llm <- function(text, system_prompt,
   # ollama checks ----
   use_ollama_native <- FALSE
   if (grepl("^ollama", model)) {
-    # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it
-    use_ollama_native <- !isTRUE(params$think) %% !structured
+    # ollama's /v1/ endpoint ignores think=FALSE; native /api/chat honours it.
+    # Use the native path only for unstructured calls that are not "thinking";
+    # structured output goes through the /v1/ endpoint (ellmer type schema).
+    use_ollama_native <- !isTRUE(params_list$think) && !structured
     if (use_ollama_native) {
-      ollama_options <- params
+      ollama_options <- params_list
       ollama_options$think <- NULL
     }
     ollama_base_url <- Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -107,19 +161,71 @@ llm <- function(text, system_prompt,
     }
   }
 
-  # check params ----
-  tryCatch({
-    params <- do.call(ellmer::params, params)
-  }, error = \(e) {
-    stop("Misspecified params argument:\n", e$message, call. = FALSE)
-  })
+  # route vllm/<model> through chat_vllm() so custom endpoints can be used
+  make_chat <- function() {
+    if (startsWith(model, "vllm/")) {
+      vllm_model <- sub("^vllm/", "", model)
+      vllm_base_url <- getOption("metacheck.llm.vllm.base_url")
+
+      if (!nzchar(vllm_model)) {
+        stop("For vllm, set model as 'vllm/<model-name>'", call. = FALSE)
+      }
+      if (is.null(vllm_base_url) || !nzchar(vllm_base_url)) {
+        stop(
+          "Set options(metacheck.llm.vllm.base_url = '<vllm-endpoint>/v1') to use vllm models",
+          call. = FALSE
+        )
+      }
+
+      vllm_call_args <- list(
+        model = vllm_model,
+        base_url = vllm_base_url,
+        credentials = function() Sys.getenv("VLLM_API_KEY"),
+        system_prompt = system_prompt,
+        params = params
+      )
+      if (length(reasoning_api_args) > 0) vllm_call_args$api_args <- reasoning_api_args
+      return(do.call(ellmer::chat_vllm, vllm_call_args))
+    }
+
+    # api_args is only ever non-empty here for a model family
+    # .llm_apply_reasoning() specifically recognised (gpt-oss/qwen3 on a
+    # Groq-or-similar OpenAI-compatible host — see that function's roxygen for
+    # why reasoning_effort must travel this way, not through `params`), so
+    # this never reaches an unrelated provider constructor that might reject
+    # an unknown `api_args` argument (Anthropic, Gemini, ...) — only added
+    # to the call when non-empty, for exactly that reason.
+    chat_call_args <- list(name = model, system_prompt = system_prompt, params = params)
+    if (length(reasoning_api_args) > 0) chat_call_args$api_args <- reasoning_api_args
+    do.call(ellmer::chat, chat_call_args)
+  }
 
   # set up progress bar ----
-  label <- if (structured) "Extracting data" else "Querying LLM"
+  # `phase` names the calling step (e.g. "Identifying scales") so a slow LLM
+  # pass is visible for what it is, rather than a generic "Extracting data".
+  # The model is appended so the user sees which LLM is being queried.
+  base_label <- if (structured) "Extracting data" else "Querying LLM"
+  label <- if (!is.null(phase) && nzchar(phase)) phase else base_label
+  if (!is.null(model) && nzchar(model)) label <- sprintf("%s (%s)", label, model)
   pb <- pb(ncalls, paste0(label, " [:bar] :current/:total :elapsedfull"))
+
+  # response cache ----
+  # A call at temperature 0 is deterministic in (model, prompt, text, type,
+  # params), so replay a stored result instead of re-issuing (and re-billing)
+  # the request. Errors are never cached. See R/llm-cache.R.
+  use_cache <- llm_cache()
 
   # iterate over the text ----
   responses <- lapply(seq_along(unique_text), function(i) {
+    key <- if (use_cache)
+      .llm_cache_key(unique_text[i], system_prompt, type, model, params) else NULL
+    if (!is.null(key)) {
+      hit <- .llm_cache_get(key)
+      if (!is.null(hit)) {
+        pb$tick()
+        return(hit$df)
+      }
+    }
     tryCatch({
       if (use_ollama_native) {
         # native ollama API: think=FALSE is honoured here, unlike /v1/
@@ -128,39 +234,71 @@ llm <- function(text, system_prompt,
           think = FALSE, options = ollama_options
         )
         pb$tick()
-        list(answer = answer)
+        out <- list(answer = answer)
+        if (!is.null(key)) .llm_cache_put(key, out)
+        out
       } else {
         # fresh chat per call to avoid context accumulation
         msg <- utils::capture.output({
-          chat <- ellmer::chat(
-            name = model,
-            system_prompt = system_prompt,
-            params = params
-          )
+          chat <- make_chat()
         }, type = "message")
         # only show message first time
         if (length(msg) && i == 1) pb$message(msg)
 
         if (structured) {
-          result <- chat$chat_structured(unique_text[i], type = type)
+          # Groq's structured-output mode sometimes rejects its own generation
+          # (HTTP 400, "Failed to generate/validate JSON") when the model emits
+          # JSON that does not match the schema. Generation is not
+          # bit-reproducible server-side, so an identical retry usually
+          # succeeds; allow four before recording the row as failed. Each retry
+          # gets a fresh chat so the failed exchange cannot pollute the next
+          # attempt.
+          for (attempt in 1:5) {
+            result <- tryCatch(
+              chat$chat_structured(unique_text[i], type = type),
+              error = function(e) e
+            )
+            if (!inherits(result, "condition")) break
+            if (attempt == 5 || !.llm_json_retryable(result)) stop(result)
+            chat <- make_chat()
+          }
           df <- .unnest_result(result)
-          df$.join_key. <- unique_text[i]
+          # An empty result (e.g. the model returned an empty array, meaning
+          # "nothing found") unnests to a 0-row frame; assigning a length-1
+          # join key to a 0-row column errors, so only set it when there are
+          # rows. A 0-row df drops out of the downstream left_join cleanly.
+          if (nrow(df) > 0) df$.join_key. <- unique_text[i]
           pb$tick()
+          # store the unnested df plus the raw result (which carries any
+          # provider-returned reasoning content) for later inspection
+          if (!is.null(key)) .llm_cache_put(key, df, raw = result)
           df
         } else {
           answer <- chat$chat(unique_text[i], echo = FALSE)
           pb$tick()
-          list(answer = trimws(answer))
+          out <- list(answer = trimws(answer))
+          if (!is.null(key)) .llm_cache_put(key, out)
+          out
         }
       }
     }, error = function(e) {
       pb$tick()
+      msg <- .llm_error_message(e)
+      # A systemic failure (bad auth, server down, unreachable endpoint) means
+      # every call this run will fail and checks fall back to rules only. Say so
+      # loudly and immediately, once per session, so the run is not silently
+      # label-blind — the per-row warnings below still record each failure.
+      if (.llm_is_systemic_error(e))
+        .llm_systemic_notice$trip(paste0(
+          "LLM appears unavailable this run — checks will fall back to ",
+          "RULES ONLY (no LLM inference). Check the endpoint and API key ",
+          "(vllm reads Sys.getenv(\"VLLM_API_KEY\")).\n  First error: ", msg))
       if (structured) {
-        df <- data.frame(.error = TRUE, .error_msg = e$message)
+        df <- data.frame(.error = TRUE, .error_msg = msg)
         df$.join_key. <- unique_text[i]
         df
       } else {
-        list(answer = NA, error = TRUE, error_msg = e$message)
+        list(answer = NA, error = TRUE, error_msg = msg)
       }
     })
   })
@@ -172,6 +310,11 @@ llm <- function(text, system_prompt,
   if (structured) {
     response_df <- dplyr::bind_rows(responses)
     text$.join_key. <- text[[text_col]]
+    # When every response was empty (the model found nothing in any input),
+    # response_df has no `.join_key.` column, which would break the join. Add an
+    # empty one so the left_join yields all-NA extracted columns instead.
+    if (!".join_key." %in% names(response_df))
+      response_df$.join_key. <- character(0)
     answer_df <- dplyr::left_join(text, response_df, by = ".join_key.",
                                   suffix = c("", ".extracted"))
     answer_df$.join_key. <- NULL
@@ -194,9 +337,16 @@ llm <- function(text, system_prompt,
     error_rows <- which(!is.na(answer_df$.error) & answer_df$.error)
     if (length(error_rows) > 0) {
       msgs <- unique(answer_df$.error_msg[error_rows])
-      warning("There were extraction errors in rows: ",
-              paste(error_rows, collapse = ", "),
-              "\n", paste("  *", msgs, collapse = "\n"))
+      n_ok <- nrow(answer_df) - length(error_rows)
+      warning(
+        sprintf(
+          "Note (not fatal): %d of %d LLM extraction%s failed and %s left blank; the other %d succeeded and all checks continued.\nRow%s %s: %s\n  %s",
+          length(error_rows), nrow(answer_df), plural(nrow(answer_df)),
+          if (length(error_rows) == 1) "was" else "were", n_ok,
+          plural(length(error_rows)), paste(error_rows, collapse = ", "),
+          if (length(error_rows) == 1) "reason" else "reasons",
+          paste(msgs, collapse = "\n  ")),
+        call. = FALSE)
     }
   } else if (!structured) {
     error_indices <- isTRUE(answer_df$error)
@@ -253,6 +403,126 @@ llm <- function(text, system_prompt,
     httr2::req_body_json(body) |>
     httr2::req_perform()
   trimws(httr2::resp_body_json(resp)$message$content)
+}
+
+# Build the message recorded for a failed LLM call. ellmer/httr2 HTTP errors
+# carry the response object (on the condition itself or its parent), and its
+# body holds the provider's actual reason — e.g. behind a bare "HTTP 400 Bad
+# Request", Groq says "Please reduce the length of the messages or completion".
+# Without it a user cannot tell an oversized prompt from a malformed schema.
+# TRUE when a structured-output failure is worth retrying verbatim: Groq
+# returns HTTP 400 "Failed to generate JSON" / "Failed to validate JSON" when
+# the model's output does not match the requested schema, and since generation
+# is not deterministic server-side the same request usually succeeds on a
+# second attempt. Genuine request errors (bad key, oversized prompt, rate
+# limit) do not match and fail immediately as before.
+.llm_json_retryable <- function(e) {
+  msg <- .llm_error_message(e)
+  grepl(
+    paste(
+      "Failed to (generate|validate) JSON",
+      # jsonlite lexical/parse errors: the model returned text that is not valid
+      # JSON (a prose list, a truncated object, a bare number). Generation is not
+      # deterministic, so a fresh attempt usually yields schema-valid JSON. Covers
+      # "invalid char in json text", "malformed number ...", "premature EOF",
+      # "unallowed token", etc.
+      "lexical error",
+      "malformed number",
+      "premature EOF",
+      "parse error",
+      "```json",
+      sep = "|"
+    ),
+    msg,
+    ignore.case = TRUE
+  )
+}
+
+# Does this error mean the LLM is SYSTEMICALLY unavailable — i.e. every LLM call
+# this run will fail the same way, so all checks silently fall back to rules
+# only? Three such classes: an authentication failure (HTTP 401/403, e.g. a
+# missing/expired API key), the endpoint erroring server-side (HTTP >= 500), or a
+# genuine transport failure (DNS, connection refused, timeout — the endpoint is
+# unreachable). Distinguished from a transient single-call failure (a one-off 400
+# or a malformed-JSON reply), which is NOT systemic and keeps only its per-row
+# warning.
+#
+# The subtle case: an error with NO response object is usually transport-level,
+# BUT a jsonlite parse error (the request returned 200, the body just was not
+# valid JSON) also has no response — and is per-call, not systemic. So a
+# no-response error only counts as systemic when it is NOT a retryable JSON/parse
+# failure and its message looks like a real connection problem.
+.llm_is_systemic_error <- function(e) {
+  resp <- e$resp %||% e$parent$resp
+  status <- tryCatch(httr2::resp_status(resp), error = function(e2) NA_integer_)
+  if (isTRUE(status %in% c(401L, 403L))) return(TRUE)   # auth: every call fails
+  if (isTRUE(status >= 500L)) return(TRUE)              # server down / erroring
+  if (!is.null(resp)) return(FALSE)                     # got a response: per-call
+  # No response object. A malformed-JSON reply also has none — that is a per-call
+  # model hiccup, not the endpoint being down, so exclude it.
+  if (.llm_json_retryable(e)) return(FALSE)
+  # Otherwise treat it as systemic only if the message names a transport failure.
+  transport <- paste(
+    "could not resolve", "connection refused", "couldn't connect", "timed out",
+    "timeout", "connection reset", "network is unreachable", "no route to host",
+    "failed to connect", "empty reply from server", "handshake", "ssl",
+    sep = "|")
+  grepl(transport, conditionMessage(e), ignore.case = TRUE)
+}
+
+# Emit an explicit, immediate notice the FIRST time the LLM looks systemically
+# unavailable in a session, then stay quiet — the per-call warnings still record
+# every failure for warnings(). Uses message() (prints to stderr immediately),
+# not warning() (which R queues and shows only at the end, deduplicated and
+# capped at 50 — invisible mid-run, which is exactly the failure we are fixing).
+.llm_systemic_notice <- local({
+  done <- FALSE
+  list(
+    trip  = function(msg) { if (!done) { message(msg); done <<- TRUE }; invisible() },
+    reset = function() done <<- FALSE
+  )
+})
+
+# Make text safe to serialise into a JSON request body for any LLM provider.
+# Two problems, both common in research data:
+#   * invalid UTF-8 — a mis-encoded byte (a Latin-1 apostrophe/°/é a nominally-
+#     UTF-8 file never validated) makes the JSON body unparseable. We reinterpret
+#     invalid entries as Latin-1, a conversion that cannot fail (every byte is a
+#     valid Latin-1 character), leaving valid text untouched.
+#   * control characters — raw NUL / C0 control bytes (except tab/newline) are
+#     illegal in JSON strings; strip them.
+# Applied to the vector of prompts before caching or sending, so no malformed
+# text reaches the provider regardless of which upstream path built it.
+.llm_sanitise_text <- function(x) {
+  if (is.null(x) || !length(x)) return(x)
+  x <- as.character(x)
+  bad <- !is.na(x) & !validUTF8(x)
+  if (any(bad)) x[bad] <- iconv(x[bad], from = "latin1", to = "UTF-8", sub = "")
+  # Any residue still invalid (rare): drop the invalid bytes rather than fail.
+  still <- !is.na(x) & !validUTF8(x)
+  if (any(still)) x[still] <- iconv(x[still], from = "UTF-8", to = "UTF-8", sub = "")
+  # Strip C0 control chars except tab (\t) and newline (\n). \x00 (NUL) cannot
+  # appear in an R character string, so the range \x01-\x1f covers all that can.
+  x <- gsub("[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F]", "", x, perl = TRUE)
+  x
+}
+
+.llm_error_message <- function(e) {
+  msg <- conditionMessage(e)
+  resp <- e$resp %||% e$parent$resp
+  if (is.null(resp)) return(msg)
+  detail <- tryCatch({
+    body <- httr2::resp_body_json(resp, check_type = FALSE)
+    err <- body$error
+    if (is.character(err)) err[1] else err$message %||% body$message
+  }, error = function(e2) NULL)
+  if (is.null(detail))
+    detail <- tryCatch(httr2::resp_body_string(resp), error = function(e2) NULL)
+  if (!is.character(detail) || length(detail) == 0 || !nzchar(detail[1]))
+    return(msg)
+  detail <- detail[1]
+  if (nchar(detail) > 500) detail <- paste0(substr(detail, 1, 500), " [truncated]")
+  paste0(msg, "\n  Provider says: ", detail)
 }
 
 #' Convert structured LLM result to a data frame
@@ -411,6 +681,195 @@ llm_max_calls <- function(n = NULL) {
   invisible(getOption("metacheck.llm_max_calls"))
 }
 
+#' Set the default max_tokens for LLM calls
+#'
+#' `llm()` needs SOME max_tokens value on every call (a provider truncates a
+#' response with no clear error otherwise — a codebook/data-check pass over
+#' many columns at once is the case most likely to need more than the
+#' built-in default). Rather than requiring every module call to repeat
+#' `params = list(max_tokens = ...)` individually, set it once per session
+#' here; `llm()` falls back to this whenever a caller's own `params` does not
+#' already specify `max_tokens` (an explicit `params$max_tokens` on a single
+#' call still wins, same precedence as every other `params` entry).
+#'
+#' @param n the default max_tokens value, or `NULL` to read the current value
+#'   without changing it
+#'
+#' @return the current default max_tokens value (invisibly when setting)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' llm_max_tokens(8192)
+#' }
+llm_max_tokens <- function(n = NULL) {
+  if (is.null(n)) {
+    return(getOption("metacheck.llm_max_tokens"))
+  }
+  if (!is.numeric(n)) stop("n must be a number")
+
+  n <- as.integer(n)
+  if (n < 1) {
+    warning("n must be greater than 0; it was not changed from ", getOption("metacheck.llm_max_tokens"))
+  } else {
+    options(metacheck.llm_max_tokens = n)
+  }
+
+  invisible(getOption("metacheck.llm_max_tokens"))
+}
+
+#' Set the default reasoning effort for LLM calls
+#'
+#' Every LLM call this package makes is a bounded, structured-extraction task
+#' over text already given in the prompt (classify a file, extract a
+#' variable's label, list the scales named in ~30 sentences, group files by
+#' study) — pattern-matching over given material, not multi-step reasoning
+#' (no arithmetic, no multi-hop inference, no planning). A "thinking"/
+#' "reasoning" model spending extra tokens re-deriving what the prompt already
+#' states is close to pure overhead here: it inflates cost/latency and eats
+#' into the same `max_tokens` budget as the visible answer, which is a
+#' confirmed real cause of truncated structured responses on `gpt-oss` models
+#' via Groq. Minimal reasoning effort is the right DEFAULT for what this
+#' package does, not a tradeoff against quality.
+#'
+#' There is no single universal "reasoning" switch across providers — this is
+#' genuinely per model family, each verified rather than assumed:
+#' \itemize{
+#'   \item `openai/gpt-oss-*` (Groq or any OpenAI-compatible host): the
+#'     `reasoning_effort` chat-completion parameter, accepting `"low"`,
+#'     `"medium"`, or `"high"` — `"low"` is the minimum; there is no full-off
+#'     option for this family (verified against Groq's own docs).
+#'   \item `qwen3*`-family models: also `reasoning_effort`, but accepting
+#'     `"none"` or `"default"` — `"none"` fully disables reasoning tokens,
+#'     unlike gpt-oss.
+#'   \item Mistral's reasoning-capable models (`mistral-small-latest`,
+#'     `mistral-medium-3-5`): also `reasoning_effort`, but with only TWO
+#'     values, `"high"` (full thinking chunk) or `"none"` (thinking chunk
+#'     omitted) — verified against Mistral's own docs, a third distinct shape
+#'     from both gpt-oss and qwen3.
+#'   \item Ollama-hosted reasoning models (DeepSeek-R1, Qwen3, ...): the
+#'     native API's boolean `think` (`llm()` already sends this as a
+#'     `/nothink` system-prompt prefix over Ollama's native `/api/chat`
+#'     endpoint when `think = FALSE`, since Ollama's OpenAI-compatible `/v1/`
+#'     endpoint ignores it) — a genuinely different mechanism (a flag on the
+#'     request, not a graded effort level), so `llm_reasoning()`'s `"low"`/
+#'     `"none"` both map to `think = FALSE` for this family; there is no
+#'     Ollama equivalent of `"medium"`/`"high"` to request.
+#' }
+#' A model family with none of the above (a plain non-reasoning model, or one
+#' not yet covered here) is left untouched: `llm_reasoning()` never forces an
+#' unsupported parameter onto a call, since providers vary in whether an
+#' unrecognised parameter is silently ignored or rejected outright.
+#'
+#' @param effort one of `"low"`, `"medium"`, `"high"`, `"none"`, or `NULL` to
+#'   read the current value without changing it. Default recommendation for
+#'   this package's own calls is `"low"` (or `"none"` where the model family
+#'   supports fully disabling reasoning).
+#'
+#' @return the current default reasoning effort (invisibly when setting)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' llm_reasoning("low")
+#' }
+llm_reasoning <- function(effort = NULL) {
+  if (is.null(effort)) {
+    return(getOption("metacheck.llm_reasoning"))
+  }
+  effort <- match.arg(effort, c("low", "medium", "high", "none"))
+  options(metacheck.llm_reasoning = effort)
+  invisible(getOption("metacheck.llm_reasoning"))
+}
+
+# Translate the session-wide llm_reasoning() setting into whatever parameter
+# the ACTIVE model family actually understands, given a model name already
+# known to be a real, dispatchable model string (e.g. "groq/openai/gpt-oss-
+# 20b", "ollama/qwen3:latest").
+#
+# Returns a list(params_list, api_args): `reasoning_effort` is NOT put into
+# `params_list` for a Groq/OpenAI-compatible host — confirmed directly (a live
+# call, not assumed) that ellmer's chat_params() method for
+# ProviderOpenAICompatible (which Groq has no override of) only forwards a
+# fixed allowlist (temperature/top_p/top_k/max_tokens/seed/...) through
+# standardise_params(), silently DROPPING reasoning_effort with a
+# "Ignoring unsupported parameters" warning — ellmer has not wired this
+# provider-specific field through to the request body yet. The escape hatch
+# ellmer DOES provide is `api_args` (chat_groq()'s own parameter, reachable
+# through ellmer::chat()'s `...`): whatever is in `api_args` is merged
+# directly into the request body, bypassing that allowlist — confirmed live,
+# no warning, correct model behaviour. Ollama's `think` boolean is unaffected
+# by any of this (it is not a chat_params()-standardised field at all — see
+# llm()'s existing native-Ollama-API path), so it still goes through
+# `params_list` exactly as before.
+#
+# WITHOUT overwriting anything the caller already set explicitly
+# (params$think, or a caller-supplied api_args), same override precedence
+# max_tokens already uses. A model family this function does not recognise is
+# returned unchanged — never a guessed parameter name.
+#
+# A session that never calls llm_reasoning() at all defaults here to "low",
+# not "do nothing": every call this package makes is a bounded, structured-
+# extraction task (see llm_reasoning()'s own roxygen for the full case), so an
+# UNSET session should get the minimal-reasoning behaviour that documentation
+# already recommends, not whatever the provider's own server-side default
+# happens to be. Confirmed as a real, live gap: gpt-oss-20b via Groq truncated
+# structured JSON responses under max_tokens = 8192 because no reasoning_effort
+# was ever sent at all, letting Groq apply its own (non-minimal) default —
+# llm_reasoning() itself still returns the RAW, unset getOption() value (NULL)
+# to any caller introspecting it, so this default lives only here, at the
+# point of actual use, not as a silent mutation of the stored option.
+.llm_apply_reasoning <- function(params_list, model, api_args = list()) {
+  out <- list(params_list = params_list, api_args = api_args)
+  effort <- getOption("metacheck.llm_reasoning") %||% "low"
+
+  m <- tolower(model)
+  is_gpt_oss <- grepl("gpt-oss", m, fixed = TRUE)
+  is_qwen3   <- grepl("qwen3", m, fixed = TRUE)
+  is_mistral <- grepl("^mistral", m)
+  is_ollama  <- grepl("^ollama", m)
+
+  if (is_mistral && is.null(api_args$reasoning_effort)) {
+    # Mistral's reasoning-capable models (mistral-small-latest, mistral-
+    # medium-3-5) accept reasoning_effort too, but with only TWO values —
+    # "high" (full thinking chunk) or "none" (thinking chunk omitted) —
+    # verified against Mistral's own docs, a genuinely different shape from
+    # both gpt-oss's three levels and qwen3's "none"/"default". Same
+    # api_args channel as Groq: ellmer's ProviderMistral chat_params()
+    # allowlist also has no reasoning_effort entry, so it would be silently
+    # dropped through `params` the same way — confirmed live via chat_mistral(
+    # api_args = list(reasoning_effort = "none")), no warning, correct
+    # response. A plain (non-reasoning) Mistral model simply has nothing to
+    # act on this field; sending it is a no-op there, not an error.
+    out$api_args$reasoning_effort <- if (effort == "high") "high" else "none"
+    return(out)
+  }
+
+  if (is_ollama && (is_qwen3 || grepl("deepseek-r1", m, fixed = TRUE))) {
+    # Ollama's reasoning control is the boolean `think`, not a graded effort —
+    # see the roxygen above. Both "low" and "none" mean "do not spend tokens
+    # reasoning" here; "medium"/"high" have no Ollama equivalent to request,
+    # so they are left as the model's own default (think left untouched)
+    # rather than guessing a mapping the API does not have.
+    if (effort %in% c("low", "none") && is.null(params_list$think))
+      out$params_list$think <- FALSE
+    return(out)
+  }
+  if (is_qwen3 && is.null(api_args$reasoning_effort)) {
+    # Qwen3 accepts "none"/"default" specifically (not low/medium/high); map
+    # our 4-level setting onto its 2-level one, preferring the fullest
+    # suppression available at or below the requested level.
+    out$api_args$reasoning_effort <- if (effort %in% c("low", "none")) "none" else "default"
+    return(out)
+  }
+  if (is_gpt_oss && is.null(api_args$reasoning_effort)) {
+    # gpt-oss has no full-off option; "none" is downgraded to its floor, "low".
+    out$api_args$reasoning_effort <- if (effort == "none") "low" else effort
+    return(out)
+  }
+  out
+}
+
 #' Set the default LLM model
 #'
 #' Use `llm_model_list()` to get a list of available models
@@ -421,8 +880,11 @@ llm_max_calls <- function(n = NULL) {
 #' @export
 #'
 llm_model <- function(model = NULL) {
-  if (is.null(model)) {
+  if (missing(model)) {
     return(getOption("metacheck.llm.model"))
+  } else if (is.null(model)) {
+    options(metacheck.llm.model = NULL)
+    invisible(getOption("metacheck.llm.model"))
   } else if (is.character(model)) {
     options(metacheck.llm.model = model)
     invisible(getOption("metacheck.llm.model"))
