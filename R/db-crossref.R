@@ -519,6 +519,27 @@ add_bib_match <- function(paper, min_score = 50) {
   }
 
   cr_data <- dplyr::bind_rows(cr_data_doi, cr_data_no)
+
+  # Warn about lookups that did not complete for network reasons (offline,
+  # dropped connection, timeout, or a 5xx server error), as opposed to a DOI
+  # CrossRef genuinely could not find ("Not Found"). A network failure means the
+  # bib_match table is incomplete, so downstream checks that treat a missing
+  # match as a problem (e.g. flagging an unresolvable DOI) could misfire. We do
+  # not store this in bib_match; we surface it here, at lookup time.
+  if (!is.null(cr_data$error)) {
+    net_err <- grepl("offline|connection|timeout|failed|http 5",
+                     tolower(cr_data$error))
+    n_net <- sum(net_err, na.rm = TRUE)
+    if (n_net > 0) {
+      msg <- sprintf(
+        "%d of %d reference lookups did not complete (network error); the bib_match table may be incomplete. Re-run add_bib_match() with a stable connection for full data.",
+        n_net, nrow(cr_data))
+      message(msg)
+      logger("add_bib_match", list(network_errors = n_net,
+                                   total = nrow(cr_data), msg = msg))
+    }
+  }
+
   if ("page" %in% names(cr_data)) {
     cr_data <- tidyr::separate(
       cr_data, page,

@@ -4,16 +4,13 @@
 \alias{regcheck_start_local}
 \title{Start the local RegCheck server}
 \usage{
-regcheck_start_local(
-  method = c("docker", "python"),
-  model = "llama3.2",
-  port = 8000
-)
+regcheck_start_local(method = c("docker", "python"), model = NULL, port = 8000)
 }
 \arguments{
 \item{method}{\code{"docker"} (default) or \code{"python"}}
 
-\item{model}{Ollama language model to use (default \code{"llama3.2"}). Any
+\item{model}{Ollama language model to use. Defaults to \code{NULL}, which
+auto-selects the largest language model currently pulled in Ollama. Any
 model you have pulled with \verb{ollama pull} can be used here — larger
 models generally produce better judgements.}
 

@@ -7,7 +7,7 @@ test_that("ref_consistency", {
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 5)
+  expect_equal(nrow(mod_output$table), 4)
   expect_equal(mod_output$module, module)
 
   # iteration
@@ -63,17 +63,45 @@ test_that("ref_accuracy", {
   expect_null(mod_output$table)
   expect_match(mod_output$summary_text, "add_bib_match")
 
-  # relevant references - info
+  # relevant references
   paper <- demopaper()
   mod_output <- module_run(paper, module)
-  expect_equal(mod_output$traffic_light, "yellow")
   expect_equal(nrow(mod_output$table), nrow(paper$bib))
 
-  expect_equal(mod_output$summary_table$refs_checked, 5)
-  expect_equal(mod_output$summary_table$doi_mismatch, 1)
-  expect_equal(mod_output$summary_table$year_mismatch, 0)
-  expect_equal(mod_output$summary_table$title_mismatch, 1)
-  expect_equal(mod_output$summary_table$author_mismatch, 1)
+  # references that supplied a DOI are checked; the demo paper includes two
+  # references with a DOI that does not resolve, which are flagged as incoherent
+  st <- mod_output$summary_table
+  expect_equal(st$refs_checked, 4)
+  expect_equal(st$no_doi, 0)
+  expect_equal(st$incoherent, 2)
+  expect_equal(mod_output$traffic_light, "yellow")
+
+  # those two are the "unresolved" tier: a cited DOI CrossRef could not find
+  unresolved <- mod_output$table[mod_output$table$tier == "unresolved", ]
+  expect_equal(nrow(unresolved), 2)
+  expect_true(all(unresolved$incoherent))
+
+  # a checked reference (one whose DOI resolves) whose cited journal differs
+  # from the record its DOI points to is also incoherent. Corrupt the journal
+  # of a "provided" reference and confirm one more reference is flagged.
+  checked_id <- mod_output$table$bib_id[mod_output$table$tier == "provided"][[1]]
+  bad <- demopaper()
+  bad$bib$container[bad$bib$bib_id == checked_id] <-
+    "A Completely Different Journal Name"
+  bad_out <- module_run(bad, module)
+  expect_equal(bad_out$traffic_light, "yellow")
+  expect_equal(bad_out$summary_table$incoherent, 3)
+
+  # min_mismatches controls whether a single title/author mismatch flags. A lone
+  # author mismatch flags at the default (1) but not when set to 2.
+  auth <- demopaper()
+  auth$bib$authors[auth$bib$bib_id == checked_id] <- "Nonexistent, A; Madeup, B"
+  loose  <- module_run(auth, module)                       # default = 1
+  strict <- module_run(auth, module, min_mismatches = 2)   # conservative
+  # the two unresolved references are always incoherent; the lone author
+  # mismatch adds a third only at the sensitive setting
+  expect_equal(loose$summary_table$incoherent, 3)
+  expect_equal(strict$summary_table$incoherent, 2)
 })
 
 test_that("ref_replication", {
