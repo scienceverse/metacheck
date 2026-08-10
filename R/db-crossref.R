@@ -220,7 +220,11 @@ crossref_doi <- function(doi, select = c(
       email()
     )
 
-    resps <- .batch_query(urls, msg = "Querying CrossRef by DOI")
+    # api.labs.crossref.org single-record lookup: polite pool allows 10 req/s
+    # (https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/,
+    # effective 2025-12-01; verified with mailto identified above)
+    resps <- .batch_query(urls, msg = "Querying CrossRef by DOI",
+                          throttle_capacity = 10, throttle_fill_time_s = 1)
 
     valid_results <- lapply(seq_along(valid_idx), \(j) {
       tryCatch({
@@ -413,8 +417,12 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
     }
   })
 
-  # batch to avoid rate limiting
-  resps <- .batch_query(urls, msg = "Querying CrossRef")
+  # api.crossref.org list/search (query.*) endpoint: polite pool allows only
+  # 3 req/s here, vs 10 req/s for single-record works/{doi} lookups
+  # (https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/,
+  # effective 2025-12-01; verified with mailto identified above)
+  resps <- .batch_query(urls, msg = "Querying CrossRef",
+                        throttle_capacity = 3, throttle_fill_time_s = 1)
 
   table <- lapply(seq_along(ref), \(i) {
     r <- if (is.character(ref[[i]])) {
@@ -723,7 +731,7 @@ openalex_doi <- function(doi, select = NULL) {
       email()
     )
 
-    resps <- .batch_query(urls, msg = "Querying CrossRef by DOI")
+    resps <- .batch_query(urls, msg = "Querying OpenAlex by DOI")
   }
 
   oa <- vector("list", length(doi))
