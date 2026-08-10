@@ -10,7 +10,10 @@ osf_type(guid)
 \item{guid}{the 5-letter GUID}
 }
 \value{
-the type
+the type, or \code{"inaccessible"} when the GUID is a validly-formed
+OSF ID but the resource itself could not be reached (private, embargoed,
+withdrawn, or deleted) -- distinct from \code{NA}, which means the input was
+not a valid OSF ID at all
 }
 \description{
 Get OSF GUID Type

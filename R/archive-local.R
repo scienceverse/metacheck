@@ -53,7 +53,7 @@ local_files <- function(path, recursive = FALSE) {
     repo_url = path,
     file_name = file_names,
     file_url = NA_character_,
-    file_location = normalizePath(all_paths),
+    file_location = normalizePath(all_paths, mustWork = FALSE),
     file_size = file_sizes,
     file_type = file_types
   )
