@@ -1,0 +1,29 @@
+[
+    {
+        "uuid": "112719a3-3346-447a-96dc-e253af34a9b3",
+        "name": "readme.txt",
+        "handle": null,
+        "type": "bitstream",
+        "expand": [
+            "metadata",
+            "parent",
+            "policies",
+            "all"
+        ],
+        "bundleName": "ORIGINAL",
+        "description": "ReadMe",
+        "format": "Text",
+        "mimeType": "text/plain",
+        "sizeBytes": 4644,
+        "parentObject": null,
+        "retrieveLink": "/rest/bitstreams/112719a3-3346-447a-96dc-e253af34a9b3/retrieve",
+        "checkSum": {
+            "value": "376649b4220071fba36ab1c50aafdf98",
+            "checkSumAlgorithm": "MD5"
+        },
+        "sequenceId": 2,
+        "policies": null,
+        "metadata": null,
+        "link": "/rest/bitstreams/112719a3-3346-447a-96dc-e253af34a9b3"
+    }
+]
