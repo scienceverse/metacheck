@@ -19,7 +19,10 @@ osf_info(osf_url, id_col = 1, recursive = FALSE, pb = NULL)
 a data frame of information
 }
 \description{
-Retrieve info from the OSF by ID
+Repository listings are cached for the session (keyed by URL and
+\code{recursive}), so repeated calls do not re-query the OSF API; clear the cache
+with \code{\link[=osf_cache_clear]{osf_cache_clear()}} or disable it with
+\code{options(metacheck.osf.cache = FALSE)}.
 }
 \examples{
 \dontrun{
