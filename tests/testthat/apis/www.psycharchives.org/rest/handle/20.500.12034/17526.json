@@ -1,0 +1,23 @@
+{
+    "uuid": "be35b8b4-2bc7-4691-964d-52cfc1cf17a9",
+    "name": "Items, psychometrica data and automatic item generators from the International Cognitive Ability Resource (ICAR) project",
+    "handle": "20.500.12034/17526",
+    "type": "item",
+    "expand": [
+        "metadata",
+        "parentCollection",
+        "parentCollectionList",
+        "parentCommunityList",
+        "bitstreams",
+        "all"
+    ],
+    "lastModified": "2026-06-02 18:10:16.832",
+    "parentCollection": null,
+    "parentCollectionList": null,
+    "parentCommunityList": null,
+    "bitstreams": null,
+    "withdrawn": "false",
+    "archived": "true",
+    "link": "/rest/items/be35b8b4-2bc7-4691-964d-52cfc1cf17a9",
+    "metadata": null
+}
