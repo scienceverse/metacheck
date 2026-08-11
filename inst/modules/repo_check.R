@@ -23,18 +23,12 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
-#' @param github_gate if TRUE, gate large GitHub repos before recursive listing
-#' @param github_max_repo_size_mb gate threshold for GitHub repository size (MB)
-#' @param github_max_files gate threshold for GitHub repository file count
 #' @param model the LLM model name (see `llm_model_list()`), used only when
 #'   `llm_use(TRUE)` for study grouping the deterministic passes cannot place
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
-                       github_gate = TRUE,
-                       github_max_repo_size_mb = 500,
-                       github_max_files = 1000,
                        model = llm_model(),
                        params = list()) {
   # get repository links ----
@@ -348,16 +342,14 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   github_files_df <- data.frame(repo_name = character(0))
   if (length(github_urls) > 0) {
     # github_tree_files() fetches repo metadata + full tree in 2 API requests
-    # (vs. N recursive /contents/ calls) and gates large repos before any file
-    # listing happens.
+    # (vs. N recursive /contents/ calls), so a repository is listed in full
+    # whatever its size — the same treatment every other source gets. Only a
+    # tree GitHub's own API reports as truncated (>100,000 items) comes back
+    # unlisted. How much of a repository is DOWNLOADED is capped separately,
+    # by download_repo_files() in data_check.
     gh_results <- lapply(github_urls, function(url) {
       tryCatch(
-        github_tree_files(
-          url,
-          max_repo_size_mb = github_max_repo_size_mb,
-          max_files = github_max_files,
-          gate = github_gate
-        ),
+        github_tree_files(url),
         error = \(e) list(gated = TRUE, reason = conditionMessage(e),
                           files = NULL, default_branch = NA_character_))
     })
@@ -367,11 +359,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       r <- gh_results[[url]]
       if (isTRUE(r$gated)) {
         repos$repo_error[repos$repo_url == url] <- r$reason
-        warning(sprintf(
-          paste0("Repository %s was not listed: %s. ",
-                 "Set `github_gate = FALSE` to force full recursive listing."),
-          url, r$reason
-        ), call. = FALSE)
+        warning(sprintf("Repository %s was not listed: %s.", url, r$reason),
+                call. = FALSE)
         paste0("Skipping GitHub repo (", r$reason, "): ", url) |>
           list(what = _) |>
           pb$tick(0, tokens = _)
