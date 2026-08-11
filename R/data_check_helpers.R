@@ -6066,6 +6066,55 @@ data_check_is_psychopy <- function(df) {
     any(c("psychopyVersion", "frameRate", "expName") %in% nm)
 }
 
+# Is this file an E-Prime text export? Recognised from the header block E-Prime
+# writes at the top of every export, not from the extension (.txt/.edat/.edat2
+# say nothing on their own).
+.eprime_is_export <- function(path) {
+  head_lines <- text_peek(path, n = 30L)
+  if (!length(head_lines)) return(FALSE)
+  any(grepl("^\\*\\*\\*\\s*Header Start", head_lines)) ||
+    (any(grepl("^(Experiment|Subject):", head_lines)) &&
+       any(grepl("^LevelName:", head_lines)))
+}
+
+# Does this file hold TRIAL-LEVEL behavioural data (one row per trial) rather
+# than a participant-level table (one row per respondent)?
+#
+# A screening predicate, used by data_check to keep trial-level task output out
+# of its tabular-data counts and column descriptions: a per-trial file's columns
+# are paradata channels (response times, trial indices, stimulus codes), so
+# describing them as if they were variables of a participant-level dataset
+# produces noise. data_check records the verdict as `data_format = "trial_level"`
+# in its per-file `structure` table, which is what a later conversion step reads.
+#
+# Lives here, with the platform detectors it delegates to, rather than in the
+# Behaverse converter: deciding WHETHER a file is trial-level is a
+# classification question, independent of whether anything goes on to convert it.
+.bh_is_trial_level_file <- function(path) {
+  if (length(path) != 1L || is.na(path) || !file.exists(path)) return(FALSE)
+  ext <- tolower(tools::file_ext(path))
+  if (ext %in% c("txt", "edat", "edat2") && .eprime_is_export(path)) return(TRUE)
+  # Only DELIMITED-TEXT files can be a trial-level table, so only those are worth
+  # a read.csv sniff. Reading a binary/document (.docx/.pdf/.sav/.xlsx/...) as CSV
+  # produces "invalid input / embedded nulls" warnings and can return garbage, so
+  # gate on the extension first. (E-Prime's own extensions were handled above.)
+  # NOT ".log": a Stata plain-text log genuinely could be a trial-level table by
+  # this extension alone, but no real corpus example has ever been found to
+  # confirm a sniffer against, so .log is left out here and classed
+  # "documentation" in .ext_registry instead of guessed at.
+  .bh_sniff_exts <- c("csv", "tsv", "dat", "iqdat", "txt")
+  if (!ext %in% .bh_sniff_exts) return(FALSE)
+  # A one-row header read is enough for the data-frame detectors.
+  hdr <- tryCatch(
+    utils::read.csv(path, check.names = FALSE, nrows = 1L,
+                    fileEncoding = "UTF-8-BOM",
+                    sep = if (ext == "iqdat") "\t" else ","),
+    error = function(e) NULL)
+  if (is.null(hdr) || ncol(hdr) == 0) return(FALSE)
+  data_check_is_behaverse(hdr) || data_check_is_inquisit(hdr) ||
+    data_check_is_jspsych(hdr)
+}
+
 # ── Likert scale-block detection ──────────────────────────────────────────────
 # Shared by data_validate (careless responding) and codebook_check (LLM scale
 # identification). A "scale block" is a run of adjacent Likert-type columns that
