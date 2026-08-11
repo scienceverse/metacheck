@@ -23,12 +23,18 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
+#' @param peek_zips if TRUE (default), read each `.zip`'s file listing over HTTP
+#'   without downloading it (one Range request per archive, see [zip_peek()]) and
+#'   list its contents in place of the archive row. Set FALSE to leave archives
+#'   as single opaque entries and make no per-archive request. Only `.zip` can be
+#'   inspected this way; other archive formats have no tail index.
 #' @param model the LLM model name (see `llm_model_list()`), used only when
 #'   `llm_use(TRUE)` for study grouping the deterministic passes cannot place
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
+                       peek_zips = TRUE,
                        model = llm_model(),
                        params = list()) {
   # get repository links ----
@@ -633,18 +639,76 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   all_files$repo_name <- basename(all_files$repo_url)
 
+  ## look inside .zip archives ----
+  # An archive is otherwise a dead end in a file listing: "this repository
+  # contains 3 archive files" says nothing about what a reader would actually
+  # get. A ZIP stores its central directory at the END of the file, so ONE HTTP
+  # Range request for the tail recovers every entry's name and uncompressed size
+  # without downloading the archive (see zip_peek()) — which is exactly the
+  # "list, don't fetch" operation this module is built around.
+  #
+  # Only .zip can be inspected this way. A .7z/.rar/.tar.gz has no tail index,
+  # so its contents stay unknown until data_check downloads it — which is why
+  # the report below still recommends .zip over those formats.
+  #
+  # The archive row is REPLACED by its contents when the peek succeeds, so the
+  # listing shows the files a reader gets rather than the container. A failed
+  # peek (host ignores ranges, directory not in the tail) leaves the archive row
+  # untouched, and data_check opens it after download as before.
+  if (isTRUE(peek_zips) && nrow(all_files) > 0) {
+    is_zip <- .is_zip(all_files$file_name) &
+      !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+    if (any(is_zip)) {
+      zpb <- pb(sum(is_zip), "Reading zip contents [:bar] :current/:total")
+      on.exit(zpb$terminate(), add = TRUE)
+      expanded <- list(); consumed <- integer(0)
+      for (i in which(is_zip)) {
+        peek <- tryCatch(zip_peek(all_files$file_url[i]), error = \(e) NULL)
+        zpb$tick()
+        if (is.null(peek) || nrow(peek) == 0) next
+        rows <- all_files[rep(i, nrow(peek)), , drop = FALSE]
+        rows$file_name <- basename(peek$name)
+        # The inner path is prefixed with the archive's own name so a reader can
+        # see which archive a file came from, and so two archives holding a
+        # `data.csv` do not collide in the listing.
+        rows$file_path <- file.path(all_files$file_name[i], peek$name)
+        rows$file_size <- peek$size
+        # No URL of its own: an entry inside an archive is not separately
+        # downloadable, so nothing downstream should try.
+        rows$file_url  <- NA_character_
+        # file_type must be re-derived from the INNER file's extension. Left
+        # inherited it would still say "archive" for every entry, so a zip of 40
+        # CSVs would report 40 archives and no data files in the summary counts
+        # (files_data / files_code / files_zip all key on this column).
+        if ("file_type" %in% names(rows)) {
+          ext <- tolower(tools::file_ext(rows$file_name))
+          ft  <- metacheck::file_types$type[
+            match(ext, metacheck::file_types$ext)]
+          rows$file_type <- ifelse(is.na(ft), "file", ft)
+        }
+        expanded[[length(expanded) + 1L]] <- rows
+        consumed <- c(consumed, i)
+      }
+      if (length(consumed) > 0) {
+        all_files <- dplyr::bind_rows(all_files[-consumed, , drop = FALSE],
+                                      dplyr::bind_rows(expanded))
+      }
+    }
+  }
+
   ## preliminary classification + study grouping ----
-  # A PRELIMINARY, name/path-only pass: repo_check never downloads files, so it
-  # can only classify from names/extensions (data_classify_files()) and group
-  # from paths/repo-splits/the manuscript roster (data_group_llm()) — the same
+  # A PRELIMINARY, name/path-only pass: repo_check does not download files, so
+  # it classifies from names/extensions (data_classify_files()) and groups from
+  # paths/repo-splits/the manuscript roster (data_group_llm()) — the same
   # deterministic-first machinery data_check uses, run independently here (not
   # shared as a frozen seed) because data_check operates on a materially
-  # different, POST-download file set: it downloads, expands archives (adding
-  # rows that don't exist yet at this point), and reclassifies .txt content,
-  # none of which repo_check can see. This preliminary pass exists purely to
-  # power repo_check's OWN report (warnings, naming check, dropdown below);
-  # data_check's later classification is authoritative for placement.
-  all_files$data_type <- data_classify_files(all_files$file_name)
+  # different, POST-download file set: it opens the archives .zip peeking cannot
+  # reach (.tar.gz, .7z) and reclassifies .txt by content, neither of which is
+  # visible from a listing. This preliminary pass powers repo_check's OWN report
+  # (warnings, naming check, dropdown below); data_check's later classification
+  # is authoritative for placement.
+  all_files$data_type <- data_classify_files(all_files$file_name,
+                                             all_files$file_path)
   all_files$doc_role  <- .data_doc_role(all_files$file_name)
 
   # Root readme / ro-crate-metadata.json are collection-level and are never
@@ -742,15 +806,15 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## zip files ----
-  # repo_check() only LISTS archive files here — it never opens one (peeking a
-  # .zip via HTTP range request, or downloading any archive, is data_check's
-  # job when peek_zips/download is enabled). So this report makes no claim
-  # about whether an archive's content was or wasn't examined; it only warns
-  # about the one thing repo_check itself can know from the file name alone:
-  # non-.zip archive FORMAT. Only .zip stores its file listing in a tail index
-  # reachable by an HTTP range request, so only .zip can be inspected without a
-  # full download; .7z/.rar/.tar.gz must be downloaded whole, and some formats
-  # (.7z/.rar) metacheck cannot read at all.
+  # What reaches here is the archives that could NOT be listed. A .zip whose
+  # central directory was read above has been replaced by its contents, so it is
+  # no longer an "archive" row and is not counted or warned about — its files
+  # are simply in the listing, which is the point.
+  #
+  # What remains is a .7z/.rar/.tar.gz (no tail index, so nothing to read
+  # without downloading the whole file — and .7z/.rar metacheck cannot read at
+  # all), or a .zip whose host ignored the Range request. Both are opaque from a
+  # listing, which is exactly what the recommendation below is about.
   zip_n <- sum(repos$files_zip)
   if (zip_n > 0) {
     zip_files <- all_files$file_name[!is.na(all_files$file_type) & all_files$file_type == "archive"]
