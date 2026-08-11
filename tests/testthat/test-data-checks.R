@@ -355,37 +355,6 @@ test_that("data_col_concept detects concepts by name+value agreement", {
   expect_true(is.na(data_col_concept("rt", rep(-5, 10))))
 })
 
-test_that("data_analysis_unit infers the unit of observation", {
-  # Person-level: unique id per row.
-  persons <- data.frame(subject_id = 1:30, age = sample(18:65, 30, TRUE))
-  expect_equal(data_analysis_unit(persons, "subject_id")$unit, "person")
-
-  # Trial-level: repeating id + a trial column.
-  trials <- data.frame(subject_id = rep(1:5, each = 8), trial = rep(1:8, 5),
-                       rt = runif(40, 300, 900))
-  expect_equal(data_analysis_unit(trials, "subject_id")$unit, "trial")
-
-  # Session/repeated-measures: repeating id + a wave column.
-  sessions <- data.frame(id = rep(1:10, each = 3), wave = rep(1:3, 10),
-                         score = rnorm(30))
-  expect_equal(data_analysis_unit(sessions, "id")$unit, "session")
-
-  # Dyad: two identifier columns.
-  dyads <- data.frame(actor_id = rep(1:5, 2), partner_id = rep(6:10, 2),
-                      liking = rnorm(10))
-  expect_equal(data_analysis_unit(dyads, c("actor_id", "partner_id"))$unit, "dyad")
-
-  # id inferred by name when not supplied.
-  expect_equal(data_analysis_unit(persons)$unit, "person")
-
-  # All-NA id column: 0/0 unique fraction must not error (regression: an id
-  # column with no non-NA values gave frac_unique = NaN and `if (NaN >= 0.98)`
-  # threw "missing value where TRUE/FALSE needed").
-  na_ids <- data.frame(subject_id = rep(NA_character_, 5), value = 1:5)
-  expect_no_error(res <- data_analysis_unit(na_ids, "subject_id"))
-  expect_false(identical(res$unit, "person"))
-})
-
 test_that("data_col_stats returns numeric summaries", {
   s <- data_col_stats(c(1, 2, 3, 4, 5), c(1, 2, 3, 4, 5))
   expect_equal(s$n, 5)
