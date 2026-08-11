@@ -304,22 +304,6 @@
   })
 }
 
-# ── Reader: E-Prime text export ───────────────────────────────────────────────
-# E-Prime exports are UTF-16 (or BOM) text: a header block of `Field: value`
-# lines, then repeating `Level: 3` frames (one per Trial), each a run of
-# `Field: value` lines. Object timing is `<obj>.RT` (ms) or, if absent,
-# `<obj>.RTTime - <obj>.OnsetTime` (absolute clock). Parses one file to a list of
-# per-trial named lists, plus the header (Subject, Experiment).
-# Does this file's content look like an E-Prime export? E-Prime writes a fixed
-# header block whose markers are unmistakable. Content-based, because E-Prime's
-# .txt extension is far too ambiguous to classify on the name alone.
-.eprime_is_export <- function(path) {
-  head_lines <- text_peek(path, n = 30L)
-  if (!length(head_lines)) return(FALSE)
-  any(grepl("^\\*\\*\\*\\s*Header Start", head_lines)) ||
-    (any(grepl("^(Experiment|Subject):", head_lines)) &&
-       any(grepl("^LevelName:", head_lines)))
-}
 
 .bh_parse_eprime <- function(path) {
   # text_peek() handles the encodings E-Prime actually ships (UTF-16 with a BOM,
@@ -434,37 +418,6 @@
   })
 }
 
-# Is this file a trial-level format (Behaverse / Inquisit / E-Prime / jsPsych)?
-# CHEAP: reads only the header (or the first lines for E-Prime), not the whole
-# file, so screening hundreds of per-participant files is fast. Used by data_check
-# to hold trial-level files OUT of the per-file tabular extractor and route them to
-# the Behaverse accumulator instead — otherwise 200 per-participant E-Prime files
-# would become 200 separate "datasets" rather than one merged instrument.
-.bh_is_trial_level_file <- function(path) {
-  if (length(path) != 1L || is.na(path) || !file.exists(path)) return(FALSE)
-  ext <- tolower(tools::file_ext(path))
-  if (ext %in% c("txt", "edat", "edat2") && .eprime_is_export(path)) return(TRUE)
-  # Only DELIMITED-TEXT files can be a trial-level table, so only those are worth
-  # a read.csv sniff. Reading a binary/document (.docx/.pdf/.sav/.xlsx/...) as CSV
-  # produces "invalid input / embedded nulls" warnings and can return garbage, so
-  # gate on the extension first. (E-Prime's own extensions were handled above.)
-  # NOT ".log": a Stata plain-text log genuinely could be a trial-level table by
-  # this extension alone, but no real corpus example has ever been found to
-  # confirm a sniffer against, so .log is left out here and classed
-  # "documentation" in .ext_registry (R/data_check_helpers.R) instead of
-  # guessed at.
-  .bh_sniff_exts <- c("csv", "tsv", "dat", "iqdat", "txt")
-  if (!ext %in% .bh_sniff_exts) return(FALSE)
-  # A one-row header read is enough for the data-frame detectors.
-  hdr <- tryCatch(
-    utils::read.csv(path, check.names = FALSE, nrows = 1L,
-                    fileEncoding = "UTF-8-BOM",
-                    sep = if (ext == "iqdat") "\t" else ","),
-    error = function(e) NULL)
-  if (is.null(hdr) || ncol(hdr) == 0) return(FALSE)
-  data_check_is_behaverse(hdr) || data_check_is_inquisit(hdr) ||
-    data_check_is_jspsych(hdr)
-}
 
 # ── File-level dispatch: one source file -> Response rows keyed by instrument ──
 # Reads one data file, detects its trial-level format, and returns a named list
@@ -475,8 +428,9 @@
   ext <- tolower(tools::file_ext(path))
 
   # E-Prime is text (header + Level:3 frames), not a flat table — parse directly.
-  # Gated on CONTENT (.eprime_is_export), not the extension: .txt is far too
-  # ambiguous to parse speculatively, and this avoids reading every .txt in full.
+  # Gated on CONTENT (.eprime_is_export(), in R/data_check_helpers.R with the
+  # other platform detectors), not the extension: .txt is far too ambiguous to
+  # parse speculatively, and this avoids reading every .txt in full.
   if (ext %in% c("txt", "edat", "edat2") && .eprime_is_export(path)) {
     parsed <- tryCatch(.bh_parse_eprime(path), error = function(e) NULL)
     if (!is.null(parsed) && length(parsed$trials) > 0) {

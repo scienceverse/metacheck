@@ -443,6 +443,62 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   tasks_paper_only <- setdiff(tasks_in_paper, tasks_in_data)
   n_tasks_paper_only <- length(tasks_paper_only)
 
+  # ── 4c. Data values the codebook does not allow ──────────────────────────────
+  # "The codebook says this variable takes 1-5, but the column contains a 6."
+  # Only a DOCUMENTED range is used: no inference, no fallback. A value outside
+  # a range the authors themselves declared is a concrete, checkable
+  # discrepancy; a value outside a range metacheck guessed is not.
+  #
+  # This ran in data_check until it moved here, where the codebook is actually
+  # available. There it fetched the codebook via
+  # get_prev_outputs("codebook_check", "table") — but codebook_check reads
+  # data_check's output, so in pipeline order that always returned NULL and the
+  # check silently fell back to a range INFERRED from the data. Over 1286 real
+  # numeric columns that fallback fired once, so nothing of value is lost by
+  # requiring documentation.
+  #
+  # Values are classified so a reader can tell the kinds apart: a declared or
+  # conventional missing code (-99, 999), a keying typo (55 on a 1-5 scale), or
+  # unexplained.
+  scale_violations <- list()
+  if (!is.null(previews) && nrow(labels_df) > 0 &&
+      all(c("source_file", "column_name") %in% names(labels_df)) &&
+      "value_labels" %in% names(labels_df)) {
+    for (i in seq_len(nrow(labels_df))) {
+      f <- labels_df$source_file[i]; cn <- labels_df$column_name[i]
+      if (is.na(f) || is.na(cn) || is.null(previews[[f]])) next
+      df_i <- previews[[f]]
+      if (!cn %in% names(df_i)) next
+      x <- suppressWarnings(as.numeric(as.character(df_i[[cn]])))
+      if (all(is.na(x))) next
+
+      codes <- .decode_value_labels(labels_df$value_labels[i])
+      valid <- suppressWarnings(as.numeric(names(codes) %||% codes))
+      valid <- valid[!is.na(valid)]
+      if (length(valid) < 2) next          # no documented range to violate
+
+      miss <- .decode_value_labels(labels_df$missing_values[i] %||% NA_character_)
+      declared <- suppressWarnings(as.numeric(names(miss) %||% miss))
+      declared <- declared[!is.na(declared)]
+
+      sv <- data_check_scale_values(x, declared = declared, valid_values = valid)
+      if (!isTRUE(sv$problem)) next
+      scale_violations[[length(scale_violations) + 1L]] <- data.frame(
+        source_file = f, column = cn,
+        documented = sprintf("[%g, %g]", sv$lower, sv$upper),
+        n_values = length(sv$values),
+        values = paste(utils::head(signif(sv$values, 4), 8), collapse = ", "),
+        kinds = paste(unique(sv$classes), collapse = ", "),
+        stringsAsFactors = FALSE)
+    }
+  }
+  scale_violation_df <- if (length(scale_violations) > 0)
+    dplyr::bind_rows(scale_violations) else
+    data.frame(source_file = character(0), column = character(0),
+               documented = character(0), n_values = integer(0),
+               values = character(0), kinds = character(0),
+               stringsAsFactors = FALSE)
+
   # ── 5. Coverage tallies ──────────────────────────────────────────────────────
   # Two distinct questions, kept separate:
   #   matched  — did the column match a codebook entry by name? (data coverage)
@@ -511,6 +567,10 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
         else if (n_unmatched == 0 && n_conflicted == 0) "green"  # all matched, all clean
         else if (pct_matched >= 80) "yellow"      # mostly matched, or only conflicts
         else "red"                                # substantial coverage gaps
+  # A value the codebook itself does not allow is a documented-vs-actual
+  # discrepancy, so a repository with a complete, cleanly-matched codebook is
+  # not "green" while its data contradicts that codebook.
+  if (nrow(scale_violation_df) > 0 && tl == "green") tl <- "yellow"
 
   # ── 7. Report ────────────────────────────────────────────────────────────────
   if (n_codebook_vars == 0) {
@@ -613,6 +673,33 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
         scroll_table(unused_tbl, maxrows = 15)
       )
     }
+  }
+
+  # ── Values the codebook does not allow ───────────────────────────────────────
+  if (nrow(scale_violation_df) > 0) {
+    sv_tbl <- scale_violation_df |>
+      dplyr::arrange(dplyr::desc(.data$n_values)) |>
+      dplyr::transmute(
+        File = .data$source_file, Column = .data$column,
+        `Codebook range` = .data$documented,
+        `N values` = .data$n_values,
+        `Values found` = .data$values,
+        Kind = .data$kinds)
+    n_sv_cols <- nrow(scale_violation_df)
+    n_sv_vals <- sum(scale_violation_df$n_values)
+    report <- c(report,
+      "#### Values Outside the Documented Range",
+      sprintf(paste0(
+        "%d column%s %s %d value%s the codebook does not list. Each is either an ",
+        "unrecoded missing code (a stray -99 or 999), a keying error (a 55 where ",
+        "5 was meant), or unexplained — the `Kind` column says which. Only ",
+        "columns whose codebook documents a value range are checked, so every ",
+        "row here is a discrepancy between what the authors declared and what ",
+        "the data contains."),
+        n_sv_cols, plural(n_sv_cols),
+        if (n_sv_cols == 1) "contains" else "contain",
+        n_sv_vals, plural(n_sv_vals)),
+      scroll_table(sv_tbl, maxrows = 20))
   }
 
   # ── Scales ───────────────────────────────────────────────────────────────────
@@ -769,6 +856,8 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   list(
     table = labels_df,
     codebook_vars = codebook_vars_df,
+    # One row per column holding values its own codebook does not list.
+    scale_violations = scale_violation_df,
     scales_osd = scales_osd,           # per-group inventory in OpenScales OSD form
     summary_table = summary_table,
     na_replace = c(column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,

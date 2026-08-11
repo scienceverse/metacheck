@@ -17,7 +17,7 @@
 # by module into one of five tables so each table stays tidy for its domain:
 #   stat_findings  — stat_check, stat_p_exact, stat_p_nonsig, stat_effect_size, marginal
 #   code_findings  — code_check
-#   data_findings  — codebook_check, data_validate
+#   data_findings  — codebook_check, data_check (and legacy data_validate)
 #   excel_findings — spreadsheet_check (and legacy excel_check)
 #   other_findings — everything else (coi/ethics/funding/open_practices/power/
 #                    prereg + any unrecognised module), so no finding is dropped.
@@ -53,7 +53,10 @@
 .sv_stat_modules  <- c("stat_check", "stat_p_exact", "stat_p_nonsig",
                        "stat_effect_size", "marginal")
 .sv_code_modules  <- c("code_check")
-.sv_data_modules  <- c("codebook_check", "data_validate")
+# data_validate was merged into data_check; the old name is kept for the same
+# reason excel_check is (see below), so findings in archives written before the
+# merge still route to data_findings instead of falling through to other_findings.
+.sv_data_modules  <- c("codebook_check", "data_check", "data_validate")
 # The findings TABLE is still called excel_findings: it is a persisted SQLite
 # table name, so renaming it would break every existing archive. Only the module
 # name changed (excel_check -> spreadsheet_check); the old name is kept so
