@@ -48,7 +48,9 @@ Suggests:
     withr,
     shiny,
     shinyjs,
-    shinydashboard
+    shinydashboard,
+    DBI,
+    RSQLite
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 Imports: 
@@ -72,7 +74,9 @@ Imports:
     gitcreds, 
     roxygen2, 
     jpeg,
-    progress
+    progress,
+    graphics,
+    grDevices
 VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
