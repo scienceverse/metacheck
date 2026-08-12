@@ -40,6 +40,8 @@
 #' `NA`) are classified but not column-extracted; pass `local_path` to point at
 #' a downloaded copy of the repository.
 #'
+#' <validation>This module has not been validated. All checks in the data_check module have unknown error rates. Carefully evaluate the output of this module. You can help improve this module by reporting an issue on GitHub.</validation>
+#'
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})

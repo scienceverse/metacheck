@@ -239,7 +239,8 @@ test_that("a path without collection.json is rejected", {
   empty <- file.path(tempdir(), paste0("svempty_", as.integer(runif(1, 1, 1e6))))
   dir.create(empty, showWarnings = FALSE)
   db <- tempfile(fileext = ".sqlite")
-  expect_error(add_to_scienceverse(empty, db, quiet = TRUE), "No collection roots")
+  expect_error(add_to_scienceverse(empty, db, quiet = TRUE),
+               "No metacheck output roots found")
 })
 
 # ── query layer (the engine behind scienceverse_app()) ───────────────────────

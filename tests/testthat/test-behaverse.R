@@ -319,13 +319,13 @@ test_that(".bh_is_trial_level_file leaves an ordinary table alone", {
 })
 
 # ── paradata column routing out of scale grouping ─────────────────────────────
-# .scale_is_paradata_col / .scale_prefix_groups live in the sourced module, not
-# the package namespace, so source the module into an env to test them directly.
+# .paradata_name / .scale_prefix_groups live in the sourced module, not the
+# package namespace, so source the module into an env to test them directly.
 .cb_env_bh <- new.env()
 sys.source(metacheck:::module_find("codebook_check"), envir = .cb_env_bh)
 
-test_that(".scale_is_paradata_col flags channels but not the answer channel", {
-  is_para <- .cb_env_bh$.scale_is_paradata_col
+test_that(".paradata_name flags channels but not the answer channel", {
+  is_para <- .cb_env_bh$.paradata_name
   expect_true(is_para("psqi_q_1_response_time_i1"))
   expect_true(is_para("psqi_q_1_trial_index_i1"))
   expect_true(is_para("EB T1 timing_First Click"))

@@ -65,11 +65,15 @@ write_file_manifest <- function(manifest_dir, out = NULL) {
     # NULL (length 0); fall back to the file name so every paper gets a row.
     pid <- j$paper_id %||% sub("[.]manifest[.]json$", "", basename(f))
     if (is.null(j$files) || length(j$files) == 0)
+      # Same columns, in the same order, as the populated branch below: these
+      # frames are rbind()ed together, so a missing column (provider) makes the
+      # whole manifest unreadable as soon as one paper has no files.
       return(data.frame(
         paper_id = pid, repo_url = NA, file_name = NA, file_path = NA,
-        file_url = NA, file_size = NA, file_size_mb = NA, data_type = NA,
-        downloaded = NA, status = "no_repo", skip_intentional = NA,
-        skip_reason = "no repository", stringsAsFactors = FALSE))
+        file_url = NA, file_size = NA, file_size_mb = NA, provider = NA,
+        data_type = NA, downloaded = NA, status = "no_repo",
+        skip_intentional = NA, skip_reason = "no repository",
+        stringsAsFactors = FALSE))
     d <- j$files
     fs <- as.numeric(col(d, "file_size"))
     data.frame(

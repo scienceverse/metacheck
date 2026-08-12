@@ -834,7 +834,7 @@ osf_file_download <- function(osf_id,
 
   .osf_download_zip <- function(zip_url, zip_path, zip_size = NA_real_,
                                 timeout_s = 1800) {
-    # TEMP verbose diagnostics (remove later): OSF's Waterbutler GENERATES the zip
+    # OSF's Waterbutler GENERATES the zip
     # on the fly for a whole-repo request, which for a big repo (thousands of
     # files) can take minutes before a single byte streams — so a silent buffered
     # read looks hung and hits the curl timeout. We stream straight to disk with a

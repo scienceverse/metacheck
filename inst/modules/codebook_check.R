@@ -1680,13 +1680,30 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
 # heuristic is applied only to the columns no stem claims. `qualtrics`: when TRUE
 # and no scale_group is given, blocks are recovered from the Qualtrics <stem>_<N>
 # export-naming convention (.qualtrics_col_stem) before the heuristic runs.
-# Paradata channel tokens: trial-level metadata (response times, trial/stimulus/
-# option channels) that some formats (Behaverse wide pivots, Qualtrics timing)
-# attach to every item column. These are NOT scale items — they are recognised
-# here and EXCLUDED from scale grouping so they do not become junk "scales". The
-# data is not discarded: it is routed to Behaverse `trial` paradata files (see
-# R/behaverse-convert.R). Matched as whole, delimiter-bounded segments so an
-# answer channel (response_numeric) and construct words are never caught.
+# ── Paradata: columns nobody measured ─────────────────────────────────────────
+# Not everything in a data file is data. Survey platforms and experiment software
+# add columns recording HOW a response was given (response times, click counts,
+# trial indices), WHERE it was given (browser, screen geometry, software version),
+# and in WHAT ORDER items were shown. Survey methodology calls the first group
+# PARADATA, and that name is used here for the whole set: all of it is excluded
+# for the same reason, being a by-product of collection rather than an
+# observation of a participant.
+#
+# This is the "not everything in a data file is data" filter. An instrument is
+# never named from these columns, so a wide export does not spend one LLM group
+# per housekeeping column, and they are still DESCRIBED in the inventory so every
+# column carries a description for Psych-DS compliance. Nothing is discarded —
+# the columns are classified, not dropped.
+#
+# Recognition is deliberately CONSERVATIVE. Wrongly excluding a real measurement
+# loses a variable silently, which is worse than leaving a stray timing column in
+# the inventory, so every rule matches a closed, known vocabulary, and the
+# platform-specific rules fire only on a file detected as that platform.
+
+# Paradata channel tokens attached per item by trial-level exports (Behaverse
+# wide pivots, Qualtrics timing). Matched as whole, delimiter-bounded segments,
+# so a substantive name that merely contains one of these words as a fragment is
+# not caught.
 .PARADATA_CHANNEL_RE <- paste0(
   "(^|[_. -])(",
   "trial_index|stimulus_type|stimulus_description|response_time|",
@@ -1718,46 +1735,121 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   # spelling or a following channel word is an unambiguous Qualtrics timer.
   "tim(e|ing)[_. -]*(first|last|page|click)|timing([_. -]|$)")
 
-# Is a column name a paradata channel (not a scale item)? The Behaverse ANSWER
-# channel `response_numeric` is deliberately NOT matched, so real items survive.
-.scale_is_paradata_col <- function(nm) {
+# The columns each trial-level platform ADDS that are collection bookkeeping,
+# not data a researcher analyses: browser/OS diagnostics, media-load flags,
+# screen geometry, DOM node ids, per-trial pauses/timeouts, stimulus geometry.
+#
+# A DENYLIST, deliberately: a jsPsych/Inquisit export also carries the
+# researcher's OWN custom columns (stim, resp1, correct_response, stimcolor),
+# which are often the most important data — an allowlist of "known platform
+# columns" would wrongly drop those. So only the KNOWN housekeeping is
+# enumerated and everything else is kept. Matched case-insensitively.
+.PARADATA_PLATFORM_COLS <- list(
+  # jsPsych core + common browser-check/plugin bookkeeping.
+  jspsych  = c("success", "timeout", "failed_images", "failed_audio",
+               "failed_video", "trial_index", "time_elapsed", "internal_node_id",
+               "width", "height", "webaudio", "browser", "browser_version",
+               "mobile", "os", "fullscreen", "vsync_rate", "webcam", "microphone",
+               "view_history", "plugin_version"),
+  # Inquisit reserved columns (the numbered stimulus geometry is added by RE).
+  inquisit = c("date", "time", "build", "pretrialpause", "posttrialpause",
+               "windowcenter", "trialduration", "trialtimeout", "blocktimeout",
+               "inwindow"),
+  # Native Behaverse paradata channels other than the substantive response.
+  behaverse = c("stimulus_onset", "response_validation_time", "validation_time")
+)
+
+# Inquisit numbered stimulus channels: the ITEM is data (the shown content), the
+# geometry (vertical/horizontal position, onset time, internal number) is
+# paradata. Only the geometry families are matched; stimulusitem<n> is kept.
+.PARADATA_INQUISIT_STIM_RE <- "^stimulus(number|vpos|hpos|onset)[0-9]+$"
+
+# PsychoPy paradata is SUFFIX-based, not a fixed name list: component/loop names
+# are study-specific (serialport_cue6_2.started, edloop.thisRepN), so the machine
+# columns are recognised by their trailing role. Loop counters (.thisN/.thisIndex
+# /.thisRepN/.thisTrialN/.ran) and component timing (.started/.stopped) are
+# paradata; the RESPONSE channels (.rt/.keys/.corr/.response) are data and are
+# NOT matched here, so they survive. Plus PsychoPy's fixed run-metadata columns.
+.PARADATA_PSYCHOPY_RE <- "[.](this(n|index|repn|trialn)|ran|started|stopped)$"
+.PARADATA_PSYCHOPY_META_COLS <- c("psychopyversion", "framerate", "expname",
+                                  "date", "os", "session", "expstart")
+
+# Is a column name a paradata CHANNEL, judged from the name alone? Covers the
+# per-item channels of a trial-level wide pivot and the Qualtrics page timers.
+# The Behaverse ANSWER channel `response_numeric` is deliberately NOT matched,
+# so real items survive. Vectorised; returns a logical the length of `nm`.
+.paradata_name <- function(nm) {
   x <- tolower(nm)
   (grepl(.PARADATA_CHANNEL_RE, x, perl = TRUE) |
      grepl(.QUALTRICS_TIMER_RE, x, perl = TRUE)) &
     !grepl("response_numeric", x, fixed = TRUE)
 }
 
-# Is each column of `df` non-analytic survey/export MACHINERY rather than a
-# substantive measurement — so it must be kept out of SCALE DETECTION (and hence
-# the LLM), though it is still DESCRIBED elsewhere in the inventory? Covers:
-#   * paradata channels (response/validation times, click/timing channels);
+# Given column names and a detected `format` (jspsych/inquisit/behaverse/
+# psychopy), which columns are that platform's collection bookkeeping? A column
+# qualifies only when it is a KNOWN housekeeping name for that platform (or an
+# Inquisit stimulus-geometry / PsychoPy loop-counter channel). Every other column
+# — including the researcher's custom experimental columns — is kept; `response`
+# and `stimulus` are never in the denylist. For an absent or unrecognised format
+# nothing is flagged. The caller must have confirmed the platform, because these
+# vocabularies are only safe within their own platform: a survey column named
+# "browser" or "date" elsewhere is a legitimate variable.
+.paradata_platform_col <- function(col_names, format) {
+  n <- length(col_names)
+  if (n == 0 || is.null(format) || is.na(format) || !nzchar(format))
+    return(rep(FALSE, n))
+  deny <- .PARADATA_PLATFORM_COLS[[format]]
+  low  <- tolower(trimws(col_names))
+  out  <- if (is.null(deny)) rep(FALSE, n) else low %in% tolower(deny)
+  if (identical(format, "inquisit"))
+    out <- out | grepl(.PARADATA_INQUISIT_STIM_RE, low, perl = TRUE)
+  if (identical(format, "psychopy"))
+    out <- out |
+      grepl(.PARADATA_PSYCHOPY_RE, low, perl = TRUE) |
+      low %in% .PARADATA_PSYCHOPY_META_COLS
+  out
+}
+
+# Which trial-level platform produced this data frame, if any? One of
+# jspsych/inquisit/psychopy/behaverse, or NULL when the file matches no platform.
+# Gating the per-platform vocabularies on this is what keeps them safe.
+.paradata_format <- function(df) {
+  if (data_check_is_jspsych(df))   return("jspsych")
+  if (data_check_is_inquisit(df))  return("inquisit")
+  if (data_check_is_psychopy(df))  return("psychopy")
+  if (data_check_is_behaverse(df)) return("behaverse")
+  NULL
+}
+
+# Is each column of `df` paradata rather than a substantive measurement? Five
+# sources, ORed — a column is paradata if ANY fires:
+#   * paradata channels (response/validation times, trial/stimulus channels,
+#     Qualtrics page timers);
 #   * reserved survey-platform metadata (StartDate, Duration, ResponseId, ...);
 #   * Qualtrics display-order/randomisation columns (`<Q>_DO_<...>`);
 #   * free-text-entry overflow columns (`*_TEXT`);
-#   * trial-level task machinery (jsPsych browser/media/geometry diagnostics,
-#     Inquisit stimulus geometry / pauses / timeouts, ...) via Behaverse's
-#     per-platform substantive-column vocabulary (.bh_is_machinery_col), applied
-#     only when the file is DETECTED as that platform so a survey column named
-#     "browser" or "response" elsewhere is never touched.
-# This is the "not everything in a data file is data" filter: an instrument is
-# never named from these, so a wide export does not spend one LLM group per
-# housekeeping column. Side-effect free; it removes columns from grouping only.
-.scale_is_nonanalytic_col <- function(df) {
+#   * per-platform trial-level bookkeeping, applied only when the file is
+#     DETECTED as that platform so a survey column named "browser" or "date"
+#     elsewhere is never touched.
+# Returns a logical of length ncol(df); logical(0) for a zero-column frame.
+.paradata_col <- function(df) {
   nm <- names(df)
-  out <- .scale_is_paradata_col(nm) |
+  if (length(nm) == 0) return(logical(0))
+
+  out <- .paradata_name(nm) |
     !is.na(.qualtrics_tag_cols(nm)) |          # reserved platform metadata
     .qualtrics_is_display_order(nm) |          # `_DO_` randomisation order
     grepl("_TEXT$", nm, perl = TRUE)           # free-text-entry overflow
 
-  # Trial-level task machinery, gated on per-file platform detection.
-  fmt <- if (data_check_is_jspsych(df)) "jspsych"
-         else if (data_check_is_inquisit(df)) "inquisit"
-         else if (data_check_is_psychopy(df)) "psychopy"
-         else if (data_check_is_behaverse(df)) "behaverse"
-         else NULL
-  if (!is.null(fmt)) out <- out | .bh_is_machinery_col(nm, fmt)
+  # Trial-level platform bookkeeping, gated on per-file platform detection.
+  fmt <- .paradata_format(df)
+  if (!is.null(fmt)) out <- out | .paradata_platform_col(nm, fmt)
   out
 }
+
+# Retained as the name the scale-grouping call sites use, so the intent at those
+# sites ("skip what is not analysable") stays readable.
+.scale_is_nonanalytic_col <- function(df) .paradata_col(df)
 
 # Self-label export MACHINERY columns in labels_df so they are excluded from the
 # codebook-matching LLM while still being fully described (Psych-DS compliant).

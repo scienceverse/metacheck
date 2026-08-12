@@ -1,9 +1,18 @@
-# Module tests for codebook_check, run offline via a local fixture repo
-# (test_paper + local_path). Rules-only (llm_use(FALSE)).
+# codebook_check: scale identification and Psych-DS emission.
 #
-# The data_validate tests that used to live here moved to test-data-checks.R
-# when that module was merged into data_check: the data-quality, careless and
-# spreadsheet-formatting checks are all part of data_check now.
+# Run offline via a local fixture repo (test_paper + local_path), rules-only
+# (llm_use(FALSE)) except where an LLM tier is explicitly mocked.
+#
+# This file covers the SCALE side of codebook_check: paper-context retrieval,
+# the dictionary matcher, abstention when nothing identifies a block, block
+# detection, and how scale metadata reaches Psych-DS variableMeasured. The
+# documentation-coverage checks (matched vs. clean, unused variables,
+# misalignment, documented-range violations, tasks, traffic light) live in
+# test-module-codebook_check.R.
+#
+# The file was previously named test-module-codebook_data_validate.R, from when
+# data_validate lived here; those tests moved to test-data-checks.R when the
+# module merged into data_check, leaving the name misleading.
 
 # Source the sourced-module internals so the paper-context helpers can be tested
 # directly (they are not in the package namespace). module_find() resolves the

@@ -325,8 +325,10 @@ test_that(".llm_ollama_native", {
   resp2 <- llm(text, system_prompt, model = "ollama/qwen2.5:3b")
   expect_message(resp3 <- llm(text, system_prompt, model = "ollama"), "Using model")
 
-  expect_equal(names(resp2), c("text", "answer"))
-  expect_equal(names(resp3), c("text", "answer"))
+  # llm() also returns `error`/`error_msg` (which call failed, and why), so the
+  # check is that the answer columns are there, not that they are the only ones.
+  expect_in(c("text", "answer"), names(resp2))
+  expect_in(c("text", "answer"), names(resp3))
 
   expect_error(.llm_ollama_native(text, system_prompt, "notamodel"))
 
