@@ -13,11 +13,16 @@ osf_file_download(
   ignore_folder_structure = FALSE,
   mode = c("files", "zip"),
   unzip = TRUE,
+  osf_pat = NULL,
   pb = NULL
 )
 }
 \arguments{
-\item{osf_id}{an OSF ID or URL}
+\item{osf_id}{an OSF ID or URL. A \emph{user} ID (the GUID in a profile URL, e.g.
+\code{"4i578"} for \url{https://osf.io/4i578}) downloads every project that user
+contributes to, so a whole account can be archived in one call. To choose
+a subset instead, pass the table from \code{\link[=osf_user_projects]{osf_user_projects()}} (filtered
+however you like) -- any data frame with an \code{osf_id} column works.}
 
 \item{download_to}{path to download to}
 
@@ -33,10 +38,19 @@ osf_file_download(
 
 \item{unzip}{if \code{TRUE} and \code{mode = "zip"}, unzip the downloaded archive into the output folder; if \code{FALSE}, keep the zip file as-is}
 
+\item{osf_pat}{an OSF personal access token, needed to reach private projects
+and to raise the API rate limit. Defaults to whatever \code{\link[=osf_pat]{osf_pat()}} returns
+(the \code{OSF_PAT} environment variable unless set otherwise); passing it here
+sets it for the rest of the session. See \code{\link[=osf_pat]{osf_pat()}} for how to create one.}
+
 \item{pb}{a progress bar passed from another function}
 }
 \value{
-data frame of file info
+data frame of file info, one row per file (\code{osf_id} is each file's
+own ID). It carries \code{download_path}, the absolute folder the project was
+saved in, plus \code{osf_project} and \code{osf_url} identifying the project, so the
+result can be passed straight to \code{\link[=zenodo_upload]{zenodo_upload()}}. \code{downloaded},
+\code{size_on_disk}, and \code{attempted} report the verification described above.
 }
 \description{
 Creates a directory for the OSF ID and downloads all of the files using a folder structure from the OSF project nodes and file storage structure. Returns (invisibly) a data frame with file info.
@@ -46,10 +60,47 @@ Some differences may exist because the OSF allows longer file names with charact
 
 In the default \code{mode = "files"}, you can limit downloads to only files under a specific size (defaults to 10MB). Files over \code{max_file_size} are omitted individually, while \code{max_download_size} is an all-or-nothing gate for the remaining repository total. Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
 
-In \code{mode = "zip"}, OSF's Waterbutler API serves the requested folder as one generated zip archive. In this mode, \code{max_download_size} applies to the archive as a whole when the server reports a \code{Content-Length}, but \code{max_file_size} cannot filter files inside the archive before download. The archive can either be kept as a zip or unzipped after download.
+In \code{mode = "zip"}, OSF's Waterbutler API serves a folder as one generated zip
+archive, which is far fewer requests than fetching each file. That endpoint
+covers one node's \code{osfstorage} at a time, so a project whose files sit in
+components, or on a linked add-on such as GitHub or Dropbox, is not one
+archive: one archive is requested per node that holds \code{osfstorage} files, and
+anything no archive can hold is downloaded individually, so the whole project
+is still retrieved. In this mode, \code{max_download_size} applies to each archive
+when the server reports a \code{Content-Length}, but \code{max_file_size} cannot filter
+files inside an archive before download. Archives can either be kept as zips
+or unzipped after download.
 }
+\section{Downloading a whole account, or part of one}{
+Given a user ID, every project that user contributes to is downloaded.
+Components are not listed separately, because downloading a project already
+brings its components' files with it, at any depth.
+
+To download only some of them, list the projects first with
+\code{\link[=osf_user_projects]{osf_user_projects()}}, filter that table however you like, and pass it back:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{projects <- osf_user_projects("4i578")
+subset(projects, public) |> osf_file_download(download_to = "my_osf")
+}\if{html}{\out{</div>}}
+}
+
+\section{Checking the download}{
+Every file that was meant to arrive is checked against the file system
+afterwards, and against the size the OSF reported for it, so a transfer that
+failed silently or wrote a truncated file is reported rather than passing as
+complete. Two columns record the outcome: \code{downloaded} is TRUE only for a
+file actually present at the right size, and \code{attempted} is FALSE for a file
+deliberately excluded by \code{max_file_size} or \code{max_download_size}. Files that
+were attempted but did not arrive raise a warning naming them.
+}
+
 \examples{
 \dontrun{
 osf_file_download("6nt4v")
+
+# download everything one user has, then archive it on Zenodo
+osf_file_download("4i578", download_to = "my_osf",
+                  max_file_size = NULL) |>
+  zenodo_upload()
 }
 }

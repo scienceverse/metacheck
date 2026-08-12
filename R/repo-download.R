@@ -194,12 +194,38 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   }, error = function(e) NA_real_)
 }
 
+# Which HTTP statuses are worth retrying when fetching a FILE from repository
+# storage. httr2's default covers 429 and 503. 403 is added because OSF does
+# not serve files from api.osf.io directly: it redirects to a pre-signed
+# cloud-storage URL, and that URL answers 403 both when the signature has
+# expired and when the storage host refuses a request from a burst. Neither is
+# permanent, but the default treats 403 as "not allowed, do not retry", so a
+# file is silently lost from an otherwise complete download. Observed live on
+# 2026-08-12: one file of 56 from pngda failed this way while the test suite
+# was downloading concurrently, and succeeded on every run made on its own.
+#
+# This applies only to downloading file BYTES from storage hosts. A 403 from
+# the OSF API itself means a private resource and is handled separately, by
+# .osf_status_error(), which is untouched by this.
+.storage_is_transient <- function(resp) {
+  httr2::resp_status(resp) %in% c(403, 429, 500, 502, 503, 504)
+}
+
+# Wait longer between each try, so a retry does not simply rejoin the burst
+# that was just refused: 2s after the first failure, 4s after the second,
+# doubling to a 30s ceiling. httr2 honours a server's Retry-After header in
+# preference to this.
+.storage_backoff <- function(attempt) {
+  min(2^attempt, 30)
+}
+
 # Download one file to `dest`. Returns NA_character_ on success, or a short
 # error description on failure (for the caller's failure report). Files are
 # size-gated upfront by the caller, so this just fetches. Transient server
-# refusals — OSF rate-limits bursts with 429, and 503s happen — are retried
-# with backoff (Retry-After is honoured), because a batch of many small
-# requests otherwise loses files at random.
+# refusals — OSF rate-limits bursts with 429, answers 403 from its pre-signed
+# storage URLs, and 503s happen — are retried with backoff (Retry-After is
+# honoured), because a batch of many small requests otherwise loses files at
+# random.
 .download_one <- function(url, dest) {
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   tryCatch({
@@ -215,7 +241,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       # inserts waits when the burst budget is spent, which is what keeps OSF
       # from answering 429.
       httr2::req_throttle(capacity = 10, fill_time_s = 10, realm = host) |>
-      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient,
+                       backoff = .storage_backoff) |>
       httr2::req_progress()
     httr2::req_perform(req, path = dest)
     if (file.exists(dest) && file.size(dest) > 0) NA_character_
@@ -262,7 +290,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   reqs <- lapply(urls, \(url) {
     tryCatch({
       httr2::request(url) |>
-        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
+        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                         is_transient = .storage_is_transient,
+                         backoff = .storage_backoff) |>
         httr2::req_error(is_error = \(resp) FALSE)
     }, error = \(e) NULL)
   })
@@ -402,7 +432,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       req_func() |>
       httr2::req_timeout(timeout_s) |>
       httr2::req_error(is_error = \(r) FALSE) |>
-      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE)
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient,
+                       backoff = .storage_backoff)
     if (verbose()) req <- httr2::req_progress(req, type = "down")
     httr2::req_perform(req, path = zip_tmp)
     if (!file.exists(zip_tmp) || file.size(zip_tmp) == 0) "empty response"
