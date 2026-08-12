@@ -147,8 +147,15 @@ test_that("osf_file_download zip keep archive", {
 
   expect_equal(nrow(dl), 1)
   expect_true(dl$downloaded[[1]])
-  expect_equal(dl$path[[1]], "abcde.zip")
-  expect_true(file.exists(file.path(download_to, mock_id, "abcde.zip")))
+
+  # One archive per node that OWNS files, not one for the root. The OSF's
+  # ?zip= endpoint only ever archives a single node's osfstorage, so a file
+  # belonging to component "child1" comes from child1's archive; asking the
+  # root for it returns an archive that does not contain it. Hence child1.zip,
+  # not abcde.zip.
+  expect_equal(dl$path[[1]], "child1.zip")
+  expect_true(file.exists(file.path(download_to, mock_id, "child1.zip")))
+  expect_false(file.exists(file.path(download_to, mock_id, "abcde.zip")))
 }, "none")
 
 test_that("osf_file_download zip unzip preserves structure", {
@@ -174,6 +181,11 @@ test_that("osf_file_download zip unzip preserves structure", {
 
   zip_src <- withr::local_tempdir()
   writeLines("x,y\n1,2", file.path(zip_src, "processed-data.csv"))
+  # The downloaded file is checked against the size the OSF reported, so the
+  # fixture has to declare the size its own test data actually has (which is
+  # platform-dependent: writeLines() ends lines with CRLF on Windows, LF
+  # elsewhere).
+  contents$size[[1]] <- file.size(file.path(zip_src, "processed-data.csv"))
   withr::with_dir(zip_src,
                   utils::zip("mock.zip", "processed-data.csv", flags = "-q"))
   zip_raw <- readBin(file.path(zip_src, "mock.zip"), "raw",
@@ -233,7 +245,13 @@ test_that("osf_file_download zip unzip can flatten structure", {
     provider = c("osfstorage", "osfstorage", NA),
     path = c("/README", "/nested/README", NA),
     kind = c("file", "file", "folder"),
-    size = c(8, 9, NA),
+    # Sizes are filled in below from the bytes actually written into the mock
+    # archive. osf_file_download() checks each downloaded file against the size
+    # the OSF reported for it, so a fixture that declares a size its own test
+    # data does not have would (correctly) be reported as a failed download.
+    # Hard-coding a number is also platform-dependent: writeLines() ends lines
+    # with CRLF on Windows and LF elsewhere.
+    size = c(NA_real_, NA_real_, NA),
     download_url = c("https://example.test/README", "https://example.test/nested/README", NA),
     parent = c(mock_id, mock_id, NA),
     project = c(mock_id, mock_id, NA),
@@ -246,6 +264,10 @@ test_that("osf_file_download zip unzip can flatten structure", {
   dir.create(file.path(zip_src, "nested"))
   writeLines("root", file.path(zip_src, "README"))
   writeLines("nested", file.path(zip_src, "nested", "README"))
+  contents$size[1:2] <- c(
+    file.size(file.path(zip_src, "README")),
+    file.size(file.path(zip_src, "nested", "README"))
+  )
   withr::with_dir(zip_src,
                   utils::zip("mock.zip", c("README", "nested/README"), flags = "-q"))
   zip_raw <- readBin(file.path(zip_src, "mock.zip"), "raw",
@@ -483,3 +505,66 @@ test_that("osf_file_download registrations", {
   contents <- osf_info(osf_id, recursive = TRUE)
   expect_contains(contents$kind, c("folder", "file"))
 }, "mock")
+
+
+test_that("downloads are verified against the file system", {
+  skip_if_not(online("api.osf.io"))
+  skip_on_cran()
+
+  # A small single-file project, not pngda: this test only needs the
+  # verification columns to be right, and downloading 57 files over the network
+  # (twice, with the test below) provokes OSF into refusing requests.
+  download_to <- withr::local_tempdir()
+  dl <- suppressWarnings(
+    osf_file_download("6nt4v", download_to, max_file_size = 5))
+
+  expect_true(all(c("size_on_disk", "attempted") %in% names(dl)))
+
+  # Whatever is marked as downloaded really is on disk, at the size the OSF
+  # reported for it. Not asserted as "every attempted file arrived": this
+  # downloads over the network for real, and an occasional failed transfer is
+  # what `downloaded` exists to report, not a broken test.
+  expect_equal(unname(dl$size_on_disk[dl$downloaded]),
+               as.numeric(dl$size[dl$downloaded]))
+
+  # deleting a file is detected: `downloaded` reflects the file system, not
+  # merely that the copy step ran
+  skip_if(sum(dl$downloaded) < 1)
+  folder <- unique(dl$download_path)[[1]]
+  gone <- dl$path[dl$downloaded][[1]]
+  file.remove(file.path(folder, gone))
+
+  rechecked <- .osf_verify_downloads(dl, folder)
+  expect_equal(sum(!rechecked$downloaded), sum(!dl$downloaded) + 1L)
+})
+
+
+test_that("files skipped by a size limit are not reported as failures", {
+  skip_if_not(online("api.osf.io"))
+  skip_on_cran()
+
+  download_to <- withr::local_tempdir()
+
+  # max_file_size excludes a file on purpose; that is not a download failure,
+  # and it was already reported when it was skipped
+  expect_message(
+    dl <- suppressWarnings(
+      osf_file_download("pngda", download_to, max_file_size = 0.01)),
+    "exceeded"
+  )
+
+  # The point of `attempted`: a file excluded by the size limit is marked
+  # FALSE, so it is not counted as a download that failed, and is never
+  # reported as having arrived.
+  expect_true(any(!dl$attempted))
+  expect_false(any(dl$downloaded[!dl$attempted]))
+
+  # Every file that was skipped was skipped for the stated reason
+  expect_true(all(dl$size[!dl$attempted] > 0.01 * 1024 * 1024))
+
+  # Files that were attempted mostly arrive, but this downloads from OSF for
+  # real and OSF refuses the occasional request in a burst (HTTP 403/429), so
+  # the count is not asserted exactly -- reporting such a failure is precisely
+  # what `downloaded` is for.
+  expect_gt(sum(dl$downloaded), 0)
+})

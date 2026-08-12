@@ -487,6 +487,7 @@ zenodo_file_download <- function(zenodo_id,
   }
 
   # copy to flat target directory using original filename if available
+  files$path <- NA_character_
   for (i in seq_len(nrow(files))) {
     if (isTRUE(files$downloaded[i])) {
       from <- file.path(temppath, files$id[[i]])
@@ -494,13 +495,95 @@ zenodo_file_download <- function(zenodo_id,
       to <- file.path(download_to, fname)
       dir.create(dirname(to), showWarnings = FALSE, recursive = TRUE)
       file.copy(from, to, overwrite = TRUE)
+      files$path[[i]] <- fname
     }
+  }
+
+  # --- verify what actually reached the disk ----
+  files <- .zenodo_verify_downloads(files, download_to)
+
+  n_missing <- sum(!files$downloaded)
+  if (n_missing > 0) {
+    worst <- files[!files$downloaded, ]
+    warning(sprintf(
+      "%d of %d file%s from Zenodo record %s did not arrive intact (e.g. %s). The returned table marks %s downloaded = FALSE. Run again to retry.",
+      n_missing, nrow(files), plural(nrow(files)), zenodo_id,
+      paste(utils::head(worst$key, 3), collapse = ", "),
+      if (n_missing == 1) "it" else "them"), call. = FALSE)
   }
 
   # --- return table ----
   files$folder    <- basename(download_to)
   files$zenodo_id <- as.character(zenodo_id)
-  files <- files[, c("folder", "zenodo_id", "id", "key", "size", "checksum", "self", "downloaded")]
+  files <- files[, c("folder", "zenodo_id", "id", "key", "path", "size",
+                     "size_on_disk", "checksum", "checksum_ok", "self",
+                     "downloaded")]
 
   invisible(files)
+}
+
+#' Check downloaded Zenodo files against the file system
+#'
+#' Confirms that every file the download planned to save is present, is the
+#' size Zenodo reported, and matches the checksum Zenodo published for it.
+#'
+#' Up to this point `downloaded` records only that the transfer step ran. A
+#' request that failed, a copy that did not happen, or a truncated write all
+#' leave a row marked TRUE with nothing usable on disk. That matters most when
+#' archiving a whole record unattended, where nobody is watching each file.
+#'
+#' Zenodo publishes an MD5 checksum per file, which catches corruption that a
+#' size comparison cannot -- a file can be the right length and still be wrong.
+#' Hashing uses `tools::md5sum()` from base R, as `import-grobid.R` and
+#' `llm-cache.R` already do, so this adds no dependency. Only files Zenodo gave
+#' an `md5:` value for are hashed; for anything else the size check stands on
+#' its own.
+#'
+#' @param files the file table being built, with `path`, `size`, `checksum`,
+#'   and `downloaded` columns
+#' @param download_to the folder the record was saved in
+#'
+#' @returns `files` with `downloaded` corrected against the file system, plus
+#'   `size_on_disk` and `checksum_ok` columns
+#' @export
+#' @keywords internal
+.zenodo_verify_downloads <- function(files, download_to) {
+  if (is.null(files) || nrow(files) == 0) return(files)
+
+  files$size_on_disk <- NA_real_
+  files$checksum_ok <- NA
+
+  if (!"path" %in% names(files)) {
+    files$downloaded <- FALSE
+    return(files)
+  }
+
+  has_path <- !is.na(files$path)
+  full <- rep(NA_character_, nrow(files))
+  full[has_path] <- file.path(download_to, files$path[has_path])
+
+  on_disk <- rep(FALSE, nrow(files))
+  on_disk[has_path] <- file.exists(full[has_path]) & !dir.exists(full[has_path])
+  files$size_on_disk[on_disk] <- file.size(full[on_disk])
+
+  ok <- on_disk & !is.na(files$size_on_disk)
+
+  # Size: a file present at the wrong length is worse than an absent one,
+  # because it looks complete to everything downstream.
+  expected <- suppressWarnings(as.numeric(files$size %||% rep(NA_real_, nrow(files))))
+  ok <- ok & (is.na(expected) | files$size_on_disk == expected) %in% TRUE
+
+  # Checksum: only for files that survived the checks above, since hashing is
+  # the expensive part and there is no point hashing a file that is missing.
+  md5 <- sub("^md5:", "", files$checksum %||% rep(NA_character_, nrow(files)))
+  to_hash <- which(ok & !is.na(md5) &
+                     grepl("^[0-9a-f]{32}$", md5, ignore.case = TRUE))
+  for (i in to_hash) {
+    got <- tryCatch(unname(tools::md5sum(full[[i]])), error = \(e) NA_character_)
+    files$checksum_ok[[i]] <- identical(tolower(got), tolower(md5[[i]]))
+  }
+  ok <- ok & !(files$checksum_ok %in% FALSE)
+
+  files$downloaded <- ok & files$downloaded %in% TRUE
+  files
 }

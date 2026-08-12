@@ -213,3 +213,184 @@ test_that("osf_id vs wb_id", {
 
   expect_equal(osf_info[, 2:11], wb_info[, 2:11])
 }, "mock")
+
+
+test_that("osf_pat", {
+  expect_true(is.function(metacheck::osf_pat))
+  expect_no_error(helplist <- help(osf_pat, metacheck))
+
+  withr::local_options(metacheck.osf.pat = NULL)
+  withr::local_envvar(OSF_PAT = "")
+
+  # falls back to the environment variable when the option is unset, so
+  # .Renviron keeps working exactly as before
+  expect_equal(osf_pat(), "")
+  withr::local_envvar(OSF_PAT = "from-renviron")
+  expect_equal(osf_pat(), "from-renviron")
+
+  # setting it overrides the environment variable for the session
+  osf_pat("from-function")
+  expect_equal(osf_pat(), "from-function")
+
+  expect_error(osf_pat(123), "single string")
+  expect_error(osf_pat(c("a", "b")), "single string")
+})
+
+
+test_that(".osf_headers takes an explicit token", {
+  req <- httr2::request("https://api.osf.io")
+
+  withr::local_options(metacheck.osf.pat = NULL)
+  withr::local_envvar(OSF_PAT = "")
+
+  # The argument is `pat`, not `osf_pat`: an argument named after the
+  # osf_pat() function supplying its default would shadow it and error with
+  # "promise already under evaluation".
+  obs <- .osf_headers(req, pat = "explicit-token")
+  expect_equal(typeof(obs$headers$Authorization), "weakref")
+
+  obs_none <- .osf_headers(req, pat = "")
+  expect_null(obs_none$headers$Authorization)
+})
+
+
+test_that(".osf_expand_user_ids leaves non-user ids alone", {
+  skip_if_not(online("api.osf.io"))
+
+  # a project id passes through untouched
+  expect_equal(.osf_expand_user_ids("6nt4v"), "6nt4v")
+
+  # nothing in, nothing out
+  expect_equal(.osf_expand_user_ids(character(0)), character(0))
+
+  # a 24-character waterbutler file id can never be a user, so it is not even
+  # queried
+  wb <- strrep("a", 24)
+  expect_equal(.osf_expand_user_ids(wb), wb)
+})
+
+
+test_that(".osf_user_nodes reduces components to their projects", {
+  skip_if_not(online("api.osf.io"))
+  skip_on_cran()
+
+  # A user profile lists every node the user contributes to, components
+  # included. Downloading a component separately would duplicate files already
+  # nested inside its project, so each node is reduced to its root.
+  projects <- .osf_user_nodes("4i578")
+
+  expect_type(projects, "character")
+  expect_gt(length(projects), 0)
+  expect_false(any(duplicated(projects)))
+  expect_true(all(nchar(projects) == 5))
+
+  # the profile lists more nodes than there are unique projects
+  all_nodes <- osf_get_all_pages("https://api.osf.io/v2/users/4i578/nodes/")
+  expect_gt(nrow(all_nodes), length(projects))
+})
+
+
+test_that(".osf_expand_user_ids expands a user id", {
+  skip_if_not(online("api.osf.io"))
+  skip_on_cran()
+
+  expect_equal(osf_type("4i578"), "users")
+
+  expect_message(expanded <- .osf_expand_user_ids("4i578"), "projects to download")
+  expect_gt(length(expanded), 1)
+  expect_equal(expanded, .osf_user_nodes("4i578"))
+
+  # a project named alongside its owner is kept, and kept first
+  mixed <- suppressMessages(.osf_expand_user_ids(c("6nt4v", "4i578")))
+  expect_equal(mixed[[1]], "6nt4v")
+  expect_false(any(duplicated(mixed)))
+})
+
+
+test_that(".osf_verify_downloads checks the file system", {
+  d <- withr::local_tempdir()
+  writeLines("hello", file.path(d, "good.txt"))
+  good_size <- file.size(file.path(d, "good.txt"))
+
+  # present and the size the OSF reported
+  r <- data.frame(path = "good.txt", size = good_size, downloaded = TRUE)
+  expect_true(.osf_verify_downloads(r, d)$downloaded)
+
+  # present but truncated: worse than absent, because it looks complete
+  r_trunc <- data.frame(path = "good.txt", size = 999999, downloaded = TRUE)
+  v <- .osf_verify_downloads(r_trunc, d)
+  expect_false(v$downloaded)
+  expect_equal(v$size_on_disk, as.numeric(good_size))
+
+  # absent
+  expect_false(.osf_verify_downloads(
+    data.frame(path = "missing.txt", size = 10, downloaded = TRUE), d)$downloaded)
+
+  # no path was ever set for the row
+  expect_false(.osf_verify_downloads(
+    data.frame(path = NA_character_, size = 10, downloaded = TRUE), d)$downloaded)
+
+  # the OSF reported no size, so presence is all that can be checked
+  expect_true(.osf_verify_downloads(
+    data.frame(path = "good.txt", size = NA_real_, downloaded = TRUE), d)$downloaded)
+
+  # a row already known to have failed is not resurrected by the file existing
+  expect_false(.osf_verify_downloads(
+    data.frame(path = "good.txt", size = good_size, downloaded = FALSE), d)$downloaded)
+
+  # a directory is not a downloaded file
+  dir.create(file.path(d, "adir"))
+  expect_false(.osf_verify_downloads(
+    data.frame(path = "adir", size = NA_real_, downloaded = TRUE), d)$downloaded)
+
+  # zip kept unopened: every row points at the one archive, so sizes cannot
+  # be compared per file
+  expect_true(.osf_verify_downloads(
+    data.frame(path = "good.txt", size = 999999, downloaded = TRUE), d,
+    check_size = FALSE)$downloaded)
+
+  # nothing to check
+  expect_equal(nrow(.osf_verify_downloads(r[0, ], d)), 0L)
+  expect_false(.osf_verify_downloads(
+    data.frame(size = 1, downloaded = TRUE), d)$downloaded)
+})
+
+
+test_that("osf_user_projects lists projects to choose from", {
+  skip_if_not(online("api.osf.io"))
+  skip_on_cran()
+
+  expect_true(is.function(metacheck::osf_user_projects))
+  expect_no_error(helplist <- help(osf_user_projects, metacheck))
+
+  projects <- osf_user_projects("4i578")
+
+  expect_s3_class(projects, "data.frame")
+  expect_true(all(c("osf_id", "name", "category", "public", "osf_url") %in%
+                    names(projects)))
+  expect_gt(nrow(projects), 0)
+  expect_false(any(duplicated(projects$osf_id)))
+  expect_true(all(nchar(projects$osf_id) == 5))
+
+  # titles are the point of the listing: a project only reachable through one
+  # of its components is filled in by a second batched request, so almost
+  # every row should be named
+  expect_gt(sum(!is.na(projects$name)), nrow(projects) * 0.9)
+
+  # Every ID is a plausible project the download path could expand a user to.
+  # Not compared against a second live call of .osf_user_nodes(): the OSF
+  # returns fewer nodes when it is under load, so two separate listings of the
+  # same profile legitimately differ in length.
+  expect_type(projects$osf_id, "character")
+  expect_false(any(is.na(projects$osf_id)))
+
+  # nothing to list
+  expect_equal(nrow(osf_user_projects(NA_character_)), 0L)
+})
+
+
+test_that("osf_file_download accepts a table of projects", {
+  # a filtered osf_user_projects() table is how a subset is chosen
+  expect_error(osf_file_download(data.frame(name = "x")),
+               "no `osf_id` column")
+})

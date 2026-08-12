@@ -12,7 +12,9 @@
   accept = "application/json",
   req_func = function(req) {
      req
- }
+ },
+  throttle_capacity = NULL,
+  throttle_fill_time_s = 1
 )
 }
 \arguments{
@@ -25,6 +27,15 @@
 \item{delay}{Courtesy delay between batches (in seconds)}
 
 \item{accept}{The header type to accept}
+
+\item{throttle_capacity}{requests per \code{throttle_fill_time_s} to allow, or
+NULL (default) for no throttling. Only set this for a host known to
+rate-limit (e.g. CrossRef); for others, req_retry's backoff already
+handles the rare 429 and a proactive throttle would just slow things down
+for no benefit.}
+
+\item{throttle_fill_time_s}{time window (seconds) \code{throttle_capacity}
+applies to. Ignored when \code{throttle_capacity} is NULL.}
 }
 \value{
 a list of responses
