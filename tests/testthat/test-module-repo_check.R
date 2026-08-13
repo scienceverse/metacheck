@@ -107,33 +107,52 @@ test_that("OSF", {
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
 
-test_that("OSF, github and rb", {
+test_that("OSF and github", {
   # relevant text - info
   module <- "repo_check"
   text <- c("osf.io/629bx",
-            "github.com/scienceverse/demo",
-            "https://researchbox.org/4377")
+            "github.com/scienceverse/demo")
   paper <- test_paper()
-  paper$url <- data.frame(href = text, text_id = 1:3)
+  paper$url <- data.frame(href = text, text_id = 1:2)
   mod_output <- module_run(paper, module)
 
   expect_equal(mod_output$traffic_light, "yellow")
-  expect_gt(nrow(mod_output$table), 14)
+  exp <- c("bad.R", "bad.Rmd", "good-example.R")
+  expect_contains(mod_output$table$file_name, exp)
+  expect_equal(mod_output$summary_table$paper_id, paper$paper_id)
+  expect_equal(mod_output$summary_table$repo_n, 2)
+  expect_equal(mod_output$summary_table$files_n, nrow(mod_output$table))
+  expect_gte(mod_output$summary_table$files_data, 1)
+  expect_gte(mod_output$summary_table$files_code, 1)
+  expect_gte(mod_output$summary_table$files_zip, 1)
+}, "mock")
+
+test_that("ResearchBox", {
+  # Not mocked, unlike the rest of this file. ResearchBox builds its zip from a
+  # POST to download_files.php, and httptest2 records that binary body as a
+  # separate .R-FILE payload referenced by find_mock_file(), which is internal
+  # to httptest2 and not in scope when the fixture is evaluated -- so a recorded
+  # response cannot be replayed. (The varying `reference` token in the POST body
+  # is handled by the redactor in helper.R, but that only fixes the file NAME,
+  # not this.) So this one goes to the live site.
+  skip_if_not(online("researchbox.org"))
+  skip_on_cran()
+
+  module <- "repo_check"
+  paper <- test_paper()
+  paper$url <- data.frame(href = "https://researchbox.org/4377", text_id = 1)
+  mod_output <- module_run(paper, module)
+
   # `file_name` holds the file's NAME; its position inside the repository (or
   # inside an expanded archive) lives in `file_path`. The ResearchBox archive
   # stores this script at "Code/Study 1.r", so the subfolder is asserted
   # against file_path and the bare name against file_name.
-  exp <- c("bad.R", "bad.Rmd", "Study 1.r", "good-example.R")
-  expect_contains(mod_output$table$file_name, exp)
+  expect_contains(mod_output$table$file_name, "Study 1.r")
   expect_contains(mod_output$table$file_path, "Code/Study 1.r")
-  expect_equal(mod_output$summary_table$paper_id, paper$paper_id)
-  expect_equal(mod_output$summary_table$repo_n, 3)
-  expect_equal(mod_output$summary_table$files_n, nrow(mod_output$table))
+  expect_equal(mod_output$summary_table$repo_n, 1)
   expect_gte(mod_output$summary_table$files_data, 1)
   expect_gte(mod_output$summary_table$files_code, 1)
-  expect_gte(mod_output$summary_table$files_readme, 1)
-  expect_gte(mod_output$summary_table$files_zip, 1)
-}, "mock")
+})
 
 test_that("Zenodo", {
   paper <- test_paper(url = "https://zenodo.org/records/17754445")
