@@ -4,12 +4,16 @@
 \alias{code_line_stats}
 \title{Get Code Composition Stats}
 \usage{
-code_line_stats(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
+code_line_stats(
+  code_text,
+  lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")
+)
 }
 \arguments{
 \item{code_text}{the code text for a single file}
 
-\item{lang}{the language (we only currently handle R, SPSS, SAS, Stata)}
+\item{lang}{the language (we only currently handle R, Python, SPSS, SAS,
+Stata, Mplus, MATLAB)}
 }
 \value{
 list with items \code{total_lines}, \code{comment_lines}, \code{code_lines}, and \code{percent_comment}
