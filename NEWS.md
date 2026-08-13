@@ -1,3 +1,18 @@
+# metacheck 0.2.0
+
+* Four new modules: `data_check`, `codebook_check`, `reg_check` and `ethics_check`
+* Large updates to existing modules:
+  * `repo_check` now lists what is inside zip archives instead of just counting them, and checks file naming
+  * `code_check` reads code out of output files, supports Python and notebooks, and detects environment pins
+  * `ref_accuracy` was rewritten to check DOI-backed reference coherence
+  * `stat_effect_size` finds tests via `extract_eq()` and reports implied sample sizes
+  * `power` uses structured LLM extraction, with a prompt-based fallback
+* Data files in repositories are now downloaded and checked, not just listed, with a shared on-disk cache (`download_repo_files()`, `repo_cache_dir()`)
+* New archive sources: PsychArchives, Zenodo deposit and upload, and OSF project listing; GitHub repositories are now listed via the Git Trees API
+* Statistical output files can be read and compared against the manuscript: JASP, jamovi, SPSS, Stata, Mplus and R (`read_stat_tables()`, `match_reported_output()`)
+* LLM responses are cached on disk (`llm_cache()`), with new `llm_reasoning()` and `llm_max_tokens()` settings
+* Removed `metacheck_app()`; use `report_app()` instead
+
 # metacheck 0.1.0
 
 * Actual beta release with proper number and Zenodo citation!
