@@ -223,14 +223,31 @@ osf_info <- function(osf_url, id_col = 1,
     # both ways, with byte-for-byte identical results; the batched version was
     # slower, because .batch_query() sleeps 0.5s between batches of 5. Left
     # sequential deliberately -- do not "optimise" this without measuring.
+    # Both loops report as they go. A big repository spends minutes here with
+    # nothing else to show -- ManyLabs2 has hundreds of components -- and a
+    # spinner that says only "Starting retrieval" for that long is
+    # indistinguishable from a hang. Saying which level is being walked, and
+    # how much has been found, makes a long wait legible.
     children <- info
     child_collector <- data.frame()
     urls <- children$children[!is.na(children$children)]
+    depth <- 0
     while (length(urls) > 0) {
+      depth <- depth + 1
+      sprintf("Listing components: level %d, %d to check (%d found so far)",
+              depth, length(urls), nrow(child_collector)) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
       resp <- lapply(urls, osf_get_all_pages) |> dplyr::bind_rows()
       children <- .osf_parse_response(resp)
       child_collector <- dplyr::bind_rows(child_collector, children)
       urls <- children$children[!is.na(children$children)]
+    }
+    if (nrow(child_collector) > 0) {
+      sprintf("Found %d component%s", nrow(child_collector),
+              plural(nrow(child_collector))) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
     }
 
     # get all new node IDs to search for files
@@ -239,6 +256,11 @@ osf_info <- function(osf_url, id_col = 1,
     urls <- files$files[!is.na(files$files)]
     file_collector <- data.frame()
     while (length(urls) > 0) {
+      n_files <- sum(file_collector$kind %in% "file")
+      sprintf("Listing files: %d folder%s to check (%d file%s found so far)",
+              length(urls), plural(length(urls)), n_files, plural(n_files)) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
       resp <- lapply(urls, osf_get_all_pages) |> dplyr::bind_rows()
       files <- .osf_parse_response(resp)
       file_collector <- dplyr::bind_rows(file_collector, files)
@@ -482,7 +504,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
         logger("osf_get_all_pages",
                list(url = url, expected = total1, got = nrow(out)))
         warning(sprintf(
-          "The OSF listed only %d of the %d items it reports for %s. Files that were not listed cannot be downloaded. Run again (see ?osf_pat, which raises the request limit).",
+          "The OSF listed only %d of the %d items it reports for %s. Anything not listed is not retrieved, so this listing is incomplete. Run again (see ?osf_pat, which raises the request limit).",
           nrow(out), total1, sub("\\?.*$", "", url)), call. = FALSE)
         attr(out, "osf_incomplete") <- c(expected = total1, got = nrow(out))
       }
@@ -578,7 +600,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
     logger("osf_get_all_pages",
            list(url = url, expected = expected, got = got))
     warning(sprintf(
-      "The OSF listed only %d of the %d items it reports for %s. Files that were not listed cannot be downloaded. This usually means the OSF refused a request under load: run again (see ?osf_pat, which raises the request limit).",
+      "The OSF listed only %d of the %d items it reports for %s. Anything not listed is not retrieved, so this listing is incomplete. This usually means the OSF refused a request under load: run again (see ?osf_pat, which raises the request limit).",
       got, expected, sub("\\?.*$", "", url)), call. = FALSE)
     attr(out, "osf_incomplete") <- c(expected = expected, got = got)
   }
@@ -674,7 +696,15 @@ osf_delay <- function(delay = NULL) {
 #'
 #' Some differences may exist because the OSF allows longer file names with characters that may not be allowed on a file system, so these are cleaned up when downloading.
 #'
-#' In the default `mode = "files"`, you can limit downloads to only files under a specific size (defaults to 10MB). Files over `max_file_size` are omitted individually, while `max_download_size` is an all-or-nothing gate for the remaining repository total. Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+#' Everything is downloaded by default: no size limits apply, because this
+#' function exists to retrieve a repository in full and someone archiving their
+#' own work wants their own files whatever size they are. Limits are available
+#' for when that is not what you want -- looking at somebody else's repository,
+#' say. In the default `mode = "files"`, files over `max_file_size` are omitted
+#' individually, while `max_download_size` is an all-or-nothing gate for the
+#' remaining repository total. Omitted files are reported as messages and
+#' appear in the returned data frame with `downloaded = FALSE` and
+#' `attempted = FALSE`.
 #'
 #' In `mode = "zip"`, OSF's Waterbutler API serves a folder as one generated zip
 #' archive, which is far fewer requests than fetching each file. That endpoint
@@ -716,13 +746,47 @@ osf_delay <- function(delay = NULL) {
 #'   contributes to, so a whole account can be archived in one call. To choose
 #'   a subset instead, pass the table from [osf_user_projects()] (filtered
 #'   however you like) -- any data frame with an `osf_id` column works.
-#' @param download_to path to download to
-#' @param max_file_size maximum file size to download (in MB) - set to NULL for no restrictions
-#' @param max_download_size maximum total size to download
+#' @param download_to path to download to. Each project is saved in its own
+#'   folder here, named after its OSF ID. Downloading the same project again
+#'   reuses that folder and fetches only what is missing, so re-running after a
+#'   partial download resumes it instead of making a second copy.
+#' @param max_file_size largest single file to download, in MB. `NULL` (the
+#'   default) means no limit: this function exists to retrieve a repository in
+#'   full, and someone archiving their own work wants their own files whatever
+#'   size they are. Set a number to skip anything larger, which is useful when
+#'   looking at a repository that is not yours.
+#' @param max_download_size largest total per project, in MB. `NULL` (the
+#'   default) means no limit, for the same reason.
 #' @param max_folder_length maximum folder name length (set to make sure paths are <260 character on some Windows OS)
 #' @param ignore_folder_structure if TRUE, download all files into a single folder
-#' @param mode download individual files (`"files"`, the default) or request a Waterbutler zip of the whole folder/repository (`"zip"`)
+#' @param mode what you want from the repository:
+#'
+#'   * `"all"` (the default) -- the whole thing, as fast as the OSF allows. It
+#'     walks the component tree and takes one archive per component, never
+#'     listing individual files. Listing is what makes a large repository slow:
+#'     for ManyLabs2 it ran over 15 minutes before fetching anything, while
+#'     this route retrieved the whole 1.9 GB project in under 7 minutes. Files
+#'     on a linked add-on (GitHub, Dropbox) are not in any OSF archive, so
+#'     those are fetched individually. Size limits do not apply, because there
+#'     is no file list to filter, and neither does resuming: running it again
+#'     downloads every archive again. Knowing what to skip would mean reading
+#'     each archive's index without fetching it, and the OSF does not allow
+#'     that (a HEAD returns 501 and a Range request returns the whole file, so
+#'     `zip_peek()` cannot read it). Use `"select"` if you need to resume.
+#'   * `"select"` -- list every file first, apply `max_file_size` and
+#'     `max_download_size`, then fetch what survives, checking each file
+#'     against the size the OSF reported. Use this when you want part of a
+#'     repository, or want each file verified.
+#'   * `"zip"` -- like `"select"`, but transports whole nodes as archives once
+#'     the listing is done. Fewer requests than `"select"`, though not faster.
+#'   * `"files"` -- an old name for `"select"`, still accepted.
 #' @param unzip if `TRUE` and `mode = "zip"`, unzip the downloaded archive into the output folder; if `FALSE`, keep the zip file as-is
+#' @param metadata whether to also retrieve the parts of the project that are
+#'   not files, into an `_osf_metadata` folder inside the project's folder: wiki
+#'   pages as Markdown (current version only), the activity log as
+#'   `logs.csv`, the project's title, description, tags, licence and
+#'   contributors as `metadata.json`, and a readable `README.md` summarising
+#'   them. Costs about four extra API requests per project.
 #' @param osf_pat an OSF personal access token, needed to reach private projects
 #'   and to raise the API rate limit. Defaults to whatever [osf_pat()] returns
 #'   (the `OSF_PAT` environment variable unless set otherwise); passing it here
@@ -734,6 +798,11 @@ osf_delay <- function(delay = NULL) {
 #'   saved in, plus `osf_project` and `osf_url` identifying the project, so the
 #'   result can be passed straight to [zenodo_upload()]. `downloaded`,
 #'   `size_on_disk`, and `attempted` report the verification described above.
+#'
+#'   In `mode = "all"` there is no file listing, so the table has one row per
+#'   **node** instead: `folder`, `osf_project`, `osf_url`, `title`, `files`
+#'   (how many arrived), `bytes`, `download_path`, and `downloaded`. It can
+#'   still be passed to [zenodo_upload()], which uses `download_path`.
 #' @export
 #'
 #' @examples
@@ -747,16 +816,23 @@ osf_delay <- function(delay = NULL) {
 #' }
 osf_file_download <- function(osf_id,
                               download_to = ".",
-                              max_file_size = 10,
-                              max_download_size = 100,
+                              max_file_size = NULL,
+                              max_download_size = NULL,
                               max_folder_length = Inf,
                               ignore_folder_structure = FALSE,
-                              mode = c("files", "zip"),
+                              mode = c("all", "select", "files", "zip"),
                               unzip = TRUE,
+                              metadata = TRUE,
                               osf_pat = NULL,
                               pb = NULL) {
   ## error checking ----
   mode <- match.arg(mode)
+  # "files" and "zip" named a transport rather than an intent, and the choice
+  # silently decided whether the size limits applied at all. "select" is the
+  # old "files" behaviour under a name that says what it is for; "zip" is kept
+  # because it is still the right answer when you want whole nodes but also
+  # want the file listing (to filter, or to verify).
+  if (identical(mode, "select")) mode <- "select"
   # The documentation offers NULL as "no restriction", but NULL reaches the
   # size gates below as length-zero, where is.finite(NULL) is logical(0) and
   # `if` then errors with "missing value where TRUE/FALSE needed". Normalising
@@ -824,7 +900,8 @@ osf_file_download <- function(osf_id,
             max_folder_length = max_folder_length,
             ignore_folder_structure = ignore_folder_structure,
             mode = mode,
-            unzip = unzip
+            unzip = unzip,
+            metadata = metadata
           )
         },
         error = function(e) {
@@ -846,6 +923,22 @@ osf_file_download <- function(osf_id,
     return(dl)
   }
 
+  ## mode = "all": skip the file listing entirely ----
+  # Listing every file is what makes a large repository slow: for ManyLabs2
+  # (8cd4r) the recursive listing ran over 15 minutes before a single byte was
+  # fetched, while walking the component tree and taking one archive per node
+  # retrieved the whole 1.9 GB project in 396 seconds (measured 2026-08-13).
+  #
+  # The listing earns its cost when you are CHOOSING files -- it is what
+  # `max_file_size` filters on, and what the per-file size verification checks
+  # against. When you want the repository in full, neither applies, so the
+  # listing is spent learning the names of files you were going to download
+  # regardless.
+  if (identical(mode, "all")) {
+    return(.osf_download_all(osf_id, download_to, metadata = metadata,
+                             pb = pb))
+  }
+
   ## get files and folders ----
   paste0("Starting retrieval for ", osf_id)|>
     list(what = _) |>
@@ -857,10 +950,39 @@ osf_file_download <- function(osf_id,
     intersect(names(contents))
   files <- contents[contents$osf_type == "files", cols, drop = FALSE]
 
+  # Say what was found before fetching begins, so the size of the job is known
+  # up front rather than inferred from how long it takes.
+  n_f <- sum(files$kind %in% "file")
+  if (n_f > 0) {
+    sprintf("%s: %d file%s, %s to download", osf_id, n_f, plural(n_f),
+            .cap_size_str(sum(as.numeric(files$size[files$kind %in% "file"]),
+                              na.rm = TRUE))) |>
+      message()
+  }
+
   if (nrow(files) == 0) {
-    paste0("- ", osf_id, " contained no files")|>
-      list(what = _) |>
-      pb$tick(0, tokens = _)
+    # "contained no files" is right for an empty project, but misleading for
+    # one that could not be read at all -- the listing reports that as a type
+    # rather than as an error, so it is checked here.
+    unreadable <- contents$osf_type %in% c("unfound", "private", "error",
+                                           "invalid")
+    if (any(unreadable)) {
+      why <- contents$osf_type[unreadable][[1]]
+      message(sprintf(
+        "%s: %s. Nothing was downloaded.", osf_id,
+        switch(why,
+          unfound = sprintf(
+            "no such project on the OSF. Check the ID at https://osf.io/%s",
+            osf_id),
+          private = "this project is private and your token cannot read it. See ?osf_pat",
+          invalid = "not a valid OSF ID",
+          "the OSF could not be reached for this project"
+        )))
+    } else {
+      paste0("- ", osf_id, " contained no files")|>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+    }
     return(NULL)
   }
 
@@ -1035,7 +1157,7 @@ osf_file_download <- function(osf_id,
   }
 
   ## restrict file size ----
-  if (identical(mode, "files") && is.finite(max_file_size) && max_file_size > 0) {
+  if (identical(mode, "select") && is.finite(max_file_size) && max_file_size > 0) {
     too_big_files <- which(files$size > max_file_size * mb)
     if (length(too_big_files) > 0) {
       paste0(
@@ -1056,7 +1178,7 @@ osf_file_download <- function(osf_id,
 
   ## restrict total download size ----
   repo_total_mb <- sum(files$size, na.rm = TRUE) / mb
-  if (identical(mode, "files") && is.finite(max_download_size) && repo_total_mb > max_download_size) {
+  if (identical(mode, "select") && is.finite(max_download_size) && repo_total_mb > max_download_size) {
     need_total <- ceiling(repo_total_mb)
     msg <- sprintf(
       paste0("Repository %s was not downloaded: its %d file%s total %s MB, ",
@@ -1069,27 +1191,37 @@ osf_file_download <- function(osf_id,
     files <- files[0, , drop = FALSE]
   }
 
-  ## set up download directory (make sure it doesn't overwrite anything)
+  ## set up download directory ----
   # On the OSF you can nest folders and give long folder names, but windows has a 260 character folder name limit.
   # download_to <- fs::path_abs(download_to)
   download_to <- normalizePath(download_to, winslash = "/", mustWork = FALSE)
   if (dir.exists(download_to)) {
     download_to <- file.path(download_to, osf_id)
   }
-  i <- 0
-  while (dir.exists(download_to)) {
-    i <- i + 1
-    download_to <- download_to |>
-      sub("_\\d+$", "", x = _) |>
-      paste0("_", i)
-  }
-  dir.create(download_to, showWarnings = FALSE, recursive = FALSE)
-  paste0("- Created directory ", download_to)|>
+
+  # A project is downloaded into the SAME folder every time, so running the
+  # command again resumes rather than starting a second copy. Earlier this
+  # appended a counter (6nt4v, then 6nt4v_1, ...), which meant the obvious
+  # response to a partial download -- run it again -- silently re-fetched
+  # everything into a new folder. For an archive of a whole account that is
+  # hours of duplicated transfer, and leaves the user to work out which folder
+  # is the complete one.
+  #
+  # Files already present at the size the OSF reports are skipped (see
+  # `already_have` below), so a repeat run costs the listing plus whatever is
+  # genuinely missing.
+  resuming <- dir.exists(download_to)
+  dir.create(download_to, showWarnings = FALSE, recursive = TRUE)
+  if (resuming) {
+    paste0("- Adding to existing directory ", download_to)
+  } else {
+    paste0("- Created directory ", download_to)
+  } |>
     list(what = _) |>
     pb$tick(0, tokens = _)
 
   files_to_copy <- integer(0)
-  if (sum(files$kind == "file") > 0 && identical(mode, "files")) {
+  if (sum(files$kind == "file") > 0 && identical(mode, "select")) {
     ## download all to temp folder ----
     # temppath <- fs::file_temp()
     temppath <- tempfile()
@@ -1097,6 +1229,40 @@ osf_file_download <- function(osf_id,
     dir.create(temppath)
 
     files_to_download <- which(files$kind == "file")
+
+    # Resuming: skip whatever is already on disk at the size the OSF reports
+    # for it. The save paths are worked out here (rather than after the
+    # download, as they used to be) precisely so this comparison can happen
+    # before anything is fetched.
+    #
+    # Size is only trusted for osfstorage. For a linked add-on the OSF's
+    # recorded size goes stale (see the note below), so presence alone decides:
+    # re-fetching a file that is already there would otherwise happen on every
+    # run for every add-on file.
+    files <- .osf_prepare_save_paths(files, contents, osf_id,
+                                     max_folder_length,
+                                     ignore_folder_structure)
+    if (resuming && length(files_to_download) > 0) {
+      on_disk_path <- file.path(download_to, files$save_path[files_to_download])
+      exp_size <- suppressWarnings(as.numeric(files$size[files_to_download]))
+      trust_size <- tolower(files$provider[files_to_download]) %in%
+        c("osfstorage", NA)
+      have <- file.exists(on_disk_path) & !dir.exists(on_disk_path)
+      right_size <- !trust_size | is.na(exp_size) |
+        (file.size(on_disk_path) == exp_size) %in% TRUE
+      already_have <- have & right_size
+
+      if (any(already_have)) {
+        message(sprintf(
+          "%d of %d file%s from %s %s already on disk and %s not downloaded again.",
+          sum(already_have), length(files_to_download),
+          plural(length(files_to_download)), osf_id,
+          if (sum(already_have) == 1) "is" else "are",
+          if (sum(already_have) == 1) "was" else "were"))
+        files_to_copy <- c(files_to_copy, files_to_download[already_have])
+        files_to_download <- files_to_download[!already_have]
+      }
+    }
 
     # OSF's download_url redirects (per file) to a pre-signed cloud-storage URL
     # (Google Cloud Storage), not a shared, rate-limited endpoint -- a live burst
@@ -1107,6 +1273,7 @@ osf_file_download <- function(osf_id,
     "Downloading files" |>
       list(what = _) |>
       pb$tick(0, tokens = _)
+    # Everything was already on disk: nothing left to fetch.
     urls <- files$download_url[files_to_download]
     dests <- file.path(temppath, files$osf_id[files_to_download])
     # The expected size is used to detect a truncated transfer: a file that
@@ -1142,16 +1309,29 @@ osf_file_download <- function(osf_id,
         length(failed_j), length(files_to_download),
         plural(length(files_to_download)), osf_id,
         basename(urls[failed_j[1]]), errs[failed_j[1]]))
+
+      # A private project whose files all come back as sign-in pages means the
+      # request was not authorised. Said plainly and once, because the
+      # per-file messages describe the symptom rather than the cause, and a
+      # whole-account archive can produce hundreds of them.
+      if (any(grepl("not authorised", errs[failed_j], fixed = TRUE))) {
+        warning(sprintf(
+          "%s is private and its files could not be downloaded without an authorised OSF token. The listing shows the files because listings are authorised, but the file downloads were refused. Set a token with osf_pat(\"your-token\") or OSF_PAT in .Renviron, then run this again. See ?osf_pat",
+          osf_id), call. = FALSE)
+      }
     }
 
     "Setting up file structure" |>
       list(what = _) |>
       pb$tick(0, tokens = _)
 
-    files <- .osf_prepare_save_paths(files, contents, osf_id,
-                                     max_folder_length,
-                                     ignore_folder_structure)
-    files_to_copy <- .osf_copy_files(files, temppath, download_to)
+    # Save paths were already worked out above (before the resume check), so
+    # they are not recomputed here. Only the newly fetched files are copied out
+    # of the temp folder; anything skipped as already-present is added to
+    # `files_to_copy` by the resume check and must not be dropped here.
+    newly_copied <- .osf_copy_files(files[files_to_download, , drop = FALSE],
+                                    temppath, download_to)
+    files_to_copy <- c(files_to_copy, files_to_download[newly_copied])
   } else if (sum(files$kind == "file") > 0 && identical(mode, "zip")) {
     # Waterbutler's ?zip= endpoint archives ONE node's ONE provider. A project
     # is routinely neither: pngda, for example, holds 57 files spread over 6
@@ -1305,7 +1485,7 @@ osf_file_download <- function(osf_id,
     c("folder", "osf_id", "name", "filetype", "size", "downloads", "provider")
   ]
 
-  if (identical(mode, "files") && length(files_to_copy) > 0) {
+  if (identical(mode, "select") && length(files_to_copy) > 0) {
     copied <- files[files_to_copy, c("osf_id", "save_path")]
     names(copied)[[2]] <- "path"
     copied$downloaded <- TRUE
@@ -1340,6 +1520,20 @@ osf_file_download <- function(osf_id,
   ret$download_path <- download_to
   ret$osf_project <- osf_id
   ret$osf_url <- paste0("https://osf.io/", osf_id)
+
+  ## the parts of the project that are not files ----
+  # Wikis, the activity log, and the descriptive metadata. A project is often a
+  # record as much as a store, and none of that is in the file listing.
+  if (isTRUE(metadata)) {
+    tryCatch(.osf_metadata_download(osf_id, download_to, pb = pb),
+             error = \(e) {
+               logger(".osf_metadata_download",
+                      list(osf_id = osf_id, error = conditionMessage(e)))
+               message(sprintf(
+                 "Could not retrieve metadata for %s (%s); its files were downloaded.",
+                 osf_id, conditionMessage(e)))
+             })
+  }
 
   ## verify every planned file actually reached the disk ----
   # Up to here `downloaded` records only that the copy step RAN for a file, not

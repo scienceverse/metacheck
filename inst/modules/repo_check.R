@@ -673,8 +673,14 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         # `data.csv` do not collide in the listing.
         rows$file_path <- file.path(all_files$file_name[i], peek$name)
         rows$file_size <- peek$size
-        # No URL of its own: an entry inside an archive is not separately
-        # downloadable, so nothing downstream should try.
+        # No URL of its own: an entry inside an archive has no address a plain
+        # download can request, so nothing downstream should try one.
+        #
+        # A member CAN now be retrieved on its own, by asking the archive's URL
+        # for just that member's byte range (.zip_member_fetch()), but that needs
+        # the archive URL plus the entry's position within it rather than a URL
+        # for the entry, so this column stays NA. Wiring data_check up to fetch
+        # single members that way is a separate change.
         rows$file_url  <- NA_character_
         # file_type must be re-derived from the INNER file's extension. Left
         # inherited it would still say "archive" for every entry, so a zip of 40

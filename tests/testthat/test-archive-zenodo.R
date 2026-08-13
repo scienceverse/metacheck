@@ -172,7 +172,15 @@ test_that("zenodo_file_download", {
           list(
             id = paste0("ok_", zid),
             key = "ok.csv",
-            size = 256,
+            # The mocked req_perform() below serves exactly "x,y\n1,2\n", so
+            # the fixture has to declare that file's real length: downloads are
+            # checked against the size Zenodo reports, and a fixture claiming a
+            # size its own test data does not have is (correctly) reported as a
+            # file that did not arrive intact.
+            size = nchar("x,y\n1,2\n"),
+            # Not a real md5, so the checksum comparison is skipped for this
+            # file and the size check stands on its own. A genuine md5 is
+            # exercised in test-archive-zenodo-upload.R instead.
             checksum = "md5:ok",
             links = list(self = paste0("https://files.example/", zid, "/ok.csv"))
           )
@@ -203,4 +211,126 @@ test_that("zenodo_file_download", {
   expect_equal(nrow(dl_ok), 1)
   expect_true(dl_ok$downloaded[[1]])
   expect_true(file.exists(file.path(tmpdir_ok, "24680", "ok.csv")))
+})
+
+# A record holding one large zip, for the unzip_types tests below. The zip is far
+# larger than max_file_size, which is the case that matters: without the
+# exemption in the size filter it would be discarded before anything could be
+# read out of it, and unzip_types could never do anything.
+.zip_record_info <- function(zenodo_url, id_col = 1, pb = NULL) {
+  zid <- .zenodo_id(zenodo_url)
+  data.frame(
+    zenodo_url = as.character(zenodo_url),
+    zenodo_id = zid,
+    files = I(list(list(
+      list(
+        id = paste0("z_", zid),
+        key = "bundle.zip",
+        size = 130 * 1024 * 1024,
+        checksum = "md5:zzz",
+        links = list(self = "https://files.example/bundle.zip")
+      )
+    )))
+  )
+}
+
+test_that("zenodo_file_download extracts only wanted members with unzip_types", {
+  # The archive holds one data file and one image. Only the data file should be
+  # fetched; the image is never requested.
+  requested <- character(0)
+  testthat::local_mocked_bindings(
+    zenodo_info = .zip_record_info,
+    .zenodo_zip_members = function(url, dest, keep_types, max_file_size) {
+      requested <<- c(requested, url)
+      expect_equal(keep_types, "data")
+      writeLines("id,x\n1,2", file.path(dest, "study.csv"))
+      data.frame(name = "study.csv", path = file.path(dest, "study.csv"),
+                 size = 9, ok = TRUE)
+    }
+  )
+
+  tmp <- withr::local_tempdir()
+  dl <- zenodo_file_download("13579", download_to = tmp,
+                             unzip_types = "data", max_file_size = 10)
+
+  expect_equal(nrow(dl), 1)
+  expect_equal(dl$key, "bundle.zip")
+  # The zip survived the 10 MB cap despite being 130 MB, because only its
+  # selected members are transferred.
+  expect_true(dl$downloaded[[1]])
+  expect_equal(dl$extracted[[1]], 1)
+  expect_equal(requested, "https://files.example/bundle.zip")
+  expect_true(file.exists(file.path(tmp, "13579", "study.csv")))
+  # Zenodo's size and MD5 describe the zip, which was never downloaded, so the
+  # verification step must not measure the row against them.
+  expect_true(is.na(dl$size_on_disk[[1]]))
+})
+
+test_that("zenodo_file_download falls back to a whole download when the zip cannot be read", {
+  # A host that refuses range requests: .zenodo_zip_members() returns NULL, and
+  # the archive must then be fetched whole rather than silently skipped.
+  testthat::local_mocked_bindings(
+    zenodo_info = .zip_record_info,
+    .zenodo_zip_members = function(url, dest, keep_types, max_file_size) NULL
+  )
+  testthat::local_mocked_bindings(
+    request = function(url) structure(list(url = url), class = "httr2_request"),
+    req_timeout = function(req, seconds) req,
+    req_error = function(req, is_error) req,
+    req_retry = function(req, ...) req,
+    req_perform = function(req, path = NULL) {
+      structure(list(status = 200, body = charToRaw("PK-not-a-real-zip")),
+                class = "httr2_response")
+    },
+    resp_status = function(resp) resp$status,
+    resp_body_raw = function(resp) resp$body,
+    .package = "httr2"
+  )
+
+  tmp <- withr::local_tempdir()
+  dl <- suppressWarnings(
+    zenodo_file_download("13579", download_to = tmp,
+                         unzip_types = "data", max_file_size = 10))
+
+  # The whole archive was downloaded, so this is an ordinary file row again:
+  # `extracted` stays NA and the zip itself is on disk.
+  expect_true(is.na(dl$extracted[[1]]))
+  expect_true(file.exists(file.path(tmp, "13579", "bundle.zip")))
+  # And because it is an ordinary row again, the usual size check applies to it
+  # -- the mocked body is not 130 MB, so verification correctly rejects it.
+  expect_false(dl$downloaded[[1]])
+})
+
+test_that("unzip_types leaves records without a zip completely unchanged", {
+  testthat::local_mocked_bindings(
+    zenodo_info = function(zenodo_url, id_col = 1, pb = NULL) {
+      zid <- .zenodo_id(zenodo_url)
+      data.frame(
+        zenodo_url = as.character(zenodo_url), zenodo_id = zid,
+        # size must match the body the mocked req_perform() serves below
+        # ("x,y\n1,2\n", 8 bytes), or the verification step rejects the row.
+        files = I(list(list(list(
+          id = paste0("c_", zid), key = "plain.csv", size = 8,
+          checksum = NA_character_,
+          links = list(self = "https://files.example/plain.csv")))))
+      )
+    }
+  )
+  testthat::local_mocked_bindings(
+    request = function(url) structure(list(url = url), class = "httr2_request"),
+    req_timeout = function(req, seconds) req,
+    req_error = function(req, is_error) req,
+    req_perform = function(req) structure(
+      list(status = 200, body = charToRaw("x,y\n1,2\n")), class = "httr2_response"),
+    resp_status = function(resp) resp$status,
+    resp_body_raw = function(resp) resp$body,
+    .package = "httr2"
+  )
+
+  tmp <- withr::local_tempdir()
+  dl <- zenodo_file_download("11111", download_to = tmp, unzip_types = "data")
+
+  expect_true(dl$downloaded[[1]])
+  expect_true(is.na(dl$extracted[[1]]))   # nothing was unzipped
+  expect_true(file.exists(file.path(tmp, "11111", "plain.csv")))
 })

@@ -21,6 +21,76 @@ test_that(".parse_zip_central_dir reads names and sizes from a real zip tail", {
   expect_true(cd$size[basename(cd$name) == "data.csv"] > 0)
 })
 
+test_that(".parse_zip_central_dir also reports method, csize, offset and crc", {
+  d <- withr::local_tempdir()
+  writeLines(rep("id,x", 200), file.path(d, "data.csv"))   # compressible
+  writeLines("hello", file.path(d, "notes.txt"))
+  zip <- file.path(d, "test.zip")
+  withr::with_dir(d, utils::zip("test.zip", c("data.csv", "notes.txt"),
+                                flags = "-q"))
+  skip_if_not(file.exists(zip), "zip utility unavailable")
+
+  raw <- readBin(zip, "raw", file.size(zip))
+  cd <- metacheck:::.parse_zip_central_dir(raw)
+
+  # name and size stay the first two columns: zip_decision() and repo_check()
+  # use only those, so the fetch fields must be purely additive.
+  expect_equal(names(cd)[1:2], c("name", "size"))
+  expect_true(all(c("method", "csize", "offset", "crc") %in% names(cd)))
+
+  # The first member's local header starts at the very beginning of the archive.
+  expect_equal(min(cd$offset), 0)
+  expect_true(all(cd$method %in% c(0, 8)))   # stored or deflate
+
+  # The stored CRC must match the file on disk, which proves the field is being
+  # read from the right offset rather than merely being present.
+  for (i in seq_len(nrow(cd))) {
+    f <- file.path(d, cd$name[i])
+    expect_equal(metacheck:::.crc32(readBin(f, "raw", file.size(f))), cd$crc[i])
+  }
+})
+
+test_that(".crc32 matches the standard check value", {
+  # The conventional CRC32 test vector: CRC32("123456789") == 0xcbf43926.
+  expect_equal(metacheck:::.crc32(charToRaw("123456789")), 3421780262)
+  expect_equal(metacheck:::.crc32(raw(0)), 0)
+})
+
+test_that(".zip_crc_ok distinguishes a match, a mismatch, and no check", {
+  b <- charToRaw("123456789")
+  expect_true(metacheck:::.zip_crc_ok(b, 3421780262))
+  expect_false(metacheck:::.zip_crc_ok(b, 12345))
+  # An absent CRC is "not checked", not "failed" -- .zip_member_fetch() rejects
+  # only on FALSE, so returning NA here must not discard a good download.
+  expect_true(is.na(metacheck:::.zip_crc_ok(b, NA_real_)))
+})
+
+test_that(".zip_crc_ok accepts CRCs above the R integer maximum", {
+  # CRC32 is unsigned 32-bit, so roughly half of all values exceed
+  # .Machine$integer.max. Parsing one into an R integer yields NA and makes a
+  # correct file look corrupt, which would silently reject half of all
+  # downloads, so this case is tested explicitly.
+  big <- charToRaw("123456789")            # CRC 3421780262 > 2147483647
+  expect_gt(metacheck:::.crc32(big), .Machine$integer.max)
+  expect_true(metacheck:::.zip_crc_ok(big, metacheck:::.crc32(big)))
+})
+
+test_that(".zip_inflate_member passes stored members through and rejects others", {
+  # Method 0 is stored: the bytes are the file, so no decompression and no
+  # dependency on the zip package.
+  expect_identical(metacheck:::.zip_inflate_member(as.raw(1:5), 0), as.raw(1:5))
+  # Only deflate (8) is supported; anything else is refused rather than guessed.
+  expect_null(metacheck:::.zip_inflate_member(as.raw(1:5), 12))
+})
+
+test_that(".zip_member_fetch refuses a Zip64 entry instead of using the sentinel", {
+  # A >4GB archive stores 0xFFFFFFFF in the 4-byte fields, which the parser turns
+  # into NA. Fetching from that offset would request a meaningless byte range.
+  entry <- data.frame(name = "big.dat", size = NA_real_, method = 8,
+                      csize = NA_real_, offset = NA_real_, crc = 1)
+  expect_null(metacheck:::.zip_member_fetch("http://example.invalid/x.zip", entry))
+})
+
 test_that("zip_decision keeps a data zip and links a pure-asset zip", {
   # Stub zip_peek so no network: two synthetic listings.
   local_mocked_bindings(

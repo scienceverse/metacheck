@@ -13,7 +13,7 @@ test_that("osf_file_download", {
 
   download_to <- withr::local_tempdir()
   op <- capture_messages(
-    dl <- osf_file_download(osf_id, download_to)
+    dl <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   )
   f <- file.path(download_to, osf_id)
   expect_true(dir.exists(f))
@@ -22,21 +22,23 @@ test_that("osf_file_download", {
   expect_equal(dl$downloaded, TRUE)
   expect_true(nchar(dl$osf_id) %in% c(5, 24))
 
-  ## second download with existing file (same download_to so it sees existing dir)
+  ## second download resumes into the SAME folder rather than making a copy.
+  ## Running the command again is the obvious response to a partial download,
+  ## so it must not silently re-fetch everything into "6nt4v_1".
   op <- capture_messages(
-    dl2 <- osf_file_download(osf_id, download_to)
+    dl2 <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   )
-  folder <- paste0(osf_id, "_1")
-  expect_equal(dl2$folder, folder)
-  f2 <- file.path(download_to, folder)
-  expect_true(dir.exists(f2))
+  expect_equal(dl2$folder, osf_id)
+  expect_false(dir.exists(file.path(download_to, paste0(osf_id, "_1"))))
+  expect_true(any(grepl("already on disk", op)))
+  expect_true(file.path(f, "osfstorage", node_name, "processed-data.csv") |>
+                file.exists())
 
   unlink(f, recursive = TRUE)
-  unlink(f2, recursive = TRUE)
 
   # error in one ID
   osf_id <- c("yuck", "6nt4v")
-  expect_warning(dl3 <- osf_file_download(osf_id, download_to), "yuck")
+  expect_warning(dl3 <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select"), "yuck")
   expect_equal(dl$name, dl3$name)
   f3 <- file.path(download_to, "6nt4v")
   unlink(f3, recursive = TRUE)
@@ -50,7 +52,7 @@ test_that("too small max_file_size", {
   tmpdir2 <- withr::local_tempdir()
   op <- capture_messages(
     dl <- osf_file_download(osf_id, tmpdir2,
-                            max_file_size = .0001)
+                            max_file_size = .0001, metadata = FALSE, mode = "select")
   )
   expect_equal(nrow(dl), 1)
   expect_equal(dl$folder, osf_id)
@@ -70,7 +72,7 @@ test_that("too small max_download_size", {
   tmpdir <- withr::local_tempdir()
   expect_warning(op <- capture_messages(
     dl <- osf_file_download(osf_id, tmpdir,
-                            max_download_size = .0001)
+                            max_download_size = .0001, metadata = FALSE, mode = "select")
   ), "per-repository limit")
   expect_equal(nrow(dl), 1)
   expect_equal(dl$folder, osf_id)
@@ -113,7 +115,8 @@ test_that("osf_file_download zip keep archive", {
   download_to <- withr::local_tempdir()
   dl <- with_mocked_bindings(
     with_mocked_bindings(
-      osf_file_download(mock_id, download_to, mode = "zip", unzip = FALSE),
+      osf_file_download(mock_id, download_to, mode = "zip", unzip = FALSE,
+                        metadata = FALSE),
       request = function(url) structure(list(url = url, method = "GET"), class = "httr2_request"),
       req_method = function(req, method) {
         req$method <- method
@@ -194,7 +197,8 @@ test_that("osf_file_download zip unzip preserves structure", {
   download_to <- withr::local_tempdir()
   dl <- with_mocked_bindings(
     with_mocked_bindings(
-      osf_file_download(mock_id, download_to, mode = "zip", unzip = TRUE),
+      osf_file_download(mock_id, download_to, mode = "zip", unzip = TRUE,
+                        metadata = FALSE),
       request = function(url) structure(list(url = url, method = "GET"), class = "httr2_request"),
       req_method = function(req, method) {
         req$method <- method
@@ -277,7 +281,7 @@ test_that("osf_file_download zip unzip can flatten structure", {
   dl <- with_mocked_bindings(
     with_mocked_bindings(
       osf_file_download(mock_id, download_to, mode = "zip", unzip = TRUE,
-                        ignore_folder_structure = TRUE),
+                        ignore_folder_structure = TRUE, metadata = FALSE),
       request = function(url) structure(list(url = url, method = "GET"), class = "httr2_request"),
       req_method = function(req, method) {
         req$method <- method
@@ -323,7 +327,7 @@ test_that("nested", {
 
   osf_id <- "j3gcx"
   download_to <- withr::local_tempdir()
-  dl <- osf_file_download(osf_id, download_to)
+  dl <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   # list.files(download_to, recursive = T)
 
   storage <- "osfstorage"
@@ -358,7 +362,7 @@ test_that("truncate", {
   download_to <- withr::local_tempdir()
   expect_warning(op <- capture_messages(
     dl <- osf_file_download(osf_id, download_to,
-                            max_folder_length = 3)
+                            max_folder_length = 3, metadata = FALSE, mode = "select")
   ), "truncated")
   # list.files(download_to, recursive = T)
 
@@ -391,7 +395,7 @@ test_that("multiple osf_ids", {
 
   osf_id <- c("6nt4v", "j3gcx")
   download_to <- withr::local_tempdir()
-  dl <- osf_file_download(osf_id, download_to)
+  dl <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   # list.files(download_to, recursive = T)
 
   storage <- "osfstorage"
@@ -408,7 +412,7 @@ test_that("Waterbutler ID for folder", {
 
   osf_id <- "https://files.de-1.osf.io/v1/resources/j3gcx/providers/osfstorage/685a46eb8c103f8ab307047f/?zip="
   download_to <- withr::local_tempdir()
-  dl <- osf_file_download(osf_id, download_to)
+  dl <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   # list.files(download_to, recursive = T)
 
   expect_true(all(dl$folder == "685a46eb8c103f8ab307047f"))
@@ -426,7 +430,7 @@ test_that("osf_file_download github", {
 
   osf_id <- "mc45x"
   download_to <- withr::local_tempdir()
-  dl <- osf_file_download(osf_id, download_to)
+  dl <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   f <- file.path(download_to, osf_id)
   expect_true(dir.exists(f))
   expect_true(file.path(f, "osfstorage", "DESCRIPTION") |>
@@ -446,7 +450,7 @@ test_that("osf_file_download long unnested", {
   # unnested with duplicate file names
   download_to <- withr::local_tempdir()
   dl <- osf_file_download(osf_id, download_to,
-                          ignore_folder_structure = TRUE)
+                          ignore_folder_structure = TRUE, metadata = FALSE, mode = "select")
   expect_true("test-4.txt" %in% dl$path)
   f <- file.path(download_to, osf_id)
   expect_true(dir.exists(f))
@@ -469,7 +473,8 @@ test_that("osf_file_download ignore_folder_structure", {
   download_to <- withr::local_tempdir()
   x <- osf_file_download(osf_id = osf_id,
                          download_to = download_to,
-                         ignore_folder_structure = TRUE
+                         ignore_folder_structure = TRUE,
+                         metadata = FALSE, mode = "select"
                          )
 
   destdir <- file.path(download_to, osf_id)
@@ -486,7 +491,7 @@ test_that("osf_file_download issue 99", {
   # https://github.com/scienceverse/metacheck/issues/99
   osf_id <- c("msfcn")
   download_to <- withr::local_tempdir()
-  x <- osf_file_download(osf_id, download_to)
+  x <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   destdir <- file.path(download_to, osf_id)
 
   f <- list.files(destdir, recursive = TRUE)
@@ -508,6 +513,7 @@ test_that("osf_file_download registrations", {
 
 
 test_that("downloads are verified against the file system", {
+  skip_if_quick() # downloads from OSF for real
   skip_if_not(online("api.osf.io"))
   skip_on_cran()
 
@@ -516,7 +522,8 @@ test_that("downloads are verified against the file system", {
   # (twice, with the test below) provokes OSF into refusing requests.
   download_to <- withr::local_tempdir()
   dl <- suppressWarnings(
-    osf_file_download("6nt4v", download_to, max_file_size = 5))
+    osf_file_download("6nt4v", download_to, max_file_size = 5,
+                      metadata = FALSE, mode = "select"))
 
   expect_true(all(c("size_on_disk", "attempted") %in% names(dl)))
 
@@ -540,6 +547,7 @@ test_that("downloads are verified against the file system", {
 
 
 test_that("files skipped by a size limit are not reported as failures", {
+  skip_if_quick() # downloads 57 files from OSF for real
   skip_if_not(online("api.osf.io"))
   skip_on_cran()
 
@@ -549,7 +557,8 @@ test_that("files skipped by a size limit are not reported as failures", {
   # and it was already reported when it was skipped
   expect_message(
     dl <- suppressWarnings(
-      osf_file_download("pngda", download_to, max_file_size = 0.01)),
+      osf_file_download("pngda", download_to, max_file_size = 0.01,
+                        metadata = FALSE, mode = "select")),
     "exceeded"
   )
 

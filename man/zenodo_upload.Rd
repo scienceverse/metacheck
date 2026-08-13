@@ -12,6 +12,9 @@ zenodo_upload(
   license = "cc-by-4.0",
   upload_type = "dataset",
   metadata = NULL,
+  as_zip = TRUE,
+  split_materials = "materials",
+  upload_osf_metadata = TRUE,
   max_file_size = NULL,
   ask = TRUE,
   pb = NULL
@@ -39,6 +42,54 @@ no license Zenodo recognises}
 
 \item{metadata}{a list of extra metadata fields to add to every deposition,
 overriding what was taken from the OSF}
+
+\item{as_zip}{whether to upload each folder as a single ZIP archive instead
+of as individual files.
+
+Zenodo has no folders. Its documentation says so directly -- "Zenodo does
+not support uploading and organising files into folders/directories.
+Instead, you can create a ZIP archive and upload it, in which case Zenodo
+will display the file structure inside the ZIP" -- and the API agrees: a
+file name containing "/" is rejected, and a file record has no path field.
+
+So there is a choice. \code{TRUE} (the default) keeps the folder structure
+exactly, which is what an archive is for: a reader gets the project as the
+author arranged it, rather than a heap of files they must sort out. The
+usual objection -- that reaching one small file means downloading
+everything -- is what \code{split_materials} answers, by putting the bulky part
+in a separate archive.
+
+\code{FALSE} uploads the files separately, which keeps each one visible,
+previewable and downloadable on its own; the folder structure is lost,
+though file names are kept short and only prefixed where two files would
+otherwise collide. That suits a small flat folder, where the structure
+carries no meaning worth preserving.}
+
+\item{split_materials}{which CATEGORIES of file to put in their own archive
+when \code{as_zip = TRUE}. Defaults to \code{"materials"}, which is usually the bulk
+of a repository's size and the part a reader is least likely to need.
+
+Categories are the same six \code{repo_check()} reports -- \code{data}, \code{code},
+\code{materials}, \code{documentation}, \code{output}, \code{unknown} -- decided by the same
+classifier, so a file lands in the same category whether it is being
+checked or archived. Pass more than one to separate them further, for
+example \code{c("materials", "output")}.
+
+Every archive stores the same project folder at its root, so unzipping all
+of them rebuilds the original tree exactly, while unzipping only the main
+one gives everything except the split categories, each file still in its
+right place. That lets somebody take the data and code without a
+multi-gigabyte stimulus set.
+
+Set \code{NULL} or \code{FALSE} for a single archive holding everything. Ignored
+unless \code{as_zip = TRUE}.}
+
+\item{upload_osf_metadata}{whether to upload the \verb{_osf_metadata} folder that
+\code{\link[=osf_file_download]{osf_file_download()}} saves inside each project -- the wiki pages, the
+activity log, and the project record. \code{TRUE} by default, so the archive on
+Zenodo describes itself. Set \code{FALSE} to deposit only the data files; the
+metadata is still read either way, since that is where the deposition's
+title, licence and authors come from.}
 
 \item{max_file_size}{largest file to upload, in MB; larger files are skipped
 and reported. Set to NULL for no limit.}

@@ -243,23 +243,45 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL) {
 #'
 #' You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
 #'
+#' A `.zip` in the record is normally fetched whole and left as a zip. Set
+#' `unzip_types` to pull only the files you want out of it instead: Zenodo
+#' serves per-file URLs with byte-range support and each member of a zip is
+#' compressed separately, so the wanted members can be read out of the archive
+#' while the rest is never transferred. A zip of stimuli and three data files
+#' then costs the three data files. When the archive cannot be read that way
+#' (the listing fails, or the host refuses ranges) it is downloaded whole as
+#' before, so this never loses a file -- it only avoids transferring one.
+#'
 #' @param zenodo_id an Zenodo ID or URL
 #' @param download_to path to download to
 #' @param max_file_size maximum file size to download (in MB) - set to NULL or Inf for no restrictions
 #' @param max_download_size maximum total size to download - set to NULL of Inf for no restrictions
+#' @param unzip_types file categories to extract from `.zip` files in the record
+#'   rather than downloading the zip whole, named as [data_classify_files()]
+#'   names them: `"data"`, `"code"`, `"materials"`, `"documentation"`,
+#'   `"output"`, `"unknown"`. More than one may be given. `NULL` (the default)
+#'   downloads zips whole and leaves them zipped, as before. `max_file_size`
+#'   applies to each extracted member rather than to the archive.
 #' @param pb a progress bar passed from another function
 #'
-#' @returns data frame of file info
+#' @returns data frame of file info. When members are extracted from a zip, its
+#'   row reports the zip with `extracted` giving the number of members written;
+#'   `size_on_disk` and `checksum_ok` are then `NA`, because what is on disk is
+#'   the members rather than the archive Zenodo published a size and MD5 for.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #'   zenodo_file_download("2591593")
+#'
+#'   # take only the data files out of any zip in the record
+#'   zenodo_file_download("2591593", unzip_types = "data")
 #' }
 zenodo_file_download <- function(zenodo_id,
                                  download_to = ".",
                                  max_file_size = 10,
                                  max_download_size = 100,
+                                 unzip_types = NULL,
                                  pb = NULL) {
   zenodo_id <- .zenodo_id(zenodo_id) |>
     stats::na.omit() |>
@@ -288,6 +310,7 @@ zenodo_file_download <- function(zenodo_id,
           download_to = download_to,
           max_file_size = max_file_size,
           max_download_size = max_download_size,
+          unzip_types = unzip_types,
           pb = pb
         ),
         error = function(e) {
@@ -350,9 +373,20 @@ zenodo_file_download <- function(zenodo_id,
     return(NULL)
   }
 
+  # A zip we were asked to look inside is exempt from the size caps below.
+  # Those caps measure the file Zenodo would send, and for these that number
+  # describes bytes we have decided not to transfer: only selected members are
+  # fetched, each capped individually by `max_file_size` at extraction time.
+  # Judging a 130 MB archive by its full size would discard it before the
+  # extraction that makes it cheap -- which is exactly the archive `unzip_types`
+  # exists for, so without this exemption the option could never do anything.
+  unzippable <- rep(FALSE, nrow(files))
+  if (!is.null(unzip_types) && length(unzip_types) > 0)
+    unzippable <- .is_zip(files$key) & !is.na(files$self) & nzchar(files$self %||% "")
+
   # --- size filters (MB) ----
   if (!is.null(max_file_size) && is.finite(max_file_size) && max_file_size > 0) {
-    too_big_files <- which(files$size > max_file_size * 1024 * 1024)
+    too_big_files <- which(files$size > max_file_size * 1024 * 1024 & !unzippable)
     if (length(too_big_files) > 0) {
       for (i in too_big_files) {
         paste0(
@@ -363,13 +397,17 @@ zenodo_file_download <- function(zenodo_id,
           pb$tick(0, tokens = _)
       }
       files <- files[-too_big_files, , drop = FALSE]
+      unzippable <- unzippable[-too_big_files]
     }
   }
 
   # remove largest files until total <= limit
   if (!is.null(max_download_size) && is.finite(max_download_size) && max_download_size > 0) {
-    while (nrow(files) > 0 && sum(files$size, na.rm = TRUE) > max_download_size * 1024 * 1024) {
-      max_file <- which(files$size == max(files$size, na.rm = TRUE))[1L]
+    # Only the files that will be transferred whole count against the total.
+    while (any(!unzippable) &&
+           sum(files$size[!unzippable], na.rm = TRUE) > max_download_size * 1024 * 1024) {
+      capped <- which(!unzippable)
+      max_file <- capped[which.max(files$size[capped])]
       paste0(
         "- omitting ", files$key[[max_file]],
         " (", round(files$size[[max_file]] / 1024 / 1024, 1), "MB)"
@@ -377,6 +415,7 @@ zenodo_file_download <- function(zenodo_id,
         list(what = _) |>
         pb$tick(0, tokens = _)
       files <- files[-max_file, , drop = FALSE]
+      unzippable <- unzippable[-max_file]   # keep the mask aligned with `files`
     }
   }
 
@@ -422,7 +461,15 @@ zenodo_file_download <- function(zenodo_id,
   # where a caller may want only a subset of a record.
   used_bulk <- FALSE
   n_in_record <- length(files_list)
-  if (n == n_in_record) {
+
+  # `unzippable` (computed with the size filters above, and kept aligned with
+  # `files` as rows were dropped) marks the zips to be read member by member.
+  # Their presence also rules out the bulk archive: it would transfer the whole
+  # record, including the zip contents being avoided, before anything could be
+  # selected from it.
+  unzip_me <- unzippable
+
+  if (n == n_in_record && !any(unzip_me)) {
     zip_url <- sprintf("https://zenodo.org/api/records/%s/files-archive", zenodo_id)
     zip_path <- file.path(temppath, "archive.zip")
     dl_ok <- tryCatch({
@@ -458,9 +505,44 @@ zenodo_file_download <- function(zenodo_id,
 
   # --- file-by-file fallback (used when the bulk archive was skipped, or
   # extraction did not account for every wanted file) ----
+  files$extracted <- NA_integer_
   if (!used_bulk) {
     for (i in seq_len(n)) {
       if (isTRUE(files$downloaded[i])) next   # already extracted from the archive
+
+      # --- selected members out of a zip, instead of the whole zip ----
+      # Members are written straight into the target directory, not into
+      # temppath: they keep their own names from inside the archive, whereas the
+      # file-by-file path below stages each download under the Zenodo file `id`
+      # and renames it when copying.
+      if (unzip_me[i]) {
+        paste0("Reading zip contents of ", files$key[[i]]) |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+        got <- tryCatch(
+          .zenodo_zip_members(files$self[[i]], dest = download_to,
+                              keep_types = unzip_types,
+                              max_file_size = max_file_size),
+          error = \(e) NULL)
+        if (!is.null(got)) {
+          # A readable archive with nothing wanted inside is a success with zero
+          # members, not a failure: there was nothing to fetch.
+          files$extracted[i] <- sum(got$ok %in% TRUE)
+          files$downloaded[i] <- TRUE
+          paste0("- extracted ", files$extracted[i], " file",
+                 plural(files$extracted[i]), " from ", files$key[[i]]) |>
+            list(what = _) |>
+            pb$tick(0, tokens = _)
+          next
+        }
+        # Listing failed (host refused ranges, or the directory was unreadable):
+        # fall through and download the archive whole, as before.
+        paste0("- could not read ", files$key[[i]],
+               " without downloading it; fetching the whole archive") |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+      }
+
       ok <- FALSE
       if (!is.na(files$self[[i]]) && nzchar(files$self[[i]])) {
         # write to a stable temp filename (use Zenodo file `id`)
@@ -489,6 +571,9 @@ zenodo_file_download <- function(zenodo_id,
   # copy to flat target directory using original filename if available
   files$path <- NA_character_
   for (i in seq_len(nrow(files))) {
+    # An unzipped row has no staged file to copy: its members were written to
+    # download_to directly, under their own names inside the archive.
+    if (!is.na(files$extracted[i])) next
     if (isTRUE(files$downloaded[i])) {
       from <- file.path(temppath, files$id[[i]])
       fname <- if (!is.na(files$key[[i]]) && nzchar(files$key[[i]])) files$key[[i]] else files$id[[i]]
@@ -517,9 +602,57 @@ zenodo_file_download <- function(zenodo_id,
   files$zenodo_id <- as.character(zenodo_id)
   files <- files[, c("folder", "zenodo_id", "id", "key", "path", "size",
                      "size_on_disk", "checksum", "checksum_ok", "self",
-                     "downloaded")]
+                     "downloaded", "extracted")]
 
   invisible(files)
+}
+
+#' Fetch selected files out of a .zip in a Zenodo record without downloading it
+#'
+#' A zip published on Zenodo is often mostly material a reader does not need:
+#' stimuli, images, or videos alongside the few data files. Zenodo serves its
+#' per-file URLs with byte-range support, and every member of a zip is
+#' compressed on its own, so individual members can be pulled out of the archive
+#' while the rest is never transferred (see `.zip_member_fetch()`). Verified
+#' 2026-08-13 on record 13384475: one 2.06 MB member out of a 129.8 MB archive
+#' in about half a second.
+#'
+#' This is not possible for every archive. `.7z`, `.rar` and `.tar.gz` compress
+#' all their files as one stream, so nothing inside can be read without
+#' decompressing everything before it, and Zenodo's own whole-record
+#' `files-archive` endpoint ignores range requests entirely. Both cases fall
+#' back to downloading the archive whole.
+#'
+#' @param url the zip's `self` download URL in the record
+#' @param dest directory to write the extracted members into
+#' @param keep_types file categories worth extracting, as
+#'   [data_classify_files()] names them; the default keeps data and
+#'   documentation and skips materials, matching [zip_decision()]
+#' @param max_file_size largest member to extract (in MB), applied per member
+#'   exactly as the record-level cap is applied per file
+#'
+#' @returns a data frame with one row per extracted member (`name`, `path`,
+#'   `size`, `ok`), or `NULL` when the archive could not be listed and the
+#'   caller should download it whole instead
+#' @keywords internal
+.zenodo_zip_members <- function(url, dest,
+                                keep_types = c("data", "documentation"),
+                                max_file_size = 10) {
+  listing <- tryCatch(zip_peek(url), error = \(e) NULL)
+  if (is.null(listing) || nrow(listing) == 0) return(NULL)
+
+  types <- data_classify_files(basename(listing$name))
+  keep <- types %in% keep_types
+
+  # A member whose size is unknown (NA, as Zip64 entries are) is not extracted:
+  # the size cap cannot be applied to it and its bytes cannot be located.
+  if (!is.null(max_file_size) && is.finite(max_file_size) && max_file_size > 0)
+    keep <- keep & !is.na(listing$size) &
+      listing$size <= max_file_size * 1024 * 1024
+
+  if (!any(keep)) return(listing[0, c("name", "size"), drop = FALSE])
+
+  .zip_fetch_members(url, names = listing$name[keep], dest = dest)
 }
 
 #' Check downloaded Zenodo files against the file system
@@ -539,16 +672,26 @@ zenodo_file_download <- function(zenodo_id,
 #' an `md5:` value for are hashed; for anything else the size check stands on
 #' its own.
 #'
+#' A row whose `extracted` count is set is exempt from both checks. Zenodo's
+#' size and MD5 describe the zip as published, and that zip was deliberately
+#' never downloaded -- only chosen members were. Measured against those values
+#' every such row would look truncated. The members carry their own integrity
+#' check instead: each is verified against the CRC32 stored in the archive's
+#' central directory as it is extracted, in `.zip_member_fetch()`.
+#'
 #' @param files the file table being built, with `path`, `size`, `checksum`,
-#'   and `downloaded` columns
+#'   and `downloaded` columns, and optionally `extracted`
 #' @param download_to the folder the record was saved in
 #'
 #' @returns `files` with `downloaded` corrected against the file system, plus
 #'   `size_on_disk` and `checksum_ok` columns
-#' @export
 #' @keywords internal
 .zenodo_verify_downloads <- function(files, download_to) {
   if (is.null(files) || nrow(files) == 0) return(files)
+
+  # Rows whose members were extracted rather than whose file was downloaded.
+  unzipped <- if ("extracted" %in% names(files)) !is.na(files$extracted)
+              else rep(FALSE, nrow(files))
 
   files$size_on_disk <- NA_real_
   files$checksum_ok <- NA
@@ -585,5 +728,11 @@ zenodo_file_download <- function(zenodo_id,
   ok <- ok & !(files$checksum_ok %in% FALSE)
 
   files$downloaded <- ok & files$downloaded %in% TRUE
+
+  # Restore the unzipped rows, which every check above necessarily failed: they
+  # have no `path`, because the archive itself was never written to disk. Their
+  # members were CRC-checked individually during extraction, so the row stands
+  # as the extraction left it.
+  if (any(unzipped)) files$downloaded[unzipped] <- TRUE
   files
 }
