@@ -4,12 +4,16 @@
 \alias{code_library_lines}
 \title{Get Code Library Lines}
 \usage{
-code_library_lines(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
+code_library_lines(
+  code_text,
+  lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")
+)
 }
 \arguments{
 \item{code_text}{the code text for a single file}
 
-\item{lang}{the language (we only currently handle R, SPSS, SAS, Stata)}
+\item{lang}{the language (we only currently handle R, Python, SPSS, SAS,
+Stata, Mplus, MATLAB)}
 }
 \value{
 a data frame with columns \code{code} and \code{line} (the line numbers on which library calls exist, after removing blank lines and comments)
