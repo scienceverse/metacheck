@@ -16,7 +16,10 @@ automatically on retry when the central directory is larger)}
 a data.frame with columns \code{name} (entry path inside the zip) and
 \code{size} (uncompressed bytes), excluding directory entries; or \code{NULL} when the
 host does not support range requests or the listing cannot be read (the
-caller should then download-and-inspect).
+caller should then download-and-inspect). Also returns \code{method}, \code{csize},
+\code{offset}, and \code{crc}, which describe where each member's bytes sit in the
+archive so a single member can be fetched without the rest; \code{csize} and
+\code{offset} are \code{NA} for a Zip64 archive, which cannot be fetched this way.
 }
 \description{
 Uses an HTTP range request to fetch only the tail of a ZIP archive and read

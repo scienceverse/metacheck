@@ -4,12 +4,16 @@
 \alias{.osf_parse_response}
 \title{Parse an OSF API response into a data frame}
 \usage{
-.osf_parse_response(resp, pb = NULL)
+.osf_parse_response(resp, pb = NULL, osf_id = NA_character_)
 }
 \arguments{
 \item{resp}{an httr2 response}
 
 \item{pb}{a progress bar}
+
+\item{osf_id}{the ID this response is for, used in the messages. Without it
+a failure could only report "NA could not be found", which tells the
+reader nothing about which of their IDs was wrong.}
 }
 \value{
 a single-row data frame
