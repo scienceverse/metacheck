@@ -325,10 +325,21 @@ test_that("data_col_facets splits type into orthogonal properties", {
   expect_equal(data_col_facets("rt_s", c(0.54, 0.61, 0.49, 0.70, 0.55))$unit,
                "seconds")
 
-  # Likert item: ordinal level, likert concept.
-  f <- data_col_facets("panas_1", sample(1:5, 60, TRUE))
+  # Likert is a property of a scale BLOCK, not of one column: whole numbers over
+  # a narrow range describe a trial counter (`round`, `block`, a PsychoPy loop
+  # index) as readily as a rating item. The caller, which has the whole data
+  # frame, passes `in_scale_block`.
+  f <- data_col_facets("panas_1", sample(1:5, 60, TRUE), in_scale_block = TRUE)
   expect_equal(f$measurement_level, "ordinal")
   expect_equal(f$concept, "likert")
+
+  # Without block context the same values claim nothing, rather than guessing.
+  f <- data_col_facets("panas_1", sample(1:5, 60, TRUE))
+  expect_true(is.na(f$concept))
+
+  # A trial counter has identical value characteristics and must NOT be likert.
+  f <- data_col_facets("round", sample(1:5, 60, TRUE), in_scale_block = FALSE)
+  expect_true(is.na(f$concept))
 
   # A comma-decimal column is numeric with a parse note, not a fake type.
   f <- data_col_facets("price", c("1,50", "2,30", "4,10", "5,00", "3,25",
@@ -445,6 +456,42 @@ test_that("data_check_pii_geo requires a geographic name, not just a value range
   # Ordinary decimals in coordinate range but a non-geographic name → not flagged.
   expect_false(data_check_pii_geo("x", seq(10, 30, length.out = 40))$problem)
   expect_false(data_check_pii_geo("temperature", c(20.1, 21.5, 19.8))$problem)
+})
+
+test_that("data_check_pii_geo finds a coordinate inside a compound name", {
+  # The name is word-split, so a coordinate is recognised however it is spelled
+  # out. `LocationLatitude` is Qualtrics' own column name and was previously
+  # missed, because the check only accepted a bare "lat"/"latitude".
+  sib <- c("LocationLatitude", "LocationLongitude")
+  expect_true(data_check_pii_geo("LocationLatitude",
+                                 c(52.37, 4.89, 51.5), sib)$problem)
+  expect_true(data_check_pii_geo("gps_lat", c(52.37, 4.89, 51.5),
+                                 c("gps_lat", "gps_lon"))$problem)
+})
+
+test_that("data_check_pii_geo requires a partner column for lat/lon", {
+  # A real coordinate is a PAIR. In psychology data "lat" is as often latency
+  # or a lateralisation index, and "lon" a loneliness scale — none of which has
+  # the matching sibling column a genuine coordinate always has.
+  set.seed(1)
+  psych <- c("id", "lat", "rt", "accuracy")          # no lon
+  expect_false(data_check_pii_geo("lat", round(runif(200, .3, 3.5), 3),
+                                  psych)$problem)    # latency in seconds
+  expect_false(data_check_pii_geo("lat", sample(0:1, 200, TRUE),
+                                  psych)$problem)    # Latin-square code
+  expect_false(data_check_pii_geo("lon", sample(1:7, 200, TRUE),
+                                  c("id", "lon", "rt"))$problem)  # loneliness
+
+  # The same column IS flagged once its partner is present.
+  expect_true(data_check_pii_geo("lat", round(runif(200, 50, 54), 3),
+                                 c("id", "lat", "lon"))$problem)
+
+  # A name that IS a coordinate outright needs no partner.
+  expect_true(data_check_pii_geo("gps", runif(20, -10, 10), psych)$problem)
+
+  # Values outside the coordinate range are rejected whatever the siblings say.
+  expect_false(data_check_pii_geo("lat", round(rlnorm(200, log(650), .4)),
+                                  c("id", "lat", "lon"))$problem)
 })
 
 test_that("data_check_pii_freetext flags real prose but not codes or non-prose", {

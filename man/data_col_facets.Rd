@@ -4,12 +4,20 @@
 \alias{data_col_facets}
 \title{Describe a data column as orthogonal facets (DDI-style)}
 \usage{
-data_col_facets(col_name, values)
+data_col_facets(col_name, values, in_scale_block = NA)
 }
 \arguments{
 \item{col_name}{the column's name}
 
 \item{values}{the column's values}
+
+\item{in_scale_block}{whether this column belongs to a detected scale block
+(a run of consecutive same-prefix columns sharing a response range — see
+\code{.detect_scale_blocks()}), which is what makes it a \code{likert} item. Requires
+the whole data frame to determine, so the caller supplies it; \code{NA} (the
+default) means unknown and leaves the concept alone. A column's own values
+cannot decide this — whole numbers over a narrow range describe a trial
+counter as readily as a rating item.}
 }
 \value{
 a list with \code{representation}, \code{measurement_level}, \code{concept},
@@ -26,9 +34,9 @@ role). See the facet vocabulary in the "Column facets" section of this file.
 \details{
 Derives representation, measurement level, role, quality and a parse note from
 the rule primitive \code{\link[=data_col_type]{data_col_type()}} (preserving its edge cases), and the
-concept from \code{\link[=data_col_concept]{data_col_concept()}}. The \code{likert} concept is inferred here from
-an ordinal integer measurement level; \code{id}/\code{date} concepts from the role /
-representation. \code{unit} is left \code{NA} for concepts whose unit is not implied
+concept from \code{\link[=data_col_concept]{data_col_concept()}}. The \code{id}/\code{date} concepts are inferred here
+from the role / representation, and \code{likert} from \code{in_scale_block} (see that
+argument). \code{unit} is left \code{NA} for concepts whose unit is not implied
 (an LLM/codebook can fill it); \code{reaction_time} seeds \code{seconds}/\code{milliseconds}
 from the value magnitude.
 }
