@@ -42,6 +42,7 @@ Suggests:
     careless,
     readODS,
     openxlsx,
+    haven,
     devtools,
     httptest2,
     processx,
