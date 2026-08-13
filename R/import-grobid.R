@@ -402,17 +402,17 @@ grobid_to_bibr <- function(xml_path,
     table_id = seq_along(tab_sec),
     section_id = tab_sec,
     html = rep(NA_character_, length(tab_sec)),
-    contents = rep(NA_character_, length(tab_sec)),
+    contents = vector("list", length(tab_sec)),
     page_number = rep(NA_integer_, length(tab_sec))
   )
 
-  # add html
+  # add html + contents
   tabs <- xml2::xml_find_all(xml, "//figure[@type='table']")
   if (length(tabs) == nrow(paper$table)) {
     for (i in seq_along(tabs)) {
-      html <- xml2::xml_find_first(tabs[[i]], ".//table") |>
-        paste()
-      paper$table$html[[i]] <- html
+      tab_node <- xml2::xml_find_first(tabs[[i]], ".//table")
+      paper$table$html[[i]] <- paste(tab_node)
+      paper$table$contents[[i]] <- .tei_table_contents(tab_node)
     }
   }
 
@@ -451,11 +451,7 @@ grobid_to_bibr <- function(xml_path,
   paper$url$href <- gsub("\\.$", "", paper$url$href) # fix urls with . at end
   same <- gsub("^https?://", "", paper$url$href) ==
     gsub("^https?://", "", gsub("\\s", "", paper$url$link_text))
-  same <- !is.na(same) & same
-  # only normalize anchors that ARE the URL (modulo spaces/protocol):
-  # substituting arbitrary anchor text with its href rewrites every match of
-  # that text in the whole paper (e.g. anchor "Fig" clobbering "Fig. 2")
-  for (i in which(same)) {
+  for (i in seq_along(same)) {
     paper$text$text <- gsub(paper$url$link_text[[i]],
          paper$url$href[[i]],
          paper$text$text, fixed = TRUE)
@@ -930,6 +926,136 @@ grobid_to_bibr <- function(xml_path,
 }
 
 
+#' Get a table's contents from a Grobid `<table>` node
+#'
+#' Grobid renders a table as `<row>`/`<cell>` elements, with a `cols` attribute
+#' on a cell that spans several columns (GroBid's own equivalent of an HTML
+#' `colspan`). Reads the header as one or more leading rows and every
+#' following row as data (see below), expanding a spanning cell's text across
+#' the columns it covers (the same grid-alignment approach `.stat_table_parse
+#' ()` uses for JASP/jamovi colspans in R/stat-tables.R), so a header cell
+#' that spans two data columns still lines up with both of them rather than
+#' shifting everything after it.
+#'
+#' Grobid's `<row>`/`<cell>` structure makes no header/data distinction at all
+#' (unlike HTML's `<th>`/`<td>`) — but a real table's header can genuinely
+#' span SEVERAL leading rows (a super-header naming a group of columns, a
+#' sub-header, then the actual column names — confirmed against a real corpus
+#' paper's regression table: "Association with mean reappraisal" / "" /
+#' "β01 (SE)", three leading rows before any data). Treating only the first
+#' `<row>` as the header (as an earlier version of this function did) reads
+#' the REAL column names as if they were a data row, and scans genuine data as
+#' if it were headers. The leading rows are instead scanned from the top:
+#' every row whose cells are MOSTLY non-numeric (prose/blank, the shape a
+#' header or super-header row has) is folded into the header, stopping at the
+#' first row that looks like real data (mostly numeric/bracket/dash cells) —
+#' mirroring `.stat_table_parse()`'s own "last distinct-label row is the real
+#' header" heuristic, adapted for Grobid's lack of `<th>`. Folded header rows
+#' are joined per column with " / " (so "Association with" / "mean
+#' reappraisal" / "β01 (SE)" becomes one combined column name), which keeps
+#' the super-header's grouping information rather than discarding it.
+#'
+#' Ragged rows (a row with fewer/more cells than the header — GroBid's
+#' PDF-layout table detection is imperfect) are padded/truncated to the
+#' header's width rather than erroring, so one malformed row does not lose the
+#' rest of the table.
+#'
+#' @param tab_node the `<table>` xml2 node (or NA/NULL when the table was not
+#'   found)
+#'
+#' @returns a list of character vectors, `list(headers_row, ...data_rows)` (the
+#'   shape `inst/schema/paper.json`'s `table.contents` declares), or `NULL`
+#'   when the node is absent or has no rows
+#' @keywords internal
+.tei_table_contents <- function(tab_node) {
+  if (is.null(tab_node) || (length(tab_node) == 1 && is.na(tab_node))) return(NULL)
+
+  rows <- xml2::xml_find_all(tab_node, ".//row")
+  if (length(rows) == 0) return(NULL)
+
+  # Expand one <row>'s cells to a grid vector, repeating a cell's text across
+  # its `cols` span (default 1 when absent/invalid).
+  grid_of <- function(row) {
+    cells <- xml2::xml_find_all(row, ".//cell")
+    if (length(cells) == 0) return(character(0))
+    txt <- xml2::xml_text(cells, trim = TRUE) |> gsub("\\s+", " ", x = _)
+    span <- vapply(cells, function(c) {
+      n <- suppressWarnings(as.integer(xml2::xml_attr(c, "cols")))
+      if (is.na(n) || n < 1) 1L else n
+    }, integer(1))
+    rep(txt, times = span)
+  }
+
+  grids <- lapply(rows, grid_of)
+  width <- max(lengths(grids))
+  if (width == 0) return(NULL)
+
+  # Pad/truncate every row to the header's width so a ragged row (missing or
+  # extra cells) does not misalign the columns after it.
+  grids <- lapply(grids, function(g) {
+    length(g) <- width
+    g[is.na(g)] <- ""
+    g
+  })
+
+  # A row "looks like data" when most of its NON-EMPTY cells are numeric/
+  # value-shaped (a plain number, a bracketed CI, a lone dash placeholder) —
+  # the shape a real header/super-header row never has (its cells are prose
+  # column names, or blank where a span leaves a gap). ">= half" rather than
+  # "all", since a data row's own leading label cell ("1. Depression") is
+  # legitimately non-numeric text sitting alongside otherwise-numeric cells.
+  #
+  # A BARE small ordinal ("1.", "2.", ...: 1-2 digits, no decimal point) is
+  # explicitly EXCLUDED from "looks numeric" here — that shape is a matrix's
+  # own column-index header cell (a correlation matrix numbers its columns
+  # "1." … "6." to cross-reference the row labels), never a real reported
+  # value in this corpus (a decimal like "0.86", a range "0-32", or a dash
+  # placeholder always has a decimal point, a hyphen, or is the bare dash
+  # itself). Without this exclusion, a header row that is MOSTLY such
+  # ordinals ("Well-being measure | α | M (SD) | Actual | Possible | 1. | 2.
+  # | 3. | 4. | 5.") was itself misclassified as the first DATA row —
+  # confirmed against a real corpus paper's correlation-matrix table, whose
+  # own column-name header row was then scanned as if it were a result,
+  # producing nonsense "correlations" of exactly 1, 2, 3, 4, 5.
+  is_data_shaped <- function(g) {
+    nz <- g[nzchar(g)]
+    if (!length(nz)) return(FALSE)   # a wholly blank row is never data
+    is_ordinal <- grepl("^[0-9]{1,2}\\.?$", nz)
+    # Broad on purpose: a real reported value can carry trailing prose a
+    # strict full-string numeric pattern would reject ("0.059 (0.018)", a
+    # beta with its parenthetical SE; "6.38 (6.60)", a mean with its SD) — it
+    # only needs to START like a number/comparator, or be a bracketed
+    # interval, or the bare dash placeholder convention APA tables use for a
+    # diagonal/blank cell.
+    looks_numeric <- grepl("^[<>]?[-+]?[.0-9]", nz) | grepl("^\\[.*\\]$", nz) | nz == "-"
+    n_non_ord <- sum(!is_ordinal)
+    if (n_non_ord == 0) return(FALSE)   # a row of ONLY ordinals is the header
+    (sum(looks_numeric & !is_ordinal) / n_non_ord) >= 0.5 && mean(is_ordinal) < 0.5
+  }
+
+  header_end <- 1L
+  for (i in seq_along(grids)) {
+    if (is_data_shaped(grids[[i]])) { header_end <- i - 1L; break }
+    header_end <- i
+  }
+  header_end <- max(header_end, 1L)   # always at least one header row
+
+  if (header_end == 1L) {
+    header <- grids[[1]]
+  } else {
+    # Fold the leading header_end rows into one combined header, joining each
+    # column's text across those rows with " / " (blank contributions
+    # dropped, so a genuinely single-row-tall column name is not padded with
+    # empty " / " segments from a super-header that did not span it).
+    header <- vapply(seq_len(width), function(ci) {
+      parts <- vapply(grids[seq_len(header_end)], `[[`, character(1), ci)
+      parts <- parts[nzchar(parts)]
+      if (!length(parts)) "" else paste(parts, collapse = " / ")
+    }, character(1))
+  }
+
+  c(list(header), grids[-seq_len(header_end)])
+}
 
 
 #' Parse XML bib format to bibtex
