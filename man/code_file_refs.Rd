@@ -4,12 +4,23 @@
 \alias{code_file_refs}
 \title{Get files referenced in code}
 \usage{
-code_file_refs(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
+code_file_refs(
+  code_text,
+  lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB"),
+  include_writes = FALSE
+)
 }
 \arguments{
 \item{code_text}{the code text for a single file}
 
-\item{lang}{the language (we only currently handle R, SPSS, SAS, Stata)}
+\item{lang}{the language (we only currently handle R, Python, SPSS, SAS,
+Stata, Mplus, MATLAB)}
+
+\item{include_writes}{also return files the code \emph{writes} (R only). Off by
+default: callers that ask "which referenced inputs are missing from the
+repository?" (e.g. \code{code_check}) must not see a written file as a missing
+input. \code{\link[=repro_file_io]{repro_file_io()}} turns this on so a file produced by one script can
+be recognised as the input another script consumes.}
 }
 \value{
 a vector of files that are referenced in the code
