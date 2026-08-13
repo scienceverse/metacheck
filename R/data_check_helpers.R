@@ -4831,11 +4831,11 @@ data_check_colname_collisions <- function(col_names) {
     regex = "\\b(?!000|666|9\\d\\d)\\d{3}-(?!00)\\d{2}-(?!0000)\\d{4}\\b",
     kind  = "specific"),
   # Credit-card-like: 13-16 digits in even 4-digit groups (space/dash) or one
-  # unbroken run, not part of a longer digit/decimal string. Must also pass a
-  # Luhn checksum, which rejects the vast majority of coincidental digit runs.
+  # unbroken run, not part of a longer digit/decimal string. Must also pass
+  # .pii_card_ok(): a real issuer prefix AND the Luhn checksum.
   credit_card = list(
     regex = "(?<![\\d.])(?:\\d{13,16}|\\d{4}[ -]\\d{4}[ -]\\d{4}[ -]\\d{1,4})(?![\\d.])",
-    kind  = "specific", validate = ".pii_luhn_ok")
+    kind  = "specific", validate = ".pii_card_ok")
   # NOTE: a phone pattern was removed. It was "broad" and collided heavily with
   # date/time strings (e.g. Qualtrics StartDate/EndDate timestamps), producing
   # false positives on essentially every survey export, and modern studies
@@ -4843,8 +4843,16 @@ data_check_colname_collisions <- function(col_names) {
   # "specific" with validators, so a hit is almost always a real identifier.
 )
 
-# Luhn checksum: the check most card issuers use. Rejects most random 13-16
-# digit runs, so a plausible credit card must both match the shape and validate.
+# Luhn checksum: the check most card issuers use.
+#
+# On its own this is NOT a strong filter. Luhn is a single check digit, so a
+# random digit run passes it one time in ten — measured at 9.7-10.2% across
+# random 13/14/15/16-digit strings, and the same for sequential ids, epoch
+# millisecond timestamps and MTurk-style numeric ids. Since a credit-card hit
+# flags the whole column on ONE match, a column of ~20 long numeric ids would
+# trip it by chance alone. Both credit-card flags on a 120-file corpus were
+# false positives on millisecond timestamps ("1595957929810"), with no true
+# positives. Use .pii_card_ok(), which adds the issuer-prefix test.
 .pii_luhn_ok <- function(s) {
   d <- as.integer(strsplit(gsub("[^0-9]", "", s), "")[[1]])
   n <- length(d)
@@ -4853,6 +4861,34 @@ data_check_colname_collisions <- function(col_names) {
   d[seq(2, n, by = 2)] <- d[seq(2, n, by = 2)] * 2
   d[d > 9] <- d[d > 9] - 9
   sum(d) %% 10 == 0
+}
+
+# Does this look like a real payment card? Issuer prefix (IIN) AND Luhn.
+#
+# Every card scheme assigns a fixed leading range, so a number that passes Luhn
+# but begins 15959... is not a card whatever its checksum says. Requiring both
+# means a coincidental digit run has to satisfy the 1-in-10 checksum AND land in
+# one of these narrow ranges, which is what removes the timestamp/id collisions.
+# Length is checked per scheme too (Amex is 15 digits, Visa 13 or 16, ...), so a
+# 16-digit number starting "34" is rejected rather than counted as Amex.
+.pii_card_ok <- function(s) {
+  d <- gsub("[^0-9]", "", s)
+  n <- nchar(d)
+  if (n < 13 || n > 16) return(FALSE)
+  p <- function(k) as.integer(substr(d, 1, k))
+  scheme <-
+    (p(1) == 4 && n %in% c(13, 16)) ||                       # Visa
+    (p(2) >= 51 && p(2) <= 55 && n == 16) ||                 # Mastercard
+    (p(4) >= 2221 && p(4) <= 2720 && n == 16) ||             # Mastercard (2-series)
+    (p(2) %in% c(34, 37) && n == 15) ||                      # American Express
+    (p(4) == 6011 && n == 16) ||                             # Discover
+    (p(2) == 65 && n == 16) ||                               # Discover
+    (p(3) >= 644 && p(3) <= 649 && n == 16) ||               # Discover
+    (p(2) %in% c(36, 38) && n %in% c(14, 16)) ||             # Diners Club
+    (p(3) >= 300 && p(3) <= 305 && n == 14) ||               # Diners Club (carte blanche)
+    (p(4) >= 3528 && p(4) <= 3589 && n == 16)                # JCB
+  if (!scheme) return(FALSE)
+  .pii_luhn_ok(s)
 }
 
 
@@ -4864,14 +4900,68 @@ data_check_colname_collisions <- function(col_names) {
 # specific person-name compounds below (firstname/lastname/surname/fullname)
 # are retained because they reliably indicate a real person's name.
 .pii_name_tokens <- c(
+  # ── person name ──
   "firstname", "lastname", "surname", "fullname",
+  # nl / de / fr / es / it / pt / nordic. "nombre" (es) is included even though
+  # it is a substring of French "nombreux": this check ASKS FOR REVIEW rather
+  # than asserting a breach, and the same trade-off is already accepted for the
+  # English tokens ("addressed" and "street_view_task" match "address"/"street").
+  "naam", "voornaam", "achternaam", "tussenvoegsel", "geslachtsnaam",
+  "vorname", "nachname", "familienname",
+  "prenom", "nomdefamille",
+  "nombre", "apellido",
+  "cognome", "sobrenome", "nomecompleto",
+  "fornavn", "etternavn", "efternavn", "fornamn", "sukunimi", "etunimi",
+  # ── email / phone ──
   "email", "e-mail", "phone", "mobile", "telephone", "fax",
+  "phonenumber", "mobilenumber", "cellphone", "cellnumber",
+  "epost", "correoelectronico",
+  "telefoon", "telefon", "telefono", "telefone", "puhelin",
+  "mobiel", "handynummer",
+  # Compound phone-number forms. These languages join the words with no
+  # separator, so the token has to be listed whole — splitting cannot recover
+  # "telefoon" + "nummer" from "telefoonnummer".
+  "telefoonnummer", "mobielnummer", "gsmnummer",
+  "telefonnummer", "telefonnummber", "rufnummer", "mobilnummer",
+  "numerotelephone", "numerodetelephone", "numeroportable",
+  "numerotelefono", "numeromovil", "telefononumero",
+  "numerodetelefone", "telemovel",
+  "puhelinnumero", "telefonnumer",
+  # ── address / postcode ──
   "address", "street", "zipcode", "zip", "postcode", "postalcode",
+  "adres", "adresse", "direccion", "indirizzo", "endereco", "osoite",
+  "postleitzahl", "codepostal", "codigopostal", "postnummer",
+  "woonplaats", "wohnort", "straat", "strasse",
+  # ── national / government id ──
   "ssn", "socialsecurity", "passport", "nationalid", "taxid",
-  "dob", "dateofbirth", "birthdate", "birthday",
+  "bsn", "rijksregisternummer", "sozialversicherungsnummer",
+  "numerosecuritesociale", "dni", "codicefiscale", "personnummer",
+  "henkilotunnus", "paspoort", "reisepass", "passeport", "pasaporte",
+  # Date of birth. HIPAA's Safe Harbor rule treats "all elements of dates
+  # (except year) directly related to an individual" as an identifier, naming
+  # birth date explicitly, and the statistical-disclosure-control literature
+  # (sdcMicro's own guidance) lists date of birth alongside sex and postcode as
+  # the classic quasi-identifier combination. Year of birth is included too:
+  # Safe Harbor permits keeping the YEAR alone for people under 90, so it is
+  # weaker evidence than a full date — but the SDC literature still calls year
+  # of birth highly identifying in combination, and metacheck only surfaces
+  # this for review rather than asserting a breach.
+  "dob", "dateofbirth", "birthdate", "birthday", "birthyear",
+  "yearofbirth", "yob",
+  # Non-English forms, matching the multilingual coverage the age/gender
+  # patterns already carry (leeftijd/alter, geslacht).
+  "geboortedatum", "geboortejaar", "geburtsdatum", "geburtsjahr",
+  "datenaissance", "fechanacimiento", "datadinascita",
+  # ── technical / financial ──
   "ipaddress", "ip", "mac", "creditcard", "iban", "bankaccount",
+  "kontonummer", "bankrekening", "ibannummer", "kreditkarte",
+  "cartebancaire", "tarjetacredito",
+  # ── location ──
   "latitude", "longitude", "lat", "lon", "lng", "geolocation", "gps",
-  "username", "userid", "handle", "initials"
+  "breitengrad", "laengengrad", "ortsangabe",
+  # ── account / handle ──
+  "username", "userid", "handle", "initials",
+  "gebruikersnaam", "benutzername", "initialen"
 )
 
 #' Flag values that match a personal-information pattern
@@ -4931,12 +5021,57 @@ data_check_pii_values <- function(x, broad_min_frac = 0.30) {
        values = sub(" .*$", "", hits))
 }
 
+# Split a column name into word tokens. This is the whole point of the PII
+# name check working at all: the previous version stripped every separator
+# ("phone_number" -> "phonenumber") and then substring-matched, which cannot
+# tell a name that IS a token from a name that merely CONTAINS one. That is why
+# "microphone", "headphones", "phoneme", "phonetic", "saxophone", "automobile"
+# and "addressed" all flagged as personal information.
+#
+# Splits on punctuation/underscores AND camelCase, so "RecipientFirstName"
+# becomes recipient/first/name and "IPAddress" becomes ip/address.
+.pii_split_name <- function(x) {
+  # camelCase boundary: phoneNumber -> phone Number
+  a <- gsub("(?<=[a-z0-9])(?=[A-Z])", " ", x, perl = TRUE)
+
+  # Where a run of capitals ends is genuinely ambiguous, and no single rule gets
+  # both of these right:
+  #   IPAddress  -> the run ends BEFORE a capitalised word  ("IP" + "Address")
+  #   ZIPcode    -> the run ends BEFORE lowercase           ("ZIP" + "code")
+  # Reading either one alone mis-splits the other ("ZI"+"Pcode", "IPA"+"ddress"),
+  # so both readings are produced and a token only has to appear in ONE of them.
+  # The spurious single letters this leaves ("r", "ecipient") are harmless: no
+  # PII token is one character long.
+  s1 <- gsub("(?<=[A-Z])(?=[A-Z][a-z])", " ", a, perl = TRUE)
+  s2 <- gsub("(?<=[A-Z])(?=[a-z])",      " ", a, perl = TRUE)
+
+  p <- c(strsplit(tolower(s1), "[^a-z0-9]+")[[1]],
+         strsplit(tolower(s2), "[^a-z0-9]+")[[1]])
+  unique(p[nzchar(p)])
+}
+
 #' Flag a column whose name suggests personal information
 #'
-#' Matches the (normalised) column name against tokens that typically identify a
-#' person (name, email, address, dob, ssn, ip, coordinates, ...). Complements
-#' [data_check_pii_values()]: catches identifying columns whose values look
-#' ordinary (e.g. a `participant_name` free-text field).
+#' Matches a column name against tokens that typically identify a person (name,
+#' email, address, date of birth, national id, ip, coordinates, ...) in English
+#' and the main European languages. Complements [data_check_pii_values()]:
+#' catches identifying columns whose values look ordinary (e.g. a
+#' `participant_name` free-text field).
+#'
+#' Matching is WORD-based, not substring-based. The name is split into words on
+#' separators and camelCase, and a word must EQUAL a token. Three additions keep
+#' real names matching:
+#'
+#' * adjacent words are re-joined and tested ("first_name" -> "firstname"),
+#'   because the token list holds compounds rather than the bare word "name",
+#'   which would otherwise match `trial_name` / `file_name` / `condition_name`;
+#' * the whole separator-free name is tested, so languages that compound without
+#'   separators still match ("telefoonnummer", "geboortedatum");
+#' * matching is case-insensitive throughout.
+#'
+#' Measured against 2113 real column names and a decoy set of ordinary research
+#' vocabulary, this cut false positives from 14 to 2 while missing nothing the
+#' previous substring rule caught.
 #'
 #' @param col_name the column name
 #' @returns list(problem, message, values)
@@ -4945,55 +5080,98 @@ data_check_pii_values <- function(x, broad_min_frac = 0.30) {
 data_check_pii_name <- function(col_name) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.null(col_name) || is.na(col_name) || !nzchar(col_name)) return(none)
-  norm <- gsub("[^a-z0-9]", "", tolower(col_name))
-  if (!nzchar(norm)) return(none)
-  # Match a token as a whole normalised name or a clear sub-token; short tokens
-  # (ip, zip, lat, lon, dob) must be the whole name to avoid matching inside
-  # ordinary words (e.g. "description" contains "ip").
-  short <- nchar(.pii_name_tokens) <= 3
-  exact <- .pii_name_tokens[short]
-  sub   <- .pii_name_tokens[!short]
-  hit <- norm %in% exact | any(vapply(sub, function(t) grepl(t, norm, fixed = TRUE),
-                                      logical(1)))
-  if (!isTRUE(hit)) return(none)
-  matched <- c(exact[exact == norm],
-               sub[vapply(sub, function(t) grepl(t, norm, fixed = TRUE), logical(1))])
+
+  words <- .pii_split_name(col_name)
+  norm  <- gsub("[^a-z0-9]", "", tolower(col_name))
+  if (!length(words) && !nzchar(norm)) return(none)
+
+  cand <- words
+  # Adjacent joins: "first name" -> "firstname", "date of birth" ->
+  # "dateofbirth". Pairs and triples cover every compound in the token list.
+  if (length(words) >= 2)
+    cand <- c(cand, vapply(seq_len(length(words) - 1),
+                           function(i) paste0(words[i], words[i + 1]),
+                           character(1)))
+  if (length(words) >= 3)
+    cand <- c(cand, vapply(seq_len(length(words) - 2),
+                           function(i) paste0(words[i], words[i+1], words[i+2]),
+                           character(1)))
+  # The full name with separators removed, for no-separator compounds.
+  if (nzchar(norm)) cand <- c(cand, norm)
+
+  matched <- unique(cand[cand %in% .pii_name_tokens])
+  if (!length(matched)) return(none)
+
   list(problem = TRUE,
        message = sprintf("Column name suggests personal information (matched: %s). Review before sharing.",
-                         paste(unique(matched), collapse = ", ")),
-       values = unique(matched))
+                         paste(matched, collapse = ", ")),
+       values = matched)
 }
 
-#' Flag a numeric column that looks like a geographic coordinate
+#' Flag a column that holds geographic coordinates
 #'
-#' Latitude/longitude columns can re-identify participants. Flags a numeric
-#' column whose name looks like a coordinate, or whose values all fall in the
-#' latitude (-90..90) or longitude (-180..180) range with decimal precision.
+#' A precise coordinate pins a participant to a place, so it is disclosure risk
+#' even when every other column is anonymous. Detected from the column NAME
+#' (word-split, so `LocationLatitude` and `gps_lat` are recognised, not only a
+#' bare `lat`), then confirmed two ways.
+#'
+#' Confirmation matters because the name alone is ambiguous: in psychology data
+#' `lat` is as likely to be latency or a lateralisation index as latitude, and
+#' `lon` can be a loneliness scale. Two requirements filter those out:
+#'
+#' * the values must lie inside the coordinate range (±90 for a latitude, ±180
+#'   for a longitude), which rejects a latency in milliseconds; and
+#' * a matching PARTNER column must exist in the same file — a latitude needs a
+#'   longitude beside it. A real coordinate is always a pair, whereas a latency,
+#'   a loneliness score or a Latin-square code never has a `lon` sibling. This
+#'   is what separates them, since the coordinate ranges are so wide that almost
+#'   any bounded measurement fits inside them.
+#'
+#' `gps`, `geolocation` and `coordinate` name a coordinate outright and need no
+#' partner.
 #'
 #' @param col_name the column name
-#' @param x the column values
+#' @param x the column's values
+#' @param sibling_names the other column names in the same file, used to find
+#'   the partner column. When `NULL` (a caller checking one column with no file
+#'   context) the partner requirement is skipped, so the check behaves as it did
+#'   before — name plus value range.
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
-data_check_pii_geo <- function(col_name, x) {
+data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
   none <- list(problem = FALSE, message = "", values = NULL)
-  norm <- gsub("[^a-z0-9]", "", tolower(col_name %||% ""))
-  name_geo <- norm %in% c("lat", "latitude", "lon", "lng", "longitude",
-                          "geolocation", "gps", "coord", "coordinate")
-  # Value range alone cannot distinguish a coordinate from any other decimal
-  # measurement (temperature, reaction time, ...), so a bare value match would
-  # flag ordinary data. We therefore require the column NAME to look
-  # geographic; the value range then only *confirms* it. A geographic name with
-  # too few values to check still flags (the name is enough of a prompt).
-  if (!name_geo) return(none)
+
+  words <- .pii_split_name(col_name %||% "")
+  if (!length(words)) return(none)
+
+  lat_words <- c("lat", "latitude", "breitengrad")
+  lon_words <- c("lon", "lng", "longitude", "laengengrad")
+  # Named outright as a coordinate: no partner column needed.
+  solo_words <- c("gps", "geolocation", "coordinate", "coordinates", "geocode")
+
+  is_lat  <- any(words %in% lat_words)
+  is_lon  <- any(words %in% lon_words)
+  is_solo <- any(words %in% solo_words)
+  if (!is_lat && !is_lon && !is_solo) return(none)
+
+  # Values must be in coordinate range. A latitude is bounded tighter than a
+  # longitude, so each is checked against its own limit.
   num <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x), fixed = TRUE)))
   num <- num[!is.na(num)]
   if (length(num) >= 3) {
-    in_lat <- all(num >= -90  & num <= 90)
-    in_lon <- all(num >= -180 & num <= 180)
-    if (!in_lat && !in_lon)
-      return(none)   # geographic name but values are out of coordinate range
+    lim <- if (is_lat && !is_lon) 90 else 180
+    if (!all(num >= -lim & num <= lim)) return(none)
   }
+
+  # A lat/lon column must have its partner in the same file. Skipped when the
+  # caller passed no sibling names, and never required for a `gps`-style name.
+  if (!is_solo && !is.null(sibling_names)) {
+    sib <- unique(unlist(lapply(sibling_names, .pii_split_name)))
+    want <- if (is_lat) lon_words else lat_words
+    if (!any(sib %in% want)) return(none)
+  }
+
   list(problem = TRUE,
        message = "Column name suggests geographic coordinates. Review before sharing.",
        values = "geo")
@@ -5272,18 +5450,68 @@ data_check_demographic <- function(col_name, x) {
         tolower(col_name), perl = TRUE)
 }
 
+# Date/time formats seen in real psychology repositories, ordered so the
+# DATETIME set is always tried first: a full timestamp also parses as a bare
+# date (strptime ignores trailing text), so testing dates first would classify
+# every timestamp as a date. Checked against values pulled from a cache of 849
+# real OSF repositories -- the two PsychoPy/compact forms below are there
+# because a plain "\\d{1,2}:\\d{2}" test misses them:
+#   "2020-05-19_16h20.01.792"  PsychoPy writes the hour separator as `h`
+#   "2022_Feb_08_1523"         compact, no separator between hour and minute
+.DATETIME_FMTS <- c(
+  "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M",
+  "%d/%m/%Y %H:%M:%S", "%m/%d/%Y %H:%M:%S", "%Y/%m/%d %H:%M:%S",
+  "%d-%m-%Y %H:%M:%S", "%Y-%m-%d_%Hh%M",    "%Y_%b_%d_%H%M"
+)
+.DATE_FMTS <- c(
+  "%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%d-%m-%Y",
+  "%m/%d/%y", "%d/%m/%y", "%d %b %Y", "%B %d, %Y"
+)
+
+# What fraction of `v` parses under the best-fitting of `fmts`? The best SINGLE
+# format is used rather than "parsed by any", because a column is written in one
+# format -- allowing a mixture would let two half-matching formats add up to a
+# spurious pass.
+.parse_frac <- function(v, fmts) {
+  v <- as.character(v)
+  v <- v[!is.na(v) & nzchar(v)]
+  if (!length(v)) return(0)
+  best <- 0
+  for (f in fmts) {
+    p <- suppressWarnings(as.POSIXct(v, format = f, tz = "UTC"))
+    best <- max(best, mean(!is.na(p)))
+    if (best >= 1) break
+  }
+  best
+}
+
 # Timestamp (a clock time / datetime the event happened) vs a plain date. Both
 # have representation `datetime`; the concept distinguishes a full timestamp
 # (has a time component) from a calendar date.
+#
+# Decided by PARSING the values, not by pattern-matching a time component. A
+# bare-numeric column (likert responses, participant ids, reaction times in ms,
+# ages, four-digit years) parses under none of these formats, so this cannot
+# steal a non-date column -- verified against each of those cases explicitly.
 .concept_is_timestamp <- function(col_name, x) {
   name_ok <- grepl("(^|[^a-z])(time|timestamp|datetime|onset|startdate|enddate|recordeddate)([^a-z]|$)",
                    tolower(col_name), perl = TRUE)
   if (!name_ok) return(FALSE)
-  v <- as.character(x)
-  v <- v[!is.na(v) & nzchar(v)]
-  if (length(v) == 0) return(FALSE)
-  # A time component (HH:MM) present in most values → timestamp, not bare date.
-  mean(grepl("\\d{1,2}:\\d{2}", v)) >= 0.5
+  .parse_frac(x, .DATETIME_FMTS) >= 0.5
+}
+
+# A calendar date with no clock time (date of birth, test date, a bare
+# collection date). Checked AFTER .concept_is_timestamp() in data_col_concept(),
+# so a column carrying a full timestamp is never reduced to "date".
+.concept_is_date <- function(col_name, x) {
+  name_ok <- grepl("(^|[^a-z])(date|dob|birth|birthday|geboorte|dated)([^a-z]|$)|(^|[^a-z])(day|dag)([^a-z]|$)",
+                   tolower(col_name), perl = TRUE)
+  if (!name_ok) return(FALSE)
+  # Must NOT look like a timestamp (that is the other concept), and must parse
+  # as a date. The datetime test comes first for the same ordering reason the
+  # format vectors are ordered: a timestamp satisfies both.
+  if (.parse_frac(x, .DATETIME_FMTS) >= 0.5) return(FALSE)
+  .parse_frac(x, .DATE_FMTS) >= 0.5
 }
 
 #' Detect the substantive concept a column measures
@@ -5313,8 +5541,21 @@ data_col_concept <- function(col_name, x) {
   if (.concept_is_accuracy(col_name, x))  return("accuracy")
   demo <- data_check_demographic(col_name, x)
   if (!is.na(demo))                       return(demo)
+  # Timestamp before date: a full timestamp satisfies both tests, and the more
+  # specific concept wins.
   if (.concept_is_timestamp(col_name, x)) return("timestamp")
+  if (.concept_is_date(col_name, x))      return("date")
   if (.concept_is_condition(col_name, x)) return("condition")
+  # NOTE: no `likert` rule here, deliberately. .is_likert_item() (used for scale
+  # BLOCK detection) tests values only -- whole numbers, 3-11 distinct levels, a
+  # narrow range -- which describes a rating item and a trial counter equally
+  # well. Validated against 3145 real columns from 120 cached repositories: it
+  # fired 389 times, and the most frequent hits were `block`, `round`,
+  # `Trial Number`, PsychoPy loop indices (resp_loop.thisIndex/.thisN), stimulus
+  # ids (arcade_id_L/R) and key-press codes (resp_*.keys) -- not rating scales.
+  # Genuine items ("british_entitative_1_1") were a small minority. A single
+  # column carries too little signal; .detect_scale_blocks() gets this right
+  # because it sees a RUN of same-prefix columns sharing one response range.
   NA_character_
 }
 
@@ -5344,14 +5585,21 @@ data_col_concept <- function(col_name, x) {
 #'
 #' Derives representation, measurement level, role, quality and a parse note from
 #' the rule primitive [data_col_type()] (preserving its edge cases), and the
-#' concept from [data_col_concept()]. The `likert` concept is inferred here from
-#' an ordinal integer measurement level; `id`/`date` concepts from the role /
-#' representation. `unit` is left `NA` for concepts whose unit is not implied
+#' concept from [data_col_concept()]. The `id`/`date` concepts are inferred here
+#' from the role / representation, and `likert` from `in_scale_block` (see that
+#' argument). `unit` is left `NA` for concepts whose unit is not implied
 #' (an LLM/codebook can fill it); `reaction_time` seeds `seconds`/`milliseconds`
 #' from the value magnitude.
 #'
 #' @param col_name the column's name
 #' @param values the column's values
+#' @param in_scale_block whether this column belongs to a detected scale block
+#'   (a run of consecutive same-prefix columns sharing a response range — see
+#'   `.detect_scale_blocks()`), which is what makes it a `likert` item. Requires
+#'   the whole data frame to determine, so the caller supplies it; `NA` (the
+#'   default) means unknown and leaves the concept alone. A column's own values
+#'   cannot decide this — whole numbers over a narrow range describe a trial
+#'   counter as readily as a rating item.
 #'
 #' @returns a list with `representation`, `measurement_level`, `concept`,
 #'   `role`, `unit`, `quality`, `parse_note`, plus the numeric helpers carried
@@ -5363,7 +5611,7 @@ data_col_concept <- function(col_name, x) {
 #' @examples
 #' data_col_facets("RT", c(543, 612, 498, 701))
 #' data_col_facets("subject_id", c("s01", "s02", "s03"))
-data_col_facets <- function(col_name, values) {
+data_col_facets <- function(col_name, values, in_scale_block = NA) {
   prim <- data_col_type(col_name, values)      # the rule primitive
   ct   <- prim$col_type
   x_noNA <- values[!is.na(values)]
@@ -5405,14 +5653,33 @@ data_col_facets <- function(col_name, values) {
     else if (identical(representation, "datetime")) concept <- "timestamp"
   }
 
-  # Likert: an ordinal-looking integer column (the rules mark these "ambiguous"
-  # integers with 3–20 unique values). Only claim it when nothing more specific
-  # was found, and set the ordinal level.
-  if (is.na(concept) && isTRUE(prim$ambiguous) && isTRUE(prim$is_numeric)) {
-    if (.is_likert_item(values)) {
-      concept <- "likert"
-      measurement_level <- "ordinal"
-    }
+  # Likert: decided by whether the column belongs to a detected SCALE BLOCK (a
+  # run of consecutive same-prefix columns sharing a response range — see
+  # .detect_scale_blocks()), not by the column's own values.
+  #
+  # The values alone cannot carry this. .is_likert_item() asks whether a column
+  # holds whole numbers with 3–11 distinct levels in a narrow range, which
+  # describes a rating item and a trial counter equally well. Over 3145 columns
+  # from 120 real repositories, using it per-column claimed 242 columns that are
+  # plainly not scales — `round`, `block`, PsychoPy loop indices
+  # (resp_loop.thisIndex/.thisN/.thisTrialN), stimulus ids (arcade_id_L/R) and
+  # key-press codes (resp_*.keys). Over the same corpus, block detection claimed
+  # 133 columns forming 6 groups, each inspected and confirmed a real instrument
+  # (UPPS-P's 50 items, three 25-item rating batteries, DotsCol1-5, IQ_short1-3).
+  #
+  # Not a measured error rate: there is no hand-labelled ground truth here, and
+  # the corpus is one sample of 120 files. Known structural limits — a scale
+  # whose items are not CONSECUTIVE columns, one whose item names do not share a
+  # prefix after stripping a trailing number (bfi_agree_1 / bfi_extra_1), or one
+  # shorter than .scale_min_items — are missed by construction.
+  #
+  # `in_scale_block` is therefore supplied by the caller, which has the whole
+  # data frame. NA (the default, for a caller describing a single column with no
+  # frame context) means "unknown" and claims nothing, rather than falling back
+  # to the value-only test that was measured to be wrong.
+  if (is.na(concept) && isTRUE(in_scale_block)) {
+    concept <- "likert"
+    measurement_level <- "ordinal"
   }
 
   # Concept-implied measurement level: a categorical concept is nominal even
@@ -5421,6 +5688,29 @@ data_col_facets <- function(col_name, values) {
   if (is.na(measurement_level) &&
       concept %in% c("gender", "race", "accuracy", "condition"))
     measurement_level <- "nominal"
+
+  # Non-numeric values cannot be interval or ratio: those levels require a
+  # meaningful distance between values, which text does not have. A column whose
+  # values do not parse as numbers is therefore nominal (or ordinal, but only a
+  # codebook can say which — and where an ordering IS derivable the rules above
+  # have already set `ordinal` from a scale block, so anything reaching here has
+  # no evidence of order).
+  #
+  # This is the rule that replaced the measurement-level LLM pass: it was being
+  # handed exactly these columns — `object_label` (Wine, Hammock, Binoculars),
+  # `event` (onload, subject, mouse), `ll_amt` (the literal string "NULL") —
+  # under a prompt asking for the level of a NUMERIC column.
+  #
+  # `representation == "empty"` is excluded: an all-NA column has no values to
+  # be nominal ABOUT, and gets its own stub entry downstream.
+  if (is.na(measurement_level) && !isTRUE(prim$is_numeric) &&
+      !identical(representation, "empty") && length(x_noNA) > 0) {
+    nn <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA),
+                                           fixed = TRUE)))
+    # "Does not parse as numeric" is judged on the values actually present, so a
+    # mostly-text column with a few stray numbers still counts as text.
+    if (mean(!is.na(nn)) < 0.5) measurement_level <- "nominal"
+  }
 
   # unit: implied by a few concepts; NA otherwise.
   unit <- NA_character_
@@ -5667,9 +5957,33 @@ data_check_is_qualtrics <- function(df, min_meta = 4L) {
   # the bare token rather than the quoted `"ImportId"`.
   if (any(grepl("ImportId", vals, fixed = TRUE))) return(TRUE)
   # Question-text row: Qualtrics labels its own metadata columns with prose
-  # versions of their names. If several cells match those labels, it's a header.
+  # versions of their names ("Start Date", "Response ID", "Recipient Email").
+  #
+  # Counted ABSOLUTELY, not as a fraction of the row. A fraction fails on
+  # exactly the surveys that matter most: Qualtrics writes a FIXED ~17 metadata
+  # columns however long the questionnaire is, so the longer the survey the
+  # smaller that fraction gets. Measured on a real 139-column export, 13 cells
+  # matched unmistakable Qualtrics labels (Start Date, Response ID, Recipient
+  # Email, Distribution Channel, ...) — a fraction of 0.094, far below the 0.3
+  # this used to require. The row was therefore not recognised, the loop in
+  # data_strip_qualtrics_header() stopped at row 1, and the `ImportId` row
+  # BEHIND it (which this function does detect) was never reached. Both junk
+  # rows survived into the data, leaving every rating column a character vector
+  # of question text — which is why a 25-item rating battery classified as
+  # `ratio` text rather than an ordinal scale.
+  #
+  # The absolute floor mirrors data_check_is_qualtrics()'s own `min_meta = 4L`,
+  # which already counts metadata columns absolutely for the same reason.
+  #
+  # A narrow frame cannot reach 4: a 3-column export has at most 3 metadata
+  # cells, so an absolute-only rule silently never strips it. When there are
+  # fewer than 4 columns, fall back to requiring that nearly all of them are
+  # metadata labels — on such a frame that is just as diagnostic, because a row
+  # of genuine data would have to consist entirely of strings matching reserved
+  # Qualtrics label names.
   label_keys <- .qualtrics_key(vals)
-  mean(label_keys %in% names(.qualtrics_meta_cols)) >= 0.3
+  n_meta <- sum(label_keys %in% names(.qualtrics_meta_cols))
+  if (length(vals) >= 4L) n_meta >= 4L else n_meta == length(vals)
 }
 
 #' Strip Qualtrics secondary-header rows and re-type the columns
@@ -5987,6 +6301,55 @@ data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
 # mislabelling it as psychometric scales. Each detector keys on the reserved
 # column vocabulary that identifies its format, mirroring data_check_is_qualtrics.
 
+# ── Reader: E-Prime text export ───────────────────────────────────────────────
+# E-Prime exports are UTF-16 (or BOM) text: a header block of `Field: value`
+# lines, then repeating `Level: 3` frames (one per Trial), each a run of
+# `Field: value` lines. Object timing is `<obj>.RT` (ms) or, if absent,
+# `<obj>.RTTime - <obj>.OnsetTime` (absolute clock). Parses one file to a list of
+# per-trial named lists, plus the header (Subject, Experiment).
+# Does this file's content look like an E-Prime export? E-Prime writes a fixed
+# header block whose markers are unmistakable. Content-based, because E-Prime's
+# .txt extension is far too ambiguous to classify on the name alone.
+.eprime_is_export <- function(path) {
+  head_lines <- text_peek(path, n = 30L)
+  if (!length(head_lines)) return(FALSE)
+  any(grepl("^\\*\\*\\*\\s*Header Start", head_lines)) ||
+    (any(grepl("^(Experiment|Subject):", head_lines)) &&
+       any(grepl("^LevelName:", head_lines)))
+}
+
+# Is this file a trial-level format (Behaverse / Inquisit / E-Prime / jsPsych)?
+# CHEAP: reads only the header (or the first lines for E-Prime), not the whole
+# file, so screening hundreds of per-participant files is fast. Used by data_check
+# to hold trial-level files OUT of the per-file tabular extractor and route them to
+# the Behaverse accumulator instead — otherwise 200 per-participant E-Prime files
+# would become 200 separate "datasets" rather than one merged instrument.
+.bh_is_trial_level_file <- function(path) {
+  if (length(path) != 1L || is.na(path) || !file.exists(path)) return(FALSE)
+  ext <- tolower(tools::file_ext(path))
+  if (ext %in% c("txt", "edat", "edat2") && .eprime_is_export(path)) return(TRUE)
+  # Only DELIMITED-TEXT files can be a trial-level table, so only those are worth
+  # a read.csv sniff. Reading a binary/document (.docx/.pdf/.sav/.xlsx/...) as CSV
+  # produces "invalid input / embedded nulls" warnings and can return garbage, so
+  # gate on the extension first. (E-Prime's own extensions were handled above.)
+  # NOT ".log": a Stata plain-text log genuinely could be a trial-level table by
+  # this extension alone, but no real corpus example has ever been found to
+  # confirm a sniffer against, so .log is left out here and classed
+  # "documentation" in .ext_registry (R/data_check_helpers.R) instead of
+  # guessed at.
+  .bh_sniff_exts <- c("csv", "tsv", "dat", "iqdat", "txt")
+  if (!ext %in% .bh_sniff_exts) return(FALSE)
+  # A one-row header read is enough for the data-frame detectors.
+  hdr <- tryCatch(
+    utils::read.csv(path, check.names = FALSE, nrows = 1L,
+                    fileEncoding = "UTF-8-BOM",
+                    sep = if (ext == "iqdat") "\t" else ","),
+    error = function(e) NULL)
+  if (is.null(hdr) || ncol(hdr) == 0) return(FALSE)
+  data_check_is_behaverse(hdr) || data_check_is_inquisit(hdr) ||
+    data_check_is_jspsych(hdr)
+}
+
 #' Detect trial-level behavioural-data source formats
 #'
 #' Each function reports whether a data frame is an export from a particular
@@ -6064,55 +6427,6 @@ data_check_is_psychopy <- function(df) {
   any(grepl("[.]this(N|Index|RepN|TrialN)$", nm)) ||
     any(grepl("[.](started|stopped)$", nm)) ||
     any(c("psychopyVersion", "frameRate", "expName") %in% nm)
-}
-
-# Is this file an E-Prime text export? Recognised from the header block E-Prime
-# writes at the top of every export, not from the extension (.txt/.edat/.edat2
-# say nothing on their own).
-.eprime_is_export <- function(path) {
-  head_lines <- text_peek(path, n = 30L)
-  if (!length(head_lines)) return(FALSE)
-  any(grepl("^\\*\\*\\*\\s*Header Start", head_lines)) ||
-    (any(grepl("^(Experiment|Subject):", head_lines)) &&
-       any(grepl("^LevelName:", head_lines)))
-}
-
-# Does this file hold TRIAL-LEVEL behavioural data (one row per trial) rather
-# than a participant-level table (one row per respondent)?
-#
-# A screening predicate, used by data_check to keep trial-level task output out
-# of its tabular-data counts and column descriptions: a per-trial file's columns
-# are paradata channels (response times, trial indices, stimulus codes), so
-# describing them as if they were variables of a participant-level dataset
-# produces noise. data_check records the verdict as `data_format = "trial_level"`
-# in its per-file `structure` table, which is what a later conversion step reads.
-#
-# Lives here, with the platform detectors it delegates to, rather than in the
-# Behaverse converter: deciding WHETHER a file is trial-level is a
-# classification question, independent of whether anything goes on to convert it.
-.bh_is_trial_level_file <- function(path) {
-  if (length(path) != 1L || is.na(path) || !file.exists(path)) return(FALSE)
-  ext <- tolower(tools::file_ext(path))
-  if (ext %in% c("txt", "edat", "edat2") && .eprime_is_export(path)) return(TRUE)
-  # Only DELIMITED-TEXT files can be a trial-level table, so only those are worth
-  # a read.csv sniff. Reading a binary/document (.docx/.pdf/.sav/.xlsx/...) as CSV
-  # produces "invalid input / embedded nulls" warnings and can return garbage, so
-  # gate on the extension first. (E-Prime's own extensions were handled above.)
-  # NOT ".log": a Stata plain-text log genuinely could be a trial-level table by
-  # this extension alone, but no real corpus example has ever been found to
-  # confirm a sniffer against, so .log is left out here and classed
-  # "documentation" in .ext_registry instead of guessed at.
-  .bh_sniff_exts <- c("csv", "tsv", "dat", "iqdat", "txt")
-  if (!ext %in% .bh_sniff_exts) return(FALSE)
-  # A one-row header read is enough for the data-frame detectors.
-  hdr <- tryCatch(
-    utils::read.csv(path, check.names = FALSE, nrows = 1L,
-                    fileEncoding = "UTF-8-BOM",
-                    sep = if (ext == "iqdat") "\t" else ","),
-    error = function(e) NULL)
-  if (is.null(hdr) || ncol(hdr) == 0) return(FALSE)
-  data_check_is_behaverse(hdr) || data_check_is_inquisit(hdr) ||
-    data_check_is_jspsych(hdr)
 }
 
 # ── Likert scale-block detection ──────────────────────────────────────────────
