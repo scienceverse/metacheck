@@ -325,10 +325,21 @@ test_that("data_col_facets splits type into orthogonal properties", {
   expect_equal(data_col_facets("rt_s", c(0.54, 0.61, 0.49, 0.70, 0.55))$unit,
                "seconds")
 
-  # Likert item: ordinal level, likert concept.
-  f <- data_col_facets("panas_1", sample(1:5, 60, TRUE))
+  # Likert is a property of a scale BLOCK, not of one column: whole numbers over
+  # a narrow range describe a trial counter (`round`, `block`, a PsychoPy loop
+  # index) as readily as a rating item. The caller, which has the whole data
+  # frame, passes `in_scale_block`.
+  f <- data_col_facets("panas_1", sample(1:5, 60, TRUE), in_scale_block = TRUE)
   expect_equal(f$measurement_level, "ordinal")
   expect_equal(f$concept, "likert")
+
+  # Without block context the same values claim nothing, rather than guessing.
+  f <- data_col_facets("panas_1", sample(1:5, 60, TRUE))
+  expect_true(is.na(f$concept))
+
+  # A trial counter has identical value characteristics and must NOT be likert.
+  f <- data_col_facets("round", sample(1:5, 60, TRUE), in_scale_block = FALSE)
+  expect_true(is.na(f$concept))
 
   # A comma-decimal column is numeric with a parse note, not a fake type.
   f <- data_col_facets("price", c("1,50", "2,30", "4,10", "5,00", "3,25",
@@ -445,6 +456,42 @@ test_that("data_check_pii_geo requires a geographic name, not just a value range
   # Ordinary decimals in coordinate range but a non-geographic name → not flagged.
   expect_false(data_check_pii_geo("x", seq(10, 30, length.out = 40))$problem)
   expect_false(data_check_pii_geo("temperature", c(20.1, 21.5, 19.8))$problem)
+})
+
+test_that("data_check_pii_geo finds a coordinate inside a compound name", {
+  # The name is word-split, so a coordinate is recognised however it is spelled
+  # out. `LocationLatitude` is Qualtrics' own column name and was previously
+  # missed, because the check only accepted a bare "lat"/"latitude".
+  sib <- c("LocationLatitude", "LocationLongitude")
+  expect_true(data_check_pii_geo("LocationLatitude",
+                                 c(52.37, 4.89, 51.5), sib)$problem)
+  expect_true(data_check_pii_geo("gps_lat", c(52.37, 4.89, 51.5),
+                                 c("gps_lat", "gps_lon"))$problem)
+})
+
+test_that("data_check_pii_geo requires a partner column for lat/lon", {
+  # A real coordinate is a PAIR. In psychology data "lat" is as often latency
+  # or a lateralisation index, and "lon" a loneliness scale — none of which has
+  # the matching sibling column a genuine coordinate always has.
+  set.seed(1)
+  psych <- c("id", "lat", "rt", "accuracy")          # no lon
+  expect_false(data_check_pii_geo("lat", round(runif(200, .3, 3.5), 3),
+                                  psych)$problem)    # latency in seconds
+  expect_false(data_check_pii_geo("lat", sample(0:1, 200, TRUE),
+                                  psych)$problem)    # Latin-square code
+  expect_false(data_check_pii_geo("lon", sample(1:7, 200, TRUE),
+                                  c("id", "lon", "rt"))$problem)  # loneliness
+
+  # The same column IS flagged once its partner is present.
+  expect_true(data_check_pii_geo("lat", round(runif(200, 50, 54), 3),
+                                 c("id", "lat", "lon"))$problem)
+
+  # A name that IS a coordinate outright needs no partner.
+  expect_true(data_check_pii_geo("gps", runif(20, -10, 10), psych)$problem)
+
+  # Values outside the coordinate range are rejected whatever the siblings say.
+  expect_false(data_check_pii_geo("lat", round(rlnorm(200, log(650), .4)),
+                                  c("id", "lat", "lon"))$problem)
 })
 
 test_that("data_check_pii_freetext flags real prose but not codes or non-prose", {
@@ -570,6 +617,38 @@ test_that("data_check_is_qualtrics fires on the metadata column set", {
   expect_false(data_check_is_qualtrics(data.frame(a = 1:3, b = 4:6)))
 })
 
+test_that("data_strip_qualtrics_header strips both rows on a long survey", {
+  # Regression: the question-text row used to be recognised by the FRACTION of
+  # cells matching a Qualtrics metadata label. Qualtrics writes a fixed set of
+  # metadata columns however long the questionnaire is, so on a real survey that
+  # fraction is tiny (measured: 13 matches in 139 columns = 0.09) and the row was
+  # not recognised. Stripping then stopped at row 1 and never reached the
+  # `ImportId` row behind it, leaving both junk rows in the data — which made
+  # every rating column a character vector of question text.
+  meta <- c("StartDate", "EndDate", "Progress", "Duration (in seconds)",
+            "Finished", "RecordedDate", "ResponseId")
+  items <- paste0("q_", 1:60)                     # a long questionnaire
+  nm <- c(meta, items)
+
+  question_row <- c("Start Date", "End Date", "Progress", "Duration (in seconds)",
+                    "Finished", "Recorded Date", "Response ID",
+                    paste("Question text for item", 1:60))
+  import_row <- sprintf('{"ImportId":"%s"}', nm)
+  data_rows <- lapply(seq_along(nm), function(i)
+    if (i <= length(meta)) rep("x", 3) else as.character(sample(1:7, 3, TRUE)))
+
+  q <- as.data.frame(rbind(question_row, import_row,
+                           do.call(cbind, data_rows)),
+                     stringsAsFactors = FALSE)
+  names(q) <- nm
+
+  expect_true(data_check_is_qualtrics(q))
+  stripped <- data_strip_qualtrics_header(q)
+  expect_equal(nrow(stripped), nrow(q) - 2L)
+  # The item columns are numeric again once the two text rows are gone.
+  expect_true(is.numeric(stripped[["q_1"]]))
+})
+
 test_that("data_check_is_qualtrics corroborates a thin export via ResponseId", {
   # Only two metadata names, but ResponseId values are Qualtrics response ids.
   q <- data.frame(
@@ -656,4 +735,327 @@ test_that("data_check does not flag an .RData that holds a data frame", {
   mo <- module_run(test_paper("x"), "data_check",
                    local_path = d, local_only = TRUE)
   expect_false(grepl("R workspace file", paste(mo$summary_text, collapse = "\n")))
+})
+
+# ── Careless responding ───────────────────────────────────────────────────────
+
+# Build a survey fixture: `n_ok` varied respondents on a Likert scale, plus a
+# straightliner (same answer throughout) and an alternating responder, with an
+# id column. `seed` keeps the varied respondents reproducible.
+make_careless_survey <- function(prefix = "panas", n_items = 10, n_ok = 50,
+                                 levels = 2:4, seed = 1) {
+  set.seed(seed)
+  items <- as.data.frame(matrix(sample(levels, n_ok * n_items, replace = TRUE),
+                                nrow = n_ok))
+  names(items) <- paste0(prefix, "_", seq_len(n_items))
+  straight <- as.data.frame(matrix(rep(median(levels), n_items), nrow = 1))
+  alternating <- as.data.frame(matrix(rep(range(levels), length.out = n_items),
+                                      nrow = 1))
+  names(straight) <- names(alternating) <- names(items)
+  items <- rbind(items, straight, alternating)
+  cbind(participant_id = seq_len(n_ok + 2), items)
+}
+
+test_that("data_check flags a straightliner but not an alternating responder", {
+  skip_if_not_installed("careless")
+  llm_use(FALSE)
+  d <- file.path(tempdir(), "dc_careless"); unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  utils::write.csv(make_careless_survey(), file.path(d, "data", "survey.csv"),
+                   row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  expect_true("careless" %in% names(mo))
+  expect_equal(anyDuplicated(mo$careless$respondent), 0L)
+
+  # The straightliner (id 51) answered identically on all 10 items.
+  hit <- mo$careless[mo$careless$respondent == "51", ]
+  expect_equal(nrow(hit), 1L)
+  expect_equal(hit$max_longstring, 10)
+  # The threshold text states the run and the cut it crossed.
+  expect_match(hit$threshold, "same answer 10 times in a row")
+
+  # The alternating responder (id 52) has high response variability. High IRV
+  # is NOT a flag: it cannot be told apart from an engaged respondent using the
+  # whole scale, so only straightlining flags anyone.
+  expect_false("52" %in% mo$careless$respondent)
+  expect_true(all(mo$careless$reasons == "straightlining"))
+})
+
+test_that("data_check does not screen scale blocks below the item minimum", {
+  skip_if_not_installed("careless")
+  llm_use(FALSE)
+  # A 3-item block: identical answers there are ordinary (on 3 items with few
+  # levels it happens by chance to a sizeable share of honest respondents), so
+  # the block must not be screened at all. Every respondent here straightlines.
+  d <- file.path(tempdir(), "dc_shortblock"); unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  flat <- data.frame(participant_id = 1:40,
+                     q_1 = rep(3L, 40), q_2 = rep(3L, 40), q_3 = rep(3L, 40))
+  utils::write.csv(flat, file.path(d, "data", "survey.csv"), row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  expect_equal(nrow(mo$careless), 0)
+})
+
+test_that("data_check reports careless coverage limits when nothing is flagged", {
+  skip_if_not_installed("careless")
+  llm_use(FALSE)
+  # A screenable survey in which nobody straightlines: the report must still
+  # say what the check cannot see, so a clean result is not read as an
+  # all-clear for the whole dataset.
+  d <- file.path(tempdir(), "dc_clean"); unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  set.seed(7)
+  items <- as.data.frame(matrix(sample(1:5, 40 * 10, replace = TRUE), nrow = 40))
+  names(items) <- paste0("panas_", 1:10)
+  # Guarantee no run reaches the 8-of-10 cut.
+  items[] <- lapply(items, function(x) x)
+  items$panas_1 <- rep(c(1L, 5L), length.out = 40)
+  utils::write.csv(cbind(participant_id = 1:40, items),
+                   file.path(d, "data", "survey.csv"), row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  rp <- paste(mo$report, collapse = "\n")
+  expect_true(grepl("#### Careless Responding", rp, fixed = TRUE))
+  expect_match(rp, "What this does not cover")
+  expect_match(rp, "not evidence that a dataset is free of careless responding")
+})
+
+test_that("careless scale blocks split by variable-name prefix", {
+  skip_if_not_installed("careless")
+  llm_use(FALSE)
+  d <- file.path(tempdir(), "dc_two_scales"); unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  # Two adjacent scales on the same 1-5 metric: panas_1..8 then rse_1..6. They
+  # must be detected as TWO blocks, not merged, because the prefix changes.
+  s1 <- make_careless_survey("panas", n_items = 8, n_ok = 40, levels = 1:5, seed = 2)
+  s2 <- make_careless_survey("rse",   n_items = 6, n_ok = 40, levels = 1:5, seed = 3)
+  wide <- cbind(s1, s2[, -1, drop = FALSE])  # drop duplicate id from s2
+  utils::write.csv(wide, file.path(d, "data", "survey.csv"), row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  scales <- unique(unlist(strsplit(mo$careless$scales, "; ")))
+  expect_true(any(grepl("^panas", scales)))
+  expect_true(any(grepl("^rse", scales)))
+})
+
+test_that("data_check does not run careless without an id or a scale block", {
+  skip_if_not_installed("careless")
+  llm_use(FALSE)
+  # A survey block but NO identifier column: careless is not actionable, skipped.
+  d <- file.path(tempdir(), "dc_noid"); unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE)
+  s <- make_careless_survey()[, -1, drop = FALSE]   # drop participant_id
+  utils::write.csv(s, file.path(d, "data", "survey.csv"), row.names = FALSE)
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  expect_equal(nrow(mo$careless), 0)
+
+  # Non-survey data (no Likert block): careless produces nothing either.
+  d2 <- file.path(tempdir(), "dc_nonsurvey"); unlink(d2, recursive = TRUE)
+  dir.create(file.path(d2, "data"), recursive = TRUE)
+  utils::write.csv(data.frame(id = 1:40, rt = rnorm(40, 500, 50),
+                              age = sample(18:65, 40, replace = TRUE)),
+                   file.path(d2, "data", "d.csv"), row.names = FALSE)
+  mo2 <- module_run(test_paper("x"), "data_check",
+                    local_path = d2, local_only = TRUE)
+  expect_equal(nrow(mo2$careless), 0)
+})
+
+# ── Spreadsheet formatting checks (merged from the former spreadsheet_check) ──
+# Flags non-machine-readable spreadsheet formatting (colour coding, merged
+# cells, empty rows, empty/unnamed columns) as part of data_check. Runs offline
+# against fixture files built in tempdir(); no network, no LLM. Requires
+# openxlsx to build the .xlsx fixtures.
+#
+# Ported from the former data_validate module tests. The findings frame moved
+# from that module's `table` to data_check's `findings`; `table` now holds the
+# per-column table, so file/sheet-level findings are read from `findings`.
+
+# Build a repository fixture with one "messy" and one "clean" Excel file.
+make_excel_repo <- function() {
+  d <- file.path(tempdir(), paste0("xl_fix_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+
+  # Messy workbook: colour-coded cells, a merged range, an all-empty column.
+  wb <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb, "Data")
+  df <- data.frame(id = 1:4, grp = c("a", "b", "a", "b"),
+                   empty = rep(NA, 4), val = c(10, 20, 30, 40))
+  openxlsx::writeData(wb, "Data", df)
+  openxlsx::addStyle(wb, "Data", openxlsx::createStyle(fgFill = "#FFCC00"),
+                     rows = 2, cols = 4)
+  openxlsx::addStyle(wb, "Data", openxlsx::createStyle(fgFill = "#00CCFF"),
+                     rows = 3, cols = 4)
+  openxlsx::mergeCells(wb, "Data", cols = 1:2, rows = 7)
+  openxlsx::saveWorkbook(wb, file.path(d, "data", "messy.xlsx"), overwrite = TRUE)
+
+  # Clean workbook: a plain rectangular table.
+  openxlsx::write.xlsx(data.frame(id = 1:3, score = c(1.1, 2.2, 3.3)),
+                       file.path(d, "data", "clean.xlsx"))
+  d
+}
+
+test_that("data_check flags spreadsheet colour, merges and empty columns", {
+  skip_if_not_installed("openxlsx")
+  llm_use(FALSE)
+  d <- make_excel_repo()
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+
+  expect_equal(mo$traffic_light, "yellow")
+  st <- mo$summary_table
+  expect_equal(st$spreadsheet_file_n, 2)
+  expect_equal(st$spreadsheet_flagged_file_n, 1)   # only messy.xlsx has issues
+
+  # The findings table names each issue type for the messy file, with
+  # column = NA (these are file/sheet-level, not column-level, findings).
+  sheet_finds <- mo$findings[is.na(mo$findings$column), ]
+  expect_true(any(grepl("Colour", sheet_finds$check)))
+  expect_true(any(grepl("Merged", sheet_finds$check)))
+  expect_true(any(grepl("Empty or unnamed", sheet_finds$check)))
+  # Scope is always reported.
+  expect_true(any(grepl("examined 2 spreadsheet files", mo$report)))
+})
+
+test_that("data_check spreadsheet checks are clean when Excel files are clean", {
+  skip_if_not_installed("openxlsx")
+  llm_use(FALSE)
+  d <- file.path(tempdir(), paste0("xl_clean_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+  openxlsx::write.xlsx(data.frame(id = 1:3, score = c(1.1, 2.2, 3.3)),
+                       file.path(d, "data", "clean.xlsx"))
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  expect_equal(mo$summary_table$spreadsheet_file_n, 1)
+  expect_equal(mo$summary_table$spreadsheet_flagged_file_n, 0)
+  expect_false(any(grepl("Colour|Merged|Empty",
+                         mo$findings$check[is.na(mo$findings$column)])))
+})
+
+# ── OpenDocument (.ods) ───────────────────────────────────────────────────────
+#
+# The .ods fixtures are written as raw ODF XML rather than through a writer:
+# readODS::write_ods() cannot produce cell fills or merged ranges, which are
+# exactly the features under test. Writing the XML also pins the two structures
+# that make ODS different from OOXML — implicit cell positions and the
+# `number-rows-repeated` / `number-columns-repeated` counters that compress
+# blank runs — so a regression in the counter expansion is caught here.
+.write_ods_fixture <- function(path, content_xml) {
+  build <- file.path(tempdir(), paste0("odsb_", as.integer(runif(1, 1, 1e9))))
+  dir.create(file.path(build, "META-INF"), recursive = TRUE,
+             showWarnings = FALSE)
+  writeLines("application/vnd.oasis.opendocument.spreadsheet",
+             file.path(build, "mimetype"), sep = "")
+  writeLines(paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">',
+    '<manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.spreadsheet"/>',
+    '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>',
+    '</manifest:manifest>'), file.path(build, "META-INF", "manifest.xml"))
+  writeLines(content_xml, file.path(build, "content.xml"))
+
+  wd <- setwd(build)
+  on.exit(setwd(wd), add = TRUE)
+  utils::zip(path, c("mimetype", "META-INF/manifest.xml", "content.xml"),
+             flags = "-r9Xq")
+  path
+}
+
+.ods_header <- paste0(
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<office:document-content',
+  ' xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"',
+  ' xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"',
+  ' xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"',
+  ' xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"',
+  ' xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"',
+  ' office:version="1.2">')
+
+test_that("data_check flags colour and merges in .ods files", {
+  llm_use(FALSE)
+  skip_if_not_installed("readODS")
+
+  d <- file.path(tempdir(), paste0("ods_fix_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+
+  # A merged banner (A1:B1), one red cell, and three blank rows written as a
+  # SINGLE row element with number-rows-repeated="3".
+  messy <- paste0(.ods_header,
+    '<office:automatic-styles>',
+    '<style:style style:name="ceRed" style:family="table-cell">',
+    '<style:table-cell-properties fo:background-color="#ff0000"/></style:style>',
+    # white/transparent must NOT count as colour coding
+    '<style:style style:name="ceWhite" style:family="table-cell">',
+    '<style:table-cell-properties fo:background-color="#ffffff"/></style:style>',
+    '</office:automatic-styles>',
+    '<office:body><office:spreadsheet>',
+    '<table:table table:name="Data">',
+    '<table:table-row>',
+    '<table:table-cell table:number-columns-spanned="2" table:number-rows-spanned="1" office:value-type="string"><text:p>banner</text:p></table:table-cell>',
+    '<table:covered-table-cell/>',
+    '<table:table-cell office:value-type="string"><text:p>val</text:p></table:table-cell>',
+    '</table:table-row>',
+    '<table:table-row>',
+    '<table:table-cell table:style-name="ceRed" office:value-type="float" office:value="1"><text:p>1</text:p></table:table-cell>',
+    '<table:table-cell table:style-name="ceWhite" office:value-type="float" office:value="2"><text:p>2</text:p></table:table-cell>',
+    '<table:table-cell office:value-type="float" office:value="3"><text:p>3</text:p></table:table-cell>',
+    '</table:table-row>',
+    '<table:table-row table:number-rows-repeated="3"><table:table-cell table:number-columns-repeated="3"/></table:table-row>',
+    '<table:table-row>',
+    '<table:table-cell office:value-type="float" office:value="9"><text:p>9</text:p></table:table-cell>',
+    '<table:table-cell table:number-columns-repeated="2"/>',
+    '</table:table-row>',
+    '</table:table></office:spreadsheet></office:body></office:document-content>')
+  .write_ods_fixture(file.path(d, "data", "messy.ods"), messy)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+
+  expect_equal(mo$traffic_light, "yellow")
+  st <- mo$summary_table
+  expect_equal(st$spreadsheet_file_n, 1)
+  expect_equal(st$spreadsheet_flagged_file_n, 1)
+
+  sheet_finds <- mo$findings[is.na(mo$findings$column), ]
+  expect_true(any(grepl("Colour", sheet_finds$check)))
+  expect_true(any(grepl("Merged", sheet_finds$check)))
+  # The merge range is synthesised into the same A1:B1 form the xlsx path uses.
+  expect_true(any(grepl("A1:B1", sheet_finds$detail)))
+  expect_true(any(grepl("examined 1 spreadsheet file\\b", mo$report)))
+})
+
+test_that("data_check spreadsheet checks are clean for a clean .ods file", {
+  llm_use(FALSE)
+  skip_if_not_installed("readODS")
+
+  d <- file.path(tempdir(), paste0("ods_clean_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+
+  clean <- paste0(.ods_header,
+    '<office:body><office:spreadsheet><table:table table:name="Data">',
+    '<table:table-row>',
+    '<table:table-cell office:value-type="string"><text:p>id</text:p></table:table-cell>',
+    '<table:table-cell office:value-type="string"><text:p>score</text:p></table:table-cell>',
+    '</table:table-row>',
+    '<table:table-row>',
+    '<table:table-cell office:value-type="float" office:value="1"><text:p>1</text:p></table:table-cell>',
+    '<table:table-cell office:value-type="float" office:value="1.1"><text:p>1.1</text:p></table:table-cell>',
+    '</table:table-row>',
+    '<table:table-row>',
+    '<table:table-cell office:value-type="float" office:value="2"><text:p>2</text:p></table:table-cell>',
+    '<table:table-cell office:value-type="float" office:value="2.2"><text:p>2.2</text:p></table:table-cell>',
+    '</table:table-row>',
+    '</table:table></office:spreadsheet></office:body></office:document-content>')
+  .write_ods_fixture(file.path(d, "data", "clean.ods"), clean)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  expect_equal(mo$summary_table$spreadsheet_flagged_file_n, 0)
 })

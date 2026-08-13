@@ -39,6 +39,10 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Suggests:
     ggplot2,
+    careless,
+    readODS,
+    openxlsx,
+    haven,
     devtools,
     httptest2,
     processx,
