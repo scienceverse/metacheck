@@ -13,7 +13,7 @@ code_lang(file_name)
 a vector of languages
 }
 \description{
-Detects code language used in files, only for languages metacheck currently processes (R, SAS, SPSS, Stata).
+Detects code language used in files, only for languages metacheck currently processes (R, SAS, SPSS, Stata, Mplus).
 }
 \examples{
 file_name <- "file.R"
