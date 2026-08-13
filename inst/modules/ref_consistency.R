@@ -21,7 +21,7 @@ ref_consistency <- function(paper) {
   bibs <- ref_table(paper) |>
     dplyr::select(paper_id, bib_id, reference = text)
   xrefs <- paper_table(paper, "xref") |>
-    dplyr::filter(xref_type == "bib") |>
+    dplyr::filter(xref_type == "bibr") |>
     dplyr::select(paper_id, bib_id = xref_id, contents, text_id)
   text <- paper_table(paper, "text") |>
     dplyr::select(paper_id, text_id, text)

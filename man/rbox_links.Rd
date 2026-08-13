@@ -13,7 +13,13 @@ rbox_links(paper)
 a table with the ResearchBox url in the first (href) column
 }
 \description{
-Find ResearchBox Links in Papers
+Get all ResearchBox links: real hyperlinks from the paper's own \code{url}
+table, plus a body-text fallback for a BARE mention like "researchbox.org/
+801" that the source PDF/HTML never encoded as an actual hyperlink (common
+in PDF-converted papers, where a plain-text URL mention loses its link
+formatting) — the \code{url} table only ever contains links the source
+document itself made clickable. Same two-tier approach \code{github_links()}
+uses for GitHub.
 }
 \examples{
 rbox_links(psychsci)

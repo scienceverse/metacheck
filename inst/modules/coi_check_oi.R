@@ -1,4 +1,4 @@
-#' COI Check (Overinclusive)
+#' COI Check Overinclusive
 #'
 #' @description
 #' Identify and extract Conflicts of Interest (COI) statements.
