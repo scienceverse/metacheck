@@ -1,0 +1,12 @@
+structure(list(method = "GET", url = "https://files.osf.io/v1/resources/6nt4v/providers/osfstorage/?zip=", 
+    status_code = 200L, headers = structure(list(server = "nginx", 
+        date = "Thu, 13 Aug 2026 07:27:30 GMT", `content-type` = "application/zip", 
+        `x-waterbutler-request-id` = "bd5d4680-437a-4fea-88c2-228d26d9b86c", 
+        `content-disposition` = "attachment; filename=\"6nt4v-osfstorage-archive.zip\"; filename*=UTF-8''6nt4v-osfstorage-archive.zip", 
+        `cache-control` = "no-cache, no-store, max-age=0, must-revalidate", 
+        expires = "-1", pragma = "no-cache", via = "1.1 google", 
+        `alt-svc` = "h3=\":443\"; ma=2592000"), class = "httr2_headers"), 
+    body = structure(find_mock_file("files.osf.io/v1/resources/6nt4v/providers/osfstorage-546010.R-FILE"), 
+        class = "httr2_path"), timing = c(redirect = 0, namelookup = 0.001605, 
+    connect = 0.007633, pretransfer = 0.021116, starttransfer = 1.422529, 
+    total = 1.422646), cache = new.env(parent = emptyenv())), class = "httr2_response")

@@ -90,6 +90,10 @@ In this study[^1] we examine whether automated checks reduce the amount of error
 [^1]: Remember, this is a demo and none of this is real.
 
 
+### Ethics
+
+The study was approved by the Ethical Review Board of Eindhoven University of Technology (reference ERB2024-113). All participants provided written informed consent before taking part.
+
 ### Procedure
 
 We randomly assigned 50 scientists to a condition where their manuscript was automatically checked for errors, and 50 scientists to a control condition with a checklist. Scientists had the opportunity to make changes to their manuscript based on the feedback of the tool. We subsequently coded all manuscripts for mistakes, and counted the total number of mistakes. We also measured the expertise of researchers (in years) to explore whether the automated tool would be more useful, the less research experience researchers had. We also asked researchers to rate how useful they found the checklist or app on a scale from 1 (not at all) to 7 (extremely useful). 
@@ -187,6 +191,30 @@ ggplot(data, aes(x = mistakes, y = experience)) +
   theme_minimal()
 ```
 
+
+# Study 2
+
+Study 2 demonstrates the checks that read a paper's actual data and analysis files, rather than its text. The numbers below are the numbers in the deposited output files, with one deliberate exception noted in the Results.
+
+## Method
+
+### Participants and Design
+
+We collected data from 120 participants, randomly assigned to a control condition or an error-feedback condition. Participants completed a decision task, from which we recorded accuracy and reaction time, and then rated their mood on five items scored from 1 (very negative) to 5 (very positive) and rated the difficulty of the task on a scale from 1 to 7.
+
+### Ethics
+
+This study was approved by the Ethical Review Board of Eindhoven University of Technology (reference ERB2024-114).
+
+### Data Availability
+
+The Study 2 data, codebook, analysis code, and statistical output files are available from Zenodo at https://doi.org/10.5281/zenodo.2669586. The release contains the data in comma-separated, Stata, and Excel form, a Qualtrics survey definition and response export, trial-level exports from PsychoPy and jsPsych, and the saved output of the analyses in JASP, jamovi, and SPSS format.
+
+## Results
+
+The mood score is the mean of the five mood items. Accuracy did not differ between the control condition and the error-feedback condition, *t*(117.82) = 1.09, *p* = .280, *d* = 0.20. Mood was somewhat lower in the control condition, *t*(117.67) = -1.65, *p* = .032, *d* = -0.30.[^3] A regression of mood on condition and accuracy was not significant, *F*(2, 117) = 2.15, *p* = .121. Accuracy was unrelated to reaction time, *r*(118) = -0.03, *p* = .723.
+
+[^3]: This *p* value is deliberately wrong. The deposited output reports *p* = .101 for this test, so the check that compares reported statistics against the statistical output files has one failure to find.
 
 ## Discussion
 

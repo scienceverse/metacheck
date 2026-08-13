@@ -4,10 +4,19 @@
 \alias{.osf_headers}
 \title{OSF Headers}
 \usage{
-.osf_headers(req)
+.osf_headers(req, pat = osf_pat())
 }
 \arguments{
 \item{req}{an httr2 request object}
+
+\item{pat}{an OSF personal access token to authorise the request with.
+Defaults to the token set by \code{\link[=osf_pat]{osf_pat()}}, which falls back to the \code{OSF_PAT}
+environment variable (normally set in \code{.Renviron}). \code{.osf_headers()} is
+passed bare as a request configurator in several places (e.g. as
+\code{.batch_query(req_func = )}), so a token supplied for a whole run is set
+with \code{\link[=osf_pat]{osf_pat()}} rather than threaded through every call site. Named \code{pat}
+rather than \code{osf_pat} because an argument of that name would shadow the
+\code{\link[=osf_pat]{osf_pat()}} function supplying its own default.}
 }
 \value{
 the modified request
