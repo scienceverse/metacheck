@@ -5,6 +5,26 @@
 # byte is sent. Publishing on the real zenodo.org mints a permanent DOI and
 # cannot be undone, which is why it is never the default.
 
+#' Write a line to a progress bar without leaving the old one behind
+#'
+#' `progress_bar` overwrites its line but does not clear it, so a message
+#' shorter than the one before leaves the tail of the previous message on
+#' screen. Padding to a fixed width overwrites those characters with spaces.
+#'
+#' @param pb the progress bar
+#' @param text the message
+#'
+#' @returns NULL, invisibly
+#' @keywords internal
+.pb_say <- function(pb, text) {
+  width <- max(getOption("width", 80) - 12, 40)
+  if (nchar(text) > width) {
+    text <- paste0(substr(text, 1, width - 1), "…")
+  }
+  pb$tick(0, tokens = list(what = formatC(text, width = -width)))
+  invisible(NULL)
+}
+
 #' Zenodo API base URL
 #'
 #' @param sandbox whether to use the sandbox server
@@ -233,7 +253,6 @@ zenodo_pat <- function(pat = NULL, sandbox = TRUE) {
 #' @param pb a progress bar passed from another function
 #'
 #' @returns a list of metadata lists, named by OSF ID
-#' @export
 #' @keywords internal
 .osf_zenodo_metadata <- function(osf_id, pb = NULL) {
   osf_id <- stats::na.omit(unique(osf_id))
@@ -293,6 +312,142 @@ zenodo_pat <- function(pat = NULL, sandbox = TRUE) {
 
   names(out) <- osf_id
   out[!vapply(out, is.null, logical(1))]
+}
+
+#' Classify files the way the check modules do
+#'
+#' `repo_check()`, `code_check()` and `data_check()` all classify a
+#' repository's files with `data_classify_files()`, into six categories:
+#' `data`, `code`, `materials`, `documentation`, `output`, and `unknown`.
+#' Splitting an upload calls the very same function, so a file cannot end up in
+#' one category when it is checked and another when it is archived.
+#'
+#' That function reads names and paths only, never file contents, in three
+#' steps: a format-locked extension (a `.sav` is code, a `.csv` is data), then
+#' a category word used as a whole token in the path (`Materials/`,
+#' `results.docx`), then a crosswalk through the coarse file type, where
+#' `image`, `audio`, `video`, `3D`, `exec`, `config` and `font` all become
+#' `materials`. Because nothing is opened, classifying costs no time even for a
+#' folder of very large files.
+#'
+#' @param files full paths to the files
+#'
+#' @returns a character vector of categories, one per file
+#' @keywords internal
+.zenodo_classify <- function(files) {
+  if (length(files) == 0) return(character(0))
+  data_classify_files(basename(files), file_path = files)
+}
+
+#' Work out the name each file will have on Zenodo
+#'
+#' Zenodo has no folders. Its own documentation is explicit: "Zenodo does not
+#' support uploading and organising files into folders/directories. Instead,
+#' you can create a ZIP archive and upload it, in which case Zenodo will
+#' display the file structure inside the ZIP." The API bears this out -- the
+#' bucket refuses a name containing "/" with a 404, the older form endpoint
+#' silently rewrites `code/02.R` to `code_02.R`, and a file object carries no
+#' path field at all.
+#'
+#' So a name has to be flat. Using the full relative path for every file makes
+#' them needlessly long, when most files in a project have a unique name
+#' anyway. This keeps the bare file name wherever it is unambiguous, and only
+#' prefixes the ones that would otherwise collide -- so `analysis.R` stays
+#' `analysis.R`, while two `README.md` files become `github__README.md` and
+#' `data__README.md`.
+#'
+#' @param files full paths to the files being uploaded
+#' @param folder the folder they are inside, stripped from the front
+#'
+#' @returns a character vector of names, one per file, all distinct
+#' @keywords internal
+.zenodo_flat_names <- function(files, folder) {
+  if (length(files) == 0) return(character(0))
+
+  rel <- sub(paste0("^", .zenodo_regex_escape(folder), "[/\\\\]*"), "", files)
+  rel <- gsub("\\\\", "/", rel)
+
+  base <- basename(rel)
+  out <- base
+
+  # Only the names that appear more than once need disambiguating. Each one
+  # takes as much of its path as it takes to become unique, so a file two
+  # folders deep is only prefixed twice if one prefix is not enough.
+  for (nm in unique(base[duplicated(base)])) {
+    idx <- which(base == nm)
+    parts <- strsplit(rel[idx], "/", fixed = TRUE)
+    for (depth in seq_len(max(lengths(parts)))) {
+      cand <- vapply(parts, \(p) {
+        keep <- utils::tail(p, depth + 1)
+        paste(keep, collapse = "__")
+      }, character(1))
+      if (!any(duplicated(cand))) break
+    }
+    out[idx] <- cand
+  }
+
+  # A name can still clash with a different file's full path form, so anything
+  # left over gets a number rather than silently overwriting on Zenodo.
+  dup <- duplicated(out)
+  if (any(dup)) {
+    for (i in which(dup)) {
+      ext <- sub(".*(\\.[^.]+)$", "\\1", out[[i]])
+      stem <- sub("\\.[^.]+$", "", out[[i]])
+      out[[i]] <- sprintf("%s_%d%s", stem, i, if (ext == out[[i]]) "" else ext)
+    }
+  }
+
+  out
+}
+
+#' Read OSF metadata that was saved alongside a downloaded folder
+#'
+#' `osf_file_download(metadata = TRUE)` writes `_osf_metadata/metadata.json`
+#' into each project folder. Reading it back means a folder can be uploaded
+#' with its real title, description, tags, licence and contributors without
+#' asking the OSF again -- and still works for a project that has since been
+#' deleted there, which is the reason for archiving it in the first place.
+#'
+#' @param folder a folder that may contain `_osf_metadata/metadata.json`
+#'
+#' @returns a metadata list in the same shape [.osf_zenodo_metadata()] returns,
+#'   or NULL when the folder has no such file
+#' @keywords internal
+.zenodo_meta_from_folder <- function(folder) {
+  path <- file.path(folder, .osf_meta_dir, "metadata.json")
+  if (!file.exists(path)) return(NULL)
+
+  m <- tryCatch(jsonlite::read_json(path, simplifyVector = FALSE),
+                error = \(e) NULL)
+  if (is.null(m) || is.null(m$osf_id)) return(NULL)
+
+  # The saved file keeps each contributor as a list with name, given_name,
+  # family_name and orcid; Zenodo wants "Family, Given" plus an optional orcid,
+  # which is what .zenodo_build_metadata() expects to receive here.
+  creators <- lapply(m$contributors %||% list(), \(c) {
+    family <- c$family_name %||% ""
+    given <- c$given_name %||% ""
+    nm <- if (nzchar(family) && nzchar(given)) {
+      sprintf("%s, %s", family, given)
+    } else {
+      c$name %||% ""
+    }
+    out <- list(name = nm)
+    if (!is.null(c$orcid) && !is.na(c$orcid) && nzchar(c$orcid)) {
+      out$orcid <- c$orcid
+    }
+    out
+  })
+  creators <- creators[vapply(creators, \(c) nzchar(c$name), logical(1))]
+
+  list(
+    osf_id = m$osf_id,
+    title = m$title %||% NA_character_,
+    description = m$description %||% NA_character_,
+    tags = unlist(m$tags %||% list(), use.names = FALSE) %||% character(0),
+    license = m$license %||% NA_character_,
+    creators = creators
+  )
 }
 
 #' Build the metadata Zenodo expects for one deposition
@@ -391,6 +546,51 @@ zenodo_pat <- function(pat = NULL, sandbox = TRUE) {
 #'   no license Zenodo recognises
 #' @param upload_type the Zenodo resource type (e.g. `"dataset"`,
 #'   `"publication"`, `"software"`)
+#' @param as_zip whether to upload each folder as a single ZIP archive instead
+#'   of as individual files.
+#'
+#'   Zenodo has no folders. Its documentation says so directly -- "Zenodo does
+#'   not support uploading and organising files into folders/directories.
+#'   Instead, you can create a ZIP archive and upload it, in which case Zenodo
+#'   will display the file structure inside the ZIP" -- and the API agrees: a
+#'   file name containing "/" is rejected, and a file record has no path field.
+#'
+#'   So there is a choice. `TRUE` (the default) keeps the folder structure
+#'   exactly, which is what an archive is for: a reader gets the project as the
+#'   author arranged it, rather than a heap of files they must sort out. The
+#'   usual objection -- that reaching one small file means downloading
+#'   everything -- is what `split_materials` answers, by putting the bulky part
+#'   in a separate archive.
+#'
+#'   `FALSE` uploads the files separately, which keeps each one visible,
+#'   previewable and downloadable on its own; the folder structure is lost,
+#'   though file names are kept short and only prefixed where two files would
+#'   otherwise collide. That suits a small flat folder, where the structure
+#'   carries no meaning worth preserving.
+#' @param split_materials which CATEGORIES of file to put in their own archive
+#'   when `as_zip = TRUE`. Defaults to `"materials"`, which is usually the bulk
+#'   of a repository's size and the part a reader is least likely to need.
+#'
+#'   Categories are the same six `repo_check()` reports -- `data`, `code`,
+#'   `materials`, `documentation`, `output`, `unknown` -- decided by the same
+#'   classifier, so a file lands in the same category whether it is being
+#'   checked or archived. Pass more than one to separate them further, for
+#'   example `c("materials", "output")`.
+#'
+#'   Every archive stores the same project folder at its root, so unzipping all
+#'   of them rebuilds the original tree exactly, while unzipping only the main
+#'   one gives everything except the split categories, each file still in its
+#'   right place. That lets somebody take the data and code without a
+#'   multi-gigabyte stimulus set.
+#'
+#'   Set `NULL` or `FALSE` for a single archive holding everything. Ignored
+#'   unless `as_zip = TRUE`.
+#' @param upload_osf_metadata whether to upload the `_osf_metadata` folder that
+#'   [osf_file_download()] saves inside each project -- the wiki pages, the
+#'   activity log, and the project record. `TRUE` by default, so the archive on
+#'   Zenodo describes itself. Set `FALSE` to deposit only the data files; the
+#'   metadata is still read either way, since that is where the deposition's
+#'   title, licence and authors come from.
 #' @param metadata a list of extra metadata fields to add to every deposition,
 #'   overriding what was taken from the OSF
 #' @param max_file_size largest file to upload, in MB; larger files are skipped
@@ -424,6 +624,9 @@ zenodo_upload <- function(folders,
                           license = "cc-by-4.0",
                           upload_type = "dataset",
                           metadata = NULL,
+                          as_zip = TRUE,
+                          split_materials = "materials",
+                          upload_osf_metadata = TRUE,
                           max_file_size = NULL,
                           ask = TRUE,
                           pb = NULL) {
@@ -488,7 +691,16 @@ zenodo_upload <- function(folders,
   mb <- 1024 * 1024
   file_lists <- lapply(paths, \(p) {
     f <- list.files(p, recursive = TRUE, full.names = TRUE, all.files = FALSE)
-    f[!dir.exists(f)]
+    f <- f[!dir.exists(f)]
+    # The `_osf_metadata` folder holds the wiki pages, activity log and project
+    # record that osf_file_download() saved. Uploading it by default keeps the
+    # archive self-describing on Zenodo, but it is not data, so it can be left
+    # out. The metadata is still READ either way -- that is what gives the
+    # deposition its title, licence and authors.
+    if (!isTRUE(upload_osf_metadata)) {
+      f <- f[!grepl(sprintf("(^|[/\\\\])%s([/\\\\]|$)", .osf_meta_dir), f)]
+    }
+    f
   })
   sizes <- lapply(file_lists, \(f) if (length(f)) file.size(f) else numeric(0))
 
@@ -524,32 +736,73 @@ zenodo_upload <- function(folders,
 
   ## confirm before sending anything ----
   server <- if (isTRUE(sandbox)) "the Zenodo SANDBOX (sandbox.zenodo.org)" else "the REAL Zenodo (zenodo.org)"
+  # Starts on a new line: the progress bar leaves the cursor part way along its
+  # own line, so without this the summary is spliced onto the spinner. The
+  # blank line *after* it belongs to the menu title below, not here -- see the
+  # note there.
+  # Say which of the two shapes the files will arrive in, because it is the
+  # difference between a reader seeing your folders and seeing a flat list, and
+  # it is easier to change now than after the deposition exists.
+  how <- if (isTRUE(as_zip)) {
+    if (length(split_materials) > 0 && !isFALSE(split_materials)) {
+      sprintf("\nFiles will be packed into ZIP archives, keeping their folders, with %s in separate archives.",
+              paste(split_materials, collapse = " and "))
+    } else {
+      "\nFiles will be packed into one ZIP archive per folder, keeping their folders."
+    }
+  } else {
+    "\nFiles will be uploaded individually; their folder structure will be lost."
+  }
   summary_msg <- sprintf(
-    "About to upload %d folder%s (%d file%s, %s) to %s.\nDepositions will be %s.",
+    "\nAbout to upload %d folder%s (%d file%s, %s) to %s.%s\nDepositions will be %s.",
     length(paths), plural(length(paths)),
     sum(n_files), plural(sum(n_files)),
-    .cap_size_str(total_size), server,
+    .cap_size_str(total_size), server, how,
     if (isTRUE(publish)) "PUBLISHED immediately" else "left as unpublished drafts"
   )
   message(summary_msg)
 
   if (isTRUE(publish) && !isTRUE(sandbox)) {
     message("Publishing on the real Zenodo cannot be undone: each record and ",
-            "its DOI become permanent and cannot be deleted.")
+            "its DOI become permanent and cannot be deleted.\n")
   }
 
   if (isTRUE(ask) && interactive()) {
-    choice <- utils::menu(c("Yes, upload", "No, cancel"), title = "Continue?")
+    # The blank line belongs to the title rather than the message before it:
+    # message() writes to stderr and menu() to stdout, and the two are not
+    # guaranteed to interleave, so a trailing newline on the message can be
+    # flushed after the prompt has already been printed -- which is how
+    # "drafts." and "Continue?" ended up on the same line.
+    choice <- utils::menu(c("Yes, upload", "No, cancel"),
+                          title = "\nContinue?")
     if (choice != 1) {
       message("Cancelled; nothing was uploaded")
       return(invisible(NULL))
     }
   }
 
-  ## OSF metadata for all projects, in one batch ----
+  ## metadata for each folder ----
+  # A folder downloaded by osf_file_download(metadata = TRUE) already carries
+  # everything Zenodo needs, in `_osf_metadata/metadata.json`: title,
+  # description, tags, licence, and contributors with their ORCIDs. Reading it
+  # means uploading a folder gets the same rich deposition as uploading a
+  # download result, and it works for a project that has since been deleted
+  # from the OSF -- which is the whole point of having archived it.
+  #
+  # Where there is no such file (a folder that did not come from the OSF, or
+  # one downloaded with metadata = FALSE), the OSF is queried as before.
   meta_by_id <- list()
   if (!is.null(osf_ids) && any(!is.na(osf_ids))) {
     meta_by_id <- .osf_zenodo_metadata(osf_ids, pb = pb)
+  }
+
+  meta_by_folder <- lapply(paths, .zenodo_meta_from_folder)
+  names(meta_by_folder) <- paths
+  n_local <- sum(!vapply(meta_by_folder, is.null, logical(1)))
+  if (n_local > 0) {
+    message(sprintf(
+      "Read the OSF metadata already saved in %d folder%s.",
+      n_local, plural(n_local)))
   }
 
   # An OSF project whose metadata could not be fetched (deleted, made private,
@@ -574,12 +827,20 @@ zenodo_upload <- function(folders,
 
   for (i in seq_along(paths)) {
     folder <- paths[[i]]
-    sprintf("Uploading %s (%d of %d)", basename(folder), i, length(paths)) |>
-      list(what = _) |>
-      pb$tick(0, tokens = _)
+    # Padded to a fixed width. The progress bar overwrites its line without
+    # clearing it, so a shorter message leaves the tail of a longer one behind
+    # -- a folder named after a long project title would otherwise stay on
+    # screen, spliced onto whatever came next.
+    .pb_say(pb, sprintf("Uploading %s (%d of %d)",
+                        basename(folder), i, length(paths)))
 
     osf_id <- if (!is.null(osf_ids)) osf_ids[[i]] else NA_character_
-    meta <- if (!is.na(osf_id)) meta_by_id[[osf_id]] else NULL
+    # The folder's own saved metadata wins: it is what was archived, it needs
+    # no request, and it survives the project being deleted from the OSF.
+    # Falling back to a fresh query covers folders downloaded before this
+    # existed, or with metadata = FALSE.
+    meta <- meta_by_folder[[folder]]
+    if (is.null(meta) && !is.na(osf_id)) meta <- meta_by_id[[osf_id]]
     md <- .zenodo_build_metadata(meta, folder, license = license,
                                  upload_type = upload_type)
     if (isTRUE(attr(md, "license_was_default"))) {
@@ -591,7 +852,13 @@ zenodo_upload <- function(folders,
       ## create an empty deposition ----
       resp <- httr2::request(paste0(api, "/deposit/depositions")) |>
         .zenodo_auth(token) |>
-        httr2::req_body_json(list()) |>
+        # An empty JSON OBJECT, "{}", not an empty array. R has one type for
+        # both, and req_body_json(list()) serialises it as "[]", which Zenodo
+        # answers with HTTP 500 -- an unhelpful status that reads like a fault
+        # at their end rather than a malformed request from ours (verified
+        # 2026-08-13: "{}" returns 201 and creates the deposition, "[]" returns
+        # 500). The body is written literally to avoid the ambiguity.
+        httr2::req_body_raw("{}", type = "application/json") |>
         httr2::req_perform()
       .zenodo_check_resp(resp, sprintf("Creating a deposition for %s",
                                        basename(folder)))
@@ -614,12 +881,101 @@ zenodo_upload <- function(folders,
     ## upload each file ----
     uploaded <- 0L
     upload_err <- NA_character_
+    # Worked out for the whole folder at once, because a name can only be
+    # shortened safely if nothing else in the same deposition would collide
+    # with it.
+    # One zip preserving the real folder structure, or the files individually
+    # with flattened names.
+    #
+    # Zenodo's own answer to "Can I upload folders/directories?" is: "Zenodo
+    # does not support uploading and organising files into folders/directories.
+    # Instead, you can create a ZIP archive and upload it, in which case Zenodo
+    # will display the file structure inside the ZIP." So `as_zip = TRUE` is
+    # the only way to keep nesting -- at the cost of nobody being able to
+    # download or preview a single file without taking the whole archive.
+    if (isTRUE(as_zip)) {
+      stem <- path_sanitize(basename(folder), keep_sep = FALSE)
+      root <- basename(folder)
+
+      # Both archives store paths relative to the folder's PARENT, so each
+      # carries the same "<project>/" prefix inside it. Unzipping both into one
+      # place therefore rebuilds the original tree exactly, and unzipping only
+      # one gives everything except the omitted part, still correctly nested.
+      # That is what makes splitting safe: a reader who skips a multi-gigabyte
+      # stimulus set still gets a working copy of everything else.
+      parent <- dirname(folder)
+      # list.files(root) returns paths relative to `root` ("Data/b.csv"), not
+      # including it, so the prefix has to be added back -- zipping from the
+      # parent needs "Study/Data/b.csv" or it finds nothing to do.
+      rels <- list.files(folder, recursive = TRUE, all.files = FALSE)
+      rels <- rels[!dir.exists(file.path(folder, rels))]
+      rels <- file.path(root, rels)
+      abs <- file.path(parent, rels)
+
+      # Split by the SAME categories repo_check reports, so a file goes to the
+      # same place whether it is being checked or archived.
+      split_into <- if (is.null(split_materials) || isFALSE(split_materials)) {
+        character(0)
+      } else {
+        split_materials
+      }
+      cats <- if (length(split_into)) .zenodo_classify(abs) else
+        rep(NA_character_, length(rels))
+      is_mat <- cats %in% split_into
+
+      built <- character(0)
+      # Each folder gets its own temporary directory, because the archive is
+      # named after the folder and two folders can easily share a name -- two
+      # OSF projects each holding a "Study" folder, say. Writing them all to
+      # one directory means the second overwrites the first, so anything
+      # reading an archive back after the loop gets another folder's files.
+      # The names inside stay short and meaningful, which is what a reader
+      # sees on Zenodo.
+      zip_dir <- file.path(tempdir(), paste0("metacheck_zip_", i))
+      dir.create(zip_dir, recursive = TRUE, showWarnings = FALSE)
+      make_zip <- function(which_rels, suffix) {
+        if (length(which_rels) == 0) return(NULL)
+        zf <- file.path(zip_dir, paste0(stem, suffix, ".zip"))
+        unlink(zf)
+        withr::with_dir(parent, utils::zip(zf, which_rels, flags = "-q"))
+        if (file.exists(zf) && file.size(zf) > 0) zf else NULL
+      }
+
+      if (any(is_mat) && !all(is_mat)) {
+        # One archive per split category, plus one for everything else, so
+        # "materials" and "output" can be separated independently.
+        built <- make_zip(rels[!is_mat], "")
+        parts <- character(0)
+        for (ct in intersect(split_into, unique(cats[is_mat]))) {
+          zf <- make_zip(rels[cats %in% ct], paste0("_", ct))
+          if (!is.null(zf)) {
+            built <- c(built, zf)
+            n_ct <- sum(cats %in% ct)
+            parts <- c(parts, sprintf("%s (%d %s file%s)",
+                                      basename(zf), n_ct, ct, plural(n_ct)))
+          }
+        }
+        message(sprintf(
+          "%s: split into %s (%d file%s) and %s. Unzipping all of them rebuilds the original folders; unzipping only the first gives everything except those categories.",
+          basename(folder), basename(built[[1]]), sum(!is_mat),
+          plural(sum(!is_mat)), paste(parts, collapse = ", ")))
+      } else {
+        built <- make_zip(rels, "")
+      }
+
+      if (length(built) > 0) {
+        file_lists[[i]] <- built
+      } else {
+        message(sprintf(
+          "Could not build a zip for %s; its files are uploaded individually.",
+          basename(folder)))
+      }
+    }
+
+    flat_names <- .zenodo_flat_names(file_lists[[i]], folder)
     for (j in seq_along(file_lists[[i]])) {
       fp <- file_lists[[i]][[j]]
-      # Keep the folder structure by using the path relative to the folder as
-      # the file's name on Zenodo; Zenodo has a flat file list, but a name with
-      # "/" in it preserves where the file sat.
-      rel <- sub(paste0("^", .zenodo_regex_escape(folder), "[/\\\\]*"), "", fp)
+      rel <- flat_names[[j]]
 
       ok <- tryCatch({
         if (!is.null(bucket)) {
@@ -647,10 +1003,8 @@ zenodo_upload <- function(folders,
       })
 
       if (isTRUE(ok)) uploaded <- uploaded + 1L
-      sprintf("%s: uploaded %d of %d files", basename(folder), uploaded,
-              length(file_lists[[i]])) |>
-        list(what = _) |>
-        pb$tick(0, tokens = _)
+      .pb_say(pb, sprintf("%s: uploaded %d of %d files", basename(folder),
+                          uploaded, length(file_lists[[i]])))
     }
 
     if (uploaded < length(file_lists[[i]])) {
@@ -710,22 +1064,70 @@ zenodo_upload <- function(folders,
   out <- dplyr::bind_rows(results)
 
   if (length(default_license_used) > 0) {
+    # Says what to type, not just which argument exists. A reader who does not
+    # already know Zenodo's licence identifiers cannot act on "set the license
+    # argument"; the two commonest choices and where to find the rest close
+    # that gap.
+    # Names each folder in a full sentence rather than appending a list to a
+    # count: "1 folder ...: one_project" made the reader work out which folder
+    # was meant, and read as a tally rather than as something to act on.
+    n_lic <- length(default_license_used)
+    shown <- utils::head(default_license_used, 5)
+    quoted <- paste(sprintf("\"%s\"", shown), collapse = ", ")
+    opening <- if (n_lic == 1) {
+      sprintf(
+        "The folder %s comes from an OSF project without specified license information.",
+        quoted)
+    } else {
+      sprintf(
+        "%d folders come from OSF projects without specified license information: %s%s.",
+        n_lic, quoted,
+        if (n_lic > length(shown)) ", and others" else "")
+    }
+
     warning(sprintf(
-      "%d folder%s had no license Zenodo recognises, so `license = \"%s\"` was used instead: %s. Set the `license` argument to change this.",
-      length(default_license_used), plural(length(default_license_used)),
-      license, paste(utils::head(default_license_used, 5), collapse = ", ")),
+      paste0(
+        "%s The license `%s` was added to Zenodo. You can change it on Zenodo ",
+        "if needed, or choose a different one when uploading:\n",
+        "    zenodo_upload(result, license = \"cc0-1.0\")   # public domain\n",
+        "    zenodo_upload(result, license = \"cc-by-4.0\")  # attribution\n",
+        "Other identifiers are listed at ",
+        "https://zenodo.org/api/vocabularies/licenses"),
+      opening, license),
       call. = FALSE)
   }
 
   n_ok <- sum(!is.na(out$deposition_id))
   message(sprintf(
-    "Created %d deposition%s on %s with %d file%s. %s",
+    "\nCreated %d deposition%s on %s with %d file%s.",
     n_ok, plural(n_ok),
     if (isTRUE(sandbox)) "the Zenodo sandbox" else "Zenodo",
-    sum(out$files_uploaded), plural(sum(out$files_uploaded)),
-    if (isTRUE(publish)) "Published." else
-      "They are unpublished drafts: open each url below to check it, then press Publish on Zenodo."
+    sum(out$files_uploaded), plural(sum(out$files_uploaded))
   ))
+
+  # The urls are the point of the whole run, so they are printed rather than
+  # left in the returned table -- which is invisible, so a caller who does not
+  # assign the result would otherwise be told to "open each url below" and
+  # shown none.
+  urls <- out$url[!is.na(out$url)]
+  if (length(urls) > 0) {
+    if (isTRUE(publish)) {
+      message("Published. The records are at:")
+    } else {
+      message("They are unpublished drafts. Check each one, then press ",
+              "Publish on Zenodo:")
+    }
+    for (k in seq_along(urls)) {
+      message(sprintf("  %s  (%s)", urls[[k]], basename(out$folder[!is.na(out$url)][[k]])))
+    }
+
+    # Opening the pages saves the user copying each url by hand, but only in an
+    # interactive session: a script, R CMD check, or the test suite must never
+    # have browser windows opened on it.
+    if (interactive()) {
+      for (url in urls) utils::browseURL(url)
+    }
+  }
 
   invisible(out)
 }

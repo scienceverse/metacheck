@@ -194,6 +194,92 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   }, error = function(e) NA_real_)
 }
 
+# Add the right authorisation to a file-download request, based on its host.
+#
+# Listing calls all go through .osf_headers(), so an OSF token reveals every
+# private project and its file names and sizes. The file BYTES were fetched
+# anonymously, which fails in a way that is easy to miss: the OSF does not
+# answer 403 for a private file, it returns HTTP 200 and an HTML sign-in page
+# (verified 2026-08-13 on osf.io/download/854te/, which returned
+# "<title>OSF | Sign in</title>" with status 200). That page was then written
+# to disk as if it were the file, and only the size check caught it -- as
+# "truncated", which read like a network problem rather than a missing token.
+#
+# Zenodo behaves the same way for a restricted record, so its token is added
+# too where one is set.
+.auth_for_url <- function(req) {
+  url <- req$url %||% ""
+  if (grepl("osf\\.io", url, ignore.case = TRUE)) {
+    pat <- tryCatch(osf_pat(), error = \(e) "")
+    if (nzchar(pat %||% "")) {
+      # unrestricted_auth is what makes the token survive the redirect, and
+      # without it the token is useless for a private file.
+      #
+      # osf.io/download/<id>/ answers 302 to a REGIONAL storage host --
+      # files.de-1.osf.io for a European project, files.osf.io for others.
+      # curl drops the Authorization header when a redirect crosses to a
+      # different host (a sensible default: it stops a token leaking to
+      # wherever a redirect points). The OSF relies on that header being kept,
+      # so the storage host then answers 403 and the file never arrives.
+      #
+      # Verified 2026-08-13 on a real private file (osf.io/download/854te/,
+      # 30,461 bytes): 403 without this option, HTTP 200 and the full file
+      # with it. Public files are unaffected either way.
+      #
+      # The token is only sent to hosts matched above, all of them OSF's own,
+      # so allowing it to follow their internal redirect does not expose it to
+      # a third party.
+      req <- req |>
+        httr2::req_headers(Authorization = sprintf("Bearer %s", pat)) |>
+        httr2::req_options(unrestricted_auth = TRUE)
+    }
+  } else if (grepl("zenodo\\.org", url, ignore.case = TRUE)) {
+    sandbox <- grepl("sandbox\\.zenodo\\.org", url, ignore.case = TRUE)
+    pat <- tryCatch(zenodo_pat(sandbox = sandbox), error = \(e) "")
+    if (nzchar(pat %||% "")) {
+      # Zenodo also redirects a file request to its own storage host, so the
+      # token needs to survive that hop for the same reason as the OSF above.
+      req <- req |>
+        httr2::req_headers(Authorization = sprintf("Bearer %s", pat)) |>
+        httr2::req_options(unrestricted_auth = TRUE)
+    }
+  }
+  req
+}
+
+# Did this response serve a login page instead of the file?
+#
+# An unauthenticated request for a private OSF file returns HTTP 200 with an
+# HTML sign-in page. Treated as a normal download it produces a file of the
+# wrong size, reported as "truncated", which sends the reader looking for a
+# network fault. Recognising it lets the real cause be named.
+.is_login_page <- function(path, expected_size = NA_real_) {
+  if (!file.exists(path)) return(FALSE)
+  size <- file.size(path)
+  # A sign-in page is small and is HTML; a data file of the same size would
+  # have to begin with an HTML doctype to be confused with one.
+  if (is.na(size) || size == 0 || size > 200000) return(FALSE)
+
+  # Read RAW BYTES, not characters. Most downloads are binary (PDFs, xlsx,
+  # gzip), and readChar() on those emits "truncating string with embedded
+  # nuls" and "unable to translate ... to a wide string" for every file --
+  # 15 warnings on a 31-file project, all of them noise about files that were
+  # downloaded perfectly. Bytes have no encoding to get wrong.
+  raw_head <- tryCatch(readBin(path, "raw", n = 400), error = \(e) raw(0))
+  if (length(raw_head) == 0) return(FALSE)
+
+  # A NUL byte in the first bytes means binary, and rules out an HTML page
+  # before any text comparison is attempted.
+  if (any(raw_head == as.raw(0))) return(FALSE)
+
+  head_txt <- rawToChar(raw_head)
+  # The bytes may still not be valid in the native encoding, so compare them
+  # as bytes rather than letting R re-encode them.
+  grepl("<!DOCTYPE html|<html", head_txt, ignore.case = TRUE, useBytes = TRUE) &&
+    grepl("sign in|log in|osf \\| sign", head_txt,
+          ignore.case = TRUE, useBytes = TRUE)
+}
+
 # Which HTTP statuses are worth retrying when fetching a FILE from repository
 # storage. httr2's default covers 429 and 503. 403 is added because OSF does
 # not serve files from api.osf.io directly: it redirects to a pre-signed
@@ -235,6 +321,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     if (is.null(host) || !length(host) || is.na(host) || !nzchar(host))
       host <- "local"
     req <- httr2::request(url) |>
+      # A private file needs the token, or the OSF serves a sign-in page with
+      # status 200 instead. See .auth_for_url().
+      .auth_for_url() |>
       # Pace the requests instead of firing the whole batch back-to-back: a
       # leaky bucket per host that allows a short burst of 10, then sustains
       # ~1 request/second. Downloads are sequential either way; this only
@@ -246,6 +335,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
                        backoff = .storage_backoff) |>
       httr2::req_progress()
     httr2::req_perform(req, path = dest)
+    if (.is_login_page(dest)) {
+      unlink(dest)
+      return("not authorised (the OSF returned a sign-in page; see ?osf_pat)")
+    }
     if (file.exists(dest) && file.size(dest) > 0) NA_character_
     else "empty response"
   }, error = function(e) {
@@ -290,6 +383,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   reqs <- lapply(urls, \(url) {
     tryCatch({
       httr2::request(url) |>
+        .auth_for_url() |>
         httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
                          is_transient = .storage_is_transient,
                          backoff = .storage_backoff) |>
@@ -344,10 +438,26 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       if (length(body) == 0) return("empty response")
       writeBin(body, dests[i])
     }
-    exp <- expected_size[i]
-    if (!is.na(exp) && exp > 0 && file.size(dests[i]) != exp) {
+    # A sign-in page served in place of the file: the file is private and the
+    # request was not authorised. Named as such, because "truncated" sent
+    # readers looking for a network fault instead of a missing token.
+    if (.is_login_page(dests[i], expected_size[i])) {
       unlink(dests[i])
-      return(sprintf("truncated (%d of %d bytes)", file.size(dests[i]), exp))
+      return("not authorised (the OSF returned a sign-in page; see ?osf_pat)")
+    }
+    exp <- expected_size[i]
+    if (!is.na(exp) && exp > 0) {
+      got <- file.size(dests[i])
+      # `got` is NA when the file is not there at all, which is a failed
+      # download rather than a truncated one; saying "truncated (NA of ...)"
+      # described the symptom in a way that hid the cause.
+      if (is.na(got)) {
+        return("download failed (nothing was written)")
+      }
+      if (got != exp) {
+        unlink(dests[i])
+        return(sprintf("truncated (%.0f of %.0f bytes)", got, exp))
+      }
     }
     NA_character_
   }, character(1))

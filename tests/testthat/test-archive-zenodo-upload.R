@@ -210,6 +210,7 @@ test_that("zenodo_upload does nothing when there are no files", {
 
 
 test_that("zenodo_upload rejects a bad token before uploading anything", {
+  skip_if_quick() # contacts the Zenodo sandbox
   skip_if_not(online("sandbox.zenodo.org"))
   skip_on_cran()
 

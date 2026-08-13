@@ -8,6 +8,7 @@ test_that(".osf_pat_validate", {
   #   expect_false(obs)
   # })
 
+  skip_if_quick() # validates a token against the OSF API
   skip_if_not(online("https://api.osf.io/v2/preprints/khbvy/"))
 
   # real PAT (if set)
@@ -255,6 +256,7 @@ test_that(".osf_headers takes an explicit token", {
 
 
 test_that(".osf_expand_user_ids leaves non-user ids alone", {
+  skip_if_quick() # queries the OSF API
   skip_if_not(online("api.osf.io"))
 
   # a project id passes through untouched
@@ -271,6 +273,7 @@ test_that(".osf_expand_user_ids leaves non-user ids alone", {
 
 
 test_that(".osf_user_nodes reduces components to their projects", {
+  skip_if_quick() # pages through a real user profile
   skip_if_not(online("api.osf.io"))
   skip_on_cran()
 
@@ -291,6 +294,7 @@ test_that(".osf_user_nodes reduces components to their projects", {
 
 
 test_that(".osf_expand_user_ids expands a user id", {
+  skip_if_quick() # pages through a real user profile
   skip_if_not(online("api.osf.io"))
   skip_on_cran()
 
@@ -357,6 +361,7 @@ test_that(".osf_verify_downloads checks the file system", {
 
 
 test_that("osf_user_projects lists projects to choose from", {
+  skip_if_quick() # queries a real user profile
   skip_if_not(online("api.osf.io"))
   skip_on_cran()
 

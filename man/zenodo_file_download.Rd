@@ -9,6 +9,7 @@ zenodo_file_download(
   download_to = ".",
   max_file_size = 10,
   max_download_size = 100,
+  unzip_types = NULL,
   pb = NULL
 )
 }
@@ -21,19 +22,41 @@ zenodo_file_download(
 
 \item{max_download_size}{maximum total size to download - set to NULL of Inf for no restrictions}
 
+\item{unzip_types}{file categories to extract from \code{.zip} files in the record
+rather than downloading the zip whole, named as \code{\link[=data_classify_files]{data_classify_files()}}
+names them: \code{"data"}, \code{"code"}, \code{"materials"}, \code{"documentation"},
+\code{"output"}, \code{"unknown"}. More than one may be given. \code{NULL} (the default)
+downloads zips whole and leaves them zipped, as before. \code{max_file_size}
+applies to each extracted member rather than to the archive.}
+
 \item{pb}{a progress bar passed from another function}
 }
 \value{
-data frame of file info
+data frame of file info. When members are extracted from a zip, its
+row reports the zip with \code{extracted} giving the number of members written;
+\code{size_on_disk} and \code{checksum_ok} are then \code{NA}, because what is on disk is
+the members rather than the archive Zenodo published a size and MD5 for.
 }
 \description{
 Creates a directory for the Zenodo ID and downloads all of the files using a folder structure from the Zenodo project nodes and file storage structure. Returns (invisibly) a data frame with file info.
 }
 \details{
 You can limit downloads to only files under a specific size (defaults to 10MB) and only a maximum download size (largest files will be omitted until total size is under the limit). Omitted files will be listed as messages in verbose mode, and included in the returned data frame with the downloaded column value set to FALSE.
+
+A \code{.zip} in the record is normally fetched whole and left as a zip. Set
+\code{unzip_types} to pull only the files you want out of it instead: Zenodo
+serves per-file URLs with byte-range support and each member of a zip is
+compressed separately, so the wanted members can be read out of the archive
+while the rest is never transferred. A zip of stimuli and three data files
+then costs the three data files. When the archive cannot be read that way
+(the listing fails, or the host refuses ranges) it is downloaded whole as
+before, so this never loses a file -- it only avoids transferring one.
 }
 \examples{
 \dontrun{
   zenodo_file_download("2591593")
+
+  # take only the data files out of any zip in the record
+  zenodo_file_download("2591593", unzip_types = "data")
 }
 }

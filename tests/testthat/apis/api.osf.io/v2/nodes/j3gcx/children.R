@@ -1,7 +1,7 @@
 structure(list(method = "GET", url = "https://api.osf.io/v2/nodes/j3gcx/children/", 
     status_code = 200L, headers = structure(list(server = "nginx", 
-        date = "Thu, 04 Jun 2026 14:53:33 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
-        `content-length` = "128", vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
+        date = "Thu, 13 Aug 2026 07:26:32 GMT", `content-type` = "application/vnd.api+json; charset=utf-8", 
+        `content-length` = "129", vary = "Accept-Encoding", vary = "Accept, Cookie, origin", 
         allow = "GET, POST, HEAD, OPTIONS", `x-content-type-options` = "nosniff", 
         `referrer-policy` = "same-origin", `cross-origin-opener-policy` = "same-origin", 
         `x-frame-options` = "DENY", `cache-control` = "no-cache, no-store, max-age=0, must-revalidate", 
@@ -17,9 +17,9 @@ structure(list(method = "GET", url = "https://api.osf.io/v2/nodes/j3gcx/children
     0x6c, 0x2c, 0x22, 0x6d, 0x65, 0x74, 0x61, 0x22, 0x3a, 0x7b, 
     0x22, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x22, 0x3a, 0x30, 0x2c, 
     0x22, 0x70, 0x65, 0x72, 0x5f, 0x70, 0x61, 0x67, 0x65, 0x22, 
-    0x3a, 0x31, 0x30, 0x7d, 0x7d, 0x2c, 0x22, 0x6d, 0x65, 0x74, 
-    0x61, 0x22, 0x3a, 0x7b, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 
-    0x6f, 0x6e, 0x22, 0x3a, 0x22, 0x32, 0x2e, 0x30, 0x22, 0x7d, 
-    0x7d)), timing = c(redirect = 0, namelookup = 0, connect = 0, 
-    pretransfer = 0.000343, starttransfer = 1.264561, total = 1.26483
+    0x3a, 0x31, 0x30, 0x30, 0x7d, 0x7d, 0x2c, 0x22, 0x6d, 0x65, 
+    0x74, 0x61, 0x22, 0x3a, 0x7b, 0x22, 0x76, 0x65, 0x72, 0x73, 
+    0x69, 0x6f, 0x6e, 0x22, 0x3a, 0x22, 0x32, 0x2e, 0x30, 0x22, 
+    0x7d, 0x7d)), timing = c(redirect = 0, namelookup = 0, connect = 0, 
+    pretransfer = 0.000405, starttransfer = 1.199609, total = 1.199899
     ), cache = new.env(parent = emptyenv())), class = "httr2_response")

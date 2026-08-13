@@ -197,7 +197,9 @@ osf_pat <- function(pat = NULL) {
         warning(id, " resulted in an error", call. = FALSE)
         data.frame(osf_id = id, osf_type = "error")
       } else {
-        .osf_parse_response(resp, pb = pb)
+        # `id` is the ID this response was requested for, so a failure can name
+        # it rather than reporting "NA could not be found".
+        .osf_parse_response(resp, pb = pb, osf_id = id)
       }
     }, error = \(e) {
       data.frame(osf_id = id, osf_type = "error")
@@ -223,10 +225,14 @@ osf_pat <- function(pat = NULL) {
 #' @param resp an httr2 response
 #' @param pb a progress bar
 #'
+#' @param osf_id the ID this response is for, used in the messages. Without it
+#'   a failure could only report "NA could not be found", which tells the
+#'   reader nothing about which of their IDs was wrong.
+#'
 #' @returns a single-row data frame
 #' @keywords internal
-.osf_parse_response <- function(resp, pb = NULL) {
-  id <- NA_character_
+.osf_parse_response <- function(resp, pb = NULL, osf_id = NA_character_) {
+  id <- osf_id
   if (is.data.frame(resp)) {
     all_data <- resp
   } else {
@@ -242,7 +248,21 @@ osf_pat <- function(pat = NULL) {
       warning("Too many requests", call. = FALSE)
       return(data.frame(osf_id = id, osf_type = "too many requests"))
     } else {
-      warning(id, " could not be found", call. = FALSE)
+      # 410 (Gone) is the OSF saying the project existed and was deleted or
+      # withdrawn, which is worth distinguishing from 404 (never existed, or
+      # mistyped) -- the reader's next step is different in each case.
+      warning(
+        if (is.na(id)) "An OSF resource" else id,
+        if (identical(sc, 410L) || identical(sc, 410)) {
+          " has been deleted or withdrawn from the OSF (HTTP 410), so its files cannot be downloaded."
+        } else {
+          paste0(
+            " could not be found on the OSF (HTTP ", sc,
+            "). Check the ID is spelled correctly",
+            if (!is.na(id)) sprintf(" and that you can see it at https://osf.io/%s", id) else "",
+            ". A private project needs an OSF token; see ?osf_pat")
+        },
+        call. = FALSE)
       return(data.frame(osf_id = id, osf_type = "unfound"))
     }
   }
@@ -590,7 +610,6 @@ osf_user_projects <- function(user_id, pb = NULL) {
 #'
 #' @returns a character vector of unique project IDs, or `character(0)` when the
 #'   user has no visible projects
-#' @export
 #' @keywords internal
 .osf_user_nodes <- function(user_id, pb = NULL) {
   osf_user_projects(user_id, pb = pb)$osf_id
@@ -608,7 +627,6 @@ osf_user_projects <- function(user_id, pb = NULL) {
 #'
 #' @returns a character vector of IDs with any user IDs replaced by their
 #'   projects
-#' @export
 #' @keywords internal
 .osf_expand_user_ids <- function(osf_id, pb = NULL) {
   if (length(osf_id) == 0) return(osf_id)
@@ -669,7 +687,6 @@ osf_user_projects <- function(user_id, pb = NULL) {
 #'
 #' @returns `ret` with `downloaded` corrected against the file system, and a
 #'   `size_on_disk` column added
-#' @export
 #' @keywords internal
 .osf_verify_downloads <- function(ret, download_to, check_size = TRUE) {
   if (is.null(ret) || nrow(ret) == 0) return(ret)
