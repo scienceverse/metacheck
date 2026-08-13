@@ -4,12 +4,16 @@
 \alias{code_remove_comments}
 \title{Remove comments from code text}
 \usage{
-code_remove_comments(code_text, lang = c("R", "SPSS", "SAS", "Stata"))
+code_remove_comments(
+  code_text,
+  lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")
+)
 }
 \arguments{
 \item{code_text}{the code text for a single file}
 
-\item{lang}{the language (we only currently handle R, SPSS, SAS, Stata)}
+\item{lang}{the language (we only currently handle R, Python, SPSS, SAS,
+Stata, Mplus, MATLAB)}
 }
 \value{
 the code_text minus comment lines
