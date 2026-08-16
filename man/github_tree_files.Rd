@@ -4,32 +4,39 @@
 \alias{github_tree_files}
 \title{Get GitHub repository files via the Git Trees API}
 \usage{
-github_tree_files(repo, max_repo_size_mb = 500, max_files = 1000, gate = TRUE)
+github_tree_files(repo)
 }
 \arguments{
 \item{repo}{GitHub repo URL or \code{"owner/repo"} string}
-
-\item{max_repo_size_mb}{gate: skip repos whose disk size exceeds this (MB;
-from GitHub repo metadata)}
-
-\item{max_files}{gate: skip repos with more than this many files (default 1000)}
-
-\item{gate}{if FALSE, disable GitHub gates and use the legacy recursive
-listing via \code{\link[=github_files]{github_files()}}}
 }
 \description{
 Fetches the complete file tree of a GitHub repository in two API calls
 (repo metadata + recursive tree), rather than the N-request recursive
-\code{/contents/} crawl used by \code{github_files()}. Also gates large
-or software-dominated repositories before any recursive traversal.
+\code{/contents/} crawl used by \code{github_files()}.
 }
 \details{
+A repository is listed in full whatever its size, matching how every other
+archive source (OSF, Zenodo, ResearchBox, PsychArchives, local) is treated.
+Because the Git Trees API returns the whole tree in ONE request, listing a
+large repository costs no more than listing a small one, so there is nothing
+to protect against at this stage. What a repository's size does limit is how
+much of it is DOWNLOADED, and that is handled downstream by
+\code{download_repo_files()}'s per-file and per-repository budgets, which
+fill smallest-file-first up to the cap and report what was omitted.
+
+The one case that still refuses is GitHub's own hard API limit: a tree with
+more than 100,000 entries comes back flagged \code{truncated}, meaning the
+response is incomplete. There is no way to list such a repository through
+this endpoint, so it is reported rather than silently returning a partial
+file list.
+
 Returns a list with:
 \describe{
-\item{\code{gated}}{logical}
-\item{\code{reason}}{character reason for gating, or \code{NA}}
+\item{\code{gated}}{logical; \code{TRUE} only when the repository could
+not be listed at all (invalid/inaccessible, or a truncated tree)}
+\item{\code{reason}}{character reason, or \code{NA}}
 \item{\code{files}}{data.frame shaped like \code{github_files()} output,
-or \code{NULL} when gated or when the tree could not be fetched}
+or \code{NULL} when the tree could not be fetched}
 \item{\code{default_branch}}{character}
 }
 }

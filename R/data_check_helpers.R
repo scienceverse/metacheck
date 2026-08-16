@@ -1822,6 +1822,60 @@ txt_classify_content <- function(path) {
 # invalid and leaves both the data and the attribute untouched.
 .utf8_repair_df <- function(df) {
   if (is.null(df)) return(df)
+
+  # Flatten columns that are not vectors, BEFORE anything else looks at them.
+  #
+  # A data frame's column is normally a vector, but `jsonlite` turns a nested
+  # JSON response into a data frame whose columns are THEMSELVES data frames or
+  # matrices (an OSF/API result saved to .RData or .rds is the common case).
+  # Every per-column operation downstream assumes a vector: is.na() on such a
+  # column returns a MATRIX, so subsetting flattens to one element per cell and
+  # counts come back one-per-cell instead of one-per-column. That breaks
+  # data_col_stats(), data_col_type(), data_col_facets() and the sample-value
+  # summary alike -- four separate failures with one cause, which is why this is
+  # fixed here at the single point every reader passes through rather than
+  # guarded in each consumer.
+  #
+  # The column is rendered as text, one string per row, so it is still listed,
+  # still classified, and still visible in the sample values -- rather than
+  # being dropped, which would hide data the researcher did share.
+  if (is.data.frame(df) && ncol(df) > 0) {
+    for (j in seq_along(df)) {
+      x <- df[[j]]
+      if (is.null(dim(x)) && (is.atomic(x) || is.null(x))) next
+      flat <- tryCatch({
+        if (is.data.frame(x)) {
+          # Row-wise, NOT apply(): apply() coerces to a matrix first, which
+          # fails outright when the sub-columns are themselves data frames
+          # (nesting more than one level deep, as an OSF API response is).
+          # Each sub-column is flattened to text on its own, then pasted.
+          parts <- lapply(names(x), function(k) {
+            v <- x[[k]]
+            v <- if (is.data.frame(v) || is.list(v))
+              vapply(seq_len(NROW(v)), function(i)
+                paste(utils::head(unlist(if (is.data.frame(v)) v[i, ] else v[[i]]), 10),
+                      collapse = ","), character(1))
+            else as.character(v)
+            paste0(k, "=", v)
+          })
+          do.call(paste, c(parts, sep = "; "))
+        } else if (is.matrix(x)) {
+          apply(x, 1, function(r) paste(as.character(r), collapse = "; "))
+        } else if (is.list(x)) {
+          vapply(x, function(e)
+            paste(utils::head(unlist(e), 20), collapse = "; "), character(1))
+        } else {
+          as.character(x)
+        }
+      }, error = function(e) rep(NA_character_, NROW(x)))
+      # Only replace when the flattened form still has one value per row; a
+      # mismatch would silently misalign the column against the rest of the
+      # table, which is worse than leaving it out.
+      df[[j]] <- if (length(flat) == NROW(df)) as.character(flat)
+                 else rep(NA_character_, NROW(df))
+    }
+  }
+
   if (!is.null(names(df))) {
     nm <- names(df)
     bad <- is.na(iconv(nm, from = "UTF-8", to = "UTF-8"))
@@ -2342,6 +2396,28 @@ data_col_type <- function(col_name, values) {
 #' @export
 #' @keywords internal
 data_col_stats <- function(x_for_stats, x_raw) {
+  # A column is not always a vector. `jsonlite` turns a nested API response into
+  # a data frame whose columns are THEMSELVES data frames (or matrices, or
+  # lists) -- common in .RData/.rds files holding a saved API result. For those,
+  # is.na() returns a MATRIX rather than a vector, so `x_raw[!is.na(x_raw)]`
+  # flattens to one element per cell and n_unique below becomes one number per
+  # cell instead of one number. data.frame() then recycles that into as many
+  # rows as there were cells, and data_check's do.call(rbind, ...) over the
+  # columns fails with "length of 'dimnames' [2] not equal to array extent".
+  #
+  # There are no summary statistics for such a column anyway, so report it as
+  # unsummarisable: one row, counts of the values it holds, statistics NA. The
+  # column is still listed and still classified; only its statistics are blank.
+  if (!is.null(dim(x_raw)) || (!is.atomic(x_raw) && !is.null(x_raw))) {
+    n_val <- NROW(x_raw)
+    return(data.frame(
+      n = n_val, n_missing = 0L, n_unique = NA_integer_,
+      mean = NA_real_, sd = NA_real_, se = NA_real_, median = NA_real_,
+      min = NA_real_, max = NA_real_, range = NA_real_, p25 = NA_real_,
+      p75 = NA_real_, iqr = NA_real_, skewness = NA_real_, kurtosis = NA_real_
+    ))
+  }
+
   n_unique_val <- length(unique(x_raw[!is.na(x_raw)]))
   empty_stats <- function(n, n_miss) data.frame(
     n = n, n_missing = n_miss, n_unique = n_unique_val,
