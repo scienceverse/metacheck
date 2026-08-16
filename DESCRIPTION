@@ -53,6 +53,7 @@ Suggests:
     shiny,
     shinyjs,
     shinydashboard,
+    bslib,
     DBI,
     RSQLite,
     zip,
