@@ -1,0 +1,4 @@
+id,varname,description
+var1,X...id,id_number
+var2,dv,"dependent variabel"
+var3,binary,condition

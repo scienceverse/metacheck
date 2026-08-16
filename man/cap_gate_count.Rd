@@ -30,8 +30,15 @@ cap_gate_count(
 a single string, or \code{NULL} when \code{n_needed <= current}
 }
 \description{
-The count analogue of \code{\link[=cap_gate_size]{cap_gate_size()}}: when a unit of work (a repository, a
-codebook file, a survey) has more items than a count cap allows, the whole
-unit is skipped rather than truncated. Returns \code{NULL} when within the cap.
+When a unit of work (a repository, a codebook file, a survey) has more items
+than a count cap allows, the whole unit is skipped rather than truncated.
+Returns \code{NULL} when within the cap.
+}
+\details{
+Note this is a COUNT cap, and skipping is the right response because the
+items are not independently useful — half a codebook's LLM chunks describe
+half its variables. Download SIZE limits behave differently: they fill to
+the budget smallest-file-first and report what was omitted (see
+\code{download_repo_files()}).
 }
 \keyword{internal}

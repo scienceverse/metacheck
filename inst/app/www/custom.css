@@ -58,6 +58,22 @@ table.dataTable tbody td.focus {
   box-shadow: none !important;
 }
 
+/* OSF app: a validation message ("Nothing downloaded yet") is placed by
+   Shiny outside the normal table flow, so the box drew its background to a
+   height that did not include it. Give the message ordinary block flow and
+   room to sit in, so the box grows around it. */
+#project_table .shiny-output-error-validation,
+#result_table .shiny-output-error-validation {
+  display: block;
+  padding: 0.5em 0 1em 0;
+  color: #666;
+}
+
+#project_table,
+#result_table {
+  min-height: 2.5em;
+}
+
 /* grid layout for the options checkboxes */
 .report-checks {
   display: grid;
