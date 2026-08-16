@@ -31,6 +31,44 @@ report_app <- function(quiet = FALSE, ...) {
   }
 }
 
+#' Launch OSF Download App
+#'
+#' Launch the OSF app: enter an OSF user or project ID, search and tick the
+#' projects you want, then download them with [osf_file_download()].
+#'
+#' Listing a user's projects uses [osf_user_projects()], and a single project
+#' ID is shown as a one-row list so both routes end in the same place. Private
+#' projects need a token, which is entered in the app and set for that session
+#' only with [osf_pat()].
+#'
+#' @param quiet whether to show debugging messages in the console
+#' @param ... arguments to pass to shiny::runApp
+#'
+#' @export
+#'
+#' @returns NULL (invisibly)
+#'
+#' @examples
+#' \dontrun{
+#' osf_app()
+#' }
+#'
+osf_app <- function(quiet = FALSE, ...) {
+  pckgs <- c("shiny", "shinydashboard", "shinyjs", "DT")
+  names(pckgs) <- pckgs
+  req_pckgs <- sapply(pckgs, requireNamespace, quietly = TRUE)
+
+  if (all(req_pckgs)) {
+    appdir <- system.file("app/osf_app.R", package = "metacheck")
+    shiny::runApp(appDir = appdir, quiet = quiet, ...) |> invisible()
+  } else {
+    warning(
+      "You need to install the following packages to run the app: ",
+      paste(names(req_pckgs[!req_pckgs]), collapse = ", ")
+    )
+  }
+}
+
 requireNamespace <- NULL # allows mocked bindings for test
 
 #' Launch Trove App

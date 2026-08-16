@@ -161,6 +161,101 @@ report <- function(paper,
   invisible(module_output)
 }
 
+#' Create a Report for a Local Repository
+#'
+#' Runs the repository modules on a folder of files on your own computer and
+#' writes a single report. Use it on a repository you have downloaded (for
+#' example with [osf_file_download()]) to see what was shared and what could be
+#' improved, before archiving the files somewhere permanent.
+#'
+#' Four modules run in order, each building on the one before it:
+#' [repo_check][repo_check] takes an inventory of the files,
+#' [code_check][code_check] reads the analysis scripts,
+#' [data_check][data_check] reads the data files and runs data-quality checks,
+#' and [codebook_check][codebook_check] checks whether the data columns are
+#' documented. Only the first is told where the files are; the rest reuse its
+#' results.
+#'
+#' Nothing is downloaded and no links are followed: only the folder you name is
+#' read. Whether a language model is used is decided by [llm_use()], exactly as
+#' when running the modules individually.
+#'
+#' @param path path to the repository folder to check
+#' @param output_file the name of the output file. Defaults to the folder's own
+#'   name with `_report.html` appended, written to the working directory. Give a
+#'   path here to write it somewhere else; any folders in that path must already
+#'   exist.
+#' @param output_format the format to create the report in, `"html"` (the
+#'   default) or `"qmd"`
+#' @param modules the modules to run. Defaults to the four repository modules,
+#'   in the order they depend on each other. Change it to run fewer.
+#' @param args a list of extra arguments to pass to modules, named by module
+#'   (see [report()]). `local_path` and `local_only` are set for you.
+#'
+#' @return the module output, invisibly, with the report's file path in its
+#'   `save_path` attribute
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # check a folder you have downloaded
+#' report_repository("how_many_registered_studies_are_published")
+#'
+#' # write the report somewhere else
+#' report_repository("my_study", output_file = "reports/my_study.html")
+#' }
+report_repository <- function(path,
+                              output_file = NULL,
+                              output_format = c("html", "qmd"),
+                              modules = c("repo_check", "code_check",
+                                          "data_check", "codebook_check"),
+                              args = list()) {
+  output_format <- tolower(output_format[[1]])
+
+  ## error checking ----
+  if (!is.character(path) || length(path) != 1 || is.na(path)) {
+    stop("`path` must be a single path to a repository folder", call. = FALSE)
+  }
+  if (!dir.exists(path)) {
+    stop("No folder found at ", path,
+         ".\nCheck the path, or download the repository first with ",
+         "osf_file_download().", call. = FALSE)
+  }
+
+  ## default the report name to the folder's own name ----
+  # normalizePath so a trailing slash or "." resolves to a real folder name
+  # rather than an empty string or a dot.
+  full_path <- normalizePath(path, winslash = "/", mustWork = TRUE)
+  if (is.null(output_file)) {
+    output_file <- paste0(basename(full_path), "_report.", output_format)
+  }
+
+  ## the first module reads the folder; the rest reuse its results ----
+  # Passing local_path to a later module would force it to re-run repo_check
+  # from scratch, so it is set on the first module only. local_only stops any
+  # link in the paper object being followed -- there is no paper here, but it
+  # also skips the link searches entirely.
+  first <- modules[[1]]
+  args[[first]] <- utils::modifyList(
+    args[[first]] %||% list(),
+    list(local_path = full_path, local_only = TRUE)
+  )
+
+  # There is no manuscript here, so the paper object is an empty stand-in for
+  # the modules to hang their results on. Its title becomes the report's
+  # subtitle, so name it after the folder rather than leaving it "Test Paper".
+  paper <- test_paper()
+  paper$info$title <- basename(full_path)
+
+  report(
+    paper = paper,
+    modules = modules,
+    output_file = output_file,
+    output_format = output_format,
+    args = args
+  )
+}
+
 #' Run modules for a report
 #'
 #' Runs modules in order on the paper and orders by section and traffic light.
@@ -391,13 +486,17 @@ module_report <- function(module_output,
       validation <- NULL
       info <- module_info(module_output$module)
 
-      # set up validation section if tagged
-      m <- gregexpr("<validation>.*</validation>", info$details)
-      if (m > -1) {
+      # set up validation section if tagged. Emit a native Quarto fenced div, not
+      # a raw <p>: raw HTML gets passed through by Pandoc wrapped in
+      # \if{html}{\out{...}}, and that wrapper leaked into the rendered report as
+      # literal "}}" / "\if{html}{\out{" around the validation text. A fenced div
+      # renders to <div class="validation"> cleanly and keeps the CSS hook.
+      m <- gregexpr("<validation>.*?</validation>", info$details)
+      if (m[[1]][1] > -1) {
         validation <- regmatches(info$details, m) |>
           _[[1]] |>
-          sub("<validation>\\s*", "<p class='validation'>**Validation**: ", x = _) |>
-          sub("\\s*</validation>", "</p>", x = _)
+          sub("<validation>\\s*", "::: {.validation}\nValidation: ", x = _) |>
+          sub("\\s*</validation>", "\n:::", x = _)
       }
 
       # get authors

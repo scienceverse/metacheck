@@ -148,11 +148,14 @@ test_paper <- function(text = LETTERS, url = character(0)) {
     classification_score = 0
   )
 
-  p$info <- dplyr::tibble(
-    title = "Test Paper",
-    file_hash = p$paper_id,
-    input_format = "test"
-  )
+  # Fill a row of the info table paper() already built from the schema, rather
+  # than replacing it with a narrower one. Overwriting dropped every column not
+  # set here -- including `doi`, which report_qmd() reads, so building a report
+  # from a test paper warned "Unknown or uninitialised column" on every run.
+  p$info[1, ] <- NA
+  p$info$title <- "Test Paper"
+  p$info$file_hash <- p$paper_id
+  p$info$input_format <- "test"
 
   p$url <- dplyr::tibble(
     href = url,
