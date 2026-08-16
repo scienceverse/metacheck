@@ -243,6 +243,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
         httr2::req_headers(Authorization = sprintf("Bearer %s", pat)) |>
         httr2::req_options(unrestricted_auth = TRUE)
     }
+  } else if (grepl(.dataverse_host_regex(), url, ignore.case = TRUE)) {
+    # Dataverse's token is per-installation (see .dataverse_pat()), unlike
+    # OSF/Zenodo's single shared token, and is sent as X-Dataverse-key rather
+    # than a Bearer Authorization header -- .dataverse_headers() applies it.
+    req <- .dataverse_headers(req)
   }
   req
 }
@@ -609,10 +614,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #' `repo_check()`), writing each into a per-session temp directory or a
 #' persistent on-disk cache, and fills in `file_location` for every file it
 #' successfully retrieves. Where a whole-repo archive download is available
-#' (OSF's Waterbutler `?zip=` endpoint, Zenodo's `files-archive` endpoint, a
-#' GitHub zipball), it is used instead of one HTTP request per file; a repo
-#' whose archive download fails, or is rejected by the size/worth-it gate,
-#' falls back to file-by-file fetching automatically.
+#' (OSF's Waterbutler `?zip=` endpoint, Zenodo's `files-archive` endpoint,
+#' Dataverse's `/api/access/dataset` endpoint, a GitHub zipball), it is used
+#' instead of one HTTP request per file; a repo whose archive download fails,
+#' or is rejected by the size/worth-it gate, falls back to file-by-file
+#' fetching automatically.
 #'
 #' Two independent size gates apply: `max_file_size` skips oversize files
 #' individually (the rest of the repository still downloads); `max_download_size`
@@ -804,11 +810,12 @@ download_repo_files <- function(files,
   # ── Download the files of repositories that passed the gate ─────────────────
   # For OSF repos, use the Waterbutler zip endpoint (one request for all of
   # osfstorage). For Zenodo repos, use the files-archive endpoint (one request
-  # for the whole record). For GitHub repos, use the API zipball (one request,
-  # follows the redirect to the signed download URL). All three are cheaper and
-  # less rate-limit-sensitive than N individual file requests. Any repo whose
-  # zip download fails, or that the zip-vs-file-by-file gate rejects, falls
-  # through to the file-by-file path.
+  # for the whole record). For Dataverse repos, use the /api/access/dataset
+  # endpoint (one request for the whole dataset). For GitHub repos, use the API
+  # zipball (one request, follows the redirect to the signed download URL).
+  # All four are cheaper and less rate-limit-sensitive than N individual file
+  # requests. Any repo whose zip download fails, or that the zip-vs-file-by-file
+  # gate rejects, falls through to the file-by-file path.
   failed <- data.frame(repo_url = character(0), file_name = character(0),
                        error = character(0), stringsAsFactors = FALSE)
   if (length(to_get) > 0) {
@@ -942,6 +949,64 @@ download_repo_files <- function(files,
                       repo, length(ridx), plural(length(ridx))))
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = FALSE,
+                                      timeout_s = zip_timeout_s)
+      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
+    }
+
+    # ── Dataverse: whole-dataset archive ────────────────────────────────────────
+    # /api/access/dataset/:persistentId is Dataverse's documented bulk-download
+    # endpoint (the same URL a dataset page's own "Download All" button uses).
+    # Like Zenodo's files-archive and OSF's ?zip=, it is all-or-nothing for the
+    # dataset, so the same size/worth-it gate applies. Unlike those two hosts,
+    # Dataverse is many independent installations, so the request needs
+    # .dataverse_headers() for that installation's own API token (see
+    # archive-dataverse.R) rather than a single shared auth scheme.
+    dv_repos <- unique(files$repo_url[
+      remaining[grepl(.dataverse_host_regex(), files$repo_url[remaining], ignore.case = TRUE)]])
+    for (repo in dv_repos) {
+      ridx <- intersect(remaining, which(files$repo_url == repo))
+      if (length(ridx) == 0) next
+      parsed <- .dataverse_parse(repo)
+      host <- parsed$host[[1]]
+      doi <- parsed$doi[[1]]
+      if (is.na(host) || is.na(doi)) next
+      zip_url <- sprintf(
+        "https://%s/api/access/dataset/:persistentId/?persistentId=doi:%s",
+        host, doi)
+      zip_bytes <- .remote_content_length(zip_url)
+
+      # Same zip-vs-file-by-file decision as Zenodo/OSF (see comments above).
+      n_wanted   <- length(ridx)
+      record_n   <- sum(files$repo_url == repo)
+      size_ok  <- !is.na(zip_bytes) &&
+        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
+      worth_it <- n_wanted > 50L || record_n <= 2L * n_wanted
+      if (!isTRUE(size_ok && worth_it)) {
+        why <- if (!size_ok)
+          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
+                  if (is.na(zip_bytes)) "unknown" else
+                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
+        else
+          sprintf("dataset holds %d files for %d wanted (>2x) and wanted <= 50",
+                  record_n, n_wanted)
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          repo, why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
+
+      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
+        message(sprintf(
+          paste0("Repository %s downloads as one archive of %s MB to extract ",
+                 "%s MB of selected files (whole-dataset Dataverse archive)."),
+          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
+      }
+      message(sprintf("Downloading %s as zip (%d file%s)...",
+                      repo, length(ridx), plural(length(ridx))))
+      files <- .download_zip_to_cache(files, ridx, zip_url,
+                                      strip_dir = FALSE,
+                                      req_func = .dataverse_headers,
                                       timeout_s = zip_timeout_s)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }

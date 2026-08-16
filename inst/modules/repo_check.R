@@ -4,7 +4,7 @@
 #' This module retrieves information from repositories.
 #'
 #' @details
-#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, PsychArchives, and Zenodo based on links in the manuscript.
+#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, PsychArchives, Zenodo, and Dataverse based on links in the manuscript.
 #'
 #' When a linked OSF page is a registration, its `registered_from` project (the
 #' one it was registered from, which the manuscript itself may never link
@@ -57,6 +57,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     rb_links_found     <- empty_links
     pa_links_found     <- empty_links
     zenodo_links_found <- empty_links
+    dataverse_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
     # exclude psychsci badges
@@ -73,6 +74,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     pa_links_found$repo_type     <- "psycharchives"
     zenodo_links_found <- zenodo_links(paper)
     zenodo_links_found$repo_type <- "zenodo"
+    dataverse_links_found <- dataverse_links(paper)
+    dataverse_links_found$repo_type <- "dataverse"
   }
 
   ## organise repos in a table
@@ -82,7 +85,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     github_links_found[, cols],
     rb_links_found[, cols],
     pa_links_found[, cols],
-    zenodo_links_found[, cols]
+    zenodo_links_found[, cols],
+    dataverse_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   repos$repo_error <- NA_character_
@@ -539,6 +543,70 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
+  ## Dataverse ----
+  # Like PsychArchives, Dataverse's REST API lists a dataset's files (name,
+  # size, checksum, per-file download URL) without downloading them, so this
+  # only fills file_url / file_size and leaves file_location = NA;
+  # download_repo_files() fetches the bytes later (deferred, like Zenodo/OSF).
+  dv_urls <- repos |>
+    dplyr::filter(repo_type == "dataverse") |>
+    _$repo_url |>
+    unique()
+  dv_files_df <- data.frame(repo_name = character(0))
+  if (length(dv_urls) > 0) {
+    tryCatch({
+      .dv_info <- suppressMessages(dataverse_info(dv_urls))
+
+      if (nrow(.dv_info) > 0 && "files" %in% names(.dv_info)) {
+        file_rows <- lapply(seq_len(nrow(.dv_info)), function(i) {
+          files_i <- .dv_info$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            df <- f$dataFile %||% list()
+            file_url <- if (!is.null(df$id))
+              sprintf("https://%s/api/access/datafile/%s",
+                     .dv_info$dataverse_host[[i]], df$id)
+            else NA_character_
+
+            data.frame(
+              repo_url = as.character(.dv_info$dataverse_url[[i]]),
+              file_name = as.character(f$label %||% df$filename %||% NA_character_),
+              file_path = as.character(f$label %||% df$filename %||% NA_character_),
+              file_url = file_url,
+              file_location = NA_character_,
+              file_size = as.numeric(df$filesize %||% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        dv_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(dv_files_df) > 0) {
+          dv_files_df$ext <- tolower(sub("^.*\\.", "", basename(dv_files_df$file_name)))
+          no_ext <- !is.na(dv_files_df$file_name) &
+            !grepl("\\.", basename(dv_files_df$file_name))
+          dv_files_df$ext[no_ext] <- NA_character_
+
+          dv_files_df <- dv_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          dv_files_df$ext <- NULL
+        } else {
+          dv_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% dv_urls] <<- conditionMessage(e)
+    })
+  }
+
   ## Local files ----
   local_files_df <- data.frame(repo_name = character(0))
   if (!is.null(local_path)) {
@@ -576,7 +644,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (nrow(repos) == 0) {
     info <- list(
       traffic_light = "na",
-      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, PsychArchives, or Zenodo.",
+      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, PsychArchives, Zenodo, or Dataverse.",
       summary_table = data.frame(
         paper_id = paper_id(paper),
         repo_n = 0,
@@ -592,7 +660,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, pa_files_df, zenodo_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, pa_files_df, zenodo_files_df, dv_files_df, local_files_df)
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)

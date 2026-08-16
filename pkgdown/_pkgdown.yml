@@ -201,6 +201,10 @@ reference:
   - '`zenodo_links`'
   - '`zenodo_info`'
   - '`zenodo_file_download`'
+  - '`dataverse_links`'
+  - '`dataverse_info`'
+  - '`dataverse_file_download`'
+  - '`dataverse_pat`'
 - title: Integrations
   desc: ~
   contents:

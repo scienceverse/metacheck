@@ -47,10 +47,11 @@ Fetches the bytes for a table of repository files (as produced by
 \code{repo_check()}), writing each into a per-session temp directory or a
 persistent on-disk cache, and fills in \code{file_location} for every file it
 successfully retrieves. Where a whole-repo archive download is available
-(OSF's Waterbutler \verb{?zip=} endpoint, Zenodo's \code{files-archive} endpoint, a
-GitHub zipball), it is used instead of one HTTP request per file; a repo
-whose archive download fails, or is rejected by the size/worth-it gate,
-falls back to file-by-file fetching automatically.
+(OSF's Waterbutler \verb{?zip=} endpoint, Zenodo's \code{files-archive} endpoint,
+Dataverse's \verb{/api/access/dataset} endpoint, a GitHub zipball), it is used
+instead of one HTTP request per file; a repo whose archive download fails,
+or is rejected by the size/worth-it gate, falls back to file-by-file
+fetching automatically.
 }
 \details{
 Two independent size gates apply: \code{max_file_size} skips oversize files
