@@ -43,6 +43,7 @@ Suggests:
     readODS,
     openxlsx,
     haven,
+    codebook,
     devtools,
     httptest2,
     processx,
