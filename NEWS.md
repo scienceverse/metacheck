@@ -1,3 +1,10 @@
+# metacheck 0.2.1
+
+* New `report_repository()` creates a report for a folder of files on your own computer, with no manuscript needed: give it a path and it runs `repo_check`, `code_check`, `data_check` and `codebook_check` and writes a report named after the folder
+* Fixed `data_check` failing on a data file whose columns are themselves data frames or matrices, as `jsonlite` produces from a nested API response (common in an `.RData` holding a saved OSF result). Such columns are now flattened to text, so they are described rather than crashing the module with "length of 'dimnames' [2] not equal to array extent"
+* Fixed `test_paper()` dropping every column of the `info` table except three, which made building a report from it warn about the missing `doi` column
+* Removed a spurious "one argument not used by format" warning from `data_check`'s personal-information note
+
 # metacheck 0.2.0
 
 * Four new modules: `data_check`, `codebook_check`, `reg_check` and `ethics_check`

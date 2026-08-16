@@ -13,6 +13,7 @@ inst/modules/sample-size*
 /data-raw/psychsci/pdf/
 /data-raw/psychsci/*_consolidated
 /data-raw/psychsci/bibr/
+/data-raw/cache/
 _stuff/modules-old/sample-size*
 _stuff/check_correct_citations/pdfs_lakens
 _stuff/check_correct_citations/xmls_lakens
@@ -23,3 +24,16 @@ CLAUDE.md
 
 
 .positai
+
+# metacheck's on-disk caches (downloaded repository files and LLM responses).
+# Created in the working directory by default, so they appear wherever code is
+# run from; see metacheck_cache_info() to locate them or the metacheck.cache.dir
+# option to move them elsewhere.
+#
+# Only ignored at the repository root. NOT a blanket `.metacheck_*`: the folder
+# tests/testthat/.metacheck_repo_cache holds COMMITTED ResearchBox fixtures that
+# a blanket pattern would hide, so a future deletion of them would go unnoticed.
+/.metacheck_repo_cache/
+/.metacheck_llm_cache/
+
+.comments/
