@@ -2036,11 +2036,11 @@ export_spv_html <- function(path, out = NULL) {
       tb <- tables[[i]]
       heading <- ""
       if (!is.na(tb$analysis %||% NA) && !identical(tb$analysis, last_analysis)) {
-        heading <- sprintf("<h2>%s</h2>", .stat_html_escape(tb$analysis))
+        heading <- sprintf("<h2>%s</h2>", .spv_html_escape(tb$analysis))
         last_analysis <- tb$analysis
       }
       title <- if (!is.na(tb$title %||% NA) && nzchar(tb$title))
-        sprintf("<h3>%s</h3>", .stat_html_escape(tb$title)) else ""
+        sprintf("<h3>%s</h3>", .spv_html_escape(tb$title)) else ""
       body_html <- if (isTRUE(tb$is_chart)) .spv_chart_html(tb$data) else .spv_table_html(tb$data)
       sections[[i]] <- paste0(heading, title, body_html)
     }
@@ -2058,10 +2058,18 @@ export_spv_html <- function(path, out = NULL) {
     "th { background: #f0f0f0; text-align: center; }\n",
     "td:first-child, th:first-child { text-align: left; }\n",
     "</style>\n</head>\n<body>\n<h1>%s</h1>\n%s\n</body>\n</html>\n"),
-    .stat_html_escape(basename(path)), .stat_html_escape(basename(path)), body)
+    .spv_html_escape(basename(path)), .spv_html_escape(basename(path)), body)
 
   writeLines(html, out, useBytes = TRUE)
   invisible(out)
+}
+
+.spv_html_escape <- function(x) {
+  x <- as.character(x %||% "")
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  x
 }
 
 # One decoded .spv chart (import_spv()'s (x, y) point shape -- see
@@ -2097,7 +2105,7 @@ export_spv_html <- function(path, out = NULL) {
       # this: sum y by matching x before drawing.
       agg <- stats::aggregate(y ~ x, data = df, FUN = sum)
       agg <- agg[order(agg$x), ]
-      heights <- stats::setNames(agg$y, vapply(agg$x, .stat_display_value, character(1)))
+      heights <- stats::setNames(agg$y, vapply(agg$x, .spv_display_value, character(1)))
       graphics::barplot(heights, xlab = xlab, ylab = ylab, col = "#5596E6", border = NA)
     } else {
       fits <- attr(df, "spv_chart_fits") %||% list()
@@ -2122,6 +2130,45 @@ export_spv_html <- function(path, out = NULL) {
 
   data_uri <- paste0("data:image/png;base64,", base64enc::base64encode(png_path))
   sprintf('<img src="%s" alt="chart" style="max-width: 100%%;">', data_uri)
+}
+
+# Round a decoded value cell to 3 decimal places for HTML DISPLAY only, to
+# read like SPSS's own on-screen output (e.g. ".841" rather than
+# "0.840583589880873"). This is deliberately display-only: the underlying
+# data.frame value (used by stat_results_long() / stat_output_json() for
+# exact statistical matching against reported results) is never touched,
+# only the string written into a rendered <td> here. The .spv format's own
+# per-cell display-format spec (which would give the EXACT decimal count SPSS
+# used) is decoded from the archive but currently discarded (see the `format`
+# field read in .spvlb_read_value(), unused past that point) -- a fixed
+# 3-decimal round is a simpler, purely cosmetic stand-in, not a re-derivation
+# of that spec.
+#
+# Two cases are deliberately left un-rounded rather than applying the rule
+# blindly:
+#   * WHOLE NUMBERS (a case count, N of Items, a df) round to themselves --
+#     "397" not "397.000". SPSS never pads an integer statistic with zeros.
+#   * VALUES THAT WOULD ROUND TO EXACTLY ZERO (a p-value like 4.7e-108) keep
+#     full precision instead, since "0.000" reads as an impossible exact
+#     zero rather than "very small" -- a materially misleading display, not
+#     just a cosmetic loss of precision.
+.spv_display_value <- function(x) {
+  # A real NA (an unresolved dimension leaf, or a cell .spvlb_value_text()
+  # never produced text for) must render as an EMPTY cell, matching SPSS's
+  # own blank display for "not applicable" -- `x %||% ""` only substitutes on
+  # NULL, so an actual NA value would otherwise become the literal string
+  # "NA" via as.character(NA), which is wrong on two counts: it isn't blank,
+  # and it looks like the two-letter category label "NA" some real tables
+  # legitimately use (e.g. "North America").
+  if (is.na(x %||% NA)) return("")
+  x <- as.character(x)
+  num <- suppressWarnings(as.numeric(x))
+  if (is.na(num) || !is.finite(num) || !grepl("^[-+]?[0-9.]+([eE][-+]?[0-9]+)?$", x))
+    return(x)
+  if (num == round(num)) return(format(round(num), scientific = FALSE, trim = TRUE))
+  rounded <- formatC(num, format = "f", digits = 3)
+  if (num != 0 && as.numeric(rounded) == 0) return(x)
+  rounded
 }
 
 # One decoded .spv table (import_spv()'s long/tidy shape: one row per cell,
@@ -2149,11 +2196,11 @@ export_spv_html <- function(path, out = NULL) {
     return(.spv_table_html_pivot(df, row_dims, col_dims))
 
   # Fallback: flat listing (no usable axis split recorded).
-  headers <- paste(sprintf("<th>%s</th>", vapply(names(df), .stat_html_escape, character(1))),
+  headers <- paste(sprintf("<th>%s</th>", vapply(names(df), .spv_html_escape, character(1))),
                    collapse = "")
   rows <- vapply(seq_len(nrow(df)), function(i) {
     cells <- vapply(df[i, , drop = TRUE],
-                    function(v) .stat_html_escape(.stat_display_value(v)), character(1))
+                    function(v) .spv_html_escape(.spv_display_value(v)), character(1))
     paste0("<tr>", paste(sprintf("<td>%s</td>", cells), collapse = ""), "</tr>")
   }, character(1))
   sprintf("<table>\n<thead><tr>%s</tr></thead>\n<tbody>\n%s\n</tbody>\n</table>",
@@ -2192,8 +2239,8 @@ export_spv_html <- function(path, out = NULL) {
       pos <- 1L
       for (n in rle_lens) {
         cells <- c(cells, if (n > 1L)
-          sprintf('<th colspan="%d">%s</th>', n, .stat_html_escape(labels[pos]))
-        else sprintf("<th>%s</th>", .stat_html_escape(labels[pos])))
+          sprintf('<th colspan="%d">%s</th>', n, .spv_html_escape(labels[pos]))
+        else sprintf("<th>%s</th>", .spv_html_escape(labels[pos])))
         pos <- pos + n
       }
       cells
@@ -2205,7 +2252,7 @@ export_spv_html <- function(path, out = NULL) {
     left <- if (length(row_dims)) {
       if (d < n_levels)
         if (length(row_dims) > 1L) sprintf('<th colspan="%d"></th>', length(row_dims)) else "<th></th>"
-      else paste(sprintf("<th>%s</th>", vapply(row_dims, .stat_html_escape, character(1))),
+      else paste(sprintf("<th>%s</th>", vapply(row_dims, .spv_html_escape, character(1))),
                 collapse = "")
     } else ""
     paste0("<tr>", left, paste(header_row_cells[[d]], collapse = ""), "</tr>")
@@ -2223,11 +2270,11 @@ export_spv_html <- function(path, out = NULL) {
     strsplit(row_levels, "␟", fixed = TRUE) else list()
   body_rows <- vapply(seq_along(row_levels), function(i) {
     stub <- if (length(row_dims))
-      paste(sprintf("<td>%s</td>", vapply(row_parts[[i]], .stat_html_escape, character(1))),
+      paste(sprintf("<td>%s</td>", vapply(row_parts[[i]], .spv_html_escape, character(1))),
             collapse = "")
     else ""
     cells <- paste(sprintf("<td>%s</td>",
-                           vapply(grid[i, ], function(v) .stat_html_escape(.stat_display_value(v)), character(1))),
+                           vapply(grid[i, ], function(v) .spv_html_escape(.spv_display_value(v)), character(1))),
                    collapse = "")
     paste0("<tr>", stub, cells, "</tr>")
   }, character(1))

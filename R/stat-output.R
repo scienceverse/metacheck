@@ -19,6 +19,34 @@
 # Column -> STATO typing is via stato_type_column() (R/stato-map.R): a verified
 # STATO class where one exists, else a metacheck-minted statistic term, else the
 # header text as a nominal label (never dropped).
+#
+# Every result ROW gets a stable result_id, via .stat_result_ids() (the TABLE's
+# base id) plus a per-row suffix added by each caller. The base id is the
+# CODENAME (source_file) that produced the table plus a POSITIONAL locator —
+#   * an executed R script: the source LINE the statement started on, from
+#     read_r_output()'s echo-based line attribution (`l<line>`), plus
+#     `line_seq` (that result TABLE's 1-based position among results sharing
+#     the SAME line — a loop calling t.test() each iteration prints several
+#     result tables off one source line);
+#   * a JASP/jamovi extraction: there is no source line for a GUI-driven
+#     analysis, so `table_index` (the table's 1-based ordinal position in the
+#     rendered document, from read_stat_tables()) plays the same role a line
+#     number plays for R.
+# Each caller then appends `_r<row>` (that row's 1-based position within the
+# table) to turn the table's base id into a unique per-ROW id — the level a
+# reader actually wants to trace ("which line/table produced THIS reported
+# t-value"), since one result table commonly holds several rows (one per
+# comparison/predictor/group).
+# The whole id is sanitised to lower-case letters/digits/underscores only —
+# every separator (the `#` that used to join source_file to the locator, `.`
+# in a filename, spaces in an analysis heading) becomes `_` — so result_id is
+# always a single safe token, usable as a filename or a column value without
+# further escaping.
+.stat_sanitize_id <- function(x) {
+  x <- tolower(trimws(as.character(x %||% "")))
+  x <- gsub("[^a-z0-9]+", "_", x)
+  sub("^_|_$", "", x)
+}
 
 # One base (per-TABLE) result_id per element of `tables`
 # (read_stat_tables()/read_r_output()'s return shape), stamped in the SAME
@@ -84,7 +112,69 @@
                           anchor, row_label, sep = "_"))
 }
 
+# Is this cell a PLACEHOLDER rather than a value? JASP renders an empty cell in
+# a result table as "." and jamovi as an em/en dash; a table for an analysis the
+# user set up but never completed is placeholder in EVERY cell. Emitting those
+# produces fully STATO-typed junk — a "p-value" whose value is "." — which is
+# worse than omitting them, because a downstream matcher sees a p that exists
+# but can never match anything. Treated exactly like the already-skipped empty
+# cell: the key is omitted, and a result left with no values at all is dropped.
+# Deliberately NARROW: only these exact markers (after trimming) count, so a
+# real value is never discarded.
+.STAT_PLACEHOLDERS <- c(".", "-", "—", "–", "−",
+                        "na", "nan", "null", "n/a")
+.stat_is_placeholder <- function(x) {
+  x <- trimws(as.character(x %||% ""))
+  !nzchar(x) || tolower(x) %in% .STAT_PLACEHOLDERS
+}
 
+# Which columns of a result table are STATISTICS (vs row-label / structural
+# columns). JASP/jamovi lay tables out differently PER TEST — the label
+# column(s) that key each row (test name, model, predictor, group, effect-size
+# NAME) can be at the front, in the middle, or have an empty header, and there
+# can be several. So classify by CONTENT, not header or position: a column is a
+# row-LABEL when its non-empty cells are mostly non-numeric text; a statistic
+# column holds (mostly) numbers OR has a header that maps to a known statistic.
+# This adapts to every test automatically because it reads the actual column.
+# `role` is the source format's OWN declaration of what this column is, when it
+# makes one: jamovi's ResultsColumn carries type ("text" for a label column,
+# number/integer for a statistic) and format (which can name the quantity
+# outright, e.g. "pvalue"). A declaration beats any amount of guessing from cell
+# contents — a transposed t-test column mixes a variable name, a test name and
+# then numbers, which no content heuristic classifies correctly — so it is
+# consulted first. NULL for sources that declare nothing (the HTML path), which
+# falls through to the content test unchanged.
+.stat_is_label_col <- function(header, values, role = NULL) {
+  if (!is.null(role)) {
+    ty <- tolower(trimws(as.character(role$type %||% "")))
+    fm <- tolower(trimws(as.character(role$format %||% "")))
+    # A declared quantity in `format` (pvalue, zto, ...) means a statistic.
+    if (nzchar(fm)) return(FALSE)
+    if (ty %in% c("number", "integer")) return(FALSE)
+    if (identical(ty, "text")) return(TRUE)
+  }
+  h <- tolower(trimws(header %||% ""))
+  vals <- trimws(as.character(values %||% character(0)))
+  # Placeholders ("." in JASP, an em dash in jamovi) are not content: an
+  # all-placeholder column carries no information either way. They must be
+  # dropped BEFORE the numeric-content test below, because that test's regex
+  # (`[0-9.]+`) matches a bare "." — so a column of JASP placeholders would
+  # otherwise look 100% numeric and be misclassified as a statistic column,
+  # producing a junk statistic keyed off an empty header.
+  vals <- vals[!vapply(vals, .stat_is_placeholder, logical(1))]
+  # A header that types to a known statistic is a statistic column regardless of
+  # content (e.g. a p column with "< .001" strings).
+  if (nzchar(h) && !identical(stato_type_column(h)$termSource, ""))
+    return(FALSE)
+  # Content test: a value is "numeric-ish" if it parses as a number, is a
+  # reported comparison (< .001), or an infinity — the forms statistics take.
+  if (length(vals) == 0) return(TRUE)   # empty column -> treat as label/spacer
+  numlike <- grepl("^[<>=]?\\s*[-+]?[0-9.]+([eE][-+]?[0-9]+)?$", vals) |
+             grepl("(?i)^[-+]?inf$", vals, perl = TRUE) |
+             grepl("^[<>]\\s*[.0-9]", vals)
+  # Label column when fewer than half its cells look numeric.
+  mean(numlike) < 0.5
+}
 
 #' Flatten extracted result tables into one queryable long data frame
 #'

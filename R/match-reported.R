@@ -19,6 +19,48 @@
 # output value, rounded to the reported number of decimals, equals it (reported
 # "W = 370.5" matches an output 370.5; "d = .68" matches 0.6810).
 
+# Normalise a value string to a number. APA leading-dot ".06" -> 0.06; strip
+# thousands separators; "< .001"/"> .05" -> the bound (with a censored flag).
+# Returns list(num, dec = #decimals as written, censored = "<"/">"/"").
+.norm_value <- function(x) {
+  s <- trimws(as.character(x %||% ""))
+  cens <- ""
+  if (grepl("^[<>]", s)) { cens <- substr(s, 1, 1); s <- trimws(sub("^[<>]\\s*", "", s)) }
+  s <- gsub("[, ]", "", s)
+  s <- sub("[^0-9.eE+-].*$", "", s)
+  dm <- regmatches(s, regexpr("\\.[0-9]+", s))
+  dec <- if (length(dm)) nchar(dm) - 1L else 0L
+  s2 <- sub("^(-?)\\.", "\\10.", s)
+  num <- suppressWarnings(as.numeric(s2))
+  list(num = num, dec = dec, censored = cens)
+}
+
+# A bracketed interval, as extract_eq() captures a CI: "[.16, .29]" (the
+# regex's own `\\[[^\\]]+\\]` alternative keeps the brackets and the separator
+# as one rhs string, deliberately — see R/text-extractors.R). .norm_value() has
+# no notion of a two-number range, so untangling it happens here, upstream of
+# .norm_value(): the two inner numbers are extracted and normalised
+# separately. Returns NULL when `x` is not bracket-shaped or does not contain
+# exactly two separated numbers.
+.norm_interval <- function(x) {
+  s <- trimws(as.character(x %||% ""))
+  if (!grepl("^\\[.*\\]$", s)) return(NULL)
+  inner <- sub("^\\[(.*)\\]$", "\\1", s)
+  # APA separates CI bounds with a comma ("[.16, .29]"), a semicolon
+  # ("[.16; .29]", common outside APA/in some European conventions), or an
+  # en/em dash or plain hyphen with no comma/semicolon present ("[.16-.29]").
+  # Comma/semicolon are tried first so a negative lower bound ("-0.16") is
+  # never mistaken for a dash separator.
+  parts <- if (grepl("[,;]", inner)) strsplit(inner, "[,;]")[[1]]
+    else strsplit(inner, "(?<=[0-9])\\s*[-–—]\\s*(?=[.0-9])",
+                  perl = TRUE)[[1]]
+  parts <- trimws(parts)
+  if (length(parts) != 2 || any(!nzchar(parts))) return(NULL)
+  lo <- .norm_value(parts[1]); hi <- .norm_value(parts[2])
+  if (is.na(lo$num) || is.na(hi$num)) return(NULL)
+  list(lo = lo, hi = hi)
+}
+
 # The anchor's own parenthetical degrees of freedom, as extract_eq() captures
 # it in its `df` column: "(28)" for a one-df test (t, chi2, z, ...) or
 # "(2, 57)" for a two-df F-test (numerator, denominator) — see

@@ -64,6 +64,19 @@
   paste(paper$text$text[hit], collapse = " ")
 }
 
+# A column header is "ambiguous" when Grobid's own extraction could not have
+# given it real meaning: blank, a bare running number ("1.", "2." — a
+# correlation matrix's own column index, not a statistic name), or a dash/blank
+# placeholder. .stat_family() returning NA already catches "unrecognised", but a
+# blank/numeric header is unrecognised for a DIFFERENT reason (nothing was ever
+# there to recognise) than a real-but-unmapped label — kept as its own check so
+# a future .stat_family() addition can't accidentally start treating "1." as a
+# real family.
+.table_header_ambiguous <- function(header) {
+  h <- trimws(header %||% "")
+  !nzchar(h) || grepl("^[0-9]+\\.?$|^-+$", h)
+}
+
 # Type every cell in a table's rows (tiers 1-3): header family first, caption
 # family for cells the header left untyped, then value-shape (CI) for anything
 # still untyped. Returns a list of per-data-row lists of

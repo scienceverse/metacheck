@@ -96,6 +96,25 @@
 .TEST_NONEVIDENCE <- c("range", "mode", "or", "and", "min", "max", "sum",
                        "count", "total", "height", "width", "age")
 
+# Normalise a reported statistic name to a comparison key: lower-cased, Greek
+# and superscripts folded to ASCII, punctuation dropped. "ηp²" -> "etap2",
+# "Cohen's d" -> "cohens d", "χ²" -> "chi2".
+.norm_stat_name <- function(x) {
+  s <- tolower(trimws(as.character(x %||% "")))
+  s <- gsub("α", "alpha", s)    # alpha (Cronbach's α)
+  s <- gsub("η", "eta", s)      # eta
+  s <- gsub("χ", "chi", s)      # chi
+  s <- gsub("β", "beta", s)     # beta
+  s <- gsub("ρ", "rho", s)      # rho
+  s <- gsub("τ", "tau", s)      # tau
+  s <- gsub("Δ", "delta", s)    # Delta
+  s <- gsub("δ", "delta", s)    # delta
+  s <- gsub("²", "2", s)        # superscript 2
+  s <- gsub("’|‘|'", "", s)
+  s <- gsub("[^a-z0-9 ]+", "", s)
+  trimws(gsub("\\s+", " ", s))
+}
+
 # Is this name a statistic we recognise? Uses the SAME vocabulary as the output
 # side (R/stato-map.R), so the two halves of a match agree on what a statistic
 # is, plus the anchor/satellite lists for reporting conventions the output-side
