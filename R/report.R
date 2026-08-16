@@ -187,13 +187,17 @@ report_module_run <- function(paper, modules, args = list()) {
     length(modules),
     ":what [:bar] :current/:total :elapsedfull"
   )
+  on.exit(pb$terminate())
   pb$tick(0, tokens = list(what = "Running modules"))
 
   # run each module ----
   # module_output <- lapply(modules, \(module) {
   op <- paper
   for (module in modules) {
-    pb$tick(tokens = list(what = module))
+    # Label the bar with the module about to run (zero-advance) so a slow module
+    # — e.g. one making LLM calls — is attributed to its own name, not the next
+    # module's. The bar advances only after the module returns (below).
+    pb$tick(0, tokens = list(what = module))
     mod_args <- args[[module]] %||% list()
     mod_args$paper <- op
     mod_args$module <- module
@@ -201,14 +205,22 @@ report_module_run <- function(paper, modules, args = list()) {
     op <- tryCatch(do.call(module_run, mod_args),
       error = function(e) {
         warning("Error in ", module, call. = FALSE)
-        prev <- mod_args$paper$prev_outputs
+        prev <- list()
+        if (inherits(mod_args$paper, "metacheck_module_output")) {
+          prev <- mod_args$paper$prev_outputs %||% list()
+          this_out <- mod_args$paper
+          this_out$prev_outputs <- NULL
+          this_out$paper <- NULL
+          prev[[this_out$module]] <- this_out
+        }
         report_items <- list(
           module = module,
           title = module,
           table = NULL,
           report = e$message,
           summary_text = "This module failed to run",
-          summary_table = mod_args$paper$summary_table,
+          summary_table = mod_args$paper$summary_table %||% data.frame(
+            paper_id = paper$paper_id),
           traffic_light = "fail",
           paper = paper,
           prev_outputs = prev
@@ -218,11 +230,19 @@ report_module_run <- function(paper, modules, args = list()) {
         return(report_items)
       }
     )
+    # Advance now that the module has finished, so its elapsed time is charged to
+    # its own label rather than bleeding into the next module's.
+    pb$tick(tokens = list(what = module))
   }
 
   # pull last module output out
   module_output <- op$prev_outputs
   op$prev_outputs <- NULL
+  # Keep one copy of the paper as an attribute of the returned list (the per-
+  # module $paper slots are stripped to keep the object flat), so downstream
+  # consumers — e.g. convert_psychds() / convert_codebook() reusing a captured
+  # result — can recover the paper without re-reading it.
+  paper_obj <- op$paper
   op$paper <- NULL
   module_output[[op$module]] <- op
 
@@ -238,6 +258,7 @@ report_module_run <- function(paper, modules, args = list()) {
   mod_order <- xtfrm(sections)
   module_output <- sort_by(module_output, mod_order)
 
+  attr(module_output, "paper") <- paper_obj
   return(module_output)
 }
 
@@ -391,13 +412,17 @@ module_report <- function(module_output,
       validation <- NULL
       info <- module_info(module_output$module)
 
-      # set up validation section if tagged
-      m <- gregexpr("<validation>.*</validation>", info$details)
-      if (m > -1) {
+      # set up validation section if tagged. Emit a native Quarto fenced div, not
+      # a raw <p>: raw HTML gets passed through by Pandoc wrapped in
+      # \if{html}{\out{...}}, and that wrapper leaked into the rendered report as
+      # literal "}}" / "\if{html}{\out{" around the validation text. A fenced div
+      # renders to <div class="validation"> cleanly and keeps the CSS hook.
+      m <- gregexpr("<validation>.*?</validation>", info$details)
+      if (m[[1]][1] > -1) {
         validation <- regmatches(info$details, m) |>
           _[[1]] |>
-          sub("<validation>\\s*", "<p class='validation'>**Validation**: ", x = _) |>
-          sub("\\s*</validation>", "</p>", x = _)
+          sub("<validation>\\s*", "::: {.validation}\nValidation: ", x = _) |>
+          sub("\\s*</validation>", "\n:::", x = _)
       }
 
       # get authors
