@@ -486,13 +486,17 @@ module_report <- function(module_output,
       validation <- NULL
       info <- module_info(module_output$module)
 
-      # set up validation section if tagged
-      m <- gregexpr("<validation>.*</validation>", info$details)
-      if (m > -1) {
+      # set up validation section if tagged. Emit a native Quarto fenced div, not
+      # a raw <p>: raw HTML gets passed through by Pandoc wrapped in
+      # \if{html}{\out{...}}, and that wrapper leaked into the rendered report as
+      # literal "}}" / "\if{html}{\out{" around the validation text. A fenced div
+      # renders to <div class="validation"> cleanly and keeps the CSS hook.
+      m <- gregexpr("<validation>.*?</validation>", info$details)
+      if (m[[1]][1] > -1) {
         validation <- regmatches(info$details, m) |>
           _[[1]] |>
-          sub("<validation>\\s*", "<p class='validation'>**Validation**: ", x = _) |>
-          sub("\\s*</validation>", "</p>", x = _)
+          sub("<validation>\\s*", "::: {.validation}\nValidation: ", x = _) |>
+          sub("\\s*</validation>", "\n:::", x = _)
       }
 
       # get authors

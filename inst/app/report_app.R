@@ -1,5 +1,13 @@
 ## report_app.R — Create Report only: upload a PDF, get a report ##
 suppressPackageStartupMessages({
+  # Tab files (tabs/report.R, tabs/options.R) call metacheck's own exported
+  # functions unqualified (e.g. llm_model_list()). shiny::runApp() sources
+  # them into the global env, which only has metacheck on the search path if
+  # the caller already ran library(metacheck) themselves -- report_app()
+  # itself does not, so metacheck::report_app() failed with "could not find
+  # function" for anyone who hadn't separately attached the package first.
+  # See https://github.com/scienceverse/metacheck/issues/320.
+  library(metacheck)
   library(shiny)
   library(shinyjs)
   library(shinydashboard)
