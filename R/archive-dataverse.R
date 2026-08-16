@@ -24,6 +24,24 @@
 # Dataverse (its links fall through unclassified, the same as any other
 # unrecognised URL -- there is no false-positive risk from under-listing, only
 # a missed repository).
+#
+# The European block below (2026-08-16) was sourced from the crowdsourced
+# IQSS/dataverse-installations list (github.com/IQSS/dataverse-installations,
+# data/data.json) and individually verified live against each host's own
+# GET /api/info/version -- the endpoint every real Dataverse installation
+# answers -- rather than trusted as listed. That list is not fully reliable:
+# it wrongly includes reshare.ukdataservice.ac.uk (confirmed live to be
+# EPrints, not Dataverse: /api/info/version returns 404, and see
+# archive-reshare.R) and zenodo.org (not Dataverse at all). Hosts that failed
+# verification (DNS did not resolve, or answered 404) were left OUT rather
+# than added on the list's word alone: snd.gu.se (Sweden; SND appears to have
+# moved to researchdata.se), dataverse.nioz.nl, datashare.ed.ac.uk, and
+# roughly a dozen .de/.ie/.uk/.bg/.ch hosts that no longer resolve
+# (dataverse.tcd.ie, dataverse.uni-koeln.de, dataverse.uni-mannheim.de,
+# dataverse.ul.ie, rdmc.manchester.ac.uk, dataverse.swansea.ac.uk,
+# dataverse.tind.io, data.unece.org, dataverse.mpi-sws.org,
+# keen.zih.tu-dresden.de, dataverse.uni-sofia.bg) -- these may simply be
+# stale list entries, or may be back up later; re-check before adding.
 .dataverse_hosts <- function() {
   c(
     "dataverse.harvard.edu",   # Harvard Dataverse, the flagship instance
@@ -35,7 +53,49 @@
     "dataverse.icrisat.org",
     "data.aussda.at",          # AUSSDA (Austria)
     "darus.uni-stuttgart.de",  # DaRUS (U. Stuttgart)
-    "dataverse.lib.virginia.edu"
+    "dataverse.lib.virginia.edu",
+
+    # -- Europe, verified live 2026-08-16 (see note above) --
+    "dataverse.adp.fdv.uni-lj.si",       # ADP, Slovenian Social Science Data Archives
+    "bonndata.uni-bonn.de",              # bonndata (U. Bonn, Germany)
+    "dataverse.bsc.es",                  # BSC Dataverse (Spain)
+    "dataverse.cirad.fr",                # CIRAD Dataverse (France)
+    "data.crossda.hr",                   # CROSSDA (Croatia)
+    "archivdv.soc.cas.cz",               # CSDA Dataverse (Czechia)
+    "dare.uol.de",                       # dare (Germany)
+    "dataverse.ird.fr",                  # Data Suds (France)
+    "data.sciencespo.fr",                # data.sciencespo (France)
+    "datadoi.ee",                        # DATADOI (Estonia)
+    "edatos.consorciomadrono.es",        # Dataverse e-cienciaDatos (Spain)
+    "dv.dataverse.lv",                   # DataverseLV (Latvia)
+    "dataverse.no",                      # DataverseNO (Norway)
+    "dataverse.rhi.hi.is",               # DATICE (Iceland)
+    "dataverse.deic.dk",                 # DeiC Dataverse (Denmark)
+    "edmond.mpdl.mpg.de",                # Edmond, Max Planck Digital Library (Germany)
+    "health-study-hub.de",               # Health Study Hub (Germany)
+    "heidata.uni-heidelberg.de",         # HeiDATA (U. Heidelberg, Germany)
+    "dataverse.iza.org",                 # IDSC Dataverse, IZA (Germany)
+    "datasets.iisg.amsterdam",           # IISH Dataverse (Netherlands)
+    "dataverse.pushdom.ru",              # Institute of Russian Literature Dataverse (Russia)
+    "data.fdz.ioer.de",                  # ioerDATA (Germany)
+    "dataverse.ipgp.fr",                 # IPGP Research Collection (France)
+    "issda.ucd.ie",                      # ISSDA Dataverse (Ireland)
+    "dataverse.iit.it",                  # Italian Institute of Technology (Italy)
+    "data.fz-juelich.de",                # Jülich DATA (Germany)
+    "rdr.kuleuven.be",                   # KU Leuven RDR (Belgium)
+    "lida.dataverse.lt",                 # LiDA, Lithuanian Data Archive
+    "lore.list.lu",                      # LORE, LIST Open Repository (Luxembourg)
+    "portal.odissei.nl",                 # ODISSEI Portal (Netherlands)
+    "dataverse.uclouvain.be",            # Open Data @ UCLouvain (Belgium)
+    "dataverse.openforestdata.pl",       # Open Forest Data (Poland)
+    "osnadata.ub.uni-osnabrueck.de",     # osnaData (Germany)
+    "entrepot.recherche.data.gouv.fr",   # Recherche Data Gouv (France, national repository)
+    "repod.icm.edu.pl",                  # RepOD (Poland)
+    "dataverse.rsu.lv",                  # RSU Dataverse (Latvia)
+    "archaeology.datastations.nl",       # DANS Data Station Archaeology (Netherlands)
+    "lifesciences.datastations.nl",      # DANS Data Station Life Sciences (Netherlands)
+    "phys-techsciences.datastations.nl", # DANS Data Station Physical/Technical Sciences (Netherlands)
+    "ssh.datastations.nl"                # DANS Data Station Social Sciences and Humanities (Netherlands)
   )
 }
 

@@ -248,6 +248,37 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     # OSF/Zenodo's single shared token, and is sent as X-Dataverse-key rather
     # than a Bearer Authorization header -- .dataverse_headers() applies it.
     req <- .dataverse_headers(req)
+  } else if (grepl("figshare\\.com", url, ignore.case = TRUE)) {
+    # Figshare's token (see .figshare_pat()) is sent as "Authorization: token
+    # X" rather than a Bearer scheme -- .figshare_headers() applies it. Public
+    # files download without one; a token here only raises rate limits or
+    # unlocks a private article.
+    req <- .figshare_headers(req)
+  } else if (grepl("datadryad\\.org", url, ignore.case = TRUE)) {
+    # Dryad's token (see .dryad_pat()) is a Bearer token like OSF/Zenodo, but
+    # unlike every other host handled here it is REQUIRED to download file
+    # bytes even from a fully public dataset (verified live 2026-08-16: both
+    # the per-file and whole-dataset download endpoints answer 401 with no
+    # token) -- .dryad_headers() applies it when set, but with none set every
+    # Dryad download in this function will fail.
+    req <- .dryad_headers(req)
+  } else if (grepl("reshare\\.ukdataservice\\.ac\\.uk", url, ignore.case = TRUE)) {
+    # ReShare has no documented personal-access-token scheme; public deposits
+    # download without any auth header at all (verified live 2026-08-16).
+    # .reshare_headers() only sets User-Agent.
+    req <- .reshare_headers(req)
+  } else if (grepl("data\\.4tu\\.nl", url, ignore.case = TRUE)) {
+    # 4TU.ResearchData's Djehuty platform reuses Figshare's auth scheme
+    # ("Authorization: token X") but issues its own tokens, meaningless to
+    # real Figshare -- see .researchdata4tu_pat(). Applied directly here
+    # (rather than via .figshare_headers(), which reads figshare_pat()) so a
+    # file URL reached outside researchdata4tu_file_download()'s own
+    # temporary option override still gets the right token.
+    pat <- tryCatch(.researchdata4tu_pat(), error = \(e) "")
+    req <- req |> httr2::req_headers(`User-Agent` = "metacheck")
+    if (nzchar(pat %||% "")) {
+      req <- req |> httr2::req_headers(Authorization = sprintf("token %s", pat))
+    }
   }
   req
 }
@@ -615,10 +646,13 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #' persistent on-disk cache, and fills in `file_location` for every file it
 #' successfully retrieves. Where a whole-repo archive download is available
 #' (OSF's Waterbutler `?zip=` endpoint, Zenodo's `files-archive` endpoint,
-#' Dataverse's `/api/access/dataset` endpoint, a GitHub zipball), it is used
-#' instead of one HTTP request per file; a repo whose archive download fails,
-#' or is rejected by the size/worth-it gate, falls back to file-by-file
-#' fetching automatically.
+#' Dataverse's `/api/access/dataset` endpoint, Dryad's `stash:download`
+#' endpoint, a GitHub zipball), it is used instead of one HTTP request per
+#' file; a repo whose archive download fails, or is rejected by the
+#' size/worth-it gate, falls back to file-by-file fetching automatically.
+#' Figshare, 4TU.ResearchData (Figshare-compatible), and ReShare have no
+#' documented whole-record bulk endpoint, so their files are always fetched
+#' one by one.
 #'
 #' Two independent size gates apply: `max_file_size` skips oversize files
 #' individually (the rest of the repository still downloads); `max_download_size`
@@ -811,11 +845,14 @@ download_repo_files <- function(files,
   # For OSF repos, use the Waterbutler zip endpoint (one request for all of
   # osfstorage). For Zenodo repos, use the files-archive endpoint (one request
   # for the whole record). For Dataverse repos, use the /api/access/dataset
-  # endpoint (one request for the whole dataset). For GitHub repos, use the API
-  # zipball (one request, follows the redirect to the signed download URL).
-  # All four are cheaper and less rate-limit-sensitive than N individual file
-  # requests. Any repo whose zip download fails, or that the zip-vs-file-by-file
-  # gate rejects, falls through to the file-by-file path.
+  # endpoint (one request for the whole dataset). For Dryad repos, use the
+  # dataset's own stash:download endpoint (one request for the whole dataset).
+  # For GitHub repos, use the API zipball (one request, follows the redirect to
+  # the signed download URL). All five are cheaper and less rate-limit-sensitive
+  # than N individual file requests. Figshare has no such endpoint (see
+  # figshare_file_download()'s documentation) so it always falls through to the
+  # file-by-file path below. Any repo whose zip download fails, or that the
+  # zip-vs-file-by-file gate rejects, falls through the same way.
   failed <- data.frame(repo_url = character(0), file_name = character(0),
                        error = character(0), stringsAsFactors = FALSE)
   if (length(to_get) > 0) {
@@ -1007,6 +1044,61 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = FALSE,
                                       req_func = .dataverse_headers,
+                                      timeout_s = zip_timeout_s)
+      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
+    }
+
+    # ── Dryad: whole-dataset archive ────────────────────────────────────────────
+    # /api/v2/datasets/<encoded-doi>/download is Dryad's documented bulk-
+    # download endpoint (verified live: it is the "stash:download" link
+    # carried on every dataset's own API response, the same link a dataset
+    # page's own "Download Dataset" button uses). Like Dataverse's
+    # /api/access/dataset and Zenodo's files-archive, it is all-or-nothing for
+    # the dataset, so the same size/worth-it gate applies.
+    dryad_repos <- unique(files$repo_url[
+      remaining[grepl("datadryad\\.org", files$repo_url[remaining], ignore.case = TRUE)]])
+    for (repo in dryad_repos) {
+      ridx <- intersect(remaining, which(files$repo_url == repo))
+      if (length(ridx) == 0) next
+      doi <- tryCatch(.dryad_doi(repo), error = \(e) NA_character_)
+      if (is.na(doi) || !nzchar(doi %||% "")) next
+      encoded <- utils::URLencode(paste0("doi:", doi), reserved = TRUE)
+      zip_url <- sprintf("https://datadryad.org/api/v2/datasets/%s/download", encoded)
+      zip_bytes <- .remote_content_length(zip_url)
+
+      # Same zip-vs-file-by-file decision as Dataverse/Zenodo/OSF (see comments
+      # above).
+      n_wanted   <- length(ridx)
+      record_n   <- sum(files$repo_url == repo)
+      size_ok  <- !is.na(zip_bytes) &&
+        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
+      worth_it <- n_wanted > 50L || record_n <= 2L * n_wanted
+      if (!isTRUE(size_ok && worth_it)) {
+        why <- if (!size_ok)
+          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
+                  if (is.na(zip_bytes)) "unknown" else
+                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
+        else
+          sprintf("dataset holds %d files for %d wanted (>2x) and wanted <= 50",
+                  record_n, n_wanted)
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          repo, why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
+
+      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
+        message(sprintf(
+          paste0("Repository %s downloads as one archive of %s MB to extract ",
+                 "%s MB of selected files (whole-dataset Dryad archive)."),
+          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
+      }
+      message(sprintf("Downloading %s as zip (%d file%s)...",
+                      repo, length(ridx), plural(length(ridx))))
+      files <- .download_zip_to_cache(files, ridx, zip_url,
+                                      strip_dir = FALSE,
+                                      req_func = .dryad_headers,
                                       timeout_s = zip_timeout_s)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }

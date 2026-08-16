@@ -205,6 +205,21 @@ reference:
   - '`dataverse_info`'
   - '`dataverse_file_download`'
   - '`dataverse_pat`'
+  - '`figshare_links`'
+  - '`figshare_info`'
+  - '`figshare_file_download`'
+  - '`figshare_pat`'
+  - '`dryad_links`'
+  - '`dryad_info`'
+  - '`dryad_file_download`'
+  - '`dryad_pat`'
+  - '`reshare_links`'
+  - '`reshare_info`'
+  - '`reshare_file_download`'
+  - '`researchdata4tu_links`'
+  - '`researchdata4tu_info`'
+  - '`researchdata4tu_file_download`'
+  - '`researchdata4tu_pat`'
 - title: Integrations
   desc: ~
   contents:
