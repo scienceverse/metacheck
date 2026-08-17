@@ -75,6 +75,10 @@ logger <- function(label = "", contents = list(), logpath = NULL) {
 
 #' Get the last log
 #'
+#' Reads entries back from the on-disk log written by [logger()] (newest
+#' first, so `i = 1` is the most recent entry). Returns a single entry as a
+#' list, or several entries row-bound into a data frame.
+#'
 #' @param i the indices to return
 #' @param logpath an optional file path to read the log from
 #'

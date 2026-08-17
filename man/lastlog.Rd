@@ -15,7 +15,9 @@ lastlog(i = 1, logpath = NULL)
 a list of the last log item, or a data frame of multiple items
 }
 \description{
-Get the last log
+Reads entries back from the on-disk log written by \code{\link[=logger]{logger()}} (newest
+first, so \code{i = 1} is the most recent entry). Returns a single entry as a
+list, or several entries row-bound into a data frame.
 }
 \examples{
 # set up 2 log items

@@ -41,6 +41,11 @@ rep_if <- function(x, y, replace = NULL) {
 
 #' Set or get verbosity
 #'
+#' Get or set whether metacheck's own functions (e.g. [message()], [pb()])
+#' print progress messages and progress bars. Call with no argument to read
+#' the current value; call with `TRUE`/`FALSE` to set it for the rest of the
+#' session. Defaults to `TRUE` when never set.
+#'
 #' @param verbose if logical, sets whether to show verbose output messages and progress bars
 #'
 #' @returns the current option value (logical)
@@ -63,6 +68,11 @@ verbose <- function(verbose = NULL) {
 
 
 #' Check if the host of a URL is online
+#'
+#' Resolves the URL's host via DNS lookup to check whether it is reachable.
+#' A scheme (`http://`/`https://`) is added automatically if `url` doesn't
+#' have one. This only confirms the host resolves, not that the specific
+#' page or API endpoint responds.
 #'
 #' @param url a URL to check
 #'

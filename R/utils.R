@@ -146,6 +146,12 @@
 
 #' Set or get email
 #'
+#' Get or set the contact email metacheck sends with requests to external
+#' APIs (e.g. Crossref's polite pool), so a host that needs to reach you
+#' about your usage can do so. Call with no argument to read the current
+#' value; call with a valid email address to set it for the rest of the
+#' session. Defaults to `"metacheck@scienceverse.org"` when never set.
+#'
 #' @param email if a string, sets the email
 #'
 #' @returns the current option value (character)
