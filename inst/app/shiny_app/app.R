@@ -294,28 +294,8 @@ report_tab <- tabItem(
   tabName = "report_tab",
   h2("Generate a Metacheck Report"),
   tags$p(
-    "This shiny app provides easy access to ",
-    tags$a("Metacheck", href = "https://www.scienceverse.org/metacheck/",
-           target = "_blank"),
-    ". Metacheck is open source software to check manuscripts for best ",
-    "practices developed by Lisa DeBruine and Daniel Lakens."
-  ),
-  tags$p(
-    "See the ",
-    tags$a("Metacheck Manual",
-           href = "https://www.scienceverse.org/metacheck_book",
-           target = "_blank"),
-    " for a detailed explanation of the software. You can report ",
-    tags$a("bugs", href = "https://github.com/scienceverse/metacheck/issues",
-           target = "_blank"),
-    "."
-  ),
-  tags$p(
-    "Select a PDF file below. The report will be generated automatically. ",
-    "Three modules that can take a lot of time (reference accuracy, data ",
-    "check, and codebook check) are turned off by default. You can include ",
-    "these checks by updating the options (but be patient when running the ",
-    "checks). When it is ready, a ",
+    "Select a PDF file below. The report will be generated automatically ",
+    "using all validated modules. When it is ready, a ",
     tags$b("View Report"), " button will appear — click it to open the report ",
     "in a new browser tab."
   ),
@@ -376,18 +356,12 @@ options_tab <- tabItem(
     ),
 
     tags$div(class = "report-checks",
-      checkboxInput("query_crossref",
-                    "Query CrossRef and run reference accuracy check",
-                    value = FALSE),
-      tags$span("Send full references to CrossRef API (can take a while)"),
+      checkboxInput("query_crossref", "Query CrossRef", value = TRUE),
+      tags$span("Send full references to CrossRef API"),
       checkboxInput("query_pubpeer", "Query PubPeer", value = TRUE),
       tags$span("Send reference DOIs to PubPeer API"),
       checkboxInput("query_repos", "Query Data Repositories", value = TRUE),
-      tags$span("Use API to query repositories such as GitHub, Zenodo, and the OSF"),
-      checkboxInput("query_data_codebook",
-                    "Run data check and codebook check",
-                    value = FALSE),
-      tags$span("Checks the data files and codebook in linked repositories (can take several minutes)")
+      tags$span("Use API to query repositories such as GitHub, Zenodo, and the OSF")
     ),
 
     tags$hr(),
@@ -677,10 +651,6 @@ server <- function(input, output, session) {
         if (!isTRUE(input$query_repos))
           modules <- setdiff(modules, c("repo_check", "code_check",
                                         "data_check", "codebook_check"))
-        # data_check/codebook_check are the slowest modules (can take several
-        # minutes), so they are opt-in even when repositories are queried.
-        if (!isTRUE(input$query_data_codebook))
-          modules <- setdiff(modules, c("data_check", "codebook_check"))
 
         incProgress(0.15, detail = "Rendering HTML (Quarto)...")
         render_report_no_quarto(paper, modules, htmlpath)
