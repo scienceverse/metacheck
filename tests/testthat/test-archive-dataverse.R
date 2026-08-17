@@ -164,10 +164,17 @@ test_that("dataverse_file_download", {
 
   tmpdir <- withr::local_tempdir()
 
-  dl <- dataverse_file_download(
-    "dataverse.harvard.edu", "10.7910/DVN/ABC123",
-    download_to = tmpdir,
-    max_file_size = 10
+  # small.csv has no real network target for this fake DOI, so the download
+  # itself fails (as opposed to big.bin, which is dropped before any attempt
+  # by the max_file_size filter) -- the "did not arrive intact" warning is
+  # the function correctly reporting that real, expected failure.
+  expect_warning(
+    dl <- dataverse_file_download(
+      "dataverse.harvard.edu", "10.7910/DVN/ABC123",
+      download_to = tmpdir,
+      max_file_size = 10
+    ),
+    "did not arrive intact"
   )
 
   expect_equal(nrow(dl), 1)
@@ -179,12 +186,21 @@ test_that("dataverse_file_download", {
   expect_true(dir.exists(folder))
   expect_equal(list.files(folder), character(0))
 
-  # vectorised: multiple datasets
-  dl2 <- dataverse_file_download(
-    host = c("dataverse.harvard.edu", "dataverse.nl"),
-    doi = c("10.7910/DVN/ABC123", "10.34894/XYZ999"),
-    download_to = tmpdir,
-    max_file_size = 10
+  # vectorised: multiple datasets. Each DOI fails its own download and warns
+  # separately (the recursive per-pair call in dataverse_file_download()), so
+  # expect_warning() alone would only catch the first and leave the second
+  # uncaptured; withCallingHandlers asserts on every warning that occurs.
+  withCallingHandlers(
+    dl2 <- dataverse_file_download(
+      host = c("dataverse.harvard.edu", "dataverse.nl"),
+      doi = c("10.7910/DVN/ABC123", "10.34894/XYZ999"),
+      download_to = tmpdir,
+      max_file_size = 10
+    ),
+    warning = function(w) {
+      expect_match(conditionMessage(w), "did not arrive intact")
+      invokeRestart("muffleWarning")
+    }
   )
   expect_setequal(dl2$dataverse_doi, c("10.7910/DVN/ABC123", "10.34894/XYZ999"))
   expect_true(all(dl2$downloaded == FALSE))
