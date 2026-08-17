@@ -119,7 +119,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' dataverse_links(psychsci)
+#' }
 dataverse_links <- function(paper) {
   href <- text <- NULL
 

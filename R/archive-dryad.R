@@ -26,7 +26,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' dryad_links(psychsci)
+#' }
 dryad_links <- function(paper) {
   href <- text <- NULL
 

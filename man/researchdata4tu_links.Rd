@@ -21,5 +21,8 @@ only ever contains links the source document itself made clickable. Same
 two-tier approach \code{zenodo_links()} uses.
 }
 \examples{
+\dontrun{
+psychsci <- papers_load("psychsci", cache = TRUE)
 researchdata4tu_links(psychsci)
+}
 }

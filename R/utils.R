@@ -211,17 +211,6 @@ path_sanitize <- function(path, replacement = "_",
 
 
 
-# psychsci ----
-
-#' Psychological Science Open Access Paper Set
-#'
-#' 250 open access papers from Psychological Science.
-#'
-#' @format A list of 250 paper objects
-#' @source \url{https://journals.sagepub.com/home/pss}
-"psychsci"
-
-
 # bind_rows <- function(..., .id = NULL) {
 #   # try to bind and try to fix if error
 #   df <- tryCatch(

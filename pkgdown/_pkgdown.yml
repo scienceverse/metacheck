@@ -16,6 +16,8 @@ home:
         title: "Funding"
         text: Metacheck is partly financed by the Dutch Research Council (NWO) via the Thematic Digital Competence Centre Social Sciences & Humanities (TDCC-SSH) as part of the project Research Transparency Check with file number ICT.001.TDCC.018 under the grant <https://doi.org/10.61686/ENWVD61320>.
   links:
+  - text: metacheck Book
+    href: http://www.scienceverse.org/metacheck_book/
   - text: Contact the Team
     href: mailto:metacheck.scienceverse@gmail.com
 
@@ -40,35 +42,14 @@ template:
 
 navbar:
   structure:
-    left: [home, gs, external, reference, articles, news]
+    left: [home, book, external, reference, news]
   components:
-    gs:
-      text: Get Started
-      href: articles/metacheck.html
+    book:
+      text: Book
+      href: http://www.scienceverse.org/metacheck_book/
     external:
       text: Example Report
       href: report-example.html
-
-articles:
-  - title: "Blog Posts"
-    contents:
-        - articles/intro
-        - articles/jars
-        # - articles/osf
-        - articles/aspredicted
-  - title: "Articles"
-    contents:
-        - batch
-        # - metascience
-        # - articles/text_model
-        - modules
-        - creating_modules
-        # - articles/validate
-        - articles/github
-        - articles/ollama
-        - articles/local-files
-        - articles/stats
-        - articles/papers-databases
 
 reference:
 - title: Reading in Papers
@@ -82,7 +63,6 @@ reference:
   - '`read`'
   - '`demopaper`'
   - '`demofile`'
-  - '`psychsci`'
   - '`test_paper`'
   - '`paper_id`'
   - '`paper_write`'

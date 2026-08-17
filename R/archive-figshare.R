@@ -36,7 +36,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' figshare_links(psychsci)
+#' }
 figshare_links <- function(paper) {
   href <- text <- NULL
 

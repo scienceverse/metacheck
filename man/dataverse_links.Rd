@@ -21,5 +21,8 @@ or DOI prefix to match against everything). Same two-tier hyperlink +
 bare-mention approach \code{zenodo_links()} uses, applied per known host.
 }
 \examples{
+\dontrun{
+psychsci <- papers_load("psychsci", cache = TRUE)
 dataverse_links(psychsci)
+}
 }

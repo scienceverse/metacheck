@@ -45,7 +45,9 @@ res_tbl <- text_search(paper, "p =", return = "match")
 expanded <- text_expand(res_tbl, paper)
 
 # multiple paper search
-papers <- psychsci
+\dontrun{
+papers <- papers_load("psychsci", cache = TRUE)
 res_tbl <- text_search(papers, "replicate")
 expanded <- text_expand(res_tbl, papers, plus = 1, minus = 1)
+}
 }

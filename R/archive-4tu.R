@@ -38,7 +38,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' researchdata4tu_links(psychsci)
+#' }
 researchdata4tu_links <- function(paper) {
   href <- text <- NULL
 
