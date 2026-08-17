@@ -22,4 +22,6 @@ codecov.yml
 inst/templates/_report.html
 ^\.positai$
 ^\.claude$
+^\.vscode$
+^\.comments$
 ^tests$

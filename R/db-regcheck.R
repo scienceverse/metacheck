@@ -112,7 +112,7 @@ regcheck_compare <- function(paper_text,
       stop(
         "Unknown RegCheck client '", client, "'. ",
         "Use one of: \"ollama\" (local server), \"groq\", \"openai\", or \"deepseek\".\n",
-        "See vignette(\"regcheck\", package = \"metacheck\") for setup instructions.",
+        "See http://www.scienceverse.org/metacheck_book/ for setup instructions.",
         call. = FALSE
       )
     }
@@ -132,7 +132,7 @@ regcheck_compare <- function(paper_text,
         "RegCheck requires an API token for the '", client, "' client.\n",
         "Set REGCHECK_API_TOKEN in your .Renviron:\n",
         "  usethis::edit_r_environ()  # add: REGCHECK_API_TOKEN=\"your_token\"\n",
-        "See vignette(\"regcheck\", package = \"metacheck\") for details.",
+        "See http://www.scienceverse.org/metacheck_book/ for details.",
         call. = FALSE
       )
     }
@@ -272,7 +272,7 @@ regcheck_compare <- function(paper_text,
       stop(
         "The RegCheck server rejected your API token (401 Unauthorized).\n",
         "Check that REGCHECK_API_TOKEN in your .Renviron is correct.\n",
-        "See vignette(\"regcheck\", package = \"metacheck\") for details.",
+        "See http://www.scienceverse.org/metacheck_book/ for details.",
         call. = FALSE
       )
     },
@@ -282,7 +282,7 @@ regcheck_compare <- function(paper_text,
       if (identical(client, "ollama")) {
         stop("Could not connect to the local RegCheck server at ", url, ".\n",
              "Start it first with regcheck_start_local(), then try again.\n",
-             "See vignette(\"regcheck\", package = \"metacheck\") for setup instructions.",
+             "See http://www.scienceverse.org/metacheck_book/ for setup instructions.",
              call. = FALSE)
       }
       stop(conditionMessage(e), call. = FALSE)
