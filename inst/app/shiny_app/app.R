@@ -294,6 +294,23 @@ report_tab <- tabItem(
   tabName = "report_tab",
   h2("Generate a Metacheck Report"),
   tags$p(
+    "This shiny app provides easy access to ",
+    tags$a("Metacheck", href = "https://www.scienceverse.org/metacheck/",
+           target = "_blank"),
+    ". Metacheck is open source software to check manuscripts for best ",
+    "practices developed by Lisa DeBruine and Daniel Lakens."
+  ),
+  tags$p(
+    "See the ",
+    tags$a("Metacheck Manual",
+           href = "https://www.scienceverse.org/metacheck_book",
+           target = "_blank"),
+    " for a detailed explanation of the software. You can report ",
+    tags$a("bugs", href = "https://github.com/scienceverse/metacheck/issues",
+           target = "_blank"),
+    "."
+  ),
+  tags$p(
     "Select a PDF file below. The report will be generated automatically ",
     "using all validated modules. When it is ready, a ",
     tags$b("View Report"), " button will appear — click it to open the report ",
