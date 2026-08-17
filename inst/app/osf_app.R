@@ -204,14 +204,16 @@ server <- function(input, output, session) {
       return(tagList(
         tags$p(paste("Your browser downloads each project straight from the",
                      "OSF and saves it where your browser puts downloads, so",
-                     "nothing is stored on this server. Your browser may ask",
-                     "you to allow more than one file when several projects",
-                     "are selected.")),
+                     "nothing is stored on this server.")),
         tags$p(paste("Each project arrives as one zip file per component.",
                      "Files kept on a linked GitHub or Dropbox account are",
                      "not in the OSF archive, so they are not included; to",
                      "get those, run metacheck on your own computer as the",
-                     "manual describes below."))
+                     "manual describes below.")),
+        tags$p(style = "color: red;",
+               paste("When multiple (sub) components are downloaded, your",
+                     "browser will ask you for approval for multiple file",
+                     "downloads as a security measure."))
       ))
     }
     tagList(
