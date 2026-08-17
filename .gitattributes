@@ -1,5 +1,19 @@
-# Test fixtures are hashed byte-for-byte (file_hash = md5sum of the raw file),
-# so they must use stable LF line endings on every platform. Without this,
-# Windows checkouts get CRLF and the recomputed hash no longer matches the
-# value stored in the fixture JSON, producing a phantom diff after each test run.
-tests/testthat/fixtures/** text eol=lf
+# Repo-wide line-ending normalization. Git decides text vs binary per file
+# by inspecting its content (looking for NUL bytes etc.), so this stays
+# correct for new files without needing an extension added here by hand.
+# Text files are stored in the repo with LF and converted to the local
+# platform's line ending on checkout; binary files are never touched.
+* text=auto
+
+# Some fixture files under tests/testthat/fixtures/ are hashed byte-for-byte
+# (file_hash = md5sum of the raw file), so those specific formats must never
+# have their bytes altered even if Git's content-based auto-detection were
+# ever to misjudge them. pdf/zip are unambiguous; omv and jasp are Java/ZIP
+# archives despite their extension, so they need the same explicit override.
+# Marking a binary format as text makes Git rewrite \r\n/\n byte sequences
+# inside the binary data on checkout, which is what produced phantom
+# "modified" diffs on Windows machines with core.autocrlf set.
+*.pdf -text
+*.zip -text
+*.omv -text
+*.jasp -text
