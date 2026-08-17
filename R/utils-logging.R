@@ -19,6 +19,7 @@ logpath <- function() {
     #dt <- Sys.time() |> format("%Y-%m-%d_%H-%M-%S")
     path <- paste0("metacheck", ".log") |> file.path(dir, x = _)
     jsonlite::write_json(list(), path)
+    log <- path
   }
 
   return(log)
