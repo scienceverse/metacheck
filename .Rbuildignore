@@ -17,8 +17,6 @@
 ^doc$
 ^Meta$
 ^_stuff/*
-^vignettes/articles$
-^vignettes/.quarto$
 codecov.yml
 ^inst/plumber$
 inst/templates/_report.html
