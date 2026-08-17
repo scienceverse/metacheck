@@ -1,5 +1,13 @@
 ## osf_app.R — download OSF projects in two steps: list, then download ##
 suppressPackageStartupMessages({
+  # Tab files (tabs/osf_list.R, tabs/osf_download.R) call metacheck's own
+  # exported functions unqualified (e.g. osf_user_projects(), osf_pat(),
+  # plural()). shiny::runApp() sources them into the global env, which only
+  # has metacheck on the search path if the caller already ran
+  # library(metacheck) themselves -- see report_app.R and
+  # https://github.com/scienceverse/metacheck/issues/320 for the same bug
+  # there.
+  library(metacheck)
   library(shiny)
   library(shinyjs)
   library(shinydashboard)
