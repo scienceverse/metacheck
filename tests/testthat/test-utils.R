@@ -28,6 +28,7 @@ test_that(".onAttach", {
 
 
 test_that("llm_use", {
+  withr::defer(llm_use(FALSE))
   expect_true(is.function(metacheck::llm_use))
   expect_no_error(helplist <- help(llm_use, metacheck))
 
