@@ -1,5 +1,16 @@
-# Test fixtures are hashed byte-for-byte (file_hash = md5sum of the raw file),
-# so they must use stable LF line endings on every platform. Without this,
-# Windows checkouts get CRLF and the recomputed hash no longer matches the
-# value stored in the fixture JSON, producing a phantom diff after each test run.
-tests/testthat/fixtures/** text eol=lf
+# Line endings, once, for the whole repository. Do not add narrower text/eol
+# rules elsewhere -- this line is the entire policy.
+#
+# `text=auto` makes git inspect each file's actual bytes (the same
+# NUL-byte/binary-content heuristic `file`/`diff` use) and decide for itself
+# whether it is text or binary -- it does not depend on the extension, so a
+# binary file with a misleading extension (e.g. a zip archive saved as
+# `*.R-FILE` in tests/testthat/apis/) is still detected correctly with no
+# entry needed here. Detected text files are stored with LF and checked out
+# with LF on every platform, regardless of a contributor's local
+# core.autocrlf -- this is what stops line-ending churn for good. Detected
+# binary files are left untouched (no line-ending conversion, no text diff),
+# which matters for tests/testthat/fixtures/, where fixtures are hashed
+# byte-for-byte (file_hash = md5sum of the raw file): a binary fixture whose
+# bytes get rewritten on checkout would silently break that hash.
+* text=auto
