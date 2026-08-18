@@ -1030,7 +1030,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # A file is "runnable-so-far" when it parses, all its referenced inputs
   # resolve (matched or produced upstream), and it is placeable in the order.
   parses <- if ("parse_error" %in% names(r_files))
-    !isTRUE_vec(r_files$parse_error) else rep(TRUE, n_code)
+    !(!is.na(r_files$parse_error) & r_files$parse_error) else rep(TRUE, n_code)
   file_order <- order_tbl$order[match(r_files$file_name, order_tbl$file_name)]
   placeable <- !is.na(file_order)
 
@@ -1625,7 +1625,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       # serves it) reproduced against a STALE version, not necessarily the one
       # the authors used — worth distinguishing from an ordinary install.
       via_arch <- if ("via_archive" %in% names(install_results))
-        install_results$package[isTRUE_vec(install_results$via_archive)] else character(0)
+        install_results$package[!is.na(install_results$via_archive) & install_results$via_archive] else character(0)
       report_inst <- sprintf(
         "Dependencies were installed into a throwaway library before running: %d succeeded, %d failed. %s were installed.",
         n_ok, n_fail, paste(install_results$package, collapse = ", "))
