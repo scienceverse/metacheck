@@ -65,10 +65,16 @@ FLoRA_update <- function() {
   options(timeout = 300)
 
   tmp <- tempfile()
+  # t4j8f is a single OSF file, not a whole project: mode = "all" (the
+  # default since the whole-project-download addition) skips the file
+  # listing and downloads archives per node, which is the wrong shape for
+  # a direct single-file target. "select" is the old "files" behaviour that
+  # actually lists and fetches the requested file.
   suppressMessages(osf_file_download(
     osf_id = "t4j8f",
     download_to = tmp,
-    ignore_folder_structure = TRUE
+    ignore_folder_structure = TRUE,
+    mode = "select"
   ))
   on.exit(unlink(tmp))
 
