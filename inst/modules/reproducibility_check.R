@@ -126,6 +126,14 @@
 #'   builds** — it copies the folder from `attr(result, "sandbox")` when
 #'   present, and silently omits it otherwise (it does not run
 #'   `reproducibility_check` itself, so it cannot force this for you).
+#' @param cache if `TRUE`, forwarded to the internal `data_check`/`code_check`
+#'   runs: files they download are kept in the persistent on-disk cache (see
+#'   [repo_cache_dir()]) and reused on later runs instead of being
+#'   re-downloaded. If `FALSE` (the default), downloads go to a temporary
+#'   directory discarded when the R session ends — nothing accumulates on
+#'   disk. Only takes effect when `data_check`/`code_check` have not already
+#'   been run for this paper (see the chained-output note above); if you ran
+#'   them yourself first, set `cache` there instead.
 #'
 #' @returns a list
 reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -134,7 +142,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   docker_use_declared_version = FALSE,
                                   install_missing = FALSE,
                                   cran_install_main = FALSE,
-                                  timeout = 600, keep_sandbox = FALSE) {
+                                  timeout = 600, keep_sandbox = FALSE,
+                                  cache = FALSE) {
   # paper <- psychsci[[233]] # to test (many code files, several issues)
   sandbox <- match.arg(sandbox)
 
@@ -188,11 +197,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   run_missing <- function(mod) {
     # model / params only go to the modules that accept them (data_check,
     # psychds_check use the LLM for study grouping); code_check has no such
-    # arguments, so passing them would error with "unused arguments".
+    # arguments, so passing them would error with "unused arguments". Same
+    # reasoning for cache: only data_check/code_check download files.
     args <- list(paper, mod, local_only = local_only)
     if (!is.null(local_path)) args$local_path <- local_path
     if (mod %in% c("data_check", "psychds_check")) {
       args$model <- model; args$params <- params
+    }
+    if (mod %in% c("data_check", "code_check")) {
+      args$cache <- cache
     }
     do.call(module_run, args)
   }
@@ -929,9 +942,22 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_dup <- sum(dup)
   dup_report <- NULL
   if (n_dup > 0) {
-    # For the report: which kept file each dropped duplicate mirrors.
-    dup_of <- vapply(which(dup), function(i)
-      r_files$file_name[which(hashes == hashes[i])[1]], character(1))
+    # For the report: which kept file each dropped duplicate mirrors, and
+    # WHERE each copy came from -- file_name alone is useless here, since
+    # mirrors share the same basename by construction (that is the whole
+    # premise of this dedup step), so "X (same as X)" would say nothing.
+    # resolve_row_path() (already used for hashing, above) gives the local
+    # cache path or source URL, which actually differs between mirrors.
+    dup_kept_idx <- vapply(which(dup), function(i) which(hashes == hashes[i])[1], integer(1))
+    dup_loc <- vapply(which(dup), function(i) resolve_row_path(i) %||% NA_character_, character(1))
+    kept_loc <- vapply(dup_kept_idx, function(i) resolve_row_path(i) %||% NA_character_, character(1))
+    dup_of <- r_files$file_name[dup_kept_idx]
+    dup_desc <- sprintf(
+      "`%s`%s (same as `%s`%s)",
+      r_files$file_name[dup],
+      ifelse(!is.na(dup_loc) & nzchar(dup_loc), paste0(" at `", dup_loc, "`"), ""),
+      dup_of,
+      ifelse(!is.na(kept_loc) & nzchar(kept_loc), paste0(" at `", kept_loc, "`"), ""))
     dup_report <- c("#### Duplicate files across repo mirrors", sprintf(
       paste0(
         "%d file%s %s byte-identical to another file already in the run ",
@@ -940,8 +966,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         "to avoid wasted duplicate execution: %s."),
       n_dup, plural(n_dup), plural(n_dup, "is", "are"),
       plural(n_dup, "It was", "They were"),
-      paste(sprintf("`%s` (same as `%s`)", r_files$file_name[dup], dup_of),
-            collapse = "; ")))
+      paste(dup_desc, collapse = "; ")))
     r_files <- r_files[!dup, , drop = FALSE]
     n_code <- nrow(r_files)
   }

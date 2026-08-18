@@ -1745,11 +1745,22 @@ code_file_refs <- function(code_text,
     Mplus = list() # FILE = "..." is always quoted; quoted-filename pattern suffices
   )
 
+  # Only run the unquoted-capture regexes against lines that do NOT already
+  # have a quoted filename: they exist for barewords (`use myfile.dta`), but
+  # applied to an already-quoted line (`insheet using "07. Study 6
+  # (Clean).csv", clear`) the capture group `[^,\s]+` stops at the quoted
+  # name's first space and grabs a truncated fragment (`"07.`) instead -- a
+  # real Stata filename routinely contains spaces and is quoted for exactly
+  # that reason, so this collided constantly. Confirmed against a real corpus
+  # paper's .do file, where every quoted, space-containing filename produced
+  # a second bogus "loaded but missing" reference alongside the correct one.
+  unquoted_lines <- load_lines[!grepl(quoted_filename_pattern, load_lines, perl = TRUE)]
+
   extra <- character(0)
   caps <- lang_unquoted_captures[[lang]]
   for (cap in caps) {
-    m <- regexec(cap$regex, load_lines, perl = TRUE)
-    reg <- regmatches(load_lines, m)
+    m <- regexec(cap$regex, unquoted_lines, perl = TRUE)
+    reg <- regmatches(unquoted_lines, m)
     if (length(reg) > 0) {
       vals <- vapply(reg, function(x) if (length(x) >= cap$group + 1) x[cap$group + 1] else NA_character_, character(1))
       extra <- c(extra, vals)

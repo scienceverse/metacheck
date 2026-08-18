@@ -50,8 +50,21 @@ rbox_links <- function(paper) {
   # a bare body-text mention of the same repo commonly differ only by a
   # trailing slash (captured by the "/?" above), and left un-normalized that
   # turns one repo into two throughout repo_check.
+  #
+  # ResearchBox has since added URL forms that name a SPECIFIC FILE within a
+  # box, not a separate box: "2257.8"/"2257.9" (a dotted box variant) and
+  # "2257/72" (a numeric file id under the box). rb_bare_regex already stops
+  # at the box id for a bare mention, but a REAL hyperlink (found_href, from
+  # the paper's own url table) carries the full href unmodified -- so two
+  # links to different files in the SAME box were reaching repo_check as two
+  # DIFFERENT repositories, each downloaded and cached separately. Truncate
+  # every href to "researchbox.org/<box id>" so all such links collapse to
+  # the one box before repo_check ever sees them.
   dplyr::bind_rows(found_href, other_rb) |>
     dplyr::mutate(href = sub("/+$", "", href)) |>
+    dplyr::mutate(href = sub(
+      "(researchbox\\.org/[0-9]+)(\\.[0-9]+)?(/.*)?$", "\\1", href,
+      ignore.case = TRUE)) |>
     unique()
 }
 
