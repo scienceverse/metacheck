@@ -513,50 +513,6 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   errs
 }
 
-#' Download selected repository files into the shared cache
-#'
-#' Given file rows from `repo_check` (with `repo_url`, `file_url`, `file_path`,
-#' `file_size`), download the files of a repository into a persistent cache keyed
-#' by repo URL. Files already present in the cache are reused (never
-#' re-downloaded).
-#'
-#' The two size caps work differently. `max_file_size` is a **per-file filter**:
-#' any single file larger than it is skipped individually, while the rest of the
-#' repository still downloads. `max_download_size` is a **per-repository gate**:
-#' if the total of the files that would download (i.e. after the per-file filter)
-#' exceeds it, the **whole** repository is skipped. Sizes come from the manifest
-#' `file_size`, or a `HEAD` `Content-Length` probe when that is missing; a file
-#' whose size cannot be determined at all gates its repository (we refuse to
-#' stream a file of unknown size).
-#'
-#' @param files a data.frame of file rows to download
-#' @param max_file_size largest single file to download, in MB (`Inf` = no cap);
-#'   larger files are skipped individually
-#' @param max_download_size largest total download per repository, in MB
-#'   (`Inf` = no cap); measured after the per-file filter, and if exceeded the
-#'   whole repository is skipped
-#' @param cache if `TRUE`, write downloads to the persistent on-disk cache (see
-#'   [repo_cache_dir()]), so they survive the session and are reused on later
-#'   runs. If `FALSE` (the default), write to a per-session temporary directory
-#'   that R removes on exit — files are available for this run only and nothing
-#'   accumulates on disk. Use `cache = TRUE` for repeated work on the same
-#'   repositories or when building an archive across several runs.
-#' @param pb an optional progress bar
-#'
-#' Downloads are paced (a short burst, then ~1 request/second per host) and
-#' transient refusals (HTTP 429/503, dropped connections) are retried with
-#' backoff, honouring `Retry-After`. A file that still fails after the retries
-#' is reported with a message (one per repository) and recorded in the
-#' `"failed"` attribute; with `cache = TRUE`, re-running fetches only the files
-#' that are still missing.
-#'
-#' @returns `files` with `file_location` set to the cache path for each
-#'   downloaded (or already-cached) file, and `NA` otherwise. Attribute
-#'   `"gated"` is a data.frame (`repo_url`, `message`) of repositories skipped by
-#'   the total cap; attribute `"oversize_skipped"` is a data.frame (`repo_url`,
-#'   `file_name`, `file_size`) of individual files skipped by the per-file cap;
-#'   attribute `"failed"` is a data.frame (`repo_url`, `file_name`, `error`) of
-#'   files whose download failed after retries.
 # Download a repository as a single zip archive and extract only the requested
 # files into the shared cache. Used instead of N individual file downloads for
 # OSF (Waterbutler zip) and GitHub (API zipball).

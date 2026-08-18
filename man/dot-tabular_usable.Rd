@@ -19,7 +19,7 @@ a list with \code{usable} (logical) and, when \code{FALSE}, a human-readable
 \description{
 \code{readxl}/\code{read.delim} will happily read a human-formatted coding worksheet
 (interleaved "Code N: description" free-text columns + sparse 0/1 indicators,
-summary/legend rows at the bottom) into a data frame — but the result is not a
+summary/legend rows at the bottom) into a data frame -- but the result is not a
 rectangular \emph{dataset}: most "columns" are prose annotations and most cells are
 structurally empty. Extracting columns from such a file yields junk (the
 "Code"-prefixed columns) and sending them to the LLM wastes calls on non-data.
@@ -29,11 +29,11 @@ This detects that case from facets \code{data_check} has already computed, using
 two signals combined with tiered rules (not a single AND-gate, so an extreme
 value on one axis can exclude a file on its own):
 \itemize{
-\item \strong{prose fraction} — share of columns that are free text: \code{representation}
+\item \strong{prose fraction} -- share of columns that are free text: \code{representation}
 is \code{"text"}, the \code{concept} is not a recognised text kind (id/date/timestamp),
 and the column is high-cardinality (distinct/non-missing > 0.5), i.e. a
 genuine free-text field, not a small set of category labels.
-\item \strong{missingness fraction} — share of columns that are >50\% missing.
+\item \strong{missingness fraction} -- share of columns that are >50\% missing.
 }
 
 Exclude when the file is almost entirely empty, or overwhelmingly free text,

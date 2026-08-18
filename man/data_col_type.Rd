@@ -18,10 +18,10 @@ be consulted), \code{numeric_values} (numeric vector for stats, or \code{NULL}),
 \code{n_coerced}, and \code{is_numeric}.
 }
 \description{
-Rule order (ported from datacheck \code{classify_col_type_rules()}): all-NA →
-empty; ID name pattern → id; 1 unique → constant; 2 unique → binary;
-date-parseable → date; long strings → text; numeric → continuous (or
-ambiguous integer, flagged for LLM); comma-decimal → continuous variants.
+Rule order (ported from datacheck \code{classify_col_type_rules()}): all-NA ->
+empty; ID name pattern -> id; 1 unique -> constant; 2 unique -> binary;
+date-parseable -> date; long strings -> text; numeric -> continuous (or
+ambiguous integer, flagged for LLM); comma-decimal -> continuous variants.
 }
 \examples{
 data_col_type("age", c(23, 45, 31, 29))

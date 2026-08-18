@@ -18,9 +18,6 @@
 #' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
 #' @import dplyr
-#' @import tidyr
-#' @import httr
-#' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object
 #'

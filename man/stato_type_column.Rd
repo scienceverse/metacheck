@@ -11,8 +11,8 @@ stato_type_column(header, call_fn = NULL)
 
 \item{call_fn}{optional name of the R function that produced this result
 (e.g. \code{"shapiro.test"}), as carried by \code{\link[=read_r_output]{read_r_output()}}. When supplied it
-disambiguates headers that name different quantities in different tests —
-R prints a bare \code{W} for both Shapiro-Wilk's W and the Wilcoxon rank sum —
+disambiguates headers that name different quantities in different tests --
+R prints a bare \code{W} for both Shapiro-Wilk's W and the Wilcoxon rank sum --
 which no header-only lookup can resolve. Ignored for GUI formats, which
 have no call.}
 }

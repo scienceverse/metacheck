@@ -13,7 +13,7 @@ data_check_pii_values(x, broad_min_frac = 0.3)
 values that must match for the column to be flagged (currently unused)}
 }
 \value{
-list(problem, message, values) — \code{values} is the matched pattern
+list(problem, message, values) -- \code{values} is the matched pattern
 name(s), not the data
 }
 \description{
@@ -24,7 +24,7 @@ the matching values themselves (so the report does not leak the PII).
 \details{
 All current patterns are \emph{specific}: they flag on a single validated match,
 because for disclosure one real identifier is already a problem. A raw regex
-match is necessary but not sufficient — the credit-card pattern must also pass
+match is necessary but not sufficient -- the credit-card pattern must also pass
 a Luhn checksum, which keeps ordinary numbers from tripping the flag. (A
 broad-pattern path with a per-column fraction threshold, \code{broad_min_frac}, is
 retained for future patterns but is currently unused.)

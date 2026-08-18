@@ -819,7 +819,7 @@ code_abs_path <- function(code_text) {
 #' )
 #' code_setwd(code_text)
 code_setwd <- function(code_text) {
-  text_id <- NULL # fix cmd check note
+  text_id <- text <- NULL # fix cmd check note
   # A setwd( call: the token at a call position, capturing to the LAST closing
   # paren on the line (greedy `.*`), so a nested argument like setwd(getwd()) or
   # setwd(dirname(path)) is shown in full. A setwd argument spanning lines is
@@ -1346,7 +1346,7 @@ code_library_names <- function(code_text,
 #' comma-joined string in its `table$packages` column. This returns the sorted,
 #' de-duplicated union across a set of those rows — the paper-level dependency
 #' list used for the module summary, the manifest `code` section, and the
-#' `requirements.txt` written into a Psych-DS archive by [convert_psychds()].
+#' `requirements.txt` written into a Psych-DS archive by `convert_psychds()`.
 #'
 #' @param packages a character vector of comma-joined package strings (e.g.
 #'   `code_check(...)$table$packages`), or a `code_check` table (data frame with
@@ -1577,7 +1577,7 @@ code_packages <- function(packages) {
 #' @param include_writes also return files the code *writes* (R only). Off by
 #'   default: callers that ask "which referenced inputs are missing from the
 #'   repository?" (e.g. `code_check`) must not see a written file as a missing
-#'   input. [repro_file_io()] turns this on so a file produced by one script can
+#'   input. `repro_file_io()` turns this on so a file produced by one script can
 #'   be recognised as the input another script consumes.
 #'
 #' @returns a vector of files that are referenced in the code

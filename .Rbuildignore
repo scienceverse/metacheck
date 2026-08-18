@@ -24,4 +24,5 @@ inst/templates/_report.html
 ^\.claude$
 ^\.vscode$
 ^\.comments$
+^CLAUDE\.md$
 ^tests$

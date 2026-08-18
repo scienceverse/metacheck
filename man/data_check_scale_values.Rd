@@ -41,15 +41,15 @@ integer levels. Any value outside that set is a data problem, and this check
 both flags it and, for each value, offers the most likely explanation:
 \itemize{
 \item a \strong{missing-data code} left as a number (a \code{-99} / \code{999} in the
-sentinel list, or a codebook-\strong{declared} missing code) — recode to \code{NA};
+sentinel list, or a codebook-\strong{declared} missing code) -- recode to \code{NA};
 \item a \strong{keying typo} of an in-scale value (a \code{33} for \code{3}, a \code{55} for
-\code{5}) — the probable intended value is named;
+\code{5}) -- the probable intended value is named;
 \item otherwise an \strong{unexplained} out-of-range value to review.
 }
 The valid range is ground truth when \code{valid_values} / \code{valid_range} are
 supplied (e.g. from a codebook), otherwise inferred by \code{.detect_likert_scale}.
 A column that is not a rating scale (continuous, many-level, non-integer, too
-few rows) has no fixed range and is not flagged here — unbounded variables
+few rows) has no fixed range and is not flagged here -- unbounded variables
 (age, reaction time) have no principled "valid range" to violate.
 }
 \details{
@@ -57,7 +57,7 @@ Ground truth is trusted only when it is actually PLAUSIBLE for this column's
 data: at least \code{min_ground_truth_coverage} of the non-missing values must
 already fall inside the declared range. A codebook/\code{.qsf} variable can be
 mismatched to the wrong data column (a cross-study name collision, or a
-Qualtrics timing/paradata column inheriting its question's response codes —
+Qualtrics timing/paradata column inheriting its question's response codes --
 see the \code{.qsf} question-tag fallback in \code{match_column_labels()}); when that
 happens the declared range explains almost none of the data, and trusting it
 anyway turns nearly every real value into a false "out of range" flag. When

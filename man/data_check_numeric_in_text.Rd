@@ -20,7 +20,7 @@ list(problem, message, values)
 \description{
 When a column read as character is mostly numbers but has a few values that
 do not parse (e.g. "n/a", ">100", "50 approx"), those dirty cells forced the
-whole column to text — a data-quality problem in the source, not a read
+whole column to text -- a data-quality problem in the source, not a read
 error. A \emph{fully} numeric text column is not flagged here: the file readers
 auto-type clean numeric columns, so an all-numeric character column would
 indicate a reader problem rather than a data problem.

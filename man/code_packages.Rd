@@ -19,7 +19,7 @@ The \code{code_check} module stores the packages each code file loads as a
 comma-joined string in its \code{table$packages} column. This returns the sorted,
 de-duplicated union across a set of those rows — the paper-level dependency
 list used for the module summary, the manifest \code{code} section, and the
-\code{requirements.txt} written into a Psych-DS archive by \code{\link[=convert_psychds]{convert_psychds()}}.
+\code{requirements.txt} written into a Psych-DS archive by \code{convert_psychds()}.
 }
 \examples{
 code_packages(c("dplyr, ggplot2", "", "dplyr, tidyr"))

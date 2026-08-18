@@ -50,7 +50,7 @@
 #'     field is free text with 225 distinct values, so it is mapped to this
 #'     small vocabulary and dropped when it does not map.}
 #'   \item{text_ok}{`TRUE` when the name is safe to match against manuscript
-#'     prose. Present for consistency with [scale_meta]; unlike PhenX entries,
+#'     prose. Present for consistency with `scale_meta`; unlike PhenX entries,
 #'     Atlas task names are instrument names rather than topic labels, so this
 #'     is `TRUE` for every current row.}
 #' }
@@ -59,7 +59,7 @@
 #'   content is CC-BY, but tasks it merely names (WAIS, Conners) are
 #'   proprietary. Nothing here grants a right to administer a task.
 #'   Rebuild with `data-raw/tasks.R`.
-#' @seealso [scales] for questionnaire instruments, [scale_meta] for their
+#' @seealso [scales] for questionnaire instruments, `scale_meta` for their
 #'   item-level detail.
 #' @keywords internal
 "tasks"

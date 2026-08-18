@@ -196,20 +196,20 @@ regcheck_compare <- function(paper_text,
 .regcheck_sanitize <- function(text) {
   # greek letters and scientific symbols -> readable names
   map <- c(
-    "α" = "alpha", "β" = "beta", "γ" = "gamma",
-    "δ" = "delta", "Δ" = "Delta", "ε" = "epsilon",
-    "ζ" = "zeta", "η" = "eta", "θ" = "theta",
-    "ι" = "iota", "κ" = "kappa", "λ" = "lambda",
-    "μ" = "mu", "ν" = "nu", "ξ" = "xi",
-    "π" = "pi", "ρ" = "rho", "σ" = "sigma",
-    "Σ" = "Sigma", "τ" = "tau", "φ" = "phi",
-    "υ" = "upsilon", "χ" = "chi", "ψ" = "psi",
-    "ω" = "omega", "Ω" = "Omega",
-    "²" = "2", "³" = "3", "⁰" = "0", "¹" = "1",
-    "≤" = "<=", "≥" = ">=", "≠" = "!=", "≈" = "~",
-    "×" = "x", "·" = "*", "−" = "-", "±" = "+/-",
-    "–" = "-", "—" = "-", "‘" = "'", "’" = "'",
-    "“" = '"', "”" = '"', "…" = "...", "°" = " degrees"
+    "\u03b1" = "alpha", "\u03b2" = "beta", "\u03b3" = "gamma",
+    "\u03b4" = "delta", "\u0394" = "Delta", "\u03b5" = "epsilon",
+    "\u03b6" = "zeta", "\u03b7" = "eta", "\u03b8" = "theta",
+    "\u03b9" = "iota", "\u03ba" = "kappa", "\u03bb" = "lambda",
+    "\u03bc" = "mu", "\u03bd" = "nu", "\u03be" = "xi",
+    "\u03c0" = "pi", "\u03c1" = "rho", "\u03c3" = "sigma",
+    "\u03a3" = "Sigma", "\u03c4" = "tau", "\u03c6" = "phi",
+    "\u03c5" = "upsilon", "\u03c7" = "chi", "\u03c8" = "psi",
+    "\u03c9" = "omega", "\u03a9" = "Omega",
+    "\u00b2" = "2", "\u00b3" = "3", "\u2070" = "0", "\u00b9" = "1",
+    "\u2264" = "<=", "\u2265" = ">=", "\u2260" = "!=", "\u2248" = "~",
+    "\u00d7" = "x", "\u00b7" = "*", "\u2212" = "-", "\u00b1" = "+/-",
+    "\u2013" = "-", "\u2014" = "-", "\u2018" = "'", "\u2019" = "'",
+    "\u201c" = '"', "\u201d" = '"', "\u2026" = "...", "\u00b0" = " degrees"
   )
   for (ch in names(map)) {
     text <- gsub(ch, map[[ch]], text, fixed = TRUE)
@@ -265,7 +265,7 @@ regcheck_compare <- function(paper_text,
     httr2_http_401 = function(e) {
       if (identical(client, "ollama")) {
         stop("The local RegCheck server rejected the API token.\n",
-             "This should not happen with regcheck_start_local() — ",
+             "This should not happen with regcheck_start_local() -- ",
              "try stopping and restarting the server with regcheck_start_local().",
              call. = FALSE)
       }
