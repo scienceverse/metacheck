@@ -252,6 +252,14 @@ grobid_to_bibr <- function(xml_path,
         httr2::req_timeout(15) |>
         httr2::req_options(connecttimeout = 10, ssl_options = 2) |>
         httr2::req_error(is_error = \(resp) FALSE) |>
+        # retry_on_failure covers a connection-level failure (timeout, DNS,
+        # refused), not just an HTTP error response -- a live server can
+        # still throw here on one bad connection attempt (see issue #363: a
+        # server confirmed independently to be up and reachable, immediately
+        # before and after the failing call, still produced this exact
+        # error), so retrying absorbs a one-off blip instead of treating it
+        # the same as a genuinely dead server.
+        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
         httr2::req_perform()
     },
     error = function(e) {
@@ -259,6 +267,7 @@ grobid_to_bibr <- function(xml_path,
         stop(
           "Connection to the GROBID server failed! ",
           "Please check your connection or the URL: ", api_url,
+          " (", conditionMessage(e), ")",
           call. = FALSE
         )
       }
