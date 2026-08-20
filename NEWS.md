@@ -1,3 +1,25 @@
+# metacheck 0.2.1
+
+* New `report_repository()` creates a report for a folder of files on your own computer, with no manuscript needed: give it a path and it runs `repo_check`, `code_check`, `data_check` and `codebook_check` and writes a report named after the folder
+* Fixed `data_check` failing on a data file whose columns are themselves data frames or matrices, as `jsonlite` produces from a nested API response (common in an `.RData` holding a saved OSF result). Such columns are now flattened to text, so they are described rather than crashing the module with "length of 'dimnames' [2] not equal to array extent"
+* Fixed `test_paper()` dropping every column of the `info` table except three, which made building a report from it warn about the missing `doi` column
+* Removed a spurious "one argument not used by format" warning from `data_check`'s personal-information note
+
+# metacheck 0.2.0
+
+* Four new modules: `data_check`, `codebook_check`, `reg_check` and `ethics_check`
+* Large updates to existing modules:
+  * `repo_check` now lists what is inside zip archives instead of just counting them, and checks file naming
+  * `code_check` reads code out of output files, supports Python and notebooks, and detects environment pins
+  * `ref_accuracy` was rewritten to check DOI-backed reference coherence
+  * `stat_effect_size` finds tests via `extract_eq()` and reports implied sample sizes
+  * `power` uses structured LLM extraction, with a prompt-based fallback
+* Data files in repositories are now downloaded and checked, not just listed, with a shared on-disk cache (`download_repo_files()`, `repo_cache_dir()`)
+* New archive sources: PsychArchives, Zenodo deposit and upload, and OSF project listing; GitHub repositories are now listed via the Git Trees API
+* Statistical output files can be read and compared against the manuscript: JASP, jamovi, SPSS, Stata, Mplus and R (`read_stat_tables()`, `match_reported_output()`)
+* LLM responses are cached on disk (`llm_cache()`), with new `llm_reasoning()` and `llm_max_tokens()` settings
+* Removed `metacheck_app()`; use `report_app()` instead
+
 # metacheck 0.1.0
 
 * Actual beta release with proper number and Zenodo citation!

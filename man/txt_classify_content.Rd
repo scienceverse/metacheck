@@ -27,7 +27,7 @@ Returns the data_check type the content implies:
 \item \code{"data"} for an E-Prime export (its fixed \verb{*** Header Start ***} /
 \verb{LevelName:} header), or for a delimited table with a real header row;
 \item \code{NA_character_} when the content is not recognised, meaning "keep whatever
-the name-based classifier decided" — never a downgrade on a guess.
+the name-based classifier decided" -- never a downgrade on a guess.
 }
 
 The file is only read, never modified or removed: the download cache is

@@ -260,18 +260,23 @@ test_that("module_report howitworks", {
 
 test_that("module_report validation", {
   paper <- demopaper()
-  v <- "<p class='validation'>"
+  # A tagged module's <validation> block is emitted as a Quarto fenced div,
+  # which renders to <div class="validation">. It used to be written as raw
+  # <p class='validation'> HTML, which leaked literal "}}" / "\if{html}{\out{"
+  # into the report text (see the comment in R/report.R).
+  v <- "::: {.validation}"
 
   module <- test_path("modules", "no_error.R")
   module_output <- module_run(paper, module)
   rep <- module_report(module_output)
   expect_true(grepl(v, rep, fixed = TRUE))
+  expect_true(grepl("Here is my demo validation", rep, fixed = TRUE))
 
   # no validation
   module <- "all_urls"
   module_output <- module_run(paper, module)
   rep <- module_report(module_output)
-  expect_false(grepl("<p class='validation'>", rep, fixed = TRUE))
+  expect_false(grepl(v, rep, fixed = TRUE))
 })
 
 

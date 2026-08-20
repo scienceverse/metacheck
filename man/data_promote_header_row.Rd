@@ -22,8 +22,8 @@ metadata rows removed above the header, 0 = unchanged), and \code{stripped}
 }
 \description{
 When a banner / blank / units / repeated-label row sits ABOVE the real header,
-the reader takes that top row as the header (inventing \verb{…N} names, or spreading
-one label — \code{CDA} merged across 110 columns — into \verb{CDA…1 … CDA…110}). This
+the reader takes that top row as the header (inventing \code{...N} names, or spreading
+one label -- \code{CDA} merged across 110 columns -- into \verb{CDA...1 ... CDA...110}). This
 finds the true header among the first few rows via \code{\link[=.detect_header_row]{.detect_header_row()}},
 promotes it to the column names, drops it and everything above, and re-types the
 freed columns. It is the inverse of \code{\link[=data_strip_qualtrics_header]{data_strip_qualtrics_header()}} (which

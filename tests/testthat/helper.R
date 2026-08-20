@@ -6,6 +6,12 @@ quick <- TRUE
 
 testthat::set_max_fails(5)
 
+# psychsci was previously bundled package data (data/psychsci.rda); it is now
+# fetched from scienceverse/papers and cached in the user data directory
+# (see .papers_cache_dir(), unaffected by the test-only metacheck.cache.dir
+# override in setup.R), so this downloads once and is reused across test runs.
+psychsci <- papers_load("psychsci", cache = TRUE)
+
 email("metacheck@scienceverse.org")
 
 httptest2::.mockPaths(NULL)

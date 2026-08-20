@@ -230,69 +230,74 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       naming    <- naming_of(sub$file_name)
 
       is_leaf <- !is.na(rows$leaf_idx)
-      # Path/type/study/naming text can all echo real, arbitrary file names —
-      # including names this very table exists to flag as containing unusual
-      # characters — so every value rendered into the HTML table is escaped:
-      # .stat_html_escape() (R/stat_helpers.R) for &/</>, plus an explicit quote escape
-      # for the two attributes below (title='...', class='...').
-      tbl <- data.frame(
-        Path = .stat_html_escape(rows$text),
-        `Classified as` = "", Study = "", `Naming issue` = "",
-        check.names = FALSE
-      )
-      type_label <- .stat_html_escape(.tree_type_label(
-        data_type[rows$leaf_idx[is_leaf]], doc_role[rows$leaf_idx[is_leaf]]))
-      tbl[["Classified as"]][is_leaf] <- sprintf(
-        "<span class='dv-tree-type'>%s %s</span>",
+      # A tree has to READ as a tree: every line visible at once, in order,
+      # with the branch characters lining up. A table breaks that — it splits
+      # the drawing into cells and pages through it, so a folder can end up on
+      # a different page from its contents. So the rows are laid out as text
+      # and emitted as a preformatted block, with the per-file columns padded
+      # to align. Widths are computed from the content rather than fixed, so
+      # a deep tree or a long type name still lines up.
+      type_txt <- rep("", nrow(rows))
+      type_txt[is_leaf] <- paste(
         .tree_type_icon(data_type[rows$leaf_idx[is_leaf]], doc_role[rows$leaf_idx[is_leaf]]),
-        type_label
+        .tree_type_label(data_type[rows$leaf_idx[is_leaf]], doc_role[rows$leaf_idx[is_leaf]])
       )
-      grp <- .stat_html_escape(group[rows$leaf_idx[is_leaf]])
-      tbl$Study[is_leaf] <- ifelse(is.na(group[rows$leaf_idx[is_leaf]]), "\U02014", grp)
+      grp <- group[rows$leaf_idx[is_leaf]]
+      study_txt <- rep("", nrow(rows))
+      study_txt[is_leaf] <- ifelse(is.na(grp), "", grp)
       nm <- naming[rows$leaf_idx[is_leaf]]
-      nm_esc <- gsub("'", "&#39;", .stat_html_escape(nm), fixed = TRUE)
-      tbl[["Naming issue"]][is_leaf] <- ifelse(
-        is.na(nm), "\U02014",
-        sprintf("<span class='dv-tree-naming' title='%s'>%s</span>", nm_esc, nm_esc))
+      naming_txt <- rep("", nrow(rows))
+      naming_txt[is_leaf] <- ifelse(is.na(nm), "", nm)
 
-      list(repo = repo, table = tbl)
+      # Pad to the widest entry in each column. formatC() counts characters,
+      # and an emoji is one character here, so the icon does not throw the
+      # alignment off in a monospaced block.
+      pad <- function(x, extra = 2) {
+        w <- max(nchar(x, type = "chars"), 0) + extra
+        formatC(x, width = -w, flag = " ")
+      }
+      has_study  <- any(nzchar(study_txt))
+      has_naming <- any(nzchar(naming_txt))
+      # Every column is padded the same way. Trailing space on the last one is
+      # stripped below, so padding it too costs nothing and keeps the columns
+      # evenly separated whichever ones are present.
+      lines <- paste0(
+        pad(rows$text),
+        pad(type_txt),
+        if (has_study) pad(study_txt) else "",
+        if (has_naming) naming_txt else ""
+      )
+      lines <- sub("\\s+$", "", lines)
+
+      list(repo = repo, lines = lines,
+           has_study = has_study, has_naming = has_naming)
     })
     blocks <- Filter(Negate(is.null), blocks)
     if (length(blocks) == 0) return(NULL)
 
-    # Minimal inline CSS scoped to this table: monospace path column, tight
-    # padding (no gap between the last path character and the next column),
-    # alternating white/light-grey rows. Written once per report; harmless if
-    # data_check runs more than once (the class names are stable/idempotent).
-    css <- paste(
-      "<style>",
-      ".dv-tree-table{border-collapse:collapse;width:100%;font-size:0.85em;}",
-      ".dv-tree-table td,.dv-tree-table th{padding:2px 8px;text-align:left;white-space:nowrap;}",
-      ".dv-tree-table td:first-child{font-family:monospace;padding-right:4px;}",
-      ".dv-tree-table tr:nth-child(odd){background:#ffffff;}",
-      ".dv-tree-table tr:nth-child(even){background:#f2f2f2;}",
-      ".dv-tree-naming{color:#b00020;text-decoration:underline dotted;cursor:help;}",
-      "</style>",
-      sep = "\n")
-
     sections <- lapply(blocks, function(b) {
-      html <- sprintf(
-        "<table class='dv-tree-table'><thead><tr><th>Path</th><th>Classified as</th><th>Study</th><th>Naming issue</th></tr></thead><tbody>%s</tbody></table>",
-        paste(sprintf(
-          "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>",
-          b$table$Path, b$table[["Classified as"]], b$table$Study, b$table[["Naming issue"]]
-        ), collapse = "")
-      )
-      paste0("**Repository: ", b$repo, "**\n\n", html)
+      # A fenced block with no language, so Quarto renders it verbatim in a
+      # monospaced font and does not try to highlight it as code.
+      #
+      # The whole block is ONE element, with its lines joined by single
+      # newlines. module_report() joins the report vector with blank lines
+      # between elements, which is right between paragraphs but would put an
+      # empty row between every line of the tree.
+      c(paste0("**Repository: ", b$repo, "**"),
+        paste(c("```", b$lines, "```"), collapse = "\n"))
     })
 
-    collapse_section(
-      c(css,
-        "The table below shows where files sit within each repository. Each file is tagged with how it was classified, which study it belongs to (when known), and any file-naming issue found by repo_check — hover an underlined naming issue for the reason it is flagged.",
-        unlist(sections)),
-      title = "Data Tree",
-      callout = "note"
-    )
+    legend <- paste0(
+      "Each file is followed by how it was classified",
+      if (any(vapply(blocks, function(b) b$has_study, logical(1))))
+        ", which study it belongs to" else "",
+      if (any(vapply(blocks, function(b) b$has_naming, logical(1))))
+        ", and any file-naming issue found by repo_check" else "",
+      ".")
+
+    c("#### Data Tree",
+      paste("Where the files sit within each repository.", legend),
+      unlist(sections))
   }
 
   # Wrap a list of (filename -> table) into a Quarto tabset, one tab per file
@@ -1170,17 +1175,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (n_trial_level == 1) "was" else "were"
   ) else NULL
 
-  # file inventory table
-  file_tbl <- all_files |>
-    dplyr::count(Type = data_type, name = "Files") |>
-    dplyr::arrange(dplyr::desc(.data$Files))
-
   report <- c(
-    "This module classifies repository files and, for tabular data files available locally, extracts each column's type and summary statistics.",
-    "#### File Types",
-    scroll_table(file_tbl, maxrows = 10)
+    "This module classifies repository files and, for tabular data files available locally, extracts each column's type and summary statistics."
   )
 
+  # The data tree replaces the former "File Types" count table: it lists every
+  # file with the same classification, so a separate per-type tally was a less
+  # informative view of information already shown here.
   tree_block <- repo_tree_block(all_files, tree_naming_issues)
   if (!is.null(tree_block)) {
     report <- c(report, tree_block)
@@ -1851,7 +1852,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # should not read as an accusation that data was leaked.
     pii_checks <- c("Personal info (values)", "Personal info (column name)",
                     "Free-text (may hold PII)")
-    pii_note <- if (any(all_issue_findings$check %in% pii_checks)) sprintf(
+    pii_note <- if (any(all_issue_findings$check %in% pii_checks)) (
       paste0(
         "\n\n**About the personal-information flags.** These are pattern ",
         "matches, not confirmed disclosures, and they are tuned to over-report ",
@@ -1870,8 +1871,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         "no names at all.\n\n",
         "A flag means *look at this column*. Where the data is already ",
         "de-identified (an `ip` column reading `Anonymized`, a `name` column ",
-        "the authors emptied), no action is needed."),
-      "") else NULL
+        "the authors emptied), no action is needed.")
+    ) else NULL
 
     dv_report <- c(dv_report, "#### Issues Identified",
                 paste0(

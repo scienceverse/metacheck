@@ -15,7 +15,7 @@ the current default max_tokens value (invisibly when setting)
 }
 \description{
 \code{llm()} needs SOME max_tokens value on every call (a provider truncates a
-response with no clear error otherwise — a codebook/data-check pass over
+response with no clear error otherwise -- a codebook/data-check pass over
 many columns at once is the case most likely to need more than the
 built-in default). Rather than requiring every module call to repeat
 \code{params = list(max_tokens = ...)} individually, set it once per session

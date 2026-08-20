@@ -49,7 +49,7 @@ options_tab <- tabItem(
 
     textInput(
       "local_path",
-      "If you want to check a local folder that contains all files you plan to upload to a data repository, or if you unchecked the option to retrieve information from online data repositories, you can still run the repo_check and code_check modules by manually downloading the repositories and speciying the local folder.",
+      "If you want to check a local folder that contains all files you plan to upload to a data repository, or if you unchecked the option to retrieve information from online data repositories, you can still run the repo_check, code_check, data_check, and codebook_check modules by manually downloading the repositories and speciying the local folder.",
       value = "",
       placeholder = "Full path to a local folder or archive, e.g. C:/Users/me/study_code.zip",
       width = "100%"

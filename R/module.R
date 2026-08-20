@@ -8,7 +8,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' module_run(psychsci[[1]], "all_p_values")
+#' }
 module_run <- function(paper, module, ...) {
   module_path <- module_find(module)
   info <- module_info(module_path)

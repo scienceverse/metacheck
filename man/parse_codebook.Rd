@@ -20,7 +20,7 @@ parse_codebook(
 \code{structure_df$group} for this file), scoping the definitions it yields to
 that ONE study. \code{NA_character_} (the default) leaves them unscoped, which
 \code{match_column_labels()} then applies to every same-named column
-PAPER-WIDE — correct for a genuinely paper-wide codebook, but it also lets
+PAPER-WIDE -- correct for a genuinely paper-wide codebook, but it also lets
 one study's codebook (e.g. a \code{condition} variable coded 1-4 in Study A)
 leak onto an unrelated same-named column in Study B (coded 1-6). Callers
 that know the file's group should pass it. Mirrors \code{.extract_haven_labels}'s

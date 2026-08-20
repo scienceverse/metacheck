@@ -7,11 +7,11 @@
 # and run with `llm_use(FALSE)`. The module upgrades to an LLM classifier only
 # when `llm_use(TRUE)` (see data_check.R).
 
-# ── File-type crosswalk ──────────────────────────────────────────────────────
+# -- File-type crosswalk ------------------------------------------------------
 
 # data_check's semantic file types. A file's finer documentation ROLE (is this
 # row the root readme? a codebook? plain supplemental text?) is NOT part of
-# this vocabulary — that is `.data_doc_role()`, a separate, orthogonal column.
+# this vocabulary -- that is `.data_doc_role()`, a separate, orthogonal column.
 # `data_type` answers "what kind of repository content is this" (drives
 # Psych-DS folder placement and the report grouping); `doc_role` answers "which
 # specific documentation artifact is this" (drives root-vs-per-study placement
@@ -29,7 +29,7 @@
 # `materials` covers everything a participant/experimenter interacts with
 # directly rather than an analytic artifact: stimuli/media (audio/video/image/
 # 3D/font) AND runnable software (installers, experiment-runner scripts,
-# compiled binaries) — both are needed to REPLICATE the study procedure, as
+# compiled binaries) -- both are needed to REPLICATE the study procedure, as
 # opposed to `data`/`code`, which are needed to RE-USE or REPRODUCE results.
 # `documentation` covers everything that explains the data/study rather than
 # being data/code/materials itself: readme, codebook, and supplemental text
@@ -37,17 +37,17 @@
 #
 # Archives (.zip/.tar/...) are NOT a content type: a zip is a container, never
 # itself research content, so it crosswalks to `unknown` only for the case it
-# could not be opened/peeked (an unreadable format, or peeking disabled) — once
+# could not be opened/peeked (an unreadable format, or peeking disabled) -- once
 # opened, its contents are classified normally and the container's own row is
 # dropped, not relabelled (see inst/modules/data_check.R's archive-expansion
-# step). A `.csv.gz` is, for every purpose, a `.csv` — the archive layer is
+# step). A `.csv.gz` is, for every purpose, a `.csv` -- the archive layer is
 # purely a delivery mechanism.
 .file_type_crosswalk <- c(
   data    = "data",
   code    = "code",
-  stats   = "code",       # SPSS/SAS/Stata syntax → code
-  exec    = "materials",  # exe/dll/app/... → materials (runnable, not analytic)
-  config  = "materials",  # yaml/ini/toml/... → materials
+  stats   = "code",       # SPSS/SAS/Stata syntax -> code
+  exec    = "materials",  # exe/dll/app/... -> materials (runnable, not analytic)
+  config  = "materials",  # yaml/ini/toml/... -> materials
   audio   = "materials",
   video   = "materials",
   image   = "materials",
@@ -60,7 +60,7 @@
   archive = "unknown"
 )
 
-# ── Unified extension registry ───────────────────────────────────────────────
+# -- Unified extension registry -----------------------------------------------
 #
 # ONE table, keyed by extension, replacing what used to be six independent
 # hardcoded lists that could (and did) silently disagree: .fixed_ext_type,
@@ -101,7 +101,7 @@
               code_lang = code_lang, mime = mime, stringsAsFactors = FALSE)
   }
   dplyr::bind_rows(
-    # ── Code ──────────────────────────────────────────────────────────────
+    # -- Code --------------------------------------------------------------
     # .ipynb's LANGUAGE is content-dependent (see code_lang()'s own roxygen:
     # of 144 real corpus notebooks, 126 declared Python and 7 declared R via
     # in-file metadata) -- registered as data_type "code" (format-locked
@@ -161,7 +161,7 @@
     r("yaml", "code"), r("yml", "code"), r("toml", "code"),
     r("ini",  "code"), r("lock","code"), r("rproj","code"),
 
-    # ── Data ──────────────────────────────────────────────────────────────
+    # -- Data --------------------------------------------------------------
     # MATLAB source (.m) is code; MATLAB's own binary data container (.mat)
     # is data, never code -- distinct extensions, no ambiguity between them
     # (unlike .out below, whose reclassification-after-download logic does
@@ -293,7 +293,7 @@
     # "Eye-Tracking/data/" folder).
     r("asc", "data", readable = FALSE),
 
-    # ── Materials ─────────────────────────────────────────────────────────
+    # -- Materials ---------------------------------------------------------
     r("exe",  "materials"), r("dmg",  "materials"), r("app",  "materials"),
     r("jar",  "materials"), r("msi",  "materials"), r("deb",  "materials"),
     r("rpm",  "materials"),
@@ -350,7 +350,7 @@
     r("pyc", "materials"), r("map", "materials"),
     r("rdb", "materials"), r("rdx", "materials"),
 
-    # ── Output ────────────────────────────────────────────────────────────
+    # -- Output ------------------------------------------------------------
     # .spv/.smcl have full readers (import_stat_output()/import_stata_smcl(),
     # R/spv.R, R/stata.R) that recover their embedded analysis syntax as a
     # sibling code file -- the .spv/.smcl row ITSELF still stays data_type
@@ -382,7 +382,7 @@
     r("amosp",      "output"), r("afdesign",   "output"),
     r("pt",         "output"),
 
-    # ── Documentation ─────────────────────────────────────────────────────
+    # -- Documentation -----------------------------------------------------
     # A Qualtrics survey-definition file (.qsf) is the survey's own codebook:
     # it carries every question's wording and its response options with
     # coded values (see parse_qsf()). Classing it as documentation (with
@@ -443,7 +443,7 @@
 #' @param file_path optional character vector, same length as `file_name`: the
 #'   full repo-relative path of each file (e.g. `"ResearchBox 801/Materials/
 #'   Informant Survey_Redacted.pdf"`). When supplied, a keyword found ANYWHERE
-#'   in the path (a folder segment OR the filename itself — see the Tier 2
+#'   in the path (a folder segment OR the filename itself -- see the Tier 2
 #'   keyword table below) reclassifies a file. A researcher's own naming,
 #'   whether the folder or the file, is a stronger, more deliberate signal
 #'   than a generic extension like `.pdf`/`.docx`/`.txt`, which could hold
@@ -468,10 +468,10 @@ data_classify_files <- function(file_name, file_path = NULL) {
   n <- length(file_name)
   if (n == 0) return(character(0))
 
-  # ── Tier 1: format-locked classification ──────────────────────────────────
+  # -- Tier 1: format-locked classification ----------------------------------
   # Nothing below this point can override a Tier 1 result. `file_category()`'s
   # hard rules (sure_class: stats/data/code, and the .jasp/.por data+stats
-  # compound) key on the file's actual FORMAT, not its name — translate its
+  # compound) key on the file's actual FORMAT, not its name -- translate its
   # old-style labels ("readme", "codebook") into the 6-way data_check
   # vocabulary here so only this one place needs to know about that mapping.
   cat_raw <- file_category(file_name)$file_category
@@ -483,12 +483,12 @@ data_classify_files <- function(file_name, file_path = NULL) {
   fixed <- unname(.fixed_ext_type[ext])
   locked <- dplyr::coalesce(fixed, cat)          # fixed extension wins over cat_raw
 
-  # ── Tier 2: keyword-in-name overrides ─────────────────────────────────────
+  # -- Tier 2: keyword-in-name overrides -------------------------------------
   # An explicit category word in the researcher's own folder or file naming
   # ("Materials/", "Results.docx", "analysis_code.zip") is a more deliberate,
   # direct signal than a generic extension like .pdf/.docx/.txt/.html/.zip,
-  # each of which could hold almost anything. Checked as whole NAME TOKENS —
-  # bounded by "/", "_", "-", ".", space, or start/end of string — never as a
+  # each of which could hold almost anything. Checked as whole NAME TOKENS --
+  # bounded by "/", "_", "-", ".", space, or start/end of string -- never as a
   # bare substring: R regex's \b treats "_" as a word character, so \b alone
   # would silently miss "my_output_log.html" (verified directly against that
   # string, not by reasoning about the regex), and a bare substring match
@@ -526,7 +526,7 @@ data_classify_files <- function(file_name, file_path = NULL) {
     claimed <- claimed | hit
   }
 
-  # ── Tier 3: coarse crosswalk fallback ─────────────────────────────────────
+  # -- Tier 3: coarse crosswalk fallback -------------------------------------
   # Whatever Tier 1/2 left unresolved falls back to metacheck::file_types via
   # .file_type_crosswalk (e.g. image -> materials, text -> documentation).
   coarse <- filetype(file_name)                  # named vector, may be "a;b"
@@ -535,7 +535,7 @@ data_classify_files <- function(file_name, file_path = NULL) {
   type <- ifelse(is.na(type), crosswalked, type)
 
   # ro-crate-metadata.json is collection-level documentation (see
-  # .data_doc_role()), never code or data — without this override its .json
+  # .data_doc_role()), never code or data -- without this override its .json
   # extension would crosswalk to "code"/"data" via the coarse file_types table.
   type[grepl("^ro-crate-metadata\\.json$", tolower(basename(file_name)))] <- "documentation"
 
@@ -549,7 +549,7 @@ data_classify_files <- function(file_name, file_path = NULL) {
 #' the specific artifact: the (collection-level) readme, a codebook, or plain
 #' supplemental text (preprints, slide decks, Word docs). This is the axis
 #' `psychds_check` uses to decide root-vs-per-study placement and that
-#' `codebook_check` uses to select which files to parse — orthogonal to
+#' `codebook_check` uses to select which files to parse -- orthogonal to
 #' `data_type`, which only says "this is documentation of some kind."
 #'
 #' `ro-crate-metadata.json` is treated as a `"readme"` role: like a README, it
@@ -576,7 +576,7 @@ data_classify_files <- function(file_name, file_path = NULL) {
     grepl("^readme($|\\.)", tolower(base)) ~ "readme",
     # A LICENSE file is collection-level, like the readme (one licence for the
     # whole deposit, not per-study), so it gets the same root placement in
-    # convert_psychds()'s target_of() — see psychds_check.R.
+    # convert_psychds()'s target_of() -- see psychds_check.R.
     grepl("^licen[sc]e($|\\.)", tolower(base)) ~ "license",
     cat_raw == "codebook" ~ "codebook",
     ext == "qsf" ~ "codebook",
@@ -587,11 +587,11 @@ data_classify_files <- function(file_name, file_path = NULL) {
   role
 }
 
-# ── Data format (tabular vs raw) ─────────────────────────────────────────────
+# -- Data format (tabular vs raw) ---------------------------------------------
 
 # The SINGLE source of truth for "can metacheck read this as a table": every
 # extension with a branch in data_read_head()'s switch, and nothing else. Keep
-# the two in lockstep — adding a reader branch without adding its extension here
+# the two in lockstep -- adding a reader branch without adding its extension here
 # (via .ext_registry's `readable` column) leaves the format downloaded but
 # never read; adding it here without a reader branch makes data_read_head()
 # return NULL for a file we promised was tabular.
@@ -604,7 +604,7 @@ data_classify_files <- function(file_name, file_path = NULL) {
 # Previously this was maintained as its own hand-typed vector, itself already
 # a fix for three EARLIER divergent lists (.ods was readable but never
 # converted; formats with no reader branch were downloaded and silently read
-# as NULL) — now derived from .ext_registry so a new reader branch only needs
+# as NULL) -- now derived from .ext_registry so a new reader branch only needs
 # updating in one place (the registry's `readable` column) instead of two.
 .readable_extensions <- .ext_registry$ext[.ext_registry$readable]
 
@@ -636,7 +636,7 @@ data_format <- function(ext) {
 #' file, so extension-based classification treats it as data. It is
 #' distinguished from real research data by content, using the repository's own
 #' file list as ground truth: a manifest has a column in which most values name
-#' other files in the repository. This is name- and header-agnostic — it does
+#' other files in the repository. This is name- and header-agnostic -- it does
 #' not rely on the file or its columns being *called* anything in particular.
 #'
 #' To avoid demoting genuine data that merely references assets (e.g. a
@@ -677,7 +677,7 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 
 # Default number of items per LLM classification call. Sized for reliable
 # structured-array responses on small models (e.g. Groq's gpt-oss-20b): input
-# tokens are not the binding constraint here — the limit is how many array items
+# tokens are not the binding constraint here -- the limit is how many array items
 # the model returns complete and correctly indexed. ~50 keeps responses reliable
 # while cutting call count ~50x versus one-call-per-item. Used by every batched
 # classifier in data_check so batch size is tuned in one place.
@@ -685,11 +685,11 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 
 # Default sampler seed for the study-group pass. Fixed (not random) so repeated
 # runs of the same paper ask the provider for the same sampling path; callers can
-# override via params$seed. Best-effort — see .data_group_llm_impl().
+# override via params$seed. Best-effort -- see .data_group_llm_impl().
 .data_group_seed <- 8675309L
 
 # Write a per-paper file manifest (JSON) recording every repository file and
-# whether it was downloaded — the provenance needed to audit a corpus or rebuild
+# whether it was downloaded -- the provenance needed to audit a corpus or rebuild
 # a data archive without re-querying every repo. `files` is data_check's finalised
 # `all_files`; `want` is the logical vector of files this run tried to download;
 # `gated` is the download gate table (repos refused by the size caps);
@@ -698,9 +698,9 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 # LLM model string the run used.
 #
 # Every file not downloaded is classified as **intentional** (a policy decision:
-# download mode, skip_types, zip peek, the size caps — re-running changes
+# download mode, skip_types, zip peek, the size caps -- re-running changes
 # nothing unless the settings change) or **unintentional** (the run wanted the
-# file and could not fetch it: transient download failure, missing URL — a
+# file and could not fetch it: transient download failure, missing URL -- a
 # re-run with the same settings retries exactly these, since cached files are
 # reused). The top-level `not_downloaded` block separates the two and sets
 # `rerun_recommended`, so a corpus audit can find incomplete papers mechanically.
@@ -713,7 +713,7 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 #
 # Sizes are completed here: a downloaded file's real size comes from disk, and a
 # wanted file the listing left unsized (OSF returns NA for some files, often the
-# large ones) is resolved with a cheap HEAD probe — so the manifest carries a
+# large ones) is resolved with a cheap HEAD probe -- so the manifest carries a
 # real size for choosing the archive's size ceiling. Only NA-sized wanted files
 # are probed, and only when a manifest is requested, so normal runs pay nothing.
 .data_check_write_manifest <- function(manifest, files, want, gated,
@@ -722,7 +722,7 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
                                        skip_types = NULL,
                                        oversize = NULL, failed = NULL,
                                        zip_peek = NULL, model = NULL) {
-  # Resolve the output path: a directory → "<paper_id>.manifest.json" inside it;
+  # Resolve the output path: a directory -> "<paper_id>.manifest.json" inside it;
   # a ".json" path is used verbatim.
   path <- manifest
   if (!grepl("\\.json$", path, ignore.case = TRUE)) {
@@ -749,7 +749,7 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   gated_urls <- if (!is.null(gated) && nrow(gated) > 0) gated$repo_url else character(0)
 
   # Complete the sizes. A downloaded file's real size is on disk. For a wanted
-  # file the listing left unsized (OSF returns NA for some files — exactly the
+  # file the listing left unsized (OSF returns NA for some files -- exactly the
   # large ones), resolve it with a cheap HEAD probe so the manifest carries a
   # real size for ceiling planning. This runs only when a manifest is requested
   # (opt-in) and only for the NA-sized wanted files, so normal runs pay nothing.
@@ -993,7 +993,7 @@ manifest_merge <- function(path, patch) {
 #' (folder + name) context, so a multi-study repository can be split into
 #' `study-<group>/` directories (used by `psychds_check`). Group codes follow
 #' datacheck's scheme: `ex1`, `ex2a`, `pilot1`, ... . Every file resolves to
-#' exactly one study — there is no `"shared"` group. The only files that stay
+#' exactly one study -- there is no `"shared"` group. The only files that stay
 #' collection-level (never grouped, `group` left `NA`) are the root README and
 #' the root `ro-crate-metadata.json` (see `.data_doc_role()`), which callers
 #' must exclude BEFORE calling this function (see `data_check.R`). Only
@@ -1002,7 +1002,7 @@ manifest_merge <- function(path, patch) {
 #'
 #' Only files that will actually be analysed or placed (data, documentation,
 #' code, materials) are sent to the model; every one of them must end up with a
-#' real study code — a materials or documentation file reused across multiple
+#' real study code -- a materials or documentation file reused across multiple
 #' studies is still assigned to exactly ONE owning study (whichever the
 #' deterministic passes or the model placed it in first); every other study
 #' that reuses it gets a reference recorded separately (see `referenced_by` in
@@ -1015,7 +1015,7 @@ manifest_merge <- function(path, patch) {
 #' request/output limits.
 #'
 #' @param files a data.frame of files (needs `file_path` or `file_name`; an
-#'   optional `data_type` column limits which files are sent to the model —
+#'   optional `data_type` column limits which files are sent to the model --
 #'   see Details)
 #' @param model the LLM model name
 #' @param params a named list passed to `llm()`
@@ -1024,7 +1024,7 @@ manifest_merge <- function(path, patch) {
 #' @returns a data.frame with `group` and `referenced_by` columns (one row per
 #'   input file, same order) and `"model"`/`"roster"`/`"roster_check"`/
 #'   `"unresolved"` attributes, or `NULL` only when `files` is empty/NULL.
-#'   Every placeable file resolves to a real study group — there is no
+#'   Every placeable file resolves to a real study group -- there is no
 #'   `"shared"` value and no partial-failure NULL return.
 #' @export
 #' @keywords internal
@@ -1035,13 +1035,13 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 
 #' Study roster named in a paper's text
 #'
-#' Reads the manuscript for the studies it names — "Experiment 1", "Study 2a",
-#' "Pilot 2" — and returns them as normalised group codes (`ex1`, `ex2a`,
+#' Reads the manuscript for the studies it names -- "Experiment 1", "Study 2a",
+#' "Pilot 2" -- and returns them as normalised group codes (`ex1`, `ex2a`,
 #' `pilot2`). This is the AUTHORITATIVE list of a paper's studies: the authors
 #' say how many there are and what they are called, so it both names the groups
 #' and gives a count to validate any file grouping against (see
-#' `.data_group_check_roster`). Deterministic and free — a regex over text we
-#' already extracted — so it runs BEFORE any LLM.
+#' `.data_group_check_roster`). Deterministic and free -- a regex over text we
+#' already extracted -- so it runs BEFORE any LLM.
 #'
 #' Only mentions of the form <word><optional space/punct><number><optional
 #' single letter> count; a bare "the experiment" names no specific study and is
@@ -1085,7 +1085,7 @@ data_study_roster <- function(paper) {
 # Compare a file grouping to the manuscript's study roster and report the
 # agreement. The roster is what the AUTHORS say exists; the grouping is what we
 # inferred from the files. A mismatch means the structure we are about to write
-# contradicts the paper — worth surfacing rather than silently emitting. Returns
+# contradicts the paper -- worth surfacing rather than silently emitting. Returns
 # list(roster, found, missing, extra, agrees).
 .data_group_check_roster <- function(groups, roster) {
   found <- unique(groups[!is.na(groups)])
@@ -1097,8 +1097,8 @@ data_study_roster <- function(paper) {
 }
 
 # Data files referenced by a code file. A script names the data it reads and
-# writes — read_csv("raw/x.csv"), readRDS("../data/processed/y.rds"),
-# write_csv(df, "processed/z.csv") — which is HARD evidence that the script and
+# writes -- read_csv("raw/x.csv"), readRDS("../data/processed/y.rds"),
+# write_csv(df, "processed/z.csv") -- which is HARD evidence that the script and
 # those files belong to the same study: no guessing, no LLM. Returns the
 # referenced paths' basenames (lowercased), or character(0).
 #
@@ -1120,7 +1120,7 @@ data_study_roster <- function(paper) {
 .data_code_refs <- function(path, max_bytes = 2e6) {
   if (is.na(path) || !nzchar(path) || !file.exists(path)) return(character(0))
   # file.size() can still return NA here even after file.exists() passed (a
-  # broken symlink, a permissions/race edge case) — treat that as unreadable
+  # broken symlink, a permissions/race edge case) -- treat that as unreadable
   # rather than letting `if (NA > max_bytes)` error out the whole grouping
   # pass. Newly reachable now that repo_check() also calls into this code path
   # with files that were never actually downloaded (file_location may point at
@@ -1130,7 +1130,7 @@ data_study_roster <- function(paper) {
   txt <- tryCatch(paste(readLines(path, warn = FALSE), collapse = "\n"),
                   error = function(e) NULL)
   if (is.null(txt) || !nzchar(txt)) return(character(0))
-  # <fn>( ... "<path>"  — the first quoted string of a read/write call. Allows
+  # <fn>( ... "<path>"  -- the first quoted string of a read/write call. Allows
   # arguments before the path (write_csv(df, "out.csv")).
   pat <- paste0("(?:", .CODE_READ_FNS, ")\\s*\\([^)\"']*[\"']([^\"']+)[\"']")
   m <- regmatches(txt, gregexpr(pat, txt, perl = TRUE, ignore.case = TRUE))[[1]]
@@ -1142,8 +1142,8 @@ data_study_roster <- function(paper) {
 
 # Deterministically derive a study group from a file path, or NA when the path
 # names no study. Filenames and folder names very often carry the study label
-# verbatim — "Experiment 1/", "study2a_data.csv", even smashed together without
-# separators ("...dataexperiment1creplication...") — and a regex reads those
+# verbatim -- "Experiment 1/", "study2a_data.csv", even smashed together without
+# separators ("...dataexperiment1creplication...") -- and a regex reads those
 # more reliably than a small LLM, which has misread exactly such names. The
 # filename is searched first, then the enclosing folders from innermost to
 # outermost. The short prefixes ("ex", "exp") must not be preceded by a letter
@@ -1200,12 +1200,12 @@ data_study_roster <- function(paper) {
 
 # Separate a paper's files into studies BY SOURCE REPOSITORY. A paper often links
 # several independent repositories (multiple OSF components, a Zenodo archive, a
-# GitHub repo); when those repos hold DIFFERENT files, each is a distinct study —
+# GitHub repo); when those repos hold DIFFERENT files, each is a distinct study --
 # a far more reliable signal than the file paths, which frequently name only a
 # processing stage ("raw/", "processed/") and no study at all. Returns a per-file
 # base study code (`ex1`, `ex2`, ... by first appearance of each qualifying repo),
 # or all-NA when there is only one repository or the repos are mirrors of each
-# other (near-identical file sets — not separate studies).
+# other (near-identical file sets -- not separate studies).
 #
 # The "files differ" guard compares each pair of repos' basename sets by Jaccard
 # overlap; repos that overlap >= `mirror_overlap` are treated as one study (the
@@ -1252,7 +1252,7 @@ data_study_roster <- function(paper) {
   # temperature 0, but on a SERVED model that alone does not guarantee a
   # reproducible answer (request batching, KV-cache state and GPU floating-point
   # non-associativity all perturb the logits), and study groups decide the
-  # dataset's directory structure — a run-to-run flip silently reshapes the
+  # dataset's directory structure -- a run-to-run flip silently reshapes the
   # output. Providers document `seed` as best-effort rather than a promise, so
   # this narrows the variance, it does not eliminate it; the deterministic passes
   # above are what actually make the common cases reproducible.
@@ -1268,7 +1268,7 @@ data_study_roster <- function(paper) {
   # directory: data, documentation, materials, code. When no data_type column
   # is present we fall back to grouping everything. Note: the collection-level
   # root readme / root ro-crate-metadata.json must already have been EXCLUDED
-  # from `files` by the caller (data_check.R) before this function runs — they
+  # from `files` by the caller (data_check.R) before this function runs -- they
   # are never assigned a study and never reach this function at all.
   placeable <- c("data", "documentation", "materials", "code")
   dtype <- if ("data_type" %in% names(files))
@@ -1278,7 +1278,7 @@ data_study_roster <- function(paper) {
   # Base group by SOURCE REPOSITORY: a paper that links several repos with
   # different files is multi-study, one study per repo (see .data_group_from_repo).
   # This seeds the default so unrecognised files fall to their repo's study.
-  # NA (single repo / mirrors) keeps `group` unresolved (NA) for now — every
+  # NA (single repo / mirrors) keeps `group` unresolved (NA) for now -- every
   # remaining pass below tries to fill it, and the final fallback (no file is
   # ever left unresolved) guarantees a real study code by the time this
   # function returns.
@@ -1288,7 +1288,7 @@ data_study_roster <- function(paper) {
 
   # Deterministic pre-pass: a path that names its study outright ("Experiment
   # 1/", "study2a_data.csv", "...experiment1creplication...") overrides the repo
-  # base — an explicit study name in the path is more specific than "which repo".
+  # base -- an explicit study name in the path is more specific than "which repo".
   # The regex is exact where a small LLM has misread such names. Files still
   # ambiguous AFTER both repo and path passes go to the LLM.
   pre <- .data_group_from_path(paths)
@@ -1297,7 +1297,7 @@ data_study_roster <- function(paper) {
 
   # CODE-REFERENCE pass: a script names the data it reads and writes, so every
   # file it references belongs to the script's study. This is hard evidence (no
-  # guessing) and rescues data files whose own path names no study — the common
+  # guessing) and rescues data files whose own path names no study -- the common
   # case, where paths describe a processing stage ("raw/", "processed/") rather
   # than a study. Only fills files still unplaced by the repo/path passes, and
   # only from scripts that ARE placed, so it propagates a known group outward
@@ -1306,12 +1306,12 @@ data_study_roster <- function(paper) {
   # This is also the ONLY signal metacheck has for cross-study reuse: when a
   # script belonging to a DIFFERENT study than the file's current owner also
   # references it, that other study is recorded in `referenced_by` (a list
-  # column, one entry per file) instead of overwriting `group` — the file keeps
+  # column, one entry per file) instead of overwriting `group` -- the file keeps
   # its single owning study, and the other study gets a reference written into
   # its own metadata later (see .psychds_dataset_description() /
   # .psychds_rocrate_json() in psychds-convert.R). Reuse that is never named in
   # any script's code (e.g. two studies described in prose as using "the same
-  # stimuli") is NOT detected — this is a known, accepted limitation, not a bug.
+  # stimuli") is NOT detected -- this is a known, accepted limitation, not a bug.
   loc <- if ("file_location" %in% names(files)) files$file_location else
     rep(NA_character_, length(paths))
   is_code <- dtype %in% c("code", "materials")
@@ -1345,7 +1345,7 @@ data_study_roster <- function(paper) {
 
   # The LLM is the LAST resort: it only sees files the deterministic passes
   # (repository, path regex, code references) could not place. When they placed
-  # everything — the common case for a multi-repo paper — no call is made at all.
+  # everything -- the common case for a multi-repo paper -- no call is made at all.
   # NB: this must not return early; the roster relabelling and the "every file
   # gets a real study" guard below still have to run.
   prompt <- paste(
@@ -1354,7 +1354,7 @@ data_study_roster <- function(paper) {
     "pilot, ...). Assign each numbered file to a study group using these codes:",
     "'ex1','ex2','ex2a',... for experiments/studies, 'pilot1','pilot2',... for",
     "pilots. Infer groups from folder names and filenames. EVERY file belongs",
-    "to exactly one study — there is no 'shared' option. If the whole",
+    "to exactly one study -- there is no 'shared' option. If the whole",
     "repository is a single study, put every file in 'ex1'. If a file (e.g. a",
     "shared codebook or a materials file) genuinely serves multiple studies,",
     "assign it to whichever single study it is most closely associated with by",
@@ -1386,11 +1386,11 @@ data_study_roster <- function(paper) {
   unresolved <- integer(0)   # rows no batch (or retry) ever answered for
 
   # Ask the model about one batch of rows; returns the rows it could NOT place.
-  # A batch can fail outright (network error, HTTP 400 json_validate_failed —
+  # A batch can fail outright (network error, HTTP 400 json_validate_failed --
   # providers reject a structured response they cannot validate, which happens
   # more often on LONG arrays) or come back partial. Either way the rows left
   # over are reported back so the caller can retry them in smaller pieces rather
-  # than silently leaving them at their default — the old behaviour, which made
+  # than silently leaving them at their default -- the old behaviour, which made
   # an intermittent provider error look exactly like "the model said 'shared'"
   # and was the main source of run-to-run instability.
   ask_batch <- function(rows) {
@@ -1436,13 +1436,13 @@ data_study_roster <- function(paper) {
   }
   # Unlike the old scheme, there is no "give up and return NULL" case here: a
   # NULL return would leave the caller's `group` at its NA default for every
-  # file, which is no longer a valid outcome — every placeable file MUST
+  # file, which is no longer a valid outcome -- every placeable file MUST
   # resolve to a real study group (there is no 'shared' escape hatch), even
   # when every deterministic pass and every LLM batch failed. The fallback
   # immediately below guarantees this unconditionally, so this function always
   # returns a real data.frame from this point on, never NULL.
 
-  # EVERY placeable file must resolve to a real study group — there is no
+  # EVERY placeable file must resolve to a real study group -- there is no
   # 'shared' fallback. Generalizes the old "data is never shared" guarantee
   # (previously data-only) to documentation, materials, and code as well: a
   # file that reaches this point still unresolved (nothing placed it, and no
@@ -1450,7 +1450,7 @@ data_study_roster <- function(paper) {
   # the repo pass placed it, (2) the sole study when exactly one exists, (3)
   # 'ex1' when no study exists at all (a single-study repo), (4) the
   # lexicographically-first study code when several studies exist and nothing
-  # else resolved it — e.g. a repo-root materials/ folder no script happens to
+  # else resolved it -- e.g. a repo-root materials/ folder no script happens to
   # reference. This runs BEFORE the roster relabelling below so it works with
   # the raw slot labels.
   is_placeable <- dtype %in% placeable
@@ -1458,7 +1458,7 @@ data_study_roster <- function(paper) {
   # No real evidence anywhere in this file set: no repo split, no path/code
   # reference, no LLM answer ever produced a study code before reaching this
   # fallback. Distinct from the "sole study" / "several studies" branches
-  # below, where AT LEAST ONE file had real evidence — just not this
+  # below, where AT LEAST ONE file had real evidence -- just not this
   # particular one. Exposed as an attribute so callers (psychds_check) can
   # tell "grouped with real evidence" from "grouped by blanket default" rather
   # than treating every non-NA group the same way.
@@ -1479,7 +1479,7 @@ data_study_roster <- function(paper) {
   # studies are called ("Experiment 1, 2a, 2b, 3"); our partition may be
   # structurally right but named by slot (ex1..ex4 from four repositories). When
   # the partition has exactly as many groups as the paper names studies, adopt
-  # the authors' labels — the paper is authoritative for naming.
+  # the authors' labels -- the paper is authoritative for naming.
   #
   # Groups already carrying a roster label (a path that literally said
   # "Experiment 2a") are left alone and their label is taken out of the pool, so
@@ -1517,7 +1517,7 @@ data_study_roster <- function(paper) {
   attr(out, "roster") <- roster
   attr(out, "roster_check") <- .data_group_check_roster(group, roster)
   # TRUE when no file's path, repository split, code reference, or LLM answer
-  # ever named a real study anywhere in this file set — every group came from
+  # ever named a real study anywhere in this file set -- every group came from
   # the blanket "ex1" default, not actual evidence. psychds_check uses this to
   # warn that the grouping is a guess rather than implying real structure was
   # detected.
@@ -1531,7 +1531,7 @@ data_study_roster <- function(paper) {
   out
 }
 
-# ── Tabular reading ──────────────────────────────────────────────────────────
+# -- Tabular reading ----------------------------------------------------------
 
 # Sniff the field delimiter of a delimited text file from its first
 # non-blank, non-comment line.
@@ -1539,7 +1539,7 @@ data_study_roster <- function(paper) {
 # conversion that cannot fail, since every byte is a valid Latin-1 character).
 # The pre-read sniffers below run string ops (trimws, strsplit, gsub) on raw
 # readLines() output, and any of those errors with "input string 1 is invalid
-# UTF-8" when a Latin-1-encoded file has a non-ASCII byte in its first lines —
+# UTF-8" when a Latin-1-encoded file has a non-ASCII byte in its first lines --
 # which used to make the whole file unreadable before the readers' own
 # encoding tolerance ever got a chance.
 .utf8_lines <- function(x) {
@@ -1554,8 +1554,8 @@ data_study_roster <- function(paper) {
 #' Reads the first `n` lines of a file as text, tolerating the encodings research
 #' data actually ships in: a UTF-8/UTF-16 BOM, UTF-16 (E-Prime exports), and
 #' Latin-1 bytes that would otherwise make `readLines()` output error in later
-#' string operations. Intended for cheap format sniffing — deciding *what* a file
-#' is before committing to a reader — not for reading data.
+#' string operations. Intended for cheap format sniffing -- deciding *what* a file
+#' is before committing to a reader -- not for reading data.
 #'
 #' Returns `character(0)` for a missing, empty or unreadable file rather than
 #' erroring, so a caller can treat "cannot peek" as "not my format".
@@ -1578,7 +1578,7 @@ text_peek <- function(path, n = 20L) {
   if (is.na(size) || size == 0) return(character(0))
 
   # Read a bounded chunk rather than the whole file when only the first n lines
-  # are wanted (the sniffing case). `n = Inf` reads it all — callers that need
+  # are wanted (the sniffing case). `n = Inf` reads it all -- callers that need
   # every line (e.g. parsing a whole E-Prime export) must not be silently
   # truncated. 64 KB covers any plausible 20-line header, doubled for UTF-16.
   want <- if (is.finite(n)) min(size, 65536) else size
@@ -1603,7 +1603,7 @@ text_peek <- function(path, n = 20L) {
   }
   if (is.na(txt)) return(character(0))
 
-  txt <- sub("^﻿", "", txt)                    # strip a BOM
+  txt <- sub("^\ufeff", "", txt)                    # strip a BOM
   lines <- strsplit(txt, "\r\n|\n|\r")[[1]]
   utils::head(.utf8_lines(lines), n)
 }
@@ -1622,7 +1622,7 @@ text_peek <- function(path, n = 20L) {
 #' - `"data"` for an E-Prime export (its fixed `*** Header Start ***` /
 #'   `LevelName:` header), or for a delimited table with a real header row;
 #' - `NA_character_` when the content is not recognised, meaning "keep whatever
-#'   the name-based classifier decided" — never a downgrade on a guess.
+#'   the name-based classifier decided" -- never a downgrade on a guess.
 #'
 #' The file is only read, never modified or removed: the download cache is
 #' persistent by design (see [repo_cache_dir()]), so classification decides how a
@@ -1709,24 +1709,10 @@ txt_classify_content <- function(path) {
   !(all_num(split_row(lines[1])) && all_num(split_row(lines[2])))
 }
 
-#' Read the head of a data file regardless of format
-#'
-#' Reads the first `n_rows` of a tabular data file (csv/tsv/txt/dat/xlsx/xls/
-#' ods/fods/sav/dta/sas7bdat/rds/rda/rdata). Delimiter and header presence are
-#' auto-detected for delimited text; invalid UTF-8 triggers a latin1 retry.
-#' Reading `.ods`/`.fods` needs the suggested `readODS` package; without it the
-#' function returns `NULL` for those formats.
-#'
-#' @param path path to a data file
-#' @param n_rows number of rows to read (`Inf` for all)
-#'
-#' @returns a data.frame, or `NULL` on failure / unsupported format.
-#' @export
-#' @keywords internal
-# Cheaply detect a "single big field" file — a .csv/.txt/.dat whose content is
+# Cheaply detect a "single big field" file -- a .csv/.txt/.dat whose content is
 # really one large value stuffed into a single column, not a table. This covers
 # any such file, whatever the value is (a JSON blob, an XML document, a base64
-# string, a serialised log, ...): the giveaway is format-independent — the data
+# string, a serialised log, ...): the giveaway is format-independent -- the data
 # is a *single column* whose rows are *huge*. A real one-column dataset has short
 # rows (one value each); a blob-in-a-cell has an enormous row. Such files are
 # pathologically slow to parse with read.delim and carry no tabular data, so
@@ -1768,7 +1754,7 @@ txt_classify_content <- function(path) {
 }
 
 # Read a delimited file into a data.frame. Uses data.table::fread when available
-# — orders of magnitude faster than utils::read.delim on files with large or
+# -- orders of magnitude faster than utils::read.delim on files with large or
 # awkward quoted fields (e.g. cells holding multi-line numpy-array dumps), which
 # make base R's quote-scanning pathologically slow (minutes per file). Falls back
 # to read.delim (with a latin1 retry for invalid UTF-8) when data.table is not
@@ -1810,11 +1796,11 @@ txt_classify_content <- function(path) {
 # name checks with "invalid multibyte string"; sub out invalid bytes rather
 # than dropping the column. For character VALUES: fread reads with
 # encoding = "UTF-8", which marks strings as UTF-8 without validating, so a
-# Latin-1 byte in a nominally-UTF-8 file (a mis-encoded apostrophe, °, µ,
-# é ...) yields strings that crash the base regex calls data_check runs on
+# Latin-1 byte in a nominally-UTF-8 file (a mis-encoded apostrophe,  degrees, u,
+# e ...) yields strings that crash the base regex calls data_check runs on
 # every column ("input string N is invalid UTF-8"). Reinterpret only the
-# invalid entries as Latin-1 — a conversion that cannot fail, since every
-# byte is a valid Latin-1 character — and leave valid values untouched.
+# invalid entries as Latin-1 -- a conversion that cannot fail, since every
+# byte is a valid Latin-1 character -- and leave valid values untouched.
 # The per-column repair counts are recorded in the "utf8_repaired" attribute
 # so data_check can carry them into its columns table and data_validate can
 # warn the researcher about the file's mixed encoding (the repaired values
@@ -1822,6 +1808,60 @@ txt_classify_content <- function(path) {
 # invalid and leaves both the data and the attribute untouched.
 .utf8_repair_df <- function(df) {
   if (is.null(df)) return(df)
+
+  # Flatten columns that are not vectors, BEFORE anything else looks at them.
+  #
+  # A data frame's column is normally a vector, but `jsonlite` turns a nested
+  # JSON response into a data frame whose columns are THEMSELVES data frames or
+  # matrices (an OSF/API result saved to .RData or .rds is the common case).
+  # Every per-column operation downstream assumes a vector: is.na() on such a
+  # column returns a MATRIX, so subsetting flattens to one element per cell and
+  # counts come back one-per-cell instead of one-per-column. That breaks
+  # data_col_stats(), data_col_type(), data_col_facets() and the sample-value
+  # summary alike -- four separate failures with one cause, which is why this is
+  # fixed here at the single point every reader passes through rather than
+  # guarded in each consumer.
+  #
+  # The column is rendered as text, one string per row, so it is still listed,
+  # still classified, and still visible in the sample values -- rather than
+  # being dropped, which would hide data the researcher did share.
+  if (is.data.frame(df) && ncol(df) > 0) {
+    for (j in seq_along(df)) {
+      x <- df[[j]]
+      if (is.null(dim(x)) && (is.atomic(x) || is.null(x))) next
+      flat <- tryCatch({
+        if (is.data.frame(x)) {
+          # Row-wise, NOT apply(): apply() coerces to a matrix first, which
+          # fails outright when the sub-columns are themselves data frames
+          # (nesting more than one level deep, as an OSF API response is).
+          # Each sub-column is flattened to text on its own, then pasted.
+          parts <- lapply(names(x), function(k) {
+            v <- x[[k]]
+            v <- if (is.data.frame(v) || is.list(v))
+              vapply(seq_len(NROW(v)), function(i)
+                paste(utils::head(unlist(if (is.data.frame(v)) v[i, ] else v[[i]]), 10),
+                      collapse = ","), character(1))
+            else as.character(v)
+            paste0(k, "=", v)
+          })
+          do.call(paste, c(parts, sep = "; "))
+        } else if (is.matrix(x)) {
+          apply(x, 1, function(r) paste(as.character(r), collapse = "; "))
+        } else if (is.list(x)) {
+          vapply(x, function(e)
+            paste(utils::head(unlist(e), 20), collapse = "; "), character(1))
+        } else {
+          as.character(x)
+        }
+      }, error = function(e) rep(NA_character_, NROW(x)))
+      # Only replace when the flattened form still has one value per row; a
+      # mismatch would silently misalign the column against the rest of the
+      # table, which is worse than leaving it out.
+      df[[j]] <- if (length(flat) == NROW(df)) as.character(flat)
+                 else rep(NA_character_, NROW(df))
+    }
+  }
+
   if (!is.null(names(df))) {
     nm <- names(df)
     bad <- is.na(iconv(nm, from = "UTF-8", to = "UTF-8"))
@@ -1858,6 +1898,21 @@ txt_classify_content <- function(path) {
   df
 }
 
+#' Read the head of a data file regardless of format
+#'
+#' Reads the first `n_rows` of a tabular data file (csv/tsv/txt/dat/xlsx/xls/
+#' ods/fods/sav/dta/sas7bdat/rds/rda/rdata). Delimiter and header presence are
+#' auto-detected for delimited text; invalid UTF-8 triggers a latin1 retry.
+#' Reading `.ods`/`.fods` needs the suggested `readODS` package; without it the
+#' function returns `NULL` for those formats.
+#'
+#' @param path path to a data file
+#' @param n_rows number of rows to read (`Inf` for all)
+#'
+#' @returns a data.frame, or `NULL` on failure / unsupported format.
+#' @export
+#' @keywords internal
+#
 # The set of extensions handled by the switch below IS the package's definition
 # of "tabular", exported through .readable_extensions / data_format(). Any new
 # branch added here must be added there too, or the format will never be
@@ -1912,7 +1967,7 @@ data_read_head <- function(path, n_rows = 5) {
         # sheet). We re-classify column types ourselves via data_col_type(), so
         # readxl's guess is not relied upon.
         # .name_repair = "unique_quiet": readxl still renames blank/duplicate
-        # headers (…1, K…3, …) — we handle names ourselves — but without printing
+        # headers (...1, K...3, ...) -- we handle names ourselves -- but without printing
         # the "New names:" message on every such sheet.
         df <- suppressWarnings(as.data.frame(
           readxl::read_excel(path, n_max = nmax, .name_repair = "unique_quiet")))
@@ -1947,7 +2002,7 @@ data_read_head <- function(path, n_rows = 5) {
         df
       },
       ods = , fods = {
-        # OpenDocument spreadsheet — LibreOffice/OpenOffice's native format, and
+        # OpenDocument spreadsheet -- LibreOffice/OpenOffice's native format, and
         # the default for anyone not using Excel. Structurally the same as .xlsx
         # (sheets of rows with a header row), so this mirrors the xlsx branch
         # above step for step; only the reader differs.
@@ -2012,7 +2067,7 @@ data_read_head <- function(path, n_rows = 5) {
         if (is.data.frame(df) && is.finite(n_rows)) utils::head(df, n_rows) else df
       },
       omv = {
-        # A .omv (jamovi) is the JASP counterpart — import_omv() returns the same
+        # A .omv (jamovi) is the JASP counterpart -- import_omv() returns the same
         # labelled data frame, so it is treated exactly like a .jasp / .sav.
         df <- import_omv(path)$data
         if (is.data.frame(df) && is.finite(n_rows)) utils::head(df, n_rows) else df
@@ -2022,8 +2077,8 @@ data_read_head <- function(path, n_rows = 5) {
         if (is.data.frame(obj)) utils::head(obj, n_rows) else NULL
       },
       rda = , rdata = {
-        # An .RData/.rda workspace can hold arbitrary objects — fitted models,
-        # session state — not just data frames. Restoring a model that
+        # An .RData/.rda workspace can hold arbitrary objects -- fitted models,
+        # session state -- not just data frames. Restoring a model that
         # references an uninstalled package (e.g. robustlmm, effects) makes
         # load() print namespace/restore diagnostics at the C level (not
         # suppressible from R) and can crash. We read it in an isolated
@@ -2044,7 +2099,7 @@ data_read_head <- function(path, n_rows = 5) {
 # Read an .RData/.rda workspace in an ISOLATED subprocess and return its first
 # data frame (head of `n_rows`), or NULL. Isolation is essential: restoring
 # model/session objects that reference uninstalled packages prints C-level
-# diagnostics and can crash the process — none of which must reach the caller.
+# diagnostics and can crash the process -- none of which must reach the caller.
 # A NULL return means the workspace holds no reusable tabular data (only models
 # / session objects, or it could not be restored at all); data_check turns that
 # into a sharing recommendation.
@@ -2084,21 +2139,21 @@ rscript_path <- function() {
             if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
 }
 
-# ── Column-type classification (rules only) ──────────────────────────────────
+# -- Column-type classification (rules only) ----------------------------------
 
 # Detect a Likert / rating scale in a numeric column and infer its valid range.
 #
 # A scale is a small set of CONSECUTIVE integers spanning a plausible range
 # (0-based, 1-based, or symmetric bipolar). The column is expected to be
-# CONTAMINATED — the whole reason to detect the scale is to surface the weird
+# CONTAMINATED -- the whole reason to detect the scale is to surface the weird
 # values (a stray 99, a mistyped 33) as being outside the valid range. So the
 # range must be inferred robustly, from the DENSE core of common consecutive
 # levels, not from min()/max() (which one outlier destroys).
 #
 # Method (hybrid "E"): find the dense consecutive core (mode-anchored, bridging
 # small interior gaps, stopping at a rare+gapped level), then anchor the FLOOR
-# to the natural scale start (1, or 0 if a 0 is observed) — reporting that
-# inference — and take the CEILING as the top core level. Everything outside the
+# to the natural scale start (1, or 0 if a 0 is observed) -- reporting that
+# inference -- and take the CEILING as the top core level. Everything outside the
 # accepted [lo, hi] is returned as `suspects` for the out-of-range / miscoded
 # checks to interpret.
 #
@@ -2146,7 +2201,7 @@ rscript_path <- function() {
   # The scale is the run of CONSECUTIVE occupied integer levels around the mode.
   # An ADJACENT occupied level (step 1) is always part of the scale, however
   # rare: a lone 6 next to a 1-5 core means the scale really goes to 6 and that
-  # level was just rarely used — it is NOT a typo. A value beyond a GAP (a 99, a
+  # level was just rarely used -- it is NOT a typo. A value beyond a GAP (a 99, a
   # mistyped 33, an 8 after 1-6) cannot be a quiet extension (there would be a
   # hole), so the core stops and that value becomes a suspect.
   #
@@ -2180,7 +2235,7 @@ rscript_path <- function() {
 
   # Floor anchoring: scales start at 0 or 1. Infer as little as possible, and
   # record what we infer. If the observed floor is 2 or 3, snap down to the
-  # natural start — 0 when a 0 is present anywhere, else 1 — but never below the
+  # natural start -- 0 when a 0 is present anywhere, else 1 -- but never below the
   # data's actual minimum-minus-a-little (we only fill the small gap to 0/1).
   floor_inferred <- integer(0)
   natural_floor <- if (0L %in% u) 0L else 1L
@@ -2208,7 +2263,7 @@ rscript_path <- function() {
       sprintf("; inferred the unobserved floor value%s %s to make it a %d-based scale",
               plural(length(floor_inferred)),
               paste(floor_inferred, collapse = ", "), natural_floor) else ""
-    sprintf("Detected a %d–%d rating scale (levels observed: %s%s).",
+    sprintf("Detected a %d-%d rating scale (levels observed: %s%s).",
             lo, hi, paste(intersect(accepted, u), collapse = ", "), inf)
   }
 
@@ -2229,10 +2284,10 @@ rscript_path <- function() {
 
 #' Classify a single data column by rule
 #'
-#' Rule order (ported from datacheck `classify_col_type_rules()`): all-NA →
-#' empty; ID name pattern → id; 1 unique → constant; 2 unique → binary;
-#' date-parseable → date; long strings → text; numeric → continuous (or
-#' ambiguous integer, flagged for LLM); comma-decimal → continuous variants.
+#' Rule order (ported from datacheck `classify_col_type_rules()`): all-NA ->
+#' empty; ID name pattern -> id; 1 unique -> constant; 2 unique -> binary;
+#' date-parseable -> date; long strings -> text; numeric -> continuous (or
+#' ambiguous integer, flagged for LLM); comma-decimal -> continuous variants.
 #'
 #' @param col_name the column's name (drives the ID-pattern rule)
 #' @param values the column's values (a vector)
@@ -2304,8 +2359,8 @@ data_col_type <- function(col_name, values) {
       return(list(col_type = "continuous", ambiguous = FALSE,
                   numeric_values = values, n_coerced = NA_integer_,
                   is_numeric = FALSE))
-    # ambiguous integer 3–20 unique: rules can't tell ordinal/categorical/
-    # continuous apart. LLM-off → treat as continuous.
+    # ambiguous integer 3-20 unique: rules can't tell ordinal/categorical/
+    # continuous apart. LLM-off -> treat as continuous.
     return(list(col_type = NA_character_, ambiguous = TRUE,
                 numeric_values = values, n_coerced = NA_integer_,
                 is_numeric = TRUE))
@@ -2326,12 +2381,12 @@ data_col_type <- function(col_name, values) {
                 is_numeric = FALSE))
   }
 
-  # remaining character columns: LLM would decide categorical/text/... — off → text
+  # remaining character columns: LLM would decide categorical/text/... -- off -> text
   list(col_type = NA_character_, ambiguous = TRUE, numeric_values = NULL,
        n_coerced = NA_integer_, is_numeric = FALSE)
 }
 
-# ── Column statistics ────────────────────────────────────────────────────────
+# -- Column statistics --------------------------------------------------------
 
 #' Summary statistics for a numeric column
 #'
@@ -2342,6 +2397,28 @@ data_col_type <- function(col_name, values) {
 #' @export
 #' @keywords internal
 data_col_stats <- function(x_for_stats, x_raw) {
+  # A column is not always a vector. `jsonlite` turns a nested API response into
+  # a data frame whose columns are THEMSELVES data frames (or matrices, or
+  # lists) -- common in .RData/.rds files holding a saved API result. For those,
+  # is.na() returns a MATRIX rather than a vector, so `x_raw[!is.na(x_raw)]`
+  # flattens to one element per cell and n_unique below becomes one number per
+  # cell instead of one number. data.frame() then recycles that into as many
+  # rows as there were cells, and data_check's do.call(rbind, ...) over the
+  # columns fails with "length of 'dimnames' [2] not equal to array extent".
+  #
+  # There are no summary statistics for such a column anyway, so report it as
+  # unsummarisable: one row, counts of the values it holds, statistics NA. The
+  # column is still listed and still classified; only its statistics are blank.
+  if (!is.null(dim(x_raw)) || (!is.atomic(x_raw) && !is.null(x_raw))) {
+    n_val <- NROW(x_raw)
+    return(data.frame(
+      n = n_val, n_missing = 0L, n_unique = NA_integer_,
+      mean = NA_real_, sd = NA_real_, se = NA_real_, median = NA_real_,
+      min = NA_real_, max = NA_real_, range = NA_real_, p25 = NA_real_,
+      p75 = NA_real_, iqr = NA_real_, skewness = NA_real_, kurtosis = NA_real_
+    ))
+  }
+
   n_unique_val <- length(unique(x_raw[!is.na(x_raw)]))
   empty_stats <- function(n, n_miss) data.frame(
     n = n, n_missing = n_miss, n_unique = n_unique_val,
@@ -2357,7 +2434,7 @@ data_col_stats <- function(x_for_stats, x_raw) {
 
   # x_for_stats may hold non-numeric text (e.g. a coding sheet's long free-text
   # column pushed through here): as.numeric() would emit "NAs introduced by
-  # coercion" — surfaced as `In FUN(X[[i]], ...)` because this runs inside
+  # coercion" -- surfaced as `In FUN(X[[i]], ...)` because this runs inside
   # data_check's per-column lapply. The NAs are expected and discarded on the
   # next line, so the warning is pure noise; suppress it, matching every other
   # coercion of raw column values in this file.
@@ -2384,7 +2461,7 @@ data_col_stats <- function(x_for_stats, x_raw) {
   )
 }
 
-# ── Codebook parsing + column matching (used by codebook_check) ───────────────
+# -- Codebook parsing + column matching (used by codebook_check) ---------------
 #
 # Ported from datacheck's 2_codebook_label.R / helper.R. The rules-only path
 # (structured CSV/Excel, haven embedded labels, rich-text extraction, exact and
@@ -2392,7 +2469,7 @@ data_col_stats <- function(x_for_stats, x_raw) {
 # unstructured codebooks, fuzzy column matching, semantic label merging) are
 # gated behind `llm_use(TRUE)` in codebook_check.R.
 
-# Normalise a variable/column name for matching: lowercase, underscores → space,
+# Normalise a variable/column name for matching: lowercase, underscores -> space,
 # collapse whitespace, strip leading/trailing dots.
 normalize_varname <- function(x) {
   x <- tolower(x)
@@ -2428,7 +2505,7 @@ normalize_varname <- function(x) {
 # responses" and "Participant response" normalise to the same string.
 normalize_label <- function(x) {
   x <- tolower(x)
-  x <- gsub("'s|’s|‘s", "", x, perl = TRUE)
+  x <- gsub("'s|\u2019s|\u2018s", "", x, perl = TRUE)
   x <- gsub("[^a-z0-9 ]", " ", x)
   x <- gsub("\\s+", " ", trimws(x))
   vapply(x, .stem_words, character(1), USE.NAMES = FALSE)
@@ -2441,7 +2518,7 @@ normalize_label <- function(x) {
 # separator-insensitive, so "variable_name", "variable name", "variable-name"
 # and "Variable.Name" are one case rather than four alternations. Harvesting the
 # real headers from the corpus showed 968 distinct spellings across 2280 header
-# cells, so enumerating literal forms does not scale — normalise, then match a
+# cells, so enumerating literal forms does not scale -- normalise, then match a
 # compact word set.
 .normalize_header <- function(x) {
   x <- tolower(trimws(as.character(x)))
@@ -2450,7 +2527,7 @@ normalize_label <- function(x) {
 }
 
 # Header words naming the VARIABLE column and the LABEL column. Both are matched
-# against .normalize_header() output, and both tolerate an optional plural — real
+# against .normalize_header() output, and both tolerate an optional plural -- real
 # codebooks write "Variable Names" (the whole Project Implicit IAT corpus) as
 # often as "Variable Name".
 #
@@ -2465,7 +2542,7 @@ normalize_label <- function(x) {
   "field|fields|column|columns|name|names|code|codes|id)$",
   "|^(variable|var|item|field|column|col) (name|names)$")
 # "question" and "questions" are label words in their own right (a codebook whose
-# only text column is the item's question), not just qualifiers — the original
+# only text column is the item's question), not just qualifiers -- the original
 # list carried bare "question", and dropping it silently pushed such files onto
 # the positional fallback.
 .cb_lab_header_re <- paste0(
@@ -2510,7 +2587,7 @@ normalize_label <- function(x) {
 # from the column prefix/abbreviation (unnamed block -> "response"). Capped at a
 # word boundary so the file name stays reasonable; the full name is kept in
 # scale_info$name. Provenance is NOT encoded in the slug (it lives in
-# metacheck$scale_source) — the slug is just a stable, readable identifier.
+# metacheck$scale_source) -- the slug is just a stable, readable identifier.
 .osd_slug <- function(name = NULL, prefix = NULL, max_chars = 60L) {
   x <- if (!is.null(name) && !is.na(name) && nzchar(name)) name else prefix %||% ""
   x <- tolower(gsub("[^A-Za-z0-9]+", "_", x))
@@ -2528,7 +2605,7 @@ normalize_label <- function(x) {
 # A code valid under the OpenScales OSD spec: uppercase letters, digits, and
 # hyphens only. Capped at 40 characters (at a hyphen boundary where possible):
 # an over-long "code" comes from a self-generated LLM label that is really a
-# sentence, not an instrument name — the full text is kept in scale_info$name.
+# sentence, not an instrument name -- the full text is kept in scale_info$name.
 .osd_safe_code <- function(x, max_chars = 40L) {
   x <- toupper(gsub("[^A-Za-z0-9]+", "-", x %||% ""))
   x <- gsub("^-+|-+$", "", x)
@@ -2546,13 +2623,13 @@ normalize_label <- function(x) {
 # short, readable slug used as BOTH scale_info$code and the on-disk file name
 # (scales/<code>.osd): the scale NAME when it has one (PANAS ->
 # "positive_and_negative_affect_schedule"), else the column prefix (unnamed block
-# -> "response"). Provenance is NOT encoded in the slug — it is carried in the
+# -> "response"). Provenance is NOT encoded in the slug -- it is carried in the
 # returned `source` (dictionary / manuscript / self_generated / unnamed_block),
 # which the .osd's metacheck block and the README record. Three levels of trust:
-#   * dictionary     — matched a known instrument (OpenScales / curated).
-#   * manuscript     — a real instrument named in the paper.
-#   * self_generated — an LLM-inferred construct label, NOT a named instrument.
-#   * unnamed_block  — a coherent same-prefix rating block, unnamed.
+#   * dictionary     -- matched a known instrument (OpenScales / curated).
+#   * manuscript     -- a real instrument named in the paper.
+#   * self_generated -- an LLM-inferred construct label, NOT a named instrument.
+#   * unnamed_block  -- a coherent same-prefix rating block, unnamed.
 # `prefix` is the column abbreviation, used when the scale has no name. Shared by
 # codebook_check (writing .osd files) and psychds-convert (cross-referencing
 # variables to a scale code), so it lives here rather than in the module. Returns
@@ -2565,7 +2642,7 @@ normalize_label <- function(x) {
     if (length(i)) in_dict <- TRUE
   }
   # Slug from the name when present, else the column prefix. Same value regardless
-  # of provenance — the slug is a readable identifier, not a trust marker.
+  # of provenance -- the slug is a readable identifier, not a trust marker.
   code <- .osd_slug(name = scale, prefix = prefix)
   # The UPSTREAM OpenScales code, when this scale has a reference definition.
   # Kept separate from `code`: the slug names the file and stays readable and
@@ -2588,7 +2665,7 @@ normalize_label <- function(x) {
   }
 }
 
-# ── Reference instrument lookup (OpenScales item-level data) ──────────────────
+# -- Reference instrument lookup (OpenScales item-level data) ------------------
 # `scales` identifies an instrument by NAME; `scale_meta` / `scale_items` /
 # `scale_scoring` (see data-raw/scale_items.R) describe what that instrument
 # actually contains. These helpers join the two, so a scale detected in shared
@@ -2670,7 +2747,7 @@ normalize_label <- function(x) {
 # DELIBERATELY exact-on-normalised-text, not fuzzy: a wrong item->item link
 # would attach a wrong reverse flag, which is worse than no flag. Columns that
 # do not match a reference item come back with reverse = NA (unknown), never
-# FALSE — absence of a match is not evidence the item is forward-keyed.
+# FALSE -- absence of a match is not evidence the item is forward-keyed.
 .scale_match_items <- function(wording, reference) {
   if (is.null(reference) || is.null(wording) || !length(wording)) return(NULL)
   wording <- wording[!is.na(wording) & nzchar(wording)]
@@ -2692,9 +2769,9 @@ normalize_label <- function(x) {
   )
 }
 
-# ── Value labels / code lists + missing-value scheme (DDI ValueDomain) ─────────
-# A categorical variable's meaning lives in its code list — the mapping
-# 1="Strongly disagree" ... 5="Strongly agree" — and in which codes denote
+# -- Value labels / code lists + missing-value scheme (DDI ValueDomain) ---------
+# A categorical variable's meaning lives in its code list -- the mapping
+# 1="Strongly disagree" ... 5="Strongly agree" -- and in which codes denote
 # missingness (-99="refused"). DDI models these as CodeList / ValueDomain and
 # MissingValues. We serialise a code list as a compact JSON object keyed by code
 # ("{\"1\":\"Male\",\"2\":\"Female\"}") so it survives as a single data.frame
@@ -2741,7 +2818,7 @@ normalize_label <- function(x) {
 # ordinary words and text (e.g. "Argenti-NA", "Native Americans", "Other or
 # Unknown" as a real ethnicity category), misclassifying whole country lists
 # and Likert-scale anchor sets as missing-value schemes. The bare "unknown"
-# alternative was dropped entirely — a value literally labelled "Unknown" is
+# alternative was dropped entirely -- a value literally labelled "Unknown" is
 # usually a genuine "respondent didn't know their own [ethnicity/status/etc.]"
 # response option, not evidence the field is unanswered, and no amount of
 # anchoring makes that single word unambiguous. Shared by .haven_value_labels()
@@ -2756,9 +2833,9 @@ normalize_label <- function(x) {
 # response option. Requiring the token to be the WHOLE label (bare "N/A",
 # "n/a", "N/A.") or the LAST word after - or : ("ID12345 - N/A") keeps genuine
 # abbreviation uses while excluding "na" embedded mid-sentence in running
-# prose. "N/A (some reason)" is deliberately NOT matched — a parenthetical
+# prose. "N/A (some reason)" is deliberately NOT matched -- a parenthetical
 # reason after N/A means the researcher gave that code a substantive meaning
-# ("N/A — I live alone"), not a bare missingness sentinel, so it is not
+# ("N/A -- I live alone"), not a bare missingness sentinel, so it is not
 # accepted as a valid missing-value declaration here.
 .missing_na_re <- paste0(
   "(?i)^\\s*n/?a\\.?\\s*$|",
@@ -2784,13 +2861,13 @@ normalize_label <- function(x) {
 )
 
 # Does a set of value-label TEXTS look like free-text survey responses rather
-# than a controlled category vocabulary? A genuine codebook's category names —
+# than a controlled category vocabulary? A genuine codebook's category names --
 # even a long one, like a 239-country pick-list or a detailed occupation
-# taxonomy — stay short, proper-noun-like phrases. JASP/jamovi auto-
+# taxonomy -- stay short, proper-noun-like phrases. JASP/jamovi auto-
 # factorizes ANY nominal-text column (assigning one integer level per UNIQUE
 # observed value, then storing that level->string map exactly like a haven
 # `attr(,"labels")`), so an open-ended comments field arrives looking like a
-# codebook whose "categories" are full sentences, participant IDs, and typos —
+# codebook whose "categories" are full sentences, participant IDs, and typos --
 # label count alone can't distinguish the two cases (a real country list can
 # be far larger than a small free-text field's unique-response count), but
 # label LENGTH can: category names are short, free-text responses run long.
@@ -2815,7 +2892,7 @@ normalize_label <- function(x) {
 
   # A JASP/omv free-text column factorized to one level per unique value: skip
   # entirely rather than encode it as a bogus "codebook" (see
-  # .looks_like_freetext_labels() above) — checked on the LABEL TEXT, not the
+  # .looks_like_freetext_labels() above) -- checked on the LABEL TEXT, not the
   # label COUNT, since a real codebook (a country pick-list) can legitimately
   # have far more entries than a small free-text field has unique responses.
   if (!is.null(labs) && length(labs) > 0 && .looks_like_freetext_labels(names(labs)))
@@ -2825,7 +2902,7 @@ normalize_label <- function(x) {
     codes  <- unname(labs)
     reasons <- names(labs)
     vl <- .encode_value_labels(codes, reasons)
-    # Labels that read as missingness → sentinel missing codes.
+    # Labels that read as missingness -> sentinel missing codes.
     is_miss <- grepl(.missing_label_re, reasons, perl = TRUE) |
                grepl(.missing_na_re, reasons, perl = TRUE)
     if (any(is_miss)) {
@@ -2856,9 +2933,9 @@ normalize_label <- function(x) {
 .vl_is_numeric <- function(x) grepl("^-?\\d+(\\.\\d+)?$", trimws(x))
 
 # Split a codebook "values" cell into raw left/right halves of each entry.
-# Direction is NOT decided here — see .parse_value_label_text().
+# Direction is NOT decided here -- see .parse_value_label_text().
 .vl_split_pairs <- function(s) {
-  # Scale ANCHORS written as "1 (very negative) to 7 (very positive)" — by far
+  # Scale ANCHORS written as "1 (very negative) to 7 (very positive)" -- by far
   # the most common way authors label only the two ends of a rating scale, and
   # the joiner is a word ("to") or a dash rather than a list separator, so the
   # generic entry-splitting below cannot reach it. Handled first, and only when
@@ -2877,7 +2954,7 @@ normalize_label <- function(x) {
   }
 
   # Entries separate on ; | newline. A comma also separates, but only when the
-  # next entry starts with a code — checked for BOTH directions, since a comma
+  # next entry starts with a code -- checked for BOTH directions, since a comma
   # inside a label ("Counselors, Social workers=21") must not split.
   parts <- unlist(strsplit(
     s,
@@ -2891,13 +2968,13 @@ normalize_label <- function(x) {
   ok <- lengths(m) == 3
   if (!any(ok)) {
     # No ":"/"=" anywhere. Authors also write "1-Male", "1. Male", "1) Male"
-    # and "1 Male" — the same convention .extract_codebook_positional() already
+    # and "1 Male" -- the same convention .extract_codebook_positional() already
     # accepts for anchor columns. Only a NUMERIC code is allowed here: with text
     # on both sides ("High vs. Low") there is no separator to mark the split, so
     # such a string is prose, not a code list. A bare "1,2,3" has no labels at
     # all and is correctly left unparsed by the >=2-pairs rule below.
     m <- regmatches(parts, regexec(
-      "^\\s*(-?\\d+(?:\\.\\d+)?)\\s*(?:[-–—).]\\s*|\\s+)([A-Za-z].*?)\\s*$",
+      "^\\s*(-?\\d+(?:\\.\\d+)?)\\s*(?:[-\u2013\u2014).]\\s*|\\s+)([A-Za-z].*?)\\s*$",
       parts, perl = TRUE))
     ok <- lengths(m) == 3
     if (!any(ok)) return(NULL)
@@ -2916,7 +2993,7 @@ normalize_label <- function(x) {
 # "1=Male" with "Female=2" would otherwise produce a scrambled mapping. The
 # numeric side is the code whenever exactly one side is consistently numeric.
 #
-# When NEITHER side is numeric the string alone is ambiguous — "M = Male" and
+# When NEITHER side is numeric the string alone is ambiguous -- "M = Male" and
 # "Male = M" are structurally identical. `observed` (a sample of the actual data
 # column's values, e.g. data_check's `sample_values`) resolves it: whichever side
 # matches what is really stored in the column is the code. Without `observed`
@@ -2988,7 +3065,7 @@ normalize_label <- function(x) {
   # value labels whose text reads as missingness. Accepting it as a value-label
   # header means that in a codebook with no values column it would be chosen as
   # THE code list, so "-99 = Refused" would be recorded as an ordinary value
-  # label rather than a missing code — a silent semantic error.
+  # label rather than a missing code -- a silent semantic error.
   #
   # "response options (see second sheet)" is likewise NOT accepted: the codes
   # live elsewhere, so the cell holds a cross-reference rather than a mapping.
@@ -3015,7 +3092,7 @@ normalize_label <- function(x) {
 }
 # Find a "coding instructions" column: how this variable's values came about.
 #
-# DDI models this two ways — `codingInstructions` (with `typeOfCodingInstruction`,
+# DDI models this two ways -- `codingInstructions` (with `typeOfCodingInstruction`,
 # an OPEN conceptType with no fixed vocabulary) for processing rules, and
 # `var/derivation` (`drvdesc` prose + `drvcmd` syntax) for a variable computed
 # from others. Crystal Lewis's template calls the column `transformations`
@@ -3023,7 +3100,7 @@ normalize_label <- function(x) {
 # "Transformations" as a REQUIRED data-dictionary field.
 #
 # This is the single most useful optional field because it answers "where did
-# this number come from?" — covering scale scores ("mean of items 1-10"),
+# this number come from?" -- covering scale scores ("mean of items 1-10"),
 # reverse scoring ("6 - bds_3"), exclusions, and transformations in one place.
 # It is also the only home DDI offers for REVERSE KEYING: no standard checked
 # (DDI-Codebook 2.6, DDI Lifecycle, Psych-DS) has a reverse/polarity element,
@@ -3042,7 +3119,7 @@ normalize_label <- function(x) {
 # Extract variable-label pairs from a structured data.frame (CSV/Excel rows).
 # Returns NULL when no matching header columns are found.
 # Does a character vector look like variable NAMES (short, no spaces, mostly
-# alnum/underscore — neo1, BFI_3, q07)? Used by the positional layout detector.
+# alnum/underscore -- neo1, BFI_3, q07)? Used by the positional layout detector.
 .looks_like_varnames <- function(x) {
   x <- trimws(as.character(x)); x <- x[nzchar(x) & !is.na(x)]
   if (length(x) < 3) return(FALSE)
@@ -3119,8 +3196,8 @@ normalize_label <- function(x) {
 }
 
 # Parse a GitHub-flavoured markdown table into a codebook. A README that carries
-# its data dictionary as a pipe table is a real convention — TidyTuesday ships
-# every dataset this way ("|variable |class |description |") — and the table is
+# its data dictionary as a pipe table is a real convention -- TidyTuesday ships
+# every dataset this way ("|variable |class |description |") -- and the table is
 # fully structured, so it should never reach the LLM. Scans for a separator rule
 # ("|---|---|") whose preceding row is a codebook header, then reads rows until
 # the table ends. Returns a codebook-vars data.frame or NULL.
@@ -3264,8 +3341,8 @@ normalize_label <- function(x) {
 # Parse a multi-sheet spreadsheet codebook, format-agnostically.
 #
 # Excel (.xlsx/.xls, via readxl) and OpenDocument (.ods, via readODS) codebooks
-# are structurally identical — several sheets, a header row, one variable per
-# row — so all of the logic lives here and only the READER differs. `sheets()`
+# are structurally identical -- several sheets, a header row, one variable per
+# row -- so all of the logic lives here and only the READER differs. `sheets()`
 # returns sheet names; `read(sheet, header)` returns one sheet as a data.frame,
 # with `header = FALSE` giving the un-headered grid.
 #
@@ -3317,11 +3394,11 @@ normalize_label <- function(x) {
   # stripped on every repeat after the first (seen on a corrupted OSF
   # README_VariableLegend.csv: ~65 real rows followed by ~1,000,000 blank rows,
   # among which the same ~65 names recur every ~16,384 rows with an empty
-  # label) — inflating a real handful of variables into thousands of rows that
+  # label) -- inflating a real handful of variables into thousands of rows that
   # add nothing, all the way through matching and any LLM tier downstream.
   # Keeps the FIRST occurrence of every name regardless of its label (so a
-  # codebook that is genuinely sparse — one row per variable, sometimes with no
-  # description at all — is untouched), and keeps any row whose label is
+  # codebook that is genuinely sparse -- one row per variable, sometimes with no
+  # description at all -- is untouched), and keeps any row whose label is
   # non-blank even when the name repeats (so real per-group restatements, e.g.
   # the same variable documented again under a second study heading with its
   # own real description, survive).
@@ -3388,7 +3465,7 @@ normalize_label <- function(x) {
 # Extract embedded variable labels from a haven-read data.frame (SPSS/Stata/SAS).
 # Returns NULL if no labelled columns found. Caller adds parse_method = "haven".
 # `group` scopes these labels to the ONE study/file they were embedded in
-# (data_check's structure_df$group for this file) — passing NA_character_
+# (data_check's structure_df$group for this file) -- passing NA_character_
 # (the default) leaves them unscoped, which match_column_labels() then applies
 # to every column of that name PAPER-WIDE regardless of source file. That is
 # correct when a genuinely paper-wide label truly applies everywhere, but it
@@ -3422,7 +3499,7 @@ normalize_label <- function(x) {
   )
 }
 
-# Does a line look like a codebook DEFINITION — a short leading identifier, a
+# Does a line look like a codebook DEFINITION -- a short leading identifier, a
 # separator (colon, equals, tab, or a 2+ space column gap), then descriptive
 # text? Used to decide whether a PDF is worth sending to the LLM at all.
 .cb_is_definition_line <- function(x) {
@@ -3436,7 +3513,7 @@ normalize_label <- function(x) {
 # least `min_defs` definition-looking lines on some page. Rationale: an LLM call
 # on a PDF is the most expensive route we have, and a document whose opening
 # pages hold no variable definitions is overwhelmingly a narrative coding manual,
-# a survey printout, or a 375-page institutional report — not a codebook we can
+# a survey printout, or a 375-page institutional report -- not a codebook we can
 # use. Refusing those outright is deliberate policy, not an approximation: we do
 # not send a huge PDF anywhere on the chance something useful appears late.
 #
@@ -3458,13 +3535,13 @@ normalize_label <- function(x) {
   # Hard page ceiling, checked BEFORE the content probe. A book-length PDF is
   # never worth sending: the two 375-page WVS reports and the 232-page GIPO
   # codebooks in the corpus would each cost 50-200 LLM calls. The probe alone
-  # cannot catch them — the WVS report's page 2 is a centred TITLE page whose
+  # cannot catch them -- the WVS report's page 2 is a centred TITLE page whose
   # layout incidentally matches the definition pattern 6 times, which is over
   # the threshold, so it passed the content gate while being exactly the file
   # we least want to send.
   if (length(pages) > max_pages) return(character(0))
 
-  # pdf_text() is a single LOCAL read — the whole gate costs no API calls.
+  # pdf_text() is a single LOCAL read -- the whole gate costs no API calls.
   probe <- utils::head(pages, probe_pages)
   n_def <- vapply(probe, function(t) {
     ln <- unlist(strsplit(t, "\n"))
@@ -3544,7 +3621,7 @@ normalize_label <- function(x) {
 #'   `structure_df$group` for this file), scoping the definitions it yields to
 #'   that ONE study. `NA_character_` (the default) leaves them unscoped, which
 #'   `match_column_labels()` then applies to every same-named column
-#'   PAPER-WIDE — correct for a genuinely paper-wide codebook, but it also lets
+#'   PAPER-WIDE -- correct for a genuinely paper-wide codebook, but it also lets
 #'   one study's codebook (e.g. a `condition` variable coded 1-4 in Study A)
 #'   leak onto an unrelated same-named column in Study B (coded 1-6). Callers
 #'   that know the file's group should pass it. Mirrors `.extract_haven_labels`'s
@@ -3589,11 +3666,11 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
         sep <- if (ext == "tsv") "\t" else .sniff_delimiter(path)
         # A UTF-8 BOM (EF BB BF) must be declared, not repaired downstream. It is
         # valid UTF-8, so the invalid-encoding check below does NOT fire on it,
-        # but the three bytes stay glued to the first header cell — turning
-        # "Name" into "﻿Name", which no header pattern matches. Reading with
+        # but the three bytes stay glued to the first header cell -- turning
+        # "Name" into "Name", which no header pattern matches. Reading with
         # "UTF-8-BOM" strips it. (Before this, the BOM bytes made iconv() report
         # invalid input, triggering the latin1 re-read below, which re-encoded
-        # them as the visible "ï»¿" and broke header detection outright: files
+        # them as the visible "i>?" and broke header detection outright: files
         # with an identical header parsed or failed purely on BOM presence.)
         enc <- {
           b <- tryCatch(readBin(path, "raw", 3L), error = function(e) raw(0))
@@ -3654,7 +3731,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
         }
       },
       ods = , fods = {
-        # OpenDocument spreadsheet — LibreOffice/OpenOffice's native format and
+        # OpenDocument spreadsheet -- LibreOffice/OpenOffice's native format and
         # the default for anyone not using Excel. Same structure as .xlsx, so it
         # shares .extract_spreadsheet_codebook(); only the reader differs.
         # readODS is optional: without it the file falls through to the LLM tier.
@@ -3715,7 +3792,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
       },
       omv = {
         # A .omv (jamovi) carries its own variable/value labels too, exactly like
-        # a .jasp — import_omv() attaches the same haven-style attributes, so the
+        # a .jasp -- import_omv() attaches the same haven-style attributes, so the
         # shared .extract_haven_labels() extractor applies with no special-casing.
         df <- tryCatch(import_omv(path)$data, error = function(e) NULL)
         if (is.null(df)) NULL else {
@@ -3751,7 +3828,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
   if (is.character(result) && !is.data.frame(result)) return(result)
 
   if (!is.null(result) && is.data.frame(result) && nrow(result) > 0) {
-    # A parser that already stamped its own method (e.g. parse_qsf → "qsf")
+    # A parser that already stamped its own method (e.g. parse_qsf -> "qsf")
     # keeps it; otherwise haven files are "haven" and the rest "structured".
     if (!"parse_method" %in% names(result) ||
         all(is.na(result$parse_method)))
@@ -3759,7 +3836,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
                              else "structured"
     attr(result, ".is_haven") <- NULL
     # Scope every definition from this file to the caller-supplied study group
-    # (see the `group` parameter doc above) — every extractor above sets its own
+    # (see the `group` parameter doc above) -- every extractor above sets its own
     # `group` column to NA_character_ internally, so stamping it here in ONE
     # place, after dispatch, is simpler than threading `group` through each of
     # them individually.
@@ -3772,7 +3849,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
   tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
 }
 
-# ── Qualtrics survey-definition (.qsf) parsing ────────────────────────────────
+# -- Qualtrics survey-definition (.qsf) parsing --------------------------------
 # A .qsf is JSON: one object with SurveyEntry (survey metadata) and
 # SurveyElements (an array of elements). The question elements have
 # Element == "SQ"; their Payload carries the wording and response options. The
@@ -3781,9 +3858,9 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
 # (an explicit ChoiceDataExportTags overrides the suffix). We reconstruct those
 # names so the labels join data_check's columns, but the reconstruction is not
 # guaranteed to match every export version's headers (Qualtrics has inserted an
-# "x" into some matrix column names — see ropensci/qualtRics#144); a row that
+# "x" into some matrix column names -- see ropensci/qualtRics#144); a row that
 # finds no matching data column simply contributes no label. Everything here is
-# deterministic — no LLM, no network, jsonlite only.
+# deterministic -- no LLM, no network, jsonlite only.
 
 # Strip HTML tags / entities from Qualtrics display text to plain prose.
 .qsf_strip_html <- function(x) {
@@ -3823,9 +3900,9 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
 # the question DataExportTag ("SV", "POWER.PP1"); `choice_tag` is that choice's
 # ChoiceDataExportTag when present (else NA); `code` is the raw choice key.
 # Qualtrics stores the choice tag in one of two shapes:
-#   (a) the FULL column name Qualtrics exports for this choice — which may or may
+#   (a) the FULL column name Qualtrics exports for this choice -- which may or may
 #       not share the question's prefix. Examples: "SV_1" (shares stem "SV"),
-#       "POWER.PP1_1" (shares "POWER.PP1"), and — critically — "STATUS.PP1_8"
+#       "POWER.PP1_1" (shares "POWER.PP1"), and -- critically -- "STATUS.PP1_8"
 #       for a question tagged "POWER.PP1" (a matrix whose choice tags carry a
 #       DIFFERENT alpha stem than the question). All three ARE the CSV column.
 #   (b) a bare per-choice suffix: a pure number ("1", "12") or a short reserved
@@ -3858,7 +3935,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
 #'
 #' Reads the survey object's questions and returns one row per data column the
 #' export would produce, carrying the item wording and the coded response
-#' options — the same shape as the other `parse_codebook()` back-ends, so the
+#' options -- the same shape as the other `parse_codebook()` back-ends, so the
 #' rows join the codebook / scale pipeline unchanged. The `group` column holds
 #' each question's `DataExportTag` stem, a high-confidence scale-block signal.
 #'
@@ -3893,7 +3970,7 @@ parse_qsf <- function(path) {
   # `label` is the concise per-column wording (the matrix item, the choice), used
   # for matching and OSD translations; `question` is the full question stem
   # (shared across a matrix's items). For a simple question the two coincide.
-  # `scale_group` is the DataExportTag stem — the authoritative scale-block
+  # `scale_group` is the DataExportTag stem -- the authoritative scale-block
   # signal. It is deliberately NOT the `group` column: `group` means the
   # experiment/study scope to match_column_labels, and the stem is not that.
   add <- function(var, label, scale_group, value_labels = NA_character_,
@@ -4047,7 +4124,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   norm_col <- normalize_varname(columns_df$column_name)
 
   # Expand range notation (e.g. "V1-V10") into individual variable rows.
-  range_pat  <- "^([A-Za-z]*)\\s*(\\d+)\\s*[-–]\\s*(\\d+)$"
+  range_pat  <- "^([A-Za-z]*)\\s*(\\d+)\\s*[-\u2013]\\s*(\\d+)$"
   range_rows <- grep(range_pat, codebook_vars_df$codebook_variable, perl = TRUE)
   if (length(range_rows) > 0) {
     expanded <- Filter(Negate(is.null), lapply(range_rows, function(i) {
@@ -4150,7 +4227,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     sg_out[i]   <- first_present(applicable, "scale_group")
   }
 
-  # ── Deterministic .qsf QUESTION-TAG fallback ────────────────────────────────
+  # -- Deterministic .qsf QUESTION-TAG fallback --------------------------------
   # A Qualtrics matrix / text-entry question exports one column per cell, and the
   # export cell naming does not always match the .qsf's reconstructed item name
   # (a text-entry matrix Q1914 exports Q1914_1_1, Q1914_2_1, ... while the .qsf
@@ -4159,13 +4236,13 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   # column belongs to: its `scale_group` is the question's DataExportTag, and the
   # column name begins with that tag. So we match on the question TAG (a prefix
   # relationship), not the exact item name, and assign the QUESTION-level label
-  # and value labels. This never guesses a specific wrong item — it claims only
+  # and value labels. This never guesses a specific wrong item -- it claims only
   # the question, which the shared tag makes certain. Uses the LONGEST matching
   # .qsf tag so a column is attributed to the most specific question. Runs only on
   # still-unlabelled columns and only against .qsf-sourced scale_group tags.
   #
   # EXCEPT: Qualtrics also auto-exports per-question PARADATA columns under the
-  # same tag prefix — <tag>_First.Click / _Last.Click / _Page.Submit /
+  # same tag prefix -- <tag>_First.Click / _Last.Click / _Page.Submit /
   # _Click.Count record response TIMING in seconds, not an answer. They are not
   # "the question" in any sense the label/value_labels could correctly describe
   # (claiming the question's response codes, e.g. a 1-4 Likert range, onto a
@@ -4230,7 +4307,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   )
 }
 
-# ── Data-quality checks (native, used by data_validate) ───────────────────────
+# -- Data-quality checks (native, used by data_validate) -----------------------
 #
 # Clean-room reimplementations of common data-screening checks. Each returns a
 # list(problem = <logical>, message = <chr>, values = <flagged values or NULL>),
@@ -4240,7 +4317,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 
 # Conventional numeric codes that disguise missingness in shared data. These are
 # only ever flagged when they sit OUTSIDE the column's real data (a scale's valid
-# range, or far from the bulk) — the list nominates candidates; the "detached
+# range, or far from the bulk) -- the list nominates candidates; the "detached
 # from the data" test in data_check_scale_values decides. So codes that are
 # plausible real values (97 in a 0-100 score, 99 in an age) do not fire unless
 # they are genuinely out of place.
@@ -4250,7 +4327,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 #     (memisc 97/98/99; SPSS defaults; many social-science surveys)
 #   - repeated-digit 8- and 7-families (Statistics Canada, WVS: 8=DK, 7=skip)
 #   - extreme repeated placeholders at wide widths
-# Deliberately EXCLUDED: single digits 7/8/9 (valid Likert points — the scale
+# Deliberately EXCLUDED: single digits 7/8/9 (valid Likert points -- the scale
 # detector catches an out-of-range 9 in context), -1 (very often a legitimate
 # score, e.g. a difference score or a bipolar scale point), and single-digit
 # negatives -7/-8/-9 (legitimate values on bipolar -k..k rating scales).
@@ -4282,7 +4359,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
   av <- abs(v)
   # The digit-manipulation candidates below (each single digit; drop the
   # leading/trailing digit) only make sense for an INTEGER-valued typo (a `33`
-  # keyed instead of `3`) — restricted to whole-number v, since as.character()
+  # keyed instead of `3`) -- restricted to whole-number v, since as.character()
   # on a non-integer includes the literal decimal point ("3.5" -> "3", ".",
   # "5"), and as.integer(".") throws "NAs introduced by coercion". Confirmed as
   # a real, reachable warning: data_check_scale_values() passes every
@@ -4300,7 +4377,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
     }
   }
   # sign flip (a -3 typed on a 1..7 scale, or a 3 that should be -3 on a bipolar)
-  # — still meaningful for a non-integer v, so not gated above.
+  # -- still meaningful for a non-integer v, so not gated above.
   cand <- c(cand, -v)
   cand <- unique(cand[!is.na(cand)])
   inside <- cand[cand >= lo & cand <= hi]
@@ -4316,22 +4393,22 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 #' both flags it and, for each value, offers the most likely explanation:
 #' \itemize{
 #'   \item a **missing-data code** left as a number (a `-99` / `999` in the
-#'     sentinel list, or a codebook-**declared** missing code) — recode to `NA`;
+#'     sentinel list, or a codebook-**declared** missing code) -- recode to `NA`;
 #'   \item a **keying typo** of an in-scale value (a `33` for `3`, a `55` for
-#'     `5`) — the probable intended value is named;
+#'     `5`) -- the probable intended value is named;
 #'   \item otherwise an **unexplained** out-of-range value to review.
 #' }
 #' The valid range is ground truth when `valid_values` / `valid_range` are
 #' supplied (e.g. from a codebook), otherwise inferred by `.detect_likert_scale`.
 #' A column that is not a rating scale (continuous, many-level, non-integer, too
-#' few rows) has no fixed range and is not flagged here — unbounded variables
+#' few rows) has no fixed range and is not flagged here -- unbounded variables
 #' (age, reaction time) have no principled "valid range" to violate.
 #'
 #' Ground truth is trusted only when it is actually PLAUSIBLE for this column's
 #' data: at least `min_ground_truth_coverage` of the non-missing values must
 #' already fall inside the declared range. A codebook/`.qsf` variable can be
 #' mismatched to the wrong data column (a cross-study name collision, or a
-#' Qualtrics timing/paradata column inheriting its question's response codes —
+#' Qualtrics timing/paradata column inheriting its question's response codes --
 #' see the `.qsf` question-tag fallback in `match_column_labels()`); when that
 #' happens the declared range explains almost none of the data, and trusting it
 #' anyway turns nearly every real value into a false "out of range" flag. When
@@ -4365,7 +4442,7 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
   xv <- x[!is.na(x) & !is.nan(x) & is.finite(x)]
   if (length(xv) == 0) return(none)
 
-  # ── Establish the valid range: ground truth, else inferred scale ────────────
+  # -- Establish the valid range: ground truth, else inferred scale ------------
   if (!is.null(valid_values) && length(valid_values)) {
     vv <- sort(unique(as.numeric(valid_values)))
     vv <- vv[is.finite(vv)]
@@ -4375,7 +4452,7 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
     # scale (e.g., 1/9 for a 1-9 semantic differential, or 1/5/9 when a middle
     # point is also labeled) rather than every level. If interior integer
     # values not in `vv` are actually present in the data, interpret that as a
-    # contiguous scale range rather than a literal discrete code set — otherwise
+    # contiguous scale range rather than a literal discrete code set -- otherwise
     # every unlisted interior value (2, 3, 4, 6, 7, 8) gets flagged as "outside"
     # a range whose own reported bounds (lo/hi = min/max(vv)) contain it.
     vv_int <- all(vv == round(vv))
@@ -4409,7 +4486,7 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
     lo <- hi <- valid_set <- NULL   # signals "run inference below"
   }
 
-  # ── Ground truth must actually explain most of the data ─────────────────────
+  # -- Ground truth must actually explain most of the data ---------------------
   # A declared range that covers only a small slice of the column is very likely
   # attached to the WRONG column (see the function doc), not evidence that most
   # of the data is broken. Discard it and fall back to inference rather than
@@ -4429,7 +4506,7 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
     return(list(problem = FALSE, message = "", values = NULL,
                 lower = lo, upper = hi, classes = character(0)))
 
-  # ── Classify each out-of-scale value ────────────────────────────────────────
+  # -- Classify each out-of-scale value ----------------------------------------
   declared_num <- if (!is.null(declared)) as.numeric(declared) else numeric(0)
   classify <- function(v) {
     if (v %in% declared_num) return("missing")
@@ -4441,7 +4518,7 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
   classes <- vapply(out, classify, character(1))
 
   describe <- function(v, cls) {
-    if (cls == "missing") sprintf("%s (looks like a missing-data code → recode to NA)", v)
+    if (cls == "missing") sprintf("%s (looks like a missing-data code -> recode to NA)", v)
     else if (startsWith(cls, "typo:"))
       sprintf("%s (looks like a typo of %s)", v, sub("^typo:", "", cls))
     else sprintf("%s (outside the scale, cause unclear)", v)
@@ -4449,7 +4526,7 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
   shown_i <- seq_len(min(length(out), n_max))
   parts <- vapply(shown_i, function(i) describe(out[i], classes[i]), character(1))
   msg <- sprintf(
-    "%d value%s outside the %d–%d scale: %s%s",
+    "%d value%s outside the %d-%d scale: %s%s",
     length(out), plural(length(out)), lo, hi,
     paste(parts, collapse = ", "),
     if (length(out) > n_max) ", ..." else "")
@@ -4581,7 +4658,7 @@ data_check_spss_filter <- function(col, x) {
   if (length(v) == 0) return(none)
   n_sel <- sum(v == 1)
   msg <- if (n_sel == length(v)) {
-    "SPSS \"Select Cases\" filter variable: every row is selected (value 1), so the file appears to have been saved after deleting unselected cases — the shared data are a pre-filtered subset of what was collected."
+    "SPSS \"Select Cases\" filter variable: every row is selected (value 1), so the file appears to have been saved after deleting unselected cases -- the shared data are a pre-filtered subset of what was collected."
   } else {
     sprintf("SPSS \"Select Cases\" filter variable: %d of %d rows are selected (value 1). The reported analyses likely used only the selected rows; re-apply this filter to reproduce them.",
             n_sel, length(v))
@@ -4592,7 +4669,7 @@ data_check_spss_filter <- function(col, x) {
 
 #' Flag categorical levels that differ only by letter case
 #'
-#' e.g. "Male" and "male" — likely the same category entered inconsistently.
+#' e.g. "Male" and "male" -- likely the same category entered inconsistently.
 #'
 #' @param x a character or factor vector
 #' @returns list(problem, message, values)
@@ -4643,7 +4720,7 @@ data_check_whitespace <- function(x) {
 #'
 #' When a column read as character is mostly numbers but has a few values that
 #' do not parse (e.g. "n/a", ">100", "50 approx"), those dirty cells forced the
-#' whole column to text — a data-quality problem in the source, not a read
+#' whole column to text -- a data-quality problem in the source, not a read
 #' error. A *fully* numeric text column is not flagged here: the file readers
 #' auto-type clean numeric columns, so an all-numeric character column would
 #' indicate a reader problem rather than a data problem.
@@ -4682,7 +4759,7 @@ data_check_numeric_in_text <- function(x, threshold = 0.8, n_max = 10) {
 #' files. A name that contains characters that are illegal in file names
 #' (`< > : " / \ | ? *`), control characters (tabs, newlines), leading/trailing
 #' whitespace, or that runs to hundreds of characters cannot be used in those
-#' places without modification — tools either fail (e.g. a figure file cannot
+#' places without modification -- tools either fail (e.g. a figure file cannot
 #' be created on Windows) or silently rename the variable so it no longer
 #' matches the shared data. Good practice is short names built from letters,
 #' digits and underscores.
@@ -4697,15 +4774,15 @@ data_check_numeric_in_text <- function(x, threshold = 0.8, n_max = 10) {
 #' and SAS and Stata cap names at 32 characters
 #' (<https://www.stata.com/manuals/rlimits.pdf>), so a name over 64 characters
 #' cannot be imported into any of the three major statistical packages without
-#' being renamed — after which it no longer matches the shared data or its
+#' being renamed -- after which it no longer matches the shared data or its
 #' documentation. (DDI-Codebook's `var@name` documentation still notes names
-#' are "usually up to eight characters, following the rules of SAS and SPSS" —
+#' are "usually up to eight characters, following the rules of SAS and SPSS" --
 #' a legacy of those systems' old limits, not a modern recommendation, so DDI
 #' imposes no constraint of its own.)
 #'
-#' This check only warns; nothing is renamed or dropped. ([convert_codebook()]
+#' This check only warns; nothing is renamed or dropped. (`convert_codebook()`
 #' separately excludes columns whose name would push a generated figure's file
-#' path past Windows' 260-character limit — the one case where a name makes
+#' path past Windows' 260-character limit -- the one case where a name makes
 #' rendering impossible; that budget depends on the output path, so it is
 #' computed there, not here.)
 #'
@@ -4755,8 +4832,8 @@ data_check_colname <- function(col_name, max_chars = 64L) {
 #' Many tools replace the special characters in a variable name with `_` or
 #' drop them: R's `make.names()`, SPSS/SAS/Stata on import, and generated
 #' codebooks (section ids, figure file names). Two columns whose names differ
-#' *only* in special characters — e.g. the phoneme symbols `t'` and a
-#' t-with-diacritic, which both sanitize to `t_` — therefore become
+#' *only* in special characters -- e.g. the phoneme symbols `t'` and a
+#' t-with-diacritic, which both sanitize to `t_` -- therefore become
 #' indistinguishable the moment the data leave the original file, and links or
 #' merged results silently point at the wrong variable. Identical duplicate
 #' names collide trivially and are flagged too.
@@ -4793,10 +4870,10 @@ data_check_colname_collisions <- function(col_names) {
   out
 }
 
-# ── Personal / disclosure information ─────────────────────────────────────────
+# -- Personal / disclosure information -----------------------------------------
 # These checks flag columns that may hold information that should not be shared
 # openly (personally identifiable information, PII). They are intentionally
-# conservative — a hit is a "review this before sharing" prompt, not proof of a
+# conservative -- a hit is a "review this before sharing" prompt, not proof of a
 # violation. The value regexes are standard patterns (vendored so metacheck
 # takes no dependency); a matched pattern is reported, never the matching value
 # itself, so the report does not itself leak the PII.
@@ -4805,7 +4882,7 @@ data_check_colname_collisions <- function(col_names) {
 # (e.g. Microsoft Presidio), each pattern is classed by how specific it is:
 #
 #   "specific" patterns (email, IP, SSN, credit card) are distinctive enough
-#   that a SINGLE valid match warrants a "review before sharing" flag — for
+#   that a SINGLE valid match warrants a "review before sharing" flag -- for
 #   disclosure, one real email leaking is already a problem, so requiring a
 #   fraction of the column would be a dangerous false negative;
 #
@@ -4846,7 +4923,7 @@ data_check_colname_collisions <- function(col_names) {
 # Luhn checksum: the check most card issuers use.
 #
 # On its own this is NOT a strong filter. Luhn is a single check digit, so a
-# random digit run passes it one time in ten — measured at 9.7-10.2% across
+# random digit run passes it one time in ten -- measured at 9.7-10.2% across
 # random 13/14/15/16-digit strings, and the same for sequential ids, epoch
 # millisecond timestamps and MTurk-style numeric ids. Since a credit-card hit
 # flags the whole column on ONE match, a column of ~20 long numeric ids would
@@ -4894,13 +4971,13 @@ data_check_colname_collisions <- function(col_names) {
 
 # Column-name tokens that suggest the column identifies a person, even when the
 # values look innocuous. Matched case-insensitively against normalised names.
-# NOTE: the bare "name" token was removed — it is a sub-string of many
+# NOTE: the bare "name" token was removed -- it is a sub-string of many
 # non-personal column names (experimentName, trial_name, fileName, videoName,
 # conditionName, variable name, ...) and produced mostly false positives. The
 # specific person-name compounds below (firstname/lastname/surname/fullname)
 # are retained because they reliably indicate a real person's name.
 .pii_name_tokens <- c(
-  # ── person name ──
+  # -- person name --
   "firstname", "lastname", "surname", "fullname",
   # nl / de / fr / es / it / pt / nordic. "nombre" (es) is included even though
   # it is a substring of French "nombreux": this check ASKS FOR REVIEW rather
@@ -4912,14 +4989,14 @@ data_check_colname_collisions <- function(col_names) {
   "nombre", "apellido",
   "cognome", "sobrenome", "nomecompleto",
   "fornavn", "etternavn", "efternavn", "fornamn", "sukunimi", "etunimi",
-  # ── email / phone ──
+  # -- email / phone --
   "email", "e-mail", "phone", "mobile", "telephone", "fax",
   "phonenumber", "mobilenumber", "cellphone", "cellnumber",
   "epost", "correoelectronico",
   "telefoon", "telefon", "telefono", "telefone", "puhelin",
   "mobiel", "handynummer",
   # Compound phone-number forms. These languages join the words with no
-  # separator, so the token has to be listed whole — splitting cannot recover
+  # separator, so the token has to be listed whole -- splitting cannot recover
   # "telefoon" + "nummer" from "telefoonnummer".
   "telefoonnummer", "mobielnummer", "gsmnummer",
   "telefonnummer", "telefonnummber", "rufnummer", "mobilnummer",
@@ -4927,12 +5004,12 @@ data_check_colname_collisions <- function(col_names) {
   "numerotelefono", "numeromovil", "telefononumero",
   "numerodetelefone", "telemovel",
   "puhelinnumero", "telefonnumer",
-  # ── address / postcode ──
+  # -- address / postcode --
   "address", "street", "zipcode", "zip", "postcode", "postalcode",
   "adres", "adresse", "direccion", "indirizzo", "endereco", "osoite",
   "postleitzahl", "codepostal", "codigopostal", "postnummer",
   "woonplaats", "wohnort", "straat", "strasse",
-  # ── national / government id ──
+  # -- national / government id --
   "ssn", "socialsecurity", "passport", "nationalid", "taxid",
   "bsn", "rijksregisternummer", "sozialversicherungsnummer",
   "numerosecuritesociale", "dni", "codicefiscale", "personnummer",
@@ -4943,7 +5020,7 @@ data_check_colname_collisions <- function(col_names) {
   # (sdcMicro's own guidance) lists date of birth alongside sex and postcode as
   # the classic quasi-identifier combination. Year of birth is included too:
   # Safe Harbor permits keeping the YEAR alone for people under 90, so it is
-  # weaker evidence than a full date — but the SDC literature still calls year
+  # weaker evidence than a full date -- but the SDC literature still calls year
   # of birth highly identifying in combination, and metacheck only surfaces
   # this for review rather than asserting a breach.
   "dob", "dateofbirth", "birthdate", "birthday", "birthyear",
@@ -4952,14 +5029,14 @@ data_check_colname_collisions <- function(col_names) {
   # patterns already carry (leeftijd/alter, geslacht).
   "geboortedatum", "geboortejaar", "geburtsdatum", "geburtsjahr",
   "datenaissance", "fechanacimiento", "datadinascita",
-  # ── technical / financial ──
+  # -- technical / financial --
   "ipaddress", "ip", "mac", "creditcard", "iban", "bankaccount",
   "kontonummer", "bankrekening", "ibannummer", "kreditkarte",
   "cartebancaire", "tarjetacredito",
-  # ── location ──
+  # -- location --
   "latitude", "longitude", "lat", "lon", "lng", "geolocation", "gps",
   "breitengrad", "laengengrad", "ortsangabe",
-  # ── account / handle ──
+  # -- account / handle --
   "username", "userid", "handle", "initials",
   "gebruikersnaam", "benutzername", "initialen"
 )
@@ -4972,7 +5049,7 @@ data_check_colname_collisions <- function(col_names) {
 #'
 #' All current patterns are *specific*: they flag on a single validated match,
 #' because for disclosure one real identifier is already a problem. A raw regex
-#' match is necessary but not sufficient — the credit-card pattern must also pass
+#' match is necessary but not sufficient -- the credit-card pattern must also pass
 #' a Luhn checksum, which keeps ordinary numbers from tripping the flag. (A
 #' broad-pattern path with a per-column fraction threshold, `broad_min_frac`, is
 #' retained for future patterns but is currently unused.)
@@ -4980,7 +5057,7 @@ data_check_colname_collisions <- function(col_names) {
 #' @param x a vector (coerced to character)
 #' @param broad_min_frac for broad patterns, the minimum fraction of non-empty
 #'   values that must match for the column to be flagged (currently unused)
-#' @returns list(problem, message, values) — `values` is the matched pattern
+#' @returns list(problem, message, values) -- `values` is the matched pattern
 #'   name(s), not the data
 #' @export
 #' @keywords internal
@@ -5119,9 +5196,9 @@ data_check_pii_name <- function(col_name) {
 #' `lat` is as likely to be latency or a lateralisation index as latitude, and
 #' `lon` can be a loneliness scale. Two requirements filter those out:
 #'
-#' * the values must lie inside the coordinate range (±90 for a latitude, ±180
+#' * the values must lie inside the coordinate range (+/-90 for a latitude, +/-180
 #'   for a longitude), which rejects a latency in milliseconds; and
-#' * a matching PARTNER column must exist in the same file — a latitude needs a
+#' * a matching PARTNER column must exist in the same file -- a latitude needs a
 #'   longitude beside it. A real coordinate is always a pair, whereas a latency,
 #'   a loneliness score or a Latin-square code never has a `lon` sibling. This
 #'   is what separates them, since the coordinate ranges are so wide that almost
@@ -5135,7 +5212,7 @@ data_check_pii_name <- function(col_name) {
 #' @param sibling_names the other column names in the same file, used to find
 #'   the partner column. When `NULL` (a caller checking one column with no file
 #'   context) the partner requirement is skipped, so the check behaves as it did
-#'   before — name plus value range.
+#'   before -- name plus value range.
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
@@ -5181,7 +5258,7 @@ data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
 #'
 #' Open-ended typed responses (comments, explanations, descriptions) can contain
 #' names, places, or other identifying detail, so they warrant a "review before
-#' sharing" prompt. The aim is to flag genuine typed prose only — not any long,
+#' sharing" prompt. The aim is to flag genuine typed prose only -- not any long,
 #' varied string. Long values that are *not* prose (numeric matrices with blank
 #' headers, IDs, hashes, URLs, file paths, base64) are common in research data
 #' and previously produced false positives, so a column is flagged only when its
@@ -5190,8 +5267,8 @@ data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
 #' * long enough (`min_median_chars`),
 #' * varied enough to be responses rather than a repeated category
 #'   (`min_unique_frac`),
-#' * **multi-word** — most values contain whitespace between words, and
-#' * **predominantly alphabetic** — letters, not mostly digits/punctuation.
+#' * **multi-word** -- most values contain whitespace between words, and
+#' * **predominantly alphabetic** -- letters, not mostly digits/punctuation.
 #'
 #' @param x a character or factor vector
 #' @param min_median_chars typical (median) length above which a column may be
@@ -5236,7 +5313,7 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
        values = NULL)
 }
 
-# ── Demographic-column detection ──────────────────────────────────────────────
+# -- Demographic-column detection ----------------------------------------------
 # Detect the three demographic variables that almost every human-subjects study
 # collects: age, gender/sex, and race/ethnicity. Used by data_check (to tag the
 # column) and data_validate (to report which demographics a file contains).
@@ -5245,7 +5322,7 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
 # demographic, AND the VALUES must be consistent with it. Name alone is too weak
 # (a column literally called "age" that holds free text is not usable age data)
 # and values alone are ambiguous (a 1/2 column is as likely a condition code as
-# a sex code). Requiring both keeps false positives low — the aim is a column a
+# a sex code). Requiring both keeps false positives low -- the aim is a column a
 # reviewer can trust is really participant age / gender / race.
 
 # Column-name tokens per demographic, matched against the normalised name
@@ -5336,7 +5413,7 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
 #' continuous/categorical): this adds a *semantic* label used by `data_check`
 #' (reported in the column table) and `data_validate` (which reports the
 #' demographics a file contains). Detection is name-driven, so a demographic
-#' under a cryptic name (e.g. `q3`) is intentionally not caught here — that is
+#' under a cryptic name (e.g. `q3`) is intentionally not caught here -- that is
 #' the LLM classifier's job.
 #'
 #' @param col_name the column's name
@@ -5366,12 +5443,12 @@ data_check_demographic <- function(col_name, x) {
   NA_character_
 }
 
-# ── Column facets (orthogonal properties, DDI-style) ──────────────────────────
+# -- Column facets (orthogonal properties, DDI-style) --------------------------
 # A data column has several INDEPENDENT properties, and collapsing them into one
 # `col_type` enum (the old model) conflated things that are not alternatives:
 # how the value is stored, what measurement level it is on, and what it actually
 # measures. Following DDI (which separates RepresentedVariable representation,
-# @classificationLevel, the Variable→Concept link, VariableRole and UnitType) we
+# @classificationLevel, the Variable->Concept link, VariableRole and UnitType) we
 # describe each column with orthogonal facets instead:
 #
 #   representation     numeric | text | datetime | code | empty
@@ -5380,30 +5457,30 @@ data_check_demographic <- function(col_name, x) {
 #                      (Stevens level; DDI @classificationLevel)
 #   concept            reaction_time | accuracy | age | gender | race | likert |
 #                      condition | id | date | timestamp | NA
-#                      (what the column measures; DDI Variable→Concept)
+#                      (what the column measures; DDI Variable->Concept)
 #   role               identifier | measure | condition | timestamp | measure
 #                      (how it functions in the dataset; DDI VariableRole)
 #   unit               seconds | milliseconds | years | NA (DDI UnitType)
 #   quality            ok | empty | constant | near_constant (data state)
 #   parse_note         NA | comma_decimal | mostly_numeric
-#                      (a representation quirk, NOT a type — was a fake col_type)
+#                      (a representation quirk, NOT a type -- was a fake col_type)
 #
 # `data_col_facets()` derives these from the existing rule primitive
-# `data_col_type()` (kept internal so its battle-tested edge cases — UTF-8
-# guard, date threshold, comma-decimal, text-length — are preserved) plus the
+# `data_col_type()` (kept internal so its battle-tested edge cases -- UTF-8
+# guard, date threshold, comma-decimal, text-length -- are preserved) plus the
 # concept detectors below. Rules run always; the LLM (in data_check) only fills
 # facets the rules left NA.
 
 # Concept detector: name+value agreement, same discipline as the demographic
-# detector. Returns a concept code or NA. Order matters — the first match wins,
+# detector. Returns a concept code or NA. Order matters -- the first match wins,
 # so specific concepts (reaction_time) are tried before generic ones.
 #
 # All four name checks below match against the LOWERCASED but UN-stripped
-# column name, with (^|[^a-z])...([^a-z]|$) boundary anchoring — the same
+# column name, with (^|[^a-z])...([^a-z]|$) boundary anchoring -- the same
 # style already used by .RT_NAME_RE/.ACC_NAME_RE/cond_name in
 # .detect_task_columns() below (which .concept_is_rt/.concept_is_accuracy now
 # call directly, rather than maintaining a second, divergent copy of the same
-# pattern). An earlier version matched against .qualtrics_key(col_name) —
+# pattern). An earlier version matched against .qualtrics_key(col_name) --
 # fully alnum-stripped, which destroys every separator a real column name has
 # (e.g. "response_time_break" -> "responsetimebreak"), so word-boundary
 # anchoring was IMPOSSIBLE on that stripped form; bare "rt"/"time"/"condition"
@@ -5594,11 +5671,11 @@ data_col_concept <- function(col_name, x) {
 #' @param col_name the column's name
 #' @param values the column's values
 #' @param in_scale_block whether this column belongs to a detected scale block
-#'   (a run of consecutive same-prefix columns sharing a response range — see
+#'   (a run of consecutive same-prefix columns sharing a response range -- see
 #'   `.detect_scale_blocks()`), which is what makes it a `likert` item. Requires
 #'   the whole data frame to determine, so the caller supplies it; `NA` (the
 #'   default) means unknown and leaves the concept alone. A column's own values
-#'   cannot decide this — whole numbers over a narrow range describe a trial
+#'   cannot decide this -- whole numbers over a narrow range describe a trial
 #'   counter as readily as a rating item.
 #'
 #' @returns a list with `representation`, `measurement_level`, `concept`,
@@ -5640,7 +5717,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
   concept <- data_col_concept(col_name, values)
 
   # role: an id column is an identifier; a timestamp/date column is temporal;
-  # everything else defaults to a measure. condition concept → condition role.
+  # everything else defaults to a measure. condition concept -> condition role.
   role <- if (identical(ct, "id")) "identifier"
           else if (identical(concept, "timestamp") || identical(ct, "date")) "timestamp"
           else if (identical(concept, "condition")) "condition"
@@ -5654,24 +5731,24 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
   }
 
   # Likert: decided by whether the column belongs to a detected SCALE BLOCK (a
-  # run of consecutive same-prefix columns sharing a response range — see
+  # run of consecutive same-prefix columns sharing a response range -- see
   # .detect_scale_blocks()), not by the column's own values.
   #
   # The values alone cannot carry this. .is_likert_item() asks whether a column
-  # holds whole numbers with 3–11 distinct levels in a narrow range, which
+  # holds whole numbers with 3-11 distinct levels in a narrow range, which
   # describes a rating item and a trial counter equally well. Over 3145 columns
   # from 120 real repositories, using it per-column claimed 242 columns that are
-  # plainly not scales — `round`, `block`, PsychoPy loop indices
+  # plainly not scales -- `round`, `block`, PsychoPy loop indices
   # (resp_loop.thisIndex/.thisN/.thisTrialN), stimulus ids (arcade_id_L/R) and
   # key-press codes (resp_*.keys). Over the same corpus, block detection claimed
   # 133 columns forming 6 groups, each inspected and confirmed a real instrument
   # (UPPS-P's 50 items, three 25-item rating batteries, DotsCol1-5, IQ_short1-3).
   #
   # Not a measured error rate: there is no hand-labelled ground truth here, and
-  # the corpus is one sample of 120 files. Known structural limits — a scale
+  # the corpus is one sample of 120 files. Known structural limits -- a scale
   # whose items are not CONSECUTIVE columns, one whose item names do not share a
   # prefix after stripping a trailing number (bfi_agree_1 / bfi_extra_1), or one
-  # shorter than .scale_min_items — are missed by construction.
+  # shorter than .scale_min_items -- are missed by construction.
   #
   # `in_scale_block` is therefore supplied by the caller, which has the whole
   # data frame. NA (the default, for a caller describing a single column with no
@@ -5692,13 +5769,13 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
   # Non-numeric values cannot be interval or ratio: those levels require a
   # meaningful distance between values, which text does not have. A column whose
   # values do not parse as numbers is therefore nominal (or ordinal, but only a
-  # codebook can say which — and where an ordering IS derivable the rules above
+  # codebook can say which -- and where an ordering IS derivable the rules above
   # have already set `ordinal` from a scale block, so anything reaching here has
   # no evidence of order).
   #
   # This is the rule that replaced the measurement-level LLM pass: it was being
-  # handed exactly these columns — `object_label` (Wine, Hammock, Binoculars),
-  # `event` (onload, subject, mouse), `ll_amt` (the literal string "NULL") —
+  # handed exactly these columns -- `object_label` (Wine, Hammock, Binoculars),
+  # `event` (onload, subject, mouse), `ll_amt` (the literal string "NULL") --
   # under a prompt asking for the level of a NUMERIC column.
   #
   # `representation == "empty"` is excluded: an all-NA column has no values to
@@ -5752,7 +5829,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 # so they can be tuned as the check is run on more repositories. Derived from a
 # set of human-coded qualitative worksheets (prose columns ~45-50%, missingness
 # ~90%+) versus their study's real dataset (~3% prose, ~2% missing).
-.tabular_prose_high  <- 0.70   # overwhelmingly free-text → not a dataset on its own
+.tabular_prose_high  <- 0.70   # overwhelmingly free-text -> not a dataset on its own
 .tabular_prose_mid   <- 0.40   # the coding-sheet middle ground: both must hold
 .tabular_miss_mid    <- 0.40   # (missingness only corroborates prose; never alone)
 
@@ -5760,7 +5837,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 #'
 #' `readxl`/`read.delim` will happily read a human-formatted coding worksheet
 #' (interleaved "Code N: description" free-text columns + sparse 0/1 indicators,
-#' summary/legend rows at the bottom) into a data frame — but the result is not a
+#' summary/legend rows at the bottom) into a data frame -- but the result is not a
 #' rectangular *dataset*: most "columns" are prose annotations and most cells are
 #' structurally empty. Extracting columns from such a file yields junk (the
 #' "Code"-prefixed columns) and sending them to the LLM wastes calls on non-data.
@@ -5769,11 +5846,11 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 #' two signals combined with tiered rules (not a single AND-gate, so an extreme
 #' value on one axis can exclude a file on its own):
 #'
-#' * **prose fraction** — share of columns that are free text: `representation`
+#' * **prose fraction** -- share of columns that are free text: `representation`
 #'   is `"text"`, the `concept` is not a recognised text kind (id/date/timestamp),
 #'   and the column is high-cardinality (distinct/non-missing > 0.5), i.e. a
 #'   genuine free-text field, not a small set of category labels.
-#' * **missingness fraction** — share of columns that are >50% missing.
+#' * **missingness fraction** -- share of columns that are >50% missing.
 #'
 #' Exclude when the file is almost entirely empty, or overwhelmingly free text,
 #' or moderately both. A file with an ordinary structure (a few open-response
@@ -5810,7 +5887,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
   # Tiered rules. NOTE: high missingness ALONE does NOT exclude. Legitimate
   # branched / planned-missing surveys (e.g. a Qualtrics export where each
   # respondent sees only their condition's questions) are 90%+ missing but are
-  # real NUMERIC data — excluding them drops the actual dataset (and its scales).
+  # real NUMERIC data -- excluding them drops the actual dataset (and its scales).
   # We exclude only when the file is overwhelmingly FREE TEXT, or moderately free
   # text AND mostly empty (the human coding-worksheet signature). Missingness is
   # corroborating, never sufficient.
@@ -5819,17 +5896,17 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
       "%s of columns are free text, not variables", pct(prose_frac))))
   if (prose_frac >= .tabular_prose_mid && miss_frac >= .tabular_miss_mid)
     return(list(usable = FALSE, reason = sprintf(
-      "%s of columns are free text and %s are mostly empty — this looks like a coding worksheet, not a rectangular dataset",
+      "%s of columns are free text and %s are mostly empty -- this looks like a coding worksheet, not a rectangular dataset",
       pct(prose_frac), pct(miss_frac))))
 
   list(usable = TRUE, reason = NA_character_)
 }
 
-# ── Qualtrics survey-export detection ─────────────────────────────────────────
+# -- Qualtrics survey-export detection -----------------------------------------
 # Qualtrics CSV/TSV exports have a fixed, distinctive shape: a set of reserved
 # response-metadata columns (StartDate, Duration (in seconds), Finished, ...)
-# that are the same across every survey, and — for the "use choice text" export
-# — a multi-row header (machine names, then human question text, then an
+# that are the same across every survey, and -- for the "use choice text" export
+# -- a multi-row header (machine names, then human question text, then an
 # `ImportId` JSON row). We detect the file as Qualtrics from those metadata
 # names and/or the ImportId row, strip the junk header rows so the data types
 # correctly, and tag the metadata columns so data_validate can report the things
@@ -5837,7 +5914,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 # preview/unfinished rows, recording window, which PII fields are present).
 #
 # We deliberately do NOT try to interpret the substantive question/scale columns
-# here — that is the scale-block detector's job (a different unit).
+# here -- that is the scale-block detector's job (a different unit).
 
 # Reserved Qualtrics metadata column names, mapped to a semantic tag. Names are
 # matched case-insensitively after stripping non-alphanumerics, so "Duration (in
@@ -5895,7 +5972,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 # no SQ entry in the .qsf and no analytic value, so they should not be matched to
 # a codebook or sent to the LLM. Matched as a delimiter-bounded `_DO_` segment so
 # a substantive column that merely contains the letters "do" is never caught.
-# Caller must gate on data_check_is_qualtrics() — this is a name test only.
+# Caller must gate on data_check_is_qualtrics() -- this is a name test only.
 .qualtrics_is_display_order <- function(col_names) {
   grepl("_DO(_|$)", col_names, perl = TRUE)
 }
@@ -5905,7 +5982,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 #' Fires when the columns include enough of Qualtrics' reserved response-metadata
 #' names (StartDate, EndDate, Progress, Duration (in seconds), Finished,
 #' RecordedDate, ResponseId, DistributionChannel, ...) that the file is
-#' unambiguously a Qualtrics export — these exact names essentially never
+#' unambiguously a Qualtrics export -- these exact names essentially never
 #' co-occur outside Qualtrics. The `ResponseId` column (values like `R_xxxxx`)
 #' or a leftover `ImportId` JSON header cell is treated as corroborating.
 #'
@@ -5964,12 +6041,12 @@ data_check_is_qualtrics <- function(df, min_meta = 4L) {
   # columns however long the questionnaire is, so the longer the survey the
   # smaller that fraction gets. Measured on a real 139-column export, 13 cells
   # matched unmistakable Qualtrics labels (Start Date, Response ID, Recipient
-  # Email, Distribution Channel, ...) — a fraction of 0.094, far below the 0.3
+  # Email, Distribution Channel, ...) -- a fraction of 0.094, far below the 0.3
   # this used to require. The row was therefore not recognised, the loop in
   # data_strip_qualtrics_header() stopped at row 1, and the `ImportId` row
   # BEHIND it (which this function does detect) was never reached. Both junk
   # rows survived into the data, leaving every rating column a character vector
-  # of question text — which is why a 25-item rating battery classified as
+  # of question text -- which is why a 25-item rating battery classified as
   # `ratio` text rather than an ordinal scale.
   #
   # The absolute floor mirrors data_check_is_qualtrics()'s own `min_meta = 4L`,
@@ -5978,7 +6055,7 @@ data_check_is_qualtrics <- function(df, min_meta = 4L) {
   # A narrow frame cannot reach 4: a 3-column export has at most 3 metadata
   # cells, so an absolute-only rule silently never strips it. When there are
   # fewer than 4 columns, fall back to requiring that nearly all of them are
-  # metadata labels — on such a frame that is just as diagnostic, because a row
+  # metadata labels -- on such a frame that is just as diagnostic, because a row
   # of genuine data would have to consist entirely of strings matching reserved
   # Qualtrics label names.
   label_keys <- .qualtrics_key(vals)
@@ -6024,17 +6101,17 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
   df
 }
 
-# ── Leading metadata-row / offset-header repair ───────────────────────────────
+# -- Leading metadata-row / offset-header repair -------------------------------
 # The Qualtrics strip above handles junk rows BELOW a correct header. The inverse
 # defect is common too: the real header sits one or more rows DOWN because the top
 # of the sheet is a banner, a blank row, or a units row. The reader then takes
-# that top row as the header — inventing placeholder names (…4, V3, Unnamed: 2)
-# for its blank cells, or promoting a units row to names — and every downstream
+# that top row as the header -- inventing placeholder names (...4, V3, Unnamed: 2)
+# for its blank cells, or promoting a units row to names -- and every downstream
 # check (typing, scale detection, data_validate, PII) sees a corrupted table.
 #
 # The CDA (contralateral delay activity) EEG files are the motivating case: the
 # true header (Participant, Reject, Condition, then millisecond time points) is in
-# row 2, so the reader produced CDA…4 … CDA…113 from one stray top-row label
+# row 2, so the reader produced CDA...4 ... CDA...113 from one stray top-row label
 # spread across blank-header columns, and the wide time series was mistaken for an
 # 80-item psychometric scale.
 
@@ -6046,15 +6123,15 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 }
 
 # Column names a reader invents for BLANK/duplicate headers: readxl/tidyverse
-# `…N`, base R `V1`/`X.1`/`X`, this file's own `col_N` fallback, and pandas
+# `...N`, base R `V1`/`X.1`/`X`, this file's own `col_N` fallback, and pandas
 # `Unnamed: N`. A high share of these is the signature of a blank or partial top
 # row read as the header.
 .is_placeholder_name <- function(x) {
   x <- trimws(as.character(x))
-  grepl("^.*\\.\\.\\.\\d+$", x) |                     # readxl `…N` (incl. STEM…N,
+  grepl("^.*\\.\\.\\.\\d+$", x) |                     # readxl `...N` (incl. STEM...N,
                                                        # where one real top-row cell
                                                        # was spread across blanks:
-                                                       # CDA…4, CDA…5, …)
+                                                       # CDA...4, CDA...5, ...)
     grepl("^(V\\d+|X(\\.\\d+)?|col_\\d+)$", x) |       # base R make.names / fallback
     grepl("^Unnamed:?\\.?\\s*\\d+$", x, ignore.case = TRUE) |  # pandas
     !nzchar(x)                                          # bare blank
@@ -6064,13 +6141,13 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 # column counts when its non-empty cells are ALL numeric or ALL non-numeric. This
 # is the core signal for locating a header. A header cell is a type-outlier at the
 # top of its column (a text label above a numeric column), so a table read WITHOUT
-# a header — with the real header row still sitting in the body — has LOW
+# a header -- with the real header row still sitting in the body -- has LOW
 # consistency; removing exactly the header row makes the columns consistent.
 #
 # We measure clean-numeric fraction specifically, because the offset defect this
 # repairs (banner/units/blank row above the header) leaves the columns below as
 # genuine numeric data. An all-text table (a codebook) has 0 numeric columns at
-# every drop, so no drop improves it and nothing is promoted — the correct outcome.
+# every drop, so no drop improves it and nothing is promoted -- the correct outcome.
 .numeric_col_fraction <- function(df) {
   if (is.null(df) || ncol(df) == 0 || nrow(df) == 0) return(0)
   ok <- vapply(df, function(col) {
@@ -6084,23 +6161,23 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 
 # Fraction of a row's non-empty cells that repeat another cell in the same row.
 # A real header is near-unique (~0); a banner row (one label written/merged across
-# many columns, e.g. CDA…CDA×110) is near-1. Used only to DESCRIBE what was
-# stripped, for the researcher-facing message — not to decide the header.
+# many columns, e.g. CDA...CDAx110) is near-1. Used only to DESCRIBE what was
+# stripped, for the researcher-facing message -- not to decide the header.
 .row_duplication <- function(vals) {
   v <- trimws(as.character(vals)); v <- v[nzchar(v) & !is.na(v)]
   if (length(v) == 0) return(0)
   1 - length(unique(v)) / length(v)
 }
 
-# Is a single row JUNK sitting above the real header — a banner / blank / title /
+# Is a single row JUNK sitting above the real header -- a banner / blank / title /
 # units row, or a stale reader-mangled header rather than a real column header? A
 # header names columns: it is well filled, near-unique, and free of reader
 # placeholders. Junk fails one of those in a characteristic way:
 #  - near-empty: almost all cells blank (a spacer row, or a title in one cell);
-#  - heavily duplicated: one label repeated across many columns (CDA…CDA×110), a
+#  - heavily duplicated: one label repeated across many columns (CDA...CDAx110), a
 #    banner or a merged cell read unmerged;
 #  - mostly placeholders: a stale mangled header baked into a converted file
-#    (…1, …2, CDA…4, CDA…5 — a prior read's invented names saved as row 1).
+#    (...1, ...2, CDA...4, CDA...5 -- a prior read's invented names saved as row 1).
 # `body_numeric` is the type-consistency of the data below; a row is only junk in
 # CONTEXT of a consistent body, so an all-text table (codebook) is never stripped.
 .is_junk_above_header <- function(vals, body_numeric,
@@ -6109,7 +6186,7 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
   filled <- mean(nzchar(trimws(as.character(vals))) & !is.na(vals))
   dup    <- .row_duplication(vals)
   ph     <- mean(.is_placeholder_name(vals))
-  # Only strip rows above a body that is itself reasonably well-typed — otherwise
+  # Only strip rows above a body that is itself reasonably well-typed -- otherwise
   # we have no evidence the columns below are real data (guards all-text files).
   if (body_numeric < 0.3) return(FALSE)
   filled <= max_filled || dup >= min_dup || ph >= min_placeholder
@@ -6127,8 +6204,8 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 #'     (the CDA/behavior sheets), weak when the body is mostly text.
 #'  2. **Junk rows above.** A banner (one label repeated across columns) or a
 #'     near-empty spacer row is not a header (see `.is_junk_above_header()`). This
-#'     carries the cases where the numeric jump is weak — e.g. the CDA banner row
-#'     of `CDA` × 110 sitting above a header that only relabels 3 of 113 columns.
+#'     carries the cases where the numeric jump is weak -- e.g. the CDA banner row
+#'     of `CDA` x 110 sitting above a header that only relabels 3 of 113 columns.
 #'
 #' The header is the SMALLEST `h` such that every row above `h` is junk, the body
 #' below `h` is type-consistent, and promoting `h` does not make the typing worse.
@@ -6166,7 +6243,7 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 
   # Walk down from the top: strip a leading row only while it is junk, judged
   # against the body that would remain if the NEXT row were the header. Stop at
-  # the first non-junk row — that is the true header.
+  # the first non-junk row -- that is the true header.
   strip <- 0L
   while (strip < scan_n - 1L &&
          .is_junk_above_header(rows[[strip + 1L]], body_numeric[strip + 2L])) {
@@ -6176,7 +6253,7 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
     return(list(header_row = 1L, stripped = list(), improved = 0))
 
   # The row we would PROMOTE must itself look like a header: it needs real
-  # variable NAMES — non-empty, non-numeric, non-placeholder tokens. A headerless
+  # variable NAMES -- non-empty, non-numeric, non-placeholder tokens. A headerless
   # numeric file (every row is data, e.g. 1|1|3|2 or a column-index row NA|1|2|3)
   # has no such row, so stripping its first row and using the next (numeric) row as
   # names would FABRICATE a header. Refuse unless the promoted row is textual.
@@ -6186,7 +6263,7 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
                            c("NA", "NAN", "NULL", "N/A", "INF", "-INF", ".") &
                          !.is_placeholder_name(hdr_vals)]
   # A token is textual (a real name) only when it does NOT parse as a number.
-  # `.as_num_safe("NaN")` returns NaN — itself NA under is.na() — so a numeric NaN
+  # `.as_num_safe("NaN")` returns NaN -- itself NA under is.na() -- so a numeric NaN
   # cell must not be mistaken for text; the NA-like filter above already drops it.
   num <- .as_num_safe(hdr_real)
   hdr_text <- hdr_real[is.na(num) & !is.nan(num)]
@@ -6208,8 +6285,8 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 #' Promote a mis-placed header row and drop leading metadata rows
 #'
 #' When a banner / blank / units / repeated-label row sits ABOVE the real header,
-#' the reader takes that top row as the header (inventing `…N` names, or spreading
-#' one label — `CDA` merged across 110 columns — into `CDA…1 … CDA…110`). This
+#' the reader takes that top row as the header (inventing `...N` names, or spreading
+#' one label -- `CDA` merged across 110 columns -- into `CDA...1 ... CDA...110`). This
 #' finds the true header among the first few rows via [.detect_header_row()],
 #' promotes it to the column names, drops it and everything above, and re-types the
 #' freed columns. It is the inverse of [data_strip_qualtrics_header()] (which
@@ -6294,14 +6371,14 @@ data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
   list(df = candidate, promoted = n_strip, stripped = det$stripped)
 }
 
-# ── Trial-level (paradata) source-format detection ────────────────────────────
+# -- Trial-level (paradata) source-format detection ----------------------------
 # Several data formats record per-trial PARADATA (response times, trial/stimulus
 # indices) alongside each response. Detected here so codebook_check can route that
 # paradata to a Behaverse `trial` document (see R/behaverse-convert.R) instead of
 # mislabelling it as psychometric scales. Each detector keys on the reserved
 # column vocabulary that identifies its format, mirroring data_check_is_qualtrics.
 
-# ── Reader: E-Prime text export ───────────────────────────────────────────────
+# -- Reader: E-Prime text export -----------------------------------------------
 # E-Prime exports are UTF-16 (or BOM) text: a header block of `Field: value`
 # lines, then repeating `Level: 3` frames (one per Trial), each a run of
 # `Field: value` lines. Object timing is `<obj>.RT` (ms) or, if absent,
@@ -6322,7 +6399,7 @@ data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
 # CHEAP: reads only the header (or the first lines for E-Prime), not the whole
 # file, so screening hundreds of per-participant files is fast. Used by data_check
 # to hold trial-level files OUT of the per-file tabular extractor and route them to
-# the Behaverse accumulator instead — otherwise 200 per-participant E-Prime files
+# the Behaverse accumulator instead -- otherwise 200 per-participant E-Prime files
 # would become 200 separate "datasets" rather than one merged instrument.
 .bh_is_trial_level_file <- function(path) {
   if (length(path) != 1L || is.na(path) || !file.exists(path)) return(FALSE)
@@ -6357,14 +6434,14 @@ data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
 #' recognise paradata (response times, trial/stimulus channels) and normalise it
 #' to the Behaverse `trial` schema rather than treating it as scale items.
 #'
-#' - `data_check_is_behaverse()` — native Behaverse tidy long form (an
+#' - `data_check_is_behaverse()` -- native Behaverse tidy long form (an
 #'   `instrument_id` column plus Response channels such as `response_numeric`,
 #'   `response_time`, `trial_index`).
-#' - `data_check_is_inquisit()` — Millisecond Inquisit `.iqdat` (`subject`,
+#' - `data_check_is_inquisit()` -- Millisecond Inquisit `.iqdat` (`subject`,
 #'   `blockcode`, `trialcode`, `latency`).
-#' - `data_check_is_jspsych()` — jsPsych (`trial_type`, `rt`, and `trial_index`
+#' - `data_check_is_jspsych()` -- jsPsych (`trial_type`, `rt`, and `trial_index`
 #'   or `time_elapsed`).
-#' - `data_check_is_psychopy()` — PsychoPy Builder (`<loop>.thisN`/`.thisRepN`
+#' - `data_check_is_psychopy()` -- PsychoPy Builder (`<loop>.thisN`/`.thisRepN`
 #'   loop counters, `<comp>.started`/`.stopped` timing, or `psychopyVersion` /
 #'   `frameRate` / `expName`); machinery is matched by these suffixes, not a
 #'   fixed column list, because PsychoPy column names are study-specific.
@@ -6429,7 +6506,7 @@ data_check_is_psychopy <- function(df) {
     any(c("psychopyVersion", "frameRate", "expName") %in% nm)
 }
 
-# ── Likert scale-block detection ──────────────────────────────────────────────
+# -- Likert scale-block detection ----------------------------------------------
 # Shared by data_validate (careless responding) and codebook_check (LLM scale
 # identification). A "scale block" is a run of adjacent Likert-type columns that
 # share a variable-name prefix, i.e. one psychometric scale (PANAS_1..10).
@@ -6468,7 +6545,7 @@ data_check_is_psychopy <- function(df) {
     diff(range(u)) <= 12 && min(u) >= -5 && max(u) <= 100
 }
 
-# ── Task column detection (reaction time / accuracy) ──────────────────────────
+# -- Task column detection (reaction time / accuracy) --------------------------
 # A behavioural task does not produce a Likert block, so `.detect_scale_blocks`
 # cannot see one: task data is either one row per TRIAL (subject, trial,
 # condition, rt, correct) or one aggregated column per condition
@@ -6486,7 +6563,7 @@ data_check_is_psychopy <- function(df) {
 .ACC_NAME_RE <- "(^|[^a-z])(acc|accuracy|correct|iscorrect|is[._ -]?correct|error|errors|hit|hits|miss|misses)([^a-z]|$)"
 
 # Does a column look like a REACTION TIME by its values?
-# Positive, continuous-ish, right-skewed and wide — the inverse of the Likert
+# Positive, continuous-ish, right-skewed and wide -- the inverse of the Likert
 # signature in `.is_likert_item`. Deliberately does not test skew directly: a
 # small trial count makes skew unstable, whereas "many distinct positive values
 # over a wide range" is robust.
@@ -6565,7 +6642,7 @@ data_check_is_psychopy <- function(df) {
              by_value = rt_val | acc_val)[kind != "", , drop = FALSE]
 }
 
-# Is a column a plausible per-trial ACCURACY item — one column per trial, scored
+# Is a column a plausible per-trial ACCURACY item -- one column per trial, scored
 # right/wrong? The task analogue of `.is_likert_item`, and deliberately its
 # complement: `.is_likert_item` requires >= 3 distinct values, so a binary
 # column fails it and a block of them is invisible to `.detect_scale_blocks`.
@@ -6590,8 +6667,8 @@ data_check_is_psychopy <- function(df) {
 }
 
 # Detect ACCURACY BLOCKS: maximal runs of adjacent binary columns sharing a name
-# prefix (raven_1..18, iat_1..20). Mirrors `.detect_scale_blocks` exactly —
-# same contiguity assumption, same prefix rule, same minimum size — but keyed on
+# prefix (raven_1..18, iat_1..20). Mirrors `.detect_scale_blocks` exactly --
+# same contiguity assumption, same prefix rule, same minimum size -- but keyed on
 # `.is_accuracy_item` instead of `.is_likert_item`.
 #
 # A minimum of `.task_acc_min_items` (8) applies rather than `.scale_min_items`
@@ -6679,18 +6756,18 @@ data_check_is_psychopy <- function(df) {
 # statistics (no file re-read)? This is broader than `.detect_scale_blocks`,
 # which only accepts small-integer Likert items and so misses 0-100 slider /
 # percentage rating scales (values like 11, 95, 71). It exists to gate what the
-# OSD exporter is allowed to WRITE — named or unnamed — so that a coherent rating
+# OSD exporter is allowed to WRITE -- named or unnamed -- so that a coherent rating
 # block is kept while genuine non-scales (probabilities, model parameters) are
 # rejected.
 #
 # A block qualifies when, pooled across its columns:
 #   * at least 60% of its columns are numeric (a scale block is numeric ratings,
 #     not free text / ids);
-#   * the pooled minimum is >= -1 — rejects unbounded model parameters that go
+#   * the pooled minimum is >= -1 -- rejects unbounded model parameters that go
 #     negative (e.g. alpha/beta weights spanning -52 .. +10);
-#   * the pooled maximum is > 1 — rejects [0,1] quantities (probabilities,
+#   * the pooled maximum is > 1 -- rejects [0,1] quantities (probabilities,
 #     posterior means) that are NOT ratings, and
-#   * the pooled maximum is <= 100 — the upper bound of a plausible rating
+#   * the pooled maximum is <= 100 -- the upper bound of a plausible rating
 #     envelope (0-100 sliders, 1-7 Likert, 0-10 scales all pass; a summed total
 #     or a count that runs into the hundreds does not).
 # `cols` are the block's column names; `source_file` scopes the lookup so a

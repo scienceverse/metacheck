@@ -84,7 +84,10 @@ test_that("a repo over the total cap downloads the smallest files up to the budg
   total_mb <- sum(files$file_size) / (1024 * 1024)
   # budget fits the small file but not both.
   cap <- (small_mb + total_mb) / 2
-  dl <- download_repo_files(files, max_file_size = 100, max_download_size = cap)
+  expect_warning(
+    dl <- download_repo_files(files, max_file_size = 100, max_download_size = cap),
+    "per-repository budget"
+  )
   expect_equal(sum(!is.na(dl$file_location)), 1)     # smallest file downloaded
   # a partial-fill note is recorded (the larger file omitted).
   expect_true(nrow(attr(dl, "gated")) >= 1)

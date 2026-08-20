@@ -28,7 +28,7 @@ Complements \code{\link[=data_col_type]{data_col_type()}} (which gives a structu
 continuous/categorical): this adds a \emph{semantic} label used by \code{data_check}
 (reported in the column table) and \code{data_validate} (which reports the
 demographics a file contains). Detection is name-driven, so a demographic
-under a cryptic name (e.g. \code{q3}) is intentionally not caught here — that is
+under a cryptic name (e.g. \code{q3}) is intentionally not caught here -- that is
 the LLM classifier's job.
 }
 \examples{

@@ -14,7 +14,7 @@ data_group_llm(
 }
 \arguments{
 \item{files}{a data.frame of files (needs \code{file_path} or \code{file_name}; an
-optional \code{data_type} column limits which files are sent to the model —
+optional \code{data_type} column limits which files are sent to the model --
 see Details)}
 
 \item{model}{the LLM model name}
@@ -27,7 +27,7 @@ see Details)}
 a data.frame with \code{group} and \code{referenced_by} columns (one row per
 input file, same order) and \code{"model"}/\code{"roster"}/\code{"roster_check"}/
 \code{"unresolved"} attributes, or \code{NULL} only when \code{files} is empty/NULL.
-Every placeable file resolves to a real study group — there is no
+Every placeable file resolves to a real study group -- there is no
 \code{"shared"} value and no partial-failure NULL return.
 }
 \description{
@@ -35,7 +35,7 @@ Classifies every file in a repository into a study group from its path
 (folder + name) context, so a multi-study repository can be split into
 \verb{study-<group>/} directories (used by \code{psychds_check}). Group codes follow
 datacheck's scheme: \code{ex1}, \code{ex2a}, \code{pilot1}, ... . Every file resolves to
-exactly one study — there is no \code{"shared"} group. The only files that stay
+exactly one study -- there is no \code{"shared"} group. The only files that stay
 collection-level (never grouped, \code{group} left \code{NA}) are the root README and
 the root \code{ro-crate-metadata.json} (see \code{.data_doc_role()}), which callers
 must exclude BEFORE calling this function (see \code{data_check.R}). Only
@@ -45,7 +45,7 @@ unresolved; callers get a fully deterministic grouping when \code{llm_use(FALSE)
 \details{
 Only files that will actually be analysed or placed (data, documentation,
 code, materials) are sent to the model; every one of them must end up with a
-real study code — a materials or documentation file reused across multiple
+real study code -- a materials or documentation file reused across multiple
 studies is still assigned to exactly ONE owning study (whichever the
 deterministic passes or the model placed it in first); every other study
 that reuses it gets a reference recorded separately (see \code{referenced_by} in

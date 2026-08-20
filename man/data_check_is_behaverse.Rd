@@ -29,14 +29,14 @@ to the Behaverse \code{trial} schema rather than treating it as scale items.
 }
 \details{
 \itemize{
-\item \code{data_check_is_behaverse()} — native Behaverse tidy long form (an
+\item \code{data_check_is_behaverse()} -- native Behaverse tidy long form (an
 \code{instrument_id} column plus Response channels such as \code{response_numeric},
 \code{response_time}, \code{trial_index}).
-\item \code{data_check_is_inquisit()} — Millisecond Inquisit \code{.iqdat} (\code{subject},
+\item \code{data_check_is_inquisit()} -- Millisecond Inquisit \code{.iqdat} (\code{subject},
 \code{blockcode}, \code{trialcode}, \code{latency}).
-\item \code{data_check_is_jspsych()} — jsPsych (\code{trial_type}, \code{rt}, and \code{trial_index}
+\item \code{data_check_is_jspsych()} -- jsPsych (\code{trial_type}, \code{rt}, and \code{trial_index}
 or \code{time_elapsed}).
-\item \code{data_check_is_psychopy()} — PsychoPy Builder (\verb{<loop>.thisN}/\code{.thisRepN}
+\item \code{data_check_is_psychopy()} -- PsychoPy Builder (\verb{<loop>.thisN}/\code{.thisRepN}
 loop counters, \verb{<comp>.started}/\code{.stopped} timing, or \code{psychopyVersion} /
 \code{frameRate} / \code{expName}); machinery is matched by these suffixes, not a
 fixed column list, because PsychoPy column names are study-specific.

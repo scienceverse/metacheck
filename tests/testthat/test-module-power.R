@@ -488,8 +488,9 @@ test_that("power, with Ollama (structured)", {
   # (see git history), which a mock cannot represent.
   module <- "power"
   llm_use(TRUE)
-  llm_model("ollama/qwen2.5:3b")
+  withr::defer(llm_use(FALSE))
   withr::local_options(metacheck.llm.cache = FALSE)
+  llm_model("ollama/qwen2.5:3b")
 
   power_text <- c(
     "An a priori power analysis for an independent samples t-test, conducted using the pwr.t.test function from pwr (Champely, 2020), indicated that for a Cohen's d = 0.5, and a desired power level of 80% required at least 64 participants in each group.",

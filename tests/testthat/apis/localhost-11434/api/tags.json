@@ -1,6 +1,29 @@
 {
     "models": [
         {
+            "name": "qwen2.5:3b",
+            "model": "qwen2.5:3b",
+            "modified_at": "2026-08-13T19:25:24.3180608+02:00",
+            "size": 1929912432,
+            "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "qwen2",
+                "families": [
+                    "qwen2"
+                ],
+                "parameter_size": "3.1B",
+                "quantization_level": "Q4_K_M",
+                "context_length": 32768,
+                "embedding_length": 2048
+            },
+            "capabilities": [
+                "completion",
+                "tools"
+            ]
+        },
+        {
             "name": "smollm:135m",
             "model": "smollm:135m",
             "modified_at": "2026-05-31T11:29:45.377344106+02:00",
@@ -15,23 +38,6 @@
                 ],
                 "parameter_size": "134.52M",
                 "quantization_level": "Q4_0"
-            }
-        },
-        {
-            "name": "qwen2.5:3b",
-            "model": "qwen2.5:3b",
-            "modified_at": "2026-05-30T14:54:36.117370029+02:00",
-            "size": 1929912432,
-            "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
-            "details": {
-                "parent_model": "",
-                "format": "gguf",
-                "family": "qwen2",
-                "families": [
-                    "qwen2"
-                ],
-                "parameter_size": "3.1B",
-                "quantization_level": "Q4_K_M"
             }
         }
     ]

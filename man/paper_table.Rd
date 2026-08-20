@@ -20,6 +20,9 @@ a merged table
 Return a table from a paper object or concatenate tables across a list of paper objects.
 }
 \examples{
+\dontrun{
+psychsci <- papers_load("psychsci", cache = TRUE)
 biblio <- paper_table(psychsci[1:10], "bib")
 xrefs <- paper_table(psychsci[1:10], "xref")
+}
 }

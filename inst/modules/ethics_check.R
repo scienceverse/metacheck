@@ -8,56 +8,56 @@
 #' Patterns are designed to capture:
 #'
 #' **Human research committee names**
-#' - "Institutional Review Board" / IRB (US standard)
-#' - "Independent Ethics Committee" / IEC (ICH-GCP international clinical trial term)
-#' - "Ethical/Ethics Review Board" (generic)
-#' - "Ethics (Advisory/Review) Committee/Board/Panel/Sub-committee"
-#' - "Research Ethics Committee/Board/Panel" (UK/Canada/Australia)
-#' - "Medical Ethics Committee"
-#' - "Human Subjects/Research Committee" / "Human Research Ethics (Advisory) Panel"
-#' - "Committee for/on the Protection of Human Subjects"
-#' - "Committee on (Health) Research Ethics"
-#' - "Office of Research Ethics"
+#' - `Institutional Review Board` / IRB (US standard)
+#' - `Independent Ethics Committee` / IEC (ICH-GCP international clinical trial term)
+#' - `Ethical/Ethics Review Board` (generic)
+#' - `Ethics (Advisory/Review) Committee/Board/Panel/Sub-committee`
+#' - `Research Ethics Committee/Board/Panel` (UK/Canada/Australia)
+#' - `Medical Ethics Committee`
+#' - `Human Subjects/Research Committee` / `Human Research Ethics (Advisory) Panel`
+#' - `Committee for/on the Protection of Human Subjects`
+#' - `Committee on (Health) Research Ethics`
+#' - `Office of Research Ethics`
 #' - Abbreviations: IEC, REC, REB, ERB, METC, DEC. REC/REB/ERB/DEC are short
-#'   enough to collide with unrelated jargon (e.g. "REC" as a recognition-heuristic
-#'   model abbreviation, "DEC" as a decision-task label, "Reb" as an author surname),
+#'   enough to collide with unrelated jargon (e.g. `REC` as a recognition-heuristic
+#'   model abbreviation, `DEC` as a decision-task label, `Reb` as an author surname),
 #'   so these four require an ethics/approval/committee/board/panel/institutional/
 #'   protocol word within ~30 characters in the same sentence. IRB and IEC are kept
 #'   unconstrained as they are not observed to collide in practice.
-#' - Dutch: "Medisch-ethische toetsingscommissie" (METC)
-#' - French: "Comité d'éthique" / "Comité d'Ethique"
+#' - Dutch: `Medisch-ethische toetsingscommissie` (METC)
+#' - French: `Comité d'éthique` / `Comité d'Ethique`
 #'
 #' **Animal research committee names**
-#' - "Institutional Animal Care and Use Committee" / IACUC (US standard)
-#' - Any sentence containing "animal(s)" and "committee" (or "board"/"panel") within ~5 words
-#'   of each other — catches "Experimental Animal Care and Use Committee",
-#'   "Animal Ethics Committee", "Animal Welfare Board", "Animal Welfare Ethical Review Body", etc.
-#' - UK: "Animal Welfare Ethical Review Body" / AWERB
-#' - Dutch: "Dierexperimentencommissie" / DEC (see DEC constraint above); "Instantie voor Dierenwelzijn" / IvD
-#' - German: "Tierversuchskommission" / TvK (advisory committee under §15 Tierschutzgesetz)
-#' - French: "Comité d'éthique en expérimentation animale" / CEEA; "Comité d'éthique animale"
-#' - Spanish: "Comité de ética en experimentación animal" / CEEA
+#' - `Institutional Animal Care and Use Committee` / IACUC (US standard)
+#' - Any sentence containing `animal(s)` and `committee` (or `board`/`panel`) within ~5 words
+#'   of each other — catches `Experimental Animal Care and Use Committee`,
+#'   `Animal Ethics Committee`, `Animal Welfare Board`, `Animal Welfare Ethical Review Body`, etc.
+#' - UK: `Animal Welfare Ethical Review Body` / AWERB
+#' - Dutch: `Dierexperimentencommissie` / DEC (see DEC constraint above); `Instantie voor Dierenwelzijn` / IvD
+#' - German: `Tierversuchskommission` / TvK (advisory committee under §15 Tierschutzgesetz)
+#' - French: `Comité d'éthique en expérimentation animale` / CEEA; `Comité d'éthique animale`
+#' - Spanish: `Comité de ética en experimentación animal` / CEEA
 #'
 #' **Approval phrasing**
-#' - "Ethics/Ethical (approval|clearance) [was] (granted|obtained|received|given|secured)"
-#' - "Ethically approved"
-#' - "Approved by the (ethics|irb|institutional|independent|local|review|research) ..."
-#' - "This/The study/protocol/experiment/procedures/methods/research [was] (approved|reviewed) by"
-#' - "Study was ethically approved"
-#' - "(Followed|met|follow) the ethical (guidelines|standards|requirements)"
-#' - "In accordance with ... ethical (guidelines|standards)"
-#' - "Ethics protocol"
-#' - "Approved under (protocol|reference|number)"
+#' - `Ethics/Ethical (approval|clearance) [was] (granted|obtained|received|given|secured)`
+#' - `Ethically approved`
+#' - `Approved by the (ethics|irb|institutional|independent|local|review|research) ...`
+#' - `This/The study/protocol/experiment/procedures/methods/research [was] (approved|reviewed) by`
+#' - `Study was ethically approved`
+#' - `(Followed|met|follow) the ethical (guidelines|standards|requirements)`
+#' - `In accordance with ... ethical (guidelines|standards)`
+#' - `Ethics protocol`
+#' - `Approved under (protocol|reference|number)`
 #'
 #' **Waiver / exemption**
-#' - "Ethics/Ethical (waiver|exemption)"
-#' - "IRB (waiver|exemption|exempt)"
-#' - "Exempted from (ethics|irb|institutional review)"
-#' - "Waived by the (ethics|irb|institutional|review) (committee|board)"
-#' - "Deemed exempt"
+#' - `Ethics/Ethical (waiver|exemption)`
+#' - `IRB (waiver|exemption|exempt)`
+#' - `Exempted from (ethics|irb|institutional review)`
+#' - `Waived by the (ethics|irb|institutional|review) (committee|board)`
+#' - `Deemed exempt`
 #'
 #' **Declaration of Helsinki**
-#' - "Declaration of Helsinki" / "Helsinki Declaration"
+#' - `Declaration of Helsinki` / `Helsinki Declaration`
 #'
 #' Patterns are NOT designed to capture:
 #' - General ethical considerations or ethical dilemmas in study content

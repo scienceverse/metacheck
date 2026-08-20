@@ -12,11 +12,11 @@ data_col_facets(col_name, values, in_scale_block = NA)
 \item{values}{the column's values}
 
 \item{in_scale_block}{whether this column belongs to a detected scale block
-(a run of consecutive same-prefix columns sharing a response range — see
+(a run of consecutive same-prefix columns sharing a response range -- see
 \code{.detect_scale_blocks()}), which is what makes it a \code{likert} item. Requires
 the whole data frame to determine, so the caller supplies it; \code{NA} (the
 default) means unknown and leaves the concept alone. A column's own values
-cannot decide this — whole numbers over a narrow range describe a trial
+cannot decide this -- whole numbers over a narrow range describe a trial
 counter as readily as a rating item.}
 }
 \value{

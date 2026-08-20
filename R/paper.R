@@ -71,13 +71,15 @@ paper <- function(id = NULL, ...) {
 #' @export
 #' @keywords internal
 #' @examples
-#'
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' p1 <- psychsci[[1]]
 #' p2 <- psychsci[[2]]
 #' plist <- paperlist(p1, p2)
 #'
 #' merged <- paperlist(psychsci[1:2], psychsci[2:3],
 #'                     merge_duplicates = TRUE)
+#' }
 paperlist <- function(..., merge_duplicates = FALSE) {
   dots <- list(...)
 
@@ -148,11 +150,14 @@ test_paper <- function(text = LETTERS, url = character(0)) {
     classification_score = 0
   )
 
-  p$info <- dplyr::tibble(
-    title = "Test Paper",
-    file_hash = p$paper_id,
-    input_format = "test"
-  )
+  # Fill a row of the info table paper() already built from the schema, rather
+  # than replacing it with a narrower one. Overwriting dropped every column not
+  # set here -- including `doi`, which report_qmd() reads, so building a report
+  # from a test paper warned "Unknown or uninitialised column" on every run.
+  p$info[1, ] <- NA
+  p$info$title <- "Test Paper"
+  p$info$file_hash <- p$paper_id
+  p$info$input_format <- "test"
 
   p$url <- dplyr::tibble(
     href = url,
@@ -507,8 +512,11 @@ demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd")) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' biblio <- paper_table(psychsci[1:10], "bib")
 #' xrefs <- paper_table(psychsci[1:10], "xref")
+#' }
 paper_table <- function(paper, table, cols = NULL) {
   if (!.is_paper_list(paper)) {
     if (!.is_paper(paper)) stop("paper must be a paper or paperlist object.")
@@ -543,7 +551,10 @@ paper_table <- function(paper, table, cols = NULL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' paper_id(psychsci)
+#' }
 paper_id <- function(paper) {
   paper_table(paper, "info", "paper_id")$paper_id
 }
@@ -558,7 +569,10 @@ paper_id <- function(paper) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' biblio <- ref_table(psychsci[[1]])
+#' }
 ref_table <- function(paper) {
   bib_id <- text <- NULL
   cols <- c("paper_id", "bib_id", "doi")

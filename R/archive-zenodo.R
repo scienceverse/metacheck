@@ -13,7 +13,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' zenodo_links(psychsci)
+#' }
 zenodo_links <- function(paper) {
   href <- text <- NULL
 

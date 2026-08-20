@@ -8,7 +8,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' github_links(psychsci)
+#' }
 github_links <- function(paper) {
   href <- text <- text_id <- NULL
 
@@ -269,42 +272,43 @@ github_files <- function(repo, dir = "",
 #'
 #' Fetches the complete file tree of a GitHub repository in two API calls
 #' (repo metadata + recursive tree), rather than the N-request recursive
-#' \code{/contents/} crawl used by \code{github_files()}. Also gates large
-#' or software-dominated repositories before any recursive traversal.
+#' \code{/contents/} crawl used by \code{github_files()}.
+#'
+#' A repository is listed in full whatever its size, matching how every other
+#' archive source (OSF, Zenodo, ResearchBox, PsychArchives, local) is treated.
+#' Because the Git Trees API returns the whole tree in ONE request, listing a
+#' large repository costs no more than listing a small one, so there is nothing
+#' to protect against at this stage. What a repository's size does limit is how
+#' much of it is DOWNLOADED, and that is handled downstream by
+#' \code{download_repo_files()}'s per-file and per-repository budgets, which
+#' fill smallest-file-first up to the cap and report what was omitted.
+#'
+#' The one case that still refuses is GitHub's own hard API limit: a tree with
+#' more than 100,000 entries comes back flagged \code{truncated}, meaning the
+#' response is incomplete. There is no way to list such a repository through
+#' this endpoint, so it is reported rather than silently returning a partial
+#' file list.
 #'
 #' Returns a list with:
 #' \describe{
-#'   \item{\code{gated}}{logical}
-#'   \item{\code{reason}}{character reason for gating, or \code{NA}}
+#'   \item{\code{gated}}{logical; \code{TRUE} only when the repository could
+#'     not be listed at all (invalid/inaccessible, or a truncated tree)}
+#'   \item{\code{reason}}{character reason, or \code{NA}}
 #'   \item{\code{files}}{data.frame shaped like \code{github_files()} output,
-#'     or \code{NULL} when gated or when the tree could not be fetched}
+#'     or \code{NULL} when the tree could not be fetched}
 #'   \item{\code{default_branch}}{character}
 #' }
 #'
 #' @param repo GitHub repo URL or \code{"owner/repo"} string
-#' @param max_repo_size_mb gate: skip repos whose disk size exceeds this (MB;
-#'   from GitHub repo metadata)
-#' @param max_files gate: skip repos with more than this many files (default 1000)
-#' @param gate if FALSE, disable GitHub gates and use the legacy recursive
-#'   listing via [github_files()]
 #'
 #' @export
 #' @keywords internal
-github_tree_files <- function(repo,
-                              max_repo_size_mb = 500,
-                              max_files        = 1000,
-                              gate             = TRUE) {
+github_tree_files <- function(repo) {
   clean_repo <- github_repo(repo)
   if (is.null(clean_repo))
     return(list(gated = TRUE,
                 reason = "invalid or inaccessible GitHub repository",
                 files  = NULL, default_branch = NA_character_))
-
-  if (!isTRUE(gate)) {
-    files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
-    return(list(gated = FALSE, reason = NA_character_,
-                files = files_df, default_branch = NA_character_))
-  }
 
   # ── 1. Repo metadata (size + default branch, 1 request) ─────────────────────
   meta_resp <- tryCatch(
@@ -321,17 +325,6 @@ github_tree_files <- function(repo,
 
   meta           <- httr2::resp_body_json(meta_resp)
   default_branch <- meta$default_branch %||% "main"
-  repo_size_kb   <- meta$size %||% 0L
-  repo_size_mb   <- as.numeric(repo_size_kb) / 1024
-
-  if (is.finite(max_repo_size_mb) && repo_size_mb > max_repo_size_mb)
-    return(list(
-      gated  = TRUE,
-      reason = sprintf(
-        "GitHub repo size ~%s MB exceeds the %s MB gate",
-        .cap_num(round(repo_size_mb)),
-        .cap_num(max_repo_size_mb)),
-      files  = NULL, default_branch = default_branch))
 
   # ── 2. Git tree (recursive, 1 request) ──────────────────────────────────────
   tree_resp <- tryCatch(
@@ -358,14 +351,6 @@ github_tree_files <- function(repo,
 
   blobs   <- Filter(\(x) x$type == "blob", tree$tree %||% list())
   n_files <- length(blobs)
-
-  if (is.finite(max_files) && n_files > max_files)
-    return(list(
-      gated  = TRUE,
-      reason = sprintf(
-        "GitHub repo has %d files (gate is %d)",
-        n_files, max_files),
-      files  = NULL, default_branch = default_branch))
 
   # ── 3. Build file data.frame ─────────────────────────────────────────────────
   paths <- vapply(blobs, \(x) x$path %||% "", character(1))
