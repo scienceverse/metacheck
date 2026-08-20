@@ -157,6 +157,11 @@ test_that("no scale is named when neither dictionary nor manuscript identifies i
 })
 
 test_that("scale metadata is emitted into Psych-DS variableMeasured", {
+  # .psychds_variable_measured() lives in R/psychds-convert.R, which is only
+  # on the convert_psychds branch, not merged here -- skip until that branch
+  # is merged in rather than reimplementing untested logic blind.
+  skip_if_not(exists(".psychds_variable_measured", where = asNamespace("metacheck")),
+              "requires R/psychds-convert.R from the convert_psychds branch")
   # The PropertyValue builder puts the scale name in schema.org's native
   # measurementTechnique and the grouping in a namespaced metacheck:scale block.
   cols <- data.frame(
@@ -187,6 +192,10 @@ test_that("scale metadata is emitted into Psych-DS variableMeasured", {
 })
 
 test_that("psychds variableMeasured emits DDI code list, missing, question", {
+  # See the skip note in the previous test -- .psychds_variable_measured()
+  # is only on the convert_psychds branch.
+  skip_if_not(exists(".psychds_variable_measured", where = asNamespace("metacheck")),
+              "requires R/psychds-convert.R from the convert_psychds branch")
   cols <- data.frame(
     source_file = "s.csv", column_name = "sex",
     representation = "numeric", measurement_level = "nominal",
