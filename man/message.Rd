@@ -17,6 +17,8 @@ message(..., domain = NULL, appendLF = TRUE)
 TRUE
 }
 \description{
-Less scary green messages
+Metacheck's replacement for \code{\link[base:message]{base::message()}}: prints in green when run
+interactively (so it reads as informational rather than a warning), and
+is silent entirely when \code{\link[=verbose]{verbose()}} is \code{FALSE}.
 }
 \keyword{internal}

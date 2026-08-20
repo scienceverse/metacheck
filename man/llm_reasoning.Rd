@@ -19,7 +19,7 @@ the current default reasoning effort (invisibly when setting)
 Every LLM call this package makes is a bounded, structured-extraction task
 over text already given in the prompt (classify a file, extract a
 variable's label, list the scales named in ~30 sentences, group files by
-study) — pattern-matching over given material, not multi-step reasoning
+study) -- pattern-matching over given material, not multi-step reasoning
 (no arithmetic, no multi-hop inference, no planning). A "thinking"/
 "reasoning" model spending extra tokens re-deriving what the prompt already
 states is close to pure overhead here: it inflates cost/latency and eats
@@ -29,26 +29,26 @@ via Groq. Minimal reasoning effort is the right DEFAULT for what this
 package does, not a tradeoff against quality.
 }
 \details{
-There is no single universal "reasoning" switch across providers — this is
+There is no single universal "reasoning" switch across providers -- this is
 genuinely per model family, each verified rather than assumed:
 \itemize{
 \item \verb{openai/gpt-oss-*} (Groq or any OpenAI-compatible host): the
 \code{reasoning_effort} chat-completion parameter, accepting \code{"low"},
-\code{"medium"}, or \code{"high"} — \code{"low"} is the minimum; there is no full-off
+\code{"medium"}, or \code{"high"} -- \code{"low"} is the minimum; there is no full-off
 option for this family (verified against Groq's own docs).
 \item \verb{qwen3*}-family models: also \code{reasoning_effort}, but accepting
-\code{"none"} or \code{"default"} — \code{"none"} fully disables reasoning tokens,
+\code{"none"} or \code{"default"} -- \code{"none"} fully disables reasoning tokens,
 unlike gpt-oss.
 \item Mistral's reasoning-capable models (\code{mistral-small-latest},
 \code{mistral-medium-3-5}): also \code{reasoning_effort}, but with only TWO
 values, \code{"high"} (full thinking chunk) or \code{"none"} (thinking chunk
-omitted) — verified against Mistral's own docs, a third distinct shape
+omitted) -- verified against Mistral's own docs, a third distinct shape
 from both gpt-oss and qwen3.
 \item Ollama-hosted reasoning models (DeepSeek-R1, Qwen3, ...): the
 native API's boolean \code{think} (\code{llm()} already sends this as a
 \verb{/nothink} system-prompt prefix over Ollama's native \verb{/api/chat}
 endpoint when \code{think = FALSE}, since Ollama's OpenAI-compatible \verb{/v1/}
-endpoint ignores it) — a genuinely different mechanism (a flag on the
+endpoint ignores it) -- a genuinely different mechanism (a flag on the
 request, not a graded effort level), so \code{llm_reasoning()}'s \code{"low"}/
 \code{"none"} both map to \code{think = FALSE} for this family; there is no
 Ollama equivalent of \code{"medium"}/\code{"high"} to request.

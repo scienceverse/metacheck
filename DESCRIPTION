@@ -44,6 +44,12 @@ Suggests:
     openxlsx,
     haven,
     codebook,
+    readxl,
+    data.table,
+    officer,
+    pdftools,
+    SnowballC,
+    yaml,
     devtools,
     httptest2,
     processx,
@@ -85,7 +91,6 @@ Imports:
     graphics,
     grDevices,
     utils
-VignetteBuilder: knitr
 URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
 Depends: 

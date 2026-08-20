@@ -6,7 +6,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' aspredicted_links(psychsci)
+#' }
 aspredicted_links <- function(paper) {
   href <- NULL
 

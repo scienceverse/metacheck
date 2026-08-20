@@ -69,7 +69,10 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api"),
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' osf_links(psychsci)
+#' }
 osf_links <- function(paper) {
   href <- text <- NULL
 

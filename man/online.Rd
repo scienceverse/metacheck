@@ -13,7 +13,10 @@ online(url = "google.com")
 boolean
 }
 \description{
-Check if the host of a URL is online
+Resolves the URL's host via DNS lookup to check whether it is reachable.
+A scheme (\verb{http://}/\verb{https://}) is added automatically if \code{url} doesn't
+have one. This only confirms the host resolves, not that the specific
+page or API endpoint responds.
 }
 \examples{
 online()

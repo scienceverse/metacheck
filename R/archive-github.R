@@ -8,7 +8,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' github_links(psychsci)
+#' }
 github_links <- function(paper) {
   href <- text <- text_id <- NULL
 

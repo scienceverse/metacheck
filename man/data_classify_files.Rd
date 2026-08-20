@@ -11,7 +11,7 @@ data_classify_files(file_name, file_path = NULL)
 
 \item{file_path}{optional character vector, same length as \code{file_name}: the
 full repo-relative path of each file (e.g. \code{"ResearchBox 801/Materials/ Informant Survey_Redacted.pdf"}). When supplied, a keyword found ANYWHERE
-in the path (a folder segment OR the filename itself — see the Tier 2
+in the path (a folder segment OR the filename itself -- see the Tier 2
 keyword table below) reclassifies a file. A researcher's own naming,
 whether the folder or the file, is a stronger, more deliberate signal
 than a generic extension like \code{.pdf}/\code{.docx}/\code{.txt}, which could hold

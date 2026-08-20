@@ -37,6 +37,7 @@ Metacheck is meant to be modular and for users to be able to buil their own libr
 
     ```
     # sample 10 random papers
+    psychsci <- papers_load("psychsci", cache = TRUE)
     papers <- sample(psychsci, 10)
 
     # generate a report for each paper

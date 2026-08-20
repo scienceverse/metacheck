@@ -20,7 +20,7 @@ statistic (\code{t}, \code{df}, \code{p}), so \code{\link[=stato_type_column]{st
 header. \code{.spv} tables decode LONG/tidy instead (see R/spv.R): one row
 per cell, with the statistic's own NAME sitting as a value inside a
 dimension column (e.g. a row where the "Statistics" column reads
-\code{"Sig. (2-tailed)"} and \code{value} is \code{0.037}) — there is no header to type at
+\code{"Sig. (2-tailed)"} and \code{value} is \code{0.037}) -- there is no header to type at
 all. This types that row from its OWN category value instead, reusing the
 SAME \code{.STATO_MAP}/\code{.MC_STAT_MAP} dictionaries \code{stato_type_column()} draws
 on (SPSS's row labels and JASP/jamovi's column headers name the same

@@ -48,13 +48,26 @@ accuracy <- function(expected, observed) {
 }
 
 
-#' Validate
+#' Validate a module's output against coded ground truth
 #'
-#' @param gt a data frame or vector of text
-#' @param module the module
-#' @param compare name of the module output table for comparison
+#' Runs `module` on a set of texts you have already coded by hand, then
+#' checks its output against your coding. Each text in `gt` becomes its own
+#' test paper; the module's output table (`compare`) is joined back to `gt`
+#' by `paper_id` and `text`, and for every column that appears in both, a
+#' `<column>.valid` logical column is added marking where the module's value
+#' matches your ground truth. Pass the result to [accuracy()] to summarise
+#' agreement (e.g. sensitivity, specificity, d-prime).
 #'
-#' @returns something
+#' @param gt a vector of texts to code, or a data frame with `paper_id` and
+#'   `text` columns plus one column per ground-truth value to compare against
+#'   the module's output (column names must match the module output table)
+#' @param module the name of the module to run and validate
+#' @param compare name of the list item in the module's output to compare
+#'   against `gt` (usually `"table"`, the module's full row-level results)
+#'
+#' @returns `gt` full-joined with the module's `compare` table (columns
+#'   suffixed `.gt` and `.mod` where names collide), plus one `<column>.valid`
+#'   logical column per compared column
 #' @export
 #'
 #' @examples

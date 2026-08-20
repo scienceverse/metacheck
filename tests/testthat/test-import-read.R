@@ -68,9 +68,13 @@ test_that("read - recursive", {
   # recursive ----
   paper <- read(a, recursive = TRUE)
   expect_equal(length(paper), 5)
-  # exp <- list.files(a, recursive = TRUE) |>
-  #   gsub("\\.json$", "", x = _)
-  exp <- paper_id(psychsci[1:3]) |> _[c(1,1,2,3,3)]
+  # read(recursive = TRUE) lists files via list.files(..., recursive = TRUE),
+  # which returns paths in alphabetical order -- derive the expectation the
+  # same way rather than hardcoding a paper-id-dependent pattern.
+  exp <- list.files(a, pattern = "\\.json$", recursive = TRUE, full.names = TRUE) |>
+    sort() |>
+    basename() |>
+    gsub("\\.json$", "", x = _)
   expect_equal(paper_id(paper), exp)
 })
 

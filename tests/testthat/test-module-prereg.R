@@ -160,6 +160,55 @@ test_that("multiple papers", {
   expect_setequal(mo$summary_table$preregistration, c(1,1))
 }, "mock")
 
+test_that("inaccessible registration link is reported, not dropped silently", {
+  # https://github.com/scienceverse/metacheck/issues/361
+  # osf_type() returns "inaccessible" for a validly-formed OSF id that
+  # cannot be read (private, embargoed, withdrawn, deleted) -- mocked here
+  # since a real private resource cannot be safely recorded as a fixture.
+  #
+  # Uses with_mocked_bindings() (explicit scope), not local_mocked_bindings():
+  # this project's custom test_that() wrapper in helper.R does not restore
+  # local_mocked_bindings()'s deferred cleanup correctly -- confirmed the
+  # mock leaks into the NEXT test's real calls when tried that way (same
+  # class of problem test-archive-osf.R's .osf_status_error test comment
+  # already documents for req_perform()).
+  guid <- "abcde"
+  paper <- test_paper(url = paste0("https://osf.io/", guid))
+  mo <- testthat::with_mocked_bindings(
+    module_run(paper, "prereg_check"),
+    osf_type = function(guid) "inaccessible",
+    .package = "metacheck"
+  )
+
+  # not the "no registrations" branch -- this is a real, distinct finding
+  expect_false(grepl("no registrations", mo$summary_text))
+  expect_match(mo$summary_text, "could not be accessed")
+  expect_true(any(grepl("private, embargoed, or withdrawn", mo$report)))
+  expect_true(any(grepl(guid, mo$report)))
+})
+
+test_that("registration that type-checks but fails to fetch is reported", {
+  # https://github.com/scienceverse/metacheck/issues/361
+  # osf_type() can say "registrations" while the later fetch still fails
+  # (osf_get_all_pages() tags that with an osf_error attribute) -- confirm
+  # this is tracked the same way as an osf_type()-detected inaccessible link.
+  # See the note above on why with_mocked_bindings() (not
+  # local_mocked_bindings()) is used here.
+  guid <- "fghij"
+  paper <- test_paper(url = paste0("https://osf.io/", guid))
+  mo <- testthat::with_mocked_bindings(
+    module_run(paper, "prereg_check"),
+    osf_type = function(guid) "registrations",
+    osf_get_all_pages = function(url, page_end = Inf) {
+      metacheck:::.osf_error_result("forbidden")
+    },
+    .package = "metacheck"
+  )
+
+  expect_match(mo$summary_text, "could not be accessed")
+  expect_true(any(grepl(guid, mo$report)))
+})
+
 test_that("combine >10 OSF registrations", {
   # https://github.com/scienceverse/metacheck/issues/262
 

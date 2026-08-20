@@ -193,6 +193,13 @@ format_bib_authors <- function(authors) {
       }
       req |>
         httr2::req_error(is_error = \(resp) FALSE) |>
+        # retry_on_failure covers a connection-level failure (timeout, DNS,
+        # refused), not just an HTTP error response -- a live server can
+        # still throw here on one bad connection attempt (see issue #363,
+        # same failure mode confirmed for the sibling .grobid_isalive()
+        # check), so retrying absorbs a one-off blip instead of treating it
+        # the same as a genuinely dead server.
+        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
         httr2::req_perform()
     },
     error = function(e) {
@@ -200,6 +207,7 @@ format_bib_authors <- function(authors) {
         stop(
           "Connection to the BIBR server failed. ",
           "Please check your connection or the URL: ", api_url,
+          " (", conditionMessage(e), ")",
           call. = FALSE
         )
       }

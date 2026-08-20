@@ -1,5 +1,5 @@
 test_that("psychsci", {
-  expect_true(.is_paper_list(metacheck::psychsci))
+  expect_true(.is_paper_list(psychsci))
 
   # check all valid format
   for (paper in psychsci) {

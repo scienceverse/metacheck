@@ -40,6 +40,7 @@
 #'
 #' @examples
 #' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
 #' psycharchives_links(psychsci)
 #' }
 psycharchives_links <- function(paper) {

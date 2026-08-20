@@ -18,7 +18,7 @@ or yields no questions.
 \description{
 Reads the survey object's questions and returns one row per data column the
 export would produce, carrying the item wording and the coded response
-options — the same shape as the other \code{parse_codebook()} back-ends, so the
+options -- the same shape as the other \code{parse_codebook()} back-ends, so the
 rows join the codebook / scale pipeline unchanged. The \code{group} column holds
 each question's \code{DataExportTag} stem, a high-confidence scale-block signal.
 }

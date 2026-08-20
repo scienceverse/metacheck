@@ -4,7 +4,7 @@
 #' This module retrieves information from repositories.
 #'
 #' @details
-#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, PsychArchives, and Zenodo based on links in the manuscript.
+#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, PsychArchives, Zenodo, Dataverse, Figshare, Dryad, ReShare, and 4TU.ResearchData based on links in the manuscript.
 #'
 #' When a linked OSF page is a registration, its `registered_from` project (the
 #' one it was registered from, which the manuscript itself may never link
@@ -57,6 +57,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     rb_links_found     <- empty_links
     pa_links_found     <- empty_links
     zenodo_links_found <- empty_links
+    dataverse_links_found <- empty_links
+    figshare_links_found <- empty_links
+    dryad_links_found <- empty_links
+    reshare_links_found <- empty_links
+    researchdata4tu_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
     # exclude psychsci badges
@@ -73,6 +78,16 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     pa_links_found$repo_type     <- "psycharchives"
     zenodo_links_found <- zenodo_links(paper)
     zenodo_links_found$repo_type <- "zenodo"
+    dataverse_links_found <- dataverse_links(paper)
+    dataverse_links_found$repo_type <- "dataverse"
+    figshare_links_found <- figshare_links(paper)
+    figshare_links_found$repo_type <- "figshare"
+    dryad_links_found <- dryad_links(paper)
+    dryad_links_found$repo_type <- "dryad"
+    reshare_links_found <- reshare_links(paper)
+    reshare_links_found$repo_type <- "reshare"
+    researchdata4tu_links_found <- researchdata4tu_links(paper)
+    researchdata4tu_links_found$repo_type <- "researchdata4tu"
   }
 
   ## organise repos in a table
@@ -82,7 +97,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     github_links_found[, cols],
     rb_links_found[, cols],
     pa_links_found[, cols],
-    zenodo_links_found[, cols]
+    zenodo_links_found[, cols],
+    dataverse_links_found[, cols],
+    figshare_links_found[, cols],
+    dryad_links_found[, cols],
+    reshare_links_found[, cols],
+    researchdata4tu_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   repos$repo_error <- NA_character_
@@ -539,6 +559,309 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
+  ## Dataverse ----
+  # Like PsychArchives, Dataverse's REST API lists a dataset's files (name,
+  # size, checksum, per-file download URL) without downloading them, so this
+  # only fills file_url / file_size and leaves file_location = NA;
+  # download_repo_files() fetches the bytes later (deferred, like Zenodo/OSF).
+  dv_urls <- repos |>
+    dplyr::filter(repo_type == "dataverse") |>
+    _$repo_url |>
+    unique()
+  dv_files_df <- data.frame(repo_name = character(0))
+  if (length(dv_urls) > 0) {
+    tryCatch({
+      .dv_info <- suppressMessages(dataverse_info(dv_urls))
+
+      if (nrow(.dv_info) > 0 && "files" %in% names(.dv_info)) {
+        file_rows <- lapply(seq_len(nrow(.dv_info)), function(i) {
+          files_i <- .dv_info$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            df <- f$dataFile %||% list()
+            file_url <- if (!is.null(df$id))
+              sprintf("https://%s/api/access/datafile/%s",
+                     .dv_info$dataverse_host[[i]], df$id)
+            else NA_character_
+
+            data.frame(
+              repo_url = as.character(.dv_info$dataverse_url[[i]]),
+              file_name = as.character(f$label %||% df$filename %||% NA_character_),
+              file_path = as.character(f$label %||% df$filename %||% NA_character_),
+              file_url = file_url,
+              file_location = NA_character_,
+              file_size = as.numeric(df$filesize %||% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        dv_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(dv_files_df) > 0) {
+          dv_files_df$ext <- tolower(sub("^.*\\.", "", basename(dv_files_df$file_name)))
+          no_ext <- !is.na(dv_files_df$file_name) &
+            !grepl("\\.", basename(dv_files_df$file_name))
+          dv_files_df$ext[no_ext] <- NA_character_
+
+          dv_files_df <- dv_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          dv_files_df$ext <- NULL
+        } else {
+          dv_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% dv_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## Figshare ----
+  # Like Dataverse/PsychArchives, Figshare's REST API lists an article's files
+  # (name, size, checksum, per-file download URL) without downloading them, so
+  # this only fills file_url / file_size and leaves file_location = NA;
+  # download_repo_files() fetches the bytes later (deferred, like Zenodo/OSF).
+  fs_urls <- repos |>
+    dplyr::filter(repo_type == "figshare") |>
+    _$repo_url |>
+    unique()
+  fs_files_df <- data.frame(repo_name = character(0))
+  if (length(fs_urls) > 0) {
+    tryCatch({
+      .fs_info <- suppressMessages(figshare_info(fs_urls))
+
+      if (nrow(.fs_info) > 0 && "files" %in% names(.fs_info)) {
+        file_rows <- lapply(seq_len(nrow(.fs_info)), function(i) {
+          files_i <- .fs_info$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            data.frame(
+              repo_url = as.character(.fs_info$figshare_url[[i]]),
+              file_name = as.character(f$name %||% NA_character_),
+              file_path = as.character(f$name %||% NA_character_),
+              file_url = as.character(f$download_url %||% NA_character_),
+              file_location = NA_character_,
+              file_size = as.numeric(f$size %||% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        fs_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(fs_files_df) > 0) {
+          fs_files_df$ext <- tolower(sub("^.*\\.", "", basename(fs_files_df$file_name)))
+          no_ext <- !is.na(fs_files_df$file_name) &
+            !grepl("\\.", basename(fs_files_df$file_name))
+          fs_files_df$ext[no_ext] <- NA_character_
+
+          fs_files_df <- fs_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          fs_files_df$ext <- NULL
+        } else {
+          fs_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% fs_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## Dryad ----
+  # Like Figshare/Dataverse, Dryad's REST API lists a dataset's files (path,
+  # size, digest, per-file download URL) without downloading them, so this
+  # only fills file_url / file_size and leaves file_location = NA;
+  # download_repo_files() fetches the bytes later (deferred, like Zenodo/OSF).
+  dryad_urls <- repos |>
+    dplyr::filter(repo_type == "dryad") |>
+    _$repo_url |>
+    unique()
+  dryad_files_df <- data.frame(repo_name = character(0))
+  if (length(dryad_urls) > 0) {
+    tryCatch({
+      .dryad_info_tbl <- suppressMessages(dryad_info(dryad_urls))
+
+      if (nrow(.dryad_info_tbl) > 0 && "files" %in% names(.dryad_info_tbl)) {
+        file_rows <- lapply(seq_len(nrow(.dryad_info_tbl)), function(i) {
+          files_i <- .dryad_info_tbl$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            dl_href <- f$`_links`$`stash:download`$href %||% NA_character_
+            file_url <- if (!is.na(dl_href)) paste0("https://datadryad.org", dl_href)
+                        else NA_character_
+
+            data.frame(
+              repo_url = as.character(.dryad_info_tbl$dryad_url[[i]]),
+              file_name = as.character(f$path %||% NA_character_),
+              file_path = as.character(f$path %||% NA_character_),
+              file_url = file_url,
+              file_location = NA_character_,
+              file_size = as.numeric(f$size %||% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        dryad_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(dryad_files_df) > 0) {
+          dryad_files_df$ext <- tolower(sub("^.*\\.", "", basename(dryad_files_df$file_name)))
+          no_ext <- !is.na(dryad_files_df$file_name) &
+            !grepl("\\.", basename(dryad_files_df$file_name))
+          dryad_files_df$ext[no_ext] <- NA_character_
+
+          dryad_files_df <- dryad_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          dryad_files_df$ext <- NULL
+        } else {
+          dryad_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% dryad_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## ReShare ----
+  # Like Dataverse/Figshare/Dryad, ReShare's EPrints REST API lists a
+  # deposit's files (name, size, hash, per-file download URL) without
+  # downloading them, so this only fills file_url / file_size and leaves
+  # file_location = NA; download_repo_files() fetches the bytes later
+  # (deferred, like Zenodo/OSF).
+  reshare_urls <- repos |>
+    dplyr::filter(repo_type == "reshare") |>
+    _$repo_url |>
+    unique()
+  reshare_files_df <- data.frame(repo_name = character(0))
+  if (length(reshare_urls) > 0) {
+    tryCatch({
+      .reshare_info_tbl <- suppressMessages(reshare_info(reshare_urls))
+
+      if (nrow(.reshare_info_tbl) > 0 && "files" %in% names(.reshare_info_tbl)) {
+        file_rows <- lapply(seq_len(nrow(.reshare_info_tbl)), function(i) {
+          files_i <- .reshare_info_tbl$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            file_url <- f$uri %||% NA_character_
+            if (!is.na(file_url)) file_url <- sub("^http://", "https://", file_url)
+
+            data.frame(
+              repo_url = as.character(.reshare_info_tbl$reshare_url[[i]]),
+              file_name = as.character(f$filename %||% NA_character_),
+              file_path = as.character(f$filename %||% NA_character_),
+              file_url = file_url,
+              file_location = NA_character_,
+              file_size = as.numeric(f$filesize %||% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        reshare_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(reshare_files_df) > 0) {
+          reshare_files_df$ext <- tolower(sub("^.*\\.", "", basename(reshare_files_df$file_name)))
+          no_ext <- !is.na(reshare_files_df$file_name) &
+            !grepl("\\.", basename(reshare_files_df$file_name))
+          reshare_files_df$ext[no_ext] <- NA_character_
+
+          reshare_files_df <- reshare_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          reshare_files_df$ext <- NULL
+        } else {
+          reshare_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% reshare_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## 4TU.ResearchData ----
+  # Djehuty (4TU.ResearchData's platform) implements the same Figshare v2 API
+  # as figshare_info()/figshare_file_download() use, so this block is
+  # otherwise identical to the Figshare block above -- see archive-4tu.R.
+  fourtu_urls <- repos |>
+    dplyr::filter(repo_type == "researchdata4tu") |>
+    _$repo_url |>
+    unique()
+  fourtu_files_df <- data.frame(repo_name = character(0))
+  if (length(fourtu_urls) > 0) {
+    tryCatch({
+      .fourtu_info <- suppressMessages(researchdata4tu_info(fourtu_urls))
+
+      if (nrow(.fourtu_info) > 0 && "files" %in% names(.fourtu_info)) {
+        file_rows <- lapply(seq_len(nrow(.fourtu_info)), function(i) {
+          files_i <- .fourtu_info$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            data.frame(
+              repo_url = as.character(.fourtu_info$researchdata4tu_url[[i]]),
+              file_name = as.character(f$name %||% NA_character_),
+              file_path = as.character(f$name %||% NA_character_),
+              file_url = as.character(f$download_url %||% NA_character_),
+              file_location = NA_character_,
+              file_size = as.numeric(f$size %||% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        fourtu_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(fourtu_files_df) > 0) {
+          fourtu_files_df$ext <- tolower(sub("^.*\\.", "", basename(fourtu_files_df$file_name)))
+          no_ext <- !is.na(fourtu_files_df$file_name) &
+            !grepl("\\.", basename(fourtu_files_df$file_name))
+          fourtu_files_df$ext[no_ext] <- NA_character_
+
+          fourtu_files_df <- fourtu_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          fourtu_files_df$ext <- NULL
+        } else {
+          fourtu_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% fourtu_urls] <<- conditionMessage(e)
+    })
+  }
+
   ## Local files ----
   local_files_df <- data.frame(repo_name = character(0))
   if (!is.null(local_path)) {
@@ -576,7 +899,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (nrow(repos) == 0) {
     info <- list(
       traffic_light = "na",
-      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, PsychArchives, or Zenodo.",
+      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, PsychArchives, Zenodo, Dataverse, Figshare, Dryad, ReShare, or 4TU.ResearchData.",
       summary_table = data.frame(
         paper_id = paper_id(paper),
         repo_n = 0,
@@ -592,7 +915,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, pa_files_df, zenodo_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, pa_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, local_files_df)
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)

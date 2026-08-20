@@ -72,7 +72,7 @@ llm <- function(text, system_prompt,
   unique_text <- unique(text[[text_col]])
   # Sanitise before anything downstream keys on the text (cache key, request
   # body). Research data routinely carries invalid UTF-8 (a mis-encoded
-  # apostrophe/°/é in a free-text survey answer) and stray control bytes; ellmer
+  # apostrophe/deg/e in a free-text survey answer) and stray control bytes; ellmer
   # serialises those into a JSON request body the provider then cannot parse
   # (Mistral: HTTP 400 "There was an error parsing the body"). One guard here
   # protects every caller and every provider. See .llm_sanitise_text().
@@ -101,7 +101,7 @@ llm <- function(text, system_prompt,
   }
 
   # session-wide reasoning-effort default (llm_reasoning()), translated to
-  # whichever parameter/channel the ACTIVE model family actually understands —
+  # whichever parameter/channel the ACTIVE model family actually understands --
   # see .llm_apply_reasoning()'s own roxygen for why this is not a single
   # cross-provider knob, and specifically why "reasoning_effort" must travel
   # as `api_args` (a request-body override reaching Groq/OpenAI-compatible
@@ -190,10 +190,10 @@ llm <- function(text, system_prompt,
 
     # api_args is only ever non-empty here for a model family
     # .llm_apply_reasoning() specifically recognised (gpt-oss/qwen3 on a
-    # Groq-or-similar OpenAI-compatible host — see that function's roxygen for
+    # Groq-or-similar OpenAI-compatible host -- see that function's roxygen for
     # why reasoning_effort must travel this way, not through `params`), so
     # this never reaches an unrelated provider constructor that might reject
-    # an unknown `api_args` argument (Anthropic, Gemini, ...) — only added
+    # an unknown `api_args` argument (Anthropic, Gemini, ...) -- only added
     # to the call when non-empty, for exactly that reason.
     chat_call_args <- list(name = model, system_prompt = system_prompt, params = params)
     if (length(reasoning_api_args) > 0) chat_call_args$api_args <- reasoning_api_args
@@ -287,10 +287,10 @@ llm <- function(text, system_prompt,
       # A systemic failure (bad auth, server down, unreachable endpoint) means
       # every call this run will fail and checks fall back to rules only. Say so
       # loudly and immediately, once per session, so the run is not silently
-      # label-blind — the per-row warnings below still record each failure.
+      # label-blind -- the per-row warnings below still record each failure.
       if (.llm_is_systemic_error(e))
         .llm_systemic_notice$trip(paste0(
-          "LLM appears unavailable this run — checks will fall back to ",
+          "LLM appears unavailable this run -- checks will fall back to ",
           "RULES ONLY (no LLM inference). Check the endpoint and API key ",
           "(vllm reads Sys.getenv(\"VLLM_API_KEY\")).\n  First error: ", msg))
       if (structured) {
@@ -407,7 +407,7 @@ llm <- function(text, system_prompt,
 
 # Build the message recorded for a failed LLM call. ellmer/httr2 HTTP errors
 # carry the response object (on the condition itself or its parent), and its
-# body holds the provider's actual reason — e.g. behind a bare "HTTP 400 Bad
+# body holds the provider's actual reason -- e.g. behind a bare "HTTP 400 Bad
 # Request", Groq says "Please reduce the length of the messages or completion".
 # Without it a user cannot tell an oversized prompt from a malformed schema.
 # TRUE when a structured-output failure is worth retrying verbatim: Groq
@@ -438,18 +438,18 @@ llm <- function(text, system_prompt,
   )
 }
 
-# Does this error mean the LLM is SYSTEMICALLY unavailable — i.e. every LLM call
+# Does this error mean the LLM is SYSTEMICALLY unavailable -- i.e. every LLM call
 # this run will fail the same way, so all checks silently fall back to rules
 # only? Three such classes: an authentication failure (HTTP 401/403, e.g. a
 # missing/expired API key), the endpoint erroring server-side (HTTP >= 500), or a
-# genuine transport failure (DNS, connection refused, timeout — the endpoint is
+# genuine transport failure (DNS, connection refused, timeout -- the endpoint is
 # unreachable). Distinguished from a transient single-call failure (a one-off 400
 # or a malformed-JSON reply), which is NOT systemic and keeps only its per-row
 # warning.
 #
 # The subtle case: an error with NO response object is usually transport-level,
 # BUT a jsonlite parse error (the request returned 200, the body just was not
-# valid JSON) also has no response — and is per-call, not systemic. So a
+# valid JSON) also has no response -- and is per-call, not systemic. So a
 # no-response error only counts as systemic when it is NOT a retryable JSON/parse
 # failure and its message looks like a real connection problem.
 .llm_is_systemic_error <- function(e) {
@@ -458,7 +458,7 @@ llm <- function(text, system_prompt,
   if (isTRUE(status %in% c(401L, 403L))) return(TRUE)   # auth: every call fails
   if (isTRUE(status >= 500L)) return(TRUE)              # server down / erroring
   if (!is.null(resp)) return(FALSE)                     # got a response: per-call
-  # No response object. A malformed-JSON reply also has none — that is a per-call
+  # No response object. A malformed-JSON reply also has none -- that is a per-call
   # model hiccup, not the endpoint being down, so exclude it.
   if (.llm_json_retryable(e)) return(FALSE)
   # Otherwise treat it as systemic only if the message names a transport failure.
@@ -471,10 +471,10 @@ llm <- function(text, system_prompt,
 }
 
 # Emit an explicit, immediate notice the FIRST time the LLM looks systemically
-# unavailable in a session, then stay quiet — the per-call warnings still record
+# unavailable in a session, then stay quiet -- the per-call warnings still record
 # every failure for warnings(). Uses message() (prints to stderr immediately),
 # not warning() (which R queues and shows only at the end, deduplicated and
-# capped at 50 — invisible mid-run, which is exactly the failure we are fixing).
+# capped at 50 -- invisible mid-run, which is exactly the failure we are fixing).
 .llm_systemic_notice <- local({
   done <- FALSE
   list(
@@ -485,11 +485,11 @@ llm <- function(text, system_prompt,
 
 # Make text safe to serialise into a JSON request body for any LLM provider.
 # Two problems, both common in research data:
-#   * invalid UTF-8 — a mis-encoded byte (a Latin-1 apostrophe/°/é a nominally-
+#   * invalid UTF-8 -- a mis-encoded byte (a Latin-1 apostrophe/deg/e a nominally-
 #     UTF-8 file never validated) makes the JSON body unparseable. We reinterpret
 #     invalid entries as Latin-1, a conversion that cannot fail (every byte is a
 #     valid Latin-1 character), leaving valid text untouched.
-#   * control characters — raw NUL / C0 control bytes (except tab/newline) are
+#   * control characters -- raw NUL / C0 control bytes (except tab/newline) are
 #     illegal in JSON strings; strip them.
 # Applied to the vector of prompts before caching or sending, so no malformed
 # text reaches the provider regardless of which upstream path built it.
@@ -553,7 +553,7 @@ llm <- function(text, system_prompt,
     }
   }
 
-  # Single object — convert NULLs to NAs and make one-row df
+  # Single object -- convert NULLs to NAs and make one-row df
   if (is.list(result)) {
     result[vapply(result, is.null, logical(1))] <- NA
   }
@@ -684,7 +684,7 @@ llm_max_calls <- function(n = NULL) {
 #' Set the default max_tokens for LLM calls
 #'
 #' `llm()` needs SOME max_tokens value on every call (a provider truncates a
-#' response with no clear error otherwise — a codebook/data-check pass over
+#' response with no clear error otherwise -- a codebook/data-check pass over
 #' many columns at once is the case most likely to need more than the
 #' built-in default). Rather than requiring every module call to repeat
 #' `params = list(max_tokens = ...)` individually, set it once per session
@@ -723,7 +723,7 @@ llm_max_tokens <- function(n = NULL) {
 #' Every LLM call this package makes is a bounded, structured-extraction task
 #' over text already given in the prompt (classify a file, extract a
 #' variable's label, list the scales named in ~30 sentences, group files by
-#' study) — pattern-matching over given material, not multi-step reasoning
+#' study) -- pattern-matching over given material, not multi-step reasoning
 #' (no arithmetic, no multi-hop inference, no planning). A "thinking"/
 #' "reasoning" model spending extra tokens re-deriving what the prompt already
 #' states is close to pure overhead here: it inflates cost/latency and eats
@@ -732,26 +732,26 @@ llm_max_tokens <- function(n = NULL) {
 #' via Groq. Minimal reasoning effort is the right DEFAULT for what this
 #' package does, not a tradeoff against quality.
 #'
-#' There is no single universal "reasoning" switch across providers — this is
+#' There is no single universal "reasoning" switch across providers -- this is
 #' genuinely per model family, each verified rather than assumed:
 #' \itemize{
 #'   \item `openai/gpt-oss-*` (Groq or any OpenAI-compatible host): the
 #'     `reasoning_effort` chat-completion parameter, accepting `"low"`,
-#'     `"medium"`, or `"high"` — `"low"` is the minimum; there is no full-off
+#'     `"medium"`, or `"high"` -- `"low"` is the minimum; there is no full-off
 #'     option for this family (verified against Groq's own docs).
 #'   \item `qwen3*`-family models: also `reasoning_effort`, but accepting
-#'     `"none"` or `"default"` — `"none"` fully disables reasoning tokens,
+#'     `"none"` or `"default"` -- `"none"` fully disables reasoning tokens,
 #'     unlike gpt-oss.
 #'   \item Mistral's reasoning-capable models (`mistral-small-latest`,
 #'     `mistral-medium-3-5`): also `reasoning_effort`, but with only TWO
 #'     values, `"high"` (full thinking chunk) or `"none"` (thinking chunk
-#'     omitted) — verified against Mistral's own docs, a third distinct shape
+#'     omitted) -- verified against Mistral's own docs, a third distinct shape
 #'     from both gpt-oss and qwen3.
 #'   \item Ollama-hosted reasoning models (DeepSeek-R1, Qwen3, ...): the
 #'     native API's boolean `think` (`llm()` already sends this as a
 #'     `/nothink` system-prompt prefix over Ollama's native `/api/chat`
 #'     endpoint when `think = FALSE`, since Ollama's OpenAI-compatible `/v1/`
-#'     endpoint ignores it) — a genuinely different mechanism (a flag on the
+#'     endpoint ignores it) -- a genuinely different mechanism (a flag on the
 #'     request, not a graded effort level), so `llm_reasoning()`'s `"low"`/
 #'     `"none"` both map to `think = FALSE` for this family; there is no
 #'     Ollama equivalent of `"medium"`/`"high"` to request.
@@ -788,25 +788,25 @@ llm_reasoning <- function(effort = NULL) {
 # 20b", "ollama/qwen3:latest").
 #
 # Returns a list(params_list, api_args): `reasoning_effort` is NOT put into
-# `params_list` for a Groq/OpenAI-compatible host — confirmed directly (a live
+# `params_list` for a Groq/OpenAI-compatible host -- confirmed directly (a live
 # call, not assumed) that ellmer's chat_params() method for
 # ProviderOpenAICompatible (which Groq has no override of) only forwards a
 # fixed allowlist (temperature/top_p/top_k/max_tokens/seed/...) through
 # standardise_params(), silently DROPPING reasoning_effort with a
-# "Ignoring unsupported parameters" warning — ellmer has not wired this
+# "Ignoring unsupported parameters" warning -- ellmer has not wired this
 # provider-specific field through to the request body yet. The escape hatch
 # ellmer DOES provide is `api_args` (chat_groq()'s own parameter, reachable
 # through ellmer::chat()'s `...`): whatever is in `api_args` is merged
-# directly into the request body, bypassing that allowlist — confirmed live,
+# directly into the request body, bypassing that allowlist -- confirmed live,
 # no warning, correct model behaviour. Ollama's `think` boolean is unaffected
-# by any of this (it is not a chat_params()-standardised field at all — see
+# by any of this (it is not a chat_params()-standardised field at all -- see
 # llm()'s existing native-Ollama-API path), so it still goes through
 # `params_list` exactly as before.
 #
 # WITHOUT overwriting anything the caller already set explicitly
 # (params$think, or a caller-supplied api_args), same override precedence
 # max_tokens already uses. A model family this function does not recognise is
-# returned unchanged — never a guessed parameter name.
+# returned unchanged -- never a guessed parameter name.
 #
 # A session that never calls llm_reasoning() at all defaults here to "low",
 # not "do nothing": every call this package makes is a bounded, structured-
@@ -815,7 +815,7 @@ llm_reasoning <- function(effort = NULL) {
 # already recommends, not whatever the provider's own server-side default
 # happens to be. Confirmed as a real, live gap: gpt-oss-20b via Groq truncated
 # structured JSON responses under max_tokens = 8192 because no reasoning_effort
-# was ever sent at all, letting Groq apply its own (non-minimal) default —
+# was ever sent at all, letting Groq apply its own (non-minimal) default --
 # llm_reasoning() itself still returns the RAW, unset getOption() value (NULL)
 # to any caller introspecting it, so this default lives only here, at the
 # point of actual use, not as a silent mutation of the stored option.
@@ -831,13 +831,13 @@ llm_reasoning <- function(effort = NULL) {
 
   if (is_mistral && is.null(api_args$reasoning_effort)) {
     # Mistral's reasoning-capable models (mistral-small-latest, mistral-
-    # medium-3-5) accept reasoning_effort too, but with only TWO values —
-    # "high" (full thinking chunk) or "none" (thinking chunk omitted) —
+    # medium-3-5) accept reasoning_effort too, but with only TWO values --
+    # "high" (full thinking chunk) or "none" (thinking chunk omitted) --
     # verified against Mistral's own docs, a genuinely different shape from
     # both gpt-oss's three levels and qwen3's "none"/"default". Same
     # api_args channel as Groq: ellmer's ProviderMistral chat_params()
     # allowlist also has no reasoning_effort entry, so it would be silently
-    # dropped through `params` the same way — confirmed live via chat_mistral(
+    # dropped through `params` the same way -- confirmed live via chat_mistral(
     # api_args = list(reasoning_effort = "none")), no warning, correct
     # response. A plain (non-reasoning) Mistral model simply has nothing to
     # act on this field; sending it is a no-op there, not an error.
@@ -846,7 +846,7 @@ llm_reasoning <- function(effort = NULL) {
   }
 
   if (is_ollama && (is_qwen3 || grepl("deepseek-r1", m, fixed = TRUE))) {
-    # Ollama's reasoning control is the boolean `think`, not a graded effort —
+    # Ollama's reasoning control is the boolean `think`, not a graded effort --
     # see the roxygen above. Both "low" and "none" mean "do not spend tokens
     # reasoning" here; "medium"/"high" have no Ollama equivalent to request,
     # so they are left as the model's own default (think left untouched)

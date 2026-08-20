@@ -18,7 +18,6 @@
 #' @author Raphael Merz (\email{r.t.p.merz@tue.nl})
 #'
 #' @import dplyr
-#' @import jsonlite
 #'
 #' @param paper a paper object or paperlist object, or NULL to check local files only (see [test_paper()])
 #' @param local_path optional path to a local directory. When provided, all files in that directory (recursively) are added to the file list alongside any files found via `repo_check`.

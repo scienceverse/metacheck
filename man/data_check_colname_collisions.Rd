@@ -17,8 +17,8 @@ a named list mapping each colliding column name to a message
 Many tools replace the special characters in a variable name with \verb{_} or
 drop them: R's \code{make.names()}, SPSS/SAS/Stata on import, and generated
 codebooks (section ids, figure file names). Two columns whose names differ
-\emph{only} in special characters — e.g. the phoneme symbols \verb{t'} and a
-t-with-diacritic, which both sanitize to \code{t_} — therefore become
+\emph{only} in special characters -- e.g. the phoneme symbols \verb{t'} and a
+t-with-diacritic, which both sanitize to \code{t_} -- therefore become
 indistinguishable the moment the data leave the original file, and links or
 merged results silently point at the wrong variable. Identical duplicate
 names collide trivially and are flagged too.

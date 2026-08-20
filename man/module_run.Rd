@@ -20,5 +20,8 @@ a list of the returned table and report text
 Run a module
 }
 \examples{
+\dontrun{
+psychsci <- papers_load("psychsci", cache = TRUE)
 module_run(psychsci[[1]], "all_p_values")
+}
 }

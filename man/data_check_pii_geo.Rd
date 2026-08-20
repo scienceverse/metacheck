@@ -14,7 +14,7 @@ data_check_pii_geo(col_name, x, sibling_names = NULL)
 \item{sibling_names}{the other column names in the same file, used to find
 the partner column. When \code{NULL} (a caller checking one column with no file
 context) the partner requirement is skipped, so the check behaves as it did
-before — name plus value range.}
+before -- name plus value range.}
 }
 \value{
 list(problem, message, values)
@@ -30,9 +30,9 @@ Confirmation matters because the name alone is ambiguous: in psychology data
 \code{lat} is as likely to be latency or a lateralisation index as latitude, and
 \code{lon} can be a loneliness scale. Two requirements filter those out:
 \itemize{
-\item the values must lie inside the coordinate range (±90 for a latitude, ±180
+\item the values must lie inside the coordinate range (+/-90 for a latitude, +/-180
 for a longitude), which rejects a latency in milliseconds; and
-\item a matching PARTNER column must exist in the same file — a latitude needs a
+\item a matching PARTNER column must exist in the same file -- a latitude needs a
 longitude beside it. A real coordinate is always a pair, whereas a latency,
 a loneliness score or a Latin-square code never has a \code{lon} sibling. This
 is what separates them, since the coordinate ranges are so wide that almost
