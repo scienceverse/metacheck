@@ -16,7 +16,6 @@
 #' @author Lisa DeBruine (\email{lisa.debruine@glasgow.ac.uk})
 #'
 #' @import dplyr
-#' @import tidyr
 #'
 #' @param paper a paper object or paperlist object
 #'

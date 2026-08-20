@@ -16,14 +16,14 @@ invisibly, the path to the virtual environment
 \description{
 Creates a Python virtual environment inside the bundled RegCheck app
 directory, installs all dependencies, and downloads the NLTK data. Only
-needed if you are using the manual Python path — if you have Docker,
+needed if you are using the manual Python path -- if you have Docker,
 use \code{\link[=regcheck_start_local]{regcheck_start_local()}} directly with \code{method = "docker"}.
 }
 \details{
 \strong{System requirements:}
 \itemize{
-\item Python 3.12+ — \url{https://www.python.org/downloads/}
-\item Ollama — \url{https://ollama.com/download}, then run
+\item Python 3.12+ -- \url{https://www.python.org/downloads/}
+\item Ollama -- \url{https://ollama.com/download}, then run
 \code{ollama pull llama3.2} and
 \code{ollama pull nomic-embed-text-v2-moe} in a terminal.
 }

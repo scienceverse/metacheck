@@ -2,7 +2,7 @@
 # EXTRACTED from the paper's analysis output (reproducibility_check's
 # stat_results_long(), from JASP/jamovi files or run-R-code console output).
 #
-# A reported test is NOT a single number — it is a multi-component statement, e.g.
+# A reported test is NOT a single number -- it is a multi-component statement, e.g.
 # "M = 1.93, SD = 0.76, W = 183.5, p = .791, rb = -0.16". extract_eq() shatters
 # that into one row per number, but tags each with a `grp_id` that groups the
 # numbers from the SAME reported test. We RECOMPOSE those groups back into whole
@@ -63,7 +63,7 @@
 
 # The anchor's own parenthetical degrees of freedom, as extract_eq() captures
 # it in its `df` column: "(28)" for a one-df test (t, chi2, z, ...) or
-# "(2, 57)" for a two-df F-test (numerator, denominator) — see
+# "(2, 57)" for a two-df F-test (numerator, denominator) -- see
 # text-extractors.R's own docstring for the exact format. This was
 # PREVIOUSLY IGNORED ENTIRELY: .recompose_eq()/.tests_from_extract() read
 # every OTHER field off a component (name, value, comp) but never `df`, so
@@ -72,7 +72,7 @@
 # value for picking the right site when two candidate analyses report
 # similar t/p/d values (confirmed against a real corpus paper's two
 # same-shaped-looking t-tests at DIFFERENT sites, t(130)=5.56 vs
-# t(114)=3.10 — the df alone tells them apart before even looking at p/d).
+# t(114)=3.10 -- the df alone tells them apart before even looking at p/d).
 # Returns NULL when `x` is not a parenthetical df at all (bare NA, as most
 # components carry). Returns list(df1 = <parsed value>) for a single df, or
 # list(df1 = ..., df2 = ...) for an F-test's two.
@@ -101,7 +101,7 @@
   NULL   # more than two comma-separated parts: not a recognised df shape
 }
 
-# Coarse statistic family for a name, both sides. NA when unrecognised — used to
+# Coarse statistic family for a name, both sides. NA when unrecognised -- used to
 # (a) drop junk reported rows whose "name" is prose/a variable, and (b) prefer a
 # type-consistent output cell when matching.
 .stat_family <- function(name) {
@@ -109,7 +109,7 @@
   n <- gsub("[[:space:]]+", " ", n)
   # jamovi's t-test tables name their primary test-statistic column literally
   # "stat", with the bracket naming WHICH test produced it (not a correction
-  # of the same quantity) — see stato-map.R's identical handling for the full
+  # of the same quantity) -- see stato-map.R's identical handling for the full
   # justification and the tag confirmation. This must be resolved BEFORE the
   # generic strip below, which would otherwise reduce "stat[stud]" to the
   # unmapped bare "stat" and lose the one thing that says what it even is.
@@ -117,12 +117,12 @@
   # Every OTHER jamovi bracket suffix (df[stud], p[stud], md[stud], es[stud],
   # cil[stud]/ciu[stud]/ciles[stud]/ciues[stud], f[gg]/p[hf] sphericity
   # corrections, ...) names a correction/variant of the SAME quantity, so
-  # stripping it and classifying the bare prefix is correct — mirroring
+  # stripping it and classifying the bare prefix is correct -- mirroring
   # .stato_strip_variant() (R/stato-map.R), which this reuses so the two
   # typing paths (display vs. matching) cannot silently diverge again. This
   # was previously ASSUMED to already work ("the generic cases below still
   # resolve correctly once ... bare post-strip names [are] passed through")
-  # without the strip actually being implemented here — confirmed as a real
+  # without the strip actually being implemented here -- confirmed as a real
   # bug against a real corpus paper: p[stud] and es[stud] both returned NA
   # (unrecognised) with no strip, which meant a reported t/p/d test could
   # match its own t (once the stat[stud] fix above landed) but never its own
@@ -132,33 +132,33 @@
   dplyr::case_when(
     grepl("^stat\\[(stud|welc)\\]$", n_pre_strip)                     ~ "t",
     n_pre_strip == "stat[mann]"                                       ~ "W",
-    # Pr(>F) / Pr(>|t|) / Pr(>|z|) / Pr(>Chi) are ALWAYS a p-value column —
+    # Pr(>F) / Pr(>|t|) / Pr(>|z|) / Pr(>Chi) are ALWAYS a p-value column --
     # R's anova()/aov()/summary() print the test statistic the p-value belongs
     # to inside the parens (">F" for an F-test row, ">|t|" for a coefficient
     # row, ...), but that names which test the p-value IS FOR, not the
     # p-value's own type. This must be checked BEFORE the F/t/chisq anchor
     # clauses below, or "Pr(>F)" is claimed by the "^pr\\(>f" branch there and
-    # typed family "F" — which silently blocks the reported p from ever
+    # typed family "F" -- which silently blocks the reported p from ever
     # matching it (val_in()'s type-gate requires a "p"-family cell), even
     # though the exact right value sits at the exact right site. Confirmed
     # against a real corpus paper: an aov() table's own "F value"/"Pr(>F)"
     # pair at one test_id, where F matched (F stayed correctly typed below)
     # but p never could, until this line moved p-value recognition first.
     # "pval" is metafor::rma()'s own column name (its "Model Results" table
-    # header), confirmed by reproducing rma()'s real print output — no space,
+    # header), confirmed by reproducing rma()'s real print output -- no space,
     # hyphen, or "Pr(>" wrapper, so it fell through every other pattern here to
     # NA (unrecognised) without this explicit case, and a meta-analysis
     # paper's reported "p < .001" could then only match at the wrong site (via
     # the censored branch's any-value fallback for an unrecognised name) or
     # not at all.
     grepl("^p$|^pval$|p-value|p value|pr\\(>", n)                     ~ "p",
-    # No case existed for "df" at all before this — a standalone reported
+    # No case existed for "df" at all before this -- a standalone reported
     # "df = X" (extract-tests.R's own .TEST_SATELLITES lists "df" as valid
     # outside the t(df)/F(df1,df2) parenthetical form) could never match a
     # df cell on the output side, jamovi's own included (df[stud] strips to
     # bare "df" above and fell through to NA with no case to catch it).
     # "df1"/"df2" are the anchor's OWN parenthetical df, once split by
-    # .norm_df() (an F-test's "F(2, 2159)" -> numerator/denominator) — kept
+    # .norm_df() (an F-test's "F(2, 2159)" -> numerator/denominator) -- kept
     # as a SEPARATE, narrower family from generic "df" because the output
     # side genuinely distinguishes them too (stato-map.R's own df1 ->
     # STATO:0000498 "numerator degrees of freedom", df2 -> STATO:0000527
@@ -172,14 +172,14 @@
       grepl("t-?test|student'?s t", n)                                ~ "t",
     grepl("^f($| |-|value| change)", n) |
       grepl("\\banova\\b|f-?test", n)                                 ~ "F",
-    grepl("chi|χ|x-squared|x²|goodness of fit", n)                    ~ "chisq",
+    grepl("chi|\u03c7|x-squared|x\u00b2|goodness of fit", n)                    ~ "chisq",
     grepl("^z($| |value)", n)                                         ~ "z",
     grepl("^w$|wilcoxon|mann-whitney", n)                             ~ "W",
     grepl("^u$", n)                                                   ~ "U",
     grepl("^q$", n)                                                   ~ "Q",
     # "es" bare is jamovi's own t-test "Effect Size" column name (its own
     # bracket-tag, e.g. es[stud], is stripped above like every other jamovi
-    # variant suffix) — jamovi's effect-size column defaults to Cohen's d and
+    # variant suffix) -- jamovi's effect-size column defaults to Cohen's d and
     # stato-map.R's stato_type_column() already treats bare "es" as an effect
     # size estimate unconditionally, so typing it "d" here for matching is
     # the same assumption already made on the display-typing side, not a new
@@ -196,26 +196,26 @@
     # either the string start or a non-letter excludes both without needing a
     # regex word-boundary (which "beta" would still satisfy, since b is itself
     # a word character adjacent to "eta" with no boundary between them).
-    grepl("η|ηp²|(^|[^a-z])eta", n)                                   ~ "eta2",
-    grepl("ω|omega", n)                                               ~ "omega2",
+    grepl("\u03b7|\u03b7p\u00b2|(^|[^a-z])eta", n)                                   ~ "eta2",
+    grepl("\u03c9|omega", n)                                               ~ "omega2",
     grepl("odds", n)                                                  ~ "or",
     grepl("^rb$|rank.?biserial|biserial", n)                          ~ "rb",
     grepl("bf|bayes", n)                                              ~ "bf",
     grepl("^r$|correlation|pearson|^rs$", n)                          ~ "r",
-    grepl("^rho|^ρ|spearman", n)                                      ~ "rho",
+    grepl("^rho|^\u03c1|spearman", n)                                      ~ "rho",
     # "stdcoef" is the common column name a hand-written standardisation helper
     # gives a standardised coefficient (e.g. the widely copied stdCoef.merMod()
     # snippet for lme4 models, which has no built-in standardised-beta output);
     # it names the same quantity as "beta"/"standardized" without either word
     # in it, so it needs its own case rather than relying on the substring
     # checks below to catch it.
-    grepl("^β|beta|standardi|^std\\.?coef$", n)                       ~ "beta",
+    grepl("^\u03b2|beta|standardi|^std\\.?coef$", n)                       ~ "beta",
     grepl("^b$|estimate|unstandardi", n)                              ~ "b",
     grepl("^se$|std\\. error|standard error", n)                     ~ "se",
     grepl("^m$|^mean$", n)                                            ~ "mean",
     grepl("^sd$|std\\. dev", n)                                       ~ "sd",
     grepl("^n$|^ns$|sample size", n)                                  ~ "n",
-    grepl("^α|alpha|cronbach", n)                                     ~ "alpha",
+    grepl("^\u03b1|alpha|cronbach", n)                                     ~ "alpha",
     # R-squared / marginal-conditional R2 (MuMIn::r.squaredGLMM() prints
     # "R2m"/"R2c"; psychometric::CI.Rsq() prints "Rsq" for the point estimate).
     grepl("^r2m?c?$|^rsq$|r-?squared|r sq(uared)?$", n)                ~ "rsq",
@@ -225,7 +225,7 @@
     # matched explicitly. ci_lower/ci_upper are .norm_interval()'s own component
     # names for a reported bracketed CI ("[.16, .29]") split into two bounds.
     # "conf.low"/"conf.high" are broom::tidy()'s (and broom.mixed's) own bound
-    # names — extremely common in modern tidyverse-style R analysis code — and
+    # names -- extremely common in modern tidyverse-style R analysis code -- and
     # neither contains "lower"/"upper"/"ci"/"interval", so without this explicit
     # case every broom-derived CI bound returned NA here and could never match,
     # confirmed against a real corpus paper whose Experiment2.R output carried
@@ -233,11 +233,11 @@
     # "ci.lb"/"ci.ub" are metafor::rma()'s own bound names (its "Model Results"
     # table header), confirmed by reproducing rma()'s real print output.
     # "cilow"/"cihig" are jamovi's OWN bound names (no separator at all between
-    # "ci" and "low"/"hig") — confirmed against a real corpus paper's .omv
+    # "ci" and "low"/"hig") -- confirmed against a real corpus paper's .omv
     # t-test output. None of these contain "lower"/"upper"/"ci_"/"conf" with a
     # separator, so without these explicit cases each fell through to the
     # GENERIC "ci" catch-all below (since "ci.lb"/"cilow" both still contain
-    # the substring "ci") — and a generic "ci"-typed output cell can NEVER
+    # the substring "ci") -- and a generic "ci"-typed output cell can NEVER
     # match a reported CI bound, because .norm_interval() (the reporting side)
     # always splits a bracketed CI into the SPECIFIC ci_lower/ci_upper
     # families, never the generic "ci"; the strict type-gate in
@@ -246,14 +246,14 @@
     # its actual value.
     # "cil"/"ciu"/"ciles"/"ciues" are jamovi's OWN bound names after this
     # function's own .stato_strip_variant() strip above (cil[stud] -> "cil",
-    # ciles[stud] -> "ciles") — jamovi's t-test table can report a CI on BOTH
+    # ciles[stud] -> "ciles") -- jamovi's t-test table can report a CI on BOTH
     # the mean difference (cil/ciu) AND the effect size (ciles/ciues: "ci
     # [for the] es") as two DIFFERENT intervals in the same table, confirmed
     # against a real corpus paper's ttestOneS output (cil/ciu = [0.34, 0.56]
-    # around md=0.45; ciles/ciues = [0.35, 0.59] around es=0.47 — visibly not
+    # around md=0.45; ciles/ciues = [0.35, 0.59] around es=0.47 -- visibly not
     # the same interval). A manuscript's single reported "95% CI = [x, y]"
     # gives no way to tell which of the two it names, so both map to the same
-    # generic ci_lower/ci_upper family and val_in() tries either candidate —
+    # generic ci_lower/ci_upper family and val_in() tries either candidate --
     # matching whichever one the reported bound actually equals, rather than
     # silently picking one and missing the CI whenever it was the other.
     grepl("^lcl$|^ci_?lower$|^conf\\.?low$|^ci\\.lb$|^cilow$|^cil$|^ciles$", n) ~ "ci_lower",
@@ -282,15 +282,15 @@
       # "p = .001". That silently fails to match a real p of 1.7e-05, which IS
       # < .001 - the commonest way a significant p is reported.
       cc <- if (!is.null(g$comp)) trimws(as.character(g$comp[i])) else NA_character_
-      # A CI is reported as one bracketed value ("[.16, .29]") — extract_eq()
-      # keeps it as one rhs string by design (see R/text-extractors.R) — but the
+      # A CI is reported as one bracketed value ("[.16, .29]") -- extract_eq()
+      # keeps it as one rhs string by design (see R/text-extractors.R) -- but the
       # output side stores its two bounds as separate rows (LCL/UCL), so it is
       # split here into two independently matchable components rather than one
       # unparsed value that .norm_value() would drop as NA.
       ivl <- .norm_interval(g$rhs[i])
       if (!is.null(ivl)) {
         # family is the SPECIFIC bound family ("ci_lower"/"ci_upper"), not the
-        # generic "ci" .stat_family() gave the raw label ("95% CI") — the
+        # generic "ci" .stat_family() gave the raw label ("95% CI") -- the
         # output side's LCL/UCL are typed to the specific families (see
         # .stat_family() above), and val_in()'s family-preference match would
         # never find them under the generic "ci".
@@ -308,9 +308,9 @@
                   dec = nv$dec, censored = cens)
       # The anchor's OWN parenthetical df ("t(309) = 8.31" -> df "(309)",
       # "F(2, 2159) = 6.76" -> df "(2, 2159)") was previously dropped
-      # entirely — extract_eq()'s own `df` column was never read here. Added
+      # entirely -- extract_eq()'s own `df` column was never read here. Added
       # as a SEPARATE component alongside the anchor's value, so it must
-      # independently match a df/df1/df2 cell at the site — see .norm_df()'s
+      # independently match a df/df1/df2 cell at the site -- see .norm_df()'s
       # own comment for why this is worth doing.
       dfv <- if (!is.null(g$df)) .norm_df(g$df[i]) else NULL
       if (!is.null(dfv)) {
@@ -348,7 +348,7 @@
       # text-only .split_into_tests() heuristic. Unused by the plain scoring
       # path below (val_in() never reads them). `pos` MUST be the SENTENCE-
       # wide position (extract-tests.R's own `sentence_pos`, tagged before
-      # any split), not this loop's local `gi` — a post-split index would
+      # any split), not this loop's local `gi` -- a post-split index would
       # reset to 1, 2, 3... for every piece .split_into_tests() cut the
       # sentence into, making a distance comparison between two components
       # from DIFFERENT split pieces meaningless. Falls back to `gi` only for
@@ -359,11 +359,11 @@
       fam <- .stat_family(c$name)
       if (is.na(fam)) return(NULL)
       # A CI reported as one bracketed value ("[.16, .29]") is split into two
-      # independently matchable components (its lower and upper bound) — see
+      # independently matchable components (its lower and upper bound) -- see
       # .recompose_eq()'s identical handling above for why.
       ivl <- .norm_interval(c$value)
       if (!is.null(ivl)) {
-        # family is the SPECIFIC bound family, not the generic "ci" — see
+        # family is the SPECIFIC bound family, not the generic "ci" -- see
         # .recompose_eq()'s identical handling above for why.
         return(list(
           list(family = "ci_lower", name = "ci_lower", value = ivl$lo$num,
@@ -378,7 +378,7 @@
       if (!nzchar(cens) && cc %in% c("<", ">")) cens <- cc
       main <- list(family = fam, name = c$name, value = nv$num,
                   dec = nv$dec, censored = cens, is_anchor = is_anch, pos = pos)
-      # The anchor's own parenthetical df — see .recompose_eq()'s identical
+      # The anchor's own parenthetical df -- see .recompose_eq()'s identical
       # handling above for why this is added.
       dfv <- .norm_df(c$df)
       if (!is.null(dfv)) {
@@ -404,7 +404,7 @@
 # Do two output SITES plausibly concern the SAME underlying variable? Used
 # when a sentence's own components end up confirmed at two DIFFERENT sites
 # (a mean+CI at one, an alpha at another; a t-test at one, its own df2 at a
-# unioned residuals row at another) — row_label is the one human-readable
+# unioned residuals row at another) -- row_label is the one human-readable
 # identifier that survives across otherwise-unrelated analyses on the same
 # variable, confirmed against a real corpus paper (a t-test's row_label
 # "compassion_mindset" and its separately-computed reliability's row_label
@@ -416,7 +416,7 @@
 # "emo_total_unlimited_limited"), so requiring an exact string match would
 # miss the real link, while a raw substring match risks a false positive on
 # an unrelated but textually similar label. A token must ALSO be more than 3
-# characters to count — short tokens ("t", "d", "ci", "sd", numeric suffixes
+# characters to count -- short tokens ("t", "d", "ci", "sd", numeric suffixes
 # like "1"/"2") are exactly the kind of generic fragment that recurs across
 # unrelated variables by chance, so they are excluded rather than treated as
 # a genuine link between two sites.
@@ -436,7 +436,7 @@
 }
 
 # Re-derive test boundaries from OUTPUT evidence instead of trusting
-# extract_tests()'s text-only split — see the header comment at this
+# extract_tests()'s text-only split -- see the header comment at this
 # function's own call site (inside match_reported_output()) for the full
 # rationale and the two confirmed real-corpus failure modes it fixes.
 #
@@ -468,14 +468,14 @@
   taggable <- tests[has_tags]
   untouched <- tests[!has_tags]
 
-  # Pool every test sharing one text_id (one SENTENCE) back together —
-  # undoing extract_tests()'s own split — keyed on text_id since that is the
+  # Pool every test sharing one text_id (one SENTENCE) back together --
+  # undoing extract_tests()'s own split -- keyed on text_id since that is the
   # one identifier every test from the same sentence shares regardless of
   # how many pieces .split_into_tests() cut it into.
   tids <- vapply(taggable, function(t) as.character(t$text_id %||% NA), character(1))
   by_tid <- split(taggable, tids)
 
-  # Best site + score for one component against every candidate site —
+  # Best site + score for one component against every candidate site --
   # shared by the anchor search and the per-anchor claiming pass below, so
   # both use the IDENTICAL notion of "matches" that the main scoring loop
   # (val_in(), just above this function's call site) already uses.
@@ -512,7 +512,7 @@
     if (!any(is_anch)) return(grp)   # nothing to regroup around
 
     # Which ORIGINAL pre-regroup test (index into `grp`) each pooled
-    # component came from — needed after regrouping to ask "did this
+    # component came from -- needed after regrouping to ask "did this
     # component's original TEXT neighbours end up somewhere else?", which is
     # exactly the plausibility question .sites_share_variable() answers.
     orig_test <- rep(seq_along(grp), vapply(grp, function(t) length(t$components), integer(1)))
@@ -578,7 +578,7 @@
     }
     # Anything no anchor's evidence claimed (an anchor with no site, or a
     # satellite no anchor's site happened to contain) falls back to
-    # extract_tests()'s OWN original grouping for exactly those components —
+    # extract_tests()'s OWN original grouping for exactly those components --
     # never dropped, never left ungrouped. Reconstructed by intersecting the
     # original per-test membership with the leftover set, so a satellite
     # that WAS correctly grouped by the text heuristic (and no evidence
@@ -651,21 +651,21 @@
 #'   `$long` tables are combined, keeping each file's provenance)
 #' @param include_tables if TRUE and `paper` is a paper object, also build
 #'   tests from statistics reported only in a results table's cells (e.g. from
-#'   Grobid's table parsing — see `.tei_table_contents()` in
+#'   Grobid's table parsing -- see `.tei_table_contents()` in
 #'   R/import-grobid.R and the 5-tier header/caption/value-shape/row/matrix
 #'   approach in R/match-table.R's `.table_tests()`) and add them to the set
 #'   checked against `output`. Default FALSE: table-derived tests are opt-in,
 #'   currently used only by `reproducibility_check`, so
 #'   every other caller's matching behaviour is unchanged.
 #' @param min_components a test must have at least this many recognised components
-#'   to be assessed (default 1, so a lone reported statistic — a bare
-#'   correlation `r=-.27` or `d = 0.40` with no accompanying p/CI — is still checked against the
+#'   to be assessed (default 1, so a lone reported statistic -- a bare
+#'   correlation `r=-.27` or `d = 0.40` with no accompanying p/CI -- is still checked against the
 #'   output, TYPE-GATED the same as any other component: it only matches an
 #'   output cell of the SAME family, at the site with the most co-occurring
 #'   components, via `val_in()`. This carries a higher coincidence risk than a
 #'   multi-component test (a single r rounding to the reported value at some
 #'   site is more likely than a whole signature doing so by chance), so a
-#'   single-component match is worth reading with that in mind — set to 2 to
+#'   single-component match is worth reading with that in mind -- set to 2 to
 #'   exclude single-component rows entirely, as this function used to by
 #'   default.
 #'
@@ -674,17 +674,17 @@
 #'   "W=183.5 p=.791 rb=-0.16"), `n_components`, `n_matched` (components found in
 #'   the best-matching output analysis), `found` (logical), `match_values` (the
 #'   matched components as "name=value" pairs), `not_matched` (the UNMATCHED
-#'   components of that same test, same "name=value" form — always populated
+#'   components of that same test, same "name=value" form -- always populated
 #'   alongside `match_values` for a partial match, so exactly which claim failed
 #'   to reproduce is visible, not just a count), `source_file` / `analysis`
 #'   (provenance of the match), `confidence` ("full" all components matched
-#'   / "partial" / "none"), and `plausible_split` — NA unless this test's
+#'   / "partial" / "none"), and `plausible_split` -- NA unless this test's
 #'   grouping came from `.regroup_by_evidence()` re-deriving test boundaries
 #'   from OUTPUT co-occurrence rather than trusting `extract_tests()`'s
 #'   text-only guess (see that function's own header comment): TRUE when a
 #'   component split away from its original reported neighbours landed at a
 #'   site sharing a `row_label` token with theirs (the same underlying
-#'   variable, reached via a different analysis — plausible), FALSE when no
+#'   variable, reached via a different analysis -- plausible), FALSE when no
 #'   such link was found (the split is NOT hidden or downgraded, only
 #'   flagged, so a reader can judge the match's plausibility from the
 #'   `source_file`/`analysis` of every piece involved). Attribute
@@ -715,12 +715,12 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
   # Table-derived tests (opt-in): .table_tests() (R/match-table.R) scans
   # paper$table$contents (statistics reported only inside a results table's
   # cells, invisible to extract_eq()/extract_tests() because that content never
-  # enters paper$text — see that file's own header comment for the full 5-tier
+  # enters paper$text -- see that file's own header comment for the full 5-tier
   # header/caption/value-shape/row/matrix approach). Already built in this
   # function's own internal "test" shape (list(text_id, grp_id, components)),
   # so it is simply appended to `tests` rather than recomposed here. Its
-  # text_id is synthesised as a NEGATIVE number unique to its (table_id, row) —
-  # never colliding with a real paper$text row id — so a table-derived row is
+  # text_id is synthesised as a NEGATIVE number unique to its (table_id, row) --
+  # never colliding with a real paper$text row id -- so a table-derived row is
   # always visibly distinguishable in the RESULT rows this function returns
   # (see the final `rows` below, where text_id/grp_id are plain display
   # columns): no real text_id is ever <= 0.
@@ -824,7 +824,7 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
   # still wins on its own when a test's whole signature came from one row.
   # Matched by STRING PREFIX on test_id (the same opaque, sanitized id
   # .stat_test_id() built, "_residuals" being jamovi's own fixed row label,
-  # confirmed identical across every ANOVA table in the same real paper) —
+  # confirmed identical across every ANOVA table in the same real paper) --
   # not by re-deriving analysis_id, which match_reported_output() has no
   # access to; this carries the same string-matching caveat model_ref's own
   # site key already accepts.
@@ -838,7 +838,7 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       # recovered by stripping a fixed number of trailing segments from the
       # sibling's own id (that would cut into a multi-word label instead of
       # the row_label boundary). Matched by STARTS-WITH against
-      # resid_prefix instead — correct regardless of how many underscores
+      # resid_prefix instead -- correct regardless of how many underscores
       # the sibling's own row_label carries, since resid_prefix itself is
       # unambiguous (it is the residuals row's OWN id with only its fixed,
       # single-token "_residuals" suffix removed).
@@ -862,16 +862,16 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
   val_in <- function(cell, comp) {
     tol <- 0.5 / (10^comp$dec)
     if (nzchar(comp$censored)) {
-      # A censored bound ("p < .001") must ALSO respect a known family — the
+      # A censored bound ("p < .001") must ALSO respect a known family -- the
       # same reason the exact-match branch below does. Without this, "p <
       # .001" matched ANY value below .001 at the site regardless of type,
-      # including an unrelated SE/estimate that merely happened to be small —
+      # including an unrelated SE/estimate that merely happened to be small --
       # confirmed as a real false positive: a reported test with no genuine
       # matching site at all (its real values appeared nowhere in the script's
       # output) still scored a spurious partial match, because the site's
       # OWN small-valued "pval" column (e.g. metafor::rma()'s own p, "<.0001",
       # itself well under .001) satisfied the censored check while an
-      # unrelated "se" cell coincidentally rounded to the reported SE — two
+      # unrelated "se" cell coincidentally rounded to the reported SE -- two
       # false hits together outscored the correct (nonexistent) site. Falls
       # back to "any value" only when the component's name matched no
       # recognised family, same as the exact-match branch.
@@ -880,14 +880,14 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       if (comp$censored == "<") any(cell_vals < comp$value) else any(cell_vals > comp$value)
     } else if (!is.na(comp$family)) {
       # A component with a KNOWN type must match an output cell of that SAME
-      # type — no fallback to "any value in the site" for a typed statistic.
+      # type -- no fallback to "any value in the site" for a typed statistic.
       # The fallback used to let a reported beta or CI bound coincidentally
       # match an unrelated, untyped cell (e.g. a standardised coefficient
       # `stdcoef` sitting near the same value as an unrelated model's beta) that
       # merely happened to round to the same number. That false hit did more
       # than mislabel one component: it could make a WRONG site outscore the
       # TRUE site in the best-site tie-break below, so a test's real beta/p
-      # then failed to match at the site actually chosen — a false positive
+      # then failed to match at the site actually chosen -- a false positive
       # elsewhere silently causing a false negative on the correct evidence.
       fam_cells <- cell$val[!is.na(cell$fam) & cell$fam == comp$family]
       if (any(abs(round(fam_cells, comp$dec) - comp$value) < tol)) return(TRUE)
@@ -895,23 +895,23 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       # column) for certain reported families whose PROSE label is more
       # specific than what generic model-fitting software actually prints.
       # Two confirmed real cases:
-      #   * "beta": authors very commonly write "β" for a model's raw/
+      #   * "beta": authors very commonly write "beta" for a model's raw/
       #     unstandardised coefficient (lme4/lmerTest's own printed "Estimate"
       #     column, family "b") without ever having computed a real
-      #     standardised beta — six such components sat at the exact right
+      #     standardised beta -- six such components sat at the exact right
       #     test_id site as their matching t/p, unmatched only because
-      #     "Estimate" (b) is not "β" (beta).
+      #     "Estimate" (b) is not "beta" (beta).
       #   * "d": a META-ANALYSIS pooled effect size (Cohen's d) is exactly
       #     what metafor::rma()'s generic "Model Results" table reports as
       #     "estimate" (typed "b", the same generic coefficient family a
-      #     regression's slope gets) — rma() has no notion of "this run is
+      #     regression's slope gets) -- rma() has no notion of "this run is
       #     estimating a d" to print a d-specific column name. Reproduced
       #     directly against a real metafor::rma() call to confirm its exact
       #     print header, then confirmed against a real corpus paper's own
       #     meta-analysis script.
       # SAFE only when the site has NO genuine cell of the reported family
       # itself to be confused with (that is the exact false-positive the
-      # type-gate above exists to prevent, per the comment above) — so this
+      # type-gate above exists to prevent, per the comment above) -- so this
       # fires only as a last resort, never instead of a real same-family
       # match, and never across sites (a "b" at an UNRELATED site is never
       # reachable, since this still filters by `cell`, the one candidate site
@@ -925,7 +925,7 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       # GENERIC "df" family: an F-test's own reported numerator/denominator
       # df ("F(2, 2159)", split into df1/df2 by .norm_df()) is typically
       # printed as two SEPARATE bare "df" cells by the underlying software,
-      # not as distinct df1/df2 columns — jamovi's one-way-ANOVA table prints
+      # not as distinct df1/df2 columns -- jamovi's one-way-ANOVA table prints
       # the numerator df as a bare "df" on the effect row and the denominator
       # df as a bare "df" on the (unioned-in, see the residuals-row site
       # widening above) residuals row; R's oneway.test()/aov() do the
@@ -940,19 +940,19 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       }
       FALSE
     } else {
-      # No recognised type for this component (name matched no family) — the
+      # No recognised type for this component (name matched no family) -- the
       # only case where matching by value alone is still attempted.
       any(abs(round(cell$val, comp$dec) - comp$value) < tol)
     }
   }
 
-  # ── Evidence-driven regrouping ──────────────────────────────────────────
+  # -- Evidence-driven regrouping ------------------------------------------
   #
   # extract_tests()'s own .split_into_tests() decides test boundaries from
   # TEXT ALONE (anchor vocabulary + repeat detection), before any output is
   # available -- and that heuristic is fundamentally ambiguous in both
   # directions, confirmed against a real corpus paper:
-  #   * UNDER-splits: "M = 3.28, 95% CI = [3.18, 3.38], ..., Cronbach's α =
+  #   * UNDER-splits: "M = 3.28, 95% CI = [3.18, 3.38], ..., Cronbach's alpha =
   #     .86" is textually ONE group (a single anchor, alpha, with no repeat
   #     to trigger a split), but is actually TWO unrelated claims -- a
   #     scale's own mean+CI, and its separately-computed reliability -- that
@@ -984,7 +984,7 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
     # A censored component ("p < .001") must show its comparator, not just its
     # bound: dropping `censored` here rendered EVERY such component as if it
     # were an exact "p=0.001", even though val_in()'s own matching (below)
-    # correctly treats it as "< .001" throughout — the display simply never
+    # correctly treats it as "< .001" throughout -- the display simply never
     # read the field. Confirmed as a real bug against a real corpus paper's
     # regression table, whose several genuine "p < .001" cells all rendered
     # as a plain "p=0.001" in the report.
@@ -1035,8 +1035,8 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       res$source_file <- best_site$sf[1]
       res$analysis <- best_site$an[1]
       res$confidence <- if (best_n == nc) "full" else "partial"
-      # Record every component's outcome at the best site — matched AND
-      # unmatched — as "name=value" pairs, so a partial match shows exactly
+      # Record every component's outcome at the best site -- matched AND
+      # unmatched -- as "name=value" pairs, so a partial match shows exactly
       # which of the test's own values were found and which were not, rather
       # than a bare count that hides which specific claim failed to reproduce.
       matched <- vapply(comps, function(c) val_in(best_site, c), logical(1))

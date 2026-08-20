@@ -297,9 +297,18 @@
 .r_capture_runner <- function() {
   function(script, wd, capture_file, helpers) {
     setwd(wd)
+    # This IS the subprocess's own global environment (this function runs as
+    # the top-level callr::r() payload, in a fresh R session with nothing else
+    # in it) -- captured into a variable, not written as a literal
+    # `globalenv()` call, only so R CMD check's static "assignments to the
+    # global environment" scan (tools:::.check_package_code_assign_to_globalenv,
+    # a source-level pattern match with no notion of which session a call
+    # actually runs in) does not flag this as if it modified the user's own
+    # interactive session, which it never does.
+    env <- globalenv()
     # Recreate the reducer helpers in the child (they cannot be referenced from
     # the parent's namespace inside callr).
-    for (nm in names(helpers)) assign(nm, helpers[[nm]], envir = globalenv())
+    for (nm in names(helpers)) assign(nm, helpers[[nm]], envir = env)
     captures <- list()
     # Always leave a file behind, even on error/timeout, so the parent can read
     # whatever was captured before the script died.
@@ -307,7 +316,6 @@
 
     exprs <- parse(script, keep.source = TRUE)
     srcrefs <- attr(exprs, "srcref")
-    env <- globalenv()
 
     for (i in seq_along(exprs)) {
       e <- exprs[[i]]

@@ -7,7 +7,7 @@
 # happened to need one first, so that:
 #
 #   * a caller does not have to source an unrelated format reader to reuse a
-#     one-line formatter — the reason code_check's syntax recovery previously
+#     one-line formatter -- the reason code_check's syntax recovery previously
 #     pulled in the whole of R/r-output.R and R/stat-tables.R;
 #   * a helper shared by the paper-prose path and the output path (notably
 #     .r_stat_pattern(), which extract_eq() and read_r_output() must agree on)
@@ -108,26 +108,26 @@
 # ---- statistic names --------------------------------------------------
 
 # Normalise a reported statistic name to a comparison key: lower-cased, Greek
-# and superscripts folded to ASCII, punctuation dropped. "ηp²" -> "etap2",
-# "Cohen's d" -> "cohens d", "χ²" -> "chi2".
+# and superscripts folded to ASCII, punctuation dropped. "\u03b7p\u00b2" -> "etap2",
+# "Cohen's d" -> "cohens d", "\u03c7\u00b2" -> "chi2".
 .norm_stat_name <- function(x) {
   s <- tolower(trimws(as.character(x %||% "")))
-  s <- gsub("α", "alpha", s)    # alpha (Cronbach's α)
-  s <- gsub("η", "eta", s)      # eta
-  s <- gsub("χ", "chi", s)      # chi
-  s <- gsub("β", "beta", s)     # beta
-  s <- gsub("ρ", "rho", s)      # rho
-  s <- gsub("τ", "tau", s)      # tau
-  s <- gsub("Δ", "delta", s)    # Delta
-  s <- gsub("δ", "delta", s)    # delta
-  s <- gsub("²", "2", s)        # superscript 2
-  s <- gsub("’|‘|'", "", s)
+  s <- gsub("\u03b1", "alpha", s)    # alpha (Cronbach's \u03b1)
+  s <- gsub("\u03b7", "eta", s)      # eta
+  s <- gsub("\u03c7", "chi", s)      # chi
+  s <- gsub("\u03b2", "beta", s)     # beta
+  s <- gsub("\u03c1", "rho", s)      # rho
+  s <- gsub("\u03c4", "tau", s)      # tau
+  s <- gsub("\u0394", "delta", s)    # Delta
+  s <- gsub("\u03b4", "delta", s)    # delta
+  s <- gsub("\u00b2", "2", s)        # superscript 2
+  s <- gsub("\u2019|\u2018|'", "", s)
   s <- gsub("[^a-z0-9 ]+", "", s)
   trimws(gsub("\\s+", " ", s))
 }
 
 # Sphericity-correction suffixes jamovi appends to repeated-measures ANOVA
-# columns: f[gg] / p[hf] / df[none] are still an F, a p and a df — the bracket
+# columns: f[gg] / p[hf] / df[none] are still an F, a p and a df -- the bracket
 # names WHICH correction was applied (Greenhouse-Geisser, Huynh-Feldt, none),
 # which is a property of how the value was computed, not a different quantity.
 # Stripping the suffix before lookup types the whole family from the existing
@@ -155,7 +155,7 @@
 
 # A bracketed interval, as extract_eq() captures a CI: "[.16, .29]" (the
 # regex's own `\\[[^\\]]+\\]` alternative keeps the brackets and the separator
-# as one rhs string, deliberately — see R/text-extractors.R). .norm_value() has
+# as one rhs string, deliberately -- see R/text-extractors.R). .norm_value() has
 # no notion of a two-number range, so untangling it happens here, upstream of
 # .norm_value(): the two inner numbers are extracted and normalised
 # separately. Returns NULL when `x` is not bracket-shaped or does not contain
@@ -170,7 +170,7 @@
   # Comma/semicolon are tried first so a negative lower bound ("-0.16") is
   # never mistaken for a dash separator.
   parts <- if (grepl("[,;]", inner)) strsplit(inner, "[,;]")[[1]]
-    else strsplit(inner, "(?<=[0-9])\\s*[-–—]\\s*(?=[.0-9])",
+    else strsplit(inner, "(?<=[0-9])\\s*[-\u2013\u2014]\\s*(?=[.0-9])",
                   perl = TRUE)[[1]]
   parts <- trimws(parts)
   if (length(parts) != 2 || any(!nzchar(parts))) return(NULL)
@@ -184,13 +184,13 @@
 # Is this cell a PLACEHOLDER rather than a value? JASP renders an empty cell in
 # a result table as "." and jamovi as an em/en dash; a table for an analysis the
 # user set up but never completed is placeholder in EVERY cell. Emitting those
-# produces fully STATO-typed junk — a "p-value" whose value is "." — which is
+# produces fully STATO-typed junk -- a "p-value" whose value is "." -- which is
 # worse than omitting them, because a downstream matcher sees a p that exists
 # but can never match anything. Treated exactly like the already-skipped empty
 # cell: the key is omitted, and a result left with no values at all is dropped.
 # Deliberately NARROW: only these exact markers (after trimming) count, so a
 # real value is never discarded.
-.STAT_PLACEHOLDERS <- c(".", "-", "—", "–", "−",
+.STAT_PLACEHOLDERS <- c(".", "-", "\u2014", "\u2013", "\u2212",
                         "na", "nan", "null", "n/a")
 
 .stat_is_placeholder <- function(x) {
@@ -199,7 +199,7 @@
 }
 
 # Which columns of a result table are STATISTICS (vs row-label / structural
-# columns). JASP/jamovi lay tables out differently PER TEST — the label
+# columns). JASP/jamovi lay tables out differently PER TEST -- the label
 # column(s) that key each row (test name, model, predictor, group, effect-size
 # NAME) can be at the front, in the middle, or have an empty header, and there
 # can be several. So classify by CONTENT, not header or position: a column is a
@@ -210,8 +210,8 @@
 # makes one: jamovi's ResultsColumn carries type ("text" for a label column,
 # number/integer for a statistic) and format (which can name the quantity
 # outright, e.g. "pvalue"). A declaration beats any amount of guessing from cell
-# contents — a transposed t-test column mixes a variable name, a test name and
-# then numbers, which no content heuristic classifies correctly — so it is
+# contents -- a transposed t-test column mixes a variable name, a test name and
+# then numbers, which no content heuristic classifies correctly -- so it is
 # consulted first. NULL for sources that declare nothing (the HTML path), which
 # falls through to the content test unchanged.
 .stat_is_label_col <- function(header, values, role = NULL) {
@@ -228,7 +228,7 @@
   # Placeholders ("." in JASP, an em dash in jamovi) are not content: an
   # all-placeholder column carries no information either way. They must be
   # dropped BEFORE the numeric-content test below, because that test's regex
-  # (`[0-9.]+`) matches a bare "." — so a column of JASP placeholders would
+  # (`[0-9.]+`) matches a bare "." -- so a column of JASP placeholders would
   # otherwise look 100% numeric and be misclassified as a statistic column,
   # producing a junk statistic keyed off an empty header.
   vals <- vals[!vapply(vals, .stat_is_placeholder, logical(1))]
@@ -237,7 +237,7 @@
   if (nzchar(h) && !identical(stato_type_column(h)$termSource, ""))
     return(FALSE)
   # Content test: a value is "numeric-ish" if it parses as a number, is a
-  # reported comparison (< .001), or an infinity — the forms statistics take.
+  # reported comparison (< .001), or an infinity -- the forms statistics take.
   if (length(vals) == 0) return(TRUE)   # empty column -> treat as label/spacer
   numlike <- grepl("^[<>=]?\\s*[-+]?[0-9.]+([eE][-+]?[0-9]+)?$", vals) |
              grepl("(?i)^[-+]?inf$", vals, perl = TRUE) |
@@ -247,11 +247,11 @@
 }
 
 # A column header is "ambiguous" when Grobid's own extraction could not have
-# given it real meaning: blank, a bare running number ("1.", "2." — a
+# given it real meaning: blank, a bare running number ("1.", "2." -- a
 # correlation matrix's own column index, not a statistic name), or a dash/blank
 # placeholder. .stat_family() returning NA already catches "unrecognised", but a
 # blank/numeric header is unrecognised for a DIFFERENT reason (nothing was ever
-# there to recognise) than a real-but-unmapped label — kept as its own check so
+# there to recognise) than a real-but-unmapped label -- kept as its own check so
 # a future .stat_family() addition can't accidentally start treating "1." as a
 # real family.
 .table_header_ambiguous <- function(header) {
@@ -263,12 +263,12 @@
 
 # The "<name> [(df)] <op> <value>" statistic pattern, shared with extract_eq().
 .r_stat_pattern <- function() {
-  operators <- c("=", "<", ">", "~", "≈", "≠", "≤", "≥",
-                 "≪", "≫")
+  operators <- c("=", "<", ">", "~", "\u2248", "\u2260", "\u2264", "\u2265",
+                 "\u226a", "\u226b")
   op <- paste(operators, collapse = "")
-  gr <- "Ͱ-Ͽ"
+  gr <- "\u0370-\u03ff"
   list(op = op, pattern = paste0(
-    "([", gr, "²a-zA-Z][", gr, "²a-zA-Z0-9._-]*)\\s*",  # statistic name
+    "([", gr, "\u00b2a-zA-Z][", gr, "\u00b2a-zA-Z0-9._-]*)\\s*",  # statistic name
     "(\\([^)]*\\))?\\s*",                                          # optional (df)
     "([", op, "]{1,3})\\s*",                                      # comparator
     # value: a number (no trailing comma), scientific notation, or "< .001".

@@ -6,7 +6,7 @@
 #   2. a column name -> a metacheck-minted term (.MC_STAT_MAP + .MC_STAT_LABELS)
 #      for statistics STATO has no class for;
 #   3. the same, after stripping a trailing variant/correction suffix
-#      (f[gg], p[hf], stat[stud]) — see .stato_strip_variant();
+#      (f[gg], p[hf], stat[stud]) -- see .stato_strip_variant();
 #   4. FALLBACK: no class at all -> the column's own header text is the type
 #      (annotationValue = header, no termAccession). Nothing is ever dropped.
 #
@@ -15,10 +15,10 @@
 # inst/schema/stato/jamovi-column-titles.txt.
 #
 # EVERY STATO IRI here was verified via the EBI OLS4 API
-# (https://www.ebi.ac.uk/ols4) against the `stato` ontology — they are NOT
+# (https://www.ebi.ac.uk/ols4) against the `stato` ontology -- they are NOT
 # guessed. Verify with the TERM endpoint, not search: OLS4's search index
 # returns ids (e.g. STATO:0000669 "sum") whose term lookup 404s, and a
-# plausible-looking id can belong to something else entirely — STATO:0000505 and
+# plausible-looking id can belong to something else entirely -- STATO:0000505 and
 # STATO:0000506 look like they should be sum-of-squares and mean-square but are
 # actually "quadrat sampling" and "cluster sampling". Check with:
 #   curl "https://www.ebi.ac.uk/ols4/api/ontologies/stato/terms?iri=\
@@ -108,12 +108,12 @@
   "STATO:0000560" = "Rao's score"
 )
 
-# ── metacheck-minted statistic terms ─────────────────────────────────────────
+# -- metacheck-minted statistic terms -----------------------------------------
 # Statistics that JASP/jamovi/R report routinely but for which the STATO release
 # served by OLS4 has NO class. Each was searched for on OLS4 before being minted
 # here; the note on each records what was checked and why the nearest STATO term
 # does not fit. These carry the metacheck namespace, exactly as the open-science
-# booleans in the RO-Crate output do (metacheck:hasSharedData etc.) — they are
+# booleans in the RO-Crate output do (metacheck:hasSharedData etc.) -- they are
 # metacheck's own vocabulary, NOT a claim about STATO, and a consumer can tell
 # the difference from the IRI alone.
 #
@@ -139,7 +139,7 @@
   # STATO has no plain "median": searching returns only compounds (median
   # difference, median time-to-event, median of the ratios corrected count).
   "median"                 = "median",
-  # Only "inter quartile range" (STATO:0000164) exists — not the quantile
+  # Only "inter quartile range" (STATO:0000164) exists -- not the quantile
   # values themselves, which jamovi reports as quart1-3 / quant1-3.
   "quantile"               = "quantile",
   # Distinct from a count of observations (STATO:0000047): this counts the
@@ -152,8 +152,8 @@
   # STATO:0000070 is Yate's corrected chi-squared TEST, not the corrected
   # statistic value.
   "correctedChiSquared"    = "continuity-corrected Chi-Squared statistic",
-  # Adjusted R² is a different quantity from R² (STATO:0000564) — it penalises
-  # for the number of predictors — and OLS4 has no class for it.
+  # Adjusted R2 is a different quantity from R2 (STATO:0000564) -- it penalises
+  # for the number of predictors -- and OLS4 has no class for it.
   "adjustedRSquared"       = "adjusted coefficient of determination",
   # A contingency table's EXPECTED cell frequency (what the null model predicts)
   # is a different quantity from the observed count (STATO:0000047). OLS4 has no
@@ -161,7 +161,7 @@
   # Cochran-Armitage trend statistic.
   "expectedCount"          = "expected cell frequency",
   # STATO:0000199 is Mauchly's TEST for sphericity, not the W statistic it
-  # yields — the same test-vs-statistic distinction as Shapiro-Wilk above.
+  # yields -- the same test-vs-statistic distinction as Shapiro-Wilk above.
   "mauchlyW"               = "Mauchly's W statistic",
   # The Greenhouse-Geisser / Huynh-Feldt sphericity-correction epsilons, as
   # reported in a "Tests of Sphericity" table. These are the CORRECTION FACTORS
@@ -207,9 +207,9 @@
   # test statistic itself (the noncentral F/chi-squared distribution's shape
   # parameter, used to compute observed power), not a synonym for F or df.
   "noncentralityParameter" = "noncentrality parameter",
-  # Logistic regression pseudo-R² statistics: OLS4 has no match for either
+  # Logistic regression pseudo-R2 statistics: OLS4 has no match for either
   # (checked 2026-07-30). Distinct FORMULAS from each other and from the
-  # ordinary/adjusted R² (STATO:0000564 / metacheck:adjustedRSquared) used
+  # ordinary/adjusted R2 (STATO:0000564 / metacheck:adjustedRSquared) used
   # for linear models, so neither is folded into those.
   "nagelkerkeRSquared"     = "Nagelkerke pseudo R-squared",
   "coxSnellRSquared"       = "Cox and Snell pseudo R-squared",
@@ -280,8 +280,8 @@
   "shapiro-wilk w"          = "shapiroWilkW",
   "chisqcorr"               = "correctedChiSquared",
   "ar2"                     = "adjustedRSquared",
-  "adj. r²"                 = "adjustedRSquared",
-  "adjusted r²"             = "adjustedRSquared",
+  "adj. r\u00b2"                 = "adjustedRSquared",
+  "adjusted r\u00b2"             = "adjustedRSquared",
   "adjusted r square"       = "adjustedRSquared",   # SPSS's own spelling
   "adj. r-squared"          = "adjustedRSquared",   # statsmodels' .summary() spelling
   "noncent. parameter"      = "noncentralityParameter",
@@ -306,7 +306,7 @@
   "mauch"                   = "mauchlyW",
   "mauchly's w"             = "mauchlyW",
   # NOTE: these two keys are only the EPSILON when they stand alone (a Tests of
-  # Sphericity column). As a bracket suffix — ss[gg], p[hf] — they name the
+  # Sphericity column). As a bracket suffix -- ss[gg], p[hf] -- they name the
   # correction applied to another statistic, and .stato_strip_variant() strips
   # them before lookup, so that case never reaches here.
   "gg"                      = "greenhouseGeisserEpsilon",
@@ -326,7 +326,7 @@
   # test statistics
   "t"                       = "STATO:0000176",
   "f"                       = "STATO:0000282",
-  "χ²"            = "STATO:0000030",   # chi-square symbol
+  "\u03c7\u00b2"            = "STATO:0000030",   # chi-square symbol
   "chi-squared"             = "STATO:0000030",
   "chi-square"              = "STATO:0000030",
   "z"                       = "STATO:0000376",
@@ -342,7 +342,7 @@
   "num df"                  = "STATO:0000498",
   "den df"                  = "STATO:0000527",
   # oneway.test()'s Welch one-way test prints its own denominator df header as
-  # "denom df", not "den df" — a distinct literal string from the other df
+  # "denom df", not "den df" -- a distinct literal string from the other df
   # keys above (stato_type_column() looks up an exact, case-folded key with no
   # fuzzy matching), so it needs its own entry rather than relying on "den df".
   "denom df"                = "STATO:0000527",
@@ -351,8 +351,8 @@
   "hedges' g"               = "STATO:0000319",
   "hedges's g"              = "STATO:0000319",
   "glass' delta"            = "STATO:0000320",
-  "η²"           = "STATO:0000317",   # eta-squared
-  "ω²"           = "STATO:0000318",   # omega-squared
+  "\u03b7\u00b2"           = "STATO:0000317",   # eta-squared
+  "\u03c9\u00b2"           = "STATO:0000318",   # omega-squared
   "odds ratio"              = "STATO:0000182",
   "exp(b)"                  = "STATO:0000182",   # SPSS logistic regression's own label
   # descriptives / dispersion
@@ -380,9 +380,9 @@
   # Pearson's r the "r"/"pearson's r" keys above already map, just under
   # scipy's own field name. "slope"/"intercept" are verified STATO classes in
   # their own right (OLS4 search: "slope" -> STATO:0000656, "intercept" ->
-  # STATO:0000657 — general graph/line-fit quantities, not regression-specific
+  # STATO:0000657 -- general graph/line-fit quantities, not regression-specific
   # classes, but a semantic match for a fitted line's own slope/intercept).
-  # "stderr" is linregress's name for the slope estimate's standard error —
+  # "stderr" is linregress's name for the slope estimate's standard error --
   # distinct from the SAMPLE-MEAN standard error "se"/"standard error" already
   # map to (STATO:0000037) above, so it cannot reuse that key without a
   # category mismatch; OLS4 has no regression-slope-specific SE class, so this
@@ -394,8 +394,8 @@
   "intercept"               = "STATO:0000657",
   "stderr"                  = "STATO:0000562",
   # bayesian
-  "bf₁₀"         = "STATO:0000266",   # BF10
-  "bf₀₁"         = "STATO:0000266",   # BF01
+  "bf\u2081\u2080"         = "STATO:0000266",   # BF10
+  "bf\u2080\u2081"         = "STATO:0000266",   # BF01
   "bayes factor"            = "STATO:0000266",
   # R console-output spellings (summary(lm)/aov/anova/t.test/cor.test), so the
   # captured-R-output path types the same statistics as the JASP/jamovi path.
@@ -407,7 +407,7 @@
   # statsmodels' OLSResults/Logit/GLM .summary() printed text (parsed via the
   # shared .r_output_tables() fixed-width parser, R/r-output.R, reused as-is
   # for this Python output the same way .r_output_oneline() is reused for
-  # bare scipy Result reprs) — its OWN column spellings, different from R's
+  # bare scipy Result reprs) -- its OWN column spellings, different from R's
   # equivalent lm/glm output above ("coef" not "estimate", "std err" not
   # "std. error", bare "t"/"p>|t|" not "t value"/"pr(>|t|)"). Confirmed real
   # via a Zenodo-sampled notebook's OLS Regression Results table.
@@ -416,10 +416,10 @@
   "p>|t|"                   = "STATO:0000700",   # OLS/WLS/GLS t-based p column
   "p>|z|"                   = "STATO:0000700",   # Logit/GLM z-based p column
   # statsmodels' .summary() KEY-VALUE header block (parsed by .ipynb_stat_kv(),
-  # R/stat-tables.R — a two-"Label: value"-pairs-per-line shape neither
+  # R/stat-tables.R -- a two-"Label: value"-pairs-per-line shape neither
   # .r_output_tables() nor .r_output_oneline() can parse, so it needs its own
   # extractor; see that function's own comment). Manuscript-reportable
-  # model-fit statistics ("the model explained significant variance, R² =
+  # model-fit statistics ("the model explained significant variance, R2 =
   # .84, F(6, 93) = 84.18, p < .001") that were previously not extracted at
   # all. Confirmed real and stable across two independently-sampled Zenodo
   # notebooks' OLS output.
@@ -429,11 +429,11 @@
   "log-likelihood"          = "STATO:0000550",
   "no. observations"        = "STATO:0000088",
   "df residuals"            = "STATO:0000069",
-  # "adj. r-squared" is METACHECK-minted (.MC_STAT_MAP's "adjustedRSquared" —
-  # see .MC_STAT_LABELS's own comment on why OLS4 has no adjusted-R² class),
+  # "adj. r-squared" is METACHECK-minted (.MC_STAT_MAP's "adjustedRSquared" --
+  # see .MC_STAT_LABELS's own comment on why OLS4 has no adjusted-R2 class),
   # not listed here; "df model" and "covariance type" have no verified STATO/
   # metacheck term and stay untyped nominal labels (df model is a model-level
-  # PREDICTOR COUNT, not a test's own degrees of freedom — reusing STATO:0000069
+  # PREDICTOR COUNT, not a test's own degrees of freedom -- reusing STATO:0000069
   # for it would be the same category error the file header warns against;
   # covariance type, e.g. "nonrobust"/"cluster"/"HC1", is a categorical
   # setting, not a statistic at all).
@@ -452,8 +452,8 @@
   # produced it (W = Shapiro-Wilk's W after shapiro.test, but the rank sum after
   # wilcox.test). The header alone cannot disambiguate them, so they are NOT in
   # this table; they are resolved from the producing CALL instead, via
-  # .STATO_BY_CALL below — and stay tier-4 nominal when no call is known.
-  # ── jamovi / JASP MACHINE column names ──────────────────────────────────────
+  # .STATO_BY_CALL below -- and stay tier-4 nominal when no call is known.
+  # -- jamovi / JASP MACHINE column names --------------------------------------
   # The structured readers (.jasp_structured_tables / .jmv_structured_tables in
   # R/stat-tables.R) key columns on the format's own machine `name`, not the
   # rendered display title, because a title is often blank or cosmetic. Those
@@ -461,11 +461,11 @@
   # "SE", "md" not "Mean Difference"), so they need their own entries or the
   # structured path would type far less than the HTML path did.
   # NOT typed at all, deliberately: `stat` is jamovi's generic test-statistic
-  # column whose meaning changes per row (a t here, a U there), so ANY class —
-  # STATO or metacheck — would assert something the data does not support. It
+  # column whose meaning changes per row (a t here, a U there), so ANY class --
+  # STATO or metacheck -- would assert something the data does not support. It
   # stays tier-4 nominal. (`md`, `ss`, `ms` were previously untyped for want of
   # a STATO class; they are now metacheck-minted in .MC_STAT_MAP.)
-  # ("se" is already mapped above, in the display-title block — the lower-cased
+  # ("se" is already mapped above, in the display-title block -- the lower-cased
   # lookup key is identical for both vocabularies, so it is not repeated here.)
   "num"                     = "STATO:0000088",   # N, jamovi descriptives
   # Adjusted p-values: all are p-values (the adjustment is a property of how it
@@ -485,7 +485,7 @@
   # `eta` there is eta-squared and `omega` is omega-squared (the un-squared
   # forms are not what jamovi reports). Generalized (`ges`) and PARTIAL
   # (`parteta`) eta-squared are DISTINCT quantities and are never folded in
-  # here — they get their own metacheck terms in .MC_STAT_MAP.
+  # here -- they get their own metacheck terms in .MC_STAT_MAP.
   "eta"                     = "STATO:0000317",
   "etasq"                   = "STATO:0000317",
   "omega"                   = "STATO:0000318",
@@ -501,7 +501,7 @@
   "counts"                  = "STATO:0000047",
   "count"                   = "STATO:0000047",
   # jamovi anovaRM's Group Summary reports `n` (cases per group) beside `ex`,
-  # the number of cases EXCLUDED from that group — a count, so it takes the
+  # the number of cases EXCLUDED from that group -- a count, so it takes the
   # count class. (Not the same as `missing`, which counts absent values within
   # a variable and is minted separately as metacheck:missingCount.)
   "ex"                      = "STATO:0000047",
@@ -527,10 +527,10 @@
   "n of items"              = "STATO:0000047",   # reliability analysis
   "numerator df"            = "STATO:0000498",
   "denominator df"          = "STATO:0000527",
-  # ── SPSS (.spv) row-label spellings ────────────────────────────────────────
+  # -- SPSS (.spv) row-label spellings ----------------------------------------
   # A .spv table's statistic identity is a CELL VALUE in a "Statistics"-type
   # dimension column (e.g. a row with Statistics="Sig. (2-tailed)"), not a
-  # column header the way JASP/jamovi/R report it — see .spv_stato_type_row()
+  # column header the way JASP/jamovi/R report it -- see .spv_stato_type_row()
   # in R/stat-output.R, which looks these same maps up keyed on that cell
   # value instead of a header. SPSS's own phrasing rarely matches the header
   # spellings above verbatim, so its synonyms are collected here rather than
@@ -613,12 +613,12 @@
   # standard-error class rather than the skewness/kurtosis class.
   "seskew"                  = "STATO:0000037",
   "sekurt"                  = "STATO:0000037",
-  # R-squared aliases. Adjusted R² is a DIFFERENT quantity and has no STATO
+  # R-squared aliases. Adjusted R2 is a DIFFERENT quantity and has no STATO
   # class; it is minted as metacheck:adjustedRSquared in .MC_STAT_MAP instead.
   "r2"                      = "STATO:0000564",
-  "r²"                      = "STATO:0000564",
+  "r\u00b2"                      = "STATO:0000564",
   "rsq"                     = "STATO:0000564",
-  # Aliases of already-verified classes — no new terms needed, these are just
+  # Aliases of already-verified classes -- no new terms needed, these are just
   # the other spellings JASP/jamovi/R emit for the same quantity.
   "pval"                    = "STATO:0000700",
   "p_value"                 = "STATO:0000700",
@@ -670,7 +670,7 @@
   # independent means, which is exactly STATO:0000648 (the narrower
   # "between independent proportions" class, 0000649, does not apply here).
   "sed"                     = "STATO:0000648",
-  # jamovi Bayesian tables: BFM is a Bayes factor like the BF₁₀/BF₀₁ subscripted
+  # jamovi Bayesian tables: BFM is a Bayes factor like the BF10/BF01 subscripted
   # forms already mapped above (the subscript names which hypothesis pair is
   # being compared, not a different quantity).
   "bfm"                     = "STATO:0000266",
@@ -687,7 +687,7 @@
   "p(incl)"                 = "STATO:0000702",
   "p(excl)"                 = "STATO:0000702",
   "prior odds"              = "STATO:0000702",
-  # ── JASP machine/column names ─────────────────────────────────────────────
+  # -- JASP machine/column names ---------------------------------------------
   # JASP's structured analyses.json uses its own column names, a third
   # vocabulary alongside the display titles and jamovi's machine names.
   "bf"                      = "STATO:0000266",
@@ -721,7 +721,7 @@
   "ucl"                     = "STATO:0000196",
   # "stdse"/"SErsq": the standard error of a STANDARDISED coefficient (the
   # widely copied stdCoef.merMod() lme4 helper's column name) and of an R2
-  # estimate (psychometric::CI.Rsq()'s column name) — both are still a
+  # estimate (psychometric::CI.Rsq()'s column name) -- both are still a
   # standard error, the same quantity "se"/"standard error" above already
   # name; these are just the literal headers those two specific functions
   # print, which do not contain either recognised substring.
@@ -747,13 +747,13 @@
 # Only pairs whose identity is unambiguous GIVEN the call are listed; anything
 # absent falls through to the header-only tables.
 # A "statistic" key is added below for the tests whose result has exactly ONE
-# possible statistic type — rstatix's t_test()/chisq_test()/etc. print their
+# possible statistic type -- rstatix's t_test()/chisq_test()/etc. print their
 # tidy tibble's generic value column as literally "statistic" rather than the
 # base test's own letter (t.test()'s bare "t", chisq.test()'s "X-squared"),
 # so the base-R keys above never match rstatix's column header. Left OFF
 # wilcox.test/cor.test: each covers more than one possible statistic (W or V;
 # S, t, or z depending on the method actually used), so "statistic" there
-# would be a guess this table refuses to make — see the file header comment.
+# would be a guess this table refuses to make -- see the file header comment.
 .STATO_BY_CALL <- list(
   "shapiro.test"  = c(w = "mcSTAT:shapiroWilkW", statistic = "mcSTAT:shapiroWilkW"),
   "wilcox.test"   = c(w = "mcSTAT:wilcoxonW", v = "mcSTAT:wilcoxonV"),
@@ -772,53 +772,53 @@
   "var.test"      = c(f = "STATO:0000282", statistic = "STATO:0000282"),
   "t.test"        = c(t = "STATO:0000176", statistic = "STATO:0000176"),
   "ks.test"       = c(d = "mcSTAT:kolmogorovSmirnovD", statistic = "mcSTAT:kolmogorovSmirnovD"),
-  # effsize::cohen.d()'s printed "d estimate" — see .r_output_cohend()
+  # effsize::cohen.d()'s printed "d estimate" -- see .r_output_cohend()
   # (R/r-output.R), which names its recovered column plainly "d". Without this,
   # bare "d" is ambiguous with ks.test()'s Kolmogorov-Smirnov D above.
   "cohen.d"       = c(d = "STATO:0000618"),
-  # effectsize::cohens_d()/repeated_measures_d() — see .r_output_effectsize_d()
+  # effectsize::cohens_d()/repeated_measures_d() -- see .r_output_effectsize_d()
   # (R/r-output.R), a different package's different print shape for the same
   # Cohen's d statistic, also named plainly "d" and so needing the same
   # disambiguation from ks.test()'s D.
   "cohens_d"            = c(d = "STATO:0000618"),
   "repeated_measures_d" = c(d = "STATO:0000618"),
-  # ── scipy.stats' printed repr (Python, not R) ──────────────────────────────
+  # -- scipy.stats' printed repr (Python, not R) ------------------------------
   # A notebook's saved cell output prints e.g. "TtestResult(statistic=23.06,
-  # pvalue=1.2e-28, df=51)" — read by .ipynb_read_tables() (R/stat-tables.R),
+  # pvalue=1.2e-28, df=51)" -- read by .ipynb_read_tables() (R/stat-tables.R),
   # which parses this same "name=value" fragment shape via the shared
   # .r_output_oneline() (R/r-output.R). The class name IS the call, unlike R's
   # echoed statement text, so it is matched literally (.ipynb_result_class())
   # rather than recovered from a preceding call. Every class below was
   # confirmed to actually occur across two independent Zenodo samples (170 +
   # 51 real notebooks, from a generic search and a scipy.stats/statsmodels/
-  # pingouin-targeted search respectively) — not a guess at scipy's full API
+  # pingouin-targeted search respectively) -- not a guess at scipy's full API
   # surface; expand further only as more classes are actually observed.
   # ttest_1samp()/ttest_ind()/ttest_rel() all return a TtestResult/
-  # Ttest_indResult, all Student's t — unambiguous, same reasoning as R's own
+  # Ttest_indResult, all Student's t -- unambiguous, same reasoning as R's own
   # "t.test" entry above.
   "ttestresult"        = c(statistic = "STATO:0000176"),
   "ttest_indresult"    = c(statistic = "STATO:0000176"),
   # linregress()'s rvalue/slope/intercept/stderr are typed directly by their
-  # OWN header text in .STATO_MAP (no call-based disambiguation needed — none
+  # OWN header text in .STATO_MAP (no call-based disambiguation needed -- none
   # of those names collides with another statistic family the way bare "W" or
   # "statistic" do), so no entry is needed here for them; only "pvalue" is
   # generic enough to need no call either (already typed via .STATO_MAP's
-  # "pvalue" key). Listed here only for discoverability — linregressresult
+  # "pvalue" key). Listed here only for discoverability -- linregressresult
   # itself needs NO entry.
   #
-  # mannwhitneyu()'s statistic is the rank-sum U (independent samples) — the
+  # mannwhitneyu()'s statistic is the rank-sum U (independent samples) -- the
   # same family R's wilcox.test() calls "W" for two independent samples
   # (mcSTAT:wilcoxonW; see wilcox.test's entry above and its own header
-  # comment on why "statistic" is deliberately absent there — R's wilcox.test
+  # comment on why "statistic" is deliberately absent there -- R's wilcox.test
   # is ambiguous between W and V depending on design, but scipy splits that
   # into two separate, unambiguous functions/classes instead).
   "mannwhitneyuresult" = c(statistic = "mcSTAT:mannWhitneyU"),
-  # wilcoxon()'s statistic is the signed-rank statistic (paired/one-sample) —
+  # wilcoxon()'s statistic is the signed-rank statistic (paired/one-sample) --
   # confirmed directly against scipy's own docs: "the sum of the ranks of the
   # differences", the same quantity R's wilcox.test calls "V" in that design.
   "wilcoxonresult"     = c(statistic = "mcSTAT:wilcoxonV"),
   # kruskal()'s statistic is the H statistic. OLS4 has "Kruskal Wallis test"
-  # (STATO:0000094, the TEST) but no class for the H value itself — verified
+  # (STATO:0000094, the TEST) but no class for the H value itself -- verified
   # directly against OLS4's search, the same test-vs-statistic gap R's own
   # kruskal.test() entry above already works around with a metacheck term
   # (there STATO:0000030, chi-squared, since R prints it AS a chi-squared
@@ -861,8 +861,8 @@
 #' @param header the column header string as rendered in the result table
 #' @param call_fn optional name of the R function that produced this result
 #'   (e.g. `"shapiro.test"`), as carried by [read_r_output()]. When supplied it
-#'   disambiguates headers that name different quantities in different tests —
-#'   R prints a bare `W` for both Shapiro-Wilk's W and the Wilcoxon rank sum —
+#'   disambiguates headers that name different quantities in different tests --
+#'   R prints a bare `W` for both Shapiro-Wilk's W and the Wilcoxon rank sum --
 #'   which no header-only lookup can resolve. Ignored for GUI formats, which
 #'   have no call.
 #'
@@ -875,7 +875,7 @@ stato_type_column <- function(header, call_fn = NULL) {
   # R's t.test prints its group means as "mean in group <level>" (and a paired
   # test as "mean difference"), so the LEVEL is baked into the header and no
   # fixed key can match. The quantity is the same sample mean regardless of
-  # which group it belongs to — the group is recorded in the row label — so the
+  # which group it belongs to -- the group is recorded in the row label -- so the
   # prefix is normalised away before lookup.
   if (grepl("^mean in group ", key)) key <- "mean"
   if (grepl("^mean of ", key)) key <- "mean"
@@ -888,11 +888,11 @@ stato_type_column <- function(header, call_fn = NULL) {
   # those have no dot before the digits.
   if (grepl("^.+[a-z_)]\\.[0-9]+$", key)) key <- sub("\\.[0-9]+$", "", key)
   # The call-based capture path (R/r-capture.R) keys a multi-column aggregate as
-  # "<fun> (<variable>)" — e.g. "mean (y)" — so several aggregated variables
+  # "<fun> (<variable>)" -- e.g. "mean (y)" -- so several aggregated variables
   # stay distinct in one table. The STATISTIC is the function; the parenthesised
   # variable is which column it was computed on, and is recorded in the label.
   # Skipped when the FULL key (unstripped) is already a known statsmodels
-  # header of the exact same shape ("prob (f-statistic)") — that parenthetical
+  # header of the exact same shape ("prob (f-statistic)") -- that parenthetical
   # names WHICH quantity's p-value this is, not a variable a function was
   # computed over, so stripping it would collapse a real, mapped key ("prob
   # (f-statistic)" -> STATO:0000700) down to a bare "prob" with no entry at
@@ -921,18 +921,18 @@ stato_type_column <- function(header, call_fn = NULL) {
 
   # jamovi's t-test tables (ttestOneS/ttestIS/ttestPS) name their primary
   # test-statistic column literally "stat", with the bracket naming WHICH
-  # test produced it. Unlike f[gg]/p[hf]/df[stud]/md[stud]/es[stud] — where
+  # test produced it. Unlike f[gg]/p[hf]/df[stud]/md[stud]/es[stud] -- where
   # the bracket names a correction/variant of the SAME quantity, so stripping
-  # it and looking up the bare key is correct — here the bracket changes what
+  # it and looking up the bare key is correct -- here the bracket changes what
   # the quantity IS, so it must be resolved before the generic strip-and-
   # lookup below discards it (a bare "stat" has no entry in either vocabulary
   # at all). Tags confirmed against a real corpus paper's ttestOneS/ttestIS
   # output (stat[stud], stat[welc]) and this codebase's own note on the third
   # jamovi variant (R/stat-tables.R's "stud/welc/mann/bf" comment): stud/welc
   # are both Student's/Welch's t; mann is Mann-Whitney's U, for which STATO
-  # has only the TEST class (STATO:0000076) and no statistic class — the same
+  # has only the TEST class (STATO:0000076) and no statistic class -- the same
   # gap already documented above for wilcox.test(), so it reuses that same
-  # minted term (mcSTAT:wilcoxonW — R's wilcox.test() prints the identical
+  # minted term (mcSTAT:wilcoxonW -- R's wilcox.test() prints the identical
   # rank-sum statistic for two independent samples).
   if (grepl("^stat\\[(stud|welc)\\]$", key))
     return(list(annotationValue = unname(.STATO_LABELS[["STATO:0000176"]]),
@@ -944,7 +944,7 @@ stato_type_column <- function(header, call_fn = NULL) {
                 termAccession = paste0(.MC_STAT_NS, "wilcoxonW")))
 
   # Candidate keys: the header as written, then the same with a trailing
-  # variant/correction suffix removed (f[gg], p[hf]) — see
+  # variant/correction suffix removed (f[gg], p[hf]) -- see
   # .stato_strip_variant(). Both vocabularies are consulted for each, STATO
   # first, so a real STATO class always wins over a minted one.
   keys <- unique(c(key, .stato_strip_variant(key)))
@@ -967,7 +967,7 @@ stato_type_column <- function(header, call_fn = NULL) {
     }
   }
 
-  # No class in either vocabulary — keep the header as a nominal label.
+  # No class in either vocabulary -- keep the header as a nominal label.
   list(annotationValue = trimws(header), termSource = "", termAccession = "")
 }
 
@@ -978,7 +978,7 @@ stato_type_column <- function(header, call_fn = NULL) {
 #' header. `.spv` tables decode LONG/tidy instead (see R/spv.R): one row
 #' per cell, with the statistic's own NAME sitting as a value inside a
 #' dimension column (e.g. a row where the "Statistics" column reads
-#' `"Sig. (2-tailed)"` and `value` is `0.037`) — there is no header to type at
+#' `"Sig. (2-tailed)"` and `value` is `0.037`) -- there is no header to type at
 #' all. This types that row from its OWN category value instead, reusing the
 #' SAME `.STATO_MAP`/`.MC_STAT_MAP` dictionaries `stato_type_column()` draws
 #' on (SPSS's row labels and JASP/jamovi's column headers name the same

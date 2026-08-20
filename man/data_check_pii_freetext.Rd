@@ -33,7 +33,7 @@ list(problem, message, values)
 \description{
 Open-ended typed responses (comments, explanations, descriptions) can contain
 names, places, or other identifying detail, so they warrant a "review before
-sharing" prompt. The aim is to flag genuine typed prose only — not any long,
+sharing" prompt. The aim is to flag genuine typed prose only -- not any long,
 varied string. Long values that are \emph{not} prose (numeric matrices with blank
 headers, IDs, hashes, URLs, file paths, base64) are common in research data
 and previously produced false positives, so a column is flagged only when its
@@ -44,8 +44,8 @@ typical value actually reads like written language:
 \item long enough (\code{min_median_chars}),
 \item varied enough to be responses rather than a repeated category
 (\code{min_unique_frac}),
-\item \strong{multi-word} — most values contain whitespace between words, and
-\item \strong{predominantly alphabetic} — letters, not mostly digits/punctuation.
+\item \strong{multi-word} -- most values contain whitespace between words, and
+\item \strong{predominantly alphabetic} -- letters, not mostly digits/punctuation.
 }
 }
 \keyword{internal}

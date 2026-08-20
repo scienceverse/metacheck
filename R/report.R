@@ -169,10 +169,10 @@ report <- function(paper,
 #' improved, before archiving the files somewhere permanent.
 #'
 #' Four modules run in order, each building on the one before it:
-#' [repo_check][repo_check] takes an inventory of the files,
-#' [code_check][code_check] reads the analysis scripts,
-#' [data_check][data_check] reads the data files and runs data-quality checks,
-#' and [codebook_check][codebook_check] checks whether the data columns are
+#' `repo_check` takes an inventory of the files,
+#' `code_check` reads the analysis scripts,
+#' `data_check` reads the data files and runs data-quality checks,
+#' and `codebook_check` checks whether the data columns are
 #' documented. Only the first is told where the files are; the rest reuse its
 #' results.
 #'

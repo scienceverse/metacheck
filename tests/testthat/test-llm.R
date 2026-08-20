@@ -172,6 +172,7 @@ test_that("llm_max_calls", {
   model0 <- llm_model()
   withr::defer(llm_model(model0))
   llm_model("groq/llama-3.1-8b-instant")
+  withr::defer(llm_use(FALSE))
 
   n <- getOption("metacheck.llm_max_calls")
   n2 <- llm_max_calls()

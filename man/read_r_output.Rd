@@ -23,7 +23,7 @@ a list with one element per detected result block, each a list of
 \code{line} (1-based source line, or \code{NA} when \code{code_lines} was not supplied),
 \code{line_seq} (1-based counter of results sharing that \code{line}, or \code{NA}), and
 \code{call_fn} (the recognised statistical function that produced the block,
-e.g. \code{"shapiro.test"}, or \code{""}) — the same structure \code{\link[=read_stat_tables]{read_stat_tables()}}
+e.g. \code{"shapiro.test"}, or \code{""}) -- the same structure \code{\link[=read_stat_tables]{read_stat_tables()}}
 returns, plus these three fields. \code{call_fn} lets \code{\link[=stato_type_column]{stato_type_column()}}
 resolve statistic letters that are ambiguous in the printed output alone.
 }
@@ -36,7 +36,7 @@ export.
 }
 \details{
 When \code{code_lines} is supplied (the script's own text, one element per source
-line — what a run's \code{code_text_list[[file]]} already is), each result is
+line -- what a run's \code{code_text_list[[file]]} already is), each result is
 additionally tagged with the 1-based source \code{line} it came from, recovered by
 matching the echoed \verb{> }/\verb{+ } statement text against the script. A single
 statement that prints several results (e.g. a \code{for} loop calling \code{t.test()}

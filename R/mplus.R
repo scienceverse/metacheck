@@ -280,16 +280,16 @@
       if (.mplus_is_level_label(dtl)) { level <- dtl; group <- NA_character_ } else group <- dtl
       j <- j + 1L; next
     }
-    data_lines <- c(data_lines, paste0(level %NA% "", "␟", group %NA% "", "␟", dl))
+    data_lines <- c(data_lines, paste0(level %NA% "", "\u241f", group %NA% "", "\u241f", dl))
     j <- j + 1L
   }
   if (!length(data_lines)) return(list(data = NULL, next_line = start + 1L))
-  level_col <- sub("␟.*$", "", data_lines)
+  level_col <- sub("\u241f.*$", "", data_lines)
   has_level <- any(nzchar(level_col))
-  rest_lines <- sub("^[^␟]*␟", "", data_lines)
-  group_col <- sub("␟.*$", "", rest_lines)
+  rest_lines <- sub("^[^\u241f]*\u241f", "", data_lines)
+  group_col <- sub("\u241f.*$", "", rest_lines)
   has_group <- any(nzchar(group_col))
-  body_lines <- sub("^[^␟]*␟", "", rest_lines)
+  body_lines <- sub("^[^\u241f]*\u241f", "", rest_lines)
   cols <- .mplus_split_block(c(header_lines, body_lines))
   if (is.null(cols) || length(cols) < 2) return(list(data = NULL, next_line = start + 1L))
   n_header <- length(header_lines)

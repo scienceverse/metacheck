@@ -21,7 +21,7 @@ labels and figure file names in generated codebooks, and keys in metadata
 files. A name that contains characters that are illegal in file names
 (\verb{< > : " / \\ | ? *}), control characters (tabs, newlines), leading/trailing
 whitespace, or that runs to hundreds of characters cannot be used in those
-places without modification — tools either fail (e.g. a figure file cannot
+places without modification -- tools either fail (e.g. a figure file cannot
 be created on Windows) or silently rename the variable so it no longer
 matches the shared data. Good practice is short names built from letters,
 digits and underscores.
@@ -37,15 +37,15 @@ length SPSS supports
 and SAS and Stata cap names at 32 characters
 (\url{https://www.stata.com/manuals/rlimits.pdf}), so a name over 64 characters
 cannot be imported into any of the three major statistical packages without
-being renamed — after which it no longer matches the shared data or its
+being renamed -- after which it no longer matches the shared data or its
 documentation. (DDI-Codebook's \code{var@name} documentation still notes names
-are "usually up to eight characters, following the rules of SAS and SPSS" —
+are "usually up to eight characters, following the rules of SAS and SPSS" --
 a legacy of those systems' old limits, not a modern recommendation, so DDI
 imposes no constraint of its own.)
 
-This check only warns; nothing is renamed or dropped. (\code{\link[=convert_codebook]{convert_codebook()}}
+This check only warns; nothing is renamed or dropped. (\code{convert_codebook()}
 separately excludes columns whose name would push a generated figure's file
-path past Windows' 260-character limit — the one case where a name makes
+path past Windows' 260-character limit -- the one case where a name makes
 rendering impossible; that budget depends on the output path, so it is
 computed there, not here.)
 }

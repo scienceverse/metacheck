@@ -53,8 +53,8 @@
 # since it is real command-echo text.
 .SMCL_C_CODES <- c(
   "|" = "|", "+" = "+", "-" = "-",
-  "TT" = "┬", "BT" = "┴", "LT" = "├", "RT" = "┤",
-  "TLC" = "┌", "TRC" = "┐", "BLC" = "└", "BRC" = "┘",
+  "TT" = "\u252c", "BT" = "\u2534", "LT" = "\u251c", "RT" = "\u2524",
+  "TLC" = "\u250c", "TRC" = "\u2510", "BLC" = "\u2514", "BRC" = "\u2518",
   "-(" = "{", ")-" = "}")
 
 #' Render one SMCL-marked-up line as plain text
@@ -183,8 +183,8 @@
 #' @keywords internal
 .smcl_render <- function(lines) vapply(lines, .smcl_render_line, character(1), USE.NAMES = FALSE)
 
-# ═══════════════════════════════════════════════════════════════════════════
-# ── Command/output splitting ─────────────────────────────────────────────────
+# ===========================================================================
+# -- Command/output splitting -------------------------------------------------
 # A rendered .smcl line that WAS a "{com}. <command>" / "{com}> <continuation>"
 # echo starts with a literal ". " or "> " once rendered to plain text
 # (the {com} style marker itself renders to nothing, per .SMCL_ZERO_WIDTH) --
@@ -193,7 +193,7 @@
 # additionally sometimes prefixed with a literal line-number ("  2. ", "  3.
 # ") when Stata is inside a block (foreach/if/while) -- confirmed in a real
 # file's `foreach var of varlist ... { ... }` block.
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
 
 #' Split a rendered .smcl transcript into (command, output) chunks
 #'
@@ -220,15 +220,15 @@
   })
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
-# ── Fixed-width text tables (duplicated from R/r-output.R's
+# ===========================================================================
+# -- Fixed-width text tables (duplicated from R/r-output.R's
 # .r_output_tables() blank-column-splitting technique -- see that file's own
 # comment for the full rationale. NOT called directly: R's own stop-word
 # heuristics ("residual standard error", "Call:", ...) do not apply to
 # Stata's tables, which are bounded by {hline}-drawn dash rules instead, so
 # this is a Stata-specific re-application of the SAME splitting primitive,
-# not a shared function. ─────────────────────────────────────────────────────
-# ═══════════════════════════════════════════════════════════════════════════
+# not a shared function. -----------------------------------------------------
+# ===========================================================================
 
 .stata_is_numlike <- function(x) {
   x <- trimws(x)
@@ -261,7 +261,7 @@
 # often after its last data row too.
 .stata_is_rule_line <- function(line) {
   tl <- trimws(line)
-  nzchar(tl) && grepl("^[-┬┴├┤┌┐└┘+]+$", tl)
+  nzchar(tl) && grepl("^[-\u252c\u2534\u251c\u2524\u250c\u2510\u2514\u2518+]+$", tl)
 }
 
 #' Extract fixed-width result tables from rendered .smcl output
@@ -319,7 +319,7 @@
   tables
 }
 
-# ── One-line results (e.g. "estat gof"'s "Deviance goodness-of-fit = 367.79",
+# -- One-line results (e.g. "estat gof"'s "Deviance goodness-of-fit = 367.79",
 # or "Iteration 2: log pseudolikelihood = -640.68206") -- shares
 # .r_stat_pattern() (R/r-output.R) since the underlying "<name> <op> <value>"
 # shape is identical to R's one-line test output; not duplicated since it is
@@ -346,9 +346,9 @@
   results
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
-# ── Top-level entry points ────────────────────────────────────────────────
-# ═══════════════════════════════════════════════════════════════════════════
+# ===========================================================================
+# -- Top-level entry points ------------------------------------------------
+# ===========================================================================
 
 #' Read a Stata Markup and Control Language (.smcl) output log
 #'

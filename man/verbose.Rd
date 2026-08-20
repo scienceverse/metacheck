@@ -13,7 +13,10 @@ verbose(verbose = NULL)
 the current option value (logical)
 }
 \description{
-Set or get verbosity
+Get or set whether metacheck's own functions (e.g. \code{\link[=message]{message()}}, \code{\link[=pb]{pb()}})
+print progress messages and progress bars. Call with no argument to read
+the current value; call with \code{TRUE}/\code{FALSE} to set it for the rest of the
+session. Defaults to \code{TRUE} when never set.
 }
 \examples{
 verbose()

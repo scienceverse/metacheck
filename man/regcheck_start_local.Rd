@@ -11,7 +11,7 @@ regcheck_start_local(method = c("docker", "python"), model = NULL, port = 8000)
 
 \item{model}{Ollama language model to use. Defaults to \code{NULL}, which
 auto-selects the largest language model currently pulled in Ollama. Any
-model you have pulled with \verb{ollama pull} can be used here — larger
+model you have pulled with \verb{ollama pull} can be used here -- larger
 models generally produce better judgements.}
 
 \item{port}{port to run the server on (default 8000)}
@@ -36,12 +36,12 @@ Requires Python 3.12+ and Ollama. Run \code{\link[=regcheck_setup_local]{regchec
 
 In both cases, Ollama must be running with the required models pulled.
 The embedding model is fixed; the language model can be any Ollama model
-you have pulled — use the largest one that fits your hardware:
+you have pulled -- use the largest one that fits your hardware:
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{ollama pull nomic-embed-text-v2-moe
 ollama pull llama3.2          # or llama3.1, mistral, etc.
 }\if{html}{\out{</div>}}
 
-The API token is set automatically to \code{"metacheck-local"} — no manual
+The API token is set automatically to \code{"metacheck-local"} -- no manual
 token configuration needed.
 }

@@ -18,7 +18,7 @@ data_check_is_qualtrics(df, min_meta = 4L)
 Fires when the columns include enough of Qualtrics' reserved response-metadata
 names (StartDate, EndDate, Progress, Duration (in seconds), Finished,
 RecordedDate, ResponseId, DistributionChannel, ...) that the file is
-unambiguously a Qualtrics export — these exact names essentially never
+unambiguously a Qualtrics export -- these exact names essentially never
 co-occur outside Qualtrics. The \code{ResponseId} column (values like \code{R_xxxxx})
 or a leftover \code{ImportId} JSON header cell is treated as corroborating.
 }

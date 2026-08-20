@@ -18,8 +18,8 @@ a character vector of at most \code{n} lines (UTF-8), or \code{character(0)}.
 Reads the first \code{n} lines of a file as text, tolerating the encodings research
 data actually ships in: a UTF-8/UTF-16 BOM, UTF-16 (E-Prime exports), and
 Latin-1 bytes that would otherwise make \code{readLines()} output error in later
-string operations. Intended for cheap format sniffing — deciding \emph{what} a file
-is before committing to a reader — not for reading data.
+string operations. Intended for cheap format sniffing -- deciding \emph{what} a file
+is before committing to a reader -- not for reading data.
 }
 \details{
 Returns \code{character(0)} for a missing, empty or unreadable file rather than

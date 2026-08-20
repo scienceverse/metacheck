@@ -19,7 +19,7 @@ Stata, Mplus, MATLAB)}
 \item{include_writes}{also return files the code \emph{writes} (R only). Off by
 default: callers that ask "which referenced inputs are missing from the
 repository?" (e.g. \code{code_check}) must not see a written file as a missing
-input. \code{\link[=repro_file_io]{repro_file_io()}} turns this on so a file produced by one script can
+input. \code{repro_file_io()} turns this on so a file produced by one script can
 be recognised as the input another script consumes.}
 }
 \value{

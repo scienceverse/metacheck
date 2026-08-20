@@ -71,7 +71,7 @@
   # A locator can still repeat across TABLES (e.g. the analysis-heading
   # fallback with no line/table_index, if a heading recurs) — disambiguate
   # with a trailing counter before row-suffixing, same intent as before.
-  ave(ids, ids, FUN = function(x)
+  stats::ave(ids, ids, FUN = function(x)
     if (length(x) == 1) x else paste0(x, "_", seq_along(x)))
 }
 
@@ -176,6 +176,33 @@
   mean(numlike) < 0.5
 }
 
+# A column that typed to plain "df" (a single degrees-of-freedom, STATO
+# STATO:0000069 — see .STATO_MAP in stato-map.R) but whose CELL holds a
+# comma-separated pair ("2, 560") is really an F-test's numerator/
+# denominator df printed as one string — afex::aov_car()/aov_ez() and
+# similar ANOVA-table printers do this; jamovi/JASP give df1/df2 their own
+# columns instead, so this only ever fires for R-console-sourced tables.
+# Returns a list of list(name, value, typ) — one entry per half, each
+# re-typed via stato_type_column() against "df1"/"df2" (already-mapped
+# keys) — or NULL when `val` is not this shape, or when `typ` is not
+# already a plain "df" (so a genuinely different column that merely
+# CONTAINS a comma, e.g. a row-label-shaped cell, is never mistaken for
+# this). Guarded on BOTH halves parsing as real numbers, so a value like
+# "a, b" (not degrees of freedom at all) is left untouched, consistent with
+# every other "do not guess" boundary in this file.
+.split_combined_df <- function(val, typ) {
+  if (is.null(typ) || !identical(typ$termAccession,
+      "http://purl.obolibrary.org/obo/STATO_0000069")) return(NULL)
+  m <- regmatches(val, regexec("^([0-9.]+)\\s*,\\s*([0-9.]+)$", val))[[1]]
+  if (length(m) != 3) return(NULL)
+  if (is.na(suppressWarnings(as.numeric(m[[2]]))) ||
+      is.na(suppressWarnings(as.numeric(m[[3]])))) return(NULL)
+  list(
+    list(name = "df1", value = m[[2]], typ = stato_type_column("df1")),
+    list(name = "df2", value = m[[3]], typ = stato_type_column("df2"))
+  )
+}
+
 #' Flatten extracted result tables into one queryable long data frame
 #'
 #' Turns the nested output of [read_stat_tables()] into a tidy long table: one
@@ -207,34 +234,6 @@
 #'   the same row share that prefix — only the final segment tells them apart.
 #'   Empty frame (same columns) when there is nothing to flatten.
 #' @export
-
-# A column that typed to plain "df" (a single degrees-of-freedom, STATO
-# STATO:0000069 — see .STATO_MAP in stato-map.R) but whose CELL holds a
-# comma-separated pair ("2, 560") is really an F-test's numerator/
-# denominator df printed as one string — afex::aov_car()/aov_ez() and
-# similar ANOVA-table printers do this; jamovi/JASP give df1/df2 their own
-# columns instead, so this only ever fires for R-console-sourced tables.
-# Returns a list of list(name, value, typ) — one entry per half, each
-# re-typed via stato_type_column() against "df1"/"df2" (already-mapped
-# keys) — or NULL when `val` is not this shape, or when `typ` is not
-# already a plain "df" (so a genuinely different column that merely
-# CONTAINS a comma, e.g. a row-label-shaped cell, is never mistaken for
-# this). Guarded on BOTH halves parsing as real numbers, so a value like
-# "a, b" (not degrees of freedom at all) is left untouched, consistent with
-# every other "do not guess" boundary in this file.
-.split_combined_df <- function(val, typ) {
-  if (is.null(typ) || !identical(typ$termAccession,
-      "http://purl.obolibrary.org/obo/STATO_0000069")) return(NULL)
-  m <- regmatches(val, regexec("^([0-9.]+)\\s*,\\s*([0-9.]+)$", val))[[1]]
-  if (length(m) != 3) return(NULL)
-  if (is.na(suppressWarnings(as.numeric(m[[2]]))) ||
-      is.na(suppressWarnings(as.numeric(m[[3]])))) return(NULL)
-  list(
-    list(name = "df1", value = m[[2]], typ = stato_type_column("df1")),
-    list(name = "df2", value = m[[3]], typ = stato_type_column("df2"))
-  )
-}
-
 stat_results_long <- function(tables, paper_id = NA_character_,
                               source_file = NA_character_) {
   empty <- data.frame(paper_id = character(0), source_file = character(0),
@@ -305,7 +304,7 @@ stat_results_long <- function(tables, paper_id = NA_character_,
       # same intent as .stat_result_ids()'s locator disambiguation above — so
       # the per-cell id below is unique even in that edge case.
       stat_slugs <- vapply(headers[stat_cols], .stat_sanitize_id, character(1))
-      stat_slugs <- ave(stat_slugs, stat_slugs, FUN = function(x)
+      stat_slugs <- stats::ave(stat_slugs, stat_slugs, FUN = function(x)
         if (length(x) == 1) x else paste0(x, "_", seq_along(x)))
       cells <- lapply(seq_along(stat_cols), function(si) {
         ci <- stat_cols[si]
@@ -515,7 +514,7 @@ stat_output_json <- function(tables, paper_id = "metacheck",
 #' entries each have a `value`. This is a native structural check, not an
 #' executed external JSON Schema — there is no external standard this document
 #' conforms to, by design (see the file header comment). Mirrors
-#' [behaverse_validate()]'s and `psychds-validate.R`'s hand-rolled approach.
+#' `behaverse_validate()`'s and `psychds-validate.R`'s hand-rolled approach.
 #'
 #' @param doc a statistical-output document as an R list (as from
 #'   [stat_output_json()]), or a length-1 character path / JSON string to parse

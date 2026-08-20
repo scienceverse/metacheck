@@ -1,0 +1,221 @@
+:root {
+  --green: #59935B;
+  --medgreen: #4a7d4c;
+  --darkgreen: #15342A;
+}
+
+body {
+  font-size: 16px;
+}
+
+.box-header {
+  padding: 0 10px 0 0;
+}
+.box-header h3 {
+  width: 100%;
+  padding: 10px;
+}
+
+.skin-black .main-header .navbar {
+  background-color: var(--green);
+}
+.skin-black .main-header .navbar>.sidebar-toggle {
+  color: #FFF;
+}
+
+.sidebar-menu {
+  font-size: 120%;
+}
+
+h3.box-title,
+.box-header,
+.btn-box-tool,
+.btn-box-tool:hover,
+.open .btn-box-tool {
+  color: white;
+  font-weight: 800;
+}
+
+#download_json + div.form-group,
+#download_script + div.form-group {
+  width: 50%;
+  display: inline-block;
+  margin-left: 1em;
+}
+
+.content-wrapper { overflow: auto; }
+
+#shiny-tab-out_tab .box-body h3 { display: none; }
+
+.box-header {
+  background-color: var(--green);
+}
+
+textarea { width: 100%; }
+
+/* override keytable style */
+table.dataTable tbody td.focus {
+  box-shadow: none !important;
+}
+
+/* grid layout for the options checkboxes */
+.report-checks {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  row-gap: 0.4em;
+  column-gap: 1em;
+  margin-bottom: 0.5em;
+}
+.report-checks .shiny-input-container {
+  white-space: nowrap;
+  margin-bottom: 0;
+}
+.report-checks .checkbox label {
+  font-weight: 600;
+}
+
+/* tint the checkbox green when checked (default is grey/unchecked) */
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--green) !important;
+  width: 1.05em;
+  height: 1.05em;
+}
+
+/* PDF upload field — full green treatment */
+.pdf-upload .input-group {
+  border: 2px solid var(--green);
+  padding-left: 1px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.pdf-upload .btn-file {
+  background-color: var(--green) !important;
+  color: #fff !important;
+  border: none;
+  font-weight: 600;
+}
+.pdf-upload .btn-file:hover,
+.pdf-upload .btn-file:focus {
+  background-color: var(--medgreen) !important;
+  color: #fff !important;
+}
+.pdf-upload .form-control {
+  background-color: rgba(89, 147, 91, 0.08) !important;
+  border: none;
+  box-shadow: none;
+}
+
+/* Options "Done" button */
+.btn-options-done {
+  background-color: var(--green) !important;
+  color: #fff !important;
+  border: none;
+  font-weight: 600;
+}
+.btn-options-done:hover,
+.btn-options-done:focus {
+  background-color: var(--medgreen) !important;
+  color: #fff !important;
+}
+
+
+/* Shared-server capacity note + live busy banner */
+.capacity-note {
+  font-size: 0.92em;
+  color: #555;
+  background: #f5f7f5;
+  border-left: 3px solid var(--green);
+  padding: 0.5em 0.9em;
+  border-radius: 4px;
+  margin-bottom: 0.8em;
+}
+.capacity-note .fa-circle-info { color: var(--green); }
+/* amber variant emphasising the "try again if busy" message */
+.capacity-note.capacity-warn {
+  background: #fff8e1;
+  border-left-color: #e0c200;
+  color: #5c4b00;
+}
+.capacity-note.capacity-warn .fa-triangle-exclamation { color: #b7950b; }
+.busy-banner {
+  padding: 0.5em 0.9em;
+  border-radius: 4px;
+  margin-bottom: 0.8em;
+  font-weight: 600;
+}
+.busy-banner.busy-some { background: #eef5ee; color: #2c5e2e; border: 1px solid #cfe3cf; }
+.busy-banner.busy-full { background: #fff8e1; color: #5c4b00; border: 1px solid #e0c200; }
+
+/* upload hint + client-side oversize error */
+.upload-hint {
+  font-size: 0.9em;
+  color: #666;
+  margin: -0.3em 0 0.8em;
+}
+.upload-size-error {
+  background: #fdecea;
+  border: 1px solid #c0392b;
+  border-left: 4px solid #c0392b;
+  color: #922b21;
+  padding: 0.6em 0.9em;
+  border-radius: 4px;
+  margin-bottom: 0.8em;
+  font-weight: 600;
+}
+
+/* LLM key panel revealed when the "Use LLM power check" toggle is on */
+.llm-key-panel {
+  border-left: 3px solid var(--green);
+  padding: 0.2em 0 0.2em 0.9em;
+  margin: 0.3em 0 0.5em;
+}
+.llm-cost-note {
+  font-size: 0.92em;
+  color: #555;
+}
+.llm-cost-note .fa-circle-info { color: var(--green); }
+
+/* "save your report" warning shown after a report is generated */
+.report-save-note {
+  margin-top: 1em;
+  padding: 0.8em 1em;
+  border: 1px solid #e0c200;
+  border-left: 4px solid #e0c200;
+  border-radius: 4px;
+  background-color: #fff8e1;
+  color: #5c4b00;
+  line-height: 1.5;
+}
+.report-save-note .fa-triangle-exclamation,
+.report-save-note .fa-exclamation-triangle {
+  color: #b7950b;
+}
+
+/* In-app Report tab: full-bleed iframe + action row */
+.report-view-actions {
+  margin-bottom: 0.8em;
+  display: flex;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+.report-frame {
+  width: 100%;
+  height: 80vh;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
+.report-empty {
+  padding: 1em;
+  color: #555;
+}
+
+#gdpr_privacy_ui ul {
+  padding-left: 0;
+}
+#gdpr_privacy_ui li {
+  list-style-type: none;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+}
