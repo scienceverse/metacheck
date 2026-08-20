@@ -1,5 +1,21 @@
 # Test fixtures are hashed byte-for-byte (file_hash = md5sum of the raw file),
-# so they must use stable LF line endings on every platform. Without this,
-# Windows checkouts get CRLF and the recomputed hash no longer matches the
-# value stored in the fixture JSON, producing a phantom diff after each test run.
-tests/testthat/fixtures/** text eol=lf
+# so their bytes must never be touched by Git's line-ending conversion.
+# Default every fixture to binary (no conversion, no diff) so a newly added
+# fixture is safe by default, then opt the genuinely textual formats back
+# into stable LF line endings. Getting this backwards - marking a binary
+# format like pdf/zip/omv/jasp as text - makes Git rewrite \r\n/\n byte
+# sequences inside the binary data on checkout, which is what produced
+# phantom "modified" diffs on Windows machines with core.autocrlf set.
+tests/testthat/fixtures/** binary
+tests/testthat/fixtures/**/*.R text eol=lf
+tests/testthat/fixtures/**/*.Rmd text eol=lf
+tests/testthat/fixtures/**/*.qmd text eol=lf
+tests/testthat/fixtures/**/*.md text eol=lf
+tests/testthat/fixtures/**/*.txt text eol=lf
+tests/testthat/fixtures/**/*.csv text eol=lf
+tests/testthat/fixtures/**/*.json text eol=lf
+tests/testthat/fixtures/**/*.ipynb text eol=lf
+tests/testthat/fixtures/**/*.xml text eol=lf
+tests/testthat/fixtures/**/*.html text eol=lf
+tests/testthat/fixtures/**/*.do text eol=lf
+tests/testthat/fixtures/**/*.Rproj text eol=lf

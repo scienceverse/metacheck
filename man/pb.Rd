@@ -15,7 +15,10 @@ pb(total, format = "[:bar] :current/:total")
 a function
 }
 \description{
-Progress Bar
+Creates a console progress bar (via the progress package) that respects
+\code{\link[=verbose]{verbose()}}: when verbosity is off, it returns a dummy object with
+no-op \code{tick()}/\code{message()}/\code{terminate()} methods, so callers can always
+call those methods without checking \code{verbose()} themselves.
 }
 \details{
 Tokens

@@ -18,13 +18,13 @@
 #'
 #' Creates a Python virtual environment inside the bundled RegCheck app
 #' directory, installs all dependencies, and downloads the NLTK data. Only
-#' needed if you are using the manual Python path — if you have Docker,
+#' needed if you are using the manual Python path -- if you have Docker,
 #' use [regcheck_start_local()] directly with `method = "docker"`.
 #'
 #' **System requirements:**
 #' \itemize{
-#'   \item Python 3.12+ — \url{https://www.python.org/downloads/}
-#'   \item Ollama — \url{https://ollama.com/download}, then run
+#'   \item Python 3.12+ -- \url{https://www.python.org/downloads/}
+#'   \item Ollama -- \url{https://ollama.com/download}, then run
 #'         \code{ollama pull llama3.2} and
 #'         \code{ollama pull nomic-embed-text-v2-moe} in a terminal.
 #' }
@@ -106,19 +106,19 @@ regcheck_setup_local <- function(python = NULL) {
 #'
 #' In both cases, Ollama must be running with the required models pulled.
 #' The embedding model is fixed; the language model can be any Ollama model
-#' you have pulled — use the largest one that fits your hardware:
+#' you have pulled -- use the largest one that fits your hardware:
 #' ```
 #' ollama pull nomic-embed-text-v2-moe
 #' ollama pull llama3.2          # or llama3.1, mistral, etc.
 #' ```
 #'
-#' The API token is set automatically to `"metacheck-local"` — no manual
+#' The API token is set automatically to `"metacheck-local"` -- no manual
 #' token configuration needed.
 #'
 #' @param method `"docker"` (default) or `"python"`
 #' @param model Ollama language model to use. Defaults to `NULL`, which
 #'   auto-selects the largest language model currently pulled in Ollama. Any
-#'   model you have pulled with `ollama pull` can be used here — larger
+#'   model you have pulled with `ollama pull` can be used here -- larger
 #'   models generally produce better judgements.
 #' @param port port to run the server on (default 8000)
 #'
@@ -168,7 +168,7 @@ regcheck_start_local <- function(method = c("docker", "python"),
     }
     message("Starting local RegCheck server via Docker at http://localhost:", port,
             " (model: ", model, ") ...")
-    message("(First run will build the image — this takes a few minutes.)")
+    message("(First run will build the image -- this takes a few minutes.)")
     proc <- processx::process$new(
       command = docker,
       args    = c("compose", "up", "--build", "--force-recreate"),

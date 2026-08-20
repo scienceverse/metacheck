@@ -13,6 +13,6 @@ data_check_case_issues(x)
 list(problem, message, values)
 }
 \description{
-e.g. "Male" and "male" — likely the same category entered inconsistently.
+e.g. "Male" and "male" -- likely the same category entered inconsistently.
 }
 \keyword{internal}

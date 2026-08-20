@@ -23,5 +23,5 @@ every result carries a \code{result_id} and a non-empty \code{values} object who
 entries each have a \code{value}. This is a native structural check, not an
 executed external JSON Schema — there is no external standard this document
 conforms to, by design (see the file header comment). Mirrors
-\code{\link[=behaverse_validate]{behaverse_validate()}}'s and \code{psychds-validate.R}'s hand-rolled approach.
+\code{behaverse_validate()}'s and \code{psychds-validate.R}'s hand-rolled approach.
 }

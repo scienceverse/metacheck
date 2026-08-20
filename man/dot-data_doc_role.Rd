@@ -19,7 +19,7 @@ Within \code{data_classify_files()}'s coarse \code{"documentation"} type, distin
 the specific artifact: the (collection-level) readme, a codebook, or plain
 supplemental text (preprints, slide decks, Word docs). This is the axis
 \code{psychds_check} uses to decide root-vs-per-study placement and that
-\code{codebook_check} uses to select which files to parse — orthogonal to
+\code{codebook_check} uses to select which files to parse -- orthogonal to
 \code{data_type}, which only says "this is documentation of some kind."
 }
 \details{

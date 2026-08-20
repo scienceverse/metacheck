@@ -25,7 +25,7 @@ A manifest (e.g. a "table of contents" CSV) is structurally a valid tabular
 file, so extension-based classification treats it as data. It is
 distinguished from real research data by content, using the repository's own
 file list as ground truth: a manifest has a column in which most values name
-other files in the repository. This is name- and header-agnostic — it does
+other files in the repository. This is name- and header-agnostic -- it does
 not rely on the file or its columns being \emph{called} anything in particular.
 }
 \details{

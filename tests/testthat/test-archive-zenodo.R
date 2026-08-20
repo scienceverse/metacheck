@@ -138,10 +138,16 @@ test_that("zenodo_file_download", {
 
   tmpdir <- withr::local_tempdir()
 
-  dl <- zenodo_file_download(
-    zenodo_id = "12345",
-    download_to = tmpdir,
-    max_file_size = 10
+  # small.csv has no real network target for this fake Zenodo record, so the
+  # download itself fails -- the "did not arrive intact" warning is the
+  # function correctly reporting that real, expected failure.
+  expect_warning(
+    dl <- zenodo_file_download(
+      zenodo_id = "12345",
+      download_to = tmpdir,
+      max_file_size = 10
+    ),
+    "did not arrive intact"
   )
 
   expect_equal(nrow(dl), 1)
@@ -153,10 +159,19 @@ test_that("zenodo_file_download", {
   expect_true(dir.exists(folder))
   expect_equal(list.files(folder), character(0))
 
-  dl2 <- zenodo_file_download(
-    zenodo_id = c("12345", "67890"),
-    download_to = tmpdir,
-    max_file_size = 10
+  # vectorised: each Zenodo record fails its own download and warns
+  # separately, so expect_warning() alone would only catch the first and
+  # leave the second uncaptured; withCallingHandlers asserts on every warning.
+  withCallingHandlers(
+    dl2 <- zenodo_file_download(
+      zenodo_id = c("12345", "67890"),
+      download_to = tmpdir,
+      max_file_size = 10
+    ),
+    warning = function(w) {
+      expect_match(conditionMessage(w), "did not arrive intact")
+      invokeRestart("muffleWarning")
+    }
   )
 
   expect_setequal(dl2$zenodo_id, c("12345", "67890"))

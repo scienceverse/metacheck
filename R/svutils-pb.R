@@ -1,6 +1,11 @@
 
 #' Progress Bar
 #'
+#' Creates a console progress bar (via the progress package) that respects
+#' [verbose()]: when verbosity is off, it returns a dummy object with
+#' no-op `tick()`/`message()`/`terminate()` methods, so callers can always
+#' call those methods without checking `verbose()` themselves.
+#'
 #' @details
 #' Tokens
 #'

@@ -6,6 +6,28 @@ list_tab <- tabItem(
 
   h2("Find OSF Projects"),
   tags$p(
+    "This shiny app provides easy access to a single function of ",
+    tags$a("Metacheck", href = "https://www.scienceverse.org/metacheck/",
+           target = "_blank"),
+    ". Metacheck is open source software to check manuscripts for best ",
+    "practices developed by Lisa DeBruine and Daniel Lakens. You can use ",
+    "this app to download (private) OSF repositories."
+  ),
+  tags$p(
+    "See the ",
+    tags$a("Metacheck Manual",
+           href = "https://www.scienceverse.org/metacheck_book/chapters/archiving-osf.html",
+           target = "_blank"),
+    " for a detailed explanation of how to get your Personal Access Token ",
+    "(PAT) from the OSF. You can report ",
+    tags$a("bugs", href = "https://github.com/scienceverse/metacheck/issues",
+           target = "_blank"),
+    ". Try out the ",
+    tags$a("Metacheck Shiny app", href = "https://shiny.ieis.tue.nl/metacheck/",
+           target = "_blank"),
+    " if you want to automatically check scientific papers for best practices."
+  ),
+  tags$p(
     "Enter an OSF user ID to list everything they have, or a project ID to ",
     "download just that project. A full OSF web address works too."
   ),

@@ -35,7 +35,7 @@ expressible as OSD scoring. Non-zero for 7 tasks in the whole ontology.}
 field is free text with 225 distinct values, so it is mapped to this
 small vocabulary and dropped when it does not map.}
 \item{text_ok}{\code{TRUE} when the name is safe to match against manuscript
-prose. Present for consistency with \link{scale_meta}; unlike PhenX entries,
+prose. Present for consistency with \code{scale_meta}; unlike PhenX entries,
 Atlas task names are instrument names rather than topic labels, so this
 is \code{TRUE} for every current row.}
 }
@@ -73,7 +73,7 @@ The Atlas records no design parameters, so no \code{parameters} block is
 harvested. Those are authored by hand per task.
 }
 \seealso{
-\link{scales} for questionnaire instruments, \link{scale_meta} for their
+\link{scales} for questionnaire instruments, \code{scale_meta} for their
 item-level detail.
 }
 \keyword{internal}

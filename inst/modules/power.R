@@ -259,16 +259,25 @@ power <- function(paper, seed = 8675309) {
 # (like power.json below) uses union types ("type": ["string", "null"]) and
 # null-inclusive enums, which some providers' structured-output validators
 # reject outright (confirmed: Groq's openai/gpt-oss-20b returns HTTP 400 on
-# power_array.json, Mistral accepts it -- see issue #323). ellmer's own
-# mechanism for an optional field is `required = FALSE` (a plain type, no
-# union, dropped from the JSON Schema `required` list) with no `null` in the
-# enum's allowed values -- the exact fix issue #323 itself proposes ("replace
-# [string,null] unions with a single type + required=FALSE, drop null from
-# enums"). Building it this way (matching codebook_check.R's
-# type_object()/type_array() pattern) means structured mode works on strict
-# validators too, not just lenient ones, and the prompt-fence fallback below
-# is only needed for a provider that rejects structured output outright
-# (not this specific schema shape).
+# power_array.json, Mistral accepts it -- see issue #323).
+#
+# For an optional (required = FALSE) field, ellmer's ProviderOpenAICompatible
+# (which Groq uses) still lists the field in the compiled schema's "required"
+# array and adds "null" to its type -- OpenAI's strict-mode convention, not
+# something `required = FALSE` on its own avoids (confirmed live and via
+# ellmer:::as_json source against ellmer 0.4.2 -- see issue #365). For a plain
+# type (number/string) that is harmless: Groq accepts a null response for a
+# field with no enum constraint. But for type_enum(), ellmer's compiled
+# schema adds "null" to the field's `type` while leaving `enum` untouched --
+# a field that is simultaneously typed to allow null and constrained by an
+# enum that does not list null among its allowed values. Groq's request-side
+# validator accepts that schema, but its response-side validator then rejects
+# a genuinely null response against it (confirmed live, HTTP 400: "expected
+# string, but got null"). The fix is to include NA in the enum's own value
+# vector (matching power.json's null-inclusive enums below) for every
+# optional type_enum() field, so `enum` and `type` agree that null is
+# allowed. Confirmed live end-to-end: ellmer returns the field as NA in the
+# resulting tibble, same as a provider that omits the key entirely.
 #
 # Wrapped in a single-field object (power_analyses: array), not a bare
 # top-level array: codebook_check.R's own type spec notes Groq's gpt-oss-20b
@@ -286,7 +295,7 @@ power <- function(paper, seed = 8675309) {
         statistical_test = ellmer::type_enum(
           c("paired t-test", "unpaired t-test", "one-sample t-test",
             "1-way ANOVA", "2-way ANOVA", "3-way ANOVA", "MANOVA",
-            "regression", "chi-square", "correlation", "other"),
+            "regression", "chi-square", "correlation", "other", NA),
           description = "The statistical test used.", required = FALSE
         ),
         statistical_test_other = ellmer::type_string(
@@ -311,7 +320,7 @@ power <- function(paper, seed = 8675309) {
         ),
         effect_size_metric = ellmer::type_enum(
           c("Cohen's d", "Hedges' g", "Cohen's f", "partial eta squared",
-            "eta squared", "unstandardised", "other"),
+            "eta squared", "unstandardised", "other", NA),
           description = "The effect size metric. Use 'unstandardised' for raw/non-standardized effects.",
           required = FALSE
         ),
@@ -322,7 +331,7 @@ power <- function(paper, seed = 8675309) {
         software = ellmer::type_enum(
           c("G*Power", "Superpower", "Pangea", "Morepower", "PASS", "pwr",
             "simr", "PowerUpR", "simulation", "InteractionPoweR", "pwrss",
-            "other"),
+            "other", NA),
           description = "The software used to conduct the power analysis.",
           required = FALSE
         )

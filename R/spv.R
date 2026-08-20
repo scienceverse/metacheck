@@ -2168,9 +2168,9 @@ export_spv_html <- function(path, out = NULL) {
 # ever present in the tables this port covers).
 .spv_table_html_pivot <- function(df, row_dims, col_dims) {
   row_key <- if (length(row_dims))
-    do.call(paste, c(as.list(df[row_dims]), sep = "␟")) else rep("", nrow(df))
+    do.call(paste, c(as.list(df[row_dims]), sep = "\u241f")) else rep("", nrow(df))
   col_key <- if (length(col_dims))
-    do.call(paste, c(as.list(df[col_dims]), sep = "␟")) else rep("value", nrow(df))
+    do.call(paste, c(as.list(df[col_dims]), sep = "\u241f")) else rep("value", nrow(df))
 
   row_levels <- unique(row_key)
   col_levels <- unique(col_key)
@@ -2183,7 +2183,7 @@ export_spv_html <- function(path, out = NULL) {
   # edge afterwards, aligned with the deepest header level the way SPSS's
   # own corner stub sits -- not as a separate row above everything.
   col_parts <- if (length(col_dims))
-    strsplit(col_levels, "␟", fixed = TRUE) else list()
+    strsplit(col_levels, "\u241f", fixed = TRUE) else list()
   header_row_cells <- if (length(col_dims)) {
     lapply(seq_along(col_dims), function(d) {
       labels <- vapply(col_parts, `[[`, character(1), d)
@@ -2220,7 +2220,7 @@ export_spv_html <- function(path, out = NULL) {
   for (i in seq_len(nrow(df))) grid[ri[i], ci[i]] <- df$value[i]
 
   row_parts <- if (length(row_dims))
-    strsplit(row_levels, "␟", fixed = TRUE) else list()
+    strsplit(row_levels, "\u241f", fixed = TRUE) else list()
   body_rows <- vapply(seq_along(row_levels), function(i) {
     stub <- if (length(row_dims))
       paste(sprintf("<td>%s</td>", vapply(row_parts[[i]], .stat_html_escape, character(1))),

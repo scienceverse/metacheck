@@ -2,22 +2,33 @@
 % Please edit documentation in R/validate.R
 \name{validate}
 \alias{validate}
-\title{Validate}
+\title{Validate a module's output against coded ground truth}
 \usage{
 validate(gt, module, compare = "table")
 }
 \arguments{
-\item{gt}{a data frame or vector of text}
+\item{gt}{a vector of texts to code, or a data frame with \code{paper_id} and
+\code{text} columns plus one column per ground-truth value to compare against
+the module's output (column names must match the module output table)}
 
-\item{module}{the module}
+\item{module}{the name of the module to run and validate}
 
-\item{compare}{name of the module output table for comparison}
+\item{compare}{name of the list item in the module's output to compare
+against \code{gt} (usually \code{"table"}, the module's full row-level results)}
 }
 \value{
-something
+\code{gt} full-joined with the module's \code{compare} table (columns
+suffixed \code{.gt} and \code{.mod} where names collide), plus one \verb{<column>.valid}
+logical column per compared column
 }
 \description{
-Validate
+Runs \code{module} on a set of texts you have already coded by hand, then
+checks its output against your coding. Each text in \code{gt} becomes its own
+test paper; the module's output table (\code{compare}) is joined back to \code{gt}
+by \code{paper_id} and \code{text}, and for every column that appears in both, a
+\verb{<column>.valid} logical column is added marking where the module's value
+matches your ground truth. Pass the result to \code{\link[=accuracy]{accuracy()}} to summarise
+agreement (e.g. sensitivity, specificity, d-prime).
 }
 \examples{
 validate("p < .05", "stat_p_exact")

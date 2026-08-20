@@ -14,13 +14,13 @@ a character vector of group codes, or \code{character(0)} when the text
 names no numbered study.
 }
 \description{
-Reads the manuscript for the studies it names — "Experiment 1", "Study 2a",
-"Pilot 2" — and returns them as normalised group codes (\code{ex1}, \code{ex2a},
+Reads the manuscript for the studies it names -- "Experiment 1", "Study 2a",
+"Pilot 2" -- and returns them as normalised group codes (\code{ex1}, \code{ex2a},
 \code{pilot2}). This is the AUTHORITATIVE list of a paper's studies: the authors
 say how many there are and what they are called, so it both names the groups
 and gives a count to validate any file grouping against (see
-\code{.data_group_check_roster}). Deterministic and free — a regex over text we
-already extracted — so it runs BEFORE any LLM.
+\code{.data_group_check_roster}). Deterministic and free -- a regex over text we
+already extracted -- so it runs BEFORE any LLM.
 }
 \details{
 Only mentions of the form \if{html}{\out{<word>}}<optional space/punct>\if{html}{\out{<number>}}\if{html}{\out{<optional

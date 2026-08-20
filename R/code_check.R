@@ -819,7 +819,7 @@ code_abs_path <- function(code_text) {
 #' )
 #' code_setwd(code_text)
 code_setwd <- function(code_text) {
-  text_id <- NULL # fix cmd check note
+  text_id <- text <- NULL # fix cmd check note
   # A setwd( call: the token at a call position, capturing to the LAST closing
   # paren on the line (greedy `.*`), so a nested argument like setwd(getwd()) or
   # setwd(dirname(path)) is shown in full. A setwd argument spanning lines is
@@ -1346,7 +1346,7 @@ code_library_names <- function(code_text,
 #' comma-joined string in its `table$packages` column. This returns the sorted,
 #' de-duplicated union across a set of those rows — the paper-level dependency
 #' list used for the module summary, the manifest `code` section, and the
-#' `requirements.txt` written into a Psych-DS archive by [convert_psychds()].
+#' `requirements.txt` written into a Psych-DS archive by `convert_psychds()`.
 #'
 #' @param packages a character vector of comma-joined package strings (e.g.
 #'   `code_check(...)$table$packages`), or a `code_check` table (data frame with
@@ -1577,7 +1577,7 @@ code_packages <- function(packages) {
 #' @param include_writes also return files the code *writes* (R only). Off by
 #'   default: callers that ask "which referenced inputs are missing from the
 #'   repository?" (e.g. `code_check`) must not see a written file as a missing
-#'   input. [repro_file_io()] turns this on so a file produced by one script can
+#'   input. `repro_file_io()` turns this on so a file produced by one script can
 #'   be recognised as the input another script consumes.
 #'
 #' @returns a vector of files that are referenced in the code
@@ -1745,11 +1745,22 @@ code_file_refs <- function(code_text,
     Mplus = list() # FILE = "..." is always quoted; quoted-filename pattern suffices
   )
 
+  # Only run the unquoted-capture regexes against lines that do NOT already
+  # have a quoted filename: they exist for barewords (`use myfile.dta`), but
+  # applied to an already-quoted line (`insheet using "07. Study 6
+  # (Clean).csv", clear`) the capture group `[^,\s]+` stops at the quoted
+  # name's first space and grabs a truncated fragment (`"07.`) instead -- a
+  # real Stata filename routinely contains spaces and is quoted for exactly
+  # that reason, so this collided constantly. Confirmed against a real corpus
+  # paper's .do file, where every quoted, space-containing filename produced
+  # a second bogus "loaded but missing" reference alongside the correct one.
+  unquoted_lines <- load_lines[!grepl(quoted_filename_pattern, load_lines, perl = TRUE)]
+
   extra <- character(0)
   caps <- lang_unquoted_captures[[lang]]
   for (cap in caps) {
-    m <- regexec(cap$regex, load_lines, perl = TRUE)
-    reg <- regmatches(load_lines, m)
+    m <- regexec(cap$regex, unquoted_lines, perl = TRUE)
+    reg <- regmatches(unquoted_lines, m)
     if (length(reg) > 0) {
       vals <- vapply(reg, function(x) if (length(x) >= cap$group + 1) x[cap$group + 1] else NA_character_, character(1))
       extra <- c(extra, vals)

@@ -41,10 +41,10 @@ improved, before archiving the files somewhere permanent.
 }
 \details{
 Four modules run in order, each building on the one before it:
-\link{repo_check} takes an inventory of the files,
-\link{code_check} reads the analysis scripts,
-\link{data_check} reads the data files and runs data-quality checks,
-and \link{codebook_check} checks whether the data columns are
+\code{repo_check} takes an inventory of the files,
+\code{code_check} reads the analysis scripts,
+\code{data_check} reads the data files and runs data-quality checks,
+and \code{codebook_check} checks whether the data columns are
 documented. Only the first is told where the files are; the rest reuse its
 results.
 

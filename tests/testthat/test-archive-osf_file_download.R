@@ -130,7 +130,7 @@ test_that("osf_file_download zip keep archive", {
       # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
       # body is written to disk, not returned in-memory) -- one mock has to
       # serve both calls the real function makes, in order.
-      req_perform = function(req, path = NULL) {
+      req_perform = function(req, path = NULL, mock = NULL) {
         if (identical(req$method, "HEAD")) {
           return(structure(
             list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
@@ -145,6 +145,11 @@ test_that("osf_file_download zip keep archive", {
       .package = "httr2"
     ),
     osf_info = function(...) contents,
+    # mock_id "abcde" is 5 characters, the same shape as a real OSF user GUID,
+    # so .osf_expand_user_ids() treats it as a possible user and calls the
+    # live osf_type() to check -- mock it to report "nodes" (a project, not a
+    # user) so that check resolves locally instead of hitting the OSF API.
+    osf_type = function(...) "nodes",
     .package = "metacheck"
   )
 
@@ -212,7 +217,7 @@ test_that("osf_file_download zip unzip preserves structure", {
       # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
       # body is written to disk, not returned in-memory) -- one mock has to
       # serve both calls the real function makes, in order.
-      req_perform = function(req, path = NULL) {
+      req_perform = function(req, path = NULL, mock = NULL) {
         if (identical(req$method, "HEAD")) {
           return(structure(
             list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
@@ -227,6 +232,11 @@ test_that("osf_file_download zip unzip preserves structure", {
       .package = "httr2"
     ),
     osf_info = function(...) contents,
+    # mock_id "abcde" is 5 characters, the same shape as a real OSF user GUID,
+    # so .osf_expand_user_ids() treats it as a possible user and calls the
+    # live osf_type() to check -- mock it to report "nodes" (a project, not a
+    # user) so that check resolves locally instead of hitting the OSF API.
+    osf_type = function(...) "nodes",
     .package = "metacheck"
   )
 
@@ -295,7 +305,7 @@ test_that("osf_file_download zip unzip can flatten structure", {
       # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
       # body is written to disk, not returned in-memory) -- one mock has to
       # serve both calls the real function makes, in order.
-      req_perform = function(req, path = NULL) {
+      req_perform = function(req, path = NULL, mock = NULL) {
         if (identical(req$method, "HEAD")) {
           return(structure(
             list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
@@ -310,6 +320,11 @@ test_that("osf_file_download zip unzip can flatten structure", {
       .package = "httr2"
     ),
     osf_info = function(...) contents,
+    # mock_id "abcde" is 5 characters, the same shape as a real OSF user GUID,
+    # so .osf_expand_user_ids() treats it as a possible user and calls the
+    # live osf_type() to check -- mock it to report "nodes" (a project, not a
+    # user) so that check resolves locally instead of hitting the OSF API.
+    osf_type = function(...) "nodes",
     .package = "metacheck"
   )
 
