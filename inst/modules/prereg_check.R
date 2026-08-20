@@ -57,9 +57,15 @@ prereg_check <- function(paper) {
     unique()
   link_types <- osf_type(osf_ids)
   reg_ids <- osf_ids[link_types == "registrations" & !is.na(link_types)]
+  # A validly-formed OSF id that cannot be read (private, embargoed,
+  # withdrawn, or deleted) is a different finding from "not a registration at
+  # all" -- osf_type() already tells the two apart (see #361), so keep that
+  # distinction instead of letting both fall through link_types != "registrations"
+  # and reading identically as "no registration was linked".
+  inaccessible_ids <- osf_ids[link_types == "inaccessible" & !is.na(link_types)]
 
   ## no registrations ----
-  if (length(reg_ids) == 0 & nrow(table_ap) == 0) {
+  if (length(reg_ids) == 0 & length(inaccessible_ids) == 0 & nrow(table_ap) == 0) {
     resp <- list(
       traffic_light = "na",
       summary_text = sprintf(
@@ -81,12 +87,23 @@ prereg_check <- function(paper) {
     reg_ids #paste(reg_ids, collapse = ",")
   )
 
+  # Seeded with the links already known to be inaccessible from osf_type()
+  # above, then appended to below for a registration that looked accessible
+  # there but still fails to fetch (osf_get_all_pages() tags that with an
+  # osf_error attribute rather than returning empty-for-no-reason).
+  inaccessible_regs <- links_osf$href[osf_check_id(links_osf$href) %in% inaccessible_ids]
+
   # have to iterate, process then merge
   # because pagination > 10 usually returns unmergeable dfs
   ps <- lapply(urls, \(url) {
     reg_info <- osf_get_all_pages(url)
 
-    if (length(reg_info) == 0) return(NULL)
+    if (length(reg_info) == 0) {
+      if (!is.null(attr(reg_info, "osf_error"))) {
+        inaccessible_regs <<- c(inaccessible_regs, url)
+      }
+      return(NULL)
+    }
 
     info <- reg_info
     osf_prereg_extract(info)
@@ -96,6 +113,36 @@ prereg_check <- function(paper) {
   prereg_schemas <- c(ps, list(ap_schema_table)) |>
     lapply(\(x) lapply(x, paste, collapse = "\n\n"))
   prereg_info <- do.call(dplyr::bind_rows, prereg_schemas)
+
+  ## every registration inaccessible, nothing else found ----
+  # reg_ids was non-empty (so the early "no registrations" guard above did
+  # not catch this), but every one of them turned out to be unfetchable, and
+  # there is no AsPredicted data either -- prereg_info has zero rows and,
+  # critically, no paper_id column (only added by the left_join below, which
+  # is skipped for zero rows), so falling through to the accessible-
+  # registration reporting logic past this point would error. Same shape as
+  # the early guard, with the inaccessible links named instead of omitted.
+  if (nrow(prereg_info) == 0 && length(inaccessible_regs) > 0) {
+    resp <- list(
+      traffic_light = "na",
+      summary_text = sprintf(
+        "We found %d OSF link%s, but no accessible registrations. %d registration link%s could not be accessed (private, embargoed, or withdrawn).",
+        nrow(links_osf), nrow(links_osf) |> plural(),
+        length(inaccessible_regs), length(inaccessible_regs) |> plural()
+      ),
+      na_replace = 0,
+      summary_table = data.frame(
+        paper_id = paper_id(paper),
+        preregistration = 0
+      ),
+      report = sprintf(
+        "The following registration link%s could not be accessed and may be private, embargoed, or withdrawn: %s.",
+        length(inaccessible_regs) |> plural(),
+        paste(inaccessible_regs, collapse = ", ")
+      )
+    )
+    return(resp)
+  }
 
   if (nrow(prereg_info)) {
     paper_ids <- data.frame(
@@ -115,14 +162,43 @@ prereg_check <- function(paper) {
     "We found %d preregistration%s.",
     nrow(prereg_info), nrow(prereg_info) |> plural()
   )
+  # An inaccessible registration is a real finding, not "nothing was linked"
+  # -- name it in the same headline sentence a reader sees first, rather than
+  # only in the fuller report text below, so it isn't missed wherever
+  # summary_text alone is surfaced (e.g. a paperlist's summary_table).
+  if (length(inaccessible_regs) > 0) {
+    summary_text <- paste(summary_text, sprintf(
+      "%d registration link%s could not be accessed (private, embargoed, or withdrawn).",
+      length(inaccessible_regs), length(inaccessible_regs) |> plural()
+    ))
+  }
 
   # report ----
   has_sample_size <- "sample_size" %in% names(prereg_info)
-  report_text <- sprintf(
-    "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s above%s.",
-    nrow(prereg_info) |> plural(),
-    ifelse(has_sample_size, ", and have provided the preregistered sample size", "")
-  )
+  # Only makes sense when there is an accessible preregistration for it to
+  # point at -- with every link inaccessible, there is no "link above" to
+  # check, and nothing about deviations or sample size can be recommended.
+  report_text <- if (nrow(prereg_info) > 0) {
+    sprintf(
+      "Meta-scientific research has shown that deviations from preregistrations are often not reported or checked, and that the most common deviations concern the sample size. We recommend manually checking the full preregistration at the link%s above%s.",
+      nrow(prereg_info) |> plural(),
+      ifelse(has_sample_size, ", and have provided the preregistered sample size", "")
+    )
+  } else {
+    NULL
+  }
+  # Names which links were skipped and why, so a reader checking the paper
+  # can go verify them by hand instead of the report reading as if no
+  # registration were ever linked there.
+  inaccessible_text <- if (length(inaccessible_regs) > 0) {
+    sprintf(
+      "The following registration link%s could not be accessed and may be private, embargoed, or withdrawn: %s.",
+      length(inaccessible_regs) |> plural(),
+      paste(inaccessible_regs, collapse = ", ")
+    )
+  } else {
+    NULL
+  }
 
   prereg_link_table <- data.frame(
     id = link(prereg_info$link, prereg_info$id),
@@ -169,6 +245,7 @@ prereg_check <- function(paper) {
     summary_text,
     scroll_table(prereg_link_table),
     report_text,
+    inaccessible_text,
     scroll_table(samplesize_table),
     collapse_section(
       scroll_table(prereg_table, maxrows = 5),
