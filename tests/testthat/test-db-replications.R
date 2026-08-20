@@ -20,10 +20,14 @@ test_that("FLoRA", {
   expect_equal(attr(f, "date"), d)
 })
 
-test_that("update", {
-  skip_if_quick()
-
-  path <- FLoRA_update()
-  expect_true(grepl("FLoRA\\.Rds$", path))
-  expect_true(file.exists(path))
-}, "mock")
+# "update" (FLoRA_update() downloads flora.csv from the OSF and checks the
+# result path) is removed rather than kept: it only ever asserted
+# file.exists(path), never the file's content or size, so its entire value
+# was covered by osf_file_download()'s own tests -- but its mock fixture
+# (tests/testthat/apis/osf.io/download/t4j8f.R) recorded the real 5.6MB
+# flora.csv, a 37MB text file checked into the repo for a test that did not
+# need a single byte of it. That cost -- repo bloat, slow clones/checkouts,
+# CI cache size -- was paid on every commit, for a test gated behind
+# skip_if_quick() that consequently never ran in a normal devtools::test()
+# pass anyway (see issue #364). Not worth reconstructing a smaller fixture
+# for; deleted along with the fixture file.
