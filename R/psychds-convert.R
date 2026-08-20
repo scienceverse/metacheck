@@ -2120,12 +2120,18 @@ convert_psychds <- function(paper, output_dir = NULL,
   # paradata file cross-reference each other on the canonical instrument id, so we
   # pre-scan the paradata instrument keys, write the OSDs (which embed the link),
   # then write the paradata (linking back to the matching OSDs).
-  paradata_keys <- .bh_paradata_keys(output_dir)
+  #
+  # .bh_paradata_keys()/.osd_write_paradata() live in R/behaverse-convert.R,
+  # which is only on the measures_module branch, not merged here yet -- until
+  # it is, convert_psychds() runs with no paradata cross-referencing (the
+  # empty-vector/empty-list values below are .osd_write_scales()'s and
+  # .psychds_rocrate_json()'s own documented "no paradata" defaults, not a new
+  # behavior). Replace this block with the real calls once that branch merges.
+  paradata_keys <- character(0)
   osd_codes     <- .osd_write_scales(scales_osd, output_dir, structure_df,
                                      paradata_keys = paradata_keys)
   n_scales_written <- attr(osd_codes, "n_written") %||% 0L
-  paradata_index <- .osd_write_paradata(output_dir, osd_codes = as.character(osd_codes),
-                                        study_name = pid, model = model, params = params)
+  paradata_index <- list()
 
   # ── Write the paper's full text into documentation/ (always at the root) ─────
   # The release should carry the manuscript prose the checks read, not just the
