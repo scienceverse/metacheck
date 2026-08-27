@@ -134,6 +134,31 @@
 #'   disk. Only takes effect when `data_check`/`code_check` have not already
 #'   been run for this paper (see the chained-output note above); if you ran
 #'   them yourself first, set `cache` there instead.
+#' @param download,skip_types,peek_zips,max_file_size,max_download_size
+#'   forwarded to the internal `data_check` run, with the same defaults
+#'   `data_check` itself uses — see `data_check`'s own docs for what each
+#'   controls. Only takes effect when `data_check` has not already been run
+#'   for this paper (see the chained-output note above); if you ran it
+#'   yourself first with different arguments, that run's file set is reused
+#'   as-is. Matching these to whatever built a paper's on-disk archive matters
+#'   for more than just speed: `data_check`'s LLM-refined column/file
+#'   classification is cached by exact call inputs (see [llm_cache()]), and
+#'   the file set these arguments select is part of that batched input — a
+#'   different `download`/`peek_zips`/etc. here silently produces a different
+#'   file set, and so a cache miss, even for an identical paper and an
+#'   identical underlying question.
+#' @param tables_dir optional directory of per-paper `<paper_id>.rds` files
+#'   written by `capture_module_tables()` (e.g. a prior full corpus build).
+#'   When set, `data_check`/`code_check`/`psychds_check` outputs are read
+#'   from this paper's saved file FIRST, before the chained-output check
+#'   above and before falling back to actually running the module -- so a
+#'   `reproducibility_check`-only retest of an already-built paper (e.g.
+#'   `report(paper, "reproducibility_check")`, with nothing else chained) can
+#'   reuse a previous full build's already-computed results and skip
+#'   `data_check`/`code_check`/`psychds_check` (and their downloads/LLM
+#'   calls) entirely. A saved file missing a particular module's output
+#'   still falls back to running just that module. `NULL` (the default)
+#'   disables this and behaves exactly as before.
 #'
 #' @returns a list
 reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -143,7 +168,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   install_missing = FALSE,
                                   cran_install_main = FALSE,
                                   timeout = 600, keep_sandbox = FALSE,
-                                  cache = FALSE) {
+                                  cache = FALSE,
+                                  download = "data",
+                                  skip_types = NULL,
+                                  peek_zips = FALSE,
+                                  max_file_size = 100,
+                                  max_download_size = 500,
+                                  tables_dir = NULL) {
   # paper <- psychsci[[233]] # to test (many code files, several issues)
   sandbox <- match.arg(sandbox)
 
@@ -174,25 +205,47 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(id) == 0) NA_character_ else id[[1]]
   }
 
+  # ── 0. Saved module outputs from a prior full build (tables_dir) ────────────
+  # Read once, lazily: only opened if tables_dir is actually set, and only
+  # once even though several items below may be pulled from it. A paper never
+  # captured (or with no file for this module) simply yields NULL per item, so
+  # this degrades to the pre-tables_dir behaviour with no special-casing
+  # needed at the call sites below.
+  .saved_tables <- NULL
+  .saved_tables_tried <- FALSE
+  get_saved_output <- function(mod, item) {
+    if (is.null(tables_dir)) return(NULL)
+    if (!.saved_tables_tried) {
+      .saved_tables_tried <<- TRUE
+      pid <- .pid()
+      path <- if (!is.na(pid)) file.path(tables_dir, paste0(pid, ".rds")) else NA_character_
+      if (!is.na(path) && file.exists(path))
+        .saved_tables <<- tryCatch(readRDS(path), error = function(e) NULL)
+    }
+    .saved_tables$modules[[mod]][[item]]
+  }
+
   # ── 1. Inputs from the upstream modules ─────────────────────────────────────
   # code_check gives the code files + their per-file analysis (parse status,
   # packages); psychds_check gives the file→target plan the path rewrite needs;
   # data_check gives the download status behind a missing input. Reuse chained
-  # outputs; run what is missing.
+  # outputs first (a live report() chain that already ran these modules);
+  # then a prior full build's saved tables (tables_dir, above); run what is
+  # still missing after both.
   # NOTE: inst/modules/psychds_check.R is DUPLICATED into this branch and into
   # the convert_psychds branch — this module needs psychds_check's plan
   # (below) but nothing from convert_psychds/psychds-convert.R itself. Once
   # both modules are mature, consider extracting psychds_check's plan-building
   # logic into a shared internal helper instead of maintaining two copies of
   # the file.
-  code_tbl     <- get_prev_outputs("code_check", "table")
-  plan         <- get_prev_outputs("psychds_check", "table")
-  structure_df <- get_prev_outputs("data_check", "structure")
+  code_tbl     <- get_prev_outputs("code_check", "table") %||% get_saved_output("code_check", "table")
+  plan         <- get_prev_outputs("psychds_check", "table") %||% get_saved_output("psychds_check", "table")
+  structure_df <- get_prev_outputs("data_check", "structure") %||% get_saved_output("data_check", "structure")
   # code_check's declared-version detection (renv.lock/sessionInfo/groundhog/
   # checkpoint — see .code_version_pin_check()), reused by the Docker backend
   # below to pick the base image's R version. NULL until code_tbl's source is
   # resolved (either already cached, or freshly run just below).
-  version_pin  <- get_prev_outputs("code_check", "version_pin")
+  version_pin  <- get_prev_outputs("code_check", "version_pin") %||% get_saved_output("code_check", "version_pin")
 
   run_missing <- function(mod) {
     # model / params only go to the modules that accept them (data_check,
@@ -207,6 +260,29 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (mod %in% c("data_check", "code_check")) {
       args$cache <- cache
     }
+    if (mod == "data_check") {
+      args$download <- download
+      args$skip_types <- skip_types
+      args$peek_zips <- peek_zips
+      args$max_file_size <- max_file_size
+      args$max_download_size <- max_download_size
+    }
+
+    # This module's own execution/matching logic never depends on LLM-refined
+    # column classification or scale naming (data_check's/psychds_check's own
+    # optional refinement over what deterministic rules already resolve) --
+    # only on file names/locations, code language, and the path-rewrite plan.
+    # So force llm_use(FALSE) for JUST this fallback call, regardless of
+    # whatever the caller's session has set globally: a solo
+    # reproducibility_check retest run with llm_use(TRUE) left on from
+    # unrelated work would otherwise pay data_check's full LLM-classification
+    # cost (which can be slow) for a result this module never uses. Restored
+    # unconditionally on exit, including on error, so it never leaks into the
+    # caller's session.
+    prev_llm_use <- llm_use()
+    llm_use(FALSE)
+    on.exit(llm_use(prev_llm_use), add = TRUE)
+
     do.call(module_run, args)
   }
   if (is.null(structure_df)) {

@@ -467,3 +467,164 @@ get_prev_outputs <- function(module, item, parent_n = 2) {
   prev <- get0(obj, parent.frame(parent_n))
   prev[[module]][[item]]
 }
+
+# Non-result list elements of a metacheck_module_output: inter-module plumbing
+# and the paper itself, none of which belong in a saved results object. Every
+# OTHER element (table, summary_table, and any module-specific result frame)
+# is kept as-is.
+.module_output_plumbing <- c("paper", "prev_outputs", "module", "title",
+                             "section")
+
+# data_check's `previews` holds the FULL read data frame of every tabular data
+# file (not a truncated preview), kept only so data_validate can read it back
+# via get_prev_outputs() from the LIVE chain. Dropped here: it is not a
+# reduced/derived result but a near-complete copy of the paper's raw data
+# files, and can be arbitrarily large. It remains available to the live
+# chain, just not persisted.
+.module_output_archive_exclude <- c("previews")
+
+# Save one paper's full module outputs to disk (lossless), so a later
+# reproducibility_check-only (or any single-module) retest can load a
+# paper's already-computed code_tbl/plan/structure_df instead of re-running
+# data_check/code_check/psychds_check (and their LLM calls) from scratch.
+# Unlike a reduced/truncated JSON summary, result data here is not coerced:
+# the object round-trips exactly (list-columns, numeric types, factors).
+#
+# Only the module *results* are kept; inter-module plumbing (prev_outputs,
+# paper, and the routing fields module/title/section) is stripped so the
+# file stays small and self-contained.
+#
+# `chain` is a module-output chain from `report_module_run()` (or
+# `report()`'s return value) -- a flat list of metacheck_module_output
+# elements, one per module that ran.
+# `results_dir` is the directory to write the per-paper `<paper_id>.rds`
+# into (created if needed).
+# `paper_id` is an optional paper id, used to name the file when it cannot be
+# recovered from the chain's summary tables.
+# Returns the written path, invisibly.
+capture_module_tables <- function(chain, results_dir, paper_id = NULL) {
+  mods <- Filter(function(x) inherits(x, "metacheck_module_output"), chain)
+  if (length(mods) == 0) mods <- chain
+
+  # Recover one paper id for the file name.
+  chain_pid <- paper_id
+  if (is.null(chain_pid) || is.na(chain_pid) || !nzchar(chain_pid %||% "")) {
+    for (mo in mods) {
+      st <- mo$summary_table
+      if (!is.null(st) && "paper_id" %in% names(st) && nrow(st) > 0) {
+        cand <- as.character(st$paper_id[[1]])
+        if (!is.na(cand) && nzchar(cand)) { chain_pid <- cand; break }
+      }
+    }
+  }
+  pid <- chain_pid %||% "paper"
+  if (is.na(pid) || !nzchar(pid)) pid <- paper_id %||% "paper"
+
+  # Keep every result element of each module, drop the plumbing and the
+  # explicitly excluded large/non-archival elements (e.g. data_check's previews).
+  outputs <- lapply(mods, function(mo) {
+    keep <- setdiff(names(mo),
+                    c(.module_output_plumbing, .module_output_archive_exclude))
+    mo[keep]
+  })
+
+  # report_module_run() strips each module's own summary_table and left-joins
+  # them all into ONE wide row carried by the last module (duplicate names
+  # suffixed ".<module>"). So a mid-chain module's `summary_table` slot is
+  # usually empty here; store that combined wide row once at the top level.
+  # The per-module `table`s are untouched and complete.
+  combined_summary <- NULL
+  for (mo in mods) {
+    st <- mo$summary_table
+    if (!is.null(st) && is.data.frame(st) && nrow(st) > 0 &&
+        ncol(st) > ncol(combined_summary %||% st[, 0, drop = FALSE]))
+      combined_summary <- st
+  }
+
+  dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+  path <- file.path(results_dir, paste0(pid, ".rds"))
+  saveRDS(list(paper_id = pid,
+               generated = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+               summary_table = combined_summary,
+               modules = outputs),
+          path)
+  invisible(path)
+}
+
+# Stack one module's full tables across every saved paper. Reads every
+# `<paper_id>.rds` written by `capture_module_tables()` and binds a chosen
+# element (default "table"; also e.g. "summary_table", or a module's extra
+# frame) of ONE module across all papers into a single data frame, tagged
+# with paper_id. Returns a data.frame (empty if none had it).
+collect_module_tables <- function(results_dir, module, element = "table") {
+  rfiles <- list.files(results_dir, pattern = "[.]rds$", full.names = TRUE)
+  if (length(rfiles) == 0) {
+    warning("No *.rds files found in ", results_dir,
+            ". Did the run call capture_module_tables()?", call. = FALSE)
+    return(data.frame())
+  }
+  parts <- lapply(rfiles, function(f) {
+    j <- tryCatch(readRDS(f), error = function(e) NULL)
+    if (is.null(j) || is.null(j$modules[[module]])) return(NULL)
+    el <- j$modules[[module]][[element]]
+    if (is.null(el) || !is.data.frame(el) || nrow(el) == 0) return(NULL)
+    if (!"paper_id" %in% names(el)) el$paper_id <- j$paper_id
+    el
+  })
+  parts <- Filter(Negate(is.null), parts)
+  if (length(parts) == 0) return(data.frame())
+  out <- dplyr::bind_rows(parts)
+  front <- intersect("paper_id", names(out))
+  out[, c(front, setdiff(names(out), front)), drop = FALSE]
+}
+
+# Load a paper's saved module outputs (written by `capture_module_tables()`)
+# back into a metacheck_module_output-shaped chain, so `module_run()` sees
+# them exactly as if they had just been computed live in this session --
+# i.e. get_prev_outputs("data_check", "structure") etc. finds them without
+# re-running data_check/code_check/psychds_check (or their LLM calls).
+#
+# `results_dir` is the directory holding the per-paper `<paper_id>.rds` files
+# (as written by `capture_module_tables()`).
+# `paper_id` is the paper id to load (matches the saved file's basename).
+# `paper` is the paper object itself (not persisted by `capture_module_tables()`,
+# since every module already carries it live) -- required so the returned
+# chain has somewhere for `module_run()` to find `paper$paper_id` etc.
+#
+# Returns a metacheck_module_output object usable as the `paper` argument to
+# `module_run()`/`report()`/`report_module_run()`, or NULL if no saved file
+# exists for this paper_id.
+#
+# @examples
+# \dontrun{
+# chain <- .load_module_tables("D:/psychscience_data/psychsci/_tables",
+#                              "collabra.123", paper)
+# if (!is.null(chain)) {
+#   out <- module_run(chain, "reproducibility_check", execute = TRUE)
+# }
+# }
+.load_module_tables <- function(results_dir, paper_id, paper) {
+  path <- file.path(results_dir, paste0(paper_id, ".rds"))
+  if (!file.exists(path)) return(NULL)
+  saved <- tryCatch(readRDS(path), error = function(e) NULL)
+  if (is.null(saved) || length(saved$modules) == 0) return(NULL)
+
+  mod_names <- names(saved$modules)
+  prev_outputs <- setNames(lapply(mod_names, function(m) {
+    mo <- saved$modules[[m]]
+    mo$module <- m
+    mo$title <- mo$title %||% m
+    mo$section <- mo$section %||% "general"
+    mo$paper <- paper
+    class(mo) <- "metacheck_module_output"
+    mo
+  }), mod_names)
+
+  # The LAST module becomes the top-level chain object (same shape
+  # report_module_run() builds), with every module (itself included) nested
+  # under prev_outputs so get_prev_outputs() finds all of them.
+  last <- prev_outputs[[length(prev_outputs)]]
+  last$prev_outputs <- prev_outputs
+  last$summary_table <- saved$summary_table
+  last
+}

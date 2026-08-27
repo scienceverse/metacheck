@@ -376,6 +376,10 @@ llm <- function(text, system_prompt,
 #' @param think whether to use thinking mode (very slow)
 #' @param options further options to pass to to the model
 #' @param base_url the local URL
+#' @param timeout request timeout in seconds; defaults to [llm_timeout()]. A
+#'   stuck/overloaded local Ollama server otherwise blocks here with no log
+#'   output for as long as curl is willing to wait -- this turns that into a
+#'   visible, retriable per-call failure instead.
 #'
 #' @export
 #' @keywords internal
@@ -383,7 +387,8 @@ llm <- function(text, system_prompt,
                                model = NULL,
                                think = FALSE,
                                options = list(),
-                               base_url = Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")) {
+                               base_url = Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+                               timeout = llm_timeout()) {
 
   if (isFALSE(think)) {
     system_prompt <- paste0("/nothink\n\n", system_prompt)
@@ -400,6 +405,7 @@ llm <- function(text, system_prompt,
     )
   )
   resp <- httr2::request(paste0(base_url, "/api/chat")) |>
+    httr2::req_timeout(timeout) |>
     httr2::req_body_json(body) |>
     httr2::req_perform()
   trimws(httr2::resp_body_json(resp)$message$content)
@@ -452,12 +458,26 @@ llm <- function(text, system_prompt,
 # valid JSON) also has no response -- and is per-call, not systemic. So a
 # no-response error only counts as systemic when it is NOT a retryable JSON/parse
 # failure and its message looks like a real connection problem.
+#
+# A per-call REQUEST TIMEOUT (llm_timeout()/req_timeout(), curl class
+# "curl_error_operation_timedout") is deliberately excluded here even though its
+# message also contains "timed out": that class means curl gave up waiting on
+# THIS one request (a stuck/overloaded local Ollama server, most often -- the
+# server is up, just slow on this call), not that the endpoint is unreachable.
+# Confirmed as a distinct, stable curl condition class from a genuine
+# connection failure (DNS/refused, still caught by the transport-message check
+# below). Treating a single slow call as "every call this run will fail" would
+# be wrong -- it should fail fast and retry, not abandon the LLM for the
+# session (the ollama-not-running check earlier in llm() already covers the
+# server genuinely being down).
 .llm_is_systemic_error <- function(e) {
   resp <- e$resp %||% e$parent$resp
   status <- tryCatch(httr2::resp_status(resp), error = function(e2) NA_integer_)
   if (isTRUE(status %in% c(401L, 403L))) return(TRUE)   # auth: every call fails
   if (isTRUE(status >= 500L)) return(TRUE)              # server down / erroring
   if (!is.null(resp)) return(FALSE)                     # got a response: per-call
+  if (inherits(e$parent, "curl_error_operation_timedout") ||
+      inherits(e, "curl_error_operation_timedout")) return(FALSE)
   # No response object. A malformed-JSON reply also has none -- that is a per-call
   # model hiccup, not the endpoint being down, so exclude it.
   if (.llm_json_retryable(e)) return(FALSE)
@@ -679,6 +699,39 @@ llm_max_calls <- function(n = NULL) {
   }
 
   invisible(getOption("metacheck.llm_max_calls"))
+}
+
+#' Set the per-call timeout for LLM requests
+#'
+#' Every single request `llm()` makes (one item, or one batch, depending on
+#' the caller) is bounded by this wall-clock limit. Without it, a stuck local
+#' model (most often Ollama under load, or a batch too large for the model to
+#' finish) blocks silently -- no log output, no progress, nothing -- for as
+#' long as the underlying HTTP client is willing to wait, which can be hours.
+#' A timeout turns that invisible stall into a fast, visible, per-row failure
+#' (recorded the same way a provider error already is -- see `llm()`'s own
+#' error handling), so a large batch run fails fast and retries instead of
+#' hanging.
+#'
+#' @param seconds the timeout in seconds, or `NULL` to read the current value
+#'   without changing it
+#'
+#' @return the current timeout in seconds (invisibly when setting)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' llm_timeout(120)
+#' }
+llm_timeout <- function(seconds = NULL) {
+  if (is.null(seconds)) {
+    return(getOption("metacheck.llm_timeout", 180))
+  }
+  if (!is.numeric(seconds) || length(seconds) != 1 || is.na(seconds) || seconds <= 0) {
+    stop("seconds must be a single positive number", call. = FALSE)
+  }
+  options(metacheck.llm_timeout = seconds)
+  invisible(getOption("metacheck.llm_timeout"))
 }
 
 #' Set the default max_tokens for LLM calls
