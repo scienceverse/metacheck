@@ -1309,6 +1309,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                              run_results$error_type == "undefined_variable", ,
                              drop = FALSE]
     reran <- FALSE
+    # Where each pass-1 undefined symbol is actually defined, keyed on
+    # "<user_file>||<symbol>" — kept around (not just used to decide whether to
+    # reorder) so the FINAL report's undefined-variable table can say "defined
+    # in <file>" even for a symbol that did not get an unambiguous reorder edge
+    # (0 or >1 definers), and even after `run_results` is replaced by the
+    # corrective re-run below.
+    definer_lookup <- character(0)
     if (nrow(undef_err) > 0) {
       defs <- repro_defined_vars(code_text_list)
       def_of <- function(v) {
@@ -1320,6 +1327,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       for (i in seq_len(nrow(undef_err))) {
         user <- undef_err$file_name[i]; v <- undef_err$undefined_var[i]
         definers <- setdiff(def_of(v), user)
+        if (length(definers) > 0)
+          definer_lookup[[paste0(user, "||", v)]] <- paste(definers, collapse = ", ")
         # Only act when exactly one file defines it (unambiguous); 0 = genuinely
         # undefined (a real bug, leave it), >1 = ambiguous (do not guess).
         if (length(definers) == 1) {
@@ -1619,16 +1628,30 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     undef <- run_results[!is.na(run_results$error_type) &
                          run_results$error_type == "undefined_variable", ,
                          drop = FALSE]
+    # "Defined in <file>" per row, from the definer_lookup built during the
+    # corrective re-run step above — covers a symbol left unresolved there too
+    # (0 or >1 definers, so no reorder edge was added), not just the ones that
+    # got reordered. Blank when the symbol is not defined anywhere in the
+    # paper's code at all (a genuine bug, not a sourcing/order gap).
+    undef_defined_in <- if (nrow(undef) > 0)
+      vapply(seq_len(nrow(undef)), function(i)
+        definer_lookup[[paste0(undef$file_name[i], "||", undef$undefined_var[i])]] %||% "",
+        character(1)) else character(0)
     report_undef <- if (nrow(undef) > 0) c(sprintf(
-      paste0("**%d script%s failed on an undefined variable** (`object '...' not ",
-             "found`). This typically means the script expects a variable that ",
-             "another script defines — i.e. it is meant to be sourced into a ",
-             "larger session, not run on its own — or the variable is simply ",
-             "never created. Each is counted as an error (red)."),
+      paste0("**%d script%s failed on an undefined variable or function** (`object ",
+             "'...' not found` / `could not find function \"...\"`). This typically ",
+             "means the script expects a variable or function that another script ",
+             "defines — i.e. it is meant to be sourced into a larger session, not ",
+             "run on its own — or the symbol is simply never created. When another ",
+             "of the paper's own script files defines the same name, this is called ",
+             "out below as a likely sourcing/copy-paste gap. Each is counted as an ",
+             "error (red)."),
       nrow(undef), plural(nrow(undef))),
       scroll_table(data.frame(
         File = undef$file_name,
         `Missing variable` = undef$undefined_var,
+        `Defined in` = ifelse(nzchar(undef_defined_in), undef_defined_in,
+                              "(not defined anywhere in the paper's code)"),
         check.names = FALSE), maxrows = 10)) else NULL
 
     # Dependency-unavailable errors, called out explicitly: a script that
@@ -1737,9 +1760,28 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                "necessarily the one the paper's authors used: %s."),
         length(via_arch), paste(via_arch, collapse = ", ")) else NULL
       failed <- install_results[!install_results$installed, , drop = FALSE]
+      # A failure category (see .repro_classify_install_message()) separates
+      # "genuinely gone from CRAN" (permanent) from "transient network hiccup"
+      # (worth a retry) from "needs a compiler toolchain" (environment setup,
+      # not a paper problem) — surfaced as a label alongside the raw message,
+      # which stays the authoritative text. Absent (older saved results, or a
+      # category of NA) falls back to no label, same as before this was added.
+      cat_label <- function(cat) {
+        nm <- c(cran_unavailable = "not available on CRAN for this R version",
+               compile_failure = "compilation/configure failure",
+               network = "network issue",
+               transitive_dependency_missing = "a dependency of this package is unavailable",
+               other = "uncategorised")
+        unname(nm[cat])
+      }
+      failed_cat <- if ("category" %in% names(failed))
+        vapply(failed$category, function(c)
+          if (is.na(c)) "" else cat_label(c) %||% "", character(1)) else
+        rep("", nrow(failed))
       report_fail <- if (nrow(failed) > 0) sprintf(
         "**Failed:** %s", paste(sprintf(
-          "%s%s", failed$package,
+          "%s%s%s", failed$package,
+          ifelse(nzchar(failed_cat), sprintf(" [%s]", failed_cat), ""),
           ifelse(nzchar(failed$message), sprintf(" (%s)", failed$message), "")),
           collapse = "; ")) else NULL
       report <- c(report, report_inst, report_arch, report_fail)

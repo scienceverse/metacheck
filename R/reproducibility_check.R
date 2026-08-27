@@ -1053,18 +1053,52 @@ repro_defined_vars <- function(code_text_list) {
 #'   `file_name` column)
 #'
 #' @returns a data frame with `basename`, `status` (one of `in_repo_not_downloaded`,
-#'   `withheld_size`, `absent`), and `detail` (a human-readable reason).
+#'   `withheld_size`, `absent`), `detail` (a human-readable reason), and
+#'   `similar_to` (a candidate near-match basename from the repository's file
+#'   list, or `NA` — only ever set for `absent` rows; see below).
 #' @export
 repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   refs <- unique(tolower(basename(gsub("\\\\", "/", refs))))
   empty <- data.frame(basename = character(0), status = character(0),
-                      detail = character(0))
+                      detail = character(0), similar_to = character(0))
   if (length(refs) == 0) return(empty)
 
   struct_base <- if (!is.null(structure_df) && "file_name" %in% names(structure_df))
     tolower(basename(gsub("\\\\", "/", structure_df$file_name))) else character(0)
   skip_base <- if (!is.null(skipped) && "file_name" %in% names(skipped))
     tolower(basename(gsub("\\\\", "/", skipped$file_name))) else character(0)
+
+  # A file genuinely absent from the repository is sometimes actually PRESENT
+  # under a near-identical name — a typo in the code, or a capitalisation/
+  # separator mismatch ("Data.csv" referenced, "data.csv" present) — which is a
+  # different (and more actionable) finding than "this file was never shared at
+  # all". Tried only for an otherwise-`absent` reference (an exact match already
+  # resolved above needs no fallback): first the SAME STEM ignoring extension
+  # (a script asking for `data.csv` when only `data.xlsx` was shared — common
+  # when authors describe a conversion in prose but never update the code), then
+  # a small EDIT DISTANCE on the full basename (a typo/case/punctuation slip).
+  # Never guesses across a large distance — a near-miss is surfaced as a
+  # candidate for a human to confirm, not silently treated as a match.
+  all_candidates <- unique(struct_base)
+  find_similar <- function(b) {
+    if (length(all_candidates) == 0) return(NA_character_)
+    stem <- tools::file_path_sans_ext(b)
+    cand_stems <- tools::file_path_sans_ext(all_candidates)
+    stem_hit <- all_candidates[cand_stems == stem & nzchar(stem)]
+    if (length(stem_hit) > 0) return(stem_hit[[1]])
+    # Small edit distance on the full basename (extension included, so a
+    # same-stem-different-extension pair is already caught above and does not
+    # also compete here). Threshold: at most 3 edits, and never more than a
+    # quarter of the reference's own length, so a short name ("x.csv") cannot
+    # match something unrelated purely because 3 edits is a large fraction of
+    # it — same "do not guess" spirit as the rest of this file.
+    max_dist <- min(3L, floor(nchar(b) / 4))
+    if (max_dist < 1L) return(NA_character_)
+    d <- utils::adist(b, all_candidates)[1, ]
+    hit <- which(d <= max_dist)
+    if (length(hit) == 0) return(NA_character_)
+    all_candidates[hit[which.min(d[hit])]]
+  }
 
   rows <- lapply(refs, function(b) {
     if (b %in% skip_base) {
@@ -1074,7 +1108,7 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
       return(data.frame(basename = b, status = "withheld_size",
                         detail = sprintf(
                           "referenced file is in the repository but was not downloaded%s: over the size cap",
-                          mb)))
+                          mb), similar_to = NA_character_))
     }
     if (b %in% struct_base) {
       i <- which(struct_base == b)[1]
@@ -1083,13 +1117,20 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
       downloaded <- !is.na(loc) && nzchar(loc) && file.exists(loc %||% "")
       if (!downloaded)
         return(data.frame(basename = b, status = "in_repo_not_downloaded",
-                          detail = "referenced file is listed in the repository but was not downloaded"))
+                          detail = "referenced file is listed in the repository but was not downloaded",
+                          similar_to = NA_character_))
       # Present and downloaded — not actually missing; caller filters these out.
       return(data.frame(basename = b, status = "present",
-                        detail = "referenced file is available"))
+                        detail = "referenced file is available",
+                        similar_to = NA_character_))
     }
-    data.frame(basename = b, status = "absent",
-               detail = "referenced file is not present in the repository")
+    similar <- find_similar(b)
+    detail <- if (!is.na(similar))
+      sprintf("referenced file is not present in the repository, but a similarly-named file exists: %s",
+              similar)
+      else "referenced file is not present in the repository"
+    data.frame(basename = b, status = "absent", detail = detail,
+              similar_to = similar)
   })
   out <- dplyr::bind_rows(rows)
   out[out$status != "present", , drop = FALSE]
@@ -1397,13 +1438,15 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
 #' the run used a stale-but-real version rather than the one the authors had.
 #'
 #' @returns a data frame with `package`, `source`, `installed` (logical),
-#'   `message` (error text on failure, else ""), and `via_archive` (logical,
-#'   TRUE when installed from the CRAN Archive after a live-CRAN failure).
+#'   `message` (error text on failure, else ""), `via_archive` (logical,
+#'   TRUE when installed from the CRAN Archive after a live-CRAN failure), and
+#'   `category` (see [.repro_classify_install_message()]; `NA` for a
+#'   successful install).
 #' @export
 repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
-                      via_archive = logical(0))
+                      via_archive = logical(0), category = character(0))
   if (is.null(install_deps) || nrow(install_deps) == 0) return(empty)
   dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
   old_lib <- .libPaths(); on.exit(.libPaths(old_lib), add = TRUE)
@@ -1501,9 +1544,95 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
       }
     }
     data.frame(package = pkg, source = src, installed = res$ok, message = res$msg,
-              via_archive = isTRUE(res$via_archive))
+              via_archive = isTRUE(res$via_archive),
+              category = if (isTRUE(res$ok)) NA_character_
+                        else .repro_classify_install_message(res$msg))
   })
   dplyr::bind_rows(rows)
+}
+
+#' Classify why a package installation failed
+#'
+#' `repro_install_deps()`/`repro_install_deps_docker()` already capture the raw
+#' error text for a failed package, but the raw text alone does not say what
+#' KIND of failure it was — and the distinction matters for what a reader
+#' should do about it: a package genuinely gone from CRAN with no successor is
+#' a real, permanent problem (worth reporting as-is), a transient network
+#' hiccup is worth an automatic retry rather than treating as conclusive, and a
+#' missing compiler toolchain is an environment-setup gap, not a defect in the
+#' paper's own code. None of these change whether the install COUNTS as a
+#' failure (they still do, and still stay out of the traffic light — see the
+#' module's own dependency-unavailable handling), only how informative the
+#' report is about the subtype.
+#'
+#' Matched against the install error message's own text with a fixed set of
+#' regexes, most-specific first, so a message that could plausibly match more
+#' than one category (rare, but not impossible) is not misassigned to a looser
+#' pattern. A message matching none of them is `"other"` — the raw `message`
+#' column is always still the authoritative text; this is advisory framing on
+#' top of it, not a replacement for reading the message.
+#'
+#' `install.packages()`'s own standard CRAN-unavailability message —
+#' `"package 'x' is not available for this version of R"` — is CRAN's ONE
+#' generic wording for two different real causes (the package was removed/
+#' archived entirely, or a current version simply never supported this R
+#' release) and does not itself say which one applies; confirmed directly
+#' against real R output rather than assumed. Splitting those into two
+#' categories from the message text alone would be a guess this classifier
+#' does not make — both are reported as `"cran_unavailable"`, and the CRAN
+#' Archive retry's own `via_archive` result elsewhere already provides the
+#' real, non-guessed signal for the archived case ([repro_install_deps()]),
+#' since a successful Archive install proves that specific cause rather than
+#' inferring it from wording.
+#'
+#' @param msg the error message text (`repro_install_deps()`'s own `message`
+#'   column for one failed row)
+#'
+#' @returns a single category string: `"cran_unavailable"`,
+#'   `"compile_failure"`, `"network"`, `"transitive_dependency_missing"`, or
+#'   `"other"`
+#' @keywords internal
+.repro_classify_install_message <- function(msg) {
+  if (is.null(msg) || is.na(msg) || !nzchar(msg)) return("other")
+
+  # A source build that failed partway through compiling/configuring — most
+  # often a missing system library or compiler toolchain, not an R-level
+  # problem at all. Checked before the broader patterns below: a compile
+  # failure's own text ("non-zero exit status") never overlaps with them, but
+  # checking it first keeps this category's meaning narrow and unambiguous.
+  # NOTE: a bare "error: " substring was deliberately tried and dropped here —
+  # R wraps almost any condition's own text in "Error: ..." regardless of
+  # cause (confirmed: it false-matched a GitHub 404 "not found" message that
+  # has nothing to do with compiling), so it is not a usable compile signal on
+  # its own; every pattern below is specific to an actual build-tool message.
+  if (grepl("configure(:| failed| error)|non-zero exit status|compilation failed|make(:| error)\\b|\\bgcc\\b|g\\+\\+|gfortran",
+           msg, ignore.case = TRUE, perl = TRUE))
+    return("compile_failure")
+
+  # Could not even reach the repository/host — a transient condition, worth
+  # retrying, not evidence the package is unavailable.
+  if (grepl("could not resolve host|couldn.t connect to server|timed? ?out|connection (refused|reset|timed out)|network is unreachable|ssl (connect|certificate) error|could not reach",
+           msg, ignore.case = TRUE, perl = TRUE))
+    return("network")
+
+  # The package ITSELF is not being installed here — a NAMED dependency of it
+  # is what's missing/unavailable ("there is no package called 'x'", "dependency
+  # 'x' is not available for package 'y'"). Checked before the generic
+  # cran_unavailable pattern below, since "dependency 'x' is not available..."
+  # would otherwise also match that broader "is not available" wording and be
+  # misclassified as the package's own CRAN availability, not its dependency's.
+  if (grepl("there is no package called|depend(s|ency|encies) .*(is|are) not available|unable to (find|locate) (required )?package",
+           msg, ignore.case = TRUE, perl = TRUE))
+    return("transitive_dependency_missing")
+
+  # CRAN's generic "not available" wording — covers both a fully archived
+  # package and one simply incompatible with this R version; see roxygen above
+  # for why those are not split further.
+  if (grepl("is not available (for|as a package)|package .* is not available|was built (for|under) R version",
+           msg, ignore.case = TRUE, perl = TRUE))
+    return("cran_unavailable")
+
+  "other"
 }
 
 #' Install a package's most recent CRAN Archive version
@@ -1727,12 +1856,25 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
       # a later phase uses it as a run-order signal (the file defining X should
       # precede this one). Check both the callr message and the captured stderr,
       # since the child's own error text lands in stderr.
+      #
+      # R phrases a missing FUNCTION differently from a missing variable
+      # ("could not find function \"foo\"" vs "object 'x' not found") — both are
+      # the same underlying problem (an unresolved top-level symbol, usually
+      # because the script that defines it was never run/sourced first), so
+      # both patterns are checked and feed the same undefined_var extraction.
       undef_pat <- "object ['\"]([^'\"]+)['\"] not found"
+      fn_pat    <- "could not find function ['\"]([^'\"]+)['\"]"
       undef_src <- if (grepl(undef_pat, msg)) msg else
-        if (grepl(undef_pat, se)) se else NA_character_
-      undef_var <- if (!is.na(undef_src))
+        if (grepl(undef_pat, se)) se else
+        if (grepl(fn_pat, msg)) msg else
+        if (grepl(fn_pat, se)) se else NA_character_
+      undef_var <- if (!is.na(undef_src) && grepl(undef_pat, undef_src))
         sub(paste0(".*", undef_pat, ".*"), "\\1",
-            regmatches(undef_src, regexpr(undef_pat, undef_src))) else NA_character_
+            regmatches(undef_src, regexpr(undef_pat, undef_src)))
+        else if (!is.na(undef_src) && grepl(fn_pat, undef_src))
+        sub(paste0(".*", fn_pat, ".*"), "\\1",
+            regmatches(undef_src, regexpr(fn_pat, undef_src)))
+        else NA_character_
 
       # A script that library()/require()s a package we already know FAILED to
       # install (even after the CRAN Archive retry — see repro_install_deps())

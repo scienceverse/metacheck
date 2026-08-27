@@ -175,15 +175,16 @@ repro_docker_available <- function() {
 #' @returns a data frame with `package`, `source`, `installed` (logical),
 #'   `message` (error text on failure, else ""), `via_archive` (always FALSE
 #'   — the CRAN Archive retry [repro_install_deps()] does is not duplicated
-#'   here; a package unavailable on live CRAN is simply recorded as failed) —
-#'   same columns as [repro_install_deps()] so callers do not need to branch
-#'   on which backend ran.
+#'   here; a package unavailable on live CRAN is simply recorded as failed),
+#'   and `category` (see [.repro_classify_install_message()]; `NA` for a
+#'   successful install) — same columns as [repro_install_deps()] so callers
+#'   do not need to branch on which backend ran.
 #' @export
 repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-ver:latest",
                                       timeout = 600) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
-                      via_archive = logical(0))
+                      via_archive = logical(0), category = character(0))
   if (is.null(install_deps) || nrow(install_deps) == 0) return(empty)
   dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -316,6 +317,14 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 
   out <- dplyr::bind_rows(tbl, padding)
   out$via_archive <- FALSE   # the CRAN Archive retry repro_install_deps() does is not duplicated here
+  # Classified on the HOST, not inside the container script: the container has
+  # no access to this package's own R functions (it runs install.R as a
+  # standalone Rscript with no library() of this package available), so each
+  # row's message is categorised here once results are back, same classifier
+  # repro_install_deps() uses.
+  out$category <- ifelse(out$installed, NA_character_,
+                         vapply(out$message, .repro_classify_install_message,
+                                character(1)))
   out
 }
 
@@ -543,11 +552,21 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
                dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))
     }
     if (res$status != 0) {
+      # See repro_run_scripts()'s twin of this block (R/reproducibility_check.R)
+      # for why a missing FUNCTION ("could not find function ...") is matched
+      # alongside a missing variable ("object ... not found") into the same
+      # undefined_var column.
       undef_pat <- "object ['\"]([^'\"]+)['\"] not found"
-      undef_src <- if (grepl(undef_pat, se)) se else NA_character_
-      undef_var <- if (!is.na(undef_src))
+      fn_pat    <- "could not find function ['\"]([^'\"]+)['\"]"
+      undef_src <- if (grepl(undef_pat, se)) se else
+        if (grepl(fn_pat, se)) se else NA_character_
+      undef_var <- if (!is.na(undef_src) && grepl(undef_pat, undef_src))
         sub(paste0(".*", undef_pat, ".*"), "\\1",
-            regmatches(undef_src, regexpr(undef_pat, undef_src))) else NA_character_
+            regmatches(undef_src, regexpr(undef_pat, undef_src)))
+        else if (!is.na(undef_src) && grepl(fn_pat, undef_src))
+        sub(paste0(".*", fn_pat, ".*"), "\\1",
+            regmatches(undef_src, regexpr(fn_pat, undef_src)))
+        else NA_character_
 
       nopkg_pat <- "there is no package called ['\"]([^'\"]+)['\"]"
       nopkg_src <- if (grepl(nopkg_pat, se)) se else NA_character_
