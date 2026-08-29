@@ -105,10 +105,16 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   empty_summary <- function(text) {
+    # One row per paper still in play (from structure_df, since columns_df is
+    # what's empty here) -- .pid()'s single collapsed id would under-report a
+    # corpus where every paper genuinely has zero tabular data, showing one
+    # row instead of one all-zero row per paper.
+    empty_pids <- if (!is.null(structure_df) && "paper_id" %in% names(structure_df))
+      unique(structure_df$paper_id) else .pid(columns_df, structure_df)
     list(
       table = data.frame(),
       summary_table = data.frame(
-        paper_id = .pid(columns_df, structure_df),
+        paper_id = empty_pids,
         column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,
         conflicted_n = 0, codebook_var_n = 0, unused_var_n = 0
       ),
@@ -173,6 +179,12 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       cb_group <- if ("group" %in% names(cb_rows)) cb_rows$group[i] else NA_character_
       pv <- parse_codebook(p, group = cb_group)
       if (is.data.frame(pv) && nrow(pv) > 0) {
+        # Attach this file's own paper_id so codebook_vars_df (built below from
+        # parsed_list) can be grouped per paper -- parse_codebook() itself has
+        # no notion of which paper a codebook file belongs to, so this is
+        # stamped on here from cb_rows, the same per-row source cb_group above
+        # already reads from.
+        pv$paper_id <- cb_rows$paper_id[i]
         parsed_list[[length(parsed_list) + 1L]] <- pv
       } else if (is.character(pv) && length(pv) > 0 && llm_use()) {
         # Unstructured text: send to the LLM in 100-line chunks. Upfront gate —
@@ -190,6 +202,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
           llm_out <- codebook_parse_llm(pv, basename(p), model, params,
                                         max_chunks = max_llm_chunks)
           if (!is.null(llm_out) && nrow(llm_out) > 0) {
+            llm_out$paper_id <- cb_rows$paper_id[i]
             parsed_list[[length(parsed_list) + 1L]] <- llm_out
             llm_parse_files <- llm_parse_files + 1L
             if (is.na(llm_model_used))
@@ -233,6 +246,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       # "haven" (the codebase's name for an embedded data-file label) gives them
       # that shared authority without touching every haven-keyed call site.
       res$parse_method <- "haven"
+      res$paper_id <- haven_rows$paper_id[i]
       parsed_list[[length(parsed_list) + 1L]] <- res
     }
   }
@@ -516,20 +530,61 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_clean      <- sum(clean)
   n_conflicted <- sum(conflicted)
 
+  # Per-paper versions of the five counts above, for summary_table below (one
+  # row per paper) -- labels_df carries its own paper_id per row (inherited
+  # from columns_df via match_column_labels()), so this is a plain groupby
+  # rather than a corpus-wide scalar repeated on every paper's row.
+  coverage_by_paper <- data.frame(
+    paper_id = labels_df$paper_id, matched = matched, clean = clean,
+    conflicted = conflicted
+  ) |>
+    dplyr::summarise(
+      column_n = dplyr::n(),
+      matched_n = sum(matched),
+      unmatched_n = dplyr::n() - sum(matched),
+      clean_n = sum(clean),
+      conflicted_n = sum(conflicted),
+      .by = paper_id
+    )
+
   # A codebook variable is "used" if any data column matched its name — whether
   # or not the resulting label was clean. This keeps a conflicted-but-present
   # variable out of the "unused" list. Conflicting/ambiguous rows can list
   # several codebook variables (" | "-joined), so split before normalising.
-  matched_norm <- unique(normalize_varname(
-    unlist(strsplit(
-      labels_df$codebook_variable[matched & !is.na(labels_df$codebook_variable)],
-      " | ", fixed = TRUE))
-  ))
+  #
+  # matched_norm/used_var are scoped PER PAPER (via paper_id, present on both
+  # labels_df and codebook_vars_df) rather than computed once across every
+  # paper in a paperlist run: a corpus-wide match set would mark a codebook
+  # variable "used" whenever ANY paper's data happened to share its (very
+  # common, e.g. "age"/"id"/"condition") normalised name, even if that
+  # specific paper's own data never matched it.
+  matched_by_paper <- split(
+    labels_df$codebook_variable[matched & !is.na(labels_df$codebook_variable)],
+    labels_df$paper_id[matched & !is.na(labels_df$codebook_variable)])
+  matched_norm_by_paper <- lapply(matched_by_paper, function(x)
+    unique(normalize_varname(unlist(strsplit(x, " | ", fixed = TRUE)))))
+
   n_codebook_vars <- nrow(codebook_vars_df)
-  used_var <- if (n_codebook_vars > 0)
-    normalize_varname(codebook_vars_df$codebook_variable) %in% matched_norm else
+  used_var <- if (n_codebook_vars > 0) {
+    mn <- matched_norm_by_paper[codebook_vars_df$paper_id]
+    mapply(function(varname, mn_set) varname %in% (mn_set %||% character(0)),
+           normalize_varname(codebook_vars_df$codebook_variable), mn)
+  } else {
     logical(0)
+  }
   n_unused <- sum(!used_var)
+
+  n_codebook_vars_by_paper <- if (n_codebook_vars > 0) {
+    codebook_vars_df |> dplyr::summarise(codebook_var_n = dplyr::n(), .by = paper_id)
+  } else {
+    data.frame(paper_id = character(0), codebook_var_n = integer(0))
+  }
+  n_unused_by_paper <- if (n_codebook_vars > 0) {
+    data.frame(paper_id = codebook_vars_df$paper_id, used_var = used_var) |>
+      dplyr::summarise(unused_var_n = sum(!used_var), .by = paper_id)
+  } else {
+    data.frame(paper_id = character(0), unused_var_n = integer(0))
+  }
 
   pct_matched <- if (n_columns > 0)
     round(100 * n_matched / n_columns) else 0L
@@ -827,31 +882,33 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     report <- c(report, paste0("- ", gate_msgs))
 
   # ── 8. Summary table + return ────────────────────────────────────────────────
-  pid <- .pid(labels_df, columns_df, structure_df)
-  summary_table <- data.frame(
-    paper_id       = pid,
-    column_n       = n_columns,
-    matched_n      = n_matched,
-    unmatched_n    = n_unmatched,
-    clean_n        = n_clean,
-    conflicted_n   = n_conflicted,
-    codebook_var_n = n_codebook_vars,
-    unused_var_n   = n_unused,
-    # Scale detection vs. naming: how many data files held a scale-like item
-    # block (rule-based detection), how many distinct instruments were named
-    # (LLM), and how many detected blocks stayed unnamed. The gap between the
-    # first and the last is the "looks like a scale but we can't name it" set.
-    scale_blocks_n  = n_scale_files,
-    scale_named_n   = n_scales_found,
-    scale_unnamed_n = n_scale_unnamed,
-    # Behavioural tasks (Stroop, IAT, n-back). Detected from a different data
-    # signature than scales — rt/accuracy columns rather than a Likert block —
-    # so counted separately. `task_paper_only_n` is the task named in the
-    # manuscript with no matching data: measured but seemingly not shared.
-    task_files_n     = n_task_files,
-    task_named_n     = n_tasks_found,
-    task_paper_only_n = n_tasks_paper_only
-  )
+  # One row per paper (see coverage_by_paper / n_codebook_vars_by_paper /
+  # n_unused_by_paper built earlier), not .pid(...)'s single collapsed id --
+  # that always returns just the FIRST paper's id on a paperlist, the same bug
+  # already fixed for repo_check.R and data_check.R's summary_table.
+  #
+  # scale_blocks_n/scale_named_n/scale_unnamed_n/task_files_n/task_named_n/
+  # task_paper_only_n remain corpus-wide scalars (repeated on every paper's
+  # row below) rather than true per-paper counts: unlike the coverage/codebook
+  # counts above, these come from scale_groups and the scan_paper_for_*()
+  # dictionary scans, which are built once across the whole run and would need
+  # a larger restructuring (making scale_groups itself paper_id-aware) to
+  # split correctly per paper. Tracked as a known remaining gap, not silently
+  # different from this module's behaviour before this fix.
+  summary_table <- data.frame(paper_id = unique(labels_df$paper_id) %||% .pid(labels_df, columns_df, structure_df)) |>
+    dplyr::left_join(coverage_by_paper, by = "paper_id") |>
+    dplyr::left_join(n_codebook_vars_by_paper, by = "paper_id") |>
+    dplyr::left_join(n_unused_by_paper, by = "paper_id")
+  for (col in c("column_n", "matched_n", "unmatched_n", "clean_n", "conflicted_n",
+                "codebook_var_n", "unused_var_n")) {
+    summary_table[[col]][is.na(summary_table[[col]])] <- 0L
+  }
+  summary_table$scale_blocks_n   <- n_scale_files
+  summary_table$scale_named_n    <- n_scales_found
+  summary_table$scale_unnamed_n  <- n_scale_unnamed
+  summary_table$task_files_n     <- n_task_files
+  summary_table$task_named_n     <- n_tasks_found
+  summary_table$task_paper_only_n <- n_tasks_paper_only
 
   list(
     table = labels_df,
@@ -1219,9 +1276,26 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
     paste(parts[!is.na(parts) & nzchar(parts)], collapse = " ")
   }
 
-  have_paper <- .is_paper(paper) && !is.null(paper$text) && nrow(paper$text) > 0
-  paper_hay  <- if (have_paper)
-    paste(as.character(paper$text$text), collapse = " \n ") else ""
+  # Computed per-file below (paper_hay_for()), not once here: on a paperlist
+  # run `paper` is never a single scivrs_paper, so a bare .is_paper(paper)
+  # check would always be FALSE (silently skipping paper-text corroboration
+  # for every corpus run -- this matcher runs even with llm_use(FALSE), the
+  # default for a corpus run, so this was silently degrading the DEFAULT
+  # path, not just an opt-in LLM tier). Per-file also avoids pooling every
+  # paper's text together as corroboration evidence for any one file.
+  file_paper_id <- if ("paper_id" %in% names(labels_df))
+    stats::setNames(labels_df$paper_id, labels_df$source_file) else
+    stats::setNames(character(0), character(0))
+  paper_for_file <- function(file) {
+    pid <- unname(file_paper_id[file])
+    if (is.na(pid) || !.is_paper_list(paper)) return(paper)
+    paper[[pid]] %||% paper
+  }
+  paper_hay_for <- function(file) {
+    p <- paper_for_file(file)
+    if (!.is_paper(p) || is.null(p$text) || nrow(p$text) == 0) return("")
+    paste(as.character(p$text$text), collapse = " \n ")
+  }
 
   # Does instrument `i`'s FULL NAME appear in `hay`? Corroboration deliberately
   # requires the full name, NOT the bare acronym: an acronym like "BES" in a
@@ -1275,7 +1349,7 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       cb_hay <- wording_of(file, nms)           # codebook wording FIRST
       # Corroborate each candidate: codebook, then paper.
       cb_ok <- vapply(cand, corroborates, logical(1), hay = cb_hay)
-      pp_ok <- vapply(cand, corroborates, logical(1), hay = paper_hay)
+      pp_ok <- vapply(cand, corroborates, logical(1), hay = paper_hay_for(file))
       corr  <- cb_ok | pp_ok
 
       pick <- NA_integer_; conf <- NA_character_
@@ -1355,14 +1429,33 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   }
   dict$.nkey <- vapply(dict$name, first_tok, character(1))
 
-  have_paper <- .is_paper(paper) && !is.null(paper$text) && nrow(paper$text) > 0
-  paper_hay  <- if (have_paper)
-    paste(as.character(paper$text$text), collapse = " \n ") else ""
+  # Computed per-file below (paper_hay_for()), not once here: on a paperlist
+  # run `paper` is never a single scivrs_paper, so a bare .is_paper(paper)
+  # check would always be FALSE (silently skipping paper-text corroboration
+  # for every corpus run -- this matcher runs even with llm_use(FALSE), the
+  # default for a corpus run). Per-file also avoids pooling every paper's
+  # text together as corroboration evidence for any one file's task columns.
+  file_paper_id <- if ("paper_id" %in% names(labels_df))
+    stats::setNames(labels_df$paper_id, labels_df$source_file) else
+    stats::setNames(character(0), character(0))
+  paper_for_file <- function(file) {
+    pid <- unname(file_paper_id[file])
+    if (is.na(pid) || !.is_paper_list(paper)) return(paper)
+    paper[[pid]] %||% paper
+  }
+  paper_hay_for <- function(file) {
+    p <- paper_for_file(file)
+    if (!.is_paper(p) || is.null(p$text) || nrow(p$text) == 0) return("")
+    paste(as.character(p$text$text), collapse = " \n ")
+  }
 
   # Corroboration requires the FULL NAME in the text, never a bare acronym —
   # the same rule the scale matcher uses, and for the same reason: "IAT" and
-  # "CRT" are ambiguous outside their context.
+  # "CRT" are ambiguous outside their context. Reads `file` from the enclosing
+  # for-loop below rather than taking it as a parameter, since its only
+  # caller (corr <- vapply(cand, corroborates, ...)) is inside that loop.
   corroborates <- function(i) {
+    paper_hay <- paper_hay_for(file)
     if (!nzchar(paper_hay)) return(FALSE)
     pat <- .scale_text_pattern(dict$name[i], NA_character_)
     isTRUE(tryCatch(grepl(pat, paper_hay, perl = TRUE, ignore.case = TRUE),
@@ -2273,6 +2366,19 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
   dict <- .scale_dictionary()
   lbl_key <- if (all(c("source_file","column_name") %in% names(labels_df)))
     paste(labels_df$source_file, labels_df$column_name, sep = "\x01") else character(0)
+  # file -> owning paper_id, so .scale_paper_context() below searches only
+  # THAT paper's text -- without this, passing the whole (possibly multi-paper)
+  # `paper` argument through pools every paper's sentences together, so a
+  # scale abbreviation in one paper could get "confirmed" by another paper's
+  # unrelated prose describing a different instrument.
+  file_paper_id <- if ("paper_id" %in% names(labels_df))
+    stats::setNames(labels_df$paper_id, labels_df$source_file) else
+    stats::setNames(character(0), character(0))
+  paper_for_file <- function(file) {
+    pid <- unname(file_paper_id[file])
+    if (is.na(pid) || !.is_paper_list(paper)) return(paper)
+    paper[[pid]] %||% paper
+  }
   wording_of <- function(file, cols) {
     if (!length(lbl_key)) return(character(0))
     i <- match(paste(file, cols, sep = "\x01"), lbl_key)
@@ -2782,7 +2888,24 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
            if ("question" %in% names(labels_df)) labels_df$question[i])
     w[!is.na(w) & nzchar(w)]
   }
-  have_paper <- .is_paper(paper) && !is.null(paper$text) && nrow(paper$text) > 0
+  # Per-file, not once: on a paperlist run `paper` is never a single
+  # scivrs_paper object, so a bare .is_paper(paper) check here would always be
+  # FALSE (silently skipping manuscript-text context for every corpus run),
+  # and passing the whole paperlist through to .scale_paper_context() would
+  # pool every paper's sentences together for whichever file is currently
+  # being processed.
+  file_paper_id <- if ("paper_id" %in% names(labels_df))
+    stats::setNames(labels_df$paper_id, labels_df$source_file) else
+    stats::setNames(character(0), character(0))
+  paper_for_file <- function(file) {
+    pid <- unname(file_paper_id[file])
+    if (is.na(pid) || !.is_paper_list(paper)) return(paper)
+    paper[[pid]] %||% paper
+  }
+  have_paper_for <- function(file) {
+    p <- paper_for_file(file)
+    .is_paper(p) && !is.null(p$text) && nrow(p$text) > 0
+  }
 
   type_spec <- ellmer::type_object(
     construct = ellmer::type_string(
@@ -2824,8 +2947,8 @@ codebook_parse_llm <- function(lines, src, model, params, max_chunks = 10L) {
       keys <- paste(file, nms, sep = "\x01")
       if (any(keys %in% named_key)) next          # already named — skip
       wording <- wording_of(file, nms)
-      ctx <- if (have_paper)
-        .scale_paper_context(paper, .scale_name_prefix(nms[[1]]), wording) else
+      ctx <- if (have_paper_for(file))
+        .scale_paper_context(paper_for_file(file), .scale_name_prefix(nms[[1]]), wording) else
         character(0)
       # Descriptive words in the column names themselves (letters-only tokens of
       # >= 3 chars, minus a stray item-index token). A block whose names carry
@@ -2930,8 +3053,14 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
     if (is.na(i)) return(NA_character_)
     labels_df$label[i]
   }
-  have_paper_text <- .is_paper(paper) &&
-    !is.null(paper$text) && nrow(paper$text) > 0
+  # Checked per-file below (paper_for_file(rep_file)), not once here: on a
+  # paperlist run, bare `paper` is never a single scivrs_paper object, so
+  # gating on .is_paper(paper) here would always be FALSE and silently skip
+  # manuscript-text scale identification for every corpus run.
+  have_paper_text_for <- function(file) {
+    p <- paper_for_file(file)
+    .is_paper(p) && !is.null(p$text) && nrow(p$text) > 0
+  }
 
   # Scales the paper names outright. Offering these as candidates lets the model
   # CONFIRM a stated instrument — far more reliable than guessing from item
@@ -2947,10 +3076,12 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
   } else {
     character(0)
   }
-  paper_scales <- if (have_paper_text) {
-    union(llm_named, .scan_paper_for_scales(paper))
-  } else {
-    character(0)
+  # Computed per-file inside the loop below (paper_scales_for()), not once
+  # here: on a paperlist run there is no single `paper` to scan, and each
+  # file's candidate list should come from its OWN paper's text only.
+  paper_scales_for <- function(file) {
+    if (!have_paper_text_for(file)) return(character(0))
+    union(llm_named, .scan_paper_for_scales(paper_for_file(file)))
   }
 
   # Per file: the Likert-eligible columns (flattened across blocks) and their
@@ -3057,8 +3188,9 @@ codebook_identify_scales <- function(previews, labels_df, model, params,
     # variable-name prefix or its distinctive item words. The Methods section
     # usually names the instrument outright ("the 20-item PANAS ..."), which
     # lets the model confirm rather than guess. Only when a paper is available.
-    ctx <- if (have_paper_text)
-      .scale_paper_context(paper, prefixes, labs) else character(0)
+    ctx <- if (have_paper_text_for(rep_file))
+      .scale_paper_context(paper_for_file(rep_file), prefixes, labs) else character(0)
+    paper_scales <- paper_scales_for(rep_file)
     text_in <- listing
     if (length(paper_scales) > 0)
       text_in <- paste0(
@@ -3130,9 +3262,16 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
   norm_col <- normalize_varname(labels_df$column_name)
 
   # Tier: merge conflicting definitions.
+  # Grouped by paper_id + column_name, not column_name alone: two different
+  # papers can share a column name (e.g. "age"), and without paper_id in the
+  # key, idx1 below would pick just the FIRST paper's row across the whole
+  # corpus and apply its resolved label to every other paper's same-named
+  # column too.
   conflict_idx <- which(labels_df$label_status == "conflicting_definition")
   if (length(conflict_idx) > 0) {
-    conflict_cols <- unique(labels_df$column_name[conflict_idx])
+    conflict_keys <- paste(labels_df$paper_id[conflict_idx],
+                           labels_df$column_name[conflict_idx], sep = "\x01")
+    conflict_cols <- unique(conflict_keys)
     type_spec <- ellmer::type_object(
       equivalent = ellmer::type_boolean("Whether all labels describe the same construct"),
       canonical  = ellmer::type_string("Best single label if equivalent, else empty",
@@ -3143,8 +3282,10 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
       "psychology dataset describe the same construct. If they do, return equivalent=true and",
       "the most human-readable single label as canonical; otherwise equivalent=false."
     )
-    for (cn in conflict_cols) {
-      idx1 <- conflict_idx[labels_df$column_name[conflict_idx] == cn][1]
+    for (key in conflict_cols) {
+      match_pos <- conflict_idx[conflict_keys == key]
+      idx1 <- match_pos[1]
+      cn <- labels_df$column_name[idx1]
       labs <- strsplit(labels_df$label[idx1], " | ", fixed = TRUE)[[1]]
       txt <- sprintf("Column: %s\nCandidate labels:\n%s", cn,
                      paste0("- ", labs, collapse = "\n"))
@@ -3159,7 +3300,7 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
       if (!isTRUE(resp$equivalent[1])) next
       canonical <- resp$canonical[1] %||% ""
       if (is.na(canonical) || !nzchar(canonical)) next
-      apply_idx <- conflict_idx[labels_df$column_name[conflict_idx] == cn]
+      apply_idx <- match_pos
       labels_df$label[apply_idx]        <- canonical
       labels_df$label_status[apply_idx] <- "labelled"
       labels_df$label_method[apply_idx] <- "merged_llm"
@@ -3168,13 +3309,26 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
   }
 
   # Tier: fuzzy-match unlabelled columns to unmatched codebook variables.
+  # Run once PER PAPER (the for (pid in ...) loop below), not once across the
+  # whole labels_df/codebook_vars_df: unlab_cols and unmatched_vars would
+  # otherwise span every paper in a paperlist run, and the match-back at
+  # "rows <- which(norm_col == pnc & ...)" keys only on normalised name, so a
+  # column named e.g. "age" in one paper could get fuzzy-matched to a
+  # different paper's "age" codebook variable. The batching/prompt logic
+  # inside is unchanged from before -- only the paper_id scoping is new.
+  paper_ids_here <- unique(labels_df$paper_id)
+  for (pid in paper_ids_here) {
+  labels_paper_idx <- which(labels_df$paper_id == pid)
+  cbk_paper_idx    <- which(codebook_vars_df$paper_id == pid)
+
   documented <- labels_df$label_status %in% c("labelled", "llm")
-  unlabelled_idx <- which(labels_df$label_status == "unlabelled")
+  unlabelled_idx <- labels_paper_idx[labels_df$label_status[labels_paper_idx] == "unlabelled"]
   matched_norm <- unique(normalize_varname(
-    labels_df$codebook_variable[documented & !is.na(labels_df$codebook_variable)]
+    labels_df$codebook_variable[documented & labels_df$paper_id == pid &
+                                !is.na(labels_df$codebook_variable)]
   ))
   unmatched_vars <- codebook_vars_df[
-    !normalize_varname(codebook_vars_df$codebook_variable) %in% matched_norm,
+    cbk_paper_idx[!normalize_varname(codebook_vars_df$codebook_variable[cbk_paper_idx]) %in% matched_norm],
     , drop = FALSE
   ]
 
@@ -3232,7 +3386,7 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
           pnv <- normalize_varname(resp$codebook_variable[k])
           if (!pnc %in% norm_col[unlabelled_idx] || !pnv %in% norm_unmatched) next
           var_row <- which(norm_unmatched == pnv)[1]
-          rows <- which(norm_col == pnc & labels_df$label_status == "unlabelled")
+          rows <- unlabelled_idx[norm_col[unlabelled_idx] == pnc]
           if (length(rows) == 0 || is.na(var_row)) next
           labels_df$label[rows]             <- unmatched_vars$label[var_row]
           labels_df$codebook_variable[rows] <- unmatched_vars$codebook_variable[var_row]
@@ -3244,6 +3398,7 @@ codebook_match_llm <- function(labels_df, columns_df, codebook_vars_df,
       }
     }
   }
+  } # end for (pid in paper_ids_here)
 
   list(labels_df = labels_df, n_matched = n_matched, n_merged = n_merged,
        model = model_used)

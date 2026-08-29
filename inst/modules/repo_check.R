@@ -1289,6 +1289,20 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   unknown_files <- all_files$file_name[
     !is.na(all_files$data_type) & all_files$data_type == "unknown"]
   n_unknown <- length(unknown_files)
+  # Per-paper count for summary_table, below -- n_unknown above stays a
+  # corpus-wide total for the narrative report/summary_text (one paragraph per
+  # module call, not per paper), but summary_table is one row per paper, so it
+  # needs its own paper_id-grouped count rather than the same total repeated
+  # on every row.
+  n_unknown_by_paper <- if (nrow(all_files) > 0) {
+    all_files |>
+      dplyr::summarise(
+        files_unknown = sum(!is.na(data_type) & data_type == "unknown"),
+        .by = paper_id
+      )
+  } else {
+    data.frame(paper_id = character(0), files_unknown = integer(0))
+  }
   if (n_unknown > 0) {
     report_unknown <- sprintf(
       "#### Unclassified Files\n\nWe could not classify %d file%s by name or extension: %s. Add a recognisable keyword (`data`, `code`, `materials`, `documentation`, `output`) to the file name, or use a common extension, so both humans and machines can tell what kind of file it is.",
@@ -1340,6 +1354,28 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   naming_suggest <- naming_issues[naming_issues$severity == "suggestion", , drop = FALSE]
   n_naming_bad <- nrow(naming_bad)
   n_naming_suggest <- length(unique(naming_suggest$file_name))
+
+  # Per-paper count for summary_table, below. check_file_naming() only takes
+  # file_name/file_path/data_type (no paper_id in, none out), and its padding
+  # check (.file_naming_check_padding()) compares files against each other --
+  # correct within one paper's own files, meaningless across unrelated papers.
+  # So this re-runs check_file_naming() once per paper on that paper's own
+  # file subset, rather than trying to join the corpus-wide naming_issues
+  # above back onto paper_id by file_name (file names like "data.csv" repeat
+  # across unrelated papers, which would misattribute issues).
+  n_naming_bad_by_paper <- if (nrow(all_files) > 0) {
+    all_files |>
+      dplyr::summarise(
+        naming_issues = {
+          pf <- check_file_naming(
+            file_name, file_path = file_path %||% file_name, data_type = data_type)
+          sum(pf$severity == "bad")
+        },
+        .by = paper_id
+      )
+  } else {
+    data.frame(paper_id = character(0), naming_issues = integer(0))
+  }
 
   if (nrow(naming_issues) > 0) {
     naming_tbl <- naming_issues
@@ -1459,8 +1495,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       dplyr::across(files_n:files_zip, sum),
       .by = c(paper_id)
     )
-  summary_table$files_unknown <- n_unknown
-  summary_table$naming_issues <- n_naming_bad
+  summary_table <- summary_table |>
+    dplyr::left_join(n_unknown_by_paper, by = "paper_id") |>
+    dplyr::left_join(n_naming_bad_by_paper, by = "paper_id")
+  summary_table$files_unknown[is.na(summary_table$files_unknown)] <- 0L
+  summary_table$naming_issues[is.na(summary_table$naming_issues)] <- 0L
   summary_table$roster_mismatch <- !is.null(roster_check) &&
     length(roster_check$roster) > 0 &&
     (length(roster_check$missing) > 0 || length(roster_check$extra) > 0)
