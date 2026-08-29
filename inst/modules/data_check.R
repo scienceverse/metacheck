@@ -1344,7 +1344,16 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     list(
       table = spreadsheet_findings_df,
       summary_table = data.frame(
-        paper_id = .pid(columns_df, structure_df), column_n = 0, flagged_n = 0,
+        # .pid() takes a single argument (files = NULL) -- this call
+        # passed a second, unmatched argument (structure_df), which made
+        # every call crash with "unused argument (structure_df)"
+        # whenever this branch was reached (any paper where data_check
+        # found zero readable tabular files: previews empty, whether from
+        # messy/non-rectangular spreadsheets or no tabular data at all).
+        # Introduced in 21a6c28 (2026-08-11); the correct one-argument
+        # form, .pid(columns_df), was already used seven lines below in
+        # that same commit.
+        paper_id = .pid(columns_df), column_n = 0, flagged_n = 0,
         spreadsheet_file_n = n_spreadsheet_files,
         spreadsheet_flagged_file_n = n_flagged_files_spreadsheet),
       na_replace = c(column_n = 0, flagged_n = 0,
