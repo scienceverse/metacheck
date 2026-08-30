@@ -397,6 +397,15 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         skip_types = skip_types)
     }
     return(list(
+      # all_files here is already the real, correctly-typed base frame
+      # (paper_id, file_name, file_location, ...), just zero rows -- return
+      # it for BOTH table and structure (module_run() sets each to NULL
+      # otherwise) so bind_rows() across a corpus/batch does not drop these
+      # columns to nothing for every paper when even one paper's repo_check
+      # found no files at all (the same class of bug found and fixed in
+      # code_check.R's and codebook_check.R's equivalent empty-result paths).
+      table = all_files,
+      structure = all_files,
       traffic_light = "na",
       summary_text = "We found no files to analyse.",
       gated_repos = listing_gated,

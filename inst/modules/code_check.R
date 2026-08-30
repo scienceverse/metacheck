@@ -144,6 +144,16 @@ code_check <- function(paper, local_path = NULL,
   # no relevant code files found ----
   if (nrow(code_files) == 0) {
     info <- list(
+      # code_files here is all_files filtered down to zero rows -- returning
+      # it (rather than omitting `table`) keeps the real base columns
+      # (paper_id, file_location, file_type, ...) in the schema even when
+      # empty. Without this, module_run() set `table` to NULL for this
+      # paper, and a corpus batch with even ONE paper hitting this branch
+      # made bind_rows() across the batch either drop columns entirely (a
+      # zero-column data.frame in the mix) or silently fill them with NA for
+      # every OTHER paper in that batch too -- confirmed on a real 2-paper
+      # batch where neither paper had any code file.
+      table = code_files,
       traffic_light = "na",
       summary_text = summary_code,
       # code_n (not code_file_n): must match the normal-path summary_table's

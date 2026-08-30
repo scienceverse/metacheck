@@ -108,11 +108,27 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     # One row per paper still in play (from structure_df, since columns_df is
     # what's empty here) -- .pid()'s single collapsed id would under-report a
     # corpus where every paper genuinely has zero tabular data, showing one
-    # row instead of one all-zero row per paper.
-    empty_pids <- if (!is.null(structure_df) && "paper_id" %in% names(structure_df))
-      unique(structure_df$paper_id) else .pid(columns_df, structure_df)
+    # row instead of one all-zero row per paper. structure_df can itself now
+    # be a real but ZERO-ROW data frame (data_check()'s own empty-result path
+    # returns a properly-typed empty table rather than NULL) -- in that case
+    # unique(structure_df$paper_id) is character(0), not "no paper_id column
+    # at all", so it must fall through to .pid() too, or the mismatched
+    # length(0) vs length-1 scalar columns below error with "arguments imply
+    # differing number of rows".
+    struct_pids <- if (!is.null(structure_df) && "paper_id" %in% names(structure_df))
+      unique(structure_df$paper_id) else character(0)
+    empty_pids <- if (length(struct_pids) > 0) struct_pids else .pid(columns_df, structure_df)
     list(
-      table = data.frame(),
+      # columns_df (zero rows here) rather than a shapeless data.frame():
+      # it already carries the real base columns (paper_id, source_file,
+      # column_name, ...) that the normal path's `table = labels_df` would
+      # also have, even though it lacks labels_df's own added
+      # label/label_status/codebook_variable columns -- keeping SOME of the
+      # real schema means bind_rows() across a corpus/batch does not drop
+      # every column down to nothing the way a bare data.frame() would (the
+      # same class of bug found and fixed in code_check.R's equivalent
+      # empty-result path).
+      table = columns_df %||% data.frame(),
       summary_table = data.frame(
         paper_id = empty_pids,
         column_n = 0, matched_n = 0, unmatched_n = 0, clean_n = 0,

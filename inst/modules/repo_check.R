@@ -1355,7 +1355,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_naming_bad <- nrow(naming_bad)
   n_naming_suggest <- length(unique(naming_suggest$file_name))
 
-  # Per-paper count for summary_table, below. check_file_naming() only takes
+  # Per-paper naming-issues table (with paper_id attached) and its "bad"
+  # count for summary_table, below. check_file_naming() only takes
   # file_name/file_path/data_type (no paper_id in, none out), and its padding
   # check (.file_naming_check_padding()) compares files against each other --
   # correct within one paper's own files, meaningless across unrelated papers.
@@ -1363,16 +1364,33 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # file subset, rather than trying to join the corpus-wide naming_issues
   # above back onto paper_id by file_name (file names like "data.csv" repeat
   # across unrelated papers, which would misattribute issues).
-  n_naming_bad_by_paper <- if (nrow(all_files) > 0) {
-    all_files |>
-      dplyr::summarise(
-        naming_issues = {
-          pf <- check_file_naming(
-            file_name, file_path = file_path %||% file_name, data_type = data_type)
-          sum(pf$severity == "bad")
-        },
-        .by = paper_id
-      )
+  #
+  # The tagged result (naming_issues_by_paper) is what gets RETURNED as this
+  # module's top-level `naming_issues` field, below -- data_check() reads
+  # that field via get_prev_outputs("repo_check", "naming_issues") for its
+  # own per-file "Naming issue" column, so it needs paper_id to correctly
+  # scope issues to the right paper on a multi-paper (batch/corpus) run, not
+  # just a corpus-wide count.
+  naming_issues_by_paper_list <- if (nrow(all_files) > 0) {
+    split(all_files, all_files$paper_id) |>
+      lapply(function(df) {
+        pf <- check_file_naming(
+          df$file_name, file_path = df$file_path %||% df$file_name,
+          data_type = df$data_type)
+        if (nrow(pf) > 0) pf$paper_id <- df$paper_id[[1]]
+        pf
+      })
+  } else {
+    list()
+  }
+  naming_issues_by_paper <- if (length(naming_issues_by_paper_list) > 0) {
+    dplyr::bind_rows(naming_issues_by_paper_list)
+  } else {
+    naming_issues[0, , drop = FALSE]
+  }
+  n_naming_bad_by_paper <- if (nrow(naming_issues_by_paper) > 0) {
+    naming_issues_by_paper |>
+      dplyr::summarise(naming_issues = sum(severity == "bad"), .by = paper_id)
   } else {
     data.frame(paper_id = character(0), naming_issues = integer(0))
   }
@@ -1531,7 +1549,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     table = all_files,
     summary_table = summary_table,
     gated_repos = gated_repos,
-    naming_issues = naming_issues,
+    # naming_issues_by_paper (paper_id attached), not the un-tagged
+    # naming_issues used only for this call's own narrative report/summary
+    # text above -- data_check() reads this field via
+    # get_prev_outputs("repo_check", "naming_issues") and needs paper_id to
+    # scope issues to the right paper on a multi-paper run.
+    naming_issues = naming_issues_by_paper,
     roster_check = roster_check,
     group_no_evidence = group_no_evidence,
     na_replace = 0,
