@@ -122,6 +122,21 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   names(repos)[2] <- "repo_url"
   repos$repo_error <- NA_character_
 
+  # A Figshare private "share link" (figshare.com/s/<hash>) is a real,
+  # detected Figshare mention that cannot be resolved any further -- the
+  # hash is opaque and Figshare's own resolution page is behind an AWS WAF
+  # bot challenge, with no documented plain-HTTP API alternative (see
+  # figshare_links()'s own comment). Flagged via repo_error (the same field
+  # every other unreachable-repo case in this module uses, e.g. a private
+  # OSF project) rather than left silently indistinguishable from "no
+  # Figshare link found at all" or from a merely malformed/broken url.
+  if ("figshare_unsupported" %in% names(figshare_links_found) &&
+      any(figshare_links_found$figshare_unsupported %in% TRUE)) {
+    unsupported_urls <- figshare_links_found$href[figshare_links_found$figshare_unsupported %in% TRUE]
+    repos$repo_error[repos$repo_url %in% unsupported_urls] <-
+      "private share link (figshare.com/s/...) cannot be resolved without a browser"
+  }
+
   # get files ----
 
   ## OSF ----
