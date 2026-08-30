@@ -308,7 +308,8 @@ github_tree_files <- function(repo) {
   if (is.null(clean_repo))
     return(list(gated = TRUE,
                 reason = "invalid or inaccessible GitHub repository",
-                files  = NULL, default_branch = NA_character_))
+                files  = NULL, default_branch = NA_character_,
+                license = NA_character_))
 
   # ── 1. Repo metadata (size + default branch, 1 request) ─────────────────────
   meta_resp <- tryCatch(
@@ -320,11 +321,18 @@ github_tree_files <- function(repo) {
   if (is.null(meta_resp) || httr2::resp_status(meta_resp) != 200) {
     files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
     return(list(gated = FALSE, reason = NA_character_,
-                files = files_df, default_branch = "main"))
+                files = files_df, default_branch = "main",
+                license = NA_character_))
   }
 
   meta           <- httr2::resp_body_json(meta_resp)
   default_branch <- meta$default_branch %||% "main"
+  # GitHub's own repo-metadata response already includes a detected licence
+  # (SPDX id, e.g. "MIT", "AGPL-3.0"), or NULL when GitHub could not detect
+  # one from a LICENSE-style file -- confirmed live against a real public
+  # repo. No separate API call needed: this is the same request that already
+  # supplies default_branch above.
+  license <- meta$license$spdx_id %||% NA_character_
 
   # ── 2. Git tree (recursive, 1 request) ──────────────────────────────────────
   tree_resp <- tryCatch(
@@ -338,7 +346,8 @@ github_tree_files <- function(repo) {
   if (is.null(tree_resp) || httr2::resp_status(tree_resp) != 200) {
     files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
     return(list(gated = FALSE, reason = NA_character_,
-                files = files_df, default_branch = default_branch))
+                files = files_df, default_branch = default_branch,
+                license = license))
   }
 
   tree <- httr2::resp_body_json(tree_resp)
@@ -347,7 +356,7 @@ github_tree_files <- function(repo) {
     return(list(
       gated  = TRUE,
       reason = "GitHub repo tree truncated (>100 000 items); too large to list",
-      files  = NULL, default_branch = default_branch))
+      files  = NULL, default_branch = default_branch, license = license))
 
   blobs   <- Filter(\(x) x$type == "blob", tree$tree %||% list())
   n_files <- length(blobs)
@@ -379,7 +388,7 @@ github_tree_files <- function(repo) {
   }
 
   list(gated = FALSE, reason = NA_character_,
-       files = files_df, default_branch = default_branch)
+       files = files_df, default_branch = default_branch, license = license)
 }
 
 

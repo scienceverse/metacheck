@@ -281,6 +281,8 @@ psycharchives_file_download <- function(pa_url, pb = NULL) {
     # caller can warn about restricted items without a second API round-trip.
     rights <- unlist(lapply(file_lists, \(x) attr(x, "rights")))
     attr(df, "rights") <- rights
+    doi <- unlist(lapply(file_lists, \(x) attr(x, "doi")))
+    attr(df, "doi") <- doi
 
     return(df)
   }
@@ -292,22 +294,25 @@ psycharchives_file_download <- function(pa_url, pb = NULL) {
   info <- .psycharchives_info(pa_url, pb = pb)
   if ("error" %in% names(info)) return(NULL)
 
-  # Rights flag (e.g. "restrictedAccess") carried as an attribute rather than a
-  # column, so the file frame stays file-only while the caller can still detect
-  # restricted items. Reuses the metadata .psycharchives_info() already fetched.
+  # Rights flag (e.g. "restrictedAccess") and doi carried as attributes rather
+  # than columns, so the file frame stays file-only while the caller can still
+  # read them. Reuses the metadata .psycharchives_info() already fetched.
   rights <- stats::setNames(info$PA_license %||% NA_character_, pa_url)
+  doi <- stats::setNames(info$PA_doi %||% NA_character_, pa_url)
 
   file_list <- info$files[[1]]
   if (is.null(file_list) || nrow(file_list) == 0) {
     # Item resolved but exposes no public bitstreams (typically a fully
-    # restricted item). Return a zero-row frame that still carries the rights
-    # attribute, so the restricted-access warning can still fire.
+    # restricted item). Return a zero-row frame that still carries the
+    # rights/doi attributes, so the restricted-access warning (and license/
+    # doi surfacing in repo_check) can still fire.
     empty <- data.frame(
       pa_url = character(0), name = character(0), file_url = character(0),
       file_location = character(0), size = numeric(0), isdir = logical(0),
       ext = character(0), type = character(0)
     )
     attr(empty, "rights") <- rights
+    attr(empty, "doi") <- doi
     return(empty)
   }
 
@@ -335,6 +340,7 @@ psycharchives_file_download <- function(pa_url, pb = NULL) {
   )
 
   attr(pa_file_info, "rights") <- rights
+  attr(pa_file_info, "doi") <- doi
 
   return(pa_file_info)
 }
