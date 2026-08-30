@@ -28,6 +28,16 @@
 #'   list its contents in place of the archive row. Set FALSE to leave archives
 #'   as single opaque entries and make no per-archive request. Only `.zip` can be
 #'   inspected this way; other archive formats have no tail index.
+#' @param osf_license if TRUE, make one extra lightweight API request
+#'   (`?embed=license`, not the full four-call project-metadata lookup) per
+#'   distinct OSF project linked, to include OSF's licence in `repo_metadata`.
+#'   FALSE (the default) skips this, since it is one additional request per
+#'   OSF project on top of what this module otherwise makes -- meaningful
+#'   added latency across a large corpus. Every other supported repository
+#'   platform (Dryad, Zenodo, Dataverse, Figshare, ReShare, GitHub, GitLab,
+#'   PsychArchives) already fetches its own licence as part of a request
+#'   this module makes anyway, so `repo_metadata` has their licence
+#'   populated regardless of this parameter.
 #' @param model the LLM model name (see `llm_model_list()`), used only when
 #'   `llm_use(TRUE)` for study grouping the deterministic passes cannot place
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
@@ -35,6 +45,7 @@
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        peek_zips = TRUE,
+                       osf_license = FALSE,
                        model = llm_model(),
                        params = list()) {
   # get repository links ----
@@ -54,6 +65,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     empty_links        <- dplyr::tibble(paper_id = character(), href = character(), repo_type = character())
     osf_links_found    <- empty_links
     github_links_found <- empty_links
+    gitlab_links_found <- empty_links
     rb_links_found     <- empty_links
     pa_links_found     <- empty_links
     zenodo_links_found <- empty_links
@@ -72,6 +84,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     osf_links_found$repo_type    <- "osf"
     github_links_found <- github_links(paper)
     github_links_found$repo_type <- "github"
+    gitlab_links_found <- gitlab_links(paper)
+    gitlab_links_found$repo_type <- "gitlab"
     rb_links_found     <- rbox_links(paper)
     rb_links_found$repo_type     <- "researchbox"
     pa_links_found     <- psycharchives_links(paper)
@@ -95,6 +109,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   repos <- dplyr::bind_rows(
     osf_links_found[, cols],
     github_links_found[, cols],
+    gitlab_links_found[, cols],
     rb_links_found[, cols],
     pa_links_found[, cols],
     zenodo_links_found[, cols],
@@ -143,6 +158,30 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   osf_paper_ids <- repos$paper_id[repos$repo_type == "osf"]
   osf_paper_id <- if (length(osf_paper_ids) > 0) osf_paper_ids[[1]] else
     paper_id(paper)[[1]]
+
+  # OSF has no project-level DOI field to surface (see .osf_license()'s own
+  # docs) -- only license is fetched here, one extra lightweight request
+  # (?embed=license alone, not the full four-call .osf_node_metadata()) per
+  # distinct OSF URL actually linked. Done against the URLs as linked, not
+  # after registration->parent resolution below, so this stays a simple,
+  # separate lookup rather than threading through that resolution logic.
+  # Gated behind osf_license (default FALSE, see its own docs above): unlike
+  # every other backend, this is a genuinely extra request this module would
+  # not otherwise make, so it is opt-in rather than always-on.
+  osf_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                            license = character(0))
+  if (isTRUE(osf_license) && length(osf_urls) > 0) {
+    osf_node_ids <- osf_check_id(osf_urls)
+    osf_lic <- vapply(osf_node_ids, \(id) {
+      if (is.na(id)) return(NA_character_)
+      tryCatch(.osf_license(id), error = \(e) NA_character_)
+    }, character(1))
+    osf_meta_df <- data.frame(
+      repo_url = osf_urls,
+      doi = NA_character_,
+      license = unname(osf_lic)
+    )
+  }
 
   osf_files_df <- data.frame(repo_name = character(0))
   if (length(osf_urls) > 0) {
@@ -411,6 +450,83 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         )
       }
     }
+
+    # github_tree_files() already fetches the repo's detected licence (SPDX
+    # id) as part of the same metadata request that supplies default_branch
+    # -- see archive-github.R. GitHub has no dataset DOI concept, unlike the
+    # data-repository backends below, so doi is always NA here.
+    gh_license <- vapply(gh_results, \(r) r$license %||% NA_character_, character(1))
+    github_meta_df <- data.frame(
+      repo_url = github_urls,
+      doi = NA_character_,
+      license = unname(gh_license[github_urls])
+    )
+  } else {
+    github_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                                 license = character(0))
+  }
+
+  ## GitLab ----
+  gitlab_urls <- repos |>
+    dplyr::filter(repo_type == "gitlab") |>
+    _$repo_url |>
+    unique()
+  gitlab_files_df <- data.frame(repo_name = character(0))
+  gitlab_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                               license = character(0))
+  if (length(gitlab_urls) > 0) {
+    # gitlab_tree_files() fetches project metadata + licence, then the file
+    # tree (paginated -- see archive-gitlab.R for why this differs from
+    # GitHub's single-request Git Trees API) and backfills file size via a
+    # batched GraphQL query. How much of a repository is DOWNLOADED is
+    # capped separately, by download_repo_files() in data_check.
+    gl_results <- lapply(gitlab_urls, function(url) {
+      tryCatch(
+        gitlab_tree_files(url),
+        error = \(e) list(gated = TRUE, reason = conditionMessage(e),
+                          files = NULL, default_branch = NA_character_,
+                          license = NA_character_))
+    })
+    names(gl_results) <- gitlab_urls
+
+    for (url in gitlab_urls) {
+      r <- gl_results[[url]]
+      if (isTRUE(r$gated)) {
+        repos$repo_error[repos$repo_url == url] <- r$reason
+        warning(sprintf("Repository %s was not listed: %s.", url, r$reason),
+                call. = FALSE)
+        paste0("Skipping GitLab repo (", r$reason, "): ", url) |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+      }
+    }
+
+    good_gl_files <- Filter(Negate(is.null),
+                            lapply(gl_results, \(r) if (!isTRUE(r$gated)) r$files else NULL))
+    if (length(good_gl_files) > 0) {
+      gitlab_file_list <- dplyr::bind_rows(good_gl_files)
+      gitlab_file_list <- gitlab_file_list[
+        !is.na(gitlab_file_list$type) & gitlab_file_list$type != "dir", , drop = FALSE]
+      if (nrow(gitlab_file_list) > 0) {
+        gitlab_files_df <- dplyr::tibble(
+          repo_url      = gitlab_file_list$repo,
+          file_name     = gitlab_file_list$name,
+          file_path     = gitlab_file_list$path,
+          file_url      = gitlab_file_list$download_url,
+          file_location = NA_character_,
+          file_size     = gitlab_file_list$size,
+          file_type     = gitlab_file_list$type
+        )
+      }
+    }
+
+    # GitLab has no dataset DOI concept either, same as GitHub.
+    gl_license <- vapply(gl_results, \(r) r$license %||% NA_character_, character(1))
+    gitlab_meta_df <- data.frame(
+      repo_url = gitlab_urls,
+      doi = NA_character_,
+      license = unname(gl_license[gitlab_urls])
+    )
   }
 
   ## ResearchBox ----
@@ -459,6 +575,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   pa_files_df <- data.frame(repo_name = character(0))
+  pa_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                           license = character(0))
   if (length(pa_urls) > 0) {
     tryCatch({
       pa_file_list <- psycharchives_file_download(pa_urls, pb = pb)
@@ -477,6 +595,19 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           repos$repo_error[repos$repo_url %in% restricted] <-
             "restricted access"
         }
+      }
+
+      # doi/license (dc.identifier.doi / dc.rights) are carried as attributes
+      # by psycharchives_file_download() (same mechanism as pa_rights above,
+      # itself the "rights" attribute) rather than columns, since the file
+      # frame stays file-only -- no extra API call.
+      pa_doi <- attr(pa_file_list, "doi")
+      if (length(pa_rights) > 0 || length(pa_doi) > 0) {
+        pa_meta_df <- data.frame(
+          repo_url = pa_urls,
+          doi = unname(pa_doi[pa_urls]),
+          license = unname(pa_rights[pa_urls])
+        )
       }
 
       if (!is.null(pa_file_list) && nrow(pa_file_list) > 0) {
@@ -506,9 +637,22 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   zenodo_files_df <- data.frame(repo_name = character(0))
+  zenodo_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                               license = character(0))
   if (length(zenodo_urls) > 0) {
     tryCatch({
       .zenodo_info <- suppressMessages(zenodo_info(zenodo_urls, pb = pb))
+
+      # zenodo_info() already fetches doi/license as part of its normal
+      # dataset-record lookup (see archive-zenodo.R) -- this is a plain
+      # extraction of columns already in memory, not a new API call.
+      if (nrow(.zenodo_info) > 0) {
+        zenodo_meta_df <- data.frame(
+          repo_url = as.character(.zenodo_info$zenodo_url),
+          doi = as.character(.zenodo_info$doi),
+          license = as.character(.zenodo_info$license)
+        )
+      }
 
       if (nrow(.zenodo_info) > 0 && "files" %in% names(.zenodo_info)) {
         file_rows <- lapply(seq_len(nrow(.zenodo_info)), function(i) {
@@ -569,9 +713,22 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   dv_files_df <- data.frame(repo_name = character(0))
+  dv_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                           license = character(0))
   if (length(dv_urls) > 0) {
     tryCatch({
       .dv_info <- suppressMessages(dataverse_info(dv_urls))
+
+      # dataverse_info() already fetches doi/license as part of its normal
+      # dataset-version lookup (see archive-dataverse.R) -- plain extraction
+      # of columns already in memory, not a new API call.
+      if (nrow(.dv_info) > 0) {
+        dv_meta_df <- data.frame(
+          repo_url = as.character(.dv_info$dataverse_url),
+          doi = as.character(.dv_info$doi),
+          license = as.character(.dv_info$license)
+        )
+      }
 
       if (nrow(.dv_info) > 0 && "files" %in% names(.dv_info)) {
         file_rows <- lapply(seq_len(nrow(.dv_info)), function(i) {
@@ -633,9 +790,22 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   fs_files_df <- data.frame(repo_name = character(0))
+  fs_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                           license = character(0))
   if (length(fs_urls) > 0) {
     tryCatch({
       .fs_info <- suppressMessages(figshare_info(fs_urls))
+
+      # figshare_info() already fetches doi/license as part of its normal
+      # article lookup (see archive-figshare.R) -- plain extraction of
+      # columns already in memory, not a new API call.
+      if (nrow(.fs_info) > 0) {
+        fs_meta_df <- data.frame(
+          repo_url = as.character(.fs_info$figshare_url),
+          doi = as.character(.fs_info$doi),
+          license = as.character(.fs_info$license)
+        )
+      }
 
       if (nrow(.fs_info) > 0 && "files" %in% names(.fs_info)) {
         file_rows <- lapply(seq_len(nrow(.fs_info)), function(i) {
@@ -691,9 +861,22 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   dryad_files_df <- data.frame(repo_name = character(0))
+  dryad_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                              license = character(0))
   if (length(dryad_urls) > 0) {
     tryCatch({
       .dryad_info_tbl <- suppressMessages(dryad_info(dryad_urls))
+
+      # dryad_info() already fetches doi/license as part of its normal
+      # dataset-record lookup (see archive-dryad.R) -- plain extraction of
+      # columns already in memory, not a new API call.
+      if (nrow(.dryad_info_tbl) > 0) {
+        dryad_meta_df <- data.frame(
+          repo_url = as.character(.dryad_info_tbl$dryad_url),
+          doi = as.character(.dryad_info_tbl$doi),
+          license = as.character(.dryad_info_tbl$license)
+        )
+      }
 
       if (nrow(.dryad_info_tbl) > 0 && "files" %in% names(.dryad_info_tbl)) {
         file_rows <- lapply(seq_len(nrow(.dryad_info_tbl)), function(i) {
@@ -754,9 +937,24 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   reshare_files_df <- data.frame(repo_name = character(0))
+  reshare_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                                license = character(0))
   if (length(reshare_urls) > 0) {
     tryCatch({
       .reshare_info_tbl <- suppressMessages(reshare_info(reshare_urls))
+
+      # reshare_info() already fetches doi as part of its normal deposit
+      # lookup (see archive-reshare.R) -- plain extraction, not a new API
+      # call. license is always NA: ReShare's EPrints API does not expose a
+      # licence field through this endpoint at all (not a bug, a real gap
+      # in what ReShare's own API returns).
+      if (nrow(.reshare_info_tbl) > 0) {
+        reshare_meta_df <- data.frame(
+          repo_url = as.character(.reshare_info_tbl$reshare_url),
+          doi = as.character(.reshare_info_tbl$doi),
+          license = as.character(.reshare_info_tbl$license)
+        )
+      }
 
       if (nrow(.reshare_info_tbl) > 0 && "files" %in% names(.reshare_info_tbl)) {
         file_rows <- lapply(seq_len(nrow(.reshare_info_tbl)), function(i) {
@@ -814,9 +1012,23 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     _$repo_url |>
     unique()
   fourtu_files_df <- data.frame(repo_name = character(0))
+  fourtu_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                               license = character(0))
   if (length(fourtu_urls) > 0) {
     tryCatch({
       .fourtu_info <- suppressMessages(researchdata4tu_info(fourtu_urls))
+
+      # researchdata4tu_info() reuses figshare's own info-fetching internally
+      # (Djehuty implements the Figshare v2 API), so doi/license are already
+      # fetched the same way as the Figshare block above -- plain
+      # extraction, not a new API call.
+      if (nrow(.fourtu_info) > 0) {
+        fourtu_meta_df <- data.frame(
+          repo_url = as.character(.fourtu_info$researchdata4tu_url),
+          doi = as.character(.fourtu_info$doi),
+          license = as.character(.fourtu_info$license)
+        )
+      }
 
       if (nrow(.fourtu_info) > 0 && "files" %in% names(.fourtu_info)) {
         file_rows <- lapply(seq_len(nrow(.fourtu_info)), function(i) {
@@ -915,7 +1127,21 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, rb_files_df, pa_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, local_files_df)
+
+  # One row per REPOSITORY (not per paper, not per file): a paper can link
+  # more than one repository (e.g. one for data, one for code) with
+  # different licences, so collapsing to one value per paper here would
+  # lose information -- callers that want a single per-paper answer can
+  # derive it from this the same way build_master_comparison.R derives
+  # mc_repo_types from repo_url. ResearchBox and local paths are excluded:
+  # neither has a doi/license concept to surface (ResearchBox's "LICENSE
+  # FOR USE" field is a fixed platform-wide reuse notice, not a per-dataset
+  # licence).
+  repo_metadata <- dplyr::bind_rows(
+    osf_meta_df, github_meta_df, gitlab_meta_df, pa_meta_df, zenodo_meta_df,
+    dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df, fourtu_meta_df
+  )
 
   # remove duplicate links
   # (can happen when same repo is referenced different ways)
@@ -1080,6 +1306,20 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     by = "repo_url",
     relationship = "many-to-many"
   )
+
+  # Same paper_id attachment for the per-repo metadata table (see
+  # repo_metadata's own construction comment above for why this is one row
+  # per repo, not per paper).
+  if (nrow(repo_metadata) > 0) {
+    repo_metadata <- dplyr::left_join(
+      repo_metadata,
+      repos[, c("paper_id", "repo_url")],
+      by = "repo_url",
+      relationship = "many-to-many"
+    )
+  } else {
+    repo_metadata$paper_id <- character(0)
+  }
 
   repos <- dplyr::full_join(repos, all_files, by = c("paper_id", "repo_url"), relationship = "many-to-many") |>
     dplyr::summarise(
@@ -1555,6 +1795,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # get_prev_outputs("repo_check", "naming_issues") and needs paper_id to
     # scope issues to the right paper on a multi-paper run.
     naming_issues = naming_issues_by_paper,
+    # One row per repository: paper_id, repo_url, doi, license. See
+    # repo_metadata's own construction comment above for why this is
+    # per-repo rather than collapsed to one value per paper.
+    repo_metadata = repo_metadata,
     roster_check = roster_check,
     group_no_evidence = group_no_evidence,
     na_replace = 0,

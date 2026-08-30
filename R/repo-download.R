@@ -1094,6 +1094,54 @@ download_repo_files <- function(files,
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
+    # ── GitLab: repository archive.zip ──────────────────────────────────────────
+    # GitLab's archive.zip does not support HTTP Range requests (confirmed
+    # live: a Range header request comes back 200, not 206, accept-ranges:
+    # none), so it also has no content-length up front (it is a streamed
+    # response) -- .remote_content_length() below will simply return NA for
+    # it, same as it already does for any endpoint without that header; the
+    # size-comparison warnings just do not fire, downloading still proceeds.
+    gl_repos <- unique(files$repo_url[
+      remaining[grepl("gitlab\\.com", files$repo_url[remaining], ignore.case = TRUE)]])
+    for (repo in gl_repos) {
+      ridx <- intersect(remaining, which(files$repo_url == repo))
+      if (length(ridx) == 0) next
+      clean_repo <- tryCatch(gitlab_repo(repo), error = \(e) NULL)
+      if (is.null(clean_repo)) next
+      proj_id <- .gitlab_project_id(clean_repo)
+      # Omitting sha makes GitLab use the default branch.
+      zip_url <- sprintf("https://gitlab.com/api/v4/projects/%s/repository/archive.zip",
+                         proj_id)
+      zip_bytes <- .remote_content_length(zip_url)
+      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
+        warning(sprintf(
+          paste0("Repository %s will be downloaded as a larger archive transport ",
+                 "(%s MB) than the selected file estimate (%s MB)."),
+          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))
+        ), call. = FALSE)
+      }
+      if (!is.na(zip_bytes) && is.finite(max_download_size) && zip_bytes > max_download_size * mb) {
+        warning(sprintf(
+          paste0("Repository %s archive transport is %s MB, above max_download_size ",
+                 "(%s MB). Continuing by design because transport is one-shot zip."),
+          repo, .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size)
+        ), call. = FALSE)
+      }
+      message(sprintf("Downloading %s as zip (%d file%s)...",
+                      repo, length(ridx), plural(length(ridx))))
+      # strip_dir = TRUE: like GitHub's zipball, GitLab's archive.zip wraps
+      # every entry in a single top-level folder
+      # ("namespace-project-<ref>-<sha>/..."), which must be stripped so the
+      # extracted paths match the plain repo-relative paths already recorded
+      # in `files` from gitlab_tree_files().
+      files <- .download_zip_to_cache(files, ridx, zip_url,
+                                      strip_dir = TRUE,
+                                      req_func = .gitlab_config,
+                                      timeout_s = zip_timeout_s)
+      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
+    }
+
     # ── File-by-file for ResearchBox / zip fallbacks ────────────────────────────
     if (length(remaining) > 0) {
       if (is.null(pb)) {

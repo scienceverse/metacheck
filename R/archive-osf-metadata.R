@@ -124,6 +124,41 @@
   out
 }
 
+#' Get an OSF project's licence
+#'
+#' A single, lightweight lookup for the one field repo_check() actually
+#' needs from an OSF project's metadata: its licence name. Unlike
+#' [.osf_node_metadata()] (four API calls: node + citation + registrations +
+#' forks, built for full metadata archiving), this makes exactly one request
+#' with `?embed=license` -- confirmed live that this alone returns the same
+#' license name .osf_node_metadata() reads from the identical embed, without
+#' the other three calls.
+#'
+#' OSF has no project-level DOI field in this response (DOI-minting is a
+#' separate, opt-in OSF feature most projects never use) -- there is
+#' nothing to extract for a doi column here, unlike the dedicated data
+#' repositories (Dryad, Zenodo, Dataverse, Figshare, ReShare), which all
+#' return one directly.
+#'
+#' @param osf_id the OSF node ID
+#'
+#' @returns the licence name (character), or NA if none is set or the
+#'   project could not be read
+#' @keywords internal
+.osf_license <- function(osf_id) {
+  osf_api <- getOption("metacheck.osf.api")
+  node <- tryCatch({
+    resp <- httr2::request(sprintf("%s/nodes/%s/?embed=license", osf_api, osf_id)) |>
+      .osf_headers() |>
+      httr2::req_error(is_error = \(r) FALSE) |>
+      httr2::req_perform()
+    if (httr2::resp_status(resp) != 200) NULL else
+      httr2::resp_body_json(resp, simplifyVector = TRUE)$data
+  }, error = \(e) NULL)
+
+  node$embeds$license$data$attributes$name %||% NA_character_
+}
+
 #' Collect an OSF project's structured metadata
 #'
 #' Everything that is a record rather than a file: the node's own attributes,
