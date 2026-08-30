@@ -51,7 +51,7 @@ figshare_links <- function(paper) {
     dplyr::filter(grepl("figshare\\.com|10\\.6084/m9\\.figshare", href, ignore.case = TRUE))
 
   fs_bare_regex <- paste0(
-    "(?:https?://)?(?:[a-z0-9.-]+\\.)?figshare\\.com/(?:articles|ndownloader)/[A-Za-z0-9/_.-]*",
+    "(?:https?://)?(?:[a-z0-9.-]+\\.)?figshare\\.com/(?:articles|ndownloader|projects|s)/[A-Za-z0-9/_.-]*",
     "|(?:https?://)?(?:doi\\.org/)?10\\.6084/m9\\.figshare\\.[0-9]+(?:\\.v[0-9]+)?"
   )
   other_fs <- text_search(paper, fs_bare_regex, return = "match", perl = TRUE) |>
@@ -67,6 +67,21 @@ figshare_links <- function(paper) {
 
   links$figshare_url <- links$href
   links$figshare_id <- .figshare_id(links$figshare_url)
+
+  # A private "share link" (figshare.com/s/<hash>) carries no article id
+  # anywhere in the URL -- the hash IS the whole identifier, resolved only by
+  # Figshare's own front end after an AWS WAF bot challenge (verified live
+  # 2026-08-30: a plain HTTP request gets an explicit "we need to verify
+  # you're not a robot... this requires JavaScript" challenge page, not real
+  # content). There is no documented, plain-HTTP API endpoint that accepts
+  # this token (the /v2/account/articles/{id}/private_links/{token} family
+  # is for the OWNER managing their own links, not a third party resolving
+  # someone else's). Flagged rather than silently dropped, so a paper citing
+  # one is visibly reported as "found a Figshare link, could not resolve it"
+  # instead of looking like no Figshare link existed at all.
+  links$figshare_unsupported <- grepl("figshare\\.com/s/[A-Za-z0-9]+",
+                                      links$figshare_url, ignore.case = TRUE) &
+    is.na(links$figshare_id)
 
   return(links)
 }
@@ -120,6 +135,77 @@ figshare_links <- function(paper) {
   return(NA_character_)
 }
 
+# Get a Figshare PROJECT id from a URL, e.g.
+# "figshare.com/projects/PERICLES_-_Heritage_values/133332" -> "133332".
+# Kept entirely separate from .figshare_id() (rather than adding a project
+# pattern to that function's own list) because a project id and an article
+# id are different resource types on different API paths -- an article id
+# from .figshare_id() is used directly as .../v2/articles/{id}, while a
+# project id needs .../v2/projects/{id}/articles first to find the article
+# ids it actually contains (see .figshare_project_articles()). Conflating
+# the two would silently 404 (or worse, alias onto an unrelated article that
+# happens to share the same numeric id) rather than erroring clearly.
+.figshare_project_id <- function(figshare_url) {
+  if (length(figshare_url) == 0) return(character(0))
+  if (length(figshare_url) > 1) return(vapply(figshare_url, .figshare_project_id, character(1)))
+
+  figshare_url <- trimws(as.character(figshare_url))
+  if (is.na(figshare_url) || !nzchar(figshare_url)) return(NA_character_)
+
+  # The project's numeric id is always the LAST path segment -- confirmed
+  # live against https://figshare.com/projects/PERICLES_-_Heritage_values/133332,
+  # whose project name segment itself can contain further slashes' worth of
+  # punctuation-adjacent characters, so anchoring on "the segment right
+  # after /projects/" would be wrong; anchoring on "the trailing digits"
+  # is not.
+  match <- regexec("figshare\\.com/projects/[^/]+/([0-9]+)/?$", figshare_url,
+                   perl = TRUE, ignore.case = TRUE)
+  groups <- regmatches(figshare_url, match)[[1]]
+  if (length(groups) >= 2) return(groups[[2]])
+  NA_character_
+}
+
+# List the article ids a Figshare PROJECT contains, via the public
+# GET /v2/projects/{id}/articles endpoint (verified live 2026-08-30, and
+# documented as a "Public endpoints" entry not requiring authentication --
+# https://docs.figshare.com/old_docs/api/projects/ -- unlike the
+# /v2/account/projects/ family, which is for a signed-in user's OWN
+# projects). Paginated at page_size=100; a project bundling more than that
+# many articles is realistically rare for a single paper's supplementary
+# data, but the loop still follows pagination properly rather than assuming
+# one page is always enough.
+.figshare_project_articles <- function(project_id, host = "api.figshare.com", pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
+  all_ids <- character(0)
+  page <- 1L
+  repeat {
+    api_url <- sprintf("https://%s/v2/projects/%s/articles?page=%d&page_size=100",
+                       host, project_id, page)
+    resp <- .batch_query(api_url, msg = NULL,
+                         req_func = \(req) .figshare_headers(req, host = host))[[1]]
+    if (is.null(resp) || httr2::resp_status(resp) != 200) {
+      if (length(all_ids) == 0) {
+        warning("Figshare project ", project_id, " could not be found on ", host,
+                call. = FALSE)
+      }
+      break
+    }
+    rec <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
+    if (is.null(rec) || length(rec) == 0) break
+
+    ids <- vapply(rec, function(a) as.character(a$id %||% NA_character_), character(1))
+    all_ids <- c(all_ids, ids[!is.na(ids)])
+
+    if (length(rec) < 100) break   # last page
+    page <- page + 1L
+  }
+  unique(all_ids)
+}
+
 #' Retrieve info from Figshare by URL
 #'
 #' @param figshare_url a Figshare URL or DOI, or a table containing them
@@ -162,6 +248,42 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com", p
   ) |>
     unique()
   ids <- ids[!is.na(ids$figshare_url), , drop = FALSE]
+
+  # A PROJECT url (figshare.com/projects/<name>/<id>) has no article id of
+  # its own -- .figshare_id() correctly returns NA for it, since a project
+  # bundles multiple articles rather than being one. Expand each such url
+  # into one row per article the project actually contains (one project url
+  # -> N article-id rows, the same shape as if the paper had cited N
+  # separate article urls directly), via the public projects/{id}/articles
+  # endpoint. A project with zero articles, or one .figshare_project_id()
+  # fails to resolve at all, simply contributes no rows here and its url
+  # stays NA in `ids` -- reported the same way any other unresolvable
+  # Figshare link already is, not a special case.
+  unresolved <- is.na(ids$figshare_id)
+  if (any(unresolved)) {
+    project_urls <- ids$figshare_url[unresolved]
+    project_ids <- .figshare_project_id(project_urls)
+    has_project <- !is.na(project_ids)
+    if (any(has_project)) {
+      project_rows <- Map(function(url, proj_id) {
+        article_ids <- .figshare_project_articles(proj_id, host = host, pb = pb)
+        if (length(article_ids) == 0) return(NULL)
+        data.frame(figshare_url = url, figshare_id = article_ids, stringsAsFactors = FALSE)
+      }, project_urls[has_project], project_ids[has_project])
+      project_rows <- project_rows[!vapply(project_rows, is.null, logical(1))]
+      if (length(project_rows) > 0) {
+        # Drop the original NA-id placeholder rows for urls that just
+        # successfully expanded into real article rows, so a project ends
+        # up as N article rows, not N+1 (the extra one carrying no id, no
+        # title, no doi -- confirmed live: without this, figshare_info() on
+        # a project url returned 9 rows for an 8-article project).
+        expanded_urls <- unique(vapply(project_rows, function(r) r$figshare_url[[1]], character(1)))
+        ids <- ids[!(ids$figshare_url %in% expanded_urls & is.na(ids$figshare_id)), , drop = FALSE]
+        ids <- dplyr::bind_rows(ids, do.call(rbind, project_rows)) |> unique()
+      }
+    }
+  }
+
   valid_ids <- unique(stats::na.omit(ids$figshare_id))
 
   if (length(valid_ids) == 0) {
