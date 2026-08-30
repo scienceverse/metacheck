@@ -252,7 +252,7 @@ test_that("zip timeout is passed to zip transport", {
     # the zip transport path — which forwards zip_timeout_s — actually runs.
     .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
-                                      req_func, timeout_s) {
+                                      req_func, timeout_s, max_bytes = Inf) {
       expect_equal(timeout_s, 7)
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
@@ -281,7 +281,7 @@ test_that("reports when archive transport is larger than selected files", {
     osf_check_id = function(x) "abcde",
     .remote_content_length = function(url) 50 * 1024 * 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
-                                      req_func, timeout_s) {
+                                      req_func, timeout_s, max_bytes = Inf) {
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
     },
@@ -320,7 +320,7 @@ test_that("OSF non-osfstorage rows fall back to file-by-file", {
     # takes the zip; only the non-osfstorage (dropbox) row falls back.
     .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
-                                      req_func, timeout_s) {
+                                      req_func, timeout_s, max_bytes = Inf) {
       # zip transport should only cover the osfstorage row
       expect_equal(length(row_idx), 1)
       files$file_location[row_idx] <- files$.cache_path[row_idx]
