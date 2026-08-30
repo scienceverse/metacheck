@@ -397,6 +397,15 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         skip_types = skip_types)
     }
     return(list(
+      # all_files here is already the real, correctly-typed base frame
+      # (paper_id, file_name, file_location, ...), just zero rows -- return
+      # it for BOTH table and structure (module_run() sets each to NULL
+      # otherwise) so bind_rows() across a corpus/batch does not drop these
+      # columns to nothing for every paper when even one paper's repo_check
+      # found no files at all (the same class of bug found and fixed in
+      # code_check.R's and codebook_check.R's equivalent empty-result paths).
+      table = all_files,
+      structure = all_files,
       traffic_light = "na",
       summary_text = "We found no files to analyse.",
       gated_repos = listing_gated,
@@ -1275,13 +1284,43 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   empty_col_n <- if (n_columns > 0 && "quality" %in% names(columns_df))
     sum(tolower(columns_df$quality %||% "") == "empty", na.rm = TRUE) else 0L
-  summary_table <- data.frame(
-    paper_id = .pid(all_files),
-    data_file_n = n_tabular_all,
-    column_n = n_columns,
-    empty_col_n = empty_col_n
-  ) |>
+
+  # summary_table is one row per paper, but n_tabular_all/n_columns/empty_col_n
+  # above are corpus-wide totals (used elsewhere for the single narrative
+  # report/traffic_light of this module call) -- re-aggregate per paper_id
+  # here so a multi-paper run doesn't tag every paper with the same combined
+  # total, or (worse) collapse to a single row via .pid(all_files), which
+  # always returns just the first paper's id on a paperlist.
+  data_file_n_by_paper <- if (nrow(all_files) > 0) {
+    all_files |>
+      dplyr::mutate(.__is_tab = is_tabular_data & !is_trial_level) |>
+      dplyr::summarise(data_file_n = sum(.__is_tab), .by = paper_id)
+  } else {
+    data.frame(paper_id = character(0), data_file_n = integer(0))
+  }
+  column_n_by_paper <- if (n_columns > 0) {
+    columns_df |> dplyr::summarise(column_n = dplyr::n(), .by = paper_id)
+  } else {
+    data.frame(paper_id = character(0), column_n = integer(0))
+  }
+  empty_col_n_by_paper <- if (n_columns > 0 && "quality" %in% names(columns_df)) {
+    columns_df |>
+      dplyr::summarise(
+        empty_col_n = sum(tolower(quality %||% "") == "empty", na.rm = TRUE),
+        .by = paper_id
+      )
+  } else {
+    data.frame(paper_id = character(0), empty_col_n = integer(0))
+  }
+
+  summary_table <- data.frame(paper_id = unique(all_files$paper_id) %||% .pid(all_files)) |>
+    dplyr::left_join(data_file_n_by_paper, by = "paper_id") |>
+    dplyr::left_join(column_n_by_paper, by = "paper_id") |>
+    dplyr::left_join(empty_col_n_by_paper, by = "paper_id") |>
     dplyr::left_join(coltype_wide, by = "paper_id")
+  summary_table$data_file_n[is.na(summary_table$data_file_n)] <- 0L
+  summary_table$column_n[is.na(summary_table$column_n)] <- 0L
+  summary_table$empty_col_n[is.na(summary_table$empty_col_n)] <- 0L
 
   summary_text <- c(summary_files, summary_data, summary_studies,
                      summary_ungrouped, summary_nolocal, summary_omitted,
@@ -1735,6 +1774,71 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                                    column_findings_df$column)))
   n_flagged_files_spreadsheet <- length(unique(spreadsheet_findings_df$source_file))
 
+  # Per-paper versions of the four counts above, for dv_summary_table below.
+  # Neither columns_df's per-column findings nor spreadsheet_findings_df carry
+  # paper_id directly (both are keyed by source_file only), so look it up via
+  # columns_df (source_file -> paper_id, one row per column) and structure_df
+  # (file_name -> paper_id, one row per file) respectively -- both already
+  # carry a real per-row paper_id, unlike the single scalar .pid() collapses
+  # a whole paperlist down to.
+  file_to_paper <- if (!is.null(columns_df) && nrow(columns_df) > 0) {
+    stats::setNames(columns_df$paper_id, columns_df$source_file)
+  } else {
+    character(0)
+  }
+  spreadsheet_file_to_paper <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
+    stats::setNames(structure_df$paper_id, structure_df$file_name)
+  } else {
+    character(0)
+  }
+
+  column_n_dv_by_paper <- if (n_columns > 0 && !is.null(columns_df)) {
+    columns_df |> dplyr::summarise(column_n = dplyr::n(), .by = paper_id)
+  } else {
+    data.frame(paper_id = character(0), column_n = integer(0))
+  }
+  n_flagged_by_paper <- if (nrow(column_findings_df) > 0) {
+    data.frame(
+      paper_id = unname(file_to_paper[column_findings_df$source_file]),
+      key = paste(column_findings_df$source_file, column_findings_df$column)
+    ) |>
+      dplyr::summarise(flagged_n = length(unique(key)), .by = paper_id)
+  } else {
+    data.frame(paper_id = character(0), flagged_n = integer(0))
+  }
+  # spreadsheet_result$n_files counts XLSX/XLS/ODS/FODS files examined (whether
+  # or not any of them triggered a finding); recompute that same per-file count
+  # grouped by paper_id from structure_df directly, rather than from
+  # spreadsheet_findings_df (which only has rows for files that actually raised
+  # a finding, and would undercount clean spreadsheets).
+  n_spreadsheet_files_by_paper <- {
+    xl_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0) {
+      structure_df[
+        tolower(tools::file_ext(structure_df$file_name)) %in% .dv_spreadsheet_exts &
+          !is.na(structure_df$file_location) &
+          nzchar(structure_df$file_location) &
+          file.exists(structure_df$file_location %||% ""),
+        , drop = FALSE]
+    } else {
+      structure_df[0, , drop = FALSE]
+    }
+    if (!is.null(xl_rows) && nrow(xl_rows) > 0) {
+      xl_rows |> dplyr::summarise(spreadsheet_file_n = dplyr::n(), .by = paper_id)
+    } else {
+      data.frame(paper_id = character(0), spreadsheet_file_n = integer(0))
+    }
+  }
+  n_flagged_files_spreadsheet_by_paper <- if (nrow(spreadsheet_findings_df) > 0) {
+    data.frame(
+      paper_id = unname(spreadsheet_file_to_paper[spreadsheet_findings_df$source_file]),
+      source_file = spreadsheet_findings_df$source_file
+    ) |>
+      dplyr::summarise(spreadsheet_flagged_file_n = length(unique(source_file)),
+                       .by = paper_id)
+  } else {
+    data.frame(paper_id = character(0), spreadsheet_flagged_file_n = integer(0))
+  }
+
   # Per-check tally: how many distinct columns each check flagged (a column can
   # be flagged by several checks, so these overlap and need not sum to n_flagged).
   check_counts <- if (nrow(column_findings_df) > 0) {
@@ -1965,13 +2069,22 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   # ── 5. Summary table + return ────────────────────────────────────────────────
-  dv_summary_table <- data.frame(
-    paper_id  = .pid(columns_df),
-    column_n  = n_columns,
-    flagged_n = n_flagged,
-    spreadsheet_file_n = n_spreadsheet_files,
-    spreadsheet_flagged_file_n = n_flagged_files_spreadsheet
-  )
+  # One row per paper (see the per-paper *_by_paper frames built above) rather
+  # than one row for the whole run tagged with .pid(columns_df) -- which always
+  # returns just the FIRST paper's id when this module runs on a paperlist, the
+  # same bug already fixed above for the main summary_table.
+  dv_paper_ids <- data.frame(
+    paper_id = unique(c(column_n_dv_by_paper$paper_id,
+                        n_spreadsheet_files_by_paper$paper_id)) %||%
+      .pid(columns_df))
+  dv_summary_table <- dv_paper_ids |>
+    dplyr::left_join(column_n_dv_by_paper, by = "paper_id") |>
+    dplyr::left_join(n_flagged_by_paper, by = "paper_id") |>
+    dplyr::left_join(n_spreadsheet_files_by_paper, by = "paper_id") |>
+    dplyr::left_join(n_flagged_files_spreadsheet_by_paper, by = "paper_id")
+  for (col in c("column_n", "flagged_n", "spreadsheet_file_n", "spreadsheet_flagged_file_n")) {
+    dv_summary_table[[col]][is.na(dv_summary_table[[col]])] <- 0L
+  }
 
   qualtrics_df <- if (length(qualtrics_specs) > 0)
     dplyr::bind_rows(lapply(qualtrics_specs, function(s) data.frame(
@@ -2018,8 +2131,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # blanket "ex1" default rather than actual evidence. psychds_check surfaces
     # this as a warning instead of implying real structure was detected.
     group_no_evidence = group_no_evidence,
-    summary_table = merge(summary_table, dv_summary_table, by = "paper_id",
-                          all = TRUE, sort = FALSE),
+    # column_n already exists in summary_table (same concept, same value,
+    # computed once above) -- drop it from dv_summary_table before merging so
+    # the two tables don't collide into column_n.x/column_n.y.
+    summary_table = merge(summary_table, dv_summary_table[setdiff(names(dv_summary_table), "column_n")],
+                          by = "paper_id", all = TRUE, sort = FALSE),
     na_replace = c(data_file_n = 0, column_n = 0, empty_col_n = 0,
                    flagged_n = 0, spreadsheet_file_n = 0,
                    spreadsheet_flagged_file_n = 0),

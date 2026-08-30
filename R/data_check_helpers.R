@@ -2577,7 +2577,8 @@ normalize_label <- function(x) {
     value_labels = character(0), missing_values = character(0),
     question = character(0),
     coding_instructions = character(0),
-    parse_method = character(0)
+    parse_method = character(0),
+    paper_id = character(0)
   )
 }
 
@@ -4163,8 +4164,27 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
       if (length(v) > 0) as.character(v[1]) else NA_character_
     } else NA_character_
 
+  # A codebook variable must belong to the SAME paper as the column it labels.
+  # Without this, a column named e.g. "age" or "condition" (extremely common
+  # across unrelated studies) would match ANY paper's codebook variable of the
+  # same normalised name when this function runs once across a whole
+  # paperlist -- columns_df/codebook_vars_df both span every paper in that
+  # case, not just one. columns_df always carries paper_id (from data_check),
+  # and codebook_check.R stamps it onto codebook_vars_df too -- but this
+  # function is also called directly in tests with a minimal codebook_vars_df
+  # that has no paper_id column at all, so that case falls back to the
+  # pre-fix behaviour (match by name only) rather than silently matching
+  # nothing.
+  col_paper_id <- columns_df$paper_id %||% rep(NA_character_, n)
+  has_var_paper_id <- "paper_id" %in% names(codebook_vars_df)
+  var_paper_id <- if (has_var_paper_id) codebook_vars_df$paper_id else NULL
+
   for (i in seq_len(n)) {
-    name_idx <- which(norm_var == norm_col[i])
+    name_idx <- if (has_var_paper_id) {
+      which(norm_var == norm_col[i] & var_paper_id == col_paper_id[i])
+    } else {
+      which(norm_var == norm_col[i])
+    }
     if (length(name_idx) == 0) next
     cg <- col_group[i]
 
