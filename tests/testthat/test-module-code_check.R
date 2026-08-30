@@ -7,7 +7,12 @@ test_that("code_check offline", {
   paper <- test_paper("no text")
   mo <- module_run(paper, module)
   expect_equal(mo$traffic_light, "na")
-  expect_null(mo$table)
+  # A typed zero-row data frame, not NULL, since e213d79 ("fix empty-result
+  # schema loss on batch runs") -- the empty case now keeps its expected
+  # columns (file_name, repo_url, language) so bind_rows() across batches
+  # doesn't silently drop this paper's schema.
+  expect_equal(nrow(mo$table), 0)
+  expect_true(all(c("file_name", "repo_url", "language") %in% names(mo$table)))
   exp <- data.frame(paper_id = paper$paper_id,
                     code_n = 0)
   expect_equal(mo$summary_table, exp)

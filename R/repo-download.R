@@ -182,10 +182,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 
 # Resolve a remote resource's Content-Length (bytes) via HEAD. Used to compare
 # one-shot archive transport size against the selected-file estimate.
-.remote_content_length <- function(url) {
+#
+# req_func: request configurator applied before sending, e.g. .dryad_headers.
+# Needed for Dryad specifically -- unlike every other host this function is
+# called for, Dryad requires a token for ANY call that touches file bytes,
+# including a bare HEAD on its bulk-download endpoint (verified live
+# 2026-08-16, see .dryad_headers()'s own comment). An unauthenticated HEAD
+# against it 401s, so without req_func = .dryad_headers this always returns
+# NA for Dryad, which permanently fails the zip-vs-file-by-file size gate
+# below and silently forces every Dryad dataset onto the file-by-file path.
+.remote_content_length <- function(url, req_func = identity) {
   tryCatch({
     req <- httr2::request(url) |>
       httr2::req_method("HEAD") |>
+      req_func() |>
       httr2::req_error(is_error = function(r) FALSE)
     resp <- httr2::req_perform(req)
     cl <- httr2::resp_header(resp, "content-length")
@@ -520,27 +530,80 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # strip_dir: strip the first path component of each zip entry, because GitHub
 #   zipball prepends "owner-repo-sha/" to every path; OSF waterbutler does not.
 # req_func:  request configurator (.osf_headers or .github_config).
+# max_bytes: hard cap enforced DURING the download itself (bytes; Inf = no
+#   cap), not just a pre-flight Content-Length check. Needed because a
+#   pre-flight size check can be wrong or entirely unavailable -- e.g. Dryad's
+#   bulk-download endpoint never reports Content-Length (verified live
+#   2026-08-30: HEAD 403s, GET is chunked with no length header), so its
+#   gate upstream can only ever pass an ESTIMATE, not a confirmed size. Issue
+#   #366 documented exactly this failure mode on OSF: a single failed text
+#   file triggered a whole-repo zip fallback that pulled 2.47GB before timing
+#   out, because the only protection was req_timeout(), which bounds wall-clock
+#   time, not bytes -- a fast connection can pull many GB inside any
+#   reasonable timeout. Streaming with req_perform_stream() and aborting once
+#   the cap is crossed bounds the actual resource that matters (bytes), and
+#   works even when no upstream size estimate exists at all.
 #
 # Returns `files` with file_location filled for successfully extracted rows.
 .download_zip_to_cache <- function(files, row_idx, zip_url,
                                    strip_dir = FALSE,
                                    req_func = identity,
-                                   timeout_s = 120) {
+                                   timeout_s = 120,
+                                   max_bytes = Inf) {
   zip_tmp <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_tmp), add = TRUE)
 
   dl_err <- tryCatch({
+    # req_perform_stream() is deprecated as of httr2 1.2.0 in favour of this
+    # pull-based connection API. It also sidesteps a real ambiguity: it is
+    # undocumented whether req_retry() re-invokes a push-style callback on a
+    # retried attempt, which -- unlike a plain download -- would corrupt the
+    # output file (a second attempt's bytes appended after the first attempt's
+    # partial bytes, both written to the same open connection). Not retrying
+    # a stream at this level is deliberate: a failed/aborted archive download
+    # returns `files` unchanged, and the caller falls back to file-by-file for
+    # whatever did not get filled in, so nothing is lost by treating a
+    # streaming failure as one-shot here.
     req <- httr2::request(zip_url) |>
       req_func() |>
-      httr2::req_timeout(timeout_s) |>
-      httr2::req_error(is_error = \(r) FALSE) |>
-      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient,
-                       backoff = .storage_backoff)
-    if (verbose()) req <- httr2::req_progress(req, type = "down")
-    httr2::req_perform(req, path = zip_tmp)
-    if (!file.exists(zip_tmp) || file.size(zip_tmp) == 0) "empty response"
-    else NA_character_
+      httr2::req_error(is_error = \(r) FALSE)
+    resp <- httr2::req_perform_connection(req)
+    on.exit(close(resp), add = TRUE)
+
+    con <- file(zip_tmp, open = "wb")
+    written <- 0
+    over_cap <- FALSE
+    timed_out <- FALSE
+    deadline <- Sys.time() + timeout_s
+    repeat {
+      if (Sys.time() > deadline) {
+        timed_out <- TRUE
+        break
+      }
+      chunk <- httr2::resp_stream_raw(resp, kb = 512)
+      if (length(chunk) == 0) {
+        if (httr2::resp_stream_is_complete(resp)) break
+        next
+      }
+      writeBin(chunk, con)
+      written <- written + length(chunk)
+      if (is.finite(max_bytes) && written > max_bytes) {
+        over_cap <- TRUE
+        break
+      }
+    }
+    close(con)
+
+    if (isTRUE(over_cap)) {
+      sprintf("archive exceeded the %s MB cap during download and was aborted",
+              .cap_num(round(max_bytes / (1024 * 1024))))
+    } else if (isTRUE(timed_out)) {
+      sprintf("archive download exceeded the %ds timeout", timeout_s)
+    } else if (!file.exists(zip_tmp) || file.size(zip_tmp) == 0) {
+      "empty response"
+    } else {
+      NA_character_
+    }
   }, error = \(e) conditionMessage(e))
 
   if (!is.na(dl_err)) {
@@ -889,7 +952,8 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx_zip, zip_url,
                                       strip_dir = FALSE,
                                       req_func = .osf_headers,
-                                      timeout_s = zip_timeout_s)
+                                      timeout_s = zip_timeout_s,
+                                      max_bytes = max_download_size * mb)
       remaining <- setdiff(remaining, ridx_zip[!is.na(files$file_location[ridx_zip])])
     }
 
@@ -942,7 +1006,8 @@ download_repo_files <- function(files,
                       repo, length(ridx), plural(length(ridx))))
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = FALSE,
-                                      timeout_s = zip_timeout_s)
+                                      timeout_s = zip_timeout_s,
+                                      max_bytes = max_download_size * mb)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1000,7 +1065,8 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = FALSE,
                                       req_func = .dataverse_headers,
-                                      timeout_s = zip_timeout_s)
+                                      timeout_s = zip_timeout_s,
+                                      max_bytes = max_download_size * mb)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1011,8 +1077,20 @@ download_repo_files <- function(files,
     # page's own "Download Dataset" button uses). Like Dataverse's
     # /api/access/dataset and Zenodo's files-archive, it is all-or-nothing for
     # the dataset, so the same size/worth-it gate applies.
+    #
+    # repo_url is whatever a paper cited -- confirmed against a real 1861-paper
+    # corpus run that every single Dryad repo_url is the doi.org citation form
+    # (e.g. "https://doi.org/10.5061/dryad.8sf7m0cjc"), never a bare
+    # datadryad.org URL, even though file_url (the per-file download link) is
+    # always datadryad.org. Matching only "datadryad\\.org" here missed every
+    # one of them, so this whole branch was silently dead code for the entire
+    # corpus: every Dryad dataset fell through to file-by-file downloads (2 + N
+    # requests each, one per file), which is what was driving the 429s seen at
+    # corpus scale -- not a missing token (file_url downloads were already
+    # authorised correctly by .auth_for_url()).
     dryad_repos <- unique(files$repo_url[
-      remaining[grepl("datadryad\\.org", files$repo_url[remaining], ignore.case = TRUE)]])
+      remaining[grepl("datadryad\\.org|doi\\.org/10\\.5061/dryad",
+                      files$repo_url[remaining], ignore.case = TRUE)]])
     for (repo in dryad_repos) {
       ridx <- intersect(remaining, which(files$repo_url == repo))
       if (length(ridx) == 0) next
@@ -1020,7 +1098,24 @@ download_repo_files <- function(files,
       if (is.na(doi) || !nzchar(doi %||% "")) next
       encoded <- utils::URLencode(paste0("doi:", doi), reserved = TRUE)
       zip_url <- sprintf("https://datadryad.org/api/v2/datasets/%s/download", encoded)
-      zip_bytes <- .remote_content_length(zip_url)
+      zip_bytes <- .remote_content_length(zip_url, req_func = .dryad_headers)
+
+      # Dryad's bulk-download endpoint cannot report its size ahead of time by
+      # ANY method (verified live 2026-08-30): a HEAD gets 403
+      # InvalidSignatureException (the endpoint proxies to a pre-signed S3 URL
+      # whose signature is verb-specific and does not validate for HEAD), and
+      # a GET answers 200 with Transfer-Encoding: chunked and no
+      # Content-Length header at all. So zip_bytes is always NA here, unlike
+      # every other backend in this function where the live probe usually
+      # works. Falling back to "unknown size means skip the zip" (as issue
+      # #366 recommends when size truly cannot be confirmed) would make this
+      # whole branch permanently dead for Dryad regardless of the URL-matching
+      # fix above -- so estimate instead, from sizes repo_check() already
+      # listed for this dataset. A zip is compressed, so the true download is
+      # normally smaller than this sum: a conservative (not optimistic)
+      # stand-in for the live probe.
+      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
+      if (is.na(zip_bytes) && expected_bytes > 0) zip_bytes <- expected_bytes
 
       # Same zip-vs-file-by-file decision as Dataverse/Zenodo/OSF (see comments
       # above).
@@ -1043,8 +1138,7 @@ download_repo_files <- function(files,
         next   # leaves ridx in `remaining` for the file-by-file loop below
       }
 
-      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
-      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
+      if (expected_bytes > 0 && zip_bytes > expected_bytes) {
         message(sprintf(
           paste0("Repository %s downloads as one archive of %s MB to extract ",
                  "%s MB of selected files (whole-dataset Dryad archive)."),
@@ -1055,7 +1149,8 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = FALSE,
                                       req_func = .dryad_headers,
-                                      timeout_s = zip_timeout_s)
+                                      timeout_s = zip_timeout_s,
+                                      max_bytes = max_download_size * mb)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
