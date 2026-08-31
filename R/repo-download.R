@@ -346,9 +346,137 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # Wait longer between each try, so a retry does not simply rejoin the burst
 # that was just refused: 2s after the first failure, 4s after the second,
 # doubling to a 30s ceiling. httr2 honours a server's Retry-After header in
-# preference to this.
+# preference to this, and .storage_retry_after_factory() (below) takes
+# priority over both when a response carries a RateLimit-Reset-style header.
 .storage_backoff <- function(attempt) {
   min(2^attempt, 30)
+}
+
+# Read a host-reported rate-limit reset off a 429 response (seconds from
+# now, or NA if the response carries no rate-limit headers at all). Shared
+# by .storage_retry_after_factory()/.storage_is_transient_factory() below and
+# by the zip-download path, so the header-family lookup lives in exactly one
+# place.
+#
+# Confirmed live 2026-08-31 against real 429 responses: Dryad and GitLab both
+# send the IETF-draft "RateLimit-*" header family (RateLimit-Limit,
+# RateLimit-Remaining, RateLimit-Reset -- a Unix timestamp), while Zenodo and
+# GitHub send the older, unstandardised "X-RateLimit-*" convention (same
+# three fields, same Unix-timestamp Reset). Both are checked -- header lookup
+# is case-insensitive, so "ratelimit-remaining" and "x-ratelimit-remaining"
+# are matched by name only, not by which prefix a given host happens to use.
+# OSF, Figshare, and Dataverse do not expose rate-limit headers on the
+# endpoints checked (OSF's own docs state a plain 100/hour-unauthenticated,
+# 10,000/day-authenticated limit instead, with no header to read it from
+# live) -- for those this returns NA and callers fall back to their existing
+# behaviour (.storage_backoff()'s exponential doubling), unaffected.
+# Pure (no side effects, e.g. no message()) -- used both where a wait is
+# about to be acted on (and should be announced -- see
+# .storage_retry_after_factory() below) and where a wait is only being
+# INSPECTED after the fact (e.g. .download_one()'s error handler, checking
+# whether a failure it already gave up on was specifically a confirmed
+# rate-limit exhaustion, where announcing a wait that is not going to happen
+# would be actively misleading).
+.rate_limit_wait <- function(resp) {
+  remaining <- httr2::resp_header(resp, "ratelimit-remaining") %||%
+    httr2::resp_header(resp, "x-ratelimit-remaining")
+  reset <- httr2::resp_header(resp, "ratelimit-reset") %||%
+    httr2::resp_header(resp, "x-ratelimit-reset")
+
+  if (is.null(remaining) || is.null(reset)) return(NA_real_)
+  if (!identical(suppressWarnings(as.numeric(remaining)), 0)) return(NA_real_)
+
+  reset_time <- suppressWarnings(as.numeric(reset))
+  if (is.na(reset_time)) return(NA_real_)
+
+  wait <- reset_time - as.numeric(Sys.time())
+  # A reset time already in the past (clock skew, or the header describes a
+  # window that just rolled over) means "safe to retry now" -- 0, not a
+  # negative wait, which req_retry() would otherwise treat as "wait forever
+  # already elapsed" ambiguously depending on how it clamps.
+  if (is.na(wait) || wait < 0) 0 else wait
+}
+
+# "47s" / "12.3 min" / "1.4 hours" -- whichever unit keeps the number easy to
+# read at a glance, for the rate-limit wait message below.
+.format_wait_duration <- function(seconds) {
+  if (seconds < 60) return(sprintf("%ds", ceiling(seconds)))
+  if (seconds < 3600) return(sprintf("%.1f min", seconds / 60))
+  sprintf("%.1f hours", seconds / 3600)
+}
+
+# req_retry()'s own wait is SILENT by default (confirmed against httr2's
+# docs: no mention of printing anything for `after`/`backoff`, and no
+# verbosity is configured on these requests) -- a multi-minute-to-hour-long
+# wait with no visible sign anything is happening looks identical to a
+# genuinely hung process. This announces it: states the exact duration so a
+# user monitoring a long corpus run knows this is expected and roughly how
+# long to wait rather than assuming something is stuck, and names Ctrl+C as
+# the way out (skip_on_api_limit is the scripted equivalent -- see
+# download_repo_files()'s own parameter of that name -- for not wanting to
+# wait at all, decided ahead of time rather than interrupted after the
+# fact). Called only from the spot that is ABOUT to act on the wait
+# (.storage_retry_after_factory()'s non-skip branch, and the zip path's own
+# equivalent spot), never from a place merely inspecting what would have
+# happened, so it never announces a wait that will not occur.
+.announce_rate_limit_wait <- function(wait) {
+  if (wait > 5) {
+    message(sprintf(
+      "Rate limit reached; waiting %s for the host's own reset before retrying (Ctrl+C to stop, or use skip_on_api_limit = TRUE to skip this file instead of waiting).",
+      .format_wait_duration(wait)))
+  }
+}
+
+# This is a genuine, confirmed-live root cause for a real production failure
+# (not speculative hardening): .storage_backoff()'s blind exponential
+# doubling was observed retrying a Dryad download for several minutes against
+# a bucket that was provably empty until the top of the hour (RateLimit-
+# Remaining: 0), burning the same wall-clock time as it would take to just
+# wait for RateLimit-Reset, and contributing to a real corpus-run crash by
+# keeping heavy 429 conditions alive far longer than the host's own quota
+# recovery would have required.
+#
+# `after` (the httr2 req_retry() argument this powers) must return either a
+# wait in seconds or NA to fall back to `backoff`/Retry-After. It has no way
+# to say "give up entirely" -- that is what returning FALSE from
+# is_transient is for. A factory here too (mirroring
+# .storage_is_transient_factory(), not just relying on it) because it was
+# confirmed LIVE (2026-08-31) that httr2 still calls `after` even when
+# `is_transient` has already returned FALSE for the same response -- the
+# request correctly does not retry either way, but without this the rate-
+# limit message below would print "waiting 1 hour..." immediately before
+# skip_on_api_limit gives up in the same instant, which is actively
+# misleading. skip_on_api_limit here suppresses both the wait-worthy return
+# value and the message, matching what actually happens (nothing waits).
+.storage_retry_after_factory <- function(skip_on_api_limit = FALSE) {
+  function(resp) {
+    if (isTRUE(skip_on_api_limit)) return(NA_real_)
+    wait <- .rate_limit_wait(resp)
+    if (!is.na(wait)) .announce_rate_limit_wait(wait)
+    wait
+  }
+}
+
+# Wraps .storage_is_transient() with one extra rule: `skip_on_api_limit`
+# (default FALSE, i.e. always wait for a confirmed rate-limit reset -- see
+# download_repo_files()'s own parameter of the same name) changes 429
+# specifically. When TRUE, a 429 that carries a confirmed
+# RateLimit-Remaining: 0 is treated as NOT transient (so req_retry() gives up
+# immediately instead of waiting for the reset), while a
+# 429 WITHOUT a confirmed exhausted-bucket signal (no rate-limit headers at
+# all, or Remaining > 0 -- a plain burst refusal, not a quota exhaustion)
+# still retries with ordinary backoff either way, since skip_on_api_limit's
+# whole point is skipping a wait that is already known to be long and
+# certain, not giving up on an ordinary transient refusal.
+.storage_is_transient_factory <- function(skip_on_api_limit = FALSE) {
+  function(resp) {
+    if (!.storage_is_transient(resp)) return(FALSE)
+    if (isTRUE(skip_on_api_limit) && httr2::resp_status(resp) == 429L) {
+      wait <- .rate_limit_wait(resp)
+      if (!is.na(wait)) return(FALSE)  # confirmed exhausted bucket: give up now
+    }
+    TRUE
+  }
 }
 
 # Download one file to `dest`. Returns NA_character_ on success, or a short
@@ -358,7 +486,16 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # storage URLs, and 503s happen — are retried with backoff (Retry-After is
 # honoured), because a batch of many small requests otherwise loses files at
 # random.
-.download_one <- function(url, dest) {
+#
+# skip_on_api_limit: see download_repo_files()'s own parameter of the same
+# name. When a 429 is given up on because of it (rather than because
+# max_tries ran out on an ordinary transient refusal), the returned message
+# is prefixed "API rate limit exhausted: " -- a fixed, greppable string so a
+# caller (or a future retry script reading download_repo_files()'s `failed`
+# attribute) can filter these out from every other kind of download failure
+# and know a plain re-run, once the host's own quota has reset, is expected
+# to succeed rather than needing any other fix.
+.download_one <- function(url, dest, skip_on_api_limit = FALSE) {
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   tryCatch({
     # Throttle realm = the host (explicit: the default derivation errors on
@@ -377,8 +514,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       # from answering 429.
       httr2::req_throttle(capacity = 10, fill_time_s = 10, realm = host) |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient,
-                       backoff = .storage_backoff) |>
+                       is_transient = .storage_is_transient_factory(skip_on_api_limit),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_progress()
     httr2::req_perform(req, path = dest)
     if (.is_login_page(dest)) {
@@ -389,6 +527,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     else "empty response"
   }, error = function(e) {
     if (file.exists(dest)) unlink(dest)
+    # A 429 caught here (rather than retried away) means .storage_is_transient
+    # -- via the skip_on_api_limit factory -- declared it non-transient, i.e.
+    # gave up specifically because the bucket is confirmed exhausted. e$resp
+    # is httr2's own attached response for an httr2_http_* condition.
+    if (isTRUE(skip_on_api_limit) && inherits(e, "httr2_http_429") &&
+        !is.null(e$resp) && !is.na(.rate_limit_wait(e$resp))) {
+      return(paste0("API rate limit exhausted: ", conditionMessage(e)))
+    }
     conditionMessage(e)
   })
 }
@@ -419,8 +565,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # Returns a character vector the same length as `urls`, NA_character_ for a
 # success and an error description for a failure -- same contract as
 # `.download_one()`, so callers can loop over the result identically.
+#
+# skip_on_api_limit: see download_repo_files()'s own parameter of the same
+# name. A 429 given up on because of it is reported with the same
+# "API rate limit exhausted: " prefix .download_one() uses (see there for
+# why: a fixed, greppable string a caller can filter on to know a plain
+# re-run after the host's quota resets is expected to succeed).
 .download_many_parallel <- function(urls, dests, expected_size = NA_real_,
-                                    .retried = FALSE) {
+                                    .retried = FALSE, skip_on_api_limit = FALSE) {
   if (length(urls) == 0) return(character(0))
 
   expected_size <- rep_len(as.numeric(expected_size), length(urls))
@@ -431,8 +583,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       httr2::request(url) |>
         .auth_for_url() |>
         httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                         is_transient = .storage_is_transient,
-                         backoff = .storage_backoff) |>
+                         is_transient = .storage_is_transient_factory(skip_on_api_limit),
+                         backoff = .storage_backoff,
+                         after = .storage_retry_after_factory(skip_on_api_limit)) |>
         httr2::req_error(is_error = \(resp) FALSE)
     }, error = \(e) NULL)
   })
@@ -471,6 +624,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     # non-empty). Real HTTP failures (4xx/5xx) still get caught below.
     if (!sc %in% c(200, 0)) {
       if (file.exists(dests[i])) unlink(dests[i])
+      if (isTRUE(skip_on_api_limit) && sc == 429L && !is.na(.rate_limit_wait(r)))
+        return(paste0("API rate limit exhausted: HTTP ", sc))
       return(sprintf("HTTP %d", sc))
     }
     if (!file.exists(dests[i]) || file.size(dests[i]) == 0) {
@@ -516,7 +671,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   retry <- if (.retried) integer(0) else which(!is.na(errs) & startsWith(errs, "truncated ("))
   if (length(retry) > 0) {
     retry_errs <- .download_many_parallel(urls[retry], dests[retry], expected_size[retry],
-                                          .retried = TRUE)
+                                          .retried = TRUE, skip_on_api_limit = skip_on_api_limit)
     errs[retry] <- retry_errs
   }
 
@@ -545,29 +700,72 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #   works even when no upstream size estimate exists at all.
 #
 # Returns `files` with file_location filled for successfully extracted rows.
+# A row this fails to fill is left for the caller's file-by-file fallback to
+# retry -- see skip_on_api_limit below for what that fallback then reports.
+#
+# skip_on_api_limit: see download_repo_files()'s own parameter of the same
+# name. When FALSE (default), a confirmed-exhausted 429 here gets exactly
+# ONE wait-and-retry (see the loop below); when TRUE, it gives up on the zip
+# immediately without waiting at all, same as the per-file paths -- either
+# way, whatever rows are still missing after this function returns fall
+# through to download_repo_files()'s own file-by-file fallback, which is
+# where skip_on_api_limit's "API rate limit exhausted: " message actually
+# gets recorded (this function does not track per-file failures itself; it
+# only fills what it can and leaves the rest for that fallback to report).
 .download_zip_to_cache <- function(files, row_idx, zip_url,
                                    strip_dir = FALSE,
                                    req_func = identity,
                                    timeout_s = 120,
-                                   max_bytes = Inf) {
+                                   max_bytes = Inf,
+                                   skip_on_api_limit = FALSE) {
   zip_tmp <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_tmp), add = TRUE)
 
-  dl_err <- tryCatch({
-    # req_perform_stream() is deprecated as of httr2 1.2.0 in favour of this
-    # pull-based connection API. It also sidesteps a real ambiguity: it is
-    # undocumented whether req_retry() re-invokes a push-style callback on a
-    # retried attempt, which -- unlike a plain download -- would corrupt the
-    # output file (a second attempt's bytes appended after the first attempt's
-    # partial bytes, both written to the same open connection). Not retrying
-    # a stream at this level is deliberate: a failed/aborted archive download
-    # returns `files` unchanged, and the caller falls back to file-by-file for
-    # whatever did not get filled in, so nothing is lost by treating a
-    # streaming failure as one-shot here.
+  # One connection attempt, then (if it was rate-limited AND
+  # skip_on_api_limit is FALSE) ONE retry after waiting for the host's own
+  # stated reset -- not a general retry loop (see the streaming-corruption
+  # note below, still accurate for repeated attempts), but a single
+  # rate-limit-aware retry is safe: nothing has been written to `con` yet at
+  # this point, so there is no partial-write risk the way a mid-stream retry
+  # would have.
+  resp <- NULL
+  conn_err <- NULL
+  for (attempt in 1:2) {
     req <- httr2::request(zip_url) |>
       req_func() |>
       httr2::req_error(is_error = \(r) FALSE)
-    resp <- httr2::req_perform_connection(req)
+    attempt_resp <- tryCatch(httr2::req_perform_connection(req), error = \(e) e)
+    if (inherits(attempt_resp, "error")) {
+      conn_err <- attempt_resp
+      break
+    }
+
+    # A 429 never reaches the streaming loop below: its body is a short
+    # error page/JSON, not archive bytes, and treating that as "downloaded
+    # 37 bytes successfully" would go on to fail unzip() with a confusing
+    # "not a zip file" error instead of a clear rate-limit one. Confirmed
+    # live 2026-08-31 that Dryad's bulk-download endpoint DOES send the same
+    # RateLimit-* headers on this path as its per-file endpoint.
+    if (httr2::resp_status(attempt_resp) == 429L) {
+      wait <- .rate_limit_wait(attempt_resp)
+      close(attempt_resp)
+      if (!isTRUE(skip_on_api_limit) && attempt == 1 && !is.na(wait) && wait > 0) {
+        .announce_rate_limit_wait(wait)
+        Sys.sleep(wait)
+        next
+      }
+      return(files)  # rate-limited with no usable wait, skip_on_api_limit, or already retried once
+    }
+    resp <- attempt_resp
+    break
+  }
+  if (is.null(resp)) {
+    if (!is.null(conn_err))
+      message(sprintf("Zip download failed (%s): %s", zip_url, conditionMessage(conn_err)))
+    return(files)
+  }
+
+  dl_err <- tryCatch({
     on.exit(close(resp), add = TRUE)
 
     con <- file(zip_tmp, open = "wb")
@@ -691,6 +889,22 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   across sessions, never cleared automatically — see `repo_cache_clear()`);
 #'   if `FALSE` (default), write into a per-session temp directory that R
 #'   removes on exit
+#' @param skip_on_api_limit if `FALSE` (the default), a download that hits a
+#'   host-confirmed exhausted rate limit (a 429 whose response carries
+#'   `RateLimit-Remaining: 0`/`X-RateLimit-Remaining: 0` and a parseable
+#'   reset time — currently known to apply to Dryad, Zenodo, GitHub, and
+#'   GitLab; other hosts do not expose this and are unaffected either way)
+#'   waits for the host's own stated reset before retrying, however long that
+#'   is — appropriate for an unattended corpus build, where completeness
+#'   matters more than wall-clock time. Set `TRUE` to give up on that file
+#'   immediately instead: it is recorded in the `"failed"` attribute with an
+#'   `"API rate limit exhausted: "`-prefixed message, filterable from every
+#'   other kind of failure, so a caller can re-run later (once the quota has
+#'   reset) targeting only those specific files rather than waiting inline.
+#'   An ordinary transient refusal (a 429 without a confirmed exhausted-quota
+#'   signal, a 403/5xx) still retries with ordinary backoff regardless of
+#'   this setting — it only changes what happens once a real quota
+#'   exhaustion is confirmed.
 #' @param pb an optional progress bar object (see `pb()`), ticked as files
 #'   download
 #'
@@ -701,7 +915,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   `repo_url`, `file_name`, `file_size` — individual files skipped under
 #'   `max_file_size`), and `"failed"` (data.frame: `repo_url`, `file_name`,
 #'   `error` — files whose download was attempted but errored, e.g. a
-#'   transient network failure).
+#'   transient network failure, or — when `skip_on_api_limit = TRUE` and the
+#'   host confirmed it — an exhausted API rate limit; see `skip_on_api_limit`).
 #' @export
 #' @keywords internal
 download_repo_files <- function(files,
@@ -709,6 +924,7 @@ download_repo_files <- function(files,
                                 max_download_size = 500,
                                 zip_timeout_s = 120,
                                 cache = FALSE,
+                                skip_on_api_limit = FALSE,
                                 pb = NULL) {
   if (is.null(files) || nrow(files) == 0) return(files)
   if (!"file_location" %in% names(files))
@@ -953,7 +1169,8 @@ download_repo_files <- function(files,
                                       strip_dir = FALSE,
                                       req_func = .osf_headers,
                                       timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb)
+                                      max_bytes = max_download_size * mb,
+                                      skip_on_api_limit = skip_on_api_limit)
       remaining <- setdiff(remaining, ridx_zip[!is.na(files$file_location[ridx_zip])])
     }
 
@@ -1007,7 +1224,8 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = FALSE,
                                       timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb)
+                                      max_bytes = max_download_size * mb,
+                                      skip_on_api_limit = skip_on_api_limit)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1066,7 +1284,8 @@ download_repo_files <- function(files,
                                       strip_dir = FALSE,
                                       req_func = .dataverse_headers,
                                       timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb)
+                                      max_bytes = max_download_size * mb,
+                                      skip_on_api_limit = skip_on_api_limit)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1150,7 +1369,8 @@ download_repo_files <- function(files,
                                       strip_dir = FALSE,
                                       req_func = .dryad_headers,
                                       timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb)
+                                      max_bytes = max_download_size * mb,
+                                      skip_on_api_limit = skip_on_api_limit)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1185,7 +1405,8 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = TRUE,
                                       req_func = .github_config,
-                                      timeout_s = zip_timeout_s)
+                                      timeout_s = zip_timeout_s,
+                                      skip_on_api_limit = skip_on_api_limit)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1233,7 +1454,8 @@ download_repo_files <- function(files,
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = TRUE,
                                       req_func = .gitlab_config,
-                                      timeout_s = zip_timeout_s)
+                                      timeout_s = zip_timeout_s,
+                                      skip_on_api_limit = skip_on_api_limit)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1261,7 +1483,8 @@ download_repo_files <- function(files,
       if (length(remaining_parallel) > 0) {
         errs <- .download_many_parallel(
           files$file_url[remaining_parallel], files$.cache_path[remaining_parallel],
-          as.numeric(files$file_size[remaining_parallel]))
+          as.numeric(files$file_size[remaining_parallel]),
+          skip_on_api_limit = skip_on_api_limit)
         for (k in seq_along(remaining_parallel)) {
           i <- remaining_parallel[k]
           if (is.na(errs[k])) {
@@ -1276,7 +1499,8 @@ download_repo_files <- function(files,
       }
 
       for (i in remaining_seq) {
-        err <- .download_one(files$file_url[i], files$.cache_path[i])
+        err <- .download_one(files$file_url[i], files$.cache_path[i],
+                             skip_on_api_limit = skip_on_api_limit)
         if (is.na(err)) {
           files$file_location[i] <- files$.cache_path[i]
         } else {
