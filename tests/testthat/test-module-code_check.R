@@ -537,3 +537,94 @@ test_that("parse errors", {
 })
 
 
+test_that("code files found but every download fails does not crash (invalid subscript type 'list')", {
+  # Confirmed live 2026-08-31: a real 1861-paper corpus run crashed here when
+  # a batch's Dryad downloads hit a genuinely exhausted rate limit and EVERY
+  # file in a paper's code_check() call failed to download. This is a
+  # different scenario from "no code files" above (code_n == 0, nothing
+  # matched a checked language) -- here, real code files ARE found (code_n >
+  # 0), but every one of them errors out in the per-file try block before
+  # ever setting its analysis columns (percentage_comment, code_abs_path,
+  # etc.), leaving code_files with real rows but those columns absent
+  # entirely (not just NA). Two separate, real bugs were found and fixed for
+  # this: (1) library_sep <- sapply(...) on that resulting zero-length
+  # column silently returned list() instead of logical(0), and
+  # code_files$file_name[list()] threw "invalid subscript type 'list'";
+  # (2) several column references in the final dplyr::summarise() (0
+  # code_abs_path, 0 loaded_files_missing, 0 percentage_comment) were
+  # unguarded against the column being absent (code_setwd already was,
+  # which is what made the asymmetry visible) and threw "undefined columns
+  # selected" once (1) was fixed.
+  paper <- test_paper(url = "https://doi.org/10.5061/dryad.does-not-matter")
+
+  # A synthetic repo_check() result, fed to code_check() via module_run()'s
+  # normal chaining mechanism (get_prev_outputs("repo_check", "table"),
+  # exactly like build_master_comparison.R's own
+  # module_run(res_repo_check, "data_check") pattern) -- avoids needing to
+  # mock repo_check() itself, which module_run() dispatches via source() +
+  # eval() rather than an ordinary exported binding testthat can intercept.
+  fake_repo_check <- structure(
+    list(
+      module = "repo_check",
+      paper = paper,
+      # module_run() seeds its OWN outer summary_table from the previous
+      # module's summary_table (prev$summary_table %||%
+      # data.frame(paper_id = character(0))), then left_join()s code_check()'s
+      # result onto it -- an empty seed here silently produces a 0-row result
+      # regardless of what code_check() itself computes, so this needs a real
+      # one-row-per-paper summary_table, same as a genuine repo_check() call
+      # would have returned.
+      summary_table = data.frame(paper_id = paper_id(paper)),
+      table = data.frame(
+        paper_id = paper_id(paper),
+        file_name = c("analysis.R", "helpers.R"),
+        repo_url = "https://doi.org/10.5061/dryad.does-not-matter",
+        # file:// to a path that does not exist -- code_read()'s fallback
+        # (file_path <- file_url when file_location is NA, since the mock
+        # below never sets it) then fails LOCALLY and fast, same failure
+        # shape as a real unreachable URL would produce, without this test
+        # making a real network request to a fake host.
+        file_url = c("file:///does/not/exist/analysis.R",
+                     "file:///does/not/exist/helpers.R"),
+        file_location = NA_character_,
+        stringsAsFactors = FALSE
+      )
+    ),
+    class = "metacheck_module_output"
+  )
+
+  mo <- with_mocked_bindings(
+    module_run(fake_repo_check, "code_check"),
+    download_repo_files = function(files, ...) {
+      # Every file "found" but none downloaded -- the exact real-world shape
+      # (file_location stays NA throughout) a confirmed-exhausted rate limit
+      # produces.
+      files$file_location <- NA_character_
+      attr(files, "failed") <- data.frame(
+        repo_url = files$repo_url, file_name = files$file_name,
+        error = "API rate limit exhausted: HTTP 429 Too Many Requests.",
+        stringsAsFactors = FALSE)
+      files
+    },
+    .package = "metacheck"
+  )
+
+  expect_equal(mo$traffic_light, "na")
+  expect_equal(nrow(mo$summary_table), 1)
+  expect_equal(mo$summary_table$code_n, 2)
+  # "checked" means "code_check() attempted to read it" (set unconditionally
+  # at the top of the per-file loop, before the read itself is tried), not
+  # "successfully read" -- both files here were attempted, just failed to
+  # download/read, so this is 2, not 0.
+  expect_equal(mo$summary_table$code_checked, 2)
+  # Every one of these was the crash site (or would have been, unguarded):
+  # confirm they resolve to a safe default rather than erroring, for a
+  # paper where nothing could actually be read.
+  expect_equal(mo$summary_table$code_abs_path, 0L)
+  expect_equal(mo$summary_table$code_setwd, 0L)
+  expect_equal(mo$summary_table$code_missing_files, 0L)
+  expect_true(is.na(mo$summary_table$code_min_comments))
+  expect_equal(mo$summary_table$code_parse_errors, 0L)
+})
+
+

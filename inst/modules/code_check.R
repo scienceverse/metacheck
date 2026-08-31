@@ -384,7 +384,15 @@ code_check <- function(paper, local_path = NULL,
   # Reporting ----
 
   ## library ----
-  library_sep <- sapply(code_files$library_max_between > 3, isTRUE)
+  # vapply(), not sapply(): sapply() on a zero-length input (every checked
+  # file errored before ever setting library_max_between -- e.g. every
+  # download in the batch failed, confirmed live 2026-08-31 against a real
+  # corpus run hitting a genuinely exhausted Dryad rate limit) silently
+  # returns list() instead of logical(0), and code_files$file_name[list()]
+  # then throws "invalid subscript type 'list'" -- a real crash that took
+  # down an entire batch of an unattended corpus run. vapply()'s explicit
+  # FUN.VALUE always returns the declared type, empty input included.
+  library_sep <- vapply(code_files$library_max_between > 3, isTRUE, logical(1))
   library_issue <- code_files$file_name[library_sep]
   if (length(library_issue) == 0) {
     report_library <- "Best programming practice is to load all required libraries/imports in one block near the top of the code. In all code files, libraries/imports were loaded in one block."
@@ -459,10 +467,24 @@ code_check <- function(paper, local_path = NULL,
       plural(length(comment_issue))
     )
   }
-  cols <- c("file_name", "language", "percentage_comment")
-  rows <- !is.na(code_files$percentage_comment)
-  report_table_comments <- code_files[rows, cols]
-  report_table_comments$percentage_comment <- sprintf("%.0f%%", report_table_comments$percentage_comment * 100)
+  # "percentage_comment" is only set inside the per-file try block above, on
+  # a file that was actually read -- absent from code_files entirely (not
+  # just NA) when every checked file errored before reaching that point,
+  # e.g. every download in the batch failed (confirmed live 2026-08-31:
+  # code_files[rows, cols] below throws "undefined columns selected" in
+  # exactly that scenario, a real crash that took down an entire batch of an
+  # unattended corpus run). n_analysed/comment_issue above already handle
+  # this correctly (NULL column -> is.na()/== both give an empty, not an
+  # error), so mirror that here: an absent column means nothing to report.
+  if ("percentage_comment" %in% names(code_files)) {
+    cols <- c("file_name", "language", "percentage_comment")
+    rows <- !is.na(code_files$percentage_comment)
+    report_table_comments <- code_files[rows, cols]
+    report_table_comments$percentage_comment <- sprintf("%.0f%%", report_table_comments$percentage_comment * 100)
+  } else {
+    report_table_comments <- code_files[0, c("file_name", "language"), drop = FALSE]
+    report_table_comments$percentage_comment <- character(0)
+  }
   colnames(report_table_comments) <- c(
     "File name", "Language", "Percent comments"
   )
@@ -677,19 +699,32 @@ code_check <- function(paper, local_path = NULL,
   }
 
   # Aggregate by paper
+  # Every code_* column below except code_n/code_checked is only set inside
+  # the per-file try block earlier in this function, on a file that was
+  # actually read -- absent from code_files entirely (not just NA-filled)
+  # when every checked file errored before reaching that point, e.g. every
+  # download in the batch failed (confirmed live 2026-08-31: unguarded
+  # references here threw "In argument: `code_abs_path = sum(code_abs_path,
+  # na.rm = TRUE)`", a real crash that took down an entire batch of an
+  # unattended corpus run -- code_setwd was already guarded this way; the
+  # rest were not, which was the actual bug).
+  has_col <- function(col) col %in% names(code_files)
   summary_table <- code_files |>
     dplyr::summarise(
       code_n = dplyr::n(),
       code_checked = sum(checked, na.rm = TRUE),
-      code_abs_path = sum(code_abs_path, na.rm = TRUE),
-      code_setwd = if ("code_setwd" %in% names(code_files))
+      code_abs_path = if (has_col("code_abs_path"))
+        sum(code_abs_path, na.rm = TRUE) else 0L,
+      code_setwd = if (has_col("code_setwd"))
         sum(code_setwd, na.rm = TRUE) else 0L,
-      code_missing_files = sum(loaded_files_missing, na.rm = TRUE),
+      code_missing_files = if (has_col("loaded_files_missing"))
+        sum(loaded_files_missing, na.rm = TRUE) else 0L,
       # Guard the all-NA group (e.g. a file with no parseable code lines):
       # min(na.rm = TRUE) would warn and return Inf, so fall back to NA.
-      code_min_comments = if (any(!is.na(percentage_comment)))
+      code_min_comments = if (has_col("percentage_comment") && any(!is.na(percentage_comment)))
         min(percentage_comment, na.rm = TRUE) else NA_real_,
-      code_parse_errors = sum(parse_error, na.rm = TRUE),
+      code_parse_errors = if (has_col("parse_error"))
+        sum(parse_error, na.rm = TRUE) else 0L,
       .by = paper_id
     )
   # Distinct packages per paper (union over that paper's files). Done as a
