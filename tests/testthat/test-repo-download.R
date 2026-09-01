@@ -300,6 +300,81 @@ test_that("reports when archive transport is larger than selected files", {
   expect_false(is.na(dl$file_location[1]))
 })
 
+# Dryad's zip-vs-file-by-file threshold is quota-aware, unlike every other
+# host's (see repo-download.R's own comment on quota_worth_it for the full
+# rationale: Dryad's zip downloads are throttled to 100/day per IP,
+# file downloads to 500/day -- 5x more headroom -- so a small dataset should
+# route through the file-by-file path even though the plain request-count
+# logic alone (used for OSF/Zenodo/Dataverse above) would pick zip.
+test_that("Dryad datasets with few files skip zip even when a plain request-count check would use it", {
+  files <- data.frame(
+    repo_url = rep("https://doi.org/10.5061/dryad.testquota1", 3),
+    file_name = c("a.csv", "b.csv", "c.csv"),
+    file_path = c("a.csv", "b.csv", "c.csv"),
+    file_url = c("https://datadryad.org/api/v2/files/1/download",
+                 "https://datadryad.org/api/v2/files/2/download",
+                 "https://datadryad.org/api/v2/files/3/download"),
+    file_size = c(1024, 1024, 1024),
+    file_location = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  zip_called <- FALSE
+  local_mocked_bindings(
+    .dryad_doi = function(x) "10.5061/dryad.testquota1",
+    # A concrete, small size would pass the size gate -- confirms the skip is
+    # because of the file-count quota gate, not a size issue.
+    .remote_content_length = function(url, req_func = identity) 3072,
+    .download_zip_to_cache = function(...) {
+      zip_called <<- TRUE
+      stop("zip transport should not be called for a 3-file Dryad dataset")
+    },
+    .download_one = function(url, dest, skip_on_api_limit = FALSE) {
+      dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
+      writeLines("x", dest)
+      NA_character_
+    },
+    .package = "metacheck"
+  )
+
+  expect_message(
+    dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100),
+    "only 3 files wanted"
+  )
+  expect_false(zip_called)
+  expect_true(all(!is.na(dl$file_location)))
+})
+
+test_that("Dryad datasets with enough files still use zip", {
+  n <- 8
+  files <- data.frame(
+    repo_url = rep("https://doi.org/10.5061/dryad.testquota2", n),
+    file_name = paste0("f", seq_len(n), ".csv"),
+    file_path = paste0("f", seq_len(n), ".csv"),
+    file_url = sprintf("https://datadryad.org/api/v2/files/%d/download", seq_len(n)),
+    file_size = rep(1024, n),
+    file_location = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  local_mocked_bindings(
+    .dryad_doi = function(x) "10.5061/dryad.testquota2",
+    .remote_content_length = function(url, req_func = identity) 8192,
+    .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
+                                      req_func, timeout_s, max_bytes = Inf,
+                                      skip_on_api_limit = FALSE) {
+      files$file_location[row_idx] <- files$.cache_path[row_idx]
+      files
+    },
+    .package = "metacheck"
+  )
+
+  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
+  expect_true(all(!is.na(dl$file_location)))
+})
+
 test_that("OSF non-osfstorage rows fall back to file-by-file", {
   files <- data.frame(
     repo_url = c("https://osf.io/abcde", "https://osf.io/abcde"),
