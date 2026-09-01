@@ -1350,23 +1350,33 @@ download_repo_files <- function(files,
       # dataset's wanted files are >=half of it (true for nearly every
       # real dataset, since callers almost always want "all of it") -- which
       # means EVERY Dryad dataset routes through the strict 100/day zip
-      # bucket while the far larger 500/day file bucket sits unused. Recomputed
-      # against the real Cooper-validation corpus (768 Dryad datasets, 2710
-      # files, 26 completed batches): always-zip needs 8 calendar days
-      # (768 requests / 100 per day); always-file needs 6 (2710 / 500);
-      # splitting at this threshold -- small datasets to the file bucket,
-      # only genuinely large ones to the zip bucket -- needs 3, the minimum
-      # across every threshold from 0-50 tested, because it is the point
-      # where both buckets fill up on the same day instead of one sitting
-      # idle while the other is the sole bottleneck. Below ~5 files a zip
-      # request costs about the same number of requests as fetching them
-      # individually anyway, so this loses little to no bulk-request
-      # efficiency in exchange for a large quota win.
+      # bucket while the far larger 500/day file bucket sits unused.
+      #
+      # Threshold raised from 4 to 12 files on 2026-09-01, mid-corpus-run:
+      # even with the original threshold of 4, the ZIP BUCKET'S HOURLY CAP
+      # (20/hour, separate from and much tighter than the 100/day ceiling)
+      # was still being tripped repeatedly -- confirmed live against the
+      # real Cooper-validation corpus run, batch 29, hitting the same
+      # 5-file dataset on three consecutive restarts because the hourly
+      # bucket had no time to recover between them (restarting the SCRIPT
+      # does not reset the HOST's quota clock; only real elapsed time does).
+      # Recomputed against the corpus data on disk at the time (873 Dryad
+      # datasets): threshold 4 -> 190 zip requests corpus-wide (9.5/hour
+      # average if spent over the minimum 2 zip-days, i.e. routinely
+      # exceeding the 20/hour ceiling on its own even before accounting for
+      # a real run's uneven, bursty pacing); threshold 12 -> only 33 zip
+      # requests corpus-wide (1.6/hour average), a much larger safety
+      # margin against the hourly wall specifically. This trades away some
+      # of the daily-quota-optimality the threshold-sweep analysis found
+      # (12 is not the sweep's minimum-day threshold, 3-6 was) for
+      # practical hourly headroom that matters more once a real run is
+      # actually hitting the hourly cap repeatedly -- a deliberate,
+      # observed-behaviour-driven adjustment, not a re-run of that sweep.
       n_wanted   <- length(ridx)
       record_n   <- sum(files$repo_url == repo)
       size_ok  <- !is.na(zip_bytes) &&
         (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
-      quota_worth_it <- n_wanted > 4L
+      quota_worth_it <- n_wanted > 12L
       worth_it <- (n_wanted > 50L || record_n <= 2L * n_wanted) && quota_worth_it
       if (!isTRUE(size_ok && worth_it)) {
         why <- if (!size_ok)

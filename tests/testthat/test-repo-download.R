@@ -347,7 +347,7 @@ test_that("Dryad datasets with few files skip zip even when a plain request-coun
 })
 
 test_that("Dryad datasets with enough files still use zip", {
-  n <- 8
+  n <- 16
   files <- data.frame(
     repo_url = rep("https://doi.org/10.5061/dryad.testquota2", n),
     file_name = paste0("f", seq_len(n), ".csv"),
@@ -361,7 +361,7 @@ test_that("Dryad datasets with enough files still use zip", {
 
   local_mocked_bindings(
     .dryad_doi = function(x) "10.5061/dryad.testquota2",
-    .remote_content_length = function(url, req_func = identity) 8192,
+    .remote_content_length = function(url, req_func = identity) n * 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
                                       skip_on_api_limit = FALSE) {
