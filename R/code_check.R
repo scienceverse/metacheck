@@ -237,7 +237,8 @@ code_lang <- function(file_name) {
 # file_location already populated here, that check simply finds nothing left
 # to do and is a no-op, so their standalone behaviour (including being
 # callable/testable on their own, outside code_check()) is unchanged.
-.code_predownload <- function(all_files, max_file_size, max_download_size, cache) {
+.code_predownload <- function(all_files, max_file_size, max_download_size,
+                              cache, skip_on_api_limit = FALSE) {
   # spv/smcl/out are output-typed formats whose embedded syntax the
   # .code_expand_*() steps below recover as a sibling code file (see their own
   # comments); html/htm is not in .ext_registry at all (an .html's data_check
@@ -259,7 +260,8 @@ code_lang <- function(file_name) {
   dl <- tryCatch(
     download_repo_files(all_files[need_dl, , drop = FALSE],
                         max_file_size = max_file_size,
-                        max_download_size = max_download_size, cache = cache),
+                        max_download_size = max_download_size, cache = cache,
+                        skip_on_api_limit = skip_on_api_limit),
     error = function(e) NULL)
   if (!is.null(dl)) all_files$file_location[need_dl] <- dl$file_location
   attr(all_files, "gated") <- attr(dl, "gated")
@@ -283,7 +285,8 @@ code_lang <- function(file_name) {
 # Files that fail to download, don't decode, or have no recoverable syntax
 # are silently skipped (no row added) -- an .spv with no usable syntax is not
 # an error, since most of its content is legitimately just rendered tables.
-.code_expand_spv <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_spv <- function(all_files, max_file_size, max_download_size,
+                             cache, skip_on_api_limit = FALSE) {
   is_spv <- grepl("\\.spv$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_spv)) return(all_files)
 
@@ -293,7 +296,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(spv_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) spv_files$file_location[need_dl] <- dl$file_location
   }
@@ -337,7 +341,8 @@ code_lang <- function(file_name) {
 # are silently skipped (no row added) -- a .smcl with no usable syntax is
 # not an error, since most of its content is legitimately just rendered
 # tables and log bookkeeping.
-.code_expand_smcl <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_smcl <- function(all_files, max_file_size, max_download_size,
+                              cache, skip_on_api_limit = FALSE) {
   is_smcl <- grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_smcl)) return(all_files)
 
@@ -347,7 +352,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(smcl_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) smcl_files$file_location[need_dl] <- dl$file_location
   }
@@ -388,7 +394,8 @@ code_lang <- function(file_name) {
 # are silently skipped (no row added) -- should not happen for a genuine
 # Mplus .out (INPUT INSTRUCTIONS is always present), but a malformed or
 # truncated download is not an error worth surfacing here.
-.code_expand_mplus <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_mplus <- function(all_files, max_file_size, max_download_size,
+                               cache, skip_on_api_limit = FALSE) {
   is_out <- grepl("\\.out$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_out)) return(all_files)
 
@@ -398,7 +405,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(out_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) out_files$file_location[need_dl] <- dl$file_location
   }
@@ -445,7 +453,8 @@ code_lang <- function(file_name) {
 # data_classify_files() already gave it (see the name-based "output" rule
 # there for the OTHER trigger — a filename literally containing "output" —
 # which does not require downloading/sniffing at all).
-.code_expand_html <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_html <- function(all_files, max_file_size, max_download_size,
+                              cache, skip_on_api_limit = FALSE) {
   is_html <- grepl("\\.html?$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_html)) return(all_files)
 
@@ -455,7 +464,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(html_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) html_files$file_location[need_dl] <- dl$file_location
   }
@@ -1412,6 +1422,7 @@ code_packages <- function(packages) {
 #'   file not yet local
 #' @param max_download_size passed to [download_repo_files()]
 #' @param cache passed to [download_repo_files()]
+#' @param skip_on_api_limit passed to [download_repo_files()]
 #'
 #' @returns a list: `pinned` (logical, TRUE if any mechanism was found),
 #'   `mechanisms` (character vector, any of `renv.lock`, `sessionInfo`,
@@ -1428,7 +1439,7 @@ code_packages <- function(packages) {
 #' @keywords internal
 .code_version_pin_check <- function(all_files, code_text_list = list(),
                                     max_file_size = 100, max_download_size = 500,
-                                    cache = FALSE) {
+                                    cache = FALSE, skip_on_api_limit = FALSE) {
   out <- list(pinned = FALSE, mechanisms = character(0),
              r_versions = character(0), renv_files = character(0),
              renv_packages = data.frame(file_name = character(0),
@@ -1451,7 +1462,8 @@ code_packages <- function(packages) {
       dl <- tryCatch(
         download_repo_files(renv_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
-                            max_download_size = max_download_size, cache = cache),
+                            max_download_size = max_download_size, cache = cache,
+                            skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) renv_rows$file_location[need_dl] <- dl$file_location
     }
@@ -1494,7 +1506,8 @@ code_packages <- function(packages) {
       dl <- tryCatch(
         download_repo_files(si_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
-                            max_download_size = max_download_size, cache = cache),
+                            max_download_size = max_download_size, cache = cache,
+                            skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) si_rows$file_location[need_dl] <- dl$file_location
     }

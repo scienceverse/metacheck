@@ -26,13 +26,15 @@
 #' @param max_file_size largest single file to download, in MB (default 100). Size caps are an upfront, all-or-nothing gate per repository; set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
+#' @param skip_on_api_limit if TRUE, a 429 that carries a confirmed rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file instead of waiting out the host's own reset. Default FALSE (always wait for a confirmed reset) -- see [download_repo_files()]'s own parameter of the same name.
 #' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code` section (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
 #'
 #' @returns a list
 code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
                         max_file_size = 100, max_download_size = 500,
-                        cache = FALSE, manifest = NULL) {
+                        cache = FALSE, skip_on_api_limit = FALSE,
+                        manifest = NULL) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -62,7 +64,8 @@ code_check <- function(paper, local_path = NULL,
   # already populated and is a no-op.
   predl_gated <- NULL
   if (isTRUE(download)) {
-    all_files <- .code_predownload(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_predownload(all_files, max_file_size, max_download_size,
+                                   cache, skip_on_api_limit)
     predl_gated <- attr(all_files, "gated")
   }
 
@@ -75,7 +78,8 @@ code_check <- function(paper, local_path = NULL,
   # already local using the same options this function already passes to
   # download_repo_files() further down.
   if (any(grepl("\\.spv$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_spv(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_spv(all_files, max_file_size, max_download_size,
+                                  cache, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -86,7 +90,8 @@ code_check <- function(paper, local_path = NULL,
   # a .sps file -- see .code_expand_smcl() and .smcl_export_syntax()
   # (R/stata.R).
   if (any(grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_smcl(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_smcl(all_files, max_file_size, max_download_size,
+                                   cache, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -97,7 +102,8 @@ code_check <- function(paper, local_path = NULL,
   # file the same way .smcl's echoed commands become a .do file -- see
   # .code_expand_mplus() and .mplus_export_syntax() (R/mplus.R).
   if (any(grepl("\\.out$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_mplus(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_mplus(all_files, max_file_size, max_download_size,
+                                    cache, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -107,7 +113,8 @@ code_check <- function(paper, local_path = NULL,
   # or documentation site. See .code_expand_html() and .html_sniff_kind()/
   # .html_export_r_source() (R/html-output.R) for the full rationale.
   if (any(grepl("\\.html?$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_html(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_html(all_files, max_file_size, max_download_size,
+                                   cache, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -189,7 +196,8 @@ code_check <- function(paper, local_path = NULL,
       dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
-                                cache = cache)
+                                cache = cache,
+                                skip_on_api_limit = skip_on_api_limit)
       checked_files$file_location[need_dl] <- dl$file_location
       predl_gated <- dplyr::bind_rows(predl_gated, attr(dl, "gated"))
     }
@@ -594,7 +602,7 @@ code_check <- function(paper, local_path = NULL,
   version_pin <- .code_version_pin_check(
     all_files, code_text_list = unlist(r_text_by_paper, recursive = FALSE),
     max_file_size = max_file_size, max_download_size = max_download_size,
-    cache = cache)
+    cache = cache, skip_on_api_limit = skip_on_api_limit)
   # Splice resolved locations back into all_files so the per-paper re-check
   # below (summary_table$code_version_pinned) finds every candidate file
   # already local and downloads nothing a second time.
@@ -751,7 +759,8 @@ code_check <- function(paper, local_path = NULL,
         pid_here <- as.character(all_files$paper_id[rows[1]])
         isTRUE(.code_version_pin_check(
           all_files[rows, , drop = FALSE],
-          code_text_list = r_text_by_paper[[pid_here]] %||% list())$pinned)
+          code_text_list = r_text_by_paper[[pid_here]] %||% list(),
+          skip_on_api_limit = skip_on_api_limit)$pinned)
       },
       logical(1))
     summary_table$code_version_pinned <-

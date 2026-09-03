@@ -92,6 +92,11 @@
 #'   session ends — nothing accumulates on disk. Use `cache = TRUE` when
 #'   repeatedly checking the same repositories or building an archive across
 #'   runs; clear the cache with [repo_cache_clear()].
+#' @param skip_on_api_limit if `TRUE`, a 429 that carries a confirmed
+#'   rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file
+#'   instead of waiting out the host's own reset. Default `FALSE` (always
+#'   wait for a confirmed reset) -- see [download_repo_files()]'s own
+#'   parameter of the same name.
 #' @param manifest optional path to write a per-paper file manifest as JSON: the
 #'   full list of repository files with their download URL, size, type, Psych-DS
 #'   target path, and whether each was downloaded (and if not, why). A directory
@@ -117,6 +122,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        max_file_size = 100,
                        max_download_size = 500,
                        cache = FALSE,
+                       skip_on_api_limit = FALSE,
                        manifest = NULL,
                        plot_distributions = FALSE,
                        max_facets = .dv_max_facets,
@@ -612,7 +618,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       dl <- download_repo_files(all_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
-                                cache = cache)
+                                cache = cache,
+                                skip_on_api_limit = skip_on_api_limit)
       all_files$file_location[need_dl] <- dl$file_location
       # Files in a gated repo keep file_location = NA, so they fall out of the
       # has_local extraction filter naturally. The refusal was already reported
