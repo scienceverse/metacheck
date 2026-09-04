@@ -42,9 +42,6 @@
   "Free-text (may hold PII)"    = "of free text that may contain personal detail"
 )
 
-.rbox_pii_checks <- c("Personal info (values)", "Personal info (column name)",
-                     "Free-text (may hold PII)")
-
 # Friendly phrasing for each check_file_naming() "bad"-severity rule -- kept in
 # sync by hand with .file_naming_severity in R/file-naming.R, the same way
 # .rbox_check_phrase mirrors data_check's check_phrase table above.
@@ -208,27 +205,6 @@
   bullet_list <- .rbox_bullet_list(section$bullets)
   if (is.null(bullet_list)) return(NULL)
   c(bullet_list, section$foldouts)
-}
-
-# A fixed (hand-written, not data-derived) explanation of the three
-# personal-information detectors, as a plain markdown table.
-.rbox_pii_table_md <- function() {
-  rows <- list(
-    c("Column name", paste(
-      "Matched against identifying words in English and other European",
-      "languages (`email`, `telefoonnummer`, `geboortedatum`, ...). An",
-      "empty or already-anonymised column can still flag on its name alone.")),
-    c("Values", paste(
-      "Matched against the shape of an identifier (an IP address, a card",
-      "number, ...). A long numeric ID, a version string, or a coincidental",
-      "checksum can still flag.")),
-    c("Free text", paste(
-      "Flagged when a column holds long, mostly-distinct prose -- the shape",
-      "open-ended answers take. Most such columns contain no names at all."))
-  )
-  header <- "| Detector | What triggers it |\n|---|---|"
-  body <- vapply(rows, function(r) sprintf("| %s | %s |", r[1], r[2]), character(1))
-  paste(c(header, body), collapse = "\n")
 }
 
 # Plain HTML <details> fold-out -- CommonMark passes raw HTML blocks through
@@ -472,9 +448,14 @@ researchbox_report <- function(paper, args = list()) {
         n <- check_counts$columns[i]
         bullet <- sprintf("%d column%s %s", n, plural(n), phrase)
 
+        # detail carries the SPECIFIC reason this column was flagged (e.g. for
+        # "Personal info (column name)": "matched: name" -- which keyword in
+        # the name triggered it), not just the bare column name -- a name
+        # like `Rand1` or `Ignore` is meaningless on its own without it.
         chk_rows <- col_findings[col_findings$check == chk, , drop = FALSE] |>
-          dplyr::distinct(.data$source_file, .data$column)
-        detail <- .rbox_detail_lines(chk_rows, "`%s` in `%s`", c("column", "source_file"))
+          dplyr::distinct(.data$source_file, .data$column, .data$detail)
+        detail <- .rbox_detail_lines(chk_rows, "`%s` in `%s` -- %s",
+                                     c("column", "source_file", "detail"))
 
         dq_section <- .rbox_section_add(dq_section, bullet, detail,
           sprintf("%s -- expand to see the full list", chk))
@@ -496,21 +477,6 @@ researchbox_report <- function(paper, args = list()) {
 
     dq_out <- .rbox_section_render(dq_section)
     body <- c(body, "## Data Quality", dq_out)
-
-    if (has_col_findings) {
-      check_counts_check <- col_findings$check
-      if (any(check_counts_check %in% .rbox_pii_checks)) {
-        pii_text <- c(
-          .rbox_pii_table_md(),
-          paste(
-            "A flag means *look at this column*. Where the data is already",
-            "de-identified (an `ip` column reading `Anonymized`, a `name`",
-            "column the authors emptied), no action is needed.")
-        )
-        body <- c(body, .rbox_details(
-          pii_text, "What do these personal-information flags mean?"))
-      }
-    }
   }
 
   ## Documentation coverage -- how many extracted data columns are matched to
@@ -520,6 +486,18 @@ researchbox_report <- function(paper, args = list()) {
   ## regardless of this module running ----
   cb_bullets <- .rbox_bullets(mo$codebook_check$summary_text)
   cb_tbl <- mo$codebook_check$table
+  cb_vars <- mo$codebook_check$codebook_vars
+
+  # codebook_check's own misalign_msg bullet restates the same "N variables,
+  # M% matched" numbers the first bullet already gave, in a longer paragraph,
+  # then guesses ONE generic reason (computed scores/subscales) -- a guess
+  # that does not fit every case (e.g. a codebook naming columns by POSITION,
+  # `var1`/`var2`/..., matches no real column name for a completely different
+  # reason). Dropped here in favour of showing the actual codebook variable
+  # names and data column names side by side below, so the reader sees the
+  # real mismatch instead of a generic guess at its cause.
+  is_misalign_bullet <- grepl("^A codebook was found and parsed", cb_bullets)
+  cb_bullets <- cb_bullets[!is_misalign_bullet]
 
   if (length(cb_bullets) > 0 && !is.null(cb_tbl) && nrow(cb_tbl) > 0) {
     cb_section <- .rbox_section_new()
@@ -543,6 +521,57 @@ researchbox_report <- function(paper, args = list()) {
       }
 
       cb_section <- .rbox_section_add(cb_section, bullet, detail, title)
+    }
+
+    # When any codebook variable never matched a real column, show the two
+    # name lists side by side, one data file at a time, so the reader can see
+    # for themselves why they don't line up -- e.g. a codebook naming columns
+    # `var1`, `var2`, ... by position instead of by the data's own column
+    # names -- instead of a single guessed explanation.
+    #
+    # Pairing a data file to ITS OWN codebook file, not by study `group`:
+    # several data files can share one `group` (e.g. a main study and its
+    # supplementary-materials file both scoped to the same study code), and
+    # every codebook sharing that group would otherwise get pulled into
+    # EVERY file's comparison -- confirmed against a real box where three
+    # unrelated data files and their three separate codebooks all shared a
+    # single group. codebook_source names the parsed codebook file directly
+    # (e.g. "Study 1a Data.csv___CODEBOOK.csv" for "Study 1a Data.csv"), so
+    # matching on that stem is exact where the naming convention holds;
+    # `group` is used only as a fallback for a file with no such pairing,
+    # since it is still the best available link (imprecise, but nothing is
+    # lost that group-based matching would have shown anyway).
+    if (any(is_misalign_bullet) && !is.null(cb_vars) && nrow(cb_vars) > 0) {
+      files <- unique(cb_tbl$source_file) |> stats::na.omit() |> as.character()
+      cb_stem <- sub("___CODEBOOK\\.[A-Za-z0-9]+$", "", cb_vars$codebook_source %||% NA_character_)
+
+      compare_lines <- unlist(lapply(files, function(f) {
+        file_rows <- cb_tbl[!is.na(cb_tbl$source_file) & cb_tbl$source_file == f, , drop = FALSE]
+        cols <- unique(file_rows$column_name)
+
+        vars <- cb_vars[!is.na(cb_stem) & cb_stem == f, , drop = FALSE]
+        if (nrow(vars) == 0) {
+          g <- unique(stats::na.omit(file_rows$group))
+          if (length(g) > 0)
+            vars <- cb_vars[!is.na(cb_vars$group) & cb_vars$group %in% g, , drop = FALSE]
+        }
+
+        if (length(cols) == 0 && nrow(vars) == 0) return(NULL)
+        var_lines <- if (nrow(vars) > 0) sprintf(
+          "`%s` (%s)", vars$codebook_variable,
+          ifelse(is.na(vars$label) | !nzchar(vars$label), "no label",
+                 substr(vars$label, 1, 60))) else "(none)"
+        sprintf(
+          "**`%s`**\n    - Data columns: %s\n    - Codebook variables: %s",
+          f,
+          if (length(cols)) paste(sprintf("`%s`", cols), collapse = ", ") else "(none)",
+          paste(var_lines, collapse = "; "))
+      }))
+      if (length(compare_lines) > 0) {
+        cb_section$foldouts <- c(cb_section$foldouts, .rbox_details(
+          compare_lines,
+          "Codebook variables vs. data columns, by file -- expand to compare"))
+      }
     }
 
     cb_out <- .rbox_section_render(cb_section)
