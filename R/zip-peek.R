@@ -15,10 +15,17 @@
 # Fetch the last `n` bytes of a URL via an HTTP Range request. Returns the raw
 # bytes (possibly fewer than n if the file is smaller), or NULL on failure / if
 # the server ignored the range (returned 200 with the whole body).
+#
+# Routed through .auth_for_url() (see R/repo-download.R): Dryad answers 401 to
+# an unauthenticated request on ANY byte-touching endpoint, including a HEAD
+# or Range GET, so a Dryad zip's peek always failed before this (confirmed
+# live 2026-09-02, see issue #378) -- every other host .auth_for_url() knows
+# about is unaffected, since it only adds headers where the URL matches.
 .http_range_tail <- function(url, n, total = NULL) {
   tryCatch({
     if (is.null(total)) {
       h <- httr2::request(url) |> httr2::req_method("HEAD") |>
+        .auth_for_url() |>
         httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
       total <- suppressWarnings(as.numeric(
         httr2::resp_header(h, "content-length")))
@@ -27,6 +34,7 @@
     start <- max(0, total - n)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", start, total - 1)) |>
+      .auth_for_url() |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     # 206 = partial content (range honoured). 200 = whole file (range ignored):
@@ -52,6 +60,7 @@
     if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) return(NULL)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
+      .auth_for_url() |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     if (httr2::resp_status(r) != 206) return(NULL)
@@ -156,8 +165,11 @@
 #' }
 zip_peek <- function(url, tail_bytes = 131072) {
   # HEAD once for the total size (also lets us grab a bigger tail if needed).
+  # .auth_for_url(): see .http_range_tail()'s comment -- Dryad 401s on an
+  # unauthenticated HEAD here too.
   total <- tryCatch({
     h <- httr2::request(url) |> httr2::req_method("HEAD") |>
+      .auth_for_url() |>
       httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
     suppressWarnings(as.numeric(httr2::resp_header(h, "content-length")))
   }, error = function(e) NA_real_)
@@ -384,7 +396,14 @@ zip_peek <- function(url, tail_bytes = 131072) {
   types <- data_classify_files(basename(loc))
   roles <- .data_doc_role(basename(loc))
   fmt   <- data_format(tolower(tools::file_ext(loc)))
-  keep  <- (types == "data" |
+  # "code" is kept alongside data/documentation (gated by skip_types like
+  # everything else) so a zip's bundled code files survive expansion instead
+  # of being silently discarded -- data_check itself never surfaces them (it
+  # only column-extracts data_type == "data"), but code_check reads this same
+  # table via get_prev_outputs("data_check", "structure") when data_check ran
+  # first in the pipeline, and needs the file present to classify at all. See
+  # issue #383 (Gap 3).
+  keep  <- (types %in% c("data", "code") |
               (types == "documentation" & !is.na(roles) & roles %in% c("codebook", "readme"))) &
     !(types %in% skip_types)
   if (!any(keep)) return(empty)

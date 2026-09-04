@@ -252,9 +252,18 @@ code_lang <- function(file_name) {
                         c("JASP", "jamovi"))
   is_candidate <- grepl("\\.(spv|smcl|out|html?)$", all_files$file_name, ignore.case = TRUE) |
     all_files$language %in% union(code_langs, "Python")
+  # A row has a real file_url, OR (for a member of a zip repo_check's own peek
+  # already expanded) an archive_url + archive_member pair instead --
+  # download_repo_files() fetches that member on its own via a byte-range
+  # request, without downloading the rest of the archive. See data_check.R's
+  # identical has_target for the full rationale.
+  has_target <- (!is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")) |
+    (!is.na(all_files$archive_url %||% NA_character_) &
+       nzchar(all_files$archive_url %||% "") &
+       !is.na(all_files$archive_member %||% NA_character_))
   need_dl <- is_candidate &
     (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
-    !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+    has_target
   if (!any(need_dl)) return(all_files)
 
   dl <- tryCatch(
@@ -502,6 +511,72 @@ code_lang <- function(file_name) {
       all_files$data_type[which(is_html)[sniffed]] <- "output"
   }
 
+  if (!length(new_rows)) return(all_files)
+  dplyr::bind_rows(all_files, new_rows)
+}
+
+# For every UNEXPANDED ".zip" row in `all_files` (the archive still appears as
+# one row, never downloaded), peek inside it (zip_peek(), R/zip-peek.R -- the
+# same remote-range-request mechanism repo_check's own peek_zips uses) and
+# fetch ONLY the members code_lang() recognises as code, via
+# .zip_fetch_members()/.zip_member_fetch() -- a per-member byte-range fetch
+# that never downloads the rest of the archive. One new row is appended per
+# recovered code file, exactly like .code_expand_spv()/_smcl()/_html(); the
+# original ".zip" row is left in place (code_lang(".zip") is NA, so it is
+# never itself checked as code).
+#
+# This makes code-file DISCOVERY inside a zip independent of repo_check's own
+# peek_zips setting and of whether data_check ran first in the pipeline (see
+# .code_expand_zip()'s sibling fix, Gap 1, in inst/modules/code_check.R,
+# which reads data_check's already-expanded structure when available): a
+# caller running code_check() alone, or after repo_check(peek_zips = FALSE),
+# still gets real member names and content rather than nothing. See issue
+# #383 (Gap 2).
+#
+# A row already carrying real per-member rows (from data_check's own
+# expansion, or a caller-provided local_path) has no ".zip" file_name left to
+# match here -- data_check's expansion DROPS the archive's own row once
+# expanded (see zip-peek.R's .expand_zip()/.archive_rows()) -- so this step
+# is a no-op whenever Gap 1 already supplied the real files, and only does
+# work for the case Gap 1 cannot cover (data_check did not run first).
+#
+# Skipped entirely when a row has no file_url (a local file with no remote
+# archive to peek) or zip_peek() cannot list it (host does not support range
+# requests, or the central directory is not in the tail -- see zip_peek()'s
+# own NULL-return cases); such a row is left for the normal download path,
+# which will fetch the whole archive and (if data_check expands it) recover
+# its contents that way instead.
+.code_expand_zip <- function(all_files, skip_on_api_limit = FALSE) {
+  is_zip <- grepl("\\.zip$", all_files$file_name, ignore.case = TRUE) &
+    !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+  if (!any(is_zip)) return(all_files)
+
+  new_rows <- list()
+  for (i in which(is_zip)) {
+    url <- all_files$file_url[i]
+    peek <- tryCatch(zip_peek(url), error = function(e) NULL)
+    if (is.null(peek) || nrow(peek) == 0) next   # host/host-state can't be peeked
+
+    is_code <- !is.na(code_lang(peek$name))
+    if (!any(is_code)) next
+
+    dest <- .repo_cache_path(all_files$repo_url[i],
+                             paste0(all_files$file_path[i] %||% all_files$file_name[i],
+                                    ".contents"))
+    fetched <- tryCatch(
+      .zip_fetch_members(url, names = peek$name[is_code], dest = dest),
+      error = function(e) NULL)
+    if (is.null(fetched) || !any(fetched$ok)) next
+
+    got <- fetched[fetched$ok, , drop = FALSE]
+    rows <- all_files[rep(i, nrow(got)), , drop = FALSE]
+    rows$file_name <- basename(got$name)
+    rows$file_path <- file.path(all_files$file_path[i] %||% all_files$file_name[i], got$name)
+    rows$file_location <- got$path
+    rows$file_url <- NA_character_   # a member has no download URL of its own
+    rows$file_size <- got$size
+    new_rows[[length(new_rows) + 1L]] <- rows
+  }
   if (!length(new_rows)) return(all_files)
   dplyr::bind_rows(all_files, new_rows)
 }

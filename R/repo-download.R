@@ -168,10 +168,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # lightweight HEAD request. Used to turn a missing manifest size into a real
 # size *before* downloading, so an unsized 5 GB file is caught by the gate. NA
 # on any error or when the header is absent (chunked/dynamic responses).
+#
+# Routed through .auth_for_url(): Dryad answers 401 to an unauthenticated HEAD
+# on ANY byte-touching endpoint, including this one (verified live 2026-08-16,
+# see .dryad_headers()'s own comment) -- without this a Dryad file whose size
+# is not already known from the repo's own listing is silently dropped from
+# the download candidate set (see .remote_content_length()'s req_func, which
+# existed for the same reason but had to be opted into per call site; only 1
+# of 7 call sites did, so the other 6 still 401'd on Dryad -- .auth_for_url()
+# dispatches on the URL itself, so every caller is covered with no opt-in).
 .remote_size <- function(url) {
   tryCatch({
     req <- httr2::request(url) |>
       httr2::req_method("HEAD") |>
+      .auth_for_url() |>
       httr2::req_error(is_error = function(r) FALSE)
     resp <- httr2::req_perform(req)
     cl <- httr2::resp_header(resp, "content-length")
@@ -183,18 +193,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # Resolve a remote resource's Content-Length (bytes) via HEAD. Used to compare
 # one-shot archive transport size against the selected-file estimate.
 #
-# req_func: request configurator applied before sending, e.g. .dryad_headers.
-# Needed for Dryad specifically -- unlike every other host this function is
-# called for, Dryad requires a token for ANY call that touches file bytes,
-# including a bare HEAD on its bulk-download endpoint (verified live
-# 2026-08-16, see .dryad_headers()'s own comment). An unauthenticated HEAD
-# against it 401s, so without req_func = .dryad_headers this always returns
-# NA for Dryad, which permanently fails the zip-vs-file-by-file size gate
-# below and silently forces every Dryad dataset onto the file-by-file path.
+# req_func: request configurator applied before sending, on top of the
+# host-based auth .auth_for_url() already adds from the URL alone. Was the
+# ONLY auth this function applied, opt-in per call site via req_func =
+# .dryad_headers -- but only 1 of 7 call sites actually opted in, so the other
+# 6 still 401'd if they ever hit a Dryad URL (Dryad requires a token for ANY
+# call that touches file bytes, including a bare HEAD -- verified live
+# 2026-08-16, see .dryad_headers()'s own comment). .auth_for_url() dispatches
+# on the URL itself, so every call site is covered with no opt-in; req_func
+# stays for a caller that needs something .auth_for_url() does not cover.
 .remote_content_length <- function(url, req_func = identity) {
   tryCatch({
     req <- httr2::request(url) |>
       httr2::req_method("HEAD") |>
+      .auth_for_url() |>
       req_func() |>
       httr2::req_error(is_error = function(r) FALSE)
     resp <- httr2::req_perform(req)
@@ -957,6 +969,62 @@ download_repo_files <- function(files,
 
   already <- file.exists(files$.cache_path)
   files$file_location[already] <- files$.cache_path[already]
+
+  # ── Archive members (repo_check's zip-peek expansion) ───────────────────────
+  # A row from repo_check's zip-peek expansion (inst/modules/repo_check.R,
+  # "look inside .zip archives") has file_url = NA -- an entry inside an
+  # archive has no address a plain GET/HEAD can request -- but carries
+  # archive_url (the parent zip's own URL) and archive_member (its exact name
+  # within the archive, from zip_peek()'s own listing) instead. Fetch those
+  # here, via the same per-member byte-range mechanism
+  # (.zip_fetch_members()/.zip_member_fetch(), R/zip-peek.R) every
+  # archive-*.R platform file already uses for its own zip-vs-file-by-file
+  # download decision -- this just reaches it from the OTHER direction, a row
+  # that already knows it wants ONE named member rather than "the whole zip,
+  # filtered by type/size". Still gated by cache reuse (`already`, above) and
+  # skipped when it fails (host cannot range-request, member cannot be
+  # located): file_location stays NA and the row is simply never downloaded,
+  # same as any other unresolvable file. Does not touch a row with a real
+  # file_url, so this is purely additive for archive-member rows.
+  if ("archive_url" %in% names(files)) {
+    is_member <- !already & !is.na(files$archive_url) & nzchar(files$archive_url %||% "") &
+      !is.na(files$archive_member %||% NA_character_)
+    if (any(is_member)) {
+      for (arc in unique(files$archive_url[is_member])) {
+        idx <- which(is_member & files$archive_url == arc)
+        # A member's cache destination must NOT reuse .cache_path (built from
+        # the display file_path, which embeds the archive's own file name as
+        # a path component, e.g. ".../SharpRT/CMV_Spread-v1.0.zip/Program/
+        # main.m"): if that same archive was ALSO downloaded whole by the
+        # normal file_url path (a real FILE at ".../CMV_Spread-v1.0.zip"),
+        # creating a directory of the identical name and path fails on
+        # Windows -- confirmed live, "cannot create dir ... reason 'No such
+        # file or directory'" for exactly this collision. Instead, key the
+        # extraction directory off the ARCHIVE's own URL (repo-relative, via
+        # the same cache_path() helper every other file in this function
+        # uses, just with a synthetic relative path that cannot collide with
+        # a real file_path), suffixed ".contents" to match data_check's own
+        # zip-expansion convention (.expand_zip(), R/zip-peek.R: dest <-
+        # paste0(zip_path, ".contents")).
+        arc_key <- gsub("^https?://", "", arc)
+        arc_key <- gsub("[^A-Za-z0-9._-]+", "_", arc_key)
+        member_dest <- paste0(cache_path(files$repo_url[idx[1]],
+                                         file.path(".archive_members", arc_key)),
+                              ".contents")
+        member_dest <- .safe_write_path(member_dest)
+        dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
+        fetched <- tryCatch(
+          .zip_fetch_members(arc, names = files$archive_member[idx], dest = member_dest),
+          error = function(e) NULL)
+        if (is.null(fetched)) next
+        for (k in idx) {
+          row <- fetched[fetched$name == files$archive_member[k] & fetched$ok %in% TRUE, , drop = FALSE]
+          if (nrow(row) == 0 || is.na(row$path[[1]])) next
+          files$file_location[k] <- row$path[[1]]
+        }
+      }
+    }
+  }
 
   has_url <- !is.na(files$file_url) & nzchar(files$file_url)
   mb <- 1024 * 1024

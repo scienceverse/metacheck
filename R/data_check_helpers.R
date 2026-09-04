@@ -1908,6 +1908,9 @@ txt_classify_content <- function(path) {
 #'
 #' @param path path to a data file
 #' @param n_rows number of rows to read (`Inf` for all)
+#' @param sheet for `.xlsx`/`.xls` only: sheet name or 1-based index to read.
+#'   `NULL` (default) reads the workbook's first sheet, matching
+#'   `readxl::read_excel()`'s own default.
 #'
 #' @returns a data.frame, or `NULL` on failure / unsupported format.
 #' @export
@@ -1917,7 +1920,7 @@ txt_classify_content <- function(path) {
 # of "tabular", exported through .readable_extensions / data_format(). Any new
 # branch added here must be added there too, or the format will never be
 # downloaded and this reader will never be reached.
-data_read_head <- function(path, n_rows = 5) {
+data_read_head <- function(path, n_rows = 5, sheet = NULL) {
   ext <- tolower(tools::file_ext(path))
   tryCatch({
     df <- switch(ext,
@@ -1970,7 +1973,8 @@ data_read_head <- function(path, n_rows = 5) {
         # headers (...1, K...3, ...) -- we handle names ourselves -- but without printing
         # the "New names:" message on every such sheet.
         df <- suppressWarnings(as.data.frame(
-          readxl::read_excel(path, n_max = nmax, .name_repair = "unique_quiet")))
+          readxl::read_excel(path, sheet = sheet %||% 1L, n_max = nmax,
+                              .name_repair = "unique_quiet")))
         if (!is.null(df) && data_check_is_qualtrics(df))
           df <- data_strip_qualtrics_header(df)
         # A mis-placed header (banner / blank / units / repeated-label row above the
@@ -1981,7 +1985,8 @@ data_read_head <- function(path, n_rows = 5) {
         # to in-memory promotion if the re-read fails.
         if (!is.null(df) && ncol(df) > 1) {
           raw <- tryCatch(.utf8_repair_df(as.data.frame(suppressWarnings(
-                   readxl::read_excel(path, col_names = FALSE, n_max = 6L,
+                   readxl::read_excel(path, sheet = sheet %||% 1L,
+                     col_names = FALSE, n_max = 6L,
                      col_types = "text", .name_repair = "minimal")))),
                  error = function(e) NULL)
           if (!is.null(raw) && nrow(raw) >= 2) {
@@ -1992,8 +1997,8 @@ data_read_head <- function(path, n_rows = 5) {
               k <- prom$promoted
               nmax2 <- if (is.finite(nmax)) nmax + k else Inf
               reread <- tryCatch(suppressWarnings(as.data.frame(
-                readxl::read_excel(path, skip = k, n_max = nmax2,
-                                   .name_repair = "unique_quiet"))),
+                readxl::read_excel(path, sheet = sheet %||% 1L, skip = k,
+                                   n_max = nmax2, .name_repair = "unique_quiet"))),
                 error = function(e) NULL)
               df <- if (!is.null(reread) && ncol(reread) > 0) reread else prom$df
             }

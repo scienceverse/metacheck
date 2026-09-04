@@ -46,7 +46,21 @@ code_check <- function(paper, local_path = NULL,
   # local_path is given here, a cached result from a run without it (or with
   # a different one) would silently omit those local files, so local_path
   # forces a fresh repo_check call rather than trusting the cache.
-  all_files <- if (is.null(local_path)) get_prev_outputs("repo_check", "table") else NULL
+  #
+  # Prefer data_check's "structure" over repo_check's raw "table" when both
+  # are available in the same module_run() chain: data_check's own all_files
+  # starts from repo_check's table and only ever REPLACES a zip/tar/gz
+  # archive's one row with its expanded member rows (see data_check.R's
+  # zip/tar/gz expansion) -- it never drops a non-archive row repo_check
+  # found. So it is a strict superset for code_check's purposes, and it is
+  # the only place a code file bundled inside a zip data_check already
+  # downloaded and expanded is visible at all (repo_check's own listing still
+  # shows that zip as one opaque row when repo_check's peek_zips = FALSE, or
+  # when the peek genuinely could not read the archive). Mirrors the pattern
+  # codebook_check already uses for the same output. See issue #383 (Gap 1).
+  all_files <- if (is.null(local_path))
+    get_prev_outputs("data_check", "structure") %||%
+      get_prev_outputs("repo_check", "table") else NULL
   if (is.null(all_files)) {
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only)
@@ -115,6 +129,18 @@ code_check <- function(paper, local_path = NULL,
   if (any(grepl("\\.html?$", all_files$file_name, ignore.case = TRUE))) {
     all_files <- .code_expand_html(all_files, max_file_size, max_download_size,
                                    cache, skip_on_api_limit)
+    all_files$language <- code_lang(all_files$file_name)
+  }
+
+  # A ".zip" row still unexpanded at this point (data_check did not run
+  # first, or repo_check's own peek_zips = FALSE, so no per-member rows
+  # exist yet) hides any code files bundled inside it -- code_lang(".zip") is
+  # NA, so the archive itself is never checked, and nothing else here can see
+  # what is inside it. Peek the archive's central directory and fetch only
+  # its code-classified members via range requests (no full download). See
+  # .code_expand_zip() and issue #383 (Gap 2).
+  if (any(grepl("\\.zip$", all_files$file_name, ignore.case = TRUE))) {
+    all_files <- .code_expand_zip(all_files, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -189,9 +215,17 @@ code_check <- function(paper, local_path = NULL,
   # rows appended by the expand steps between here and there. Files without a
   # local copy fall back to streaming from file_url below.
   if (isTRUE(download) && "file_url" %in% names(checked_files)) {
+    # A row has a real file_url, OR (for a member of a zip repo_check's own
+    # peek already expanded) an archive_url + archive_member pair instead --
+    # see .code_predownload()'s identical has_target (R/code_check.R) for the
+    # full rationale.
+    has_target <- (!is.na(checked_files$file_url) & nzchar(checked_files$file_url %||% "")) |
+      (!is.na(checked_files$archive_url %||% NA_character_) &
+         nzchar(checked_files$archive_url %||% "") &
+         !is.na(checked_files$archive_member %||% NA_character_))
     need_dl <- (is.na(checked_files$file_location) |
                   !nzchar(checked_files$file_location %||% "")) &
-      !is.na(checked_files$file_url) & nzchar(checked_files$file_url %||% "")
+      has_target
     if (any(need_dl)) {
       dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,

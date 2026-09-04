@@ -1239,13 +1239,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         rows$file_size <- peek$size
         # No URL of its own: an entry inside an archive has no address a plain
         # download can request, so nothing downstream should try one.
-        #
-        # A member CAN now be retrieved on its own, by asking the archive's URL
-        # for just that member's byte range (.zip_member_fetch()), but that needs
-        # the archive URL plus the entry's position within it rather than a URL
-        # for the entry, so this column stays NA. Wiring data_check up to fetch
-        # single members that way is a separate change.
         rows$file_url  <- NA_character_
+        # A member CAN still be retrieved on its own, by asking the archive's own
+        # URL for just that member's byte range (.zip_member_fetch(), via
+        # .zip_fetch_members()) -- that needs the archive's URL plus the member's
+        # exact name within it (zip_peek()'s own listing, not the display
+        # file_path above, which is prefixed for readability), not a URL for the
+        # member itself. Carried here so a later download step (see
+        # download_repo_files(), R/repo-download.R) can fetch it that way instead
+        # of needing the whole archive. NA for every non-archive-member row.
+        rows$archive_url    <- all_files$file_url[i]
+        rows$archive_member <- peek$name
         # file_type must be re-derived from the INNER file's extension. Left
         # inherited it would still say "archive" for every entry, so a zip of 40
         # CSVs would report 40 archives and no data files in the summary counts
