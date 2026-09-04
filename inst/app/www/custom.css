@@ -58,6 +58,59 @@ table.dataTable tbody td.focus {
   box-shadow: none !important;
 }
 
+/* researchbox_app.R's condensed, in-page report */
+.rbox-report {
+  background: #fff;
+  padding: 1.5em;
+  margin-top: 1em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.rbox-report table {
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+.rbox-report th,
+.rbox-report td {
+  border: 1px solid #ccc;
+  padding: 0.4em 0.7em;
+  text-align: left;
+}
+.rbox-report th {
+  background-color: #eee;
+}
+.rbox-report details {
+  margin: 1em 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+}
+.rbox-report summary {
+  cursor: pointer;
+  font-weight: bold;
+  list-style: none;         /* replace the browser's default triangle marker */
+}
+.rbox-report summary::-webkit-details-marker {
+  display: none;             /* Chrome/Safari draw the marker separately from list-style */
+}
+.rbox-report summary::before {
+  content: "▸ ";
+  display: inline-block;
+  color: var(--green);
+}
+.rbox-report details[open] > summary::before {
+  content: "▾ ";
+}
+.rbox-report summary:hover {
+  color: var(--medgreen);
+}
+.rbox-report pre {
+  background: #f5f5f5;
+  padding: 1em;
+  overflow-x: auto;
+}
+
+
 /* OSF app: a validation message ("Nothing downloaded yet") is placed by
    Shiny outside the normal table flow, so the box drew its background to a
    height that did not include it. Give the message ordinary block flow and

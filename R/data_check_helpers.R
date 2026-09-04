@@ -1130,6 +1130,15 @@ data_study_roster <- function(paper) {
   txt <- tryCatch(paste(readLines(path, warn = FALSE), collapse = "\n"),
                   error = function(e) NULL)
   if (is.null(txt) || !nzchar(txt)) return(character(0))
+  # A script saved in a legacy encoding (e.g. a Stata .do file with
+  # Windows-1252 characters in a comment) is not valid UTF-8, and PCRE's
+  # UTF-8 mode (perl = TRUE below) warns and refuses to match on invalid
+  # input. Scrub to valid UTF-8 first — dropping the odd unconvertible byte
+  # costs nothing here, since only the ASCII-only function-call syntax around
+  # a quoted path is being matched, never the file's actual (possibly
+  # non-ASCII) prose.
+  txt <- iconv(txt, to = "UTF-8", sub = "")
+  if (is.na(txt) || !nzchar(txt)) return(character(0))
   # <fn>( ... "<path>"  — the first quoted string of a read/write call. Allows
   # arguments before the path (write_csv(df, "out.csv")).
   pat <- paste0("(?:", .CODE_READ_FNS, ")\\s*\\([^)\"']*[\"']([^\"']+)[\"']")
