@@ -211,16 +211,36 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # `zip::inflate()` expects a ZLIB stream, but a zip member stores BARE deflate
 # with no zlib wrapper, so passing the member's bytes directly fails with "Input
 # data is invalid". Prepending the two-byte zlib header (0x78 0x01) makes it
-# readable. The `size` argument must be left unset: supplying the known
-# uncompressed size makes the same call fail with "Failed to inflate data".
+# readable.
+#
+# `size` (the member's exact uncompressed size, from the archive's own central
+# directory) must NOT be passed as-is: `zip::inflate(..., size = uncompressed_size)`
+# fails outright with "Failed to inflate data" for reasons internal to the zip
+# package. Leaving `size` unset does not fail, but is worse: its documented
+# "resize the output buffer multiple times" behaviour does not actually happen
+# in practice, so any member over the default 32768-byte buffer is silently
+# TRUNCATED at exactly 32768 bytes with no error, no warning, and a
+# `bytes_written` field callers never inspect (confirmed live 2026-09-05,
+# issue #384 -- e.g. a real 44669-byte code file came back as exactly 32768
+# bytes). `.zip_member_fetch()`'s own length check below does catch the
+# resulting mismatch and discard the corrupt bytes, but the practical effect
+# was that every code/data file over 32KB inside a zip silently failed to
+# fetch, indistinguishable from a genuine network or host-compatibility
+# failure -- accounting for the large majority of issue #384's disagreements.
+# Passing `size + 1` (one byte over the true size) avoids both failure modes:
+# it is no longer the exact size that triggers the "Failed to inflate data"
+# error, and it is large enough that the real output always fits in the
+# up-front buffer instead of depending on the broken resize path. Verified
+# against both a >32KB and a <32KB real Zenodo zip member.
 #
 # Returns raw bytes, or NULL when the member cannot be decompressed.
-.zip_inflate_member <- function(comp, method) {
+.zip_inflate_member <- function(comp, method, size = NA_real_) {
   if (method == 0) return(comp)          # stored: no compression, no dependency
   if (method != 8) return(NULL)          # only deflate is supported
   if (!requireNamespace("zip", quietly = TRUE)) return(NULL)
+  size_hint <- if (!is.na(size) && size >= 0) size + 1 else NULL
   tryCatch({
-    res <- zip::inflate(c(as.raw(c(0x78, 0x01)), comp))
+    res <- zip::inflate(c(as.raw(c(0x78, 0x01)), comp), size = size_hint)
     as.raw(res$output %||% res)
   }, error = function(e) NULL)
 }
@@ -249,7 +269,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
   comp <- .http_range_bytes(url, data_start, data_start + entry$csize - 1)
   if (is.null(comp)) return(NULL)
 
-  out <- .zip_inflate_member(comp, entry$method)
+  out <- .zip_inflate_member(comp, entry$method, size = entry$size)
   if (is.null(out)) return(NULL)
 
   # The uncompressed size and CRC32 come from the archive itself, so they check
