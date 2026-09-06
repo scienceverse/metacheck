@@ -83,6 +83,45 @@ test_that(".zip_inflate_member passes stored members through and rejects others"
   expect_null(metacheck:::.zip_inflate_member(as.raw(1:5), 12))
 })
 
+test_that(".zip_inflate_member recovers a member larger than 32768 bytes", {
+  # Regression test for issue #384: zip::inflate()'s documented "resize the
+  # output buffer multiple times" behaviour when size = NULL does not happen
+  # in practice, so any member over its default 32768-byte buffer came back
+  # silently truncated at exactly 32768 bytes -- no error, no warning. This
+  # built a real local zip whose one member compresses to ~95KB uncompressed,
+  # well past that threshold, and confirms the size = NULL path truncates
+  # while size = entry$size (this function's second argument) recovers the
+  # complete, correct member.
+  d <- withr::local_tempdir()
+  content <- paste0("line ", 1:3000, " ", strrep("x", 20))
+  writeLines(content, file.path(d, "big.R"))
+  zipfile <- file.path(d, "test.zip")
+  withr::with_dir(d, utils::zip("test.zip", "big.R", flags = "-q"))
+  skip_if_not(file.exists(zipfile), "zip utility unavailable")
+
+  raw <- readBin(zipfile, "raw", file.size(zipfile))
+  cd <- metacheck:::.parse_zip_central_dir(raw)
+  entry <- cd[cd$name == "big.R", , drop = FALSE]
+  expect_gt(entry$size, 32768)   # the test is only meaningful past the buffer
+
+  lh <- raw[(entry$offset + 1):(entry$offset + 30)]
+  name_len <- metacheck:::.le_int(lh, 27, 2)
+  extra_len <- metacheck:::.le_int(lh, 29, 2)
+  data_start <- entry$offset + 30 + name_len + extra_len
+  comp <- raw[(data_start + 1):(data_start + entry$csize)]
+
+  truncated <- metacheck:::.zip_inflate_member(comp, entry$method)
+  expect_equal(length(truncated), 32768)   # documents the underlying bug
+
+  fixed <- metacheck:::.zip_inflate_member(comp, entry$method, size = entry$size)
+  expect_equal(length(fixed), entry$size)
+  # writeLines() uses the platform line ending (\r\n on Windows), so compare
+  # after normalising rather than assuming \n -- the point of this assertion
+  # is that every line survived intact and in order, not the exact byte width.
+  recovered_lines <- strsplit(rawToChar(fixed), "\r?\n")[[1]]
+  expect_identical(recovered_lines, content)
+})
+
 test_that(".zip_member_fetch refuses a Zip64 entry instead of using the sentinel", {
   # A >4GB archive stores 0xFFFFFFFF in the 4-byte fields, which the parser turns
   # into NA. Fetching from that offset would request a meaningless byte range.
@@ -114,6 +153,39 @@ test_that("zip_decision returns NA when the peek fails", {
   d <- zip_decision("http://x/opaque.zip")
   expect_true(is.na(d$worth))
   expect_match(d$reason, "could not peek")
+})
+
+test_that("zip_peek() reuses a same-session result instead of re-fetching", {
+  # Regression test for issue #384: a single pipeline run calls zip_peek() on
+  # the SAME archive URL twice (once in repo_check to list members, again in
+  # download_repo_files()'s .zip_fetch_members() to fetch one) with no
+  # throttle between them -- the second call is what got exposed to a burst
+  # rate limit. Caching the first success removes the second network call
+  # entirely rather than only making it retry-resilient.
+  #
+  # This exercises .zip_peek_cache directly (get/assign, the same operations
+  # zip_peek() itself performs) rather than calling zip_peek() end-to-end:
+  # zip_peek() needs a live HTTP server for anything beyond the cache check
+  # itself (see this file's header comment), so a real network round-trip
+  # would be needed to reach the "second call" behaviour this test is about.
+  withr::defer(rm(list = ls(envir = metacheck:::.zip_peek_cache),
+                 envir = metacheck:::.zip_peek_cache))
+
+  url <- "http://example.invalid/same.zip"
+  cached <- mget(url, envir = metacheck:::.zip_peek_cache, ifnotfound = list(NULL))[[1]]
+  expect_null(cached)   # nothing cached yet for this URL
+
+  cd <- data.frame(name = "study.csv", size = 100, method = 0, csize = 100,
+                   offset = 0, crc = 12345, stringsAsFactors = FALSE)
+  assign(url, cd, envir = metacheck:::.zip_peek_cache)
+
+  reused <- mget(url, envir = metacheck:::.zip_peek_cache, ifnotfound = list(NULL))[[1]]
+  expect_equal(reused, cd)   # the exact object zip_peek() would now return
+
+  # A different URL is unaffected by the cached entry above.
+  other <- mget("http://example.invalid/other.zip", envir = metacheck:::.zip_peek_cache,
+               ifnotfound = list(NULL))[[1]]
+  expect_null(other)
 })
 
 test_that(".expand_zip keeps inner data files and drops inner materials", {

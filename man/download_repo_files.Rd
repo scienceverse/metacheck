@@ -10,6 +10,7 @@ download_repo_files(
   max_download_size = 500,
   zip_timeout_s = 120,
   cache = FALSE,
+  skip_on_api_limit = FALSE,
   pb = NULL
 )
 }
@@ -29,6 +30,23 @@ across sessions, never cleared automatically — see \code{repo_cache_clear()});
 if \code{FALSE} (default), write into a per-session temp directory that R
 removes on exit}
 
+\item{skip_on_api_limit}{if \code{FALSE} (the default), a download that hits a
+host-confirmed exhausted rate limit (a 429 whose response carries
+\code{RateLimit-Remaining: 0}/\code{X-RateLimit-Remaining: 0} and a parseable
+reset time — currently known to apply to Dryad, Zenodo, GitHub, and
+GitLab; other hosts do not expose this and are unaffected either way)
+waits for the host's own stated reset before retrying, however long that
+is — appropriate for an unattended corpus build, where completeness
+matters more than wall-clock time. Set \code{TRUE} to give up on that file
+immediately instead: it is recorded in the \code{"failed"} attribute with an
+\code{"API rate limit exhausted: "}-prefixed message, filterable from every
+other kind of failure, so a caller can re-run later (once the quota has
+reset) targeting only those specific files rather than waiting inline.
+An ordinary transient refusal (a 429 without a confirmed exhausted-quota
+signal, a 403/5xx) still retries with ordinary backoff regardless of
+this setting — it only changes what happens once a real quota
+exhaustion is confirmed.}
+
 \item{pb}{an optional progress bar object (see \code{pb()}), ticked as files
 download}
 }
@@ -40,7 +58,8 @@ refused outright by the size caps), \code{"oversize_skipped"} (data.frame:
 \code{repo_url}, \code{file_name}, \code{file_size} — individual files skipped under
 \code{max_file_size}), and \code{"failed"} (data.frame: \code{repo_url}, \code{file_name},
 \code{error} — files whose download was attempted but errored, e.g. a
-transient network failure).
+transient network failure, or — when \code{skip_on_api_limit = TRUE} and the
+host confirmed it — an exhausted API rate limit; see \code{skip_on_api_limit}).
 }
 \description{
 Fetches the bytes for a table of repository files (as produced by

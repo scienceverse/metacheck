@@ -495,6 +495,8 @@ test_that("parse errors", {
     comment_lines = c(1L, 1L, 1L, 3L, 1L, 2L, 4L, 4L),
     code_lines = c(4L, 2L, 2L, 3L, 1L, 7L, 1L, 1L),
     percentage_comment = c(0.2, 1/3, 1/3, 0.5, 0.5, 2/9, 0.8, 0.8) ,
+    # has_docstring is Python-only (NA otherwise); every fixture here is R.
+    has_docstring = rep(NA, 8),
     loaded_files_missing = c(0L, 0L, 0L, 1L, 0L, 0L, 0L, 0L),
     loaded_files_missing_names = c("", "", "", "file.csv", "", "", "", "")
   ) |> dplyr::arrange(file_name)

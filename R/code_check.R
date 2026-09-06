@@ -9,6 +9,20 @@
 #' file_path <- demofile("json")
 #' text <- code_read(file_path)
 code_read <- function(file_path) {
+  # A genuinely empty (0-byte) local file crashes readr::guess_encoding()
+  # itself, deep inside stringi (`if (stringi::stri_enc_isascii(lines))`,
+  # given NA instead of a length-one logical), with the generic, misleading
+  # message "missing value where TRUE/FALSE needed" -- confirmed live against
+  # real 0-byte files from real GitHub repositories (e.g.
+  # olgaviedma/LadderFuelsR's R/foofy.R), not an artefact of how the file
+  # arrived locally. There is nothing to guess an encoding FOR in an empty
+  # file, so this is checked directly rather than caught after the fact.
+  # file.exists()/file.size() are meaningless for `file_path` as a remote URL
+  # (readr::guess_encoding() and read_lines() both accept one directly), so
+  # this only applies when the path resolves to a real local file; a URL
+  # falls through to the unchanged behaviour below.
+  if (file.exists(file_path) && file.size(file_path) == 0) return(character(0))
+
   # first try readr, handles most encodings well
   enc <- readr::guess_encoding(file_path)$encoding[[1]]
 
@@ -237,7 +251,8 @@ code_lang <- function(file_name) {
 # file_location already populated here, that check simply finds nothing left
 # to do and is a no-op, so their standalone behaviour (including being
 # callable/testable on their own, outside code_check()) is unchanged.
-.code_predownload <- function(all_files, max_file_size, max_download_size, cache) {
+.code_predownload <- function(all_files, max_file_size, max_download_size,
+                              cache, skip_on_api_limit = FALSE) {
   # spv/smcl/out are output-typed formats whose embedded syntax the
   # .code_expand_*() steps below recover as a sibling code file (see their own
   # comments); html/htm is not in .ext_registry at all (an .html's data_check
@@ -251,15 +266,25 @@ code_lang <- function(file_name) {
                         c("JASP", "jamovi"))
   is_candidate <- grepl("\\.(spv|smcl|out|html?)$", all_files$file_name, ignore.case = TRUE) |
     all_files$language %in% union(code_langs, "Python")
+  # A row has a real file_url, OR (for a member of a zip repo_check's own peek
+  # already expanded) an archive_url + archive_member pair instead --
+  # download_repo_files() fetches that member on its own via a byte-range
+  # request, without downloading the rest of the archive. See data_check.R's
+  # identical has_target for the full rationale.
+  has_target <- (!is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")) |
+    (!is.na(all_files$archive_url %||% NA_character_) &
+       nzchar(all_files$archive_url %||% "") &
+       !is.na(all_files$archive_member %||% NA_character_))
   need_dl <- is_candidate &
     (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
-    !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+    has_target
   if (!any(need_dl)) return(all_files)
 
   dl <- tryCatch(
     download_repo_files(all_files[need_dl, , drop = FALSE],
                         max_file_size = max_file_size,
-                        max_download_size = max_download_size, cache = cache),
+                        max_download_size = max_download_size, cache = cache,
+                        skip_on_api_limit = skip_on_api_limit),
     error = function(e) NULL)
   if (!is.null(dl)) all_files$file_location[need_dl] <- dl$file_location
   attr(all_files, "gated") <- attr(dl, "gated")
@@ -283,7 +308,8 @@ code_lang <- function(file_name) {
 # Files that fail to download, don't decode, or have no recoverable syntax
 # are silently skipped (no row added) -- an .spv with no usable syntax is not
 # an error, since most of its content is legitimately just rendered tables.
-.code_expand_spv <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_spv <- function(all_files, max_file_size, max_download_size,
+                             cache, skip_on_api_limit = FALSE) {
   is_spv <- grepl("\\.spv$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_spv)) return(all_files)
 
@@ -293,7 +319,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(spv_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) spv_files$file_location[need_dl] <- dl$file_location
   }
@@ -337,7 +364,8 @@ code_lang <- function(file_name) {
 # are silently skipped (no row added) -- a .smcl with no usable syntax is
 # not an error, since most of its content is legitimately just rendered
 # tables and log bookkeeping.
-.code_expand_smcl <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_smcl <- function(all_files, max_file_size, max_download_size,
+                              cache, skip_on_api_limit = FALSE) {
   is_smcl <- grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_smcl)) return(all_files)
 
@@ -347,7 +375,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(smcl_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) smcl_files$file_location[need_dl] <- dl$file_location
   }
@@ -388,7 +417,8 @@ code_lang <- function(file_name) {
 # are silently skipped (no row added) -- should not happen for a genuine
 # Mplus .out (INPUT INSTRUCTIONS is always present), but a malformed or
 # truncated download is not an error worth surfacing here.
-.code_expand_mplus <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_mplus <- function(all_files, max_file_size, max_download_size,
+                               cache, skip_on_api_limit = FALSE) {
   is_out <- grepl("\\.out$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_out)) return(all_files)
 
@@ -398,7 +428,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(out_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) out_files$file_location[need_dl] <- dl$file_location
   }
@@ -445,7 +476,8 @@ code_lang <- function(file_name) {
 # data_classify_files() already gave it (see the name-based "output" rule
 # there for the OTHER trigger — a filename literally containing "output" —
 # which does not require downloading/sniffing at all).
-.code_expand_html <- function(all_files, max_file_size, max_download_size, cache) {
+.code_expand_html <- function(all_files, max_file_size, max_download_size,
+                              cache, skip_on_api_limit = FALSE) {
   is_html <- grepl("\\.html?$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_html)) return(all_files)
 
@@ -455,7 +487,8 @@ code_lang <- function(file_name) {
     dl <- tryCatch(
       download_repo_files(html_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
-                          max_download_size = max_download_size, cache = cache),
+                          max_download_size = max_download_size, cache = cache,
+                          skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) html_files$file_location[need_dl] <- dl$file_location
   }
@@ -492,6 +525,72 @@ code_lang <- function(file_name) {
       all_files$data_type[which(is_html)[sniffed]] <- "output"
   }
 
+  if (!length(new_rows)) return(all_files)
+  dplyr::bind_rows(all_files, new_rows)
+}
+
+# For every UNEXPANDED ".zip" row in `all_files` (the archive still appears as
+# one row, never downloaded), peek inside it (zip_peek(), R/zip-peek.R -- the
+# same remote-range-request mechanism repo_check's own peek_zips uses) and
+# fetch ONLY the members code_lang() recognises as code, via
+# .zip_fetch_members()/.zip_member_fetch() -- a per-member byte-range fetch
+# that never downloads the rest of the archive. One new row is appended per
+# recovered code file, exactly like .code_expand_spv()/_smcl()/_html(); the
+# original ".zip" row is left in place (code_lang(".zip") is NA, so it is
+# never itself checked as code).
+#
+# This makes code-file DISCOVERY inside a zip independent of repo_check's own
+# peek_zips setting and of whether data_check ran first in the pipeline (see
+# .code_expand_zip()'s sibling fix, Gap 1, in inst/modules/code_check.R,
+# which reads data_check's already-expanded structure when available): a
+# caller running code_check() alone, or after repo_check(peek_zips = FALSE),
+# still gets real member names and content rather than nothing. See issue
+# #383 (Gap 2).
+#
+# A row already carrying real per-member rows (from data_check's own
+# expansion, or a caller-provided local_path) has no ".zip" file_name left to
+# match here -- data_check's expansion DROPS the archive's own row once
+# expanded (see zip-peek.R's .expand_zip()/.archive_rows()) -- so this step
+# is a no-op whenever Gap 1 already supplied the real files, and only does
+# work for the case Gap 1 cannot cover (data_check did not run first).
+#
+# Skipped entirely when a row has no file_url (a local file with no remote
+# archive to peek) or zip_peek() cannot list it (host does not support range
+# requests, or the central directory is not in the tail -- see zip_peek()'s
+# own NULL-return cases); such a row is left for the normal download path,
+# which will fetch the whole archive and (if data_check expands it) recover
+# its contents that way instead.
+.code_expand_zip <- function(all_files, skip_on_api_limit = FALSE) {
+  is_zip <- grepl("\\.zip$", all_files$file_name, ignore.case = TRUE) &
+    !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+  if (!any(is_zip)) return(all_files)
+
+  new_rows <- list()
+  for (i in which(is_zip)) {
+    url <- all_files$file_url[i]
+    peek <- tryCatch(zip_peek(url), error = function(e) NULL)
+    if (is.null(peek) || nrow(peek) == 0) next   # host/host-state can't be peeked
+
+    is_code <- !is.na(code_lang(peek$name))
+    if (!any(is_code)) next
+
+    dest <- .repo_cache_path(all_files$repo_url[i],
+                             paste0(all_files$file_path[i] %||% all_files$file_name[i],
+                                    ".contents"))
+    fetched <- tryCatch(
+      .zip_fetch_members(url, names = peek$name[is_code], dest = dest),
+      error = function(e) NULL)
+    if (is.null(fetched) || !any(fetched$ok)) next
+
+    got <- fetched[fetched$ok, , drop = FALSE]
+    rows <- all_files[rep(i, nrow(got)), , drop = FALSE]
+    rows$file_name <- basename(got$name)
+    rows$file_path <- file.path(all_files$file_path[i] %||% all_files$file_name[i], got$name)
+    rows$file_location <- got$path
+    rows$file_url <- NA_character_   # a member has no download URL of its own
+    rows$file_size <- got$size
+    new_rows[[length(new_rows) + 1L]] <- rows
+  }
   if (!length(new_rows)) return(all_files)
   dplyr::bind_rows(all_files, new_rows)
 }
@@ -759,12 +858,30 @@ code_abs_path <- function(code_text) {
   # regex escapes do not have (a regex has a metacharacter/digit right after the
   # backslashes, not host\share). In a PCRE pattern each literal backslash is
   # written "\\", so the on-disk bytes \\host\ become "\\\\[host]\\" below.
+  #
+  # The bare-`/`-prefixed branch requires a SECOND `/`-separated segment
+  # (`(?:[^\\n'"/]+/)`) before the rest of the string: confirmed against a
+  # real corpus that a single-segment string like "/login", "/hello", "/eti"
+  # is far more often an HTTP route (self.fetch('/login')) or a
+  # paste0(var, "/eti")-style relative fragment than a real absolute path —
+  # every genuine absolute path in the corpus this was checked against had at
+  # least two segments (e.g. "/Users/name", "/home/name"). This does mean a
+  # bare one-segment absolute path like "/etc" (no trailing content) would no
+  # longer match, which is an acceptable trade against the false positives it
+  # removes.
+  #
+  # The UNC hostname class now requires at least one LETTER
+  # ((?=[A-Za-z0-9._-]*[A-Za-z])), confirmed against real corpus false
+  # positives where a `sub()`/`gsub()` regex backreference string like
+  # "\\2\\1" or "\\1\n" was matched as \\host\share because an all-digit
+  # "host" (bare "2") satisfied the old [A-Za-z0-9._-]+ class -- no real UNC
+  # hostname is all-digit-and-punctuation with no letter at all.
   absolute_path_pattern <- paste0(
     "([\"'])", # start quote
     "(?:~/(?:[^\\n'\"]+)|", # e.g., ~/Desktop/...
-    "/(?!/)[^\\n'\"]+|",    # e.g., /User/...
+    "/(?!/)[^\\n'\"/]+/[^\\n'\"]+|",    # e.g., /User/... (2+ segments)
     "[A-Za-z]:[\\\\/][^\\n'\"]+|", # e.g., C:/... or D:\...
-    "\\\\\\\\[A-Za-z0-9._-]+\\\\[^\\n'\"]+)", # UNC \\host\share\...
+    "\\\\\\\\(?=[A-Za-z0-9._-]*[A-Za-z])[A-Za-z0-9._-]+\\\\[^\\n'\"]+)", # UNC \\host\share\...
     "\\1" # end matching quote
   )
 
@@ -841,6 +958,22 @@ code_setwd <- function(code_text) {
   if (nrow(setwd_matches) == 0)
     return(data.frame(setwd_call = character(0), line = integer(0)))
 
+  # A "setwd(...)" appearing inside a string literal (e.g.
+  # message("Please run setwd(your_path) before continuing")) is instructional
+  # text, not a live call -- confirmed as a real risk (though not yet observed
+  # in a real corpus) since this regex has no string-literal awareness on its
+  # own. Reuses .code_strip_inline_comment()'s own quote-tracking logic (which
+  # already answers exactly this question for a comment marker) rather than
+  # introducing a second way of parsing quote context.
+  is_real_call <- vapply(seq_len(nrow(setwd_matches)), function(i) {
+    line <- code_lines$text[code_lines$text_id == setwd_matches$text_id[i]][[1]]
+    call_start <- regexpr("setwd\\s*\\(", line, perl = TRUE)
+    !.code_pos_in_string(line, call_start)
+  }, logical(1))
+  setwd_matches <- setwd_matches[is_real_call, , drop = FALSE]
+  if (nrow(setwd_matches) == 0)
+    return(data.frame(setwd_call = character(0), line = integer(0)))
+
   dplyr::select(setwd_matches, setwd_call = text, line = text_id)
 }
 
@@ -870,6 +1003,37 @@ code_setwd <- function(code_text) {
 # @param L a single line of code
 # @param marker the comment marker ("//", "%", "#")
 # @returns the line, minus any trailing comment
+# Whether character position `pos` (1-based) on line `L` falls inside a
+# single- or double-quoted string literal. Shares .code_strip_inline_comment()'s
+# own quote-tracking approach (scan character by character, track which quote
+# type -- if any -- we are currently inside, backslash escapes the next
+# character) rather than introducing a second way of answering the same
+# question. Used by code_setwd() to skip a "setwd(" match that is really
+# instructional text inside a string (e.g. a message() call), not a live call.
+#
+# @param L a single line of code
+# @param pos the 1-based character position to check (as returned by
+#   regexpr()); NA/-1 (no match) always returns FALSE
+# @returns TRUE if `pos` sits inside a string literal, else FALSE
+.code_pos_in_string <- function(L, pos) {
+  if (is.na(pos) || pos < 1) return(FALSE)
+  chars <- strsplit(L, "")[[1]]
+  if (!length(chars) || pos > length(chars)) return(FALSE)
+  quote_ch <- NA_character_
+  escaped <- FALSE
+  for (i in seq_len(pos - 1L)) {
+    ch <- chars[[i]]
+    if (escaped) { escaped <- FALSE; next }
+    if (ch == "\\") { escaped <- TRUE; next }
+    if (is.na(quote_ch)) {
+      if (ch == "'" || ch == '"') quote_ch <- ch
+    } else if (ch == quote_ch) {
+      quote_ch <- NA_character_
+    }
+  }
+  !is.na(quote_ch)
+}
+
 .code_strip_inline_comment <- function(L, marker) {
   chars <- strsplit(L, "")[[1]]
   if (!length(chars)) return(L)
@@ -1107,13 +1271,39 @@ code_remove_comments <- function(code_text, lang = c("R", "Python", "SPSS", "SAS
   has_comment
 }
 
+#' Detect Python docstrings
+#'
+#' Whether Python code contains at least one complete triple-quoted string
+#' block (`"""..."""` or `'''...'''`). `code_remove_comments()`'s Python branch
+#' deliberately never strips a triple-quoted string as a comment (doing so
+#' would also destroy real docstrings, which are themselves string literals —
+#' see that function's own comment), so a Python file documented ONLY via
+#' docstrings reports 0% comments from [code_line_stats()] even though it
+#' carries real documentation. This is a separate, additive signal for that
+#' case: it does not change what counts as a "comment" for the existing
+#' `percent_comments` metric, it only reports whether docstrings are present
+#' at all, alongside it. Confirmed against a real corpus: 200 of 280
+#' zero-comment-flagged Python files (71.4%) contain at least one such block —
+#' see the code_check validation.
+#'
+#' @param code_text the code text for a single file
+#'
+#' @returns `TRUE` if at least one complete triple-quoted block is found, else `FALSE`
+#' @keywords internal
+.code_has_docstring <- function(code_text) {
+  code_text <- strsplit(code_text, "\n+") |> unlist()
+  text <- paste(code_text, collapse = "\n")
+  grepl('(?s)("""|\'\'\').*?\\1', text, perl = TRUE)
+}
+
 #' Get Code Composition Stats
 #'
 #' @param code_text the code text for a single file
 #' @param lang the language (we only currently handle R, Python, SPSS, SAS,
 #'   Stata, Mplus, MATLAB)
 #'
-#' @returns list with items `total_lines`, `comment_lines`, `code_lines`, and `percent_comment`
+#' @returns list with items `total_lines`, `comment_lines`, `code_lines`,
+#'   `percent_comment`, and (Python only) `has_docstring`
 #' @export
 #'
 #' @examples
@@ -1140,11 +1330,17 @@ code_line_stats <- function(code_text, lang = c("R", "Python", "SPSS", "SAS", "S
 
   percent_comments <- if (total_lines > 0) (comment_lines / total_lines) else NA_real_
 
+  # Python-only: see .code_has_docstring()'s own documentation for why this is
+  # a separate signal rather than folded into percent_comments. NA for every
+  # other language (there is nothing analogous to check).
+  has_docstring <- if (lang == "Python") .code_has_docstring(code_text) else NA
+
   return(list(
     total_lines = total_lines,
     comment_lines = comment_lines,
     code_lines = code_lines,
-    percent_comments = percent_comments
+    percent_comments = percent_comments,
+    has_docstring = has_docstring
   ))
 }
 
@@ -1199,7 +1395,26 @@ code_library_lines <- function(code_text, lang = c("R", "Python", "SPSS", "SAS",
     # statements, so a legal top-level import always begins its line, modulo
     # indentation) to avoid matching the word "import" inside a string or a
     # method name such as `df.import_csv`.
-    Python = "^\\s*(import|from)\\s+[A-Za-z_.]",
+    #
+    # Requires the FULL import shape, not just the leading keyword: a `from`
+    # line must also contain its own `import` keyword later on the line
+    # (`from x import y`), and a bare `import` line must be followed by a
+    # comma-separated identifier list with an optional `as name` and nothing
+    # else. code_remove_comments()'s Python branch deliberately never strips a
+    # triple-quoted string (it would also destroy real docstrings, see that
+    # function's own comment), so docstring PROSE that happens to start with
+    # "from "/"import " survives into this scan -- confirmed against a real
+    # corpus file (github.com_openvinotoolkit_cvat/site/process_sdk_docs.py)
+    # where a docstring sentence "from the generated model and api
+    # descriptions." was matched as an import line, inflating the gap between
+    # it and the file's real (contiguous) imports far past the "scattered"
+    # threshold. The old bare keyword-plus-word anchor matched that sentence;
+    # this one does not, since neither shape requires an actual import.
+    Python = paste0(
+      "^\\s*from\\s+[A-Za-z_][A-Za-z0-9_.]*\\s+import\\s|",
+      "^\\s*import\\s+[A-Za-z_][A-Za-z0-9_.]*",
+      "(\\s*,\\s*[A-Za-z_][A-Za-z0-9_.]*)*(\\s+as\\s+\\w+)?\\s*$"
+    ),
     SAS    = "\\b(%include|libname|filename|options)\\b",
     SPSS   = "\\b(INSERT|BEGIN\\s+PROGRAM|SET)\\b",
     Stata  = "\\b(do|run|cd|adopath|net\\s+install|ssc\\s+install)\\b",
@@ -1412,6 +1627,7 @@ code_packages <- function(packages) {
 #'   file not yet local
 #' @param max_download_size passed to [download_repo_files()]
 #' @param cache passed to [download_repo_files()]
+#' @param skip_on_api_limit passed to [download_repo_files()]
 #'
 #' @returns a list: `pinned` (logical, TRUE if any mechanism was found),
 #'   `mechanisms` (character vector, any of `renv.lock`, `sessionInfo`,
@@ -1428,7 +1644,7 @@ code_packages <- function(packages) {
 #' @keywords internal
 .code_version_pin_check <- function(all_files, code_text_list = list(),
                                     max_file_size = 100, max_download_size = 500,
-                                    cache = FALSE) {
+                                    cache = FALSE, skip_on_api_limit = FALSE) {
   out <- list(pinned = FALSE, mechanisms = character(0),
              r_versions = character(0), renv_files = character(0),
              renv_packages = data.frame(file_name = character(0),
@@ -1451,7 +1667,8 @@ code_packages <- function(packages) {
       dl <- tryCatch(
         download_repo_files(renv_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
-                            max_download_size = max_download_size, cache = cache),
+                            max_download_size = max_download_size, cache = cache,
+                            skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) renv_rows$file_location[need_dl] <- dl$file_location
     }
@@ -1494,7 +1711,8 @@ code_packages <- function(packages) {
       dl <- tryCatch(
         download_repo_files(si_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
-                            max_download_size = max_download_size, cache = cache),
+                            max_download_size = max_download_size, cache = cache,
+                            skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) si_rows$file_location[need_dl] <- dl$file_location
     }
@@ -1621,6 +1839,12 @@ code_file_refs <- function(code_text,
       "readLines",
       "fromJSON",
       "readtext",
+      # vroom's own reader is named after the package, not "read...", so it is
+      # invisible to the generic read[\\._]... pattern above -- confirmed as a
+      # real false negative against a corpus file calling
+      # vroom::vroom(file.path(dir, "nodes.dmp")) on a missing file that this
+      # check silently passed over (issue found in code_check validation).
+      "vroom",
       "source"
     ) |>
       paste(collapse = "|") |>
