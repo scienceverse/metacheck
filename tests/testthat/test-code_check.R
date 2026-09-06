@@ -264,6 +264,25 @@ test_that("code_abs_path", {
   obs <- code_abs_path(unc_code)
   expect_equal(nrow(obs), 1L)
   expect_true(startsWith(obs$abs_path, paste0(bs, bs, "fileserver")))
+
+  # An all-digit UNC "host" is a sub()/gsub() backreference string, not a
+  # network path (confirmed against real corpus code: sub('group (\\d+)_(\\d+)',
+  # "\\2\\1", x) and gsub('(.{1,10})(\\s|$)', '\\1\n', x) were both wrongly
+  # flagged as \\host\share paths because a bare digit satisfied the old
+  # hostname character class). A real UNC hostname always has at least one
+  # letter, so requiring one excludes this without excluding real hosts.
+  backref_code <- paste0('sub("group (', bs, 'd+)_(', bs, 'd+)", "',
+                        bs, '2', bs, '1", colnames(clupo))')
+  obs <- code_abs_path(backref_code)
+  expect_equal(nrow(obs), 0L)
+
+  # A single-segment string starting with "/" is far more often an HTTP route
+  # (self.fetch('/login')) or a paste0(var, "/eti")-style relative fragment
+  # than a real absolute path -- every genuine absolute path has at least two
+  # segments (e.g. "/Users/name"), so this is not flagged.
+  route_code <- "self.fetch('/login')"
+  obs <- code_abs_path(route_code)
+  expect_equal(nrow(obs), 0L)
 })
 
 test_that("code_remove_comments", {
@@ -378,7 +397,8 @@ test_that("code_line_stats", {
   exp <- list(total_lines = 3L,
               comment_lines = 3L,
               code_lines = 1L,
-              percent_comments = 1)
+              percent_comments = 1,
+              has_docstring = NA)
   expect_equal(obs, exp)
 
   # SPSS
@@ -401,7 +421,8 @@ test_that("code_line_stats", {
   exp <- list(total_lines = 10L,
               comment_lines = 8L,
               code_lines = 2L,
-              percent_comments = 0.8)
+              percent_comments = 0.8,
+              has_docstring = NA)
   expect_equal(obs, exp)
 })
 
@@ -846,6 +867,29 @@ test_that("code_library_lines Python", {
 
   # "import" as a method name or inside a string is not an import statement.
   expect_equal(nrow(code_library_lines("df.import_csv('a.csv')", "Python")), 0L)
+
+  # import x, y and import x as y are both real, single-line import shapes.
+  obs2 <- code_library_lines(c("import sys, re", "import numpy as np"), "Python")
+  expect_equal(obs2$line, c(1L, 2L))
+
+  # Docstring prose starting with "from "/"import " must NOT be matched as an
+  # import line: code_remove_comments()'s Python branch deliberately never
+  # strips triple-quoted strings (real docstrings would be destroyed too), so
+  # this text reaches code_library_lines() unchanged. Confirmed against a real
+  # corpus file where a docstring sentence "from the generated model and api
+  # descriptions." was matched by the old bare-keyword anchor, inflating the
+  # gap to the file's real (contiguous) imports past the "scattered"
+  # threshold -- see code_check validation.
+  docstring_code <- c(
+    '"""',
+    "Some docstring text",
+    "        from the generated model and api descriptions.",
+    '"""',
+    "import os",
+    "import sys"
+  )
+  obs3 <- code_library_lines(docstring_code, "Python")
+  expect_equal(obs3$line, c(5L, 6L))
 })
 
 
@@ -869,6 +913,19 @@ test_that("code_line_stats Python", {
   r_obs <- code_line_stats(c("# comment", "", "x <- 1", "y <- 2  # trailing"), "R")
   expect_equal(obs$code_lines, r_obs$code_lines)
   expect_equal(obs$comment_lines, r_obs$comment_lines)
+
+  # has_docstring: NA for languages other than Python, and TRUE/FALSE for
+  # Python depending on whether a complete triple-quoted block is present.
+  # A file documented ONLY via a docstring (no "#" comments) still reports 0%
+  # comments -- has_docstring is the separate, additive signal for that case
+  # (see .code_has_docstring()'s own documentation).
+  expect_true(is.na(r_obs$has_docstring))
+  expect_false(obs$has_docstring)   # no docstring in the code_text above
+
+  docstring_code <- c('"""Module docstring."""', "x = 1")
+  ds_obs <- code_line_stats(docstring_code, "Python")
+  expect_true(ds_obs$has_docstring)
+  expect_equal(ds_obs$percent_comments, 0)   # a docstring is not a "#" comment
 })
 
 

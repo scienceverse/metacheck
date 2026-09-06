@@ -844,12 +844,30 @@ code_abs_path <- function(code_text) {
   # regex escapes do not have (a regex has a metacharacter/digit right after the
   # backslashes, not host\share). In a PCRE pattern each literal backslash is
   # written "\\", so the on-disk bytes \\host\ become "\\\\[host]\\" below.
+  #
+  # The bare-`/`-prefixed branch requires a SECOND `/`-separated segment
+  # (`(?:[^\\n'"/]+/)`) before the rest of the string: confirmed against a
+  # real corpus that a single-segment string like "/login", "/hello", "/eti"
+  # is far more often an HTTP route (self.fetch('/login')) or a
+  # paste0(var, "/eti")-style relative fragment than a real absolute path —
+  # every genuine absolute path in the corpus this was checked against had at
+  # least two segments (e.g. "/Users/name", "/home/name"). This does mean a
+  # bare one-segment absolute path like "/etc" (no trailing content) would no
+  # longer match, which is an acceptable trade against the false positives it
+  # removes.
+  #
+  # The UNC hostname class now requires at least one LETTER
+  # ((?=[A-Za-z0-9._-]*[A-Za-z])), confirmed against real corpus false
+  # positives where a `sub()`/`gsub()` regex backreference string like
+  # "\\2\\1" or "\\1\n" was matched as \\host\share because an all-digit
+  # "host" (bare "2") satisfied the old [A-Za-z0-9._-]+ class -- no real UNC
+  # hostname is all-digit-and-punctuation with no letter at all.
   absolute_path_pattern <- paste0(
     "([\"'])", # start quote
     "(?:~/(?:[^\\n'\"]+)|", # e.g., ~/Desktop/...
-    "/(?!/)[^\\n'\"]+|",    # e.g., /User/...
+    "/(?!/)[^\\n'\"/]+/[^\\n'\"]+|",    # e.g., /User/... (2+ segments)
     "[A-Za-z]:[\\\\/][^\\n'\"]+|", # e.g., C:/... or D:\...
-    "\\\\\\\\[A-Za-z0-9._-]+\\\\[^\\n'\"]+)", # UNC \\host\share\...
+    "\\\\\\\\(?=[A-Za-z0-9._-]*[A-Za-z])[A-Za-z0-9._-]+\\\\[^\\n'\"]+)", # UNC \\host\share\...
     "\\1" # end matching quote
   )
 
@@ -1192,13 +1210,39 @@ code_remove_comments <- function(code_text, lang = c("R", "Python", "SPSS", "SAS
   has_comment
 }
 
+#' Detect Python docstrings
+#'
+#' Whether Python code contains at least one complete triple-quoted string
+#' block (`"""..."""` or `'''...'''`). `code_remove_comments()`'s Python branch
+#' deliberately never strips a triple-quoted string as a comment (doing so
+#' would also destroy real docstrings, which are themselves string literals —
+#' see that function's own comment), so a Python file documented ONLY via
+#' docstrings reports 0% comments from [code_line_stats()] even though it
+#' carries real documentation. This is a separate, additive signal for that
+#' case: it does not change what counts as a "comment" for the existing
+#' `percent_comments` metric, it only reports whether docstrings are present
+#' at all, alongside it. Confirmed against a real corpus: 200 of 280
+#' zero-comment-flagged Python files (71.4%) contain at least one such block —
+#' see the code_check validation.
+#'
+#' @param code_text the code text for a single file
+#'
+#' @returns `TRUE` if at least one complete triple-quoted block is found, else `FALSE`
+#' @keywords internal
+.code_has_docstring <- function(code_text) {
+  code_text <- strsplit(code_text, "\n+") |> unlist()
+  text <- paste(code_text, collapse = "\n")
+  grepl('(?s)("""|\'\'\').*?\\1', text, perl = TRUE)
+}
+
 #' Get Code Composition Stats
 #'
 #' @param code_text the code text for a single file
 #' @param lang the language (we only currently handle R, Python, SPSS, SAS,
 #'   Stata, Mplus, MATLAB)
 #'
-#' @returns list with items `total_lines`, `comment_lines`, `code_lines`, and `percent_comment`
+#' @returns list with items `total_lines`, `comment_lines`, `code_lines`,
+#'   `percent_comment`, and (Python only) `has_docstring`
 #' @export
 #'
 #' @examples
@@ -1225,11 +1269,17 @@ code_line_stats <- function(code_text, lang = c("R", "Python", "SPSS", "SAS", "S
 
   percent_comments <- if (total_lines > 0) (comment_lines / total_lines) else NA_real_
 
+  # Python-only: see .code_has_docstring()'s own documentation for why this is
+  # a separate signal rather than folded into percent_comments. NA for every
+  # other language (there is nothing analogous to check).
+  has_docstring <- if (lang == "Python") .code_has_docstring(code_text) else NA
+
   return(list(
     total_lines = total_lines,
     comment_lines = comment_lines,
     code_lines = code_lines,
-    percent_comments = percent_comments
+    percent_comments = percent_comments,
+    has_docstring = has_docstring
   ))
 }
 
@@ -1284,7 +1334,26 @@ code_library_lines <- function(code_text, lang = c("R", "Python", "SPSS", "SAS",
     # statements, so a legal top-level import always begins its line, modulo
     # indentation) to avoid matching the word "import" inside a string or a
     # method name such as `df.import_csv`.
-    Python = "^\\s*(import|from)\\s+[A-Za-z_.]",
+    #
+    # Requires the FULL import shape, not just the leading keyword: a `from`
+    # line must also contain its own `import` keyword later on the line
+    # (`from x import y`), and a bare `import` line must be followed by a
+    # comma-separated identifier list with an optional `as name` and nothing
+    # else. code_remove_comments()'s Python branch deliberately never strips a
+    # triple-quoted string (it would also destroy real docstrings, see that
+    # function's own comment), so docstring PROSE that happens to start with
+    # "from "/"import " survives into this scan -- confirmed against a real
+    # corpus file (github.com_openvinotoolkit_cvat/site/process_sdk_docs.py)
+    # where a docstring sentence "from the generated model and api
+    # descriptions." was matched as an import line, inflating the gap between
+    # it and the file's real (contiguous) imports far past the "scattered"
+    # threshold. The old bare keyword-plus-word anchor matched that sentence;
+    # this one does not, since neither shape requires an actual import.
+    Python = paste0(
+      "^\\s*from\\s+[A-Za-z_][A-Za-z0-9_.]*\\s+import\\s|",
+      "^\\s*import\\s+[A-Za-z_][A-Za-z0-9_.]*",
+      "(\\s*,\\s*[A-Za-z_][A-Za-z0-9_.]*)*(\\s+as\\s+\\w+)?\\s*$"
+    ),
     SAS    = "\\b(%include|libname|filename|options)\\b",
     SPSS   = "\\b(INSERT|BEGIN\\s+PROGRAM|SET)\\b",
     Stata  = "\\b(do|run|cd|adopath|net\\s+install|ssc\\s+install)\\b",
@@ -1709,6 +1778,12 @@ code_file_refs <- function(code_text,
       "readLines",
       "fromJSON",
       "readtext",
+      # vroom's own reader is named after the package, not "read...", so it is
+      # invisible to the generic read[\\._]... pattern above -- confirmed as a
+      # real false negative against a corpus file calling
+      # vroom::vroom(file.path(dir, "nodes.dmp")) on a missing file that this
+      # check silently passed over (issue found in code_check validation).
+      "vroom",
       "source"
     ) |>
       paste(collapse = "|") |>

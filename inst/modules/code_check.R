@@ -373,6 +373,7 @@ code_check <- function(paper, local_path = NULL,
       the_file$comment_lines <- line_stats$comment_lines
       the_file$code_lines <- line_stats$code_lines
       the_file$percentage_comment <- line_stats$percent_comments
+      the_file$has_docstring <- line_stats$has_docstring
 
       # missing loaded files
       file_refs <- code_file_refs(file_nc, the_file$language)
@@ -380,7 +381,12 @@ code_check <- function(paper, local_path = NULL,
       # fix possible winslashes
       base_ref <- gsub("\\\\", "/", file_refs) |> basename()
       base_repo <- gsub("\\\\", "/", files_in_repo) |> basename()
-      missing_files <- setdiff(base_ref, base_repo)
+      # Case-insensitive: a real file that exists in the repo only under a
+      # different letter case (e.g. code references "REM_tools.r", the repo
+      # holds "REM_tools.R") is a match, not a missing file -- most filesystems
+      # authors develop on (Windows, macOS default) are themselves
+      # case-insensitive, so this is not an error on their end to flag.
+      missing_files <- base_ref[!tolower(base_ref) %in% tolower(base_repo)]
       the_file$loaded_files_missing <- length(missing_files)
       the_file$loaded_files_missing_names <- paste(missing_files, collapse = ", ")
 
@@ -402,7 +408,8 @@ code_check <- function(paper, local_path = NULL,
                        "code_setwd", "setwd_calls", "library_lines",
                        "library_max_between", "packages_n", "packages",
                        "comment_lines", "code_lines",
-                       "percentage_comment", "loaded_files_missing",
+                       "percentage_comment", "has_docstring",
+                       "loaded_files_missing",
                        "loaded_files_missing_names", "error")
     for (col in analysis_cols)
       if (!col %in% names(code_files)) code_files[[col]] <- NA
@@ -495,6 +502,19 @@ code_check <- function(paper, local_path = NULL,
   # code files had comments" about files that were never opened.
   n_analysed <- sum(!is.na(code_files$percentage_comment))
   comment_issue <- code_files$file_name[which(code_files$percentage_comment == 0)]
+  # Of the zero-comment files, how many are Python files that DO carry a
+  # docstring? code_remove_comments()'s Python branch deliberately never
+  # strips a triple-quoted string as a comment (see that function's own
+  # comment, and .code_has_docstring()'s), so a Python file documented ONLY
+  # via docstrings still reads 0% comments here -- confirmed against a real
+  # corpus: 71.4% of zero-comment-flagged Python files there had a docstring.
+  # This does not change percentage_comment itself, only the wording of the
+  # report so a reader does not conclude such a file "has no documentation."
+  zero_rows <- which(code_files$percentage_comment == 0)
+  n_docstring_only <- if ("has_docstring" %in% names(code_files)) sum(
+    code_files$language[zero_rows] == "Python" &
+      !is.na(code_files$has_docstring[zero_rows]) &
+      code_files$has_docstring[zero_rows], na.rm = TRUE) else 0L
   if (n_analysed == 0) {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). None of the files found could be checked for comments."
     summary_comments <- "No code files could be checked for comments."
@@ -502,7 +522,11 @@ code_check <- function(paper, local_path = NULL,
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). All your code files had comments."
     summary_comments <- "All your code files had comments."
   } else {
-    report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code)."
+    docstring_note <- if (n_docstring_only > 0) sprintf(
+      " Note: this percentage counts only `#` comments; %d of these Python file%s %s documented via docstrings (`\"\"\"...\"\"\"`), which are not counted as comments here since they are string literals, not comment syntax.",
+      n_docstring_only, plural(n_docstring_only), plural(n_docstring_only, "is", "are")
+    ) else ""
+    report_comments <- paste0("Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code).", docstring_note)
     summary_comments <- sprintf(
       "%d code file%s had no comments.",
       length(comment_issue),
