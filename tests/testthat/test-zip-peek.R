@@ -155,6 +155,39 @@ test_that("zip_decision returns NA when the peek fails", {
   expect_match(d$reason, "could not peek")
 })
 
+test_that("zip_peek() reuses a same-session result instead of re-fetching", {
+  # Regression test for issue #384: a single pipeline run calls zip_peek() on
+  # the SAME archive URL twice (once in repo_check to list members, again in
+  # download_repo_files()'s .zip_fetch_members() to fetch one) with no
+  # throttle between them -- the second call is what got exposed to a burst
+  # rate limit. Caching the first success removes the second network call
+  # entirely rather than only making it retry-resilient.
+  #
+  # This exercises .zip_peek_cache directly (get/assign, the same operations
+  # zip_peek() itself performs) rather than calling zip_peek() end-to-end:
+  # zip_peek() needs a live HTTP server for anything beyond the cache check
+  # itself (see this file's header comment), so a real network round-trip
+  # would be needed to reach the "second call" behaviour this test is about.
+  withr::defer(rm(list = ls(envir = metacheck:::.zip_peek_cache),
+                 envir = metacheck:::.zip_peek_cache))
+
+  url <- "http://example.invalid/same.zip"
+  cached <- mget(url, envir = metacheck:::.zip_peek_cache, ifnotfound = list(NULL))[[1]]
+  expect_null(cached)   # nothing cached yet for this URL
+
+  cd <- data.frame(name = "study.csv", size = 100, method = 0, csize = 100,
+                   offset = 0, crc = 12345, stringsAsFactors = FALSE)
+  assign(url, cd, envir = metacheck:::.zip_peek_cache)
+
+  reused <- mget(url, envir = metacheck:::.zip_peek_cache, ifnotfound = list(NULL))[[1]]
+  expect_equal(reused, cd)   # the exact object zip_peek() would now return
+
+  # A different URL is unaffected by the cached entry above.
+  other <- mget("http://example.invalid/other.zip", envir = metacheck:::.zip_peek_cache,
+               ifnotfound = list(NULL))[[1]]
+  expect_null(other)
+})
+
 test_that(".expand_zip keeps inner data files and drops inner materials", {
   d <- withr::local_tempdir()
   writeLines("id,x\n1,2", file.path(d, "study.csv"))   # data

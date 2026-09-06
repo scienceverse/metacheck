@@ -9,7 +9,8 @@
   code_text_list = list(),
   max_file_size = 100,
   max_download_size = 500,
-  cache = FALSE
+  cache = FALSE,
+  skip_on_api_limit = FALSE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ file not yet local}
 \item{max_download_size}{passed to \code{\link[=download_repo_files]{download_repo_files()}}}
 
 \item{cache}{passed to \code{\link[=download_repo_files]{download_repo_files()}}}
+
+\item{skip_on_api_limit}{passed to \code{\link[=download_repo_files]{download_repo_files()}}}
 }
 \value{
 a list: \code{pinned} (logical, TRUE if any mechanism was found),

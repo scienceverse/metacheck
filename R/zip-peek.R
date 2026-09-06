@@ -6,6 +6,23 @@
 # the host doesn't honour ranges or the central directory isn't in the tail, so
 # the caller can download-and-inspect instead.
 
+# In-memory, same-session cache of zip_peek() results, keyed by URL. A single
+# pipeline run peeks the SAME archive twice: once in repo_check (discovering
+# member names/sizes to list, inst/modules/repo_check.R) and again inside
+# download_repo_files()'s .zip_fetch_members() (fetching one member's bytes,
+# R/repo-download.R) -- the second call needs the very same central-directory
+# fields (method/csize/offset/crc) the first call already read but did not
+# carry forward. Caching here removes the duplicate network round-trip
+# entirely (rather than only making it retry-resilient, see req_retry() below)
+# and, since the two calls happen close together within one session, halves
+# the chance of a live archive being peeked twice into the same host's burst
+# rate limit -- part of what made issue #384's fetch fail non-deterministically.
+# Reset per R session (an environment, not the on-disk repo cache in
+# R/cache.R): a zip_peek() result is only ever reused within the SAME run that
+# produced it, never across runs, so it does not need to persist or be
+# user-visible/clearable the way the on-disk file cache does.
+.zip_peek_cache <- new.env(parent = emptyenv())
+
 # Little-endian integer from a raw vector slice (1-based, `n` bytes).
 .le_int <- function(raw, at, n) {
   bytes <- as.integer(raw[at:(at + n - 1)])
@@ -21,11 +38,27 @@
 # or Range GET, so a Dryad zip's peek always failed before this (confirmed
 # live 2026-09-02, see issue #378) -- every other host .auth_for_url() knows
 # about is unaffected, since it only adds headers where the URL matches.
+#
+# Also retried via req_retry() with the SAME transient/backoff/rate-limit
+# helpers download_repo_files() uses for ordinary file downloads
+# (.storage_is_transient_factory()/.storage_backoff()/
+# .storage_retry_after_factory(), R/repo-download.R) -- without this, a 429
+# here was indistinguishable from "host does not support ranges" (both
+# silently returned NULL), which is what made issue #384's fetch fail
+# non-deterministically: repo_check's own zip_peek() call (discovering member
+# names, inst/modules/repo_check.R) and download_repo_files()'s later
+# .zip_fetch_members()->zip_peek() call (fetching a member's bytes) hit the
+# SAME archive URL twice in one pipeline run with no throttle between them,
+# so the second call was the one exposed to a burst-rate-limit refusal.
 .http_range_tail <- function(url, n, total = NULL) {
   tryCatch({
     if (is.null(total)) {
       h <- httr2::request(url) |> httr2::req_method("HEAD") |>
         .auth_for_url() |>
+        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                         is_transient = .storage_is_transient_factory(),
+                         backoff = .storage_backoff,
+                         after = .storage_retry_after_factory()) |>
         httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
       total <- suppressWarnings(as.numeric(
         httr2::resp_header(h, "content-length")))
@@ -35,6 +68,10 @@
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", start, total - 1)) |>
       .auth_for_url() |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient_factory(),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory()) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     # 206 = partial content (range honoured). 200 = whole file (range ignored):
@@ -55,12 +92,22 @@
 # it), but a caller asking for one member's bytes wants exactly those bytes, and
 # accepting the whole archive would silently transfer the gigabytes this is
 # meant to avoid. Returns raw bytes, or NULL when the host ignored the range.
+#
+# Retried via req_retry() for the same reason as .http_range_tail() -- see its
+# comment (issue #384). This is the call .zip_member_fetch() makes TWICE per
+# member (once for the local header, once for the compressed data), so a
+# single-member fetch inside a loop over many members is exactly the
+# back-to-back-request pattern a host's burst limit is most likely to catch.
 .http_range_bytes <- function(url, from, to) {
   tryCatch({
     if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) return(NULL)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
       .auth_for_url() |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient_factory(),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory()) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     if (httr2::resp_status(r) != 206) return(NULL)
@@ -164,12 +211,26 @@
 #' zip_peek("https://osf.io/download/abcde/")
 #' }
 zip_peek <- function(url, tail_bytes = 131072) {
+  # Reuse an earlier successful peek of this exact URL from this same session
+  # -- see .zip_peek_cache's own comment for why (issue #384). Only a SUCCESS
+  # is ever cached: a NULL (host refused, rate-limited, or otherwise) must be
+  # retried fresh on the next call rather than permanently remembered as
+  # "unpeekable", since req_retry() below already absorbs the transient cases
+  # and a real "not supported" result would still return NULL again quickly.
+  cached <- mget(url, envir = .zip_peek_cache, ifnotfound = list(NULL))[[1]]
+  if (!is.null(cached)) return(cached)
+
   # HEAD once for the total size (also lets us grab a bigger tail if needed).
   # .auth_for_url(): see .http_range_tail()'s comment -- Dryad 401s on an
-  # unauthenticated HEAD here too.
+  # unauthenticated HEAD here too. req_retry(): see .http_range_tail()'s
+  # comment on issue #384 -- the same burst-rate-limit exposure applies here.
   total <- tryCatch({
     h <- httr2::request(url) |> httr2::req_method("HEAD") |>
       .auth_for_url() |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient_factory(),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory()) |>
       httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
     suppressWarnings(as.numeric(httr2::resp_header(h, "content-length")))
   }, error = function(e) NA_real_)
@@ -180,6 +241,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
     cd <- .parse_zip_central_dir(raw)
     if (!is.null(cd)) {
       cd <- cd[!grepl("/$", cd$name), , drop = FALSE]   # drop directory entries
+      assign(url, cd, envir = .zip_peek_cache)
       return(cd)
     }
     if (!is.null(total) && !is.na(total) && nb >= total) break  # whole file seen
