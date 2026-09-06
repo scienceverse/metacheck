@@ -18,6 +18,16 @@ test_that("code_read", {
   obs <- code_read(file_path)
   expect_equal(obs[[1]], "* Stata do-file UTF-16 LE")
   expect_equal(obs[[2]], "* Author: Mueller")
+
+  # A genuinely empty (0-byte) file must not crash: readr::guess_encoding()
+  # returns a zero-row result for one, which previously produced NA and
+  # crashed deep inside readr's own internals with the generic message
+  # "missing value where TRUE/FALSE needed" -- confirmed against real 0-byte
+  # files in real GitHub repositories during the code_check validation.
+  empty_path <- withr::local_tempfile()
+  file.create(empty_path)
+  obs <- code_read(empty_path)
+  expect_equal(obs, character(0))
 })
 
 
@@ -283,6 +293,46 @@ test_that("code_abs_path", {
   route_code <- "self.fetch('/login')"
   obs <- code_abs_path(route_code)
   expect_equal(nrow(obs), 0L)
+})
+
+test_that("code_setwd", {
+  expect_true(is.function(metacheck::code_setwd))
+  expect_no_error(helplist <- help(code_setwd, metacheck))
+
+  # real calls, including relative/dynamic arguments -- these still count as
+  # flags, since the anti-pattern is changing the working directory at all,
+  # not specifically a hardcoded absolute-path argument
+  code_text <- c(
+    "setwd('D:/Dropbox/project')",
+    "x <- read.csv('data.csv')"
+  )
+  obs <- code_setwd(code_text)
+  expect_equal(obs$setwd_call, "setwd('D:/Dropbox/project')")
+  expect_equal(obs$line, 1)
+
+  for (call in c("setwd(dir)", "setwd(tempdir())", "setwd(getwd())")) {
+    obs <- code_setwd(call)
+    expect_equal(nrow(obs), 1L)
+  }
+
+  # "setwd(...)" mentioned inside a string literal (e.g. instructional text in
+  # a message() call) is not a live call -- code_setwd() has no string-literal
+  # awareness on its own, so this reuses .code_pos_in_string() (the same
+  # quote-tracking logic .code_strip_inline_comment() already uses) to skip it.
+  fp_code <- 'message("Please run setwd(your_path) before continuing")'
+  obs <- code_setwd(fp_code)
+  expect_equal(nrow(obs), 0L)
+
+  # a real call on the SAME line as an earlier, unrelated string is still
+  # found -- quote-tracking must not treat the whole rest of the line as
+  # "inside a string" once the earlier string has closed.
+  mixed_code <- 'x <- "some/path.csv"; setwd("D:/Dropbox/project")'
+  obs <- code_setwd(mixed_code)
+  expect_equal(nrow(obs), 1L)
+  expect_match(obs$setwd_call, "^setwd")
+
+  # no calls at all
+  expect_equal(nrow(code_setwd("x <- 1")), 0L)
 })
 
 test_that("code_remove_comments", {

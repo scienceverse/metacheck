@@ -9,6 +9,20 @@
 #' file_path <- demofile("json")
 #' text <- code_read(file_path)
 code_read <- function(file_path) {
+  # A genuinely empty (0-byte) local file crashes readr::guess_encoding()
+  # itself, deep inside stringi (`if (stringi::stri_enc_isascii(lines))`,
+  # given NA instead of a length-one logical), with the generic, misleading
+  # message "missing value where TRUE/FALSE needed" -- confirmed live against
+  # real 0-byte files from real GitHub repositories (e.g.
+  # olgaviedma/LadderFuelsR's R/foofy.R), not an artefact of how the file
+  # arrived locally. There is nothing to guess an encoding FOR in an empty
+  # file, so this is checked directly rather than caught after the fact.
+  # file.exists()/file.size() are meaningless for `file_path` as a remote URL
+  # (readr::guess_encoding() and read_lines() both accept one directly), so
+  # this only applies when the path resolves to a real local file; a URL
+  # falls through to the unchanged behaviour below.
+  if (file.exists(file_path) && file.size(file_path) == 0) return(character(0))
+
   # first try readr, handles most encodings well
   enc <- readr::guess_encoding(file_path)$encoding[[1]]
 
@@ -944,6 +958,22 @@ code_setwd <- function(code_text) {
   if (nrow(setwd_matches) == 0)
     return(data.frame(setwd_call = character(0), line = integer(0)))
 
+  # A "setwd(...)" appearing inside a string literal (e.g.
+  # message("Please run setwd(your_path) before continuing")) is instructional
+  # text, not a live call -- confirmed as a real risk (though not yet observed
+  # in a real corpus) since this regex has no string-literal awareness on its
+  # own. Reuses .code_strip_inline_comment()'s own quote-tracking logic (which
+  # already answers exactly this question for a comment marker) rather than
+  # introducing a second way of parsing quote context.
+  is_real_call <- vapply(seq_len(nrow(setwd_matches)), function(i) {
+    line <- code_lines$text[code_lines$text_id == setwd_matches$text_id[i]][[1]]
+    call_start <- regexpr("setwd\\s*\\(", line, perl = TRUE)
+    !.code_pos_in_string(line, call_start)
+  }, logical(1))
+  setwd_matches <- setwd_matches[is_real_call, , drop = FALSE]
+  if (nrow(setwd_matches) == 0)
+    return(data.frame(setwd_call = character(0), line = integer(0)))
+
   dplyr::select(setwd_matches, setwd_call = text, line = text_id)
 }
 
@@ -973,6 +1003,37 @@ code_setwd <- function(code_text) {
 # @param L a single line of code
 # @param marker the comment marker ("//", "%", "#")
 # @returns the line, minus any trailing comment
+# Whether character position `pos` (1-based) on line `L` falls inside a
+# single- or double-quoted string literal. Shares .code_strip_inline_comment()'s
+# own quote-tracking approach (scan character by character, track which quote
+# type -- if any -- we are currently inside, backslash escapes the next
+# character) rather than introducing a second way of answering the same
+# question. Used by code_setwd() to skip a "setwd(" match that is really
+# instructional text inside a string (e.g. a message() call), not a live call.
+#
+# @param L a single line of code
+# @param pos the 1-based character position to check (as returned by
+#   regexpr()); NA/-1 (no match) always returns FALSE
+# @returns TRUE if `pos` sits inside a string literal, else FALSE
+.code_pos_in_string <- function(L, pos) {
+  if (is.na(pos) || pos < 1) return(FALSE)
+  chars <- strsplit(L, "")[[1]]
+  if (!length(chars) || pos > length(chars)) return(FALSE)
+  quote_ch <- NA_character_
+  escaped <- FALSE
+  for (i in seq_len(pos - 1L)) {
+    ch <- chars[[i]]
+    if (escaped) { escaped <- FALSE; next }
+    if (ch == "\\") { escaped <- TRUE; next }
+    if (is.na(quote_ch)) {
+      if (ch == "'" || ch == '"') quote_ch <- ch
+    } else if (ch == quote_ch) {
+      quote_ch <- NA_character_
+    }
+  }
+  !is.na(quote_ch)
+}
+
 .code_strip_inline_comment <- function(L, marker) {
   chars <- strsplit(L, "")[[1]]
   if (!length(chars)) return(L)
