@@ -26,6 +26,33 @@ test_that("file_category", {
   expect_equal(obs, exp)
 })
 
+test_that("data_classify_files recognises genomic sequence formats, compressed or not", {
+  # Confirmed against real corpus files (data_availability validation) that
+  # were falling through to "unknown", wrongly reading a paper as having no
+  # data available when real sequencing data was genuinely present. The bare
+  # extensions (.fasta/.fa/.fq/.fastq) are format-locked via .ext_registry
+  # (data_classify_files()'s Tier 1), so they must be checked through that
+  # function rather than file_category() alone, which does not consult
+  # .ext_registry and has no entry for them on its own.
+  contents <- c("sample.fasta", "sample.fa", "sample.fq", "sample.fastq",
+               "sample.fasta.gz", "sample.fa.gz", "sample.fq.gz", "sample.fastq.gz")
+  obs <- data_classify_files(contents)
+  expect_equal(obs, rep("data", length(contents)))
+
+  # A real archive with no data extension of its own must NOT be swept into
+  # "data" by the same "data;archive" compound-type rule file_category() uses
+  # for the .gz-compressed forms above -- that rule only fires when the
+  # filename ALSO matches a genuine data extension.
+  expect_equal(data_classify_files("random_archive.tar.gz"), "unknown")
+  expect_equal(data_classify_files("random.gz"), "unknown")
+
+  # .dat is deliberately left ambiguous/unlocked (too generic on its own,
+  # same reasoning as excluding a bare ".info"), so a compressed ".dat.gz"
+  # stays unclassified too -- this is a design choice, not a gap this fix
+  # addresses.
+  expect_equal(data_classify_files("sample.dat.gz"), "unknown")
+})
+
 test_that("add_filetype", {
   # edge case classification
   files <- c(

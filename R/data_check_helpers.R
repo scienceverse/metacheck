@@ -219,6 +219,15 @@
     r("feather","data",readable = FALSE),
     r("parquet","data",readable = FALSE),
     r("textgrid","data",readable = FALSE),
+    # Genomic sequence formats. Confirmed against real corpus files
+    # (data_availability validation) that these were falling through to
+    # "unknown" -- e.g. a paper whose only listed files were compressed
+    # FASTA/FASTQ sequence files was wrongly read as having no data
+    # available at all, when real sequencing data was genuinely present.
+    r("fasta","data", readable = FALSE),
+    r("fa",   "data", readable = FALSE),
+    r("fq",   "data", readable = FALSE),
+    r("fastq","data", readable = FALSE),
     # Trial-level behavioural-task data. Inquisit .iqdat is tab-delimited
     # TEXT, so it is real, readable research data and downloads under the
     # default `download = "data"`; its paradata can be extracted.
