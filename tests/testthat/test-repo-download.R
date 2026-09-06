@@ -253,7 +253,8 @@ test_that("zip timeout is passed to zip transport", {
     .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE) {
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
       expect_equal(timeout_s, 7)
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
@@ -264,6 +265,37 @@ test_that("zip timeout is passed to zip transport", {
   dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100,
                             zip_timeout_s = 7)
   expect_false(is.na(dl$file_location[1]))
+})
+
+test_that(".zip_timeout_for_size scales the timeout up for a large expected transfer", {
+  # Regression test: a fixed timeout_s is either needlessly short for a
+  # large, honestly-slow archive or needlessly long for a small stalled one
+  # -- confirmed live against a real ~65MB OSF Waterbutler zip that
+  # transferred at ~2.2MB/s before the underlying connection stalled
+  # entirely (a fixed 120s timeout would have let that same rate look
+  # "fine" for a tiny archive while cutting off a large, merely-slow one at
+  # the same wall-clock point).
+  fn <- metacheck:::.zip_timeout_for_size
+
+  # NA/unknown/zero expected_bytes: caller's timeout_s passed through as-is.
+  expect_equal(fn(120, NA_real_), 120)
+  expect_equal(fn(120, 0), 120)
+  expect_equal(fn(120, -5), 120)
+
+  # A small transfer: the caller's own timeout_s must win (200KB/s makes
+  # 1024 bytes trivially fast).
+  expect_equal(fn(10, 1024), 10)
+
+  # A large transfer (500MB at a 200KB/s floor is ~2560s): the size-derived
+  # value must win over a much smaller caller timeout_s.
+  expected_bytes <- 500 * 1024 * 1024
+  got <- fn(10, expected_bytes)
+  expect_gt(got, 10)
+  expect_equal(got, expected_bytes / (200 * 1024))
+
+  # A custom, faster assumed rate scales the result down proportionally.
+  expect_equal(fn(10, expected_bytes, min_bytes_per_s = 1024 * 1024),
+              expected_bytes / (1024 * 1024))
 })
 
 test_that("reports when archive transport is larger than selected files", {
@@ -283,7 +315,8 @@ test_that("reports when archive transport is larger than selected files", {
     .remote_content_length = function(url) 50 * 1024 * 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE) {
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
     },
@@ -364,7 +397,8 @@ test_that("Dryad datasets with enough files still use zip", {
     .remote_content_length = function(url, req_func = identity) n * 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE) {
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
     },
@@ -398,7 +432,8 @@ test_that("OSF non-osfstorage rows fall back to file-by-file", {
     .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE) {
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
       # zip transport should only cover the osfstorage row
       expect_equal(length(row_idx), 1)
       files$file_location[row_idx] <- files$.cache_path[row_idx]

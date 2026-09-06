@@ -724,14 +724,49 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # where skip_on_api_limit's "API rate limit exhausted: " message actually
 # gets recorded (this function does not track per-file failures itself; it
 # only fills what it can and leaves the rest for that fallback to report).
+#' Scale a zip download timeout up for a large expected transfer
+#'
+#' A fixed `timeout_s` is either needlessly short for a large,
+#' genuinely-slow-but-healthy archive or needlessly long for a small one
+#' that has actually stalled -- confirmed live (a real ~65MB OSF zip
+#' transferred at ~2.2MB/s before the underlying connection stalled
+#' entirely, so a fixed 120s timeout would have both accepted that same
+#' rate as fine for a small archive AND cut off a large, merely-slow one at
+#' the same wall-clock point). `expected_bytes` (the sum of the selected
+#' files' own sizes -- the same estimate every zip-download call site
+#' already computes to decide whether the zip is worth taking over
+#' file-by-file) is scaled at a conservative floor of 200KB/s -- slower
+#' than every real transfer observed so far (Zenodo, Dryad, OSF all
+#' measured well above 1MB/s when healthy) but fast enough not to fail a
+#' large, honestly slow connection.
+#'
+#' @param timeout_s the caller's own timeout, in seconds -- a floor, never
+#'   reduced: a small archive still gets at least this many seconds even
+#'   when the size-derived value would be shorter
+#' @param expected_bytes the expected transfer size in bytes, or `NA` when
+#'   unknown (in which case `timeout_s` is returned unchanged)
+#' @param min_bytes_per_s the conservative transfer-rate floor used to
+#'   derive a timeout from `expected_bytes`
+#'
+#' @returns the timeout to actually use, in seconds
+#' @keywords internal
+.zip_timeout_for_size <- function(timeout_s, expected_bytes = NA_real_,
+                                  min_bytes_per_s = 200 * 1024) {
+  if (is.na(expected_bytes) || expected_bytes <= 0) return(timeout_s)
+  max(timeout_s, expected_bytes / min_bytes_per_s)
+}
+
 .download_zip_to_cache <- function(files, row_idx, zip_url,
                                    strip_dir = FALSE,
                                    req_func = identity,
                                    timeout_s = 120,
                                    max_bytes = Inf,
-                                   skip_on_api_limit = FALSE) {
+                                   skip_on_api_limit = FALSE,
+                                   expected_bytes = NA_real_) {
   zip_tmp <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_tmp), add = TRUE)
+
+  timeout_s <- .zip_timeout_for_size(timeout_s, expected_bytes)
 
   # One connection attempt, then (if it was rate-limited AND
   # skip_on_api_limit is FALSE) ONE retry after waiting for the host's own
@@ -746,7 +781,16 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     req <- httr2::request(zip_url) |>
       req_func() |>
       httr2::req_error(is_error = \(r) FALSE)
-    attempt_resp <- tryCatch(httr2::req_perform_connection(req), error = \(e) e)
+    # blocking = FALSE: see the read loop below (confirmed live, issue #382's
+    # own successor) -- a BLOCKING connection's resp_stream_raw() can itself
+    # hang indefinitely on a single stalled read (observed live: a real OSF
+    # Waterbutler zip download stalled mid-stream with the underlying TCP
+    # connection sitting in CLOSE_WAIT -- the remote had already closed its
+    # side, but the blocking read never returned to let the loop's own
+    # deadline check run again), which defeats the `deadline`/timeout_s
+    # check entirely: that check only runs BETWEEN reads, never during one.
+    attempt_resp <- tryCatch(httr2::req_perform_connection(req, blocking = FALSE),
+                             error = \(e) e)
     if (inherits(attempt_resp, "error")) {
       conn_err <- attempt_resp
       break
@@ -793,6 +837,15 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       chunk <- httr2::resp_stream_raw(resp, kb = 512)
       if (length(chunk) == 0) {
         if (httr2::resp_stream_is_complete(resp)) break
+        # Non-blocking connection (see req_perform_connection() call above):
+        # an empty chunk here means "no data available yet", not
+        # end-of-stream, so a brief sleep avoids busy-looping the CPU while
+        # still returning control to the deadline check every iteration --
+        # unlike the old blocking connection, where this same "keep reading"
+        # intent relied on resp_stream_raw() itself blocking until data
+        # arrived, which is exactly what let a stalled read defeat the
+        # deadline entirely.
+        Sys.sleep(0.1)
         next
       }
       writeBin(chunk, con)
@@ -1238,7 +1291,8 @@ download_repo_files <- function(files,
                                       req_func = .osf_headers,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx_zip[!is.na(files$file_location[ridx_zip])])
     }
 
@@ -1293,7 +1347,8 @@ download_repo_files <- function(files,
                                       strip_dir = FALSE,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1353,7 +1408,8 @@ download_repo_files <- function(files,
                                       req_func = .dataverse_headers,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1476,7 +1532,8 @@ download_repo_files <- function(files,
                                       req_func = .dryad_headers,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1512,7 +1569,8 @@ download_repo_files <- function(files,
                                       strip_dir = TRUE,
                                       req_func = .github_config,
                                       timeout_s = zip_timeout_s,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1561,7 +1619,8 @@ download_repo_files <- function(files,
                                       strip_dir = TRUE,
                                       req_func = .gitlab_config,
                                       timeout_s = zip_timeout_s,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
