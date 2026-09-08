@@ -619,15 +619,42 @@ code_extract_r <- function(file_path = NULL, save_path = NULL, documentation = 0
 
   if (is.null(save_path)) {
     output <- tempfile(fileext = ".R")
-    on.exit(unlink(output))
+    on.exit(unlink(output), add = TRUE)
   } else {
     output <- save_path
   }
 
   # prevent error on duplicate chunk labels
   old_knitr_opt <- getOption("knitr.duplicate.label")
-  on.exit(options(knitr.duplicate.label = old_knitr_opt))
+  on.exit(options(knitr.duplicate.label = old_knitr_opt), add = TRUE)
   options(knitr.duplicate.label = 'allow')
+
+  # A chunk HEADER that references a variable only ever defined by an
+  # earlier CODE chunk (e.g. a chunk option like `fig.width=x` where `x` is
+  # set by a preceding chunk) fails to evaluate under purl()/tangle mode,
+  # since tangle mode extracts code without ever running it. Confirmed live
+  # against a real repository in the Cooper corpus (Zenodo 4721453,
+  # OHI-Northeast, documents/methods/layers_all.Rmd): this one file printed
+  # 23 lines of "Error in eval(x, envir = envir) : object 'x' not found"
+  # during a corpus-validation run, yet knitr::purl() still returned the
+  # complete, correctly extracted code (144 lines) -- confirmed by calling
+  # it directly on the same file. This is knitr's own internal per-chunk
+  # recovery: it writes the caught error straight to the stderr connection
+  # (confirmed: not an R condition -- neither tryCatch(error = ...) nor a
+  # message() handler catches it) rather than raising anything, precisely so
+  # one broken chunk header does not abort the rest of the document. So the
+  # comment below ("purl errors are very unlikely") still holds -- this was
+  # never a real failure -- but the lines read exactly like a crash in a
+  # long-running corpus log, and a document with many dynamically-optioned
+  # chunks can print this many times over. Redirected via sink() rather than
+  # suppressed via message-handling, since it bypasses R's condition system
+  # entirely and a plain sink is the only thing that catches it.
+  purl_stderr <- textConnection("purl_stderr_lines", "w", local = TRUE)
+  sink(purl_stderr, type = "message")
+  on.exit({
+    sink(type = "message")
+    close(purl_stderr)
+  }, add = TRUE)
 
   # purl errors are very unlikely
   knitr::purl(
