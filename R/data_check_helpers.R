@@ -731,17 +731,6 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
                                        skip_types = NULL,
                                        oversize = NULL, failed = NULL,
                                        zip_peek = NULL, model = NULL) {
-  # Resolve the output path: a directory -> "<paper_id>.manifest.json" inside it;
-  # a ".json" path is used verbatim.
-  path <- manifest
-  if (!grepl("\\.json$", path, ignore.case = TRUE)) {
-    dir.create(path, recursive = TRUE, showWarnings = FALSE)
-    pid <- if (length(paper_id) && !is.na(paper_id[[1]])) paper_id[[1]] else "manifest"
-    path <- file.path(path, paste0(pid, ".manifest.json"))
-  } else {
-    dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  }
-
   n <- nrow(files)
   # `files` can grow after zip expansion; normalize `want` so all logical
   # operations below are length-stable and NA-free.
@@ -825,34 +814,12 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   status <- ifelse(downloaded, "downloaded",
                    ifelse(intentional %in% TRUE, "skipped", "failed"))
 
-  entries <- lapply(seq_len(n), function(i) {
-    Filter(Negate(is.null), list(
-      file_name    = files$file_name[i],
-      file_path    = files$file_path[i] %||% files$file_name[i],
-      repo_url     = files$repo_url[i],
-      file_url     = files$file_url[i] %||% NA_character_,
-      # Storage provider (osfstorage / dropbox / github / ...), from repo_check.
-      # Recorded so a re-run reconstructing rows from the manifest keeps the
-      # Waterbutler-zip eligibility that download_repo_files() keys on. NULL for
-      # non-OSF hosts (they have their own zip/file-by-file paths).
-      provider     = if (!is.null(files$provider) && !is.na(files$provider[i]))
-                       files$provider[i] else NULL,
-      file_size    = if (!is.na(file_size[i])) file_size[i] else NULL,
-      data_type    = files$data_type[i] %||% NA_character_,
-      data_format  = files$data_format[i] %||% NA_character_,
-      downloaded   = downloaded[i],
-      status       = status[i],
-      skip_reason  = if (downloaded[i]) NULL else reason[i],
-      skip_intentional = if (downloaded[i]) NULL else intentional[i]
-    ))
-  })
-
   generated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  unint <- which(!downloaded & intentional %in% FALSE)
-  intent <- which(!downloaded & intentional %in% TRUE)
 
-  # Reproducibility metadata. Field names map onto DDI-Codebook 2.5 elements;
-  # ddi_mapping documents the correspondence inside the manifest itself.
+  # Reproducibility metadata. Identical for every paper in this batch (it
+  # describes the RUN, not any one paper), so computed once. Field names map
+  # onto DDI-Codebook 2.5 elements; ddi_mapping documents the correspondence
+  # inside the manifest itself.
   provenance <- list(
     software  = list(name = "metacheck", version = tryCatch(
       as.character(utils::packageVersion("metacheck")),
@@ -874,37 +841,105 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
     )
   )
 
-  doc <- list(
-    paper_id  = if (length(paper_id)) paper_id[[1]] else NA_character_,
-    generated = generated,
-    download  = download,
-    skip_types = if (length(skip_types)) as.list(skip_types) else NULL,
-    caps      = list(max_file_size_mb = max_file_size,
-                     max_download_size_mb = max_download_size),
-    provenance   = provenance,
-    n_files      = n,
-    n_downloaded = sum(downloaded),
-    not_downloaded = list(
-      intentional_n   = length(intent),
-      unintentional_n = length(unint),
-      # The unintentional list is the re-run signal: these are the files a
-      # re-run with the same settings will retry (cache reuse skips the rest).
-      unintentional_files = lapply(unint, function(i) list(
-        file_name = files$file_name[i],
-        repo_url  = files$repo_url[i],
-        reason    = reason[i])),
-      rerun_recommended = length(unint) > 0
-    ),
-    files        = entries
-  )
-  doc <- Filter(Negate(is.null), doc)
+  # ── Split by paper and write one manifest per paper ─────────────────────────
+  # data_check() is called ONCE per module_run() -- for a paperlist (e.g. one
+  # batch of a corpus run) that means `files` holds every paper's rows
+  # together, not one paper's. Group by `files$paper_id` when repo_check
+  # attached one (the normal case); fall back to the `paper_id` ARGUMENT,
+  # used verbatim as the set of ids to write, when `files` has no such column
+  # -- covers both a single-paper caller with no paper_id column, and the
+  # zero-files case (files has 0 rows, so its own paper_id column, even if
+  # present, carries no information; the caller passes the batch's full id
+  # list instead so every paper -- not just the first -- still gets a
+  # (empty) manifest. See the empty-files call site in data_check()).
+  pids <- if ("paper_id" %in% names(files) && n > 0) {
+    files$paper_id
+  } else {
+    rep(if (length(paper_id)) paper_id[[1]] else NA_character_, n)
+  }
+  all_pids <- if (n > 0) {
+    unique(pids)
+  } else {
+    u <- unique(paper_id)
+    if (length(u) == 0) NA_character_ else u
+  }
 
-  # Merge (not overwrite): the manifest is a shared metacheck file. data_check
-  # owns every key it builds here; code_check owns a separate `code` section
-  # (packages). Each writer passes only its own keys, so a re-run of one module
-  # never drops the other's section (see manifest_merge()).
-  manifest_merge(path, doc)
-  invisible(path)
+  paths <- character(0)
+  for (pid_i in all_pids) {
+    idx <- if (n > 0) which(pids %in% pid_i) else integer(0)
+
+    # Resolve this paper's output path: a directory -> "<paper_id>.manifest.json"
+    # inside it; a ".json" path is used verbatim (a single-paper caller, e.g. a
+    # direct call with manifest = "x.manifest.json", where every row goes into
+    # that one file regardless of paper_id).
+    path <- manifest
+    if (!grepl("\\.json$", path, ignore.case = TRUE)) {
+      dir.create(path, recursive = TRUE, showWarnings = FALSE)
+      pid_label <- if (!is.na(pid_i) && nzchar(pid_i %||% "")) pid_i else "manifest"
+      path <- file.path(path, paste0(pid_label, ".manifest.json"))
+    } else {
+      dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+    }
+
+    entries <- lapply(idx, function(i) {
+      Filter(Negate(is.null), list(
+        file_name    = files$file_name[i],
+        file_path    = files$file_path[i] %||% files$file_name[i],
+        repo_url     = files$repo_url[i],
+        file_url     = files$file_url[i] %||% NA_character_,
+        # Storage provider (osfstorage / dropbox / github / ...), from repo_check.
+        # Recorded so a re-run reconstructing rows from the manifest keeps the
+        # Waterbutler-zip eligibility that download_repo_files() keys on. NULL for
+        # non-OSF hosts (they have their own zip/file-by-file paths).
+        provider     = if (!is.null(files$provider) && !is.na(files$provider[i]))
+                         files$provider[i] else NULL,
+        file_size    = if (!is.na(file_size[i])) file_size[i] else NULL,
+        data_type    = files$data_type[i] %||% NA_character_,
+        data_format  = files$data_format[i] %||% NA_character_,
+        downloaded   = downloaded[i],
+        status       = status[i],
+        skip_reason  = if (downloaded[i]) NULL else reason[i],
+        skip_intentional = if (downloaded[i]) NULL else intentional[i]
+      ))
+    })
+
+    unint  <- idx[!downloaded[idx] & intentional[idx] %in% FALSE]
+    intent <- idx[!downloaded[idx] & intentional[idx] %in% TRUE]
+
+    doc <- list(
+      paper_id  = if (!is.na(pid_i)) pid_i else NA_character_,
+      generated = generated,
+      download  = download,
+      skip_types = if (length(skip_types)) as.list(skip_types) else NULL,
+      caps      = list(max_file_size_mb = max_file_size,
+                       max_download_size_mb = max_download_size),
+      provenance   = provenance,
+      n_files      = length(idx),
+      n_downloaded = sum(downloaded[idx]),
+      not_downloaded = list(
+        intentional_n   = length(intent),
+        unintentional_n = length(unint),
+        # The unintentional list is the re-run signal: these are the files a
+        # re-run with the same settings will retry (cache reuse skips the rest).
+        unintentional_files = lapply(unint, function(i) list(
+          file_name = files$file_name[i],
+          repo_url  = files$repo_url[i],
+          reason    = reason[i])),
+        rerun_recommended = length(unint) > 0
+      ),
+      files        = entries
+    )
+    doc <- Filter(Negate(is.null), doc)
+
+    # Merge (not overwrite): the manifest is a shared metacheck file. data_check
+    # owns every key it builds here; code_check owns a separate `code` section
+    # (packages). Each writer passes only its own keys, so a re-run of one module
+    # never drops the other's section (see manifest_merge()).
+    manifest_merge(path, doc)
+    paths <- c(paths, path)
+  }
+
+  invisible(paths)
 }
 
 #' Merge fields into a metacheck manifest, preserving other sections
@@ -5584,9 +5619,28 @@ data_check_demographic <- function(col_name, x) {
 # format -- allowing a mixture would let two half-matching formats add up to a
 # spurious pass.
 .parse_frac <- function(v, fmts) {
+  # A strptime-style format (dashes, slashes, colons, or a month name) can
+  # never match a bare number, so a numeric column always parses at 0 -- but
+  # getting there the slow way (stringify + up to 18 as.POSIXct() passes over
+  # the full column) is expensive. Confirmed live on a real 331k-row Darwin
+  # Core file: a numeric "day" column (day-of-month, matched by
+  # .concept_is_date()'s name regex on "day") alone cost 2.27s of an 11.3s
+  # total classification pass, ~10x every other column. Skipping straight to
+  # 0 for a numeric column changes no result, only the time to reach it.
+  if (is.numeric(v)) return(0)
   v <- as.character(v)
   v <- v[!is.na(v) & nzchar(v)]
   if (!length(v)) return(0)
+  # strptime (as.POSIXct's parser) hard-errors -- rather than returning NA --
+  # on an input string longer than ~1000 characters (R's internal strptime
+  # buffer is fixed-size; confirmed live: 1000 chars parses, 1020+ always
+  # errors "input string is too long"). A free-text column (e.g. an
+  # open-ended survey response) routinely has values that long, and this
+  # crashed data_check entirely -- not just this one column -- the moment
+  # such a column was checked. No real date/datetime value is anywhere near
+  # 200 characters, so treat an overlong value as simply unparseable (NA),
+  # the same as any other value that fails to match a format.
+  v[nchar(v) > 200] <- NA_character_
   best <- 0
   for (f in fmts) {
     p <- suppressWarnings(as.POSIXct(v, format = f, tz = "UTC"))
