@@ -252,7 +252,8 @@ code_lang <- function(file_name) {
 # to do and is a no-op, so their standalone behaviour (including being
 # callable/testable on their own, outside code_check()) is unchanged.
 .code_predownload <- function(all_files, max_file_size, max_download_size,
-                              cache, skip_on_api_limit = FALSE) {
+                              cache, skip_on_api_limit = FALSE,
+                              max_files_per_repo = Inf) {
   # spv/smcl/out are output-typed formats whose embedded syntax the
   # .code_expand_*() steps below recover as a sibling code file (see their own
   # comments); html/htm is not in .ext_registry at all (an .html's data_check
@@ -283,7 +284,8 @@ code_lang <- function(file_name) {
   dl <- tryCatch(
     download_repo_files(all_files[need_dl, , drop = FALSE],
                         max_file_size = max_file_size,
-                        max_download_size = max_download_size, cache = cache,
+                        max_download_size = max_download_size,
+                        max_files_per_repo = max_files_per_repo, cache = cache,
                         skip_on_api_limit = skip_on_api_limit),
     error = function(e) NULL)
   if (!is.null(dl)) all_files$file_location[need_dl] <- dl$file_location

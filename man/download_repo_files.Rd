@@ -8,6 +8,7 @@ download_repo_files(
   files,
   max_file_size = 100,
   max_download_size = 500,
+  max_files_per_repo = Inf,
   zip_timeout_s = 120,
   cache = FALSE,
   skip_on_api_limit = FALSE,
@@ -21,6 +22,15 @@ download_repo_files(
 \item{max_file_size}{largest single file to download, in MB}
 
 \item{max_download_size}{largest total cached footprint per repository, in MB}
+
+\item{max_files_per_repo}{largest file COUNT a single repository may have
+before it is refused outright (same \code{"gated"} reporting as the size caps
+above), default \code{Inf} (no cap). Unlike \code{max_file_size}/\code{max_download_size},
+this catches a repo whose FILE COUNT (not byte size) makes it impractical
+to process one file at a time -- confirmed live 2026-09-07 against a real
+Zenodo record (SAPFLUXNET, ~4000 files) whose per-file classification and
+full-content read (in data_check, downstream of this function) took hours
+and multiple GB of memory for a single paper's repository.}
 
 \item{zip_timeout_s}{timeout (seconds) for a whole-repo zip download attempt
 before falling back to file-by-file fetching}
@@ -57,9 +67,13 @@ attributes: \code{"gated"} (data.frame: \code{repo_url}, \code{message} — repo
 refused outright by the size caps), \code{"oversize_skipped"} (data.frame:
 \code{repo_url}, \code{file_name}, \code{file_size} — individual files skipped under
 \code{max_file_size}), and \code{"failed"} (data.frame: \code{repo_url}, \code{file_name},
-\code{error} — files whose download was attempted but errored, e.g. a
-transient network failure, or — when \code{skip_on_api_limit = TRUE} and the
-host confirmed it — an exhausted API rate limit; see \code{skip_on_api_limit}).
+\code{file_url}, \code{paper_id}, \code{error} — files whose download was attempted but
+errored, e.g. a transient network failure, or — when \code{skip_on_api_limit = TRUE} and the host confirmed it — an exhausted API rate limit; see
+\code{skip_on_api_limit}. \code{file_url} is carried along so a caller can point
+someone at the file directly instead of re-deriving the link. \code{paper_id}
+is \code{files$paper_id[i]} when \code{files} carries that column (e.g. a
+paperlist batch), \code{NA} otherwise — lets a caller attribute a failure back
+to the paper it belongs to without re-joining on \code{repo_url}).
 }
 \description{
 Fetches the bytes for a table of repository files (as produced by

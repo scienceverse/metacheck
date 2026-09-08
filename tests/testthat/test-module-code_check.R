@@ -347,6 +347,114 @@ test_that("code_check merges packages into a supplied manifest", {
   expect_setequal(unlist(m$code$packages), c("dplyr", "ggplot2"))
 })
 
+test_that("code_check records failed code-file downloads in the manifest, with file_url", {
+  # Same synthetic repo_check() + download_repo_files() mock shape as the
+  # "API rate limit exhausted" traffic-light test above, but this time also
+  # supplying `manifest =` so the failure reaches the manifest's
+  # `code$files_failed` section instead of only affecting the traffic light.
+  paper <- test_paper(url = "https://doi.org/10.5061/dryad.does-not-matter")
+  fake_repo_check <- structure(
+    list(
+      module = "repo_check",
+      paper = paper,
+      summary_table = data.frame(paper_id = paper_id(paper)),
+      table = data.frame(
+        paper_id = paper_id(paper),
+        file_name = "analysis.R",
+        repo_url = "https://doi.org/10.5061/dryad.does-not-matter",
+        file_url = "https://datadryad.org/does-not-matter/analysis.R",
+        file_location = NA_character_,
+        stringsAsFactors = FALSE
+      )
+    ),
+    class = "metacheck_module_output"
+  )
+  mdir <- withr::local_tempdir()
+
+  mo <- with_mocked_bindings(
+    module_run(fake_repo_check, "code_check", manifest = mdir),
+    download_repo_files = function(files, ...) {
+      files$file_location <- NA_character_
+      attr(files, "failed") <- data.frame(
+        repo_url = files$repo_url, file_name = files$file_name,
+        file_url = files$file_url,
+        error = "download failed (nothing was written)",
+        stringsAsFactors = FALSE)
+      files
+    },
+    .package = "metacheck"
+  )
+
+  mf <- list.files(mdir, pattern = "\\.manifest\\.json$", full.names = TRUE)
+  expect_length(mf, 1)
+  m <- jsonlite::fromJSON(mf[[1]], simplifyVector = FALSE)
+  expect_length(m$code$files_failed, 1)
+  expect_equal(m$code$files_failed[[1]]$file_name, "analysis.R")
+  expect_equal(m$code$files_failed[[1]]$file_url,
+              "https://datadryad.org/does-not-matter/analysis.R")
+  expect_match(m$code$files_failed[[1]]$error, "download failed")
+})
+
+test_that("code_check manifest is split one file per paper for a paperlist batch", {
+  # Regression test for a real production bug (confirmed live 2026-09-07):
+  # code_check() is called ONCE per module_run(), so a paperlist batch's
+  # packages and failed downloads used to collapse into ONE manifest named
+  # after whichever paper happened to be first. Two papers here -- one whose
+  # code loads a package, one whose download fails -- must land in two
+  # separate manifest files, each holding only its own paper's data.
+  withr::local_options(metacheck.llm.use = FALSE)
+  good_r <- withr::local_tempfile(fileext = ".R")
+  writeLines(c("library(ggplot2)", "x <- 1"), good_r)
+
+  fake_repo_check <- structure(
+    list(
+      module = "repo_check",
+      paper = test_paper(),
+      summary_table = data.frame(paper_id = c("paperX", "paperY")),
+      table = data.frame(
+        paper_id = c("paperX", "paperY"),
+        file_name = c("good.R", "bad.R"),
+        repo_url = c("https://doi.org/10.5061/dryad.aaa",
+                     "https://doi.org/10.5061/dryad.bbb"),
+        file_url = c("file:///does/not/exist/good.R",
+                     "file:///does/not/exist/bad.R"),
+        file_location = NA_character_,
+        stringsAsFactors = FALSE
+      )
+    ),
+    class = "metacheck_module_output"
+  )
+  mdir <- withr::local_tempdir()
+
+  mo <- with_mocked_bindings(
+    module_run(fake_repo_check, "code_check", manifest = mdir),
+    download_repo_files = function(files, ...) {
+      is_x <- files$paper_id == "paperX"
+      files$file_location[is_x] <- good_r  # a real, readable local file
+      attr(files, "failed") <- data.frame(
+        repo_url = files$repo_url[!is_x], file_name = files$file_name[!is_x],
+        file_url = files$file_url[!is_x], paper_id = files$paper_id[!is_x],
+        error = "download failed (nothing was written)",
+        stringsAsFactors = FALSE)
+      files
+    },
+    .package = "metacheck"
+  )
+
+  mf <- list.files(mdir, pattern = "\\.manifest\\.json$")
+  expect_setequal(mf, c("paperX.manifest.json", "paperY.manifest.json"))
+
+  mX <- jsonlite::fromJSON(file.path(mdir, "paperX.manifest.json"), simplifyVector = FALSE)
+  mY <- jsonlite::fromJSON(file.path(mdir, "paperY.manifest.json"), simplifyVector = FALSE)
+
+  expect_equal(unlist(mX$code$packages), "ggplot2")
+  expect_null(mX$code$files_failed)   # paperX's success does not leak in
+
+  expect_null(mY$code$packages)       # paperY's failure does not carry paperX's package
+  expect_length(mY$code$files_failed, 1)
+  expect_equal(mY$code$files_failed[[1]]$file_name, "bad.R")
+})
+
 
 test_that("code_check paper + local_path", {
   skip_if_quick()

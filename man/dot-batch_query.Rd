@@ -14,7 +14,8 @@
      req
  },
   throttle_capacity = NULL,
-  throttle_fill_time_s = 1
+  throttle_fill_time_s = 1,
+  timeout_s = 60
 )
 }
 \arguments{
@@ -36,6 +37,17 @@ for no benefit.}
 
 \item{throttle_fill_time_s}{time window (seconds) \code{throttle_capacity}
 applies to. Ignored when \code{throttle_capacity} is NULL.}
+
+\item{timeout_s}{per-request timeout (seconds). req_perform_sequential()
+is a single blocking call with no timeout of its own, so a connection the
+remote accepts but then stalls on (no error, no close, just silence)
+blocks forever -- confirmed live 2026-09-07 (Cooper corpus rerun) via
+zenodo_info()'s call here, hanging on a Zenodo record lookup for over an
+hour with near-zero CPU and one open connection. Unlike a file download,
+a metadata/listing response has no meaningful "expected size" to scale
+against (see download_repo_files()'s size-scaled timeout for that case),
+so this is a flat default generous enough for a slow-but-real API
+response while still bounding a truly stalled connection.}
 }
 \value{
 a list of responses

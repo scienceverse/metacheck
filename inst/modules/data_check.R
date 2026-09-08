@@ -86,6 +86,13 @@
 #'   (default 500). If a repository's total exceeds this, the whole repository is
 #'   refused (nothing downloaded) with a message naming the size to lift it. Set
 #'   `Inf` for no cap.
+#' @param max_files_per_repo largest file COUNT a single repository may have
+#'   before it is refused outright (default `Inf`, no cap). Unlike the size
+#'   caps above, this catches a repo whose sheer file COUNT (not byte size)
+#'   makes per-file classification and full-content reading impractical for
+#'   one paper's repository -- confirmed live 2026-09-07 against a real
+#'   Zenodo record (SAPFLUXNET, ~4000 files) that took hours and multiple GB
+#'   of memory. See [download_repo_files()]'s own parameter of the same name.
 #' @param cache if `TRUE`, keep downloaded files in a persistent on-disk cache
 #'   (see [repo_cache_dir()]) so they are reused on later runs. If `FALSE` (the
 #'   default), download to a temporary directory that is discarded when the R
@@ -121,6 +128,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        peek_zips = FALSE,
                        max_file_size = 100,
                        max_download_size = 500,
+                       max_files_per_repo = Inf,
                        cache = FALSE,
                        skip_on_api_limit = FALSE,
                        manifest = NULL,
@@ -359,6 +367,17 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(id) == 0) id <- paper$paper_id %||% NA_character_
     id[[1]]
   }
+  # Same fallback chain as .pid(), but returns every paper's id (a paperlist
+  # batch has more than one) instead of collapsing to the first -- used where
+  # `files` cannot say which papers it covers (the zero-files manifest below),
+  # so a manifest still gets written for every paper, not just paper_id[[1]].
+  .pids_all <- function(files = NULL) {
+    id <- paper_id(paper)
+    if (length(id) == 0 && !is.null(files) && "paper_id" %in% names(files))
+      id <- unique(files$paper_id)
+    if (length(id) == 0) id <- paper$paper_id %||% NA_character_
+    id
+  }
 
   # ── 1. Get the file list from repo_check ────────────────────────────────────
   all_files <- get_prev_outputs("repo_check", "table")
@@ -398,7 +417,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         stringsAsFactors = FALSE)
       manifest_path <- .data_check_write_manifest(
         manifest, empty_files, logical(0), NULL,
-        paper_id = .pid(all_files), download = download,
+        paper_id = .pids_all(all_files), download = download,
         max_file_size = max_file_size, max_download_size = max_download_size,
         skip_types = skip_types)
     }
@@ -628,6 +647,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       dl <- download_repo_files(all_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
+                                max_files_per_repo = max_files_per_repo,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       all_files$file_location[need_dl] <- dl$file_location

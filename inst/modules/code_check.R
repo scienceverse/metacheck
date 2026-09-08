@@ -25,14 +25,16 @@
 #' @param download if TRUE (default), download the code files to be checked from online repositories so they are read locally. Set FALSE to stream each file from its URL instead.
 #' @param max_file_size largest single file to download, in MB (default 100). Size caps are an upfront, all-or-nothing gate per repository; set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
+#' @param max_files_per_repo largest file COUNT a single repository may have before it is refused outright (default `Inf`, no cap) -- see [download_repo_files()]'s own parameter of the same name.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
 #' @param skip_on_api_limit if TRUE, a 429 that carries a confirmed rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file instead of waiting out the host's own reset. Default FALSE (always wait for a confirmed reset) -- see [download_repo_files()]'s own parameter of the same name.
-#' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code` section (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
+#' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code$packages` section, and any code file this module tried and failed to download (after retries) is recorded in `code$files_failed` (`file_name`, `repo_url`, `file_url`, `error` per file -- the `file_url` is a direct link to fetch it manually) (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
 #'
 #' @returns a list
 code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
                         max_file_size = 100, max_download_size = 500,
+                        max_files_per_repo = Inf,
                         cache = FALSE, skip_on_api_limit = FALSE,
                         manifest = NULL) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
@@ -77,10 +79,12 @@ code_check <- function(paper, local_path = NULL,
   # for why. Each step's own need_dl check afterwards then finds file_location
   # already populated and is a no-op.
   predl_gated <- NULL
+  code_failed_files <- NULL
   if (isTRUE(download)) {
     all_files <- .code_predownload(all_files, max_file_size, max_download_size,
-                                   cache, skip_on_api_limit)
+                                   cache, skip_on_api_limit, max_files_per_repo)
     predl_gated <- attr(all_files, "gated")
+    code_failed_files <- attr(all_files, "failed")
   }
 
   # An .spv is SPSS's rendered OUTPUT (never itself checked as code), but its
@@ -230,10 +234,12 @@ code_check <- function(paper, local_path = NULL,
       dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
+                                max_files_per_repo = max_files_per_repo,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       checked_files$file_location[need_dl] <- dl$file_location
       predl_gated <- dplyr::bind_rows(predl_gated, attr(dl, "gated"))
+      code_failed_files <- dplyr::bind_rows(code_failed_files, attr(dl, "failed"))
     }
   }
   # Repositories refused by the size caps (from the pre-pass and/or the
@@ -698,23 +704,78 @@ code_check <- function(paper, local_path = NULL,
     } else NULL
   }
 
-  ## merge packages into the manifest ----
-  if (!is.null(manifest) && length(all_packages) > 0) {
-    path <- manifest
-    if (!grepl("\\.json$", path, ignore.case = TRUE)) {
+  ## merge packages and failed downloads into the manifest, one file per paper ----
+  # code_check downloads its own subset of files (predownload + the catch-up
+  # pass above), separately from data_check's download and its `files`
+  # manifest section -- a code file data_check never wanted (e.g. download =
+  # "none" there) can still fail here, so this is the only place those
+  # failures are ever recorded. Deduplicated by (repo_url, file_name): the
+  # same file can be attempted twice (once in .code_predownload(), again by
+  # the catch-up pass above) if it failed the first time and file_location is
+  # still NA.
+  if (!is.null(code_failed_files) && nrow(code_failed_files) > 0) {
+    code_failed_files <- code_failed_files[
+      !duplicated(paste(code_failed_files$repo_url, code_failed_files$file_name)), ]
+  }
+  # code_check() is called ONCE per module_run() -- for a paperlist (e.g. one
+  # batch of a corpus run), all_packages/code_failed_files hold every paper's
+  # rows together, not one paper's. Split by paper_id (same pattern as
+  # pkg_counts/pin_by_paper above) and merge each paper's own manifest
+  # separately -- a plain single write here would collapse every paper's
+  # packages and failures into one file named after whichever paper happened
+  # to be first (confirmed live 2026-09-07 during the Cooper corpus rerun: one
+  # manifest ended up holding 46+ distinct repo_urls from dozens of papers).
+  if (!is.null(manifest)) {
+    pids <- if ("paper_id" %in% names(code_files) && nrow(code_files) > 0) {
+      unique(code_files$paper_id)
+    } else {
       pid <- paper_id(paper)
-      pid <- if (length(pid) && !is.na(pid[[1]])) pid[[1]] else "manifest"
-      path <- file.path(path, paste0(pid, ".manifest.json"))
+      if (length(pid) == 0) pid <- paper$paper_id %||% NA_character_
+      pid
     }
-    tryCatch(
-      manifest_merge(path, list(code = list(
-        packages = as.list(all_packages),
-        ddi_mapping = list(
-          "code.packages" = "otherMat/software (loaded packages)"
-        )
-      ))),
-      error = function(e) NULL
-    )
+    for (pid_i in pids) {
+      pkgs_i <- if ("paper_id" %in% names(code_files) && nrow(code_files) > 0) {
+        pkg_union(which(code_files$paper_id == pid_i))
+      } else {
+        all_packages
+      }
+      failed_i <- if (!is.null(code_failed_files) && nrow(code_failed_files) > 0 &&
+                       "paper_id" %in% names(code_failed_files)) {
+        code_failed_files[code_failed_files$paper_id %in% pid_i, , drop = FALSE]
+      } else if (!is.null(code_failed_files) && length(pids) <= 1) {
+        # No paper_id on the failed rows (e.g. a direct call with `files`
+        # lacking that column) and only one paper in play: attribute them all
+        # to it, same as the single-paper fallback everywhere else here.
+        code_failed_files
+      } else NULL
+
+      if (length(pkgs_i) == 0 && (is.null(failed_i) || nrow(failed_i) == 0)) next
+
+      path <- manifest
+      if (!grepl("\\.json$", path, ignore.case = TRUE)) {
+        pid_label <- if (!is.na(pid_i) && nzchar(pid_i %||% "")) pid_i else "manifest"
+        path <- file.path(path, paste0(pid_label, ".manifest.json"))
+      }
+      files_failed_i <- if (!is.null(failed_i) && nrow(failed_i) > 0) {
+        lapply(seq_len(nrow(failed_i)), function(i) list(
+          file_name = failed_i$file_name[i],
+          repo_url  = failed_i$repo_url[i],
+          file_url  = failed_i$file_url[i],
+          error     = failed_i$error[i]
+        ))
+      } else NULL
+      tryCatch(
+        manifest_merge(path, list(code = list(
+          packages = if (length(pkgs_i) > 0) as.list(pkgs_i) else NULL,
+          files_failed = files_failed_i,
+          ddi_mapping = list(
+            "code.packages" = "otherMat/software (loaded packages)",
+            "code.files_failed" = "fileDscr/notes (code files whose download failed after retries)"
+          )
+        ))),
+        error = function(e) NULL
+      )
+    }
   }
 
   report <- c(
