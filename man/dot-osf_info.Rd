@@ -4,12 +4,18 @@
 \alias{.osf_info}
 \title{Retrieve info from the OSF by ID}
 \usage{
-.osf_info(osf_id, pb = NULL)
+.osf_info(osf_id, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{osf_id}{an vector of OSF IDs or URLs}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached listing for an id
+already looked up (see \code{\link[=repo_info_cache]{repo_info_cache()}}) instead of re-querying the
+OSF API. Off by default. Separate from (and in addition to) \code{osf_info()}'s
+own in-memory, session-only cache (\code{options(metacheck.osf.cache = )}) --
+this one is persistent on disk and survives a restart of the script.}
 }
 \value{
 a data frame of information

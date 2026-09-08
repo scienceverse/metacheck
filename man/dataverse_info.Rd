@@ -4,7 +4,7 @@
 \alias{dataverse_info}
 \title{Retrieve info from Dataverse by URL}
 \usage{
-dataverse_info(dataverse_url, id_col = 1, pb = NULL)
+dataverse_info(dataverse_url, id_col = 1, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{dataverse_url}{a Dataverse dataset URL (or DOI, if \code{host} is also
@@ -15,6 +15,10 @@ given), or a table containing them (e.g., as created by
 if \code{dataverse_url} is a table}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached listing for a dataset
+already looked up (see \code{\link[=repo_info_cache]{repo_info_cache()}}) instead of re-querying the
+installation's API. Off by default.}
 }
 \value{
 a data frame of information

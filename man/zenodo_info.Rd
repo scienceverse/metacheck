@@ -4,7 +4,7 @@
 \alias{zenodo_info}
 \title{Retrieve info from Zenodo by URL}
 \usage{
-zenodo_info(zenodo_url, id_col = 1, pb = NULL)
+zenodo_info(zenodo_url, id_col = 1, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{zenodo_url}{an Zenodo URL, or a table containing them (e.g., as created by \code{zenodo_links()})}
@@ -12,6 +12,10 @@ zenodo_info(zenodo_url, id_col = 1, pb = NULL)
 \item{id_col}{the index or name of the column that contains Zenodo URLs, if id is a table}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached listing for a record
+already looked up (see \code{\link[=repo_info_cache]{repo_info_cache()}}) instead of re-querying
+Zenodo's API. Off by default.}
 }
 \value{
 a data frame of information

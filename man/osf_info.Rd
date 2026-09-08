@@ -4,7 +4,7 @@
 \alias{osf_info}
 \title{Retrieve info from the OSF by ID}
 \usage{
-osf_info(osf_url, id_col = 1, recursive = FALSE, pb = NULL)
+osf_info(osf_url, id_col = 1, recursive = FALSE, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{osf_url}{an OSF ID or URL, or a table containing them}
@@ -14,6 +14,11 @@ osf_info(osf_url, id_col = 1, recursive = FALSE, pb = NULL)
 \item{recursive}{whether to retrieve all children}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, also reuse a PERSISTENT, on-disk cached listing per
+id (see \code{\link[=repo_info_cache]{repo_info_cache()}}) that survives a restart of the script --
+separate from, and in addition to, this function's own in-memory,
+session-only cache described above. Off by default.}
 }
 \value{
 a data frame of information

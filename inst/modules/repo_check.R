@@ -38,6 +38,16 @@
 #'   PsychArchives) already fetches its own licence as part of a request
 #'   this module makes anyway, so `repo_metadata` has their licence
 #'   populated regardless of this parameter.
+#' @param cache if TRUE, reuse a previously cached Dryad/Zenodo listing (see
+#'   [repo_info_cache()]) instead of re-querying the host's API for a
+#'   repository already looked up. FALSE (the default) always queries fresh.
+#'   This is a SEPARATE cache from the downloaded-file-bytes cache
+#'   ([repo_cache_dir()]) -- listing a repository and downloading its files
+#'   are different costs. Worth enabling for a corpus build likely to be
+#'   interrupted and restarted: without it, a host with a strict per-IP
+#'   quota (Dryad, confirmed live 2026-09-08) has its quota re-spent on every
+#'   restart re-listing repositories nothing new needs fetching for, rather
+#'   than on the actual (usually much smaller) download workload.
 #' @param model the LLM model name (see `llm_model_list()`), used only when
 #'   `llm_use(TRUE)` for study grouping the deterministic passes cannot place
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
@@ -46,6 +56,7 @@
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        peek_zips = TRUE,
                        osf_license = FALSE,
+                       cache = FALSE,
                        model = llm_model(),
                        params = list()) {
   # get repository links ----
@@ -203,7 +214,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     tryCatch({
       suppressWarnings({
         osf_info <- lapply(osf_urls, \(x) {
-          osf_files <- osf_info(x, recursive = TRUE, pb = pb)
+          osf_files <- osf_info(x, recursive = TRUE, pb = pb, cache = cache)
           osf_files$repo_name <- x
           osf_files
         }) |> dplyr::bind_rows()
@@ -304,7 +315,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (length(parent_urls_new) > 0) {
         parent_info <- suppressWarnings(
           lapply(parent_urls_new, \(x) {
-            pf <- osf_info(x, recursive = TRUE, pb = pb)
+            pf <- osf_info(x, recursive = TRUE, pb = pb, cache = cache)
             pf$repo_name <- x
             pf
           }) |> dplyr::bind_rows()
@@ -428,10 +439,15 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # unlisted. How much of a repository is DOWNLOADED is capped separately,
     # by download_repo_files() in data_check.
     gh_results <- lapply(github_urls, function(url) {
-      tryCatch(
+      cached <- if (isTRUE(cache)) .repo_info_cache_get("github", url) else NULL
+      if (!is.null(cached)) return(cached)
+      result <- tryCatch(
         github_tree_files(url),
         error = \(e) list(gated = TRUE, reason = conditionMessage(e),
                           files = NULL, default_branch = NA_character_))
+      if (isTRUE(cache) && .repo_info_list_ok(result))
+        .repo_info_cache_put("github", url, result)
+      result
     })
     names(gh_results) <- github_urls
 
@@ -496,11 +512,16 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # batched GraphQL query. How much of a repository is DOWNLOADED is
     # capped separately, by download_repo_files() in data_check.
     gl_results <- lapply(gitlab_urls, function(url) {
-      tryCatch(
+      cached <- if (isTRUE(cache)) .repo_info_cache_get("gitlab", url) else NULL
+      if (!is.null(cached)) return(cached)
+      result <- tryCatch(
         gitlab_tree_files(url),
         error = \(e) list(gated = TRUE, reason = conditionMessage(e),
                           files = NULL, default_branch = NA_character_,
                           license = NA_character_))
+      if (isTRUE(cache) && .repo_info_list_ok(result))
+        .repo_info_cache_put("gitlab", url, result)
+      result
     })
     names(gl_results) <- gitlab_urls
 
@@ -594,7 +615,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                            license = character(0))
   if (length(pa_urls) > 0) {
     tryCatch({
-      pa_file_list <- psycharchives_file_download(pa_urls, pb = pb)
+      pa_file_list <- psycharchives_file_download(pa_urls, pb = pb, cache = cache)
 
       # Flag items whose DSpace rights are restricted/embargoed. The REST API
       # only lists publicly retrievable bitstreams, so restricted files never
@@ -656,7 +677,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                                license = character(0))
   if (length(zenodo_urls) > 0) {
     tryCatch({
-      .zenodo_info <- suppressMessages(zenodo_info(zenodo_urls, pb = pb))
+      .zenodo_info <- suppressMessages(zenodo_info(zenodo_urls, pb = pb, cache = cache))
 
       # zenodo_info() already fetches doi/license as part of its normal
       # dataset-record lookup (see archive-zenodo.R) -- this is a plain
@@ -732,7 +753,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                            license = character(0))
   if (length(dv_urls) > 0) {
     tryCatch({
-      .dv_info <- suppressMessages(dataverse_info(dv_urls))
+      .dv_info <- suppressMessages(dataverse_info(dv_urls, cache = cache))
 
       # dataverse_info() already fetches doi/license as part of its normal
       # dataset-version lookup (see archive-dataverse.R) -- plain extraction
@@ -809,7 +830,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                            license = character(0))
   if (length(fs_urls) > 0) {
     tryCatch({
-      .fs_info <- suppressMessages(figshare_info(fs_urls))
+      .fs_info <- suppressMessages(figshare_info(fs_urls, cache = cache))
 
       # figshare_info() already fetches doi/license as part of its normal
       # article lookup (see archive-figshare.R) -- plain extraction of
@@ -880,7 +901,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                               license = character(0))
   if (length(dryad_urls) > 0) {
     tryCatch({
-      .dryad_info_tbl <- suppressMessages(dryad_info(dryad_urls))
+      .dryad_info_tbl <- suppressMessages(dryad_info(dryad_urls, cache = cache))
 
       # dryad_info() already fetches doi/license as part of its normal
       # dataset-record lookup (see archive-dryad.R) -- plain extraction of
@@ -956,7 +977,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                                 license = character(0))
   if (length(reshare_urls) > 0) {
     tryCatch({
-      .reshare_info_tbl <- suppressMessages(reshare_info(reshare_urls))
+      .reshare_info_tbl <- suppressMessages(reshare_info(reshare_urls, cache = cache))
 
       # reshare_info() already fetches doi as part of its normal deposit
       # lookup (see archive-reshare.R) -- plain extraction, not a new API
@@ -1031,7 +1052,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                                license = character(0))
   if (length(fourtu_urls) > 0) {
     tryCatch({
-      .fourtu_info <- suppressMessages(researchdata4tu_info(fourtu_urls))
+      .fourtu_info <- suppressMessages(researchdata4tu_info(fourtu_urls, cache = cache))
 
       # researchdata4tu_info() reuses figshare's own info-fetching internally
       # (Djehuty implements the Figshare v2 API), so doi/license are already

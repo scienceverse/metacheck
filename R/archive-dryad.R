@@ -99,6 +99,12 @@ dryad_links <- function(paper) {
 #' @param id_col the index or name of the column that contains Dryad URLs, if
 #'   `dryad_url` is a table
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a previously cached listing for a dataset
+#'   already looked up (see [repo_info_cache()]) instead of re-querying
+#'   Dryad's API. Off by default. Worth enabling for a corpus build likely to
+#'   be interrupted and restarted, since Dryad's per-IP request quota is
+#'   otherwise re-spent on every restart re-listing datasets nothing new
+#'   needs fetching for.
 #'
 #' @returns a data frame of information
 #' @export
@@ -106,7 +112,7 @@ dryad_links <- function(paper) {
 #' \dontrun{
 #'   dryad_info("https://doi.org/10.5061/dryad.j1fd7")
 #' }
-dryad_info <- function(dryad_url, id_col = 1, pb = NULL) {
+dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("datadryad.org")) {
     stop("Dryad seems to be offline")
   }
@@ -150,7 +156,15 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL) {
 
   id_info <- vector("list", length(valid_dois))
   for (i in seq_along(valid_dois)) {
-    id_info[[i]] <- .dryad_info(valid_dois[[i]], pb = pb)
+    doi <- valid_dois[[i]]
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("dryad", doi) else NULL
+    if (!is.null(cached)) {
+      id_info[[i]] <- cached
+    } else {
+      id_info[[i]] <- .dryad_info(doi, pb = pb)
+      if (isTRUE(cache) && .repo_info_ok(id_info[[i]]))
+        .repo_info_cache_put("dryad", doi, id_info[[i]])
+    }
   }
 
   info <- do.call(dplyr::bind_rows, id_info)

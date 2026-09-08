@@ -75,6 +75,9 @@ psycharchives_links <- function(paper) {
 #' @param id_col the index or name of the column that contains PsychArchives URLs,
 #'   if `pa_url` is a table
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a cached listing from a prior call for the
+#'   same item instead of re-querying PsychArchives (see
+#'   [repo_info_cache()]); default `FALSE`
 #'
 #' @returns a data frame of information
 #' @export
@@ -82,7 +85,7 @@ psycharchives_links <- function(paper) {
 #' \dontrun{
 #' psycharchives_info("https://hdl.handle.net/20.500.12034/17526")
 #' }
-psycharchives_info <- function(pa_url, id_col = 1, pb = NULL) {
+psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("psycharchives.org")) {
     stop("PsychArchives.org seems to be offline")
   }
@@ -132,7 +135,15 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL) {
   error <- FALSE
   while (!error & i < length(valid_ids)) {
     i <- i + 1
-    info <- .psycharchives_info(valid_ids[[i]])
+    id <- valid_ids[[i]]
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("psycharchives", id) else NULL
+    if (!is.null(cached)) {
+      info <- cached
+    } else {
+      info <- .psycharchives_info(id)
+      if (isTRUE(cache) && .repo_info_ok(info))
+        .repo_info_cache_put("psycharchives", id, info)
+    }
     if ("error" %in% names(info)) error <- TRUE
     id_info[[i]] <- info
   }
@@ -259,10 +270,13 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL) {
 #'
 #' @param pa_url a vector of PsychArchives URLs
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a cached listing from a prior call for the
+#'   same item instead of re-querying PsychArchives (see
+#'   [repo_info_cache()]); default `FALSE`
 #'
 #' @returns a data frame of file information (one row per public bitstream)
 #' @export
-psycharchives_file_download <- function(pa_url, pb = NULL) {
+psycharchives_file_download <- function(pa_url, pb = NULL, cache = FALSE) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
     on.exit(pb$terminate())
@@ -272,7 +286,7 @@ psycharchives_file_download <- function(pa_url, pb = NULL) {
   if (length(pa_url) > 1) {
     unique_pa <- unique(pa_url) |> setdiff(NA)
 
-    file_lists <- lapply(unique_pa, psycharchives_file_download, pb = pb)
+    file_lists <- lapply(unique_pa, psycharchives_file_download, pb = pb, cache = cache)
     info <- do.call(dplyr::bind_rows, args = file_lists)
     orig <- data.frame(pa_url = pa_url)
     df <- dplyr::left_join(orig, info, by = "pa_url")
@@ -291,7 +305,14 @@ psycharchives_file_download <- function(pa_url, pb = NULL) {
     list(what = _) |>
     pb$tick(0, tokens = _)
 
-  info <- .psycharchives_info(pa_url, pb = pb)
+  cached <- if (isTRUE(cache)) .repo_info_cache_get("psycharchives", pa_url) else NULL
+  if (!is.null(cached)) {
+    info <- cached
+  } else {
+    info <- .psycharchives_info(pa_url, pb = pb)
+    if (isTRUE(cache) && .repo_info_ok(info))
+      .repo_info_cache_put("psycharchives", pa_url, info)
+  }
   if ("error" %in% names(info)) return(NULL)
 
   # Rights flag (e.g. "restrictedAccess") and doi carried as attributes rather

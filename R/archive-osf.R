@@ -138,6 +138,10 @@ osf_cache_clear <- function() {
 #' @param id_col the index or name of the column that contains OSF IDs or URLs, if id is a table
 #' @param recursive whether to retrieve all children
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, also reuse a PERSISTENT, on-disk cached listing per
+#'   id (see [repo_info_cache()]) that survives a restart of the script --
+#'   separate from, and in addition to, this function's own in-memory,
+#'   session-only cache described above. Off by default.
 #'
 #' @returns a data frame of information
 #' @export
@@ -151,7 +155,8 @@ osf_cache_clear <- function() {
 #' }
 osf_info <- function(osf_url, id_col = 1,
                      recursive = FALSE,
-                     pb = NULL) {
+                     pb = NULL,
+                     cache = FALSE) {
   # Reuse a cached listing for this session, so a second pass over the same
   # repository (e.g. report() then convert_psychds()) doesn't re-query OSF.
   use_cache <- isTRUE(getOption("metacheck.osf.cache", TRUE))
@@ -195,7 +200,7 @@ osf_info <- function(osf_url, id_col = 1,
   }
 
   # retrieve info for all valid IDs in parallel
-  info <- .osf_info(valid_ids, pb = pb) |>
+  info <- .osf_info(valid_ids, pb = pb, cache = cache) |>
     dplyr::left_join(ids, by = "osf_id")
   if (!"project" %in% colnames(info)) {
     info$project <- rep(NA_character_, nrow(info))

@@ -4,7 +4,7 @@
 \alias{psycharchives_info}
 \title{Retrieve info from PsychArchives by URL}
 \usage{
-psycharchives_info(pa_url, id_col = 1, pb = NULL)
+psycharchives_info(pa_url, id_col = 1, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{pa_url}{a PsychArchives URL (item page, handle, or hdl.handle.net link),
@@ -14,6 +14,10 @@ or a table containing them (e.g., as created by \code{psycharchives_links()})}
 if \code{pa_url} is a table}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a cached listing from a prior call for the
+same item instead of re-querying PsychArchives (see
+\code{\link[=repo_info_cache]{repo_info_cache()}}); default \code{FALSE}}
 }
 \value{
 a data frame of information

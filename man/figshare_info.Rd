@@ -4,7 +4,13 @@
 \alias{figshare_info}
 \title{Retrieve info from Figshare by URL}
 \usage{
-figshare_info(figshare_url, id_col = 1, host = "api.figshare.com", pb = NULL)
+figshare_info(
+  figshare_url,
+  id_col = 1,
+  host = "api.figshare.com",
+  pb = NULL,
+  cache = FALSE
+)
 }
 \arguments{
 \item{figshare_url}{a Figshare URL or DOI, or a table containing them
@@ -18,6 +24,10 @@ if \code{figshare_url} is a table}
 \code{"data.4tu.nl"} instead (see the note at the top of this file).}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached listing for an article
+already looked up (see \code{\link[=repo_info_cache]{repo_info_cache()}}) instead of re-querying the
+API. Off by default.}
 }
 \value{
 a data frame of information

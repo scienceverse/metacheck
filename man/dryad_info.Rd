@@ -4,7 +4,7 @@
 \alias{dryad_info}
 \title{Retrieve info from Dryad by URL}
 \usage{
-dryad_info(dryad_url, id_col = 1, pb = NULL)
+dryad_info(dryad_url, id_col = 1, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{dryad_url}{a Dryad dataset URL or DOI, or a table containing them
@@ -14,6 +14,13 @@ dryad_info(dryad_url, id_col = 1, pb = NULL)
 \code{dryad_url} is a table}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached listing for a dataset
+already looked up (see \code{\link[=repo_info_cache]{repo_info_cache()}}) instead of re-querying
+Dryad's API. Off by default. Worth enabling for a corpus build likely to
+be interrupted and restarted, since Dryad's per-IP request quota is
+otherwise re-spent on every restart re-listing datasets nothing new
+needs fetching for.}
 }
 \value{
 a data frame of information

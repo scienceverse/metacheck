@@ -4,7 +4,7 @@
 \alias{reshare_info}
 \title{Retrieve info from ReShare by URL}
 \usage{
-reshare_info(reshare_url, id_col = 1, pb = NULL)
+reshare_info(reshare_url, id_col = 1, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{reshare_url}{a ReShare URL or DOI, or a table containing them (e.g.,
@@ -14,6 +14,10 @@ as created by \code{\link[=reshare_links]{reshare_links()}})}
 if \code{reshare_url} is a table}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached listing for a deposit
+already looked up (see \code{\link[=repo_info_cache]{repo_info_cache()}}) instead of re-querying the
+API. Off by default.}
 }
 \value{
 a data frame of information

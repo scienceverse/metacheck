@@ -146,11 +146,16 @@ osf_pat <- function(pat = NULL) {
 #'
 #' @param osf_id an vector of OSF IDs or URLs
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a previously cached listing for an id
+#'   already looked up (see [repo_info_cache()]) instead of re-querying the
+#'   OSF API. Off by default. Separate from (and in addition to) `osf_info()`'s
+#'   own in-memory, session-only cache (`options(metacheck.osf.cache = )`) --
+#'   this one is persistent on disk and survives a restart of the script.
 #'
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
-.osf_info <- function(osf_id, pb = NULL) {
+.osf_info <- function(osf_id, pb = NULL, cache = FALSE) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
     on.exit(pb$terminate())
@@ -176,34 +181,58 @@ osf_pat <- function(pat = NULL) {
   guid_ids <- valid_ids[is_guid | is_vo]
   wb_ids <- valid_ids[!is_guid & !is_vo & !is.na(valid_ids)]
 
-  urls <- c(
+  all_urls <- c(
     sprintf("%s/guids/%s", osf_api, guid_ids),
     #sprintf("%s/nodes/%s/?view_only=%s", osf_api, vo_ids, vo_tokens),
     sprintf("%s/files/%s", osf_api, wb_ids)
   )
-
-  resps <- .batch_query(urls, msg = "OSF Info", req_func = .osf_headers)
   all_ids <- c(guid_ids, wb_ids)
 
-  # Process responses
-  results <- vector("list", length(resps))
-
-  for (i in seq_along(resps)) {
-    resp <- resps[[i]]
-    id <- all_ids[[i]]
-
-    results[[i]] <- tryCatch({
-      if (inherits(resp, "error")) {
-        warning(id, " resulted in an error", call. = FALSE)
-        data.frame(osf_id = id, osf_type = "error")
-      } else {
-        # `id` is the ID this response was requested for, so a failure can name
-        # it rather than reporting "NA could not be found".
-        .osf_parse_response(resp, pb = pb, osf_id = id)
+  # Reuse a persistent cached entry per id when requested (see
+  # repo_info_cache()), so restarting a corpus build does not re-query OSF
+  # for a node already looked up in an earlier run. This is separate from
+  # (and checked before falling through to) osf_info()'s own in-memory
+  # session cache above, which does not survive a restart. A cache miss/off
+  # falls through to the request exactly as before.
+  results <- vector("list", length(all_ids))
+  need_fetch <- rep(TRUE, length(all_ids))
+  if (isTRUE(cache)) {
+    for (i in seq_along(all_ids)) {
+      hit <- .repo_info_cache_get("osf", all_ids[i])
+      if (!is.null(hit)) {
+        results[[i]] <- hit
+        need_fetch[i] <- FALSE
       }
-    }, error = \(e) {
-      data.frame(osf_id = id, osf_type = "error")
-    })
+    }
+  }
+
+  fetch_idx <- which(need_fetch)
+  if (length(fetch_idx) > 0) {
+    fetch_urls <- all_urls[fetch_idx]
+    fetch_ids  <- all_ids[fetch_idx]
+    resps <- .batch_query(fetch_urls, msg = "OSF Info", req_func = .osf_headers)
+
+    for (k in seq_along(fetch_idx)) {
+      i <- fetch_idx[k]
+      resp <- resps[[k]]
+      id <- fetch_ids[[k]]
+
+      results[[i]] <- tryCatch({
+        if (inherits(resp, "error")) {
+          warning(id, " resulted in an error", call. = FALSE)
+          data.frame(osf_id = id, osf_type = "error")
+        } else {
+          # `id` is the ID this response was requested for, so a failure can name
+          # it rather than reporting "NA could not be found".
+          .osf_parse_response(resp, pb = pb, osf_id = id)
+        }
+      }, error = \(e) {
+        data.frame(osf_id = id, osf_type = "error")
+      })
+
+      if (isTRUE(cache) && .repo_info_ok(results[[i]]))
+        .repo_info_cache_put("osf", id, results[[i]])
+    }
   }
 
   info_table <- do.call(dplyr::bind_rows, results)

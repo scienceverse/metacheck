@@ -97,6 +97,9 @@ zenodo_links <- function(paper) {
 #' @param zenodo_url an Zenodo URL, or a table containing them (e.g., as created by `zenodo_links()`)
 #' @param id_col the index or name of the column that contains Zenodo URLs, if id is a table
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a previously cached listing for a record
+#'   already looked up (see [repo_info_cache()]) instead of re-querying
+#'   Zenodo's API. Off by default.
 #'
 #' @returns a data frame of information
 #' @export
@@ -105,7 +108,7 @@ zenodo_links <- function(paper) {
 #'   # get info on one zenodo link
 #'   zenodo_info("https://doi.org/10.5281/zenodo.18648142")
 #' }
-zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL) {
+zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("zenodo.org")) {
     stop("Zenodo.org seems to be offline")
   }
@@ -153,7 +156,15 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL) {
   i <- 0
   while (i < length(valid_ids)) {
     i <- i + 1
-    id_info[[i]] <- .zenodo_info(valid_ids[[i]], pb = pb)
+    zid <- valid_ids[[i]]
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("zenodo", zid) else NULL
+    if (!is.null(cached)) {
+      id_info[[i]] <- cached
+    } else {
+      id_info[[i]] <- .zenodo_info(zid, pb = pb)
+      if (isTRUE(cache) && .repo_info_ok(id_info[[i]]))
+        .repo_info_cache_put("zenodo", zid, id_info[[i]])
+    }
   }
 
   info <- id_info |>

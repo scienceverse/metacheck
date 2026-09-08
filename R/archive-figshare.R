@@ -216,6 +216,9 @@ figshare_links <- function(paper) {
 #'   `"api.figshare.com"`; [researchdata4tu_info()] calls this with
 #'   `"data.4tu.nl"` instead (see the note at the top of this file).
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a previously cached listing for an article
+#'   already looked up (see [repo_info_cache()]) instead of re-querying the
+#'   API. Off by default.
 #'
 #' @returns a data frame of information
 #' @export
@@ -223,7 +226,8 @@ figshare_links <- function(paper) {
 #' \dontrun{
 #'   figshare_info("https://doi.org/10.6084/m9.figshare.18093368.v1")
 #' }
-figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com", pb = NULL) {
+figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
+                          pb = NULL, cache = FALSE) {
   if (!online(host)) {
     stop(host, " seems to be offline")
   }
@@ -303,7 +307,19 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com", p
 
   id_info <- vector("list", length(valid_ids))
   for (i in seq_along(valid_ids)) {
-    id_info[[i]] <- .figshare_info(valid_ids[[i]], host = host, pb = pb)
+    id <- valid_ids[[i]]
+    # host is part of the key: researchdata4tu_info() reuses this same
+    # worker against a DIFFERENT host (data.4tu.nl), whose ids are not
+    # guaranteed distinct from api.figshare.com's own id space.
+    ckey <- paste(host, id)
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("figshare", ckey) else NULL
+    if (!is.null(cached)) {
+      id_info[[i]] <- cached
+    } else {
+      id_info[[i]] <- .figshare_info(id, host = host, pb = pb)
+      if (isTRUE(cache) && .repo_info_ok(id_info[[i]]))
+        .repo_info_cache_put("figshare", ckey, id_info[[i]])
+    }
   }
 
   info <- do.call(dplyr::bind_rows, id_info)

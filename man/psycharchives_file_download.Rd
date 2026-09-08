@@ -4,12 +4,16 @@
 \alias{psycharchives_file_download}
 \title{Retrieve public file list from PsychArchives by URL}
 \usage{
-psycharchives_file_download(pa_url, pb = NULL)
+psycharchives_file_download(pa_url, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{pa_url}{a vector of PsychArchives URLs}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a cached listing from a prior call for the
+same item instead of re-querying PsychArchives (see
+\code{\link[=repo_info_cache]{repo_info_cache()}}); default \code{FALSE}}
 }
 \value{
 a data frame of file information (one row per public bitstream)
