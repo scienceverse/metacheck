@@ -9,6 +9,7 @@ download_repo_files(
   max_file_size = 100,
   max_download_size = 500,
   max_files_per_repo = Inf,
+  repo_file_counts = NULL,
   zip_timeout_s = 120,
   cache = FALSE,
   skip_on_api_limit = FALSE,
@@ -31,6 +32,22 @@ to process one file at a time -- confirmed live 2026-09-07 against a real
 Zenodo record (SAPFLUXNET, ~4000 files) whose per-file classification and
 full-content read (in data_check, downstream of this function) took hours
 and multiple GB of memory for a single paper's repository.}
+
+\item{repo_file_counts}{optional named vector/table, \code{repo_url} -> TRUE
+total row count for that repo in the caller's FULL listing, before any
+filtering to "still need downloading". \code{files} here is routinely a
+filtered subset (data_check()/code_check() only pass rows that are
+wanted and not yet on disk), so \code{length(idx)} for a repo within \code{files}
+undercounts its real size -- confirmed live 2026-09-09: the SAME
+SAPFLUXNET record above (~4000 files total) had under \code{max_files_per_repo}
+"still need downloading" rows on one run, so the gate never fired, and
+several hundred individual files were then requested from a host that
+was, at the time, answering every one with a persistent (not transient)
+403 -- each retried independently, compounding into a multi-hour stall
+with no single wait long enough to look like the real problem. When a
+repo's URL is not a name in this vector (e.g. NULL, the default, for a
+caller that has not been updated to pass it), falls back to
+\code{length(idx)} exactly as before.}
 
 \item{zip_timeout_s}{timeout (seconds) for a whole-repo zip download attempt
 before falling back to file-by-file fetching}

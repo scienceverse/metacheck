@@ -10,7 +10,8 @@
   max_file_size = 100,
   max_download_size = 500,
   cache = FALSE,
-  skip_on_api_limit = FALSE
+  skip_on_api_limit = FALSE,
+  max_files_per_repo = Inf
 )
 }
 \arguments{

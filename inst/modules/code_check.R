@@ -97,7 +97,7 @@ code_check <- function(paper, local_path = NULL,
   # download_repo_files() further down.
   if (any(grepl("\\.spv$", all_files$file_name, ignore.case = TRUE))) {
     all_files <- .code_expand_spv(all_files, max_file_size, max_download_size,
-                                  cache, skip_on_api_limit)
+                                  cache, skip_on_api_limit, max_files_per_repo)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -109,7 +109,7 @@ code_check <- function(paper, local_path = NULL,
   # (R/stata.R).
   if (any(grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE))) {
     all_files <- .code_expand_smcl(all_files, max_file_size, max_download_size,
-                                   cache, skip_on_api_limit)
+                                   cache, skip_on_api_limit, max_files_per_repo)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -121,7 +121,7 @@ code_check <- function(paper, local_path = NULL,
   # .code_expand_mplus() and .mplus_export_syntax() (R/mplus.R).
   if (any(grepl("\\.out$", all_files$file_name, ignore.case = TRUE))) {
     all_files <- .code_expand_mplus(all_files, max_file_size, max_download_size,
-                                    cache, skip_on_api_limit)
+                                    cache, skip_on_api_limit, max_files_per_repo)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -132,7 +132,7 @@ code_check <- function(paper, local_path = NULL,
   # .html_export_r_source() (R/html-output.R) for the full rationale.
   if (any(grepl("\\.html?$", all_files$file_name, ignore.case = TRUE))) {
     all_files <- .code_expand_html(all_files, max_file_size, max_download_size,
-                                   cache, skip_on_api_limit)
+                                   cache, skip_on_api_limit, max_files_per_repo)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -231,10 +231,16 @@ code_check <- function(paper, local_path = NULL,
                   !nzchar(checked_files$file_location %||% "")) &
       has_target
     if (any(need_dl)) {
+      # TRUE per-repo row count in the FULL listing, not just the need_dl
+      # subset passed below -- see download_repo_files()'s own
+      # repo_file_counts roxygen (and data_check.R's identical wiring) for
+      # why this matters: a filtered subset can undercount an oversized repo.
+      repo_file_counts <- table(checked_files$repo_url)
       dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
                                 max_files_per_repo = max_files_per_repo,
+                                repo_file_counts = repo_file_counts,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       checked_files$file_location[need_dl] <- dl$file_location
@@ -697,7 +703,8 @@ code_check <- function(paper, local_path = NULL,
   version_pin <- .code_version_pin_check(
     all_files, code_text_list = unlist(r_text_by_paper, recursive = FALSE),
     max_file_size = max_file_size, max_download_size = max_download_size,
-    cache = cache, skip_on_api_limit = skip_on_api_limit)
+    cache = cache, skip_on_api_limit = skip_on_api_limit,
+    max_files_per_repo = max_files_per_repo)
   # Splice resolved locations back into all_files so the per-paper re-check
   # below (summary_table$code_version_pinned) finds every candidate file
   # already local and downloads nothing a second time.
@@ -916,7 +923,8 @@ code_check <- function(paper, local_path = NULL,
         isTRUE(.code_version_pin_check(
           all_files[rows, , drop = FALSE],
           code_text_list = r_text_by_paper[[pid_here]] %||% list(),
-          skip_on_api_limit = skip_on_api_limit)$pinned)
+          skip_on_api_limit = skip_on_api_limit,
+          max_files_per_repo = max_files_per_repo)$pinned)
       },
       logical(1))
     summary_table$code_version_pinned <-

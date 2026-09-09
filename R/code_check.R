@@ -281,11 +281,16 @@ code_lang <- function(file_name) {
     has_target
   if (!any(need_dl)) return(all_files)
 
+  # TRUE per-repo row count in the FULL listing, not just the need_dl subset
+  # passed below -- see download_repo_files()'s own repo_file_counts roxygen
+  # for why an oversized repo can otherwise slip through max_files_per_repo.
+  repo_file_counts <- table(all_files$repo_url)
   dl <- tryCatch(
     download_repo_files(all_files[need_dl, , drop = FALSE],
                         max_file_size = max_file_size,
                         max_download_size = max_download_size,
-                        max_files_per_repo = max_files_per_repo, cache = cache,
+                        max_files_per_repo = max_files_per_repo,
+                        repo_file_counts = repo_file_counts, cache = cache,
                         skip_on_api_limit = skip_on_api_limit),
     error = function(e) NULL)
   if (!is.null(dl)) all_files$file_location[need_dl] <- dl$file_location
@@ -311,17 +316,23 @@ code_lang <- function(file_name) {
 # are silently skipped (no row added) -- an .spv with no usable syntax is not
 # an error, since most of its content is legitimately just rendered tables.
 .code_expand_spv <- function(all_files, max_file_size, max_download_size,
-                             cache, skip_on_api_limit = FALSE) {
+                             cache, skip_on_api_limit = FALSE,
+                             max_files_per_repo = Inf) {
   is_spv <- grepl("\\.spv$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_spv)) return(all_files)
 
   spv_files <- all_files[is_spv, , drop = FALSE]
   need_dl <- is.na(spv_files$file_location) | !nzchar(spv_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(spv_files)) {
+    # TRUE per-repo row count in the FULL listing (all_files), not just this
+    # spv-only subset -- see download_repo_files()'s repo_file_counts roxygen.
+    repo_file_counts <- table(all_files$repo_url)
     dl <- tryCatch(
       download_repo_files(spv_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
+                          max_files_per_repo = max_files_per_repo,
+                          repo_file_counts = repo_file_counts,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) spv_files$file_location[need_dl] <- dl$file_location
@@ -367,17 +378,23 @@ code_lang <- function(file_name) {
 # not an error, since most of its content is legitimately just rendered
 # tables and log bookkeeping.
 .code_expand_smcl <- function(all_files, max_file_size, max_download_size,
-                              cache, skip_on_api_limit = FALSE) {
+                              cache, skip_on_api_limit = FALSE,
+                              max_files_per_repo = Inf) {
   is_smcl <- grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_smcl)) return(all_files)
 
   smcl_files <- all_files[is_smcl, , drop = FALSE]
   need_dl <- is.na(smcl_files$file_location) | !nzchar(smcl_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(smcl_files)) {
+    # TRUE per-repo row count in the FULL listing (all_files), not just this
+    # smcl-only subset -- see download_repo_files()'s repo_file_counts roxygen.
+    repo_file_counts <- table(all_files$repo_url)
     dl <- tryCatch(
       download_repo_files(smcl_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
+                          max_files_per_repo = max_files_per_repo,
+                          repo_file_counts = repo_file_counts,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) smcl_files$file_location[need_dl] <- dl$file_location
@@ -420,17 +437,23 @@ code_lang <- function(file_name) {
 # Mplus .out (INPUT INSTRUCTIONS is always present), but a malformed or
 # truncated download is not an error worth surfacing here.
 .code_expand_mplus <- function(all_files, max_file_size, max_download_size,
-                               cache, skip_on_api_limit = FALSE) {
+                               cache, skip_on_api_limit = FALSE,
+                               max_files_per_repo = Inf) {
   is_out <- grepl("\\.out$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_out)) return(all_files)
 
   out_files <- all_files[is_out, , drop = FALSE]
   need_dl <- is.na(out_files$file_location) | !nzchar(out_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(out_files)) {
+    # TRUE per-repo row count in the FULL listing (all_files), not just this
+    # out-only subset -- see download_repo_files()'s repo_file_counts roxygen.
+    repo_file_counts <- table(all_files$repo_url)
     dl <- tryCatch(
       download_repo_files(out_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
+                          max_files_per_repo = max_files_per_repo,
+                          repo_file_counts = repo_file_counts,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) out_files$file_location[need_dl] <- dl$file_location
@@ -479,17 +502,23 @@ code_lang <- function(file_name) {
 # there for the OTHER trigger — a filename literally containing "output" —
 # which does not require downloading/sniffing at all).
 .code_expand_html <- function(all_files, max_file_size, max_download_size,
-                              cache, skip_on_api_limit = FALSE) {
+                              cache, skip_on_api_limit = FALSE,
+                              max_files_per_repo = Inf) {
   is_html <- grepl("\\.html?$", all_files$file_name, ignore.case = TRUE)
   if (!any(is_html)) return(all_files)
 
   html_files <- all_files[is_html, , drop = FALSE]
   need_dl <- is.na(html_files$file_location) | !nzchar(html_files$file_location %||% "")
   if (any(need_dl) && "file_url" %in% names(html_files)) {
+    # TRUE per-repo row count in the FULL listing (all_files), not just this
+    # html-only subset -- see download_repo_files()'s repo_file_counts roxygen.
+    repo_file_counts <- table(all_files$repo_url)
     dl <- tryCatch(
       download_repo_files(html_files[need_dl, , drop = FALSE],
                           max_file_size = max_file_size,
                           max_download_size = max_download_size, cache = cache,
+                          max_files_per_repo = max_files_per_repo,
+                          repo_file_counts = repo_file_counts,
                           skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (!is.null(dl)) html_files$file_location[need_dl] <- dl$file_location
@@ -1746,7 +1775,8 @@ code_packages <- function(packages) {
 #' @keywords internal
 .code_version_pin_check <- function(all_files, code_text_list = list(),
                                     max_file_size = 100, max_download_size = 500,
-                                    cache = FALSE, skip_on_api_limit = FALSE) {
+                                    cache = FALSE, skip_on_api_limit = FALSE,
+                                    max_files_per_repo = Inf) {
   out <- list(pinned = FALSE, mechanisms = character(0),
              r_versions = character(0), renv_files = character(0),
              renv_packages = data.frame(file_name = character(0),
@@ -1766,10 +1796,16 @@ code_packages <- function(packages) {
     need_dl <- (is.na(renv_rows$file_location) | !nzchar(renv_rows$file_location %||% "")) &
       !is.na(renv_rows$file_url) & nzchar(renv_rows$file_url %||% "")
     if (any(need_dl)) {
+      # TRUE per-repo row count in the FULL listing (all_files), not just this
+      # renv.lock-only subset -- see download_repo_files()'s repo_file_counts
+      # roxygen.
+      repo_file_counts <- table(all_files$repo_url)
       dl <- tryCatch(
         download_repo_files(renv_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
                             max_download_size = max_download_size, cache = cache,
+                            max_files_per_repo = max_files_per_repo,
+                            repo_file_counts = repo_file_counts,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) renv_rows$file_location[need_dl] <- dl$file_location
@@ -1810,10 +1846,16 @@ code_packages <- function(packages) {
     need_dl <- (is.na(si_rows$file_location) | !nzchar(si_rows$file_location %||% "")) &
       !is.na(si_rows$file_url) & nzchar(si_rows$file_url %||% "")
     if (any(need_dl)) {
+      # TRUE per-repo row count in the FULL listing (all_files), not just this
+      # sessionInfo/README-only subset -- see download_repo_files()'s
+      # repo_file_counts roxygen.
+      repo_file_counts <- table(all_files$repo_url)
       dl <- tryCatch(
         download_repo_files(si_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
                             max_download_size = max_download_size, cache = cache,
+                            max_files_per_repo = max_files_per_repo,
+                            repo_file_counts = repo_file_counts,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) si_rows$file_location[need_dl] <- dl$file_location

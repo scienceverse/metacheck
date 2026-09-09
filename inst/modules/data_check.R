@@ -644,10 +644,18 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
       has_target
     if (any(need_dl)) {
+      # TRUE per-repo row count in the FULL listing, not just the need_dl
+      # subset passed below -- download_repo_files()'s max_files_per_repo
+      # gate needs this to catch an oversized repo whose still-needed rows
+      # happen to fall under the cap even though its real size does not (see
+      # download_repo_files()'s own repo_file_counts roxygen for the live
+      # incident this closes).
+      repo_file_counts <- table(all_files$repo_url)
       dl <- download_repo_files(all_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
                                 max_files_per_repo = max_files_per_repo,
+                                repo_file_counts = repo_file_counts,
                                 cache = cache,
                                 skip_on_api_limit = skip_on_api_limit)
       all_files$file_location[need_dl] <- dl$file_location

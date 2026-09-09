@@ -560,21 +560,6 @@ llm <- function(text, system_prompt,
   as.data.frame(result)
 }
 
-#' List LLM Models
-#'
-#' List available LLM models for the specified platform.
-#'
-#' For platforms other than groq, returns the value from the corresponding ellmer::models_platform function.
-#'
-#' @param platform The platform. If NULL, checks all platforms for which you have a valid API_KEY.
-#'
-#' @returns a data frame of models and info
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' llm_model_list()
-#' }
 # Providers metacheck actually reviews and documents supporting, intersected
 # below against whatever ellmer::models_* functions the installed ellmer
 # version happens to export -- an ALLOWLIST, not "every models_* function
@@ -600,6 +585,21 @@ llm <- function(text, system_prompt,
   "portkey", "vllm"
 )
 
+#' List LLM Models
+#'
+#' List available LLM models for the specified platform.
+#'
+#' For platforms other than groq, returns the value from the corresponding ellmer::models_platform function.
+#'
+#' @param platform The platform. If NULL, checks all platforms for which you have a valid API_KEY.
+#'
+#' @returns a data frame of models and info
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' llm_model_list()
+#' }
 llm_model_list <- function(platform = NULL) {
   # get all ellmer models_* functions, then keep only the ones on the
   # allowlist above (see its comment for why this is an allowlist, not a

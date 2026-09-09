@@ -973,6 +973,21 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   Zenodo record (SAPFLUXNET, ~4000 files) whose per-file classification and
 #'   full-content read (in data_check, downstream of this function) took hours
 #'   and multiple GB of memory for a single paper's repository.
+#' @param repo_file_counts optional named vector/table, `repo_url` -> TRUE
+#'   total row count for that repo in the caller's FULL listing, before any
+#'   filtering to "still need downloading". `files` here is routinely a
+#'   filtered subset (data_check()/code_check() only pass rows that are
+#'   wanted and not yet on disk), so `length(idx)` for a repo within `files`
+#'   undercounts its real size -- confirmed live 2026-09-09: the SAME
+#'   SAPFLUXNET record above (~4000 files total) had under `max_files_per_repo`
+#'   "still need downloading" rows on one run, so the gate never fired, and
+#'   several hundred individual files were then requested from a host that
+#'   was, at the time, answering every one with a persistent (not transient)
+#'   403 -- each retried independently, compounding into a multi-hour stall
+#'   with no single wait long enough to look like the real problem. When a
+#'   repo's URL is not a name in this vector (e.g. NULL, the default, for a
+#'   caller that has not been updated to pass it), falls back to
+#'   `length(idx)` exactly as before.
 #' @param zip_timeout_s timeout (seconds) for a whole-repo zip download attempt
 #'   before falling back to file-by-file fetching
 #' @param cache if `TRUE`, write into the persistent rappdirs cache (survives
@@ -1018,6 +1033,7 @@ download_repo_files <- function(files,
                                 max_file_size = 100,
                                 max_download_size = 500,
                                 max_files_per_repo = Inf,
+                                repo_file_counts = NULL,
                                 zip_timeout_s = 120,
                                 cache = FALSE,
                                 skip_on_api_limit = FALSE,
@@ -1202,12 +1218,25 @@ download_repo_files <- function(files,
     # paper's repo either. Uses the same gated/cap_report reporting shape as
     # the size-based caps below, so it surfaces the same way in messages and
     # manifests.
-    if (is.finite(max_files_per_repo) && length(idx) > max_files_per_repo) {
+    #
+    # Gated on repo_file_counts[[repo]] (the TRUE total for this repo) when
+    # the caller provided it, not length(idx) -- `files` is routinely a
+    # caller-filtered subset (only rows still needing a download), which
+    # undercounts a repo whose remaining/wanted rows happen to fall under the
+    # cap even though its real size does not. See this parameter's own
+    # roxygen for the live incident this closes (SAPFLUXNET again: slipped
+    # through on `length(idx)`, then several hundred files individually hit
+    # a host returning a persistent 403, each retried, compounding into a
+    # multi-hour stall with no single wait long enough to look like the
+    # actual problem).
+    true_n <- if (!is.null(repo_file_counts) && repo %in% names(repo_file_counts))
+      repo_file_counts[[repo]] else length(idx)
+    if (is.finite(max_files_per_repo) && true_n > max_files_per_repo) {
       msg <- sprintf(
         paste0("Repository %s holds %d files, exceeding the %d-file cap: ",
                "skipped entirely (not size-capped, file-count-capped). ",
                "Raise `max_files_per_repo` to include it."),
-        repo, length(idx), max_files_per_repo)
+        repo, true_n, max_files_per_repo)
       cap_report(msg)
       gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
                                        stringsAsFactors = FALSE))
