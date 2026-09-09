@@ -1007,6 +1007,79 @@ code_setwd <- function(code_text) {
 }
 
 
+#' Find install.packages() calls in code
+#'
+#' An `install.packages()` call in analysis code installs software on
+#' whoever runs the script, without asking -- a portability and security
+#' concern raised in issue #398: at minimum it is disruptive (unexpected
+#' installs, network access, a package version the author didn't test
+#' against), and at worst a security risk if it points at a private/
+#' untrusted repository. Best practice is to document required packages
+#' (a README, a `renv.lock`/`DESCRIPTION`) rather than install them from
+#' inside the analysis code itself. This scans the (comment-free) code for
+#' `install.packages(...)` calls and returns one row per call, with the
+#' argument as written. Only a LIVE call is ever seen here: a commented-out
+#' `#install.packages(...)` is invisible to this function by construction,
+#' the same way [code_setwd()] never sees a commented-out `setwd()` --
+#' both are only ever called on `code_remove_comments()`'s output. R-only
+#' (the construct is R's; other languages have their own package managers,
+#' which this does not scan).
+#'
+#' @param code_text the code text for a single file (character vector), ideally
+#'   comment-free (as produced by [code_remove_comments()])
+#'
+#' @returns a data frame with columns `install_packages_call` (the
+#'   `install.packages(...)` text as written) and `line` (its line number).
+#'   Empty frame when none are found.
+#' @export
+#'
+#' @examples
+#' code_text <- c(
+#'   "install.packages('ggplot2')",
+#'   "library(ggplot2)"
+#' )
+#' code_install_packages(code_text)
+code_install_packages <- function(code_text) {
+  text_id <- text <- NULL # fix cmd check note
+  # An install.packages( call, optionally namespace-qualified (utils::install.
+  # packages(...) is common in careful/explicit code, unlike setwd()); the
+  # token at a call position, capturing to the LAST closing paren on the line
+  # (greedy `.*`), so a call spanning several named arguments is shown in full.
+  # Matched on the whole line so the report can show the call as written.
+  ip_pattern <- "(?:utils::)?install\\.packages\\s*\\(.*\\)"
+
+  code_lines <- dplyr::tibble(
+    text = strsplit(code_text, "\n+") |> unlist()
+  )
+  code_lines$text_id <- seq_along(code_lines$text)
+
+  ip_matches <- search_text(
+    code_lines,
+    ip_pattern,
+    perl = TRUE,
+    return = "match"
+  )
+  if (nrow(ip_matches) == 0)
+    return(data.frame(install_packages_call = character(0), line = integer(0)))
+
+  # An "install.packages(...)" appearing inside a string literal (e.g.
+  # message("Run install.packages('foo') if this fails")) is instructional
+  # text, not a live call -- same false-positive risk code_setwd() guards
+  # against, reusing the same quote-tracking check rather than introducing a
+  # second way of answering the same question.
+  is_real_call <- vapply(seq_len(nrow(ip_matches)), function(i) {
+    line <- code_lines$text[code_lines$text_id == ip_matches$text_id[i]][[1]]
+    call_start <- regexpr("(?:utils::)?install\\.packages\\s*\\(", line, perl = TRUE)
+    !.code_pos_in_string(line, call_start)
+  }, logical(1))
+  ip_matches <- ip_matches[is_real_call, , drop = FALSE]
+  if (nrow(ip_matches) == 0)
+    return(data.frame(install_packages_call = character(0), line = integer(0)))
+
+  dplyr::select(ip_matches, install_packages_call = text, line = text_id)
+}
+
+
 # Strip a trailing end-of-line comment, ignoring any comment marker that falls
 # INSIDE a string literal.
 #

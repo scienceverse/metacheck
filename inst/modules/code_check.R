@@ -355,6 +355,15 @@ code_check <- function(paper, local_path = NULL,
       the_file$code_setwd <- nrow(setwd_calls)
       the_file$setwd_calls <- paste(setwd_calls$setwd_call, collapse = " | ")
 
+      # get install.packages() calls (R only; same reasoning/delimiter as
+      # setwd() above -- see code_install_packages()).
+      install_packages_calls <- if (the_file$language == "R")
+        code_install_packages(file_nc) else
+        data.frame(install_packages_call = character(0), line = integer(0))
+      the_file$code_install_packages <- nrow(install_packages_calls)
+      the_file$install_packages_calls <-
+        paste(install_packages_calls$install_packages_call, collapse = " | ")
+
       # Find lines where libraries/imports/includes are loaded
       library_lines <- code_library_lines(file_nc, the_file$language)
 
@@ -411,7 +420,9 @@ code_check <- function(paper, local_path = NULL,
   if (ncol(collected_df) == 0) {
     analysis_cols <- c("checked", "parse_error", "parse_error_msg",
                        "code_abs_path", "absolute_paths",
-                       "code_setwd", "setwd_calls", "library_lines",
+                       "code_setwd", "setwd_calls",
+                       "code_install_packages", "install_packages_calls",
+                       "library_lines",
                        "library_max_between", "packages_n", "packages",
                        "comment_lines", "code_lines",
                        "percentage_comment", "has_docstring",
@@ -500,6 +511,26 @@ code_check <- function(paper, local_path = NULL,
     cols <- c("file_name", "setwd_calls")
     report_table_setwd <- code_files[which(code_files$code_setwd > 0), cols]
     colnames(report_table_setwd) <- c("File name", "setwd() calls found")
+  }
+
+  ## install.packages() ----
+  # which() (not logical indexing) for the same NA-safety reason as above.
+  install_packages_issues <- if ("code_install_packages" %in% names(code_files))
+    code_files$file_name[which(code_files$code_install_packages > 0)] else character(0)
+  if (length(install_packages_issues) == 0) {
+    report_install_packages <- "Best programming practice is to avoid `install.packages()` in analysis code: it installs software on whoever runs the script without asking, which is at minimum disruptive (an unexpected install, network access, a package version the author never tested against) and at worst a security risk if it points at an untrusted repository. Document required packages instead (a README, a `renv.lock`/`DESCRIPTION`). No `install.packages()` calls were found in any of the code files."
+    summary_install_packages <- "No install.packages() calls were found."
+    report_table_install_packages <- NULL
+  } else {
+    report_install_packages <- sprintf(
+      "Best programming practice is to avoid `install.packages()` in analysis code: it installs software on whoever runs the script without asking, which is at minimum disruptive (an unexpected install, network access, a package version the author never tested against) and at worst a security risk if it points at an untrusted repository. Document required packages instead (a README, a `renv.lock`/`DESCRIPTION`). `install.packages()` calls were found in %d code file%s.",
+      length(install_packages_issues),
+      plural(length(install_packages_issues))
+    )
+    summary_install_packages <- "install.packages() calls were found."
+    cols <- c("file_name", "install_packages_calls")
+    report_table_install_packages <- code_files[which(code_files$code_install_packages > 0), cols]
+    colnames(report_table_install_packages) <- c("File name", "install.packages() calls found")
   }
 
   ## Comments ----
@@ -792,6 +823,9 @@ code_check <- function(paper, local_path = NULL,
     "#### Working Directory (setwd)",
     report_setwd,
     scroll_table(report_table_setwd, maxrows = 5),
+    "#### Package Installation (install.packages)",
+    report_install_packages,
+    scroll_table(report_table_install_packages, maxrows = 5),
     "#### Libraries / Imports",
     report_library,
     "#### Packages / Dependencies",
@@ -817,6 +851,7 @@ code_check <- function(paper, local_path = NULL,
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
       length(setwd_issues) == 0 &&
+      length(install_packages_issues) == 0 &&
       length(library_issue) == 0 &&
       parse_issues == 0 &&
       version_pin$pinned) {
@@ -844,6 +879,8 @@ code_check <- function(paper, local_path = NULL,
         sum(code_abs_path, na.rm = TRUE) else 0L,
       code_setwd = if (has_col("code_setwd"))
         sum(code_setwd, na.rm = TRUE) else 0L,
+      code_install_packages = if (has_col("code_install_packages"))
+        sum(code_install_packages, na.rm = TRUE) else 0L,
       code_missing_files = if (has_col("loaded_files_missing"))
         sum(loaded_files_missing, na.rm = TRUE) else 0L,
       # Guard the all-NA group (e.g. a file with no parseable code lines):
@@ -896,6 +933,7 @@ code_check <- function(paper, local_path = NULL,
     summary_missingfiles,
     summary_absolute,
     summary_setwd,
+    summary_install_packages,
     summary_library,
     summary_packages,
     summary_version_pin,
