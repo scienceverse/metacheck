@@ -8,8 +8,10 @@ download_repo_files(
   files,
   max_file_size = 100,
   max_download_size = 500,
+  max_files_per_repo = Inf,
   zip_timeout_s = 120,
   cache = FALSE,
+  skip_on_api_limit = FALSE,
   pb = NULL
 )
 }
@@ -21,6 +23,15 @@ download_repo_files(
 
 \item{max_download_size}{largest total cached footprint per repository, in MB}
 
+\item{max_files_per_repo}{largest file COUNT a single repository may have
+before it is refused outright (same \code{"gated"} reporting as the size caps
+above), default \code{Inf} (no cap). Unlike \code{max_file_size}/\code{max_download_size},
+this catches a repo whose FILE COUNT (not byte size) makes it impractical
+to process one file at a time -- confirmed live 2026-09-07 against a real
+Zenodo record (SAPFLUXNET, ~4000 files) whose per-file classification and
+full-content read (in data_check, downstream of this function) took hours
+and multiple GB of memory for a single paper's repository.}
+
 \item{zip_timeout_s}{timeout (seconds) for a whole-repo zip download attempt
 before falling back to file-by-file fetching}
 
@@ -28,6 +39,23 @@ before falling back to file-by-file fetching}
 across sessions, never cleared automatically — see \code{repo_cache_clear()});
 if \code{FALSE} (default), write into a per-session temp directory that R
 removes on exit}
+
+\item{skip_on_api_limit}{if \code{FALSE} (the default), a download that hits a
+host-confirmed exhausted rate limit (a 429 whose response carries
+\code{RateLimit-Remaining: 0}/\code{X-RateLimit-Remaining: 0} and a parseable
+reset time — currently known to apply to Dryad, Zenodo, GitHub, and
+GitLab; other hosts do not expose this and are unaffected either way)
+waits for the host's own stated reset before retrying, however long that
+is — appropriate for an unattended corpus build, where completeness
+matters more than wall-clock time. Set \code{TRUE} to give up on that file
+immediately instead: it is recorded in the \code{"failed"} attribute with an
+\code{"API rate limit exhausted: "}-prefixed message, filterable from every
+other kind of failure, so a caller can re-run later (once the quota has
+reset) targeting only those specific files rather than waiting inline.
+An ordinary transient refusal (a 429 without a confirmed exhausted-quota
+signal, a 403/5xx) still retries with ordinary backoff regardless of
+this setting — it only changes what happens once a real quota
+exhaustion is confirmed.}
 
 \item{pb}{an optional progress bar object (see \code{pb()}), ticked as files
 download}
@@ -39,8 +67,13 @@ attributes: \code{"gated"} (data.frame: \code{repo_url}, \code{message} — repo
 refused outright by the size caps), \code{"oversize_skipped"} (data.frame:
 \code{repo_url}, \code{file_name}, \code{file_size} — individual files skipped under
 \code{max_file_size}), and \code{"failed"} (data.frame: \code{repo_url}, \code{file_name},
-\code{error} — files whose download was attempted but errored, e.g. a
-transient network failure).
+\code{file_url}, \code{paper_id}, \code{error} — files whose download was attempted but
+errored, e.g. a transient network failure, or — when \code{skip_on_api_limit = TRUE} and the host confirmed it — an exhausted API rate limit; see
+\code{skip_on_api_limit}. \code{file_url} is carried along so a caller can point
+someone at the file directly instead of re-deriving the link. \code{paper_id}
+is \code{files$paper_id[i]} when \code{files} carries that column (e.g. a
+paperlist batch), \code{NA} otherwise — lets a caller attribute a failure back
+to the paper it belongs to without re-joining on \code{repo_url}).
 }
 \description{
 Fetches the bytes for a table of repository files (as produced by

@@ -4,7 +4,7 @@
 \alias{researchdata4tu_info}
 \title{Retrieve info from 4TU.ResearchData by URL}
 \usage{
-researchdata4tu_info(researchdata4tu_url, id_col = 1, pb = NULL)
+researchdata4tu_info(researchdata4tu_url, id_col = 1, pb = NULL, cache = FALSE)
 }
 \arguments{
 \item{researchdata4tu_url}{a 4TU.ResearchData URL or DOI, or a table
@@ -14,6 +14,10 @@ containing them (e.g., as created by \code{\link[=researchdata4tu_links]{researc
 4TU.ResearchData URLs, if \code{researchdata4tu_url} is a table}
 
 \item{pb}{a progress bar passed from another function}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached listing for an article
+already looked up (see \code{\link[=repo_info_cache]{repo_info_cache()}}) instead of re-querying the
+API. Off by default.}
 }
 \value{
 a data frame of information

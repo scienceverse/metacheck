@@ -37,11 +37,18 @@ file_category <- function(contents) {
 
   # category is from OSF, so can be: analysis, communication, data, hypothesis, instrumentation, methods and measures, procedure, project, software, other, but mostly uncategorized (NA)
 
-  # hard rules. Most files carry a single type, matched exactly as before. The
-  # one compound case handled here is a statistics-package file that bundles BOTH
-  # a dataset and its analyses (a .jasp / .por is typed "data;stats"): classify it
-  # as DATA, since the dataset is the primary artifact and any bundled analyses
-  # are recovered separately as the code file. Other compound types (code;web,
+  # hard rules. Most files carry a single type, matched exactly as before. Two
+  # compound cases are handled here. A statistics-package file that bundles
+  # BOTH a dataset and its analyses (a .jasp / .por is typed "data;stats"):
+  # classify it as DATA, since the dataset is the primary artifact and any
+  # bundled analyses are recovered separately as the code file. A gzip-
+  # compressed scientific data file (e.g. "sample.fasta.gz", "sample.fq.gz")
+  # matches BOTH its compound data extension (file_types' "fasta.gz"/"fq.gz"
+  # entries) and the bare "gz" extension (typed "archive" in the community
+  # extension list this table is built from), so its own filetype is
+  # "data;archive" -- classify it as DATA for the same reason as above: the
+  # research data is the primary artifact, and gzip compression is a storage
+  # detail, not a different kind of content. Other compound types (code;web,
   # code;exec, code;data) keep their previous behaviour (fall through to NA).
   ft_has <- function(t) grepl(paste0("\\b", t, "\\b"), ft)
   sure_class <- dplyr::case_when(
@@ -49,6 +56,7 @@ file_category <- function(contents) {
     ft == "data" ~ "data",
     ft == "code" ~ "code",
     ft_has("data") & ft_has("stats") ~ "data",   # .jasp / .por: data + analyses
+    ft_has("data") & ft_has("archive") ~ "data", # sample.fasta.gz / .fq.gz
   )
 
   is_readme <- grepl("read[ _-]?me", contents$name, ignore.case = TRUE)

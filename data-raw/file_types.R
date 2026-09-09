@@ -31,7 +31,18 @@ extensions[["data"]] <- data.frame(
           # MATLAB binary array/workspace file. Not source code (MATLAB
           # scripts are .m); it holds saved variables, so it belongs with the
           # other scientific data containers below.
-          "mat")
+          "mat",
+          # Genomic sequence formats, gzip-compressed (the common convention
+          # for these, since sequence files compress well). A bare
+          # tools::file_ext() lookup (used by .ext_registry's data_type
+          # lock) only ever sees "gz" for a compound name like
+          # "sample.fasta.gz", which is itself classified "archive" -- these
+          # compound extensions are matched directly against the whole
+          # filename instead (see file_category()'s own per-extension regex
+          # scan), so a real sequence file is not misread as a generic
+          # archive. Confirmed against real corpus files that were falling
+          # through to "unknown" (data_availability validation).
+          "fasta.gz", "fa.gz", "fq.gz", "fastq.gz")
 )
 extensions[["archive"]] <- data.frame(
   ext = c("z", "lzop", "sz")

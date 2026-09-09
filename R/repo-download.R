@@ -168,10 +168,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # lightweight HEAD request. Used to turn a missing manifest size into a real
 # size *before* downloading, so an unsized 5 GB file is caught by the gate. NA
 # on any error or when the header is absent (chunked/dynamic responses).
+#
+# Routed through .auth_for_url(): Dryad answers 401 to an unauthenticated HEAD
+# on ANY byte-touching endpoint, including this one (verified live 2026-08-16,
+# see .dryad_headers()'s own comment) -- without this a Dryad file whose size
+# is not already known from the repo's own listing is silently dropped from
+# the download candidate set (see .remote_content_length()'s req_func, which
+# existed for the same reason but had to be opted into per call site; only 1
+# of 7 call sites did, so the other 6 still 401'd on Dryad -- .auth_for_url()
+# dispatches on the URL itself, so every caller is covered with no opt-in).
 .remote_size <- function(url) {
   tryCatch({
     req <- httr2::request(url) |>
       httr2::req_method("HEAD") |>
+      .auth_for_url() |>
       httr2::req_error(is_error = function(r) FALSE)
     resp <- httr2::req_perform(req)
     cl <- httr2::resp_header(resp, "content-length")
@@ -183,18 +193,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # Resolve a remote resource's Content-Length (bytes) via HEAD. Used to compare
 # one-shot archive transport size against the selected-file estimate.
 #
-# req_func: request configurator applied before sending, e.g. .dryad_headers.
-# Needed for Dryad specifically -- unlike every other host this function is
-# called for, Dryad requires a token for ANY call that touches file bytes,
-# including a bare HEAD on its bulk-download endpoint (verified live
-# 2026-08-16, see .dryad_headers()'s own comment). An unauthenticated HEAD
-# against it 401s, so without req_func = .dryad_headers this always returns
-# NA for Dryad, which permanently fails the zip-vs-file-by-file size gate
-# below and silently forces every Dryad dataset onto the file-by-file path.
+# req_func: request configurator applied before sending, on top of the
+# host-based auth .auth_for_url() already adds from the URL alone. Was the
+# ONLY auth this function applied, opt-in per call site via req_func =
+# .dryad_headers -- but only 1 of 7 call sites actually opted in, so the other
+# 6 still 401'd if they ever hit a Dryad URL (Dryad requires a token for ANY
+# call that touches file bytes, including a bare HEAD -- verified live
+# 2026-08-16, see .dryad_headers()'s own comment). .auth_for_url() dispatches
+# on the URL itself, so every call site is covered with no opt-in; req_func
+# stays for a caller that needs something .auth_for_url() does not cover.
 .remote_content_length <- function(url, req_func = identity) {
   tryCatch({
     req <- httr2::request(url) |>
       httr2::req_method("HEAD") |>
+      .auth_for_url() |>
       req_func() |>
       httr2::req_error(is_error = function(r) FALSE)
     resp <- httr2::req_perform(req)
@@ -495,7 +507,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # attribute) can filter these out from every other kind of download failure
 # and know a plain re-run, once the host's own quota has reset, is expected
 # to succeed rather than needing any other fix.
-.download_one <- function(url, dest, skip_on_api_limit = FALSE) {
+.download_one <- function(url, dest, skip_on_api_limit = FALSE,
+                          expected_bytes = NA_real_) {
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
   tryCatch({
     # Throttle realm = the host (explicit: the default derivation errors on
@@ -503,6 +516,15 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     host <- tryCatch(httr2::url_parse(url)$hostname, error = function(e) NULL)
     if (is.null(host) || !length(host) || is.na(host) || !nzchar(host))
       host <- "local"
+    # req_perform() below is a single blocking call with no timeout of its
+    # own -- confirmed live 2026-09-07 (Cooper corpus rerun) to hang
+    # indefinitely on a connection the remote accepted but then stalled mid-
+    # transfer (near-zero CPU, one ESTABLISHED socket, no data, no error --
+    # the exact same failure mode .download_zip_to_cache() had before its own
+    # deadline fix, just via req_perform() instead of a manual read loop).
+    # req_timeout() makes curl itself abort a stalled connection so it turns
+    # into an ordinary httr2 error that req_retry() (already wired up below)
+    # can act on, same size-scaled floor as the zip path's own timeout.
     req <- httr2::request(url) |>
       # A private file needs the token, or the OSF serves a sign-in page with
       # status 200 instead. See .auth_for_url().
@@ -513,6 +535,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       # inserts waits when the burst budget is spent, which is what keeps OSF
       # from answering 429.
       httr2::req_throttle(capacity = 10, fill_time_s = 10, realm = host) |>
+      httr2::req_timeout(.zip_timeout_for_size(60, expected_bytes)) |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
                        is_transient = .storage_is_transient_factory(skip_on_api_limit),
                        backoff = .storage_backoff,
@@ -578,10 +601,16 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   expected_size <- rep_len(as.numeric(expected_size), length(urls))
   for (d in dests) dir.create(dirname(d), showWarnings = FALSE, recursive = TRUE)
 
-  reqs <- lapply(urls, \(url) {
+  # req_timeout() per request (same size-scaled floor .download_one() and the
+  # zip path use): without it, req_perform_parallel() below blocks on
+  # whichever request stalls, same failure mode as .download_one() before its
+  # own fix -- for a PARALLEL batch this is worse, since one stalled
+  # connection holds up every other request in the batch too, not just itself.
+  reqs <- lapply(seq_along(urls), \(i) {
     tryCatch({
-      httr2::request(url) |>
+      httr2::request(urls[i]) |>
         .auth_for_url() |>
+        httr2::req_timeout(.zip_timeout_for_size(60, expected_size[i])) |>
         httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
                          is_transient = .storage_is_transient_factory(skip_on_api_limit),
                          backoff = .storage_backoff,
@@ -712,14 +741,49 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # where skip_on_api_limit's "API rate limit exhausted: " message actually
 # gets recorded (this function does not track per-file failures itself; it
 # only fills what it can and leaves the rest for that fallback to report).
+#' Scale a zip download timeout up for a large expected transfer
+#'
+#' A fixed `timeout_s` is either needlessly short for a large,
+#' genuinely-slow-but-healthy archive or needlessly long for a small one
+#' that has actually stalled -- confirmed live (a real ~65MB OSF zip
+#' transferred at ~2.2MB/s before the underlying connection stalled
+#' entirely, so a fixed 120s timeout would have both accepted that same
+#' rate as fine for a small archive AND cut off a large, merely-slow one at
+#' the same wall-clock point). `expected_bytes` (the sum of the selected
+#' files' own sizes -- the same estimate every zip-download call site
+#' already computes to decide whether the zip is worth taking over
+#' file-by-file) is scaled at a conservative floor of 200KB/s -- slower
+#' than every real transfer observed so far (Zenodo, Dryad, OSF all
+#' measured well above 1MB/s when healthy) but fast enough not to fail a
+#' large, honestly slow connection.
+#'
+#' @param timeout_s the caller's own timeout, in seconds -- a floor, never
+#'   reduced: a small archive still gets at least this many seconds even
+#'   when the size-derived value would be shorter
+#' @param expected_bytes the expected transfer size in bytes, or `NA` when
+#'   unknown (in which case `timeout_s` is returned unchanged)
+#' @param min_bytes_per_s the conservative transfer-rate floor used to
+#'   derive a timeout from `expected_bytes`
+#'
+#' @returns the timeout to actually use, in seconds
+#' @keywords internal
+.zip_timeout_for_size <- function(timeout_s, expected_bytes = NA_real_,
+                                  min_bytes_per_s = 200 * 1024) {
+  if (is.na(expected_bytes) || expected_bytes <= 0) return(timeout_s)
+  max(timeout_s, expected_bytes / min_bytes_per_s)
+}
+
 .download_zip_to_cache <- function(files, row_idx, zip_url,
                                    strip_dir = FALSE,
                                    req_func = identity,
                                    timeout_s = 120,
                                    max_bytes = Inf,
-                                   skip_on_api_limit = FALSE) {
+                                   skip_on_api_limit = FALSE,
+                                   expected_bytes = NA_real_) {
   zip_tmp <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_tmp), add = TRUE)
+
+  timeout_s <- .zip_timeout_for_size(timeout_s, expected_bytes)
 
   # One connection attempt, then (if it was rate-limited AND
   # skip_on_api_limit is FALSE) ONE retry after waiting for the host's own
@@ -734,7 +798,16 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     req <- httr2::request(zip_url) |>
       req_func() |>
       httr2::req_error(is_error = \(r) FALSE)
-    attempt_resp <- tryCatch(httr2::req_perform_connection(req), error = \(e) e)
+    # blocking = FALSE: see the read loop below (confirmed live, issue #382's
+    # own successor) -- a BLOCKING connection's resp_stream_raw() can itself
+    # hang indefinitely on a single stalled read (observed live: a real OSF
+    # Waterbutler zip download stalled mid-stream with the underlying TCP
+    # connection sitting in CLOSE_WAIT -- the remote had already closed its
+    # side, but the blocking read never returned to let the loop's own
+    # deadline check run again), which defeats the `deadline`/timeout_s
+    # check entirely: that check only runs BETWEEN reads, never during one.
+    attempt_resp <- tryCatch(httr2::req_perform_connection(req, blocking = FALSE),
+                             error = \(e) e)
     if (inherits(attempt_resp, "error")) {
       conn_err <- attempt_resp
       break
@@ -781,6 +854,15 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       chunk <- httr2::resp_stream_raw(resp, kb = 512)
       if (length(chunk) == 0) {
         if (httr2::resp_stream_is_complete(resp)) break
+        # Non-blocking connection (see req_perform_connection() call above):
+        # an empty chunk here means "no data available yet", not
+        # end-of-stream, so a brief sleep avoids busy-looping the CPU while
+        # still returning control to the deadline check every iteration --
+        # unlike the old blocking connection, where this same "keep reading"
+        # intent relied on resp_stream_raw() itself blocking until data
+        # arrived, which is exactly what let a stalled read defeat the
+        # deadline entirely.
+        Sys.sleep(0.1)
         next
       }
       writeBin(chunk, con)
@@ -883,6 +965,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   `table`): needs `repo_url`, `file_url`, and `file_path` or `file_name`
 #' @param max_file_size largest single file to download, in MB
 #' @param max_download_size largest total cached footprint per repository, in MB
+#' @param max_files_per_repo largest file COUNT a single repository may have
+#'   before it is refused outright (same `"gated"` reporting as the size caps
+#'   above), default `Inf` (no cap). Unlike `max_file_size`/`max_download_size`,
+#'   this catches a repo whose FILE COUNT (not byte size) makes it impractical
+#'   to process one file at a time -- confirmed live 2026-09-07 against a real
+#'   Zenodo record (SAPFLUXNET, ~4000 files) whose per-file classification and
+#'   full-content read (in data_check, downstream of this function) took hours
+#'   and multiple GB of memory for a single paper's repository.
 #' @param zip_timeout_s timeout (seconds) for a whole-repo zip download attempt
 #'   before falling back to file-by-file fetching
 #' @param cache if `TRUE`, write into the persistent rappdirs cache (survives
@@ -914,14 +1004,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   refused outright by the size caps), `"oversize_skipped"` (data.frame:
 #'   `repo_url`, `file_name`, `file_size` — individual files skipped under
 #'   `max_file_size`), and `"failed"` (data.frame: `repo_url`, `file_name`,
-#'   `error` — files whose download was attempted but errored, e.g. a
-#'   transient network failure, or — when `skip_on_api_limit = TRUE` and the
-#'   host confirmed it — an exhausted API rate limit; see `skip_on_api_limit`).
+#'   `file_url`, `paper_id`, `error` — files whose download was attempted but
+#'   errored, e.g. a transient network failure, or — when `skip_on_api_limit =
+#'   TRUE` and the host confirmed it — an exhausted API rate limit; see
+#'   `skip_on_api_limit`. `file_url` is carried along so a caller can point
+#'   someone at the file directly instead of re-deriving the link. `paper_id`
+#'   is `files$paper_id[i]` when `files` carries that column (e.g. a
+#'   paperlist batch), `NA` otherwise — lets a caller attribute a failure back
+#'   to the paper it belongs to without re-joining on `repo_url`).
 #' @export
 #' @keywords internal
 download_repo_files <- function(files,
                                 max_file_size = 100,
                                 max_download_size = 500,
+                                max_files_per_repo = Inf,
                                 zip_timeout_s = 120,
                                 cache = FALSE,
                                 skip_on_api_limit = FALSE,
@@ -958,15 +1054,126 @@ download_repo_files <- function(files,
   already <- file.exists(files$.cache_path)
   files$file_location[already] <- files$.cache_path[already]
 
-  has_url <- !is.na(files$file_url) & nzchar(files$file_url)
   mb <- 1024 * 1024
-
   gated <- data.frame(repo_url = character(0), message = character(0),
                       stringsAsFactors = FALSE)
   # Individual files skipped because they exceed max_file_size (the repo is still
-  # downloaded — only these files are left out). Recorded for reporting.
+  # downloaded — only these files are left out). Recorded for reporting. Moved
+  # up here (was previously defined just before the has_url loop below) so the
+  # archive-member block, which runs first, can record into it too.
   oversize_skipped <- data.frame(repo_url = character(0), file_name = character(0),
                                  file_size = numeric(0), stringsAsFactors = FALSE)
+
+  # ── Archive members (repo_check's zip-peek expansion) ───────────────────────
+  # A row from repo_check's zip-peek expansion (inst/modules/repo_check.R,
+  # "look inside .zip archives") has file_url = NA -- an entry inside an
+  # archive has no address a plain GET/HEAD can request -- but carries
+  # archive_url (the parent zip's own URL) and archive_member (its exact name
+  # within the archive, from zip_peek()'s own listing) instead. Fetch those
+  # here, via the same per-member byte-range mechanism
+  # (.zip_fetch_members()/.zip_member_fetch(), R/zip-peek.R) every
+  # archive-*.R platform file already uses for its own zip-vs-file-by-file
+  # download decision -- this just reaches it from the OTHER direction, a row
+  # that already knows it wants ONE named member rather than "the whole zip,
+  # filtered by type/size". Still gated by cache reuse (`already`, above) and
+  # skipped when it fails (host cannot range-request, member cannot be
+  # located): file_location stays NA and the row is simply never downloaded,
+  # same as any other unresolvable file. Does not touch a row with a real
+  # file_url, so this is purely additive for archive-member rows.
+  if ("archive_url" %in% names(files)) {
+    is_member <- !already & !is.na(files$archive_url) & nzchar(files$archive_url %||% "") &
+      !is.na(files$archive_member %||% NA_character_)
+    if (any(is_member)) {
+      for (arc in unique(files$archive_url[is_member])) {
+        idx <- which(is_member & files$archive_url == arc)
+
+        # Apply the SAME max_file_size/max_download_size caps the has_url path
+        # applies below -- until this was added, an archive-member row (no
+        # file_url, fetched via .zip_fetch_members()'s byte-range mechanism
+        # instead) was invisible to both caps entirely: confirmed live
+        # 2026-09-09 against a real OSF repository whose zip-peek listing
+        # named several 1-2 GB CSV members, every one of which downloaded in
+        # full (8.1 GB total for one paper) despite max_file_size = 100 (MB)
+        # and max_download_size = 500 (MB), because this block runs before
+        # (and independently of) the per-repo budget loop that enforces those
+        # caps for ordinary file_url downloads. Budgeted per ARCHIVE (this
+        # `arc`'s own members), not per repository like the loop below --
+        # a repo-wide budget shared across archive-member and file_url
+        # downloads would need the two paths unified, which this does not
+        # attempt; scoped here to close the specific gap that let one
+        # archive's members bypass sizing entirely.
+        member_sizes <- as.numeric(files$file_size[idx])
+        over <- !is.na(member_sizes) & member_sizes > max_file_size * mb
+        if (any(over)) {
+          oversize_skipped <- rbind(oversize_skipped, data.frame(
+            repo_url  = files$repo_url[idx[over]],
+            file_name = files$file_name[idx[over]],
+            file_size = member_sizes[over],
+            stringsAsFactors = FALSE))
+        }
+        cand <- idx[!over & !is.na(member_sizes)]
+        cand_size <- member_sizes[!over & !is.na(member_sizes)]
+        if (length(cand) == 0) next
+
+        cap_bytes <- if (is.finite(max_download_size)) max_download_size * mb else Inf
+        ord <- order(cand_size)
+        used <- 0
+        keep <- logical(length(cand))
+        for (o in ord) {
+          if (used + cand_size[o] <= cap_bytes) {
+            keep[o] <- TRUE
+            used <- used + cand_size[o]
+          }
+        }
+        if (any(!keep) && is.finite(cap_bytes)) {
+          msg <- sprintf(
+            paste0("An archive in repository %s exceeds the %s MB per-repository ",
+                   "budget: fetched the smallest members up to the cap, %d member%s ",
+                   "omitted. Raise `max_download_size` to include more."),
+            files$repo_url[idx[1]], .cap_num(max_download_size),
+            sum(!keep), plural(sum(!keep)))
+          cap_report(msg)
+          gated <- rbind(gated, data.frame(repo_url = files$repo_url[idx[1]],
+                                           message = msg, stringsAsFactors = FALSE))
+        }
+        idx <- cand[keep]
+        if (length(idx) == 0) next
+
+        # A member's cache destination must NOT reuse .cache_path (built from
+        # the display file_path, which embeds the archive's own file name as
+        # a path component, e.g. ".../SharpRT/CMV_Spread-v1.0.zip/Program/
+        # main.m"): if that same archive was ALSO downloaded whole by the
+        # normal file_url path (a real FILE at ".../CMV_Spread-v1.0.zip"),
+        # creating a directory of the identical name and path fails on
+        # Windows -- confirmed live, "cannot create dir ... reason 'No such
+        # file or directory'" for exactly this collision. Instead, key the
+        # extraction directory off the ARCHIVE's own URL (repo-relative, via
+        # the same cache_path() helper every other file in this function
+        # uses, just with a synthetic relative path that cannot collide with
+        # a real file_path), suffixed ".contents" to match data_check's own
+        # zip-expansion convention (.expand_zip(), R/zip-peek.R: dest <-
+        # paste0(zip_path, ".contents")).
+        arc_key <- gsub("^https?://", "", arc)
+        arc_key <- gsub("[^A-Za-z0-9._-]+", "_", arc_key)
+        member_dest <- paste0(cache_path(files$repo_url[idx[1]],
+                                         file.path(".archive_members", arc_key)),
+                              ".contents")
+        member_dest <- .safe_write_path(member_dest)
+        dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
+        fetched <- tryCatch(
+          .zip_fetch_members(arc, names = files$archive_member[idx], dest = member_dest),
+          error = function(e) NULL)
+        if (is.null(fetched)) next
+        for (k in idx) {
+          row <- fetched[fetched$name == files$archive_member[k] & fetched$ok %in% TRUE, , drop = FALSE]
+          if (nrow(row) == 0 || is.na(row$path[[1]])) next
+          files$file_location[k] <- row$path[[1]]
+        }
+      }
+    }
+  }
+
+  has_url <- !is.na(files$file_url) & nzchar(files$file_url)
   to_get <- integer(0)
 
   # ── Per-repository budget + per-file size filter ────────────────────────────
@@ -985,6 +1192,28 @@ download_repo_files <- function(files,
   for (repo in unique(files$repo_url[has_url])) {
     idx <- which(files$repo_url == repo & has_url)
     if (length(idx) == 0) next
+
+    # A repo with an extreme file count (e.g. a global multi-site database --
+    # confirmed live 2026-09-07 against a real Zenodo record, SAPFLUXNET, with
+    # ~4000 files) is gated immediately, before any per-file size resolution
+    # (which would itself mean thousands of HEAD probes / cache-size checks).
+    # Beyond the download cost, data_check's own full-content read of every
+    # file (needed for its checks) does not scale to this many files for one
+    # paper's repo either. Uses the same gated/cap_report reporting shape as
+    # the size-based caps below, so it surfaces the same way in messages and
+    # manifests.
+    if (is.finite(max_files_per_repo) && length(idx) > max_files_per_repo) {
+      msg <- sprintf(
+        paste0("Repository %s holds %d files, exceeding the %d-file cap: ",
+               "skipped entirely (not size-capped, file-count-capped). ",
+               "Raise `max_files_per_repo` to include it."),
+        repo, length(idx), max_files_per_repo)
+      cap_report(msg)
+      gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
+                                       stringsAsFactors = FALSE))
+      next
+    }
+
     is_cached <- already[idx]
 
     # Resolve sizes (bytes): manifest size; for a cached file the on-disk size;
@@ -1089,6 +1318,7 @@ download_repo_files <- function(files,
   # file-by-file path below. Any repo whose zip download fails, or that the
   # zip-vs-file-by-file gate rejects, falls through the same way.
   failed <- data.frame(repo_url = character(0), file_name = character(0),
+                       file_url = character(0), paper_id = character(0),
                        error = character(0), stringsAsFactors = FALSE)
   if (length(to_get) > 0) {
     remaining <- to_get
@@ -1136,9 +1366,19 @@ download_repo_files <- function(files,
       # payload), not just the wanted subset, so the waste ratio is honest for
       # mixed / partially-filtered nodes. When zip_bytes is unknown the size gate
       # cannot be checked, so we do not risk an unbounded transport: fall back.
-      n_wanted   <- length(ridx_zip)
-      node_osf_n <- sum(files$repo_url == repo &
-                        vapply(seq_len(nrow(files)), is_osfstorage, logical(1)))
+      #
+      # Scoped to this repo's own rows (`which(files$repo_url == repo)`), NOT
+      # `seq_len(nrow(files))` -- the latter re-ran is_osfstorage() (an R-level
+      # scalar call, not vectorised) over EVERY row of the whole batch's
+      # combined files table, once per OSF repo in this loop. For a batch of
+      # 50 papers whose files table can run into the thousands of rows (some
+      # corpus repos publish one file per participant per block), that is an
+      # O(n_osf_repos * n_total_files) scan of scalar R calls -- confirmed
+      # live 2026-09-07 to silently pin one CPU core for 15+ minutes with zero
+      # progress output, since nothing prints until this decision completes.
+      n_wanted    <- length(ridx_zip)
+      repo_rows   <- which(files$repo_url == repo)
+      node_osf_n  <- sum(vapply(repo_rows, is_osfstorage, logical(1)))
       size_ok  <- !is.na(zip_bytes) &&
         (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
       worth_it <- n_wanted > 50L || node_osf_n <= 2L * n_wanted
@@ -1170,7 +1410,8 @@ download_repo_files <- function(files,
                                       req_func = .osf_headers,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx_zip[!is.na(files$file_location[ridx_zip])])
     }
 
@@ -1225,7 +1466,8 @@ download_repo_files <- function(files,
                                       strip_dir = FALSE,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1285,7 +1527,8 @@ download_repo_files <- function(files,
                                       req_func = .dataverse_headers,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1336,18 +1579,56 @@ download_repo_files <- function(files,
       expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
       if (is.na(zip_bytes) && expected_bytes > 0) zip_bytes <- expected_bytes
 
-      # Same zip-vs-file-by-file decision as Dataverse/Zenodo/OSF (see comments
-      # above).
+      # Same zip-vs-file-by-file request-COUNT decision as Dataverse/Zenodo/OSF
+      # (see comments above) -- but Dryad additionally gates on a QUOTA-aware
+      # threshold the other hosts don't get, because Dryad uniquely (confirmed
+      # 2026-09-01 against its own open-source rate-limit config,
+      # datadryad/dryad-app config/initializers/rack_attack.rb +
+      # config/app_config.yml) runs the zip and per-file download paths
+      # through two INDEPENDENT per-IP quota buckets with very different
+      # sizes: zip_downloads_per_day = 100, file_downloads_per_day = 500 (5x
+      # more headroom), each tracked under its own Rack::Attack cache key
+      # regardless of how many bytes/files a request involves. The plain
+      # request-count logic above (worth_it) always prefers zip once a
+      # dataset's wanted files are >=half of it (true for nearly every
+      # real dataset, since callers almost always want "all of it") -- which
+      # means EVERY Dryad dataset routes through the strict 100/day zip
+      # bucket while the far larger 500/day file bucket sits unused.
+      #
+      # Threshold raised from 4 to 12 files on 2026-09-01, mid-corpus-run:
+      # even with the original threshold of 4, the ZIP BUCKET'S HOURLY CAP
+      # (20/hour, separate from and much tighter than the 100/day ceiling)
+      # was still being tripped repeatedly -- confirmed live against the
+      # real Cooper-validation corpus run, batch 29, hitting the same
+      # 5-file dataset on three consecutive restarts because the hourly
+      # bucket had no time to recover between them (restarting the SCRIPT
+      # does not reset the HOST's quota clock; only real elapsed time does).
+      # Recomputed against the corpus data on disk at the time (873 Dryad
+      # datasets): threshold 4 -> 190 zip requests corpus-wide (9.5/hour
+      # average if spent over the minimum 2 zip-days, i.e. routinely
+      # exceeding the 20/hour ceiling on its own even before accounting for
+      # a real run's uneven, bursty pacing); threshold 12 -> only 33 zip
+      # requests corpus-wide (1.6/hour average), a much larger safety
+      # margin against the hourly wall specifically. This trades away some
+      # of the daily-quota-optimality the threshold-sweep analysis found
+      # (12 is not the sweep's minimum-day threshold, 3-6 was) for
+      # practical hourly headroom that matters more once a real run is
+      # actually hitting the hourly cap repeatedly -- a deliberate,
+      # observed-behaviour-driven adjustment, not a re-run of that sweep.
       n_wanted   <- length(ridx)
       record_n   <- sum(files$repo_url == repo)
       size_ok  <- !is.na(zip_bytes) &&
         (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
-      worth_it <- n_wanted > 50L || record_n <= 2L * n_wanted
+      quota_worth_it <- n_wanted > 12L
+      worth_it <- (n_wanted > 50L || record_n <= 2L * n_wanted) && quota_worth_it
       if (!isTRUE(size_ok && worth_it)) {
         why <- if (!size_ok)
           sprintf("zip transport %s MB exceeds 2x the %s MB budget",
                   if (is.na(zip_bytes)) "unknown" else
                     .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
+        else if (!quota_worth_it)
+          sprintf("only %d file%s wanted -- Dryad's zip quota (100/day) is 5x stricter than its per-file quota (500/day), not worth spending on a small dataset",
+                  n_wanted, plural(n_wanted))
         else
           sprintf("dataset holds %d files for %d wanted (>2x) and wanted <= 50",
                   record_n, n_wanted)
@@ -1370,7 +1651,8 @@ download_repo_files <- function(files,
                                       req_func = .dryad_headers,
                                       timeout_s = zip_timeout_s,
                                       max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1406,7 +1688,8 @@ download_repo_files <- function(files,
                                       strip_dir = TRUE,
                                       req_func = .github_config,
                                       timeout_s = zip_timeout_s,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1455,7 +1738,8 @@ download_repo_files <- function(files,
                                       strip_dir = TRUE,
                                       req_func = .gitlab_config,
                                       timeout_s = zip_timeout_s,
-                                      skip_on_api_limit = skip_on_api_limit)
+                                      skip_on_api_limit = skip_on_api_limit,
+                                      expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
     }
 
@@ -1492,6 +1776,8 @@ download_repo_files <- function(files,
           } else {
             failed <- rbind(failed, data.frame(
               repo_url = files$repo_url[i], file_name = files$file_name[i],
+              file_url = files$file_url[i],
+              paper_id = if ("paper_id" %in% names(files)) files$paper_id[i] else NA_character_,
               error = errs[k], stringsAsFactors = FALSE))
           }
           if (!is.null(pb)) pb$tick()
@@ -1500,12 +1786,15 @@ download_repo_files <- function(files,
 
       for (i in remaining_seq) {
         err <- .download_one(files$file_url[i], files$.cache_path[i],
-                             skip_on_api_limit = skip_on_api_limit)
+                             skip_on_api_limit = skip_on_api_limit,
+                             expected_bytes = as.numeric(files$file_size[i]))
         if (is.na(err)) {
           files$file_location[i] <- files$.cache_path[i]
         } else {
           failed <- rbind(failed, data.frame(
             repo_url = files$repo_url[i], file_name = files$file_name[i],
+            file_url = files$file_url[i],
+            paper_id = if ("paper_id" %in% names(files)) files$paper_id[i] else NA_character_,
             error = err, stringsAsFactors = FALSE))
         }
         if (!is.null(pb)) pb$tick()

@@ -147,3 +147,57 @@ test_that("data_check manifest write preserves a code section", {
   expect_equal(unlist(m$code$packages), "dplyr")   # code section survived
   expect_equal(m$provenance$software$name, "metacheck")  # data_check section present
 })
+
+test_that("manifest is split one file per paper for a paperlist batch", {
+  # Regression test for a real production bug (confirmed live 2026-09-07,
+  # during the Cooper corpus rerun): data_check()/code_check() are each
+  # called ONCE per module_run(), so for a paperlist batch `files` holds
+  # every paper's rows together. The manifest path used to be derived from
+  # only the FIRST paper's id, so an entire batch's files silently collapsed
+  # into one manifest mislabeled under paper 1 -- live, a single manifest
+  # ended up holding 46+ distinct repo_urls from dozens of different papers.
+  # Grouping by files$paper_id (repo_check attaches this to every row) fixes
+  # it: one manifest per paper, each holding only its own files.
+  withr::local_options(metacheck.llm.use = FALSE)
+  mdir <- withr::local_tempdir()
+
+  files <- data.frame(
+    paper_id  = c("paperA", "paperB"),
+    repo_url  = c("https://osf.io/aaaaa", "https://osf.io/bbbbb"),
+    file_name = c("dataA.csv", "dataB.csv"),
+    file_path = c("dataA.csv", "dataB.csv"),
+    file_url  = c("https://osf.io/download/aaaaa/", "https://osf.io/download/bbbbb/"),
+    file_size = c(100, 100),
+    data_type = c("data", "data"), data_format = c("tabular", "tabular"),
+    file_location = c(NA_character_, NA_character_),
+    stringsAsFactors = FALSE
+  )
+  failed <- data.frame(repo_url = "https://osf.io/bbbbb", file_name = "dataB.csv",
+                       file_url = "https://osf.io/download/bbbbb/", paper_id = "paperB",
+                       error = "download failed (nothing was written)",
+                       stringsAsFactors = FALSE)
+
+  paths <- metacheck:::.data_check_write_manifest(
+    mdir, files, want = c(TRUE, TRUE), gated = NULL,
+    paper_id = c("paperA", "paperB"), download = "data",
+    max_file_size = 100, max_download_size = 500, failed = failed)
+
+  expect_length(paths, 2)
+  written <- list.files(mdir, pattern = "\\.manifest\\.json$")
+  expect_setequal(written, c("paperA.manifest.json", "paperB.manifest.json"))
+
+  mA <- jsonlite::fromJSON(file.path(mdir, "paperA.manifest.json"), simplifyVector = FALSE)
+  mB <- jsonlite::fromJSON(file.path(mdir, "paperB.manifest.json"), simplifyVector = FALSE)
+
+  # Each paper's own file only -- no cross-contamination.
+  expect_equal(mA$paper_id, "paperA")
+  expect_equal(mA$n_files, 1)
+  expect_equal(mA$files[[1]]$file_name, "dataA.csv")
+
+  expect_equal(mB$paper_id, "paperB")
+  expect_equal(mB$n_files, 1)
+  expect_equal(mB$files[[1]]$file_name, "dataB.csv")
+  expect_equal(mB$files[[1]]$status, "failed")
+  expect_true(mB$not_downloaded$rerun_recommended)
+  expect_false(mA$not_downloaded$rerun_recommended)
+})

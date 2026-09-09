@@ -10,11 +10,13 @@ metacheck_cache_info()
 a data.frame (\code{cache}, \code{path}, \code{size_mb}), invisibly.
 }
 \description{
-Prints the location and size of both on-disk caches — the downloaded
-repository-file cache and the LLM-response cache — so they are never hidden.
-By default each sits in a folder in the current working directory
-(\code{.metacheck_repo_cache} and \code{.metacheck_llm_cache}); relocate both with
-\code{options(metacheck.cache.dir = "/some/path")}.
+Prints the location and size of all three on-disk caches — the downloaded
+repository-FILE cache, the repository-LISTING cache (dataset/record
+metadata, off by default -- see \code{\link[=repo_info_cache]{repo_info_cache()}}), and the LLM-response
+cache — so they are never hidden. By default each sits in a folder in the
+current working directory (\code{.metacheck_repo_cache},
+\code{.metacheck_repo_info_cache}, and \code{.metacheck_llm_cache}); relocate all
+three with \code{options(metacheck.cache.dir = "/some/path")}.
 }
 \examples{
 \dontrun{
@@ -22,5 +24,6 @@ metacheck_cache_info()
 }
 }
 \seealso{
-\code{\link[=repo_cache_dir]{repo_cache_dir()}}, \code{\link[=repo_cache_clear]{repo_cache_clear()}}, \code{\link[=llm_cache_clear]{llm_cache_clear()}}
+\code{\link[=repo_cache_dir]{repo_cache_dir()}}, \code{\link[=repo_cache_clear]{repo_cache_clear()}}, \code{\link[=repo_info_cache]{repo_info_cache()}},
+\code{\link[=repo_info_cache_clear]{repo_info_cache_clear()}}, \code{\link[=llm_cache_clear]{llm_cache_clear()}}
 }

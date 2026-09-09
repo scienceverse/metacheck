@@ -4,12 +4,16 @@
 \alias{data_read_head}
 \title{Read the head of a data file regardless of format}
 \usage{
-data_read_head(path, n_rows = 5)
+data_read_head(path, n_rows = 5, sheet = NULL)
 }
 \arguments{
 \item{path}{path to a data file}
 
 \item{n_rows}{number of rows to read (\code{Inf} for all)}
+
+\item{sheet}{for \code{.xlsx}/\code{.xls} only: sheet name or 1-based index to read.
+\code{NULL} (default) reads the workbook's first sheet, matching
+\code{readxl::read_excel()}'s own default.}
 }
 \value{
 a data.frame, or \code{NULL} on failure / unsupported format.

@@ -95,6 +95,31 @@ test_that(".batch_query", {
   expect_equal(obs[[3]]$status_code, 200)
 }, "mock")
 
+test_that(".batch_query sets a per-request timeout, default and overridden", {
+  # Regression test for a real production hang (confirmed live 2026-09-07,
+  # Cooper corpus rerun): req_perform_sequential() has no timeout of its own,
+  # so a connection the remote accepts but then stalls on (no error, no
+  # close, just silence) blocks forever. This is the shared query helper
+  # behind every repository/API integration in the package (OSF, Dataverse,
+  # Dryad, Figshare, Zenodo, Crossref, ...) -- the actual hang was
+  # zenodo_info()'s call here, stuck over an hour on one Zenodo record lookup.
+  captured <- NULL
+  local_mocked_bindings(
+    req_perform_sequential = function(reqs, ...) {
+      captured <<- reqs
+      stop("stop before any real request -- only inspecting req$options")
+    },
+    .package = "httr2"
+  )
+
+  tryCatch(.batch_query("https://example.org/a"), error = function(e) NULL)
+  expect_equal(captured[[1]]$options$timeout_ms, 60000)  # 60s default
+
+  tryCatch(.batch_query("https://example.org/a", timeout_s = 5),
+          error = function(e) NULL)
+  expect_equal(captured[[1]]$options$timeout_ms, 5000)
+})
+
 
 test_that("path_sanitize", {
   expect_true(is.function(metacheck::path_sanitize))

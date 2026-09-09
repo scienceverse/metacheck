@@ -25,14 +25,18 @@
 #' @param download if TRUE (default), download the code files to be checked from online repositories so they are read locally. Set FALSE to stream each file from its URL instead.
 #' @param max_file_size largest single file to download, in MB (default 100). Size caps are an upfront, all-or-nothing gate per repository; set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
+#' @param max_files_per_repo largest file COUNT a single repository may have before it is refused outright (default `Inf`, no cap) -- see [download_repo_files()]'s own parameter of the same name.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
-#' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code` section (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
+#' @param skip_on_api_limit if TRUE, a 429 that carries a confirmed rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file instead of waiting out the host's own reset. Default FALSE (always wait for a confirmed reset) -- see [download_repo_files()]'s own parameter of the same name.
+#' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code$packages` section, and any code file this module tried and failed to download (after retries) is recorded in `code$files_failed` (`file_name`, `repo_url`, `file_url`, `error` per file -- the `file_url` is a direct link to fetch it manually) (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
 #'
 #' @returns a list
 code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
                         max_file_size = 100, max_download_size = 500,
-                        cache = FALSE, manifest = NULL) {
+                        max_files_per_repo = Inf,
+                        cache = FALSE, skip_on_api_limit = FALSE,
+                        manifest = NULL) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
   # example with missing data files: paper <- psychsci[[221]]
   # Many R files, some with library in different places. paper <- psychsci[[225]]
@@ -44,7 +48,21 @@ code_check <- function(paper, local_path = NULL,
   # local_path is given here, a cached result from a run without it (or with
   # a different one) would silently omit those local files, so local_path
   # forces a fresh repo_check call rather than trusting the cache.
-  all_files <- if (is.null(local_path)) get_prev_outputs("repo_check", "table") else NULL
+  #
+  # Prefer data_check's "structure" over repo_check's raw "table" when both
+  # are available in the same module_run() chain: data_check's own all_files
+  # starts from repo_check's table and only ever REPLACES a zip/tar/gz
+  # archive's one row with its expanded member rows (see data_check.R's
+  # zip/tar/gz expansion) -- it never drops a non-archive row repo_check
+  # found. So it is a strict superset for code_check's purposes, and it is
+  # the only place a code file bundled inside a zip data_check already
+  # downloaded and expanded is visible at all (repo_check's own listing still
+  # shows that zip as one opaque row when repo_check's peek_zips = FALSE, or
+  # when the peek genuinely could not read the archive). Mirrors the pattern
+  # codebook_check already uses for the same output. See issue #383 (Gap 1).
+  all_files <- if (is.null(local_path))
+    get_prev_outputs("data_check", "structure") %||%
+      get_prev_outputs("repo_check", "table") else NULL
   if (is.null(all_files)) {
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only)
@@ -61,9 +79,12 @@ code_check <- function(paper, local_path = NULL,
   # for why. Each step's own need_dl check afterwards then finds file_location
   # already populated and is a no-op.
   predl_gated <- NULL
+  code_failed_files <- NULL
   if (isTRUE(download)) {
-    all_files <- .code_predownload(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_predownload(all_files, max_file_size, max_download_size,
+                                   cache, skip_on_api_limit, max_files_per_repo)
     predl_gated <- attr(all_files, "gated")
+    code_failed_files <- attr(all_files, "failed")
   }
 
   # An .spv is SPSS's rendered OUTPUT (never itself checked as code), but its
@@ -75,7 +96,8 @@ code_check <- function(paper, local_path = NULL,
   # already local using the same options this function already passes to
   # download_repo_files() further down.
   if (any(grepl("\\.spv$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_spv(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_spv(all_files, max_file_size, max_download_size,
+                                  cache, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -86,7 +108,8 @@ code_check <- function(paper, local_path = NULL,
   # a .sps file -- see .code_expand_smcl() and .smcl_export_syntax()
   # (R/stata.R).
   if (any(grepl("\\.smcl$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_smcl(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_smcl(all_files, max_file_size, max_download_size,
+                                   cache, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -97,7 +120,8 @@ code_check <- function(paper, local_path = NULL,
   # file the same way .smcl's echoed commands become a .do file -- see
   # .code_expand_mplus() and .mplus_export_syntax() (R/mplus.R).
   if (any(grepl("\\.out$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_mplus(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_mplus(all_files, max_file_size, max_download_size,
+                                    cache, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -107,7 +131,20 @@ code_check <- function(paper, local_path = NULL,
   # or documentation site. See .code_expand_html() and .html_sniff_kind()/
   # .html_export_r_source() (R/html-output.R) for the full rationale.
   if (any(grepl("\\.html?$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_html(all_files, max_file_size, max_download_size, cache)
+    all_files <- .code_expand_html(all_files, max_file_size, max_download_size,
+                                   cache, skip_on_api_limit)
+    all_files$language <- code_lang(all_files$file_name)
+  }
+
+  # A ".zip" row still unexpanded at this point (data_check did not run
+  # first, or repo_check's own peek_zips = FALSE, so no per-member rows
+  # exist yet) hides any code files bundled inside it -- code_lang(".zip") is
+  # NA, so the archive itself is never checked, and nothing else here can see
+  # what is inside it. Peek the archive's central directory and fetch only
+  # its code-classified members via range requests (no full download). See
+  # .code_expand_zip() and issue #383 (Gap 2).
+  if (any(grepl("\\.zip$", all_files$file_name, ignore.case = TRUE))) {
+    all_files <- .code_expand_zip(all_files, skip_on_api_limit)
     all_files$language <- code_lang(all_files$file_name)
   }
 
@@ -182,16 +219,27 @@ code_check <- function(paper, local_path = NULL,
   # rows appended by the expand steps between here and there. Files without a
   # local copy fall back to streaming from file_url below.
   if (isTRUE(download) && "file_url" %in% names(checked_files)) {
+    # A row has a real file_url, OR (for a member of a zip repo_check's own
+    # peek already expanded) an archive_url + archive_member pair instead --
+    # see .code_predownload()'s identical has_target (R/code_check.R) for the
+    # full rationale.
+    has_target <- (!is.na(checked_files$file_url) & nzchar(checked_files$file_url %||% "")) |
+      (!is.na(checked_files$archive_url %||% NA_character_) &
+         nzchar(checked_files$archive_url %||% "") &
+         !is.na(checked_files$archive_member %||% NA_character_))
     need_dl <- (is.na(checked_files$file_location) |
                   !nzchar(checked_files$file_location %||% "")) &
-      !is.na(checked_files$file_url) & nzchar(checked_files$file_url %||% "")
+      has_target
     if (any(need_dl)) {
       dl <- download_repo_files(checked_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
-                                cache = cache)
+                                max_files_per_repo = max_files_per_repo,
+                                cache = cache,
+                                skip_on_api_limit = skip_on_api_limit)
       checked_files$file_location[need_dl] <- dl$file_location
       predl_gated <- dplyr::bind_rows(predl_gated, attr(dl, "gated"))
+      code_failed_files <- dplyr::bind_rows(code_failed_files, attr(dl, "failed"))
     }
   }
   # Repositories refused by the size caps (from the pre-pass and/or the
@@ -331,6 +379,7 @@ code_check <- function(paper, local_path = NULL,
       the_file$comment_lines <- line_stats$comment_lines
       the_file$code_lines <- line_stats$code_lines
       the_file$percentage_comment <- line_stats$percent_comments
+      the_file$has_docstring <- line_stats$has_docstring
 
       # missing loaded files
       file_refs <- code_file_refs(file_nc, the_file$language)
@@ -338,7 +387,12 @@ code_check <- function(paper, local_path = NULL,
       # fix possible winslashes
       base_ref <- gsub("\\\\", "/", file_refs) |> basename()
       base_repo <- gsub("\\\\", "/", files_in_repo) |> basename()
-      missing_files <- setdiff(base_ref, base_repo)
+      # Case-insensitive: a real file that exists in the repo only under a
+      # different letter case (e.g. code references "REM_tools.r", the repo
+      # holds "REM_tools.R") is a match, not a missing file -- most filesystems
+      # authors develop on (Windows, macOS default) are themselves
+      # case-insensitive, so this is not an error on their end to flag.
+      missing_files <- base_ref[!tolower(base_ref) %in% tolower(base_repo)]
       the_file$loaded_files_missing <- length(missing_files)
       the_file$loaded_files_missing_names <- paste(missing_files, collapse = ", ")
 
@@ -360,7 +414,8 @@ code_check <- function(paper, local_path = NULL,
                        "code_setwd", "setwd_calls", "library_lines",
                        "library_max_between", "packages_n", "packages",
                        "comment_lines", "code_lines",
-                       "percentage_comment", "loaded_files_missing",
+                       "percentage_comment", "has_docstring",
+                       "loaded_files_missing",
                        "loaded_files_missing_names", "error")
     for (col in analysis_cols)
       if (!col %in% names(code_files)) code_files[[col]] <- NA
@@ -453,6 +508,19 @@ code_check <- function(paper, local_path = NULL,
   # code files had comments" about files that were never opened.
   n_analysed <- sum(!is.na(code_files$percentage_comment))
   comment_issue <- code_files$file_name[which(code_files$percentage_comment == 0)]
+  # Of the zero-comment files, how many are Python files that DO carry a
+  # docstring? code_remove_comments()'s Python branch deliberately never
+  # strips a triple-quoted string as a comment (see that function's own
+  # comment, and .code_has_docstring()'s), so a Python file documented ONLY
+  # via docstrings still reads 0% comments here -- confirmed against a real
+  # corpus: 71.4% of zero-comment-flagged Python files there had a docstring.
+  # This does not change percentage_comment itself, only the wording of the
+  # report so a reader does not conclude such a file "has no documentation."
+  zero_rows <- which(code_files$percentage_comment == 0)
+  n_docstring_only <- if ("has_docstring" %in% names(code_files)) sum(
+    code_files$language[zero_rows] == "Python" &
+      !is.na(code_files$has_docstring[zero_rows]) &
+      code_files$has_docstring[zero_rows], na.rm = TRUE) else 0L
   if (n_analysed == 0) {
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). None of the files found could be checked for comments."
     summary_comments <- "No code files could be checked for comments."
@@ -460,7 +528,11 @@ code_check <- function(paper, local_path = NULL,
     report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code). All your code files had comments."
     summary_comments <- "All your code files had comments."
   } else {
-    report_comments <- "Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code)."
+    docstring_note <- if (n_docstring_only > 0) sprintf(
+      " Note: this percentage counts only `#` comments; %d of these Python file%s %s documented via docstrings (`\"\"\"...\"\"\"`), which are not counted as comments here since they are string literals, not comment syntax.",
+      n_docstring_only, plural(n_docstring_only), plural(n_docstring_only, "is", "are")
+    ) else ""
+    report_comments <- paste0("Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code).", docstring_note)
     summary_comments <- sprintf(
       "%d code file%s had no comments.",
       length(comment_issue),
@@ -594,7 +666,7 @@ code_check <- function(paper, local_path = NULL,
   version_pin <- .code_version_pin_check(
     all_files, code_text_list = unlist(r_text_by_paper, recursive = FALSE),
     max_file_size = max_file_size, max_download_size = max_download_size,
-    cache = cache)
+    cache = cache, skip_on_api_limit = skip_on_api_limit)
   # Splice resolved locations back into all_files so the per-paper re-check
   # below (summary_table$code_version_pinned) finds every candidate file
   # already local and downloads nothing a second time.
@@ -632,23 +704,78 @@ code_check <- function(paper, local_path = NULL,
     } else NULL
   }
 
-  ## merge packages into the manifest ----
-  if (!is.null(manifest) && length(all_packages) > 0) {
-    path <- manifest
-    if (!grepl("\\.json$", path, ignore.case = TRUE)) {
+  ## merge packages and failed downloads into the manifest, one file per paper ----
+  # code_check downloads its own subset of files (predownload + the catch-up
+  # pass above), separately from data_check's download and its `files`
+  # manifest section -- a code file data_check never wanted (e.g. download =
+  # "none" there) can still fail here, so this is the only place those
+  # failures are ever recorded. Deduplicated by (repo_url, file_name): the
+  # same file can be attempted twice (once in .code_predownload(), again by
+  # the catch-up pass above) if it failed the first time and file_location is
+  # still NA.
+  if (!is.null(code_failed_files) && nrow(code_failed_files) > 0) {
+    code_failed_files <- code_failed_files[
+      !duplicated(paste(code_failed_files$repo_url, code_failed_files$file_name)), ]
+  }
+  # code_check() is called ONCE per module_run() -- for a paperlist (e.g. one
+  # batch of a corpus run), all_packages/code_failed_files hold every paper's
+  # rows together, not one paper's. Split by paper_id (same pattern as
+  # pkg_counts/pin_by_paper above) and merge each paper's own manifest
+  # separately -- a plain single write here would collapse every paper's
+  # packages and failures into one file named after whichever paper happened
+  # to be first (confirmed live 2026-09-07 during the Cooper corpus rerun: one
+  # manifest ended up holding 46+ distinct repo_urls from dozens of papers).
+  if (!is.null(manifest)) {
+    pids <- if ("paper_id" %in% names(code_files) && nrow(code_files) > 0) {
+      unique(code_files$paper_id)
+    } else {
       pid <- paper_id(paper)
-      pid <- if (length(pid) && !is.na(pid[[1]])) pid[[1]] else "manifest"
-      path <- file.path(path, paste0(pid, ".manifest.json"))
+      if (length(pid) == 0) pid <- paper$paper_id %||% NA_character_
+      pid
     }
-    tryCatch(
-      manifest_merge(path, list(code = list(
-        packages = as.list(all_packages),
-        ddi_mapping = list(
-          "code.packages" = "otherMat/software (loaded packages)"
-        )
-      ))),
-      error = function(e) NULL
-    )
+    for (pid_i in pids) {
+      pkgs_i <- if ("paper_id" %in% names(code_files) && nrow(code_files) > 0) {
+        pkg_union(which(code_files$paper_id == pid_i))
+      } else {
+        all_packages
+      }
+      failed_i <- if (!is.null(code_failed_files) && nrow(code_failed_files) > 0 &&
+                       "paper_id" %in% names(code_failed_files)) {
+        code_failed_files[code_failed_files$paper_id %in% pid_i, , drop = FALSE]
+      } else if (!is.null(code_failed_files) && length(pids) <= 1) {
+        # No paper_id on the failed rows (e.g. a direct call with `files`
+        # lacking that column) and only one paper in play: attribute them all
+        # to it, same as the single-paper fallback everywhere else here.
+        code_failed_files
+      } else NULL
+
+      if (length(pkgs_i) == 0 && (is.null(failed_i) || nrow(failed_i) == 0)) next
+
+      path <- manifest
+      if (!grepl("\\.json$", path, ignore.case = TRUE)) {
+        pid_label <- if (!is.na(pid_i) && nzchar(pid_i %||% "")) pid_i else "manifest"
+        path <- file.path(path, paste0(pid_label, ".manifest.json"))
+      }
+      files_failed_i <- if (!is.null(failed_i) && nrow(failed_i) > 0) {
+        lapply(seq_len(nrow(failed_i)), function(i) list(
+          file_name = failed_i$file_name[i],
+          repo_url  = failed_i$repo_url[i],
+          file_url  = failed_i$file_url[i],
+          error     = failed_i$error[i]
+        ))
+      } else NULL
+      tryCatch(
+        manifest_merge(path, list(code = list(
+          packages = if (length(pkgs_i) > 0) as.list(pkgs_i) else NULL,
+          files_failed = files_failed_i,
+          ddi_mapping = list(
+            "code.packages" = "otherMat/software (loaded packages)",
+            "code.files_failed" = "fileDscr/notes (code files whose download failed after retries)"
+          )
+        ))),
+        error = function(e) NULL
+      )
+    }
   }
 
   report <- c(
@@ -751,7 +878,8 @@ code_check <- function(paper, local_path = NULL,
         pid_here <- as.character(all_files$paper_id[rows[1]])
         isTRUE(.code_version_pin_check(
           all_files[rows, , drop = FALSE],
-          code_text_list = r_text_by_paper[[pid_here]] %||% list())$pinned)
+          code_text_list = r_text_by_paper[[pid_here]] %||% list(),
+          skip_on_api_limit = skip_on_api_limit)$pinned)
       },
       logical(1))
     summary_table$code_version_pinned <-

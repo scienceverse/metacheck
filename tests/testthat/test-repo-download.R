@@ -94,6 +94,35 @@ test_that("a repo over the total cap downloads the smallest files up to the budg
   expect_match(attr(dl, "gated")$message, "per-repository budget")
 })
 
+test_that("max_files_per_repo gates a repository by file COUNT, not size", {
+  # Regression test for a real production incident (confirmed live
+  # 2026-09-07, Cooper corpus rerun): a repository with an extreme file count
+  # (a real Zenodo record, SAPFLUXNET, ~4000 files -- individually small, so
+  # neither max_file_size nor max_download_size caught it) took hours and
+  # multiple GB of memory in data_check's per-file classification and
+  # full-content read, for a single paper's repository. max_files_per_repo
+  # gates the whole repo immediately by file count alone, before any of that
+  # per-file work (or even the per-file size resolution) begins.
+  files <- make_dl_files(sizes = c(100, 100, 100, 100, 100))  # 5 tiny files
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  expect_message(
+    dl <- download_repo_files(files, max_file_size = 100, max_download_size = 500,
+                              max_files_per_repo = 3),
+    "exceeding the 3-file cap"
+  )
+  expect_equal(sum(!is.na(dl$file_location)), 0)  # nothing downloaded
+  expect_equal(nrow(attr(dl, "gated")), 1)
+  expect_match(attr(dl, "gated")$message, "exceeding the 3-file cap")
+
+  # Under the cap: downloads normally.
+  files2 <- make_dl_files(sizes = c(100, 100))
+  unlink(metacheck:::.repo_cache_subdir(files2$repo_url[1]), recursive = TRUE)
+  dl2 <- download_repo_files(files2, max_file_size = 100, max_download_size = 500,
+                             max_files_per_repo = 3)
+  expect_equal(sum(!is.na(dl2$file_location)), 2)
+})
+
 test_that("NA manifest size falls back to a HEAD Content-Length probe", {
   files <- make_dl_files()
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
@@ -140,6 +169,70 @@ test_that("failed downloads are reported and recorded, not swallowed", {
   expect_equal(nrow(fa), 1)
   expect_equal(fa$file_name, "f2.csv")
   expect_true(nzchar(fa$error))
+  # file_url is carried along so a caller can point someone at the file
+  # directly (e.g. a manifest entry) without re-deriving the link.
+  expect_equal(fa$file_url, files$file_url[2])
+})
+
+test_that(".download_one applies a size-scaled req_timeout, not an unbounded req_perform", {
+  # Regression test for a real production hang (confirmed live 2026-09-07,
+  # Cooper corpus rerun): req_perform() had no timeout of its own, so a
+  # connection the remote accepted but then stalled mid-transfer blocked
+  # indefinitely (near-zero CPU, one ESTABLISHED socket, no data, no error --
+  # the same failure mode .download_zip_to_cache() had before ITS deadline
+  # fix, just via the plain blocking req_perform() path instead of a manual
+  # read loop). req_timeout() lets curl abort a stalled connection so it
+  # becomes an ordinary httr2 error req_retry() can act on.
+  captured <- NULL
+  local_mocked_bindings(
+    req_perform = function(req, ...) {
+      captured <<- req
+      stop("stop before any real request -- only inspecting req$options")
+    },
+    .package = "httr2"
+  )
+
+  # Small file: the caller's own 60s floor wins.
+  tryCatch(
+    metacheck:::.download_one("https://example.org/a.csv", tempfile(),
+                              expected_bytes = 1024),
+    error = function(e) NULL)
+  expect_equal(captured$options$timeout_ms, 60000)
+
+  # Large file (500MB at the 200KB/s floor is ~2560s): the size-derived value
+  # must win over the 60s default.
+  tryCatch(
+    metacheck:::.download_one("https://example.org/big.csv", tempfile(),
+                              expected_bytes = 500 * 1024 * 1024),
+    error = function(e) NULL)
+  expect_equal(captured$options$timeout_ms,
+              (500 * 1024 * 1024) / (200 * 1024) * 1000)
+})
+
+test_that(".download_many_parallel applies a size-scaled req_timeout per request", {
+  # Same fix as .download_one() above, for the parallel path -- more urgent
+  # there, since a stalled connection blocks every OTHER request in the same
+  # parallel batch, not just its own.
+  captured <- list()
+  local_mocked_bindings(
+    req_perform_parallel = function(reqs, ...) {
+      captured <<- reqs
+      stop("stop before any real request -- only inspecting req$options")
+    },
+    .package = "httr2"
+  )
+  withr::local_envvar(TESTTHAT = "false")  # use the parallel path, not sequential
+
+  tryCatch(
+    metacheck:::.download_many_parallel(
+      c("https://example.org/a.csv", "https://example.org/big.csv"),
+      c(tempfile(), tempfile()),
+      expected_size = c(1024, 500 * 1024 * 1024)),
+    error = function(e) NULL)
+
+  expect_equal(captured[[1]]$options$timeout_ms, 60000)
+  expect_equal(captured[[2]]$options$timeout_ms,
+              (500 * 1024 * 1024) / (200 * 1024) * 1000)
 })
 
 test_that("cache paths are stable and per-repo", {
@@ -253,7 +346,8 @@ test_that("zip timeout is passed to zip transport", {
     .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE) {
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
       expect_equal(timeout_s, 7)
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
@@ -264,6 +358,37 @@ test_that("zip timeout is passed to zip transport", {
   dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100,
                             zip_timeout_s = 7)
   expect_false(is.na(dl$file_location[1]))
+})
+
+test_that(".zip_timeout_for_size scales the timeout up for a large expected transfer", {
+  # Regression test: a fixed timeout_s is either needlessly short for a
+  # large, honestly-slow archive or needlessly long for a small stalled one
+  # -- confirmed live against a real ~65MB OSF Waterbutler zip that
+  # transferred at ~2.2MB/s before the underlying connection stalled
+  # entirely (a fixed 120s timeout would have let that same rate look
+  # "fine" for a tiny archive while cutting off a large, merely-slow one at
+  # the same wall-clock point).
+  fn <- metacheck:::.zip_timeout_for_size
+
+  # NA/unknown/zero expected_bytes: caller's timeout_s passed through as-is.
+  expect_equal(fn(120, NA_real_), 120)
+  expect_equal(fn(120, 0), 120)
+  expect_equal(fn(120, -5), 120)
+
+  # A small transfer: the caller's own timeout_s must win (200KB/s makes
+  # 1024 bytes trivially fast).
+  expect_equal(fn(10, 1024), 10)
+
+  # A large transfer (500MB at a 200KB/s floor is ~2560s): the size-derived
+  # value must win over a much smaller caller timeout_s.
+  expected_bytes <- 500 * 1024 * 1024
+  got <- fn(10, expected_bytes)
+  expect_gt(got, 10)
+  expect_equal(got, expected_bytes / (200 * 1024))
+
+  # A custom, faster assumed rate scales the result down proportionally.
+  expect_equal(fn(10, expected_bytes, min_bytes_per_s = 1024 * 1024),
+              expected_bytes / (1024 * 1024))
 })
 
 test_that("reports when archive transport is larger than selected files", {
@@ -283,7 +408,8 @@ test_that("reports when archive transport is larger than selected files", {
     .remote_content_length = function(url) 50 * 1024 * 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE) {
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
     },
@@ -298,6 +424,145 @@ test_that("reports when archive transport is larger than selected files", {
     "downloads as one archive"
   )
   expect_false(is.na(dl$file_location[1]))
+})
+
+test_that("OSF zip-vs-file decision scales with this repo's own files, not the whole batch table", {
+  # Regression test for a real production stall (confirmed live 2026-09-07,
+  # metacheck-license-doi issue found during the Cooper corpus rerun):
+  # node_osf_n used to call is_osfstorage() -- a scalar, non-vectorised
+  # function -- once per row of the ENTIRE `files` table for every OSF repo
+  # being decided on, instead of just that repo's own rows. In a real batch
+  # (many papers' files combined into one table before download_repo_files()
+  # runs) that is an O(n_osf_repos * n_total_files) scan of R-level scalar
+  # calls; live it pinned one CPU core for 15+ minutes with no progress
+  # output before this fix (which scopes the scan to `which(files$repo_url
+  # == repo)`, matching how `ridx_zip` just above it is already scoped).
+  #
+  # `decoy` stands in for "everything else in the batch": a large, unrelated
+  # repo with no file_url (so it costs nothing in the per-repo download-budget
+  # loop and is never a download candidate) that only pads nrow(files).
+  n_decoy <- 20000
+  decoy <- data.frame(
+    repo_url = "https://example.org/big-non-osf-repo",
+    file_name = paste0("d", seq_len(n_decoy), ".csv"),
+    file_path = paste0("d", seq_len(n_decoy), ".csv"),
+    file_url = NA_character_,
+    file_size = NA_real_,
+    file_location = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  target <- data.frame(
+    repo_url = "https://osf.io/abcde",
+    file_name = "a.csv",
+    file_path = "a.csv",
+    file_url = "https://files.osf.io/v1/resources/abcde/providers/osfstorage/a.csv",
+    file_size = 1024,
+    file_location = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  files <- rbind(decoy, target)
+  unlink(metacheck:::.repo_cache_subdir(target$repo_url[1]), recursive = TRUE)
+
+  local_mocked_bindings(
+    osf_check_id = function(x) "abcde",
+    .remote_content_length = function(url) 1024,
+    .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
+                                      req_func, timeout_s, max_bytes = Inf,
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
+      files$file_location[row_idx] <- files$.cache_path[row_idx]
+      files
+    },
+    .package = "metacheck"
+  )
+
+  t0 <- Sys.time()
+  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
+  elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+
+  expect_false(is.na(dl$file_location[dl$repo_url == target$repo_url[1]]))
+  # Scoped to the target repo's one row, this is near-instant regardless of
+  # how large the rest of the batch is; scanning all 20000 decoy rows too
+  # (the old behaviour) was slow enough in local testing to fail this bound
+  # by a wide margin.
+  expect_lt(elapsed, 3)
+})
+
+# Dryad's zip-vs-file-by-file threshold is quota-aware, unlike every other
+# host's (see repo-download.R's own comment on quota_worth_it for the full
+# rationale: Dryad's zip downloads are throttled to 100/day per IP,
+# file downloads to 500/day -- 5x more headroom -- so a small dataset should
+# route through the file-by-file path even though the plain request-count
+# logic alone (used for OSF/Zenodo/Dataverse above) would pick zip.
+test_that("Dryad datasets with few files skip zip even when a plain request-count check would use it", {
+  files <- data.frame(
+    repo_url = rep("https://doi.org/10.5061/dryad.testquota1", 3),
+    file_name = c("a.csv", "b.csv", "c.csv"),
+    file_path = c("a.csv", "b.csv", "c.csv"),
+    file_url = c("https://datadryad.org/api/v2/files/1/download",
+                 "https://datadryad.org/api/v2/files/2/download",
+                 "https://datadryad.org/api/v2/files/3/download"),
+    file_size = c(1024, 1024, 1024),
+    file_location = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  zip_called <- FALSE
+  local_mocked_bindings(
+    .dryad_doi = function(x) "10.5061/dryad.testquota1",
+    # A concrete, small size would pass the size gate -- confirms the skip is
+    # because of the file-count quota gate, not a size issue.
+    .remote_content_length = function(url, req_func = identity) 3072,
+    .download_zip_to_cache = function(...) {
+      zip_called <<- TRUE
+      stop("zip transport should not be called for a 3-file Dryad dataset")
+    },
+    .download_one = function(url, dest, skip_on_api_limit = FALSE,
+                             expected_bytes = NA_real_) {
+      dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
+      writeLines("x", dest)
+      NA_character_
+    },
+    .package = "metacheck"
+  )
+
+  expect_message(
+    dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100),
+    "only 3 files wanted"
+  )
+  expect_false(zip_called)
+  expect_true(all(!is.na(dl$file_location)))
+})
+
+test_that("Dryad datasets with enough files still use zip", {
+  n <- 16
+  files <- data.frame(
+    repo_url = rep("https://doi.org/10.5061/dryad.testquota2", n),
+    file_name = paste0("f", seq_len(n), ".csv"),
+    file_path = paste0("f", seq_len(n), ".csv"),
+    file_url = sprintf("https://datadryad.org/api/v2/files/%d/download", seq_len(n)),
+    file_size = rep(1024, n),
+    file_location = NA_character_,
+    stringsAsFactors = FALSE
+  )
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  local_mocked_bindings(
+    .dryad_doi = function(x) "10.5061/dryad.testquota2",
+    .remote_content_length = function(url, req_func = identity) n * 1024,
+    .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
+                                      req_func, timeout_s, max_bytes = Inf,
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
+      files$file_location[row_idx] <- files$.cache_path[row_idx]
+      files
+    },
+    .package = "metacheck"
+  )
+
+  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
+  expect_true(all(!is.na(dl$file_location)))
 })
 
 test_that("OSF non-osfstorage rows fall back to file-by-file", {
@@ -323,13 +588,15 @@ test_that("OSF non-osfstorage rows fall back to file-by-file", {
     .remote_content_length = function(url) 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE) {
+                                      skip_on_api_limit = FALSE,
+                                      expected_bytes = NA_real_) {
       # zip transport should only cover the osfstorage row
       expect_equal(length(row_idx), 1)
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
     },
-    .download_one = function(url, dest, skip_on_api_limit = FALSE) {
+    .download_one = function(url, dest, skip_on_api_limit = FALSE,
+                             expected_bytes = NA_real_) {
       fallback_n <<- fallback_n + 1L
       NA_character_
     },
@@ -411,7 +678,8 @@ test_that("osfstorage and Zenodo file-by-file rows use the parallel path, others
       for (d in dests) { dir.create(dirname(d), showWarnings = FALSE, recursive = TRUE); writeBin(raw(1), d) }
       rep(NA_character_, length(urls))
     },
-    .download_one = function(url, dest, skip_on_api_limit = FALSE) {
+    .download_one = function(url, dest, skip_on_api_limit = FALSE,
+                             expected_bytes = NA_real_) {
       sequential_urls <<- c(sequential_urls, url)
       dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
       writeBin(raw(1), dest)
@@ -554,7 +822,8 @@ test_that("download_repo_files(skip_on_api_limit = TRUE) records exhausted-quota
 
   future_reset <- as.character(round(as.numeric(Sys.time())) + 3600)
   local_mocked_bindings(
-    .download_one = function(url, dest, skip_on_api_limit = FALSE) {
+    .download_one = function(url, dest, skip_on_api_limit = FALSE,
+                             expected_bytes = NA_real_) {
       "API rate limit exhausted: HTTP 429 Too Many Requests."
     },
     .package = "metacheck"

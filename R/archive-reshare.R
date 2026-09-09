@@ -123,6 +123,9 @@ reshare_links <- function(paper) {
 #' @param id_col the index or name of the column that contains ReShare URLs,
 #'   if `reshare_url` is a table
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a previously cached listing for a deposit
+#'   already looked up (see [repo_info_cache()]) instead of re-querying the
+#'   API. Off by default.
 #'
 #' @returns a data frame of information
 #' @export
@@ -130,7 +133,7 @@ reshare_links <- function(paper) {
 #' \dontrun{
 #'   reshare_info("https://doi.org/10.5255/UKDA-SN-854001")
 #' }
-reshare_info <- function(reshare_url, id_col = 1, pb = NULL) {
+reshare_info <- function(reshare_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("reshare.ukdataservice.ac.uk")) {
     stop("ReShare seems to be offline")
   }
@@ -174,7 +177,15 @@ reshare_info <- function(reshare_url, id_col = 1, pb = NULL) {
 
   id_info <- vector("list", length(valid_ids))
   for (i in seq_along(valid_ids)) {
-    id_info[[i]] <- .reshare_info(valid_ids[[i]], pb = pb)
+    id <- valid_ids[[i]]
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("reshare", id) else NULL
+    if (!is.null(cached)) {
+      id_info[[i]] <- cached
+    } else {
+      id_info[[i]] <- .reshare_info(id, pb = pb)
+      if (isTRUE(cache) && .repo_info_ok(id_info[[i]]))
+        .repo_info_cache_put("reshare", id, id_info[[i]])
+    }
   }
 
   info <- do.call(dplyr::bind_rows, id_info)

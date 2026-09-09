@@ -215,6 +215,9 @@ dataverse_links <- function(paper) {
 #' @param id_col the index or name of the column that contains Dataverse URLs,
 #'   if `dataverse_url` is a table
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a previously cached listing for a dataset
+#'   already looked up (see [repo_info_cache()]) instead of re-querying the
+#'   installation's API. Off by default.
 #'
 #' @returns a data frame of information
 #' @export
@@ -222,7 +225,7 @@ dataverse_links <- function(paper) {
 #' \dontrun{
 #'   dataverse_info("https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/GGDUND")
 #' }
-dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL) {
+dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
     pb$tick(0, list(what = "Dataverse Retrieve"))
@@ -267,7 +270,18 @@ dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL) {
 
   id_info <- vector("list", nrow(valid))
   for (i in seq_len(nrow(valid))) {
-    id_info[[i]] <- .dataverse_info(valid$dataverse_host[[i]], valid$dataverse_doi[[i]], pb = pb)
+    # Dataverse has no single host (see this file's own top-of-file
+    # comment), so the cache key must include the installation, not just
+    # the DOI -- the same DOI-shaped string is meaningless without it.
+    ckey <- paste(valid$dataverse_host[[i]], valid$dataverse_doi[[i]])
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("dataverse", ckey) else NULL
+    if (!is.null(cached)) {
+      id_info[[i]] <- cached
+    } else {
+      id_info[[i]] <- .dataverse_info(valid$dataverse_host[[i]], valid$dataverse_doi[[i]], pb = pb)
+      if (isTRUE(cache) && .repo_info_ok(id_info[[i]]))
+        .repo_info_cache_put("dataverse", ckey, id_info[[i]])
+    }
   }
 
   info <- do.call(dplyr::bind_rows, id_info)

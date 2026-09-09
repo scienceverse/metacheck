@@ -6,6 +6,23 @@
 # the host doesn't honour ranges or the central directory isn't in the tail, so
 # the caller can download-and-inspect instead.
 
+# In-memory, same-session cache of zip_peek() results, keyed by URL. A single
+# pipeline run peeks the SAME archive twice: once in repo_check (discovering
+# member names/sizes to list, inst/modules/repo_check.R) and again inside
+# download_repo_files()'s .zip_fetch_members() (fetching one member's bytes,
+# R/repo-download.R) -- the second call needs the very same central-directory
+# fields (method/csize/offset/crc) the first call already read but did not
+# carry forward. Caching here removes the duplicate network round-trip
+# entirely (rather than only making it retry-resilient, see req_retry() below)
+# and, since the two calls happen close together within one session, halves
+# the chance of a live archive being peeked twice into the same host's burst
+# rate limit -- part of what made issue #384's fetch fail non-deterministically.
+# Reset per R session (an environment, not the on-disk repo cache in
+# R/cache.R): a zip_peek() result is only ever reused within the SAME run that
+# produced it, never across runs, so it does not need to persist or be
+# user-visible/clearable the way the on-disk file cache does.
+.zip_peek_cache <- new.env(parent = emptyenv())
+
 # Little-endian integer from a raw vector slice (1-based, `n` bytes).
 .le_int <- function(raw, at, n) {
   bytes <- as.integer(raw[at:(at + n - 1)])
@@ -15,10 +32,33 @@
 # Fetch the last `n` bytes of a URL via an HTTP Range request. Returns the raw
 # bytes (possibly fewer than n if the file is smaller), or NULL on failure / if
 # the server ignored the range (returned 200 with the whole body).
+#
+# Routed through .auth_for_url() (see R/repo-download.R): Dryad answers 401 to
+# an unauthenticated request on ANY byte-touching endpoint, including a HEAD
+# or Range GET, so a Dryad zip's peek always failed before this (confirmed
+# live 2026-09-02, see issue #378) -- every other host .auth_for_url() knows
+# about is unaffected, since it only adds headers where the URL matches.
+#
+# Also retried via req_retry() with the SAME transient/backoff/rate-limit
+# helpers download_repo_files() uses for ordinary file downloads
+# (.storage_is_transient_factory()/.storage_backoff()/
+# .storage_retry_after_factory(), R/repo-download.R) -- without this, a 429
+# here was indistinguishable from "host does not support ranges" (both
+# silently returned NULL), which is what made issue #384's fetch fail
+# non-deterministically: repo_check's own zip_peek() call (discovering member
+# names, inst/modules/repo_check.R) and download_repo_files()'s later
+# .zip_fetch_members()->zip_peek() call (fetching a member's bytes) hit the
+# SAME archive URL twice in one pipeline run with no throttle between them,
+# so the second call was the one exposed to a burst-rate-limit refusal.
 .http_range_tail <- function(url, n, total = NULL) {
   tryCatch({
     if (is.null(total)) {
       h <- httr2::request(url) |> httr2::req_method("HEAD") |>
+        .auth_for_url() |>
+        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                         is_transient = .storage_is_transient_factory(),
+                         backoff = .storage_backoff,
+                         after = .storage_retry_after_factory()) |>
         httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
       total <- suppressWarnings(as.numeric(
         httr2::resp_header(h, "content-length")))
@@ -27,6 +67,11 @@
     start <- max(0, total - n)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", start, total - 1)) |>
+      .auth_for_url() |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient_factory(),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory()) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     # 206 = partial content (range honoured). 200 = whole file (range ignored):
@@ -47,11 +92,22 @@
 # it), but a caller asking for one member's bytes wants exactly those bytes, and
 # accepting the whole archive would silently transfer the gigabytes this is
 # meant to avoid. Returns raw bytes, or NULL when the host ignored the range.
+#
+# Retried via req_retry() for the same reason as .http_range_tail() -- see its
+# comment (issue #384). This is the call .zip_member_fetch() makes TWICE per
+# member (once for the local header, once for the compressed data), so a
+# single-member fetch inside a loop over many members is exactly the
+# back-to-back-request pattern a host's burst limit is most likely to catch.
 .http_range_bytes <- function(url, from, to) {
   tryCatch({
     if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) return(NULL)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
+      .auth_for_url() |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient_factory(),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory()) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     if (httr2::resp_status(r) != 206) return(NULL)
@@ -155,9 +211,26 @@
 #' zip_peek("https://osf.io/download/abcde/")
 #' }
 zip_peek <- function(url, tail_bytes = 131072) {
+  # Reuse an earlier successful peek of this exact URL from this same session
+  # -- see .zip_peek_cache's own comment for why (issue #384). Only a SUCCESS
+  # is ever cached: a NULL (host refused, rate-limited, or otherwise) must be
+  # retried fresh on the next call rather than permanently remembered as
+  # "unpeekable", since req_retry() below already absorbs the transient cases
+  # and a real "not supported" result would still return NULL again quickly.
+  cached <- mget(url, envir = .zip_peek_cache, ifnotfound = list(NULL))[[1]]
+  if (!is.null(cached)) return(cached)
+
   # HEAD once for the total size (also lets us grab a bigger tail if needed).
+  # .auth_for_url(): see .http_range_tail()'s comment -- Dryad 401s on an
+  # unauthenticated HEAD here too. req_retry(): see .http_range_tail()'s
+  # comment on issue #384 -- the same burst-rate-limit exposure applies here.
   total <- tryCatch({
     h <- httr2::request(url) |> httr2::req_method("HEAD") |>
+      .auth_for_url() |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .storage_is_transient_factory(),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory()) |>
       httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
     suppressWarnings(as.numeric(httr2::resp_header(h, "content-length")))
   }, error = function(e) NA_real_)
@@ -168,6 +241,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
     cd <- .parse_zip_central_dir(raw)
     if (!is.null(cd)) {
       cd <- cd[!grepl("/$", cd$name), , drop = FALSE]   # drop directory entries
+      assign(url, cd, envir = .zip_peek_cache)
       return(cd)
     }
     if (!is.null(total) && !is.na(total) && nb >= total) break  # whole file seen
@@ -199,16 +273,36 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # `zip::inflate()` expects a ZLIB stream, but a zip member stores BARE deflate
 # with no zlib wrapper, so passing the member's bytes directly fails with "Input
 # data is invalid". Prepending the two-byte zlib header (0x78 0x01) makes it
-# readable. The `size` argument must be left unset: supplying the known
-# uncompressed size makes the same call fail with "Failed to inflate data".
+# readable.
+#
+# `size` (the member's exact uncompressed size, from the archive's own central
+# directory) must NOT be passed as-is: `zip::inflate(..., size = uncompressed_size)`
+# fails outright with "Failed to inflate data" for reasons internal to the zip
+# package. Leaving `size` unset does not fail, but is worse: its documented
+# "resize the output buffer multiple times" behaviour does not actually happen
+# in practice, so any member over the default 32768-byte buffer is silently
+# TRUNCATED at exactly 32768 bytes with no error, no warning, and a
+# `bytes_written` field callers never inspect (confirmed live 2026-09-05,
+# issue #384 -- e.g. a real 44669-byte code file came back as exactly 32768
+# bytes). `.zip_member_fetch()`'s own length check below does catch the
+# resulting mismatch and discard the corrupt bytes, but the practical effect
+# was that every code/data file over 32KB inside a zip silently failed to
+# fetch, indistinguishable from a genuine network or host-compatibility
+# failure -- accounting for the large majority of issue #384's disagreements.
+# Passing `size + 1` (one byte over the true size) avoids both failure modes:
+# it is no longer the exact size that triggers the "Failed to inflate data"
+# error, and it is large enough that the real output always fits in the
+# up-front buffer instead of depending on the broken resize path. Verified
+# against both a >32KB and a <32KB real Zenodo zip member.
 #
 # Returns raw bytes, or NULL when the member cannot be decompressed.
-.zip_inflate_member <- function(comp, method) {
+.zip_inflate_member <- function(comp, method, size = NA_real_) {
   if (method == 0) return(comp)          # stored: no compression, no dependency
   if (method != 8) return(NULL)          # only deflate is supported
   if (!requireNamespace("zip", quietly = TRUE)) return(NULL)
+  size_hint <- if (!is.na(size) && size >= 0) size + 1 else NULL
   tryCatch({
-    res <- zip::inflate(c(as.raw(c(0x78, 0x01)), comp))
+    res <- zip::inflate(c(as.raw(c(0x78, 0x01)), comp), size = size_hint)
     as.raw(res$output %||% res)
   }, error = function(e) NULL)
 }
@@ -237,7 +331,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
   comp <- .http_range_bytes(url, data_start, data_start + entry$csize - 1)
   if (is.null(comp)) return(NULL)
 
-  out <- .zip_inflate_member(comp, entry$method)
+  out <- .zip_inflate_member(comp, entry$method, size = entry$size)
   if (is.null(out)) return(NULL)
 
   # The uncompressed size and CRC32 come from the archive itself, so they check
@@ -384,7 +478,14 @@ zip_peek <- function(url, tail_bytes = 131072) {
   types <- data_classify_files(basename(loc))
   roles <- .data_doc_role(basename(loc))
   fmt   <- data_format(tolower(tools::file_ext(loc)))
-  keep  <- (types == "data" |
+  # "code" is kept alongside data/documentation (gated by skip_types like
+  # everything else) so a zip's bundled code files survive expansion instead
+  # of being silently discarded -- data_check itself never surfaces them (it
+  # only column-extracts data_type == "data"), but code_check reads this same
+  # table via get_prev_outputs("data_check", "structure") when data_check ran
+  # first in the pipeline, and needs the file present to classify at all. See
+  # issue #383 (Gap 3).
+  keep  <- (types %in% c("data", "code") |
               (types == "documentation" & !is.na(roles) & roles %in% c("codebook", "readme"))) &
     !(types %in% skip_types)
   if (!any(keep)) return(empty)

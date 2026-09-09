@@ -86,12 +86,24 @@
 #'   (default 500). If a repository's total exceeds this, the whole repository is
 #'   refused (nothing downloaded) with a message naming the size to lift it. Set
 #'   `Inf` for no cap.
+#' @param max_files_per_repo largest file COUNT a single repository may have
+#'   before it is refused outright (default `Inf`, no cap). Unlike the size
+#'   caps above, this catches a repo whose sheer file COUNT (not byte size)
+#'   makes per-file classification and full-content reading impractical for
+#'   one paper's repository -- confirmed live 2026-09-07 against a real
+#'   Zenodo record (SAPFLUXNET, ~4000 files) that took hours and multiple GB
+#'   of memory. See [download_repo_files()]'s own parameter of the same name.
 #' @param cache if `TRUE`, keep downloaded files in a persistent on-disk cache
 #'   (see [repo_cache_dir()]) so they are reused on later runs. If `FALSE` (the
 #'   default), download to a temporary directory that is discarded when the R
 #'   session ends — nothing accumulates on disk. Use `cache = TRUE` when
 #'   repeatedly checking the same repositories or building an archive across
 #'   runs; clear the cache with [repo_cache_clear()].
+#' @param skip_on_api_limit if `TRUE`, a 429 that carries a confirmed
+#'   rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file
+#'   instead of waiting out the host's own reset. Default `FALSE` (always
+#'   wait for a confirmed reset) -- see [download_repo_files()]'s own
+#'   parameter of the same name.
 #' @param manifest optional path to write a per-paper file manifest as JSON: the
 #'   full list of repository files with their download URL, size, type, Psych-DS
 #'   target path, and whether each was downloaded (and if not, why). A directory
@@ -116,7 +128,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        peek_zips = FALSE,
                        max_file_size = 100,
                        max_download_size = 500,
+                       max_files_per_repo = Inf,
                        cache = FALSE,
+                       skip_on_api_limit = FALSE,
                        manifest = NULL,
                        plot_distributions = FALSE,
                        max_facets = .dv_max_facets,
@@ -353,6 +367,17 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(id) == 0) id <- paper$paper_id %||% NA_character_
     id[[1]]
   }
+  # Same fallback chain as .pid(), but returns every paper's id (a paperlist
+  # batch has more than one) instead of collapsing to the first -- used where
+  # `files` cannot say which papers it covers (the zero-files manifest below),
+  # so a manifest still gets written for every paper, not just paper_id[[1]].
+  .pids_all <- function(files = NULL) {
+    id <- paper_id(paper)
+    if (length(id) == 0 && !is.null(files) && "paper_id" %in% names(files))
+      id <- unique(files$paper_id)
+    if (length(id) == 0) id <- paper$paper_id %||% NA_character_
+    id
+  }
 
   # ── 1. Get the file list from repo_check ────────────────────────────────────
   all_files <- get_prev_outputs("repo_check", "table")
@@ -392,7 +417,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
         stringsAsFactors = FALSE)
       manifest_path <- .data_check_write_manifest(
         manifest, empty_files, logical(0), NULL,
-        paper_id = .pid(all_files), download = download,
+        paper_id = .pids_all(all_files), download = download,
         max_file_size = max_file_size, max_download_size = max_download_size,
         skip_types = skip_types)
     }
@@ -605,14 +630,26 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
   }
   if (download != "none") {
+    # A row has a real file_url (a plain download target) OR, for a member of
+    # a zip repo_check's own peek already expanded (see "look inside .zip
+    # archives", inst/modules/repo_check.R), an archive_url + archive_member
+    # pair instead -- download_repo_files() fetches that member on its own via
+    # a byte-range request against archive_url, without downloading the rest
+    # of the archive (see its own "Archive members" section, R/repo-download.R).
+    has_target <- (!is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")) |
+      (!is.na(all_files$archive_url %||% NA_character_) &
+         nzchar(all_files$archive_url %||% "") &
+         !is.na(all_files$archive_member %||% NA_character_))
     need_dl <- want &
       (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
-      !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
+      has_target
     if (any(need_dl)) {
       dl <- download_repo_files(all_files[need_dl, , drop = FALSE],
                                 max_file_size = max_file_size,
                                 max_download_size = max_download_size,
-                                cache = cache)
+                                max_files_per_repo = max_files_per_repo,
+                                cache = cache,
+                                skip_on_api_limit = skip_on_api_limit)
       all_files$file_location[need_dl] <- dl$file_location
       # Files in a gated repo keep file_location = NA, so they fall out of the
       # has_local extraction filter naturally. The refusal was already reported
@@ -837,6 +874,33 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # file stays classified as data so data_validate's spreadsheet-formatting
       # checks still check its formatting.
       usable <- .tabular_usable(cls, df)
+      # A multi-sheet .xlsx/.xls where sheet 1 is a cover/readme/metadata page
+      # (a common convention) fails .tabular_usable() even when a LATER sheet
+      # holds the real data -- data_read_head() only ever reads sheet 1 by
+      # default. Before giving up on the file, try each remaining sheet and
+      # keep the first one that passes, mirroring how
+      # .extract_spreadsheet_codebook() already loops over sh_names for
+      # codebook extraction. See issue #379.
+      if (!isTRUE(usable$usable) &&
+          tolower(tools::file_ext(f$file_name)) %in% c("xlsx", "xls")) {
+        sh_names <- tryCatch(readxl::excel_sheets(f$file_location),
+                             error = function(e) character(0))
+        sh_names <- setdiff(sh_names, sh_names[1])   # sheet 1 already tried
+        for (sh in sh_names) {
+          df2 <- tryCatch(data_read_head(f$file_location, n_rows = Inf, sheet = sh),
+                          error = function(e) NULL)
+          if (is.null(df2) || ncol(df2) == 0) next
+          scale_cols2 <- names(df2)[unlist(.detect_scale_blocks(df2), use.names = FALSE)]
+          cls2 <- lapply(seq_along(df2), function(j)
+            data_col_facets(names(df2)[j], df2[[j]],
+                            in_scale_block = names(df2)[j] %in% scale_cols2))
+          usable2 <- .tabular_usable(cls2, df2)
+          if (isTRUE(usable2$usable)) {
+            df <- df2; cls <- cls2; scale_cols <- scale_cols2; usable <- usable2
+            break
+          }
+        }
+      }
       if (!isTRUE(usable$usable)) {
         non_tabular_files[[f$file_name]] <<- usable$reason
         return(NULL)
@@ -1403,7 +1467,26 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       else text,
       dv_report = if (nrow(spreadsheet_findings_df) > 0)
         .dv_spreadsheet_report(spreadsheet_findings_df, n_spreadsheet_files)
-      else NULL
+      else NULL,
+      # This early return skips the module's main return (below, ~line 2147)
+      # entirely -- a paper with files but NONE readable as tabular data
+      # (all code/PDFs/images, or every spreadsheet unreadable) hit this
+      # path with structure/previews/gated_repos/manifest_path silently
+      # absent from the result, rather than merely empty. structure in
+      # particular is the per-file classification codebook_check AND
+      # code_check (get_prev_outputs("data_check", "structure"), see
+      # code_check.R) read from data_check's output -- both already
+      # tolerate a NULL/missing structure via a fallback, so this was not
+      # a crash, just a silently weaker result than a paper with the same
+      # files but at least one readable table would get. All four of
+      # these were already computed earlier in the function regardless of
+      # whether any file's content was readable, so they are correct here
+      # too, not placeholders.
+      structure = all_files,
+      previews = file_previews,
+      gated_repos = listing_gated,
+      manifest_path = manifest_path,
+      group_no_evidence = group_no_evidence
     )
   }
 

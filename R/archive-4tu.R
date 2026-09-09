@@ -133,6 +133,9 @@ researchdata4tu_links <- function(paper) {
 #' @param id_col the index or name of the column that contains
 #'   4TU.ResearchData URLs, if `researchdata4tu_url` is a table
 #' @param pb a progress bar passed from another function
+#' @param cache if `TRUE`, reuse a previously cached listing for an article
+#'   already looked up (see [repo_info_cache()]) instead of re-querying the
+#'   API. Off by default.
 #'
 #' @returns a data frame of information
 #' @export
@@ -140,7 +143,8 @@ researchdata4tu_links <- function(paper) {
 #' \dontrun{
 #'   researchdata4tu_info("https://doi.org/10.4121/16766929.v1")
 #' }
-researchdata4tu_info <- function(researchdata4tu_url, id_col = 1, pb = NULL) {
+researchdata4tu_info <- function(researchdata4tu_url, id_col = 1, pb = NULL,
+                                 cache = FALSE) {
   raw_url <- if (is.data.frame(researchdata4tu_url)) {
     researchdata4tu_url[[id_col]]
   } else {
@@ -192,7 +196,19 @@ researchdata4tu_info <- function(researchdata4tu_url, id_col = 1, pb = NULL) {
     list(what = _) |>
     pb$tick(0, tokens = _)
 
-  id_info <- lapply(valid_ids, \(id) .figshare_info(id, host = "data.4tu.nl", pb = pb))
+  # Same cache namespace/key scheme as figshare_info() itself (host + id),
+  # since this calls the same underlying worker against the same host --
+  # sharing entries with a direct figshare_info(host = "data.4tu.nl") call
+  # is correct, not incidental.
+  id_info <- lapply(valid_ids, \(id) {
+    ckey <- paste("data.4tu.nl", id)
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("figshare", ckey) else NULL
+    if (!is.null(cached)) return(cached)
+    result <- .figshare_info(id, host = "data.4tu.nl", pb = pb)
+    if (isTRUE(cache) && .repo_info_ok(result))
+      .repo_info_cache_put("figshare", ckey, result)
+    result
+  })
   info <- do.call(dplyr::bind_rows, id_info)
   names(info)[names(info) == "figshare_id"] <- "researchdata4tu_id"
 

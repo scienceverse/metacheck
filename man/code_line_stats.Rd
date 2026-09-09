@@ -16,7 +16,8 @@ code_line_stats(
 Stata, Mplus, MATLAB)}
 }
 \value{
-list with items \code{total_lines}, \code{comment_lines}, \code{code_lines}, and \code{percent_comment}
+list with items \code{total_lines}, \code{comment_lines}, \code{code_lines},
+\code{percent_comment}, and (Python only) \code{has_docstring}
 }
 \description{
 Get Code Composition Stats
