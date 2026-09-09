@@ -1054,6 +1054,16 @@ download_repo_files <- function(files,
   already <- file.exists(files$.cache_path)
   files$file_location[already] <- files$.cache_path[already]
 
+  mb <- 1024 * 1024
+  gated <- data.frame(repo_url = character(0), message = character(0),
+                      stringsAsFactors = FALSE)
+  # Individual files skipped because they exceed max_file_size (the repo is still
+  # downloaded — only these files are left out). Recorded for reporting. Moved
+  # up here (was previously defined just before the has_url loop below) so the
+  # archive-member block, which runs first, can record into it too.
+  oversize_skipped <- data.frame(repo_url = character(0), file_name = character(0),
+                                 file_size = numeric(0), stringsAsFactors = FALSE)
+
   # ── Archive members (repo_check's zip-peek expansion) ───────────────────────
   # A row from repo_check's zip-peek expansion (inst/modules/repo_check.R,
   # "look inside .zip archives") has file_url = NA -- an entry inside an
@@ -1076,6 +1086,59 @@ download_repo_files <- function(files,
     if (any(is_member)) {
       for (arc in unique(files$archive_url[is_member])) {
         idx <- which(is_member & files$archive_url == arc)
+
+        # Apply the SAME max_file_size/max_download_size caps the has_url path
+        # applies below -- until this was added, an archive-member row (no
+        # file_url, fetched via .zip_fetch_members()'s byte-range mechanism
+        # instead) was invisible to both caps entirely: confirmed live
+        # 2026-09-09 against a real OSF repository whose zip-peek listing
+        # named several 1-2 GB CSV members, every one of which downloaded in
+        # full (8.1 GB total for one paper) despite max_file_size = 100 (MB)
+        # and max_download_size = 500 (MB), because this block runs before
+        # (and independently of) the per-repo budget loop that enforces those
+        # caps for ordinary file_url downloads. Budgeted per ARCHIVE (this
+        # `arc`'s own members), not per repository like the loop below --
+        # a repo-wide budget shared across archive-member and file_url
+        # downloads would need the two paths unified, which this does not
+        # attempt; scoped here to close the specific gap that let one
+        # archive's members bypass sizing entirely.
+        member_sizes <- as.numeric(files$file_size[idx])
+        over <- !is.na(member_sizes) & member_sizes > max_file_size * mb
+        if (any(over)) {
+          oversize_skipped <- rbind(oversize_skipped, data.frame(
+            repo_url  = files$repo_url[idx[over]],
+            file_name = files$file_name[idx[over]],
+            file_size = member_sizes[over],
+            stringsAsFactors = FALSE))
+        }
+        cand <- idx[!over & !is.na(member_sizes)]
+        cand_size <- member_sizes[!over & !is.na(member_sizes)]
+        if (length(cand) == 0) next
+
+        cap_bytes <- if (is.finite(max_download_size)) max_download_size * mb else Inf
+        ord <- order(cand_size)
+        used <- 0
+        keep <- logical(length(cand))
+        for (o in ord) {
+          if (used + cand_size[o] <= cap_bytes) {
+            keep[o] <- TRUE
+            used <- used + cand_size[o]
+          }
+        }
+        if (any(!keep) && is.finite(cap_bytes)) {
+          msg <- sprintf(
+            paste0("An archive in repository %s exceeds the %s MB per-repository ",
+                   "budget: fetched the smallest members up to the cap, %d member%s ",
+                   "omitted. Raise `max_download_size` to include more."),
+            files$repo_url[idx[1]], .cap_num(max_download_size),
+            sum(!keep), plural(sum(!keep)))
+          cap_report(msg)
+          gated <- rbind(gated, data.frame(repo_url = files$repo_url[idx[1]],
+                                           message = msg, stringsAsFactors = FALSE))
+        }
+        idx <- cand[keep]
+        if (length(idx) == 0) next
+
         # A member's cache destination must NOT reuse .cache_path (built from
         # the display file_path, which embeds the archive's own file name as
         # a path component, e.g. ".../SharpRT/CMV_Spread-v1.0.zip/Program/
@@ -1111,14 +1174,6 @@ download_repo_files <- function(files,
   }
 
   has_url <- !is.na(files$file_url) & nzchar(files$file_url)
-  mb <- 1024 * 1024
-
-  gated <- data.frame(repo_url = character(0), message = character(0),
-                      stringsAsFactors = FALSE)
-  # Individual files skipped because they exceed max_file_size (the repo is still
-  # downloaded — only these files are left out). Recorded for reporting.
-  oversize_skipped <- data.frame(repo_url = character(0), file_name = character(0),
-                                 file_size = numeric(0), stringsAsFactors = FALSE)
   to_get <- integer(0)
 
   # ── Per-repository budget + per-file size filter ────────────────────────────
