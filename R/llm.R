@@ -305,33 +305,43 @@ llm <- function(text, system_prompt,
 #' \dontrun{
 #' llm_model_list()
 #' }
+# Providers metacheck actually reviews and documents supporting, intersected
+# below against whatever ellmer::models_* functions the installed ellmer
+# version happens to export -- an ALLOWLIST, not "every models_* function
+# ellmer exports minus the ones we've personally been burned by so far".
+# That blocklist-style approach (excluding posit, see the 2026-09-09 fix
+# below) broke again within the same ellmer version bump: ellmer 0.5.0 added
+# models_update_prices() (a maintenance utility that refreshes cached
+# pricing data and returns a plain logical, not a models data frame -- it
+# still matches the "models_.+" pattern, so it was called and its boolean
+# result crashed the dplyr::bind_rows() below with "Argument 2 must be a
+# data frame or a named atomic vector") and made models_github() defunct
+# (GitHub Models was retired 2026-07-30; calling it now just errors, safely
+# caught below, but there is no reason to keep trying a permanently retired
+# service). Confirmed live 2026-09-09 against a fresh install with ellmer
+# 0.5.0: an allowlisted lookup, unlike the dynamic one, is unaffected by
+# whatever ellmer adds or retires next -- a genuinely new PROVIDER ellmer
+# adds in the future is simply not queried until someone deliberately
+# reviews it and adds it here, rather than being auto-adopted the moment it
+# starts existing.
+.LLM_ALLOWED_PLATFORMS <- c(
+  "anthropic", "aws_bedrock", "claude", "deepseek", "google_gemini",
+  "google_vertex", "groq", "lmstudio", "mistral", "ollama", "openai",
+  "portkey", "vllm"
+)
+
 llm_model_list <- function(platform = NULL) {
-  # get all ellmer models_* functions
+  # get all ellmer models_* functions, then keep only the ones on the
+  # allowlist above (see its comment for why this is an allowlist, not a
+  # blocklist over everything ellmer happens to export).
   ef <- getNamespaceExports("ellmer") |>
     grep("models_.+", x = _, value = TRUE)
   names(ef) <- gsub("models_", "", ef)
+  ef <- ef[names(ef) %in% .LLM_ALLOWED_PLATFORMS]
   funcs <- lapply(ef, \(x) utils::getFromNamespace(x, "ellmer"))
   # ellmer doesn't have a groq or ollama model functions, so use ours
   funcs$groq <- .llm_model_list_groq
   #funcs$ollama <- .llm_model_list_ollama
-
-  # ellmer::models_posit() (added in a newer ellmer release than existed
-  # when this function was first written) authenticates against Posit's own
-  # hosted-model gateway (gateway.posit.ai) via an interactive OAuth
-  # device-code browser login when no credentials are cached -- confirmed
-  # live 2026-09-09 (GitHub issue #397): a user on a completely clean
-  # install hit this the moment report_app() rendered its model-choice
-  # dropdown (which calls this function on startup, before the user does
-  # anything), was shown a device code and a Posit sign-in page with no
-  # relation to anything they configured, and ended up enrolled in a
-  # "Posit AI" trial trying to make it go away. Posit's hosted models are
-  # not a provider metacheck documents supporting, so this platform is
-  # excluded outright here -- unlike google_gemini/google_vertex below,
-  # which are credential-gated rather than excluded, because listing
-  # ellmer::getNamespaceExports("ellmer") for "models_.+" dynamically
-  # should not silently adopt a new provider's side effects metacheck was
-  # never reviewed against.
-  funcs$posit <- NULL
 
   # if null, return all available platforms
   if (is.null(platform)) platform <- names(funcs)
@@ -356,6 +366,14 @@ llm_model_list <- function(platform = NULL) {
 
       model_func <- funcs[[p]]
       m <- model_func()
+      # Defensive second layer, beyond the allowlist above: a provider
+      # function that returns something other than a data frame (like
+      # models_update_prices()'s plain logical, see the allowlist comment)
+      # is treated the same as any other failure -- silently skipped --
+      # rather than reaching m$platform <- p, coercing m into a list, and
+      # crashing dplyr::bind_rows() below for every OTHER provider's
+      # results too, not just this one's.
+      if (!is.data.frame(m)) return(NULL)
       #cols <- c("platform", names(m))
       m$platform <- p
 
