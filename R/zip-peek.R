@@ -211,14 +211,26 @@
 #' zip_peek("https://osf.io/download/abcde/")
 #' }
 zip_peek <- function(url, tail_bytes = 131072) {
-  # Reuse an earlier successful peek of this exact URL from this same session
-  # -- see .zip_peek_cache's own comment for why (issue #384). Only a SUCCESS
-  # is ever cached: a NULL (host refused, rate-limited, or otherwise) must be
-  # retried fresh on the next call rather than permanently remembered as
-  # "unpeekable", since req_retry() below already absorbs the transient cases
-  # and a real "not supported" result would still return NULL again quickly.
-  cached <- mget(url, envir = .zip_peek_cache, ifnotfound = list(NULL))[[1]]
-  if (!is.null(cached)) return(cached)
+  # Reuse an earlier peek of this exact URL from this same session -- SUCCESS
+  # OR FAILURE. Originally only a success was cached, on the assumption a
+  # refused/unsupported NULL "would still return NULL again quickly" -- true
+  # for a host that plainly does not honour ranges (a fast, clear refusal),
+  # but confirmed live 2026-09-09 to be false when the host instead answers
+  # every call with a retryable-looking status (403/429/5xx) persistently:
+  # a single zip_peek() call already pays req_retry()'s full backoff
+  # sequence (up to 3 tries each, exponential up to a 30s cap, across up to
+  # 3 separate HTTP calls this function and its helpers make) before giving
+  # up, and this file's own header comment documents that the SAME url is
+  # peeked more than once per pipeline run (once in repo_check, again in
+  # download_repo_files()'s .zip_fetch_members()) -- each call independently
+  # paying that cost again compounds into a multi-hour stall for one
+  # persistently-403ing archive. exists(...) (not mget's ifnotfound), so a
+  # cached NULL is distinguishable from "never attempted" -- assign(url,
+  # NULL, envir=...) really does bind NULL in an environment (unlike
+  # env$x <- NULL on a list, which removes the element); confirmed live.
+  if (exists(url, envir = .zip_peek_cache, inherits = FALSE)) {
+    return(get(url, envir = .zip_peek_cache, inherits = FALSE))
+  }
 
   # HEAD once for the total size (also lets us grab a bigger tail if needed).
   # .auth_for_url(): see .http_range_tail()'s comment -- Dryad 401s on an
@@ -237,7 +249,10 @@ zip_peek <- function(url, tail_bytes = 131072) {
 
   for (nb in unique(c(tail_bytes, 1048576))) {   # retry once with 1 MB tail
     raw <- .http_range_tail(url, nb, total = total)
-    if (is.null(raw)) return(NULL)
+    if (is.null(raw)) {
+      assign(url, NULL, envir = .zip_peek_cache)
+      return(NULL)
+    }
     cd <- .parse_zip_central_dir(raw)
     if (!is.null(cd)) {
       cd <- cd[!grepl("/$", cd$name), , drop = FALSE]   # drop directory entries
@@ -246,6 +261,7 @@ zip_peek <- function(url, tail_bytes = 131072) {
     }
     if (!is.null(total) && !is.na(total) && nb >= total) break  # whole file seen
   }
+  assign(url, NULL, envir = .zip_peek_cache)
   NULL
 }
 
