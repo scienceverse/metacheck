@@ -315,6 +315,24 @@ llm_model_list <- function(platform = NULL) {
   funcs$groq <- .llm_model_list_groq
   #funcs$ollama <- .llm_model_list_ollama
 
+  # ellmer::models_posit() (added in a newer ellmer release than existed
+  # when this function was first written) authenticates against Posit's own
+  # hosted-model gateway (gateway.posit.ai) via an interactive OAuth
+  # device-code browser login when no credentials are cached -- confirmed
+  # live 2026-09-09 (GitHub issue #397): a user on a completely clean
+  # install hit this the moment report_app() rendered its model-choice
+  # dropdown (which calls this function on startup, before the user does
+  # anything), was shown a device code and a Posit sign-in page with no
+  # relation to anything they configured, and ended up enrolled in a
+  # "Posit AI" trial trying to make it go away. Posit's hosted models are
+  # not a provider metacheck documents supporting, so this platform is
+  # excluded outright here -- unlike google_gemini/google_vertex below,
+  # which are credential-gated rather than excluded, because listing
+  # ellmer::getNamespaceExports("ellmer") for "models_.+" dynamically
+  # should not silently adopt a new provider's side effects metacheck was
+  # never reviewed against.
+  funcs$posit <- NULL
+
   # if null, return all available platforms
   if (is.null(platform)) platform <- names(funcs)
 
