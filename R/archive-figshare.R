@@ -19,7 +19,64 @@
 # files, files[].id/name/size/download_url/computed_md5) as api.figshare.com,
 # just at a different host and accepting either a numeric id or a uuid for the
 # same article. See archive-4tu.R for the thin researchdata4tu_*() wrappers
-# that call these functions with host = "data.4tu.nl".
+# that call these functions with host = "data.4tu.nl". Searched DataCite's
+# client registry (api.datacite.org/clients?query=djehuty) 2026-09-11 for any
+# other institution running the same separate software -- 4TU is the only one.
+#
+# Separately, many institutions run a "branded" Figshare page on their OWN
+# domain (not a *.figshare.com subdomain) while the content itself still lives
+# on the real figshare.com service -- e.g. a paper may cite
+# "figshare.le.ac.uk/articles/..." rather than "figshare.com/articles/...".
+# These are NOT separate software like 4TU: verified live 2026-09-11, every
+# vanity domain below answers /v2/articles/1 with Figshare's single-page-app
+# shell (HTTP 202, empty HTML body) rather than a real API response -- the
+# same thing every *.figshare.com institutional subdomain does -- so file
+# access for all of them still goes through api.figshare.com regardless of
+# which address a paper's citation used. See .figshare_vanity_hosts() below
+# for the list and its source; unlike Dataverse's per-installation host list,
+# this one only needs to widen link DETECTION, not the API host used for
+# downloads.
+
+# Known custom ("vanity") domains that are a website-only front end for the
+# real figshare.com service under an institution's own branding -- found via
+# DataCite's public client registry (api.datacite.org/clients?software=figshare,
+# 17 results 2026-09-11) and individually confirmed live the same way: none of
+# them serve their own API (see the file-level note above for what "confirmed"
+# means here). Two more DataCite-listed candidates were left OUT because they
+# no longer resolve live: myresearchdata.curtin.edu.au (DNS does not resolve)
+# and dra.american.edu (TLS certificate no longer matches the hostname) --
+# these may simply be stale entries; re-check before adding.
+.figshare_vanity_hosts <- function() {
+  c(
+    "aura.american.edu",        # American University Research Archive (USA)
+    "books.openmonographs.org", # Figshare-hosted monograph platform
+    "indigo.uic.edu",           # University of Illinois Chicago (USA)
+    "figshare.le.ac.uk",        # University of Leicester (UK)
+    "drum.um.edu.mt",           # University of Malta
+    "data.dtu.dk",              # Technical University of Denmark
+    "dro.deakin.edu.au",        # Deakin University (Australia)
+    "repository.mmu.ac.uk",     # Manchester Metropolitan University (UK)
+    "figshare.unimelb.edu.au",  # University of Melbourne (Australia)
+    "ore.exeter.ac.uk",         # Open Research Exeter (UK)
+    "figshare.shef.ac.uk",      # University of Sheffield (UK)
+    "orda.shef.ac.uk",          # University of Sheffield, ORDA (UK)
+    "figshare.warwick.ac.uk",   # University of Warwick (UK)
+    "rdr.ucl.ac.uk",            # University College London (UK)
+    "zivahub.uct.ac.za",        # University of Cape Town (South Africa)
+    "redata.arizona.edu"        # University of Arizona (USA)
+  )
+}
+
+# Regex fragment matching real figshare.com, its alternate root domain
+# figsh.com (confirmed live 2026-09-11 via pennbrook.figsh.com, listed under
+# the official figshare.com client in DataCite's registry), or any of the
+# vanity hosts above. Combines with an optional subdomain prefix the same way
+# the plain "figshare.com" match always has, so a URL like
+# "sub.figshare.le.ac.uk/..." still matches its listed host.
+.figshare_host_regex <- function() {
+  vanity <- paste(gsub("\\.", "\\\\.", .figshare_vanity_hosts()), collapse = "|")
+  paste0("figshare\\.com|figsh\\.com|", vanity)
+}
 
 #' Find Figshare Links in Papers
 #'
@@ -47,11 +104,15 @@ figshare_links <- function(paper) {
   # Figshare -- every one of them is served by the same api.figshare.com, so
   # the host match is deliberately "any subdomain of figshare.com" rather than
   # a fixed list the way Dataverse needs one for its independent installations.
+  # The vanity hosts (figshare.le.ac.uk, orda.shef.ac.uk, ...) are the same
+  # story on an institution's own domain rather than a figshare.com subdomain
+  # -- see .figshare_vanity_hosts() above.
+  host_regex <- .figshare_host_regex()
   found_href <- paper_table(paper, "url") |>
-    dplyr::filter(grepl("figshare\\.com|10\\.6084/m9\\.figshare", href, ignore.case = TRUE))
+    dplyr::filter(grepl(paste0(host_regex, "|10\\.6084/m9\\.figshare"), href, ignore.case = TRUE))
 
   fs_bare_regex <- paste0(
-    "(?:https?://)?(?:[a-z0-9.-]+\\.)?figshare\\.com/(?:articles|ndownloader|projects|s)/[A-Za-z0-9/_.-]*",
+    "(?:https?://)?(?:[a-z0-9.-]+\\.)?(?:", host_regex, ")/(?:articles|ndownloader|projects|s)/[A-Za-z0-9/_.-]*",
     "|(?:https?://)?(?:doi\\.org/)?10\\.6084/m9\\.figshare\\.[0-9]+(?:\\.v[0-9]+)?"
   )
   other_fs <- text_search(paper, fs_bare_regex, return = "match", perl = TRUE) |>
@@ -117,10 +178,20 @@ figshare_links <- function(paper) {
   # .figshare_id() always resolves to the latest version via the plain
   # /articles/{id} endpoint, matching how .zenodo_id() drops nothing (Zenodo
   # has no separate version suffix) but is otherwise the same pattern family.
+  #
+  # The /articles/ path patterns match any recognised Figshare host (real
+  # figshare.com/figsh.com subdomains AND the vanity hosts in
+  # .figshare_vanity_hosts()), because a vanity-domain citation
+  # (figshare.le.ac.uk/articles/dataset/.../12345678) carries the id in the
+  # same path shape -- only the download/ndownloader host never varies (see
+  # the file-level note above: vanity hosts serve no API of their own, so a
+  # file is always actually fetched from figshare.com regardless of which
+  # host a paper cited).
+  host_regex <- .figshare_host_regex()
   patterns <- c(
     "10\\.6084/m9\\.figshare\\.([0-9]+)",
-    "figshare\\.com/articles/(?:dataset|[a-z]+)/[^/]+/([0-9]+)",
-    "figshare\\.com/articles/([0-9]+)",
+    paste0("(?:", host_regex, ")/articles/(?:dataset|[a-z]+)/[^/]+/([0-9]+)"),
+    paste0("(?:", host_regex, ")/articles/([0-9]+)"),
     "ndownloader\\.figshare\\.com/files/([0-9]+)"
   )
 
@@ -157,9 +228,12 @@ figshare_links <- function(paper) {
   # whose project name segment itself can contain further slashes' worth of
   # punctuation-adjacent characters, so anchoring on "the segment right
   # after /projects/" would be wrong; anchoring on "the trailing digits"
-  # is not.
-  match <- regexec("figshare\\.com/projects/[^/]+/([0-9]+)/?$", figshare_url,
-                   perl = TRUE, ignore.case = TRUE)
+  # is not. Host is any recognised Figshare address (see .figshare_host_regex()
+  # / .figshare_vanity_hosts()), not just literal figshare.com, for the same
+  # reason .figshare_id()'s /articles/ patterns widened -- a vanity-domain
+  # citation carries the same path shape.
+  match <- regexec(paste0("(?:", .figshare_host_regex(), ")/projects/[^/]+/([0-9]+)/?$"),
+                   figshare_url, perl = TRUE, ignore.case = TRUE)
   groups <- regmatches(figshare_url, match)[[1]]
   if (length(groups) >= 2) return(groups[[2]])
   NA_character_
