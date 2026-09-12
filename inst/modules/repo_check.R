@@ -4,7 +4,7 @@
 #' This module retrieves information from repositories.
 #'
 #' @details
-#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, DSpace (PsychArchives and other legacy- and DSpace 7-based installations), Zenodo, Dataverse, Figshare, Dryad, ReShare, and 4TU.ResearchData based on links in the manuscript.
+#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, DSpace (PsychArchives and other legacy- and DSpace 7-based installations), Zenodo, Dataverse, Figshare, Dryad, ReShare, 4TU.ResearchData, Mendeley Data, and DataONE (Arctic Data Center, KNB, and other member nodes) based on links in the manuscript.
 #'
 #' When a linked OSF page is a registration, its `registered_from` project (the
 #' one it was registered from, which the manuscript itself may never link
@@ -86,6 +86,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     reshare_links_found <- empty_links
     researchdata4tu_links_found <- empty_links
     dspace7_links_found <- empty_links
+    mendeley_links_found <- empty_links
+    dataone_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
     # exclude psychsci badges
@@ -116,6 +118,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     reshare_links_found$repo_type <- "reshare"
     researchdata4tu_links_found <- researchdata4tu_links(paper)
     researchdata4tu_links_found$repo_type <- "researchdata4tu"
+    mendeley_links_found <- mendeley_links(paper)
+    mendeley_links_found$repo_type <- "mendeley"
+    dataone_links_found <- dataone_links(paper)
+    dataone_links_found$repo_type <- "dataone"
   }
 
   ## organise repos in a table
@@ -132,7 +138,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dryad_links_found[, cols],
     reshare_links_found[, cols],
     researchdata4tu_links_found[, cols],
-    dspace7_links_found[, cols]
+    dspace7_links_found[, cols],
+    mendeley_links_found[, cols],
+    dataone_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   repos$repo_error <- NA_character_
@@ -490,7 +498,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # id) as part of the same metadata request that supplies default_branch
     # -- see archive-github.R. GitHub has no dataset DOI concept, unlike the
     # data-repository backends below, so doi is always NA here.
-    gh_license <- vapply(gh_results, \(r) r$license %||% NA_character_, character(1))
+    # %empty_or% (not %||%) because r$license can come back as a length-zero
+    # value rather than NULL; vapply(..., character(1)) requires exactly
+    # length 1 from every call, so %||% letting a length-zero value through
+    # would error ("values must be length 1").
+    gh_license <- vapply(gh_results, \(r) r$license %empty_or% NA_character_, character(1))
     github_meta_df <- data.frame(
       repo_url = github_urls,
       doi = NA_character_,
@@ -561,7 +573,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
 
     # GitLab has no dataset DOI concept either, same as GitHub.
-    gl_license <- vapply(gl_results, \(r) r$license %||% NA_character_, character(1))
+    # %empty_or% (not %||%) for the same reason as gh_license above: vapply
+    # requires exactly length 1 from every call.
+    gl_license <- vapply(gl_results, \(r) r$license %empty_or% NA_character_, character(1))
     gitlab_meta_df <- data.frame(
       repo_url = gitlab_urls,
       doi = NA_character_,
@@ -742,17 +756,21 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
           rows_i <- lapply(files_i, function(f) {
             file_url <- NA_character_
-            if (!is.null(f$links) && !is.null(f$links$self)) {
+            if (!is.null(f$links) && length(f$links$self) > 0) {
               file_url <- as.character(f$links$self)
             }
 
+            # %empty_or% (not %||%) because Zenodo can return a field as a
+            # length-zero value (e.g. an empty array) rather than NULL; %||%
+            # would let that through and break this data.frame() call with
+            # "arguments imply differing number of rows".
             data.frame(
               repo_url = as.character(.zenodo_info$zenodo_url[[i]]),
-              file_name = as.character(f$key %||% NA_character_),
-              file_path = as.character(f$key %||% NA_character_),
+              file_name = as.character(f$key %empty_or% NA_character_),
+              file_path = as.character(f$key %empty_or% NA_character_),
               file_url = file_url,
               file_location = NA_character_,
-              file_size = as.numeric(f$size %||% NA_real_)
+              file_size = as.numeric(f$size %empty_or% NA_real_)
             )
           })
 
@@ -818,18 +836,22 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
           rows_i <- lapply(files_i, function(f) {
             df <- f$dataFile %||% list()
-            file_url <- if (!is.null(df$id))
+            file_url <- if (length(df$id) > 0)
               sprintf("https://%s/api/access/datafile/%s",
                      .dv_info$dataverse_host[[i]], df$id)
             else NA_character_
 
+            # %empty_or% (not %||%) because a field can come back as a
+            # length-zero value (e.g. an empty array) rather than NULL; %||%
+            # would let that through and break this data.frame() call with
+            # "arguments imply differing number of rows".
             data.frame(
               repo_url = as.character(.dv_info$dataverse_url[[i]]),
-              file_name = as.character(f$label %||% df$filename %||% NA_character_),
-              file_path = as.character(f$label %||% df$filename %||% NA_character_),
+              file_name = as.character(f$label %empty_or% df$filename %empty_or% NA_character_),
+              file_path = as.character(f$label %empty_or% df$filename %empty_or% NA_character_),
               file_url = file_url,
               file_location = NA_character_,
-              file_size = as.numeric(df$filesize %||% NA_real_)
+              file_size = as.numeric(df$filesize %empty_or% NA_real_)
             )
           })
 
@@ -894,13 +916,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           }
 
           rows_i <- lapply(files_i, function(f) {
+            # %empty_or% (not %||%) because a field can come back as a
+            # length-zero value (e.g. an empty array) rather than NULL; %||%
+            # would let that through and break this data.frame() call with
+            # "arguments imply differing number of rows".
             data.frame(
               repo_url = as.character(.fs_info$figshare_url[[i]]),
-              file_name = as.character(f$name %||% NA_character_),
-              file_path = as.character(f$name %||% NA_character_),
-              file_url = as.character(f$download_url %||% NA_character_),
+              file_name = as.character(f$name %empty_or% NA_character_),
+              file_path = as.character(f$name %empty_or% NA_character_),
+              file_url = as.character(f$download_url %empty_or% NA_character_),
               file_location = NA_character_,
-              file_size = as.numeric(f$size %||% NA_real_)
+              file_size = as.numeric(f$size %empty_or% NA_real_)
             )
           })
 
@@ -965,17 +991,23 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           }
 
           rows_i <- lapply(files_i, function(f) {
-            dl_href <- f$`_links`$`stash:download`$href %||% NA_character_
+            dl_href <- f$`_links`$`stash:download`$href %empty_or% NA_character_
             file_url <- if (!is.na(dl_href)) paste0("https://datadryad.org", dl_href)
                         else NA_character_
 
+            # %empty_or% (not %||%) because a field can come back as a
+            # length-zero value (e.g. an empty array) rather than NULL; %||%
+            # would let that through and break this data.frame() call with
+            # "arguments imply differing number of rows" (dl_href above uses
+            # it too, since a length-zero value would otherwise make
+            # `!is.na(dl_href)` error with "argument is of length zero").
             data.frame(
               repo_url = as.character(.dryad_info_tbl$dryad_url[[i]]),
-              file_name = as.character(f$path %||% NA_character_),
-              file_path = as.character(f$path %||% NA_character_),
+              file_name = as.character(f$path %empty_or% NA_character_),
+              file_path = as.character(f$path %empty_or% NA_character_),
               file_url = file_url,
               file_location = NA_character_,
-              file_size = as.numeric(f$size %||% NA_real_)
+              file_size = as.numeric(f$size %empty_or% NA_real_)
             )
           })
 
@@ -1043,16 +1075,22 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           }
 
           rows_i <- lapply(files_i, function(f) {
-            file_url <- f$uri %||% NA_character_
+            file_url <- f$uri %empty_or% NA_character_
             if (!is.na(file_url)) file_url <- sub("^http://", "https://", file_url)
 
+            # %empty_or% (not %||%) because a field can come back as a
+            # length-zero value (e.g. an empty array) rather than NULL; %||%
+            # would let that through and break this data.frame() call with
+            # "arguments imply differing number of rows" (file_url above uses
+            # it too, since a length-zero value would otherwise make
+            # `!is.na(file_url)` error with "argument is of length zero").
             data.frame(
               repo_url = as.character(.reshare_info_tbl$reshare_url[[i]]),
-              file_name = as.character(f$filename %||% NA_character_),
-              file_path = as.character(f$filename %||% NA_character_),
+              file_name = as.character(f$filename %empty_or% NA_character_),
+              file_path = as.character(f$filename %empty_or% NA_character_),
               file_url = file_url,
               file_location = NA_character_,
-              file_size = as.numeric(f$filesize %||% NA_real_)
+              file_size = as.numeric(f$filesize %empty_or% NA_real_)
             )
           })
 
@@ -1117,13 +1155,17 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           }
 
           rows_i <- lapply(files_i, function(f) {
+            # %empty_or% (not %||%) because a field can come back as a
+            # length-zero value (e.g. an empty array) rather than NULL; %||%
+            # would let that through and break this data.frame() call with
+            # "arguments imply differing number of rows".
             data.frame(
               repo_url = as.character(.fourtu_info$researchdata4tu_url[[i]]),
-              file_name = as.character(f$name %||% NA_character_),
-              file_path = as.character(f$name %||% NA_character_),
-              file_url = as.character(f$download_url %||% NA_character_),
+              file_name = as.character(f$name %empty_or% NA_character_),
+              file_path = as.character(f$name %empty_or% NA_character_),
+              file_url = as.character(f$download_url %empty_or% NA_character_),
               file_location = NA_character_,
-              file_size = as.numeric(f$size %||% NA_real_)
+              file_size = as.numeric(f$size %empty_or% NA_real_)
             )
           })
 
@@ -1150,6 +1192,161 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     }, error = \(e) {
       # See the OSF block above for why every url is flagged on failure.
       repos$repo_error[repos$repo_url %in% fourtu_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## Mendeley Data ----
+  mendeley_urls <- repos |>
+    dplyr::filter(repo_type == "mendeley") |>
+    _$repo_url |>
+    unique()
+  mendeley_files_df <- data.frame(repo_name = character(0))
+  mendeley_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                                 license = character(0))
+  if (length(mendeley_urls) > 0) {
+    tryCatch({
+      .mendeley_info <- suppressMessages(mendeley_info(mendeley_urls, cache = cache))
+
+      # mendeley_info() already fetches doi/license as part of its normal
+      # dataset-record lookup (see archive-mendeley.R) -- this is a plain
+      # extraction of columns already in memory, not a new API call.
+      if (nrow(.mendeley_info) > 0) {
+        mendeley_meta_df <- data.frame(
+          repo_url = as.character(.mendeley_info$mendeley_url),
+          doi = as.character(.mendeley_info$doi),
+          license = as.character(.mendeley_info$license)
+        )
+      }
+
+      if (nrow(.mendeley_info) > 0 && "files" %in% names(.mendeley_info)) {
+        file_rows <- lapply(seq_len(nrow(.mendeley_info)), function(i) {
+          files_i <- .mendeley_info$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          rows_i <- lapply(files_i, function(f) {
+            cd <- f$content_details %||% list()
+
+            # %empty_or% (not %||%) because a field can come back as a
+            # length-zero value (e.g. an empty array) rather than NULL; %||%
+            # would let that through and break this data.frame() call with
+            # "arguments imply differing number of rows".
+            data.frame(
+              repo_url = as.character(.mendeley_info$mendeley_url[[i]]),
+              file_name = as.character(f$filename %empty_or% NA_character_),
+              file_path = as.character(f$filename %empty_or% NA_character_),
+              file_url = as.character(cd$download_url %empty_or% NA_character_),
+              file_location = NA_character_,
+              file_size = as.numeric(cd$size %empty_or% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        mendeley_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(mendeley_files_df) > 0) {
+          mendeley_files_df$ext <- tolower(sub("^.*\\.", "", basename(mendeley_files_df$file_name)))
+          no_ext <- !is.na(mendeley_files_df$file_name) &
+            !grepl("\\.", basename(mendeley_files_df$file_name))
+          mendeley_files_df$ext[no_ext] <- NA_character_
+
+          mendeley_files_df <- mendeley_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          mendeley_files_df$ext <- NULL
+        } else {
+          mendeley_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% mendeley_urls] <<- conditionMessage(e)
+    })
+  }
+
+  ## DataONE ----
+  # Unlike the other providers above, a DataONE listing needs BOTH the host
+  # and the pid to identify a record (see archive-dataone.R) -- dataone_info()
+  # takes the repo_url directly rather than a pre-extracted id column, and
+  # its own dataone_host/dataone_pid columns (not repo_url) are what actually
+  # key the join back to each file's source repo.
+  dataone_urls <- repos |>
+    dplyr::filter(repo_type == "dataone") |>
+    _$repo_url |>
+    unique()
+  dataone_files_df <- data.frame(repo_name = character(0))
+  dataone_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                                license = character(0))
+  if (length(dataone_urls) > 0) {
+    tryCatch({
+      .dataone_info_tbl <- suppressMessages(dataone_info(dataone_urls, cache = cache))
+
+      if (nrow(.dataone_info_tbl) > 0) {
+        dataone_meta_df <- data.frame(
+          repo_url = as.character(.dataone_info_tbl$dataone_url),
+          doi = as.character(.dataone_info_tbl$doi),
+          license = as.character(.dataone_info_tbl$license)
+        )
+      }
+
+      if (nrow(.dataone_info_tbl) > 0 && "files" %in% names(.dataone_info_tbl)) {
+        file_rows <- lapply(seq_len(nrow(.dataone_info_tbl)), function(i) {
+          files_i <- .dataone_info_tbl$files[[i]]
+          if (is.null(files_i) || length(files_i) == 0) {
+            return(NULL)
+          }
+
+          host <- .dataone_info_tbl$dataone_host[[i]]
+          api_base <- NULL
+          for (h in .dataone_hosts()) if (identical(h$host, host)) api_base <- h$api_base
+
+          rows_i <- lapply(files_i, function(f) {
+            # A file's download url is built from the SAME host's own
+            # "object/<pid>" endpoint the dataset's metadata document itself
+            # came from -- see the file-level note in archive-dataone.R for
+            # why this is used instead of the url the metadata document's
+            # <physical> element names directly.
+            file_url <- if (!is.null(api_base) && length(f$pid) > 0 && !is.na(f$pid))
+              paste0("https://", host, api_base, "object/", utils::URLencode(f$pid, reserved = TRUE))
+            else NA_character_
+
+            data.frame(
+              repo_url = as.character(.dataone_info_tbl$dataone_url[[i]]),
+              file_name = as.character(f$key %empty_or% NA_character_),
+              file_path = as.character(f$key %empty_or% NA_character_),
+              file_url = file_url,
+              file_location = NA_character_,
+              file_size = as.numeric(f$size %empty_or% NA_real_)
+            )
+          })
+
+          dplyr::bind_rows(rows_i)
+        })
+
+        dataone_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(dataone_files_df) > 0) {
+          dataone_files_df$ext <- tolower(sub("^.*\\.", "", basename(dataone_files_df$file_name)))
+          no_ext <- !is.na(dataone_files_df$file_name) &
+            !grepl("\\.", basename(dataone_files_df$file_name))
+          dataone_files_df$ext[no_ext] <- NA_character_
+
+          dataone_files_df <- dataone_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          dataone_files_df$ext <- NULL
+        } else {
+          dataone_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% dataone_urls] <<- conditionMessage(e)
     })
   }
 
@@ -1190,7 +1387,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (nrow(repos) == 0) {
     info <- list(
       traffic_light = "na",
-      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, DSpace, Zenodo, Dataverse, Figshare, Dryad, ReShare, or 4TU.ResearchData.",
+      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, DSpace, Zenodo, Dataverse, Figshare, Dryad, ReShare, 4TU.ResearchData, Mendeley Data, or DataONE.",
       summary_table = data.frame(
         paper_id = paper_id(paper),
         repo_n = 0,
@@ -1206,7 +1403,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link
   # more than one repository (e.g. one for data, one for code) with
@@ -1219,7 +1416,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # licence).
   repo_metadata <- dplyr::bind_rows(
     osf_meta_df, github_meta_df, gitlab_meta_df, pa_meta_df, zenodo_meta_df,
-    dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df, fourtu_meta_df
+    dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df, fourtu_meta_df,
+    mendeley_meta_df, dataone_meta_df
   )
 
   # remove duplicate links
