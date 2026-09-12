@@ -1456,6 +1456,24 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       all_files$file_path <- all_files$file_name
     }
     all_files$file_path[is.na(all_files$file_path) | !nzchar(all_files$file_path)] <- all_files$file_name[is.na(all_files$file_path) | !nzchar(all_files$file_path)]
+
+    # exclude R package source trees ----
+    # An R package (its own DESCRIPTION+NAMESPACE) is reusable software
+    # infrastructure, not the study's data or analysis code, so its files are
+    # dropped from the listing entirely -- before classification, README
+    # detection, or the zip peek below, so they never inflate files_n/
+    # files_code or appear in downstream reports. Detected per repo_url (a
+    # package's DESCRIPTION/NAMESPACE must belong to the SAME repository) so a
+    # package in one OSF component does not wrongly exclude an unrelated
+    # sibling component's files.
+    is_r_pkg <- stats::ave(
+      all_files$file_path, all_files$repo_url,
+      FUN = .is_r_package_file
+    ) |> as.logical()
+    if (any(is_r_pkg)) {
+      all_files <- all_files[!is_r_pkg, , drop = FALSE]
+    }
+
     is_readme <- grepl(
       "readme|read[_ ]me",
       all_files$file_name,

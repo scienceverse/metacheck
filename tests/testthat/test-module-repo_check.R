@@ -251,6 +251,41 @@ test_that("repo_check paper + local_path", {
 }, "mock")
 
 
+# repo_check() + R package exclusion ----
+
+test_that("repo_check excludes an R package's own source tree", {
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "R"))
+  dir.create(file.path(d, "man"))
+  writeLines("Package: mypkg\nVersion: 0.1.0", file.path(d, "DESCRIPTION"))
+  writeLines("export(foo)", file.path(d, "NAMESPACE"))
+  writeLines("foo <- function() 1", file.path(d, "R", "foo.R"))
+  writeLines("\\name{foo}", file.path(d, "man", "foo.Rd"))
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+  writeLines("a,b\n1,2", file.path(d, "data.csv"))
+
+  mo <- module_run(test_paper(), "repo_check", local_path = d)
+
+  # package files gone entirely, non-package files still listed
+  expect_false(any(grepl("^DESCRIPTION$|^NAMESPACE$|foo\\.R$|foo\\.Rd$",
+                         mo$table$file_name)))
+  expect_true("analysis.R" %in% mo$table$file_name)
+  expect_true("data.csv" %in% mo$table$file_name)
+  expect_equal(mo$summary_table$files_n, 2)
+})
+
+test_that("repo_check keeps files when DESCRIPTION has no matching NAMESPACE", {
+  d <- withr::local_tempdir()
+  writeLines("Package: mypkg\nVersion: 0.1.0", file.path(d, "DESCRIPTION"))
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+
+  mo <- module_run(test_paper(), "repo_check", local_path = d)
+
+  expect_true("DESCRIPTION" %in% mo$table$file_name)
+  expect_true("analysis.R" %in% mo$table$file_name)
+})
+
+
 # repo_check() + local_only ----
 
 test_that("repo_check local_only = TRUE ignores online repos, checks local only", {

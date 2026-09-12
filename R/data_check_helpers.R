@@ -552,6 +552,81 @@ data_classify_files <- function(file_name, file_path = NULL) {
   type
 }
 
+#' Identify files that belong to an R package's own source tree
+#'
+#' An R package repository (or a package kept in a subfolder of a larger
+#' repository) is not itself research data or analysis code -- it is
+#' reusable software infrastructure, and its `.R` files, `DESCRIPTION`,
+#' `NAMESPACE`, `man/`, and `tests/` are package scaffolding rather than
+#' the study's data/code. Detected by the standard CRAN/R-package fingerprint:
+#' a `DESCRIPTION` file containing a `Package:` field, plus a `NAMESPACE`
+#' file, both directly inside the same folder. Only that folder's own
+#' fingerprint is checked (not, say, `DESCRIPTION` and `NAMESPACE` sitting in
+#' two different folders that happen to share a repository).
+#'
+#' A repository can hold more than one R package (e.g. a monorepo of
+#' packages), and a package can sit in a subfolder rather than at the
+#' repository root, so detection runs per folder rather than assuming the
+#' whole repository is-or-isn't a package.
+#'
+#' Detection works from file NAMES alone (no download needed): a `DESCRIPTION`
+#' file and a `NAMESPACE` file directly inside the same folder is the
+#' fingerprint every R package has, whether on CRAN or in a git repository
+#' that has been through `devtools::document()`/`R CMD build` at least once.
+#' Only files that are actually PART of the package -- `DESCRIPTION`/
+#' `NAMESPACE` themselves, and anything under that folder's `R/`, `man/`,
+#' `tests/`, `vignettes/`, `data/`, `inst/`, or `src/` subdirectories -- are
+#' reported as package files; a sibling file sitting directly in the same
+#' folder (e.g. a study's `analysis.R` kept alongside a package it depends
+#' on) is NOT swept in just because it shares that folder.
+#'
+#' @param file_path a character vector of repo-relative file paths (as found
+#'   in `all_files$file_path`)
+#'
+#' @returns a logical vector, same length as `file_path`: `TRUE` for every
+#'   file that is part of a detected R package (the `DESCRIPTION`/`NAMESPACE`
+#'   themselves, plus their standard package subdirectories).
+#' @keywords internal
+.is_r_package_file <- function(file_path) {
+  n <- length(file_path)
+  if (n == 0) return(logical(0))
+
+  known <- !is.na(file_path) & nzchar(file_path)
+  path <- gsub("\\\\", "/", ifelse(known, file_path, "<na>"))
+  dir  <- dirname(path)
+  dir[path == basename(path)] <- "."
+  base_lc <- toupper(basename(path))
+
+  has_description <- known & base_lc == "DESCRIPTION"
+  has_namespace   <- known & base_lc == "NAMESPACE"
+
+  pkg_dirs <- intersect(dir[has_description], dir[has_namespace])
+  if (length(pkg_dirs) == 0) return(rep(FALSE, n))
+
+  # the package's own DESCRIPTION/NAMESPACE, or anything under one of its
+  # standard subdirectories -- NOT every file that merely sits in the same
+  # folder as those two. Compared as PATH SEGMENTS (split on "/"), never as a
+  # substring match, so e.g. "analysis.R" at package root is not mistaken for
+  # living under an "R" subdirectory just because its extension is ".R".
+  pkg_subdirs <- c("R", "man", "tests", "vignettes", "data", "inst", "src")
+  is_pkg_member <- function(i) {
+    d <- dir[i]
+    for (pd in pkg_dirs) {
+      if (identical(d, pd)) return(base_lc[i] %in% c("DESCRIPTION", "NAMESPACE"))
+      rel <- if (identical(pd, ".")) d else {
+        prefix <- paste0(pd, "/")
+        if (!startsWith(d, prefix)) NA_character_
+        else substr(d, nchar(prefix) + 1L, nchar(d))
+      }
+      if (!is.na(rel) && strsplit(rel, "/", fixed = TRUE)[[1]][1] %in% pkg_subdirs) {
+        return(TRUE)
+      }
+    }
+    FALSE
+  }
+  known & vapply(seq_len(n), is_pkg_member, logical(1))
+}
+
 #' Classify a documentation file's fine-grained role
 #'
 #' Within `data_classify_files()`'s coarse `"documentation"` type, distinguish
