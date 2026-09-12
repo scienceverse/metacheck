@@ -4,7 +4,7 @@
 #' This module retrieves information from repositories.
 #'
 #' @details
-#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, PsychArchives, Zenodo, Dataverse, Figshare, Dryad, ReShare, and 4TU.ResearchData based on links in the manuscript.
+#' The Repository Check module lists files on the OSF, GitHub, ResearchBox, DSpace (PsychArchives and other legacy- and DSpace 7-based installations), Zenodo, Dataverse, Figshare, Dryad, ReShare, and 4TU.ResearchData based on links in the manuscript.
 #'
 #' When a linked OSF page is a registration, its `registered_from` project (the
 #' one it was registered from, which the manuscript itself may never link
@@ -85,6 +85,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dryad_links_found <- empty_links
     reshare_links_found <- empty_links
     researchdata4tu_links_found <- empty_links
+    dspace7_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
     # exclude psychsci badges
@@ -99,8 +100,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     gitlab_links_found$repo_type <- "gitlab"
     rb_links_found     <- rbox_links(paper)
     rb_links_found$repo_type     <- "researchbox"
-    pa_links_found     <- psycharchives_links(paper)
-    pa_links_found$repo_type     <- "psycharchives"
+    pa_links_found     <- dspace_links(paper)
+    pa_links_found$repo_type     <- "dspace"
+    dspace7_links_found <- dspace7_links(paper)
+    dspace7_links_found$repo_type <- "dspace7"
     zenodo_links_found <- zenodo_links(paper)
     zenodo_links_found$repo_type <- "zenodo"
     dataverse_links_found <- dataverse_links(paper)
@@ -128,7 +131,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     figshare_links_found[, cols],
     dryad_links_found[, cols],
     reshare_links_found[, cols],
-    researchdata4tu_links_found[, cols]
+    researchdata4tu_links_found[, cols],
+    dspace7_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   repos$repo_error <- NA_character_
@@ -601,13 +605,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
-  ## PsychArchives ----
-  # Unlike ResearchBox, PsychArchives lists public files via its DSpace REST API
-  # without downloading them, so this only fills file_url / file_size and leaves
-  # file_location = NA; download_repo_files() fetches the bytes later (deferred,
-  # like Zenodo/OSF), which keeps the per-file/per-repo size caps in force.
+  ## DSpace (legacy REST API: PsychArchives and other installations in
+  ## .dspace_legacy_hosts(), archive-psycharchives.R) ----
+  # Lists public files via the DSpace REST API without downloading them, so
+  # this only fills file_url / file_size and leaves file_location = NA;
+  # download_repo_files() fetches the bytes later (deferred, like Zenodo/OSF),
+  # which keeps the per-file/per-repo size caps in force.
+  # psycharchives_file_download() resolves which of .dspace_legacy_hosts() a
+  # given url belongs to on its own (see archive-psycharchives.R), so this
+  # call is unchanged even though pa_urls may now include non-PsychArchives
+  # hosts.
   pa_urls <- repos |>
-    dplyr::filter(repo_type == "psycharchives") |>
+    dplyr::filter(repo_type == "dspace") |>
     _$repo_url |>
     unique()
   pa_files_df <- data.frame(repo_name = character(0))
@@ -664,6 +673,40 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # its own repo_error, so only backfill urls still unflagged.
       unflagged <- pa_urls[is.na(repos$repo_error[match(pa_urls, repos$repo_url)])]
       repos$repo_error[repos$repo_url %in% unflagged] <<- conditionMessage(e)
+    })
+  }
+
+  ## DSpace 7+ (archive-dspace7.R -- a differently-shaped REST API from the
+  ## legacy one above, so it needs its own download function) ----
+  # Same deferred pattern as the legacy-DSpace block: only file_url / file_size
+  # are filled here, download_repo_files() fetches bytes later. No doi/license
+  # extraction here (unlike the legacy-DSpace/Zenodo/Dataverse/... blocks'
+  # *_meta_df) -- archive-dspace7.R does not currently surface those as
+  # attributes the way psycharchives_file_download() does.
+  dspace7_urls <- repos |>
+    dplyr::filter(repo_type == "dspace7") |>
+    _$repo_url |>
+    unique()
+  dspace7_files_df <- data.frame(repo_name = character(0))
+  if (length(dspace7_urls) > 0) {
+    tryCatch({
+      dspace7_file_list <- dspace7_file_download(dspace7_urls, pb = pb)
+
+      if (!is.null(dspace7_file_list) && nrow(dspace7_file_list) > 0) {
+        dspace7_file_list <- dspace7_file_list |> dplyr::filter(!isdir)
+        dspace7_files_df <- data.frame(
+          repo_url = dspace7_file_list$dspace7_url,
+          file_name = dspace7_file_list$name,
+          file_path = dspace7_file_list$name,
+          file_url = dspace7_file_list$file_url,
+          file_location = dspace7_file_list$file_location,
+          file_size = dspace7_file_list$size,
+          file_type = dspace7_file_list$type
+        )
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% dspace7_urls] <<- conditionMessage(e)
     })
   }
 
@@ -1147,7 +1190,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (nrow(repos) == 0) {
     info <- list(
       traffic_light = "na",
-      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, PsychArchives, Zenodo, Dataverse, Figshare, Dryad, ReShare, or 4TU.ResearchData.",
+      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, DSpace, Zenodo, Dataverse, Figshare, Dryad, ReShare, or 4TU.ResearchData.",
       summary_table = data.frame(
         paper_id = paper_id(paper),
         repo_n = 0,
@@ -1163,7 +1206,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link
   # more than one repository (e.g. one for data, one for code) with

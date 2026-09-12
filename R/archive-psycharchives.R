@@ -9,19 +9,118 @@
 # Access control is handled for us by the API: a restricted item's protected
 # bitstreams simply do not appear in /bitstreams, so listing only ever yields
 # publicly retrievable files.
+#
+# PsychArchives is not the only installation of this API: any DSpace <=6
+# installation exposes the identical /rest/ shape. The functions below
+# (.psycharchives_rest, .psycharchives_info, and therefore the exported
+# psycharchives_info()/psycharchives_file_download()) take/derive a `host`
+# rather than assuming www.psycharchives.org, so they work unmodified for any
+# host in .dspace_legacy_hosts() -- see dspace_links() below, which is the
+# general (all-hosts) counterpart to psycharchives_links() (PsychArchives
+# only, kept for anyone calling it directly and expecting only PsychArchives
+# results). Other installations found and verified live 2026-09-11 via
+# DataCite's public client registry (api.datacite.org/clients?software=dspace,
+# 169 results) filtered to hosts answering GET /rest/test with "REST api is
+# running." (the same legacy-API health check psycharchives.org answers) --
+# hosts answering the newer DSpace 7+ /server/api/ shape instead are handled
+# separately, in archive-dspace7.R.
+.dspace_legacy_hosts <- function() {
+  c(
+    "www.psycharchives.org",         # PsychArchives, ZPID (Germany)
+    "bonndoc.ulb.uni-bonn.de",       # bonndoc, University of Bonn (Germany)
+    "dspace.ut.ee",                  # University of Tartu Library (Estonia)
+    "qsardb.org",                    # QsarDB
+    "repositorio-digital.cide.edu",  # CIDE (Mexico)
+    "ses.library.usyd.edu.au"        # University of Sydney eScholarship (Australia)
+  )
+}
 
-# Base of the DSpace REST API. retrieveLink values are server-relative
-# ("/rest/bitstreams/<uuid>/retrieve"), so downloads prefix this.
-.PSYCHARCHIVES_REST <- "https://www.psycharchives.org/rest"
+.dspace_legacy_host_regex <- function() {
+  paste(gsub("\\.", "\\\\.", .dspace_legacy_hosts()), collapse = "|")
+}
+
+# Extract (host, handle) from any reference to a known legacy-DSpace
+# installation: a real hyperlink already carries its own host, so the handle
+# is read out of the URL regardless of that installation's own handle prefix
+# (e.g. "20.500.xxxx"); a BARE mention with no host attached (no domain in the
+# text at all) can only be attributed to PsychArchives, since its prefix
+# (20.500.12034) is the only one this package has on record -- another
+# installation's own prefix would need to be looked up and added here before
+# its bare mentions could be recognised the same way.
+#
+# Vectorised; returns a data.frame(host, handle) the same length as `url`,
+# both NA for an element that matches neither case.
+.dspace_legacy_parse <- function(url) {
+  url <- as.character(url)
+  n <- length(url)
+  host <- rep(NA_character_, n)
+  handle <- rep(NA_character_, n)
+  has_url <- !is.na(url) & nzchar(url)
+  if (!any(has_url)) return(data.frame(host = host, handle = handle, stringsAsFactors = FALSE))
+
+  host_regex <- .dspace_legacy_host_regex()
+  for (i in which(has_url)) {
+    u <- url[i]
+    hm <- regmatches(u, regexpr(host_regex, u, ignore.case = TRUE, perl = TRUE))
+    if (length(hm) > 0) {
+      host[i] <- tolower(hm)
+    } else if (grepl("20\\.500\\.12034/[0-9]+", u)) {
+      host[i] <- "www.psycharchives.org"
+    }
+    hd <- regmatches(u, regexpr("[0-9]{1,5}(?:\\.[0-9]+){0,3}/[0-9A-Za-z.]+", u, perl = TRUE))
+    if (length(hd) > 0) handle[i] <- sub("[.,;]+$", "", hd)
+  }
+  data.frame(host = host, handle = handle, stringsAsFactors = FALSE)
+}
 
 # Extract the handle suffix (e.g. "20.500.12034/17526") from any PsychArchives
 # reference: a hdl.handle.net URL, a psycharchives.org item page, or a bare
-# handle. Returns NA_character_ when no handle is present.
+# handle. Returns NA_character_ when no handle is present. Kept as a thin
+# wrapper over the general .dspace_legacy_parse() so existing callers are
+# unaffected.
 .psycharchives_handle <- function(url) {
-  url <- as.character(url)
-  m <- regmatches(url, regexpr("20\\.500\\.12034/[0-9]+", url))
-  if (length(m) == 0 || !nzchar(m)) return(NA_character_)
-  m
+  .dspace_legacy_parse(url)$handle[[1]]
+}
+
+#' Find DSpace (legacy REST API) Links in Papers
+#'
+#' Get all links to any of the legacy-DSpace-REST installations in
+#' \code{.dspace_legacy_hosts()} (PsychArchives plus the others verified
+#' 2026-09-11 -- see the note at the top of this file): real hyperlinks from
+#' the paper's own \code{url} table, plus a body-text fallback. The fallback
+#' recognises a bare mention (no hostname attached) only for PsychArchives'
+#' own handle prefix (20.500.12034) -- see \code{.dspace_legacy_parse()} for
+#' why the other installations' bare mentions cannot be resolved the same way.
+#' This is the general (all-hosts) counterpart to \code{psycharchives_links()},
+#' which stays PsychArchives-only for anyone calling it directly.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a table with the DSpace url in the first (href) column
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' psychsci <- papers_load("psychsci", cache = TRUE)
+#' dspace_links(psychsci)
+#' }
+dspace_links <- function(paper) {
+  href <- text <- NULL
+  host_regex <- .dspace_legacy_host_regex()
+
+  found_href <- paper_table(paper, "url") |>
+    dplyr::filter(grepl(host_regex, href, ignore.case = TRUE))
+
+  ds_bare_regex <- paste0(
+    "(?:https?://)?(?:www\\.)?(?:", host_regex, ")/[A-Za-z0-9/._-]+",
+    "|(?:https?://)?(?:hdl\\.handle\\.net/)?20\\.500\\.12034/[0-9]+"
+  )
+  other_ds <- text_search(paper, ds_bare_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
+  dplyr::bind_rows(found_href, other_ds) |>
+    dplyr::mutate(href = sub("/+$", "", href)) |>
+    unique()
 }
 
 #' Find PsychArchives Links in Papers
@@ -189,7 +288,15 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
     pa_url = pa_url
   )
 
-  handle <- .psycharchives_handle(pa_url)
+  # Host is derived from pa_url itself (any known legacy-DSpace installation,
+  # falling back to PsychArchives for a bare handle with no host attached --
+  # see .dspace_legacy_parse()), so this function needs no host parameter of
+  # its own and every existing caller (psycharchives_info(),
+  # psycharchives_file_download()) automatically supports every host in
+  # .dspace_legacy_hosts() without any change on their part.
+  parsed <- .dspace_legacy_parse(pa_url)
+  host <- parsed$host[[1]] %||% "www.psycharchives.org"
+  handle <- parsed$handle[[1]]
   if (is.na(handle)) {
     warning(pa_url, " is not a valid PsychArchives handle", call. = FALSE)
     obj$error <- "unfound"
@@ -197,7 +304,7 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
   }
 
   # Resolve the handle to a DSpace item (UUID) via the REST API.
-  item <- .psycharchives_rest(paste0("/handle/", handle))
+  item <- .psycharchives_rest(paste0("/handle/", handle), host = host)
   if (is.null(item) || is.null(item$uuid)) {
     warning(pa_url, " could not be found", call. = FALSE)
     obj$error <- "unfound"
@@ -206,7 +313,7 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
   uuid <- item$uuid
 
   # Item-level metadata (title, authors, DOI, rights, date).
-  meta <- .psycharchives_rest(paste0("/items/", uuid, "?expand=metadata"))
+  meta <- .psycharchives_rest(paste0("/items/", uuid, "?expand=metadata"), host = host)
   md <- meta$metadata %||% list()
   md_val <- function(key) {
     vals <- vapply(md, \(m) if (identical(m$key, key)) m$value else NA_character_,
@@ -224,7 +331,7 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
 
   # Public bitstream list. Restricted bitstreams are omitted by the API, so this
   # only ever contains publicly retrievable files.
-  bitstreams <- .psycharchives_rest(paste0("/items/", uuid, "/bitstreams?limit=1000"))
+  bitstreams <- .psycharchives_rest(paste0("/items/", uuid, "/bitstreams?limit=1000"), host = host)
   file_list <- if (length(bitstreams) == 0) {
     data.frame(
       name = character(0),
@@ -237,7 +344,7 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
       size = vapply(bitstreams, \(b) as.numeric(b$sizeBytes %||% NA_real_), numeric(1)),
       retrieve = vapply(bitstreams,
         \(b) if (is.null(b$retrieveLink)) NA_character_
-             else paste0("https://www.psycharchives.org", b$retrieveLink),
+             else paste0("https://", host, b$retrieveLink),
         character(1))
     )
   }
@@ -246,10 +353,12 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
   return(obj)
 }
 
-# One DSpace REST request returning parsed JSON, or NULL on any failure / non-200.
-# Kept internal and unexported; mirrors the httr2 error handling used elsewhere.
-.psycharchives_rest <- function(path) {
-  url <- paste0(.PSYCHARCHIVES_REST, path)
+# One DSpace legacy-REST request returning parsed JSON, or NULL on any failure
+# / non-200. `host` defaults to PsychArchives so any pre-existing call site
+# that never passed one keeps its exact prior behaviour. Kept internal and
+# unexported; mirrors the httr2 error handling used elsewhere.
+.psycharchives_rest <- function(path, host = "www.psycharchives.org") {
+  url <- paste0("https://", host, "/rest", path)
   tryCatch({
     resp <- httr2::request(url) |>
       httr2::req_headers(Accept = "application/json") |>

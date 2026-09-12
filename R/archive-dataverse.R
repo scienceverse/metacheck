@@ -25,23 +25,38 @@
 # unrecognised URL -- there is no false-positive risk from under-listing, only
 # a missed repository).
 #
-# The European block below (2026-08-16) was sourced from the crowdsourced
-# IQSS/dataverse-installations list (github.com/IQSS/dataverse-installations,
-# data/data.json) and individually verified live against each host's own
-# GET /api/info/version -- the endpoint every real Dataverse installation
-# answers -- rather than trusted as listed. That list is not fully reliable:
-# it wrongly includes reshare.ukdataservice.ac.uk (confirmed live to be
-# EPrints, not Dataverse: /api/info/version returns 404, and see
-# archive-reshare.R) and zenodo.org (not Dataverse at all). Hosts that failed
-# verification (DNS did not resolve, or answered 404) were left OUT rather
-# than added on the list's word alone: snd.gu.se (Sweden; SND appears to have
-# moved to researchdata.se), dataverse.nioz.nl, datashare.ed.ac.uk, and
-# roughly a dozen .de/.ie/.uk/.bg/.ch hosts that no longer resolve
-# (dataverse.tcd.ie, dataverse.uni-koeln.de, dataverse.uni-mannheim.de,
-# dataverse.ul.ie, rdmc.manchester.ac.uk, dataverse.swansea.ac.uk,
-# dataverse.tind.io, data.unece.org, dataverse.mpi-sws.org,
-# keen.zih.tu-dresden.de, dataverse.uni-sofia.bg) -- these may simply be
-# stale list entries, or may be back up later; re-check before adding.
+# The European block below (2026-08-16) and the Africa/Asia/North America/
+# South America block further down (2026-09-11) were both sourced from the
+# crowdsourced IQSS/dataverse-installations list
+# (github.com/IQSS/dataverse-installations, data/data.json) and individually
+# verified live against each host's own GET /api/info/version -- the endpoint
+# every real Dataverse installation answers -- rather than trusted as listed.
+# That list is not fully reliable: it wrongly includes
+# reshare.ukdataservice.ac.uk (confirmed live to be EPrints, not Dataverse:
+# /api/info/version returns 404, and see archive-reshare.R) and zenodo.org
+# (not Dataverse at all). Hosts that failed verification (DNS did not
+# resolve, or answered 404) were left OUT rather than added on the list's
+# word alone: snd.gu.se (Sweden; SND appears to have moved to
+# researchdata.se), dataverse.nioz.nl, datashare.ed.ac.uk, and roughly a
+# dozen .de/.ie/.uk/.bg/.ch hosts that no longer resolve (dataverse.tcd.ie,
+# dataverse.uni-koeln.de, dataverse.uni-mannheim.de, dataverse.ul.ie,
+# rdmc.manchester.ac.uk, dataverse.swansea.ac.uk, dataverse.tind.io,
+# data.unece.org, dataverse.mpi-sws.org, keen.zih.tu-dresden.de,
+# dataverse.uni-sofia.bg) -- these may simply be stale list entries, or may
+# be back up later; re-check before adding.
+#
+# The 2026-09-11 pass checked every host in the registry not already on this
+# list (101 candidates) and kept only the 71 that answered /api/info/version
+# with a real version number. 30 more failed live (mostly a WAF blocking the
+# request with 403, a redirect to a login page, or DNS/connection failures)
+# and were left out for the same reason as the ones above -- a failure here
+# does not mean the installation is fake, only that this check could not
+# confirm it right now: dataverse.tdl.org, archive.data.jhu.edu,
+# dataverse.ada.edu.au, dataspace.ust.hk, dvn.fudan.edu.cn,
+# dataverse.nioz.nl, dataverse.acg.maine.edu/dvn, datahub.polen.fccn.pt,
+# research-data.urosario.edu.co, dataverse.unr.edu.ar, opendata.pku.edu.cn,
+# data.scielo.org, and about a dozen more that timed out entirely rather than
+# answering; re-check before adding.
 .dataverse_hosts <- function() {
   c(
     "dataverse.harvard.edu",   # Harvard Dataverse, the flagship instance
@@ -95,7 +110,86 @@
     "archaeology.datastations.nl",       # DANS Data Station Archaeology (Netherlands)
     "lifesciences.datastations.nl",      # DANS Data Station Life Sciences (Netherlands)
     "phys-techsciences.datastations.nl", # DANS Data Station Physical/Technical Sciences (Netherlands)
-    "ssh.datastations.nl"                # DANS Data Station Social Sciences and Humanities (Netherlands)
+    "ssh.datastations.nl",               # DANS Data Station Social Sciences and Humanities (Netherlands)
+
+    # -- Africa, Asia, North America, South America, verified live
+    # 2026-09-11 (see note above) --
+    # -- Africa --
+    "dataverse.bhp.org.bw",                   # Botswana Harvard Data (Botswana)
+    "data.worldagroforestry.org",             # World Agroforestry - Research Data Repository (Kenya)
+    # -- Asia --
+    "researchdata.cuhk.edu.hk",               # CUHK Research Data Repository (Hong Kong)
+    "researchdata.lib.polyu.edu.hk",          # PolyU Research Data Repository (Hong Kong)
+    "data.brin.go.id",                        # BRIN Dataverse (Indonesia)
+    "data.cifor.org",                         # CIFOR (Indonesia)
+    "dataverse.theacss.org",                  # ACSS Dataverse (Lebanon)
+    "data.mel.cgiar.org",                     # MELDATA (Lebanon)
+    "researchdata.nie.edu.sg",                # NIE Data Repository (Singapore)
+    "dataverse.lib.nycu.edu.tw",              # NYCU Dataverse (Taiwan)
+    # -- Europe (additional, outside the 2026-08-16 pass above) --
+    "www.sodha.be",                           # SODHA (Belgium)
+    "dataverse.uliege.be",                    # ULiège Open Data Repository (Belgium)
+    "data.goettingen-research-online.de",     # Göttingen Research Online (Germany)
+    "infraverse.zih.tu-dresden.de",           # KEEN Data Management Platform (Germany)
+    "planetary-data-portal.org",              # TRR170-DB (Germany)
+    "data.tu-dortmund.de",                    # TUDOdata (Germany)
+    "datarepository.unive.it",                # Università Ca' Foscari Venezia Datarepository (Italy)
+    "dataverse.unimi.it",                     # Università degli Studi di Milano (Italy)
+    "danebadawcze.uw.edu.pl",                 # Dane Badawcze UW (Poland)
+    "uken.rodbuk.pl",                         # RODBUK UKEN (Poland)
+    "rodbuk.pl",                              # RODBUK (Poland)
+    "agh.rodbuk.pl",                          # RODBUK AGH (Poland)
+    "pk.rodbuk.pl",                           # RODBUK PK (Poland)
+    "uek.rodbuk.pl",                          # RODBUK UEK (Poland)
+    "uj.rodbuk.pl",                           # RODBUK UJ (Poland)
+    "sano.rodbuk.pl",                         # Sano (Poland)
+    "ifj.rodbuk.pl",                          # Henryk Niewodniczański Institute of Nuclear Physics PAS (Poland)
+    "akf.rodbuk.pl",                          # University of Physical Culture in Krakow (Poland)
+    "uwr.rodbuk.pl",                          # University of Wroclaw (Poland)
+    "dataportal.ing.pan.pl",                  # Institute of Geophysics, Polish Academy of Sciences (Poland)
+    "dataverse.csuc.cat",                     # CORA. Research Data Repository (RDR) (Spain)
+    "opendata.nas.gov.ua",                    # DataverseUA (Ukraine)
+    # -- North America --
+    "dataverse.lib.unb.ca",                   # UNB Libraries Dataverse (Canada)
+    "dataverse.tec.ac.cr",                    # Repositorio TECdatos (Costa Rica)
+    "data.cimmyt.org",                        # CIMMYT Research Data (Mexico)
+    "datahub.tec.mx",                         # Tecnológico de Monterrey Data Hub (Mexico)
+    "dataverse.asu.edu",                      # ASU Library Research Data Repository (USA)
+    "dataverse.dartmouth.edu",                # Dartmouth Dataverse (USA)
+    "dataverse.fiu.edu",                      # Florida International University Research Data Portal (USA)
+    "dataverse.orc.gmu.edu",                  # George Mason University Dataverse (USA)
+    "dataverse.jpl.nasa.gov",                 # JPL Open Repository (USA)
+    "dataverse.whoi.edu",                     # MBLWHOI Library Dataverse (USA)
+    "data.qdr.syr.edu",                       # QDR Main Collection (USA)
+    "datasets.lib.berkeley.edu",              # UC Berkeley Library Dataverse (USA)
+    "dataverse.ucla.edu",                     # UCLA Dataverse (USA)
+    "dataverse.udel.edu",                     # UD Dataverse (USA)
+    "dataverse.carc.usc.edu",                 # USC Dataverse (USA)
+    "dataverse.vtti.vt.edu",                  # VTTI (USA)
+    "dataverse.arcc.uwyo.edu",                # Wyoming Data Repository (USA)
+    "dataverse.yale.edu",                     # Yale Dataverse (USA)
+    # -- South America --
+    "datos.unlp.edu.ar",                      # U. Nacional de La Plata data repository (Argentina)
+    "arcadados.fiocruz.br",                   # Arca Dados (Brazil)
+    "dataverse.cidacs.org",                   # CIDACS (Brazil)
+    "dataverse.cbpf.br",                      # Centro Brasileiro de Pesquisas Físicas (Brazil)
+    "dataverse.ideal.ufpb.br",                # DataPB (Brazil)
+    "domusdados.unifesp.br",                  # Domus Dados (Brazil)
+    "dataverse.fgv.br",                       # FGV Dataverse (Brazil)
+    "repositoriopesquisas.ibict.br",          # IBICT (Brazil)
+    "repositorio.soildata.mapbiomas.org",     # Repositório SoilData (Brazil)
+    "datospararesiliencia.cl",                # Datos para Resiliencia (Chile)
+    "datos.usach.cl",                         # Repositorio de Datos de Investigación USACH (Chile)
+    "datos.uchile.cl",                        # U. de Chile research data repository (Chile)
+    "datav.udec.cl",                          # U. de Concepción research data repository (Chile)
+    "opendata.cesa.edu.co",                   # CESA data repository (Colombia)
+    "investigacionartes.mincultura.gov.co",   # Ministerio de las Culturas, las Artes y los Saberes (Colombia)
+    "papyrus-datos.co",                       # PAPYRUS (Colombia)
+    "datosinvestigacion.udistrital.edu.co",   # U. Distrital Francisco José de Caldas (Colombia)
+    "indata.cedia.edu.ec",                    # Indata (Ecuador)
+    "data.cipotato.org",                      # International Potato Center (Peru)
+    "datos.pucp.edu.pe",                      # Pontificia U. Católica del Perú (Peru)
+    "redata.anii.org.uy"                      # Redata (Uruguay)
   )
 }
 
