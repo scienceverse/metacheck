@@ -174,6 +174,11 @@ test_that("failed downloads are reported and recorded, not swallowed", {
   expect_equal(fa$file_url, files$file_url[2])
 })
 
+# Captured as plain top-level code (not inside test_that()) so it runs
+# unconditionally before the mock below, with no dependency on any
+# defer/frame-exit machinery -- see the comment on the restore line below.
+.real_req_perform <- get("req_perform", envir = asNamespace("httr2"), inherits = FALSE)
+
 test_that(".download_one applies a size-scaled req_timeout, not an unbounded req_perform", {
   # Regression test for a real production hang (confirmed live 2026-09-07,
   # Cooper corpus rerun): req_perform() had no timeout of its own, so a
@@ -183,6 +188,18 @@ test_that(".download_one applies a size-scaled req_timeout, not an unbounded req
   # fix, just via the plain blocking req_perform() path instead of a manual
   # read loop). req_timeout() lets curl abort a stalled connection so it
   # becomes an ordinary httr2 error req_retry() can act on.
+  #
+  # local_mocked_bindings()'s own cleanup is NOT trusted here: confirmed live
+  # 2026-09-12 (testthat 3.3.2 / withr 3.0.3 / httr2 1.3.0) that its deferred
+  # restore of req_perform silently does not take effect, even though a plain
+  # on.exit()/withr::defer() canary in the same block DOES fire -- the
+  # deferred call runs, but this specific assignInNamespace() restore inside
+  # it does not stick. req_perform_sequential() (the path every later
+  # download in this file takes, since TESTTHAT == "true") calls req_perform()
+  # internally, so a leaked mock here breaks every later real download in this
+  # file with "stop before any real request". Belt-and-suspenders fix:
+  # restore explicitly, as plain top-level code immediately after this
+  # test_that() call below -- that runs unconditionally.
   captured <- NULL
   local_mocked_bindings(
     req_perform = function(req, ...) {
@@ -208,11 +225,34 @@ test_that(".download_one applies a size-scaled req_timeout, not an unbounded req
   expect_equal(captured$options$timeout_ms,
               (500 * 1024 * 1024) / (200 * 1024) * 1000)
 })
+# See the comment inside the test above: force req_perform back to the real
+# httr2 implementation regardless of whether local_mocked_bindings() already
+# did so, since it is not reliable for this specific binding here.
+assignInNamespace("req_perform", .real_req_perform, ns = "httr2")
+
+# Captured as plain top-level code (not inside test_that()) so it runs
+# unconditionally before the mock below, with no dependency on any
+# defer/frame-exit machinery -- see the comment on the restore line below.
+.real_req_perform_parallel <- get("req_perform_parallel", envir = asNamespace("httr2"),
+                                  inherits = FALSE)
 
 test_that(".download_many_parallel applies a size-scaled req_timeout per request", {
   # Same fix as .download_one() above, for the parallel path -- more urgent
   # there, since a stalled connection blocks every OTHER request in the same
   # parallel batch, not just its own.
+  #
+  # local_mocked_bindings()'s own cleanup is NOT trusted here: confirmed live
+  # 2026-09-12 (in this exact testthat 3.3.2 / withr 3.0.3 / httr2 1.3.0
+  # combination) that its deferred restore of req_perform_parallel silently
+  # does not take effect -- get()-ing the binding right after this test_that()
+  # block still returns the mock, even though a plain on.exit()/withr::defer()
+  # canary in the same block DOES fire, so the deferred call itself runs but
+  # this specific assignInNamespace() restore inside it does not stick. Every
+  # later test in this file that goes through .download_many_parallel() while
+  # this leaked mock is in place fails with "stop before any real request".
+  # Belt-and-suspenders fix: restore explicitly, as plain top-level code
+  # immediately after this test_that() call below -- that runs
+  # unconditionally, with no dependency on any defer/frame-exit machinery.
   captured <- list()
   local_mocked_bindings(
     req_perform_parallel = function(reqs, ...) {
@@ -234,6 +274,10 @@ test_that(".download_many_parallel applies a size-scaled req_timeout per request
   expect_equal(captured[[2]]$options$timeout_ms,
               (500 * 1024 * 1024) / (200 * 1024) * 1000)
 })
+# See the comment inside the test above: force req_perform_parallel back to
+# the real httr2 implementation regardless of whether local_mocked_bindings()
+# already did so, since it is not reliable for this specific binding here.
+assignInNamespace("req_perform_parallel", .real_req_perform_parallel, ns = "httr2")
 
 test_that("cache paths are stable and per-repo", {
   a <- metacheck:::.repo_cache_subdir("https://osf.io/abc")
@@ -484,8 +528,12 @@ test_that("OSF zip-vs-file decision scales with this repo's own files, not the w
   # Scoped to the target repo's one row, this is near-instant regardless of
   # how large the rest of the batch is; scanning all 20000 decoy rows too
   # (the old behaviour) was slow enough in local testing to fail this bound
-  # by a wide margin.
-  expect_lt(elapsed, 3)
+  # by a wide margin. The threshold is generous (not a tight benchmark) --
+  # confirmed live 2026-09-12 that a loaded/slower machine can take 3-4s for
+  # the fast (scoped) path alone, so this only needs to catch a return to the
+  # O(n)-over-the-whole-batch behaviour, which would take far longer than 15s
+  # against 20000 decoy rows, not sit just over a tight few-second line.
+  expect_lt(elapsed, 15)
 })
 
 # Dryad's zip-vs-file-by-file threshold is quota-aware, unlike every other

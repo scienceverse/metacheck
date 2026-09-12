@@ -591,6 +591,9 @@ test_that("parse errors", {
     # none of the fixture files call setwd()
     code_setwd = rep(0L, 8),
     setwd_calls = rep("", 8),
+    # none of the fixture files call install.packages()
+    code_install_packages = rep(0L, 8),
+    install_packages_calls = rep("", 8),
     library_lines = c(1L, 1L, 1L, 1L, 0L, 3L, 0L, 0L),
     library_max_between = c(NA, NA, NA, NA, NA, 5L, NA, NA),
     # packages/packages_n are alphabetical by file_name (see arrange() below):
@@ -634,6 +637,7 @@ test_that("parse errors", {
     code_checked = 8,
     code_abs_path = 1,
     code_setwd = 0L,
+    code_install_packages = 0L,
     code_missing_files = 1,
     code_min_comments = 0.2,
     code_parse_errors = 4,

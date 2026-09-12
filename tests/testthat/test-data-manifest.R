@@ -161,6 +161,16 @@ test_that("manifest is split one file per paper for a paperlist batch", {
   withr::local_options(metacheck.llm.use = FALSE)
   mdir <- withr::local_tempdir()
 
+  # paperA's file is downloaded successfully (a real on-disk file); paperB's
+  # is not, and is the one reported in `failed` below. Giving paperA a real
+  # `file_location` is what actually makes `rerun_recommended` FALSE for it
+  # meaningful -- left as NA, it would fall through .data_check_write_manifest's
+  # generic "wanted, has a URL, not downloaded, no recorded reason" branch,
+  # which is unintentional (a re-run signal) by design, not a bug this test
+  # is about.
+  real_a <- withr::local_tempfile(fileext = ".csv")
+  writeLines("a,b\n1,2", real_a)
+
   files <- data.frame(
     paper_id  = c("paperA", "paperB"),
     repo_url  = c("https://osf.io/aaaaa", "https://osf.io/bbbbb"),
@@ -169,7 +179,7 @@ test_that("manifest is split one file per paper for a paperlist batch", {
     file_url  = c("https://osf.io/download/aaaaa/", "https://osf.io/download/bbbbb/"),
     file_size = c(100, 100),
     data_type = c("data", "data"), data_format = c("tabular", "tabular"),
-    file_location = c(NA_character_, NA_character_),
+    file_location = c(real_a, NA_character_),
     stringsAsFactors = FALSE
   )
   failed <- data.frame(repo_url = "https://osf.io/bbbbb", file_name = "dataB.csv",

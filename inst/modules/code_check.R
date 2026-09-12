@@ -802,15 +802,21 @@ code_check <- function(paper, local_path = NULL,
           error     = failed_i$error[i]
         ))
       } else NULL
+      # Filter(Negate(is.null), ...) before merging: jsonlite::toJSON()
+      # renders a NULL list element as "{}" rather than dropping it (or
+      # writing a real JSON null), which would otherwise make an absent
+      # packages/files_failed section for THIS paper come back as an empty
+      # object -- not NULL -- when re-read with fromJSON(simplifyVector =
+      # FALSE). Same convention .data_check_write_manifest() already uses.
       tryCatch(
-        manifest_merge(path, list(code = list(
+        manifest_merge(path, list(code = Filter(Negate(is.null), list(
           packages = if (length(pkgs_i) > 0) as.list(pkgs_i) else NULL,
           files_failed = files_failed_i,
           ddi_mapping = list(
             "code.packages" = "otherMat/software (loaded packages)",
             "code.files_failed" = "fileDscr/notes (code files whose download failed after retries)"
           )
-        ))),
+        )))),
         error = function(e) NULL
       )
     }
