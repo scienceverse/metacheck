@@ -244,7 +244,10 @@ dspace7_links <- function(paper) {
     for (key in keys) {
       entries <- md[[key]]
       if (!is.null(entries) && length(entries) > 0) {
-        vals <- vapply(entries, \(m) m$value %||% NA_character_, character(1))
+        # %empty_or% (not %||%) because m$value can come back as a
+        # length-zero value rather than NULL; vapply(..., character(1))
+        # requires exactly length 1 from every call.
+        vals <- vapply(entries, \(m) m$value %empty_or% NA_character_, character(1))
         vals <- vals[!is.na(vals)]
         if (length(vals) > 0) return(paste(vals, collapse = "; "))
       }
@@ -252,12 +255,15 @@ dspace7_links <- function(paper) {
     NA_character_
   }
 
-  obj$title           <- item$name %||% md_val("dc.title")
+  # %empty_or% (not %||%) because a field can come back as a length-zero
+  # value rather than NULL; %||% letting that through would break the $<-
+  # assignment below with "replacement has 0 rows".
+  obj$title           <- item$name %empty_or% md_val("dc.title")
   obj$authors          <- md_val("dc.contributor.author")
   obj$doi              <- md_val(c("dc.identifier.doi"))
   obj$license           <- md_val(c("dc.rights", "dc.rights.uri", "dc.rights.license"))
   obj$publication_date <- md_val(c("dc.date.issued", "dc.date.available"))
-  obj$updated_date      <- item$lastModified %||% NA_character_
+  obj$updated_date      <- item$lastModified %empty_or% NA_character_
 
   # Only the ORIGINAL bundle holds deposited files -- LICENSE/THUMBNAIL/SWORD
   # (and others some installations add) are derived or administrative, not
@@ -273,13 +279,16 @@ dspace7_links <- function(paper) {
     bs <- .dspace7_rest(paste0("/core/bundles/", original$uuid, "/bitstreams"), host = host)
     bitstreams <- bs[["_embedded"]][["bitstreams"]] %||% list()
     if (length(bitstreams) > 0) {
+      # %empty_or% (not %||%) because a field can come back as a length-zero
+      # value rather than NULL; vapply(..., character(1)/numeric(1)) requires
+      # exactly length 1 from every call.
       file_list <- data.frame(
-        name = vapply(bitstreams, \(b) b$name %||% NA_character_, character(1)),
-        size = vapply(bitstreams, \(b) as.numeric(b$sizeBytes %||% NA_real_), numeric(1)),
+        name = vapply(bitstreams, \(b) b$name %empty_or% NA_character_, character(1)),
+        size = vapply(bitstreams, \(b) as.numeric(b$sizeBytes %empty_or% NA_real_), numeric(1)),
         checksum = vapply(bitstreams,
-          \(b) b$checkSum$value %||% NA_character_, character(1)),
+          \(b) b$checkSum$value %empty_or% NA_character_, character(1)),
         retrieve = vapply(bitstreams,
-          \(b) b[["_links"]][["content"]][["href"]] %||% NA_character_, character(1))
+          \(b) b[["_links"]][["content"]][["href"]] %empty_or% NA_character_, character(1))
       )
     }
   }

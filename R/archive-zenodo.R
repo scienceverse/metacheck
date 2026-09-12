@@ -228,23 +228,28 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   metadata <- rec$metadata
 
   # Basic metadata
-  obj$title <-            metadata$title %||% NA_character_
-  obj$doi <-              rec$doi %||% NA_character_
-  obj$description <-      metadata$description %||% NA_character_
-  obj$publication_date <- metadata$publication_date %||% NA_character_
-  obj$updated_date <-     rec$updated %||% NA_character_
+  # Scalar fields use %empty_or% (not %||%) because a JSON field can come
+  # back as a length-zero value (e.g. an empty array) rather than NULL; %||%
+  # would let that through unchanged and break the data.frame() column
+  # assignment below. List-wrapped fields (creators, keywords, journal,
+  # owners, files) don't need it: wrapping in list() always yields length 1.
+  obj$title <-            metadata$title %empty_or% NA_character_
+  obj$doi <-              rec$doi %empty_or% NA_character_
+  obj$description <-      metadata$description %empty_or% NA_character_
+  obj$publication_date <- metadata$publication_date %empty_or% NA_character_
+  obj$updated_date <-     rec$updated %empty_or% NA_character_
   obj$creators <-         list(metadata$creators) %||% list(c())
   obj$keywords <-         list(metadata$keywords) %||% list(c())
-  obj$resource_type <-    metadata$resource_type$type %||% NA_character_
+  obj$resource_type <-    metadata$resource_type$type %empty_or% NA_character_
   obj$journal <-          list(metadata$journal) %||% list(c())
   obj$owners <-           list(rec$owners) %||% list(c())
-  obj$license <-          metadata$license$id %||%
-                          metadata$license$title %||%
-                          metadata$license %||%
+  obj$license <-          metadata$license$id %empty_or%
+                          metadata$license$title %empty_or%
+                          metadata$license %empty_or%
                           NA_character_
-  obj$downloads <-        rec$stats$downloads %||% NA_real_
-  obj$unique_downloads <- rec$stats$unique_downloads %||% NA_real_
-  obj$views <-            rec$stats$views %||% NA_real_
+  obj$downloads <-        rec$stats$downloads %empty_or% NA_real_
+  obj$unique_downloads <- rec$stats$unique_downloads %empty_or% NA_real_
+  obj$views <-            rec$stats$views %empty_or% NA_real_
   obj$files <-            list(rec$files) %||% list(c())
 
   return(obj)

@@ -332,7 +332,10 @@ github_tree_files <- function(repo) {
   # one from a LICENSE-style file -- confirmed live against a real public
   # repo. No separate API call needed: this is the same request that already
   # supplies default_branch above.
-  license <- meta$license$spdx_id %||% NA_character_
+  # %empty_or% (not %||%) because spdx_id can come back as a length-zero
+  # value rather than NULL, which would otherwise propagate as a
+  # length-zero "license" into the caller's vapply(..., character(1)).
+  license <- meta$license$spdx_id %empty_or% NA_character_
 
   # ── 2. Git tree (recursive, 1 request) ──────────────────────────────────────
   tree_resp <- tryCatch(
@@ -362,7 +365,10 @@ github_tree_files <- function(repo) {
   n_files <- length(blobs)
 
   # ── 3. Build file data.frame ─────────────────────────────────────────────────
-  paths <- vapply(blobs, \(x) x$path %||% "", character(1))
+  # %empty_or% (not %||%) because a field can come back as a length-zero
+  # value rather than NULL; vapply(..., character(1)/numeric(1)) requires
+  # exactly length 1 from every call.
+  paths <- vapply(blobs, \(x) x$path %empty_or% "", character(1))
   if (n_files == 0) {
     files_df <- data.frame(
       repo = character(0), clean_repo = character(0), name = character(0),
@@ -377,7 +383,7 @@ github_tree_files <- function(repo) {
       name         = basename(paths),
       path         = paths,
       download_url = paste0(raw_base, paths),
-      size         = vapply(blobs, \(x) x$size %||% NA_real_, numeric(1)),
+      size         = vapply(blobs, \(x) x$size %empty_or% NA_real_, numeric(1)),
       ft           = "file",
       stringsAsFactors = FALSE)
     files_df$ext  <- tolower(tools::file_ext(files_df$name))

@@ -221,8 +221,11 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
 
   authors_field <- rec$authors
   authors <- if (is.list(authors_field)) {
+    # %empty_or% (not %||%) because a$firstName/a$lastName can come back as
+    # length-zero values rather than NULL; vapply(..., character(1))
+    # requires exactly length 1 from every call.
     vapply(authors_field, function(a) {
-      full <- trimws(paste(a$firstName %||% "", a$lastName %||% ""))
+      full <- trimws(paste(a$firstName %empty_or% "", a$lastName %empty_or% ""))
       if (nzchar(full)) full else NA_character_
     }, character(1))
   } else {
@@ -243,12 +246,17 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
     }
   }
 
-  obj$title <-            rec$title %||% NA_character_
-  obj$doi <-              rec$identifier %||% NA_character_
-  obj$publication_date <- rec$publicationDate %||% NA_character_
-  obj$updated_date <-     rec$lastModificationDate %||% NA_character_
+  # Scalar fields use %empty_or% (not %||%) because a JSON field can come
+  # back as a length-zero value (e.g. an empty array) rather than NULL; %||%
+  # would let that through unchanged and break the $<- assignment above with
+  # "replacement has 0 rows". List-wrapped fields (authors, files) don't
+  # need it: wrapping in list() always yields length 1.
+  obj$title <-            rec$title %empty_or% NA_character_
+  obj$doi <-              rec$identifier %empty_or% NA_character_
+  obj$publication_date <- rec$publicationDate %empty_or% NA_character_
+  obj$updated_date <-     rec$lastModificationDate %empty_or% NA_character_
   obj$authors <-          list(authors)
-  obj$license <-          rec$license %||% NA_character_
+  obj$license <-          rec$license %empty_or% NA_character_
   obj$files <-            list(files_list)
 
   return(obj)
@@ -535,17 +543,21 @@ dryad_file_download <- function(dryad_doi,
   # -- see .dryad_info()). The file id is the numeric segment of
   # _links.self.href (".../api/v2/files/<id>"), there being no separate id
   # field in the response.
+  # %empty_or% (not %||%) because a field can come back as a length-zero
+  # value rather than NULL; %||% letting that through would break
+  # dplyr::tibble()'s recycling (or the !is.na() checks below, which error
+  # with "argument is of length zero" on a length-zero input).
   rows <- lapply(files_list, function(x) {
-    self_href <- x$`_links`$self$href %||% NA_character_
-    dl_href <- x$`_links`$`stash:download`$href %||% NA_character_
+    self_href <- x$`_links`$self$href %empty_or% NA_character_
+    dl_href <- x$`_links`$`stash:download`$href %empty_or% NA_character_
     file_id <- if (!is.na(self_href))
       sub("^.*/([0-9]+)$", "\\1", self_href) else NA_character_
-    digest_type <- tolower(x$digestType %||% NA_character_)
+    digest_type <- tolower(x$digestType %empty_or% NA_character_)
     dplyr::tibble(
       id       = file_id,
-      key      = x$path %||% NA_character_,
-      size     = as.numeric(x$size %||% NA_real_),
-      checksum = x$digest %||% NA_character_,
+      key      = x$path %empty_or% NA_character_,
+      size     = as.numeric(x$size %empty_or% NA_real_),
+      checksum = x$digest %empty_or% NA_character_,
       checksum_type = digest_type,
       self     = if (!is.na(dl_href)) paste0("https://datadryad.org", dl_href)
                  else NA_character_

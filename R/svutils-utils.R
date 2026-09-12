@@ -18,6 +18,28 @@ if (exists("%||%", envir = baseenv())) {
   `%||%` <- get("%||%", envir = baseenv())
 }
 
+#' Default value for `NULL` or length-zero values
+#'
+#' Like [`%||%`], but also substitutes `y` when `x` has length zero (for
+#' example an empty array in a parsed JSON API response), not only when `x`
+#' is `NULL`. This matters when `x` feeds a single `data.frame()` column
+#' alongside scalar values: a length-zero `x` (as opposed to `NULL`) passes
+#' `%||%` unchanged and then throws "arguments imply differing number of
+#' rows" (in `data.frame()`) or "replacement has 0 rows" (in `$<-`), which
+#' typically aborts and silently drops the whole record it belongs to.
+#'
+#' @param x,y If `x` is `NULL` or has length 0, will return `y`; otherwise returns `x`.
+#' @export
+#' @keywords internal
+#' @name op-empty-default
+#' @examples
+#' 1 %empty_or% 2
+#' NULL %empty_or% 2
+#' character(0) %empty_or% 2
+`%empty_or%` <- function(x, y) {
+  if (length(x) == 0) y else x
+}
+
 #' Replace If
 #'
 #' Replace values if NULL, NA, or specified value
@@ -74,7 +96,16 @@ verbose <- function(verbose = NULL) {
 #' have one. This only confirms the host resolves, not that the specific
 #' page or API endpoint responds.
 #'
+#' A single DNS lookup can fail transiently (a brief resolver hiccup) even
+#' when the host is fine, so this retries a few times with a short pause
+#' before reporting the host as unreachable. Many archive modules use this
+#' as a hard pre-flight gate (`stop()` if offline) before an entire batch of
+#' otherwise-unrelated records, so one flaky lookup here previously aborted
+#' every one of them.
+#'
 #' @param url a URL to check
+#' @param tries number of DNS lookup attempts before giving up
+#' @param wait seconds to pause between attempts
 #'
 #' @returns boolean
 #' @export
@@ -82,10 +113,15 @@ verbose <- function(verbose = NULL) {
 #'
 #' @examples
 #' online()
-online <- function(url = "google.com") {
+online <- function(url = "google.com", tries = 3, wait = 1) {
   #host <- urltools::domain(url)
   url <- ifelse(grepl("^[a-zA-Z]+://", url), url, paste0("http://", url))
   host <- sub("^[a-zA-Z]+://([^/]+).*", "\\1", url)
 
-  !is.null(curl::nslookup(host, error = FALSE))
+  for (i in seq_len(tries)) {
+    if (!is.null(curl::nslookup(host, error = FALSE))) return(TRUE)
+    if (i < tries) Sys.sleep(wait)
+  }
+
+  FALSE
 }

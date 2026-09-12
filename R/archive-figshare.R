@@ -271,7 +271,10 @@ figshare_links <- function(paper) {
     rec <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
     if (is.null(rec) || length(rec) == 0) break
 
-    ids <- vapply(rec, function(a) as.character(a$id %||% NA_character_), character(1))
+    # %empty_or% (not %||%) because a$id can come back as a length-zero
+    # value rather than NULL; vapply(..., character(1)) requires exactly
+    # length 1 from every call.
+    ids <- vapply(rec, function(a) as.character(a$id %empty_or% NA_character_), character(1))
     all_ids <- c(all_ids, ids[!is.na(ids)])
 
     if (length(rec) < 100) break   # last page
@@ -448,17 +451,25 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
 
   authors_field <- rec$authors
   authors <- if (is.list(authors_field)) {
-    vapply(authors_field, function(a) a$full_name %||% NA_character_, character(1))
+    # %empty_or% (not %||%) because a$full_name can come back as a
+    # length-zero value rather than NULL; vapply(..., character(1))
+    # requires exactly length 1 from every call.
+    vapply(authors_field, function(a) a$full_name %empty_or% NA_character_, character(1))
   } else {
     character(0)
   }
 
-  obj$title <-            rec$title %||% NA_character_
-  obj$doi <-              rec$doi %||% NA_character_
-  obj$publication_date <- rec$published_date %||% NA_character_
-  obj$updated_date <-     rec$modified_date %||% NA_character_
+  # Scalar fields use %empty_or% (not %||%) because a JSON field can come
+  # back as a length-zero value (e.g. an empty array) rather than NULL; %||%
+  # would let that through unchanged and break the $<- assignment above with
+  # "replacement has 0 rows". List-wrapped fields (authors, files) don't
+  # need it: wrapping in list() always yields length 1.
+  obj$title <-            rec$title %empty_or% NA_character_
+  obj$doi <-              rec$doi %empty_or% NA_character_
+  obj$publication_date <- rec$published_date %empty_or% NA_character_
+  obj$updated_date <-     rec$modified_date %empty_or% NA_character_
   obj$authors <-          list(authors)
-  obj$license <-          rec$license$name %||% NA_character_
+  obj$license <-          rec$license$name %empty_or% NA_character_
   obj$files <-            list(rec$files %||% list())
 
   return(obj)
@@ -657,13 +668,16 @@ figshare_file_download <- function(figshare_id,
 
   # Build a flat table from entries (verified live field names: id, name,
   # size, computed_md5, download_url -- see .figshare_info()).
+  # %empty_or% (not %||%) because a field can come back as a length-zero
+  # value rather than NULL; %||% letting that through would break
+  # dplyr::tibble()'s recycling with a "must be size 1, not 0" error.
   rows <- lapply(files_list, function(x) {
     dplyr::tibble(
-      id       = as.character(x$id %||% NA_character_),
-      key      = x$name %||% NA_character_,
-      size     = as.numeric(x$size %||% NA_real_),
-      checksum = x$computed_md5 %||% NA_character_,
-      self     = x$download_url %||% NA_character_
+      id       = as.character(x$id %empty_or% NA_character_),
+      key      = x$name %empty_or% NA_character_,
+      size     = as.numeric(x$size %empty_or% NA_real_),
+      checksum = x$computed_md5 %empty_or% NA_character_,
+      self     = x$download_url %empty_or% NA_character_
     )
   })
 

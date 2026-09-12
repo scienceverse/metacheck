@@ -105,9 +105,12 @@
   if (is.null(logs) || !is.data.frame(logs) || nrow(logs) == 0) return(NULL)
 
   att <- logs$attributes
+  # %empty_or% (not %||%) because a column can come back as a length-zero
+  # value rather than NULL, which would otherwise break this data.frame()
+  # call with "arguments imply differing number of rows".
   out <- data.frame(
-    date = att$date %||% NA_character_,
-    action = att$action %||% NA_character_
+    date = att$date %empty_or% NA_character_,
+    action = att$action %empty_or% NA_character_
   )
 
   # Flatten whichever params are simple vectors; anything nested (contributors,
@@ -156,7 +159,10 @@
       httr2::resp_body_json(resp, simplifyVector = TRUE)$data
   }, error = \(e) NULL)
 
-  node$embeds$license$data$attributes$name %||% NA_character_
+  # %empty_or% (not %||%) because name can come back as a length-zero value
+  # rather than NULL, and this function's contract is to always return a
+  # length-1 scalar.
+  node$embeds$license$data$attributes$name %empty_or% NA_character_
 }
 
 #' Collect an OSF project's structured metadata

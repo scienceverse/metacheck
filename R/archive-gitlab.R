@@ -255,7 +255,10 @@ gitlab_tree_files <- function(repo) {
 
   meta           <- httr2::resp_body_json(meta_resp)
   default_branch <- meta$default_branch %||% "main"
-  license        <- meta$license$key %||% NA_character_
+  # %empty_or% (not %||%) because key can come back as a length-zero value
+  # rather than NULL, which would otherwise propagate as a length-zero
+  # "license" into the caller's vapply(..., character(1)).
+  license        <- meta$license$key %empty_or% NA_character_
 
   # ── 2. File tree (paginated, 100 entries/page) ───────────────────────────────
   all_entries <- list()
@@ -304,7 +307,10 @@ gitlab_tree_files <- function(repo) {
       path = character(0), download_url = character(0), size = numeric(0),
       type = character(0), stringsAsFactors = FALSE)
   } else {
-    paths <- vapply(blobs, \(x) x$path %||% "", character(1))
+    # %empty_or% (not %||%) because a field can come back as a length-zero
+    # value rather than NULL; vapply(..., character(1)) requires exactly
+    # length 1 from every call.
+    paths <- vapply(blobs, \(x) x$path %empty_or% "", character(1))
     raw_base <- sprintf("https://gitlab.com/%s/-/raw/%s/",
                         clean_repo, utils::URLencode(default_branch))
     files_df <- data.frame(
@@ -377,8 +383,11 @@ gitlab_tree_files <- function(repo) {
     res <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
     nodes <- res$data$project$repository$blobs$nodes
     if (length(nodes) == 0) return(NULL)
-    sizes <- vapply(nodes, \(n) as.numeric(n$size %||% NA_real_), numeric(1))
-    names(sizes) <- vapply(nodes, \(n) n$path %||% NA_character_, character(1))
+    # %empty_or% (not %||%) because a field can come back as a length-zero
+    # value rather than NULL; vapply(..., character(1)/numeric(1)) requires
+    # exactly length 1 from every call.
+    sizes <- vapply(nodes, \(n) as.numeric(n$size %empty_or% NA_real_), numeric(1))
+    names(sizes) <- vapply(nodes, \(n) n$path %empty_or% NA_character_, character(1))
     sizes
   })
 

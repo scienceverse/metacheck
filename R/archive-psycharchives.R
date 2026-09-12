@@ -316,13 +316,19 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
   meta <- .psycharchives_rest(paste0("/items/", uuid, "?expand=metadata"), host = host)
   md <- meta$metadata %||% list()
   md_val <- function(key) {
-    vals <- vapply(md, \(m) if (identical(m$key, key)) m$value else NA_character_,
+    # %empty_or% (not %||%) because m$value can come back as a length-zero
+    # value rather than NULL; vapply(..., character(1)) requires exactly
+    # length 1 from every call.
+    vals <- vapply(md, \(m) if (identical(m$key, key)) (m$value %empty_or% NA_character_) else NA_character_,
                    character(1))
     vals <- vals[!is.na(vals)]
     if (length(vals) == 0) NA_character_ else paste(vals, collapse = "; ")
   }
 
-  obj$PA_title    <- item$name %||% md_val("dc.title")
+  # %empty_or% (not %||%) because item$name can come back as a length-zero
+  # value rather than NULL; %||% letting that through would break the $<-
+  # assignment below with "replacement has 0 rows".
+  obj$PA_title    <- item$name %empty_or% md_val("dc.title")
   obj$PA_authors  <- md_val("dc.contributor.author")
   obj$PA_doi      <- md_val("dc.identifier.doi")
   obj$PA_license  <- md_val("dc.rights")
@@ -339,9 +345,12 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
       retrieve = character(0)
     )
   } else {
+    # %empty_or% (not %||%) because a field can come back as a length-zero
+    # value rather than NULL; vapply(..., character(1)/numeric(1)) requires
+    # exactly length 1 from every call.
     data.frame(
-      name = vapply(bitstreams, \(b) b$name %||% NA_character_, character(1)),
-      size = vapply(bitstreams, \(b) as.numeric(b$sizeBytes %||% NA_real_), numeric(1)),
+      name = vapply(bitstreams, \(b) b$name %empty_or% NA_character_, character(1)),
+      size = vapply(bitstreams, \(b) as.numeric(b$sizeBytes %empty_or% NA_real_), numeric(1)),
       retrieve = vapply(bitstreams,
         \(b) if (is.null(b$retrieveLink)) NA_character_
              else paste0("https://", host, b$retrieveLink),

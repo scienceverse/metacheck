@@ -443,19 +443,28 @@ dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL, cache = FALSE) 
   title <- field_val("title")
   authors_field <- field_val("author")
   authors <- if (is.list(authors_field)) {
+    # %empty_or% (not %||%) because a field can come back as a length-zero
+    # value rather than NULL; vapply(..., character(1)) requires exactly
+    # length 1 from every call, so %||% letting that through would error
+    # ("values must be length 1").
     vapply(authors_field, function(a) {
-      a$authorName$value %||% NA_character_
+      a$authorName$value %empty_or% NA_character_
     }, character(1))
   } else {
     character(0)
   }
 
-  obj$title <-            title %||% NA_character_
-  obj$doi <-              data$persistentUrl %||% NA_character_
-  obj$publication_date <- version$releaseTime %||% data$publicationDate %||% NA_character_
-  obj$updated_date <-     version$lastUpdateTime %||% NA_character_
+  # Scalar fields use %empty_or% (not %||%) because a JSON field can come
+  # back as a length-zero value (e.g. an empty array) rather than NULL; %||%
+  # would let that through unchanged and break the $<- assignment above with
+  # "replacement has 0 rows". List-wrapped fields (authors, files) don't
+  # need it: wrapping in list() always yields length 1.
+  obj$title <-            title %empty_or% NA_character_
+  obj$doi <-              data$persistentUrl %empty_or% NA_character_
+  obj$publication_date <- version$releaseTime %empty_or% data$publicationDate %empty_or% NA_character_
+  obj$updated_date <-     version$lastUpdateTime %empty_or% NA_character_
   obj$authors <-          list(authors)
-  obj$license <-          version$license$name %||% NA_character_
+  obj$license <-          version$license$name %empty_or% NA_character_
   obj$files <-            list(version$files %||% list())
 
   return(obj)
@@ -650,15 +659,18 @@ dataverse_file_download <- function(host, doi,
   # Build a flat table from nested entries. Dataverse's file listing nests the
   # actual file metadata under "dataFile"; `id` is the numeric datafile id the
   # download endpoint (/api/access/datafile/<id>) takes.
+  # %empty_or% (not %||%) because a field can come back as a length-zero
+  # value rather than NULL; %||% letting that through would break
+  # dplyr::tibble()'s recycling with a "must be size 1, not 0" error.
   rows <- lapply(files_list, function(x) {
     df <- x$dataFile %||% list()
     dplyr::tibble(
-      id       = as.character(df$id %||% NA_character_),
-      key      = x$label %||% df$filename %||% NA_character_,
-      size     = as.numeric(df$filesize %||% NA_real_),
-      checksum = (df$checksum$value %||% NA_character_),
-      checksum_type = tolower(df$checksum$type %||% NA_character_),
-      self     = if (!is.null(df$id))
+      id       = as.character(df$id %empty_or% NA_character_),
+      key      = x$label %empty_or% df$filename %empty_or% NA_character_,
+      size     = as.numeric(df$filesize %empty_or% NA_real_),
+      checksum = (df$checksum$value %empty_or% NA_character_),
+      checksum_type = tolower(df$checksum$type %empty_or% NA_character_),
+      self     = if (length(df$id) > 0)
         sprintf("https://%s/api/access/datafile/%s", host, df$id)
       else NA_character_
     )

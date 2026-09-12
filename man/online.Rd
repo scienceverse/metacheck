@@ -4,10 +4,14 @@
 \alias{online}
 \title{Check if the host of a URL is online}
 \usage{
-online(url = "google.com")
+online(url = "google.com", tries = 3, wait = 1)
 }
 \arguments{
 \item{url}{a URL to check}
+
+\item{tries}{number of DNS lookup attempts before giving up}
+
+\item{wait}{seconds to pause between attempts}
 }
 \value{
 boolean
@@ -17,6 +21,14 @@ Resolves the URL's host via DNS lookup to check whether it is reachable.
 A scheme (\verb{http://}/\verb{https://}) is added automatically if \code{url} doesn't
 have one. This only confirms the host resolves, not that the specific
 page or API endpoint responds.
+}
+\details{
+A single DNS lookup can fail transiently (a brief resolver hiccup) even
+when the host is fine, so this retries a few times with a short pause
+before reporting the host as unreachable. Many archive modules use this
+as a hard pre-flight gate (\code{stop()} if offline) before an entire batch of
+otherwise-unrelated records, so one flaky lookup here previously aborted
+every one of them.
 }
 \examples{
 online()

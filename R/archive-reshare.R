@@ -238,9 +238,12 @@ reshare_info <- function(reshare_url, id_col = 1, pb = NULL, cache = FALSE) {
 
   creators_field <- rec$creators
   authors <- if (is.list(creators_field)) {
+    # %empty_or% (not %||%) because nm$given/nm$family can come back as
+    # length-zero values rather than NULL; vapply(..., character(1))
+    # requires exactly length 1 from every call.
     vapply(creators_field, function(a) {
       nm <- a$name %||% list()
-      full <- trimws(paste(nm$given %||% "", nm$family %||% ""))
+      full <- trimws(paste(nm$given %empty_or% "", nm$family %empty_or% ""))
       if (nzchar(full)) full else NA_character_
     }, character(1))
   } else {
@@ -261,10 +264,14 @@ reshare_info <- function(reshare_url, id_col = 1, pb = NULL, cache = FALSE) {
     }
   }
 
-  obj$title <-            rec$title %||% NA_character_
-  obj$doi <-              rec$doi %||% NA_character_
-  obj$publication_date <- rec$datestamp %||% NA_character_
-  obj$updated_date <-     rec$lastmod %||% NA_character_
+  # Scalar fields use %empty_or% (not %||%) because a JSON field can come
+  # back as a length-zero value (e.g. an empty array) rather than NULL; %||%
+  # would let that through unchanged and break the $<- assignment above with
+  # "replacement has 0 rows".
+  obj$title <-            rec$title %empty_or% NA_character_
+  obj$doi <-              rec$doi %empty_or% NA_character_
+  obj$publication_date <- rec$datestamp %empty_or% NA_character_
+  obj$updated_date <-     rec$lastmod %empty_or% NA_character_
   obj$authors <-          list(authors)
   obj$license <-          NA_character_
   obj$files <-            list(files_flat)
@@ -408,15 +415,19 @@ reshare_file_download <- function(reshare_id,
   # filename, filesize, hash, hash_type, uri -- see .reshare_info()). `uri`
   # is already the full download URL (http://reshare.ukdataservice.ac.uk/id/
   # file/<fileid>) -- upgraded to https here since the API serves both.
+  # %empty_or% (not %||%) because a field can come back as a length-zero
+  # value rather than NULL; %||% letting that through would break the
+  # !is.na() check above (errors with "argument is of length zero" on a
+  # length-zero input) or dplyr::tibble()'s recycling.
   rows <- lapply(files_list, function(x) {
-    self_url <- x$uri %||% NA_character_
+    self_url <- x$uri %empty_or% NA_character_
     if (!is.na(self_url)) self_url <- sub("^http://", "https://", self_url)
     dplyr::tibble(
-      id       = as.character(x$fileid %||% NA_character_),
-      key      = x$filename %||% NA_character_,
-      size     = as.numeric(x$filesize %||% NA_real_),
-      checksum = x$hash %||% NA_character_,
-      checksum_type = tolower(x$hash_type %||% NA_character_),
+      id       = as.character(x$fileid %empty_or% NA_character_),
+      key      = x$filename %empty_or% NA_character_,
+      size     = as.numeric(x$filesize %empty_or% NA_real_),
+      checksum = x$hash %empty_or% NA_character_,
+      checksum_type = tolower(x$hash_type %empty_or% NA_character_),
       self     = self_url
     )
   })

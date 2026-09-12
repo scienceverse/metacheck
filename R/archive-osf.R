@@ -410,7 +410,10 @@ osf_type <- function(guid) {
 
   otype <- info$relationships$referent$links$related$meta$type
 
-  otype %||% NA_character_
+  # %empty_or% (not %||%) because otype can come back as a length-zero
+  # value rather than NULL, and this function's contract is to always
+  # return a length-1 scalar.
+  otype %empty_or% NA_character_
 }
 
 
