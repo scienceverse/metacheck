@@ -21,6 +21,12 @@
 #' @param model the LLM model name (see `llm_model_list()`) in the format "provider" or "provider/model"
 #' @param params a named list to pass to `ellmer::params()`
 #' @param phase optional label naming the calling step (e.g. "Identifying scales") shown in the progress bar so a slow LLM pass is identifiable; the model name is appended automatically
+#' @param capture_reasoning if `TRUE` (default `FALSE`), a structured call
+#'   (`type` provided) adds a `.reasoning` column: the provider's own
+#'   chain-of-thought text for that row (via ellmer's `ContentThinking`,
+#'   e.g. from `reasoning_effort`/`think`), or `NA` when the provider/call
+#'   returned none. Off by default since most callers never look at it and
+#'   it costs nothing extra to skip; every existing caller is unaffected.
 #'
 #' @return a data frame of results
 #'
@@ -43,7 +49,8 @@ llm <- function(text, system_prompt,
                 text_col = "text",
                 model = llm_model(),
                 params = list(),
-                phase = NULL) {
+                phase = NULL,
+                capture_reasoning = FALSE) {
   ## error detection ----
   if (!llm_use()) {
     stop("Set llm_use(TRUE) to use LLM functions")
@@ -268,10 +275,19 @@ llm <- function(text, system_prompt,
           # join key to a 0-row column errors, so only set it when there are
           # rows. A 0-row df drops out of the downstream left_join cleanly.
           if (nrow(df) > 0) df$.join_key. <- unique_text[i]
+          # Reasoning trace (opt-in): read from the CHAT object's own last
+          # turn, not from `result` itself -- chat_structured()'s return value
+          # is only the parsed/validated structured object, the thinking
+          # content (when the provider returned one) lives on the turn
+          # ellmer recorded internally. .llm_extract_thinking() returns NA
+          # when there is none (provider didn't think, or doesn't support
+          # it), never errors.
+          thinking <- if (isTRUE(capture_reasoning)) .llm_extract_thinking(chat) else NA_character_
+          if (isTRUE(capture_reasoning) && nrow(df) > 0) df$.reasoning <- thinking
           pb$tick()
           # store the unnested df plus the raw result (which carries any
           # provider-returned reasoning content) for later inspection
-          if (!is.null(key)) .llm_cache_put(key, df, raw = result)
+          if (!is.null(key)) .llm_cache_put(key, df, raw = result, thinking = thinking)
           df
         } else {
           answer <- chat$chat(unique_text[i], echo = FALSE)
@@ -523,6 +539,34 @@ llm <- function(text, system_prompt,
   detail <- detail[1]
   if (nchar(detail) > 500) detail <- paste0(substr(detail, 1, 500), " [truncated]")
   paste0(msg, "\n  Provider says: ", detail)
+}
+
+# Read the provider's own chain-of-thought text for the most recent
+# chat_structured()/chat() call on this ellmer Chat object, if any. The
+# thinking content is NOT part of chat_structured()'s own return value (that
+# is only the parsed/validated structured object) -- ellmer records it as a
+# ContentThinking element within the Turn it appends to the chat's history,
+# so it has to be read back from the chat object itself via last_turn().
+# Returns NA_character_ (never errors) when: the chat has no last turn yet,
+# the turn has no ContentThinking element (provider/model did not think, or
+# does not support it), or ellmer's Content/ContentThinking classes are not
+# present in the installed ellmer version (defensive -- an internal class
+# structure, not part of ellmer's stable API).
+.llm_extract_thinking <- function(chat) {
+  turn <- tryCatch(chat$last_turn(), error = function(e) NULL)
+  if (is.null(turn)) return(NA_character_)
+  contents <- tryCatch(turn@contents, error = function(e) NULL)
+  if (is.null(contents) || length(contents) == 0) return(NA_character_)
+  is_thinking <- vapply(contents, function(c) inherits(c, "ellmer::ContentThinking"), logical(1))
+  if (!any(is_thinking)) return(NA_character_)
+  # Several thinking blocks in one turn (rare, but not disallowed by the
+  # class) are joined -- keeping every block is more useful for inspection
+  # than arbitrarily keeping only the first.
+  texts <- vapply(contents[is_thinking], function(c) tryCatch(c@thinking, error = function(e) NA_character_),
+                  character(1))
+  texts <- texts[!is.na(texts) & nzchar(texts)]
+  if (length(texts) == 0) return(NA_character_)
+  paste(texts, collapse = "\n\n")
 }
 
 #' Convert structured LLM result to a data frame

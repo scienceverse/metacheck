@@ -11,7 +11,8 @@ llm(
   text_col = "text",
   model = llm_model(),
   params = list(),
-  phase = NULL
+  phase = NULL,
+  capture_reasoning = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,13 @@ free text.}
 \item{params}{a named list to pass to \code{ellmer::params()}}
 
 \item{phase}{optional label naming the calling step (e.g. "Identifying scales") shown in the progress bar so a slow LLM pass is identifiable; the model name is appended automatically}
+
+\item{capture_reasoning}{if \code{TRUE} (default \code{FALSE}), a structured call
+(\code{type} provided) adds a \code{.reasoning} column: the provider's own
+chain-of-thought text for that row (via ellmer's \code{ContentThinking},
+e.g. from \code{reasoning_effort}/\code{think}), or \code{NA} when the provider/call
+returned none. Off by default since most callers never look at it and
+it costs nothing extra to skip; every existing caller is unaffected.}
 }
 \value{
 a data frame of results
