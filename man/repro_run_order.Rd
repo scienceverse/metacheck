@@ -19,6 +19,10 @@ must run earlier), and \code{order_basis} (\code{dependency}, \code{numeric}, or
 Attribute \code{"cycle"} is a character vector of file_names in a dependency
 cycle (empty when acyclic); attribute \code{"ambiguous"} is TRUE when no ordering
 signal placed a multi-file set (they share \code{order = NA}, basis \code{none}).
+Attribute \code{"fuzzy_sources"} is a data frame (\code{from}, \code{to}) of \code{source()}
+edges that only resolved after normalising both basenames (a renumbered/
+reworded script reference — see \code{\link[=.repro_normalize_basename]{.repro_normalize_basename()}}), empty
+when every \code{source()} reference matched an exact basename.
 }
 \description{
 Scripts in a repository usually depend on each other: a preparation script

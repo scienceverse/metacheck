@@ -41,13 +41,18 @@ the run used a stale-but-real version rather than the one the authors had.}
 }
 \value{
 a data frame with \code{package}, \code{source}, \code{installed} (logical),
-\code{message} (error text on failure, else ""), and \code{via_archive} (logical,
-TRUE when installed from the CRAN Archive after a live-CRAN failure).
+\code{message} (error text on failure, else ""), \code{via_archive} (logical,
+TRUE when installed from the CRAN Archive after a live-CRAN failure), and
+\code{category} (see \code{\link[=.repro_classify_install_message]{.repro_classify_install_message()}}; \code{NA} for a
+successful install).
 }
 \description{
 Installs each non-base dependency into \code{lib_dir} (a temp library, never the
 user's), so a run does not mutate the user's installed packages. CRAN packages
-come from \code{install.packages()}; GitHub/URL sources from the ref the code named
+come from \code{install.packages()}; Bioconductor packages (\code{source == "bioc"},
+see \code{\link[=repro_dependencies]{repro_dependencies()}}/\code{\link[=.repro_bioc_packages]{.repro_bioc_packages()}}) from
+\code{BiocManager::install()}, installing \code{BiocManager} itself first if absent;
+GitHub/URL sources from the ref the code named
 (\code{remotes::install_github()} / \code{install.packages(url)}), honouring a pinned
 \verb{@ref} when present. Every install's outcome is recorded; installing runs
 package build/configure scripts, so this is part of the gated execute phase.

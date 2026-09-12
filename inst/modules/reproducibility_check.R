@@ -1051,6 +1051,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   pb_read$tick(0, list(what = ""))
   on.exit(pb_read$terminate())
 
+  # raw_text_list keeps each file's UNEXTRACTED text alongside code_text_list
+  # (which, for an .Rmd/.qmd, is already knitr::purl()'d down to just its {r}
+  # chunks) -- the content sniffs below (#394/#396) need the file's true raw
+  # content to recognise a JSON/HTML dump or a JAGS model saved with a `.R`
+  # extension; code_extract_r() on such a file returns character(0) (no {r}
+  # chunks to purl), which would make every sniff see nothing to sniff at all.
+  raw_text_list <- lapply(seq_len(n_code), function(i) {
+    path <- resolve_row_path(i)
+    if (is.na(path)) return(character(0))
+    tryCatch(code_read(path), error = function(e) character(0))
+  })
+  names(raw_text_list) <- r_files$file_name
+
   code_text_list <- lapply(seq_len(n_code), function(i) {
     the_file <- r_files[i, ]
     pb_read$tick(1, list(what = the_file$file_name))
@@ -1058,7 +1071,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (is.na(path)) return(character(0))
     is_rmd <- grepl("\\.(rmd|qmd)$", the_file$file_name, ignore.case = TRUE)
     tryCatch(
-      if (is_rmd) code_extract_r(path) else code_read(path),
+      if (is_rmd) code_extract_r(path) else raw_text_list[[i]],
       error = function(e) character(0))
   })
   names(code_text_list) <- r_files$file_name
@@ -1113,6 +1126,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   order_tbl <- repro_run_order(io)
   cycle     <- attr(order_tbl, "cycle") %||% character(0)
   ambiguous_order <- isTRUE(attr(order_tbl, "ambiguous"))
+  # source() edges resolved only after normalising both basenames (a
+  # renumbered/reworded script reference — see repro_run_order()'s own
+  # roxygen and issue #392) — surfaced in the report below as lower-
+  # confidence matches, distinct from an exact source() resolution.
+  fuzzy_sources <- attr(order_tbl, "fuzzy_sources") %||%
+    data.frame(from = character(0), to = character(0))
 
   # ── 6. Missing-input diagnosis ──────────────────────────────────────────────
   # A read is a "missing input" when no earlier script writes it AND it is not a
@@ -1125,13 +1144,58 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # Parse status carried over from code_check (a file that will not parse cannot
   # run). code_check stored parse_error per file.
-  parse_errs <- if ("parse_error" %in% names(r_files))
-    sum(r_files$parse_error, na.rm = TRUE) else 0L
+  parse_error_raw <- if ("parse_error" %in% names(r_files))
+    !is.na(r_files$parse_error) & r_files$parse_error else rep(FALSE, n_code)
+
+  # Before treating a parse failure as a genuine code defect, sniff whether
+  # the file's content even looks like R at all (#394: a JSON/HTML dump saved
+  # with a `.R`/`.Rmd` extension) or is a well-known non-R DSL this module
+  # recognises (#396: a JAGS/BUGS model definition, `model { ... }`) — see
+  # .repro_content_sniff()/.repro_is_jags_model() (R/reproducibility_check.R).
+  # Both are informational/positive findings, not reproducibility defects:
+  # the file is exactly what it claims to be, just not standalone R, so
+  # neither counts toward parse_errs/the traffic light the way a real syntax
+  # error does — same treatment, since they are siblings (see #396's own
+  # issue text for why they must stay consistent with each other).
+  sniff_type <- rep(NA_character_, n_code)   # "not_r_content" | "jags_model" | NA
+  sniff_detail <- rep(NA_character_, n_code)
+  if (any(parse_error_raw)) {
+    for (i in which(parse_error_raw)) {
+      raw <- raw_text_list[[i]]
+      fn  <- r_files$file_name[i]
+      jags_hit <- .repro_is_jags_model(
+        raw, fn, other_code_text = raw_text_list[setdiff(seq_len(n_code), i)])
+      if (jags_hit) {
+        sniff_type[i] <- "jags_model"
+        sniff_detail[i] <- "JAGS/BUGS model definition (not standalone R)"
+        next
+      }
+      detected <- .repro_content_sniff(raw)
+      if (!is.na(detected)) {
+        sniff_type[i] <- "not_r_content"
+        sniff_detail[i] <- sprintf(
+          "file content does not appear to be R (detected: %s)", detected)
+      }
+    }
+  }
+  n_not_r_content <- sum(sniff_type == "not_r_content", na.rm = TRUE)
+  n_jags_model    <- sum(sniff_type == "jags_model", na.rm = TRUE)
+
+  # A "genuine" parse error excludes both sniffed categories -- this is what
+  # feeds parse_errs/the traffic light/the "Parsing" report section below, so
+  # neither a non-R dump nor a JAGS model recolours the light or counts
+  # against the paper's own code.
+  parse_error_genuine <- parse_error_raw & is.na(sniff_type)
+  parse_errs <- sum(parse_error_genuine)
 
   # A file is "runnable-so-far" when it parses, all its referenced inputs
   # resolve (matched or produced upstream), and it is placeable in the order.
-  parses <- if ("parse_error" %in% names(r_files))
-    !(!is.na(r_files$parse_error) & r_files$parse_error) else rep(TRUE, n_code)
+  # A sniffed file (not_r_content/jags_model) is still not RUN as R (it is
+  # not R), but is no longer marked not-runnable *because it "failed to
+  # parse"* -- see not_runnable_reason below, which gives it its own reason
+  # instead of lumping it in with "parse_error".
+  parses <- !parse_error_genuine
+  runs_as_r <- !parse_error_raw   # still gates execution (parses_named), below
   file_order <- order_tbl$order[match(r_files$file_name, order_tbl$file_name)]
   placeable <- !is.na(file_order)
 
@@ -1157,14 +1221,25 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                  !(tolower(d$basename) %in% produced_before[[i]])])
   })
   file_unresolved <- lengths(unresolved_list) > 0L
-  runnable <- parses & placeable & !file_unresolved
+  # A sniffed file (not_r_content/jags_model) is real content that happens
+  # not to be standalone R -- it "parses" for THIS purpose (parse_error_
+  # genuine is FALSE for it), but it is still not something the run order/
+  # missing-input logic should treat as ordinary analysis code either; it is
+  # excluded from `runnable` via its own dedicated reason below, not via
+  # `parses`, so it never contributes to parse_errs or the traffic light.
+  runnable <- parses & placeable & !file_unresolved & is.na(sniff_type)
   n_runnable <- sum(runnable)
 
   # Why each file is not runnable, in the order the conditions are applied.
+  # not_r_content/jags_model checked FIRST: a file that is not R at all
+  # cannot meaningfully be "unplaceable" or "missing an input" either, and
+  # this is what gives the report a distinct, positive reason instead of
+  # folding it into "parse_error" (see the sniff step above and #394/#396).
   not_runnable_reason <- ifelse(
-    runnable, NA_character_,
+    !is.na(sniff_type), sniff_type,
+    ifelse(runnable, NA_character_,
     ifelse(!parses, "parse_error",
-           ifelse(!placeable, "unplaceable", "missing_input")))
+           ifelse(!placeable, "unplaceable", "missing_input"))))
   unresolved_inputs <- vapply(unresolved_list, function(x)
     if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
@@ -1274,8 +1349,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
 
     # 3. Run in order. A file whose inputs are known-missing is not run (it
-    #    cannot succeed); a file that will not parse is not run either.
-    parses_named <- stats::setNames(parses, r_files$file_name)
+    #    cannot succeed); a file that will not parse is not run either. Gated
+    #    on runs_as_r (not `parses`): a sniffed file (#394/#396) "parses" for
+    #    the runnable/traffic-light bookkeeping above, but it is still not R
+    #    and must not actually be handed to callr/Docker to execute.
+    parses_named <- stats::setNames(runs_as_r, r_files$file_name)
     skip_files <- r_files$file_name[file_unresolved]
     if (length(skip_files))
       .dbg("skipping (missing inputs): ", paste(skip_files, collapse = ", "))
@@ -1299,16 +1377,26 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
          paste(sprintf("%s=%s", run_results$file_name, run_results$outcome),
                collapse = "; "))
 
-    # 4. Corrective re-run (ONE extra pass, no more). An "object 'X' not found"
-    #    error means the script expected a variable another script defines but
-    #    that ran later (or not at all). Find the file that defines each missing
-    #    variable, add "definer precedes user" edges, recompute the order, and
-    #    re-run once. A second undefined-var error after this pass is accepted as
-    #    the final outcome (we do not iterate to convergence).
+    # 4. Corrective re-run (ONE extra pass, no more). Two sibling correctable
+    #    causes, both surfaced as error_type == "undefined_variable" by
+    #    repro_run_scripts()'s classification (it deliberately does not split
+    #    them — see its own roxygen): an "object 'X' not found" error means the
+    #    script expected a VARIABLE another script defines but that ran later
+    #    (or not at all); a "could not find function \"X\"" error more often
+    #    means the script simply never library()'d the package that exports
+    #    it. The raw message text (still available in `error`) is what tells
+    #    the two apart here, since undefined_var/error_type alone cannot.
+    #    Find the file that defines each missing variable (unchanged from
+    #    before), AND find the one package that unambiguously exports each
+    #    missing function name (new — see #390), add "definer precedes user"
+    #    edges and/or inject the resolved library() call, recompute the order,
+    #    and re-run once. A second undefined-var error after this pass is
+    #    accepted as the final outcome (we do not iterate to convergence).
     undef_err <- run_results[!is.na(run_results$error_type) &
                              run_results$error_type == "undefined_variable", ,
                              drop = FALSE]
     reran <- FALSE
+    reran_for_reorder <- FALSE
     # Where each pass-1 undefined symbol is actually defined, keyed on
     # "<user_file>||<symbol>" — kept around (not just used to decide whether to
     # reorder) so the FINAL report's undefined-variable table can say "defined
@@ -1316,13 +1404,35 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (0 or >1 definers), and even after `run_results` is replaced by the
     # corrective re-run below.
     definer_lookup <- character(0)
+    # library() injections this pass decided on, file_name -> package — kept
+    # around (not just applied) so the final report / `modifications` output
+    # (see #391) can say what was injected and why, the same way
+    # definer_lookup survives for the reorder case.
+    library_injections <- character(0)
     if (nrow(undef_err) > 0) {
+      # "could not find function \"X\"" vs "object 'X' not found" — the SAME
+      # regexes repro_run_scripts() itself matched against (R/reproducibility_
+      # check.R), re-applied here to the raw error text because error_type
+      # does not keep the distinction. A row whose message matches neither
+      # (should not happen, since error_type == "undefined_variable" was only
+      # ever set when one of them matched) is treated as the object-not-found
+      # branch, the pre-existing behaviour.
+      fn_pat <- "could not find function ['\"]([^'\"]+)['\"]"
+      is_fn_missing <- grepl(fn_pat, undef_err$error, perl = TRUE)
+
       defs <- repro_defined_vars(code_text_list)
       def_of <- function(v) {
         # file_name(s) that define variable v at top level
         hit <- vapply(defs$defines, function(dd) v %in% dd, logical(1))
         defs$file_name[hit]
       }
+      # Scoped candidate package set for the missing-library() lookup: the
+      # paper's OWN declared dependencies (already resolved above as `deps`)
+      # plus a small curated safe-list of extremely common packages — NOT a
+      # blind scan of every installed package (see .repro_find_export_pkg()'s
+      # own roxygen for why that is unsafe).
+      candidate_pkgs <- unique(c(deps$package %||% character(0), .repro_common_pkgs()))
+
       extra_edges <- list()
       for (i in seq_len(nrow(undef_err))) {
         user <- undef_err$file_name[i]; v <- undef_err$undefined_var[i]
@@ -1335,34 +1445,63 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           extra_edges <- c(extra_edges, list(c(definers, user)))
           .dbg("undefined-var edge: '", definers, "' defines '", v,
                "' needed by '", user, "'")
+        } else if (length(definers) == 0 && isTRUE(is_fn_missing[i]) &&
+                   !(user %in% names(library_injections))) {
+          # Zero same-repo definers for a missing FUNCTION (not object): try
+          # the scoped package-export lookup instead. One injection per file
+          # per pass (not %in% names() already) — a script failing on a
+          # second, different missing function in the same pass is left for
+          # a later, separate report rather than stacking guesses.
+          pkg <- .repro_find_export_pkg(v, candidate_pkgs)
+          if (!is.na(pkg)) {
+            library_injections[[user]] <- pkg
+            .dbg("missing-library injection: '", v, "' resolved to package '",
+                 pkg, "' for '", user, "'")
+          }
         }
       }
-      if (length(extra_edges) > 0) {
-        order_tbl2 <- repro_run_order(io, extra_edges = extra_edges)
+      if (length(extra_edges) > 0 || length(library_injections) > 0) {
+        order_tbl2 <- if (length(extra_edges) > 0)
+          repro_run_order(io, extra_edges = extra_edges) else order_tbl
         run_order2 <- order_tbl2$file_name[order(order_tbl2$order)]
-        .dbg("re-running ", length(run_order2), " script(s) in corrected order: ",
-             paste(run_order2, collapse = " -> "))
+        # Re-write the scripts with the resolved library() injections applied
+        # (repro_write_scripts()'s own `inject_libs` param — see #390) before
+        # re-running; a file with no injection this pass is written exactly
+        # as before (inject_libs only touches files named in it).
+        run_tbl2 <- if (length(library_injections) > 0)
+          repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
+                              inject_libs = library_injections) else run_tbl
+        .dbg("re-running ", length(run_order2), " script(s) in corrected order",
+             if (length(library_injections) > 0) sprintf(
+               " (with %d library() injection(s): %s)",
+               length(library_injections),
+               paste(sprintf("%s: library(%s)", names(library_injections),
+                             library_injections), collapse = "; ")) else "",
+             ": ", paste(run_order2, collapse = " -> "))
         run_results <- if (sandbox == "docker") {
           repro_run_scripts_docker(
-            run_tbl, run_order2, sandbox_root = sandbox_root,
+            run_tbl2, run_order2, sandbox_root = sandbox_root,
             lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
             image = docker_image, timeout = timeout, skip = skip_files,
             parses = parses_named, failed_deps = failed_deps)
         } else {
           repro_run_scripts(
-            run_tbl, run_order2,
+            run_tbl2, run_order2,
             lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
             timeout = timeout, skip = skip_files, parses = parses_named,
             failed_deps = failed_deps)
         }
         order_tbl <- order_tbl2   # report the corrected order
+        run_tbl <- run_tbl2       # so downstream setwd/family/injection detail (#391) reflects pass 2
         reran <- TRUE
+        reran_for_reorder <- length(extra_edges) > 0
         .dbg("execution finished (pass 2). outcomes: ",
              paste(sprintf("%s=%s", run_results$file_name, run_results$outcome),
                    collapse = "; "))
       }
     }
     attr(run_results, "reran_for_order") <- reran
+    attr(run_results, "reran_for_reorder") <- reran_for_reorder
 
     # An execution error (errored / timed_out) is a reproduction failure: force
     # the traffic light red, whatever the static signals said. A
@@ -1505,6 +1644,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else {
     "The scripts were ordered by their data dependencies (a script writing a file another reads runs first), `source()` calls, and numeric filename prefixes."
   }
+  if (nrow(fuzzy_sources) > 0)
+    report_order <- paste(report_order, sprintf(
+      paste0("**%d `source()` reference%s** only matched a file after ",
+             "normalising both names (lowercase, extension stripped, a ",
+             "leading numbering prefix stripped, separators collapsed) — a ",
+             "likely renumbered/reworded filename rather than an exact ",
+             "match: %s. Treat these as lower-confidence than an exact ",
+             "`source()` resolution."),
+      nrow(fuzzy_sources), plural(nrow(fuzzy_sources)),
+      paste(sprintf("`%s` -> `%s`", fuzzy_sources$to, fuzzy_sources$from),
+            collapse = "; ")))
 
   ## Path rewriting ----
   total_rewrites <- sum(rewrites_n)
@@ -1561,6 +1711,26 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       "%d R file%s did not parse and cannot be run (see code_check for the errors).",
       parse_errs, plural(parse_errs)))
 
+  # Sniffed non-R content (#394/#396): informational, not a reproducibility
+  # defect -- reported distinctly from a genuine parse failure so a reader
+  # does not read "the author has a bug" into a file that was never meant to
+  # be standalone R in the first place.
+  if (n_not_r_content > 0 || n_jags_model > 0) {
+    sniff_rows <- which(!is.na(sniff_type))
+    report <- c(report, "#### Non-R content detected",
+      if (n_not_r_content > 0) sprintf(
+        "%d file%s that failed to parse %s not actually R content (a JSON/HTML/XML dump saved with an R-type extension) -- this is informational, not a reproducibility defect.",
+        n_not_r_content, plural(n_not_r_content), plural(n_not_r_content, "is", "are")),
+      if (n_jags_model > 0) sprintf(
+        "%d file%s %s a JAGS/BUGS model definition (`model { ... }`), not standalone R -- these are meant to be passed to `rjags::jags.model()`/`R2jags::jags()`/`runjags::run.jags()`, not run directly, and are not a reproducibility defect.",
+        n_jags_model, plural(n_jags_model), plural(n_jags_model, "is", "are")),
+      scroll_table(data.frame(
+        File = r_files$file_name[sniff_rows],
+        Detected = sniff_type[sniff_rows],
+        Detail = sniff_detail[sniff_rows],
+        check.names = FALSE), maxrows = 10))
+  }
+
   ## Execution ----
   if (!is.null(run_results) && nrow(run_results) > 0) {
     oc <- run_results$outcome
@@ -1584,13 +1754,22 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       plural(n_skipped, "was", "were"), n_nodep, n_noparse)
 
     # Note the corrective re-run when it happened, so the outcomes are read as
-    # "after re-ordering", not the first attempt.
-    if (isTRUE(attr(run_results, "reran_for_order")))
-      report_exec <- paste(report_exec,
-        "\n\n*One script hit an `object '...' not found` error, indicating it",
-        "expected a variable another script defines. We inferred which script",
-        "supplies it, re-ordered so that script runs first, and re-ran once. The",
-        "outcomes above are from that corrected order.*")
+    # "after re-ordering"/"after injecting library()", not the first attempt.
+    if (isTRUE(attr(run_results, "reran_for_order"))) {
+      reran_bits <- character(0)
+      if (isTRUE(attr(run_results, "reran_for_reorder")))
+        reran_bits <- c(reran_bits, paste(
+          "a script hit an `object '...' not found` error, indicating it",
+          "expected a variable another script defines. We inferred which",
+          "script supplies it and re-ordered so that script runs first"))
+      if (length(library_injections) > 0)
+        reran_bits <- c(reran_bits, sprintf(
+          "a script hit a `could not find function \"...\"` error that resolved to exactly one package (%s); we injected the corresponding `library()` call",
+          paste(sprintf("`library(%s)`", library_injections), collapse = ", ")))
+      report_exec <- paste(report_exec, sprintf(
+        "\n\n*%s, and re-ran once. The outcomes above are from that corrected run.*",
+        paste(reran_bits, collapse = "; ")))
+    }
 
     # setwd() warning. A script that only runs after we strip a setwd() is
     # "reproducible after ignoring a setwd() that should not be in the code".
@@ -1920,6 +2099,62 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # were silently missed.
   if (!is.null(dup_report)) report <- c(report, dup_report)
 
+  # ── `modifications`: per-change detail, not just aggregate counts ──────────
+  # Everything below was already computed above (rewrite_list at "4. Per-file
+  # path rewrite + I/O", run_tbl's setwd_paths/family_detail/library_injected
+  # at "1. Build the data tree..." and the corrective re-run) purely to derive
+  # a COUNT (paths_rewritten, setwd_removed, ...) for `table` — the per-change
+  # detail itself was discarded once the count was taken. This keeps it alive
+  # through to the final return instead, one row per individual change, so a
+  # reader can see WHICH path was rewritten to WHAT, WHICH setwd() path was
+  # removed, WHICH font family was replaced, and WHICH library() was injected,
+  # rather than only "12 paths were rewritten".
+  # Path rewrites are computed unconditionally (section 4, above) since they
+  # are part of the STATIC analysis — surfaced here regardless of `execute`.
+  # setwd()/font/library() detail only exists once repro_write_scripts()
+  # has actually written the scripts, which only happens when execute = TRUE.
+  rw_rows <- dplyr::bind_rows(lapply(names(rewrite_list), function(fn) {
+    d <- rewrite_list[[fn]]
+    if (is.null(d) || !nrow(d)) return(NULL)
+    good <- d$matched & !d$ambiguous & !is.na(d$target) & nzchar(d$target %||% "")
+    if (!any(good)) return(NULL)
+    data.frame(file_name = fn, change_type = "path_rewrite",
+              detail = sprintf('"%s" -> "%s"', d$ref[good], d$target[good]),
+              stringsAsFactors = FALSE)
+  }))
+
+  modifications <- if (isTRUE(execute)) {
+    setwd_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
+                          "setwd_paths" %in% names(run_tbl)) {
+      hit <- run_tbl$setwd_removed > 0 & nzchar(run_tbl$setwd_paths %||% "")
+      if (any(hit)) dplyr::bind_rows(lapply(which(hit), function(i)
+        data.frame(file_name = run_tbl$file_name[i], change_type = "setwd_removed",
+                  detail = strsplit(run_tbl$setwd_paths[i], ", ", fixed = TRUE)[[1]],
+                  stringsAsFactors = FALSE)))
+      else NULL
+    } else NULL
+
+    family_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
+                           "family_detail" %in% names(run_tbl)) {
+      hit <- run_tbl$family_replaced > 0 & nzchar(run_tbl$family_detail %||% "")
+      if (any(hit)) dplyr::bind_rows(lapply(which(hit), function(i)
+        data.frame(file_name = run_tbl$file_name[i], change_type = "font_replaced",
+                  detail = strsplit(run_tbl$family_detail[i], "; ", fixed = TRUE)[[1]],
+                  stringsAsFactors = FALSE)))
+      else NULL
+    } else NULL
+
+    library_rows_mod <- if (length(library_injections) > 0)
+      data.frame(file_name = names(library_injections), change_type = "library_injected",
+                detail = sprintf("library(%s)", library_injections),
+                stringsAsFactors = FALSE) else NULL
+
+    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod)
+  } else rw_rows
+  if (is.null(modifications) || !nrow(modifications))
+    modifications <- data.frame(file_name = character(0), change_type = character(0),
+                                detail = character(0))
+
   out <- list(
     table = table,
     summary_table = summary_table,
@@ -1939,7 +2174,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # The full match_reported_output() result (one row per reported test —
     # see match_table_raw's own comment above), NULL when there was no output
     # to match against at all.
-    match_table = match_table_raw
+    match_table = match_table_raw,
+    # Per-file modification detail (path rewrites, setwd() removal, font
+    # substitution, and library() injection) — see the "modifications" build
+    # above. Empty (0-row, same columns) when execute = FALSE (nothing was
+    # actually written/run to modify) or nothing needed modifying.
+    modifications = modifications
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

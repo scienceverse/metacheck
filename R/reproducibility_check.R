@@ -35,10 +35,10 @@
 #'   of such vectors (one per file) to pool across files
 #' @param lang the language (only R declares installable packages here)
 #'
-#' @returns a data frame with columns `package`, `source` (`cran`, `github`,
-#'   `url`, or `base`), `ref` (the source path/ref for github/url, else NA), and
-#'   `base` (logical, TRUE for a base/recommended package). One row per distinct
-#'   package. Empty frame (same columns) when none are found.
+#' @returns a data frame with columns `package`, `source` (`cran`, `bioc`,
+#'   `github`, `url`, or `base`), `ref` (the source path/ref for github/url,
+#'   else NA), and `base` (logical, TRUE for a base/recommended package). One
+#'   row per distinct package. Empty frame (same columns) when none are found.
 #' @export
 #'
 #' @examples
@@ -85,10 +85,20 @@ repro_dependencies <- function(code_text, lang = "R") {
     url_pkg <- sub("[_.].*$", "", basename(url_refs))   # pkg_1.0.tar.gz -> pkg
 
     base_pkgs <- .repro_base_packages()
+    bioc_pkgs <- .repro_bioc_packages()
 
     src <- rep("cran", length(pkgs))
     ref <- rep(NA_character_, length(pkgs))
     src[pkgs %in% base_pkgs] <- "base"
+    # A Bioconductor package is never on CRAN, so install.packages() always
+    # fails for it with "there is no package called 'X'" even though the
+    # package genuinely exists and installs fine via BiocManager -- see
+    # .repro_bioc_packages(). Applied AFTER base (a base package is never also
+    # a Bioconductor one) but BEFORE the github/url overrides below, so a
+    # script that explicitly names a GitHub/URL source for a Bioconductor
+    # package (a development version, say) still keeps that more specific
+    # source rather than being relabelled "bioc".
+    src[pkgs %in% bioc_pkgs & !pkgs %in% base_pkgs] <- "bioc"
     for (k in seq_along(gh_pkg)) {
       hit <- pkgs == gh_pkg[k]
       if (any(hit)) { src[hit] <- "github"; ref[hit] <- gh_refs[k] }
@@ -112,6 +122,54 @@ repro_dependencies <- function(code_text, lang = "R") {
   if (is.null(ip)) c("base", "methods", "utils", "stats", "graphics",
                      "grDevices", "datasets", "tools")
   else rownames(ip)
+}
+
+# A bundled, static list of common Bioconductor package names -- NOT a live
+# query (BiocManager::available()/the Bioconductor JSON manifest would need
+# network access at classification time, for a question that is answered just
+# as well by a name lookup), and NOT a hard dependency: BiocManager is only
+# ever used conditionally, at INSTALL time (see repro_install_deps()'s "bioc"
+# branch), never here. This list exists purely so repro_dependencies() can
+# tell a CRAN-absent, Bioconductor-only package (edgeR, phyloseq, DESeq2, ...)
+# apart from a package that is simply unavailable anywhere -- confirmed as the
+# single largest identifiable cause of install failures in a real corpus run
+# (40 of 140 dependency_unavailable failures were Bioconductor packages
+# classified "cran" and so never attempted via BiocManager::install()).
+# Deliberately a fixed list rather than exhaustive: Bioconductor has ~2000+
+# packages, but only the common ones actually showing up in analysis code
+# (as opposed to Bioconductor's own internal infrastructure packages) need
+# to be recognised here; an unlisted Bioconductor package still falls
+# through to "cran" (misclassified, but no worse than before this fix) rather
+# than the list being maintained as if it must be complete.
+.repro_bioc_packages <- function() {
+  c(
+    "edgeR", "DESeq2", "limma", "phyloseq", "dada2", "LEA", "affy", "affyio",
+    "AnnotationDbi", "AnnotationHub", "Biobase", "BiocGenerics",
+    "BiocParallel", "BiocVersion", "biomaRt", "Biostrings", "BSgenome",
+    "ComplexHeatmap", "ConsensusClusterPlus", "cummeRbund", "DelayedArray",
+    "DESeq", "DiffBind", "DOSE", "edgeR", "EnhancedVolcano", "ensembldb",
+    "enrichplot", "fgsea", "flowCore", "GenomeInfoDb", "GenomicAlignments",
+    "GenomicFeatures", "GenomicRanges", "genefilter", "GEOquery", "ggtree",
+    "goseq", "GSEABase", "GSVA", "Gviz", "HTSeq", "IRanges", "KEGGREST",
+    "limma", "M3C", "MAGeCKFlute", "makecdfenv", "MassSpecWavelet",
+    "MEDIPS", "methylKit", "minfi", "MotifDb", "mzR", "org.Hs.eg.db",
+    "org.Mm.eg.db", "pathview", "PICS", "preprocessCore", "qvalue",
+    "Rgraphviz", "Rhtslib", "rhdf5", "rtracklayer", "Rsamtools",
+    "Rsubread", "S4Vectors", "scater", "scran", "SingleCellExperiment",
+    "SummarizedExperiment", "sva", "topGO", "TxDb.Hsapiens.UCSC.hg19.knownGene",
+    "TxDb.Hsapiens.UCSC.hg38.knownGene", "variancePartition", "vsn",
+    "WGCNA", "XVector", "zlibbioc", "clusterProfiler", "ChIPseeker",
+    "ChIPQC", "csaw", "DECIPHER", "deseq2", "monocle", "muscat", "Rbowtie",
+    "Rhisat2", "Rsubread", "seqinr", "shinyMethyl", "slingshot",
+    "tximport", "tximeta", "biovizBase", "regioneR", "karyoploteR",
+    "VariantAnnotation", "STRINGdb", "graph", "RBGL", "limmaGUI",
+    "beadarray", "lumi", "oligo", "crlmm", "snpStats", "IlluminaHumanMethylation450kanno.ilmn12.hg19",
+    "IlluminaHumanMethylationEPICanno.ilm10b4.hg19", "FlowSOM", "CATALYST",
+    "diffloop", "GenomicInteractions", "InteractionSet", "bsseq",
+    "methylumi", "wateRmelon", "phyloseq", "microbiome", "ANCOMBC",
+    "mixOmics", "MOFA2", "BiocSingular", "batchelor", "scDblFinder",
+    "scuttle", "zellkonverter", "DropletUtils", "destiny", "MAST"
+  ) |> unique()
 }
 
 #' Find file paths built at runtime with sprintf()/paste()/paste0()/file.path()
@@ -808,6 +866,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 #'   Attribute `"cycle"` is a character vector of file_names in a dependency
 #'   cycle (empty when acyclic); attribute `"ambiguous"` is TRUE when no ordering
 #'   signal placed a multi-file set (they share `order = NA`, basis `none`).
+#'   Attribute `"fuzzy_sources"` is a data frame (`from`, `to`) of `source()`
+#'   edges that only resolved after normalising both basenames (a renumbered/
+#'   reworded script reference — see [.repro_normalize_basename()]), empty
+#'   when every `source()` reference matched an exact basename.
 #' @export
 #'
 #' @examples
@@ -846,9 +908,32 @@ repro_run_order <- function(files, extra_edges = NULL) {
     w <- setdiff(writer_of[[r]] %||% integer(0), i)   # not self
     if (length(w)) before[[i]] <- union(before[[i]], w)
   }
-  # source(): if i sources B, the file whose basename is B precedes i.
+  # source(): if i sources B, the file whose basename is B precedes i. Tried
+  # first by EXACT basename (as before); when that finds nothing, retried on
+  # a NORMALISED basename (see .repro_normalize_basename()) — a script-to-
+  # script source() reference is the one basename-mismatch case with real
+  # evidence behind it (a renumbered/reworded file, e.g. `source("001 - data
+  # prep.R")` when the actual file is `"103 - Data Prep.R"` — see issue #392;
+  # general DATA-file references are deliberately NOT given this treatment,
+  # per that issue's own evidence that fuzzy matching does not generalise
+  # there). A fuzzy-matched edge is recorded in the `"fuzzy_sources"`
+  # attribute (from_file -> to_file pairs) so a caller can flag it as a
+  # lower-confidence match rather than silently treating it the same as an
+  # exact hit — the same "never silently guess" posture
+  # repro_rewrite_paths()'s own `ambiguous` column already follows.
+  fuzzy_sources <- list()
+  norm_base <- .repro_normalize_basename(base_name)
   for (i in seq_len(n)) for (s in tolower(sources[[i]])) {
     j <- setdiff(which(base_name == s), i)
+    if (!length(j)) {
+      s_norm <- .repro_normalize_basename(s)
+      j <- setdiff(which(nzchar(s_norm) & norm_base == s_norm), i)
+      if (length(j) == 1) {
+        fuzzy_sources[[length(fuzzy_sources) + 1L]] <- c(fname[j], fname[i])
+      } else if (length(j) > 1) {
+        j <- integer(0)   # ambiguous after normalising too: do not guess
+      }
+    }
     if (length(j)) before[[i]] <- union(before[[i]], j)
   }
 
@@ -928,7 +1013,32 @@ repro_run_order <- function(files, extra_edges = NULL) {
   # Ambiguous when more than one file exists but nothing (no dependency edge and
   # no numbering in any filename) distinguishes their order.
   attr(out, "ambiguous") <- n > 1 && !any_dependency && !any(has_num)
+  # source() edges resolved only after normalising both basenames (see above)
+  # — a data frame of `from`/`to` file_name pairs, empty (0-row) when every
+  # source() reference matched exactly. Distinct from an exact match so a
+  # caller can flag it as lower-confidence, per issue #392.
+  attr(out, "fuzzy_sources") <- if (length(fuzzy_sources))
+    data.frame(from = vapply(fuzzy_sources, `[[`, character(1), 1),
+              to   = vapply(fuzzy_sources, `[[`, character(1), 2),
+              stringsAsFactors = FALSE) else
+    data.frame(from = character(0), to = character(0))
   out
+}
+
+# Normalise a basename for FUZZY source()-target matching (repro_run_order()'s
+# own use, see issue #392) — lowercase (caller already lowercases, done again
+# here so this helper is safe standalone too), strip the extension, strip a
+# leading numbering prefix (`01_`, `103 - `, `12.`), and collapse every
+# remaining separator (space/dot/underscore/hyphen) so `"001 - data prep.R"`
+# and `"103 - Data Prep.R"` normalise to the same key ("dataprep"). Applied
+# ONLY to script-to-script source() targets, never to general data-file
+# references — see repro_run_order()'s own comment for why (this issue's own
+# evidence found fuzzy matching does not generalise to data files).
+# @keywords internal
+.repro_normalize_basename <- function(b) {
+  b <- tolower(tools::file_path_sans_ext(b))
+  b <- sub("^[0-9]+[\\s._-]*", "", b, perl = TRUE)
+  gsub("[\\s._-]+", "", b, perl = TRUE)
 }
 
 #' Extract the files a script reads, writes, and sources
@@ -1036,6 +1146,63 @@ repro_defined_vars <- function(code_text_list) {
   dplyr::bind_rows(rows)
 }
 
+# A small curated safe-list of extremely common packages worth considering
+# for the missing-library() corrective step (see .repro_find_export_pkg()
+# and the module's own corrective re-run) even when a paper's OWN declared
+# dependencies (repro_dependencies()) do not name them -- these are packages
+# whose exported names turn up constantly in scripts that never library()
+# them explicitly (a test file run standalone with no library(testthat); a
+# %>% pipe with no library(magrittr)/library(dplyr)). Deliberately NOT a
+# blind scan of every installed/CRAN package: the companion issue's own
+# evidence found a blind scan ambiguous 13.5% of the time (e.g. %>% alone
+# matches 69 installed packages) -- this list stays short and high-confidence
+# on purpose, and the ambiguity check in .repro_find_export_pkg() still
+# applies to it exactly as it does to a paper's own declared dependencies.
+.repro_common_pkgs <- function() {
+  c("testthat", "magrittr", "dplyr", "tidyr", "ggplot2", "purrr", "tibble",
+    "stringr", "readr", "forcats")
+}
+
+#' Find the one installed package (if any) that unambiguously exports a name
+#'
+#' Used by the module's corrective re-run for a `could not find function "X"`
+#' error that no file in the paper's own code defines (the sibling case to
+#' [repro_defined_vars()]'s repo-file lookup, for when the missing symbol is a
+#' PACKAGE export the author simply forgot to `library()`, not a local
+#' variable/function). Deliberately scoped, not a blind search of every
+#' installed or CRAN package: only `candidates` (the paper's own declared
+#' dependencies plus [.repro_common_pkgs()]'s small curated safe-list) are
+#' checked, so an ambiguous common name (`%>%`, `select`, ...) across the
+#' package universe at large is never even considered — see this function's
+#' caller for why a blind scan is unsafe (a real corpus check found `%>%`
+#' alone exported by 69 installed packages).
+#'
+#' A candidate package that is not installed is silently skipped (not an
+#' error): this only ever runs against packages already usable in the current
+#' R installation, since `BiocManager`/`remotes`-style live lookups are out of
+#' scope for a same-process check like this one.
+#'
+#' @param name the undefined symbol (e.g. `"test_that"`, `"%>%"`)
+#' @param candidates character vector of candidate package names to check
+#'   (already scoped by the caller — see above)
+#'
+#' @returns the single package name that exports `name`, or `NA_character_`
+#'   when zero or more than one candidate does (never guessed)
+#' @keywords internal
+.repro_find_export_pkg <- function(name, candidates) {
+  candidates <- unique(candidates[!is.na(candidates) & nzchar(candidates %||% "")])
+  if (!length(candidates) || !nzchar(name %||% "")) return(NA_character_)
+  hits <- character(0)
+  for (pkg in candidates) {
+    if (!requireNamespace(pkg, quietly = TRUE)) next   # not installed: skip
+    exports <- tryCatch(getNamespaceExports(asNamespace(pkg)),
+                        error = function(e) character(0))
+    if (name %in% exports) hits <- c(hits, pkg)
+  }
+  hits <- unique(hits)
+  if (length(hits) == 1) hits else NA_character_
+}
+
 #' Diagnose why a referenced input file is unavailable
 #'
 #' When a script reads a file that is not present, the reason matters: a file
@@ -1134,6 +1301,137 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   })
   out <- dplyr::bind_rows(rows)
   out[out$status != "present", , drop = FALSE]
+}
+
+#' Sniff whether a `.R`/`.Rmd` file that failed to parse is actually R
+#'
+#' A parse failure ([code_parse_r()], via `code_check`'s `parse_error`) is
+#' usually a genuine defect in the paper's code — but occasionally the file
+#' was never R source at all (a serialized JSON/HTML widget export saved with
+#' a `.R` extension) or is a well-known non-R DSL (a JAGS/BUGS model
+#' definition, see [.repro_is_jags_model()]). Reporting either of those as
+#' "failed to parse" reads identically to a real syntax error in real
+#' analysis code, giving a reader no way to tell "the author has a bug" from
+#' "this file was never R to begin with".
+#'
+#' Deliberately conservative: only the UNAMBIGUOUS cases are flagged (a JSON
+#' object/array spanning essentially the whole file, or a clear HTML/XML
+#' doctype/tag at the very start) — checked on the RAW text, not something
+#' `code_parse_r()` already tried to parse as R, so this never depends on
+#' *why* the parse failed. Anything else (including a real, if unusual, R
+#' script) is left alone and reported as a genuine parse failure, same as
+#' before this existed.
+#'
+#' @param code_text the file's raw text (character vector, one element per
+#'   line, as read by `code_read()`/`code_extract_r()`)
+#'
+#' @returns `NA_character_` when nothing matches (treat as a genuine parse
+#'   failure), else one of `"JSON"`, `"HTML"`, `"XML"` naming what was
+#'   detected
+#' @keywords internal
+.repro_content_sniff <- function(code_text) {
+  if (is.null(code_text) || !length(code_text)) return(NA_character_)
+  txt <- trimws(paste(code_text, collapse = "\n"))
+  if (!nzchar(txt)) return(NA_character_)
+
+  # HTML/XML: an unambiguous doctype/root-tag marker at the very start (after
+  # stripping leading whitespace) — real R code never legitimately starts
+  # this way (a `<` at the very start of a file, before any comment or
+  # assignment, is not valid R syntax either).
+  if (grepl("^<!DOCTYPE\\s+html", txt, ignore.case = TRUE, perl = TRUE)) return("HTML")
+  if (grepl("^<html\\b", txt, ignore.case = TRUE, perl = TRUE)) return("HTML")
+  if (grepl("^<\\?xml\\b", txt, ignore.case = TRUE, perl = TRUE)) return("XML")
+
+  # JSON: the file starts with `{` or `[` AND the matching close (found by a
+  # simple bracket-depth scan, respecting quotes) is at or near the very end
+  # of the file — "spans essentially the whole file", not merely a `{` that
+  # opens an R block at the top of an otherwise-real script (e.g. a script
+  # that starts with `{ x <- 1; ... }` -- rare, but real R). Requiring the
+  # closing bracket to land in roughly the last 1% of the text (or the last
+  # 5 characters, whichever is larger) is what keeps this conservative.
+  first_ch <- substr(txt, 1, 1)
+  if (first_ch %in% c("{", "[")) {
+    close_ch <- if (first_ch == "{") "}" else "]"
+    n <- nchar(txt)
+    depth <- 0L; i <- 1L; in_str <- NA_character_; end <- NA_integer_
+    while (i <= n) {
+      ch <- substr(txt, i, i)
+      if (!is.na(in_str)) {
+        if (ch == "\\") i <- i + 1L
+        else if (ch == in_str) in_str <- NA_character_
+      } else if (ch %in% c('"')) in_str <- ch   # JSON strings are double-quoted only
+      else if (ch == first_ch) depth <- depth + 1L
+      else if (ch == close_ch) { depth <- depth - 1L; if (depth == 0L) { end <- i; break } }
+      i <- i + 1L
+    }
+    if (!is.na(end)) {
+      tail_len <- n - end
+      # A trailing `# roxygen`-style comment or blank lines after the closing
+      # bracket would still be "essentially the whole file"; anything with
+      # substantial trailing content is left alone (more likely a real R
+      # block followed by more R code).
+      if (tail_len <= max(5L, ceiling(n * 0.01))) return("JSON")
+    }
+  }
+  NA_character_
+}
+
+#' Recognise a JAGS/BUGS model-definition file
+#'
+#' A JAGS/BUGS model (`model { ... }`) is written in JAGS's own modelling
+#' language, not R, and is meant to be passed as a text file to
+#' `rjags::jags.model()`/`R2jags::jags()`/`runjags::run.jags()`, never parsed
+#' as R directly — authors frequently save one with a `.R` extension, which
+#' then fails [code_parse_r()] and reads identically to a genuine broken R
+#' script. Matched via three signals, any one of which is treated as
+#' sufficient (the third — an actual calling reference from the paper's own
+#' code — is the strongest, since it confirms the paper's own code treats
+#' this file as a JAGS model rather than something to run directly):
+#'
+#' 1. the file's first non-comment, non-blank content is the token `model`
+#'    immediately followed by `{`;
+#' 2. its path contains a component named `jags_script`/`bugs_script`/
+#'    `jags_model` (case-insensitive);
+#' 3. it is referenced elsewhere in the SAME paper's own R code as the
+#'    `file=`/first argument to `rjags::jags.model()`, `R2jags::jags()`, or
+#'    `runjags::run.jags()`.
+#'
+#' @param code_text the file's raw text (character vector, one element per
+#'   line)
+#' @param file_name the file's own name/path (checked for a `jags_script`/
+#'   `bugs_script`/`jags_model` path component)
+#' @param other_code_text optional list of OTHER files' code text (e.g. the
+#'   paper's other R files) to scan for a `jags.model()`/`jags()`/`run.jags()`
+#'   call naming this file — `NULL` skips this (strongest) signal
+#'
+#' @returns `TRUE` when any signal matches, else `FALSE`
+#' @keywords internal
+.repro_is_jags_model <- function(code_text, file_name = "", other_code_text = NULL) {
+  if (!is.null(code_text) && length(code_text)) {
+    nc <- code_remove_comments(code_text, "R")
+    nc <- nc[nzchar(trimws(nc))]
+    if (length(nc) && grepl("^\\s*model\\s*\\{", nc[[1]], perl = TRUE)) return(TRUE)
+  }
+  if (nzchar(file_name %||% "") &&
+      grepl("(^|[/\\\\])(jags_script|bugs_script|jags_model)([/\\\\]|$)",
+           file_name, ignore.case = TRUE, perl = TRUE)) return(TRUE)
+
+  if (!is.null(other_code_text) && length(other_code_text)) {
+    fn_base <- basename(gsub("\\\\", "/", file_name %||% ""))
+    call_pat <- paste0(
+      "\\b(rjags::jags\\.model|jags\\.model|R2jags::jags|runjags::run\\.jags|run\\.jags)",
+      "\\s*\\(\\s*(?:file\\s*=\\s*)?['\"]([^'\"]+)['\"]")
+    for (ct in other_code_text) {
+      if (is.null(ct) || !length(ct)) next
+      joined <- paste(code_remove_comments(ct, "R"), collapse = "\n")
+      m <- regmatches(joined, gregexpr(call_pat, joined, perl = TRUE))[[1]]
+      if (!length(m)) next
+      refs <- sub(paste0(".*", call_pat), "\\2", m, perl = TRUE)
+      if (nzchar(fn_base) && fn_base %in% basename(gsub("\\\\", "/", refs)))
+        return(TRUE)
+    }
+  }
+  FALSE
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1272,16 +1570,29 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' `setwd()` is removed is reported as "reproducible after ignoring a `setwd()`
 #' that should not have been in the code and needs to be fixed".
 #'
+#' @param inject_libs optional named character vector/list (names are
+#'   `file_name`s already present in `code_text_list`) — a package name to
+#'   inject as a `library(<pkg>)` call at the very top of that script's text
+#'   before it is written. Used by the module's corrective re-run for a
+#'   `could not find function "X"` error resolved to exactly one package that
+#'   exports `X` (see the module's own missing-`library()` corrective step) —
+#'   reusing this function's existing text-rewrite plumbing rather than a
+#'   separate rewrite path. `NULL` (default) injects nothing, unchanged from
+#'   before this parameter existed.
+#'
 #' @returns a data frame with `file_name`, `script_path` (absolute path written),
 #'   `run_dir` (the working directory a run should use — always `root`),
 #'   `setwd_removed` (count of `setwd()` lines commented out),
-#'   `setwd_paths` (comma-joined paths those calls named, for the warning), and
+#'   `setwd_paths` (comma-joined paths those calls named, for the warning),
 #'   `family_replaced` (count of `family =`/`base_family =` named-font
 #'   arguments replaced with `"sans"`, so a plot call does not fail with
 #'   "invalid font type" for a font not registered on the machine running the
-#'   sandbox).
+#'   sandbox), `family_detail` (semicolon-joined `<old> -> "sans"` text for
+#'   each replacement), and `library_injected` (the package name injected via
+#'   `inject_libs` for that file, or `NA` when none was).
 #' @export
-repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
+repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
+                                inject_libs = NULL) {
   fnames <- names(code_text_list)
   plan_base <- if (!is.null(plan) && "file_name" %in% names(plan))
     tolower(basename(plan$file_name)) else character(0)
@@ -1379,12 +1690,26 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
     # the rest of this function's rewrites already follow.
     family_pat <- "\\b(base_family|family)\\s*=\\s*(['\"])[^'\"]*\\2"
     joined_for_family <- paste(txt, collapse = "\n")
-    family_n <- lengths(regmatches(joined_for_family,
-                                   gregexpr(family_pat, joined_for_family, perl = TRUE)))[1]
+    family_matches <- regmatches(joined_for_family,
+                                 gregexpr(family_pat, joined_for_family, perl = TRUE))[[1]]
+    family_n <- length(family_matches)
     if (family_n > 0) {
       joined_for_family <- gsub(family_pat, "\\1 = \"sans\"", joined_for_family, perl = TRUE)
       txt <- strsplit(joined_for_family, "\n", fixed = TRUE)[[1]]
     }
+
+    # Inject a missing library() call at the very top of the script, when the
+    # caller resolved an undefined-function error to exactly one package (see
+    # this function's own `inject_libs` param docs above). Prepended, not
+    # inserted at the error's own line: the injected package must be attached
+    # before ANY of the script's code runs, since a `library()` earlier in
+    # the same file could otherwise already have been attempted and failed
+    # first (also, the corrective rerun only has a file-level signal — "this
+    # script needs package P" — not a line number to target).
+    injected_pkg <- if (!is.null(inject_libs) && fn %in% names(inject_libs))
+      inject_libs[[fn]] else NA_character_
+    if (!is.na(injected_pkg) && nzchar(injected_pkg))
+      txt <- c(sprintf("library(%s)  # [reproducibility_check injected]", injected_pkg), txt)
 
     tgt  <- script_target(fn)
     dest <- file.path(root, tgt)
@@ -1393,7 +1718,10 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
     data.frame(file_name = fn, script_path = dest, run_dir = root,
                setwd_removed = setwd_n,
                setwd_paths = paste(setwd_paths, collapse = ", "),
-               family_replaced = family_n)
+               family_replaced = family_n,
+               family_detail = paste(
+                 sprintf("%s -> \"sans\"", family_matches), collapse = "; "),
+               library_injected = injected_pkg)
   })
   dplyr::bind_rows(rows)
 }
@@ -1402,7 +1730,10 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root) {
 #'
 #' Installs each non-base dependency into `lib_dir` (a temp library, never the
 #' user's), so a run does not mutate the user's installed packages. CRAN packages
-#' come from `install.packages()`; GitHub/URL sources from the ref the code named
+#' come from `install.packages()`; Bioconductor packages (`source == "bioc"`,
+#' see [repro_dependencies()]/[.repro_bioc_packages()]) from
+#' `BiocManager::install()`, installing `BiocManager` itself first if absent;
+#' GitHub/URL sources from the ref the code named
 #' (`remotes::install_github()` / `install.packages(url)`), honouring a pinned
 #' `@ref` when present. Every install's outcome is recorded; installing runs
 #' package build/configure scripts, so this is part of the gated execute phase.
@@ -1506,6 +1837,15 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
                                 quiet = FALSE)
       } else if (identical(src, "url")) {
         utils::install.packages(ref, lib = lib_dir, repos = NULL, quiet = FALSE)
+      } else if (identical(src, "bioc")) {
+        # BiocManager is deliberately NOT a hard dependency of this package
+        # (see .repro_bioc_packages()'s own comment) -- installed here, into
+        # the SAME throwaway lib_dir, only when an actual Bioconductor install
+        # is needed. install.packages() (not remotes) is enough for this,
+        # since BiocManager itself is an ordinary CRAN package.
+        if (!requireNamespace("BiocManager", quietly = TRUE))
+          utils::install.packages("BiocManager", lib = lib_dir, quiet = FALSE)
+        BiocManager::install(pkg, lib = lib_dir, update = FALSE, ask = FALSE)
       } else {
         # Explicit lib=: .libPaths()[1] is `lib_dir` (the throwaway) at this
         # point, not R's real user library, so an unqualified install.packages()
