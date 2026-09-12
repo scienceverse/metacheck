@@ -124,8 +124,15 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
     table <- zenodo_url
     table$zenodo_url <- table[[id_col]]
   } else {
-    raw_urls <- unique(zenodo_url) |> stats::na.omit()
-    table <- data.frame(zenodo_url = raw_urls)
+    # as.character() BEFORE data.frame(), not after. Given a list of urls -- a
+    # list-column `repo_url` arriving here from repo_check(), say --
+    # data.frame(zenodo_url = <list>) does not create a `zenodo_url` column at
+    # all: it creates one column per list element, named after their values,
+    # and leaves `table$zenodo_url` NULL for everything below to trip over.
+    # Coercing first makes the column exist whatever shape arrives.
+    raw_urls <- unique(as.character(zenodo_url))
+    raw_urls <- raw_urls[!is.na(raw_urls)]
+    table <- data.frame(zenodo_url = raw_urls, stringsAsFactors = FALSE)
   }
 
   ids <- data.frame(
@@ -181,6 +188,46 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   return(data)
 }
 
+# The frame .zenodo_info() returns for a record it could not read, with the
+# SAME columns as the frame it returns for a record it did read.
+#
+# The two used to differ: an unreadable record produced only `zenodo_id` (plus
+# `error`), so a paper whose every Zenodo record came back unreadable yielded
+# an `info` table with no doi/license/files columns at all. Callers build their
+# own data.frames straight out of those columns (see `repo_check()`'s Zenodo
+# block), and `as.character(NULL)` is `character(0)` -- a zero-length column
+# beside the n-row `repo_url` column, which data.frame() rejects with
+# "arguments imply differing number of rows: n, 0". That message is exactly
+# what a real corpus run recorded for 106 of its 190 unresolvable Zenodo rows
+# (n = the number of distinct Zenodo URLs on the paper, which is why the
+# counts came in as 75x "1, 0", 26x "2, 0" and 5x "5, 0"), and it took the
+# whole Zenodo block down for that paper. `files` is a list column holding
+# NULL, not an absent column: repo_check() checks for the column's presence
+# and then treats an empty/NULL entry as "no files", which is the right answer
+# for a record nobody could read.
+.zenodo_unread <- function(zenodo_id, error) {
+  data.frame(
+    zenodo_id        = as.character(zenodo_id),
+    title            = NA_character_,
+    doi              = NA_character_,
+    description      = NA_character_,
+    publication_date = NA_character_,
+    updated_date     = NA_character_,
+    creators         = I(list(NULL)),
+    keywords         = I(list(NULL)),
+    resource_type    = NA_character_,
+    journal          = I(list(NULL)),
+    owners           = I(list(NULL)),
+    license          = NA_character_,
+    downloads        = NA_real_,
+    unique_downloads = NA_real_,
+    views            = NA_real_,
+    files            = I(list(NULL)),
+    error            = as.character(error),
+    stringsAsFactors = FALSE
+  )
+}
+
 #' Retrieve info from Zenodo by ID
 #'
 #' @param zenodo_id a Zenodo ID or URL
@@ -200,11 +247,6 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
     list(what = _) |>
     pb$tick(0, tokens = _)
 
-  # set up return table
-  obj <- data.frame(
-    zenodo_id = zenodo_id
-  )
-
   # Build the URL
   zenodo_api_url <- paste0("https://zenodo.org/api/records/", zenodo_id)
 
@@ -212,8 +254,7 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
 
   if (httr2::resp_status(resp) != 200) {
     warning(zenodo_id, " could not be found", call. = FALSE)
-    obj$error <- "unfound"
-    return(obj)
+    return(.zenodo_unread(zenodo_id, "unfound"))
   }
 
   rec <- tryCatch(
@@ -221,9 +262,13 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
     error = \(e) NULL
   )
   if (is.null(rec)) {
-    obj$error <- "parse_error"
-    return(obj)
+    return(.zenodo_unread(zenodo_id, "parse_error"))
   }
+
+  # set up return table
+  obj <- data.frame(
+    zenodo_id = zenodo_id
+  )
 
   metadata <- rec$metadata
 

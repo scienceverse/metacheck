@@ -739,11 +739,21 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # zenodo_info() already fetches doi/license as part of its normal
       # dataset-record lookup (see archive-zenodo.R) -- this is a plain
       # extraction of columns already in memory, not a new API call.
+      #
+      # .col_chr(), not a bare as.character(). A paper whose every Zenodo
+      # record came back unreadable had no doi/license columns at all, and
+      # as.character(NULL) is character(0) -- a zero-length column beside the
+      # n-row repo_url column, which data.frame() rejects with "arguments
+      # imply differing number of rows: n, 0". That aborted this whole block
+      # and flagged every Zenodo URL on the paper. .zenodo_unread() in
+      # archive-zenodo.R now guarantees those columns are present, but the
+      # guard belongs here too: extracting the metadata never needs the
+      # record to have been readable.
       if (nrow(.zenodo_info) > 0) {
         zenodo_meta_df <- data.frame(
-          repo_url = as.character(.zenodo_info$zenodo_url),
-          doi = as.character(.zenodo_info$doi),
-          license = as.character(.zenodo_info$license)
+          repo_url = .col_chr(.zenodo_info, "zenodo_url"),
+          doi = .col_chr(.zenodo_info, "doi"),
+          license = .col_chr(.zenodo_info, "license")
         )
       }
 

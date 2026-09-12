@@ -70,6 +70,107 @@ test_that(".zenodo_info", {
 }, "mock")
 
 
+# Regression: a record that cannot be read used to come back as a frame with
+# only `zenodo_id` (+ `error`). Nothing in the Zenodo path needs a record to
+# have been readable, so the schema must not depend on how the API answered.
+test_that(".zenodo_info keeps its schema when a record cannot be read", {
+  full <- c("zenodo_id", "title", "doi", "description", "publication_date",
+            "updated_date", "creators", "keywords", "resource_type", "journal",
+            "owners", "license", "downloads", "unique_downloads", "views",
+            "files", "error")
+
+  # with_mocked_bindings(), not local_mocked_bindings(): this repo's custom
+  # test_that() wrapper (helper.R) calls testthat::test_that(desc, code) with
+  # `code` already a promise, and local_mocked_bindings()'s deferred, frame-
+  # based teardown does not reliably fire at the end of a block evaluated
+  # that way -- confirmed directly (a minimal repro leaked an unrelated mock
+  # into the NEXT test_that() the same way). with_mocked_bindings() evaluates
+  # its code argument immediately under dynamic scoping instead of deferring
+  # cleanup, so it does not depend on that frame resolution at all.
+
+  # non-200: Zenodo had nothing for us (or was throttling us into a non-200)
+  unread <- testthat::with_mocked_bindings(
+    suppressWarnings(.zenodo_info("5498371")),
+    .batch_query = function(...) list(httr2::response(status_code = 404L))
+  )
+  expect_equal(nrow(unread), 1)
+  expect_setequal(names(unread), full)
+  expect_equal(unread$error, "unfound")
+  # every column is exactly one row -- the property the callers rely on
+  expect_true(all(vapply(unread, length, integer(1)) == 1))
+
+  # 200 with a body that will not parse
+  bad <- testthat::with_mocked_bindings(
+    suppressWarnings(.zenodo_info("5498371")),
+    .batch_query = function(...) list(
+      httr2::response(status_code = 200L, body = charToRaw("not json")))
+  )
+  expect_setequal(names(bad), full)
+  expect_equal(bad$error, "parse_error")
+  expect_true(all(vapply(bad, length, integer(1)) == 1))
+})
+
+
+# Regression for the actual corpus failure. repo_check()'s Zenodo block builds
+# its repo_metadata straight out of these columns; with only unreadable records
+# there were no doi/license columns, so `as.character(NULL)` was character(0)
+# beside the n-row repo_url column and data.frame() threw
+# "arguments imply differing number of rows: n, 0".
+test_that("zenodo_info keeps doi/license when every record is unreadable", {
+  # Deliberately NOT going through zenodo_info()/local_mocked_bindings() here
+  # (see the note above on why local_mocked_bindings() is unsafe in this
+  # file). This exercises the exact shape that used to crash directly: two
+  # .zenodo_unread() rows (what .zenodo_info() returns for a record it
+  # cannot read) fed through zenodo_info()'s own row-binding/join, with no
+  # network mocking at all.
+  unread <- dplyr::bind_rows(
+    .zenodo_unread("5498371", "unfound"),
+    .zenodo_unread("5498372", "unfound")
+  )
+  table <- data.frame(
+    zenodo_url = c("https://doi.org/10.5281/zenodo.5498371",
+                   "https://doi.org/10.5281/zenodo.5498372"),
+    stringsAsFactors = FALSE
+  )
+  ids <- data.frame(
+    zenodo_url = table$zenodo_url,
+    zenodo_id = c("5498371", "5498372")
+  )
+  zi <- table |>
+    dplyr::left_join(ids, by = "zenodo_url") |>
+    dplyr::left_join(unread, by = "zenodo_id", suffix = c("", ".zenodo"))
+
+  expect_equal(nrow(zi), 2)
+  expect_equal(length(.col_chr(zi, "doi")), nrow(zi))
+  expect_equal(length(.col_chr(zi, "license")), nrow(zi))
+  # the verbatim old expression, which used to throw
+  expect_no_error(data.frame(repo_url = as.character(zi$zenodo_url),
+                             doi = as.character(zi$doi),
+                             license = as.character(zi$license)))
+})
+
+
+test_that(".col_chr always returns one value per row", {
+  expect_true(is.function(metacheck:::.col_chr))
+
+  df <- data.frame(a = 1:2)
+  expect_equal(.col_chr(df, "a"), c("1", "2"))
+  # absent column -> default, not character(0)
+  expect_equal(.col_chr(df, "absent"), c(NA_character_, NA_character_))
+  expect_equal(.col_chr(df, "absent", "x"), c("x", "x"))
+  # length-1 column recycles
+  df$one <- "only"
+  expect_equal(.col_chr(df, "one"), c("only", "only"))
+  # a list column as.character() can flatten is used as is...
+  df$lst <- I(list("a", "b"))
+  expect_equal(.col_chr(df, "lst"), c("a", "b"))
+  # ...and one it cannot is treated as no value, not an error
+  df$bad <- I(list(character(0), character(0)))
+  expect_equal(.col_chr(df, "bad"), c(NA_character_, NA_character_))
+  # empty frame stays empty
+  expect_equal(.col_chr(df[0, , drop = FALSE], "a"), character(0))
+})
+
 
 test_that("zenodo_info", {
   expect_true(is.function(metacheck::zenodo_info))

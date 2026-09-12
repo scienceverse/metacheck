@@ -32,6 +32,44 @@
 # the only pacing they have. Making it conditional on throttle_capacity would
 # silently change delay's effect for any future caller that sets both, which
 # is a worse trade than the redundancy it would remove.
+# One column of a data frame, coerced to character and guaranteed to be
+# `nrow(df)` long.
+#
+# `as.character(NULL)` is `character(0)`, so a column that is absent silently
+# becomes a zero-length vector. Building a data.frame() with that alongside an
+# n-row column then throws "arguments imply differing number of rows: n, 0",
+# which is a crash several steps away from the shape that caused it -- exactly
+# what a real corpus run recorded for Zenodo (see .zenodo_unread() in
+# archive-zenodo.R for the trigger), so callers extracting optional columns
+# should go through this rather than calling as.character() on the column
+# directly.
+.col_chr <- function(df, col, default = NA_character_) {
+  n <- nrow(df)
+  if (n == 0) return(character(0))
+
+  x <- df[[col]]
+  if (is.null(x)) return(rep_len(default, n))
+
+  # A plain atomic column: as.character() on the whole vector at once is safe
+  # and cheap, and its length already has to equal n (data.frame() enforces
+  # this for every column it holds).
+  if (!is.list(x)) return(as.character(x))
+
+  # A list column (e.g. `license = list(NULL)`, `list(character(0))`, ...) has
+  # to be coerced ELEMENT BY ELEMENT: as.character() on the list as a whole
+  # does not error on an element it cannot sensibly flatten to one string --
+  # e.g. as.character(list(character(0))) returns the literal TEXT
+  # "character(0)", the same length as a genuinely one-per-row column, so a
+  # length check alone cannot tell the two apart. Only an element that is
+  # itself already length 1 (after coercion) is a usable single value;
+  # anything else (NULL, length 0, length > 1) means "no usable value" here.
+  vapply(x, function(el) {
+    if (is.null(el) || length(el) != 1) return(default)
+    val <- tryCatch(as.character(el), error = \(e) NULL)
+    if (is.null(val) || length(val) != 1) default else val
+  }, character(1))
+}
+
 #' Batch query
 #'
 #' @param urls A vector of URLs
