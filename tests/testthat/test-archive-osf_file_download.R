@@ -85,23 +85,6 @@ test_that("too small max_download_size", {
 }, "mock")
 
 test_that("osf_file_download zip keep archive", {
-  # BLOCKED (not fixed): fails on reproducibility_fixes (and its merge into
-  # dev) with "archive download failed (`key` must be an environment or
-  # external pointer)" -- confirmed reproducible in isolation (this file
-  # alone) and against a clean checkout of dev, where this same test passes.
-  # This test's req_perform mock returns a hand-built
-  # structure(list(...), class = "httr2_response") rather than a real
-  # httr2::response() -- real httr2 internals apparently now expect a live
-  # object (an environment/external pointer) somewhere in that structure
-  # that this fake one does not carry. Not tracked down further: the error
-  # is thrown from inside httr2's own C/internal code, and reproducing it
-  # requires stepping through installed-package internals rather than this
-  # package's own source, which was judged not worth the time for a
-  # mocking-shape issue in one test file. Skipping rather than deleting, so
-  # this is visible and re-checked next time httr2 (or this test's mock) is
-  # touched, rather than silently losing coverage.
-  skip("known-broken mock: real req_perform()/resp_* now reject this test's hand-built httr2_response structure (\"key must be an environment or external pointer\"); not tracked down, see comment above")
-
   osf_cache_clear()
   withr::defer(osf_cache_clear())
 
@@ -184,10 +167,6 @@ test_that("osf_file_download zip keep archive", {
 }, "none")
 
 test_that("osf_file_download zip unzip preserves structure", {
-  # BLOCKED (not fixed): same cause as "osf_file_download zip keep archive"
-  # above -- see that test's comment.
-  skip("known-broken mock: real req_perform()/resp_* now reject this test's hand-built httr2_response structure (\"key must be an environment or external pointer\"); not tracked down, see \"osf_file_download zip keep archive\"'s comment")
-
   osf_cache_clear()
   withr::defer(osf_cache_clear())
 
@@ -269,10 +248,6 @@ test_that("osf_file_download zip unzip preserves structure", {
 }, "none")
 
 test_that("osf_file_download zip unzip can flatten structure", {
-  # BLOCKED (not fixed): same cause as "osf_file_download zip keep archive"
-  # above -- see that test's comment.
-  skip("known-broken mock: real req_perform()/resp_* now reject this test's hand-built httr2_response structure (\"key must be an environment or external pointer\"); not tracked down, see \"osf_file_download zip keep archive\"'s comment")
-
   osf_cache_clear()
   withr::defer(osf_cache_clear())
 
