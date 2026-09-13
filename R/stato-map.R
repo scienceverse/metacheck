@@ -729,7 +729,16 @@
   "sersq"                   = "STATO:0000037"
 )
 
-# -- call-aware disambiguation (R output) -------------------------------------
+# Sphericity-correction suffixes jamovi appends to repeated-measures ANOVA
+# columns: f[gg] / p[hf] / df[none] are still an F, a p and a df — the bracket
+# names WHICH correction was applied (Greenhouse-Geisser, Huynh-Feldt, none),
+# which is a property of how the value was computed, not a different quantity.
+# Stripping the suffix before lookup types the whole family from the existing
+# entries instead of needing one entry per statistic per correction.
+# Also covers jamovi's test-variant suffixes (stat[stud] = Student's).
+.stato_strip_variant <- function(key) sub("\\[[^]]*\\]$", "", key)
+
+# ── call-aware disambiguation (R output) ─────────────────────────────────────
 # For executed R code we know EXACTLY which function produced each printed
 # block (read_r_output() carries it as `call_fn`, recovered from the echoed
 # statement). That resolves the statistic letters an htest printout leaves

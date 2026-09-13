@@ -623,11 +623,11 @@ export_mplus_html <- function(path, out = NULL) {
       tb <- tables[[i]]
       heading <- ""
       if (!identical(tb$analysis, last_section)) {
-        heading <- sprintf("<h3>%s</h3>", .stat_html_escape(tb$analysis))
+        heading <- sprintf("<h3>%s</h3>", .spv_html_escape(tb$analysis))
         last_section <- tb$analysis
       }
       title <- if (!identical(tb$title, tb$analysis) && !is.na(tb$title %||% NA))
-        sprintf("<h4>%s</h4>", .stat_html_escape(tb$title)) else ""
+        sprintf("<h4>%s</h4>", .spv_html_escape(tb$title)) else ""
       sections[[i]] <- paste0(heading, title, .spv_table_html(tb$data))
     }
     paste(unlist(sections), collapse = "\n")
@@ -644,7 +644,7 @@ export_mplus_html <- function(path, out = NULL) {
     "th { background: #f0f0f0; text-align: center; }\n",
     "td:first-child, th:first-child { text-align: left; }\n",
     "</style>\n</head>\n<body>\n<h1>%s</h1>\n%s\n</body>\n</html>\n"),
-    .stat_html_escape(basename(path)), .stat_html_escape(basename(path)), body)
+    .spv_html_escape(basename(path)), .spv_html_escape(basename(path)), body)
 
   writeLines(html, out, useBytes = TRUE)
   invisible(out)

@@ -143,6 +143,19 @@ read_stat_tables <- function(path) {
   Filter(Negate(is.null), out)
 }
 
+# A stored number -> the character form the rest of the pipeline works in.
+# Deliberately lets R choose fixed vs scientific notation (`format()`'s default,
+# via as.character()): forcing scientific = FALSE turns a p-value like 6.58e-72
+# into seventy zeros and a digit, which is unreadable and defeats the numeric
+# re-parse downstream. 15 significant digits keeps full double precision without
+# printing float noise.
+.stat_num_to_chr <- function(v) {
+  if (!is.finite(v)) return(as.character(v))       # Inf / NaN keep their names
+  if (v == round(v) && abs(v) < 1e15)
+    return(format(v, scientific = FALSE, trim = TRUE))   # whole numbers: 113 not 1.13e2
+  format(v, digits = 15, trim = TRUE)
+}
+
 # Strip JASP's internal column-name encoding. JASP mangles the user's variable
 # names into result-column names as
 # "JaspColumn_.21._Encoded_pearson_p.value", where only the trailing part after

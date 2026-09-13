@@ -432,7 +432,7 @@ export_stata_smcl_html <- function(path, out = NULL) {
       tb <- tables[[i]]
       heading <- ""
       if (!identical(tb$analysis, last_cmd)) {
-        heading <- sprintf("<h3><code>%s</code></h3>", .stat_html_escape(tb$analysis))
+        heading <- sprintf("<h3><code>%s</code></h3>", .spv_html_escape(tb$analysis))
         last_cmd <- tb$analysis
       }
       sections[[i]] <- paste0(heading, .spv_table_html(tb$data))
@@ -451,7 +451,7 @@ export_stata_smcl_html <- function(path, out = NULL) {
     "th { background: #f0f0f0; text-align: center; }\n",
     "td:first-child, th:first-child { text-align: left; }\n",
     "</style>\n</head>\n<body>\n<h1>%s</h1>\n%s\n</body>\n</html>\n"),
-    .stat_html_escape(basename(path)), .stat_html_escape(basename(path)), body)
+    .spv_html_escape(basename(path)), .spv_html_escape(basename(path)), body)
 
   writeLines(html, out, useBytes = TRUE)
   invisible(out)

@@ -1,0 +1,1 @@
+print(some_var_no_script_defines)
