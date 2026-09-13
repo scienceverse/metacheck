@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.2.1
-Date: 2026-08-14
+Version: 0.3.0
+Date: 2026-09-13
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",

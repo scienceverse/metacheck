@@ -1,3 +1,16 @@
+# metacheck 0.3.0
+
+* New `reproducibility_check` module: assesses whether a paper's code can run on its data. Static analysis (dependencies, run order, missing inputs, undefined symbols with a same-file source suggestion) always runs; `execute = TRUE` additionally runs the code in an isolated `callr` subprocess or a locked-down Docker container, and matches its console output against the paper's own reported statistics
+* New `psychds_check` module
+* New repository platforms: GitLab (with licence/DOI metadata), Mendeley Data, DataONE, the Finnish Social Science Data Archive (FSD), and many more Dataverse/Figshare/DSpace installations; `repo_check` also now lists what a Zenodo/Dryad zip archive contains without downloading it (`zip_peek()`), and excludes R package source trees (DESCRIPTION/NAMESPACE/R/man/tests) from a repository's data/code listing
+* Dryad: OAuth2 client-credentials authentication, a real byte cap during zip streaming, quota-aware zip-vs-file-by-file downloading, and a raised zip-vs-file threshold
+* Rate-limit handling rewritten: a 429 with a confirmed `RateLimit-Reset`/`X-RateLimit-Reset` header (Dryad, Zenodo, GitHub, GitLab) now waits for the host's own stated reset instead of blind exponential backoff, and repeated requests to an already-rate-limited host reuse that reset instead of each independently rediscovering it. New `skip_on_api_limit` parameter on `data_check()`/`code_check()` to give up immediately instead of waiting. Rate-limit messages now name the host
+* `download_repo_files()` and friends: a per-repository file-count cap and request timeout, per-paper download manifests, an optional on-disk cache for `repo_check`'s own listing/API calls, and `max_file_size`/`max_download_size` caps now also apply to archive-member downloads
+* `code_check`: flags `install.packages()` calls, classifies genomic sequence files (FASTA/FASTQ) as data, reads code out of more output formats, and several crash/false-positive fixes found during corpus validation (including a crash when every file in a batch fails to download, and empty-file/`setwd()`-string-literal blindness in `code_read()`)
+* `data_check`: fixed a crash and wasted work in date/datetime column classification, and a crash on a paper with no readable tabular data
+* LLM: new `llm_timeout()` bounds a stuck/overloaded local model call instead of hanging indefinitely; `llm_model_list()` switched from a blocklist to an allowlist of providers; new opt-in `capture_reasoning` argument to `llm()`
+* Fixed a `repo_check`/`data_check`/`code_check` per-paper `summary_table` aggregation bug that could silently reuse a corpus-wide count across every paper's row, or collapse it to a single paper, when a module ran on a paperlist
+
 # metacheck 0.2.1
 
 * New `report_repository()` creates a report for a folder of files on your own computer, with no manuscript needed: give it a path and it runs `repo_check`, `code_check`, `data_check` and `codebook_check` and writes a report named after the folder
