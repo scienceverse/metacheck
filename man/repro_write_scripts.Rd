@@ -4,7 +4,13 @@
 \alias{repro_write_scripts}
 \title{Write path-rewritten scripts into the materialised layout}
 \usage{
-repro_write_scripts(code_text_list, rewrite_list, plan, root)
+repro_write_scripts(
+  code_text_list,
+  rewrite_list,
+  plan,
+  root,
+  inject_libs = NULL
+)
 }
 \arguments{
 \item{code_text_list}{named list of per-file code text (names are file_names)}
@@ -14,16 +20,28 @@ repro_write_scripts(code_text_list, rewrite_list, plan, root)
 \item{plan}{the \code{psychds_check} table (to find each script's own target_path)}
 
 \item{root}{the materialised layout root}
+
+\item{inject_libs}{optional named character vector/list (names are
+\code{file_name}s already present in \code{code_text_list}) — a package name to
+inject as a \verb{library(<pkg>)} call at the very top of that script's text
+before it is written. Used by the module's corrective re-run for a
+\verb{could not find function "X"} error resolved to exactly one package that
+exports \code{X} (see the module's own missing-\code{library()} corrective step) —
+reusing this function's existing text-rewrite plumbing rather than a
+separate rewrite path. \code{NULL} (default) injects nothing, unchanged from
+before this parameter existed.}
 }
 \value{
 a data frame with \code{file_name}, \code{script_path} (absolute path written),
 \code{run_dir} (the working directory a run should use — always \code{root}),
 \code{setwd_removed} (count of \code{setwd()} lines commented out),
-\code{setwd_paths} (comma-joined paths those calls named, for the warning), and
+\code{setwd_paths} (comma-joined paths those calls named, for the warning),
 \code{family_replaced} (count of \verb{family =}/\verb{base_family =} named-font
 arguments replaced with \code{"sans"}, so a plot call does not fail with
 "invalid font type" for a font not registered on the machine running the
-sandbox).
+sandbox), \code{family_detail} (semicolon-joined \verb{<old> -> "sans"} text for
+each replacement), and \code{library_injected} (the package name injected via
+\code{inject_libs} for that file, or \code{NA} when none was).
 }
 \description{
 Each script's referenced data paths are rewritten to their Psych-DS target

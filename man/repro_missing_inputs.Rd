@@ -20,7 +20,9 @@ file_location + file_size)}
 }
 \value{
 a data frame with \code{basename}, \code{status} (one of \code{in_repo_not_downloaded},
-\code{withheld_size}, \code{absent}), and \code{detail} (a human-readable reason).
+\code{withheld_size}, \code{absent}), \code{detail} (a human-readable reason), and
+\code{similar_to} (a candidate near-match basename from the repository's file
+list, or \code{NA} — only ever set for \code{absent} rows; see below).
 }
 \description{
 When a script reads a file that is not present, the reason matters: a file

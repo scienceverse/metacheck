@@ -29,9 +29,10 @@ source)}
 a data frame with \code{package}, \code{source}, \code{installed} (logical),
 \code{message} (error text on failure, else ""), \code{via_archive} (always FALSE
 — the CRAN Archive retry \code{\link[=repro_install_deps]{repro_install_deps()}} does is not duplicated
-here; a package unavailable on live CRAN is simply recorded as failed) —
-same columns as \code{\link[=repro_install_deps]{repro_install_deps()}} so callers do not need to branch
-on which backend ran.
+here; a package unavailable on live CRAN is simply recorded as failed),
+and \code{category} (see \code{\link[=.repro_classify_install_message]{.repro_classify_install_message()}}; \code{NA} for a
+successful install) — same columns as \code{\link[=repro_install_deps]{repro_install_deps()}} so callers
+do not need to branch on which backend ran.
 }
 \description{
 The Docker-backed twin of \code{\link[=repro_install_deps]{repro_install_deps()}}: same return contract,

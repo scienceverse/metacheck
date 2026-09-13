@@ -13,10 +13,10 @@ of such vectors (one per file) to pool across files}
 \item{lang}{the language (only R declares installable packages here)}
 }
 \value{
-a data frame with columns \code{package}, \code{source} (\code{cran}, \code{github},
-\code{url}, or \code{base}), \code{ref} (the source path/ref for github/url, else NA), and
-\code{base} (logical, TRUE for a base/recommended package). One row per distinct
-package. Empty frame (same columns) when none are found.
+a data frame with columns \code{package}, \code{source} (\code{cran}, \code{bioc},
+\code{github}, \code{url}, or \code{base}), \code{ref} (the source path/ref for github/url,
+else NA), and \code{base} (logical, TRUE for a base/recommended package). One
+row per distinct package. Empty frame (same columns) when none are found.
 }
 \description{
 Walks each code file with \code{\link[=code_library_names]{code_library_names()}} and returns the distinct

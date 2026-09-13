@@ -71,6 +71,20 @@ test_that("repro_dependencies returns an empty frame for non-R / empty input", {
   expect_equal(nrow(repro_dependencies(character(0))), 0)
 })
 
+test_that("repro_dependencies classifies a Bioconductor package as source 'bioc'", {
+  deps <- repro_dependencies(c("library(edgeR)", "library(dplyr)"))
+  expect_equal(deps$source[deps$package == "edgeR"], "bioc")
+  expect_equal(deps$source[deps$package == "dplyr"], "cran")
+  expect_false(deps$base[deps$package == "edgeR"])
+})
+
+test_that("repro_dependencies keeps a github source for a Bioconductor package explicitly named that way", {
+  code <- c("library(edgeR)",
+           "remotes::install_github('Bioconductor/edgeR')")
+  deps <- repro_dependencies(code)
+  expect_equal(deps$source[deps$package == "edgeR"], "github")
+})
+
 
 # repro_rewrite_paths() ----
 
@@ -304,6 +318,40 @@ test_that("repro_run_order honours extra_edges (e.g. an undefined-variable corre
   expect_lt(ord[["b.R"]], ord[["a.R"]])
 })
 
+test_that("repro_run_order fuzzy-matches a renumbered/reworded source() target", {
+  # "001 - data prep.R" (sourced) vs the actual file "103 - Data Prep.R" -- an
+  # exact basename match finds nothing, but both normalise to "dataprep".
+  files <- data.frame(file_name = c("201 - Analysis.R", "103 - Data Prep.R"))
+  files$reads   <- list(character(0), character(0))
+  files$writes  <- list(character(0), character(0))
+  files$sources <- list("001 - data prep.R", character(0))
+  out <- repro_run_order(files)
+  ord <- stats::setNames(out$order, out$file_name)
+  expect_lt(ord[["103 - Data Prep.R"]], ord[["201 - Analysis.R"]])
+  fuzzy <- attr(out, "fuzzy_sources")
+  expect_equal(nrow(fuzzy), 1)
+  expect_equal(fuzzy$from, "103 - Data Prep.R")
+  expect_equal(fuzzy$to, "201 - Analysis.R")
+})
+
+test_that("repro_run_order does not fuzzy-match when an exact basename hit already exists", {
+  files <- data.frame(file_name = c("main.R", "helper.R"))
+  files$reads   <- list(character(0), character(0))
+  files$writes  <- list(character(0), character(0))
+  files$sources <- list("helper.R", character(0))
+  out <- repro_run_order(files)
+  expect_equal(nrow(attr(out, "fuzzy_sources")), 0)
+})
+
+test_that("repro_run_order leaves an ambiguous fuzzy source() match unresolved", {
+  files <- data.frame(file_name = c("main.R", "01_prep.R", "02_prep.R"))
+  files$reads   <- list(character(0), character(0), character(0))
+  files$writes  <- list(character(0), character(0), character(0))
+  files$sources <- list("00_prep.R", character(0), character(0))
+  out <- repro_run_order(files)
+  expect_equal(nrow(attr(out, "fuzzy_sources")), 0)
+})
+
 
 # repro_file_io() ----
 
@@ -378,6 +426,74 @@ test_that("repro_missing_inputs excludes a file that is present and downloaded",
 test_that("repro_missing_inputs returns an empty frame for no refs", {
   out <- repro_missing_inputs(character(0), plan = NULL, structure_df = NULL)
   expect_equal(nrow(out), 0)
+})
+
+
+# .repro_content_sniff() ----
+
+test_that(".repro_content_sniff detects a JSON dump spanning the whole file", {
+  code <- c('{"x":{"material":"phong","data":[1,2,3]}}')
+  expect_equal(.repro_content_sniff(code), "JSON")
+})
+
+test_that(".repro_content_sniff detects an HTML doctype", {
+  code <- c("<!DOCTYPE html>", "<html><body>hi</body></html>")
+  expect_equal(.repro_content_sniff(code), "HTML")
+})
+
+test_that(".repro_content_sniff detects an XML declaration", {
+  code <- c('<?xml version="1.0"?>', "<root></root>")
+  expect_equal(.repro_content_sniff(code), "XML")
+})
+
+test_that(".repro_content_sniff leaves real R code alone, even one starting with '{'", {
+  code <- c("{", "  x <- 1", "  y <- 2", "}", "print(x + y)")
+  expect_true(is.na(.repro_content_sniff(code)))
+})
+
+test_that(".repro_content_sniff returns NA for empty input", {
+  expect_true(is.na(.repro_content_sniff(character(0))))
+  expect_true(is.na(.repro_content_sniff(NULL)))
+})
+
+
+# .repro_is_jags_model() ----
+
+test_that(".repro_is_jags_model detects a model{} block as the first content", {
+  code <- c("model {", "  psi ~ dlogis(0, 1)", "}")
+  expect_true(.repro_is_jags_model(code))
+})
+
+test_that(".repro_is_jags_model detects a jags_script/ path component", {
+  expect_true(.repro_is_jags_model("x <- 1", file_name = "study1/jags_script/conditional_model.R"))
+})
+
+test_that(".repro_is_jags_model detects a calling reference in another file's code", {
+  jags_code <- c("psi ~ dlogis(0,1)")   # does NOT start with model{ itself
+  other <- list(c('m <- rjags::jags.model(file = "model_def.R", data = d)'))
+  expect_true(.repro_is_jags_model(jags_code, file_name = "model_def.R",
+                                   other_code_text = other))
+})
+
+test_that(".repro_is_jags_model is FALSE for ordinary R code", {
+  expect_false(.repro_is_jags_model(c("x <- 1", "y <- 2"), file_name = "analysis.R"))
+})
+
+
+# .repro_find_export_pkg() ----
+
+test_that(".repro_find_export_pkg resolves a name exported by exactly one candidate", {
+  pkg <- .repro_find_export_pkg("test_that", c("testthat", "dplyr"))
+  expect_equal(pkg, "testthat")
+})
+
+test_that(".repro_find_export_pkg returns NA when no candidate exports the name", {
+  pkg <- .repro_find_export_pkg("not_a_real_exported_name_xyz", c("testthat", "dplyr"))
+  expect_true(is.na(pkg))
+})
+
+test_that(".repro_find_export_pkg returns NA for empty candidates", {
+  expect_true(is.na(.repro_find_export_pkg("test_that", character(0))))
 })
 
 
@@ -504,6 +620,37 @@ test_that("repro_write_scripts places a script with no plan target at the tree r
   root <- withr::local_tempdir()
   out <- repro_write_scripts(code_list, rewrite_list, plan = NULL, root)
   expect_equal(out$script_path, file.path(root, "orphan.R"))
+})
+
+test_that("repro_write_scripts injects a library() call at the top when asked", {
+  code_list <- list("uses_testthat.R" = c('test_that("x", { expect_true(TRUE) })'))
+  rewrite_list <- list("uses_testthat.R" = data.frame(
+    ref = character(0), basename = character(0), matched = logical(0),
+    target = character(0), ambiguous = logical(0), n_candidates = integer(0),
+    is_call = logical(0)))
+  plan <- data.frame(file_name = "uses_testthat.R", target_path = "uses_testthat.R")
+  root <- withr::local_tempdir()
+  out <- repro_write_scripts(code_list, rewrite_list, plan, root,
+                             inject_libs = c(uses_testthat.R = "testthat"))
+
+  expect_equal(out$library_injected, "testthat")
+  written <- readLines(out$script_path[1])
+  expect_match(written[1], "^library\\(testthat\\)")
+})
+
+test_that("repro_write_scripts injects nothing for a file not named in inject_libs", {
+  code_list <- list("plain.R" = "x <- 1")
+  rewrite_list <- list("plain.R" = data.frame(
+    ref = character(0), basename = character(0), matched = logical(0),
+    target = character(0), ambiguous = logical(0), n_candidates = integer(0),
+    is_call = logical(0)))
+  plan <- data.frame(file_name = "plain.R", target_path = "plain.R")
+  root <- withr::local_tempdir()
+  out <- repro_write_scripts(code_list, rewrite_list, plan, root,
+                             inject_libs = c(other.R = "testthat"))
+  expect_true(is.na(out$library_injected))
+  written <- readLines(out$script_path[1])
+  expect_false(any(grepl("^library\\(", written)))
 })
 
 
