@@ -64,10 +64,16 @@ code_check <- function(paper, local_path = NULL,
     get_prev_outputs("data_check", "structure") %||%
       get_prev_outputs("repo_check", "table") else NULL
   if (is.null(all_files)) {
+    # cache forwarded from this call's own `cache` argument: without it,
+    # repo_check() falls back to its own default (cache = FALSE) regardless
+    # of what the caller asked for, and every repo listing (Dryad/Zenodo/OSF/
+    # ...) is re-queried from scratch on every restart -- exactly the
+    # repeated-listing quota exhaustion repo_info_cache()/cache.R's own docs
+    # describe (see metacheck#402-adjacent finding, same corpus rerun).
     if (!is.null(local_path)) {
-      mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only)
+      mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only, cache = cache)
     } else {
-      mo <- module_run(paper, "repo_check", local_only = local_only)
+      mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache)
     }
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
   }

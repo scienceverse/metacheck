@@ -174,6 +174,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   peek_zips = FALSE,
                                   max_file_size = 100,
                                   max_download_size = 500,
+                                  skip_on_api_limit = FALSE,
                                   tables_dir = NULL) {
   # paper <- psychsci[[233]] # to test (many code files, several issues)
   sandbox <- match.arg(sandbox)
@@ -250,15 +251,23 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   run_missing <- function(mod) {
     # model / params only go to the modules that accept them (data_check,
     # psychds_check use the LLM for study grouping); code_check has no such
-    # arguments, so passing them would error with "unused arguments". Same
-    # reasoning for cache: only data_check/code_check download files.
+    # arguments, so passing them would error with "unused arguments".
+    # cache/skip_on_api_limit ALSO go to psychds_check: it is not itself a
+    # downloader, but its own fallback (get_prev_outputs("data_check", ...)
+    # is NULL here, since each run_missing() call is a standalone module_run()
+    # rather than a chained pipeline) calls module_run(paper, "data_check")
+    # again -- uncached and un-skip-aware if not told otherwise, silently
+    # re-fetching/re-listing everything the data_check call just above already
+    # paid for (confirmed live: this, not the direct data_check call, was
+    # what re-hit Dryad's rate limit even with cache/skip_on_api_limit set).
     args <- list(paper, mod, local_only = local_only)
     if (!is.null(local_path)) args$local_path <- local_path
     if (mod %in% c("data_check", "psychds_check")) {
       args$model <- model; args$params <- params
     }
-    if (mod %in% c("data_check", "code_check")) {
+    if (mod %in% c("data_check", "code_check", "psychds_check")) {
       args$cache <- cache
+      args$skip_on_api_limit <- skip_on_api_limit
     }
     if (mod == "data_check") {
       args$download <- download
@@ -1403,7 +1412,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # in <file>" even for a symbol that did not get an unambiguous reorder edge
     # (0 or >1 definers), and even after `run_results` is replaced by the
     # corrective re-run below.
-    definer_lookup <- character(0)
+    # A list, not character(0): `[[` on a named character vector throws
+    # "subscript out of bounds" for a missing key instead of returning NULL,
+    # which breaks the `definer_lookup[[key]] %||% ""` lookup below whenever
+    # a symbol has 0 or >1 definers (see metacheck#402).
+    definer_lookup <- list()
     # library() injections this pass decided on, file_name -> package — kept
     # around (not just applied) so the final report / `modifications` output
     # (see #391) can say what was injected and why, the same way

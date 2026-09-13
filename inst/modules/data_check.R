@@ -389,11 +389,19 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # these from file_name/file_path/data_type, so re-fetch rather than recompute.
   tree_naming_issues <- get_prev_outputs("repo_check", "naming_issues")
   if (is.null(all_files)) {
+    # cache forwarded from this call's own `cache` argument: without it,
+    # repo_check() falls back to its own default (cache = FALSE) regardless
+    # of what the caller asked for, and every repo listing (Dryad/Zenodo/OSF/
+    # ...) is re-queried from scratch on every restart -- exactly the
+    # repeated-listing quota exhaustion repo_info_cache()/cache.R's own docs
+    # describe (confirmed live again 2026-09-13: batch 1 of a fresh corpus
+    # rerun hit Dryad's 100/day zip quota despite cache = TRUE requested
+    # throughout the reproducibility_check -> data_check chain).
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path,
-                       local_only = local_only)
+                       local_only = local_only, cache = cache)
     } else {
-      mo <- module_run(paper, "repo_check", local_only = local_only)
+      mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache)
     }
     all_files <- mo$table %||% data.frame(
       file_name = character(0), repo_url = character(0),

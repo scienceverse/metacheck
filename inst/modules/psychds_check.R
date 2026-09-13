@@ -64,7 +64,9 @@
 #' @returns a list
 psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
                           model = llm_model(),
-                          params = list()) {
+                          params = list(),
+                          cache = FALSE,
+                          skip_on_api_limit = FALSE) {
 
   # DUPLICATED: this file is copied as-is into both the reproducibility_check
   # branch and the convert_psychds branch (neither can run without the plan
@@ -123,12 +125,25 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   columns_df   <- get_prev_outputs("data_check", "table")
   group_no_evidence <- get_prev_outputs("data_check", "group_no_evidence")
   if (is.null(structure_df)) {
+    # cache/skip_on_api_limit forwarded from this call's own arguments:
+    # get_prev_outputs("data_check", ...) is only populated when this module
+    # runs as part of the SAME report() chain that already ran data_check --
+    # a caller like reproducibility_check() that invokes each module via its
+    # own separate module_run() call (no chained pipeline object) always
+    # finds this NULL, so this fallback re-fetches the file listing/downloads
+    # from scratch on every call. Without forwarding, that redundant fetch
+    # silently ignored whatever cache/skip_on_api_limit the caller asked for
+    # (confirmed live: this is what still queried Dryad uncached, and waited
+    # out its rate limit instead of skipping, even after reproducibility_check
+    # -> data_check's OWN direct call was correctly configured).
     mo <- if (!is.null(local_path)) {
       module_run(paper, "data_check", local_path = local_path,
-                 local_only = local_only, model = model, params = params)
+                 local_only = local_only, model = model, params = params,
+                 cache = cache, skip_on_api_limit = skip_on_api_limit)
     } else {
       module_run(paper, "data_check", local_only = local_only,
-                 model = model, params = params)
+                 model = model, params = params,
+                 cache = cache, skip_on_api_limit = skip_on_api_limit)
     }
     structure_df <- mo$structure
     columns_df   <- mo$table
