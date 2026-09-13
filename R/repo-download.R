@@ -431,11 +431,28 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # (.storage_retry_after_factory()'s non-skip branch, and the zip path's own
 # equivalent spot), never from a place merely inspecting what would have
 # happened, so it never announces a wait that will not occur.
-.announce_rate_limit_wait <- function(wait) {
+#
+# `resp`/`host` are both optional (both call sites have one or the other in
+# scope, but keeping them optional avoids breaking any other caller): if
+# `host` is not given directly, it is read off `resp`'s own request URL --
+# httr2 has no resp_url_host() (confirmed against the installed version),
+# so resp_url() is parsed with url_parse() instead -- the zip-download call
+# site passes `host` directly instead of `resp` because it must close() its
+# response before this is called (see that call site), and resp_url() is
+# not guaranteed to work on an already-closed connection. Either way,
+# naming the host lets a user watching a long corpus run know WHICH host
+# (Zenodo, Dryad, GitHub, GitLab -- the only hosts that expose the
+# rate-limit headers .rate_limit_wait() reads) is the one currently
+# exhausted, rather than just "the host".
+.announce_rate_limit_wait <- function(wait, resp = NULL, host = NULL) {
   if (wait > 5) {
+    if (is.null(host) && !is.null(resp)) {
+      host <- tryCatch(httr2::url_parse(httr2::resp_url(resp))$hostname, error = \(e) NULL)
+    }
+    host_part <- if (!is.null(host)) sprintf(" from %s", host) else ""
     message(sprintf(
-      "Rate limit reached; waiting %s for the host's own reset before retrying (Ctrl+C to stop, or use skip_on_api_limit = TRUE to skip this file instead of waiting).",
-      .format_wait_duration(wait)))
+      "Rate limit reached%s; waiting %s for the host's own reset before retrying (Ctrl+C to stop, or use skip_on_api_limit = TRUE to skip this file instead of waiting).",
+      host_part, .format_wait_duration(wait)))
   }
 }
 
@@ -464,7 +481,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   function(resp) {
     if (isTRUE(skip_on_api_limit)) return(NA_real_)
     wait <- .rate_limit_wait(resp)
-    if (!is.na(wait)) .announce_rate_limit_wait(wait)
+    if (!is.na(wait)) .announce_rate_limit_wait(wait, resp)
     wait
   }
 }
@@ -821,9 +838,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     # RateLimit-* headers on this path as its per-file endpoint.
     if (httr2::resp_status(attempt_resp) == 429L) {
       wait <- .rate_limit_wait(attempt_resp)
+      # Read the host before close() -- parsing resp_url() needs the
+      # response's own request URL, which may not survive closing the
+      # connection.
+      host <- tryCatch(httr2::url_parse(httr2::resp_url(attempt_resp))$hostname,
+                       error = \(e) NULL)
       close(attempt_resp)
       if (!isTRUE(skip_on_api_limit) && attempt == 1 && !is.na(wait) && wait > 0) {
-        .announce_rate_limit_wait(wait)
+        .announce_rate_limit_wait(wait, host = host)
         Sys.sleep(wait)
         next
       }
