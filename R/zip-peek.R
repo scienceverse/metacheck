@@ -53,6 +53,14 @@
 .http_range_tail <- function(url, n, total = NULL) {
   tryCatch({
     if (is.null(total)) {
+      # See .wait_out_known_rate_limit()'s own comment (R/repo-download.R):
+      # this HEAD and the Range GET below it are two independent requests to
+      # the same host within one zip_peek() call -- checking the session's
+      # rate-limit record before EACH one means a host already known (from
+      # an earlier request, possibly for a different archive entirely) to be
+      # rate-limited waits out the remaining time up front, instead of both
+      # requests independently rediscovering the same 429.
+      .wait_out_known_rate_limit(url)
       h <- httr2::request(url) |> httr2::req_method("HEAD") |>
         .auth_for_url() |>
         httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
@@ -65,6 +73,7 @@
     }
     if (is.null(total) || is.na(total) || total <= 0) return(NULL)
     start <- max(0, total - n)
+    .wait_out_known_rate_limit(url)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", start, total - 1)) |>
       .auth_for_url() |>
@@ -101,6 +110,11 @@
 .http_range_bytes <- function(url, from, to) {
   tryCatch({
     if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) return(NULL)
+    # See .http_range_tail()'s own comment on this same call: check the
+    # session's rate-limit record before sending, so a host already known
+    # rate-limited (recorded by any earlier request this session, including
+    # a different archive/member) waits out the remaining time up front.
+    .wait_out_known_rate_limit(url)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
       .auth_for_url() |>

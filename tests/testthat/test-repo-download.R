@@ -803,6 +803,95 @@ test_that(".storage_retry_after_factory(skip_on_api_limit = TRUE) always returns
   expect_true(is.na(after_skip(resp)))
 })
 
+# .host_rate_limit_cache / .host_rate_limit_record / .host_rate_limit_remaining
+# / .wait_out_known_rate_limit: the shared session-level record of a
+# confirmed rate-limit reset per host, added so several independent
+# requests to the same freshly-throttled host (zip_peek()'s HEAD + Range
+# GET, or a later download_repo_files() call on the same archive) don't
+# each pay their own full wait rediscovering the same 429 -- see
+# repo-download.R's own comment on .host_rate_limit_cache for the confirmed
+# live case (2026-09-13 Cooper validation rerun) this fixes. Tests use a
+# fake, never-real hostname so they cannot collide with a real host's
+# record from another test or a real network call.
+test_that(".host_rate_limit_record / .host_rate_limit_remaining round-trip a wait", {
+  host <- "test-ratelimit-roundtrip.invalid"
+  metacheck:::.host_rate_limit_record(host, 5)
+  remaining <- metacheck:::.host_rate_limit_remaining(host)
+  expect_true(remaining > 4 && remaining <= 5)
+})
+
+test_that(".host_rate_limit_record keeps the LATER of two recorded resets, never moves it earlier", {
+  host <- "test-ratelimit-later-wins.invalid"
+  metacheck:::.host_rate_limit_record(host, 100)
+  metacheck:::.host_rate_limit_record(host, 1)  # a shorter wait must NOT shrink it
+  expect_true(metacheck:::.host_rate_limit_remaining(host) > 90)
+
+  metacheck:::.host_rate_limit_record(host, 200)  # a longer wait DOES extend it
+  expect_true(metacheck:::.host_rate_limit_remaining(host) > 190)
+})
+
+test_that(".host_rate_limit_remaining returns NA for a host with no recorded wait", {
+  expect_true(is.na(metacheck:::.host_rate_limit_remaining("test-ratelimit-unseen.invalid")))
+})
+
+test_that(".host_rate_limit_remaining clears and returns NA once the window has passed", {
+  host <- "test-ratelimit-expiring.invalid"
+  metacheck:::.host_rate_limit_record(host, 0.1)
+  Sys.sleep(0.15)
+  expect_true(is.na(metacheck:::.host_rate_limit_remaining(host)))
+  # cleared, not just expired-but-still-checked: a second read must also be NA
+  expect_true(is.na(metacheck:::.host_rate_limit_remaining(host)))
+})
+
+test_that(".wait_out_known_rate_limit sleeps out a known host's remaining wait", {
+  host <- "test-ratelimit-wait.invalid"
+  metacheck:::.host_rate_limit_record(host, 0.2)
+  t0 <- Sys.time()
+  result <- metacheck:::.wait_out_known_rate_limit(paste0("https://", host, "/x"))
+  elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+  expect_true(result)
+  expect_true(elapsed >= 0.15)  # actually slept, not a no-op
+})
+
+test_that(".wait_out_known_rate_limit returns TRUE immediately for a host with nothing recorded", {
+  t0 <- Sys.time()
+  result <- metacheck:::.wait_out_known_rate_limit("https://test-ratelimit-clean.invalid/x")
+  elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+  expect_true(result)
+  expect_true(elapsed < 0.1)  # no sleep
+})
+
+test_that(".wait_out_known_rate_limit(skip_on_api_limit = TRUE) returns FALSE without waiting", {
+  host <- "test-ratelimit-skip.invalid"
+  metacheck:::.host_rate_limit_record(host, 5)
+  t0 <- Sys.time()
+  result <- metacheck:::.wait_out_known_rate_limit(paste0("https://", host, "/x"),
+                                                    skip_on_api_limit = TRUE)
+  elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+  expect_false(result)
+  expect_true(elapsed < 0.1)  # gave up, did not wait the recorded 5s
+})
+
+test_that(".storage_retry_after_factory records the host's reset for later requests to reuse", {
+  host <- "test-ratelimit-factory-record.invalid"
+  future_reset <- as.character(round(as.numeric(Sys.time())) + 30)
+  resp <- httr2::response(
+    status_code = 429,
+    url = paste0("https://", host, "/api/x"),
+    headers = list("ratelimit-remaining" = "0", "ratelimit-reset" = future_reset),
+    body = raw(0)
+  )
+  after_wait <- metacheck:::.storage_retry_after_factory(FALSE)
+  suppressMessages(after_wait(resp))
+
+  # round(as.numeric(Sys.time())) can round UP to the next second, so the
+  # recorded wait can land fractionally over 30 -- generous bounds, not a
+  # tight one, since this checks "the host got recorded with roughly the
+  # right reset," not the exact float.
+  remaining <- metacheck:::.host_rate_limit_remaining(host)
+  expect_true(!is.na(remaining) && remaining > 25 && remaining <= 31)
+})
+
 test_that(".storage_is_transient_factory(skip_on_api_limit = TRUE) treats a confirmed-exhausted 429 as non-transient", {
   future_reset <- as.character(round(as.numeric(Sys.time())) + 900)
   exhausted_429 <- mk_ratelimit_resp("0", future_reset)

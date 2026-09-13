@@ -409,6 +409,66 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   if (is.na(wait) || wait < 0) 0 else wait
 }
 
+# Session-scoped, per-HOST record of the last confirmed rate-limit reset
+# time (a Unix timestamp, from .rate_limit_wait()'s reset_time -- see there
+# for which hosts populate this: Dryad, Zenodo, GitHub, GitLab). Environment,
+# not a plain variable, so every caller mutates the SAME store rather than a
+# local copy -- reset per R session, never persisted, since a rate-limit
+# window is only meaningful for the process that is actually being throttled
+# right now.
+#
+# WHY THIS EXISTS: a single zip_peek() call already makes two independent
+# requests (.http_range_tail()'s HEAD then its Range GET), and repo_check
+# calls zip_peek() once per archive plus download_repo_files() can call it
+# again later for the same archive's members (.zip_fetch_members(), see
+# zip-peek.R's own header comment on issue #384) -- each of those requests
+# has its own req_retry()/.storage_retry_after_factory(), so each one,
+# independently, has to receive a fresh 429 before it even LEARNS the host
+# is rate-limited, then pays the full announced wait for that discovery.
+# Confirmed live 2026-09-13 (Cooper validation rerun): one Zenodo archive
+# whose record needed several of these calls in the same repo_check() run
+# produced three consecutive ~40s "Rate limit reached" announcements back to
+# back, because each call discovered and waited out the SAME host-side
+# rate-limit window as if it were the first to hit it. Recording the reset
+# time here the first time it is learned lets every LATER call to the same
+# host skip straight to the (now shorter, or already-elapsed) remaining
+# wait instead of re-discovering it the slow way.
+.host_rate_limit_cache <- new.env(parent = emptyenv())
+
+# Record a confirmed rate-limit reset for `host`, IF `wait` is a real
+# (non-NA, non-negative-after-clamping) confirmed wait -- see
+# .rate_limit_wait(). Keeps the LATER of any existing recorded reset and
+# the new one: a still-later 429 on the same host (a new request that also
+# got rate-limited before the first wait finished) can only mean the window
+# extends at least that far, never less, so never move the stored reset
+# earlier.
+.host_rate_limit_record <- function(host, wait) {
+  if (is.null(host) || is.na(wait)) return(invisible(NULL))
+  reset_at <- as.numeric(Sys.time()) + wait
+  prev <- .host_rate_limit_cache[[host]]
+  if (is.null(prev) || reset_at > prev) {
+    .host_rate_limit_cache[[host]] <- reset_at
+  }
+  invisible(NULL)
+}
+
+# Seconds remaining until `host`'s last recorded rate-limit reset, or NA if
+# nothing is recorded for it or its window has already passed (a passed
+# window is cleared here too, so a stale entry cannot keep matching forever
+# and this stays a cheap single-lookup check for a host that was never
+# throttled, the overwhelmingly common case).
+.host_rate_limit_remaining <- function(host) {
+  if (is.null(host)) return(NA_real_)
+  reset_at <- .host_rate_limit_cache[[host]]
+  if (is.null(reset_at)) return(NA_real_)
+  remaining <- reset_at - as.numeric(Sys.time())
+  if (remaining <= 0) {
+    rm(list = host, envir = .host_rate_limit_cache)
+    return(NA_real_)
+  }
+  remaining
+}
+
 # "47s" / "12.3 min" / "1.4 hours" -- whichever unit keeps the number easy to
 # read at a glance, for the rate-limit wait message below.
 .format_wait_duration <- function(seconds) {
@@ -481,7 +541,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   function(resp) {
     if (isTRUE(skip_on_api_limit)) return(NA_real_)
     wait <- .rate_limit_wait(resp)
-    if (!is.na(wait)) .announce_rate_limit_wait(wait, resp)
+    if (!is.na(wait)) {
+      host <- tryCatch(httr2::url_parse(httr2::resp_url(resp))$hostname, error = \(e) NULL)
+      .host_rate_limit_record(host, wait)
+      .announce_rate_limit_wait(wait, resp)
+    }
     wait
   }
 }
@@ -506,6 +570,30 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     }
     TRUE
   }
+}
+
+# Call BEFORE sending a request to `url`, so a request to a host already
+# known (from .host_rate_limit_record(), above) to be rate-limited waits out
+# the REMAINING time up front instead of being sent only to come back 429
+# and rediscover a window this session already knows about. See
+# .host_rate_limit_cache's own comment for the motivating case (zip_peek()
+# making several independent requests to the same freshly-throttled Zenodo
+# host within one repo_check() call).
+#
+# `skip_on_api_limit` mirrors every other use of that name here: TRUE means
+# give up immediately (return FALSE, caller treats this like an
+# already-exhausted-bucket failure) rather than wait. Returns TRUE once it
+# is safe to proceed (either nothing was recorded for this host, its window
+# already passed, or the wait was honoured), FALSE only under
+# skip_on_api_limit.
+.wait_out_known_rate_limit <- function(url, skip_on_api_limit = FALSE) {
+  host <- tryCatch(httr2::url_parse(url)$hostname, error = \(e) NULL)
+  remaining <- .host_rate_limit_remaining(host)
+  if (is.na(remaining)) return(TRUE)
+  if (isTRUE(skip_on_api_limit)) return(FALSE)
+  .announce_rate_limit_wait(remaining, host = host)
+  Sys.sleep(remaining)
+  TRUE
 }
 
 # Download one file to `dest`. Returns NA_character_ on success, or a short
@@ -558,6 +646,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
                        backoff = .storage_backoff,
                        after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_progress()
+    # See .wait_out_known_rate_limit()'s own comment: a host this session
+    # already learned is rate-limited (from an earlier file's download, or
+    # from a zip_peek() call on the same archive) waits out the remaining
+    # time up front, rather than sending this request only to rediscover
+    # the same 429 and re-announce the same wait from scratch.
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) {
+      return("API rate limit exhausted: known rate-limited host, skip_on_api_limit")
+    }
     httr2::req_perform(req, path = dest)
     if (.is_login_page(dest)) {
       unlink(dest)
