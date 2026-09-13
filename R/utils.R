@@ -128,11 +128,32 @@
         # retry transient statuses and connection-level failures (timeouts,
         # dropped connections). retry_on_failure covers the latter, which a
         # status-only is_transient would otherwise miss.
+        #
+        # getOption("metacheck.skip_on_api_limit"): this LISTING path (every
+        # *_info()/*_links() call across archive-*.R -- Dryad, Zenodo, OSF,
+        # Dataverse, Figshare, Mendeley, DataONE, ReShare -- all share this one
+        # function) is completely separate from download_repo_files()'s own
+        # skip_on_api_limit parameter, and has no parameter of its own to
+        # thread one through from each of those ~10 call sites individually.
+        # A session-scoped option, set once by reproducibility_check() around
+        # its whole per-paper run (same temporary-override pattern already
+        # used here for llm_use()) and read here, gives every caller the same
+        # skip behaviour without a signature change fanning out across every
+        # archive backend. Confirmed live: without this, a NEW (not yet
+        # listing-cached) Dryad repository's plain dryad_info() lookup, made
+        # during repo_check() -- well before any file download -- blocked for
+        # 5+ hours on Dryad's daily quota reset even with skip_on_api_limit =
+        # TRUE requested throughout the reproducibility_check -> data_check ->
+        # download_repo_files() chain, because that chain never reaches this
+        # function at all.
         httr2::req_retry(
           max_tries = 5,
           retry_on_failure = TRUE,
           is_transient = \(resp) {
             status <- httr2::resp_status(resp)
+            if (isTRUE(getOption("metacheck.skip_on_api_limit", FALSE)) && status == 429L) {
+              return(FALSE)
+            }
             status %in% c(429, 500, 502, 503, 504)
           }
         ) |>

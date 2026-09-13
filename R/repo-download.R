@@ -538,6 +538,18 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # misleading. skip_on_api_limit here suppresses both the wait-worthy return
 # value and the message, matching what actually happens (nothing waits).
 .storage_retry_after_factory <- function(skip_on_api_limit = FALSE) {
+  # Fall back to the session-scoped option (see utils.R's .batch_query() for
+  # the same pattern/rationale) when the caller's own argument is FALSE: some
+  # callers of this factory -- zip_peek(), used by repo_check() to read a zip
+  # archive's file listing over HTTP without downloading it -- have no
+  # skip_on_api_limit parameter of their own to thread one through at all.
+  # Confirmed live: a zip_peek() Range request that hit a confirmed Dryad
+  # quota-exhausted 429 blocked for hours despite skip_on_api_limit = TRUE
+  # requested throughout the reproducibility_check -> data_check ->
+  # repo_check chain, because repo_check() has no way to pass it to zip_peek()
+  # and zip_peek() calls this factory with the argument at its default.
+  skip_on_api_limit <- isTRUE(skip_on_api_limit) ||
+    isTRUE(getOption("metacheck.skip_on_api_limit", FALSE))
   function(resp) {
     if (isTRUE(skip_on_api_limit)) return(NA_real_)
     wait <- .rate_limit_wait(resp)
@@ -562,6 +574,10 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # whole point is skipping a wait that is already known to be long and
 # certain, not giving up on an ordinary transient refusal.
 .storage_is_transient_factory <- function(skip_on_api_limit = FALSE) {
+  # Same session-option fallback as .storage_retry_after_factory() above --
+  # see its comment for why a caller-supplied argument alone is not enough.
+  skip_on_api_limit <- isTRUE(skip_on_api_limit) ||
+    isTRUE(getOption("metacheck.skip_on_api_limit", FALSE))
   function(resp) {
     if (!.storage_is_transient(resp)) return(FALSE)
     if (isTRUE(skip_on_api_limit) && httr2::resp_status(resp) == 429L) {
@@ -587,6 +603,11 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # already passed, or the wait was honoured), FALSE only under
 # skip_on_api_limit.
 .wait_out_known_rate_limit <- function(url, skip_on_api_limit = FALSE) {
+  # Session-option fallback -- see .storage_retry_after_factory()'s comment.
+  # zip_peek() (R/zip-peek.R) calls this with no skip_on_api_limit argument
+  # at all, so its own default (FALSE) would otherwise always win here.
+  skip_on_api_limit <- isTRUE(skip_on_api_limit) ||
+    isTRUE(getOption("metacheck.skip_on_api_limit", FALSE))
   host <- tryCatch(httr2::url_parse(url)$hostname, error = \(e) NULL)
   remaining <- .host_rate_limit_remaining(host)
   if (is.na(remaining)) return(TRUE)

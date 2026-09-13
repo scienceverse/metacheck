@@ -197,6 +197,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       stop("execute = TRUE with sandbox = \"docker\": ", docker_ok$msg, call. = FALSE)
   }
 
+  # Session-scoped, same temporary-override pattern as llm_use() below: every
+  # *_info()/*_links() listing call this run makes (repo_check, and anything
+  # data_check/code_check/psychds_check call in turn) shares ONE retry helper,
+  # .batch_query() (R/utils.R), which has no skip_on_api_limit parameter of
+  # its own and is not reachable by threading one through this function's own
+  # call chain alone. Setting the option here, once, for the whole paper,
+  # covers that path too instead of just download_repo_files()'s. Restored
+  # unconditionally on exit so it never leaks into the caller's session.
+  prev_skip_opt <- getOption("metacheck.skip_on_api_limit")
+  options(metacheck.skip_on_api_limit = skip_on_api_limit)
+  on.exit(options(metacheck.skip_on_api_limit = prev_skip_opt), add = TRUE)
+
   .pid <- function(...) {
     id <- paper_id(paper)
     for (df in list(...)) {
