@@ -285,6 +285,54 @@ test_that("repo_check keeps files when DESCRIPTION has no matching NAMESPACE", {
   expect_true("analysis.R" %in% mo$table$file_name)
 })
 
+test_that("repo_check keeps a root-level package's own files when it IS the deposit", {
+  # a study that shares its own data and analysis code packaged as an R
+  # package (e.g. a study-specific GitHub repo like wx-ecology/BaBA): only
+  # packaging scaffolding (.Rbuildignore, .Rproj, LICENSE, README) sits
+  # outside the package's R/, man/, data/ -- nothing data/code-shaped, so
+  # there is no "outside" for the study's content to live in and the
+  # exclusion must not strip the package's own real data/code.
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "R"))
+  dir.create(file.path(d, "man"))
+  dir.create(file.path(d, "data"))
+  writeLines("Package: mypkg\nVersion: 0.1.0", file.path(d, "DESCRIPTION"))
+  writeLines("export(foo)", file.path(d, "NAMESPACE"))
+  writeLines("foo <- function() 1", file.path(d, "R", "foo.R"))
+  writeLines("\\name{foo}", file.path(d, "man", "foo.Rd"))
+  save(list = "x", file = file.path(d, "data", "study_data.rda"), envir = list2env(list(x = 1)))
+  writeLines("", file.path(d, ".Rbuildignore"))
+  writeLines("MIT", file.path(d, "LICENSE"))
+  writeLines("# mypkg", file.path(d, "README.md"))
+
+  mo <- module_run(test_paper(), "repo_check", local_path = d)
+
+  expect_true("DESCRIPTION" %in% mo$table$file_name)
+  expect_true("NAMESPACE" %in% mo$table$file_name)
+  expect_true("foo.R" %in% mo$table$file_name)
+  expect_true("study_data.rda" %in% mo$table$file_name)
+})
+
+test_that("repo_check excludes a nested vendored package but keeps real sibling content", {
+  # a study's repo that bundles a vendored copy of someone else's general-
+  # purpose package (its own DESCRIPTION+NAMESPACE nested in a subfolder)
+  # alongside the study's OWN real analysis files at the repo root -- only
+  # the vendored package's files should be excluded.
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "vendored_pkg", "R"), recursive = TRUE)
+  writeLines("Package: vendoredpkg\nVersion: 0.1.0", file.path(d, "vendored_pkg", "DESCRIPTION"))
+  writeLines("export(bar)", file.path(d, "vendored_pkg", "NAMESPACE"))
+  writeLines("bar <- function() 1", file.path(d, "vendored_pkg", "R", "bar.R"))
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+  writeLines("a,b\n1,2", file.path(d, "data.csv"))
+
+  mo <- module_run(test_paper(), "repo_check", local_path = d)
+
+  expect_false(any(grepl("^DESCRIPTION$|^NAMESPACE$|bar\\.R$", mo$table$file_name)))
+  expect_true("analysis.R" %in% mo$table$file_name)
+  expect_true("data.csv" %in% mo$table$file_name)
+})
+
 
 # repo_check() + local_only ----
 

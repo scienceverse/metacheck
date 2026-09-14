@@ -576,16 +576,37 @@ data_classify_files <- function(file_name, file_path = NULL) {
 #' Only files that are actually PART of the package -- `DESCRIPTION`/
 #' `NAMESPACE` themselves, and anything under that folder's `R/`, `man/`,
 #' `tests/`, `vignettes/`, `data/`, `inst/`, or `src/` subdirectories -- are
-#' reported as package files; a sibling file sitting directly in the same
+#' candidates for exclusion; a sibling file sitting directly in the same
 #' folder (e.g. a study's `analysis.R` kept alongside a package it depends
 #' on) is NOT swept in just because it shares that folder.
 #'
+#' A package detected at the REPOSITORY ROOT is only excluded if at least one
+#' file OUTSIDE it classifies (via `data_classify_files()`, the same rules-
+#' based classifier `data_check` itself uses) as real `"data"` or `"code"` --
+#' not merely present, since packaging scaffolding (`.gitignore`, `LICENSE`,
+#' `README`, a `Flowchart.png` a README embeds, `*.Rproj`, CI config, etc.)
+#' commonly sits alongside a package's DESCRIPTION/NAMESPACE without being
+#' the study's own content. This distinguishes two real cases that both
+#' fingerprint as "DESCRIPTION+NAMESPACE at the root": a study that shares
+#' its own data and analysis code AS an R package (the package IS the
+#' deposit -- nothing to exclude, since nothing data/code-shaped lives
+#' outside the package for the study's content to be) versus a study's
+#' repository that happens to bundle a vendored copy of someone else's
+#' package alongside the study's own files (here the vendored package's
+#' DESCRIPTION/NAMESPACE sits alongside the study's own real data/code, so
+#' only the vendored package's own files are excluded). A package detected in
+#' a NESTED subfolder is always excluded regardless of this check, since by
+#' construction there is always an "outside" for a nested package (at
+#' minimum, the parent folder itself).
+#'
 #' @param file_path a character vector of repo-relative file paths (as found
-#'   in `all_files$file_path`)
+#'   in `all_files$file_path`, all belonging to the same `repo_url`)
 #'
 #' @returns a logical vector, same length as `file_path`: `TRUE` for every
 #'   file that is part of a detected R package (the `DESCRIPTION`/`NAMESPACE`
-#'   themselves, plus their standard package subdirectories).
+#'   themselves, plus their standard package subdirectories) AND that package
+#'   is being excluded (root-level packages are only excluded when real
+#'   content survives outside them; nested packages are always excluded).
 #' @keywords internal
 .is_r_package_file <- function(file_path) {
   n <- length(file_path)
@@ -609,22 +630,45 @@ data_classify_files <- function(file_name, file_path = NULL) {
   # substring match, so e.g. "analysis.R" at package root is not mistaken for
   # living under an "R" subdirectory just because its extension is ".R".
   pkg_subdirs <- c("R", "man", "tests", "vignettes", "data", "inst", "src")
-  is_pkg_member <- function(i) {
+  member_of <- function(i) {
     d <- dir[i]
     for (pd in pkg_dirs) {
-      if (identical(d, pd)) return(base_lc[i] %in% c("DESCRIPTION", "NAMESPACE"))
+      if (identical(d, pd)) {
+        if (base_lc[i] %in% c("DESCRIPTION", "NAMESPACE")) return(pd)
+        next
+      }
       rel <- if (identical(pd, ".")) d else {
         prefix <- paste0(pd, "/")
         if (!startsWith(d, prefix)) NA_character_
         else substr(d, nchar(prefix) + 1L, nchar(d))
       }
       if (!is.na(rel) && strsplit(rel, "/", fixed = TRUE)[[1]][1] %in% pkg_subdirs) {
-        return(TRUE)
+        return(pd)
       }
     }
-    FALSE
+    NA_character_
   }
-  known & vapply(seq_len(n), is_pkg_member, logical(1))
+  owner <- vapply(seq_len(n), member_of, character(1))
+  is_pkg_member <- known & !is.na(owner)
+
+  for (pd in pkg_dirs) {
+    if (!identical(pd, ".")) next  # nested packages are always excluded
+    outside_idx <- which(!is_pkg_member & known)
+    # an RStudio project marker (e.g. "BaBA.Rproj") classifies as "code" by
+    # extension alone under data_classify_files(), but it is packaging
+    # config, not a real analysis script -- exclude it here rather than loosen
+    # the general-purpose classifier just for this one packaging artifact.
+    outside_idx <- outside_idx[!grepl("\\.rproj$", basename(path[outside_idx]), ignore.case = TRUE)]
+    outside_types <- data_classify_files(basename(path[outside_idx]), path[outside_idx])
+    has_real_content <- any(outside_types %in% c("data", "code"))
+    if (!has_real_content) {
+      # nothing data/code-shaped survives outside this root-level package:
+      # the package IS the deposit, so do not exclude any of its files.
+      is_pkg_member[owner == pd & !is.na(owner)] <- FALSE
+    }
+  }
+
+  is_pkg_member
 }
 
 #' Classify a documentation file's fine-grained role
