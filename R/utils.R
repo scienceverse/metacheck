@@ -209,6 +209,19 @@
     }
   }
 
+  # req_error(is_error = \(resp) FALSE) above suppresses httr2's usual error
+  # on a bad HTTP STATUS, so a real response always comes back for those.
+  # A connection-level failure (timeout, DNS, dropped connection) is a
+  # different thing entirely: req_perform_sequential's on_error = "continue"
+  # still returns one, but as an httr2_failure condition object, not a
+  # response -- every caller across archive-*.R checks is.null(resp) before
+  # calling httr2::resp_status(resp), which crashes ("resp must be an HTTP
+  # response object") when given an httr2_failure instead. Normalizing that
+  # to NULL here, once, means every existing is.null(resp) check across all
+  # ~10 callers already does the right thing without each needing its own
+  # is_response() guard.
+  resps <- lapply(resps, \(r) if (is.null(r) || inherits(r, "httr2_response")) r else NULL)
+
   resps
 }
 

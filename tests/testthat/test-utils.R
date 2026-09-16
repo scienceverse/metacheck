@@ -121,6 +121,33 @@ test_that(".batch_query sets a per-request timeout, default and overridden", {
 })
 
 
+test_that(".batch_query normalizes a connection-level failure to NULL", {
+  # Regression test for a real crash (confirmed live 2026-09-16, Cooper
+  # corpus rerun / 4TU DOI investigation): req_error(is_error = \(resp) FALSE)
+  # only suppresses errors on a real HTTP status, not a connection-level
+  # failure (timeout, DNS, dropped connection). req_perform_sequential's
+  # on_error = "continue" still returns something for that slot, but an
+  # httr2_failure condition object rather than an httr2_response -- and
+  # every archive-*.R caller (dryad_info, figshare_info, dataverse_info,
+  # mendeley_info, dataone_info, gitlab_info, reshare_info, ...) checks only
+  # is.null(resp) before calling httr2::resp_status(resp), which errors
+  # ("resp must be an HTTP response object") on an httr2_failure. This
+  # normalizes any non-response result to NULL here, once, so every
+  # existing is.null(resp) check downstream already does the right thing.
+  failure <- structure(
+    list(message = "Failed to connect"),
+    class = c("httr2_failure", "error", "condition")
+  )
+  local_mocked_bindings(
+    req_perform_sequential = function(reqs, ...) list(failure),
+    .package = "httr2"
+  )
+
+  obs <- .batch_query("https://example.org/a")
+  expect_equal(obs, list(NULL))
+})
+
+
 test_that("path_sanitize", {
   expect_true(is.function(metacheck::path_sanitize))
   expect_no_error(helplist <- help(path_sanitize, metacheck))

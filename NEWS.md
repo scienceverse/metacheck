@@ -11,6 +11,7 @@
 * LLM: new `llm_timeout()` bounds a stuck/overloaded local model call instead of hanging indefinitely; `llm_model_list()` switched from a blocklist to an allowlist of providers; new opt-in `capture_reasoning` argument to `llm()`
 * Fixed a `repo_check`/`data_check`/`code_check` per-paper `summary_table` aggregation bug that could silently reuse a corpus-wide count across every paper's row, or collapse it to a single paper, when a module ran on a paperlist
 * Fixed `.researchdata4tu_id()` not recognizing a 4TU.ResearchData DOI whose uuid has no `uuid:` label (`10.4121/<uuid>`, as opposed to `10.4121/uuid:<uuid>`), which silently left `repo_check` unable to fetch a real, working 4TU dataset cited by its own DOI
+* Fixed `.batch_query()` (the shared query helper behind every `*_info()`/`*_links()` call across Dryad, Zenodo, OSF, Figshare, 4TU, Dataverse, Mendeley Data, DataONE, GitLab, and ReShare) crashing with "resp must be an HTTP response object" on a connection-level failure (timeout, DNS, dropped connection) instead of returning `NULL` like every caller already expects
 
 # metacheck 0.2.1
 
