@@ -101,12 +101,16 @@ researchdata4tu_links <- function(paper) {
 
   # A DOI's numeric segment is the article id (see note at top of file); the
   # version suffix is dropped, matching .figshare_id()'s treatment of
-  # Figshare's identical ".v<n>" suffix. A "uuid:" DOI has no numeric id
-  # anywhere in it, so the uuid itself is extracted and passed straight
-  # through -- the API accepts it just as well.
+  # Figshare's identical ".v<n>" suffix. Some DOIs have no numeric id at all,
+  # only a uuid -- either labelled ("10.4121/uuid:<uuid>") or bare
+  # ("10.4121/<uuid>", confirmed live against a real paper citation, e.g.
+  # 10.4121/ce413614-1c82-4e81-90c0-323aa7d2fabd) -- so the uuid itself is
+  # extracted and passed straight through in either case; the API accepts it
+  # just as well.
   patterns <- c(
     "10\\.4121/uuid:([0-9a-f-]{36})",
     "10\\.4121/([0-9]+)",
+    "10\\.4121/([0-9a-f-]{36})",
     "data\\.4tu\\.nl/datasets/([0-9a-f-]{36})",
     "data\\.4tu\\.nl/articles/(?:dataset/[^/]+/)?([0-9]+)"
   )
