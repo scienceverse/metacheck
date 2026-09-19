@@ -123,6 +123,18 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (is.data.frame(zenodo_url)) {
     table <- zenodo_url
     table$zenodo_url <- table[[id_col]]
+    # A caller passing zenodo_links()'s own output back in (the documented,
+    # normal usage) already has a zenodo_id column of its own; ids below
+    # recomputes it independently, and left joining ids onto a table that
+    # already has that name produces zenodo_id.x/.y suffixes instead of a
+    # plain zenodo_id column -- silently breaking the SECOND join further
+    # down (by = "zenodo_id"), which then errors with "must be present in
+    # the data" only on a dataset that isn't found (the valid_ids == 0
+    # early-return path never reaches that second join, which is why this
+    # went unnoticed: the crash needs an unfound dataset to surface, not
+    # just an already-parsed table). Dropped here so ids's own recomputed
+    # values are always what flows through, not stale/duplicated ones.
+    table$zenodo_id <- NULL
   } else {
     # as.character() BEFORE data.frame(), not after. Given a list of urls -- a
     # list-column `repo_url` arriving here from repo_check(), say --

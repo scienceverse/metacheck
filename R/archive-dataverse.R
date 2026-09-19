@@ -198,6 +198,152 @@
   paste(gsub("\\.", "\\\\.", .dataverse_hosts()), collapse = "|")
 }
 
+# A bare DOI with no host domain anywhere in its URL (e.g.
+# "https://doi.org/10.18167/DVN1/T0DMFJ" for CIRAD Dataverse, with no
+# "dataverse.cirad.fr" string to match .dataverse_host_regex()) is invisible
+# to dataverse_links() even when the host itself is already a recognised
+# installation -- confirmed live against a real paper's Data Availability
+# Statement. Unlike Dryad (a single host, so any of its DOI prefixes
+# unambiguously means Dryad), the file header above explains why Dataverse
+# detection deliberately does NOT key off a bare DOI prefix in general:
+# hundreds of independent installations means a bare prefix is not
+# guaranteed to belong to Dataverse specifically. This resolves that
+# ambiguity the same way -- not with a wildcard, but with an explicit,
+# per-HOST allowlist: each prefix below was individually confirmed
+# (2026-09-19) via DataCite's own DOI index (a `url:*host*` search finding
+# real DOIs whose landing page resolves to that exact, already-known-
+# Dataverse host) to genuinely belong to that specific installation, so a
+# bare DOI under one of these prefixes can be resolved to its host with the
+# same confidence as a URL that carried the hostname explicitly. 87 of the
+# 121 known hosts were confirmably resolved this way; a host absent here
+# is simply not yet mapped, not assumed to have no DOI prefix at all.
+#
+# A few prefixes are shared across multiple related hosts (a consortium
+# DataCite account -- rodbuk.pl's Polish university family, DANS's
+# datastations.nl portal family): kept attached to every host DataCite
+# confirms it actually serving DOIs under, since dataverse_host feeds
+# directly into the live API call URL and picking the wrong one of several
+# genuinely-plausible hosts would break retrieval, not just misattribute a
+# citation.
+.dataverse_doi_prefix_hosts <- function() {
+  list(
+    "agh.rodbuk.pl" = "10.58032",
+    "akf.rodbuk.pl" = "10.58145",
+    "arcadados.fiocruz.br" = "10.35078",
+    "archaeology.datastations.nl" = "10.17026",
+    "archivdv.soc.cas.cz" = "10.14473",
+    "borealisdata.ca" = "10.5683",
+    "danebadawcze.uw.edu.pl" = "10.58132",
+    "dare.uol.de" = "10.57782",
+    "data.aussda.at" = "10.11587",
+    "data.cimmyt.org" = "10.71682",
+    "data.cipotato.org" = "10.21223",
+    "data.crossda.hr" = "10.23669",
+    "data.fdz.ioer.de" = "10.71830",
+    "data.qdr.syr.edu" = "10.5064",
+    "data.sciencespo.fr" = "10.21410",
+    "data.worldagroforestry.org" = "10.34725",
+    "datadoi.ee" = "10.23673",
+    "datahub.tec.mx" = "10.57687",
+    "dataportal.ing.pan.pl" = "10.60871",
+    "datarepository.unive.it" = "10.71731",
+    "datasets.lib.berkeley.edu" = "10.60503",
+    "datav.udec.cl" = "10.48665",
+    "dataverse.arcc.uwyo.edu" = "10.15786",
+    "dataverse.asu.edu" = "10.48349",
+    "dataverse.bsc.es" = "10.82201",
+    "dataverse.carc.usc.edu" = "10.34728",
+    "dataverse.cidacs.org" = "10.57833",
+    "dataverse.cirad.fr" = "10.18167",
+    "dataverse.csuc.cat" = "10.34810",
+    "dataverse.dartmouth.edu" = "10.21989",
+    "dataverse.deic.dk" = "10.60612",
+    "dataverse.fiu.edu" = "10.34703",
+    "dataverse.harvard.edu" = "10.7910",
+    "dataverse.icrisat.org" = "10.21421",
+    "dataverse.ideal.ufpb.br" = c("10.71650", "10.48472"),
+    "dataverse.iit.it" = "10.48557",
+    "dataverse.ipgp.fr" = "10.18715",
+    "dataverse.ird.fr" = "10.23708",
+    "dataverse.jpl.nasa.gov" = "10.48577",
+    "dataverse.lib.nycu.edu.tw" = "10.57770",
+    "dataverse.lib.unb.ca" = "10.25545",
+    "dataverse.lib.virginia.edu" = "10.18130",
+    "dataverse.nl" = "10.34894",
+    "dataverse.no" = "10.18710",
+    "dataverse.openforestdata.pl" = "10.48370",
+    "dataverse.orc.gmu.edu" = "10.13021",
+    "dataverse.rhi.hi.is" = "10.34881",
+    "dataverse.rsu.lv" = "10.48510",
+    "dataverse.theacss.org" = "10.25825",
+    "dataverse.ucla.edu" = "10.25346",
+    "dataverse.udel.edu" = "10.82252",
+    "dataverse.uliege.be" = "10.58119",
+    "dataverse.unc.edu" = "10.15139",
+    "dataverse.unimi.it" = "10.13130",
+    "dataverse.vtti.vt.edu" = "10.15787",
+    "dataverse.whoi.edu" = "10.26027",
+    "dataverse.yale.edu" = "10.60600",
+    "datos.uchile.cl" = "10.34691",
+    "datos.usach.cl" = "10.60547",
+    "datospararesiliencia.cl" = "10.71578",
+    "dv.dataverse.lv" = "10.71782",
+    "edatos.consorciomadrono.es" = "10.21950",
+    "edmond.mpdl.mpg.de" = "10.17617",
+    "entrepot.recherche.data.gouv.fr" = "10.57745",
+    "ifj.rodbuk.pl" = "10.48733",
+    "indata.cedia.edu.ec" = "10.48661",
+    "investigacionartes.mincultura.gov.co" = "10.82294",
+    "issda.ucd.ie" = "10.7929",
+    "lifesciences.datastations.nl" = "10.17026",
+    "lore.list.lu" = "10.57828",
+    "opendata.nas.gov.ua" = "10.48788",
+    "pk.rodbuk.pl" = "10.58099",
+    "portal.odissei.nl" = "10.57934",
+    "rdr.kuleuven.be" = "10.48804",
+    "redata.anii.org.uy" = "10.60895",
+    "repod.icm.edu.pl" = "10.18150",
+    "repositorio.soildata.mapbiomas.org" = "10.60502",
+    "researchdata.cuhk.edu.hk" = "10.48668",
+    "researchdata.lib.polyu.edu.hk" = "10.60933",
+    "researchdata.nie.edu.sg" = "10.25340",
+    "rodbuk.pl" = c("10.57903", "10.34616", "10.48733", "10.58032", "10.58145", "10.58116"),
+    "sano.rodbuk.pl" = "10.71580",
+    "ssh.datastations.nl" = "10.17026",
+    "uek.rodbuk.pl" = "10.58116",
+    "uj.rodbuk.pl" = "10.57903",
+    "uwr.rodbuk.pl" = "10.34616",
+    "www.sodha.be" = "10.34934"
+  )
+}
+
+# Regex fragment matching any known Dataverse DOI prefix, for use inside a
+# larger pattern (mirrors .dataverse_host_regex(), one level down).
+.dataverse_doi_prefix_regex <- function() {
+  prefixes <- unique(unlist(.dataverse_doi_prefix_hosts()))
+  paste(gsub("\\.", "\\\\.", prefixes), collapse = "|")
+}
+
+# host for a DOI whose prefix is in .dataverse_doi_prefix_hosts(), vectorised.
+# Returns NA where the prefix is unrecognised or ambiguous handling isn't
+# needed (ambiguous prefixes return their FIRST listed host -- ties are rare
+# and each one was individually confirmed live, so any listed host is a
+# genuinely correct installation, not a guess).
+.dataverse_host_from_doi <- function(doi) {
+  doi <- as.character(doi)
+  out <- rep(NA_character_, length(doi))
+  has_doi <- !is.na(doi) & nzchar(doi)
+  if (!any(has_doi)) return(out)
+
+  prefix_hosts <- .dataverse_doi_prefix_hosts()
+  px <- sub("^(10\\.\\d+).*", "\\1", doi)
+  for (host in names(prefix_hosts)) {
+    hit <- has_doi & is.na(out) & px %in% prefix_hosts[[host]]
+    out[hit] <- host
+  }
+  out
+}
+
 #' Find Dataverse Links in Papers
 #'
 #' Get all Dataverse links: real hyperlinks from the paper's own `url` table,
@@ -233,11 +379,25 @@ dataverse_links <- function(paper) {
   other_dv <- text_search(paper, dv_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
+  # A citation carrying only a bare DOI, with no host domain string anywhere
+  # in the URL at all (e.g. "https://doi.org/10.18167/DVN1/T0DMFJ" for CIRAD
+  # Dataverse -- confirmed live: the real paper's Data Availability Statement
+  # names the DOI, never the host), is invisible to both patterns above.
+  # Matched separately against .dataverse_doi_prefix_hosts()'s
+  # individually-verified prefix allowlist -- see that function's own header
+  # comment for why a prefix-only match is safe here despite the file
+  # header's general caution against DOI-prefix detection for Dataverse.
+  dv_doi_regex <- paste0(
+    "(?:https?://)?(?:doi\\.org/)?(?:", .dataverse_doi_prefix_regex(), ")/[A-Za-z0-9/._-]+"
+  )
+  other_dv_doi <- text_search(paper, dv_doi_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
   # See osf_links() for why this normalization is needed: a real hyperlink and
   # a bare body-text mention of the same repo commonly differ only by a
   # trailing slash, and left un-normalized that turns one repo into two
   # throughout repo_check.
-  links <- dplyr::bind_rows(found_href, other_dv) |>
+  links <- dplyr::bind_rows(found_href, other_dv, other_dv_doi) |>
     dplyr::mutate(href = sub("/+$", "", href)) |>
     unique()
 
@@ -288,6 +448,21 @@ dataverse_links <- function(paper) {
   doi <- vapply(doi_m, function(m) {
     if (length(m) < 2) NA_character_ else utils::URLdecode(m[[2]])
   }, character(1))
+
+  # A bare DOI citation (e.g. "https://doi.org/10.18167/DVN1/T0DMFJ") carries
+  # neither a dataset.xhtml host page nor a persistentId query param -- both
+  # extractions above return NA for it. Recovered here from a plain
+  # "10.xxxx/..." pattern in the URL, but ONLY when it isn't already
+  # host-resolved (a real dataset.xhtml page can incidentally contain a
+  # 10.xxxx-shaped substring elsewhere that isn't the dataset's own DOI, so
+  # this fallback is deliberately host-scoped, not a blanket second attempt).
+  bare_doi_needed <- is.na(doi) & has_url
+  if (any(bare_doi_needed)) {
+    bare_m <- regmatches(url, regexec("(10\\.\\d+/[A-Za-z0-9/._-]+)", url, perl = TRUE))
+    bare_doi <- vapply(bare_m, function(m) if (length(m) < 2) NA_character_ else m[[2]], character(1))
+    doi[bare_doi_needed] <- bare_doi[bare_doi_needed]
+  }
+
   # A DOI never legitimately ends in a bare ".": when the persistentId sits at
   # the very end of a URL, sentence-final punctuation from the source PDF/HTML
   # is sometimes captured as part of the href itself (observed live in the
@@ -297,6 +472,15 @@ dataverse_links <- function(paper) {
   # Left unstripped this looks like two datasets and doubles the API calls,
   # each failing on the "." variant.
   doi <- sub("\\.$", "", doi)
+
+  # host resolution for a bare-DOI citation, which the host-regex pass above
+  # cannot recover since no host string is anywhere in that URL -- see
+  # .dataverse_doi_prefix_hosts()'s header comment for why this per-host
+  # verified allowlist is safe where a general DOI-prefix guess would not be.
+  host_needed <- has_url & (is.na(host) | !nzchar(host %||% "")) & !is.na(doi)
+  if (any(host_needed)) {
+    host[host_needed] <- .dataverse_host_from_doi(doi[host_needed])
+  }
 
   data.frame(host = host, doi = doi, stringsAsFactors = FALSE)
 }
@@ -329,6 +513,20 @@ dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL, cache = FALSE) 
   if (is.data.frame(dataverse_url)) {
     table <- dataverse_url
     table$dataverse_url <- table[[id_col]]
+    # A caller passing dataverse_links()'s own output back in (the
+    # documented, normal usage) already has dataverse_host/dataverse_doi
+    # columns of its own; ids below recomputes both independently, and
+    # left joining ids onto a table that already has those names produces
+    # .x/.y-suffixed duplicates instead of plain columns -- silently
+    # breaking the SECOND join further down (by = c("dataverse_host",
+    # "dataverse_doi")), which then errors with "must be present in the
+    # data" only when a dataset isn't found (confirmed live 2026-09-19).
+    # Dropped here so ids's own recomputed values are always what flows
+    # through, never stale/duplicated ones. Same fix applied identically
+    # across every archive-*.R file sharing this table/ids/left_join shape
+    # (4tu, dataone, dryad, figshare, mendeley, reshare, zenodo).
+    table$dataverse_host <- NULL
+    table$dataverse_doi <- NULL
   } else {
     raw_urls <- unique(dataverse_url) |> stats::na.omit()
     table <- data.frame(dataverse_url = raw_urls)

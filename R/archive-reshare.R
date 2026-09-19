@@ -147,6 +147,19 @@ reshare_info <- function(reshare_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (is.data.frame(reshare_url)) {
     table <- reshare_url
     table$reshare_url <- table[[id_col]]
+    # A caller passing reshare_links()'s own output back in (the
+    # documented, normal usage) already has a reshare_id column of its
+    # own; ids below recomputes it independently, and left joining ids
+    # onto a table that already has that name produces reshare_id.x/.y
+    # suffixes instead of a plain reshare_id column -- silently breaking
+    # the SECOND join further down (by = "reshare_id"), which then errors
+    # with "must be present in the data" only when a dataset isn't found
+    # (confirmed live 2026-09-19). Dropped here so ids's own recomputed
+    # values are always what flows through, never stale/duplicated ones.
+    # Same fix applied identically across every archive-*.R file sharing
+    # this table/ids/left_join shape (dataone, dataverse, dryad, figshare,
+    # mendeley, zenodo).
+    table$reshare_id <- NULL
   } else {
     raw_urls <- unique(reshare_url) |> stats::na.omit()
     table <- data.frame(reshare_url = raw_urls)

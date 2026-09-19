@@ -10,6 +10,32 @@
 # also carries `_links.stash:download.href`, Dryad's documented whole-dataset
 # bulk-download endpoint (the same link a dataset page's own "Download
 # Dataset" button uses) -- unlike Figshare, which has no such endpoint.
+#
+# Dryad DOIs are not all issued under the 10.5061 prefix -- Dryad's own
+# DataCite client record (api.datacite.org/clients/dryad.dryad) only lists
+# its two CURRENTLY active DataCite prefixes (10.5061, 10.15146), but real
+# minted DOIs also exist under several older EZID-era prefixes that predate
+# or sit outside that registry (older datasets keep whatever prefix they
+# were minted under, unlike a URL that can be updated after the fact).
+# The list below is the empirically COMPLETE set found by repeatedly
+# random-sampling DataCite's own DOI index for Dryad's client id
+# (data/code_data_preparation/scratch_find_all_dryad_prefixes.R,
+# 2026-09-17) until 40 consecutive batches of 100 random DOIs each
+# produced no new prefix. Every prefix was individually confirmed live via
+# doi.org's own handle API to resolve to a real datadryad.org dataset page
+# (e.g. 10.25338/B8N33J -> https://datadryad.org/dataset/doi:10.25338/B8N33J).
+# Two prefixes seen elsewhere in the SAME investigation (10.7294, 10.5063)
+# were checked the same way and confirmed NOT Dryad (VTechData and KNB
+# respectively) -- kept as an explicit, individually-verified allowlist
+# rather than a bare numeric-prefix wildcard for exactly that reason:
+# nothing guarantees a not-yet-seen prefix is Dryad's rather than an
+# unrelated publisher's, and DataCite prefixes are reused/reassigned
+# across organizations over time.
+.dryad_doi_prefixes <- function() {
+  c("10.5061", "10.15146", "10.25338", "10.25349", "10.5068",
+    "10.6071", "10.6075", "10.6076", "10.6078", "10.6086",
+    "10.7272", "10.7280", "10.7291", "10.7941")
+}
 
 #' Find Dryad Links in Papers
 #'
@@ -33,13 +59,24 @@
 dryad_links <- function(paper) {
   href <- text <- NULL
 
+  # 10.5061 DOIs always carry a literal "dryad." word after the slash
+  # (10.5061/dryad.j1fd7); the alternate prefixes below do not
+  # (10.25338/B8N33J) -- matched separately since a prefix-only pattern
+  # for 10.25338/10.5068 would also swallow unrelated DOIs under those
+  # same registrant prefixes if they exist (unverified; see the
+  # .dryad_doi_prefixes() note above).
+  alt_prefixes <- setdiff(.dryad_doi_prefixes(), "10.5061")
+  alt_prefix_regex <- paste(gsub("\\.", "\\\\.", alt_prefixes), collapse = "|")
+
   found_href <- paper_table(paper, "url") |>
-    dplyr::filter(grepl("datadryad\\.org|10\\.5061/dryad", href, ignore.case = TRUE))
+    dplyr::filter(grepl(paste0("datadryad\\.org|10\\.5061/dryad|", alt_prefix_regex, "/"),
+                        href, ignore.case = TRUE))
 
   dryad_bare_regex <- paste0(
     "(?:https?://)?(?:www\\.)?datadryad\\.org/(?:stash/)?dataset[s]?/doi[:%]",
     "[A-Za-z0-9%._/-]*",
-    "|(?:https?://)?(?:doi\\.org/)?10\\.5061/dryad\\.[A-Za-z0-9]+"
+    "|(?:https?://)?(?:doi\\.org/)?10\\.5061/dryad\\.[A-Za-z0-9]+",
+    "|(?:https?://)?(?:doi\\.org/)?(?:", alt_prefix_regex, ")/[A-Za-z0-9]+"
   )
   other_dryad <- text_search(paper, dryad_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
@@ -82,11 +119,18 @@ dryad_links <- function(paper) {
 
   dryad_url <- utils::URLdecode(dryad_url)
 
-  match <- regexec("(10\\.5061/dryad\\.[A-Za-z0-9]+)", dryad_url, perl = TRUE,
-                   ignore.case = TRUE)
-  groups <- regmatches(dryad_url, match)[[1]]
-  if (length(groups) >= 2) {
-    return(tolower(groups[[2]]))
+  alt_prefixes <- setdiff(.dryad_doi_prefixes(), "10.5061")
+  alt_prefix_regex <- paste(gsub("\\.", "\\\\.", alt_prefixes), collapse = "|")
+  patterns <- c(
+    "(10\\.5061/dryad\\.[A-Za-z0-9]+)",
+    paste0("((?:", alt_prefix_regex, ")/[A-Za-z0-9]+)")
+  )
+  for (pattern in patterns) {
+    match <- regexec(pattern, dryad_url, perl = TRUE, ignore.case = TRUE)
+    groups <- regmatches(dryad_url, match)[[1]]
+    if (length(groups) >= 2) {
+      return(tolower(groups[[2]]))
+    }
   }
 
   return(NA_character_)
@@ -126,6 +170,18 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (is.data.frame(dryad_url)) {
     table <- dryad_url
     table$dryad_url <- table[[id_col]]
+    # A caller passing dryad_links()'s own output back in (the documented,
+    # normal usage) already has a dryad_doi column of its own; ids below
+    # recomputes it independently, and left joining ids onto a table that
+    # already has that name produces dryad_doi.x/.y suffixes instead of a
+    # plain dryad_doi column -- silently breaking the SECOND join further
+    # down (by = "dryad_doi"), which then errors with "must be present in
+    # the data" only when a dataset isn't found (confirmed live 2026-09-19).
+    # Dropped here so ids's own recomputed values are always what flows
+    # through, never stale/duplicated ones. Same fix applied identically
+    # across every archive-*.R file sharing this table/ids/left_join shape
+    # (dataone, dataverse, figshare, mendeley, reshare, zenodo).
+    table$dryad_doi <- NULL
   } else {
     raw_urls <- unique(dryad_url) |> stats::na.omit()
     table <- data.frame(dryad_url = raw_urls)
