@@ -73,3 +73,30 @@ test_that("error: argument is of length zero", {
   expect_equal(nrow(mo$table), 0)
   expect_equal(mo$summary_table$data_open, FALSE)
 })
+
+test_that("on request is not open sharing", {
+  module <- "open_practices"
+  paper <- test_paper("Data available upon request.")
+  mo <- module_run(paper, module)
+
+  # flagged in the table, but not counted as open
+  expect_equal(mo$table$on_request, TRUE)
+  expect_equal(mo$summary_table$data_open, FALSE)
+  expect_equal(mo$summary_table$on_request, TRUE)
+  expect_equal(mo$traffic_light, "red")
+
+  # open data plus something on request
+  paper <- test_paper(c(
+    "Data are available at https://osf.io/hk4yq/.",
+    "Raw data are available on request."
+  ))
+  mo <- module_run(paper, module)
+  expect_equal(mo$summary_table$data_open, TRUE)
+  expect_equal(mo$summary_table$on_request, TRUE)
+
+  # request-gated sharing that also names a repository
+  paper <- test_paper("Data are available upon request at https://osf.io/hk4yq/.")
+  mo <- module_run(paper, module)
+  expect_equal(mo$summary_table$data_open, FALSE)
+  expect_equal(mo$summary_table$on_request, TRUE)
+})

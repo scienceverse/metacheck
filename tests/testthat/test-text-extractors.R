@@ -209,3 +209,10 @@ test_that("bibr vs extract_eq", {
   dplyr::filter(compare, is.na(bibr) | is.na(mc)) |> View()
 
 })
+
+test_that("extract_p_values upper-case P", {
+  paper <- test_paper(c("t = 2.23, P = 0.005.", "NP = 0.5, MAP < .05"))
+  p <- extract_p_values(paper)
+  expect_equal(p$text, "P = 0.005")
+  expect_equal(p$p_value, 0.005)
+})

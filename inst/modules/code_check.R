@@ -673,9 +673,7 @@ code_check <- function(paper, local_path = NULL,
     )
     summary_parse <- "Parsing issues of R-type files were found."
     cols <- c("file_name", "parse_error_msg")
-    # which(), not isTRUE(): isTRUE() on the whole column is FALSE for any
-    # multi-file paper, which emptied this table even when errors were found.
-    report_table_parse <- code_files[which(code_files$parse_error), cols]
+    report_table_parse <- code_files[code_files$parse_error %in% TRUE, cols]
     colnames(report_table_parse) <- c("File name", "Error Message")
   }
 

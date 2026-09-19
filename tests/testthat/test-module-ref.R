@@ -39,6 +39,21 @@ test_that("ref_miscitation", {
   expect_equal(mod_output$table$doi[[1]], test_doi)
   expect_equal(mod_output$summary_table$`miscite_10.1037/0003-066x.54.6.408`,
                1)
+
+  ## multiple matches: each gets its own report entry
+  dois <- paper$bib$doi[!is.na(paper$bib$doi) & paper$bib$doi != ""] |>
+    unique() |>
+    head(2)
+  skip_if(length(dois) < 2)
+  db <- data.frame(
+    doi = dois,
+    reftext = c("Reference A", "Reference B"),
+    warning = c("Warning A", "Warning B")
+  )
+  mod_output <- module_run(paper, module, db = db)
+  report <- paste(mod_output$report, collapse = "\n")
+  expect_true(grepl("Warning A", report))
+  expect_true(grepl("Warning B", report))
 })
 
 

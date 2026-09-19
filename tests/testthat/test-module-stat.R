@@ -132,3 +132,19 @@ test_that("stat_check", {
 })
 
 
+test_that("less than or equal to comparators", {
+  paper <- test_paper(c(
+    "OK p-value example; p ≤ .001",
+    "Bad p-value example; p ≤ .05",
+    "Significant result; p ≤ .01",
+    "Nonsignificant result; p = .20"
+  ))
+
+  # <= is treated like <
+  mod_output <- module_run(paper, "stat_p_exact")
+  expect_equal(mod_output$table$imprecise, c(FALSE, TRUE, TRUE, FALSE))
+
+  # p <= .01 is significant
+  mod_output <- module_run(paper, "stat_p_nonsig")
+  expect_equal(mod_output$table$text, "p = .20")
+})
