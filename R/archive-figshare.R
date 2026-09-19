@@ -46,6 +46,30 @@
 # no longer resolve live: myresearchdata.curtin.edu.au (DNS does not resolve)
 # and dra.american.edu (TLS certificate no longer matches the hostname) --
 # these may simply be stale entries; re-check before adding.
+#
+# Extended 2026-09-19 with 15 more institutional instances, found by
+# searching DataCite's client registry for "figshare" in the CLIENT NAME
+# (api.datacite.org/clients?query=figshare, 35 candidates) and individually
+# confirming each live the same way as the original 16 (its landing host
+# answers /api/articles/1 with Figshare's own SPA shell, HTTP 202/empty
+# HTML body, not a real API response). Several DataCite-listed candidates
+# were checked and EXCLUDED because their real platform is something else
+# entirely, confirmed by the same live check returning a real API response
+# from a DIFFERENT platform rather than Figshare's SPA shell: DataverseNO
+# (vjhc.usn, despite a client name match), DTU's Orbit institutional
+# repository (dk.dtic; data.dtu.dk below is a SEPARATE, genuinely-Figshare
+# DTU service under a different DataCite client), and University of
+# Salford's Worktribe platform (bl.salford). Two more clients had no
+# usable prefixes to sample from at all (figshare.sage, figshare.test --
+# inactive/test accounts) and two resolved to hosts already listed here
+# under a different DataCite client id (au.ir -> aura.american.edu,
+# bl.ucld -> rdr.ucl.ac.uk).
+#
+# Monash University's bridges.monash.edu was found separately (its
+# DataCite client is named "Monash University", not "figshare", so the
+# name search above missed it) via a real paper citing a bare
+# 10.26180/... DOI with no host domain in the URL at all -- confirmed
+# live the same way as every other host here.
 .figshare_vanity_hosts <- function() {
   c(
     "aura.american.edu",        # American University Research Archive (USA)
@@ -63,7 +87,77 @@
     "figshare.warwick.ac.uk",   # University of Warwick (UK)
     "rdr.ucl.ac.uk",            # University College London (UK)
     "zivahub.uct.ac.za",        # University of Cape Town (South Africa)
-    "redata.arizona.edu"        # University of Arizona (USA)
+    "redata.arizona.edu",       # University of Arizona (USA)
+    "bridges.monash.edu",       # Monash University (Australia)
+    "brunel.figshare.com",      # Brunel University London (UK)
+    "city.figshare.com",        # City, University of London (UK)
+    "curate.curtin.edu.au",     # Curtin University (Australia)
+    "tandf.figshare.com",       # Taylor & Francis (publisher instance)
+    "asha.figshare.com",        # American Speech-Language-Hearing Association (publisher instance)
+    "smithsonian.figshare.com", # Smithsonian Institution (USA)
+    "orcid.figshare.com",       # ORCID (publisher/org instance)
+    "plus.figshare.com",        # Figshare+ (publisher-neutral instance)
+    "griffith.figshare.com",    # Griffith University (Australia)
+    "repository.lboro.ac.uk",   # Loughborough University (UK)
+    "nhlbi.figshare.com",       # National Heart, Lung, and Blood Institute (USA)
+    "arizona.figshare.com",     # University of Arizona (USA) -- separate DataCite client from redata.arizona.edu above
+    "su.figshare.com",          # Stockholm University (Sweden)
+    "figshare.swinburne.edu.au",# Swinburne University of Technology (Australia)
+    "ucb.figshare.com",         # University College Birmingham (UK)
+    "auckland.figshare.com",    # University of Auckland (New Zealand)
+    "uc.figshare.com",          # University of Cincinnati (USA)
+    "figshare.manchester.ac.uk",# University of Manchester (UK)
+    "novasbe.figshare.com",     # Universidade Nova de Lisboa, NOVA SBE (Portugal)
+    "figshare.uts.edu.au",      # University of Technology Sydney (Australia)
+    "melbourne.figshare.com"    # University of Melbourne (Australia) -- separate DataCite client/host from figshare.unimelb.edu.au above
+  )
+}
+
+# DOI-prefix -> host, for the institutional Figshare instances above whose
+# own DOI prefix differs from the generic 10.6084/m9.figshare.* form (the
+# same problem .dataverse_doi_prefix_hosts()/.dryad_doi_prefixes() solve
+# for their own platforms): a paper citing a bare institutional DOI with
+# no host domain anywhere in the URL (e.g. "https://doi.org/10.26180/
+# 19095317.v1" for Monash, never naming bridges.monash.edu) is otherwise
+# invisible to figshare_links()'s bare-mention fallback, which only
+# recognised 10.6084. Each prefix below was individually confirmed live
+# 2026-09-19 the same way as the hosts above (a real sample DOI under this
+# exact prefix, from DataCite's own registry, resolves to this exact
+# host). Two already-listed hosts (ore.exeter.ac.uk, orda.shef.ac.uk) had
+# no prefix of their own recorded before this pass; they do now.
+.figshare_doi_prefix_hosts <- function() {
+  list(
+    "10.17633" = "brunel.figshare.com",
+    "10.25383" = "city.figshare.com",
+    "10.25917" = "curate.curtin.edu.au",
+    "10.26187" = "dro.deakin.edu.au",
+    "10.60809" = "drum.um.edu.mt",
+    "10.23641" = "asha.figshare.com",
+    "10.25573" = "smithsonian.figshare.com",
+    "10.23640" = "orcid.figshare.com",
+    "10.25452" = "plus.figshare.com",
+    "10.57831" = "griffith.figshare.com",
+    "10.17028" = "repository.lboro.ac.uk",
+    "10.26174" = "repository.lboro.ac.uk",
+    "10.23634" = "repository.mmu.ac.uk",
+    "10.25858" = "repository.mmu.ac.uk",
+    "10.83056" = "repository.mmu.ac.uk",
+    "10.25444" = "nhlbi.figshare.com",
+    "10.24378" = "ore.exeter.ac.uk",
+    "10.15131" = "orda.shef.ac.uk",
+    "10.25422" = "arizona.figshare.com",
+    "10.17045" = "su.figshare.com",
+    "10.25916" = "figshare.swinburne.edu.au",
+    "10.83399" = "ucb.figshare.com",
+    "10.17608" = "auckland.figshare.com",
+    "10.25375" = "zivahub.uct.ac.za",
+    "10.60696" = "uc.figshare.com",
+    "10.48420" = "figshare.manchester.ac.uk",
+    "10.82444" = "figshare.warwick.ac.uk",
+    "10.60580" = "novasbe.figshare.com",
+    "10.71741" = "figshare.uts.edu.au",
+    "10.26180" = "bridges.monash.edu",
+    "10.26188" = "melbourne.figshare.com"
   )
 }
 
@@ -108,12 +202,22 @@ figshare_links <- function(paper) {
   # story on an institution's own domain rather than a figshare.com subdomain
   # -- see .figshare_vanity_hosts() above.
   host_regex <- .figshare_host_regex()
+  # Institutional prefixes (10.26180 for Monash, etc. -- see
+  # .figshare_doi_prefix_hosts()) matched alongside 10.6084 so a URL
+  # carrying either shape is found here too, not just via .figshare_id()'s
+  # bare-DOI branch below (found_href/other_fs both need it, since a real
+  # hyperlink using an institutional DOI is just as possible as a bare one).
+  doi_prefix_regex <- paste(
+    gsub("\\.", "\\\\.", c("10.6084", names(.figshare_doi_prefix_hosts()))),
+    collapse = "|"
+  )
   found_href <- paper_table(paper, "url") |>
-    dplyr::filter(grepl(paste0(host_regex, "|10\\.6084/m9\\.figshare"), href, ignore.case = TRUE))
+    dplyr::filter(grepl(paste0(host_regex, "|", doi_prefix_regex), href, ignore.case = TRUE))
 
   fs_bare_regex <- paste0(
     "(?:https?://)?(?:[a-z0-9.-]+\\.)?(?:", host_regex, ")/(?:articles|ndownloader|projects|s)/[A-Za-z0-9/_.-]*",
-    "|(?:https?://)?(?:doi\\.org/)?10\\.6084/m9\\.figshare\\.[0-9]+(?:\\.v[0-9]+)?"
+    "|(?:https?://)?(?:doi\\.org/)?10\\.6084/m9\\.figshare\\.[0-9]+(?:\\.v[0-9]+)?",
+    "|(?:https?://)?(?:doi\\.org/)?(?:", doi_prefix_regex, ")/[A-Za-z0-9._-]+(?:\\.v[0-9]+)?"
   )
   other_fs <- text_search(paper, fs_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
@@ -200,13 +304,38 @@ figshare_links <- function(paper) {
   # cannot itself span a `/`, so it does not actually match (let alone
   # mis-match) a three-segment URL, but keeping the more specific pattern
   # first is still the safer order to read and extend.
+  # An institutional Figshare instance's own DOI prefix (10.26180 for
+  # Monash, etc. -- see .figshare_doi_prefix_hosts()) carries the article
+  # id as its suffix, the same shape as 10.6084/m9.figshare.<id> but
+  # without the literal "m9.figshare." segment -- confirmed live
+  # 2026-09-19: https://doi.org/10.26180/19095317.v1 resolves to Monash
+  # article id 19095317. Some institutions insert their own short
+  # sub-prefix before the numeric id instead (10.25375/uct.14618526.v1
+  # for ZivaHub/UCT -- confirmed live to resolve to article id 14618526,
+  # NOT a literal id "uct.14618526"), so the id itself is anchored as the
+  # LAST all-digit segment rather than assumed to sit immediately after
+  # the DOI prefix. Matched here as its own pattern rather than folded
+  # into the bare-id pattern below, since that one requires an
+  # already-known host in the URL itself, which a bare institutional DOI
+  # never carries.
+  inst_prefix_regex <- paste(
+    gsub("\\.", "\\\\.", names(.figshare_doi_prefix_hosts())), collapse = "|"
+  )
   host_regex <- .figshare_host_regex()
   patterns <- c(
     "10\\.6084/m9\\.figshare\\.([0-9]+)",
     paste0("(?:", host_regex, ")/articles/(?:dataset|[a-z]+)/[^/]+/([0-9]+)"),
     paste0("(?:", host_regex, ")/articles/[^/]+/([0-9]+)"),
     paste0("(?:", host_regex, ")/articles/([0-9]+)"),
-    "ndownloader\\.figshare\\.com/files/([0-9]+)"
+    "ndownloader\\.figshare\\.com/files/([0-9]+)",
+    # Anchored on a non-digit boundary after the id (a following "." or
+    # ".vN", or end-of-string), not end-of-string alone: a trailing
+    # sentence period from ordinary prose ("...19095317.v1.") is common
+    # enough in real extracted paper text to be worth tolerating, and
+    # anchoring purely on `$` silently returned NA for it -- found live
+    # 2026-09-19 via a real corpus paper's citation ending in exactly this
+    # shape.
+    paste0("(?:", inst_prefix_regex, ")/(?:[a-z]+\\.)?([0-9]+)(?:\\.v[0-9]+)?(?:[^0-9]|$)")
   )
 
   for (pattern in patterns) {

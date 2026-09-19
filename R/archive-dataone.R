@@ -16,12 +16,25 @@
 # "DataONE" 2026-09-12) and each confirmed live the same way: a plain GET to
 # "<api_base>node" returns DataONE's own XML node-capabilities document
 # rather than an HTML page.
+#
+# data.piscoweb.org (PISCO, Partnership for Interdisciplinary Studies of
+# Coastal Oceans, UC Santa Barbara) added 2026-09-19: found via a real
+# paper citing a bare 10.6085/AA/... DOI with no host domain in the URL at
+# all ("uploaded to DataONE and are accessible here: https://doi.org/
+# 10.6085/AA/marine_ltm.20.1") -- resolving that DOI live redirects to
+# data.piscoweb.org/metacatui/..., confirmed to run the same Metacat API
+# at /metacat/d1/mn/v2/node (real DataONE XML node-capabilities response),
+# and GET .../meta/doi:10.6085%2FAA%2Fmarine_ltm.20.1 returns the real
+# systemMetadata record for that exact dataset. 10.6085 registered to this
+# host specifically (not DataONE generally) via DataCite's own record for
+# that DOI.
 .dataone_hosts <- function() {
   list(
     list(host = "arcticdata.io",           api_base = "/metacat/d1/mn/v2/", doi_prefix = "10.18739"),
     list(host = "knb.ecoinformatics.org",  api_base = "/knb/d1/mn/v2/",     doi_prefix = "10.5063"),
     list(host = "metacat.tfri.gov.tw",     api_base = "/metacat/d1/mn/v2/", doi_prefix = NA_character_),
-    list(host = "smithsonian.dataone.org", api_base = "/metacat/d1/mn/v2/", doi_prefix = NA_character_)
+    list(host = "smithsonian.dataone.org", api_base = "/metacat/d1/mn/v2/", doi_prefix = NA_character_),
+    list(host = "data.piscoweb.org",       api_base = "/metacat/d1/mn/v2/", doi_prefix = "10.6085")
   )
 }
 
@@ -139,8 +152,13 @@ dataone_links <- function(paper) {
 
   # A bare DOI (with or without a doi.org/https:// prefix) has no "doi:"
   # marker of its own -- add one, since that is the literal PID string
-  # DataONE's own API expects.
-  match <- regexec("(?:doi\\.org/)?(10\\.[0-9]+/[A-Za-z0-9._-]+)$", dataone_url, perl = TRUE, ignore.case = TRUE)
+  # DataONE's own API expects. The suffix itself is allowed to contain a
+  # further slash (e.g. PISCO's 10.6085/AA/marine_ltm.20.1, confirmed live
+  # to be a real, resolving DOI -- DataONE PIDs are not required to be
+  # slash-free after the prefix the way most other repositories' DOIs are)
+  # -- [A-Za-z0-9._-]+ alone cannot match across a "/", which silently
+  # dropped this whole class of PID before this fix.
+  match <- regexec("(?:doi\\.org/)?(10\\.[0-9]+/[A-Za-z0-9._/-]+)$", dataone_url, perl = TRUE, ignore.case = TRUE)
   groups <- regmatches(dataone_url, match)[[1]]
   if (length(groups) >= 2) return(paste0("doi:", groups[[2]]))
 

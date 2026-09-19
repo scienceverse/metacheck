@@ -57,18 +57,53 @@ test_that(".figshare_id", {
     # return NA: the three-segment (type/name/id) pattern above requires a
     # type keyword that isn't there, and the bare-id pattern requires the
     # id immediately after /articles/, which it also isn't.
-    "https://figshare.com/articles/PxW_dataset/6934484"
+    "https://figshare.com/articles/PxW_dataset/6934484",
+    # An institutional Figshare instance's own DOI prefix (see
+    # .figshare_doi_prefix_hosts()) -- confirmed live 2026-09-19 against a
+    # real paper citing Monash University's bridges.monash.edu this way,
+    # with no host domain anywhere in the URL. Used to return NA: the
+    # id-extraction patterns only ever recognised 10.6084.
+    "https://doi.org/10.26180/19095317.v1",
+    # Same institutional-prefix shape, no version suffix.
+    "https://doi.org/10.26188/14122688",
+    # An institutional prefix whose suffix inserts a short sub-prefix
+    # before the numeric id (ZivaHub/UCT's "uct." -- confirmed live to
+    # resolve to article id 14618526, not a literal id "uct.14618526").
+    "https://doi.org/10.25375/uct.14618526.v1"
   )
 
   ids <- .figshare_id(figshare_url)
   expect_equal(unname(ids), c(
     "18093368", "18093368", "18093368", "18093368", "18093368",
     "12345", NA, NA, NA, NA,
-    "6934484"
+    "6934484", "19095317", "14122688", "14618526"
   ))
 
   # NULL / empty
   expect_equal(.figshare_id(NULL), character(0))
+})
+
+
+test_that("figshare_links recognises institutional Figshare DOI prefixes with no host domain in the URL", {
+  # Regression test: 29 institutional Figshare instances (28 found via
+  # DataCite's client registry, plus Monash found separately -- see
+  # .figshare_vanity_hosts()'s own header comment) added 2026-09-19, each
+  # confirmed live to answer Figshare's own SPA shell (HTTP 202) rather
+  # than a real API response, and each DOI prefix confirmed live to
+  # resolve to that exact host.
+  hosts <- metacheck:::.figshare_doi_prefix_hosts()
+  expect_equal(unname(hosts[["10.26180"]]), "bridges.monash.edu")
+  expect_equal(unname(hosts[["10.26188"]]), "melbourne.figshare.com")
+  expect_equal(unname(hosts[["10.25375"]]), "zivahub.uct.ac.za")
+  expect_true("bridges.monash.edu" %in% metacheck:::.figshare_vanity_hosts())
+
+  paper <- test_paper(
+    text = "Data from: ... Monash University. Dataset, https://doi.org/10.26180/19095317.v1."
+  )
+  links <- figshare_links(paper)
+  expect_equal(nrow(links), 1)
+  expect_equal(unname(links$figshare_id), "19095317")
+  expect_false(links$figshare_unsupported)
 })
 
 
