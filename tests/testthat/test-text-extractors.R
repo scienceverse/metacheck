@@ -46,13 +46,14 @@ test_that("extract_p_values", {
     "t = 2.23, p = 0.005.",
     "(p = 0.152)",
     "peta = 2.3; p > .05, ppp = 2",
-    "2 = p"
+    "2 = p",
+    "MAP = .5, P = .04"
   ))
   p <- extract_p_values(paper)
-  expect_equal(nrow(p), 3)
-  expect_equal(p$text, c("p = 0.005", "p = 0.152", "p > .05"))
-  expect_equal(p$p_value, c(0.005, 0.152, 0.050))
-  expect_equal(p$p_comp, c("=", "=", ">"))
+  expect_equal(nrow(p), 4)
+  expect_equal(p$text, c("p = 0.005", "p = 0.152", "p > .05", "P = .04"))
+  expect_equal(p$p_value, c(0.005, 0.152, 0.050, 0.04))
+  expect_equal(p$p_comp, c("=", "=", ">", "="))
 
   # iteration: text modules need no special adaptation
   paper <- psychsci
@@ -208,11 +209,4 @@ test_that("bibr vs extract_eq", {
 
   dplyr::filter(compare, is.na(bibr) | is.na(mc)) |> View()
 
-})
-
-test_that("extract_p_values upper-case P", {
-  paper <- test_paper(c("t = 2.23, P = 0.005.", "NP = 0.5, MAP < .05"))
-  p <- extract_p_values(paper)
-  expect_equal(p$text, "P = 0.005")
-  expect_equal(p$p_value, 0.005)
 })
