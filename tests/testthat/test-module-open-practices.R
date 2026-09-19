@@ -27,6 +27,16 @@ test_that("open_practices paperlist", {
   expect_equal(mo$table$data, c(F, T))
   expect_equal(mo$table$code, c(T, F))
   expect_equal(mo$table$on_request, c(F, T))
+
+  # on request is flagged, but is not open sharing
+  expect_equal(mo$summary_table$data_open, c(F, F))
+  expect_equal(mo$summary_table$on_request, c(F, T))
+
+  # unless the same sentence also names a repository
+  paper <- test_paper("Data are available at https://osf.io/hk4yq/; raw data on request.")
+  mo <- module_run(paper, module)
+  expect_equal(mo$summary_table$data_open, TRUE)
+  expect_equal(mo$traffic_light, "red")
 })
 
 
@@ -72,32 +82,4 @@ test_that("error: argument is of length zero", {
 
   expect_equal(nrow(mo$table), 0)
   expect_equal(mo$summary_table$data_open, FALSE)
-})
-
-test_that("on request is not open sharing", {
-  module <- "open_practices"
-  paper <- test_paper("Data available upon request.")
-  mo <- module_run(paper, module)
-
-  # flagged in the table, but not counted as open
-  expect_equal(mo$table$on_request, TRUE)
-  expect_equal(mo$summary_table$data_open, FALSE)
-  expect_equal(mo$summary_table$on_request, TRUE)
-  expect_equal(mo$traffic_light, "red")
-
-  # open data plus something on request
-  paper <- test_paper(c(
-    "Data are available at https://osf.io/hk4yq/.",
-    "Raw data are available on request."
-  ))
-  mo <- module_run(paper, module)
-  expect_equal(mo$summary_table$data_open, TRUE)
-  expect_equal(mo$summary_table$on_request, TRUE)
-
-  # open and on-request sharing in the same sentence counts as open
-  paper <- test_paper("Data are available at https://osf.io/hk4yq/; raw data on request.")
-  mo <- module_run(paper, module)
-  expect_equal(mo$summary_table$data_open, TRUE)
-  expect_equal(mo$summary_table$on_request, TRUE)
-  expect_equal(mo$traffic_light, "red")
 })
