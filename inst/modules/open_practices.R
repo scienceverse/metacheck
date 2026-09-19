@@ -113,12 +113,17 @@ open_practices <- function(paper) {
   table$paper_id <- as.character(table$paper_id)
 
   # summary_table ----
-  # sentences about sharing on request are flagged in the table,
-  # but do not count as open sharing
+  # sentences that only matched repo_words because of "on request"
+  # are flagged in the table, but do not count as open sharing
+  in_repo <- setdiff(repo_words, on_request) |>
+    paste(collapse = "|") |>
+    grepl(table$text, ignore.case = TRUE)
+
   summary_table <- table |>
-    summarise(data_open = any(data & !on_request),
-              code_open = any(code & !on_request),
-              materials_open = any(materials & !on_request),
+    dplyr::mutate(.in_repo = in_repo) |>
+    summarise(data_open = any(data & .in_repo),
+              code_open = any(code & .in_repo),
+              materials_open = any(materials & .in_repo),
               prereg_open = any(prereg),
               on_request = any(on_request),
               data_statements = list(unique(text[data])),
@@ -187,7 +192,7 @@ open_practices <- function(paper) {
     } else {
       data_report <- sprintf(
         "Data was openly shared for this article, based on the following text:\n\n> %s",
-        paste(table$text[table$data & !table$on_request], collapse = "\n\n> ")
+        paste(table$text[table$data & in_repo], collapse = "\n\n> ")
       )
     }
 
@@ -197,7 +202,7 @@ open_practices <- function(paper) {
     } else {
       code_report <- sprintf(
         "Code was openly shared for this article, based on the following text:\n\n> %s",
-        paste(table$text[table$code & !table$on_request], collapse = "\n\n> ")
+        paste(table$text[table$code & in_repo], collapse = "\n\n> ")
       )
     }
 

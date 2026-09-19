@@ -1,7 +1,7 @@
 # metacheck (development version)
 
 * `extract_p_values()` now also detects upper-case "P = .04" (affects "all_p_values", "stat_p_exact" and "stat_p_nonsig")
-* "stat_p_exact" and "stat_p_nonsig" treat "≤" like "<", so "p ≤ .001" is no longer flagged as imprecise and "p ≤ .01" is no longer listed as non-significant
+* "stat_p_nonsig" treats "≤" like "<", so "p ≤ .01" is no longer listed as non-significant
 * "code_check" can now return a green traffic light, and the parse-error table is shown when more than one file was checked
 * "causal_claims" no longer excludes every sentence containing the word "random" (e.g., "random assignment to conditions"); only "pseudorandom" is excluded
 * "open_practices" no longer counts "available on request" as open sharing in the summary table
