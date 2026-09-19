@@ -32,10 +32,8 @@ stat_p_exact <- function(paper) {
   )
 
   # Flag imprecise p-values
-  # treat "less than or equal to" the same as "less than"
-  less_than <- c("<", "\u2264", "<=", "=<")
-  p$imprecise <- p$p_comp %in% less_than & p$p_value > .001
-  p$imprecise <- p$imprecise | !p$p_comp %in% c("=", less_than)
+  p$imprecise <- p$p_comp == "<" & p$p_value > .001
+  p$imprecise <- p$imprecise | !p$p_comp %in% c("=", "<")
   p$imprecise <- p$imprecise | is.na(p$p_value)
 
   # remove false positive "*p < .05"

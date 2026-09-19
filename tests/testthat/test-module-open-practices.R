@@ -94,9 +94,10 @@ test_that("on request is not open sharing", {
   expect_equal(mo$summary_table$data_open, TRUE)
   expect_equal(mo$summary_table$on_request, TRUE)
 
-  # request-gated sharing that also names a repository
-  paper <- test_paper("Data are available upon request at https://osf.io/hk4yq/.")
+  # open and on-request sharing in the same sentence counts as open
+  paper <- test_paper("Data are available at https://osf.io/hk4yq/; raw data on request.")
   mo <- module_run(paper, module)
-  expect_equal(mo$summary_table$data_open, FALSE)
+  expect_equal(mo$summary_table$data_open, TRUE)
   expect_equal(mo$summary_table$on_request, TRUE)
+  expect_equal(mo$traffic_light, "red")
 })
