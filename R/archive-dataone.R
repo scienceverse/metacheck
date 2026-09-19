@@ -174,6 +174,20 @@ dataone_info <- function(dataone_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (is.data.frame(dataone_url)) {
     table <- dataone_url
     table$dataone_url <- table[[id_col]]
+    # A caller passing dataone_links()'s own output back in (the documented,
+    # normal usage) already has dataone_host/dataone_pid columns of its
+    # own; ids below recomputes both independently, and left joining ids
+    # onto a table that already has those names produces .x/.y-suffixed
+    # duplicates instead of plain columns -- silently breaking the SECOND
+    # join further down (by = c("dataone_host", "dataone_pid")), which
+    # then errors with "must be present in the data" only when a dataset
+    # isn't found (confirmed live 2026-09-19). Dropped here so ids's own
+    # recomputed values are always what flows through, never stale/
+    # duplicated ones. Same fix applied identically across every
+    # archive-*.R file sharing this table/ids/left_join shape (dataverse,
+    # dryad, figshare, mendeley, reshare, zenodo).
+    table$dataone_host <- NULL
+    table$dataone_pid <- NULL
   } else {
     raw_urls <- unique(dataone_url) |> stats::na.omit()
     table <- data.frame(dataone_url = raw_urls)

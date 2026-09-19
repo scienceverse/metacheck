@@ -318,6 +318,19 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
   if (is.data.frame(figshare_url)) {
     table <- figshare_url
     table$figshare_url <- table[[id_col]]
+    # A caller passing figshare_links()'s own output back in (the
+    # documented, normal usage) already has a figshare_id column of its
+    # own; ids below recomputes it independently, and left joining ids
+    # onto a table that already has that name produces figshare_id.x/.y
+    # suffixes instead of a plain figshare_id column -- silently breaking
+    # the SECOND join further down (by = "figshare_id"), which then errors
+    # with "must be present in the data" only when an article isn't found
+    # (confirmed live 2026-09-19). Dropped here so ids's own recomputed
+    # values are always what flows through, never stale/duplicated ones.
+    # Same fix applied identically across every archive-*.R file sharing
+    # this table/ids/left_join shape (dataone, dataverse, dryad, mendeley,
+    # reshare, zenodo).
+    table$figshare_id <- NULL
   } else {
     raw_urls <- unique(figshare_url) |> stats::na.omit()
     table <- data.frame(figshare_url = raw_urls)

@@ -117,6 +117,79 @@ test_that(".dataverse_info reports not-found", {
 })
 
 
+test_that("dataverse_links recognises a bare DOI with no host domain in the URL", {
+  # Regression test: repo_check missed CIRAD Dataverse deposits cited as a
+  # bare DOI ("https://doi.org/10.18167/DVN1/T0DMFJ", no "dataverse.cirad.fr"
+  # string anywhere) even though dataverse.cirad.fr is already a known host
+  # -- confirmed live against a real paper's Data Availability Statement.
+  # 10.18167 was individually confirmed (2026-09-19) via DataCite's own DOI
+  # index to belong to dataverse.cirad.fr specifically -- see
+  # .dataverse_doi_prefix_hosts()'s own header comment for the full method.
+  # A bare DOI citation, like the real one this test guards against, never
+  # arrives as a clickable hyperlink in the `url` table (see .dataverse_
+  # doi_prefix_hosts()'s own header comment) -- it is body text the source
+  # PDF/HTML never made into a link, so it must be given as `text`, the
+  # same way a real Data Availability Statement is, not as `url`.
+  paper <- test_paper(text = c(
+    "Data are available on the CIRAD Dataverse: https://doi.org/10.18167/DVN1/T0DMFJ.",
+    "Also see https://doi.org/10.9999/unrelated123 for something unrelated."
+  ))
+
+  links <- dataverse_links(paper)
+
+  expect_equal(nrow(links), 1)
+  expect_equal(unname(links$dataverse_host), "dataverse.cirad.fr")
+  expect_equal(unname(links$dataverse_doi), "10.18167/DVN1/T0DMFJ")
+})
+
+
+test_that(".dataverse_host_from_doi resolves a host from a verified prefix only", {
+  expect_true(is.function(metacheck:::.dataverse_host_from_doi))
+
+  expect_equal(
+    metacheck:::.dataverse_host_from_doi("10.18167/DVN1/T0DMFJ"),
+    "dataverse.cirad.fr"
+  )
+  expect_equal(
+    metacheck:::.dataverse_host_from_doi("10.7910/DVN/ABC123"),
+    "dataverse.harvard.edu"
+  )
+  # An unverified prefix must not resolve to any host -- the allowlist is
+  # explicit and individually confirmed, not a general DOI-prefix guess
+  # (the file's own top-of-file comment explains why that distinction
+  # matters for Dataverse specifically, unlike Dryad's single-host case).
+  expect_true(is.na(metacheck:::.dataverse_host_from_doi("10.9999/unrelated123")))
+})
+
+
+test_that("dataverse_info() does not crash on dataverse_links()'s own output for an unfound DOI", {
+  # Regression test: dataverse_info(dataverse_links(paper)) -- the
+  # documented, normal usage -- crashed with "Join columns in `x` must be
+  # present in the data" whenever the dataset wasn't found.
+  # dataverse_links()'s output already carries dataverse_host/dataverse_doi
+  # columns; dataverse_info() independently recomputed its own `ids`
+  # versions of both and left-joined them onto the table without dropping
+  # the caller's existing columns first, producing .x/.y-suffixed
+  # duplicates that broke the SECOND join further down (by =
+  # c("dataverse_host", "dataverse_doi")) -- confirmed live 2026-09-19, and
+  # the same shape in 6 other archive-*.R files (see their own test files).
+  testthat::local_mocked_bindings(
+    .batch_query = function(urls, msg = NULL, req_func = identity) {
+      list(structure(list(status = 404), class = "httr2_response"))
+    }
+  )
+  testthat::local_mocked_bindings(
+    resp_status = function(resp) resp$status,
+    .package = "httr2"
+  )
+
+  paper <- test_paper(url =
+    "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/NOPE")
+  links <- dataverse_links(paper)
+  expect_no_error(suppressWarnings(dataverse_info(links)))
+})
+
+
 test_that("dataverse_pat stores per-host tokens", {
   withr::local_options(
     metacheck.dataverse.pat.DATAVERSE_HARVARD_EDU = NULL,
