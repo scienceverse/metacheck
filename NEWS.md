@@ -1,5 +1,6 @@
 # metacheck 0.3.0
 
+* Fixed `.figshare_id()` not recognising a Figshare article URL with no resource-type segment (`figshare.com/articles/<slug>/<id>`, as opposed to `figshare.com/articles/dataset/<slug>/<id>`) -- an older/plainer, still commonly-cited Figshare URL shape that `figshare_links()` already detected but could not resolve to an id, silently leaving `repo_check` unable to fetch a real Figshare article cited by its own link. See scienceverse/metacheck#411
 * New `reproducibility_check` module: assesses whether a paper's code can run on its data. Static analysis (dependencies, run order, missing inputs, undefined symbols with a same-file source suggestion) always runs; `execute = TRUE` additionally runs the code in an isolated `callr` subprocess or a locked-down Docker container, and matches its console output against the paper's own reported statistics
 * New `psychds_check` module
 * New repository platforms: GitLab (with licence/DOI metadata), Mendeley Data, DataONE, the Finnish Social Science Data Archive (FSD), and many more Dataverse/Figshare/DSpace installations; `repo_check` also now lists what a Zenodo/Dryad zip archive contains without downloading it (`zip_peek()`), and excludes R package source trees (DESCRIPTION/NAMESPACE/R/man/tests) from a repository's data/code listing

@@ -187,10 +187,24 @@ figshare_links <- function(paper) {
   # the file-level note above: vanity hosts serve no API of their own, so a
   # file is always actually fetched from figshare.com regardless of which
   # host a paper cited).
+  # Not every Figshare article URL carries a resource-type segment
+  # (dataset/software/media/...) -- an older or simply plainer citation
+  # can read "figshare.com/articles/<slug>/<id>" with the id directly
+  # after the slug, no type keyword in between. Confirmed live 2026-09-19:
+  # https://figshare.com/articles/PxW_dataset/6934484 is a real Figshare
+  # article at exactly that two-segment shape (api.figshare.com/v2/
+  # articles/6934484 resolves); it was detected by figshare_links() as a
+  # figshare_url but silently got NA here, since neither the three-segment
+  # (type/name/id) pattern below nor the bare-id pattern matched it. The
+  # two-segment pattern must come AFTER the three-segment one: `[^/]+`
+  # cannot itself span a `/`, so it does not actually match (let alone
+  # mis-match) a three-segment URL, but keeping the more specific pattern
+  # first is still the safer order to read and extend.
   host_regex <- .figshare_host_regex()
   patterns <- c(
     "10\\.6084/m9\\.figshare\\.([0-9]+)",
     paste0("(?:", host_regex, ")/articles/(?:dataset|[a-z]+)/[^/]+/([0-9]+)"),
+    paste0("(?:", host_regex, ")/articles/[^/]+/([0-9]+)"),
     paste0("(?:", host_regex, ")/articles/([0-9]+)"),
     "ndownloader\\.figshare\\.com/files/([0-9]+)"
   )

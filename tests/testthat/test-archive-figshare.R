@@ -50,13 +50,21 @@ test_that(".figshare_id", {
     "https://figshare.com/projects/some_project/133332",  # project, not an article
     "https://figshare.com/s/5e01cc0cae4cf3e2e14f",         # share link, opaque hash
     "not-a-figshare-url",
-    ""
+    "",
+    # No resource-type segment (slug directly followed by id) -- a real,
+    # still-common Figshare article URL shape, confirmed live 2026-09-19
+    # against https://figshare.com/articles/PxW_dataset/6934484. Used to
+    # return NA: the three-segment (type/name/id) pattern above requires a
+    # type keyword that isn't there, and the bare-id pattern requires the
+    # id immediately after /articles/, which it also isn't.
+    "https://figshare.com/articles/PxW_dataset/6934484"
   )
 
   ids <- .figshare_id(figshare_url)
   expect_equal(unname(ids), c(
     "18093368", "18093368", "18093368", "18093368", "18093368",
-    "12345", NA, NA, NA, NA
+    "12345", NA, NA, NA, NA,
+    "6934484"
   ))
 
   # NULL / empty
