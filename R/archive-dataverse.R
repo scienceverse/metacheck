@@ -225,6 +225,23 @@
 # directly into the live API call URL and picking the wrong one of several
 # genuinely-plausible hosts would break retrieval, not just misattribute a
 # citation.
+#
+# Re-derived 2026-09-19 (see NEWS.md): the original version of this table
+# was built by sampling only the first 25 DOIs returned per host by
+# DataCite's `url:*host*` search, which badly under-counted any host with
+# more real DOIs than that -- 63 of the 121 known hosts, some by orders of
+# magnitude (dataverse.harvard.edu alone has 817,836 real DOIs; the sampled
+# version only ever saw its dominant prefix, 10.7910, and missed the
+# 10.26300 prefix entirely). This was caught when a paper citing
+# 10.7939/DVN/M6Q2PE -- the University of Alberta's legacy Dataverse
+# prefix, since migrated onto the shared Borealis platform at
+# borealisdata.ca -- failed to resolve, even though borealisdata.ca was
+# already a known host: it was mapped to only its dominant prefix
+# (10.5683), not the 5 others it also genuinely serves. Every host below
+# was re-queried using DataCite's facet aggregation
+# (`disable-facets=false` on the `/dois` search), which returns every
+# distinct DOI prefix actually in use for a query, with its real count, in
+# one request -- not a sample.
 .dataverse_doi_prefix_hosts <- function() {
   list(
     "agh.rodbuk.pl" = "10.58032",
@@ -232,7 +249,7 @@
     "arcadados.fiocruz.br" = "10.35078",
     "archaeology.datastations.nl" = "10.17026",
     "archivdv.soc.cas.cz" = "10.14473",
-    "borealisdata.ca" = "10.5683",
+    "borealisdata.ca" = c("10.14285", "10.23685", "10.34990", "10.5203", "10.5683", "10.7939"),
     "danebadawcze.uw.edu.pl" = "10.58132",
     "dare.uol.de" = "10.57782",
     "data.aussda.at" = "10.11587",
@@ -243,7 +260,7 @@
     "data.qdr.syr.edu" = "10.5064",
     "data.sciencespo.fr" = "10.21410",
     "data.worldagroforestry.org" = "10.34725",
-    "datadoi.ee" = "10.23673",
+    "datadoi.ee" = c("10.15155", "10.23659", "10.23673"),
     "datahub.tec.mx" = "10.57687",
     "dataportal.ing.pan.pl" = "10.60871",
     "datarepository.unive.it" = "10.71731",
@@ -259,18 +276,18 @@
     "dataverse.dartmouth.edu" = "10.21989",
     "dataverse.deic.dk" = "10.60612",
     "dataverse.fiu.edu" = "10.34703",
-    "dataverse.harvard.edu" = "10.7910",
+    "dataverse.harvard.edu" = c("10.26300", "10.7910"),
     "dataverse.icrisat.org" = "10.21421",
-    "dataverse.ideal.ufpb.br" = c("10.71650", "10.48472"),
+    "dataverse.ideal.ufpb.br" = c("10.48472", "10.71650"),
     "dataverse.iit.it" = "10.48557",
     "dataverse.ipgp.fr" = "10.18715",
     "dataverse.ird.fr" = "10.23708",
-    "dataverse.jpl.nasa.gov" = "10.48577",
+    "dataverse.jpl.nasa.gov" = c("10.48577", "10.48588"),
     "dataverse.lib.nycu.edu.tw" = "10.57770",
     "dataverse.lib.unb.ca" = "10.25545",
     "dataverse.lib.virginia.edu" = "10.18130",
     "dataverse.nl" = "10.34894",
-    "dataverse.no" = "10.18710",
+    "dataverse.no" = c("10.18710", "10.23642", "10.6084"),
     "dataverse.openforestdata.pl" = "10.48370",
     "dataverse.orc.gmu.edu" = "10.13021",
     "dataverse.rhi.hi.is" = "10.34881",
@@ -290,7 +307,7 @@
     "dv.dataverse.lv" = "10.71782",
     "edatos.consorciomadrono.es" = "10.21950",
     "edmond.mpdl.mpg.de" = "10.17617",
-    "entrepot.recherche.data.gouv.fr" = "10.57745",
+    "entrepot.recherche.data.gouv.fr" = c("10.12763", "10.15454", "10.17180", "10.57745"),
     "ifj.rodbuk.pl" = "10.48733",
     "indata.cedia.edu.ec" = "10.48661",
     "investigacionartes.mincultura.gov.co" = "10.82294",
@@ -307,11 +324,11 @@
     "researchdata.cuhk.edu.hk" = "10.48668",
     "researchdata.lib.polyu.edu.hk" = "10.60933",
     "researchdata.nie.edu.sg" = "10.25340",
-    "rodbuk.pl" = c("10.57903", "10.34616", "10.48733", "10.58032", "10.58145", "10.58116"),
+    "rodbuk.pl" = c("10.26106", "10.34616", "10.48733", "10.57903", "10.58032", "10.58099", "10.58116", "10.58145", "10.71580"),
     "sano.rodbuk.pl" = "10.71580",
     "ssh.datastations.nl" = "10.17026",
     "uek.rodbuk.pl" = "10.58116",
-    "uj.rodbuk.pl" = "10.57903",
+    "uj.rodbuk.pl" = c("10.26106", "10.57903"),
     "uwr.rodbuk.pl" = "10.34616",
     "www.sodha.be" = "10.34934"
   )
