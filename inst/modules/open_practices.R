@@ -113,10 +113,12 @@ open_practices <- function(paper) {
   table$paper_id <- as.character(table$paper_id)
 
   # summary_table ----
+  # sentences about sharing on request are flagged in the table,
+  # but do not count as open sharing
   summary_table <- table |>
-    summarise(data_open = any(data),
-              code_open = any(code),
-              materials_open = any(materials),
+    summarise(data_open = any(data & !on_request),
+              code_open = any(code & !on_request),
+              materials_open = any(materials & !on_request),
               prereg_open = any(prereg),
               on_request = any(on_request),
               data_statements = list(unique(text[data])),
@@ -168,7 +170,7 @@ open_practices <- function(paper) {
     }
 
     if (summary_table$on_request) {
-      summary_text <- gsub("\\.$", ", but on request.", summary_text)
+      summary_text <- gsub("\\.$", "; some sharing is only on request.", summary_text)
       tl <- "red"
     }
   }
@@ -185,7 +187,7 @@ open_practices <- function(paper) {
     } else {
       data_report <- sprintf(
         "Data was openly shared for this article, based on the following text:\n\n> %s",
-        paste(table$text[table$data], collapse = "\n\n> ")
+        paste(table$text[table$data & !table$on_request], collapse = "\n\n> ")
       )
     }
 
@@ -195,7 +197,7 @@ open_practices <- function(paper) {
     } else {
       code_report <- sprintf(
         "Code was openly shared for this article, based on the following text:\n\n> %s",
-        paste(table$text[table$code], collapse = "\n\n> ")
+        paste(table$text[table$code & !table$on_request], collapse = "\n\n> ")
       )
     }
 
