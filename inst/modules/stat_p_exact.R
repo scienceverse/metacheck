@@ -39,7 +39,7 @@ stat_p_exact <- function(paper) {
   p$imprecise <- p$imprecise | is.na(p$p_value)
 
   # remove false positive "*p < .05"
-  star_pattern <- "\\*\\s*p\\s*<\\s*0?\\.0+[15]"
+  star_pattern <- "\\*\\s*[pP]\\s*<\\s*0?\\.0+[15]"
   stars <- grepl(star_pattern, p$expanded)
   p$imprecise <- p$imprecise & !stars
 

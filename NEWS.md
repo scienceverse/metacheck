@@ -1,3 +1,13 @@
+# metacheck (development version)
+
+* `extract_p_values()` now also detects upper-case "P = .04" (affects "all_p_values", "stat_p_exact" and "stat_p_nonsig")
+* "stat_p_nonsig" treats "≤" like "<", so "p ≤ .01" is no longer listed as non-significant
+* "code_check" can now return a green traffic light, and the parse-error table is shown when more than one file was checked
+* "causal_claims" no longer excludes every sentence containing the word "random" (e.g., "random assignment to conditions"); only "pseudorandom" is excluded
+* "open_practices" no longer counts "available on request" as open sharing in the summary table
+* "ref_miscitation" reports all matched papers, not just the last one
+* "ref_retraction" report text no longer refers to replication studies
+
 # metacheck 0.3.0
 
 * DataONE: added `data.piscoweb.org` (PISCO, UC Santa Barbara) as a known member node, and fixed `.dataone_pid()` not recognising a bare DOI whose suffix itself contains a further slash (PISCO's own `10.6085/AA/<id>` shape) -- both found via a real paper citing this DOI with no host domain in the URL at all, which `dataone_links()` could not resolve at all before this fix
