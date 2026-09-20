@@ -1,4 +1,5 @@
 test_that("psychsci", {
+  skip_no_psychsci()
   expect_true(.is_paper_list(psychsci))
 
   # check all valid format

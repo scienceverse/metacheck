@@ -76,6 +76,7 @@ test_that("open_practices both open data and code", {
 
 
 test_that("error: argument is of length zero", {
+  skip_no_psychsci()
   module <- "open_practices"
   paper <- psychsci$`0956797617714811`
   mo <- module_run(paper, module)

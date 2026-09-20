@@ -46,6 +46,7 @@ test_that("statcheck options", {
 })
 
 test_that("error", {
+  skip_no_psychsci()
   # errored out at 154
   # Error in missing value where TRUE/FALSE needed
   paper <- psychsci[100]

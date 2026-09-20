@@ -63,6 +63,7 @@ test_that("report return list", {
 })
 
 test_that("report paperlist", {
+  skip_no_psychsci()
   paper <- psychsci[1:2]
   modules <- c("stat_p_exact", "marginal")
   output_file <- withr::local_tempfile(pattern = "_", fileext = ".qmd")
@@ -104,6 +105,7 @@ test_that("render qmd", {
   modules <- c("stat_p_exact", "marginal")
 
   # qmd
+  skip_no_psychsci()
   paper <- psychsci[[94]]
   output_file <- withr::local_tempfile(fileext = ".qmd")
   output_format <- "qmd"
@@ -220,6 +222,7 @@ test_that("module_report", {
   expect_error(module_report())
 
   # set up module output
+  skip_no_psychsci()
   module_output <- module_run(psychsci[[4]], "stat_p_exact")
 
   report <- module_report(module_output)

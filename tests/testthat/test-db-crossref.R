@@ -112,6 +112,7 @@ test_that("add_bib_match", {
 }, "mock")
 
 test_that('Error in `[.data.frame`(ref[[i]], , ref[[i]] != "")', {
+  skip_no_psychsci()
   paper <- psychsci[[1]]
   ref <- paper$bib[6:7, ]
   obs <- crossref_query(ref, min_score = 50)
@@ -235,6 +236,7 @@ test_that("crossref_query batch", {
 })
 
 test_that("crossref_doi", {
+  skip_no_psychsci()
   expect_true(is.function(metacheck::crossref_doi))
   expect_no_error(helplist <- help(crossref_doi, metacheck))
 
@@ -308,6 +310,7 @@ test_that("datacite_doi", {
 }, "mock")
 
 test_that("openalex_doi", {
+  skip_no_psychsci()
   expect_true(is.function(metacheck::openalex_doi))
   expect_no_error(helplist <- help(openalex_doi, metacheck))
 
