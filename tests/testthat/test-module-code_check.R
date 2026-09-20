@@ -332,3 +332,16 @@ test_that("parse errors", {
 })
 
 
+
+test_that("code_check local_path: green light and parse errors", {
+  tmp <- withr::local_tempdir()
+  writeLines(c("# comment", "x <- 1"), file.path(tmp, "good.R"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_equal(mo$traffic_light, "green")
+
+  # parse errors are reported when more than one file is checked
+  writeLines("x <- (1", file.path(tmp, "bad.R"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_equal(mo$traffic_light, "yellow")
+  expect_true(any(grepl("bad.R", mo$report, fixed = TRUE)))
+})

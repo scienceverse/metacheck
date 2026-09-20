@@ -52,7 +52,7 @@ causal_claims <- function(paper) {
   | \\brandom\\s+jitter(?:ed|ing)?\\b
   | \\brandom\\s+noise\\b
   | \\brandom\\s+pixels?\\b|\\brandom\\-pixel\\b
-  | \\b(?:pseudo)?random\\b
+  | \\bpseudo\\-?random(?:ly|i[sz]ed)?\\b
 
   # sampling / lotteries / non-arm selection
   | \\brandom\\s+digit\\-?dial(?:ing)?\\b
@@ -119,7 +119,7 @@ causal_claims <- function(paper) {
     summary_text_title <- "Causal claims were detected in the title."
     report_causal_title <- c(
       summary_text_title,
-      scroll_table(causal_title[, c("sentence", "cause", "effect")]), 1
+      scroll_table(causal_title[, c("sentence", "cause", "effect")], 1)
     )
   }
 
