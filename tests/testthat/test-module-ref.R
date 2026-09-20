@@ -11,6 +11,7 @@ test_that("ref_consistency", {
   expect_equal(mod_output$module, module)
 
   # iteration
+  skip_no_psychsci()
   paper <- psychsci[c(23, 25)]
   mod_output1 <- module_run(paper[[1]], module)
   mod_output2 <- module_run(paper[[2]], module)
@@ -176,6 +177,7 @@ test_that("ref_retraction", {
 })
 
 test_that("ref_pubpeer", {
+  skip_no_psychsci()
   module <- "ref_pubpeer"
   mods <- module_list()
   expect_true(module %in% mods$name)

@@ -54,6 +54,7 @@ test_that("stat_p_exact", {
   expect_equal(sum(mod_output$table$zero), 1)
 
   # iteration
+  skip_no_psychsci()
   paper <- psychsci
   mod_output <- module_run(paper, module)
   lt05 <- grepl("p < .05", mod_output$table$text) |> sum()
@@ -82,6 +83,7 @@ test_that("marginal", {
   expect_equal(nrow(mod_output$table), 2)
 
   # iteration
+  skip_no_psychsci()
   mod_output <- module_run(psychsci, module)
   # expect_true(unique(mod_output$table$id) |> length() > 1)
 })

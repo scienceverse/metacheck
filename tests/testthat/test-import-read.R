@@ -44,6 +44,7 @@ test_that("read - json and xml together", {
 })
 
 test_that("read - recursive", {
+  skip_no_psychsci()
   # set up temp
   a <- file.path(withr::local_tempdir(), "a")
   b1 <- file.path(a, "b1")

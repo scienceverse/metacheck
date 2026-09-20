@@ -183,6 +183,7 @@ test_that("chaining modules - one paper", {
 })
 
 test_that("chaining modules - paperlist", {
+  skip_no_psychsci()
   paper <- psychsci[1:5]
 
   p <- module_run(paper, "all_p_values")
@@ -235,6 +236,7 @@ test_that("all_urls", {
   expect_equal(urls$module, module)
 
   # iteration
+  skip_no_psychsci()
   paper <- psychsci[1:5]
   mod_output <- module_run(paper, module)
   ids <- mod_output$table$paper_id |> unique()

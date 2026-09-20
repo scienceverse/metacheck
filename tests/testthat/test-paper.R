@@ -85,6 +85,7 @@ test_that(".paper_coerce", {
   expect_equal(ll$example, "NO")
 
   # handle paper_list
+  skip_no_psychsci()
   paper <- psychsci[1:3]
   paper[[1]]$info$file_name <- 10
   paper[[2]]$bib$bib_id <- as.character(paper[[2]]$bib$bib_id)
@@ -114,6 +115,7 @@ test_that("paper_validate", {
 
 
 test_that("paperlist", {
+  skip_no_psychsci()
   # individual papers
   p1 <- psychsci[[1]]
   p2 <- psychsci[[2]]
@@ -196,6 +198,7 @@ test_that("paper_table", {
                ignore_attr = TRUE)
 
   # concat 2 papers
+  skip_no_psychsci()
   paper <- psychsci[1:2]
   bibs <- paper_table(paper, "bib")
   n <- nrow(paper[[1]]$bib) + nrow(paper[[2]]$bib)
@@ -234,6 +237,7 @@ test_that("paper_id", {
   exp <- paper$paper_id
   expect_equal(obs, exp)
 
+  skip_no_psychsci()
   paper <- psychsci
   obs <- paper_id(paper)
   expect_equal(length(obs), length(paper))
@@ -262,6 +266,7 @@ test_that("ref_table", {
 
 
 test_that(".is_paper_list", {
+  skip_no_psychsci()
   expect_equal(.is_paper_list(psychsci), TRUE)
   expect_equal(.is_paper_list(psychsci[1]), TRUE)
   expect_equal(.is_paper_list(psychsci[[1]]), FALSE)
@@ -296,6 +301,7 @@ test_that("print.scivrs_paperlist", {
 })
 
 test_that("[.scivrs_paperlist", {
+  skip_no_psychsci()
   # subsetting maintains class
   x <- psychsci[1:3]
   expect_s3_class(psychsci, "scivrs_paperlist")

@@ -1,4 +1,5 @@
 test_that("aspredicted_links", {
+  skip_no_psychsci()
   expect_true(is.function(metacheck::aspredicted_links))
   expect_no_error(helplist <- help(aspredicted_links, metacheck))
 

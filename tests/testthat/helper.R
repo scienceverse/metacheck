@@ -128,3 +128,9 @@ skip_osf <- function() {
 skip_if_quick <- function() {
   if (quick) skip("Quick mode")
 }
+
+# skip if the psychsci test corpus couldn't be downloaded (see setup.R)
+skip_no_psychsci <- function() {
+  skip_if_not(exists("psychsci") && !is.null(get("psychsci")),
+              "psychsci test corpus not available")
+}

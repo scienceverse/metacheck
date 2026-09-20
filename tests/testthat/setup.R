@@ -30,3 +30,37 @@ withr::defer({
   else Sys.setenv(METACHECK_LLM_CACHE_DIR = .mc_old_llm_env)
 })
 withr::defer(unlink(.mc_test_cache, recursive = TRUE))
+
+# psychsci test corpus ---------------------------------------------------
+# psychsci was removed from data/ (LazyData) to reduce package size and is
+# now downloaded on demand from the GitHub release and cached in the same
+# directory metacheck already uses for other downloaded data
+# (see rappdirs::user_data_dir() usage in R/db-retractionwatch.R).
+#
+# If it can't be downloaded (e.g. no internet, as on CRAN), tests that need
+# it are skipped via skip_if_no_psychsci(), not failed.
+
+psychsci_cache_path <- rappdirs::user_data_dir("metacheck", "scienceverse") |>
+  file.path("psychsci.rds")
+
+if (!file.exists(psychsci_cache_path)) {
+  dir.create(dirname(psychsci_cache_path), showWarnings = FALSE, recursive = TRUE)
+  tryCatch(
+    curl::curl_download(
+      "https://github.com/scienceverse/papers/releases/download/psychsci/psychsci.rds",
+      psychsci_cache_path
+    ),
+    error = function(e) NULL
+  )
+}
+
+if (file.exists(psychsci_cache_path)) {
+  psychsci <- tryCatch(readRDS(psychsci_cache_path), error = function(e) NULL)
+} else {
+  psychsci <- NULL
+}
+
+if (is.null(psychsci)) {
+  unlink(psychsci_cache_path) # remove any partial/corrupt download
+  message("psychsci test corpus not available (download failed); dependent tests will be skipped")
+}

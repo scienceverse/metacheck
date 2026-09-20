@@ -30,6 +30,7 @@ test_that("extract_urls", {
   expect_equal(nrow(urls), 0)
 
   # paperlist
+  skip_no_psychsci()
   paper <- psychsci[1:10]
   urls <- extract_urls(paper)
   expect_in(urls$paper_id, names(paper))
@@ -56,6 +57,7 @@ test_that("extract_p_values", {
   expect_equal(p$p_comp, c("=", "=", ">", "="))
 
   # iteration: text modules need no special adaptation
+  skip_no_psychsci()
   paper <- psychsci
   p <- extract_p_values(paper)
 
@@ -172,6 +174,7 @@ test_that("extract_eq complex", {
 
   # all eq
   skip_if_quick()
+  skip_no_psychsci()
   #eq <- paper_table(psychsci, "eq")
   eq <- extract_eq(psychsci)
   lhs <- dplyr::count(eq, lhs, sort = TRUE)
