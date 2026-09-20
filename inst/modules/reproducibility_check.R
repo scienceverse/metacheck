@@ -159,6 +159,33 @@
 #'   calls) entirely. A saved file missing a particular module's output
 #'   still falls back to running just that module. `NULL` (the default)
 #'   disables this and behaves exactly as before.
+#' @param workers when `paper` is a paperlist AND `execute = TRUE` AND
+#'   `sandbox = "docker"`, the number of papers to run CONCURRENTLY, each in
+#'   its own background R process (`callr`). Default 1: papers are checked
+#'   one at a time, in order, exactly as before. Raising this starts the
+#'   next paper's Docker run the moment a running one finishes, instead of
+#'   waiting for the whole paperlist to go one paper at a time — the actual
+#'   work of each paper (installing dependencies, running scripts in
+#'   containers) is unaffected; only how many papers' worth of that work
+#'   happen at once changes. Ignored (treated as 1) for a single paper, or
+#'   whenever `execute = FALSE` or `sandbox = "process"`: those paths are
+#'   fast enough, or already isolated only at the crash level, that running
+#'   several at once is not worth the added complexity — the docker sandbox
+#'   is the one with slow, external, genuinely parallelisable work (`docker
+#'   run`, package installs). Each worker's container is capped at
+#'   `1/workers` of the host's CPUs and memory (see
+#'   `.repro_docker_resource_limits()`) so `workers` concurrent containers
+#'   cannot collectively exceed the host — set `workers` no higher than the
+#'   number of papers you actually want fighting over that share at once.
+#' @param results_dir when `paper` is a paperlist and `workers > 1`, an
+#'   optional directory to write each paper's full result to
+#'   (`<paper_id>.rds`, via `capture_module_tables()`'s own format) AS SOON
+#'   as that paper finishes, not just once the whole paperlist is done — so
+#'   a long batch is inspectable and resumable mid-run (see
+#'   `collect_module_tables()`) even if it is interrupted partway through,
+#'   and a crashed/killed run does not lose the papers that already
+#'   completed. `NULL` (the default) does not write anything; every paper's
+#'   result is still returned in memory either way.
 #'
 #' @returns a list
 reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -175,9 +202,40 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   max_file_size = 100,
                                   max_download_size = 500,
                                   skip_on_api_limit = FALSE,
-                                  tables_dir = NULL) {
+                                  tables_dir = NULL,
+                                  workers = 1,
+                                  results_dir = NULL) {
   # paper <- psychsci[[233]] # to test (many code files, several issues)
   sandbox <- match.arg(sandbox)
+
+  # ── Paperlist + workers > 1: run papers CONCURRENTLY ────────────────────────
+  # Every argument above is still just for ONE paper's own reproducibility
+  # check; this branch does not change any of that single-paper logic (below,
+  # unchanged) — it only decides how many papers' worth of it run at the same
+  # time when there is more than one paper to check. Restricted to the case
+  # that actually benefits: sandbox = "docker" execution is slow, external
+  # (docker run, package installs) work that genuinely overlaps across
+  # papers; a single paper, execute = FALSE (static analysis only), or
+  # sandbox = "process" all fall through to the existing sequential path
+  # unchanged (workers is simply ignored there, not an error, so a caller
+  # looping over mixed execute/sandbox settings does not need to branch on it
+  # themselves).
+  if (.is_paper_list(paper) && length(paper) > 1 && workers > 1 &&
+      isTRUE(execute) && sandbox == "docker") {
+    return(.reproducibility_check_batch(
+      paper, workers = workers, results_dir = results_dir,
+      local_path = local_path, local_only = local_only,
+      model = model, params = params,
+      execute = execute, sandbox = sandbox,
+      docker_use_declared_version = docker_use_declared_version,
+      install_missing = install_missing,
+      cran_install_main = cran_install_main,
+      timeout = timeout, keep_sandbox = keep_sandbox,
+      cache = cache, download = download, skip_types = skip_types,
+      peek_zips = peek_zips, max_file_size = max_file_size,
+      max_download_size = max_download_size,
+      skip_on_api_limit = skip_on_api_limit, tables_dir = tables_dir))
+  }
 
   # Executing downloaded code runs it on this machine: gate it behind an explicit
   # opt-in. sandbox = "process" (default) isolates a CRASH via callr, not the
@@ -2221,4 +2279,224 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (isTRUE(keep_sandbox) && !is.null(sandbox_root))
     out$sandbox <- sandbox_root
   out
+}
+
+# ── Concurrent multi-paper dispatch (reproducibility_check(paper = <paperlist>,
+# workers > 1, execute = TRUE, sandbox = "docker")) ─────────────────────────
+#
+# One background R process per paper (callr::r_bg()), up to `workers` alive
+# at any moment; the instant one finishes, the next queued paper starts —
+# never fewer than `workers` running while papers remain, never more.  Each
+# process runs the SAME single-paper reproducibility_check() call this file
+# already defines above, completely unchanged — this is dispatch only, not a
+# second implementation of the check itself.
+#
+# A background R PROCESS per paper, not e.g. a future/promise sharing this R
+# session: reproducibility_check() reads and restores several process-global
+# settings (options(metacheck.skip_on_api_limit = ...), llm_use()), which are
+# fine to set/restore around ONE call in the caller's own session but are not
+# safe for several papers to set/restore concurrently in a SHARED session —
+# see this function's own header comment on options(). A separate OS process
+# per paper sidesteps that entirely: each has its own session, so one
+# paper's options() never observes another's.
+.reproducibility_check_batch <- function(paper, workers, results_dir, ...) {
+  if (!requireNamespace("callr", quietly = TRUE))
+    stop("workers > 1 with sandbox = \"docker\" needs the 'callr' package ",
+         "(each paper runs in its own background R process).", call. = FALSE)
+
+  pids <- names(paper)
+  n <- length(pids)
+  workers <- max(1L, min(as.integer(workers), n))
+  args_common <- list(...)
+
+  # Per-worker container resource limits, sized so `workers` concurrent
+  # containers cannot collectively exceed the host — see
+  # .repro_docker_resource_limits()'s own header for why this is set here
+  # (once, from the number of workers actually running) rather than as a
+  # fixed constant in reproducibility_check_docker.R.
+  limits <- .repro_docker_resource_limits(workers)
+  prev_limits <- getOption("metacheck.docker_resource_limits")
+  options(metacheck.docker_resource_limits = limits)
+  on.exit(options(metacheck.docker_resource_limits = prev_limits), add = TRUE)
+
+  message("[repro] running ", n, " paper", if (n != 1) "s", " with up to ",
+          workers, " at a time (", limits$cpus, " CPU / ", limits$memory_gb,
+          "GB per container) ...")
+
+  queue <- seq_len(n)          # indices into `paper`/`pids` still to start
+  running <- list()            # pid -> callr process handle
+  results <- vector("list", n); names(results) <- pids
+
+  launch <- function(i) {
+    pid <- pids[[i]]
+    message("[repro]   -> starting '", pid, "' (", sum(lengths(running) > 0 |
+            vapply(running, function(x) TRUE, logical(1))), " already running)")
+    p <- callr::r_bg(
+      # module_run(), not reproducibility_check() directly: the module is
+      # loaded from inst/modules/reproducibility_check.R at run time (see
+      # module_run()'s own source(module_path, local = TRUE)), it is not an
+      # exported package function -- library(metacheck) alone does not make
+      # it callable, only module_run() knows how to find and source it.
+      func = function(paper1, args, limits) {
+        options(metacheck.docker_resource_limits = limits)
+        do.call(metacheck::module_run,
+                c(list(paper = paper1, module = "reproducibility_check"), args))
+      },
+      args = list(paper1 = paper[[i]], args = args_common, limits = limits),
+      package = "metacheck",
+      supervise = TRUE
+    )
+    running[[pid]] <<- p
+  }
+
+  # Prime the pool: start up to `workers` papers immediately.
+  n_start <- min(workers, length(queue))
+  if (n_start > 0) {
+    for (i in queue[seq_len(n_start)]) launch(i)
+    queue <- queue[-seq_len(n_start)]
+  }
+
+  # Poll for completions; the moment a slot frees up, start the next queued
+  # paper. A short sleep between polls (not a busy-loop) — Docker runs take
+  # minutes, so polling every second costs nothing but keeps the pool full
+  # promptly rather than only checking once a minute.
+  while (length(running) > 0) {
+    done_now <- character(0)
+    for (pid in names(running)) {
+      p <- running[[pid]]
+      if (!p$is_alive()) done_now <- c(done_now, pid)
+    }
+    for (pid in done_now) {
+      p <- running[[pid]]
+      res <- tryCatch(p$get_result(), error = function(e) {
+        message("[repro]   x  '", pid, "' failed: ", conditionMessage(e))
+        NULL
+      })
+      if (is.null(res)) {
+        err <- tryCatch(paste(p$read_all_error(), collapse = "\n"),
+                        error = function(e) "")
+        res <- list(traffic_light = "error",
+                    summary_text = paste0("Docker reproducibility check failed: ",
+                                          if (nzchar(err)) err else "unknown error"),
+                    table = data.frame(),
+                    summary_table = data.frame(paper_id = pid))
+      }
+      results[[pid]] <- res
+      if (!is.null(results_dir)) {
+        # res is already a metacheck_module_output (from module_run(), inside
+        # the background process above) whenever the paper's own check
+        # succeeded; the synthetic error stand-in built above (get_result()
+        # itself failing) is not, so it is wrapped the same way here as a
+        # single-module "chain" for capture_module_tables()'s own contract.
+        chain <- if (inherits(res, "metacheck_module_output")) list(res) else {
+          err_out <- res
+          class(err_out) <- "metacheck_module_output"
+          list(err_out)
+        }
+        tryCatch(capture_module_tables(chain, results_dir, paper_id = pid),
+                error = function(e) message(
+                  "[repro]   (could not write ", pid, ".rds to results_dir: ",
+                  conditionMessage(e), ")"))
+      }
+      message("[repro]   <- '", pid, "' done (", sum(vapply(results, Negate(is.null), logical(1))),
+              "/", n, ")")
+      running[[pid]] <- NULL
+      if (length(queue) > 0) {
+        launch(queue[[1]])
+        queue <- queue[-1]
+      }
+    }
+    if (length(running) > 0 && length(done_now) == 0) Sys.sleep(1)
+  }
+
+  # ── Combine into the shape module_run() expects for a paperlist call ───────
+  # One row per paper_id in `summary_table` (module_run() left-joins this onto
+  # its own data.frame(paper_id = names(paper)) — see R/module.R), and every
+  # paper's own `table` row-bound together, tagged by paper_id, exactly like
+  # every other paperlist-aware module (e.g. stat_p_exact() via
+  # extract_p_values()/text_search()) already returns.
+  summary_table <- dplyr::bind_rows(lapply(pids, function(pid) {
+    st <- results[[pid]]$summary_table
+    if (is.null(st) || !nrow(st)) data.frame(paper_id = pid) else st
+  }))
+  table <- dplyr::bind_rows(lapply(pids, function(pid) {
+    tb <- results[[pid]]$table
+    if (is.null(tb) || !nrow(tb)) return(NULL)
+    if (!"paper_id" %in% names(tb)) tb$paper_id <- pid
+    tb
+  }))
+  if (is.null(table)) table <- data.frame()
+
+  tls <- vapply(results, function(r) r$traffic_light %||% "na", character(1))
+  overall_tl <- if (all(tls == "na")) "na" else
+    if (any(tls == "red")) "red" else
+    if (any(tls == "error")) "error" else
+    if (any(tls == "yellow") || any(tls == "info")) "yellow" else "green"
+
+  n_ok <- sum(tls %in% c("green", "yellow", "info"))
+  n_red <- sum(tls == "red")
+  n_err <- sum(tls == "error")
+  summary_text <- sprintf(
+    "Ran the reproducibility check on %d paper%s (up to %d at a time): %d ok, %d red, %d error%s.",
+    n, plural(n), workers, n_ok, n_red, n_err, plural(n_err))
+
+  list(
+    table = table,
+    summary_table = summary_table,
+    traffic_light = overall_tl,
+    summary_text = summary_text,
+    report = summary_text,
+    per_paper = results   # each paper's full, untruncated result list
+  )
+}
+
+# Per-container `--cpus`/`--memory` limits for N concurrent workers, so N
+# containers running at once cannot collectively claim more than the host
+# has. Split evenly across `workers`: with 1 worker (the pre-existing,
+# sequential path) this returns the host's full capacity, same as an
+# unlimited container behaved before this existed. Read back by
+# repro_install_deps_docker()/repro_run_scripts_docker() (see
+# reproducibility_check_docker.R) via the `metacheck.docker_resource_limits`
+# option this batch dispatcher sets around each worker's own call — set as an
+# option, not a function argument threaded through reproducibility_check()'s
+# own long signature, since it is dispatch-level configuration (how many
+# OTHER papers are running right now), not something any single paper's own
+# check has an opinion on.
+.repro_docker_resource_limits <- function(workers) {
+  workers <- max(1L, as.integer(workers))
+  ncores <- tryCatch(parallel::detectCores(logical = TRUE), error = function(e) NA_integer_)
+  if (is.na(ncores) || ncores < 1) ncores <- 4L   # conservative fallback
+
+  mem_bytes <- tryCatch(.repro_docker_host_memory_bytes(), error = function(e) NA_real_)
+  mem_gb <- if (is.na(mem_bytes)) 8 else mem_bytes / (1024^3)   # conservative fallback
+
+  cpus <- max(1, floor((ncores / workers) * 10) / 10)  # one decimal place
+  memory_gb <- max(1, floor(mem_gb / workers))
+  list(cpus = cpus, memory_gb = memory_gb)
+}
+
+# Best-effort total host RAM in bytes, cross-platform, for
+# .repro_docker_resource_limits(). Returns NA (handled by that function's own
+# fallback) rather than erroring when the platform-specific lookup fails --
+# e.g. a locked-down CI container without /proc, or wmic removed from newer
+# Windows builds.
+.repro_docker_host_memory_bytes <- function() {
+  sysname <- Sys.info()[["sysname"]]
+  if (identical(sysname, "Linux")) {
+    meminfo <- tryCatch(readLines("/proc/meminfo", n = 1), error = function(e) NA_character_)
+    kb <- suppressWarnings(as.numeric(sub("[^0-9]*([0-9]+).*", "\\1", meminfo)))
+    if (!is.na(kb)) return(kb * 1024)
+  } else if (identical(sysname, "Darwin")) {
+    out <- tryCatch(system("sysctl -n hw.memsize", intern = TRUE), error = function(e) NA_character_)
+    b <- suppressWarnings(as.numeric(out))
+    if (!is.na(b)) return(b)
+  } else if (identical(sysname, "Windows")) {
+    out <- tryCatch(
+      system("powershell -NoProfile -Command \"(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory\"",
+             intern = TRUE),
+      error = function(e) NA_character_)
+    b <- suppressWarnings(as.numeric(trimws(out[length(out)])))
+    if (!is.na(b)) return(b)
+  }
+  NA_real_
 }

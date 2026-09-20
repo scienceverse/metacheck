@@ -1,5 +1,8 @@
-# metacheck (development version)
+# metacheck 0.3.1
 
+* `reproducibility_check`: a paperlist with `workers > 1` (and `execute = TRUE, sandbox = "docker"`) now runs that many papers' Docker checks concurrently, each in its own background R process, starting the next queued paper as soon as a slot frees up; each container is capped at `1/workers` of the host's CPU and memory, and a `results_dir` writes each paper's result as soon as it finishes
+* Fixed `repro_install_deps_docker()` silently corrupting the generated install script for a paper with enough dependencies (18+ in practice) that `deparse()` wrapped to multiple lines, zeroing out every install in the batch (scienceverse/metacheck#418)
+* Fixed a Docker container being left running (and consuming CPU/memory indefinitely) when a script's execution or dependency-install timeout fired — the container is now explicitly stopped, not just the `docker run` CLI process that started it (scienceverse/metacheck#417)
 * `extract_p_values()` now also detects upper-case "P = .04" (affects "all_p_values", "stat_p_exact" and "stat_p_nonsig")
 * "stat_p_nonsig" treats "≤" like "<", so "p ≤ .01" is no longer listed as non-significant
 * "code_check" can now return a green traffic light, and the parse-error table is shown when more than one file was checked

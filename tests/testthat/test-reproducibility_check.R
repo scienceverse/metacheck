@@ -723,3 +723,98 @@ test_that("repro_run_scripts returns an empty frame for no scripts", {
   expect_equal(nrow(out), 0)
   expect_true(all(c("file_name", "outcome", "script_lines", "captures") %in% names(out)))
 })
+
+
+# repro_install_deps_docker() -- generated install.R script (issue #418) ----
+# The bug this guards against was in pure string construction (deparse()
+# wrapping to multiple lines for a long enough dependency vector, silently
+# corrupting the c()-literal assignment), entirely before Docker is ever
+# invoked -- so this reproduces that construction directly rather than
+# calling repro_install_deps_docker() itself (which always shells out to a
+# real `docker run`, with no seam this test suite mocks for a namespaced
+# processx:: call -- see the local_mocked_bindings() docs on why mocking a
+# `pkg::fun()` call from outside its own package is unreliable/discouraged).
+
+test_that("repro_install_deps_docker's generated install.R parses for a long dependency list (#418)", {
+  # 18 packages: the exact count that triggered deparse() wrapping to
+  # multiple lines in the corpus paper that surfaced #418. Reproduces the
+  # bug's actual mechanism directly (deparse() wrapping a long vector),
+  # rather than going through the full repro_install_deps_docker() call
+  # (which always shells out to a real `docker run` with no seam this test
+  # suite mocks elsewhere) -- the bug and its fix are both entirely in this
+  # header-construction step, before Docker is ever invoked.
+  pkgs <- c("bayestestR", "brms", "broom", "broom.mixed", "dplyr", "ggdist",
+           "ggh4x", "ggnewscale", "ggpubr", "ggridges", "janitor", "lubridate",
+           "modelr", "moments", "PearsonDS", "scales", "tidybayes", "tidyverse")
+  expect_gt(length(deparse(pkgs)), 1)  # sanity check: this vector DOES wrap
+
+  srcs <- rep("cran", length(pkgs))
+
+  # The exact construction repro_install_deps_docker() uses (see
+  # R/reproducibility_check_docker.R) -- deparse1(), not deparse(), is the
+  # fix: deparse() would silently tear the header lines below apart instead
+  # of raising an error, so this asserts the OUTPUT is correct, not just
+  # that deparse1() was called.
+  header <- c(
+    paste0(".repro_docker_pkgs <- ", deparse1(pkgs)),
+    paste0(".repro_docker_srcs <- ", deparse1(srcs))
+  )
+
+  expect_length(header, 2)  # one line per assignment, never torn across lines
+  expect_true(all(grepl("^\\.repro_docker_(pkgs|srcs) <- ", header)))
+
+  env <- new.env()
+  expect_no_error(eval(parse(text = header), envir = env))
+  expect_equal(env$.repro_docker_pkgs, pkgs)
+  expect_equal(env$.repro_docker_srcs, srcs)
+})
+
+
+# repro_run_scripts_docker() -- timeout stops the container, not just the
+# CLI (issue #417) ----
+# Real Docker, real timeout, gated the same way the module test file's
+# execute = TRUE tests are (skip_if_quick(), Docker availability): the bug
+# is specifically that processx::run(timeout = ...) killing the HOST-SIDE
+# `docker run` CLI does not stop the CONTAINER it started, so this must
+# actually run a container and check docker's own state afterward -- no
+# in-process mock can stand in for "is a container still running".
+
+test_that("repro_run_scripts_docker stops the container on timeout instead of orphaning it", {
+  skip_if_quick()
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  root <- withr::local_tempdir()
+  script <- file.path(root, "sleeper.R")
+  # sleeps far longer than the timeout below, so the run is GUARANTEED to
+  # still be executing inside the container when the timeout fires --
+  # a script that already exited on its own would never exercise the stop
+  # path this test is checking.
+  writeLines(c('Sys.sleep(120)', 'cat("should never reach here\\n")'), script)
+  run_tbl <- data.frame(file_name = "sleeper.R", script_path = script, run_dir = root)
+
+  out <- repro_run_scripts_docker(
+    run_tbl, order = "sleeper.R", sandbox_root = root,
+    image = "ghcr.io/scienceverse/metacheck_r:latest", timeout = 5)
+
+  expect_equal(out$outcome, "timed_out")
+
+  # The actual regression check: no container left `Up` after the timeout.
+  # A short grace period (.repro_docker_stop()'s own "--time 5") plus
+  # `docker ps` overhead means checking immediately can race the stop
+  # command's own SIGTERM/SIGKILL sequence, so this polls briefly rather
+  # than asserting instantaneously.
+  container_gone <- FALSE
+  for (i in 1:10) {
+    running <- tryCatch(
+      processx::run("docker", c("ps", "--filter", "name=repro_",
+                                "--format", "{{.Names}}"),
+                    error_on_status = FALSE, timeout = 10)$stdout,
+      error = function(e) "")
+    if (!nzchar(trimws(running))) { container_gone <- TRUE; break }
+    Sys.sleep(1)
+  }
+  expect_true(container_gone,
+             info = "a repro_* container was still `docker ps`-visible 10s after its own timeout fired")
+})

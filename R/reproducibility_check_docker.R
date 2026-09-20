@@ -64,6 +64,56 @@ repro_docker_available <- function() {
 # non-root id on both sides of the mount.
 .repro_docker_uid <- "1000:1000"
 
+# A unique container name for one docker run, so it can be `docker stop`ped
+# by name afterwards if needed (see .repro_docker_stop() and its call sites
+# below -- GitHub issue #417). Built from tempfile()'s own randomness
+# (already used throughout this file for sandbox/results paths) rather than
+# adding a uuid dependency; "docker" itself only allows
+# [a-zA-Z0-9][a-zA-Z0-9_.-]* in a container name, so non-alphanumeric
+# characters from the temp path are stripped rather than escaped.
+.repro_docker_container_name <- function() {
+  raw <- basename(tempfile("repro_"))
+  paste0("repro_", gsub("[^a-zA-Z0-9_.-]", "", raw))
+}
+
+# Best-effort `docker stop` on a container BY NAME, for the case
+# processx::run(..., timeout = ...) reports a timeout: that only kills the
+# host-side `docker run` CLI process (confirmed directly: a `docker run`
+# killed via a processx timeout leaves its container `Up` and burning CPU
+# indefinitely -- the CLI dying is not something the container's own process
+# tree is listening for), never the container itself. `--rm` alone does not
+# help either: it removes the container on ITS OWN exit, which a
+# `docker stop` still triggers -- see this function's own use immediately
+# after a detected timeout, below. Errors here are swallowed (best-effort,
+# not resignalled as the run's own failure): the run has already been
+# recorded as `timed_out` regardless of whether the stop itself succeeds,
+# and a stop failing (e.g. the container happened to exit on its own between
+# the timeout firing and this call) must not mask that already-correct
+# result with a second, unrelated error.
+.repro_docker_stop <- function(name, timeout = 30) {
+  tryCatch(
+    processx::run("docker", c("stop", "--time", "5", name),
+                  error_on_status = FALSE, timeout = timeout),
+    error = function(e) NULL)
+  invisible(NULL)
+}
+
+# `--cpus`/`--memory` args for a docker run, from whatever
+# reproducibility_check()'s batch dispatcher (workers > 1 — see
+# .reproducibility_check_batch() in inst/modules/reproducibility_check.R) set
+# via the `metacheck.docker_resource_limits` option, so N concurrent
+# containers cannot collectively exceed the host. A single-paper,
+# sequential call (workers = 1, the default, or reproducibility_check()
+# called directly rather than through the batch path) never sets this option,
+# so it returns character(0) here -- exactly the previous behaviour
+# (unlimited container), unchanged for every existing caller.
+.repro_docker_resource_args <- function() {
+  limits <- getOption("metacheck.docker_resource_limits")
+  if (is.null(limits)) return(character(0))
+  c("--cpus", as.character(limits$cpus),
+    "--memory", paste0(limits$memory_gb, "g"))
+}
+
 # A HOST path known to be under sandbox_root -> its path INSIDE the container
 # (mounted at /sandbox). Uses substring() on the known prefix length, not a
 # regex strip: sandbox_root is a real filesystem path that can contain
@@ -255,10 +305,25 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   # value originates from repro_dependencies()'s own regex extraction
   # (package/source names, GitHub refs), never from the paper's arbitrary
   # file content.
+  # deparse1(), not deparse(): deparse() returns a character VECTOR of lines
+  # once the deparsed value is long enough to wrap (R's default
+  # width.cutoff), so paste0(prefix, deparse(x)) recycles the prefix against
+  # each line instead of prefixing the whole literal -- header ends up with
+  # the prefix attached only to the first line, and the remaining lines
+  # spliced in bare, unassigned, later in the same c(). A paper with enough
+  # dependencies (18 was enough in a real corpus paper) then produces a
+  # broken install.R like:
+  #   .repro_docker_pkgs <- c("a", "b", ...,
+  #   "c", "d", ...
+  #   .repro_docker_pkgs <- "e", "f", ...
+  #   .repro_docker_pkgs"
+  # which fails to parse, silently zeroing out every install in the batch.
+  # deparse1() (base R, since R 4.0) always returns a single string, so the
+  # prefix is never recycled. See GitHub issue #418.
   header <- c(
-    paste0(".repro_docker_pkgs <- ", deparse(install_deps$package)),
-    paste0(".repro_docker_srcs <- ", deparse(install_deps$source)),
-    paste0(".repro_docker_refs <- ", deparse(install_deps$ref))
+    paste0(".repro_docker_pkgs <- ", deparse1(install_deps$package)),
+    paste0(".repro_docker_srcs <- ", deparse1(install_deps$source)),
+    paste0(".repro_docker_refs <- ", deparse1(install_deps$ref))
   )
   script_path <- file.path(sandbox_dir, "install.R")
   # No BOM: writeLines()/UTF-8 without a BOM is R's own default, but Docker
@@ -276,11 +341,13 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   # in more places than just /sandbox and /rlib), but non-root + dropped
   # capabilities cost nothing and narrow what a malicious build script could
   # do even with network access.
-  args <- c("run", "--rm",
+  container_name <- .repro_docker_container_name()
+  args <- c("run", "--rm", "--name", container_name,
            "--user", .repro_docker_uid,
            "--cap-drop", "ALL",
            "--security-opt", "no-new-privileges",
            "--pids-limit", "512",
+           .repro_docker_resource_args(),
            "-v", paste0(sandbox_dir, ":/sandbox"),
            "-v", paste0(normalizePath(lib_dir, mustWork = FALSE), ":/rlib"),
            image, "Rscript", "/sandbox/install.R")
@@ -290,6 +357,19 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
                   stdout = out_file, stderr = out_file),
     error = function(e) NULL)
+
+  # processx::run(timeout = ...) only kills the HOST-SIDE `docker run` CLI
+  # process; it does not stop the container that CLI started (confirmed
+  # directly: a container survives its own `docker run` wrapper being
+  # killed on timeout, still consuming CPU indefinitely afterwards -- see
+  # GitHub issue #417). `--name` above makes the container reachable by name
+  # regardless of whether processx reports the timeout as a normal return
+  # ($timeout == TRUE) or, less commonly, as a thrown condition -- either
+  # way, `res` will not reflect a clean exit, so any non-clean outcome here
+  # gets a stop attempt; a container that already exited on its own before
+  # this runs is simply a harmless no-op (.repro_docker_stop() swallows the
+  # "no such container" error).
+  if (is.null(res) || isTRUE(res$timeout)) .repro_docker_stop(container_name)
 
   # A results file with FEWER rows than install_deps is a real, expected
   # outcome now that results are written incrementally (see script_lines'
@@ -500,13 +580,15 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     # contract is "run_dir is always root" (every script's relative paths are
     # rewritten against the sandbox ROOT, not its own subdirectory -- see that
     # function's roxygen), so there is no per-script subdirectory to cd into.
-    args <- c("run", "--rm",
+    container_name <- .repro_docker_container_name()
+    args <- c("run", "--rm", "--name", container_name,
              "--network", "none", "--read-only",
              "--tmpfs", "/tmp",
              "--user", .repro_docker_uid,
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
+             .repro_docker_resource_args(),
              "-w", "/sandbox",
              "-v", paste0(sandbox_root, ":/sandbox"))
     if (!is.null(lib_dir_norm))
@@ -522,6 +604,23 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       error = function(e) e)
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
 
+    # is_timeout also drives error_type/outcome further below (moved up from
+    # there, unchanged) -- computed once and reused here as well, for the
+    # container-stop call: a timed-out `docker run` CLI does NOT stop the
+    # container it started (confirmed directly, see .repro_docker_stop()'s
+    # own comment) -- a real corpus run left a container running a
+    # ~490-combination caret grid search for 80+ minutes past its own
+    # recorded timeout, undetected, burning CPU that later papers'/scripts'
+    # containers were competing for (GitHub issue #417). `--name` above
+    # makes it reachable by either of processx's two timeout shapes (a
+    # thrown condition, or a normal return with $timeout == TRUE); a
+    # container that already exited cleanly makes the stop call a harmless
+    # no-op.
+    is_timeout <- (inherits(res, "condition") && isTRUE(attr(res, "timeout") %||%
+      grepl("timed? ?out", conditionMessage(res), ignore.case = TRUE))) ||
+      (is.list(res) && isTRUE(res$timeout))
+    if (is_timeout) .repro_docker_stop(container_name)
+
     cap_file_host <- file.path(sandbox_root, ".capture.rds")
     captures <- if (file.exists(cap_file_host))
       tryCatch(readRDS(cap_file_host), error = function(e) NULL) else NULL
@@ -534,8 +633,8 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
 
     message("[repro/docker]   <- '", fn, "' done in ", round(elapsed, 1), "s")
 
-    is_timeout <- inherits(res, "condition") && isTRUE(attr(res, "timeout") %||%
-      grepl("timed? ?out", conditionMessage(res), ignore.case = TRUE))
+    # is_timeout was already computed above (right after `res`, so the
+    # container-stop call could reuse it too) -- not recomputed here.
     # processx::run(error_on_status = FALSE) never throws for a nonzero exit;
     # it returns normally with $status != 0. A THROWN condition here means
     # docker itself could not be started/completed (not the script's fault).

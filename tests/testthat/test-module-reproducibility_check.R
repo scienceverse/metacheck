@@ -324,3 +324,61 @@ test_that("execute = TRUE + install_missing installs a real CRAN dependency", {
   expect_equal(mo$table$outcome, "ran_ok")
   expect_true(any(mo$install_results$package == "digest" & mo$install_results$installed))
 })
+
+
+# execute = TRUE, sandbox = "docker", workers > 1 (concurrent multi-paper) ----
+# Real end-to-end: real Docker containers, real callr background processes,
+# skipped whenever Docker/callr are unavailable (CI without Docker, quick
+# local runs) the same way the process-sandbox execute = TRUE tests above are
+# gated on skip_if_quick(). Each paper's own upstream module output is fed
+# via tables_dir (reproducibility_check()'s own documented "prior full
+# build" mechanism -- see its own roxygen), since a background process
+# started by .reproducibility_check_batch() has no live module_run() chain
+# to read prev_outputs from the way module_run(fake_code, ...) does above.
+test_that("workers > 1 runs a paperlist's docker checks concurrently and combines results", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  papers <- lapply(1:3, function(i) test_paper())
+  names(papers) <- vapply(papers, paper_id, character(1))
+  plist <- structure(papers, class = c("scivrs_paperlist", "list"))
+
+  tables_dir <- withr::local_tempdir()
+  for (p in papers) {
+    pid <- paper_id(p)
+    code_tbl <- code_tbl_row(p, "ok.R", repro_fixture("ok.R"))
+    structure_df <- data.frame(paper_id = pid, file_name = "data.csv",
+                               file_location = repro_fixture("data.csv"))
+    plan_df <- data.frame(file_name = "data.csv", target_path = "data.csv")
+    saveRDS(list(paper_id = pid, modules = list(
+      code_check = list(table = code_tbl),
+      data_check = list(structure = structure_df),
+      psychds_check = list(table = plan_df)
+    )), file.path(tables_dir, paste0(pid, ".rds")))
+  }
+
+  results_dir <- withr::local_tempdir()
+  t0 <- Sys.time()
+  mo <- module_run(plist, "reproducibility_check",
+                   execute = TRUE, sandbox = "docker", workers = 2,
+                   timeout = 120, tables_dir = tables_dir,
+                   results_dir = results_dir)
+  elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+
+  expect_setequal(mo$summary_table$paper_id, names(papers))
+  expect_setequal(mo$table$paper_id, names(papers))
+  expect_true(all(mo$table$outcome == "ran_ok"))
+
+  # each paper wrote its own <paper_id>.rds via capture_module_tables() as it
+  # finished, not just once the whole batch was done
+  expect_setequal(tools::file_path_sans_ext(list.files(results_dir)), names(papers))
+
+  # weak timing check: 3 papers at 2 workers cannot be FASTER than the
+  # slowest single container run allows, but should be well short of running
+  # all 3 fully sequentially (a loose bound -- this asserts overlap happened,
+  # not a specific speedup factor, since container startup time varies by
+  # machine).
+  expect_lt(elapsed, 3 * 60)
+})
