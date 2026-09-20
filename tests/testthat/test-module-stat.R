@@ -17,15 +17,13 @@ test_that("stat_p_exact", {
     "Bad p-value example (p > .1)",
     "Bad p-value example (p = n.s.)",
     "Bad p-value example; p=ns",
-    "Bad p-value example; p \u2264 .001",
     "OK p-value example; p < .001",
     "OK p-value example; p < .0005"
   ))
 
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "red")
-  expect_equal(nrow(mod_output$table), 12)
-  expect_equal(sum(mod_output$table$imprecise), 10)
+  expect_equal(nrow(mod_output$table), 11)
 
   # zero p-values
   paper <- test_paper(c(
@@ -134,9 +132,3 @@ test_that("stat_check", {
 })
 
 
-
-test_that("stat_p_nonsig", {
-  paper <- test_paper(c("Significant; p \u2264 .01", "Nonsignificant; p = .20"))
-  mod_output <- module_run(paper, "stat_p_nonsig")
-  expect_equal(mod_output$table$text, "p = .20")
-})

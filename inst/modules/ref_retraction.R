@@ -70,7 +70,7 @@ ref_retraction <- function(paper) {
     ## report_text ----
     n_doi <- sum(!is.na(bib$doi))
     report_text <- sprintf(
-      "We checked %d reference%s with DOIs. %s\n\nCheck if you are aware of the retraction, correction, or expression of concern for each reference, and consider whether it still supports your claims.",
+      "We checked %d reference%s with DOIs. %s\n\nCheck if you are aware of the replication studies, and cite them where appropriate.",
       n_doi, plural(n_doi), summary_text
     )
 

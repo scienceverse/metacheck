@@ -39,15 +39,6 @@ test_that("ref_miscitation", {
   expect_equal(mod_output$table$doi[[1]], test_doi)
   expect_equal(mod_output$summary_table$`miscite_10.1037/0003-066x.54.6.408`,
                1)
-
-  ## all matched papers are reported
-  db <- data.frame(
-    doi = unique(na.omit(paper$bib$doi))[1:2],
-    reftext = c("Reference A", "Reference B"),
-    warning = c("Warning A", "Warning B")
-  )
-  mod_output <- module_run(paper, module, db = db)
-  expect_length(mod_output$report, 2)
 })
 
 

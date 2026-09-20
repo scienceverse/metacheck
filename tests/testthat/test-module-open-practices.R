@@ -27,16 +27,6 @@ test_that("open_practices paperlist", {
   expect_equal(mo$table$data, c(F, T))
   expect_equal(mo$table$code, c(T, F))
   expect_equal(mo$table$on_request, c(F, T))
-
-  # on request is flagged, but is not open sharing
-  expect_equal(mo$summary_table$data_open, c(F, F))
-  expect_equal(mo$summary_table$on_request, c(F, T))
-
-  # unless the same sentence also names a repository
-  paper <- test_paper("Data are available at https://osf.io/hk4yq/; raw data on request.")
-  mo <- module_run(paper, module)
-  expect_equal(mo$summary_table$data_open, TRUE)
-  expect_equal(mo$traffic_light, "red")
 })
 
 

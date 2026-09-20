@@ -51,7 +51,7 @@ extract_p_values <- function(paper) {
   ) |> paste(collapse = "")
 
   pattern <- paste0(
-    "\\b[pP]-?(value)?\\s*", # ways to write p (or P)
+    "\\bp-?(value)?\\s*", # ways to write p
     "[", operators, "]{1,2}\\s*", # 1-2 operators
     "(n\\.?s\\.?|\\d?\\.\\d+)", # ns or valid numbers
     "\\s*(e\\s*-\\d+)?", # also match scientific notation

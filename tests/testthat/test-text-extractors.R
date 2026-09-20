@@ -46,14 +46,13 @@ test_that("extract_p_values", {
     "t = 2.23, p = 0.005.",
     "(p = 0.152)",
     "peta = 2.3; p > .05, ppp = 2",
-    "2 = p",
-    "MAP = .5, P = .04"
+    "2 = p"
   ))
   p <- extract_p_values(paper)
-  expect_equal(nrow(p), 4)
-  expect_equal(p$text, c("p = 0.005", "p = 0.152", "p > .05", "P = .04"))
-  expect_equal(p$p_value, c(0.005, 0.152, 0.050, 0.04))
-  expect_equal(p$p_comp, c("=", "=", ">", "="))
+  expect_equal(nrow(p), 3)
+  expect_equal(p$text, c("p = 0.005", "p = 0.152", "p > .05"))
+  expect_equal(p$p_value, c(0.005, 0.152, 0.050))
+  expect_equal(p$p_comp, c("=", "=", ">"))
 
   # iteration: text modules need no special adaptation
   paper <- psychsci

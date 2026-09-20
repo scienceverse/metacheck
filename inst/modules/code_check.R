@@ -280,7 +280,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
     )
     summary_parse <- "Parsing issues of R-type files were found."
     cols <- c("file_name", "parse_error_msg")
-    report_table_parse <- code_files[code_files$parse_error %in% TRUE, cols]
+    report_table_parse <- code_files[isTRUE(code_files$parse_error), cols]
     colnames(report_table_parse) <- c("File name", "Error Message")
   }
 
@@ -308,7 +308,7 @@ code_check <- function(paper, file_limit = 20, local_path = NULL, local_only = F
       length(comment_issue) == 0 &&
       length(absolute_issues) == 0 &&
       length(library_issue) == 0 &&
-      parse_issues == 0) {
+      length(parse_issues) == 0) {
     tl <- "green"
   } else {
     tl <- "yellow"
