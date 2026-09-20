@@ -528,6 +528,14 @@ capture_module_tables <- function(chain, results_dir, paper_id = NULL) {
     mo[keep]
   })
 
+  # Name outputs by each module's own $module field, so collect_module_tables()
+  # can look them up by name. Fall back to a positional name for anything
+  # missing/blank/duplicated, so a lookup miss never silently collides.
+  mod_names <- vapply(mods, function(mo) mo$module %||% NA_character_, character(1))
+  bad <- is.na(mod_names) | !nzchar(mod_names) | duplicated(mod_names)
+  mod_names[bad] <- paste0("module_", which(bad))
+  names(outputs) <- mod_names
+
   # report_module_run() strips each module's own summary_table and left-joins
   # them all into ONE wide row carried by the last module (duplicate names
   # suffixed ".<module>"). So a mid-chain module's `summary_table` slot is
@@ -572,7 +580,12 @@ collect_module_tables <- function(results_dir, module, element = "table") {
     el
   })
   parts <- Filter(Negate(is.null), parts)
-  if (length(parts) == 0) return(data.frame())
+  if (length(parts) == 0) {
+    warning(length(rfiles), " *.rds file(s) found in ", results_dir,
+            ", but none had a \"", module, "\" module with a non-empty \"",
+            element, "\".", call. = FALSE)
+    return(data.frame())
+  }
   out <- dplyr::bind_rows(parts)
   front <- intersect("paper_id", names(out))
   out[, c(front, setdiff(names(out), front)), drop = FALSE]
