@@ -2325,12 +2325,27 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   queue <- seq_len(n)          # indices into `paper`/`pids` still to start
   running <- list()            # pid -> callr process handle
+  err_files <- list()          # pid -> stderr temp file path (see launch())
+  out_files <- list()          # pid -> stdout temp file path (see launch())
   results <- vector("list", n); names(results) <- pids
 
   launch <- function(i) {
     pid <- pids[[i]]
     message("[repro]   -> starting '", pid, "' (", sum(lengths(running) > 0 |
             vapply(running, function(x) TRUE, logical(1))), " already running)")
+    # stdout/stderr go to temp files, NOT the r_bg() default of "|" (a pipe).
+    # A pipe has a small, fixed OS buffer (~64KB); nothing in the poll loop
+    # below drains it while a worker is still running (only read_all_error()
+    # is called, and only once is_alive() has already gone FALSE). A paper
+    # whose Docker run/module_run() output exceeds that buffer before the
+    # parent reads it blocks the child on its next write() forever: the
+    # process stays alive (is_alive() == TRUE, CPU frozen, not accumulating)
+    # and its slot in `running` never frees, so the queue stalls behind it
+    # and this function never returns. See callr::r_bg()'s own "Draining
+    # standard output and error" documentation. Files have no such buffer
+    # limit, so this class of deadlock cannot occur.
+    out_file <- tempfile("repro_worker_out_")
+    err_file <- tempfile("repro_worker_err_")
     p <- callr::r_bg(
       # module_run(), not reproducibility_check() directly: the module is
       # loaded from inst/modules/reproducibility_check.R at run time (see
@@ -2344,9 +2359,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       },
       args = list(paper1 = paper[[i]], args = args_common, limits = limits),
       package = "metacheck",
-      supervise = TRUE
+      supervise = TRUE,
+      stdout = out_file,
+      stderr = err_file
     )
     running[[pid]] <<- p
+    err_files[[pid]] <<- err_file
+    out_files[[pid]] <<- out_file
   }
 
   # Prime the pool: start up to `workers` papers immediately.
@@ -2373,7 +2392,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         NULL
       })
       if (is.null(res)) {
-        err <- tryCatch(paste(p$read_all_error(), collapse = "\n"),
+        # stderr was redirected to a file (see launch()), not read via
+        # p$read_all_error() -- that reads from the pipe callr uses by
+        # default, which this worker was not given.
+        err <- tryCatch(paste(readLines(err_files[[pid]], warn = FALSE), collapse = "\n"),
                         error = function(e) "")
         res <- list(traffic_light = "error",
                     summary_text = paste0("Docker reproducibility check failed: ",
@@ -2381,6 +2403,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                     table = data.frame(),
                     summary_table = data.frame(paper_id = pid))
       }
+      unlink(c(out_files[[pid]], err_files[[pid]]))
+      out_files[[pid]] <- NULL
+      err_files[[pid]] <- NULL
       results[[pid]] <- res
       if (!is.null(results_dir)) {
         # res is already a metacheck_module_output (from module_run(), inside
