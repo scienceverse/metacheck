@@ -1,5 +1,6 @@
 # metacheck 0.3.1
 
+* `read()` reads bibr export schema 12.x files (a JSON file with a root `schema_version`; other versions stop with an error). Captions and footnotes are text rows with no section, which `figure`, `table` and the new `footnote` table point at with `text_id`; in the `xref` table `xref_id` is the row's own key and `target_id` the row it cites. Files without a root `schema_version` read as before
 * `reproducibility_check`: a paperlist with `workers > 1` (and `execute = TRUE, sandbox = "docker"`) now runs that many papers' Docker checks concurrently, each in its own background R process, starting the next queued paper as soon as a slot frees up; each container is capped at `1/workers` of the host's CPU and memory, and a `results_dir` writes each paper's result as soon as it finishes
 * Fixed `repro_install_deps_docker()` silently corrupting the generated install script for a paper with enough dependencies (18+ in practice) that `deparse()` wrapped to multiple lines, zeroing out every install in the batch (scienceverse/metacheck#418)
 * Fixed a Docker container being left running (and consuming CPU/memory indefinitely) when a script's execution or dependency-install timeout fired — the container is now explicitly stopped, not just the `docker run` CLI process that started it (scienceverse/metacheck#417)

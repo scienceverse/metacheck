@@ -1,0 +1,3527 @@
+{
+  "paper_id": "PMC4383902",
+  "schema_version": "12.0",
+  "source": {
+    "file_name": "PMC4383902.xml",
+    "sha256": "5fe402bfa6f69b3f3d310dfa1ebf8d65430106f9d58a5560a64bb5b57ae90bf2",
+    "input_format": "jats"
+  },
+  "metadata": {
+    "title": "Europe PMC: a full-text literature database for the life sciences and platform for innovation",
+    "abstract": "This article describes recent developments of Europe PMC (http://europepmc.org), the leading database for life science literature. Formerly known as UKPMC, the service was rebranded in November 2012 as Europe PMC to reflect the scope of the funding agencies that support it. Several new developments have enriched Europe PMC considerably since then. Europe PMC now offers RESTful web services to access both articles and grants, powerful search tools such as citation-count sort order and data citation features, a service to add publications to your ORCID, a variety of export formats, and an External Links service that enables any related resource to be linked from Europe PMC content.",
+    "keywords": [],
+    "doi": "10.1093/nar/gku1061",
+    "pmid": "25378340",
+    "pmcid": "PMC4383902",
+    "arxiv": null,
+    "language": "en",
+    "paper_type": null,
+    "oecd_l1": null,
+    "oecd_l2": null,
+    "journal": "Nucleic Acids Research",
+    "volume": "43",
+    "issue": "Database issue",
+    "first_page": "D1042",
+    "last_page": null,
+    "issn": null,
+    "publisher": "Oxford University Press",
+    "published": "2014-11-06",
+    "published_date": "2014-11-06",
+    "license": "This is an Open Access article distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted reuse, distribution, and reproduction in any medium, provided the original work is properly cited.",
+    "license_url": "http://creativecommons.org/licenses/by/4.0/",
+    "license_spdx": "CC-BY-4.0",
+    "funding_statement": "Twenty-six European-based funders of life science research: http://europepmc.org/Funders/ under a Wellcome Trust grant [098231] awarded to EMBL-EBI. Funding for open access charge: Wellcome Trust [098231]. Conflict of interest statement. None declared.",
+    "coi_statement": "Conflict of interest statement. None declared.",
+    "ethics_statement": null,
+    "data_availability": null
+  },
+  "author": [
+    {
+      "author_id": 1,
+      "given": null,
+      "family": null,
+      "suffix": null,
+      "literal": "The Europe PMC Consortium",
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": [],
+      "credit_roles": []
+    }
+  ],
+  "affiliation": [
+    {
+      "affiliation_id": 1,
+      "text": "European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK",
+      "institution": "European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI)",
+      "department": null,
+      "city": "Cambridge",
+      "country": "UK",
+      "author_ids": [
+        1
+      ]
+    },
+    {
+      "affiliation_id": 2,
+      "text": "The British Library, 96 Euston Road, London NW1 2DB, UK",
+      "institution": "The British Library",
+      "department": null,
+      "city": "London",
+      "country": "UK",
+      "author_ids": [
+        1
+      ]
+    },
+    {
+      "affiliation_id": 3,
+      "text": "Mimas, Roscoe Building, The University of Manchester, Oxford Road, Manchester M13 9PL, UK",
+      "institution": "The University of Manchester",
+      "department": "Mimas",
+      "city": "Manchester",
+      "country": "UK",
+      "author_ids": [
+        1
+      ]
+    },
+    {
+      "affiliation_id": 4,
+      "text": "National Centre for Text Mining, School of Computer Science, University of Manchester, 131 Princess Street, Manchester M1 7DN, UK",
+      "institution": "University of Manchester",
+      "department": "National Centre for Text Mining, School of Computer Science",
+      "city": "Manchester",
+      "country": "UK",
+      "author_ids": [
+        1
+      ]
+    }
+  ],
+  "funding": [
+    {
+      "funding_id": 1,
+      "funder": "Wellcome Trust",
+      "award_ids": [
+        "098231"
+      ]
+    }
+  ],
+  "text": [
+    {
+      "text": "The core mission of Europe PMC (http://europepmc.org) is to build open, full-text scientific literature resources and support innovation by engaging users, enabling contributors and integrating related research data.",
+      "text_id": 1,
+      "paragraph_id": 1,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC does this primarily by providing access and adding value to over 29 million abstracts and 3 million full-text articles.",
+      "text_id": 2,
+      "paragraph_id": 2,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "It was first described in the 2011 NAR database issue (1) when it was operating as UKPMC; however in November 2012 it was rebranded as Europe PMC to reflect the Europe-wide funders that support it.",
+      "text_id": 3,
+      "paragraph_id": 2,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC is now the designated repository for the open access publication mandates of 26 funders of life sciences, including international organizations such as the European Research Council and World Health Organization.",
+      "text_id": 4,
+      "paragraph_id": 2,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC is a partner in PMC International (PMCi), along with PMC USA and PMC Canada (http://www.ncbi.nlm.nih.gov/pmc/about/pmci/), which means that full-text content is shared by and available from any of these three nodes.",
+      "text_id": 5,
+      "paragraph_id": 2,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The main Europe PMC database is hosted at EMBL-EBI, where this core full-text collection is extended with all PubMed abstracts, selected Agricola abstracts (http://www.ntis.gov/products/agricola.aspx), international patents from the European Patent Office and abstracts from several other smaller sources.",
+      "text_id": 6,
+      "paragraph_id": 2,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "To be clear, as with PubMed or PMC (2), the content of Europe PMC includes abstracts and articles from anywhere in the world, and they are not limited by funder or geographical location.",
+      "text_id": 7,
+      "paragraph_id": 3,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The full scope of content in PubMed and PMC is available from Europe PMC and delivered through a single search interface.",
+      "text_id": 8,
+      "paragraph_id": 3,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Where Europe PMC differs from PMC/PubMed is in the services and features layered on top of the content.",
+      "text_id": 9,
+      "paragraph_id": 4,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Since 2011, we have added several new search features and tools, which are described below.",
+      "text_id": 10,
+      "paragraph_id": 4,
+      "section_id": 1,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "It is important to note that Europe PMC contains both abstracts and full-text articles in a single search interface.",
+      "text_id": 11,
+      "paragraph_id": 5,
+      "section_id": 2,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "There are four ways that full-text content is added to Europe PMC and PMC, which were outlined in the previous NAR article (1) (see Box 1).",
+      "text_id": 12,
+      "paragraph_id": 6,
+      "section_id": 3,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "If you want your article to be archived in Europe PMC, and the work is funded by one of the Europe PMC funders, then all of those four options are open to you.",
+      "text_id": 13,
+      "paragraph_id": 6,
+      "section_id": 3,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "However if the work is not funded by one of the Europe PMC funders, then the simplest way to ensure your article is archived in PMCi is to publish your work in a journal that deposits 100% of its content into the archive.",
+      "text_id": 14,
+      "paragraph_id": 6,
+      "section_id": 3,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Paying an article processing charge (APC) and publishing your article in the Open Access track of a ‘hybrid’ journal does not always result in the article being deposited in the PMCi archives—this can also depend on the funder—so if you are paying an APC and expect your article to therefore become available in Europe PMC, it is worth checking that this is indeed the case.",
+      "text_id": 15,
+      "paragraph_id": 6,
+      "section_id": 3,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "To self-archive manuscripts in Europe PMC via Europe PMC plus, you must be funded by one of the Europe PMC funders.",
+      "text_id": 16,
+      "paragraph_id": 6,
+      "section_id": 3,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC supplements the full-text article collection with abstracts from a variety of sources.",
+      "text_id": 17,
+      "paragraph_id": 7,
+      "section_id": 5,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "In particular, Europe PMC ingests all of PubMed, updated daily (currently about 24 million records), adds records from the agricultural collection Agricola monthly (about 600 000 records) and contains international patent abstracts from the life sciences domain and ad hoc additions of metadata from other smaller sources.",
+      "text_id": 18,
+      "paragraph_id": 7,
+      "section_id": 5,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "In cases where a full-text article in Europe PMC does not have a PubMed record, we also create a metadata record—there are about 440K of these, and they reflect records in flux (not yet in PubMed but will be) or records for articles of a type not taken by PubMed.",
+      "text_id": 19,
+      "paragraph_id": 7,
+      "section_id": 5,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The total content available in Europe PMC at the time of writing can be seen in Figure 1a.",
+      "text_id": 20,
+      "paragraph_id": 7,
+      "section_id": 5,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "While all of the content in Europe PMC is free to read, not all of it is free to reuse, for example to redistribute, translate or text mine.",
+      "text_id": 21,
+      "paragraph_id": 8,
+      "section_id": 6,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "At the time of writing, about 870 000 articles are open access, i.e. they can be reused based on criteria stipulated in the article license, and this number increases daily.",
+      "text_id": 22,
+      "paragraph_id": 8,
+      "section_id": 6,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "These articles are available for bulk download on the Europe PMC FTP site (http://europepmc.org/FtpSite), and are also served in full through the Europe PMC web services (see below).",
+      "text_id": 23,
+      "paragraph_id": 8,
+      "section_id": 6,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The open access article set makes up a growing proportion of the total full-text content available via Europe PMC (Figure 1b).",
+      "text_id": 24,
+      "paragraph_id": 8,
+      "section_id": 6,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Several improvements have recently been made to the Europe PMC search service.",
+      "text_id": 25,
+      "paragraph_id": 9,
+      "section_id": 7,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Here we describe a few highlights.",
+      "text_id": 26,
+      "paragraph_id": 9,
+      "section_id": 7,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The full list of fields available to search can be found in Europe PMC Help.",
+      "text_id": 27,
+      "paragraph_id": 9,
+      "section_id": 7,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "While this section describes how to use these features via the website, all are also enabled in the RESTful web services.",
+      "text_id": 28,
+      "paragraph_id": 9,
+      "section_id": 7,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The articles can now be returned ranked by the number of citations.",
+      "text_id": 29,
+      "paragraph_id": 10,
+      "section_id": 8,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "For example, it is now easy to browse classic papers (i.e. the most highly cited articles) in Europe PMC.",
+      "text_id": 30,
+      "paragraph_id": 10,
+      "section_id": 8,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "If you search Europe PMC for an author name, for example Bradford MM or Janet Thornton, we automatically detect that this looks like an author name and limit the search to the author field.",
+      "text_id": 31,
+      "paragraph_id": 11,
+      "section_id": 9,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "This results in a cleaner results list than would have been retrieved previously.",
+      "text_id": 32,
+      "paragraph_id": 11,
+      "section_id": 9,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "If this default behavior proves problematic, you can force a different behavior via the new Advanced Search form.",
+      "text_id": 33,
+      "paragraph_id": 11,
+      "section_id": 9,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Use this form (found under the wheel icon to the right of the search box) if you know specifically what you are looking for.",
+      "text_id": 34,
+      "paragraph_id": 12,
+      "section_id": 10,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Many fields operate with autosuggest—which is particularly useful for restricting searches to a journal name, for example.",
+      "text_id": 35,
+      "paragraph_id": 12,
+      "section_id": 10,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The Advanced Search also makes it easy to find records that cite data (3) or are linked from various data resources; for example, articles that cite PDB, articles cited in Uniprot or abstracts that have freely available full text in institutional repositories that are not available in Europe PMC (under the External Links tab on abstract pages).",
+      "text_id": 36,
+      "paragraph_id": 12,
+      "section_id": 10,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "One of the new options on the Advanced Search relates only to the full-text article set: Section Search (submitted, J. Biomed. Semantics).",
+      "text_id": 37,
+      "paragraph_id": 13,
+      "section_id": 11,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Here, it is possible to limit searches to specific sections such as Acknowledgments (try searching for papers that have acknowledged you) or figure legends.",
+      "text_id": 38,
+      "paragraph_id": 13,
+      "section_id": 11,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Finally, when you find something that you want to share, there is a tweet button on every article page.",
+      "text_id": 39,
+      "paragraph_id": 14,
+      "section_id": 11,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "ORCIDs are unique identifiers for researchers, allowing them to unequivocally showcase their work and make publication processes more straightforward (http://orcid.org).",
+      "text_id": 40,
+      "paragraph_id": 15,
+      "section_id": 13,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "We have developed a simple tool for researchers to link publications found in Europe PMC to their ORCID record (see: http://europepmc.org/orcid/import).",
+      "text_id": 41,
+      "paragraph_id": 15,
+      "section_id": 13,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "So far, about 17 000 unique ORCIDs have been linked to over 300 000 publication claims using this tool.",
+      "text_id": 42,
+      "paragraph_id": 15,
+      "section_id": 13,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The tool is available from the Europe PMC homepage, and is also discoverable on the ORCID Foundation website.",
+      "text_id": 43,
+      "paragraph_id": 15,
+      "section_id": 13,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe",
+      "text_id": 44,
+      "paragraph_id": 16,
+      "section_id": 14,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "PMC has integrated ORCIDs into article records and search systems (Figure 2).",
+      "text_id": 45,
+      "paragraph_id": 16,
+      "section_id": 14,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "If someone has claimed an article, the ORCID is displayed below the abstract; clicking on it will elicit a search based on that ORCID.",
+      "text_id": 46,
+      "paragraph_id": 16,
+      "section_id": 14,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "A search by ORCID is also available as an option by clicking on an author name.",
+      "text_id": 47,
+      "paragraph_id": 16,
+      "section_id": 14,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "If you know someone's ORCID, the correct search syntax can be ensured by selecting ‘ORCID’ from the pull-down list of Bibliographic Fields in the Advanced Search page.",
+      "text_id": 48,
+      "paragraph_id": 16,
+      "section_id": 14,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "This is a particularly useful approach for people who have frequently occurring last names, or have changed their name.",
+      "text_id": 49,
+      "paragraph_id": 16,
+      "section_id": 14,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The idea that in the future, the scientific article stands shoulder-to-shoulder with data, seamlessly integrated and enriched with structured information, is a vision that has emerged over the past decade (3), and is something that Europe PMC actively contributes to.",
+      "text_id": 50,
+      "paragraph_id": 17,
+      "section_id": 15,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "To this end, we have recently developed new ways to foster links between the literature and data:",
+      "text_id": 51,
+      "paragraph_id": 17,
+      "section_id": 15,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "In addition to the database links described in the 2011 article, these now also include OMIM (4) and ArrayExpress (5), and are updated at least monthly.",
+      "text_id": 52,
+      "paragraph_id": 18,
+      "section_id": 16,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Several large central databases such as UniProt (6) are covered (to date over 900 000 articles are associated with UniProt) as well as thematic databases such as the Genome RNAi database (7).",
+      "text_id": 53,
+      "paragraph_id": 18,
+      "section_id": 16,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The External Links service is open to any database that cites the life science literature and uses a simple combination of Excel spreadsheet (or XML) and FTP to upload lists of article-database links, which are then published to the website, usually within 24 h.",
+      "text_id": 54,
+      "paragraph_id": 18,
+      "section_id": 16,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The External Links service can also be used by repositories that hold the full-text articles for which Europe PMC only has the metadata. See: http://europepmc.org/LabsLink for more details.",
+      "text_id": 55,
+      "paragraph_id": 18,
+      "section_id": 16,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC now routinely discovers several types of data citations in the form of accession numbers, for example to the European Nucleotide Archive (8), and DOIs out of the full text of Europe PMC articles (9) via the Europe PMC text-mining engine, which is based on Whatizit (10).",
+      "text_id": 56,
+      "paragraph_id": 19,
+      "section_id": 17,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Since 2013, these and Europe PMC's article citation counts have been incorporated into the PLOS Article Level Metrics system.",
+      "text_id": 57,
+      "paragraph_id": 19,
+      "section_id": 17,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "As well as text mining gene/protein names, organisms, chemicals, diseases, and Gene Ontology terms (11), Experimental Factor Ontology (EFO) terms are now also routinely mined as a force for data integration (12).",
+      "text_id": 58,
+      "paragraph_id": 20,
+      "section_id": 18,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "(The EFO is an ‘umbrella’ ontology designed to work across a wide range of biological domains).",
+      "text_id": 59,
+      "paragraph_id": 20,
+      "section_id": 18,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "All the data-literature citations and crosslinks can be explored through the BioEntities and External Links tabs on abstract and article pages (Figure 3), ‘Data Links and Citations’ and ‘External Links’ menus on the Advanced Search page, and through the Europe PMC APIs.",
+      "text_id": 60,
+      "paragraph_id": 21,
+      "section_id": 18,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC offers several routes to download data, depending on what you want to do and the scale at which you want to do it.",
+      "text_id": 61,
+      "paragraph_id": 22,
+      "section_id": 19,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "For occasional use (for example, downloading a bibliography, inserting a citation into a document or checking the full-text XML of an Open Access article), select records from a search results list, or, to download the whole list (or single article), just click on ‘Export’ to the right of the page.",
+      "text_id": 62,
+      "paragraph_id": 23,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The download formats offered are:",
+      "text_id": 63,
+      "paragraph_id": 23,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "ID list (PMIDs and others)",
+      "text_id": 64,
+      "paragraph_id": 24,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "BibTex",
+      "text_id": 65,
+      "paragraph_id": 25,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "RIS (for use to export to a variety of citation manager products)",
+      "text_id": 66,
+      "paragraph_id": 26,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Tab separated values",
+      "text_id": 67,
+      "paragraph_id": 27,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Citation (core citation details in plain text form for inserting into documents)",
+      "text_id": 68,
+      "paragraph_id": 28,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "XML (metadata including abstracts)",
+      "text_id": 69,
+      "paragraph_id": 29,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Full-text XML (Open Access articles only)",
+      "text_id": 70,
+      "paragraph_id": 30,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "There is no limit on the number of records that can be downloaded via this route, although if the number is more than 2000, then it has to be done in batches.",
+      "text_id": 71,
+      "paragraph_id": 31,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "We strongly recommend that you use the APIs described below if you are gathering more than a few hundred records, or if you are retrieving information routinely",
+      "text_id": 72,
+      "paragraph_id": 31,
+      "section_id": 20,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe",
+      "text_id": 73,
+      "paragraph_id": 32,
+      "section_id": 22,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "PMC offers a modular RESTful API that outputs in XML or JSON formats, through which it is possible to search all content and retrieve metadata, plus full text, figures and supplementary files for the Open Access full-text articles.",
+      "text_id": 74,
+      "paragraph_id": 32,
+      "section_id": 22,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "In the case of full-text articles that do not have a license that allows redistribution, the full text is searched but only metadata will be returned.",
+      "text_id": 75,
+      "paragraph_id": 32,
+      "section_id": 22,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "A Dublin Core output format is also available for metadata.",
+      "text_id": 76,
+      "paragraph_id": 32,
+      "section_id": 22,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The 26 funders of Europe PMC supply grant award data to Europe PMC.",
+      "text_id": 77,
+      "paragraph_id": 33,
+      "section_id": 23,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "These data are used to validate researchers funded by any of the Europe PMC funders so that those researchers can use the Europe PMC manuscript submission system, Europe PMC plus.",
+      "text_id": 78,
+      "paragraph_id": 33,
+      "section_id": 23,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "However, all the public grant data submitted by the funders can also be searched and browsed in the Grant Lookup Tool, and, more recently, are also available via a public RESTful API.",
+      "text_id": 79,
+      "paragraph_id": 33,
+      "section_id": 23,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "For bulk download of the XML of the Open Access article set, visit the Europe PMC FTP site.",
+      "text_id": 80,
+      "paragraph_id": 34,
+      "section_id": 24,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The main article set is updated weekly.",
+      "text_id": 81,
+      "paragraph_id": 34,
+      "section_id": 24,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "A quarterly snapshot is archived to make it easier to cite the collection as dataset.",
+      "text_id": 82,
+      "paragraph_id": 34,
+      "section_id": 24,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Finally, if you like information to be pushed, you can set up an RSS feed for your favorite search.",
+      "text_id": 83,
+      "paragraph_id": 35,
+      "section_id": 24,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "This could include, for example, articles that cite a particular data type (e.g. protein structures) or cite a particular article, or articles by a specific author, institute or on a topic of interest.",
+      "text_id": 84,
+      "paragraph_id": 35,
+      "section_id": 24,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The Europe PMC core text mining service provides some basic utility to integrate literature and data.",
+      "text_id": 85,
+      "paragraph_id": 36,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "However, we envision that algorithms and applications based on text and data mining, developed by the research community, will add significant value to the content, in particular to the growing Open Access article set in the context of biological data.",
+      "text_id": 86,
+      "paragraph_id": 36,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "To this end, Europe PMC aspires to provide text and data miners with the means to publish the outcomes of their algorithms in the context of articles in Europe PMC.",
+      "text_id": 87,
+      "paragraph_id": 36,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "This is exemplified by the Evidence Finder application, which is invoked on the full-text search for queries based on gene/protein names, diseases, organisms, chemicals and anatomical entities (14), extracted using the text mining workbench Argo (15,16).",
+      "text_id": 88,
+      "paragraph_id": 36,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Evidence Finder shows facts or claims, together with their interpretations (17), hidden in full-text articles based on the user's query, displaying relevant text fragments alongside the article metadata on search results lists on Europe PMC Labs.",
+      "text_id": 89,
+      "paragraph_id": 36,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "For each query, it also displays a list of automatically generated questions (e.g. ‘What causes melanoma?’) that can be used by the user to narrow down the search results to only those documents that contain the answer to a selected question.",
+      "text_id": 90,
+      "paragraph_id": 36,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The External Links service provides a straightforward means to publish the outputs of text mining.",
+      "text_id": 91,
+      "paragraph_id": 37,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "In this way, phrases or triples identified by the text mining of full text can be linked to other articles, data or websites that provide useful extra information related to the source article.",
+      "text_id": 92,
+      "paragraph_id": 37,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "More information on the External Links service can be found here: http://europepmc.org/LabsLink.",
+      "text_id": 93,
+      "paragraph_id": 37,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Finally, Europe PMC is making use of the EMBL-EBI Embassy Cloud to host Evidence Finder, bringing the computational aspects of the application closer to the data and providing an easy way for text mining algorithms to update outputs daily, based on incoming open access content.",
+      "text_id": 94,
+      "paragraph_id": 38,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "This mechanism is being extended to academic text mining groups that wish to routinely publish algorithm outputs to Europe PMC via the External Links service.",
+      "text_id": 95,
+      "paragraph_id": 38,
+      "section_id": 25,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC is a fast, reliable and comprehensive resource for accessing the life science literature.",
+      "text_id": 96,
+      "paragraph_id": 39,
+      "section_id": 26,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Based on open access and open data principles, we strive to foster a sense of ‘collaborative community’ by applying layers of value on the core full-text content through engagement with users in the many roles in which they interact with Europe PMC.",
+      "text_id": 97,
+      "paragraph_id": 39,
+      "section_id": 26,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC is embedded in a big data environment, and we see smarter integration of the open full-text literature and open data as critical in supporting life science research.",
+      "text_id": 98,
+      "paragraph_id": 39,
+      "section_id": 26,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Europe PMC will continue to be developed toward these goals in the future.",
+      "text_id": 99,
+      "paragraph_id": 39,
+      "section_id": 26,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "We welcome comments and questions about any aspect of the service.",
+      "text_id": 100,
+      "paragraph_id": 40,
+      "section_id": 26,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The best way to contact us is via the Feedback button at the bottom of every page, or via Twitter (follow us @EuropePMCnews).",
+      "text_id": 101,
+      "paragraph_id": 40,
+      "section_id": 26,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "We would like to thank the Europe PMC Project and Advisory Boards and the EMBL-EBI Literature Services Advisory Board for strategic guidance on the development of Europe PMC.",
+      "text_id": 102,
+      "paragraph_id": 41,
+      "section_id": 27,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Author List:",
+      "text_id": 103,
+      "paragraph_id": 42,
+      "section_id": 28,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Yuci Gou, Florian Graff, Oliver Kilian, Senay Kafkas, Jyothi Katuri, Jee-Hyub Kim, Nikos Marinos, Johanna McEntyre, Andrew Morrison, Xingjun Pi, Philip Rossiter, Francesco Talo, Vid Vartak (European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK); Lee-Ann Coleman, Craig Hawkins, Anna Kinsey, Sami Mansoor, Victoria Morris, Rob Rowbotham, (The British Library, 96 Euston Road London NW1 2DB, UK); David Chaplin, Ross MacIntyre, Yogesh Patel (Mimas, Roscoe Building, The University of Manchester, Oxford Road, Manchester M13 9PL, UK); Sophia Ananiadou, William J. Black, John McNaught, Rafal Rak and Andrew Rowley (National Centre for Text Mining, School of Computer Science, University of Manchester, 131 Princess Street, Manchester, M1 7DN, UK).",
+      "text_id": 104,
+      "paragraph_id": 43,
+      "section_id": 28,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Twenty-six European-based funders of life science research: http://europepmc.org/Funders/ under a Wellcome Trust grant [098231] awarded to EMBL-EBI.",
+      "text_id": 105,
+      "paragraph_id": 44,
+      "section_id": 30,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Funding for open access charge: Wellcome Trust [098231].",
+      "text_id": 106,
+      "paragraph_id": 44,
+      "section_id": 30,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Conflict of interest statement.",
+      "text_id": 107,
+      "paragraph_id": 45,
+      "section_id": 30,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "None declared.",
+      "text_id": 108,
+      "paragraph_id": 45,
+      "section_id": 30,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "1. McEntyre J.R., Ananiadou S., Andrews S., Black W.J., Boulderstone R., Buttery P., Chaplin D., Chevuru S., Cobley N., Coleman L.A. UKPMC: a full text article resource for the life sciences. Nucleic Acids Res. 2011;39:D58–D65. doi: 10.1093/nar/gkq1063.",
+      "text_id": 109,
+      "paragraph_id": 46,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "2. NCBI Resource Coordinators. Database resources of the National Center for Biotechnology Information. Nucleic Acids Res. 2014;42:D7–D17. doi: 10.1093/nar/gkt1146.",
+      "text_id": 110,
+      "paragraph_id": 47,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "3. Bourne P. Will a biological database be different from a biological journal? PLoS Comput. Biol. 2005;1:179–181. doi: 10.1371/journal.pcbi.0010034.",
+      "text_id": 111,
+      "paragraph_id": 48,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "4. Hamosh A., Scott A.F., Amberger J.S., Bocchini C.A., McKusick V.A. Online Mendelian Inheritance in Man (OMIM), a knowledgebase of human genes and genetic disorders. Nucleic Acids Res. 2005;33:D514–D517. doi: 10.1093/nar/gki033.",
+      "text_id": 112,
+      "paragraph_id": 49,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "5. Rustici G., Kolesnikov N., Brandizi M., Burdett T., Dylag M., Emam I., Farne A., Hastings E., Ison J., Keays M. ArrayExpress update—trends in database growth and links to data analysis tools. Nucleic Acids Res. 2013;41:D987–D990. doi: 10.1093/nar/gks1174.",
+      "text_id": 113,
+      "paragraph_id": 50,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "6. UniProt Consortium. Activities at the Universal Protein Resource (UniProt) Nucleic Acids Res. 2014;42:D191–D198. doi: 10.1093/nar/gkt1140.",
+      "text_id": 114,
+      "paragraph_id": 51,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "7. Schmidt E.E., Pelz O., Buhlmann S., Kerr G., Horn T., Boutros M. GenomeRNAi: a database for cell-based and in vivo RNAi phenotypes, 2013 update. Nucleic Acids Res. 2013;41:D1021–D1026. doi: 10.1093/nar/gks1170.",
+      "text_id": 115,
+      "paragraph_id": 52,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "8. Pakseresht N., Alako B., Amid C., Cerdeño-Tárraga A., Cleland I., Gibson R., Goodgame N., Gur T., Jang M., Kay S. Assembly information services in the European Nucleotide Archive. Nucleic Acids Res. 2014;42:D38–D43. doi: 10.1093/nar/gkt1082.",
+      "text_id": 116,
+      "paragraph_id": 53,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "9. Kafkas Ş., Kim J.H., McEntyre J.R. Database citation in full text biomedical articles. PLoS One. 2013;8:e63184. doi: 10.1371/journal.pone.0063184.",
+      "text_id": 117,
+      "paragraph_id": 54,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "10. Rebholz-Schuhmann D., Arregui M., Gaudan S., Kirsch H., Jimeno A. Text processing through web services: calling Whatizit. Bioinformatics. 2008;24:296–298. doi: 10.1093/bioinformatics/btm557.",
+      "text_id": 118,
+      "paragraph_id": 55,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "11. Gene Ontology Consortium. Gene Ontology annotations and resources. 2013;41:D530–D535. doi: 10.1093/nar/gks1050.",
+      "text_id": 119,
+      "paragraph_id": 56,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "12. Malone J., Holloway E., Adamusiak T., Kapushesky M., Zheng J., Kolesnikov N., Zhukova A., Brazma A., Parkinson H. Modelling sample variables with an Experimental Factor Ontology. Bioinformatics. 2010;26:1112–1118. doi: 10.1093/bioinformatics/btq099.",
+      "text_id": 120,
+      "paragraph_id": 57,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "13. Corpas M., Jimenez R., Carbon S.J., García A., Garcia L., Goldberg T., Gomez J., Kalderimis A., Lewis S.E., Mulvany I. BioJS: an open source standard for biological visualisation—its status in 2014. F1000Res. 2014;3:55. doi: 10.12688/f1000research.3-55.v1.",
+      "text_id": 121,
+      "paragraph_id": 58,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "14. Pyysalo S., Ananiadou S. Anatomical entity mention recognition at literature scale. Bioinformatics. 2014;30:868–875. doi: 10.1093/bioinformatics/btt580.",
+      "text_id": 122,
+      "paragraph_id": 59,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "15. Rak R., Batista-Navarro R., Rowley A., Carter J., Ananiadou S. Text mining-assisted biocuration workflows in Argo. Database (Oxford) 2014;2014:doi: 10.1093/database/bau070. doi: 10.1093/database/bau070.",
+      "text_id": 123,
+      "paragraph_id": 60,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "16. Rak R., Batista-Navarro R., Carter J., Rowley A., Ananiadou S. Processing biological literature with customizable web services supporting interoperable formats. Database (Oxford) 2014;2014:doi: 10.1093/database/bau064. doi: 10.1093/database/bau064.",
+      "text_id": 124,
+      "paragraph_id": 61,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "17. Miwa M., Thompson P., McNaught J., Kell D.B., Ananiadou S. Extracting semantically enriched events from biomedical literature. BMC Bioinformatics. 2012;13:108. doi: 10.1186/1471-2105-13-108.",
+      "text_id": 125,
+      "paragraph_id": 62,
+      "section_id": 32,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Figure 1. (a) Total scope of content (abstracts and articles) available in Europe PMC. Blue columns represent abstracts; the green column represents full text. Actual numbers of records at the time of writing: PubMed: 24 174 318; Patents: 4 229 297; Agricola: 577 871; Europe PMC full-text abstract not in PubMed: 447 427; Other smaller sources of metadata: 201 988; Europe PMC full text: 2 988 235. (b) Proportion of full-text articles in Europe PMC expressed, for comparative purposes, as a proportion of abstracts available in PubMed (100%, gray bar), per publication year. Open Access full-text articles are in yellow; ‘read only’ full-text articles are in green. For publication year 2012, around 25% of PubMed is available as full text in Europe PMC, and of those, about 50% are available open access. The slight drop in read-only articles seen in 2013 is due to many articles published in 2013 still being under a 12-month embargo period at the time of writing.",
+      "text_id": 126,
+      "paragraph_id": 63,
+      "section_id": null,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Figure 2. ORCIDs in Europe PMC. ORCIDs can be used to search for authors unambiguously in Europe PMC, and are apparent in several different ways. Abstract pages: (a) If the ORCID has been matched to a specific author in an article, there is an option to use the ORCID instead of the name to search for a particular author. (b) ORCIDs that have claimed the article are listed below the abstract; the name linked to the ORCID is shown on mouse-over and clicking on the ORCID triggers a search. Search page: (c) If you know an ORCID, search for it using the syntax shown, or select ‘ORCID’ from the Bibliographic Fields menu on the Advanced Search Page. Here the results are shown ranked by citation count.",
+      "text_id": 127,
+      "paragraph_id": 64,
+      "section_id": null,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Figure 3. The BioEntities tab in Europe PMC. The BioEntities tab contains rich information on key concepts mined from the article as well as links to and from related data resources. In this example, several Uniprot records cite this article, and we have also found one data citation, to a dataset in the Dryad database (http://datadryad.org). In the case of chemical entities mined from text, we have used a BioJS module (http://www.ebi.ac.uk/Tools/biojs/registry/) to display the chemical structure of the entity (13). The same applies to mined PDB citations (not shown). In other cases, links to the database in question, or to invoke a search of Europe PMC for that concept, are provided. This figure has been modified and abbreviated from the actual screenshot to show the breadth of coverage in this example article.",
+      "text_id": 128,
+      "paragraph_id": 65,
+      "section_id": null,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "† The list of authors of the Europe PMC Consortium is provided in the Appendix.",
+      "text_id": 129,
+      "paragraph_id": 66,
+      "section_id": null,
+      "page_number": null,
+      "formatted": null
+    }
+  ],
+  "section": [
+    {
+      "section_id": 1,
+      "header": "BACKGROUND",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "intro"
+    },
+    {
+      "section_id": 2,
+      "header": "EUROPE PMC CORE CONTENT",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "method"
+    },
+    {
+      "section_id": 3,
+      "header": "Full-text articles in Europe PMC: correspondence with PMC",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 4,
+      "header": "Abstracts in Europe PMC: correspondence with PubMed",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "unknown"
+    },
+    {
+      "section_id": 5,
+      "header": "Introduction",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "intro"
+    },
+    {
+      "section_id": 6,
+      "header": "Open access: why licensing is important",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 7,
+      "header": "SEARCHING EUROPE PMC IS EASY AND POWERFUL",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 8,
+      "header": "Citation count sort order",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 9,
+      "header": "Author search",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "author_contributions"
+    },
+    {
+      "section_id": 10,
+      "header": "Advanced search",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 11,
+      "header": "Section search",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 12,
+      "header": "EUROPE PMC AND ORCID",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 13,
+      "header": "Link publications to your ORCID",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 14,
+      "header": "Use ORCID to search Europe PMC",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 15,
+      "header": "INTEGRATING DATA WITH LITERATURE VIA EUROPE PMC",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 16,
+      "header": "Database records that cite articles",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 17,
+      "header": "Articles that cite data",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 18,
+      "header": "Text-mined concepts",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 19,
+      "header": "DOWNLOADING DATA FROM EUROPE PMC",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 20,
+      "header": "Export articles from the website",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 21,
+      "header": "Web services and APIs",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "title"
+    },
+    {
+      "section_id": 22,
+      "header": "Articles",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 23,
+      "header": "Grants",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "endnote"
+    },
+    {
+      "section_id": 24,
+      "header": "FTP and RSS",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 25,
+      "header": "EUROPE PMC RESOURCES FOR TEXT AND DATA MINERS",
+      "level": 2,
+      "parent_section_id": 2,
+      "section_type": "method"
+    },
+    {
+      "section_id": 26,
+      "header": "SUMMARY",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "unknown"
+    },
+    {
+      "section_id": 27,
+      "header": "Acknowledgments",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "acknowledgment"
+    },
+    {
+      "section_id": 28,
+      "header": "APPENDIX",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "appendix"
+    },
+    {
+      "section_id": 29,
+      "header": "Footnotes",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "footnote"
+    },
+    {
+      "section_id": 30,
+      "header": "FUNDING",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "funding"
+    },
+    {
+      "section_id": 31,
+      "header": "REFERENCES",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "unknown"
+    },
+    {
+      "section_id": 32,
+      "header": "References",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "references"
+    }
+  ],
+  "url": [
+    {
+      "url_id": 1,
+      "href": "http://europepmc.org",
+      "link_text": null,
+      "text_id": 1,
+      "start": 32,
+      "end": 52
+    },
+    {
+      "url_id": 2,
+      "href": "http://www.ncbi.nlm.nih.gov/pmc/about/pmci/",
+      "link_text": null,
+      "text_id": 5,
+      "start": 88,
+      "end": 131
+    },
+    {
+      "url_id": 3,
+      "href": "http://www.ntis.gov/products/agricola.aspx",
+      "link_text": null,
+      "text_id": 6,
+      "start": 157,
+      "end": 199
+    },
+    {
+      "url_id": 4,
+      "href": "http://europepmc.org/FtpSite",
+      "link_text": null,
+      "text_id": 23,
+      "start": 75,
+      "end": 103
+    },
+    {
+      "url_id": 5,
+      "href": "http://orcid.org",
+      "link_text": null,
+      "text_id": 40,
+      "start": 151,
+      "end": 167
+    },
+    {
+      "url_id": 6,
+      "href": "http://europepmc.org/orcid/import",
+      "link_text": null,
+      "text_id": 41,
+      "start": 117,
+      "end": 150
+    },
+    {
+      "url_id": 7,
+      "href": "http://europepmc.org/LabsLink",
+      "link_text": null,
+      "text_id": 55,
+      "start": 142,
+      "end": 171
+    },
+    {
+      "url_id": 8,
+      "href": "http://europepmc.org/LabsLink",
+      "link_text": null,
+      "text_id": 93,
+      "start": 66,
+      "end": 95
+    },
+    {
+      "url_id": 9,
+      "href": "http://europepmc.org/Funders/",
+      "link_text": null,
+      "text_id": 105,
+      "start": 60,
+      "end": 89
+    }
+  ],
+  "bib": [
+    {
+      "bib_id": 1,
+      "text_id": 109,
+      "bib_type": "journal_article",
+      "doi": "10.1093/nar/gkq1063",
+      "title": "UKPMC: a full text article resource for the life sciences",
+      "authors": "McEntyre J.R., Ananiadou S., Andrews S., Black W.J., Boulderstone R., Buttery P., Chaplin D., Chevuru S., Cobley N., Coleman L.A",
+      "editors": null,
+      "publisher": null,
+      "year": 2011,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2011",
+      "container": "Nucleic Acids Res",
+      "volume": "39",
+      "issue": null,
+      "first_page": "D58",
+      "last_page": "D65",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 2,
+      "text_id": 110,
+      "bib_type": "journal_article",
+      "doi": "10.1093/nar/gkt1146",
+      "title": "Database resources of the National Center for Biotechnology Information",
+      "authors": "NCBI Resource Coordinators",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2014",
+      "container": "Nucleic Acids Res",
+      "volume": "42",
+      "issue": null,
+      "first_page": "D7",
+      "last_page": "D17",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 3,
+      "text_id": 111,
+      "bib_type": "journal_article",
+      "doi": "10.1371/journal.pcbi.0010034",
+      "title": "Will a biological database be different from a biological journal?",
+      "authors": "Bourne P",
+      "editors": null,
+      "publisher": null,
+      "year": 2005,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2005",
+      "container": "PLoS Comput. Biol",
+      "volume": "1",
+      "issue": null,
+      "first_page": "179",
+      "last_page": "181",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 4,
+      "text_id": 112,
+      "bib_type": "journal_article",
+      "doi": "10.1093/nar/gki033",
+      "title": "Online Mendelian Inheritance in Man (OMIM), a knowledgebase of human genes and genetic disorders",
+      "authors": "Hamosh A., Scott A.F., Amberger J.S., Bocchini C.A., McKusick V.A",
+      "editors": null,
+      "publisher": null,
+      "year": 2005,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2005",
+      "container": "Nucleic Acids Res",
+      "volume": "33",
+      "issue": null,
+      "first_page": "D514",
+      "last_page": "D517",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 5,
+      "text_id": 113,
+      "bib_type": "journal_article",
+      "doi": "10.1093/nar/gks1174",
+      "title": "ArrayExpress update—trends in database growth and links to data analysis tools",
+      "authors": "Rustici G., Kolesnikov N., Brandizi M., Burdett T., Dylag M., Emam I., Farne A., Hastings E., Ison J., Keays M",
+      "editors": null,
+      "publisher": null,
+      "year": 2013,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2013",
+      "container": "Nucleic Acids Res",
+      "volume": "41",
+      "issue": null,
+      "first_page": "D987",
+      "last_page": "D990",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 6,
+      "text_id": 114,
+      "bib_type": "other",
+      "doi": "10.1093/nar/gkt1140",
+      "title": "Activities at the Universal Protein Resource (UniProt) Nucleic Acids Res",
+      "authors": "UniProt Consortium",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2014",
+      "container": null,
+      "volume": "42",
+      "issue": null,
+      "first_page": "D191",
+      "last_page": "D198",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 7,
+      "text_id": 115,
+      "bib_type": "journal_article",
+      "doi": "10.1093/nar/gks1170",
+      "title": "GenomeRNAi: a database for cell-based and in vivo RNAi phenotypes, 2013 update",
+      "authors": "Schmidt E.E., Pelz O., Buhlmann S., Kerr G., Horn T., Boutros M",
+      "editors": null,
+      "publisher": null,
+      "year": 2013,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2013",
+      "container": "Nucleic Acids Res",
+      "volume": "41",
+      "issue": null,
+      "first_page": "D1021",
+      "last_page": "D1026",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 8,
+      "text_id": 116,
+      "bib_type": "journal_article",
+      "doi": "10.1093/nar/gkt1082",
+      "title": "Assembly information services in the European Nucleotide Archive",
+      "authors": "Pakseresht N., Alako B., Amid C., Cerdeño-Tárraga A., Cleland I., Gibson R., Goodgame N., Gur T., Jang M., Kay S",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2014",
+      "container": "Nucleic Acids Res",
+      "volume": "42",
+      "issue": null,
+      "first_page": "D38",
+      "last_page": "D43",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 9,
+      "text_id": 117,
+      "bib_type": "journal_article",
+      "doi": "10.1371/journal.pone.0063184",
+      "title": "Database citation in full text biomedical articles",
+      "authors": "Kafkas Ş., Kim J.H., McEntyre J.R",
+      "editors": null,
+      "publisher": null,
+      "year": 2013,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2013",
+      "container": "PLoS One",
+      "volume": "8",
+      "issue": null,
+      "first_page": "e63184",
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 10,
+      "text_id": 118,
+      "bib_type": "journal_article",
+      "doi": "10.1093/bioinformatics/btm557",
+      "title": "Text processing through web services: calling Whatizit",
+      "authors": "Rebholz-Schuhmann D., Arregui M., Gaudan S., Kirsch H., Jimeno A",
+      "editors": null,
+      "publisher": null,
+      "year": 2008,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2008",
+      "container": "Bioinformatics",
+      "volume": "24",
+      "issue": null,
+      "first_page": "296",
+      "last_page": "298",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 11,
+      "text_id": 119,
+      "bib_type": "other",
+      "doi": "10.1093/nar/gks1050",
+      "title": "Gene Ontology annotations and resources",
+      "authors": "Gene Ontology Consortium",
+      "editors": null,
+      "publisher": null,
+      "year": 2013,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2013",
+      "container": null,
+      "volume": "41",
+      "issue": null,
+      "first_page": "D530",
+      "last_page": "D535",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 12,
+      "text_id": 120,
+      "bib_type": "journal_article",
+      "doi": "10.1093/bioinformatics/btq099",
+      "title": "Modelling sample variables with an Experimental Factor Ontology",
+      "authors": "Malone J., Holloway E., Adamusiak T., Kapushesky M., Zheng J., Kolesnikov N., Zhukova A., Brazma A., Parkinson H",
+      "editors": null,
+      "publisher": null,
+      "year": 2010,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2010",
+      "container": "Bioinformatics",
+      "volume": "26",
+      "issue": null,
+      "first_page": "1112",
+      "last_page": "1118",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 13,
+      "text_id": 121,
+      "bib_type": "journal_article",
+      "doi": "10.12688/f1000research.3-55.v1",
+      "title": "BioJS: an open source standard for biological visualisation—its status in 2014",
+      "authors": "Corpas M., Jimenez R., Carbon S.J., García A., Garcia L., Goldberg T., Gomez J., Kalderimis A., Lewis S.E., Mulvany I",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2014",
+      "container": "F1000Res",
+      "volume": "3",
+      "issue": "55",
+      "first_page": "55",
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 14,
+      "text_id": 122,
+      "bib_type": "journal_article",
+      "doi": "10.1093/bioinformatics/btt580",
+      "title": "Anatomical entity mention recognition at literature scale",
+      "authors": "Pyysalo S., Ananiadou S.",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2014",
+      "container": "Bioinformatics",
+      "volume": "30",
+      "issue": null,
+      "first_page": "868",
+      "last_page": "875",
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 15,
+      "text_id": 123,
+      "bib_type": "journal_article",
+      "doi": "10.1093/database/bau070",
+      "title": "Text mining-assisted biocuration workflows in Argo",
+      "authors": "Rak R., Batista-Navarro R., Rowley A., Carter J., Ananiadou S",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2014",
+      "container": "Database (Oxford)",
+      "volume": null,
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 16,
+      "text_id": 124,
+      "bib_type": "journal_article",
+      "doi": "10.1093/database/bau064",
+      "title": "Processing biological literature with customizable web services supporting interoperable formats",
+      "authors": "Rak R., Batista-Navarro R., Carter J., Rowley A., Ananiadou S",
+      "editors": null,
+      "publisher": null,
+      "year": 2014,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2014",
+      "container": "Database (Oxford)",
+      "volume": null,
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    },
+    {
+      "bib_id": 17,
+      "text_id": 125,
+      "bib_type": "journal_article",
+      "doi": "10.1186/1471-2105-13-108",
+      "title": "Extracting semantically enriched events from biomedical literature",
+      "authors": "Miwa M., Thompson P., McNaught J., Kell D.B., Ananiadou S",
+      "editors": null,
+      "publisher": null,
+      "year": 2012,
+      "year_suffix": null,
+      "date": null,
+      "published_date": "2012",
+      "container": "BMC Bioinformatics",
+      "volume": "13:108",
+      "issue": null,
+      "first_page": null,
+      "last_page": null,
+      "edition": null,
+      "version": null,
+      "url": null,
+      "is_in_press": false,
+      "arxiv": null,
+      "pmid": null,
+      "series": null,
+      "access_date": null,
+      "note": null
+    }
+  ],
+  "xref": [
+    {
+      "xref_id": 1,
+      "target_id": 1,
+      "xref_type": "figure",
+      "contents": "Figure 1a",
+      "text_id": 20,
+      "start": 80,
+      "end": 89
+    },
+    {
+      "xref_id": 2,
+      "target_id": 1,
+      "xref_type": "figure",
+      "contents": "Figure 1b",
+      "text_id": 24,
+      "start": 115,
+      "end": 124
+    },
+    {
+      "xref_id": 3,
+      "target_id": 2,
+      "xref_type": "figure",
+      "contents": "Figure 2",
+      "text_id": 45,
+      "start": 67,
+      "end": 75
+    },
+    {
+      "xref_id": 4,
+      "target_id": 3,
+      "xref_type": "figure",
+      "contents": "Figure 3",
+      "text_id": 60,
+      "start": 144,
+      "end": 152
+    },
+    {
+      "xref_id": 5,
+      "target_id": 1,
+      "xref_type": "bib",
+      "contents": "(1)",
+      "text_id": 3,
+      "start": 54,
+      "end": 57
+    },
+    {
+      "xref_id": 6,
+      "target_id": 2,
+      "xref_type": "bib",
+      "contents": "(2)",
+      "text_id": 7,
+      "start": 35,
+      "end": 38
+    },
+    {
+      "xref_id": 7,
+      "target_id": 1,
+      "xref_type": "bib",
+      "contents": "(1)",
+      "text_id": 12,
+      "start": 123,
+      "end": 126
+    },
+    {
+      "xref_id": 8,
+      "target_id": 3,
+      "xref_type": "bib",
+      "contents": "(3)",
+      "text_id": 36,
+      "start": 70,
+      "end": 73
+    },
+    {
+      "xref_id": 9,
+      "target_id": 3,
+      "xref_type": "bib",
+      "contents": "(3)",
+      "text_id": 50,
+      "start": 205,
+      "end": 208
+    },
+    {
+      "xref_id": 10,
+      "target_id": 4,
+      "xref_type": "bib",
+      "contents": "(4)",
+      "text_id": 52,
+      "start": 93,
+      "end": 96
+    },
+    {
+      "xref_id": 11,
+      "target_id": 5,
+      "xref_type": "bib",
+      "contents": "(5)",
+      "text_id": 52,
+      "start": 114,
+      "end": 117
+    },
+    {
+      "xref_id": 12,
+      "target_id": 6,
+      "xref_type": "bib",
+      "contents": "(6)",
+      "text_id": 53,
+      "start": 48,
+      "end": 51
+    },
+    {
+      "xref_id": 13,
+      "target_id": 7,
+      "xref_type": "bib",
+      "contents": "(7)",
+      "text_id": 53,
+      "start": 187,
+      "end": 190
+    },
+    {
+      "xref_id": 14,
+      "target_id": 8,
+      "xref_type": "bib",
+      "contents": "(8)",
+      "text_id": 56,
+      "start": 148,
+      "end": 151
+    },
+    {
+      "xref_id": 15,
+      "target_id": 9,
+      "xref_type": "bib",
+      "contents": "(9)",
+      "text_id": 56,
+      "start": 206,
+      "end": 209
+    },
+    {
+      "xref_id": 16,
+      "target_id": 10,
+      "xref_type": "bib",
+      "contents": "(10)",
+      "text_id": 56,
+      "start": 276,
+      "end": 280
+    },
+    {
+      "xref_id": 17,
+      "target_id": 11,
+      "xref_type": "bib",
+      "contents": "(11)",
+      "text_id": 58,
+      "start": 99,
+      "end": 103
+    },
+    {
+      "xref_id": 18,
+      "target_id": 12,
+      "xref_type": "bib",
+      "contents": "(12)",
+      "text_id": 58,
+      "start": 207,
+      "end": 211
+    },
+    {
+      "xref_id": 19,
+      "target_id": 14,
+      "xref_type": "bib",
+      "contents": "(14)",
+      "text_id": 88,
+      "start": 193,
+      "end": 197
+    },
+    {
+      "xref_id": 20,
+      "target_id": 15,
+      "xref_type": "bib",
+      "contents": "(15,16)",
+      "text_id": 88,
+      "start": 246,
+      "end": 253
+    },
+    {
+      "xref_id": 21,
+      "target_id": 16,
+      "xref_type": "bib",
+      "contents": "(15,16)",
+      "text_id": 88,
+      "start": 246,
+      "end": 253
+    },
+    {
+      "xref_id": 22,
+      "target_id": 17,
+      "xref_type": "bib",
+      "contents": "(17)",
+      "text_id": 89,
+      "start": 75,
+      "end": 79
+    }
+  ],
+  "figure": [
+    {
+      "figure_id": 1,
+      "label": "1",
+      "section_id": 4,
+      "text_id": 126,
+      "image": null,
+      "caption": "Figure 1. (a) Total scope of content (abstracts and articles) available in Europe PMC. Blue columns represent abstracts; the green column represents full text. Actual numbers of records at the time of writing: PubMed: 24 174 318; Patents: 4 229 297; Agricola: 577 871; Europe PMC full-text abstract not in PubMed: 447 427; Other smaller sources of metadata: 201 988; Europe PMC full text: 2 988 235. (b) Proportion of full-text articles in Europe PMC expressed, for comparative purposes, as a proportion of abstracts available in PubMed (100%, gray bar), per publication year. Open Access full-text articles are in yellow; ‘read only’ full-text articles are in green. For publication year 2012, around 25% of PubMed is available as full text in Europe PMC, and of those, about 50% are available open access. The slight drop in read-only articles seen in 2013 is due to many articles published in 2013 still being under a 12-month embargo period at the time of writing.",
+      "page_number": null
+    },
+    {
+      "figure_id": 2,
+      "label": "2",
+      "section_id": 14,
+      "text_id": 127,
+      "image": null,
+      "caption": "Figure 2. ORCIDs in Europe PMC. ORCIDs can be used to search for authors unambiguously in Europe PMC, and are apparent in several different ways. Abstract pages: (a) If the ORCID has been matched to a specific author in an article, there is an option to use the ORCID instead of the name to search for a particular author. (b) ORCIDs that have claimed the article are listed below the abstract; the name linked to the ORCID is shown on mouse-over and clicking on the ORCID triggers a search. Search page: (c) If you know an ORCID, search for it using the syntax shown, or select ‘ORCID’ from the Bibliographic Fields menu on the Advanced Search Page. Here the results are shown ranked by citation count.",
+      "page_number": null
+    },
+    {
+      "figure_id": 3,
+      "label": "3",
+      "section_id": 18,
+      "text_id": 128,
+      "image": null,
+      "caption": "Figure 3. The BioEntities tab in Europe PMC. The BioEntities tab contains rich information on key concepts mined from the article as well as links to and from related data resources. In this example, several Uniprot records cite this article, and we have also found one data citation, to a dataset in the Dryad database (http://datadryad.org). In the case of chemical entities mined from text, we have used a BioJS module (http://www.ebi.ac.uk/Tools/biojs/registry/) to display the chemical structure of the entity (13). The same applies to mined PDB citations (not shown). In other cases, links to the database in question, or to invoke a search of Europe PMC for that concept, are provided. This figure has been modified and abbreviated from the actual screenshot to show the breadth of coverage in this example article.",
+      "page_number": null
+    }
+  ],
+  "table": [],
+  "footnote": [
+    {
+      "footnote_id": 1,
+      "label": "†",
+      "text_id": 129
+    }
+  ],
+  "eq": [],
+  "metadata_match": [],
+  "affiliation_match": [],
+  "funding_match": [],
+  "bib_match": [],
+  "extraction": {
+    "producer": {
+      "name": "bibr",
+      "version": "0.5.1",
+      "build_sha": null
+    },
+    "converter": null,
+    "completed_at": "2026-09-23T13:28:30Z",
+    "ocr": null,
+    "llm": {
+      "provider": "openai",
+      "model": "local-qwen",
+      "backend": "cloud"
+    },
+    "settings": {
+      "ref_seg": "geom",
+      "ref_parse": "ner",
+      "crossref_enrich": false,
+      "consolidate": "off"
+    },
+    "timings": {
+      "stages": {
+        "jats": 0.001,
+        "parse_segment": 1.214,
+        "extract": 223.443
+      },
+      "total_seconds": 224.658
+    },
+    "usage": {
+      "totals": {
+        "calls": 5,
+        "input_tokens": 5133,
+        "cached_input_tokens": 0,
+        "output_tokens": 3174,
+        "total_tokens": 8307
+      },
+      "breakdown": [
+        {
+          "label": "extract_equations",
+          "provider": "openai",
+          "model": "local-qwen",
+          "calls": 2,
+          "input_tokens": 1497,
+          "cached_input_tokens": 0,
+          "output_tokens": 482,
+          "total_tokens": 1979
+        },
+        {
+          "label": "extract_research_integrity",
+          "provider": "openai",
+          "model": "local-qwen",
+          "calls": 1,
+          "input_tokens": 1006,
+          "cached_input_tokens": 0,
+          "output_tokens": 1226,
+          "total_tokens": 2232
+        },
+        {
+          "label": "implicit_sections",
+          "provider": "openai",
+          "model": "local-qwen",
+          "calls": 1,
+          "input_tokens": 498,
+          "cached_input_tokens": 0,
+          "output_tokens": 391,
+          "total_tokens": 889
+        },
+        {
+          "label": "section_classifier",
+          "provider": "openai",
+          "model": "local-qwen",
+          "calls": 1,
+          "input_tokens": 2132,
+          "cached_input_tokens": 0,
+          "output_tokens": 1075,
+          "total_tokens": 3207
+        }
+      ]
+    },
+    "identity": {
+      "receipt": {
+        "selected": {
+          "raw": "10.1093/nar/gku1061",
+          "normalized": "10.1093/nar/gku1061",
+          "source_kind": "structured_metadata",
+          "page": null,
+          "section_id": null,
+          "section_type": null,
+          "region_index": null,
+          "region_type": null,
+          "text_id": null,
+          "marker_kind": "structured_doi",
+          "repeated_header_footer_count": 0,
+          "semantic_context": "article_self",
+          "selection_tier": 3,
+          "rejection_reason": null
+        },
+        "candidates": [
+          {
+            "raw": "10.1093/nar/gkq1063.",
+            "normalized": "10.1093/nar/gkq1063",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 109,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gkt1146.",
+            "normalized": "10.1093/nar/gkt1146",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 110,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1371/journal.pcbi.0010034.",
+            "normalized": "10.1371/journal.pcbi.0010034",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 111,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gki033.",
+            "normalized": "10.1093/nar/gki033",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 112,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gks1174.",
+            "normalized": "10.1093/nar/gks1174",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 113,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gkt1140.",
+            "normalized": "10.1093/nar/gkt1140",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 114,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gks1170.",
+            "normalized": "10.1093/nar/gks1170",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 115,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gkt1082.",
+            "normalized": "10.1093/nar/gkt1082",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 116,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1371/journal.pone.0063184.",
+            "normalized": "10.1371/journal.pone.0063184",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 117,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/bioinformatics/btm557.",
+            "normalized": "10.1093/bioinformatics/btm557",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 118,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gks1050.",
+            "normalized": "10.1093/nar/gks1050",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 119,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/bioinformatics/btq099.",
+            "normalized": "10.1093/bioinformatics/btq099",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 120,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.12688/f1000research.3-55.v1.",
+            "normalized": "10.12688/f1000research.3-55.v1",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 121,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/bioinformatics/btt580.",
+            "normalized": "10.1093/bioinformatics/btt580",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 122,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/database/bau070.",
+            "normalized": "10.1093/database/bau070",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 123,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/database/bau070.",
+            "normalized": "10.1093/database/bau070",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 123,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/database/bau064.",
+            "normalized": "10.1093/database/bau064",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 124,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/database/bau064.",
+            "normalized": "10.1093/database/bau064",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 124,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1186/1471-2105-13-108.",
+            "normalized": "10.1186/1471-2105-13-108",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 32,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 125,
+            "marker_kind": "explicit_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1093/nar/gku1061",
+            "normalized": "10.1093/nar/gku1061",
+            "source_kind": "structured_metadata",
+            "page": null,
+            "section_id": null,
+            "section_type": null,
+            "region_index": null,
+            "region_type": null,
+            "text_id": null,
+            "marker_kind": "structured_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "article_self",
+            "selection_tier": 3,
+            "rejection_reason": null
+          }
+        ],
+        "issue_codes": []
+      }
+    },
+    "diagnostics": {
+      "text_quality": null,
+      "references_complete": true,
+      "ref_seg_fallback_used": false,
+      "section_classification": [
+        {
+          "section_id": 1,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 2,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 3,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 4,
+          "score": 0.0,
+          "source": "imrad_dedup"
+        },
+        {
+          "section_id": 5,
+          "score": 0.85,
+          "source": "implicit"
+        },
+        {
+          "section_id": 6,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 7,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 8,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 9,
+          "score": 0.7049347758293152,
+          "source": "model"
+        },
+        {
+          "section_id": 10,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 11,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 12,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 13,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 14,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 15,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 16,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 17,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 18,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 19,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 20,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 21,
+          "score": 0.5200653076171875,
+          "source": "model"
+        },
+        {
+          "section_id": 22,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 23,
+          "score": 0.9821438193321228,
+          "source": "model"
+        },
+        {
+          "section_id": 24,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 25,
+          "score": 0.85,
+          "source": "llm"
+        },
+        {
+          "section_id": 26,
+          "score": 0.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 27,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 28,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 29,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 30,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 31,
+          "score": 0.0,
+          "source": "imrad_dedup"
+        },
+        {
+          "section_id": 32,
+          "score": 1.0,
+          "source": "exact_alias"
+        }
+      ],
+      "xref_tier": [
+        {
+          "xref_id": 1,
+          "tier": "label"
+        },
+        {
+          "xref_id": 2,
+          "tier": "label"
+        },
+        {
+          "xref_id": 3,
+          "tier": "label"
+        },
+        {
+          "xref_id": 4,
+          "tier": "label"
+        },
+        {
+          "xref_id": 5,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 6,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 7,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 8,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 9,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 10,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 11,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 12,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 13,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 14,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 15,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 16,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 17,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 18,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 19,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 20,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 21,
+          "tier": "paren_numeric"
+        },
+        {
+          "xref_id": 22,
+          "tier": "paren_numeric"
+        }
+      ],
+      "citation_linking": {
+        "style_scores": {
+          "numeric": 0.0,
+          "paren-numeric": 1.0,
+          "flattened-superscript": 0.0,
+          "author-year": 0.0
+        },
+        "candidates": [
+          {
+            "text_id": 105,
+            "start": 119,
+            "end": 127,
+            "raw": "[098231]",
+            "style": "numeric",
+            "bib_ids": [],
+            "evidence": [
+              "bracket_marker"
+            ],
+            "confidence": 0.0,
+            "accepted": false,
+            "rejection_reasons": [
+              "unknown_bib_id"
+            ]
+          },
+          {
+            "text_id": 106,
+            "start": 47,
+            "end": 55,
+            "raw": "[098231]",
+            "style": "numeric",
+            "bib_ids": [],
+            "evidence": [
+              "bracket_marker"
+            ],
+            "confidence": 0.0,
+            "accepted": false,
+            "rejection_reasons": [
+              "unknown_bib_id"
+            ]
+          },
+          {
+            "text_id": 3,
+            "start": 54,
+            "end": 57,
+            "raw": "(1)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              1
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 7,
+            "start": 35,
+            "end": 38,
+            "raw": "(2)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              2
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 12,
+            "start": 123,
+            "end": 126,
+            "raw": "(1)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              1
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 36,
+            "start": 70,
+            "end": 73,
+            "raw": "(3)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              3
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 50,
+            "start": 205,
+            "end": 208,
+            "raw": "(3)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              3
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 52,
+            "start": 93,
+            "end": 96,
+            "raw": "(4)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              4
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 52,
+            "start": 114,
+            "end": 117,
+            "raw": "(5)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              5
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 53,
+            "start": 48,
+            "end": 51,
+            "raw": "(6)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              6
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 53,
+            "start": 187,
+            "end": 190,
+            "raw": "(7)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              7
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 56,
+            "start": 148,
+            "end": 151,
+            "raw": "(8)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              8
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 56,
+            "start": 206,
+            "end": 209,
+            "raw": "(9)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              9
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 56,
+            "start": 276,
+            "end": 280,
+            "raw": "(10)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              10
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 58,
+            "start": 99,
+            "end": 103,
+            "raw": "(11)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              11
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 58,
+            "start": 207,
+            "end": 211,
+            "raw": "(12)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              12
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 88,
+            "start": 193,
+            "end": 197,
+            "raw": "(14)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              14
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 88,
+            "start": 246,
+            "end": 253,
+            "raw": "(15,16)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              15,
+              16
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 89,
+            "start": 75,
+            "end": 79,
+            "raw": "(17)",
+            "style": "paren-numeric",
+            "bib_ids": [
+              17
+            ],
+            "evidence": [
+              "parenthetical_marker",
+              "recurring_sentences:11",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 1.0,
+            "accepted": true,
+            "rejection_reasons": []
+          },
+          {
+            "text_id": 104,
+            "start": 326,
+            "end": 328,
+            "raw": "10",
+            "style": "flattened-superscript",
+            "bib_ids": [
+              10
+            ],
+            "evidence": [
+              "word_attached_digit_run",
+              "ambiguous_alphanumeric_carrier",
+              "reference_carrier_ungrounded:10",
+              "recurring_anchor_sentences:0",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 0.0,
+            "accepted": false,
+            "rejection_reasons": [
+              "reference_carrier_mismatch",
+              "insufficient_recurring_marker_evidence",
+              "ambiguous_alphanumeric_carrier"
+            ]
+          },
+          {
+            "text_id": 104,
+            "start": 476,
+            "end": 477,
+            "raw": "1",
+            "style": "flattened-superscript",
+            "bib_ids": [
+              1
+            ],
+            "evidence": [
+              "word_attached_digit_run",
+              "ambiguous_alphanumeric_carrier",
+              "reference_carrier_ungrounded:1",
+              "recurring_anchor_sentences:0",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 0.0,
+            "accepted": false,
+            "rejection_reasons": [
+              "reference_carrier_mismatch",
+              "insufficient_recurring_marker_evidence",
+              "ambiguous_alphanumeric_carrier"
+            ]
+          },
+          {
+            "text_id": 104,
+            "start": 612,
+            "end": 614,
+            "raw": "13",
+            "style": "flattened-superscript",
+            "bib_ids": [
+              13
+            ],
+            "evidence": [
+              "word_attached_digit_run",
+              "ambiguous_alphanumeric_carrier",
+              "reference_carrier_grounded:13",
+              "recurring_anchor_sentences:0",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 0.0,
+            "accepted": false,
+            "rejection_reasons": [
+              "single_letter_carrier",
+              "insufficient_recurring_marker_evidence",
+              "ambiguous_alphanumeric_carrier"
+            ]
+          },
+          {
+            "text_id": 104,
+            "start": 826,
+            "end": 827,
+            "raw": "1",
+            "style": "flattened-superscript",
+            "bib_ids": [
+              1
+            ],
+            "evidence": [
+              "word_attached_digit_run",
+              "ambiguous_alphanumeric_carrier",
+              "reference_carrier_ungrounded:1",
+              "recurring_anchor_sentences:0",
+              "printed_reference_prefixes:17"
+            ],
+            "confidence": 0.0,
+            "accepted": false,
+            "rejection_reasons": [
+              "single_letter_carrier",
+              "reference_carrier_mismatch",
+              "insufficient_recurring_marker_evidence",
+              "ambiguous_alphanumeric_carrier"
+            ]
+          }
+        ],
+        "resolved_candidate_fraction": 0.7391304347826086,
+        "unique_linked_bib_fraction": 0.9411764705882353
+      },
+      "reference_yield": {
+        "credible_source_starts": 17,
+        "attempts": [
+          {
+            "strategy": "native",
+            "spans": [
+              [
+                0,
+                253
+              ],
+              [
+                254,
+                418
+              ],
+              [
+                419,
+                568
+              ],
+              [
+                569,
+                799
+              ],
+              [
+                800,
+                1058
+              ],
+              [
+                1059,
+                1200
+              ],
+              [
+                1201,
+                1414
+              ],
+              [
+                1415,
+                1659
+              ],
+              [
+                1660,
+                1809
+              ],
+              [
+                1810,
+                2004
+              ],
+              [
+                2005,
+                2120
+              ],
+              [
+                2121,
+                2374
+              ],
+              [
+                2375,
+                2635
+              ],
+              [
+                2636,
+                2792
+              ],
+              [
+                2793,
+                2999
+              ],
+              [
+                3000,
+                3252
+              ],
+              [
+                3253,
+                3447
+              ]
+            ],
+            "credible_starts": 17,
+            "selected": true,
+            "reason_flags": []
+          }
+        ],
+        "selected_spans": [
+          [
+            0,
+            253
+          ],
+          [
+            254,
+            418
+          ],
+          [
+            419,
+            568
+          ],
+          [
+            569,
+            799
+          ],
+          [
+            800,
+            1058
+          ],
+          [
+            1059,
+            1200
+          ],
+          [
+            1201,
+            1414
+          ],
+          [
+            1415,
+            1659
+          ],
+          [
+            1660,
+            1809
+          ],
+          [
+            1810,
+            2004
+          ],
+          [
+            2005,
+            2120
+          ],
+          [
+            2121,
+            2374
+          ],
+          [
+            2375,
+            2635
+          ],
+          [
+            2636,
+            2792
+          ],
+          [
+            2793,
+            2999
+          ],
+          [
+            3000,
+            3252
+          ],
+          [
+            3253,
+            3447
+          ]
+        ],
+        "source_character_coverage": 1.0,
+        "parsed_count": 17,
+        "valid_count": 17,
+        "duplicate_rate": 0.0,
+        "reason_flags": []
+      }
+    },
+    "validation": {
+      "errors": 0,
+      "warnings": 2,
+      "blocking": 0,
+      "promotable": true,
+      "issues": [
+        {
+          "code": "VAL_STATEMENT_SUSPECT",
+          "severity": "warning",
+          "message": "Legacy and bounded integrity-statement ownership differ for coi_statement",
+          "origin_stage": "post_parse",
+          "evidence_ids": [
+            "coi_statement",
+            "section:29",
+            "text:107",
+            "text:108"
+          ],
+          "count": 1,
+          "blocking": false
+        },
+        {
+          "code": "VAL_STATEMENT_SUSPECT",
+          "severity": "warning",
+          "message": "Legacy and bounded integrity-statement ownership differ for funding_statement",
+          "origin_stage": "post_parse",
+          "evidence_ids": [
+            "funding_statement",
+            "section:29",
+            "text:105",
+            "text:106",
+            "text:107",
+            "text:108"
+          ],
+          "count": 1,
+          "blocking": false
+        }
+      ]
+    },
+    "qualification": {
+      "bibr_sha": null,
+      "platform_sha": null,
+      "model_id": "local-qwen",
+      "model_revision": null,
+      "jinja_sha256": null,
+      "structured_backend": "instructor",
+      "temperature": null,
+      "thinking_mode": false,
+      "protocol_hashes": {
+        "section_classifier": {
+          "request_document_sha256": "ae0a8ba2a8ced6942859ba3d9aea37b82ebd431cfb391290774f681c64f1e72e",
+          "instruction_sha256": "46b6f13a33e1477693db91aaafea66e797d96931646c5890cb92127df7adca05",
+          "converted_template_sha256": "6636ba76a942880c097e560b79e1e448333701076d892eda389cbe38d357253a"
+        },
+        "implicit_sections": {
+          "request_document_sha256": "4668b1de13608695f3b2e5b55823267d2c80ffdb5283c73afd6ac84cb2ca8c57",
+          "instruction_sha256": "2d797406bf14d1c5c6bf16ce4b6821792f82ceae527c583f5dd2dd5a161fe61b",
+          "converted_template_sha256": "925763c9b299df9b6275807f28bf2bf1b2ce6df680689d723f422eea88aa76c6"
+        },
+        "extract_equations": {
+          "request_document_sha256": "30925aaf32c772064abff8c09aa6060fad29b2a210cebdef671177aa42391354",
+          "instruction_sha256": "eab0aec16eb08fb0b9814afad588b241fcecc9a7c9a3a4d4f6e4c43c10d8d101",
+          "converted_template_sha256": "ff4985cab79601a74ec2c5affd5d8c8f347128defbd71f7138f0a135e827a507"
+        },
+        "extract_research_integrity": {
+          "request_document_sha256": "aabf276e2e4aba5f74d669a11a2ce825214810295e383cddc89a93790be19ebc",
+          "instruction_sha256": "53709b5b9a82bc3a617820bcf3522368c2f27127e378f72039684751c53ff87a",
+          "converted_template_sha256": "57cac09f3fcb74daaf2a1f26c3f6a5c25082586565adae63d50053d2103de940"
+        }
+      },
+      "raw_native_valid": null,
+      "raw_native_category": null,
+      "fallback_attempted": false,
+      "fallback_outcome": "not_attempted",
+      "physical_request_count": 5,
+      "logical_request_count": 5
+    },
+    "warnings": [
+      {
+        "code": "STATEMENT_LEXICAL_FALLBACK",
+        "message": "coi_statement filled by lexical anchor matching"
+      }
+    ]
+  }
+}

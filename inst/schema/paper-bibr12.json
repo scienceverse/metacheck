@@ -1,0 +1,549 @@
+{
+  "description": "What a paper read from a bibr export schema 12.x file (or converted from Grobid TEI with schema_version = \"12.0\") adds to paper.json. Every addition is optional, so papers in the older format validate as before. Merged into paper.json by .paper_schema_bibr12().",
+  "properties": {
+    "affiliation": {
+      "description": "bibr 12.x: distinct byline affiliations (the 12.x name of affiliations)",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/affiliation"
+      }
+    },
+    "footnote": {
+      "description": "bibr 12.x: one row per footnote or endnote; its text is a row of the text table with no section",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/footnote"
+      }
+    },
+    "affiliation_match": {
+      "description": "bibr 12.x: ROR organizations matched to affiliation strings",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/affiliation_match"
+      }
+    },
+    "funding_match": {
+      "description": "bibr 12.x: ROR organizations matched to printed funder names",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/funding_match"
+      }
+    }
+  },
+  "$defs": {
+    "info": {
+      "properties": {
+        "sha256": {
+          "description": "bibr 12.x: SHA-256 digest of the input file's bytes (source.sha256)",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "pmid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pmcid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "arxiv": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published_date": {
+          "description": "bibr 12.x: the publication date as ISO 8601 (YYYY, YYYY-MM or YYYY-MM-DD)",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_spdx": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "input_format": {
+          "enum": [
+            "jats",
+            "tei",
+            "html",
+            "epub"
+          ]
+        },
+        "paper_type": {
+          "enum": [
+            "meta_analysis",
+            "case_study",
+            "corrigendum",
+            "erratum",
+            "retraction"
+          ]
+        }
+      }
+    },
+    "author": {
+      "properties": {
+        "suffix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "literal": {
+          "description": "bibr 12.x: the whole name of a group author; given and family are null then",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "credit_roles": {
+          "description": "bibr 12.x: CRediT roles as NISO term URIs",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "section": {
+      "properties": {
+        "section_type": {
+          "enum": [
+            "data_availability"
+          ]
+        }
+      }
+    },
+    "url": {
+      "properties": {
+        "url_id": {
+          "description": "bibr 12.x: 1-based position",
+          "type": "integer"
+        },
+        "start": {
+          "description": "bibr 12.x: where the link starts in its sentence (0-based, in characters)",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "bib": {
+      "properties": {
+        "bib_type": {
+          "enum": [
+            "thesis"
+          ]
+        },
+        "published_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "arxiv": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pmid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "series": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "access_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "bib_match": {
+      "properties": {
+        "service": {
+          "enum": [
+            "ror"
+          ]
+        },
+        "author": {
+          "description": "bibr 12.x: structured authors of the matched record (authors holds the given/family pairs)",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "editor": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "published_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_spdx": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funder": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "info_match": {
+      "properties": {
+        "service": {
+          "enum": [
+            "ror"
+          ]
+        },
+        "author": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "editor": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/person"
+          }
+        },
+        "published_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_spdx": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funder": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "funding": {
+      "properties": {
+        "funding_id": {
+          "description": "bibr 12.x: 1-based position",
+          "type": "integer"
+        }
+      }
+    },
+    "xref": {
+      "properties": {
+        "target_id": {
+          "description": "bibr 12.x: the referenced row by xref_type (bib_id, figure_id, table_id or footnote_id); xref_id is then the row's own 1-based position",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "figure": {
+      "properties": {
+        "label": {
+          "description": "bibr 12.x: the printed label without the word, e.g. 3, 3.1 or S2",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "bibr 12.x: the caption's text row; section_id is then the section the figure is printed in",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "table": {
+      "properties": {
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "bibr 12.x: the caption's text row; section_id is then the section the table is printed in",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "eq": {
+      "properties": {
+        "eq_id": {
+          "type": "integer"
+        },
+        "start": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "verbatim": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "footnote": {
+      "type": "object",
+      "required": [
+        "footnote_id",
+        "text_id"
+      ],
+      "properties": {
+        "footnote_id": {
+          "description": "1-based position in document order",
+          "type": "integer"
+        },
+        "label": {
+          "description": "The marker the note is printed with, e.g. 1, * or a dagger",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "The text row holding the note",
+          "type": "integer"
+        }
+      }
+    },
+    "affiliation_match": {
+      "type": "object",
+      "required": [
+        "affiliation_id",
+        "service"
+      ],
+      "properties": {
+        "affiliation_id": {
+          "type": "integer"
+        },
+        "service": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "score": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "country_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "funding_match": {
+      "type": "object",
+      "required": [
+        "funding_id",
+        "service"
+      ],
+      "properties": {
+        "funding_id": {
+          "type": "integer"
+        },
+        "service": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "score": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "country_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funder_doi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "person": {
+      "type": "object",
+      "properties": {
+        "given": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "literal": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orcid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "affiliation": {
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

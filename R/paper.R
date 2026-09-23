@@ -187,7 +187,7 @@ test_paper <- function(text = LETTERS, url = character(0)) {
 #' paper <- demopaper()
 #' paper_validate(paper)
 paper_validate <- function(paper) {
-  schema <- .paper_schema()
+  schema <- .paper_schema_bibr12()
   error_msg <- c()
   warning_msg <- c()
 
@@ -217,6 +217,7 @@ paper_validate <- function(paper) {
   sink <- lapply(tbls, \(tbl) {
     ref <- schema$properties[[tbl]]$`$ref` %||%
       schema$properties[[tbl]]$items$`$ref`
+    if (is.null(ref)) return(NULL) # not a table, e.g. extraction
     def <- strsplit(ref, "/")[[1]][[3]]
 
     cols <- names(paper[[tbl]])
@@ -296,7 +297,7 @@ paper_validate <- function(paper) {
     return(papers)
   }
 
-  schema <- .paper_schema()
+  schema <- .paper_schema_bibr12()
 
   type_func <- list(
     "string" = as.character,
@@ -322,6 +323,7 @@ paper_validate <- function(paper) {
   for (tbl in tbls) {
     ref <- schema$properties[[tbl]]$`$ref` %||%
       schema$properties[[tbl]]$items$`$ref`
+    if (is.null(ref)) next # not a table, e.g. extraction
     def <- strsplit(ref, "/")[[1]][[3]]
     prop <- schema$`$defs`[[def]]$properties
     cols <- intersect(names(paper[[tbl]]), names(prop))
