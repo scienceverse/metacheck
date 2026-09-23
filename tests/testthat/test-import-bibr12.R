@@ -175,3 +175,97 @@ test_that("only bibr schema 12.x is read from files with a schema_version", {
   jsonlite::write_json(json, path, auto_unbox = TRUE, null = "null")
   expect_error(.read_bibr(path), "schema 13.0 is not supported")
 })
+
+test_that("paper_write writes bibr 12.0 that reads back the same", {
+  save_path <- withr::local_tempdir()
+
+  for (name in c("PMC4383902", "probe_html", "full", "preprint")) {
+    path <- bibr12(name)
+    paper <- read(path)
+    json_path <- paper_write(paper, save_path = save_path,
+                             schema_version = "12.0")
+    if (requireNamespace("jsonvalidate", quietly = TRUE)) {
+      expect_valid_bibr12(json_path)
+    }
+
+    # nothing is lost: the rewrite differs from bibr's JSON only in converter
+    orig <- jsonlite::read_json(path)
+    json <- jsonlite::read_json(json_path)
+    expect_null(orig$extraction$converter)
+    expect_equal(json$extraction$converter,
+                 list(name = "metacheck",
+                      version = as.character(packageVersion("metacheck")),
+                      build_sha = NULL))
+    orig$extraction["converter"] <- NULL
+    json$extraction["converter"] <- NULL
+    expect_equal(json, orig)
+
+    # and it reads back the same paper
+    paper2 <- read(json_path)
+    paper$extraction["converter"] <- NULL
+    paper2$extraction["converter"] <- NULL
+    expect_equal(paper2, paper)
+  }
+
+  # images are kept when read with them
+  paper <- read(bibr12("probe_docx"), include_images = TRUE)
+  json_path <- paper_write(paper, save_path = save_path,
+                           schema_version = "12.0")
+  expect_equal(jsonlite::read_json(json_path)$figure,
+               jsonlite::read_json(bibr12("probe_docx"))$figure)
+})
+
+test_that("paper_write keeps its default output", {
+  paper <- read(bibr12("probe_html"))
+  save_path <- withr::local_tempdir()
+
+  # without schema_version, the paper object is saved as before
+  json_path <- paper_write(paper, save_path = save_path)
+  json <- jsonlite::read_json(json_path)
+  expect_null(json$schema_version)
+  expect_equal(json$info[[1]]$title, paper$info$title)
+
+  # 12.0 needs a 12.x paper
+  expect_error(paper_write(demopaper(), save_path = save_path,
+                           schema_version = "12.0"),
+               "metacheck's older format")
+  expect_error(paper_write(paper, save_path = save_path,
+                           schema_version = "11.0"),
+               "schema_version must be NULL or \"12.0\"")
+
+  # a paper read from a later 12.x file is not rewritten
+  paper$info$schema_version <- "12.1"
+  expect_error(paper_write(paper, save_path = save_path,
+                           schema_version = "12.0"),
+               "read from bibr export schema 12.1")
+})
+
+test_that("paper_write converts bib_match rows from add_bib_match()", {
+  paper <- read(bibr12("full"))
+  # the columns add_bib_match() makes: given/family authors, CrossRef scores
+  paper$bib_match <- data.frame(
+    bib_id = 1L, service = "crossref", service_id = NA_character_,
+    score = 61.7, bib_type = "article", doi = "10.1234/PRIOR",
+    title = "A Prior Study", publisher = NA_character_, year = 2020L,
+    date = NA_character_, container = "Journal of Things"
+  )
+  paper$bib_match$authors <- list(data.frame(given = "Jane", family = "Smith"))
+  paper$bib_match$editors <- list(data.frame(given = character(0),
+                                             family = character(0)))
+
+  json_path <- paper_write(paper, save_path = withr::local_tempdir(),
+                           schema_version = "12.0")
+  if (requireNamespace("jsonvalidate", quietly = TRUE)) {
+    expect_valid_bibr12(json_path)
+  }
+
+  json <- jsonlite::read_json(json_path)
+  match <- json$bib_match[[1]]
+  expect_equal(match$author, list(list(given = "Jane", family = "Smith")))
+  expect_null(match$editor)
+  expect_null(match$score)
+  expect_equal(match$bib_type, "journal_article")
+  expect_equal(match$doi, "10.1234/prior")
+  codes <- vapply(json$extraction$warnings, \(w) w$code, character(1))
+  expect_in("METACHECK_MATCH_SCORE_NOT_0_1", codes)
+})

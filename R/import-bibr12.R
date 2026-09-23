@@ -1,6 +1,6 @@
 # bibr export schema 12.x ----
 #
-# Reads the JSON of bibr's export schema 12.x
+# Reads and writes the JSON of bibr's export schema 12.x
 # (https://bibr.org/schema/bibr-export-v12.schema.json). A paper read from a
 # 12.x file keeps metacheck's own names where it has them -- the 12.x
 # `metadata` and `source` objects make the `info` table and `metadata_match` is
@@ -104,6 +104,14 @@
   eq = "eq", metadata_match = "info_match",
   affiliation_match = "affiliation_match", funding_match = "funding_match",
   bib_match = "bib_match"
+)
+
+# the extraction keys 12.0 defines; other keys are not written
+.bibr12_extraction_keys <- c(
+  "producer", "converter", "completed_at", "ocr", "llm", "settings",
+  "timings", "usage", "identity", "enrichment", "diagnostics", "validation",
+  "qualification", "warnings", "pages", "float_parts", "text_regions",
+  "regions", "trace"
 )
 
 #' Paper schema with the bibr 12.x additions
@@ -296,4 +304,182 @@
 
   info <- .bibr12_info(x$metadata, x$source, version, x$extraction$producer)
   .bibr12_paper(x$paper_id, info, tables, x$extraction)
+}
+
+#' Convert a paper to bibr export schema 12.0
+#'
+#' Called by `paper_write(schema_version = "12.0")`. Keeps the extraction
+#' block of the paper (a bibr export keeps bibr as its producer and the time
+#' bibr extracted it) and names metacheck as the converter. A paper read from
+#' a later 12.x file is not rewritten, since the rewrite would have to keep
+#' keys metacheck does not know.
+#'
+#' @param paper a paper object in 12.0 form
+#' @returns a list that `jsonlite::write_json(auto_unbox = TRUE)` writes as
+#'   a 12.0 export
+#' @noRd
+.paper_to_bibr12 <- function(paper) {
+  if (!.is_bibr12(paper)) {
+    stop("paper_write(schema_version = \"12.0\") writes papers read from a ",
+         "bibr 12.x export, or converted from Grobid TEI with ",
+         "grobid_to_bibr(schema_version = \"12.0\"); '", paper$paper_id,
+         "' is in metacheck's older format", call. = FALSE)
+  }
+  version <- paper$info$schema_version[[1]]
+  if (!identical(version, "12.0")) {
+    stop("paper_write(schema_version = \"12.0\") cannot rewrite '",
+         paper$paper_id, "': it was read from bibr export schema ", version,
+         ", and a rewrite keeps every key, including those metacheck does ",
+         "not know", call. = FALSE)
+  }
+
+  warnings <- paper$extraction$warnings %||% list()
+  warn <- function(code, message) {
+    warnings[[length(warnings) + 1L]] <<- list(code = code, message = message)
+  }
+
+  tables <- lapply(stats::setNames(nm = names(.bibr12_tables)), \(tbl) {
+    df <- paper[[.bibr12_tables[[tbl]]]]
+    columns <- if (is.data.frame(df)) as.list(df) else list()
+    .bibr12_df(columns, .bibr12_cols[[tbl]], n = NROW(df))
+  })
+
+  # 12.x writes degrees of freedom bare: "28"
+  tables$eq$df <- sub("^\\((.*)\\)$", "\\1", tables$eq$df)
+
+  # match rows made by metacheck's add_bib_match() have the older columns
+  for (tbl in c("bib_match", "metadata_match")) {
+    df <- paper[[.bibr12_tables[[tbl]]]]
+    rows <- tables[[tbl]]
+    if (!NROW(df)) next
+
+    for (who in c("author", "editor")) {
+      older <- df[[paste0(who, "s")]]
+      if (is.null(df[[who]]) && is.list(older)) {
+        rows[[who]] <- lapply(older, \(p) {
+          if (!is.data.frame(p) || !nrow(p)) return(NULL)
+          lapply(seq_len(nrow(p)), \(i) {
+            person <- list(given = p$given[[i]], family = p$family[[i]])
+            person[!is.na(person)]
+          })
+        })
+      }
+    }
+
+    if (is.null(df$published_date) && !is.null(df$date)) {
+      date <- as.character(df$date)
+      iso <- grepl("^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$", date)
+      rows$published_date <- ifelse(iso, date, NA_character_)
+    }
+
+    off_scale <- !is.na(rows$score) & (rows$score < 0 | rows$score > 1)
+    if (any(off_scale)) {
+      rows$score[off_scale] <- NA_real_
+      warn("METACHECK_MATCH_SCORE_NOT_0_1", sprintf(
+        "%d %s score(s) were not on the 0-1 scale (e.g. CrossRef relevance scores) and were written as null",
+        sum(off_scale), tbl))
+    }
+
+    services <- c("crossref", "openalex", "datacite", "doi.org", "openlibrary",
+                  "ror", "manual", "other")
+    rows$service[!rows$service %in% services] <- "other"
+    rows$bib_type <- .bibr12_bib_type(rows$bib_type)
+    rows$doi <- .bibr12_doi(rows$doi)
+
+    tables[[tbl]] <- rows
+  }
+
+  # arrays: I() keeps a one-element array an array under auto_unbox
+  tables <- lapply(stats::setNames(nm = names(tables)), \(tbl) {
+    rows <- tables[[tbl]]
+    cols <- .bibr12_cols[[tbl]]
+    for (col in names(cols)[cols %in% c("chr[]", "int[]")]) {
+      rows[[col]] <- lapply(rows[[col]], I)
+    }
+    for (col in names(cols)[cols == "chr[][]"]) {
+      rows[[col]] <- lapply(rows[[col]], \(x) lapply(x, I))
+    }
+    rows
+  })
+
+  info <- paper$info
+  metadata <- .bibr12_df(as.list(info), .bibr12_cols$metadata, n = 1L) |>
+    as.list() |>
+    lapply(\(v) if (is.list(v)) I(v[[1]]) else v[[1]])
+
+  source <- list(
+    file_name = as.character(info$file_name[[1]]),
+    sha256 = as.character(info$sha256[[1]] %||% NA),
+    input_format = as.character(info$input_format[[1]])
+  )
+
+  extraction <- paper$extraction
+  extraction <- extraction[intersect(names(extraction), .bibr12_extraction_keys)]
+  extraction["converter"] <- list(list(
+    name = "metacheck",
+    version = as.character(utils::packageVersion("metacheck")),
+    build_sha = NULL
+  ))
+  # when the producer extracted the content, which a converter keeps
+  extraction["completed_at"] <- list(
+    extraction$completed_at %||%
+      format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+  )
+  for (key in c("ocr", "llm")) {
+    if (!key %in% names(extraction)) extraction[key] <- list(NULL)
+  }
+  extraction["warnings"] <- list(warnings)
+  first <- intersect(c("producer", "converter", "completed_at", "ocr", "llm"),
+                     names(extraction))
+  extraction <- extraction[c(first, setdiff(names(extraction), first))]
+
+  c(
+    list(
+      paper_id = as.character(paper$paper_id),
+      schema_version = "12.0",
+      source = source,
+      metadata = metadata
+    ),
+    tables[c("author", "affiliation", "funding", "text", "section", "url",
+             "bib", "xref", "figure", "table", "footnote", "eq",
+             "metadata_match", "affiliation_match", "funding_match",
+             "bib_match")],
+    list(extraction = extraction)
+  )
+}
+
+#' Normalize DOIs for bibr 12.x: bare and lowercase, NA when not a DOI
+#'
+#' @param x character vector
+#' @returns character vector
+#' @noRd
+.bibr12_doi <- function(x) {
+  x <- tolower(trimws(as.character(x)))
+  x <- sub("^(https?://(dx\\.)?doi\\.org/|doi:\\s*)", "", x)
+  x[!grepl("^10\\.[0-9]{4,9}/\\S+$", x)] <- NA_character_
+  x
+}
+
+#' Map reference types to the bibr 12.x vocabulary
+#'
+#' @param x character vector of bibtex, CrossRef or 12.x types
+#' @returns character vector
+#' @noRd
+.bibr12_bib_type <- function(x) {
+  types <- c("journal_article", "book", "book_chapter", "dataset", "software",
+             "preprint", "conference_paper", "report", "thesis", "other")
+  map <- c(
+    article = "journal_article", "journal-article" = "journal_article",
+    incollection = "book_chapter", inbook = "book_chapter",
+    "book-chapter" = "book_chapter", inproceedings = "conference_paper",
+    conference = "conference_paper",
+    "proceedings-article" = "conference_paper", techreport = "report",
+    phdthesis = "thesis", mastersthesis = "thesis",
+    dissertation = "thesis", "posted-content" = "preprint"
+  )
+  x <- as.character(x)
+  mapped <- !is.na(x) & x %in% names(map)
+  x[mapped] <- map[x[mapped]]
+  x[!is.na(x) & !x %in% types] <- "other"
+  x
 }
