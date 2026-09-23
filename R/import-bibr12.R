@@ -483,3 +483,20 @@
   x[!is.na(x) & !x %in% types] <- "other"
   x
 }
+
+#' SHA-256 digest of a file
+#'
+#' @param path file path
+#' @returns 64 lowercase hex characters, or NA when neither R >= 4.5 nor the
+#'   digest package is available
+#' @noRd
+.bibr12_sha256 <- function(path) {
+  tools_ns <- asNamespace("tools")
+  if (exists("sha256sum", envir = tools_ns, inherits = FALSE)) {
+    return(unname(get("sha256sum", envir = tools_ns)(path)))
+  }
+  if (requireNamespace("digest", quietly = TRUE)) {
+    return(digest::digest(path, algo = "sha256", file = TRUE))
+  }
+  NA_character_
+}
