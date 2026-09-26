@@ -164,56 +164,47 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   invisible(freed)
 }
 
-# Resolve a remote file's size (bytes) from its Content-Length header via a
-# lightweight HEAD request. Used to turn a missing manifest size into a real
-# size *before* downloading, so an unsized 5 GB file is caught by the gate. NA
-# on any error or when the header is absent (chunked/dynamic responses).
+# Resolve a remote file's size (bytes) before downloading it. Used to turn a
+# missing manifest size into a real size, so an unsized 5 GB file is caught by
+# the gate. NA on any error or when the host reports no size at all.
 #
-# Routed through .auth_for_url(): Dryad answers 401 to an unauthenticated HEAD
-# on ANY byte-touching endpoint, including this one (verified live 2026-08-16,
-# see .dryad_headers()'s own comment) -- without this a Dryad file whose size
-# is not already known from the repo's own listing is silently dropped from
-# the download candidate set (see .remote_content_length()'s req_func, which
-# existed for the same reason but had to be opted into per call site; only 1
-# of 7 call sites did, so the other 6 still 401'd on Dryad -- .auth_for_url()
-# dispatches on the URL itself, so every caller is covered with no opt-in).
+# Tries a HEAD request first, then a one-byte ranged GET whose Content-Range
+# carries the size (.head_size()/.range_size(), R/zip-peek.R). The fallback is
+# needed because Dryad, Figshare and Harvard Dataverse redirect downloads to
+# Amazon S3, which refuses HEAD with 403 (issue #424) -- before it, a file on
+# those hosts whose size the listing did not report was silently dropped from
+# the download candidate set.
+#
+# Both requests go through .auth_for_url(): Dryad answers 401 to an
+# unauthenticated request on ANY byte-touching endpoint (verified live
+# 2026-08-16, see .dryad_headers()'s own comment).
 .remote_size <- function(url) {
-  tryCatch({
-    req <- httr2::request(url) |>
-      httr2::req_method("HEAD") |>
-      .auth_for_url() |>
-      httr2::req_error(is_error = function(r) FALSE)
-    resp <- httr2::req_perform(req)
-    cl <- httr2::resp_header(resp, "content-length")
-    if (is.null(cl) || is.na(cl) || !nzchar(cl)) return(NA_real_)
-    as.numeric(cl)
-  }, error = function(e) NA_real_)
+  size <- .head_size(url)
+  if (is.na(size)) size <- .range_size(url)
+  size
 }
 
-# Resolve a remote resource's Content-Length (bytes) via HEAD. Used to compare
-# one-shot archive transport size against the selected-file estimate.
-#
-# req_func: request configurator applied before sending, on top of the
-# host-based auth .auth_for_url() already adds from the URL alone. Was the
-# ONLY auth this function applied, opt-in per call site via req_func =
-# .dryad_headers -- but only 1 of 7 call sites actually opted in, so the other
-# 6 still 401'd if they ever hit a Dryad URL (Dryad requires a token for ANY
-# call that touches file bytes, including a bare HEAD -- verified live
-# 2026-08-16, see .dryad_headers()'s own comment). .auth_for_url() dispatches
-# on the URL itself, so every call site is covered with no opt-in; req_func
-# stays for a caller that needs something .auth_for_url() does not cover.
-.remote_content_length <- function(url, req_func = identity) {
-  tryCatch({
-    req <- httr2::request(url) |>
-      httr2::req_method("HEAD") |>
-      .auth_for_url() |>
-      req_func() |>
-      httr2::req_error(is_error = function(r) FALSE)
-    resp <- httr2::req_perform(req)
-    cl <- httr2::resp_header(resp, "content-length")
-    if (is.null(cl) || is.na(cl) || !nzchar(cl)) return(NA_real_)
-    as.numeric(cl)
-  }, error = function(e) NA_real_)
+# Estimated size (bytes) of a repository's whole-archive download: the sum of
+# the file sizes listed for it in `files`, or NA when none are listed. Used
+# because no whole-archive endpoint reports its size ahead of time (see
+# download_repo_files()'s archive section). `files` may hold only the rows a
+# caller still needs (data_check passes just those), so this can
+# underestimate the archive; the byte limit enforced during the download is
+# what actually bounds it. A zip is compressed, which pulls the other way.
+.archive_size_estimate <- function(files, repo) {
+  est <- sum(as.numeric(files$file_size[files$repo_url == repo]), na.rm = TRUE)
+  if (est > 0) est else NA_real_
+}
+
+# Why a whole-archive download is refused on size, or NA when it is allowed:
+# refused when its size is unknown or above 2x the per-repository budget (a
+# one-request transport earns a 2x allowance over the per-file path).
+.archive_size_refusal <- function(zip_bytes, max_download_size, mb) {
+  if (is.na(zip_bytes)) return("archive size unknown: no file sizes listed")
+  if (is.finite(max_download_size) && zip_bytes > 2 * max_download_size * mb)
+    return(sprintf("estimated archive size %s MB exceeds 2x the %s MB budget",
+                   .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size)))
+  NA_character_
 }
 
 # Add the right authorisation to a file-download request, based on its host.
@@ -1082,15 +1073,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #' Fetches the bytes for a table of repository files (as produced by
 #' `repo_check()`), writing each into a per-session temp directory or a
 #' persistent on-disk cache, and fills in `file_location` for every file it
-#' successfully retrieves. Where a whole-repo archive download is available
-#' (OSF's Waterbutler `?zip=` endpoint, Zenodo's `files-archive` endpoint,
-#' Dataverse's `/api/access/dataset` endpoint, Dryad's `stash:download`
-#' endpoint, a GitHub zipball), it is used instead of one HTTP request per
-#' file; a repo whose archive download fails, or is rejected by the
-#' size/worth-it gate, falls back to file-by-file fetching automatically.
-#' Figshare, 4TU.ResearchData (Figshare-compatible), and ReShare have no
-#' documented whole-record bulk endpoint, so their files are always fetched
-#' one by one.
+#' successfully retrieves. For Dryad (`stash:download` endpoint), GitHub
+#' (zipball) and GitLab (`archive.zip`), a whole-repo archive download is used
+#' instead of one HTTP request per file. None of these archives reports its
+#' size in advance, so the size is estimated from the listed file sizes: an
+#' archive with no listed sizes, or an estimate above twice
+#' `max_download_size`, is not used, and a download that grows past twice
+#' `max_download_size` is stopped. A repo whose archive is not used or fails
+#' falls back to file-by-file fetching automatically, as do all other hosts.
 #'
 #' Two independent size gates apply: `max_file_size` skips oversize files
 #' individually (the rest of the repository still downloads); `max_download_size`
@@ -1474,29 +1464,42 @@ download_repo_files <- function(files,
   }
 
   # ── Download the files of repositories that passed the gate ─────────────────
-  # For OSF repos, use the Waterbutler zip endpoint (one request for all of
-  # osfstorage). For Zenodo repos, use the files-archive endpoint (one request
-  # for the whole record). For Dataverse repos, use the /api/access/dataset
-  # endpoint (one request for the whole dataset). For Dryad repos, use the
-  # dataset's own stash:download endpoint (one request for the whole dataset).
-  # For GitHub repos, use the API zipball (one request, follows the redirect to
-  # the signed download URL). All five are cheaper and less rate-limit-sensitive
-  # than N individual file requests. Figshare has no such endpoint (see
-  # figshare_file_download()'s documentation) so it always falls through to the
-  # file-by-file path below. Any repo whose zip download fails, or that the
-  # zip-vs-file-by-file gate rejects, falls through the same way.
+  # For Dryad repos, use the dataset's own stash:download endpoint (one request
+  # for the whole dataset); for GitHub and GitLab repos, the repository's
+  # archive zip. One request is cheaper and less rate-limit-sensitive than N
+  # individual file requests. Every other host goes file-by-file below, and so
+  # does any repo whose archive download fails or that the archive gate below
+  # rejects.
+  #
+  # OSF (?zip=), Zenodo (files-archive) and Dataverse (/api/access/dataset)
+  # also offer a whole-record archive, and this function used to try them --
+  # but only when a HEAD request reported the archive's size, and none of the
+  # three ever does: they build the zip on request and stream it with no
+  # Content-Length (verified live 2026-09-24, issue #424). Those branches
+  # therefore never ran and were removed.
+  #
+  # The same is true of the three archives still used here, so their size is
+  # ESTIMATED from the file sizes listed for the repository
+  # (.archive_size_estimate()). One rule applies to all three:
+  #   - no estimate (no listed sizes), or an estimate above 2x the per-repo
+  #     budget (a one-request transport earns a 2x allowance): skip the
+  #     archive and download the files individually;
+  #   - otherwise download the archive with that same 2x limit enforced on
+  #     the bytes as they arrive (.download_zip_to_cache()'s max_bytes), so a
+  #     low estimate cannot turn into an unbounded download. An archive that
+  #     crosses the limit is aborted and its files are downloaded
+  #     individually.
   failed <- data.frame(repo_url = character(0), file_name = character(0),
                        file_url = character(0), paper_id = character(0),
                        error = character(0), stringsAsFactors = FALSE)
   if (length(to_get) > 0) {
     remaining <- to_get
+    archive_cap <- 2 * max_download_size * mb   # Inf when there is no budget
 
-    # ── OSF: Waterbutler zip ────────────────────────────────────────────────────
-    osf_repos <- unique(files$repo_url[
-      remaining[grepl("osf\\.io", files$repo_url[remaining], ignore.case = TRUE)]])
-    # Is a file on OSF's osfstorage (the only provider the ?zip= endpoint
-    # covers)? Authoritative source is the `provider` column repo_check now
-    # carries; fall back to the file_url form for older rows that predate it.
+    # Is a file on OSF's osfstorage? Used by the file-by-file loop below to
+    # pick the downloads that are safe to run in parallel. Authoritative
+    # source is the `provider` column repo_check now carries; fall back to the
+    # file_url form for older rows that predate it.
     is_osfstorage <- function(i) {
       if ("provider" %in% names(files) && !is.na(files$provider[i]))
         return(identical(tolower(files$provider[i]), "osfstorage"))
@@ -1504,209 +1507,13 @@ download_repo_files <- function(files,
       if (is.na(url) || !nzchar(url)) return(FALSE)
       grepl("/providers/osfstorage/", url, ignore.case = TRUE)
     }
-    for (repo in osf_repos) {
-      ridx <- intersect(remaining, which(files$repo_url == repo))
-      if (length(ridx) == 0) next
-      # Waterbutler zip only covers osfstorage. Non-osfstorage rows fall through
-      # to file-by-file download below as a complement path.
-      ridx_zip <- ridx[vapply(ridx, is_osfstorage, logical(1))]
-      if (length(ridx_zip) == 0) next
-      osf_id <- tryCatch(osf_check_id(repo), error = \(e) NA_character_)
-      # Only use zip for 5-char node GUIDs (not waterbutler folder IDs)
-      if (is.na(osf_id) || !nzchar(osf_id %||% "") || nchar(osf_id) != 5) next
-      zip_url <- sprintf(
-        "https://files.osf.io/v1/resources/%s/providers/osfstorage/?zip=", osf_id)
-      zip_bytes <- .remote_content_length(zip_url)
-
-      # ── Zip-vs-file-by-file decision ─────────────────────────────────────────
-      # The ?zip= endpoint is all-or-nothing: it always zips the WHOLE node's
-      # osfstorage, not just the files we want. So it is only worth taking when
-      # the one-shot transport is not wildly bigger than what we'd fetch
-      # individually. Take the zip when BOTH:
-      #   (1) size: the zip is <= 2x the per-repo budget (a one-request transport
-      #       earns a 2x allowance over the per-run download budget); AND
-      #   (2) worth it: EITHER we want more than 50 files from this node (at that
-      #       many individual requests the per-request latency + OSF rate-limiting
-      #       make the zip faster regardless of a little wasted data), OR the node
-      #       holds no more than 2x the files we actually want (so the zip drags
-      #       in at most one unwanted file per wanted one).
-      # `node_osf_n` counts EVERY osfstorage file in the node (the zip's real
-      # payload), not just the wanted subset, so the waste ratio is honest for
-      # mixed / partially-filtered nodes. When zip_bytes is unknown the size gate
-      # cannot be checked, so we do not risk an unbounded transport: fall back.
-      #
-      # Scoped to this repo's own rows (`which(files$repo_url == repo)`), NOT
-      # `seq_len(nrow(files))` -- the latter re-ran is_osfstorage() (an R-level
-      # scalar call, not vectorised) over EVERY row of the whole batch's
-      # combined files table, once per OSF repo in this loop. For a batch of
-      # 50 papers whose files table can run into the thousands of rows (some
-      # corpus repos publish one file per participant per block), that is an
-      # O(n_osf_repos * n_total_files) scan of scalar R calls -- confirmed
-      # live 2026-09-07 to silently pin one CPU core for 15+ minutes with zero
-      # progress output, since nothing prints until this decision completes.
-      n_wanted    <- length(ridx_zip)
-      repo_rows   <- which(files$repo_url == repo)
-      node_osf_n  <- sum(vapply(repo_rows, is_osfstorage, logical(1)))
-      size_ok  <- !is.na(zip_bytes) &&
-        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
-      worth_it <- n_wanted > 50L || node_osf_n <= 2L * n_wanted
-      if (!isTRUE(size_ok && worth_it)) {
-        why <- if (!size_ok)
-          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
-                  if (is.na(zip_bytes)) "unknown" else
-                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
-        else
-          sprintf("node holds %d osfstorage files for %d wanted (>2x) and wanted <= 50",
-                  node_osf_n, n_wanted)
-        message(sprintf(
-          "Skipping zip for %s (%s); downloading its files individually.",
-          repo, why))
-        next   # leaves ridx in `remaining` for the file-by-file loop below
-      }
-
-      expected_bytes <- sum(as.numeric(files$file_size[ridx_zip]), na.rm = TRUE)
-      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
-        message(sprintf(
-          paste0("Repository %s downloads as one archive of %s MB to extract ",
-                 "%s MB of selected files (whole-node osfstorage zip)."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
-      }
-      message(sprintf("Downloading %s as zip (%d file%s)...",
-                      repo, length(ridx_zip), plural(length(ridx_zip))))
-      files <- .download_zip_to_cache(files, ridx_zip, zip_url,
-                                      strip_dir = FALSE,
-                                      req_func = .osf_headers,
-                                      timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit,
-                                      expected_bytes = expected_bytes)
-      remaining <- setdiff(remaining, ridx_zip[!is.na(files$file_location[ridx_zip])])
-    }
-
-    # ── Zenodo: files-archive ────────────────────────────────────────────────────
-    # Undocumented in Zenodo's public API reference, but a stable first-party
-    # endpoint (the same URL Zenodo's own record pages link to as "Download
-    # all"); verified live to return a proper zip. Like OSF's ?zip=, it is
-    # all-or-nothing for the record, so the same size/worth-it gate applies.
-    zen_repos <- unique(files$repo_url[
-      remaining[grepl("zenodo", files$repo_url[remaining], ignore.case = TRUE)]])
-    for (repo in zen_repos) {
-      ridx <- intersect(remaining, which(files$repo_url == repo))
-      if (length(ridx) == 0) next
-      zenodo_id <- tryCatch(.zenodo_id(repo), error = \(e) NA_character_)
-      if (is.na(zenodo_id) || !nzchar(zenodo_id %||% "")) next
-      zip_url <- sprintf("https://zenodo.org/api/records/%s/files-archive", zenodo_id)
-      zip_bytes <- .remote_content_length(zip_url)
-
-      # Same zip-vs-file-by-file decision as OSF (see comment above): take the
-      # archive when its transport size is not wildly bigger than the per-repo
-      # budget, and either most of the record's files are wanted or the
-      # archive would not drag in more than 2x unwanted files.
-      n_wanted   <- length(ridx)
-      record_n   <- sum(files$repo_url == repo)
-      size_ok  <- !is.na(zip_bytes) &&
-        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
-      worth_it <- n_wanted > 50L || record_n <= 2L * n_wanted
-      if (!isTRUE(size_ok && worth_it)) {
-        why <- if (!size_ok)
-          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
-                  if (is.na(zip_bytes)) "unknown" else
-                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
-        else
-          sprintf("record holds %d files for %d wanted (>2x) and wanted <= 50",
-                  record_n, n_wanted)
-        message(sprintf(
-          "Skipping zip for %s (%s); downloading its files individually.",
-          repo, why))
-        next   # leaves ridx in `remaining` for the file-by-file loop below
-      }
-
-      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
-      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
-        message(sprintf(
-          paste0("Repository %s downloads as one archive of %s MB to extract ",
-                 "%s MB of selected files (whole-record Zenodo archive)."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
-      }
-      message(sprintf("Downloading %s as zip (%d file%s)...",
-                      repo, length(ridx), plural(length(ridx))))
-      files <- .download_zip_to_cache(files, ridx, zip_url,
-                                      strip_dir = FALSE,
-                                      timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit,
-                                      expected_bytes = expected_bytes)
-      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
-    }
-
-    # ── Dataverse: whole-dataset archive ────────────────────────────────────────
-    # /api/access/dataset/:persistentId is Dataverse's documented bulk-download
-    # endpoint (the same URL a dataset page's own "Download All" button uses).
-    # Like Zenodo's files-archive and OSF's ?zip=, it is all-or-nothing for the
-    # dataset, so the same size/worth-it gate applies. Unlike those two hosts,
-    # Dataverse is many independent installations, so the request needs
-    # .dataverse_headers() for that installation's own API token (see
-    # archive-dataverse.R) rather than a single shared auth scheme.
-    dv_repos <- unique(files$repo_url[
-      remaining[grepl(.dataverse_host_regex(), files$repo_url[remaining], ignore.case = TRUE)]])
-    for (repo in dv_repos) {
-      ridx <- intersect(remaining, which(files$repo_url == repo))
-      if (length(ridx) == 0) next
-      parsed <- .dataverse_parse(repo)
-      host <- parsed$host[[1]]
-      doi <- parsed$doi[[1]]
-      if (is.na(host) || is.na(doi)) next
-      zip_url <- sprintf(
-        "https://%s/api/access/dataset/:persistentId/?persistentId=doi:%s",
-        host, doi)
-      zip_bytes <- .remote_content_length(zip_url)
-
-      # Same zip-vs-file-by-file decision as Zenodo/OSF (see comments above).
-      n_wanted   <- length(ridx)
-      record_n   <- sum(files$repo_url == repo)
-      size_ok  <- !is.na(zip_bytes) &&
-        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
-      worth_it <- n_wanted > 50L || record_n <= 2L * n_wanted
-      if (!isTRUE(size_ok && worth_it)) {
-        why <- if (!size_ok)
-          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
-                  if (is.na(zip_bytes)) "unknown" else
-                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
-        else
-          sprintf("dataset holds %d files for %d wanted (>2x) and wanted <= 50",
-                  record_n, n_wanted)
-        message(sprintf(
-          "Skipping zip for %s (%s); downloading its files individually.",
-          repo, why))
-        next   # leaves ridx in `remaining` for the file-by-file loop below
-      }
-
-      expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
-      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
-        message(sprintf(
-          paste0("Repository %s downloads as one archive of %s MB to extract ",
-                 "%s MB of selected files (whole-dataset Dataverse archive)."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
-      }
-      message(sprintf("Downloading %s as zip (%d file%s)...",
-                      repo, length(ridx), plural(length(ridx))))
-      files <- .download_zip_to_cache(files, ridx, zip_url,
-                                      strip_dir = FALSE,
-                                      req_func = .dataverse_headers,
-                                      timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb,
-                                      skip_on_api_limit = skip_on_api_limit,
-                                      expected_bytes = expected_bytes)
-      remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
-    }
 
     # ── Dryad: whole-dataset archive ────────────────────────────────────────────
     # /api/v2/datasets/<encoded-doi>/download is Dryad's documented bulk-
     # download endpoint (verified live: it is the "stash:download" link
     # carried on every dataset's own API response, the same link a dataset
-    # page's own "Download Dataset" button uses). Like Dataverse's
-    # /api/access/dataset and Zenodo's files-archive, it is all-or-nothing for
-    # the dataset, so the same size/worth-it gate applies.
+    # page's own "Download Dataset" button uses). It is all-or-nothing for the
+    # dataset, so the archive gate above applies.
     #
     # repo_url is whatever a paper cited -- confirmed against a real 1861-paper
     # corpus run that every single Dryad repo_url is the doi.org citation form
@@ -1728,28 +1535,13 @@ download_repo_files <- function(files,
       if (is.na(doi) || !nzchar(doi %||% "")) next
       encoded <- utils::URLencode(paste0("doi:", doi), reserved = TRUE)
       zip_url <- sprintf("https://datadryad.org/api/v2/datasets/%s/download", encoded)
-      zip_bytes <- .remote_content_length(zip_url, req_func = .dryad_headers)
-
-      # Dryad's bulk-download endpoint cannot report its size ahead of time by
-      # ANY method (verified live 2026-08-30): a HEAD gets 403
-      # InvalidSignatureException (the endpoint proxies to a pre-signed S3 URL
-      # whose signature is verb-specific and does not validate for HEAD), and
-      # a GET answers 200 with Transfer-Encoding: chunked and no
-      # Content-Length header at all. So zip_bytes is always NA here, unlike
-      # every other backend in this function where the live probe usually
-      # works. Falling back to "unknown size means skip the zip" (as issue
-      # #366 recommends when size truly cannot be confirmed) would make this
-      # whole branch permanently dead for Dryad regardless of the URL-matching
-      # fix above -- so estimate instead, from sizes repo_check() already
-      # listed for this dataset. A zip is compressed, so the true download is
-      # normally smaller than this sum: a conservative (not optimistic)
-      # stand-in for the live probe.
+      zip_bytes <- .archive_size_estimate(files, repo)
       expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
-      if (is.na(zip_bytes) && expected_bytes > 0) zip_bytes <- expected_bytes
 
-      # Same zip-vs-file-by-file request-COUNT decision as Dataverse/Zenodo/OSF
-      # (see comments above) -- but Dryad additionally gates on a QUOTA-aware
-      # threshold the other hosts don't get, because Dryad uniquely (confirmed
+      # Request-COUNT decision: take the archive when most of the dataset's
+      # files are wanted or more than 50 are (the per-request latency then
+      # outweighs a little wasted data) -- but Dryad additionally gates on a
+      # QUOTA-aware threshold, because Dryad (confirmed
       # 2026-09-01 against its own open-source rate-limit config,
       # datadryad/dryad-app config/initializers/rack_attack.rb +
       # config/app_config.yml) runs the zip and per-file download paths
@@ -1757,7 +1549,7 @@ download_repo_files <- function(files,
       # sizes: zip_downloads_per_day = 100, file_downloads_per_day = 500 (5x
       # more headroom), each tracked under its own Rack::Attack cache key
       # regardless of how many bytes/files a request involves. The plain
-      # request-count logic above (worth_it) always prefers zip once a
+      # request-count logic (worth_it) always prefers zip once a
       # dataset's wanted files are >=half of it (true for nearly every
       # real dataset, since callers almost always want "all of it") -- which
       # means EVERY Dryad dataset routes through the strict 100/day zip
@@ -1785,15 +1577,11 @@ download_repo_files <- function(files,
       # observed-behaviour-driven adjustment, not a re-run of that sweep.
       n_wanted   <- length(ridx)
       record_n   <- sum(files$repo_url == repo)
-      size_ok  <- !is.na(zip_bytes) &&
-        (!is.finite(max_download_size) || zip_bytes <= 2 * max_download_size * mb)
+      size_why   <- .archive_size_refusal(zip_bytes, max_download_size, mb)
       quota_worth_it <- n_wanted > 12L
       worth_it <- (n_wanted > 50L || record_n <= 2L * n_wanted) && quota_worth_it
-      if (!isTRUE(size_ok && worth_it)) {
-        why <- if (!size_ok)
-          sprintf("zip transport %s MB exceeds 2x the %s MB budget",
-                  if (is.na(zip_bytes)) "unknown" else
-                    .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size))
+      if (!is.na(size_why) || !worth_it) {
+        why <- if (!is.na(size_why)) size_why
         else if (!quota_worth_it)
           sprintf("only %d file%s wanted -- Dryad's zip quota (100/day) is 5x stricter than its per-file quota (500/day), not worth spending on a small dataset",
                   n_wanted, plural(n_wanted))
@@ -1806,19 +1594,13 @@ download_repo_files <- function(files,
         next   # leaves ridx in `remaining` for the file-by-file loop below
       }
 
-      if (expected_bytes > 0 && zip_bytes > expected_bytes) {
-        message(sprintf(
-          paste0("Repository %s downloads as one archive of %s MB to extract ",
-                 "%s MB of selected files (whole-dataset Dryad archive)."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))))
-      }
       message(sprintf("Downloading %s as zip (%d file%s)...",
                       repo, length(ridx), plural(length(ridx))))
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = FALSE,
                                       req_func = .dryad_headers,
                                       timeout_s = zip_timeout_s,
-                                      max_bytes = max_download_size * mb,
+                                      max_bytes = archive_cap,
                                       skip_on_api_limit = skip_on_api_limit,
                                       expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
@@ -1834,28 +1616,22 @@ download_repo_files <- function(files,
       if (is.null(clean_repo)) next
       # Omitting the ref makes GitHub use the default branch.
       zip_url <- sprintf("https://api.github.com/repos/%s/zipball", clean_repo)
-      zip_bytes <- .remote_content_length(zip_url)
+      size_why <- .archive_size_refusal(.archive_size_estimate(files, repo),
+                                        max_download_size, mb)
+      if (!is.na(size_why)) {
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          repo, size_why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
       expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
-      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
-        warning(sprintf(
-          paste0("Repository %s will be downloaded as a larger archive transport ",
-                 "(%s MB) than the selected file estimate (%s MB)."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))
-        ), call. = FALSE)
-      }
-      if (!is.na(zip_bytes) && is.finite(max_download_size) && zip_bytes > max_download_size * mb) {
-        warning(sprintf(
-          paste0("Repository %s archive transport is %s MB, above max_download_size ",
-                 "(%s MB). Continuing by design because transport is one-shot zip."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size)
-        ), call. = FALSE)
-      }
       message(sprintf("Downloading %s as zip (%d file%s)...",
                       repo, length(ridx), plural(length(ridx))))
       files <- .download_zip_to_cache(files, ridx, zip_url,
                                       strip_dir = TRUE,
                                       req_func = .github_config,
                                       timeout_s = zip_timeout_s,
+                                      max_bytes = archive_cap,
                                       skip_on_api_limit = skip_on_api_limit,
                                       expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
@@ -1864,10 +1640,8 @@ download_repo_files <- function(files,
     # ── GitLab: repository archive.zip ──────────────────────────────────────────
     # GitLab's archive.zip does not support HTTP Range requests (confirmed
     # live: a Range header request comes back 200, not 206, accept-ranges:
-    # none), so it also has no content-length up front (it is a streamed
-    # response) -- .remote_content_length() below will simply return NA for
-    # it, same as it already does for any endpoint without that header; the
-    # size-comparison warnings just do not fire, downloading still proceeds.
+    # none) and streams with no Content-Length, so like the others its size
+    # is estimated from the listed file sizes.
     gl_repos <- unique(files$repo_url[
       remaining[grepl("gitlab\\.com", files$repo_url[remaining], ignore.case = TRUE)]])
     for (repo in gl_repos) {
@@ -1879,22 +1653,15 @@ download_repo_files <- function(files,
       # Omitting sha makes GitLab use the default branch.
       zip_url <- sprintf("https://gitlab.com/api/v4/projects/%s/repository/archive.zip",
                          proj_id)
-      zip_bytes <- .remote_content_length(zip_url)
+      size_why <- .archive_size_refusal(.archive_size_estimate(files, repo),
+                                        max_download_size, mb)
+      if (!is.na(size_why)) {
+        message(sprintf(
+          "Skipping zip for %s (%s); downloading its files individually.",
+          repo, size_why))
+        next   # leaves ridx in `remaining` for the file-by-file loop below
+      }
       expected_bytes <- sum(as.numeric(files$file_size[ridx]), na.rm = TRUE)
-      if (!is.na(zip_bytes) && expected_bytes > 0 && zip_bytes > expected_bytes) {
-        warning(sprintf(
-          paste0("Repository %s will be downloaded as a larger archive transport ",
-                 "(%s MB) than the selected file estimate (%s MB)."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(round(expected_bytes / mb))
-        ), call. = FALSE)
-      }
-      if (!is.na(zip_bytes) && is.finite(max_download_size) && zip_bytes > max_download_size * mb) {
-        warning(sprintf(
-          paste0("Repository %s archive transport is %s MB, above max_download_size ",
-                 "(%s MB). Continuing by design because transport is one-shot zip."),
-          repo, .cap_num(round(zip_bytes / mb)), .cap_num(max_download_size)
-        ), call. = FALSE)
-      }
       message(sprintf("Downloading %s as zip (%d file%s)...",
                       repo, length(ridx), plural(length(ridx))))
       # strip_dir = TRUE: like GitHub's zipball, GitLab's archive.zip wraps
@@ -1906,6 +1673,7 @@ download_repo_files <- function(files,
                                       strip_dir = TRUE,
                                       req_func = .gitlab_config,
                                       timeout_s = zip_timeout_s,
+                                      max_bytes = archive_cap,
                                       skip_on_api_limit = skip_on_api_limit,
                                       expected_bytes = expected_bytes)
       remaining <- setdiff(remaining, ridx[!is.na(files$file_location[ridx])])
@@ -1926,7 +1694,7 @@ download_repo_files <- function(files,
       # completely different host and have not been checked the same way, so
       # checking repo_url alone would wrongly route those through the
       # unthrottled path too. is_osfstorage() (defined above) already makes
-      # this per-file distinction for the zip gate; reuse it here.
+      # this per-file distinction; reuse it here.
       is_zenodo_file <- grepl("zenodo\\.org", files$file_url[remaining], ignore.case = TRUE)
       is_parallel_safe <- vapply(remaining, is_osfstorage, logical(1)) | is_zenodo_file
       remaining_parallel <- remaining[is_parallel_safe]

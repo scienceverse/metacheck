@@ -975,10 +975,11 @@ dataverse_file_download <- function(host, doi,
   # No bulk whole-dataset archive path here (unlike Zenodo's files-archive):
   # Dataverse's /api/access/dataset/:persistentId endpoint zips the WHOLE
   # dataset regardless of the file selection above, so it would defeat the
-  # size filters and the per-file API-token auth just applied. download_repo_files()
-  # in repo-download.R makes that all-or-nothing tradeoff explicitly, the same
-  # way it does for OSF/Zenodo; this per-record download always goes file by
-  # file (or member by member, for a zip named in unzip_types).
+  # size filters and the per-file API-token auth just applied. It also never
+  # reports its size in advance (verified live 2026-09-24, issue #424), which
+  # is why download_repo_files() in repo-download.R no longer uses it either;
+  # this per-record download always goes file by file (or member by member,
+  # for a zip named in unzip_types).
   for (i in seq_len(n)) {
     # --- selected members out of a zip, instead of the whole zip ----
     if (unzippable[i]) {

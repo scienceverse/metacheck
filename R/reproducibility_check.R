@@ -1830,7 +1830,11 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
             if (cran_main) ", into main library" else ", into throwaway library",
             ") ...")
     install_lib <- if (cran_main) old_lib[1] else lib_dir
+    install_warnings <- character(0)
     res <- tryCatch({
+      # Warnings are recorded (not silenced) for the load check below: see
+      # .repro_not_loadable_msg().
+      withCallingHandlers({
       if (identical(src, "github")) {
         if (!gh_avail) stop("the 'remotes' package is needed to install GitHub sources")
         remotes::install_github(ref, lib = lib_dir, upgrade = "never",
@@ -1855,11 +1859,13 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
         # normally (captured before the throwaway push).
         utils::install.packages(pkg, lib = install_lib, quiet = FALSE)
       }
+      }, warning = function(w)
+        install_warnings <<- c(install_warnings, conditionMessage(w)))
       # Confirm it can actually be loaded (main library needs no lib.loc; the
       # throwaway paths were already prepended to .libPaths() above).
       if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
           !requireNamespace(pkg, quietly = TRUE))
-        stop("installed but package '", pkg, "' is not loadable")
+        stop(.repro_not_loadable_msg(pkg, install_warnings))
       list(ok = TRUE, msg = "", via_archive = FALSE)
     }, error = function(e) list(ok = FALSE, msg = conditionMessage(e), via_archive = FALSE))
 
@@ -1889,6 +1895,21 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
                         else .repro_classify_install_message(res$msg))
   })
   dplyr::bind_rows(rows)
+}
+
+# The failure message for a package that could not be loaded after its
+# install step. install.packages() does not stop for a package it cannot
+# find: it warns "package 'x' is not available for this version of R" and
+# returns normally. Without this, the load check that follows reported
+# "installed but package 'x' is not loadable" -- claiming an install that
+# never happened, in wording .repro_classify_install_message() cannot place,
+# so a name that is not a package at all was listed as an uncategorised
+# failure (issue #421). The install step's own "not available" warning is the
+# real reason, so it is reported instead when there is one.
+.repro_not_loadable_msg <- function(pkg, warnings) {
+  unavailable <- grep("is not available", warnings, value = TRUE, fixed = TRUE)
+  if (length(unavailable) > 0) return(paste(unique(unavailable), collapse = "; "))
+  paste0("installed but package '", pkg, "' is not loadable")
 }
 
 #' Classify why a package installation failed
@@ -1998,9 +2019,25 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
 .repro_cran_archive_install <- function(pkg, install_lib, lib_dir) {
   fail <- function(msg) list(ok = FALSE, msg = msg, version = NA_character_)
   archive_url <- paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/")
-  listing <- tryCatch(readLines(archive_url, warn = FALSE),
-                      error = function(e) NULL)
-  if (is.null(listing)) return(fail("could not reach the CRAN Archive listing"))
+  # The HTTP status is only in readLines()'s warning ("... HTTP status was
+  # '404 Not Found'"); its error just says "cannot open the connection".
+  # A 404 means the Archive has no folder for this package -- it was never
+  # archived, or is not a CRAN package at all -- not that CRAN was
+  # unreachable. Reporting it as "could not reach" made
+  # .repro_classify_install_message() file every such package as a network
+  # problem (issue #421).
+  read_warnings <- character(0)
+  listing <- withCallingHandlers(
+    tryCatch(readLines(archive_url, warn = FALSE), error = function(e) NULL),
+    warning = function(w) {
+      read_warnings <<- c(read_warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+  if (is.null(listing)) {
+    if (any(grepl("404", read_warnings, fixed = TRUE)))
+      return(fail("package not found in the CRAN Archive"))
+    return(fail("could not reach the CRAN Archive listing"))
+  }
 
   # The Archive's directory listing is an HTML index: each row names a source
   # tarball "<pkg>_<version>.tar.gz" and its own modification date, which is

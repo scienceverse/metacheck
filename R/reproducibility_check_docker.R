@@ -272,7 +272,9 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     'out <- list()',
     'for (i in seq_along(pkgs)) {',
     '  pkg <- pkgs[i]; src <- srcs[i]; ref <- refs[i]',
+    '  warns <- character(0)',
     '  res <- tryCatch({',
+    '    withCallingHandlers({',
     '    if (identical(src, "github")) {',
     '      if (!gh_avail) stop("the remotes package is not available in this image")',
     '      remotes::install_github(ref, lib = lib, upgrade = "never", quiet = FALSE)',
@@ -285,8 +287,16 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     '    } else {',
     '      install.packages(pkg, lib = lib, quiet = FALSE)',
     '    }',
-    '    if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib))',
-    '      stop("installed but package is not loadable")',
+    '    }, warning = function(w) warns <<- c(warns, conditionMessage(w)))',
+    # Same rule as .repro_not_loadable_msg() (R/reproducibility_check.R),
+    # inlined because this script runs without this package: a package
+    # install.packages() could not find only produces a "not available"
+    # warning, which is the real reason (issue #421).
+    '    if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib)) {',
+    '      na <- unique(grep("is not available", warns, value = TRUE, fixed = TRUE))',
+    '      stop(if (length(na) > 0) paste(na, collapse = "; ")',
+    '           else "installed but package is not loadable")',
+    '    }',
     '    list(ok = TRUE, msg = "")',
     '  }, error = function(e) list(ok = FALSE, msg = conditionMessage(e)))',
     '  out[[i]] <- data.frame(package = pkg, source = src, installed = res$ok, message = res$msg)',

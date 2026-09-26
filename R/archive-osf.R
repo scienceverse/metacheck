@@ -723,8 +723,12 @@ osf_delay <- function(delay = NULL) {
 #' components, or on a linked add-on such as GitHub or Dropbox, is not one
 #' archive: one archive is requested per node that holds `osfstorage` files, and
 #' anything no archive can hold is downloaded individually, so the whole project
-#' is still retrieved. In this mode, `max_download_size` applies to each archive
-#' when the server reports a `Content-Length`, but `max_file_size` cannot filter
+#' is still retrieved. In this mode, `max_download_size` is a budget for the
+#' whole project. The OSF does not report an archive's size in advance, so a
+#' node's archive is taken only when its listed files fit in what is left of the
+#' budget, and its download is stopped if it grows past that. The files of a
+#' node whose archive does not fit, or was stopped, are downloaded individually,
+#' smallest first, as many as fit in the budget. `max_file_size` cannot filter
 #' files inside an archive before download. Archives can either be kept as zips
 #' or unzipped after download.
 #'
@@ -1105,23 +1109,17 @@ osf_file_download <- function(osf_id,
     sprintf("https://files.osf.io/v1/resources/%s/providers/osfstorage/?zip=", osf_id)
   }
 
-  .osf_zip_content_length <- function(url) {
-    resp <- tryCatch({
-      httr2::request(url) |>
-        .osf_headers() |>
-        httr2::req_method("HEAD") |>
-        httr2::req_error(is_error = \(resp) FALSE) |>
-        httr2::req_perform()
-    }, error = \(e) NULL)
-
-    if (is.null(resp)) return(NA_real_)
-    if (httr2::resp_status(resp) >= 400) return(NA_real_)
-    val <- tryCatch(httr2::resp_header(resp, "content-length"), error = \(e) NA_character_)
-    suppressWarnings(as.numeric(val))
-  }
-
+  # max_bytes: stop the download once this many bytes have arrived (Inf = no
+  # limit). The OSF never reports an archive's size in advance (it builds the
+  # zip on request: HEAD answers 501 and a GET streams with no Content-Length,
+  # verified live 2026-09-24, issue #424), so the per-repository budget can
+  # only be enforced while the bytes arrive. curl's maxfilesize_large option
+  # does this for a stream of unknown length since libcurl 8.4.0 (verified
+  # live: stopped at exactly the limit). Retrying a failed transfer is turned
+  # off when a limit is set: a transfer stopped at the limit fails, and each
+  # retry would download up to the limit again.
   .osf_download_zip <- function(zip_url, zip_path, zip_size = NA_real_,
-                                timeout_s = 1800) {
+                                timeout_s = 1800, max_bytes = Inf) {
     # OSF's Waterbutler GENERATES the zip
     # on the fly for a whole-repo request, which for a big repo (thousands of
     # files) can take minutes before a single byte streams — so a silent buffered
@@ -1129,7 +1127,7 @@ osf_file_download <- function(osf_id,
     # progress bar and a generous timeout, and print each stage so a slow/failed
     # download is visible instead of mysterious.
     t0 <- Sys.time()
-    sz <- if (is.finite(zip_size)) sprintf("%.1f MB", zip_size / (1024^2)) else "unknown size"
+    sz <- if (is.finite(zip_size)) sprintf("files listed at %.1f MB", zip_size / (1024^2)) else "unknown size"
     message(sprintf("[zip] requesting archive: %s (%s)", zip_url, sz))
     message("[zip] OSF builds the archive server-side first; for a large repo ",
             "this can take several minutes before download starts. Streaming to:")
@@ -1141,10 +1139,12 @@ osf_file_download <- function(osf_id,
       # Same retry policy as every other file-bytes download: Waterbutler
       # serves the archive from a storage host that answers 403 when it
       # refuses a request, which is not permanent. See .storage_is_transient().
-      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+      httr2::req_retry(max_tries = 3, retry_on_failure = !is.finite(max_bytes),
                        is_transient = .storage_is_transient,
                        backoff = .storage_backoff) |>
       httr2::req_progress(type = "down")
+    if (is.finite(max_bytes))
+      req <- httr2::req_options(req, maxfilesize_large = max_bytes)
 
     resp <- tryCatch(
       httr2::req_perform(req, path = zip_path),   # STREAM to disk, not memory
@@ -1152,10 +1152,20 @@ osf_file_download <- function(osf_id,
 
     elapsed <- round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
     if (inherits(resp, "error")) {
+      # A partial archive must not be left in the download folder, where
+      # unzip = FALSE would otherwise leave it looking like a real one.
+      unlink(zip_path)
+      if (grepl("maximum file size", conditionMessage(resp), ignore.case = TRUE)) {
+        message(sprintf("[zip] STOPPED after %ss: the archive grew past the %s MB left in the budget",
+                        elapsed, .cap_num(round(max_bytes / (1024^2), 1))))
+        stop(sprintf("OSF zip archive for %s exceeded the download budget", zip_url),
+             call. = FALSE)
+      }
       message(sprintf("[zip] FAILED after %ss: %s", elapsed, conditionMessage(resp)))
       stop(sprintf("OSF zip download failed for %s", zip_url), call. = FALSE)
     }
     if (httr2::resp_status(resp) != 200) {
+      unlink(zip_path)   # an error page, not an archive
       message(sprintf("[zip] FAILED after %ss: HTTP %s", elapsed,
                       httr2::resp_status(resp)))
       stop(sprintf("OSF zip download failed for %s (HTTP %s)",
@@ -1232,6 +1242,10 @@ osf_file_download <- function(osf_id,
     pb$tick(0, tokens = _)
 
   files_to_copy <- integer(0)
+  # osf_ids of files left out because they did not fit in the budget
+  # (mode = "zip"); reported with attempted = FALSE, like any other file a
+  # size limit excluded.
+  budget_skipped <- character(0)
   if (sum(files$kind == "file") > 0 && identical(mode, "select")) {
     ## download all to temp folder ----
     # temppath <- fs::file_temp()
@@ -1378,6 +1392,14 @@ osf_file_download <- function(osf_id,
                                      max_folder_length,
                                      ignore_folder_structure)
 
+    # `max_download_size` is a budget for the whole project, shared by the
+    # archives and the files downloaded individually below. `used` counts the
+    # bytes already downloaded against it. A node whose archive does not fit
+    # is not skipped: its files are downloaded individually below, as many
+    # as fit in what is left of the budget.
+    budget <- if (is.finite(max_download_size)) max_download_size * mb else Inf
+    used <- 0
+
     # One archive per owning node. `zip_nodes` is every node that owns at least
     # one osfstorage file, so a project whose files sit in components is
     # covered, not just the root.
@@ -1388,21 +1410,20 @@ osf_file_download <- function(osf_id,
       if (length(node_idx) == 0) next
 
       zip_url <- .osf_zip_url(node)
-      zip_size <- .osf_zip_content_length(zip_url)
-      message(sprintf("[zip] %s: %d file(s), archive size %s",
-        node, length(node_idx),
-        if (is.finite(zip_size)) sprintf("%.1f MB", zip_size / mb) else
-          "not reported by server (will stream blind)"))
+      # The OSF never reports an archive's size in advance (see
+      # .osf_download_zip()), so it is estimated from the listed file sizes.
+      # A zip is compressed, so the archive is normally smaller than this.
+      zip_size <- sum(files$size[node_idx], na.rm = TRUE)
+      message(sprintf("[zip] %s: %d file(s), %.1f MB listed",
+                      node, length(node_idx), zip_size / mb))
 
-      if (is.finite(max_download_size) && !is.na(zip_size) &&
-          zip_size > max_download_size * mb) {
-        need_total <- ceiling(zip_size / mb)
-        cap_report(sprintf(
-          paste0("Node %s was not downloaded: its zip archive totals %s MB, ",
-                 "over the %s MB per-repository limit. ",
-                 "Set `max_download_size >= %s` to download it."),
-          node, .cap_num(need_total), .cap_num(max_download_size),
-          .cap_num(need_total)))
+      if (used + zip_size > budget) {
+        message(sprintf(
+          paste0("[zip] %s: its files total %s MB, more than the %s MB left of ",
+                 "the %s MB per-repository limit; they are downloaded ",
+                 "individually below, as many as fit in the limit."),
+          node, .cap_num(round(zip_size / mb, 1)),
+          .cap_num(round((budget - used) / mb, 1)), .cap_num(max_download_size)))
         next
       }
 
@@ -1412,13 +1433,15 @@ osf_file_download <- function(osf_id,
         list(what = _) |>
         pb$tick(0, tokens = _)
       ok <- tryCatch({
-        .osf_download_zip(zip_url, zip_path, zip_size = zip_size); TRUE
+        .osf_download_zip(zip_url, zip_path, zip_size = zip_size,
+                          max_bytes = budget - used); TRUE
       }, error = \(e) {
         message(sprintf("[zip] %s: archive download failed (%s); its files are downloaded individually below.",
                         node, conditionMessage(e)))
         FALSE
       })
       if (!isTRUE(ok)) next
+      used <- used + file.size(zip_path)
 
       if (isTRUE(unzip)) {
         unzip_dir <- tempfile(pattern = "osf-zip-")
@@ -1460,6 +1483,29 @@ osf_file_download <- function(osf_id,
       # recorded as copied are the rows that were actually copied.
       wanted <- left[!is.na(files$download_url[left]) &
                        nzchar(files$download_url[left])]
+      # Only as many as fit in what is left of the per-repository budget:
+      # smallest first, as download_repo_files() does, so as many files as
+      # possible arrive. A file with no listed size cannot be counted against
+      # the budget, so it is left out while a limit is set.
+      if (is.finite(budget) && length(wanted) > 0) {
+        ord <- wanted[order(files$size[wanted], na.last = TRUE)]
+        s <- files$size[ord]
+        fits <- !is.na(s) & cumsum(ifelse(is.na(s), Inf, s)) <= budget - used
+        dropped <- ord[!fits]
+        if (length(dropped) > 0) {
+          budget_skipped <- c(budget_skipped, files$osf_id[dropped])
+          need_total <- ceiling((used + sum(files$size[wanted], na.rm = TRUE)) / mb)
+          cap_report(sprintf(
+            paste0("%d file%s in %s did not fit in the %s MB per-repository ",
+                   "limit and %s not downloaded. ",
+                   "Set `max_download_size >= %s` to download %s."),
+            length(dropped), plural(length(dropped)), osf_id,
+            .cap_num(max_download_size),
+            if (length(dropped) == 1) "was" else "were",
+            .cap_num(need_total), if (length(dropped) == 1) "it" else "them"))
+        }
+        wanted <- ord[fits]
+      }
       if (length(wanted) > 0) {
         dests <- file.path(temppath2, files$osf_id[wanted])
         # Sizes for add-on files are not trustworthy, so none is passed for
@@ -1589,7 +1635,8 @@ osf_file_download <- function(osf_id,
   # when it was skipped. Only files that were meant to arrive and did not are
   # a problem worth warning about, so the two are counted separately -- and
   # `attempted` records which is which, so the table says so too.
-  ret$attempted <- ret$osf_id %in% files$osf_id
+  ret$attempted <- ret$osf_id %in% files$osf_id &
+    !(ret$osf_id %in% budget_skipped)
   n_ok <- sum(ret$downloaded)
   failed <- which(!ret$downloaded & ret$attempted)
 
