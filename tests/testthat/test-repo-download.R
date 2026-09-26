@@ -373,10 +373,10 @@ test_that("cache = FALSE downloads to a temp dir and never touches the persisten
 
 test_that("zip timeout is passed to zip transport", {
   files <- data.frame(
-    repo_url = "https://osf.io/abcde",
+    repo_url = "https://github.com/owner/repo-timeout",
     file_name = "a.csv",
     file_path = "a.csv",
-    file_url = "https://files.osf.io/v1/resources/abcde/providers/osfstorage/a.csv",
+    file_url = "https://raw.githubusercontent.com/owner/repo/main/a.csv",
     file_size = 1024,
     file_location = NA_character_,
     stringsAsFactors = FALSE
@@ -384,10 +384,9 @@ test_that("zip timeout is passed to zip transport", {
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
 
   local_mocked_bindings(
-    osf_check_id = function(x) "abcde",
-    # A concrete (small) zip size passes the zip-vs-file-by-file size gate, so
-    # the zip transport path — which forwards zip_timeout_s — actually runs.
-    .remote_content_length = function(url) 1024,
+    github_repo = function(repo) "owner/repo",
+    # A listed (small) file size gives the archive an estimate within budget,
+    # so the zip transport path -- which forwards zip_timeout_s -- actually runs.
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
                                       skip_on_api_limit = FALSE,
@@ -435,105 +434,89 @@ test_that(".zip_timeout_for_size scales the timeout up for a large expected tran
               expected_bytes / (1024 * 1024))
 })
 
-test_that("reports when archive transport is larger than selected files", {
+test_that("a GitHub archive is downloaded with a limit of 2x the budget", {
+  # Issue #424: GitHub's zipball reports no size, so it used to be downloaded
+  # with no byte limit at all. It is now limited like Dryad's archive.
   files <- data.frame(
-    repo_url = "https://osf.io/abcde",
+    repo_url = "https://github.com/owner/repo-cap",
     file_name = "a.csv",
     file_path = "a.csv",
-    file_url = "https://files.osf.io/v1/resources/abcde/providers/osfstorage/a.csv",
+    file_url = "https://raw.githubusercontent.com/owner/repo/main/a.csv",
     file_size = 1024,
     file_location = NA_character_,
     stringsAsFactors = FALSE
   )
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
 
+  cap <- NA_real_
   local_mocked_bindings(
-    osf_check_id = function(x) "abcde",
-    .remote_content_length = function(url) 50 * 1024 * 1024,
+    github_repo = function(repo) "owner/repo",
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
                                       skip_on_api_limit = FALSE,
                                       expected_bytes = NA_real_) {
+      cap <<- max_bytes
       files$file_location[row_idx] <- files$.cache_path[row_idx]
       files
     },
     .package = "metacheck"
   )
 
-  # The whole-node zip being larger than the selected files is expected/by-design
-  # (the ?zip= endpoint always zips the whole node), so it is now reported as a
-  # message rather than a warning.
-  expect_message(
-    dl <- download_repo_files(files, max_file_size = 10, max_download_size = 500),
-    "downloads as one archive"
-  )
+  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
+  expect_equal(cap, 2 * 100 * 1024 * 1024)
   expect_false(is.na(dl$file_location[1]))
 })
 
-test_that("OSF zip-vs-file decision scales with this repo's own files, not the whole batch table", {
-  # Regression test for a real production stall (confirmed live 2026-09-07,
-  # metacheck-license-doi issue found during the Cooper corpus rerun):
-  # node_osf_n used to call is_osfstorage() -- a scalar, non-vectorised
-  # function -- once per row of the ENTIRE `files` table for every OSF repo
-  # being decided on, instead of just that repo's own rows. In a real batch
-  # (many papers' files combined into one table before download_repo_files()
-  # runs) that is an O(n_osf_repos * n_total_files) scan of R-level scalar
-  # calls; live it pinned one CPU core for 15+ minutes with no progress
-  # output before this fix (which scopes the scan to `which(files$repo_url
-  # == repo)`, matching how `ridx_zip` just above it is already scoped).
-  #
-  # `decoy` stands in for "everything else in the batch": a large, unrelated
-  # repo with no file_url (so it costs nothing in the per-repo download-budget
-  # loop and is never a download candidate) that only pads nrow(files).
-  n_decoy <- 20000
-  decoy <- data.frame(
-    repo_url = "https://example.org/big-non-osf-repo",
-    file_name = paste0("d", seq_len(n_decoy), ".csv"),
-    file_path = paste0("d", seq_len(n_decoy), ".csv"),
-    file_url = NA_character_,
-    file_size = NA_real_,
+test_that("a GitHub archive with no listed sizes, or too large, is not used", {
+  # No whole-repository archive reports its size, so the size is estimated
+  # from the listed file sizes. With none listed there is no estimate, and an
+  # estimate above 2x the budget is refused: both go file by file instead.
+  make_files <- function(size, repo) data.frame(
+    repo_url = repo,
+    file_name = paste0(letters[seq_along(size)], ".csv"),
+    file_path = paste0(letters[seq_along(size)], ".csv"),
+    file_url = sprintf("https://raw.githubusercontent.com/owner/repo/main/%s.csv",
+                       letters[seq_along(size)]),
+    file_size = size,
     file_location = NA_character_,
     stringsAsFactors = FALSE
   )
-  target <- data.frame(
-    repo_url = "https://osf.io/abcde",
-    file_name = "a.csv",
-    file_path = "a.csv",
-    file_url = "https://files.osf.io/v1/resources/abcde/providers/osfstorage/a.csv",
-    file_size = 1024,
-    file_location = NA_character_,
-    stringsAsFactors = FALSE
-  )
-  files <- rbind(decoy, target)
-  unlink(metacheck:::.repo_cache_subdir(target$repo_url[1]), recursive = TRUE)
 
+  fallback_n <- 0L
   local_mocked_bindings(
-    osf_check_id = function(x) "abcde",
-    .remote_content_length = function(url) 1024,
-    .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
-                                      req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE,
-                                      expected_bytes = NA_real_) {
-      files$file_location[row_idx] <- files$.cache_path[row_idx]
-      files
+    github_repo = function(repo) "owner/repo",
+    # A file whose size is unknown is sized on the spot; report it as 1 KB so
+    # the per-repository budget lets it through to the download step.
+    .remote_size = function(url) 1024,
+    .download_zip_to_cache = function(...) {
+      stop("the archive should not be used")
+    },
+    .download_one = function(url, dest, skip_on_api_limit = FALSE,
+                             expected_bytes = NA_real_) {
+      fallback_n <<- fallback_n + 1L
+      dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
+      writeBin(raw(1), dest)
+      NA_character_
     },
     .package = "metacheck"
   )
 
-  t0 <- Sys.time()
-  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
-  elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+  files <- make_files(NA_real_, "https://github.com/owner/repo-unsized")
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  expect_message(
+    dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100),
+    "archive size unknown")
+  expect_false(is.na(dl$file_location[1]))
 
-  expect_false(is.na(dl$file_location[dl$repo_url == target$repo_url[1]]))
-  # Scoped to the target repo's one row, this is near-instant regardless of
-  # how large the rest of the batch is; scanning all 20000 decoy rows too
-  # (the old behaviour) was slow enough in local testing to fail this bound
-  # by a wide margin. The threshold is generous (not a tight benchmark) --
-  # confirmed live 2026-09-12 that a loaded/slower machine can take 3-4s for
-  # the fast (scoped) path alone, so this only needs to catch a return to the
-  # O(n)-over-the-whole-batch behaviour, which would take far longer than 15s
-  # against 20000 decoy rows, not sit just over a tight few-second line.
-  expect_lt(elapsed, 15)
+  # A 0.5 MB wanted file next to a 5 MB file the per-file cap skips: the
+  # archive would still hold both (5.5 MB), over 2x the 1 MB budget.
+  files <- make_files(c(0.5, 5) * 1024 * 1024, "https://github.com/owner/repo-toolarge")
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  expect_message(
+    dl <- download_repo_files(files, max_file_size = 1, max_download_size = 1),
+    "exceeds 2x the 1 MB budget")
+  expect_false(is.na(dl$file_location[1]))
+  expect_equal(fallback_n, 2L)
 })
 
 # Dryad's zip-vs-file-by-file threshold is quota-aware, unlike every other
@@ -541,7 +524,7 @@ test_that("OSF zip-vs-file decision scales with this repo's own files, not the w
 # rationale: Dryad's zip downloads are throttled to 100/day per IP,
 # file downloads to 500/day -- 5x more headroom -- so a small dataset should
 # route through the file-by-file path even though the plain request-count
-# logic alone (used for OSF/Zenodo/Dataverse above) would pick zip.
+# logic alone would pick zip.
 test_that("Dryad datasets with few files skip zip even when a plain request-count check would use it", {
   files <- data.frame(
     repo_url = rep("https://doi.org/10.5061/dryad.testquota1", 3),
@@ -559,9 +542,8 @@ test_that("Dryad datasets with few files skip zip even when a plain request-coun
   zip_called <- FALSE
   local_mocked_bindings(
     .dryad_doi = function(x) "10.5061/dryad.testquota1",
-    # A concrete, small size would pass the size gate -- confirms the skip is
-    # because of the file-count quota gate, not a size issue.
-    .remote_content_length = function(url, req_func = identity) 3072,
+    # The listed sizes (3 KB in total) pass the size gate -- confirms the skip
+    # is because of the file-count quota gate, not a size issue.
     .download_zip_to_cache = function(...) {
       zip_called <<- TRUE
       stop("zip transport should not be called for a 3-file Dryad dataset")
@@ -598,7 +580,6 @@ test_that("Dryad datasets with enough files still use zip", {
 
   local_mocked_bindings(
     .dryad_doi = function(x) "10.5061/dryad.testquota2",
-    .remote_content_length = function(url, req_func = identity) n * 1024,
     .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
                                       req_func, timeout_s, max_bytes = Inf,
                                       skip_on_api_limit = FALSE,
@@ -610,49 +591,6 @@ test_that("Dryad datasets with enough files still use zip", {
   )
 
   dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
-  expect_true(all(!is.na(dl$file_location)))
-})
-
-test_that("OSF non-osfstorage rows fall back to file-by-file", {
-  files <- data.frame(
-    repo_url = c("https://osf.io/abcde", "https://osf.io/abcde"),
-    file_name = c("a.csv", "b.csv"),
-    file_path = c("a.csv", "b.csv"),
-    file_url = c(
-      "https://files.osf.io/v1/resources/abcde/providers/osfstorage/a.csv",
-      "https://files.osf.io/v1/resources/abcde/providers/dropbox/b.csv"
-    ),
-    file_size = c(1024, 1024),
-    file_location = c(NA_character_, NA_character_),
-    stringsAsFactors = FALSE
-  )
-  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
-
-  fallback_n <- 0L
-  local_mocked_bindings(
-    osf_check_id = function(x) "abcde",
-    # A concrete (small) zip size passes the size gate so the osfstorage row
-    # takes the zip; only the non-osfstorage (dropbox) row falls back.
-    .remote_content_length = function(url) 1024,
-    .download_zip_to_cache = function(files, row_idx, zip_url, strip_dir,
-                                      req_func, timeout_s, max_bytes = Inf,
-                                      skip_on_api_limit = FALSE,
-                                      expected_bytes = NA_real_) {
-      # zip transport should only cover the osfstorage row
-      expect_equal(length(row_idx), 1)
-      files$file_location[row_idx] <- files$.cache_path[row_idx]
-      files
-    },
-    .download_one = function(url, dest, skip_on_api_limit = FALSE,
-                             expected_bytes = NA_real_) {
-      fallback_n <<- fallback_n + 1L
-      NA_character_
-    },
-    .package = "metacheck"
-  )
-
-  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
-  expect_equal(fallback_n, 1L)
   expect_true(all(!is.na(dl$file_location)))
 })
 
@@ -687,9 +625,9 @@ test_that(".download_many_parallel reports HTTP errors and retries a truncated d
 })
 
 test_that("osfstorage and Zenodo file-by-file rows use the parallel path, others don't", {
-  # The zip-vs-file-by-file gate is skipped here (no .remote_content_length /
-  # .download_zip_to_cache mock), so every row goes to the file-by-file
-  # section. Routing within it must be decided per FILE (provider / file_url),
+  # OSF and Zenodo have no archive route (issue #424), so every row goes to
+  # the file-by-file section. Routing within it must be decided per FILE
+  # (provider / file_url),
   # not per repo -- an osfstorage row and a Zenodo row should both reach
   # .download_many_parallel(), while a same-repo non-osfstorage row (e.g. a
   # Dropbox add-on file living in an OSF node) must still go through
@@ -715,11 +653,6 @@ test_that("osfstorage and Zenodo file-by-file rows use the parallel path, others
   parallel_urls <- character(0)
   sequential_urls <- character(0)
   local_mocked_bindings(
-    # Force the zip-vs-file-by-file gate to skip the zip transport for both
-    # OSF and Zenodo (both consult .remote_content_length() for the archive
-    # size; NA fails the gate's size_ok check), so every row reaches the
-    # file-by-file section this test is actually about.
-    .remote_content_length = function(url) NA_real_,
     .download_many_parallel = function(urls, dests, expected_size = NA_real_,
                                        skip_on_api_limit = FALSE) {
       parallel_urls <<- c(parallel_urls, urls)
@@ -740,6 +673,48 @@ test_that("osfstorage and Zenodo file-by-file rows use the parallel path, others
 
   expect_setequal(parallel_urls, files$file_url[c(1, 3)])
   expect_equal(sequential_urls, files$file_url[2])
+  expect_true(all(!is.na(dl$file_location)))
+})
+
+test_that("OSF, Zenodo and Dataverse repos are downloaded file by file", {
+  # Issue #424: their whole-record archives never report a size, so the
+  # archive route for them never ran and was removed. No archive request may
+  # be made for them.
+  files <- data.frame(
+    repo_url = c("https://osf.io/fghij", "https://doi.org/10.5281/zenodo.424424",
+                 "https://doi.org/10.7910/DVN/ABCDEF"),
+    file_name = c("a.csv", "b.csv", "c.csv"),
+    file_path = c("a.csv", "b.csv", "c.csv"),
+    file_url = c(
+      "https://files.osf.io/v1/resources/fghij/providers/osfstorage/a.csv",
+      "https://zenodo.org/api/records/424424/files/b.csv/content",
+      "https://dataverse.harvard.edu/api/access/datafile/1"),
+    file_size = c(1024, 1024, 1024),
+    file_location = rep(NA_character_, 3),
+    stringsAsFactors = FALSE
+  )
+  for (r in unique(files$repo_url))
+    unlink(metacheck:::.repo_cache_subdir(r), recursive = TRUE)
+
+  local_mocked_bindings(
+    .download_zip_to_cache = function(...) {
+      stop("no archive should be requested for OSF, Zenodo or Dataverse")
+    },
+    .download_many_parallel = function(urls, dests, expected_size = NA_real_,
+                                       skip_on_api_limit = FALSE) {
+      for (d in dests) { dir.create(dirname(d), showWarnings = FALSE, recursive = TRUE); writeBin(raw(1), d) }
+      rep(NA_character_, length(urls))
+    },
+    .download_one = function(url, dest, skip_on_api_limit = FALSE,
+                             expected_bytes = NA_real_) {
+      dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
+      writeBin(raw(1), dest)
+      NA_character_
+    },
+    .package = "metacheck"
+  )
+
+  dl <- download_repo_files(files, max_file_size = 10, max_download_size = 100)
   expect_true(all(!is.na(dl$file_location)))
 })
 

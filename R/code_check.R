@@ -867,8 +867,8 @@ code_parse_r <- function(file_path = "", text = NULL) {
   errors <- lapply(file_path, \(fp) {
     if (fp != "") text <- code_read(fp)
 
-    # check for rmd/qmd file
-    if (grepl("^---\\s*$", text[[1]])) {
+    # check for rmd/qmd file (an empty file has no first line: issue #425)
+    if (length(text) > 0 && grepl("^---\\s*$", text[[1]])) {
       text <- code_extract_r(text = text)
     }
 
@@ -943,8 +943,12 @@ code_abs_path <- function(code_text) {
     "\\1" # end matching quote
   )
 
+  # as.character(): for an empty file code_text is character(0), and
+  # unlist(list()) is NULL, so tibble(text = NULL) had no `text` column and
+  # gave "Unknown or uninitialised column" warnings (issue #425). Every
+  # code_*() function that splits code_text into lines does the same.
   code_lines <- dplyr::tibble(
-    text = strsplit(code_text, "\n+") |> unlist()
+    text = strsplit(code_text, "\n+") |> unlist() |> as.character()
   )
   code_lines$text_id <- seq_along(code_lines$text)
 
@@ -1003,7 +1007,7 @@ code_setwd <- function(code_text) {
   setwd_pattern <- "setwd\\s*\\(.*\\)"
 
   code_lines <- dplyr::tibble(
-    text = strsplit(code_text, "\n+") |> unlist()
+    text = strsplit(code_text, "\n+") |> unlist() |> as.character()
   )
   code_lines$text_id <- seq_along(code_lines$text)
 
@@ -1078,7 +1082,7 @@ code_install_packages <- function(code_text) {
   ip_pattern <- "(?:utils::)?install\\.packages\\s*\\(.*\\)"
 
   code_lines <- dplyr::tibble(
-    text = strsplit(code_text, "\n+") |> unlist()
+    text = strsplit(code_text, "\n+") |> unlist() |> as.character()
   )
   code_lines$text_id <- seq_along(code_lines$text)
 
@@ -1211,7 +1215,7 @@ code_install_packages <- function(code_text) {
 code_remove_comments <- function(code_text, lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
   in_block <- FALSE
-  code_text <- strsplit(code_text, "\n+") |> unlist()
+  code_text <- strsplit(code_text, "\n+") |> unlist() |> as.character()
   code_text_nc <- character(0)
 
   if (lang == "R") {
@@ -1422,7 +1426,7 @@ code_remove_comments <- function(code_text, lang = c("R", "Python", "SPSS", "SAS
 #' @returns `TRUE` if at least one complete triple-quoted block is found, else `FALSE`
 #' @keywords internal
 .code_has_docstring <- function(code_text) {
-  code_text <- strsplit(code_text, "\n+") |> unlist()
+  code_text <- strsplit(code_text, "\n+") |> unlist() |> as.character()
   text <- paste(code_text, collapse = "\n")
   grepl('(?s)("""|\'\'\').*?\\1', text, perl = TRUE)
 }
@@ -1447,7 +1451,7 @@ code_remove_comments <- function(code_text, lang = c("R", "Python", "SPSS", "SAS
 #' code_line_stats(code_text, "R")
 code_line_stats <- function(code_text, lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB")) {
   lang <- match.arg(lang)
-  code_text <- strsplit(code_text, "\n+") |> unlist()
+  code_text <- strsplit(code_text, "\n+") |> unlist() |> as.character()
 
   total_lines <- length(code_text)
   blank_lines <- sum(trimws(code_text) == "")
@@ -1578,6 +1582,14 @@ code_library_lines <- function(code_text, lang = c("R", "Python", "SPSS", "SAS",
 #' constructed package names, and does not know which *version* was used — only
 #' the names appear in the source.
 #'
+#' Where a call takes a variable rather than a package name —
+#' `install.packages(pkgs)`, `requireNamespace(pkg)`,
+#' `library(pkg, character.only = TRUE)`, `lapply(pkgs, library, ...)` — the
+#' variable is resolved to the names it holds when the file assigns it a
+#' literal vector (`pkgs <- c("a", "b")`, including a `for (pkg in pkgs)` loop
+#' variable), and dropped otherwise. The variable's own name is never reported
+#' as a package.
+#'
 #' @param code_text the code text for a single file
 #' @param lang the language (R, Python, SPSS, SAS, Stata, Mplus, MATLAB)
 #'
@@ -1629,6 +1641,31 @@ code_library_names <- function(code_text,
     if (length(m) >= i + 1L && nzchar(m[i + 1L])) m[i + 1L] else NA_character_
   }
 
+  # Variables the script assigns a literal package list to (issue #421): a
+  # paper's own install boilerplate usually keeps its packages in a variable,
+  # `pkgs <- c("dplyr", "lme4")`, and then loads or installs them through that
+  # variable -- `for (p in pkgs) install.packages(p)`,
+  # `lapply(pkgs, library, character.only = TRUE)`. There the argument is the
+  # VARIABLE, not a package name. It is resolved to the literal names when
+  # the file assigns them, and otherwise dropped: reporting the variable's own
+  # name ("pkgs", "req.lib") as a package made it be installed and reported
+  # as a failed dependency.
+  vars <- if (lang == "R") .code_char_vector_vars(code_text) else list()
+
+  # Package names from one argument: a quoted name is a package name; a bare
+  # word is a package name only when `bare_is_name` (library(dplyr)), and
+  # otherwise a variable, resolved through `vars`. `pkgs[...]` (indexing a
+  # package-list variable) resolves the same way.
+  arg_packages <- function(tok, bare_is_name) {
+    tok <- trimws(tok)
+    if (grepl("^(['\"]).*\\1$", tok)) return(tok)
+    id <- sub("\\[.*$", "", tok)
+    if (!grepl("^[.A-Za-z][.A-Za-z0-9_]*$", id)) return(character(0))
+    if (bare_is_name && identical(id, tok)) return(tok)
+    vars[[id]] %||% character(0)
+  }
+  char_only <- "character\\.only\\s*=\\s*(TRUE|T)\\b"
+
   for (ln in seq_along(code_text)) {
     L <- code_text[ln]
 
@@ -1642,23 +1679,58 @@ code_library_names <- function(code_text,
       # line — only the first (its own package) was ever detected, so the
       # other 13 (including one genuinely needed at runtime) were silently
       # never installed, and the script errored on the first missing one.
+      #
+      # A bare word is a package name for library()/require(), unless the call
+      # sets character.only = TRUE; requireNamespace() always evaluates its
+      # argument, so a bare word there is always a variable.
       for (fn in c("library", "require", "requireNamespace")) {
-        m <- gregexpr(sprintf("\\b%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)", fn), L,
-                      perl = TRUE)
+        m <- gregexpr(sprintf("\\b%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)([^)]*)", fn),
+                      L, perl = TRUE)
         g <- regmatches(L, m)[[1]]
-        if (length(g) > 0) {
-          pkgs <- sub(sprintf("^%s\\s*\\(\\s*", fn), "", g, perl = TRUE)
-          add(pkgs, fn, ln)
+        for (call in g) {
+          parts <- regmatches(call, regexec(
+            sprintf("^%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)(.*)$", fn), call,
+            perl = TRUE))[[1]]
+          bare_is_name <- fn != "requireNamespace" &&
+            !grepl(char_only, parts[3], perl = TRUE)
+          add(arg_packages(parts[2], bare_is_name), fn, ln)
         }
       }
-      # pacman::p_load(a, b, c) — one or more comma-separated packages
+      # lapply(pkgs, library, character.only = TRUE) and the same with
+      # sapply/vapply/Map/purrr's map/walk and require: loads every package
+      # in the variable.
+      ap <- regmatches(L, gregexpr(paste0(
+        "\\b(?:lapply|sapply|vapply|walk|map)\\s*\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)",
+        "\\s*,\\s*(?:FUN\\s*=\\s*)?(library|require)\\b"), L, perl = TRUE))[[1]]
+      for (call in ap) {
+        parts <- regmatches(call, regexec(
+          "\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)\\s*,\\s*(?:FUN\\s*=\\s*)?(library|require)\\b",
+          call, perl = TRUE))[[1]]
+        add(vars[[parts[2]]] %||% character(0), parts[3], ln)
+      }
+      # pacman::p_load(a, b, c) — one or more comma-separated packages. With
+      # character.only = TRUE, or given as p_load(char = pkgs), the arguments
+      # are variables instead.
       pl <- cap("\\bp_load\\s*\\(([^)]*)\\)", L, 1)
-      if (!is.na(pl)) add(strsplit(pl, "\\s*,\\s*")[[1]], "p_load", ln)
-      # install.packages("x") / renv::install("x")
-      for (fn in c("install\\.packages", "install")) {
-        g <- cap(sprintf("\\b%s\\s*\\(\\s*(c\\()?\\s*([A-Za-z0-9._'\", ]+?)\\s*\\)",
-                         fn), L, 2)
-        if (!is.na(g)) add(strsplit(g, "\\s*,\\s*")[[1]], "install", ln)
+      if (!is.na(pl)) {
+        args <- strsplit(pl, "\\s*,\\s*")[[1]]
+        chr <- grepl("^\\s*char\\s*=", args)
+        args[chr] <- sub("^\\s*char\\s*=\\s*", "", args[chr])
+        bare_is_name <- !any(chr) && !grepl(char_only, pl, perl = TRUE)
+        args <- args[!grepl("=", args)]   # other named arguments
+        add(unlist(lapply(args, arg_packages, bare_is_name = bare_is_name)),
+            "p_load", ln)
+      }
+      # install.packages("x") / renv::install("x") / BiocManager::install("x"):
+      # the first argument, a name or c(...) of names. It is always evaluated,
+      # so a bare word there is a variable.
+      m <- gregexpr("\\binstall(?:\\.packages)?\\s*\\(\\s*(c\\s*\\([^)]*\\)|[^,)]+)",
+                    L, perl = TRUE)
+      for (call in regmatches(L, m)[[1]]) {
+        arg <- sub("^install(?:\\.packages)?\\s*\\(\\s*", "", call, perl = TRUE)
+        arg <- sub("^c\\s*\\((.*)\\)$", "\\1", trimws(arg))
+        toks <- strsplit(arg, "\\s*,\\s*")[[1]]
+        add(unlist(lapply(toks, arg_packages, bare_is_name = FALSE)), "install", ln)
       }
       # pkg::fun / pkg:::fun namespace-qualified calls (all on the line)
       ns <- regmatches(L, gregexpr("\\b([A-Za-z][A-Za-z0-9._]*):{2,3}", L,
@@ -1684,6 +1756,43 @@ code_library_names <- function(code_text,
   # Drop non-identifier captures (e.g. a stray operator) and de-duplicate.
   out <- out[grepl("^[A-Za-z][A-Za-z0-9._]*$", out$package), , drop = FALSE]
   unique(out)
+}
+
+# Character values a script assigns literally to a variable, for
+# code_library_names() to resolve a package-list variable (issue #421).
+# Recognises `name <- c("a", "b")` (also `=` / `<<-`, and a c(...) spread over
+# several lines), `name <- "a"`, and a for-loop variable over such a vector,
+# `for (v in name)`, which takes the vector's values. Anything else -- a
+# vector built by a function call, indexing, or other variables -- is not
+# resolved, since static analysis cannot know its value. Returns a named list
+# of character vectors; a later assignment to the same name wins.
+.code_char_vector_vars <- function(code_text) {
+  joined <- paste(code_text, collapse = "\n")
+  id <- "[.A-Za-z][.A-Za-z0-9_]*"
+  out <- list()
+
+  pat <- sprintf(paste0("(?m)^\\s*(%s)\\s*(?:<<-|<-|=)\\s*",
+                        "(c\\s*\\([^()]*\\)|['\"][^'\"\n]*['\"])"), id)
+  hits <- regmatches(joined, gregexpr(pat, joined, perl = TRUE))[[1]]
+  for (h in hits) {
+    parts <- regmatches(h, regexec(pat, h, perl = TRUE))[[1]]
+    value <- sub("^c\\s*\\((.*)\\)$", "\\1", parts[3])
+    strs <- regmatches(value, gregexpr("(['\"])[^'\"\n]*\\1", value, perl = TRUE))[[1]]
+    # Only a vector of nothing but quoted strings is a literal package list.
+    rest <- gsub("(['\"])[^'\"\n]*\\1", "", value, perl = TRUE)
+    if (length(strs) == 0 || grepl("[^[:space:],]", rest)) next
+    out[[parts[2]]] <- gsub("^['\"]|['\"]$", "", strs)
+  }
+
+  loops <- regmatches(joined, gregexpr(
+    sprintf("\\bfor\\s*\\(\\s*(%s)\\s+in\\s+(%s)\\s*\\)", id, id),
+    joined, perl = TRUE))[[1]]
+  for (l in loops) {
+    parts <- regmatches(l, regexec(
+      sprintf("\\(\\s*(%s)\\s+in\\s+(%s)\\s*\\)", id, id), l, perl = TRUE))[[1]]
+    if (!is.null(out[[parts[3]]])) out[[parts[2]]] <- out[[parts[3]]]
+  }
+  out
 }
 
 #' Distinct packages from a code_check table

@@ -1,7 +1,6 @@
-# Tests for the ZIP central-directory parser and the download decision. The
-# range-fetch (zip_peek) needs a live HTTP server, so it is covered by the OSF
-# acceptance run; here we test the pure parser on a real local zip's bytes and
-# the classification decision, which need no network.
+# Tests for the ZIP central-directory parser and the download decision, on a
+# real local zip's bytes, which need no network. The range requests zip_peek()
+# sends are tested at the end of this file against httr2's mocked responses.
 
 test_that(".parse_zip_central_dir reads names and sizes from a real zip tail", {
   # Build a small zip with known contents.
@@ -130,6 +129,16 @@ test_that(".zip_member_fetch refuses a Zip64 entry instead of using the sentinel
   expect_null(metacheck:::.zip_member_fetch("http://example.invalid/x.zip", entry))
 })
 
+# Captured as plain top-level code before the two tests below replace
+# zip_peek(): local_mocked_bindings()'s own restore does not reliably take
+# effect in this setup (see the same note in test-repo-download.R), and the
+# tests at the end of this file need the real function. It is put back
+# explicitly in the namespace after them, which is where package code such as
+# zip_decision() looks it up. A bare zip_peek() call inside a later test is
+# still found in a different environment that keeps the stand-in, so those
+# tests call metacheck:::zip_peek() instead.
+.real_zip_peek <- get("zip_peek", envir = asNamespace("metacheck"), inherits = FALSE)
+
 test_that("zip_decision keeps a data zip and links a pure-asset zip", {
   # Stub zip_peek so no network: two synthetic listings.
   local_mocked_bindings(
@@ -154,6 +163,7 @@ test_that("zip_decision returns NA when the peek fails", {
   expect_true(is.na(d$worth))
   expect_match(d$reason, "could not peek")
 })
+assignInNamespace("zip_peek", .real_zip_peek, ns = "metacheck")
 
 test_that("zip_peek() reuses a same-session result instead of re-fetching", {
   # Regression test for issue #384: a single pipeline run calls zip_peek() on
@@ -217,4 +227,130 @@ test_that(".expand_zip keeps inner data files and drops inner materials", {
   # inner rows inherit the zip's repo/paper, lose their own URL
   expect_true(all(rows$paper_id == "p.1"))
   expect_true(all(is.na(rows$file_url)))
+})
+
+# ── Hosts that refuse HEAD (issue #424) ─────────────────────────────────────
+# Dryad, Figshare and Harvard Dataverse redirect downloads to Amazon S3, which
+# answers HEAD with 403 but a ranged GET with 206. These tests stand in for
+# such a host with httr2's mocked responses, serving the bytes of a real zip.
+
+# A small real zip's bytes, or NULL when no zip utility is available.
+.test_zip_bytes <- function(d) {
+  writeLines(rep("id,x", 50), file.path(d, "data.csv"))
+  writeLines("hello", file.path(d, "notes.txt"))
+  withr::with_dir(d, utils::zip("t.zip", c("data.csv", "notes.txt"), flags = "-q"))
+  zip <- file.path(d, "t.zip")
+  if (!file.exists(zip)) return(NULL)
+  readBin(zip, "raw", file.size(zip))
+}
+
+# A mocked host serving `bytes`. HEAD gets `head_status`. A Range header is
+# honoured with 206 and a Content-Range header, except that a suffix range
+# gets `suffix_status` instead when that is not 206 (200 = range ignored and
+# the whole file sent; 416 = over-long suffix refused, as GitHub does).
+.s3_like_host <- function(bytes, head_status = 403L, suffix_status = 206L,
+                          log = NULL) {
+  total <- length(bytes)
+  function(req) {
+    method <- req$method %||% "GET"
+    range <- req$headers$Range %||% NA_character_
+    if (!is.null(log)) log$calls <- c(log$calls, paste(method, range))
+    if (identical(method, "HEAD")) return(httr2::response(head_status))
+    if (is.na(range)) return(httr2::response(200L, body = bytes))
+    if (grepl("^bytes=-", range)) {
+      if (suffix_status == 200L) return(httr2::response(200L, body = bytes))
+      n <- as.numeric(sub("^bytes=-", "", range))
+      if (suffix_status == 416L && n > total)
+        return(httr2::response(416L, headers = list(
+          `Content-Range` = sprintf("bytes */%d", total))))
+      from <- max(0, total - n); to <- total - 1
+    } else {
+      lims <- as.numeric(strsplit(sub("^bytes=", "", range), "-")[[1]])
+      from <- lims[1]; to <- min(lims[2], total - 1)
+    }
+    httr2::response(206L,
+      headers = list(`Content-Range` = sprintf("bytes %.0f-%.0f/%d", from, to, total)),
+      body = bytes[(from + 1):(to + 1)])
+  }
+}
+
+test_that(".content_range_total reads the size from a Content-Range header", {
+  resp <- function(cr) httr2::response(206L, headers = list(`Content-Range` = cr))
+  expect_equal(metacheck:::.content_range_total(resp("bytes 0-0/2545568")), 2545568)
+  expect_equal(metacheck:::.content_range_total(resp("bytes */2246")), 2246)
+  expect_true(is.na(metacheck:::.content_range_total(resp("bytes 0-99/*"))))
+  expect_true(is.na(metacheck:::.content_range_total(httr2::response(206L))))
+})
+
+test_that("zip_peek() lists a zip on a host that refuses HEAD", {
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/refuses-head.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  log <- new.env(); log$calls <- character(0)
+  httr2::local_mocked_responses(.s3_like_host(bytes, log = log))
+  cd <- metacheck:::zip_peek(url)
+
+  expect_setequal(cd$name, c("data.csv", "notes.txt"))
+  # The 403 was not retried: exactly one HEAD was sent.
+  expect_equal(sum(startsWith(log$calls, "HEAD")), 1)
+  expect_true(any(grepl("^GET bytes=-", log$calls)))
+})
+
+test_that("zip_peek() rejects a whole-file answer when the size is unknown", {
+  # Without a size, a host that ignores the range would send the whole file,
+  # which for a real archive can be gigabytes: only 206 is accepted.
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/ignores-range.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  httr2::local_mocked_responses(.s3_like_host(bytes, suffix_status = 200L))
+  expect_null(metacheck:::zip_peek(url))
+})
+
+test_that("zip_peek() handles a 416 answer to an over-long suffix range", {
+  # GitHub answers 416 when the requested tail is longer than the file, but
+  # still reports the size ("bytes */2246"); the file is then fetched whole by
+  # position.
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/short.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  httr2::local_mocked_responses(.s3_like_host(bytes, suffix_status = 416L))
+  cd <- metacheck:::zip_peek(url)
+  expect_setequal(cd$name, c("data.csv", "notes.txt"))
+})
+
+test_that(".zip_member_fetch() works on a host that refuses HEAD", {
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/member.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  httr2::local_mocked_responses(.s3_like_host(bytes))
+  cd <- metacheck:::zip_peek(url)
+  got <- metacheck:::.zip_member_fetch(url, cd[cd$name == "notes.txt", , drop = FALSE])
+  notes <- file.path(d, "notes.txt")
+  expect_equal(got, readBin(notes, "raw", file.size(notes)))
+})
+
+test_that(".remote_size falls back to a ranged request when HEAD is refused", {
+  httr2::local_mocked_responses(.s3_like_host(as.raw(1:200)))
+  expect_equal(metacheck:::.remote_size("https://s3-like.example/file.csv"), 200)
+
+  # A host answering HEAD with a 403 error page must not have that page's
+  # Content-Length read as the file size.
+  httr2::local_mocked_responses(function(req) {
+    if (identical(req$method, "HEAD"))
+      return(httr2::response(403L, headers = list(`Content-Length` = "243")))
+    httr2::response(403L)
+  })
+  expect_true(is.na(metacheck:::.remote_size("https://s3-like.example/private.csv")))
 })

@@ -745,6 +745,11 @@ test_that("code files found but every download fails does not crash (invalid sub
 test_that("code_check local_path: green light and parse errors", {
   tmp <- withr::local_tempdir()
   writeLines(c("# comment", "x <- 1"), file.path(tmp, "good.R"))
+  # Green also requires the package versions to be recorded (the "Reproducible
+  # Environment" check added in 9285b1f), so the clean case needs an
+  # renv.lock alongside the code.
+  writeLines(c("{", "  \"R\": {\"Version\": \"4.4.1\"},", "  \"Packages\": {}", "}"),
+             file.path(tmp, "renv.lock"))
   mo <- module_run(test_paper(), "code_check", local_path = tmp)
   expect_equal(mo$traffic_light, "green")
 
@@ -753,4 +758,19 @@ test_that("code_check local_path: green light and parse errors", {
   mo <- module_run(test_paper(), "code_check", local_path = tmp)
   expect_equal(mo$traffic_light, "yellow")
   expect_true(any(grepl("bad.R", mo$report, fixed = TRUE)))
+})
+
+test_that("code_check handles empty code files without errors or warnings", {
+  # Issue #425: empty files (an empty __init__.py marks a Python package) were
+  # recorded with an error and gave "Unknown or uninitialised column"
+  # warnings. They are now checked like any other file, and are not flagged
+  # for having no comments.
+  tmp <- withr::local_tempdir()
+  file.create(file.path(tmp, "__init__.py"))
+  file.create(file.path(tmp, "empty.R"))
+  writeLines(c("# comment", "x <- 1"), file.path(tmp, "good.R"))
+  expect_no_warning(mo <- module_run(test_paper(), "code_check", local_path = tmp))
+  expect_false("error" %in% names(mo$table) && any(!is.na(mo$table$error)))
+  expect_equal(mo$table$comment_lines[mo$table$file_name == "__init__.py"], 0)
+  expect_true(any(grepl("All your code files had comments", mo$report, fixed = TRUE)))
 })

@@ -77,7 +77,9 @@
 #'   without downloading it — see [zip_peek()]) and only fetch zips that contain
 #'   actual data or a codebook. A zip of only stimuli/materials is left for the
 #'   release to link to rather than mirror. Zips whose contents cannot be peeked
-#'   are downloaded as usual. Off by default.
+#'   are downloaded as usual. A downloaded zip is also unpacked, and its files
+#'   are classified and listed as their own rows. On by default (with it off,
+#'   data inside zip archives was never found, see issue #424).
 #' @param max_file_size largest single file to download, in MB (default 100).
 #'   The size caps are an upfront, all-or-nothing gate: if any file in a
 #'   repository exceeds this, the whole repository is refused (nothing
@@ -125,7 +127,7 @@
 data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        download = "data",
                        skip_types = NULL,
-                       peek_zips = FALSE,
+                       peek_zips = TRUE,
                        max_file_size = 100,
                        max_download_size = 500,
                        max_files_per_repo = Inf,

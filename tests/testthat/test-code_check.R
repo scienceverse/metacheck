@@ -793,6 +793,59 @@ test_that("code_library_names R", {
   expect_equal(names(obs), c("package", "source", "line"))
 })
 
+test_that("code_library_names does not report a package-list variable as a package", {
+  # Issue #421: a paper's own install boilerplate loads its packages through a
+  # variable, and the variable's name ("req.lib", "list.packages", "x", ...)
+  # was reported, installed, and listed as a failed dependency.
+  pkgs_of <- function(code) unique(code_library_names(code, "R")$package)
+
+  # The issue's example: the loop variable resolves to the literal list,
+  # which may span several lines.
+  expect_setequal(pkgs_of(c(
+    'list.packages <- c("activity", "bbmle",',
+    '                   "Distance")',
+    'for (req.lib in list.packages) {',
+    '  if (!require(req.lib, character.only = TRUE)) {',
+    '    install.packages(req.lib)',
+    '    library(req.lib, character.only = TRUE)',
+    '  }',
+    '}')), c("activity", "bbmle", "Distance"))
+
+  # The common new.packages idiom: indexing a list variable resolves to it;
+  # a derived variable (new.packages) cannot be resolved and is dropped.
+  expect_setequal(pkgs_of(c(
+    'list.of.packages <- c("ggplot2", "Rcpp")',
+    'new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]',
+    'if (length(new.packages)) install.packages(new.packages)',
+    'install.packages(list.of.packages[!list.of.packages %in% rownames(installed.packages())])',
+    'lapply(list.of.packages, require, character.only = TRUE)')),
+    c("ggplot2", "Rcpp"))
+
+  # Variables with no literal value in the file are dropped, never reported.
+  for (v in c("x", "pkg", "packages.toinstall", "not_installed", "dependencies", "arma")) {
+    expect_equal(pkgs_of(c(sprintf("install.packages(%s)", v),
+                           sprintf("library(%s, character.only = TRUE)", v),
+                           sprintf("requireNamespace(%s, quietly = TRUE)", v))),
+                 character(0), info = v)
+  }
+  # A vector that is not purely literal is not resolved either.
+  expect_setequal(pkgs_of(c('pk <- c("zoo", other)', 'install.packages(pk)')),
+               character(0))
+
+  # sapply(FUN = ...) and pacman's char = / character.only forms.
+  expect_setequal(pkgs_of(c('pkgs = c("psych", "car")',
+                         'sapply(pkgs, FUN = library, character.only = TRUE)')),
+               c("car", "psych"))
+  expect_setequal(pkgs_of(c('p <- c("lme4", "car")', 'pacman::p_load(char = p)')),
+               c("car", "lme4", "pacman"))
+
+  # Literal names keep working, including with further arguments.
+  expect_setequal(pkgs_of(c('library(dplyr); library("tidyr")',
+                         'install.packages("afex", dependencies = TRUE)',
+                         'BiocManager::install("edgeR")')),
+               c("afex", "BiocManager", "dplyr", "edgeR", "tidyr"))
+})
+
 
 test_that("code_library_names Python", {
   code_text <- c(
@@ -1037,3 +1090,22 @@ test_that("code_extract_py", {
 })
 
 
+
+test_that("code_*() functions handle an empty file without warnings or errors", {
+  # Issue #425: an empty script (such as a Python package's __init__.py)
+  # gave "Unknown or uninitialised column" warnings, and code_parse_r() and
+  # code_line_stats() stopped with an error.
+  x <- character(0)
+  expect_no_warning(ap <- code_abs_path(x))
+  expect_equal(nrow(ap), 0)
+  expect_equal(names(ap), c("abs_path", "line"))
+  expect_no_warning(sw <- code_setwd(x))
+  expect_equal(nrow(sw), 0)
+  expect_no_warning(ip <- code_install_packages(x))
+  expect_equal(nrow(ip), 0)
+  expect_no_error(ls <- code_line_stats(x, "Python"))
+  expect_equal(ls$total_lines, 0)
+  expect_true(is.na(ls$percent_comments))
+  expect_no_error(pr <- code_parse_r(text = x))
+  expect_false(pr$error)
+})
