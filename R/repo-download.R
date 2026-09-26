@@ -1306,7 +1306,8 @@ download_repo_files <- function(files,
         member_dest <- .safe_write_path(member_dest)
         dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
         fetched <- tryCatch(
-          .zip_fetch_members(arc, names = files$archive_member[idx], dest = member_dest),
+          .zip_fetch_members(arc, names = files$archive_member[idx], dest = member_dest,
+                            cache = cache, skip_on_api_limit = skip_on_api_limit),
           error = function(e) NULL)
         if (is.null(fetched)) next
         for (k in idx) {

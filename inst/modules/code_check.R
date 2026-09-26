@@ -27,7 +27,7 @@
 #' @param max_download_size largest total download per repository, in MB (default 500). Set `Inf` for no cap.
 #' @param max_files_per_repo largest file COUNT a single repository may have before it is refused outright (default `Inf`, no cap) -- see [download_repo_files()]'s own parameter of the same name.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
-#' @param skip_on_api_limit if TRUE, a 429 that carries a confirmed rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file instead of waiting out the host's own reset. Default FALSE (always wait for a confirmed reset) -- see [download_repo_files()]'s own parameter of the same name.
+#' @param skip_on_api_limit if TRUE, a 429 that carries a confirmed rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file instead of waiting out the host's own reset. Default FALSE (always wait for a confirmed reset) -- see [download_repo_files()]'s own parameter of the same name. Also forwarded to `repo_check()` and to `.code_expand_zip()`'s own zip-peeking step, both of which make the same kind of request and can hit the same rate limit.
 #' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code$packages` section, and any code file this module tried and failed to download (after retries) is recorded in `code$files_failed` (`file_name`, `repo_url`, `file_url`, `error` per file -- the `file_url` is a direct link to fetch it manually) (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
 #'
 #' @returns a list
@@ -70,10 +70,15 @@ code_check <- function(paper, local_path = NULL,
     # ...) is re-queried from scratch on every restart -- exactly the
     # repeated-listing quota exhaustion repo_info_cache()/cache.R's own docs
     # describe (see metacheck#402-adjacent finding, same corpus rerun).
+    # skip_on_api_limit forwarded too: repo_check()'s own peek_zips step can
+    # now wait out a confirmed rate limit the same way a download does (see
+    # the same forwarding fix in data_check.R, issue #427).
     if (!is.null(local_path)) {
-      mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only, cache = cache)
+      mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only,
+                       cache = cache, skip_on_api_limit = skip_on_api_limit)
     } else {
-      mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache)
+      mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
+                       skip_on_api_limit = skip_on_api_limit)
     }
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
   }
@@ -150,7 +155,7 @@ code_check <- function(paper, local_path = NULL,
   # its code-classified members via range requests (no full download). See
   # .code_expand_zip() and issue #383 (Gap 2).
   if (any(grepl("\\.zip$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_zip(all_files, skip_on_api_limit)
+    all_files <- .code_expand_zip(all_files, skip_on_api_limit, cache)
     all_files$language <- code_lang(all_files$file_name)
   }
 

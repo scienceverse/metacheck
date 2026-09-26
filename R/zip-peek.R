@@ -53,8 +53,8 @@
 # moment (see .storage_is_transient(), R/repo-download.R), but S3 answers a
 # HEAD with 403 every single time, so retrying it only added ~6 s of backoff
 # per Dryad/Figshare/Dataverse file before the size request failed anyway.
-.size_probe_is_transient_factory <- function() {
-  is_transient <- .storage_is_transient_factory()
+.size_probe_is_transient_factory <- function(skip_on_api_limit = FALSE) {
+  is_transient <- .storage_is_transient_factory(skip_on_api_limit)
   function(resp) httr2::resp_status(resp) != 403L && is_transient(resp)
 }
 
@@ -71,18 +71,18 @@
 # Size in bytes from a HEAD request, or NA. Only a successful (2xx) answer is
 # read: an error answer's Content-Length is the length of the error page, not
 # of the file.
-.head_size <- function(url) {
+.head_size <- function(url, skip_on_api_limit = FALSE) {
   tryCatch({
     # See .wait_out_known_rate_limit()'s own comment (R/repo-download.R): a
     # host already known to be rate-limited waits out the remaining time
     # before this request instead of rediscovering the same 429.
-    .wait_out_known_rate_limit(url)
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) return(NA_real_)
     h <- httr2::request(url) |> httr2::req_method("HEAD") |>
       .auth_for_url() |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .size_probe_is_transient_factory(),
+                       is_transient = .size_probe_is_transient_factory(skip_on_api_limit),
                        backoff = .storage_backoff,
-                       after = .storage_retry_after_factory()) |>
+                       after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
     status <- httr2::resp_status(h)
     if (status < 200 || status >= 300) return(NA_real_)
@@ -94,15 +94,16 @@
 # Send one ranged GET (`range` is the Range header value) and return
 # list(status, total, body). `body` is read only for a 206 answer; any other
 # answer is closed unread (see the section comment above).
-.http_range_get <- function(url, range) {
-  .wait_out_known_rate_limit(url)
+.http_range_get <- function(url, range, skip_on_api_limit = FALSE) {
+  if (!.wait_out_known_rate_limit(url, skip_on_api_limit))
+    return(list(status = NA_integer_, total = NA_real_, body = NULL))
   resp <- httr2::request(url) |>
     httr2::req_headers(Range = range) |>
     .auth_for_url() |>
     httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                     is_transient = .size_probe_is_transient_factory(),
+                     is_transient = .size_probe_is_transient_factory(skip_on_api_limit),
                      backoff = .storage_backoff,
-                     after = .storage_retry_after_factory()) |>
+                     after = .storage_retry_after_factory(skip_on_api_limit)) |>
     httr2::req_error(is_error = function(r) FALSE) |>
     httr2::req_perform_connection()
   on.exit(close(resp), add = TRUE)
@@ -114,9 +115,9 @@
 
 # Size in bytes from a one-byte ranged GET, or NA. The fallback for when a
 # HEAD request gives no usable size (see the section comment above).
-.range_size <- function(url) {
+.range_size <- function(url, skip_on_api_limit = FALSE) {
   tryCatch({
-    r <- .http_range_get(url, "bytes=0-0")
+    r <- .http_range_get(url, "bytes=0-0", skip_on_api_limit = skip_on_api_limit)
     if (r$status %in% c(206L, 416L) && is.finite(r$total) && r$total > 0)
       r$total else NA_real_
   }, error = function(e) NA_real_)
@@ -149,20 +150,21 @@
 # .zip_fetch_members()->zip_peek() call (fetching a member's bytes) hit the
 # SAME archive URL twice in one pipeline run with no throttle between them,
 # so the second call was the one exposed to a burst-rate-limit refusal.
-.http_range_tail <- function(url, n, total = NULL) {
+.http_range_tail <- function(url, n, total = NULL, skip_on_api_limit = FALSE) {
   tryCatch({
-    if (is.null(total)) total <- .head_size(url)
-    if (is.na(total)) return(.http_range_suffix(url, n))
+    if (is.null(total)) total <- .head_size(url, skip_on_api_limit = skip_on_api_limit)
+    if (is.na(total))
+      return(.http_range_suffix(url, n, skip_on_api_limit = skip_on_api_limit))
     if (total <= 0) return(NULL)
     start <- max(0, total - n)
-    .wait_out_known_rate_limit(url)
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) return(NULL)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", start, total - 1)) |>
       .auth_for_url() |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient_factory(),
+                       is_transient = .storage_is_transient_factory(skip_on_api_limit),
                        backoff = .storage_backoff,
-                       after = .storage_retry_after_factory()) |>
+                       after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     # 206 = partial content (range honoured). 200 = whole file (range ignored):
@@ -182,15 +184,17 @@
 # refuses an over-long suffix (GitHub raw files do, verified live
 # 2026-09-24); its Content-Range still gives the size, so the whole, small
 # file is then requested by exact position instead.
-.http_range_suffix <- function(url, n) {
-  r <- .http_range_get(url, sprintf("bytes=-%.0f", n))
+.http_range_suffix <- function(url, n, skip_on_api_limit = FALSE) {
+  r <- .http_range_get(url, sprintf("bytes=-%.0f", n),
+                       skip_on_api_limit = skip_on_api_limit)
   if (r$status == 206L && !is.null(r$body)) {
     body <- r$body
     attr(body, "total") <- r$total
     return(body)
   }
   if (r$status == 416L && is.finite(r$total) && r$total > 0)
-    return(.http_range_tail(url, n, total = r$total))
+    return(.http_range_tail(url, n, total = r$total,
+                            skip_on_api_limit = skip_on_api_limit))
   NULL
 }
 
@@ -207,21 +211,21 @@
 # member (once for the local header, once for the compressed data), so a
 # single-member fetch inside a loop over many members is exactly the
 # back-to-back-request pattern a host's burst limit is most likely to catch.
-.http_range_bytes <- function(url, from, to) {
+.http_range_bytes <- function(url, from, to, skip_on_api_limit = FALSE) {
   tryCatch({
     if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) return(NULL)
     # See .http_range_tail()'s own comment on this same call: check the
     # session's rate-limit record before sending, so a host already known
     # rate-limited (recorded by any earlier request this session, including
     # a different archive/member) waits out the remaining time up front.
-    .wait_out_known_rate_limit(url)
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) return(NULL)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
       .auth_for_url() |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient_factory(),
+                       is_transient = .storage_is_transient_factory(skip_on_api_limit),
                        backoff = .storage_backoff,
-                       after = .storage_retry_after_factory()) |>
+                       after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     if (httr2::resp_status(r) != 206) return(NULL)
@@ -310,6 +314,17 @@
 #' @param url the download URL of a ZIP file
 #' @param tail_bytes how many bytes of the tail to fetch (default 128 KB; raised
 #'   automatically on retry when the central directory is larger)
+#' @param cache if `TRUE`, persist this URL's result to disk (see
+#'   [zip_peek_cache_clear()]) so a later R process reuses it instead of
+#'   re-peeking the archive over HTTP. Off by default, matching
+#'   [repo_info_cache()]'s own opt-in shape; a caller that never asks for
+#'   caching sees no behavior change. `repo_check()`/`data_check()` forward
+#'   their own `cache` argument here.
+#' @param skip_on_api_limit if `TRUE`, a confirmed exhausted rate-limit bucket
+#'   during a peek is treated as a failure (returns `NULL`) instead of waiting
+#'   out the host's reset -- see [download_repo_files()]'s parameter of the
+#'   same name. Falls back to `getOption("metacheck.skip_on_api_limit")` when
+#'   not given directly.
 #'
 #' @returns a data.frame with columns `name` (entry path inside the zip) and
 #'   `size` (uncompressed bytes), excluding directory entries; or `NULL` when the
@@ -324,7 +339,8 @@
 #' \dontrun{
 #' zip_peek("https://osf.io/download/abcde/")
 #' }
-zip_peek <- function(url, tail_bytes = 131072) {
+zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
+                     skip_on_api_limit = FALSE) {
   # Reuse an earlier peek of this exact URL from this same session -- SUCCESS
   # OR FAILURE. Originally only a success was cached, on the assumption a
   # refused/unsupported NULL "would still return NULL again quickly" -- true
@@ -346,16 +362,30 @@ zip_peek <- function(url, tail_bytes = 131072) {
     return(get(url, envir = .zip_peek_cache, inherits = FALSE))
   }
 
+  # On-disk cache, one level further out than the in-memory one above: reused
+  # across R processes, not just within one (issue #427). Gated on `cache`
+  # (default FALSE) so an uncached caller's behavior is unchanged. A hit here
+  # is also written into the in-memory cache, so a second call THIS session
+  # (e.g. repo_check's peek followed by download_repo_files()'s) skips even
+  # the disk read.
+  if (isTRUE(cache) && .zip_peek_cache_has(url)) {
+    cd <- .zip_peek_cache_get(url)
+    assign(url, cd, envir = .zip_peek_cache)
+    return(cd)
+  }
+
   # HEAD once for the total size (also lets us grab a bigger tail if needed).
   # When HEAD gives none (S3-backed hosts refuse it, issue #424), total stays
   # NA: the first tail is then requested by distance from the end, and its
   # Content-Range supplies the size for the 1 MB retry.
-  total <- .head_size(url)
+  total <- .head_size(url, skip_on_api_limit = skip_on_api_limit)
 
   for (nb in unique(c(tail_bytes, 1048576))) {   # retry once with 1 MB tail
-    raw <- .http_range_tail(url, nb, total = total)
+    raw <- .http_range_tail(url, nb, total = total,
+                            skip_on_api_limit = skip_on_api_limit)
     if (is.null(raw)) {
       assign(url, NULL, envir = .zip_peek_cache)
+      if (isTRUE(cache)) .zip_peek_cache_put(url, NULL)
       return(NULL)
     }
     if (is.na(total)) total <- attr(raw, "total") %||% NA_real_
@@ -363,11 +393,13 @@ zip_peek <- function(url, tail_bytes = 131072) {
     if (!is.null(cd)) {
       cd <- cd[!grepl("/$", cd$name), , drop = FALSE]   # drop directory entries
       assign(url, cd, envir = .zip_peek_cache)
+      if (isTRUE(cache)) .zip_peek_cache_put(url, cd)
       return(cd)
     }
     if (!is.null(total) && !is.na(total) && nb >= total) break  # whole file seen
   }
   assign(url, NULL, envir = .zip_peek_cache)
+  if (isTRUE(cache)) .zip_peek_cache_put(url, NULL)
   NULL
 }
 
@@ -439,18 +471,20 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # position from the central directory.
 #
 # Returns raw bytes of the decompressed member, or NULL on any failure.
-.zip_member_fetch <- function(url, entry, verify = TRUE) {
+.zip_member_fetch <- function(url, entry, verify = TRUE, skip_on_api_limit = FALSE) {
   if (is.null(entry) || nrow(entry) != 1) return(NULL)
   if (is.na(entry$offset) || is.na(entry$csize)) return(NULL)  # Zip64
   if (entry$csize == 0) return(raw(0))                         # empty member
 
   # Local file header: 30 fixed bytes, then name and extra fields.
-  lh <- .http_range_bytes(url, entry$offset, entry$offset + 29)
+  lh <- .http_range_bytes(url, entry$offset, entry$offset + 29,
+                          skip_on_api_limit = skip_on_api_limit)
   if (is.null(lh)) return(NULL)
   if (!identical(lh[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) return(NULL)
   data_start <- entry$offset + 30 + .le_int(lh, 27, 2) + .le_int(lh, 29, 2)
 
-  comp <- .http_range_bytes(url, data_start, data_start + entry$csize - 1)
+  comp <- .http_range_bytes(url, data_start, data_start + entry$csize - 1,
+                            skip_on_api_limit = skip_on_api_limit)
   if (is.null(comp)) return(NULL)
 
   out <- .zip_inflate_member(comp, entry$method, size = entry$size)
@@ -522,8 +556,10 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # archive. Returns a data.frame of what was fetched (name, path on disk, bytes,
 # ok), or NULL when the archive could not be listed at all -- which is the
 # signal for the caller to fall back to downloading the whole thing.
-.zip_fetch_members <- function(url, names = NULL, dest, verify = TRUE) {
-  cd <- tryCatch(zip_peek(url), error = function(e) NULL)
+.zip_fetch_members <- function(url, names = NULL, dest, verify = TRUE,
+                               cache = FALSE, skip_on_api_limit = FALSE) {
+  cd <- tryCatch(zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit),
+                 error = function(e) NULL)
   if (is.null(cd) || nrow(cd) == 0) return(NULL)
 
   want <- if (is.null(names)) cd else cd[cd$name %in% names, , drop = FALSE]
@@ -532,7 +568,8 @@ zip_peek <- function(url, tail_bytes = 131072) {
   out_path <- rep(NA_character_, nrow(want))
   ok <- rep(FALSE, nrow(want))
   for (i in seq_len(nrow(want))) {
-    bytes <- .zip_member_fetch(url, want[i, , drop = FALSE], verify = verify)
+    bytes <- .zip_member_fetch(url, want[i, , drop = FALSE], verify = verify,
+                               skip_on_api_limit = skip_on_api_limit)
     if (is.null(bytes)) next
     # Entry paths come from the archive, so they are constrained to sit under
     # dest: a member named "../secret" or "/etc/x" would otherwise write outside
@@ -718,14 +755,20 @@ zip_peek <- function(url, tail_bytes = 131072) {
 #' @param url the zip's download URL
 #' @param skip_types data_type(s) that don't count as worth-downloading content
 #'   (e.g. `"materials"`)
+#' @param cache passed to [zip_peek()]: if `TRUE`, reuse an on-disk cached
+#'   peek across R sessions instead of re-peeking the archive.
+#' @param skip_on_api_limit passed to [zip_peek()]: if `TRUE`, a confirmed
+#'   exhausted rate-limit bucket is treated as a failed peek instead of
+#'   waiting out the host's reset.
 #'
 #' @returns a list with `worth` (`TRUE`/`FALSE`, or `NA` when the peek failed so
 #'   the caller can fall back to downloading), `reason`, `n_entries`, `types`
 #'   (table of inner types), and `contents` (the peeked data.frame or `NULL`).
 #' @export
 #' @keywords internal
-zip_decision <- function(url, skip_types = "materials") {
-  peek <- zip_peek(url)
+zip_decision <- function(url, skip_types = "materials", cache = FALSE,
+                         skip_on_api_limit = FALSE) {
+  peek <- zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit)
   if (is.null(peek))
     return(list(worth = NA, reason = "could not peek (download to inspect)",
                 n_entries = NA_integer_, types = NULL, contents = NULL))
