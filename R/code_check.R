@@ -591,7 +591,7 @@ code_lang <- function(file_name) {
 # own NULL-return cases); such a row is left for the normal download path,
 # which will fetch the whole archive and (if data_check expands it) recover
 # its contents that way instead.
-.code_expand_zip <- function(all_files, skip_on_api_limit = FALSE) {
+.code_expand_zip <- function(all_files, skip_on_api_limit = FALSE, cache = FALSE) {
   is_zip <- grepl("\\.zip$", all_files$file_name, ignore.case = TRUE) &
     !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
   if (!any(is_zip)) return(all_files)
@@ -599,7 +599,8 @@ code_lang <- function(file_name) {
   new_rows <- list()
   for (i in which(is_zip)) {
     url <- all_files$file_url[i]
-    peek <- tryCatch(zip_peek(url), error = function(e) NULL)
+    peek <- tryCatch(zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit),
+                     error = function(e) NULL)
     if (is.null(peek) || nrow(peek) == 0) next   # host/host-state can't be peeked
 
     is_code <- !is.na(code_lang(peek$name))
@@ -609,7 +610,8 @@ code_lang <- function(file_name) {
                              paste0(all_files$file_path[i] %||% all_files$file_name[i],
                                     ".contents"))
     fetched <- tryCatch(
-      .zip_fetch_members(url, names = peek$name[is_code], dest = dest),
+      .zip_fetch_members(url, names = peek$name[is_code], dest = dest,
+                        cache = cache, skip_on_api_limit = skip_on_api_limit),
       error = function(e) NULL)
     if (is.null(fetched) || !any(fetched$ok)) next
 

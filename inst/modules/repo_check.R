@@ -51,6 +51,12 @@
 #' @param model the LLM model name (see `llm_model_list()`), used only when
 #'   `llm_use(TRUE)` for study grouping the deterministic passes cannot place
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
+#' @param skip_on_api_limit if TRUE, a confirmed exhausted rate-limit bucket
+#'   hit while peeking a zip's contents (`peek_zips = TRUE`) skips that
+#'   archive instead of waiting out the host's own reset. Default FALSE
+#'   (always wait for a confirmed reset) -- see [download_repo_files()]'s
+#'   parameter of the same name, which this matches for the listing-only
+#'   requests `zip_peek()` makes here.
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -58,7 +64,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        osf_license = FALSE,
                        cache = FALSE,
                        model = llm_model(),
-                       params = list()) {
+                       params = list(),
+                       skip_on_api_limit = FALSE) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
@@ -1517,7 +1524,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       on.exit(zpb$terminate(), add = TRUE)
       expanded <- list(); consumed <- integer(0)
       for (i in which(is_zip)) {
-        peek <- tryCatch(zip_peek(all_files$file_url[i]), error = \(e) NULL)
+        peek <- tryCatch(zip_peek(all_files$file_url[i], cache = cache,
+                                  skip_on_api_limit = skip_on_api_limit),
+                        error = \(e) NULL)
         zpb$tick()
         if (is.null(peek) || nrow(peek) == 0) next
         rows <- all_files[rep(i, nrow(peek)), , drop = FALSE]
