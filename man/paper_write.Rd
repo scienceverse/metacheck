@@ -4,7 +4,7 @@
 \alias{paper_write}
 \title{Write paper}
 \usage{
-paper_write(paper, file_name = NULL, save_path = ".")
+paper_write(paper, file_name = NULL, save_path = ".", schema_version = NULL)
 }
 \arguments{
 \item{paper}{a paper object}
@@ -12,6 +12,13 @@ paper_write(paper, file_name = NULL, save_path = ".")
 \item{file_name}{the name of the file (if NULL, defaults to the paper_id)}
 
 \item{save_path}{the directory to save the JSON file in}
+
+\item{schema_version}{NULL (the default) saves the paper object as is;
+"12.0" saves a bibr export schema 12.0 file, for a paper read from a bibr
+12.0 export or converted with \code{grobid_to_bibr(schema_version = "12.0")}.
+The file keeps the paper's extraction block (a bibr export keeps bibr as
+its producer and the time bibr extracted it) and names metacheck as the
+converter.}
 }
 \value{
 the path to the JSON file

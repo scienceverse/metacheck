@@ -61,6 +61,11 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
                               simplifyVector = TRUE,
                               simplifyDataFrame = TRUE)
 
+  # bibr export schema 11 and later put schema_version at the root ----
+  if (!is.null(data$schema_version)) {
+    return(.read_bibr12(file_path, include_images))
+  }
+
   paper <- paper()
   paper$paper_id <- data$paper_id
 

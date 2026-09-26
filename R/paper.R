@@ -187,7 +187,7 @@ test_paper <- function(text = LETTERS, url = character(0)) {
 #' paper <- demopaper()
 #' paper_validate(paper)
 paper_validate <- function(paper) {
-  schema <- .paper_schema()
+  schema <- .paper_schema_bibr12()
   error_msg <- c()
   warning_msg <- c()
 
@@ -217,6 +217,7 @@ paper_validate <- function(paper) {
   sink <- lapply(tbls, \(tbl) {
     ref <- schema$properties[[tbl]]$`$ref` %||%
       schema$properties[[tbl]]$items$`$ref`
+    if (is.null(ref)) return(NULL) # not a table, e.g. extraction
     def <- strsplit(ref, "/")[[1]][[3]]
 
     cols <- names(paper[[tbl]])
@@ -296,7 +297,7 @@ paper_validate <- function(paper) {
     return(papers)
   }
 
-  schema <- .paper_schema()
+  schema <- .paper_schema_bibr12()
 
   type_func <- list(
     "string" = as.character,
@@ -322,6 +323,7 @@ paper_validate <- function(paper) {
   for (tbl in tbls) {
     ref <- schema$properties[[tbl]]$`$ref` %||%
       schema$properties[[tbl]]$items$`$ref`
+    if (is.null(ref)) next # not a table, e.g. extraction
     def <- strsplit(ref, "/")[[1]][[3]]
     prop <- schema$`$defs`[[def]]$properties
     cols <- intersect(names(paper[[tbl]]), names(prop))
@@ -605,6 +607,12 @@ ref_table <- function(paper) {
 #' @param paper a paper object
 #' @param file_name the name of the file (if NULL, defaults to the paper_id)
 #' @param save_path the directory to save the JSON file in
+#' @param schema_version NULL (the default) saves the paper object as is;
+#'   "12.0" saves a bibr export schema 12.0 file, for a paper read from a bibr
+#'   12.0 export or converted with `grobid_to_bibr(schema_version = "12.0")`.
+#'   The file keeps the paper's extraction block (a bibr export keeps bibr as
+#'   its producer and the time bibr extracted it) and names metacheck as the
+#'   converter.
 #'
 #' @returns the path to the JSON file
 #' @export
@@ -615,7 +623,12 @@ ref_table <- function(paper) {
 #' paper$info$title <- "New title"
 #' paper_write(paper, "new_paper")
 #' }
-paper_write <- function(paper, file_name = NULL, save_path = ".") {
+paper_write <- function(paper, file_name = NULL, save_path = ".",
+                        schema_version = NULL) {
+  if (!is.null(schema_version) && !identical(schema_version, "12.0")) {
+    stop("schema_version must be NULL or \"12.0\"", call. = FALSE)
+  }
+
   save_path <- normalizePath(save_path)
   dir.create(save_path, showWarnings = FALSE, recursive = TRUE)
 
@@ -624,7 +637,7 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
     pb <- pb(length(paper), ":what [:bar] :current/:total")
     pb$tick(0, list(what = "Saving..."))
     json_paths <- mapply(\(p, f, s) {
-      jp <- paper_write(p, f, s)
+      jp <- paper_write(p, f, s, schema_version)
       pb$tick(1, list(what = f))
       jp
     }, paper, file_name, save_path)
@@ -635,6 +648,16 @@ paper_write <- function(paper, file_name = NULL, save_path = ".") {
   if (is.null(file_name)) file_name <- paper$paper_id
   file_name <- gsub("\\.(json|zip)$", "", x = file_name)
   json_path <- file.path(save_path, paste0(file_name, ".json"))
+
+  if (!is.null(schema_version)) {
+    jsonlite::write_json(.paper_to_bibr12(paper), json_path,
+                         na = "null",
+                         null = "null",
+                         auto_unbox = TRUE,
+                         pretty = TRUE,
+                         digits = NA)
+    return(invisible(json_path))
+  }
 
   jsonlite::write_json(paper, json_path,
                        na = "null",

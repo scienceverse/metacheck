@@ -20,8 +20,13 @@ ref_consistency <- function(paper) {
   # detailed table of results ----
   bibs <- ref_table(paper) |>
     dplyr::select(paper_id, bib_id, reference = text)
-  xrefs <- paper_table(paper, "xref") |>
-    dplyr::filter(xref_type == "bibr") |>
+  xrefs <- paper_table(paper, "xref")
+  # bibr 12.x papers cite a reference with a "bib" xref whose target_id is
+  # the bib_id (their xref_id is the row's own key)
+  v12 <- xrefs$paper_id %in% .bibr12_paper_ids(paper)
+  if (any(v12)) xrefs$xref_id[v12] <- xrefs$target_id[v12]
+  xrefs <- xrefs[ifelse(v12, xrefs$xref_type %in% "bib",
+                        xrefs$xref_type %in% "bibr"), ] |>
     dplyr::select(paper_id, bib_id = xref_id, contents, text_id)
   text <- paper_table(paper, "text") |>
     dplyr::select(paper_id, text_id, text)

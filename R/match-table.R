@@ -278,7 +278,12 @@
   out <- lapply(seq_len(nrow(paper$table)), function(i) {
     content <- paper$table$contents[[i]]
     if (is.null(content)) return(list())
-    caption <- .table_caption(paper, paper$table$section_id[[i]])
+    caption <- if (.is_bibr12(paper)) {
+      # bibr 12.x: section_id is the section the table is printed in
+      paper$table$caption[[i]]
+    } else {
+      .table_caption(paper, paper$table$section_id[[i]])
+    }
     .table_tests_one(paper$table$table_id[[i]], content, caption)
   })
   unlist(out, recursive = FALSE)

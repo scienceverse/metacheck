@@ -1,0 +1,384 @@
+{
+  "paper_id": "probe",
+  "schema_version": "12.0",
+  "source": {
+    "file_name": "probe.html",
+    "sha256": "3c6c3f6d06fe8716a432e5aa9f597186ca94bb9761e7ba93d97908fce30068ec",
+    "input_format": "html"
+  },
+  "metadata": {
+    "title": "Probe Paper on Xrefs",
+    "abstract": null,
+    "keywords": [],
+    "doi": "10.1234/probe.abc",
+    "pmid": null,
+    "pmcid": null,
+    "arxiv": null,
+    "language": "en",
+    "paper_type": null,
+    "oecd_l1": null,
+    "oecd_l2": null,
+    "journal": null,
+    "volume": null,
+    "issue": null,
+    "first_page": null,
+    "last_page": null,
+    "issn": null,
+    "publisher": null,
+    "published": "2024-03-05",
+    "published_date": "2024-03-05",
+    "license": null,
+    "license_url": null,
+    "license_spdx": null,
+    "funding_statement": null,
+    "coi_statement": null,
+    "ethics_statement": null,
+    "data_availability": null
+  },
+  "author": [
+    {
+      "author_id": 1,
+      "given": "Jane",
+      "family": "Smith",
+      "suffix": null,
+      "literal": null,
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": [],
+      "credit_roles": []
+    },
+    {
+      "author_id": 2,
+      "given": "Bo",
+      "family": "Lee",
+      "suffix": null,
+      "literal": null,
+      "email": null,
+      "corresponding": false,
+      "orcid": null,
+      "role": [],
+      "credit_roles": []
+    }
+  ],
+  "affiliation": [],
+  "funding": [],
+  "text": [
+    {
+      "text": "As shown in Eq. 5 and discussed in Section 2, the effect was large, t(28) = 2.10, p <.05, d = 0.8.",
+      "text_id": 1,
+      "paragraph_id": 1,
+      "section_id": 2,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "See the Supplementary Material and Table S2 for details.",
+      "text_id": 2,
+      "paragraph_id": 1,
+      "section_id": 2,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "The mathematical italic 𝛼 = 0.05 criterion was used, as in Figure 1.",
+      "text_id": 3,
+      "paragraph_id": 1,
+      "section_id": 2,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "We collected data from 40 people. Results are in Table 1.",
+      "text_id": 4,
+      "paragraph_id": 2,
+      "section_id": 3,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Smith, J. (2020). A prior study. Journal of Things, 7, 10-20. https://doi.org/10.1234/PRIOR",
+      "text_id": 5,
+      "paragraph_id": 3,
+      "section_id": 4,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Figure 1. A plot of the effect.",
+      "text_id": 6,
+      "paragraph_id": 4,
+      "section_id": null,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Table 1. Values",
+      "text_id": 7,
+      "paragraph_id": 5,
+      "section_id": null,
+      "page_number": null,
+      "formatted": null
+    }
+  ],
+  "section": [
+    {
+      "section_id": 1,
+      "header": "Probe Paper on Xrefs",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "title"
+    },
+    {
+      "section_id": 2,
+      "header": "Introduction",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "intro"
+    },
+    {
+      "section_id": 3,
+      "header": "Methods",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "method"
+    },
+    {
+      "section_id": 4,
+      "header": "References",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "references"
+    }
+  ],
+  "url": [
+    {
+      "url_id": 1,
+      "href": "https://doi.org/10.1234/PRIOR",
+      "link_text": null,
+      "text_id": 5,
+      "start": 62,
+      "end": 91
+    }
+  ],
+  "bib": [],
+  "xref": [
+    {
+      "xref_id": 1,
+      "target_id": null,
+      "xref_type": "equation",
+      "contents": "Eq. 5",
+      "text_id": 1,
+      "start": 12,
+      "end": 17
+    },
+    {
+      "xref_id": 2,
+      "target_id": null,
+      "xref_type": "section",
+      "contents": "Section 2",
+      "text_id": 1,
+      "start": 35,
+      "end": 44
+    },
+    {
+      "xref_id": 3,
+      "target_id": null,
+      "xref_type": "supplementary",
+      "contents": "Table S2",
+      "text_id": 2,
+      "start": 35,
+      "end": 43
+    },
+    {
+      "xref_id": 4,
+      "target_id": null,
+      "xref_type": "supplementary",
+      "contents": "Supplementary Material",
+      "text_id": 2,
+      "start": 8,
+      "end": 30
+    },
+    {
+      "xref_id": 5,
+      "target_id": 1,
+      "xref_type": "figure",
+      "contents": "Figure 1",
+      "text_id": 3,
+      "start": 59,
+      "end": 67
+    },
+    {
+      "xref_id": 6,
+      "target_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 4,
+      "start": 49,
+      "end": 56
+    }
+  ],
+  "figure": [
+    {
+      "figure_id": 1,
+      "label": "1",
+      "section_id": 3,
+      "text_id": 6,
+      "image": null,
+      "caption": "Figure 1. A plot of the effect.",
+      "page_number": null
+    }
+  ],
+  "table": [
+    {
+      "table_id": 1,
+      "label": "1",
+      "section_id": 3,
+      "text_id": 7,
+      "html": "<table><caption>Table 1. Values</caption><tbody><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></tbody></table>",
+      "contents": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "1",
+          "2"
+        ]
+      ],
+      "caption": "Table 1. Values",
+      "page_number": null
+    }
+  ],
+  "footnote": [],
+  "eq": [],
+  "metadata_match": [],
+  "affiliation_match": [],
+  "funding_match": [],
+  "bib_match": [],
+  "extraction": {
+    "producer": {
+      "name": "bibr",
+      "version": "0.5.1",
+      "build_sha": null
+    },
+    "converter": null,
+    "completed_at": "2026-09-23T13:16:49Z",
+    "ocr": null,
+    "llm": null,
+    "settings": {
+      "ref_seg": "geom",
+      "ref_parse": "ner",
+      "crossref_enrich": false,
+      "consolidate": "off"
+    },
+    "timings": {
+      "stages": {
+        "html": 0.008,
+        "parse_segment": 0.034,
+        "extract": 0.289
+      },
+      "total_seconds": 0.331
+    },
+    "identity": {
+      "receipt": {
+        "selected": {
+          "raw": "10.1234/PROBE.ABC",
+          "normalized": "10.1234/probe.abc",
+          "source_kind": "structured_metadata",
+          "page": null,
+          "section_id": null,
+          "section_type": null,
+          "region_index": null,
+          "region_type": null,
+          "text_id": null,
+          "marker_kind": "structured_doi",
+          "repeated_header_footer_count": 0,
+          "semantic_context": "article_self",
+          "selection_tier": 3,
+          "rejection_reason": null
+        },
+        "candidates": [
+          {
+            "raw": "10.1234/PRIOR",
+            "normalized": "10.1234/prior",
+            "source_kind": "sentence",
+            "page": null,
+            "section_id": 4,
+            "section_type": "references",
+            "region_index": null,
+            "region_type": null,
+            "text_id": 5,
+            "marker_kind": "doi_url",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "reference",
+            "selection_tier": 0,
+            "rejection_reason": "reference_candidate"
+          },
+          {
+            "raw": "10.1234/PROBE.ABC",
+            "normalized": "10.1234/probe.abc",
+            "source_kind": "structured_metadata",
+            "page": null,
+            "section_id": null,
+            "section_type": null,
+            "region_index": null,
+            "region_type": null,
+            "text_id": null,
+            "marker_kind": "structured_doi",
+            "repeated_header_footer_count": 0,
+            "semantic_context": "article_self",
+            "selection_tier": 3,
+            "rejection_reason": null
+          }
+        ],
+        "issue_codes": []
+      }
+    },
+    "diagnostics": {
+      "text_quality": null,
+      "references_complete": true,
+      "ref_seg_fallback_used": false,
+      "section_classification": [
+        {
+          "section_id": 1,
+          "score": 1.0,
+          "source": "title"
+        },
+        {
+          "section_id": 2,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 3,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 4,
+          "score": 1.0,
+          "source": "exact_alias"
+        }
+      ],
+      "xref_tier": [
+        {
+          "xref_id": 5,
+          "tier": "label"
+        },
+        {
+          "xref_id": 6,
+          "tier": "label"
+        }
+      ]
+    },
+    "validation": {
+      "errors": 0,
+      "warnings": 0,
+      "blocking": 0,
+      "promotable": true,
+      "issues": []
+    },
+    "warnings": []
+  }
+}

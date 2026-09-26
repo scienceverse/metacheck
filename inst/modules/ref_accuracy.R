@@ -57,6 +57,8 @@
 #'   relevance score for a DOI found by title search to be offered as a
 #'   suggested DOI. Low-scoring matches are usually the wrong paper, so they are
 #'   not suggested. Raise to be more conservative, lower to suggest more.
+#'   Papers read from bibr 12.x exports score their matches 0-1, so for them
+#'   the score is compared with `suggest_score / 100`.
 #'
 #' @returns report list
 ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
@@ -396,8 +398,11 @@ ref_accuracy <- function(paper, max_authors = 6, title_similarity = 0.7,
   if (nrow(nodoi_rows) > 0) {
     # only offer a suggested DOI when the CrossRef title-search match scored
     # high enough to be trustworthy; a low score is usually the wrong paper.
+    # bibr 12.x papers score their matches 0-1
+    min_score <- ifelse(nodoi_rows$paper_id %in% .bibr12_paper_ids(paper),
+                        suggest_score / 100, suggest_score)
     suggested <- ifelse(
-      !is.na(nodoi_rows$score) & nodoi_rows$score >= suggest_score &
+      !is.na(nodoi_rows$score) & nodoi_rows$score >= min_score &
         !is.na(nodoi_rows$doi.match) & nzchar(nodoi_rows$doi.match),
       link(paste0("https://doi.org/", nodoi_rows$doi.match), nodoi_rows$doi.match),
       ""
