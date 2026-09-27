@@ -971,6 +971,8 @@ dataverse_file_download <- function(host, doi,
   n <- nrow(files)
   files$downloaded <- FALSE
   files$extracted <- NA_integer_
+  failed <- data.frame(key = character(0), member = character(0),
+                       error = character(0), stringsAsFactors = FALSE)
 
   # No bulk whole-dataset archive path here (unlike Zenodo's files-archive):
   # Dataverse's /api/access/dataset/:persistentId endpoint zips the WHOLE
@@ -998,6 +1000,20 @@ dataverse_file_download <- function(host, doi,
                plural(files$extracted[i]), " from ", files$key[[i]]) |>
           list(what = _) |>
           pb$tick(0, tokens = _)
+        # A member that failed to extract left a row with ok == FALSE; report
+        # what actually went wrong instead of only counting successes, so a
+        # transient failure worth retrying can be told apart from one that
+        # will not resolve on its own (#429).
+        bad <- got[!(got$ok %in% TRUE), , drop = FALSE]
+        if (nrow(bad) > 0) {
+          failed <- rbind(failed, data.frame(
+            key = files$key[[i]], member = bad$name, error = bad$error,
+            stringsAsFactors = FALSE))
+          for (j in seq_len(nrow(bad)))
+            paste0("  - failed to extract ", bad$name[j], ": ", bad$error[j]) |>
+              list(what = _) |>
+              pb$tick(0, tokens = _)
+        }
         next
       }
       paste0("- could not read ", files$key[[i]],
@@ -1064,6 +1080,7 @@ dataverse_file_download <- function(host, doi,
   files <- files[, c("folder", "dataverse_host", "dataverse_doi", "id", "key",
                      "path", "size", "size_on_disk", "checksum", "checksum_ok",
                      "self", "downloaded", "extracted")]
+  attr(files, "failed") <- failed
 
   invisible(files)
 }

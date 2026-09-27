@@ -211,14 +211,26 @@
 # member (once for the local header, once for the compressed data), so a
 # single-member fetch inside a loop over many members is exactly the
 # back-to-back-request pattern a host's burst limit is most likely to catch.
-.http_range_bytes <- function(url, from, to, skip_on_api_limit = FALSE) {
+#
+# `reason`, if given, is an environment the caller reads afterwards: on any
+# failure this writes a one-line explanation into `reason$msg` (a caught error's
+# message, or "HTTP <status>", or "short read"), so a caller can tell a
+# transient network/HTTP failure apart from a host that plain doesn't support
+# range requests, instead of both looking like an identical silent NULL (#429).
+.http_range_bytes <- function(url, from, to, skip_on_api_limit = FALSE, reason = NULL) {
   tryCatch({
-    if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) return(NULL)
+    if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) {
+      if (!is.null(reason)) reason$msg <- "invalid byte range"
+      return(NULL)
+    }
     # See .http_range_tail()'s own comment on this same call: check the
     # session's rate-limit record before sending, so a host already known
     # rate-limited (recorded by any earlier request this session, including
     # a different archive/member) waits out the remaining time up front.
-    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) return(NULL)
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) {
+      if (!is.null(reason)) reason$msg <- "host is rate-limited (waiting skipped by skip_on_api_limit)"
+      return(NULL)
+    }
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
       .auth_for_url() |>
@@ -228,11 +240,21 @@
                        after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
-    if (httr2::resp_status(r) != 206) return(NULL)
+    status <- httr2::resp_status(r)
+    if (status != 206) {
+      if (!is.null(reason)) reason$msg <- sprintf("HTTP %d (range not honoured)", status)
+      return(NULL)
+    }
     body <- httr2::resp_body_raw(r)
-    if (length(body) != (to - from + 1)) return(NULL)   # short/over-long read
+    if (length(body) != (to - from + 1)) {   # short/over-long read
+      if (!is.null(reason)) reason$msg <- "short read (range request returned the wrong length)"
+      return(NULL)
+    }
     body
-  }, error = function(e) NULL)
+  }, error = function(e) {
+    if (!is.null(reason)) reason$msg <- conditionMessage(e)
+    NULL
+  })
 }
 
 # Parse ZIP central-directory entries from a raw tail that ends at the true end
@@ -471,31 +493,59 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # position from the central directory.
 #
 # Returns raw bytes of the decompressed member, or NULL on any failure.
-.zip_member_fetch <- function(url, entry, verify = TRUE, skip_on_api_limit = FALSE) {
-  if (is.null(entry) || nrow(entry) != 1) return(NULL)
-  if (is.na(entry$offset) || is.na(entry$csize)) return(NULL)  # Zip64
+#
+# `reason`, if given, is an environment the caller reads afterwards: on any
+# failure this writes a one-line explanation into `reason$msg`, so a caller can
+# record WHY a member was never downloaded instead of a bare, indistinguishable
+# NULL (#429) -- e.g. a transient range-request failure (worth a retry) vs. a
+# corrupt local header or a CRC mismatch (retrying won't help).
+.zip_member_fetch <- function(url, entry, verify = TRUE, skip_on_api_limit = FALSE,
+                              reason = NULL) {
+  if (is.null(entry) || nrow(entry) != 1) {
+    if (!is.null(reason)) reason$msg <- "invalid archive entry"
+    return(NULL)
+  }
+  if (is.na(entry$offset) || is.na(entry$csize)) {  # Zip64
+    if (!is.null(reason)) reason$msg <- "Zip64 entry (size/offset not stored in 32 bits)"
+    return(NULL)
+  }
   if (entry$csize == 0) return(raw(0))                         # empty member
 
   # Local file header: 30 fixed bytes, then name and extra fields.
   lh <- .http_range_bytes(url, entry$offset, entry$offset + 29,
-                          skip_on_api_limit = skip_on_api_limit)
+                          skip_on_api_limit = skip_on_api_limit, reason = reason)
   if (is.null(lh)) return(NULL)
-  if (!identical(lh[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) return(NULL)
+  if (!identical(lh[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) {
+    if (!is.null(reason)) reason$msg <- "local file header signature mismatch"
+    return(NULL)
+  }
   data_start <- entry$offset + 30 + .le_int(lh, 27, 2) + .le_int(lh, 29, 2)
 
   comp <- .http_range_bytes(url, data_start, data_start + entry$csize - 1,
-                            skip_on_api_limit = skip_on_api_limit)
+                            skip_on_api_limit = skip_on_api_limit, reason = reason)
   if (is.null(comp)) return(NULL)
 
   out <- .zip_inflate_member(comp, entry$method, size = entry$size)
-  if (is.null(out)) return(NULL)
+  if (is.null(out)) {
+    if (!is.null(reason))
+      reason$msg <- if (entry$method != 8 && entry$method != 0)
+        sprintf("unsupported compression method (%d)", entry$method)
+      else "decompression failed"
+    return(NULL)
+  }
 
   # The uncompressed size and CRC32 come from the archive itself, so they check
   # the bytes against what the author stored rather than against our own guess.
   # A CRC that was not computed returns NA, which must not be read as failure:
   # only an actual mismatch (FALSE) rejects the bytes.
-  if (!is.na(entry$size) && length(out) != entry$size) return(NULL)
-  if (isTRUE(verify) && isFALSE(.zip_crc_ok(out, entry$crc))) return(NULL)
+  if (!is.na(entry$size) && length(out) != entry$size) {
+    if (!is.null(reason)) reason$msg <- "decompressed size did not match the archive's record"
+    return(NULL)
+  }
+  if (isTRUE(verify) && isFALSE(.zip_crc_ok(out, entry$crc))) {
+    if (!is.null(reason)) reason$msg <- "CRC32 mismatch (corrupt download)"
+    return(NULL)
+  }
   out
 }
 
@@ -554,8 +604,15 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # `names` are entry paths as zip_peek() reports them; when NULL every member is
 # fetched. Files are written under `dest` following their path inside the
 # archive. Returns a data.frame of what was fetched (name, path on disk, bytes,
-# ok), or NULL when the archive could not be listed at all -- which is the
-# signal for the caller to fall back to downloading the whole thing.
+# ok, error), or NULL when the archive could not be listed at all -- which is
+# the signal for the caller to fall back to downloading the whole thing.
+#
+# `error` is NA for a member fetched successfully (ok == TRUE) and otherwise a
+# one-line reason it wasn't -- a range request that failed or was refused, a
+# corrupt local header, a CRC mismatch, a path-traversal rejection, or a write
+# failure. Without this a row simply had ok == FALSE with nothing to say why,
+# so a transient failure worth retrying and a host that will never support
+# this looked identical after the fact (#429).
 .zip_fetch_members <- function(url, names = NULL, dest, verify = TRUE,
                                cache = FALSE, skip_on_api_limit = FALSE) {
   cd <- tryCatch(zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit),
@@ -567,26 +624,38 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 
   out_path <- rep(NA_character_, nrow(want))
   ok <- rep(FALSE, nrow(want))
+  error <- rep(NA_character_, nrow(want))
   for (i in seq_len(nrow(want))) {
+    reason <- new.env(parent = emptyenv())
     bytes <- .zip_member_fetch(url, want[i, , drop = FALSE], verify = verify,
-                               skip_on_api_limit = skip_on_api_limit)
-    if (is.null(bytes)) next
+                               skip_on_api_limit = skip_on_api_limit,
+                               reason = reason)
+    if (is.null(bytes)) {
+      error[i] <- reason$msg %||% "unknown failure"
+      next
+    }
     # Entry paths come from the archive, so they are constrained to sit under
     # dest: a member named "../secret" or "/etc/x" would otherwise write outside
     # the target directory when the archive is hostile or simply malformed.
     rel <- gsub("\\\\", "/", want$name[i])
     rel <- sub("^([A-Za-z]:)?/+", "", rel)
-    if (any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) next
+    if (any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) {
+      error[i] <- "entry path escapes the archive (path traversal)"
+      next
+    }
     target <- file.path(dest, rel)
     dir.create(dirname(target), showWarnings = FALSE, recursive = TRUE)
     written <- tryCatch({ writeBin(bytes, target); TRUE },
                         error = function(e) FALSE)
-    if (!written) next
+    if (!written) {
+      error[i] <- "could not write the extracted member to disk"
+      next
+    }
     out_path[i] <- target
     ok[i] <- TRUE
   }
   data.frame(name = want$name, path = out_path, size = want$size, ok = ok,
-             stringsAsFactors = FALSE)
+             error = error, stringsAsFactors = FALSE)
 }
 
 # ── Archive-format classification ────────────────────────────────────────────
