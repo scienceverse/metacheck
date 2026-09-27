@@ -129,15 +129,41 @@ test_that(".zip_member_fetch refuses a Zip64 entry instead of using the sentinel
   expect_null(metacheck:::.zip_member_fetch("http://example.invalid/x.zip", entry))
 })
 
-# Captured as plain top-level code before the two tests below replace
-# zip_peek(): local_mocked_bindings()'s own restore does not reliably take
-# effect in this setup (see the same note in test-repo-download.R), and the
-# tests at the end of this file need the real function. It is put back
-# explicitly in the namespace after them, which is where package code such as
-# zip_decision() looks it up. A bare zip_peek() call inside a later test is
-# still found in a different environment that keeps the stand-in, so those
-# tests call metacheck:::zip_peek() instead.
+test_that(".zip_member_fetch records why a fetch failed instead of a bare NULL (#429)", {
+  # Without a `reason` environment nothing changes -- still a bare NULL.
+  entry <- data.frame(name = "big.dat", size = NA_real_, method = 8,
+                      csize = NA_real_, offset = NA_real_, crc = 1)
+  reason <- new.env(parent = emptyenv())
+  expect_null(metacheck:::.zip_member_fetch("http://example.invalid/x.zip", entry,
+                                            reason = reason))
+  expect_match(reason$msg, "Zip64")
+})
+
+# Captured as plain top-level code before the tests below replace zip_peek():
+# local_mocked_bindings()'s own restore does not reliably take effect in this
+# setup (see the same note in test-repo-download.R), and the tests at the end
+# of this file need the real function. It is put back explicitly in the
+# namespace after them, which is where package code such as zip_decision()
+# looks it up. A bare zip_peek() call inside a later test is still found in a
+# different environment that keeps the stand-in, so those tests call
+# metacheck:::zip_peek() instead.
 .real_zip_peek <- get("zip_peek", envir = asNamespace("metacheck"), inherits = FALSE)
+
+test_that(".zip_fetch_members reports a per-member error instead of a silent ok=FALSE (#429)", {
+  # A listing succeeds (mocked), but the member itself can never be fetched
+  # (offset/csize NA, i.e. Zip64) -- this must show up as a specific message in
+  # the `error` column, not just ok == FALSE with nothing to say why.
+  local_mocked_bindings(
+    zip_peek = function(url, ...) {
+      data.frame(name = "big.dat", size = NA_real_, method = 8,
+                csize = NA_real_, offset = NA_real_, crc = 1)
+    }
+  )
+  d <- withr::local_tempdir()
+  got <- metacheck:::.zip_fetch_members("http://example.invalid/x.zip", dest = d)
+  expect_false(got$ok)
+  expect_match(got$error, "Zip64")
+})
 
 test_that("zip_decision keeps a data zip and links a pure-asset zip", {
   # Stub zip_peek so no network: two synthetic listings.
