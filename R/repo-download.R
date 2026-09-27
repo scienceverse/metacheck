@@ -1208,6 +1208,14 @@ download_repo_files <- function(files,
   # archive-member block, which runs first, can record into it too.
   oversize_skipped <- data.frame(repo_url = character(0), file_name = character(0),
                                  file_size = numeric(0), stringsAsFactors = FALSE)
+  # Same reason `oversize_skipped` was moved up (see above): `failed` was
+  # previously defined just before the has_url loop, so the archive-member
+  # block below had nowhere to record a fetch failure and simply discarded it
+  # (issue #429) -- moved up here so it can append to the SAME table the
+  # has_url path already reports through.
+  failed <- data.frame(repo_url = character(0), file_name = character(0),
+                       file_url = character(0), paper_id = character(0),
+                       error = character(0), stringsAsFactors = FALSE)
 
   # ── Archive members (repo_check's zip-peek expansion) ───────────────────────
   # A row from repo_check's zip-peek expansion (inst/modules/repo_check.R,
@@ -1305,14 +1313,46 @@ download_repo_files <- function(files,
                               ".contents")
         member_dest <- .safe_write_path(member_dest)
         dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
+        # Record what actually went wrong instead of discarding it: a bare
+        # `next` here left every member of `arc` at file_location = NA with no
+        # trace of why, so a transient failure worth retrying and a host that
+        # will never support range requests looked identical after the fact
+        # (issue #429).
         fetched <- tryCatch(
           .zip_fetch_members(arc, names = files$archive_member[idx], dest = member_dest,
                             cache = cache, skip_on_api_limit = skip_on_api_limit),
-          error = function(e) NULL)
-        if (is.null(fetched)) next
+          error = function(e) conditionMessage(e))
+        if (is.character(fetched)) {
+          failed <- rbind(failed, data.frame(
+            repo_url = files$repo_url[idx[1]], file_name = files$file_name[idx],
+            file_url = arc,
+            paper_id = if ("paper_id" %in% names(files)) files$paper_id[idx] else NA_character_,
+            error = fetched, stringsAsFactors = FALSE))
+          next
+        }
+        if (is.null(fetched)) {
+          # zip_peek() itself failed to list the archive at all (host refused
+          # ranges, or the listing could not be read) -- .zip_fetch_members()'s
+          # own contract for this case, distinct from an error thrown mid-fetch.
+          failed <- rbind(failed, data.frame(
+            repo_url = files$repo_url[idx[1]], file_name = files$file_name[idx],
+            file_url = arc,
+            paper_id = if ("paper_id" %in% names(files)) files$paper_id[idx] else NA_character_,
+            error = "could not list the archive (host may not support range requests)",
+            stringsAsFactors = FALSE))
+          next
+        }
         for (k in idx) {
-          row <- fetched[fetched$name == files$archive_member[k] & fetched$ok %in% TRUE, , drop = FALSE]
-          if (nrow(row) == 0 || is.na(row$path[[1]])) next
+          row <- fetched[fetched$name == files$archive_member[k], , drop = FALSE]
+          if (nrow(row) == 0) next
+          if (!isTRUE(row$ok[[1]]) || is.na(row$path[[1]])) {
+            failed <- rbind(failed, data.frame(
+              repo_url = files$repo_url[k], file_name = files$file_name[k],
+              file_url = arc,
+              paper_id = if ("paper_id" %in% names(files)) files$paper_id[k] else NA_character_,
+              error = row$error[[1]] %||% "unknown failure", stringsAsFactors = FALSE))
+            next
+          }
           files$file_location[k] <- row$path[[1]]
         }
       }
@@ -1490,9 +1530,6 @@ download_repo_files <- function(files,
   #     low estimate cannot turn into an unbounded download. An archive that
   #     crosses the limit is aborted and its files are downloaded
   #     individually.
-  failed <- data.frame(repo_url = character(0), file_name = character(0),
-                       file_url = character(0), paper_id = character(0),
-                       error = character(0), stringsAsFactors = FALSE)
   if (length(to_get) > 0) {
     remaining <- to_get
     archive_cap <- 2 * max_download_size * mb   # Inf when there is no budget
