@@ -217,6 +217,22 @@
 # message, or "HTTP <status>", or "short read"), so a caller can tell a
 # transient network/HTTP failure apart from a host that plain doesn't support
 # range requests, instead of both looking like an identical silent NULL (#429).
+#
+# Retries any non-206, non-200 status (not just .storage_is_transient()'s
+# fixed 403/429/5xx list), up to 3 tries with the same exponential backoff --
+# widened after #429: a single-member fetch that came back with some OTHER
+# status (a plain 401, a 400, anything not on that list) was accepted as
+# final after exactly one try, even though the identical request succeeded
+# moments later when reproduced by hand, and nothing distinguishes "this host
+# will never honour ranges" from "that one request happened to fail" for an
+# unlisted status. 200 is excluded on purpose: it means the host is ignoring
+# Range entirely and sending the whole body, a fixed property of the host/URL
+# that a retry cannot change, so retrying it would only waste three requests'
+# worth of time before giving the same answer. 206 (success) is also excluded,
+# since there is nothing to retry.
+.range_status_is_transient <- function(resp) {
+  !(httr2::resp_status(resp) %in% c(200L, 206L))
+}
 .http_range_bytes <- function(url, from, to, skip_on_api_limit = FALSE, reason = NULL) {
   tryCatch({
     if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) {
@@ -235,7 +251,7 @@
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
       .auth_for_url() |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient_factory(skip_on_api_limit),
+                       is_transient = .range_status_is_transient,
                        backoff = .storage_backoff,
                        after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_error(is_error = function(r) FALSE) |>
