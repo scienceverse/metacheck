@@ -174,6 +174,81 @@ test_that("failed downloads are reported and recorded, not swallowed", {
   expect_equal(fa$file_url, files$file_url[2])
 })
 
+# Build a files data.frame shaped like repo_check's zip-peek expansion: no
+# file_url (an archive-member row has none), but archive_url/archive_member
+# instead (see download_repo_files()'s own header comment on this block).
+make_archive_member_files <- function() {
+  repo <- paste0("https://example.org/repo-test-",
+                paste(sample(c(letters, 0:9), 12, TRUE), collapse = ""))
+  data.frame(
+    repo_url = repo,
+    file_name = "member.R",
+    file_path = "data/member.R",
+    file_url = NA_character_,
+    file_size = 100,
+    file_location = NA_character_,
+    archive_url = paste0(repo, "/archive.zip"),
+    archive_member = "member.R",
+    paper_id = "p.1",
+    stringsAsFactors = FALSE
+  )
+}
+
+test_that("a failed archive-member fetch is recorded in `failed`, not silently dropped (#429)", {
+  # Regression test: download_repo_files()'s archive-member block used to wrap
+  # .zip_fetch_members() in tryCatch(..., error = function(e) NULL) and move on
+  # with a bare `next` on any failure -- file_location stayed NA with nothing
+  # recorded anywhere, for either a thrown error or a per-member ok = FALSE.
+  files <- make_archive_member_files()
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) stop("simulated network failure")
+  )
+  dl <- download_repo_files(files)
+  expect_true(is.na(dl$file_location[1]))
+  fa <- attr(dl, "failed")
+  expect_equal(nrow(fa), 1)
+  expect_match(fa$error, "simulated network failure")
+  expect_equal(fa$file_name, "member.R")
+})
+
+test_that("a per-member ok=FALSE from .zip_fetch_members is recorded in `failed` (#429)", {
+  files <- make_archive_member_files()
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) {
+      data.frame(name = names, path = NA_character_, size = 100, ok = FALSE,
+                error = "CRC32 mismatch (corrupt download)", stringsAsFactors = FALSE)
+    }
+  )
+  dl <- download_repo_files(files)
+  expect_true(is.na(dl$file_location[1]))
+  fa <- attr(dl, "failed")
+  expect_equal(nrow(fa), 1)
+  expect_match(fa$error, "CRC32 mismatch")
+})
+
+test_that("a successful archive-member fetch still populates file_location (#429)", {
+  # Guards the happy path against the same change: a real ok = TRUE row must
+  # still set file_location, not get swept into `failed`.
+  files <- make_archive_member_files()
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+  extracted <- tempfile()
+  writeLines("ok", extracted)
+
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) {
+      data.frame(name = names, path = extracted, size = 100, ok = TRUE,
+                error = NA_character_, stringsAsFactors = FALSE)
+    }
+  )
+  dl <- download_repo_files(files)
+  expect_equal(dl$file_location[1], extracted)
+  expect_equal(nrow(attr(dl, "failed")), 0)
+})
+
 # Captured as plain top-level code (not inside test_that()) so it runs
 # unconditionally before the mock below, with no dependency on any
 # defer/frame-exit machinery -- see the comment on the restore line below.

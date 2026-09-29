@@ -338,6 +338,46 @@ test_that("zip_peek() rejects a whole-file answer when the size is unknown", {
   expect_null(metacheck:::zip_peek(url))
 })
 
+test_that(".range_status_is_transient retries any status except 200/206 (#429)", {
+  # Widened after #429: an intermittent 401 (Dryad's real, confirmed status
+  # for an unauthenticated OR momentarily-flaky request, see .auth_for_url()'s
+  # comment) was accepted as final after exactly one try before this, since it
+  # is not on .storage_is_transient()'s fixed 403/429/5xx list. 200 and 206
+  # are the two statuses that mean "the request completed, one way or
+  # another" -- nothing to retry.
+  resp <- function(status) httr2::response(status)
+  expect_true(metacheck:::.range_status_is_transient(resp(401L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(400L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(403L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(429L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(500L)))
+  expect_false(metacheck:::.range_status_is_transient(resp(200L)))
+  expect_false(metacheck:::.range_status_is_transient(resp(206L)))
+})
+
+test_that(".http_range_bytes's request is configured to retry on a 401 (#429)", {
+  # httr2::local_mocked_responses()/with_mocked_responses() do not exercise
+  # req_retry()'s actual retry loop at all -- req_perform()'s own source
+  # returns the mocked response immediately via handle_resp(), before the
+  # `while (tries < max_tries ...)` loop that consults is_transient/backoff
+  # is ever reached. This is a documented httr2 mocking limitation, not a
+  # metacheck bug -- confirmed independently elsewhere in this codebase (see
+  # test-repo-download.R's skipped "skip_on_api_limit = TRUE gives up on a
+  # confirmed rate limit fast" test and its comment). So this checks the
+  # request's policy directly instead of simulating multiple attempts.
+  req <- httr2::request("https://flaky.example/x.zip") |>
+    httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                     is_transient = metacheck:::.range_status_is_transient,
+                     backoff = metacheck:::.storage_backoff)
+  policy <- req$policies$retry_max_tries
+  expect_equal(policy, 3)
+  is_transient <- req$policies$retry_is_transient
+  expect_true(is_transient(httr2::response(401L)))
+  expect_true(is_transient(httr2::response(400L)))
+  expect_false(is_transient(httr2::response(200L)))
+  expect_false(is_transient(httr2::response(206L)))
+})
+
 test_that("zip_peek() handles a 416 answer to an over-long suffix range", {
   # GitHub answers 416 when the requested tail is longer than the file, but
   # still reports the size ("bytes */2246"); the file is then fetched whole by
