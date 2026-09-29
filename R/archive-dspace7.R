@@ -387,6 +387,16 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
     info <- do.call(dplyr::bind_rows, file_lists)
     orig <- data.frame(dspace7_url = dspace7_url)
     df <- dplyr::left_join(orig, info, by = "dspace7_url")
+
+    # doi/license carried as attributes rather than columns, mirroring
+    # psycharchives_file_download()'s identical pattern for legacy DSpace --
+    # see the comment there for why (keeps the file frame file-only while the
+    # caller, repo_check.R, can still surface them in repo_metadata).
+    license <- unlist(lapply(file_lists, \(x) attr(x, "license")))
+    attr(df, "license") <- license
+    doi <- unlist(lapply(file_lists, \(x) attr(x, "doi")))
+    attr(df, "doi") <- doi
+
     return(df)
   }
 
@@ -401,12 +411,25 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
   info <- .dspace7_info(host, uuid = parsed$uuid[[1]], handle = parsed$handle[[1]], pb = pb)
   if ("error" %in% names(info)) return(NULL)
 
+  # license/doi carried as attributes rather than columns -- reuses the
+  # metadata .dspace7_info() already fetched, same mechanism
+  # psycharchives_file_download() uses for legacy DSpace's rights/doi.
+  license <- stats::setNames(info$license %||% NA_character_, dspace7_url)
+  doi <- stats::setNames(info$doi %||% NA_character_, dspace7_url)
+
   file_list <- info$files[[1]]
   if (is.null(file_list) || nrow(file_list) == 0) {
     paste0("- ", dspace7_url, " contained no files") |>
       list(what = _) |>
       pb$tick(0, tokens = _)
-    return(NULL)
+    empty <- data.frame(
+      dspace7_url = character(0), name = character(0), file_url = character(0),
+      file_location = character(0), size = numeric(0), isdir = logical(0),
+      ext = character(0), type = character(0)
+    )
+    attr(empty, "license") <- license
+    attr(empty, "doi") <- doi
+    return(empty)
   }
 
   df <- data.frame(
@@ -422,6 +445,9 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
     sapply(\(x) if (length(x) < 2) "" else x[[length(x)]]) |>
     tolower()
   df <- dplyr::left_join(df, metacheck::file_types, by = "ext")
+
+  attr(df, "license") <- license
+  attr(df, "doi") <- doi
 
   df
 }
