@@ -248,6 +248,7 @@
     "akf.rodbuk.pl" = "10.58145",
     "arcadados.fiocruz.br" = "10.35078",
     "archaeology.datastations.nl" = "10.17026",
+    "phys-techsciences.datastations.nl" = "10.17026", # shared with the 3 other DANS Data Stations -- see .dataverse_host_from_doi()
     "archivdv.soc.cas.cz" = "10.14473",
     "borealisdata.ca" = c("10.14285", "10.23685", "10.34990", "10.5203", "10.5683", "10.7939"),
     "danebadawcze.uw.edu.pl" = "10.58132",
@@ -342,10 +343,16 @@
 }
 
 # host for a DOI whose prefix is in .dataverse_doi_prefix_hosts(), vectorised.
-# Returns NA where the prefix is unrecognised or ambiguous handling isn't
-# needed (ambiguous prefixes return their FIRST listed host -- ties are rare
-# and each one was individually confirmed live, so any listed host is a
-# genuinely correct installation, not a guess).
+# Returns NA where the prefix is unrecognised. A prefix shared by more than
+# one host (confirmed live 2026-09-29, issue #432: DANS operates FOUR
+# separate installations -- archaeology/lifesciences/phys-techsciences/ssh
+# .datastations.nl -- all under the single shared prefix 10.17026) cannot be
+# resolved from the prefix alone; picking "the first listed host" for those
+# was confirmed wrong for a real paper (10.17026/dans-2b8-gx7j genuinely
+# lives on lifesciences.datastations.nl, not archaeology.datastations.nl,
+# the first-listed host sharing that prefix). Resolved instead via
+# .dataverse_resolve_doi_host(), which follows the DOI's own live redirect
+# -- the same resolution any human reader of the citation would go through.
 .dataverse_host_from_doi <- function(doi) {
   doi <- as.character(doi)
   out <- rep(NA_character_, length(doi))
@@ -354,11 +361,50 @@
 
   prefix_hosts <- .dataverse_doi_prefix_hosts()
   px <- sub("^(10\\.\\d+).*", "\\1", doi)
+
+  # Build prefix -> hosts (plural) so a shared prefix is detected rather
+  # than silently collapsed to whichever host happens to be looped first.
+  prefix_to_hosts <- list()
   for (host in names(prefix_hosts)) {
-    hit <- has_doi & is.na(out) & px %in% prefix_hosts[[host]]
-    out[hit] <- host
+    for (prefix in prefix_hosts[[host]]) {
+      prefix_to_hosts[[prefix]] <- c(prefix_to_hosts[[prefix]], host)
+    }
+  }
+
+  for (i in which(has_doi)) {
+    candidates <- prefix_to_hosts[[px[i]]]
+    if (is.null(candidates)) next
+    if (length(candidates) == 1) {
+      out[i] <- candidates
+    } else {
+      out[i] <- .dataverse_resolve_doi_host(doi[i], candidates)
+    }
   }
   out
+}
+
+# Resolve which of several candidate hosts a DOI actually belongs to by
+# following the DOI's own live redirect (doi.org -> the installation's real
+# dataset URL) -- see .dataverse_host_from_doi()'s header comment. Falls
+# back to the first candidate if the redirect cannot be followed or does not
+# land on any of them, keeping the previous (sometimes-wrong, but never
+# worse) behaviour rather than turning a resolvable citation into an
+# unresolvable one.
+.dataverse_resolve_doi_host <- function(doi, candidates) {
+  resolved <- tryCatch({
+    resp <- httr2::request(paste0("https://doi.org/", doi)) |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform()
+    httr2::resp_url(resp)
+  }, error = \(e) NA_character_)
+
+  if (!is.na(resolved)) {
+    for (host in candidates) {
+      if (grepl(host, resolved, fixed = TRUE)) return(host)
+    }
+  }
+
+  candidates[[1]]
 }
 
 #' Find Dataverse Links in Papers

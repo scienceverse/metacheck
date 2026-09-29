@@ -82,9 +82,30 @@ dataone_links <- function(paper) {
   found_href <- paper_table(paper, "url") |>
     dplyr::filter(grepl(paste0(host_regex, "|", doi_regex), href, ignore.case = TRUE))
 
+  # KNB's own real landing pages use a "#view/doi:..." fragment, not a
+  # "/view/doi:..." path segment -- confirmed live 2026-09-29 (issue #435):
+  # "https://knb.ecoinformatics.org/#view/doi:10.5063/..." is a real citation
+  # shape this pattern's "/(?:view|catalog/view)/doi:" branch never actually
+  # matched (the "#" breaks it). A host without its own registered doi_prefix
+  # (metacat.tfri.gov.tw, smithsonian.dataone.org -- see .dataone_hosts())
+  # has no fallback via the doi_regex branch either, so this host-branch
+  # match is the only path to detecting a citation on those hosts at all.
+  #
+  # KNB also predates DataONE's DOI minting: many older datasets are cited
+  # only by their legacy Metacat docid ("knb.1404.1" -- scope.identifier.
+  # revision), with no DOI or URL at all in the citing text (confirmed live
+  # 2026-09-29, issue #435: a paper citing only "http://knb.ecoinformatics.org"
+  # and, separately, "identifier knb.1404.1"). Confirmed live that this
+  # docid, used AS the PID with no "doi:" wrapper, resolves directly against
+  # KNB's own API (knb/d1/mn/v2/object/knb.1404.1 -> HTTP 200, real EML).
+  # Matched narrowly on the literal "knb." prefix (not a generic
+  # word.digits.digit pattern) to avoid matching unrelated numbers in prose.
+  knb_docid_regex <- "\\bknb\\.[0-9]+\\.[0-9]+\\b"
+
   dataone_bare_regex <- paste0(
-    "(?:https?://)?(?:", host_regex, ")/(?:view|catalog/view)/doi:[^\\s\"'<>)]+",
-    "|(?:https?://)?(?:doi\\.org/)?(?:", doi_regex, ")/[A-Za-z0-9._/-]+"
+    "(?:https?://)?(?:", host_regex, ")/(?:#?view|catalog/view)/doi:[^\\s\"'<>)]+",
+    "|(?:https?://)?(?:doi\\.org/)?(?:", doi_regex, ")/[A-Za-z0-9._/-]+",
+    "|", knb_docid_regex
   )
   other_dataone <- text_search(paper, dataone_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
@@ -118,6 +139,10 @@ dataone_links <- function(paper) {
   dataone_url <- trimws(as.character(dataone_url))
   if (is.na(dataone_url) || !nzchar(dataone_url)) return(NA_character_)
 
+  if (grepl("^knb\\.[0-9]+\\.[0-9]+$", dataone_url, perl = TRUE)) {
+    return("knb.ecoinformatics.org")
+  }
+
   for (h in .dataone_hosts()) {
     if (grepl(h$host, dataone_url, fixed = TRUE)) return(h$host)
     if (!is.na(h$doi_prefix) &&
@@ -141,6 +166,10 @@ dataone_links <- function(paper) {
 
   dataone_url <- trimws(as.character(dataone_url))
   if (is.na(dataone_url) || !nzchar(dataone_url)) return(NA_character_)
+
+  if (grepl("^knb\\.[0-9]+\\.[0-9]+$", dataone_url, perl = TRUE)) {
+    return(dataone_url)
+  }
 
   # A member node landing page URL already carries the PID verbatim in its
   # own "doi:..." form (e.g. ".../view/doi:10.18739/A2GT5FG86") -- confirmed

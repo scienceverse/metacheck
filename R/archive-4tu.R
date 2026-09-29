@@ -126,6 +126,43 @@ researchdata4tu_links <- function(paper) {
   return(NA_character_)
 }
 
+# A uuid extracted by .researchdata4tu_id() (from either a "uuid:"-labelled
+# or bare-uuid DOI) is NOT the id data.4tu.nl's v2/articles/<id> endpoint
+# accepts -- confirmed live 2026-09-29 (issue #431): the DOI
+# "10.4121/uuid:04b25e70-ca3e-489f-9510-36385c1a4104" redirects to
+# "https://data.4tu.nl/articles/_/12675218/1", a different, numeric id for
+# the same record. The v2 API's own "either id or uuid" equivalence (see the
+# file-level note) held for the one article manually checked when this file
+# was written, but does not hold in general -- so a uuid is resolved to its
+# real numeric id here by following the DOI's live redirect, the same
+# resolution the API's own users would go through, rather than trusted as
+# API-equivalent to the id.
+#
+# @param uuid a single 4TU.ResearchData uuid (no "10.4121/" prefix)
+# @returns the numeric article id, or the original uuid if resolution fails
+#   (keeps the previous, sometimes-working behaviour as a fallback rather
+#   than turning a resolvable article into an unresolvable one)
+.researchdata4tu_resolve_uuid <- function(uuid) {
+  doi_url <- paste0("https://doi.org/10.4121/uuid:", uuid)
+  resolved <- tryCatch({
+    resp <- httr2::request(doi_url) |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform()
+    httr2::resp_url(resp)
+  }, error = \(e) NA_character_)
+
+  if (is.na(resolved)) return(uuid)
+
+  # data.4tu.nl article URLs carry the numeric id as their last path segment
+  # (e.g. ".../articles/_/12675218/1" or ".../articles/dataset/name/12675218")
+  # -- confirmed live against both papers in issue #431.
+  match <- regexec("data\\.4tu\\.nl/articles/.*?([0-9]+)(?:/[0-9]+)?/?$", resolved, perl = TRUE, ignore.case = TRUE)
+  groups <- regmatches(resolved, match)[[1]]
+  if (length(groups) >= 2) return(groups[[2]])
+
+  uuid
+}
+
 #' Retrieve info from 4TU.ResearchData by URL
 #'
 #' Thin wrapper around [figshare_info()] with `host = "data.4tu.nl"` -- see
@@ -183,6 +220,19 @@ researchdata4tu_info <- function(researchdata4tu_url, id_col = 1, pb = NULL,
     researchdata4tu_id  = .researchdata4tu_id(table$researchdata4tu_url)
   ) |> unique()
   ids <- ids[!is.na(ids$researchdata4tu_url), , drop = FALSE]
+
+  # A uuid (rather than a numeric id) is not what v2/articles/<id> accepts --
+  # see .researchdata4tu_resolve_uuid()'s header comment (issue #431).
+  # Resolved BEFORE dedup/lookup below so every downstream join and cache key
+  # sees the real numeric id, matching what .figshare_info() will actually
+  # query.
+  is_uuid <- grepl("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                   ids$researchdata4tu_id, ignore.case = TRUE)
+  if (any(is_uuid)) {
+    resolved <- vapply(ids$researchdata4tu_id[is_uuid], .researchdata4tu_resolve_uuid, character(1))
+    ids$researchdata4tu_id[is_uuid] <- resolved
+  }
+
   valid_ids <- unique(stats::na.omit(ids$researchdata4tu_id))
 
   if (length(valid_ids) == 0) {
