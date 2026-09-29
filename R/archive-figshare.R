@@ -215,7 +215,7 @@ figshare_links <- function(paper) {
     dplyr::filter(grepl(paste0(host_regex, "|", doi_prefix_regex), href, ignore.case = TRUE))
 
   fs_bare_regex <- paste0(
-    "(?:https?://)?(?:[a-z0-9.-]+\\.)?(?:", host_regex, ")/(?:articles|ndownloader|projects|s)/[A-Za-z0-9/_.-]*",
+    "(?:https?://)?(?:[a-z0-9.-]+\\.)?(?:", host_regex, ")/(?:articles|ndownloader|projects|collections|s)/[A-Za-z0-9/_.-]*",
     "|(?:https?://)?(?:doi\\.org/)?10\\.6084/m9\\.figshare\\.[0-9]+(?:\\.v[0-9]+)?",
     "|(?:https?://)?(?:doi\\.org/)?(?:", doi_prefix_regex, ")/[A-Za-z0-9._-]+(?:\\.v[0-9]+)?"
   )
@@ -426,6 +426,71 @@ figshare_links <- function(paper) {
   unique(all_ids)
 }
 
+# Get a Figshare COLLECTION id from a URL, e.g.
+# "figshare.com/collections/some_name/8742785" -> "8742785". Mirrors
+# .figshare_project_id() exactly -- a collection is a different bundling
+# resource from a project (grouping already-published articles from
+# possibly different authors/accounts, rather than one account's own
+# in-progress work), on its own API path, but the URL and id-extraction
+# shape is identical. Kept separate rather than folded into
+# .figshare_project_id() for the same reason that function gives for staying
+# separate from .figshare_id(): conflating resource types risks a silent
+# wrong-endpoint call rather than a clear NA. Confirmed live 2026-09-29
+# (issue #434): a real collection (figshare.com/collections/x/8742785)
+# answers HTTP 202 at that URL (the same SPA-shell response every other
+# recognised Figshare resource type gives) and its id resolves against
+# /v2/collections/{id}.
+.figshare_collection_id <- function(figshare_url) {
+  if (length(figshare_url) == 0) return(character(0))
+  if (length(figshare_url) > 1) return(vapply(figshare_url, .figshare_collection_id, character(1)))
+
+  figshare_url <- trimws(as.character(figshare_url))
+  if (is.na(figshare_url) || !nzchar(figshare_url)) return(NA_character_)
+
+  match <- regexec(paste0("(?:", .figshare_host_regex(), ")/collections/[^/]+/([0-9]+)/?$"),
+                   figshare_url, perl = TRUE, ignore.case = TRUE)
+  groups <- regmatches(figshare_url, match)[[1]]
+  if (length(groups) >= 2) return(groups[[2]])
+  NA_character_
+}
+
+# List the article ids a Figshare COLLECTION contains, via the public GET
+# /v2/collections/{id}/articles endpoint (confirmed live 2026-09-29, same
+# "Public endpoints" family as /v2/projects/{id}/articles -- no
+# authentication needed). Mirrors .figshare_project_articles() exactly,
+# including its pagination handling.
+.figshare_collection_articles <- function(collection_id, host = "api.figshare.com", pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
+  all_ids <- character(0)
+  page <- 1L
+  repeat {
+    api_url <- sprintf("https://%s/v2/collections/%s/articles?page=%d&page_size=100",
+                       host, collection_id, page)
+    resp <- .batch_query(api_url, msg = NULL,
+                         req_func = \(req) .figshare_headers(req, host = host))[[1]]
+    if (is.null(resp) || httr2::resp_status(resp) != 200) {
+      if (length(all_ids) == 0) {
+        warning("Figshare collection ", collection_id, " could not be found on ", host,
+                call. = FALSE)
+      }
+      break
+    }
+    rec <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
+    if (is.null(rec) || length(rec) == 0) break
+
+    ids <- vapply(rec, function(a) as.character(a$id %empty_or% NA_character_), character(1))
+    all_ids <- c(all_ids, ids[!is.na(ids)])
+
+    if (length(rec) < 100) break   # last page
+    page <- page + 1L
+  }
+  unique(all_ids)
+}
+
 #' Retrieve info from Figshare by URL
 #'
 #' @param figshare_url a Figshare URL or DOI, or a table containing them
@@ -517,6 +582,30 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
         expanded_urls <- unique(vapply(project_rows, function(r) r$figshare_url[[1]], character(1)))
         ids <- ids[!(ids$figshare_url %in% expanded_urls & is.na(ids$figshare_id)), , drop = FALSE]
         ids <- dplyr::bind_rows(ids, do.call(rbind, project_rows)) |> unique()
+      }
+    }
+  }
+
+  # A COLLECTION url (figshare.com/collections/<name>/<id>) is expanded the
+  # same way a project is, just above -- see .figshare_collection_id()'s
+  # header comment (issue #434) for why collections are a separate resource
+  # type from projects despite the identical expansion shape.
+  unresolved <- is.na(ids$figshare_id)
+  if (any(unresolved)) {
+    collection_urls <- ids$figshare_url[unresolved]
+    collection_ids <- .figshare_collection_id(collection_urls)
+    has_collection <- !is.na(collection_ids)
+    if (any(has_collection)) {
+      collection_rows <- Map(function(url, coll_id) {
+        article_ids <- .figshare_collection_articles(coll_id, host = host, pb = pb)
+        if (length(article_ids) == 0) return(NULL)
+        data.frame(figshare_url = url, figshare_id = article_ids, stringsAsFactors = FALSE)
+      }, collection_urls[has_collection], collection_ids[has_collection])
+      collection_rows <- collection_rows[!vapply(collection_rows, is.null, logical(1))]
+      if (length(collection_rows) > 0) {
+        expanded_urls <- unique(vapply(collection_rows, function(r) r$figshare_url[[1]], character(1)))
+        ids <- ids[!(ids$figshare_url %in% expanded_urls & is.na(ids$figshare_id)), , drop = FALSE]
+        ids <- dplyr::bind_rows(ids, do.call(rbind, collection_rows)) |> unique()
       }
     }
   }
