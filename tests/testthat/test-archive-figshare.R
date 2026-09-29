@@ -69,14 +69,25 @@ test_that(".figshare_id", {
     # An institutional prefix whose suffix inserts a short sub-prefix
     # before the numeric id (ZivaHub/UCT's "uct." -- confirmed live to
     # resolve to article id 14618526, not a literal id "uct.14618526").
-    "https://doi.org/10.25375/uct.14618526.v1"
+    "https://doi.org/10.25375/uct.14618526.v1",
+    # An institutional prefix whose suffix chains TWO sub-prefix segments
+    # before the numeric id, not just one (University of Auckland's
+    # "k6.auckland." -- confirmed live 2026-09-29 to resolve to article id
+    # 25808182). Used to return NA (issue #439): the sub-prefix was matched
+    # zero-or-one times, so a second segment left the id unmatched.
+    "https://doi.org/10.17608/k6.auckland.25808182.v2",
+    # Same two-segment shape for a different institution (University of
+    # Sheffield/ORDA's "shef.data." -- confirmed live 2026-09-29 to resolve
+    # to article id 13712533).
+    "https://doi.org/10.15131/shef.data.13712533"
   )
 
   ids <- .figshare_id(figshare_url)
   expect_equal(unname(ids), c(
     "18093368", "18093368", "18093368", "18093368", "18093368",
     "12345", NA, NA, NA, NA,
-    "6934484", "19095317", "14122688", "14618526"
+    "6934484", "19095317", "14122688", "14618526",
+    "25808182", "13712533"
   ))
 
   # NULL / empty

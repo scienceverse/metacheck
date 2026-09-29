@@ -317,7 +317,13 @@ figshare_links <- function(paper) {
   # the DOI prefix. Matched here as its own pattern rather than folded
   # into the bare-id pattern below, since that one requires an
   # already-known host in the URL itself, which a bare institutional DOI
-  # never carries.
+  # never carries. Some institutions chain more than one such sub-prefix
+  # segment before the id (10.17608/k6.auckland.25808182.v2 for Auckland,
+  # 10.15131/shef.data.13712533 for Sheffield/ORDA) rather than just one
+  # (uct. above) -- confirmed live 2026-09-29, both resolving to the
+  # article ids captured here. The sub-prefix segment is therefore matched
+  # zero or more times, not zero-or-one, so any number of them are skipped
+  # before the trailing numeric id.
   inst_prefix_regex <- paste(
     gsub("\\.", "\\\\.", names(.figshare_doi_prefix_hosts())), collapse = "|"
   )
@@ -335,7 +341,7 @@ figshare_links <- function(paper) {
     # anchoring purely on `$` silently returned NA for it -- found live
     # 2026-09-19 via a real corpus paper's citation ending in exactly this
     # shape.
-    paste0("(?:", inst_prefix_regex, ")/(?:[a-z]+\\.)?([0-9]+)(?:\\.v[0-9]+)?(?:[^0-9]|$)")
+    paste0("(?:", inst_prefix_regex, ")/(?:[a-z0-9]+\\.)*([0-9]+)(?:\\.v[0-9]+)?(?:[^0-9]|$)")
   )
 
   for (pattern in patterns) {
