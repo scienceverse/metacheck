@@ -700,18 +700,33 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   ## DSpace 7+ (archive-dspace7.R -- a differently-shaped REST API from the
   ## legacy one above, so it needs its own download function) ----
   # Same deferred pattern as the legacy-DSpace block: only file_url / file_size
-  # are filled here, download_repo_files() fetches bytes later. No doi/license
-  # extraction here (unlike the legacy-DSpace/Zenodo/Dataverse/... blocks'
-  # *_meta_df) -- archive-dspace7.R does not currently surface those as
-  # attributes the way psycharchives_file_download() does.
+  # are filled here, download_repo_files() fetches bytes later. doi/license are
+  # carried as attributes on dspace7_file_download()'s result, the same
+  # mechanism psycharchives_file_download() uses for legacy DSpace (see its
+  # own doi/rights comment) -- fixed 2026-09-29 (issue #435 follow-up).
   dspace7_urls <- repos |>
     dplyr::filter(repo_type == "dspace7") |>
     _$repo_url |>
     unique()
   dspace7_files_df <- data.frame(repo_name = character(0))
+  dspace7_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                                license = character(0))
   if (length(dspace7_urls) > 0) {
     tryCatch({
       dspace7_file_list <- dspace7_file_download(dspace7_urls, pb = pb)
+
+      # doi/license (dc.identifier.doi / dc.rights*) carried as attributes by
+      # dspace7_file_download() rather than columns, same as pa_doi/pa_rights
+      # above -- no extra API call.
+      dspace7_doi <- attr(dspace7_file_list, "doi")
+      dspace7_license <- attr(dspace7_file_list, "license")
+      if (length(dspace7_doi) > 0 || length(dspace7_license) > 0) {
+        dspace7_meta_df <- data.frame(
+          repo_url = dspace7_urls,
+          doi = unname(dspace7_doi[dspace7_urls]),
+          license = unname(dspace7_license[dspace7_urls])
+        )
+      }
 
       if (!is.null(dspace7_file_list) && nrow(dspace7_file_list) > 0) {
         dspace7_file_list <- dspace7_file_list |> dplyr::filter(!isdir)
@@ -1432,9 +1447,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # FOR USE" field is a fixed platform-wide reuse notice, not a per-dataset
   # licence).
   repo_metadata <- dplyr::bind_rows(
-    osf_meta_df, github_meta_df, gitlab_meta_df, pa_meta_df, zenodo_meta_df,
-    dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df, fourtu_meta_df,
-    mendeley_meta_df, dataone_meta_df
+    osf_meta_df, github_meta_df, gitlab_meta_df, pa_meta_df, dspace7_meta_df,
+    zenodo_meta_df, dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df,
+    fourtu_meta_df, mendeley_meta_df, dataone_meta_df
   )
 
   # remove duplicate links

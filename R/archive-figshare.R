@@ -426,7 +426,7 @@ figshare_links <- function(paper) {
   unique(all_ids)
 }
 
-# Get a Figshare COLLECTION id from a URL, e.g.
+# Get a Figshare COLLECTION id from a URL or DOI, e.g.
 # "figshare.com/collections/some_name/8742785" -> "8742785". Mirrors
 # .figshare_project_id() exactly -- a collection is a different bundling
 # resource from a project (grouping already-published articles from
@@ -440,6 +440,21 @@ figshare_links <- function(paper) {
 # answers HTTP 202 at that URL (the same SPA-shell response every other
 # recognised Figshare resource type gives) and its id resolves against
 # /v2/collections/{id}.
+#
+# A collection DOI (10.6084/m9.figshare.c.<id>, the literal ".c." segment
+# marking it as a collection rather than an article -- confirmed live
+# 2026-09-29 against 10.6084/m9.figshare.c.6190228, which redirects to
+# figshare.com/collections/.../6190228, the SAME numeric id) needs its own
+# pattern here: it carries no "/collections/" path segment at all, so the
+# URL pattern above never matches it, and .figshare_id()'s own DOI pattern
+# ("10\\.6084/m9\\.figshare\\.([0-9]+)") also never matches it, since
+# [0-9]+ cannot match the literal "c" -- confirmed by direct test, so a
+# collection DOI was never at risk of being silently misidentified as an
+# article id either, just invisible to both functions until now. Only the
+# literal 10.6084 prefix is checked here (not the institutional prefixes in
+# .figshare_doi_prefix_hosts()): no institutional-collection-DOI citation
+# has been found yet to confirm whether those platforms even mint them the
+# same way.
 .figshare_collection_id <- function(figshare_url) {
   if (length(figshare_url) == 0) return(character(0))
   if (length(figshare_url) > 1) return(vapply(figshare_url, .figshare_collection_id, character(1)))
@@ -451,6 +466,12 @@ figshare_links <- function(paper) {
                    figshare_url, perl = TRUE, ignore.case = TRUE)
   groups <- regmatches(figshare_url, match)[[1]]
   if (length(groups) >= 2) return(groups[[2]])
+
+  doi_match <- regexec("10\\.6084/m9\\.figshare\\.c\\.([0-9]+)",
+                       figshare_url, perl = TRUE, ignore.case = TRUE)
+  doi_groups <- regmatches(figshare_url, doi_match)[[1]]
+  if (length(doi_groups) >= 2) return(doi_groups[[2]])
+
   NA_character_
 }
 

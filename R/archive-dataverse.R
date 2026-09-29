@@ -242,6 +242,19 @@
 # (`disable-facets=false` on the `/dois` search), which returns every
 # distinct DOI prefix actually in use for a query, with its real count, in
 # one request -- not a sample.
+#
+# That facet-aggregation re-derivation still let one false entry through:
+# dataverse.no's list wrongly included 10.6084 (removed 2026-09-29, issue
+# #434). 10.6084 is Figshare's own globally-registered prefix (DataCite
+# confirms its only client is figshare.ars, with zero DOIs registered to any
+# dataverse.no client) -- the facet aggregation apparently picked it up from
+# a dataverse.no-hosted record that merely REFERENCED a 10.6084 Figshare DOI
+# (e.g. a related-identifier field), not one dataverse.no itself issued.
+# Caught when a real citation of a Figshare collection DOI
+# (10.6084/m9.figshare.c.6190228, confirmed live to redirect to
+# figshare.com/collections/...) was misrouted through dataverse_links() and
+# failed retrieval against dataverse.no, even though figshare_links() also
+# matched the same DOI correctly on its own.
 .dataverse_doi_prefix_hosts <- function() {
   list(
     "agh.rodbuk.pl" = "10.58032",
@@ -288,7 +301,7 @@
     "dataverse.lib.unb.ca" = "10.25545",
     "dataverse.lib.virginia.edu" = "10.18130",
     "dataverse.nl" = "10.34894",
-    "dataverse.no" = c("10.18710", "10.23642", "10.6084"),
+    "dataverse.no" = c("10.18710", "10.23642"),
     "dataverse.openforestdata.pl" = "10.48370",
     "dataverse.orc.gmu.edu" = "10.13021",
     "dataverse.rhi.hi.is" = "10.34881",
