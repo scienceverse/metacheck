@@ -274,11 +274,38 @@ test_that("data_classify_files classifies by name and extension", {
   expect_equal(.data_doc_role("ro-crate-metadata.json"), "readme")
 })
 
+test_that("data_classify_files recognizes domain data formats by extension alone (issue #441)", {
+  # ESRI Shapefile components, GeoPackage, phylogenetic trees, mass
+  # spectrometry, and 3D scan data previously had no Tier-1 (extension-only)
+  # rule, so a file with no folder-keyword hint (e.g. sitting at the root of
+  # an archive) fell through to "unknown" -- confirmed against real corpus
+  # examples ("shoreline.shp", "cb_2016_us_state_20m.shp") with no data-named
+  # parent folder to trigger the Tier 2 keyword fallback.
+  files <- c("shoreline.shp", "shoreline.dbf", "shoreline.shx", "shoreline.prj",
+             "shoreline.sbn", "shoreline.sbx", "shoreline.cpg", "map.gpkg",
+             "tree.nex", "tree.nwk", "tree.tre", "tree.phy",
+             "spectrum.mzxml", "spectrum.mztab", "scan.ply",
+             "results.tab", "results.table")
+  cl <- data_classify_files(files)
+  expect_true(all(cl == "data"))
+
+  # .stl stays "materials" (3D-printable model convention), deliberately NOT
+  # folded in with .ply (3D scan data) despite both being mesh formats.
+  expect_equal(data_classify_files("model.stl"), "materials")
+})
+
 test_that("data_format separates tabular from raw", {
   expect_equal(data_format("csv"), "tabular")
   expect_equal(data_format("sav"), "tabular")
   expect_equal(data_format("edf"), "raw")
   expect_equal(data_format("mp4"), "raw")
+  # .tab/.table are plain-text delimited data, read via the same
+  # data_read_head() branch as .csv/.txt/.tsv/.dat (issue #441).
+  expect_equal(data_format("tab"), "tabular")
+  expect_equal(data_format("table"), "tabular")
+  # Shapefile/GIS and phylogenetic-tree formats have no metacheck reader.
+  expect_equal(data_format("shp"), "raw")
+  expect_equal(data_format("nwk"), "raw")
 })
 
 test_that("data_is_manifest detects a file-listing masquerading as data", {
