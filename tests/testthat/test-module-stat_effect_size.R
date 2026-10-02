@@ -155,3 +155,31 @@ test_that("stat_effect_size reports the sample sizes behind a d coherence match"
                "Match under paired-samples dz assumption.")
 })
 
+test_that("stat_effect_size checks numeric coherence for Hedges' g, not just Cohen's d (#450)", {
+  module <- "stat_effect_size"
+
+  # Hedges' g is on the same scale as Cohen's d, so a reported g should be
+  # checked against the same implied-d values, not skipped as unparseable.
+  paper <- test_paper("A was bigger than B, t(124) = 1.23, p 0.013, Hedges' g = 0.34.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+  expect_true(mod_output$table$d_coherence_assumption[[1]] %in% c(
+    "paired_dz",
+    "independent_equal_n",
+    "independent_unequal_n_range"
+  ))
+
+  # a genuinely incoherent Hedges' g should still be flagged as no_match,
+  # the same way an incoherent Cohen's d already is
+  paper <- test_paper("A was bigger than B, t(20) = 1.00, p 0.32, Hedges' g = 3.00.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$table$d_coherence[[1]], "no_match")
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "none")
+
+  # bare "g =" (no "Hedges'" prefix) is also recognized
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, g = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "paired_dz")
+})
+
