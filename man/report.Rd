@@ -27,7 +27,9 @@ report(
 \item{args}{a list of arguments to pass to modules (see Details)}
 }
 \value{
-the file path the report is saved to
+the module output, invisibly, with the report's file path in its
+\code{save_path} attribute (a vector of paths, one per paper, when \code{paper} is
+a paperlist)
 }
 \description{
 Run specified modules on a paper and generate a report in quarto (qmd), html, or pdf format.

@@ -13,7 +13,9 @@
 #' @param output_format the format to create the report in
 #' @param args a list of arguments to pass to modules (see Details)
 #'
-#' @return the file path the report is saved to
+#' @return the module output, invisibly, with the report's file path in its
+#'   `save_path` attribute (a vector of paths, one per paper, when `paper` is
+#'   a paperlist)
 #' @export
 #'
 #' @examples
