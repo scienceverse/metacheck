@@ -203,5 +203,21 @@ test_that("stat_effect_size recognizes a GROBID subscript collapse like 'g av' (
   mod_output <- module_run(paper, module)
   expect_equal(mod_output$traffic_light, "green")
   expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+
+  # the same collapsed subscript with no "Hedges'"/"Cohen's" prefix word at
+  # all -- "g av" (space) and "g_av" (literal underscore) must both still be
+  # recognized as an effect size and have their numeric value parsed for
+  # coherence checking, not just classified as present
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, g av = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$es[[1]], "g av = 0.56")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, g_av = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$es[[1]], "g_av = 0.56")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
 })
 

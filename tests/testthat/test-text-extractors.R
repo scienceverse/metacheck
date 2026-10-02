@@ -172,9 +172,9 @@ test_that("extract_eq complex", {
   eq <- extract_eq(paper)
   expect_equal(eq$lhs, c("Cohen's d", "Hedges's g"))
 
-  # GROBID collapses a subscript to a plain space ("g_av" -> "g av"); the
-  # extra word is only absorbed into lhs when the Hedges'/Cohen's prefix
-  # matched, so an unrelated adjacent clause ("beta = ...") is not fused
+  # GROBID collapses a subscript to a plain space ("g_av" -> "g av"); when a
+  # Hedges'/Cohen's prefix precedes it, the extra word is absorbed into lhs
+  # only then, so an unrelated adjacent clause ("beta = ...") is not fused
   # into the preceding statistic's name (#448)
   paper <- test_paper(c(
     "t(130) = 18.04, p < 0.001, Hedges' g av = 1.76.",
@@ -186,6 +186,24 @@ test_that("extract_eq complex", {
     "t", "p", "Hedges' g av",
     "t", "p", "Cohen's d z",
     "beta", "t"
+  ))
+
+  # the same collapsed subscript with no "Hedges'"/"Cohen's" prefix word at
+  # all ("g av"/"g_av" on its own) is recognized too, scoped to exactly the
+  # known letter+subscript-word pairs so it does not fuse unrelated words
+  # ("sample size n = 40", "mean age years = 25") into a false statistic name
+  paper <- test_paper(c(
+    "t(34) = 3.4, p = .003, g av = 0.43.",
+    "t(34) = 3.4, p = .003, g_av = 0.43.",
+    "the sample size n = 40.",
+    "mean age years = 25."
+  ))
+  eq <- extract_eq(paper)
+  expect_equal(eq$lhs, c(
+    "t", "p", "g av",
+    "t", "p", "g_av",
+    "n",
+    "years"
   ))
 
   # all eq

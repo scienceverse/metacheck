@@ -55,8 +55,8 @@ stat_effect_size <- function(paper) {
 
     patt <- paste0(
       "(?i)\\b",
-      "(hedge(?:'|’)?s\\s+g\\s*(?:av|z|rm)?|cohen(?:'|’)?s\\s+d\\s*z|cohen(?:'|’)?s\\s+d|",
-      "d\\s*z|d|ds|g\\s*(?:av|z|rm)?|gs)",
+      "(hedge(?:'|’)?s\\s+g[\\s_]*(?:av|z|rm)?|cohen(?:'|’)?s\\s+d[\\s_]*z|cohen(?:'|’)?s\\s+d|",
+      "d[\\s_]*z|d|ds|g[\\s_]*(?:av|z|rm)?|gs)",
       "\\b\\s*[=≈<>≤≥]{1,3}\\s*",
       "([-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?)"
     )
