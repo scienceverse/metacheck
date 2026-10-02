@@ -28,11 +28,13 @@
 #' @keywords internal
 paper <- function(id = NULL, ...) {
   if (is.null(id)) {
-    # make a random hash from the time
+    # make a random hash from the time. digest::digest(serialize = FALSE) is
+    # used instead of tools::md5sum(bytes = _), which needs R >= 4.5.0, while
+    # DESCRIPTION allows R >= 4.3.0.
     id <- Sys.time() |>
       format("%s%OS6") |>
       charToRaw() |>
-      tools::md5sum(bytes = _) |>
+      digest::digest(algo = "md5", serialize = FALSE) |>
       substr(1, 14)
   }
 
