@@ -1208,7 +1208,7 @@ osf_file_download <- function(osf_id,
       osf_id, nrow(files), plural(nrow(files)),
       .cap_num(need_total), .cap_num(max_download_size), .cap_num(need_total)
     )
-    cap_report(msg)
+    .cap_report(msg)
     files <- files[0, , drop = FALSE]
   }
 

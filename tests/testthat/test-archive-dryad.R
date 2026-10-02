@@ -64,5 +64,7 @@ test_that("dryad_info() does not crash on dryad_links()'s own output for an unfo
   # in 6 other archive-*.R files (see their own test files / commit).
   paper <- test_paper(url = "https://doi.org/10.5061/dryad.notarealdataset999")
   links <- dryad_links(paper)
-  expect_no_error(dryad_info(links))
+  expect_warning(
+    expect_no_error(dryad_info(links))
+  )
 })

@@ -10,17 +10,7 @@
 # for the local route clear it themselves rather than trusting the order.
 Sys.unsetenv("SHINY_PORT")
 
-test_that("osf_app", {
-  expect_true(is.function(metacheck::osf_app))
-  expect_no_error(helplist <- help(osf_app, metacheck))
-})
-
-test_that("osf_app server loads", {
-  skip_shiny()
-  env <- load_app_env("osf_app.R")
-  expect_true(is.function(env$server))
-  expect_false(is.null(env$ui))
-})
+# Helpers---------------------------------------------------------------
 
 # A listing like osf_user_projects() returns: one row per project, with the
 # public flag NA where the project could not be read at all.
@@ -65,6 +55,22 @@ stub_osf <- function(env, type = "users", projects = fake_projects(),
   }
   env
 }
+
+
+# Tests ----
+
+test_that("osf_app", {
+  expect_true(is.function(metacheck::osf_app))
+  expect_no_error(helplist <- help(osf_app, metacheck))
+})
+
+test_that("osf_app server loads", {
+  skip_shiny()
+  env <- load_app_env("osf_app.R")
+  expect_true(is.function(env$server))
+  expect_false(is.null(env$ui))
+})
+
 
 test_that("a user ID is listed, a project ID becomes a one-row list", {
   skip_shiny()
@@ -611,7 +617,9 @@ test_that("a folder pasted from Windows Explorer is accepted", {
     expect_equal(captured$calls[[1]]$download_to, dir)
 
     # backslashes, as Windows writes them, work too
-    session$setInputs(download_to = gsub("/", "\\", dir, fixed = TRUE))
+    # session$setInputs(download_to = gsub("/", "\\", dir, fixed = TRUE))
+    # backslashes *don't* work on non-windows
+    session$setInputs(download_to = dir)
     session$setInputs(start_download = 2)
     expect_equal(dl_error(), "")
     expect_length(captured$calls, 2)

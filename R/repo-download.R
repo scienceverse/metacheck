@@ -1285,7 +1285,7 @@ download_repo_files <- function(files,
                    "omitted. Raise `max_download_size` to include more."),
             files$repo_url[idx[1]], .cap_num(max_download_size),
             sum(!keep), plural(sum(!keep)))
-          cap_report(msg)
+          .cap_report(msg)
           gated <- rbind(gated, data.frame(repo_url = files$repo_url[idx[1]],
                                            message = msg, stringsAsFactors = FALSE))
         }
@@ -1407,7 +1407,7 @@ download_repo_files <- function(files,
                "skipped entirely (not size-capped, file-count-capped). ",
                "Raise `max_files_per_repo` to include it."),
         repo, true_n, max_files_per_repo)
-      cap_report(msg)
+      .cap_report(msg)
       gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
                                        stringsAsFactors = FALSE))
       next
@@ -1483,7 +1483,7 @@ download_repo_files <- function(files,
                "Raise `max_download_size` to include more."),
         repo, .cap_num(repo_total_cap),
         length(omitted), plural(length(omitted)))
-      cap_report(msg)
+      .cap_report(msg)
       gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
                                        stringsAsFactors = FALSE))
     }

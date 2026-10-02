@@ -64,7 +64,8 @@ Suggests:
     DBI,
     RSQLite,
     zip,
-    digest
+    digest,
+    BiocManager
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 Imports: 
