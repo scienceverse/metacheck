@@ -22,26 +22,6 @@
 .cbc <- new.env()
 sys.source(metacheck:::module_find("codebook_check"), envir = .cbc)
 
-# ── Fixtures ──────────────────────────────────────────────────────────────────
-
-# A fresh temp directory, removed when the calling test finishes.
-cbc_dir <- function(name) {
-  d <- file.path(tempdir(), paste0("cbc_", name, "_",
-                                   as.integer(runif(1, 1, 1e6))))
-  unlink(d, recursive = TRUE)
-  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
-  withr::defer(unlink(d, recursive = TRUE), envir = parent.frame())
-  d
-}
-
-# Run data_check then codebook_check over a local fixture directory.
-cbc_run <- function(d, paper = test_paper("x"), ...) {
-  report_module_run(
-    paper, c("data_check", "codebook_check"),
-    args = list(data_check = list(local_path = d, local_only = TRUE),
-                codebook_check = list(...)))[["codebook_check"]]
-}
-
 # ── Coverage vs. label quality ────────────────────────────────────────────────
 # The module keeps two questions apart: did a column match a codebook entry at
 # all (coverage), and did it also get one usable label (quality)? A column with

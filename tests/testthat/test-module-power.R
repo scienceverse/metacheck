@@ -1,3 +1,25 @@
+# Helpers ----
+
+# Mocked ellmer::chat() constructor for the STRUCTURED path: chat_structured()
+# is looked up against a table of known input texts (matching on a fixed
+# substring so paragraph_id splits of the same source text still match) and
+# returns the power_analyses array a real provider would for that text. Used
+# by every "power, with LLM (structured)" scenario below in place of the old
+# HTTP-recorded fixtures, since those fixtures only ever captured the
+# UNSTRUCTURED (prompt-fenced) request/response shape -- the structured
+# request body (response_format/json_schema) never matches them.
+.mock_structured_chat <- function(lookup) {
+  function(...) structure(list(
+    chat_structured = function(text, type) {
+      hit <- Filter(function(pat) grepl(pat, text, fixed = TRUE), names(lookup))
+      if (length(hit) == 0) return(list(power_analyses = list()))
+      lookup[[hit[[1]]]]
+    }
+  ), class = "Chat")
+}
+
+# Tests ----
+
 test_that("power, no LLM", {
   module <- "power"
   mods <- module_list()
@@ -58,25 +80,6 @@ test_that("power, no LLM", {
   expect_equal(nrow(mo$table), 1)
   expect_equal(mo$summary_table$power_n, 1)
 })
-
-
-# Mocked ellmer::chat() constructor for the STRUCTURED path: chat_structured()
-# is looked up against a table of known input texts (matching on a fixed
-# substring so paragraph_id splits of the same source text still match) and
-# returns the power_analyses array a real provider would for that text. Used
-# by every "power, with LLM (structured)" scenario below in place of the old
-# HTTP-recorded fixtures, since those fixtures only ever captured the
-# UNSTRUCTURED (prompt-fenced) request/response shape -- the structured
-# request body (response_format/json_schema) never matches them.
-.mock_structured_chat <- function(lookup) {
-  function(...) structure(list(
-    chat_structured = function(text, type) {
-      hit <- Filter(function(pat) grepl(pat, text, fixed = TRUE), names(lookup))
-      if (length(hit) == 0) return(list(power_analyses = list()))
-      lookup[[hit[[1]]]]
-    }
-  ), class = "Chat")
-}
 
 test_that("power, with LLM (structured)", {
   module <- "power"

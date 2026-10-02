@@ -13,7 +13,7 @@
 #' @export
 #'
 #' @examples
-#' retractionwatch()
+#' retractionwatch() |> head()
 retractionwatch <- function() {
   int <- system.file("databases/retractionwatch.Rds", package = "metacheck")
   int_rw <- readRDS(int)

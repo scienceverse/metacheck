@@ -669,7 +669,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       all_files$file_location[need_dl] <- dl$file_location
       # Files in a gated repo keep file_location = NA, so they fall out of the
       # has_local extraction filter naturally. The refusal was already reported
-      # inline (and warned) by cap_report inside download_repo_files.
+      # inline (and warned) by .cap_report inside download_repo_files.
       gated_repos <- attr(dl, "gated")
       # Kept for the manifest: which files the per-file cap skipped
       # (intentional) and which downloads failed after retries (unintentional —

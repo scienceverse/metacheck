@@ -212,7 +212,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
                                action = "parse")
         # Over the budget → report and skip this file's LLM parse.
         if (!is.null(gate)) {
-          cap_report(gate)
+          .cap_report(gate)
           gate_msgs <- c(gate_msgs, gate)
         } else {
           llm_out <- codebook_parse_llm(pv, basename(p), model, params,

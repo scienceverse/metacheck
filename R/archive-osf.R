@@ -1198,7 +1198,7 @@ osf_file_download <- function(osf_id,
       osf_id, nrow(files), plural(nrow(files)),
       .cap_num(need_total), .cap_num(max_download_size), .cap_num(need_total)
     )
-    cap_report(msg)
+    .cap_report(msg)
     files <- files[0, , drop = FALSE]
   }
 
@@ -1397,7 +1397,7 @@ osf_file_download <- function(osf_id,
       if (is.finite(max_download_size) && !is.na(zip_size) &&
           zip_size > max_download_size * mb) {
         need_total <- ceiling(zip_size / mb)
-        cap_report(sprintf(
+        .cap_report(sprintf(
           paste0("Node %s was not downloaded: its zip archive totals %s MB, ",
                  "over the %s MB per-repository limit. ",
                  "Set `max_download_size >= %s` to download it."),

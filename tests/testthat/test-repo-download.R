@@ -12,6 +12,7 @@ options(
   metacheck.repo_cache.dir = file.path(tempdir(), "mc-test-persist-cache"),
   metacheck.repo_cache.session_dir = file.path(tempdir(), "mc-test-session-cache"))
 
+# Helpers -----------------
 # Build a files data.frame (repo_check shape) pointing at local source files.
 # Each call uses a fresh unique repo URL so tests never collide in either cache
 # (cache = FALSE writes to the session dir, which persists across tests in a run).
@@ -33,6 +34,8 @@ make_dl_files <- function(sizes = c(100, 100)) {
     stringsAsFactors = FALSE
   )
 }
+
+# Tests -----
 
 test_that("download_repo_files downloads and populates file_location", {
   # isolate the cache so the test is hermetic
@@ -106,11 +109,11 @@ test_that("max_files_per_repo gates a repository by file COUNT, not size", {
   files <- make_dl_files(sizes = c(100, 100, 100, 100, 100))  # 5 tiny files
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
 
-  expect_message(
+  expect_message(expect_warning(
     dl <- download_repo_files(files, max_file_size = 100, max_download_size = 500,
                               max_files_per_repo = 3),
     "exceeding the 3-file cap"
-  )
+  ))
   expect_equal(sum(!is.na(dl$file_location)), 0)  # nothing downloaded
   expect_equal(nrow(attr(dl, "gated")), 1)
   expect_match(attr(dl, "gated")$message, "exceeding the 3-file cap")

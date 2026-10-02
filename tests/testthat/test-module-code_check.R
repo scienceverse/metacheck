@@ -371,6 +371,7 @@ test_that("code_check records failed code-file downloads in the manifest, with f
   )
   mdir <- withr::local_tempdir()
 
+  expect_warning(
   mo <- with_mocked_bindings(
     module_run(fake_repo_check, "code_check", manifest = mdir),
     download_repo_files = function(files, ...) {
@@ -383,6 +384,7 @@ test_that("code_check records failed code-file downloads in the manifest, with f
       files
     },
     .package = "metacheck"
+  )
   )
 
   mf <- list.files(mdir, pattern = "\\.manifest\\.json$", full.names = TRUE)
@@ -745,6 +747,8 @@ test_that("code files found but every download fails does not crash (invalid sub
 test_that("code_check local_path: green light and parse errors", {
   tmp <- withr::local_tempdir()
   writeLines(c("# comment", "x <- 1"), file.path(tmp, "good.R"))
+  # needs something to pass .code_version_pin_check
+  writeLines(c('{"R": {"Version": "4.3.2"}}'), file.path(tmp, "renv.lock"))
   mo <- module_run(test_paper(), "code_check", local_path = tmp)
   expect_equal(mo$traffic_light, "green")
 
@@ -752,5 +756,6 @@ test_that("code_check local_path: green light and parse errors", {
   writeLines("x <- (1", file.path(tmp, "bad.R"))
   mo <- module_run(test_paper(), "code_check", local_path = tmp)
   expect_equal(mo$traffic_light, "yellow")
+  expect_equal(mo$table$parse_error, c(T, F))
   expect_true(any(grepl("bad.R", mo$report, fixed = TRUE)))
 })

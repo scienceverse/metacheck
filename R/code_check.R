@@ -1749,29 +1749,32 @@ code_packages <- function(packages) {
 #' not evidence it was used to pin anything, so a bare `library()` call does
 #' not count.
 #'
-#' @param all_files the full repo file listing (`repo_check`'s table: needs
-#'   `file_name`, `file_url`, `repo_url`, `file_location` where available)
+#' @param all_files the full repo file listing
+#'   (`repo_check`'s table: needs `file_name`, `file_url`, `repo_url`,
+#'   `file_location` where available)
 #' @param code_text_list a named list of already-read R file text (names are
 #'   file_names) — reused for the groundhog/checkpoint scan so no file is
 #'   downloaded or read twice
-#' @param max_file_size passed to [download_repo_files()] for any candidate
-#'   file not yet local
+#' @param max_file_size passed to [download_repo_files()]
+#'   for any candidate file not yet local
 #' @param max_download_size passed to [download_repo_files()]
 #' @param cache passed to [download_repo_files()]
 #' @param skip_on_api_limit passed to [download_repo_files()]
 #'
-#' @returns a list: `pinned` (logical, TRUE if any mechanism was found),
-#'   `mechanisms` (character vector, any of `renv.lock`, `sessionInfo`,
-#'   `groundhog`, `checkpoint`), `r_versions` (character vector of R version
-#'   strings found, one per source), `renv_files` (character vector of
-#'   `renv.lock` file_names found), `renv_packages` (data frame `file_name`,
-#'   `package`, `version`, `source` — one row per locked package, across all
-#'   `renv.lock` files found), `sessioninfo_files` (character vector of
-#'   matched file_names), `file_location` (named character vector, file_name
-#'   -> resolved local path, for every candidate file this call downloaded —
-#'   a caller re-checking a SUBSET of `all_files` per paper can splice these
-#'   back into its own copy of `all_files` first, so the same file is never
-#'   downloaded twice across repeat calls)
+#' @returns a list:
+#'   `pinned` (logical, TRUE if any mechanism was found),
+#'   `mechanisms` (character vector, any of
+#'      `renv.lock`, `sessionInfo`, `groundhog`, `checkpoint`),
+#'   `r_versions` (character vector of R version strings found, one per source),
+#'   `renv_files` (character vector of `renv.lock` file_names found),
+#'   `renv_packages` (data frame `file_name`, `package`, `version`, `source`
+#'      — one row per locked package, across all `renv.lock` files found),
+#'   `sessioninfo_files` (character vector of matched file_names),
+#'   `file_location` (named character vector, file_name -> resolved local
+#'      path, for every candidate file this call downloaded — a caller
+#'      re-checking a SUBSET of `all_files` per paper can splice these back
+#'      into its own copy of `all_files` first, so the same file is never
+#'      downloaded twice across repeat calls)
 #' @keywords internal
 .code_version_pin_check <- function(all_files, code_text_list = list(),
                                     max_file_size = 100, max_download_size = 500,
@@ -1803,9 +1806,10 @@ code_packages <- function(packages) {
       dl <- tryCatch(
         download_repo_files(renv_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
-                            max_download_size = max_download_size, cache = cache,
+                            max_download_size = max_download_size,
                             max_files_per_repo = max_files_per_repo,
                             repo_file_counts = repo_file_counts,
+                            cache = cache,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) renv_rows$file_location[need_dl] <- dl$file_location
@@ -1853,9 +1857,10 @@ code_packages <- function(packages) {
       dl <- tryCatch(
         download_repo_files(si_rows[need_dl, , drop = FALSE],
                             max_file_size = max_file_size,
-                            max_download_size = max_download_size, cache = cache,
+                            max_download_size = max_download_size,
                             max_files_per_repo = max_files_per_repo,
                             repo_file_counts = repo_file_counts,
+                            cache = cache,
                             skip_on_api_limit = skip_on_api_limit),
         error = function(e) NULL)
       if (!is.null(dl)) si_rows$file_location[need_dl] <- dl$file_location
