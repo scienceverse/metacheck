@@ -116,8 +116,12 @@ covers one node's \code{osfstorage} at a time, so a project whose files sit in
 components, or on a linked add-on such as GitHub or Dropbox, is not one
 archive: one archive is requested per node that holds \code{osfstorage} files, and
 anything no archive can hold is downloaded individually, so the whole project
-is still retrieved. In this mode, \code{max_download_size} applies to each archive
-when the server reports a \code{Content-Length}, but \code{max_file_size} cannot filter
+is still retrieved. In this mode, \code{max_download_size} is a budget for the
+whole project. The OSF does not report an archive's size in advance, so a
+node's archive is taken only when its listed files fit in what is left of the
+budget, and its download is stopped if it grows past that. The files of a
+node whose archive does not fit, or was stopped, are downloaded individually,
+smallest first, as many as fit in the budget. \code{max_file_size} cannot filter
 files inside an archive before download. Archives can either be kept as zips
 or unzipped after download.
 }

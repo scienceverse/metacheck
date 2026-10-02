@@ -582,6 +582,8 @@ zenodo_file_download <- function(zenodo_id,
   # --- file-by-file fallback (used when the bulk archive was skipped, or
   # extraction did not account for every wanted file) ----
   files$extracted <- NA_integer_
+  failed <- data.frame(key = character(0), member = character(0),
+                       error = character(0), stringsAsFactors = FALSE)
   if (!used_bulk) {
     for (i in seq_len(n)) {
       if (isTRUE(files$downloaded[i])) next   # already extracted from the archive
@@ -609,6 +611,20 @@ zenodo_file_download <- function(zenodo_id,
                  plural(files$extracted[i]), " from ", files$key[[i]]) |>
             list(what = _) |>
             pb$tick(0, tokens = _)
+          # A member that failed to extract left a row with ok == FALSE; report
+          # what actually went wrong instead of only counting successes, so a
+          # transient failure worth retrying can be told apart from one that
+          # will not resolve on its own (#429).
+          bad <- got[!(got$ok %in% TRUE), , drop = FALSE]
+          if (nrow(bad) > 0) {
+            failed <- rbind(failed, data.frame(
+              key = files$key[[i]], member = bad$name, error = bad$error,
+              stringsAsFactors = FALSE))
+            for (j in seq_len(nrow(bad)))
+              paste0("  - failed to extract ", bad$name[j], ": ", bad$error[j]) |>
+                list(what = _) |>
+                pb$tick(0, tokens = _)
+          }
           next
         }
         # Listing failed (host refused ranges, or the directory was unreadable):
@@ -679,6 +695,7 @@ zenodo_file_download <- function(zenodo_id,
   files <- files[, c("folder", "zenodo_id", "id", "key", "path", "size",
                      "size_on_disk", "checksum", "checksum_ok", "self",
                      "downloaded", "extracted")]
+  attr(files, "failed") <- failed
 
   invisible(files)
 }

@@ -187,9 +187,73 @@ dspace7_links <- function(paper) {
   other_ds7 <- text_search(paper, ds7_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
-  dplyr::bind_rows(found_href, other_ds7) |>
+  # No 64-installation DOI-prefix registry exists for DSpace 7 the way
+  # .dataverse_doi_prefix_hosts()/.dryad_doi_prefixes() have for their own
+  # platforms (building one would mean individually verifying a prefix for
+  # every host in .dspace7_hosts()) -- so a paper citing ONLY a DOI, with the
+  # host domain never appearing anywhere in its text, was previously
+  # invisible to dspace7_links() entirely. Confirmed live 2026-09-29 (issue
+  # #435): 10.13020/q3y6-h459 resolves to conservancy.umn.edu, a known host,
+  # but neither that host string nor a recognisable path shape ever appears
+  # in the citing text.
+  #
+  # Resolved instead by live-resolving each distinct DOI-shaped string found
+  # in the paper and keeping only the ones that redirect to a known DSpace 7
+  # host -- bounded to the DOIs actually present in this one paper, not an
+  # unbounded scan. The bare "10.xxx/yyy" is captured directly (the same
+  # regexec()-capture-group idiom every sibling archive-*.R DOI extractor
+  # uses -- .dryad_doi(), .figshare_id(), .dataone_pid() -- rather than
+  # matching a whole doi.org URL and normalising it afterwards).
+  doi_bare_regex <- "(?:https?://)?(?:dx\\.)?(?:doi\\.org/)?(10\\.\\d{3,9}/[-._;()/:<>A-Za-z0-9]+[A-Za-z0-9])"
+  doi_mentions <- text_search(paper, doi_bare_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
+  .extract_doi <- function(x) {
+    match <- regexec(doi_bare_regex, x, perl = TRUE, ignore.case = TRUE)
+    groups <- regmatches(x, match)[[1]]
+    if (length(groups) >= 2) groups[[2]] else NA_character_
+  }
+
+  other_ds7_doi <- if (nrow(doi_mentions) > 0) {
+    doi_mentions$doi <- vapply(doi_mentions$href, .extract_doi, character(1))
+    dois <- unique(stats::na.omit(doi_mentions$doi))
+    # .dspace7_parse() needs the resolved landing-page URL itself (to read
+    # off a uuid or handle from its path), not the bare DOI string, so the
+    # resolved URL replaces href here rather than just gating on whether one
+    # was found.
+    resolved_urls <- vapply(dois, .dspace7_resolve_doi_url, character(1))
+    names(resolved_urls) <- dois
+    rows <- doi_mentions[doi_mentions$doi %in% dois[!is.na(resolved_urls)], , drop = FALSE]
+    if (nrow(rows) > 0) rows$href <- resolved_urls[rows$doi]
+    rows$doi <- NULL
+    rows
+  } else {
+    doi_mentions[0, , drop = FALSE]
+  }
+
+  dplyr::bind_rows(found_href, other_ds7, other_ds7_doi) |>
     dplyr::mutate(href = sub("/+$", "", href)) |>
     unique()
+}
+
+# Resolve a single DOI's live redirect and return the resolved URL if it
+# lands on a known DSpace 7 host, or NA if it does not resolve or lands
+# elsewhere -- see dspace7_links()'s header comment (issue #435).
+.dspace7_resolve_doi_url <- function(doi) {
+  resolved <- tryCatch({
+    resp <- httr2::request(paste0("https://doi.org/", doi)) |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform()
+    httr2::resp_url(resp)
+  }, error = \(e) NA_character_)
+
+  if (is.na(resolved)) return(NA_character_)
+
+  hosts <- .dspace7_hosts()
+  for (host in hosts) {
+    if (grepl(host, resolved, fixed = TRUE)) return(resolved)
+  }
+  NA_character_
 }
 
 # One DSpace 7 REST request returning parsed JSON, or NULL on any failure /
@@ -323,6 +387,16 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
     info <- do.call(dplyr::bind_rows, file_lists)
     orig <- data.frame(dspace7_url = dspace7_url)
     df <- dplyr::left_join(orig, info, by = "dspace7_url")
+
+    # doi/license carried as attributes rather than columns, mirroring
+    # psycharchives_file_download()'s identical pattern for legacy DSpace --
+    # see the comment there for why (keeps the file frame file-only while the
+    # caller, repo_check.R, can still surface them in repo_metadata).
+    license <- unlist(lapply(file_lists, \(x) attr(x, "license")))
+    attr(df, "license") <- license
+    doi <- unlist(lapply(file_lists, \(x) attr(x, "doi")))
+    attr(df, "doi") <- doi
+
     return(df)
   }
 
@@ -337,12 +411,25 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
   info <- .dspace7_info(host, uuid = parsed$uuid[[1]], handle = parsed$handle[[1]], pb = pb)
   if ("error" %in% names(info)) return(NULL)
 
+  # license/doi carried as attributes rather than columns -- reuses the
+  # metadata .dspace7_info() already fetched, same mechanism
+  # psycharchives_file_download() uses for legacy DSpace's rights/doi.
+  license <- stats::setNames(info$license %||% NA_character_, dspace7_url)
+  doi <- stats::setNames(info$doi %||% NA_character_, dspace7_url)
+
   file_list <- info$files[[1]]
   if (is.null(file_list) || nrow(file_list) == 0) {
     paste0("- ", dspace7_url, " contained no files") |>
       list(what = _) |>
       pb$tick(0, tokens = _)
-    return(NULL)
+    empty <- data.frame(
+      dspace7_url = character(0), name = character(0), file_url = character(0),
+      file_location = character(0), size = numeric(0), isdir = logical(0),
+      ext = character(0), type = character(0)
+    )
+    attr(empty, "license") <- license
+    attr(empty, "doi") <- doi
+    return(empty)
   }
 
   df <- data.frame(
@@ -358,6 +445,9 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
     sapply(\(x) if (length(x) < 2) "" else x[[length(x)]]) |>
     tolower()
   df <- dplyr::left_join(df, metacheck::file_types, by = "ext")
+
+  attr(df, "license") <- license
+  attr(df, "doi") <- doi
 
   df
 }

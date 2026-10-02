@@ -215,7 +215,7 @@ figshare_links <- function(paper) {
     dplyr::filter(grepl(paste0(host_regex, "|", doi_prefix_regex), href, ignore.case = TRUE))
 
   fs_bare_regex <- paste0(
-    "(?:https?://)?(?:[a-z0-9.-]+\\.)?(?:", host_regex, ")/(?:articles|ndownloader|projects|s)/[A-Za-z0-9/_.-]*",
+    "(?:https?://)?(?:[a-z0-9.-]+\\.)?(?:", host_regex, ")/(?:articles|ndownloader|projects|collections|s)/[A-Za-z0-9/_.-]*",
     "|(?:https?://)?(?:doi\\.org/)?10\\.6084/m9\\.figshare\\.[0-9]+(?:\\.v[0-9]+)?",
     "|(?:https?://)?(?:doi\\.org/)?(?:", doi_prefix_regex, ")/[A-Za-z0-9._-]+(?:\\.v[0-9]+)?"
   )
@@ -317,7 +317,13 @@ figshare_links <- function(paper) {
   # the DOI prefix. Matched here as its own pattern rather than folded
   # into the bare-id pattern below, since that one requires an
   # already-known host in the URL itself, which a bare institutional DOI
-  # never carries.
+  # never carries. Some institutions chain more than one such sub-prefix
+  # segment before the id (10.17608/k6.auckland.25808182.v2 for Auckland,
+  # 10.15131/shef.data.13712533 for Sheffield/ORDA) rather than just one
+  # (uct. above) -- confirmed live 2026-09-29, both resolving to the
+  # article ids captured here. The sub-prefix segment is therefore matched
+  # zero or more times, not zero-or-one, so any number of them are skipped
+  # before the trailing numeric id.
   inst_prefix_regex <- paste(
     gsub("\\.", "\\\\.", names(.figshare_doi_prefix_hosts())), collapse = "|"
   )
@@ -335,7 +341,7 @@ figshare_links <- function(paper) {
     # anchoring purely on `$` silently returned NA for it -- found live
     # 2026-09-19 via a real corpus paper's citation ending in exactly this
     # shape.
-    paste0("(?:", inst_prefix_regex, ")/(?:[a-z]+\\.)?([0-9]+)(?:\\.v[0-9]+)?(?:[^0-9]|$)")
+    paste0("(?:", inst_prefix_regex, ")/(?:[a-z0-9]+\\.)*([0-9]+)(?:\\.v[0-9]+)?(?:[^0-9]|$)")
   )
 
   for (pattern in patterns) {
@@ -417,6 +423,92 @@ figshare_links <- function(paper) {
     # %empty_or% (not %||%) because a$id can come back as a length-zero
     # value rather than NULL; vapply(..., character(1)) requires exactly
     # length 1 from every call.
+    ids <- vapply(rec, function(a) as.character(a$id %empty_or% NA_character_), character(1))
+    all_ids <- c(all_ids, ids[!is.na(ids)])
+
+    if (length(rec) < 100) break   # last page
+    page <- page + 1L
+  }
+  unique(all_ids)
+}
+
+# Get a Figshare COLLECTION id from a URL or DOI, e.g.
+# "figshare.com/collections/some_name/8742785" -> "8742785". Mirrors
+# .figshare_project_id() exactly -- a collection is a different bundling
+# resource from a project (grouping already-published articles from
+# possibly different authors/accounts, rather than one account's own
+# in-progress work), on its own API path, but the URL and id-extraction
+# shape is identical. Kept separate rather than folded into
+# .figshare_project_id() for the same reason that function gives for staying
+# separate from .figshare_id(): conflating resource types risks a silent
+# wrong-endpoint call rather than a clear NA. Confirmed live 2026-09-29
+# (issue #434): a real collection (figshare.com/collections/x/8742785)
+# answers HTTP 202 at that URL (the same SPA-shell response every other
+# recognised Figshare resource type gives) and its id resolves against
+# /v2/collections/{id}.
+#
+# A collection DOI (10.6084/m9.figshare.c.<id>, the literal ".c." segment
+# marking it as a collection rather than an article -- confirmed live
+# 2026-09-29 against 10.6084/m9.figshare.c.6190228, which redirects to
+# figshare.com/collections/.../6190228, the SAME numeric id) needs its own
+# pattern here: it carries no "/collections/" path segment at all, so the
+# URL pattern above never matches it, and .figshare_id()'s own DOI pattern
+# ("10\\.6084/m9\\.figshare\\.([0-9]+)") also never matches it, since
+# [0-9]+ cannot match the literal "c" -- confirmed by direct test, so a
+# collection DOI was never at risk of being silently misidentified as an
+# article id either, just invisible to both functions until now. Only the
+# literal 10.6084 prefix is checked here (not the institutional prefixes in
+# .figshare_doi_prefix_hosts()): no institutional-collection-DOI citation
+# has been found yet to confirm whether those platforms even mint them the
+# same way.
+.figshare_collection_id <- function(figshare_url) {
+  if (length(figshare_url) == 0) return(character(0))
+  if (length(figshare_url) > 1) return(vapply(figshare_url, .figshare_collection_id, character(1)))
+
+  figshare_url <- trimws(as.character(figshare_url))
+  if (is.na(figshare_url) || !nzchar(figshare_url)) return(NA_character_)
+
+  match <- regexec(paste0("(?:", .figshare_host_regex(), ")/collections/[^/]+/([0-9]+)/?$"),
+                   figshare_url, perl = TRUE, ignore.case = TRUE)
+  groups <- regmatches(figshare_url, match)[[1]]
+  if (length(groups) >= 2) return(groups[[2]])
+
+  doi_match <- regexec("10\\.6084/m9\\.figshare\\.c\\.([0-9]+)",
+                       figshare_url, perl = TRUE, ignore.case = TRUE)
+  doi_groups <- regmatches(figshare_url, doi_match)[[1]]
+  if (length(doi_groups) >= 2) return(doi_groups[[2]])
+
+  NA_character_
+}
+
+# List the article ids a Figshare COLLECTION contains, via the public GET
+# /v2/collections/{id}/articles endpoint (confirmed live 2026-09-29, same
+# "Public endpoints" family as /v2/projects/{id}/articles -- no
+# authentication needed). Mirrors .figshare_project_articles() exactly,
+# including its pagination handling.
+.figshare_collection_articles <- function(collection_id, host = "api.figshare.com", pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
+  all_ids <- character(0)
+  page <- 1L
+  repeat {
+    api_url <- sprintf("https://%s/v2/collections/%s/articles?page=%d&page_size=100",
+                       host, collection_id, page)
+    resp <- .batch_query(api_url, msg = NULL,
+                         req_func = \(req) .figshare_headers(req, host = host))[[1]]
+    if (is.null(resp) || httr2::resp_status(resp) != 200) {
+      if (length(all_ids) == 0) {
+        warning("Figshare collection ", collection_id, " could not be found on ", host,
+                call. = FALSE)
+      }
+      break
+    }
+    rec <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
+    if (is.null(rec) || length(rec) == 0) break
+
     ids <- vapply(rec, function(a) as.character(a$id %empty_or% NA_character_), character(1))
     all_ids <- c(all_ids, ids[!is.na(ids)])
 
@@ -517,6 +609,30 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
         expanded_urls <- unique(vapply(project_rows, function(r) r$figshare_url[[1]], character(1)))
         ids <- ids[!(ids$figshare_url %in% expanded_urls & is.na(ids$figshare_id)), , drop = FALSE]
         ids <- dplyr::bind_rows(ids, do.call(rbind, project_rows)) |> unique()
+      }
+    }
+  }
+
+  # A COLLECTION url (figshare.com/collections/<name>/<id>) is expanded the
+  # same way a project is, just above -- see .figshare_collection_id()'s
+  # header comment (issue #434) for why collections are a separate resource
+  # type from projects despite the identical expansion shape.
+  unresolved <- is.na(ids$figshare_id)
+  if (any(unresolved)) {
+    collection_urls <- ids$figshare_url[unresolved]
+    collection_ids <- .figshare_collection_id(collection_urls)
+    has_collection <- !is.na(collection_ids)
+    if (any(has_collection)) {
+      collection_rows <- Map(function(url, coll_id) {
+        article_ids <- .figshare_collection_articles(coll_id, host = host, pb = pb)
+        if (length(article_ids) == 0) return(NULL)
+        data.frame(figshare_url = url, figshare_id = article_ids, stringsAsFactors = FALSE)
+      }, collection_urls[has_collection], collection_ids[has_collection])
+      collection_rows <- collection_rows[!vapply(collection_rows, is.null, logical(1))]
+      if (length(collection_rows) > 0) {
+        expanded_urls <- unique(vapply(collection_rows, function(r) r$figshare_url[[1]], character(1)))
+        ids <- ids[!(ids$figshare_url %in% expanded_urls & is.na(ids$figshare_id)), , drop = FALSE]
+        ids <- dplyr::bind_rows(ids, do.call(rbind, collection_rows)) |> unique()
       }
     }
   }
@@ -917,6 +1033,8 @@ figshare_file_download <- function(figshare_id,
   n <- nrow(files)
   files$downloaded <- FALSE
   files$extracted <- NA_integer_
+  failed <- data.frame(key = character(0), member = character(0),
+                       error = character(0), stringsAsFactors = FALSE)
 
   for (i in seq_len(n)) {
     # --- selected members out of a zip, instead of the whole zip ----
@@ -936,6 +1054,20 @@ figshare_file_download <- function(figshare_id,
                plural(files$extracted[i]), " from ", files$key[[i]]) |>
           list(what = _) |>
           pb$tick(0, tokens = _)
+        # A member that failed to extract left a row with ok == FALSE; report
+        # what actually went wrong instead of only counting successes, so a
+        # transient failure worth retrying can be told apart from one that
+        # will not resolve on its own (#429).
+        bad <- got[!(got$ok %in% TRUE), , drop = FALSE]
+        if (nrow(bad) > 0) {
+          failed <- rbind(failed, data.frame(
+            key = files$key[[i]], member = bad$name, error = bad$error,
+            stringsAsFactors = FALSE))
+          for (j in seq_len(nrow(bad)))
+            paste0("  - failed to extract ", bad$name[j], ": ", bad$error[j]) |>
+              list(what = _) |>
+              pb$tick(0, tokens = _)
+        }
         next
       }
       paste0("- could not read ", files$key[[i]],
@@ -1001,6 +1133,7 @@ figshare_file_download <- function(figshare_id,
   files <- files[, c("folder", "figshare_id", "id", "key", "path", "size",
                      "size_on_disk", "checksum", "checksum_ok", "self",
                      "downloaded", "extracted")]
+  attr(files, "failed") <- failed
 
   invisible(files)
 }

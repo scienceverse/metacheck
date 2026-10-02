@@ -228,6 +228,47 @@
     r("fa",   "data", readable = FALSE),
     r("fq",   "data", readable = FALSE),
     r("fastq","data", readable = FALSE),
+    # GIS vector data. ESRI Shapefile components only make sense as a set --
+    # a .shp without its sidecar files is not independently openable -- so
+    # all components are locked to "data" together, the same way .edat/
+    # .edat2 are treated as one family elsewhere in this registry. .gpkg
+    # (GeoPackage) is the Shapefile's modern single-file successor. Extension
+    # alone is unambiguous evidence of research data for all of these.
+    # Confirmed against real corpus evidence (BES validation corpus, issue
+    # #441): previously these had no Tier-1 rule at all and depended
+    # entirely on Tier 2's folder/filename-keyword fallback, so e.g. a bare
+    # "shoreline.shp" at the root of an archive fell through to "unknown".
+    r("shp",  "data", readable = FALSE),
+    r("dbf",  "data", readable = FALSE),
+    r("shx",  "data", readable = FALSE),
+    r("prj",  "data", readable = FALSE),
+    r("sbn",  "data", readable = FALSE),
+    r("sbx",  "data", readable = FALSE),
+    r("cpg",  "data", readable = FALSE),
+    r("gpkg", "data", readable = FALSE),
+    # Phylogenetic tree formats (Nexus, Newick, Phylip) -- confirmed corpus
+    # evidence (issue #441) of papers citing these as their archived data
+    # format, previously falling through to "unknown" with no Tier-1 rule.
+    r("nex",  "data", readable = FALSE),
+    r("nwk",  "data", readable = FALSE),
+    r("tre",  "data", readable = FALSE),
+    r("phy",  "data", readable = FALSE),
+    # Mass spectrometry data formats -- same corpus-confirmed gap as above.
+    r("mzxml","data", readable = FALSE),
+    r("mztab","data", readable = FALSE),
+    # 3D point-cloud/mesh SCAN data (e.g. a specimen or environment capture).
+    # Deliberately separate from .stl, which stays under the existing "3D"
+    # coarse crosswalk (-> materials): in practice .stl much more often names
+    # a 3D-PRINTABLE model than a scan of research content, a distinction
+    # worth preserving rather than merging the two extensions' treatment.
+    r("ply",  "data", readable = FALSE),
+    # Generic plain-text tabular data -- a real, if informal, convention
+    # distinct from ".txt" (whose own coarse type is "text"/documentation-
+    # leaning, not data). Genuinely ambiguous with ".tab" as a document
+    # abbreviation in some fields, but corpus evidence (issue #441) is
+    # specifically these being cited as data files.
+    r("tab",   "data", readable = TRUE),
+    r("table", "data", readable = TRUE),
     # Trial-level behavioural-task data. Inquisit .iqdat is tab-delimited
     # TEXT, so it is real, readable research data and downloads under the
     # default `download = "data"`; its paradata can be extracted.
@@ -2087,7 +2128,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
   ext <- tolower(tools::file_ext(path))
   tryCatch({
     df <- switch(ext,
-      csv = , txt = , tsv = , dat = {
+      csv = , txt = , tsv = , dat = , tab = , table = {
         sep <- if (ext == "tsv") "\t" else .sniff_delimiter(path)
         hdr <- .detect_header(path, sep)
         # Cheap bail-out for a non-tabular file disguised as .csv: one big field

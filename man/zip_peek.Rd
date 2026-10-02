@@ -4,13 +4,26 @@
 \alias{zip_peek}
 \title{Peek at the contents of a remote ZIP file without downloading it}
 \usage{
-zip_peek(url, tail_bytes = 131072)
+zip_peek(url, tail_bytes = 131072, cache = FALSE, skip_on_api_limit = FALSE)
 }
 \arguments{
 \item{url}{the download URL of a ZIP file}
 
 \item{tail_bytes}{how many bytes of the tail to fetch (default 128 KB; raised
 automatically on retry when the central directory is larger)}
+
+\item{cache}{if \code{TRUE}, persist this URL's result to disk (see
+\code{\link[=zip_peek_cache_clear]{zip_peek_cache_clear()}}) so a later R process reuses it instead of
+re-peeking the archive over HTTP. Off by default, matching
+\code{\link[=repo_info_cache]{repo_info_cache()}}'s own opt-in shape; a caller that never asks for
+caching sees no behavior change. \code{repo_check()}/\code{data_check()} forward
+their own \code{cache} argument here.}
+
+\item{skip_on_api_limit}{if \code{TRUE}, a confirmed exhausted rate-limit bucket
+during a peek is treated as a failure (returns \code{NULL}) instead of waiting
+out the host's reset -- see \code{\link[=download_repo_files]{download_repo_files()}}'s parameter of the
+same name. Falls back to \code{getOption("metacheck.skip_on_api_limit")} when
+not given directly.}
 }
 \value{
 a data.frame with columns \code{name} (entry path inside the zip) and
