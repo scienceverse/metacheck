@@ -93,7 +93,7 @@ osf_pat <- function(pat = NULL) {
 
   req <- httr2::request(probe) |>
     httr2::req_error(is_error = \(r) FALSE)  |>
-    # httr2::req_timeout(5) |>
+    httr2::req_timeout(5) |>
     httr2::req_headers(
       `User-Agent` = "metacheck",
       Accept = "application/vnd.api+json"
