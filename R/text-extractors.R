@@ -143,7 +143,15 @@ extract_eq <- function(paper) {
   df_inner <- "(?:[0-9,\\.\\s]+|[nN]\\s*=\\s*[0-9]+)*"
   pattern <- paste0(
     "(?:(Hedge.{0,3}|Cronbach.{0,2}|Cohen.{0,2}|\\d{1,2}%)\\s+)?", # common prefix
-    "[", gr, "\u00B2a-zA-Z-_\\.0-9\\{\\}\\^\\\\]+\\s*", # statistic name
+    "[", gr, "\u00B2a-zA-Z-_\\.0-9\\{\\}\\^\\\\]+", # statistic name
+    # one extra short all-letter word, catching a subscript GROBID collapsed
+    # to plain space ("Hedges' g av" -> "g" + "av"), ONLY when the Hedges'/
+    # Cohen's prefix above actually matched -- otherwise "beta = 0.74, t(260)"
+    # style adjacent clauses would start swallowing the next word as if it
+    # were part of this statistic's own name (see the df_inner note above for
+    # the matching concern with parenthetical df).
+    "(?(1)(?:\\s+[a-zA-Z]{1,3}(?=\\s*[", op, "]))?)",
+    "\\s*", # statistic name
     "(?:\\(", df_inner, "\\))?\\s*", # optional df-shaped parentheses
     "[", op , "]{1,3}\\s*", # 1-3 operators
     "([0-9\\.,+-]*[0-9]|\\[[^\\]]+\\]|n\\.?\\s*s\\.?)", # valid numbers or anything in [] or NS

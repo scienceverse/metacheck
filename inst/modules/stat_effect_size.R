@@ -472,7 +472,7 @@ stat_effect_size <- function(paper) {
     raw <- gsub("²", "2", raw) # squared symbol to 2
     is_es <-
       grepl("^(cohen.{0,3})?d(_?(z|s|av|rm))?$", raw) || # Cohen's d / dz / ds / dav / drm
-      grepl("^(hedge.{0,3})?g$", raw) ||                 # Hedges' g
+      grepl("^(hedge.{0,3})?g(_?(av|z|rm|s))?$", raw) || # Hedges' g / gav / gz / grm / gs
       grepl("^f2?$", raw) || grepl("cohen", raw) ||      # Cohen's f
       grepl("ω|omega", raw) ||                           # omega
       grepl("η|eta", raw) ||                             # eta family

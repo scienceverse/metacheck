@@ -172,6 +172,22 @@ test_that("extract_eq complex", {
   eq <- extract_eq(paper)
   expect_equal(eq$lhs, c("Cohen's d", "Hedges's g"))
 
+  # GROBID collapses a subscript to a plain space ("g_av" -> "g av"); the
+  # extra word is only absorbed into lhs when the Hedges'/Cohen's prefix
+  # matched, so an unrelated adjacent clause ("beta = ...") is not fused
+  # into the preceding statistic's name (#448)
+  paper <- test_paper(c(
+    "t(130) = 18.04, p < 0.001, Hedges' g av = 1.76.",
+    "t(23) = 2.73, p = .01, Cohen's d z = 0.56.",
+    "This was significant (beta = 0.74, t(260) = 11.32)."
+  ))
+  eq <- extract_eq(paper)
+  expect_equal(eq$lhs, c(
+    "t", "p", "Hedges' g av",
+    "t", "p", "Cohen's d z",
+    "beta", "t"
+  ))
+
   # all eq
   skip_if_quick()
   skip_no_psychsci()

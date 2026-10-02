@@ -183,3 +183,25 @@ test_that("stat_effect_size checks numeric coherence for Hedges' g, not just Coh
   expect_equal(mod_output$table$d_coherence_assumption[[1]], "paired_dz")
 })
 
+test_that("stat_effect_size recognizes a GROBID subscript collapse like 'g av' (#448)", {
+  module <- "stat_effect_size"
+
+  # GROBID renders a subscripted Hedges' g_av as plain-text "Hedges' g av" --
+  # extract_eq() must keep the whole label (not drop it or split off "av" as
+  # an unrelated statistic), and stat_effect_size must still recognize it as
+  # an effect size and check its numeric coherence, the same as unsubscripted
+  # Hedges' g.
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, Hedges' g av = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$es[[1]], "Hedges' g av = 0.56")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "paired_dz")
+
+  # same for Cohen's d z / d rm collapsed subscripts
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, Cohen's d z = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+})
+
