@@ -294,6 +294,41 @@ stat_effect_size <- function(paper) {
         "Match under independent-samples unequal-n range assumption (closest split n1 = %d, n2 = %d, N = %d).",
         n1[best], n2[best], n_total
       )
+    } else if ({
+      # parse_d_stats()'s "Hedges(?:'|’)?s..." alternative only matches
+      # when an apostrophe follows "Hedges" -- without one ("Hedges g av",
+      # as GROBID sometimes drops it along with the subscript), the engine
+      # falls through to the plain "g ..." alternative instead, but by then
+      # the whole "Hedges g av" phrase has already been captured as label
+      # (the first alternative's "hedge.{0,3}s\s+g..." still matches it as
+      # one unit). Strip a leading Hedges'/Cohen's word either way before
+      # checking the shape, so both forms are recognized consistently.
+      g_label <- sub("^(hedge.{0,3}s|cohen.{0,2}s)\\s+", "", d_stats$label[1], ignore.case = TRUE, perl = TRUE)
+      # Only an EXPLICITLY subscripted g (g_av/g_z/g_rm/gs), not bare "g":
+      # unsubscripted "Hedges' g" is ambiguous between Cumming's g_av (not
+      # recoverable from t/df, see below) and the original Hedges (1981)
+      # small-sample correction of d_z/d_s (a deterministic multiplier of d,
+      # just as checkable as d_z itself) -- #455's own confirmed example is
+      # always explicitly subscripted, so only that narrower shape is exempt.
+      grepl("^(g[ _](av|z|rm)|gs)$", g_label)
+    }) {
+      # Hedges' g_av (Cumming, 2012's bias-corrected average-variance
+      # standardizer) also depends on the individual condition SDs and the
+      # true observed correlation between them -- information a bare t(df)
+      # does not preserve. Unlike d_z/d_rm(r=0.5), which are fully determined
+      # by t/df alone, there is no single "implied g_av" to check a reported
+      # value against exactly, so a correctly-computed g_av can legitimately
+      # fail every tested formula here without being wrong (#455). Labeled
+      # "indeterminate" (cannot verify), not "no_match" (verified and found
+      # inconsistent) -- the same distinction already made for Welch's t.
+      out$d_coherence <- "indeterminate"
+      out$d_coherence_assumption <- "none"
+      out$d_coherence_note <- paste0(
+        "Hedges' g (subscripted) reported; not checked against the tested formulas. g_av depends ",
+        "on the individual condition SDs and the true observed correlation, neither of which t(df) ",
+        "preserves, so a correctly-computed g_av can differ from the implied d_z/d_rm/equal-n/",
+        "unequal-n values without being an error."
+      )
     } else {
       out$d_coherence <- "no_match"
       out$d_coherence_assumption <- "none"
