@@ -215,14 +215,16 @@ crossref_doi <- function(doi, select = c(
 
   if (length(valid_idx) > 0) {
     urls <- sprintf(
-      "https://api.labs.crossref.org/works/%s?mailto=%s",
+      "https://api.crossref.org/works/%s?mailto=%s",
       utils::URLencode(cleaned[valid_idx], reserved = TRUE),
       email()
     )
 
-    # api.labs.crossref.org single-record lookup: polite pool allows 10 req/s
-    # (https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/,
-    # effective 2025-12-01; verified with mailto identified above)
+    # api.crossref.org single-record works/{doi} lookup: polite pool allows
+    # 10 req/s (https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/,
+    # effective 2025-12-01; verified with mailto identified above). Uses the
+    # production host, not the experimental api.labs.crossref.org mirror,
+    # which has no service guarantee and returns the same fields.
     resps <- .batch_query(urls, msg = "Querying CrossRef by DOI",
                           throttle_capacity = 10, throttle_fill_time_s = 1)
 
