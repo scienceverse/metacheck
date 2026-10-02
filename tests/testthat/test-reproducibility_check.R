@@ -818,3 +818,34 @@ test_that("repro_run_scripts_docker stops the container on timeout instead of or
   expect_true(container_gone,
              info = "a repro_* container was still `docker ps`-visible 10s after its own timeout fired")
 })
+
+test_that("a package install.packages() cannot find is reported as unavailable", {
+  # Issue #421: install.packages() only WARNS for a name it cannot find, so
+  # the load check reported "installed but package 'x' is not loadable" --
+  # claiming an install that never happened, classified as uncategorised.
+  # The warning is the real reason and is reported instead.
+  warn <- "package 'list.packages' is not available for this version of R"
+  msg <- metacheck:::.repro_not_loadable_msg("list.packages", c("other warning", warn))
+  expect_equal(msg, warn)
+  expect_equal(metacheck:::.repro_classify_install_message(msg), "cran_unavailable")
+
+  # With the CRAN Archive retry's own result appended, as repro_install_deps()
+  # does: a package the Archive has no folder for is not a network problem.
+  msg2 <- paste0(msg, " (CRAN Archive retry also failed: package not found in the CRAN Archive)")
+  expect_equal(metacheck:::.repro_classify_install_message(msg2), "cran_unavailable")
+
+  # Without such a warning the original wording is kept.
+  expect_equal(metacheck:::.repro_not_loadable_msg("pkg", character(0)),
+               "installed but package 'pkg' is not loadable")
+})
+
+test_that("repro_dependencies does not list a package-list variable as a package", {
+  # Issue #421, end to end through the dependency list reproducibility_check
+  # installs from.
+  deps <- repro_dependencies(c(
+    'list.packages <- c("activity", "bbmle")',
+    'for (req.lib in list.packages) {',
+    '  if (!require(req.lib, character.only = TRUE)) install.packages(req.lib)',
+    '}'))
+  expect_setequal(deps$package, c("activity", "bbmle"))
+})

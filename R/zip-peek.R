@@ -29,9 +29,109 @@
   sum(bytes * 256^(seq_len(n) - 1))
 }
 
+# ── Learning a remote file's size (issue #424) ──────────────────────────────
+# A HEAD request is the usual way to learn a file's size, but it is not
+# reliable: Dryad, Figshare and Harvard Dataverse all redirect their download
+# URL to Amazon S3, which answers HEAD with 403 while it answers a ranged GET
+# with 206 (verified live 2026-09-24). A 206 or 416 answer to a ranged GET
+# carries the total size in its Content-Range header ("bytes 0-0/2545568", or
+# "bytes */2246" when the requested range is not satisfiable), so a ranged GET
+# is the fallback whenever HEAD gives no usable size.
+#
+# Whole-archive endpoints that build their zip on request (OSF ?zip=, Zenodo
+# files-archive, Dataverse dataset download, GitHub zipball, GitLab
+# archive.zip, Dryad dataset download) report no size by EITHER method: they
+# ignore Range and stream the body with no Content-Length (verified live
+# 2026-09-24). That is why the ranged GET here is sent through
+# req_perform_connection(): the status is read before any body, and every
+# answer other than 206 is closed unread, so a host that ignores the range
+# cannot make this request transfer a whole archive.
+
+# Retry rule for a SIZE request: the same transient/rate-limit rule
+# download_repo_files() uses for file bytes, minus 403. The storage rule
+# retries 403 because an OSF pre-signed download URL can answer 403 for a
+# moment (see .storage_is_transient(), R/repo-download.R), but S3 answers a
+# HEAD with 403 every single time, so retrying it only added ~6 s of backoff
+# per Dryad/Figshare/Dataverse file before the size request failed anyway.
+.size_probe_is_transient_factory <- function(skip_on_api_limit = FALSE) {
+  is_transient <- .storage_is_transient_factory(skip_on_api_limit)
+  function(resp) httr2::resp_status(resp) != 403L && is_transient(resp)
+}
+
+# Total size from a response's Content-Range header, or NA when the header is
+# absent or its total is "*" (unknown).
+.content_range_total <- function(resp) {
+  cr <- httr2::resp_header(resp, "content-range")
+  if (is.null(cr) || is.na(cr)) return(NA_real_)
+  m <- regmatches(cr, regexec("/([0-9]+)[[:space:]]*$", cr))[[1]]
+  if (length(m) < 2) return(NA_real_)
+  as.numeric(m[2])
+}
+
+# Size in bytes from a HEAD request, or NA. Only a successful (2xx) answer is
+# read: an error answer's Content-Length is the length of the error page, not
+# of the file.
+.head_size <- function(url, skip_on_api_limit = FALSE) {
+  tryCatch({
+    # See .wait_out_known_rate_limit()'s own comment (R/repo-download.R): a
+    # host already known to be rate-limited waits out the remaining time
+    # before this request instead of rediscovering the same 429.
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) return(NA_real_)
+    h <- httr2::request(url) |> httr2::req_method("HEAD") |>
+      .auth_for_url() |>
+      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                       is_transient = .size_probe_is_transient_factory(skip_on_api_limit),
+                       backoff = .storage_backoff,
+                       after = .storage_retry_after_factory(skip_on_api_limit)) |>
+      httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
+    status <- httr2::resp_status(h)
+    if (status < 200 || status >= 300) return(NA_real_)
+    cl <- suppressWarnings(as.numeric(httr2::resp_header(h, "content-length")))
+    if (length(cl) != 1 || is.na(cl) || cl <= 0) NA_real_ else cl
+  }, error = function(e) NA_real_)
+}
+
+# Send one ranged GET (`range` is the Range header value) and return
+# list(status, total, body). `body` is read only for a 206 answer; any other
+# answer is closed unread (see the section comment above).
+.http_range_get <- function(url, range, skip_on_api_limit = FALSE) {
+  if (!.wait_out_known_rate_limit(url, skip_on_api_limit))
+    return(list(status = NA_integer_, total = NA_real_, body = NULL))
+  resp <- httr2::request(url) |>
+    httr2::req_headers(Range = range) |>
+    .auth_for_url() |>
+    httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                     is_transient = .size_probe_is_transient_factory(skip_on_api_limit),
+                     backoff = .storage_backoff,
+                     after = .storage_retry_after_factory(skip_on_api_limit)) |>
+    httr2::req_error(is_error = function(r) FALSE) |>
+    httr2::req_perform_connection()
+  on.exit(close(resp), add = TRUE)
+  status <- httr2::resp_status(resp)
+  list(status = status,
+       total = .content_range_total(resp),
+       body = if (status == 206L) httr2::resp_body_raw(resp) else NULL)
+}
+
+# Size in bytes from a one-byte ranged GET, or NA. The fallback for when a
+# HEAD request gives no usable size (see the section comment above).
+.range_size <- function(url, skip_on_api_limit = FALSE) {
+  tryCatch({
+    r <- .http_range_get(url, "bytes=0-0", skip_on_api_limit = skip_on_api_limit)
+    if (r$status %in% c(206L, 416L) && is.finite(r$total) && r$total > 0)
+      r$total else NA_real_
+  }, error = function(e) NA_real_)
+}
+
 # Fetch the last `n` bytes of a URL via an HTTP Range request. Returns the raw
 # bytes (possibly fewer than n if the file is smaller), or NULL on failure / if
-# the server ignored the range (returned 200 with the whole body).
+# the server ignored the range (returned 200 with the whole body). The file's
+# total size is attached as attr(, "total") (NA when the host did not report
+# it), so zip_peek() can size its larger retry even when HEAD gave nothing.
+#
+# `total`: the file size if already known; NULL to ask for it with HEAD first;
+# NA when HEAD already failed, in which case the tail is requested by its
+# distance from the end instead (.http_range_suffix(), issue #424).
 #
 # Routed through .auth_for_url() (see R/repo-download.R): Dryad answers 401 to
 # an unauthenticated request on ANY byte-touching endpoint, including a HEAD
@@ -50,48 +150,52 @@
 # .zip_fetch_members()->zip_peek() call (fetching a member's bytes) hit the
 # SAME archive URL twice in one pipeline run with no throttle between them,
 # so the second call was the one exposed to a burst-rate-limit refusal.
-.http_range_tail <- function(url, n, total = NULL) {
+.http_range_tail <- function(url, n, total = NULL, skip_on_api_limit = FALSE) {
   tryCatch({
-    if (is.null(total)) {
-      # See .wait_out_known_rate_limit()'s own comment (R/repo-download.R):
-      # this HEAD and the Range GET below it are two independent requests to
-      # the same host within one zip_peek() call -- checking the session's
-      # rate-limit record before EACH one means a host already known (from
-      # an earlier request, possibly for a different archive entirely) to be
-      # rate-limited waits out the remaining time up front, instead of both
-      # requests independently rediscovering the same 429.
-      .wait_out_known_rate_limit(url)
-      h <- httr2::request(url) |> httr2::req_method("HEAD") |>
-        .auth_for_url() |>
-        httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                         is_transient = .storage_is_transient_factory(),
-                         backoff = .storage_backoff,
-                         after = .storage_retry_after_factory()) |>
-        httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
-      total <- suppressWarnings(as.numeric(
-        httr2::resp_header(h, "content-length")))
-    }
-    if (is.null(total) || is.na(total) || total <= 0) return(NULL)
+    if (is.null(total)) total <- .head_size(url, skip_on_api_limit = skip_on_api_limit)
+    if (is.na(total))
+      return(.http_range_suffix(url, n, skip_on_api_limit = skip_on_api_limit))
+    if (total <= 0) return(NULL)
     start <- max(0, total - n)
-    .wait_out_known_rate_limit(url)
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) return(NULL)
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", start, total - 1)) |>
       .auth_for_url() |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient_factory(),
+                       is_transient = .storage_is_transient_factory(skip_on_api_limit),
                        backoff = .storage_backoff,
-                       after = .storage_retry_after_factory()) |>
+                       after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
     # 206 = partial content (range honoured). 200 = whole file (range ignored):
     # only usable if it's small enough that we got the tail anyway.
-    if (httr2::resp_status(r) == 206) return(httr2::resp_body_raw(r))
-    if (httr2::resp_status(r) == 200) {
-      body <- httr2::resp_body_raw(r)
-      return(utils::tail(body, n))
-    }
-    NULL
+    body <- NULL
+    if (httr2::resp_status(r) == 206) body <- httr2::resp_body_raw(r)
+    if (httr2::resp_status(r) == 200) body <- utils::tail(httr2::resp_body_raw(r), n)
+    if (!is.null(body)) attr(body, "total") <- total
+    body
   }, error = function(e) NULL)
+}
+
+# The tail request for a file of unknown size: "bytes=-n" asks for the last n
+# bytes without knowing where they start. Only a 206 answer is accepted (see
+# the size section comment above: a host ignoring the range would otherwise
+# send the whole file). A 416 means the file is shorter than n on a host that
+# refuses an over-long suffix (GitHub raw files do, verified live
+# 2026-09-24); its Content-Range still gives the size, so the whole, small
+# file is then requested by exact position instead.
+.http_range_suffix <- function(url, n, skip_on_api_limit = FALSE) {
+  r <- .http_range_get(url, sprintf("bytes=-%.0f", n),
+                       skip_on_api_limit = skip_on_api_limit)
+  if (r$status == 206L && !is.null(r$body)) {
+    body <- r$body
+    attr(body, "total") <- r$total
+    return(body)
+  }
+  if (r$status == 416L && is.finite(r$total) && r$total > 0)
+    return(.http_range_tail(url, n, total = r$total,
+                            skip_on_api_limit = skip_on_api_limit))
+  NULL
 }
 
 # Fetch an arbitrary byte range [from, to] (0-based, inclusive) from a URL.
@@ -107,28 +211,66 @@
 # member (once for the local header, once for the compressed data), so a
 # single-member fetch inside a loop over many members is exactly the
 # back-to-back-request pattern a host's burst limit is most likely to catch.
-.http_range_bytes <- function(url, from, to) {
+#
+# `reason`, if given, is an environment the caller reads afterwards: on any
+# failure this writes a one-line explanation into `reason$msg` (a caught error's
+# message, or "HTTP <status>", or "short read"), so a caller can tell a
+# transient network/HTTP failure apart from a host that plain doesn't support
+# range requests, instead of both looking like an identical silent NULL (#429).
+#
+# Retries any non-206, non-200 status (not just .storage_is_transient()'s
+# fixed 403/429/5xx list), up to 3 tries with the same exponential backoff --
+# widened after #429: a single-member fetch that came back with some OTHER
+# status (a plain 401, a 400, anything not on that list) was accepted as
+# final after exactly one try, even though the identical request succeeded
+# moments later when reproduced by hand, and nothing distinguishes "this host
+# will never honour ranges" from "that one request happened to fail" for an
+# unlisted status. 200 is excluded on purpose: it means the host is ignoring
+# Range entirely and sending the whole body, a fixed property of the host/URL
+# that a retry cannot change, so retrying it would only waste three requests'
+# worth of time before giving the same answer. 206 (success) is also excluded,
+# since there is nothing to retry.
+.range_status_is_transient <- function(resp) {
+  !(httr2::resp_status(resp) %in% c(200L, 206L))
+}
+.http_range_bytes <- function(url, from, to, skip_on_api_limit = FALSE, reason = NULL) {
   tryCatch({
-    if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) return(NULL)
+    if (!is.finite(from) || !is.finite(to) || from < 0 || to < from) {
+      if (!is.null(reason)) reason$msg <- "invalid byte range"
+      return(NULL)
+    }
     # See .http_range_tail()'s own comment on this same call: check the
     # session's rate-limit record before sending, so a host already known
     # rate-limited (recorded by any earlier request this session, including
     # a different archive/member) waits out the remaining time up front.
-    .wait_out_known_rate_limit(url)
+    if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) {
+      if (!is.null(reason)) reason$msg <- "host is rate-limited (waiting skipped by skip_on_api_limit)"
+      return(NULL)
+    }
     r <- httr2::request(url) |>
       httr2::req_headers(Range = sprintf("bytes=%.0f-%.0f", from, to)) |>
       .auth_for_url() |>
       httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient_factory(),
+                       is_transient = .range_status_is_transient,
                        backoff = .storage_backoff,
-                       after = .storage_retry_after_factory()) |>
+                       after = .storage_retry_after_factory(skip_on_api_limit)) |>
       httr2::req_error(is_error = function(r) FALSE) |>
       httr2::req_perform()
-    if (httr2::resp_status(r) != 206) return(NULL)
+    status <- httr2::resp_status(r)
+    if (status != 206) {
+      if (!is.null(reason)) reason$msg <- sprintf("HTTP %d (range not honoured)", status)
+      return(NULL)
+    }
     body <- httr2::resp_body_raw(r)
-    if (length(body) != (to - from + 1)) return(NULL)   # short/over-long read
+    if (length(body) != (to - from + 1)) {   # short/over-long read
+      if (!is.null(reason)) reason$msg <- "short read (range request returned the wrong length)"
+      return(NULL)
+    }
     body
-  }, error = function(e) NULL)
+  }, error = function(e) {
+    if (!is.null(reason)) reason$msg <- conditionMessage(e)
+    NULL
+  })
 }
 
 # Parse ZIP central-directory entries from a raw tail that ends at the true end
@@ -210,6 +352,17 @@
 #' @param url the download URL of a ZIP file
 #' @param tail_bytes how many bytes of the tail to fetch (default 128 KB; raised
 #'   automatically on retry when the central directory is larger)
+#' @param cache if `TRUE`, persist this URL's result to disk (see
+#'   [zip_peek_cache_clear()]) so a later R process reuses it instead of
+#'   re-peeking the archive over HTTP. Off by default, matching
+#'   [repo_info_cache()]'s own opt-in shape; a caller that never asks for
+#'   caching sees no behavior change. `repo_check()`/`data_check()` forward
+#'   their own `cache` argument here.
+#' @param skip_on_api_limit if `TRUE`, a confirmed exhausted rate-limit bucket
+#'   during a peek is treated as a failure (returns `NULL`) instead of waiting
+#'   out the host's reset -- see [download_repo_files()]'s parameter of the
+#'   same name. Falls back to `getOption("metacheck.skip_on_api_limit")` when
+#'   not given directly.
 #'
 #' @returns a data.frame with columns `name` (entry path inside the zip) and
 #'   `size` (uncompressed bytes), excluding directory entries; or `NULL` when the
@@ -224,7 +377,8 @@
 #' \dontrun{
 #' zip_peek("https://osf.io/download/abcde/")
 #' }
-zip_peek <- function(url, tail_bytes = 131072) {
+zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
+                     skip_on_api_limit = FALSE) {
   # Reuse an earlier peek of this exact URL from this same session -- SUCCESS
   # OR FAILURE. Originally only a success was cached, on the assumption a
   # refused/unsupported NULL "would still return NULL again quickly" -- true
@@ -246,36 +400,44 @@ zip_peek <- function(url, tail_bytes = 131072) {
     return(get(url, envir = .zip_peek_cache, inherits = FALSE))
   }
 
+  # On-disk cache, one level further out than the in-memory one above: reused
+  # across R processes, not just within one (issue #427). Gated on `cache`
+  # (default FALSE) so an uncached caller's behavior is unchanged. A hit here
+  # is also written into the in-memory cache, so a second call THIS session
+  # (e.g. repo_check's peek followed by download_repo_files()'s) skips even
+  # the disk read.
+  if (isTRUE(cache) && .zip_peek_cache_has(url)) {
+    cd <- .zip_peek_cache_get(url)
+    assign(url, cd, envir = .zip_peek_cache)
+    return(cd)
+  }
+
   # HEAD once for the total size (also lets us grab a bigger tail if needed).
-  # .auth_for_url(): see .http_range_tail()'s comment -- Dryad 401s on an
-  # unauthenticated HEAD here too. req_retry(): see .http_range_tail()'s
-  # comment on issue #384 -- the same burst-rate-limit exposure applies here.
-  total <- tryCatch({
-    h <- httr2::request(url) |> httr2::req_method("HEAD") |>
-      .auth_for_url() |>
-      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
-                       is_transient = .storage_is_transient_factory(),
-                       backoff = .storage_backoff,
-                       after = .storage_retry_after_factory()) |>
-      httr2::req_error(is_error = function(r) FALSE) |> httr2::req_perform()
-    suppressWarnings(as.numeric(httr2::resp_header(h, "content-length")))
-  }, error = function(e) NA_real_)
+  # When HEAD gives none (S3-backed hosts refuse it, issue #424), total stays
+  # NA: the first tail is then requested by distance from the end, and its
+  # Content-Range supplies the size for the 1 MB retry.
+  total <- .head_size(url, skip_on_api_limit = skip_on_api_limit)
 
   for (nb in unique(c(tail_bytes, 1048576))) {   # retry once with 1 MB tail
-    raw <- .http_range_tail(url, nb, total = total)
+    raw <- .http_range_tail(url, nb, total = total,
+                            skip_on_api_limit = skip_on_api_limit)
     if (is.null(raw)) {
       assign(url, NULL, envir = .zip_peek_cache)
+      if (isTRUE(cache)) .zip_peek_cache_put(url, NULL)
       return(NULL)
     }
+    if (is.na(total)) total <- attr(raw, "total") %||% NA_real_
     cd <- .parse_zip_central_dir(raw)
     if (!is.null(cd)) {
       cd <- cd[!grepl("/$", cd$name), , drop = FALSE]   # drop directory entries
       assign(url, cd, envir = .zip_peek_cache)
+      if (isTRUE(cache)) .zip_peek_cache_put(url, cd)
       return(cd)
     }
     if (!is.null(total) && !is.na(total) && nb >= total) break  # whole file seen
   }
   assign(url, NULL, envir = .zip_peek_cache)
+  if (isTRUE(cache)) .zip_peek_cache_put(url, NULL)
   NULL
 }
 
@@ -347,29 +509,59 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # position from the central directory.
 #
 # Returns raw bytes of the decompressed member, or NULL on any failure.
-.zip_member_fetch <- function(url, entry, verify = TRUE) {
-  if (is.null(entry) || nrow(entry) != 1) return(NULL)
-  if (is.na(entry$offset) || is.na(entry$csize)) return(NULL)  # Zip64
+#
+# `reason`, if given, is an environment the caller reads afterwards: on any
+# failure this writes a one-line explanation into `reason$msg`, so a caller can
+# record WHY a member was never downloaded instead of a bare, indistinguishable
+# NULL (#429) -- e.g. a transient range-request failure (worth a retry) vs. a
+# corrupt local header or a CRC mismatch (retrying won't help).
+.zip_member_fetch <- function(url, entry, verify = TRUE, skip_on_api_limit = FALSE,
+                              reason = NULL) {
+  if (is.null(entry) || nrow(entry) != 1) {
+    if (!is.null(reason)) reason$msg <- "invalid archive entry"
+    return(NULL)
+  }
+  if (is.na(entry$offset) || is.na(entry$csize)) {  # Zip64
+    if (!is.null(reason)) reason$msg <- "Zip64 entry (size/offset not stored in 32 bits)"
+    return(NULL)
+  }
   if (entry$csize == 0) return(raw(0))                         # empty member
 
   # Local file header: 30 fixed bytes, then name and extra fields.
-  lh <- .http_range_bytes(url, entry$offset, entry$offset + 29)
+  lh <- .http_range_bytes(url, entry$offset, entry$offset + 29,
+                          skip_on_api_limit = skip_on_api_limit, reason = reason)
   if (is.null(lh)) return(NULL)
-  if (!identical(lh[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) return(NULL)
+  if (!identical(lh[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) {
+    if (!is.null(reason)) reason$msg <- "local file header signature mismatch"
+    return(NULL)
+  }
   data_start <- entry$offset + 30 + .le_int(lh, 27, 2) + .le_int(lh, 29, 2)
 
-  comp <- .http_range_bytes(url, data_start, data_start + entry$csize - 1)
+  comp <- .http_range_bytes(url, data_start, data_start + entry$csize - 1,
+                            skip_on_api_limit = skip_on_api_limit, reason = reason)
   if (is.null(comp)) return(NULL)
 
   out <- .zip_inflate_member(comp, entry$method, size = entry$size)
-  if (is.null(out)) return(NULL)
+  if (is.null(out)) {
+    if (!is.null(reason))
+      reason$msg <- if (entry$method != 8 && entry$method != 0)
+        sprintf("unsupported compression method (%d)", entry$method)
+      else "decompression failed"
+    return(NULL)
+  }
 
   # The uncompressed size and CRC32 come from the archive itself, so they check
   # the bytes against what the author stored rather than against our own guess.
   # A CRC that was not computed returns NA, which must not be read as failure:
   # only an actual mismatch (FALSE) rejects the bytes.
-  if (!is.na(entry$size) && length(out) != entry$size) return(NULL)
-  if (isTRUE(verify) && isFALSE(.zip_crc_ok(out, entry$crc))) return(NULL)
+  if (!is.na(entry$size) && length(out) != entry$size) {
+    if (!is.null(reason)) reason$msg <- "decompressed size did not match the archive's record"
+    return(NULL)
+  }
+  if (isTRUE(verify) && isFALSE(.zip_crc_ok(out, entry$crc))) {
+    if (!is.null(reason)) reason$msg <- "CRC32 mismatch (corrupt download)"
+    return(NULL)
+  }
   out
 }
 
@@ -428,10 +620,19 @@ zip_peek <- function(url, tail_bytes = 131072) {
 # `names` are entry paths as zip_peek() reports them; when NULL every member is
 # fetched. Files are written under `dest` following their path inside the
 # archive. Returns a data.frame of what was fetched (name, path on disk, bytes,
-# ok), or NULL when the archive could not be listed at all -- which is the
-# signal for the caller to fall back to downloading the whole thing.
-.zip_fetch_members <- function(url, names = NULL, dest, verify = TRUE) {
-  cd <- tryCatch(zip_peek(url), error = function(e) NULL)
+# ok, error), or NULL when the archive could not be listed at all -- which is
+# the signal for the caller to fall back to downloading the whole thing.
+#
+# `error` is NA for a member fetched successfully (ok == TRUE) and otherwise a
+# one-line reason it wasn't -- a range request that failed or was refused, a
+# corrupt local header, a CRC mismatch, a path-traversal rejection, or a write
+# failure. Without this a row simply had ok == FALSE with nothing to say why,
+# so a transient failure worth retrying and a host that will never support
+# this looked identical after the fact (#429).
+.zip_fetch_members <- function(url, names = NULL, dest, verify = TRUE,
+                               cache = FALSE, skip_on_api_limit = FALSE) {
+  cd <- tryCatch(zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit),
+                 error = function(e) NULL)
   if (is.null(cd) || nrow(cd) == 0) return(NULL)
 
   want <- if (is.null(names)) cd else cd[cd$name %in% names, , drop = FALSE]
@@ -439,25 +640,38 @@ zip_peek <- function(url, tail_bytes = 131072) {
 
   out_path <- rep(NA_character_, nrow(want))
   ok <- rep(FALSE, nrow(want))
+  error <- rep(NA_character_, nrow(want))
   for (i in seq_len(nrow(want))) {
-    bytes <- .zip_member_fetch(url, want[i, , drop = FALSE], verify = verify)
-    if (is.null(bytes)) next
+    reason <- new.env(parent = emptyenv())
+    bytes <- .zip_member_fetch(url, want[i, , drop = FALSE], verify = verify,
+                               skip_on_api_limit = skip_on_api_limit,
+                               reason = reason)
+    if (is.null(bytes)) {
+      error[i] <- reason$msg %||% "unknown failure"
+      next
+    }
     # Entry paths come from the archive, so they are constrained to sit under
     # dest: a member named "../secret" or "/etc/x" would otherwise write outside
     # the target directory when the archive is hostile or simply malformed.
     rel <- gsub("\\\\", "/", want$name[i])
     rel <- sub("^([A-Za-z]:)?/+", "", rel)
-    if (any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) next
+    if (any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) {
+      error[i] <- "entry path escapes the archive (path traversal)"
+      next
+    }
     target <- file.path(dest, rel)
     dir.create(dirname(target), showWarnings = FALSE, recursive = TRUE)
     written <- tryCatch({ writeBin(bytes, target); TRUE },
                         error = function(e) FALSE)
-    if (!written) next
+    if (!written) {
+      error[i] <- "could not write the extracted member to disk"
+      next
+    }
     out_path[i] <- target
     ok[i] <- TRUE
   }
   data.frame(name = want$name, path = out_path, size = want$size, ok = ok,
-             stringsAsFactors = FALSE)
+             error = error, stringsAsFactors = FALSE)
 }
 
 # ── Archive-format classification ────────────────────────────────────────────
@@ -626,14 +840,20 @@ zip_peek <- function(url, tail_bytes = 131072) {
 #' @param url the zip's download URL
 #' @param skip_types data_type(s) that don't count as worth-downloading content
 #'   (e.g. `"materials"`)
+#' @param cache passed to [zip_peek()]: if `TRUE`, reuse an on-disk cached
+#'   peek across R sessions instead of re-peeking the archive.
+#' @param skip_on_api_limit passed to [zip_peek()]: if `TRUE`, a confirmed
+#'   exhausted rate-limit bucket is treated as a failed peek instead of
+#'   waiting out the host's reset.
 #'
 #' @returns a list with `worth` (`TRUE`/`FALSE`, or `NA` when the peek failed so
 #'   the caller can fall back to downloading), `reason`, `n_entries`, `types`
 #'   (table of inner types), and `contents` (the peeked data.frame or `NULL`).
 #' @export
 #' @keywords internal
-zip_decision <- function(url, skip_types = "materials") {
-  peek <- zip_peek(url)
+zip_decision <- function(url, skip_types = "materials", cache = FALSE,
+                         skip_on_api_limit = FALSE) {
+  peek <- zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit)
   if (is.null(peek))
     return(list(worth = NA, reason = "could not peek (download to inspect)",
                 n_entries = NA_integer_, types = NULL, contents = NULL))

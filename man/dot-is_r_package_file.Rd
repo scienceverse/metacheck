@@ -8,12 +8,14 @@
 }
 \arguments{
 \item{file_path}{a character vector of repo-relative file paths (as found
-in \code{all_files$file_path})}
+in \code{all_files$file_path}, all belonging to the same \code{repo_url})}
 }
 \value{
 a logical vector, same length as \code{file_path}: \code{TRUE} for every
 file that is part of a detected R package (the \code{DESCRIPTION}/\code{NAMESPACE}
-themselves, plus their standard package subdirectories).
+themselves, plus their standard package subdirectories) AND that package
+is being excluded (root-level packages are only excluded when real
+content survives outside them; nested packages are always excluded).
 }
 \description{
 An R package repository (or a package kept in a subfolder of a larger
@@ -39,8 +41,27 @@ that has been through \code{devtools::document()}/\verb{R CMD build} at least on
 Only files that are actually PART of the package -- \code{DESCRIPTION}/
 \code{NAMESPACE} themselves, and anything under that folder's \verb{R/}, \verb{man/},
 \verb{tests/}, \verb{vignettes/}, \verb{data/}, \verb{inst/}, or \verb{src/} subdirectories -- are
-reported as package files; a sibling file sitting directly in the same
+candidates for exclusion; a sibling file sitting directly in the same
 folder (e.g. a study's \code{analysis.R} kept alongside a package it depends
 on) is NOT swept in just because it shares that folder.
+
+A package detected at the REPOSITORY ROOT is only excluded if at least one
+file OUTSIDE it classifies (via \code{data_classify_files()}, the same rules-
+based classifier \code{data_check} itself uses) as real \code{"data"} or \code{"code"} --
+not merely present, since packaging scaffolding (\code{.gitignore}, \code{LICENSE},
+\code{README}, a \code{Flowchart.png} a README embeds, \verb{*.Rproj}, CI config, etc.)
+commonly sits alongside a package's DESCRIPTION/NAMESPACE without being
+the study's own content. This distinguishes two real cases that both
+fingerprint as "DESCRIPTION+NAMESPACE at the root": a study that shares
+its own data and analysis code AS an R package (the package IS the
+deposit -- nothing to exclude, since nothing data/code-shaped lives
+outside the package for the study's content to be) versus a study's
+repository that happens to bundle a vendored copy of someone else's
+package alongside the study's own files (here the vendored package's
+DESCRIPTION/NAMESPACE sits alongside the study's own real data/code, so
+only the vendored package's own files are excluded). A package detected in
+a NESTED subfolder is always excluded regardless of this check, since by
+construction there is always an "outside" for a nested package (at
+minimum, the parent folder itself).
 }
 \keyword{internal}

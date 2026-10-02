@@ -77,7 +77,9 @@
 #'   without downloading it — see [zip_peek()]) and only fetch zips that contain
 #'   actual data or a codebook. A zip of only stimuli/materials is left for the
 #'   release to link to rather than mirror. Zips whose contents cannot be peeked
-#'   are downloaded as usual. Off by default.
+#'   are downloaded as usual. A downloaded zip is also unpacked, and its files
+#'   are classified and listed as their own rows. On by default (with it off,
+#'   data inside zip archives was never found, see issue #424).
 #' @param max_file_size largest single file to download, in MB (default 100).
 #'   The size caps are an upfront, all-or-nothing gate: if any file in a
 #'   repository exceeds this, the whole repository is refused (nothing
@@ -103,7 +105,9 @@
 #'   rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file
 #'   instead of waiting out the host's own reset. Default `FALSE` (always
 #'   wait for a confirmed reset) -- see [download_repo_files()]'s own
-#'   parameter of the same name.
+#'   parameter of the same name. Also forwarded to `repo_check()` and to the
+#'   zip-peeking step below (`peek_zips`, [zip_peek()]), both of which make
+#'   the same kind of request and can hit the same rate limit.
 #' @param manifest optional path to write a per-paper file manifest as JSON: the
 #'   full list of repository files with their download URL, size, type, Psych-DS
 #'   target path, and whether each was downloaded (and if not, why). A directory
@@ -125,7 +129,7 @@
 data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        download = "data",
                        skip_types = NULL,
-                       peek_zips = FALSE,
+                       peek_zips = TRUE,
                        max_file_size = 100,
                        max_download_size = 500,
                        max_files_per_repo = Inf,
@@ -397,11 +401,17 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # describe (confirmed live again 2026-09-13: batch 1 of a fresh corpus
     # rerun hit Dryad's 100/day zip quota despite cache = TRUE requested
     # throughout the reproducibility_check -> data_check chain).
+    # skip_on_api_limit forwarded the same way: repo_check()'s own peek_zips
+    # step (zip_peek(), R/zip-peek.R) can now hit and wait out the same
+    # confirmed rate limit data_check()'s own downloads do, so a caller who
+    # asked not to wait for THOSE must not silently still wait here (issue #427).
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path,
-                       local_only = local_only, cache = cache)
+                       local_only = local_only, cache = cache,
+                       skip_on_api_limit = skip_on_api_limit)
     } else {
-      mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache)
+      mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
+                       skip_on_api_limit = skip_on_api_limit)
     }
     all_files <- mo$table %||% data.frame(
       file_name = character(0), repo_url = character(0),
@@ -628,7 +638,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       zpb <- pb(sum(is_zip), "Peeking into zips [:bar] :current/:total")
       on.exit(zpb$terminate(), add = TRUE)
       for (i in which(is_zip)) {
-        d <- zip_decision(all_files$file_url[i], skip_types = skip_types %||% "materials")
+        d <- zip_decision(all_files$file_url[i], skip_types = skip_types %||% "materials",
+                         cache = cache, skip_on_api_limit = skip_on_api_limit)
         if (isFALSE(d$worth)) {
           want[i] <- FALSE
           zip_peek_reason[i] <- paste0("zip skipped: ", d$reason)
@@ -669,7 +680,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       all_files$file_location[need_dl] <- dl$file_location
       # Files in a gated repo keep file_location = NA, so they fall out of the
       # has_local extraction filter naturally. The refusal was already reported
-      # inline (and warned) by cap_report inside download_repo_files.
+      # inline (and warned) by .cap_report inside download_repo_files.
       gated_repos <- attr(dl, "gated")
       # Kept for the manifest: which files the per-file cap skipped
       # (intentional) and which downloads failed after retries (unintentional —

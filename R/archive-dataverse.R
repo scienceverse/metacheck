@@ -242,12 +242,26 @@
 # (`disable-facets=false` on the `/dois` search), which returns every
 # distinct DOI prefix actually in use for a query, with its real count, in
 # one request -- not a sample.
+#
+# That facet-aggregation re-derivation still let one false entry through:
+# dataverse.no's list wrongly included 10.6084 (removed 2026-09-29, issue
+# #434). 10.6084 is Figshare's own globally-registered prefix (DataCite
+# confirms its only client is figshare.ars, with zero DOIs registered to any
+# dataverse.no client) -- the facet aggregation apparently picked it up from
+# a dataverse.no-hosted record that merely REFERENCED a 10.6084 Figshare DOI
+# (e.g. a related-identifier field), not one dataverse.no itself issued.
+# Caught when a real citation of a Figshare collection DOI
+# (10.6084/m9.figshare.c.6190228, confirmed live to redirect to
+# figshare.com/collections/...) was misrouted through dataverse_links() and
+# failed retrieval against dataverse.no, even though figshare_links() also
+# matched the same DOI correctly on its own.
 .dataverse_doi_prefix_hosts <- function() {
   list(
     "agh.rodbuk.pl" = "10.58032",
     "akf.rodbuk.pl" = "10.58145",
     "arcadados.fiocruz.br" = "10.35078",
     "archaeology.datastations.nl" = "10.17026",
+    "phys-techsciences.datastations.nl" = "10.17026", # shared with the 3 other DANS Data Stations -- see .dataverse_host_from_doi()
     "archivdv.soc.cas.cz" = "10.14473",
     "borealisdata.ca" = c("10.14285", "10.23685", "10.34990", "10.5203", "10.5683", "10.7939"),
     "danebadawcze.uw.edu.pl" = "10.58132",
@@ -287,7 +301,7 @@
     "dataverse.lib.unb.ca" = "10.25545",
     "dataverse.lib.virginia.edu" = "10.18130",
     "dataverse.nl" = "10.34894",
-    "dataverse.no" = c("10.18710", "10.23642", "10.6084"),
+    "dataverse.no" = c("10.18710", "10.23642"),
     "dataverse.openforestdata.pl" = "10.48370",
     "dataverse.orc.gmu.edu" = "10.13021",
     "dataverse.rhi.hi.is" = "10.34881",
@@ -342,10 +356,16 @@
 }
 
 # host for a DOI whose prefix is in .dataverse_doi_prefix_hosts(), vectorised.
-# Returns NA where the prefix is unrecognised or ambiguous handling isn't
-# needed (ambiguous prefixes return their FIRST listed host -- ties are rare
-# and each one was individually confirmed live, so any listed host is a
-# genuinely correct installation, not a guess).
+# Returns NA where the prefix is unrecognised. A prefix shared by more than
+# one host (confirmed live 2026-09-29, issue #432: DANS operates FOUR
+# separate installations -- archaeology/lifesciences/phys-techsciences/ssh
+# .datastations.nl -- all under the single shared prefix 10.17026) cannot be
+# resolved from the prefix alone; picking "the first listed host" for those
+# was confirmed wrong for a real paper (10.17026/dans-2b8-gx7j genuinely
+# lives on lifesciences.datastations.nl, not archaeology.datastations.nl,
+# the first-listed host sharing that prefix). Resolved instead via
+# .dataverse_resolve_doi_host(), which follows the DOI's own live redirect
+# -- the same resolution any human reader of the citation would go through.
 .dataverse_host_from_doi <- function(doi) {
   doi <- as.character(doi)
   out <- rep(NA_character_, length(doi))
@@ -354,11 +374,50 @@
 
   prefix_hosts <- .dataverse_doi_prefix_hosts()
   px <- sub("^(10\\.\\d+).*", "\\1", doi)
+
+  # Build prefix -> hosts (plural) so a shared prefix is detected rather
+  # than silently collapsed to whichever host happens to be looped first.
+  prefix_to_hosts <- list()
   for (host in names(prefix_hosts)) {
-    hit <- has_doi & is.na(out) & px %in% prefix_hosts[[host]]
-    out[hit] <- host
+    for (prefix in prefix_hosts[[host]]) {
+      prefix_to_hosts[[prefix]] <- c(prefix_to_hosts[[prefix]], host)
+    }
+  }
+
+  for (i in which(has_doi)) {
+    candidates <- prefix_to_hosts[[px[i]]]
+    if (is.null(candidates)) next
+    if (length(candidates) == 1) {
+      out[i] <- candidates
+    } else {
+      out[i] <- .dataverse_resolve_doi_host(doi[i], candidates)
+    }
   }
   out
+}
+
+# Resolve which of several candidate hosts a DOI actually belongs to by
+# following the DOI's own live redirect (doi.org -> the installation's real
+# dataset URL) -- see .dataverse_host_from_doi()'s header comment. Falls
+# back to the first candidate if the redirect cannot be followed or does not
+# land on any of them, keeping the previous (sometimes-wrong, but never
+# worse) behaviour rather than turning a resolvable citation into an
+# unresolvable one.
+.dataverse_resolve_doi_host <- function(doi, candidates) {
+  resolved <- tryCatch({
+    resp <- httr2::request(paste0("https://doi.org/", doi)) |>
+      httr2::req_error(is_error = \(resp) FALSE) |>
+      httr2::req_perform()
+    httr2::resp_url(resp)
+  }, error = \(e) NA_character_)
+
+  if (!is.na(resolved)) {
+    for (host in candidates) {
+      if (grepl(host, resolved, fixed = TRUE)) return(host)
+    }
+  }
+
+  candidates[[1]]
 }
 
 #' Find Dataverse Links in Papers
@@ -971,14 +1030,17 @@ dataverse_file_download <- function(host, doi,
   n <- nrow(files)
   files$downloaded <- FALSE
   files$extracted <- NA_integer_
+  failed <- data.frame(key = character(0), member = character(0),
+                       error = character(0), stringsAsFactors = FALSE)
 
   # No bulk whole-dataset archive path here (unlike Zenodo's files-archive):
   # Dataverse's /api/access/dataset/:persistentId endpoint zips the WHOLE
   # dataset regardless of the file selection above, so it would defeat the
-  # size filters and the per-file API-token auth just applied. download_repo_files()
-  # in repo-download.R makes that all-or-nothing tradeoff explicitly, the same
-  # way it does for OSF/Zenodo; this per-record download always goes file by
-  # file (or member by member, for a zip named in unzip_types).
+  # size filters and the per-file API-token auth just applied. It also never
+  # reports its size in advance (verified live 2026-09-24, issue #424), which
+  # is why download_repo_files() in repo-download.R no longer uses it either;
+  # this per-record download always goes file by file (or member by member,
+  # for a zip named in unzip_types).
   for (i in seq_len(n)) {
     # --- selected members out of a zip, instead of the whole zip ----
     if (unzippable[i]) {
@@ -997,6 +1059,20 @@ dataverse_file_download <- function(host, doi,
                plural(files$extracted[i]), " from ", files$key[[i]]) |>
           list(what = _) |>
           pb$tick(0, tokens = _)
+        # A member that failed to extract left a row with ok == FALSE; report
+        # what actually went wrong instead of only counting successes, so a
+        # transient failure worth retrying can be told apart from one that
+        # will not resolve on its own (#429).
+        bad <- got[!(got$ok %in% TRUE), , drop = FALSE]
+        if (nrow(bad) > 0) {
+          failed <- rbind(failed, data.frame(
+            key = files$key[[i]], member = bad$name, error = bad$error,
+            stringsAsFactors = FALSE))
+          for (j in seq_len(nrow(bad)))
+            paste0("  - failed to extract ", bad$name[j], ": ", bad$error[j]) |>
+              list(what = _) |>
+              pb$tick(0, tokens = _)
+        }
         next
       }
       paste0("- could not read ", files$key[[i]],
@@ -1063,6 +1139,7 @@ dataverse_file_download <- function(host, doi,
   files <- files[, c("folder", "dataverse_host", "dataverse_doi", "id", "key",
                      "path", "size", "size_on_disk", "checksum", "checksum_ok",
                      "self", "downloaded", "extracted")]
+  attr(files, "failed") <- failed
 
   invisible(files)
 }

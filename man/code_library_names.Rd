@@ -39,6 +39,14 @@ The extraction is regex-based (like the rest of the module) so it degrades
 gracefully on files that will not parse. It can therefore miss dynamically
 constructed package names, and does not know which \emph{version} was used — only
 the names appear in the source.
+
+Where a call takes a variable rather than a package name —
+\code{install.packages(pkgs)}, \code{requireNamespace(pkg)},
+\code{library(pkg, character.only = TRUE)}, \code{lapply(pkgs, library, ...)} — the
+variable is resolved to the names it holds when the file assigns it a
+literal vector (\code{pkgs <- c("a", "b")}, including a \code{for (pkg in pkgs)} loop
+variable), and dropped otherwise. The variable's own name is never reported
+as a package.
 }
 \examples{
 code_text <- c(

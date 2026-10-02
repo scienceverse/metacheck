@@ -1,12 +1,7 @@
 # test-11-api.R
 # Tests for the metacheck Plumber API
 
-# GET test files (bibr JSON — the API no longer accepts GROBID XML)
-test_json <- system.file("demos", "to_err_is_human.json", package = "metacheck")
-golden_json <- system.file("demos", "golden_bibr_10_2.json", package = "metacheck")
-
-# API base URL (override with METACHECK_API_URL to test a non-default instance)
-api_url <- Sys.getenv("METACHECK_API_URL", "http://localhost:2005")
+# Helpers ---------
 
 # Helper function to check if API is running
 api_is_running <- function() {
@@ -28,7 +23,17 @@ skip_if_no_api <- function() {
   }
 }
 
-# Test health endpoint
+# GET test files (bibr JSON — the API no longer accepts GROBID XML)
+test_json <- system.file("demos", "to_err_is_human.json", package = "metacheck")
+golden_json <- system.file("demos", "golden_bibr_10_2.json", package = "metacheck")
+
+# API base URL (override with METACHECK_API_URL to test a non-default instance)
+api_url <- Sys.getenv("METACHECK_API_URL", "http://localhost:2005")
+
+
+
+# Tests ----
+
 test_that("Health endpoint returns 200 and proper response", {
   skip_if_no_api()
 

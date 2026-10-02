@@ -4,13 +4,25 @@
 \alias{zip_decision}
 \title{Decide whether a remote ZIP is worth downloading for a data archive}
 \usage{
-zip_decision(url, skip_types = "materials")
+zip_decision(
+  url,
+  skip_types = "materials",
+  cache = FALSE,
+  skip_on_api_limit = FALSE
+)
 }
 \arguments{
 \item{url}{the zip's download URL}
 
 \item{skip_types}{data_type(s) that don't count as worth-downloading content
 (e.g. \code{"materials"})}
+
+\item{cache}{passed to \code{\link[=zip_peek]{zip_peek()}}: if \code{TRUE}, reuse an on-disk cached
+peek across R sessions instead of re-peeking the archive.}
+
+\item{skip_on_api_limit}{passed to \code{\link[=zip_peek]{zip_peek()}}: if \code{TRUE}, a confirmed
+exhausted rate-limit bucket is treated as a failed peek instead of
+waiting out the host's reset.}
 }
 \value{
 a list with \code{worth} (\code{TRUE}/\code{FALSE}, or \code{NA} when the peek failed so

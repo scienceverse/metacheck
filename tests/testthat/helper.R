@@ -2,7 +2,7 @@
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
 # if TRUE, skip slow tests and those that need external connections
-quick <- TRUE
+quick <- FALSE
 
 testthat::set_max_fails(5)
 
@@ -67,6 +67,8 @@ test_that <- function(desc, code, mock = "none") {
     httptest2::start_capturing()
     on.exit(httptest2::stop_capturing())
   }
+
+  # message the test description on elapsed time > 4
   time <- system.time( testthat::test_that(desc, code) )
   s <- round(time[['elapsed']], 1)
   if (s > 4) message(s, ": ", desc)
@@ -84,6 +86,8 @@ fix_fancy <- function(x) {
     gsub("[\u201C\u201D\u201E\u201F]", '"', x = _) |>
     gsub("–", "-", x = _)
 }
+
+# skip functions ----------------------------------------
 
 skip_shiny <- function() {
   skip_if_not_installed("shiny")
@@ -134,3 +138,7 @@ skip_no_psychsci <- function() {
   skip_if_not(exists("psychsci") && !is.null(get("psychsci")),
               "psychsci test corpus not available")
 }
+
+
+
+

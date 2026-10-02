@@ -1,7 +1,6 @@
-# Tests for the ZIP central-directory parser and the download decision. The
-# range-fetch (zip_peek) needs a live HTTP server, so it is covered by the OSF
-# acceptance run; here we test the pure parser on a real local zip's bytes and
-# the classification decision, which need no network.
+# Tests for the ZIP central-directory parser and the download decision, on a
+# real local zip's bytes, which need no network. The range requests zip_peek()
+# sends are tested at the end of this file against httr2's mocked responses.
 
 test_that(".parse_zip_central_dir reads names and sizes from a real zip tail", {
   # Build a small zip with known contents.
@@ -130,6 +129,42 @@ test_that(".zip_member_fetch refuses a Zip64 entry instead of using the sentinel
   expect_null(metacheck:::.zip_member_fetch("http://example.invalid/x.zip", entry))
 })
 
+test_that(".zip_member_fetch records why a fetch failed instead of a bare NULL (#429)", {
+  # Without a `reason` environment nothing changes -- still a bare NULL.
+  entry <- data.frame(name = "big.dat", size = NA_real_, method = 8,
+                      csize = NA_real_, offset = NA_real_, crc = 1)
+  reason <- new.env(parent = emptyenv())
+  expect_null(metacheck:::.zip_member_fetch("http://example.invalid/x.zip", entry,
+                                            reason = reason))
+  expect_match(reason$msg, "Zip64")
+})
+
+# Captured as plain top-level code before the tests below replace zip_peek():
+# local_mocked_bindings()'s own restore does not reliably take effect in this
+# setup (see the same note in test-repo-download.R), and the tests at the end
+# of this file need the real function. It is put back explicitly in the
+# namespace after them, which is where package code such as zip_decision()
+# looks it up. A bare zip_peek() call inside a later test is still found in a
+# different environment that keeps the stand-in, so those tests call
+# metacheck:::zip_peek() instead.
+.real_zip_peek <- get("zip_peek", envir = asNamespace("metacheck"), inherits = FALSE)
+
+test_that(".zip_fetch_members reports a per-member error instead of a silent ok=FALSE (#429)", {
+  # A listing succeeds (mocked), but the member itself can never be fetched
+  # (offset/csize NA, i.e. Zip64) -- this must show up as a specific message in
+  # the `error` column, not just ok == FALSE with nothing to say why.
+  local_mocked_bindings(
+    zip_peek = function(url, ...) {
+      data.frame(name = "big.dat", size = NA_real_, method = 8,
+                csize = NA_real_, offset = NA_real_, crc = 1)
+    }
+  )
+  d <- withr::local_tempdir()
+  got <- metacheck:::.zip_fetch_members("http://example.invalid/x.zip", dest = d)
+  expect_false(got$ok)
+  expect_match(got$error, "Zip64")
+})
+
 test_that("zip_decision keeps a data zip and links a pure-asset zip", {
   # Stub zip_peek so no network: two synthetic listings.
   local_mocked_bindings(
@@ -154,6 +189,7 @@ test_that("zip_decision returns NA when the peek fails", {
   expect_true(is.na(d$worth))
   expect_match(d$reason, "could not peek")
 })
+assignInNamespace("zip_peek", .real_zip_peek, ns = "metacheck")
 
 test_that("zip_peek() reuses a same-session result instead of re-fetching", {
   # Regression test for issue #384: a single pipeline run calls zip_peek() on
@@ -217,4 +253,255 @@ test_that(".expand_zip keeps inner data files and drops inner materials", {
   # inner rows inherit the zip's repo/paper, lose their own URL
   expect_true(all(rows$paper_id == "p.1"))
   expect_true(all(is.na(rows$file_url)))
+})
+
+# ── Hosts that refuse HEAD (issue #424) ─────────────────────────────────────
+# Dryad, Figshare and Harvard Dataverse redirect downloads to Amazon S3, which
+# answers HEAD with 403 but a ranged GET with 206. These tests stand in for
+# such a host with httr2's mocked responses, serving the bytes of a real zip.
+
+# A small real zip's bytes, or NULL when no zip utility is available.
+.test_zip_bytes <- function(d) {
+  writeLines(rep("id,x", 50), file.path(d, "data.csv"))
+  writeLines("hello", file.path(d, "notes.txt"))
+  withr::with_dir(d, utils::zip("t.zip", c("data.csv", "notes.txt"), flags = "-q"))
+  zip <- file.path(d, "t.zip")
+  if (!file.exists(zip)) return(NULL)
+  readBin(zip, "raw", file.size(zip))
+}
+
+# A mocked host serving `bytes`. HEAD gets `head_status`. A Range header is
+# honoured with 206 and a Content-Range header, except that a suffix range
+# gets `suffix_status` instead when that is not 206 (200 = range ignored and
+# the whole file sent; 416 = over-long suffix refused, as GitHub does).
+.s3_like_host <- function(bytes, head_status = 403L, suffix_status = 206L,
+                          log = NULL) {
+  total <- length(bytes)
+  function(req) {
+    method <- req$method %||% "GET"
+    range <- req$headers$Range %||% NA_character_
+    if (!is.null(log)) log$calls <- c(log$calls, paste(method, range))
+    if (identical(method, "HEAD")) return(httr2::response(head_status))
+    if (is.na(range)) return(httr2::response(200L, body = bytes))
+    if (grepl("^bytes=-", range)) {
+      if (suffix_status == 200L) return(httr2::response(200L, body = bytes))
+      n <- as.numeric(sub("^bytes=-", "", range))
+      if (suffix_status == 416L && n > total)
+        return(httr2::response(416L, headers = list(
+          `Content-Range` = sprintf("bytes */%d", total))))
+      from <- max(0, total - n); to <- total - 1
+    } else {
+      lims <- as.numeric(strsplit(sub("^bytes=", "", range), "-")[[1]])
+      from <- lims[1]; to <- min(lims[2], total - 1)
+    }
+    httr2::response(206L,
+      headers = list(`Content-Range` = sprintf("bytes %.0f-%.0f/%d", from, to, total)),
+      body = bytes[(from + 1):(to + 1)])
+  }
+}
+
+test_that(".content_range_total reads the size from a Content-Range header", {
+  resp <- function(cr) httr2::response(206L, headers = list(`Content-Range` = cr))
+  expect_equal(metacheck:::.content_range_total(resp("bytes 0-0/2545568")), 2545568)
+  expect_equal(metacheck:::.content_range_total(resp("bytes */2246")), 2246)
+  expect_true(is.na(metacheck:::.content_range_total(resp("bytes 0-99/*"))))
+  expect_true(is.na(metacheck:::.content_range_total(httr2::response(206L))))
+})
+
+test_that("zip_peek() lists a zip on a host that refuses HEAD", {
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/refuses-head.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  log <- new.env(); log$calls <- character(0)
+  httr2::local_mocked_responses(.s3_like_host(bytes, log = log))
+  cd <- metacheck:::zip_peek(url)
+
+  expect_setequal(cd$name, c("data.csv", "notes.txt"))
+  # The 403 was not retried: exactly one HEAD was sent.
+  expect_equal(sum(startsWith(log$calls, "HEAD")), 1)
+  expect_true(any(grepl("^GET bytes=-", log$calls)))
+})
+
+test_that("zip_peek() rejects a whole-file answer when the size is unknown", {
+  # Without a size, a host that ignores the range would send the whole file,
+  # which for a real archive can be gigabytes: only 206 is accepted.
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/ignores-range.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  httr2::local_mocked_responses(.s3_like_host(bytes, suffix_status = 200L))
+  expect_null(metacheck:::zip_peek(url))
+})
+
+test_that(".range_status_is_transient retries any status except 200/206 (#429)", {
+  # Widened after #429: an intermittent 401 (Dryad's real, confirmed status
+  # for an unauthenticated OR momentarily-flaky request, see .auth_for_url()'s
+  # comment) was accepted as final after exactly one try before this, since it
+  # is not on .storage_is_transient()'s fixed 403/429/5xx list. 200 and 206
+  # are the two statuses that mean "the request completed, one way or
+  # another" -- nothing to retry.
+  resp <- function(status) httr2::response(status)
+  expect_true(metacheck:::.range_status_is_transient(resp(401L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(400L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(403L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(429L)))
+  expect_true(metacheck:::.range_status_is_transient(resp(500L)))
+  expect_false(metacheck:::.range_status_is_transient(resp(200L)))
+  expect_false(metacheck:::.range_status_is_transient(resp(206L)))
+})
+
+test_that(".http_range_bytes's request is configured to retry on a 401 (#429)", {
+  # httr2::local_mocked_responses()/with_mocked_responses() do not exercise
+  # req_retry()'s actual retry loop at all -- req_perform()'s own source
+  # returns the mocked response immediately via handle_resp(), before the
+  # `while (tries < max_tries ...)` loop that consults is_transient/backoff
+  # is ever reached. This is a documented httr2 mocking limitation, not a
+  # metacheck bug -- confirmed independently elsewhere in this codebase (see
+  # test-repo-download.R's skipped "skip_on_api_limit = TRUE gives up on a
+  # confirmed rate limit fast" test and its comment). So this checks the
+  # request's policy directly instead of simulating multiple attempts.
+  req <- httr2::request("https://flaky.example/x.zip") |>
+    httr2::req_retry(max_tries = 3, retry_on_failure = TRUE,
+                     is_transient = metacheck:::.range_status_is_transient,
+                     backoff = metacheck:::.storage_backoff)
+  policy <- req$policies$retry_max_tries
+  expect_equal(policy, 3)
+  is_transient <- req$policies$retry_is_transient
+  expect_true(is_transient(httr2::response(401L)))
+  expect_true(is_transient(httr2::response(400L)))
+  expect_false(is_transient(httr2::response(200L)))
+  expect_false(is_transient(httr2::response(206L)))
+})
+
+test_that("zip_peek() handles a 416 answer to an over-long suffix range", {
+  # GitHub answers 416 when the requested tail is longer than the file, but
+  # still reports the size ("bytes */2246"); the file is then fetched whole by
+  # position.
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/short.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  httr2::local_mocked_responses(.s3_like_host(bytes, suffix_status = 416L))
+  cd <- metacheck:::zip_peek(url)
+  expect_setequal(cd$name, c("data.csv", "notes.txt"))
+})
+
+test_that(".zip_member_fetch() works on a host that refuses HEAD", {
+  d <- withr::local_tempdir()
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/member.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  httr2::local_mocked_responses(.s3_like_host(bytes))
+  cd <- metacheck:::zip_peek(url)
+  got <- metacheck:::.zip_member_fetch(url, cd[cd$name == "notes.txt", , drop = FALSE])
+  notes <- file.path(d, "notes.txt")
+  expect_equal(got, readBin(notes, "raw", file.size(notes)))
+})
+
+# ── On-disk zip-peek cache (issue #427) ─────────────────────────────────────
+# Regression tests for the in-memory-only cache: a restarted R process re-peeks
+# every zip it already peeked, even though a zip's contents cannot change.
+
+test_that("zip_peek(cache = TRUE) persists a result to disk and a later call reuses it", {
+  d <- withr::local_tempdir()
+  withr::local_options(metacheck.zip_peek_cache.dir = d)
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/persisted.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  log <- new.env(); log$calls <- character(0)
+  httr2::local_mocked_responses(.s3_like_host(bytes, log = log))
+  cd <- metacheck:::zip_peek(url, cache = TRUE)
+  expect_setequal(cd$name, c("data.csv", "notes.txt"))
+  expect_true(length(log$calls) > 0)   # a real network round-trip happened
+
+  # A cache file now exists on disk for this URL.
+  expect_true(metacheck:::.zip_peek_cache_has(url))
+
+  # Clear the in-memory cache only (simulating a fresh R session), then call
+  # again: the disk cache is hit, so NO further HTTP request is made.
+  rm(list = url, envir = metacheck:::.zip_peek_cache)
+  log$calls <- character(0)
+  cd2 <- metacheck:::zip_peek(url, cache = TRUE)
+  expect_equal(cd2, cd)
+  expect_equal(length(log$calls), 0)
+})
+
+test_that("zip_peek(cache = FALSE) never reads or writes the on-disk cache", {
+  d <- withr::local_tempdir()
+  withr::local_options(metacheck.zip_peek_cache.dir = d)
+  bytes <- .test_zip_bytes(d)
+  skip_if(is.null(bytes), "zip utility unavailable")
+  url <- "https://s3-like.example/uncached.zip"
+  withr::defer(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)))
+
+  httr2::local_mocked_responses(.s3_like_host(bytes))
+  metacheck:::zip_peek(url)   # cache defaults to FALSE
+  expect_false(metacheck:::.zip_peek_cache_has(url))
+})
+
+test_that("zip_peek_cache_clear() removes every cached entry", {
+  d <- withr::local_tempdir()
+  withr::local_options(metacheck.zip_peek_cache.dir = d)
+  metacheck:::.zip_peek_cache_put("http://x/a.zip", data.frame(name = "a", size = 1))
+  metacheck:::.zip_peek_cache_put("http://x/b.zip", NULL)
+  expect_true(metacheck:::.zip_peek_cache_has("http://x/a.zip"))
+
+  n <- zip_peek_cache_clear()
+  expect_equal(n, 2)
+  expect_false(metacheck:::.zip_peek_cache_has("http://x/a.zip"))
+})
+
+# ── skip_on_api_limit reaching zip_peek()'s own HTTP helpers (issue #427) ───
+# .wait_out_known_rate_limit() (R/repo-download.R) only skips a confirmed,
+# already-known rate limit when told to -- previously zip_peek()'s helpers
+# called it with no argument at all, so a caller's own skip_on_api_limit could
+# never reach it except via the global option.
+
+test_that("zip_peek(skip_on_api_limit = TRUE) gives up instead of waiting on a known rate limit", {
+  # A dedicated, never-reused host: withr::defer() inside test_that() has
+  # already been found (see this file's own note above .real_zip_peek) not to
+  # reliably run before the NEXT test_that() starts in this setup, so a record
+  # against a host any other test in this file also uses (s3-like.example)
+  # could otherwise leak into one of them and force a real multi-second sleep
+  # there instead of failing loudly here. Cleaned up immediately below rather
+  # than deferred, for the same reason.
+  host <- "s3-rate-limited-only.example"
+  on.exit(suppressWarnings(rm(list = host, envir = metacheck:::.host_rate_limit_cache)),
+         add = TRUE)
+  # Record a long remaining wait for this host, as a real 429 response would.
+  metacheck:::.host_rate_limit_record(host, 999)
+
+  url <- paste0("https://", host, "/rate-limited.zip")
+  on.exit(suppressWarnings(rm(list = url, envir = metacheck:::.zip_peek_cache)), add = TRUE)
+
+  # No mocked response is registered: if the wait were not skipped, this would
+  # either hang (Sys.sleep(999)) or error on an unmocked request. A quick NULL
+  # return proves the known-limit check gave up up front.
+  cd <- metacheck:::zip_peek(url, skip_on_api_limit = TRUE)
+  expect_null(cd)
+})
+
+test_that(".remote_size falls back to a ranged request when HEAD is refused", {
+  httr2::local_mocked_responses(.s3_like_host(as.raw(1:200)))
+  expect_equal(metacheck:::.remote_size("https://s3-like.example/file.csv"), 200)
+
+  # A host answering HEAD with a 403 error page must not have that page's
+  # Content-Length read as the file size.
+  httr2::local_mocked_responses(function(req) {
+    if (identical(req$method, "HEAD"))
+      return(httr2::response(403L, headers = list(`Content-Length` = "243")))
+    httr2::response(403L)
+  })
+  expect_true(is.na(metacheck:::.remote_size("https://s3-like.example/private.csv")))
 })

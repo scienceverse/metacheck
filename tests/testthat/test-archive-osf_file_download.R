@@ -137,17 +137,11 @@ test_that("osf_file_download zip keep archive", {
       req_error = function(req, is_error) req,
       req_timeout = function(req, seconds) req,
       req_progress = function(req, ...) req,
-      # .osf_zip_content_length() HEADs the archive first (no `path`, wants a
-      # content-length header); .osf_download_zip() then streams the archive's
-      # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
-      # body is written to disk, not returned in-memory) -- one mock has to
-      # serve both calls the real function makes, in order.
+      # .osf_download_zip() streams the archive's real bytes to `path`
+      # (mirroring req_perform(path=)'s own contract: the body is written to
+      # disk, not returned in-memory). No size request is made first: the OSF
+      # never reports an archive's size, so it is estimated from the listing.
       req_perform = function(req, path = NULL, mock = NULL) {
-        if (identical(req$method, "HEAD")) {
-          return(structure(
-            list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
-            class = "httr2_response"))
-        }
         if (!is.null(path)) writeBin(zip_raw, path)
         structure(list(status = 200, headers = list(), body = raw()), class = "httr2_response")
       },
@@ -227,17 +221,11 @@ test_that("osf_file_download zip unzip preserves structure", {
       req_error = function(req, is_error) req,
       req_timeout = function(req, seconds) req,
       req_progress = function(req, ...) req,
-      # .osf_zip_content_length() HEADs the archive first (no `path`, wants a
-      # content-length header); .osf_download_zip() then streams the archive's
-      # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
-      # body is written to disk, not returned in-memory) -- one mock has to
-      # serve both calls the real function makes, in order.
+      # .osf_download_zip() streams the archive's real bytes to `path`
+      # (mirroring req_perform(path=)'s own contract: the body is written to
+      # disk, not returned in-memory). No size request is made first: the OSF
+      # never reports an archive's size, so it is estimated from the listing.
       req_perform = function(req, path = NULL, mock = NULL) {
-        if (identical(req$method, "HEAD")) {
-          return(structure(
-            list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
-            class = "httr2_response"))
-        }
         if (!is.null(path)) writeBin(zip_raw, path)
         structure(list(status = 200, headers = list(), body = raw()), class = "httr2_response")
       },
@@ -318,17 +306,11 @@ test_that("osf_file_download zip unzip can flatten structure", {
       req_error = function(req, is_error) req,
       req_timeout = function(req, seconds) req,
       req_progress = function(req, ...) req,
-      # .osf_zip_content_length() HEADs the archive first (no `path`, wants a
-      # content-length header); .osf_download_zip() then streams the archive's
-      # real bytes to `path` (mirroring req_perform(path=)'s own contract: the
-      # body is written to disk, not returned in-memory) -- one mock has to
-      # serve both calls the real function makes, in order.
+      # .osf_download_zip() streams the archive's real bytes to `path`
+      # (mirroring req_perform(path=)'s own contract: the body is written to
+      # disk, not returned in-memory). No size request is made first: the OSF
+      # never reports an archive's size, so it is estimated from the listing.
       req_perform = function(req, path = NULL, mock = NULL) {
-        if (identical(req$method, "HEAD")) {
-          return(structure(
-            list(status = 200, headers = list(`content-length` = as.character(length(zip_raw))), body = raw()),
-            class = "httr2_response"))
-        }
         if (!is.null(path)) writeBin(zip_raw, path)
         structure(list(status = 200, headers = list(), body = raw()), class = "httr2_response")
       },
@@ -609,4 +591,65 @@ test_that("files skipped by a size limit are not reported as failures", {
   # the count is not asserted exactly -- reporting such a failure is precisely
   # what `downloaded` is for.
   expect_gt(sum(dl$downloaded), 0)
+})
+
+test_that("zip mode downloads a node too large for the budget file by file, within it", {
+  # Issue #424: a node whose archive did not fit was reported as "not
+  # downloaded" and then downloaded file by file anyway, with no limit. Now its
+  # files are downloaded individually, smallest first, as many as fit in the
+  # per-repository budget; the rest are marked attempted = FALSE.
+  osf_cache_clear()
+  withr::defer(osf_cache_clear())
+
+  mock_id <- "abcde"
+  contents <- data.frame(
+    osf_type = c("files", "files", "files", "nodes"),
+    osf_id = c("file1", "file2", "file3", "child1"),
+    name = c("a.csv", "b.csv", "c.csv", "Data"),
+    provider = c("osfstorage", "osfstorage", "osfstorage", NA),
+    path = c("/a.csv", "/b.csv", "/c.csv", NA),
+    kind = c("file", "file", "file", "folder"),
+    size = c(10, 20, 100, NA),
+    download_url = c("https://example.test/a.csv", "https://example.test/b.csv",
+                     "https://example.test/c.csv", NA),
+    parent = c("child1", "child1", "child1", mock_id),
+    project = c("child1", "child1", "child1", mock_id),
+    filetype = c("csv", "csv", "csv", NA),
+    downloads = c(1, 1, 1, NA),
+    stringsAsFactors = FALSE
+  )
+
+  fetched_urls <- character(0)
+  download_to <- withr::local_tempdir()
+  # A budget of 50 bytes: the node's 130 listed bytes do not fit, so no
+  # archive is requested; a.csv and b.csv (30 bytes) fit, c.csv does not.
+  budget_mb <- 50 / 1024^2
+  dl <- with_mocked_bindings(
+    with_mocked_bindings(
+      suppressWarnings(
+        osf_file_download(mock_id, download_to, mode = "zip", unzip = TRUE,
+                          max_download_size = budget_mb, metadata = FALSE)),
+      req_perform = function(...) stop("no archive should be requested"),
+      .package = "httr2"
+    ),
+    osf_info = function(...) contents,
+    osf_type = function(...) "nodes",
+    .download_many_parallel = function(urls, dests, expected_size = NA_real_,
+                                       skip_on_api_limit = FALSE) {
+      fetched_urls <<- c(fetched_urls, urls)
+      for (k in seq_along(dests)) {
+        dir.create(dirname(dests[k]), showWarnings = FALSE, recursive = TRUE)
+        writeBin(raw(expected_size[k]), dests[k])
+      }
+      rep(NA_character_, length(urls))
+    },
+    .package = "metacheck"
+  )
+
+  expect_setequal(fetched_urls, c("https://example.test/a.csv",
+                                  "https://example.test/b.csv"))
+  expect_equal(dl$downloaded[match(c("file1", "file2", "file3"), dl$osf_id)],
+               c(TRUE, TRUE, FALSE))
+  expect_equal(dl$attempted[match(c("file1", "file2", "file3"), dl$osf_id)],
+               c(TRUE, TRUE, FALSE))
 })

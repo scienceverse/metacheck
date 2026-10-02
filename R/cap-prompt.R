@@ -8,7 +8,7 @@
 # each refusal with the right item, not batched at the end) and raised as a
 # warning for programmatic capture. `message` is a cap_gate_* sentence that
 # already names the parameter and the value to lift the cap.
-cap_report <- function(message) {
+.cap_report <- function(message) {
   base::message(message)
   warning(message, call. = FALSE)
   invisible(NULL)

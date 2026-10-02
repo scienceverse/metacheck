@@ -10,7 +10,8 @@
   model = NULL,
   think = FALSE,
   options = list(),
-  base_url = Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+  base_url = Sys.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+  timeout = llm_timeout()
 )
 }
 \arguments{
@@ -25,6 +26,11 @@
 \item{options}{further options to pass to to the model}
 
 \item{base_url}{the local URL}
+
+\item{timeout}{request timeout in seconds; defaults to \code{\link[=llm_timeout]{llm_timeout()}}. A
+stuck/overloaded local Ollama server otherwise blocks here with no log
+output for as long as curl is willing to wait -- this turns that into a
+visible, retriable per-call failure instead.}
 }
 \description{
 ellmer routes ollama via the OpenAI-compatible /v1/ endpoint, which ignores
