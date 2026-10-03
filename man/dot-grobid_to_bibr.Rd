@@ -4,12 +4,15 @@
 \alias{.grobid_to_bibr}
 \title{Convert grobid to Bibr format}
 \usage{
-.grobid_to_bibr(xml_path, pb = NULL)
+.grobid_to_bibr(xml_path, pb = NULL, schema_version = NULL)
 }
 \arguments{
 \item{xml_path}{path to a single XML file}
 
 \item{pb}{a progress bar passed from \code{grobid_to_bibr()}}
+
+\item{schema_version}{NULL (the default) converts as before; "12.0" makes
+a paper in bibr export schema 12.x form (see \code{grobid_to_bibr()})}
 }
 \value{
 a paper object

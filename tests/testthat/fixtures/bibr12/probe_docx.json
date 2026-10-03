@@ -1,0 +1,254 @@
+{
+  "paper_id": "probe",
+  "schema_version": "12.0",
+  "source": {
+    "file_name": "probe.docx",
+    "sha256": "1fd1dd047911014703f95dc2fdae0889df1dfad2ee44c4b7f9df191cc662b129",
+    "input_format": "docx"
+  },
+  "metadata": {
+    "title": "A DOCX Probe",
+    "abstract": null,
+    "keywords": [],
+    "doi": null,
+    "pmid": null,
+    "pmcid": null,
+    "arxiv": null,
+    "language": null,
+    "paper_type": null,
+    "oecd_l1": null,
+    "oecd_l2": null,
+    "journal": null,
+    "volume": null,
+    "issue": null,
+    "first_page": null,
+    "last_page": null,
+    "issn": null,
+    "publisher": null,
+    "published": null,
+    "published_date": null,
+    "license": null,
+    "license_url": null,
+    "license_spdx": null,
+    "funding_statement": null,
+    "coi_statement": null,
+    "ethics_statement": null,
+    "data_availability": "Data are available at https://osf.io/abcd/."
+  },
+  "author": [],
+  "affiliation": [],
+  "funding": [],
+  "text": [
+    {
+      "text": "We found t(28) = 2.10, p < .05 as shown in Figure 1 and Table 1.",
+      "text_id": 1,
+      "paragraph_id": 1,
+      "section_id": 2,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Figure 1. A red box.",
+      "text_id": 2,
+      "paragraph_id": 2,
+      "section_id": 2,
+      "page_number": null,
+      "formatted": null
+    },
+    {
+      "text": "Data are available at https://osf.io/abcd/.",
+      "text_id": 3,
+      "paragraph_id": 3,
+      "section_id": 3,
+      "page_number": null,
+      "formatted": null
+    }
+  ],
+  "section": [
+    {
+      "section_id": 1,
+      "header": "A DOCX Probe",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "title"
+    },
+    {
+      "section_id": 2,
+      "header": "Introduction",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "intro"
+    },
+    {
+      "section_id": 3,
+      "header": "Data availability",
+      "level": 1,
+      "parent_section_id": null,
+      "section_type": "data_availability"
+    }
+  ],
+  "url": [
+    {
+      "url_id": 1,
+      "href": "https://osf.io/abcd/",
+      "link_text": null,
+      "text_id": 3,
+      "start": 22,
+      "end": 42
+    }
+  ],
+  "bib": [],
+  "xref": [
+    {
+      "xref_id": 1,
+      "target_id": 1,
+      "xref_type": "table",
+      "contents": "Table 1",
+      "text_id": 1,
+      "start": 56,
+      "end": 63
+    },
+    {
+      "xref_id": 2,
+      "target_id": 1,
+      "xref_type": "figure",
+      "contents": "Figure 1",
+      "text_id": 1,
+      "start": 43,
+      "end": 51
+    },
+    {
+      "xref_id": 3,
+      "target_id": 1,
+      "xref_type": "figure",
+      "contents": "Figure 1",
+      "text_id": 2,
+      "start": 0,
+      "end": 8
+    }
+  ],
+  "figure": [
+    {
+      "figure_id": 1,
+      "label": null,
+      "section_id": 2,
+      "text_id": null,
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAARklEQVR4nO3QQQ0AMAzDwC5Ayh/KYO27EHA+MYGTfO7uJFJEncJgIrG/wljiKK8wljjKK4wljvIKY4mjvMJY4iivMFZs9QMd3AFAAwrePQAAAABJRU5ErkJggg==",
+      "caption": null,
+      "page_number": null
+    }
+  ],
+  "table": [
+    {
+      "table_id": 1,
+      "label": null,
+      "section_id": 2,
+      "text_id": null,
+      "html": "<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>A</th>\n      <th>B</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>1</td>\n      <td>2</td>\n    </tr>\n  </tbody>\n</table>",
+      "contents": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          "1",
+          "2"
+        ]
+      ],
+      "caption": null,
+      "page_number": null
+    }
+  ],
+  "footnote": [],
+  "eq": [],
+  "metadata_match": [],
+  "affiliation_match": [],
+  "funding_match": [],
+  "bib_match": [],
+  "extraction": {
+    "producer": {
+      "name": "bibr",
+      "version": "0.5.1",
+      "build_sha": null
+    },
+    "converter": null,
+    "completed_at": "2026-09-23T13:16:47Z",
+    "ocr": null,
+    "llm": null,
+    "settings": {
+      "ref_seg": "geom",
+      "ref_parse": "ner",
+      "crossref_enrich": false,
+      "consolidate": "off"
+    },
+    "timings": {
+      "stages": {
+        "docx": 0.028,
+        "parse_segment": 0.012,
+        "extract": 0.315
+      },
+      "total_seconds": 0.355
+    },
+    "identity": {
+      "receipt": {
+        "selected": null,
+        "candidates": [],
+        "issue_codes": []
+      }
+    },
+    "diagnostics": {
+      "text_quality": null,
+      "references_complete": true,
+      "ref_seg_fallback_used": false,
+      "section_classification": [
+        {
+          "section_id": 1,
+          "score": 1.0,
+          "source": "title"
+        },
+        {
+          "section_id": 2,
+          "score": 1.0,
+          "source": "exact_alias"
+        },
+        {
+          "section_id": 3,
+          "score": 1.0,
+          "source": "exact_alias"
+        }
+      ],
+      "xref_tier": [
+        {
+          "xref_id": 1,
+          "tier": "position"
+        },
+        {
+          "xref_id": 2,
+          "tier": "position"
+        },
+        {
+          "xref_id": 3,
+          "tier": "position"
+        }
+      ]
+    },
+    "validation": {
+      "errors": 0,
+      "warnings": 1,
+      "blocking": 0,
+      "promotable": true,
+      "issues": [
+        {
+          "code": "VAL_CAPTION_MISSING",
+          "severity": "warning",
+          "message": "1/1 table(s) are missing a caption",
+          "origin_stage": "export",
+          "evidence_ids": [],
+          "count": 1,
+          "blocking": false
+        }
+      ]
+    },
+    "warnings": []
+  }
+}

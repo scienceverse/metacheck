@@ -25,7 +25,15 @@ ref_miscitation <- function(paper, db = readRDS(system.file("databases/miscite.R
 
   # consolidate xrefs, filter, and expand
   text <- paper_table(paper, "text")
-  xrefs <- paper_table(paper, "xref") |>
+  xrefs <- paper_table(paper, "xref")
+  # bibr 12.x papers cite a reference with a "bib" xref whose target_id is
+  # the bib_id (their xref_id is the row's own key)
+  v12 <- xrefs$paper_id %in% .bibr12_paper_ids(paper)
+  if (any(v12)) {
+    xrefs$xref_id[v12] <- ifelse(xrefs$xref_type[v12] %in% "bib",
+                                 xrefs$target_id[v12], NA_integer_)
+  }
+  xrefs <- xrefs |>
     dplyr::filter(!is.na(xref_id)) |>
     dplyr::left_join(text, by = c("paper_id", "text_id")) |>
     dplyr::select(paper_id, bib_id = xref_id, citation = text) |>

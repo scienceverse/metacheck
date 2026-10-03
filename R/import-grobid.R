@@ -167,12 +167,22 @@ convert_grobid <- function(file_path, save_path = ".",
 #' @param xml_path the path to the XML file
 #' @param save_path directory or file path to save to; set to NULL to return a paper object
 #' @param crossref_lookup whether to look up references in crossref
+#' @param schema_version NULL (the default) converts as before; "12.0" makes
+#'   a paper in bibr export schema 12.x form and saves a bibr 12.0 file (see
+#'   [paper_write()]). Its source is the PDF Grobid read when it is next to
+#'   the XML (published.pdf for published.pdf.tei.xml or published.xml), else
+#'   the XML file.
 #'
 #' @returns a paper object
 #' @export
 grobid_to_bibr <- function(xml_path,
                            save_path = ".",
-                           crossref_lookup = FALSE) {
+                           crossref_lookup = FALSE,
+                           schema_version = NULL) {
+  if (!is.null(schema_version) && !identical(schema_version, "12.0")) {
+    stop("schema_version must be NULL or \"12.0\"", call. = FALSE)
+  }
+
   # handle directory or multiple files ----
   if (length(xml_path) == 1 && dir.exists(xml_path)) {
     dir_path <- xml_path
@@ -188,7 +198,7 @@ grobid_to_bibr <- function(xml_path,
     what <- basename(xml_path1)
     pb$tick(0, list(step = "", what = what))
     p <- tryCatch(
-      .grobid_to_bibr(xml_path = xml_path1, pb),
+      .grobid_to_bibr(xml_path = xml_path1, pb, schema_version),
       error = \(e) {
         errors <<- errors + 1
         logger("grobid_to_bibr", list(xml_path = xml_path1, error = e$message))
@@ -212,7 +222,7 @@ grobid_to_bibr <- function(xml_path,
     # or save paper and return file name
     # save here instead of after iteration so batches can be cancelled with partial return
     file_name <- basename(xml_path1) |> gsub("\\.xml$", "", x = _)
-    json_path <- paper_write(p, file_name, save_path)
+    json_path <- paper_write(p, file_name, save_path, schema_version)
     return(json_path)
   })
 
@@ -290,12 +300,18 @@ grobid_to_bibr <- function(xml_path,
 #'
 #' @param xml_path path to a single XML file
 #' @param pb a progress bar passed from `grobid_to_bibr()`
+#' @param schema_version NULL (the default) converts as before; "12.0" makes
+#'   a paper in bibr export schema 12.x form (see `grobid_to_bibr()`)
 #'
 #' @returns a paper object
 #' @export
 #' @keywords internal
-.grobid_to_bibr <- function(xml_path, pb = NULL) {
+.grobid_to_bibr <- function(xml_path, pb = NULL, schema_version = NULL) {
   header <- section_type <- NULL
+
+  if (!is.null(schema_version)) {
+    return(.grobid_to_bibr12(xml_path, schema_version))
+  }
 
   schema <- .paper_schema()
   m <- regexec("(?<=\\(v)[\\d\\.]+", schema$description, perl = TRUE)

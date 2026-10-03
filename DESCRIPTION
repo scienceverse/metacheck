@@ -65,6 +65,7 @@ Suggests:
     RSQLite,
     zip,
     digest,
+    jsonvalidate,
     BiocManager
 Config/testthat/edition: 3
 Config/testthat/parallel: false

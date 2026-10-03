@@ -4,7 +4,12 @@
 \alias{grobid_to_bibr}
 \title{Convert Grobid TEI XML file to bibr format}
 \usage{
-grobid_to_bibr(xml_path, save_path = ".", crossref_lookup = FALSE)
+grobid_to_bibr(
+  xml_path,
+  save_path = ".",
+  crossref_lookup = FALSE,
+  schema_version = NULL
+)
 }
 \arguments{
 \item{xml_path}{the path to the XML file}
@@ -12,6 +17,12 @@ grobid_to_bibr(xml_path, save_path = ".", crossref_lookup = FALSE)
 \item{save_path}{directory or file path to save to; set to NULL to return a paper object}
 
 \item{crossref_lookup}{whether to look up references in crossref}
+
+\item{schema_version}{NULL (the default) converts as before; "12.0" makes
+a paper in bibr export schema 12.x form and saves a bibr 12.0 file (see
+\code{\link[=paper_write]{paper_write()}}). Its source is the PDF Grobid read when it is next to
+the XML (published.pdf for published.pdf.tei.xml or published.xml), else
+the XML file.}
 }
 \value{
 a paper object
