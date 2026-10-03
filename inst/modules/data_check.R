@@ -40,6 +40,16 @@
 #' `NA`) are classified but not column-extracted; pass `local_path` to point at
 #' a downloaded copy of the repository.
 #'
+#' For a paper whose repository is on Dryad, this means column extraction
+#' never happens unless a Dryad API key is set: Dryad requires one to
+#' download file bytes, even from a fully public dataset (dataset listing
+#' and metadata do not need one). Without a key, every Dryad file stays
+#' classified but un-downloaded, column_n is 0, and a warning naming Dryad
+#' and `?dryad_pat`/`?dryad_auth` is included among the download failures.
+#' A one-time session message is also shown (see repo_check) the first time
+#' a Dryad dataset is encountered with no key set.
+#'
+
 #' <validation>This module has not been validated. All checks in the data_check module have unknown error rates. Carefully evaluate the output of this module. You can help improve this module by reporting an issue on GitHub.</validation>
 #'
 #' @keywords results
@@ -59,8 +69,8 @@
 #'   * `"data"` (the default) fetches only the machine-readable files the checks
 #'     analyse — tabular data plus codebook/README files.
 #'   * `"all"` fetches **every** file in the repository (code, materials, PDFs,
-#'     assets, ...), the right choice when building a complete data archive with
-#'     `convert_psychds()`. Still subject to the size caps below.
+#'     assets, ...), the right choice when building a complete local mirror of
+#'     the repository. Still subject to the size caps below.
 #'   * `FALSE` (or `"none"`) downloads nothing — files are only classified by
 #'     name. `TRUE` is accepted as a synonym for `"data"`.
 #'   Downloads are reused on later runs.
@@ -323,8 +333,19 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # lets the framework handle tab switching and widget sizing, rather than
   # hand-rolled show/hide JS. Tab-heading level (##) becomes a tab label and is
   # not added to the report TOC.
+  #
+  # report_type("simple") (see its own docs): the tabset JS itself is one of
+  # the things that makes a report email-unsafe, so emit plain stacked real
+  # headings instead -- one level below the surrounding section (####), so
+  # each file name becomes a genuine ##### heading with no JS involved.
   file_tabset <- function(files, table_fun) {
     if (length(files) == 0) return(NULL)
+    if (identical(report_type(), "simple")) {
+      secs <- vapply(files, function(f) {
+        paste(c(paste0("##### ", f), table_fun(f)), collapse = "\n\n")
+      }, character(1))
+      return(paste(secs, collapse = "\n\n"))
+    }
     # Each tab heading and its body are separate blocks joined by a blank line:
     # Pandoc only parses a `## heading` when a blank line precedes it, so a
     # single newline can let the heading be swallowed into the previous block
@@ -1268,9 +1289,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_trial_level <- if (n_trial_level > 0) sprintf(
     paste0("%d trial-level data file%s (E-Prime / Inquisit / jsPsych / Behaverse) ",
            "%s recognised. These are per-participant records of a behavioural task, ",
-           "so they are not listed as separate datasets — convert_psychds() merges ",
-           "them per instrument into Behaverse `paradata/<instrument>.json` (one ",
-           "file per instrument, all participants). Nothing is deleted."),
+           "so they are not listed as separate datasets. Nothing is deleted."),
     n_trial_level, plural(n_trial_level),
     if (n_trial_level == 1) "was" else "were"
   ) else NULL

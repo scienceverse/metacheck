@@ -249,6 +249,8 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
     on.exit(pb$terminate())
   }
 
+  .dryad_warn_if_no_key()
+
   paste0("* Retrieving info from Dryad DOI ", dryad_doi, "...") |>
     list(what = _) |>
     pb$tick(0, tokens = _)
@@ -469,6 +471,30 @@ dryad_auth <- function(client_id = NULL, client_secret = NULL,
 # mid-session take effect on the very next Dryad request.
 .dryad_oauth_client <- function() {
   .dryad_auth()
+}
+
+# Warn, once per session, the first time a Dryad dataset is resolved with no
+# key set (dryad_pat() nor dryad_auth()). Dataset metadata/listing works
+# without one (see below), so this is shown here rather than failing outright
+# -- but every later file-byte download for that dataset will 401 (see
+# .dryad_headers()'s own comment), and surfacing that only after the fact, one
+# failed download at a time, means a whole corpus run can finish before the
+# user learns why every Dryad file came back empty. Shown at most once per
+# session, same pattern as the repo-cache notice in download_repo_files();
+# reset with options(metacheck.dryad_pat.notified = NULL) to see it again.
+.dryad_warn_if_no_key <- function() {
+  if (isTRUE(getOption("metacheck.dryad_pat.notified"))) return(invisible())
+  has_key <- nzchar(tryCatch(dryad_pat(), error = \(e) "") %||% "") ||
+    !is.null(tryCatch(.dryad_oauth_client(), error = \(e) NULL))
+  if (!has_key) {
+    message(
+      "No Dryad API key is set. Dryad dataset listings and metadata can be ",
+      "read without one, but downloading file CONTENTS from Dryad requires ",
+      "a key even for a fully public dataset -- every such download will ",
+      "fail with 'HTTP 401' until one is set. See ?dryad_pat or ?dryad_auth."
+    )
+  }
+  options(metacheck.dryad_pat.notified = TRUE)
 }
 
 #' Download all files from a Dryad dataset

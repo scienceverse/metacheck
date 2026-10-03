@@ -1,0 +1,196 @@
+{
+    "status": "ok",
+    "message-type": "work-list",
+    "message-version": "1.0.0",
+    "message": {
+        "facets": {
+
+        },
+        "total-results": 2,
+        "items": [
+            {
+                "indexed": {
+                    "date-parts": [
+                        [
+                            2022,
+                            4,
+                            6
+                        ]
+                    ],
+                    "date-time": "2022-04-06T02:56:16Z",
+                    "timestamp": 1649213776699
+                },
+                "edition-number": "1",
+                "reference-count": 0,
+                "publisher": "Atena Editora",
+                "content-domain": {
+                    "domain": [
+
+                    ],
+                    "crossmark-restriction": false
+                },
+                "DOI": "10.22533/at.ed.6632101038",
+                "type": "book-chapter",
+                "created": {
+                    "date-parts": [
+                        [
+                            2021,
+                            3,
+                            2
+                        ]
+                    ],
+                    "date-time": "2021-03-02T12:33:47Z",
+                    "timestamp": 1614688427000
+                },
+                "page": "57-64",
+                "source": "Crossref",
+                "is-referenced-by-count": 0,
+                "title": [
+                    "LETALIDADE DAS EXPOSIÇÕES A RATICIDAS CUMARÍNICOS ATENDIDAS PELO CENTRO DE INFORMAÇÕES TOXICOLÓGICAS DO RIO GRANDE DO SUL"
+                ],
+                "prefix": "10.22533",
+                "author": [
+                    {
+                        "given": "Matheus Lomba",
+                        "family": "Dasqueve",
+                        "sequence": "first",
+                        "affiliation": [
+
+                        ],
+                        "role": [
+                            {
+                                "role": "author",
+                                "vocabulary": "crossref"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Andressa Luísa",
+                        "family": "Dallago",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ],
+                        "role": [
+                            {
+                                "role": "author",
+                                "vocabulary": "crossref"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Lívia Aurélio",
+                        "family": "Andreoni",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ],
+                        "role": [
+                            {
+                                "role": "author",
+                                "vocabulary": "crossref"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Anderson Roberto Machado dos",
+                        "family": "Santos",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ],
+                        "role": [
+                            {
+                                "role": "author",
+                                "vocabulary": "crossref"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Marina Becker",
+                        "family": "Klein",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ],
+                        "role": [
+                            {
+                                "role": "author",
+                                "vocabulary": "crossref"
+                            }
+                        ]
+                    },
+                    {
+                        "given": "Ariádne Garcia",
+                        "family": "Leite",
+                        "sequence": "additional",
+                        "affiliation": [
+
+                        ],
+                        "role": [
+                            {
+                                "role": "author",
+                                "vocabulary": "crossref"
+                            }
+                        ]
+                    }
+                ],
+                "member": "9818",
+                "published-online": {
+                    "date-parts": [
+                        [
+                            2021,
+                            3,
+                            2
+                        ]
+                    ]
+                },
+                "container-title": [
+                    "Práticas Preventivas e Práticas Curativas na Medicina 2"
+                ],
+                "deposited": {
+                    "date-parts": [
+                        [
+                            2021,
+                            3,
+                            2
+                        ]
+                    ],
+                    "date-time": "2021-03-02T12:33:55Z",
+                    "timestamp": 1614688435000
+                },
+                "score": 17.606548,
+                "resource": {
+                    "primary": {
+                        "URL": "https://www.atenaeditora.com.br/post-ebook/3882"
+                    }
+                },
+                "issued": {
+                    "date-parts": [
+                        [
+                            2021,
+                            3,
+                            2
+                        ]
+                    ]
+                },
+                "references-count": 0,
+                "URL": "https://doi.org/10.22533/at.ed.6632101038",
+                "published": {
+                    "date-parts": [
+                        [
+                            2021,
+                            3,
+                            2
+                        ]
+                    ]
+                }
+            }
+        ],
+        "items-per-page": 1,
+        "query": {
+            "start-index": 0,
+            "search-terms": null
+        }
+    }
+}

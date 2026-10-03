@@ -296,6 +296,20 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   req
 }
 
+# A 401 from Dryad almost always means the same thing: no API key was set, and
+# Dryad (unlike OSF/Zenodo/Figshare/Dataverse) REQUIRES one to download file
+# bytes even from a fully public dataset (see .dryad_headers()'s own comment).
+# Appended to the raw HTTP error so the existing failure-reporting message in
+# download_repo_files() names the real cause instead of a bare "HTTP 401".
+.dryad_401_hint <- function(url, status) {
+  if (!identical(status, 401L) || !grepl("datadryad\\.org", url, ignore.case = TRUE))
+    return("")
+  has_key <- nzchar(tryCatch(dryad_pat(), error = \(e) "") %||% "") ||
+    !is.null(tryCatch(.dryad_oauth_client(), error = \(e) NULL))
+  if (has_key) return("")
+  " (Dryad requires an API key to download file bytes, even from a public dataset -- see ?dryad_pat)"
+}
+
 # Did this response serve a login page instead of the file?
 #
 # An unauthenticated request for a private OSF file returns HTTP 200 with an
@@ -683,7 +697,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
         !is.null(e$resp) && !is.na(.rate_limit_wait(e$resp))) {
       return(paste0("API rate limit exhausted: ", conditionMessage(e)))
     }
-    conditionMessage(e)
+    hint <- if (inherits(e, "httr2_http_401") && !is.null(e$resp))
+      .dryad_401_hint(url, httr2::resp_status(e$resp)) else ""
+    paste0(conditionMessage(e), hint)
   })
 }
 
@@ -780,7 +796,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       if (file.exists(dests[i])) unlink(dests[i])
       if (isTRUE(skip_on_api_limit) && sc == 429L && !is.na(.rate_limit_wait(r)))
         return(paste0("API rate limit exhausted: HTTP ", sc))
-      return(sprintf("HTTP %d", sc))
+      return(paste0(sprintf("HTTP %d", sc), .dryad_401_hint(urls[i], sc)))
     }
     if (!file.exists(dests[i]) || file.size(dests[i]) == 0) {
       # httptest2's mock-API mode returns the response object in memory but
