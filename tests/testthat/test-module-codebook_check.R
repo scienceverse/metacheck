@@ -448,7 +448,7 @@ test_that("a task is named when the data shows it and the paper confirms it", {
     "Participants completed a colour-word Stroop task.",
     "Reaction time and accuracy were recorded on every trial."))
 
-  cc <- cbc_run(d, paper = p)
+  cc <- cbc_run(d, paper = p, extract_scales = TRUE)
   expect_gte(cc$summary_table$task_files_n, 1)
   expect_match(paste(cc$report, collapse = "\n"), "#### Tasks", fixed = TRUE)
 })
@@ -462,7 +462,7 @@ test_that("a task named in the paper with no data is reported, not treated as an
              file.path(d, "codebook.csv"))
 
   p <- test_paper("Participants completed a Stroop task before the survey.")
-  cc <- cbc_run(d, paper = p)
+  cc <- cbc_run(d, paper = p, extract_scales = TRUE)
 
   expect_gte(cc$summary_table$task_paper_only_n, 1)
   expect_match(paste(cc$report, collapse = "\n"),
@@ -497,7 +497,7 @@ test_that("a totals-only block with no item block anywhere is flagged orphan", {
                IERQ_model  = round(runif(20, 5, 35), 1)),
     file.path(d, "data", "totals.csv"), row.names = FALSE)
 
-  cc <- cbc_run(d)
+  cc <- cbc_run(d, extract_scales = TRUE)
   # Whether the block is NAMED depends on the dictionary, but the module must
   # at minimum detect and report the column group.
   expect_match(paste(cc$report, collapse = "\n"), "#### Scales", fixed = TRUE)
@@ -573,7 +573,7 @@ test_that("rules-only mode names scales from the dictionary alone", {
   utils::write.csv(cbind(id = 1:40, items),
                    file.path(d, "data", "s.csv"), row.names = FALSE)
 
-  cc <- cbc_run(d)
+  cc <- cbc_run(d, extract_scales = TRUE)
   named <- !is.na(cc$table$scale) & nzchar(cc$table$scale)
   expect_true(any(named))
   expect_true(all(cc$table$scale_source[named] == "matched"))
@@ -622,4 +622,47 @@ test_that("with no codebook the report says so instead of showing an empty table
   expect_match(rpt, "No codebook or README documentation was found", fixed = TRUE)
   expect_false(grepl("#### Column Documentation", rpt, fixed = TRUE))
   expect_equal(cc$traffic_light, "red")
+})
+
+test_that("codebook_check emits plain headings instead of a tabset in simple mode", {
+  llm_use(FALSE)
+  # Explicit set + reset, not withr::local_options(): relying on automatic
+  # end-of-test restoration was confirmed to leak "simple" into whichever
+  # test runs next under this project's actual test runner (devtools::test())
+  # -- see test-report-helpers.R's "report_type" test for the full story.
+  report_type("simple")
+  d <- cbc_dir("simpletabset")
+  utils::write.csv(data.frame(id = 1:5, age = 20:24),
+                   file.path(d, "data", "s1.csv"), row.names = FALSE)
+  utils::write.csv(data.frame(id = 1:5, sex = c(1, 2, 1, 2, 1)),
+                   file.path(d, "data", "s2.csv"), row.names = FALSE)
+  writeLines(c("varname,description", "age,Age in years", "sex,Sex"),
+             file.path(d, "codebook.csv"))
+
+  cc <- cbc_run(d)
+  rpt <- paste(cc$report, collapse = "\n")
+
+  report_type("full")
+
+  expect_false(grepl("panel-tabset", rpt, fixed = TRUE))
+  expect_match(rpt, "##### s1.csv", fixed = TRUE)
+  expect_match(rpt, "##### s2.csv", fixed = TRUE)
+})
+
+test_that("codebook_check still uses a tabset in full mode", {
+  llm_use(FALSE)
+  report_type("full")
+  d <- cbc_dir("fulltabset")
+  utils::write.csv(data.frame(id = 1:5, age = 20:24),
+                   file.path(d, "data", "s1.csv"), row.names = FALSE)
+  utils::write.csv(data.frame(id = 1:5, sex = c(1, 2, 1, 2, 1)),
+                   file.path(d, "data", "s2.csv"), row.names = FALSE)
+  writeLines(c("varname,description", "age,Age in years", "sex,Sex"),
+             file.path(d, "codebook.csv"))
+
+  cc <- cbc_run(d)
+  rpt <- paste(cc$report, collapse = "\n")
+  expect_match(rpt, "panel-tabset", fixed = TRUE)
+  expect_match(rpt, "## s1.csv", fixed = TRUE)
+  expect_match(rpt, "## s2.csv", fixed = TRUE)
 })

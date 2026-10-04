@@ -11,15 +11,25 @@ report_table(table, colwidths = "auto", maxrows = 2, escape = FALSE)
 
 \item{colwidths}{set column widths as a vector of px (number > 1) or percent (numbers <= 1)}
 
-\item{maxrows}{if the table has more rows than this, paginate}
+\item{maxrows}{if the table has more rows than this, paginate (full report)
+or show a scrollbar sized to approximately this many rows (simple report)}
 
-\item{escape}{whether or not to escape the DT (necessary if using raw html)}
+\item{escape}{whether or not to escape the table (necessary if using raw html)}
 }
 \value{
-the datatable
+the datatable (full report) or a knitr::kable object (simple report)
 }
 \description{
 A function to display tables in reports.
+}
+\details{
+When \code{\link[=report_type]{report_type()}} is \code{"simple"}, this renders a plain static HTML table
+(via \code{knitr::kable()}) in a CSS-only scrollable box instead of a
+\code{DT::datatable()} widget -- no JavaScript at all, so the report stays safe
+to email. Every row is kept and reachable by scrolling (just like the full
+report's paginated widget, just without the JS), except for a pathologically
+large table, which is truncated to \link{.report_table_simple_max_rows} rows with
+a note, so one huge table cannot make the report unboundedly large.
 }
 \examples{
 report_table(iris)

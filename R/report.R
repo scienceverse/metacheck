@@ -1,3 +1,29 @@
+# Directory holding a Pandoc binary rmarkdown::render() can use, for the
+# report_type("simple") render path (see report_qmd()'s own comment for why
+# that path avoids quarto::quarto_render()). rmarkdown::pandoc_available()
+# only finds a standalone Pandoc install or one RStudio has already pointed
+# it at via the RSTUDIO_PANDOC env var (RStudio sets that for its own
+# bundled copy when running inside the IDE) -- in a plain Rscript/terminal
+# session with no standalone Pandoc, confirmed to return FALSE with nothing
+# set. Rather than require a second, separate Pandoc install just for this
+# one render path, reuse the copy Quarto already bundles (report() already
+# depends on Quarto for the full-report path) via quarto::quarto_path(),
+# whose directory layout is <quarto_root>/bin/quarto(.exe) with Pandoc at
+# <quarto_root>/bin/tools/. Returns NULL (not an error) if that binary or
+# layout cannot be found, so the caller can still try rmarkdown's own
+# default detection rather than fail outright.
+.report_pandoc_dir <- function() {
+  quarto_bin <- tryCatch(quarto::quarto_path(), error = function(e) NULL)
+  if (is.null(quarto_bin) || !nzchar(quarto_bin)) return(NULL)
+
+  pandoc_dir <- file.path(dirname(quarto_bin), "tools")
+  has_pandoc <- file.exists(file.path(pandoc_dir, "pandoc")) ||
+    file.exists(file.path(pandoc_dir, "pandoc.exe"))
+  if (!dir.exists(pandoc_dir) || !has_pandoc) return(NULL)
+
+  pandoc_dir
+}
+
 #' Create a Report
 #'
 #' Run specified modules on a paper and generate a report in quarto (qmd), html, or pdf format.
@@ -11,6 +37,13 @@
 #' @param modules a vector of modules to run (names for built-in modules or paths for custom modules)
 #' @param output_file the name of the output file
 #' @param output_format the format to create the report in
+#' @param report_type `"full"` (the default) for the normal interactive
+#'   report (theme toggle, sortable/paginated JavaScript tables, tabbed
+#'   sections), or `"simple"` for a static report with none of that -- plain
+#'   tables, stacked headings instead of tabs, a single theme, no embedded
+#'   JavaScript at all. Use `"simple"` for a report you plan to email: mail
+#'   clients and scanners routinely flag the JavaScript a full report embeds
+#'   (even though it is inert without a browser). See [report_type()].
 #' @param args a list of arguments to pass to modules (see Details)
 #'
 #' @return the module output, invisibly, with the report's file path in its
@@ -22,6 +55,7 @@
 #' \dontrun{
 #' paper <- demopaper()
 #' report(paper)
+#' report(paper, report_type = "simple") # email-safe, no embedded JS
 #' }
 report <- function(paper,
                    modules = c(
@@ -46,6 +80,7 @@ report <- function(paper,
                                         "_report.",
                                         output_format),
                    output_format = c("html", "qmd"),
+                   report_type = c("full", "simple"),
                    args = list()) {
   # error catching ----
   ## check output format
@@ -55,6 +90,28 @@ report <- function(paper,
       call. = FALSE
     )
   }
+
+  ## check report type, and set it for the duration of this call (module code
+  ## that builds tables/tabsets, e.g. report_table(), checks report_type()
+  ## itself -- see its own docs for why that cannot be a plain argument).
+  ## Restored on exit, including on error, so it never leaks into the
+  ## caller's session.
+  report_type <- tolower(report_type[[1]])
+  if (!report_type %in% c("full", "simple")) {
+    stop("The report_type must be either 'full' or 'simple'.",
+      call. = FALSE
+    )
+  }
+  if (identical(report_type, "simple") && output_format != "qmd" &&
+      !requireNamespace("rmarkdown", quietly = TRUE)) {
+    stop("report_type = 'simple' needs the 'rmarkdown' package. ",
+      "Install it with install.packages('rmarkdown').",
+      call. = FALSE
+    )
+  }
+  prev_report_type <- metacheck::report_type()
+  metacheck::report_type(report_type)
+  on.exit(metacheck::report_type(prev_report_type), add = TRUE)
 
   ## check if modules are available
   mod_exists <- sapply(modules, module_find)
@@ -77,7 +134,7 @@ report <- function(paper,
     }
 
     reports <- mapply(\(x, of) {
-      r <- tryCatch(report(x, modules, of, output_format, args),
+      r <- tryCatch(report(x, modules, of, output_format, report_type, args),
         error = \(e) {
           logger("report", list(paper = x$id, error = e$message))
           warning("Error in ", x$id, ":\n", e$message,
@@ -117,14 +174,71 @@ report <- function(paper,
   if (output_format == "qmd") {
     write(report_text, output_file)
     save_path <- output_file
+  } else if (identical(report_type, "simple")) {
+    # Simple-mode rendering goes around Quarto's HTML format entirely (see
+    # report_qmd()'s own comment for why) -- rmarkdown::render() on the plain
+    # R Markdown text built above, using the SAME Pandoc binary Quarto
+    # bundles (.report_pandoc_dir()), since requiring a second, separate
+    # Pandoc install just for this would be a real new dependency.
+    temp_input <- tempfile(fileext = ".Rmd")
+    temp_output <- sub("Rmd$", output_format, temp_input)
+
+    on.exit(unlink(temp_input), add = TRUE)
+    on.exit(unlink(temp_output), add = TRUE)
+
+    write(report_text, temp_input)
+
+    save_path <- tryCatch(
+      {
+        pandoc_dir <- .report_pandoc_dir()
+        prev_pandoc_env <- Sys.getenv("RSTUDIO_PANDOC", unset = NA)
+        if (!is.null(pandoc_dir)) Sys.setenv(RSTUDIO_PANDOC = pandoc_dir)
+        on.exit({
+          if (is.na(prev_pandoc_env)) Sys.unsetenv("RSTUDIO_PANDOC")
+          else Sys.setenv(RSTUDIO_PANDOC = prev_pandoc_env)
+        }, add = TRUE)
+
+        rmarkdown::render(
+          input = temp_input,
+          output_file = basename(temp_output),
+          output_dir = dirname(temp_output),
+          quiet = TRUE,
+          envir = new.env(parent = globalenv())
+        )
+        file.rename(temp_output, output_file)
+        output_file
+      },
+      error = function(e) {
+        # save the Rmd on render error and return its path
+        output_rmd <- output_file |>
+          gsub("\\.html$", "", x = _) |>
+          paste0(".Rmd")
+        write(report_text, output_rmd)
+
+        logger("rmarkdown render", list(paper = paper$paper_id,
+                                        rmd = output_rmd,
+                                        error = e$message))
+
+        warning("There was an error rendering your report:\n", e$message,
+          "\n\nSee the following for the R Markdown file:\n", output_rmd,
+          call. = FALSE
+        )
+        return(output_rmd)
+      }
+    )
   } else {
     # render report ----
     temp_input <- tempfile(fileext = ".qmd")
     temp_output <- sub("qmd$", output_format, temp_input)
 
     ## clean up
-    on.exit(unlink(temp_input))
-    on.exit(unlink(temp_output)) # won't exist if rename works
+    # add = TRUE on both: a bare on.exit() call REPLACES every handler
+    # already registered in this call (including temp_input's own cleanup
+    # just below, and report_type's restoration above) rather than adding to
+    # them -- confirmed to have silently skipped temp_input's unlink() even
+    # before report_type existed, since the very next on.exit() call wiped it.
+    on.exit(unlink(temp_input), add = TRUE)
+    on.exit(unlink(temp_output), add = TRUE) # won't exist if rename works
 
     write(report_text, temp_input)
 
@@ -189,6 +303,9 @@ report <- function(paper,
 #'   exist.
 #' @param output_format the format to create the report in, `"html"` (the
 #'   default) or `"qmd"`
+#' @param report_type `"full"` (the default) or `"simple"` (a static,
+#'   email-safe report with no embedded JavaScript) -- see [report()] and
+#'   [report_type()].
 #' @param modules the modules to run. Defaults to the four repository modules,
 #'   in the order they depend on each other. Change it to run fewer.
 #' @param args a list of extra arguments to pass to modules, named by module
@@ -205,14 +322,19 @@ report <- function(paper,
 #'
 #' # write the report somewhere else
 #' report_repository("my_study", output_file = "reports/my_study.html")
+#'
+#' # a static, email-safe report
+#' report_repository("my_study", report_type = "simple")
 #' }
 report_repository <- function(path,
                               output_file = NULL,
                               output_format = c("html", "qmd"),
+                              report_type = c("full", "simple"),
                               modules = c("repo_check", "code_check",
                                           "data_check", "codebook_check"),
                               args = list()) {
   output_format <- tolower(output_format[[1]])
+  report_type <- tolower(report_type[[1]])
 
   ## error checking ----
   if (!is.character(path) || length(path) != 1 || is.na(path)) {
@@ -254,6 +376,7 @@ report_repository <- function(path,
     modules = modules,
     output_file = output_file,
     output_format = output_format,
+    report_type = report_type,
     args = args
   )
 }
@@ -368,7 +491,21 @@ report_module_run <- function(paper, modules, args = list()) {
 #' @export
 report_qmd <- function(module_output, paper = list()) {
   ## read in report template ----
-  report_template <- system.file("templates/_report.qmd",
+  # report_type() (set for the call's duration by report(), or directly by
+  # the caller -- see its own docs) picks which template builds the header:
+  # _report_simple.Rmd is a plain R MARKDOWN template (not Quarto), rendered
+  # by report() via rmarkdown::render() rather than quarto::quarto_render().
+  # Quarto's HTML format always embeds its own baseline JavaScript bundle
+  # (tabsets.js, Bootstrap/Popper) REGARDLESS of theme/feature settings --
+  # there is no Quarto option to suppress it -- so getting an email-safe
+  # report with (almost) no embedded <script> content requires going around
+  # Quarto's HTML format entirely and using the same Pandoc binary Quarto
+  # bundles, driven through rmarkdown's much plainer default template
+  # instead. See .report_pandoc_dir()'s own docs for how that Pandoc binary
+  # is located.
+  template_file <- if (identical(report_type(), "simple"))
+    "templates/_report_simple.Rmd" else "templates/_report.qmd"
+  report_template <- system.file(template_file,
     package = "metacheck"
   )
   rt <- readLines(report_template)
@@ -450,7 +587,28 @@ report_qmd <- function(module_output, paper = list()) {
     paste(collapse = "\n\n") |>
     gsub("\\n{3,}", "\n\n", x = _)
 
+  # Both quarto::quarto_render() and rmarkdown::render() always execute this
+  # document's R chunks in a separate subprocess -- options() set in the
+  # calling R session, including report_type()'s, never reach it. The text
+  # above (scroll_table()'s .panel-tabset vs. plain headings,
+  # codebook_file_tabset()) was already built correctly in THIS process,
+  # which does see report_type() -- but the embedded
+  # `metacheck::report_table(...)` calls inside those R chunks only run
+  # later, in the subprocess, so it needs its own explicit setup chunk to
+  # pick the same mode. Also makes a saved/re-rendered document
+  # self-consistent: whatever generated its text is what re-rendering it
+  # reproduces. Classic `{r, include=FALSE}` chunk-option syntax, not
+  # Quarto's `#| include: false` YAML form, since this chunk is shared by
+  # both the Quarto .qmd and the plain R Markdown .Rmd template -- Quarto
+  # accepts the classic form too, but plain knitr/rmarkdown does not
+  # understand Quarto's YAML chunk-option syntax.
+  setup_chunk <- sprintf(
+    "```{r, include=FALSE}\nmetacheck::report_type(\"%s\")\n```",
+    report_type()
+  )
+
   report_text <- paste(qmd_header,
+    setup_chunk,
     summary_text,
     module_reports,
     "\n", # prevent incomplete final line warnings
@@ -549,8 +707,16 @@ module_report <- function(module_output,
   )
 
   # create collapsible boxes around substantial reports (> 300 char)
-  pre <- "<details><summary>View detailed feedback</summary><div>"
-  post <- "</div></details>"
+  # No inner <div> wrapper: it serves no CSS/JS purpose (confirmed against
+  # both templates -- the demo section's own <details> examples never used
+  # one either) and plain Pandoc's HTML-block parser cannot reliably track a
+  # raw <div> left open across many lines of interleaved content (a fenced
+  # div closing in between makes it "close implicitly" with a stderr
+  # warning, confirmed live rendering a report_type("simple") report whose
+  # body contains a `collapse_section()` callout) -- <details> alone is
+  # already a real block container, so it needs no second one nested inside.
+  pre <- "<details><summary>View detailed feedback</summary>"
+  post <- "</details>"
   if (is.null(report) ||
     all(module_output$summary_text == report)) {
     pre <- post <- report <- NULL

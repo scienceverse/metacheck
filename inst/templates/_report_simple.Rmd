@@ -1,0 +1,80 @@
+---
+title: MetaCheck Report
+subtitle: "%s"
+output:
+  html_document:
+    theme: null
+    highlight: null
+    toc: true
+    toc_depth: 3
+    toc_float: false
+    section_divs: true
+    anchor_sections: false
+    self_contained: true
+    mathjax: null
+    md_extensions: "+fenced_divs+header_attributes+bracketed_spans"
+---
+
+<style>
+  #TOC { border: 1px solid #15342A; border-radius: 0.5em; padding: 1em; margin-bottom: 1.5em; }
+  #TOC ul { padding-left: 1.2em; }
+  h2, h3 { margin-left: -20px; }
+  h2 { font-size: 150%; }
+  h3 { font-size: 125%; }
+  h4 { font-size: 110%; }
+  h5 { font-size: 100%; font-style: italic; }
+  .emoji-key { list-style: none; padding-left: 0; }
+  .emoji-key li { margin-bottom: 0.5em; }
+  th { background-color: #555; color: white; }
+  table.dt-static { margin: 0.5em 0; width: 100%; border-collapse: collapse; }
+  table.dt-static th, table.dt-static td { padding: 0.3em 0.6em; border: 1px solid #ccc; text-align: left; }
+  table strong { color: red; }
+  summary { color: #333; cursor: pointer; }
+  .callout-note, .callout-tip, .callout-warning, .callout-important, .callout-caution {
+    border-left: 4px solid #15342A;
+    border-radius: 0.25em;
+    padding: 0.5em 1em;
+    margin: 1em 0;
+    background-color: #f5f5f5;
+  }
+  .validation { display: block;
+                border: 2px solid #15342A;
+                border-radius: 1em;
+                padding: 0.5em 1em 0;
+                margin-bottom: 0.5em;
+                background-color: #15342A33;}
+  #info { text-align: right; font-size: 0.9em; margin-bottom: 1.5em; }
+</style>
+
+::: {#info}
+[MetaCheck](http://www.scienceverse.org/metacheck) version %s
+Report Created: %s
+%s <!-- doi, if exists -->
+:::
+
+This is a **simple** report: a static, email-safe version with no interactive tables, tabs, or theme switching, and no embedded JavaScript, so that mail clients and scanners do not flag it as active content.
+
+<ul class="emoji-key">
+  <li class="red">⚠️ possible problems detected;</li>
+  <li class="yellow">🔍 something to check;</li>
+  <li class="green">✅️ no problems detected;</li>
+  <li class="info">ℹ️ informational only;</li>
+  <li class="na">⬜ not applicable;</li>
+  <li class="fail">☠️ check failed</li>
+</ul>
+
+[Metacheck](https://www.scienceverse.org/metacheck/) is a tool that screens scientific manuscripts and aims to identify potential issues for improvement. Our goal is to guide researchers towards best practices, especially with respect to practices that researchers easily forget, or might not have learned about yet. Metacheck is developed to help researchers correctly and completely report statistical results, will point to possibly relevant information about citations, and provides feedback about data and code sharing.
+
+Metacheck combines existing and new checks in a module-based tool. It is open source, and anyone can contribute modules. It mainly relies on text search or retrieving information from external sources through API’s or web-scraping, but the power modules can optionally use large language models. The use of LLM's is always optional and opt-in. The development of Metacheck is guided by our [values statement](https://www.scienceverse.org/metacheck/#our-values).
+
+::: {.validation}
+In light with our values, our modules are validated on sets of open-access papers. In each validated module, there will be a sentence explaining the prevalence of false positives (incorrect detection/classification) and false negatives (incorrect omission). For example, if a hypothetical module detects the inappropriate practice of "woozling", the sentence might read:
+
+> In a sample of 250 papers from the *Journal of X*, there were 350 instances of woozling. This module correctly detected 340 of them, and incorrectly identified 7. Therefore 3% of true instances are missed, and 2% of detections are false positives.
+
+There is an inherent tradeoff between false positives and false negatives. Many of our modules are designed like "smoke detectors", where they are more likely to detect a practice that needs attention, but also more likely to incorrectly flag something. Therefore, you need to check the output of each module, keeping the validated error rates in mind.
+:::
+
+Metacheck is under continuous development. It can be surprisingly difficult to automatically retrieve information from papers, and there is a large amount of edge-cases where our tool might not yet work accurately. By using our tool, and providing us with feedback about what we can't get right yet, you will help to improve the tool for all other users. Issues can be submitted [on Github](https://github.com/scienceverse/metacheck/issues), and suggestions for improvement or feedback can be sent to [metacheck@scienceverse.org](mailto:metacheck@scienceverse.org).
+
+<!-- Demo -->

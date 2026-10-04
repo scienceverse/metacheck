@@ -1,24 +1,9 @@
 # Unit tests for the codebook parsing + column matching helpers (rules path).
 # LLM tiers are exercised only in the module and require an LLM, so are not here.
-
-# Helpers ─────────────────────────────────────────
-# A fresh temp directory, removed when the calling test finishes.
-cbc_dir <- function(name) {
-  d <- file.path(tempdir(), paste0("cbc_", name, "_",
-                                   as.integer(runif(1, 1, 1e6))))
-  unlink(d, recursive = TRUE)
-  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
-  withr::defer(unlink(d, recursive = TRUE), envir = parent.frame())
-  d
-}
-
-# Run data_check then codebook_check over a local fixture directory.
-cbc_run <- function(d, paper = test_paper("x"), ...) {
-  report_module_run(
-    paper, c("data_check", "codebook_check"),
-    args = list(data_check = list(local_path = d, local_only = TRUE),
-                codebook_check = list(...)))[["codebook_check"]]
-}
+#
+# cbc_dir()/cbc_run() (used below and in test-module-codebook_check.R) are
+# defined in helper.R, not here -- see that file's own comment for why they
+# cannot live in an ordinary test-*.R file.
 
 test_that("normalize_varname canonicalises names", {
   expect_equal(normalize_varname("SSS_total"), "sss total")

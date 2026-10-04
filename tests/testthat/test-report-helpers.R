@@ -1,3 +1,38 @@
+test_that("report_type", {
+  expect_true(is.function(metacheck::report_type))
+  expect_no_error(helplist <- help(report_type, metacheck))
+
+  # Explicit reset at both ends, not withr::local_options()/on.exit(): this
+  # setting is a bare session option report_table()/collapse_section()/the
+  # module tabset helpers all read directly, and relying on automatic
+  # end-of-test restoration was confirmed to leak "simple" into whichever
+  # test happened to run next under this project's actual test runner
+  # (devtools::test()) -- reproduced with the plainest possible on.exit()
+  # marker, so every test that cares about report_type() now sets it
+  # explicitly itself instead of depending on cleanup from the one before it.
+  report_type("full")
+
+  expect_equal(report_type(), "full")
+
+  obs <- report_type("simple")
+  expect_equal(obs, "simple")
+  expect_equal(report_type(), "simple")
+
+  # case-insensitive, and only the first element of a longer vector is used
+  obs <- report_type(c("FULL", "simple"))
+  expect_equal(obs, "full")
+  expect_equal(report_type(), "full")
+
+  expect_error(report_type("fancy"), "full.*simple")
+
+  # a bad value never changes the current setting
+  report_type("simple")
+  expect_error(report_type("fancy"))
+  expect_equal(report_type(), "simple")
+
+  report_type("full")
+})
+
 test_that("scroll_table", {
   expect_true(is.function(metacheck::scroll_table))
   expect_no_error(helplist <- help(scroll_table, metacheck))
@@ -47,6 +82,9 @@ test_that("report_table", {
   expect_true(is.function(metacheck::report_table))
   expect_no_error(helplist <- help(report_table, metacheck))
 
+  # explicit, not relied-on cleanup -- see the "report_type" test's own comment
+  report_type("full")
+
   expect_error(report_table(bad_arg))
 
   # one row
@@ -89,10 +127,73 @@ test_that("report_table", {
   expect_equal(obs$x$options$columnDefs[[1]]$width, "4em")
 })
 
+test_that("report_table in simple mode returns a static table with no JS widget", {
+  # explicit, not relied-on cleanup -- see the "report_type" test's own comment
+  report_type("simple")
+
+  table <- data.frame(a = 1, b = 2, c = 3, d = 4)
+  obs <- report_table(table)
+  # knitr::asis_output(), not a DT htmlwidget: no JS dependency at all.
+  expect_s3_class(obs, "knit_asis")
+  expect_false(inherits(obs, "htmlwidget"))
+  txt <- as.character(obs)
+  expect_true(grepl("dt-static", txt, fixed = TRUE))
+  expect_false(grepl("<script", txt, fixed = TRUE))
+  expect_false(grepl("html-widget", txt, fixed = TRUE))
+
+  # escape = FALSE: raw HTML in a cell passes through unescaped
+  df_html <- data.frame(x = "a<br>b", stringsAsFactors = FALSE)
+  obs <- report_table(df_html, escape = FALSE)
+  expect_true(grepl("a<br>b", as.character(obs), fixed = TRUE))
+
+  # escape = TRUE: special characters are escaped, never executed as markup
+  df_unsafe <- data.frame(x = "<script>alert(1)</script>", stringsAsFactors = FALSE)
+  obs <- report_table(df_unsafe, escape = TRUE)
+  txt <- as.character(obs)
+  expect_true(grepl("&lt;script&gt;", txt, fixed = TRUE))
+  expect_false(grepl("<script>alert", txt, fixed = TRUE))
+
+  # colwidths applied as a <colgroup>, not DT columnDefs
+  table <- data.frame(a = 1:3, b = 4:6)
+  obs <- report_table(table, colwidths = c(100, 0.5))
+  txt <- as.character(obs)
+  expect_true(grepl('<col style="width:100px">', txt, fixed = TRUE))
+  expect_true(grepl('<col style="width:50%">', txt, fixed = TRUE))
+
+  # a table within maxrows renders with no scroll box at all
+  small <- data.frame(x = 1:3)
+  obs <- report_table(small, maxrows = 10)
+  expect_false(grepl("max-height", as.character(obs), fixed = TRUE))
+
+  # a table over maxrows gets a scroll box, but every row is still present
+  # (unlike the full-report widget, nothing is hidden behind JS pagination)
+  big <- data.frame(x = 1:50)
+  obs <- report_table(big, maxrows = 10)
+  txt <- as.character(obs)
+  expect_true(grepl("max-height", txt, fixed = TRUE))
+  expect_equal(lengths(regmatches(txt, gregexpr("<tr>", txt))), 51) # 50 rows + header
+
+  # a pathologically large table is truncated with a visible note, so one
+  # huge table cannot make the report unboundedly large
+  max_rows <- metacheck:::.report_table_simple_max_rows
+  huge <- data.frame(x = seq_len(max_rows + 100))
+  obs <- report_table(huge, maxrows = 10)
+  txt <- as.character(obs)
+  expect_true(grepl(
+    sprintf("Showing the first %d of %d rows", max_rows, max_rows + 100),
+    txt
+  ))
+  expect_equal(lengths(regmatches(txt, gregexpr("<tr>", txt))), max_rows + 1)
+
+  report_type("full")
+})
 
 test_that("collapse_section", {
   expect_true(is.function(metacheck::collapse_section))
   expect_no_error(helplist <- help(collapse_section, metacheck))
+
+  # explicit, not relied-on cleanup -- see the "report_type" test's own comment
+  report_type("full")
 
   expect_error(collapse_section())
   expect_error(collapse_section("a", callout = "d"))
@@ -103,6 +204,30 @@ test_that("collapse_section", {
 
   obs <- collapse_section(text, callout = "warning")
   expect_true(grepl("callout-warning", obs))
+})
+
+test_that("collapse_section in simple mode renders the title as visible text, never collapsed", {
+  # explicit, not relied-on cleanup -- see the "report_type" test's own comment
+  report_type("simple")
+
+  obs <- collapse_section("hello", title = "How It Works")
+  # Plain Pandoc has no concept of a fenced-div "title" attribute -- it would
+  # pass title="..." through as an invisible HTML attribute rather than
+  # content, so simple mode must render it as real text instead.
+  expect_false(grepl('title="How It Works"', obs, fixed = TRUE))
+  expect_true(grepl("**How It Works**", obs, fixed = TRUE))
+  expect_true(grepl("callout-tip", obs, fixed = TRUE))
+
+  # collapse is always forced FALSE: expand/collapse needs Bootstrap JS a
+  # simple report never includes, so collapse="true" would leave the
+  # content permanently hidden behind a dead toggle.
+  obs <- collapse_section("hello", collapse = TRUE)
+  expect_false(grepl('collapse="true"', obs, fixed = TRUE))
+
+  obs <- collapse_section("hello", callout = "warning")
+  expect_true(grepl("callout-warning", obs, fixed = TRUE))
+
+  report_type("full")
 })
 
 test_that("plural", {

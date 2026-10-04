@@ -6,12 +6,6 @@ quick <- FALSE
 
 testthat::set_max_fails(5)
 
-# psychsci was previously bundled package data (data/psychsci.rda); it is now
-# fetched from scienceverse/papers and cached in the user data directory
-# (see .papers_cache_dir(), unaffected by the test-only metacheck.cache.dir
-# override in setup.R), so this downloads once and is reused across test runs.
-psychsci <- papers_load("psychsci", cache = TRUE)
-
 email("metacheck@scienceverse.org")
 
 httptest2::.mockPaths(NULL)
@@ -137,6 +131,36 @@ skip_if_quick <- function() {
 skip_no_psychsci <- function() {
   skip_if_not(exists("psychsci") && !is.null(get("psychsci")),
               "psychsci test corpus not available")
+}
+
+# codebook_check / data_check local-fixture helpers --------------------------
+# These must live in THIS file, not in an ordinary test-*.R file: testthat
+# sources every test-*.R file into its OWN private child environment
+# (test_one_file()'s `env(env)`), so a top-level function assigned in one
+# test file is never visible to another, however they are ordered -- only
+# helper-*.R/helper.R (sourced directly into the shared environment by
+# source_test_helpers()) is visible everywhere. Confirmed live: cbc_dir()
+# used to be defined in test-codebook-helpers.R, where it worked for tests in
+# THAT file (sourced together with its own definition) but threw "could not
+# find function" for every test in test-module-codebook_check.R that called
+# it, under this project's actual test runner (devtools::test()).
+
+# A fresh temp directory, removed when the calling test finishes.
+cbc_dir <- function(name) {
+  d <- file.path(tempdir(), paste0("cbc_", name, "_",
+                                   as.integer(runif(1, 1, 1e6))))
+  unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+  withr::defer(unlink(d, recursive = TRUE), envir = parent.frame())
+  d
+}
+
+# Run data_check then codebook_check over a local fixture directory.
+cbc_run <- function(d, paper = test_paper("x"), ...) {
+  report_module_run(
+    paper, c("data_check", "codebook_check"),
+    args = list(data_check = list(local_path = d, local_only = TRUE),
+                codebook_check = list(...)))[["codebook_check"]]
 }
 
 

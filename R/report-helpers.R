@@ -1,3 +1,41 @@
+#' Set or get the report type
+#'
+#' Controls whether [report()]/[report_repository()] build a full, interactive
+#' HTML report (light/dark theme toggle, sortable/paginated JavaScript tables,
+#' tabbed sections) or a "simple" static report with none of that -- plain
+#' tables, stacked headings instead of tabs, a single theme, no inline
+#' `<script>` content. Email clients and mail scanners routinely flag the
+#' embedded JavaScript a full report carries (even though it is inert without
+#' a browser), so `report_type("simple")` is the setting to use before
+#' emailing a report. [report_table()] and any module building tabbed output
+#' (e.g. `data_check`'s per-file table tabset) check this setting themselves,
+#' since they build their markdown/HTML while a module runs -- before
+#' [report()] ever selects a template.
+#'
+#' @param report_type if `"full"` or `"simple"`, sets the report type;
+#'   `NULL` (the default) returns the current setting without changing it
+#'
+#' @returns the current option value (`"full"` or `"simple"`)
+#' @export
+#'
+#' @examples
+#' report_type()
+#' report_type("simple")
+#' report_type("full")
+report_type <- function(report_type = NULL) {
+  if (is.null(report_type)) {
+    return(getOption("metacheck.report_type", "full"))
+  }
+
+  report_type <- tolower(report_type[[1]])
+  if (!report_type %in% c("full", "simple")) {
+    stop("Set report_type with 'full' or 'simple'", call. = FALSE)
+  }
+
+  options(metacheck.report_type = report_type)
+  invisible(getOption("metacheck.report_type"))
+}
+
 #' Make Scroll Table
 #'
 #' A helper function for making module reports.
@@ -76,17 +114,40 @@ metacheck::report_table(table, %s, %s, %s)
 #'
 #' A function to display tables in reports.
 #'
+#' When [report_type()] is `"simple"`, this renders a plain static HTML table
+#' (via `knitr::kable()`) in a CSS-only scrollable box instead of a
+#' `DT::datatable()` widget -- no JavaScript at all, so the report stays safe
+#' to email. Every row is kept and reachable by scrolling (just like the full
+#' report's paginated widget, just without the JS), except for a pathologically
+#' large table, which is truncated to [.report_table_simple_max_rows] rows with
+#' a note, so one huge table cannot make the report unboundedly large.
+#'
 #' @param table the data frame to show in a table, or a vector for a list
 #' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
-#' @param maxrows if the table has more rows than this, paginate
-#' @param escape whether or not to escape the DT (necessary if using raw html)
+#' @param maxrows if the table has more rows than this, paginate (full report)
+#'   or show a scrollbar sized to approximately this many rows (simple report)
+#' @param escape whether or not to escape the table (necessary if using raw html)
 #'
-#' @returns the datatable
+#' @returns the datatable (full report) or a knitr::kable object (simple report)
 #' @export
 #'
 #' @examples
 #' report_table(iris)
 report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE) {
+  # replace line breaks with <br>
+  for (col in names(table)) {
+    if (is.character(table[[col]])) {
+      table[[col]] <- gsub("\n", "<br>", table[[col]])
+    }
+  }
+
+  # let col names break at _
+  names(table) <- gsub("_", "_<wbr>", names(table))
+
+  if (identical(report_type(), "simple")) {
+    return(.report_table_static(table, colwidths, maxrows, escape))
+  }
+
   # set up columnDef
   if (length(colwidths) == 1 && colwidths == "auto") {
     cd_code <- list()
@@ -112,16 +173,6 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
     cd_code <- cd[!sapply(cd, is.null)]
   }
 
-  # replace line breaks with <br>
-  for (col in names(table)) {
-    if (is.character(table[[col]])) {
-      table[[col]] <- gsub("\n", "<br>", table[[col]])
-    }
-  }
-
-  # let col names break at _
-  names(table) <- gsub("_", "_<wbr>", names(table))
-
   # set up options
   dom <- ifelse(nrow(table) > maxrows, "<'top' p>", "t")
   options <- list(
@@ -140,9 +191,84 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
   )
 }
 
+# Largest number of rows a single table keeps in a simple-mode report before
+# being truncated with a note -- an upfront safety cap, not the normal
+# behaviour (a report-sized table is expected to stay well under this; this
+# only guards against a pathologically large one making the file unboundedly
+# large, since simple mode has no JS pagination to hide rows behind).
+.report_table_simple_max_rows <- 500L
+
+# Plain, static HTML table for report_type("simple"): knitr::kable() (no
+# JavaScript, no htmlwidgets dependency) wrapped in a CSS-only scrollable box
+# (plain `overflow` -- works in every browser and the vast majority of email
+# clients, with no scripting involved) sized to roughly `maxrows` visible rows,
+# so a long table is still fully reachable by scrolling rather than hidden
+# behind JS-driven pagination. Column width is applied via inline <col> tags,
+# since kable() itself has no per-column width option.
+.report_table_static <- function(table, colwidths = "auto", maxrows = 2,
+                                 escape = FALSE) {
+  n_total <- nrow(table)
+  truncated <- n_total > .report_table_simple_max_rows
+  if (truncated) {
+    table <- utils::head(table, .report_table_simple_max_rows)
+  }
+
+  kbl <- knitr::kable(table, format = "html", escape = isTRUE(escape),
+                      row.names = FALSE, table.attr = 'class="dt-static"')
+  kbl <- as.character(kbl)
+
+  # Inject a <colgroup> right after the opening <table ...> tag when explicit
+  # widths were requested -- kable() has no column-width argument, and this is
+  # simpler than hand-building the whole table from scratch.
+  if (!(length(colwidths) == 1 && identical(colwidths, "auto"))) {
+    widths <- vapply(seq_len(ncol(table)), function(i) {
+      x <- if (i <= length(colwidths)) colwidths[[i]] else NA
+      if (is.na(x)) return("")
+      if (is.numeric(x)) x <- if (x > 1) paste0(x, "px") else paste0(x * 100, "%")
+      sprintf(' style="width:%s"', x)
+    }, character(1))
+    colgroup <- paste0("<colgroup>",
+                       paste0("<col", widths, ">", collapse = ""),
+                       "</colgroup>")
+    kbl <- sub("(<table[^>]*>)", paste0("\\1", colgroup), kbl)
+  }
+
+  # A fixed-height scroll box roughly sized to `maxrows` visible rows (~2.5em
+  # each, plus the header) when the table has more rows than that -- small
+  # tables render at their natural height with no scrollbar at all.
+  box <- if (n_total > maxrows) {
+    height <- sprintf("%.0fem", (maxrows + 1) * 2.5)
+    sprintf('<div style="max-height:%s;overflow:auto;">%s</div>', height, kbl)
+  } else {
+    kbl
+  }
+
+  note <- if (truncated) sprintf(
+    "\n\n*Showing the first %d of %d rows.*\n",
+    .report_table_simple_max_rows, n_total) else ""
+
+  # asis_output(), not a bare string: this is the last value of an R chunk
+  # with no `results: 'asis'` chunk option, and knitr auto-print()s a plain
+  # character vector as quoted/escaped text rather than passing it through to
+  # Pandoc. asis_output() is what DT::datatable()'s own print.htmlwidget and
+  # knitr::kable()'s own print method rely on under the hood for the SAME
+  # purpose in the full-report path -- this makes report_table()'s simple-mode
+  # branch behave identically from the chunk's point of view.
+  knitr::asis_output(paste0(box, note))
+}
+
 #' Make Collapsible Section
 #'
 #' A helper function for making module reports.
+#'
+#' When [report_type()] is `"simple"`, this renders as a plain fenced div
+#' with the title as a real bold line of text, not a Quarto callout: Quarto's
+#' `title`/`collapse` fenced-div attributes are Quarto-specific -- plain
+#' Pandoc (what [report()]'s simple-mode render uses, see its own docs)
+#' passes an unrecognised attribute straight through as a literal (invisible)
+#' HTML attribute rather than rendering it as content, and
+#' expanding/collapsing needs Bootstrap's collapse JavaScript, which a simple
+#' report never includes. The content is always shown inline, uncollapsed.
 #'
 #' @param text The text to put in the collapsible section; vectors will be collapse with line breaks between (e.g., into paragraphs)
 #' @param title The title of the collapse header
@@ -158,14 +284,21 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
 collapse_section <- function(text, title = "Learn More",
                              callout = c("tip", "note", "warning", "important", "caution"),
                              collapse = TRUE) {
-  fmt <- '::: {.callout-%s title="%s" collapse="%s"}\n\n%s\n\n:::\n'
+  callout <- match.arg(callout)
+  body <- paste0(text, collapse = "\n\n")
 
+  if (identical(report_type(), "simple")) {
+    fmt <- '::: {.callout-%s}\n\n**%s**\n\n%s\n\n:::\n'
+    return(sprintf(fmt, callout, title, body))
+  }
+
+  fmt <- '::: {.callout-%s title="%s" collapse="%s"}\n\n%s\n\n:::\n'
   sprintf(
     fmt,
-    match.arg(callout),
+    callout,
     title,
     ifelse(collapse, "true", "false"),
-    paste0(text, collapse = "\n\n")
+    body
   )
 }
 
