@@ -1,26 +1,38 @@
 #' Set or get the report type
 #'
-#' Controls whether [report()]/[report_repository()] build a full, interactive
-#' HTML report (light/dark theme toggle, sortable/paginated JavaScript tables,
-#' tabbed sections) or a "simple" static report with none of that -- plain
-#' tables, stacked headings instead of tabs, a single theme, no inline
-#' `<script>` content. Email clients and mail scanners routinely flag the
-#' embedded JavaScript a full report carries (even though it is inert without
-#' a browser), so `report_type("simple")` is the setting to use before
-#' emailing a report. [report_table()] and any module building tabbed output
-#' (e.g. `data_check`'s per-file table tabset) check this setting themselves,
-#' since they build their markdown/HTML while a module runs -- before
-#' [report()] ever selects a template.
+#' Controls two independent things about how [report()]/[report_repository()]
+#' build a report:
+#' * **rendering mechanics** -- a full, interactive HTML report (light/dark
+#'   theme toggle, sortable/paginated JavaScript tables, tabbed sections) vs.
+#'   a "simple" static report with none of that -- plain tables, stacked
+#'   headings instead of tabs, a single theme, no inline `<script>` content.
+#'   Email clients and mail scanners routinely flag the embedded JavaScript a
+#'   full report carries (even though it is inert without a browser), so a
+#'   "simple" report type is the setting to use before emailing a report.
+#' * **content amount** -- every module's full detail vs. only the modules
+#'   flagged red/yellow/fail (i.e. what needs attention), with just their
+#'   one-line summary and no expandable detail, "How It Works" callout, or
+#'   validation note. This is the "brief" setting, for getting to "what to
+#'   improve" as fast as possible.
 #'
-#' @param report_type if `"full"` or `"simple"`, sets the report type;
-#'   `NULL` (the default) returns the current setting without changing it
+#' These two axes combine into four values: `"full"` (default), `"brief"`,
+#' `"simple"`, and `"simple_brief"`. [report_table()] and any module building
+#' tabbed output (e.g. `data_check`'s per-file table tabset) check this
+#' setting themselves, since they build their markdown/HTML while a module
+#' runs -- before [report()] ever selects a template.
 #'
-#' @returns the current option value (`"full"` or `"simple"`)
+#' @param report_type if one of `"full"`, `"brief"`, `"simple"`, or
+#'   `"simple_brief"`, sets the report type; `NULL` (the default) returns the
+#'   current setting without changing it
+#'
+#' @returns the current option value
 #' @export
 #'
 #' @examples
 #' report_type()
 #' report_type("simple")
+#' report_type("brief")
+#' report_type("simple_brief")
 #' report_type("full")
 report_type <- function(report_type = NULL) {
   if (is.null(report_type)) {
@@ -28,12 +40,387 @@ report_type <- function(report_type = NULL) {
   }
 
   report_type <- tolower(report_type[[1]])
-  if (!report_type %in% c("full", "simple")) {
-    stop("Set report_type with 'full' or 'simple'", call. = FALSE)
+  if (!report_type %in% c("full", "brief", "simple", "simple_brief")) {
+    stop("Set report_type with 'full', 'brief', 'simple', or 'simple_brief'",
+      call. = FALSE)
   }
 
   options(metacheck.report_type = report_type)
   invisible(getOption("metacheck.report_type"))
+}
+
+# Whether a report_type value uses static, JS-free rendering (plain Pandoc via
+# rmarkdown::render(), not Quarto) -- true for "simple" and "simple_brief".
+.report_is_static <- function(report_type) {
+  report_type %in% c("simple", "simple_brief")
+}
+
+# Whether a report_type value shows only flagged modules (red/yellow/fail)
+# with summary text only, skipping full detail -- true for "brief" and
+# "simple_brief".
+.report_is_brief <- function(report_type) {
+  report_type %in% c("brief", "simple_brief")
+}
+
+# Brief mode's to-do list needs the SPECIFIC thing to fix (e.g. the exact
+# sentence an effect was called "marginally significant" in, or the exact
+# imprecise p-value found) -- summary_text alone only says a module found
+# something wrong, never what/where. No module returns that detail as a
+# separate, standardised field (confirmed: each module's "flagged rows"
+# table -- report_table, zero_table, report_table_absolute, etc. -- is a
+# local variable inside the module's own code, filtered and labelled
+# ad hoc, never part of its returned list), so modules are not changed.
+# Instead, this reaches into module_output$report, which scroll_table()
+# already builds as one or more `​```{r}` chunks per flagged table, each
+# embedding that exact data frame as literal, deparsed R source (`table <-
+# structure(list(...))`) for later evaluation by rmarkdown/Quarto. Since
+# that source was produced by deparse() of a plain data frame inside this
+# same package (never user-authored code), parsing effectively reduces to
+# an inert, read-only expression -- there is no path for it to run anything
+# other than reconstruct that data frame -- so evaluating it here to pull
+# the data back out, instead of waiting for a later Pandoc render, is safe.
+# Every module's flagged table lists one row per issue with at least one
+# descriptive column (named differently per module -- "Text", "Sentence",
+# "Reference", "File name", ...), so rather than guess which column is "the"
+# text, every column of a row becomes one "Header: value" clause, joined
+# into a single bullet -- a generic rendering that needs no per-module
+# column-name convention.
+# A module's flagged tables are often split across more than one
+# scroll_table() call that describe the SAME rows from different angles --
+# e.g. power.R emits info_table (one row per power analysis, with a
+# power_type status column) and text_table (the same power_id, with the
+# actual matched sentence) as two separate tables rather than one. Grouping
+# each in isolation (as .report_group_table() does) would show the status
+# counts with no sentence to back them up. This merges tables pairwise
+# before grouping, two different ways depending on their shape:
+#  - same columns (e.g. codebook_check's per-file tabset repeating an
+#    identical-shaped table once per file) -> stacked into one table, so
+#    the same issue repeated across files is counted once instead of once
+#    per file;
+#  - different columns sharing exactly one column name with mostly-matching
+#    values (e.g. power.R's shared `power_id`) -> joined on that column, so
+#    a status column from one table and the evidence text from another end
+#    up on the same row.
+# Tables that match neither case stay separate and are grouped on their own.
+.report_merge_tables <- function(tbls) {
+  if (length(tbls) <= 1) return(tbls)
+
+  merged <- list(tbls[[1]])
+  for (tbl in tbls[-1]) {
+    last <- merged[[length(merged)]]
+    if (identical(names(tbl), names(last))) {
+      merged[[length(merged)]] <- rbind(last, tbl)
+      next
+    }
+
+    shared <- intersect(names(tbl), names(last))
+    if (length(shared) == 1) {
+      key <- shared[[1]]
+      # power.R's own power_id is int in one table, chr in the other --
+      # coerce both sides to character so the join can match on value
+      # rather than failing silently on a type mismatch.
+      last[[key]] <- as.character(last[[key]])
+      tbl[[key]] <- as.character(tbl[[key]])
+      joined <- tryCatch(merge(last, tbl, by = key, all = TRUE),
+                         error = \(e) NULL)
+      if (!is.null(joined)) {
+        merged[[length(merged)]] <- joined
+        next
+      }
+    }
+
+    merged[[length(merged) + 1]] <- tbl
+  }
+  merged
+}
+
+# Turns one flagged table into one bullet per distinct issue, instead of one
+# bullet per row -- e.g. power.R's info_table lists one row per detected
+# power analysis with a `power_type` column repeating "unknown" 3 times;
+# the old row-per-bullet rendering showed that 3 times verbatim rather than
+# once, as "2 items: power_type: unknown". No module marks which of its
+# columns is "the issue" vs. "which row this is", so this guesses from each
+# column's own shape: a column whose non-NA values repeat (fewer distinct
+# values than rows) is treated as a status/issue column worth grouping and
+# counting; an all-NA column is dropped outright (no information);
+# everything else (every value distinct -- e.g. the matched sentence, a
+# file name, a DOI) is treated as supporting evidence and quoted back for
+# the group, per the user's own request to show the actual flagged
+# sentence(s) a count refers to, not just the count.
+.report_group_table <- function(tbl, max_quotes = 3L) {
+  n <- nrow(tbl)
+  if (n == 0) return(character(0))
+
+  is_status_col <- vapply(tbl, \(col) {
+    non_na <- col[!is.na(col) & nzchar(as.character(col))]
+    length(non_na) > 0 && length(unique(non_na)) < n
+  }, logical(1))
+  all_na_col <- vapply(tbl, \(col) all(is.na(col) | !nzchar(as.character(col))),
+                       logical(1))
+  status_cols <- names(tbl)[is_status_col & !all_na_col]
+  context_cols <- names(tbl)[!is_status_col & !all_na_col]
+  # A bookkeeping id column (power_id, bib_id, row_id, ...) is neither a
+  # status worth counting (it's different for every row, by definition)
+  # nor evidence worth quoting (it names a row, not a fact about it) -- the
+  # column that joined the two tables together in the first place (see
+  # .report_merge_tables()) still ends up here otherwise, read right back
+  # out as a stray "1 -- " glued onto the quoted sentence.
+  is_id_col <- grepl("(^|_)id$", context_cols, ignore.case = TRUE)
+  context_cols <- context_cols[!is_id_col]
+
+  if (length(status_cols) == 0) {
+    # No column repeats -- every row is its own distinct issue (e.g. each
+    # row names a different missing file, or a different incoherent
+    # reference) -- fall back to one bullet per row, same as before.
+    return(apply(tbl, 1, \(row) {
+      clauses <- ifelse(nzchar(names(row)),
+                        sprintf("**%s:** %s", names(row), row),
+                        row)
+      sprintf("- %s", paste(clauses, collapse = " -- "))
+    }))
+  }
+
+  group_key <- do.call(paste, c(tbl[status_cols], sep = "\u001f"))
+  groups <- split(seq_len(n), group_key)
+
+  vapply(groups, \(rows) {
+    g_n <- length(rows)
+    status_vals <- tbl[rows[1], status_cols, drop = FALSE]
+    status_text <- sprintf("**%s:** %s", status_cols, status_vals) |>
+      paste(collapse = ", ")
+    bullet <- sprintf("- %d item%s: %s", g_n, if (g_n == 1) "" else "s",
+                      status_text)
+
+    if (length(context_cols) == 0) return(bullet)
+
+    quote_rows <- utils::head(rows, max_quotes)
+    quotes <- apply(tbl[quote_rows, context_cols, drop = FALSE], 1, \(row) {
+      paste(row, collapse = " -- ")
+    })
+    quotes <- sprintf("  > %s", quotes)
+    if (g_n > max_quotes) {
+      quotes <- c(quotes, sprintf("  > ...and %d more.", g_n - max_quotes))
+    }
+
+    verb <- if (length(quote_rows) == 1) "sentence" else "sentences"
+    paste(c(bullet,
+           sprintf("  These issues were observed in the following %s:", verb),
+           quotes),
+         collapse = "\n")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# Named, per-module exceptions for a column whose values are not uniformly
+# "a status worth reporting" -- most status columns are (every distinct
+# value is something to flag, e.g. codebook_check's `Status: unlabelled`),
+# but power.R's `power_type` is a classification, not a verdict:
+#  - without an LLM (regex mode), a power analysis is classified as
+#    "apriori"/"sensitivity"/"posthoc"/"compromise" just as often as the
+#    classification fails ("unknown") -- only "unknown" is an actual
+#    problem;
+#  - with an LLM, power.R additionally tries to extract every one of
+#    power.R's own `llm_cols` (statistical_test, sample_size, alpha_level,
+#    power, effect_size, effect_size_metric, software, as well as
+#    power_type again) from the text -- here a row's issue is whichever of
+#    those came back NA, not its power_type value specifically.
+# There is no data in the table itself that marks either case (regex
+# mode's values are all equally plain strings; LLM mode's NAs look like any
+# other missing value), so this is named here instead. Checked against
+# `module` (the module's own file/function name, e.g. "power"), not the
+# table's shape, since nothing about the table itself distinguishes this
+# case from an ordinary status column.
+.report_table_filters <- list(
+  power = function(tbl) {
+    llm_cols <- c("power_type", "statistical_test", "sample_size",
+                  "alpha_level", "power", "effect_size",
+                  "effect_size_metric", "software")
+    present <- intersect(llm_cols, names(tbl))
+    if (length(present) == 0) return(tbl)
+
+    if (setequal(present, "power_type")) {
+      # Regex mode: power_type is the only llm_cols member present, and its
+      # value is a classification label, not a missingness signal -- only
+      # "unknown" (classification failed) is an issue.
+      return(tbl[is.na(tbl$power_type) | tbl$power_type == "unknown", ])
+    }
+
+    # LLM mode: any of these columns being NA for a row is the issue,
+    # regardless of which one(s). Rows with no NA among them had every
+    # essential detail and are not a to-do item.
+    has_na <- Reduce(`|`, lapply(tbl[present], is.na))
+    tbl[has_na, ]
+  }
+)
+
+# Extracts every scroll_table()-embedded data frame from a module's report
+# text, in order, with no merging or filtering -- the raw material both
+# the generic pipeline (.report_merge_tables()/.report_group_table()) and
+# a per-module renderer (.report_module_bullets) start from.
+.report_extract_tables <- function(report) {
+  chunk_pattern <- "(?s)```\\{r\\}.*?# table data -+\\s*\\n(table <- .*?)\\n\\n# display table.*?```"
+  tbls <- unlist(lapply(report, \(chunk) {
+    m <- gregexpr(chunk_pattern, chunk, perl = TRUE)
+    codes <- regmatches(chunk, m)[[1]]
+    if (length(codes) == 0) return(NULL)
+
+    lapply(codes, \(code) {
+      table_code <- sub(chunk_pattern, "\\1", code, perl = TRUE)
+      tryCatch(eval(parse(text = table_code)), error = \(e) NULL)
+    })
+  }), recursive = FALSE)
+  Filter(\(t) is.data.frame(t) && nrow(t) > 0, tbls)
+}
+
+# Renders "<value> in <file>" per the user's own request, one line per
+# distinct finding -- including splitting a single cell that already packs
+# several values together (code_check's own convention: multiple matches
+# in one file joined with ", " or " | " into one string, e.g. "file.csv,
+# file.csv, file.csv" or "/lisa/file.csv | C:/lisa/file.csv"). Takes a
+# two-column table directly: one column is assumed to be the file name,
+# the other the finding -- the caller (.report_module_bullets$code_check)
+# already knows which table and which columns those are, since it looked
+# them up by name rather than guessing from shape.
+.report_file_finding_bullets <- function(tbl, file_col, finding_col) {
+  rows <- lapply(seq_len(nrow(tbl)), \(i) {
+    file <- tbl[[file_col]][i]
+    findings <- tbl[[finding_col]][i] |>
+      strsplit("\\s*(,|\\|)\\s*") |>
+      _[[1]]
+    sprintf("%s in %s", findings, file)
+  }) |> unlist()
+
+  sprintf("- %s", rows)
+}
+
+# Whole-module renderers, tried before the generic merge/group pipeline
+# (.report_merge_tables()/.report_group_table()) rather than alongside it.
+# code_check.R emits ~10 scroll_table() calls across the categories in its
+# report (Missing Files, Absolute Paths, setwd, install.packages, parse
+# errors, plus a wide per-file overview table) -- generically merging
+# these (as .report_merge_tables() does for every other module, by
+# matching shared column names) joins them all into one wide table keyed
+# on "File name", burying the exact "<value> in <file>" rendering the user
+# asked for under a dozen unrelated columns most rows don't have. Picking
+# out specifically-named tables by their own column names, instead of
+# feeding everything through the generic shape-based merge, is what
+# actually produces that rendering -- hence a renderer named to the module
+# rather than another generic heuristic.
+.report_module_bullets <- list(
+  code_check = function(module_output) {
+    tbls <- .report_extract_tables(module_output$report)
+    bullets <- lapply(tbls, \(tbl) {
+      cols <- names(tbl)
+      if (identical(cols, c("File name", "Missing Files")) ||
+          identical(cols, c("File name", "Absolute paths found"))) {
+        return(.report_file_finding_bullets(tbl, cols[[1]], cols[[2]]))
+      }
+      if (identical(cols, c("File name", "Error Message"))) {
+        return(.report_file_finding_bullets(tbl, "File name", "Error Message"))
+      }
+      # Every other code_check table (the wide per-file overview; setwd()/
+      # install.packages() tables, which are rare enough in practice that
+      # the generic renderer's row-per-bullet fallback is already fine) is
+      # left to the generic pipeline below.
+      NULL
+    })
+    bullets <- unlist(Filter(Negate(is.null), bullets))
+
+    other_tbls <- Filter(\(tbl) {
+      cols <- names(tbl)
+      !identical(cols, c("File name", "Missing Files")) &&
+        !identical(cols, c("File name", "Absolute paths found")) &&
+        !identical(cols, c("File name", "Error Message")) &&
+        !identical(cols, c("File Name", "% Comments", "Missing Files",
+                          "Absolute Paths", "Code Between Libraries"))
+    }, tbls)
+    generic <- lapply(.report_merge_tables(other_tbls), .report_group_table) |>
+      unlist()
+
+    c(bullets, generic) %||% character(0)
+  },
+  # data_check.R's report always includes a raw-data preview (one table per
+  # file, columns named after the data's own column names, e.g. "id" |
+  # "dv" | "binary") and a descriptives overview (Column | Representation |
+  # Level | ... | Max) -- both unconditional context about the data
+  # itself, shown whether or not anything is wrong with it. The ONLY table
+  # that means "here is a problem" is "Issues Identified" (File | Column |
+  # Issues, built from all_issue_findings), which only exists in the report
+  # text at all when something was actually flagged. Generic
+  # merging/grouping has no way to tell a data preview apart from an
+  # issues table -- both are "a table with repeated-looking column names"
+  # -- so this looks for that one specific column signature instead, and
+  # returns nothing (not even a one-row-per-preview dump) when no table
+  # matches it, since "no issues" means exactly that.
+  data_check = function(module_output) {
+    tbls <- .report_extract_tables(module_output$report)
+    issues_tbl <- Filter(\(tbl) identical(names(tbl), c("File", "Column", "Issues")),
+                         tbls)
+    if (length(issues_tbl) == 0) return(character(0))
+
+    issues_tbl <- issues_tbl[[1]]
+    # Issues cells are HTML built by data_check's own .dv_issue_cell() --
+    # `<span title='...'>icon label</span>`, one such span per line when a
+    # column has more than one distinct issue, newline-joined -- except
+    # scroll_table() itself (not data_check) turns every "\n" in a
+    # character column into a literal "<br>" before the table is deparsed
+    # into the report text, so by the time this runs the separator between
+    # two issues on the same column is "<br>", not "\n". Stripped back to
+    # plain text (tag and tooltip removed) since a brief to-do line is
+    # plain markdown, not raw HTML, then flattened to one (issue, column,
+    # file) row per issue -- a column with two distinct issues becomes two
+    # rows here, one per issue, so each groups with its own kind below
+    # rather than staying bundled with an unrelated second issue on the
+    # same column.
+    plain_issues <- gsub("<span[^>]*>\\s*|\\s*</span>", "",
+                         issues_tbl$Issues) |>
+      strsplit("<br>")
+    n_issues <- lengths(plain_issues)
+    flat <- data.frame(
+      issue  = unlist(plain_issues),
+      column = rep(issues_tbl$Column, n_issues),
+      file   = rep(issues_tbl$File, n_issues)
+    )
+
+    groups <- split(seq_len(nrow(flat)), flat$issue)
+    vapply(groups, \(rows) {
+      g_n <- length(rows)
+      where <- sprintf('"%s" in "%s"', flat$column[rows], flat$file[rows])
+      sprintf("- %d item%s: %s, namely %s", g_n, if (g_n == 1) "" else "s",
+             flat$issue[rows[1]], paste(where, collapse = "; "))
+    }, character(1), USE.NAMES = FALSE)
+  }
+)
+
+.report_flagged_bullets <- function(module_output) {
+  report <- module_output$report
+  if (is.null(report) || all(report == "")) return(character(0))
+
+  module_renderer <- .report_module_bullets[[module_output$module %||% ""]]
+  if (!is.null(module_renderer)) {
+    return(module_renderer(module_output) %||% character(0))
+  }
+
+  tbls <- .report_extract_tables(report)
+  if (length(tbls) == 0) return(character(0))
+
+  # Filtered AFTER merging, not before: power.R's own two tables share rows
+  # via power_id (see .report_merge_tables()), and filtering info_table's
+  # power_type down to "unknown" rows before that join would leave the
+  # dropped rows' power_id values unmatched on the other side, surfacing as
+  # a spurious "power_type: NA" group once merge(..., all = TRUE) pads them.
+  merged <- .report_merge_tables(tbls)
+
+  table_filter <- .report_table_filters[[module_output$module %||% ""]]
+  if (!is.null(table_filter)) {
+    merged <- lapply(merged, table_filter)
+    merged <- Filter(\(t) nrow(t) > 0, merged)
+    if (length(merged) == 0) return(character(0))
+  }
+
+  bullets <- lapply(merged, .report_group_table) |>
+    unlist()
+
+  bullets %||% character(0)
 }
 
 #' Make Scroll Table
@@ -114,8 +501,9 @@ metacheck::report_table(table, %s, %s, %s)
 #'
 #' A function to display tables in reports.
 #'
-#' When [report_type()] is `"simple"`, this renders a plain static HTML table
-#' (via `knitr::kable()`) in a CSS-only scrollable box instead of a
+#' When [report_type()] is `"simple"` or `"simple_brief"`, this renders a
+#' plain static HTML table (via `knitr::kable()`) in a CSS-only scrollable
+#' box instead of a
 #' `DT::datatable()` widget -- no JavaScript at all, so the report stays safe
 #' to email. Every row is kept and reachable by scrolling (just like the full
 #' report's paginated widget, just without the JS), except for a pathologically
@@ -144,7 +532,7 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
   # let col names break at _
   names(table) <- gsub("_", "_<wbr>", names(table))
 
-  if (identical(report_type(), "simple")) {
+  if (.report_is_static(report_type())) {
     return(.report_table_static(table, colwidths, maxrows, escape))
   }
 
@@ -261,8 +649,9 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
 #'
 #' A helper function for making module reports.
 #'
-#' When [report_type()] is `"simple"`, this renders as a plain fenced div
-#' with the title as a real bold line of text, not a Quarto callout: Quarto's
+#' When [report_type()] is `"simple"` or `"simple_brief"`, this renders as a
+#' plain fenced div with the title as a real bold line of text, not a Quarto
+#' callout: Quarto's
 #' `title`/`collapse` fenced-div attributes are Quarto-specific -- plain
 #' Pandoc (what [report()]'s simple-mode render uses, see its own docs)
 #' passes an unrecognised attribute straight through as a literal (invisible)
@@ -287,7 +676,7 @@ collapse_section <- function(text, title = "Learn More",
   callout <- match.arg(callout)
   body <- paste0(text, collapse = "\n\n")
 
-  if (identical(report_type(), "simple")) {
+  if (.report_is_static(report_type())) {
     fmt <- '::: {.callout-%s}\n\n**%s**\n\n%s\n\n:::\n'
     return(sprintf(fmt, callout, title, body))
   }

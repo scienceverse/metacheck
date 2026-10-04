@@ -97,14 +97,14 @@ report <- function(paper,
   ## Restored on exit, including on error, so it never leaks into the
   ## caller's session.
   report_type <- tolower(report_type[[1]])
-  if (!report_type %in% c("full", "simple")) {
-    stop("The report_type must be either 'full' or 'simple'.",
+  if (!report_type %in% c("full", "brief", "simple", "simple_brief")) {
+    stop("The report_type must be one of 'full', 'brief', 'simple', or 'simple_brief'.",
       call. = FALSE
     )
   }
-  if (identical(report_type, "simple") && output_format != "qmd" &&
+  if (.report_is_static(report_type) && output_format != "qmd" &&
       !requireNamespace("rmarkdown", quietly = TRUE)) {
-    stop("report_type = 'simple' needs the 'rmarkdown' package. ",
+    stop("report_type = '", report_type, "' needs the 'rmarkdown' package. ",
       "Install it with install.packages('rmarkdown').",
       call. = FALSE
     )
@@ -174,7 +174,7 @@ report <- function(paper,
   if (output_format == "qmd") {
     write(report_text, output_file)
     save_path <- output_file
-  } else if (identical(report_type, "simple")) {
+  } else if (.report_is_static(report_type)) {
     # Simple-mode rendering goes around Quarto's HTML format entirely (see
     # report_qmd()'s own comment for why) -- rmarkdown::render() on the plain
     # R Markdown text built above, using the SAME Pandoc binary Quarto
@@ -503,7 +503,7 @@ report_qmd <- function(module_output, paper = list()) {
   # bundles, driven through rmarkdown's much plainer default template
   # instead. See .report_pandoc_dir()'s own docs for how that Pandoc binary
   # is located.
-  template_file <- if (identical(report_type(), "simple"))
+  template_file <- if (.report_is_static(report_type()))
     "templates/_report_simple.Rmd" else "templates/_report.qmd"
   report_template <- system.file(template_file,
     package = "metacheck"
@@ -539,14 +539,101 @@ report_qmd <- function(module_output, paper = list()) {
     doi_text
   )
 
+  # Brief mode (see .report_is_brief()'s own comment) drops the template's
+  # explanatory boilerplate -- what Metacheck is, the values statement, the
+  # validation blurb, the continuous-development note -- keeping only the
+  # YAML/<style> block (both templates need it to render at all), folding
+  # the version/date/DOI info and the emoji legend into one combined box.
+  # A brief report's only top-level heading is "## Summary", so the
+  # auto-generated table of contents both templates' YAML normally turns
+  # on (rmarkdown's `toc: true`, Quarto's `toc: true` + its sidebar
+  # `toc-title` legend) would otherwise render as a single, pointless
+  # "Summary" link -- turned off here instead of carrying that forward.
+  if (.report_is_brief(report_type())) {
+    info_lines <- regmatches(qmd_header,
+      regexpr("(?s)::: ?\\{#info\\}\\n(.*?)\\n:::", qmd_header, perl = TRUE)) |>
+      sub("(?s)::: ?\\{#info\\}\\n(.*?)\\n:::", "\\1", x = _, perl = TRUE) |>
+      # The original #info div's own trailing double-spaces (a markdown
+      # hard line break) don't survive capture/reinsertion reliably, so its
+      # three logical lines (link+version, date, DOI) are forced back onto
+      # separate lines explicitly rather than trusting whatever whitespace
+      # the regex happened to preserve.
+      trimws() |>
+      strsplit("\n") |>
+      _[[1]] |>
+      trimws() |>
+      paste(collapse = "  \n")
+
+    legend_items <- paste(
+      "Legend: ⚠️ possible problems detected;",
+      "\U0001F50D something to check;",
+      "✅️ no problems detected;",
+      "ℹ️ informational only;",
+      "⬜ not applicable;",
+      "☠️ check failed."
+    )
+    info_box <- sprintf(
+      "::: {.legend}\n%s\n\n---\n\n%s\n:::",
+      info_lines, legend_items
+    )
+
+    qmd_header <- sub(
+      "(?s)(</style>\\n).*$", "\\1", qmd_header, perl = TRUE
+    )
+    qmd_header <- paste(qmd_header, info_box, sep = "\n\n")
+
+    # Both templates' TOC is a YAML setting read before report_qmd() ever
+    # runs, so it has to be rewritten in the text itself rather than passed
+    # as a chunk option. "toc: true" (shared verbatim by both YAML keys,
+    # rmarkdown's and Quarto's) is the only occurrence in either template.
+    qmd_header <- sub("toc: true", "toc: false", qmd_header, fixed = TRUE)
+  }
+
   ## generate summary section ----
+  # Brief mode (see report_type()'s own docs) narrows both the summary and
+  # the per-module sections below to only what needs attention -- red,
+  # yellow, and fail (a module that errored is itself something to fix) --
+  # dropping green/info/na entirely, since the point of brief is to get to
+  # "what to improve" as fast as possible.
+  brief <- .report_is_brief(report_type())
+  summary_output <- if (brief) {
+    flagged <- sapply(module_output, `[[`, "traffic_light") %in%
+      c("red", "yellow", "fail")
+    module_output[flagged]
+  } else {
+    module_output
+  }
+
   emojis <- metacheck::emojis
-  summary_list <- sapply(module_output, \(x) {
+  summary_list <- sapply(summary_output, \(x) {
     tl <- paste0("tl_", x$traffic_light %||% "info")
     summary_text <- x$summary_text %||% ""
     # indent 4 if first line is \n (probably a list)
     if (nzchar(summary_text) && substr(summary_text, 1, 1) == "\n") {
       summary_text <- gsub("\n", "\n    ", summary_text)
+    }
+    if (brief) {
+      # No per-module section exists in brief mode (see below), so the title
+      # is plain text, not a link to an anchor that was never emitted.
+      # Followed by one to-do bullet per specific thing to fix (the exact
+      # sentence/value/file flagged), pulled from the module's own detailed
+      # report via .report_flagged_bullets() -- see its own comment for why
+      # this is the only available source -- indented under the module's
+      # line so the structure reads as "module: what's wrong" -> "fix this,
+      # fix that".
+      todo <- .report_flagged_bullets(x)
+      todo_text <- if (length(todo)) {
+        paste0("\n    ", gsub("\n", "\n    ", todo), collapse = "")
+      } else {
+        ""
+      }
+      return(sprintf(
+        "- %s %s: %s%s",
+        emojis[[tl]],
+        x$title,
+        summary_text,
+        todo_text
+      ))
     }
     sprintf(
       "- %s [%s](#%s){.%s}: %s  ",
@@ -557,35 +644,47 @@ report_qmd <- function(module_output, paper = list()) {
       summary_text
     )
   })
+  if (brief && length(summary_list) == 0) {
+    summary_list <- "Nothing flagged -- no modules reported a red, yellow, or fail status."
+  }
   summary_text <- sprintf(
     "## Summary\n\n%s\n\n",
     paste(summary_list, collapse = "\n")
   )
 
   ## format module reports ----
-  section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
+  # In brief mode, the per-module sections below would be redundant with the
+  # (already filtered) summary above -- summary_list already gives every
+  # flagged module's one-line text plus its to-do bullets, which is all
+  # brief mode shows for a module. Skip straight to the setup chunk instead
+  # of re-emitting the same modules a second time.
+  module_reports <- if (brief) {
+    ""
+  } else {
+    section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
 
-  module_reports <- sapply(section_levels, \(sec) {
-    this_section <- sapply(module_output, `[[`, "section") == sec
-    # remove fail and na from main report section
-    valid_tl <- !sapply(module_output, `[[`, "traffic_light") %in% c("na", "fail")
-    if (!any(this_section & valid_tl)) {
-      return(NULL)
-    }
+    sapply(section_levels, \(sec) {
+      this_section <- sapply(module_output, `[[`, "section") == sec
+      # remove fail and na from main report section
+      valid_tl <- !sapply(module_output, `[[`, "traffic_light") %in% c("na", "fail")
+      if (!any(this_section & valid_tl)) {
+        return(NULL)
+      }
 
-    section_op <- module_output[this_section & valid_tl]
-    mr <- sapply(section_op, module_report)
+      section_op <- module_output[this_section & valid_tl]
+      mr <- sapply(section_op, module_report)
 
-    title <- sprintf(
-      "## %s%s Modules",
-      toupper(substr(sec, 1, 1)),
-      substr(sec, 2, nchar(sec))
-    )
-    c(title, mr)
-  }) |>
-    unlist() |>
-    paste(collapse = "\n\n") |>
-    gsub("\\n{3,}", "\n\n", x = _)
+      title <- sprintf(
+        "## %s%s Modules",
+        toupper(substr(sec, 1, 1)),
+        substr(sec, 2, nchar(sec))
+      )
+      c(title, mr)
+    }) |>
+      unlist() |>
+      paste(collapse = "\n\n") |>
+      gsub("\\n{3,}", "\n\n", x = _)
+  }
 
   # Both quarto::quarto_render() and rmarkdown::render() always execute this
   # document's R chunks in a separate subprocess -- options() set in the
@@ -616,6 +715,39 @@ report_qmd <- function(module_output, paper = list()) {
   )
 
   return(report_text)
+}
+
+# Modules with no chapter yet in the online manual
+# (https://www.scienceverse.org/metacheck_book/) -- utility/listing modules
+# (all_urls, all_p_values), overinclusive variants (coi_check_oi,
+# funding_check_oi), and modules still too early-stage to document
+# (causal_claims, ref_miscitation -- see its own roxygen @description).
+# Every other built-in module's chapter lives at a predictable URL (see
+# .module_chapter_link()'s own comment), so this is a manually-maintained
+# exception list, not the rule -- update it when the book's table of
+# contents gains or loses a module chapter.
+.module_no_chapter <- c(
+  "all_urls", "all_p_values", "coi_check_oi", "funding_check_oi",
+  "causal_claims", "ref_miscitation"
+)
+
+# One sentence linking to a module's chapter in the online manual, or NULL
+# for a module not yet documented there (see .module_no_chapter). Checked
+# against the book's actual table of contents (as of 2026-10), every
+# chapter for a built-in checking module sits at
+# chapters/mod-<module name, underscores as hyphens>.html -- e.g. "marginal"
+# -> mod-marginal.html, "stat_p_exact" -> mod-stat-p-exact.html -- so the
+# link is built from that pattern rather than hand-listing 24+ URLs that
+# would drift out of sync with the module list.
+.module_chapter_link <- function(module) {
+  if (module %in% .module_no_chapter) return(NULL)
+
+  slug <- gsub("_", "-", module)
+  url <- sprintf(
+    "https://www.scienceverse.org/metacheck_book/chapters/mod-%s.html",
+    slug
+  )
+  sprintf("Read more in the [metacheck manual](%s).", url)
 }
 
 #' Report from module output
@@ -698,7 +830,9 @@ module_report <- function(module_output,
       # remove validation section
       details <- gsub("\\s*<validation>.*</validation>\\s*", "", info$details)
 
-      c(info$description, details, author_ack) |>
+      chapter_link <- .module_chapter_link(module_output$module)
+
+      c(info$description, details, author_ack, chapter_link) |>
         collapse_section("How It Works", callout = "note")
     },
     error = \(e) {

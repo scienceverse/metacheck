@@ -985,7 +985,7 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
 codebook_file_tabset <- function(tbl) {
   files <- unique(tbl$source_file)
   if (length(files) == 0) return(NULL)
-  if (identical(report_type(), "simple")) {
+  if (.report_is_static(report_type())) {
     secs <- vapply(files, function(f) {
       sub <- tbl[tbl$source_file == f, setdiff(names(tbl), "source_file"),
                  drop = FALSE]

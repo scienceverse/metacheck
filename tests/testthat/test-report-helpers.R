@@ -23,7 +23,17 @@ test_that("report_type", {
   expect_equal(obs, "full")
   expect_equal(report_type(), "full")
 
-  expect_error(report_type("fancy"), "full.*simple")
+  # "brief" and "simple_brief" are independent of "simple" (rendering
+  # mechanics) -- see report_type()'s own docs for why these are two axes.
+  obs <- report_type("brief")
+  expect_equal(obs, "brief")
+  expect_equal(report_type(), "brief")
+
+  obs <- report_type("simple_brief")
+  expect_equal(obs, "simple_brief")
+  expect_equal(report_type(), "simple_brief")
+
+  expect_error(report_type("fancy"), "full.*brief.*simple.*simple_brief")
 
   # a bad value never changes the current setting
   report_type("simple")
@@ -31,6 +41,41 @@ test_that("report_type", {
   expect_equal(report_type(), "simple")
 
   report_type("full")
+})
+
+test_that(".report_is_static and .report_is_brief", {
+  expect_false(.report_is_static("full"))
+  expect_false(.report_is_static("brief"))
+  expect_true(.report_is_static("simple"))
+  expect_true(.report_is_static("simple_brief"))
+
+  expect_false(.report_is_brief("full"))
+  expect_true(.report_is_brief("brief"))
+  expect_false(.report_is_brief("simple"))
+  expect_true(.report_is_brief("simple_brief"))
+})
+
+test_that(".report_flagged_bullets", {
+  # no report field at all
+  expect_equal(.report_flagged_bullets(list(report = NULL)), character(0))
+
+  # report is plain prose with no scroll_table() chunk
+  expect_equal(
+    .report_flagged_bullets(list(report = "Nothing to see here.")),
+    character(0)
+  )
+
+  # report contains a scroll_table()-built chunk: the deparsed table is
+  # pulled back out and rendered as one bullet per row, one clause per column
+  tbl <- data.frame(Text = c("sentence one", "sentence two"),
+                    Section = c("Intro", "Results"))
+  chunk <- scroll_table(tbl)
+  bullets <- .report_flagged_bullets(list(report = c("Some prose.", chunk)))
+  expect_length(bullets, 2)
+  expect_match(bullets[1], "sentence one", fixed = TRUE)
+  expect_match(bullets[1], "Intro", fixed = TRUE)
+  expect_match(bullets[2], "sentence two", fixed = TRUE)
+  expect_match(bullets[2], "Results", fixed = TRUE)
 })
 
 test_that("scroll_table", {

@@ -340,7 +340,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # each file name becomes a genuine ##### heading with no JS involved.
   file_tabset <- function(files, table_fun) {
     if (length(files) == 0) return(NULL)
-    if (identical(report_type(), "simple")) {
+    if (.report_is_static(report_type())) {
       secs <- vapply(files, function(f) {
         paste(c(paste0("##### ", f), table_fun(f)), collapse = "\n\n")
       }, character(1))

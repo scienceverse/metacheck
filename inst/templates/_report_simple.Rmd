@@ -16,34 +16,101 @@ output:
 ---
 
 <style>
-  #TOC { border: 1px solid #15342A; border-radius: 0.5em; padding: 1em; margin-bottom: 1.5em; }
-  #TOC ul { padding-left: 1.2em; }
-  h2, h3 { margin-left: -20px; }
-  h2 { font-size: 150%; }
-  h3 { font-size: 125%; }
-  h4 { font-size: 110%; }
-  h5 { font-size: 100%; font-style: italic; }
-  .emoji-key { list-style: none; padding-left: 0; }
-  .emoji-key li { margin-bottom: 0.5em; }
-  th { background-color: #555; color: white; }
-  table.dt-static { margin: 0.5em 0; width: 100%; border-collapse: collapse; }
-  table.dt-static th, table.dt-static td { padding: 0.3em 0.6em; border: 1px solid #ccc; text-align: left; }
-  table strong { color: red; }
-  summary { color: #333; cursor: pointer; }
-  .callout-note, .callout-tip, .callout-warning, .callout-important, .callout-caution {
-    border-left: 4px solid #15342A;
-    border-radius: 0.25em;
-    padding: 0.5em 1em;
-    margin: 1em 0;
-    background-color: #f5f5f5;
+  /* A plain-Pandoc page gets none of Bootstrap's layout for free (no
+     container, no gutters, no font stack) -- without this, text sets in
+     the browser's bare serif default at full window width, and the old
+     `h2, h3 { margin-left: -20px }` (copied from the full report, where
+     Quarto's own container absorbs it) had nothing to push against and
+     ran headings off the left edge instead. Everything below is plain
+     CSS3, inline in the page -- no external stylesheet or font request,
+     so the report stays a single, self-contained file safe to email. */
+  :root {
+    color-scheme: light;
+    --mc-ink: #1a1a1a;
+    --mc-muted: #595959;
+    --mc-brand: #15342A;
+    --mc-border: #d8dee2;
+    --mc-bg-soft: #f6f7f7;
   }
-  .validation { display: block;
-                border: 2px solid #15342A;
-                border-radius: 1em;
-                padding: 0.5em 1em 0;
-                margin-bottom: 0.5em;
-                background-color: #15342A33;}
-  #info { text-align: right; font-size: 0.9em; margin-bottom: 1.5em; }
+  html { color-scheme: light; }
+  body {
+    max-width: 50em;
+    margin: 0 auto;
+    padding: 2.5em 1.5em 4em;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+      sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--mc-ink);
+    background: #ffffff;
+  }
+  h1, h2, h3, h4, h5 { line-height: 1.3; color: var(--mc-ink); }
+  h1.title { font-size: 1.9em; margin-bottom: 0.2em; color: var(--mc-brand); }
+  .subtitle { font-size: 1.2em; color: var(--mc-muted); font-weight: normal; margin-top: 0; }
+  h2 {
+    font-size: 1.4em;
+    margin-top: 2em;
+    padding-bottom: 0.3em;
+    border-bottom: 2px solid var(--mc-brand);
+  }
+  h3 { font-size: 1.15em; margin-top: 1.6em; }
+  h4 { font-size: 1.05em; margin-top: 1.3em; }
+  h5 { font-size: 1em; font-style: italic; margin-top: 1.1em; }
+  p { margin: 0.8em 0; }
+  a { color: #0b5a4a; }
+  ul, ol { padding-left: 1.4em; }
+  li { margin-bottom: 0.3em; }
+  hr { border: none; border-top: 1px solid var(--mc-border); margin: 2em 0; }
+  #TOC {
+    border: 1px solid var(--mc-border);
+    border-radius: 0.5em;
+    padding: 1em 1.5em;
+    margin-bottom: 2em;
+    background: var(--mc-bg-soft);
+  }
+  #TOC ul { padding-left: 1.2em; }
+  .emoji-key { list-style: none; padding-left: 0; }
+  .emoji-key li { margin-bottom: 0.4em; }
+  th { background-color: var(--mc-brand); color: white; font-weight: 600; }
+  table.dt-static { margin: 0.8em 0; width: 100%; border-collapse: collapse; font-size: 0.95em; }
+  table.dt-static th, table.dt-static td { padding: 0.45em 0.7em; border: 1px solid var(--mc-border); text-align: left; }
+  table.dt-static tr:nth-child(even) { background-color: var(--mc-bg-soft); }
+  table strong { color: #a4282f; }
+  details {
+    border: 1px solid var(--mc-border);
+    border-radius: 0.4em;
+    padding: 0.2em 1em;
+    margin: 1em 0;
+    background: var(--mc-bg-soft);
+  }
+  summary { color: var(--mc-ink); cursor: pointer; font-weight: 600; padding: 0.5em 0; }
+  .callout-note, .callout-tip, .callout-warning, .callout-important, .callout-caution {
+    border-left: 4px solid var(--mc-brand);
+    border-radius: 0.25em;
+    padding: 0.8em 1.2em;
+    margin: 1.2em 0;
+    background-color: var(--mc-bg-soft);
+  }
+  .validation {
+    display: block;
+    border: 1px solid var(--mc-brand);
+    border-radius: 0.6em;
+    padding: 1em 1.2em;
+    margin-bottom: 1.5em;
+    background-color: #eef3f1;
+  }
+  #info { text-align: right; font-size: 0.9em; color: var(--mc-muted); margin-bottom: 2em; }
+  .legend {
+    font-size: 0.9em;
+    color: var(--mc-muted);
+    padding: 0.8em 1.2em;
+    border: 1px solid var(--mc-border);
+    border-radius: 0.4em;
+    background: var(--mc-bg-soft);
+    margin-bottom: 1.5em;
+  }
+  .legend p { margin: 0.2em 0; }
+  .legend hr { margin: 0.6em 0; border-top: 1px solid var(--mc-border); }
 </style>
 
 ::: {#info}

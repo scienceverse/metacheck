@@ -44,5 +44,11 @@ CLAUDE.md
 # a blanket pattern would hide, so a future deletion of them would go unnoticed.
 /.metacheck_repo_cache/
 /.metacheck_llm_cache/
+/.metacheck_repo_info_cache/
+/.metacheck_zip_peek_cache/
 
 .comments/
+
+# scratch output from local scripts (e.g. data-raw/report-all-types.R) --
+# never committed, regenerate by re-running the script that made it
+/tmp_output/
