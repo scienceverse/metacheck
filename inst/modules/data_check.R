@@ -333,19 +333,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # lets the framework handle tab switching and widget sizing, rather than
   # hand-rolled show/hide JS. Tab-heading level (##) becomes a tab label and is
   # not added to the report TOC.
-  #
-  # report_type("simple") (see its own docs): the tabset JS itself is one of
-  # the things that makes a report email-unsafe, so emit plain stacked real
-  # headings instead -- one level below the surrounding section (####), so
-  # each file name becomes a genuine ##### heading with no JS involved.
   file_tabset <- function(files, table_fun) {
     if (length(files) == 0) return(NULL)
-    if (identical(report_type(), "simple")) {
-      secs <- vapply(files, function(f) {
-        paste(c(paste0("##### ", f), table_fun(f)), collapse = "\n\n")
-      }, character(1))
-      return(paste(secs, collapse = "\n\n"))
-    }
     # Each tab heading and its body are separate blocks joined by a blank line:
     # Pandoc only parses a `## heading` when a blank line precedes it, so a
     # single newline can let the heading be swallowed into the previous block

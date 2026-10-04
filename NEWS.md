@@ -1,3 +1,7 @@
+# metacheck 0.3.2
+
+* Fixed `data_check()` crashing on any report that builds a per-file tabset (every data/codebook preview with more than one file): `inst/modules/data_check.R`'s `file_tabset()` called `report_type()`, a function that was never defined anywhere in the package -- its call site had been committed without the function's own definition landing alongside it. Reverted `file_tabset()` to its previous, unconditional-tabset behaviour.
+
 # metacheck 0.3.1
 
 * DSpace 7+: `dspace7_file_download()` now carries an item's doi/license as attributes (mirroring legacy DSpace's `psycharchives_file_download()`), so `repo_check()`'s `repo_metadata` table gets a row for a DSpace 7 repository instead of none at all, even when its file listing succeeded (scienceverse/metacheck#435)
