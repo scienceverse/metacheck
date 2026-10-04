@@ -498,6 +498,27 @@ test_that("OSF view_only links", {
   expect_equal(text$text, exp)
 })
 
+test_that(".process_full_text collapses GROBID's doi.org/https line-wrap whitespace (issue #411)", {
+  # GROBID's PDF-to-text extraction sometimes re-flows a PDF column/line-wrap
+  # boundary as a literal space, splitting a repository DOI/URL right where
+  # it happened to wrap -- confirmed live against real corpus papers as both
+  # "https ://..." and "doi. org/..." / "doi.org/ 10....". Every current
+  # doi\.org regex in the archive-*.R backends then fails to match.
+  full_text <- data.frame(
+    p = 1, div = 1, section = 1, header = "demo",
+    formatted = c(
+      "<p>Data are available at https ://doi. org/10.5061/dryad.m20hf10.</p>",
+      "<p>See also https://doi.org/ 10.5281/zenodo.5070812.</p>",
+      "<p>A normal http://example.com/page link, unaffected.</p>"
+    ))
+
+  obs <- .process_full_text(full_text)
+  exp <- c("Data are available at https://doi.org/10.5061/dryad.m20hf10.",
+           "See also https://doi.org/10.5281/zenodo.5070812.",
+           "A normal http://example.com/page link, unaffected.")
+  expect_equal(obs$text, exp)
+})
+
 test_that("p. 100", {
   full_text <- data.frame(
     p = 1,
