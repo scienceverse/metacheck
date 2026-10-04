@@ -56,6 +56,33 @@ load_app_env <- function(app_file) {
   env
 }
 
+# A fresh temp directory for a codebook_check fixture, removed when the
+# calling test finishes. Lives here (not in test-codebook-helpers.R, where it
+# was previously defined but never itself called) because
+# test-module-codebook_check.R depends on it too: a helper shared across test
+# files must live in helper.R, which testthat guarantees is sourced before
+# any test file runs under every runner (devtools::test(), test_file() on a
+# single file, test_dir()) -- unlike a definition left inside another test-*.R
+# file, which only happens to be visible if that other file ran first in the
+# same session.
+cbc_dir <- function(name) {
+  d <- file.path(tempdir(), paste0("cbc_", name, "_",
+                                   as.integer(runif(1, 1, 1e6))))
+  unlink(d, recursive = TRUE)
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+  withr::defer(unlink(d, recursive = TRUE), envir = parent.frame())
+  d
+}
+
+# Run data_check then codebook_check over a local fixture directory. See
+# cbc_dir()'s own comment for why this lives in helper.R.
+cbc_run <- function(d, paper = test_paper("x"), ...) {
+  report_module_run(
+    paper, c("data_check", "codebook_check"),
+    args = list(data_check = list(local_path = d, local_only = TRUE),
+                codebook_check = list(...)))[["codebook_check"]]
+}
+
 # mock function
 test_that <- function(desc, code, mock = "none") {
   Sys.setenv("MOCK_CAPTURE" = "FALSE")
