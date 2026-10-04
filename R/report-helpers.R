@@ -271,6 +271,48 @@ report_type <- function(report_type = NULL) {
   Filter(\(t) is.data.frame(t) && nrow(t) > 0, tbls)
 }
 
+# Finds a collapse_section() callout in a module's report text by its
+# title (e.g. reproducibility_check's own "Output — <file> (<outcome>)"
+# per-script dropdown, holding the real stdout/stderr transcript -- the
+# only place that detail lives, never part of any table) and returns its
+# body as a plain <details> block instead of the fenced-div callout
+# collapse_section() itself always emits. A Quarto/Pandoc "::: {.callout}"
+# fenced div is not safe to nest inside an indented markdown list item
+# (the same brittleness already noted on module_report()'s own <details>
+# choice over a second nested div) -- brief mode's to-do bullets are
+# exactly such a list, so the callout's plain-text content is pulled back
+# out and re-wrapped in a real HTML container, which nests safely because
+# unlike a fenced div, a <details> element does not need a surrounding
+# blank line to parse.
+.report_find_callout <- function(report, title_pattern) {
+  chunk <- Filter(\(x) grepl(title_pattern, x, perl = TRUE), report)
+  if (length(chunk) == 0) return(NULL)
+
+  pattern <- '(?s)::: \\{\\.callout-\\w+[^}]*title="([^"]*)"[^}]*\\}\\n\\n(.*?)\\n\\n:::'
+  m <- regmatches(chunk[[1]], regexpr(pattern, chunk[[1]], perl = TRUE))
+  if (!nzchar(m)) return(NULL)
+
+  body <- sub(pattern, "\\2", m, perl = TRUE)
+  # Once this body sits inside a raw <details> block, it is in CommonMark's
+  # "raw HTML block" territory -- markdown syntax inside is not guaranteed
+  # to be processed (confirmed live: with two ```` fenced blocks present,
+  # Pandoc rendered the first as inline code and partly swallowed the
+  # second into a plain paragraph instead of two <pre> blocks). Converted
+  # to real HTML here instead of leaving markdown Pandoc may or may not
+  # process consistently: a ```` fence becomes <pre>, **bold** becomes
+  # <strong>, with the original text HTML-escaped first so a literal "<"/
+  # "&" in captured stdout/stderr (e.g. "x < y") cannot be mistaken for a
+  # tag.
+  body <- .stat_html_escape(body)
+  body <- gsub("(?s)````\\n(.*?)\\n````", "<pre>\\1</pre>", body, perl = TRUE)
+  body <- gsub("\\*\\*([^*]+)\\*\\*", "<strong>\\1</strong>", body)
+
+  list(
+    title = sub(pattern, "\\1", m, perl = TRUE),
+    body  = body
+  )
+}
+
 # Renders "<value> in <file>" per the user's own request, one line per
 # distinct finding -- including splitting a single cell that already packs
 # several values together (code_check's own convention: multiple matches
@@ -388,6 +430,193 @@ report_type <- function(report_type = NULL) {
       sprintf("- %d item%s: %s, namely %s", g_n, if (g_n == 1) "" else "s",
              flat$issue[rows[1]], paste(where, collapse = "; "))
     }, character(1), USE.NAMES = FALSE)
+  },
+  # repo_check.R's report is mostly unconditional inventory, same pattern as
+  # data_check's raw previews: a per-repository stats table (Repository |
+  # Platform | Error | All Files | ...), a full file manifest (Repository |
+  # File | Size | Type), and up to one "File | Group | Path" table PER DATA
+  # TYPE from its "see how every file was classified" audit section -- all
+  # shown whether or not anything is wrong. The ONE table that is actual
+  # findings is "File | Rule | Severity | Detail" (naming_tbl, built from
+  # check_file_naming() -- confirmed every row it emits is a real rule
+  # violation, never a clean/passing file, so no further filtering is
+  # needed before grouping by Rule). The per-repository stats table's Error
+  # column, when present and non-NA for a row (repo_check drops the column
+  # entirely when every repository resolved cleanly), is also surfaced --
+  # the one piece of that otherwise-inventory table that is itself a
+  # problem (a private/inaccessible/failed repository).
+  repo_check = function(module_output) {
+    tbls <- .report_extract_tables(module_output$report)
+
+    naming_tbl <- Filter(\(tbl) identical(names(tbl), c("File", "Rule", "Severity", "Detail")),
+                         tbls)
+    naming_bullets <- if (length(naming_tbl) > 0) {
+      naming_tbl <- naming_tbl[[1]]
+      groups <- split(seq_len(nrow(naming_tbl)), naming_tbl$Rule)
+      vapply(groups, \(rows) {
+        g_n <- length(rows)
+        sev <- unique(naming_tbl$Severity[rows])
+        sev_text <- if (length(sev) == 1) sprintf(" (%s)", sev) else ""
+        sprintf('- %d item%s: %s%s, namely "%s"', g_n, if (g_n == 1) "" else "s",
+               naming_tbl$Rule[rows[1]], sev_text,
+               paste(naming_tbl$File[rows], collapse = '", "'))
+      }, character(1), USE.NAMES = FALSE)
+    } else {
+      character(0)
+    }
+
+    repo_tbl <- Filter(\(tbl) "Error" %in% names(tbl) && "Repository" %in% names(tbl) &&
+                         !"File" %in% names(tbl),
+                       tbls)
+    error_bullets <- if (length(repo_tbl) > 0) {
+      repo_tbl <- repo_tbl[[1]]
+      has_error <- !is.na(repo_tbl$Error) & nzchar(repo_tbl$Error)
+      if (any(has_error)) {
+        sprintf('- %s: "%s"', repo_tbl$Error[has_error], repo_tbl$Repository[has_error])
+      } else {
+        character(0)
+      }
+    } else {
+      character(0)
+    }
+
+    c(error_bullets, naming_bullets)
+  },
+  # reproducibility_check.R's report has FOUR tables, two of which are
+  # cleanly issues-only (missing_table: "File | Status | Reason", only ever
+  # built when n_missing_inputs > 0; order_table: "Order | File | Runs
+  # after | Basis", pure inventory of the run plan, always shown, never an
+  # issue) -- same split as other modules. The other two are a shape
+  # neither "pure inventory" nor "pure issues" fits: ONE ROW PER ITEM
+  # regardless of outcome (exec_table has a row for every script, deliberately
+  # including every "ran_ok" one, per the module's own comment: "for EVERY
+  # script (not just failures)"; match_table has a row for every reported
+  # statistic the module tried to reproduce, matched or not). For these
+  # two, only the rows whose own status column marks them as NOT fine are
+  # kept before grouping -- exec_table's Outcome != "ran_ok", match_table's
+  # Confidence != "full" (confirmed against match-reported.R: confidence is
+  # exactly "full"/"partial"/"none", "full" being every component matched).
+  reproducibility_check = function(module_output) {
+    tbls <- .report_extract_tables(module_output$report)
+
+    missing_tbl <- Filter(\(tbl) identical(names(tbl), c("File", "Status", "Reason")), tbls)
+    missing_bullets <- if (length(missing_tbl) > 0) {
+      .report_group_table(missing_tbl[[1]])
+    } else {
+      character(0)
+    }
+
+    exec_tbl <- Filter(\(tbl) identical(names(tbl), c("File", "Outcome", "Detail", "Time (s)")),
+                       tbls)
+    exec_bullets <- if (length(exec_tbl) > 0) {
+      exec_tbl <- exec_tbl[[1]]
+      flagged <- exec_tbl[exec_tbl$Outcome != "ran_ok", c("File", "Outcome", "Detail")]
+
+      # errored/timed_out are the two outcomes with a real, distinct
+      # stdout/stderr transcript per file worth reading (per the user's
+      # own request) -- each gets its own line plus that transcript, as
+      # plain indented text (not a nested bullet list -- see
+      # .report_find_callout()'s own comment on why a Quarto callout div
+      # cannot safely nest inside the brief to-do list this feeds into).
+      # The remaining outcomes (skipped_missing_inputs, not_parsed,
+      # dependency_unavailable) never ran at all, so there is no
+      # meaningfully different transcript per file -- those stay grouped
+      # exactly as the generic renderer already does for every other
+      # module.
+      has_transcript <- flagged$Outcome %in% c("errored", "timed_out")
+      transcript_rows <- flagged[has_transcript, ]
+      grouped_rows <- flagged[!has_transcript, ]
+
+      transcript_bullets <- vapply(seq_len(nrow(transcript_rows)), \(i) {
+        file <- transcript_rows$File[i]
+        outcome <- transcript_rows$Outcome[i]
+        callout <- .report_find_callout(module_output$report,
+                                        sprintf("Output — %s \\(%s\\)",
+                                               gsub("([.])", "\\\\\\1", file), outcome))
+        bullet <- sprintf("- %s: \"%s\"", outcome, file)
+        if (is.null(callout)) return(bullet)
+
+        details <- sprintf(
+          "    <details><summary>Error details</summary>\n\n    %s\n\n    </details>",
+          gsub("\n", "\n    ", callout$body)
+        )
+        paste(bullet, details, sep = "\n")
+      }, character(1))
+
+      c(if (nrow(grouped_rows) > 0) .report_group_table(grouped_rows) else character(0),
+        transcript_bullets)
+    } else {
+      character(0)
+    }
+
+    match_tbl <- Filter(\(tbl) all(c("Reported", "Found", "Confidence") %in% names(tbl)), tbls)
+    match_bullets <- if (length(match_tbl) > 0) {
+      match_tbl <- match_tbl[[1]]
+      match_tbl <- match_tbl[match_tbl$Confidence != "full", ]
+      if (nrow(match_tbl) > 0) {
+        # Not left to .report_group_table()'s own cardinality guess: with
+        # as few rows as this table usually has, Plausible (mostly a blank
+        # string) can look lower-cardinality than Confidence by sheer
+        # coincidence and get grouped on instead -- Confidence (this
+        # table's actual severity signal, per match-reported.R) is named
+        # explicitly here rather than guessed at.
+        groups <- split(seq_len(nrow(match_tbl)), match_tbl$Confidence)
+        vapply(groups, \(rows) {
+          g_n <- length(rows)
+          where <- sprintf('"%s" (found: %s)', match_tbl$Reported[rows],
+                           ifelse(nzchar(match_tbl$Found[rows]),
+                                  match_tbl$Found[rows], "no"))
+          sprintf("- %d item%s: confidence %s, namely %s", g_n,
+                 if (g_n == 1) "" else "s", match_tbl$Confidence[rows[1]],
+                 paste(where, collapse = "; "))
+        }, character(1), USE.NAMES = FALSE)
+      } else {
+        character(0)
+      }
+    } else {
+      character(0)
+    }
+
+    c(missing_bullets, exec_bullets, match_bullets)
+  },
+  # stat_effect_size.R's report has two tables that genuinely overlap: a
+  # bare one-column vector of sentences missing an effect size entirely
+  # (scroll_table(table_missing$text) -- unnamed, since it is a plain
+  # character vector, not a data frame), and "detail_table" (explicitly
+  # titled "All detected and assessed stats" in the module's own text --
+  # EVERY detected test, matched and unmatched alike, inventory like
+  # data_check's/repo_check's full-audit tables), which repeats those same
+  # missing-effect-size sentences as rows with Effect Size == NA alongside
+  # every clean one. Brief mode reports the missing sentences once (from
+  # the first table, since it is already issues-only) and, from
+  # detail_table, only rows coherence-checked as "no_match" -- a confirmed
+  # inconsistency between the effect size and its test statistic.
+  # "indeterminate" (the checker genuinely could not tell, e.g. a
+  # non-integer df) is deliberately excluded per the user's own call: it
+  # is not a confirmed problem, and showing it as a to-do item would read
+  # as a false accusation.
+  stat_effect_size = function(module_output) {
+    tbls <- .report_extract_tables(module_output$report)
+
+    missing_tbl <- Filter(\(tbl) identical(names(tbl), ""), tbls)
+    missing_bullets <- if (length(missing_tbl) > 0) {
+      sprintf('- missing effect size, namely "%s"', missing_tbl[[1]][[1]])
+    } else {
+      character(0)
+    }
+
+    detail_tbl <- Filter(\(tbl) all(c("d Coherence", "eta Coherence") %in% names(tbl)), tbls)
+    coherence_bullets <- if (length(detail_tbl) > 0) {
+      detail_tbl <- detail_tbl[[1]]
+      no_match <- detail_tbl$`d Coherence` == "no_match" |
+        detail_tbl$`eta Coherence` == "no_match"
+      no_match[is.na(no_match)] <- FALSE
+      if (any(no_match)) .report_group_table(detail_tbl[no_match, ]) else character(0)
+    } else {
+      character(0)
+    }
+
+    c(missing_bullets, coherence_bullets)
   }
 )
 

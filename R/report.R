@@ -657,9 +657,19 @@ report_qmd <- function(module_output, paper = list()) {
   # (already filtered) summary above -- summary_list already gives every
   # flagged module's one-line text plus its to-do bullets, which is all
   # brief mode shows for a module. Skip straight to the setup chunk instead
-  # of re-emitting the same modules a second time.
+  # of re-emitting the same modules a second time -- except for a single
+  # combined validation table (.report_validation_table()'s own comment),
+  # replacing the per-module validation callout brief mode otherwise has no
+  # equivalent of.
   module_reports <- if (brief) {
-    ""
+    validation <- if (length(summary_output) > 0) .report_validation_table(summary_output) else ""
+    feedback <- paste(
+      "If there are things we can improve, please email us at",
+      "[metacheck@scienceverse.org](mailto:metacheck@scienceverse.org)",
+      "or leave an issue at",
+      "[github.com/scienceverse/metacheck/issues](https://github.com/scienceverse/metacheck/issues)."
+    )
+    paste(validation, feedback, sep = "\n\n")
   } else {
     section_levels <- c("general", "intro", "method", "results", "discussion", "reference")
 
@@ -748,6 +758,43 @@ report_qmd <- function(module_output, paper = list()) {
     slug
   )
   sprintf("Read more in the [metacheck manual](%s).", url)
+}
+
+# Brief mode's single combined validation table -- full/simple mode is
+# untouched and keeps its existing per-module validation callout (see
+# module_report()'s own "validation" variable); brief mode skips the whole
+# per-module detail section (including that callout) entirely, so it had
+# no validation content of its own before this. One table for every
+# flagged module (same set as the Summary section itself), rather than
+# repeating each module's own callout, since the point here is a single,
+# scannable transparency statement about the whole report, not a repeat of
+# detail brief mode otherwise deliberately omits. A module with no
+# `<validation>` tag at all (most of the 19 utility/newer/overinclusive
+# modules) is listed too, marked as such, rather than silently left out --
+# the absence of validation evidence is as relevant to trust as its
+# presence.
+.report_validation_table <- function(module_output) {
+  rows <- lapply(module_output, \(x) {
+    validation_text <- tryCatch({
+      info <- module_info(x$module)
+      m <- gregexpr("<validation>.*?</validation>", info$details)
+      if (m[[1]][1] > -1) {
+        regmatches(info$details, m)[[1]] |>
+          sub("<validation>\\s*", "", x = _) |>
+          sub("\\s*</validation>", "", x = _)
+      } else {
+        "No validation information yet."
+      }
+    }, error = \(e) "No validation information yet.")
+    data.frame(Module = x$title, Validation = validation_text)
+  })
+  tbl <- dplyr::bind_rows(rows)
+
+  sprintf(
+    "## Validation\n\nIn line with Metacheck's values, we transparently communicate how each module was validated against manually coded ground truth data.\n\n<details><summary>Validation details</summary>\n\n%s\n\n</details>",
+    knitr::kable(tbl, format = "html", escape = TRUE, row.names = FALSE,
+                table.attr = 'class="dt-static"') |> as.character()
+  )
 }
 
 #' Report from module output
