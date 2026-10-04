@@ -497,6 +497,42 @@ dryad_auth <- function(client_id = NULL, client_secret = NULL,
   options(metacheck.dryad_pat.notified = TRUE)
 }
 
+# Fetch one Dryad file's bytes to `target_path`. Extracted out of
+# dryad_file_download()'s per-file loop (issue #456.6) so the 401-vs-other-
+# failure distinction can be tested in isolation, with a single plain
+# req_perform() call and no retry/sequential machinery to mock.
+#
+# @param self_url the file's own download URL (`files$self`)
+# @param target_path where to write the bytes on success
+# @returns `list(ok = TRUE)`, or `list(ok = FALSE, error = <string or NULL>)`
+#   -- `error` is NULL when the request itself failed (network/timeout, no
+#   response at all), since there is nothing more specific to report there.
+.dryad_download_one_file <- function(self_url, target_path) {
+  resp <- tryCatch(
+    {
+      httr2::request(self_url) |>
+        .dryad_headers() |>
+        httr2::req_timeout(600) |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
+    },
+    error = \(e) NULL
+  )
+  if (is.null(resp)) return(list(ok = FALSE, error = NULL))
+  if (httr2::resp_status(resp) == 200) {
+    writeBin(httr2::resp_body_raw(resp), target_path)
+    return(list(ok = TRUE))
+  }
+  # A 401 here is otherwise indistinguishable from any other download failure
+  # once this file ends up staying "unknown" downstream -- see
+  # .dryad_401_hint()'s own comment and issue #456.6, which flagged exactly
+  # this confusion for the download_repo_files() path that repo_check/
+  # data_check actually use. Recorded here too so this standalone export
+  # reports the same clear cause.
+  status <- httr2::resp_status(resp)
+  list(ok = FALSE, error = paste0("HTTP ", status, .dryad_401_hint(self_url, status)))
+}
+
 #' Download all files from a Dryad dataset
 #'
 #' Creates a directory for the dataset and downloads all of its files.
@@ -772,19 +808,12 @@ dryad_file_download <- function(dryad_doi,
     ok <- FALSE
     if (!is.na(files$self[[i]]) && nzchar(files$self[[i]])) {
       target_path <- file.path(temppath, files$id[[i]])
-      resp <- tryCatch(
-        {
-          httr2::request(files$self[[i]]) |>
-            .dryad_headers() |>
-            httr2::req_timeout(600) |>
-            httr2::req_error(is_error = \(resp) FALSE) |>
-            httr2::req_perform()
-        },
-        error = \(e) NULL
-      )
-      if (!is.null(resp) && httr2::resp_status(resp) == 200) {
-        writeBin(httr2::resp_body_raw(resp), target_path)
-        ok <- TRUE
+      got <- .dryad_download_one_file(files$self[[i]], target_path)
+      ok <- got$ok
+      if (!ok && !is.null(got$error)) {
+        failed <- rbind(failed, data.frame(
+          key = files$key[[i]], member = NA_character_, error = got$error,
+          stringsAsFactors = FALSE))
       }
     }
     files$downloaded[i] <- isTRUE(ok)

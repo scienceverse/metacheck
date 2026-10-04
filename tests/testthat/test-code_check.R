@@ -51,6 +51,17 @@ test_that("code_lang", {
   expect_equal(obs, character(0))
 })
 
+test_that("code_lang recognizes Julia and NetLogo (issue #456)", {
+  # Previously missing from .ext_registry entirely, so data_classify_files()
+  # (via metacheck::file_types' coarse crosswalk) correctly typed a .jl file
+  # "code", but code_lang() returned NA and code_check() never treated it as
+  # a candidate for that same file -- the two subsystems disagreed.
+  file_name <- c("model.jl", "model.nlogo")
+  obs <- code_lang(file_name)
+  exp <- c("Julia", "NetLogo") |> stats::setNames(file_name)
+  expect_equal(obs, exp)
+})
+
 test_that("code_extract_r", {
   expect_true(is.function(metacheck::code_extract_r))
   expect_no_error(helplist <- help(code_extract_r, metacheck))

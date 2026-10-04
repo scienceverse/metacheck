@@ -547,6 +547,19 @@ grobid_to_bibr <- function(xml_path,
       })
     }, USE.NAMES = FALSE)
 
+    # GROBID's PDF-to-text extraction sometimes re-flows a PDF column/line-wrap
+    # boundary as a literal space instead of removing it, splitting a URL
+    # right where it happened to wrap -- confirmed live (issue #411) as both
+    # "https ://..." (space after "https") and "doi. org/..." / "doi.org/
+    # 10...." (space around the "doi.org" host). Collapsed centrally here,
+    # once, rather than in every archive-*.R backend's own regex: each
+    # backend's repository-link detection otherwise silently misses any DOI
+    # that happens to land on such a wrap boundary.
+    ft$text <- ft$text |>
+      gsub("\\b(https?)\\s*:\\s*//", "\\1://", x = _, ignore.case = TRUE) |>
+      gsub("\\bdoi\\.\\s+org\\b", "doi.org", x = _, ignore.case = TRUE) |>
+      gsub("\\bdoi\\.org/\\s+", "doi.org/", x = _, ignore.case = TRUE)
+
     # return initials and page
     ft$formatted <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$formatted)
     ft$text <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$text)
