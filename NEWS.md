@@ -1,6 +1,7 @@
 # metacheck 0.3.2
 
 * Fixed `data_check()` crashing on any report that builds a per-file tabset (every data/codebook preview with more than one file): `inst/modules/data_check.R`'s `file_tabset()` called `report_type()`, a function that was never defined anywhere in the package -- its call site had been committed without the function's own definition landing alongside it. Reverted `file_tabset()` to its previous, unconditional-tabset behaviour.
+* `.process_full_text()`'s GROBID line-wrap whitespace fix (#411) extended to more safe anchors (a DOI's "10.NNNN/" prefix, and the single-fixed-host literals `zenodo.org/`, `osf.io/`, `researchbox.org/`) and more platforms, resolving 10 more corpus papers whose repository DOI/URL was split by the same line-wrap artifact at a different position (scienceverse/metacheck#458)
 
 # metacheck 0.3.1
 
