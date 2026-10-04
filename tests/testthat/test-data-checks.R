@@ -1086,3 +1086,47 @@ test_that("data_check spreadsheet checks are clean for a clean .ods file", {
                    local_path = d, local_only = TRUE)
   expect_equal(mo$summary_table$spreadsheet_flagged_file_n, 0)
 })
+
+test_that("data_check emits plain headings instead of a tabset in simple mode", {
+  llm_use(FALSE)
+  # Explicit set + reset, not withr::local_options(): relying on automatic
+  # end-of-test restoration was confirmed to leak "simple" into whichever
+  # test runs next under this project's actual test runner (devtools::test())
+  # -- see test-report-helpers.R's "report_type" test for the full story.
+  report_type("simple")
+  d <- file.path(tempdir(), paste0("simple_tabset_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+  utils::write.csv(data.frame(id = 1:5, x = 1:5),
+                   file.path(d, "data", "study1.csv"), row.names = FALSE)
+  utils::write.csv(data.frame(id = 1:5, y = 5:1),
+                   file.path(d, "data", "study2.csv"), row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  rpt <- paste(mo$report, collapse = "\n")
+
+  report_type("full")
+
+  expect_false(grepl("panel-tabset", rpt, fixed = TRUE))
+  expect_match(rpt, "##### study1.csv", fixed = TRUE)
+  expect_match(rpt, "##### study2.csv", fixed = TRUE)
+})
+
+test_that("data_check still uses a tabset in full mode", {
+  llm_use(FALSE)
+  report_type("full")
+  d <- file.path(tempdir(), paste0("full_tabset_", as.integer(runif(1, 1, 1e6))))
+  dir.create(file.path(d, "data"), recursive = TRUE, showWarnings = FALSE)
+  utils::write.csv(data.frame(id = 1:5, x = 1:5),
+                   file.path(d, "data", "study1.csv"), row.names = FALSE)
+  utils::write.csv(data.frame(id = 1:5, y = 5:1),
+                   file.path(d, "data", "study2.csv"), row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check",
+                   local_path = d, local_only = TRUE)
+  rpt <- paste(mo$report, collapse = "\n")
+
+  expect_match(rpt, "panel-tabset", fixed = TRUE)
+  expect_match(rpt, "## study1.csv", fixed = TRUE)
+  expect_match(rpt, "## study2.csv", fixed = TRUE)
+})
