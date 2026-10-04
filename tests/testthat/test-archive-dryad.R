@@ -68,3 +68,44 @@ test_that("dryad_info() does not crash on dryad_links()'s own output for an unfo
     expect_no_error(dryad_info(links))
   )
 })
+
+test_that(".dryad_download_one_file reports a 401 distinctly from other failures (issue #456.6)", {
+  # Dryad's file-byte endpoints 401 without an API key, even for a fully
+  # public dataset. Before this fix, dryad_file_download() (the standalone
+  # export) left no record of WHY a file failed, so this looked identical to
+  # any other download problem once the file stayed un-downloaded. The main
+  # pipeline path (download_repo_files(), tested in test-repo-download.R) was
+  # already fixed for this; this covers the same mechanism in the
+  # less-used standalone export.
+  target <- withr::local_tempfile()
+  withr::local_envvar(DRYAD_PAT = "", DRYAD_CLIENT_ID = "", DRYAD_CLIENT_SECRET = "")
+
+  httr2::local_mocked_responses(list(
+    httr2::response(status_code = 401, url = "https://datadryad.org/api/v2/files/1/download")
+  ))
+  got <- metacheck:::.dryad_download_one_file(
+    "https://datadryad.org/api/v2/files/1/download", target)
+  expect_false(got$ok)
+  expect_match(got$error, "^HTTP 401")
+  expect_match(got$error, "Dryad requires an API key")
+  expect_false(file.exists(target))
+
+  # A real public-host 401 (not Dryad) must NOT get the Dryad-specific hint.
+  httr2::local_mocked_responses(list(
+    httr2::response(status_code = 401, url = "https://example.com/file/1")
+  ))
+  got_other <- metacheck:::.dryad_download_one_file("https://example.com/file/1", target)
+  expect_false(got_other$ok)
+  expect_equal(got_other$error, "HTTP 401")
+
+  # A genuine success writes the bytes and reports no error.
+  httr2::local_mocked_responses(list(
+    httr2::response(status_code = 200, body = charToRaw("file contents"),
+                    url = "https://datadryad.org/api/v2/files/1/download")
+  ))
+  got_ok <- metacheck:::.dryad_download_one_file(
+    "https://datadryad.org/api/v2/files/1/download", target)
+  expect_true(got_ok$ok)
+  expect_true(file.exists(target))
+  expect_equal(rawToChar(readBin(target, "raw", n = file.size(target))), "file contents")
+})

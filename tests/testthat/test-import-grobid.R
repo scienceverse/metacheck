@@ -498,6 +498,78 @@ test_that("OSF view_only links", {
   expect_equal(text$text, exp)
 })
 
+test_that(".process_full_text collapses GROBID's doi.org/https line-wrap whitespace (issue #411)", {
+  # GROBID's PDF-to-text extraction sometimes re-flows a PDF column/line-wrap
+  # boundary as a literal space, splitting a repository DOI/URL right where
+  # it happened to wrap -- confirmed live against real corpus papers as both
+  # "https ://..." and "doi. org/..." / "doi.org/ 10....". Every current
+  # doi\.org regex in the archive-*.R backends then fails to match.
+  full_text <- data.frame(
+    p = 1, div = 1, section = 1, header = "demo",
+    formatted = c(
+      "<p>Data are available at https ://doi. org/10.5061/dryad.m20hf10.</p>",
+      "<p>See also https://doi.org/ 10.5281/zenodo.5070812.</p>",
+      "<p>A normal http://example.com/page link, unaffected.</p>"
+    ))
+
+  obs <- .process_full_text(full_text)
+  exp <- c("Data are available at https://doi.org/10.5061/dryad.m20hf10.",
+           "See also https://doi.org/10.5281/zenodo.5070812.",
+           "A normal http://example.com/page link, unaffected.")
+  expect_equal(obs$text, exp)
+})
+
+test_that(".process_full_text collapses more GROBID line-wrap whitespace shapes (issue #458)", {
+  # A 50-paper re-validation of #411's fix found 23 papers still corrupted by
+  # the same underlying GROBID line-wrap artifact, just at a different
+  # position than the two patterns #411 already covers. These additional
+  # cases are real corrupted text from 6 of those papers (one per fixed
+  # anchor added), confirmed to resolve correctly against the real DOI/URL.
+  full_text <- data.frame(
+    p = 1, div = 1, section = 1, header = "demo",
+    formatted = c(
+      "<p>See https://zenodo. org/ record/8347003 for the data.</p>",
+      "<p>Available at https://doi. org/ 10.17026/ dans-zqs-g6cn.</p>",
+      "<p>Hosted at 10.5061/dryad. dz08kprzw as a Dryad package.</p>",
+      "<p>DOI: https://doi.org/10.13020/ 1f35-rn20.</p>",
+      "<p>Zenodo record 10.5281/ zenodo.5810881 holds the materials.</p>",
+      "<p>A normal reference (Smith et al., 2020) stays untouched.</p>"
+    ))
+
+  obs <- .process_full_text(full_text)
+  exp <- c("See https://zenodo.org/record/8347003 for the data.",
+           "Available at https://doi.org/10.17026/dans-zqs-g6cn.",
+           "Hosted at 10.5061/dryad.dz08kprzw as a Dryad package.",
+           "DOI: https://doi.org/10.13020/1f35-rn20.",
+           "Zenodo record 10.5281/zenodo.5810881 holds the materials.",
+           "A normal reference (Smith et al., 2020) stays untouched.")
+  expect_equal(obs$text, exp)
+})
+
+test_that(".process_full_text's issue #458 anchors never fire on ordinary prose", {
+  # Each sentence specifically targets one new anchor's literal substring in
+  # a way that must NOT be collapsed: a real URL immediately followed by
+  # ordinary prose (the risk the general "collapse any URL-like whitespace"
+  # approach had and this fix deliberately avoids), and three sentences
+  # using "dryad"/"zenodo"/"records" as ordinary English words, not as part
+  # of a host or DOI suffix.
+  full_text <- data.frame(
+    p = 1, div = 1, section = 1, header = "demo",
+    formatted = c(
+      "<p>See https://doi.org/10.5061/dryad.abc123 (Smith et al., 2020).</p>",
+      "<p>We studied the dryad population over several years.</p>",
+      "<p>Our approach was zenodo-adjacent in spirit.</p>",
+      "<p>The records/datasets we collected were extensive.</p>"
+    ))
+
+  obs <- .process_full_text(full_text)
+  exp <- c("See https://doi.org/10.5061/dryad.abc123 (Smith et al., 2020).",
+           "We studied the dryad population over several years.",
+           "Our approach was zenodo-adjacent in spirit.",
+           "The records/datasets we collected were extensive.")
+  expect_equal(obs$text, exp)
+})
+
 test_that("p. 100", {
   full_text <- data.frame(
     p = 1,

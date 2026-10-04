@@ -1,9 +1,7 @@
 # Unit tests for the codebook parsing + column matching helpers (rules path).
 # LLM tiers are exercised only in the module and require an LLM, so are not here.
-#
-# cbc_dir()/cbc_run() (used below and in test-module-codebook_check.R) are
-# defined in helper.R, not here -- see that file's own comment for why they
-# cannot live in an ordinary test-*.R file.
+# cbc_dir()/cbc_run(), used by test-module-codebook_check.R too, now live in
+# helper.R (see that file's own comment on why).
 
 test_that("normalize_varname canonicalises names", {
   expect_equal(normalize_varname("SSS_total"), "sss total")

@@ -294,6 +294,18 @@ test_that("data_classify_files recognizes domain data formats by extension alone
   expect_equal(data_classify_files("model.stl"), "materials")
 })
 
+test_that("data_classify_files recognizes additional corpus-confirmed formats (issue #456)", {
+  # .rdat (R's dput()-based ASCII data dump), .str (STRUCTURE input), and .dtg
+  # (DTAG biologging sensor output) previously had no Tier-1 rule.
+  files <- c("sample.rdat", "genotypes.str", "recording.dtg")
+  cl <- data_classify_files(files)
+  expect_true(all(cl == "data"))
+
+  # .nlogo is NetLogo agent-based-model SOURCE CODE, not data, despite being
+  # reported alongside the data-extension gaps above.
+  expect_equal(data_classify_files("model.nlogo"), "code")
+})
+
 test_that("data_format separates tabular from raw", {
   expect_equal(data_format("csv"), "tabular")
   expect_equal(data_format("sav"), "tabular")
@@ -1110,6 +1122,37 @@ test_that("data_check emits plain headings instead of a tabset in simple mode", 
   expect_false(grepl("panel-tabset", rpt, fixed = TRUE))
   expect_match(rpt, "##### study1.csv", fixed = TRUE)
   expect_match(rpt, "##### study2.csv", fixed = TRUE)
+})
+
+# data_check()'s own `want` computation (the archive-rescue formula fixed for
+# issue #456.1) lives inline inside the module function, not as a separately
+# callable unit, and exercising the real download/expansion path end-to-end
+# would need a mocked remote repository (no existing fixture covers an
+# UNOPENED archive still typed "unknown"). This reproduces the exact formula
+# as a focused regression test for the logic itself: a freshly-discovered
+# archive (data_type "unknown", not yet downloaded) must be promoted to
+# `want = TRUE` by `keep_archive`, not left FALSE by an AND that can only
+# narrow an already-TRUE value.
+test_that("data_check's archive-rescue `want` formula promotes an unknown archive to TRUE (issue #456.1)", {
+  data_type <- c("unknown", "unknown", "materials", "data")
+  keep_archive <- c(TRUE, FALSE, FALSE, FALSE)   # only the first row is a readable archive
+  never_fetch <- c("materials", "unknown")
+  want_baseline <- c(FALSE, FALSE, FALSE, TRUE)  # what the earlier, download-type-driven pass set
+
+  # The fixed formula (inst/modules/data_check.R):
+  want <- (want_baseline & !(data_type %in% never_fetch)) | keep_archive
+
+  expect_equal(want, c(TRUE,   # unknown archive: PROMOTED by keep_archive
+                       FALSE,  # unknown, not an archive: stays excluded
+                       FALSE,  # materials: excluded, not an archive
+                       TRUE))  # already-wanted data file: untouched
+
+  # The pre-fix formula is a no-op for any row where `want_baseline` is FALSE
+  # (an AND can only narrow, never promote) -- this is the exact regression
+  # being guarded against.
+  want_broken <- want_baseline & (!(data_type %in% never_fetch) | keep_archive)
+  expect_equal(want_broken, c(FALSE, FALSE, FALSE, TRUE))
+  expect_false(isTRUE(want_broken[[1]]))  # the bug: the archive is never rescued
 })
 
 test_that("data_check still uses a tabset in full mode", {

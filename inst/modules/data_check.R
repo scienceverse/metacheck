@@ -333,11 +333,6 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # lets the framework handle tab switching and widget sizing, rather than
   # hand-rolled show/hide JS. Tab-heading level (##) becomes a tab label and is
   # not added to the report TOC.
-  #
-  # report_type("simple") (see its own docs): the tabset JS itself is one of
-  # the things that makes a report email-unsafe, so emit plain stacked real
-  # headings instead -- one level below the surrounding section (####), so
-  # each file name becomes a genuine ##### heading with no JS involved.
   file_tabset <- function(files, table_fun) {
     if (length(files) == 0) return(NULL)
     if (.report_is_static(report_type())) {
@@ -643,8 +638,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # or we would silently drop every zipped/tarred dataset. Archives base R
     # CANNOT open (.7z/.rar/...) are not carved out: they stay excluded and
     # repo_check warns the author to re-upload as .zip.
+    # A freshly-discovered archive is typed "unknown" (the archive -> "unknown"
+    # crosswalk rule), so `want` is already FALSE for it before this line ever
+    # runs: `keep_archive` must PROMOTE that FALSE to TRUE, not just survive an
+    # AND against an already-TRUE `want` (an AND alone can never turn FALSE into
+    # TRUE, which made this rescue a no-op for every unopened archive) (#456).
     keep_archive <- .is_readable_archive(all_files$file_name)
-    want <- want & (!(all_files$data_type %in% never_fetch) | keep_archive)
+    want <- (want & !(all_files$data_type %in% never_fetch)) | keep_archive
   }
 
   # Peek inside zips (HTTP range request, no full download) and only keep those
