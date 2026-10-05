@@ -511,8 +511,29 @@ report_qmd <- function(module_output, paper = list()) {
   rt <- readLines(report_template)
   cut_after <- which(rt == "<!-- Demo -->") - 1
   rt_head <- paste(rt[1:cut_after], collapse = "\n")
-  # turn real % to %%, leave %s, %d, %f, %i
-  rt_head <- gsub("\\%(?![sdfi])", "%%", rt_head, perl = TRUE)
+
+  # The simple template's title block is hand-rolled (logo left of
+  # title/subtitle) instead of Pandoc's auto-generated one, so the report
+  # stays a single self-contained file an email client can open with no
+  # external image request -- embedded as a base64 `data:` URI, same
+  # convention as the jasp.R/omv.R/spv.R plot embeds elsewhere in this
+  # package. Substituted via a literal token + fixed-string gsub(), NOT
+  # through the sprintf() call below: a base64-encoded PNG is tens of
+  # thousands of characters, and sprintf()'s `fmt` argument has an 8192-
+  # character limit -- folding the logo in as a %s would make rt_head
+  # itself (the fmt string) exceed that the moment the logo is this large,
+  # throwing "'fmt' length exceeds maximal format length 8192" (confirmed
+  # live once this template's CSS grew past the remaining headroom).
+  # Applied to every template type (a no-op replace when the token is
+  # absent, e.g. the Quarto template) so this stays template-agnostic.
+  logo_data_uri <- if (.report_is_static(report_type())) {
+    logo_path <- system.file("app/www/images/logo.png", package = "metacheck")
+    if (nzchar(logo_path))
+      paste0("data:image/png;base64,", base64enc::base64encode(logo_path))
+    else ""
+  } else ""
+  rt_head <- gsub("{{LOGO_DATA_URI}}", logo_data_uri, rt_head, fixed = TRUE)
+
   subtitle <- gsub('"', '\\\\"', paper$info$title %||% "")
   doi_text <- ifelse(is.na(paper$info$doi) |
                        (paper$info$doi %||% "") == "", "",
@@ -530,14 +551,34 @@ report_qmd <- function(module_output, paper = list()) {
     author_text <- c(first, last) |> paste(collapse = " & ")
   }
 
-  qmd_header <- sprintf(
-    rt_head,
-    subtitle,
-    # author_text, # was confusing about author of paper vs report
-    as.character(utils::packageVersion("metacheck")),
-    Sys.Date(),
-    doi_text
+  # The static template has one extra placeholder after the YAML subtitle
+  # (subtitle again, for the hand-rolled title block below the YAML -- see
+  # its own comment; the logo itself is substituted separately above, not
+  # through sprintf()); the Quarto template has no such placeholder, so
+  # that extra arg is only appended for the static case.
+  header_args <- c(
+    list(subtitle),
+    if (.report_is_static(report_type())) list(subtitle),
+    list(
+      # author_text, # was confusing about author of paper vs report
+      as.character(utils::packageVersion("metacheck")),
+      Sys.Date(),
+      doi_text
+    )
   )
+  # Fills rt_head's %s placeholders in order, one at a time, instead of
+  # sprintf(rt_head, ...): sprintf()'s `fmt` argument has an 8192-character
+  # limit, and rt_head (the whole template header, CSS included) now
+  # exceeds that on its own -- confirmed live ("'fmt' length exceeds
+  # maximal format length 8192") once this template's CSS grew past the
+  # old template's length. A literal, real "%" in the template (CSS
+  # percentages, e.g. `width: 100%`) needs no escaping here, unlike
+  # sprintf()'s `%%` requirement, since each replacement only ever touches
+  # the first remaining literal "%s" via fixed = TRUE matching.
+  qmd_header <- rt_head
+  for (arg in header_args) {
+    qmd_header <- sub("%s", as.character(arg), qmd_header, fixed = TRUE)
+  }
 
   # Brief mode (see .report_is_brief()'s own comment) drops the template's
   # explanatory boilerplate -- what Metacheck is, the values statement, the
@@ -577,9 +618,28 @@ report_qmd <- function(module_output, paper = list()) {
       info_lines, legend_items
     )
 
-    qmd_header <- sub(
-      "(?s)(</style>\\n).*$", "\\1", qmd_header, perl = TRUE
-    )
+    # Cut everything after the banner (static template) or the <style>
+    # block (Quarto template, which has no banner markup of its own) --
+    # NOT always right after </style>: that used to also delete the static
+    # template's own banner div (logo + title/subtitle), since the banner
+    # comes after </style> in that file, leaving brief-mode simple reports
+    # with no visible title at all (confirmed live: report_simple_brief.html
+    # rendered with only the CSS-hidden plain Pandoc title block and no
+    # banner). _report_simple.Rmd marks the banner's own end with a literal
+    # "<!-- End Banner -->" comment for exactly this cut, rather than
+    # counting the banner's nested closing </div> tags here.
+    cut_pattern <- if (.report_is_static(report_type()))
+      "(?s)(</style>\\n.*?<!-- End Banner -->\\n).*$"
+    else
+      "(?s)(</style>\\n).*$"
+    qmd_header <- sub(cut_pattern, "\\1", qmd_header, perl = TRUE)
+    # The full-length static template reopens `.mc-page` (the max-width/
+    # padding container) right after the banner, closed once at the very
+    # end of report_qmd() -- the cut above removes that reopen along with
+    # everything else after the banner, so it needs to come back here, or
+    # report_qmd()'s closing_div has no matching open tag in brief mode.
+    if (.report_is_static(report_type()))
+      qmd_header <- paste0(qmd_header, "\n<div class=\"mc-page\">\n")
     qmd_header <- paste(qmd_header, info_box, sep = "\n\n")
 
     # Both templates' TOC is a YAML setting read before report_qmd() ever
@@ -605,12 +665,50 @@ report_qmd <- function(module_output, paper = list()) {
   }
 
   emojis <- metacheck::emojis
+  # Each row's icon/title/one-line summary is raw HTML, not a markdown "- "
+  # bullet: a plain bullet list gives every row IDENTICAL markup regardless
+  # of traffic light (Pandoc's bracketed-span `{.class}` syntax used
+  # previously for the link only lands the class on the <a>, never the <li>
+  # itself -- confirmed in the rendered output), so there was no way to
+  # style a row by its own status (a left accent stripe, tinted background
+  # for red/yellow) -- the ledger-row look the user asked for needs the
+  # class on the row. Raw HTML passes through untouched in both Quarto and
+  # plain Pandoc. The icon/title/summary_text going into it are confirmed
+  # markdown-free (checked against a live run), so this is safe -- but the
+  # per-module TO-DO bullets below are NOT: they mix real markdown
+  # (**bold**) with already-raw HTML (<a>, <details>, <pre>) depending on
+  # the source module, and Pandoc does not recursively markdown-process
+  # text inside a raw HTML block, so folding them into this same HTML <li>
+  # would print **bold** as literal asterisks instead of rendering it
+  # (confirmed against a live corpus: power.R's and ref_consistency.R's own
+  # todo bullets use exactly this **label:** convention). The todo list
+  # therefore stays a SEPARATE, ordinary markdown bullet list immediately
+  # following the HTML row (so Pandoc parses it normally, as before),
+  # visually indented under the row via CSS margin rather than real DOM
+  # nesting inside the <li>.
   summary_list <- sapply(summary_output, \(x) {
-    tl <- paste0("tl_", x$traffic_light %||% "info")
+    tl <- x$traffic_light %||% "info"
+    tl_symbol <- emojis[[paste0("tl_", tl)]]
     summary_text <- x$summary_text %||% ""
-    # indent 4 if first line is \n (probably a list)
-    if (nzchar(summary_text) && substr(summary_text, 1, 1) == "\n") {
-      summary_text <- gsub("\n", "\n    ", summary_text)
+    # Some modules' summary_text is ITSELF a multi-item markdown list (one
+    # "- " bullet per finding, e.g. code_check's "- We found 33 R...\n- 1
+    # code file had no comments.\n..."), not a single sentence -- confirmed
+    # against a live run: code_check, codebook_check, data_check, repo_check,
+    # reproducibility_check, causal_claims all do this. Dumped into the raw
+    # HTML row's one-line <span> as before, every "- " marker and newline
+    # just ran together into one unreadable paragraph (confirmed live: "- We
+    # found 33 R... - 1 code file had no comments. - 11 files..." as a
+    # single run-on line). Detected by its own leading "\n" (the existing
+    # convention already used below) and, when present, left OUT of the
+    # row's one-line span -- the row then shows just the module title, and
+    # the real list renders as its own proper markdown list right after the
+    # row, same placement/reasoning as the to-do list below.
+    is_list_summary <- nzchar(summary_text) && substr(summary_text, 1, 1) == "\n"
+    row_summary_text <- if (is_list_summary) "" else summary_text
+    summary_list_md <- if (is_list_summary) {
+      sprintf("\n\n::: {.mc-summary-todo}\n%s\n:::\n\n", trimws(summary_text))
+    } else {
+      ""
     }
     if (brief) {
       # No per-module section exists in brief mode (see below), so the title
@@ -618,38 +716,35 @@ report_qmd <- function(module_output, paper = list()) {
       # Followed by one to-do bullet per specific thing to fix (the exact
       # sentence/value/file flagged), pulled from the module's own detailed
       # report via .report_flagged_bullets() -- see its own comment for why
-      # this is the only available source -- indented under the module's
-      # line so the structure reads as "module: what's wrong" -> "fix this,
-      # fix that".
+      # this is the only available source -- as a separate markdown list
+      # (see this block's own comment on why it cannot live inside the row's
+      # raw HTML), wrapped in a div so it can be indented to sit visually
+      # under the row above it.
+      row_html <- sprintf(
+        "<li class=\"mc-summary-row %s\"><span class=\"mc-summary-icon\">%s</span><span class=\"mc-summary-body\"><span class=\"mc-summary-title\">%s</span><span class=\"mc-summary-text\">%s</span></span></li>",
+        tl, tl_symbol, x$title, row_summary_text
+      )
       todo <- .report_flagged_bullets(x)
-      todo_text <- if (length(todo)) {
-        paste0("\n    ", gsub("\n", "\n    ", todo), collapse = "")
+      todo_md <- if (length(todo)) {
+        sprintf("\n\n::: {.mc-summary-todo}\n%s\n:::\n\n",
+               paste(todo, collapse = "\n"))
       } else {
         ""
       }
-      return(sprintf(
-        "- %s %s: %s%s",
-        emojis[[tl]],
-        x$title,
-        summary_text,
-        todo_text
-      ))
+      return(paste0(row_html, summary_list_md, todo_md))
     }
-    sprintf(
-      "- %s [%s](#%s){.%s}: %s  ",
-      emojis[[tl]],
-      x$title,
-      gsub("\\s", "-", tolower(x$title)),
-      x$traffic_light %||% "info",
-      summary_text
+    row_html <- sprintf(
+      "<li class=\"mc-summary-row %s\"><span class=\"mc-summary-icon\">%s</span><span class=\"mc-summary-body\"><span class=\"mc-summary-title\"><a href=\"#%s\">%s</a></span><span class=\"mc-summary-text\">%s</span></span></li>",
+      tl, tl_symbol, .report_title_slug(x$title), x$title, row_summary_text
     )
+    paste0(row_html, summary_list_md)
   })
   if (brief && length(summary_list) == 0) {
-    summary_list <- "Nothing flagged -- no modules reported a red, yellow, or fail status."
+    summary_list <- "<li class=\"mc-summary-row\">Nothing flagged -- no modules reported a red, yellow, or fail status.</li>"
   }
   summary_text <- sprintf(
-    "## Summary\n\n%s\n\n",
-    paste(summary_list, collapse = "\n")
+    "## Summary\n\n<ul class=\"mc-summary\">\n\n%s\n\n</ul>\n\n",
+    paste(summary_list, collapse = "\n\n")
   )
 
   ## format module reports ----
@@ -716,10 +811,19 @@ report_qmd <- function(module_output, paper = list()) {
     report_type()
   )
 
+  # The static template opens a `<div class="mc-page">` right after its
+  # banner (see _report_simple.Rmd's own comment) to keep the
+  # max-width/padding container active for the rest of the report body,
+  # which is appended here, outside that template file -- so the matching
+  # close belongs here too, and only for that template (the Quarto template
+  # never opens it).
+  closing_div <- if (.report_is_static(report_type())) "\n\n</div>\n" else ""
+
   report_text <- paste(qmd_header,
     setup_chunk,
     summary_text,
     module_reports,
+    closing_div,
     "\n", # prevent incomplete final line warnings
     sep = "\n\n"
   )
@@ -809,6 +913,26 @@ report_qmd <- function(module_output, paper = list()) {
 #' paper <- demopaper()
 #' op <- module_run(paper, "stat_p_exact")
 #' module_report(op) |> cat()
+# A module title becomes both a Pandoc header-attribute id (module_report()'s
+# own `{#id .class}`, below) and a matching link target (the Summary
+# section's `[title](#id)`, in report_qmd() above) -- both MUST derive the
+# id the same way, or the Summary link points at an id the heading never
+# actually gets. Pandoc's `{#id}` attribute syntax itself cannot contain
+# "(", ")", or other punctuation -- a title like "Funding Check
+# (Overinclusive)" previously produced `{#funding-check-(overinclusive)
+# .red}`, which Pandoc could not parse as an attribute at all, so the whole
+# `{...}` block fell through and rendered as literal visible text instead of
+# becoming an id (confirmed live: the TOC entry and heading both read
+# "Funding Check (Overinclusive) {#funding-check-(overinclusive) .red}").
+# Mirrors Pandoc's own auto-generated heading-id rule: lowercase, whitespace
+# to hyphens, strip everything outside [a-z0-9-_].
+.report_title_slug <- function(title) {
+  title |>
+    tolower() |>
+    gsub("\\s+", "-", x = _) |>
+    gsub("[^a-z0-9_-]", "", x = _)
+}
+
 module_report <- function(module_output,
                           header = 3) {
   n <- NULL
@@ -827,7 +951,7 @@ module_report <- function(module_output,
       rep("#", header) |> paste(collapse = ""),
       tl_symbol,
       module_output$title,
-      gsub(" ", "-", tolower(module_output$title)),
+      .report_title_slug(module_output$title),
       tl
     )
   } else {

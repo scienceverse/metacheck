@@ -23,20 +23,27 @@ output:
      Quarto's own container absorbs it) had nothing to push against and
      ran headings off the left edge instead. Everything below is plain
      CSS3, inline in the page -- no external stylesheet or font request,
-     so the report stays a single, self-contained file safe to email. */
+     so the report stays a single, self-contained file safe to email.
+
+     Visual language is a bank/financial-statement one (full-bleed colour
+     banner, bold rule-separated summary rows, tinted alternating table
+     rows) per the user's own reference screenshots -- restyled in
+     Metacheck's own brand green rather than copying their orange. */
   :root {
     color-scheme: light;
     --mc-ink: #1a1a1a;
-    --mc-muted: #595959;
+    --mc-muted: #5b6b66;
     --mc-brand: #15342A;
+    --mc-brand-light: #1f4a3b;
+    --mc-accent: #c9a35f;
     --mc-border: #d8dee2;
     --mc-bg-soft: #f6f7f7;
+    --mc-bg-tint: #eef3f1;
   }
   html { color-scheme: light; }
   body {
-    max-width: 50em;
-    margin: 0 auto;
-    padding: 2.5em 1.5em 4em;
+    margin: 0;
+    padding: 0;
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
       sans-serif;
     font-size: 16px;
@@ -44,41 +51,189 @@ output:
     color: var(--mc-ink);
     background: #ffffff;
   }
+  /* Pandoc's own auto-generated title block is replaced below by the
+     banner -- hidden rather than removed from the YAML, since title/
+     subtitle still set the HTML <title> tag. rmarkdown's default HTML
+     template emits this as bare h1.title/h3.subtitle siblings directly in
+     <body> (confirmed in the rendered output), NOT wrapped in a `#header`
+     element the way the old `#header { display: none }` selector assumed
+     -- that selector matched nothing, so both the plain Pandoc title block
+     AND the banner below rendered, one after the other. */
+  h1.title.toc-ignore, h3.subtitle { display: none; }
+  .mc-banner {
+    position: relative;
+    background: linear-gradient(135deg, var(--mc-brand) 0%, var(--mc-brand-light) 100%);
+    color: #ffffff;
+    padding: 2.6em 1.5em 2.2em;
+    margin-bottom: 0;
+    overflow: hidden;
+  }
+  /* Dot-pattern texture in the top-right corner, per the user's own
+     reference screenshots -- a repeating radial-gradient (no external
+     image, so the report stays a single self-contained file), masked to a
+     soft-edged circle so it reads as a decorative accent, not a hard-edged
+     tile. */
+  .mc-banner::before {
+    content: "";
+    position: absolute;
+    top: -3em;
+    right: -3em;
+    width: 16em;
+    height: 16em;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.35) 1.5px, transparent 1.5px);
+    background-size: 10px 10px;
+    -webkit-mask-image: radial-gradient(circle at 70% 30%, #000 0%, #000 45%, transparent 72%);
+    mask-image: radial-gradient(circle at 70% 30%, #000 0%, #000 45%, transparent 72%);
+    pointer-events: none;
+  }
+  .mc-banner-inner {
+    position: relative;
+    max-width: 50em;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.3em;
+  }
+  .mc-banner img { width: 4.2em; height: 4.2em; flex-shrink: 0; }
+  .mc-banner h1.title {
+    font-size: 2.1em;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 0.15em;
+    letter-spacing: -0.01em;
+  }
+  .mc-banner .subtitle {
+    font-size: 1.1em;
+    color: #d9e6e0;
+    font-weight: normal;
+    margin: 0;
+  }
+  .mc-page {
+    max-width: 50em;
+    margin: 0 auto;
+    padding: 2em 1.5em 4em;
+  }
   h1, h2, h3, h4, h5 { line-height: 1.3; color: var(--mc-ink); }
-  h1.title { font-size: 1.9em; margin-bottom: 0.2em; color: var(--mc-brand); }
-  .subtitle { font-size: 1.2em; color: var(--mc-muted); font-weight: normal; margin-top: 0; }
   h2 {
-    font-size: 1.4em;
-    margin-top: 2em;
-    padding-bottom: 0.3em;
+    font-size: 1.35em;
+    font-weight: 600;
+    margin-top: 2.2em;
+    padding-bottom: 0.4em;
     border-bottom: 2px solid var(--mc-brand);
   }
-  h3 { font-size: 1.15em; margin-top: 1.6em; }
-  h4 { font-size: 1.05em; margin-top: 1.3em; }
+  h3 { font-size: 1.1em; margin-top: 1.6em; }
+  h4 {
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--mc-brand);
+    margin-top: 1.6em;
+    font-weight: 700;
+  }
   h5 { font-size: 1em; font-style: italic; margin-top: 1.1em; }
   p { margin: 0.8em 0; }
-  a { color: #0b5a4a; }
+  a { color: var(--mc-brand-light); }
   ul, ol { padding-left: 1.4em; }
   li { margin-bottom: 0.3em; }
   hr { border: none; border-top: 1px solid var(--mc-border); margin: 2em 0; }
   #TOC {
     border: 1px solid var(--mc-border);
-    border-radius: 0.5em;
+    border-left: 4px solid var(--mc-brand);
+    border-radius: 0.3em;
     padding: 1em 1.5em;
     margin-bottom: 2em;
     background: var(--mc-bg-soft);
   }
   #TOC ul { padding-left: 1.2em; }
-  .emoji-key { list-style: none; padding-left: 0; }
-  .emoji-key li { margin-bottom: 0.4em; }
-  th { background-color: var(--mc-brand); color: white; font-weight: 600; }
-  table.dt-static { margin: 0.8em 0; width: 100%; border-collapse: collapse; font-size: 0.95em; }
-  table.dt-static th, table.dt-static td { padding: 0.45em 0.7em; border: 1px solid var(--mc-border); text-align: left; }
+  .emoji-key {
+    list-style: none;
+    padding: 0.9em 1.3em;
+    margin: 0 0 1.8em;
+    border: 1px solid var(--mc-border);
+    border-radius: 0.3em;
+    background: var(--mc-bg-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em 1.5em;
+  }
+  .emoji-key li { margin: 0; font-size: 0.92em; white-space: nowrap; }
+  /* Summary module list, ledger-row style (per the user's own reference
+     screenshots): each module is a row with a left colour stripe for its
+     status, icon, title and one-line result -- thin rule between rows
+     rather than a plain bulleted list, which previously gave every row
+     identical markup regardless of red/yellow/green status. */
+  ul.mc-summary {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5em;
+    border: 1px solid var(--mc-border);
+    border-radius: 0.3em;
+    overflow: hidden;
+  }
+  li.mc-summary-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8em;
+    padding: 0.8em 1em;
+    margin: 0;
+    border-left: 4px solid var(--mc-border);
+    border-bottom: 1px solid var(--mc-border);
+    background: #ffffff;
+  }
+  ul.mc-summary > li.mc-summary-row:last-child { border-bottom: none; }
+  li.mc-summary-row.red { border-left-color: #a4282f; background: #fdf4f4; }
+  li.mc-summary-row.yellow { border-left-color: #a67c1f; background: #fdf9ef; }
+  li.mc-summary-row.green { border-left-color: var(--mc-brand); }
+  li.mc-summary-row.fail { border-left-color: #a4282f; background: #fdf4f4; }
+  li.mc-summary-row.info { border-left-color: #4a7a9c; }
+  li.mc-summary-row.na { border-left-color: var(--mc-border); }
+  .mc-summary-icon { font-size: 1.1em; line-height: 1.5; flex-shrink: 0; }
+  .mc-summary-body { display: flex; flex-direction: column; min-width: 0; }
+  .mc-summary-title { font-weight: 700; color: var(--mc-ink); }
+  .mc-summary-title a { color: inherit; text-decoration: none; }
+  .mc-summary-title a:hover { text-decoration: underline; }
+  .mc-summary-text { color: var(--mc-muted); font-size: 0.95em; }
+  /* To-do bullets for a flagged module (brief mode only) -- a normal
+     markdown list that sits visually under its row via indent + a thin
+     left guide rule, without being nested inside the row's own raw HTML
+     <li> (Pandoc cannot markdown-process **bold**/links nested inside raw
+     HTML -- see report.R's own comment on why this stays a sibling block). */
+  .mc-summary-todo {
+    margin: -0.6em 0 1.1em 2.6em;
+    padding: 0.2em 0 0.2em 1em;
+    border-left: 2px solid var(--mc-border);
+  }
+  .mc-summary-todo ul { margin: 0; padding-left: 1.1em; }
+  .mc-summary-todo li { font-size: 0.92em; color: var(--mc-ink); margin-bottom: 0.4em; }
+  /* Statement-style tables: bold brand header row, a heavier top rule
+     under the header (the reference screenshots' thin-rule-per-row
+     ledger look), tinted alternating rows instead of boxed-in grid lines. */
+  th {
+    background-color: var(--mc-brand);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  table.dt-static {
+    margin: 1em 0 1.6em;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+  table.dt-static th, table.dt-static td {
+    padding: 0.6em 0.8em;
+    border-bottom: 1px solid var(--mc-border);
+    text-align: left;
+  }
+  table.dt-static th { border-bottom: 2px solid var(--mc-accent); }
   table.dt-static tr:nth-child(even) { background-color: var(--mc-bg-soft); }
   table strong { color: #a4282f; }
   details {
     border: 1px solid var(--mc-border);
-    border-radius: 0.4em;
+    border-left: 4px solid var(--mc-brand);
+    border-radius: 0.3em;
     padding: 0.2em 1em;
     margin: 1em 0;
     background: var(--mc-bg-soft);
@@ -86,26 +241,45 @@ output:
   summary { color: var(--mc-ink); cursor: pointer; font-weight: 600; padding: 0.5em 0; }
   .callout-note, .callout-tip, .callout-warning, .callout-important, .callout-caution {
     border-left: 4px solid var(--mc-brand);
-    border-radius: 0.25em;
+    border-radius: 0.2em;
     padding: 0.8em 1.2em;
     margin: 1.2em 0;
     background-color: var(--mc-bg-soft);
   }
   .validation {
     display: block;
-    border: 1px solid var(--mc-brand);
-    border-radius: 0.6em;
+    border: 1px solid var(--mc-border);
+    border-left: 4px solid var(--mc-accent);
+    border-radius: 0.3em;
     padding: 1em 1.2em;
     margin-bottom: 1.5em;
-    background-color: #eef3f1;
+    background-color: var(--mc-bg-tint);
   }
-  #info { text-align: right; font-size: 0.9em; color: var(--mc-muted); margin-bottom: 2em; }
+  /* Sits on .mc-page's white background (moved out of the dark banner so
+     the banner itself stays just logo + title/subtitle, matching the
+     reference statement layout) -- coloured for that light background,
+     not the near-white-on-white left over from when this block used to
+     render inside the banner. */
+  #info {
+    font-size: 0.85em;
+    color: var(--mc-muted);
+    text-align: right;
+    margin: 0 0 1.8em;
+    padding-bottom: 0.8em;
+    border-bottom: 1px solid var(--mc-border);
+  }
+  #info a { color: var(--mc-brand-light); }
+  /* Brief mode's combined version/date/DOI + legend box (see report.R's
+     own info_box) -- a real, still-used element, NOT superseded by
+     .emoji-key: that only replaces the full report's standalone legend
+     list, which brief mode never emits in the first place. */
   .legend {
     font-size: 0.9em;
     color: var(--mc-muted);
     padding: 0.8em 1.2em;
     border: 1px solid var(--mc-border);
-    border-radius: 0.4em;
+    border-left: 4px solid var(--mc-brand);
+    border-radius: 0.3em;
     background: var(--mc-bg-soft);
     margin-bottom: 1.5em;
   }
@@ -113,20 +287,33 @@ output:
   .legend hr { margin: 0.6em 0; border-top: 1px solid var(--mc-border); }
 </style>
 
+<div class="mc-banner">
+<div class="mc-banner-inner">
+<img src="{{LOGO_DATA_URI}}" alt="MetaCheck logo">
+<div>
+<h1 class="title">MetaCheck Report</h1>
+<p class="subtitle">%s</p>
+</div>
+</div>
+</div>
+<!-- End Banner -->
+
+<div class="mc-page">
+
 ::: {#info}
-[MetaCheck](http://www.scienceverse.org/metacheck) version %s
-Report Created: %s
+[MetaCheck](http://www.scienceverse.org/metacheck) version %s \
+Report Created: %s \
 %s <!-- doi, if exists -->
 :::
 
 This is a **simple** report: a static, email-safe version with no interactive tables, tabs, or theme switching, and no embedded JavaScript, so that mail clients and scanners do not flag it as active content.
 
 <ul class="emoji-key">
-  <li class="red">⚠️ possible problems detected;</li>
-  <li class="yellow">🔍 something to check;</li>
-  <li class="green">✅️ no problems detected;</li>
-  <li class="info">ℹ️ informational only;</li>
-  <li class="na">⬜ not applicable;</li>
+  <li class="red">⚠️ possible problems detected</li>
+  <li class="yellow">🔍 something to check</li>
+  <li class="green">✅️ no problems detected</li>
+  <li class="info">ℹ️ informational only</li>
+  <li class="na">⬜ not applicable</li>
   <li class="fail">☠️ check failed</li>
 </ul>
 

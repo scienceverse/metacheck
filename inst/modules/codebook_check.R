@@ -687,9 +687,12 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (n_conflicted > 0) sprintf(
         "%d matched column%s %s a conflicting or ambiguous label that needs resolution.",
         n_conflicted, plural(n_conflicted), if (n_conflicted == 1) "has" else "have"),
-      if (n_unused > 0) sprintf(
-        "%d documented variable%s never appear%s in the data.",
-        n_unused, plural(n_unused), if (n_unused == 1) "s" else ""),
+      # n_unused's own headline count ("4 documented variables never appear
+      # in the data.") is left out here, per the user's own request: it is
+      # redundant with the brief report's per-variable to-do bullet
+      # (.report_module_bullets$codebook_check, report-helpers.R), which
+      # already names every one of those variables individually right below
+      # this summary.
       misalign_msg
     ) |> paste("\n- ", x = _, collapse = "")
   }

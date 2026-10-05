@@ -313,25 +313,64 @@ report_type <- function(report_type = NULL) {
   )
 }
 
-# Renders "<value> in <file>" per the user's own request, one line per
-# distinct finding -- including splitting a single cell that already packs
-# several values together (code_check's own convention: multiple matches
-# in one file joined with ", " or " | " into one string, e.g. "file.csv,
-# file.csv, file.csv" or "/lisa/file.csv | C:/lisa/file.csv"). Takes a
-# two-column table directly: one column is assumed to be the file name,
-# the other the finding -- the caller (.report_module_bullets$code_check)
-# already knows which table and which columns those are, since it looked
-# them up by name rather than guessing from shape.
-.report_file_finding_bullets <- function(tbl, file_col, finding_col) {
-  rows <- lapply(seq_len(nrow(tbl)), \(i) {
+# Collapses a code_check "File name" + finding-value table into a NAMED
+# list, keyed by file, of that file's deduplicated finding values -- the
+# shared first step both .report_file_finding_bullets() (one table at a
+# time) and the code_check renderer's cross-table fold (multiple tables,
+# combined per file) build on. Splits a single cell that already packs
+# several values together (code_check's own convention: multiple matches in
+# one file joined with ", " or " | " into one string, e.g. "file.csv,
+# file.csv, file.csv" or "/lisa/file.csv | C:/lisa/file.csv") -- the same
+# reference is often READ more than once in one file (three separate
+# read.csv("file.csv") calls), which repeats code_check's own join exactly
+# that many times, so the split values are deduplicated per file rather
+# than kept as three identical entries (confirmed against the user's own
+# report). `split = FALSE` (currently only code_check's parse error
+# messages) keeps finding_col as one unsplit, whitespace-collapsed value
+# per row instead: that text is free-form and can itself contain a comma,
+# and can itself contain embedded newlines (a multi-line R parser trace,
+# e.g. "line:1:1: unexpected invalid token\n1: \n    ^") that would
+# otherwise break a bullet out of valid markdown list syntax (confirmed
+# against the user's own report: "unexpected invalid token1:  ^").
+.report_file_findings_by_file <- function(tbl, file_col, finding_col, split = TRUE) {
+  out <- list()
+  for (i in seq_len(nrow(tbl))) {
     file <- tbl[[file_col]][i]
-    findings <- tbl[[finding_col]][i] |>
-      strsplit("\\s*(,|\\|)\\s*") |>
-      _[[1]]
-    sprintf("%s in %s", findings, file)
-  }) |> unlist()
+    findings <- if (split) {
+      tbl[[finding_col]][i] |>
+        strsplit("\\s*(,|\\|)\\s*") |>
+        _[[1]] |>
+        unique()
+    } else {
+      # scroll_table() (R/report-helpers.R, further down) already turns every
+      # real "\n" in a character table cell into a literal "<br>" BEFORE the
+      # table is deparsed into the report text -- by the time this function
+      # ever sees a parse error message, its line breaks are "<br>"
+      # substrings, not "\n" characters, so a plain whitespace collapse alone
+      # left them untouched and still visually broke the bullet across lines
+      # (confirmed against the user's own report). Both forms are collapsed
+      # to a single space here.
+      tbl[[finding_col]][i] |>
+        gsub("<br\\s*/?>", " ", x = _, ignore.case = TRUE) |>
+        gsub("\\s+", " ", x = _) |>
+        trimws()
+    }
+    out[[file]] <- unique(c(out[[file]], findings))
+  }
+  out
+}
 
-  sprintf("- %s", rows)
+# Renders "<kind>: <value(s)> in <file>", one line per file -- `kind` is a
+# fixed label naming the check that produced this table (e.g. "missing
+# file", "absolute path") -- without it, bullets from different checks are
+# indistinguishable once concatenated, since all otherwise read as a bare
+# "<value> in <file>" line. Used by code_check's parse-error table, the one
+# table that is never folded together with the others (see the module
+# renderer's own comment on why).
+.report_file_finding_bullets <- function(tbl, file_col, finding_col, kind, split = TRUE) {
+  by_file <- .report_file_findings_by_file(tbl, file_col, finding_col, split)
+  sprintf("- %s: %s in %s", kind, vapply(by_file, paste, character(1), collapse = ", "),
+         names(by_file))
 }
 
 # Whole-module renderers, tried before the generic merge/group pipeline
@@ -350,22 +389,76 @@ report_type <- function(report_type = NULL) {
 .report_module_bullets <- list(
   code_check = function(module_output) {
     tbls <- .report_extract_tables(module_output$report)
-    bullets <- lapply(tbls, \(tbl) {
-      cols <- names(tbl)
-      if (identical(cols, c("File name", "Missing Files")) ||
-          identical(cols, c("File name", "Absolute paths found"))) {
-        return(.report_file_finding_bullets(tbl, cols[[1]], cols[[2]]))
+
+    # Missing-files and absolute-paths findings are folded into ONE bullet
+    # per file instead of one bullet per (file, check) pair -- per the
+    # user's own request: a file with both problems previously got two
+    # separate lines ("missing file: ... in test_script.R" directly
+    # followed by "absolute path: ... in test_script.R"), which reads as
+    # two unrelated to-dos when it is really one file needing two things
+    # fixed. Parse errors stay their OWN bullets, not folded in here: a
+    # parse error is prose (a multi-line R parser trace, whitespace-
+    # collapsed -- see .report_file_findings_by_file()'s own comment),
+    # fundamentally unlike a short list of file/path names, and a file that
+    # fails to parse at all typically has no OTHER findings to fold it
+    # with anyway (code_check never ran its other checks against
+    # unparseable content).
+    missing_tbl <- Filter(\(tbl) identical(names(tbl), c("File name", "Missing Files")), tbls)
+    abs_tbl <- Filter(\(tbl) identical(names(tbl), c("File name", "Absolute paths found")), tbls)
+    missing_by_file <- if (length(missing_tbl) > 0)
+      .report_file_findings_by_file(missing_tbl[[1]], "File name", "Missing Files") else list()
+    abs_by_file <- if (length(abs_tbl) > 0)
+      .report_file_findings_by_file(abs_tbl[[1]], "File name", "Absolute paths found") else list()
+
+    folded_bullets <- character(0)
+    # Two DIFFERENT physical files (e.g. an OSF "Archive of OSF Storage" zip
+    # copy sitting alongside the real folder) can share the same bare file
+    # name, which is all code_check's own report table carries -- unioning
+    # their finding lists under one name is the same collapse-identical-
+    # duplicates call already made for the single-table case (per the
+    # user's own call on this tradeoff), now applied across both tables at
+    # once via the union below.
+    all_files <- union(names(missing_by_file), names(abs_by_file))
+    if (length(all_files) > 0) {
+      # The flagged values themselves (the file/path names actually found,
+      # e.g. "file.csv", "/lisa/file.csv") are bolded -- the host file name
+      # before the colon is not, per the user's own distinction between
+      # "the file the issue was found IN" and "the result of the check".
+      # <strong>, not **bold**: a found value can contain a run of
+      # underscores immediately against the bold delimiter, which
+      # CommonMark's emphasis-matching does not always resolve as bold (see
+      # the repo_check renderer's own comment for a confirmed live case) --
+      # raw HTML has no such ambiguity.
+      # "In <file>: we observed a missing file: ...; and an absolute path
+      # ..." -- plain-English sentence instead of the terser "<file>:
+      # missing file ...; absolute path ..." label-style line, per the
+      # user's own rewording request. Each clause gets its own article ("a
+      # missing file", "an absolute path") rather than a shared one, since
+      # "a missing file and absolute path" would misleadingly read as if
+      # "absolute path" also took the "a" from "a missing file". Joined with
+      # "; and " between every clause (not just before the last one) to
+      # read as one flowing sentence regardless of how many clause types a
+      # file has -- currently always 1 or 2 (missing file, absolute path),
+      # but written to still read naturally if a third ever joins them.
+      folded_bullets <- vapply(all_files, \(f) {
+        parts <- c(
+          if (!is.null(missing_by_file[[f]])) sprintf("a missing file: <strong>%s</strong>", paste(missing_by_file[[f]], collapse = ", ")),
+          if (!is.null(abs_by_file[[f]])) sprintf("an absolute path <strong>%s</strong>", paste(abs_by_file[[f]], collapse = ", "))
+        )
+        sprintf("- In %s: we observed %s", f, paste(parts, collapse = "; and "))
+      }, character(1), USE.NAMES = FALSE)
+    }
+
+    parse_bullets <- lapply(tbls, \(tbl) {
+      if (identical(names(tbl), c("File name", "Error Message"))) {
+        return(.report_file_finding_bullets(tbl, "File name", "Error Message",
+                                            "parse error", split = FALSE))
       }
-      if (identical(cols, c("File name", "Error Message"))) {
-        return(.report_file_finding_bullets(tbl, "File name", "Error Message"))
-      }
-      # Every other code_check table (the wide per-file overview; setwd()/
-      # install.packages() tables, which are rare enough in practice that
-      # the generic renderer's row-per-bullet fallback is already fine) is
-      # left to the generic pipeline below.
       NULL
     })
-    bullets <- unlist(Filter(Negate(is.null), bullets))
+    parse_bullets <- unlist(Filter(Negate(is.null), parse_bullets))
+
+    bullets <- unique(c(folded_bullets, parse_bullets))
 
     other_tbls <- Filter(\(tbl) {
       cols <- names(tbl)
@@ -379,6 +472,58 @@ report_type <- function(report_type = NULL) {
       unlist()
 
     c(bullets, generic) %||% character(0)
+  },
+  # codebook_check.R's report has a per-file "Column Documentation" tabset
+  # (one table per data file, columns Column | Documented | Label |
+  # Codebook Variable | Source | Status -- codebook_file_tabset() drops
+  # source_file per tab) and, when any exist, a "Documented but Unused
+  # Variables" table (Variable | Label | Source). The generic renderer has
+  # no notion of "this column is a status worth counting" vs "this column
+  # is a fact about the row" for either shape -- it grouped Column itself
+  # (every undocumented column repeats as its own one-row group) and, worse,
+  # relabelled a bare Variable/Label value as a quoted "sentence" (per the
+  # user's own report: "id_number" and "dependent variable" are not
+  # sentences). Both tables already answer the user's two actual questions
+  # directly -- which data columns have no codebook entry, and which
+  # codebook entries are never used -- so this renders those two plain
+  # lists instead of running either table through the generic grouping.
+  codebook_check = function(module_output) {
+    tbls <- .report_extract_tables(module_output$report)
+
+    doc_tbls <- Filter(\(tbl) identical(names(tbl),
+      c("Column", "Documented", "Label", "Codebook Variable", "Source", "Status")), tbls)
+    undoc_bullets <- if (length(doc_tbls) > 0) {
+      doc_tbl <- dplyr::bind_rows(doc_tbls)
+      undoc <- unique(doc_tbl$Column[doc_tbl$Documented == "no"])
+      if (length(undoc) > 0)
+        # Each column name bolded individually (not the whole joined list as
+        # one span), per the user's own request to bold the result of the
+        # check -- here, the specific column names found. <strong>, not
+        # **bold**: a real column name commonly contains underscores (e.g.
+        # "subject_id"), which next to "**" is not always resolved as bold
+        # by CommonMark's emphasis-matching (confirmed live elsewhere in
+        # this file -- see the repo_check renderer's own comment).
+        sprintf("- The following data column%s %s not documented in a codebook: %s",
+               if (length(undoc) == 1) "" else "s",
+               if (length(undoc) == 1) "is" else "are",
+               paste(sprintf("<strong>%s</strong>", undoc), collapse = ", "))
+      else character(0)
+    } else {
+      character(0)
+    }
+
+    unused_tbl <- Filter(\(tbl) identical(names(tbl), c("Variable", "Label", "Source")), tbls)
+    unused_bullets <- if (length(unused_tbl) > 0 && nrow(unused_tbl[[1]]) > 0) {
+      vars <- unused_tbl[[1]]$Variable
+      sprintf("- The following codebook variable%s %s not appear in the data: %s",
+             if (length(vars) == 1) "" else "s",
+             if (length(vars) == 1) "does" else "do",
+             paste(sprintf("<strong>%s</strong>", vars), collapse = ", "))
+    } else {
+      character(0)
+    }
+
+    c(undoc_bullets, unused_bullets)
   },
   # data_check.R's report always includes a raw-data preview (one table per
   # file, columns named after the data's own column names, e.g. "id" |
@@ -450,16 +595,27 @@ report_type <- function(report_type = NULL) {
 
     naming_tbl <- Filter(\(tbl) identical(names(tbl), c("File", "Rule", "Severity", "Detail")),
                          tbls)
-    naming_bullets <- if (length(naming_tbl) > 0) {
+    # Grouped by FILE, not by Rule: grouping by rule split what the problem is
+    # and which file it is in across separate lines/groups (a file violating
+    # two rules showed up once per rule, each time in a different group, with
+    # no single line saying "here is everything wrong with this one file") --
+    # per the user's own report, the same "problem and location spread across
+    # rows" mistake already fixed for code_check's missing-file/absolute-path
+    # bullets. One bullet per file instead, folding every rule that file
+    # violates (with its own per-rule detail, e.g. "contains a space") into
+    # that one line, found values bolded per the user's own request.
+    naming_bullets <- if (length(naming_tbl) > 0 && nrow(naming_tbl[[1]]) > 0) {
       naming_tbl <- naming_tbl[[1]]
-      groups <- split(seq_len(nrow(naming_tbl)), naming_tbl$Rule)
+      groups <- split(seq_len(nrow(naming_tbl)), naming_tbl$File)
       vapply(groups, \(rows) {
-        g_n <- length(rows)
-        sev <- unique(naming_tbl$Severity[rows])
-        sev_text <- if (length(sev) == 1) sprintf(" (%s)", sev) else ""
-        sprintf('- %d item%s: %s%s, namely "%s"', g_n, if (g_n == 1) "" else "s",
-               naming_tbl$Rule[rows[1]], sev_text,
-               paste(naming_tbl$File[rows], collapse = '", "'))
+        findings <- sprintf("%s (%s)", naming_tbl$Rule[rows], naming_tbl$Detail[rows])
+        # <strong>, not **bold**: a file name here can contain a run of
+        # underscores (e.g. "...___CODEBOOK.csv") immediately next to the
+        # closing "**", which CommonMark's emphasis-delimiter matching does
+        # not always resolve as bold -- confirmed live, rendered as literal
+        # asterisks instead of <strong> for exactly such a name. Raw HTML has
+        # no such ambiguity.
+        sprintf('- <strong>%s</strong>: %s', naming_tbl$File[rows[1]], paste(findings, collapse = "; "))
       }, character(1), USE.NAMES = FALSE)
     } else {
       character(0)
@@ -499,9 +655,22 @@ report_type <- function(report_type = NULL) {
   reproducibility_check = function(module_output) {
     tbls <- .report_extract_tables(module_output$report)
 
+    # Rendered directly, not via the generic .report_group_table(): its
+    # `Reason` column is already a complete, self-contained sentence per
+    # file (see repro_missing_inputs()'s own `detail` values, e.g.
+    # "referenced file is not present in the repository, but a
+    # similarly-named file exists: ..."), not a short status code worth
+    # counting -- the generic grouping treated it as quoted evidence for a
+    # separate "Status: absent" count, producing a count that duplicates
+    # the module's own summary_text ("2 referenced inputs unavailable")
+    # immediately followed by the same two files relabelled as "sentences"
+    # (per the user's own report: neither Status nor Reason is a sentence).
+    # One plain bullet per file instead says what the summary already
+    # counted, without restating the count or misnaming the text.
     missing_tbl <- Filter(\(tbl) identical(names(tbl), c("File", "Status", "Reason")), tbls)
-    missing_bullets <- if (length(missing_tbl) > 0) {
-      .report_group_table(missing_tbl[[1]])
+    missing_bullets <- if (length(missing_tbl) > 0 && nrow(missing_tbl[[1]]) > 0) {
+      mt <- missing_tbl[[1]]
+      sprintf("- %s: %s", mt$File, mt$Reason)
     } else {
       character(0)
     }
@@ -527,13 +696,45 @@ report_type <- function(report_type = NULL) {
       transcript_rows <- flagged[has_transcript, ]
       grouped_rows <- flagged[!has_transcript, ]
 
+      # One bullet per outcome naming the actual files, instead of the
+      # generic renderer's "N items: Outcome: skipped_missing_inputs ...
+      # These issues were observed in the following sentences: > bad.R"
+      # (per the user's own report: a bare file name is not a sentence,
+      # and the outcome code is not evidence to quote -- it is the status
+      # itself). Grouped by Outcome so e.g. every skipped_missing_inputs
+      # file is named together on one line.
+      grouped_bullets <- if (nrow(grouped_rows) > 0) {
+        outcome_labels <- c(
+          skipped_missing_inputs = "could not be run because a referenced input file is missing",
+          not_parsed              = "could not be parsed and so could not be run",
+          dependency_unavailable  = "could not be run because a required dependency is unavailable"
+        )
+        groups <- split(seq_len(nrow(grouped_rows)), grouped_rows$Outcome)
+        vapply(groups, \(rows) {
+          outcome <- grouped_rows$Outcome[rows[1]]
+          label <- outcome_labels[[outcome]] %||% outcome
+          files <- paste(grouped_rows$File[rows], collapse = ", ")
+          sprintf("- The following file%s %s: %s",
+                 if (length(rows) == 1) "" else "s", label, files)
+        }, character(1), USE.NAMES = FALSE)
+      } else {
+        character(0)
+      }
+
+      # errored/timed_out read as "The following file(s) resulted in an
+      # error/timed out when run", not the outcome code prefixed onto the
+      # file name (the old "- errored: "good-example.R"" reads backwards --
+      # per the user's own report).
       transcript_bullets <- vapply(seq_len(nrow(transcript_rows)), \(i) {
         file <- transcript_rows$File[i]
         outcome <- transcript_rows$Outcome[i]
+        outcome_text <- if (outcome == "timed_out") "timed out when run" else
+          "resulted in an error when run"
         callout <- .report_find_callout(module_output$report,
                                         sprintf("Output — %s \\(%s\\)",
                                                gsub("([.])", "\\\\\\1", file), outcome))
-        bullet <- sprintf("- %s: \"%s\"", outcome, file)
+        bullet <- sprintf("- The following file %s (see Error details below for more information): %s",
+                          outcome_text, file)
         if (is.null(callout)) return(bullet)
 
         details <- sprintf(
@@ -543,8 +744,7 @@ report_type <- function(report_type = NULL) {
         paste(bullet, details, sep = "\n")
       }, character(1))
 
-      c(if (nrow(grouped_rows) > 0) .report_group_table(grouped_rows) else character(0),
-        transcript_bullets)
+      c(grouped_bullets, transcript_bullets)
     } else {
       character(0)
     }
