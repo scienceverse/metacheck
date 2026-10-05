@@ -1984,6 +1984,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   if (nrow(naming_issues) > 0) {
     naming_tbl <- naming_issues
+    # Internal severity values ("bad"/"suggestion") drive gating elsewhere
+    # (n_naming_bad, n_naming_bad_by_paper) but read oddly as a column a user
+    # sees verbatim, so the display table relabels them without touching the
+    # underlying naming_issues/severity values used for gating above.
+    naming_tbl$severity <- c(bad = "Required", suggestion = "Suggestion")[naming_tbl$severity]
     names(naming_tbl) <- c("File", "Rule", "Severity", "Detail")
     report_naming <- c(
       "#### File Naming",
