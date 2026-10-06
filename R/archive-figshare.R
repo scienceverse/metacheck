@@ -109,7 +109,14 @@
     "figshare.manchester.ac.uk",# University of Manchester (UK)
     "novasbe.figshare.com",     # Universidade Nova de Lisboa, NOVA SBE (Portugal)
     "figshare.uts.edu.au",      # University of Technology Sydney (Australia)
-    "melbourne.figshare.com"    # University of Melbourne (Australia) -- separate DataCite client/host from figshare.unimelb.edu.au above
+    "melbourne.figshare.com",   # University of Melbourne (Australia) -- separate DataCite client/host from figshare.unimelb.edu.au above
+
+    # -- added 2026-10-05, issue #461: confirmed live the same way as the
+    # hosts above (api.figshare.com's own SPA shell at /api/articles/1,
+    # HTTP 202/empty HTML body) --
+    "data.lib.vt.edu",                 # VTechData, Virginia Tech (USA)
+    "agdatacommons.nal.usda.gov",      # USDA Ag Data Commons (USA)
+    "adelaide.figshare.com"            # University of Adelaide (Australia)
   )
 }
 
@@ -157,7 +164,14 @@
     "10.60580" = "novasbe.figshare.com",
     "10.71741" = "figshare.uts.edu.au",
     "10.26180" = "bridges.monash.edu",
-    "10.26188" = "melbourne.figshare.com"
+    "10.26188" = "melbourne.figshare.com",
+
+    # -- added 2026-10-05, issue #461 (real sample DOIs under these exact
+    # prefixes confirmed live, same way as the prefixes above) --
+    "10.5522" = "rdr.ucl.ac.uk",                  # UCL (host already listed above; only its prefix was missing)
+    "10.7294" = "data.lib.vt.edu",                # VTechData -- NOT Dryad, despite being near Dryad's own prefix range (see archive-dryad.R)
+    "10.15482" = "agdatacommons.nal.usda.gov",    # USDA Ag Data Commons
+    "10.25909" = "adelaide.figshare.com"          # University of Adelaide
   )
 }
 
@@ -324,8 +338,29 @@ figshare_links <- function(paper) {
   # article ids captured here. The sub-prefix segment is therefore matched
   # zero or more times, not zero-or-one, so any number of them are skipped
   # before the trailing numeric id.
+  #
+  # UCL (10.5522) separates its sub-prefix from the id with a literal "/"
+  # rather than "." (10.5522/04/14484084.v1 -- confirmed live 2026-10-06,
+  # issue #465) -- the skip-group below matches a trailing "." OR "/" after
+  # each sub-prefix segment, not just ".", to cover this shape too.
+  #
+  # Two of the hosts added in #464 (VTechData 10.7294, USDA Ag Data Commons
+  # 10.15482) are excluded from inst_prefix_regex entirely: their DOI
+  # suffix is a handle-style code (10.7294/WSDX-AJ44) or embeds an
+  # unrelated numeric accession number that is NOT the figshare article id
+  # (10.15482/USDA.ADC/1402049 -- confirmed live 2026-10-06 that figshare's
+  # own API resolves this DOI to article id 24852405, not 1402049). Letting
+  # either match this pattern would silently produce a WRONG id instead of
+  # NA, which is worse -- see .figshare_doi_lookup() below for how these two
+  # are actually resolved, via the API's own DOI-lookup endpoint rather
+  # than string parsing. (Adelaide, 10.25909, is NOT excluded here despite
+  # also needing that same fallback sometimes -- see
+  # .figshare_doi_lookup_fallback_prefixes()'s header comment just below for
+  # why it stays in this digit-only pattern too.)
+  numeric_fallback_hosts <- .figshare_doi_prefix_hosts()
+  numeric_fallback_hosts[.figshare_doi_lookup_prefixes()] <- NULL
   inst_prefix_regex <- paste(
-    gsub("\\.", "\\\\.", names(.figshare_doi_prefix_hosts())), collapse = "|"
+    gsub("\\.", "\\\\.", names(numeric_fallback_hosts)), collapse = "|"
   )
   host_regex <- .figshare_host_regex()
   patterns <- c(
@@ -340,8 +375,14 @@ figshare_links <- function(paper) {
     # enough in real extracted paper text to be worth tolerating, and
     # anchoring purely on `$` silently returned NA for it -- found live
     # 2026-09-19 via a real corpus paper's citation ending in exactly this
-    # shape.
-    paste0("(?:", inst_prefix_regex, ")/(?:[a-z0-9]+\\.)*([0-9]+)(?:\\.v[0-9]+)?(?:[^0-9]|$)")
+    # shape. The boundary excludes a-z specifically (not just any non-digit)
+    # so this pattern can never partially match into a hex-shaped id like
+    # Adelaide's 5b581a5a151da and return just its leading "5" -- confirmed
+    # live 2026-10-06 (issue #465) that doing so silently produced a
+    # truncated, wrong id instead of correctly falling through to NA (which
+    # is what lets figshare_retrieve()'s DOI-lookup fallback pick it up
+    # instead -- see .figshare_doi_lookup_fallback_prefixes()).
+    paste0("(?:", inst_prefix_regex, ")/(?:[a-z0-9]+[./])*([0-9]+)(?:\\.v[0-9]+)?(?:[^0-9a-z]|$)")
   )
 
   for (pattern in patterns) {
@@ -353,6 +394,93 @@ figshare_links <- function(paper) {
   }
 
   return(NA_character_)
+}
+
+# DOI prefixes whose article id can NEVER be string-parsed from the
+# citation text -- the DOI suffix is a handle-style code (VTechData) or
+# embeds a numeric accession that is NOT the figshare article id (USDA Ag
+# Data Commons), confirmed live 2026-10-06 (issue #465). These are excluded
+# from .figshare_id()'s digit-only fallback pattern entirely (see its
+# header comment), since letting either match there would silently produce
+# a WRONG id. Resolved instead via .figshare_doi_lookup()'s API call. Kept
+# as its own small function (rather than inlined where used) since both
+# .figshare_id() and .figshare_doi_lookup_fallback_prefixes() need this
+# exact list.
+.figshare_doi_lookup_prefixes <- function() {
+  c("10.7294", "10.15482")
+}
+
+# DOI prefixes eligible for the DOI-lookup fallback in figshare_retrieve()
+# -- a superset of .figshare_doi_lookup_prefixes() that ALSO includes
+# Adelaide (10.25909), confirmed live 2026-10-06 (issue #465) to mint both
+# shapes: most of its DOIs carry a plain numeric suffix that IS the real
+# figshare article id (10.25909/33113177 resolves directly to article id
+# 33113177, so .figshare_id()'s ordinary digit-only pattern stays able to
+# match 10.25909 and is correct for this, the common, case), but older
+# records use an opaque hex-shaped suffix that is NOT an id at all
+# (10.25909/5b581a5a151da resolves via the API to article id 6859511 -- no
+# numeric substring of the DOI is the real id, same situation as
+# VTechData/USDA). Unlike those two, Adelaide is NOT excluded from
+# .figshare_id()'s digit pattern, since doing so would break the common
+# numeric case -- a hex DOI simply fails every pattern there and falls
+# through to NA on its own, which is exactly what triggers this fallback.
+.figshare_doi_lookup_fallback_prefixes <- function() {
+  c(.figshare_doi_lookup_prefixes(), "10.25909")
+}
+
+# Pull the bare DOI (10.<prefix>/<suffix>) out of a URL or already-bare DOI
+# string, for one of .figshare_doi_lookup_fallback_prefixes()'s hosts
+# specifically -- e.g. "https://doi.org/10.7294/WSDX-AJ44" or
+# "10.7294/WSDX-AJ44" both give "10.7294/WSDX-AJ44". Unlike .figshare_id()'s
+# other patterns, the full DOI (not just a trailing id segment) is needed
+# here, since the whole thing is passed to the API's own doi= lookup
+# parameter rather than parsed further.
+.figshare_doi_lookup_doi <- function(figshare_url) {
+  if (length(figshare_url) == 0) return(character(0))
+  if (length(figshare_url) > 1) {
+    return(vapply(figshare_url, .figshare_doi_lookup_doi, character(1)))
+  }
+
+  prefix_regex <- paste(gsub("\\.", "\\\\.", .figshare_doi_lookup_fallback_prefixes()), collapse = "|")
+  pattern <- paste0("((?:", prefix_regex, ")/[A-Za-z0-9._/-]+?)(?:\\.v[0-9]+)?(?:[^A-Za-z0-9._/-]|$)")
+  match <- regexec(pattern, figshare_url, perl = TRUE, ignore.case = TRUE)
+  groups <- regmatches(figshare_url, match)[[1]]
+  if (length(groups) >= 2) return(groups[[2]])
+  NA_character_
+}
+
+# Resolve a figshare article id from a DOI via the API's own
+# GET /v2/articles?doi=<doi> lookup, for the hosts in
+# .figshare_doi_lookup_prefixes() whose DOI suffix carries no numeric
+# article id at all (confirmed live 2026-10-06, issue #465: VTechData's
+# 10.7294/WSDX-AJ44 resolves to article id 14096975, USDA Ag Data Commons'
+# 10.15482/USDA.ADC/1402049 resolves to article id 24852405 -- neither id
+# appears anywhere in the DOI itself). Confirmed live the same day that this
+# endpoint needs no authentication for a public article, the same as every
+# other read in this file (see .figshare_headers()).
+.figshare_doi_lookup <- function(doi, host = "api.figshare.com", pb = NULL) {
+  if (is.null(pb)) {
+    pb <- pb(NA, "(:spin) :what")
+    on.exit(pb$terminate())
+  }
+
+  paste0("* Resolving Figshare article id for DOI ", doi, "...") |>
+    list(what = _) |>
+    pb$tick(0, tokens = _)
+
+  api_url <- paste0("https://", host, "/v2/articles?doi=", utils::URLencode(doi, reserved = TRUE))
+
+  resp <- .batch_query(api_url, msg = NULL,
+                       req_func = \(req) .figshare_headers(req, host = host))[[1]]
+
+  if (is.null(resp) || httr2::resp_status(resp) != 200) {
+    return(NA_character_)
+  }
+
+  rec <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
+  if (is.null(rec) || length(rec) == 0) return(NA_character_)
+
+  as.character(rec[[1]]$id %empty_or% NA_character_)
 }
 
 # Get a Figshare PROJECT id from a URL, e.g.
@@ -633,6 +761,36 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
         expanded_urls <- unique(vapply(collection_rows, function(r) r$figshare_url[[1]], character(1)))
         ids <- ids[!(ids$figshare_url %in% expanded_urls & is.na(ids$figshare_id)), , drop = FALSE]
         ids <- dplyr::bind_rows(ids, do.call(rbind, collection_rows)) |> unique()
+      }
+    }
+  }
+
+  # A DOI under one of .figshare_doi_lookup_prefixes()'s hosts (VTechData,
+  # USDA Ag Data Commons) carries no numeric article id anywhere in its own
+  # text -- see .figshare_id()'s header comment and issue #465. Resolved
+  # here via the API's own doi= lookup instead, the same one-url-at-a-time
+  # shape as the project/collection expansions above (a bare article id, not
+  # one that bundles several, so each resolves to at most one row rather
+  # than N).
+  unresolved <- is.na(ids$figshare_id)
+  if (any(unresolved)) {
+    lookup_urls <- ids$figshare_url[unresolved]
+    lookup_dois <- .figshare_doi_lookup_doi(lookup_urls)
+    has_doi <- !is.na(lookup_dois)
+    if (any(has_doi)) {
+      resolved_ids <- vapply(lookup_dois[has_doi], function(doi) {
+        .figshare_doi_lookup(doi, host = host, pb = pb) %||% NA_character_
+      }, character(1))
+      doi_rows <- data.frame(
+        figshare_url = lookup_urls[has_doi],
+        figshare_id = resolved_ids,
+        stringsAsFactors = FALSE
+      )
+      doi_rows <- doi_rows[!is.na(doi_rows$figshare_id), , drop = FALSE]
+      if (nrow(doi_rows) > 0) {
+        expanded_urls <- unique(doi_rows$figshare_url)
+        ids <- ids[!(ids$figshare_url %in% expanded_urls & is.na(ids$figshare_id)), , drop = FALSE]
+        ids <- dplyr::bind_rows(ids, doi_rows) |> unique()
       }
     }
   }

@@ -12,6 +12,7 @@ report(
     "ref_summary"),
   output_file = paste0(paper$paper_id, "_report.", output_format),
   output_format = c("html", "qmd"),
+  report_type = c("full", "simple"),
   args = list()
 )
 }
@@ -24,10 +25,20 @@ report(
 
 \item{output_format}{the format to create the report in}
 
+\item{report_type}{\code{"full"} (the default) for the normal interactive
+report (theme toggle, sortable/paginated JavaScript tables, tabbed
+sections), or \code{"simple"} for a static report with none of that -- plain
+tables, stacked headings instead of tabs, a single theme, no embedded
+JavaScript at all. Use \code{"simple"} for a report you plan to email: mail
+clients and scanners routinely flag the JavaScript a full report embeds
+(even though it is inert without a browser). See \code{\link[=report_type]{report_type()}}.}
+
 \item{args}{a list of arguments to pass to modules (see Details)}
 }
 \value{
-the file path the report is saved to
+the module output, invisibly, with the report's file path in its
+\code{save_path} attribute (a vector of paths, one per paper, when \code{paper} is
+a paperlist)
 }
 \description{
 Run specified modules on a paper and generate a report in quarto (qmd), html, or pdf format.
@@ -42,5 +53,6 @@ Pass arguments to modules in a named list of lists, using the same names as the 
 \dontrun{
 paper <- demopaper()
 report(paper)
+report(paper, report_type = "simple") # email-safe, no embedded JS
 }
 }

@@ -26,5 +26,5 @@ a data frame
 DOIs and nature of statements from the RetractionWatch database. Use \code{rw_date()} to find the date it was downloaded, and \code{rw_update()} to update it.
 }
 \examples{
-retractionwatch()
+retractionwatch() |> head()
 }

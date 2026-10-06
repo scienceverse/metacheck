@@ -249,6 +249,8 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
     on.exit(pb$terminate())
   }
 
+  .dryad_warn_if_no_key()
+
   paste0("* Retrieving info from Dryad DOI ", dryad_doi, "...") |>
     list(what = _) |>
     pb$tick(0, tokens = _)
@@ -469,6 +471,66 @@ dryad_auth <- function(client_id = NULL, client_secret = NULL,
 # mid-session take effect on the very next Dryad request.
 .dryad_oauth_client <- function() {
   .dryad_auth()
+}
+
+# Warn, once per session, the first time a Dryad dataset is resolved with no
+# key set (dryad_pat() nor dryad_auth()). Dataset metadata/listing works
+# without one (see below), so this is shown here rather than failing outright
+# -- but every later file-byte download for that dataset will 401 (see
+# .dryad_headers()'s own comment), and surfacing that only after the fact, one
+# failed download at a time, means a whole corpus run can finish before the
+# user learns why every Dryad file came back empty. Shown at most once per
+# session, same pattern as the repo-cache notice in download_repo_files();
+# reset with options(metacheck.dryad_pat.notified = NULL) to see it again.
+.dryad_warn_if_no_key <- function() {
+  if (isTRUE(getOption("metacheck.dryad_pat.notified"))) return(invisible())
+  has_key <- nzchar(tryCatch(dryad_pat(), error = \(e) "") %||% "") ||
+    !is.null(tryCatch(.dryad_oauth_client(), error = \(e) NULL))
+  if (!has_key) {
+    message(
+      "No Dryad API key is set. Dryad dataset listings and metadata can be ",
+      "read without one, but downloading file CONTENTS from Dryad requires ",
+      "a key even for a fully public dataset -- every such download will ",
+      "fail with 'HTTP 401' until one is set. See ?dryad_pat or ?dryad_auth."
+    )
+  }
+  options(metacheck.dryad_pat.notified = TRUE)
+}
+
+# Fetch one Dryad file's bytes to `target_path`. Extracted out of
+# dryad_file_download()'s per-file loop (issue #456.6) so the 401-vs-other-
+# failure distinction can be tested in isolation, with a single plain
+# req_perform() call and no retry/sequential machinery to mock.
+#
+# @param self_url the file's own download URL (`files$self`)
+# @param target_path where to write the bytes on success
+# @returns `list(ok = TRUE)`, or `list(ok = FALSE, error = <string or NULL>)`
+#   -- `error` is NULL when the request itself failed (network/timeout, no
+#   response at all), since there is nothing more specific to report there.
+.dryad_download_one_file <- function(self_url, target_path) {
+  resp <- tryCatch(
+    {
+      httr2::request(self_url) |>
+        .dryad_headers() |>
+        httr2::req_timeout(600) |>
+        httr2::req_error(is_error = \(resp) FALSE) |>
+        httr2::req_perform()
+    },
+    error = \(e) NULL
+  )
+  if (is.null(resp)) return(list(ok = FALSE, error = NULL))
+  if (httr2::resp_status(resp) == 200) {
+    writeBin(httr2::resp_body_raw(resp), target_path)
+    return(list(ok = TRUE))
+  }
+  # A 401 here is otherwise indistinguishable from any other download failure
+  # once this file ends up staying "unknown" downstream -- see
+  # .dryad_401_hint()'s own comment and issue #456.6, which flagged exactly
+  # this confusion for the download_repo_files() path that repo_check/
+  # data_check actually use. Recorded here too so this standalone export
+  # reports the same clear cause.
+  status <- httr2::resp_status(resp)
+  list(ok = FALSE, error = paste0("HTTP ", status, .dryad_401_hint(self_url, status)))
 }
 
 #' Download all files from a Dryad dataset
@@ -746,19 +808,12 @@ dryad_file_download <- function(dryad_doi,
     ok <- FALSE
     if (!is.na(files$self[[i]]) && nzchar(files$self[[i]])) {
       target_path <- file.path(temppath, files$id[[i]])
-      resp <- tryCatch(
-        {
-          httr2::request(files$self[[i]]) |>
-            .dryad_headers() |>
-            httr2::req_timeout(600) |>
-            httr2::req_error(is_error = \(resp) FALSE) |>
-            httr2::req_perform()
-        },
-        error = \(e) NULL
-      )
-      if (!is.null(resp) && httr2::resp_status(resp) == 200) {
-        writeBin(httr2::resp_body_raw(resp), target_path)
-        ok <- TRUE
+      got <- .dryad_download_one_file(files$self[[i]], target_path)
+      ok <- got$ok
+      if (!ok && !is.null(got$error)) {
+        failed <- rbind(failed, data.frame(
+          key = files$key[[i]], member = NA_character_, error = got$error,
+          stringsAsFactors = FALSE))
       }
     }
     files$downloaded[i] <- isTRUE(ok)

@@ -40,11 +40,11 @@
 #' path/repository split and no LLM), a single-rooted tree is shown together
 #' with a note that subgrouping could not be detected. A materials or
 #' documentation file genuinely reused across studies is still owned by
-#' exactly one study; the others get a reference to it (not a copy) written
-#' into their own metadata by `convert_psychds()`.
+#' exactly one study; a future converter could write the others a reference
+#' to it (not a copy) instead of duplicating it.
 #'
-#' This module only *checks* compliance; it does not modify the repository. The
-#' report points to a dedicated builder for generating a compliant copy.
+#' This module only *checks* compliance; it does not modify the repository.
+#' Generating a compliant copy is not yet implemented.
 #'
 #' @keywords results
 #'
@@ -68,34 +68,6 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
                           cache = FALSE,
                           skip_on_api_limit = FALSE) {
 
-  # DUPLICATED: this file is copied as-is into both the reproducibility_check
-  # branch and the convert_psychds branch (neither can run without the plan
-  # this module builds, and there was no other shared branch to put a single
-  # copy on). Once both those modules are mature, consider extracting the
-  # plan-building logic below (up to where summary_text/report assembly
-  # starts) into a shared internal helper both call, instead of maintaining
-  # two copies of this file.
-
-  # File-type → Psych-DS subdirectory (data and readme handled separately, by
-  # doc_role, below).
-  #
-  # "unknown" gets its OWN subdirectory rather than being folded into
-  # documentation/: data_classify_files() could not place these files by
-  # format, folder, or filename keyword at all (see .ext_registry,
-  # R/data_check_helpers.R) — silently filing them under documentation/ hid
-  # that gap. A visible unknown/ folder is an actionable signal: a
-  # researcher (or metacheck's own maintainer) can see exactly what wasn't
-  # recognized and rename the file to include a data/code/materials/output/
-  # documentation keyword, which data_classify_files()'s Tier 2 keyword rules
-  # will then pick up correctly on a re-run.
-  type_to_subdir <- c(
-    code          = "analysis",
-    materials     = "materials",
-    output        = "outputs",
-    documentation = "documentation",
-    unknown       = "unknown"
-  )
-
   .pid <- function(...) {
     id <- paper_id(paper)
     for (df in list(...)) {
@@ -103,21 +75,6 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (!is.null(df) && "paper_id" %in% names(df)) id <- unique(df$paper_id)
     }
     if (length(id) == 0) NA_character_ else id[[1]]
-  }
-
-  # Psych-DS's OWN validator rule for a datafile name is the regex
-  # '([a-z]+-[a-zA-Z0-9]+)(_[a-z]+-[a-zA-Z0-9]+)*_data\.(csv|tsv)' (schema_model/
-  # versions/*/rules/files/tabular_data/data.yaml, "Datafile", verified directly
-  # against the psych-ds/psych-ds GitHub repo — not assumed from the prose docs
-  # alone): a KEY is lowercase-alpha-only, but a VALUE is "upper- and lowercase
-  # alphanumeric" — case is explicitly allowed in the value, so keep it. Only
-  # strip what the value pattern actually disallows (anything that is not a
-  # letter or digit); this used to also lowercase and was therefore stripping
-  # more than the spec requires — confirmed by reading the validator rule
-  # directly, not by assumption, after the user questioned whether the
-  # aggressive slugification was really a Psych-DS requirement.
-  keyword_slug <- function(x) {
-    gsub("[^a-zA-Z0-9]+", "", x)
   }
 
   # ── 1. Inputs from data_check (+ codebook_check for documentation) ───────────
@@ -172,149 +129,31 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (is.null(structure_df) || nrow(structure_df) == 0)
     return(empty("We found no repository files to check for Psych-DS compliance."))
 
-  n_files <- nrow(structure_df)
+  # ── 2. File-to-target-path plan (the file/folder organisation logic lives in
+  # psychds_file_plan(), shared with reproducibility_check) ────────────────────
+  plan <- psychds_file_plan(structure_df, group_no_evidence)
+  plan_table <- plan$table
+  group_no_evidence <- isTRUE(plan$group_no_evidence)
 
-  # ── 2. Do study groups exist? ────────────────────────────────────────────────
-  # Every file except the collection-level root README/ro-crate-metadata.json
-  # resolves to exactly one study — there is no "shared" bucket to filter out;
-  # those root files simply carry group = NA (see data_check.R).
-  groups <- if ("group" %in% names(structure_df))
-    structure_df$group else rep(NA_character_, n_files)
+  if (nrow(plan_table) == 0)
+    return(empty("We found no repository files to check for Psych-DS compliance."))
+
+  current_path <- plan_table$current_path
+  target_path  <- plan_table$target_path
+  is_excluded  <- plan_table$status == "excluded"
+  misplaced    <- plan_table$status == "move"
+  needs_convert    <- plan_table$convert
+  original_target  <- plan_table$original_target
   doc_role <- if ("doc_role" %in% names(structure_df))
-    structure_df$doc_role else rep(NA_character_, n_files)
+    structure_df$doc_role else rep(NA_character_, nrow(structure_df))
+  groups   <- plan_table$group
   study_groups <- unique(groups[!is.na(groups)])
   have_groups  <- length(study_groups) > 0
   multi_study  <- length(study_groups) > 1
+  n_files <- nrow(plan_table)
+  is_data <- !is.na(plan_table$data_type) & plan_table$data_type == "data"
 
-  # ── 3. Map each file to its Psych-DS target path ─────────────────────────────
-  # data files → data/<...>_data.csv; readme → README; everything else → its
-  # type subdirectory. Study prefix is added when groups exist.
-  is_data <- !is.na(structure_df$data_type) & structure_df$data_type == "data"
-
-  # Only a repository with >=2 detected study groups uses the study-<group>/
-  # layout; a single study (or unknown grouping) is a flat single dataset.
-  #
-  # Files that belong to a specific study go under study-<group>/ (a complete,
-  # valid Psych-DS dataset). Only the root README/ro-crate-metadata.json (group
-  # is NA by construction — see data_check.R) get NO study prefix: they live at
-  # the dataset root, beside the study-*/ folders. This follows BIDS
-  # (collection-level content sits at the root, never in a pseudo-subject like
-  # sub-shared/) and keeps every study-*/ a real dataset.
-  target_of <- function(i) {
-    dt   <- structure_df$data_type[i] %||% "unknown"
-    role <- doc_role[i]
-    name <- basename(gsub("\\\\", "/", structure_df$file_name[i]))
-    grp  <- groups[i]
-    prefix <- if (multi_study && !is.na(grp))
-      paste0("study-", grp, "/") else ""
-
-    if (dt == "data") {
-      stem <- keyword_slug(tools::file_path_sans_ext(name))
-      if (!nzchar(stem)) stem <- paste0("file", i)
-      # Every data file gets a Psych-DS *_data.csv target: the fileRegex
-      # requires AT LEAST ONE key-value pair before "_data.csv" (there is no
-      # valid zero-pairs form), so some wrapper key is unavoidable. "study" is
-      # used here — a REAL, official Psych-DS keyword (schema_model/versions/
-      # */meta/context.yaml's own controlled keyword list: study, site,
-      # subject, session, task, condition, trial, stimulus, description),
-      # unlike an invented "source" key this used to use, which is not a
-      # Psych-DS keyword at all and was also actively misleading: metacheck
-      # WRITES this CSV (converting from .sav/.xlsx/... when needed), so
-      # calling it the "source" backwards-labels the file that is the
-      # OUTPUT of that conversion, not its source. When the source is NOT
-      # already a CSV (xlsx/sav/dta/...), the converter writes a real CSV
-      # here (not a renamed copy of the original) AND keeps the original file
-      # beside it (see original_target_of); see convert_psychds().
-      paste0(prefix, "data/study-", stem, "_data.csv")
-    } else if (dt == "documentation" && !is.na(role) && role == "readme") {
-      # The root readme/ro-crate-metadata.json never carries a study prefix
-      # (grp is NA for these rows by construction); a PER-STUDY readme (rare,
-      # but possible if a study's own folder has its own README) still gets one.
-      ext <- tools::file_ext(name)
-      paste0(prefix, if (nzchar(ext)) paste0("README.", ext) else "README")
-    } else if (dt == "documentation" && !is.na(role) && role == "license") {
-      # A LICENSE is collection-level, same as the readme: one licence covers
-      # the whole deposit, so it goes at the archive root with no study prefix.
-      ext <- tools::file_ext(name)
-      paste0(prefix, if (nzchar(ext)) paste0("LICENSE.", ext) else "LICENSE")
-    } else {
-      # Single-bracket lookup: an unmapped data_type returns NA rather than
-      # throwing "subscript out of bounds" as `[[` would.
-      sub <- unname(type_to_subdir[dt])
-      if (is.na(sub)) sub <- "documentation"
-      paste0(prefix, sub, "/", name)
-    }
-  }
-  target_path  <- vapply(seq_len(n_files), target_of, character(1))
-  current_path <- gsub("\\\\", "/", structure_df$file_path %||% structure_df$file_name)
-  current_path <- ifelse(is.na(current_path), structure_df$file_name, current_path)
-  # target_of() always returns a real path now (consumed archive containers
-  # never reach this table at all — data_check.R drops those rows once their
-  # contents are extracted, rather than keeping a placeholder row for them).
-  # This guard is kept defensively in case a future data_type slips through
-  # unmapped; it should never trigger in practice.
-  is_excluded  <- is.na(target_path)
-  misplaced    <- !is_excluded & current_path != target_path
-
-  # A TABULAR data file whose source is not already a CSV (xlsx/xls/ods/tsv/dat/
-  # sav/dta/sas7bdat/jasp/omv/rds/rdata) is CONVERTED to CSV for its _data.csv
-  # target (rather than having its bytes renamed, which would be an invalid
-  # CSV), and its ORIGINAL kept alongside so the release retains the authored
-  # artifact (an .xlsx carries formatting/sheets, a .sav/.dta carries value
-  # labels). `convert` marks those rows; `original_target` is where the untouched
-  # original goes (same data/ dir, original extension).
-  #
-  # Conversion is best-effort: a source that turns out to hold no table (an
-  # .rdata of fitted models only) makes .psychds_write_data_csv() return FALSE,
-  # and convert_psychds still copies the original to `original_target` — so the
-  # file is never dropped from the release, it just arrives without a CSV.
-  #
-  # A RAW (non-tabular) data file — .npy/.h5/.pickle/.fif/... — cannot be read
-  # as a table, so it is neither converted nor renamed to .csv: it is copied
-  # with its true extension to a raw_target and does NOT claim a _data.csv path.
-  src_ext        <- tolower(tools::file_ext(structure_df$file_name))
-  # "Convertible" is asked of data_format(), the package's single source of
-  # truth for what data_read_head() can parse — the same reader
-  # .psychds_write_data_csv() uses to do the conversion. A hardcoded list here
-  # would drift from the reader (it did: .ods/.fods were readable but copied
-  # raw). A .csv needs no conversion, so it is excluded even though it is
-  # tabular.
-  needs_convert  <- is_data & src_ext != "csv" &
-                    data_format(src_ext) == "tabular"
-  is_raw_data    <- is_data & nzchar(src_ext) & src_ext != "csv" & !needs_convert
-
-  # Psych-DS's Datafile naming rule (the fileRegex checked above target_of())
-  # applies ONLY to the ".csv"/".tsv" files the "Datafile" validator rule looks
-  # for — it says nothing about any OTHER file sitting in data/. The untouched
-  # original (kept purely so the release retains what the author actually
-  # deposited) and a raw/non-tabular data file (which never claims a _data.csv
-  # path at all — it isn't the thing that rule is checking for) are both
-  # exactly that "other file" case, so neither needs the study-<slug> keyword
-  # wrapper target_of() built for the _data.csv target: each gets its OWN real
-  # basename, verified directly against the actual Psych-DS validator rule
-  # (schema_model/versions/*/rules/files/tabular_data/data.yaml) rather than
-  # assumed — that rule's `extensions: [".csv", ".tsv"]` scopes it to the
-  # datafile itself, and none of the other schema_model rules constrain
-  # filenames elsewhere under data/.
-  same_dir_real_name <- function(tp, i) {
-    # Same directory as the (possibly study-prefixed) _data.csv target, but the
-    # file's OWN real basename — not derived from the slugified target_path.
-    real_name <- basename(gsub("\\\\", "/", structure_df$file_name[i]))
-    file.path(dirname(tp), real_name)
-  }
-
-  # Convertible: keep the _data.csv target, add original alongside (real name).
-  original_target <- vapply(seq_len(n_files), function(i)
-    if (isTRUE(needs_convert[i])) same_dir_real_name(target_path[i], i) else NA_character_,
-    character(1))
-  # Raw: replace the (wrong) _data.csv target with the file's own real name,
-  # and do not treat it as a CSV to write.
-  raw_target <- vapply(seq_len(n_files), function(i)
-    if (isTRUE(is_raw_data[i])) same_dir_real_name(target_path[i], i) else NA_character_,
-    character(1))
-  target_path <- ifelse(is_raw_data, raw_target, target_path)
-
-  # ── 4. Required / recommended compliance items ───────────────────────────────
+  # ── 3. Required / recommended compliance items ───────────────────────────────
   file_names_lc <- tolower(basename(current_path))
   has_dataset_desc <- any(file_names_lc == "dataset_description.json")
   has_data_files   <- any(is_data)
@@ -486,11 +325,6 @@ psychds_check <- function(paper, local_path = NULL, local_only = FALSE,
     report <- c(report, "#### Suggestions",
                 paste0("- ", suggestions, collapse = "\n"))
   }
-
-  # Call to action.
-  report <- c(report,
-    "You can generate a Psych-DS-compliant copy of this repository — with the moves above applied and a `dataset_description.json` built from the extracted variables — using `metacheck::convert_psychds(paper, output_dir)`.",
-    "To also produce a human-readable codebook of the extracted variables (a labelled data frame plus a ready-to-run R Markdown document for the `codebook` package), use `metacheck::convert_codebook(paper, output_dir)`.")
 
   # ── 9. Summary table + return ────────────────────────────────────────────────
   summary_table <- data.frame(

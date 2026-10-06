@@ -1,9 +1,16 @@
 # File-naming convention checks, per the metacheck "machine readable FAIR data
 # and code" guide: no spaces or special characters, avoid CamelCase, actually
-# be classifiable, use zero-padded numbering for lexicographic sort, use
-# YYYYMMDD dates, and stay within path-length budgets a typical download would
-# need. Used by repo_check() to surface naming problems alongside its other
-# warnings.
+# be classifiable, use zero-padded numbering for lexicographic sort, and stay
+# within path-length budgets a typical download would need. Used by
+# repo_check() to surface naming problems alongside its other warnings.
+#
+# A "date-format" rule (flagging an 8-digit run that doesn't parse as a valid
+# YYYYMMDD date) was removed: there is no way to tell, from the filename
+# alone, whether an 8-digit run was ever intended as a date rather than some
+# other numeric ID (a DOI suffix, an accession number, a participant code),
+# so any such heuristic produces false positives with no reliable signal to
+# avoid them -- confirmed with the user rather than patched further (see
+# issue #462, a 16-digit ID sliced into two bogus "invalid date" violations).
 #
 # Deliberately does NOT check case (lowercase-vs-uppercase is acceptable — the
 # user confirmed this is not worth flagging even as a suggestion) or
@@ -29,7 +36,6 @@
   "spaces"               = "bad",
   "special-characters"   = "bad",
   "diacritics"           = "bad",
-  "date-format"          = "bad",
   "unclassifiable"       = "bad",
   "zero-padding"         = "suggestion",
   "path-length-255"      = "bad",
@@ -84,15 +90,6 @@
   # "allow classification by machines" goal actually needs.
   if (!is.na(data_type) && identical(data_type, "unknown"))
     add("unclassifiable", "could not be classified by name or extension (data_type is 'unknown'); add a recognisable keyword (data, code, materials, ...) or a known extension")
-
-  # Dates: a run of exactly 8 digits should be YYYYMMDD, not some other
-  # 8-digit number (heuristic: treat any 8-digit run as a claimed date and
-  # validate it, since 8 consecutive digits in a filename is otherwise rare).
-  date_hits <- regmatches(stem, gregexpr("[0-9]{8}", stem))[[1]]
-  for (d in date_hits) {
-    ok <- tryCatch(!is.na(as.Date(d, format = "%Y%m%d")), error = function(e) FALSE)
-    if (!ok) add("date-format", sprintf("'%s' is not a valid YYYYMMDD date", d))
-  }
 
   if (length(issues)) do.call(rbind, issues) else
     data.frame(rule = character(0), detail = character(0), stringsAsFactors = FALSE)
@@ -183,7 +180,7 @@
 #' "machine readable FAIR data and code" guide: no spaces or special
 #' characters, lowercase only, no CamelCase, an actually-classifiable name
 #' (not `data_type == "unknown"`), zero-padded numbering across sibling files,
-#' YYYYMMDD dates, and four path-length budgets (255/228/100/50 characters).
+#' and four path-length budgets (255/228/100/50 characters).
 #'
 #' @param file_name a character vector of file basenames
 #' @param file_path a character vector of repo-relative paths (defaults to
@@ -199,9 +196,9 @@
 #'
 #' @details
 #' Rules split into two severities. `"bad"`: spaces, special characters,
-#' diacritics, invalid YYYYMMDD dates, `data_type == "unknown"` (the file
-#' could not be classified at all), and exceeding the hard 255-character path
-#' limit — these break something real. `"suggestion"`: uppercase letters,
+#' diacritics, `data_type == "unknown"` (the file could not be classified at
+#' all), and exceeding the hard 255-character path limit — these break
+#' something real. `"suggestion"`: uppercase letters,
 #' CamelCase, unpadded sibling numbering, and the softer 228/100/50
 #' path-length budgets — real conventions worth following, but nothing in
 #' metacheck's own classification or ordering logic actually depends on them

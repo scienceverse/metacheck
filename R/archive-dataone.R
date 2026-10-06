@@ -35,6 +35,22 @@
     list(host = "metacat.tfri.gov.tw",     api_base = "/metacat/d1/mn/v2/", doi_prefix = NA_character_),
     list(host = "smithsonian.dataone.org", api_base = "/metacat/d1/mn/v2/", doi_prefix = NA_character_),
     list(host = "data.piscoweb.org",       api_base = "/metacat/d1/mn/v2/", doi_prefix = "10.6085")
+
+    # NOT added here (issue #461): the Environmental Data Initiative (EDI,
+    # portal.edirepository.org, API host pasta.lternet.edu, DOI prefix
+    # 10.6073) cites 5 real papers but was left out rather than listed with
+    # a guessed api_base. EDI runs PASTA, not Metacat -- confirmed live
+    # 2026-10-05 that it does NOT expose the Metacat "<api_base>object/<pid>"
+    # shape every host above relies on (pasta.lternet.edu/d1/mn/v2/node and
+    # portal.edirepository.org/nis/d1/mn/v2/node both 404). PASTA's own API
+    # is real and live (pasta.lternet.edu/package/docs/api -> 200) but uses a
+    # different path shape ("/package/<type>/<scope>/<identifier>/<revision>",
+    # confirmed via a real 403 permissions-error body naming that service
+    # method, not a 404) that .dataone_object_size()/.dataone_info() do not
+    # know how to build a URL for -- adding the host without also adding that
+    # URL-construction logic would register the host as "known" while every
+    # lookup against it silently fails. This is a code change, not a table
+    # entry; re-check before adding.
   )
 }
 

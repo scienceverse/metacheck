@@ -58,12 +58,53 @@ execute:
   .quarto-dark table strong { color: yellow; }
   summary { color: #333; }
   .quarto-dark summary { color: #CCC; }
-  .validation { display: block; 
-                border: 2px solid #15342A; 
-                border-radius: 1em; 
-                padding: 0.5em 1em 0; 
+  .validation { display: block;
+                border: 2px solid #15342A;
+                border-radius: 1em;
+                padding: 0.5em 1em 0;
                 margin-bottom: 0.5em;
                 background-color: #15342A33;}
+  .legend {
+    font-size: 0.9em;
+    padding: 0.8em 1.2em;
+    border: 1px solid #ccc;
+    border-radius: 0.4em;
+    background: #f5f5f5;
+    margin-bottom: 1.5em;
+  }
+  .legend p { margin: 0.2em 0; }
+  .legend hr { margin: 0.6em 0; border-top: 1px solid #ccc; }
+  .quarto-dark .legend { background: #222; border-color: #555; }
+  .quarto-dark .legend hr { border-top-color: #555; }
+  /* Summary module list, ledger-row style -- matches _report_simple.Rmd's
+     own .mc-summary rules so the row markup report.R now shares between
+     both templates (see report_qmd()'s own comment) looks intentional
+     here too, not left as unstyled <li class="mc-summary-row ..."> (those
+     classes previously had no matching CSS in this template at all). */
+  ul.mc-summary { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  li.mc-summary-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8em;
+    padding: 0.6em 0.9em;
+    margin: 0 0 0.3em;
+    border-left: 4px solid #ccc;
+    border-radius: 0.2em;
+    background: #f7f7f7;
+  }
+  .quarto-dark li.mc-summary-row { background: #262626; border-left-color: #555; }
+  li.mc-summary-row.red { border-left-color: #a4282f; }
+  li.mc-summary-row.yellow { border-left-color: #a67c1f; }
+  li.mc-summary-row.green { border-left-color: #15342A; }
+  li.mc-summary-row.fail { border-left-color: #a4282f; }
+  li.mc-summary-row.info { border-left-color: #4a7a9c; }
+  .mc-summary-title { font-weight: 700; }
+  .mc-summary-title a { color: inherit; text-decoration: none; }
+  .mc-summary-title a:hover { text-decoration: underline; }
+  .mc-summary-body { display: flex; flex-direction: column; min-width: 0; }
+  .mc-summary-text { font-size: 0.95em; opacity: 0.85; }
+  .mc-summary-todo { margin: -0.3em 0 0.8em 2.6em; }
+  .mc-summary-todo li { font-size: 0.92em; }
 </style>
 
 ::: {#info}

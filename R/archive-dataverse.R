@@ -190,6 +190,13 @@
     "data.cipotato.org",                      # International Potato Center (Peru)
     "datos.pucp.edu.pe",                      # Pontificia U. Católica del Perú (Peru)
     "redata.anii.org.uy"                      # Redata (Uruguay)
+
+    # researchdata.se (SND, Sweden) NOT added here (issue #461): every
+    # /api/info/version path tried live 2026-10-05 (bare domain, /sv
+    # locale prefix, snd.se) 404s or fails to resolve, and the bare domain's
+    # own robots.txt looks like a generic Drupal portal, not a Dataverse
+    # installation -- could not reproduce the issue's live confirmation from
+    # here; re-check before adding.
   )
 }
 

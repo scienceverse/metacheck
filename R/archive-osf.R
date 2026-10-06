@@ -1495,7 +1495,7 @@ osf_file_download <- function(osf_id,
         if (length(dropped) > 0) {
           budget_skipped <- c(budget_skipped, files$osf_id[dropped])
           need_total <- ceiling((used + sum(files$size[wanted], na.rm = TRUE)) / mb)
-          cap_report(sprintf(
+          .cap_report(sprintf(
             paste0("%d file%s in %s did not fit in the %s MB per-repository ",
                    "limit and %s not downloaded. ",
                    "Set `max_download_size >= %s` to download %s."),

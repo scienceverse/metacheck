@@ -563,6 +563,50 @@ grobid_to_bibr <- function(xml_path,
       })
     }, USE.NAMES = FALSE)
 
+    # GROBID's PDF-to-text extraction sometimes re-flows a PDF column/line-wrap
+    # boundary as a literal space instead of removing it, splitting a URL
+    # right where it happened to wrap -- confirmed live (issue #411) as both
+    # "https ://..." (space after "https") and "doi. org/..." / "doi.org/
+    # 10...." (space around the "doi.org" host). Collapsed centrally here,
+    # once, rather than in every archive-*.R backend's own regex: each
+    # backend's repository-link detection otherwise silently misses any DOI
+    # that happens to land on such a wrap boundary.
+    #
+    # Extended per issue #458 (a 50-paper re-validation of the original fix)
+    # with more anchors of the same safety property: a fixed, literal
+    # substring that never occurs in ordinary English prose, so collapsing
+    # the one space immediately after it can never corrupt real text. A
+    # DOI's prefix ("10.NNNN/") is always one unbroken string per ISO 26324,
+    # benefiting every platform's bare-DOI detector; the host+path and
+    # platform-suffix rules below are additionally safe ONLY for the
+    # platforms identified by one single fixed host literal (zenodo.org/,
+    # osf.io/, researchbox.org/, and the /dryad./ and /zenodo. suffix
+    # shape) -- confirmed against osf_bare_regex/rb_bare_regex in
+    # archive-osf.R/archive-researchbox.R. This deliberately does NOT
+    # extend to the allowlist-based platforms (Dataverse, DataONE, DSpace7,
+    # PsychArchives), which are identified by dozens of different
+    # per-institution domains with no single host literal to anchor on, and
+    # deliberately does NOT try to collapse whitespace generally once a
+    # URL-like token is detected -- tested directly, that also eats into
+    # ordinary prose immediately following a clean, correct URL (e.g.
+    # "(Smith et al., 2020)" -> "(Smithetal., 2020)"), since there is no
+    # reliable rule for where a URL *ends* once matching is allowed to
+    # continue past an internal space.
+    ft$text <- ft$text |>
+      gsub("\\b(https?)\\s*:\\s*//", "\\1://", x = _, ignore.case = TRUE) |>
+      gsub("\\bdoi\\.\\s+org\\b", "doi.org", x = _, ignore.case = TRUE) |>
+      gsub("\\bdoi\\.org/\\s+", "doi.org/", x = _, ignore.case = TRUE) |>
+      gsub("(\\b10\\.\\d{4,9}/)\\s+", "\\1", x = _, perl = TRUE) |>
+      gsub("\\bzenodo\\.\\s+org\\b", "zenodo.org", x = _, ignore.case = TRUE) |>
+      gsub("\\bzenodo\\.org/\\s+", "zenodo.org/", x = _, ignore.case = TRUE) |>
+      gsub("\\bosf\\.\\s+io\\b", "osf.io", x = _, ignore.case = TRUE) |>
+      gsub("\\bosf\\.io/\\s+", "osf.io/", x = _, ignore.case = TRUE) |>
+      gsub("\\bresearchbox\\.\\s+org\\b", "researchbox.org", x = _, ignore.case = TRUE) |>
+      gsub("\\bresearchbox\\.org/\\s+", "researchbox.org/", x = _, ignore.case = TRUE) |>
+      gsub("\\b(records?/)\\s+(?=[0-9])", "\\1", x = _, ignore.case = TRUE, perl = TRUE) |>
+      gsub("(/dryad\\.)\\s+([a-z0-9])", "\\1\\2", x = _, ignore.case = TRUE, perl = TRUE) |>
+      gsub("(/zenodo\\.)\\s+([a-z0-9])", "\\1\\2", x = _, ignore.case = TRUE, perl = TRUE)
+
     # return initials and page
     ft$formatted <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$formatted)
     ft$text <- gsub("\\b([A-Z])\\$%", "\\1\\.", x = ft$text)

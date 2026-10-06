@@ -159,9 +159,9 @@ test_that("repro_rewrite_paths does not flag ambiguity when every candidate reso
 })
 
 test_that("repro_rewrite_paths uses original_target for a reference naming the pre-conversion extension", {
-  # plan$file_name is the file's ORIGINAL basename (what psychds_check's
-  # structure_df$file_name carries for a converted row — see
-  # inst/modules/psychds_check.R's plan_table build), and basename matching
+  # plan$file_name is the file's ORIGINAL basename (what structure_df$file_name
+  # carries for a converted row — see R/psychds-file-plan.R's plan_table
+  # build), and basename matching
   # (a few lines up in repro_rewrite_paths) is keyed on THAT, never on
   # target_path's basename — so every reference that resolves to this plan
   # row does so via the ORIGINAL name, and ref_ext (read off that same

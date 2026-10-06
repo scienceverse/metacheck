@@ -129,6 +129,17 @@
     r("sas",  "code", readable = FALSE, code_lang = "SAS"),
     r("inp",  "code", readable = FALSE, code_lang = "Mplus"),
     r("m",    "code", readable = FALSE, code_lang = "MATLAB"),
+    # NetLogo agent-based-model source, confirmed against real corpus
+    # evidence (issue #456) -- source code, not data, despite the issue's own
+    # suggested fix grouping it with the data-extension gaps below it came in
+    # with.
+    r("nlogo","code", readable = FALSE, code_lang = "NetLogo"),
+    # Julia source. Previously recognised as "code" only via metacheck::file_types'
+    # coarse crosswalk (used by data_classify_files()), with no row at all
+    # here -- so code_lang() returned NA and code_check() never treated a
+    # real .jl file as a candidate even though data_check already typed it
+    # "code" (issue #456).
+    r("jl",   "code", readable = FALSE, code_lang = "Julia"),
     # Probabilistic-programming / cognitive-modelling source, confirmed
     # against real corpus examples: .stan (Stan model code), .wppl (WebPPL,
     # confirmed as source under a node_modules/ package, not data), .mpt
@@ -269,6 +280,14 @@
     # specifically these being cited as data files.
     r("tab",   "data", readable = TRUE),
     r("table", "data", readable = TRUE),
+    # Corpus-confirmed data formats with no prior Tier-1 rule (issue #456):
+    # .rdat is R's dput()-based ASCII data dump (distinct from the already
+    # format-locked binary .rda/.rdata above); .str is STRUCTURE
+    # population-genetics software input; .dtg is DTAG marine-mammal
+    # biologging sensor output.
+    r("rdat",  "data", readable = FALSE),
+    r("str",   "data", readable = FALSE),
+    r("dtg",   "data", readable = FALSE),
     # Trial-level behavioural-task data. Inquisit .iqdat is tab-delimited
     # TEXT, so it is real, readable research data and downloads under the
     # default `download = "data"`; its paradata can be extracted.

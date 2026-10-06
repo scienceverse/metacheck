@@ -31,7 +31,17 @@
     "dspace.ut.ee",                  # University of Tartu Library (Estonia)
     "qsardb.org",                    # QsarDB
     "repositorio-digital.cide.edu",  # CIDE (Mexico)
-    "ses.library.usyd.edu.au"        # University of Sydney eScholarship (Australia)
+    "ses.library.usyd.edu.au",       # University of Sydney eScholarship (Australia)
+
+    # -- added 2026-10-05, issue #461: confirmed live via GET /rest/test ->
+    # "REST api is running." (the same legacy-API health check as the hosts
+    # above). Note: ecommons.cornell.edu, also proposed by issue #461 under
+    # this same list, was NOT added here -- confirmed live 2026-10-05 that
+    # /rest/test actually 404s there (a DSpace-CRIS branded 404 page), and
+    # /server/api instead returns a real DSpace 8 root document -- it is a
+    # DSpace 7+ host and belongs in .dspace7_hosts() (archive-dspace7.R)
+    # instead, where it has been added.
+    "datastorre.stir.ac.uk"          # University of Stirling DataSTORRE (UK)
   )
 }
 

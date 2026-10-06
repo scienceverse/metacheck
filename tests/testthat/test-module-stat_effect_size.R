@@ -183,3 +183,97 @@ test_that("stat_effect_size checks numeric coherence for Hedges' g, not just Coh
   expect_equal(mod_output$table$d_coherence_assumption[[1]], "paired_dz")
 })
 
+test_that("stat_effect_size recognizes a GROBID subscript collapse like 'g av' (#448)", {
+  module <- "stat_effect_size"
+
+  # GROBID renders a subscripted Hedges' g_av as plain-text "Hedges' g av" --
+  # extract_eq() must keep the whole label (not drop it or split off "av" as
+  # an unrelated statistic), and stat_effect_size must still recognize it as
+  # an effect size and check its numeric coherence, the same as unsubscripted
+  # Hedges' g.
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, Hedges' g av = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$es[[1]], "Hedges' g av = 0.56")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "paired_dz")
+
+  # same for Cohen's d z / d rm collapsed subscripts
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, Cohen's d z = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+
+  # the same collapsed subscript with no "Hedges'"/"Cohen's" prefix word at
+  # all -- "g av" (space) and "g_av" (literal underscore) must both still be
+  # recognized as an effect size and have their numeric value parsed for
+  # coherence checking, not just classified as present
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, g av = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$es[[1]], "g av = 0.56")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, g_av = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$es[[1]], "g_av = 0.56")
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+})
+
+test_that("stat_effect_size labels an unmatched subscripted Hedges' g as indeterminate, not no_match (#455)", {
+  module <- "stat_effect_size"
+
+  # Hedges' g_av (Cumming, 2012's bias-corrected average-variance
+  # standardizer) also depends on the individual condition SDs and the true
+  # observed correlation, neither of which a bare t(df) preserves -- unlike
+  # d_z/d_rm(r=0.5), which ARE fully determined by t/df alone. A correctly-
+  # reported g_av can therefore legitimately fail every tested formula
+  # without being an error, so it must be flagged as unverifiable
+  # ("indeterminate"), not as a confirmed inconsistency ("no_match").
+  paper <- test_paper("A was bigger than B, t(130) = 18.04, p < .001, Hedges' g av = 1.76.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$traffic_light, "green")
+  expect_equal(mod_output$table$d_coherence[[1]], "indeterminate")
+  expect_equal(mod_output$table$d_coherence_assumption[[1]], "none")
+  expect_match(mod_output$table$d_coherence_note[[1]], "g_av depends on", fixed = TRUE)
+
+  # same without the apostrophe (GROBID sometimes drops it along with the
+  # subscript: "Hedges g av" rather than "Hedges' g av") -- parse_d_stats()
+  # captures the whole phrase as one label in this shape, so the check must
+  # still strip the leading "Hedges" word before testing for a subscript
+  paper <- test_paper("A was bigger than B, t(130) = 18.04, p < .001, Hedges g av = 1.76.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$table$d_coherence[[1]], "indeterminate")
+
+  # literal underscore and bare "gs" forms, with and without a prefix word
+  for (txt in c(
+    "A was bigger than B, t(130) = 18.04, p < .001, Hedges' g_av = 1.76.",
+    "A was bigger than B, t(130) = 18.04, p < .001, g av = 1.76.",
+    "A was bigger than B, t(130) = 18.04, p < .001, g_av = 1.76.",
+    "A was bigger than B, t(130) = 18.04, p < .001, gs = 1.76."
+  )) {
+    mod_output <- module_run(test_paper(txt), module)
+    expect_equal(mod_output$table$d_coherence[[1]], "indeterminate")
+  }
+
+  # plain, UNSUBSCRIPTED "Hedges' g" is ambiguous (could be the original
+  # Hedges, 1981 small-sample correction of d_z/d_s, a deterministic
+  # multiplier of d just as checkable as d_z itself) and is NOT covered by
+  # this exemption -- a genuinely incoherent plain g must still be no_match,
+  # the same as an incoherent Cohen's d (unchanged from #450)
+  paper <- test_paper("A was bigger than B, t(20) = 1.00, p 0.32, Hedges' g = 3.00.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$table$d_coherence[[1]], "no_match")
+
+  paper <- test_paper("A was bigger than B, t(20) = 1.00, p 0.32, d = 3.00.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$table$d_coherence[[1]], "no_match")
+
+  # a genuinely COHERENT subscripted g_av must still report match, not be
+  # swallowed into indeterminate just because it carries a subscript
+  paper <- test_paper("A was bigger than B, t(23) = 2.73, p 0.013, Hedges' g av = 0.56.")
+  mod_output <- module_run(paper, module)
+  expect_equal(mod_output$table$d_coherence[[1]], "match_under_assumptions")
+})
+

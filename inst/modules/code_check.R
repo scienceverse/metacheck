@@ -6,11 +6,21 @@
 #' @details
 #' The Code Check module checks R, Rmd, Qmd, SAS, SPSS, and Stata files, using regular expressions to check the code. The regular expression search will detect the number of comments, the lines at which libraries/imports are loaded, attempts to detect absolute paths to files, and lists files that are loaded, and checks if these files are in the repository. The module will return suggestions to improve the code if there are no comments, if libraries/imports are loaded in lines further than 4 lines apart, if files that are loaded are not in the repository, and if absolute file paths are found.
 #'
-#' The regular expressions can miss information in code files, or falsely detect parts of the code as a fixed file path. Libraries/imports might be loaded in one block, even if there are more than 3 intermittent lines. The package was validated internally on papers published in Psychological Science. There might be valid reasons why some loaded files can’t be shared, but the module can’t evaluate these reasons, and always gives a warning.
+#' The regular expressions can miss information in code files, or falsely detect parts of the code as a fixed file path. Libraries/imports might be loaded in one block, even if there are more than 3 intermittent lines. The module was tried out internally on papers published in Psychological Science, but has not been formally validated. There might be valid reasons why some loaded files can’t be shared, but the module can’t evaluate these reasons, and always gives a warning.
 #'
 #' The module also checks whether the repository pins the R/package versions the analysis actually depended on: an `renv.lock` file (parsed for the R version and every locked package + its version/source), a `sessionInfo()`/`sessioninfo::session_info()` text dump (matched by filename — `sessionInfo.txt`/`session_info.txt` and similar, or embedded in a README), or a `groundhog::groundhog.library()`/`checkpoint::checkpoint()` date-pin call in the code (a bare `library(groundhog)`/`library(checkpoint)` does not count — the pinning call itself must be present). When none of these is found, the report flags it as a reproducibility gap: package versions may drift between when the analysis was run and any later reproduction attempt.
 #'
 #' If you want to extend the package to perform additional checks on code files, or make the checks work on other types of code files, reach out to the Metacheck development team.
+#'
+#' Checking code requires downloading its file contents. For a paper whose
+#' repository is on Dryad, this never succeeds unless a Dryad API key is
+#' set: Dryad requires one to download file bytes, even from a fully public
+#' dataset (listing the repository's files does not need one). Without a
+#' key, every Dryad-hosted code file is listed but unchecked, and a warning
+#' naming Dryad and `?dryad_pat`/`?dryad_auth` is included among the
+#' download failures recorded in the manifest.
+#'
+#' <validation>This module has not been validated. All checks in the code_check module have unknown error rates. Carefully evaluate the output of this module. You can help improve this module by reporting an issue on GitHub.</validation>
 #'
 #' @keywords results
 #'
@@ -486,7 +496,10 @@ code_check <- function(paper, local_path = NULL,
       "Best programming practice is to load all required libraries/imports in one block near the top of the code. In %d code files, libraries/imports were at multiple places (i.e., with more than 3 non-comment lines in between).",
       length(library_issue)
     )
-    summary_library <- "Libraries/imports were loaded in multiple places."
+    summary_library <- sprintf(
+      "Libraries/imports were loaded in multiple places in %s.",
+      paste(library_issue, collapse = ", ")
+    )
   }
 
   ## absolute paths ----
@@ -582,9 +595,10 @@ code_check <- function(paper, local_path = NULL,
     ) else ""
     report_comments <- paste0("Best programming practice is to add comments to code, to explain what the code does (to yourself in the future, or peers who want to re-use your code).", docstring_note)
     summary_comments <- sprintf(
-      "%d code file%s had no comments.",
+      "%d code file%s (%s) had no comments.",
       length(comment_issue),
-      plural(length(comment_issue))
+      plural(length(comment_issue)),
+      paste(comment_issue, collapse = ", ")
     )
   }
   # "percentage_comment" is only set inside the per-file try block above, on
@@ -725,7 +739,7 @@ code_check <- function(paper, local_path = NULL,
 
   if (!version_pin$pinned) {
     report_version_pin <- "No `renv.lock` file, `sessionInfo()`/`session_info()` record, or `groundhog`/`checkpoint` date-pin call was found anywhere in the repository. Without one of these, the exact R and package versions used for the analysis are not recoverable, and package versions may drift between when this analysis was run and any later reproduction attempt. Consider depositing an `renv.lock` (via the `renv` package), a `sessionInfo()` text dump, or (for R) a `groundhog`/`checkpoint` date-pin alongside the code — or, for Python code, a `requirements.txt` (not currently checked for by this module, but still good practice to include)."
-    summary_version_pin <- "No pinned R/package environment (renv.lock, sessionInfo(), or groundhog/checkpoint) was found."
+    summary_version_pin <- "No pinned R/package environment (renv.lock, sessionInfo(), or groundhog/checkpoint) was found. Consider adding a solution to improve computational reproducibility."
     report_table_version_pin <- NULL
   } else {
     mech_labels <- c(renv.lock = "an `renv.lock` file", sessionInfo = "a `sessionInfo()` record",
@@ -950,17 +964,34 @@ code_check <- function(paper, local_path = NULL,
   summary_table$code_version_pinned[is.na(summary_table$code_version_pinned)] <- FALSE
 
   # summary_text ----
+  # summary_setwd/summary_install_packages are included only when something
+  # was actually found (length(setwd_issues/install_packages_issues) > 0),
+  # not unconditionally like every other line here -- setwd()/
+  # install.packages() calls are rare enough in practice that "found" is
+  # the only noteworthy outcome; "No setwd() calls were found" on every
+  # single paper added two lines of always-true noise to the summary list
+  # for a passing check nobody needed confirmed (per the user's own
+  # request). Mirrors the conditional-inclusion convention
+  # codebook_check.R's own summary_text already uses for its
+  # only-when-present lines (n_conflicted > 0, n_unused > 0) -- a bare
+  # if() with no else yields NULL, which c() silently drops.
+  #
+  # summary_missingfiles, summary_absolute, and summary_parse are left out
+  # of this summary entirely (whether or not anything was found), per the
+  # user's own request: the brief report's per-file to-do bullets
+  # (.report_module_bullets$code_check, report-helpers.R) already name
+  # every missing file / absolute path / parse error individually, so a
+  # count-only headline here ("11 files...were missing", "Absolute file
+  # paths were found") is redundant with the detail immediately below it.
+  # summary_packages is dropped too, per the user's own call: the package
+  # count is not an error or something to fix, just informational.
   summary_text <- c(
     summary_code,
     summary_comments,
-    summary_missingfiles,
-    summary_absolute,
-    summary_setwd,
-    summary_install_packages,
+    if (length(setwd_issues) > 0) summary_setwd,
+    if (length(install_packages_issues) > 0) summary_install_packages,
     summary_library,
-    summary_packages,
-    summary_version_pin,
-    summary_parse
+    summary_version_pin
   ) |>
     paste("\n- ", x = _, collapse = "")
 

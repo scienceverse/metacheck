@@ -6,6 +6,18 @@
 #' @details
 #' The Repository Check module lists files on the OSF, GitHub, ResearchBox, DSpace (PsychArchives and other legacy- and DSpace 7-based installations), Zenodo, Dataverse, Figshare, Dryad, ReShare, 4TU.ResearchData, Mendeley Data, and DataONE (Arctic Data Center, KNB, and other member nodes) based on links in the manuscript.
 #'
+#' Listing a repository's files never requires an API key, but some hosts
+#' answer faster or more completely with one: OSF allows 100 requests/hour
+#' unauthenticated versus 10,000/day with a token (see [osf_pat()]), and
+#' Dryad enforces a strict per-IP daily quota on repeated listing (see
+#' `cache` below). Dryad is a special case beyond rate limits: listing a
+#' Dryad dataset's files works without a key, but actually downloading file
+#' CONTENTS from Dryad fails with HTTP 401 unless a key is set, even for a
+#' fully public dataset (see [dryad_pat()] or [dryad_auth()]). Since this
+#' module only lists files and never downloads their contents itself, that
+#' limitation applies to `data_check` and `code_check` (which do download
+#' content), not here -- see their own documentation.
+#'
 #' When a linked OSF page is a registration, its `registered_from` project (the
 #' one it was registered from, which the manuscript itself may never link
 #' directly) is also checked: if that project is public its files are listed
@@ -14,6 +26,8 @@
 #' rather than mirroring it.
 #'
 #' If you want to extend the package to be able to download files from additional data repositories reach out to the Metacheck development team.
+#'
+#' <validation>This module has not been validated. All checks in the repo_check module have unknown error rates. Carefully evaluate the output of this module. You can help improve this module by reporting an issue on GitHub.</validation>
 #'
 #' @keywords results
 #'
@@ -1970,6 +1984,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   if (nrow(naming_issues) > 0) {
     naming_tbl <- naming_issues
+    # Internal severity values ("bad"/"suggestion") drive gating elsewhere
+    # (n_naming_bad, n_naming_bad_by_paper) but read oddly as a column a user
+    # sees verbatim, so the display table relabels them without touching the
+    # underlying naming_issues/severity values used for gating above.
+    naming_tbl$severity <- c(bad = "Required", suggestion = "Suggestion")[naming_tbl$severity]
     names(naming_tbl) <- c("File", "Rule", "Severity", "Detail")
     report_naming <- c(
       "#### File Naming",

@@ -448,9 +448,9 @@ test_that("osf_file_download github", {
   dl <- osf_file_download(osf_id, download_to, metadata = FALSE, mode = "select")
   f <- file.path(download_to, osf_id)
   expect_true(dir.exists(f))
-  expect_true(file.path(f, "osfstorage", "DESCRIPTION") |>
+  expect_true(file.path(f, "osfstorage", "Testing", "DESCRIPTION") |>
                 file.exists())
-  expect_true(file.path(f, "github", "README.md") |>
+  expect_true(file.path(f, "github", "Testing", "README.md") |>
                 file.exists())
 })
 

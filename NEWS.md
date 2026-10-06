@@ -1,10 +1,15 @@
-# metacheck 0.3.1
+# metacheck 0.3.2
 
 * `read()` reads bibr export schema 12.x files (a JSON file with a root `schema_version`; other versions stop with an error). Captions and footnotes are text rows with no section, which `figure`, `table` and the new `footnote` table point at with `text_id`; in the `xref` table `xref_id` is the row's own key and `target_id` the row it cites. Files without a root `schema_version` read as before
 * `read()` reads bibr export schema 12.1, which bibr 0.6.0 and the ScienceVerse Platform write: the `extraction.fields` block it adds, the state of each tracked field, is kept in `paper$extraction$fields`. An export in another schema stops with an error that says what to do: extract the paper again with a bibr version that writes 12.x, or, for a newer schema, update metacheck
 * `read()` warns with the reason when it cannot read a file and returns the papers it could read. It used to stop with "The arguments must be paper objects or lists of paper objects", which hid the reason
 * `paper_write()` gains a `schema_version` argument: `"12.0"` saves a paper read from a bibr 12.x export as a bibr export schema 12.0 file, keeping its producer and naming metacheck as the converter. The default output is unchanged
 * `grobid_to_bibr()` gains a `schema_version` argument: `"12.0"` converts Grobid TEI to bibr export schema 12.0, with 1-based ids, cross-reference targets resolved from the TEI's xml:ids, one text row per caption and footnote, and the PDF next to the TEI as the source. The default conversion is unchanged
+* Fixed `data_check()` crashing on any report that builds a per-file tabset (every data/codebook preview with more than one file): `inst/modules/data_check.R`'s `file_tabset()` called `report_type()`, a function that was never defined anywhere in the package -- its call site had been committed without the function's own definition landing alongside it. Reverted `file_tabset()` to its previous, unconditional-tabset behaviour.
+* `.process_full_text()`'s GROBID line-wrap whitespace fix (#411) extended to more safe anchors (a DOI's "10.NNNN/" prefix, and the single-fixed-host literals `zenodo.org/`, `osf.io/`, `researchbox.org/`) and more platforms, resolving 10 more corpus papers whose repository DOI/URL was split by the same line-wrap artifact at a different position (scienceverse/metacheck#458)
+
+# metacheck 0.3.1
+
 * DSpace 7+: `dspace7_file_download()` now carries an item's doi/license as attributes (mirroring legacy DSpace's `psycharchives_file_download()`), so `repo_check()`'s `repo_metadata` table gets a row for a DSpace 7 repository instead of none at all, even when its file listing succeeded (scienceverse/metacheck#435)
 * DataONE: a record whose EML lists a file as a bare `<otherEntity>` with no `<physical>` child (seen on `knb.ecoinformatics.org`) no longer silently returns zero files -- its own `urn:uuid:...`-shaped id is now used as the file's PID when resolvable, with size recovered via a HEAD request (scienceverse/metacheck#435)
 * Fixed `dataverse.no`'s DOI-prefix list wrongly including `10.6084` (Figshare's own globally-registered prefix), which misrouted a Figshare collection DOI through Dataverse's dispatch and failed retrieval instead of ever reaching `figshare_links()`'s own correct match (scienceverse/metacheck#434)

@@ -27,13 +27,13 @@ Checks every file's name against the naming conventions from the metacheck
 "machine readable FAIR data and code" guide: no spaces or special
 characters, lowercase only, no CamelCase, an actually-classifiable name
 (not \code{data_type == "unknown"}), zero-padded numbering across sibling files,
-YYYYMMDD dates, and four path-length budgets (255/228/100/50 characters).
+and four path-length budgets (255/228/100/50 characters).
 }
 \details{
 Rules split into two severities. \code{"bad"}: spaces, special characters,
-diacritics, invalid YYYYMMDD dates, \code{data_type == "unknown"} (the file
-could not be classified at all), and exceeding the hard 255-character path
-limit — these break something real. \code{"suggestion"}: uppercase letters,
+diacritics, \code{data_type == "unknown"} (the file could not be classified at
+all), and exceeding the hard 255-character path limit — these break
+something real. \code{"suggestion"}: uppercase letters,
 CamelCase, unpadded sibling numbering, and the softer 228/100/50
 path-length budgets — real conventions worth following, but nothing in
 metacheck's own classification or ordering logic actually depends on them
