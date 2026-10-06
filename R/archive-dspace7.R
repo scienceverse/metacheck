@@ -106,12 +106,30 @@
     "unsworks.unsw.edu.au",                     # University of New South Wales (Australia)
     "utoronto.scholaris.ca",                    # TSpace, University of Toronto (Canada)
     "uwo.scholaris.ca",                         # Western Open Repository (Canada)
-    "www.research-collection.ethz.ch"           # ETH Zürich Research Collection (Switzerland)
+    "www.research-collection.ethz.ch",          # ETH Zürich Research Collection (Switzerland)
+
+    # -- added 2026-10-05, issue #461 --
+    "ecommons.cornell.edu",                     # Cornell eCommons (USA) -- confirmed live via /server/api (DSpace 8.2); NOT legacy DSpace despite issue #461 filing it there (/rest/test 404s with a DSpace-CRIS branded 404 page)
+    "www.repository.cam.ac.uk"                  # Apollo, University of Cambridge (UK) -- citable UI host; its own /server/api 404s, see .dspace7_api_host_aliases() below for the real API host
   )
 }
 
 .dspace7_host_regex <- function() {
   paste(gsub("\\.", "\\\\.", .dspace7_hosts()), collapse = "|")
+}
+
+# UI host -> real API host, for an installation where the two are split
+# across different subdomains (so far seen only at Cambridge's Apollo
+# repository -- every other host above serves both the citable landing page
+# and /server/api on the same domain). Confirmed live 2026-10-05, issue
+# #461: www.repository.cam.ac.uk/server/api 404s, while
+# api.repository.cam.ac.uk/server/api returns a real DSpace 8 root document
+# naming www.repository.cam.ac.uk as its own "dspaceUI". Consulted by
+# .dspace7_parse() so a citation landing on the UI host still queries the
+# right API host; add further entries here, not as a separate unrelated
+# host in .dspace7_hosts(), if another split installation turns up.
+.dspace7_api_host_aliases <- function() {
+  c("www.repository.cam.ac.uk" = "api.repository.cam.ac.uk")
 }
 
 # Extract (host, uuid, handle) from a URL referencing a known DSpace 7 host.
@@ -139,10 +157,18 @@
   uuid_pat <- "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
   handle_pat <- "(?<=/handle/)[0-9]{1,5}(?:\\.[0-9]+){0,2}/[0-9A-Za-z.]+"
 
+  aliases <- .dspace7_api_host_aliases()
   for (i in which(has_url)) {
     u <- url[i]
     hm <- regmatches(u, regexpr(host_regex, u, ignore.case = TRUE, perl = TRUE))
-    if (length(hm) > 0) host[i] <- tolower(hm)
+    if (length(hm) > 0) {
+      h <- tolower(hm)
+      # A citation landing on a UI-only host (see .dspace7_api_host_aliases())
+      # needs the real API host here, since this value is used downstream
+      # (dspace7_file_download()/.dspace7_info()) to build the actual
+      # /server/api request -- the UI host itself would 404 on every call.
+      host[i] <- if (h %in% names(aliases)) aliases[[h]] else h
+    }
 
     um <- regmatches(u, regexpr(uuid_pat, u, ignore.case = TRUE, perl = TRUE))
     if (length(um) > 0) uuid[i] <- tolower(um)

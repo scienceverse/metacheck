@@ -109,7 +109,14 @@
     "figshare.manchester.ac.uk",# University of Manchester (UK)
     "novasbe.figshare.com",     # Universidade Nova de Lisboa, NOVA SBE (Portugal)
     "figshare.uts.edu.au",      # University of Technology Sydney (Australia)
-    "melbourne.figshare.com"    # University of Melbourne (Australia) -- separate DataCite client/host from figshare.unimelb.edu.au above
+    "melbourne.figshare.com",   # University of Melbourne (Australia) -- separate DataCite client/host from figshare.unimelb.edu.au above
+
+    # -- added 2026-10-05, issue #461: confirmed live the same way as the
+    # hosts above (api.figshare.com's own SPA shell at /api/articles/1,
+    # HTTP 202/empty HTML body) --
+    "data.lib.vt.edu",                 # VTechData, Virginia Tech (USA)
+    "agdatacommons.nal.usda.gov",      # USDA Ag Data Commons (USA)
+    "adelaide.figshare.com"            # University of Adelaide (Australia)
   )
 }
 
@@ -157,7 +164,14 @@
     "10.60580" = "novasbe.figshare.com",
     "10.71741" = "figshare.uts.edu.au",
     "10.26180" = "bridges.monash.edu",
-    "10.26188" = "melbourne.figshare.com"
+    "10.26188" = "melbourne.figshare.com",
+
+    # -- added 2026-10-05, issue #461 (real sample DOIs under these exact
+    # prefixes confirmed live, same way as the prefixes above) --
+    "10.5522" = "rdr.ucl.ac.uk",                  # UCL (host already listed above; only its prefix was missing)
+    "10.7294" = "data.lib.vt.edu",                # VTechData -- NOT Dryad, despite being near Dryad's own prefix range (see archive-dryad.R)
+    "10.15482" = "agdatacommons.nal.usda.gov",    # USDA Ag Data Commons
+    "10.25909" = "adelaide.figshare.com"          # University of Adelaide
   )
 }
 
