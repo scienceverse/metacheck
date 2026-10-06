@@ -163,17 +163,111 @@ test_that("a later bibr 12.x file reads, ignoring keys it does not know", {
   expect_equal(paper$extraction$new_block, list(new_field = "new"))
 })
 
+test_that("read a bibr 12.1 export from the ScienceVerse Platform", {
+  path <- bibr12("platform_12_1")
+  json <- jsonlite::read_json(path)
+  paper <- read(path)
+
+  expect_s3_class(paper, "scivrs_paper")
+  expect_true(paper_validate(paper))
+  expect_equal(paper$paper_id, "08be289905897e61")
+
+  # metadata and source make the info table
+  expect_equal(paper$info$schema_version, "12.1")
+  expect_equal(paper$info$title, json$metadata$title)
+  expect_equal(paper$info$journal, "Open Research Europe")
+  expect_equal(paper$info$keywords[[1]], unlist(json$metadata$keywords))
+  expect_equal(paper$info$sha256, json$source$sha256)
+  expect_equal(paper$info$bibr_version, "0.5.1")
+
+  # extraction.fields, which 12.1 adds, says why the DOI is missing
+  expect_true(is.na(paper$info$doi))
+  expect_equal(paper$extraction$fields$doi$state, "abstained")
+  expect_equal(paper$extraction$fields$doi$issues[[1]], "VAL_DOI_AMBIGUOUS")
+  expect_equal(paper$extraction$fields$title$state, "extracted")
+
+  # a citation resolves to its reference by target_id; its xref_id is the
+  # row's own key, which no reference has
+  cite <- paper$xref[paper$xref$xref_type == "bib", ][1, ]
+  expect_equal(cite$contents, "Paulin, 2020")
+  expect_match(paper$text$text[[cite$text_id]], "Paulin, 2020", fixed = TRUE)
+  ref <- paper$bib[paper$bib$bib_id == cite$target_id, ]
+  expect_equal(ref$title, "An overview of ten years of liquid democracy research")
+  expect_false(cite$xref_id %in% paper$bib$bib_id)
+
+  # the table caption and the note under it are text rows with no section
+  tbl <- paper$table[1, ]
+  expect_equal(tbl$label, "1")
+  expect_equal(paper$text$text[[tbl$text_id]], tbl$caption)
+  expect_true(is.na(paper$text$section_id[[tbl$text_id]]))
+  expect_match(paper$text$text[[paper$footnote$text_id]], "^Note: All metrics")
+  expect_true(is.na(paper$text$section_id[[paper$footnote$text_id]]))
+
+  # every citation counts
+  mo <- module_run(paper, "ref_consistency")
+  expect_equal(mo$summary_table$n_bib, 10)
+  expect_equal(mo$summary_table$n_xrefs, 28)
+})
+
+test_that("a bibr export from a later 12.x reads, with what it adds", {
+  # bibr's policy for 12.x: a later minor version adds optional keys and enum
+  # values, and a reader keeps what it knows
+  json <- jsonlite::read_json(bibr12("platform_12_1"))
+  json$schema_version <- "12.3"
+  json$notes <- list(added_in = "12.3")
+  json$section[[1]]$section_type <- "preregistration"
+  json$extraction$fields$data_availability <- list(state = "extracted")
+  path <- file.path(withr::local_tempdir(), "platform_12_3.json")
+  jsonlite::write_json(json, path, auto_unbox = TRUE, null = "null",
+                       digits = NA)
+
+  paper <- read(path)
+  orig <- read(bibr12("platform_12_1"))
+  expect_true(paper_validate(paper))
+  expect_equal(paper$info$schema_version, "12.3")
+  expect_equal(names(paper), names(orig))
+  expect_equal(paper$section$section_type[[1]], "preregistration")
+  expect_equal(paper$text, orig$text)
+  expect_equal(paper$xref, orig$xref)
+  expect_equal(paper$extraction$fields$data_availability$state, "extracted")
+})
+
+test_that("files without a schema_version read in the older format", {
+  paper <- read(demofile("json"))
+  expect_true(paper_validate(paper))
+  for (path in c(demofile("json"),
+                 system.file("demos", "golden_bibr_10_2.json",
+                             package = "metacheck"))) {
+    paper <- read(path)
+    expect_false(.is_bibr12(paper))
+    expect_null(paper$extraction)
+    expect_false(is.na(paper$info$title))
+  }
+
+  # a folder can hold both
+  dir <- withr::local_tempdir()
+  file.copy(demofile("json"), file.path(dir, "demo.json"))
+  file.copy(bibr12("platform_12_1"), file.path(dir, "platform.json"))
+  papers <- read(dir)
+  expect_length(papers, 2)
+  expect_equal(unname(vapply(papers, .is_bibr12, logical(1))), c(FALSE, TRUE))
+})
+
 test_that("only bibr schema 12.x is read from files with a schema_version", {
   json <- jsonlite::read_json(bibr12("probe_html"))
   path <- file.path(withr::local_tempdir(), "v11.json")
 
   json$schema_version <- "11.0"
   jsonlite::write_json(json, path, auto_unbox = TRUE, null = "null")
-  expect_error(.read_bibr(path), "schema 11.0 is not supported")
+  expect_error(.read_bibr(path), paste(
+    "schema 11.0 is not supported.*reads schema 12.x.*\\(v11\\.json\\)\\.",
+    "Extract the paper again with a bibr version that writes schema 12\\.x\\.$"
+  ))
 
   json$schema_version <- "13.0"
   jsonlite::write_json(json, path, auto_unbox = TRUE, null = "null")
-  expect_error(.read_bibr(path), "schema 13.0 is not supported")
+  expect_error(.read_bibr(path),
+               "schema 13.0 is not supported.*Update metacheck, or extract")
 })
 
 test_that("paper_write writes bibr 12.0 that reads back the same", {

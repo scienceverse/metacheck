@@ -286,9 +286,15 @@
 
   version <- as.character(x$schema_version[[1]])
   if (!grepl("^12\\.", version)) {
+    major <- suppressWarnings(as.integer(sub("^\\s*([0-9]+).*$", "\\1", version)))
+    advice <- if (isTRUE(major > 12)) {
+      "Update metacheck, or extract the paper again with a bibr version that writes schema 12.x."
+    } else {
+      "Extract the paper again with a bibr version that writes schema 12.x."
+    }
     stop("bibr export schema ", version, " is not supported: metacheck ",
          "reads schema 12.x and the older files without a root ",
-         "schema_version (", basename(file_path), ")", call. = FALSE)
+         "schema_version (", basename(file_path), "). ", advice, call. = FALSE)
   }
 
   tables <- lapply(stats::setNames(nm = names(.bibr12_tables)), \(tbl) {
