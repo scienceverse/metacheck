@@ -26,6 +26,16 @@ text
 \description{
 A helper function for making module reports.
 }
+\details{
+When \code{\link[=report_type]{report_type()}} is \code{"simple"}, this renders as a plain fenced div
+with the title as a real bold line of text, not a Quarto callout: Quarto's
+\code{title}/\code{collapse} fenced-div attributes are Quarto-specific -- plain
+Pandoc (what \code{\link[=report]{report()}}'s simple-mode render uses, see its own docs)
+passes an unrecognised attribute straight through as a literal (invisible)
+HTML attribute rather than rendering it as content, and
+expanding/collapsing needs Bootstrap's collapse JavaScript, which a simple
+report never includes. The content is always shown inline, uncollapsed.
+}
 \examples{
 text <- c("Paragraph 1...", "Paragraph 2...")
 collapse_section(text) |> cat()

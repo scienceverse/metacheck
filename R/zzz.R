@@ -44,6 +44,7 @@
     metacheck.llm_max_calls = 30L,
     metacheck.llm.model = llm_model,
     metacheck.llm.use = FALSE,
+    metacheck.report_type = "full",
     metacheck.osf.delay = 0,
     metacheck.osf.api = "https://api.osf.io/v2",
     metacheck.osf.api.calls = 0

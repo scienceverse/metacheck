@@ -15,15 +15,16 @@
 )
 }
 \arguments{
-\item{all_files}{the full repo file listing (\code{repo_check}'s table: needs
-\code{file_name}, \code{file_url}, \code{repo_url}, \code{file_location} where available)}
+\item{all_files}{the full repo file listing
+(\code{repo_check}'s table: needs \code{file_name}, \code{file_url}, \code{repo_url},
+\code{file_location} where available)}
 
 \item{code_text_list}{a named list of already-read R file text (names are
 file_names) — reused for the groundhog/checkpoint scan so no file is
 downloaded or read twice}
 
-\item{max_file_size}{passed to \code{\link[=download_repo_files]{download_repo_files()}} for any candidate
-file not yet local}
+\item{max_file_size}{passed to \code{\link[=download_repo_files]{download_repo_files()}}
+for any candidate file not yet local}
 
 \item{max_download_size}{passed to \code{\link[=download_repo_files]{download_repo_files()}}}
 
@@ -32,17 +33,19 @@ file not yet local}
 \item{skip_on_api_limit}{passed to \code{\link[=download_repo_files]{download_repo_files()}}}
 }
 \value{
-a list: \code{pinned} (logical, TRUE if any mechanism was found),
-\code{mechanisms} (character vector, any of \code{renv.lock}, \code{sessionInfo},
-\code{groundhog}, \code{checkpoint}), \code{r_versions} (character vector of R version
-strings found, one per source), \code{renv_files} (character vector of
-\code{renv.lock} file_names found), \code{renv_packages} (data frame \code{file_name},
-\code{package}, \code{version}, \code{source} — one row per locked package, across all
-\code{renv.lock} files found), \code{sessioninfo_files} (character vector of
-matched file_names), \code{file_location} (named character vector, file_name
--> resolved local path, for every candidate file this call downloaded —
-a caller re-checking a SUBSET of \code{all_files} per paper can splice these
-back into its own copy of \code{all_files} first, so the same file is never
+a list:
+\code{pinned} (logical, TRUE if any mechanism was found),
+\code{mechanisms} (character vector, any of
+\code{renv.lock}, \code{sessionInfo}, \code{groundhog}, \code{checkpoint}),
+\code{r_versions} (character vector of R version strings found, one per source),
+\code{renv_files} (character vector of \code{renv.lock} file_names found),
+\code{renv_packages} (data frame \code{file_name}, \code{package}, \code{version}, \code{source}
+— one row per locked package, across all \code{renv.lock} files found),
+\code{sessioninfo_files} (character vector of matched file_names),
+\code{file_location} (named character vector, file_name -> resolved local
+path, for every candidate file this call downloaded — a caller
+re-checking a SUBSET of \code{all_files} per paper can splice these back
+into its own copy of \code{all_files} first, so the same file is never
 downloaded twice across repeat calls)
 }
 \description{

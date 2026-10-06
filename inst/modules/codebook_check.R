@@ -36,6 +36,8 @@
 #' to still-unmatched codebook variables, and merging conflicting label
 #' definitions into a single canonical label.
 #'
+#' <validation>This module has not been validated. All checks in the codebook_check module have unknown error rates. Carefully evaluate the output of this module. You can help improve this module by reporting an issue on GitHub.</validation>
+#'
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
@@ -47,18 +49,26 @@
 #' @param local_path optional path to a local directory, passed through to
 #'   `data_check` / `repo_check` when their output is not already available
 #' @param local_only if TRUE, skip online repository lookups (see `repo_check`)
+#' @param extract_scales if TRUE, also identify psychometric scales and
+#'   behavioural tasks represented in the data (column-prefix grouping,
+#'   dictionary/manuscript matching, and -- with `llm_use(TRUE)` -- an LLM
+#'   fallback for unmatched blocks), and report them in a "Scales"/"Tasks"
+#'   section. This part of the module is experimental and has not been
+#'   validated, so it defaults to FALSE; set TRUE to opt in.
 #' @param codebook_max_calls the maximum number of LLM calls a single tier will
 #'   make (default 40): the number of 100-line text blocks per unstructured
 #'   codebook file, and the number of distinct survey layouts sent for scale
-#'   identification. This is an upfront gate: if a tier would need more calls
-#'   than this, the whole tier is skipped (not truncated) with a message naming
-#'   `codebook_max_calls` and the number needed.
+#'   identification (only relevant when `extract_scales = TRUE`). This is an
+#'   upfront gate: if a tier would need more calls than this, the whole tier is
+#'   skipped (not truncated) with a message naming `codebook_max_calls` and the
+#'   number needed.
 #' @param model the LLM model name (see `llm_model_list()`) used only when
 #'   `llm_use(TRUE)`
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
 #'
 #' @returns a list
 codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
+                           extract_scales = FALSE,
                            codebook_max_calls = 40L,
                            model = llm_model(),
                            params = list()) {
@@ -151,8 +161,11 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── 1b. Scales named in the MANUSCRIPT ───────────────────────────────────────
   # Runs only once we know data columns exist (above). It reads the paper text to
   # name instruments the authors describe, so the report can flag scales whose
-  # item-level data was not shared alongside the data that WAS.
-  text_scales <- .identify_scales_text_llm(paper, model, params)
+  # item-level data was not shared alongside the data that WAS. Gated on
+  # extract_scales (see its own roxygen docs): this part of the module is
+  # experimental and off by default.
+  text_scales <- if (isTRUE(extract_scales))
+    .identify_scales_text_llm(paper, model, params) else NULL
 
   # ── 2. Locate codebook/readme files with a local copy ────────────────────────
   cb_rows <- if (!is.null(structure_df) && nrow(structure_df) > 0 &&
@@ -324,6 +337,10 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   labels_df$scale            <- NA_character_
   labels_df$scale_confidence <- NA_character_
   labels_df$scale_source     <- NA_character_
+  # Computed unconditionally (all FALSE when extract_scales = FALSE, since
+  # labels_df$scale is then never filled in) so the report section below can
+  # reference it regardless of whether scale identification ran.
+  named <- !is.na(labels_df$scale) & nzchar(labels_df$scale)
   n_scales_found     <- 0L
   n_scale_files      <- 0L
   n_scale_unnamed    <- 0L
@@ -331,7 +348,15 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_tasks_found      <- 0L     # behavioural tasks named from the data
   n_task_files       <- 0L     # files whose columns look task-like (rt/accuracy)
   scale_groups       <- NULL   # per-group inventory (for OSD + report)
-  have_previews <- !is.null(previews) && length(previews) > 0
+  tasks_paper_only   <- character(0)
+  n_tasks_paper_only <- 0L
+  scales_osd         <- list()
+  # Scale/task identification is experimental and off by default (see
+  # extract_scales's own roxygen docs) -- skip the whole stage-1..4 pipeline
+  # below when not opted into, leaving labels_df$scale/scale_confidence/
+  # scale_source all NA and every count above at its zero default.
+  have_previews <- isTRUE(extract_scales) &&
+    !is.null(previews) && length(previews) > 0
 
   apply_scale <- function(sc, source = "matched") {
     # Fill scale/confidence/source from a PER-COLUMN result, without overwriting
@@ -407,71 +432,73 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
   }
 
-  # Stage 4: propagate to same-prefix siblings.
-  labels_df <- .propagate_scale_by_prefix(labels_df)
+  if (isTRUE(extract_scales)) {
+    # Stage 4: propagate to same-prefix siblings.
+    labels_df <- .propagate_scale_by_prefix(labels_df)
 
-  # Backfill scale_groups$scale from the FINAL labels_df. scale_groups was set by
-  # Stage 1 (manuscript LLM) only; the dictionary (Stage 2) and self-generated
-  # (Stage 3) tiers write their names into labels_df, NOT scale_groups. Without
-  # this, a block named by the dictionary or self-gen tier counts as named
-  # (scale_named_n) but its OSD entry keeps write = FALSE, so no .osd file is
-  # written. Copy each group's column-level name (and its source) back so
-  # .scales_to_osd() sees every named block.
-  if (!is.null(scale_groups) && nrow(scale_groups) > 0 &&
-      !is.null(labels_df) && nrow(labels_df) > 0) {
-    lk <- paste(labels_df$source_file, labels_df$column_name, sep = "\x01")
-    for (i in seq_len(nrow(scale_groups))) {
-      cur <- scale_groups$scale[i]
-      if (!is.na(cur) && nzchar(cur)) next          # Stage 1 already named it
-      cols <- scale_groups$columns[[i]]
-      idx  <- match(paste(scale_groups$source_file[i], cols, sep = "\x01"), lk)
-      idx  <- idx[!is.na(idx)]
-      nm   <- labels_df$scale[idx]
-      nm   <- nm[!is.na(nm) & nzchar(nm)]
-      if (length(nm)) {
-        scale_groups$scale[i] <- nm[[1]]
-        if ("scale_source" %in% names(labels_df)) {
-          ss <- labels_df$scale_source[idx]
-          ss <- ss[!is.na(ss) & nzchar(ss)]
-          if (length(ss)) scale_groups$scale_source[i] <- ss[[1]]
-        }
-        # Confidence must ride along with the name. Without this a scale named
-        # by the dictionary or self-gen tier reached the report with an EMPTY
-        # confidence: it showed as blank in the inventory table, and — because
-        # the guidance block counts `confidence %in% c("medium","low")` — a
-        # medium-confidence match silently suppressed the "how to make this
-        # high confidence" advice that the match was supposed to trigger.
-        if ("scale_confidence" %in% names(labels_df) &&
-            "confidence" %in% names(scale_groups)) {
-          cf <- labels_df$scale_confidence[idx]
-          cf <- cf[!is.na(cf) & nzchar(cf)]
-          if (length(cf)) scale_groups$confidence[i] <- cf[[1]]
+    # Backfill scale_groups$scale from the FINAL labels_df. scale_groups was set by
+    # Stage 1 (manuscript LLM) only; the dictionary (Stage 2) and self-generated
+    # (Stage 3) tiers write their names into labels_df, NOT scale_groups. Without
+    # this, a block named by the dictionary or self-gen tier counts as named
+    # (scale_named_n) but its OSD entry keeps write = FALSE, so no .osd file is
+    # written. Copy each group's column-level name (and its source) back so
+    # .scales_to_osd() sees every named block.
+    if (!is.null(scale_groups) && nrow(scale_groups) > 0 &&
+        !is.null(labels_df) && nrow(labels_df) > 0) {
+      lk <- paste(labels_df$source_file, labels_df$column_name, sep = "\x01")
+      for (i in seq_len(nrow(scale_groups))) {
+        cur <- scale_groups$scale[i]
+        if (!is.na(cur) && nzchar(cur)) next          # Stage 1 already named it
+        cols <- scale_groups$columns[[i]]
+        idx  <- match(paste(scale_groups$source_file[i], cols, sep = "\x01"), lk)
+        idx  <- idx[!is.na(idx)]
+        nm   <- labels_df$scale[idx]
+        nm   <- nm[!is.na(nm) & nzchar(nm)]
+        if (length(nm)) {
+          scale_groups$scale[i] <- nm[[1]]
+          if ("scale_source" %in% names(labels_df)) {
+            ss <- labels_df$scale_source[idx]
+            ss <- ss[!is.na(ss) & nzchar(ss)]
+            if (length(ss)) scale_groups$scale_source[i] <- ss[[1]]
+          }
+          # Confidence must ride along with the name. Without this a scale named
+          # by the dictionary or self-gen tier reached the report with an EMPTY
+          # confidence: it showed as blank in the inventory table, and — because
+          # the guidance block counts `confidence %in% c("medium","low")` — a
+          # medium-confidence match silently suppressed the "how to make this
+          # high confidence" advice that the match was supposed to trigger.
+          if ("scale_confidence" %in% names(labels_df) &&
+              "confidence" %in% names(scale_groups)) {
+            cf <- labels_df$scale_confidence[idx]
+            cf <- cf[!is.na(cf) & nzchar(cf)]
+            if (length(cf)) scale_groups$confidence[i] <- cf[[1]]
+          }
         }
       }
     }
+
+    # OSD export of the full per-group inventory (named + unmatched groups kept).
+    # Response scale lets the codebook lead (columns_df = data_check stats fallback,
+    # labels_df = codebook value labels + item wording).
+    scales_osd <- if (!is.null(scale_groups) && nrow(scale_groups) > 0)
+      .scales_to_osd(scale_groups, columns_df, labels_df) else list()
+
+    named <- !is.na(labels_df$scale) & nzchar(labels_df$scale)
+    n_scales_found <- length(unique(labels_df$scale[named]))
+    files_named    <- unique(labels_df$source_file[named])
+    n_scale_unnamed <- max(0L, n_scale_files - length(files_named))
+
+    # Tasks named in the manuscript but absent from the data. A task is often
+    # described in the methods and its trial-level data never shared, so this is
+    # the "measured but not shared" signal — the task counterpart of an orphan
+    # total. Reported, never treated as an error: a task may legitimately live in
+    # a file we could not read, and not finding a task in the data is common.
+    tasks_in_paper <- .scan_paper_for_tasks(paper)
+    tasks_in_data  <- unique(labels_df$scale[named &
+                       labels_df$scale_source %in% "task_matched"])
+    tasks_paper_only <- setdiff(tasks_in_paper, tasks_in_data)
+    n_tasks_paper_only <- length(tasks_paper_only)
   }
-
-  # OSD export of the full per-group inventory (named + unmatched groups kept).
-  # Response scale lets the codebook lead (columns_df = data_check stats fallback,
-  # labels_df = codebook value labels + item wording).
-  scales_osd <- if (!is.null(scale_groups) && nrow(scale_groups) > 0)
-    .scales_to_osd(scale_groups, columns_df, labels_df) else list()
-
-  named <- !is.na(labels_df$scale) & nzchar(labels_df$scale)
-  n_scales_found <- length(unique(labels_df$scale[named]))
-  files_named    <- unique(labels_df$source_file[named])
-  n_scale_unnamed <- max(0L, n_scale_files - length(files_named))
-
-  # Tasks named in the manuscript but absent from the data. A task is often
-  # described in the methods and its trial-level data never shared, so this is
-  # the "measured but not shared" signal — the task counterpart of an orphan
-  # total. Reported, never treated as an error: a task may legitimately live in
-  # a file we could not read, and not finding a task in the data is common.
-  tasks_in_paper <- .scan_paper_for_tasks(paper)
-  tasks_in_data  <- unique(labels_df$scale[named &
-                     labels_df$scale_source %in% "task_matched"])
-  tasks_paper_only <- setdiff(tasks_in_paper, tasks_in_data)
-  n_tasks_paper_only <- length(tasks_paper_only)
 
   # ── 4c. Data values the codebook does not allow ──────────────────────────────
   # "The codebook says this variable takes 1-5, but the column contains a 6."
@@ -660,9 +687,12 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (n_conflicted > 0) sprintf(
         "%d matched column%s %s a conflicting or ambiguous label that needs resolution.",
         n_conflicted, plural(n_conflicted), if (n_conflicted == 1) "has" else "have"),
-      if (n_unused > 0) sprintf(
-        "%d documented variable%s never appear%s in the data.",
-        n_unused, plural(n_unused), if (n_unused == 1) "s" else ""),
+      # n_unused's own headline count ("4 documented variables never appear
+      # in the data.") is left out here, per the user's own request: it is
+      # redundant with the brief report's per-variable to-do bullet
+      # (.report_module_bullets$codebook_check, report-helpers.R), which
+      # already names every one of those variables individually right below
+      # this summary.
       misalign_msg
     ) |> paste("\n- ", x = _, collapse = "")
   }
@@ -773,104 +803,108 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       scroll_table(sv_tbl, maxrows = 20))
   }
 
-  # ── Scales ───────────────────────────────────────────────────────────────────
-  # Report the scale-group inventory: every column group detected by its shared
-  # abbreviation, with the instrument it was matched to (from the manuscript /
-  # dictionary) or "not matched" when the text did not name it. Unmatched groups
-  # are shown too — a real column family we saw but could not name.
-  if (!is.null(scale_groups) && nrow(scale_groups) > 0) {
-    sg <- scale_groups
-    sg$Matched <- ifelse(!is.na(sg$scale) & nzchar(sg$scale),
-                         sg$scale, "— not matched to a named scale —")
-    inv_tbl <- data.frame(
-      File        = sg$source_file,
-      Abbrev      = sg$prefix,
-      Columns     = sg$n_columns,
-      `Max item`  = ifelse(is.na(sg$max_item), "?", as.character(sg$max_item)),
-      Scale       = sg$Matched,
-      Confidence  = ifelse(is.na(sg$confidence), "", sg$confidence),
-      Source      = ifelse(is.na(sg$scale_source), "", sg$scale_source),
-      check.names = FALSE, stringsAsFactors = FALSE)
-    n_grp   <- nrow(sg)
-    n_named <- sum(!is.na(sg$scale) & nzchar(sg$scale))
-    report <- c(report, "#### Scales",
-      sprintf("We detected %d column group%s (by shared abbreviation) that look like scales; %d %s matched to a named instrument from the paper text or dictionary. Groups we could not name are listed too — they are real scale-like column families whose instrument the manuscript did not identify. Identified scales are exported in the OpenScales OSD structure.",
-              n_grp, plural(n_grp), n_named, if (n_named == 1) "was" else "were"),
-      scroll_table(inv_tbl, maxrows = 40))
-    # Orphan totals: a totals-only block whose scale has no genuine item block
-    # anywhere (matched by name). Warn — we found the score but not the items.
-    if ("totals_only" %in% names(sg)) {
-      tot <- !is.na(sg$totals_only) & sg$totals_only &
-             !is.na(sg$scale) & nzchar(sg$scale)
-      have_items <- unique(tolower(sg$scale[!tot & !is.na(sg$scale) &
-                                            nzchar(sg$scale)]))
-      orphan <- tot & !(tolower(sg$scale) %in% have_items)
-      if (any(orphan)) {
-        ot <- sg[orphan, , drop = FALSE]
-        lines <- vapply(seq_len(nrow(ot)), function(j)
-          sprintf("- **%s** (columns `%s` in %s)", ot$scale[j],
-                  paste(utils::head(ot$columns[[j]], 6), collapse = "`, `"),
-                  ot$source_file[j]), character(1))
-        report <- c(report, paste0(
-          "**Scale totals without item-level data.** For the following, we ",
-          "identified what looks like the total or average score, but found ",
-          "**no individual item columns**. The items may not be shared, or are ",
-          "labelled differently. Consider sharing the item-level data, or ",
-          "labelling items clearly, so the scale can be verified:"),
-          lines)
+  # ── Scales / Tasks ───────────────────────────────────────────────────────────
+  # Both sections are gated on extract_scales (off by default, see its roxygen
+  # docs): with it FALSE, none of the stage 1..4 detection above ran, so there
+  # is nothing real to report here.
+  if (isTRUE(extract_scales)) {
+    # Report the scale-group inventory: every column group detected by its shared
+    # abbreviation, with the instrument it was matched to (from the manuscript /
+    # dictionary) or "not matched" when the text did not name it. Unmatched groups
+    # are shown too — a real column family we saw but could not name.
+    if (!is.null(scale_groups) && nrow(scale_groups) > 0) {
+      sg <- scale_groups
+      sg$Matched <- ifelse(!is.na(sg$scale) & nzchar(sg$scale),
+                           sg$scale, "— not matched to a named scale —")
+      inv_tbl <- data.frame(
+        File        = sg$source_file,
+        Abbrev      = sg$prefix,
+        Columns     = sg$n_columns,
+        `Max item`  = ifelse(is.na(sg$max_item), "?", as.character(sg$max_item)),
+        Scale       = sg$Matched,
+        Confidence  = ifelse(is.na(sg$confidence), "", sg$confidence),
+        Source      = ifelse(is.na(sg$scale_source), "", sg$scale_source),
+        check.names = FALSE, stringsAsFactors = FALSE)
+      n_grp   <- nrow(sg)
+      n_named <- sum(!is.na(sg$scale) & nzchar(sg$scale))
+      report <- c(report, "#### Scales",
+        sprintf("We detected %d column group%s (by shared abbreviation) that look like scales; %d %s matched to a named instrument from the paper text or dictionary. Groups we could not name are listed too — they are real scale-like column families whose instrument the manuscript did not identify. Identified scales are exported in the OpenScales OSD structure.",
+                n_grp, plural(n_grp), n_named, if (n_named == 1) "was" else "were"),
+        scroll_table(inv_tbl, maxrows = 40))
+      # Orphan totals: a totals-only block whose scale has no genuine item block
+      # anywhere (matched by name). Warn — we found the score but not the items.
+      if ("totals_only" %in% names(sg)) {
+        tot <- !is.na(sg$totals_only) & sg$totals_only &
+               !is.na(sg$scale) & nzchar(sg$scale)
+        have_items <- unique(tolower(sg$scale[!tot & !is.na(sg$scale) &
+                                              nzchar(sg$scale)]))
+        orphan <- tot & !(tolower(sg$scale) %in% have_items)
+        if (any(orphan)) {
+          ot <- sg[orphan, , drop = FALSE]
+          lines <- vapply(seq_len(nrow(ot)), function(j)
+            sprintf("- **%s** (columns `%s` in %s)", ot$scale[j],
+                    paste(utils::head(ot$columns[[j]], 6), collapse = "`, `"),
+                    ot$source_file[j]), character(1))
+          report <- c(report, paste0(
+            "**Scale totals without item-level data.** For the following, we ",
+            "identified what looks like the total or average score, but found ",
+            "**no individual item columns**. The items may not be shared, or are ",
+            "labelled differently. Consider sharing the item-level data, or ",
+            "labelling items clearly, so the scale can be verified:"),
+            lines)
+        }
       }
+
+      # Guidance when some groups are unnamed or only tentatively named.
+      n_unnamed <- n_grp - n_named
+      n_low <- sum(sg$confidence %in% c("medium","low"))
+      if (n_unnamed > 0 || n_low > 0)
+        report <- c(report, paste(
+          "To let this tool (and anyone reusing the data) identify these scales with **high confidence**:",
+          "\n- **Name the instrument in the manuscript with its abbreviation** — e.g. \"the Breakup Distress Scale (BDS)\" — matching the column prefix.",
+          "\n- **Add a codebook** giving the item wording, or state the number of items (\"a 15-item scale\").",
+          sep = ""))
+    } else if (!llm_use() && !is.null(previews) && length(previews) > 0) {
+      report <- c(report, "#### Scales",
+        "Scale naming from the manuscript needs an LLM (enable with `llm_use(TRUE)`); the dictionary rules matcher still names instruments whose abbreviation matches a known scale.")
     }
 
-    # Guidance when some groups are unnamed or only tentatively named.
-    n_unnamed <- n_grp - n_named
-    n_low <- sum(sg$confidence %in% c("medium","low"))
-    if (n_unnamed > 0 || n_low > 0)
-      report <- c(report, paste(
-        "To let this tool (and anyone reusing the data) identify these scales with **high confidence**:",
-        "\n- **Name the instrument in the manuscript with its abbreviation** — e.g. \"the Breakup Distress Scale (BDS)\" — matching the column prefix.",
-        "\n- **Add a codebook** giving the item wording, or state the number of items (\"a 15-item scale\").",
-        sep = ""))
-  } else if (!llm_use() && !is.null(previews) && length(previews) > 0) {
-    report <- c(report, "#### Scales",
-      "Scale naming from the manuscript needs an LLM (enable with `llm_use(TRUE)`); the dictionary rules matcher still names instruments whose abbreviation matches a known scale.")
-  }
+    # Instruments the manuscript describes but the shared data does not carry.
+    # `.scale_prefix_groups()` only sees column families with a shared leading
+    # abbreviation, so scales whose columns are item-content words are invisible to
+    # every stage above no matter how well the data is documented.
+    report <- c(report,
+                .scale_text_report(text_scales,
+                                   matched = unique(labels_df$scale[named])))
 
-  # Instruments the manuscript describes but the shared data does not carry.
-  # `.scale_prefix_groups()` only sees column families with a shared leading
-  # abbreviation, so scales whose columns are item-content words are invisible to
-  # every stage above no matter how well the data is documented.
-  report <- c(report,
-              .scale_text_report(text_scales,
-                                 matched = unique(labels_df$scale[named])))
-
-  # ── Tasks ───────────────────────────────────────────────────────────────────
-  # Reported separately from scales because the evidence is different: a task is
-  # recognised from rt/accuracy columns rather than a Likert block, and a task
-  # named in the paper with no data behind it is a routine, reportable state
-  # rather than a fault.
-  if (n_task_files > 0 || n_tasks_paper_only > 0) {
-    task_lines <- character(0)
-    if (n_task_files > 0)
-      task_lines <- c(task_lines, sprintf(
-        "%d data file%s contain%s columns that look like a behavioural task (reaction times, accuracy, or a block of correct/incorrect items). %s named to a known task.",
-        n_task_files, plural(n_task_files),
-        if (n_task_files == 1) "s" else "",
-        if (n_tasks_found > 0)
-          sprintf("%d distinct task%s %s", n_tasks_found, plural(n_tasks_found),
-                  if (n_tasks_found == 1) "was" else "were")
-        else "None could be"))
-    if (n_tasks_paper_only > 0)
-      task_lines <- c(task_lines, paste0(
-        sprintf("**%d task%s named in the manuscript %s no matching data.** ",
-                n_tasks_paper_only, plural(n_tasks_paper_only),
-                if (n_tasks_paper_only == 1) "has" else "have"),
-        "The trial-level data may not be shared, may live in a file we could ",
-        "not read, or may use column names we did not recognise. Sharing ",
-        "trial-level data (one row per trial, with condition, response time ",
-        "and accuracy) would let the task be verified:"),
-        paste0("- ", tasks_paper_only))
-    if (length(task_lines))
-      report <- c(report, "#### Tasks", task_lines)
+    # Reported separately from scales because the evidence is different: a task is
+    # recognised from rt/accuracy columns rather than a Likert block, and a task
+    # named in the paper with no data behind it is a routine, reportable state
+    # rather than a fault.
+    if (n_task_files > 0 || n_tasks_paper_only > 0) {
+      task_lines <- character(0)
+      if (n_task_files > 0)
+        task_lines <- c(task_lines, sprintf(
+          "%d data file%s contain%s columns that look like a behavioural task (reaction times, accuracy, or a block of correct/incorrect items). %s named to a known task.",
+          n_task_files, plural(n_task_files),
+          if (n_task_files == 1) "s" else "",
+          if (n_tasks_found > 0)
+            sprintf("%d distinct task%s %s", n_tasks_found, plural(n_tasks_found),
+                    if (n_tasks_found == 1) "was" else "were")
+          else "None could be"))
+      if (n_tasks_paper_only > 0)
+        task_lines <- c(task_lines, paste0(
+          sprintf("**%d task%s named in the manuscript %s no matching data.** ",
+                  n_tasks_paper_only, plural(n_tasks_paper_only),
+                  if (n_tasks_paper_only == 1) "has" else "have"),
+          "The trial-level data may not be shared, may live in a file we could ",
+          "not read, or may use column names we did not recognise. Sharing ",
+          "trial-level data (one row per trial, with condition, response time ",
+          "and accuracy) would let the task be verified:"),
+          paste0("- ", tasks_paper_only))
+      if (length(task_lines))
+        report <- c(report, "#### Tasks", task_lines)
+    }
   }
 
   if (llm_use()) {
@@ -947,9 +981,21 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
 
 # One column-documentation table per source file inside a Quarto tabset (mirrors
 # data_check's file_tabset). `tbl` must include a `source_file` column.
+#
+# report_type("simple") (see its own docs): emit plain stacked ##### headings
+# instead of a tabset -- the tabset JS is part of what makes a report
+# email-unsafe, so simple mode never generates a `.panel-tabset` fence.
 codebook_file_tabset <- function(tbl) {
   files <- unique(tbl$source_file)
   if (length(files) == 0) return(NULL)
+  if (.report_is_static(report_type())) {
+    secs <- vapply(files, function(f) {
+      sub <- tbl[tbl$source_file == f, setdiff(names(tbl), "source_file"),
+                 drop = FALSE]
+      paste(c(paste0("##### ", f), scroll_table(sub, maxrows = 25)), collapse = "\n\n")
+    }, character(1))
+    return(paste(secs, collapse = "\n\n"))
+  }
   # Blank-line-separate every block so Pandoc parses each `## file` as a tab
   # heading rather than swallowing it into the preceding table block.
   tabs <- vapply(files, function(f) {

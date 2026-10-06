@@ -44,7 +44,7 @@ Where a call takes a variable rather than a package name —
 \code{install.packages(pkgs)}, \code{requireNamespace(pkg)},
 \code{library(pkg, character.only = TRUE)}, \code{lapply(pkgs, library, ...)} — the
 variable is resolved to the names it holds when the file assigns it a
-literal vector (\code{pkgs <- c("a", "b")}, including a \code{for (pkg in pkgs)} loop
+literal vector (\code{pkgs <- c("a", "b")}, including a \verb{for (pkg in pkgs)} loop
 variable), and dropped otherwise. The variable's own name is never reported
 as a package.
 }

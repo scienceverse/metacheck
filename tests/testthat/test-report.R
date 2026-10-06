@@ -100,6 +100,89 @@ test_that("report paperlist", {
   expect_true(file.exists(output_file[[2]]))
 })
 
+test_that("report_repository errors on a bad path", {
+  expect_true(is.function(metacheck::report_repository))
+  expect_no_error(helplist <- help(report_repository, metacheck))
+
+  expect_error(report_repository(1), "single path")
+  expect_error(report_repository(c("a", "b")), "single path")
+  expect_error(report_repository(tempfile()), "No folder found")
+})
+
+test_that("report_repository defaults output_file to the folder's own name", {
+  # A relative output_file (report_repository()'s own default) is written
+  # relative to WHATEVER the working directory is when it runs -- tested here
+  # by changing into the fixture directory via a plain function call (not
+  # withr::local_dir()/on.exit() placed directly in this test_that() block:
+  # both were confirmed, while writing this feature, not to reliably restore
+  # at the end of a test_that() block under this project's actual test
+  # runner (devtools::test()) -- see test-report-helpers.R's "report_type"
+  # test for the full story. An ordinary function's OWN on.exit() does
+  # restore reliably even when the function is called from inside
+  # test_that(), which is why this is wrapped in one here.
+  in_dir <- function(dir, code) {
+    old <- setwd(dir)
+    on.exit(setwd(old), add = TRUE)
+    force(code)
+  }
+
+  cwd_before <- getwd()
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "my_repo"))
+  writeLines("id,x\n1,2", file.path(d, "my_repo", "data.csv"))
+
+  rep <- in_dir(d, report_repository("my_repo", output_format = "qmd",
+                                     modules = "repo_check"))
+  save_path <- attr(rep, "save_path")
+  expect_equal(save_path, "my_repo_report.qmd")
+  expect_true(file.exists(file.path(d, save_path)))
+  # The working directory must be back to normal: a leftover change here
+  # would silently break every later test using a relative path (e.g.
+  # module_find()'s own "modules/..." lookups) -- see this test's own
+  # comment above for the real incident that taught us to check this.
+  expect_equal(getwd(), cwd_before)
+})
+
+test_that("report_repository's args are only set on the first module", {
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "repo1"))
+  writeLines("a script", file.path(d, "repo1", "analysis.R"))
+  output_file <- withr::local_tempfile(fileext = ".qmd")
+
+  # explicit args for the first module (repo_check) must survive being
+  # merged with the local_path/local_only report_repository() injects, and
+  # the second module (code_check) must receive NEITHER of those two --
+  # it is meant to reuse repo_check's chained output, not re-read the folder
+  # itself (see report_repository()'s own comment on why).
+  args <- list(repo_check = list(cache = TRUE))
+  rep <- report_repository(file.path(d, "repo1"), output_file = output_file,
+                           output_format = "qmd",
+                           modules = c("repo_check", "code_check"),
+                           args = args)
+
+  expect_true(file.exists(output_file))
+  qmd_txt <- paste(readLines(output_file), collapse = "\n")
+  # analysis.R was found via repo_check's own folder read and reached
+  # code_check's report without code_check being told local_path itself.
+  expect_match(qmd_txt, "analysis.R", fixed = TRUE)
+})
+
+test_that("report_repository passes report_type through to the generated report", {
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "repo2"))
+  writeLines("id,x\n1,2", file.path(d, "repo2", "data.csv"))
+  output_file <- withr::local_tempfile(fileext = ".qmd")
+
+  report_repository(file.path(d, "repo2"), output_file = output_file,
+                    output_format = "qmd", report_type = "simple",
+                    modules = "repo_check")
+
+  qmd_txt <- paste(readLines(output_file), collapse = "\n")
+  # report_qmd()'s own setup chunk records which mode generated the text --
+  # see its own comment for why the subprocess needs this spelled out.
+  expect_match(qmd_txt, 'report_type\\("simple"\\)')
+})
+
 test_that("render qmd", {
   paper <- demopaper()
   modules <- c("stat_p_exact", "marginal")
@@ -131,6 +214,45 @@ test_that("render html", {
   save_path <- attr(paper_report, "save_path")
   expect_true(file.exists(save_path))
   # browseURL(save_path)
+})
+
+test_that("render html report_type = 'simple' produces a static, email-safe file", {
+  skip_if_quick()
+  skip_on_ci()
+  skip_on_cran()
+  skip_if_not_installed("quarto")
+  skip_if_not_installed("rmarkdown")
+
+  llm_use(FALSE)
+  paper <- test_paper("Example text with p = .03 and p = .5.")
+  modules <- c("stat_p_exact", "stat_p_nonsig")
+  output_file <- withr::local_tempfile(fileext = ".html")
+
+  prev_report_type <- report_type()
+  paper_report <- report(paper, modules, output_file, "html",
+                         report_type = "simple")
+  # report_type() must never leak out of report() into the caller's session,
+  # whichever branch of the render (success or the error/warning fallback)
+  # actually ran -- see report()'s own on.exit() comment for the bug this
+  # guards: a bare on.exit() call elsewhere in the same function used to
+  # silently wipe this restoration out.
+  expect_equal(report_type(), prev_report_type)
+
+  save_path <- attr(paper_report, "save_path")
+  expect_true(file.exists(save_path))
+  expect_match(save_path, "\\.html$")
+
+  txt <- paste(readLines(save_path, warn = FALSE), collapse = "\n")
+  # No DT::datatable() widget, no Quarto tabsets/theme-toggle bundle: this is
+  # the whole point of report_type = "simple" (see report_qmd()'s own
+  # comment for why Quarto's HTML format cannot be used for this at all).
+  expect_false(grepl("html-widget", txt, fixed = TRUE))
+  expect_false(grepl("htmlwidget-", txt, fixed = TRUE))
+  expect_false(grepl("panel-tabset", txt, fixed = TRUE))
+  expect_false(grepl("quarto-color-scheme-toggle", txt, fixed = TRUE))
+  # Real content still made it through the render.
+  expect_match(txt, "Exact", fixed = TRUE)
+  expect_match(txt, "dt-static", fixed = TRUE)
 })
 
 test_that("report pass args", {

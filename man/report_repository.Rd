@@ -8,6 +8,7 @@ report_repository(
   path,
   output_file = NULL,
   output_format = c("html", "qmd"),
+  report_type = c("full", "simple"),
   modules = c("repo_check", "code_check", "data_check", "codebook_check"),
   args = list()
 )
@@ -22,6 +23,10 @@ exist.}
 
 \item{output_format}{the format to create the report in, \code{"html"} (the
 default) or \code{"qmd"}}
+
+\item{report_type}{\code{"full"} (the default) or \code{"simple"} (a static,
+email-safe report with no embedded JavaScript) -- see \code{\link[=report]{report()}} and
+\code{\link[=report_type]{report_type()}}.}
 
 \item{modules}{the modules to run. Defaults to the four repository modules,
 in the order they depend on each other. Change it to run fewer.}
@@ -59,5 +64,8 @@ report_repository("how_many_registered_studies_are_published")
 
 # write the report somewhere else
 report_repository("my_study", output_file = "reports/my_study.html")
+
+# a static, email-safe report
+report_repository("my_study", report_type = "simple")
 }
 }
