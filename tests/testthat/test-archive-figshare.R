@@ -95,6 +95,56 @@ test_that(".figshare_id", {
 })
 
 
+test_that(".figshare_id handles the 4 institutional DOI-prefix hosts added in #464 (issue #465)", {
+  # UCL (10.5522) separates its sub-prefix from the id with "/" rather than
+  # "." -- confirmed live 2026-10-06 that this used to return just the
+  # sub-prefix ("04") instead of the real id.
+  expect_equal(unname(.figshare_id("10.5522/04/14484084.v1")), "14484084")
+  expect_equal(unname(.figshare_id("10.5522/04/23217572.v1")), "23217572")
+
+  # Adelaide (10.25909) mints a plain numeric suffix for most of its DOIs,
+  # which IS the real figshare article id directly.
+  expect_equal(unname(.figshare_id("10.25909/33113177")), "33113177")
+
+  # Older Adelaide records use an opaque hex-shaped suffix that is NOT the
+  # article id (confirmed live: the real id is 6859511, unrelated to any
+  # digits in the DOI) -- this must return NA here, not a truncated partial
+  # match on the id's leading digit run ("5"), since a wrong id is worse
+  # than a correctly-flagged unresolved one. See the
+  # "figshare_info resolves ... via DOI lookup" test below for how this
+  # case is actually resolved, one level up in figshare_info().
+  expect_equal(unname(.figshare_id("10.25909/5b581a5a151da")), NA_character_)
+
+  # VTechData (10.7294) and USDA Ag Data Commons (10.15482) use DOI
+  # suffixes that carry no real figshare article id at all -- a
+  # handle-style code, or a numeric accession that is a DIFFERENT number
+  # from the real id (confirmed live: 10.15482/USDA.ADC/1402049's real id
+  # is 24852405, not 1402049). Both must return NA here rather than a
+  # silently wrong id.
+  expect_equal(unname(.figshare_id("10.7294/WSDX-AJ44")), NA_character_)
+  expect_equal(unname(.figshare_id("10.15482/USDA.ADC/1402049")), NA_character_)
+})
+
+
+test_that("figshare_info resolves VTechData/USDA/Adelaide DOIs with no parseable id via DOI lookup (issue #465)", {
+  # These three DOIs all return NA from .figshare_id() itself (see the test
+  # above); figshare_info() must still resolve each to its real article id
+  # via the API's own GET /v2/articles?doi= lookup rather than leaving it
+  # unresolved, confirmed live 2026-10-06 against each DOI's real,
+  # independently-checked article id.
+  info <- figshare_info(c(
+    "https://doi.org/10.7294/WSDX-AJ44",
+    "10.15482/USDA.ADC/1402049",
+    "10.25909/5b581a5a151da"
+  ))
+
+  by_url <- setNames(info$figshare_id, info$figshare_url)
+  expect_equal(unname(by_url[["https://doi.org/10.7294/WSDX-AJ44"]]), "14096975")
+  expect_equal(unname(by_url[["10.15482/USDA.ADC/1402049"]]), "24852405")
+  expect_equal(unname(by_url[["10.25909/5b581a5a151da"]]), "6859511")
+})
+
+
 test_that("figshare_links recognises institutional Figshare DOI prefixes with no host domain in the URL", {
   # Regression test: 29 institutional Figshare instances (28 found via
   # DataCite's client registry, plus Monash found separately -- see
