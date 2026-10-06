@@ -36,10 +36,11 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
       }
     }, error = \(e) {
       logger("read", e$message)
+      warning("Could not read ", basename(fp), ": ", e$message, call. = FALSE)
       return(NULL)
     })
   })
-  papers <- paperlist(papers)
+  papers <- paperlist(papers[!vapply(papers, is.null, logical(1))])
   if (length(papers) == 1) papers <- papers[[1]]
 
   return(papers)

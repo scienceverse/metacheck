@@ -268,6 +268,14 @@ test_that("only bibr schema 12.x is read from files with a schema_version", {
   jsonlite::write_json(json, path, auto_unbox = TRUE, null = "null")
   expect_error(.read_bibr(path),
                "schema 13.0 is not supported.*Update metacheck, or extract")
+
+  # read() warns with the reason and skips the file
+  expect_warning(papers <- read(path),
+                 "Could not read v11.json: bibr export schema 13.0")
+  expect_length(papers, 0)
+  file.copy(bibr12("platform_12_1"), dirname(path))
+  expect_warning(paper <- read(dirname(path)), "schema 13.0 is not supported")
+  expect_equal(paper$info$schema_version, "12.1")
 })
 
 test_that("paper_write writes bibr 12.0 that reads back the same", {
