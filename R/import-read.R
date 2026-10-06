@@ -36,10 +36,11 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
       }
     }, error = \(e) {
       logger("read", e$message)
+      warning("Could not read ", basename(fp), ": ", e$message, call. = FALSE)
       return(NULL)
     })
   })
-  papers <- paperlist(papers)
+  papers <- paperlist(papers[!vapply(papers, is.null, logical(1))])
   if (length(papers) == 1) papers <- papers[[1]]
 
   return(papers)
@@ -60,6 +61,11 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   data <- jsonlite::read_json(file_path,
                               simplifyVector = TRUE,
                               simplifyDataFrame = TRUE)
+
+  # bibr export schema 11 and later put schema_version at the root ----
+  if (!is.null(data$schema_version)) {
+    return(.read_bibr12(file_path, include_images))
+  }
 
   paper <- paper()
   paper$paper_id <- data$paper_id

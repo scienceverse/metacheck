@@ -1,0 +1,4470 @@
+{
+  "$comment": "This schema document is dedicated to the public domain under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/). The bibr software that produces it is AGPL-3.0-or-later.",
+  "$defs": {
+    "AffiliationExport": {
+      "additionalProperties": false,
+      "description": "One distinct affiliation from the author byline.\n\nBuilt on every run from the byline strings. The parsed components come\nfrom an LLM and stay null when no LLM ran or it returned no parse.",
+      "properties": {
+        "affiliation_id": {
+          "description": "Primary key; 1-based position in first-seen order.",
+          "minimum": 1,
+          "title": "Affiliation Id",
+          "type": "integer"
+        },
+        "author_ids": {
+          "default": [],
+          "description": "author[].author_id of every author with this affiliation, in byline order.",
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": "Author Ids",
+          "type": "array"
+        },
+        "city": {
+          "default": null,
+          "description": "Parsed city.",
+          "title": "City",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "country": {
+          "default": null,
+          "description": "Parsed country.",
+          "title": "Country",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "department": {
+          "default": null,
+          "description": "Parsed department or unit.",
+          "title": "Department",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "institution": {
+          "default": null,
+          "description": "Parsed institution name.",
+          "title": "Institution",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "description": "The affiliation string, verbatim from the byline.",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "affiliation_id",
+        "text",
+        "institution",
+        "department",
+        "city",
+        "country",
+        "author_ids"
+      ],
+      "title": "AffiliationExport",
+      "type": "object"
+    },
+    "AffiliationMatchExport": {
+      "additionalProperties": false,
+      "description": "The ROR organization matched to one affiliation string.\n\nOnly ROR's own recommended match (``chosen``) is kept; an affiliation\nwithout one has no row.",
+      "properties": {
+        "affiliation_id": {
+          "description": "affiliation[].affiliation_id this record matches.",
+          "minimum": 1,
+          "title": "Affiliation Id",
+          "type": "integer"
+        },
+        "country_code": {
+          "default": null,
+          "description": "ISO 3166-1 alpha-2 country code of the organization.",
+          "pattern": "^[A-Z]{2}$",
+          "title": "Country Code",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "default": null,
+          "description": "The organization's display name at ROR.",
+          "title": "Name",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "score": {
+          "default": null,
+          "description": "The service's match score, 0\u20131 (for ranking, not selection).",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Score",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "service": {
+          "description": "External service that returned the record.",
+          "enum": [
+            "crossref",
+            "openalex",
+            "datacite",
+            "doi.org",
+            "openlibrary",
+            "ror",
+            "manual",
+            "other"
+          ],
+          "title": "Service",
+          "type": "string"
+        },
+        "service_id": {
+          "description": "The organization's ROR ID as a URI (https://ror.org/...).",
+          "pattern": "^https://ror\\.org/0[a-z0-9]{6}[0-9]{2}$",
+          "title": "Service Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "affiliation_id",
+        "service",
+        "service_id",
+        "score",
+        "name",
+        "country_code"
+      ],
+      "title": "AffiliationMatchExport",
+      "type": "object"
+    },
+    "AuthorExport": {
+      "additionalProperties": false,
+      "description": "One author of the paper, in byline order.\n\nAffiliations are in ``affiliation[]``, linked by ``author_ids``.",
+      "properties": {
+        "author_id": {
+          "description": "Primary key; 1-based position in the byline.",
+          "minimum": 1,
+          "title": "Author Id",
+          "type": "integer"
+        },
+        "corresponding": {
+          "description": "True when the paper marks this author as a corresponding author; false when it does not, or when that is not known.",
+          "title": "Corresponding",
+          "type": "boolean"
+        },
+        "credit_roles": {
+          "default": [],
+          "description": "CRediT roles matched from role, as NISO term URIs (https://credit.niso.org/contributor-roles/...); empty when none matched.",
+          "items": {
+            "pattern": "^https://credit\\.niso\\.org/contributor-roles/[a-z-]+/$",
+            "type": "string"
+          },
+          "title": "Credit Roles",
+          "type": "array"
+        },
+        "email": {
+          "default": null,
+          "description": "Email address, as printed.",
+          "title": "Email",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family": {
+          "description": "Family name; null for group authors and when not found.",
+          "title": "Family",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "given": {
+          "description": "Given name(s) or initials; null for mononyms and group authors.",
+          "title": "Given",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "literal": {
+          "default": null,
+          "description": "The whole name of a group or organization author (a consortium, a working group), as printed; given and family are null then. Null for people.",
+          "title": "Literal",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orcid": {
+          "default": null,
+          "description": "ORCID iD as a canonical URI (https://orcid.org/0000-0000-0000-0000).",
+          "pattern": "^https://orcid\\.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$",
+          "title": "Orcid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "default": [],
+          "description": "Contribution roles from the author-contributions statement, as printed; empty when the paper has none.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Role",
+          "type": "array"
+        },
+        "suffix": {
+          "default": null,
+          "description": "Name suffix such as 'Jr.' or 'III'.",
+          "title": "Suffix",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "author_id",
+        "given",
+        "family",
+        "suffix",
+        "literal",
+        "email",
+        "corresponding",
+        "orcid",
+        "role",
+        "credit_roles"
+      ],
+      "title": "AuthorExport",
+      "type": "object"
+    },
+    "BibExport": {
+      "additionalProperties": false,
+      "description": "One entry of the paper's reference list, parsed from the printed entry.\n\nValues are as printed unless consolidation filled or replaced them from\n``bib_match``; the field names it took are listed per ``bib_id`` in\n``extraction.diagnostics.consolidation``.",
+      "properties": {
+        "access_date": {
+          "default": null,
+          "description": "Accessed/retrieved date of an online source, as printed.",
+          "title": "Access Date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "arxiv": {
+          "default": null,
+          "description": "arXiv identifier.",
+          "title": "Arxiv",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "authors": {
+          "default": null,
+          "description": "Author list exactly as printed, including punctuation and 'et al.'.",
+          "title": "Authors",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bib_id": {
+          "description": "Primary key; 1-based position in the reference list.",
+          "minimum": 1,
+          "title": "Bib Id",
+          "type": "integer"
+        },
+        "bib_type": {
+          "default": null,
+          "description": "Reference type; null when not determined.",
+          "enum": [
+            "journal_article",
+            "book",
+            "book_chapter",
+            "dataset",
+            "software",
+            "preprint",
+            "conference_paper",
+            "report",
+            "thesis",
+            "other",
+            null
+          ],
+          "title": "Bib Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "container": {
+          "default": null,
+          "description": "Journal, book or proceedings the work appeared in.",
+          "title": "Container",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date": {
+          "default": null,
+          "description": "Fuller publication date, as printed.",
+          "title": "Date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "doi": {
+          "default": null,
+          "description": "DOI printed in the entry, bare and lowercase.",
+          "pattern": "^10\\.[0-9]{4,9}/[^\\sA-Z]+$",
+          "title": "Doi",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "edition": {
+          "default": null,
+          "description": "Edition.",
+          "title": "Edition",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "editors": {
+          "default": null,
+          "description": "Editor list exactly as printed.",
+          "title": "Editors",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "first_page": {
+          "default": null,
+          "description": "First page or article number.",
+          "title": "First Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "is_in_press": {
+          "default": false,
+          "description": "True when the entry is marked in press or forthcoming; false otherwise, including when that is not known.",
+          "title": "Is In Press",
+          "type": "boolean"
+        },
+        "issue": {
+          "default": null,
+          "description": "Issue.",
+          "title": "Issue",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_page": {
+          "default": null,
+          "description": "Last page.",
+          "title": "Last Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "default": null,
+          "description": "Trailing free-text note.",
+          "title": "Note",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pmid": {
+          "default": null,
+          "description": "PubMed identifier.",
+          "title": "Pmid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published_date": {
+          "default": null,
+          "description": "The publication date as ISO 8601 (YYYY, YYYY-MM or YYYY-MM-DD), as precise as the entry prints it in date or year; consolidation fills it from bib_match[].published_date. Null when neither is known.",
+          "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$",
+          "title": "Published Date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publisher": {
+          "default": null,
+          "description": "Publisher.",
+          "title": "Publisher",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "series": {
+          "default": null,
+          "description": "Book or report series.",
+          "title": "Series",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_id": {
+          "default": null,
+          "description": "text[].text_id of the reference-section sentence holding this entry; null when it could not be matched.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "title": {
+          "default": null,
+          "description": "Title of the cited work.",
+          "title": "Title",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "default": null,
+          "description": "URL as printed, repaired of line-wrap artifacts.",
+          "title": "Url",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "default": null,
+          "description": "Version (software, datasets).",
+          "title": "Version",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "volume": {
+          "default": null,
+          "description": "Volume.",
+          "title": "Volume",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "year": {
+          "default": null,
+          "description": "Publication year; null when absent or in press.",
+          "title": "Year",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "year_suffix": {
+          "default": null,
+          "description": "Disambiguation letter after the year, e.g. 'a' in '2020a'.",
+          "title": "Year Suffix",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "bib_id",
+        "text_id",
+        "bib_type",
+        "doi",
+        "title",
+        "authors",
+        "editors",
+        "publisher",
+        "year",
+        "year_suffix",
+        "date",
+        "published_date",
+        "container",
+        "volume",
+        "issue",
+        "first_page",
+        "last_page",
+        "edition",
+        "version",
+        "url",
+        "is_in_press",
+        "arxiv",
+        "pmid",
+        "series",
+        "access_date",
+        "note"
+      ],
+      "title": "BibExport",
+      "type": "object"
+    },
+    "BibMatchExport": {
+      "additionalProperties": false,
+      "description": "One external-service record matched to a reference-list entry.",
+      "properties": {
+        "author": {
+          "default": null,
+          "description": "Structured authors of the matched record; null when none.",
+          "items": {
+            "$ref": "#/$defs/PersonNameExport"
+          },
+          "title": "Author",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "bib_id": {
+          "description": "bib[].bib_id of the entry this record matches.",
+          "minimum": 1,
+          "title": "Bib Id",
+          "type": "integer"
+        },
+        "bib_type": {
+          "default": null,
+          "description": "Work type at the service.",
+          "enum": [
+            "journal_article",
+            "book",
+            "book_chapter",
+            "dataset",
+            "software",
+            "preprint",
+            "conference_paper",
+            "report",
+            "thesis",
+            "other",
+            null
+          ],
+          "title": "Bib Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "container": {
+          "default": null,
+          "description": "Journal, book or proceedings.",
+          "title": "Container",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "doi": {
+          "default": null,
+          "description": "DOI of the matched record, lowercase.",
+          "pattern": "^10\\.[0-9]{4,9}/[^\\sA-Z]+$",
+          "title": "Doi",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "edition": {
+          "default": null,
+          "description": "Edition.",
+          "title": "Edition",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "editor": {
+          "default": null,
+          "description": "Structured editors of the matched record; null when none.",
+          "items": {
+            "$ref": "#/$defs/PersonNameExport"
+          },
+          "title": "Editor",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "first_page": {
+          "default": null,
+          "description": "First page or article number.",
+          "title": "First Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funder": {
+          "default": null,
+          "description": "Funders and awards the record lists.",
+          "items": {
+            "$ref": "#/$defs/MatchFunderExport"
+          },
+          "title": "Funder",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "issue": {
+          "default": null,
+          "description": "Issue.",
+          "title": "Issue",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_page": {
+          "default": null,
+          "description": "Last page.",
+          "title": "Last Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_spdx": {
+          "default": null,
+          "description": "SPDX identifier of license_url, for Creative Commons licenses and CC0.",
+          "title": "License Spdx",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_url": {
+          "default": null,
+          "description": "License URL of the version of record (else of an unspecified version); text-mining licenses are skipped.",
+          "title": "License Url",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published_date": {
+          "default": null,
+          "description": "Publication date as ISO 8601 (YYYY-MM or YYYY-MM-DD, as precise as the record); null when the record gives only a year (see year).",
+          "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$",
+          "title": "Published Date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publisher": {
+          "default": null,
+          "description": "Publisher.",
+          "title": "Publisher",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "score": {
+          "default": null,
+          "description": "Match score, 0\u20131: 1 for a DOI lookup; a bibliographic search hit scores its title similarity after author and year checks.",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Score",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "service": {
+          "description": "External service that returned the record.",
+          "enum": [
+            "crossref",
+            "openalex",
+            "datacite",
+            "doi.org",
+            "openlibrary",
+            "ror",
+            "manual",
+            "other"
+          ],
+          "title": "Service",
+          "type": "string"
+        },
+        "service_id": {
+          "default": null,
+          "description": "The record's identifier at that service.",
+          "title": "Service Id",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "default": null,
+          "description": "Title of the matched record.",
+          "title": "Title",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "default": null,
+          "description": "URL of the record.",
+          "title": "Url",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "default": null,
+          "description": "Version.",
+          "title": "Version",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "volume": {
+          "default": null,
+          "description": "Volume.",
+          "title": "Volume",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "year": {
+          "default": null,
+          "description": "Publication year.",
+          "title": "Year",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "bib_id",
+        "service",
+        "service_id",
+        "score",
+        "bib_type",
+        "doi",
+        "title",
+        "author",
+        "editor",
+        "publisher",
+        "year",
+        "published_date",
+        "container",
+        "volume",
+        "issue",
+        "first_page",
+        "last_page",
+        "edition",
+        "version",
+        "url",
+        "license_url",
+        "license_spdx",
+        "funder"
+      ],
+      "title": "BibMatchExport",
+      "type": "object"
+    },
+    "CaptionAssignmentExport": {
+      "additionalProperties": false,
+      "description": "One caption-to-float decision.",
+      "properties": {
+        "ambiguous": {
+          "default": false,
+          "description": "Whether another float scored as well.",
+          "title": "Ambiguous",
+          "type": "boolean"
+        },
+        "caption_id": {
+          "description": "caption_id of the caption.",
+          "title": "Caption Id",
+          "type": "string"
+        },
+        "object_id": {
+          "description": "'figure:<figure_id>' or 'table:<table_id>' it was assigned to; null when unassigned, or when that float did not survive to the export.",
+          "title": "Object Id",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reasons": {
+          "description": "Signals behind the decision.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "score": {
+          "description": "Assignment score.",
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "caption_id",
+        "object_id",
+        "score",
+        "reasons",
+        "ambiguous"
+      ],
+      "title": "CaptionAssignmentExport",
+      "type": "object"
+    },
+    "CaptionAssignmentReceiptExport": {
+      "additionalProperties": false,
+      "description": "How captions were matched to figures and tables.",
+      "properties": {
+        "assignments": {
+          "description": "Every assignment decision.",
+          "items": {
+            "$ref": "#/$defs/CaptionAssignmentExport"
+          },
+          "title": "Assignments",
+          "type": "array"
+        },
+        "candidates": {
+          "description": "Every caption found.",
+          "items": {
+            "$ref": "#/$defs/CaptionCandidateExport"
+          },
+          "title": "Candidates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "candidates",
+        "assignments"
+      ],
+      "title": "CaptionAssignmentReceiptExport",
+      "type": "object"
+    },
+    "CaptionCandidateExport": {
+      "additionalProperties": false,
+      "description": "One caption found in the source.",
+      "properties": {
+        "bbox": {
+          "description": "Bounding box [x0, y0, x1, y1] in PDF points from the top-left corner of the displayed page (see extraction.pages).",
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Bbox",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "caption_id": {
+          "description": "Receipt-local caption identifier.",
+          "title": "Caption Id",
+          "type": "string"
+        },
+        "object_type": {
+          "description": "'figure' or 'table'.",
+          "title": "Object Type",
+          "type": "string"
+        },
+        "page_number": {
+          "description": "1-based page.",
+          "title": "Page Number",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "source_index": {
+          "description": "Position of the caption in the source order.",
+          "title": "Source Index",
+          "type": "integer"
+        },
+        "text": {
+          "description": "Caption text.",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "caption_id",
+        "text",
+        "object_type",
+        "page_number",
+        "bbox",
+        "source_index"
+      ],
+      "title": "CaptionCandidateExport",
+      "type": "object"
+    },
+    "CitationCandidateExport": {
+      "additionalProperties": false,
+      "description": "One in-text citation the detector considered.",
+      "properties": {
+        "accepted": {
+          "description": "Whether the candidate became an xref row.",
+          "title": "Accepted",
+          "type": "boolean"
+        },
+        "bib_ids": {
+          "description": "bib[].bib_id values the candidate links to.",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Bib Ids",
+          "type": "array"
+        },
+        "confidence": {
+          "description": "Detector confidence.",
+          "title": "Confidence",
+          "type": "number"
+        },
+        "end": {
+          "description": "End character offset (exclusive).",
+          "title": "End",
+          "type": "integer"
+        },
+        "evidence": {
+          "description": "Signals supporting the link.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "raw": {
+          "description": "The citation text as printed.",
+          "title": "Raw",
+          "type": "string"
+        },
+        "rejection_reasons": {
+          "description": "Why a rejected candidate was dropped.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Rejection Reasons",
+          "type": "array"
+        },
+        "start": {
+          "description": "Start character offset within the sentence.",
+          "title": "Start",
+          "type": "integer"
+        },
+        "style": {
+          "description": "Citation style the candidate was read as.",
+          "title": "Style",
+          "type": "string"
+        },
+        "text_id": {
+          "description": "text[].text_id of the sentence.",
+          "title": "Text Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "text_id",
+        "start",
+        "end",
+        "raw",
+        "style",
+        "bib_ids",
+        "evidence",
+        "confidence",
+        "accepted",
+        "rejection_reasons"
+      ],
+      "title": "CitationCandidateExport",
+      "type": "object"
+    },
+    "CitationLinkingExport": {
+      "additionalProperties": false,
+      "description": "Evidence-bearing receipt for inline citation linking.",
+      "properties": {
+        "candidates": {
+          "description": "Every candidate considered.",
+          "items": {
+            "$ref": "#/$defs/CitationCandidateExport"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "resolved_candidate_fraction": {
+          "description": "Share of candidates linked to at least one reference.",
+          "title": "Resolved Candidate Fraction",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "style_scores": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Score per citation style for this paper.",
+          "title": "Style Scores",
+          "type": "object"
+        },
+        "unique_linked_bib_fraction": {
+          "description": "Share of references cited at least once.",
+          "title": "Unique Linked Bib Fraction",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "style_scores",
+        "candidates",
+        "resolved_candidate_fraction",
+        "unique_linked_bib_fraction"
+      ],
+      "title": "CitationLinkingExport",
+      "type": "object"
+    },
+    "ConsolidationExport": {
+      "additionalProperties": false,
+      "description": "Fields of one reference that consolidation took from ``bib_match``.",
+      "properties": {
+        "bib_id": {
+          "description": "bib[].bib_id of the modified entry.",
+          "minimum": 1,
+          "title": "Bib Id",
+          "type": "integer"
+        },
+        "fields": {
+          "description": "bib[] field names filled or replaced, in field order.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "bib_id",
+        "fields"
+      ],
+      "title": "ConsolidationExport",
+      "type": "object"
+    },
+    "DiagnosticsExport": {
+      "additionalProperties": false,
+      "description": "Outcome flags and stage receipts \u2014 never raw payloads.\n\n``regions``, ``text_regions`` and ``trace`` are deliberately NOT here: they\nare megabyte-scale intermediate data, and bundling them would force every\ndiagnostics consumer to reason about size. Receipts are omitted when their\nstage did not run.",
+      "properties": {
+        "caption_assignment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaptionAssignmentReceiptExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Receipt for caption-to-float assignment."
+        },
+        "citation_linking": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CitationLinkingExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Receipt for inline citation linking."
+        },
+        "consolidation": {
+          "default": null,
+          "description": "Per modified reference, the bib[] fields consolidation took from bib_match; omitted when consolidation did not run.",
+          "items": {
+            "$ref": "#/$defs/ConsolidationExport"
+          },
+          "title": "Consolidation",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "paper_classification": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PaperClassificationExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Confidence of metadata.paper_type and metadata.oecd_*."
+        },
+        "ref_seg_fallback_used": {
+          "default": false,
+          "description": "Whether reference segmentation fell back to the CRF model.",
+          "title": "Ref Seg Fallback Used",
+          "type": "boolean"
+        },
+        "reference_yield": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReferenceYieldExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Receipt for reference segmentation and yield."
+        },
+        "references_complete": {
+          "default": true,
+          "description": "False when reference extraction is known to be incomplete.",
+          "title": "References Complete",
+          "type": "boolean"
+        },
+        "section_classification": {
+          "default": null,
+          "description": "One row per section[] row: how its section_type was decided.",
+          "items": {
+            "$ref": "#/$defs/SectionClassificationExport"
+          },
+          "title": "Section Classification",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "text_quality": {
+          "default": null,
+          "description": "Text-layer quality score, 0\u20131; null when not measured.",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Text Quality",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "xref_tier": {
+          "default": null,
+          "description": "How each bibliography, figure and table xref that recorded it was linked.",
+          "items": {
+            "$ref": "#/$defs/XrefTierExport"
+          },
+          "title": "Xref Tier",
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "text_quality",
+        "references_complete",
+        "ref_seg_fallback_used"
+      ],
+      "title": "DiagnosticsExport",
+      "type": "object"
+    },
+    "DoiCandidateExport": {
+      "additionalProperties": false,
+      "description": "One source-visible DOI and where it was read.\n\n``page`` and ``region_index`` name the layout region the DOI was read\nfrom: the ``extraction.regions`` row with the same ``page`` and ``index``.\nThat index is the region's 0-based position among its page's regions after\nOCR post-processing. Post-processing renumbers a page when it drops\nduplicate regions or merges split ones (a formula and its equation number,\na word hyphenated across two blocks), so the index can differ from the\nlayout detector's original slot.\n\nA ``sentence`` candidate names the region that began the sentence's\nparagraph (``text[].paragraph_id``), which ``region_type`` labels. If the\nparser joined following regions into that paragraph, the DOI may be\nprinted in one of those instead.\n\n``region_index`` is null when no layout region on ``page`` is recorded:\nheader and footer furniture, structured metadata, captions, footnotes,\ninput parsed without layout analysis, and a sentence printed on a later\npage than the region that began its paragraph.",
+      "properties": {
+        "marker_kind": {
+          "description": "Label printed before the DOI, e.g. 'article_doi', 'data_doi' or 'structured_doi'.",
+          "title": "Marker Kind",
+          "type": "string"
+        },
+        "normalized": {
+          "description": "The DOI normalized for comparison.",
+          "title": "Normalized",
+          "type": "string"
+        },
+        "page": {
+          "description": "1-based page, when known.",
+          "title": "Page",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "raw": {
+          "description": "The DOI as printed.",
+          "title": "Raw",
+          "type": "string"
+        },
+        "region_index": {
+          "description": "0-based region position on the page; see the model description.",
+          "title": "Region Index",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "region_type": {
+          "description": "Layout class of that region.",
+          "title": "Region Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rejection_reason": {
+          "default": null,
+          "description": "Why the candidate was not selected; null when eligible.",
+          "title": "Rejection Reason",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "repeated_header_footer_count": {
+          "description": "On how many pages the same DOI appears as header or footer furniture.",
+          "title": "Repeated Header Footer Count",
+          "type": "integer"
+        },
+        "section_id": {
+          "description": "section[].section_id, when known.",
+          "title": "Section Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "section_type": {
+          "description": "section_type of that section, when known; 'figure', 'table' or 'footnote' for a caption or footnote row, whose section_id is null.",
+          "title": "Section Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "selection_tier": {
+          "description": "Selection strength: 4 matches the caller's expected DOI, 3 is an explicit self-identification, 2 is front matter or repeated furniture, 1 is uncontested and untyped.",
+          "title": "Selection Tier",
+          "type": "integer"
+        },
+        "semantic_context": {
+          "description": "Surrounding-context class used in selection.",
+          "title": "Semantic Context",
+          "type": "string"
+        },
+        "source_kind": {
+          "description": "Where it was read, e.g. 'sentence', 'text', 'structured_metadata' or 'publication_region'.",
+          "title": "Source Kind",
+          "type": "string"
+        },
+        "text_id": {
+          "description": "text[].text_id of the sentence, when from text.",
+          "title": "Text Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "raw",
+        "normalized",
+        "source_kind",
+        "page",
+        "section_id",
+        "section_type",
+        "region_index",
+        "region_type",
+        "text_id",
+        "marker_kind",
+        "repeated_header_footer_count",
+        "semantic_context",
+        "selection_tier",
+        "rejection_reason"
+      ],
+      "title": "DoiCandidateExport",
+      "type": "object"
+    },
+    "EnrichmentExport": {
+      "additionalProperties": false,
+      "description": "Reference-enrichment completeness \u2014 lets a consumer distinguish a\npartial (timed-out) enrichment from a complete one without scanning\n``extraction.warnings``.",
+      "properties": {
+        "complete": {
+          "description": "False when enrichment stopped before every reference was looked up, e.g. on a timeout.",
+          "title": "Complete",
+          "type": "boolean"
+        },
+        "refs_enriched": {
+          "description": "References with at least one bib_match row.",
+          "title": "Refs Enriched",
+          "type": "integer"
+        },
+        "refs_total": {
+          "description": "References in bib[].",
+          "title": "Refs Total",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "complete",
+        "refs_enriched",
+        "refs_total"
+      ],
+      "title": "EnrichmentExport",
+      "type": "object"
+    },
+    "EqExport": {
+      "additionalProperties": false,
+      "description": "One statistical or mathematical expression found in a sentence,\ne.g. ``t(28) = 2.10``.",
+      "properties": {
+        "comp": {
+          "description": "Comparator, normalized: '<=' is '\u2264', '>=' is '\u2265', '<<' is '\u226a' and '>>' is '\u226b'.",
+          "enum": [
+            "=",
+            "<",
+            ">",
+            "\u2264",
+            "\u2265",
+            "\u2248",
+            "\u2260",
+            "\u226a",
+            "\u226b",
+            "~"
+          ],
+          "title": "Comp",
+          "type": "string"
+        },
+        "df": {
+          "description": "Degrees of freedom printed with the left-hand side, e.g. '28' for t(28); null when none.",
+          "title": "Df",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "end": {
+          "default": null,
+          "description": "Where the printed expression ends (exclusive), in the same units as start.",
+          "minimum": 0,
+          "title": "End",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "eq_id": {
+          "description": "Primary key; 1-based position.",
+          "minimum": 1,
+          "title": "Eq Id",
+          "type": "integer"
+        },
+        "grp_id": {
+          "description": "Group of expressions reported together, e.g. the t, p and d of one test.",
+          "minimum": 1,
+          "title": "Grp Id",
+          "type": "integer"
+        },
+        "lhs": {
+          "description": "Left-hand side, e.g. 't', 'p' or 'F'.",
+          "title": "Lhs",
+          "type": "string"
+        },
+        "rhs": {
+          "description": "Right-hand side, e.g. '2.10' or '.003'.",
+          "title": "Rhs",
+          "type": "string"
+        },
+        "start": {
+          "default": null,
+          "description": "Where the printed expression starts in text[].text of text_id: a 0-based offset in Unicode code points; null when it could not be located.",
+          "minimum": 0,
+          "title": "Start",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "text[].text_id of the sentence containing the expression.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": "integer"
+        },
+        "verbatim": {
+          "default": null,
+          "description": "The expression exactly as printed (text[].text sliced by start and end); null when it could not be located.",
+          "title": "Verbatim",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "eq_id",
+        "text_id",
+        "start",
+        "end",
+        "grp_id",
+        "verbatim",
+        "lhs",
+        "df",
+        "comp",
+        "rhs"
+      ],
+      "title": "EqExport",
+      "type": "object"
+    },
+    "ExpectedIdentityExport": {
+      "additionalProperties": false,
+      "description": "What the caller said the input should be (queue-driven runs).",
+      "properties": {
+        "doi_required": {
+          "default": false,
+          "description": "Whether a missing or mismatched DOI fails the run.",
+          "title": "Doi Required",
+          "type": "boolean"
+        },
+        "expected_doi": {
+          "default": null,
+          "description": "DOI the caller expected.",
+          "title": "Expected Doi",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_doi_sha256": {
+          "default": null,
+          "description": "sha256 of the case-folded expected DOI.",
+          "title": "Expected Doi Sha256",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_title": {
+          "default": null,
+          "description": "Title the caller expected.",
+          "title": "Expected Title",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "queue_record_id": {
+          "description": "Caller's record identifier.",
+          "title": "Queue Record Id",
+          "type": "string"
+        },
+        "source_sha256": {
+          "default": null,
+          "description": "sha256 the caller expected for the input file.",
+          "title": "Source Sha256",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target_block_hint": {
+          "additionalProperties": true,
+          "default": null,
+          "description": "Caller's hint for locating the target article in the file.",
+          "title": "Target Block Hint",
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "queue_record_id",
+        "expected_doi",
+        "expected_doi_sha256",
+        "expected_title",
+        "target_block_hint",
+        "source_sha256",
+        "doi_required"
+      ],
+      "title": "ExpectedIdentityExport",
+      "type": "object"
+    },
+    "ExtractionExport": {
+      "additionalProperties": false,
+      "description": "How this output was produced \u2014 everything that is not the paper itself.\n\nBuilt by ``ExportStage._build_extraction`` from the pipeline context; the\nexport function folds in the receipts that exist only at serialization\ntime, and the output validation gate adds ``validation``. Always present:\na Paper exported outside the pipeline gets a minimal block (producer,\nexport time, the diagnostics the Paper carries, validation).",
+      "properties": {
+        "completed_at": {
+          "description": "When the producer finished extracting the content, as a UTC ISO 8601 timestamp (2026-01-15T09:30:00Z); for bibr, when it wrote the export. A converter keeps the producer's time when it has it, else writes its own.",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$",
+          "title": "Completed At",
+          "type": "string"
+        },
+        "converter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProducerExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The software that wrote another extractor's output into this format, or rewrote an export (e.g. 'metacheck'); null when the producer wrote this file itself."
+        },
+        "diagnostics": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DiagnosticsExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outcome flags and stage receipts."
+        },
+        "enrichment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EnrichmentExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Enrichment completeness; omitted when enrichment did not run."
+        },
+        "float_parts": {
+          "default": null,
+          "description": "Page and bounding box of every printed piece of the figures and tables; omitted when no piece has a location (natively parsed inputs).",
+          "items": {
+            "$ref": "#/$defs/FloatPartExport"
+          },
+          "title": "Float Parts",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "identity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IdentityExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "DOI identity expectations and receipt."
+        },
+        "llm": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LlmEngineExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Core extraction LLM; null when the run used none."
+        },
+        "ocr": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OcrEngineExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "OCR engine; null when the run used none."
+        },
+        "pages": {
+          "default": null,
+          "description": "Size of every page with layout analysis: the frame of the bounding boxes in extraction. A box is [x0, y0, x1, y1] in PDF points (1/72 inch) on the page as displayed (after its /Rotate, within its CropBox), measured from the top-left corner with y increasing downward. Omitted for inputs without pages (DOCX, XML, HTML, ePub).",
+          "items": {
+            "$ref": "#/$defs/PageExport"
+          },
+          "title": "Pages",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "producer": {
+          "$ref": "#/$defs/ProducerExport",
+          "description": "The software that extracted the content: 'bibr', or another extractor (e.g. 'grobid') whose output a converter wrote into this format."
+        },
+        "qualification": {
+          "additionalProperties": true,
+          "default": null,
+          "description": "Deployment-qualification provenance read by the external qualification runner: identity SHAs, per-task protocol hashes, native-validity and fallback outcome, request counts. Hashes and counts only, never document text. Omitted when no LLM task ran or usage tracking is off.",
+          "title": "Qualification",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "regions": {
+          "default": null,
+          "description": "Per-region layout debug payload; opt-in (include_regions).",
+          "items": {
+            "$ref": "#/$defs/RegionExport"
+          },
+          "title": "Regions",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractionSettingsExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Resolved per-run settings; omitted when the export was made outside the pipeline."
+        },
+        "text_regions": {
+          "default": null,
+          "description": "Per-sentence layout features, one row per text[] row that has them; opt-in (include_region_meta).",
+          "items": {
+            "$ref": "#/$defs/TextRegionExport"
+          },
+          "title": "Text Regions",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "timings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimingsExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Wall-clock timings; omitted when untimed."
+        },
+        "trace": {
+          "default": null,
+          "description": "Captured LLM calls; opt-in (LLM_CAPTURE_TRACE).",
+          "items": {
+            "$ref": "#/$defs/LlmTraceExport"
+          },
+          "title": "Trace",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "usage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UsageExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "LLM token usage; omitted when usage tracking is off."
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidationExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Output validation gate result: error/warning counts, promotion disposition and the issue list. Omitted when the gate was skipped."
+        },
+        "warnings": {
+          "description": "Non-fatal processing warnings, each a stable code and a message.",
+          "items": {
+            "$ref": "#/$defs/WarningExport"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "producer",
+        "converter",
+        "completed_at",
+        "ocr",
+        "llm",
+        "warnings"
+      ],
+      "title": "ExtractionExport",
+      "type": "object"
+    },
+    "ExtractionSettingsExport": {
+      "additionalProperties": false,
+      "description": "Per-run resolutions of the reference/enrichment knobs.",
+      "properties": {
+        "consolidate": {
+          "description": "Consolidation mode: 'off', 'fill' or 'replace'.",
+          "title": "Consolidate",
+          "type": "string"
+        },
+        "crossref_enrich": {
+          "description": "Whether Crossref enrichment was enabled.",
+          "title": "Crossref Enrich",
+          "type": "boolean"
+        },
+        "ref_parse": {
+          "description": "Reference parsing strategy used.",
+          "title": "Ref Parse",
+          "type": "string"
+        },
+        "ref_seg": {
+          "description": "Reference segmentation strategy used.",
+          "title": "Ref Seg",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref_seg",
+        "ref_parse",
+        "crossref_enrich",
+        "consolidate"
+      ],
+      "title": "ExtractionSettingsExport",
+      "type": "object"
+    },
+    "FigureExport": {
+      "additionalProperties": false,
+      "description": "One figure.",
+      "properties": {
+        "caption": {
+          "default": null,
+          "description": "Caption as printed, starting with its label when one is printed ('Figure 2. Mean ratings\u2026').",
+          "title": "Caption",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "figure_id": {
+          "description": "Primary key; 1-based position in document order.",
+          "minimum": 1,
+          "title": "Figure Id",
+          "type": "integer"
+        },
+        "image": {
+          "default": null,
+          "description": "The whole figure as a data URI naming its media type (data:image/jpeg;base64,...); a figure detected as several panel crops is composited from them, with white between panels. Null unless images are requested.",
+          "pattern": "^data:[a-z]+/[a-z0-9.+-]+;base64,",
+          "title": "Image",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "default": null,
+          "description": "The printed label without the word, as printed with whitespace removed: '3', '3.1', 'S2', 'A1', 'IV'; a 'Supplementary Figure 4' caption gives 'S4'. In-text references resolve by it. Not unique: the unmerged pieces of a figure split across pages repeat it ('Figure 3. Cont.'), and references target the piece not marked as continued. Null when none was printed or detected.",
+          "title": "Label",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page_number": {
+          "description": "1-based page the figure starts on.",
+          "minimum": 1,
+          "title": "Page Number",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "section_id": {
+          "default": null,
+          "description": "section[].section_id of the section the figure is printed in (for PDF, the section being read where it appears); null when it is printed before the first section or its section is not known.",
+          "minimum": 1,
+          "title": "Section Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "text_id": {
+          "default": null,
+          "description": "text[].text_id of the caption's row; null when no caption was found.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "figure_id",
+        "label",
+        "section_id",
+        "text_id",
+        "image",
+        "caption",
+        "page_number"
+      ],
+      "title": "FigureExport",
+      "type": "object"
+    },
+    "FloatPartExport": {
+      "additionalProperties": false,
+      "description": "Where one physical piece of a figure or table was printed: a panel crop,\nor one page of a table continued across pages.",
+      "properties": {
+        "bbox": {
+          "description": "Bounding box [x0, y0, x1, y1] in PDF points from the top-left corner of the displayed page (see extraction.pages).",
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Bbox",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "object_id": {
+          "description": "figure[].figure_id or table[].table_id, by object_type.",
+          "minimum": 1,
+          "title": "Object Id",
+          "type": "integer"
+        },
+        "object_type": {
+          "description": "'figure' or 'table'.",
+          "enum": [
+            "figure",
+            "table"
+          ],
+          "title": "Object Type",
+          "type": "string"
+        },
+        "page_number": {
+          "description": "1-based page the piece is printed on.",
+          "minimum": 1,
+          "title": "Page Number",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "part_index": {
+          "description": "1-based position of the piece within its object.",
+          "minimum": 1,
+          "title": "Part Index",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "object_type",
+        "object_id",
+        "part_index",
+        "page_number",
+        "bbox"
+      ],
+      "title": "FloatPartExport",
+      "type": "object"
+    },
+    "FootnoteExport": {
+      "additionalProperties": false,
+      "description": "One footnote or endnote. Its text is a row of ``text[]``, after the body;\nthe row may start with the printed mark, which ``label`` holds on its own.",
+      "properties": {
+        "footnote_id": {
+          "description": "Primary key; 1-based position in document order.",
+          "minimum": 1,
+          "title": "Footnote Id",
+          "type": "integer"
+        },
+        "label": {
+          "description": "The marker the note is printed with, e.g. '1', '*' or '\u2020'; null when none is printed or detected.",
+          "title": "Label",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "text[].text_id of the note's text row.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "footnote_id",
+        "label",
+        "text_id"
+      ],
+      "title": "FootnoteExport",
+      "type": "object"
+    },
+    "FundingExport": {
+      "additionalProperties": false,
+      "description": "One funder parsed from the funding statement.",
+      "properties": {
+        "award_ids": {
+          "default": [],
+          "description": "Grant or award numbers attributed to this funder, as printed.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Award Ids",
+          "type": "array"
+        },
+        "funder": {
+          "description": "Funder name, as printed.",
+          "title": "Funder",
+          "type": "string"
+        },
+        "funding_id": {
+          "description": "Primary key; 1-based position.",
+          "minimum": 1,
+          "title": "Funding Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "funding_id",
+        "funder",
+        "award_ids"
+      ],
+      "title": "FundingExport",
+      "type": "object"
+    },
+    "FundingMatchExport": {
+      "additionalProperties": false,
+      "description": "The ROR organization matched to one printed funder name.\n\nOnly ROR's own recommended match (``chosen``) is kept; a funder without\none has no row.",
+      "properties": {
+        "country_code": {
+          "default": null,
+          "description": "ISO 3166-1 alpha-2 country code of the organization.",
+          "pattern": "^[A-Z]{2}$",
+          "title": "Country Code",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funder_doi": {
+          "default": null,
+          "description": "The organization's Open Funder Registry DOI, bare and lowercase (10.13039/...), when ROR records one.",
+          "pattern": "^10\\.[0-9]{4,9}/[^\\sA-Z]+$",
+          "title": "Funder Doi",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funding_id": {
+          "description": "funding[].funding_id this record matches.",
+          "minimum": 1,
+          "title": "Funding Id",
+          "type": "integer"
+        },
+        "name": {
+          "default": null,
+          "description": "The organization's display name at ROR.",
+          "title": "Name",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "score": {
+          "default": null,
+          "description": "The service's match score, 0\u20131 (for ranking, not selection).",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Score",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "service": {
+          "description": "External service that returned the record.",
+          "enum": [
+            "crossref",
+            "openalex",
+            "datacite",
+            "doi.org",
+            "openlibrary",
+            "ror",
+            "manual",
+            "other"
+          ],
+          "title": "Service",
+          "type": "string"
+        },
+        "service_id": {
+          "description": "The organization's ROR ID as a URI (https://ror.org/...).",
+          "pattern": "^https://ror\\.org/0[a-z0-9]{6}[0-9]{2}$",
+          "title": "Service Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "funding_id",
+        "service",
+        "service_id",
+        "score",
+        "name",
+        "country_code",
+        "funder_doi"
+      ],
+      "title": "FundingMatchExport",
+      "type": "object"
+    },
+    "IdentityExport": {
+      "additionalProperties": false,
+      "description": "Caller-supplied expectations and the DOI-selection receipt.",
+      "properties": {
+        "expected": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpectedIdentityExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What the caller expected; omitted when nothing was supplied."
+        },
+        "receipt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IdentityReceiptExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The DOI-selection receipt; omitted when selection did not run."
+        }
+      },
+      "title": "IdentityExport",
+      "type": "object"
+    },
+    "IdentityReceiptExport": {
+      "additionalProperties": false,
+      "description": "Which DOI was chosen as the paper's own, and from which candidates.",
+      "properties": {
+        "candidates": {
+          "description": "Every DOI candidate considered.",
+          "items": {
+            "$ref": "#/$defs/DoiCandidateExport"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "issue_codes": {
+          "description": "Identity issue codes raised during selection.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Issue Codes",
+          "type": "array"
+        },
+        "selected": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DoiCandidateExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The chosen candidate; null when none qualified."
+        }
+      },
+      "required": [
+        "selected",
+        "candidates",
+        "issue_codes"
+      ],
+      "title": "IdentityReceiptExport",
+      "type": "object"
+    },
+    "LlmEngineExport": {
+      "additionalProperties": false,
+      "description": "The CORE extraction LLM. ``null`` when the run deliberately had none.\n\n``usage.breakdown`` is authoritative for every engine that actually ran;\nwhen the two disagree (multi-engine run), breakdown wins.",
+      "properties": {
+        "backend": {
+          "default": null,
+          "description": "Structured-output backend.",
+          "title": "Backend",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "default": null,
+          "description": "Model identifier.",
+          "title": "Model",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider": {
+          "default": null,
+          "description": "LLM provider.",
+          "title": "Provider",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "backend"
+      ],
+      "title": "LlmEngineExport",
+      "type": "object"
+    },
+    "LlmTraceExport": {
+      "additionalProperties": false,
+      "description": "One LLM call's captured prompt and raw response.\n\nCapture is opt-in via ``LLM_CAPTURE_TRACE`` (default off). Traces are joined\nto the extraction by paper ID and to usage breakdowns by label, provider,\nand model. Credential-shaped tokens are scrubbed before export; document\ntext is still present, so callers control where trace-bearing exports go.\n\nOnly the Instructor backend currently captures traces. The NuExtract-native\nbackend logs a warning when tracing is requested and emits no trace rows.\nOnly successful physical attempts are captured: validation re-asks inside\nInstructor and transient failures in the outer retry loop are absent.\nConsequently ``attempt`` is currently always 1; failure fields do not\nconstitute a complete retry history.",
+      "properties": {
+        "attempt": {
+          "default": 1,
+          "description": "Attempt number; currently always 1.",
+          "title": "Attempt",
+          "type": "integer"
+        },
+        "error": {
+          "default": null,
+          "description": "Error message of a failed call.",
+          "title": "Error",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "finish_reason": {
+          "default": null,
+          "description": "Provider finish reason.",
+          "title": "Finish Reason",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "description": "Call site.",
+          "title": "Label",
+          "type": "string"
+        },
+        "messages": {
+          "description": "Chat messages sent.",
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Messages",
+          "type": "array"
+        },
+        "model": {
+          "default": null,
+          "description": "Model identifier.",
+          "title": "Model",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "params": {
+          "additionalProperties": true,
+          "description": "Resolved sampling parameters, provider-shaped.",
+          "title": "Params",
+          "type": "object"
+        },
+        "parsed_ok": {
+          "description": "Whether the output parsed into the expected structure.",
+          "title": "Parsed Ok",
+          "type": "boolean"
+        },
+        "provider": {
+          "default": null,
+          "description": "LLM provider.",
+          "title": "Provider",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "raw_completion": {
+          "default": null,
+          "description": "Raw model output.",
+          "title": "Raw Completion",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "label",
+        "provider",
+        "model",
+        "messages",
+        "raw_completion",
+        "parsed_ok",
+        "finish_reason",
+        "params",
+        "attempt",
+        "error"
+      ],
+      "title": "LlmTraceExport",
+      "type": "object"
+    },
+    "MatchFunderExport": {
+      "additionalProperties": false,
+      "description": "A funder named on an external-service record.",
+      "properties": {
+        "award_ids": {
+          "description": "Award numbers, as recorded.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Award Ids",
+          "type": "array"
+        },
+        "funder_doi": {
+          "default": null,
+          "description": "Open Funder Registry DOI, bare and lowercase (10.13039/...), when recorded.",
+          "pattern": "^10\\.[0-9]{4,9}/[^\\sA-Z]+$",
+          "title": "Funder Doi",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "default": null,
+          "description": "Funder name, as the service gives it.",
+          "title": "Name",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ror": {
+          "default": null,
+          "description": "ROR ID as a URI (https://ror.org/...), when recorded.",
+          "pattern": "^https://ror\\.org/0[a-z0-9]{6}[0-9]{2}$",
+          "title": "Ror",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "funder_doi",
+        "ror",
+        "award_ids"
+      ],
+      "title": "MatchFunderExport",
+      "type": "object"
+    },
+    "MatchOrganizationExport": {
+      "additionalProperties": false,
+      "description": "An organization named on an external-service record.",
+      "properties": {
+        "name": {
+          "default": null,
+          "description": "Organization name, as the service gives it.",
+          "title": "Name",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ror": {
+          "default": null,
+          "description": "ROR ID as a URI (https://ror.org/...), when the record has one.",
+          "pattern": "^https://ror\\.org/0[a-z0-9]{6}[0-9]{2}$",
+          "title": "Ror",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "ror"
+      ],
+      "title": "MatchOrganizationExport",
+      "type": "object"
+    },
+    "MetadataExport": {
+      "additionalProperties": false,
+      "description": "Paper-level metadata, as printed in the paper.\n\nScalars only (``keywords`` is the one list), so R consumers can call\n``as.data.frame(metadata)`` (metacheck's ``.read_bibr``). How the values\nwere produced lives under ``extraction``; the input file under ``source``.",
+      "properties": {
+        "abstract": {
+          "default": null,
+          "description": "Abstract text; null when the paper has none or it was not found.",
+          "title": "Abstract",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "arxiv": {
+          "default": null,
+          "description": "arXiv identifier (e.g. 2101.12345), declared by the input, taken from an arXiv DOI, or read from the arXiv stamp on page 1.",
+          "title": "Arxiv",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "coi_statement": {
+          "default": null,
+          "description": "Conflict-of-interest statement text, as printed.",
+          "title": "Coi Statement",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "data_availability": {
+          "default": null,
+          "description": "Data-availability statement text, as printed.",
+          "title": "Data Availability",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "doi": {
+          "description": "The paper's own DOI, bare (10.xxxx/..., no resolver prefix) and lowercase; null when none was found.",
+          "pattern": "^10\\.[0-9]{4,9}/[^\\sA-Z]+$",
+          "title": "Doi",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ethics_statement": {
+          "default": null,
+          "description": "Ethics approval statement text, as printed.",
+          "title": "Ethics Statement",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "first_page": {
+          "default": null,
+          "description": "The paper's own first page or article number, as printed.",
+          "title": "First Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funding_statement": {
+          "default": null,
+          "description": "Funding statement text from the paper's funding section. The funders and award numbers parsed from it are in funding[].",
+          "title": "Funding Statement",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "issn": {
+          "default": null,
+          "description": "The journal ISSN, as printed.",
+          "title": "Issn",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "issue": {
+          "default": null,
+          "description": "The paper's own issue, as printed.",
+          "title": "Issue",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "journal": {
+          "default": null,
+          "description": "Journal or venue name from the paper's own front matter.",
+          "title": "Journal",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "keywords": {
+          "description": "Author keywords in printed order; empty when none were found.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Keywords",
+          "type": "array"
+        },
+        "language": {
+          "default": null,
+          "description": "Language tag the input declares (BCP 47, e.g. 'en'); null for PDFs.",
+          "title": "Language",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_page": {
+          "default": null,
+          "description": "The paper's own last page, as printed.",
+          "title": "Last Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license": {
+          "default": null,
+          "description": "License statement or name, as printed.",
+          "title": "License",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_spdx": {
+          "default": null,
+          "description": "SPDX identifier of the license (e.g. 'CC-BY-4.0'), for Creative Commons licenses with a known version and CC0.",
+          "title": "License Spdx",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_url": {
+          "default": null,
+          "description": "License URL: the one printed in license, else the canonical Creative Commons URL when the license is identified.",
+          "title": "License Url",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "oecd_l1": {
+          "default": null,
+          "description": "OECD Fields of Science domain; null when not classified.",
+          "enum": [
+            "Natural Sciences",
+            "Engineering and Technology",
+            "Medical and Health Sciences",
+            "Agricultural and Veterinary Sciences",
+            "Social Sciences",
+            "Humanities and the Arts",
+            null
+          ],
+          "title": "Oecd L1",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "oecd_l2": {
+          "default": null,
+          "description": "OECD Fields of Science subdomain, within oecd_l1; null when not classified.",
+          "enum": [
+            "Mathematics",
+            "Computer and Information Sciences",
+            "Physical Sciences",
+            "Chemical Sciences",
+            "Earth and Related Environmental Sciences",
+            "Biological Sciences",
+            "Civil Engineering",
+            "Electrical Engineering, Electronic Engineering, Information Engineering",
+            "Mechanical Engineering",
+            "Chemical Engineering",
+            "Materials Engineering",
+            "Medical Engineering",
+            "Environmental Engineering",
+            "Environmental Biotechnology",
+            "Industrial Biotechnology",
+            "Nano-technology",
+            "Basic Medicine",
+            "Clinical Medicine",
+            "Health Sciences",
+            "Medical Biotechnology",
+            "Agriculture, Forestry, and Fisheries",
+            "Animal and Dairy Science",
+            "Veterinary Science",
+            "Agricultural Biotechnology",
+            "Psychology and Cognitive Sciences",
+            "Economics and Business",
+            "Education",
+            "Sociology",
+            "Law",
+            "Political Science",
+            "Social and Economic Geography",
+            "Media and Communications",
+            "History and Archaeology",
+            "Languages and Literature",
+            "Philosophy, Ethics and Religion",
+            "Arts (arts, history of arts, performing arts, music)",
+            null
+          ],
+          "title": "Oecd L2",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paper_type": {
+          "default": null,
+          "description": "Paper type from bibr's classifier; null when not classified. Its confidence is extraction.diagnostics.paper_classification.paper_type_confidence.",
+          "enum": [
+            "empirical",
+            "review",
+            "meta_analysis",
+            "case_study",
+            "commentary",
+            "corrigendum",
+            "erratum",
+            "retraction",
+            "unknown",
+            null
+          ],
+          "title": "Paper Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pmcid": {
+          "default": null,
+          "description": "PubMed Central ID (PMC\u2026), when the input declares one.",
+          "title": "Pmcid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pmid": {
+          "default": null,
+          "description": "PubMed ID, when the input declares one.",
+          "title": "Pmid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published": {
+          "default": null,
+          "description": "Publication date as printed (free text, not normalized).",
+          "title": "Published",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published_date": {
+          "default": null,
+          "description": "The publication date in published as ISO 8601: YYYY, YYYY-MM or YYYY-MM-DD, as precise as printed; null when absent or ambiguous.",
+          "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$",
+          "title": "Published Date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publisher": {
+          "default": null,
+          "description": "The publisher, as printed.",
+          "title": "Publisher",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "description": "Paper title; null when none was found.",
+          "title": "Title",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "volume": {
+          "default": null,
+          "description": "The paper's own volume, as printed.",
+          "title": "Volume",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "abstract",
+        "keywords",
+        "doi",
+        "pmid",
+        "pmcid",
+        "arxiv",
+        "language",
+        "paper_type",
+        "oecd_l1",
+        "oecd_l2",
+        "journal",
+        "volume",
+        "issue",
+        "first_page",
+        "last_page",
+        "issn",
+        "publisher",
+        "published",
+        "published_date",
+        "license",
+        "license_url",
+        "license_spdx",
+        "funding_statement",
+        "coi_statement",
+        "ethics_statement",
+        "data_availability"
+      ],
+      "title": "MetadataExport",
+      "type": "object"
+    },
+    "MetadataMatchExport": {
+      "additionalProperties": false,
+      "description": "One external-service record matched to the paper itself (self-DOI lookup).",
+      "properties": {
+        "author": {
+          "default": null,
+          "description": "Structured authors of the matched record; null when none.",
+          "items": {
+            "$ref": "#/$defs/PersonNameExport"
+          },
+          "title": "Author",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "bib_type": {
+          "default": null,
+          "description": "Work type at the service.",
+          "enum": [
+            "journal_article",
+            "book",
+            "book_chapter",
+            "dataset",
+            "software",
+            "preprint",
+            "conference_paper",
+            "report",
+            "thesis",
+            "other",
+            null
+          ],
+          "title": "Bib Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "container": {
+          "default": null,
+          "description": "Journal, book or proceedings.",
+          "title": "Container",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "doi": {
+          "default": null,
+          "description": "DOI of the matched record, lowercase.",
+          "pattern": "^10\\.[0-9]{4,9}/[^\\sA-Z]+$",
+          "title": "Doi",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "edition": {
+          "default": null,
+          "description": "Edition.",
+          "title": "Edition",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "editor": {
+          "default": null,
+          "description": "Structured editors of the matched record; null when none.",
+          "items": {
+            "$ref": "#/$defs/PersonNameExport"
+          },
+          "title": "Editor",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "first_page": {
+          "default": null,
+          "description": "First page or article number.",
+          "title": "First Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "funder": {
+          "default": null,
+          "description": "Funders and awards the record lists.",
+          "items": {
+            "$ref": "#/$defs/MatchFunderExport"
+          },
+          "title": "Funder",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "issue": {
+          "default": null,
+          "description": "Issue.",
+          "title": "Issue",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_page": {
+          "default": null,
+          "description": "Last page.",
+          "title": "Last Page",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_spdx": {
+          "default": null,
+          "description": "SPDX identifier of license_url, for Creative Commons licenses and CC0.",
+          "title": "License Spdx",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_url": {
+          "default": null,
+          "description": "License URL of the version of record (else of an unspecified version); text-mining licenses are skipped.",
+          "title": "License Url",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published_date": {
+          "default": null,
+          "description": "Publication date as ISO 8601 (YYYY-MM or YYYY-MM-DD, as precise as the record); null when the record gives only a year (see year).",
+          "pattern": "^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$",
+          "title": "Published Date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publisher": {
+          "default": null,
+          "description": "Publisher.",
+          "title": "Publisher",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "score": {
+          "default": null,
+          "description": "Match score, 0\u20131: 1 for a DOI lookup; a bibliographic search hit scores its title similarity after author and year checks.",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Score",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "service": {
+          "description": "External service that returned the record.",
+          "enum": [
+            "crossref",
+            "openalex",
+            "datacite",
+            "doi.org",
+            "openlibrary",
+            "ror",
+            "manual",
+            "other"
+          ],
+          "title": "Service",
+          "type": "string"
+        },
+        "service_id": {
+          "default": null,
+          "description": "The record's identifier at that service.",
+          "title": "Service Id",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "default": null,
+          "description": "Title of the matched record.",
+          "title": "Title",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "default": null,
+          "description": "URL of the record.",
+          "title": "Url",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "default": null,
+          "description": "Version.",
+          "title": "Version",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "volume": {
+          "default": null,
+          "description": "Volume.",
+          "title": "Volume",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "year": {
+          "default": null,
+          "description": "Publication year.",
+          "title": "Year",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "service",
+        "service_id",
+        "score",
+        "bib_type",
+        "doi",
+        "title",
+        "author",
+        "editor",
+        "publisher",
+        "year",
+        "published_date",
+        "container",
+        "volume",
+        "issue",
+        "first_page",
+        "last_page",
+        "edition",
+        "version",
+        "url",
+        "license_url",
+        "license_spdx",
+        "funder"
+      ],
+      "title": "MetadataMatchExport",
+      "type": "object"
+    },
+    "OcrEngineExport": {
+      "additionalProperties": false,
+      "description": "Which OCR engine produced this output. ``null`` on the native-parse path.",
+      "properties": {
+        "backend": {
+          "default": null,
+          "description": "OCR backend.",
+          "title": "Backend",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "default": null,
+          "description": "OCR model identifier.",
+          "title": "Model",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profile": {
+          "default": null,
+          "description": "OCR profile.",
+          "enum": [
+            "paddle",
+            "glm",
+            null
+          ],
+          "title": "Profile",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "backend",
+        "model",
+        "profile"
+      ],
+      "title": "OcrEngineExport",
+      "type": "object"
+    },
+    "PageExport": {
+      "additionalProperties": false,
+      "description": "Size of one page of the input document, the frame of every bounding box.",
+      "properties": {
+        "height": {
+          "description": "Height of the page as displayed, in PDF points.",
+          "title": "Height",
+          "type": "number"
+        },
+        "page_number": {
+          "description": "1-based page number.",
+          "minimum": 1,
+          "title": "Page Number",
+          "type": "integer"
+        },
+        "width": {
+          "description": "Width of the page as displayed, in PDF points (1/72 inch).",
+          "title": "Width",
+          "type": "number"
+        }
+      },
+      "required": [
+        "page_number",
+        "width",
+        "height"
+      ],
+      "title": "PageExport",
+      "type": "object"
+    },
+    "PaperClassificationExport": {
+      "additionalProperties": false,
+      "description": "Confidence of the paper-level classifications in ``metadata``.",
+      "properties": {
+        "oecd_confidence": {
+          "default": null,
+          "description": "Confidence of metadata.oecd_l1 and oecd_l2, 0\u20131.",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Oecd Confidence",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "paper_type_confidence": {
+          "default": null,
+          "description": "Confidence of metadata.paper_type, 0\u20131.",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Paper Type Confidence",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "paper_type_confidence",
+        "oecd_confidence"
+      ],
+      "title": "PaperClassificationExport",
+      "type": "object"
+    },
+    "PersonNameExport": {
+      "additionalProperties": false,
+      "description": "One structured person name from an external service.\n\n``literal`` holds corporate/unsplittable names whole; when it is set,\n``family``/``given`` are absent. Absent parts are omitted.",
+      "properties": {
+        "affiliation": {
+          "default": null,
+          "description": "The person's affiliations on this record, as the service lists them.",
+          "items": {
+            "$ref": "#/$defs/MatchOrganizationExport"
+          },
+          "title": "Affiliation",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "family": {
+          "default": null,
+          "description": "Family name.",
+          "title": "Family",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "given": {
+          "default": null,
+          "description": "Given name(s) or initials.",
+          "title": "Given",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "literal": {
+          "default": null,
+          "description": "Whole name of an organization or an unsplittable name.",
+          "title": "Literal",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orcid": {
+          "default": null,
+          "description": "ORCID iD as a canonical URI (https://orcid.org/0000-0000-0000-0000), as the service records it.",
+          "pattern": "^https://orcid\\.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$",
+          "title": "Orcid",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "default": null,
+          "description": "Name suffix such as 'Jr.'.",
+          "title": "Suffix",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "title": "PersonNameExport",
+      "type": "object"
+    },
+    "ProducerExport": {
+      "additionalProperties": false,
+      "description": "A piece of software: the extractor of the content\n(``extraction.producer``) or the converter that wrote it into this format\n(``extraction.converter``).",
+      "properties": {
+        "build_sha": {
+          "default": null,
+          "description": "Commit SHA of the software's build, when known.",
+          "title": "Build Sha",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Name of the software, e.g. 'bibr', 'grobid' or 'metacheck'.",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "description": "Version of the software (not the schema version).",
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "build_sha"
+      ],
+      "title": "ProducerExport",
+      "type": "object"
+    },
+    "ReferenceSegmentationAttemptExport": {
+      "additionalProperties": false,
+      "description": "One attempt at splitting the reference section into entries.",
+      "properties": {
+        "credible_starts": {
+          "description": "Entries that start like a reference.",
+          "title": "Credible Starts",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "reason_flags": {
+          "description": "Why the attempt was or was not selected.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Reason Flags",
+          "type": "array"
+        },
+        "selected": {
+          "description": "Whether this attempt was used.",
+          "title": "Selected",
+          "type": "boolean"
+        },
+        "spans": {
+          "description": "Character spans [start, end] of the entries found.",
+          "items": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "strategy": {
+          "description": "Segmentation strategy tried.",
+          "title": "Strategy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "strategy",
+        "spans",
+        "credible_starts",
+        "selected",
+        "reason_flags"
+      ],
+      "title": "ReferenceSegmentationAttemptExport",
+      "type": "object"
+    },
+    "ReferenceYieldExport": {
+      "additionalProperties": false,
+      "description": "How many references were found, and how the reference section was split.",
+      "properties": {
+        "attempts": {
+          "description": "Every segmentation attempt.",
+          "items": {
+            "$ref": "#/$defs/ReferenceSegmentationAttemptExport"
+          },
+          "title": "Attempts",
+          "type": "array"
+        },
+        "credible_source_starts": {
+          "description": "Entry starts visible in the source reference section.",
+          "title": "Credible Source Starts",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "duplicate_rate": {
+          "description": "Share of entries that duplicate another.",
+          "title": "Duplicate Rate",
+          "type": "number"
+        },
+        "parsed_count": {
+          "description": "Entries parsed.",
+          "title": "Parsed Count",
+          "type": "integer"
+        },
+        "reason_flags": {
+          "description": "Yield warnings, e.g. suspected under-extraction.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Reason Flags",
+          "type": "array"
+        },
+        "selected_spans": {
+          "description": "Spans of the selected attempt.",
+          "items": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "title": "Selected Spans",
+          "type": "array"
+        },
+        "source_character_coverage": {
+          "description": "Share of the reference section's characters covered by entries.",
+          "title": "Source Character Coverage",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "valid_count": {
+          "description": "Parsed entries that passed validity checks.",
+          "title": "Valid Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "credible_source_starts",
+        "attempts",
+        "selected_spans",
+        "source_character_coverage",
+        "parsed_count",
+        "valid_count",
+        "duplicate_rate",
+        "reason_flags"
+      ],
+      "title": "ReferenceYieldExport",
+      "type": "object"
+    },
+    "RegionExport": {
+      "additionalProperties": false,
+      "description": "One layout region of a page (opt-in ``include_regions`` debug payload).",
+      "properties": {
+        "bbox": {
+          "description": "Bounding box [x0, y0, x1, y1] in PDF points from the top-left corner of the displayed page (see extraction.pages).",
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Bbox",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "char_density": {
+          "default": null,
+          "description": "Characters per square point of bounding-box area.",
+          "title": "Char Density",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "content": {
+          "default": null,
+          "description": "Region text after post-processing.",
+          "title": "Content",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "estimated_line_height": {
+          "default": null,
+          "description": "Bounding-box height divided by the region's line count, in points.",
+          "title": "Estimated Line Height",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "font_bold": {
+          "default": null,
+          "description": "Whether the dominant font is bold.",
+          "title": "Font Bold",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "font_size": {
+          "default": null,
+          "description": "Dominant font size, in points.",
+          "title": "Font Size",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "font_weight": {
+          "default": null,
+          "description": "Dominant font weight.",
+          "title": "Font Weight",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "index": {
+          "description": "0-based position of the region among its page's regions after OCR post-processing.",
+          "title": "Index",
+          "type": "integer"
+        },
+        "label": {
+          "description": "Layout class, e.g. 'text', 'title', 'table'.",
+          "title": "Label",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page": {
+          "description": "1-based page number.",
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "raw_ocr_content": {
+          "default": null,
+          "description": "Region text as OCR returned it.",
+          "title": "Raw Ocr Content",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "section_id": {
+          "default": null,
+          "description": "section[].section_id the region was assigned to.",
+          "title": "Section Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "page",
+        "index",
+        "label",
+        "bbox",
+        "font_size",
+        "font_weight",
+        "font_bold",
+        "section_id",
+        "content",
+        "raw_ocr_content",
+        "char_density",
+        "estimated_line_height"
+      ],
+      "title": "RegionExport",
+      "type": "object"
+    },
+    "SectionClassificationExport": {
+      "additionalProperties": false,
+      "description": "How one section's ``section_type`` was decided.",
+      "properties": {
+        "score": {
+          "description": "Classifier confidence, 0\u20131; null when not scored.",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Score",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "section_id": {
+          "description": "section[].section_id.",
+          "minimum": 1,
+          "title": "Section Id",
+          "type": "integer"
+        },
+        "source": {
+          "description": "Which tier decided the type: 'exact_alias', 'substring_alias' or 'alias_prior' (heading lookup), 'model' (trained classifier), 'llm', 'parent_context', 'title', 'implicit', 'positional', 'appendix_repair' or 'imrad_dedup'; null when unclassified.",
+          "title": "Source",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "section_id",
+        "score",
+        "source"
+      ],
+      "title": "SectionClassificationExport",
+      "type": "object"
+    },
+    "SectionExport": {
+      "additionalProperties": false,
+      "description": "One section of the paper, with its place in the section tree.\n\nThe sections the paper has: its printed headings, the title when it is\nprinted as one, and sections inferred where the paper prints no heading,\nsuch as an unheaded abstract. Captions and footnotes are not sections;\n``figure[]``, ``table[]`` and ``footnote[]`` point at their text rows.",
+      "properties": {
+        "header": {
+          "description": "Heading text as printed; null when the section has no heading.",
+          "title": "Header",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "level": {
+          "description": "Heading depth: 1 for top-level sections, 2 for their subsections, and so on; 1 when the depth is not known.",
+          "minimum": 1,
+          "title": "Level",
+          "type": "integer"
+        },
+        "parent_section_id": {
+          "description": "section_id of the parent section; null for top-level sections.",
+          "minimum": 1,
+          "title": "Parent Section Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "section_id": {
+          "description": "Primary key; 1-based position in document order.",
+          "minimum": 1,
+          "title": "Section Id",
+          "type": "integer"
+        },
+        "section_type": {
+          "description": "Section role (IMRaD plus front and back matter). 'figure', 'table' and 'footnote' mark a printed heading over floats or notes, such as 'Footnotes'; the notes themselves are footnote[] rows, not this section's text. How the role was decided is in extraction.diagnostics.section_classification.",
+          "enum": [
+            "title",
+            "abstract",
+            "intro",
+            "method",
+            "results",
+            "discussion",
+            "references",
+            "acknowledgment",
+            "funding",
+            "keywords",
+            "endnote",
+            "appendix",
+            "data_availability",
+            "author_contributions",
+            "coi",
+            "ethics",
+            "footnote",
+            "table",
+            "figure",
+            "unknown",
+            null
+          ],
+          "title": "Section Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "section_id",
+        "header",
+        "level",
+        "parent_section_id",
+        "section_type"
+      ],
+      "title": "SectionExport",
+      "type": "object"
+    },
+    "SourceExport": {
+      "additionalProperties": false,
+      "description": "Identity of the input file \u2014 not of the paper.\n\nIn a converted export (``extraction.converter`` set), the file the\nproducer extracted from, such as the PDF GROBID read, when the converter\nhas it; else the file the converter read, such as GROBID's TEI.",
+      "properties": {
+        "file_name": {
+          "description": "Name of the input file, without directories.",
+          "title": "File Name",
+          "type": "string"
+        },
+        "input_format": {
+          "description": "The input's format: 'jats' for JATS XML, 'tei' for TEI XML (GROBID), otherwise 'pdf', 'docx', 'html' or 'epub'; 'unknown' when it could not be determined.",
+          "enum": [
+            "pdf",
+            "docx",
+            "jats",
+            "tei",
+            "html",
+            "epub",
+            "unknown"
+          ],
+          "title": "Input Format",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 digest of the input file's bytes, as 64 lowercase hexadecimal characters; identical files give the same digest. Null only when the export was made without the input bytes.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "file_name",
+        "sha256",
+        "input_format"
+      ],
+      "title": "SourceExport",
+      "type": "object"
+    },
+    "TableExport": {
+      "additionalProperties": false,
+      "description": "One table.",
+      "properties": {
+        "caption": {
+          "default": null,
+          "description": "Caption as printed, starting with its label when one is printed ('Figure 2. Mean ratings\u2026').",
+          "title": "Caption",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contents": {
+          "description": "Cell text as rows of strings; the first row is the header. A table continued across pages has all its pieces' rows merged.",
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Contents",
+          "type": "array"
+        },
+        "html": {
+          "default": null,
+          "description": "HTML markup as printed; a table continued across pages has one <table> element per printed piece, joined by newlines.",
+          "title": "Html",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "default": null,
+          "description": "The printed label without the word, as printed with whitespace removed: '3', '3.1', 'S2', 'A1', 'IV'; a 'Supplementary Table 4' caption gives 'S4'. In-text references resolve by it. Not unique: the unmerged pieces of a table split across pages repeat it ('Table 3 (continued)'), and references target the piece not marked as continued. Null when none was printed or detected.",
+          "title": "Label",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page_number": {
+          "description": "1-based page the table starts on.",
+          "minimum": 1,
+          "title": "Page Number",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "section_id": {
+          "default": null,
+          "description": "section[].section_id of the section the table is printed in (for PDF, the section being read where it appears); null when it is printed before the first section or its section is not known.",
+          "minimum": 1,
+          "title": "Section Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "table_id": {
+          "description": "Primary key; 1-based position in document order.",
+          "minimum": 1,
+          "title": "Table Id",
+          "type": "integer"
+        },
+        "text_id": {
+          "default": null,
+          "description": "text[].text_id of the caption's row; null when no caption was found.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "table_id",
+        "label",
+        "section_id",
+        "text_id",
+        "html",
+        "contents",
+        "caption",
+        "page_number"
+      ],
+      "title": "TableExport",
+      "type": "object"
+    },
+    "TextExport": {
+      "additionalProperties": false,
+      "description": "One row of the document text, in reading order: a sentence of the body,\nor a whole caption or footnote.",
+      "properties": {
+        "formatted": {
+          "default": null,
+          "description": "Source form of the span when it differs from text: a display equation's expression as the input gives it (LaTeX from OCR); null otherwise.",
+          "title": "Formatted",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page_number": {
+          "description": "1-based page the sentence starts on; null for inputs without pages.",
+          "minimum": 1,
+          "title": "Page Number",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "paragraph_id": {
+          "description": "Paragraph this sentence belongs to (1-based).",
+          "minimum": 1,
+          "title": "Paragraph Id",
+          "type": "integer"
+        },
+        "section_id": {
+          "description": "section[].section_id of the section the sentence belongs to; null for a caption or footnote row (figure[], table[] and footnote[] point at those by text_id) and before the first section.",
+          "minimum": 1,
+          "title": "Section Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "text": {
+          "description": "The row as plain text: one sentence of the body, or a whole caption or footnote, which can hold several sentences. A display equation is the placeholder '[equation]', with the expression in formatted.",
+          "title": "Text",
+          "type": "string"
+        },
+        "text_id": {
+          "description": "Primary key; 1-based reading-order position. Caption and footnote rows come after the body.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "text",
+        "text_id",
+        "paragraph_id",
+        "section_id",
+        "page_number",
+        "formatted"
+      ],
+      "title": "TextExport",
+      "type": "object"
+    },
+    "TextRegionExport": {
+      "additionalProperties": false,
+      "description": "Layout features of one text[] row (opt-in ``include_region_meta``;\ntraining and debug payload).",
+      "properties": {
+        "bbox": {
+          "default": null,
+          "description": "Bounding box of the source region: [x0, y0, x1, y1] in PDF points from the top-left corner of the displayed page (see extraction.pages).",
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Bbox",
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "font_bold": {
+          "default": null,
+          "description": "Whether the font is bold.",
+          "title": "Font Bold",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "font_size": {
+          "default": null,
+          "description": "Font size, in points.",
+          "title": "Font Size",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "is_italic": {
+          "default": null,
+          "description": "Whether the font is italic.",
+          "title": "Is Italic",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "page_number": {
+          "default": null,
+          "description": "1-based page of the source region.",
+          "minimum": 1,
+          "title": "Page Number",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "region_type": {
+          "default": null,
+          "description": "Layout class of the source region.",
+          "title": "Region Type",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "text[].text_id these features describe.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "text_id",
+        "font_size",
+        "font_bold",
+        "is_italic",
+        "page_number",
+        "bbox",
+        "region_type"
+      ],
+      "title": "TextRegionExport",
+      "type": "object"
+    },
+    "TimingsExport": {
+      "additionalProperties": false,
+      "description": "Per-stage wall-clock seconds (the export stage's own time is excluded \u2014\nit is still running when this is built).\n\nBoth fields are always populated when this object exists: an untimed run\nomits the whole ``extraction.timings`` object rather than emitting one with\nnull fields. The ``| None`` types are structural only.",
+      "properties": {
+        "stages": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "default": null,
+          "description": "Seconds per stage.",
+          "title": "Stages",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "total_seconds": {
+          "default": null,
+          "description": "Seconds for the whole run.",
+          "title": "Total Seconds",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "stages",
+        "total_seconds"
+      ],
+      "title": "TimingsExport",
+      "type": "object"
+    },
+    "UrlExport": {
+      "additionalProperties": false,
+      "description": "One hyperlink found in the text.",
+      "properties": {
+        "end": {
+          "default": null,
+          "description": "Where the link's visible text (or the URL) ends (exclusive), in the same units as start.",
+          "minimum": 0,
+          "title": "End",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "href": {
+          "description": "Link target, repaired of line-wrap whitespace and a trailing sentence period.",
+          "title": "Href",
+          "type": "string"
+        },
+        "link_text": {
+          "description": "Visible link text when it differs from the URL; null when the URL itself is the text.",
+          "title": "Link Text",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "default": null,
+          "description": "Where the link's visible text (or the URL) starts in text[].text of text_id: a 0-based offset in Unicode code points; null when it could not be located.",
+          "minimum": 0,
+          "title": "Start",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "text[].text_id of the sentence containing the link.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": "integer"
+        },
+        "url_id": {
+          "description": "Primary key; 1-based position.",
+          "minimum": 1,
+          "title": "Url Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "url_id",
+        "href",
+        "link_text",
+        "text_id",
+        "start",
+        "end"
+      ],
+      "title": "UrlExport",
+      "type": "object"
+    },
+    "UsageExport": {
+      "additionalProperties": false,
+      "description": "LLM token usage for the run.",
+      "properties": {
+        "breakdown": {
+          "description": "One row per (label, provider, model).",
+          "items": {
+            "$ref": "#/$defs/UsageRowExport"
+          },
+          "title": "Breakdown",
+          "type": "array"
+        },
+        "totals": {
+          "$ref": "#/$defs/UsageTotalsExport",
+          "description": "Sum over all breakdown rows."
+        }
+      },
+      "required": [
+        "totals",
+        "breakdown"
+      ],
+      "title": "UsageExport",
+      "type": "object"
+    },
+    "UsageRowExport": {
+      "additionalProperties": false,
+      "description": "One ``(label, provider, model)`` LLM usage row.",
+      "properties": {
+        "cached_input_tokens": {
+          "description": "Input tokens served from the provider cache.",
+          "title": "Cached Input Tokens",
+          "type": "integer"
+        },
+        "calls": {
+          "description": "Number of calls.",
+          "title": "Calls",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "description": "Input tokens, including cached ones.",
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "label": {
+          "description": "Call site, e.g. 'extract_authors'.",
+          "title": "Label",
+          "type": "string"
+        },
+        "model": {
+          "default": null,
+          "description": "Model identifier.",
+          "title": "Model",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_tokens": {
+          "description": "Output tokens.",
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "provider": {
+          "default": null,
+          "description": "LLM provider.",
+          "title": "Provider",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "total_tokens": {
+          "description": "Input plus output tokens.",
+          "title": "Total Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "label",
+        "provider",
+        "model",
+        "calls",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "total_tokens"
+      ],
+      "title": "UsageRowExport",
+      "type": "object"
+    },
+    "UsageTotalsExport": {
+      "additionalProperties": false,
+      "description": "Aggregate of every ``breakdown`` row \u2014 denormalized deliberately.",
+      "properties": {
+        "cached_input_tokens": {
+          "description": "Input tokens served from the provider cache.",
+          "title": "Cached Input Tokens",
+          "type": "integer"
+        },
+        "calls": {
+          "description": "Number of calls.",
+          "title": "Calls",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "description": "Input tokens, including cached ones.",
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "description": "Output tokens.",
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "total_tokens": {
+          "description": "Input plus output tokens.",
+          "title": "Total Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "calls",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "total_tokens"
+      ],
+      "title": "UsageTotalsExport",
+      "type": "object"
+    },
+    "ValidationExport": {
+      "additionalProperties": false,
+      "description": "Output validation gate result and promotion disposition.",
+      "properties": {
+        "blocking": {
+          "default": 0,
+          "description": "Issues that block promotion.",
+          "title": "Blocking",
+          "type": "integer"
+        },
+        "errors": {
+          "description": "Issues with severity 'error'.",
+          "title": "Errors",
+          "type": "integer"
+        },
+        "issues": {
+          "description": "Every finding.",
+          "items": {
+            "$ref": "#/$defs/ValidationIssueExport"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "promotable": {
+          "default": true,
+          "description": "True when no issue blocks promotion.",
+          "title": "Promotable",
+          "type": "boolean"
+        },
+        "warnings": {
+          "description": "Issues with severity 'warning'.",
+          "title": "Warnings",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "errors",
+        "warnings",
+        "blocking",
+        "promotable",
+        "issues"
+      ],
+      "title": "ValidationExport",
+      "type": "object"
+    },
+    "ValidationIssueExport": {
+      "additionalProperties": false,
+      "description": "One finding of the output validation gate.",
+      "properties": {
+        "blocking": {
+          "default": false,
+          "description": "Whether it prevents promotion.",
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "code": {
+          "description": "Stable issue code, e.g. 'VAL_AUTHOR_BLANK'.",
+          "title": "Code",
+          "type": "string"
+        },
+        "count": {
+          "description": "Number of occurrences.",
+          "title": "Count",
+          "type": "integer"
+        },
+        "evidence_ids": {
+          "description": "Identifiers of the rows involved.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "message": {
+          "description": "Human-readable description.",
+          "title": "Message",
+          "type": "string"
+        },
+        "origin_stage": {
+          "default": "export",
+          "description": "Pipeline stage that raised it.",
+          "title": "Origin Stage",
+          "type": "string"
+        },
+        "severity": {
+          "description": "'error' or 'warning'.",
+          "enum": [
+            "error",
+            "warning"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message",
+        "origin_stage",
+        "evidence_ids",
+        "count",
+        "blocking"
+      ],
+      "title": "ValidationIssueExport",
+      "type": "object"
+    },
+    "WarningExport": {
+      "additionalProperties": false,
+      "description": "One non-fatal processing warning.",
+      "properties": {
+        "code": {
+          "description": "Stable, machine-readable warning code in UPPER_SNAKE case, e.g. 'OCR_PAGE_FAILED'. bibr's codes are listed in its JSON schema reference; other producers and converters may add their own, so readers must accept a code they do not know. A converter starts its own codes with its name ('METACHECK_\u2026'), so they cannot collide with the producer's.",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "description": "Human-readable details, such as the page, counts or exception type.",
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "WarningExport",
+      "type": "object"
+    },
+    "XrefExport": {
+      "additionalProperties": false,
+      "description": "One in-text reference from a sentence to a reference-list entry,\ntable, figure, footnote, equation, supplement or section.\n\nA reference naming several targets (``[1, 2]``, ``Tables 2-4``) is one row\nper target; the rows share ``contents`` and the span.",
+      "properties": {
+        "contents": {
+          "description": "The citation or reference as printed, e.g. '(Smith, 2020)' or 'Table 2'.",
+          "title": "Contents",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "end": {
+          "default": null,
+          "description": "Where the printed reference ends (exclusive), in the same units as start.",
+          "minimum": 0,
+          "title": "End",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "default": null,
+          "description": "Where the printed reference starts in text[].text of text_id: a 0-based offset in Unicode code points; null when it was not located, as for every footnote reference bibr writes.",
+          "minimum": 0,
+          "title": "Start",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "target_id": {
+          "description": "Primary key of the referenced row, by xref_type: bib \u2192 bib_id, figure \u2192 figure_id, table \u2192 table_id, foot \u2192 footnote_id. A figure or table reference resolves by the label it prints; extraction.diagnostics.xref_tier says when a paper with no labels fell back to position. Null for equation, section and supplementary references, which name no exported row (the printed label is in contents), and whenever the reference did not resolve.",
+          "minimum": 1,
+          "title": "Target Id",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "text_id": {
+          "description": "text[].text_id of the sentence containing the reference. A footnote reference without start and end was not located in its sentence, so its text_id is approximate. bibr locates no footnote marks: it puts a DOCX note's reference on the last sentence of the paragraph holding the mark and a PDF note's on the sentence before the note, and gives a PDF note printed without a mark no reference.",
+          "minimum": 1,
+          "title": "Text Id",
+          "type": "integer"
+        },
+        "xref_id": {
+          "description": "Primary key; 1-based position.",
+          "minimum": 1,
+          "title": "Xref Id",
+          "type": "integer"
+        },
+        "xref_type": {
+          "description": "What kind of item is referenced.",
+          "enum": [
+            "bib",
+            "table",
+            "figure",
+            "foot",
+            "supplementary",
+            "equation",
+            "section"
+          ],
+          "title": "Xref Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "xref_id",
+        "target_id",
+        "xref_type",
+        "contents",
+        "text_id",
+        "start",
+        "end"
+      ],
+      "title": "XrefExport",
+      "type": "object"
+    },
+    "XrefTierExport": {
+      "additionalProperties": false,
+      "description": "How one bibliography, figure or table xref was linked.",
+      "properties": {
+        "tier": {
+          "description": "How the link was made: for a bib reference, the citation detector that found it; for a figure or table reference, 'label' (matched against the printed labels) or 'position' (no float of that kind has a label, so the printed number was taken as a position).",
+          "enum": [
+            "numeric",
+            "paren_numeric",
+            "flattened_superscript",
+            "author_year",
+            "llm",
+            "label",
+            "position"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "xref_id": {
+          "description": "xref[].xref_id.",
+          "minimum": 1,
+          "title": "Xref Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "xref_id",
+        "tier"
+      ],
+      "title": "XrefTierExport",
+      "type": "object"
+    }
+  },
+  "$id": "https://bibr.org/schema/bibr-export-v12.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A research paper as extracted by bibr (export schema v12).\n\n``extraction`` holds everything about how the output was produced.\nEverything else is the paper: ``paper_id``, ``schema_version`` and\n``source`` identify the paper and its input file; ``metadata`` and the\nrecord tables ``author``, ``affiliation``, ``funding``, ``text``,\n``section``, ``url``, ``bib``, ``xref``, ``figure``, ``table``, ``footnote``\nand ``eq`` hold what the paper says; the ``*_match`` tables hold what external\nregistries returned for the paper, its affiliations, funders and references.\n\nEvery record table has an integer primary key named ``<table>_id``,\n1-based; the other ``*_id`` columns are foreign keys to the table they name.\nAbsent values are ``null``, never an empty-string or zero sentinel. Every\nroot key is always present; record tables may be empty. Readers dispatch on\nthe presence of the root ``schema_version``. Character offsets count\nUnicode code points of the exported text. Every score and confidence is\n0\u20131. Identifiers use each registry's canonical form: DOIs bare and\nlowercase, ORCID iDs and ROR IDs as https URIs. Every bounding box is\n``[x0, y0, x1, y1]`` in PDF points (1/72 inch) on the page as displayed,\nmeasured from its top-left corner with y increasing downward;\n``extraction.pages`` gives each page's size in the same units.\n\nA tool that writes another extractor's output in this format, or rewrites\nan export, names itself in ``extraction.converter`` and keeps the\nproducer's ``extraction.producer``. A rewrite keeps ``schema_version`` and\nevery key, including those of a later 12.x that the tool does not know.",
+  "properties": {
+    "affiliation": {
+      "default": [],
+      "description": "Distinct byline affiliations: verbatim text, best-effort parsed components, and the authors they belong to.",
+      "items": {
+        "$ref": "#/$defs/AffiliationExport"
+      },
+      "title": "Affiliation",
+      "type": "array"
+    },
+    "affiliation_match": {
+      "default": [],
+      "description": "ROR organizations matched to affiliation strings; enrichment runs only.",
+      "items": {
+        "$ref": "#/$defs/AffiliationMatchExport"
+      },
+      "title": "Affiliation Match",
+      "type": "array"
+    },
+    "author": {
+      "description": "Authors in byline order, with name, email, corresponding-author flag, ORCID, and contribution roles.",
+      "items": {
+        "$ref": "#/$defs/AuthorExport"
+      },
+      "title": "Author",
+      "type": "array"
+    },
+    "bib": {
+      "description": "Reference-list entries, parsed from the printed entries.",
+      "items": {
+        "$ref": "#/$defs/BibExport"
+      },
+      "title": "Bib",
+      "type": "array"
+    },
+    "bib_match": {
+      "default": [],
+      "description": "External-service records matched to reference-list entries, one row per hit.",
+      "items": {
+        "$ref": "#/$defs/BibMatchExport"
+      },
+      "title": "Bib Match",
+      "type": "array"
+    },
+    "eq": {
+      "description": "Statistical and mathematical expressions, split into left-hand side, degrees of freedom, comparator and right-hand side.",
+      "items": {
+        "$ref": "#/$defs/EqExport"
+      },
+      "title": "Eq",
+      "type": "array"
+    },
+    "extraction": {
+      "$ref": "#/$defs/ExtractionExport",
+      "description": "How this output was produced \u2014 everything that is not the paper itself: engines, settings, timings, LLM usage, enrichment, identity receipts, diagnostics, qualification provenance, validation and warnings."
+    },
+    "figure": {
+      "description": "Figures with caption, page and optional image data.",
+      "items": {
+        "$ref": "#/$defs/FigureExport"
+      },
+      "title": "Figure",
+      "type": "array"
+    },
+    "footnote": {
+      "default": [],
+      "description": "Footnotes and endnotes: the printed marker and the note's text row.",
+      "items": {
+        "$ref": "#/$defs/FootnoteExport"
+      },
+      "title": "Footnote",
+      "type": "array"
+    },
+    "funding": {
+      "default": [],
+      "description": "Funders and award numbers parsed from the funding statement.",
+      "items": {
+        "$ref": "#/$defs/FundingExport"
+      },
+      "title": "Funding",
+      "type": "array"
+    },
+    "funding_match": {
+      "default": [],
+      "description": "ROR organizations matched to printed funder names; enrichment runs only.",
+      "items": {
+        "$ref": "#/$defs/FundingMatchExport"
+      },
+      "title": "Funding Match",
+      "type": "array"
+    },
+    "metadata": {
+      "$ref": "#/$defs/MetadataExport",
+      "description": "Paper-level metadata: title, abstract, keywords, DOI, paper type and OECD classification, the paper's own journal/venue identity, and research-integrity statement text."
+    },
+    "metadata_match": {
+      "default": [],
+      "description": "External-service records matched to the paper itself (self-DOI lookup).",
+      "items": {
+        "$ref": "#/$defs/MetadataMatchExport"
+      },
+      "title": "Metadata Match",
+      "type": "array"
+    },
+    "paper_id": {
+      "description": "Paper identifier and the key that joins this paper's rows across files: the user-supplied --paper-id, else the input file's name without its extension (bibr batch writes its corpus-unique id, the name of the JSON file). A converter uses the name of source.file_name without its extension.",
+      "minLength": 1,
+      "title": "Paper Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "12.0",
+      "description": "Export schema version. Its presence at the root is how readers distinguish v11 and later from all earlier versions.",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "section": {
+      "description": "Sections with their headings, hierarchy and section type.",
+      "items": {
+        "$ref": "#/$defs/SectionExport"
+      },
+      "title": "Section",
+      "type": "array"
+    },
+    "source": {
+      "$ref": "#/$defs/SourceExport",
+      "description": "Identity of the input file: name, SHA-256 digest, and format."
+    },
+    "table": {
+      "description": "Tables with HTML markup, cell contents, caption and page.",
+      "items": {
+        "$ref": "#/$defs/TableExport"
+      },
+      "title": "Table",
+      "type": "array"
+    },
+    "text": {
+      "description": "Document text as ordered sentence-level spans, each linked to its paragraph, section and page; caption and footnote rows follow the body.",
+      "items": {
+        "$ref": "#/$defs/TextExport"
+      },
+      "title": "Text",
+      "type": "array"
+    },
+    "url": {
+      "description": "Hyperlinks in the text, with link text and source sentence.",
+      "items": {
+        "$ref": "#/$defs/UrlExport"
+      },
+      "title": "Url",
+      "type": "array"
+    },
+    "xref": {
+      "description": "In-text references linking a sentence to a reference-list entry, table, figure, footnote, equation, supplement or section.",
+      "items": {
+        "$ref": "#/$defs/XrefExport"
+      },
+      "title": "Xref",
+      "type": "array"
+    }
+  },
+  "required": [
+    "paper_id",
+    "schema_version",
+    "source",
+    "metadata",
+    "author",
+    "affiliation",
+    "funding",
+    "text",
+    "section",
+    "url",
+    "bib",
+    "xref",
+    "figure",
+    "table",
+    "footnote",
+    "eq",
+    "metadata_match",
+    "affiliation_match",
+    "funding_match",
+    "bib_match",
+    "extraction"
+  ],
+  "title": "PaperExport",
+  "type": "object"
+}
