@@ -79,7 +79,7 @@
 #'   non-root user) — a real containment boundary, appropriate for running
 #'   code you do not trust. Requires Docker to be installed and running (see
 #'   [repro_docker_available()]). By default (see `docker_use_declared_version`)
-#'   the base image is `ghcr.io/scienceverse/metacheck_r:latest`, a
+#'   the base image is `ghcr.io/scienceverse/metacheck_r_large:latest`, a
 #'   pre-built image with the ~750 most common corpus packages already
 #'   installed, so most papers skip most of the install phase entirely
 #'   rather than reinstalling their dependencies from scratch on every run.

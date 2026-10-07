@@ -823,7 +823,7 @@ test_that("repro_run_scripts_docker stops the container on timeout instead of or
 
   out <- repro_run_scripts_docker(
     run_tbl, order = "sleeper.R", sandbox_root = root,
-    image = "ghcr.io/scienceverse/metacheck_r:latest", timeout = 5)
+    image = "ghcr.io/scienceverse/metacheck_r_large:latest", timeout = 5)
 
   expect_equal(out$outcome, "timed_out")
 
