@@ -7,15 +7,32 @@
 .repro_docker_default_image
 }
 \description{
-\code{ghcr.io/scienceverse/metacheck_r} has the ~750 most common packages
-found across a corpus scan of real papers' R code already installed (see
-https://github.com/scienceverse/metacheck_docker_reproducibility for the
-Dockerfile/package list/build instructions), so a run against it skips
-most of the install phase entirely instead of reinstalling every
-dependency from scratch. This is the DEFAULT image (see
-\code{.repro_docker_image_for()}'s \code{use_declared_version} argument) -- pinned
-to whatever R version it was built against, NOT the paper's own declared
-version, which is the tradeoff \code{docker_use_declared_version} on
-\code{reproducibility_check()} exists to let a caller opt out of.
+\code{ghcr.io/scienceverse/metacheck_r_large} has the ~750 most common
+packages found across a corpus scan of real papers' R code already
+installed, plus JAGS, a JDK, and the GDAL/GEOS/PROJ geospatial stack
+(see https://github.com/scienceverse/metacheck_docker_reproducibility
+for the Dockerfile/package list/build instructions -- that repo also
+publishes a smaller \code{metacheck_r_small} variant, ~390 packages, seen in
+at least 3 corpus files, also with JAGS/a JDK but without the geospatial
+stack), so a run against it skips most of the install phase entirely
+instead of reinstalling every dependency from scratch. This is the
+DEFAULT image (see \code{.repro_docker_image_for()}'s \code{use_declared_version}
+argument) -- pinned to whatever R version it was built against, NOT the
+paper's own declared version, which is the tradeoff
+\code{docker_use_declared_version} on \code{reproducibility_check()} exists to let
+a caller opt out of.
+}
+\details{
+History: this constant pointed at a single, un-split
+\code{ghcr.io/scienceverse/metacheck_r} image until 2026-10, when the
+\verb{_large}/\verb{_small} split described in the build repo's own README/
+Dockerfiles was ACTUALLY built and pushed under those names for the
+first time (confirmed live via \verb{docker pull}, not assumed from the
+README) -- a prior attempt to point this constant at \code{metacheck_r_large}
+earlier that same session had to be reverted because the name did not
+yet exist on the registry at that time; it does now. If this constant
+is ever repointed again, confirm with \verb{docker pull} first, not from this
+file's own README alone -- see that README's own naming-status note for
+why that verification step matters here specifically.
 }
 \keyword{internal}

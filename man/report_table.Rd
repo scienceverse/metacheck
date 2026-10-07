@@ -23,8 +23,9 @@ the datatable (full report) or a knitr::kable object (simple report)
 A function to display tables in reports.
 }
 \details{
-When \code{\link[=report_type]{report_type()}} is \code{"simple"}, this renders a plain static HTML table
-(via \code{knitr::kable()}) in a CSS-only scrollable box instead of a
+When \code{\link[=report_type]{report_type()}} is \code{"simple"} or \code{"simple_brief"}, this renders a
+plain static HTML table (via \code{knitr::kable()}) in a CSS-only scrollable
+box instead of a
 \code{DT::datatable()} widget -- no JavaScript at all, so the report stays safe
 to email. Every row is kept and reachable by scrolling (just like the full
 report's paginated widget, just without the JS), except for a pathologically

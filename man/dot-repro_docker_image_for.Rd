@@ -18,7 +18,7 @@ of the pre-built image. Default FALSE.}
 }
 \value{
 a single image reference, e.g.
-\code{"ghcr.io/scienceverse/metacheck_r:latest"}, \code{"rocker/r-ver:4.3.1"}, or
+\code{"ghcr.io/scienceverse/metacheck_r_large:latest"}, \code{"rocker/r-ver:4.3.1"}, or
 \code{"rocker/r-ver:latest"}
 }
 \description{

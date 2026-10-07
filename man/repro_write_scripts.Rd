@@ -9,7 +9,8 @@ repro_write_scripts(
   rewrite_list,
   plan,
   root,
-  inject_libs = NULL
+  inject_libs = NULL,
+  lang = "R"
 )
 }
 \arguments{
@@ -29,7 +30,25 @@ before it is written. Used by the module's corrective re-run for a
 exports \code{X} (see the module's own missing-\code{library()} corrective step) —
 reusing this function's existing text-rewrite plumbing rather than a
 separate rewrite path. \code{NULL} (default) injects nothing, unchanged from
-before this parameter existed.}
+before this parameter existed. R only: there is no Python corrective
+re-run (the module's missing-dependency/undefined-name recovery is
+namespace-export-based — see \code{.repro_find_export_pkg()} — with no
+equivalent built for Python's \code{import} statements), so this is ignored
+for a file whose \code{lang} is \code{"Python"}.}
+
+\item{lang}{the language each element of \code{code_text_list} is in: a single
+string applied to every file (default \code{"R"}), or a named character
+vector keyed by file_name for a mixed-language set (same shape as
+\code{\link[=repro_file_io]{repro_file_io()}}'s own \code{lang}). Selects the write-redirect function
+names (\code{\link[=.repro_redirect_writes]{.repro_redirect_writes()}}) and the "comment out the working-
+directory override" line (\code{setwd()} for R, \code{os.chdir()} for Python).
+Python's font-substitution analogue is deliberately NOT built: an
+unavailable font is a matplotlib WARNING with a silent DejaVu Sans
+fallback, not the hard "invalid font type" failure
+\verb{family =}/\verb{base_family =} causes in R's graphics devices (the actual
+reason this transform exists for R) — rewriting Python's many
+\code{rcParams}/\code{plt.rc()}/\verb{fontdict=} spellings would be solving a failure
+mode Python's own ecosystem does not have here.}
 }
 \value{
 a data frame with \code{file_name}, \code{script_path} (absolute path written),

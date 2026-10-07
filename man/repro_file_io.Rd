@@ -4,11 +4,23 @@
 \alias{repro_file_io}
 \title{Extract the files a script reads, writes, and sources}
 \usage{
-repro_file_io(code_text_list)
+repro_file_io(code_text_list, lang = "R")
 }
 \arguments{
 \item{code_text_list}{a named list of code-text character vectors, one per
-file (names are the file_names)}
+file (names are the file_names), OR a named list of such lists when
+files are in more than one language (see \code{lang})}
+
+\item{lang}{the language each element of \code{code_text_list} is in: either a
+single string applied to every file (default \code{"R"}), or a named
+character vector keyed by file_name for a mixed-language set. Python has
+no \code{source()}-equivalent for reusing a SIBLING analysis script by
+relative path (its code-reuse mechanism, \code{import}, names an installed
+module, not a local file run_order must sequence), so \code{sources} is
+always empty for a Python file; \code{open(..., "w"/"a"/...)} is classified
+as a write only when that same line's own mode argument says so (a bare
+\code{open(x)} defaults to Python's own read mode and is otherwise
+ambiguous between the two).}
 }
 \value{
 a data frame with \code{file_name} and list-columns \code{reads}, \code{writes},
@@ -18,5 +30,6 @@ a data frame with \code{file_name} and list-columns \code{reads}, \code{writes},
 A thin wrapper that runs the static reference scans over each code file and
 returns the per-file read / write / source basenames \code{\link[=repro_run_order]{repro_run_order()}}
 needs. Reads/writes come from \code{\link[=code_file_refs]{code_file_refs()}} split by call type; sources
-from a scan for \code{source()}. All returned as lowercased basenames.
+from a scan for \code{source()} (R only — see \code{lang} below). All returned as
+lowercased basenames.
 }

@@ -2161,8 +2161,8 @@ code_file_refs <- function(code_text,
   # output, and the main consumer (code_check) reports referenced files that are
   # absent from the repository — an output would be a false "missing input"
   # there. Reproducibility ordering does need them, so they are opt-in.
-  if (isTRUE(include_writes) && identical(lang, "R")) {
-    write_call_regex <- c(
+  lang_write_regex <- list(
+    R = c(
       "write[\\._][A-Za-z\\._0-9]*", # write.csv, write_csv, write.table, ...
       "saveRDS",
       "save",                        # save(), and save.image() via the \\.? below
@@ -2170,7 +2170,27 @@ code_file_refs <- function(code_text,
       "ggsave",
       "export",
       "fwrite"
-    ) |>
+    ),
+    # Python's writers, by library: pandas' to_<format> (to_csv, to_excel,
+    # to_pickle, to_parquet, to_json, ...) mirrors read_<format> above, so the
+    # generic "to_[A-Za-z_0-9]+" covers the whole family the same way. The
+    # rest are named individually because they do not begin with "to_":
+    # numpy (save/savetxt), pickle (dump), json (dump), matplotlib
+    # (savefig), and Python's own open(..., "w"/"a"/"wb") — open() is ALSO a
+    # read call (see the Python entry in lang_load_regex above), so a plain
+    # open() hit is not itself evidence of a write; it is only treated as one
+    # when the SAME line also carries a write/append mode flag, checked
+    # below via write_mode_pattern rather than listed in this regex.
+    Python = c(
+      "to_[A-Za-z_0-9]+",
+      "savetxt",
+      "savefig",
+      "dump",
+      "save"
+    )
+  )
+  if (isTRUE(include_writes) && lang %in% names(lang_write_regex)) {
+    write_call_regex <- lang_write_regex[[lang]] |>
       paste(collapse = "|") |>
       paste0("\\b(", x = _, ")\\s*\\(")
     grepl_load <- paste0(grepl_load, "|", write_call_regex)

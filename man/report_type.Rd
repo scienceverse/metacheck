@@ -7,27 +7,42 @@
 report_type(report_type = NULL)
 }
 \arguments{
-\item{report_type}{if \code{"full"} or \code{"simple"}, sets the report type;
-\code{NULL} (the default) returns the current setting without changing it}
+\item{report_type}{if one of \code{"full"}, \code{"brief"}, \code{"simple"}, or
+\code{"simple_brief"}, sets the report type; \code{NULL} (the default) returns the
+current setting without changing it}
 }
 \value{
-the current option value (\code{"full"} or \code{"simple"})
+the current option value
 }
 \description{
-Controls whether \code{\link[=report]{report()}}/\code{\link[=report_repository]{report_repository()}} build a full, interactive
-HTML report (light/dark theme toggle, sortable/paginated JavaScript tables,
-tabbed sections) or a "simple" static report with none of that -- plain
-tables, stacked headings instead of tabs, a single theme, no inline
-\verb{<script>} content. Email clients and mail scanners routinely flag the
-embedded JavaScript a full report carries (even though it is inert without
-a browser), so \code{report_type("simple")} is the setting to use before
-emailing a report. \code{\link[=report_table]{report_table()}} and any module building tabbed output
-(e.g. \code{data_check}'s per-file table tabset) check this setting themselves,
-since they build their markdown/HTML while a module runs -- before
-\code{\link[=report]{report()}} ever selects a template.
+Controls two independent things about how \code{\link[=report]{report()}}/\code{\link[=report_repository]{report_repository()}}
+build a report:
+\itemize{
+\item \strong{rendering mechanics} -- a full, interactive HTML report (light/dark
+theme toggle, sortable/paginated JavaScript tables, tabbed sections) vs.
+a "simple" static report with none of that -- plain tables, stacked
+headings instead of tabs, a single theme, no inline \verb{<script>} content.
+Email clients and mail scanners routinely flag the embedded JavaScript a
+full report carries (even though it is inert without a browser), so a
+"simple" report type is the setting to use before emailing a report.
+\item \strong{content amount} -- every module's full detail vs. only the modules
+flagged red/yellow/fail (i.e. what needs attention), with just their
+one-line summary and no expandable detail, "How It Works" callout, or
+validation note. This is the "brief" setting, for getting to "what to
+improve" as fast as possible.
+}
+}
+\details{
+These two axes combine into four values: \code{"full"} (default), \code{"brief"},
+\code{"simple"}, and \code{"simple_brief"}. \code{\link[=report_table]{report_table()}} and any module building
+tabbed output (e.g. \code{data_check}'s per-file table tabset) check this
+setting themselves, since they build their markdown/HTML while a module
+runs -- before \code{\link[=report]{report()}} ever selects a template.
 }
 \examples{
 report_type()
 report_type("simple")
+report_type("brief")
+report_type("simple_brief")
 report_type("full")
 }

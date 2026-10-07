@@ -27,8 +27,9 @@ text
 A helper function for making module reports.
 }
 \details{
-When \code{\link[=report_type]{report_type()}} is \code{"simple"}, this renders as a plain fenced div
-with the title as a real bold line of text, not a Quarto callout: Quarto's
+When \code{\link[=report_type]{report_type()}} is \code{"simple"} or \code{"simple_brief"}, this renders as a
+plain fenced div with the title as a real bold line of text, not a Quarto
+callout: Quarto's
 \code{title}/\code{collapse} fenced-div attributes are Quarto-specific -- plain
 Pandoc (what \code{\link[=report]{report()}}'s simple-mode render uses, see its own docs)
 passes an unrecognised attribute straight through as a literal (invisible)
