@@ -395,6 +395,33 @@ test_that("repro_defined_vars returns an empty frame for no files", {
 })
 
 
+# .repro_py_defined_vars() ----
+
+test_that(".repro_py_defined_vars finds top-level assignments and def/class", {
+  code_list <- list("a.py" = c(
+    "x = 1",
+    "    y = 2",            # indented -- not top level
+    "def some_fn():",
+    "    pass",
+    "class SomeClass:",
+    "    pass"
+  ))
+  out <- .repro_py_defined_vars(code_list)
+  expect_setequal(out$defines[[1]], c("x", "some_fn", "SomeClass"))
+})
+
+test_that(".repro_py_defined_vars does not confuse == with an assignment", {
+  code_list <- list("a.py" = c("if x == 1:", "    pass"))
+  out <- .repro_py_defined_vars(code_list)
+  expect_equal(out$defines[[1]], character(0))
+})
+
+test_that(".repro_py_defined_vars returns an empty frame for no files", {
+  out <- .repro_py_defined_vars(list())
+  expect_equal(nrow(out), 0)
+})
+
+
 # repro_missing_inputs() ----
 
 test_that("repro_missing_inputs classifies an absent file", {
@@ -848,4 +875,178 @@ test_that("repro_dependencies does not list a package-list variable as a package
     '  if (!require(req.lib, character.only = TRUE)) install.packages(req.lib)',
     '}'))
   expect_setequal(deps$package, c("activity", "bbmle"))
+})
+
+
+# repro_dependencies_py() ----
+
+test_that("repro_dependencies_py finds import statements and tags base/pypi", {
+  code <- c("import os", "import numpy as np", "from sklearn.linear_model import LinearRegression")
+  deps <- repro_dependencies_py(code)
+  expect_true(deps$base[deps$package == "os"])
+  expect_false(deps$base[deps$package == "numpy"])
+  expect_equal(deps$source[deps$package == "numpy"], "pypi")
+})
+
+test_that("repro_dependencies_py attaches a requirements.txt pin to the matching import", {
+  code <- c("import numpy")
+  manifest <- c("numpy==1.26.0", "# a comment", "")
+  deps <- repro_dependencies_py(code, manifest_text = manifest)
+  expect_equal(deps$ref[deps$package == "numpy"], "numpy==1.26.0")
+})
+
+test_that("repro_dependencies_py returns an empty frame for NULL/empty input", {
+  empty_cols <- c("package", "source", "ref", "base")
+  expect_equal(names(repro_dependencies_py(NULL)), empty_cols)
+  expect_equal(nrow(repro_dependencies_py(character(0))), 0)
+})
+
+test_that("repro_dependencies_py pools a list of files, preferring a manifest pin over import-only", {
+  deps <- repro_dependencies_py(list(c("import numpy"), c("import numpy")),
+                                manifest_text = "numpy==1.26.0")
+  expect_equal(nrow(deps[deps$package == "numpy", ]), 1)
+  expect_equal(deps$ref[deps$package == "numpy"], "numpy==1.26.0")
+})
+
+
+# repro_install_deps_py() ----
+
+test_that("repro_install_deps_py returns an empty frame for no dependencies", {
+  empty_cols <- c("package", "source", "installed", "message", "via_archive", "category")
+  out <- repro_install_deps_py(data.frame(), lib_dir = withr::local_tempdir())
+  expect_equal(names(out), empty_cols)
+  expect_equal(nrow(out), 0)
+})
+
+test_that("repro_install_deps_py errors with a clear message when python is not found", {
+  install_deps <- data.frame(package = "numpy", source = "pypi", ref = NA_character_)
+  expect_error(
+    repro_install_deps_py(install_deps, lib_dir = withr::local_tempdir(),
+                          python_bin = "definitely_not_a_real_python_binary_xyz"),
+    "was not found on PATH")
+})
+
+
+# repro_run_scripts_py() error_type / dependency_unavailable classification ----
+# Unit tests for the fix reconciling the process backend's error_type string
+# with the docker backend's (see R/reproducibility_check_python.R's own
+# comment at the change site) -- both backends must now report the SAME
+# strings ("undefined_variable", "dependency_unavailable") for the same
+# underlying stderr shape, not diverge (process: raw "NameError"; docker:
+# "undefined_variable") the way they did before this fix.
+
+test_that("repro_run_scripts_py reconciles a NameError to error_type 'undefined_variable'", {
+  skip_if_not(nzchar(Sys.which("python")) || nzchar(Sys.which("python3")),
+             "no python interpreter available")
+  py_bin <- if (nzchar(Sys.which("python"))) "python" else "python3"
+
+  root <- withr::local_tempdir()
+  script <- file.path(root, "undefined_var.py")
+  writeLines("print(some_var_no_script_defines)", script)
+  run_tbl <- data.frame(file_name = "undefined_var.py", script_path = script, run_dir = root)
+
+  out <- repro_run_scripts_py(run_tbl, order = "undefined_var.py",
+                              python_bin = py_bin, timeout = 60)
+
+  expect_equal(out$outcome, "errored")
+  # NOT the raw "NameError" string -- reconciled to the same
+  # "undefined_variable" string the docker backend already used.
+  expect_equal(out$error_type, "undefined_variable")
+  expect_equal(out$undefined_var, "some_var_no_script_defines")
+})
+
+test_that("repro_run_scripts_py classifies a missing import as dependency_unavailable when listed in failed_deps", {
+  skip_if_not(nzchar(Sys.which("python")) || nzchar(Sys.which("python3")),
+             "no python interpreter available")
+  py_bin <- if (nzchar(Sys.which("python"))) "python" else "python3"
+
+  root <- withr::local_tempdir()
+  script <- file.path(root, "needs_pkg.py")
+  writeLines("import this_package_does_not_exist_xyz123", script)
+  run_tbl <- data.frame(file_name = "needs_pkg.py", script_path = script, run_dir = root)
+
+  out <- repro_run_scripts_py(run_tbl, order = "needs_pkg.py", python_bin = py_bin,
+                              timeout = 60,
+                              failed_deps = "this_package_does_not_exist_xyz123")
+
+  expect_equal(out$outcome, "dependency_unavailable")
+  expect_equal(out$error_type, "dependency_unavailable")
+})
+
+test_that("repro_run_scripts_py does NOT classify a missing import as dependency_unavailable when it is not in failed_deps", {
+  # failed_deps is empty here -- repro_install_deps_py() was never even
+  # asked about this package, so the missing import must be reported as an
+  # ordinary error, not (incorrectly) blamed on install failure.
+  skip_if_not(nzchar(Sys.which("python")) || nzchar(Sys.which("python3")),
+             "no python interpreter available")
+  py_bin <- if (nzchar(Sys.which("python"))) "python" else "python3"
+
+  root <- withr::local_tempdir()
+  script <- file.path(root, "needs_pkg2.py")
+  writeLines("import this_package_does_not_exist_xyz123", script)
+  run_tbl <- data.frame(file_name = "needs_pkg2.py", script_path = script, run_dir = root)
+
+  out <- repro_run_scripts_py(run_tbl, order = "needs_pkg2.py", python_bin = py_bin,
+                              timeout = 60)
+
+  expect_equal(out$outcome, "errored")
+  expect_false(identical(out$error_type, "dependency_unavailable"))
+})
+
+
+# Python statistical-output extraction (py_stat_output mechanism) ----
+# Unit-level test of the EXTRACTION step the module's py_stat_output block
+# (inst/modules/reproducibility_check.R) applies to a Python script's
+# captured stdout -- calling .ipynb_stat_line()/.ipynb_is_noise() directly
+# against a FAKE but correctly-shaped stdout string, so this runs with no
+# Python interpreter and no scipy installation required at all (a real,
+# scipy-dependent end-to-end execute = TRUE test also exists, gated
+# separately, in test-module-reproducibility_check.R).
+
+test_that("a fake scipy TtestResult one-liner in stdout parses via .ipynb_stat_line()", {
+  so <- "TtestResult(statistic=4.89, pvalue=6.75e-05, df=22)"
+  lines <- strsplit(so, "\n", fixed = TRUE)[[1]]
+  lines <- lines[nzchar(trimws(lines))]
+  expect_false(.ipynb_is_noise(lines))
+
+  tabs <- .ipynb_stat_line(lines)
+  expect_false(is.null(tabs))
+  expect_length(tabs, 1)
+  expect_equal(tabs[[1]]$call_fn, "TtestResult")
+
+  long <- stat_results_long(tabs, paper_id = "test_paper", source_file = "ttest.py")
+  expect_gt(nrow(long), 0)
+  expect_true("statistic" %in% tolower(long$statistic) ||
+             any(grepl("statistic", tolower(long$statistic))))
+
+  json <- stat_output_json(tabs, paper_id = "test_paper", source_file = "ttest.py")
+  expect_true(!is.null(json))
+})
+
+test_that("match_reported_output() does not error against a stat_output list with a python_output-sourced entry", {
+  so <- "TtestResult(statistic=4.89, pvalue=6.75e-05, df=22)"
+  lines <- strsplit(so, "\n", fixed = TRUE)[[1]]
+  tabs <- .ipynb_stat_line(lines)
+  stat_output <- list(list(
+    file = "ttest.py", n_tables = length(tabs), source = "python_output",
+    json = stat_output_json(tabs, paper_id = "test_paper", source_file = "ttest.py"),
+    long = stat_results_long(tabs, paper_id = "test_paper", source_file = "ttest.py")
+  ))
+
+  paper <- test_paper("t(22) = 4.89, p < .001.")
+  matched <- tryCatch(
+    match_reported_output(paper, stat_output, include_tables = TRUE),
+    error = function(e) e)
+  expect_false(inherits(matched, "error"))
+  expect_true(is.data.frame(matched))
+})
+
+test_that("a noise-only Python stdout block does not parse (no raw-text fallback)", {
+  # Consistent with read_r_output()'s own behaviour on unparseable console
+  # output (R/r-output.R: it returns list(), never a raw-text fallback
+  # column) -- the Python path deliberately matches that, rather than
+  # inventing a raw-text fallback of its own.
+  so <- "<Figure size 640x480 with 1 Axes>"
+  lines <- strsplit(so, "\n", fixed = TRUE)[[1]]
+  expect_true(.ipynb_is_noise(lines))
 })

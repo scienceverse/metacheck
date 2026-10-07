@@ -4,10 +4,25 @@
 \alias{.repro_redirect_writes}
 \title{Find a script's WRITE calls and redirect their targets into the sandbox}
 \usage{
-.repro_redirect_writes(code_text)
+.repro_redirect_writes(code_text, lang = "R")
 }
 \arguments{
 \item{code_text}{the code text for a single file (character vector)}
+
+\item{lang}{\code{"R"} (default) or \code{"Python"} — selects the write-function
+names matched, and (for the path-like-variable scan) the assignment
+operator recognised: R's \verb{<-}/\verb{<<-}/\code{=} vs. Python's \code{=} only. Python's
+\code{open(path, "w")} is deliberately NOT included in \code{write_fns} here even
+though it is a write call (see \code{\link[=repro_file_io]{repro_file_io()}}'s own \code{open_write_mode}
+handling): \code{open()} returns a file HANDLE, not the path itself — the
+call that actually names the path to redirect — so this function instead
+matches the handle variable's own \code{.write(...)}/\code{.writelines(...)} calls
+is out of scope for a text-level, no-interpreter rewrite (which handle
+a later \code{.write()} belongs to is not recoverable without actually
+running the code); \code{open()} is left unredirected here and any
+relative-path failure surfaces as a plain execute-time error instead,
+same as any other unresolved reference this function already leaves
+alone (see \code{hit} below).}
 }
 \value{
 a data frame with one row per detected write call: \code{call_text} (the

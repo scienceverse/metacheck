@@ -383,15 +383,37 @@ repro_dependencies <- function(code_text, lang = "R") {
 #'   (1-based line the call starts on). Empty frame when the script has no
 #'   resolvable write calls.
 #' @keywords internal
-.repro_redirect_writes <- function(code_text) {
+#' @param lang `"R"` (default) or `"Python"` — selects the write-function
+#'   names matched, and (for the path-like-variable scan) the assignment
+#'   operator recognised: R's `<-`/`<<-`/`=` vs. Python's `=` only. Python's
+#'   `open(path, "w")` is deliberately NOT included in `write_fns` here even
+#'   though it is a write call (see [repro_file_io()]'s own `open_write_mode`
+#'   handling): `open()` returns a file HANDLE, not the path itself — the
+#'   call that actually names the path to redirect — so this function instead
+#'   matches the handle variable's own `.write(...)`/`.writelines(...)` calls
+#'   is out of scope for a text-level, no-interpreter rewrite (which handle
+#'   a later `.write()` belongs to is not recoverable without actually
+#'   running the code); `open()` is left unredirected here and any
+#'   relative-path failure surfaces as a plain execute-time error instead,
+#'   same as any other unresolved reference this function already leaves
+#'   alone (see `hit` below).
+.repro_redirect_writes <- function(code_text, lang = "R") {
   empty <- data.frame(call_text = character(0), replacement = character(0),
                       redirected_name = character(0), line = integer(0))
   if (is.null(code_text) || length(code_text) == 0) return(empty)
-  nc <- code_remove_comments(code_text, "R")
+  nc <- code_remove_comments(code_text, lang)
   joined <- paste(nc, collapse = "\n")
 
-  write_fns <- c("write[\\._][A-Za-z\\._0-9]*", "saveRDS", "save\\.image",
-                "save", "ggsave", "export", "fwrite")
+  write_fns_for <- list(
+    R = c("write[\\._][A-Za-z\\._0-9]*", "saveRDS", "save\\.image",
+         "save", "ggsave", "export", "fwrite"),
+    # to_<format> (to_csv/to_pickle/to_parquet/...), numpy's save/savetxt,
+    # matplotlib's savefig, and pickle's/json's dump — see code_check.R's
+    # lang_write_regex (code_file_refs()) for the same list, kept in sync.
+    # open() is excluded — see this function's own `lang` docs above.
+    Python = c("to_[A-Za-z_0-9]+", "savetxt", "savefig", "dump", "save")
+  )
+  write_fns <- write_fns_for[[lang]] %||% write_fns_for[["R"]]
   fn_pat <- paste0("\\b(", paste(write_fns, collapse = "|"), ")\\s*\\(")
   starts <- gregexpr(fn_pat, joined, perl = TRUE)[[1]]
   if (length(starts) == 1 && starts == -1) return(empty)
@@ -416,8 +438,12 @@ repro_dependencies <- function(code_text, lang = "R") {
   }
 
   # Top-level assignments whose RHS looks path-like (see above) — covers
-  # `x <- "a.csv"` and `x <- paste0("dir/", Sys.Date(), ".csv")` alike.
-  assign_pat <- "^([.a-zA-Z][.a-zA-Z0-9_]*)\\s*(?:<<-|<-|=)\\s*(.+)$"
+  # `x <- "a.csv"` and `x <- paste0("dir/", Sys.Date(), ".csv")` alike (R);
+  # Python has only `=` (no `<-`/`<<-`), same restriction as
+  # repro_defined_vars()/`.code_char_vector_vars()` elsewhere in this file.
+  assign_pat <- if (identical(lang, "Python"))
+    "^([.a-zA-Z_][.a-zA-Z0-9_]*)\\s*=(?!=)\\s*(.+)$" else
+    "^([.a-zA-Z][.a-zA-Z0-9_]*)\\s*(?:<<-|<-|=)\\s*(.+)$"
   am <- regmatches(nc, regexec(assign_pat, nc, perl = TRUE))
   assigns <- Filter(function(x) length(x) == 3, am)
   path_like_vars <- character(0)
@@ -485,12 +511,21 @@ repro_dependencies <- function(code_text, lang = "R") {
       }
       # An INLINE path-building call as the argument itself — no intermediate
       # variable at all (`write.csv(df, paste0("dir/", Sys.Date(), ".csv"))`,
-      # the common `%>% write.csv(paste0(...), ...)` pipe shape). Gated on the
-      # value actually being a call to one of the known path-building
-      # functions (not just "contains a quoted extension-shaped string
-      # somewhere"), so an unrelated call whose LAST argument happens to be
-      # such a string (rare, but not zero-risk) is not swept in by accident.
-      if (grepl("^(paste0|paste|sprintf|file\\.path)\\s*\\(", val, perl = TRUE)) {
+      # the common `%>% write.csv(paste0(...), ...)` pipe shape; for Python,
+      # `df.to_csv(os.path.join("dir", "x.csv"))`). Gated on the value
+      # actually being a call to one of the known path-building functions
+      # (not just "contains a quoted extension-shaped string somewhere"), so
+      # an unrelated call whose LAST argument happens to be such a string
+      # (rare, but not zero-risk) is not swept in by accident. Python
+      # f-strings/.format() calls are NOT matched here — unlike
+      # os.path.join(...), there is no reliable "this is a path-building
+      # call" marker to gate on for either (an f-string is not a call at
+      # all), so per this function's own `lang` docs, those are left
+      # unresolved rather than guessed at.
+      path_build_pat <- if (identical(lang, "Python"))
+        "^(os\\.path\\.join|pathlib\\.Path|Path)\\s*\\(" else
+        "^(paste0|paste|sprintf|file\\.path)\\s*\\("
+      if (grepl(path_build_pat, val, perl = TRUE)) {
         ext <- .repro_path_like_ext(val)
         if (!is.na(ext)) {
           # No variable name to label the redirected file with (unlike the
@@ -616,7 +651,14 @@ repro_dependencies <- function(code_text, lang = "R") {
 #' @param plan the `psychds_check` table: one row per file with `file_name`,
 #'   `target_path`, `current_path`, and (for converted tabular files)
 #'   `original_target`
-#' @param lang the language (only R is rewritten here)
+#' @param lang the language: `"R"` or `"Python"` are rewritten; any other
+#'   value returns the empty frame. Python's format-string call forms
+#'   (f-strings, `.format()`, `os.path.join()`) are NOT resolved to a call
+#'   row the way R's `sprintf()`/`paste()`/`file.path()` are (see
+#'   `call_refs`/[.repro_format_call_refs()] below) — only a literal quoted
+#'   path is rewritten for Python, so a path built by string
+#'   concatenation/formatting is left alone and reported `matched = FALSE`
+#'   rather than guessed at.
 #' @param structure_df optional `data_check` structure table (`file_name`,
 #'   `file_location`) — when supplied, enables the content-hash mirror
 #'   collapsing described above. `NULL` (default) skips it.
@@ -645,11 +687,11 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
                       matched = logical(0), target = character(0),
                       ambiguous = logical(0), n_candidates = integer(0),
                       is_call = logical(0))
-  if (!identical(lang, "R") || is.null(code_text)) return(empty)
+  if (!lang %in% c("R", "Python") || is.null(code_text)) return(empty)
   if (is.null(plan) || nrow(plan) == 0 ||
       !all(c("file_name", "target_path") %in% names(plan))) return(empty)
 
-  refs <- code_file_refs(code_text, "R")
+  refs <- code_file_refs(code_text, lang)
   # Format-string calls (sprintf()/paste()/paste0()/file.path()) are a SEPARATE
   # source of references: code_file_refs() already returns their raw format
   # string as a "reference" too (it matches the quoted-filename pattern), so
@@ -658,8 +700,12 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   # or the call's trailing arguments are orphaned (see .repro_format_call_refs()
   # roxygen for the concrete case this fixes). Build the call rows here and
   # drop their raw format string from `refs`, so each such reference is
-  # represented exactly once, as a call row.
-  call_refs <- .repro_format_call_refs(code_text)
+  # represented exactly once, as a call row. R only (see this function's own
+  # `lang` docs) — a Python reference built by an f-string/.format()/
+  # os.path.join() call is left as a literal-only match attempt instead.
+  call_refs <- if (identical(lang, "R")) .repro_format_call_refs(code_text) else
+    data.frame(call_text = character(0), fmt = character(0),
+               resolved = character(0), line = integer(0))
   if (nrow(call_refs) > 0) refs <- setdiff(refs, call_refs$fmt)
   if (length(refs) == 0 && nrow(call_refs) == 0) return(empty)
   ref_base <- tolower(basename(gsub("\\\\", "/", refs)))
@@ -1046,32 +1092,57 @@ repro_run_order <- function(files, extra_edges = NULL) {
 #' A thin wrapper that runs the static reference scans over each code file and
 #' returns the per-file read / write / source basenames [repro_run_order()]
 #' needs. Reads/writes come from [code_file_refs()] split by call type; sources
-#' from a scan for `source()`. All returned as lowercased basenames.
+#' from a scan for `source()` (R only — see `lang` below). All returned as
+#' lowercased basenames.
 #'
 #' @param code_text_list a named list of code-text character vectors, one per
-#'   file (names are the file_names)
+#'   file (names are the file_names), OR a named list of such lists when
+#'   files are in more than one language (see `lang`)
+#' @param lang the language each element of `code_text_list` is in: either a
+#'   single string applied to every file (default `"R"`), or a named
+#'   character vector keyed by file_name for a mixed-language set. Python has
+#'   no `source()`-equivalent for reusing a SIBLING analysis script by
+#'   relative path (its code-reuse mechanism, `import`, names an installed
+#'   module, not a local file run_order must sequence), so `sources` is
+#'   always empty for a Python file; `open(..., "w"/"a"/...)` is classified
+#'   as a write only when that same line's own mode argument says so (a bare
+#'   `open(x)` defaults to Python's own read mode and is otherwise
+#'   ambiguous between the two).
 #'
 #' @returns a data frame with `file_name` and list-columns `reads`, `writes`,
 #'   `sources` (each a character vector of basenames).
 #' @export
-repro_file_io <- function(code_text_list) {
+repro_file_io <- function(code_text_list, lang = "R") {
   if (is.null(code_text_list) || length(code_text_list) == 0)
     return(data.frame(file_name = character(0)))
 
   fname <- names(code_text_list) %||% as.character(seq_along(code_text_list))
+  lang_for <- if (length(lang) == 1) stats::setNames(rep(lang, length(fname)), fname)
+    else lang[fname]
 
   # A read call vs a write call, from the call name preceding the quoted path.
-  write_fns <- "\\b(write[._][A-Za-z._0-9]*|saveRDS|save|save\\.image|ggsave|export|fwrite)\\s*\\("
+  write_fns_for <- list(
+    R = "\\b(write[._][A-Za-z._0-9]*|saveRDS|save|save\\.image|ggsave|export|fwrite)\\s*\\(",
+    Python = "\\b(to_[A-Za-z_0-9]+|savetxt|savefig|dump|save)\\s*\\("
+  )
+  # open(...) is BOTH a read call (code_file_refs()'s Python branch) and a
+  # potential write call, decided only by its own mode argument -- "r"/"rb"
+  # (or no mode at all, Python's own read default) is a read, "w"/"a"/"x"/
+  # any mode containing "w"/"a"/"x" is a write.
+  open_write_mode <- "open\\s*\\([^)]*['\"][a-zA-Z]*[wax][a-zA-Z]*['\"]"
   src_pat <- "source\\s*\\(\\s*['\"]([^'\"]+)['\"]"
 
   rows <- lapply(seq_along(code_text_list), function(k) {
     ct <- code_text_list[[k]]
-    nc <- code_remove_comments(ct, "R")
+    fn_lang <- lang_for[[k]] %||% "R"
+    nc <- code_remove_comments(ct, fn_lang)
     # include_writes = TRUE: outputs must be visible here, because a file one
     # script writes is the input the next script reads. Without them `writes` is
     # always empty and every intermediate looks like a missing input.
-    all_refs <- code_file_refs(nc, "R", include_writes = TRUE)
+    all_refs <- code_file_refs(nc, fn_lang, include_writes = TRUE)
     joined <- paste(nc, collapse = "\n")
+
+    write_fns <- write_fns_for[[fn_lang]] %||% write_fns_for[["R"]]
 
     # Classify each ref per *occurrence*, not per file: a file can be written on
     # one line and read back on another (a cached intermediate), and it must then
@@ -1082,15 +1153,23 @@ repro_file_io <- function(code_text_list) {
     for (i in seq_along(all_refs)) {
       lines <- grep(all_refs[i], nc, fixed = TRUE, value = TRUE)
       w <- grepl(write_fns, lines, perl = TRUE, ignore.case = TRUE)
+      if (identical(fn_lang, "Python"))
+        w <- w | grepl(open_write_mode, lines, perl = TRUE)
       is_write[i] <- any(w)
       is_read[i]  <- any(!w)
     }
     reads  <- ref_base[is_read]
     writes <- ref_base[is_write]
 
-    srcs <- regmatches(joined, gregexpr(src_pat, joined, perl = TRUE))[[1]]
-    srcs <- sub(src_pat, "\\1", srcs, perl = TRUE)
-    srcs <- tolower(basename(gsub("\\\\", "/", srcs)))
+    # source() is R-only (see this function's own roxygen for why Python's
+    # import does not play the same role).
+    if (identical(fn_lang, "R")) {
+      srcs <- regmatches(joined, gregexpr(src_pat, joined, perl = TRUE))[[1]]
+      srcs <- sub(src_pat, "\\1", srcs, perl = TRUE)
+      srcs <- tolower(basename(gsub("\\\\", "/", srcs)))
+    } else {
+      srcs <- character(0)
+    }
 
     # code_file_refs() lists source() among its "read" calls, so a sourced
     # script leaks into `reads`. A source() is a CODE dependency (handled by the
@@ -1578,7 +1657,24 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   exports `X` (see the module's own missing-`library()` corrective step) —
 #'   reusing this function's existing text-rewrite plumbing rather than a
 #'   separate rewrite path. `NULL` (default) injects nothing, unchanged from
-#'   before this parameter existed.
+#'   before this parameter existed. R only: there is no Python corrective
+#'   re-run (the module's missing-dependency/undefined-name recovery is
+#'   namespace-export-based — see `.repro_find_export_pkg()` — with no
+#'   equivalent built for Python's `import` statements), so this is ignored
+#'   for a file whose `lang` is `"Python"`.
+#' @param lang the language each element of `code_text_list` is in: a single
+#'   string applied to every file (default `"R"`), or a named character
+#'   vector keyed by file_name for a mixed-language set (same shape as
+#'   [repro_file_io()]'s own `lang`). Selects the write-redirect function
+#'   names ([.repro_redirect_writes()]) and the "comment out the working-
+#'   directory override" line (`setwd()` for R, `os.chdir()` for Python).
+#'   Python's font-substitution analogue is deliberately NOT built: an
+#'   unavailable font is a matplotlib WARNING with a silent DejaVu Sans
+#'   fallback, not the hard "invalid font type" failure
+#'   `family =`/`base_family =` causes in R's graphics devices (the actual
+#'   reason this transform exists for R) — rewriting Python's many
+#'   `rcParams`/`plt.rc()`/`fontdict=` spellings would be solving a failure
+#'   mode Python's own ecosystem does not have here.
 #'
 #' @returns a data frame with `file_name`, `script_path` (absolute path written),
 #'   `run_dir` (the working directory a run should use — always `root`),
@@ -1592,10 +1688,12 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   `inject_libs` for that file, or `NA` when none was).
 #' @export
 repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
-                                inject_libs = NULL) {
+                                inject_libs = NULL, lang = "R") {
   fnames <- names(code_text_list)
   plan_base <- if (!is.null(plan) && "file_name" %in% names(plan))
     tolower(basename(plan$file_name)) else character(0)
+  lang_for <- if (length(lang) == 1) stats::setNames(rep(lang, length(fnames)), fnames)
+    else lang[fnames]
 
   script_target <- function(fn) {
     # A script's own place in the tree: match its basename in the plan; else put
@@ -1608,16 +1706,26 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     basename(fn)
   }
 
-  # A line that calls setwd(). Matches setwd( at a statement start (allowing
-  # leading whitespace), so setwd inside a longer expression is still caught by
-  # the call token. The quoted argument (if any) is captured for the warning.
-  setwd_line <- "^(\\s*)(setwd\\s*\\(.*)$"
-  setwd_arg  <- "setwd\\s*\\(\\s*['\"]([^'\"]+)['\"]"
+  # A line that calls setwd()/os.chdir(). Matches the call at a statement
+  # start (allowing leading whitespace), so a call inside a longer expression
+  # is still caught by the call token. The quoted argument (if any) is
+  # captured for the warning.
+  setwd_line_for <- list(
+    R = "^(\\s*)(setwd\\s*\\(.*)$",
+    Python = "^(\\s*)(os\\.chdir\\s*\\(.*)$"
+  )
+  setwd_arg_for <- list(
+    R = "setwd\\s*\\(\\s*['\"]([^'\"]+)['\"]",
+    Python = "os\\.chdir\\s*\\(\\s*['\"]([^'\"]+)['\"]"
+  )
 
   rows <- lapply(seq_along(code_text_list), function(i) {
     fn  <- fnames[[i]]
     txt <- code_text_list[[i]]
     rw  <- rewrite_list[[fn]]
+    fn_lang <- lang_for[[i]] %||% "R"
+    setwd_line <- setwd_line_for[[fn_lang]] %||% setwd_line_for[["R"]]
+    setwd_arg  <- setwd_arg_for[[fn_lang]] %||% setwd_arg_for[["R"]]
     # Apply each resolved (matched, non-ambiguous, real target) rewrite as a
     # literal replacement. Fixed (non-regex) to avoid metacharacter surprises
     # in file paths. A plain reference replaces just the quoted path; an
@@ -1645,7 +1753,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     # can wrap across lines, e.g. piped into write.csv() on its own line), then
     # re-split back into per-line form so the rest of this function's
     # line-vector operations (setwd detection below) still work unchanged.
-    wr <- .repro_redirect_writes(txt)
+    wr <- .repro_redirect_writes(txt, lang = fn_lang)
     if (nrow(wr) > 0) {
       joined_txt <- paste(txt, collapse = "\n")
       for (k in seq_len(nrow(wr))) {
@@ -1687,11 +1795,14 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     # narrow: only a `family =` / `base_family =` NAMED argument is touched
     # (not any quoted string that merely looks like a font name), the same
     # "do not guess beyond what is clearly the thing in question" restraint
-    # the rest of this function's rewrites already follow.
+    # the rest of this function's rewrites already follow. R only — see this
+    # function's own `lang` docs for why Python has no equivalent here.
     family_pat <- "\\b(base_family|family)\\s*=\\s*(['\"])[^'\"]*\\2"
     joined_for_family <- paste(txt, collapse = "\n")
-    family_matches <- regmatches(joined_for_family,
-                                 gregexpr(family_pat, joined_for_family, perl = TRUE))[[1]]
+    family_matches <- if (identical(fn_lang, "R"))
+      regmatches(joined_for_family,
+                gregexpr(family_pat, joined_for_family, perl = TRUE))[[1]] else
+      character(0)
     family_n <- length(family_matches)
     if (family_n > 0) {
       joined_for_family <- gsub(family_pat, "\\1 = \"sans\"", joined_for_family, perl = TRUE)
@@ -1705,8 +1816,10 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     # before ANY of the script's code runs, since a `library()` earlier in
     # the same file could otherwise already have been attempted and failed
     # first (also, the corrective rerun only has a file-level signal — "this
-    # script needs package P" — not a line number to target).
-    injected_pkg <- if (!is.null(inject_libs) && fn %in% names(inject_libs))
+    # script needs package P" — not a line number to target). R only — see
+    # this function's own `inject_libs` docs above.
+    injected_pkg <- if (identical(fn_lang, "R") && !is.null(inject_libs) &&
+                        fn %in% names(inject_libs))
       inject_libs[[fn]] else NA_character_
     if (!is.na(injected_pkg) && nzchar(injected_pkg))
       txt <- c(sprintf("library(%s)  # [reproducibility_check injected]", injected_pkg), txt)

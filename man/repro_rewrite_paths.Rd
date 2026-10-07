@@ -21,7 +21,14 @@ repro_rewrite_paths(
 \code{target_path}, \code{current_path}, and (for converted tabular files)
 \code{original_target}}
 
-\item{lang}{the language (only R is rewritten here)}
+\item{lang}{the language: \code{"R"} or \code{"Python"} are rewritten; any other
+value returns the empty frame. Python's format-string call forms
+(f-strings, \code{.format()}, \code{os.path.join()}) are NOT resolved to a call
+row the way R's \code{sprintf()}/\code{paste()}/\code{file.path()} are (see
+\code{call_refs}/\code{\link[=.repro_format_call_refs]{.repro_format_call_refs()}} below) — only a literal quoted
+path is rewritten for Python, so a path built by string
+concatenation/formatting is left alone and reported \code{matched = FALSE}
+rather than guessed at.}
 
 \item{structure_df}{optional \code{data_check} structure table (\code{file_name},
 \code{file_location}) — when supplied, enables the content-hash mirror

@@ -23,3 +23,19 @@ whatever R is already installed.
   `read_r_output()`'s extractors only recognise fixed-width tables and
   `stat = value` one-liners — a bare `[1] 0.75` or a named-vector print
   produces no result row at all, so nothing for `model_ref` to attach to.
+
+Python siblings of the same scripts, same purpose each, kept to the standard
+library only (`csv`/`os`, no `import pandas`/`import scipy`/...) so their own
+`execute = TRUE` tests never need `install_missing = TRUE` / network access
+either — every script here runs with whatever `python`/`python3` is already
+installed:
+
+- `ok.py` — reads `data.csv`, prints two group means. Runs cleanly.
+- `writes_then_reads.py` / `reads_written.py` — the same two-script
+  read-after-write pipeline as the R pair, via `open()`/`csv`.
+- `missing_input.py` — reads a file that is not in the fixture directory.
+- `bad_chdir.py` — calls `os.chdir()` to an absolute path before reading data
+  (the Python sibling of `bad_setwd.R`).
+- `errors.py` — raises a real runtime error (`raise RuntimeError(...)`).
+- `undefined_var.py` — references a name no script in this fixture defines
+  (a `NameError`, the Python sibling of `undefined_var.R`'s `object not found`).
