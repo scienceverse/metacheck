@@ -18,4 +18,21 @@ to whatever R version it was built against, NOT the paper's own declared
 version, which is the tradeoff \code{docker_use_declared_version} on
 \code{reproducibility_check()} exists to let a caller opt out of.
 }
+\details{
+NOTE (found and reverted within the same session that found it): the
+build repo's README/Dockerfiles describe a \code{metacheck_r_large}/
+\code{metacheck_r_small} split, which this constant briefly pointed at -- but
+\code{ghcr.io/scienceverse/metacheck_r_large} does not actually exist on the
+registry (confirmed via \verb{docker pull}, which fails with "not found"),
+while the plain \code{ghcr.io/scienceverse/metacheck_r} used here DOES exist
+and pulls successfully (confirmed directly). The \verb{_large}/\verb{_small} split
+was designed (Dockerfiles + README written) but, as far as can be
+verified from this repo alone, never actually built and pushed under
+those names -- the README documents an intended future state, not the
+currently published image. Reverted to the verified-working name rather
+than trusting the README's naming over an actual \verb{docker pull} result.
+If the \verb{_large}/\verb{_small} split is ever actually built and pushed, this
+constant should be updated again -- but only after confirming with
+\verb{docker pull} first, not from the README alone.
+}
 \keyword{internal}

@@ -145,6 +145,22 @@ repro_docker_available <- function() {
 #' to whatever R version it was built against, NOT the paper's own declared
 #' version, which is the tradeoff `docker_use_declared_version` on
 #' `reproducibility_check()` exists to let a caller opt out of.
+#'
+#' NOTE (found and reverted within the same session that found it): the
+#' build repo's README/Dockerfiles describe a `metacheck_r_large`/
+#' `metacheck_r_small` split, which this constant briefly pointed at -- but
+#' `ghcr.io/scienceverse/metacheck_r_large` does not actually exist on the
+#' registry (confirmed via `docker pull`, which fails with "not found"),
+#' while the plain `ghcr.io/scienceverse/metacheck_r` used here DOES exist
+#' and pulls successfully (confirmed directly). The `_large`/`_small` split
+#' was designed (Dockerfiles + README written) but, as far as can be
+#' verified from this repo alone, never actually built and pushed under
+#' those names -- the README documents an intended future state, not the
+#' currently published image. Reverted to the verified-working name rather
+#' than trusting the README's naming over an actual `docker pull` result.
+#' If the `_large`/`_small` split is ever actually built and pushed, this
+#' constant should be updated again -- but only after confirming with
+#' `docker pull` first, not from the README alone.
 #' @keywords internal
 .repro_docker_default_image <- "ghcr.io/scienceverse/metacheck_r:latest"
 
