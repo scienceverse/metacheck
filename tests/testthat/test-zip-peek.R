@@ -165,6 +165,60 @@ test_that(".zip_fetch_members reports a per-member error instead of a silent ok=
   expect_match(got$error, "Zip64")
 })
 
+test_that(".zip_fetch_members downloads the archive once in whole-archive mode (#471)", {
+  # A real local zip, served through a file:// URL so .download_one() can fetch
+  # it without a network; zip_peek() is stubbed with the zip's own central
+  # directory, as repo_check would have read it.
+  d <- withr::local_tempdir()
+  writeLines(rep("id,x", 200), file.path(d, "a.csv"))
+  writeLines(rep("y", 50), file.path(d, "b.csv"))
+  dir.create(file.path(d, "sub"))
+  writeLines("z <- 1", file.path(d, "sub", "c.R"))
+  writeLines("stimulus", file.path(d, "img.txt"))
+  withr::with_dir(d, utils::zip("arc.zip", c("a.csv", "b.csv", "sub/c.R", "img.txt"),
+                                flags = "-q"))
+  zip <- file.path(d, "arc.zip")
+  skip_if_not(file.exists(zip), "zip utility unavailable")
+  cd <- metacheck:::.parse_zip_central_dir(readBin(zip, "raw", file.size(zip)))
+  local_mocked_bindings(zip_peek = function(url, ...) cd)
+
+  url <- paste0("file:///", normalizePath(zip, winslash = "/"))
+  dest <- file.path(d, "out")
+  kept <- file.path(d, "kept.zip")
+  got <- metacheck:::.zip_fetch_members(url, names = c("a.csv", "b.csv", "sub/c.R"),
+                                        dest = dest, max_whole_bytes = Inf,
+                                        archive_path = kept)
+  expect_true(all(got$ok))
+  expect_equal(normalizePath(got$path), normalizePath(file.path(dest, got$name)))
+  expect_equal(readLines(file.path(dest, "sub", "c.R")), "z <- 1")
+  expect_false(file.exists(file.path(dest, "img.txt")))   # not wanted, not written
+  expect_true(file.exists(kept))   # archive kept for a restarted run
+
+  # Too large for the budget: the archive is not downloaded (NULL tells
+  # .zip_fetch_members() to fetch member by member instead).
+  kept2 <- file.path(d, "kept2.zip")
+  want <- cd[cd$name %in% c("a.csv", "b.csv"), , drop = FALSE]
+  expect_null(metacheck:::.zip_fetch_whole(url, cd, want, file.path(d, "out2", want$name),
+                                           max_bytes = 10, archive_path = kept2))
+  expect_false(file.exists(kept2))
+})
+
+test_that(".zip_whole_size estimates a zip's size from its central directory (#471)", {
+  d <- withr::local_tempdir()
+  writeLines(rep("id,x", 200), file.path(d, "a.csv"))
+  writeLines("hello", file.path(d, "b.txt"))
+  withr::with_dir(d, utils::zip("arc.zip", c("a.csv", "b.txt"), flags = "-q"))
+  zip <- file.path(d, "arc.zip")
+  skip_if_not(file.exists(zip), "zip utility unavailable")
+  cd <- metacheck:::.parse_zip_central_dir(readBin(zip, "raw", file.size(zip)))
+  est <- metacheck:::.zip_whole_size(cd)
+  # Local extra fields are not in the central directory, so the estimate may be
+  # short by a few dozen bytes per member, never more.
+  expect_true(abs(est - file.size(zip)) < 100 * nrow(cd))
+  cd$offset[1] <- NA   # Zip64: unknown
+  expect_true(is.na(metacheck:::.zip_whole_size(cd)))
+})
+
 test_that("zip_decision keeps a data zip and links a pure-asset zip", {
   # Stub zip_peek so no network: two synthetic listings.
   local_mocked_bindings(

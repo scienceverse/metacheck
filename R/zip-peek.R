@@ -629,8 +629,27 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # failure. Without this a row simply had ok == FALSE with nothing to say why,
 # so a transient failure worth retrying and a host that will never support
 # this looked identical after the fact (#429).
+#
+# Whole-archive mode (issue #471): every member costs two range requests
+# (.zip_member_fetch()), so an archive with N wanted members costs about 2N + 2
+# requests, against 1 for downloading the archive once. On a host with a strict
+# daily request quota (Dryad) that difference decides whether a corpus run takes
+# hours or days. When at least `min_whole_members` members are wanted and the
+# archive's own size (estimated from its central directory, see
+# .zip_whole_size()) is at most `max_whole_bytes`, the archive is downloaded
+# once and the wanted members are extracted locally. Off by default
+# (`max_whole_bytes = 0`): the caller decides, because the archive-*.R platform
+# callers chose member fetching precisely to avoid transferring an archive that
+# is mostly material. `archive_path`, when given, is where the downloaded
+# archive is kept, so a restarted run reuses it instead of requesting it again;
+# when NULL it is a temporary file removed on exit. Any member the whole-archive
+# step could not deliver (download failed, rate limit, extraction failed) falls
+# through to the per-member range fetch below, so this never does worse than
+# before.
 .zip_fetch_members <- function(url, names = NULL, dest, verify = TRUE,
-                               cache = FALSE, skip_on_api_limit = FALSE) {
+                               cache = FALSE, skip_on_api_limit = FALSE,
+                               max_whole_bytes = 0, archive_path = NULL,
+                               min_whole_members = 3) {
   cd <- tryCatch(zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit),
                  error = function(e) NULL)
   if (is.null(cd) || nrow(cd) == 0) return(NULL)
@@ -641,7 +660,23 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   out_path <- rep(NA_character_, nrow(want))
   ok <- rep(FALSE, nrow(want))
   error <- rep(NA_character_, nrow(want))
+  targets <- vapply(want$name, .zip_member_target, character(1), dest = dest,
+                    USE.NAMES = FALSE)
+
+  if (nrow(want) >= min_whole_members && isTRUE(max_whole_bytes > 0)) {
+    whole <- tryCatch(
+      .zip_fetch_whole(url, cd, want, targets, max_bytes = max_whole_bytes,
+                       archive_path = archive_path,
+                       skip_on_api_limit = skip_on_api_limit),
+      error = function(e) NULL)
+    if (!is.null(whole)) {
+      ok <- !is.na(whole)
+      out_path[ok] <- whole[ok]
+    }
+  }
+
   for (i in seq_len(nrow(want))) {
+    if (ok[i]) next   # already extracted from the whole archive
     reason <- new.env(parent = emptyenv())
     bytes <- .zip_member_fetch(url, want[i, , drop = FALSE], verify = verify,
                                skip_on_api_limit = skip_on_api_limit,
@@ -650,16 +685,11 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
       error[i] <- reason$msg %||% "unknown failure"
       next
     }
-    # Entry paths come from the archive, so they are constrained to sit under
-    # dest: a member named "../secret" or "/etc/x" would otherwise write outside
-    # the target directory when the archive is hostile or simply malformed.
-    rel <- gsub("\\\\", "/", want$name[i])
-    rel <- sub("^([A-Za-z]:)?/+", "", rel)
-    if (any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) {
+    target <- targets[i]
+    if (is.na(target)) {
       error[i] <- "entry path escapes the archive (path traversal)"
       next
     }
-    target <- file.path(dest, rel)
     dir.create(dirname(target), showWarnings = FALSE, recursive = TRUE)
     written <- tryCatch({ writeBin(bytes, target); TRUE },
                         error = function(e) FALSE)
@@ -672,6 +702,87 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   }
   data.frame(name = want$name, path = out_path, size = want$size, ok = ok,
              error = error, stringsAsFactors = FALSE)
+}
+
+# Where a member named `name` is written under `dest`, or NA when its path would
+# escape `dest`. Entry paths come from the archive, so they are constrained to
+# sit under dest: a member named "../secret" or "/etc/x" would otherwise write
+# outside the target directory when the archive is hostile or simply malformed.
+.zip_member_target <- function(name, dest) {
+  rel <- gsub("\\\\", "/", name)
+  rel <- sub("^([A-Za-z]:)?/+", "", rel)
+  if (any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) return(NA_character_)
+  file.path(dest, rel)
+}
+
+# Size in bytes of a remote zip, estimated from its central directory (`cd`,
+# from zip_peek()) so no extra request is needed: the end of the last member's
+# data, plus the central directory and its end record that follow it. Extra
+# fields are not in `cd`, so this can be short by a few dozen bytes per member
+# (31 per member for an Info-ZIP archive) -- close enough for a size cap and a
+# timeout. NA when any
+# entry is Zip64 (offset or compressed size not stored).
+.zip_whole_size <- function(cd) {
+  if (is.null(cd) || nrow(cd) == 0 || anyNA(cd$offset) || anyNA(cd$csize))
+    return(NA_real_)
+  name_bytes <- nchar(cd$name, type = "bytes")
+  max(cd$offset + 30 + name_bytes + cd$csize) + sum(46 + name_bytes) + 22
+}
+
+# Download a whole zip once and extract the rows of `want` (from zip_peek())
+# into `targets` (from .zip_member_target(), same order). Returns a character
+# vector the length of `targets`: the written path, or NA for a member that was
+# not delivered (the caller then fetches it by byte range). Returns NULL when
+# the archive was not used at all: too large or of unknown size, or the
+# download failed. See .zip_fetch_members() for when and why this is used.
+.zip_fetch_whole <- function(url, cd, want, targets, max_bytes,
+                             archive_path = NULL, skip_on_api_limit = FALSE) {
+  size <- .zip_whole_size(cd)
+  if (is.na(size) || size > max_bytes) return(NULL)
+
+  if (is.null(archive_path)) {
+    archive_path <- tempfile(fileext = ".zip")
+    on.exit(unlink(archive_path), add = TRUE)
+  }
+  zip_list <- function(p) {
+    if (!file.exists(p)) return(NULL)
+    tryCatch(utils::unzip(p, list = TRUE), error = function(e) NULL)
+  }
+  # Reuse an archive kept by an earlier run; one that cannot be listed is a
+  # partial or corrupt download and is fetched again.
+  if (is.null(zip_list(archive_path))) {
+    unlink(archive_path)
+    err <- .download_one(url, archive_path, skip_on_api_limit = skip_on_api_limit,
+                         expected_bytes = size)
+    if (!is.na(err) || is.null(zip_list(archive_path))) {
+      unlink(archive_path)
+      return(NULL)
+    }
+  }
+
+  # Extract into a scratch directory first, then copy each member to its
+  # target, so the paths on disk are the same as the per-member fetch writes
+  # (which strips leading "/" and drive letters) and a traversal name is never
+  # handed to unzip at all.
+  exdir <- tempfile("zipwhole")
+  on.exit(unlink(exdir, recursive = TRUE), add = TRUE)
+  safe <- !is.na(targets)
+  if (any(safe))
+    tryCatch(suppressWarnings(utils::unzip(archive_path, files = want$name[safe],
+                                           exdir = exdir)),
+             error = function(e) NULL)
+
+  out <- rep(NA_character_, length(targets))
+  for (i in which(safe)) {
+    src <- file.path(exdir, want$name[i])
+    # The archive's own record of the size checks the extracted bytes; a
+    # mismatch or a missing file leaves the member to the per-member fetch.
+    if (!file.exists(src) ||
+        (!is.na(want$size[i]) && file.size(src) != want$size[i])) next
+    dir.create(dirname(targets[i]), showWarnings = FALSE, recursive = TRUE)
+    if (isTRUE(file.copy(src, targets[i], overwrite = TRUE))) out[i] <- targets[i]
+  }
+  out
 }
 
 # ── Archive-format classification ────────────────────────────────────────────

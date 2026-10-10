@@ -165,7 +165,8 @@ code_check <- function(paper, local_path = NULL,
   # its code-classified members via range requests (no full download). See
   # .code_expand_zip() and issue #383 (Gap 2).
   if (any(grepl("\\.zip$", all_files$file_name, ignore.case = TRUE))) {
-    all_files <- .code_expand_zip(all_files, skip_on_api_limit, cache)
+    all_files <- .code_expand_zip(all_files, skip_on_api_limit, cache,
+                                  max_download_size = max_download_size)
     all_files$language <- code_lang(all_files$file_name)
   }
 

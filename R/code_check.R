@@ -591,7 +591,8 @@ code_lang <- function(file_name) {
 # own NULL-return cases); such a row is left for the normal download path,
 # which will fetch the whole archive and (if data_check expands it) recover
 # its contents that way instead.
-.code_expand_zip <- function(all_files, skip_on_api_limit = FALSE, cache = FALSE) {
+.code_expand_zip <- function(all_files, skip_on_api_limit = FALSE, cache = FALSE,
+                             max_download_size = 500) {
   is_zip <- grepl("\\.zip$", all_files$file_name, ignore.case = TRUE) &
     !is.na(all_files$file_url) & nzchar(all_files$file_url %||% "")
   if (!any(is_zip)) return(all_files)
@@ -609,9 +610,18 @@ code_lang <- function(file_name) {
     dest <- .repo_cache_path(all_files$repo_url[i],
                              paste0(all_files$file_path[i] %||% all_files$file_name[i],
                                     ".contents"))
+    # A Dryad archive within the download budget is fetched whole, once,
+    # instead of two range requests per code member: Dryad's strict daily
+    # request quota otherwise stalls the run (issue #471; see
+    # .zip_fetch_members()). Kept at the zip's own cache path, where the
+    # ordinary download would also put it, so it is not requested again.
+    whole_bytes <- if (grepl("datadryad\\.org", url, ignore.case = TRUE))
+      max_download_size * 1024 * 1024 else 0
     fetched <- tryCatch(
       .zip_fetch_members(url, names = peek$name[is_code], dest = dest,
-                        cache = cache, skip_on_api_limit = skip_on_api_limit),
+                        cache = cache, skip_on_api_limit = skip_on_api_limit,
+                        max_whole_bytes = whole_bytes,
+                        archive_path = sub("\\.contents$", "", dest)),
       error = function(e) NULL)
     if (is.null(fetched) || !any(fetched$ok)) next
 

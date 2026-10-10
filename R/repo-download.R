@@ -1324,11 +1324,19 @@ download_repo_files <- function(files,
         # paste0(zip_path, ".contents")).
         arc_key <- gsub("^https?://", "", arc)
         arc_key <- gsub("[^A-Za-z0-9._-]+", "_", arc_key)
-        member_dest <- paste0(cache_path(files$repo_url[idx[1]],
-                                         file.path(".archive_members", arc_key)),
-                              ".contents")
-        member_dest <- .safe_write_path(member_dest)
+        arc_path <- .safe_write_path(cache_path(files$repo_url[idx[1]],
+                                                file.path(".archive_members", arc_key)))
+        member_dest <- .safe_write_path(paste0(arc_path, ".contents"))
         dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
+        # Dryad counts every request against a strict daily quota, and a
+        # per-member fetch costs two requests per member (issue #471): for a
+        # Dryad archive within this archive's budget, download it once and
+        # extract the members locally instead (.zip_fetch_members()'s
+        # whole-archive mode). The archive is kept at `arc_path` (the
+        # ".contents" directory's own name without the suffix, mirroring
+        # .expand_zip()) so a restarted run does not request it again. Other
+        # hosts keep the per-member fetch, which transfers fewer bytes.
+        whole_bytes <- if (grepl("datadryad\\.org", arc, ignore.case = TRUE)) cap_bytes else 0
         # Record what actually went wrong instead of discarding it: a bare
         # `next` here left every member of `arc` at file_location = NA with no
         # trace of why, so a transient failure worth retrying and a host that
@@ -1336,7 +1344,8 @@ download_repo_files <- function(files,
         # (issue #429).
         fetched <- tryCatch(
           .zip_fetch_members(arc, names = files$archive_member[idx], dest = member_dest,
-                            cache = cache, skip_on_api_limit = skip_on_api_limit),
+                            cache = cache, skip_on_api_limit = skip_on_api_limit,
+                            max_whole_bytes = whole_bytes, archive_path = arc_path),
           error = function(e) conditionMessage(e))
         if (is.character(fetched)) {
           failed <- rbind(failed, data.frame(
