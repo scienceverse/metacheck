@@ -673,6 +673,24 @@ test_that("repro_write_scripts redirects a literal write target into output/", {
   expect_false(grepl("results/out.csv", written, fixed = TRUE))
 })
 
+test_that("repro_write_scripts redirects writes to a relative output/ path, not the host path (#502)", {
+  # the Docker sandbox mounts root at /sandbox, so a host path in the script
+  # does not exist inside the container; every run's working directory is root
+  code_list <- list("analysis.R" = 'write.csv(x, "../Data/Cleaned/out.csv")')
+  rewrite_list <- list("analysis.R" = data.frame(
+    ref = character(0), basename = character(0), matched = logical(0),
+    target = character(0), ambiguous = logical(0), n_candidates = integer(0),
+    is_call = logical(0)))
+  plan <- data.frame(file_name = "analysis.R", target_path = "analysis.R")
+  root <- withr::local_tempdir()
+  out <- repro_write_scripts(code_list, rewrite_list, plan, root)
+
+  written <- paste(readLines(out$script_path[1]), collapse = "\n")
+  expect_match(written, '"output/out.csv"', fixed = TRUE)
+  expect_false(grepl(basename(root), written, fixed = TRUE))
+  expect_equal(normalizePath(out$run_dir[1]), normalizePath(root))
+})
+
 test_that("repro_write_scripts replaces a named font family with 'sans'", {
   code_list <- list("plot.R" = 'theme_few(base_family = "Times New Roman")')
   rewrite_list <- list("plot.R" = data.frame(
