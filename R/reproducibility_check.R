@@ -1895,12 +1895,17 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     # can wrap across lines, e.g. piped into write.csv() on its own line), then
     # re-split back into per-line form so the rest of this function's
     # line-vector operations (setwd detection below) still work unchanged.
+    # The target is RELATIVE ("output/<name>"), not file.path(root, "output"):
+    # every run uses the sandbox root as its working directory (`run_dir` is
+    # always `root`, below), in the process sandbox and in the Docker sandbox,
+    # where `root` is mounted at /sandbox and the host path does not exist,
+    # so an absolute host path made every write fail there (#502).
     wr <- .repro_redirect_writes(txt, lang = fn_lang)
     if (nrow(wr) > 0) {
       joined_txt <- paste(txt, collapse = "\n")
       for (k in seq_len(nrow(wr))) {
         repl <- gsub("{{REPRO_OUTPUT}}",
-                    paste0(gsub("\\\\", "/", file.path(root, "output")), "/"),
+                    "output/",
                     wr$replacement[k], fixed = TRUE)
         joined_txt <- sub(wr$call_text[k], repl, joined_txt, fixed = TRUE)
       }
