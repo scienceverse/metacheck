@@ -1739,6 +1739,8 @@ osf_file_download <- function(osf_id,
 #'
 #' @returns a table of preprint info
 #' @export
+#' @seealso For PsyArXiv, [psyarxiv_search()] uses PsyArXiv's own API, with
+#'   full-text search, more filters and bulk files ([psyarxiv_dump()]).
 #' @examples
 #' \dontrun{
 #' dc <- c("2025-09-01", "2025-10-01")

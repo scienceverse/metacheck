@@ -1,0 +1,141 @@
+{
+    "total": 16,
+    "page": 2,
+    "perPage": 2,
+    "results": [
+        {
+            "id": "c43bk",
+            "title": "Replication of Schuler &amp; Wanke (2016)",
+            "abstract": "Findings that money priming increases support for status quo and system-supporting beliefs have proven difficult to replicate. Schuler and Wänke (2016) found that Subjective SES moderates money priming effects on system justification and belief in a just world. We conducted three preregistered replication of this research, with sample sizes three times those of the original studies. Replication 1 combined elements from the original two studies, and Replications 2 and 3 were close replications of Schuler and Wänke’s (2016) Studies 1 and 2, respectively.  Across eight tests of the original effect, one was significant and consistent with the original effect, one was significant and opposite the original effect, and six were not significant. We conclude that the original findings may have been the result of sampling error, and the findings of “small telescopes” analyses are consistent with this conclusion. We discuss implications for money priming effects, and replication attempts in general.",
+            "snippet": "Findings that money <mark>priming<\/mark> increases support for status quo and system-supporting beliefs have proven difficult to replicate. Schuler and Wänke (2016) found that Subjective SES moderates money <mark>priming<\/mark> effects on system justification and belief in a just world. We…",
+            "state": "published",
+            "version": 1,
+            "doi": "10.31234/osf.io/c43bk_v1",
+            "publicationDoi": null,
+            "firstPostedAt": "2017-08-05 12:00:31",
+            "versionPostedAt": "2017-08-05 12:00:31",
+            "license": {
+                "id": "563c1cf88c5e4a3877f9e965",
+                "name": "No license"
+            },
+            "authors": [
+                {
+                    "id": "osf:f1pib",
+                    "name": "Jarret Crawford",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": null
+                },
+                {
+                    "id": "osf:7q489",
+                    "name": "Allison Fournier",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": null
+                },
+                {
+                    "id": "osf:q4yvg",
+                    "name": "John Ruscio",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": "The College of New Jersey"
+                }
+            ],
+            "authorCount": 3,
+            "subjects": [
+                {
+                    "id": "5b4e7425c6983001430b6c1e",
+                    "name": "Social and Behavioral Sciences"
+                },
+                {
+                    "id": "5b4e7425c6983001430b6c34",
+                    "name": "Social and Personality Psychology"
+                }
+            ],
+            "tags": [
+
+            ],
+            "hasData": false,
+            "hasPrereg": false,
+            "language": "en",
+            "url": "/preprint/c43bk"
+        },
+        {
+            "id": "h98v4",
+            "title": "Physical Warmth and Perceptual Focus: A Replication of IJzerman and Semin (2009)",
+            "abstract": "With the changing of modal research practices in psychology, the grounded cognition perspective (sometimes categorized under the more popular term of “social priming”) has become heavily criticized. Specifically, LeBel and Campbell (2013) reported a failed replication of a study involving what some would call ‘social priming’. We sought to replicate a study from our own lab (IJzerman &amp; Semin, 2009), to investigate the reproducibility of the reported effect that physical warmth leads to a greater focus on perceptual relations. We also improved our methods to reduce potential experimenter’s bias (cf. Doyen, Klein, Pichon, &amp; Cleeremans, 2012). We successfully replicated the finding that a simple cue of physical warmth makes people more likely to adopt a relational focus.\n\nThis paper was published in PLoS one:\nSchilder, J. D., IJzerman, H., &amp; Denissen, J. J. (2014). Physical warmth and perceptual focus: A replication of IJzerman and Semin (2009). PloS one, 9(11), e112772.",
+            "snippet": "With the changing of modal research practices in psychology, the grounded cognition perspective (sometimes categorized under the more popular term of “social <mark>priming<\/mark>”) has become heavily criticized. Specifically, LeBel and Campbell (2013) reported a failed replication of a study involving…",
+            "state": "published",
+            "version": 1,
+            "doi": "10.31234/osf.io/h98v4",
+            "publicationDoi": "10.1371/journal.pone.0112772",
+            "firstPostedAt": "2017-06-29 14:04:04",
+            "versionPostedAt": "2017-06-29 14:04:04",
+            "license": {
+                "id": "563c1cf88c5e4a3877f9e96c",
+                "name": "CC0 1.0"
+            },
+            "authors": [
+                {
+                    "id": "osf:vya83",
+                    "name": "Janneke",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": null
+                },
+                {
+                    "id": "osf:3hsfj",
+                    "name": "Hans IJzerman",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": "Annecy Behavioral Science Lab"
+                },
+                {
+                    "id": "osf:uwak6",
+                    "name": "Jaap Denissen",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": "Utrecht University"
+                }
+            ],
+            "authorCount": 3,
+            "subjects": [
+                {
+                    "id": "5b4e7425c6983001430b6c1e",
+                    "name": "Social and Behavioral Sciences"
+                },
+                {
+                    "id": "5b4e7427c6983001430b6c71",
+                    "name": "Perception"
+                },
+                {
+                    "id": "5b4e7425c6983001430b6c34",
+                    "name": "Social and Personality Psychology"
+                }
+            ],
+            "tags": [
+                "corelab",
+                "embodiment",
+                "grounded cognition",
+                "perceptual focus",
+                "replication",
+                "\"social priming\"",
+                "social thermoregulation",
+                "solid science",
+                "warmth"
+            ],
+            "hasData": false,
+            "hasPrereg": false,
+            "language": "en",
+            "url": "/preprint/h98v4"
+        }
+    ],
+    "interpreted": "title : \"replication\" AND \"priming\"",
+    "links": {
+        "self": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=2",
+        "first": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=1",
+        "last": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=8",
+        "next": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=3",
+        "prev": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=1"
+    }
+}

@@ -1,0 +1,10 @@
+structure(list(method = "GET", url = "https://next.psyarxiv.org/api/v1/authors/osf:nonexistent", 
+    status_code = 404L, headers = structure(list(date = "Thu, 22 Oct 2026 04:10:00 GMT", 
+        `content-type` = "application/json", `content-length` = "43", 
+        `access-control-allow-origin` = "*", `report-to` = "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=73Y1CrPTUVLiFOnOkswYNzReg1Yg%2FY4jr6VVbulyEv1%2BUVFjvLveQGonwrlbxMlNAsYLfzIuBBlouZvl1kDe%2FgkoAh1ocnlbqFJ3hs%2Bes85kMEpi%2Bsgqm%2BV6tkgo2FN6hl7XfA%3D%3D\"}]}", 
+        nel = "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}", 
+        server = "cloudflare", `cf-ray` = "a4e5a6595daa44aa-AMS", 
+        `alt-svc` = "h3=\":443\"; ma=86400"), class = "httr2_headers"), 
+    body = charToRaw("{\"error\":\"No such author\",\"statusCode\":404}"), 
+    timing = c(redirect = 0, namelookup = 0, connect = 0, pretransfer = 0.000552, 
+    starttransfer = 0.126951, total = 0.127052), cache = new.env(parent = emptyenv())), class = "httr2_response")

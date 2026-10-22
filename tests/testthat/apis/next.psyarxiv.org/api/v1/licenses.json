@@ -1,0 +1,28 @@
+{
+    "licenses": [
+        {
+            "id": "563c1cf88c5e4a3877f9e96a",
+            "name": "CC-By Attribution 4.0 International",
+            "shortName": "CC BY 4.0",
+            "url": "https://creativecommons.org/licenses/by/4.0/legalcode",
+            "selectable": true,
+            "count": 40895
+        },
+        {
+            "id": "563c1cf88c5e4a3877f9e965",
+            "name": "No license",
+            "shortName": "No license",
+            "url": null,
+            "selectable": false,
+            "count": 7232
+        },
+        {
+            "id": "563c1cf88c5e4a3877f9e96c",
+            "name": "CC0 1.0 Universal",
+            "shortName": "CC0 1.0",
+            "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+            "selectable": true,
+            "count": 4956
+        }
+    ]
+}

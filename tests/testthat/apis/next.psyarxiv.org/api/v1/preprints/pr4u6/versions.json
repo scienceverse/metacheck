@@ -1,0 +1,164 @@
+{
+    "id": "pr4u6",
+    "currentVersion": 7,
+    "versions": [
+        {
+            "version": 7,
+            "title": "The Hateful Eight (H8): An Efficient Multifaceted Approach to the Short Dark Tetrad (SD4)",
+            "doi": "10.31234/osf.io/pr4u6_v7",
+            "postedAt": "2026-05-30 10:40:45",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 1,
+            "subVersions": [
+
+            ],
+            "fileUrl": "/files/osf/pr4u6_v7/1/H8%202026-05-29.pdf",
+            "fileName": "H8 2026-05-29.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/pr4u6_v7/download",
+            "viewUrl": "/files/osf/pr4u6_v7/1/H8%202026-05-29.pdf"
+        },
+        {
+            "version": 6,
+            "title": "The Hateful Eight (H8): An Efficient Multifaceted Approach to the Short Dark Tetrad (SD4)",
+            "doi": "10.31234/osf.io/pr4u6_v6",
+            "postedAt": "2025-12-30 14:57:01",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 1,
+            "subVersions": [
+
+            ],
+            "fileUrl": "/files/osf/pr4u6_v6/1/H8%202025-12-30.pdf",
+            "fileName": "H8 2025-12-30.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/pr4u6_v6/download",
+            "viewUrl": "/files/osf/pr4u6_v6/1/H8%202025-12-30.pdf"
+        },
+        {
+            "version": 5,
+            "title": "The Hateful Eight (H8): An Efficient Multifaceted Approach to the Short Dark Tetrad (SD4)",
+            "doi": "10.31234/osf.io/pr4u6_v5",
+            "postedAt": "2025-11-12 10:11:12",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 1,
+            "subVersions": [
+
+            ],
+            "fileUrl": "/files/osf/pr4u6_v5/1/H8%202025-11-11.pdf",
+            "fileName": "H8 2025-11-11.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/pr4u6_v5/download",
+            "viewUrl": "/files/osf/pr4u6_v5/1/H8%202025-11-11.pdf"
+        },
+        {
+            "version": 4,
+            "title": "The Hateful Eight: An Efficient Multifaceted Short Dark Tetrad Measure",
+            "doi": "10.31234/osf.io/pr4u6_v4",
+            "postedAt": "2025-11-02 19:39:43",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 1,
+            "subVersions": [
+
+            ],
+            "fileUrl": "/files/osf/pr4u6_v4/1/H8%202025-10-30.pdf",
+            "fileName": "H8 2025-10-30.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/pr4u6_v4/download",
+            "viewUrl": "/files/osf/pr4u6_v4/1/H8%202025-10-30.pdf"
+        },
+        {
+            "version": 3,
+            "title": "The Hateful Eight: An Efficient Multifaceted Short Dark Tetrad Measure for Adults",
+            "doi": "10.31234/osf.io/pr4u6_v3",
+            "postedAt": "2025-08-28 22:27:04",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 1,
+            "subVersions": [
+
+            ],
+            "fileUrl": "/files/osf/pr4u6_v3/1/H8%202025-08-27.pdf",
+            "fileName": "H8 2025-08-27.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/pr4u6_v3/download",
+            "viewUrl": "/files/osf/pr4u6_v3/1/H8%202025-08-27.pdf"
+        },
+        {
+            "version": 2,
+            "title": "The Hateful Eight (H8): An Efficient Multifaceted Approach to the Short Dark Tetrad (SD4)",
+            "doi": "10.31234/osf.io/pr4u6_v2",
+            "postedAt": "2025-06-18 16:26:59",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 1,
+            "subVersions": [
+
+            ],
+            "fileUrl": "/files/osf/pr4u6_v2/1/H8%202025-06-18.pdf",
+            "fileName": "H8 2025-06-18.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/pr4u6_v2/download",
+            "viewUrl": "/files/osf/pr4u6_v2/1/H8%202025-06-18.pdf"
+        },
+        {
+            "version": 1,
+            "title": "The Hateful Eight (H8): An Efficient Multifaceted Approach to the Short Dark Tetrad (SD4)",
+            "doi": "10.31234/osf.io/pr4u6",
+            "postedAt": "2020-07-06 04:51:36",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 3,
+            "subVersions": [
+                {
+                    "label": "1.1",
+                    "revision": 1,
+                    "postedAt": "2020-07-06 04:45:25",
+                    "size": 1216738,
+                    "osfFileUrl": "https://osf.io/download/xw2bt/?revision=1",
+                    "fileUrl": "/files/osf/pr4u6_v1/1/H8%202020-07-05.pdf",
+                    "fileName": "H8 2020-07-05.pdf",
+                    "contentType": "application/pdf",
+                    "viewUrl": "/files/osf/pr4u6_v1/1/H8%202020-07-05.pdf"
+                },
+                {
+                    "label": "1.2",
+                    "revision": 2,
+                    "postedAt": "2020-09-02 04:43:26",
+                    "size": 840859,
+                    "osfFileUrl": "https://osf.io/download/xw2bt/?revision=2",
+                    "fileUrl": "/files/osf/pr4u6_v1/2/H8%202020-09-02.pdf",
+                    "fileName": "H8 2020-09-02.pdf",
+                    "contentType": "application/pdf",
+                    "viewUrl": "/files/osf/pr4u6_v1/2/H8%202020-09-02.pdf"
+                },
+                {
+                    "label": "1.3",
+                    "revision": 3,
+                    "postedAt": "2020-09-04 05:46:23",
+                    "size": 1483248,
+                    "osfFileUrl": "https://osf.io/download/xw2bt/?revision=3",
+                    "fileUrl": "/files/osf/pr4u6_v1/3/H8%202020-09-03.pdf",
+                    "fileName": "H8 2020-09-03.pdf",
+                    "contentType": "application/pdf",
+                    "viewUrl": "/files/osf/pr4u6_v1/3/H8%202020-09-03.pdf"
+                }
+            ],
+            "fileUrl": "/files/osf/pr4u6_v1/3/H8%202020-09-03.pdf",
+            "fileName": "H8 2020-09-03.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/pr4u6_v1/download",
+            "viewUrl": "/files/osf/pr4u6_v1/3/H8%202020-09-03.pdf"
+        }
+    ]
+}

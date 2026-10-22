@@ -36,3 +36,7 @@ pp <- osf_preprint_list("psyarxiv", date_created = dc)
 files <- pp$primary_file
 }
 }
+\seealso{
+For PsyArXiv, \code{\link[=psyarxiv_search]{psyarxiv_search()}} uses PsyArXiv's own API, with
+full-text search, more filters and bulk files (\code{\link[=psyarxiv_dump]{psyarxiv_dump()}}).
+}

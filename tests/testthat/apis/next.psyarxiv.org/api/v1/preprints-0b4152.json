@@ -1,0 +1,185 @@
+{
+    "total": 2988,
+    "page": 1,
+    "perPage": 3,
+    "results": [
+        {
+            "id": "pqkj7",
+            "title": "Kailey test",
+            "abstract": "test abstract with lots of really great content",
+            "snippet": null,
+            "state": "published",
+            "version": 1,
+            "doi": "10.31234/osf.io/pqkj7_v1",
+            "publicationDoi": "10.1177/25152459251407612",
+            "firstPostedAt": "2026-10-21 22:02:19",
+            "versionPostedAt": "2026-10-21 22:02:19",
+            "license": {
+                "id": "563c1cf88c5e4a3877f9e96a",
+                "name": "CC BY 4.0"
+            },
+            "authors": [
+                {
+                    "id": "osf:mjgst",
+                    "name": "Katherine M. Lawson",
+                    "orcid": "0000-0002-4083-9797",
+                    "orcidVerified": true,
+                    "affiliation": "Rhodes College"
+                },
+                {
+                    "id": "osf:tfmfq",
+                    "name": "Julia G. Bottesini",
+                    "orcid": "0000-0002-5340-993X",
+                    "orcidVerified": true,
+                    "affiliation": null
+                }
+            ],
+            "authorCount": 2,
+            "subjects": [
+                {
+                    "id": "5b4e7425c6983001430b6c1e",
+                    "name": "Social and Behavioral Sciences"
+                },
+                {
+                    "id": "5b4e7428c6983001430b6caf",
+                    "name": "Quantitative Psychology"
+                }
+            ],
+            "tags": [
+                "transparency",
+                "measurement reporting",
+                "materials",
+                "construct validity"
+            ],
+            "hasData": true,
+            "hasPrereg": true,
+            "language": "en",
+            "url": "/preprint/pqkj7"
+        },
+        {
+            "id": "ucems",
+            "title": "Manuscript",
+            "abstract": "This is a test",
+            "snippet": null,
+            "state": "published",
+            "version": 1,
+            "doi": "10.31234/osf.io/ucems_v1",
+            "publicationDoi": "10.1093/biomet/23.1-2.114",
+            "firstPostedAt": "2026-10-21 09:57:32",
+            "versionPostedAt": "2026-10-21 09:57:32",
+            "license": {
+                "id": "563c1cf88c5e4a3877f9e96c",
+                "name": "CC0 1.0"
+            },
+            "authors": [
+                {
+                    "id": "osf:tdyix",
+                    "name": "Matti Vuorre",
+                    "orcid": "0000-0001-5052-066X",
+                    "orcidVerified": true,
+                    "affiliation": "Tilburg University"
+                }
+            ],
+            "authorCount": 1,
+            "subjects": [
+                {
+                    "id": "5b4e7424c6983001430b6c18",
+                    "name": "Psychiatry"
+                },
+                {
+                    "id": "5b4e7429c6983001430b6cfc",
+                    "name": "Health-related Behavior"
+                }
+            ],
+            "tags": [
+                "test",
+                "manuscript",
+                "science"
+            ],
+            "hasData": true,
+            "hasPrereg": false,
+            "language": "en",
+            "url": "/preprint/ucems"
+        },
+        {
+            "id": "c3vfj",
+            "title": "The medial temporal lobe and the retention of scene memories across a one-week delay",
+            "abstract": "Remembering everyday events involves retaining multiple components, including the scenes that provide the spatial and contextual setting in which events occur. The medial temporal lobe (MTL) supports scene construction and complex event memory. However, less is known about its contribution to retaining the details of an event’s scene over time, as scene information is typically embedded within narrative and event structures that are assessed for memory shortly after encoding. To examine scene memory retention, fifty-seven cognitively healthy older adults viewed 360-degree panoramic videos depicting real-world environments and freely recalled each scene shortly after viewing and again one week later. We tested whether individual differences in MTL volume were related to retention of scene memory and whether these relationships changed across the one-week delay. The proportion of episodic detail retrieved did not significantly change across the one-week delay, but the details recalled changed and became more participant specific, as measured by several measures of text-based similarity. Critically, relationships between MTL volume and scene memory also changed over time such that greater MTL volume was associated with being more consistent with what was originally recalled. Exploratory subregional analyses further showed that perirhinal cortex volume was robustly associated with the text-based similarity measures. These findings suggest that MTL is related to memory for the scene component of complex experience, particularly the ability to consistently recall the details of a scene over time.",
+            "snippet": null,
+            "state": "published",
+            "version": 1,
+            "doi": "10.31234/osf.io/c3vfj_v1",
+            "publicationDoi": null,
+            "firstPostedAt": "2026-10-16 03:00:26",
+            "versionPostedAt": "2026-10-16 03:00:26",
+            "license": {
+                "id": "563c1cf88c5e4a3877f9e96c",
+                "name": "CC0 1.0"
+            },
+            "authors": [
+                {
+                    "id": "osf:e3cyd",
+                    "name": "Angelique I. Delarazan",
+                    "orcid": "0000-0003-0121-7618",
+                    "orcidVerified": true,
+                    "affiliation": "University of Arizona"
+                },
+                {
+                    "id": "osf:hyn9d",
+                    "name": "Alexis N. Garcia",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": "University of Arizona"
+                },
+                {
+                    "id": "osf:udf4s",
+                    "name": "Ashley Huggins",
+                    "orcid": "0000-0001-7936-2116",
+                    "orcidVerified": true,
+                    "affiliation": null
+                },
+                {
+                    "id": "osf:7z43s",
+                    "name": "Matthew D. Grilli",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": "University of Arizona"
+                }
+            ],
+            "authorCount": 4,
+            "subjects": [
+                {
+                    "id": "5b4e7425c6983001430b6c1b",
+                    "name": "Neuroscience"
+                },
+                {
+                    "id": "5b4e7425c6983001430b6c1e",
+                    "name": "Social and Behavioral Sciences"
+                },
+                {
+                    "id": "5b4e7425c6983001430b6c23",
+                    "name": "Cognitive Neuroscience"
+                },
+                {
+                    "id": "5b4e7427c6983001430b6c8c",
+                    "name": "Cognitive Psychology"
+                }
+            ],
+            "tags": [
+                "Medial temporal lobe scene memory volume episodic memory"
+            ],
+            "hasData": true,
+            "hasPrereg": false,
+            "language": "en",
+            "url": "/preprint/c3vfj"
+        }
+    ],
+    "interpreted": null,
+    "links": {
+        "self": "/api/v1/preprints?year_from=2026&has_data=true&per_page=3&page=1",
+        "first": "/api/v1/preprints?year_from=2026&has_data=true&per_page=3&page=1",
+        "last": "/api/v1/preprints?year_from=2026&has_data=true&per_page=3&page=996",
+        "next": "/api/v1/preprints?year_from=2026&has_data=true&per_page=3&page=2",
+        "prev": null
+    }
+}

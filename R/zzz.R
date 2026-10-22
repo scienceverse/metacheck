@@ -48,7 +48,8 @@
     metacheck.report_type = "full",
     metacheck.osf.delay = 0,
     metacheck.osf.api = "https://api.osf.io/v2",
-    metacheck.osf.api.calls = 0
+    metacheck.osf.api.calls = 0,
+    metacheck.psyarxiv.api = "https://next.psyarxiv.org/api/v1"
   )
   # only set if not already set
   toset <- !(names(op.pkg) %in% names(op))

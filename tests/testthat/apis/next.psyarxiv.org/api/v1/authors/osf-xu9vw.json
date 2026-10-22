@@ -1,0 +1,49 @@
+{
+    "id": "osf:xu9vw",
+    "name": "Yung-Jung Chen",
+    "orcid": null,
+    "orcidVerified": false,
+    "affiliation": null,
+    "employment": [
+
+    ],
+    "education": [
+
+    ],
+    "osfProfileUrl": "https://osf.io/xu9vw/",
+    "preprintCount": 4,
+    "coauthors": [
+        {
+            "id": "osf:xmahd",
+            "name": "Zoltan Dienes",
+            "count": 4
+        },
+        {
+            "id": "osf:953pd",
+            "name": "Ryan Bradley Scott",
+            "count": 4
+        }
+    ],
+    "subjects": [
+        {
+            "id": "5b4e7427c6983001430b6c8c",
+            "name": "Cognitive Psychology",
+            "count": 4
+        },
+        {
+            "id": "5b4e7425c6983001430b6c1e",
+            "name": "Social and Behavioral Sciences",
+            "count": 4
+        },
+        {
+            "id": "5b4e7429c6983001430b6cf8",
+            "name": "Consciousness",
+            "count": 3
+        },
+        {
+            "id": "5b4e7428c6983001430b6cd5",
+            "name": "Attention",
+            "count": 2
+        }
+    ]
+}

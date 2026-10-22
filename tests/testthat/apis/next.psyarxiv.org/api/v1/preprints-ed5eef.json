@@ -1,0 +1,130 @@
+{
+    "total": 16,
+    "page": 1,
+    "perPage": 2,
+    "results": [
+        {
+            "id": "jwgv3",
+            "title": "Is conscious perception necessary to direct attention? A replication of Jiang et al. (2006)",
+            "abstract": "The relationship between attention and consciousness has been debated for the past few decades. Observing attentional biases induced by visual stimuli below conscious threshold is one way of providing evidence for the independence of attention and conscious perception. Among such studies, Jiang et al. (2006) found a strong priming effect below the objective conscious threshold with high sensitivity, in showing attentional biases to nude images suppressed by continuous flash suppression (CFS). This study aims to replicate Jiang et al. by following the original design and materials as closely as possible with Bayesian analytical approaches.",
+            "snippet": "…Among such studies, Jiang et al. (2006) found a strong <mark>priming<\/mark> effect below the objective conscious threshold with high sensitivity, in showing attentional biases to nude images suppressed by continuous flash suppression (CFS). This study aims to replicate Jiang et…",
+            "state": "published",
+            "version": 1,
+            "doi": "10.31234/osf.io/jwgv3",
+            "publicationDoi": null,
+            "firstPostedAt": "2023-10-11 15:58:52",
+            "versionPostedAt": "2023-10-11 15:58:52",
+            "license": {
+                "id": "563c1cf88c5e4a3877f9e96a",
+                "name": "CC BY 4.0"
+            },
+            "authors": [
+                {
+                    "id": "osf:xu9vw",
+                    "name": "Yung-Jung Chen",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": null
+                },
+                {
+                    "id": "osf:953pd",
+                    "name": "Ryan Bradley Scott",
+                    "orcid": "0000-0003-1711-4920",
+                    "orcidVerified": true,
+                    "affiliation": "University of Sussex"
+                },
+                {
+                    "id": "osf:xmahd",
+                    "name": "Zoltan Dienes",
+                    "orcid": "0000-0001-7454-3161",
+                    "orcidVerified": true,
+                    "affiliation": null
+                }
+            ],
+            "authorCount": 3,
+            "subjects": [
+                {
+                    "id": "5b4e7425c6983001430b6c1e",
+                    "name": "Social and Behavioral Sciences"
+                },
+                {
+                    "id": "5b4e7427c6983001430b6c8c",
+                    "name": "Cognitive Psychology"
+                }
+            ],
+            "tags": [
+                "attention",
+                "consciousness",
+                "continuous flash suppression",
+                "priming",
+                "unconscious attention"
+            ],
+            "hasData": true,
+            "hasPrereg": false,
+            "language": "en",
+            "url": "/preprint/jwgv3"
+        },
+        {
+            "id": "u5dxn",
+            "title": "Self-construal priming does not shift self-descriptions, value endorsement, or social obligation judgment: A preregistered replication and extension of Gardner, Gabriel, &amp; Lee (1999)",
+            "abstract": "Humans from different cultures define the self differently, but how cultures influence self-construal—beliefs about the self—remains elusive. Do cultures mold our way of perceiving, thinking, feeling, and acting, much into a habit through cultural practices and daily routines (habit mechanism)? Or do cultures merely modify the accessibility of a certain way of perceiving, thinking, feeling, and acting, just as one’s thoughts constantly change on a daily basis based on the current motive and situation (access mechanism)? A highly influential line of work in cultural priming—self-construal priming—suggests that reading different story primes (reflecting either independent or interdependent thought processes) or circling different types of pronouns in word-search primes (either independent [e.g., I, mine] or interdependent [e.g., we, ours] pronouns) can shift self-descriptions, value endorsement, and social obligation judgment (Gardner, Gabriel, &amp; Lee, 1999). In this preregistered replication and extension study, despite efforts to maximize priming and to identify moderators, we found that self-construal priming, either through story primes or word-search primes, did not change the relative independence or interdependence of one’s self-construal in Chinese participants. Priming was also not modulated by gender, experience living aboard, rice vs. wheat farming legacy, or self-reported earnestness in answering the questions. Thus, the predominant access afforded by cultures is much less malleable than previously assumed, consistent with the habit but not access mechanism of cultural influences. To build a cumulative and reproducible cultural psychology, we call for direct replications of key findings in cultural priming and related literature.",
+            "snippet": "…In this preregistered replication and extension study, despite efforts to maximize <mark>priming<\/mark> and to identify moderators, we found that self-construal <mark>priming<\/mark>, either through story primes or word-search primes, did not change the relative independence or interdependence of one…",
+            "state": "published",
+            "version": 1,
+            "doi": "10.31234/osf.io/u5dxn",
+            "publicationDoi": null,
+            "firstPostedAt": "2021-10-02 06:19:58",
+            "versionPostedAt": "2021-10-02 06:19:58",
+            "license": {
+                "id": "563c1cf88c5e4a3877f9e96a",
+                "name": "CC BY 4.0"
+            },
+            "authors": [
+                {
+                    "id": "osf:ayjcv",
+                    "name": "Zhicheng Lin",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": "University of Science and Technology of China"
+                },
+                {
+                    "id": "osf:mrh9x",
+                    "name": "Yichen Wu",
+                    "orcid": null,
+                    "orcidVerified": false,
+                    "affiliation": null
+                }
+            ],
+            "authorCount": 2,
+            "subjects": [
+                {
+                    "id": "5b4e7424c6983001430b6c19",
+                    "name": "Meta-science"
+                },
+                {
+                    "id": "5b4e7425c6983001430b6c1b",
+                    "name": "Neuroscience"
+                },
+                {
+                    "id": "5b4e7425c6983001430b6c1e",
+                    "name": "Social and Behavioral Sciences"
+                }
+            ],
+            "tags": [
+                "Self-construal priming; cultural priming; culture; self; replication"
+            ],
+            "hasData": true,
+            "hasPrereg": true,
+            "language": "en",
+            "url": "/preprint/u5dxn"
+        }
+    ],
+    "interpreted": "title : \"replication\" AND \"priming\"",
+    "links": {
+        "self": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=1",
+        "first": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=1",
+        "last": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=8",
+        "next": "/api/v1/preprints?q=title%3Areplication+AND+priming&per_page=2&page=2",
+        "prev": null
+    }
+}

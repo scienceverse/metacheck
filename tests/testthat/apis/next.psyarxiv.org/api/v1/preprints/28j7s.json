@@ -1,0 +1,126 @@
+{
+    "id": "28j7s",
+    "title": "Posterior ERP tracks evidence accumulation for memory-based decisions.",
+    "abstract": "Recollection is a retrieval of episodic memory accompanied by high subjective confidence. Given their subjective vividness, recollection-based memories are the building blocks of autobiographical memories and what define who we are. Past studies have proposed the late posterior positivity (or LPP) as an electrophysiological marker of recollection-based memory retrieval. Recent findings in perceptual decision-making research, on the other hand, suggest that the LPP might instead track the accumulation of decision evidence to determine the presence or absence of episodic memory. To adjudicate between the two hypotheses, we amassed two EEG datasets (n = 59 and 45) in which human participants performed a standard recognition memory task. Here we show that while the LPP amplitude is uniquely higher when participants endorse the presence of episodic memory with high confidence, its amplitude universally increases until any recognition decision is made, even when participants endorse the absence of any episodic memory. Thus, our results question the process purity of the LPP as the electrophysiological marker of recollection-based memory retrieval and elucidate its additional role as a marker of evidence accumulation for mnemonic decisions.",
+    "snippet": null,
+    "state": "published",
+    "version": 1,
+    "doi": "10.31234/osf.io/28j7s",
+    "publicationDoi": null,
+    "firstPostedAt": "2024-08-23 17:00:34",
+    "versionPostedAt": "2024-08-23 17:00:34",
+    "license": {
+        "id": "563c1cf88c5e4a3877f9e96a",
+        "name": "CC BY 4.0"
+    },
+    "authors": [
+        {
+            "id": "osf:kp6rt",
+            "name": "Keisuke Fukuda",
+            "orcid": "0000-0003-2450-4345",
+            "orcidVerified": true,
+            "affiliation": "University of Toronto Mississauga"
+        },
+        {
+            "id": "osf:azvc8",
+            "name": "Frida Printzlau",
+            "orcid": null,
+            "orcidVerified": false,
+            "affiliation": null
+        },
+        {
+            "id": "osf:rm8y9",
+            "name": "Min-Suk Kang",
+            "orcid": "0000-0002-7865-371X",
+            "orcidVerified": true,
+            "affiliation": null
+        },
+        {
+            "id": "osf:qf653",
+            "name": "Geoff Woodman",
+            "orcid": null,
+            "orcidVerified": false,
+            "affiliation": "Vanderbilt University"
+        }
+    ],
+    "authorCount": 4,
+    "subjects": [
+        {
+            "id": "5b4e7425c6983001430b6c1b",
+            "name": "Neuroscience"
+        },
+        {
+            "id": "5b4e7425c6983001430b6c1e",
+            "name": "Social and Behavioral Sciences"
+        },
+        {
+            "id": "5b4e7425c6983001430b6c23",
+            "name": "Cognitive Neuroscience"
+        },
+        {
+            "id": "5b4e7427c6983001430b6c8c",
+            "name": "Cognitive Psychology"
+        },
+        {
+            "id": "5b4e7429c6983001430b6cfb",
+            "name": "Judgment and Decision Making"
+        },
+        {
+            "id": "5b4e7427c6983001430b6ca5",
+            "name": "Memory"
+        }
+    ],
+    "tags": [
+
+    ],
+    "hasData": true,
+    "hasPrereg": false,
+    "language": "en",
+    "url": "/preprint/28j7s",
+    "modifiedAt": "2024-08-23 17:27:31",
+    "withdrawnAt": null,
+    "withdrawalReason": null,
+    "hasCoi": null,
+    "coiStatement": null,
+    "dataStatus": "available",
+    "dataLinks": [
+        "https://osf.io/xa96h/"
+    ],
+    "preregStatus": "not_applicable",
+    "preregLinks": [
+
+    ],
+    "materialsStatus": null,
+    "materialsLinks": [
+
+    ],
+    "source": "osf",
+    "osfUrl": "https://osf.io/preprints/psyarxiv/28j7s_v1/",
+    "fileUrl": "/files/osf/28j7s_v1/1/Fukuda_etal_PsyArxiv.pdf",
+    "viewUrl": "/files/osf/28j7s_v1/1/Fukuda_etal_PsyArxiv.pdf",
+    "versions": [
+        {
+            "version": 1,
+            "title": "Posterior ERP tracks evidence accumulation for memory-based decisions.",
+            "doi": "10.31234/osf.io/28j7s",
+            "postedAt": "2024-08-23 17:00:34",
+            "state": "published",
+            "withdrawnAt": null,
+            "withdrawalReason": null,
+            "fileRevisions": 1,
+            "subVersions": [
+
+            ],
+            "fileUrl": "/files/osf/28j7s_v1/1/Fukuda_etal_PsyArxiv.pdf",
+            "fileName": "Fukuda_etal_PsyArxiv.pdf",
+            "contentType": "application/pdf",
+            "osfFileUrl": "https://osf.io/preprints/psyarxiv/28j7s_v1/download",
+            "viewUrl": "/files/osf/28j7s_v1/1/Fukuda_etal_PsyArxiv.pdf"
+        }
+    ],
+    "submitterId": null,
+    "supplements": {
+        "url": "https://osf.io/xa96h/",
+        "status": "public"
+    }
+}

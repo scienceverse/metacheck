@@ -1,0 +1,10 @@
+structure(list(method = "GET", url = "https://next.psyarxiv.org/api/v1/preprints/zzzzz", 
+    status_code = 404L, headers = structure(list(date = "Thu, 22 Oct 2026 04:09:58 GMT", 
+        `content-type` = "application/json", `content-length` = "45", 
+        `access-control-allow-origin` = "*", `report-to` = "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=LPWCr4P4UksxEXSMBbuURfkZvc02sSnzL9V1jPQLdCZHBBkebi720Y1qdEXxIIFA8h4sPKVuv9F4hSyBSO6dz%2F31WT0yVTzIHQvQo%2Fzhs%2F7iSlQnYIF8clv5Hh9ySKxJzL146Q%3D%3D\"}]}", 
+        nel = "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}", 
+        server = "cloudflare", `cf-ray` = "a4e5a6406a0144aa-AMS", 
+        `alt-svc` = "h3=\":443\"; ma=86400"), class = "httr2_headers"), 
+    body = charToRaw("{\"error\":\"No such preprint\",\"statusCode\":404}"), 
+    timing = c(redirect = 0, namelookup = 0, connect = 0, pretransfer = 0.00037, 
+    starttransfer = 2.099688, total = 2.099936), cache = new.env(parent = emptyenv())), class = "httr2_response")

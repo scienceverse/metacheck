@@ -1,0 +1,92 @@
+{
+    "dumps": [
+        {
+            "name": "psyarxiv-2016.jsonl.gz",
+            "year": 2016,
+            "size": 104646,
+            "records": 189,
+            "builtAt": "2026-10-19T14:46:26.375Z",
+            "url": "/api/v1/dumps/psyarxiv-2016.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2017.jsonl.gz",
+            "year": 2017,
+            "size": 608957,
+            "records": 991,
+            "builtAt": "2026-10-19T14:46:28.913Z",
+            "url": "/api/v1/dumps/psyarxiv-2017.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2018.jsonl.gz",
+            "year": 2018,
+            "size": 1557030,
+            "records": 2353,
+            "builtAt": "2026-10-19T14:46:31.995Z",
+            "url": "/api/v1/dumps/psyarxiv-2018.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2019.jsonl.gz",
+            "year": 2019,
+            "size": 2456511,
+            "records": 3590,
+            "builtAt": "2026-10-19T14:46:36.595Z",
+            "url": "/api/v1/dumps/psyarxiv-2019.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2020.jsonl.gz",
+            "year": 2020,
+            "size": 4456400,
+            "records": 6247,
+            "builtAt": "2026-10-19T14:46:43.446Z",
+            "url": "/api/v1/dumps/psyarxiv-2020.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2021.jsonl.gz",
+            "year": 2021,
+            "size": 4823584,
+            "records": 6734,
+            "builtAt": "2026-10-19T14:46:50.131Z",
+            "url": "/api/v1/dumps/psyarxiv-2021.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2022.jsonl.gz",
+            "year": 2022,
+            "size": 4564310,
+            "records": 6300,
+            "builtAt": "2026-10-19T14:46:56.630Z",
+            "url": "/api/v1/dumps/psyarxiv-2022.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2023.jsonl.gz",
+            "year": 2023,
+            "size": 4931448,
+            "records": 6721,
+            "builtAt": "2026-10-19T14:47:03.580Z",
+            "url": "/api/v1/dumps/psyarxiv-2023.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2024.jsonl.gz",
+            "year": 2024,
+            "size": 4930770,
+            "records": 6673,
+            "builtAt": "2026-10-19T14:47:10.320Z",
+            "url": "/api/v1/dumps/psyarxiv-2024.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2025.jsonl.gz",
+            "year": 2025,
+            "size": 6960656,
+            "records": 9110,
+            "builtAt": "2026-10-19T14:47:20.314Z",
+            "url": "/api/v1/dumps/psyarxiv-2025.jsonl.gz"
+        },
+        {
+            "name": "psyarxiv-2026.jsonl.gz",
+            "year": 2026,
+            "size": 6687422,
+            "records": 8354,
+            "builtAt": "2026-10-19T14:47:28.432Z",
+            "url": "/api/v1/dumps/psyarxiv-2026.jsonl.gz"
+        }
+    ]
+}
