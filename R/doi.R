@@ -2,13 +2,17 @@
 #'
 #' @param doi a character vector of one or more DOIs
 #'
-#' @returns a character vector of cleaned DOIs (no https://doi.org or DOI:)
+#' @returns a character vector of cleaned DOIs: no https://doi.org or DOI:,
+#'   and no spaces, trailing punctuation or URL encoding, which a DOI cannot
+#'   contain but a DOI read from a PDF or a link often has
 #' @export
 #'
 #' @examples
 #' doi_clean("https://doi.org/10.1038/nphys1170")
 #' doi_clean("doi:10.1038/nphys1170")
 #' doi_clean("DOI: 10.1038/nphys1170")
+#' doi_clean("10.1037/0003-066x.54.6.4 08.")
+#' doi_clean("https://doi.org/10.1002/%28SICI%291097-0258%2819980430%2917%3A8%3C857%3A%3AAID-SIM777%3E3.0.CO%3B2-E")
 doi_clean <- function(doi) {
   doi <- doi |>
     unlist() |>
@@ -25,8 +29,13 @@ doi_clean <- function(doi) {
   doi <- sub("#.*$", "", doi)
   # remove /full off the end
   doi <- sub("/full$", "", doi)
-
-  doi <- trimws(doi)
+  # a link encodes characters such as ( ) and ; ("10.1002/%28SICI%29...")
+  enc <- grepl("%[0-9A-Fa-f]{2}", doi)
+  doi[enc] <- vapply(doi[enc], utils::URLdecode, character(1), USE.NAMES = FALSE)
+  # a line break in the PDF leaves spaces inside the DOI
+  # ("10.1037/0003-066x.54.6.4 08"), and the sentence its punctuation
+  doi <- gsub("\\s+", "", doi)
+  doi <- sub("[.,;]+$", "", doi)
 
   return(doi)
 }

@@ -85,6 +85,14 @@ test_that("doi_clean", {
   clean <- doi_clean(doi)
   expect_equal(clean, exp)
 
+  # spaces and trailing punctuation from the PDF, and URL encoding
+  expect_equal(doi_clean("10.1037/0003-066x.54.6.4 08."), "10.1037/0003-066x.54.6.408")
+  expect_equal(doi_clean("doi: 10.1038/ nphys1170;"), "10.1038/nphys1170")
+  expect_equal(
+    doi_clean("https://doi.org/10.1002/%28SICI%291099-0720%28199601%2910%3A1%3C1%3A%3AAID-ACP366%3E3.0.CO%3B2-6"),
+    "10.1002/(SICI)1099-0720(199601)10:1<1::AID-ACP366>3.0.CO;2-6")
+  expect_true(doi_valid_format(doi_clean("10.1037/0003-066x.54.6.4 08.")))
+
   # journal-specific format
   doi <- "http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153"
   clean <- doi_clean(doi)

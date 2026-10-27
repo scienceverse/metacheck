@@ -515,7 +515,7 @@ add_bib_match <- function(paper, min_score = 50) {
   }
 
   # look up by doi
-  has_doi <- doi_valid_format(bib$doi) %in% TRUE
+  has_doi <- doi_valid_format(doi_clean(bib$doi)) %in% TRUE
 
   # look up papers with DOI
   cr_data_doi <- data.frame()
@@ -541,6 +541,7 @@ add_bib_match <- function(paper, min_score = 50) {
   # bib_match table is incomplete, so downstream checks that treat a missing
   # match as a problem (e.g. flagging an unresolvable DOI) could misfire. We do
   # not store this in bib_match; we surface it here, at lookup time.
+  net_err <- rep(FALSE, nrow(cr_data))
   if (!is.null(cr_data$error)) {
     net_err <- grepl("offline|connection|timeout|failed|http 5",
                      tolower(cr_data$error))
@@ -610,6 +611,22 @@ add_bib_match <- function(paper, min_score = 50) {
     data.frame(given = character(0), family = character(0)),
     simplify = FALSE
   )
+
+  # a DOI that CrossRef does not know may be registered with DataCite, which
+  # holds most data and code DOIs (Zenodo, OSF, Dryad); look those up there.
+  # The first rows of cr_data are the DOI lookups, in the order of bib[has_doi, ]
+  dc_rows <- which(seq_len(nrow(bib_match)) <= nrow(cr_data_doi) &
+                     is.na(bib_match$title) & !net_err)
+  if (length(dc_rows) > 0) {
+    dc <- datacite_doi(bib$doi[has_doi][dc_rows])
+    found <- !is.na(dc$title)
+    cols <- intersect(c("service", "service_id", "bib_type", "doi", "title",
+                        "authors", "container", "publisher", "year", "date",
+                        "url", "version"), names(dc))
+    for (col in cols) {
+      bib_match[[col]][dc_rows[found]] <- dc[[col]][found]
+    }
+  }
 
   # remove unfound
   bib_match_table <- bib_match[!is.na(bib_match$title), ] |>

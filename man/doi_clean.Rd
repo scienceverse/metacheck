@@ -10,7 +10,9 @@ doi_clean(doi)
 \item{doi}{a character vector of one or more DOIs}
 }
 \value{
-a character vector of cleaned DOIs (no https://doi.org or DOI:)
+a character vector of cleaned DOIs: no https://doi.org or DOI:,
+and no spaces, trailing punctuation or URL encoding, which a DOI cannot
+contain but a DOI read from a PDF or a link often has
 }
 \description{
 Clean DOIs
@@ -19,4 +21,6 @@ Clean DOIs
 doi_clean("https://doi.org/10.1038/nphys1170")
 doi_clean("doi:10.1038/nphys1170")
 doi_clean("DOI: 10.1038/nphys1170")
+doi_clean("10.1037/0003-066x.54.6.4 08.")
+doi_clean("https://doi.org/10.1002/\%28SICI\%291097-0258\%2819980430\%2917\%3A8\%3C857\%3A\%3AAID-SIM777\%3E3.0.CO\%3B2-E")
 }

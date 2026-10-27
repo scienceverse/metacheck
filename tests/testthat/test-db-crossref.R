@@ -394,3 +394,40 @@ test_that(".crossref_parse_item reads a record with null fields (U13)", {
   expect_equal(out$DOI, "10.1/x")
   expect_false("volume" %in% names(out))
 })
+
+test_that("add_bib_match looks up a DOI written as a URL directly, and a DOI CrossRef does not know at DataCite", {
+  calls <- new.env()
+  local_mocked_bindings(
+    crossref_doi = function(doi, ...) {
+      calls$crossref <- doi
+      data.frame(DOI = c("10.1371/journal.pone.0004153", doi[2], doi[3]),
+                 title = c("Tetris", NA, NA),
+                 error = c(NA, "Resource not found.", "connection error"))
+    },
+    crossref_query = function(...) stop("title search used"),
+    datacite_doi = function(doi) {
+      calls$datacite <- doi
+      data.frame(service = "datacite", doi = "10.5281/zenodo.1165402",
+                 title = "Speech Recording Videos", year = 2018,
+                 authors = I(list(data.frame(given = "Emma", family = "Holmes"))))
+    }
+  )
+  paper <- test_paper("x")
+  paper$bib <- data.frame(
+    bib_id = 1:3,
+    doi = c("http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0004153",
+            "https://doi.org/10.5281/zenodo.1165402",
+            "10.1234/offline"),
+    title = NA, container = NA, authors = NA
+  )
+  bm <- suppressMessages(add_bib_match(paper))$bib_match
+
+  # all three went to the DOI lookup, none to the title search
+  expect_length(calls$crossref, 3)
+  # only the DOI CrossRef did not find goes to DataCite, not the network error
+  expect_equal(calls$datacite, "https://doi.org/10.5281/zenodo.1165402")
+  expect_equal(bm$bib_id, 1:2)
+  expect_equal(bm$service, c("crossref", "datacite"))
+  expect_equal(bm$doi[2], "10.5281/zenodo.1165402")
+  expect_equal(bm$authors[[2]]$family, "Holmes")
+})
