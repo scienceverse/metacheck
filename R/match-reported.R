@@ -861,6 +861,14 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
 
   val_in <- function(cell, comp) {
     tol <- 0.5 / (10^comp$dec)
+    # Does an output value round to the reported one: is it within half a
+    # unit of the reported last decimal, both ends included? A value exactly
+    # halfway (a mean of 13.625) is 13.63 by the usual rule of rounding half
+    # up and 13.62 by R's round(), which rounds half to the even digit, and
+    # either is a correct report. Rounding with round() first and then
+    # comparing accepted only R's, so a correct "M = 13.63" was not found.
+    # The small extra margin absorbs floating-point error in x - value.
+    rounds_to <- function(x) abs(x - comp$value) <= tol * (1 + 1e-9)
     if (nzchar(comp$censored)) {
       # A censored bound ("p < .001") must ALSO respect a known family -- the
       # same reason the exact-match branch below does. Without this, "p <
@@ -893,7 +901,7 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       # then failed to match at the site actually chosen -- a false positive
       # elsewhere silently causing a false negative on the correct evidence.
       fam_cells <- cell$val[!is.na(cell$fam) & cell$fam == comp$family]
-      if (any(abs(round(fam_cells, comp$dec) - comp$value) < tol, na.rm = TRUE)) return(TRUE)
+      if (any(rounds_to(fam_cells), na.rm = TRUE)) return(TRUE)
       # SAME-SITE fallback to "b" (a generic model "Estimate"/coefficient
       # column) for certain reported families whose PROSE label is more
       # specific than what generic model-fitting software actually prints.
@@ -922,7 +930,7 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       if (comp$family %in% c("beta", "d") &&
           !any(!is.na(cell$fam) & cell$fam == comp$family)) {
         b_cells <- cell$val[!is.na(cell$fam) & cell$fam == "b"]
-        return(any(abs(round(b_cells, comp$dec) - comp$value) < tol))
+        return(any(rounds_to(b_cells)))
       }
       # Same SAFE-fallback shape as beta/d -> b just above, for df1/df2 -> the
       # GENERIC "df" family: an F-test's own reported numerator/denominator
@@ -939,13 +947,13 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
       if (comp$family %in% c("df1", "df2") &&
           !any(!is.na(cell$fam) & cell$fam == comp$family)) {
         df_cells <- cell$val[!is.na(cell$fam) & cell$fam == "df"]
-        return(any(abs(round(df_cells, comp$dec) - comp$value) < tol))
+        return(any(rounds_to(df_cells)))
       }
       FALSE
     } else {
       # No recognised type for this component (name matched no family) -- the
       # only case where matching by value alone is still attempted.
-      any(abs(round(cell$val, comp$dec) - comp$value) < tol)
+      any(rounds_to(cell$val))
     }
   }
 

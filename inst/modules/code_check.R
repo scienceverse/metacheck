@@ -200,7 +200,9 @@ code_check <- function(paper, local_path = NULL,
   listed_langs <- c("R", "Python", "SAS", "SPSS", "Stata", "Mplus", "MATLAB", "JASP")
   checked_langs <- setdiff(listed_langs, "JASP")
 
-  relevant <- all_files$language %in% listed_langs
+  # renv's own files (renv/activate.R, renv/library/) are not the paper's
+  # code; see .in_renv_folder()
+  relevant <- all_files$language %in% listed_langs & !.in_renv_folder(all_files)
   code_files <- all_files[relevant, , drop = FALSE]
 
   lang_counts <- sapply(listed_langs, \(l) sum(code_files$language == l))

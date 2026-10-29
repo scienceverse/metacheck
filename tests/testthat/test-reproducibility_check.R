@@ -1709,3 +1709,57 @@ test_that("a file found only inside an archive is a missing input in the package
                                           file_path = "Humor study 4a.csv", file_location = NA))
   expect_equal(repro_missing_inputs("Humor study 4a.csv", plan, both)$status, "in_repo_not_downloaded")
 })
+
+test_that("a stored result is read from the right-hand side of its assignment (#549)", {
+  expect_equal(.r_call_fun_arg("means <- sapply(d[, c('x', 'y')], mean)"), "mean")
+  expect_equal(.r_call_fun_arg("(s = tapply(d$y, d$g, sd))"), "sd")
+  expect_equal(.r_call_fun_arg("a <- b <- aggregate(y ~ g, d, median)"), "median")
+  expect_true(is.na(.r_call_fun_arg("x <- 1")))
+  d <- data.frame(x = c(1, 2, 3, 4), y = c(2, 4, 6, 9))
+  rec <- .r_capture_value(sapply(d, mean), "means <- sapply(d, mean)")
+  expect_equal(rec$analysis, "mean by group")
+  expect_equal(rec$rows[[2]]$stats$mean, 5.25)
+})
+
+test_that("an effectsize result is captured, typed as Cohen's d with its interval (#549)", {
+  skip_if_not_installed("effectsize")
+  x <- c(17, 20, 19, 25, 26, 18, 22, 21)
+  y <- c(10, 12, 14, 16, 18, 11, 13, 16)
+  es <- effectsize::repeated_measures_d(x, y, method = "z", adjust = FALSE)
+  rec <- .r_capture_value(es, "dz_result <- effectsize::repeated_measures_d(x, y)")
+  st <- rec$rows[[1]]$stats
+  expect_equal(names(st), c("d", "conf.low", "conf.high"))
+  expect_equal(st$d, es$d_z)
+  expect_equal(stato_type_column("d")$annotationValue, "Cohen's d")
+  # also from the copy of the capture code a Docker container gets
+  e <- new.env(parent = globalenv())
+  eval(parse(text = .repro_docker_capture_preamble()), envir = e)
+  expect_equal(e$.r_capture_value(es, "dz <- f()")$rows[[1]]$stats$d, es$d_z)
+  # a table of several effects names each row by its Parameter column
+  g <- factor(rep(c("a", "b"), 4))
+  eta <- suppressMessages(effectsize::eta_squared(stats::aov(x ~ g), partial = FALSE))
+  rec <- .r_capture_value(eta, "eta <- eta_squared(m)")
+  expect_equal(rec$rows[[1]]$label, "g")
+  expect_true("\u03b7\u00b2" %in% names(rec$rows[[1]]$stats))
+})
+
+test_that("a value exactly halfway matches both of its correct roundings", {
+  # The mean of these 8 numbers is exactly 13.625: "M = 13.63" (rounding half
+  # up, as people do) was not found, because the output value was rounded
+  # with round(), which gives 13.62 (half to the even digit)
+  d <- data.frame(congruent = c(10, 12, 14, 16, 18, 11, 13, 15),
+                  incongruent = c(17, 20, 19, 25, 26, 18, 22, 21))
+  rec <- .r_capture_value(sapply(d, mean), "means <- sapply(d, mean)")
+  rec$line <- 2L
+  rec$call_text <- "means <- sapply(d, mean)"
+  tabs <- .r_captures_to_tables(list(rec), source_label = "analysis.R")
+  stat_output <- list(list(
+    file = "analysis.R", n_tables = length(tabs), source = "r_output",
+    json = stat_output_json(tabs, paper_id = "test_paper", source_file = "analysis.R"),
+    long = stat_results_long(tabs, paper_id = "test_paper", source_file = "analysis.R")))
+  found <- function(txt) match_reported_output(test_paper(txt), stat_output)$found
+  expect_true(all(found("The congruent condition (M = 13.63) was faster.")))
+  expect_true(all(found("The congruent condition (M = 13.62) was faster.")))
+  expect_false(any(found("The congruent condition (M = 13.64) was faster.")))
+  expect_false(any(found("The congruent condition (M = 13.61) was faster.")))
+})

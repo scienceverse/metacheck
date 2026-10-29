@@ -26,7 +26,7 @@
 # The classes worth capturing, and how to reduce each to named numbers. Kept as
 # a FIXED list: an unrecognised class is ignored rather than guessed at.
 .R_CAPTURE_CLASSES <- c("htest", "summary.lm", "anova", "summary.aov",
-                        "summary.glm", "lm", "glm")
+                        "summary.glm", "lm", "glm", "effectsize_table")
 
 # One `htest` (t.test, cor.test, chisq.test, shapiro.test, wilcox.test, ...) ->
 # list(analysis, call_fn, stats). `statistic` and `parameter` are NAMED in the
@@ -102,6 +102,48 @@
   list(analysis = analysis, method = analysis, rows = rows)
 }
 
+# An effectsize result (cohens_d(), repeated_measures_d(), hedges_g(),
+# eta_squared(), ...) is a data.frame whose first column is named for the
+# effect size ("d_z", "Cohens_d", "Eta2_partial") with its interval in
+# "CI_low"/"CI_high". Those names are not in the vocabulary, so they are
+# renamed to ones that are: every d of a mean difference is Cohen's d (the
+# paper's "dz" is typed as Cohen's d too), and the interval takes the names an
+# htest's conf.int gets above. A stored result is never printed, so without
+# this it was not found at all (#549). Other columns keep their own name and
+# so stay untyped; the confidence level ("CI") is left out.
+.r_cap_effectsize <- function(x) {
+  df <- x
+  class(df) <- "data.frame"
+  if (!nrow(df) || !ncol(df)) return(NULL)
+  rename <- c(d_z = "d", d_rm = "d", d_av = "d", d_b = "d", d_d = "d",
+              d_r = "d", cohens_d = "d", hedges_g = "Hedges' g",
+              glass_delta = "Glass' delta", glass_delta_adjusted = "Glass' delta",
+              eta2 = "η²", eta2_partial = "partial eta squared",
+              omega2 = "ω²", r = "r", odds_ratio = "odds ratio",
+              ci_low = "conf.low", ci_high = "conf.high")
+  cn <- names(df)
+  is_num <- vapply(df, is.numeric, logical(1)) & tolower(cn) != "ci"
+  if (!any(is_num)) return(NULL)
+  keys <- ifelse(tolower(cn) %in% names(rename), rename[tolower(cn)], cn)
+  # eta_squared() and the like name each row in a "Parameter" column
+  lab_col <- match("parameter", tolower(cn))
+  rows <- lapply(seq_len(nrow(df)), function(i) {
+    st <- list()
+    for (j in which(is_num)) {
+      v <- df[[j]][i]
+      if (!is.na(v)) st[[keys[j]]] <- unname(v)
+    }
+    if (!length(st)) return(NULL)
+    list(label = if (!is.na(lab_col)) as.character(df[[lab_col]][i]) else "",
+         stats = st)
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (!length(rows)) return(NULL)
+  # named for the effect size column, as effectsize itself names it
+  an <- cn[which(is_num)[1]]
+  list(analysis = an, method = "", rows = rows)
+}
+
 # ── Identity from the CALL, for classless results ────────────────────────────
 # Many R results carry no statistical identity in the OBJECT at all.
 # aggregate(y ~ g, d, mean) and aggregate(y ~ g, d, sd) return byte-identical
@@ -125,6 +167,12 @@
 .r_call_fun_arg <- function(call_text) {
   if (is.null(call_text) || !nzchar(call_text)) return(NA_character_)
   cl <- tryCatch(str2lang(call_text), error = function(e) NULL)
+  # A stored result, means <- sapply(d, mean): the value is the right-hand
+  # side's, so that is the call to read; the assignment itself has no FUN
+  # (#549). R parses `->` as `<-`, and (means <- sapply(d, mean)) prints it.
+  while (is.call(cl) && length(cl) >= 2 &&
+         as.character(cl[[1]])[1] %in% c("<-", "=", "<<-", "("))
+    cl <- cl[[length(cl)]]
   if (is.null(cl) || !is.call(cl)) return(NA_character_)
   fname <- tryCatch(as.character(cl[[1]])[1], error = function(e) NA_character_)
   if (is.na(fname) || !nzchar(fname)) return(NA_character_)
@@ -226,6 +274,8 @@
 
   if (inherits(v, "htest")) return(.r_cap_htest(v))
 
+  if (inherits(v, "effectsize_table")) return(.r_cap_effectsize(v))
+
   if (inherits(v, "summary.lm") || inherits(v, "summary.glm")) {
     an <- if (inherits(v, "summary.glm")) "glm" else "lm"
     return(.r_cap_coef_matrix(v$coefficients, an))
@@ -279,7 +329,8 @@
     .r_cap_htest       = .r_cap_htest,
     .r_cap_coef_matrix = .r_cap_coef_matrix,
     .r_cap_anova       = .r_cap_anova,
-    .r_call_fun_arg    = .r_call_fun_arg,
+    .r_cap_effectsize  = .r_cap_effectsize,
+    .r_call_fun_arg   = .r_call_fun_arg,
     .r_cap_by_fun      = .r_cap_by_fun,
     stato_type_column  = child_type,
     .r_capture_value   = .r_capture_value)

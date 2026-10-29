@@ -1,8 +1,12 @@
 # always executed by load_all() and at the beginning of automated testing
 # https://r-pkgs.org/testing-design.html#testthat-helper-files
 
-# if TRUE, skip slow tests and those that need external connections
-quick <- FALSE
+# if TRUE, skip slow tests and those that need external connections. Quick is
+# the default, so a test run after a change takes minutes, not hours; set the
+# environment variable METACHECK_FULL_TESTS=true (in .Renviron, or
+# Sys.setenv(METACHECK_FULL_TESTS = "true") before devtools::test()) to run
+# every test, as before a release. The GitHub test workflow sets it.
+quick <- !identical(tolower(Sys.getenv("METACHECK_FULL_TESTS")), "true")
 
 testthat::set_max_fails(5)
 
