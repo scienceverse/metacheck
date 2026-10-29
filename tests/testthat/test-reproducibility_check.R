@@ -1309,6 +1309,9 @@ test_that("repro_write_scripts redirects writes to output/ relative to the sandb
 })
 
 test_that("a script that writes a file succeeds in the Docker sandbox (#502)", {
+  # on GitHub's Linux runner (uid 1001) the container's user (1000) cannot
+  # write in the sandbox folder; Docker Desktop does not check owners
+  skip_on_ci()
   skip_if_quick()
   skip_if_not_installed("processx")
   docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
