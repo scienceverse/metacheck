@@ -17,10 +17,17 @@ test_that(".osf_pat_validate", {
     expect_true(obs)
   }
 
-  # bad PAT - direct - resets env variable
-  expect_warning(obs <- .osf_pat_validate("BADPAT"))
+  # bad PAT - direct - leaves the env variable as it is
+  expect_warning(obs <- .osf_pat_validate("BADPAT"), "so it is not used")
   expect_false(obs)
-  expect_equal(Sys.getenv("OSF_PAT"), "")
+  expect_equal(Sys.getenv("OSF_PAT"), osf_pat)
+
+  # bad PAT - from env - resets env variable
+  withr::with_envvar(c(OSF_PAT = "BADPATFROMENV"), {
+    expect_warning(obs <- .osf_pat_validate(), "Clearing OSF_PAT")
+    expect_false(obs)
+    expect_equal(Sys.getenv("OSF_PAT"), "")
+  })
 
   if (FALSE) { # sometimes borks the PAT?
     # unset PAT
@@ -421,7 +428,7 @@ test_that(".osf_parse_response keeps the reason a lookup failed (#501)", {
   expect_equal(parse(404)$osf_type, "unfound")
   expect_equal(parse(404)$error, "not found on the OSF (HTTP 404)")
   expect_equal(parse(410)$error, "deleted or withdrawn from the OSF (HTTP 410)")
-  expect_equal(parse(429)$error, "the OSF rate limit was reached (HTTP 429)")
+  expect_match(parse(429)$error, "^API rate limit exhausted: .*OSF's limit")
   # a failed lookup is not kept in the listing cache
   expect_false(metacheck:::.repo_info_ok(r))
   # a private project is not a failure

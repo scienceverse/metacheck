@@ -738,7 +738,8 @@ openalex_doi <- function(doi, select = NULL) {
       email()
     )
 
-    resps <- .batch_query(urls, msg = "Querying OpenAlex by DOI")
+    resps <- .batch_query(urls, msg = "Querying OpenAlex by DOI",
+                          req_func = .openalex_headers)
   }
 
   oa <- vector("list", length(doi))
@@ -755,11 +756,78 @@ openalex_doi <- function(doi, select = NULL) {
     i <- valid_idx[j]
     resp <- resps[[j]]
     failed <- is.null(resp) || inherits(resp, "error") || httr2::resp_status(resp) >= 400
-    oa[[i]] <- if (failed) list(DOI = doi[i], error = "not found") else
+    limit <- if (!failed) NULL else .openalex_limit(resp)
+    oa[[i]] <- if (!is.null(limit)) list(DOI = doi[i], error = limit) else
+      if (failed) list(DOI = doi[i], error = "not found") else
       tryCatch(.openalex_add_abstract(httr2::resp_body_json(resp)),
                error = \(e) list(DOI = doi[i], error = "not found"))
   }
   return(oa)
+}
+
+#' Set or get an OpenAlex API key
+#'
+#' OpenAlex works without a key, with a budget of US$0.10 per day: about
+#' 1,000 searches, while looking up a work by its DOI or OpenAlex ID is free.
+#' A free key raises the budget to US$1 per day. Make one by signing up at
+#' <https://openalex.org/signup> and copying the key from
+#' <https://openalex.org/settings/api-key>.
+#'
+#' Store it as the `OPENALEX_API_KEY` environment variable so it is read every
+#' time R starts. A key OpenAlex refuses makes it refuse every request, so a
+#' refused key is left out (see [api_key_status()]).
+#'
+#' @param key the key to set, or NULL to get the current key
+#'
+#' @returns the current key (character; `""` when none is set)
+#' @export
+#'
+#' @examples
+#' openalex_key() # returns "" unless a key is set
+openalex_key <- function(key = NULL) {
+  opt <- "metacheck.openalex.key"
+  if (is.null(key)) {
+    return(getOption(opt) %||% Sys.getenv("OPENALEX_API_KEY"))
+  }
+  if (!is.character(key) || length(key) != 1 || is.na(key)) {
+    stop("Set openalex_key with a single string containing your OpenAlex key",
+         call. = FALSE)
+  }
+  options(metacheck.openalex.key = key)
+  invisible(key)
+}
+
+# Adds the OpenAlex key (see openalex_key()) to a request, when one is set
+# and OpenAlex has not refused it.
+.openalex_headers <- function(req) {
+  key <- tryCatch(.key_use("openalex", check = .openalex_key_check),
+                  error = \(e) "")
+  if (nzchar(key %||% "")) {
+    req <- req |> httr2::req_headers(Authorization = sprintf("Bearer %s", key))
+  }
+  req
+}
+
+# A key OpenAlex refuses answers 401 even for a single work (checked
+# 2026-10-28); a lookup by ID costs nothing from the budget.
+.openalex_key_check <- function(key) {
+  .key_check_request("https://api.openalex.org/works/W2741809807?select=id",
+                     list(Authorization = sprintf("Bearer %s", key)))
+}
+
+# The message for a response refused because OpenAlex's budget or speed limit
+# was reached (recorded, see .key_limit_reached()), or NULL for any other
+# response. The daily budget starts again at midnight UTC.
+.openalex_limit <- function(resp) {
+  if (is.null(resp) || inherits(resp, "error") ||
+      httr2::resp_status(resp) != 429L) return(NULL)
+  wait <- suppressWarnings(as.numeric(httr2::resp_header(resp, "retry-after")))
+  until <- if (length(wait) == 1 && !is.na(wait)) {
+    Sys.time() + wait
+  } else {
+    as.POSIXct(paste(as.Date(Sys.time(), tz = "UTC") + 1, "00:00:00"), tz = "UTC")
+  }
+  .key_limit_reached("openalex", until)
 }
 
 #' Add abstract from inverted index
@@ -822,8 +890,14 @@ openalex_query <- function(title, source = NA, authors = NA, strict = TRUE) {
   j <- tryCatch({
     resp <- .mc_request(url) |>
       httr2::req_headers(Accept = "application/json") |>
+      .openalex_headers() |>
       httr2::req_error(is_error = \(resp) FALSE) |>
       httr2::req_perform()
+    limit <- .openalex_limit(resp)
+    if (!is.null(limit)) {
+      message(limit)
+      return(NULL)
+    }
     httr2::resp_body_json(resp)
   },
     error = \(e) {

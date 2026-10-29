@@ -4,14 +4,15 @@
 \alias{.osf_headers}
 \title{OSF Headers}
 \usage{
-.osf_headers(req, pat = osf_pat())
+.osf_headers(req, pat = .key_use("osf", check = .osf_key_check))
 }
 \arguments{
 \item{req}{an httr2 request object}
 
 \item{pat}{an OSF personal access token to authorise the request with.
 Defaults to the token set by \code{\link[=osf_pat]{osf_pat()}}, which falls back to the \code{OSF_PAT}
-environment variable (normally set in \code{.Renviron}). \code{.osf_headers()} is
+environment variable (normally set in \code{.Renviron}), left out when the OSF
+refuses it (see \code{\link[=api_key_status]{api_key_status()}}). \code{.osf_headers()} is
 passed bare as a request configurator in several places (e.g. as
 \code{.batch_query(req_func = )}), so a token supplied for a whole run is set
 with \code{\link[=osf_pat]{osf_pat()}} rather than threaded through every call site. Named \code{pat}

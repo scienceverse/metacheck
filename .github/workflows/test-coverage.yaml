@@ -14,6 +14,8 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      # run every test, not only the quick ones (tests/testthat/helper.R)
+      METACHECK_FULL_TESTS: "true"
 
     steps:
       - uses: actions/checkout@v4

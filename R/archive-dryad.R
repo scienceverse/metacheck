@@ -504,8 +504,19 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
 # hits the dryad_pat() 10-hour manual-token expiry (see dryad_auth()). Falls
 # back to the static dryad_pat() bearer header when no client is set, for
 # callers who only ever generated a plain token.
+#
+# A token set in this session with dryad_pat() (a visitor's own key in the
+# metacheck apps, see api_keys_use()) comes before client credentials from
+# the DRYAD_CLIENT_ID/DRYAD_CLIENT_SECRET environment variables (the server's
+# key); client credentials set in this session with dryad_auth() still come
+# first.
 .dryad_headers <- function(req) {
   req <- req |> httr2::req_headers(`User-Agent` = "metacheck")
+  session_client <- nzchar(getOption("metacheck.dryad.client_id") %||% "")
+  session_pat <- getOption("metacheck.dryad.pat") %||% ""
+  if (!session_client && nzchar(session_pat)) {
+    return(req |> httr2::req_headers(Authorization = sprintf("Bearer %s", session_pat)))
+  }
   client <- tryCatch(.dryad_oauth_client(), error = \(e) NULL)
   if (!is.null(client)) {
     return(req |> httr2::req_oauth_client_credentials(client))

@@ -280,6 +280,26 @@ code_lang <- function(file_name) {
   if (is.na(lang)) NA_character_ else lang
 }
 
+# Files inside a renv/ folder were written by the renv package, not by the
+# authors: renv/activate.R (run by the project's .Rprofile to set up its
+# package library) and, when the folder is shared in full, renv/library/ with
+# the R files of every installed package. code_check and reproducibility_check
+# leave them out, so they are not counted, checked or run as the paper's code
+# (#548). renv.lock sits next to the renv/ folder, not in it, so it is still
+# found as a version pin.
+#
+# The folder is in file_path ("renv/activate.R", also for a local folder and
+# a .zip member: "project.zip/renv/activate.R"); file_name holds the base
+# name only, so it is used just when a row has no file_path.
+#
+# Returns TRUE per row of `files` (a code_check/repo_check table).
+.in_renv_folder <- function(files) {
+  if (!nrow(files)) return(logical(0))
+  p <- files$file_path %||% rep(NA_character_, nrow(files))
+  p <- ifelse(is.na(p) | !nzchar(p), files$file_name %||% NA_character_, p)
+  grepl("(^|/)renv/", gsub("\\\\", "/", p), ignore.case = TRUE)
+}
+
 # code_check() previously called download_repo_files() up to five separate
 # times: once each inside .code_expand_spv()/.code_expand_smcl()/
 # .code_expand_mplus()/.code_expand_html() (each downloading only its own
@@ -325,7 +345,10 @@ code_lang <- function(file_name) {
     (!is.na(all_files$archive_url %||% NA_character_) &
        nzchar(all_files$archive_url %||% "") &
        !is.na(all_files$archive_member %||% NA_character_))
-  need_dl <- is_candidate &
+  # renv's own files are left out of code_check, so they are not downloaded
+  # either: a shared renv/library/ would otherwise spend the repository's
+  # download budget before the paper's own code
+  need_dl <- is_candidate & !.in_renv_folder(all_files) &
     (is.na(all_files$file_location) | !nzchar(all_files$file_location %||% "")) &
     has_target
   if (!any(need_dl)) return(all_files)
@@ -553,7 +576,10 @@ code_lang <- function(file_name) {
 .code_expand_html <- function(all_files, max_file_size, max_download_size,
                               cache, skip_on_api_limit = FALSE,
                               max_files_per_repo = Inf) {
-  is_html <- grepl("\\.html?$", all_files$file_name, ignore.case = TRUE)
+  # not the help pages and vignettes of the packages in a shared renv/library/:
+  # renv's own files are left out of code_check (see .in_renv_folder())
+  is_html <- grepl("\\.html?$", all_files$file_name, ignore.case = TRUE) &
+    !.in_renv_folder(all_files)
   if (!any(is_html)) return(all_files)
 
   html_files <- all_files[is_html, , drop = FALSE]
@@ -668,7 +694,9 @@ code_lang <- function(file_name) {
                      error = function(e) NULL)
     if (is.null(peek) || nrow(peek) == 0) next   # host/host-state can't be peeked
 
-    is_code <- !is.na(code_lang(peek$name))
+    # renv's own files are left out of code_check, so they are not fetched
+    is_code <- !is.na(code_lang(peek$name)) &
+      !.in_renv_folder(data.frame(file_path = peek$name))
     if (!any(is_code)) next
 
     dest <- .repo_cache_path(all_files$repo_url[i],

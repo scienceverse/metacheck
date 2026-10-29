@@ -27,6 +27,8 @@ researchbox_tab <- tabItem(
     ),
     actionButton("run_check", "Run Check", icon = icon("play"))
   ),
+  uiOutput("api_key_notice"),
+  api_keys_box("researchbox"),
 
   box(title = "Privacy",
       collapsible = TRUE,

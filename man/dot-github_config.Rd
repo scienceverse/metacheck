@@ -13,6 +13,8 @@
 the modified request
 }
 \description{
-Adds GitHub auth and accept headers to an httr2 request.
+Adds GitHub auth and accept headers to an httr2 request. The key is the
+one \code{\link[=github_pat]{github_pat()}} returns, left out when GitHub refuses it (see
+\code{\link[=api_key_status]{api_key_status()}}).
 }
 \keyword{internal}

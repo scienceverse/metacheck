@@ -5,7 +5,8 @@
 #' @param req an httr2 request object
 #' @param pat an OSF personal access token to authorise the request with.
 #'   Defaults to the token set by [osf_pat()], which falls back to the `OSF_PAT`
-#'   environment variable (normally set in `.Renviron`). `.osf_headers()` is
+#'   environment variable (normally set in `.Renviron`), left out when the OSF
+#'   refuses it (see [api_key_status()]). `.osf_headers()` is
 #'   passed bare as a request configurator in several places (e.g. as
 #'   `.batch_query(req_func = )`), so a token supplied for a whole run is set
 #'   with [osf_pat()] rather than threaded through every call site. Named `pat`
@@ -15,7 +16,7 @@
 #' @returns the modified request
 #' @export
 #' @keywords internal
-.osf_headers <- function(req, pat = osf_pat()) {
+.osf_headers <- function(req, pat = .key_use("osf", check = .osf_key_check)) {
   req <- req |>
     httr2::req_headers(
       `User-Agent` = "metacheck",
@@ -128,23 +129,44 @@ osf_pat <- function(pat = NULL) {
     error = \(e) NA
   )
 
-  # authorised access success
+  # authorised access success; remembered, so .osf_headers() does not check
+  # the key a second time (see .key_use())
   if (sc_auth %in% 200L) {
+    assign(paste("osf", osf_pat), TRUE, envir = .key_checked)
     return(TRUE)
   }
 
   if (sc_auth %in% c(401L, 403L)) {
-    # unset PAT if invalid
-    warning(
-      "The current OSF_PAT blocks access to public files. ",
-      "Clearing OSF_PAT for this session. ",
-      "Update or remove it in .Renviron.",
-      call. = FALSE
-    )
-    Sys.setenv(OSF_PAT = "")
+    # remembered, so .osf_headers() leaves this token out (see .key_use())
+    assign(paste("osf", osf_pat), FALSE, envir = .key_checked)
+    if (identical(osf_pat, Sys.getenv("OSF_PAT"))) {
+      # unset PAT if invalid
+      .key_problem_record("osf", "rejected", source = "server")
+      warning(
+        "The current OSF_PAT blocks access to public files. ",
+        "Clearing OSF_PAT for this session. ",
+        "Update or remove it in .Renviron.",
+        call. = FALSE
+      )
+      Sys.setenv(OSF_PAT = "")
+    } else {
+      # A token given directly (such as one typed in osf_app()) is not the
+      # one in .Renviron: clearing OSF_PAT here removed a working token from
+      # .Renviron for the rest of the session.
+      warning("This OSF token blocks access to public files, so it is not used.",
+              call. = FALSE)
+    }
   }
 
   return(FALSE)
+}
+
+# A key the OSF refuses answers 401 even for a public preprint (the one
+# .osf_pat_validate() also uses).
+.osf_key_check <- function(key) {
+  .key_check_request("https://api.osf.io/v2/preprints/khbvy/",
+                     list(Authorization = sprintf("Bearer %s", key),
+                          Accept = "application/vnd.api+json"))
 }
 
 #' Retrieve info from the OSF by ID
@@ -448,11 +470,14 @@ osf_pat <- function(pat = NULL) {
                         osf_type = "private",
                         public = FALSE))
     } else if (sc == 429) {
-      warning("Too many requests", call. = FALSE)
+      # The OSF sends no time at which its limit ends (100 requests per hour
+      # without a key, 10,000 per day with one), so an hour is assumed.
+      limit <- .key_limit_reached("osf")
+      warning(limit, call. = FALSE)
       # `error` marks the row as a failed lookup, so repo_check reports it and
       # the listing cache does not keep it (.repo_info_ok(), #501)
       return(data.frame(osf_id = id, osf_type = "too many requests",
-                        error = "the OSF rate limit was reached (HTTP 429)"))
+                        error = limit))
     } else if (sc >= 500) {
       # The OSF API is down or overloaded (an outage answered every request
       # with HTTP 503 on 2026-10-17): that says nothing about whether the

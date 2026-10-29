@@ -2,7 +2,8 @@
 # not executed by load_all()
 # https://r-pkgs.org/testing-design.html#testthat-setup-files
 
-verbose(FALSE)
+# metacheck's messages stay on: many tests check them (verbose(FALSE) here was
+# undone straight away until 2026-10-29, so the tests were written with them on)
 
 # Disable the session OSF listing cache during tests: it would let one test
 # reuse another's listing and skip the httptest2-mocked request, breaking mock
@@ -18,18 +19,24 @@ options(metacheck.osf.cache = FALSE)
 .mc_test_cache <- file.path(tempdir(), "metacheck-test-cache")
 dir.create(.mc_test_cache, showWarnings = FALSE, recursive = TRUE)
 options(metacheck.cache.dir = .mc_test_cache)
+# metacheck's state folder (key problems, ResearchBox's count of requests for
+# boxes it could not find) is shared by every R session of the user: tests
+# write theirs to the throwaway folder too.
+options(metacheck.state.dir = file.path(.mc_test_cache, "state"))
 .mc_old_llm_env <- Sys.getenv("METACHECK_LLM_CACHE_DIR", unset = NA)
 Sys.setenv(METACHECK_LLM_CACHE_DIR = file.path(.mc_test_cache, "llm"))
 
-# teardown code
-withr::defer(verbose(TRUE))
-withr::defer(options(metacheck.osf.cache = TRUE))
-withr::defer(options(metacheck.cache.dir = NULL))
+# teardown code, run when all tests have run. teardown_env() is needed: without
+# it, each reset runs as soon as this file has run, before the first test, and
+# the tests would write to the package source and the user's own state folder.
+withr::defer(options(metacheck.osf.cache = TRUE), teardown_env())
+withr::defer(options(metacheck.cache.dir = NULL), teardown_env())
+withr::defer(options(metacheck.state.dir = NULL), teardown_env())
 withr::defer({
   if (is.na(.mc_old_llm_env)) Sys.unsetenv("METACHECK_LLM_CACHE_DIR")
   else Sys.setenv(METACHECK_LLM_CACHE_DIR = .mc_old_llm_env)
-})
-withr::defer(unlink(.mc_test_cache, recursive = TRUE))
+}, teardown_env())
+withr::defer(unlink(.mc_test_cache, recursive = TRUE), teardown_env())
 
 # psychsci test corpus ---------------------------------------------------
 # psychsci was removed from data/ (LazyData) to reduce package size and is

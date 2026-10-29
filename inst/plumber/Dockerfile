@@ -42,10 +42,12 @@ RUN R -e "download.file('https://github.com/quarto-dev/quarto-cli/releases/downl
 # filesystem and only /tmp writable (a tmpfs — see docker-compose.yml), so point
 # every transient Quarto/Deno write at it. Without this, quarto_render can't
 # create its caches at runtime and the HTML render fails (gracefully — the JSON
-# check still succeeds — but no report is produced).
+# check still succeeds — but no report is produced). metacheck's state folder
+# (which API key was refused or reached its limit) goes there too.
 ENV XDG_CACHE_HOME=/tmp/.cache \
     DENO_DIR=/tmp/.deno \
-    TMPDIR=/tmp
+    TMPDIR=/tmp \
+    METACHECK_STATE_DIR=/tmp/metacheck-state
 
 # copy app
 COPY . /srv/metacheck

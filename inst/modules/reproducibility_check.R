@@ -1049,12 +1049,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   r_files <- code_tbl[!is.na(code_tbl$language) & code_tbl$language == "R", ,
                       drop = FALSE]
-  # The renv bootstrap (renv/activate.R) is machinery, not the paper's analysis
-  # code; it is not something a reproduction "runs", so drop it.
-  r_files <- r_files[!grepl("(^|/)renv/activate\\.R$", r_files$file_name,
-                            ignore.case = TRUE), , drop = FALSE]
+  # renv's own files (renv/activate.R, renv/library/) are not the paper's
+  # analysis code, so they are not run. code_check already leaves them out;
+  # this also covers a code table passed in directly. The pattern used to be
+  # matched against file_name, which holds no folder, so it never matched
+  # (#548); see .in_renv_folder().
+  r_files <- r_files[!.in_renv_folder(r_files), , drop = FALSE]
   py_files <- code_tbl[!is.na(code_tbl$language) & code_tbl$language == "Python", ,
                        drop = FALSE]
+  py_files <- py_files[!.in_renv_folder(py_files), , drop = FALSE]
   has_r <- nrow(r_files) > 0
   has_py <- nrow(py_files) > 0
 

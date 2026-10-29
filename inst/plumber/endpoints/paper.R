@@ -131,6 +131,12 @@ function(req, res) {
 #* @post /module
 #* @param file:file bibr JSON file to process
 #* @param name:[string] Name of the module to run (required)
+#* @param key_github your own GitHub key (optional), used for this request instead of the server's
+#* @param key_osf your own OSF key (optional), used for this request instead of the server's
+#* @param key_dryad your own Dryad key (optional), used for this request instead of the server's
+#* @param key_researchbox your own ResearchBox key (optional), used for this request instead of the server's
+#* @param key_gitlab your own GitLab key (optional), used for this request instead of the server's
+#* @param key_openalex your own OpenAlex key (optional), used for this request instead of the server's
 #* @serializer json
 function(req, res) {
     with_uploaded_paper(
@@ -154,6 +160,15 @@ function(req, res) {
             if (module_path == "") {
                 return(error_response(res, 500, paste0("Module file for '", mp$name, "' not found.")))
             }
+
+            # The sender's own API keys (fields key_github, key_osf, ...) take
+            # the place of the server's keys (environment variables) for this
+            # request only: set as options, and restored when it ends.
+            services <- c("github", "osf", "dryad", "researchbox", "gitlab", "openalex")
+            keys <- mp[intersect(paste0("key_", services), names(mp))]
+            names(keys) <- sub("^key_", "", names(keys))
+            old <- metacheck::api_keys_use(keys, shared = TRUE)
+            on.exit(options(old), add = TRUE)
 
             source(module_path, local = TRUE)
             if (!exists(mp$name)) {

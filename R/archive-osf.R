@@ -708,6 +708,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
     err <- .osf_status_error(sc)
     if (!is.null(err)) {
       logger("osf_get_all_pages", list(url = url, status = sc))
+      if (sc == 429) .key_limit_reached("osf")
       return(.osf_error_result(err))
     }
     httr2::resp_body_json(resp, simplifyVector = TRUE)
@@ -734,6 +735,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
     err <- .osf_status_error(sc)
     if (!is.null(err)) {
       logger("osf_get_all_pages", list(url = urls[i], status = sc))
+      if (sc == 429) .key_limit_reached("osf")
       return(.osf_error_result(err))
     }
     tryCatch(httr2::resp_body_json(r, simplifyVector = TRUE),

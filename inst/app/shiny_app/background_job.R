@@ -21,23 +21,33 @@
 #'   this app's folder as working directory), so it must load packages and
 #'   source helper files itself, and get everything else through `args`.
 #' @param args named list of arguments for `fun`.
+#' @param keys a visitor's own API keys, named by service (see api_keys.R),
+#'   used in this job only.
 #' @return a job: list(proc = the callr process, progress_file = path).
-bg_start <- function(fun, args = list()) {
+bg_start <- function(fun, args = list(), keys = list()) {
   progress_file <- tempfile("job_progress_", fileext = ".txt")
   file.create(progress_file)
   # A function keeps the environment it was created in; sent to the other
   # process it would drag that whole environment along. It needs nothing
   # from it, so detach it.
   environment(fun) <- globalenv()
-  runner <- function(fun, args, app_dir, progress_file) {
+  runner <- function(fun, args, app_dir, progress_file, keys) {
     setwd(app_dir)
     options(shiny_progress_file = progress_file)
+    # The server's keys are environment variables, which this process
+    # inherited; a visitor's own keys take their place for this job only.
+    # Skipped with a metacheck older than api_keys_use().
+    # On someone's own computer (METACHECK_LOCAL) the keys are their own.
+    if (exists("api_keys_use", envir = asNamespace("metacheck"))) {
+      metacheck::api_keys_use(
+        keys, shared = !identical(tolower(Sys.getenv("METACHECK_LOCAL")), "true"))
+    }
     do.call(fun, args)
   }
   proc <- callr::r_bg(
     runner,
     args = list(fun = fun, args = args, app_dir = getwd(),
-                progress_file = progress_file),
+                progress_file = progress_file, keys = keys),
     # "" = the job's messages and warnings go to this app's own log file.
     stdout = "", stderr = "",
     # The job is stopped if this app's R process ends.

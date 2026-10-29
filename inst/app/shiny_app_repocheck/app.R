@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
 
 source("render_report.R")
 source("background_job.R")
+source("api_keys.R")
 
 ## --- limits -----------------------------------------------------------------
 # Sized for the shared server (~196 GB disk, 4 cores). The worst case on disk
@@ -39,6 +40,9 @@ CHECK_COOLDOWN_SECONDS <- 30
 SLOT_STALE_SECONDS     <- 1800   # repository checks can run much longer than PDFs
 
 MODULES <- c("repo_check", "code_check", "data_check")
+
+# The services whose keys a visitor can enter (see api_keys.R)
+KEY_SERVICES <- c("github", "osf", "dryad", "researchbox", "gitlab")
 
 # What the progress bar says while each module runs.
 MODULE_LABELS <- c(
@@ -285,6 +289,7 @@ check_tab <- tabItem(
     "try again in a few minutes."
   ),
   uiOutput("busy_banner"),
+  uiOutput("api_key_notice"),
   box(title = "Repository", collapsible = FALSE, width = 12,
     radioButtons("input_mode", NULL,
       choiceNames = list(
@@ -320,6 +325,7 @@ check_tab <- tabItem(
         "or large raw data. The check starts as soon as the upload finishes.")
     )
   ),
+  api_keys_box(KEY_SERVICES),
   box(title = "Privacy", collapsible = TRUE, collapsed = TRUE, width = 12,
     tags$ul(
       tags$li("\U0001F310 For an online repository, the server contacts that repository's host (e.g. GitHub, OSF, Zenodo) to list and download its public files."),
@@ -386,6 +392,8 @@ server <- function(input, output, session) {
                 inuse, MAX_CONCURRENT_CHECKS))
     } else NULL
   })
+
+  output$api_key_notice <- renderUI(api_key_notice(KEY_SERVICES, session))
 
   # Stops this session's running check, if any (set by run_check()).
   stop_job <- NULL
@@ -457,7 +465,7 @@ server <- function(input, output, session) {
       labels = MODULE_LABELS[MODULES], args = prepared$args,
       htmlpath = htmlpath, cache_dir = file.path(workdir, "cache"),
       work_dir = prepared$work_dir
-    ))
+    ), keys = api_keys_entered(input, KEY_SERVICES))
     stop_watch <- bg_watch(job, session, "Checking repository",
       heartbeat = slot, max_minutes = 60,
       on_done = function(path) {

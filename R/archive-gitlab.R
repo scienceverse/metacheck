@@ -176,11 +176,34 @@ gitlab_repo <- function(repo) {
 #' @keywords internal
 .gitlab_config <- function(req) {
   req <- req |> httr2::req_headers(`User-Agent` = "scienceverse/metacheck")
-  pat <- tryCatch(gitlab_pat(), error = \(e) "")
+  pat <- tryCatch(.key_use("gitlab", check = .gitlab_key_check), error = \(e) "")
   if (nzchar(pat %||% "")) {
     req <- req |> httr2::req_headers(`PRIVATE-TOKEN` = pat)
   }
   req
+}
+
+# A token GitLab refuses answers 401 even for a public project, such as
+# GitLab's own (project 278964, gitlab-org/gitlab).
+.gitlab_key_check <- function(key) {
+  .key_check_request("https://gitlab.com/api/v4/projects/278964",
+                     list(`PRIVATE-TOKEN` = key))
+}
+
+# The message for a response refused because GitLab's limit was reached
+# (recorded, see .key_limit_reached()), or NULL for any other response.
+# GitLab answers 429 with the end of the limit in RateLimit-Reset (seconds
+# since 1970) and the wait in Retry-After.
+.gitlab_limit <- function(resp) {
+  if (is.null(resp) || httr2::resp_status(resp) != 429L) return(NULL)
+  reset <- suppressWarnings(as.numeric(httr2::resp_header(resp, "ratelimit-reset")))
+  wait <- suppressWarnings(as.numeric(httr2::resp_header(resp, "retry-after")))
+  until <- if (length(reset) == 1 && !is.na(reset)) {
+    as.POSIXct(reset, origin = "1970-01-01")
+  } else if (length(wait) == 1 && !is.na(wait)) {
+    Sys.time() + wait
+  } else NA
+  .key_limit_reached("gitlab", until)
 }
 
 #' Set or get a GitLab API token
@@ -275,6 +298,11 @@ gitlab_tree_files <- function(repo) {
       httr2::req_error(is_error = \(r) FALSE) |>
       httr2::req_perform(),
     error = \(e) NULL)
+  limit <- .gitlab_limit(meta_resp)
+  if (!is.null(limit)) {
+    return(list(gated = TRUE, reason = limit, files = NULL,
+                default_branch = NA_character_, license = NA_character_))
+  }
   if (is.null(meta_resp) || httr2::resp_status(meta_resp) != 200) {
     return(list(gated = TRUE,
                 reason = "invalid or inaccessible GitLab repository",
@@ -308,6 +336,13 @@ gitlab_tree_files <- function(repo) {
         httr2::req_error(is_error = \(r) FALSE) |>
         httr2::req_perform(),
       error = \(e) NULL)
+    # a listing that GitLab's limit stopped part way is not listed at all,
+    # rather than listed with only its first pages
+    limit <- .gitlab_limit(tree_resp)
+    if (!is.null(limit)) {
+      return(list(gated = TRUE, reason = limit, files = NULL,
+                  default_branch = default_branch, license = license))
+    }
     if (is.null(tree_resp) || httr2::resp_status(tree_resp) != 200) {
       if (page == 1L) {
         return(list(gated = FALSE, reason = NA_character_,

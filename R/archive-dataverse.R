@@ -827,10 +827,20 @@ dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL, cache = FALSE) 
 # uses a single per-installation API token (X-Dataverse-key), unlike OSF/
 # Zenodo's Bearer tokens -- named per-host with .dataverse_pat() below, since a
 # token issued by one installation is meaningless to any other.
+#
+# A key the installation refuses answers 401 ("Bad API key") even for a
+# public dataset (checked 2026-10-28 on dataverse.harvard.edu), so each
+# installation's key is checked once per R process and left out when refused
+# (see .key_use()).
 .dataverse_headers <- function(req) {
   host <- tryCatch(httr2::url_parse(req$url)$hostname, error = \(e) NULL)
   req <- req |> httr2::req_headers(`User-Agent` = "metacheck")
-  pat <- tryCatch(.dataverse_pat(host), error = \(e) "")
+  pat <- tryCatch(
+    .key_use("dataverse", .dataverse_pat(host), id = paste("Dataverse", host),
+             check = \(key) .key_check_request(
+               sprintf("https://%s/api/users/:me", host),
+               list(`X-Dataverse-key` = key))),
+    error = \(e) "")
   if (nzchar(pat %||% "")) {
     req <- req |> httr2::req_headers(`X-Dataverse-key` = pat)
   }

@@ -209,6 +209,15 @@ reference:
   - '`researchdata4tu_pat`'
   - '`ldbase_links`'
   - '`ldbase_info`'
+- title: API Keys
+  desc: ~
+  contents:
+  - '`api_key_status`'
+  - '`api_keys_use`'
+  - '`github_pat`'
+  - '`osf_pat`'
+  - '`gitlab_pat`'
+  - '`openalex_key`'
 - title: Integrations
   desc: ~
   contents:

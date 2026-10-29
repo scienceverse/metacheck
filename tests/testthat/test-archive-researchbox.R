@@ -171,7 +171,8 @@ test_that("rbox_info", {
 test_that("rbox_info cache", {
   testthat::local_mocked_bindings(online = \(...) TRUE)
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   first <- rbox_info("https://researchbox.org/801", cache = TRUE)
 
   # the second call asks ResearchBox nothing, for any link to the same box
@@ -183,7 +184,8 @@ test_that("rbox_info cache", {
 
 test_that("rbox_files", {
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   files <- rbox_files("https://researchbox.org/801")
   expect_equal(nrow(files), 10)
   expect_equal(names(files), c("rb_url", "name", "file_id", "section", "type",
@@ -207,7 +209,8 @@ test_that("rbox_files", {
 
 test_that("a peer-review link sends its passcode to the API", {
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   sent <- list()
   local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
     sent[[action]] <<- code
@@ -288,7 +291,8 @@ test_that("rbox_search pages through the hits", {
 
 test_that(".rbox_api turns refusals into messages", {
   withr::local_options(metacheck.researchbox.token = "",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   expect_match(.rbox_api("box_meta", box_id = 1)$error, "no ResearchBox API key")
 
   withr::local_options(metacheck.researchbox.token = "test-token")
@@ -322,7 +326,7 @@ test_that("boxes without a passcode are not sent after 8 answers of 'unfound'", 
   # ResearchBox blocks the key for 10 days after 10 requests for boxes that
   # are not public, and answers those as if the box did not exist
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.state.dir = withr::local_tempdir())
   local_mocked_bindings(req_perform = function(req, ...) httr2::response(500, body = raw(0)),
                         .package = "httr2")
   for (i in 1:8) expect_equal(.rbox_api("box_meta", box_id = i)$error, "unfound")
@@ -376,7 +380,8 @@ test_that("rbox_file_download checks the files against the table of contents", {
   box <- .rbox_test_box(withr::local_tempdir())
   skip_if_not(file.exists(box$zip), "zip utility unavailable")
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   asked <- character(0)
   zip_file <- box$zip
   local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
@@ -420,7 +425,8 @@ test_that("rbox_file_download without a table of contents asks for the file list
   box <- .rbox_test_box(withr::local_tempdir(), toc = FALSE)
   skip_if_not(file.exists(box$zip), "zip utility unavailable")
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   asked <- character(0)
   listed_ok <- TRUE
   local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
@@ -449,7 +455,8 @@ test_that("rbox_file_download of chosen files", {
   box <- .rbox_test_box(d, toc = FALSE)
   skip_if_not(file.exists(box$zip), "zip utility unavailable")
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   sent <- list()
   local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
     if (action == "download_files") {
@@ -488,7 +495,8 @@ test_that("several links to one box download it once, with the passcode", {
   box <- .rbox_test_box(withr::local_tempdir())
   skip_if_not(file.exists(box$zip), "zip utility unavailable")
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   sent <- list()
   local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
     sent[[length(sent) + 1]] <<- list(action = action, code = code)
@@ -513,7 +521,8 @@ test_that("several links to one box download it once, with the passcode", {
 
 test_that(".rbox_license", {
   withr::local_options(metacheck.researchbox.token = "test-token",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   asked <- 0
   local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
     asked <<- asked + 1
@@ -538,7 +547,8 @@ test_that(".rbox_license", {
 
 test_that("an empty ResearchBox page, and several boxes that all fail (U43, U45)", {
   withr::local_options(metacheck.researchbox.token = "",
-                       metacheck.cache.dir = withr::local_tempdir())
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
   # an empty body stopped resp_body_string() before the status was checked
   for (st in c(200, 403)) {
     local_mocked_bindings(req_perform = function(req, ...) httr2::response(st, body = raw(0)),

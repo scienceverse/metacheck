@@ -45,8 +45,12 @@ test_that(".gitlab_config adds a User-Agent, and PRIVATE-TOKEN only when a PAT i
   expect_equal(h$headers[["User-Agent"]], "scienceverse/metacheck")
   expect_null(h$headers[["PRIVATE-TOKEN"]])
 
+  # a token is checked with GitLab before it is used (see .key_use()); this
+  # one is taken as accepted
   gitlab_pat("fake-token-for-test")
-  h2 <- .gitlab_config(httr2::request("https://gitlab.com"))
+  h2 <- with_mocked_bindings(
+    .gitlab_config(httr2::request("https://gitlab.com")),
+    .key_check_request = function(url, headers) TRUE)
   expect_equal(h2$headers[["PRIVATE-TOKEN"]], "fake-token-for-test")
   gitlab_pat(old %||% "")
 })

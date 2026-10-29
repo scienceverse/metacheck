@@ -26,6 +26,9 @@ test_that("a report on an uploaded .zip does not show the server's folders (#500
   # later test in this session runs with the app's bar
   orig_pb <- metacheck:::pb
   withr::defer(utils::assignInNamespace("pb", orig_pb, ns = "metacheck"))
+  # the job also sets metacheck.repo_cache.dir to its own cache folder; put
+  # the old value back afterwards, or every later test downloads into it
+  withr::local_options(metacheck.repo_cache.dir = getOption("metacheck.repo_cache.dir"))
 
   for (wrapped in c(TRUE, FALSE)) {
     workdir <- withr::local_tempdir()

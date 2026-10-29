@@ -273,13 +273,9 @@ github_files <- function(repo, dir = "",
   contents <- tryCatch(httr2::resp_body_json(resp), error = \(e) list())
 
   if (httr2::resp_status(resp) != 200) {
-    rl <- headers$`x-ratelimit-remaining`
-    if (!is.null(rl) && as.integer(rl) == 0) {
-      reset <- headers$`x-ratelimit-reset` |>
-        as.integer() |>
-        as.POSIXct() |>
-        format("%Y-%m-%d %T")
-      message("Rate limit exceeded, resetting at ", reset)
+    limit <- .github_limit(resp)
+    if (!is.null(limit)) {
+      message(limit)
     } else {
       message(dir, ": ", contents$message)
     }
@@ -405,11 +401,16 @@ github_tree_files <- function(repo) {
   # says nothing about the repository, so it still falls through to the
   # github_files() crawl below, as before.
   if (!is.null(meta_resp) && httr2::resp_status(meta_resp) == 404) return(invalid)
+  # GitHub's limit (60 requests per hour without a key, 5,000 with one) makes
+  # the repository "not listed", not empty: the crawl below would be refused
+  # too, and its empty result read as a repository without files.
+  limit <- if (!is.null(meta_resp)) .github_limit(meta_resp)
+  if (!is.null(limit)) {
+    return(list(gated = TRUE, reason = limit, files = NULL,
+                default_branch = NA_character_, license = NA_character_))
+  }
   if (is.null(meta_resp) || httr2::resp_status(meta_resp) != 200) {
-    files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
-    return(list(gated = FALSE, reason = NA_character_,
-                files = files_df, default_branch = "main",
-                license = NA_character_))
+    return(.github_crawl(repo, "main", NA_character_))
   }
 
   meta           <- httr2::resp_body_json(meta_resp)
@@ -433,11 +434,13 @@ github_tree_files <- function(repo) {
       httr2::req_error(is_error = \(r) FALSE) |>
       httr2::req_perform(),
     error = \(e) NULL)
+  limit <- if (!is.null(tree_resp)) .github_limit(tree_resp)
+  if (!is.null(limit)) {
+    return(list(gated = TRUE, reason = limit, files = NULL,
+                default_branch = default_branch, license = license))
+  }
   if (is.null(tree_resp) || httr2::resp_status(tree_resp) != 200) {
-    files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
-    return(list(gated = FALSE, reason = NA_character_,
-                files = files_df, default_branch = default_branch,
-                license = license))
+    return(.github_crawl(repo, default_branch, license))
   }
 
   tree <- httr2::resp_body_json(tree_resp)
@@ -485,9 +488,46 @@ github_tree_files <- function(repo) {
 }
 
 
+# The /contents/ crawl of github_files(), for when the tree could not be
+# fetched. A crawl that GitHub's limit stopped is "not listed", like the tree
+# requests above, rather than a repository without files.
+.github_crawl <- function(repo, default_branch, license) {
+  files_df <- tryCatch(github_files(repo, recursive = TRUE), error = \(e) NULL)
+  problem <- .key_problem("github")
+  if (is.null(files_df) && identical(problem$problem, "limit")) {
+    return(list(gated = TRUE, files = NULL,
+                reason = paste0("API rate limit exhausted: ",
+                                .key_problem_message("github", "limit", problem$until)),
+                default_branch = default_branch, license = license))
+  }
+  list(gated = FALSE, reason = NA_character_, files = files_df,
+       default_branch = default_branch, license = license)
+}
+
+# The message for a response refused because GitHub's limit was reached
+# (recorded, see .key_limit_reached()), or NULL for any other response.
+# GitHub answers 403 or 429 with x-ratelimit-remaining 0 and the end of the
+# hour in x-ratelimit-reset; its secondary limit (too many requests at once)
+# answers the same statuses with retry-after instead.
+.github_limit <- function(resp) {
+  if (!httr2::resp_status(resp) %in% c(403L, 429L)) return(NULL)
+  remaining <- httr2::resp_header(resp, "x-ratelimit-remaining")
+  reset <- suppressWarnings(as.numeric(httr2::resp_header(resp, "x-ratelimit-reset")))
+  wait <- suppressWarnings(as.numeric(httr2::resp_header(resp, "retry-after")))
+  if (!identical(remaining, "0") && length(wait) == 0) return(NULL)
+  until <- if (length(reset) == 1 && !is.na(reset)) {
+    as.POSIXct(reset, origin = "1970-01-01")
+  } else if (length(wait) == 1 && !is.na(wait)) {
+    Sys.time() + wait
+  } else NA
+  .key_limit_reached("github", until)
+}
+
 #' GitHub Configuration
 #'
-#' Adds GitHub auth and accept headers to an httr2 request.
+#' Adds GitHub auth and accept headers to an httr2 request. The key is the
+#' one [github_pat()] returns, left out when GitHub refuses it (see
+#' [api_key_status()]).
 #'
 #' @param req an httr2 request object
 #'
@@ -496,10 +536,7 @@ github_tree_files <- function(repo) {
 #'
 #' @keywords internal
 .github_config <- function(req) {
-  token <- tryCatch(
-    gitcreds::gitcreds_get(),
-    error = function(e) NULL
-  )
+  token <- .key_use("github", check = .github_key_check)
 
   req <- req |>
     httr2::req_headers(
@@ -507,12 +544,56 @@ github_tree_files <- function(repo) {
       `User-Agent` = "scienceverse/metacheck"
     )
 
-  if (!is.null(token)) {
+  if (nzchar(token)) {
     req <- req |>
-      httr2::req_headers(Authorization = paste("token", token$password))
+      httr2::req_headers(Authorization = paste("token", token))
   }
 
   return(req)
+}
+
+# GitHub's /rate_limit does not count toward the limit.
+.github_key_check <- function(key) {
+  .key_check_request("https://api.github.com/rate_limit",
+                     list(Authorization = paste("token", key)))
+}
+
+#' Set or get a GitHub token
+#'
+#' A token raises GitHub's limit from 60 to 5,000 requests per hour. A
+#' fine-grained token with access to public repositories only reads nothing
+#' that is not public: make one at
+#' <https://github.com/settings/personal-access-tokens/new>, choose "Public
+#' repositories" under "Repository access", and add no permissions.
+#'
+#' Without a token set here, the token is found the way git finds one: the
+#' `GITHUB_PAT` environment variable, else git's credential store (see
+#' [gitcreds::gitcreds_get()]). Store it in your `.Renviron` file as
+#' `GITHUB_PAT="your-token"` so it is read every time R starts.
+#'
+#' @param pat the token to set, or NULL to get the current token
+#'
+#' @returns the current token (character; `""` when none is set)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' github_pat()
+#' }
+github_pat <- function(pat = NULL) {
+  opt <- "metacheck.github.pat"
+  if (is.null(pat)) {
+    set <- getOption(opt) %||% ""
+    if (nzchar(set)) return(set)
+    token <- tryCatch(gitcreds::gitcreds_get(), error = \(e) NULL)
+    return(token$password %||% "")
+  }
+  if (!is.character(pat) || length(pat) != 1 || is.na(pat)) {
+    stop("Set github_pat with a single string containing your GitHub token",
+         call. = FALSE)
+  }
+  options(metacheck.github.pat = pat)
+  invisible(pat)
 }
 
 #' Get Languages from GitHub Repo

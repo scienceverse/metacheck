@@ -286,10 +286,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #
 # Zenodo behaves the same way for a restricted record, so its token is added
 # too where one is set.
+#
+# The service is chosen by the address's host name only: matching anywhere in
+# the address sent a key to any host whose path or query merely mentioned
+# "osf.io" or "zenodo.org" (such as a link shortener or a web archive).
 .auth_for_url <- function(req) {
   url <- req$url %||% ""
-  if (grepl("osf\\.io", url, ignore.case = TRUE)) {
-    pat <- tryCatch(osf_pat(), error = \(e) "")
+  if (.url_host_is(url, "osf.io")) {
+    pat <- tryCatch(.key_use("osf", check = .osf_key_check), error = \(e) "")
     if (nzchar(pat %||% "")) {
       # osf.io/download/<id>/ answers 302 to a REGIONAL file server --
       # files.de-1.osf.io for a European project, files.osf.io for others --
@@ -313,8 +317,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
         httr2::req_url(.osf_file_server_url(url, pat)) |>
         httr2::req_headers(Authorization = sprintf("Bearer %s", pat))
     }
-  } else if (grepl("zenodo\\.org", url, ignore.case = TRUE)) {
-    sandbox <- grepl("sandbox\\.zenodo\\.org", url, ignore.case = TRUE)
+  } else if (.url_host_is(url, "zenodo.org")) {
+    sandbox <- .url_host_is(url, "sandbox.zenodo.org")
     pat <- tryCatch(zenodo_pat(sandbox = sandbox), error = \(e) "")
     if (nzchar(pat %||% "")) {
       # Zenodo serves a file itself (HTTP 200, no redirect; checked
@@ -323,18 +327,18 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       req <- req |>
         httr2::req_headers(Authorization = sprintf("Bearer %s", pat))
     }
-  } else if (grepl(.dataverse_host_regex(), url, ignore.case = TRUE)) {
+  } else if (.url_host_is(url, .dataverse_hosts())) {
     # Dataverse's token is per-installation (see .dataverse_pat()), unlike
     # OSF/Zenodo's single shared token, and is sent as X-Dataverse-key rather
     # than a Bearer Authorization header -- .dataverse_headers() applies it.
     req <- .dataverse_headers(req)
-  } else if (grepl("figshare\\.com", url, ignore.case = TRUE)) {
+  } else if (.url_host_is(url, "figshare.com")) {
     # Figshare's token (see .figshare_pat()) is sent as "Authorization: token
     # X" rather than a Bearer scheme -- .figshare_headers() applies it. Public
     # files download without one; a token here only raises rate limits or
     # unlocks a private article.
     req <- .figshare_headers(req)
-  } else if (grepl("datadryad\\.org", url, ignore.case = TRUE)) {
+  } else if (.url_host_is(url, "datadryad.org")) {
     # Dryad's token (see .dryad_pat()) is a Bearer token like OSF/Zenodo, but
     # unlike every other host handled here it is REQUIRED to download file
     # bytes even from a fully public dataset (verified live 2026-08-16: both
@@ -342,12 +346,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     # token) -- .dryad_headers() applies it when set, but with none set every
     # Dryad download in this function will fail.
     req <- .dryad_headers(req)
-  } else if (grepl("reshare\\.ukdataservice\\.ac\\.uk", url, ignore.case = TRUE)) {
+  } else if (.url_host_is(url, "reshare.ukdataservice.ac.uk")) {
     # ReShare has no documented personal-access-token scheme; public deposits
     # download without any auth header at all (verified live 2026-08-16).
     # .reshare_headers() only sets User-Agent.
     req <- .reshare_headers(req)
-  } else if (grepl("data\\.4tu\\.nl", url, ignore.case = TRUE)) {
+  } else if (.url_host_is(url, "data.4tu.nl")) {
     # 4TU.ResearchData's Djehuty platform reuses Figshare's auth scheme
     # ("Authorization: token X") but issues its own tokens, meaningless to
     # real Figshare -- see .researchdata4tu_pat(). Applied directly here
@@ -361,6 +365,15 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     }
   }
   req
+}
+
+# TRUE when the host name of `url` is one of `domains`, or ends in "." and one
+# of them ("files.osf.io" for "osf.io").
+.url_host_is <- function(url, domains) {
+  host <- tolower(tryCatch(httr2::url_parse(url)$hostname, error = \(e) "") %||% "")
+  if (!nzchar(host)) return(FALSE)
+  domains <- tolower(domains)
+  any(host == domains | endsWith(host, paste0(".", domains)))
 }
 
 # The OSF file server a download address on osf.io itself redirects to
@@ -390,13 +403,23 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # bytes even from a fully public dataset (see .dryad_headers()'s own comment).
 # Appended to the raw HTTP error so the existing failure-reporting message in
 # download_repo_files() names the real cause instead of a bare "HTTP 401".
+#
+# With a key set, a 401 means Dryad refused the key (a token from
+# dryad_pat() lasts 10 hours): that is recorded, so the apps can ask visitors
+# for their own key (see api_key_status()).
 .dryad_401_hint <- function(url, status) {
-  if (!identical(status, 401L) || !grepl("datadryad\\.org", url, ignore.case = TRUE))
+  if (!identical(status, 401L) || !.url_host_is(url, "datadryad.org"))
     return("")
   has_key <- nzchar(tryCatch(dryad_pat(), error = \(e) "") %||% "") ||
     !is.null(tryCatch(.dryad_oauth_client(), error = \(e) NULL))
-  if (has_key) return("")
-  " (Dryad requires an API key to download file bytes, even from a public dataset -- see ?dryad_pat)"
+  if (has_key) {
+    source <- .key_source("dryad")
+    .key_problem_record("dryad", "rejected", source = source)
+    return(paste0(" (", .key_problem_message("dryad", "rejected", source = source), ")"))
+  }
+  paste0(" (Dryad requires an API key to download file bytes, even from a ",
+         "public dataset -- see ?dryad_pat. Please provide your own Dryad key ",
+         "to continue (you can make one at ", .key_services$dryad$url, "))")
 }
 
 # Did this response serve a login page instead of the file?
@@ -536,8 +559,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # got rate-limited before the first wait finished) can only mean the window
 # extends at least that far, never less, so never move the stored reset
 # earlier.
+#
+# A host whose limit belongs to a key metacheck manages (Dryad, GitHub,
+# GitLab, the OSF; see .key_service_for_host()) is also recorded as a key
+# problem, shared with the other R processes (see api_key_status()).
 .host_rate_limit_record <- function(host, wait) {
   if (is.null(host) || is.na(wait)) return(invisible(NULL))
+  service <- .key_service_for_host(host)
+  if (!is.na(service)) .key_problem_record(service, "limit", Sys.time() + wait)
   reset_at <- as.numeric(Sys.time()) + wait
   prev <- .host_rate_limit_cache[[host]]
   if (is.null(prev) || reset_at > prev) {

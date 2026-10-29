@@ -867,3 +867,60 @@ test_that("a script reading a file that is only inside a .zip is not run, and th
   expect_match(txt, "only inside data.zip; unpack it so the code finds it", fixed = TRUE)
   expect_equal(mo$summary_table$repro_missing_inputs, 1)
 })
+
+test_that("renv's own files in a renv/ folder are not assessed as the paper's scripts (#548)", {
+  # The exclusion matched "renv/activate.R" against file_name, which holds
+  # no folder, so activate.R was assessed and its sprintf() path made it a
+  # missing input and the light yellow.
+  paper <- test_paper()
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "renv"))
+  writeLines('x <- readRDS(sprintf("renv_%s.tar.gz", "1.0.0"))',
+             file.path(d, "renv", "activate.R"))
+  code_tbl <- rbind(code_tbl_row(paper, "ok.R", repro_fixture("ok.R")),
+                    code_tbl_row(paper, "activate.R", file.path(d, "renv", "activate.R")))
+  code_tbl$file_path <- c("ok.R", "renv/activate.R")
+  structure_df <- data.frame(
+    paper_id = paper_id(paper), file_name = c("ok.R", "data.csv"),
+    file_location = c(repro_fixture("ok.R"), repro_fixture("data.csv")))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- module_run(fake_code, "reproducibility_check")
+  expect_equal(mo$table$file_name, "ok.R")
+  expect_equal(mo$traffic_light, "green")
+})
+
+test_that("execute = TRUE: stored sapply() summaries and a stored effectsize result are found (#549)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  skip_if_not_installed("effectsize")
+  # The means and SDs were only found when sapply() stood on its own line,
+  # and dz only when the effectsize result was printed; stored in a variable,
+  # as analysis code usually does, they were "not found".
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "data"))
+  dir.create(file.path(root, "code"))
+  write.csv(data.frame(congruent = c(10, 12, 14, 16, 18, 11, 13, 16),
+                       incongruent = c(17, 20, 19, 25, 26, 18, 22, 21)),
+            file.path(root, "data", "stroop_data.csv"), row.names = FALSE)
+  writeLines(c(
+    'stroop_data <- read.csv("../data/stroop_data.csv")',
+    'means <- sapply(stroop_data[, c("congruent", "incongruent")], mean)',
+    'sds <- sapply(stroop_data[, c("congruent", "incongruent")], sd)',
+    'ttest_result <- t.test(stroop_data$incongruent, stroop_data$congruent, paired = TRUE)',
+    'dz_result <- effectsize::repeated_measures_d(stroop_data$incongruent,',
+    '  stroop_data$congruent, method = "z", adjust = FALSE)'),
+    file.path(root, "code", "analysis.R"))
+  paper <- test_paper(c(
+    "The congruent condition (M = 13.75, SD = 2.76) was faster than the incongruent condition (M = 21, SD = 3.21).",
+    "A paired t-test was significant, t(7) = 12.97, p < .001, Cohen's dz = 4.59."))
+
+  mo <- module_run(paper, "reproducibility_check", local_path = root,
+                   local_only = TRUE, execute = TRUE, timeout = 60)
+  mt <- mo$match_table
+  expect_true(all(mt$found))
+  expect_true(any(grepl("M=13.75", mt$reported, fixed = TRUE)))
+  expect_true(any(grepl("SD=2.76", mt$reported, fixed = TRUE)))
+  expect_true(any(grepl("dz=4.59", mt$reported, fixed = TRUE)))
+  expect_equal(mo$traffic_light, "green")
+})

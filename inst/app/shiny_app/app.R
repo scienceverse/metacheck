@@ -25,6 +25,7 @@ suppressPackageStartupMessages({
 
 source("render_report.R")
 source("background_job.R")
+source("api_keys.R")
 
 # Load server-provided API keys (MISTRAL_API_KEY, GROQ_API_KEY) from a
 # .Renviron in this app directory. Shiny Server does not reliably read a
@@ -242,6 +243,10 @@ VALIDATED_MODULES <- c(
   "repo_check", "code_check", "data_check", "codebook_check"
 )
 
+# The services whose keys a visitor can enter (see api_keys.R): those the
+# repository modules read
+KEY_SERVICES <- c("github", "osf", "dryad", "researchbox", "gitlab")
+
 # Remote GROBID servers offered (no "local" option on a server).
 GROBID_SERVERS <- list(
   metacheck   = "https://grobid.hti.ieis.tue.nl",
@@ -397,6 +402,7 @@ report_tab <- tabItem(
     "is never lost silently. Thank you for your patience."
   ),
   uiOutput("busy_banner"),
+  uiOutput("api_key_notice"),
   tags$div(class = "pdf-upload",
     fileInput("upload_pdf", NULL, multiple = FALSE, accept = ".pdf",
               width = "100%",
@@ -484,7 +490,8 @@ options_tab <- tabItem(
     tags$br(),
     actionButton("options_done", "Done — back to Create Report",
                  icon = icon("arrow-left"), class = "btn-options-done")
-  )
+  ),
+  api_keys_box(KEY_SERVICES)
 )
 
 ui <- dashboardPage(
@@ -548,6 +555,9 @@ server <- function(input, output, session) {
                 inuse, MAX_CONCURRENT_REPORTS))
     } else NULL
   })
+
+  output$api_key_notice <- renderUI(
+    api_key_notice(KEY_SERVICES, session, where = "in the Options tab"))
 
   # The currently selected LLM provider definition (defaults to the default).
   llm_provider <- reactive({
@@ -723,7 +733,7 @@ server <- function(input, output, session) {
       grobid_url = GROBID_SERVERS[[input$grobid_server_choice]],
       use_crossref = use_crossref, modules = modules,
       use_llm = use_llm, llm_model = prov$model, htmlpath = htmlpath
-    ))
+    ), keys = api_keys_entered(input, KEY_SERVICES))
     stop_watch <- bg_watch(job, session, "Generating report",
       heartbeat = slot, max_minutes = 30,
       on_done = function(result) {

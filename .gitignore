@@ -46,7 +46,6 @@ CLAUDE.md
 /.metacheck_llm_cache/
 /.metacheck_repo_info_cache/
 /.metacheck_zip_peek_cache/
-/.metacheck_researchbox/
 
 .comments/
 

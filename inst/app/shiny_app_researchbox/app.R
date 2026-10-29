@@ -24,6 +24,8 @@ options(shiny.maxRequestSize = 100 * 1024^2,
         scipen = 10,
         digits = 4)
 
+# before the tabs, which use api_keys_box()
+source("api_keys.R")
 source("tabs/researchbox_check.R")
 source("tabs/researchbox_options.R")
 source("render_report.R")
@@ -217,6 +219,8 @@ server <- function(input, output, session) {
   # One row per visit. See the note above: this counts visits, not people.
   usage_record("session")
 
+  output$api_key_notice <- renderUI(api_key_notice("researchbox", session))
+
   ## reactiveVals ----
   report_html    <- reactiveVal(NULL)   # the rendered report, as raw bytes
   report_url     <- reactiveVal("")     # where the in-page frame loads it from
@@ -282,7 +286,10 @@ server <- function(input, output, session) {
                     (file.exists(local_path) || dir.exists(local_path))
     max_fs   <- input$max_file_size %||% 100
     max_ds   <- input$max_download_size %||% 500
-    cache_dl <- isTRUE(input$cache_downloads)
+    keys     <- api_keys_entered(input, "researchbox")
+    # Files fetched with a visitor's own key are not kept in the cache the
+    # next visitors' checks read from.
+    cache_dl <- isTRUE(input$cache_downloads) && length(keys) == 0
 
     size_args <- list(max_file_size = max_fs, max_download_size = max_ds,
                       cache = cache_dl)
@@ -308,7 +315,7 @@ server <- function(input, output, session) {
     job <- bg_start(researchbox_job, list(
       paper = paper, modules = RBOX_MODULES, args = module_args,
       htmlpath = htmlpath
-    ))
+    ), keys = keys)
     stop_watch <- bg_watch(job, session, "Generating report",
       heartbeat = slot,
       on_done = function(path) {

@@ -18,3 +18,12 @@ services:
       - GEMINI_API_KEY
       - METACHECK_LLM_MODEL
       - METACHECK_LLM_MAX_CALLS
+      # Optional API keys for the data repositories and OpenAlex (see
+      # ?api_key_status); a request can send its own instead (key_github, ...).
+      - GITHUB_PAT
+      - OSF_PAT
+      - DRYAD_CLIENT_ID
+      - DRYAD_CLIENT_SECRET
+      - RESEARCHBOX_API_KEY
+      - GITLAB_PAT
+      - OPENALEX_API_KEY

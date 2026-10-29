@@ -188,13 +188,16 @@ rbox_token <- function(token = NULL) {
 # request exactly as one for a box that does not exist: HTTP 500 with an empty
 # body, without the count of requests left that its API page promises (checked
 # 2026-10-28 with box 10480). So every such answer to a request without a
-# passcode is recorded, for 10 days, in metacheck's cache folder; from
+# passcode is recorded, for 10 days, in metacheck's state folder; from
 # .rbox_unfound_limit on, boxes without a passcode are not sent to the API.
+# The state folder, not the working directory: on a server each job runs in
+# a folder of its own, removed when the job ends, so a count kept there was
+# lost after every job (see .metacheck_state_dir()).
 .rbox_unfound_limit <- 8
 
 # (the folder is made only when an answer is recorded, see .rbox_unfound_add())
 .rbox_unfound_path <- function() {
-  file.path(.metacheck_cache_root(), ".metacheck_researchbox", "unfound_requests.rds")
+  file.path(.metacheck_state_dir(), "researchbox_unfound_requests.rds")
 }
 
 # The times of the recorded answers of the last 10 days
@@ -245,6 +248,14 @@ rbox_token <- function(token = NULL) {
   if (!nzchar(token)) {
     return(list(ok = FALSE, error = "no ResearchBox API key is set (see ?rbox_token)",
                 body = NULL))
+  }
+  # A limit another job reached with the same key (an hourly or daily limit,
+  # recorded below) is not asked again before it ends.
+  problem <- .key_problem("researchbox")
+  if (!is.null(problem)) {
+    return(list(ok = FALSE, body = NULL, error = paste0(
+      if (problem$problem == "limit") "API rate limit exhausted: ",
+      .key_problem_message("researchbox", problem$problem, problem$until))))
   }
   fields <- list(...)
   if (!is.na(code)) fields$code <- code
@@ -301,8 +312,22 @@ rbox_token <- function(token = NULL) {
     "unfound"
   } else if (status == 429L) {
     wait <- .rbox_retry_after(resp)
+    # The key's hourly or daily limit holds for every box, so it is recorded
+    # for the other jobs (see api_key_status()). Not a wait under a minute (a
+    # request sent too soon), nor a limit for one box or file ("list_files
+    # same-box hourly limit"), which other boxes are not held to.
+    key_wide <- !is.na(wait) && wait > .rbox_max_wait &&
+      !grepl("same[- ](box|file)", body$error %||% "", ignore.case = TRUE)
+    if (key_wide) .key_problem_record("researchbox", "limit", Sys.time() + wait)
     paste0("API rate limit exhausted: ", body$error %||% "HTTP 429",
-           if (!is.na(wait)) paste0(" (ResearchBox asks to wait ", wait, " seconds)"))
+           if (!is.na(wait)) paste0(" (ResearchBox asks to wait ", wait, " seconds)"),
+           if (key_wide) paste0(". ", .key_problem_message("researchbox", "limit",
+                                                         Sys.time() + wait)))
+  } else if (status %in% c(401L, 403L)) {
+    # a key ResearchBox does not know: 401, "token invalid" (checked 2026-10-28)
+    .key_problem_record("researchbox", "rejected")
+    paste0("HTTP ", status, if (!is.null(body$error)) paste0(": ", body$error),
+           ". ", .key_problem_message("researchbox", "rejected"))
   } else {
     paste0("HTTP ", status, if (!is.null(body$error)) paste0(": ", body$error))
   }
