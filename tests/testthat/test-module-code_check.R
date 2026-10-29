@@ -887,3 +887,25 @@ test_that("code_check takes a listing without file_url, and empty code files (U8
   txt <- module_report(mo)
   expect_match(txt, "analysis.R", fixed = TRUE)
 })
+
+test_that("code_check leaves out renv's own files in a renv/ folder (#548)", {
+  # renv/activate.R is written by renv, not by the authors: it has setwd()
+  # and absolute paths, which were blamed on the authors. The old exclusion
+  # matched "renv/" against file_name, which holds no folder.
+  tmp <- withr::local_tempdir()
+  writeLines(c("# comment", "x <- 1"), file.path(tmp, "good.R"))
+  writeLines(c("{", "  \"R\": {\"Version\": \"4.4.1\"},", "  \"Packages\": {}", "}"),
+             file.path(tmp, "renv.lock"))
+  dir.create(file.path(tmp, "renv", "library", "pkg", "R"), recursive = TRUE)
+  writeLines(c("old <- setwd(tempdir())", "f <- '~/.Rprofile'"),
+             file.path(tmp, "renv", "activate.R"))
+  writeLines("y <- 2", file.path(tmp, "renv", "library", "pkg", "R", "pkg.R"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_equal(mo$table$file_name, "good.R")
+  expect_equal(mo$summary_table$code_n, 1)
+  expect_false(grepl("setwd", mo$summary_text, fixed = TRUE))
+  # renv.lock, next to the renv/ folder, is still found
+  expect_true(mo$summary_table$code_version_pinned)
+  expect_equal(mo$traffic_light, "green")
+})
