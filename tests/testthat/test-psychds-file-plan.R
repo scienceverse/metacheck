@@ -38,6 +38,17 @@ test_that("psychds_file_plan keeps a script's folders below the folder the scrip
   expect_equal(psychds_file_plan(one)$table$target_path, "analysis/analysis.R")
 })
 
+test_that("psychds_file_plan ignores a top folder that holds every file, and keeps data folders", {
+  s <- data.frame(file_name = c("README.md", "a.R", "x.csv", "x.csv"),
+                  file_path = c("repo-1a2b/README.md", "repo-1a2b/Code/a.R",
+                                "repo-1a2b/Data/lb/x.csv", "repo-1a2b/Data/ub/x.csv"),
+                  data_type = c("documentation", "code", "data", "data"),
+                  doc_role = c("readme", NA, NA, NA), group = NA_character_)
+  tb <- psychds_file_plan(s)$table
+  expect_equal(tb$target_path, c("README.md", "analysis/a.R",
+                                 "data/lb/study-x_data.csv", "data/ub/study-x_data.csv"))
+})
+
 test_that("psychds_file_plan leaves correctly placed files and valid data names alone (U112)", {
   # data/eeg.npy was told to move to itself, and study-a_data.csv was renamed
   # data/study-studyadata_data.csv

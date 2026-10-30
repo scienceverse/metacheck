@@ -139,40 +139,59 @@ test_that("FAIR_repo writes a data file that is not a CSV as a real CSV and keep
 test_that("FAIR_repo keeps a data file that holds no table as it is, and two originals with one name apart", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
-  saveRDS(stats::lm(dist ~ speed, datasets::cars), file.path(d, "data", "model.rds"))
-  dir.create(file.path(d, "a"))
-  dir.create(file.path(d, "b"))
-  saveRDS(data.frame(x = 1:3), file.path(d, "a", "tab.rds"))
-  saveRDS(data.frame(x = 4:6), file.path(d, "b", "tab.rds"))
+  # a list is no table (and no model): kept as it is, not reported as failed
+  saveRDS(list(a = 1, b = letters), file.path(d, "data", "lookup.rds"))
+  # two different R tables with one name in one folder of the copy
+  dir.create(file.path(d, "data", "a"))
+  dir.create(file.path(d, "data", "a", "b"))
+  saveRDS(data.frame(x = 1:3), file.path(d, "data", "a", "tab.rds"))
+  file.copy(file.path(d, "data", "a", "tab.rds"), file.path(d, "data", "a", "b"))
+  saveRDS(data.frame(x = 4:6), file.path(d, "data", "a", "b", "tab.rds"))
   res <- fair_run(d)
   data_dir <- file.path(res$output_dir, "data")
-  # a fitted model is no table: kept as it is, not reported as failed
   expect_length(res$copy_failed, 0)
-  expect_true(file.exists(file.path(data_dir, "model.rds")))
-  expect_false(file.exists(file.path(data_dir, "study-model_data.csv")))
-  expect_true(any(grepl("model.rds", readLines(file.path(res$output_dir, "CHANGES.md")))))
-  # the second original no longer overwrites the first
-  originals <- list.files(data_dir, "^tab.*\\.rds$", full.names = TRUE)
+  expect_true(file.exists(file.path(data_dir, "lookup.rds")))
+  expect_false(file.exists(file.path(data_dir, "study-lookup_data.csv")))
+  # each R table is written as CSV, with its own original next to it
+  expect_equal(readRDS(file.path(data_dir, "a", "tab.rds"))$x, 1:3)
+  expect_equal(readRDS(file.path(data_dir, "a", "b", "tab.rds"))$x, 4:6)
+  expect_true(file.exists(file.path(data_dir, "a", "study-tab_data.csv")))
+  expect_true(file.exists(file.path(data_dir, "a", "b", "study-tab_data.csv")))
+})
+
+test_that(".FAIR_repo_copy keeps two different originals with one place apart", {
+  # with folders kept this is rare, but a converted original placed where
+  # another original already is got overwritten
+  d <- withr::local_tempdir()
+  saveRDS(data.frame(x = 1:3), file.path(d, "one.rds"))
+  saveRDS(data.frame(x = 4:6), file.path(d, "two.rds"))
+  plan <- data.frame(file_name = c("tab.rds", "tab.rds"), data_type = "data",
+                     group = NA_character_,
+                     target_path = c("data/study-tab_data.csv", "data/study-tab_data.csv"),
+                     convert = TRUE, original_target = c("data/tab.rds", "data/tab.rds"))
+  out <- withr::local_tempdir()
+  copied <- .FAIR_repo_copy(plan, data.frame(file_location = file.path(d, c("one.rds", "two.rds"))),
+                            out)
+  originals <- list.files(file.path(out, "data"), "\\.rds$", full.names = TRUE)
   expect_length(originals, 2)
   expect_setequal(lapply(originals, function(f) readRDS(f)$x), list(1:3, 4:6))
-  expect_length(list.files(data_dir, "^study-tab_data.*\\.csv$"), 2)
 })
 
 test_that("FAIR_repo gives the second of two different files with one place a numbered name", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
+  # x.csv and x.tsv in one folder both become study-x_data.csv
+  writeLines(c("a,b", "1,2"), file.path(d, "data", "x.csv"))
+  writeLines(c("a\tb", "3\t4"), file.path(d, "data", "x.tsv"))
+  # files with one name in different folders stay apart in their folders
   dir.create(file.path(d, "extra"))
-  dir.create(file.path(d, "copy"))
-  # a different file with the same name: renamed
   utils::write.csv(data.frame(id = 9), file.path(d, "extra", "scores.csv"),
                    row.names = FALSE)
-  # an identical file with the same name: left out
-  file.copy(file.path(d, "data", "bom.csv"), file.path(d, "copy", "bom.csv"))
   res <- fair_run(d)
   expect_equal(nrow(res$renamed), 1)
-  expect_equal(res$renamed$written, "data/study-scores_data_2.csv")
+  expect_equal(res$renamed$written, "data/study-x_data_2.csv")
   expect_true(file.exists(file.path(res$output_dir, res$renamed$written)))
-  expect_equal(sum(grepl("bom", list.files(file.path(res$output_dir, "data")))), 1)
+  expect_true(file.exists(file.path(res$output_dir, "data", "extra", "study-scores_data.csv")))
 })
 
 test_that("FAIR_repo leaves out a file from a zip that is also next to it, and leaves the folder unchanged", {
@@ -261,8 +280,8 @@ test_that("FAIR_repo writes the metadata files", {
   # the codebook's label is the variable's description
   expect_equal(vars[[which(names_ == "score")[1]]]$description, "outcome measure")
 
-  expect_true(file.exists(file.path(out, "requirements.txt")))
-  expect_true("dplyr" %in% readLines(file.path(out, "requirements.txt")))
+  # R packages are not put in requirements.txt, which pip reads
+  expect_false(file.exists(file.path(out, "requirements.txt")))
   expect_true(file.exists(file.path(out, "logs", "log.md")))
   expect_false(file.exists(file.path(out, "logs", "README.md")))
   # the paper's full text is not copied
@@ -284,7 +303,7 @@ test_that("FAIR_repo writes the metadata files", {
   local <- ids$referenced[!grepl("^https?://", ids$referenced)]
   expect_equal(setdiff(local, ids$described), character(0))
   expect_true(all(c("data/study-scores_data.csv", "analysis/analysis.R",
-                    "requirements.txt", "CHANGES.md") %in% ids$described))
+                    "CHANGES.md") %in% ids$described))
 })
 
 test_that("FAIR_repo's metadata holds no path on the computer that ran it", {
@@ -402,7 +421,8 @@ test_that("the RO-Crate has the paper, authors, CRediT roles and contact, and fe
   # collected and processed
   expect_equal(sum(unlist(g) == "unknown"), 5)
   # the language and package the code uses
-  expect_true(all(c("#language-r", "#package-dplyr") %in% names(by_id)))
+  expect_true(all(c("#language-r", "#package-r-dplyr") %in% names(by_id)))
+  expect_equal(by_id[["#package-r-dplyr"]]$programmingLanguage[["@id"]], "#language-r")
 })
 
 test_that("without a paper, the copy is named after the folder and the README asks for the paper", {
@@ -415,10 +435,113 @@ test_that("without a paper, the copy is named after the folder and the README as
   expect_equal(crate[["@graph"]][[2]]$name, basename(d))
   expect_false(any(vapply(crate[["@graph"]], function(e)
     identical(e[["@type"]], "Person"), logical(1))))
+  # the authors are a field to fill in
+  expect_equal(crate[["@graph"]][[2]]$author, "unknown")
   readme <- readLines(file.path(res$output_dir, "README.md"))
   expect_equal(readme[1], paste("#", basename(d)))
-  expect_true("- The authors" %in% readme)
-  expect_true("- The paper that uses these files" %in% readme)
+  expect_true(all(c("- The title", "- The authors", "- The paper that uses these files")
+                  %in% readme))
+})
+
+test_that("without a paper, the title comes from the folder's own README", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  writeLines(c("# Water quality at the festival", "", "Some text."),
+             file.path(d, "README.txt"))
+  res <- fair_run(d)
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
+                              simplifyVector = FALSE)
+  expect_equal(crate[["@graph"]][[2]]$name, "Water quality at the festival")
+  desc <- jsonlite::fromJSON(file.path(res$output_dir, "dataset_description.json"))
+  expect_equal(desc$name, "Water quality at the festival")
+  # a plain first line is no title
+  expect_null(.FAIR_repo_readme_title("README.txt", {
+    o <- withr::local_tempdir()
+    writeLines("This readme.text file was generated on 2024-01-01 by me", file.path(o, "README.txt"))
+    o
+  }))
+})
+
+test_that("FAIR_repo treats a top folder that holds every file as the top", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  base <- fair_fixture()
+  # a repository downloaded from GitHub sits in "<name>-<commit>/"
+  d <- withr::local_tempdir()
+  file.copy(base, d, recursive = TRUE)
+  file.rename(file.path(d, basename(base)), file.path(d, "repo-1a2b3c4"))
+  res <- fair_run(d)
+  out <- res$output_dir
+  expect_equal(readLines(file.path(out, "README.txt")), "A readme.")
+  expect_false(file.exists(file.path(out, "README.md")))
+  expect_true(file.exists(file.path(out, "data", "study-scores_data.csv")))
+})
+
+test_that("FAIR_repo keeps the folders inside data/, so files with one name stay apart", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  for (s in c("scenario_lb", "scenario_ub")) {
+    dir.create(file.path(d, "data", s))
+    utils::write.csv(data.frame(t = 1:2, v = if (s == "scenario_lb") 1:2 else 3:4),
+                     file.path(d, "data", s, "forcing.csv"), row.names = FALSE)
+    # identical in both scenarios, and still kept in both
+    writeLines(c("a,b", "1,2"), file.path(d, "data", s, "soil.csv"))
+  }
+  res <- fair_run(d)
+  data_dir <- file.path(res$output_dir, "data")
+  for (s in c("scenario_lb", "scenario_ub"))
+    expect_setequal(list.files(file.path(data_dir, s)),
+                    c("study-forcing_data.csv", "study-soil_data.csv"))
+  expect_equal(nrow(res$renamed), 0)
+  expect_equal(nrow(res$identical), 0)
+})
+
+test_that("FAIR_repo puts results in outputs/: files only scripts write, and fitted models", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  writeLines(c('d <- read.csv("../data/scores.csv")',
+               'write.csv(summary(d), "results_table.csv")'),
+             file.path(d, "Code", "summarise.R"))
+  # the results the script wrote, shared next to the code
+  writeLines(c("x,y", "1,2"), file.path(d, "Code", "results_table.csv"))
+  saveRDS(stats::lm(dist ~ speed, datasets::cars), file.path(d, "data", "fit.rds"))
+  # an R table with a CSV of the same name next to it is not converted again
+  saveRDS(data.frame(id = 1:5), file.path(d, "data", "scores.rds"))
+  res <- fair_run(d)
+  out <- res$output_dir
+  expect_true(file.exists(file.path(out, "outputs", "results_table.csv")))
+  expect_true(file.exists(file.path(out, "outputs", "fit.rds")))
+  expect_false(file.exists(file.path(out, "data", "study-fit_data.csv")))
+  expect_true(file.exists(file.path(out, "data", "scores.rds")))
+  expect_false(any(grepl("scores_data_2", list.files(file.path(out, "data")))))
+  # the script now writes its results into outputs/, where they are shared
+  code <- readLines(file.path(out, "analysis", "summarise.R"))
+  expect_true(any(grepl('"outputs/results_table.csv"', code, fixed = TRUE)))
+})
+
+test_that("requirements.txt lists the Python packages pip can install, nothing else", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  writeLines(c("import os", "import json", "import pandas as pd",
+               "from sklearn.linear_model import LinearRegression"),
+             file.path(d, "Code", "model.py"))
+  unlink(file.path(d, "README.txt"))
+  res <- fair_run(d)
+  req <- readLines(file.path(res$output_dir, "requirements.txt"))
+  pkgs <- req[!startsWith(req, "#")]
+  expect_setequal(pkgs, c("pandas", "scikit-learn"))
+  # the R packages are named in the README instead
+  readme <- readLines(file.path(res$output_dir, "README.md"))
+  expect_true(any(grepl("R packages: dplyr", readme, fixed = TRUE)))
+  expect_true(any(grepl("Python packages: pandas, scikit-learn", readme, fixed = TRUE)))
+})
+
+test_that("FAIR_repo writes no dataset_description.json for a folder of code only", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+  res <- fair_run(d)
+  expect_false(file.exists(file.path(res$output_dir, "dataset_description.json")))
+  expect_true(file.exists(file.path(res$output_dir, "ro-crate-metadata.json")))
 })
 
 test_that("FAIR_repo writes a README from the RO-Crate when the folder has none", {

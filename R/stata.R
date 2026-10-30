@@ -258,7 +258,9 @@
 .stata_split_block <- function(block) {
   block <- gsub("\t", strrep(" ", 8), block, fixed = TRUE)
   w <- max(nchar(block))
-  padded <- formatC(block, width = -w, flag = "-")
+  # padded in characters; formatC() miscounts a line with a backslash (see
+  # split_block() in R/r-output.R)
+  padded <- paste0(block, strrep(" ", w - nchar(block)))
   chars <- do.call(rbind, strsplit(padded, "", fixed = TRUE))
   blank_col <- apply(chars, 2, function(cc) all(cc == " "))
   nb <- !blank_col

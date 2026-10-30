@@ -710,7 +710,11 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
   split_block <- function(block) {
     block <- prep_block(block)
     w <- max(nchar(block))
-    padded <- formatC(block, width = -w, flag = "-")   # left-justify to width w
+    # left-justify to width w, counted in characters: formatC() miscounts a
+    # line with a backslash (a notebook's "$\\itE. coli$" label), so the
+    # lines split into rows of different lengths and rbind() recycled them
+    # ("number of columns of result is not a multiple of vector length")
+    padded <- paste0(block, strrep(" ", w - nchar(block)))
     chars <- do.call(rbind, strsplit(padded, "", fixed = TRUE))
     blank_col <- apply(chars, 2, function(cc) all(cc == " "))
     # column ranges = runs of NON-blank columns

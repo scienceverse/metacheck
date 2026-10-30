@@ -12,10 +12,15 @@
 #' Every file is placed where the Psych-DS layout puts it (data under `data/`,
 #' code under `analysis/`, materials under `materials/`, documentation under
 #' `documentation/`, one `study-<group>/` folder per study when there are
-#' several; see [psychds_file_plan()]). A data file that is not a CSV file
-#' (`.xlsx`, `.sav`, `.dta`, ...) is also written as a real CSV file, with the
-#' original kept next to it. A data CSV file is copied without a byte order
-#' mark.
+#' several; see [psychds_file_plan()]), keeping its own subfolders. A file a
+#' script writes and no script reads, and an R data file holding a fitted
+#' model, is a result and goes to `outputs/`. A data file that is not a CSV
+#' file (`.xlsx`, `.sav`, `.dta`, ...) is also written as a real CSV file,
+#' with the original kept next to it; an R data file only when it holds a
+#' table and no CSV of the same name is next to it. A data CSV file is
+#' copied without a byte order mark. A file from an archive in the folder
+#' that is identical to a file next to it, and a README identical to
+#' another, are left out.
 #'
 #' R and Python scripts (`.R`, `.Rmd`, `.qmd`, `.py`, `.ipynb`) are changed so
 #' they still find their files in the new layout: each file path that
@@ -27,7 +32,7 @@
 #' paths may no longer work.
 #'
 #' Metadata is written next to the files:
-#' * `dataset_description.json` in each study folder (Psych-DS), describing
+#' * `dataset_description.json` in each study folder with data (Psych-DS), describing
 #'   every data column, with its label from the codebook when
 #'   `codebook_check` found one;
 #' * `ro-crate-metadata.json` at the top (RO-Crate 1.3): every file, the
@@ -40,9 +45,12 @@
 #'   authors are asked for something: the licence, an author's CRediT roles,
 #'   and when and how the data were collected and processed;
 #' * `README.md`, a readable version of the RO-Crate, in the top folder and in
-#'   each study folder, unless the folder has its own README there;
-#' * `requirements.txt`, the packages the code loads, unless the folder has
-#'   its own `requirements.txt`, `renv.lock` or `DESCRIPTION`;
+#'   each study folder, unless the folder has its own README there. Without a
+#'   paper, the title is taken from the folder's own README;
+#' * `requirements.txt`, the Python packages the code imports, for
+#'   `pip install -r requirements.txt`, unless the folder has its own
+#'   `requirements.txt`, `environment.yml` or `pyproject.toml`. R packages are
+#'   listed in the README and the RO-Crate;
 #' * `logs/`, the list of files and the results of the checks, without the
 #'   places on this computer the files are in;
 #' * `CHANGES.md`, and a `CHANGES.md` in each study folder that has none.
@@ -97,10 +105,12 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   }
 
   ops <- .FAIR_repo_run_checks(full_path, paper)
-  # Without a paper, the copy is named after the folder.
+  # Without a paper there is no title and there are no authors; the title is
+  # then taken from the folder's own README, else its name (see
+  # .FAIR_repo_collect()).
   if (is.null(paper)) {
     paper <- test_paper()
-    paper$info$title <- basename(full_path)
+    paper$info$title <- NA_character_
     paper$author <- NULL
   }
   pid <- basename(full_path)
@@ -124,6 +134,7 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
                        convert = logical(0), original_target = character(0))
   }
 
+  plan <- .FAIR_repo_outputs_and_r_data(plan, structure_df, ops)
   plan <- .FAIR_repo_identical(plan, structure_df)
   copied <- .FAIR_repo_copy(plan, structure_df, output_dir)
   plan$written <- copied$written
@@ -191,19 +202,22 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   reused <- .FAIR_repo_reused_by_group(plan)
   written <- as.character(plan$written)
   written[is.na(written)] <- ""
+  # what the README, the RO-Crate and the dataset descriptions are written from
+  info <- .FAIR_repo_collect(paper, pid, ops, plan, structure_df, output_dir)
 
-  # dataset_description.json for each study holding files; a repository's
-  # own dataset_description.json is kept.
+  # dataset_description.json for each study with a data/ folder (a Psych-DS
+  # dataset has data; a folder of code only is not one); a repository's own
+  # dataset_description.json is kept.
   descriptions <- character(0)
   for (root in roots) {
     prefix <- if (nzchar(root$dir)) paste0(root$dir, "/") else ""
-    if (!any(nzchar(written) & startsWith(written, prefix))) next
+    if (!any(startsWith(written, paste0(prefix, "data/")))) next
     dest <- file.path(output_dir, root$dir, "dataset_description.json")
     if (file.exists(dest)) next
     cols <- if (is.null(root$grp) || !is.data.frame(columns_df)) columns_df else
       columns_df[columns_df$group %in% root$grp, , drop = FALSE]
     desc <- .FAIR_repo_dataset_description(
-      paper, .FAIR_repo_label(root$grp),
+      paper, info$title, .FAIR_repo_label(root$grp),
       .FAIR_repo_variable_measured(cols, labels_df),
       if (is.null(root$grp)) character(0) else reused[[root$grp]] %||% character(0))
     .FAIR_repo_write_json(desc, dest)
@@ -217,9 +231,7 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   # fulltext <- .FAIR_repo_write_paper_text(paper, output_dir, pid)  # full text
   fulltext <- NULL
   logs <- .FAIR_repo_write_logs(ops, structure_df, pid, output_dir, folder)
-  requirements <- .FAIR_repo_write_requirements(ops, plan, output_dir)
-  # what the README and the RO-Crate are both written from
-  info <- .FAIR_repo_collect(paper, pid, ops, plan, structure_df, output_dir)
+  requirements <- .FAIR_repo_write_requirements(info$software, plan, output_dir)
   readme_changes <- .FAIR_repo_write_readme_changes(plan, copied, info, output_dir,
                                                     columns_df, labels_df)
 
@@ -237,6 +249,89 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
        # fulltext = fulltext %||% character(0),  # full text
        requirements = requirements %||% character(0),
        logs = names(logs), readme_changes = readme_changes)
+}
+
+# Where results and R data files go, decided before anything is copied, so
+# the scripts' paths are changed to their final places.
+# * A file a script writes and no script reads is a result: it goes to
+#   outputs/, under its own name. (A file one script writes and another
+#   reads, such as cleaned data, stays data.) reproducibility_check gives
+#   what each script reads and writes, found by reading the code.
+# * An R data file (.rds, .RData, .rda) holding a fitted model is a result
+#   too. One holding no table, or with a CSV of the same name next to it, is
+#   kept as it is instead of written again as CSV: an .RData next to its own
+#   .csv became a second table under a numbered name.
+.FAIR_repo_outputs_and_r_data <- function(plan, structure_df, ops) {
+  n <- nrow(plan)
+  if (!n) return(plan)
+  loc <- structure_df$file_location %||% rep(NA_character_, n)
+  name <- basename(gsub("\\\\", "/", plan$file_name))
+  to_outputs <- function(i) {
+    dir <- dirname(plan$target_path[i])
+    # "study-ex1/data/scen_a" becomes "study-ex1/outputs/scen_a"
+    dir <- sub("^((study-[^/]+/)?)[^/]+", "\\1outputs", dir)
+    plan$target_path[i] <<- paste0(dir, "/", name[i])
+    plan$convert[i] <<- FALSE
+    plan$original_target[i] <<- NA_character_
+  }
+  keep_as_is <- function(i) {
+    if (!is.na(plan$original_target[i])) plan$target_path[i] <<- plan$original_target[i]
+    plan$convert[i] <<- FALSE
+    plan$original_target[i] <<- NA_character_
+  }
+
+  repro <- ops[["reproducibility_check"]]$table
+  if (is.data.frame(repro) && all(c("reads", "writes") %in% names(repro))) {
+    reads <- tolower(basename(unlist(repro$reads)))
+    writes <- tolower(basename(unlist(repro$writes)))
+    result <- setdiff(writes, reads)
+    for (i in which(tolower(name) %in% result & !is.na(plan$target_path) &
+                    !plan$data_type %in% "code"))
+      to_outputs(i)
+  }
+
+  ext <- tolower(tools::file_ext(name))
+  r_data <- which(ext %in% c("rds", "rdata", "rda") & !is.na(plan$target_path) &
+                    !startsWith(sub("^study-[^/]+/", "", plan$target_path), "outputs/"))
+  csv_here <- tolower(paste0(dirname(plan$current_path %||% name), "/",
+                             tools::file_path_sans_ext(name)))[ext == "csv"]
+  for (i in r_data) {
+    if (is.na(loc[i]) || !file.exists(loc[i])) next
+    kind <- .FAIR_repo_r_data_kind(loc[i])
+    stem <- tolower(paste0(dirname(plan$current_path[i] %||% name[i]), "/",
+                           tools::file_path_sans_ext(name[i])))
+    if (kind == "model") to_outputs(i)
+    else if (kind != "table" || stem %in% csv_here) keep_as_is(i)
+  }
+  plan
+}
+
+# What an R data file holds: "table" (what data_read_head() reads as a data
+# frame), "model" (a fitted model: an object with a model call, or of a
+# common model class), or "other".
+.FAIR_repo_r_data_kind <- function(path) {
+  # an object of a package that is not installed loads with a warning
+  # ("namespace 'rjags' is not available"), which says nothing here
+  objs <- tryCatch(suppressWarnings({
+    if (grepl("\\.rds$", path, ignore.case = TRUE)) list(readRDS(path)) else {
+      e <- new.env()
+      nms <- load(path, envir = e)
+      mget(nms, envir = e)
+    }
+  }), error = function(e) list())
+  if (!length(objs)) return("other")
+  is_model <- function(o) {
+    inherits(o, c("lm", "glm", "merMod", "lmerMod", "glmerMod", "brmsfit",
+                  "stanfit", "stanreg", "gam", "lavaan", "rfsrc",
+                  "randomForest", "train", "nls", "coxph", "survreg",
+                  "MCMCglmm", "glmmTMB", "betareg", "polr", "clm", "htest")) ||
+      (is.list(o) && !is.data.frame(o) && is.call(o$call)) ||
+      (isS4(o) && "call" %in% methods::slotNames(o))
+  }
+  if (any(vapply(objs, is_model, logical(1)))) return("model")
+  if (any(vapply(objs, function(o) is.data.frame(o) || is.matrix(o), logical(1))))
+    return("table")
+  "other"
 }
 
 # Mark the files the copy does not need twice, in a column `same_as`: the
@@ -440,6 +535,8 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   rw <- repro_rewrite_paths(code, target, plan, lang,
                             structure_df = structure_df)
   txt <- .repro_apply_rewrites(raw, rw)
+  pointed <- .FAIR_repo_point_to_outputs(txt, plan)
+  txt <- pointed$txt
   # A notebook's lines are JSON strings, which the setwd() pattern does not
   # match, so a notebook keeps its setwd()/os.chdir() calls.
   sw <- .repro_neutralise_setwd(txt, lang, by = "metacheck FAIR_repo")
@@ -462,9 +559,40 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   changed <- if (nrow(rw)) rw$matched & !rw$ambiguous & !is.na(rw$target) &
     nzchar(rw$target) & !(rw$as_written %||% FALSE) & rw$target != rw$ref else
     logical(0)
-  data.frame(target_path = target, paths_changed = sum(changed),
+  data.frame(target_path = target, paths_changed = sum(changed) + pointed$n,
              setwd_removed = sw$n,
              setwd_paths = paste(sw$paths, collapse = ", "))
+}
+
+# Point a script's quoted paths to the files that are now in outputs/: a
+# script that writes write.csv(x, "results/table.csv") writes
+# "outputs/table.csv" in the copy, where the shared table is.
+# repro_rewrite_paths() changes the files a script reads, not the ones it
+# writes. A quoted string counts when its last part is the name of such a
+# file. Returns list(txt, n = the number of strings changed).
+.FAIR_repo_point_to_outputs <- function(txt, plan) {
+  out <- which(!is.na(plan$target_path) &
+                 grepl("^(study-[^/]+/)?outputs/", plan$target_path))
+  if (!length(out)) return(list(txt = txt, n = 0L))
+  target_of <- stats::setNames(plan$target_path[out],
+                               tolower(basename(plan$target_path[out])))
+  # one name for two different results: which one a script means is unknown
+  target_of <- target_of[!duplicated(names(target_of)) &
+                           !duplicated(names(target_of), fromLast = TRUE)]
+  n <- 0L
+  m <- gregexpr("([\"'])([^\"'\n]+)\\1", txt, perl = TRUE)
+  found <- regmatches(txt, m)
+  for (k in seq_along(found)) {
+    for (s in unique(found[[k]])) {
+      inner <- substring(s, 2, nchar(s) - 1)
+      key <- tolower(basename(gsub("\\\\", "/", inner)))
+      if (!key %in% names(target_of) || inner == target_of[[key]]) next
+      q <- substring(s, 1, 1)
+      txt[k] <- gsub(s, paste0(q, target_of[[key]], q), txt[k], fixed = TRUE)
+      n <- n + 1L
+    }
+  }
+  list(txt = txt, n = n)
 }
 
 # Copy a file, dropping a leading UTF-8 byte order mark (EF BB BF) if

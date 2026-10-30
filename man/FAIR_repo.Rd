@@ -47,10 +47,15 @@ is used is decided by \code{\link[=llm_use]{llm_use()}}.
 Every file is placed where the Psych-DS layout puts it (data under \verb{data/},
 code under \verb{analysis/}, materials under \verb{materials/}, documentation under
 \verb{documentation/}, one \verb{study-<group>/} folder per study when there are
-several; see \code{\link[=psychds_file_plan]{psychds_file_plan()}}). A data file that is not a CSV file
-(\code{.xlsx}, \code{.sav}, \code{.dta}, ...) is also written as a real CSV file, with the
-original kept next to it. A data CSV file is copied without a byte order
-mark.
+several; see \code{\link[=psychds_file_plan]{psychds_file_plan()}}), keeping its own subfolders. A file a
+script writes and no script reads, and an R data file holding a fitted
+model, is a result and goes to \verb{outputs/}. A data file that is not a CSV
+file (\code{.xlsx}, \code{.sav}, \code{.dta}, ...) is also written as a real CSV file,
+with the original kept next to it; an R data file only when it holds a
+table and no CSV of the same name is next to it. A data CSV file is
+copied without a byte order mark. A file from an archive in the folder
+that is identical to a file next to it, and a README identical to
+another, are left out.
 
 R and Python scripts (\code{.R}, \code{.Rmd}, \code{.qmd}, \code{.py}, \code{.ipynb}) are changed so
 they still find their files in the new layout: each file path that
@@ -63,7 +68,7 @@ paths may no longer work.
 
 Metadata is written next to the files:
 \itemize{
-\item \code{dataset_description.json} in each study folder (Psych-DS), describing
+\item \code{dataset_description.json} in each study folder with data (Psych-DS), describing
 every data column, with its label from the codebook when
 \code{codebook_check} found one;
 \item \code{ro-crate-metadata.json} at the top (RO-Crate 1.3): every file, the
@@ -76,9 +81,12 @@ study was run (DDI-Lifecycle terms). "unknown" is written only where the
 authors are asked for something: the licence, an author's CRediT roles,
 and when and how the data were collected and processed;
 \item \code{README.md}, a readable version of the RO-Crate, in the top folder and in
-each study folder, unless the folder has its own README there;
-\item \code{requirements.txt}, the packages the code loads, unless the folder has
-its own \code{requirements.txt}, \code{renv.lock} or \code{DESCRIPTION};
+each study folder, unless the folder has its own README there. Without a
+paper, the title is taken from the folder's own README;
+\item \code{requirements.txt}, the Python packages the code imports, for
+\verb{pip install -r requirements.txt}, unless the folder has its own
+\code{requirements.txt}, \code{environment.yml} or \code{pyproject.toml}. R packages are
+listed in the README and the RO-Crate;
 \item \verb{logs/}, the list of files and the results of the checks, without the
 places on this computer the files are in;
 \item \code{CHANGES.md}, and a \code{CHANGES.md} in each study folder that has none.
