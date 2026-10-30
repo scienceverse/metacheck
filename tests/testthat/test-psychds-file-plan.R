@@ -22,6 +22,22 @@ test_that("psychds_file_plan puts a README in a subfolder in documentation/, nam
                                  "README", "README"))
 })
 
+test_that("psychds_file_plan keeps a script's folders below the folder the scripts share", {
+  # put flat in analysis/, two default.py collided and Python's imports broke
+  s <- data.frame(file_name = c("a.R", "helpers.py", "default.py", "default.py", "b.R"),
+                  file_path = c("Code/a.R", "Code/utils/helpers.py", "Code/x/default.py",
+                                "Code/y/default.py", "data.zip/Code/b.R"),
+                  data_type = "code", group = NA_character_)
+  tb <- psychds_file_plan(s)$table
+  expect_equal(tb$target_path, c("analysis/a.R", "analysis/utils/helpers.py",
+                                 "analysis/x/default.py", "analysis/y/default.py",
+                                 "analysis/b.R"))
+  # one script in a folder of its own goes straight to analysis/
+  one <- data.frame(file_name = "analysis.R", file_path = "Code/analysis.R",
+                    data_type = "code", group = NA_character_)
+  expect_equal(psychds_file_plan(one)$table$target_path, "analysis/analysis.R")
+})
+
 test_that("psychds_file_plan leaves correctly placed files and valid data names alone (U112)", {
   # data/eeg.npy was told to move to itself, and study-a_data.csv was renamed
   # data/study-studyadata_data.csv

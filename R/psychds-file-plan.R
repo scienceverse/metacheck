@@ -124,6 +124,34 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
   # prefix is added when groups exist.
   is_data <- !is.na(data_type) & data_type == "data"
 
+  # A script keeps its folders below the folder all scripts of its study
+  # share ("Code/utils/helpers.py" with "Code/a.R" becomes
+  # "analysis/utils/helpers.py"): put flat in analysis/, two scripts with one
+  # name collided, and code that finds its own modules by folder (Python's
+  # `from utils import helpers`, R's source("utils/helpers.R")) stopped
+  # working.
+  is_code <- !is.na(data_type) & data_type == "code"
+  code_dir <- rep("", n_files)
+  if (any(is_code)) {
+    rel <- .plan_strip_archive(path_given)
+    dirs <- strsplit(ifelse(is.na(rel), "", dirname(rel)), "/", fixed = TRUE)
+    dirs <- lapply(dirs, function(d) d[!d %in% c(".", "")])
+    grp_key <- ifelse(is.na(groups), "", groups)
+    for (g in unique(grp_key[is_code])) {
+      rows <- which(is_code & grp_key == g & !is.na(rel))
+      if (!length(rows)) next
+      common <- Reduce(function(a, b) {
+        k <- 0L
+        while (k < min(length(a), length(b)) && a[k + 1L] == b[k + 1L]) k <- k + 1L
+        a[seq_len(k)]
+      }, dirs[rows])
+      for (i in rows) {
+        below <- dirs[[i]][-seq_along(common)]
+        if (length(below)) code_dir[i] <- paste0(paste(below, collapse = "/"), "/")
+      }
+    }
+  }
+
   # Only a repository with >=2 detected study groups uses the study-<group>/
   # layout; a single study (or unknown grouping) is a flat single dataset.
   #
@@ -178,7 +206,7 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
       # throwing "subscript out of bounds" as `[[` would.
       sub <- unname(type_to_subdir[dt])
       if (is.na(sub)) sub <- "documentation"
-      paste0(prefix, sub, "/", name)
+      paste0(prefix, sub, "/", code_dir[i], name)
     }
   }
   target_path  <- vapply(seq_len(n_files), target_of, character(1))
@@ -281,11 +309,16 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
 # counts as the top.
 .plan_readme_folder <- function(path) {
   if (length(path) != 1 || is.na(path) || !nzchar(path)) return(NA_character_)
-  p <- gsub("\\\\", "/", path)
-  p <- sub("^([^/]*/)*[^/]*\\.(zip|tar|tgz|gz|7z|rar)(\\.contents)?/", "", p,
-           ignore.case = TRUE)
-  d <- dirname(p)
+  d <- dirname(.plan_strip_archive(path))
   if (d %in% c(".", "", "/")) return(NA_character_)
   slug <- gsub("(^-+|-+$)", "", gsub("[^A-Za-z0-9]+", "-", basename(d)))
   if (nzchar(slug)) slug else NA_character_
+}
+
+# A path with "/" and without the archive it is in ("data.zip/x.csv" or
+# "data.zip.contents/x.csv" becomes "x.csv").
+.plan_strip_archive <- function(path) {
+  p <- gsub("\\\\", "/", path)
+  sub("^([^/]*/)*[^/]*\\.(zip|tar|tgz|gz|7z|rar)(\\.contents)?/", "", p,
+      ignore.case = TRUE)
 }
