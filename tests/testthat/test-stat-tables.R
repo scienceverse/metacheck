@@ -425,3 +425,15 @@ test_that("statistics ids: NA source, no repeated prefix, both underscores trimm
   expect_equal(.stat_result_ids(list(list(analysis = "x")), NA_character_), "result_x")
   expect_equal(.stat_test_id(list(), "odd name.spv", "odd_name_spv_t3_r1", "a"), "odd_name_spv_t3_a")
 })
+
+test_that("a printed block with a backslash in it is split without recycled rows", {
+  # formatC() miscounted a line with a backslash, so the lines had different
+  # lengths and rbind() recycled them ("number of columns of result is not a
+  # multiple of vector length"); from a notebook's matplotlib output
+  lines <- c("(<AxesSubplot:xlabel='Group', ylabel='$\\itE. coli$ units per 100mL'>,",
+             " [<statannot.StatResult.StatResult at 0x11dd7bdd0>,",
+             "  <statannot.StatResult.StatResult at 0x11dd48ad0>])")
+  expect_no_warning(.r_output_tables(lines))
+  expect_no_warning(.mplus_split_block(lines))
+  expect_no_warning(.stata_split_block(lines))
+})

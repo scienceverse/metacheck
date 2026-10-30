@@ -97,6 +97,7 @@ reference:
   - '`report`'
   - '`report_module_run`'
   - '`report_qmd`'
+  - '`FAIR_repo`'
 - title: Module Helpers
   desc: These functions help module writers make consistently formatted report text.
   contents:

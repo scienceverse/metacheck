@@ -14,7 +14,12 @@
 #' crosswalk, then format-locked extension overrides. For every file classified
 #' as tabular `data` that is available locally, the module reads the file head,
 #' describes each column with `data_col_facets()` and computes summary statistics
-#' for numeric columns. Following DDI, a column is described by orthogonal facets
+#' for numeric columns. Every sheet of a spreadsheet that holds a table is read:
+#' a file with several such sheets has its columns under `source_file =
+#' "file.xlsx [sheet]"`, and the `sheet` column names the sheet of any
+#' spreadsheet with several sheets; a sheet of notes or a codebook is treated
+#' as documentation when the file has another table.
+#' Following DDI, a column is described by orthogonal facets
 #' rather than a single type: `representation` (numeric/text/datetime/code — how
 #' it is stored), `measurement_level` (Stevens: nominal/ordinal/interval/ratio),
 #' `concept` (what it measures: reaction_time/age/gender/likert/id/…), `role`
@@ -778,75 +783,101 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # its cells name other files in the repository (see data_is_manifest()).
       # Compare against every other file in the repo, not itself.
       other_files <- all_files$file_name[all_files$source_file != f$source_file]
-      if (data_is_manifest(df, other_files)) {
-        manifest_files <<- c(manifest_files, f$source_file)
-        return(NULL)
+
+      # What one table (a file, or one sheet of a spreadsheet) is, before its
+      # columns are extracted.
+      prepare_table <- function(df) {
+        if (data_is_manifest(df, other_files)) return(list(manifest = TRUE))
+
+        # Qualtrics writes TWO extra rows under the header — the full question
+        # text, then a {"ImportId":...} JSON row — before any real response. Left
+        # in place they make every column a character vector of prose, so a
+        # rating item types as text rather than an ordinal scale. Strip them
+        # before anything reads the values. Verified on a real 139-column export:
+        # without this a 25-item rating battery (british_ratings_1..25) typed as
+        # `ratio` with concept NA; with it, `ordinal` / `likert`.
+        if (data_check_is_qualtrics(df)) df <- data_strip_qualtrics_header(df)
+
+        # Which columns form a rating-scale block (a run of consecutive
+        # same-prefix columns sharing a response range)? Computed once per table
+        # here, because it needs the whole data frame — a single column cannot
+        # tell a rating item from a trial counter. This is what makes a column
+        # `likert` in data_col_facets() below.
+        scale_cols <- names(df)[unlist(.detect_scale_blocks(df), use.names = FALSE)]
+
+        # Describe each column as orthogonal facets (DDI-style) instead of a single
+        # col_type: how it is stored (representation), its measurement level, what
+        # it measures (concept), how it functions (role), its unit and data-quality
+        # state. See data_col_facets() in data_check_helpers.R.
+        cls <- lapply(seq_along(df), function(j)
+          data_col_facets(names(df)[j], df[[j]],
+                          in_scale_block = names(df)[j] %in% scale_cols))
+
+        # A table that read as a data frame but is not a usable rectangular
+        # dataset (a human coding worksheet: mostly free text and/or almost all
+        # empty) gives no columns and nothing is sent to the LLM, but the file
+        # stays classified as data so data_validate's spreadsheet-formatting
+        # checks still check its formatting.
+        list(manifest = FALSE, df = df, cls = cls,
+             usable = .tabular_usable(cls, df))
       }
 
-      # Qualtrics writes TWO extra rows under the header — the full question
-      # text, then a {"ImportId":...} JSON row — before any real response. Left
-      # in place they make every column a character vector of prose, so a
-      # rating item types as text rather than an ordinal scale. Strip them
-      # before anything reads the values. Verified on a real 139-column export:
-      # without this a 25-item rating battery (british_ratings_1..25) typed as
-      # `ratio` with concept NA; with it, `ordinal` / `likert`.
-      if (data_check_is_qualtrics(df)) df <- data_strip_qualtrics_header(df)
-
-      # Which columns form a rating-scale block (a run of consecutive
-      # same-prefix columns sharing a response range)? Computed once per file
-      # here, because it needs the whole data frame — a single column cannot
-      # tell a rating item from a trial counter. This is what makes a column
-      # `likert` in data_col_facets() below.
-      scale_cols <- names(df)[unlist(.detect_scale_blocks(df), use.names = FALSE)]
-
-      # Describe each column as orthogonal facets (DDI-style) instead of a single
-      # col_type: how it is stored (representation), its measurement level, what
-      # it measures (concept), how it functions (role), its unit and data-quality
-      # state. See data_col_facets() in data_check_helpers.R.
-      cls <- lapply(seq_along(df), function(j)
-        data_col_facets(names(df)[j], df[[j]],
-                        in_scale_block = names(df)[j] %in% scale_cols))
-
-      # Skip a file that read as a data frame but is not a usable rectangular
-      # dataset (a human coding worksheet: mostly free text and/or almost all
-      # empty). No columns are extracted and nothing is sent to the LLM, but the
-      # file stays classified as data so data_validate's spreadsheet-formatting
-      # checks still check its formatting.
-      usable <- .tabular_usable(cls, df)
-      # A multi-sheet .xlsx/.xls where sheet 1 is a cover/readme/metadata page
-      # (a common convention) fails .tabular_usable() even when a LATER sheet
-      # holds the real data -- data_read_head() only ever reads sheet 1 by
-      # default. Before giving up on the file, try each remaining sheet and
-      # keep the first one that passes, mirroring how
-      # .extract_spreadsheet_codebook() already loops over sh_names for
-      # codebook extraction. See issue #379.
-      if (!isTRUE(usable$usable) &&
-          tolower(tools::file_ext(f$file_name)) %in% c("xlsx", "xls")) {
-        # not for an .xls that crashes the reader (see .xls_readable())
-        sh_names <- if (!.xls_readable(f$file_location)) character(0) else
-          tryCatch(readxl::excel_sheets(f$file_location), error = function(e) character(0))
-        sh_names <- setdiff(sh_names, sh_names[1])   # sheet 1 already tried
-        for (sh in sh_names) {
-          df2 <- tryCatch(data_read_head(f$file_location, n_rows = Inf, sheet = sh),
-                          error = function(e) NULL)
-          if (is.null(df2) || ncol(df2) == 0) next
-          scale_cols2 <- names(df2)[unlist(.detect_scale_blocks(df2), use.names = FALSE)]
-          cls2 <- lapply(seq_along(df2), function(j)
-            data_col_facets(names(df2)[j], df2[[j]],
-                            in_scale_block = names(df2)[j] %in% scale_cols2))
-          usable2 <- .tabular_usable(cls2, df2)
-          if (isTRUE(usable2$usable)) {
-            df <- df2; cls <- cls2; scale_cols <- scale_cols2; usable <- usable2
-            break
-          }
+      first <- prepare_table(df)
+      sheets <- .data_file_sheets(f$file_location)
+      if (length(sheets) < 2) {
+        # Skip a file manifest / table-of-contents (see above), or a file that
+        # holds no usable table.
+        if (first$manifest) {
+          manifest_files <<- c(manifest_files, f$source_file)
+          return(NULL)
         }
-      }
-      if (!isTRUE(usable$usable)) {
-        non_tabular_files[[f$source_file]] <<- usable$reason
-        return(NULL)
+        if (!isTRUE(first$usable$usable)) {
+          non_tabular_files[[f$source_file]] <<- first$usable$reason
+          return(NULL)
+        }
+        tables <- list(first)
+        table_sheets <- NA_character_
+      } else {
+        # Every sheet of a spreadsheet is read, not just the first (#555): other
+        # sheets were not checked, described or counted, and a README on the
+        # first sheet was reported as the table when it passed as one. A sheet
+        # of notes or a codebook is documentation: it counts as a table only
+        # when the file holds no other (#379 looked further only when the first
+        # sheet failed).
+        prepared <- c(list(first), lapply(sheets[-1], function(sh) {
+          d <- tryCatch(data_read_head(f$file_location, n_rows = Inf, sheet = sh),
+                        error = function(e) NULL)
+          if (is.null(d) || ncol(d) == 0) return(list(manifest = FALSE))
+          prepare_table(d)
+        }))
+        is_table <- vapply(prepared, function(p) isTRUE(p$usable$usable), logical(1))
+        is_doc <- .sheet_is_notes(sheets) | vapply(prepared, function(p)
+          !is.null(p$df) && !is.null(.find_codebook_cols(names(p$df))), logical(1))
+        keep <- which(is_table & !is_doc)
+        if (!length(keep)) keep <- utils::head(which(is_table), 1)
+        if (!length(keep)) {
+          if (first$manifest) {
+            manifest_files <<- c(manifest_files, f$source_file)
+          } else {
+            non_tabular_files[[f$source_file]] <<-
+              first$usable$reason %||% "the file has no data rows or columns"
+          }
+          return(NULL)
+        }
+        tables <- prepared[keep]
+        table_sheets <- sheets[keep]
       }
 
-      file_previews[[f$source_file]] <<- df
+      # A file with one table keeps its own name; each table of a file with
+      # several is named "file [sheet]", as the codebook sheets of a spreadsheet
+      # are, so columns with one name on two sheets stay apart.
+      table_keys <- if (length(tables) > 1)
+        paste0(f$source_file, " [", table_sheets, "]") else f$source_file
+
+      dplyr::bind_rows(lapply(seq_along(tables), function(tb) {
+      df <- tables[[tb]]$df
+      cls <- tables[[tb]]$cls
+      file_previews[[table_keys[tb]]] <<- df
 
       getf <- function(field) vapply(cls, function(c) {
         v <- c[[field]]; if (is.null(v) || is.na(v)) NA_character_ else v
@@ -894,7 +925,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       data.frame(
         paper_id          = f$paper_id %||% .pid(all_files),
         repo_url          = f$repo_url,
-        source_file       = f$source_file,
+        source_file       = table_keys[tb],
+        sheet             = table_sheets[tb],
         group             = f$group %||% NA_character_,
         column_name       = names(df),
         representation    = getf("representation"),
@@ -914,7 +946,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                                    unname(s4_conv[names(df)]), ""),
         stats_mat
       )
+      }))
     })
+    n_files_read <- sum(lengths(per_file) > 0)
     columns_df <- dplyr::bind_rows(Filter(Negate(is.null), per_file))
 
     # Header signature per source file: the sorted set of its column names. Files
@@ -1082,9 +1116,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
 
   # the files columns were read from: .RData files and unreadable files were
-  # counted too ("extracted 2 columns from 3 of them") (U99)
+  # counted too ("extracted 2 columns from 3 of them") (U99); a file with
+  # several sheets counts once
   n_extracted <- if (!is.null(columns_df) && "source_file" %in% names(columns_df))
-    length(unique(columns_df$source_file)) else
+    n_files_read else
     nrow(data_files) - length(manifest_files) - length(non_tabular_files)
   summary_data <- sprintf(
     "We found %d tabular data file%s and extracted %d column%s from %d of them.",

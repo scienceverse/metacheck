@@ -1496,22 +1496,45 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 }
 
 # The folder an archive is extracted into. A downloaded archive (in the
-# repository cache or the temporary folder) is extracted beside itself, to
-# "<archive>.contents", which a later run reuses. Any other archive is the
-# user's own (local_path): extracting beside it wrote into the user's folder,
-# and the next run listed the extracted files as files of their own and
-# extracted the archive again, so every file counted twice (U214). It is
-# extracted into the temporary folder instead, under the archive's checksum.
+# repository cache, or this session's download folder when the cache is off;
+# see .repo_session_dir()) is extracted beside itself, to "<archive>.contents",
+# which a later run reuses. Any other archive is the user's own (local_path):
+# extracting beside it wrote into the user's folder, and the next run listed
+# the extracted files as files of their own and extracted the archive again,
+# so every file counted twice (U214). It is extracted into the temporary
+# folder instead, under the archive's checksum. A folder of the user's that is
+# itself in the temporary folder (an upload unpacked there, a test) is the
+# user's too: the whole temporary folder counted as downloads, so FAIR_repo()
+# wrote "<archive>.contents" into the folder it was converting.
 .archive_dest <- function(path) {
-  beside <- paste0(path, ".contents")
+  if (.in_download_folder(path)) return(paste0(path, ".contents"))
+  file.path(tempdir(), "metacheck-archives", unname(tools::md5sum(path)))
+}
+
+# Whether `path` is a file metacheck downloaded: in the repository cache, or
+# this session's download folder when the cache is off. metacheck writes next
+# to such a file (an unpacked archive, code recovered from an output file);
+# any other file is the user's own, and nothing is written into its folder.
+.in_download_folder <- function(path) {
   repo_cache <- getOption("metacheck.repo_cache.dir")
   if (is.null(repo_cache) || !nzchar(repo_cache))
     repo_cache <- file.path(.metacheck_cache_root(), ".metacheck_repo_cache")
-  roots <- normalizePath(c(tempdir(), repo_cache), winslash = "/", mustWork = FALSE)
+  session <- getOption("metacheck.repo_cache.session_dir",
+                       file.path(tempdir(), "metacheck-repo-files"))
+  roots <- normalizePath(c(session, repo_cache), winslash = "/", mustWork = FALSE)
   norm <- normalizePath(path, winslash = "/", mustWork = FALSE)
   if (.Platform$OS.type == "windows") { roots <- tolower(roots); norm <- tolower(norm) }
-  if (any(startsWith(norm, paste0(roots, "/")))) return(beside)
-  file.path(tempdir(), "metacheck-archives", unname(tools::md5sum(path)))
+  any(startsWith(norm, paste0(roots, "/")))
+}
+
+# The folder code recovered from an output file is written to: a `code_dir_name`
+# folder next to a downloaded file, which a later run reuses; for a file of the
+# user's own, a folder of that name in the temporary folder (removed when the R
+# session ends), under the file's checksum, so the user's folder is not changed.
+.recovered_code_dir <- function(path, code_dir_name = "code") {
+  if (.in_download_folder(path)) return(file.path(dirname(path), code_dir_name))
+  file.path(tempdir(), "metacheck-recovered-code", unname(tools::md5sum(path)),
+            code_dir_name)
 }
 
 # Move the members extracted into `part` (a folder beside `dest`) into `dest`,

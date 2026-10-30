@@ -753,28 +753,13 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   # The script's own study group, for disambiguation.
   script_grp <- .data_group_from_path(file_name)
 
-  # Resolve each PLAN ROW's own on-disk source (by file_name, falling back to
-  # basename — same lookup shape repro_materialize_layout()'s find_source()
-  # already uses), for the content-hash mirror collapsing below. Only built
-  # when structure_df was supplied; NA everywhere otherwise (skips collapsing
+  # Resolve each PLAN ROW's own on-disk source (see .repro_plan_sources()),
+  # for the content-hash mirror collapsing below. Only built when
+  # structure_df was supplied; NA everywhere otherwise (skips collapsing
   # entirely, same as before this was added).
   plan_source_path <- if (!is.null(structure_df) &&
-                          all(c("file_name", "file_location") %in% names(structure_df))) {
-    loc_lookup <- stats::setNames(structure_df$file_location, structure_df$file_name)
-    loc_base   <- stats::setNames(loc_lookup, tolower(basename(names(loc_lookup))))
-    vapply(plan$file_name, function(fn) {
-      if (fn %in% names(loc_lookup)) {
-        l <- loc_lookup[[fn]]
-        if (!is.na(l) && nzchar(l) && file.exists(l)) return(l)
-      }
-      b <- tolower(basename(fn))
-      if (b %in% names(loc_base)) {
-        l <- loc_base[[b]]
-        if (!is.na(l) && nzchar(l) && file.exists(l)) return(l)
-      }
-      NA_character_
-    }, character(1))
-  } else rep(NA_character_, nrow(plan))
+                          all(c("file_name", "file_location") %in% names(structure_df)))
+    .repro_plan_sources(plan, structure_df) else rep(NA_character_, nrow(plan))
   plan_hash <- ifelse(is.na(plan_source_path), NA_character_,
                       unname(tools::md5sum(plan_source_path)))
 
@@ -1737,6 +1722,59 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 # so the real psychds output and the download cache are never touched.
 # ─────────────────────────────────────────────────────────────────────────────
 
+# The file on disk behind each row of a plan, or NA when it has none.
+#
+# A plan that names each row's own source file (the package layout, see
+# .repro_package_plan()) is used as it is. A plan made by psychds_file_plan()
+# has one row per row of structure_df, in the same order, so row i's file is
+# structure row i's. Only a plan that is neither (filtered, or built by hand)
+# is looked up by file name, then by base name. The name lookup alone took
+# the first file of that name: the demographics.csv of several OSF components
+# all got the first component's content, and in repro_rewrite_paths() they
+# then had the same content hash and were taken for copies of one file.
+.repro_plan_sources <- function(plan, structure_df) {
+  n <- nrow(plan)
+  out <- rep(NA_character_, n)
+  if (!n) return(out)
+  exists_ <- function(p) !is.na(p) & nzchar(p %||% "") & file.exists(p %||% "")
+
+  own <- if ("source" %in% names(plan)) plan$source else rep(NA_character_, n)
+  has_own <- exists_(own)
+  out[has_own] <- own[has_own]
+
+  if (is.null(structure_df) ||
+      !all(c("file_name", "file_location") %in% names(structure_df)))
+    return(out)
+
+  # psychds_file_plan() gives a row without a file name its path's base name
+  s_name <- structure_df$file_name
+  no_name <- is.na(s_name) | !nzchar(s_name)
+  s_name[no_name] <- basename(structure_df$file_path %||% rep(NA_character_, nrow(structure_df)))[no_name]
+  aligned <- nrow(structure_df) == n &&
+    identical(as.character(plan$file_name), as.character(s_name))
+
+  if (aligned) {
+    loc <- structure_df$file_location
+    use <- !has_own & exists_(loc)
+    out[use] <- loc[use]
+    return(out)
+  }
+
+  loc_lookup <- stats::setNames(structure_df$file_location, structure_df$file_name)
+  # basename index, for when plan file_name and structure file_name differ by dir
+  loc_base <- stats::setNames(loc_lookup, tolower(basename(names(loc_lookup))))
+  for (i in which(!has_own)) {
+    fn <- plan$file_name[i]
+    if (is.na(fn)) next
+    if (fn %in% names(loc_lookup) && exists_(loc_lookup[[fn]])) {
+      out[i] <- loc_lookup[[fn]]; next
+    }
+    b <- tolower(basename(fn))
+    if (b %in% names(loc_base) && exists_(loc_base[[b]])) out[i] <- loc_base[[b]]
+  }
+  out
+}
+
 #' Materialise the Psych-DS layout for a paper into a throwaway directory
 #'
 #' The execute phase runs the paper's code against the Psych-DS layout, but the
@@ -1771,37 +1809,14 @@ repro_materialize_layout <- function(plan, structure_df, root) {
       !all(c("file_name", "target_path") %in% names(plan)))
     return(invisible(structure(root, materialised = done)))
 
-  loc_lookup <- if (!is.null(structure_df) &&
-                    all(c("file_name", "file_location") %in% names(structure_df)))
-    stats::setNames(structure_df$file_location, structure_df$file_name) else
-    character(0)
-  # basename index, for when plan file_name and structure file_name differ by dir
-  loc_base <- if (length(loc_lookup))
-    stats::setNames(loc_lookup, tolower(basename(names(loc_lookup)))) else
-    character(0)
-
-  find_source <- function(fn) {
-    if (fn %in% names(loc_lookup)) {
-      l <- loc_lookup[[fn]]
-      if (!is.na(l) && nzchar(l) && file.exists(l)) return(l)
-    }
-    b <- tolower(basename(fn))
-    if (b %in% names(loc_base)) {
-      l <- loc_base[[b]]
-      if (!is.na(l) && nzchar(l) && file.exists(l)) return(l)
-    }
-    NA_character_
-  }
+  # Each row's own source file (see .repro_plan_sources()): looked up by name,
+  # the 20 log.csv files of 20 scan folders all got the first one's content.
+  sources <- .repro_plan_sources(plan, structure_df)
 
   has_target <- !is.na(plan$target_path) & nzchar(plan$target_path %||% "")
-  # A plan that names each row's own source file (the package layout, see
-  # .repro_package_plan()) is copied from there: looked up by name, the 20
-  # log.csv files of 20 scan folders all got the first one's content.
-  own_source <- if ("source" %in% names(plan)) plan$source else rep(NA_character_, nrow(plan))
   rows <- lapply(which(has_target), function(i) {
     tgt <- plan$target_path[i]
-    src <- own_source[i]
-    if (is.na(src) || !nzchar(src) || !file.exists(src)) src <- find_source(plan$file_name[i])
+    src <- sources[i]
     if (is.na(src))
       return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
     dest <- file.path(root, tgt)
@@ -1831,7 +1846,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     has_orig <- !is.na(plan$original_target) & nzchar(plan$original_target %||% "")
     orig_rows <- lapply(which(has_orig), function(i) {
       tgt <- plan$original_target[i]
-      src <- find_source(plan$file_name[i])
+      src <- sources[i]
       if (is.na(src))
         return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
       dest <- file.path(root, tgt)
@@ -2134,6 +2149,82 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out
 }
 
+# Apply each resolved (matched, non-ambiguous, real target) rewrite of
+# repro_rewrite_paths() to a script's text as a literal replacement. Fixed
+# (non-regex) to avoid metacharacter surprises in file paths. A plain
+# reference replaces just the path; an `is_call` row (sprintf()/paste()-family
+# — see repro_rewrite_paths()) replaces the ENTIRE call with a bare literal
+# string, since `ref` there is the whole call text: substituting only a
+# substring inside it would leave the call's other arguments (e.g. `wd,
+# wd_data` after the format string) orphaned in a now-broken expression.
+#
+# A plain reference is replaced only where it stands in quotes ("x.csv",
+# 'x.csv', or \"x.csv\" inside a notebook's JSON). Replaced wherever the text
+# appeared, the reference x.csv also changed "old_x.csv" into
+# "old_data/study-x_data.csv", a file that does not exist.
+.repro_apply_rewrites <- function(txt, rw) {
+  if (is.null(rw) || !nrow(rw)) return(txt)
+  good <- rw$matched & !rw$ambiguous & !is.na(rw$target) & nzchar(rw$target)
+  # a reference kept as written is left alone: for a call its target is
+  # the call itself, which was put in quotes, so `sprintf("%s/x.xlsx", wd)`
+  # became the unparseable `"sprintf("%s/x.xlsx", wd)"`
+  # (Lakens/tue_datamanager_check#4, item 9)
+  if ("as_written" %in% names(rw)) good <- good & !(rw$as_written %in% TRUE)
+  is_call_col <- if ("is_call" %in% names(rw)) rw$is_call else rep(FALSE, nrow(rw))
+  for (k in which(good)) {
+    if (isTRUE(is_call_col[k])) {
+      txt <- gsub(rw$ref[k], paste0('"', rw$target[k], '"'), txt, fixed = TRUE)
+    } else {
+      for (q in c('\\"', '"', "'"))
+        txt <- gsub(paste0(q, rw$ref[k], q), paste0(q, rw$target[k], q), txt,
+                    fixed = TRUE)
+    }
+  }
+  txt
+}
+
+# Replace each setwd()/os.chdir() line of a script with a statement that does
+# nothing, keeping the original visible in a comment that says why. Not a bare
+# comment: when the call is the only statement of a block, a comment leaves
+# the block empty -- Python stops with "IndentationError: expected an
+# indented block" (a try:/if:/with: body), and in R `if (x)` followed by
+# setwd() on the next line would take the NEXT statement as its body (#480).
+#
+# Matches the call at a statement start (allowing leading whitespace). Also
+# base::setwd(), and chdir() after `from os import chdir` or under another
+# module name (o.chdir()): only setwd( and os.chdir( were caught, so such a
+# call ran and failed on the author's own path (tue_datamanager_check#4, item
+# 5). Not mychdir( or print(chdir).
+#
+# `by` names who removed it, in the comment. Returns list(txt, n = the number
+# replaced, paths = the quoted path each named).
+.repro_neutralise_setwd <- function(txt, lang = "R", by = "reproducibility_check") {
+  setwd_line_for <- list(
+    R = "^(\\s*)((?:base::)?setwd\\s*\\(.*)$",
+    Python = "^(\\s*)((?:[A-Za-z_][A-Za-z0-9_]*\\.)?chdir\\s*\\(.*)$"
+  )
+  setwd_arg_for <- list(
+    R = "(?:base::)?setwd\\s*\\(\\s*['\"]([^'\"]+)['\"]",
+    Python = "(?:[A-Za-z_][A-Za-z0-9_]*\\.)?chdir\\s*\\(\\s*['\"]([^'\"]+)['\"]"
+  )
+  setwd_line <- setwd_line_for[[lang]] %||% setwd_line_for[["R"]]
+  setwd_arg  <- setwd_arg_for[[lang]] %||% setwd_arg_for[["R"]]
+
+  is_setwd <- grepl(setwd_line, txt, perl = TRUE)
+  n <- sum(is_setwd)
+  paths <- character(0)
+  if (n > 0) {
+    hit_lines <- txt[is_setwd]
+    m <- regmatches(hit_lines, regexpr(setwd_arg, hit_lines, perl = TRUE))
+    paths <- sub(paste0(".*", setwd_arg, ".*"), "\\1", m[nzchar(m)], perl = TRUE)
+    no_op <- if (identical(lang, "Python"))
+      sprintf("\\1pass  # [%s removed os.chdir] \\2", by) else
+      sprintf("\\1invisible(NULL)  # [%s removed setwd] \\2", by)
+    txt[is_setwd] <- sub(setwd_line, no_op, txt[is_setwd], perl = TRUE)
+  }
+  list(txt = txt, n = n, paths = paths)
+}
+
 #' Write path-rewritten scripts into the materialised layout
 #'
 #' Each script's referenced data paths are rewritten to their Psych-DS target
@@ -2239,23 +2330,6 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     basename(fn)
   }
 
-  # A line that calls setwd()/os.chdir(). Matches the call at a statement
-  # start (allowing leading whitespace), so a call inside a longer expression
-  # is still caught by the call token. The quoted argument (if any) is
-  # captured for the warning.
-  # Also base::setwd(), and chdir() after `from os import chdir` or under
-  # another module name (o.chdir()): only setwd( and os.chdir( were caught,
-  # so such a call ran and failed on the author's own path
-  # (tue_datamanager_check#4, item 5). Not mychdir( or print(chdir).
-  setwd_line_for <- list(
-    R = "^(\\s*)((?:base::)?setwd\\s*\\(.*)$",
-    Python = "^(\\s*)((?:[A-Za-z_][A-Za-z0-9_]*\\.)?chdir\\s*\\(.*)$"
-  )
-  setwd_arg_for <- list(
-    R = "(?:base::)?setwd\\s*\\(\\s*['\"]([^'\"]+)['\"]",
-    Python = "(?:[A-Za-z_][A-Za-z0-9_]*\\.)?chdir\\s*\\(\\s*['\"]([^'\"]+)['\"]"
-  )
-
   rows <- lapply(seq_along(code_text_list), function(i) {
     fn  <- fnames[[i]]
     txt <- code_text_list[[i]]
@@ -2264,30 +2338,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     # of a very large script could not be told apart from a hang (#481).
     message("[repro]   rewriting '", fn, "' (", sum(nchar(txt, type = "bytes")), " bytes) ...")
     fn_lang <- lang_for[[i]] %||% "R"
-    setwd_line <- setwd_line_for[[fn_lang]] %||% setwd_line_for[["R"]]
-    setwd_arg  <- setwd_arg_for[[fn_lang]] %||% setwd_arg_for[["R"]]
-    # Apply each resolved (matched, non-ambiguous, real target) rewrite as a
-    # literal replacement. Fixed (non-regex) to avoid metacharacter surprises
-    # in file paths. A plain reference replaces just the quoted path; an
-    # `is_call` row (sprintf()/paste()-family — see repro_rewrite_paths())
-    # replaces the ENTIRE call with a bare literal string, since `ref` there is
-    # the whole call text: substituting only a substring inside it would leave
-    # the call's other arguments (e.g. `wd, wd_data` after the format string)
-    # orphaned in a now-broken expression.
-    if (!is.null(rw) && nrow(rw)) {
-      good <- rw$matched & !rw$ambiguous & !is.na(rw$target) & nzchar(rw$target)
-      # a reference kept as written is left alone: for a call its target is
-      # the call itself, which was put in quotes, so `sprintf("%s/x.xlsx", wd)`
-      # became the unparseable `"sprintf("%s/x.xlsx", wd)"`
-      # (Lakens/tue_datamanager_check#4, item 9)
-      if ("as_written" %in% names(rw)) good <- good & !(rw$as_written %in% TRUE)
-      is_call_col <- if ("is_call" %in% names(rw)) rw$is_call else rep(FALSE, nrow(rw))
-      for (k in which(good)) {
-        repl <- if (isTRUE(is_call_col[k]))
-          paste0('"', rw$target[k], '"') else rw$target[k]
-        txt <- gsub(rw$ref[k], repl, txt, fixed = TRUE)
-      }
-    }
+    txt <- .repro_apply_rewrites(txt, rw)
 
     # Redirect WRITE calls into the sandbox's flat output/ folder (see
     # .repro_redirect_writes()'s own roxygen for why: an unrewritten write
@@ -2329,27 +2380,12 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
       txt <- strsplit(joined_txt, "\n", fixed = TRUE)[[1]]
     }
 
-    # Comment out setwd() lines so they cannot override the sandbox wd. Record
+    # Replace setwd() lines so they cannot override the sandbox wd. Record
     # how many, and the path each named, for the report's warning.
-    is_setwd <- grepl(setwd_line, txt, perl = TRUE)
-    setwd_n <- sum(is_setwd)
-    setwd_paths <- character(0)
-    if (setwd_n > 0) {
-      hit_lines <- txt[is_setwd]
-      m <- regmatches(hit_lines, regexpr(setwd_arg, hit_lines, perl = TRUE))
-      setwd_paths <- sub(paste0(".*", setwd_arg, ".*"), "\\1",
-                         m[nzchar(m)], perl = TRUE)
-      # Replace each call with a statement that does nothing, keeping the
-      # original visible in a comment that says why. Not a bare comment: when
-      # the call is the only statement of a block, a comment leaves the block
-      # empty -- Python stops with "IndentationError: expected an indented
-      # block" (a try:/if:/with: body), and in R `if (x)` followed by setwd()
-      # on the next line would take the NEXT statement as its body (#480).
-      no_op <- if (identical(fn_lang, "Python"))
-        "\\1pass  # [reproducibility_check removed os.chdir] \\2" else
-        "\\1invisible(NULL)  # [reproducibility_check removed setwd] \\2"
-      txt[is_setwd] <- sub(setwd_line, no_op, txt[is_setwd], perl = TRUE)
-    }
+    sw <- .repro_neutralise_setwd(txt, fn_lang)
+    txt <- sw$txt
+    setwd_n <- sw$n
+    setwd_paths <- sw$paths
 
     # Replace a named font family (family = "Times New Roman", base_family =
     # "Arial", ...) with grid's own universal fallback "sans" — a specific

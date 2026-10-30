@@ -952,6 +952,52 @@ data_format <- function(ext) {
   ifelse(tolower(ext) %in% .readable_extensions, "tabular", "raw")
 }
 
+# The distinct text values of a column, in the order they first appear, with
+# how often each occurs: as.character() and, with `trim`, trimws() are applied
+# to each distinct value once, and values that become the same text are
+# counted together. data_check's column checks work on these instead of on
+# every value: a large data file repeats its values many times, and running
+# trimws(), tolower() and gsub() on each of 160,000 values per column took
+# most of data_check's time (#554). The checks give the same results, since
+# each depends only on which values occur and how often. A column that is not
+# a plain vector (a data frame or list inside the table) is turned into text
+# first, as before. A number written as text has no spaces to trim.
+.text_counts <- function(x, trim = TRUE) {
+  if (!is.atomic(x)) x <- as.character(x)
+  if (!length(x)) return(list(values = character(0), n = integer(0)))
+  u <- unique(x)
+  n <- tabulate(match(x, u), nbins = length(u))
+  s <- as.character(u)
+  if (trim && !.plain_number(x)) s <- trimws(s)
+  s_u <- unique(s)
+  list(values = s_u, n = as.vector(rowsum(n, match(s, s_u))))
+}
+
+# A plain column of numbers, not one with a class of its own (such as a date
+# or a labelled column), which is written as text in its own way. Writing such
+# a column of all-different numbers as text is what costs time in the checks,
+# and most of them can tell without it: a table of 12,000 rows and 1,037 columns
+# of model estimates took longer with the distinct values than without (#554).
+.plain_number <- function(x) is.numeric(x) && !is.object(x)
+
+# as.numeric(gsub(",", ".", as.character(x), fixed = TRUE)), with the text
+# work done once per distinct value (see .text_counts()).
+.parse_comma_numeric <- function(x) {
+  if (!is.atomic(x))
+    return(suppressWarnings(as.numeric(gsub(",", ".", as.character(x), fixed = TRUE))))
+  u <- unique(x)
+  p <- suppressWarnings(as.numeric(gsub(",", ".", as.character(u), fixed = TRUE)))
+  p[match(x, u)]
+}
+
+# stats::median(nchar(as.character(x))), with the text work done once per
+# distinct value (see .text_counts()).
+.median_nchar <- function(x) {
+  if (!is.atomic(x)) return(stats::median(nchar(as.character(x))))
+  u <- unique(x)
+  stats::median(rep(nchar(as.character(u)), tabulate(match(x, u), nbins = length(u))))
+}
+
 #' Detect a file manifest / table-of-contents masquerading as tabular data
 #'
 #' A manifest (e.g. a "table of contents" CSV) is structurally a valid tabular
@@ -984,12 +1030,17 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   repo_base <- tolower(basename(gsub("\\\\", "/", repo_files)))
 
   for (col in df) {
-    vals <- tolower(trimws(as.character(col)))
-    vals <- vals[!is.na(vals) & nzchar(vals)]
+    # a column of numbers or of TRUE/FALSE does not name files
+    if (.plain_number(col) || is.logical(col)) next
+    # each distinct value once, weighed by how often it occurs (#554)
+    tc <- .text_counts(col)
+    keep <- !is.na(tc$values) & nzchar(tc$values)
+    vals <- tolower(tc$values[keep])
+    n <- tc$n[keep]
     if (length(vals) == 0) next
     vbase <- basename(gsub("\\\\", "/", vals))
     is_ref <- vbase %in% repo_base
-    if (mean(is_ref) < threshold) next
+    if (sum(n[is_ref]) / sum(n) < threshold) next
     exts <- tools::file_ext(vals[is_ref])
     exts <- exts[nzchar(exts)]
     if (length(unique(exts)) >= min_exts) return(TRUE)
@@ -2480,7 +2531,8 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
         # with range "A1:Z6" comes back with 26). `n_max` caps rows only, which
         # is what we want.
         df <- suppressWarnings(as.data.frame(
-          readODS::read_ods(path, n_max = nmax, .name_repair = "unique_quiet")))
+          readODS::read_ods(path, sheet = sheet %||% 1L, n_max = nmax,
+                            .name_repair = "unique_quiet")))
         if (!is.null(df) && data_check_is_qualtrics(df))
           df <- data_strip_qualtrics_header(df)
         # Mis-placed header, exactly as for .xlsx: scan the first rows WITHOUT a
@@ -2488,8 +2540,8 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
         # with skip = k so column types are re-inferred natively.
         if (!is.null(df) && ncol(df) > 1) {
           raw <- tryCatch(.utf8_repair_df(as.data.frame(suppressWarnings(
-                   readODS::read_ods(path, col_names = FALSE, n_max = 6L,
-                     col_types = NA, .name_repair = "minimal")))),
+                   readODS::read_ods(path, sheet = sheet %||% 1L, col_names = FALSE,
+                     n_max = 6L, col_types = NA, .name_repair = "minimal")))),
                  error = function(e) NULL)
           if (!is.null(raw) && nrow(raw) >= 2) {
             raw_rows <- lapply(seq_len(nrow(raw)),
@@ -2499,7 +2551,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
               k <- prom$promoted
               nmax2 <- if (is.finite(nmax)) nmax + k else Inf
               reread <- tryCatch(suppressWarnings(as.data.frame(
-                readODS::read_ods(path, skip = k, n_max = nmax2,
+                readODS::read_ods(path, sheet = sheet %||% 1L, skip = k, n_max = nmax2,
                                   .name_repair = "unique_quiet"))),
                 error = function(e) NULL)
               df <- if (!is.null(reread) && ncol(reread) > 0) reread else prom$df
@@ -2618,6 +2670,26 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
   out
 }
 
+# The sheets of a spreadsheet (.xlsx, .xls, .ods, .fods), or NULL for any other
+# file, one that cannot be read, or an .xls that crashes the reader (see
+# .xls_readable()).
+.data_file_sheets <- function(path) {
+  ext <- tolower(tools::file_ext(path))
+  tryCatch(
+    if (ext %in% c("xlsx", "xls")) {
+      if (.xls_readable(path)) readxl::excel_sheets(path)
+    } else if (ext %in% c("ods", "fods") && requireNamespace("readODS", quietly = TRUE)) {
+      readODS::list_ods_sheets(path)
+    },
+    error = function(e) NULL)
+}
+
+# Whether a sheet's name says it holds notes or a codebook rather than data.
+.sheet_is_notes <- function(sheet) {
+  grepl("^(read ?me|notes?|legend|info(rmation)?|meta ?data|about|description|code ?book|(data )?dictionary)$",
+        trimws(tolower(sheet)))
+}
+
 # Read an .RData/.rda workspace in an ISOLATED subprocess and return its first
 # data frame (head of `n_rows`), or NULL. Isolation is essential: restoring
 # model/session objects that reference uninstalled packages prints C-level
@@ -2653,7 +2725,9 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
     "      v <- attr(d[[j]], a, exact = TRUE)",
     "      if (!is.null(v) && is.null(attr(df[[j]], a, exact = TRUE))) attr(df[[j]], a) <- v }",
     "    if (length(conv)) attr(df, 's4_converted') <- conv } }",
-    "saveRDS(df, %s)",
+    # not compressed: the file is read back at once and then removed, and
+    # compressing a table of 160,000 rows took 3 to 4 of the 7 seconds
+    "saveRDS(df, %s, compress = FALSE)",
     sep = "\n"),
     deparse(path), if (is.finite(nmax)) nmax else "Inf", deparse(out_rds))
 
@@ -2883,7 +2957,8 @@ data_col_type <- function(col_name, values) {
     return(list(col_type = "date", ambiguous = FALSE, numeric_values = NULL,
                 n_coerced = NA_integer_, is_numeric = FALSE))
 
-  if (stats::median(nchar(as.character(x_noNA))) > 40)
+  # (a number written as text is never that long)
+  if (!.plain_number(values) && .median_nchar(x_noNA) > 40)
     return(list(col_type = "text", ambiguous = FALSE, numeric_values = NULL,
                 n_coerced = NA_integer_, is_numeric = FALSE))
 
@@ -2899,16 +2974,16 @@ data_col_type <- function(col_name, values) {
                 is_numeric = TRUE))
   }
 
-  x_sub  <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA), fixed = TRUE)))
+  x_sub  <- .parse_comma_numeric(x_noNA)
   pct_ok <- sum(!is.na(x_sub)) / n_noNA
   if (pct_ok >= 0.95) {
-    num_vec <- suppressWarnings(as.numeric(gsub(",", ".", as.character(values), fixed = TRUE)))
+    num_vec <- .parse_comma_numeric(values)
     return(list(col_type = "continuous_comma_decimal", ambiguous = FALSE,
                 numeric_values = num_vec, n_coerced = sum(is.na(x_sub)),
                 is_numeric = FALSE))
   }
   if (pct_ok >= 0.80) {
-    num_vec <- suppressWarnings(as.numeric(gsub(",", ".", as.character(values), fixed = TRUE)))
+    num_vec <- .parse_comma_numeric(values)
     return(list(col_type = "continuous_outliers_excluded", ambiguous = FALSE,
                 numeric_values = num_vec, n_coerced = sum(is.na(x_sub)),
                 is_numeric = FALSE))
@@ -5252,8 +5327,10 @@ data_check_empty <- function(x) {
   none <- list(problem = FALSE, message = "", values = NULL)
   n <- length(x)
   if (n == 0) return(none)
-  filled <- if (is.numeric(x)) !is.na(x) else
-    !is.na(x) & nzchar(trimws(as.character(x)))
+  filled <- if (is.numeric(x)) !is.na(x) else {
+    v <- .text_counts(x)$values    # each distinct value once (#554)
+    !is.na(v) & nzchar(v)
+  }
   if (any(filled)) return(none)
   list(problem = TRUE,
        message = sprintf("Column is empty: all %d value%s %s missing.",
@@ -5320,8 +5397,8 @@ data_check_spss_filter <- function(col, x) {
 data_check_case_issues <- function(x) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
-  x <- as.character(x)
-  x <- unique(x[!is.na(x) & nzchar(trimws(x))])
+  x <- .text_counts(x, trim = FALSE)$values    # each distinct value once (#554)
+  x <- x[!is.na(x) & nzchar(trimws(x))]
   if (length(x) == 0) return(none)
   lower <- tolower(x)
   dup <- lower[duplicated(lower)]
@@ -5346,9 +5423,9 @@ data_check_case_issues <- function(x) {
 data_check_whitespace <- function(x) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
-  x <- as.character(x)
+  x <- .text_counts(x, trim = FALSE)$values    # each distinct value once (#554)
   x <- x[!is.na(x)]
-  padded <- unique(x[x != trimws(x) & nzchar(trimws(x))])
+  padded <- x[x != trimws(x) & nzchar(trimws(x))]
   if (length(padded) == 0) return(none)
   list(problem = TRUE,
        message = sprintf("%d value%s with leading/trailing whitespace: %s",
@@ -5377,15 +5454,18 @@ data_check_whitespace <- function(x) {
 data_check_numeric_in_text <- function(x, threshold = 0.8, n_max = 10) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
-  x <- trimws(as.character(x))
-  x <- x[!is.na(x) & nzchar(x)]
-  if (length(x) < 5) return(none)
+  # each distinct value once, weighed by how often it occurs (#554)
+  tc <- .text_counts(x)
+  keep <- !is.na(tc$values) & nzchar(tc$values)
+  x <- tc$values[keep]
+  n <- tc$n[keep]
+  if (sum(n) < 5) return(none)
   # Treat comma-decimals as numeric too (European formatting).
   num <- suppressWarnings(as.numeric(gsub(",", ".", x, fixed = TRUE)))
-  frac_num <- mean(!is.na(num))
+  frac_num <- sum(n[!is.na(num)]) / sum(n)
   # Mostly-but-not-fully numeric: contamination worth reporting.
   if (frac_num < threshold || frac_num >= 1) return(none)
-  bad <- unique(x[is.na(num)])
+  bad <- x[is.na(num)]
   list(problem = TRUE,
        message = sprintf("Column is %.0f%% numeric but %d value%s cannot be parsed: %s",
                          100 * frac_num, length(bad), plural(length(bad)),
@@ -5707,25 +5787,44 @@ data_check_colname_collisions <- function(col_names) {
 #' @keywords internal
 data_check_pii_values <- function(x, broad_min_frac = 0.30) {
   none <- list(problem = FALSE, message = "", values = NULL)
-  x <- trimws(as.character(x))
-  x <- x[!is.na(x) & nzchar(x)]
-  if (length(x) < 3) return(none)
+  # A number written as text can only match the credit card pattern, and only
+  # as a whole number of at least 13 digits: an email, IP address or social
+  # security number needs characters a number does not have, and the card
+  # pattern does not match next to a decimal point. Others are counted, not
+  # written as text (#554).
+  total <- NULL
+  if (.plain_number(x)) {
+    total <- sum(!is.na(x) | is.nan(x))
+    if (total < 3) return(none)
+    x <- x[!is.na(x) & is.finite(x) & abs(x) >= 1e12 & x == trunc(x)]
+    if (!length(x)) return(none)
+  }
+  # each distinct value once, weighed by how often it occurs (#554)
+  tc <- .text_counts(x)
+  keep <- !is.na(tc$values) & nzchar(tc$values)
+  x <- tc$values[keep]
+  n <- tc$n[keep]
+  total <- total %||% sum(n)
+  if (total < 3) return(none)
 
   hits <- character(0)
   for (nm in names(.pii_value_patterns)) {
     spec <- .pii_value_patterns[[nm]]
     m <- grepl(spec$regex, x, perl = TRUE)
     matched <- x[m]
+    n_matched <- n[m]
     if (length(matched) == 0) next
 
     # Validate the matched values, when the pattern has a validator.
     if (!is.null(spec$validate)) {
       vfun <- get(spec$validate, mode = "function")
-      matched <- matched[vapply(matched, vfun, logical(1))]
+      ok <- vapply(matched, vfun, logical(1))
+      matched <- matched[ok]
+      n_matched <- n_matched[ok]
       if (length(matched) == 0) next
     }
-    n_valid <- length(matched)
-    frac <- n_valid / length(x)
+    n_valid <- sum(n_matched)
+    frac <- n_valid / total
 
     # Specific patterns: a single validated match is enough (a leaked email is
     # already a disclosure). Broad patterns: require a fraction of the column.
@@ -5932,21 +6031,26 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
                                     min_alpha_frac = 0.5) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
-  x <- trimws(as.character(x))
-  x <- x[!is.na(x) & nzchar(x)]
-  if (length(x) < 5) return(none)
+  # each distinct value once, weighed by how often it occurs (#554)
+  tc <- .text_counts(x)
+  keep <- !is.na(tc$values) & nzchar(tc$values)
+  x <- tc$values[keep]
+  n <- tc$n[keep]
+  if (sum(n) < 5) return(none)
 
-  med <- stats::median(nchar(x))
-  uniq_frac <- length(unique(x)) / length(x)
+  chars <- nchar(x)
+  med <- stats::median(rep(chars, n))
+  uniq_frac <- length(x) / sum(n)
   if (med < min_median_chars || uniq_frac < min_unique_frac) return(none)
 
   # Real prose is multi-word: most values have a space between word characters.
-  multiword_frac <- mean(grepl("\\w\\s+\\w", x))
+  multiword_frac <- sum(n[grepl("\\w\\s+\\w", x)]) / sum(n)
   if (multiword_frac < min_multiword_frac) return(none)
 
   # And it is mostly letters, not digits/punctuation (rejects numeric matrices,
-  # IDs, hashes, URLs, base64). Measured on the typical (median-length) value.
-  typical <- x[order(abs(nchar(x) - med))][1]
+  # IDs, hashes, URLs, base64). Measured on the typical (median-length) value:
+  # the first one in the column closest to the median length.
+  typical <- x[which.min(abs(chars - med))]
   n_alpha <- nchar(gsub("[^A-Za-z]", "", typical))
   alpha_frac <- if (nchar(typical) > 0) n_alpha / nchar(typical) else 0
   if (alpha_frac < min_alpha_frac) return(none)
@@ -6365,8 +6469,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 
   # A constant/binary column's representation is decided by its actual storage.
   if (is.na(representation) && n_noNA > 0) {
-    num <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA),
-                                            fixed = TRUE)))
+    num <- .parse_comma_numeric(x_noNA)
     representation <- if (mean(!is.na(num)) >= 0.8) "numeric" else "text"
   }
 
@@ -6445,8 +6548,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
   # be nominal ABOUT, and gets its own stub entry downstream.
   if (is.na(measurement_level) && !isTRUE(prim$is_numeric) &&
       !identical(representation, "empty") && length(x_noNA) > 0) {
-    nn <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA),
-                                           fixed = TRUE)))
+    nn <- .parse_comma_numeric(x_noNA)
     # "Does not parse as numeric" is judged on the values actually present, so a
     # mostly-text column with a few stray numbers still counts as text.
     if (mean(!is.na(nn)) < 0.5) measurement_level <- "nominal"
@@ -6455,8 +6557,7 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
   # unit: implied by a few concepts; NA otherwise.
   unit <- NA_character_
   if (identical(concept, "reaction_time")) {
-    num <- suppressWarnings(as.numeric(gsub(",", ".", as.character(x_noNA),
-                                            fixed = TRUE)))
+    num <- .parse_comma_numeric(x_noNA)
     num <- num[!is.na(num) & num > 0]
     # Median RT above ~100 is almost certainly milliseconds; below, seconds.
     unit <- if (length(num) > 0 && stats::median(num) >= 100) "milliseconds"

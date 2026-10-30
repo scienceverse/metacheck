@@ -124,6 +124,59 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
   # prefix is added when groups exist.
   is_data <- !is.na(data_type) & data_type == "data"
 
+  # Each file's path in the repository, without the archive it is in and
+  # without a top folder that holds every file (a repository downloaded from
+  # GitHub sits in "<name>-<commit>/"): with that folder, the repository's
+  # own README counted as one in a subfolder.
+  rel <- .plan_relative_paths(path_given)
+
+  # A file keeps its folders below the folder its study's files of the same
+  # kind share ("Code/utils/helpers.py" next to "Code/a.R" becomes
+  # "analysis/utils/helpers.py"; "Data/scenario_lb/x.csv" next to
+  # "Data/y.csv" becomes "data/scenario_lb/study-x_data.csv"). Put flat in
+  # one folder, two files with one name collided, code that finds its own
+  # modules by folder (Python's `from utils import helpers`) stopped working,
+  # and data in folders that each hold one condition lost which condition
+  # they were.
+  # Which READMEs at the top of a study are its main README: one named just
+  # "README" (any extension), or the only README at that top.
+  is_readme <- !is.na(data_type) & data_type == "documentation" &
+    doc_role %in% "readme"
+  at_top <- is_readme & vapply(rel, function(p) is.na(.plan_readme_folder(p)),
+                               logical(1))
+  plain <- tolower(tools::file_path_sans_ext(basename(
+    gsub("\\\\", "/", structure_df$file_name)))) %in% "readme"
+  top_key <- ifelse(is.na(groups), "", groups)
+  n_top <- stats::ave(as.integer(at_top), top_key, FUN = sum)
+  top_readme_main <- at_top & (plain | n_top == 1)
+
+  kind <- ifelse(is.na(data_type), "unknown", data_type)
+  kind[kind == "documentation" & doc_role %in% c("readme", "license")] <- NA
+  sub_dir <- rep("", n_files)
+  dirs <- strsplit(ifelse(is.na(rel), "", dirname(rel)), "/", fixed = TRUE)
+  dirs <- lapply(dirs, function(d) d[!d %in% c(".", "")])
+  grp_key <- ifelse(is.na(groups), "", groups)
+  for (key in unique(paste(grp_key, kind)[!is.na(kind)])) {
+    rows <- which(paste(grp_key, kind) == key & !is.na(kind) & !is.na(rel))
+    if (!length(rows)) next
+    common <- Reduce(function(a, b) {
+      k <- 0L
+      while (k < min(length(a), length(b)) && a[k + 1L] == b[k + 1L]) k <- k + 1L
+      a[seq_len(k)]
+    }, dirs[rows])
+    for (i in rows) {
+      # (x[-seq_along(character(0))] is empty, not x)
+      below <- if (length(common)) dirs[[i]][-seq_along(common)] else dirs[[i]]
+      # A first folder that only names the kind of file ("data/", "Code/")
+      # is what the copy's own folder already says: with some data files at
+      # the top and others in "data/", "data/eeg.npy" became
+      # "data/data/eeg.npy".
+      if (length(below) && tolower(below[1]) %in% .plan_kind_folders)
+        below <- below[-1]
+      if (length(below)) sub_dir[i] <- paste0(paste(below, collapse = "/"), "/")
+    }
+  }
+
   # Only a repository with >=2 detected study groups uses the study-<group>/
   # layout; a single study (or unknown grouping) is a flat single dataset.
   #
@@ -147,7 +200,7 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
       # study-a_data.csv became data/study-studyadata_data.csv, so data files
       # were never in place, even in a compliant dataset (U112)
       if (grepl("^([a-z]+-[a-zA-Z0-9]+_)+data\\.(csv|tsv)$", name))
-        return(paste0(prefix, "data/", name))
+        return(paste0(prefix, "data/", sub_dir[i], name))
       stem <- keyword_slug(tools::file_path_sans_ext(name))
       if (!nzchar(stem)) stem <- paste0("file", i)
       # Every data file gets a Psych-DS *_data.csv target: the fileRegex
@@ -156,11 +209,21 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
       # used here -- a REAL, official Psych-DS keyword (schema_model/versions/
       # */meta/context.yaml's own controlled keyword list: study, site,
       # subject, session, task, condition, trial, stimulus, description).
-      paste0(prefix, "data/study-", stem, "_data.csv")
+      paste0(prefix, "data/", sub_dir[i], "study-", stem, "_data.csv")
     } else if (dt == "documentation" && !is.na(role) && role == "readme") {
       # The root readme/ro-crate-metadata.json never carries a study prefix
       # (grp is NA for these rows by construction); a PER-STUDY readme (rare,
       # but possible if a study's own folder has its own README) still gets one.
+      # A README in a subfolder describes that folder, so it goes to
+      # documentation/ named after the folder: every README went to the top,
+      # where they replaced each other and lost what they described.
+      folder <- .plan_readme_folder(rel[i])
+      if (!is.na(folder)) return(paste0(prefix, "documentation/", folder, "_", name))
+      # At the top, the README is a file named just "README", or the only
+      # README there is; one about a single file ("README_for_snowmelt.txt"
+      # next to others) keeps its name in documentation/: renamed README.txt,
+      # README_2.txt, ..., they lost which file each described.
+      if (!top_readme_main[i]) return(paste0(prefix, "documentation/", name))
       ext <- tools::file_ext(name)
       paste0(prefix, if (nzchar(ext)) paste0("README.", ext) else "README")
     } else if (dt == "documentation" && !is.na(role) && role == "license") {
@@ -173,7 +236,7 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
       # throwing "subscript out of bounds" as `[[` would.
       sub <- unname(type_to_subdir[dt])
       if (is.na(sub)) sub <- "documentation"
-      paste0(prefix, sub, "/", name)
+      paste0(prefix, sub, "/", sub_dir[i], name)
     }
   }
   target_path  <- vapply(seq_len(n_files), target_of, character(1))
@@ -268,4 +331,48 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
     structure_df$referenced_by else vector("list", n_files)
 
   list(table = plan_table, group_no_evidence = group_no_evidence)
+}
+
+# The folder a README is in, as a name for a file ("Archive of OSF Storage"
+# becomes "Archive-of-OSF-Storage"), or NA for a README at the top. The top
+# of an archive ("data.zip/README", or unpacked "data.zip.contents/README")
+# counts as the top.
+.plan_readme_folder <- function(path) {
+  if (length(path) != 1 || is.na(path) || !nzchar(path)) return(NA_character_)
+  d <- dirname(.plan_strip_archive(path))
+  if (d %in% c(".", "", "/")) return(NA_character_)
+  slug <- gsub("(^-+|-+$)", "", gsub("[^A-Za-z0-9]+", "-", basename(d)))
+  if (nzchar(slug)) slug else NA_character_
+}
+
+# Folder names that only say what kind of file is in them, as the copy's own
+# data/, analysis/, materials/, documentation/ and outputs/ folders do.
+.plan_kind_folders <- c(
+  "data", "dataset", "datasets", "rawdata", "raw_data", "raw-data",
+  "code", "codes", "script", "scripts", "analysis", "analyses", "src", "r",
+  "python", "syntax", "materials", "material", "stimuli",
+  "documentation", "docs", "doc", "output", "outputs", "results")
+
+# Paths with "/", without the archive each is in, and without the top folders
+# that hold every file ("repo-1a2b3c/Code/a.R" and "repo-1a2b3c/README.md"
+# become "Code/a.R" and "README.md"). NA stays NA.
+.plan_relative_paths <- function(paths) {
+  p <- .plan_strip_archive(paths)
+  ok <- !is.na(p) & nzchar(p)
+  repeat {
+    parts <- strsplit(p[ok], "/", fixed = TRUE)
+    if (!length(parts) || any(lengths(parts) < 2)) break
+    first <- unique(vapply(parts, `[`, "", 1))
+    if (length(first) != 1) break
+    p[ok] <- substring(p[ok], nchar(first) + 2L)
+  }
+  p
+}
+
+# A path with "/" and without the archive it is in ("data.zip/x.csv" or
+# "data.zip.contents/x.csv" becomes "x.csv").
+.plan_strip_archive <- function(path) {
+  p <- gsub("\\\\", "/", path)
+  sub("^([^/]*/)*[^/]*\\.(zip|tar|tgz|gz|7z|rar)(\\.contents)?/", "", p,
+      ignore.case = TRUE)
 }

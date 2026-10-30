@@ -225,6 +225,53 @@ test_that("repro_rewrite_paths collapses byte-identical mirror duplicates before
   expect_false(out$ambiguous)
 })
 
+test_that("repro_rewrite_paths does not take different files with one name for copies", {
+  # looked up by name, both rows got the first file, so they had the same
+  # content hash and were collapsed to the study 1 file, also for a study 2
+  # script
+  tmp1 <- withr::local_tempfile(fileext = ".csv"); writeLines("a,b\n1,2", tmp1)
+  tmp2 <- withr::local_tempfile(fileext = ".csv"); writeLines("a,b\n3,4", tmp2)
+  structure_df <- data.frame(
+    file_name = c("demographics.csv", "demographics.csv"),
+    file_location = c(tmp1, tmp2)
+  )
+  plan <- data.frame(
+    file_name = c("demographics.csv", "demographics.csv"),
+    target_path = c("study-ex1/data/study-demographics_data.csv",
+                    "study-ex2/data/study-demographics_data.csv")
+  )
+  code <- 'd <- read.csv("demographics.csv")'
+  out <- repro_rewrite_paths(code, "ex2/analysis.R", plan, structure_df = structure_df)
+  expect_true(out$matched)
+  expect_equal(out$target, "study-ex2/data/study-demographics_data.csv")
+})
+
+test_that(".repro_apply_rewrites changes a path only where it stands in quotes", {
+  # replaced wherever the text appeared, x.csv also changed "old_x.csv"
+  rw <- data.frame(ref = "x.csv", matched = TRUE, ambiguous = FALSE,
+                   target = "data/study-x_data.csv", is_call = FALSE)
+  txt <- c('a <- read.csv("x.csv")', "b <- read.csv('x.csv')",
+           'c <- read.csv("old_x.csv")', '"d <- read.csv(\\"x.csv\\")"')
+  out <- .repro_apply_rewrites(txt, rw)
+  expect_equal(out[1], 'a <- read.csv("data/study-x_data.csv")')
+  expect_equal(out[2], "b <- read.csv('data/study-x_data.csv')")
+  expect_equal(out[3], 'c <- read.csv("old_x.csv")')
+  expect_equal(out[4], '"d <- read.csv(\\"data/study-x_data.csv\\")"')
+})
+
+test_that("repro_write_scripts leaves a longer file name that ends in a changed one alone", {
+  root <- withr::local_tempdir()
+  plan <- data.frame(file_name = c("analysis.R", "x.csv", "old_x.csv"),
+                     target_path = c("analysis/analysis.R", "data/study-x_data.csv",
+                                     "data/study-oldx_data.csv"))
+  code <- list(analysis.R = c('a <- read.csv("x.csv")', 'b <- read.csv("old_x.csv")'))
+  rw <- list(analysis.R = repro_rewrite_paths(code$analysis.R, "analysis.R", plan))
+  suppressMessages(repro_write_scripts(code, rw, plan, root))
+  out <- readLines(file.path(root, "analysis/analysis.R"))
+  expect_equal(out, c('a <- read.csv("data/study-x_data.csv")',
+                      'b <- read.csv("data/study-oldx_data.csv")'))
+})
+
 
 # repro_run_order() ----
 
@@ -571,6 +618,21 @@ test_that("repro_materialize_layout also copies the original for a converted tab
   # the CSV target has no real source to copy from (no CSV file on disk), so
   # ok = FALSE for it; the original .dta copy must still succeed
   expect_true(file.exists(file.path(root, "study-ex1/data/math.dta")))
+})
+
+test_that("repro_materialize_layout copies each of several files with one name from its own place", {
+  # looked up by name, every demographics.csv got the first one's content
+  tmp1 <- withr::local_tempfile(fileext = ".csv"); writeLines("a,b\n1,2", tmp1)
+  tmp2 <- withr::local_tempfile(fileext = ".csv"); writeLines("a,b\n3,4", tmp2)
+  structure_df <- data.frame(file_name = c("demographics.csv", "demographics.csv"),
+                             file_path = c("s1/demographics.csv", "s2/demographics.csv"),
+                             file_location = c(tmp1, tmp2))
+  plan <- psychds_file_plan(transform(structure_df, data_type = "data",
+                                      group = c("ex1", "ex2")))$table
+  root <- withr::local_tempdir()
+  repro_materialize_layout(plan, structure_df, root)
+  expect_equal(readLines(file.path(root, plan$target_path[1])), c("a,b", "1,2"))
+  expect_equal(readLines(file.path(root, plan$target_path[2])), c("a,b", "3,4"))
 })
 
 test_that("repro_materialize_layout still creates output/ with no plan at all", {
