@@ -138,6 +138,18 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
   # modules by folder (Python's `from utils import helpers`) stopped working,
   # and data in folders that each hold one condition lost which condition
   # they were.
+  # Which READMEs at the top of a study are its main README: one named just
+  # "README" (any extension), or the only README at that top.
+  is_readme <- !is.na(data_type) & data_type == "documentation" &
+    doc_role %in% "readme"
+  at_top <- is_readme & vapply(rel, function(p) is.na(.plan_readme_folder(p)),
+                               logical(1))
+  plain <- tolower(tools::file_path_sans_ext(basename(
+    gsub("\\\\", "/", structure_df$file_name)))) %in% "readme"
+  top_key <- ifelse(is.na(groups), "", groups)
+  n_top <- stats::ave(as.integer(at_top), top_key, FUN = sum)
+  top_readme_main <- at_top & (plain | n_top == 1)
+
   kind <- ifelse(is.na(data_type), "unknown", data_type)
   kind[kind == "documentation" & doc_role %in% c("readme", "license")] <- NA
   sub_dir <- rep("", n_files)
@@ -207,6 +219,11 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
       # where they replaced each other and lost what they described.
       folder <- .plan_readme_folder(rel[i])
       if (!is.na(folder)) return(paste0(prefix, "documentation/", folder, "_", name))
+      # At the top, the README is a file named just "README", or the only
+      # README there is; one about a single file ("README_for_snowmelt.txt"
+      # next to others) keeps its name in documentation/: renamed README.txt,
+      # README_2.txt, ..., they lost which file each described.
+      if (!top_readme_main[i]) return(paste0(prefix, "documentation/", name))
       ext <- tools::file_ext(name)
       paste0(prefix, if (nzchar(ext)) paste0("README.", ext) else "README")
     } else if (dt == "documentation" && !is.na(role) && role == "license") {

@@ -4,7 +4,13 @@
 \alias{FAIR_repo}
 \title{Convert a research folder into a clean, FAIR copy}
 \usage{
-FAIR_repo(path, output_dir = NULL, paper = NULL, overwrite = FALSE)
+FAIR_repo(
+  path,
+  output_dir = NULL,
+  paper = NULL,
+  overwrite = FALSE,
+  execute = FALSE
+)
 }
 \arguments{
 \item{path}{the folder to convert}
@@ -20,13 +26,22 @@ filled in.}
 \item{overwrite}{whether to replace an existing \code{output_dir}. When \code{FALSE}
 (the default) and \code{output_dir} exists, nothing is written and the
 returned list has \code{existed = TRUE}.}
+
+\item{execute}{whether to run the R and Python scripts, as
+\code{reproducibility_check(execute = TRUE)} does: in a copy, with each script
+in its own R or Python process (see the \code{reproducibility_check} module for what
+that does and does not protect). Only then is a script found that uses a
+function of a package it does not load; the \code{library()} calls
+\code{reproducibility_check} adds for it are added at the top of the script
+in the copy. Default \code{FALSE}: no code is run.}
 }
 \value{
 (invisibly) a list with \code{output_dir}, \code{n_files_copied},
 \code{n_studies}, \code{plan} (the file plan, with a \code{written} column: the path
 each file was written to, NA when it was not), \code{scripts} (one row per
 changed script: \code{target_path}, \code{paths_changed}, \code{setwd_removed},
-\code{setwd_paths}), \code{skipped} (files that could not be read), \code{copy_failed}
+\code{setwd_paths}, \code{libraries_added}), \code{skipped} (files that could not be
+read), \code{copy_failed}
 and \code{renamed} (a file whose target another file already took),
 \code{empty_plan} (TRUE when the folder had no files), and the paths of the
 metadata written: \code{descriptions}, \code{rocrate}, \code{requirements}, \code{logs} and
@@ -37,11 +52,14 @@ only \code{output_dir}, the counts, and \code{existed = TRUE}.
 Writes a reorganised copy of a folder of research files (data, code,
 materials, documentation) on your own computer. Nothing is downloaded and
 no link is followed: only the folder you name is read, and it is not
-changed. The checks run the way \code{\link[=report_repository]{report_repository()}} runs them:
-\code{repo_check} takes an inventory of the folder, and \code{code_check},
-\code{data_check}, \code{codebook_check} and \code{reproducibility_check} (with
-\code{execute = FALSE}, so no code is run) build on it. Whether a language model
-is used is decided by \code{\link[=llm_use]{llm_use()}}.
+changed. The folder is first copied to a temporary folder, and the checks
+run on that copy, so nothing they write (such as code recovered from an
+output file) can reach your folder; the copy is removed at the end. The
+checks run the way \code{\link[=report_repository]{report_repository()}} runs them: \code{repo_check} takes an
+inventory of the folder, and \code{code_check}, \code{data_check}, \code{codebook_check}
+and \code{reproducibility_check} (with \code{execute = FALSE}, so no code is run,
+unless you set \code{execute}) build on it. Whether a language model is used is
+decided by \code{\link[=llm_use]{llm_use()}}.
 }
 \details{
 Every file is placed where the Psych-DS layout puts it (data under \verb{data/},
@@ -49,22 +67,36 @@ code under \verb{analysis/}, materials under \verb{materials/}, documentation un
 \verb{documentation/}, one \verb{study-<group>/} folder per study when there are
 several; see \code{\link[=psychds_file_plan]{psychds_file_plan()}}), keeping its own subfolders. A file a
 script writes and no script reads, and an R data file holding a fitted
-model, is a result and goes to \verb{outputs/}. A data file that is not a CSV
-file (\code{.xlsx}, \code{.sav}, \code{.dta}, ...) is also written as a real CSV file,
-with the original kept next to it; an R data file only when it holds a
-table and no CSV of the same name is next to it. A data CSV file is
-copied without a byte order mark. A file from an archive in the folder
+model, is a result and goes to \verb{outputs/}. A data file in a format that
+needs particular software (\code{.xlsx}, \code{.sav}, \code{.dta}, ...) is also written
+as a real CSV file, with the original kept next to it; an Excel file with
+several sheets gets one CSV per sheet, named after the sheet; an R data
+file only when it holds a table and no CSV of the same name is next to
+it. A table in a text file (\code{.txt}, \code{.tsv}) is kept as it is. A data CSV
+file is copied without a byte order mark. The files of an archive package
+(BagIt), which list the files as they were, go to
+\verb{logs/original-package/}. A file from an archive in the folder
 that is identical to a file next to it, and a README identical to
 another, are left out.
 
 R and Python scripts (\code{.R}, \code{.Rmd}, \code{.qmd}, \code{.py}, \code{.ipynb}) are changed so
-they still find their files in the new layout: each file path that
-\code{\link[=repro_rewrite_paths]{repro_rewrite_paths()}} can match to one file of the folder is replaced by
-that file's new path, and each \code{setwd()}/\code{os.chdir()} line is replaced by a
-statement that does nothing, with the original line kept in a comment.
-Every change is reported, and listed in \code{CHANGES.md}. Scripts in other
+they still find their files in the new layout, run from the top folder:
+each file path that \code{\link[=repro_rewrite_paths]{repro_rewrite_paths()}} can match to one file of the
+folder is replaced by that file's new path, as is the path a script writes
+a file to that is in the folder or goes to \verb{outputs/}; and each
+\code{setwd()}/\code{os.chdir()} line that sets a folder written out in the script,
+no folder, or the script's own folder is replaced by a statement that does
+nothing, with the original line kept in a comment (one that sets a folder
+worked out when the code runs, such as \code{setwd(tempdir())}, is left). Every
+change is reported, and listed in \code{CHANGES.md}. Scripts in other
 languages (Stata, SPSS, MATLAB, ...) are copied unchanged, so their file
 paths may no longer work.
+
+Code that \code{code_check} recovers from an output file (a rendered R Markdown
+or Quarto page, an SPSS \code{.spv}, a Stata \code{.smcl} or an Mplus \code{.out} file)
+is kept as a script in \verb{analysis/}, unless the folder has the script it was
+made from. In a README that the folder has, a link to a file of the folder
+(such as an image) is changed to that file's new place.
 
 Metadata is written next to the files:
 \itemize{

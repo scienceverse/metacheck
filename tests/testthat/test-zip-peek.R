@@ -1051,6 +1051,20 @@ test_that("an archive of the user's own is extracted into the temporary folder (
   expect_match(metacheck:::.archive_dest(up), "metacheck-archives")
 })
 
+test_that("code recovered from an output file of the user's own is written into the temporary folder", {
+  # code_check wrote a code/ folder into the folder being checked
+  own <- withr::local_tempfile(tmpdir = test_path(), fileext = ".html")
+  writeLines("<html></html>", own)
+  dir <- metacheck:::.recovered_code_dir(own)
+  expect_false(startsWith(dir, normalizePath(test_path(), winslash = "/")))
+  expect_match(dir, "metacheck-recovered-code")
+  expect_equal(basename(dir), "code")
+  # next to a downloaded file it is written beside it, for a later run
+  dl <- withr::local_tempfile(tmpdir = metacheck:::.repo_session_dir(), fileext = ".html")
+  writeLines("<html></html>", dl)
+  expect_equal(metacheck:::.recovered_code_dir(dl), file.path(dirname(dl), "code"))
+})
+
 test_that(".expand_zip and .expand_tar unpack only kept members within the limit (#472)", {
   d <- withr::local_tempdir()
   src <- file.path(d, "src"); dir.create(src)

@@ -38,6 +38,26 @@ test_that("psychds_file_plan keeps a script's folders below the folder the scrip
   expect_equal(psychds_file_plan(one)$table$target_path, "analysis/analysis.R")
 })
 
+test_that("psychds_file_plan keeps a README about one file under its own name", {
+  # README_for_a.txt and README_for_b.txt became README.txt and README_2.txt
+  s <- data.frame(file_name = c("README_for_a.txt", "README_for_b.txt", "a.csv"),
+                  file_path = c("README_for_a.txt", "README_for_b.txt", "a.csv"),
+                  data_type = c("documentation", "documentation", "data"),
+                  doc_role = c("readme", "readme", NA), group = NA_character_)
+  expect_equal(psychds_file_plan(s)$table$target_path,
+               c("documentation/README_for_a.txt", "documentation/README_for_b.txt",
+                 "data/study-a_data.csv"))
+  # next to a plain README, which is the main one
+  s2 <- rbind(s, data.frame(file_name = "README.md", file_path = "README.md",
+                            data_type = "documentation", doc_role = "readme",
+                            group = NA_character_))
+  expect_equal(psychds_file_plan(s2)$table$target_path[c(1, 4)],
+               c("documentation/README_for_a.txt", "README.md"))
+  # the only README is the main one, whatever its name
+  s3 <- s[-2, ]
+  expect_equal(psychds_file_plan(s3)$table$target_path[1], "README.txt")
+})
+
 test_that("psychds_file_plan ignores a top folder that holds every file, and keeps data folders", {
   s <- data.frame(file_name = c("README.md", "a.R", "x.csv", "x.csv"),
                   file_path = c("repo-1a2b/README.md", "repo-1a2b/Code/a.R",

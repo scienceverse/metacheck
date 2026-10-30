@@ -10,7 +10,9 @@
 \item{out_path}{path to the \code{.out} file}
 
 \item{code_dir_name}{name of the sibling code subdirectory to write into,
-relative to \code{out_path}'s own directory. Default \code{"code"}.}
+relative to \code{out_path}'s own directory. Default \code{"code"}.
+A file of the user's own gets this folder in the temporary folder
+instead, so the user's folder is not changed (see .recovered_code_dir()).}
 }
 \value{
 the path to the written \code{.inp} file, or \code{NA_character_} if the

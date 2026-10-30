@@ -579,6 +579,8 @@ import_mplus_output <- function(path) {
 #' @param out_path path to the `.out` file
 #' @param code_dir_name name of the sibling code subdirectory to write into,
 #'   relative to `out_path`'s own directory. Default `"code"`.
+#'   A file of the user's own gets this folder in the temporary folder
+#'   instead, so the user's folder is not changed (see .recovered_code_dir()).
 #' @return the path to the written `.inp` file, or `NA_character_` if the
 #'   file has no recoverable `INPUT INSTRUCTIONS` section.
 #' @keywords internal
@@ -591,7 +593,7 @@ import_mplus_output <- function(path) {
   syntax <- .mplus_syntax_lines(lines)
   if (is.na(syntax) || !nzchar(syntax)) return(NA_character_)
 
-  code_dir <- file.path(dirname(out_path), code_dir_name)
+  code_dir <- .recovered_code_dir(out_path, code_dir_name)
   dir.create(code_dir, recursive = TRUE, showWarnings = FALSE)
   out_file <- file.path(code_dir, paste0(tools::file_path_sans_ext(basename(out_path)), ".inp"))
   writeLines(strsplit(syntax, "\n", fixed = TRUE)[[1]], out_file, useBytes = TRUE)

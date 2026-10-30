@@ -491,6 +491,8 @@ export_stata_smcl_html <- function(path, out = NULL) {
 #' @param smcl_path path to the `.smcl` file
 #' @param code_dir_name name of the sibling code subdirectory to write into,
 #'   relative to `smcl_path`'s own directory. Default `"code"`.
+#'   A file of the user's own gets this folder in the temporary folder
+#'   instead, so the user's folder is not changed (see .recovered_code_dir()).
 #' @return the path to the written `.do` file, or `NA_character_` if the
 #'   file has no recoverable command echoes at all.
 #' @keywords internal
@@ -506,7 +508,7 @@ export_stata_smcl_html <- function(path, out = NULL) {
   commands <- commands[nzchar(trimws(commands))]
   if (!length(commands)) return(NA_character_)
 
-  code_dir <- file.path(dirname(smcl_path), code_dir_name)
+  code_dir <- .recovered_code_dir(smcl_path, code_dir_name)
   dir.create(code_dir, recursive = TRUE, showWarnings = FALSE)
   out_path <- file.path(code_dir, paste0(tools::file_path_sans_ext(basename(smcl_path)), ".do"))
   writeLines(commands, out_path, useBytes = TRUE)

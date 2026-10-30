@@ -136,6 +136,57 @@ test_that("FAIR_repo writes a data file that is not a CSV as a real CSV and keep
   expect_true(file.exists(file.path(data_dir, "survey.xlsx")))
 })
 
+test_that("FAIR_repo writes one CSV per Excel sheet, and describes the columns of every sheet", {
+  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("readxl")
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  # the first sheet is a README; the data are on the second
+  wb <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb, "README")
+  openxlsx::writeData(wb, "README", data.frame(about = c("Harvest data", "see sheet 2")))
+  openxlsx::addWorksheet(wb, "data sheet")
+  openxlsx::writeData(wb, "data sheet", data.frame(plant = 1:3, weight = c(2.5, 3.1, 2.8)))
+  openxlsx::saveWorkbook(wb, file.path(d, "data", "harvest.xlsx"))
+  res <- fair_run(d)
+  data_dir <- file.path(res$output_dir, "data")
+  expect_true(file.exists(file.path(data_dir, "harvest.xlsx")))
+  back <- utils::read.csv(file.path(data_dir, "study-harvest_description-datasheet_data.csv"))
+  expect_equal(names(back), c("plant", "weight"))
+  expect_equal(nrow(back), 3)
+  # the README sheet is documentation, not data
+  expect_true(file.exists(file.path(res$output_dir, "documentation",
+                                    "study-harvest_description-README_data.csv")))
+  expect_false(file.exists(file.path(data_dir, "study-harvest_description-README_data.csv")))
+  # every column of every data CSV is described, and the README sheet's are not
+  desc <- jsonlite::fromJSON(file.path(res$output_dir, "dataset_description.json"))
+  expect_true(all(c("plant", "weight") %in% desc$variableMeasured$name))
+  expect_false("about" %in% desc$variableMeasured$name)
+  # and the RO-Crate lists both sheets' files
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
+                              simplifyVector = FALSE)
+  ids <- crate_ids(crate)
+  expect_true(all(c("data/study-harvest_description-datasheet_data.csv",
+                    "documentation/study-harvest_description-README_data.csv") %in%
+                    ids$described))
+})
+
+test_that("FAIR_repo keeps a text table as it is, and an archive package's files in logs/", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  writeLines(c("id\tscore", "1\t2", "2\t3"), file.path(d, "data", "scores_tab.txt"))
+  writeLines("BagIt-Version: 0.97", file.path(d, "bagit.txt"))
+  writeLines("0123abc  data/scores.csv", file.path(d, "manifest-md5.txt"))
+  res <- fair_run(d)
+  out <- res$output_dir
+  expect_true(file.exists(file.path(out, "data", "scores_tab.txt")))
+  expect_false(any(grepl("scorestab", list.files(file.path(out, "data")))))
+  expect_true(file.exists(file.path(out, "logs", "original-package", "bagit.txt")))
+  expect_true(file.exists(file.path(out, "logs", "original-package", "manifest-md5.txt")))
+  expect_false(file.exists(file.path(out, "documentation", "bagit.txt")))
+  expect_true(any(grepl("original-package", readLines(file.path(out, "CHANGES.md")))))
+})
+
 test_that("FAIR_repo keeps a data file that holds no table as it is, and two originals with one name apart", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
@@ -179,10 +230,12 @@ test_that(".FAIR_repo_copy keeps two different originals with one place apart", 
 
 test_that("FAIR_repo gives the second of two different files with one place a numbered name", {
   withr::local_options(metacheck.llm.use = FALSE)
+  skip_if_not_installed("openxlsx")
+  skip_if_not_installed("readxl")
   d <- fair_fixture()
-  # x.csv and x.tsv in one folder both become study-x_data.csv
+  # x.csv and a one-sheet x.xlsx in one folder both become study-x_data.csv
   writeLines(c("a,b", "1,2"), file.path(d, "data", "x.csv"))
-  writeLines(c("a\tb", "3\t4"), file.path(d, "data", "x.tsv"))
+  openxlsx::write.xlsx(data.frame(a = 3, b = 4), file.path(d, "data", "x.xlsx"))
   # files with one name in different folders stay apart in their folders
   dir.create(file.path(d, "extra"))
   utils::write.csv(data.frame(id = 9), file.path(d, "extra", "scores.csv"),
@@ -462,6 +515,37 @@ test_that("without a paper, the title comes from the folder's own README", {
   }))
 })
 
+test_that("a README in another encoding does not stop the conversion", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  # an older Mac encoding: "\xd4" and "\xd5" are curly quotes
+  con <- file(file.path(d, "README.txt"), "wb")
+  writeBin(c(charToRaw("# Snow removal\nLabelled "), as.raw(0xd4),
+             charToRaw("frosted stalks"), as.raw(0xd5), charToRaw(".\n")), con)
+  close(con)
+  res <- fair_run(d)
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
+                              simplifyVector = FALSE)
+  expect_equal(crate[["@graph"]][[2]]$name, "Snow removal")
+})
+
+test_that("a column name in another encoding gives valid JSON", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  # "PPFD (µmol)" with the µ as the Latin-1 byte b5
+  con <- file(file.path(d, "data", "light.csv"), "wb")
+  writeBin(c(charToRaw("PPFD ("), as.raw(0xb5), charToRaw("mol),x\n1,2\n3,4\n")), con)
+  close(con)
+  res <- fair_run(d)
+  for (f in c("dataset_description.json", "ro-crate-metadata.json")) {
+    path <- file.path(res$output_dir, f)
+    expect_true(all(validUTF8(readLines(path, warn = FALSE))), info = f)
+    expect_no_error(jsonlite::fromJSON(path))
+  }
+  desc <- jsonlite::fromJSON(file.path(res$output_dir, "dataset_description.json"))
+  expect_true("PPFD (µmol)" %in% desc$variableMeasured$name)
+})
+
 test_that("FAIR_repo treats a top folder that holds every file as the top", {
   withr::local_options(metacheck.llm.use = FALSE)
   base <- fair_fixture()
@@ -605,4 +689,159 @@ test_that(".FAIR_repo_credit_slug recognises CRediT roles as papers write them",
   expect_equal(.FAIR_repo_credit_slug(c("Writing \u2013 review & editing",
                                         "Formal Analysis", "Cooking")),
                c("writing-review-editing", "formal-analysis", NA))
+})
+
+# A rendered R Markdown page: code_check recovers its code as a script.
+rmd_page <- function(path) {
+  writeLines(c('<html><head><meta name="generator" content="pandoc" /></head><body>',
+               '<pre class="r"><code>x &lt;- read.csv(&quot;data/scores.csv&quot;)',
+               'summary(x)</code></pre>', '</body></html>'), path)
+}
+
+test_that("FAIR_repo works on a copy, so nothing is written into the folder", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  dir.create(file.path(d, "docs"))
+  rmd_page(file.path(d, "docs", "report.html"))
+  files <- function() list.files(d, recursive = TRUE, all.files = TRUE,
+                                 include.dirs = TRUE, full.names = TRUE)
+  before <- files()
+  info_before <- file.info(before)[, c("size", "mtime")]
+  sums_before <- tools::md5sum(before[!dir.exists(before)])
+  res <- fair_run(d)
+  # code_check wrote the recovered code into a code/ folder next to the page
+  expect_equal(files(), before)
+  expect_equal(file.info(before)[, c("size", "mtime")], info_before)
+  expect_equal(tools::md5sum(before[!dir.exists(before)]), sums_before)
+  # and no path of the temporary copy reaches the logs
+  logs <- list.files(file.path(res$output_dir, "logs"), full.names = TRUE)
+  json <- unlist(lapply(logs[grepl("\\.json$", logs)], readLines))
+  expect_false(any(grepl("metacheck-fair-", json, fixed = TRUE)))
+})
+
+test_that("FAIR_repo keeps code recovered from a rendered page as a script", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  dir.create(file.path(d, "docs"))
+  rmd_page(file.path(d, "docs", "report.html"))
+  res <- fair_run(d)
+  out <- res$output_dir
+  i <- which(res$plan$file_name == "report.R")
+  expect_length(i, 1)
+  expect_true(startsWith(res$plan$written[i], "analysis/"))
+  code <- readLines(file.path(out, res$plan$written[i]))
+  # its paths are changed like those of the authors' own scripts
+  expect_true(any(grepl("data/study-scores_data.csv", code, fixed = TRUE)))
+  changes <- readLines(file.path(out, "CHANGES.md"))
+  expect_true(any(grepl("recovered from output files", changes)))
+  crate <- jsonlite::fromJSON(file.path(out, "ro-crate-metadata.json"),
+                              simplifyVector = FALSE)
+  g <- crate[["@graph"]]
+  by_id <- stats::setNames(g, vapply(g, `[[`, character(1), "@id"))
+  page <- res$plan$written[res$plan$file_name == "report.html"]
+  expect_equal(by_id[[res$plan$written[i]]]$isBasedOn[["@id"]], page)
+
+  # not when the folder has the document the page was made from
+  writeLines(c("```{r}", "x <- 1", "```"), file.path(d, "docs", "report.Rmd"))
+  res2 <- fair_run(d)
+  expect_false("report.R" %in% res2$plan$file_name)
+})
+
+test_that("FAIR_repo replaces setwd() only where it sets a written-out or the script's own folder", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  writeLines(c("old <- getwd()",
+               "setwd(tempdir())",
+               "setwd(old)",
+               "setwd(dirname(rstudioapi::getActiveDocumentContext()$path))",
+               "msg <- \"a line that says",
+               "setwd('here') in a text\"",
+               "  setwd(\"results\")"),
+             file.path(d, "Code", "folders.R"))
+  res <- fair_run(d)
+  code <- readLines(file.path(res$output_dir, "analysis", "folders.R"))
+  replaced <- grepl("[metacheck FAIR_repo removed setwd]", code, fixed = TRUE)
+  expect_equal(which(replaced), c(4L, 7L))
+  expect_equal(code[c(2, 3, 6)],
+               c("setwd(tempdir())", "setwd(old)", "setwd('here') in a text\""))
+  row <- res$scripts[res$scripts$target_path == "analysis/folders.R", ]
+  expect_equal(row$setwd_removed, 2)
+  expect_equal(row$setwd_paths, "results")
+})
+
+test_that("FAIR_repo changes the path a script writes a file to, when another script reads it", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  utils::write.csv(data.frame(id = 1:3, y = c(1, 2, 3)),
+                   file.path(d, "data", "clean.csv"), row.names = FALSE)
+  writeLines(c("x <- read.csv(\"data/scores.csv\")",
+               "write.csv(x, \"data/clean.csv\", row.names = FALSE)"),
+             file.path(d, "Code", "a_clean.R"))
+  writeLines("y <- read.csv(\"data/clean.csv\")", file.path(d, "Code", "b_model.R"))
+  res <- fair_run(d)
+  target <- res$plan$written[res$plan$file_name == "clean.csv"]
+  expect_false(identical(target, "data/clean.csv"))
+  a <- readLines(file.path(res$output_dir, "analysis", "a_clean.R"))
+  b <- readLines(file.path(res$output_dir, "analysis", "b_model.R"))
+  expect_true(any(grepl(paste0("\"", target, "\""), a, fixed = TRUE)))
+  expect_true(any(grepl(paste0("\"", target, "\""), b, fixed = TRUE)))
+})
+
+test_that("FAIR_repo changes the links in the copied README to the files' new places", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  file.remove(file.path(d, "README.txt"))
+  dir.create(file.path(d, "man", "figures"), recursive = TRUE)
+  writeBin(as.raw(c(0x89, 0x50, 0x4E, 0x47)), file.path(d, "man", "figures", "fig1.png"))
+  writeLines(c("# My study", "![a figure](man/figures/fig1.png)",
+               "<img src=\"./man/figures/fig1.png\" width=\"100%\" />",
+               "[the site](https://example.org/man/figures/fig1.png)",
+               "[a part](#results)"),
+             file.path(d, "README.md"))
+  res <- fair_run(d)
+  fig <- res$plan$written[res$plan$file_name == "fig1.png"]
+  expect_false(identical(fig, "man/figures/fig1.png"))
+  readme <- readLines(file.path(res$output_dir, "README.md"))
+  expect_equal(readme[2], paste0("![a figure](", fig, ")"))
+  expect_equal(readme[3], paste0("<img src=\"", fig, "\" width=\"100%\" />"))
+  expect_equal(readme[4:5], c("[the site](https://example.org/man/figures/fig1.png)",
+                              "[a part](#results)"))
+  changes <- readLines(file.path(res$output_dir, "CHANGES.md"))
+  expect_true(any(grepl("links were changed", changes)))
+  # the README in the folder itself is unchanged
+  expect_equal(readLines(file.path(d, "README.md"))[2], "![a figure](man/figures/fig1.png)")
+})
+
+test_that("each variable names its file as it is in the copy", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  res <- fair_run(d)
+  vm <- jsonlite::fromJSON(file.path(res$output_dir, "dataset_description.json"),
+                           simplifyVector = FALSE)$variableMeasured
+  src <- unique(vapply(vm, function(v) v[["metacheck:sourceFile"]] %||% NA_character_,
+                       character(1)))
+  expect_true(all(src %in% res$plan$written))
+})
+
+test_that("FAIR_repo adds the library() calls reproducibility_check added when it ran a script", {
+  ops <- list(reproducibility_check = list(modifications = data.frame(
+    file_name = c("a.R", "a.R", "b.R"),
+    change_type = c("library_injected", "library_injected", "path_rewrite"),
+    detail = c("library(dplyr)", "library(tidyr)", "\"x\" -> \"y\""))))
+  libs <- .FAIR_repo_added_libraries(ops)
+  expect_equal(libs, list(a.R = c("dplyr", "tidyr")))
+  plan <- data.frame(file_name = c("a.R", "b.R", "sub/b.R"), data_type = "code")
+  expect_equal(.FAIR_repo_libraries_for(libs, plan, 1), c("dplyr", "tidyr"))
+  # two scripts named b.R: which one was run is unknown
+  expect_equal(.FAIR_repo_libraries_for(list(b.R = "x"), plan, 2), character(0))
+
+  d <- withr::local_tempdir()
+  writeLines("x <- mutate(df, y = 1)", file.path(d, "a.R"))
+  sc <- .FAIR_repo_write_script(file.path(d, "a.R"), "a.R", file.path(d, "out.R"),
+                                "analysis/a.R", data.frame(file_name = "a.R"),
+                                NULL, libraries = "dplyr")
+  code <- readLines(file.path(d, "out.R"))
+  expect_true(startsWith(code[1], "library(dplyr)  # [metacheck FAIR_repo added"))
+  expect_equal(code[2], "x <- mutate(df, y = 1)")
+  expect_equal(sc$libraries_added, "dplyr")
 })

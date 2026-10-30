@@ -421,6 +421,8 @@ code_lang <- function(file_name) {
     row$file_name <- basename(sps_path)
     row$file_path <- file.path(dirname(spv_files$file_path[i] %||% spv_files$file_name[i]),
                                "code", basename(sps_path))
+    # the output file it came from (FAIR_repo() keeps the code, and says so)
+    row$recovered_from <- spv_files$file_path[i] %||% spv_files$file_name[i]
     row$file_location <- sps_path
     row$file_url <- NA_character_
     row$file_size <- file.size(sps_path)
@@ -483,6 +485,8 @@ code_lang <- function(file_name) {
     row$file_name <- basename(do_path)
     row$file_path <- file.path(dirname(smcl_files$file_path[i] %||% smcl_files$file_name[i]),
                                "code", basename(do_path))
+    # the output file it came from (FAIR_repo() keeps the code, and says so)
+    row$recovered_from <- smcl_files$file_path[i] %||% smcl_files$file_name[i]
     row$file_location <- do_path
     row$file_url <- NA_character_
     row$file_size <- file.size(do_path)
@@ -542,6 +546,8 @@ code_lang <- function(file_name) {
     row$file_name <- basename(inp_path)
     row$file_path <- file.path(dirname(out_files$file_path[i] %||% out_files$file_name[i]),
                                "code", basename(inp_path))
+    # the output file it came from (FAIR_repo() keeps the code, and says so)
+    row$recovered_from <- out_files$file_path[i] %||% out_files$file_name[i]
     row$file_location <- inp_path
     row$file_url <- NA_character_
     row$file_size <- file.size(inp_path)
@@ -614,6 +620,8 @@ code_lang <- function(file_name) {
     row$file_name <- basename(r_path)
     row$file_path <- file.path(dirname(html_files$file_path[i] %||% html_files$file_name[i]),
                                "code", basename(r_path))
+    # the output file it came from (FAIR_repo() keeps the code, and says so)
+    row$recovered_from <- html_files$file_path[i] %||% html_files$file_name[i]
     row$file_location <- r_path
     row$file_url <- NA_character_
     row$file_size <- file.size(r_path)

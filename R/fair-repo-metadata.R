@@ -34,7 +34,7 @@
 # NULL). Returns a list of PropertyValue objects. Every column is described,
 # because Psych-DS requires each CSV column to appear in variableMeasured; an
 # empty (all-NA) column gets a short entry saying so, without statistics.
-.FAIR_repo_variable_measured <- function(cols, labels = NULL) {
+.FAIR_repo_variable_measured <- function(cols, labels = NULL, new_path = NULL) {
   if (is.null(cols) || !nrow(cols)) return(list())
 
   if (!is.null(labels) && nrow(labels) &&
@@ -50,6 +50,9 @@
   }
   field <- function(row, f) if (f %in% names(row)) row[[f]] %||% NA else NA
   has <- function(x) length(x) == 1 && !is.na(x) && nzchar(as.character(x))
+  # the file a column is in, as it is named in the copy (`new_path`: data_check
+  # source_file -> path written), so every variable names its file the same way
+  src_of <- function(s) if (s %in% names(new_path)) unname(new_path[s]) else s
 
   lapply(seq_len(nrow(cols)), function(i) {
     row <- cols[i, , drop = FALSE]
@@ -59,7 +62,7 @@
         name    = row$column_name,
         description = "Empty column (no observed values in the shared data).",
         `metacheck:quality` = "empty",
-        `metacheck:sourceFile` = if (has(row$source_file)) row$source_file)))
+        `metacheck:sourceFile` = if (has(row$source_file)) src_of(row$source_file))))
     }
 
     rep_ <- field(row, "representation")
@@ -128,7 +131,7 @@
     }
 
     if (has(rep_)) pv[["metacheck:representation"]] <- rep_
-    if (has(row$source_file)) pv[["metacheck:sourceFile"]] <- row$source_file
+    if (has(row$source_file)) pv[["metacheck:sourceFile"]] <- src_of(row$source_file)
     Filter(Negate(is.null), pv)
   })
 }
@@ -452,7 +455,8 @@
 .FAIR_repo_formats <- function(plan, output_dir) {
   ok <- !is.na(plan$written)
   files <- c(plan$written[ok],
-             stats::na.omit(plan$original_target[ok & plan$convert %in% TRUE]))
+             stats::na.omit(plan$original_target[ok & plan$convert %in% TRUE]),
+             unlist(plan$sheet_files[ok]))
   ext <- tolower(tools::file_ext(files))
   ext <- ext[nzchar(ext)]
   if (!length(ext)) return(data.frame(ext = character(0), n = integer(0),
@@ -529,6 +533,10 @@
   for (f in top) {
     lines <- tryCatch(readLines(file.path(output_dir, f), n = 40, warn = FALSE,
                                 encoding = "UTF-8"), error = function(e) character(0))
+    # a README in another encoding (an older Mac or Windows one: "\xd4"
+    # for a curly quote) stopped the conversion in trimws()
+    bad <- !validUTF8(lines)
+    lines[bad] <- iconv(lines[bad], "latin1", "UTF-8", sub = "")
     lines <- trimws(lines)
     yaml <- grep("^title:", lines, value = TRUE)
     head <- grep("^#\\s+\\S", lines, value = TRUE)
@@ -684,9 +692,12 @@
 }
 
 # One RO-Crate File entity per written file: its type and size, and for a CSV
-# written from another data file, the original kept next to it.
+# written from another data file, the original kept next to it; for a script
+# recovered from an output file, that file.
 .FAIR_repo_file_entities <- function(plan, output_dir) {
   rows <- which(!is.na(plan$written))
+  # a script recovered from an output file is based on that file
+  recovered <- !is.na(plan$recovered_source %||% rep(NA_character_, nrow(plan)))
   out <- lapply(rows, function(i) {
     p <- plan$written[i]
     orig <- plan$original_target[i]
@@ -703,8 +714,19 @@
       contentSize    = if (!is.na(size)) as.character(size),
       programmingLanguage = if (!is.na(lang)) list(`@id` = .FAIR_repo_lang_id(lang)),
       `metacheck:software` = .FAIR_repo_software_for(p),
-      isBasedOn      = if (converted) list(`@id` = orig)))
+      isBasedOn      = if (converted) list(`@id` = orig)
+                       else if (recovered[i]) list(`@id` = plan$recovered_source[i])))
   })
+  # the CSVs of an Excel file's other sheets
+  sheets <- plan$sheet_files %||% rep(list(character(0)), nrow(plan))
+  for (i in rows[lengths(sheets[rows]) > 0]) for (p in sheets[[i]]) {
+    size <- suppressWarnings(file.size(file.path(output_dir, p)))
+    out[[length(out) + 1]] <- Filter(Negate(is.null), list(
+      `@id` = p, `@type` = "File", name = basename(p),
+      encodingFormat = .FAIR_repo_encoding_format(p),
+      contentSize = if (!is.na(size)) as.character(size),
+      isBasedOn = if (!is.na(plan$original_target[i])) list(`@id` = plan$original_target[i])))
+  }
   # the originals kept next to their CSV files
   orig_rows <- rows[plan$convert[rows] %in% TRUE & !is.na(plan$original_target[rows])]
   originals <- lapply(orig_rows, function(i) {
@@ -887,8 +909,8 @@
 
 .FAIR_repo_write_json <- function(obj, path) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  json <- jsonlite::toJSON(obj, auto_unbox = TRUE, pretty = TRUE, na = "null",
-                           null = "null")
+  json <- jsonlite::toJSON(.FAIR_repo_utf8(obj), auto_unbox = TRUE, pretty = TRUE,
+                           na = "null", null = "null")
   con <- file(path, open = "wb", encoding = "UTF-8")
   on.exit(close(con), add = TRUE)
   writeLines(json, con, useBytes = TRUE)
@@ -1034,7 +1056,19 @@
   conv <- which(plan$convert %in% TRUE & !is.na(plan$written))
   if (length(conv))
     lines <- c(lines, "", "Data files written as CSV files (the original is kept next to each):",
-               sprintf("- `%s` from `%s`", plan$written[conv], plan$original_target[conv]))
+               vapply(conv, function(i) {
+                 csvs <- c(plan$written[i], plan$sheet_files[[i]])
+                 sprintf("- `%s` from `%s`%s", paste(csvs, collapse = "`, `"),
+                         plan$original_target[i],
+                         if (length(csvs) > 1) " (one file per sheet)" else "")
+               }, character(1)))
+  bag <- which(!is.na(plan$written) & startsWith(plan$written, "logs/original-package/"))
+  if (length(bag))
+    lines <- c(lines, "", paste0(
+      "The files of the original archive package (BagIt) are in ",
+      "`logs/original-package/`. They list the files as they were before ",
+      "this reorganisation, so their paths and checksums do not match this copy:"),
+      sprintf("- `%s`", basename(plan$written[bag])))
   if (length(copied$not_tables))
     lines <- c(lines, "", "Data files kept as they are, because they hold no table:",
                sprintf("- `%s`", plan$written[copied$not_tables]))
@@ -1057,12 +1091,33 @@
     hit <- sc[sc$setwd_removed > 0, , drop = FALSE]
     lines <- c(lines, "", paste0(
       "Scripts whose `setwd()` lines were replaced by a statement that does ",
-      "nothing, because the folder they set does not exist in this layout ",
+      "nothing, because they set a folder written out in the script or the ",
+      "script's own folder, and the file paths now start at the top folder ",
       "(the original line is kept as a comment). Run the scripts from the top ",
       "folder of this repository:"),
       sprintf("- `%s`%s", hit$target_path,
               ifelse(nzchar(hit$setwd_paths), paste0(" (was `", hit$setwd_paths, "`)"), "")))
   }
+  libs <- sc$libraries_added %||% rep("", nrow(sc))
+  if (nrow(sc) && any(nzchar(libs)))
+    lines <- c(lines, "", paste0(
+      "Scripts given `library()` calls at the top, because running them showed ",
+      "they use a function of a package they do not load:"),
+      sprintf("- `%s` (%s)", sc$target_path[nzchar(libs)], libs[nzchar(libs)]))
+  rec <- which(!is.na(plan$written) & !is.na(plan$recovered_row %||% NA))
+  if (length(rec))
+    lines <- c(lines, "", paste0(
+      "Scripts recovered from output files, which hold the code that made ",
+      "them (the output file is kept too):"),
+      sprintf("- `%s` from `%s`", plan$written[rec],
+              ifelse(is.na(plan$recovered_source[rec]),
+                     plan$current_path[plan$recovered_row[rec]] %||% "an output file",
+                     plan$recovered_source[rec])))
+  links <- attr(copied, "readme_links") %||% character(0)
+  if (length(links))
+    lines <- c(lines, "", paste0(
+      "READMEs whose links were changed to the files' new places (the text ",
+      "is unchanged):"), sprintf("- `%s`", links))
   lines
 }
 
@@ -1126,7 +1181,20 @@
 .FAIR_repo_write_lines <- function(lines, path) {
   con <- file(path, open = "wb", encoding = "UTF-8")
   on.exit(close(con), add = TRUE)
-  writeLines(lines, con)
+  writeLines(.FAIR_repo_utf8(lines), con)
+}
+
+# Every text in `x` (at any depth) as valid UTF-8. A text from the data in an
+# older Western European encoding (a column "PPFD (\xb5mol m-2 s-1)") is
+# read as Latin-1; the JSON with it was invalid, and no JSON reader opened it.
+.FAIR_repo_utf8 <- function(x) {
+  if (is.character(x)) {
+    bad <- !is.na(x) & !validUTF8(x)
+    if (any(bad)) x[bad] <- iconv(x[bad], "latin1", "UTF-8", sub = "?")
+    return(x)
+  }
+  if (is.list(x)) x[] <- lapply(x, .FAIR_repo_utf8)
+  x
 }
 
 # A folder tree of `paths` (relative, with "/"), for a code block. At most
