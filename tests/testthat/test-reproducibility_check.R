@@ -259,6 +259,35 @@ test_that(".repro_apply_rewrites changes a path only where it stands in quotes",
   expect_equal(out[4], '"d <- read.csv(\\"data/study-x_data.csv\\")"')
 })
 
+test_that("repro_write_scripts writes a script in a folder with a colon in its name (#557)", {
+  root <- withr::local_tempdir()
+  plan <- data.frame(file_name = "code.R", target_path = "analysis/Title: a subtitle/code.R")
+  out <- suppressMessages(repro_write_scripts(list(code.R = "x <- 1"), list(), plan, root))
+  expect_equal(readLines(out$script_path), "x <- 1")
+  expect_equal(out$script_path, file.path(root, "analysis/Title_ a subtitle/code.R"))
+})
+
+test_that("repro_materialize_layout writes to the same changed name (#557)", {
+  root <- withr::local_tempdir()
+  src <- withr::local_tempfile(lines = "a,b")
+  plan <- data.frame(file_name = "x.csv", target_path = "data/Title: a subtitle/x.csv")
+  s <- data.frame(file_name = "x.csv", file_location = src)
+  repro_materialize_layout(plan, s, root)
+  expect_true(file.exists(file.path(root, "data/Title_ a subtitle/x.csv")))
+})
+
+test_that("a script that cannot be written does not stop the others (#557)", {
+  root <- withr::local_tempdir()
+  # a file where the script's folder would have to be
+  writeLines("in the way", file.path(root, "blocked"))
+  plan <- data.frame(file_name = c("a.R", "b.R"), target_path = c("blocked/a.R", "analysis/b.R"))
+  code <- list(a.R = "x <- 1", b.R = "y <- 2")
+  expect_message(out <- repro_write_scripts(code, list(), plan, root), "could not write 'a.R'")
+  expect_equal(nrow(out), 2)
+  expect_false(file.exists(out$script_path[1]))
+  expect_equal(readLines(out$script_path[2]), "y <- 2")
+})
+
 test_that("repro_write_scripts leaves a longer file name that ends in a changed one alone", {
   root <- withr::local_tempdir()
   plan <- data.frame(file_name = c("analysis.R", "x.csv", "old_x.csv"),

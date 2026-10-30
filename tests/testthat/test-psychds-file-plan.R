@@ -103,3 +103,11 @@ test_that("psychds_check gives each paper of a list its own row and report secti
   expect_equal(mo$summary_table$required_missing, c(1, 0))
   expect_equal(sum(grepl("^#### Paper ", unlist(mo$report))), 2)
 })
+
+test_that("psychds_file_plan gives targets every operating system can write (#557)", {
+  s <- data.frame(paper_id = "p", file_name = c("code.R", "PTHR1:SF7"),
+                  file_path = c("Title: a subtitle/code.R", "Title: a subtitle/PTHR1:SF7"),
+                  file_type = c("code", "other"), data_type = c("code", "documentation"))
+  plan <- psychds_file_plan(s, FALSE)$table
+  expect_false(any(grepl("[:*?\"<>|]", plan$target_path)))
+})

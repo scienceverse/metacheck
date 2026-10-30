@@ -1280,7 +1280,7 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   rel <- gsub("\\\\", "/", name)
   rel <- sub("^([A-Za-z]:)?/+", "", rel)
   if (any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) return(NA_character_)
-  file.path(dest, rel)
+  file.path(dest, .portable_path(rel))
 }
 
 # Size in bytes of a remote zip, estimated from its central directory (`cd`,

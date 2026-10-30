@@ -208,3 +208,31 @@ test_that("path_sanitize", {
   exp <- "has_spaces_backslashes_chars_.dot.is.ok"
   expect_equal(exp, obs)
 })
+
+test_that(".portable_path changes names some operating system cannot write (#557)", {
+  # characters not allowed in a Windows name, and control characters
+  expect_equal(.portable_path("Title: a subtitle/code*1?.R"), "Title_ a subtitle/code_1_.R")
+  expect_equal(.portable_path('a<b>c"d|e.csv'), "a_b_c_d_e.csv")
+  expect_equal(.portable_path("Icon\r"), "Icon_")
+  # Windows drops a final dot or space, so "x " and "x" would be different folders elsewhere
+  expect_equal(.portable_path("day_files /Rabdeau_et_al./a.csv"), "day_files/Rabdeau_et_al/a.csv")
+  # reserved names, in any case and with any extension
+  expect_equal(.portable_path(c("CON", "data/nul.txt", "lpt1.csv")), c("_CON", "data/_nul.txt", "_lpt1.csv"))
+  # a backslash separates folders on Windows only
+  expect_equal(.portable_path("a\\b.csv"), "a/b.csv")
+  # names that are fine stay as they are
+  expect_equal(.portable_path(c("data/a b-c_d.e.csv", "console.R", NA)), c("data/a b-c_d.e.csv", "console.R", NA))
+  # a name of only dots or spaces keeps a name; "." and ".." are left to the caller
+  expect_equal(.portable_path(c("a/.../b", " /b", "../b")), c("a/_/b", "_/b", "../b"))
+})
+
+test_that(".safe_write_path makes each part portable but keeps a drive (#557)", {
+  expect_equal(.safe_write_path("C:/x/a:b.txt"), "C:/x/a_b.txt")
+  expect_equal(.safe_write_path("/x/y: z/a.txt"), "/x/y_ z/a.txt")
+  expect_equal(.safe_write_path("x/a.txt"), "x/a.txt")
+})
+
+test_that(".zip_member_target makes a member's name portable and still refuses leaving the folder (#557)", {
+  expect_equal(.zip_member_target("File S5/ Almont*1.jpg", "dest"), "dest/File S5/ Almont_1.jpg")
+  expect_true(is.na(.zip_member_target("../x.csv", "dest")))
+})
