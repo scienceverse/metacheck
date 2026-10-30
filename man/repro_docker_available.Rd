@@ -8,8 +8,8 @@ repro_docker_available()
 }
 \value{
 a list \code{ok} (logical) and \code{msg} (character, empty on success —
-otherwise a human-readable reason, e.g. Docker not installed or the
-daemon not running)
+otherwise a human-readable reason, e.g. Docker not installed, the
+daemon not running, or the daemon too busy to answer)
 }
 \description{
 Checks \verb{docker info} succeeds, so a caller can fail early and clearly

@@ -1061,6 +1061,54 @@ test_that("repro_install_deps_docker's generated install.R parses for a long dep
 
 # repro_run_scripts_docker() -- timeout stops the container, not just the
 # CLI (issue #417) ----
+# Issue #560: a slow answer from `docker info` is not the same as Docker not
+# running. processx::run() is replaced, so these need the command but no daemon.
+
+test_that("repro_docker_available tries again when Docker answers late (#560)", {
+  skip_if_not_installed("processx")
+  skip_if_not(nzchar(Sys.which("docker")), "docker command not found")
+
+  waits <- c()
+  local_mocked_bindings(.package = "processx", run = function(..., timeout) {
+    waits <<- c(waits, timeout)
+    late <- length(waits) < 3
+    list(status = if (late) 2L else 0L, stdout = "", stderr = "", timeout = late)
+  })
+  expect_equal(repro_docker_available(), list(ok = TRUE, msg = ""))
+  expect_equal(waits, c(15, 30, 60))
+})
+
+test_that("repro_docker_available says Docker did not answer after the last try (#560)", {
+  skip_if_not_installed("processx")
+  skip_if_not(nzchar(Sys.which("docker")), "docker command not found")
+
+  waits <- c()
+  local_mocked_bindings(.package = "processx", run = function(..., timeout) {
+    waits <<- c(waits, timeout)
+    list(status = 2L, stdout = "", stderr = "", timeout = TRUE)
+  })
+  res <- repro_docker_available()
+  expect_false(res$ok)
+  expect_match(res$msg, "did not answer")
+  expect_no_match(res$msg, "not appear to be running")
+  expect_equal(waits, c(15, 30, 60))
+})
+
+test_that("repro_docker_available does not try again when Docker gives an error (#560)", {
+  skip_if_not_installed("processx")
+  skip_if_not(nzchar(Sys.which("docker")), "docker command not found")
+
+  waits <- c()
+  local_mocked_bindings(.package = "processx", run = function(..., timeout) {
+    waits <<- c(waits, timeout)
+    list(status = 1L, stdout = "", stderr = "", timeout = FALSE)
+  })
+  res <- repro_docker_available()
+  expect_false(res$ok)
+  expect_match(res$msg, "not appear to be running")
+  expect_equal(waits, 15)
+})
+
 # Real Docker, real timeout, gated the same way the module test file's
 # execute = TRUE tests are (skip_if_quick(), Docker availability): the bug
 # is specifically that processx::run(timeout = ...) killing the HOST-SIDE
