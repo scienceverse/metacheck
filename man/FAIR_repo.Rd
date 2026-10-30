@@ -2,85 +2,64 @@
 % Please edit documentation in R/fair-repo.R
 \name{FAIR_repo}
 \alias{FAIR_repo}
-\title{Convert a paper's repository into a clean, FAIR copy}
+\title{Convert a research folder into a clean, FAIR copy}
 \usage{
-FAIR_repo(
-  paper,
-  output_dir = NULL,
-  overwrite = FALSE,
-  refresh_osf = FALSE,
-  local_path = NULL,
-  local_only = FALSE,
-  model = llm_model(),
-  params = list(),
-  download = "all",
-  skip_types = NULL,
-  peek_zips = TRUE,
-  max_file_size = 100,
-  max_download_size = 500,
-  cache = FALSE
-)
+FAIR_repo(path, output_dir = NULL, paper = NULL, overwrite = FALSE)
 }
 \arguments{
-\item{paper}{a paper object (see \code{\link[=read]{read()}}), \strong{or} a captured result of
-\code{report_module_run(paper, ...)} (or a module output chain). The results
-of \code{data_check}, \code{codebook_check}, \code{code_check}, \code{reproducibility_check}
-and \code{funding_check} in it are reused; only the ones it lacks are run,
-and \code{reproducibility_check} is then run with \code{execute = FALSE}, so no
-code of the paper is run.}
+\item{path}{the folder to convert}
 
 \item{output_dir}{the folder to write into; created if needed. Defaults to
-\code{"FAIR_repo/<paper_id>"} under the working directory.}
+the folder's own name with \verb{_FAIR} appended, in the working directory.}
+
+\item{paper}{optionally, the paper that uses these files (see \code{\link[=read]{read()}}),
+for its title, authors, DOI, CRediT roles and funding. Its links are not
+followed. Without it, these are listed in the README as still to be
+filled in.}
 
 \item{overwrite}{whether to replace an existing \code{output_dir}. When \code{FALSE}
 (the default) and \code{output_dir} exists, nothing is written and the
 returned list has \code{existed = TRUE}.}
-
-\item{refresh_osf}{whether to fetch a new OSF file listing even if one was
-already retrieved this session. The default (\code{FALSE}) reuses it, so a
-conversion right after the checks does not query OSF again.}
-
-\item{local_path, local_only}{passed to the checks that are run (see
-\code{data_check()})}
-
-\item{model, params}{passed to the checks that are run; used only when
-\code{llm_use(TRUE)}}
-
-\item{download, skip_types, peek_zips, max_file_size, max_download_size, cache}{passed to \code{data_check} when it is run. \code{download} defaults to \code{"all"},
-because the copy should hold every file, not only the data.}
 }
 \value{
 (invisibly) a list with \code{output_dir}, \code{n_files_copied},
 \code{n_studies}, \code{plan} (the file plan, with a \code{written} column: the path
 each file was written to, NA when it was not), \code{scripts} (one row per
 changed script: \code{target_path}, \code{paths_changed}, \code{setwd_removed},
-\code{setwd_paths}), \code{skipped} (files not on disk, so not copied),
-\code{copy_failed} and \code{renamed} (a file whose target another file already
-took), \code{empty_plan} (TRUE when the repository had no files), and the
-paths of the metadata written: \code{descriptions}, \code{rocrate},
-\code{requirements}, \code{logs} and \code{readme_changes}. When an existing
-\code{output_dir} was kept, the list has only \code{output_dir}, the counts, and
-\code{existed = TRUE}.
+\code{setwd_paths}), \code{skipped} (files that could not be read), \code{copy_failed}
+and \code{renamed} (a file whose target another file already took),
+\code{empty_plan} (TRUE when the folder had no files), and the paths of the
+metadata written: \code{descriptions}, \code{rocrate}, \code{requirements}, \code{logs} and
+\code{readme_changes}. When an existing \code{output_dir} was kept, the list has
+only \code{output_dir}, the counts, and \code{existed = TRUE}.
 }
 \description{
-Writes a reorganised copy of the repository (or repositories) a paper links
-to: every file is placed where the Psych-DS layout puts it (data under
-\verb{data/}, code under \verb{analysis/}, materials under \verb{materials/},
-documentation under \verb{documentation/}, one \verb{study-<group>/} folder per study
-when there are several; see \code{\link[=psychds_file_plan]{psychds_file_plan()}}). A data file that is
-not a CSV file (\code{.xlsx}, \code{.sav}, \code{.dta}, ...) is also written as a real CSV
-file, with the original kept next to it. A data CSV file is copied without
-a byte order mark.
+Writes a reorganised copy of a folder of research files (data, code,
+materials, documentation) on your own computer. Nothing is downloaded and
+no link is followed: only the folder you name is read, and it is not
+changed. The checks run the way \code{\link[=report_repository]{report_repository()}} runs them:
+\code{repo_check} takes an inventory of the folder, and \code{code_check},
+\code{data_check}, \code{codebook_check} and \code{reproducibility_check} (with
+\code{execute = FALSE}, so no code is run) build on it. Whether a language model
+is used is decided by \code{\link[=llm_use]{llm_use()}}.
 }
 \details{
+Every file is placed where the Psych-DS layout puts it (data under \verb{data/},
+code under \verb{analysis/}, materials under \verb{materials/}, documentation under
+\verb{documentation/}, one \verb{study-<group>/} folder per study when there are
+several; see \code{\link[=psychds_file_plan]{psychds_file_plan()}}). A data file that is not a CSV file
+(\code{.xlsx}, \code{.sav}, \code{.dta}, ...) is also written as a real CSV file, with the
+original kept next to it. A data CSV file is copied without a byte order
+mark.
+
 R and Python scripts (\code{.R}, \code{.Rmd}, \code{.qmd}, \code{.py}, \code{.ipynb}) are changed so
 they still find their files in the new layout: each file path that
-\code{\link[=repro_rewrite_paths]{repro_rewrite_paths()}} can match to one file of the repository is replaced
-by that file's new path, and each \code{setwd()}/\code{os.chdir()} line is replaced
-by a statement that does nothing, with the original line kept in a
-comment. Every change is reported, and listed in \code{CHANGES.md}. Scripts in
-other languages (Stata, SPSS, MATLAB, ...) are copied unchanged, so their
-file paths may no longer work.
+\code{\link[=repro_rewrite_paths]{repro_rewrite_paths()}} can match to one file of the folder is replaced by
+that file's new path, and each \code{setwd()}/\code{os.chdir()} line is replaced by a
+statement that does nothing, with the original line kept in a comment.
+Every change is reported, and listed in \code{CHANGES.md}. Scripts in other
+languages (Stata, SPSS, MATLAB, ...) are copied unchanged, so their file
+paths may no longer work.
 
 Metadata is written next to the files:
 \itemize{
@@ -89,32 +68,28 @@ every data column, with its label from the codebook when
 \code{codebook_check} found one;
 \item \code{ro-crate-metadata.json} at the top (RO-Crate 1.3): every file, the
 paper, the authors with their CRediT roles when the paper states them,
-the contact, funding (\code{funding_check}, or the paper's funding statement),
-the licence, the repositories the files come from, the languages and
+the contact, funding (the paper's funding statement, or what
+\code{funding_check} finds in its text), the licence, the languages and
 packages the code uses, the software proprietary formats need, which
-files each script reads and writes, the missing-value codes, how each
-study was run (DDI-Lifecycle terms; from the preregistration when the
-result passed holds \code{prereg_check} and the paper links exactly one), and
-the repository files that are not in the copy. "unknown" is written only
-where the authors are asked for something: the licence, an author's
-CRediT roles, and when and how the data were collected and processed;
+files each script reads and writes, the missing-value codes, and how each
+study was run (DDI-Lifecycle terms). "unknown" is written only where the
+authors are asked for something: the licence, an author's CRediT roles,
+and when and how the data were collected and processed;
 \item \code{README.md}, a readable version of the RO-Crate, in the top folder and in
-each study folder, unless the repository has its own README there;
-\item \code{requirements.txt}, the packages the code loads, unless the repository
-has its own \code{requirements.txt}, \code{renv.lock} or \code{DESCRIPTION};
-\item \verb{logs/}, the list of repository files and the results of the checks,
-without the places on this computer they were downloaded to;
+each study folder, unless the folder has its own README there;
+\item \code{requirements.txt}, the packages the code loads, unless the folder has
+its own \code{requirements.txt}, \code{renv.lock} or \code{DESCRIPTION};
+\item \verb{logs/}, the list of files and the results of the checks, without the
+places on this computer the files are in;
 \item \code{CHANGES.md}, and a \code{CHANGES.md} in each study folder that has none.
 }
 }
 \examples{
 \dontrun{
-# Reuse the checks you ran, so nothing is downloaded again:
-res <- report_module_run(paper, c("data_check", "codebook_check",
-                                  "code_check", "reproducibility_check"))
-FAIR_repo(res)
+# convert a folder; the copy is written to "my_study_FAIR"
+FAIR_repo("my_study")
 
-# Or run the checks it needs:
-FAIR_repo(paper)
+# with the paper, for its title, authors and funding
+FAIR_repo("my_study", paper = read("my_study_paper.xml"))
 }
 }

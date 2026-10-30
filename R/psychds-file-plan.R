@@ -161,6 +161,11 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
       # The root readme/ro-crate-metadata.json never carries a study prefix
       # (grp is NA for these rows by construction); a PER-STUDY readme (rare,
       # but possible if a study's own folder has its own README) still gets one.
+      # A README in a subfolder describes that folder, so it goes to
+      # documentation/ named after the folder: every README went to the top,
+      # where they replaced each other and lost what they described.
+      folder <- .plan_readme_folder(path_given[i])
+      if (!is.na(folder)) return(paste0(prefix, "documentation/", folder, "_", name))
       ext <- tools::file_ext(name)
       paste0(prefix, if (nzchar(ext)) paste0("README.", ext) else "README")
     } else if (dt == "documentation" && !is.na(role) && role == "license") {
@@ -268,4 +273,19 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
     structure_df$referenced_by else vector("list", n_files)
 
   list(table = plan_table, group_no_evidence = group_no_evidence)
+}
+
+# The folder a README is in, as a name for a file ("Archive of OSF Storage"
+# becomes "Archive-of-OSF-Storage"), or NA for a README at the top. The top
+# of an archive ("data.zip/README", or unpacked "data.zip.contents/README")
+# counts as the top.
+.plan_readme_folder <- function(path) {
+  if (length(path) != 1 || is.na(path) || !nzchar(path)) return(NA_character_)
+  p <- gsub("\\\\", "/", path)
+  p <- sub("^([^/]*/)*[^/]*\\.(zip|tar|tgz|gz|7z|rar)(\\.contents)?/", "", p,
+           ignore.case = TRUE)
+  d <- dirname(p)
+  if (d %in% c(".", "", "/")) return(NA_character_)
+  slug <- gsub("(^-+|-+$)", "", gsub("[^A-Za-z0-9]+", "-", basename(d)))
+  if (nzchar(slug)) slug else NA_character_
 }

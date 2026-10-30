@@ -144,25 +144,20 @@
   if (length(kw)) as.list(kw) else NULL
 }
 
-# The online address of structure row i: its own download link, else its
-# repository's (ResearchBox gives no link per file). NA when neither is a web
-# address: for a local folder both are paths on the computer that ran the
-# check, which a published copy must not show.
-.FAIR_repo_source_url <- function(i, structure_df) {
-  for (col in c("file_url", "repo_url")) {
-    u <- if (col %in% names(structure_df)) structure_df[[col]][i] else NA
-    if (length(u) == 1 && .FAIR_repo_is_web(u)) return(u)
-  }
-  NA_character_
-}
-
 .FAIR_repo_is_web <- function(x) !is.na(x) & grepl("^https?://", x)
 
 # A module output without the places on this computer it holds, at any
-# depth: every file_location (where a file was downloaded to; also inside
-# code_check's version_pin), a repo_url or file_url that is a local path, and
-# reproducibility_check's sandbox folder. Used for what is written into logs/.
-.FAIR_repo_drop_local <- function(x) {
+# depth: every file_location (where a file is; also inside code_check's
+# version_pin), a repo_url or file_url that is a local path,
+# reproducibility_check's sandbox folder, and the full path of `folder` in
+# any text (repo_check's report names it), which becomes the folder's own
+# name. Used for what is written into logs/.
+.FAIR_repo_drop_local <- function(x, folder = NULL) {
+  if (is.character(x) && length(folder)) {
+    for (f in unique(c(folder, gsub("/", "\\", folder, fixed = TRUE))))
+      x <- gsub(f, basename(folder), x, fixed = TRUE)
+    return(x)
+  }
   if (is.data.frame(x)) {
     x$file_location <- NULL
     for (col in intersect(c("repo_url", "file_url"), names(x)))
@@ -176,7 +171,7 @@
       if (is.character(x[[k]]) && length(x[[k]]) == 1 && !.FAIR_repo_is_web(x[[k]]))
         x[k] <- list(NULL)
   }
-  x[] <- lapply(x, .FAIR_repo_drop_local)
+  x[] <- lapply(x, .FAIR_repo_drop_local, folder = folder)
   x
 }
 
@@ -186,23 +181,6 @@
   ext <- tolower(tools::file_ext(file_name))
   mime <- .ext_registry$mime[match(ext, .ext_registry$ext)]
   if (length(mime) == 1 && !is.na(mime)) mime else NULL
-}
-
-# The schema.org `distribution` of one study: where each of its data files can
-# be downloaded online. `rows` are its data files' plan rows. NULL when none
-# has an address.
-.FAIR_repo_distribution <- function(rows, plan, structure_df) {
-  entries <- lapply(rows, function(i) {
-    url <- .FAIR_repo_source_url(i, structure_df)
-    if (is.na(url)) return(NULL)
-    Filter(Negate(is.null), list(
-      `@type`        = "DataDownload",
-      name           = plan$file_name[i],
-      contentUrl     = url,
-      encodingFormat = .FAIR_repo_encoding_format(plan$file_name[i])))
-  })
-  entries <- Filter(Negate(is.null), entries)
-  if (length(entries)) entries else NULL
 }
 
 # A field of paper$info, or NULL when absent or empty.
@@ -220,7 +198,6 @@
 
 # The dataset_description.json of one study.
 .FAIR_repo_dataset_description <- function(paper, study_label, variables,
-                                           distribution = NULL,
                                            reused = character(0)) {
   title <- .FAIR_repo_info(paper, "title")
   suffix <- if (nzchar(study_label)) paste0(" — ", study_label) else ""
@@ -233,7 +210,6 @@
                               "."),
     variableMeasured = variables,
     schemaVersion    = "Psych-DS 1.5.1")
-  if (length(distribution)) desc[["distribution"]] <- distribution
 
   au <- .FAIR_repo_authors(paper)
   if (nrow(au))
@@ -512,28 +488,18 @@
        packages = data.frame(package = pkgs, version = as.character(version)))
 }
 
-# The repository files that are not in the copy: their path, type and why
-# (data_check's own reason when it wrote a manifest, else "not downloaded").
-.FAIR_repo_not_included <- function(plan, structure_df, ops) {
-  rows <- which(is.na(plan$written) & !is.na(plan$target_path))
-  out <- data.frame(path = character(0), type = character(0), reason = character(0),
-                    url = character(0))
-  if (!length(rows)) return(out)
+# The folder's files that are not in the copy, because they could not be read
+# or written: their path and type. A file left out because an identical one
+# is in the copy is not one of them (see .FAIR_repo_identical()).
+.FAIR_repo_not_included <- function(plan, structure_df) {
+  same <- plan$same_as %||% rep(NA_character_, nrow(plan))
+  rows <- which(is.na(plan$written) & !is.na(plan$target_path) & is.na(same))
+  if (!length(rows))
+    return(data.frame(path = character(0), type = character(0), reason = character(0)))
   path <- structure_df$file_path[rows] %||% plan$file_name[rows]
   path <- ifelse(is.na(path), plan$file_name[rows], path)
-  reason <- rep("not downloaded", length(rows))
-  mp <- ops[["data_check"]]$manifest_path
-  if (length(mp) && !is.na(mp[[1]]) && file.exists(mp[[1]])) {
-    doc <- tryCatch(jsonlite::fromJSON(mp[[1]], simplifyVector = FALSE),
-                    error = function(e) NULL)
-    files <- doc$files %||% list()
-    m_path <- vapply(files, function(f) as.character(f$file_path %||% f$file_name %||% NA), "")
-    m_reason <- vapply(files, function(f) as.character(f$skip_reason %||% NA), "")
-    hit <- match(path, m_path)
-    reason <- ifelse(!is.na(hit) & !is.na(m_reason[hit]), m_reason[hit], reason)
-  }
-  url <- vapply(rows, .FAIR_repo_source_url, character(1), structure_df = structure_df)
-  data.frame(path = path, type = plan$data_type[rows], reason = reason, url = url)
+  data.frame(path = path, type = plan$data_type[rows],
+             reason = "could not be read or written")
 }
 
 # Everything the RO-Crate and the README are written from, so the two always
@@ -551,24 +517,21 @@
       name = new_langs, n = as.integer(table(file_langs)[new_langs]),
       version = NA_character_))
   licence <- written[grepl("^LICEN[CS]E", basename(written), ignore.case = TRUE)]
-  repos <- if (is.data.frame(structure_df) && "repo_url" %in% names(structure_df))
-    unique(structure_df$repo_url[.FAIR_repo_is_web(structure_df$repo_url)]) else character(0)
   list(
     pid         = pid,
-    title       = .FAIR_repo_info(paper, "title") %||% paste0("Repository of ", pid),
+    title       = .FAIR_repo_info(paper, "title") %||% pid,
     description = if (nzchar(abstract)) abstract else
-      "A copy of this paper's repository, reorganised by metacheck.",
+      "A copy of these research files, reorganised by metacheck.",
     abstract    = abstract,
     keywords    = .FAIR_repo_keywords(.FAIR_repo_info(paper, "keywords")),
     doi_url     = .FAIR_repo_doi_url(paper),
     authors     = .FAIR_repo_authors(paper),
     funding     = .FAIR_repo_funding(paper, ops),
     licence     = if (length(licence)) licence[1] else NA_character_,
-    repos       = repos,
     roots       = .FAIR_repo_roots(plan),
     software    = software,
     formats     = .FAIR_repo_formats(plan, output_dir),
-    not_included = .FAIR_repo_not_included(plan, structure_df, ops),
+    not_included = .FAIR_repo_not_included(plan, structure_df),
     provenance  = .FAIR_repo_provenance_entities(ops, plan),
     design      = lapply(.FAIR_repo_roots(plan), function(root)
       .FAIR_repo_study_design_entity(ops, pid, root$grp)))
@@ -678,16 +641,14 @@
   entities
 }
 
-# One RO-Crate File entity per written file: its type, size, and what it was
-# made from. A CSV written from another data file is based on the original
-# kept next to it; every other file on its online source, when known.
-.FAIR_repo_file_entities <- function(plan, structure_df, output_dir) {
+# One RO-Crate File entity per written file: its type and size, and for a CSV
+# written from another data file, the original kept next to it.
+.FAIR_repo_file_entities <- function(plan, output_dir) {
   rows <- which(!is.na(plan$written))
   out <- lapply(rows, function(i) {
     p <- plan$written[i]
     orig <- plan$original_target[i]
     converted <- plan$convert[i] %in% TRUE && !is.na(orig) && nzchar(orig)
-    url <- .FAIR_repo_source_url(i, structure_df)
     size <- suppressWarnings(file.size(file.path(output_dir, p)))
     # the copy, so a notebook's or Quarto document's language is read from it
     lang <- if (identical(plan$data_type[i], "code"))
@@ -700,23 +661,20 @@
       contentSize    = if (!is.na(size)) as.character(size),
       programmingLanguage = if (!is.na(lang)) list(`@id` = .FAIR_repo_lang_id(lang)),
       `metacheck:software` = .FAIR_repo_software_for(p),
-      isBasedOn      = if (converted) list(`@id` = orig)
-                       else if (!is.na(url)) list(`@id` = url)))
+      isBasedOn      = if (converted) list(`@id` = orig)))
   })
   # the originals kept next to their CSV files
   orig_rows <- rows[plan$convert[rows] %in% TRUE & !is.na(plan$original_target[rows])]
   originals <- lapply(orig_rows, function(i) {
     p <- plan$original_target[i]
     if (!file.exists(file.path(output_dir, p))) return(NULL)
-    url <- .FAIR_repo_source_url(i, structure_df)
     Filter(Negate(is.null), list(
       `@id`          = p,
       `@type`        = "File",
       name           = basename(p),
       encodingFormat = .FAIR_repo_encoding_format(p),
       contentSize    = as.character(file.size(file.path(output_dir, p))),
-      `metacheck:software` = .FAIR_repo_software_for(p),
-      isBasedOn      = if (!is.na(url)) list(`@id` = url)))
+      `metacheck:software` = .FAIR_repo_software_for(p)))
   })
   c(out, Filter(Negate(is.null), originals))
 }
@@ -739,12 +697,12 @@
 # "unknown" is written only where the authors are asked for something:
 # when and how the data were collected, how they were processed, each
 # author's CRediT roles the paper does not state, and the licence.
-.FAIR_repo_rocrate_json <- function(info, output_dir, plan, structure_df,
+.FAIR_repo_rocrate_json <- function(info, output_dir, plan,
                                     labels_df = NULL,
                                     extra_files = character(0)) {
   roots <- info$roots
   multi <- length(roots) > 1
-  files <- .FAIR_repo_file_entities(plan, structure_df, output_dir)
+  files <- .FAIR_repo_file_entities(plan, output_dir)
   file_ids <- vapply(files, `[[`, character(1), "@id")
   # a repository's own ro-crate-metadata.json is replaced by this one
   keep <- file_ids != "ro-crate-metadata.json"
@@ -795,9 +753,6 @@
 
   paper_entity <- if (!is.null(info$doi_url)) list(list(
     `@id` = info$doi_url, `@type` = "ScholarlyArticle", name = info$title))
-  repo_entities <- lapply(info$repos, function(u) list(
-    `@id` = u, `@type` = "Dataset", name = u,
-    description = "The repository these files were copied from."))
 
   fu <- info$funding
   funder_entities <- if (!is.null(fu)) lapply(seq_along(fu$funders), function(k) list(
@@ -821,8 +776,7 @@
   ni <- info$not_included
   not_included <- lapply(seq_len(nrow(ni)), function(i) Filter(Negate(is.null), list(
     `@id` = paste0("#not-included-", i), `@type` = "CreativeWork", name = ni$path[i],
-    description = paste("Not in this copy:", ni$reason[i]),
-    url = if (!is.na(ni$url[i])) ni$url[i])))
+    description = paste("Not in this copy:", ni$reason[i]))))
 
   missing_entity <- .FAIR_repo_missing_scheme_entity(labels_df)
   provenance <- info$provenance
@@ -837,7 +791,6 @@
     author      = if (nrow(au)) ref(au$id),
     license     = if (!is.na(info$licence)) list(`@id` = info$licence) else .FAIR_repo_unknown,
     funding     = if (!is.null(grant)) list(`@id` = "#funding"),
-    isBasedOn   = if (length(info$repos)) ref(info$repos),
     dateCreated = format(Sys.Date(), "%Y-%m-%d"),
     hasPart     = c(if (multi) ref(paste0(vapply(roots, `[[`, character(1), "dir"), "/")),
                     ref(file_ids[in_dir(file_ids, "")]),
@@ -876,7 +829,7 @@
         dataCollectionMethodology = "ddi:DataCollectionMethodology",
         purpose                   = "ddi:Purpose")),
     `@graph` = c(list(descriptor, root), study_parts, files, extra,
-                 paper_entity, repo_entities, grant, funder_entities,
+                 paper_entity, grant, funder_entities,
                  info$design,
                  if (!is.null(missing_entity)) list(missing_entity),
                  lifecycle, provenance, credit, author_entities, contacts,
@@ -944,31 +897,21 @@
 #   path
 # }
 
-# A file list built from data_check's file table, for when data_check wrote
-# no manifest of its own (its `manifest` argument): every repository file,
-# and whether it was downloaded.
-.FAIR_repo_reduced_manifest <- function(structure_df, pid, path) {
+# The list of the original folder's files: each file's path in the folder,
+# size and type, and which metacheck version (and language model, if any)
+# made the copy.
+.FAIR_repo_file_list <- function(structure_df, pid, path) {
   col <- function(nm) structure_df[[nm]] %||% rep(NA_character_, nrow(structure_df))
   loc <- col("file_location")
-  downloaded <- !is.na(loc) & nzchar(loc) & file.exists(loc)
-  web <- function(nm) {
-    u <- col(nm)
-    ifelse(.FAIR_repo_is_web(u), u, NA_character_)
-  }
   files <- lapply(seq_len(nrow(structure_df)), function(i) {
-    size <- if (downloaded[i]) file.size(loc[i]) else
-      suppressWarnings(as.numeric(col("file_size")[i]))
+    size <- if (!is.na(loc[i]) && file.exists(loc[i])) file.size(loc[i]) else NA
     Filter(Negate(is.null), list(
-      file_name  = col("file_name")[i],
-      file_path  = col("file_path")[i] %||% col("file_name")[i],
-      repo_url   = web("repo_url")[i],
-      file_url   = web("file_url")[i],
-      file_size  = if (!is.na(size)) size,
-      data_type  = col("data_type")[i],
-      downloaded = downloaded[i]))
+      file_path = col("file_path")[i] %||% col("file_name")[i],
+      file_size = if (!is.na(size)) size,
+      data_type = col("data_type")[i]))
   })
   doc <- list(
-    paper_id = pid,
+    folder = pid,
     generated = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     provenance = list(
       software = list(name = "metacheck", version = tryCatch(
@@ -976,61 +919,40 @@
         error = function(e) NA_character_)),
       r_version = R.version.string,
       llm = if (isTRUE(llm_use())) list(used = TRUE, model = llm_model()) else
-        list(used = FALSE),
-      manifest_kind = "reduced"),
+        list(used = FALSE)),
     n_files = nrow(structure_df),
-    n_downloaded = sum(downloaded),
     files = files)
   .FAIR_repo_write_json(doc, path)
 }
 
-# The logs/ folder: the file list (data_check's own manifest when it wrote
-# one, else a reduced one), every check's results as an R data file
-# (capture_module_tables()), and reproducibility_check's statistical output
-# when it was run with keep_sandbox = TRUE. Returns the written paths, named
+# The logs/ folder: the list of the original folder's files, and every
+# check's results as an R data file (capture_module_tables()), without the
+# places on this computer the files are in. Returns the written paths, named
 # by path, with a one-line description each.
-.FAIR_repo_write_logs <- function(ops, structure_df, pid, output_dir) {
+.FAIR_repo_write_logs <- function(ops, structure_df, pid, output_dir,
+                                 folder = NULL) {
   logs_dir <- file.path(output_dir, "logs")
   dir.create(logs_dir, recursive = TRUE, showWarnings = FALSE)
   written <- character(0)
 
-  manifest <- file.path(logs_dir, paste0(pid, ".manifest.json"))
-  full <- ops[["data_check"]]$manifest_path
-  doc <- if (length(full) && !is.na(full[[1]]) && file.exists(full[[1]]))
-    tryCatch(jsonlite::fromJSON(full[[1]], simplifyVector = FALSE),
-             error = function(e) NULL)
-  if (!is.null(doc)) {
-    .FAIR_repo_write_json(.FAIR_repo_drop_local(doc), manifest)
-    written[manifest] <- "Every repository file, whether it was downloaded, and why a file was skipped."
-  } else if (is.data.frame(structure_df) && nrow(structure_df)) {
-    .FAIR_repo_reduced_manifest(structure_df, pid, manifest)
-    written[manifest] <- "Every repository file and whether it was downloaded."
+  if (is.data.frame(structure_df) && nrow(structure_df)) {
+    file_list <- file.path(logs_dir, paste0(pid, ".files.json"))
+    .FAIR_repo_file_list(structure_df, pid, file_list)
+    written[file_list] <- "Every file of the original folder, with its path, size and type."
   }
 
-  rds <- tryCatch(capture_module_tables(lapply(ops, .FAIR_repo_drop_local),
+  rds <- tryCatch(capture_module_tables(lapply(ops, .FAIR_repo_drop_local, folder = folder),
                                         logs_dir, paper_id = pid),
                   error = function(e) NULL)
   if (length(rds) && file.exists(rds))
     written[rds] <- "The results of every metacheck check that was run, as an R data file (readRDS())."
 
-  sandbox <- ops[["reproducibility_check"]]$sandbox
-  stat_dir <- if (length(sandbox) == 1 && !is.na(sandbox))
-    file.path(sandbox, "statistical_output") else ""
-  if (nzchar(stat_dir) && dir.exists(stat_dir)) {
-    copied <- file.copy(list.files(stat_dir, full.names = TRUE), logs_dir,
-                        overwrite = TRUE)
-    if (any(copied))
-      written[file.path(logs_dir, "results_long.csv")] <- paste0(
-        "The statistical results reproducibility_check found, one row per ",
-        "statistic, with one JSON file per source file next to it.")
-  }
-
-  # what each file holds, in a log of its own in the folder, so the
-  # repository keeps one README per folder
+  # what each file holds, in a log of its own in the folder, so the copy
+  # keeps one README per folder
   if (length(written)) {
     log <- file.path(logs_dir, "log.md")
     writeLines(c("# Log", "",
-                 "The records of the metacheck checks behind this copy of the repository:",
+                 "The records of the metacheck checks behind this copy of the files:",
                  "", sprintf("- `%s`: %s", basename(names(written)), unname(written))),
                log)
     written[log] <- "What each file in this folder holds."
@@ -1059,13 +981,22 @@
 
 # The changes metacheck made, as lines for CHANGES.md.
 .FAIR_repo_change_lines <- function(plan, copied) {
-  lines <- paste0(format(Sys.Date(), "%Y-%m-%d"), " - Repository reorganised by ",
+  lines <- paste0(format(Sys.Date(), "%Y-%m-%d"), " - Files reorganised by ",
                   "[metacheck](https://scienceverse.github.io/metacheck/): every ",
                   "file was moved to its place in the Psych-DS layout.")
   conv <- which(plan$convert %in% TRUE & !is.na(plan$written))
   if (length(conv))
     lines <- c(lines, "", "Data files written as CSV files (the original is kept next to each):",
                sprintf("- `%s` from `%s`", plan$written[conv], plan$original_target[conv]))
+  if (length(copied$not_tables))
+    lines <- c(lines, "", "Data files kept as they are, because they hold no table:",
+               sprintf("- `%s`", plan$written[copied$not_tables]))
+  same <- which(!is.na(plan$same_as %||% rep(NA, nrow(plan))))
+  if (length(same))
+    lines <- c(lines, "", "Files left out, because an identical file is in this copy:",
+               sprintf("- `%s` (identical to `%s`)",
+                       plan$current_path[same] %||% plan$file_name[same],
+                       plan$same_as[same]))
   if (nrow(copied$renamed))
     lines <- c(lines, "", "Files given a numbered name, because another file had the same place:",
                sprintf("- `%s` is `%s`", copied$renamed$written, copied$renamed$file_name))
@@ -1213,7 +1144,9 @@
 .FAIR_repo_still_unknown <- function(info) {
   au <- info$authors
   no_roles <- au$name[lengths(au$credit) == 0]
-  c(if (is.na(info$licence)) "- The licence under which the data may be reused",
+  c(if (!nrow(au)) "- The authors",
+    if (is.null(info$doi_url)) "- The paper that uses these files",
+    if (is.na(info$licence)) "- The licence under which the data may be reused",
     if (!any(au$corresponding & !is.na(au$email))) "- A contact person and email address",
     if (length(no_roles)) paste0("- The CRediT roles of ", paste(no_roles, collapse = ", ")),
     "- When the data were collected",
@@ -1271,7 +1204,7 @@
 
   c(paste0("# ", info$title), "",
     if (nzchar(info$abstract)) c(info$abstract, ""),
-    paste0("This folder is a copy of the paper's repository, reorganised by ",
+    paste0("This folder is a copy of the research files, reorganised by ",
            "[metacheck](https://scienceverse.github.io/metacheck/) on ",
            format(Sys.Date(), "%Y-%m-%d"), ". `ro-crate-metadata.json` holds ",
            "the same information in machine-readable form, and `CHANGES.md` ",
@@ -1283,8 +1216,6 @@
     if (!is.null(fu)) c("", "## Funding", "", fu$statement %||% "",
                         if (length(fu$funders)) paste0("Funders: ", paste(fu$funders, collapse = "; ")),
                         if (length(fu$awards)) paste0("Grants: ", paste(fu$awards, collapse = "; "))),
-    if (length(info$repos)) c("", "## Where the files come from", "",
-                              paste0("- ", info$repos)),
     "", "## Files", "",
     paste0("The files follow the [Psych-DS](https://psych-ds.github.io/) layout: ",
            "data in `data/`, named `study-<name>_data.csv`, analysis code in ",
@@ -1302,7 +1233,7 @@
     if (nrow(ni)) c("", "## Not included", "",
                     sprintf("- `%s` (%s): %s", ni$path, ni$type, ni$reason)),
     "", "## Still to be filled in", "",
-    "metacheck could not find the following; they are marked `unknown` in `ro-crate-metadata.json`:",
+    "metacheck could not find the following:",
     "", .FAIR_repo_still_unknown(info))
 }
 
@@ -1311,7 +1242,7 @@
   rows <- which(!is.na(plan$written) & startsWith(plan$written, paste0(root$dir, "/data/")) &
                   grepl("\\.csv$", plan$written) & plan$data_type %in% "data")
   c(paste0("# ", info$title, " — ", .FAIR_repo_label(root$grp)), "",
-    paste0("One study of this paper's repository, reorganised by ",
+    paste0("One study of the research files, reorganised by ",
            "[metacheck](https://scienceverse.github.io/metacheck/). The ",
            "authors, licence, software and scripts are described in ",
            "`ro-crate-metadata.json` in the top folder."),

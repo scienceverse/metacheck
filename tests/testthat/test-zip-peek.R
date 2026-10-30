@@ -1038,10 +1038,17 @@ test_that("an archive of the user's own is extracted into the temporary folder (
   expect_false(startsWith(dest, normalizePath(test_path(), winslash = "/")))
   expect_true(startsWith(normalizePath(dest, winslash = "/", mustWork = FALSE),
                          normalizePath(tempdir(), winslash = "/")))
-  # a downloaded archive (here: in the temporary folder) is extracted beside itself
-  dl <- withr::local_tempfile(fileext = ".zip")
+  # a downloaded archive (here: in this session's download folder) is
+  # extracted beside itself
+  dl <- withr::local_tempfile(tmpdir = metacheck:::.repo_session_dir(), fileext = ".zip")
   writeBin(as.raw(1:10), dl)
   expect_equal(metacheck:::.archive_dest(dl), paste0(dl, ".contents"))
+  # a folder of the user's in the temporary folder (an unpacked upload) is
+  # the user's too
+  up <- withr::local_tempfile(fileext = ".zip")
+  writeBin(as.raw(1:10), up)
+  expect_false(identical(metacheck:::.archive_dest(up), paste0(up, ".contents")))
+  expect_match(metacheck:::.archive_dest(up), "metacheck-archives")
 })
 
 test_that(".expand_zip and .expand_tar unpack only kept members within the limit (#472)", {
@@ -1070,7 +1077,7 @@ test_that(".expand_zip and .expand_tar unpack only kept members within the limit
     rows <- if (grepl("zip$", a)) metacheck:::.expand_zip(a, row, max_bytes = 100 * 1024)
             else metacheck:::.expand_tar(a, row, max_bytes = 100 * 1024)
     # notes.txt (plain documentation) and big.csv (over the limit) are not unpacked
-    expect_setequal(list.files(paste0(a, ".contents")), c("small.csv", "README.md"))
+    expect_setequal(list.files(metacheck:::.archive_dest(a)), c("small.csv", "README.md"))
     expect_setequal(rows$file_name, c("small.csv", "README.md", "big.csv"))
     expect_true(is.na(rows$file_location[rows$file_name == "big.csv"]))
     expect_equal(attr(rows, "oversize")$file_name, "big.csv")

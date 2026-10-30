@@ -10,6 +10,18 @@ test_that("psychds_file_plan takes a missing name from the path and excludes a f
   expect_equal(nrow(psychds_file_plan(s, FALSE)$table), 3)
 })
 
+test_that("psychds_file_plan puts a README in a subfolder in documentation/, named after the folder", {
+  # every README went to the top, where they replaced each other
+  s <- data.frame(file_name = c("README", "README", "README.md", "README", "README"),
+                  file_path = c("README", "nest-1/README", "Archive of OSF Storage/README.md",
+                                "data.zip.contents/README", "data.zip/README"),
+                  data_type = "documentation", doc_role = "readme", group = NA_character_)
+  tb <- psychds_file_plan(s)$table
+  expect_equal(tb$target_path, c("README", "documentation/nest-1_README",
+                                 "documentation/Archive-of-OSF-Storage_README.md",
+                                 "README", "README"))
+})
+
 test_that("psychds_file_plan leaves correctly placed files and valid data names alone (U112)", {
   # data/eeg.npy was told to move to itself, and study-a_data.csv was renamed
   # data/study-studyadata_data.csv

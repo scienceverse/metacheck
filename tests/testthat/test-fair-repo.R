@@ -1,5 +1,5 @@
-# FAIR_repo() on a small repository written to a temporary folder: no
-# network, no LLM.
+# FAIR_repo() on a small folder written to a temporary folder: no network, no
+# LLM.
 
 fair_fixture <- function() {
   d <- withr::local_tempdir(.local_envir = parent.frame())
@@ -31,9 +31,21 @@ crate_ids <- function(crate) {
 
 fair_run <- function(d, ...) {
   out <- file.path(withr::local_tempdir(.local_envir = parent.frame()), "out")
-  res <- suppressMessages(FAIR_repo(test_paper("x"), output_dir = out,
-                                    local_path = d, local_only = TRUE, ...))
-  res
+  suppressMessages(FAIR_repo(d, output_dir = out, ...))
+}
+
+fair_paper <- function() {
+  p <- test_paper("x")
+  p$info$title <- "A test paper"
+  p$info$doi <- "10.1234/abc"
+  p$author <- data.frame(author_id = 1:2, given = c("Ann", "Bob"),
+                         family = c("Smith", "Jones"),
+                         email = c("ann@x.org", NA), corresponding = c(TRUE, FALSE),
+                         orcid = c("0000-0001-2345-6789", NA),
+                         affiliation = c("TU/e", NA))
+  p$author$credit_roles <- list(c("Conceptualization", "Writing - original draft"),
+                                character(0))
+  p
 }
 
 test_that("FAIR_repo copies every file to its place in the new layout", {
@@ -53,14 +65,40 @@ test_that("FAIR_repo copies every file to its place in the new layout", {
   expect_false(identical(b, as.raw(c(0xEF, 0xBB, 0xBF))))
 })
 
+test_that("FAIR_repo leaves the original folder unchanged", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  before <- tools::md5sum(list.files(d, recursive = TRUE, full.names = TRUE))
+  fair_run(d)
+  after <- tools::md5sum(list.files(d, recursive = TRUE, full.names = TRUE))
+  expect_equal(after, before)
+})
+
+test_that("FAIR_repo goes online nowhere, also when the paper links a repository", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  p <- fair_paper()
+  p$text$text <- "Data and code are at https://osf.io/abcde and https://github.com/a/b."
+  online <- character(0)
+  httr2::local_mocked_responses(function(req) {
+    online <<- c(online, req$url)
+    stop("went online: ", req$url)
+  })
+  local_mocked_bindings(
+    curl_fetch_memory = function(url, ...) { online <<- c(online, url); stop("went online") },
+    curl_fetch_disk = function(url, ...) { online <<- c(online, url); stop("went online") },
+    curl_download = function(url, ...) { online <<- c(online, url); stop("went online") },
+    .package = "curl")
+  res <- fair_run(d, paper = p)
+  expect_equal(online, character(0))
+  expect_gt(res$n_files_copied, 0)
+})
+
 test_that("FAIR_repo changes a script's file paths and setwd() and says so", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
   out <- file.path(withr::local_tempdir(), "out")
-  expect_message(
-    res <- FAIR_repo(test_paper("x"), output_dir = out,
-                     local_path = d, local_only = TRUE),
-    "setwd\\(\\) was removed")
+  expect_message(res <- FAIR_repo(d, output_dir = out), "setwd\\(\\) was removed")
   code <- readLines(file.path(out, "analysis", "analysis.R"))
   expect_true(any(grepl('read.csv("data/study-scores_data.csv")', code, fixed = TRUE)))
   # a longer name that ends in the same file name is left alone
@@ -98,6 +136,28 @@ test_that("FAIR_repo writes a data file that is not a CSV as a real CSV and keep
   expect_true(file.exists(file.path(data_dir, "survey.xlsx")))
 })
 
+test_that("FAIR_repo keeps a data file that holds no table as it is, and two originals with one name apart", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  saveRDS(stats::lm(dist ~ speed, datasets::cars), file.path(d, "data", "model.rds"))
+  dir.create(file.path(d, "a"))
+  dir.create(file.path(d, "b"))
+  saveRDS(data.frame(x = 1:3), file.path(d, "a", "tab.rds"))
+  saveRDS(data.frame(x = 4:6), file.path(d, "b", "tab.rds"))
+  res <- fair_run(d)
+  data_dir <- file.path(res$output_dir, "data")
+  # a fitted model is no table: kept as it is, not reported as failed
+  expect_length(res$copy_failed, 0)
+  expect_true(file.exists(file.path(data_dir, "model.rds")))
+  expect_false(file.exists(file.path(data_dir, "study-model_data.csv")))
+  expect_true(any(grepl("model.rds", readLines(file.path(res$output_dir, "CHANGES.md")))))
+  # the second original no longer overwrites the first
+  originals <- list.files(data_dir, "^tab.*\\.rds$", full.names = TRUE)
+  expect_length(originals, 2)
+  expect_setequal(lapply(originals, function(f) readRDS(f)$x), list(1:3, 4:6))
+  expect_length(list.files(data_dir, "^study-tab_data.*\\.csv$"), 2)
+})
+
 test_that("FAIR_repo gives the second of two different files with one place a numbered name", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
@@ -115,46 +175,76 @@ test_that("FAIR_repo gives the second of two different files with one place a nu
   expect_equal(sum(grepl("bom", list.files(file.path(res$output_dir, "data")))), 1)
 })
 
+test_that("FAIR_repo leaves out a file from a zip that is also next to it, and leaves the folder unchanged", {
+  skip_if_not_installed("zip")
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  # the folder holds a zip of its own data folder, next to that folder
+  zip::zip(file.path(d, "data.zip"), files = "data", root = d)
+  before <- tools::md5sum(list.files(d, recursive = TRUE, full.names = TRUE))
+  res <- fair_run(d)
+  after <- tools::md5sum(list.files(d, recursive = TRUE, full.names = TRUE))
+  # the zip is unpacked elsewhere, never into the researcher's folder
+  expect_equal(after, before)
+  # each data file is in the copy once
+  csvs <- list.files(res$output_dir, "scores", recursive = TRUE)
+  expect_equal(csvs, "data/study-scores_data.csv")
+  expect_gt(nrow(res$identical), 0)
+  expect_true(all(res$identical$same_as %in% res$plan$written))
+  changes <- readLines(file.path(res$output_dir, "CHANGES.md"))
+  expect_true(any(grepl("identical file", changes)))
+  # a left-out file is not listed as missing
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
+                              simplifyVector = FALSE)
+  expect_null(crate[["@graph"]][[2]][["metacheck:notIncluded"]])
+})
+
+test_that("FAIR_repo keeps a README in a subfolder in documentation/, and an identical one once", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  dir.create(file.path(d, "nest-1"))
+  dir.create(file.path(d, "copy of top"))
+  writeLines("About the files in nest-1.", file.path(d, "nest-1", "README"))
+  writeLines("A readme.", file.path(d, "copy of top", "README.txt"))
+  res <- fair_run(d)
+  out <- res$output_dir
+  expect_equal(readLines(file.path(out, "README.txt")), "A readme.")
+  expect_equal(readLines(file.path(out, "documentation", "nest-1_README")),
+               "About the files in nest-1.")
+  expect_false(file.exists(file.path(out, "documentation", "copy-of-top_README.txt")))
+  expect_equal(res$identical$same_as[grepl("copy of top", res$identical$path)],
+               "README.txt")
+  expect_false(any(grepl("^README_[0-9]", list.files(out))))
+})
+
 test_that("FAIR_repo leaves an existing folder alone unless overwrite = TRUE", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
   out <- withr::local_tempdir()
   writeLines("keep", file.path(out, "mine.txt"))
-  expect_message(
-    res <- FAIR_repo(test_paper("x"), output_dir = out,
-                     local_path = d, local_only = TRUE),
-    "already exists")
+  expect_message(res <- FAIR_repo(d, output_dir = out), "already exists")
   expect_true(isTRUE(res$existed))
   expect_true(file.exists(file.path(out, "mine.txt")))
 
-  suppressMessages(FAIR_repo(test_paper("x"), output_dir = out, overwrite = TRUE,
-                             local_path = d, local_only = TRUE))
+  suppressMessages(FAIR_repo(d, output_dir = out, overwrite = TRUE))
   expect_false(file.exists(file.path(out, "mine.txt")))
 })
 
-test_that("FAIR_repo reuses the checks in a captured result and runs only the missing ones", {
+test_that("FAIR_repo names the copy after the folder by default", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
-  partial <- suppressMessages(report_module_run(
-    test_paper("x"), "data_check",
-    args = list(data_check = list(local_path = d, local_only = TRUE,
-                                  download = "all"))))
-  # only the checks the result lacks are run, on top of the reused data_check
-  ran <- character(0)
-  local_mocked_bindings(module_run = function(paper, module, ...) {
-    ran <<- c(ran, module)
-    structure(list(module = module, paper = paper$paper,
-                   prev_outputs = c(paper$prev_outputs,
-                                    stats::setNames(list(paper), paper$module)),
-                   summary_table = data.frame(paper_id = "x"),
-                   traffic_light = "info"),
-              class = "metacheck_module_output")
-  })
-  out <- file.path(withr::local_tempdir(), "out")
-  res <- suppressMessages(FAIR_repo(partial, output_dir = out))
-  expect_equal(ran, c("codebook_check", "code_check", "reproducibility_check",
-                      "funding_check"))
-  expect_true(file.exists(file.path(out, "data", "study-scores_data.csv")))
+  withr::local_dir(withr::local_tempdir())
+  res <- suppressMessages(FAIR_repo(d))
+  expect_equal(res$output_dir, paste0(basename(d), "_FAIR"))
+  expect_true(dir.exists(res$output_dir))
+})
+
+test_that("FAIR_repo stops for a path that is not a folder, or a copy inside it", {
+  expect_error(FAIR_repo(file.path(tempdir(), "no_such_folder")), "No folder found")
+  expect_error(FAIR_repo(c("a", "b")), "single path")
+  d <- withr::local_tempdir()
+  expect_error(FAIR_repo(d, output_dir = file.path(d, "copy")), "outside the folder")
+  expect_error(FAIR_repo(d, paper = list(1)), "paper object")
 })
 
 test_that("FAIR_repo writes the metadata files", {
@@ -178,7 +268,7 @@ test_that("FAIR_repo writes the metadata files", {
   # the paper's full text is not copied
   expect_false(dir.exists(file.path(out, "documentation")) &&
                  any(grepl("fulltext", list.files(file.path(out, "documentation")))))
-  expect_length(list.files(file.path(out, "logs"), "manifest\\.json$"), 1)
+  expect_length(list.files(file.path(out, "logs"), "files\\.json$"), 1)
   expect_length(list.files(file.path(out, "logs"), "\\.rds$"), 1)
 
   # CHANGES.md tells the user about the removed setwd()
@@ -201,9 +291,9 @@ test_that("FAIR_repo's metadata holds no path on the computer that ran it", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
   res <- fair_run(d)
-  # the name of the folder holding the repository, which is the same in a
-  # short and a long spelling of its path (the repository's own folder name
-  # is its name, and may be shown)
+  # the name of the folder holding the folder, which is the same in a short
+  # and a long spelling of its path (the folder's own name is its name, and
+  # may be shown)
   top <- basename(dirname(normalizePath(d)))
   for (f in c("ro-crate-metadata.json", "dataset_description.json",
               list.files(file.path(res$output_dir, "logs"), "json$", full.names = TRUE))) {
@@ -214,27 +304,6 @@ test_that("FAIR_repo's metadata holds no path on the computer that ran it", {
   logs <- readRDS(list.files(file.path(res$output_dir, "logs"), "\\.rds$",
                              full.names = TRUE))
   expect_false(any(grepl(top, unlist(logs), fixed = TRUE)))
-})
-
-test_that("FAIR_repo copies data_check's own manifest without local paths", {
-  withr::local_options(metacheck.llm.use = FALSE)
-  d <- fair_fixture()
-  top <- basename(dirname(normalizePath(d)))
-  manifest_dir <- withr::local_tempdir()
-  captured <- suppressMessages(report_module_run(
-    test_paper("x"), "data_check",
-    args = list(data_check = list(local_path = d, local_only = TRUE,
-                                  download = "all", manifest = manifest_dir))))
-  expect_length(list.files(manifest_dir, "manifest\\.json$"), 1)
-  out <- file.path(withr::local_tempdir(), "out")
-  suppressMessages(FAIR_repo(captured, output_dir = out, local_path = d,
-                             local_only = TRUE))
-  logs <- list.files(file.path(out, "logs"), "manifest\\.json$", full.names = TRUE)
-  expect_length(logs, 1)
-  doc <- jsonlite::fromJSON(logs, simplifyVector = FALSE)
-  # it is data_check's own manifest, with its reasons per file
-  expect_false(is.null(doc$download))
-  expect_false(grepl(top, paste(readLines(logs), collapse = "\n"), fixed = TRUE))
 })
 
 test_that("FAIR_repo records which files each script reads", {
@@ -257,7 +326,7 @@ test_that("FAIR_repo gives each study its own folder and metadata", {
     utils::write.csv(data.frame(id = 1:3, x = c(1.5, 2.5, 3.5)),
                      file.path(d, s, paste0(s, "_scores.csv")), row.names = FALSE)
   }
-  res <- fair_run(d)
+  res <- fair_run(d, paper = fair_paper())
   out <- res$output_dir
   expect_equal(res$n_studies, 2)
   for (s in c("study-ex1", "study-ex2"))
@@ -272,7 +341,8 @@ test_that("FAIR_repo gives each study its own folder and metadata", {
   # CRediT roles are one entry per author, not a set per study
   roles <- Filter(function(e) identical(e[["@type"]], "Role"), crate[["@graph"]])
   people <- Filter(function(e) identical(e[["@type"]], "Person"), crate[["@graph"]])
-  expect_equal(length(roles), length(people))
+  expect_equal(length(roles), 2)
+  expect_equal(length(people), 2)
   expect_false(any(duplicated(ids$described)))
 })
 
@@ -295,41 +365,22 @@ test_that("the study design is filled from a single preregistration only", {
   expect_equal(none$dataCollectionMethodology, list("unknown"))
 })
 
-test_that("FAIR_repo writes the metadata for a repository with no files", {
+test_that("FAIR_repo writes the metadata for a folder with no files", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- withr::local_tempdir()
   out <- file.path(withr::local_tempdir(), "out")
-  expect_message(
-    res <- FAIR_repo(test_paper("x"), output_dir = out,
-                     local_path = d, local_only = TRUE),
-    "No repository files")
+  expect_message(res <- FAIR_repo(d, output_dir = out), "No files")
   expect_true(res$empty_plan)
   expect_equal(res$n_files_copied, 0)
   expect_true(file.exists(file.path(out, "ro-crate-metadata.json")))
   expect_false(file.exists(file.path(out, "dataset_description.json")))
 })
 
-fair_paper <- function() {
-  p <- test_paper("x")
-  p$info$title <- "A test paper"
-  p$info$doi <- "10.1234/abc"
-  p$author <- data.frame(author_id = 1:2, given = c("Ann", "Bob"),
-                         family = c("Smith", "Jones"),
-                         email = c("ann@x.org", NA), corresponding = c(TRUE, FALSE),
-                         orcid = c("0000-0001-2345-6789", NA),
-                         affiliation = c("TU/e", NA))
-  p$author$credit_roles <- list(c("Conceptualization", "Writing - original draft"),
-                                character(0))
-  p
-}
-
 test_that("the RO-Crate has the paper, authors, CRediT roles and contact, and few unknowns", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
-  out <- file.path(withr::local_tempdir(), "out")
-  suppressMessages(FAIR_repo(fair_paper(), output_dir = out, local_path = d,
-                             local_only = TRUE))
-  crate <- jsonlite::fromJSON(file.path(out, "ro-crate-metadata.json"),
+  res <- fair_run(d, paper = fair_paper())
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
                               simplifyVector = FALSE)
   g <- crate[["@graph"]]
   by_id <- stats::setNames(g, vapply(g, `[[`, character(1), "@id"))
@@ -337,6 +388,7 @@ test_that("the RO-Crate has the paper, authors, CRediT roles and contact, and fe
   # the paper is cited, not given as the dataset's own identifier
   expect_equal(root$citation[["@id"]], "https://doi.org/10.1234/abc")
   expect_null(root$identifier)
+  expect_equal(root$name, "A test paper")
   ann <- by_id[["https://orcid.org/0000-0001-2345-6789"]]
   expect_equal(ann$email, "ann@x.org")
   expect_equal(by_id[["mailto:ann@x.org"]]$contactType, "corresponding author")
@@ -353,14 +405,28 @@ test_that("the RO-Crate has the paper, authors, CRediT roles and contact, and fe
   expect_true(all(c("#language-r", "#package-dplyr") %in% names(by_id)))
 })
 
-test_that("FAIR_repo writes a README from the RO-Crate when the repository has none", {
+test_that("without a paper, the copy is named after the folder and the README asks for the paper", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
   unlink(file.path(d, "README.txt"))
-  out <- file.path(withr::local_tempdir(), "out")
-  suppressMessages(FAIR_repo(fair_paper(), output_dir = out, local_path = d,
-                             local_only = TRUE))
-  readme <- readLines(file.path(out, "README.md"))
+  res <- fair_run(d)
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
+                              simplifyVector = FALSE)
+  expect_equal(crate[["@graph"]][[2]]$name, basename(d))
+  expect_false(any(vapply(crate[["@graph"]], function(e)
+    identical(e[["@type"]], "Person"), logical(1))))
+  readme <- readLines(file.path(res$output_dir, "README.md"))
+  expect_equal(readme[1], paste("#", basename(d)))
+  expect_true("- The authors" %in% readme)
+  expect_true("- The paper that uses these files" %in% readme)
+})
+
+test_that("FAIR_repo writes a README from the RO-Crate when the folder has none", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  unlink(file.path(d, "README.txt"))
+  res <- fair_run(d, paper = fair_paper())
+  readme <- readLines(file.path(res$output_dir, "README.md"))
   expect_equal(readme[1], "# A test paper")
   for (h in c("## Authors", "## Paper", "## Licence", "## Files", "## File formats",
               "## Software", "## Scripts", "## Variables", "## Still to be filled in"))
@@ -369,12 +435,12 @@ test_that("FAIR_repo writes a README from the RO-Crate when the repository has n
   expect_true(any(grepl("The CRediT roles of Bob Jones", readme, fixed = TRUE)))
   expect_true(any(grepl("| score | outcome measure |", readme, fixed = TRUE)))
   # the README is listed in the RO-Crate
-  crate <- jsonlite::fromJSON(file.path(out, "ro-crate-metadata.json"),
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
                               simplifyVector = FALSE)
   expect_true("README.md" %in% crate_ids(crate)$described)
 })
 
-test_that("FAIR_repo leaves the repository's own README alone", {
+test_that("FAIR_repo leaves the folder's own README alone", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
   res <- fair_run(d)
@@ -385,12 +451,10 @@ test_that("FAIR_repo leaves the repository's own README alone", {
 test_that("FAIR_repo writes the funding it found into the RO-Crate", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()
-  p <- fair_paper()
-  out <- file.path(withr::local_tempdir(), "out")
   local_mocked_bindings(.FAIR_repo_funding = function(paper, ops)
     list(statement = "Funded by NWO grant 123.", funders = "NWO", awards = "123"))
-  suppressMessages(FAIR_repo(p, output_dir = out, local_path = d, local_only = TRUE))
-  crate <- jsonlite::fromJSON(file.path(out, "ro-crate-metadata.json"),
+  res <- fair_run(d, paper = fair_paper())
+  crate <- jsonlite::fromJSON(file.path(res$output_dir, "ro-crate-metadata.json"),
                               simplifyVector = FALSE)
   g <- crate[["@graph"]]
   by_id <- stats::setNames(g, vapply(g, `[[`, character(1), "@id"))
@@ -415,12 +479,7 @@ test_that(".FAIR_repo_funding reads funding_check's sentences and bibr's funders
 })
 
 test_that(".FAIR_repo_credit_slug recognises CRediT roles as papers write them", {
-  expect_equal(.FAIR_repo_credit_slug(c("Writing – review & editing",
+  expect_equal(.FAIR_repo_credit_slug(c("Writing \u2013 review & editing",
                                         "Formal Analysis", "Cooking")),
                c("writing-review-editing", "formal-analysis", NA))
-})
-
-test_that("FAIR_repo converts one paper at a time", {
-  expect_error(FAIR_repo(paperlist(test_paper("a"), test_paper("b"))),
-               "one paper at a time")
 })
