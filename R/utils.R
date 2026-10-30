@@ -394,6 +394,33 @@ path_sanitize <- function(path, replacement = "_",
 .max_path_chars <- if (.Platform$OS.type == "windows") 250L else 4000L
 .max_component_chars <- 255L    # per-directory / filename limit on all platforms
 
+# Make the parts of a path usable on every operating system. A name that is fine
+# on one can stop a run on another: a colon or * in a deposit's folder or file
+# name cannot be written on Windows, which also drops a final dot or space and
+# reserves names like CON and NUL. The same change is made on every system, so a
+# result does not depend on the computer it came from. "." and ".." are left for
+# the caller, which refuses a path that leaves its folder.
+.portable_name <- function(x) {
+  bad_enc <- !is.na(x) & !validEnc(x)
+  x[bad_enc] <- iconv(x[bad_enc], "latin1", "UTF-8")
+  dots <- x %in% c(".", "..")
+  out <- gsub("[<>:\"|?*[:cntrl:]]", "_", x)
+  out[!dots] <- sub("[. ]+$", "", out[!dots])
+  reserved <- grepl("^(con|prn|aux|nul|com[1-9]|lpt[1-9])([.].*)?$", out, ignore.case = TRUE)
+  out[reserved] <- paste0("_", out[reserved])
+  # a name of only dots or spaces has nothing left
+  out[!dots & !is.na(x) & nzchar(x) & !nzchar(out)] <- "_"
+  out
+}
+
+# .portable_name() for each part of relative paths; NA stays NA.
+.portable_path <- function(path) {
+  vapply(path, function(p) {
+    if (is.na(p)) return(NA_character_)
+    paste(.portable_name(strsplit(gsub("\\\\", "/", p), "/", fixed = TRUE)[[1]]), collapse = "/")
+  }, character(1), USE.NAMES = FALSE)
+}
+
 # Make a path safe to write: if its ABSOLUTE form (or any single component)
 # exceeds the filesystem limit, shorten the over-long component(s) by truncating
 # and appending a short hash of the original, so the result stays unique and
@@ -431,6 +458,9 @@ path_sanitize <- function(path, replacement = "_",
   }
 
   parts <- strsplit(path, "[/\\\\]")[[1]]
+  # the drive of an absolute Windows path keeps its colon
+  is_drive <- seq_along(parts) == 1L & grepl("^[A-Za-z]:$", parts)
+  parts[!is_drive] <- .portable_name(parts[!is_drive])
   changed <- FALSE
 
   # Per-component cap first (cheap, platform-wide): shorten any single directory

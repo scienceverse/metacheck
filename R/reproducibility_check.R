@@ -1819,7 +1819,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     src <- sources[i]
     if (is.na(src))
       return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
-    dest <- file.path(root, tgt)
+    dest <- file.path(root, .portable_path(tgt))
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
     ok <- isTRUE(file.copy(src, dest, overwrite = TRUE))
     # The copy is the code's to change: in the Docker sandbox the code runs
@@ -1849,7 +1849,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
       src <- sources[i]
       if (is.na(src))
         return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
-      dest <- file.path(root, tgt)
+      dest <- file.path(root, .portable_path(tgt))
       dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
       ok <- isTRUE(file.copy(src, dest, overwrite = TRUE))
       data.frame(target_path = tgt, source = src, ok = ok)
@@ -2434,9 +2434,15 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
       txt <- c(sprintf("library(%s)  # [reproducibility_check injected]", injected_pkg), txt)
 
     tgt  <- script_target(fn, i)
-    dest <- file.path(root, tgt)
+    dest <- file.path(root, .portable_path(tgt))
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
-    writeLines(txt, dest)
+    # A script that cannot be written (a path too long for the system) is run and
+    # reported as failed, and the paper's other scripts still run.
+    written <- tryCatch({
+      suppressWarnings(writeLines(txt, dest))
+      TRUE
+    }, error = function(e) FALSE)
+    if (!written) message("[repro]   could not write '", fn, "' to ", dest)
     data.frame(file_name = fn, script_path = dest, run_dir = root,
                setwd_removed = setwd_n,
                setwd_paths = paste(setwd_paths, collapse = ", "),

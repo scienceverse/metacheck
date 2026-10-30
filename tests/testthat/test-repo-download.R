@@ -244,6 +244,34 @@ test_that("a per-member ok=FALSE from .zip_fetch_members is recorded in `failed`
   expect_match(fa$error, "CRC32 mismatch")
 })
 
+test_that("an archive member saved by an earlier run is not fetched again (#561)", {
+  files <- make_archive_member_files()
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) {
+      path <- file.path(dest, names)
+      writeBin(raw(100), path)
+      data.frame(name = names, path = path, size = 100, ok = TRUE, error = NA_character_)
+    }
+  )
+  first <- download_repo_files(files)
+  expect_equal(file.size(first$file_location), 100)
+
+  # the saved file is used as it is
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) stop("fetched again")
+  )
+  second <- download_repo_files(files)
+  expect_equal(second$file_location, first$file_location)
+  expect_equal(nrow(attr(second, "failed")), 0)
+
+  # a saved file of the wrong size is not trusted
+  writeBin(raw(10), first$file_location)
+  third <- download_repo_files(files)
+  expect_match(attr(third, "failed")$error, "fetched again")
+})
+
 test_that("a successful archive-member fetch still populates file_location (#429)", {
   # Guards the happy path against the same change: a real ok = TRUE row must
   # still set file_location, not get swept into `failed`.

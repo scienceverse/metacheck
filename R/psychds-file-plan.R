@@ -311,6 +311,11 @@ psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
   # a script's own read/write references -- see data_group_llm()). A plain
   # list column so a future converter can write a reference into each of
   # those studies' own metadata instead of copying the file.
+  # Scripts' paths are rewritten from this plan, so the plan itself must hold names
+  # every operating system can write.
+  target_path <- .portable_path(target_path)
+  original_target <- .portable_path(original_target)
+
   plan_table <- data.frame(
     file_name       = structure_df$file_name,
     data_type       = data_type,

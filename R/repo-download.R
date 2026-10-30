@@ -1478,6 +1478,20 @@ download_repo_files <- function(files,
                                                 file.path(".archive_members", arc_key)))
         member_dest <- .safe_write_path(paste0(arc_path, ".contents"))
         dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
+
+        # A member saved by an earlier run is used as it is. `already` above
+        # cannot see it: it looks at .cache_path, and a member is stored here,
+        # under ".contents" (#561). Without this check every member is unpacked
+        # or fetched from the host again on every run.
+        member_target <- vapply(files$archive_member[idx], .zip_member_target, character(1),
+                                dest = member_dest, USE.NAMES = FALSE)
+        member_bytes <- file.size(member_target)
+        saved <- !is.na(member_target) & !is.na(member_bytes) & member_bytes > 0 &
+          member_bytes == as.numeric(files$file_size[idx])
+        files$file_location[idx[saved]] <- member_target[saved]
+        idx <- idx[!saved]
+        if (length(idx) == 0) next
+
         # An archive within this archive's budget may be downloaded once and
         # the members extracted locally instead of fetched by byte range
         # (.zip_fetch_members()'s whole-archive mode). The archive is kept at
