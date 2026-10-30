@@ -185,6 +185,7 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   plan$convert <- copied$converted
   plan$original_target <- copied$original_written
   plan$sheet_files <- copied$sheet_files
+  plan$sheet_map <- copied$sheet_map
   # where the output file a recovered script came from was written
   plan$recovered_source <- plan$written[plan$recovered_row]
   attr(copied, "readme_links") <- .FAIR_repo_fix_readme_links(plan, structure_df,
@@ -345,20 +346,12 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   sf <- structure_df$source_file %||% structure_df$file_name
   new_path <- ifelse(is.na(plan$written), plan$same_as %||% NA_character_, plan$written)
   new_path <- stats::setNames(new_path, sf)[!is.na(new_path) & !is.na(sf) & !duplicated(sf)]
-  # data_check reads one sheet of an Excel file (the first, or a later one
-  # when the first holds no table): its columns are in the CSV of that sheet
-  sheets <- plan$sheet_files %||% rep(list(character(0)), nrow(plan))
-  for (i in which(lengths(sheets) > 0 & !is.na(sf))) {
-    cols_i <- columns_df$column_name[columns_df$source_file %in% sf[i]]
-    if (!length(cols_i)) next
-    for (p in c(plan$written[i], sheets[[i]])) {
-      header <- tryCatch(names(utils::read.csv(file.path(output_dir, p), nrows = 1,
-                                               check.names = FALSE)),
-                         error = function(e) character(0))
-      if (all(cols_i %in% header)) {
-        new_path[sf[i]] <- p
-        break
-      }
+  # the columns of a sheet are in the CSV of that sheet
+  sheet_map <- plan$sheet_map %||% rep(list(character(0)), nrow(plan))
+  for (i in which(lengths(sheet_map) > 0 & !is.na(sf))) {
+    for (s in names(sheet_map[[i]])) {
+      key <- .FAIR_repo_sheet_key(sf[i], s, columns_df)
+      if (!is.na(key)) new_path[key] <- sheet_map[[i]][[s]]
     }
   }
 
@@ -368,16 +361,18 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   descriptions <- character(0)
   for (root in roots) {
     prefix <- if (nzchar(root$dir)) paste0(root$dir, "/") else ""
-    if (!any(startsWith(written, paste0(prefix, "data/")))) next
+    # with every sheet's CSV: the first sheet can be a README in documentation/
+    all_written <- c(written, unlist(plan$sheet_files))
+    if (!any(startsWith(all_written, paste0(prefix, "data/")))) next
     dest <- file.path(output_dir, root$dir, "dataset_description.json")
     if (file.exists(dest)) next
     cols <- if (is.null(root$grp) || !is.data.frame(columns_df)) columns_df else
       columns_df[columns_df$group %in% root$grp, , drop = FALSE]
     variables <- .FAIR_repo_variable_measured(cols, labels_df, new_path)
     # every column of every CSV in data/ is described, also those data_check
-    # did not read (the other sheets of an Excel file): Psych-DS requires it
-    csvs <- c(written[startsWith(written, paste0(prefix, "data/")) & grepl("\\.csv$", written)],
-              unlist(plan$sheet_files[startsWith(written, paste0(prefix, "data/"))]))
+    # did not read (a sheet of notes it left out): Psych-DS requires it
+    csvs <- all_written[startsWith(all_written, paste0(prefix, "data/")) &
+                          grepl("\\.csv$", all_written)]
     variables <- c(variables, .FAIR_repo_missing_columns(
       file.path(output_dir, csvs), csvs, vapply(variables, `[[`, "", "name")))
     desc <- .FAIR_repo_dataset_description(
@@ -617,6 +612,7 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   converted <- convert          # FALSE where the file was no table after all
   original_written <- rep(NA_character_, n)
   sheet_files <- rep(list(character(0)), n)   # the CSVs of a file's other sheets
+  sheet_map <- rep(list(character(0)), n)     # sheet name -> its CSV
   hashes  <- list()   # target path -> md5 of the file written there
   same_as <- plan$same_as %||% rep(NA_character_, n)
 
@@ -675,11 +671,11 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
         isTRUE(file.copy(src, odest, overwrite = TRUE))
       }
       if (orig_ok) original_written[i] <- orig_to
-      # An Excel file with several sheets gets one CSV per sheet holding a
+      # A spreadsheet with several sheets gets one CSV per sheet holding a
       # table, named after the sheet: only the first sheet was written, so
       # the CSV lacked the other sheets, or held a README sheet instead of
       # the data.
-      sheets <- .FAIR_repo_sheets(src)
+      sheets <- .data_file_sheets(src)
       if (length(sheets) > 1) {
         made <- character(0)
         for (k in seq_along(sheets)) {
@@ -688,11 +684,13 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
                             h = paste(unname(tools::md5sum(src)), k))
           if (is.null(sheet_to)) next
           sdest <- file.path(output_dir, sheet_to)
-          if (.FAIR_repo_write_data_csv(src, sdest, sheet = k)) made <- c(made, sheet_to)
+          if (.FAIR_repo_write_data_csv(src, sdest, sheet = k))
+            made <- c(made, stats::setNames(sheet_to, sheets[k]))
         }
         if (length(made)) {
-          written[i] <- made[1]
-          sheet_files[[i]] <- made[-1]
+          written[i] <- made[[1]]
+          sheet_files[[i]] <- unname(made[-1])
+          sheet_map[[i]] <- made
           next
         }
       }
@@ -726,7 +724,7 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   list(written = written, scripts = scripts, skipped = skipped,
        failed = unique(failed), renamed = renamed, same_as = same_as,
        converted = converted, original_written = original_written,
-       sheet_files = sheet_files,
+       sheet_files = sheet_files, sheet_map = sheet_map,
        not_tables = which(convert & !converted & !is.na(written)))
 }
 
@@ -984,25 +982,28 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   }, error = function(e) FALSE)
 }
 
-# The sheets of an Excel file (.xlsx, .xls), or NULL for any other file or one
-# that cannot be read. data_read_head() reads an .ods file's first sheet only.
-.FAIR_repo_sheets <- function(path) {
-  if (!grepl("\\.xlsx?$", path, ignore.case = TRUE)) return(NULL)
-  tryCatch(readxl::excel_sheets(path), error = function(e) NULL)
+# data_check's name for the table on sheet `sheet` of the file it calls `file`:
+# "file [sheet]" when it read several tables from the file, the file's own name
+# when this was the only one, NA when it read no table from this sheet.
+.FAIR_repo_sheet_key <- function(file, sheet, columns_df) {
+  if (!is.data.frame(columns_df) || !"sheet" %in% names(columns_df)) return(NA_character_)
+  key <- paste0(file, " [", sheet, "]")
+  if (key %in% columns_df$source_file) return(key)
+  if (any(columns_df$source_file %in% file & columns_df$sheet %in% sheet)) return(file)
+  NA_character_
 }
 
 # The CSV of one sheet: the file's CSV name with the sheet as its Psych-DS
 # "description" ("data/study-harvest_data.csv" and sheet "data sheet" give
 # "data/study-harvest_description-datasheet_data.csv"). A sheet of notes
-# rather than a table (named README, notes, legend, info, metadata, about)
-# goes to documentation/: in data/ its cells were listed as variables
+# or a codebook rather than a table (see .sheet_is_notes()) goes to
+# documentation/: in data/ its cells were listed as variables
 # without names ("...2", "...3").
 .FAIR_repo_sheet_target <- function(target, sheet, k) {
   value <- gsub("[^A-Za-z0-9]+", "", sheet)
   if (!nzchar(value)) value <- paste0("sheet", k)
   out <- sub("_data\\.csv$", paste0("_description-", value, "_data.csv"), target)
-  if (grepl("^(read ?me|notes?|legend|info(rmation)?|meta ?data|about|description)$",
-            trimws(tolower(sheet))))
+  if (.sheet_is_notes(sheet))
     out <- sub("^((study-[^/]+/)?)data/", "\\1documentation/", out)
   out
 }

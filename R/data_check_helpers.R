@@ -2531,7 +2531,8 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
         # with range "A1:Z6" comes back with 26). `n_max` caps rows only, which
         # is what we want.
         df <- suppressWarnings(as.data.frame(
-          readODS::read_ods(path, n_max = nmax, .name_repair = "unique_quiet")))
+          readODS::read_ods(path, sheet = sheet %||% 1L, n_max = nmax,
+                            .name_repair = "unique_quiet")))
         if (!is.null(df) && data_check_is_qualtrics(df))
           df <- data_strip_qualtrics_header(df)
         # Mis-placed header, exactly as for .xlsx: scan the first rows WITHOUT a
@@ -2539,8 +2540,8 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
         # with skip = k so column types are re-inferred natively.
         if (!is.null(df) && ncol(df) > 1) {
           raw <- tryCatch(.utf8_repair_df(as.data.frame(suppressWarnings(
-                   readODS::read_ods(path, col_names = FALSE, n_max = 6L,
-                     col_types = NA, .name_repair = "minimal")))),
+                   readODS::read_ods(path, sheet = sheet %||% 1L, col_names = FALSE,
+                     n_max = 6L, col_types = NA, .name_repair = "minimal")))),
                  error = function(e) NULL)
           if (!is.null(raw) && nrow(raw) >= 2) {
             raw_rows <- lapply(seq_len(nrow(raw)),
@@ -2550,7 +2551,7 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
               k <- prom$promoted
               nmax2 <- if (is.finite(nmax)) nmax + k else Inf
               reread <- tryCatch(suppressWarnings(as.data.frame(
-                readODS::read_ods(path, skip = k, n_max = nmax2,
+                readODS::read_ods(path, sheet = sheet %||% 1L, skip = k, n_max = nmax2,
                                   .name_repair = "unique_quiet"))),
                 error = function(e) NULL)
               df <- if (!is.null(reread) && ncol(reread) > 0) reread else prom$df
@@ -2667,6 +2668,26 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
     if (!is.null(v) && is.null(attr(out[[j]], a, exact = TRUE))) attr(out[[j]], a) <- v
   }
   out
+}
+
+# The sheets of a spreadsheet (.xlsx, .xls, .ods, .fods), or NULL for any other
+# file, one that cannot be read, or an .xls that crashes the reader (see
+# .xls_readable()).
+.data_file_sheets <- function(path) {
+  ext <- tolower(tools::file_ext(path))
+  tryCatch(
+    if (ext %in% c("xlsx", "xls")) {
+      if (.xls_readable(path)) readxl::excel_sheets(path)
+    } else if (ext %in% c("ods", "fods") && requireNamespace("readODS", quietly = TRUE)) {
+      readODS::list_ods_sheets(path)
+    },
+    error = function(e) NULL)
+}
+
+# Whether a sheet's name says it holds notes or a codebook rather than data.
+.sheet_is_notes <- function(sheet) {
+  grepl("^(read ?me|notes?|legend|info(rmation)?|meta ?data|about|description|code ?book|(data )?dictionary)$",
+        trimws(tolower(sheet)))
 }
 
 # Read an .RData/.rda workspace in an ISOLATED subprocess and return its first

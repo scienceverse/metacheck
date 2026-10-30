@@ -1225,15 +1225,25 @@
                                        strip = "", max = 30L) {
   if (!is.data.frame(columns_df) || !nrow(columns_df)) return(character(0))
   out <- character(0)
-  for (i in rows) {
-    keep <- columns_df$source_file %in% plan$file_name[i]
+  # one table per CSV: a spreadsheet's sheets each have their own
+  entries <- unlist(lapply(rows, function(i) {
+    map <- (plan$sheet_map %||% rep(list(character(0)), nrow(plan)))[[i]]
+    if (!length(map))
+      return(list(list(i = i, key = plan$file_name[i], written = plan$written[i])))
+    lapply(names(map), function(s)
+      list(i = i, key = .FAIR_repo_sheet_key(plan$file_name[i], s, columns_df),
+           written = map[[s]]))
+  }), recursive = FALSE)
+  for (entry in entries) {
+    i <- entry$i
+    keep <- columns_df$source_file %in% entry$key
     if ("group" %in% names(columns_df) && !is.na(plan$group[i]))
       keep <- keep & columns_df$group %in% plan$group[i]
     cols <- columns_df[keep, , drop = FALSE]
     if (!nrow(cols)) next
     lab <- if (is.data.frame(labels_df) && nrow(labels_df) &&
                all(c("source_file", "column_name") %in% names(labels_df)))
-      labels_df[labels_df$source_file %in% plan$file_name[i], , drop = FALSE] else NULL
+      labels_df[labels_df$source_file %in% entry$key, , drop = FALSE] else NULL
     m <- if (!is.null(lab)) match(cols$column_name, lab$column_name) else rep(NA, nrow(cols))
     label <- if (!is.null(lab) && "label" %in% names(lab)) lab$label[m] else NA
     mv <- if (!is.null(lab) && "missing_values" %in% names(lab))
@@ -1246,7 +1256,7 @@
     if (!any(nzchar(esc(label))) && !any(nzchar(mv))) next
     n <- nrow(cols)
     show <- seq_len(min(n, max))
-    out <- c(out, "", paste0("### `", sub(strip, "", plan$written[i]), "`"), "",
+    out <- c(out, "", paste0("### `", sub(strip, "", entry$written), "`"), "",
              "| Variable | Label | Missing-value codes |", "|---|---|---|",
              sprintf("| %s | %s | %s |", esc(cols$column_name[show]),
                      esc(label[show]), esc(mv[show])))

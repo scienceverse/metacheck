@@ -812,6 +812,46 @@ test_that("FAIR_repo changes the links in the copied README to the files' new pl
   expect_equal(readLines(file.path(d, "README.md"))[2], "![a figure](man/figures/fig1.png)")
 })
 
+test_that("a folder whose only data is a spreadsheet starting with a README sheet is described (#555)", {
+  skip_if_not_installed("openxlsx")
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- withr::local_tempdir()
+  wb <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb, "README")
+  openxlsx::writeData(wb, "README", data.frame(about = c("Harvest data", "see sheet 2")))
+  openxlsx::addWorksheet(wb, "plants")
+  openxlsx::writeData(wb, "plants", data.frame(pid = 1:6, weight = c(2.5, 3.1, 2.8, 4, 3, 2)))
+  openxlsx::saveWorkbook(wb, file.path(d, "harvest.xlsx"))
+  res <- fair_run(d)
+  dd <- file.path(res$output_dir, "dataset_description.json")
+  expect_true(file.exists(dd))
+  vm <- jsonlite::fromJSON(dd, simplifyVector = FALSE)$variableMeasured
+  expect_setequal(vapply(vm, `[[`, "", "name"), c("pid", "weight"))
+  expect_equal(unique(unlist(lapply(vm, function(v) v[["metacheck:sourceFile"]]))),
+               "data/study-harvest_description-plants_data.csv")
+})
+
+test_that("each variable of a spreadsheet names the CSV of its own sheet (#555)", {
+  skip_if_not_installed("openxlsx")
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- fair_fixture()
+  wb <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb, "plants")
+  openxlsx::writeData(wb, "plants", data.frame(pid = 1:6, weight = c(2.5, 3.1, 2.8, 4, 3, 2)))
+  openxlsx::addWorksheet(wb, "soil")
+  openxlsx::writeData(wb, "soil", data.frame(sid = 1:6, ph = c(6.5, 7.1, 6.8, 7, 6.2, 6.9)))
+  openxlsx::saveWorkbook(wb, file.path(d, "data", "harvest.xlsx"))
+  res <- fair_run(d)
+  vm <- jsonlite::fromJSON(file.path(res$output_dir, "dataset_description.json"),
+                           simplifyVector = FALSE)$variableMeasured
+  src <- function(nm) unlist(lapply(vm, function(v)
+    if (identical(v$name, nm)) v[["metacheck:sourceFile"]]))
+  expect_equal(src("weight"), "data/study-harvest_description-plants_data.csv")
+  expect_equal(src("ph"), "data/study-harvest_description-soil_data.csv")
+  # from data_check, so with what it found, not only the name
+  expect_true(any(vapply(vm, function(v) identical(v$name, "ph") && !is.null(v$maxValue), TRUE)))
+})
+
 test_that("each variable names its file as it is in the copy", {
   withr::local_options(metacheck.llm.use = FALSE)
   d <- fair_fixture()

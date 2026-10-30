@@ -1643,6 +1643,54 @@ test_that("the column checks count each value as often as it occurs (#554)", {
   expect_true(data_check_empty(c(NA, "", rep("  ", 10)))$problem)
 })
 
+test_that("data_check reads every sheet of a spreadsheet that holds a table (#555)", {
+  skip_if_not_installed("openxlsx")
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- withr::local_tempdir()
+  wb <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb, "README")
+  openxlsx::writeData(wb, "README", data.frame(about = c("Harvest data", "see the other sheets"),
+                                               more = c(NA, "x")))
+  openxlsx::addWorksheet(wb, "plants")
+  openxlsx::writeData(wb, "plants", data.frame(id = 1:6, weight = c(2.5, 3.1, 2.8, 4, 3, 2)))
+  openxlsx::addWorksheet(wb, "soil")
+  openxlsx::writeData(wb, "soil", data.frame(id = 1:6, ph = c(6.5, 7.1, 6.8, 7, 6.2, 6.9)))
+  openxlsx::addWorksheet(wb, "vars")
+  openxlsx::writeData(wb, "vars", data.frame(variable = c("id", "weight"),
+                                             description = c("the plant", "in grams")))
+  openxlsx::saveWorkbook(wb, file.path(d, "harvest.xlsx"))
+  # one table besides a README: the file keeps its own name
+  wb2 <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb2, "Notes")
+  openxlsx::writeData(wb2, "Notes", data.frame(a = "text", b = "more"))
+  openxlsx::addWorksheet(wb2, "data")
+  openxlsx::writeData(wb2, "data", data.frame(x = 1:5, y = 5:1))
+  openxlsx::saveWorkbook(wb2, file.path(d, "single.xlsx"))
+  utils::write.csv(data.frame(u = 1:3), file.path(d, "plain.csv"), row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE)
+  cols <- mo$table
+  expect_setequal(cols$column_name[cols$source_file == "harvest.xlsx [plants]"], c("id", "weight"))
+  expect_setequal(cols$column_name[cols$source_file == "harvest.xlsx [soil]"], c("id", "ph"))
+  expect_equal(unique(cols$sheet[cols$source_file == "harvest.xlsx [soil]"]), "soil")
+  # the README and the codebook sheet are not data
+  expect_false(any(grepl("README|vars", cols$source_file)))
+  expect_false(any(c("about", "variable", "description") %in% cols$column_name))
+  expect_setequal(cols$column_name[cols$source_file == "single.xlsx"], c("x", "y"))
+  expect_equal(unique(cols$sheet[cols$source_file == "single.xlsx"]), "data")
+  expect_true(is.na(unique(cols$sheet[cols$source_file == "plain.csv"])))
+  # each sheet has its own preview, and a file counts once
+  expect_true(all(c("harvest.xlsx [plants]", "harvest.xlsx [soil]", "single.xlsx") %in%
+                    names(mo$previews)))
+  expect_match(mo$summary_text %||% paste(mo$report, collapse = " "), "3 of them|from 3", all = FALSE)
+})
+
+test_that("a spreadsheet with only notes is still reported as before (#555)", {
+  expect_true(all(metacheck:::.sheet_is_notes(c("README", "read me", " Notes ", "Metadata", "Codebook"))))
+  expect_false(any(metacheck:::.sheet_is_notes(c("data", "notes_2020", "Sheet1"))))
+  expect_null(metacheck:::.data_file_sheets("x.csv"))
+})
+
 test_that("a column of numbers skips the text work and gives the same results (#554)", {
   # a whole number of 13 or more digits can be a card number; its share of the
   # column counts every value, the ones not written as text too
