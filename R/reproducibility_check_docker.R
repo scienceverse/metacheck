@@ -41,8 +41,8 @@
 #' the process backend.
 #'
 #' @returns a list `ok` (logical) and `msg` (character, empty on success —
-#'   otherwise a human-readable reason, e.g. Docker not installed or the
-#'   daemon not running)
+#'   otherwise a human-readable reason, e.g. Docker not installed, the
+#'   daemon not running, or the daemon too busy to answer)
 #' @export
 repro_docker_available <- function() {
   bin <- tryCatch(Sys.which("docker"), error = function(e) "")
@@ -50,9 +50,16 @@ repro_docker_available <- function() {
     return(list(ok = FALSE, msg = "the 'docker' command was not found on PATH. Install Docker Desktop (https://www.docker.com/products/docker-desktop/) and ensure it is running."))
   if (!requireNamespace("processx", quietly = TRUE))
     return(list(ok = FALSE, msg = "the 'processx' package is required for sandbox = \"docker\"."))
-  res <- tryCatch(
-    processx::run("docker", c("info"), error_on_status = FALSE, timeout = 15),
-    error = function(e) NULL)
+  # A running Docker can be slow to answer while other containers are busy, so
+  # only a late answer earns another, longer try (GitHub issue #560).
+  for (wait in c(15, 30, 60)) {
+    res <- tryCatch(
+      processx::run("docker", c("info"), error_on_status = FALSE, timeout = wait),
+      error = function(e) NULL)
+    if (is.null(res) || !isTRUE(res$timeout)) break
+  }
+  if (!is.null(res) && isTRUE(res$timeout))
+    return(list(ok = FALSE, msg = "Docker did not answer within 60 seconds, after two shorter tries. It may be busy; try again when it has less to do."))
   if (is.null(res) || res$status != 0)
     return(list(ok = FALSE, msg = "Docker does not appear to be running. Start Docker Desktop and try again."))
   list(ok = TRUE, msg = "")
