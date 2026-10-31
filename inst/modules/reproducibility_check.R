@@ -825,7 +825,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # is opt-in rather than the default for every caller.
     matched <- tryCatch(match_reported_output(paper, stat_output,
                                               include_tables = TRUE),
-                        error = function(e) NULL)
+                        error = function(e) {
+                          message("[repro] could not compare the output with the paper: ",
+                                  conditionMessage(e))
+                          NULL
+                        })
     if (is.null(matched) || nrow(matched) == 0) return(out)
     ms <- attr(matched, "summary")
     match_report <- sprintf(

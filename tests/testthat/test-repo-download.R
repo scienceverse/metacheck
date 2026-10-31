@@ -244,6 +244,49 @@ test_that("a per-member ok=FALSE from .zip_fetch_members is recorded in `failed`
   expect_match(fa$error, "CRC32 mismatch")
 })
 
+test_that(".dataverse_guestbook_hint names a guestbook, and nothing else", {
+  answer <- function(txt) httr2::response(status_code = 400, body = charToRaw(txt))
+  expect_match(
+    metacheck:::.dataverse_guestbook_hint(answer(
+      '{"status":"ERROR","message":"You may not download this file without the required Guestbook response for guestbookID 270."}')),
+    "guestbook form")
+  expect_equal(metacheck:::.dataverse_guestbook_hint(answer('{"status":"ERROR","message":"Bad request"}')), "")
+  expect_equal(metacheck:::.dataverse_guestbook_hint(httr2::response(status_code = 400)), "")
+})
+
+test_that("a restricted file is not requested", {
+  repo <- paste0("https://example.org/repo-test-", paste(sample(c(letters, 0:9), 12, TRUE), collapse = ""))
+  unlink(metacheck:::.repo_cache_subdir(repo), recursive = TRUE)
+  files <- data.frame(
+    repo_url = repo, file_name = "closed.csv", file_path = "closed.csv",
+    file_url = paste0(repo, "/closed.csv"), file_size = 100,
+    file_location = NA_character_, file_restricted = TRUE
+  )
+  local_mocked_bindings(
+    req_perform = function(...) stop("must not be requested"),
+    .package = "httr2"
+  )
+  dl <- download_repo_files(files)
+  expect_true(is.na(dl$file_location[1]))
+  expect_equal(nrow(attr(dl, "failed")), 0)
+})
+
+test_that("an archive member without a size is recorded in `failed`, not silently dropped", {
+  files <- make_archive_member_files()
+  files$file_size <- NA_real_
+  unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
+
+  local_mocked_bindings(
+    .zip_fetch_members = function(url, names, dest, ...) stop("must not be called")
+  )
+  dl <- download_repo_files(files)
+  expect_true(is.na(dl$file_location[1]))
+  fa <- attr(dl, "failed")
+  expect_equal(nrow(fa), 1)
+  expect_equal(fa$file_name, "member.R")
+  expect_match(fa$error, "no size")
+})
+
 test_that("an archive member saved by an earlier run is not fetched again (#561)", {
   files <- make_archive_member_files()
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
