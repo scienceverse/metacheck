@@ -358,7 +358,8 @@ dataone_info <- function(dataone_url, id_col = 1, pb = NULL, cache = FALSE) {
 # simply goes unused. rows = 1000 is far above any package seen so far; an
 # object beyond it is simply absent and gets the HEAD fallback.
 #
-# Returns a numeric vector named by object id, or numeric(0) when the node
+# Returns a numeric vector named by object id, with each object's file name in
+# the attribute "file_names", or numeric(0) when the node
 # has no /query/solr/ endpoint or the query fails for any reason (on
 # 2026-10-13 smithsonian.dataone.org and data.piscoweb.org refused the
 # connection outright, and metacat.tfri.gov.tw took ~7 s to answer) -- the
@@ -376,7 +377,9 @@ dataone_info <- function(dataone_url, id_col = 1, pb = NULL, cache = FALSE) {
       httr2::req_timeout(30) |>
       httr2::req_error(is_error = \(resp) FALSE) |>
       httr2::req_perform()
-    if (httr2::resp_status(resp) != 200) NULL else httr2::resp_body_json(resp)
+    # KNB labels this reply text/json, which resp_body_json() refuses by default
+    # (checked live 2026-10-31); without check_type every query counted as failed.
+    if (httr2::resp_status(resp) != 200) NULL else httr2::resp_body_json(resp, check_type = FALSE)
   }, error = \(e) NULL)
 
   docs <- rec$response$docs
@@ -385,8 +388,11 @@ dataone_info <- function(dataone_url, id_col = 1, pb = NULL, cache = FALSE) {
   ids <- vapply(docs, \(d) as.character(d$id %empty_or% NA_character_), character(1))
   sizes <- vapply(docs, \(d) suppressWarnings(as.numeric(d$size %empty_or% NA_real_)),
                   numeric(1))
+  file_names <- vapply(docs, \(d) as.character(d$fileName %empty_or% NA_character_), character(1))
   keep <- !is.na(ids)
-  stats::setNames(sizes[keep], ids[keep])
+  out <- stats::setNames(sizes[keep], ids[keep])
+  attr(out, "file_names") <- file_names[keep]
+  out
 }
 
 #' Retrieve info from one DataONE object
@@ -521,7 +527,11 @@ dataone_info <- function(dataone_url, id_col = 1, pb = NULL, cache = FALSE) {
       name <- xml2::xml_text(xml2::xml_find_first(p, ".//*[local-name()='objectName']"))
       size <- xml2::xml_text(xml2::xml_find_first(p, ".//*[local-name()='size']"))
       url  <- xml2::xml_text(xml2::xml_find_first(p, ".//*[local-name()='url']"))
-      file_pid <- sub("^.*/", "", url %empty_or% "")
+      # A PID can hold slashes, so in a .../resolve/<pid> URL all of what follows
+      # counts: verified live 2026-10-31 on data.piscoweb.org, where
+      # doi:10.6085/AA/marine_ltm.21.1 is found and marine_ltm.21.1 gives 404.
+      url <- url %empty_or% ""
+      file_pid <- if (grepl("/resolve/", url, fixed = TRUE)) sub("^.*/resolve/", "", url) else sub("^.*/", "", url)
       return(list(
         key  = name %empty_or% NA_character_,
         size = suppressWarnings(as.numeric(size %empty_or% NA_real_)),
@@ -569,11 +579,23 @@ dataone_info <- function(dataone_url, id_col = 1, pb = NULL, cache = FALSE) {
   no_physical <- vapply(entities, \(e) {
     is.na(xml2::xml_find_first(e, ".//*[local-name()='physical']"))
   }, logical(1))
-  need <- which(no_physical &
-                vapply(files, \(f) !is.na(f$pid), logical(1)))
+  no_id <- vapply(files, \(f) is.na(f$pid), logical(1))
+  need <- which(no_physical | no_id)
   if (length(need) > 0) {
     sizes <- .dataone_package_sizes(host, api_base, pid)
+    # An entity without an object PID can still be found in this reply by its
+    # file name, without any folder its name gives. Verified live 2026-10-31 on
+    # KNB: doi:10.5063/F1VD6WMF has a <physical> with no url, named "Current
+    # Results - 0.7.7/trait_data.csv", which is the object trait_data.csv, and
+    # doi:10.5063/F1MC8X92 a bare <otherEntity> with no id. Only when exactly one
+    # object has that name.
+    file_names <- attr(sizes, "file_names")
+    for (j in which(no_id)) {
+      hit <- which(file_names == basename(files[[j]]$key))
+      if (length(hit) == 1) files[[j]]$pid <- names(sizes)[hit]
+    }
     for (j in need) {
+      if (is.na(files[[j]]$pid) || !is.na(files[[j]]$size)) next
       s <- unname(sizes[files[[j]]$pid])
       if (length(s) != 1 || is.na(s)) {
         s <- .dataone_object_size(host, api_base, files[[j]]$pid)

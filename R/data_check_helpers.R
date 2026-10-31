@@ -1144,6 +1144,9 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   fail_err <- if (!is.null(failed) && nrow(failed) > 0)
     stats::setNames(sub("\n.*", "", failed$error),
                     paste(failed$repo_url, failed$file_name)) else character(0)
+  archive_url <- files$archive_url %||% rep(NA_character_, n)
+  in_archive <- !is.na(archive_url) & nzchar(archive_url)
+  restricted <- (files$file_restricted %||% rep(FALSE, n)) %in% TRUE
 
   reason      <- rep(NA_character_, n)
   intentional <- rep(NA, n)
@@ -1160,17 +1163,21 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
     } else if (!isTRUE(want[i])) {
       reason[i] <- "not a data/codebook/README file (use download = \"all\")"
       intentional[i] <- TRUE
-    } else if (is.na(url) || !nzchar(url)) {
-      reason[i] <- "no download URL in the listing"; intentional[i] <- FALSE
+    } else if (restricted[i]) {
+      reason[i] <- "access restricted by the depositor"; intentional[i] <- TRUE
     } else if (key %in% over_key) {
       reason[i] <- sprintf("exceeds max_file_size (%s MB): skipped by the per-file cap",
                            .cap_num(max_file_size))
       intentional[i] <- TRUE
+    } else if (key %in% names(fail_err)) {
+      reason[i] <- paste0("download failed: ", fail_err[[key]])
+      intentional[i] <- FALSE
+    } else if ((is.na(url) || !nzchar(url)) && !in_archive[i]) {
+      # A file inside an archive never has a URL of its own, so this says
+      # nothing about it: it is fetched through its archive.
+      reason[i] <- "no download URL in the listing"; intentional[i] <- FALSE
     } else if (files$repo_url[i] %in% gated_urls) {
       reason[i] <- "repository refused by the size caps"; intentional[i] <- TRUE
-    } else if (key %in% names(fail_err)) {
-      reason[i] <- paste0("download failed after retries: ", fail_err[[key]])
-      intentional[i] <- FALSE
     } else {
       reason[i] <- "download failed"; intentional[i] <- FALSE
     }

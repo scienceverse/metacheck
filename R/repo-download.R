@@ -814,6 +814,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     if (!file.rename(dest, final)) return("could not move the download into place")
     NA_character_
   }, error = function(e) {
+    # Read before the file goes: the response body was written to `dest`.
+    guestbook <- if (inherits(e, "httr2_http_400") && !is.null(e$resp))
+      .dataverse_guestbook_hint(e$resp) else ""
     if (file.exists(dest)) unlink(dest)
     # A 429 caught here (rather than retried away) means .storage_is_transient
     # -- via the skip_on_api_limit factory -- declared it non-transient, i.e.
@@ -825,8 +828,19 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     }
     hint <- if (inherits(e, "httr2_http_401") && !is.null(e$resp))
       .dryad_401_hint(url, httr2::resp_status(e$resp)) else ""
-    paste0(conditionMessage(e), hint)
+    paste0(conditionMessage(e), hint, guestbook)
   })
+}
+
+# A Dataverse depositor can ask people to fill in a form (a guestbook) before
+# downloading. The listing does not say so; the host answers 400 with this
+# message (verified live 2026-10-31, Harvard Dataverse datafile 3670464). The
+# form asks for a person's details, so metacheck does not submit it.
+.dataverse_guestbook_hint <- function(resp) {
+  txt <- tryCatch(httr2::resp_body_string(resp), error = \(e) "")
+  if (grepl("Guestbook response", txt, fixed = TRUE))
+    " (the depositor requires a guestbook form to be filled in before download)"
+  else ""
 }
 
 # Download several files in parallel, with no proactive throttle. Only used for
@@ -1430,6 +1444,16 @@ download_repo_files <- function(files,
             file_size = member_sizes[over],
             stringsAsFactors = FALSE))
         }
+        # A member without a size cannot be held to the caps, so it is not
+        # fetched; recorded here so that the reason is not lost.
+        unsized <- idx[is.na(member_sizes)]
+        if (length(unsized) > 0) {
+          failed <- rbind(failed, data.frame(
+            repo_url = files$repo_url[unsized], file_name = files$file_name[unsized],
+            file_url = arc,
+            paper_id = if ("paper_id" %in% names(files)) files$paper_id[unsized] else NA_character_,
+            error = "the archive's list of contents gives no size for this file"))
+        }
         cand <- idx[!over & !is.na(member_sizes)]
         cand_size <- member_sizes[!over & !is.na(member_sizes)]
         if (length(cand) == 0) next
@@ -1577,7 +1601,8 @@ download_repo_files <- function(files,
     }
   }
 
-  has_url <- !is.na(files$file_url) & nzchar(files$file_url)
+  has_url <- !is.na(files$file_url) & nzchar(files$file_url) &
+    !((files$file_restricted %||% rep(FALSE, nrow(files))) %in% TRUE)
   to_get <- integer(0)
 
   # ── Per-repository budget + per-file size filter ────────────────────────────

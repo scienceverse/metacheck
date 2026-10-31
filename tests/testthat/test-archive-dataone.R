@@ -122,6 +122,30 @@ test_that(".dataone_package_sizes builds the Solr query and reads its reply", lo
 
   sizes <- metacheck:::.dataone_package_sizes(
     "knb.ecoinformatics.org", "/knb/d1/mn/v2/", "doi:10.5063/F11V5CFN")
+  expect_equal(attr(sizes, "file_names"), c("meta.xml", "Seed_tracking_data.csv", "Trapping_data.csv"))
+
+  # KNB labels its reply text/json
+  testthat::local_mocked_bindings(
+    req_perform = function(req, ...) {
+      httr2::response(status_code = 200,
+                      headers = list(`Content-Type` = "text/json"),
+                      body = charToRaw(jsonlite::toJSON(reply, auto_unbox = TRUE)))
+    },
+    .package = "httr2"
+  )
+  expect_length(metacheck:::.dataone_package_sizes("h", "/x/", "doi:1"), 3)
+
+  testthat::local_mocked_bindings(
+    req_perform = function(req, ...) {
+      seen <<- req$url
+      httr2::response(status_code = 200,
+                      headers = list(`Content-Type` = "application/json"),
+                      body = charToRaw(jsonlite::toJSON(reply, auto_unbox = TRUE)))
+    },
+    .package = "httr2"
+  )
+  sizes <- metacheck:::.dataone_package_sizes(
+    "knb.ecoinformatics.org", "/knb/d1/mn/v2/", "doi:10.5063/F11V5CFN")
   expect_equal(seen, paste0(
     "https://knb.ecoinformatics.org/knb/d1/mn/v2/query/solr/",
     "?q=isDocumentedBy%3A%22doi%3A10.5063%2FF11V5CFN%22",
@@ -140,6 +164,54 @@ test_that(".dataone_package_sizes builds the Solr query and reads its reply", lo
     .package = "httr2"
   )
   expect_equal(metacheck:::.dataone_package_sizes("h", "/x/", "doi:1"), numeric(0))
+}))
+
+test_that(".dataone_info keeps the slashes of a file's PID", local({
+  # data.piscoweb.org doi:10.6085/AA/marine_ltm.20.1: cut at its last slash, the
+  # PID gave 404
+  eml <- paste0(
+    '<eml:eml xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0"><dataset><title>T</title>',
+    '<dataTable><physical><objectName>a.csv</objectName><size>5</size><distribution><online>',
+    '<url>https://cn.dataone.org/cn/v2/resolve/doi:10.6085/AA/marine_ltm.21.1</url>',
+    '</online></distribution></physical></dataTable>',
+    '<dataTable><physical><objectName>b.csv</objectName><size>6</size><distribution><online>',
+    '<url>ecogrid://knb/knb.1403.1</url>',
+    '</online></distribution></physical></dataTable>',
+    '</dataset></eml:eml>')
+  testthat::local_mocked_bindings(
+    .batch_query = function(urls, ...) list(httr2::response(status_code = 200, body = charToRaw(eml))),
+    .dataone_package_sizes = function(...) numeric(0))
+  files <- metacheck:::.dataone_info("doi:1", host = "knb.ecoinformatics.org")$files[[1]]
+  expect_equal(files[[1]]$pid, "doi:10.6085/AA/marine_ltm.21.1")
+  expect_equal(files[[2]]$pid, "knb.1403.1")
+}))
+
+test_that(".dataone_info finds a file with no usable id by its file name", local({
+  # KNB doi:10.5063/F1VD6WMF: a <physical> with no url whose name has a folder,
+  # and the Solr reply has the object under the bare file name.
+  eml <- paste0(
+    '<eml:eml xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0"><dataset><title>T</title>',
+    '<dataTable><physical><objectName>Results/trait_data.csv</objectName><size/></physical></dataTable>',
+    '<otherEntity id="f7a2"><entityName>Results/twice.csv</entityName></otherEntity>',
+    '<otherEntity id="f7a3"><entityName>absent.csv</entityName></otherEntity>',
+    '</dataset></eml:eml>')
+  testthat::local_mocked_bindings(
+    .batch_query = function(urls, ...) list(httr2::response(status_code = 200, body = charToRaw(eml))),
+    .dataone_package_sizes = function(host, api_base, pid) {
+      out <- c("doi:1" = 7, "urn:uuid:aaa" = 134508, "urn:uuid:b1" = 1, "urn:uuid:b2" = 2)
+      attr(out, "file_names") <- c("meta.xml", "trait_data.csv", "twice.csv", "twice.csv")
+      out
+    },
+    .dataone_object_size = function(host, api_base, pid) stop("must not be called")
+  )
+  files <- metacheck:::.dataone_info("doi:1", host = "knb.ecoinformatics.org")$files[[1]]
+  by_key <- stats::setNames(files, vapply(files, \(f) f$key, character(1)))
+
+  expect_equal(by_key[["Results/trait_data.csv"]]$pid, "urn:uuid:aaa")
+  expect_equal(by_key[["Results/trait_data.csv"]]$size, 134508)
+  # two objects with that name: not guessed
+  expect_true(is.na(by_key[["Results/twice.csv"]]$pid))
+  expect_true(is.na(by_key[["absent.csv"]]$pid))
 }))
 
 test_that(".dataone_info asks for a DOI in upper case after a 404 (#476)", local({

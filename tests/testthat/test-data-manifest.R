@@ -61,6 +61,67 @@ test_that("manifest separates intentional and unintentional non-downloads", {
   expect_match(by_name$notes.pdf$skip_reason, "download = \"all\"", fixed = TRUE)
 })
 
+test_that("manifest gives the real reason for a file inside an archive", {
+  withr::local_options(metacheck.llm.use = FALSE)
+
+  arc <- "https://osf.io/download/arc/"
+  files <- data.frame(
+    repo_url = "https://osf.io/xxxxx",
+    file_name = c("big.csv", "packed.csv", "unsized.csv", "inner.csv", "nourl.csv"),
+    file_path = c("a.zip/big.csv", "a.zip/packed.csv", "a.zip/unsized.csv", "a.zip/inner.csv", "nourl.csv"),
+    file_url = NA_character_,
+    file_size = c(5e8, 100, NA, 100, 100),
+    data_type = "data", data_format = "tabular",
+    file_location = NA_character_,
+    archive_url = c(arc, arc, arc, arc, NA)
+  )
+  oversize <- data.frame(repo_url = files$repo_url[1], file_name = "big.csv", file_size = 5e8)
+  failed <- data.frame(repo_url = files$repo_url[1], file_name = c("packed.csv", "unsized.csv"),
+                       error = c("unsupported compression method (9)", "no size for this file"))
+
+  path <- withr::local_tempfile(fileext = ".json")
+  metacheck:::.data_check_write_manifest(
+    path, files, rep(TRUE, 5), gated = NULL, paper_id = "p1", download = "data",
+    max_file_size = 100, max_download_size = 500, skip_types = "materials",
+    oversize = oversize, failed = failed, model = "test-model")
+  m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  by_name <- stats::setNames(m$files, vapply(m$files, `[[`, "", "file_name"))
+
+  expect_equal(by_name$big.csv$status, "skipped")
+  expect_match(by_name$big.csv$skip_reason, "max_file_size")
+  expect_equal(by_name$packed.csv$status, "failed")
+  expect_match(by_name$packed.csv$skip_reason, "unsupported compression method (9)", fixed = TRUE)
+  expect_match(by_name$unsized.csv$skip_reason, "no size", fixed = TRUE)
+  # nothing recorded for it: not blamed on a URL it could never have
+  expect_equal(by_name$inner.csv$skip_reason, "download failed")
+  # outside an archive, a missing URL is still the reason
+  expect_equal(by_name$nourl.csv$skip_reason, "no download URL in the listing")
+})
+
+test_that("manifest reports a restricted file as skipped, not failed", {
+  withr::local_options(metacheck.llm.use = FALSE)
+
+  files <- data.frame(
+    repo_url = "https://dataverse.nl/x", file_name = c("closed.csv", "open.csv"),
+    file_path = c("closed.csv", "open.csv"),
+    file_url = c("https://dataverse.nl/api/access/datafile/1", "https://dataverse.nl/api/access/datafile/2"),
+    file_size = 100, data_type = "data", data_format = "tabular",
+    file_location = NA_character_, file_restricted = c(TRUE, FALSE)
+  )
+  path <- withr::local_tempfile(fileext = ".json")
+  metacheck:::.data_check_write_manifest(
+    path, files, c(TRUE, TRUE), gated = NULL, paper_id = "p1", download = "data",
+    max_file_size = 100, max_download_size = 500, skip_types = "materials",
+    oversize = NULL, failed = NULL, model = "test-model")
+  m <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  by_name <- stats::setNames(m$files, vapply(m$files, `[[`, "", "file_name"))
+
+  expect_equal(by_name$closed.csv$status, "skipped")
+  expect_equal(by_name$closed.csv$skip_reason, "access restricted by the depositor")
+  expect_true(by_name$closed.csv$skip_intentional)
+  expect_equal(by_name$open.csv$status, "failed")
+})
+
 test_that("manifest records reproducibility provenance", {
   withr::local_options(metacheck.llm.use = FALSE)
   files <- data.frame(

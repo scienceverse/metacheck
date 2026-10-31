@@ -1755,6 +1755,9 @@ test_that("match_reported_output: missing or empty test_id, Inf values, a paper 
   expect_no_error(match_reported_output(eq, out))
   expect_error(match_reported_output(paperlist(test_paper(), test_paper()), out),
                "call it for each paper")
+  # a list of one paper is that paper, as module_run() passes it on
+  expect_equal(match_reported_output(paperlist(test_paper()), out),
+               match_reported_output(test_paper(), out))
 })
 
 test_that("repro_missing_inputs reports a withheld file without a file_size column (U135)", {
