@@ -668,6 +668,41 @@ test_that("static analysis: an R script that reads back the file it saved is run
   expect_true(mo$table$runnable)
 })
 
+test_that("static analysis: a name built at run time is not predicted to be missing (#568)", {
+  paper <- test_paper()
+  script <- withr::local_tempfile(fileext = ".R")
+  writeLines(c('x <- "a"', 'd <- read.csv(paste0(x, "_field.csv"))',
+               'e <- read.csv(sprintf("%s/results.csv", x))', 'f <- read.csv("absent.csv")'), script)
+  code_tbl <- code_tbl_row(paper, "built.R", script)
+  structure_df <- data.frame(paper_id = paper_id(paper), file_name = "data.csv",
+                             file_location = repro_fixture("data.csv"))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- module_run(fake_code, "reproducibility_check")
+  expect_equal(mo$table$unresolved_inputs, "absent.csv")
+  expect_equal(mo$summary_table$repro_missing_inputs, 1)
+})
+
+test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  writeLines(c('if (file.exists("absent.csv")) d <- read.csv("absent.csv")', 'cat("done\\n")'),
+             file.path(d, "guarded.R"))
+  writeLines('d <- read.csv("really_absent.csv")', file.path(d, "stops.R"))
+  # without a data file there is no file plan, and so no prediction to test; the
+  # package layout, the default for a local folder, makes no such prediction either
+  file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE,
+                                    layout = "psychds"))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["guarded.R"]], "ran_ok")
+  expect_equal(outcome[["stops.R"]], "errored")
+  # the prediction stays in the table, and code_check reports absent files
+  expect_match(mo$table$unresolved_inputs[mo$table$file_name == "stops.R"], "really_absent.csv", fixed = TRUE)
+  expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
+})
+
 test_that("static analysis: a paper with BOTH R and Python code combines into one summary row", {
   paper <- test_paper()
   code_tbl <- dplyr::bind_rows(

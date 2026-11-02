@@ -528,6 +528,30 @@ test_that(".repro_py_defined_vars returns an empty frame for no files", {
 })
 
 
+# .repro_ref_checkable() and .repro_inputs_to_report() ----
+
+test_that(".repro_ref_checkable keeps only complete literal names (#568)", {
+  d <- data.frame(
+    ref = c("data/x.csv", "{name}.csv", "out/%s.pdf", "_field.csv", ".png", "input$a", "paste0(x, 'y.csv')",
+            "{path}/weights/model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab"),
+    basename = c("x.csv", "{name}.csv", "%s.pdf", "_field.csv", ".png", "input$a", "y.csv",
+                 "model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab"),
+    is_call = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE))
+  expect_equal(.repro_ref_checkable(d),
+               c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE))
+  # Python rows can lack is_call
+  expect_true(.repro_ref_checkable(data.frame(ref = "x.csv", basename = "x.csv")))
+})
+
+test_that(".repro_inputs_to_report keeps what a run cannot show (#568)", {
+  m <- data.frame(basename = c("a.csv", "b.csv", "c.csv", "d.csv"),
+                  status = c("absent", "withheld_size", "in_archive", "absent"),
+                  detail = "", similar_to = c(NA, NA, NA, "D_.csv"))
+  expect_equal(.repro_inputs_to_report(m, FALSE), m)
+  expect_equal(.repro_inputs_to_report(m, TRUE)$basename, c("b.csv", "c.csv", "d.csv"))
+  expect_equal(nrow(.repro_inputs_to_report(m[0, ], TRUE)), 0)
+})
+
 # repro_missing_inputs() ----
 
 test_that("repro_missing_inputs classifies an absent file", {

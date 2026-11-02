@@ -1485,6 +1485,26 @@ repro_defined_vars <- function(code_text_list) {
 #'   `similar_to` (a candidate near-match basename from the repository's file
 #'   list, or `NA` — only ever set for `absent` rows; see below).
 #' @export
+# Which rows of a repro_rewrite_paths() table name a file that can be checked before
+# the code runs. A name built at run time cannot: the row of a paste() or sprintf() call,
+# a name with a placeholder ({name}.csv, %s.pdf), or a piece of one (_field.csv, .png).
+# Such a name is only left out of the prediction, and the script is run in any case, so
+# a real file called _data.csv does no harm here.
+.repro_ref_checkable <- function(d) {
+  is_call <- if ("is_call" %in% names(d)) d$is_call %in% TRUE else rep(FALSE, nrow(d))
+  piece <- grepl("^[._]", d$basename) | !grepl(".", d$basename, fixed = TRUE)
+  built <- grepl("[%{}$*\\\\]|: ", d$ref)
+  !is_call & !piece & !built
+}
+
+# The predicted missing files worth reporting. Without a run, all of them. After a run,
+# only files the deposit does hold but the code could not use: code_check already lists
+# files that are not in the repository, and the run shows what happened to each script.
+.repro_inputs_to_report <- function(missing_inputs, execute = FALSE) {
+  if (!isTRUE(execute) || nrow(missing_inputs) == 0) return(missing_inputs)
+  missing_inputs[missing_inputs$status != "absent" | !is.na(missing_inputs$similar_to), , drop = FALSE]
+}
+
 repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   refs <- unique(tolower(basename(gsub("\\\\", "/", refs))))
   empty <- data.frame(basename = character(0), status = character(0),

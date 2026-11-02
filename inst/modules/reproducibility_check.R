@@ -26,7 +26,7 @@
 #' cannot take down the R session; note this isolates crashes, **not** the
 #' filesystem or network. Installs (when `install_missing = TRUE`) and the
 #' throwaway run library never touch your main R library. Each script's outcome
-#' is one of `ran_ok`, `errored`, `timed_out`, `skipped_missing_inputs`,
+#' is one of `ran_ok`, `errored`, `timed_out`,
 #' `dependency_unavailable`, `not_parsed`, `run_by_source` (an R script
 #' another script runs with `source()`, which is run only inside that script,
 #' since on its own it lacks the packages and objects the sourcing script sets
@@ -1334,7 +1334,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   ambiguous_n <- vapply(rewrite_list, function(d)
     if (nrow(d)) sum(d$ambiguous) else 0L, integer(1))
   unresolved_refs <- unlist(lapply(rewrite_list, function(d)
-    if (nrow(d)) d$basename[!d$matched] else character(0)), use.names = FALSE)
+    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d)] else character(0)), use.names = FALSE)
 
   # Paths assembled at runtime (sprintf()/paste()-family — see
   # repro_rewrite_paths()'s `is_call` rows) are fragile authoring regardless of
@@ -1445,7 +1445,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   unresolved_list <- lapply(seq_len(n_code), function(i) {
     d <- rewrite_list[[i]]
     if (!nrow(d)) return(character(0))
-    unique(tolower(d$basename)[!d$matched &
+    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d) &
                                  !(tolower(d$basename) %in% produced_before[[i]])])
   })
   file_unresolved <- lengths(unresolved_list) > 0L
@@ -1626,9 +1626,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     #    the runnable/traffic-light bookkeeping above, but it is still not R
     #    and must not actually be handed to callr/Docker to execute.
     parses_named <- stats::setNames(runs_as_r, r_files$file_name)
-    skip_files <- r_files$file_name[file_unresolved]
-    if (length(skip_files))
-      .dbg("skipping (missing inputs): ", paste(skip_files, collapse = ", "))
+    # A file predicted to be missing does not stop a script from being run: the
+    # prediction is often wrong (a read inside if (file.exists()), a name built at
+    # run time), and running the script gives its real outcome and error.
     run_order_names <- order_tbl$file_name[order(order_tbl$order)]
 
     # A script another script runs with source() (main.R loads tidyverse,
@@ -1638,8 +1638,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # therefore not run on its own; it runs inside the script that sources it,
     # and is recorded as `run_by_source`. See .repro_run_by_source() for when
     # a sourced script still runs on its own.
-    can_run <- stats::setNames(runs_as_r & !(r_files$file_name %in% skip_files),
-                               r_files$file_name)
+    can_run <- stats::setNames(runs_as_r, r_files$file_name)
     run_by_source <- .repro_run_by_source(order_tbl, can_run)
     if (length(run_by_source))
       .dbg("run only through source(): ", paste(sprintf("%s (by %s)", names(run_by_source),
@@ -1650,14 +1649,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         repro_run_scripts_docker(
           own, ord, sandbox_root = sandbox_root,
           lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
-          image = docker_image, timeout = timeout, skip = skip_files,
+          image = docker_image, timeout = timeout,
           parses = parses_named, failed_deps = failed_deps,
           deadline = script_deadline)
       } else {
         repro_run_scripts(
           own, ord,
           lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
-          timeout = timeout, skip = skip_files, parses = parses_named,
+          timeout = timeout, parses = parses_named,
           failed_deps = failed_deps, deadline = script_deadline)
       }
       if (!length(run_by_source)) return(res)
@@ -2005,9 +2004,22 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         paste0("against the original, un-rewritten call and will likely fail") else ""))
 
   ## Missing inputs ----
-  if (n_missing_inputs == 0) {
-    report_missing <- "Every data file the code reads is either produced by an earlier script or present in the repository."
+  # When the code was run, its outcomes show what is missing, and code_check lists
+  # files that are not in the repository, so only what those two cannot say remains.
+  reported_inputs <- .repro_inputs_to_report(missing_inputs, execute)
+  if (nrow(reported_inputs) == 0) {
+    report_missing <- if (!isTRUE(execute)) "Every data file the code reads is either produced by an earlier script or present in the repository."
     missing_table <- NULL
+  } else if (isTRUE(execute)) {
+    report_missing <- sprintf(
+      "%d input file%s the code reads %s in the deposit but not usable as named: too large to download, inside an archive, or under a similar name.",
+      nrow(reported_inputs), plural(nrow(reported_inputs)),
+      plural(nrow(reported_inputs), "is", "are"))
+    missing_table <- data.frame(
+      File   = reported_inputs$basename,
+      Status = reported_inputs$status,
+      Reason = reported_inputs$detail
+    )
   } else {
     report_missing <- sprintf(
       "%d input file%s the code reads %s not available. Files withheld only because of their size are distinguished from files absent from the repository — the former are a size-cap issue, not a reproducibility failure.",
@@ -2024,7 +2036,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     report,
     "#### Run order", report_order, scroll_table(order_table, maxrows = 10),
     "#### File paths", report_paths,
-    "#### Missing inputs", report_missing,
+    if (!is.null(report_missing)) c("#### Missing inputs", report_missing),
     if (!is.null(missing_table)) scroll_table(missing_table, maxrows = 10)
   )
   if (parse_errs > 0)
@@ -2058,7 +2070,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_ran_ok  <- sum(oc == "ran_ok")
     n_errored <- sum(oc == "errored")
     n_timeout <- sum(oc == "timed_out")
-    n_skipped <- sum(oc == "skipped_missing_inputs")
     n_noparse <- sum(oc == "not_parsed")
     n_nodep   <- sum(oc == "dependency_unavailable")
     n_by_src  <- sum(oc == "run_by_source")
@@ -2067,13 +2078,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       paste0("**The code was run.** Each script ran in an isolated %s ",
              "against a throwaway copy of ", layout_name, ", in the run order ",
              "above, with a %d-second per-script timeout. Of %d script%s: %d ran ",
-             "without error, %d errored, %d timed out, %d %s skipped (inputs ",
-             "unavailable), %d could not run because one of its own ",
-             "dependencies is unavailable, %d did not parse%s.%s"),
+             "without error, %d errored, %d timed out, %d could not run because ",
+             "one of its own dependencies is unavailable, %d did not parse%s.%s"),
       if (sandbox == "docker") "Docker container" else "subprocess",
       timeout, nrow(run_results), plural(nrow(run_results)),
-      n_ran_ok, n_errored, n_timeout, n_skipped,
-      plural(n_skipped, "was", "were"), n_nodep, n_noparse,
+      n_ran_ok, n_errored, n_timeout, n_nodep, n_noparse,
       if (n_by_src > 0) sprintf(", and %d %s run by another script with `source()`",
                                 n_by_src, plural(n_by_src, "was", "were")) else "",
       # recorded versions have their own part of the report (see below)
@@ -2387,7 +2396,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_code, plural(n_code), if (sandbox == "docker") "Docker container" else "subprocess") else sprintf(
       "We assessed %d R code file%s for reproducibility (static analysis; no code was run).",
       n_code, plural(n_code)),
-    sprintf("%d file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
+    if (!isTRUE(execute)) sprintf("%d file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
             n_runnable, plural(n_runnable), if (n_runnable == 1) "s" else ""),
     if (n_dup > 0) sprintf(
       "%d file%s skipped as byte-identical duplicate%s of another file already in the run (the paper links more than one repository/component).",
@@ -2403,9 +2412,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (n_nodep_sum > 0) sprintf(
       "%d script%s could not run because %s own dependency is unavailable (not counted against the traffic light).",
       n_nodep_sum, plural(n_nodep_sum), plural(n_nodep_sum, "its", "their")),
-    if (n_missing_inputs > 0) sprintf(
+    if (nrow(reported_inputs) > 0) sprintf(
       "%d referenced input%s unavailable (%d withheld due to size).",
-      n_missing_inputs, plural(n_missing_inputs), n_withheld),
+      nrow(reported_inputs), plural(nrow(reported_inputs)), n_withheld),
     sprintf("%d installable dependenc%s detected.", n_deps,
             if (n_deps == 1) "y" else "ies"),
     .repro_recorded_summary(recorded, install_results),
@@ -2702,7 +2711,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_ambiguous_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$ambiguous) else 0L, integer(1))
   py_unresolved_refs <- unlist(lapply(py_rewrite_list, function(d)
-    if (nrow(d)) d$basename[!d$matched] else character(0)), use.names = FALSE)
+    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d)] else character(0)), use.names = FALSE)
 
   # ── Run order ──────────────────────────────────────────────────────────
   py_order_tbl <- repro_run_order(py_io)
@@ -2746,7 +2755,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_unresolved_list <- lapply(seq_len(n_py_code), function(i) {
     d <- py_rewrite_list[[i]]
     if (!nrow(d)) return(character(0))
-    unique(tolower(d$basename)[!d$matched &
+    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d) &
                                  !(tolower(d$basename) %in% py_produced_before[[i]])])
   })
   py_file_unresolved <- lengths(py_unresolved_list) > 0L
@@ -2835,7 +2844,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
 
     py_parses_named <- stats::setNames(py_parses, py_files$file_name)
-    py_skip_files <- py_files$file_name[py_file_unresolved]
     py_run_order_names <- py_order_tbl$file_name[order(py_order_tbl$order)]
     # A module other files import is not run on its own (see
     # .repro_py_imported()), like an R script another script source()s.
@@ -2853,14 +2861,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           repro_run_scripts_py_docker(
             py_run_tbl, py_run_order_names, sandbox_root = sandbox_root,
             lib_dir = if (dir.exists(py_lib_dir)) py_lib_dir else NULL,
-            timeout = timeout, skip = py_skip_files, parses = py_parses_named,
+            timeout = timeout, parses = py_parses_named,
             failed_deps = py_failed_deps, deadline = script_deadline)
         } else {
           repro_run_scripts_py(
             py_run_tbl, py_run_order_names,
             lib_dir = if (dir.exists(py_lib_dir)) py_lib_dir else NULL,
             python_bin = py_parse_bin,
-            timeout = timeout, skip = py_skip_files, parses = py_parses_named,
+            timeout = timeout, parses = py_parses_named,
             failed_deps = py_failed_deps, deadline = script_deadline)
         },
         error = function(e) {
@@ -3034,9 +3042,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_total_ambiguous, plural(py_total_ambiguous),
       plural(py_total_ambiguous, "it was", "they were")))
 
-  if (n_py_missing_inputs == 0) {
-    py_report_missing <- "Every data file the code reads is either produced by an earlier script or present in the repository."
+  py_reported_inputs <- .repro_inputs_to_report(py_missing_inputs, execute)
+  if (nrow(py_reported_inputs) == 0) {
+    py_report_missing <- if (!isTRUE(execute)) "Every data file the code reads is either produced by an earlier script or present in the repository."
     py_missing_table <- NULL
+  } else if (isTRUE(execute)) {
+    py_report_missing <- sprintf(
+      "%d input file%s the code reads %s in the deposit but not usable as named: too large to download, inside an archive, or under a similar name.",
+      nrow(py_reported_inputs), plural(nrow(py_reported_inputs)),
+      plural(nrow(py_reported_inputs), "is", "are"))
+    py_missing_table <- data.frame(
+      File   = py_reported_inputs$basename,
+      Status = py_reported_inputs$status,
+      Reason = py_reported_inputs$detail
+    )
   } else {
     py_report_missing <- sprintf(
       "%d input file%s the code reads %s not available. Files withheld only because of their size are distinguished from files absent from the repository — the former are a size-cap issue, not a reproducibility failure.",
@@ -3053,7 +3072,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py_report,
     "#### Run order", py_report_order, scroll_table(py_order_table, maxrows = 10),
     "#### File paths", py_report_paths,
-    "#### Missing inputs", py_report_missing,
+    if (!is.null(py_report_missing)) c("#### Missing inputs", py_report_missing),
     if (!is.null(py_missing_table)) scroll_table(py_missing_table, maxrows = 10),
     # Same position as the R path's own "#### Parsing" subsection. Also shown
     # when the check could not be done, so a reader does not take a missing
@@ -3072,7 +3091,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_py_ran_ok  <- sum(py_oc == "ran_ok")
     n_py_errored <- sum(py_oc == "errored")
     n_py_timeout <- sum(py_oc == "timed_out")
-    n_py_skipped <- sum(py_oc == "skipped_missing_inputs")
     n_py_noparse <- sum(py_oc == "not_parsed")
     n_py_nodep   <- sum(py_oc == "dependency_unavailable")
     n_py_import  <- sum(py_oc == "run_by_import")
@@ -3081,16 +3099,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       paste0("**The Python code was run.** Each script ran in an isolated ",
              "%s against a throwaway copy of %s, in the run ",
              "order above, with a %d-second per-script timeout. Of %d script%s: ",
-             "%d ran without error, %d errored, %d timed out, %d %s skipped ",
-             "(inputs unavailable), %d could not run because one of its own ",
-             "dependencies is unavailable, and %d did not parse.%s Running ",
+             "%d ran without error, %d errored, %d timed out, %d could not run ",
+             "because one of its own dependencies is unavailable, and %d did not ",
+             "parse.%s Running ",
              "against current package versions: a break can reflect version ",
              "drift, which argues for pinning versions (e.g. in a ",
              "`requirements.txt`)."),
       if (sandbox == "docker") "Docker container" else "subprocess",
       layout_name, timeout, nrow(py_run_results), plural(nrow(py_run_results)),
-      n_py_ran_ok, n_py_errored, n_py_timeout, n_py_skipped,
-      plural(n_py_skipped, "was", "were"), n_py_nodep, n_py_noparse,
+      n_py_ran_ok, n_py_errored, n_py_timeout, n_py_nodep, n_py_noparse,
       if (n_py_import) sprintf(
         " %d %s not run on %s own, because other files import %s: %s.",
         n_py_import, plural(n_py_import, "file was", "files were"),
@@ -3257,7 +3274,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_py_code, plural(n_py_code)) else sprintf(
       "We assessed %d Python code file%s for reproducibility (static analysis; no code was run).",
       n_py_code, plural(n_py_code)),
-    sprintf("%d Python file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
+    if (!isTRUE(execute)) sprintf("%d Python file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
             n_py_runnable, plural(n_py_runnable), if (n_py_runnable == 1) "s" else ""),
     if (n_py_dup > 0) sprintf(
       "%d Python file%s skipped as byte-identical duplicate%s of another file already in the run.",
@@ -3272,9 +3289,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                         n_py_imp, plural(n_py_imp, "file is", "files are"),
                                         plural(n_py_imp, "its", "their")) else "")
     },
-    if (n_py_missing_inputs > 0) sprintf(
+    if (nrow(py_reported_inputs) > 0) sprintf(
       "%d referenced Python input%s unavailable (%d withheld due to size).",
-      n_py_missing_inputs, plural(n_py_missing_inputs), n_py_withheld),
+      nrow(py_reported_inputs), plural(nrow(py_reported_inputs)), n_py_withheld),
     sprintf("%d installable Python dependenc%s detected.", n_py_deps,
             if (n_py_deps == 1) "y" else "ies")
   ) |> paste("\n- ", x = _, collapse = "")
