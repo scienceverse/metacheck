@@ -57,7 +57,7 @@
     return(NULL)
   }
   tbl <- table[order(is.na(table$run_order), table$run_order), , drop = FALSE]
-  is_py <- grepl("\\.py$", tbl$file_name, ignore.case = TRUE)
+  is_py <- grepl("\\.(py|ipynb)$", tbl$file_name, ignore.case = TRUE)
   rr <- run_results[match(tbl$file_name, run_results$file_name), , drop = FALSE]
   outcome <- ifelse(is.na(rr$outcome), tbl$outcome, rr$outcome)
   # a file that was not handed to R or Python: why, from the static check
@@ -118,6 +118,9 @@
                              "The time for all scripts together had run out before it could start."),
       not_parsed = , static_parse_error = c("Not run", sprintf(
         "%s cannot read the script: it contains a syntax error.", lang)),
+      python2 = , static_python2 = c("Not run", paste0(
+        "It is written for Python 2, which has been unsupported since 2020. We run Python 3, ",
+        "and do not convert code, since that can change results.")),
       static_unplaceable = c("Not run",
                              "We could not work out when to run it, relative to the other scripts."),
       jags_model = , static_jags_model = c("Not run", "It is a JAGS model, which another script reads."),
@@ -178,6 +181,13 @@
     sprintf(paste0("- %s reads files under another name than the deposit holds (%s). We ",
                    "corrected the names so the script could run; they should be changed in the script."),
             .repro_cell(tbl$file_name[[i]]), .repro_cell(names_fixed[[i]]))
+  }, character(1)))
+  # notebook commands left out to run the code
+  commands <- if ("commands_removed" %in% names(tbl)) tbl$commands_removed else rep(NA_character_, nrow(tbl))
+  problems <- c(problems, vapply(which(!is.na(commands)), \(i) {
+    sprintf(paste0("- %s holds notebook commands that are not Python (%s). We left them out ",
+                   "so the code could run; what they install or prepare was not done."),
+            .repro_cell(tbl$file_name[[i]]), .repro_cell(commands[[i]]))
   }, character(1)))
 
   # the comparison with the paper

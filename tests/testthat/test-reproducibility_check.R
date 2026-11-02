@@ -2628,6 +2628,36 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_py_parses marks Python 2 code apart from other syntax errors (#568)", {
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  out <- .repro_py_parses(list(ok = "x = 1", py2 = 'print "a"', ex = c("try:", "    x = 1", "except E, e:", "    pass"),
+                               tabs = c("if a:", "        x = 1", "\ty = 2"), bad = "def ("))
+  expect_equal(unname(as.vector(out)), c(TRUE, FALSE, FALSE, FALSE, FALSE))
+  expect_equal(attr(out, "python2"), c(FALSE, TRUE, TRUE, TRUE, FALSE))
+  # no attribute when there is none
+  expect_null(attr(.repro_py_parses(list(ok = "x = 1", bad = "def (")), "python2"))
+})
+
+test_that(".repro_py2_error reads Python 2 code from an error message (#568)", {
+  expect_true(.repro_py2_error("  File \"a.py\"\nSyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?"))
+  expect_true(.repro_py2_error("TabError: inconsistent use of tabs and spaces in indentation"))
+  expect_false(.repro_py2_error("SyntaxError: invalid syntax"))
+  expect_false(.repro_py2_error("NameError: name 'x' is not defined"))
+})
+
+test_that(".repro_py_get_ipython adds a stand-in only when needed, and in a valid place (#568)", {
+  expect_equal(.repro_py_get_ipython("x = 1"), "x = 1")
+  txt <- c("# -*- coding: latin-1 -*-", "", 'if "colab" in str(get_ipython()):', "    pass")
+  out <- .repro_py_get_ipython(txt)
+  expect_equal(out[1:2], txt[1:2])
+  expect_match(out[3], "^get_ipython = lambda")
+  fut <- .repro_py_get_ipython(c('"""doc"""', "from __future__ import print_function", "get_ipython().system('ls')"))
+  expect_match(fut[3], "^get_ipython = lambda")
+  expect_equal(.repro_py_get_ipython(c("def get_ipython(): pass", "get_ipython()")), c("def get_ipython(): pass", "get_ipython()"))
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  expect_true(all(.repro_py_parses(list(a = out, b = fut))))
+})
+
 test_that(".repro_path_named finds the file a path names among same-named files (#568)", {
   paths <- c("Data/test/d.csv", "Data/d.csv", "repo.zip/top/R/h.R", "other.zip/top/R/h.R")
   expect_equal(.repro_path_named(paths[1:2], "Data/test/d.csv"), 1L)

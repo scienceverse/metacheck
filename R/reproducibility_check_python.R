@@ -162,7 +162,9 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
 # the code without running it and writes no files (`python -m py_compile`
 # would write a __pycache__ folder). Returns a named logical vector (by file),
 # FALSE for a file with a syntax error; every file is TRUE when no working
-# Python interpreter was found, since nothing could be checked.
+# Python interpreter was found, since nothing could be checked. When a file fails
+# because it is Python 2 code, attribute "python2" marks which (see
+# .repro_py2_error() for how Python 3 words that).
 .repro_py_parses <- function(code_text_list, python_bin = "python") {
   out <- stats::setNames(rep(TRUE, length(code_text_list)), names(code_text_list))
   if (!length(code_text_list) || !requireNamespace("processx", quietly = TRUE))
@@ -172,7 +174,8 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
 
   # One Python process for all files (starting Python once per file is slow
   # for a repository with many scripts): it prints one line per file, "1"
-  # when it parses and "0" when it does not.
+  # when it parses, "2" when it does not because it is Python 2, and "0" when
+  # it does not for another reason.
   tfs <- vapply(seq_along(code_text_list), function(k) {
     tf <- tempfile(fileext = ".py")
     writeLines(enc2utf8(code_text_list[[k]]), tf, useBytes = TRUE)
@@ -189,8 +192,9 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
     "    try:",
     "        ast.parse(open(f, encoding='utf-8', errors='replace').read())",
     "        print(1)",
-    "    except Exception:",
-    "        print(0)",
+    "    except Exception as e:",
+    "        words = ('Missing parentheses in call to', 'multiple exception types must be parenthesized')",
+    "        print(2 if isinstance(e, TabError) or any(w in str(e) for w in words) else 0)",
     sep = "\n")
   res <- tryCatch(
     processx::run(bin, c("-c", script, list_file), error_on_status = FALSE,
@@ -199,8 +203,35 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
   ok <- if (!is.null(res)) trimws(strsplit(res$stdout, "\n", fixed = TRUE)[[1]])
   # Anything unexpected (a timeout, a crash, missing lines) leaves every file
   # counted as parsing, the same as having no interpreter.
-  if (length(ok) == length(tfs) && all(ok %in% c("0", "1"))) out[] <- ok == "1"
+  if (length(ok) == length(tfs) && all(ok %in% c("0", "1", "2"))) {
+    out[] <- ok == "1"
+    if (any(ok == "2")) attr(out, "python2") <- ok == "2"
+  }
   out
+}
+
+# Whether a run's error output shows Python 2 code: a print or exec statement, the
+# form `except E, e`, or tabs mixed with spaces, which Python 2 accepted. The image
+# only has Python 3, and converting the code could change results without a word
+# (`/` between whole numbers divides differently), so these are only named.
+.repro_py2_error <- function(txt) {
+  grepl(paste0("SyntaxError: (Missing parentheses in call to|multiple exception types must be parenthesized)",
+               "|TabError:"), txt %||% "", perl = TRUE)
+}
+
+# A stand-in for get_ipython(), which only exists inside IPython: without it a
+# notebook's `if "google.colab" in str(get_ipython()):` stops with a NameError. Its
+# methods (run_line_magic, system) do nothing, as the commands are left out too.
+# Placed after leading comments (an encoding line must stay on top) and after
+# `from __future__` imports (which must come first).
+.repro_py_get_ipython <- function(txt) {
+  if (!any(grepl("\\bget_ipython\\s*\\(", txt)) || any(grepl("\\bget_ipython\\s*=|def\\s+get_ipython\\b", txt)))
+    return(txt)
+  stub <- paste0('get_ipython = lambda: type("ipython", (), {"__getattr__": lambda self, name: ',
+                 '(lambda *a, **k: None)})()  # [reproducibility_check added]')
+  future <- which(grepl("^\\s*from\\s+__future__\\s+import", txt))
+  comments <- cumprod(grepl("^\\s*(#.*)?$", txt))
+  append(txt, stub, after = if (length(future)) max(future) else sum(comments))
 }
 
 #' Parse a requirements.txt / pyproject.toml dependency block into per-package pins

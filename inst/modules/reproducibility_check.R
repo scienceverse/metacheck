@@ -35,6 +35,8 @@
 #' block), `jags_model` (a JAGS or BUGS model saved with an R extension, which
 #' another script reads) or `not_r_content` (a file that is not R at all, such
 #' as a JSON or HTML dump); these last two are not run and are not failures.
+#' `python2` marks Python 2 code, which is not run, since only Python 3 is
+#' available, and is not converted, since that can change results.
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -2697,6 +2699,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       error = function(e) character(0))
   })
   names(py_code_text_list) <- py_files$file_name
+  # What was left out of a notebook or added to a script to run it, to report.
+  py_commands_removed <- lapply(seq_len(n_py_code), function(i) {
+    if (!grepl("\\.ipynb$", py_files$file_name[i], ignore.case = TRUE)) return(character(0))
+    path <- py_resolve_row_path(i)
+    if (is.na(path)) return(character(0))
+    tryCatch(.code_notebook_parts(code_read(path))$removed, error = function(e) character(0))
+  })
+  names(py_commands_removed) <- py_files$file_name
+  py_uses_get_ipython <- vapply(py_code_text_list, function(txt)
+    !identical(.repro_py_get_ipython(txt), txt), logical(1))
+  py_code_text_list <- lapply(py_code_text_list, .repro_py_get_ipython)
 
   # ── Dependencies (pooled across files) ────────────────────────────────────
   # requirements.txt / pyproject.toml, if the repository has one: preferred
@@ -2774,7 +2787,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # none (e.g. sandbox = "docker" on a machine without Python), every file
   # counts as parsing and a syntax error only shows when the code is run.
   py_parse_bin <- .repro_find_python()
-  py_parses <- unname(.repro_py_parses(py_code_text_list))
+  py_parse_result <- .repro_py_parses(py_code_text_list)
+  py_parses <- as.vector(py_parse_result)
+  py_python2 <- as.vector(attr(py_parse_result, "python2") %||% rep(FALSE, n_py_code))
   n_py_noparse_static <- sum(!py_parses)
   # Set when the execute phase below could not run the Python code at all.
   py_exec_error <- NULL
@@ -2805,8 +2820,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   py_not_runnable_reason <- ifelse(
     py_runnable, NA_character_,
-    ifelse(!py_parses, "parse_error",
-           ifelse(!py_placeable, "unplaceable", "missing_input")))
+    ifelse(py_python2, "python2", ifelse(!py_parses, "parse_error",
+           ifelse(!py_placeable, "unplaceable", "missing_input"))))
   py_unresolved_inputs <- vapply(py_unresolved_list, function(x)
     if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
@@ -2887,6 +2902,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # A module other files import is not run on its own (see
     # .repro_py_imported()), like an R script another script source()s.
     py_imported <- .repro_py_imported(py_code_text_list, py_files$file_path)
+    # a file that does not parse keeps that outcome: it cannot run when imported either
+    py_imported <- py_imported[names(py_imported) %in% py_files$file_name[py_parses]]
     if (length(py_imported))
       .dbg("[repro/py] imported by other files, not run on their own: ",
            paste(names(py_imported), collapse = ", "))
@@ -2920,6 +2937,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_run_results <- dplyr::bind_rows(py_run_results, data.frame(
         file_name = names(py_imported), outcome = "run_by_import",
         error = "", stdout = "", stderr = ""))
+    }
+    # Python 2 code gets an outcome of its own: the parser's verdict, or, with no
+    # Python on this computer or for a script importing such a file, the error.
+    if (!is.null(py_run_results)) {
+      py_is_py2 <- py_run_results$file_name %in% py_files$file_name[py_python2] |
+        (py_run_results$outcome == "errored" &
+           .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))
+      py_run_results$outcome[py_is_py2] <- "python2"
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -3044,6 +3069,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_table$writes <- py_writes_of
   py_name_corrections <- .repro_name_corrections(py_rewrite_list)
   py_table$names_corrected <- .repro_names_corrected(py_name_corrections, py_files$file_name)
+  py_table$commands_removed <- vapply(py_commands_removed, function(x)
+    if (length(x)) paste(x, collapse = "; ") else NA_character_, character(1), USE.NAMES = FALSE)
 
   ## ── Report ────────────────────────────────────────────────────────────
   py_intro <- if (isTRUE(execute))
@@ -3125,10 +3152,31 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (!nzchar(py_parse_bin)) c("#### Parsing",
       sprintf("The Python files were not checked for syntax errors, because %s; a syntax error will only show if the code is run.",
               .repro_python_missing_reason()))
-    else if (n_py_noparse_static > 0) c("#### Parsing", sprintf(
-      "%d Python file%s did not parse and cannot be run (Python's own parser found a syntax error; code written for Python 2 also fails this check): %s.",
-      n_py_noparse_static, plural(n_py_noparse_static),
-      paste(py_files$file_name[!py_parses], collapse = ", ")))
+    else if (n_py_noparse_static > 0) c("#### Parsing",
+      if (sum(!py_parses & !py_python2) > 0) sprintf(
+        "%d Python file%s did not parse and cannot be run (Python's own parser found a syntax error): %s.",
+        sum(!py_parses & !py_python2), plural(sum(!py_parses & !py_python2)),
+        paste(py_files$file_name[!py_parses & !py_python2], collapse = ", ")),
+      if (sum(py_python2) > 0) sprintf(
+        paste0("%d Python file%s written for Python 2, which has been unsupported since 2020. ",
+               "We run Python 3, so %s not run, and we do not convert code, since that ",
+               "can change results: `/` between whole numbers divides differently. To be ",
+               "run, %s to be converted to Python 3 by the authors: %s."),
+        sum(py_python2), plural(sum(py_python2), " is", "s are"),
+        plural(sum(py_python2), "it was", "they were"),
+        plural(sum(py_python2), "it needs", "they need"),
+        paste(py_files$file_name[py_python2], collapse = ", "))),
+    if (sum(lengths(py_commands_removed)) > 0 || any(py_uses_get_ipython)) c("#### Notebook commands", sprintf(
+      paste0("To run the Python code we left out %d notebook command%s, which %s not Python",
+             "%s. A command that installs a package or prepares a file did not run, so a ",
+             "later error can follow from that. A script that runs outside a notebook should not rely on them."),
+      sum(lengths(py_commands_removed)), plural(sum(lengths(py_commands_removed))),
+      plural(sum(lengths(py_commands_removed)), "is", "are"),
+      if (any(py_uses_get_ipython)) ", and added a stand-in for `get_ipython()` that does nothing" else ""),
+      if (sum(lengths(py_commands_removed)) > 0) scroll_table(data.frame(
+        File = rep(names(py_commands_removed), lengths(py_commands_removed)),
+        Command = unlist(py_commands_removed, use.names = FALSE),
+        check.names = FALSE), maxrows = 10))
   )
 
   if (!is.null(py_run_results) && nrow(py_run_results) > 0) {
@@ -3137,6 +3185,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_py_errored <- sum(py_oc == "errored")
     n_py_timeout <- sum(py_oc == "timed_out")
     n_py_noparse <- sum(py_oc == "not_parsed")
+    n_py_python2 <- sum(py_oc == "python2")
     n_py_nodep   <- sum(py_oc == "dependency_unavailable")
     n_py_import  <- sum(py_oc == "run_by_import")
     n_late       <- sum(py_oc == "skipped_time_limit")
@@ -3145,14 +3194,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "%s against a throwaway copy of %s, in the run ",
              "order above, with a %d-second per-script timeout. Of %d script%s: ",
              "%d ran without error, %d errored, %d timed out, %d could not run ",
-             "because one of its own dependencies is unavailable, and %d did not ",
-             "parse.%s Running ",
+             "because one of its own dependencies is unavailable, %d did not ",
+             "parse, and %d %s written for Python 2.%s Running ",
              "against current package versions: a break can reflect version ",
              "drift, which argues for pinning versions (e.g. in a ",
              "`requirements.txt`)."),
       if (sandbox == "docker") "Docker container" else "subprocess",
       layout_name, timeout, nrow(py_run_results), plural(nrow(py_run_results)),
       n_py_ran_ok, n_py_errored, n_py_timeout, n_py_nodep, n_py_noparse,
+      n_py_python2, plural(n_py_python2, "is", "are"),
       if (n_py_import) sprintf(
         " %d %s not run on %s own, because other files import %s: %s.",
         n_py_import, plural(n_py_import, "file was", "files were"),
@@ -3367,6 +3417,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py_rw_rows <- dplyr::bind_rows(py_rw_rows, data.frame(
       file_name = py_name_corrections$file_name, change_type = "name_corrected",
       detail = sprintf('"%s" -> "%s"', py_name_corrections$name_in_code, py_name_corrections$name_in_deposit)))
+  # notebook commands left out, and the stand-in for get_ipython(), for the authors
+  if (sum(lengths(py_commands_removed)) > 0)
+    py_rw_rows <- dplyr::bind_rows(py_rw_rows, data.frame(
+      file_name = rep(names(py_commands_removed), lengths(py_commands_removed)),
+      change_type = "notebook_command_removed",
+      detail = unlist(py_commands_removed, use.names = FALSE)))
+  if (any(py_uses_get_ipython))
+    py_rw_rows <- dplyr::bind_rows(py_rw_rows, data.frame(
+      file_name = py_files$file_name[py_uses_get_ipython], change_type = "get_ipython_added",
+      detail = "a stand-in for get_ipython() that does nothing"))
 
   py_modifications <- if (isTRUE(execute)) {
     # Reusing "setwd_removed" as the change_type label for os.chdir() removal

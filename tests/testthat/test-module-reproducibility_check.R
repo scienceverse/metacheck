@@ -734,6 +734,35 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: Python 2 code has its own outcome, and notebook commands are noted (#568)", {
+  skip_if_quick()
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  d <- withr::local_tempdir()
+  writeLines('print "old"', file.path(d, "old.py"))
+  writeLines('print("new")', file.path(d, "new.py"))
+  writeLines('import oldmod', file.path(d, "uses.py"))
+  writeLines('print "module"', file.path(d, "oldmod.py"))
+  jsonlite::write_json(list(
+    metadata = list(kernelspec = list(language = "python", name = "python3")),
+    cells = list(list(cell_type = "code", source = "%%bash\nls -l"),
+                 list(cell_type = "code", source = 'if "colab" in str(get_ipython()):\n    !pip install a\nprint("nb")'))),
+    file.path(d, "n.ipynb"), auto_unbox = TRUE)
+  file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["old.py"]], "python2")
+  expect_equal(outcome[["oldmod.py"]], "python2")
+  expect_equal(outcome[["new.py"]], "ran_ok")
+  expect_equal(outcome[["n.ipynb"]], "ran_ok")
+  expect_equal(mo$table$not_runnable_reason[mo$table$file_name == "old.py"], "python2")
+  expect_setequal(mo$modifications$detail[mo$modifications$change_type == "notebook_command_removed"],
+                  c("%%bash", "!pip install a"))
+  expect_true("get_ipython_added" %in% mo$modifications$change_type)
+  report <- paste(unlist(mo$report), collapse = "\n")
+  expect_match(report, "written for Python 2", fixed = TRUE)
+  expect_match(report, "#### Notebook commands", fixed = TRUE)
+})
+
 test_that("execute = TRUE: a name in a variable and a path among same-named files are followed (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")

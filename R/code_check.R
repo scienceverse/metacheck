@@ -862,33 +862,7 @@ code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
     text <- code_read(file_path)
   }
 
-  nb <- tryCatch(jsonlite::fromJSON(paste(text, collapse = "\n"),
-                                    simplifyVector = FALSE),
-                 error = function(e) NULL)
-  cells <- nb$cells
-  if (is.null(cells) || !length(cells)) {
-    out <- character(0)
-    if (is.null(save_path)) return(out)
-    writeLines(out, save_path)
-    return(save_path)
-  }
-
-  src <- lapply(cells, function(cl) {
-    if (!identical(cl$cell_type, "code")) return(NULL)
-    # `source` is normally an array of lines (each keeping its trailing "\n"),
-    # but the schema also permits a single string -- handle both.
-    s <- cl$source
-    if (is.null(s) || !length(s)) return(NULL)
-    lines <- unlist(strsplit(paste(unlist(s), collapse = ""), "\n"))
-    # Drop IPython magics ("%cd ..", "%%timeit") and shell escapes ("!pip
-    # install x"): neither is Python, and both would otherwise be scanned for
-    # imports and file references as though they were.
-    lines <- lines[!grepl("^\\s*[%!]", lines)]
-    if (!length(lines)) return(NULL)
-    c(lines, "")   # blank line marks the cell boundary
-  })
-
-  out <- unlist(Filter(Negate(is.null), src)) %||% character(0)
+  out <- .code_notebook_parts(text)$lines
 
   if (is.null(save_path)) {
     out
@@ -896,6 +870,54 @@ code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
     writeLines(out, save_path)
     save_path
   }
+}
+
+# A notebook's code, and the commands left out of it, from its JSON text. Commands
+# are IPython magics ("%cd ..") and shell escapes ("!pip install x"), which are not
+# Python and would otherwise be scanned as though they were. An R-kernel notebook
+# has no such commands, and "  %>% filter()" and "!x" are code there.
+.code_notebook_parts <- function(text) {
+  nb <- tryCatch(jsonlite::fromJSON(paste(text, collapse = "\n"),
+                                    simplifyVector = FALSE),
+                 error = function(e) NULL)
+  cells <- nb$cells
+  if (is.null(cells) || !length(cells))
+    return(list(lines = character(0), removed = character(0)))
+  kernel <- nb$metadata$kernelspec
+  is_r <- tolower(kernel$language %||% "") == "r" || tolower(kernel$name %||% "") %in% c("ir", "r")
+
+  parts <- lapply(cells, function(cl) {
+    if (!identical(cl$cell_type, "code")) return(NULL)
+    # `source` is normally an array of lines (each keeping its trailing "\n"),
+    # but the schema also permits a single string -- handle both.
+    s <- cl$source
+    if (is.null(s) || !length(s)) return(NULL)
+    lines <- unlist(strsplit(paste(unlist(s), collapse = ""), "\n"))
+    part <- if (is_r) list(lines = lines, removed = character(0)) else .code_notebook_cell(lines)
+    if (length(part$lines)) part$lines <- c(part$lines, "")   # blank line marks the cell boundary
+    part
+  })
+  list(lines = unlist(lapply(parts, `[[`, "lines")) %||% character(0),
+       removed = unlist(lapply(parts, `[[`, "removed")) %||% character(0))
+}
+
+# One notebook cell of a non-R kernel without its commands. A cell that starts with
+# %%bash and the like is not Python at all, so the whole cell goes; %%time and the
+# like only wrap Python. An indented command becomes `pass`, since removing the
+# only line of an `if` block would leave code that does not parse. Also removed:
+# the commands IPython accepts without a %: "cd folder", and "name?" for help.
+.code_notebook_cell <- function(lines) {
+  first <- lines[nzchar(trimws(lines))][1]
+  if (!is.na(first) && grepl("^\\s*%%", first) &&
+      !grepl("^\\s*%%(time|timeit|capture|prun)\\b", first))
+    return(list(lines = character(0), removed = trimws(first)))
+  is_cmd <- grepl("^\\s*[%!?]", lines) |
+    grepl("^\\s*cd(\\s+[^=(\\s].*)?$", lines, perl = TRUE) |
+    grepl("^\\s*[A-Za-z_][A-Za-z0-9_.]*\\?{1,2}\\s*$", lines)
+  indented <- is_cmd & grepl("^\\s", lines)
+  removed <- trimws(lines[is_cmd])
+  lines[indented] <- sub("^(\\s*).*$", "\\1pass", lines[indented])
+  list(lines = lines[!is_cmd | indented], removed = removed)
 }
 
 #' Extract Python chunks from a Quarto document
