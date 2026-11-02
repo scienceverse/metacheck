@@ -1769,6 +1769,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # definer_lookup survives for the reorder case. A list, since a script
     # can get several packages (see .repro_missing_fn_pkgs()).
     library_injections <- list()
+    # file_name -> the scripts to load first in the re-run
+    run_after <- list()
     if (nrow(undef_err) > 0) {
       # "could not find function \"X\"" vs "object 'X' not found" — the SAME
       # regexes repro_run_scripts() itself matched against (R/reproducibility_
@@ -1799,10 +1801,22 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         definers <- setdiff(def_of(v), user)
         if (length(definers) > 0)
           definer_lookup[[paste0(user, "||", v)]] <- paste(definers, collapse = ", ")
+        # Of several, the one in the user's own folder, when that is one file.
+        if (length(definers) > 1) {
+          near <- definers[dirname(r_script_paths[match(definers, r_files$file_name)]) ==
+                             dirname(r_script_paths[match(user, r_files$file_name)])]
+          if (length(near) == 1) definers <- near
+        }
         # Only act when exactly one file defines it (unambiguous); 0 = genuinely
         # undefined (a real bug, leave it), >1 = ambiguous (do not guess).
         if (length(definers) == 1) {
           extra_edges <- c(extra_edges, list(c(definers, user)))
+          # Authors often run scripts one after another in one session. Each script
+          # here has a session of its own, so the order alone cannot give it the
+          # object: the re-run loads the defining script first (#568, item 16).
+          # Not when the defining script already loads this one: that never ends.
+          if (!user %in% run_after[[definers]] && !definers %in% run_after[[user]])
+            run_after[[user]] <- c(run_after[[user]], definers)
           .dbg("undefined-var edge: '", definers, "' defines '", v,
                "' needed by '", user, "'")
         } else if (length(definers) == 0 && isTRUE(is_fn_missing[i]) &&
@@ -1830,13 +1844,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         # (repro_write_scripts()'s own `inject_libs` param — see #390) before
         # re-running; a file with no injection this pass is written exactly
         # as before (inject_libs only touches files named in it).
-        run_tbl2 <- if (length(library_injections) > 0)
+        run_tbl2 <- if (length(library_injections) > 0 || length(run_after) > 0)
           repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
                               inject_libs = library_injections,
                               script_paths = r_script_places,
                               writes_in_place = layout == "package",
                               replace_env_calls = replace_env_calls,
-                              run_dirs = r_run_dirs) else run_tbl
+                              run_dirs = r_run_dirs,
+                              prepend = .repro_run_after_lines(run_after, run_tbl, sandbox_root)) else run_tbl
         .dbg("re-running ", length(run_order2), " script(s) in corrected order",
              if (length(library_injections) > 0) sprintf(
                " (with %d library() injection(s): %s)",
@@ -2194,6 +2209,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " **%d script%s need%s a person** to choose a file, answer a question or use an app, which cannot be reproduced without one: %s. Naming the file in the script solves this.",
         sum(oc == "needs_a_person"), plural(sum(oc == "needs_a_person")), plural(sum(oc == "needs_a_person"), "s", ""),
         paste(run_results$file_name[oc == "needs_a_person"], collapse = ", ")))
+    if (length(run_after) > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **%d script%s use%s an object or function that only another script defines**, so in the second run that script was loaded first, in the same session: %s. Such a script should `source()` the other itself, since it does not run on its own.",
+        length(run_after), plural(length(run_after)), plural(length(run_after), "s", ""),
+        paste(sprintf("`%s` after `%s`", names(run_after), vapply(run_after, paste, character(1), collapse = "`, `")), collapse = "; ")))
     if (sum(lengths(r_choices_filled)) > 0)
       report_exec <- paste0(report_exec, sprintf(
         " **%d `file.choose()` call%s replaced by the file the code names**, so the script could run; the script should name the file itself.",
@@ -2576,6 +2596,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       detail = unlist(r_choices_filled, use.names = FALSE)))
 
   modifications <- if (isTRUE(execute)) {
+    run_after_rows <- if (exists("run_after", inherits = FALSE) && length(run_after))
+      data.frame(file_name = rep(names(run_after), lengths(run_after)), change_type = "loaded_first",
+                 detail = unlist(run_after, use.names = FALSE))
     setwd_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
                           "setwd_paths" %in% names(run_tbl)) {
       hit <- run_tbl$setwd_removed > 0 & nzchar(run_tbl$setwd_paths %||% "")
@@ -2612,7 +2635,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                 plural(run_tbl$env_calls_replaced[hit]))) else NULL
     } else NULL
 
-    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod)
+    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod, run_after_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
     modifications <- data.frame(file_name = character(0), change_type = character(0),

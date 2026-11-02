@@ -734,6 +734,36 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: a script that uses what another script defines runs after it (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  for (layout in c("package", "psychds")) {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "one")); dir.create(file.path(d, "two"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "one", "d.csv"))
+    writeLines(c('dat <- read.csv("d.csv")', 'x <- nrow(dat)'), file.path(d, "one", "make.R"))
+    writeLines('stopifnot(x > 0)', file.path(d, "two", "use.R"))
+    # defined nowhere: stays a failure
+    writeLines('stopifnot(nothing > 0)', file.path(d, "two", "broken.R"))
+    # two scripts in other folders define it: not guessed
+    writeLines('w <- 1', file.path(d, "one", "w1.R")); writeLines('w <- 2', file.path(d, "w2.R"))
+    writeLines('stopifnot(w > 0)', file.path(d, "two", "unclear.R"))
+    # two scripts that need each other do not load each other for ever
+    writeLines(c('b <- 1', 'stopifnot(a == 1)'), file.path(d, "ca.R"))
+    writeLines(c('a <- 1', 'stopifnot(b == 1)'), file.path(d, "cb.R"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE, layout = layout))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["use.R"]], "ran_ok")
+    expect_equal(outcome[["make.R"]], "ran_ok")
+    expect_equal(outcome[["broken.R"]], "errored")
+    expect_equal(outcome[["unclear.R"]], "errored")
+    expect_equal(mo$modifications$detail[mo$modifications$change_type == "loaded_first" &
+                                           mo$modifications$file_name == "use.R"], "make.R")
+    expect_match(paste(unlist(mo$report), collapse = "\n"), "`use.R` after `make.R`", fixed = TRUE)
+  }
+})
+
 test_that("execute = TRUE: scripts that ask a person, or need what a person's computer has (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")

@@ -2628,6 +2628,21 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_run_after_lines loads a script from its own folder (#568)", {
+  root <- withr::local_tempdir()
+  run_tbl <- data.frame(file_name = c("use.R", "def.R", "top.R"),
+                        script_path = file.path(root, c("a/use.R", "b/c/def.R", "top.R")),
+                        run_dir = file.path(root, c("a", "b", ".")))
+  run_tbl$run_dir[3] <- root
+  out <- .repro_run_after_lines(list(use.R = "def.R", top.R = "use.R"), run_tbl, root)
+  expect_match(out$use.R, 'setwd("../b")', fixed = TRUE)
+  expect_match(out$use.R, 'source("c/def.R", local = globalenv())', fixed = TRUE)
+  expect_match(out$top.R, 'setwd("a")', fixed = TRUE)
+  expect_match(out$top.R, 'source("use.R", local = globalenv())', fixed = TRUE)
+  expect_no_error(parse(text = unlist(out)))
+  expect_null(.repro_run_after_lines(list(), run_tbl, root))
+})
+
 test_that("Python install names, and Python 2's modules (#568)", {
   deps <- repro_dependencies_py(c("import pywt", "import ruamel.yaml", "import pylab", "import cPickle", "import urlparse"))
   expect_setequal(deps$package[!deps$base], c("PyWavelets", "ruamel.yaml", "matplotlib"))

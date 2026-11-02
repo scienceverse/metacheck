@@ -2880,6 +2880,32 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   n
 }
 
+# Lines that load other scripts first, in the same session, each from its own run
+# folder, since its paths count from there. `run_after` lists by script the scripts
+# to load, and `run_tbl` is the repro_write_scripts() result. Errors stop the script,
+# as they would have in the authors' session.
+.repro_run_after_lines <- function(run_after, run_tbl, root) {
+  if (!length(run_after)) return(NULL)
+  from_top <- function(p) {
+    p <- gsub("\\\\", "/", normalizePath(p, mustWork = FALSE))
+    top <- gsub("\\\\", "/", normalizePath(root, mustWork = FALSE))
+    if (identical(p, top)) "." else sub(paste0(top, "/"), "", p, fixed = TRUE)
+  }
+  q <- function(x) paste0('"', gsub('"', '\\\\"', x), '"')
+  stats::setNames(lapply(names(run_after), function(user) {
+    u <- match(user, run_tbl$file_name)
+    vapply(run_after[[user]], function(def) {
+      d <- match(def, run_tbl$file_name)
+      def_dir <- from_top(run_tbl$run_dir[d])
+      to_dir <- .repro_rel_from(if (def_dir == ".") "./x" else file.path(def_dir, "x"), from_top(run_tbl$run_dir[u]))
+      to_dir <- if (dirname(to_dir) == ".") "." else dirname(to_dir)
+      script <- .repro_rel_from(from_top(run_tbl$script_path[d]), def_dir)
+      sprintf('local({ .old <- setwd(%s); on.exit(setwd(.old)); source(%s, local = globalenv()) })  # [reproducibility_check: load the script that defines what this one uses]',
+              q(to_dir), q(script))
+    }, character(1), USE.NAMES = FALSE)
+  }), names(run_after))
+}
+
 # Make the folders of the relative paths in write calls, counted from where the
 # script runs. Never above the sandbox. `wr` is a .repro_redirect_writes() result.
 .repro_make_write_folders <- function(wr, root, run_dir = ".") {
@@ -2967,6 +2993,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' @param run_dirs optional folder each script runs from, from `root`
 #'   ([.repro_run_folders()]), which becomes its `run_dir`. `NULL` (default) runs
 #'   every script from `root`.
+#' @param prepend optional named list, by file name: lines to put at the top of a
+#'   script, such as loading another script first ([.repro_run_after_lines()]).
 #' @param replace_env_calls if `TRUE`, the calls to groundhog, checkpoint and renv
 #'   in R code are replaced, since packages are installed before the run, and such
 #'   a call would need the network (see `.repro_neutralise_env_calls()`).
@@ -2987,7 +3015,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                                 inject_libs = NULL, lang = "R",
                                 script_paths = NULL, writes_in_place = FALSE,
-                                replace_env_calls = FALSE, run_dirs = NULL) {
+                                replace_env_calls = FALSE, run_dirs = NULL, prepend = NULL) {
   fnames <- names(code_text_list)
   plan_base <- if (!is.null(plan) && "file_name" %in% names(plan))
     tolower(basename(plan$file_name)) else character(0)
@@ -3124,6 +3152,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     injected_pkg <- injected_pkg[!is.na(injected_pkg) & nzchar(injected_pkg)]
     if (length(injected_pkg))
       txt <- c(sprintf("library(%s)  # [reproducibility_check injected]", injected_pkg), txt)
+    if (fn %in% names(prepend)) txt <- c(prepend[[fn]], txt)
 
     tgt  <- script_target(fn, i)
     dest <- file.path(root, .portable_path(tgt))
