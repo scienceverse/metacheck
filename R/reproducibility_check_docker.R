@@ -126,6 +126,23 @@ repro_docker_available <- function() {
     "--memory", paste0(limits$memory_gb, "g"))
 }
 
+# Whether a run's message comes from Docker itself rather than from the script: a
+# script cannot be judged when its container never started. While Docker Desktop
+# was down, every script of a paper was recorded as a failing script (#568, item 27).
+.repro_docker_failed <- function(txt) {
+  grepl(paste0("Error response from daemon|Docker Desktop is unable to start|",
+               "Cannot connect to the Docker daemon|failed to connect to the docker API|",
+               "error during connect|dockerDesktopLinuxEngine"), txt %||% "", ignore.case = TRUE)
+}
+
+# The container's working directory for a script's run_dir: /sandbox itself, also
+# when run_dir is missing, or a folder below it.
+.repro_docker_workdir <- function(run_dir, sandbox_root) {
+  if (is.null(run_dir) || is.na(run_dir) || !nzchar(run_dir)) return("/sandbox")
+  if (normalizePath(run_dir, mustWork = FALSE) == normalizePath(sandbox_root, mustWork = FALSE)) return("/sandbox")
+  .repro_docker_container_path(run_dir, sandbox_root)
+}
+
 # A HOST path known to be under sandbox_root -> its path INSIDE the container
 # (mounted at /sandbox). Uses substring() on the known prefix length, not a
 # regex strip: sandbox_root is a real filesystem path that can contain
@@ -748,10 +765,8 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     on.exit(unlink(wrapper_path), add = TRUE)
     container_wrapper <- .repro_docker_container_path(wrapper_path, sandbox_root)
 
-    # Working directory is always /sandbox itself: repro_write_scripts()'s own
-    # contract is "run_dir is always root" (every script's relative paths are
-    # rewritten against the sandbox ROOT, not its own subdirectory -- see that
-    # function's roxygen), so there is no per-script subdirectory to cd into.
+    # The working directory is the script's run_dir (see repro_write_scripts()),
+    # which is the sandbox root unless the package layout chose a folder below it.
     container_name <- .repro_docker_container_name()
     args <- c("run", "--rm", "--name", container_name,
              "--network", "none", "--read-only",
@@ -761,7 +776,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
              .repro_docker_resource_args(),
-             "-w", "/sandbox",
+             "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
              "-v", paste0(sandbox_root, ":/sandbox"))
     if (!is.null(lib_dir_norm))
       args <- c(args, "-v", paste0(lib_dir_norm, ":/rlib:ro"))

@@ -734,6 +734,27 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: the package layout runs a script from where its paths work (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  for (f in c("proj/R", "proj/data", "study", "study/out")) dir.create(file.path(d, f), recursive = TRUE)
+  file.copy(repro_fixture("data.csv"), file.path(d, "proj", "data", "d.csv"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "study", "near.csv"))
+  writeLines("x", file.path(d, "study", "out", "keep.txt"))
+  # the name is only known while the script runs, so no rewriting can follow it
+  writeLines(c('f <- paste0("data", "/", "d.csv")', 'stopifnot(file.exists("data/d.csv"))', "a <- read.csv(f)"),
+             file.path(d, "proj", "R", "from_top.R"))
+  writeLines(c('n <- paste0("near", ".csv")', 'stopifnot(file.exists("near.csv"))', "a <- read.csv(n)",
+               'write.csv(a, "out/result.csv")', 'stopifnot(file.exists("out/result.csv"))'),
+             file.path(d, "study", "own.R"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                    execute = TRUE, layout = "package"))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["from_top.R"]], "ran_ok")
+  expect_equal(outcome[["own.R"]], "ran_ok")
+})
+
 test_that("execute = TRUE: function files and tests are not run or counted as scripts (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")

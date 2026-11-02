@@ -2628,6 +2628,66 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_rel_from counts a path from a folder of the package (#568)", {
+  expect_equal(.repro_rel_from("a/b.csv"), "a/b.csv")
+  expect_equal(.repro_rel_from("a/b.csv", "a"), "b.csv")
+  expect_equal(.repro_rel_from("a/b.csv", "a/c"), "../b.csv")
+  expect_equal(.repro_rel_from("x/y.csv", "a/c"), "../../x/y.csv")
+})
+
+test_that(".repro_run_folders runs a script from where its paths work (#568)", {
+  plan <- data.frame(target_path = c("top/R/a.R", "top/R/b.R", "top/R/h.R", "top/data/d.csv", "top/p.Rproj",
+                                     "other/s.R", "other/near.csv", "tie/c.R", "tie/x/e.R", "tie/p.Rproj"))
+  code <- list(`a.R` = 'read.csv("data/d.csv")',       # from the top of the project
+               `b.R` = 'source("h.R")',                # from its own folder
+               `h.R` = 'x <- 1',                       # sourced: runs where b.R runs
+               `s.R` = 'read.csv("near.csv")',
+               `c.R` = 'x <- 1',                       # names nothing: its own folder
+               `e.R` = 'x <- 1')                       # a tie: the .Rproj folder
+  places <- c("top/R/a.R", "top/R/b.R", "top/R/h.R", "other/s.R", "tie/c.R", "tie/x/e.R")
+  order_tbl <- structure(data.frame(file_name = names(code)),
+                         source_edges = data.frame(from = "h.R", to = "b.R"))
+  out <- .repro_run_folders(places, code, plan, order_tbl, "package")
+  expect_equal(out, c("top", "top/R", "top/R", "other", "tie", "tie"))
+  # only in the package layout
+  expect_equal(.repro_run_folders(places, code, plan, order_tbl, "psychds"), rep(".", 6))
+  # a script at the top stays there, and a folder keeps its spelling
+  p2 <- data.frame(target_path = c("Top/a.R", "Top/d.csv", "m.R"))
+  out2 <- .repro_run_folders(c("Top/a.R", "m.R"), list(`a.R` = 'read.csv("d.csv")', `m.R` = "x"), p2,
+                             data.frame(file_name = c("a.R", "m.R")), "package")
+  expect_equal(out2, c("Top", "."))
+})
+
+test_that(".repro_keep_working_refs counts from where the script runs (#568)", {
+  plan <- .repro_package_plan(data.frame(file_name = c("d.csv", "h.R"), file_path = c("top/data/d.csv", "top/R/h.R")))
+  keep <- function(code, dir) .repro_keep_working_refs(repro_rewrite_paths(code, "m.R", plan), plan, "top/R/m.R", dir)
+  # works as written from the folder it runs in
+  from_top <- keep('read.csv("data/d.csv")', "top")
+  expect_true(from_top$as_written)
+  # a file named from elsewhere is rewritten, counted from that folder
+  abs <- keep('read.csv("/home/me/data/d.csv")', "top/R")
+  expect_equal(abs$target, "../data/d.csv")
+  expect_false(abs$as_written)
+  # beside the script, while it runs from above it
+  beside <- keep('source("h.R")', "top")
+  expect_equal(beside$target, "R/h.R")
+})
+
+test_that(".repro_docker_failed reads an error from Docker itself (#568)", {
+  expect_true(.repro_docker_failed("Error response from daemon: Docker Desktop is unable to start"))
+  expect_true(.repro_docker_failed("failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine"))
+  expect_false(.repro_docker_failed("Error in read.csv(f): cannot open the connection"))
+})
+
+test_that(".repro_checklist_section does not count Docker's failure as the script's (#568)", {
+  tb <- data.frame(file_name = "a.R", run_order = 1, outcome = "docker_failed", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "a.R", outcome = "docker_failed", error = "x", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "says nothing about the script", fixed = TRUE)
+  expect_no_match(out, "stopped with an error", fixed = TRUE)
+})
+
 test_that(".repro_function_names recognises a file that only defines functions (#568)", {
   expect_equal(.repro_function_names(c("library(a)", "k <- 1", "f <- function(x) x", "g = function() 2")), c("f", "g"))
   expect_equal(.repro_function_names(c('"doc"', 'pal <- c("a", "b")', "setClass('A')", "h <- function() 1")), "h")
@@ -2737,6 +2797,11 @@ test_that(".repro_assigned_names finds text assigned to a variable (#568)", {
                                        'g <- paste0("a", "b.csv")', 'read.csv(file = "z.csv")')),
                c("N.R", "S.R", "d.csv"))
   expect_equal(.repro_assigned_names('if (TRUE) { y <<- "in.csv" }'), "in.csv")
+  # an empty argument, which is in nearly every script
+  expect_equal(.repro_assigned_names(c('a <- x[1, ]', 'f <- "d.csv"', 'b <- y[, 2][1, , 3]', 'g <- c("e.csv", )')),
+               c("d.csv", "e.csv"))
+  expect_length(.repro_function_names(c("f <- function(x) x", "k <- x[1, ]")), 0)
+  expect_equal(.repro_function_names(c("f <- function(x) x[1, ]", "k <- c(1, )")), "f")
   expect_length(.repro_assigned_names("x <- ("), 0)
   expect_equal(.repro_assigned_names(c('f = "d.csv"', 'g = "e.csv"  # note', 'pd.read_csv("z.csv")',
                                        'h = x + "w.csv"'), "Python"), c("d.csv", "e.csv"))

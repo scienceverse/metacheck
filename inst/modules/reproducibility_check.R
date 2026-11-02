@@ -40,6 +40,8 @@
 #' `defines_functions` is a file that only defines functions, which is used, not
 #' run (`table$used_by` names the scripts that use it), and `not_analysis` is a
 #' package's tests or its `setup.py`; neither is run or counted as a script.
+#' `docker_failed` means the container never started, which says nothing about
+#' the script, so it keeps the light from being green but does not make it red.
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -1337,9 +1339,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     repro_rewrite_paths(code_text_list[[i]], r_files$file_name[i], plan, "R",
                        structure_df = structure_df, script_path = r_script_paths[i]))
   names(rewrite_list) <- r_files$file_name
+  order_tbl <- repro_run_order(io)
+  r_script_places <- .repro_script_places(r_files, plan, layout)
+  # the folder each script runs from: its original one in the package layout
+  r_run_dirs <- .repro_run_folders(r_script_places, code_text_list, plan, order_tbl, layout, "R")
   # the package layout leaves a reference that works as written as it is
   if (layout == "package") rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
-    .repro_keep_working_refs(rewrite_list[[i]], plan, r_files$file_path[i])), names(rewrite_list))
+    .repro_keep_working_refs(rewrite_list[[i]], plan, r_files$file_path[i], r_run_dirs[i])), names(rewrite_list))
 
   # Per-file rewrite counts + unresolved reads (referenced, not matched in plan).
   rewrites_n  <- vapply(rewrite_list, function(d)
@@ -1364,7 +1370,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_call_unresolved <- if (n_call_paths) sum(!call_rows_all$matched) else 0L
 
   # ── 5. Run order ────────────────────────────────────────────────────────────
-  order_tbl <- repro_run_order(io)
   cycle     <- attr(order_tbl, "cycle") %||% character(0)
   ambiguous_order <- isTRUE(attr(order_tbl, "ambiguous"))
   # source() edges resolved only after normalising both basenames (a
@@ -1598,11 +1603,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # groundhog, checkpoint and renv calls would need the network, which is off
     # in a Docker run, and recorded versions are installed before the run.
     replace_env_calls <- !is.null(recorded) || sandbox == "docker"
-    r_script_places <- .repro_script_places(r_files, plan, layout)
     run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
                                    script_paths = r_script_places,
                                    writes_in_place = layout == "package",
-                                   replace_env_calls = replace_env_calls)
+                                   replace_env_calls = replace_env_calls,
+                                   run_dirs = r_run_dirs)
     rprofile_replaced <- if (replace_env_calls) .repro_neutralise_rprofile(sandbox_root) else 0L
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
@@ -1812,7 +1817,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                               inject_libs = library_injections,
                               script_paths = r_script_places,
                               writes_in_place = layout == "package",
-                              replace_env_calls = replace_env_calls) else run_tbl
+                              replace_env_calls = replace_env_calls,
+                              run_dirs = r_run_dirs) else run_tbl
         .dbg("re-running ", length(run_order2), " script(s) in corrected order",
              if (length(library_injections) > 0) sprintf(
                " (with %d library() injection(s): %s)",
@@ -1851,6 +1857,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     sniffed <- !is.na(sniff_i) & !is.na(sniff_type[sniff_i]) &
       run_results$outcome != "run_by_source"   # functions a script sources were used
     run_results$outcome[sniffed] <- sniff_type[sniff_i[sniffed]]
+    # A script whose container never started says nothing about the script.
+    if (sandbox == "docker") {
+      no_container <- run_results$outcome == "errored" &
+        .repro_docker_failed(paste(run_results$error, run_results$stderr))
+      run_results$outcome[no_container] <- "docker_failed"
+      run_results$error_type[no_container] <- NA_character_
+    }
 
     # A predicted missing file no longer counts for a script that ran through.
     tl <- .repro_static_light(
@@ -1864,7 +1877,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome == "skipped_time_limit") && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2148,6 +2161,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " %d %s not started, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
+    if (sum(oc == "docker_failed") > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **Docker failed for %d script%s, so %s not run.** This says nothing about the code; run the check again when Docker works.",
+        sum(oc == "docker_failed"), plural(sum(oc == "docker_failed")),
+        plural(sum(oc == "docker_failed"), "it was", "they were")))
 
     # Scripts run only inside the script that sources them (see
     # run_by_source above): say which, and why they were not run on their own.
@@ -2774,8 +2792,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     repro_rewrite_paths(py_code_text_list[[i]], py_files$file_name[i], plan, "Python",
                        structure_df = structure_df, script_path = py_script_paths[i]))
   names(py_rewrite_list) <- py_files$file_name
+  py_order_tbl <- repro_run_order(py_io)
+  py_script_places <- .repro_script_places(py_files, plan, layout)
+  py_run_dirs <- .repro_run_folders(py_script_places, py_code_text_list, plan, py_order_tbl, layout, "Python")
   if (layout == "package") py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i)
-    .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_files$file_path[i])), names(py_rewrite_list))
+    .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_files$file_path[i], py_run_dirs[i])), names(py_rewrite_list))
 
   py_rewrites_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
@@ -2788,7 +2809,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   }), use.names = FALSE)
 
   # ── Run order ──────────────────────────────────────────────────────────
-  py_order_tbl <- repro_run_order(py_io)
   py_cycle <- attr(py_order_tbl, "cycle") %||% character(0)
   py_ambiguous_order <- isTRUE(attr(py_order_tbl, "ambiguous"))
   py_fuzzy_sources <- attr(py_order_tbl, "fuzzy_sources") %||%
@@ -2882,8 +2902,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     .dbg("[repro/py] writing ", n_py_code, " rewritten script(s) into the layout ...")
     py_run_tbl <- repro_write_scripts(py_code_text_list, py_rewrite_list, plan,
                                       sandbox_root, lang = "Python",
-                                      script_paths = .repro_script_places(py_files, plan, layout),
-                                      writes_in_place = layout == "package")
+                                      script_paths = py_script_places,
+                                      writes_in_place = layout == "package",
+                                      run_dirs = py_run_dirs)
     .dbg("[repro/py]   wrote ", nrow(py_run_tbl), " script(s).")
 
     # The process sandbox needs a Python interpreter on this computer (looked
@@ -2973,6 +2994,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
            .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))
       py_run_results$outcome[py_is_py2] <- "python2"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
+      if (sandbox == "docker") py_run_results$outcome[py_run_results$outcome == "errored" &
+        .repro_docker_failed(paste(py_run_results$error, py_run_results$stderr))] <- "docker_failed"
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -3004,7 +3027,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome == "skipped_time_limit") && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -3247,6 +3270,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " %d %s not started, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
+    if (sum(py_oc == "docker_failed") > 0)
+      py_report_exec <- paste0(py_report_exec, sprintf(
+        " **Docker failed for %d script%s, so %s not run.** This says nothing about the code; run the check again when Docker works.",
+        sum(py_oc == "docker_failed"), plural(sum(py_oc == "docker_failed")),
+        plural(sum(py_oc == "docker_failed"), "it was", "they were")))
 
     py_setwd_rows <- if (exists("py_run_tbl", inherits = FALSE) &&
                          "setwd_removed" %in% names(py_run_tbl))

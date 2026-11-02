@@ -313,7 +313,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
              .repro_docker_resource_args(),
-             "-w", "/sandbox",
+             "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
              "-v", paste0(sandbox_root, ":/sandbox"))
     if (!is.null(lib_dir_norm))
       args <- c(args, "-v", paste0(lib_dir_norm, ":/pylib:ro"),

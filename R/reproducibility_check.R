@@ -1019,16 +1019,23 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   found <- character(0)
   text_of <- function(x) {
     if (is.character(x) && length(x) == 1 && !is.na(x)) return(x)
-    if (is.call(x) && identical(x[[1]], as.name("c"))) return(unlist(lapply(as.list(x)[-1], text_of)))
+    if (is.call(x) && identical(x[[1]], as.name("c"))) return(unlist(lapply(.repro_call_parts(x)[-1], text_of)))
     NULL
   }
   walk <- function(e) {
     if (is.name(e[[1]]) && as.character(e[[1]]) %in% c("<-", "=", "<<-") && length(e) == 3)
       found <<- c(found, text_of(e[[3]]))
-    for (a in as.list(e)) if (is.call(a)) walk(a)
+    for (a in .repro_call_parts(e)) if (is.call(a)) walk(a)
   }
   for (e in ex) if (is.call(e)) walk(e)
   unique(found[nzchar(found)])
+}
+
+# The parts of a call, without empty arguments: x[1, ] has one, and using it stops
+# with "argument is missing, with no default".
+.repro_call_parts <- function(e) {
+  parts <- as.list(e)
+  parts[!vapply(seq_along(parts), function(k) identical(parts[[k]], quote(expr = )), logical(1))]
 }
 
 # A file name for comparing spellings: no extension, case, spaces or punctuation.
@@ -2019,7 +2026,7 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   ex <- tryCatch(parse(text = code_text, keep.source = FALSE), error = function(e) NULL)
   if (is.null(ex) || !length(ex)) return(character(0))
   literal <- function(x) is.atomic(x) || (is.call(x) && identical(x[[1]], as.name("c")) &&
-                                            all(vapply(as.list(x)[-1], literal, logical(1))))
+                                            all(vapply(.repro_call_parts(x)[-1], literal, logical(1))))
   setup <- c("library", "require", "requireNamespace", "suppressPackageStartupMessages",
              "setGeneric", "setMethod", "setClass", "setValidity", "setRefClass")
   defs <- character(0)
@@ -2315,9 +2322,12 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' @param rw a [repro_rewrite_paths()] result for one script
 #' @param plan the package layout's plan ([.repro_package_plan()])
 #' @param script_path the script's own path in the package
+#' @param run_dir the folder the script runs from, from the top of the package
+#'   (see [.repro_run_folders()]); a reference works as written when it names a
+#'   file counted from there, and a rewritten path is counted from there too
 #' @returns `rw` with a logical `as_written` column
 #' @keywords internal
-.repro_keep_working_refs <- function(rw, plan, script_path = NA_character_) {
+.repro_keep_working_refs <- function(rw, plan, script_path = NA_character_, run_dir = ".") {
   rw$as_written <- rep(FALSE, nrow(rw))
   if (!nrow(rw) || is.null(plan) || !nrow(plan)) return(rw)
   is_call <- if ("is_call" %in% names(rw)) rw$is_call %in% TRUE else rep(FALSE, nrow(rw))
@@ -2331,7 +2341,11 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     p <- .repro_norm_rel(if (script_dir %in% c(".", "")) r else file.path(script_dir, r))
     if (!is.na(p) && p %in% plan$target_path) p else NA_character_
   }, character(1), USE.NAMES = FALSE)
-  in_place <- !is_call & ref %in% plan$target_path
+  from_run <- vapply(ref, function(r) {
+    if (grepl("^([A-Za-z]:/|/|~)", r)) return(NA_character_)
+    .repro_norm_rel(if (run_dir %in% c(".", "")) r else file.path(run_dir, r))
+  }, character(1), USE.NAMES = FALSE)
+  in_place <- !is_call & !is.na(from_run) & from_run %in% plan$target_path
   relocate <- !in_place & !is_call & !is.na(from_script)
   up <- grepl("(^|/)\\.\\.(/|$)", ref)
   # a path built by sprintf()/file.path() is kept unless it holds an absolute path
@@ -2359,7 +2373,84 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   rw$target[keep] <- rw$ref[keep]
   rw$matched[in_archive] <- FALSE
   rw$target[in_archive] <- NA_character_
+  # a rewritten path counts from where the script runs
+  moved <- !keep & !is.na(rw$target) & nzchar(rw$target)
+  rw$target[moved] <- vapply(rw$target[moved], .repro_rel_from, character(1), dir = run_dir, USE.NAMES = FALSE)
   rw
+}
+
+# A path from the top of the package, counted from folder `dir` of the package.
+.repro_rel_from <- function(path, dir = ".") {
+  if (dir %in% c(".", "")) return(path)
+  a <- strsplit(gsub("\\\\", "/", dir), "/", fixed = TRUE)[[1]]
+  b <- strsplit(gsub("\\\\", "/", path), "/", fixed = TRUE)[[1]]
+  n <- min(length(a), length(b) - 1L)
+  same <- if (n > 0) which(a[seq_len(n)] != b[seq_len(n)]) else integer(0)
+  common <- if (length(same)) same[1] - 1L else n
+  paste(c(rep("..", length(a) - common), b[seq.int(common + 1L, length(b))]), collapse = "/")
+}
+
+# The folder each script runs from, in the package layout. A path in code counts
+# from the folder the authors ran it in, which is not recorded: their own folder,
+# or the top of their project. Of 271 failures on a file in the listing, 96 would
+# find it from the script's own folder and 59 from a folder above, also when the
+# name is only known while the script runs, which no rewriting can follow (#568,
+# item 4). So each script runs from the folder at or above its own from which the
+# most of the files and folders it names exist. On a tie: the nearest folder with an
+# .Rproj file, which is where RStudio runs a project, else the script's own folder.
+# A script run with source() takes the folder of the script that sources it, since
+# source() does not change the working folder. Outside the package layout every
+# script runs from the top, where its paths have been rewritten to.
+# `places` are the scripts' paths from the top (.repro_script_places()); returns
+# one folder per script from the top, "." being the top.
+.repro_run_folders <- function(places, code_text_list, plan, order_tbl, layout, lang = "R") {
+  out <- rep(".", length(places))
+  if (layout != "package" || is.null(plan) || !nrow(plan)) return(out)
+  files <- tolower(gsub("\\\\", "/", plan$target_path))
+  folders <- character(0)
+  d <- dirname(files)
+  while (length(d <- setdiff(d[d != "."], folders))) {
+    folders <- c(folders, d)
+    d <- dirname(d)
+  }
+  rproj <- dirname(files[grepl("\\.rproj$", files)])
+  known <- c(files, folders)
+  for (i in seq_along(places)) {
+    own <- dirname(tolower(gsub("\\\\", "/", places[i])))
+    chain <- own
+    while (!chain[length(chain)] %in% c(".", "")) chain <- c(chain, dirname(chain[length(chain)]))
+    if (length(chain) == 1) next
+    # every quoted text counts: only what exists in the package adds to the score,
+    # and a name also appears outside read calls: os.listdir("raw/scan1")
+    code <- iconv(code_text_list[[i]], "", "UTF-8", sub = "")
+    code <- tryCatch(code_remove_comments(code, lang), error = function(e) code)
+    quoted <- unlist(regmatches(code, gregexpr("[\"'][^\"'\n]+[\"']", code)))
+    refs <- tolower(gsub("\\\\", "/", unique(gsub("^[\"']|[\"']$", "", quoted))))
+    refs <- refs[!grepl("^([a-z]:/|/|~)|://|[%{}$*]", refs)]
+    score <- vapply(chain, function(dir) {
+      from <- vapply(refs, function(r) .repro_norm_rel(if (dir == ".") r else file.path(dir, r)),
+                     character(1), USE.NAMES = FALSE)
+      ok <- !is.na(from)
+      # a file written into a folder of the project counts by its folder
+      sum(from[ok] %in% known | (grepl("/", refs[ok], fixed = TRUE) & dirname(from[ok]) %in% folders))
+    }, numeric(1), USE.NAMES = FALSE)
+    best <- chain[score == max(score)]
+    pick <- if (any(best %in% rproj)) best[best %in% rproj][1] else best[1]
+    # the original spelling of the folder, as case can matter on the system that runs it
+    depth <- length(chain) - match(pick, chain)
+    orig <- dirname(gsub("\\\\", "/", places[i]))
+    parts <- strsplit(orig, "/", fixed = TRUE)[[1]]
+    out[i] <- if (pick == "." || depth <= 0) "." else paste(parts[seq_len(depth)], collapse = "/")
+  }
+  edges <- attr(order_tbl, "source_edges")
+  if (!is.null(edges) && nrow(edges)) {
+    fn <- names(code_text_list)
+    for (round in 1:5) for (k in seq_len(nrow(edges))) {
+      from <- match(edges$from[k], fn); to <- match(edges$to[k], fn)
+      if (!is.na(from) && !is.na(to) && !edges$to[k] %in% edges$from) out[from] <- out[to]
+    }
+  }
+  out
 }
 
 # Paths in a script that count from the script's own folder (package layout)
@@ -2696,13 +2787,17 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # the run uses. The rest of the file stays, since it can set options the analysis
 # relies on. Returns the number of calls replaced.
 .repro_neutralise_rprofile <- function(root) {
-  path <- file.path(root, ".Rprofile")
-  if (!file.exists(path)) return(0L)
-  txt <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
-  if (is.null(txt)) return(0L)
-  res <- .repro_neutralise_env_calls(txt)
-  if (res$n > 0) tryCatch(writeLines(res$txt, path), error = function(e) NULL)
-  res$n
+  # in every folder, since a script can run from its project's folder
+  paths <- list.files(root, pattern = "^\\.Rprofile$", recursive = TRUE, all.files = TRUE, full.names = TRUE)
+  n <- 0L
+  for (path in paths) {
+    txt <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+    if (is.null(txt)) next
+    res <- .repro_neutralise_env_calls(txt)
+    if (res$n > 0) tryCatch(writeLines(res$txt, path), error = function(e) NULL)
+    n <- n + res$n
+  }
+  n
 }
 
 #' Write path-rewritten scripts into the materialised layout
@@ -2774,6 +2869,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   own folder (or its `.Rproj` folder) but not from the top is first
 #'   rewritten to its path from the top, for reads and writes alike.
 #'   `FALSE` (default) redirects every write, as before.
+#' @param run_dirs optional folder each script runs from, from `root`
+#'   ([.repro_run_folders()]), which becomes its `run_dir`. `NULL` (default) runs
+#'   every script from `root`.
 #' @param replace_env_calls if `TRUE`, the calls to groundhog, checkpoint and renv
 #'   in R code are replaced, since packages are installed before the run, and such
 #'   a call would need the network (see `.repro_neutralise_env_calls()`).
@@ -2794,7 +2892,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                                 inject_libs = NULL, lang = "R",
                                 script_paths = NULL, writes_in_place = FALSE,
-                                replace_env_calls = FALSE) {
+                                replace_env_calls = FALSE, run_dirs = NULL) {
   fnames <- names(code_text_list)
   plan_base <- if (!is.null(plan) && "file_name" %in% names(plan))
     tolower(basename(plan$file_name)) else character(0)
@@ -2847,7 +2945,8 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     # In the package layout, a path counted from the script's own (or its
     # .Rproj) folder is rewritten to its path from the top first, so such a
     # write stays in the package and a later script reads it there (#523)
-    if (isTRUE(writes_in_place))
+    run_dir <- if (is.null(run_dirs)) "." else run_dirs[[i]]
+    if (isTRUE(writes_in_place) && run_dir == ".")
       txt <- .repro_relocate_relative_paths(txt, script_target(fn, i), plan)
     wr <- .repro_redirect_writes(txt, lang = fn_lang)
     # In the package layout a write stays where the code puts it, so a later
@@ -2860,7 +2959,9 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     if (nrow(wr) > 0) {
       joined_txt <- paste(txt, collapse = "\n")
       for (k in seq_len(nrow(wr))) {
-        repl <- gsub("{{REPRO_OUTPUT}}", "output/", wr$replacement[k], fixed = TRUE)
+        # output/ is at the root, so from a folder below it the path goes up first
+        ups <- if (run_dir == ".") "" else strrep("../", length(strsplit(run_dir, "/", fixed = TRUE)[[1]]))
+        repl <- gsub("{{REPRO_OUTPUT}}", paste0(ups, "output/"), wr$replacement[k], fixed = TRUE)
         joined_txt <- sub(wr$call_text[k], repl, joined_txt, fixed = TRUE)
       }
       txt <- strsplit(joined_txt, "\n", fixed = TRUE)[[1]]
@@ -2936,7 +3037,8 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
       TRUE
     }, error = function(e) FALSE)
     if (!written) message("[repro]   could not write '", fn, "' to ", dest)
-    data.frame(file_name = fn, script_path = dest, run_dir = root,
+    data.frame(file_name = fn, script_path = dest,
+               run_dir = if (run_dir == ".") root else file.path(root, .portable_path(run_dir)),
                setwd_removed = setwd_n,
                env_calls_replaced = env_n,
                setwd_paths = paste(setwd_paths, collapse = ", "),
