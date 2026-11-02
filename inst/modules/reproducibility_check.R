@@ -2915,6 +2915,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_not_analysis <- vapply(seq_len(n_py_code), function(i)
     .repro_is_py_test(py_script_paths[i], py_code_text_list[[i]]), logical(1))
   n_py_noparse_static <- sum(!py_parses & !py_not_analysis)
+  # A server waits for a connection until the time limit, so it is not run.
+  py_server <- vapply(py_code_text_list, .repro_py_starts_server, logical(1), USE.NAMES = FALSE) & !py_not_analysis
   # Set when the execute phase below could not run the Python code at all.
   py_exec_error <- NULL
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
@@ -2987,6 +2989,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                       writes_in_place = layout == "package",
                                       run_dirs = py_run_dirs)
     .dbg("[repro/py]   wrote ", nrow(py_run_tbl), " script(s).")
+    # where each script finds the repository's own modules
+    py_sandbox_files <- gsub("\\\\", "/", list.files(sandbox_root, recursive = TRUE))
+    py_sandbox_files <- py_sandbox_files[!grepl("^(_pylib|_rlib|output|statistical_output)/", py_sandbox_files)]
+    py_run_tbl$module_root <- sandbox_root
+    py_run_tbl$module_folders <- vapply(seq_len(nrow(py_run_tbl)), function(i) {
+      place <- sub(paste0(gsub("\\\\", "/", normalizePath(sandbox_root, mustWork = FALSE)), "/"), "",
+                   gsub("\\\\", "/", normalizePath(py_run_tbl$script_path[i], mustWork = FALSE)), fixed = TRUE)
+      paste(.repro_py_module_folders(py_code_text_list[[py_run_tbl$file_name[i]]], place, py_sandbox_files), collapse = "\n")
+    }, character(1))
 
     # The process sandbox needs a Python interpreter on this computer (looked
     # up above as py_parse_bin: `python`, else `python3`); sandbox = "docker"
@@ -3023,7 +3034,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (!isTRUE(install_missing)) py_failed_deps <- py_install_deps$package
     }
 
-    py_parses_named <- stats::setNames(py_parses & !py_not_analysis, py_files$file_name)
+    py_parses_named <- stats::setNames(py_parses & !py_not_analysis & !py_server, py_files$file_name)
     py_run_order_names <- py_order_tbl$file_name[order(py_order_tbl$order)]
     # A module other files import is not run on its own (see
     # .repro_py_imported()), like an R script another script source()s.
@@ -3075,6 +3086,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
            .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))
       py_run_results$outcome[py_is_py2] <- "python2"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
+      py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_server]] <- "needs_a_person"
       if (sandbox == "docker") py_run_results$outcome[py_run_results$outcome == "errored" &
         .repro_docker_failed(paste(py_run_results$error, py_run_results$stderr))] <- "docker_failed"
       py_run_results$outcome[py_run_results$outcome == "errored" &

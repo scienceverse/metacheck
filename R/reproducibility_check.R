@@ -1639,7 +1639,8 @@ repro_defined_vars <- function(code_text_list) {
 # applies to it exactly as it does to a paper's own declared dependencies.
 .repro_common_pkgs <- function() {
   c("testthat", "magrittr", "dplyr", "tidyr", "ggplot2", "purrr", "tibble",
-    "stringr", "readr", "forcats")
+    "stringr", "readr", "forcats", "data.table", "lubridate", "readxl", "nlme",
+    "lme4", "emmeans", "lsmeans", "MASS", "ape", "picante", "shiny", "vegan")
 }
 
 #' Find the one installed package (if any) that unambiguously exports a name
@@ -2785,6 +2786,13 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   any(vapply(as.list(ex), function(e) is.call(e) && deparse(e[[1]])[1] %in% apps, logical(1)))
 }
 
+# Whether a Python script serves others: it waits for a connection until the time
+# limit, with nothing to show for it (#568, item 22). `tcpserver.py` took 50 minutes.
+.repro_py_starts_server <- function(code_text) {
+  nc <- code_text[!grepl("^\\s*#", code_text)]
+  any(grepl("\\.serve_forever\\s*\\(|\\bsocketserver\\.|\\bapp\\.run\\s*\\(|\\buvicorn\\.run\\s*\\(|\\.listen\\s*\\(\\s*\\d*\\s*\\).*$|\\bwhile True:.*\\.accept\\(", nc, perl = TRUE, useBytes = TRUE))
+}
+
 # Whether a run's error shows that the code needs the internet, which is off during a
 # Docker run, since this runs code nobody has checked (#568, item 21).
 .repro_needs_internet_error <- function(txt) {
@@ -2809,6 +2817,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out[outcome %in% c("skipped_missing_inputs")] <- "file"
   err <- outcome == "errored"
   set <- function(pat, label) out[err & is.na(out) & has(pat)] <<- label
+  # provided by Snakemake when it runs the script, so only there
+  set("object 'snakemake' not found|name 'snakemake' is not defined", "environment")
   set("there is no package called|ModuleNotFoundError|No module named|ImportError|package or namespace|Error: package ", "package")
   set("cannot open the connection|cannot open file|No such file|FileNotFoundError|does not exist|Cannot find the file|Could not find a root|cannot open compressed", "file")
   set("object '[^']*' not found|could not find function|NameError|is not defined", "undefined")

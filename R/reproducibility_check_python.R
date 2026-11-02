@@ -241,6 +241,56 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
         txt %||% "", perl = TRUE)
 }
 
+# The folders Python must look in to find the repository's own modules that a script
+# imports. Python only looks beside the script, so `from maad import sound` stopped
+# with "No module named 'maad'" while maad/ is in the repository: 365 scripts in 23
+# papers (#568, item 10). For each imported name that is no standard module, the
+# folder holding a file or folder of that name, nearest to the script first. A folder
+# is left out when it would hide a standard module the script uses, such as one with
+# its own json.py, since these folders come before the standard library. `files` are
+# the paths in the sandbox from its top; returns folders from the top.
+.repro_py_module_folders <- function(code_text, script_path, files) {
+  txt <- code_text[!grepl("^\\s*#", code_text)]
+  m1 <- regmatches(txt, regexec("^\\s*import\\s+([A-Za-z0-9_., ]+)", txt))
+  m2 <- regmatches(txt, regexec("^\\s*from\\s+([A-Za-z0-9_]+)[A-Za-z0-9_.]*\\s+import\\s", txt))
+  names1 <- unlist(lapply(m1[lengths(m1) > 1], function(m) trimws(sub("\\s+as\\s+.*$", "", strsplit(m[[2]], ",")[[1]]))))
+  names2 <- vapply(m2[lengths(m2) > 1], `[`, character(1), 2)
+  tops <- unique(sub("\\..*$", "", c(names1, names2)))
+  stdlib <- .repro_py_stdlib_modules()
+  own <- setdiff(tops, stdlib)
+  if (!length(own) || !length(files)) return(character(0))
+  files <- gsub("\\\\", "/", files)
+  script_dir <- dirname(gsub("\\\\", "/", script_path))
+  depth_shared <- function(a, b) {
+    x <- strsplit(a, "/", fixed = TRUE)[[1]]; y <- strsplit(b, "/", fixed = TRUE)[[1]]
+    n <- min(length(x), length(y))
+    if (n == 0) return(0L)
+    same <- x[seq_len(n)] == y[seq_len(n)]
+    if (all(same)) n else which(!same)[1] - 1L
+  }
+  used_std <- intersect(tops, stdlib)
+  hides <- function(dir) {
+    prefix <- if (dir == ".") "" else paste0(dir, "/")
+    any(paste0(prefix, used_std, ".py") %in% files) ||
+      any(vapply(used_std, function(s) any(startsWith(files, paste0(prefix, s, "/"))), logical(1)))
+  }
+  out <- character(0)
+  for (nm in own) {
+    hit <- grep(paste0("(^|/)", nm, "(\\.py$|/)"), files, value = TRUE)
+    if (!length(hit)) next
+    # the folder that holds the module, not one further down
+    parents <- unique(vapply(hit, function(f) {
+      parts <- strsplit(f, "/", fixed = TRUE)[[1]]
+      k <- which(parts == nm | parts == paste0(nm, ".py"))[1]
+      if (k <= 1) "." else paste(parts[seq_len(k - 1)], collapse = "/")
+    }, character(1), USE.NAMES = FALSE))
+    parents <- parents[order(-vapply(parents, depth_shared, integer(1), b = script_dir))]
+    parents <- parents[!vapply(parents, hides, logical(1))]
+    if (length(parents) && parents[1] != script_dir) out <- c(out, parents[1])
+  }
+  unique(out)
+}
+
 # A stand-in for get_ipython(), which only exists inside IPython: without it a
 # notebook's `if "google.colab" in str(get_ipython()):` stops with a NameError. Its
 # methods (run_line_magic, system) do nothing, as the commands are left out too.
@@ -596,10 +646,16 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
                            error = function(e) character(0))
 
     message("[repro/py]   -> running '", fn, "' (timeout ", timeout, "s) ...")
+    # the repository's own modules first (see .repro_py_module_folders()); the
+    # folders count from the sandbox's top, which `module_root` names
+    own_modules <- if ("module_folders" %in% names(row) && !is.na(row$module_folders) && nzchar(row$module_folders))
+      file.path(row$module_root, strsplit(row$module_folders, "\n", fixed = TRUE)[[1]]) else character(0)
     t0 <- Sys.time()
     res <- tryCatch(
       processx::run(bin, row$script_path, wd = row$run_dir,
-                   env = c("current", PYTHONPATH = pythonpath, MPLBACKEND = "Agg", QT_QPA_PLATFORM = "offscreen"),
+                   env = c("current", PYTHONPATH = paste(c(own_modules, if (nzchar(pythonpath)) pythonpath),
+                                                         collapse = .Platform$path.sep),
+                           MPLBACKEND = "Agg", QT_QPA_PLATFORM = "offscreen"),
                    error_on_status = FALSE, timeout = timeout),
       error = function(e) e)
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))

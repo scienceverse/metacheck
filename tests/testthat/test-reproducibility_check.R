@@ -2628,6 +2628,32 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_py_module_folders finds the repository's own modules (#568)", {
+  files <- c("repo/maad/__init__.py", "repo/maad/sound.py", "repo/scripts/run.py", "repo/lib/helper.py",
+             "repo/scripts/beside.py", "other/maad/__init__.py", "bad/json.py", "bad/own.py")
+  f <- .repro_py_module_folders
+  expect_equal(f("from maad import sound", "repo/scripts/run.py", files), "repo")
+  expect_equal(f("import helper", "repo/scripts/run.py", files), "repo/lib")
+  # nearest to the script, when a name is in two places
+  expect_equal(f("import maad", "other/sub/x.py", files), "other")
+  # beside the script Python finds it already; what is not in the repository is not looked for
+  expect_length(f("import beside", "repo/scripts/run.py", files), 0)
+  expect_length(f(c("import numpy", "import os"), "repo/scripts/run.py", files), 0)
+  # a folder that would hide a standard module the script uses
+  expect_length(f(c("import json", "import own"), "repo/scripts/run.py", files), 0)
+  expect_equal(f("import own", "repo/scripts/run.py", files), "bad")
+  # comments do not count
+  expect_length(f("# import helper", "repo/scripts/run.py", files), 0)
+})
+
+test_that(".repro_py_starts_server recognises a script that waits for connections (#568)", {
+  expect_true(.repro_py_starts_server(c("import http.server", "httpd.serve_forever()")))
+  expect_true(.repro_py_starts_server(c("s = socket.socket()", "s.listen(5)")))
+  expect_true(.repro_py_starts_server("app.run(debug = True)"))
+  expect_false(.repro_py_starts_server(c("import numpy", "# s.listen(5)", "print(1)")))
+  expect_false(.repro_py_starts_server("model.run(x)"))
+})
+
 test_that(".repro_failure_reason names why a script did not run through (#568)", {
   r <- .repro_failure_reason
   expect_equal(r("errored", "cannot open file 'a.csv'"), "file")

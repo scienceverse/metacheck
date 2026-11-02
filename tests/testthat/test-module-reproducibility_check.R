@@ -734,6 +734,23 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: a Python script finds the repository's own modules (#568)", {
+  skip_if_quick()
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  for (layout in c("package", "psychds")) {
+    d <- withr::local_tempdir()
+    for (f in c("proj/mymod", "proj/scripts")) dir.create(file.path(d, f), recursive = TRUE)
+    writeLines("", file.path(d, "proj", "mymod", "__init__.py"))
+    writeLines("VALUE = 1", file.path(d, "proj", "mymod", "core.py"))
+    writeLines(c("from mymod import core", "assert core.VALUE == 1", "print('ok')"), file.path(d, "proj", "scripts", "run.py"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE, layout = layout))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["run.py"]], "ran_ok")
+  }
+})
+
 test_that("execute = TRUE: a script that uses what another script defines runs after it (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")

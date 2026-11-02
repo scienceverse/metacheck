@@ -331,8 +331,14 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              "-e", "HOME=/tmp", "-e", "NUMBA_CACHE_DIR=/tmp/numba", "-e", "MPLCONFIGDIR=/tmp/matplotlib",
              "-e", "XDG_CACHE_HOME=/tmp/.cache", "-e", "MPLBACKEND=Agg", "-e", "QT_QPA_PLATFORM=offscreen")
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", paste0(lib_dir_norm, ":/pylib:ro"),
-               "-e", "PYTHONPATH=/pylib")
+      args <- c(args, "-v", paste0(lib_dir_norm, ":/pylib:ro"))
+    # the repository's own modules first, then what was installed (see
+    # .repro_py_module_folders())
+    own <- if ("module_folders" %in% names(row)) row$module_folders else NA_character_
+    own <- if (!is.na(own) && nzchar(own)) strsplit(own, "\n", fixed = TRUE)[[1]] else character(0)
+    py_path <- c(if (length(own)) ifelse(own == ".", "/sandbox", paste0("/sandbox/", own)),
+                 if (!is.null(lib_dir_norm)) "/pylib")
+    if (length(py_path)) args <- c(args, "-e", paste0("PYTHONPATH=", paste(py_path, collapse = ":")))
     args <- c(args, image, "python", container_script)
 
     out_file <- tempfile(fileext = ".out")
