@@ -42,6 +42,20 @@ test_that("repro_dependencies tags a GitHub source and keeps its ref", {
   expect_equal(gg$ref, "tidyverse/ggplot2@v3.4.0")
 })
 
+test_that("repro_dependencies reads a GitHub source from groundhog.library()", {
+  deps <- repro_dependencies(c("groundhog.library('github::crsh/papaja', '2023-01-01')",
+                               'groundhog.library("user/other@v2", "2023-01-01")',
+                               'groundhog.library("dplyr", "2023-01-01")'))
+  expect_setequal(deps$package, c("papaja", "other", "dplyr"))
+  expect_equal(deps$source[deps$package == "papaja"], "github")
+  expect_equal(deps$ref[deps$package == "papaja"], "crsh/papaja")
+  expect_equal(deps$ref[deps$package == "other"], "user/other@v2")
+  expect_equal(deps$source[deps$package == "dplyr"], "cran")
+  # and the script then loads the package, not the source
+  expect_match(.repro_neutralise_env_calls("groundhog.library('github::crsh/papaja', '2023-01-01')")$txt,
+               'library("papaja")', fixed = TRUE)
+})
+
 test_that("repro_dependencies tags a URL source", {
   code <- c("library(pkgname)",
            'install.packages("https://example.org/src/contrib/pkgname_1.0.tar.gz")')
@@ -1043,6 +1057,520 @@ test_that("repro_run_scripts returns an empty frame for no scripts", {
 })
 
 
+# Recorded package versions ----
+
+test_that(".repro_highest_version and .repro_same_version compare versions", {
+  expect_equal(.repro_highest_version(c("1.9", "1.10", NA, "junk")), "1.10")
+  expect_equal(.repro_highest_version(c("1.1-21", "1.1-9")), "1.1-21")
+  expect_true(is.na(.repro_highest_version(c(NA, "junk"))))
+  expect_true(.repro_same_version("1.1-21", "1.1.21"))
+  expect_false(.repro_same_version("1.1-21", "1.1.22"))
+  expect_false(.repro_same_version(NA_character_, "1.0"))
+})
+
+test_that(".repro_recorded_plan keeps only the packages the scripts load", {
+  deps <- data.frame(
+    package = c("dplyr", "lme4", "Matrix", "papaja", "limma", "praise", "groundhog", "stats"),
+    source = c("cran", "cran", "base", "cran", "cran", "cran", "cran", "base"),
+    ref = NA_character_, base = c(FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE))
+  vp <- list(
+    renv_packages = data.frame(
+      file_name = c("a/renv.lock", "b/renv.lock", "a/renv.lock", "a/renv.lock", "a/renv.lock"),
+      package = c("dplyr", "dplyr", "papaja", "unused", "Matrix"),
+      version = c("1.0.0", "1.1.3", "0.1.2", "9.9.9", "1.5-1"),
+      source = c("Repository", "Repository", "GitHub", "Repository", "Repository"),
+      remote = c(NA, NA, "crsh/papaja@abc", NA, NA)),
+    session_packages = data.frame(
+      file_name = "si.txt", package = c("dplyr", "lme4", "limma"), version = c("0.8.0", "1.1-21", "3.50.0"),
+      source = c(NA, NA, "Bioconductor"), remote = NA_character_),
+    pin_dates = data.frame(mechanism = "groundhog", date = c("2020-01-01", "2021-03-01")))
+  looked_up <- NULL
+  local_mocked_bindings(.repro_date_versions = function(pkgs, date) {
+    looked_up <<- date
+    structure(stats::setNames(rep("1.0.0", length(pkgs)), pkgs), failed = FALSE)
+  })
+  p <- .repro_recorded_plan(deps, vp)
+  d <- p$deps
+  # no base package, no package manager, nothing that is only listed
+  expect_setequal(d$package, c("dplyr", "lme4", "papaja", "limma", "praise"))
+  # the highest version of the two lockfiles, not the session record's
+  expect_equal(d$version[d$package == "dplyr"], "1.1.3")
+  expect_equal(d$recorded_from[d$package == "dplyr"], "b/renv.lock")
+  expect_equal(d$version[d$package == "lme4"], "1.1-21")
+  # where it came from decides how it is installed
+  expect_equal(d$source[d$package == "papaja"], "github")
+  expect_equal(d$ref[d$package == "papaja"], "crsh/papaja@abc")
+  expect_equal(d$source[d$package == "limma"], "bioc")
+  # the latest date, for what no file lists
+  expect_equal(looked_up, "2021-03-01")
+  expect_equal(d$version[d$package == "praise"], "1.0.0")
+  expect_equal(d$recorded_from[d$package == "praise"], "date 2021-03-01")
+  # R's own packages keep R's version, and are named
+  expect_equal(p$kept_with_r$package, "Matrix")
+})
+
+test_that(".repro_recorded_plan returns NULL when nothing records a loaded package", {
+  deps <- data.frame(package = c("dplyr", "groundhog"), source = "cran", ref = NA_character_, base = FALSE)
+  none <- function(pkg) list(
+    renv_packages = data.frame(file_name = "renv.lock", package = pkg, version = "1.0", source = "Repository"),
+    session_packages = NULL, pin_dates = NULL)
+  expect_null(.repro_recorded_plan(deps, none("other")))
+  expect_null(.repro_recorded_plan(deps, none("groundhog")))
+  expect_null(.repro_recorded_plan(deps, NULL))
+  expect_null(.repro_recorded_plan(NULL, none("dplyr")))
+  # a record without a remote column, saved by an earlier version
+  expect_equal(.repro_recorded_plan(deps, none("dplyr"))$deps$version, "1.0")
+})
+
+test_that(".repro_recorded_plan warns when a date's versions cannot be looked up", {
+  deps <- data.frame(package = "dplyr", source = "cran", ref = NA_character_, base = FALSE)
+  vp <- list(renv_packages = NULL, session_packages = NULL,
+             pin_dates = data.frame(mechanism = "groundhog", date = "2010-01-01"))
+  local_mocked_bindings(.repro_date_versions = function(pkgs, date)
+    structure(stats::setNames(rep(NA_character_, length(pkgs)), pkgs), failed = TRUE))
+  expect_warning(p <- .repro_recorded_plan(deps, vp), "2010-01-01")
+  expect_null(p)
+  expect_silent(p <- .repro_recorded_plan(deps, vp, use_dates = FALSE))
+  expect_null(p)
+})
+
+test_that("the warning and report state that the R version is not changed", {
+  recorded <- list(
+    deps = data.frame(package = c("a", "b", "c", "d"), source = c("cran", "cran", "cran", "bioc"),
+                      ref = NA_character_, base = FALSE, version = c("1.0", "2.0", NA, "3.0"),
+                      recorded_from = "renv.lock"),
+    kept_with_r = data.frame(package = "Matrix", version = "1.5-1"), dates = character(0),
+    date_failed = FALSE)
+  vp <- list(r_versions = "4.3.1",
+             renv_packages = data.frame(file_name = "renv.lock", package = "a", version = "1.0", source = "Repository"),
+             session_packages = NULL, pin_dates = NULL)
+  w <- .repro_recorded_warning(recorded, vp, "docker")
+  expect_match(w, "3 of the 4 packages", fixed = TRUE)
+  expect_match(w, "The R version is not changed", fixed = TRUE)
+  expect_match(w, "R 4.3.1", fixed = TRUE)
+  expect_match(w, "long time", fixed = TRUE)
+  expect_match(w, "depend on", fixed = TRUE)
+  expect_match(w, "Matrix", fixed = TRUE)
+  expect_match(w, "these get their current version: d", fixed = TRUE)
+  expect_false(grepl("R version is not changed", .repro_recorded_warning(recorded, vp, "docker", TRUE), fixed = TRUE))
+
+  results <- data.frame(package = c("a", "b", "c", "d"), source = "cran",
+                        installed = c(TRUE, TRUE, TRUE, FALSE), message = c("", "", "", "no such package"),
+                        version_recorded = c("1.0", "2.0", NA, "3.0"),
+                        version_installed = c("1.0", "2.5", "9.9", NA),
+                        version_note = c("", "could not build", "", ""))
+  counts <- .repro_recorded_counts(recorded, results)
+  expect_equal(counts$exact, c(TRUE, FALSE, FALSE))
+  expect_equal(counts$replaced, c(FALSE, TRUE, FALSE))
+  expect_equal(counts$failed, c(FALSE, FALSE, TRUE))
+  rep_txt <- paste(.repro_recorded_report(recorded, results, vp, "process"), collapse = "\n")
+  expect_match(rep_txt, "1 was installed at the recorded version, 1 got another version, and 1 could not", fixed = TRUE)
+  expect_match(rep_txt, "not an exact reproduction", fixed = TRUE)
+  expect_match(rep_txt, "could not build", fixed = TRUE)
+  expect_match(rep_txt, "no such package", fixed = TRUE)
+  expect_match(rep_txt, "also load c", fixed = TRUE)
+  expect_match(rep_txt, "The R version is not changed", fixed = TRUE)
+  expect_match(.repro_recorded_summary(recorded, results), "1 of the 3 packages", fixed = TRUE)
+  expect_null(.repro_recorded_summary(NULL, results))
+  expect_null(.repro_recorded_report(recorded, NULL, vp, "process"))
+})
+
+test_that(".repro_recorded_preview says what a run would install", {
+  deps <- data.frame(package = c("a", "b"), source = "cran", ref = NA_character_, base = FALSE)
+  vp <- list(renv_packages = data.frame(file_name = "renv.lock", package = "a", version = "1.0", source = "Repository"),
+             session_packages = NULL, pin_dates = NULL)
+  expect_match(.repro_recorded_preview(deps, vp), "would install 1 package ", fixed = TRUE)
+  expect_match(.repro_recorded_preview(deps, vp), "would not change the R version", fixed = TRUE)
+  vp <- list(renv_packages = NULL, session_packages = NULL,
+             pin_dates = data.frame(mechanism = "checkpoint", date = "2022-01-01"))
+  expect_match(.repro_recorded_preview(deps, vp), "would install 2 packages", fixed = TRUE)
+  expect_null(.repro_recorded_preview(deps, list()))
+})
+
+test_that(".repro_install_limit gives the time for installing", {
+  expect_equal(.repro_install_limit(NULL, 600, 3600), 600)
+  expect_equal(.repro_install_limit(NULL, 600, 3600, recorded = TRUE), 3600)
+  expect_equal(.repro_install_limit(NULL, 7200, 3600, recorded = TRUE), 7200)
+  expect_equal(.repro_install_limit(100, 600, 3600, recorded = TRUE), 100)
+  # at most half of what is left of a clock time, and never nothing
+  expect_lte(.repro_install_limit(NULL, 600, Sys.time() + 1000, recorded = TRUE), 500)
+  expect_equal(.repro_install_limit(NULL, 600, Sys.time() - 1000), 60)
+})
+
+test_that("the install progress says what is happening and for how long", {
+  expect_equal(.repro_duration(12), "12 sec")
+  expect_equal(.repro_duration(250), "4 min")
+  expect_equal(.repro_duration(3900), "1 h 5 min")
+  first <- .repro_install_what(1, 14, "lme4", "1.1-21", Sys.time() - 12)
+  expect_match(first, "Installing lme4 1.1-21 (1 of 14, 12 sec so far)", fixed = TRUE)
+  later <- .repro_install_what(3, 14, "lme4", NA, Sys.time() - 240)
+  expect_match(later, "Installing lme4 (3 of 14, 4 min so far, about 24 min left)", fixed = TRUE)
+})
+
+test_that(".repro_docker_run_install follows the status file and stops at the time limit", {
+  skip_if_quick()
+  skip_if_not_installed("processx")
+  wd <- withr::local_tempdir()
+  status <- file.path(wd, "status")
+  out <- file.path(wd, "out")
+  prog <- file.path(wd, "p.R")
+  rscript <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
+  inst <- data.frame(package = c("a", "b"), source = "cran", ref = NA_character_)
+  writeLines(sprintf('for (i in 1:2) { writeLines(as.character(i), "%s"); Sys.sleep(2) }; cat("done\\n")',
+                     gsub("\\\\", "/", status)), prog)
+  expect_message(res <- .repro_docker_run_install(rscript, prog, 60, out, status, inst, c("1.0", NA)),
+                 "Installing a 1.0 (1 of 2", fixed = TRUE)
+  expect_equal(res, list(status = 0L, timeout = FALSE))
+  expect_equal(readLines(out), "done")
+
+  writeLines("Sys.sleep(30)", prog)
+  res <- suppressMessages(.repro_docker_run_install(rscript, prog, 2, out, status, inst, c(NA, NA)))
+  expect_true(res$timeout)
+})
+
+test_that("repro_install_deps installs a recorded version, and the current one if it cannot", {
+  skip_if_not_installed("remotes")
+  installed <- list()
+  lib <- withr::local_tempdir()
+  # Packages the tests can load anyway, since the load check after an install
+  # looks in every library; the installs below only write a DESCRIPTION file.
+  fake_install <- function(pkg, version) {
+    dir.create(file.path(lib, pkg))
+    writeLines(c(paste("Package:", pkg), paste("Version:", version), "Built: R 4.5.0; ; ; "),
+               file.path(lib, pkg, "DESCRIPTION"))
+  }
+  local_mocked_bindings(.package = "remotes", install_version = function(package, version, lib, ...) {
+    installed[[length(installed) + 1]] <<- c(package, version)
+    if (package == "jsonlite") stop("version '", version, "' is invalid for package 'jsonlite'")
+    fake_install(package, version)
+  })
+  local_mocked_bindings(.package = "utils", install.packages = function(pkgs, ...) fake_install(pkgs, "9.9"))
+
+  deps <- data.frame(package = c("withr", "jsonlite", "dplyr"), source = "cran",
+                     ref = NA_character_, version = c("0.0.1", "0.0.2", NA))
+  out <- suppressMessages(repro_install_deps(deps, lib))
+  expect_equal(out$installed, rep(TRUE, 3))
+  expect_equal(out$version_recorded, c("0.0.1", "0.0.2", NA))
+  expect_equal(out$version_installed, c("0.0.1", "9.9", "9.9"))
+  expect_match(out$version_note[2], "invalid for package", fixed = TRUE)
+  expect_equal(out$version_note[c(1, 3)], c("", ""))
+  expect_equal(installed[[1]], c("withr", "0.0.1"))
+
+  # already there at that version: nothing to do
+  n <- length(installed)
+  again <- suppressMessages(repro_install_deps(deps[1, ], lib))
+  expect_equal(length(installed), n)
+  expect_true(again$installed)
+
+  # no time left: nothing is started
+  late <- suppressMessages(repro_install_deps(deps[2, ], withr::local_tempdir(), deadline = Sys.time() - 1))
+  expect_false(late$installed)
+  expect_match(late$message, "time for installing", fixed = TRUE)
+})
+
+test_that("repro_install_deps keeps a recorded version out of your own library", {
+  skip_if_not_installed("remotes")
+  lib <- withr::local_tempdir()
+  used <- NULL
+  local_mocked_bindings(.package = "remotes", install_version = function(package, version, lib, ...) {
+    used <<- lib
+    dir.create(file.path(lib, package))
+    writeLines(c(paste("Package:", package), paste("Version:", version), "Built: R 4.5.0; ; ; "),
+               file.path(lib, package, "DESCRIPTION"))
+  })
+  out <- suppressMessages(repro_install_deps(
+    data.frame(package = "withr", source = "cran", ref = NA_character_, version = "0.0.1"),
+    lib, cran_to_main_lib = TRUE))
+  expect_equal(used, lib)
+  expect_equal(out$version_installed, "0.0.1")
+})
+
+test_that("repro_install_deps does not count a failed GitHub install as installed", {
+  skip_if_not_installed("remotes")
+  skip_if_not_installed("R6")
+  deps <- data.frame(package = "R6", source = "github", ref = "r-lib/R6@abc", version = "0.0.1")
+  # install_github() does not stop when the download fails. R6 is also in the
+  # main library, which must not count.
+  local_mocked_bindings(.package = "remotes", install_github = function(...) NA)
+  out <- suppressMessages(repro_install_deps(deps, withr::local_tempdir()))
+  expect_false(out$installed)
+
+  # installed, but the commit gave another version than the one recorded
+  local_mocked_bindings(.package = "remotes", install_github = function(ref, lib, ...) {
+    dir.create(file.path(lib, "R6"))
+    writeLines(c("Package: R6", "Version: 0.0.2", "Built: R 4.5.0; ; ; "), file.path(lib, "R6", "DESCRIPTION"))
+  })
+  out <- suppressMessages(repro_install_deps(deps, withr::local_tempdir()))
+  expect_true(out$installed)
+  expect_equal(out$version_installed, "0.0.2")
+  expect_match(out$version_note, "another version", fixed = TRUE)
+})
+
+test_that("a recorded version that fails without an error names the R version", {
+  skip_if_not_installed("remotes")
+  local_mocked_bindings(.package = "remotes", install_version = function(...) NA)
+  local_mocked_bindings(.package = "utils", install.packages = function(pkgs, lib, ...) {
+    dir.create(file.path(lib, pkgs))
+    writeLines(c(paste("Package:", pkgs), "Version: 9.9", "Built: R 4.5.0; ; ; "), file.path(lib, pkgs, "DESCRIPTION"))
+  })
+  out <- suppressMessages(repro_install_deps(
+    data.frame(package = "withr", source = "cran", ref = NA_character_, version = "0.0.1"),
+    withr::local_tempdir()))
+  expect_equal(out$version_note, paste0("the recorded version could not be installed on R ", getRversion()))
+})
+
+test_that("repro_install_deps installs a real old version into a temporary library", {
+  skip_if_quick()
+  skip_if_offline()
+  withr::local_options(repos = c(CRAN = "https://cloud.r-project.org"))
+  lib <- withr::local_tempdir()
+  out <- suppressMessages(repro_install_deps(
+    data.frame(package = "R6", source = "cran", ref = NA_character_, version = "2.4.0"), lib))
+  expect_true(out$installed)
+  expect_equal(out$version_installed, "2.4.0")
+  expect_equal(as.character(utils::packageVersion("R6", lib.loc = lib)), "2.4.0")
+})
+
+test_that(".repro_date_versions reads a dated copy of CRAN", {
+  skip_if_quick()
+  skip_if_offline()
+  v <- .repro_date_versions(c("R6", "notapackage"), "2021-03-01")
+  expect_equal(v[["R6"]], "2.5.0")
+  expect_true(is.na(v[["notapackage"]]))
+  expect_false(attr(v, "failed"))
+  # before the first copy
+  expect_true(attr(.repro_date_versions("R6", "2016-01-01"), "failed"))
+})
+
+test_that(".repro_neutralise_env_calls replaces calls that would install packages", {
+  rewrite <- function(...) .repro_neutralise_env_calls(c(...))
+  one <- function(...) paste(rewrite(...)$txt, collapse = "\n")
+
+  # groundhog.library() becomes library()
+  expect_equal(one('groundhog.library("dplyr", "2023-01-01")'), '{ library("dplyr") }')
+  expect_equal(one('groundhog::groundhog.library(c("dplyr", "lme4"), date)'),
+               '{ library("dplyr"); library("lme4") }')
+  expect_equal(one('groundhog.library(c("dplyr",', '   "lme4"), "2023-01-01"); x <- 1'),
+               '{ library("dplyr"); library("lme4") }; x <- 1')
+  expect_equal(one('pkgs <- c("a", "b")', 'groundhog.library(pkgs, d)'),
+               'pkgs <- c("a", "b")\n{ library("a"); library("b") }')
+  expect_equal(one('groundhog.library("', 'library(a)', 'library(b)', '", d)'),
+               '{ library("a"); library("b") }')
+
+  # a bare name is a package or a variable the script computes
+  pkgs <- "stats"
+  bare <- one('groundhog.library(pkgs, d)')
+  expect_no_error(eval(parse(text = bare)))
+  expect_match(one('groundhog.library(dplyr, d)'), 'library("dplyr")', fixed = TRUE)
+
+  # the others do nothing, and name what was removed
+  for (call in c('renv::restore()', 'renv::init(bare = TRUE)', 'renv::settings$snapshot.type("all")',
+                 'source("renv/activate.R")', "source('renv/activate.R')",
+                 'source(file.path("renv", "activate.R"))', 'library(renv)', 'library("groundhog")',
+                 'set.groundhog.folder("x")', 'groundhog::meta.groundhog("2023-01-01")'))
+    expect_match(one(call), '^invisible\\("reproducibility_check removed ')
+  expect_match(one('renv::restore(', '  lockfile = "renv.lock"', ')'), '^invisible\\([^\n]*\\)$')
+  expect_equal(one('if (!require(renv)) install.packages("renv")'), 'if (!TRUE) install.packages("renv")')
+  expect_equal(one('if (!requireNamespace("groundhog", quietly = TRUE)) install.packages("groundhog")'),
+               'if (!TRUE) install.packages("groundhog")')
+
+  # checkpoint() only when the script names the package
+  expect_equal(one('checkpoint("my result")'), 'checkpoint("my result")')
+  expect_match(one('library(checkpoint)', 'checkpoint("2022-01-01")'),
+               'removed a checkpoint call', fixed = TRUE)
+  expect_match(one('checkpoint::checkpoint("2022-01-01")'), 'removed a checkpoint call', fixed = TRUE)
+
+  # nothing else changes, and the count is right
+  plain <- c('library(dplyr)', 'x <- groundhog', 'source("analysis.R")')
+  expect_equal(rewrite(plain), list(txt = plain, n = 0L))
+  expect_equal(rewrite('library(groundhog)', 'groundhog.library("a", d)', 'renv::restore()')$n, 3L)
+  expect_equal(rewrite(character(0))$n, 0L)
+  for (code in list('groundhog.library("a", d); x <- 1', 'if (TRUE) renv::restore() else 1',
+                    'pkgs <- paste0("a"); groundhog.library(pkgs, d)'))
+    expect_no_error(parse(text = rewrite(code)$txt))
+})
+
+test_that(".repro_neutralise_rprofile keeps the rest of a .Rprofile", {
+  root <- withr::local_tempdir()
+  expect_equal(.repro_neutralise_rprofile(root), 0L)
+  path <- file.path(root, ".Rprofile")
+  writeLines(c('options(digits = 4)', 'source("renv/activate.R")'), path)
+  expect_equal(.repro_neutralise_rprofile(root), 1L)
+  expect_equal(readLines(path)[1], "options(digits = 4)")
+  expect_match(readLines(path)[2], "removed renv's activate.R", fixed = TRUE)
+})
+
+test_that("repro_write_scripts replaces package-manager calls only when asked", {
+  code <- list("a.R" = c('groundhog.library("dplyr", "2023-01-01")', "x <- 1"))
+  root <- withr::local_tempdir()
+  out <- suppressMessages(repro_write_scripts(code, list(), NULL, root))
+  expect_equal(out$env_calls_replaced, 0L)
+  expect_equal(readLines(out$script_path), code[["a.R"]])
+
+  out <- suppressMessages(repro_write_scripts(code, list(), NULL, root, replace_env_calls = TRUE))
+  expect_equal(out$env_calls_replaced, 1L)
+  expect_equal(readLines(out$script_path), c('{ library("dplyr") }', "x <- 1"))
+
+  # not in Python code
+  py <- list("b.py" = 'renv::restore()')
+  out <- suppressMessages(repro_write_scripts(py, list(), NULL, root, lang = "Python",
+                                              replace_env_calls = TRUE))
+  expect_equal(out$env_calls_replaced, 0L)
+})
+
+test_that("repro_install_deps_docker passes the versions to its script and reports them", {
+  skip_if_not_installed("processx")
+  captured <- NULL
+  local_mocked_bindings(.repro_docker_run_install = function(command, args, timeout, out_file, status_file,
+                                                             install_deps, versions) {
+    sandbox <- dirname(status_file)
+    captured <<- readLines(file.path(sandbox, "install.R"))
+    saveRDS(data.frame(package = "a", source = "cran", installed = TRUE, message = "",
+                       version_installed = "1.0", version_note = ""),
+            file.path(sandbox, ".install_results.rds"))
+    writeLines("", out_file)
+    list(status = 0L, timeout = FALSE)
+  })
+  deps <- data.frame(package = c("a", "b"), source = "cran", ref = NA_character_, version = c("1.0", NA))
+  out <- repro_install_deps_docker(deps, withr::local_tempdir(), image = "x")
+  # the script parses, with the version list in it
+  expect_no_error(parse(text = captured))
+  expect_true('.repro_docker_vers <- c("1.0", NA)' %in% captured)
+  expect_true(any(grepl("remotes::install_version", captured, fixed = TRUE)))
+  expect_true(any(grepl("/sandbox/.install_status", captured, fixed = TRUE)))
+  # a bare image has no remotes, and before R 4.0 data.frame() makes factors
+  expect_true(any(grepl('install.packages("remotes", lib = lib', captured, fixed = TRUE)))
+  expect_true(any(grepl("version_note = note, stringsAsFactors = FALSE", captured, fixed = TRUE)))
+  # the row the script reached, and one it did not
+  expect_equal(out$package, c("a", "b"))
+  expect_equal(out$installed, c(TRUE, FALSE))
+  expect_equal(out$version_recorded, c("1.0", NA))
+  expect_equal(out$version_installed, c("1.0", NA))
+  expect_equal(out$version_note, c("", ""))
+  # without a version column, as before
+  out <- repro_install_deps_docker(deps[c("package", "source", "ref")], withr::local_tempdir(), image = "x")
+  expect_true('.repro_docker_vers <- c(NA_character_, NA_character_)' %in% captured)
+  expect_true(all(is.na(out$version_recorded)))
+})
+
+test_that(".repro_docker_resource_args always keeps R from writing a crash file", {
+  withr::local_options(metacheck.docker_resource_limits = NULL)
+  expect_equal(.repro_docker_resource_args(), c("--ulimit", "core=1"))
+  withr::local_options(metacheck.docker_resource_limits = list(cpus = 2, memory_gb = 4))
+  expect_equal(.repro_docker_resource_args(), c("--ulimit", "core=1", "--cpus", "2", "--memory", "4g"))
+})
+
+# A small installed package, for the load check.
+local_test_package <- function(lib, name, version, imports = NULL, on_load = NULL) {
+  dir.create(lib, showWarnings = FALSE, recursive = TRUE)
+  src <- file.path(withr::local_tempdir(.local_envir = parent.frame()), name)
+  dir.create(file.path(src, "R"), recursive = TRUE)
+  writeLines(c(paste("Package:", name), paste("Version:", version), "Title: A Test", "Description: A test.",
+               "License: GPL-3", "Author: A", "Maintainer: A <a@b.c>", if (!is.null(imports)) paste("Imports:", imports)),
+             file.path(src, "DESCRIPTION"))
+  writeLines(c(if (!is.null(imports)) paste0("import(", sub(" .*$", "", imports), ")"), "export(f)"), file.path(src, "NAMESPACE"))
+  writeLines(c("f <- function() 1", if (!is.null(on_load)) paste0(".onLoad <- function(libname, pkgname) ", on_load)),
+             file.path(src, "R", "f.R"))
+  res <- processx::run(file.path(R.home("bin"), "R"),
+                       c("CMD", "INSTALL", "--no-docs", "--no-test-load", "--no-multiarch", paste0("--library=", lib), src),
+                       env = c("current", R_LIBS = lib), error_on_status = FALSE)
+  expect_equal(res$status, 0L, info = res$stderr)
+}
+
+test_that(".repro_load_check replaces a recorded version that keeps a package from loading", {
+  skip_on_cran()
+  skip_if_not_installed("processx")
+  root <- withr::local_tempdir()
+  lib <- file.path(root, "lib"); main <- file.path(root, "main")
+  local_test_package(main, "mcOld", "2.0")
+  local_test_package(main, "mcNew", "1.0", imports = "mcOld (>= 2.0)")
+  local_test_package(main, "mcFine", "3.0")
+  local_test_package(lib, "mcOld", "1.0")
+  # recorded, and fine next to what is there
+  local_test_package(lib, "mcFine", "1.5")
+  # recorded, breaks when it loads, and has no other copy to go back to
+  local_test_package(lib, "mcBroken", "1.0", on_load = 'stop("broken on this R")')
+  withr::local_envvar(R_LIBS = main)
+  ir <- data.frame(package = c("mcNew", "mcOld", "mcFine", "mcBroken"), source = "cran", installed = TRUE,
+                   message = "", category = NA_character_, version_recorded = c(NA, "1.0", "1.5", "1.0"),
+                   version_installed = c("1.0", "1.0", "1.5", "1.0"), version_note = "")
+  out <- suppressMessages(.repro_load_check(ir, lib, timeout = 300))
+
+  # the current version of the package the error names, and the note says why
+  expect_equal(out$version_installed[2], "2.0")
+  expect_match(out$version_note[2], "keeps mcNew from loading", fixed = TRUE)
+  expect_true(file.exists(file.path(main, "mcOld", "DESCRIPTION")))
+  expect_false(file.exists(file.path(lib, "mcOld", "DESCRIPTION")))
+  # a recorded version that is not at fault stays
+  expect_equal(out$version_installed[3], "1.5")
+  expect_equal(out$version_note[3], "")
+  expect_true(file.exists(file.path(lib, "mcFine", "DESCRIPTION")))
+  # a package that does not load counts as not installed
+  expect_false(out$installed[4])
+  expect_match(out$message[4], "the package does not load", fixed = TRUE)
+  expect_match(out$message[4], "broken on this R", fixed = TRUE)
+  expect_equal(out$category[4], "other")
+  expect_true(all(out$installed[1:3]))
+})
+
+test_that(".repro_load_check does nothing without a recorded version in the library", {
+  ir <- data.frame(package = "a", source = "cran", installed = TRUE, message = "", category = NA_character_,
+                   version_recorded = "1.0", version_installed = "1.0", version_note = "")
+  local_mocked_bindings(.repro_load_check_lines = function(...) stop("should not run"))
+  expect_equal(.repro_load_check(ir, withr::local_tempdir()), ir)
+})
+
+test_that(".repro_install_order installs current versions before recorded ones", {
+  deps <- data.frame(package = c("a", "b", "c", "d"), source = c("cran", "cran", "bioc", "github"),
+                     version = c("1.0", NA, "3.1", "2.0"))
+  expect_equal(.repro_install_order(deps)$package, c("b", "c", "a", "d"))
+})
+
+test_that(".repro_repos_lines replaces MRAN by the same date at Posit, and keeps other sources", {
+  repos_after <- function(repos) {
+    withr::local_options(repos = repos)
+    eval(parse(text = .repro_repos_lines()))
+    getOption("repos")
+  }
+  expect_equal(unname(repos_after(c(CRAN = "https://mran.microsoft.com/snapshot/2020-02-28"))),
+               "https://packagemanager.posit.co/cran/2020-02-28")
+  expect_equal(unname(repos_after(c(CRAN = "@CRAN@"))), "https://cloud.r-project.org")
+  expect_equal(unname(repos_after(c(CRAN = "https://p3m.dev/cran/__linux__/jammy/2023-06-15"))),
+               "https://p3m.dev/cran/__linux__/jammy/2023-06-15")
+})
+
+test_that("the load check script parses and runs from R 3.6", {
+  lines <- .repro_load_check_lines("/rlib", c("a", "b"), "a", "/sandbox/results.rds")
+  expect_no_error(parse(text = lines))
+  # data.frame() makes factors before R 4.0
+  expect_equal(sum(grepl("stringsAsFactors = FALSE", lines, fixed = TRUE)), 2)
+  expect_false(any(grepl("deparse1|\\|>", lines)))
+})
+
+test_that("repro_install_deps_docker installs recorded versions in a real container", {
+  skip_if_quick()
+  skip_if_offline()
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  # callr loads R6 in the install process, so a failed install of R6 from
+  # GitHub must not pass the load check.
+  deps <- data.frame(package = c("R6", "callr", "R6"), source = c("cran", "cran", "github"),
+                     ref = c(NA, NA, "r-lib/R6@0000000000000000000000000000000000000000"),
+                     version = c("2.4.0", NA, "2.5.1"))
+  out <- suppressMessages(repro_install_deps_docker(
+    deps[1:2, ], withr::local_tempdir(),
+    image = "ghcr.io/scienceverse/metacheck_r_large:latest", timeout = 300))
+  expect_equal(out$installed, c(TRUE, TRUE))
+  expect_equal(out$version_installed[1], "2.4.0")
+
+  out <- suppressMessages(repro_install_deps_docker(
+    deps[2:3, ], withr::local_tempdir(),
+    image = "ghcr.io/scienceverse/metacheck_r_large:latest", timeout = 300))
+  expect_equal(out$installed, c(TRUE, FALSE))
+  expect_match(out$message[2], "did not put the package in the library", fixed = TRUE)
+})
+
 # repro_install_deps_docker() -- generated install.R script (issue #418) ----
 # The bug this guards against was in pure string construction (deparse()
 # wrapping to multiple lines for a long enough dependency vector, silently
@@ -1226,6 +1754,29 @@ test_that("a package install.packages() cannot find is reported as unavailable",
   # Without such a warning the original wording is kept.
   expect_equal(metacheck:::.repro_not_loadable_msg("pkg", character(0)),
                "installed but package 'pkg' is not loadable")
+})
+
+test_that("a package that does not load is reported with what R said", {
+  skip_on_cran()
+  skip_if_not_installed("processx")
+  lib <- withr::local_tempdir()
+  withr::defer(if ("mcLoads" %in% loadedNamespaces()) unloadNamespace("mcLoads"))
+  local_test_package(lib, "mcNoLoad", "1.0", on_load = 'stop("libfoo.so.2:\n  cannot open")')
+  reason <- metacheck:::.repro_load_error("mcNoLoad", lib)
+  expect_match(reason, "libfoo.so.2: cannot open", fixed = TRUE)
+  expect_equal(metacheck:::.repro_not_loadable_msg("mcNoLoad", character(0), reason),
+               paste0("installed but package 'mcNoLoad' is not loadable: ", reason))
+  # a package that loads has nothing to report
+  local_test_package(lib, "mcLoads", "1.0")
+  expect_equal(metacheck:::.repro_load_error("mcLoads", lib), "")
+  # the install script in Docker cannot use this function, so it has its own copy
+  script <- paste(deparse(body(repro_install_deps_docker)), collapse = "\n")
+  expect_match(script, "is not loadable: ", fixed = TRUE)
+})
+
+test_that(".repro_classify_install_message does not call the install time limit a network issue", {
+  expect_equal(metacheck:::.repro_classify_install_message("docker install timed out after 5s"), "other")
+  expect_equal(metacheck:::.repro_classify_install_message("Timeout was reached: connection timed out"), "network")
 })
 
 test_that("repro_dependencies does not list a package-list variable as a package", {

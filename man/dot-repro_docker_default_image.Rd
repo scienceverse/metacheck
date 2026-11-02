@@ -14,8 +14,8 @@ installed, plus JAGS, a JDK, and the GDAL/GEOS/PROJ geospatial stack
 for the Dockerfile/package list/build instructions -- that repo also
 publishes a smaller \code{metacheck_r_small} variant, ~390 packages, seen in
 at least 3 corpus files, also with JAGS/a JDK but without the geospatial
-stack), so a run against it skips most of the install phase entirely
-instead of reinstalling every dependency from scratch. This is the
+stack), so a run against it needs no install for most papers. (With
+\code{install_missing = TRUE} every declared package is still installed.) This is the
 DEFAULT image (see \code{.repro_docker_image_for()}'s \code{use_declared_version}
 argument) -- pinned to whatever R version it was built against, NOT the
 paper's own declared version, which is the tradeoff

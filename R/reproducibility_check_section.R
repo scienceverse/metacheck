@@ -46,11 +46,13 @@
 # `run_results` its per-script run results, `missing_inputs` the rows of
 # repro_missing_inputs() for both languages, `n_dup` the number of identical
 # copies that were not run again, `n_tests`/`n_found` the comparison with the
-# paper (NA when there was none). NULL when no script was run.
+# paper (NA when there was none), `recorded_note` a sentence on the recorded
+# package versions used (see .repro_recorded_summary()). NULL when no script
+# was run.
 .repro_checklist_section <- function(table, run_results, missing_inputs = NULL,
                                      n_dup = 0, n_tests = NA, n_found = NA,
                                      sandbox = "docker", timeout = 600,
-                                     install_missing = FALSE) {
+                                     install_missing = FALSE, recorded_note = NULL) {
   if (is.null(table) || !nrow(table) || is.null(run_results) || !nrow(run_results)) {
     return(NULL)
   }
@@ -136,6 +138,7 @@
     "We ran the paper's %s in the order they depend on each other, %s, for at most %s minute%s per script.%s",
     scripts, how, format(round(timeout / 60, 1)), plural(round(timeout / 60, 1)),
     if (!isTRUE(install_missing)) " We did not install packages the scripts need." else "")
+  if (length(recorded_note) > 0) intro <- paste(intro, recorded_note)
   if (n_dup > 0) {
     intro <- paste(intro, sprintf(
       "%d identical cop%s of these scripts, which other links in the paper lead to, %s not run again.",

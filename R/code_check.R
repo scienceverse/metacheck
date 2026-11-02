@@ -293,11 +293,14 @@ code_lang <- function(file_name) {
 # name only, so it is used just when a row has no file_path.
 #
 # Returns TRUE per row of `files` (a code_check/repo_check table).
-.in_renv_folder <- function(files) {
+.in_renv_folder <- function(files) .in_folder(files, "renv")
+
+# Whether each file is in a folder of this name, at any depth.
+.in_folder <- function(files, folder) {
   if (!nrow(files)) return(logical(0))
   p <- files$file_path %||% rep(NA_character_, nrow(files))
   p <- ifelse(is.na(p) | !nzchar(p), files$file_name %||% NA_character_, p)
-  grepl("(^|/)renv/", gsub("\\\\", "/", p), ignore.case = TRUE)
+  grepl(paste0("(^|/)", folder, "/"), gsub("\\\\", "/", p), ignore.case = TRUE)
 }
 
 # code_check() previously called download_repo_files() up to five separate
@@ -1692,8 +1695,9 @@ code_library_lines <- function(code_text, lang = c("R", "Python", "SPSS", "SAS",
 #'
 #' For R this captures `library()` / `require()` / `requireNamespace()` (bare or
 #' quoted argument), pacman's `p_load()` (which may list several packages at
-#' once), namespace-qualified calls (`pkg::fun` / `pkg:::fun`), and
-#' `install.packages()` / `renv::install()`. For Python it captures `import a`,
+#' once), `groundhog.library()`, namespace-qualified calls (`pkg::fun` /
+#' `pkg:::fun`), and `install.packages()` / `renv::install()`. For Python it
+#' captures `import a`,
 #' `import a as b`, `import a, b`, and `from a.b import c` (recording the
 #' top-level package `a`). SAS / SPSS / Stata have no package concept, so an
 #' empty frame is returned.
@@ -1715,8 +1719,8 @@ code_library_lines <- function(code_text, lang = c("R", "Python", "SPSS", "SAS",
 #' @param lang the language (R, Python, SPSS, SAS, Stata, Mplus, MATLAB)
 #'
 #' @returns a data frame with columns `package`, `source` (how the package was
-#'   referenced: `library`, `require`, `requireNamespace`, `p_load`, `namespace`,
-#'   `install`, or `import`), and `line` (the line number). Rows are unique on
+#'   referenced: `library`, `require`, `requireNamespace`, `p_load`, `groundhog`,
+#'   `namespace`, `install`, or `import`), and `line` (the line number). Rows are unique on
 #'   `package` + `source` + `line`. An empty frame (same columns) when none found.
 #' @export
 #'
@@ -1804,8 +1808,12 @@ code_library_names <- function(code_text,
       # A bare word is a package name for library()/require(), unless the call
       # sets character.only = TRUE; requireNamespace() always evaluates its
       # argument, so a bare word there is always a variable.
+      #
+      # Not when a point comes before the name: groundhog.library(c("a", "b"),
+      # date) was read as library(c), so a package called "c" was installed.
+      # It has its own search, below this loop.
       for (fn in c("library", "require", "requireNamespace")) {
-        m <- gregexpr(sprintf("\\b%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)([^)]*)", fn),
+        m <- gregexpr(sprintf("(?<![\\w.])%s\\s*\\(\\s*([A-Za-z0-9._'\"]+)([^)]*)", fn),
                       L, perl = TRUE)
         g <- regmatches(L, m)[[1]]
         for (call in g) {
@@ -1853,8 +1861,9 @@ code_library_names <- function(code_text,
         toks <- strsplit(arg, "\\s*,\\s*")[[1]]
         add(unlist(lapply(toks, arg_packages, bare_is_name = FALSE)), "install", ln)
       }
-      # pkg::fun / pkg:::fun namespace-qualified calls (all on the line)
-      ns <- regmatches(L, gregexpr("\\b([A-Za-z][A-Za-z0-9._]*):{2,3}", L,
+      # pkg::fun / pkg:::fun namespace-qualified calls (all on the line), but not
+      # the source in groundhog.library("github::user/repo", date)
+      ns <- regmatches(L, gregexpr("\\b(?!(?:github|gitlab)::[\\w.-]+/)([A-Za-z][A-Za-z0-9._]*):{2,3}", L,
                                    perl = TRUE))[[1]]
       if (length(ns) > 0) add(sub(":{2,3}$", "", ns), "namespace", ln)
 
@@ -1869,6 +1878,26 @@ code_library_names <- function(code_text,
         top <- sub("\\..*$", "", sub("\\s+as\\s+.*$", "", trimws(parts)))
         add(top, "import", ln)
       }
+    }
+  }
+
+  # groundhog.library() loads its first argument: a name in quotes or not, a
+  # GitHub "user/repo", c(...), which may run over several lines, or a variable
+  # holding these. In the form groundhog.library("library(a); library(b)", date)
+  # the argument is a piece of code, which the library() search above has read.
+  if (lang == "R") {
+    joined <- paste(code_text, collapse = "\n")
+    m <- gregexpr("(?<![\\w.])groundhog\\.library\\s*\\(\\s*(?:pkg\\s*=\\s*)?(?:c\\s*\\([^)]*\\)|[^,)]+)",
+                  joined, perl = TRUE)
+    calls <- regmatches(joined, m)[[1]]
+    for (i in seq_along(calls)) {
+      arg <- sub("(?s)^.*?\\(\\s*(?:pkg\\s*=\\s*)?", "", calls[i], perl = TRUE)
+      arg <- sub("(?s)^c\\s*\\((.*)\\)$", "\\1", trimws(arg), perl = TRUE)
+      toks <- trimws(strsplit(arg, ",", fixed = TRUE)[[1]])
+      pkgs <- unlist(lapply(toks, function(tok)
+        if (tok %in% names(vars)) vars[[tok]] else arg_packages(tok, bare_is_name = TRUE)))
+      ln <- nchar(gsub("[^\n]", "", substr(joined, 1L, m[[1]][i]))) + 1L
+      add(sub("@.*$", "", sub("^.*/", "", pkgs)), "groundhog", ln)
     }
   }
 
@@ -1977,14 +2006,21 @@ code_packages <- function(packages) {
 #' (`groundhog.library(pkg, "YYYY-MM-DD")`, `checkpoint("YYYY-MM-DD")`), not
 #' merely `library(groundhog)`/`library(checkpoint)`: loading the package is
 #' not evidence it was used to pin anything, so a bare `library()` call does
-#' not count.
+#' not count. The date may be held in a variable the same script assigns it
+#' to; a call in a comment does not count.
+#'
+#' The packages a `sessionInfo()` or `session_info()` record lists are read by
+#' [.code_session_packages()]. A file that only mentions an R version still
+#' counts as a `sessionInfo` record, but has no rows in `session_packages`.
+#' A record pasted into an R script, usually as comments, also counts, but only
+#' when it lists packages: a comment such as "needs R version 4.2.0" does not.
 #'
 #' @param all_files the full repo file listing
 #'   (`repo_check`'s table: needs `file_name`, `file_url`, `repo_url`,
 #'   `file_location` where available)
 #' @param code_text_list a named list of already-read R file text (names are
-#'   file_names) — reused for the groundhog/checkpoint scan so no file is
-#'   downloaded or read twice
+#'   file_names) — reused for the groundhog/checkpoint scan and for records
+#'   pasted into scripts, so no file is downloaded or read twice
 #' @param max_file_size passed to [download_repo_files()]
 #'   for any candidate file not yet local
 #' @param max_download_size passed to [download_repo_files()]
@@ -1997,9 +2033,14 @@ code_packages <- function(packages) {
 #'      `renv.lock`, `sessionInfo`, `groundhog`, `checkpoint`),
 #'   `r_versions` (character vector of R version strings found, one per source),
 #'   `renv_files` (character vector of `renv.lock` file_names found),
-#'   `renv_packages` (data frame `file_name`, `package`, `version`, `source`
+#'   `renv_packages` (data frame `file_name`, `package`, `version`, `source`,
+#'      `remote` (`"user/repo@ref"` for a package from GitHub, else `NA`)
 #'      — one row per locked package, across all `renv.lock` files found),
 #'   `sessioninfo_files` (character vector of matched file_names),
+#'   `session_packages` (data frame with the same columns — one row per package
+#'      version the `sessionInfo()`/`session_info()` records list),
+#'   `pin_dates` (data frame `mechanism` (`groundhog` or `checkpoint`), `date`
+#'      — one row per distinct date),
 #'   `python_files` (character vector of the file_names of Python package
 #'      lists: `requirements*.txt`, `environment.yml`, `Pipfile(.lock)`,
 #'      `poetry.lock`, `uv.lock`, `pyproject.toml`),
@@ -2020,8 +2061,15 @@ code_packages <- function(packages) {
              renv_packages = data.frame(file_name = character(0),
                                         package = character(0),
                                         version = character(0),
-                                        source = character(0)),
+                                        source = character(0),
+                                        remote = character(0)),
              sessioninfo_files = character(0),
+             session_packages = data.frame(file_name = character(0),
+                                           package = character(0),
+                                           version = character(0),
+                                           source = character(0),
+                                           remote = character(0)),
+             pin_dates = data.frame(mechanism = character(0), date = character(0)),
              python_files = character(0), python_pinned = FALSE,
              file_location = character(0))
   if (is.null(all_files) || nrow(all_files) == 0) return(out)
@@ -2067,7 +2115,8 @@ code_packages <- function(packages) {
           file_name = renv_rows$file_name[i],
           package = p$Package %||% NA_character_,
           version = p$Version %||% NA_character_,
-          source = p$Source %||% NA_character_))
+          source = p$Source %||% NA_character_,
+          remote = .code_renv_remote(p)))
         out$renv_packages <- dplyr::bind_rows(out$renv_packages,
                                               dplyr::bind_rows(pkg_rows))
       }
@@ -2082,7 +2131,9 @@ code_packages <- function(packages) {
   # Names that START with a README name only ("read.me.txt" too, #487), not
   # every name .is_readme_name() accepts: each candidate may be downloaded.
   is_readme  <- grepl("^read[ _.-]?me", base_nm, ignore.case = TRUE)
-  si_candidates <- is_si_name | is_readme
+  # revdep/ holds a package's tests of other packages; its README names the R
+  # version of those tests, not of the analysis (found in real repositories)
+  si_candidates <- (is_si_name | is_readme) & !.in_folder(all_files, "revdep")
   if (any(si_candidates)) {
     si_rows <- all_files[si_candidates, , drop = FALSE]
     need_dl <- (is.na(si_rows$file_location) | !nzchar(si_rows$file_location %||% "")) &
@@ -2138,35 +2189,47 @@ code_packages <- function(packages) {
         m <- regexpr(rv_pat, hit, perl = TRUE)
         version <- regmatches(hit, m)
         version <- sub("^R version ", "", version)
-        out$sessioninfo_files <- c(out$sessioninfo_files, si_rows$file_name[i])
         out$r_versions <- c(out$r_versions, version)
       }
+      si_pkgs <- .code_session_packages(txt)
+      if (nrow(si_pkgs) > 0) {
+        si_pkgs <- cbind(file_name = si_rows$file_name[i], si_pkgs)
+        out$session_packages <- dplyr::bind_rows(out$session_packages, si_pkgs)
+      }
+      if (!is.na(hit) || nrow(si_pkgs) > 0)
+        out$sessioninfo_files <- c(out$sessioninfo_files, si_rows$file_name[i])
     }
-    if (length(out$sessioninfo_files) > 0) out$mechanisms <- c(out$mechanisms, "sessionInfo")
   }
+  # A record pasted into a script, usually as comments. Only with a list of
+  # packages: a comment that names an R version does not say what was used.
+  for (i in seq_along(code_text_list)) {
+    txt <- as.character(code_text_list[[i]])
+    bad <- !validUTF8(txt)
+    txt[bad] <- iconv(txt[bad], "latin1", "UTF-8", sub = "")
+    txt <- unlist(strsplit(txt, "\n", fixed = TRUE))
+    if (!length(txt)) next   # an empty script
+    si_pkgs <- .code_session_packages(txt)
+    if (nrow(si_pkgs) == 0) next
+    fn <- names(code_text_list)[i] %||% NA_character_
+    out$session_packages <- dplyr::bind_rows(out$session_packages, cbind(file_name = fn, si_pkgs))
+    out$sessioninfo_files <- c(out$sessioninfo_files, fn)
+    # comments, or a record without comment signs; not code such as print("R version 4.2.0")
+    hit <- grep("^\\s*(?:#.*|version\\s+)?R version [0-9]+\\.[0-9]+\\.[0-9]+", txt, value = TRUE, perl = TRUE)[1]
+    if (!is.na(hit)) {
+      version <- regmatches(hit, regexpr("R version [0-9]+\\.[0-9]+\\.[0-9]+", hit, perl = TRUE))
+      out$r_versions <- c(out$r_versions, sub("^R version ", "", version))
+    }
+  }
+  if (length(out$sessioninfo_files) > 0) out$mechanisms <- c(out$mechanisms, "sessionInfo")
 
   # ── groundhog / checkpoint date-pinning calls ───────────────────────────
   # The pinning CALL itself, with a date-shaped argument -- library(groundhog)
   # / library(checkpoint) alone is not evidence anything was pinned (see
   # roxygen @details).
-  # groundhog.library()'s first argument is often c("pkg1", "pkg2", ...) --
-  # one level of nested parens between the call's own "(" and the date
-  # argument, so a flat [^)]* (stops at the FIRST ")") missed every
-  # multi-package call. (?:[^()]|\([^()]*\))* tolerates exactly one level of
-  # nesting, which covers a plain c(...) argument list; confirmed against
-  # groundhog's own documented multi-package call shape.
-  gh_pat <- "groundhog(?:::)?\\.?library\\s*\\((?:[^()]|\\([^()]*\\))*[\"'](\\d{4}-\\d{2}-\\d{2})[\"']"
-  cp_pat <- "checkpoint(?:::checkpoint)?\\s*\\(\\s*[\"'](\\d{4}-\\d{2}-\\d{2})[\"']"
-  has_gh <- FALSE; has_cp <- FALSE
-  for (txt in code_text_list) {
-    if (!length(txt)) next
-    joined <- paste(txt, collapse = "\n")
-    if (!has_gh && grepl(gh_pat, joined, perl = TRUE)) has_gh <- TRUE
-    if (!has_cp && grepl(cp_pat, joined, perl = TRUE)) has_cp <- TRUE
-    if (has_gh && has_cp) break
-  }
-  if (has_gh) out$mechanisms <- c(out$mechanisms, "groundhog")
-  if (has_cp) out$mechanisms <- c(out$mechanisms, "checkpoint")
+  out$pin_dates <- unique(dplyr::bind_rows(c(
+    list(out$pin_dates), unname(lapply(code_text_list, .code_pin_dates)))))
+  if ("groundhog" %in% out$pin_dates$mechanism) out$mechanisms <- c(out$mechanisms, "groundhog")
+  if ("checkpoint" %in% out$pin_dates$mechanism) out$mechanisms <- c(out$mechanisms, "checkpoint")
 
   # ── Python package lists ────────────────────────────────────────────────
   # By file name only: the files pip, conda, pipenv, poetry and uv write.
@@ -2180,6 +2243,129 @@ code_packages <- function(packages) {
   out$r_versions <- unique(out$r_versions)
   out$pinned <- length(out$mechanisms) > 0
   out
+}
+
+# Where an renv.lock entry says a package came from GitHub: "user/repo@ref",
+# with the exact commit when the file records it. NA for any other package.
+.code_renv_remote <- function(p) {
+  if (is.null(p$RemoteUsername) || is.null(p$RemoteRepo)) return(NA_character_)
+  ref <- p$RemoteSha %||% p$RemoteRef
+  paste0(p$RemoteUsername, "/", p$RemoteRepo, if (!is.null(ref)) paste0("@", ref))
+}
+
+#' The package versions a sessionInfo() or session_info() record lists
+#'
+#' Reads the two forms R writes. `sessionInfo()` lists `name_version` items
+#' under "other attached packages:" and "loaded via a namespace", on lines
+#' starting with an index such as `[1]`. `sessioninfo::session_info()` and
+#' `devtools::session_info()` write a table with a header row starting
+#' `package * version date`. Text that has neither heading gives no rows, so a
+#' README that mentions an R version is not taken for a list of packages. A
+#' `## ` or `> ` before each line, as in a knitted document, is ignored.
+#' Packages that are part of R itself (`stats`, `compiler`) are left out.
+#'
+#' @param txt character vector with one line per element
+#'
+#' @returns a data frame `package`, `version`, `source` (`GitHub`,
+#'   `Bioconductor`, `Local`, `Repository`, or `NA` for `sessionInfo()`, which
+#'   does not say) and `remote` (`"user/repo@ref"` for GitHub, else `NA`)
+#' @keywords internal
+.code_session_packages <- function(txt) {
+  empty <- data.frame(package = character(0), version = character(0),
+                      source = character(0), remote = character(0))
+  bad <- !validUTF8(txt)
+  txt[bad] <- iconv(txt[bad], "latin1", "UTF-8", sub = "")
+  txt <- sub("^\\s*(?:#+|>)\\s?", "", txt, perl = TRUE)
+  rows <- list()
+  n <- length(txt)
+
+  item_pat <- "(?<![A-Za-z0-9._])([A-Za-z][A-Za-z0-9.]*)_([0-9]+(?:[.-][0-9]+)+)"
+  heads <- grep("^\\s*(other attached packages|loaded via a namespace)", txt)
+  for (h in heads) {
+    j <- h + 1L
+    while (j <= n && grepl("^\\s*\\[[0-9]+\\]", txt[j])) {
+      items <- regmatches(txt[j], gregexpr(item_pat, txt[j], perl = TRUE))[[1]]
+      if (length(items) > 0) rows[[length(rows) + 1L]] <- data.frame(
+        package = sub("_.*$", "", items), version = sub("^[^_]*_", "", items),
+        source = NA_character_, remote = NA_character_)
+      j <- j + 1L
+    }
+  }
+
+  # The flag columns (`P`, `V`, `!`) come before the name, and `*` after it.
+  row_pat <- paste0("^\\s*(?:[A-Z!]+\\s+)?([A-Za-z][A-Za-z0-9.]*)\\s+(?:\\*\\s+)?",
+                    "([0-9]+(?:[.-][0-9]+)+)\\s+\\d{4}-\\d{2}-\\d{2}\\s+",
+                    "(?:\\[[0-9?]+\\]\\s+)?(.*)$")
+  heads <- grep("^\\s*(?:!\\s+)?package\\s+\\*?\\s*(?:loadedversion|version)\\s+date", txt, perl = TRUE)
+  for (h in heads) {
+    j <- h + 1L
+    while (j <= n && grepl(row_pat, txt[j], perl = TRUE)) {
+      p <- regmatches(txt[j], regexec(row_pat, txt[j], perl = TRUE))[[1]]
+      src <- trimws(p[4])
+      is_gh <- grepl("^git ?hub", src, ignore.case = TRUE)
+      rows[[length(rows) + 1L]] <- data.frame(
+        package = p[2], version = p[3],
+        source = if (is_gh) "GitHub"
+          else if (grepl("^bioc", src, ignore.case = TRUE)) "Bioconductor"
+          else if (grepl("^local", src, ignore.case = TRUE)) "Local"
+          else "Repository",
+        remote = if (is_gh && grepl("\\(([^)]+)\\)", src))
+          sub("^.*\\(([^)]+)\\).*$", "\\1", src) else NA_character_)
+      j <- j + 1L
+    }
+  }
+
+  if (length(rows) == 0) return(empty)
+  out <- dplyr::bind_rows(rows)
+  base_pkgs <- rownames(utils::installed.packages(priority = "base"))
+  out <- out[!out$package %in% base_pkgs, , drop = FALSE]
+  out <- out[!duplicated(out[c("package", "version")]), , drop = FALSE]
+  rownames(out) <- NULL
+  out
+}
+
+# The dates one script passes to groundhog.library() and checkpoint(), as a
+# data frame `mechanism`, `date`. The date is written in the call, or held in a
+# variable the script assigns it to: `day <- "2023-01-01"` followed by
+# `groundhog.library(pkgs, day)` was not seen before. Comments are removed
+# first, because the date decides which versions are installed.
+.code_pin_dates <- function(code_text) {
+  empty <- data.frame(mechanism = character(0), date = character(0))
+  if (!length(code_text)) return(empty)
+  bad <- !validUTF8(code_text)
+  code_text[bad] <- iconv(code_text[bad], "latin1", "UTF-8", sub = "")
+  code_text <- code_remove_comments(code_text, "R")
+  if (!length(code_text)) return(empty)
+  joined <- paste(code_text, collapse = "\n")
+  vars <- .code_char_vector_vars(code_text)
+  date_pat <- "\\d{4}-\\d{2}-\\d{2}"
+  # An argument list, with up to two levels of brackets inside it: c("a", "b")
+  # and a piece of code in a string, "library(a)".
+  args_pat <- "((?:[^()]++|\\((?:[^()]++|\\([^()]*+\\))*+\\))*+)"
+
+  dates_of <- function(call_pat, date_arg, position) {
+    pat <- paste0("(?<![\\w.])", call_pat, "\\s*\\(", args_pat, "\\)")
+    calls <- regmatches(joined, gregexpr(pat, joined, perl = TRUE))[[1]]
+    found <- vapply(calls, function(call) {
+      args_txt <- sub("(?s)^[^(]*\\((.*)\\)$", "\\1", call, perl = TRUE)
+      literal <- regmatches(args_txt, regexpr(paste0("[\"']", date_pat, "[\"']"), args_txt, perl = TRUE))
+      if (length(literal) > 0) return(gsub("[\"']", "", literal))
+      args <- trimws(vapply(.repro_split_args(args_txt), `[[`, character(1), "text"))
+      name_pat <- paste0("^(?:", date_arg, ")\\s*=\\s*")
+      named <- grepl(name_pat, args, perl = TRUE)
+      arg <- if (any(named)) sub(name_pat, "", args[named][1], perl = TRUE)
+        else if (length(args) >= position) args[position] else ""
+      value <- vars[[arg]]
+      if (length(value) == 1) value else NA_character_
+    }, character(1), USE.NAMES = FALSE)
+    found <- found[!is.na(found) & grepl(paste0("^", date_pat, "$"), found)]
+    found[!is.na(as.Date(found, format = "%Y-%m-%d"))]
+  }
+
+  gh <- dates_of("groundhog\\.library", "date", 2L)
+  cp <- dates_of("(?:checkpoint::)?(?:create_|use_)?checkpoint", "snapshot_date|snapshotDate", 1L)
+  unique(data.frame(mechanism = c(rep("groundhog", length(gh)), rep("checkpoint", length(cp))),
+                    date = c(gh, cp)))
 }
 
 #' Whether the code's environment is written down, per language

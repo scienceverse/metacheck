@@ -190,7 +190,7 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
   msg <- if (!is.null(res)) {
     txt <- tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
                     error = function(e) "")
-    if (isTRUE(res$timeout)) paste0("docker install timed out after ", timeout, "s")
+    if (isTRUE(res$timeout)) paste0("docker install timed out after ", round(timeout), "s")
     else paste0("docker install failed (status ", res$status, "): ", txt)
   } else "docker run could not be started"
   unlink(out_file)
@@ -352,7 +352,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     }
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
-                        error = paste0("timed out after ", timeout, "s"),
+                        error = paste0("timed out after ", round(timeout), "s"),
                         error_type = "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL)))

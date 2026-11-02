@@ -50,9 +50,12 @@
 #' reproducible only after that repair.
 #'
 #' Dependencies are reported name-only, with the source (CRAN, GitHub, or a base
-#' package already shipped with R) — static analysis cannot know which *version*
-#' was used, and running against current package versions is itself informative:
-#' a break argues the authors should have pinned versions.
+#' package already shipped with R) — static analysis of the code cannot know which
+#' *version* was used, and running against current package versions is itself
+#' informative: a break argues the authors should have pinned versions. When the
+#' repository does record versions, a run with `recorded_versions = TRUE` installs
+#' the packages the scripts load at those versions, but it does not change the R
+#' version, which remains a limitation of the check.
 #'
 #' Run order is derived from read-after-write data dependencies (a script writing
 #' a file another reads must run first), `source()` edges, and numeric filename
@@ -105,8 +108,9 @@
 #'   [repro_docker_available()]). By default (see `docker_use_declared_version`)
 #'   the base image is `ghcr.io/scienceverse/metacheck_r_large:latest`, a
 #'   pre-built image with the ~750 most common corpus packages already
-#'   installed, so most papers skip most of the install phase entirely
-#'   rather than reinstalling their dependencies from scratch on every run.
+#'   installed, so most papers need no install at all. With
+#'   `install_missing = TRUE` every declared package is still installed, at its
+#'   current version, and takes the place of the image's copy.
 #'   Python code runs in `ghcr.io/scienceverse/metacheck_py_small:latest`.
 #'   `"process"` needs `callr` for R code and `processx` and a Python
 #'   interpreter for Python code; `"docker"` needs `processx`.
@@ -135,12 +139,37 @@
 #' @param install_missing if TRUE (and `execute = TRUE`), install the code's
 #'   declared dependencies into a throwaway temp library before running (CRAN via
 #'   `install.packages`, GitHub/URL via `remotes`; Python packages via
-#'   `pip install --target`). Default FALSE: a script
-#'   needing an absent package simply errors, recorded as its outcome.
+#'   `pip install --target`). If FALSE, nothing is installed: a script
+#'   needing an absent package simply errors, recorded as its outcome. If `NULL`
+#'   (the default), this is FALSE, except that the R packages the scripts load
+#'   are installed when `recorded_versions = TRUE` and the repository records
+#'   versions for them.
+#' @param recorded_versions if TRUE (and `execute = TRUE`), and the
+#'   repository records package versions in an `renv.lock` file, a
+#'   `sessionInfo()` or `session_info()` record, or a date in a
+#'   `groundhog.library()` or `checkpoint()` call, the R packages the scripts load
+#'   are installed at those versions, which takes much longer. Only loaded
+#'   packages are installed; a loaded package that is not listed gets its
+#'   current version. The R version is not changed, so an old
+#'   package may not install or may behave differently, and packages they depend
+#'   on and packages that come with R are not at their recorded versions; a warning
+#'   and the report say so. A recorded version that cannot be installed, or that
+#'   keeps a package from loading, is replaced by the current one. FALSE (the
+#'   default) does not use them; when a script then fails and the repository
+#'   records versions, the report recommends a run with TRUE.
+#'   Not used when `install_missing = FALSE`, nor when several papers run as one
+#'   (one at a time, or `workers > 1` with `sandbox = "docker"`, does use them).
+#' @param install_timeout the time in seconds for installing a paper's R
+#'   packages. `NULL` (the default) uses `timeout`, or an hour when recorded
+#'   versions are installed. With a clock time as `total_timeout`, installing
+#'   takes at most half of the time that is left. With `sandbox = "process"` a
+#'   package that is being installed is not stopped; no further package starts.
 #' @param cran_install_main if TRUE (and `install_missing` and `execute` are
 #'   both TRUE, and `sandbox = "process"`), CRAN-source dependencies are
 #'   installed into your DEFAULT R library instead of the throwaway one, and so
 #'   persist after the run — see [repro_install_deps()]. Useful when calling
+#'   A recorded version (see `recorded_versions`) always goes into the throwaway
+#'   library, so it cannot replace a version in your own library. Useful when calling
 #'   `reproducibility_check()` over many papers in one script: a CRAN package
 #'   installed for an early paper is already present (and skipped) for every
 #'   later paper needing it, instead of being reinstalled into a fresh
@@ -233,7 +262,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   execute = FALSE, sandbox = c("process", "docker"),
                                   layout = c("auto", "package", "psychds"),
                                   docker_use_declared_version = FALSE,
-                                  install_missing = FALSE,
+                                  install_missing = NULL,
+                                  recorded_versions = FALSE,
+                                  install_timeout = NULL,
                                   cran_install_main = FALSE,
                                   timeout = 600, total_timeout = 3600,
                                   keep_sandbox = FALSE,
@@ -251,6 +282,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   sandbox <- match.arg(sandbox)
   # set when the first script starts (see total_timeout)
   script_deadline <- NULL
+  # whether R packages are installed, and which recorded versions (see the
+  # execute block): install_missing = NULL decides there
+  install_r <- isTRUE(install_missing)
+  recorded <- NULL
+  recorded_advice <- NULL
   layout <- match.arg(layout)
   # A local folder has every file on disk: run the code in a copy of the
   # package as it is (see .repro_package_plan()).
@@ -275,9 +311,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       paper, workers = workers, results_dir = results_dir,
       local_path = local_path, local_only = local_only,
       model = model, params = params,
-      execute = execute, sandbox = sandbox,
+      execute = execute, sandbox = sandbox, layout = layout,
       docker_use_declared_version = docker_use_declared_version,
       install_missing = install_missing,
+      recorded_versions = recorded_versions,
+      install_timeout = install_timeout,
       cran_install_main = cran_install_main,
       timeout = timeout, total_timeout = total_timeout,
       keep_sandbox = keep_sandbox,
@@ -1462,7 +1500,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # ── DEBUG tracing (TEMPORARY — remove before release). Prints every step of
     # the execute phase so a hang is attributable to the exact operation. ───────
     .dbg <- function(...) message("[repro] ", ...)
-    .dbg("execute = TRUE (sandbox = ", sandbox, "). install_missing = ", install_missing,
+    .dbg("execute = TRUE (sandbox = ", sandbox, "). install_missing = ", format(install_missing),
          ", timeout = ", timeout, "s, keep_sandbox = ", keep_sandbox)
 
     # Reuse the root the JASP/jamovi step already materialised (if any stat
@@ -1476,6 +1514,26 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     lib_dir <- file.path(sandbox_root, "_lib")
     .dbg("sandbox root: ", sandbox_root)
 
+    # With recorded_versions = TRUE, when the repository records package versions,
+    # the packages the scripts load are installed at those versions (see
+    # .repro_recorded_plan()), also when install_missing was not set. Several papers run as one share one
+    # library, so one paper's list must not decide another's versions.
+    if (isTRUE(recorded_versions) && !isFALSE(install_missing)) {
+      if (.is_paper_list(paper) && length(paper) > 1) {
+        if (isTRUE(version_pin$pinned))
+          warning("reproducibility_check(): recorded package versions are not used when ",
+                  "several papers run as one. Run the papers one at a time, or with ",
+                  "workers > 1 and sandbox = \"docker\", to use them.", call. = FALSE)
+      } else {
+        recorded <- .repro_recorded_plan(deps, version_pin)
+      }
+    }
+    if (!is.null(recorded))
+      warning(.repro_recorded_warning(recorded, version_pin, sandbox,
+                                      docker_use_declared_version), call. = FALSE)
+    install_r <- isTRUE(install_missing) || (is.null(install_missing) && !is.null(recorded))
+    to_install <- if (!is.null(recorded)) .repro_install_order(recorded$deps) else install_deps
+
     # Docker base image: by default the pre-built metacheck_r_large image (fast --
     # most dependencies already installed), regardless of what R version the
     # paper declared. docker_use_declared_version = TRUE opts into matching
@@ -1483,10 +1541,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # bare image with nothing pre-installed -- slower, since every
     # dependency installs from scratch). When docker_use_declared_version is
     # FALSE (the default) and the paper DID declare a version, warn once so
-    # this is never a silent substitution of one R version for another.
+    # this is never a silent substitution of one R version for another (the
+    # warning about recorded versions above says so too).
     docker_image <- if (sandbox == "docker") {
       declared_v <- version_pin$r_versions %||% character(0)
-      if (!isTRUE(docker_use_declared_version) && length(declared_v) > 0) {
+      if (!isTRUE(docker_use_declared_version) && length(declared_v) > 0 && is.null(recorded)) {
         warning(
           "reproducibility_check(sandbox = \"docker\"): this paper declared R ",
           "version ", declared_v[[1]], ", but docker_use_declared_version = FALSE ",
@@ -1507,9 +1566,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     .dbg("  materialised ", sum(attr(ml, "materialised")$ok %||% FALSE), "/",
          nrow(attr(ml, "materialised") %||% data.frame()), " files.")
     .dbg("writing ", n_code, " rewritten script(s) into the layout ...")
+    # groundhog, checkpoint and renv calls would need the network, which is off
+    # in a Docker run, and recorded versions are installed before the run.
+    replace_env_calls <- !is.null(recorded) || sandbox == "docker"
     run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
                                    script_paths = if (layout == "package") r_files$file_path,
-                                   writes_in_place = layout == "package")
+                                   writes_in_place = layout == "package",
+                                   replace_env_calls = replace_env_calls)
+    rprofile_replaced <- if (replace_env_calls) .repro_neutralise_rprofile(sandbox_root) else 0L
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
     # 2. Optionally install dependencies. sandbox = "process": CRAN sources
@@ -1519,19 +1583,31 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     #    must not be given access to) the host's real R library, so
     #    cran_install_main has no meaning there and is silently ignored.
     failed_deps <- character(0)
-    if (isTRUE(install_missing) && n_deps > 0) {
-      .dbg("installing ", n_deps, " dependenc(y/ies)",
+    if (install_r && nrow(to_install) > 0) {
+      .dbg("installing ", nrow(to_install), " dependenc(y/ies)",
            if (sandbox == "process") paste0(" (cran_install_main = ", cran_install_main, ")") else "",
-           ": ", paste(install_deps$package, collapse = ", "))
+           ": ", paste(to_install$package, collapse = ", "))
+      install_limit <- .repro_install_limit(install_timeout, timeout, total_timeout,
+                                            recorded = !is.null(recorded))
       install_results <- if (sandbox == "docker") {
-        repro_install_deps_docker(install_deps, lib_dir, image = docker_image,
-                                  timeout = timeout)
+        repro_install_deps_docker(to_install, lib_dir, image = docker_image,
+                                  timeout = install_limit)
       } else {
         .dbg("  repos = ", paste(getOption("repos"), collapse = "; "))
-        repro_install_deps(install_deps, lib_dir, cran_to_main_lib = cran_install_main)
+        # as before, no limit unless one was asked for or versions are recorded
+        limited <- !is.null(recorded) || !is.null(install_timeout) ||
+          inherits(total_timeout, "POSIXct")
+        repro_install_deps(to_install, lib_dir, cran_to_main_lib = cran_install_main,
+                           deadline = if (limited) Sys.time() + install_limit)
       }
       .dbg("  install done: ", sum(install_results$installed), " ok, ",
            sum(!install_results$installed), " failed.")
+      # An old version next to current ones can keep a package from loading,
+      # or crash R: see .repro_load_check_lines().
+      if (!is.null(recorded))
+        install_results <- .repro_load_check(
+          install_results, lib_dir, image = docker_image,
+          timeout = .repro_install_limit(1800, timeout, total_timeout))
       # A dependency this call could not install (live CRAN AND the Archive
       # retry both failed, or a GitHub/URL source errored) — a script that
       # then fails on it is classified dependency_unavailable, not errored.
@@ -1541,7 +1617,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       # Nothing was installed, so a script that then fails because one of its
       # packages is not there could not run here: dependency_unavailable, not
       # an error in the script.
-      if (!isTRUE(install_missing)) failed_deps <- install_deps$package
+      if (!install_r) failed_deps <- install_deps$package
     }
 
     # 3. Run in order. A file whose inputs are known-missing is not run (it
@@ -1705,7 +1781,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
                               inject_libs = library_injections,
                               script_paths = if (layout == "package") r_files$file_path,
-                              writes_in_place = layout == "package") else run_tbl
+                              writes_in_place = layout == "package",
+                              replace_env_calls = replace_env_calls) else run_tbl
         .dbg("re-running ", length(run_order2), " script(s) in corrected order",
              if (length(library_injections) > 0) sprintf(
                " (with %d library() injection(s): %s)",
@@ -1992,15 +2069,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "above, with a %d-second per-script timeout. Of %d script%s: %d ran ",
              "without error, %d errored, %d timed out, %d %s skipped (inputs ",
              "unavailable), %d could not run because one of its own ",
-             "dependencies is unavailable, %d did not parse%s. Running ",
-             "against current package versions: a break can reflect version ",
-             "drift, which argues for pinning versions."),
+             "dependencies is unavailable, %d did not parse%s.%s"),
       if (sandbox == "docker") "Docker container" else "subprocess",
       timeout, nrow(run_results), plural(nrow(run_results)),
       n_ran_ok, n_errored, n_timeout, n_skipped,
       plural(n_skipped, "was", "were"), n_nodep, n_noparse,
       if (n_by_src > 0) sprintf(", and %d %s run by another script with `source()`",
-                                n_by_src, plural(n_by_src, "was", "were")) else "")
+                                n_by_src, plural(n_by_src, "was", "were")) else "",
+      # recorded versions have their own part of the report (see below)
+      if (is.null(recorded)) paste0(" Running against current package versions: a ",
+                                    "break can reflect version drift, which argues ",
+                                    "for pinning versions.") else "")
 
     # scripts not started because the time for all scripts together ran out
     # (Lakens/tue_datamanager_check#4, item 6)
@@ -2219,6 +2298,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                 if (!is.null(report_undef)) c("**Undefined-variable errors**", report_undef),
                 if (!is.null(report_nodep)) c("**Dependency-unavailable errors**", report_nodep),
                 if (!is.null(report_setwd)) c("**`setwd()` in the code**", report_setwd),
+                # The calls that install packages themselves cannot run here.
+                if (sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced > 0) c(
+                  "**`groundhog`, `checkpoint` and `renv` in the code**", sprintf(paste0(
+                    "%d call%s to these packages %s replaced, since they install packages ",
+                    "themselves: `groundhog.library()` by `library()`, the others by a ",
+                    "statement that does nothing. The scripts ran with the packages ",
+                    "installed before the run."),
+                    sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced,
+                    plural(sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced),
+                    plural(sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced, "was", "were"))),
                 if (!is.null(report_libs)) c("**`library()` calls added**", report_libs),
                 if (!is.null(report_by_source)) c("**Run by another script**", report_by_source),
                 if (length(output_blocks) > 0)
@@ -2269,9 +2358,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           collapse = "; ")) else NULL
       report <- c(report, report_inst, report_arch, report_fail)
     }
+    report <- c(report, .repro_recorded_report(recorded, install_results, version_pin,
+                                               sandbox, docker_use_declared_version))
   } else {
     report <- c(report,
-      "*Executing the code is a separate, opt-in phase (run with `execute = TRUE`). This report describes what a run would involve; it did not run anything.*")
+      "*Executing the code is a separate, opt-in phase (run with `execute = TRUE`). This report describes what a run would involve; it did not run anything.*",
+      if (isTRUE(recorded_versions) && !isFALSE(install_missing))
+        .repro_recorded_preview(deps, version_pin))
+  }
+  # Scripts failed and the repository records versions this run did not use.
+  # Several papers run as one cannot use them (see above).
+  if (isTRUE(execute) && !isTRUE(recorded_versions) && !isFALSE(install_missing) &&
+      !(.is_paper_list(paper) && length(paper) > 1)) {
+    recorded_advice <- .repro_recorded_advice(deps, version_pin, run_results)
+    report <- c(report, recorded_advice)
   }
 
   # ── 10. Summary ─────────────────────────────────────────────────────────────
@@ -2307,7 +2407,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       "%d referenced input%s unavailable (%d withheld due to size).",
       n_missing_inputs, plural(n_missing_inputs), n_withheld),
     sprintf("%d installable dependenc%s detected.", n_deps,
-            if (n_deps == 1) "y" else "ies")
+            if (n_deps == 1) "y" else "ies"),
+    .repro_recorded_summary(recorded, install_results),
+    recorded_advice
   ) |> paste("\n- ", x = _, collapse = "")
 
   # repro_tests_reported/repro_tests_matched are filled in after both
@@ -2380,7 +2482,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                  change_type = "library_injected",
                  detail = sprintf("library(%s)", unlist(library_injections, use.names = FALSE))) else NULL
 
-    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod)
+    env_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
+                        "env_calls_replaced" %in% names(run_tbl)) {
+      hit <- run_tbl$env_calls_replaced > 0
+      if (any(hit)) data.frame(file_name = run_tbl$file_name[hit],
+                               change_type = "env_call_replaced",
+                               detail = sprintf("%d groundhog, checkpoint or renv call%s",
+                                                run_tbl$env_calls_replaced[hit],
+                                                plural(run_tbl$env_calls_replaced[hit]))) else NULL
+    } else NULL
+
+    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
     modifications <- data.frame(file_name = character(0), change_type = character(0),
@@ -2659,7 +2771,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   ## ── Execution (opt-in; runs downloaded code) ────────────────────────────
   if (isTRUE(execute)) {
     .dbg("[repro/py] execute = TRUE (sandbox = ", sandbox, "). install_missing = ",
-         install_missing, ", timeout = ", timeout, "s, keep_sandbox = ", keep_sandbox)
+         format(install_missing), ", timeout = ", timeout, "s, keep_sandbox = ", keep_sandbox)
 
     # Reuse the SAME sandbox_root the R path (and/or the JASP/jamovi step)
     # already materialised, if any — one shared tree, not two. This is the
@@ -3323,6 +3435,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       any(run_results$outcome %in% c("ran_ok", "errored", "timed_out")),
     run_results = run_results,
     install_results = install_results,
+    # Which recorded versions the run used (see .repro_recorded_plan()); NULL
+    # when none were used.
+    recorded_versions = recorded,
     # Extracted JASP/jamovi/R-console/Python-console statistical output:
     # per-file statistical-output JSON (R/stat-output.R's stat_output_json();
     # a metacheck-native schema, not ISA-JSON — an earlier version borrowed
@@ -3348,7 +3463,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_dup = r_n_dup + n_py_dup,
       n_tests = shared_match$summary$n_tests %||% NA_integer_,
       n_found = shared_match$summary$n_found %||% NA_integer_,
-      sandbox = sandbox, timeout = timeout, install_missing = install_missing)
+      sandbox = sandbox, timeout = timeout, install_missing = install_r,
+      recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice))
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —
