@@ -120,8 +120,8 @@
         "%s cannot read the script: it contains a syntax error.", lang)),
       static_unplaceable = c("Not run",
                              "We could not work out when to run it, relative to the other scripts."),
-      static_jags_model = c("Not run", "It is a JAGS model, which another script reads."),
-      static_not_r_content = c("Not run", "It is not R code that can run on its own."),
+      jags_model = , static_jags_model = c("Not run", "It is a JAGS model, which another script reads."),
+      not_r_content = , static_not_r_content = c("Not run", "It is not R code that can run on its own."),
       c("Not run", ""))
     sprintf("| %s | %s | %s |", .repro_cell(tbl$file_name[[i]]), res[[1]], res[[2]])
   }, character(1))
@@ -146,7 +146,8 @@
   }
 
   # the headline: how many ran to the end, and what happened to the others
-  counted <- !outcome %in% c("run_by_source", "run_by_import")
+  counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
+                             "static_jags_model", "static_not_r_content")
   groups <- c(errored = "stopped with an error", timed_out = "ran out of time",
               dependency_unavailable = "could not run on our server")
   n_ok <- sum(outcome[counted] == "ran_ok")

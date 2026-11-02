@@ -34,7 +34,8 @@ this file as a JAGS model rather than something to run directly):
 \details{
 \enumerate{
 \item the file's first non-comment, non-blank content is the token \code{model}
-immediately followed by \verb{\{};
+followed by \verb{\{}, also on the next line, or a \verb{data \{ ... \}} block with a
+\code{model} block after it;
 \item its path contains a component named \code{jags_script}/\code{bugs_script}/
 \code{jags_model} (case-insensitive);
 \item it is referenced elsewhere in the SAME paper's own R code as the

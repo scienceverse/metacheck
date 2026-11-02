@@ -676,6 +676,23 @@ test_that(".repro_is_jags_model detects a calling reference in another file's co
 
 test_that(".repro_is_jags_model is FALSE for ordinary R code", {
   expect_false(.repro_is_jags_model(c("x <- 1", "y <- 2"), file_name = "analysis.R"))
+  expect_false(.repro_is_jags_model(c("model <- lm(y ~ x)", "{", "1", "}"), file_name = "analysis.R"))
+  expect_false(.repro_is_jags_model(c("data <- 1", "model <- 2"), file_name = "analysis.R"))
+})
+
+test_that(".repro_is_jags_model detects a brace on the next line and a data block first (#568)", {
+  expect_true(.repro_is_jags_model(c("# a model", "model", "{", "  x ~ dnorm(0, 1)", "}")))
+  expect_true(.repro_is_jags_model(c("data {", "  y <- 1", "}", "model {", "  x ~ dnorm(0, 1)", "}")))
+})
+
+test_that(".repro_checklist_section does not count a model file as a script that failed (#568)", {
+  tb <- data.frame(file_name = c("m.R", "run.R"), run_order = 1:2, outcome = c("jags_model", "ran_ok"),
+                   setwd_removed = 0, not_runnable_reason = c("jags_model", NA),
+                   unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = c("m.R", "run.R"), outcome = c("jags_model", "ran_ok"), error = "", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "**1 of 1 script ran to the end**", fixed = TRUE)
+  expect_match(out, "It is a JAGS model, which another script reads.", fixed = TRUE)
 })
 
 

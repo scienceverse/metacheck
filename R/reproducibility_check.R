@@ -1910,7 +1910,8 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #' this file as a JAGS model rather than something to run directly):
 #'
 #' 1. the file's first non-comment, non-blank content is the token `model`
-#'    immediately followed by `{`;
+#'    followed by `{`, also on the next line, or a `data { ... }` block with a
+#'    `model` block after it;
 #' 2. its path contains a component named `jags_script`/`bugs_script`/
 #'    `jags_model` (case-insensitive);
 #' 3. it is referenced elsewhere in the SAME paper's own R code as the
@@ -1931,7 +1932,12 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   if (!is.null(code_text) && length(code_text)) {
     nc <- code_remove_comments(code_text, "R")
     nc <- nc[nzchar(trimws(nc))]
-    if (length(nc) && grepl("^\\s*model\\s*\\{", nc[[1]], perl = TRUE)) return(TRUE)
+    if (length(nc)) {
+      start <- paste(utils::head(nc, 2), collapse = " ")
+      if (grepl("^\\s*model\\s*\\{", start, perl = TRUE)) return(TRUE)
+      if (grepl("^\\s*data\\s*\\{", start, perl = TRUE) &&
+          any(grepl("^\\s*model\\s*(\\{|$)", nc, perl = TRUE))) return(TRUE)
+    }
   }
   if (nzchar(file_name %||% "") &&
       grepl("(^|[/\\\\])(jags_script|bugs_script|jags_model)([/\\\\]|$)",

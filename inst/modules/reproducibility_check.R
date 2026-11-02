@@ -30,9 +30,12 @@
 #' `dependency_unavailable`, `not_parsed`, `run_by_source` (an R script
 #' another script runs with `source()`, which is run only inside that script,
 #' since on its own it lacks the packages and objects the sourcing script sets
-#' up first), or `run_by_import` (a Python file other files import, a module
+#' up first), `run_by_import` (a Python file other files import, a module
 #' rather than a script, unless it has an `if __name__ == "__main__":`
-#' block); a timeout means "still running at
+#' block), `jags_model` (a JAGS or BUGS model saved with an R extension, which
+#' another script reads) or `not_r_content` (a file that is not R at all, such
+#' as a JSON or HTML dump); these last two are not run and are not failures.
+#' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
 #' package could not be installed from live CRAN, the CRAN Archive, or a named
@@ -1413,6 +1416,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   n_not_r_content <- sum(sniff_type == "not_r_content", na.rm = TRUE)
   n_jags_model    <- sum(sniff_type == "jags_model", na.rm = TRUE)
+  # Such a file has no place in the run order, so one script and a model file
+  # are not two scripts whose order is unknown.
+  if (sum(is.na(sniff_type)) <= 1) ambiguous_order <- FALSE
 
   # A "genuine" parse error excludes both sniffed categories -- this is what
   # feeds parse_errs/the traffic light/the "Parsing" report section below, so
@@ -1819,6 +1825,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     attr(run_results, "reran_for_order") <- reran
     attr(run_results, "reran_for_reorder") <- reran_for_reorder
 
+    # A model file or other non-R content (see the sniff step above) was never a
+    # script to run: it gets an outcome of its own, not `not_parsed`, which
+    # counted it as a failure in the results (#568).
+    sniff_i <- match(run_results$file_name, r_files$file_name)
+    sniffed <- !is.na(sniff_i) & !is.na(sniff_type[sniff_i])
+    run_results$outcome[sniffed] <- sniff_type[sniff_i[sniffed]]
+
     # A predicted missing file no longer counts for a script that ran through.
     tl <- .repro_static_light(
       .repro_inputs_after_run(missing_inputs, unresolved_list, r_files$file_name, run_results),
@@ -2089,6 +2102,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_nodep   <- sum(oc == "dependency_unavailable")
     n_by_src  <- sum(oc == "run_by_source")
     n_late    <- sum(oc == "skipped_time_limit")
+    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content"))
     report_exec <- sprintf(
       paste0("**The code was run.** Each script ran in an isolated %s ",
              "against a throwaway copy of ", layout_name, ", in the run order ",
@@ -2096,7 +2110,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "without error, %d errored, %d timed out, %d could not run because ",
              "one of its own dependencies is unavailable, %d did not parse%s.%s"),
       if (sandbox == "docker") "Docker container" else "subprocess",
-      timeout, nrow(run_results), plural(nrow(run_results)),
+      timeout, n_scripts, plural(n_scripts),
       n_ran_ok, n_errored, n_timeout, n_nodep, n_noparse,
       if (n_by_src > 0) sprintf(", and %d %s run by another script with `source()`",
                                 n_by_src, plural(n_by_src, "was", "were")) else "",

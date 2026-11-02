@@ -734,6 +734,26 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: a model file has its own outcome, and the script that reads it finds it (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  for (layout in c("package", "psychds")) {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "jags_script"))
+    writeLines(c("model {", "  x ~ dnorm(0, 1)", "}"), file.path(d, "jags_script", "m.R"))
+    writeLines(c('m <- readLines("./jags_script/m.R")', 'stopifnot(any(grepl("dnorm", m)))'), file.path(d, "run.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE, layout = layout))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["m.R"]], "jags_model")
+    expect_equal(outcome[["run.R"]], "ran_ok")
+    expect_equal(mo$table$outcome[mo$table$file_name == "m.R"], "jags_model")
+    expect_equal(mo$traffic_light, "green")
+    expect_match(paste(unlist(mo$report), collapse = "\n"), "Of 1 script: 1 ran without error", fixed = TRUE)
+  }
+})
+
 test_that("execute = TRUE: a file spelled otherwise is read, and the correction is noted (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")
