@@ -121,6 +121,7 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
   dir.create(sandbox_dir, recursive = TRUE)
   on.exit(unlink(sandbox_dir, recursive = TRUE), add = TRUE)
 
+  per_package <- max(120L, min(900L, as.integer(ceiling(timeout / 2))))
   results_path <- file.path(sandbox_dir, ".install_results.jsonl")
   # A tiny shell driver, not a Python script: pip itself is the thing being
   # invoked per requirement, and a results line is appended after each one
@@ -136,12 +137,21 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
     "set -u",
     paste0('OUT="', .repro_docker_container_path(results_path, sandbox_dir), '"'),
     ': > "$OUT"',
+    # A wheel is preferred, since a package that must be compiled can take the whole
+    # time limit; each package has a limit of its own, so one slow package leaves
+    # time for the others: "requests" and "tqdm" failed only because the batch ran
+    # out of time. A pinned version that does not install, as an old numpy does on
+    # this Python, is replaced by the current one (#568, item 13).
     unlist(lapply(seq_along(reqs), function(i) {
       pkg <- install_deps$package[i]; req <- reqs[i]; src <- install_deps$source[i]
-      c(sprintf('if pip install --quiet --target /pylib %s 2> /tmp/err_%d.txt; then',
-               shQuote(req), i),
+      pip <- sprintf("timeout %d pip install --quiet --prefer-binary --no-input --target /pylib", per_package)
+      c(sprintf('if %s %s 2> /tmp/err_%d.txt; then', pip, shQuote(req), i),
         sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":""}\\n\' >> "$OUT"',
                pkg, src),
+        if (!identical(req, pkg)) c(
+          sprintf('elif %s %s 2>> /tmp/err_%d.txt; then', pip, shQuote(pkg), i),
+          sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":"","version_note":"the pinned version %s could not be installed, so the current one was"}\\n\' >> "$OUT"',
+                  pkg, src, gsub("['\"\\\\%]", "", req))),
         'else',
         sprintf('  ERR=$(tr -d \'\\n\' < /tmp/err_%d.txt | sed \'s/"/\\\\"/g\')', i),
         sprintf('  printf \'{"package":"%s","source":"%s","installed":false,"message":"%%s"}\\n\' "$ERR" >> "$OUT"',

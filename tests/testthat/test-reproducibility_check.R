@@ -2628,6 +2628,19 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that("Python install names, and Python 2's modules (#568)", {
+  deps <- repro_dependencies_py(c("import pywt", "import ruamel.yaml", "import pylab", "import cPickle", "import urlparse"))
+  expect_setequal(deps$package[!deps$base], c("PyWavelets", "ruamel.yaml", "matplotlib"))
+  expect_true(all(c("cPickle", "urlparse") %in% deps$package[deps$base]))
+  expect_true(.repro_py2_error("ModuleNotFoundError: No module named 'cPickle'"))
+  expect_false(.repro_py2_error("ModuleNotFoundError: No module named 'numpy'"))
+})
+
+test_that("the Docker install script parses, with its second pass (#568)", {
+  expect_no_error(parse(text = .repro_docker_elsewhere_lines()))
+  expect_true(any(grepl("BiocManager::install", .repro_docker_elsewhere_lines(), fixed = TRUE)))
+})
+
 test_that(".repro_neutralise_env_calls replaces calls that install packages (#568)", {
   n <- function(x) .repro_neutralise_env_calls(x)$txt
   expect_equal(n('install.packages("a")'), "invisible(NULL)")

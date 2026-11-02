@@ -173,7 +173,9 @@ repro_dependencies <- function(code_text, lang = "R") {
     "diffloop", "GenomicInteractions", "InteractionSet", "bsseq",
     "methylumi", "wateRmelon", "phyloseq", "microbiome", "ANCOMBC",
     "mixOmics", "MOFA2", "BiocSingular", "batchelor", "scDblFinder",
-    "scuttle", "zellkonverter", "DropletUtils", "destiny", "MAST"
+    "scuttle", "zellkonverter", "DropletUtils", "destiny", "MAST",
+    "ShortRead", "SNPRelate", "decontam", "arrayQualityMetrics", "baySeq", "EBImage",
+    "EBSeq", "gdsfmt", "OmicCircos", "pcaMethods", "rain", "SeqArray"
   ) |> unique()
 }
 

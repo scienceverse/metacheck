@@ -135,6 +135,57 @@ repro_docker_available <- function() {
                "error during connect|dockerDesktopLinuxEngine"), txt %||% "", ignore.case = TRUE)
 }
 
+#' The part of the install script for packages that are not on CRAN
+#'
+#' A second pass after every package has had its turn, since one time limit
+#' covers the whole install: first Bioconductor, because the fixed list of
+#' [.repro_bioc_packages()] misses many names and some packages moved there,
+#' keeping only an old copy in the CRAN Archive; then the latest version in the
+#' CRAN Archive, as [.repro_cran_archive_install()] does outside Docker. Two rounds,
+#' because a package can need another archived one (#568, items 9 and 11).
+#' Runs inside the container, without this package.
+#'
+#' @returns lines of R code that follow the install loop
+#' @keywords internal
+.repro_docker_elsewhere_lines <- function() {
+  c(
+    r"(retry_rows <- function() which(vapply(out, function(x) !x$installed && identical(x$source, "cran") && grepl("is not available", x$message, fixed = TRUE), logical(1))))",
+    r"(bioc_known <- NULL)",
+    r"(in_elsewhere <- function(pkg) {)",
+    r"(  if (is.null(bioc_known)) bioc_known <<- tryCatch({)",
+    r"(    if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", lib = lib, quiet = TRUE))",
+    r"(    rownames(utils::available.packages(repos = BiocManager::repositories())))",
+    r"(  }, error = function(e) character(0)))",
+    r"(  if (pkg %in% bioc_known) {)",
+    r"(    BiocManager::install(pkg, lib = lib, update = FALSE, ask = FALSE))",
+    r"(    return("bioc"))",
+    r"(  })",
+    r"(  listing <- suppressWarnings(tryCatch(readLines(paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/"), warn = FALSE), error = function(e) character(0))))",
+    r"(  hits <- grep(paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz"), listing, value = TRUE))",
+    r"(  if (!length(hits)) return(NA_character_))",
+    r"(  dates <- sub(".*(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}).*", "\\1", hits))",
+    r"(  latest <- hits[order(dates, decreasing = TRUE)][1])",
+    r"(  tarball <- regmatches(latest, regexpr(paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz"), latest)))",
+    r"(  if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
+    r"(  remotes::install_url(paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/", tarball), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE))",
+    r"(  "archive")",
+    r"(})",
+    r"(for (round in 1:2) for (i in retry_rows()) {)",
+    r"(  pkg <- pkgs[i])",
+    r"(  writeLines(as.character(i), "/sandbox/.install_status"))",
+    r"(  from <- tryCatch(in_elsewhere(pkg), error = function(e) conditionMessage(e)))",
+    r"(  if (file.exists(file.path(lib, pkg, "DESCRIPTION")) && requireNamespace(pkg, quietly = TRUE, lib.loc = lib)) {)",
+    r"(    out[[i]]$installed <- TRUE)",
+    r"(    out[[i]]$message <- "")",
+    r"(    out[[i]]$version_installed <- have_version(pkg))",
+    r"(    out[[i]]$via_archive <- identical(from, "archive"))",
+    r"(    if (identical(from, "bioc")) out[[i]]$source <- "bioc")",
+    r"(  })",
+    r"(  saveRDS(do.call(rbind, out), "/sandbox/.install_results.rds"))",
+    r"(})"
+  )
+}
+
 # The container's working directory for a script's run_dir: /sandbox itself, also
 # when run_dir is missing, or a folder below it.
 .repro_docker_workdir <- function(run_dir, sandbox_root) {
@@ -268,9 +319,10 @@ repro_docker_available <- function() {
 #'   source)
 #'
 #' @returns a data frame with `package`, `source`, `installed` (logical),
-#'   `message` (error text on failure, else ""), `via_archive` (always FALSE
-#'   — the CRAN Archive retry [repro_install_deps()] does is not duplicated
-#'   here; a package unavailable on live CRAN is simply recorded as failed),
+#'   `message` (error text on failure, else ""), `via_archive` (`TRUE` when the
+#'   package was not on CRAN and came from the CRAN Archive; a package not on
+#'   CRAN is first looked for on Bioconductor, see
+#'   [.repro_docker_elsewhere_lines()]),
 #'   `category` (see [.repro_classify_install_message()]; `NA` for a
 #'   successful install), `version_recorded`, `version_installed` and
 #'   `version_note` — same columns as [repro_install_deps()] so callers
@@ -403,9 +455,10 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     '    note <- "the source gave another version than the recorded one"',
     # stringsAsFactors: the default is TRUE before R 4.0, and the image may be that old
     '  out[[i]] <- data.frame(package = pkg, source = src, installed = res$ok, message = res$msg,',
-    '                         version_installed = v, version_note = note, stringsAsFactors = FALSE)',
+    '                         version_installed = v, version_note = note, via_archive = FALSE, stringsAsFactors = FALSE)',
     '  saveRDS(do.call(rbind, out), "/sandbox/.install_results.rds")',
-    '}'
+    '}',
+    .repro_docker_elsewhere_lines()
   )
 
   sandbox_dir <- tempfile("repro_docker_install_")
@@ -516,7 +569,7 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   if (!"version_installed" %in% names(out)) out$version_installed <- NA_character_
   if (!"version_note" %in% names(out)) out$version_note <- ""
   out$version_note[is.na(out$version_note)] <- ""
-  out$via_archive <- FALSE   # the CRAN Archive retry repro_install_deps() does is not duplicated here
+  out$via_archive <- out$via_archive %in% TRUE
   # Classified on the HOST, not inside the container script: the container has
   # no access to this package's own R functions (it runs install.R as a
   # standalone Rscript with no library() of this package available), so each

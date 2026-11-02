@@ -85,7 +85,7 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
   if (length(pkgs) == 0) return(empty)
 
   pins <- .repro_py_manifest_pins(manifest_text)
-  base_pkgs <- .repro_py_stdlib_modules()
+  base_pkgs <- c(.repro_py_stdlib_modules(), .repro_py2_modules())
   is_base <- pkgs %in% base_pkgs
   # The import name is not always the name pip installs (`import sklearn`
   # comes from `scikit-learn`), so the pip name is what is reported, installed
@@ -115,8 +115,29 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
     mpl_toolkits = "matplotlib", fitz = "PyMuPDF", Crypto = "pycryptodome",
     serial = "pyserial", dotenv = "python-dotenv", community = "python-louvain",
     wx = "wxPython", zmq = "pyzmq", attr = "attrs", jwt = "PyJWT",
-    OpenSSL = "pyOpenSSL"
+    OpenSSL = "pyOpenSSL",
+    pywt = "PyWavelets", ruamel = "ruamel.yaml", osgeo = "GDAL", pkg_resources = "setuptools",
+    pylab = "matplotlib", skbio = "scikit-bio", gi = "PyGObject", git = "GitPython",
+    MySQLdb = "mysqlclient", psycopg2 = "psycopg2-binary", argon2 = "argon2-cffi",
+    elftools = "pyelftools", paho = "paho-mqtt", past = "future", vcf = "PyVCF3",
+    rapidjson = "python-rapidjson", gitlab = "python-gitlab", primer3 = "primer3-py",
+    hydra = "hydra-core", skbuild = "scikit-build", pytorch_grad_cam = "grad-cam",
+    rest_framework = "djangorestframework", rest_framework_api_key = "djangorestframework-api-key",
+    corsheaders = "django-cors-headers", django_filters = "django-filter",
+    allauth = "django-allauth", dirtyfields = "django-dirtyfields", silk = "django-silk",
+    crum = "django-crum", django_auth_ldap = "django-auth-ldap",
+    logstash_async = "python-logstash-async"
   )
+}
+
+# Modules of Python 2's standard library, which have other names in Python 3 and
+# cannot be installed: importing one shows that the code is Python 2 (#568, item 13).
+.repro_py2_modules <- function() {
+  c("cPickle", "cStringIO", "StringIO", "Queue", "BaseHTTPServer", "SocketServer",
+    "SimpleHTTPServer", "CGIHTTPServer", "Tkinter", "tkFileDialog", "tkMessageBox",
+    "ttk", "urlparse", "urllib2", "httplib", "ConfigParser", "commands", "HTMLParser",
+    "cookielib", "exceptions", "__builtin__", "sets", "thread", "dummy_thread", "anydbm",
+    "dumbdbm", "gdbm", "whichdb", "copy_reg", "repr", "xmlrpclib", "htmlentitydefs")
 }
 
 # The pip name for each import name (only the top-level module counts, so
@@ -216,7 +237,8 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
 # (`/` between whole numbers divides differently), so these are only named.
 .repro_py2_error <- function(txt) {
   grepl(paste0("SyntaxError: (Missing parentheses in call to|multiple exception types must be parenthesized)",
-               "|TabError:"), txt %||% "", perl = TRUE)
+               "|TabError:|No module named '(", paste(.repro_py2_modules(), collapse = "|"), ")'"),
+        txt %||% "", perl = TRUE)
 }
 
 # A stand-in for get_ipython(), which only exists inside IPython: without it a
@@ -455,11 +477,14 @@ repro_install_deps_py <- function(install_deps, lib_dir, python_bin = "python",
     pkg <- install_deps$package[i]
     req <- if (!is.na(install_deps$ref[i]) && nzchar(install_deps$ref[i]))
       install_deps$ref[i] else pkg
-    res <- tryCatch(
-      processx::run(bin, c("-m", "pip", "install", "--quiet",
-                          "--target", lib_dir, req),
+    pip <- function(r) tryCatch(
+      processx::run(bin, c("-m", "pip", "install", "--quiet", "--prefer-binary",
+                          "--target", lib_dir, r),
                    error_on_status = FALSE, timeout = timeout),
       error = function(e) list(status = 1L, stderr = conditionMessage(e)))
+    res <- pip(req)
+    # a pinned version that does not install is replaced by the current one
+    if (!identical(res$status, 0L) && !identical(req, pkg)) res <- pip(pkg)
     ok <- identical(res$status, 0L)
     data.frame(package = pkg, source = install_deps$source[i], installed = ok,
               message = if (ok) "" else trimws(res$stderr %||% ""),
