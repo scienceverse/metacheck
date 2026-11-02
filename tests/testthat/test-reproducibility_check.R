@@ -2525,3 +2525,88 @@ test_that("a value exactly halfway matches both of its correct roundings", {
   expect_false(any(found("The congruent condition (M = 13.64) was faster.")))
   expect_false(any(found("The congruent condition (M = 13.61) was faster.")))
 })
+
+test_that(".repro_unique_script_names changes only names that repeat (#568)", {
+  files <- data.frame(file_name = c("a.R", "a.R", "b.R"), file_path = c("x/a.R", ".\\y\\a.R", "z/b.R"))
+  expect_equal(.repro_unique_script_names(files), c("x/a.R", "y/a.R", "b.R"))
+  # no repeats, no change
+  expect_equal(.repro_unique_script_names(files[2:3, ]), c("a.R", "b.R"))
+  # the same path in two repositories
+  files <- data.frame(file_name = c("a.R", "a.R"), file_path = c("x/a.R", "x/a.R"),
+                      repo_name = c("github", "zenodo.1"))
+  expect_equal(.repro_unique_script_names(files), c("github/x/a.R", "zenodo.1/x/a.R"))
+  # nothing to tell them apart by: a number, and the name still ends in the file name
+  files <- data.frame(file_name = c("a.R", "a.R"))
+  expect_equal(.repro_unique_script_names(files), c("1/a.R", "2/a.R"))
+  # a name the other language already has
+  files <- data.frame(file_name = "n.ipynb", file_path = "py/n.ipynb")
+  expect_equal(.repro_unique_script_names(files, taken = "n.ipynb"), "py/n.ipynb")
+})
+
+test_that(".repro_script_places gives same-named scripts places of their own (#568)", {
+  plan <- data.frame(file_name = c("a.R", "a.R", "b.R"), current_path = c("x/a.R", "y/a.R", "z/b.R"),
+                     target_path = c("unknown/x/a.R", "unknown/y/a.R", "unknown/z/b.R"))
+  files <- data.frame(file_name = c("x/a.R", "y/a.R", "b.R"), file_path = c("x/a.R", "y/a.R", "z/b.R"))
+  # their own row of the plan; a script with a name of its own is placed by name
+  expect_equal(.repro_script_places(files, plan, "psychds"), c("unknown/x/a.R", "unknown/y/a.R", NA))
+  # not in the plan: its own path
+  expect_equal(.repro_script_places(files, NULL, "psychds"), c("x/a.R", "y/a.R", NA))
+  expect_equal(.repro_script_places(files, plan, "package"), c("x/a.R", "y/a.R", "z/b.R"))
+  # the same path in two repositories
+  files <- data.frame(file_name = c("r1/x/a.R", "r2/x/a.R"), file_path = c("x/a.R", "x/a.R"))
+  expect_equal(.repro_script_places(files, plan[1, ], "psychds"), c("r1/x/a.R", "r2/x/a.R"))
+  expect_equal(.repro_script_places(files, plan, "package"), c("r1/x/a.R", "r2/x/a.R"))
+  # never above the sandbox
+  files <- data.frame(file_name = c("../a.R", "x/../../a.R"), file_path = c("../a.R", "x/../../a.R"))
+  expect_equal(.repro_script_places(files, NULL, "psychds"), c("_/a.R", "x/_/_/a.R"))
+})
+
+test_that("repro_run_order follows source() to the file it names among same-named files (#568)", {
+  files <- data.frame(file_name = c("a/h.R", "b/h.R", "a/m.R", "top.R", "other.R"))
+  files$file_path <- files$file_name
+  files$reads <- files$writes <- replicate(5, character(0), simplify = FALSE)
+  files$sources <- list(character(0), character(0), "h.r", "h.r", "h.r")
+  files$source_refs <- list(character(0), character(0), "h.R", "b/h.R", "h.R")
+  edges <- attr(repro_run_order(files), "source_edges")
+  expect_equal(edges$from[edges$to == "a/m.R"], "a/h.R")
+  expect_equal(edges$from[edges$to == "top.R"], "b/h.R")
+  expect_equal(.repro_sourced_file(1:2, "C:/Users/me/proj/b/h.R", c("a/h.R", "b/h.R", "m.R"), 3), 2L)
+  # no file with that name beside it, and no folder in the call: no guess
+  expect_length(edges$from[edges$to == "other.R"], 0)
+  # one file with the name: as before, from any folder
+  files <- data.frame(file_name = c("a/h.R", "m.R"))
+  files$sources <- list(character(0), "h.r")
+  expect_equal(attr(repro_run_order(files), "source_edges")$from, "a/h.R")
+})
+
+test_that("repro_file_io keeps each source() reference as written (#568)", {
+  io <- repro_file_io(list(m.R = c('source("../Lib/H.R")', 'source("g.R")', 'source("x/g.R")')))
+  expect_equal(io$sources[[1]], c("h.r", "g.r"))
+  expect_equal(io$source_refs[[1]], c("../Lib/H.R", "g.R"))
+})
+
+test_that("repro_rewrite_paths takes the file in the script's own folder among same-named files (#568)", {
+  plan <- data.frame(file_name = c("d.csv", "d.csv"), current_path = c("x/d.csv", "y/d.csv"),
+                     target_path = c("unknown/x/d.csv", "unknown/y/d.csv"))
+  code <- 'read.csv("d.csv")'
+  own <- repro_rewrite_paths(code, "m.R", plan, script_path = "y/m.R")
+  expect_equal(own$target, "unknown/y/d.csv")
+  expect_false(own$ambiguous)
+  # no file with that name in the script's folder: no guess
+  expect_true(repro_rewrite_paths(code, "m.R", plan, script_path = "z/m.R")$ambiguous)
+  # without the path, as before
+  expect_true(repro_rewrite_paths(code, "m.R", plan)$ambiguous)
+  # a reference above the top folder, with a plan that holds no paths
+  plan$current_path <- NULL
+  up <- repro_rewrite_paths('read.csv("../d.csv")', "m.R", plan, script_path = "m.R")
+  expect_true(up$ambiguous)
+})
+
+test_that(".repro_py_imported: of same-named modules, only the one the importer can reach (#568)", {
+  code <- list(`a/m.py` = "import utils", `a/utils.py` = "x = 1", `b/utils.py` = "x = 2",
+               `c/n.py` = "from b.utils import x", `d/utils.py` = "x = 3")
+  imp <- .repro_py_imported(code, names(code))
+  expect_setequal(names(imp), c("a/utils.py", "b/utils.py"))
+  expect_equal(imp[["a/utils.py"]], "a/m.py")
+  expect_equal(imp[["b/utils.py"]], "c/n.py")
+})

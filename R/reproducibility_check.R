@@ -686,6 +686,10 @@ repro_dependencies <- function(code_text, lang = "R") {
 #' @param structure_df optional `data_check` structure table (`file_name`,
 #'   `file_location`) — when supplied, enables the content-hash mirror
 #'   collapsing described above. `NULL` (default) skips it.
+#' @param script_path optional path of the script in its repository. When
+#'   several files share the name a reference gives, the one the reference
+#'   names counted from the script's own folder (`current_path` in `plan`) is
+#'   the file it means. `NULL` (default) skips this.
 #'
 #' @returns a data frame with one row per referenced path, columns `ref` (the
 #'   path as written, or the full call text when `is_call`), `basename`,
@@ -706,7 +710,7 @@ repro_dependencies <- function(code_text, lang = "R") {
 #' code_text <- c('d <- read.csv("data/demographics.csv")')
 #' repro_rewrite_paths(code_text, "ex1/analysis.R", plan)
 repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
-                                structure_df = NULL) {
+                                structure_df = NULL, script_path = NULL) {
   empty <- data.frame(ref = character(0), basename = character(0),
                       matched = logical(0), target = character(0),
                       ambiguous = logical(0), n_candidates = integer(0),
@@ -757,6 +761,17 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 
   # The script's own study group, for disambiguation.
   script_grp <- .data_group_from_path(file_name)
+
+  # The candidates a reference names when counted from the script's own folder
+  # (two folders that each hold a helpers.R and a main.R).
+  plan_current <- if ("current_path" %in% names(plan))
+    sub("^(\\./|/)+", "", gsub("\\\\", "/", plan$current_path)) else rep(NA_character_, nrow(plan))
+  in_own_folder <- function(cand, ref) {
+    if (is.null(script_path) || is.na(script_path) || !nzchar(script_path)) return(integer(0))
+    from_script <- .repro_norm_rel(file.path(dirname(script_path), ref))
+    if (is.na(from_script)) return(integer(0))
+    cand[plan_current[cand] %in% from_script]
+  }
 
   # Resolve each PLAN ROW's own on-disk source (see .repro_plan_sources()),
   # for the content-hash mirror collapsing below. Only built when
@@ -826,6 +841,12 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
                         target = cand_targets, ambiguous = FALSE,
                         n_candidates = n, is_call = FALSE))
     }
+    own <- in_own_folder(cand, refs[i])
+    if (length(own) == 1) {
+      return(data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
+                        target = pick_target(own, ref_ext[i]), ambiguous = FALSE,
+                        n_candidates = n, is_call = FALSE))
+    }
     # Several candidates share the basename AND disagree on target: disambiguate
     # by study group. Prefer the candidate whose target path is in the script's
     # study; failing that, whose target is in the study the reference path
@@ -875,6 +896,11 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
       return(data.frame(ref = call_refs$call_text[i], basename = key_base,
                         matched = TRUE, target = cand_targets, ambiguous = FALSE,
                         n_candidates = n, is_call = TRUE))
+    own <- if (!is.na(call_refs$resolved[i])) in_own_folder(cand, key) else integer(0)
+    if (length(own) == 1)
+      return(data.frame(ref = call_refs$call_text[i], basename = key_base, matched = TRUE,
+                        target = pick_target(own, key_ext), ambiguous = FALSE,
+                        n_candidates = n, is_call = TRUE))
     cand_grp <- .data_group_from_path(plan$target_path[cand])
     key_grp <- .data_group_from_path(key)
     pick <- integer(0)
@@ -916,7 +942,11 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 #' @param files a data frame with one row per code file, columns `file_name`,
 #'   and `reads` / `writes` / `sources` list-columns of basenames (as produced
 #'   by [repro_file_io()]). When `reads`/`writes`/`sources` are absent they are
-#'   derived from a `code_text` list-column if present.
+#'   derived from a `code_text` list-column if present. An optional `file_path`
+#'   column holds each file's path, and an optional `source_refs` list-column
+#'   each `source()` reference as written, in the order of `sources`: when
+#'   several files share the name a `source()` call gives, these decide which
+#'   one it means, and if they cannot, no edge is added.
 #'
 #' @returns a data frame with columns `file_name`, `order` (1-based run
 #'   position, NA when unplaceable), `depends_on` (comma-joined file_names that
@@ -985,8 +1015,13 @@ repro_run_order <- function(files, extra_edges = NULL) {
   fuzzy_sources <- list()
   source_edges <- list()   # every resolved source() edge, exact or fuzzy
   norm_base <- .repro_normalize_basename(base_name)
-  for (i in seq_len(n)) for (s in tolower(sources[[i]])) {
+  paths <- if ("file_path" %in% names(files)) files$file_path else fname
+  source_refs <- if ("source_refs" %in% names(files)) files$source_refs else sources
+  for (i in seq_len(n)) for (k in seq_along(sources[[i]])) {
+    s <- tolower(sources[[i]][[k]])
     j <- setdiff(which(base_name == s), i)
+    # several files with this name: only the one the call names
+    if (length(j) > 1) j <- .repro_sourced_file(j, source_refs[[i]][[k]], paths, i)
     if (!length(j)) {
       s_norm <- .repro_normalize_basename(s)
       j <- setdiff(which(nzchar(s_norm) & norm_base == s_norm), i)
@@ -1095,6 +1130,22 @@ repro_run_order <- function(files, extra_edges = NULL) {
                to   = vapply(source_edges, `[[`, character(1), 2)) else
     data.frame(from = character(0), to = character(0))
   out
+}
+
+# Which of several same-named files `cand` a source() reference in script `from`
+# names: counted from the script's own folder, else from the top, else the one
+# whose path ends in the reference's folders, or the end of whose absolute path
+# (on the author's computer) is the file's path. None when that leaves more than
+# one or none: the code is not guessed at.
+.repro_sourced_file <- function(cand, ref, paths, from) {
+  ref <- tolower(gsub("\\\\", "/", ref))
+  paths <- tolower(gsub("\\\\", "/", paths))
+  hit <- cand[paths[cand] %in% .repro_norm_rel(file.path(dirname(paths[from]), ref))]
+  if (!length(hit)) hit <- cand[paths[cand] %in% .repro_norm_rel(ref)]
+  if (!length(hit) && grepl("/", ref, fixed = TRUE))
+    hit <- cand[endsWith(paths[cand], paste0("/", sub("^((\\.|\\.\\.)/)+", "", ref))) |
+                  endsWith(ref, paste0("/", paths[cand]))]
+  if (length(hit) == 1) hit else integer(0)
 }
 
 #' Which scripts run inside another script, through `source()`
@@ -1298,10 +1349,10 @@ repro_file_io <- function(code_text_list, lang = "R") {
     # import does not play the same role).
     if (identical(fn_lang, "R")) {
       srcs <- regmatches(joined, gregexpr(src_pat, joined, perl = TRUE))[[1]]
-      srcs <- sub(src_pat, "\\1", srcs, perl = TRUE)
-      srcs <- tolower(basename(gsub("\\\\", "/", srcs)))
+      src_refs <- sub(src_pat, "\\1", srcs, perl = TRUE)
+      srcs <- tolower(basename(gsub("\\\\", "/", src_refs)))
     } else {
-      srcs <- character(0)
+      src_refs <- srcs <- character(0)
     }
 
     # code_file_refs() lists source() among its "read" calls, so a sourced
@@ -1313,7 +1364,8 @@ repro_file_io <- function(code_text_list, lang = "R") {
 
     data.frame(file_name = fname[k], stringsAsFactors = FALSE) |>
       (\(d) { d$reads <- list(unique(reads)); d$writes <- list(unique(writes))
-              d$sources <- list(unique(srcs)); d })()
+              d$sources <- list(unique(srcs))
+              d$source_refs <- list(src_refs[!duplicated(srcs)]); d })()
   })
   dplyr::bind_rows(rows)
 }
@@ -2216,10 +2268,18 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   is_main <- vapply(code_text_list, function(txt) {
     any(grepl("^\\s*if\\s+__name__\\s*==\\s*['\"]__main__['\"]", txt))
   }, logical(1))
+  # Of several files with one module name, a file imports the one beside it, or
+  # the one in the folder it names (from a.utils import x).
+  dirs <- dirname(paths)
+  repeated <- stem %in% stem[duplicated(stem)]
+  imports_it <- function(j, i) {
+    j != i && stem[[i]] %in% imports[[j]] &&
+      (!repeated[[i]] || dirs[[j]] == dirs[[i]] || basename(dirs[[i]]) %in% imports[[j]])
+  }
   out <- list()
   for (i in seq_along(fns)) {
     if (is_main[[i]] || stem[[i]] %in% c("", ".")) next
-    by <- fns[vapply(seq_along(fns), function(j) j != i && stem[[i]] %in% imports[[j]], logical(1))]
+    by <- fns[vapply(seq_along(fns), imports_it, logical(1), i = i)]
     if (length(by)) out[[fns[[i]]]] <- unique(by)
   }
   out
@@ -3624,6 +3684,81 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
   }, error = function(e) conditionMessage(e))
   if (isTRUE(ok)) list(ok = TRUE, msg = "", version = version)
   else fail(ok)
+}
+
+# A script's path in its repository (forward slashes, nothing in front), or its
+# file name when it has no path.
+.repro_script_path <- function(files) {
+  path <- if ("file_path" %in% names(files)) as.character(files$file_path) else
+    rep(NA_character_, nrow(files))
+  none <- is.na(path) | !nzchar(path)
+  path[none] <- files$file_name[none]
+  sub("^(\\./|/)+", "", gsub("\\\\", "/", path))
+}
+
+# A name of its own for each script of a paper. Every step of the check knows a
+# script by file_name, which holds no folder, so scripts that share a name (not
+# byte-identical copies, which are removed first) shared one result, and only
+# the first ran (#568). A name that occurs once stays as it is, so results stay
+# comparable. A repeated name becomes the script's path, which still ends in
+# the file name; with the repository in front when the path repeats too (the
+# same path in a GitHub and a Zenodo copy), and as a last resort a number.
+# `taken` holds names already used by the other language.
+.repro_unique_script_names <- function(files, taken = character(0)) {
+  out <- files$file_name
+  key <- tolower(out)
+  repeated <- key %in% c(key[duplicated(key)], tolower(taken))
+  if (!any(repeated)) return(out)
+  out[repeated] <- .repro_script_path(files)[repeated]
+  clashes <- function() {
+    k <- tolower(out)
+    repeated & k %in% c(k[duplicated(k)], tolower(taken))
+  }
+  if ("repo_name" %in% names(files)) {
+    repo <- as.character(files$repo_name)
+    add <- clashes() & !is.na(repo) & nzchar(repo)
+    out[add] <- paste0(repo[add], "/", out[add])
+  }
+  left <- clashes()
+  out[left] <- sprintf("%d/%s", which(left), out[left])
+  out
+}
+
+# The path to tell a script's folder from, for repro_run_order(): its unique
+# name when that holds a folder (it may have the repository in front), else its
+# path in the repository.
+.repro_order_path <- function(files) {
+  ifelse(grepl("/", files$file_name, fixed = TRUE), files$file_name, .repro_script_path(files))
+}
+
+# Where repro_write_scripts() puts each script (`script_paths`). The package
+# layout: its own path. Otherwise a script with a name of its own stays NA, to be
+# placed by its name in the plan, and a script that shares its name goes to its
+# own row of the plan, or else to its own path, because by name they all landed
+# on the first row and overwrote each other. Two scripts with one place (the same
+# path in two repositories) go by their unique names, and no script is put above
+# the sandbox.
+.repro_script_places <- function(files, plan, layout) {
+  fname <- files$file_name
+  path <- .repro_script_path(files)
+  if (layout == "package") {
+    out <- path
+  } else {
+    base <- tolower(basename(gsub("\\\\", "/", fname)))
+    shared <- grepl("/", fname, fixed = TRUE) | base %in% base[duplicated(base)]
+    has_current <- !is.null(plan) && all(c("current_path", "target_path") %in% names(plan))
+    current <- if (has_current) sub("^(\\./|/)+", "", gsub("\\\\", "/", plan$current_path))
+    out <- rep(NA_character_, length(fname))
+    for (i in which(shared)) {
+      hit <- if (has_current) unique(plan$target_path[which(
+        current == path[i] & !is.na(plan$target_path) & nzchar(plan$target_path))])
+      out[i] <- if (length(hit) == 1) hit else fname[i]
+    }
+  }
+  k <- tolower(out)
+  clash <- !is.na(k) & k %in% k[!is.na(k) & duplicated(k)]
+  out[clash] <- fname[clash]
+  gsub("(^|/)\\.\\.(?=/|$)", "\\1_", out, perl = TRUE)
 }
 
 # Where code file `idx` of `files` (code_check's table) came from, for the

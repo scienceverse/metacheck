@@ -1263,6 +1263,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     r_files <- r_files[!dup, , drop = FALSE]
     n_code <- nrow(r_files)
   }
+  # Scripts that still share a name differ: each gets a name of its own, which
+  # every step below knows it by (#568).
+  r_files$file_name <- .repro_unique_script_names(r_files)
 
   pb_read <- pb(n_code, ":what [:bar] :current/:total")
   pb_read$tick(0, list(what = ""))
@@ -1319,10 +1322,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── 4. Per-file path rewrite + I/O for ordering ─────────────────────────────
   io <- repro_file_io(code_text_list)
+  io$file_path <- .repro_order_path(r_files)
 
+  r_script_paths <- .repro_script_path(r_files)
   rewrite_list <- lapply(seq_len(n_code), function(i)
     repro_rewrite_paths(code_text_list[[i]], r_files$file_name[i], plan, "R",
-                       structure_df = structure_df))
+                       structure_df = structure_df, script_path = r_script_paths[i]))
   names(rewrite_list) <- r_files$file_name
   # the package layout leaves a reference that works as written as it is
   if (layout == "package") rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
@@ -1569,8 +1574,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # groundhog, checkpoint and renv calls would need the network, which is off
     # in a Docker run, and recorded versions are installed before the run.
     replace_env_calls <- !is.null(recorded) || sandbox == "docker"
+    r_script_places <- .repro_script_places(r_files, plan, layout)
     run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
-                                   script_paths = if (layout == "package") r_files$file_path,
+                                   script_paths = r_script_places,
                                    writes_in_place = layout == "package",
                                    replace_env_calls = replace_env_calls)
     rprofile_replaced <- if (replace_env_calls) .repro_neutralise_rprofile(sandbox_root) else 0L
@@ -1779,7 +1785,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         run_tbl2 <- if (length(library_injections) > 0)
           repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
                               inject_libs = library_injections,
-                              script_paths = if (layout == "package") r_files$file_path,
+                              script_paths = r_script_places,
                               writes_in_place = layout == "package",
                               replace_env_calls = replace_env_calls) else run_tbl
         .dbg("re-running ", length(run_order2), " script(s) in corrected order",
@@ -1922,6 +1928,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   table <- data.frame(
     paper_id       = if ("paper_id" %in% names(r_files)) r_files$paper_id else .pid(),
     file_name      = r_files$file_name,
+    file_path      = r_script_paths,
     parses         = parses,
     run_order      = ord_of,
     order_basis    = basis_of,
@@ -2650,6 +2657,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py_files <- py_files[!py_dup, , drop = FALSE]
     n_py_code <- nrow(py_files)
   }
+  # a name of its own for each file, as for R above; also apart from R's names,
+  # since an R and a Python notebook can share one
+  py_files$file_name <- .repro_unique_script_names(py_files, taken = r_files$file_name)
 
   # A notebook is JSON and a Quarto document is Markdown: their Python code is
   # extracted first, as code_check does (and as the R path purls an
@@ -2704,9 +2714,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── Per-file path rewrite + I/O for ordering ──────────────────────────────
   py_io <- repro_file_io(py_code_text_list, "Python")
 
+  py_script_paths <- .repro_script_path(py_files)
   py_rewrite_list <- lapply(seq_len(n_py_code), function(i)
     repro_rewrite_paths(py_code_text_list[[i]], py_files$file_name[i], plan, "Python",
-                       structure_df = structure_df))
+                       structure_df = structure_df, script_path = py_script_paths[i]))
   names(py_rewrite_list) <- py_files$file_name
   if (layout == "package") py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i)
     .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_files$file_path[i])), names(py_rewrite_list))
@@ -2810,7 +2821,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     .dbg("[repro/py] writing ", n_py_code, " rewritten script(s) into the layout ...")
     py_run_tbl <- repro_write_scripts(py_code_text_list, py_rewrite_list, plan,
                                       sandbox_root, lang = "Python",
-                                      script_paths = if (layout == "package") py_files$file_path,
+                                      script_paths = .repro_script_places(py_files, plan, layout),
                                       writes_in_place = layout == "package")
     .dbg("[repro/py]   wrote ", nrow(py_run_tbl), " script(s).")
 
@@ -2992,7 +3003,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_table <- data.frame(
     paper_id        = if ("paper_id" %in% names(py_files)) py_files$paper_id else .pid(),
     file_name       = py_files$file_name,
-    parses          = py_parses,
+    file_path       = py_script_paths,
+    parses          =py_parses,
     run_order       = py_ord_of,
     order_basis     = py_basis_of,
     depends_on      = py_dep_of,

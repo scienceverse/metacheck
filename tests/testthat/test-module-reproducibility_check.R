@@ -734,6 +734,70 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: same-named scripts each run and get their own outcome (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  for (layout in c("package", "psychds")) {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "good"))
+    dir.create(file.path(d, "bad"))
+    writeLines(c('d <- read.csv("data.csv")', 'cat("good\\n")'), file.path(d, "good", "analysis.R"))
+    writeLines('d <- read.csv("really_absent.csv")', file.path(d, "bad", "analysis.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "good", "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE, layout = layout))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["good/analysis.R"]], "ran_ok")
+    expect_equal(outcome[["bad/analysis.R"]], "errored")
+    expect_setequal(mo$table$file_name, c("good/analysis.R", "bad/analysis.R"))
+    expect_setequal(mo$table$file_name, mo$run_results$file_name)
+    expect_equal(mo$table$outcome[mo$table$file_name == "bad/analysis.R"], "errored")
+    expect_equal(mo$table$file_path, mo$table$file_name)
+  }
+})
+
+test_that("execute = TRUE: source() runs the same-named script of the script's own folder (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  for (layout in c("package", "psychds")) {
+    d <- withr::local_tempdir()
+    for (f in c("a", "b")) {
+      dir.create(file.path(d, f))
+      writeLines(sprintf('from <- "%s"', f), file.path(d, f, "helpers.R"))
+      writeLines(c('source("helpers.R")', sprintf('stopifnot(from == "%s")', f)),
+                 file.path(d, f, "main.R"))
+    }
+    file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE, layout = layout))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["a/main.R"]], "ran_ok")
+    expect_equal(outcome[["b/main.R"]], "ran_ok")
+    expect_equal(outcome[["a/helpers.R"]], "run_by_source")
+    expect_equal(outcome[["b/helpers.R"]], "run_by_source")
+  }
+})
+
+test_that("static analysis: same-named scripts that differ each keep a row, and a name that occurs once stays as it is (#568)", {
+  paper <- test_paper()
+  d <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(d, "one.R"))
+  writeLines("x <- 2", file.path(d, "two.R"))
+  writeLines("x <- 3", file.path(d, "other.R"))
+  code_tbl <- dplyr::bind_rows(
+    code_tbl_row(paper, "a.R", file.path(d, "one.R")),
+    code_tbl_row(paper, "a.R", file.path(d, "two.R")),
+    code_tbl_row(paper, "b.R", file.path(d, "other.R")))
+  code_tbl$file_path <- c("x/a.R", "y/a.R", "z/b.R")
+  structure_df <- data.frame(paper_id = paper_id(paper), file_name = "data.csv",
+                             file_location = repro_fixture("data.csv"))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- module_run(fake_code, "reproducibility_check")
+  expect_equal(mo$table$file_name, c("x/a.R", "y/a.R", "b.R"))
+  expect_equal(mo$table$file_path, c("x/a.R", "y/a.R", "z/b.R"))
+})
+
 test_that("static analysis: a paper with BOTH R and Python code combines into one summary row", {
   paper <- test_paper()
   code_tbl <- dplyr::bind_rows(

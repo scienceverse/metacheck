@@ -10,7 +10,11 @@ repro_run_order(files, extra_edges = NULL)
 \item{files}{a data frame with one row per code file, columns \code{file_name},
 and \code{reads} / \code{writes} / \code{sources} list-columns of basenames (as produced
 by \code{\link[=repro_file_io]{repro_file_io()}}). When \code{reads}/\code{writes}/\code{sources} are absent they are
-derived from a \code{code_text} list-column if present.}
+derived from a \code{code_text} list-column if present. An optional \code{file_path}
+column holds each file's path, and an optional \code{source_refs} list-column
+each \code{source()} reference as written, in the order of \code{sources}: when
+several files share the name a \code{source()} call gives, these decide which
+one it means, and if they cannot, no edge is added.}
 }
 \value{
 a data frame with columns \code{file_name}, \code{order} (1-based run

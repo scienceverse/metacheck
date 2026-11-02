@@ -9,7 +9,8 @@ repro_rewrite_paths(
   file_name,
   plan,
   lang = "R",
-  structure_df = NULL
+  structure_df = NULL,
+  script_path = NULL
 )
 }
 \arguments{
@@ -33,6 +34,11 @@ rather than guessed at.}
 \item{structure_df}{optional \code{data_check} structure table (\code{file_name},
 \code{file_location}) — when supplied, enables the content-hash mirror
 collapsing described above. \code{NULL} (default) skips it.}
+
+\item{script_path}{optional path of the script in its repository. When
+several files share the name a reference gives, the one the reference
+names counted from the script's own folder (\code{current_path} in \code{plan}) is
+the file it means. \code{NULL} (default) skips this.}
 }
 \value{
 a data frame with one row per referenced path, columns \code{ref} (the
