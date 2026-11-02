@@ -2628,6 +2628,59 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_function_names recognises a file that only defines functions (#568)", {
+  expect_equal(.repro_function_names(c("library(a)", "k <- 1", "f <- function(x) x", "g = function() 2")), c("f", "g"))
+  expect_equal(.repro_function_names(c('"doc"', 'pal <- c("a", "b")', "setClass('A')", "h <- function() 1")), "h")
+  # anything else it does makes it a script
+  expect_length(.repro_function_names(c("f <- function(x) x", "f(1)")), 0)
+  expect_length(.repro_function_names(c("f <- function(x) x", "d <- read.csv('a.csv')")), 0)
+  expect_length(.repro_function_names(c("f <- function(x) x", "print(1)")), 0)
+  # no functions at all, or a file that does not parse
+  expect_length(.repro_function_names(c("library(a)", "k <- 1")), 0)
+  expect_length(.repro_function_names("f <- function("), 0)
+})
+
+test_that(".repro_function_users names the scripts that use a file's functions (#568)", {
+  code <- list(`f.R` = "fit <- function(x) x", `a.R` = "fit(1)", `b.R` = "misfit(1)", `c.R` = "x <- fit",
+               `d.R` = 'source("f.R")', `e.R` = "stats::fit(2)")
+  users <- .repro_function_users("f.R", "fit", code, list(`d.R` = "f.r"))
+  expect_setequal(users, c("a.R", "d.R", "e.R"))
+  expect_length(.repro_function_users("f.R", "nothing", code), 0)
+  # a dot in a name is a dot
+  expect_length(.repro_function_users("f.R", "a.b", list(`f.R` = "", `g.R` = "axb(1)")), 0)
+  expect_equal(.repro_function_users("f.R", "a.b", list(`f.R` = "", `g.R` = "a.b(1)")), "g.R")
+})
+
+test_that("a package's tests and setup.py are recognised, and analyses are not (#568)", {
+  expect_true(.repro_is_r_test("pkg/tests/testthat/test-a.R"))
+  expect_true(.repro_is_r_test("tests/testthat.R"))
+  expect_false(.repro_is_r_test("analysis/tests.R"))
+  t <- .repro_is_py_test
+  expect_true(t("a/conftest.py", "x = 1"))
+  expect_true(t("test_a.py", "import pytest"))
+  expect_true(t("a/tests/b.py", "from unittest import TestCase"))
+  expect_true(t("a/tests/b.py", c("def test_one():", "    pass")))
+  expect_true(t("setup.py", c("from setuptools import setup", "setup(name = 'a')")))
+  # a name alone is not enough
+  expect_false(t("model_test.py", "import numpy"))
+  expect_false(t("predict_test.py", "x = 1"))
+  expect_false(t("setup.py", "x = 1"))
+  expect_false(t("a/b.py", c("def test_one():", "    pass")))
+})
+
+test_that(".repro_checklist_section leaves function files and tests out of the count (#568)", {
+  tb <- data.frame(file_name = c("f.R", "t.R", "g.R", "run.R"), run_order = 1:4,
+                   outcome = c("defines_functions", "not_analysis", "defines_functions", "ran_ok"),
+                   setwd_removed = 0, not_runnable_reason = c("defines_functions", "not_analysis", "defines_functions", NA),
+                   unresolved_inputs = NA_character_, used_by = c("run.R", NA, NA, NA))
+  rr <- data.frame(file_name = tb$file_name, outcome = tb$outcome, error = "", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "**1 of 1 script ran to the end**", fixed = TRUE)
+  expect_match(out, "We ran the paper's 1 R script", fixed = TRUE)
+  expect_match(out, "which run.R uses", fixed = TRUE)
+  expect_match(out, "no script in the deposit uses them", fixed = TRUE)
+})
+
 test_that(".repro_py_parses marks Python 2 code apart from other syntax errors (#568)", {
   skip_if(!nzchar(.repro_find_python()), "needs Python")
   out <- .repro_py_parses(list(ok = "x = 1", py2 = 'print "a"', ex = c("try:", "    x = 1", "except E, e:", "    pass"),

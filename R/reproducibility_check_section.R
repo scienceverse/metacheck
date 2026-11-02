@@ -80,6 +80,8 @@
     sprintf("%s (%s)", f, why)
   }
 
+  used_by <- if ("used_by" %in% names(tbl)) tbl$used_by else rep(NA_character_, nrow(tbl))
+
   # one row per script: its result and what happened, in run order
   rows <- vapply(seq_len(nrow(tbl)), \(i) {
     lang <- if (is_py[[i]]) "Python" else "R"
@@ -125,13 +127,23 @@
                              "We could not work out when to run it, relative to the other scripts."),
       jags_model = , static_jags_model = c("Not run", "It is a JAGS model, which another script reads."),
       not_r_content = , static_not_r_content = c("Not run", "It is not R code that can run on its own."),
+      defines_functions = , static_defines_functions = c(
+        "Not run",
+        if (!is.na(used_by[[i]])) sprintf("It only defines functions, which %s uses.", .repro_cell(used_by[[i]]))
+        else "It only defines functions, and no script in the deposit uses them."),
+      not_analysis = , static_not_analysis = c(
+        "Not run", "It is a test of a package or the file that installs it, not part of the analysis."),
       c("Not run", ""))
     sprintf("| %s | %s | %s |", .repro_cell(tbl$file_name[[i]]), res[[1]], res[[2]])
   }, character(1))
 
   # the opening sentences: what was run, and how
-  n_r <- sum(!is_py)
-  n_py <- sum(is_py)
+  counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
+                             "static_jags_model", "static_not_r_content",
+                             "defines_functions", "not_analysis",
+                             "static_defines_functions", "static_not_analysis")
+  n_r <- sum(!is_py & counted)
+  n_py <- sum(is_py & counted)
   scripts <- paste(c(
     if (n_r) sprintf("%d R script%s", n_r, plural(n_r)),
     if (n_py) sprintf("%d Python script%s", n_py, plural(n_py))), collapse = " and ")
@@ -149,8 +161,6 @@
   }
 
   # the headline: how many ran to the end, and what happened to the others
-  counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
-                             "static_jags_model", "static_not_r_content")
   groups <- c(errored = "stopped with an error", timed_out = "ran out of time",
               dependency_unavailable = "could not run on our server")
   n_ok <- sum(outcome[counted] == "ran_ok")

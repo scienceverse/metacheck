@@ -37,6 +37,9 @@
 #' as a JSON or HTML dump); these last two are not run and are not failures.
 #' `python2` marks Python 2 code, which is not run, since only Python 3 is
 #' available, and is not converted, since that can change results.
+#' `defines_functions` is a file that only defines functions, which is used, not
+#' run (`table$used_by` names the scripts that use it), and `not_analysis` is a
+#' package's tests or its `setup.py`; neither is run or counted as a script.
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -1418,6 +1421,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   n_not_r_content <- sum(sniff_type == "not_r_content", na.rm = TRUE)
   n_jags_model    <- sum(sniff_type == "jags_model", na.rm = TRUE)
+  # A package's tests are not the analysis, and a file that only defines functions
+  # is used, not run: running it on its own "succeeds" without doing anything, which
+  # made up most of the R files that ran in the corpus (#568).
+  r_function_names <- lapply(code_text_list, .repro_function_names)
+  sniff_type[is.na(sniff_type) & .repro_is_r_test(r_script_paths)] <- "not_analysis"
+  only_functions <- is.na(sniff_type) & grepl("\\.[Rr]$", r_files$file_name) & lengths(r_function_names) > 0
+  sniff_type[only_functions] <- "defines_functions"
+  r_used_by <- vapply(seq_len(n_code), function(i) {
+    if (!only_functions[i]) return(NA_character_)
+    users <- .repro_function_users(r_files$file_name[i], r_function_names[[i]], code_text_list,
+                                   stats::setNames(io$sources, io$file_name))
+    if (length(users)) paste(users, collapse = ", ") else NA_character_
+  }, character(1))
   # Such a file has no place in the run order, so one script and a model file
   # are not two scripts whose order is unknown.
   if (sum(is.na(sniff_type)) <= 1) ambiguous_order <- FALSE
@@ -1639,7 +1655,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     #    on runs_as_r (not `parses`): a sniffed file (#394/#396) "parses" for
     #    the runnable/traffic-light bookkeeping above, but it is still not R
     #    and must not actually be handed to callr/Docker to execute.
-    parses_named <- stats::setNames(runs_as_r, r_files$file_name)
+    parses_named <- stats::setNames(runs_as_r & is.na(sniff_type), r_files$file_name)
     # A file predicted to be missing does not stop a script from being run: the
     # prediction is often wrong (a read inside if (file.exists()), a name built at
     # run time), and running the script gives its real outcome and error.
@@ -1652,7 +1668,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # therefore not run on its own; it runs inside the script that sources it,
     # and is recorded as `run_by_source`. See .repro_run_by_source() for when
     # a sourced script still runs on its own.
-    can_run <- stats::setNames(runs_as_r, r_files$file_name)
+    # A test is not run, so what it sources is not run by it either.
+    can_run <- stats::setNames(runs_as_r & !sniff_type %in% "not_analysis", r_files$file_name)
     run_by_source <- .repro_run_by_source(order_tbl, can_run)
     if (length(run_by_source))
       .dbg("run only through source(): ", paste(sprintf("%s (by %s)", names(run_by_source),
@@ -1831,7 +1848,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # script to run: it gets an outcome of its own, not `not_parsed`, which
     # counted it as a failure in the results (#568).
     sniff_i <- match(run_results$file_name, r_files$file_name)
-    sniffed <- !is.na(sniff_i) & !is.na(sniff_type[sniff_i])
+    sniffed <- !is.na(sniff_i) & !is.na(sniff_type[sniff_i]) &
+      run_results$outcome != "run_by_source"   # functions a script sources were used
     run_results$outcome[sniffed] <- sniff_type[sniff_i[sniffed]]
 
     # A predicted missing file no longer counts for a script that ran through.
@@ -1962,6 +1980,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   table$writes <- writes_of
   name_corrections <- .repro_name_corrections(rewrite_list)
   table$names_corrected <- .repro_names_corrected(name_corrections, r_files$file_name)
+  table$used_by <- r_used_by
 
   # ── 9. Report ───────────────────────────────────────────────────────────────
   intro <- if (isTRUE(execute))
@@ -2079,7 +2098,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # does not read "the author has a bug" into a file that was never meant to
   # be standalone R in the first place.
   if (n_not_r_content > 0 || n_jags_model > 0) {
-    sniff_rows <- which(!is.na(sniff_type))
+    sniff_rows <- which(sniff_type %in% c("not_r_content", "jags_model"))
     report <- c(report, "#### Non-R content detected",
       if (n_not_r_content > 0) sprintf(
         "%d file%s that failed to parse %s not actually R content (a JSON/HTML/XML dump saved with an R-type extension) -- this is informational, not a reproducibility defect.",
@@ -2093,6 +2112,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         Detail = sniff_detail[sniff_rows],
         check.names = FALSE), maxrows = 10))
   }
+  report <- c(report, .repro_not_run_report(r_files$file_name, sniff_type, r_used_by))
 
   ## Execution ----
   if (!is.null(run_results) && nrow(run_results) > 0) {
@@ -2104,7 +2124,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_nodep   <- sum(oc == "dependency_unavailable")
     n_by_src  <- sum(oc == "run_by_source")
     n_late    <- sum(oc == "skipped_time_limit")
-    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content"))
+    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content", "defines_functions", "not_analysis"))
     report_exec <- sprintf(
       paste0("**The code was run.** Each script ran in an isolated %s ",
              "against a throwaway copy of ", layout_name, ", in the run order ",
@@ -2790,7 +2810,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_parse_result <- .repro_py_parses(py_code_text_list)
   py_parses <- as.vector(py_parse_result)
   py_python2 <- as.vector(attr(py_parse_result, "python2") %||% rep(FALSE, n_py_code))
-  n_py_noparse_static <- sum(!py_parses)
+  # A package's tests and setup.py are not the analysis, as for R above.
+  py_not_analysis <- vapply(seq_len(n_py_code), function(i)
+    .repro_is_py_test(py_script_paths[i], py_code_text_list[[i]]), logical(1))
+  n_py_noparse_static <- sum(!py_parses & !py_not_analysis)
   # Set when the execute phase below could not run the Python code at all.
   py_exec_error <- NULL
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
@@ -2815,13 +2838,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                  !(tolower(d$basename) %in% py_produced_before[[i]])])
   })
   py_file_unresolved <- lengths(py_unresolved_list) > 0L
-  py_runnable <- py_parses & py_placeable & !py_file_unresolved
+  py_runnable <- py_parses & py_placeable & !py_file_unresolved & !py_not_analysis
   n_py_runnable <- sum(py_runnable)
 
   py_not_runnable_reason <- ifelse(
     py_runnable, NA_character_,
+    ifelse(py_not_analysis, "not_analysis",
     ifelse(py_python2, "python2", ifelse(!py_parses, "parse_error",
-           ifelse(!py_placeable, "unplaceable", "missing_input"))))
+           ifelse(!py_placeable, "unplaceable", "missing_input")))))
   py_unresolved_inputs <- vapply(py_unresolved_list, function(x)
     if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
@@ -2897,13 +2921,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (!isTRUE(install_missing)) py_failed_deps <- py_install_deps$package
     }
 
-    py_parses_named <- stats::setNames(py_parses, py_files$file_name)
+    py_parses_named <- stats::setNames(py_parses & !py_not_analysis, py_files$file_name)
     py_run_order_names <- py_order_tbl$file_name[order(py_order_tbl$order)]
     # A module other files import is not run on its own (see
     # .repro_py_imported()), like an R script another script source()s.
     py_imported <- .repro_py_imported(py_code_text_list, py_files$file_path)
     # a file that does not parse keeps that outcome: it cannot run when imported either
     py_imported <- py_imported[names(py_imported) %in% py_files$file_name[py_parses]]
+    # a test is not run, so a module only a test imports is not run by it
+    py_imported <- lapply(py_imported, setdiff, py_files$file_name[py_not_analysis])
+    py_imported <- py_imported[lengths(py_imported) > 0]
     if (length(py_imported))
       .dbg("[repro/py] imported by other files, not run on their own: ",
            paste(names(py_imported), collapse = ", "))
@@ -2945,6 +2972,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         (py_run_results$outcome == "errored" &
            .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))
       py_run_results$outcome[py_is_py2] <- "python2"
+      py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -3166,6 +3194,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         plural(sum(py_python2), "it was", "they were"),
         plural(sum(py_python2), "it needs", "they need"),
         paste(py_files$file_name[py_python2], collapse = ", "))),
+    .repro_not_run_report(py_files$file_name, ifelse(py_not_analysis, "not_analysis", NA_character_)),
     if (sum(lengths(py_commands_removed)) > 0 || any(py_uses_get_ipython)) c("#### Notebook commands", sprintf(
       paste0("To run the Python code we left out %d notebook command%s, which %s not Python",
              "%s. A command that installs a package or prepares a file did not run, so a ",
@@ -3200,7 +3229,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "drift, which argues for pinning versions (e.g. in a ",
              "`requirements.txt`)."),
       if (sandbox == "docker") "Docker container" else "subprocess",
-      layout_name, timeout, nrow(py_run_results), plural(nrow(py_run_results)),
+      layout_name, timeout, sum(py_oc != "not_analysis"), plural(sum(py_oc != "not_analysis")),
       n_py_ran_ok, n_py_errored, n_py_timeout, n_py_nodep, n_py_noparse,
       n_py_python2, plural(n_py_python2, "is", "are"),
       if (n_py_import) sprintf(

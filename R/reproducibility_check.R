@@ -2011,6 +2011,92 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   FALSE
 }
 
+# The functions an R file defines, when defining things is all it does: apart from
+# functions, only library() calls, constants and the like. Empty otherwise, also for
+# a file that does not parse. Such a file is not an analysis: run on its own it
+# "succeeds" without doing anything. A function counts when a script uses it (#568).
+.repro_function_names <- function(code_text) {
+  ex <- tryCatch(parse(text = code_text, keep.source = FALSE), error = function(e) NULL)
+  if (is.null(ex) || !length(ex)) return(character(0))
+  literal <- function(x) is.atomic(x) || (is.call(x) && identical(x[[1]], as.name("c")) &&
+                                            all(vapply(as.list(x)[-1], literal, logical(1))))
+  setup <- c("library", "require", "requireNamespace", "suppressPackageStartupMessages",
+             "setGeneric", "setMethod", "setClass", "setValidity", "setRefClass")
+  defs <- character(0)
+  for (e in ex) {
+    if (is.atomic(e)) next
+    if (!is.call(e)) return(character(0))
+    if (identical(deparse(e[[1]])[1], "utils::globalVariables")) next
+    if (!is.name(e[[1]])) return(character(0))
+    f <- as.character(e[[1]])
+    if (f %in% setup) next
+    if (!f %in% c("<-", "=", "<<-") || length(e) != 3 ||
+        !(is.name(e[[2]]) || is.character(e[[2]]))) return(character(0))
+    v <- e[[3]]
+    if (is.call(v) && identical(v[[1]], as.name("function"))) defs <- c(defs, as.character(e[[2]]))
+    else if (!literal(v)) return(character(0))
+  }
+  defs
+}
+
+# The scripts that use a file's functions: calling one by name, or sourcing the file.
+.repro_function_users <- function(fn, functions, code_text_list, sources = list()) {
+  others <- setdiff(names(code_text_list), fn)
+  if (!length(functions) || !length(others)) return(character(0))
+  called <- paste0("(^|[^A-Za-z0-9._])(", paste(gsub("([.])", "\\\\\\1", functions), collapse = "|"), ")\\s*\\(")
+  base <- tolower(basename(gsub("\\\\", "/", fn)))
+  others[vapply(others, function(o) {
+    base %in% sources[[o]] ||
+      any(grepl(called, iconv(code_text_list[[o]], "", "UTF-8", sub = ""), perl = TRUE))
+  }, logical(1))]
+}
+
+# A package's own tests: run on their own, they test whether the package is
+# installed, not whether the paper's analysis reproduces.
+.repro_is_r_test <- function(paths) {
+  grepl("(^|/)tests/testthat(/|\\.[Rr]$)", gsub("\\\\", "/", paths))
+}
+
+# The same for Python, and the file that installs a package. A name alone is not
+# enough: model_test.py and predict_test.py can be analyses.
+.repro_is_py_test <- function(path, code_text) {
+  path <- tolower(gsub("\\\\", "/", path))
+  base <- basename(path)
+  if (!grepl("\\.py$", base)) return(FALSE)
+  if (base == "conftest.py") return(TRUE)
+  has <- function(pat) any(grepl(pat, code_text, perl = TRUE, useBytes = TRUE))
+  if (base == "setup.py")
+    return(has("^\\s*(import|from)\\s+(setuptools|distutils)\\b") && has("\\bsetup\\s*\\("))
+  in_tests <- grepl("(^|/)tests?/", path)
+  named <- grepl("^test_.*\\.py$|_test\\.py$|^tests?\\.py$", base)
+  ((named || in_tests) && has("^\\s*(import|from)\\s+(pytest|unittest|nose|django\\.test)\\b")) ||
+    (in_tests && has("^\\s*def\\s+test_"))
+}
+
+# The report's section on files that are not run on their own; NULL when none.
+.repro_not_run_report <- function(file_names, kinds, used_by = NULL) {
+  fn <- kinds %in% "defines_functions"
+  ts <- kinds %in% "not_analysis"
+  if (!any(fn) && !any(ts)) return(NULL)
+  used <- if (is.null(used_by)) rep(NA_character_, length(kinds)) else used_by
+  c("#### Files not run on their own",
+    if (any(fn)) sprintf(
+      paste0("%d file%s only define%s functions, so running %s on %s own says nothing: a ",
+             "function counts when a script uses it. These files are not counted as scripts. ",
+             "%d %s used by no script in the deposit."),
+      sum(fn), plural(sum(fn)), plural(sum(fn), "s", ""), plural(sum(fn), "it", "them"),
+      plural(sum(fn), "its", "their"), sum(is.na(used[fn])), plural(sum(is.na(used[fn])), "is", "are")),
+    if (any(fn)) scroll_table(data.frame(
+      File = file_names[fn],
+      `Used by` = ifelse(is.na(used[fn]), "no script", used[fn]),
+      check.names = FALSE), maxrows = 10),
+    if (any(ts)) sprintf(
+      paste0("%d file%s %s the tests of a package or the file that installs it, not part of ",
+             "the analysis, so %s not run or counted as scripts: %s."),
+      sum(ts), plural(sum(ts)), plural(sum(ts), "is one of", "are"),
+      plural(sum(ts), "it was", "they were"), paste(file_names[ts], collapse = ", ")))
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # EXECUTION helpers (the `execute = TRUE` phase). Everything below actually runs
 # downloaded code, so it is reached only when the caller explicitly opts in via

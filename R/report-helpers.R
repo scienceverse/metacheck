@@ -711,7 +711,8 @@ report_type <- function(report_type = NULL) {
     exec_bullets <- if (length(exec_tbl) > 0) {
       exec_tbl <- exec_tbl[[1]]
       # a model file or other non-R content is not a script, so not a failure
-      flagged <- exec_tbl[!exec_tbl$Outcome %in% c("ran_ok", "jags_model", "not_r_content"),
+      flagged <- exec_tbl[!exec_tbl$Outcome %in% c("ran_ok", "jags_model", "not_r_content",
+                                                   "defines_functions", "not_analysis"),
                           c("File", "Outcome", "Detail")]
 
       # errored/timed_out are the two outcomes with a real, distinct
