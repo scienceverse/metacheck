@@ -2785,6 +2785,57 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   any(vapply(as.list(ex), function(e) is.call(e) && deparse(e[[1]])[1] %in% apps, logical(1)))
 }
 
+# Whether a run's error shows that the code needs the internet, which is off during a
+# Docker run, since this runs code nobody has checked (#568, item 21).
+.repro_needs_internet_error <- function(txt) {
+  grepl(paste0("cannot open URL|[Cc]ould not resolve host|Couldn't resolve host|Temporary failure in name resolution|",
+               "Name or service not known|NameResolutionError|Max retries exceeded|urlopen error|",
+               "ConnectionError|LocalEntryNotFound|Could not reach|Failed to connect|Network is unreachable|",
+               "getaddrinfo failed|Timeout was reached|no internet|internet connection"),
+        txt %||% "", perl = TRUE)
+}
+
+# Why a script did not run through, as one word, so reasons need not be recovered
+# from messages afterwards (#568, item 24). NA for what is not a failure of the script.
+.repro_failure_reason <- function(outcome, msg) {
+  msg <- ifelse(is.na(msg), "", msg)
+  has <- function(pat) grepl(pat, msg, perl = TRUE)
+  out <- rep(NA_character_, length(outcome))
+  out[outcome %in% c("dependency_unavailable")] <- "package"
+  out[outcome %in% c("not_parsed", "python2")] <- "syntax"
+  out[outcome %in% c("timed_out", "skipped_time_limit")] <- "time"
+  out[outcome %in% c("needs_a_person")] <- "interactive"
+  out[outcome %in% c("needs_internet")] <- "internet"
+  out[outcome %in% c("skipped_missing_inputs")] <- "file"
+  err <- outcome == "errored"
+  set <- function(pat, label) out[err & is.na(out) & has(pat)] <<- label
+  set("there is no package called|ModuleNotFoundError|No module named|ImportError|package or namespace|Error: package ", "package")
+  set("cannot open the connection|cannot open file|No such file|FileNotFoundError|does not exist|Cannot find the file|Could not find a root|cannot open compressed", "file")
+  set("object '[^']*' not found|could not find function|NameError|is not defined", "undefined")
+  set("SyntaxError|IndentationError", "syntax")
+  set("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11", "environment")
+  out[err & is.na(out) & !grepl("\\S", msg)] <- "no_message"
+  out[err & is.na(out)] <- "other"
+  out
+}
+
+# What the deposit does not hold, for the scripts that did not run through, with
+# scripts apart from data: authors can act on this (#568, item 23). NULL when none.
+.repro_absent_report <- function(absent) {
+  absent <- absent[absent$status == "absent" & is.na(absent$similar_to), , drop = FALSE]
+  if (!nrow(absent)) return(NULL)
+  is_code <- grepl("\\.(r|rmd|qmd|py|ipynb|stan|jags|bugs)$", absent$basename, ignore.case = TRUE)
+  list_some <- function(x) paste0(paste(sprintf("`%s`", utils::head(x, 25)), collapse = ", "),
+                                  if (length(x) > 25) sprintf(" and %d more", length(x) - 25) else "")
+  c("#### Files the deposit does not hold",
+    if (any(!is_code)) sprintf(
+      "The scripts that did not run through read %d data file%s that %s not in the deposit, and no script of the deposit writes: %s.",
+      sum(!is_code), plural(sum(!is_code)), plural(sum(!is_code), "is", "are"), list_some(absent$basename[!is_code])),
+    if (any(is_code)) sprintf(
+      "They also run %d script%s that %s not in the deposit: %s.",
+      sum(is_code), plural(sum(is_code)), plural(sum(is_code), "is", "are"), list_some(absent$basename[is_code])))
+}
+
 # Whether a run's error shows that the script waited for a person.
 .repro_needs_person_error <- function(txt) {
   grepl(paste0("file choice cancelled|invalid 'description' argument|menu\\(\\) cannot be used non-interactively|",

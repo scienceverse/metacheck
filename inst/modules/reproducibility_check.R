@@ -43,7 +43,8 @@
 #' `docker_failed` means the container never started, which says nothing about
 #' the script, so it keeps the light from being green but does not make it red.
 #' `needs_a_person` is a script that stopped because it asks a person to choose a
-#' file or answer a question, or that starts an app; it is treated the same way.
+#' file or answer a question, or that starts an app, and `needs_internet` one that
+#' stopped because the network is off in a Docker run; both are treated the same way.
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -1902,6 +1903,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_needs_person_error(paste(run_results$error, run_results$stderr))
     run_results$outcome[asks_person] <- "needs_a_person"
     run_results$error_type[asks_person] <- NA_character_
+    # Stopped because the network is off, which says nothing about the code either.
+    if (sandbox == "docker") {
+      off_line <- run_results$outcome == "errored" &
+        .repro_needs_internet_error(paste(run_results$error, run_results$stderr))
+      run_results$outcome[off_line] <- "needs_internet"
+      run_results$error_type[off_line] <- NA_character_
+    }
+    # Always a message, and a reason for each script that did not run through.
+    no_message <- run_results$outcome == "errored" & !grepl("\\S", paste0(run_results$error, run_results$stderr))
+    run_results$error[no_message] <- "the script stopped without a message"
+    run_results$reason <- .repro_failure_reason(run_results$outcome, paste(run_results$error, run_results$stderr))
 
     # A predicted missing file no longer counts for a script that ran through.
     tl <- .repro_static_light(
@@ -1915,7 +1927,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person")) && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2032,6 +2044,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   name_corrections <- .repro_name_corrections(rewrite_list)
   table$names_corrected <- .repro_names_corrected(name_corrections, r_files$file_name)
   table$used_by <- r_used_by
+  table$reason <- if (!is.null(run_results) && "reason" %in% names(run_results))
+    run_results$reason[match(r_files$file_name, run_results$file_name)] else NA_character_
 
   # ── 9. Report ───────────────────────────────────────────────────────────────
   intro <- if (isTRUE(execute))
@@ -2137,7 +2151,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     "#### Run order", report_order, scroll_table(order_table, maxrows = 10),
     "#### File paths", report_paths, report_names,
     if (!is.null(report_missing)) c("#### Missing inputs", report_missing),
-    if (!is.null(missing_table)) scroll_table(missing_table, maxrows = 10)
+    if (!is.null(missing_table)) scroll_table(missing_table, maxrows = 10),
+    if (isTRUE(execute) && !is.null(run_results))
+      .repro_absent_report(.repro_inputs_after_run(missing_inputs, unresolved_list, r_files$file_name, run_results))
   )
   if (parse_errs > 0)
     report <- c(report, "#### Parsing", sprintf(
@@ -2209,6 +2225,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " **%d script%s need%s a person** to choose a file, answer a question or use an app, which cannot be reproduced without one: %s. Naming the file in the script solves this.",
         sum(oc == "needs_a_person"), plural(sum(oc == "needs_a_person")), plural(sum(oc == "needs_a_person"), "s", ""),
         paste(run_results$file_name[oc == "needs_a_person"], collapse = ", ")))
+    if (sum(oc == "needs_internet") > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **%d script%s need%s the internet**, which is off during the run: %s. Keeping what they download in the deposit solves this.",
+        sum(oc == "needs_internet"), plural(sum(oc == "needs_internet")), plural(sum(oc == "needs_internet"), "s", ""),
+        paste(run_results$file_name[oc == "needs_internet"], collapse = ", ")))
     if (length(run_after) > 0)
       report_exec <- paste0(report_exec, sprintf(
         " **%d script%s use%s an object or function that only another script defines**, so in the second run that script was loaded first, in the same session: %s. Such a script should `source()` the other itself, since it does not run on its own.",
@@ -3058,6 +3079,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         .repro_docker_failed(paste(py_run_results$error, py_run_results$stderr))] <- "docker_failed"
       py_run_results$outcome[py_run_results$outcome == "errored" &
         .repro_needs_person_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_a_person"
+      if (sandbox == "docker")
+        py_run_results$outcome[py_run_results$outcome == "errored" &
+          .repro_needs_internet_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_internet"
+      py_no_message <- py_run_results$outcome == "errored" & !grepl("\\S", paste0(py_run_results$error, py_run_results$stderr))
+      py_run_results$error[py_no_message] <- "the script stopped without a message"
+      py_run_results$reason <- .repro_failure_reason(py_run_results$outcome, paste(py_run_results$error, py_run_results$stderr))
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -3089,7 +3116,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person")) && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -3182,6 +3209,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_table$writes <- py_writes_of
   py_name_corrections <- .repro_name_corrections(py_rewrite_list)
   py_table$names_corrected <- .repro_names_corrected(py_name_corrections, py_files$file_name)
+  py_table$reason <- if (!is.null(py_run_results) && "reason" %in% names(py_run_results))
+    py_run_results$reason[match(py_files$file_name, py_run_results$file_name)] else NA_character_
   py_table$commands_removed <- vapply(py_commands_removed, function(x)
     if (length(x)) paste(x, collapse = "; ") else NA_character_, character(1), USE.NAMES = FALSE)
 
@@ -3259,6 +3288,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     "#### File paths", py_report_paths, .repro_name_report(py_name_corrections, execute),
     if (!is.null(py_report_missing)) c("#### Missing inputs", py_report_missing),
     if (!is.null(py_missing_table)) scroll_table(py_missing_table, maxrows = 10),
+    if (isTRUE(execute) && !is.null(py_run_results))
+      .repro_absent_report(.repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results)),
     # Same position as the R path's own "#### Parsing" subsection. Also shown
     # when the check could not be done, so a reader does not take a missing
     # section to mean every file parsed.

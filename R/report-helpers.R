@@ -744,6 +744,7 @@ report_type <- function(report_type = NULL) {
           python2                 = "are written for Python 2 and so could not be run",
           docker_failed           = "could not be run because Docker failed, which says nothing about the code",
           needs_a_person          = "need a person to choose a file, answer a question or use an app",
+          needs_internet          = "need the internet, which is off during the run",
           dependency_unavailable  = "could not be run because a required dependency is unavailable",
           skipped_time_limit      = "could not be started because the time for all scripts together had run out"
         )

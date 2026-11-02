@@ -135,6 +135,22 @@ repro_docker_available <- function() {
                "error during connect|dockerDesktopLinuxEngine"), txt %||% "", ignore.case = TRUE)
 }
 
+# Where packages live that are on neither CRAN nor Bioconductor (#568, item 12): a
+# GitHub owner/repository, or the address of a repository of packages.
+.repro_known_package_places <- function() {
+  c(INLA = "https://inla.r-inla-download.org/R/stable",
+    NicheMapR = "mrke/NicheMapR", glmmADMB = "bbolker/glmmadmb", rethinking = "rmcelreath/rethinking",
+    cmdstanr = "stan-dev/cmdstanr", TwGeos = "SLisovski/TwGeos", GeoLocTools = "SLisovski/GeoLocTools",
+    SGAT = "SWotherspoon/SGAT", microclima = "ilyamaclean/microclima", V.PhyloMaker = "jinyizju/V.PhyloMaker",
+    metabaR = "metabaRfactory/metabaR", calecopal = "an-bui/calecopal", easyGgplot2 = "kassambara/easyGgplot2",
+    ggthemr = "Mikata-Project/ggthemr", BuenColors = "caleblareau/BuenColors", coefplot2 = "palday/coefplot2",
+    tess3r = "bcm-uga/TESS3_encho_sen", PAMLr = "KiranLDA/PAMLr", rcoalescence = "thompsonsed/rcoalescence",
+    datamodelr = "bergant/datamodelr", biomonitoR = "alexology/biomonitoR", scampr = "ElliotDovers/scampr",
+    mapppdr = "CCheCastaldo/mapppdr", riojaPlot = "nsj3/riojaPlot", PCAviz = "NovembreLab/PCAviz",
+    methClust = "kkdey/methClust", remake = "richfitz/remake", ascr = "b-steve/ascr",
+    dentist = "phylotastic/dentist", Hmsc = "hmsc-r/HMSC", HMSC = "hmsc-r/HMSC")
+}
+
 #' The part of the install script for packages that are not on CRAN
 #'
 #' A second pass after every package has had its turn, since one time limit
@@ -170,16 +186,41 @@ repro_docker_available <- function() {
     r"(  remotes::install_url(paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/", tarball), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE))",
     r"(  "archive")",
     r"(})",
+    # Packages only elsewhere (#568, item 12): a table of known places, then
+    # R-universe's search for that exact name. A GitHub tarball needs no token.
+    paste0("known_places <- ", deparse1(.repro_known_package_places())),
+    r"(in_known_place <- function(pkg) {)",
+    r"(  place <- unname(known_places[pkg]))",
+    r"(  if (!is.na(place) && startsWith(place, "https://")) {)",
+    r"(    install.packages(pkg, lib = lib, repos = c(place, getOption("repos")), quiet = TRUE))",
+    r"(    return(place))",
+    r"(  })",
+    r"(  if (!is.na(place)) {)",
+    r"(    if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
+    r"(    remotes::install_url(paste0("https://github.com/", place, "/archive/HEAD.tar.gz"), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE))",
+    r"(    return(paste0("github.com/", place)))",
+    r"(  })",
+    r"(  found <- tryCatch(jsonlite::fromJSON(paste0("https://r-universe.dev/api/search?q=", pkg, "&limit=20"))$results, error = function(e) NULL))",
+    r"(  if (is.null(found) || !NROW(found)) return(NA_character_))",
+    r"(  who <- found[["_user"]][found$Package == pkg])",
+    r"(  if (!length(who)) return(NA_character_))",
+    r"(  repo <- paste0("https://", who[1], ".r-universe.dev"))",
+    r"(  install.packages(pkg, lib = lib, repos = c(repo, getOption("repos")), quiet = TRUE))",
+    r"(  repo)",
+    r"(})",
     r"(for (round in 1:2) for (i in retry_rows()) {)",
     r"(  pkg <- pkgs[i])",
     r"(  writeLines(as.character(i), "/sandbox/.install_status"))",
     r"(  from <- tryCatch(in_elsewhere(pkg), error = function(e) conditionMessage(e)))",
-    r"(  if (file.exists(file.path(lib, pkg, "DESCRIPTION")) && requireNamespace(pkg, quietly = TRUE, lib.loc = lib)) {)",
+    r"(  usable <- function() file.exists(file.path(lib, pkg, "DESCRIPTION")) && requireNamespace(pkg, quietly = TRUE, lib.loc = lib))",
+    r"(  if (!usable()) from <- tryCatch(in_known_place(pkg), error = function(e) conditionMessage(e)))",
+    r"(  if (usable()) {)",
     r"(    out[[i]]$installed <- TRUE)",
     r"(    out[[i]]$message <- "")",
     r"(    out[[i]]$version_installed <- have_version(pkg))",
     r"(    out[[i]]$via_archive <- identical(from, "archive"))",
     r"(    if (identical(from, "bioc")) out[[i]]$source <- "bioc")",
+    r"(    if (!from %in% c("bioc", "archive")) { out[[i]]$source <- "elsewhere"; out[[i]]$version_note <- paste0("installed from ", from) })",
     r"(  })",
     r"(  saveRDS(do.call(rbind, out), "/sandbox/.install_results.rds"))",
     r"(})"

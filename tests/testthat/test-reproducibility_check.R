@@ -2628,6 +2628,44 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_failure_reason names why a script did not run through (#568)", {
+  r <- .repro_failure_reason
+  expect_equal(r("errored", "cannot open file 'a.csv'"), "file")
+  expect_equal(r("errored", "there is no package called 'x'"), "package")
+  expect_equal(r("errored", "object 'x' not found"), "undefined")
+  expect_equal(r("errored", "cannot cache function 'f'"), "environment")
+  expect_equal(r("errored", " "), "no_message")
+  expect_equal(r("errored", "list index out of range"), "other")
+  expect_equal(r(c("python2", "needs_a_person", "needs_internet", "timed_out"), ""), c("syntax", "interactive", "internet", "time"))
+  # what is not a failure of the script has none
+  expect_true(all(is.na(r(c("ran_ok", "run_by_source", "defines_functions", "not_analysis", "jags_model", "docker_failed"), "x"))))
+})
+
+test_that(".repro_needs_internet_error reads a network error (#568)", {
+  expect_true(.repro_needs_internet_error("cannot open URL 'https://a'"))
+  expect_true(.repro_needs_internet_error("requests.exceptions.ConnectionError: x"))
+  expect_false(.repro_needs_internet_error("cannot open file 'a.csv'"))
+})
+
+test_that(".repro_absent_report puts scripts apart from data, and leaves out what has a near match (#568)", {
+  mi <- data.frame(basename = c("a.csv", "helpers.r", "b.csv", "c.csv"), status = c("absent", "absent", "absent", "in_archive"),
+                   detail = "", similar_to = c(NA, NA, "b_.csv", NA))
+  out <- paste(.repro_absent_report(mi), collapse = "\n")
+  expect_match(out, "1 data file that is not in the deposit", fixed = TRUE)
+  expect_match(out, "`a.csv`", fixed = TRUE)
+  expect_match(out, "1 script that is not in the deposit: `helpers.r`", fixed = TRUE)
+  expect_no_match(out, "b.csv", fixed = TRUE)
+  expect_no_match(out, "c.csv", fixed = TRUE)
+  expect_null(.repro_absent_report(mi[3:4, ]))
+})
+
+test_that("the Docker install script knows where packages only elsewhere are (#568)", {
+  lines <- .repro_docker_elsewhere_lines()
+  expect_no_error(parse(text = lines))
+  expect_true(any(grepl("rmcelreath/rethinking", lines, fixed = TRUE)))
+  expect_true(any(grepl("r-universe.dev/api/search", lines, fixed = TRUE)))
+})
+
 test_that(".repro_run_after_lines loads a script from its own folder (#568)", {
   root <- withr::local_tempdir()
   run_tbl <- data.frame(file_name = c("use.R", "def.R", "top.R"),
