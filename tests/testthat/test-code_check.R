@@ -825,6 +825,139 @@ test_that("code_library_names R", {
   expect_equal(names(obs), c("package", "source", "line"))
 })
 
+test_that("code_library_names reads the packages of groundhog.library()", {
+  # c("a", "b") was read as library(c), and a variable as a package with the
+  # variable's name, so packages called "c" and "pkgs" were installed.
+  pkgs_of <- function(code) unique(code_library_names(code, "R")$package)
+
+  expect_equal(pkgs_of('groundhog.library("dplyr", "2023-01-01")'), "dplyr")
+  expect_equal(pkgs_of('groundhog.library(dplyr, "2023-01-01")'), "dplyr")
+  expect_equal(pkgs_of('groundhog.library(pkg = "dplyr", date = "2023-01-01")'), "dplyr")
+  expect_setequal(pkgs_of('groundhog.library(c("dplyr", "lme4"), "2023-01-01")'),
+                  c("dplyr", "lme4"))
+  expect_setequal(pkgs_of(c('groundhog.library(c("dplyr",', '  "lme4"), "2023-01-01")')),
+                  c("dplyr", "lme4"))
+  expect_setequal(pkgs_of(c('pkgs <- c("dplyr", "lme4")', 'groundhog.library(pkgs, day)')),
+                  c("dplyr", "lme4"))
+  expect_equal(pkgs_of('groundhog.library("crsh/papaja", "2023-01-01")'), "papaja")
+  expect_equal(pkgs_of('groundhog.library("crsh/papaja@v1", "2023-01-01")'), "papaja")
+  # github:: names the source here, not a package called github
+  expect_equal(pkgs_of("groundhog.library('github::crsh/papaja', '2023-01-01')"), "papaja")
+  expect_equal(pkgs_of("x <- stats::sd(y)/2"), "stats")
+  # a piece of code as the argument
+  expect_setequal(pkgs_of(c('groundhog.library("', '  library(dplyr)', '  library(lme4)',
+                            '", "2023-01-01")')), c("dplyr", "lme4"))
+  expect_setequal(pkgs_of('groundhog.library("library(dplyr); library(lme4)", "2023-01-01")'),
+                  c("dplyr", "lme4"))
+  expect_length(pkgs_of('# groundhog.library("dplyr", "2023-01-01")'), 0)
+
+  # the line of a call over several lines, and how it was found
+  obs <- code_library_names(c("x <- 1", 'groundhog.library(c("dplyr",', '  "lme4"), d)'), "R")
+  expect_equal(obs$source, c("groundhog", "groundhog"))
+  expect_equal(obs$line, c(2L, 2L))
+
+  # another function whose name ends in library or require is not library()
+  expect_equal(pkgs_of(c("my.library(x)", "my.require(y)", "library(z)")), "z")
+})
+
+test_that(".code_pin_dates finds the date in the call or in a variable", {
+  dates <- function(code) {
+    d <- .code_pin_dates(code)
+    paste(d$mechanism, d$date)
+  }
+  gh <- function(date) paste("groundhog", date)
+  cp <- function(date) paste("checkpoint", date)
+
+  expect_equal(dates('groundhog.library("dplyr", "2023-01-01")'), gh("2023-01-01"))
+  expect_equal(dates('groundhog::groundhog.library("dplyr", "2023-01-01")'), gh("2023-01-01"))
+  expect_equal(dates('groundhog.library(c("dplyr", "lme4"), "2023-01-01")'), gh("2023-01-01"))
+  expect_equal(dates(c('groundhog.library("', 'library(a)', '", "2023-01-01")')), gh("2023-01-01"))
+  expect_equal(dates(c('day <- "2023-01-01"', 'groundhog.library("dplyr", day)')), gh("2023-01-01"))
+  expect_equal(dates(c('pkgs <- "a"', 'day = "2023-01-01"', 'groundhog.library(pkgs, day)')),
+               gh("2023-01-01"))
+  expect_equal(dates(c('d <- "2023-01-01"', 'groundhog.library(date = d, pkg = "a")')),
+               gh("2023-01-01"))
+  expect_setequal(dates(c('groundhog.library("a", "2023-01-01")', 'groundhog.library("b", "2023-02-02")')),
+                  gh(c("2023-01-01", "2023-02-02")))
+
+  expect_equal(dates('checkpoint("2022-01-01")'), cp("2022-01-01"))
+  expect_equal(dates('checkpoint::checkpoint("2022-01-01", r_version = "4.0.0")'), cp("2022-01-01"))
+  expect_equal(dates('checkpoint(snapshot_date = "2022-01-01")'), cp("2022-01-01"))
+  expect_equal(dates('checkpoint(snapshotDate = "2022-01-01")'), cp("2022-01-01"))
+  expect_equal(dates(c('s <- "2022-01-01"', 'create_checkpoint(s)')), cp("2022-01-01"))
+  expect_equal(dates('use_checkpoint("2022-01-01")'), cp("2022-01-01"))
+
+  # no date
+  expect_length(dates('# groundhog.library("dplyr", "2023-01-01")'), 0)
+  expect_length(dates('groundhog.library("dplyr", "2023-13-45")'), 0)
+  expect_length(dates('groundhog.library("dplyr", day)'), 0)
+  expect_length(dates('groundhog.library("dplyr", as.character(Sys.Date()))'), 0)
+  expect_length(dates(c("library(groundhog)", "library(checkpoint)")), 0)
+  expect_length(dates(NULL), 0)
+
+  # a line that is not valid UTF-8 does not stop the search
+  expect_equal(dates(c('x <- "caf\xe9"', 'groundhog.library("a", "2023-01-01")')), gh("2023-01-01"))
+})
+
+test_that(".code_session_packages reads a sessionInfo() record", {
+  obs <- .code_session_packages(c(
+    "R version 3.6.1 (2019-07-05)", "", "attached base packages:",
+    "[1] stats     graphics  grDevices", "", "other attached packages:",
+    " [1] lme4_1.1-21     Matrix_1.2-17", " [3] ggplot2_3.2.1  ", "",
+    "loaded via a namespace (and not attached):",
+    " [1] Rcpp_1.0.2  compiler_3.6.1 nlme_3.1-140", " [4] data.table_1.12.8"))
+  expect_equal(obs$package, c("lme4", "Matrix", "ggplot2", "Rcpp", "nlme", "data.table"))
+  expect_equal(obs$version, c("1.1-21", "1.2-17", "3.2.1", "1.0.2", "3.1-140", "1.12.8"))
+  expect_true(all(is.na(obs$source)))
+  expect_true(all(is.na(obs$remote)))
+
+  # as a knitted document or a Markdown quote shows it
+  for (prefix in c("## ", "> ")) {
+    obs <- .code_session_packages(paste0(prefix, c("other attached packages:", "[1] lme4_1.1-21")))
+    expect_equal(obs$package, "lme4")
+  }
+
+  # this R session's own record, not one typed here
+  obs <- .code_session_packages(utils::capture.output(print(utils::sessionInfo())))
+  expect_true("metacheck" %in% obs$package)
+  expect_false("stats" %in% obs$package)
+})
+
+test_that(".code_session_packages reads a session_info() table", {
+  obs <- .code_session_packages(c(
+    "- Packages ----", " ! package    * version  date (UTC) lib source",
+    "   assertthat   0.2.1    2019-03-21 [1] CRAN (R 4.3.0)",
+    "   dplyr      * 1.1.3    2023-09-03 [1] CRAN (R 4.3.1)",
+    " P papaja     * 0.1.2    2023-10-11 [1] Github (crsh/papaja@c0a7bb8)",
+    " V limma        3.56.2   2023-06-04 [1] Bioconductor",
+    "   mypkg        0.0.1    2023-06-04 [1] local",
+    "   R6           2.5.1    2021-08-19 [2] RSPM (R 4.3.0)",
+    "   stats      * 4.3.1    2023-06-16 [2] local", "",
+    " [1] C:/some/lib"))
+  expect_equal(obs$package, c("assertthat", "dplyr", "papaja", "limma", "mypkg", "R6"))
+  expect_equal(obs$version, c("0.2.1", "1.1.3", "0.1.2", "3.56.2", "0.0.1", "2.5.1"))
+  expect_equal(obs$source, c("Repository", "Repository", "GitHub", "Bioconductor", "Local", "Repository"))
+  expect_equal(obs$remote[3], "crsh/papaja@c0a7bb8")
+  expect_true(all(is.na(obs$remote[-3])))
+
+  # the older form, with no library column
+  obs <- .code_session_packages(c(
+    " package * version date       source", " MASS      7.3-51  2019-03-31 CRAN (R 3.6.0)",
+    " tidyr   * 1.0.0   2019-09-11 Github (tidyverse/tidyr@abc123)"))
+  expect_equal(obs$package, c("MASS", "tidyr"))
+  expect_equal(obs$source, c("Repository", "GitHub"))
+  expect_equal(obs$remote[2], "tidyverse/tidyr@abc123")
+})
+
+test_that(".code_session_packages finds nothing in other text", {
+  expect_equal(nrow(.code_session_packages(c(
+    "We used R version 4.3.1 and the package lme4_1.1 for this.", "package version date"))), 0)
+  expect_equal(nrow(.code_session_packages(character(0))), 0)
+  # a line that is not valid UTF-8 does not stop the search
+  expect_equal(.code_session_packages(c("caf\xe9", "other attached packages:", "[1] lme4_1.1-21"))$package,
+               "lme4")
+})
+
 test_that("code_library_names does not report a package-list variable as a package", {
   # Issue #421: a paper's own install boilerplate loads its packages through a
   # variable, and the variable's name ("req.lib", "list.packages", "x", ...)

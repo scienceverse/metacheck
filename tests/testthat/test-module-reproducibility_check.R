@@ -384,6 +384,140 @@ test_that("execute = TRUE + install_missing installs a real CRAN dependency", {
 })
 
 
+# Recorded package versions ----
+
+# A folder with one script and an renv.lock that lists the given packages.
+recorded_folder <- function(code, lock, env = parent.frame()) {
+  d <- withr::local_tempdir(.local_envir = env)
+  writeLines(code, file.path(d, "analysis.R"))
+  pkgs <- lapply(names(lock), function(p)
+    list(Package = p, Version = lock[[p]], Source = "Repository", Repository = "CRAN"))
+  names(pkgs) <- names(lock)
+  jsonlite::write_json(list(R = list(Version = "4.3.1"), Packages = pkgs),
+                       file.path(d, "renv.lock"), auto_unbox = TRUE)
+  d
+}
+
+test_that("a recorded version is installed with recorded_versions = TRUE, with a warning", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  skip_if_offline()
+  withr::local_options(repos = c(CRAN = "https://cloud.r-project.org"))
+  d <- recorded_folder(
+    c("library(R6)", 'cat("VERSION", as.character(packageVersion("R6")), "\\n")'),
+    list(R6 = "2.4.0", notloaded = "1.0"))
+  expect_warning(
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE,
+                                      recorded_versions = TRUE)),
+    "The R version is not changed", fixed = TRUE)
+  expect_equal(mo$run_results$outcome, "ran_ok")
+  expect_match(mo$run_results$stdout, "VERSION 2.4.0", fixed = TRUE)
+  # only the loaded package
+  expect_equal(mo$install_results$package, "R6")
+  expect_equal(mo$install_results$version_installed, "2.4.0")
+  expect_equal(mo$recorded_versions$deps$recorded_from, "renv.lock")
+  report_txt <- paste(unlist(mo$report), collapse = "\n")
+  expect_match(report_txt, "Recorded package versions", fixed = TRUE)
+  expect_match(report_txt, "The R version is not changed", fixed = TRUE)
+  expect_no_match(report_txt, "Running against current package versions", fixed = TRUE)
+  expect_match(mo$summary_text, "did not change the R version", fixed = TRUE)
+  expect_match(paste(mo$checklist_section, collapse = "\n"), "did not change the R version", fixed = TRUE)
+})
+
+test_that("recorded versions give way to an explicit setting", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- recorded_folder("x <- 1", list(R6 = "2.4.0"))
+  writeLines(c("library(R6)", "x <- 1"), file.path(d, "analysis.R"))
+  called <- 0L
+  local_mocked_bindings(repro_install_deps = function(...) {
+    called <<- called + 1L
+    data.frame(package = character(0), installed = logical(0))
+  })
+  run <- function(...) suppressWarnings(suppressMessages(module_run(
+    test_paper(), "reproducibility_check", local_path = d, execute = TRUE, ...)))
+  expect_null(run(recorded_versions = TRUE, install_missing = FALSE)$recorded_versions)
+  expect_null(run(recorded_versions = FALSE)$recorded_versions)
+  # the default
+  expect_null(run()$recorded_versions)
+  expect_equal(called, 0L)
+})
+
+test_that("a failed run recommends recorded versions when the repository records them", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  advice <- "We recommend retrying the reproducibility check with `recorded_versions = TRUE`."
+  server <- "this setting is not implemented on this shared server"
+  run <- function(d, ...) suppressWarnings(suppressMessages(module_run(
+    test_paper(), "reproducibility_check", local_path = d, execute = TRUE, ...)))
+  text <- function(mo) paste(unlist(mo$report), collapse = "\n")
+
+  d <- recorded_folder(c("library(R6)", 'stop("this script fails")'), list(R6 = "2.4.0"))
+  mo <- run(d)
+  expect_match(text(mo), advice, fixed = TRUE)
+  expect_match(mo$summary_text, advice, fixed = TRUE)
+  expect_match(paste(mo$checklist_section, collapse = "\n"), advice, fixed = TRUE)
+  expect_no_match(text(mo), server, fixed = TRUE)
+
+  # on a shared server it says the setting is not available
+  withr::with_options(list(metacheck.keys.shared = TRUE), {
+    mo <- run(d)
+    expect_match(text(mo), server, fixed = TRUE)
+    expect_match(mo$summary_text, server, fixed = TRUE)
+    expect_match(paste(mo$checklist_section, collapse = "\n"), server, fixed = TRUE)
+  })
+
+  # it cannot work with nothing installed
+  expect_no_match(text(run(d, install_missing = FALSE)), advice, fixed = TRUE)
+
+  # no failure
+  ok <- recorded_folder(c("library(R6)", "x <- 1"), list(R6 = "2.4.0"))
+  expect_no_match(text(run(ok)), advice, fixed = TRUE)
+
+  # no record
+  none <- withr::local_tempdir()
+  writeLines(c("library(R6)", 'stop("this script fails")'), file.path(none, "analysis.R"))
+  expect_no_match(text(run(none)), advice, fixed = TRUE)
+})
+
+test_that("without a record of versions nothing is installed by default", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+  called <- 0L
+  local_mocked_bindings(repro_install_deps = function(...) { called <<- called + 1L; NULL })
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  expect_equal(called, 0L)
+  expect_null(mo$recorded_versions)
+  expect_match(paste(mo$checklist_section, collapse = "\n"), "We did not install packages", fixed = TRUE)
+})
+
+test_that("a run without execute says what a run would install, and installs nothing", {
+  d <- recorded_folder("library(R6)", list(R6 = "2.4.0"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                    recorded_versions = TRUE))
+  expect_match(paste(unlist(mo$report), collapse = "\n"), "would install 1 package", fixed = TRUE)
+  expect_null(mo$recorded_versions)
+})
+
+test_that("a script's groundhog and renv calls are replaced when recorded versions are used", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  skip_if_offline()
+  withr::local_options(repos = c(CRAN = "https://cloud.r-project.org"))
+  d <- recorded_folder(
+    c("library(groundhog)", 'groundhog.library("R6", "2020-01-01")', "renv::restore()",
+      'cat("VERSION", as.character(packageVersion("R6")), "\\n")'),
+    list(R6 = "2.4.0"))
+  mo <- suppressWarnings(suppressMessages(
+    module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE, recorded_versions = TRUE)))
+  expect_equal(mo$run_results$outcome, "ran_ok")
+  expect_match(mo$run_results$stdout, "VERSION 2.4.0", fixed = TRUE)
+  expect_true("env_call_replaced" %in% mo$modifications$change_type)
+  expect_match(paste(unlist(mo$report), collapse = "\n"), "3 calls to these packages were replaced", fixed = TRUE)
+})
+
 # execute = TRUE, sandbox = "docker", workers > 1 (concurrent multi-paper) ----
 # Real end-to-end: real Docker containers, real callr background processes,
 # skipped whenever Docker/callr are unavailable (CI without Docker, quick

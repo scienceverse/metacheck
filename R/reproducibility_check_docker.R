@@ -112,12 +112,17 @@ repro_docker_available <- function() {
 # containers cannot collectively exceed the host. A single-paper,
 # sequential call (workers = 1, the default, or reproducibility_check()
 # called directly rather than through the batch path) never sets this option,
-# so it returns character(0) here -- exactly the previous behaviour
-# (unlimited container), unchanged for every existing caller.
+# so there is no limit on the processors or memory of the container.
+#
+# `--ulimit core=1` is always there: when R crashes in a container on Windows,
+# WSL writes a file of about 2.5 GB to the user's temp folder. Ten crashing
+# scripts filled a disk. A limit of 0 does not stop WSL (confirmed directly);
+# the kernel only leaves out the file for a limit of 1.
 .repro_docker_resource_args <- function() {
+  no_crash_file <- c("--ulimit", "core=1")
   limits <- getOption("metacheck.docker_resource_limits")
-  if (is.null(limits)) return(character(0))
-  c("--cpus", as.character(limits$cpus),
+  if (is.null(limits)) return(no_crash_file)
+  c(no_crash_file, "--cpus", as.character(limits$cpus),
     "--memory", paste0(limits$memory_gb, "g"))
 }
 
@@ -149,8 +154,8 @@ repro_docker_available <- function() {
 #' for the Dockerfile/package list/build instructions -- that repo also
 #' publishes a smaller `metacheck_r_small` variant, ~390 packages, seen in
 #' at least 3 corpus files, also with JAGS/a JDK but without the geospatial
-#' stack), so a run against it skips most of the install phase entirely
-#' instead of reinstalling every dependency from scratch. This is the
+#' stack), so a run against it needs no install for most papers. (With
+#' `install_missing = TRUE` every declared package is still installed.) This is the
 #' DEFAULT image (see `.repro_docker_image_for()`'s `use_declared_version`
 #' argument) -- pinned to whatever R version it was built against, NOT the
 #' paper's own declared version, which is the tradeoff
@@ -249,17 +254,23 @@ repro_docker_available <- function() {
 #'   `message` (error text on failure, else ""), `via_archive` (always FALSE
 #'   — the CRAN Archive retry [repro_install_deps()] does is not duplicated
 #'   here; a package unavailable on live CRAN is simply recorded as failed),
-#'   and `category` (see [.repro_classify_install_message()]; `NA` for a
-#'   successful install) — same columns as [repro_install_deps()] so callers
-#'   do not need to branch on which backend ran.
+#'   `category` (see [.repro_classify_install_message()]; `NA` for a
+#'   successful install), `version_recorded`, `version_installed` and
+#'   `version_note` — same columns as [repro_install_deps()] so callers
+#'   do not need to branch on which backend ran. A row with a `version` is
+#'   treated as there (see [repro_install_deps()]).
 #' @export
 repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-ver:latest",
                                       timeout = 600) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
-                      via_archive = logical(0), category = character(0))
+                      via_archive = logical(0), category = character(0),
+                      version_recorded = character(0),
+                      version_installed = character(0),
+                      version_note = character(0))
   if (is.null(install_deps) || nrow(install_deps) == 0) return(empty)
   dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
+  versions <- install_deps$version %||% rep(NA_character_, nrow(install_deps))
 
   # One install SCRIPT per call (not one docker run per package): a single
   # container start pays Docker's own startup overhead once for the whole
@@ -285,20 +296,60 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     'lib <- "/rlib"',
     'dir.create(lib, recursive = TRUE, showWarnings = FALSE)',
     '.libPaths(c(lib, .libPaths()))',
-    'repos <- getOption("repos")',
-    'if (is.null(repos) || !length(repos) || any(!nzchar(repos)) || any(repos == "@CRAN@"))',
-    '  options(repos = c(CRAN = "https://cloud.r-project.org"))',
-    'gh_avail <- requireNamespace("remotes", quietly = TRUE)',
+    .repro_repos_lines(),
     'pkgs   <- .repro_docker_pkgs',
     'srcs   <- .repro_docker_srcs',
     'refs   <- .repro_docker_refs',
+    'vers   <- .repro_docker_vers',
+    # A bare rocker/r-ver image does not have remotes, and without it no
+    # recorded version and no GitHub package can be installed.
+    'gh_avail <- requireNamespace("remotes", quietly = TRUE)',
+    'if (!gh_avail && (any(!is.na(vers)) || any(srcs == "github"))) {',
+    '  try(install.packages("remotes", lib = lib, quiet = TRUE))',
+    '  gh_avail <- requireNamespace("remotes", quietly = TRUE)',
+    '}',
+    # The same rules as .repro_installed_version() and .repro_same_version()
+    # (R/reproducibility_check.R), inlined because this script runs without
+    # this package.
+    'have_version <- function(pkg) {',
+    '  v <- suppressWarnings(tryCatch(utils::packageDescription(pkg, lib.loc = .libPaths(), fields = "Version"),',
+    '                                 error = function(e) NA_character_))',
+    '  if (length(v) != 1 || is.na(v)) NA_character_ else as.character(v)',
+    '}',
+    'same_version <- function(a, b) {',
+    '  if (is.na(a) || is.na(b)) return(FALSE)',
+    '  isTRUE(tryCatch(package_version(a) == package_version(b), error = function(e) FALSE))',
+    '}',
+    # The same rule as .repro_load_error() (R/reproducibility_check.R): a bare
+    # image often lacks a system library, which only this message tells.
+    'load_error <- function(pkg) {',
+    '  msg <- tryCatch({ loadNamespace(pkg); "" }, error = function(e) conditionMessage(e))',
+    '  substr(gsub("[[:space:]]+", " ", msg), 1, 300)',
+    '}',
     'out <- list()',
     'for (i in seq_along(pkgs)) {',
-    '  pkg <- pkgs[i]; src <- srcs[i]; ref <- refs[i]',
+    '  pkg <- pkgs[i]; src <- srcs[i]; ref <- refs[i]; ver <- vers[i]',
+    # Read by the host while this runs, for the progress display.
+    '  writeLines(as.character(i), "/sandbox/.install_status")',
     '  warns <- character(0)',
+    '  note <- ""',
+    '  version_done <- same_version(have_version(pkg), ver)',
+    '  if (!version_done && !is.na(ver) && identical(src, "bioc")) {',
+    '    note <- "Bioconductor versions follow the R version, so the current version was installed"',
+    '  } else if (!version_done && !is.na(ver) && identical(src, "cran")) {',
+    '    if (gh_avail) {',
+    '      version_done <- tryCatch({',
+    '        remotes::install_version(pkg, version = ver, lib = lib, upgrade = "never",',
+    '                                 dependencies = NA, force = TRUE, quiet = FALSE)',
+    '        same_version(have_version(pkg), ver)',
+    '      }, error = function(e) { note <<- conditionMessage(e); FALSE })',
+    '      if (!version_done && !nzchar(note)) note <- paste0("the recorded version could not be installed on R ", getRversion())',
+    '    } else note <- "the remotes package is not available in this image"',
+    '  }',
     '  res <- tryCatch({',
     '    withCallingHandlers({',
-    '    if (identical(src, "github")) {',
+    '    if (version_done) {',
+    '    } else if (identical(src, "github")) {',
     '      if (!gh_avail) stop("the remotes package is not available in this image")',
     '      remotes::install_github(ref, lib = lib, upgrade = "never", quiet = FALSE)',
     '    } else if (identical(src, "url")) {',
@@ -315,14 +366,27 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     # inlined because this script runs without this package: a package
     # install.packages() could not find only produces a "not available"
     # warning, which is the real reason (issue #421).
-    '    if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib)) {',
-    '      na <- unique(grep("is not available", warns, value = TRUE, fixed = TRUE))',
+    # A recorded version already in the image is not in lib. Being in lib is
+    # checked as well, since the load check also passes for a namespace an
+    # earlier package loaded, and a failed install_github() does not stop. A
+    # package that is gone from CRAN may still be in the image.
+    '    in_lib <- file.exists(file.path(lib, pkg, "DESCRIPTION"))',
+    '    in_image <- !in_lib && identical(src, "cran") && is.na(ver) && !is.na(have_version(pkg))',
+    '    if (!(version_done || in_lib || in_image) ||',
+    '        !requireNamespace(pkg, quietly = TRUE, lib.loc = if (in_lib && !version_done) lib else .libPaths())) {',
+    '      na <- unique(grep("is not available|non-zero exit status", warns, value = TRUE))',
     '      stop(if (length(na) > 0) paste(na, collapse = "; ")',
-    '           else "installed but package is not loadable")',
+    '           else if (!(version_done || in_lib)) "the install did not put the package in the library"',
+    '           else paste0("installed but package is not loadable: ", load_error(pkg)))',
     '    }',
     '    list(ok = TRUE, msg = "")',
     '  }, error = function(e) list(ok = FALSE, msg = conditionMessage(e)))',
-    '  out[[i]] <- data.frame(package = pkg, source = src, installed = res$ok, message = res$msg)',
+    '  v <- have_version(pkg)',
+    '  if (res$ok && !is.na(ver) && !same_version(v, ver) && !nzchar(note))',
+    '    note <- "the source gave another version than the recorded one"',
+    # stringsAsFactors: the default is TRUE before R 4.0, and the image may be that old
+    '  out[[i]] <- data.frame(package = pkg, source = src, installed = res$ok, message = res$msg,',
+    '                         version_installed = v, version_note = note, stringsAsFactors = FALSE)',
     '  saveRDS(do.call(rbind, out), "/sandbox/.install_results.rds")',
     '}'
   )
@@ -356,7 +420,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   header <- c(
     paste0(".repro_docker_pkgs <- ", deparse1(install_deps$package)),
     paste0(".repro_docker_srcs <- ", deparse1(install_deps$source)),
-    paste0(".repro_docker_refs <- ", deparse1(install_deps$ref))
+    paste0(".repro_docker_refs <- ", deparse1(install_deps$ref)),
+    paste0(".repro_docker_vers <- ", deparse1(as.character(versions)))
   )
   script_path <- file.path(sandbox_dir, "install.R")
   # No BOM: writeLines()/UTF-8 without a BOM is R's own default, but Docker
@@ -387,21 +452,18 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 
   out_file <- tempfile(fileext = ".out")
   res <- tryCatch(
-    processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
-                  stdout = out_file, stderr = out_file),
+    .repro_docker_run_install("docker", args, timeout, out_file,
+                              file.path(sandbox_dir, ".install_status"), install_deps, versions),
     error = function(e) NULL)
 
-  # processx::run(timeout = ...) only kills the HOST-SIDE `docker run` CLI
-  # process; it does not stop the container that CLI started (confirmed
-  # directly: a container survives its own `docker run` wrapper being
-  # killed on timeout, still consuming CPU indefinitely afterwards -- see
-  # GitHub issue #417). `--name` above makes the container reachable by name
-  # regardless of whether processx reports the timeout as a normal return
-  # ($timeout == TRUE) or, less commonly, as a thrown condition -- either
-  # way, `res` will not reflect a clean exit, so any non-clean outcome here
-  # gets a stop attempt; a container that already exited on its own before
-  # this runs is simply a harmless no-op (.repro_docker_stop() swallows the
-  # "no such container" error).
+  # Stopping the `docker run` CLI at the timeout does not stop the container
+  # that CLI started (confirmed directly: a container survives its own
+  # `docker run` wrapper being killed on timeout, still consuming CPU
+  # indefinitely afterwards -- see GitHub issue #417). `--name` above makes the
+  # container reachable by name, so any non-clean outcome here gets a stop
+  # attempt; a container that already exited on its own before this runs is
+  # simply a harmless no-op (.repro_docker_stop() swallows the "no such
+  # container" error).
   if (is.null(res) || isTRUE(res$timeout)) .repro_docker_stop(container_name)
 
   # A results file with FEWER rows than install_deps is a real, expected
@@ -420,7 +482,7 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   msg <- if (!is.null(res)) {
     txt <- tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
                     error = function(e) "")
-    if (isTRUE(res$timeout)) paste0("docker install timed out after ", timeout, "s")
+    if (isTRUE(res$timeout)) paste0("docker install timed out after ", round(timeout), "s")
     else paste0("docker install failed (status ", res$status, "): ", txt)
   } else "docker run could not be started"
   unlink(out_file)
@@ -433,6 +495,10 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   } else NULL
 
   out <- dplyr::bind_rows(tbl, padding)
+  out$version_recorded <- as.character(versions)[match(out$package, install_deps$package)]
+  if (!"version_installed" %in% names(out)) out$version_installed <- NA_character_
+  if (!"version_note" %in% names(out)) out$version_note <- ""
+  out$version_note[is.na(out$version_note)] <- ""
   out$via_archive <- FALSE   # the CRAN Archive retry repro_install_deps() does is not duplicated here
   # Classified on the HOST, not inside the container script: the container has
   # no access to this package's own R functions (it runs install.R as a
@@ -443,6 +509,36 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
                          vapply(out$message, .repro_classify_install_message,
                                 character(1)))
   out
+}
+
+# Run the install container and show what it is doing. The container writes the
+# number of the package it has started to `status_file`, on a mounted folder;
+# this reads it every second, and shows the package, the count and the time so far
+# (see .repro_install_what()). Returns a list `status`, `timeout`. A `docker run`
+# in the foreground showed nothing until the whole install had ended.
+.repro_docker_run_install <- function(command, args, timeout, out_file, status_file,
+                                      install_deps, versions) {
+  n <- nrow(install_deps)
+  bar <- pb(NA, "(:spin) :what")
+  on.exit(bar$terminate(), add = TRUE)
+  started <- Sys.time()
+  p <- processx::process$new(command, args, stdout = out_file, stderr = "2>&1")
+  on.exit(if (p$is_alive()) p$kill(), add = TRUE)
+  current <- 0L
+  repeat {
+    p$wait(1000)
+    i <- suppressWarnings(tryCatch(as.integer(readLines(status_file, n = 1, warn = FALSE)),
+                                   error = function(e) NA_integer_))
+    if (length(i) == 1 && !is.na(i) && i >= 1L && i <= n) {
+      what <- .repro_install_what(i, n, install_deps$package[i], versions[i], started)
+      if (i != current) message("[repro/docker]   ", what)
+      bar$tick(max(0L, i - current), list(what = what))
+      current <- i
+    }
+    if (!p$is_alive()) return(list(status = p$get_exit_status(), timeout = FALSE))
+    if (as.numeric(difftime(Sys.time(), started, units = "secs")) >= timeout)
+      return(list(status = NA_integer_, timeout = TRUE))
+  }
 }
 
 # Render .r_capture_runner()/.r_capture_helpers()'s logic (R/r-capture.R) as
@@ -529,11 +625,13 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
   pb_run <- pb(length(ordered_names), ":what [:bar] :current/:total")
   pb_run$tick(0, list(what = ""))
   on.exit(pb_run$terminate())
+  run_started <- Sys.time()
 
   capture_preamble <- .repro_docker_capture_preamble()
 
   rows <- lapply(ordered_names, function(fn) {
-    pb_run$tick(1, list(what = fn))
+    pb_run$tick(1, list(what = sprintf("Running %s (%s so far)", fn, .repro_duration(
+      as.numeric(difftime(Sys.time(), run_started, units = "secs"))))))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
 
     no_lines <- function(df) dplyr::mutate(df, script_lines = list(character(0)),
@@ -723,7 +821,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     }
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
-                        error = paste0("timed out after ", timeout, "s"),
+                        error = paste0("timed out after ", round(timeout), "s"),
                         error_type = "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))

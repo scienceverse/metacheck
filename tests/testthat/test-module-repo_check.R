@@ -147,7 +147,10 @@ test_that("ResearchBox", {
   module <- "repo_check"
   paper <- test_paper()
   paper$url <- data.frame(href = "https://researchbox.org/4377", text_id = 1)
-  mod_output <- module_run(paper, module)
+  mod_output <- suppressWarnings(module_run(paper, module))
+  # after several downloads from one computer ResearchBox refuses more for a while
+  skip_if(any(grepl("asks for a captcha", unlist(mod_output$report), fixed = TRUE)),
+          "ResearchBox asks for a captcha")
 
   # `file_name` holds the file's NAME; its position inside the repository (or
   # inside an expanded archive) lives in `file_path`. The ResearchBox archive

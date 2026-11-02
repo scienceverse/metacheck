@@ -4,11 +4,17 @@
 \alias{repro_install_deps}
 \title{Install a paper's declared dependencies into a throwaway library}
 \usage{
-repro_install_deps(install_deps, lib_dir, cran_to_main_lib = FALSE)
+repro_install_deps(
+  install_deps,
+  lib_dir,
+  cran_to_main_lib = FALSE,
+  deadline = NULL
+)
 }
 \arguments{
 \item{install_deps}{the module's \code{install_deps} frame (\code{package}, \code{source},
-\code{ref}), base packages already excluded}
+\code{ref}, and optionally \code{version}, from \code{\link[=.repro_recorded_plan]{.repro_recorded_plan()}}), base
+packages already excluded}
 
 \item{lib_dir}{the throwaway library path (created if absent); ignored for
 CRAN-source packages when \code{cran_to_main_lib = TRUE} (see below)}
@@ -38,13 +44,18 @@ before giving up — a package the paper's authors could install at the time
 recording an "errored" script for a cause that has nothing to do with the
 paper's code. The retry is recorded in \code{via_archive} so the report can say
 the run used a stale-but-real version rather than the one the authors had.}
+
+\item{deadline}{the time (\code{\link[=Sys.time]{Sys.time()}} plus the time for installing) after
+which no further package is started; \code{NULL} (the default) sets no limit}
 }
 \value{
 a data frame with \code{package}, \code{source}, \code{installed} (logical),
 \code{message} (error text on failure, else ""), \code{via_archive} (logical,
-TRUE when installed from the CRAN Archive after a live-CRAN failure), and
+TRUE when installed from the CRAN Archive after a live-CRAN failure),
 \code{category} (see \code{\link[=.repro_classify_install_message]{.repro_classify_install_message()}}; \code{NA} for a
-successful install).
+successful install), \code{version_recorded} (the version asked for, or \code{NA}),
+\code{version_installed} (the version now in the libraries, or \code{NA}) and
+\code{version_note} (why the recorded version was not installed, else "").
 }
 \description{
 Installs each non-base dependency into \code{lib_dir} (a temp library, never the
@@ -56,4 +67,14 @@ GitHub/URL sources from the ref the code named
 (\code{remotes::install_github()} / \code{install.packages(url)}), honouring a pinned
 \verb{@ref} when present. Every install's outcome is recorded; installing runs
 package build/configure scripts, so this is part of the gated execute phase.
+}
+\details{
+A row with a \code{version} is installed at that version with
+\code{remotes::install_version()}, unless the libraries already hold it; packages
+it depends on that are not there yet get their current version. When that
+version cannot be installed, the current version is installed instead and
+\code{version_note} says why. Such a row always goes into the throwaway \code{lib_dir},
+so an old version can never replace one in your own library. A Bioconductor
+package always gets its current version, since Bioconductor versions follow
+the R version.
 }

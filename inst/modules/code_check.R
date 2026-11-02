@@ -733,7 +733,8 @@ code_check <- function(paper, local_path = NULL,
   # analysis only -- see .code_version_pin_check()'s own roxygen for what
   # each mechanism does and does not establish.
   version_pin <- .code_version_pin_check(
-    all_files, code_text_list = unlist(r_text_by_paper, recursive = FALSE),
+    # unname(): the names of the list must stay the file names
+    all_files, code_text_list = unlist(unname(r_text_by_paper), recursive = FALSE),
     max_file_size = max_file_size, max_download_size = max_download_size,
     cache = cache, skip_on_api_limit = skip_on_api_limit,
     max_files_per_repo = max_files_per_repo)
@@ -775,12 +776,21 @@ code_check <- function(paper, local_path = NULL,
         " The `renv.lock` file%s lock%s %d package version%s.",
         plural(length(version_pin$renv_files)),
         if (length(version_pin$renv_files) == 1) "s" else "",
-        nrow(version_pin$renv_packages), plural(nrow(version_pin$renv_packages))) else "")
+        nrow(version_pin$renv_packages), plural(nrow(version_pin$renv_packages))) else "",
+      if (nrow(version_pin$session_packages) > 0) sprintf(
+        " The `sessionInfo()` record lists %d package version%s.",
+        # the same record is often pasted into several scripts
+        nrow(unique(version_pin$session_packages[c("package", "version")])),
+        plural(nrow(unique(version_pin$session_packages[c("package", "version")])))) else "",
+      if (nrow(version_pin$pin_dates) > 0) sprintf(
+        " Date%s the packages are pinned to: %s.",
+        plural(length(unique(version_pin$pin_dates$date))),
+        paste(sort(unique(version_pin$pin_dates$date)), collapse = ", ")) else "")
     summary_version_pin <- sprintf(
       "A pinned R/package environment was found (%s).",
       paste(version_pin$mechanisms, collapse = ", "))
     report_table_version_pin <- if (nrow(version_pin$renv_packages) > 0) {
-      tb <- version_pin$renv_packages
+      tb <- version_pin$renv_packages[, c("file_name", "package", "version", "source")]
       colnames(tb) <- c("Lockfile", "Package", "Version", "Source")
       tb
     } else NULL

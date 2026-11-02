@@ -80,6 +80,11 @@ repro_dependencies <- function(code_text, lang = "R") {
     url <- regmatches(joined, gregexpr(url_pat, joined, perl = TRUE))[[1]]
     gh_refs  <- sub(gh_pat,  "\\1", gh,  perl = TRUE)
     url_refs <- sub(url_pat, "\\1", url, perl = TRUE)
+    # groundhog.library("github::user/repo", date), and the same without github::
+    gh_hog_pat <- paste0("['\"]github::([\\w.-]+/[^'\"]+)['\"]|",
+                         "groundhog\\.library\\s*\\(\\s*(?:pkg\\s*=\\s*)?['\"]([\\w.-]+/[^'\"]+)['\"]")
+    gh_hog <- regmatches(joined, gregexpr(gh_hog_pat, joined, perl = TRUE))[[1]]
+    gh_refs <- c(gh_refs, sub(gh_hog_pat, "\\1\\2", gh_hog, perl = TRUE))
     # repo basename (drop owner and @ref) is the installed package name
     gh_pkg  <- sub("@.*$", "", basename(gh_refs))
     url_pkg <- sub("[_.].*$", "", basename(url_refs))   # pkg_1.0.tar.gz -> pkg
@@ -2225,6 +2230,91 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   list(txt = txt, n = n, paths = paths)
 }
 
+# groundhog.library(...) as the library() calls that load the same packages: the
+# code for one such call. `vars` holds the literal vectors the script assigns
+# (see .code_char_vector_vars()). A bare name that is not one of those may be a
+# package or a variable computed in the script, which only the run can tell.
+.repro_groundhog_as_library <- function(call, vars) {
+  call <- sub("^groundhog::", "", call)
+  arg <- .repro_split_args(sub("(?s)^[^(]*\\((.*)\\)$", "\\1", call, perl = TRUE))
+  first <- if (length(arg) > 0) sub("^\\s*pkg\\s*=\\s*", "", trimws(arg[[1]]$text)) else ""
+  if (grepl("^[.A-Za-z][.A-Za-z0-9_]*$", first) && !first %in% names(vars))
+    return(sprintf(paste0('{ if (exists("%1$s") && is.character(%1$s)) ',
+                          'for (.pkg in %1$s) library(.pkg, character.only = TRUE) ',
+                          'else library("%1$s") }'), first))
+  known <- vapply(names(vars), function(nm) paste0(nm, " <- ", deparse1(vars[[nm]])), character(1))
+  pkgs <- unique(code_library_names(c(known, call), "R")$package)
+  if (!length(pkgs)) return("invisible(NULL)")
+  sprintf("{ %s }", paste(sprintf('library("%s")', pkgs), collapse = "; "))
+}
+
+# Replace the calls of groundhog, checkpoint and renv in a script, since they
+# would install packages themselves, which needs the network that is off during
+# a Docker run, and put them outside the library the run uses. renv::restore()
+# stopped a run for this reason (#523, item 4). The packages are installed
+# before the run (see .repro_recorded_plan()), so:
+# groundhog.library() becomes library(); renv::*(), checkpoint() and the calls that
+# load or set up these packages become a statement that does nothing and names
+# what was removed; require(renv) becomes TRUE, so that
+# `if (!require(renv)) install.packages("renv")` installs nothing.
+#
+# The whole text, not line by line: a call can run over several lines. Text that
+# cannot be searched is returned as it is. Returns list(txt, n = the number
+# replaced).
+.repro_neutralise_env_calls <- function(txt) {
+  if (!length(txt)) return(list(txt = txt, n = 0L))
+  joined <- paste(txt, collapse = "\n")
+  args_pat <- "(?:[^()]++|\\((?:[^()]++|\\([^()]*+\\))*+\\))*+"
+  n <- 0L
+  swap <- function(joined, pat, repl) {
+    m <- gregexpr(pat, joined, perl = TRUE)
+    calls <- regmatches(joined, m)[[1]]
+    if (!length(calls)) return(joined)
+    n <<- n + length(calls)
+    regmatches(joined, m) <- list(vapply(calls, repl, character(1), USE.NAMES = FALSE))
+    joined
+  }
+  removed <- function(name) function(call)
+    sprintf('invisible("reproducibility_check removed %s")', name)
+  out <- tryCatch({
+    vars <- .code_char_vector_vars(txt)
+    joined <- swap(joined, paste0("(?<![\\w.])(?:groundhog::)?groundhog\\.library\\s*\\(", args_pat, "\\)"),
+                   function(call) .repro_groundhog_as_library(call, vars))
+    joined <- swap(joined, paste0("(?<![\\w.:])(?:groundhog::)?(?:set\\.groundhog\\.folder|meta\\.groundhog)\\s*\\(",
+                                  args_pat, "\\)"), removed("a groundhog call"))
+    joined <- swap(joined, paste0("(?<![\\w.:])renv::\\w+(?:\\$[\\w.]+)*\\s*\\(", args_pat, "\\)"),
+                   removed("an renv call"))
+    # A function of the script's own can be called checkpoint(), so only when
+    # the script names the package.
+    if (grepl("checkpoint::|(?:library|require)\\s*\\(\\s*['\"]?checkpoint", joined, perl = TRUE))
+      joined <- swap(joined, paste0("(?<![\\w.:])(?:checkpoint::)?(?:create_|use_)?checkpoint\\s*\\(",
+                                    args_pat, "\\)"), removed("a checkpoint call"))
+    joined <- swap(joined, "(?<![\\w.])source\\s*\\([^)\n]*renv[^)\n]*activate[^)\n]*\\)+",
+                   removed("renv's activate.R"))
+    tools <- "['\"]?(?:groundhog|checkpoint|renv)['\"]?"
+    joined <- swap(joined, paste0("(?<![\\w.:])(?:base::)?(?:requireNamespace|require)\\s*\\(\\s*", tools,
+                                  "\\s*(?:,[^()]*)?\\)"), function(call) "TRUE")
+    joined <- swap(joined, paste0("(?<![\\w.:])(?:base::)?library\\s*\\(\\s*", tools,
+                                  "\\s*(?:,[^()]*)?\\)"), removed("the loading of a package manager"))
+    list(txt = strsplit(joined, "\n", fixed = TRUE)[[1]], n = n)
+  }, error = function(e) list(txt = txt, n = 0L))
+  out
+}
+
+# The same for a project's .Rprofile, which R runs when it starts: it usually
+# holds source("renv/activate.R"), which downloads renv and changes the library
+# the run uses. The rest of the file stays, since it can set options the analysis
+# relies on. Returns the number of calls replaced.
+.repro_neutralise_rprofile <- function(root) {
+  path <- file.path(root, ".Rprofile")
+  if (!file.exists(path)) return(0L)
+  txt <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+  if (is.null(txt)) return(0L)
+  res <- .repro_neutralise_env_calls(txt)
+  if (res$n > 0) tryCatch(writeLines(res$txt, path), error = function(e) NULL)
+  res$n
+}
+
 #' Write path-rewritten scripts into the materialised layout
 #'
 #' Each script's referenced data paths are rewritten to their Psych-DS target
@@ -2294,10 +2384,15 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   own folder (or its `.Rproj` folder) but not from the top is first
 #'   rewritten to its path from the top, for reads and writes alike.
 #'   `FALSE` (default) redirects every write, as before.
+#' @param replace_env_calls if `TRUE`, the calls to groundhog, checkpoint and renv
+#'   in R code are replaced, since packages are installed before the run, and such
+#'   a call would need the network (see `.repro_neutralise_env_calls()`).
+#'   `FALSE` (default) leaves them.
 #' @returns a data frame with `file_name`, `script_path` (absolute path written),
 #'   `run_dir` (the working directory a run should use — always `root`),
 #'   `setwd_removed` (count of `setwd()`/`os.chdir()` calls replaced with a
 #'   statement that does nothing),
+#'   `env_calls_replaced` (count of groundhog, checkpoint and renv calls replaced),
 #'   `setwd_paths` (comma-joined paths those calls named, for the warning),
 #'   `family_replaced` (count of `family =`/`base_family =` named-font
 #'   arguments replaced with `"sans"`, so a plot call does not fail with
@@ -2308,7 +2403,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' @export
 repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                                 inject_libs = NULL, lang = "R",
-                                script_paths = NULL, writes_in_place = FALSE) {
+                                script_paths = NULL, writes_in_place = FALSE,
+                                replace_env_calls = FALSE) {
   fnames <- names(code_text_list)
   plan_base <- if (!is.null(plan) && "file_name" %in% names(plan))
     tolower(basename(plan$file_name)) else character(0)
@@ -2387,6 +2483,13 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     setwd_n <- sw$n
     setwd_paths <- sw$paths
 
+    env_n <- 0L
+    if (isTRUE(replace_env_calls) && identical(fn_lang, "R")) {
+      env <- .repro_neutralise_env_calls(txt)
+      txt <- env$txt
+      env_n <- env$n
+    }
+
     # Replace a named font family (family = "Times New Roman", base_family =
     # "Arial", ...) with grid's own universal fallback "sans" — a specific
     # named font is very commonly NOT registered as usable on the machine
@@ -2445,6 +2548,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     if (!written) message("[repro]   could not write '", fn, "' to ", dest)
     data.frame(file_name = fn, script_path = dest, run_dir = root,
                setwd_removed = setwd_n,
+               env_calls_replaced = env_n,
                setwd_paths = paste(setwd_paths, collapse = ", "),
                family_replaced = family_n,
                family_detail = paste(
@@ -2453,6 +2557,292 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                  paste(injected_pkg, collapse = ", ") else NA_character_)
   })
   dplyr::bind_rows(rows)
+}
+
+# The highest of several version strings; NA when none can be read as a version.
+.repro_highest_version <- function(versions) {
+  versions <- versions[!is.na(versions) & nzchar(versions)]
+  valid <- vapply(versions, function(v)
+    !is.na(package_version(v, strict = FALSE)), logical(1), USE.NAMES = FALSE)
+  versions <- versions[valid]
+  if (!length(versions)) return(NA_character_)
+  highest <- versions[1]
+  for (v in versions[-1]) if (package_version(v) > package_version(highest)) highest <- v
+  highest
+}
+
+# Whether two version strings are the same version: "1.1-21" and "1.1.21" are.
+.repro_same_version <- function(a, b) {
+  if (length(a) != 1 || length(b) != 1 || is.na(a) || is.na(b)) return(FALSE)
+  isTRUE(tryCatch(package_version(a) == package_version(b), error = function(e) FALSE))
+}
+
+# The version of a package in the given libraries, NA when it is not in them.
+# packageDescription() with lib.loc reads the file, and so is not misled by a
+# package already loaded in this R session (see repro_install_deps()).
+.repro_installed_version <- function(pkg, lib_paths) {
+  v <- suppressWarnings(tryCatch(
+    utils::packageDescription(pkg, lib.loc = lib_paths, fields = "Version"),
+    error = function(e) NA_character_))
+  if (length(v) != 1 || is.na(v)) NA_character_ else as.character(v)
+}
+
+# The version of each package on a dated copy of CRAN, from Posit's package
+# manager (the copies start in late 2017). NA for a package that was not on CRAN
+# at that date. All NA, with attribute `failed` TRUE, when the copy could not be
+# read: a date before the first copy, or no network.
+.repro_date_versions <- function(pkgs, date) {
+  url <- paste0("https://packagemanager.posit.co/cran/", date)
+  ap <- tryCatch(suppressWarnings(utils::available.packages(
+    repos = url, type = "source", filters = "duplicates")), error = function(e) NULL)
+  failed <- is.null(ap) || nrow(ap) == 0
+  out <- stats::setNames(rep(NA_character_, length(pkgs)), pkgs)
+  if (!failed) out[] <- unname(ap[match(pkgs, rownames(ap)), "Version"])
+  attr(out, "failed") <- failed
+  out
+}
+
+#' The recorded version of each package the scripts load
+#'
+#' A repository can record the package versions its analysis used: an
+#' `renv.lock` file, a `sessionInfo()` or `session_info()` record, or a date in a
+#' `groundhog.library()` or `checkpoint()` call (see
+#' [.code_version_pin_check()]). This matches those records to the packages the
+#' scripts load, because only those are installed: a listed package no script
+#' loads is left out, and a loaded package that is not listed keeps `NA` and is
+#' installed at its current version.
+#'
+#' `renv.lock` comes first, then the `sessionInfo()` and `session_info()` records,
+#' then a date, the latest one when there are several. Within one kind of record
+#' the highest version wins when files disagree, since a run has one library. A
+#' package whose record says it came from GitHub is installed from that commit.
+#'
+#' `groundhog`, `checkpoint` and `renv` are left out: the scripts' calls to them
+#' are rewritten (see [repro_write_scripts()]), since they would install packages
+#' themselves, which needs the network that is off during a run.
+#'
+#' Packages that come with R (`Matrix`, `MASS`, ...) keep R's own version, since
+#' they are built for that R version, and are listed in `kept_with_r`.
+#'
+#' @param deps the frame from [repro_dependencies()]: `package`, `source`, `ref`,
+#'   `base`
+#' @param version_pin the result of [.code_version_pin_check()]
+#' @param use_dates `FALSE` not to look up the versions for a date, which needs
+#'   the network; such a package then keeps `NA`
+#'
+#' @returns `NULL` when nothing records a version of a package the scripts load,
+#'   else a list: `deps` (the non-base rows of `deps`, with `version` and
+#'   `recorded_from`), `kept_with_r` (data frame `package`, `version`), `dates`
+#'   (the date used, or `character(0)`) and `date_failed` (`TRUE` when the date's
+#'   versions could not be looked up)
+#' @keywords internal
+.repro_recorded_plan <- function(deps, version_pin, use_dates = TRUE) {
+  if (is.null(deps) || !nrow(deps) || is.null(version_pin)) return(NULL)
+  tools <- c("groundhog", "checkpoint", "renv")
+  loaded <- setdiff(deps$package, tools)
+  records <- list(version_pin$renv_packages, version_pin$session_packages)
+
+  version <- stats::setNames(rep(NA_character_, length(loaded)), loaded)
+  from <- version
+  origin <- version
+  remote <- version
+  for (rec in records) {
+    if (is.null(rec) || !nrow(rec)) next
+    if (!"remote" %in% names(rec)) rec$remote <- NA_character_
+    for (pkg in intersect(loaded[is.na(version)], rec$package)) {
+      rows <- rec[rec$package == pkg, , drop = FALSE]
+      v <- .repro_highest_version(rows$version)
+      if (is.na(v)) next
+      row <- rows[match(v, rows$version), , drop = FALSE]
+      version[[pkg]] <- v
+      from[[pkg]] <- row$file_name
+      origin[[pkg]] <- row$source
+      remote[[pkg]] <- row$remote
+    }
+  }
+
+  dates <- sort(unique(version_pin$pin_dates$date %||% character(0)), decreasing = TRUE)
+  date_failed <- FALSE
+  if (length(dates) > 0 && isTRUE(use_dates)) {
+    open <- names(version)[is.na(version) & !loaded %in% deps$package[deps$base]]
+    if (length(open) > 0) {
+      dv <- .repro_date_versions(open, dates[1])
+      date_failed <- isTRUE(attr(dv, "failed"))
+      if (date_failed)
+        warning("reproducibility_check(): the package versions for the date ", dates[1],
+                " could not be looked up, because copies of CRAN start in late 2017 or ",
+                "the network could not be reached. Those packages are not installed at ",
+                "recorded versions.", call. = FALSE)
+      got <- open[!is.na(dv)]
+      version[got] <- dv[got]
+      from[got] <- paste("date", dates[1])
+    }
+  }
+  if (all(is.na(version))) return(NULL)
+
+  is_base <- deps$package %in% deps$package[deps$base]
+  rec_base <- deps$package[is_base & deps$package %in% names(version)[!is.na(version)]]
+  out <- deps[!deps$base & !deps$package %in% tools, , drop = FALSE]
+  if (!any(!is.na(version[out$package]))) return(NULL)
+  out$version <- unname(version[out$package])
+  out$recorded_from <- unname(from[out$package])
+
+  # Where the record says the package came from decides how it is installed,
+  # unless the code itself names a GitHub or URL source.
+  rec_src <- unname(origin[out$package])
+  rec_remote <- unname(remote[out$package])
+  is_gh <- !is.na(rec_src) & rec_src == "GitHub" & !is.na(rec_remote)
+  out$source[is_gh] <- "github"
+  out$ref[is_gh] <- rec_remote[is_gh]
+  is_bioc <- !is.na(rec_src) & rec_src == "Bioconductor" & out$source == "cran"
+  out$source[is_bioc] <- "bioc"
+
+  list(deps = out,
+       kept_with_r = data.frame(package = rec_base, version = unname(version[rec_base])),
+       dates = if (length(dates) > 0) dates[1] else character(0),
+       date_failed = date_failed)
+}
+
+# Which files or dates record the versions, as words for the warning and report.
+.repro_recorded_sources <- function(version_pin) {
+  dates <- version_pin$pin_dates$date %||% character(0)
+  has_session <- nrow(version_pin$session_packages %||% data.frame()) > 0
+  has_renv <- nrow(version_pin$renv_packages %||% data.frame()) > 0
+  paste(c(if (has_renv) "an `renv.lock` file",
+          if (has_session) "a `sessionInfo()` record",
+          if (length(dates) > 0) sprintf("the date %s in a `groundhog` or `checkpoint` call",
+                                         max(dates))),
+        collapse = " and ")
+}
+
+# What installing recorded versions does not do, as sentences: the limitation
+# stated in both the warning before a run and the report after it.
+.repro_recorded_limits <- function(recorded, version_pin, sandbox, use_declared = FALSE) {
+  declared <- version_pin$r_versions %||% character(0)
+  r_kept <- !(sandbox == "docker" && isTRUE(use_declared) && length(declared) > 0)
+  bioc <- recorded$deps$package[recorded$deps$source == "bioc" & !is.na(recorded$deps$version)]
+  kept <- recorded$kept_with_r$package
+  c(if (r_kept) sprintf(
+      paste0("The R version is not changed: this run uses %s%s, so an old package may ",
+             "not install, or may give other results than it gave the authors."),
+      if (sandbox == "docker") "the R version of the Docker image"
+      else paste("R", as.character(getRversion())),
+      if (length(declared) > 0) sprintf(", while the repository records R %s", declared[1]) else ""),
+    "Packages that the installed packages depend on are not at their recorded versions, which can also change results.",
+    if (length(kept) > 0) sprintf("Packages that come with R keep R's own version: %s.",
+                                  paste(kept, collapse = ", ")),
+    if (length(bioc) > 0) sprintf(
+      "Bioconductor versions follow the R version, so these get their current version: %s.",
+      paste(bioc, collapse = ", ")))
+}
+
+# The warning before a run that installs recorded versions.
+.repro_recorded_warning <- function(recorded, version_pin, sandbox, use_declared = FALSE) {
+  n <- nrow(recorded$deps)
+  n_listed <- sum(!is.na(recorded$deps$version))
+  paste(c(
+    sprintf(paste0("reproducibility_check(): the repository records package versions in ",
+                   "%s, so %d of the %d package%s the scripts load will be installed at ",
+                   "those versions. This can take a long time, because old versions are built from source."),
+            .repro_recorded_sources(version_pin), n_listed, n, plural(n)),
+    if (n_listed < n) sprintf("%d loaded package%s not listed and get%s the current version.",
+                              n - n_listed, plural(n - n_listed, " is", "s are"),
+                              plural(n - n_listed, "s", "")),
+    .repro_recorded_limits(recorded, version_pin, sandbox, use_declared)), collapse = " ")
+}
+
+# The packages of a run with recorded versions, by what happened to them: TRUE
+# per package in `exact` (at the recorded version), `replaced` (installed at
+# another version) and `failed` (not installed), for the recorded packages.
+.repro_recorded_counts <- function(recorded, install_results) {
+  listed <- recorded$deps[!is.na(recorded$deps$version), , drop = FALSE]
+  ir <- install_results[match(listed$package, install_results$package), , drop = FALSE]
+  installed <- !is.na(ir$installed) & ir$installed
+  same <- mapply(.repro_same_version, as.character(ir$version_installed %||% rep(NA, nrow(ir))),
+                 listed$version, USE.NAMES = FALSE)
+  same <- as.logical(same)
+  list(listed = listed, results = ir, exact = installed & same,
+       replaced = installed & !same, failed = !installed)
+}
+
+# One sentence for the summary and the checklist. NULL without recorded versions.
+.repro_recorded_summary <- function(recorded, install_results) {
+  if (is.null(recorded) || is.null(install_results) || !nrow(install_results)) return(NULL)
+  counts <- .repro_recorded_counts(recorded, install_results)
+  n <- nrow(counts$listed)
+  sprintf(paste0("We installed %d of the %d package%s the scripts load and the repository ",
+                 "lists at the recorded version, but did not change the R version, so ",
+                 "this is not an exact copy of the authors' setup."),
+          sum(counts$exact), n, plural(n))
+}
+
+# The section of the report on the recorded versions a run used. NULL without them.
+.repro_recorded_report <- function(recorded, install_results, version_pin, sandbox,
+                                   use_declared = FALSE) {
+  if (is.null(recorded) || is.null(install_results) || !nrow(install_results)) return(NULL)
+  counts <- .repro_recorded_counts(recorded, install_results)
+  n <- nrow(counts$listed)
+  not_listed <- recorded$deps$package[is.na(recorded$deps$version)]
+  odd <- !counts$exact
+  ir <- counts$results
+  why <- ifelse(nzchar(ir$version_note %||% rep("", nrow(ir))), ir$version_note,
+                ifelse(is.na(ir$message), "", ir$message))
+  tb <- if (any(odd)) data.frame(
+    Package = counts$listed$package[odd],
+    Recorded = counts$listed$version[odd],
+    Installed = ifelse(is.na(ir$version_installed[odd]), "not installed", ir$version_installed[odd]),
+    Why = why[odd])
+  c("#### Recorded package versions",
+    paste(c(
+      sprintf(paste0("The repository records package versions in %s. Of the %d package%s the ",
+                     "scripts load and the repository lists, %d %s installed at the recorded ",
+                     "version, %d got another version, and %d could not be installed."),
+              .repro_recorded_sources(version_pin), n, plural(n), sum(counts$exact),
+              plural(sum(counts$exact), "was", "were"), sum(counts$replaced), sum(counts$failed)),
+      if (any(counts$replaced)) "A script that uses a package with another version is not an exact reproduction.",
+      if (length(not_listed) > 0) sprintf(
+        "The scripts also load %s, which %s not listed and got the current version.",
+        paste(not_listed, collapse = ", "), plural(length(not_listed), "is", "are")),
+      if (isTRUE(recorded$date_failed)) sprintf(
+        "The versions for the date %s could not be looked up.", recorded$dates),
+      .repro_recorded_limits(recorded, version_pin, sandbox, use_declared)), collapse = " "),
+    if (!is.null(tb)) scroll_table(tb, maxrows = 15))
+}
+
+# How many packages the scripts load have a recorded version, without looking
+# up the versions for a date, which needs the network.
+.repro_recorded_n <- function(deps, version_pin) {
+  if (is.null(deps) || !nrow(deps)) return(0L)
+  recorded <- .repro_recorded_plan(deps, version_pin, use_dates = FALSE)
+  dates <- version_pin$pin_dates$date %||% character(0)
+  if (length(dates) > 0) sum(!deps$base & !deps$package %in% c("groundhog", "checkpoint", "renv"))
+  else if (!is.null(recorded)) sum(!is.na(recorded$deps$version)) else 0L
+}
+
+# The recommendation after a run in which scripts failed, when the repository
+# records versions that the run did not use. NULL otherwise. A shared server
+# (see api_keys_use()) does not offer the setting, so there it says so.
+.repro_recorded_advice <- function(deps, version_pin, run_results) {
+  failed <- c("errored", "timed_out", "dependency_unavailable")
+  if (is.null(run_results) || !any(run_results$outcome %in% failed)) return(NULL)
+  if (.repro_recorded_n(deps, version_pin) == 0) return(NULL)
+  paste(c(
+    "Metacheck detected version information that can be used to install specific versions of software for the reproducibility run.",
+    "We recommend retrying the reproducibility check with `recorded_versions = TRUE`.",
+    "This will install the required R packages, if still available.",
+    if (isTRUE(getOption("metacheck.keys.shared")))
+      "As this takes a long time, this setting is not implemented on this shared server."),
+    collapse = " ")
+}
+
+# What a run with execute = TRUE would install, for the report of a run without.
+.repro_recorded_preview <- function(deps, version_pin) {
+  n <- .repro_recorded_n(deps, version_pin)
+  if (n == 0) return(NULL)
+  sprintf(paste0("The repository records package versions in %s. A run with `execute = TRUE` ",
+                 "would install %d package%s the scripts load at those versions, which can ",
+                 "take a long time. It would not change the R version."),
+          .repro_recorded_sources(version_pin), n, plural(n))
 }
 
 #' Install a paper's declared dependencies into a throwaway library
@@ -2467,10 +2857,22 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 #' `@ref` when present. Every install's outcome is recorded; installing runs
 #' package build/configure scripts, so this is part of the gated execute phase.
 #'
+#' A row with a `version` is installed at that version with
+#' `remotes::install_version()`, unless the libraries already hold it; packages
+#' it depends on that are not there yet get their current version. When that
+#' version cannot be installed, the current version is installed instead and
+#' `version_note` says why. Such a row always goes into the throwaway `lib_dir`,
+#' so an old version can never replace one in your own library. A Bioconductor
+#' package always gets its current version, since Bioconductor versions follow
+#' the R version.
+#'
 #' @param install_deps the module's `install_deps` frame (`package`, `source`,
-#'   `ref`), base packages already excluded
+#'   `ref`, and optionally `version`, from [.repro_recorded_plan()]), base
+#'   packages already excluded
 #' @param lib_dir the throwaway library path (created if absent); ignored for
 #'   CRAN-source packages when `cran_to_main_lib = TRUE` (see below)
+#' @param deadline the time ([Sys.time()] plus the time for installing) after
+#'   which no further package is started; `NULL` (the default) sets no limit
 #' @param cran_to_main_lib if `TRUE`, CRAN-source packages are installed into
 #'   your DEFAULT library (no `lib` argument — same as calling
 #'   `install.packages(pkg)` yourself) instead of the throwaway `lib_dir`, and so
@@ -2499,15 +2901,22 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 #'
 #' @returns a data frame with `package`, `source`, `installed` (logical),
 #'   `message` (error text on failure, else ""), `via_archive` (logical,
-#'   TRUE when installed from the CRAN Archive after a live-CRAN failure), and
+#'   TRUE when installed from the CRAN Archive after a live-CRAN failure),
 #'   `category` (see [.repro_classify_install_message()]; `NA` for a
-#'   successful install).
+#'   successful install), `version_recorded` (the version asked for, or `NA`),
+#'   `version_installed` (the version now in the libraries, or `NA`) and
+#'   `version_note` (why the recorded version was not installed, else "").
 #' @export
-repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) {
+repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
+                               deadline = NULL) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
-                      via_archive = logical(0), category = character(0))
+                      via_archive = logical(0), category = character(0),
+                      version_recorded = character(0),
+                      version_installed = character(0),
+                      version_note = character(0))
   if (is.null(install_deps) || nrow(install_deps) == 0) return(empty)
+  versions <- install_deps$version %||% rep(NA_character_, nrow(install_deps))
   dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
   old_lib <- .libPaths(); on.exit(.libPaths(old_lib), add = TRUE)
   .libPaths(c(lib_dir, old_lib))
@@ -2531,10 +2940,34 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
 
   gh_avail <- requireNamespace("remotes", quietly = TRUE)
 
+  bar <- pb(NA, "(:spin) :what")
+  on.exit(bar$terminate(), add = TRUE)
+  started <- Sys.time()
+
   rows <- lapply(seq_len(nrow(install_deps)), function(i) {
     pkg <- install_deps$package[i]
     src <- install_deps$source[i]
     ref <- install_deps$ref[i]
+    version <- versions[i]
+    bar$tick(1, list(what = .repro_install_what(i, nrow(install_deps), pkg, version, started)))
+    # The time for installing has run out: a package that is left out may still
+    # be found in another library when the scripts run.
+    if (.repro_time_left(deadline) <= 0)
+      return(data.frame(package = pkg, source = src, installed = FALSE,
+                        message = "not started: the time for installing had run out",
+                        via_archive = FALSE, category = "other",
+                        version_recorded = version,
+                        version_installed = .repro_installed_version(pkg, c(lib_dir, old_lib)),
+                        version_note = ""))
+    # The recorded version is already there, so there is nothing to do.
+    have <- .repro_installed_version(pkg, c(lib_dir, old_lib))
+    if (.repro_same_version(have, version)) {
+      message("[repro]     '", pkg, "' ", version, " is already installed; skipping.")
+      return(data.frame(package = pkg, source = src, installed = TRUE, message = "",
+                        via_archive = FALSE, category = NA_character_,
+                        version_recorded = version, version_installed = have,
+                        version_note = ""))
+    }
     # A CRAN package already installed in one of the REAL (pre-throwaway)
     # library paths needs no work — this is what makes cran_to_main_lib's reuse
     # across papers actually pay off, instead of every call re-installing it.
@@ -2547,25 +2980,55 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
     # installed" for a package that no longer exists anywhere on disk, and a
     # freshly spawned callr subprocess (which starts with none of this
     # session's loaded namespaces) would then fail to find it at all.
-    cran_main <- identical(src, "cran") && isTRUE(cran_to_main_lib)
+    cran_main <- identical(src, "cran") && isTRUE(cran_to_main_lib) && is.na(version)
     if (cran_main && length(find.package(pkg, lib.loc = old_lib, quiet = TRUE)) > 0) {
       message("[repro]     '", pkg, "' already installed (main library); skipping.")
       # the same columns as every other row, with category NA (U135)
       return(data.frame(package = pkg, source = src, installed = TRUE, message = "",
-                        via_archive = FALSE, category = NA_character_))
+                        via_archive = FALSE, category = NA_character_,
+                        version_recorded = version, version_installed = have,
+                        version_note = ""))
     }
     # DEBUG (TEMPORARY — remove before release): quiet = FALSE so compilation
     # progress is visible; a slow install then reads as work, not a hang.
-    message("[repro]     installing '", pkg, "' (source: ", src,
+    message("[repro]     installing '", pkg, "'",
+            if (!is.na(version)) paste0(" ", version), " (source: ", src,
             if (cran_main) ", into main library" else ", into throwaway library",
             ") ...")
     install_lib <- if (cran_main) old_lib[1] else lib_dir
     install_warnings <- character(0)
+    version_note <- ""
+    version_done <- FALSE
+    if (!is.na(version) && identical(src, "bioc")) {
+      version_note <- "Bioconductor versions follow the R version, so the current version was installed"
+    } else if (!is.na(version) && identical(src, "cran")) {
+      if (gh_avail) {
+        version_done <- tryCatch({
+          # force: without it a package already in lib_dir, put there as a
+          # dependency of an earlier package, can be left at that version
+          remotes::install_version(pkg, version = version, lib = lib_dir, upgrade = "never",
+                                   dependencies = NA, force = TRUE, quiet = FALSE)
+          .repro_same_version(.repro_installed_version(pkg, lib_dir), version)
+        }, error = function(e) {
+          version_note <<- conditionMessage(e)
+          FALSE
+        })
+        if (!version_done && !nzchar(version_note))
+          version_note <- paste0("the recorded version could not be installed on R ", getRversion())
+      } else {
+        version_note <- "the 'remotes' package is needed to install a recorded version"
+      }
+      if (!version_done)
+        message("[repro]     '", pkg, "' ", version, " could not be installed (",
+                version_note, "); installing the current version.")
+    }
     res <- tryCatch({
       # Warnings are recorded (not silenced) for the load check below: see
       # .repro_not_loadable_msg().
       withCallingHandlers({
-      if (identical(src, "github")) {
+      if (version_done) {
+        # installed above
+      } else if (identical(src, "github")) {
         if (!gh_avail) stop("the 'remotes' package is needed to install GitHub sources")
         remotes::install_github(ref, lib = lib_dir, upgrade = "never",
                                 quiet = FALSE)
@@ -2592,10 +3055,17 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
       }, warning = function(w)
         install_warnings <<- c(install_warnings, conditionMessage(w)))
       # Confirm it can actually be loaded (main library needs no lib.loc; the
-      # throwaway paths were already prepended to .libPaths() above).
-      if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
-          !requireNamespace(pkg, quietly = TRUE))
-        stop(.repro_not_loadable_msg(pkg, install_warnings))
+      # throwaway paths were already prepended to .libPaths() above). Being where
+      # it was installed is checked as well: the load check also passes for a copy
+      # in the main library or a namespace already loaded, and a failed
+      # install_github() does not stop. A package that is gone from CRAN may
+      # still be in the main library, and the scripts can use it there.
+      in_main <- identical(src, "cran") && is.na(version) &&
+        !is.na(.repro_installed_version(pkg, old_lib))
+      if ((!file.exists(file.path(install_lib, pkg, "DESCRIPTION")) && !in_main) ||
+          (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
+           !requireNamespace(pkg, quietly = TRUE)))
+        stop(.repro_not_loadable_msg(pkg, install_warnings, .repro_load_error(pkg, lib_dir)))
       list(ok = TRUE, msg = "", via_archive = FALSE)
     }, error = function(e) list(ok = FALSE, msg = conditionMessage(e), via_archive = FALSE))
 
@@ -2619,12 +3089,261 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
         res$msg <- paste0(res$msg, " (CRAN Archive retry also failed: ", res2$msg, ")")
       }
     }
+    have <- .repro_installed_version(pkg, c(lib_dir, old_lib))
+    if (res$ok && !is.na(version) && !.repro_same_version(have, version) && !nzchar(version_note))
+      version_note <- "the source gave another version than the recorded one"
     data.frame(package = pkg, source = src, installed = res$ok, message = res$msg,
               via_archive = isTRUE(res$via_archive),
               category = if (isTRUE(res$ok)) NA_character_
-                        else .repro_classify_install_message(res$msg))
+                        else .repro_classify_install_message(res$msg),
+              version_recorded = version,
+              version_installed = have,
+              version_note = version_note)
   })
   dplyr::bind_rows(rows)
+}
+
+# Lines for a script that runs without this package, to set where packages come
+# from. The rocker/r-ver images of R before 4.0 name MRAN, which closed in 2023,
+# so nothing could be installed there ("package 'x' is not available"). Posit
+# keeps the same dated copies of CRAN.
+.repro_repos_lines <- function() {
+  c('repos <- getOption("repos")',
+    'if (is.null(repos) || !length(repos) || any(!nzchar(repos)) || any(repos == "@CRAN@")) {',
+    '  options(repos = c(CRAN = "https://cloud.r-project.org"))',
+    '} else if (any(grepl("mran.microsoft.com", repos, fixed = TRUE))) {',
+    '  options(repos = c(CRAN = sub("^.*/snapshot/", "https://packagemanager.posit.co/cran/", repos[1])))',
+    '}')
+}
+
+# The order to install in: first the packages at their current version, then
+# the recorded versions. Next to old versions, a current package can fail its
+# own load test during the install: ggtree did, in a real repository. A conflict
+# that is left then shows in the load check, which can repair it.
+.repro_install_order <- function(deps) {
+  current <- is.na(deps$version) | deps$source == "bioc"
+  deps[order(!current), , drop = FALSE]
+}
+
+#' The script that checks whether the installed packages load
+#'
+#' Only the packages the scripts load are installed at their recorded versions,
+#' next to the current versions of everything else. An old version can then keep
+#' another package from loading (a current `ggplot2` next to a recorded `scales`
+#' stopped with "namespace 'scales' 1.2.1 is being loaded, but >= 1.4.0 is
+#' required"), or crash R when a current package uses it (a recorded `magrittr`
+#' crashed `library(tidyverse)` on R 4.6.1). Both were found in real repositories.
+#'
+#' The script loads each package in a new R process, so a crash stops only that
+#' process, and a namespace that an earlier package loaded does not hide a fault.
+#' When a package does not load, a recorded version is set aside, so the current
+#' version is used: the one the error names, or else the first recorded package
+#' it depends on (or the package itself) without which it loads. A package that
+#' does not load without them either is reported, and nothing is set aside for
+#' it. The script runs without this package, in a container or in a new process,
+#' and works from R 3.6.
+#'
+#' @param lib the library the packages were installed in
+#' @param pkgs the packages the scripts load
+#' @param recorded the packages installed at a recorded version
+#' @param results_file where the script saves its results, after every package:
+#'   a list of `set_aside` (`package`, `because`, `version_installed`, `note`) and
+#'   `not_loading` (`package`, `message`)
+#'
+#' @returns the lines of the script
+#' @keywords internal
+.repro_load_check_lines <- function(lib, pkgs, recorded, results_file) {
+  c(
+    paste0("lib <- ", deparse1(lib)),
+    paste0("pkgs <- ", deparse1(pkgs)),
+    paste0("recorded <- ", deparse1(recorded)),
+    paste0("results_file <- ", deparse1(results_file)),
+    '.libPaths(c(lib, .libPaths()))',
+    .repro_repos_lines(),
+    # a folder without a DESCRIPTION file is not a package for R
+    'aside <- file.path(lib, ".set_aside")',
+    'dir.create(aside, showWarnings = FALSE)',
+    'load_file <- tempfile(fileext = ".R")',
+    'writeLines(c("args <- commandArgs(TRUE)", ".libPaths(c(args[1], .libPaths()))",',
+    '             "for (p in args[-1]) suppressPackageStartupMessages(library(p, character.only = TRUE))"), load_file)',
+    # away from the folder of the scripts, which can hold an .Rprofile
+    'setwd(tempdir())',
+    'quote_arg <- function(x) shQuote(x, type = if (.Platform$OS.type == "windows") "cmd" else "sh")',
+    'try_load <- function(p) {',
+    '  out <- suppressWarnings(system2(file.path(R.home("bin"), "Rscript"),',
+    '                                  quote_arg(c(load_file, lib, p)), stdout = TRUE, stderr = TRUE, timeout = 300))',
+    '  status <- attr(out, "status")',
+    '  list(ok = is.null(status) || identical(as.integer(status), 0L), msg = paste(out, collapse = "\\n"))',
+    '}',
+    'in_lib <- function(p) file.exists(file.path(lib, p, "DESCRIPTION"))',
+    'can_go <- function() recorded[vapply(recorded, in_lib, logical(1))]',
+    # The current version comes from another library, or is installed.
+    'other_copy <- function(p) length(find.package(p, lib.loc = setdiff(.libPaths(), lib), quiet = TRUE)) > 0',
+    'use_current <- function(p) {',
+    '  file.rename(file.path(lib, p), file.path(aside, p))',
+    '  if (!other_copy(p)) try(utils::install.packages(p, lib = lib, quiet = TRUE), silent = TRUE)',
+    '}',
+    'put_back <- function(p) {',
+    '  unlink(file.path(lib, p), recursive = TRUE)',
+    '  file.rename(file.path(aside, p), file.path(lib, p))',
+    '}',
+    'depends_on <- function(p) {',
+    '  db <- utils::installed.packages(lib.loc = .libPaths(), noCache = TRUE)',
+    '  db <- db[!duplicated(db[, "Package"]), , drop = FALSE]',
+    '  unique(unlist(tools::package_dependencies(p, db = db, which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE)))',
+    '}',
+    'named_in <- function(msg) {',
+    '  m <- regmatches(msg, regexec("namespace [^A-Za-z]*([A-Za-z][A-Za-z0-9.]*)[^A-Za-z0-9.]+[0-9.-]+ is (?:being|already) loaded, but",',
+    '                               msg, perl = TRUE))[[1]]',
+    '  if (length(m) > 1) m[2] else NA_character_',
+    '}',
+    'have_version <- function(p) {',
+    '  v <- suppressWarnings(tryCatch(utils::packageDescription(p, lib.loc = .libPaths(), fields = "Version"),',
+    '                                 error = function(e) NA_character_))',
+    '  if (length(v) != 1 || is.na(v)) NA_character_ else as.character(v)',
+    '}',
+    'set_aside <- list(); not_loading <- list()',
+    'save_results <- function() saveRDS(list(set_aside = do.call(rbind, set_aside),',
+    '                                        not_loading = do.call(rbind, not_loading)), results_file)',
+    'note <- function(p, because) {',
+    '  why <- if (identical(p, because)) "the recorded version does not load on R " else',
+    '    paste0("the recorded version keeps ", because, " from loading on R ")',
+    '  set_aside[[length(set_aside) + 1L]] <<- data.frame(package = p, because = because,',
+    '    version_installed = have_version(p), note = paste0(why, getRversion(), ", so the current version was used"),',
+    '    stringsAsFactors = FALSE)',
+    '  save_results()',
+    '}',
+    'repair <- function(p) {',
+    '  r <- try_load(p)',
+    '  if (r$ok) return(invisible(TRUE))',
+    # the package the error names, as often as it names one
+    '  repeat {',
+    '    named <- named_in(r$msg)',
+    '    if (is.na(named) || !named %in% can_go()) break',
+    '    use_current(named); note(named, p)',
+    '    r <- try_load(p)',
+    '    if (r$ok) return(invisible(TRUE))',
+    '  }',
+    # An error that names nothing, or a crash: what p depends on first, then p.
+    '  tries <- intersect(depends_on(p), can_go())',
+    '  tries <- tries[vapply(tries, other_copy, logical(1))]',
+    '  if (p %in% can_go()) tries <- c(tries, p)',
+    '  for (x in tries) {',
+    '    use_current(x)',
+    '    if (try_load(p)$ok) { note(x, p); return(invisible(TRUE)) }',
+    '    put_back(x)',
+    '  }',
+    '  if (length(tries) > 1) {',
+    '    for (x in tries) use_current(x)',
+    '    if (try_load(p)$ok) { for (x in tries) note(x, p); return(invisible(TRUE)) }',
+    '    for (x in tries) put_back(x)',
+    '  }',
+    '  lines <- strsplit(r$msg, "\\n", fixed = TRUE)[[1]]',
+    '  not_loading[[length(not_loading) + 1L]] <<- data.frame(package = p,',
+    '    message = paste0("the package does not load: ", substr(paste(utils::head(lines[nzchar(lines)], 5), collapse = " "), 1, 400)),',
+    '    stringsAsFactors = FALSE)',
+    '  save_results()',
+    '  invisible(FALSE)',
+    '}',
+    'for (p in pkgs) repair(p)',
+    # A conflict can also show only when the packages are loaded together.
+    'for (i in seq_along(pkgs)) {',
+    '  r <- try_load(pkgs[!pkgs %in% vapply(not_loading, function(x) x$package, "")])',
+    '  named <- named_in(r$msg)',
+    '  if (r$ok || is.na(named) || !named %in% can_go()) break',
+    '  use_current(named); note(named, "the other packages")',
+    '}',
+    'save_results()'
+  )
+}
+
+#' Replace recorded versions that keep the installed packages from loading
+#'
+#' Runs the script of [.repro_load_check_lines()] where the scripts will run, and
+#' puts its findings in the install results. Does nothing when no package was
+#' installed at a recorded version, since then no recorded version can be at fault.
+#'
+#' @param install_results the result of [repro_install_deps()] or
+#'   [repro_install_deps_docker()]
+#' @param lib_dir the library the packages were installed in
+#' @param image the Docker image, or NULL to run in a new process on this machine
+#' @param timeout the time in seconds for the check
+#'
+#' @returns `install_results`, with `version_installed` and `version_note` updated
+#'   for a replaced package, and `installed` FALSE for a package that does not load
+#' @keywords internal
+.repro_load_check <- function(install_results, lib_dir, image = NULL, timeout = 1800) {
+  in_lib <- file.exists(file.path(lib_dir, install_results$package, "DESCRIPTION"))
+  if (!any(in_lib)) return(install_results)
+  at_recorded <- in_lib & install_results$installed & !is.na(install_results$version_recorded) &
+    mapply(.repro_same_version, as.character(install_results$version_installed),
+           install_results$version_recorded, USE.NAMES = FALSE)
+  if (!any(at_recorded)) return(install_results)
+  message("[repro]   Checking that the installed packages load (", sum(install_results$installed),
+          " packages) ...")
+
+  sandbox_dir <- tempfile("repro_load_check_")
+  dir.create(sandbox_dir, recursive = TRUE)
+  on.exit(unlink(sandbox_dir, recursive = TRUE), add = TRUE)
+  in_docker <- !is.null(image)
+  lib_path <- normalizePath(lib_dir, winslash = "/", mustWork = FALSE)
+  lines <- .repro_load_check_lines(
+    if (in_docker) "/rlib" else lib_path,
+    install_results$package[install_results$installed],
+    install_results$package[at_recorded],
+    if (in_docker) "/sandbox/results.rds" else file.path(normalizePath(sandbox_dir, winslash = "/"), "results.rds"))
+  script <- file.path(sandbox_dir, "check.R")
+  con <- file(script, open = "wb", encoding = "UTF-8")
+  writeLines(lines, con, useBytes = TRUE)
+  close(con)
+
+  container_name <- .repro_docker_container_name()
+  res <- tryCatch(
+    if (in_docker) {
+      # as for the install: the network is on, because a replaced package may need installing
+      processx::run("docker", c("run", "--rm", "--name", container_name,
+                                "--user", .repro_docker_uid,
+                                "--cap-drop", "ALL",
+                                "--security-opt", "no-new-privileges",
+                                "--pids-limit", "512",
+                                .repro_docker_resource_args(),
+                                "-v", paste0(sandbox_dir, ":/sandbox"),
+                                "-v", paste0(lib_path, ":/rlib"),
+                                image, "Rscript", "/sandbox/check.R"),
+                    error_on_status = FALSE, timeout = timeout)
+    } else {
+      processx::run(file.path(R.home("bin"), "Rscript"), script,
+                    error_on_status = FALSE, timeout = timeout)
+    }, error = function(e) NULL)
+  if (in_docker && (is.null(res) || isTRUE(res$timeout))) .repro_docker_stop(container_name)
+
+  found <- tryCatch(readRDS(file.path(sandbox_dir, "results.rds")), error = function(e) NULL)
+  if (is.null(found)) {
+    warning("reproducibility_check(): the check that the installed packages load did not finish, ",
+            "so a recorded version may keep a package from loading.", call. = FALSE)
+    return(install_results)
+  }
+  .repro_load_check_apply(install_results, found)
+}
+
+# Puts what the load check found in the install results.
+.repro_load_check_apply <- function(install_results, found) {
+  gone <- found$set_aside
+  for (i in seq_len(NROW(gone))) {
+    row <- match(gone$package[i], install_results$package)
+    if (is.na(row)) next
+    install_results$version_installed[row] <- gone$version_installed[i]
+    install_results$version_note[row] <- gone$note[i]
+  }
+  bad <- found$not_loading
+  for (i in seq_len(NROW(bad))) {
+    row <- match(bad$package[i], install_results$package)
+    if (is.na(row)) next
+    install_results$installed[row] <- FALSE
+    install_results$message[row] <- bad$message[i]
+    install_results$category[row] <- .repro_classify_install_message(bad$message[i])
+  }
+  install_results
 }
 
 # The failure message for a package that could not be loaded after its
@@ -2635,11 +3354,22 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
 # never happened, in wording .repro_classify_install_message() cannot place,
 # so a name that is not a package at all was listed as an uncategorised
 # failure (issue #421). The install step's own "not available" warning is the
-# real reason, so it is reported instead when there is one.
-.repro_not_loadable_msg <- function(pkg, warnings) {
+# real reason, so it is reported instead when there is one. `reason` is what R
+# said when loading failed (see .repro_load_error()).
+.repro_not_loadable_msg <- function(pkg, warnings, reason = "") {
   unavailable <- grep("is not available", warnings, value = TRUE, fixed = TRUE)
   if (length(unavailable) > 0) return(paste(unique(unavailable), collapse = "; "))
-  paste0("installed but package '", pkg, "' is not loadable")
+  paste0("installed but package '", pkg, "' is not loadable", if (nzchar(reason)) paste0(": ", reason))
+}
+
+# What R says when a package does not load, on one line: often a system library
+# that is missing, which "is not loadable" alone does not tell.
+.repro_load_error <- function(pkg, lib_dir) {
+  msg <- tryCatch({
+    loadNamespace(pkg, lib.loc = c(lib_dir, .libPaths()))
+    ""
+  }, error = function(e) conditionMessage(e))
+  substr(gsub("[[:space:]]+", " ", msg), 1, 300)
 }
 
 #' Classify why a package installation failed
@@ -2685,6 +3415,10 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
 #' @keywords internal
 .repro_classify_install_message <- function(msg) {
   if (is.null(msg) || is.na(msg) || !nzchar(msg)) return("other")
+
+  # Our own time limit for installing in Docker ran out, which says nothing
+  # about the network, so it must not reach the "timed out" pattern below.
+  if (grepl("^docker install timed out after", msg)) return("other")
 
   # A source build that failed partway through compiling/configuring — most
   # often a missing system library or compiler toolchain, not an R-level
@@ -2814,7 +3548,7 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
     }
     if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir) &&
         !requireNamespace(pkg, quietly = TRUE))
-      stop("installed but package '", pkg, "' is not loadable")
+      stop(.repro_not_loadable_msg(pkg, character(0), .repro_load_error(pkg, lib_dir)))
     TRUE
   }, error = function(e) conditionMessage(e))
   if (isTRUE(ok)) list(ok = TRUE, msg = "", version = version)
@@ -2851,6 +3585,34 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE) 
 .repro_time_left <- function(deadline) {
   if (is.null(deadline)) return(Inf)
   as.numeric(difftime(deadline, Sys.time(), units = "secs"))
+}
+# A length of time as words, for the progress display: "12 sec", "4 min", "1 h 5 min".
+.repro_duration <- function(secs) {
+  secs <- max(0, round(secs))
+  if (secs < 60) return(sprintf("%d sec", as.integer(secs)))
+  mins <- as.integer(round(secs / 60))
+  if (mins < 60) return(sprintf("%d min", mins))
+  sprintf("%d h %d min", mins %/% 60L, mins %% 60L)
+}
+# What the install step is doing, with the time so far and an estimate of the
+# time left from the packages finished so far. The estimate is rough: one package
+# can take far longer to build than the others.
+.repro_install_what <- function(i, n, pkg, version, started) {
+  elapsed <- as.numeric(difftime(Sys.time(), started, units = "secs"))
+  sprintf("Installing %s%s (%d of %d, %s so far%s)", pkg,
+          if (is.na(version)) "" else paste0(" ", version), i, n, .repro_duration(elapsed),
+          if (i > 1) sprintf(", about %s left", .repro_duration(elapsed / (i - 1) * (n - i + 1))) else "")
+}
+# The seconds for installing a paper's packages. Unless `install_timeout` says
+# otherwise it is the per-script `timeout` as before, or at least an hour when
+# recorded versions are installed, since those are built from source. With a
+# clock time (such as a server's job limit), installing may take at most half of
+# what is left, so that the scripts still get to run.
+.repro_install_limit <- function(install_timeout, timeout, total_timeout, recorded = FALSE) {
+  limit <- install_timeout %||% if (isTRUE(recorded)) max(timeout, 3600) else timeout
+  if (inherits(total_timeout, "POSIXct"))
+    limit <- min(limit, max(60, .repro_time_left(total_timeout) / 2))
+  limit
 }
 
 #' Run the paper's scripts, in order, in isolated subprocesses
@@ -2916,9 +3678,11 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
   pb_run <- pb(length(ordered_names), ":what [:bar] :current/:total")
   pb_run$tick(0, list(what = ""))
   on.exit(pb_run$terminate())
+  run_started <- Sys.time()
 
   rows <- lapply(ordered_names, function(fn) {
-    pb_run$tick(1, list(what = fn))
+    pb_run$tick(1, list(what = sprintf("Running %s (%s so far)", fn, .repro_duration(
+      as.numeric(difftime(Sys.time(), run_started, units = "secs"))))))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
 
     no_lines <- function(df) dplyr::mutate(df, script_lines = list(character(0)),
