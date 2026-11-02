@@ -574,7 +574,7 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
     t0 <- Sys.time()
     res <- tryCatch(
       processx::run(bin, row$script_path, wd = row$run_dir,
-                   env = c("current", PYTHONPATH = pythonpath),
+                   env = c("current", PYTHONPATH = pythonpath, MPLBACKEND = "Agg", QT_QPA_PLATFORM = "offscreen"),
                    error_on_status = FALSE, timeout = timeout),
       error = function(e) e)
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))

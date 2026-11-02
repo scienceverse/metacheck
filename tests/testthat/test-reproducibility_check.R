@@ -1453,9 +1453,9 @@ test_that(".repro_neutralise_env_calls replaces calls that would install package
                  'set.groundhog.folder("x")', 'groundhog::meta.groundhog("2023-01-01")'))
     expect_match(one(call), '^invisible\\("reproducibility_check removed ')
   expect_match(one('renv::restore(', '  lockfile = "renv.lock"', ')'), '^invisible\\([^\n]*\\)$')
-  expect_equal(one('if (!require(renv)) install.packages("renv")'), 'if (!TRUE) install.packages("renv")')
+  expect_equal(one('if (!require(renv)) install.packages("renv")'), 'if (!TRUE) invisible(NULL)')
   expect_equal(one('if (!requireNamespace("groundhog", quietly = TRUE)) install.packages("groundhog")'),
-               'if (!TRUE) install.packages("groundhog")')
+               'if (!TRUE) invisible(NULL)')
 
   # checkpoint() only when the script names the package
   expect_equal(one('checkpoint("my result")'), 'checkpoint("my result")')
@@ -2626,6 +2626,66 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_setequal(names(imp), c("a/utils.py", "b/utils.py"))
   expect_equal(imp[["a/utils.py"]], "a/m.py")
   expect_equal(imp[["b/utils.py"]], "c/n.py")
+})
+
+test_that(".repro_neutralise_env_calls replaces calls that install packages (#568)", {
+  n <- function(x) .repro_neutralise_env_calls(x)$txt
+  expect_equal(n('install.packages("a")'), "invisible(NULL)")
+  expect_equal(n('if (!require(a)) install.packages("a", dependencies = TRUE)'), "if (!require(a)) invisible(NULL)")
+  expect_equal(n('devtools::install_github("u/r")'), "invisible(NULL)")
+  expect_equal(n('remotes::install_github("u/r", ref = c("a"))'), "invisible(NULL)")
+  expect_equal(n('BiocManager::install("a")'), "invisible(NULL)")
+  expect_equal(n('sapply(p, install.packages)'), "sapply(p, invisible)")
+  # p_load becomes library()
+  expect_equal(n('pacman::p_load(a, b)'), '{ library("a"); library("b") }')
+  expect_equal(n('p_load(char = pk)'), "{ for (.pkg in pk) library(.pkg, character.only = TRUE) }")
+  expect_equal(n('library(pacman)'), 'invisible("reproducibility_check removed the loading of a package manager")')
+  # a message about it stays valid code, and other names stay
+  msg <- n('message("run install.packages(\'a\') first")')
+  expect_no_error(parse(text = msg))
+  expect_equal(n('my.install.packages("a")'), 'my.install.packages("a")')
+  expect_equal(n('x <- 1'), 'x <- 1')
+})
+
+test_that(".repro_fill_file_choice fills in the file the code names (#568)", {
+  files <- c("nest_outcomes.csv", "transects.csv")
+  f <- function(x, d = files) .repro_fill_file_choice(x, d)
+  same_line <- f('d <- read.csv(file.choose())   # Select "nest_outcomes" here')
+  expect_equal(same_line$txt, 'd <- read.csv("nest_outcomes.csv")   # Select "nest_outcomes" here')
+  expect_equal(same_line$filled, "nest_outcomes.csv")
+  above <- f(c("# the transects file", "d <- read.csv(file.choose())"))
+  expect_equal(above$txt[2], 'd <- read.csv("transects.csv")')
+  # the only data file of the deposit
+  expect_equal(f("d <- read.csv(file.choose())", "a.csv")$txt, 'd <- read.csv("a.csv")')
+  # nothing says which, or two fit: it stays
+  expect_equal(f("d <- read.csv(file.choose())")$txt, "d <- read.csv(file.choose())")
+  expect_length(f("d <- read.csv(file.choose())")$filled, 0)
+  expect_equal(f("d <- file.choose() # nest_outcomes or transects")$filled, character(0))
+  # a comment is left alone, other forms too
+  expect_equal(f("# file.choose()", "a.csv")$txt, "# file.choose()")
+  expect_equal(f('p <- choose.files(multi = F, caption = c("a"))', "a.csv")$txt, 'p <- "a.csv"')
+})
+
+test_that(".repro_starts_app and .repro_needs_person_error (#568)", {
+  expect_true(.repro_starts_app(c("library(shiny)", "shiny::runApp('a')")))
+  expect_true(.repro_starts_app("shinyApp(ui, server)"))
+  expect_false(.repro_starts_app(c("f <- function() runApp('a')", "x <- 1")))
+  expect_false(.repro_starts_app("runApp("))
+  expect_true(.repro_needs_person_error("Error in file.choose() : file choice cancelled"))
+  expect_true(.repro_needs_person_error("EOFError: EOF when reading a line"))
+  expect_false(.repro_needs_person_error("Error: cannot open the connection"))
+})
+
+test_that(".repro_make_write_folders makes a relative folder, never above the sandbox (#568)", {
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "a", "b"), recursive = TRUE)
+  wr <- data.frame(call_text = c('write.csv(x, "out/r.csv")', "ggsave('../fig/p.png')", "ggsave('../../../up/q.png')",
+                                 'write.csv(x, "/abs/s.csv")', 'write.csv(x, "here.csv")'))
+  .repro_make_write_folders(wr, d, "a/b")
+  expect_true(dir.exists(file.path(d, "a", "b", "out")))
+  expect_true(dir.exists(file.path(d, "a", "fig")))
+  expect_false(dir.exists(file.path(d, "up")))
+  expect_false(dir.exists(file.path(dirname(d), "up")))
 })
 
 test_that(".repro_rel_from counts a path from a folder of the package (#568)", {

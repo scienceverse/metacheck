@@ -314,7 +314,12 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              "--pids-limit", "512",
              .repro_docker_resource_args(),
              "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
-             "-v", paste0(sandbox_root, ":/sandbox"))
+             "-v", paste0(sandbox_root, ":/sandbox"),
+             # the container is read-only apart from /tmp, so caches go there: Numba
+             # stopped with "cannot cache function" (#568, item 19). There is no
+             # screen, so plots and windows must not ask for one.
+             "-e", "HOME=/tmp", "-e", "NUMBA_CACHE_DIR=/tmp/numba", "-e", "MPLCONFIGDIR=/tmp/matplotlib",
+             "-e", "XDG_CACHE_HOME=/tmp/.cache", "-e", "MPLBACKEND=Agg", "-e", "QT_QPA_PLATFORM=offscreen")
     if (!is.null(lib_dir_norm))
       args <- c(args, "-v", paste0(lib_dir_norm, ":/pylib:ro"),
                "-e", "PYTHONPATH=/pylib")

@@ -42,6 +42,8 @@
 #' package's tests or its `setup.py`; neither is run or counted as a script.
 #' `docker_failed` means the container never started, which says nothing about
 #' the script, so it keeps the light from being green but does not make it red.
+#' `needs_a_person` is a script that stopped because it asks a person to choose a
+#' file or answer a question, or that starts an app; it is treated the same way.
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -1311,6 +1313,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   })
   names(code_text_list) <- r_files$file_name
 
+  # Fill in the file where a script asks a person to choose one and the code says
+  # which (see .repro_fill_file_choice()).
+  deposit_data <- if (!is.null(structure_df) && "file_name" %in% names(structure_df))
+    unique(basename(gsub("\\\\", "/", structure_df$file_name[grepl(
+      "\\.(csv|tsv|txt|dat|tab|xls|xlsx|ods|rds|rda|rdata|sav|dta)$", structure_df$file_name, ignore.case = TRUE)]))) else character(0)
+  r_choices <- lapply(code_text_list, .repro_fill_file_choice, deposit_data)
+  code_text_list <- lapply(r_choices, `[[`, "txt")
+  r_choices_filled <- lapply(r_choices, `[[`, "filled")
+
   # ── 3. Dependencies (pooled across files) ───────────────────────────────────
   # repro_dependencies() adds the install source (cran/github/url/base) + ref
   # that code_check's `packages` column does not carry. But if a file's text
@@ -1433,6 +1444,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   sniff_type[is.na(sniff_type) & .repro_is_r_test(r_script_paths)] <- "not_analysis"
   only_functions <- is.na(sniff_type) & grepl("\\.[Rr]$", r_files$file_name) & lengths(r_function_names) > 0
   sniff_type[only_functions] <- "defines_functions"
+  # A script that starts an app waits for a person until the time limit.
+  starts_app <- is.na(sniff_type) & vapply(code_text_list, .repro_starts_app, logical(1))
+  sniff_type[starts_app] <- "needs_a_person"
   r_used_by <- vapply(seq_len(n_code), function(i) {
     if (!only_functions[i]) return(NA_character_)
     users <- .repro_function_users(r_files$file_name[i], r_function_names[[i]], code_text_list,
@@ -1609,6 +1623,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                    replace_env_calls = replace_env_calls,
                                    run_dirs = r_run_dirs)
     rprofile_replaced <- if (replace_env_calls) .repro_neutralise_rprofile(sandbox_root) else 0L
+    # here::here() needs a mark for the top of the project, which is often not
+    # deposited: it stopped with "Could not find a root" (#568, item 20).
+    for (d in unique(c(sandbox_root, run_tbl$run_dir))) if (!length(list.files(d, pattern = "\\.Rproj$|^\\.here$|^DESCRIPTION$", all.files = TRUE)))
+      suppressWarnings(file.create(file.path(d, ".here")))
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
     # 2. Optionally install dependencies. sandbox = "process": CRAN sources
@@ -1864,6 +1882,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       run_results$outcome[no_container] <- "docker_failed"
       run_results$error_type[no_container] <- NA_character_
     }
+    # A script that stopped because nobody could answer it says nothing about the code.
+    asks_person <- run_results$outcome == "errored" &
+      .repro_needs_person_error(paste(run_results$error, run_results$stderr))
+    run_results$outcome[asks_person] <- "needs_a_person"
+    run_results$error_type[asks_person] <- NA_character_
 
     # A predicted missing file no longer counts for a script that ran through.
     tl <- .repro_static_light(
@@ -1877,7 +1900,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed")) && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2166,6 +2189,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " **Docker failed for %d script%s, so %s not run.** This says nothing about the code; run the check again when Docker works.",
         sum(oc == "docker_failed"), plural(sum(oc == "docker_failed")),
         plural(sum(oc == "docker_failed"), "it was", "they were")))
+    if (sum(oc == "needs_a_person") > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **%d script%s need%s a person** to choose a file, answer a question or use an app, which cannot be reproduced without one: %s. Naming the file in the script solves this.",
+        sum(oc == "needs_a_person"), plural(sum(oc == "needs_a_person")), plural(sum(oc == "needs_a_person"), "s", ""),
+        paste(run_results$file_name[oc == "needs_a_person"], collapse = ", ")))
+    if (sum(lengths(r_choices_filled)) > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **%d `file.choose()` call%s replaced by the file the code names**, so the script could run; the script should name the file itself.",
+        sum(lengths(r_choices_filled)), plural(sum(lengths(r_choices_filled)), " was", "s were")))
 
     # Scripts run only inside the script that sources them (see
     # run_by_source above): say which, and why they were not run on their own.
@@ -2378,9 +2410,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                 if (!is.null(report_setwd)) c("**`setwd()` in the code**", report_setwd),
                 # The calls that install packages themselves cannot run here.
                 if (sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced > 0) c(
-                  "**`groundhog`, `checkpoint` and `renv` in the code**", sprintf(paste0(
-                    "%d call%s to these packages %s replaced, since they install packages ",
-                    "themselves: `groundhog.library()` by `library()`, the others by a ",
+                  "**Calls that install packages in the code**", sprintf(paste0(
+                    "%d call%s to `install.packages()`, `groundhog`, `checkpoint`, `renv`, `pacman` ",
+                    "and the like %s replaced, since they install packages themselves: ",
+                    "`groundhog.library()` and `p_load()` by `library()`, the others by a ",
                     "statement that does nothing. The scripts ran with the packages ",
                     "installed before the run."),
                     sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced,
@@ -2537,6 +2570,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     rw_rows <- dplyr::bind_rows(rw_rows, data.frame(
       file_name = name_corrections$file_name, change_type = "name_corrected",
       detail = sprintf('"%s" -> "%s"', name_corrections$name_in_code, name_corrections$name_in_deposit)))
+  if (sum(lengths(r_choices_filled)) > 0)
+    rw_rows <- dplyr::bind_rows(rw_rows, data.frame(
+      file_name = rep(names(r_choices_filled), lengths(r_choices_filled)), change_type = "file_choice_filled",
+      detail = unlist(r_choices_filled, use.names = FALSE)))
 
   modifications <- if (isTRUE(execute)) {
     setwd_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
@@ -2996,6 +3033,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
       if (sandbox == "docker") py_run_results$outcome[py_run_results$outcome == "errored" &
         .repro_docker_failed(paste(py_run_results$error, py_run_results$stderr))] <- "docker_failed"
+      py_run_results$outcome[py_run_results$outcome == "errored" &
+        .repro_needs_person_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_a_person"
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -3027,7 +3066,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed")) && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output

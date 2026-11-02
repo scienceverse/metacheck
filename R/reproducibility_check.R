@@ -2729,6 +2729,69 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   sprintf("{ %s }", paste(sprintf('library("%s")', pkgs), collapse = "; "))
 }
 
+# pacman::p_load(a, b) as library() calls: p_load installs what is missing, which
+# cannot work during a run, and the module has installed these packages.
+.repro_p_load_as_library <- function(call, vars = list()) {
+  held <- regmatches(call, regexec("\\bchar\\s*=\\s*([.A-Za-z][.A-Za-z0-9_]*)", call, perl = TRUE))[[1]]
+  if (length(held) > 1 && !held[2] %in% names(vars))
+    return(sprintf("{ for (.pkg in %s) library(.pkg, character.only = TRUE) }", held[2]))
+  known <- vapply(names(vars), function(nm) paste0(nm, " <- ", deparse1(vars[[nm]])), character(1))
+  pkgs <- unique(tryCatch(code_library_names(c(known, call), "R")$package, error = function(e) character(0)))
+  pkgs <- setdiff(pkgs, "pacman")
+  if (!length(pkgs)) return("invisible(NULL)")
+  sprintf("{ %s }", paste(sprintf('library("%s")', pkgs), collapse = "; "))
+}
+
+# What asks a person to choose a file, which nobody can during a check.
+.repro_choose_pat <- "(?<![\\w.])(?:utils::|tcltk::|rstudioapi::)?(?:file\\.choose|choose\\.files|tk_choose\\.files|selectFile)\\s*\\((?:[^()]|\\([^()]*\\))*\\)"
+
+# Fill in the file where a script asks a person to choose one, when the code says
+# which: a comment on that line or just above it names a data file of the deposit,
+# or the deposit holds only one data file (#568, item 18). Otherwise the call stays,
+# and the script stops there with the outcome needs_a_person. Returns the text and
+# what was filled in.
+.repro_fill_file_choice <- function(code_text, data_files) {
+  out <- list(txt = code_text, filled = character(0))
+  if (!length(code_text) || !length(data_files)) return(out)
+  txt <- code_text
+  stems <- tools::file_path_sans_ext(data_files)
+  for (i in which(grepl(.repro_choose_pat, txt, perl = TRUE) & !grepl("^\\s*#", txt))) {
+    ctx <- txt[seq.int(max(1L, i - 2L), i)]
+    ctx <- c(ctx[-length(ctx)][grepl("^\\s*#", ctx[-length(ctx)])],
+             sub("^.*?#", "", txt[i][grepl("#", txt[i], fixed = TRUE)], perl = TRUE))
+    named <- data_files[vapply(stems, function(s) nchar(s) >= 4 &&
+      any(grepl(s, ctx, fixed = TRUE, useBytes = TRUE)), logical(1))]
+    pick <- if (length(unique(named)) == 1) named[1] else if (!length(named) && length(data_files) == 1) data_files else NA_character_
+    if (is.na(pick)) next
+    new <- paste0('"', gsub('"', '\\\\"', pick), '"')
+    m <- gregexpr(.repro_choose_pat, txt[i], perl = TRUE)
+    n_call <- length(m[[1]])
+    regmatches(txt[i], m) <- list(rep(new, n_call))
+    out$filled <- c(out$filled, rep(pick, n_call))
+  }
+  out$txt <- txt
+  out
+}
+
+# Whether an R script starts an interactive app at its top level (runApp() and the
+# like): it would wait for a person until the time limit, with nothing to show for it.
+.repro_starts_app <- function(code_text) {
+  ex <- tryCatch(parse(text = code_text, keep.source = FALSE), error = function(e) NULL)
+  if (is.null(ex)) return(FALSE)
+  apps <- c("runApp", "shinyApp", "launch_shinystan", "runExample", "runGitHub", "runUrl",
+            "shiny::runApp", "shiny::shinyApp", "shinystan::launch_shinystan")
+  any(vapply(as.list(ex), function(e) is.call(e) && deparse(e[[1]])[1] %in% apps, logical(1)))
+}
+
+# Whether a run's error shows that the script waited for a person.
+.repro_needs_person_error <- function(txt) {
+  grepl(paste0("file choice cancelled|invalid 'description' argument|menu\\(\\) cannot be used non-interactively|",
+               "could not find function \"(choose\\.files|choose\\.dir)\"|",
+               "RStudio not running|tcltk|EOFError: EOF when reading a line|",
+               "no display name and no \\$DISPLAY|couldn't connect to display"),
+        txt %||% "", perl = TRUE)
+}
+
 # Replace the calls of groundhog, checkpoint and renv in a script, since they
 # would install packages themselves, which needs the network that is off during
 # a Docker run, and put them outside the library the run uses. renv::restore()
@@ -2772,7 +2835,22 @@ repro_materialize_layout <- function(plan, structure_df, root) {
                                     args_pat, "\\)"), removed("a checkpoint call"))
     joined <- swap(joined, "(?<![\\w.])source\\s*\\([^)\n]*renv[^)\n]*activate[^)\n]*\\)+",
                    removed("renv's activate.R"))
-    tools <- "['\"]?(?:groundhog|checkpoint|renv)['\"]?"
+    # install.packages() and the like stop on the read-only system and with the
+    # network off (82 scripts in 25 papers, #568, item 15), and the module installs
+    # what the scripts load before the run. Without quotes, since such a call also
+    # stands inside messages: "please run install.packages('x')".
+    installers <- paste0("(?:(?:utils|remotes|devtools|BiocManager|pak|renv)::)?",
+                         "(?:install\\.packages|update\\.packages|install_github|install_version|install_url|",
+                         "install_cran|install_bitbucket|install_local|install_git|biocLite|pkg_install|pak)")
+    joined <- swap(joined, paste0("(?<![\\w.:$])", installers, "\\s*\\(", args_pat, "\\)"),
+                   function(call) "invisible(NULL)")
+    joined <- swap(joined, paste0("(?<![\\w.:$])BiocManager::install\\s*\\(", args_pat, "\\)"),
+                   function(call) "invisible(NULL)")
+    # as a function name: sapply(pkgs, install.packages)
+    joined <- swap(joined, "(?<![\\w.:$\"'])(?:utils::)?install\\.packages(?![\\w.(\"'])", function(call) "invisible")
+    joined <- swap(joined, paste0("(?<![\\w.:])(?:pacman::)?p_load\\s*\\(", args_pat, "\\)"),
+                   function(call) .repro_p_load_as_library(call, vars))
+    tools <- "['\"]?(?:groundhog|checkpoint|renv|pacman|remotes|devtools|BiocManager|pak)['\"]?"
     joined <- swap(joined, paste0("(?<![\\w.:])(?:base::)?(?:requireNamespace|require)\\s*\\(\\s*", tools,
                                   "\\s*(?:,[^()]*)?\\)"), function(call) "TRUE")
     joined <- swap(joined, paste0("(?<![\\w.:])(?:base::)?library\\s*\\(\\s*", tools,
@@ -2798,6 +2876,21 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     n <- n + res$n
   }
   n
+}
+
+# Make the folders of the relative paths in write calls, counted from where the
+# script runs. Never above the sandbox. `wr` is a .repro_redirect_writes() result.
+.repro_make_write_folders <- function(wr, root, run_dir = ".") {
+  if (!nrow(wr)) return(invisible(NULL))
+  quoted <- unlist(regmatches(wr$call_text, gregexpr("[\"'][^\"'\n]*[/\\\\][^\"'\n]*\\.[A-Za-z0-9]{1,8}[\"']", wr$call_text)))
+  for (q in unique(gsub("^[\"']|[\"']$", "", quoted))) {
+    q <- gsub("\\\\", "/", q)
+    if (grepl("^([A-Za-z]:/|/|~)|://", q)) next
+    p <- .repro_norm_rel(if (run_dir == ".") q else file.path(run_dir, q))
+    if (is.na(p) || dirname(p) == ".") next
+    dir.create(file.path(root, .portable_path(dirname(p))), recursive = TRUE, showWarnings = FALSE)
+  }
+  invisible(NULL)
 }
 
 #' Write path-rewritten scripts into the materialised layout
@@ -2948,7 +3041,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     run_dir <- if (is.null(run_dirs)) "." else run_dirs[[i]]
     if (isTRUE(writes_in_place) && run_dir == ".")
       txt <- .repro_relocate_relative_paths(txt, script_target(fn, i), plan)
-    wr <- .repro_redirect_writes(txt, lang = fn_lang)
+    wr <- all_wr <- .repro_redirect_writes(txt, lang = fn_lang)
     # In the package layout a write stays where the code puts it, so a later
     # script reads the file where it expects it; only a write to an absolute
     # path (the author's computer) or out of the package goes to output/.
@@ -2956,6 +3049,9 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
       outside <- grepl("[\"']([A-Za-z]:[/\\\\]|/|~|\\.\\.[/\\\\])", wr$call_text, perl = TRUE)
       wr <- wr[outside, , drop = FALSE]
     }
+    # A write stays in place, so a folder the deposit lacks must exist: an empty
+    # output folder is often not deposited, and the write stopped (#568, item 20).
+    if (isTRUE(writes_in_place)) .repro_make_write_folders(all_wr, root, run_dir)
     if (nrow(wr) > 0) {
       joined_txt <- paste(txt, collapse = "\n")
       for (k in seq_len(nrow(wr))) {

@@ -132,6 +132,8 @@
         if (!is.na(used_by[[i]])) sprintf("It only defines functions, which %s uses.", .repro_cell(used_by[[i]]))
         else "It only defines functions, and no script in the deposit uses them."),
       docker_failed = c("Not run", "Docker failed on our side, so this says nothing about the script."),
+      needs_a_person = , static_needs_a_person = c(
+        "Stopped", "It asks a person to choose a file or answer a question, or starts an app. Naming the file in the script solves this."),
       not_analysis = , static_not_analysis = c(
         "Not run", "It is a test of a package or the file that installs it, not part of the analysis."),
       c("Not run", ""))
@@ -164,7 +166,8 @@
   # the headline: how many ran to the end, and what happened to the others
   groups <- c(errored = "stopped with an error", timed_out = "ran out of time",
               dependency_unavailable = "could not run on our server",
-              docker_failed = "could not run on our server")
+              docker_failed = "could not run on our server",
+              needs_a_person = "needed a person")
   n_ok <- sum(outcome[counted] == "ran_ok")
   parts <- vapply(names(groups), \(g) {
     n <- sum(outcome[counted] == g)

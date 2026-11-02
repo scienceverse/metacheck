@@ -727,7 +727,14 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       '    pandoc <- c(file.path(tools, "pandoc"), Sys.glob(file.path(tools, "*", "pandoc")))',
       '    pandoc <- pandoc[file.exists(pandoc)]',
       '    if (length(pandoc)) Sys.setenv(RSTUDIO_PANDOC = dirname(pandoc[1]))',
-      '  }'
+      '  }',
+      # as in .r_capture_runner(): what a person\'s computer has and a check does not
+      '  options(knitr.graphics.error = FALSE)',
+      '  assign("View", function(...) invisible(NULL), envir = globalenv())',
+      '  assign("windowsFonts", function(...) invisible(NULL), envir = globalenv())',
+      '  assign("windowsFont", function(...) "sans", envir = globalenv())',
+      '  for (ask in c("file.choose", "choose.files", "choose.dir", "tk_choose.files", "tk_choose.dir"))',
+      '    assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = globalenv())'
     )
     wrapper_lines <- c(
       capture_preamble,

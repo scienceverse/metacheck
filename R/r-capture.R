@@ -363,6 +363,15 @@
     # actually runs in) does not flag this as if it modified the user's own
     # interactive session, which it never does.
     env <- globalenv()
+    # What a person's computer has and a check does not (#568, items 17 and 20): a
+    # missing figure in a document, the data viewer, and fonts only Windows has.
+    options(knitr.graphics.error = FALSE)
+    assign("View", function(...) invisible(NULL), envir = env)
+    assign("windowsFonts", function(...) invisible(NULL), envir = env)
+    assign("windowsFont", function(...) "sans", envir = env)
+    # Nobody can answer: on Windows file.choose() opens a window and waits.
+    for (ask in c("file.choose", "choose.files", "choose.dir", "tk_choose.files", "tk_choose.dir"))
+      assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = env)
     # Recreate the reducer helpers in the child (they cannot be referenced from
     # the parent's namespace inside callr). A helper copied from metacheck's
     # namespace would still call the other helpers in whatever metacheck is

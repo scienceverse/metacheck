@@ -515,7 +515,7 @@ test_that("a script's groundhog and renv calls are replaced when recorded versio
   expect_equal(mo$run_results$outcome, "ran_ok")
   expect_match(mo$run_results$stdout, "VERSION 2.4.0", fixed = TRUE)
   expect_true("env_call_replaced" %in% mo$modifications$change_type)
-  expect_match(paste(unlist(mo$report), collapse = "\n"), "3 calls to these packages were replaced", fixed = TRUE)
+  expect_match(paste(unlist(mo$report), collapse = "\n"), "3 calls to `install.packages()`", fixed = TRUE)
 })
 
 # execute = TRUE, sandbox = "docker", workers > 1 (concurrent multi-paper) ----
@@ -732,6 +732,27 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   # the prediction stays in the table, and code_check reports absent files
   expect_match(mo$table$unresolved_inputs[mo$table$file_name == "stops.R"], "really_absent.csv", fixed = TRUE)
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
+})
+
+test_that("execute = TRUE: scripts that ask a person, or need what a person's computer has (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  file.copy(repro_fixture("data.csv"), file.path(d, "only.csv"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "second.csv"))
+  writeLines(c('# the file is second.csv', 'a <- read.csv(file.choose())', 'stopifnot(nrow(a) > 0)'), file.path(d, "named.R"))
+  writeLines('a <- read.csv(file.choose())', file.path(d, "unnamed.R"))
+  writeLines(c('library(shiny)', 'runApp("nothing")'), file.path(d, "app.R"))
+  writeLines(c('View(1)', 'windowsFonts(A = windowsFont("Arial"))', 'dir.create("x", showWarnings = FALSE)',
+               'write.csv(1, "newfolder/deep/r.csv")', 'stopifnot(file.exists("newfolder/deep/r.csv"))'), file.path(d, "pc.R"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["named.R"]], "ran_ok")
+  expect_equal(outcome[["unnamed.R"]], "needs_a_person")
+  expect_equal(outcome[["app.R"]], "needs_a_person")
+  expect_equal(outcome[["pc.R"]], "ran_ok")
+  expect_equal(mo$modifications$detail[mo$modifications$change_type == "file_choice_filled"], "second.csv")
+  expect_false(identical(mo$traffic_light, "red"))
 })
 
 test_that("execute = TRUE: the package layout runs a script from where its paths work (#568)", {
