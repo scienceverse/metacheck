@@ -697,7 +697,10 @@ repro_dependencies <- function(code_text, lang = "R") {
 #'   or NA), `ambiguous` (logical, several plan files matched and the study
 #'   could not disambiguate), `n_candidates`, and `is_call` (logical, TRUE when
 #'   `ref` is a whole `sprintf()`/`paste()`-family call rather than a literal
-#'   path — see above). Empty frame when the script references no files.
+#'   path — see above), and `name_in_code` and `name_in_deposit` (both names when
+#'   they differ, else NA). A reference with no exact match also matches the one
+#'   plan file with the same extension and the same name apart from case, spaces
+#'   and punctuation. Empty frame when the script references no files.
 #' @export
 #'
 #' @examples
@@ -814,11 +817,35 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     keep
   }
 
+  # A file spelled differently in the code than in the deposit, which repositories
+  # such as Dryad can cause on deposit (relative cover.csv, relative_cover.csv):
+  # the one plan row with the same extension and the same name apart from case,
+  # spaces and punctuation. A piece of a name, a placeholder, a name built from a
+  # variable or a file the script writes itself can look like another file, so
+  # is not compared; a call row has already worked out what it can of its name.
+  plan_key <- .repro_name_key(plan_base)
+  plan_ext <- tolower(tools::file_ext(plan_base))
+  not_compared <- c(.repro_built_names(code_text, lang),
+                    unlist(repro_file_io(list(script = code_text), lang)$writes))
+  other_spelling <- function(base, literal = TRUE) {
+    if ((literal && tolower(base) %in% not_compared) || grepl("^[._]|[%{}$*]", base) ||
+        !nzchar(tools::file_ext(base))) return(integer(0))
+    key <- .repro_name_key(base)
+    if (!nzchar(key)) return(integer(0))
+    cand <- collapse_by_hash(which(plan_key == key & plan_ext == tolower(tools::file_ext(base)) & has_target))
+    if (length(unique(plan$target_path[cand])) == 1) cand[[1]] else integer(0)
+  }
+
   rows <- lapply(seq_along(refs), function(i) {
     cand <- which(plan_base == ref_base[i] & has_target)
     cand <- collapse_by_hash(cand)
     n <- length(cand)
     if (n == 0) {
+      other <- other_spelling(ref_base[i])
+      if (length(other))
+        return(data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
+                          target = pick_target(other, ref_ext[i]), ambiguous = FALSE,
+                          n_candidates = 1L, is_call = FALSE))
       return(data.frame(ref = refs[i], basename = ref_base[i], matched = FALSE,
                         target = NA_character_, ambiguous = FALSE,
                         n_candidates = 0L, is_call = FALSE))
@@ -883,6 +910,13 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     key_ext  <- tolower(tools::file_ext(key_base))
     cand <- which(plan_base == key_base & has_target)
     n <- length(cand)
+    if (n == 0) {
+      other <- other_spelling(key_base, literal = FALSE)
+      if (length(other))
+        return(data.frame(ref = call_refs$call_text[i], basename = key_base,
+                          matched = TRUE, target = pick_target(other, key_ext),
+                          ambiguous = FALSE, n_candidates = 1L, is_call = TRUE))
+    }
     if (n == 0)
       return(data.frame(ref = call_refs$call_text[i], basename = key_base,
                         matched = FALSE, target = NA_character_,
@@ -917,7 +951,82 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
                 is_call = TRUE)
   }) else list()
 
-  dplyr::bind_rows(c(rows, call_rows))
+  out <- dplyr::bind_rows(c(rows, call_rows))
+
+  # Where the name in the code is not the name in the deposit, both names, so the
+  # report can tell the authors. Only the name's case counts here too, since that
+  # fails on a case-sensitive system.
+  in_code <- basename(gsub("\\\\", "/", out$ref))
+  in_code[out$is_call] <- ifelse(!is.na(call_refs$resolved), basename(gsub("\\\\", "/", call_refs$resolved)),
+                                 basename(gsub("\\\\", "/", call_refs$fmt)))[
+    match(out$ref[out$is_call], call_refs$call_text)]
+  listed <- ifelse(out$is_call & grepl("[%{}$*]", in_code), NA_character_,
+                   plan$file_name[match(out$target, plan$target_path)])
+  from_original <- is.na(listed) & !is.na(out$target) & !(out$is_call & grepl("[%{}$*]", in_code))
+  listed[from_original] <- plan$file_name[match(out$target[from_original], orig_target)]
+  listed <- basename(gsub("\\\\", "/", listed))
+  differs <- !is.na(listed) & !out$ambiguous & listed != in_code
+  out$name_in_code <- ifelse(differs, in_code, NA_character_)
+  out$name_in_deposit <- ifelse(differs, listed, NA_character_)
+  out
+}
+
+# A file name for comparing spellings: no extension, case, spaces or punctuation.
+# A separator between two digits stays, so s1_2 and s12 remain different files.
+# Not .repro_normalize_basename(), which removes leading numbers, so that
+# 1_data.csv and 2_data.csv would count as one file.
+.repro_name_key <- function(x) {
+  x <- tolower(tools::file_path_sans_ext(iconv(x, "UTF-8", "UTF-8", sub = "")))
+  x <- gsub("([0-9])[^[:alnum:]]+(?=[0-9])", "\\1|", x, perl = TRUE)
+  gsub("[^[:alnum:]|]", "", x)
+}
+
+# File extensions of data, for saying that the deposit holds a data file in another
+# format than the code reads: x.csv and x.html sharing a name is a coincidence.
+.repro_data_exts <- c("csv", "tsv", "txt", "dat", "tab", "xls", "xlsx", "ods",
+                      "rds", "rda", "rdata", "sav", "dta")
+
+# The names a script reads under another spelling than the deposit's, one row per
+# name, from repro_rewrite_paths() results (a named list, by script).
+.repro_name_corrections <- function(rewrite_list) {
+  rows <- lapply(names(rewrite_list), function(fn) {
+    d <- rewrite_list[[fn]]
+    if (is.null(d) || !nrow(d) || !"name_in_deposit" %in% names(d)) return(NULL)
+    d <- unique(d[!is.na(d$name_in_deposit), c("name_in_code", "name_in_deposit"), drop = FALSE])
+    if (!nrow(d)) return(NULL)
+    data.frame(file_name = fn, name_in_code = d$name_in_code, name_in_deposit = d$name_in_deposit)
+  })
+  out <- dplyr::bind_rows(rows)
+  if (!nrow(out)) return(data.frame(file_name = character(0), name_in_code = character(0),
+                                    name_in_deposit = character(0)))
+  out
+}
+
+# For `table`: a script's corrected names as text, NA when there are none.
+.repro_names_corrected <- function(corrections, file_names) {
+  vapply(file_names, function(fn) {
+    d <- corrections[corrections$file_name == fn, , drop = FALSE]
+    if (!nrow(d)) return(NA_character_)
+    paste(sprintf("%s -> %s", d$name_in_code, d$name_in_deposit), collapse = "; ")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# The report's note on these names, so authors can change their code; NULL if none.
+.repro_name_report <- function(corrections, execute = FALSE) {
+  n <- nrow(corrections)
+  if (!n) return(NULL)
+  c(sprintf(
+    paste0("**%d file name%s in the code %s not the same as in the deposit**, in case, ",
+           "spaces or punctuation, and exactly one file in the deposit fits. %s ",
+           "this in a copy of the script so that it finds the file. The script itself ",
+           "should be changed, because as written it does not find the file on every ",
+           "system."),
+    n, plural(n), plural(n, "is", "are"),
+    if (isTRUE(execute)) "To run the code we corrected" else "To run the code we would correct"),
+    scroll_table(data.frame(File = corrections$file_name,
+                            `Name in the code` = corrections$name_in_code,
+                            `Name in the deposit` = corrections$name_in_deposit,
+                            check.names = FALSE), maxrows = 10))
 }
 
 #' Determine the order code files must run in
@@ -1631,7 +1740,7 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   # separator mismatch ("Data.csv" referenced, "data.csv" present) — which is a
   # different (and more actionable) finding than "this file was never shared at
   # all". Tried only for an otherwise-`absent` reference (an exact match already
-  # resolved above needs no fallback): first the SAME STEM ignoring extension
+  # resolved above needs no fallback): first the SAME NAME in another data format
   # (a script asking for `data.csv` when only `data.xlsx` was shared — common
   # when authors describe a conversion in prose but never update the code), then
   # a small EDIT DISTANCE on the full basename (a typo/case/punctuation slip).
@@ -1640,19 +1749,24 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   all_candidates <- unique(struct_base)
   find_similar <- function(b) {
     if (length(all_candidates) == 0) return(NA_character_)
-    stem <- tools::file_path_sans_ext(b)
-    cand_stems <- tools::file_path_sans_ext(all_candidates)
-    stem_hit <- all_candidates[cand_stems == stem & nzchar(stem)]
+    ext <- tolower(tools::file_ext(b))
+    cand_ext <- tolower(tools::file_ext(all_candidates))
+    # The same name in another format counts only between data formats: x.csv
+    # and x.html sharing a name is a coincidence.
+    key <- .repro_name_key(b)
+    stem_hit <- all_candidates[.repro_name_key(all_candidates) == key & nzchar(key) &
+                                 cand_ext != ext & ext %in% .repro_data_exts &
+                                 cand_ext %in% .repro_data_exts]
     if (length(stem_hit) > 0) return(stem_hit[[1]])
-    # Small edit distance on the full basename (extension included, so a
-    # same-stem-different-extension pair is already caught above and does not
-    # also compete here). Threshold: at most 3 edits, and never more than a
+    # Small edit distance on the full basename, among files of the same
+    # extension. Threshold: at most 3 edits, and never more than a
     # quarter of the reference's own length, so a short name ("x.csv") cannot
     # match something unrelated purely because 3 edits is a large fraction of
     # it — same "do not guess" spirit as the rest of this file.
     max_dist <- min(3L, floor(nchar(b) / 4))
     if (max_dist < 1L) return(NA_character_)
     d <- utils::adist(b, all_candidates)[1, ]
+    d[cand_ext != ext] <- Inf
     hit <- which(d <= max_dist)
     if (length(hit) == 0) return(NA_character_)
     all_candidates[hit[which.min(d[hit])]]
@@ -1695,10 +1809,11 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
                         similar_to = NA_character_))
     }
     similar <- find_similar(b)
-    detail <- if (!is.na(similar))
-      sprintf("referenced file is not present in the repository, but a similarly-named file exists: %s",
-              similar)
-      else "referenced file is not present in the repository"
+    detail <- if (is.na(similar)) "referenced file is not present in the repository"
+      else if (tolower(tools::file_ext(similar)) != tolower(tools::file_ext(b)))
+        sprintf("the deposit holds %s, the code reads %s", similar, b)
+      else sprintf("referenced file is not present in the repository, but a similarly-named file exists: %s",
+                   similar)
     data.frame(basename = b, status = "absent", detail = detail,
               similar_to = similar)
   })
@@ -2080,6 +2195,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   # a path built by sprintf()/file.path() is kept unless it holds an absolute path
   absolute_call <- is_call & grepl("[\"']([A-Za-z]:[/\\\\]|/|~)", rw$ref, perl = TRUE)
   keep <- in_place | (!relocate & ((is_call & !absolute_call) | (!is_call & !absolute & !up)))
+  # a name spelled otherwise than the file's does not work as written
+  if ("name_in_deposit" %in% names(rw)) keep <- keep & is.na(rw$name_in_deposit)
   # A file found by name only inside an archive ("data.zip/data/x.csv"),
   # read at the path unpacking the archive would give it ("data/x.csv"): the
   # code runs on the package as it is, where that path does not exist, so the

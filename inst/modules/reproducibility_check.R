@@ -1945,6 +1945,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
   table$reads  <- reads_of
   table$writes <- writes_of
+  name_corrections <- .repro_name_corrections(rewrite_list)
+  table$names_corrected <- .repro_names_corrected(name_corrections, r_files$file_name)
 
   # ── 9. Report ───────────────────────────────────────────────────────────────
   intro <- if (isTRUE(execute))
@@ -2014,6 +2016,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         "; %d could not be resolved and %s left unrewritten (the script runs ",
         n_call_unresolved, plural(n_call_unresolved, "was", "were")) |>
         paste0("against the original, un-rewritten call and will likely fail") else ""))
+  report_names <- .repro_name_report(name_corrections, execute)
 
   ## Missing inputs ----
   # When the code was run, its outcomes show what is missing, and code_check lists
@@ -2047,7 +2050,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   report <- c(
     report,
     "#### Run order", report_order, scroll_table(order_table, maxrows = 10),
-    "#### File paths", report_paths,
+    "#### File paths", report_paths, report_names,
     if (!is.null(report_missing)) c("#### Missing inputs", report_missing),
     if (!is.null(missing_table)) scroll_table(missing_table, maxrows = 10)
   )
@@ -2475,6 +2478,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
               detail = sprintf('"%s" -> "%s"', d$ref[good], d$target[good]),
               stringsAsFactors = FALSE)
   }))
+  # a name in the code spelled otherwise than in the deposit, for the authors
+  if (nrow(name_corrections))
+    rw_rows <- dplyr::bind_rows(rw_rows, data.frame(
+      file_name = name_corrections$file_name, change_type = "name_corrected",
+      detail = sprintf('"%s" -> "%s"', name_corrections$name_in_code, name_corrections$name_in_deposit)))
 
   modifications <- if (isTRUE(execute)) {
     setwd_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
@@ -3020,6 +3028,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
   py_table$reads  <- py_reads_of
   py_table$writes <- py_writes_of
+  py_name_corrections <- .repro_name_corrections(py_rewrite_list)
+  py_table$names_corrected <- .repro_names_corrected(py_name_corrections, py_files$file_name)
 
   ## ── Report ────────────────────────────────────────────────────────────
   py_intro <- if (isTRUE(execute))
@@ -3092,7 +3102,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_report <- c(
     py_report,
     "#### Run order", py_report_order, scroll_table(py_order_table, maxrows = 10),
-    "#### File paths", py_report_paths,
+    "#### File paths", py_report_paths, .repro_name_report(py_name_corrections, execute),
     if (!is.null(py_report_missing)) c("#### Missing inputs", py_report_missing),
     if (!is.null(py_missing_table)) scroll_table(py_missing_table, maxrows = 10),
     # Same position as the R path's own "#### Parsing" subsection. Also shown
@@ -3339,6 +3349,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
               detail = sprintf('"%s" -> "%s"', d$ref[good], d$target[good]),
               stringsAsFactors = FALSE)
   }))
+  if (nrow(py_name_corrections))
+    py_rw_rows <- dplyr::bind_rows(py_rw_rows, data.frame(
+      file_name = py_name_corrections$file_name, change_type = "name_corrected",
+      detail = sprintf('"%s" -> "%s"', py_name_corrections$name_in_code, py_name_corrections$name_in_deposit)))
 
   py_modifications <- if (isTRUE(execute)) {
     # Reusing "setwd_removed" as the change_type label for os.chdir() removal

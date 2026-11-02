@@ -734,6 +734,25 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: a file spelled otherwise is read, and the correction is noted (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  for (layout in c("package", "psychds")) {
+    d <- withr::local_tempdir()
+    writeLines(c('d <- read.csv("my data.csv")', 'stopifnot(nrow(d) > 0)'), file.path(d, "a.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "my_data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE, layout = layout))
+    expect_equal(mo$run_results$outcome, "ran_ok")
+    expect_equal(mo$table$names_corrected, "my data.csv -> my_data.csv")
+    fixed <- mo$modifications[mo$modifications$change_type == "name_corrected", ]
+    expect_equal(fixed$detail, '"my data.csv" -> "my_data.csv"')
+    report <- paste(unlist(mo$report), collapse = "\n")
+    expect_match(report, "should be changed", fixed = TRUE)
+    expect_match(report, "my_data.csv", fixed = TRUE)
+  }
+})
+
 test_that("execute = TRUE: same-named scripts each run and get their own outcome (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")

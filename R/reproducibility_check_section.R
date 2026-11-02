@@ -171,6 +171,13 @@
                    "nothing so the script could run; it should be removed from the script."),
             .repro_cell(tbl$file_name[[i]]), fun)
   }, character(1))
+  # file names spelled otherwise in the code than in the deposit
+  names_fixed <- if ("names_corrected" %in% names(tbl)) tbl$names_corrected else rep(NA_character_, nrow(tbl))
+  problems <- c(problems, vapply(which(!is.na(names_fixed)), \(i) {
+    sprintf(paste0("- %s reads files under another name than the deposit holds (%s). We ",
+                   "corrected the names so the script could run; they should be changed in the script."),
+            .repro_cell(tbl$file_name[[i]]), .repro_cell(names_fixed[[i]]))
+  }, character(1)))
 
   # the comparison with the paper
   if (is.null(n_found) || is.na(n_found)) n_found <- 0L

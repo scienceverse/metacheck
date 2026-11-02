@@ -47,7 +47,10 @@ path as written, or the full call text when \code{is_call}), \code{basename},
 or NA), \code{ambiguous} (logical, several plan files matched and the study
 could not disambiguate), \code{n_candidates}, and \code{is_call} (logical, TRUE when
 \code{ref} is a whole \code{sprintf()}/\code{paste()}-family call rather than a literal
-path — see above). Empty frame when the script references no files.
+path — see above), and \code{name_in_code} and \code{name_in_deposit} (both names when
+they differ, else NA). A reference with no exact match also matches the one
+plan file with the same extension and the same name apart from case, spaces
+and punctuation. Empty frame when the script references no files.
 }
 \description{
 A script reads and writes data by relative path (\code{read_csv("raw/x.csv")},

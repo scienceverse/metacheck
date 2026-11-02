@@ -2610,3 +2610,67 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["a/utils.py"]], "a/m.py")
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
+
+test_that(".repro_name_key ignores case, spaces and punctuation, but keeps numbers apart (#568)", {
+  expect_equal(.repro_name_key("Relative cover.csv"), .repro_name_key("relative_cover.csv"))
+  expect_equal(.repro_name_key("EU-Forest-species.csv"), .repro_name_key("euforestspecies.csv"))
+  expect_equal(.repro_name_key("a__24_03.csv"), .repro_name_key("a_24.03.csv"))
+  expect_false(.repro_name_key("s1_2.csv") == .repro_name_key("s12.csv"))
+  expect_false(.repro_name_key("1_data.csv") == .repro_name_key("2_data.csv"))
+})
+
+test_that("repro_rewrite_paths finds a file spelled otherwise, and names both spellings (#568)", {
+  plan <- data.frame(file_name = c("relative_cover.csv", "s12.csv", "x_1.csv", "x-1.csv", "field.csv"),
+                     target_path = c("d/relative_cover.csv", "d/s12.csv", "d/a/x_1.csv", "d/b/x-1.csv", "d/field.csv"))
+  rw <- function(code) repro_rewrite_paths(code, "m.R", plan)
+  one <- rw('d <- read.csv("relative cover.csv")')
+  expect_true(one$matched)
+  expect_equal(one$target, "d/relative_cover.csv")
+  expect_equal(one$name_in_code, "relative cover.csv")
+  expect_equal(one$name_in_deposit, "relative_cover.csv")
+  # case only: the file was found before, and now also gets a note
+  case <- rw('d <- read.csv("RELATIVE_cover.csv")')
+  expect_equal(case$name_in_deposit, "relative_cover.csv")
+  # the same name: no note
+  expect_true(is.na(rw('d <- read.csv("field.csv")')$name_in_deposit))
+  # numbers stay apart; another extension; two files that fit: not matched
+  expect_false(rw('d <- read.csv("s1_2.csv")')$matched)
+  expect_false(rw('d <- read.csv("relative cover.xlsx")')$matched)
+  expect_false(rw('d <- read.csv("x 1.csv")')$matched)
+  # a piece of a name, and a name built from a variable, are not compared
+  expect_false(any(rw('d <- read.csv(paste0(x, "_field.csv"))')$matched))
+  expect_false(any(rw('d <- read.csv(paste(x, "fie ld.csv"))')$matched))
+  # a file the script writes itself
+  own <- rw(c('write.csv(d, "relative cover.csv")', 'e <- read.csv("relative cover.csv")'))
+  expect_false(any(own$matched))
+  # a call that holds the whole name, with only the folder unknown
+  call <- rw('d <- read.csv(sprintf("%s/relative cover.csv", dir))')
+  expect_equal(call$target[call$is_call], "d/relative_cover.csv")
+  expect_equal(call$name_in_deposit[call$is_call], "relative_cover.csv")
+})
+
+test_that(".repro_keep_working_refs rewrites a name spelled otherwise in the package layout (#568)", {
+  plan <- .repro_package_plan(data.frame(file_name = "relative_cover.csv", file_path = "data/relative_cover.csv"))
+  rw <- repro_rewrite_paths('d <- read.csv("relative cover.csv")', "m.R", plan)
+  out <- .repro_keep_working_refs(rw, plan, "m.R")
+  expect_false(out$as_written)
+  expect_equal(out$target, "data/relative_cover.csv")
+})
+
+test_that("repro_missing_inputs names another format only between data formats (#568)", {
+  structure_df <- data.frame(file_name = c("Baja_data.csv", "ranta_1985.html"))
+  out <- repro_missing_inputs(c("baja data.xlsx", "ranta_1985.csv"), NULL, structure_df)
+  expect_equal(out$similar_to[out$basename == "baja data.xlsx"], "baja_data.csv")
+  expect_equal(out$detail[out$basename == "baja data.xlsx"], "the deposit holds baja_data.csv, the code reads baja data.xlsx")
+  expect_true(is.na(out$similar_to[out$basename == "ranta_1985.csv"]))
+})
+
+test_that(".repro_checklist_section notes a corrected name (#568)", {
+  tb <- data.frame(file_name = "m.R", run_order = 1, outcome = "ran_ok", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_,
+                   names_corrected = "a b.csv -> a_b.csv")
+  rr <- data.frame(file_name = "m.R", outcome = "ran_ok", error = "", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, .repro_cell("a b.csv -> a_b.csv"), fixed = TRUE)
+  expect_match(out, "should be changed in the script", fixed = TRUE)
+})
