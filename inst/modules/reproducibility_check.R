@@ -1333,8 +1333,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
   ambiguous_n <- vapply(rewrite_list, function(d)
     if (nrow(d)) sum(d$ambiguous) else 0L, integer(1))
-  unresolved_refs <- unlist(lapply(rewrite_list, function(d)
-    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d)] else character(0)), use.names = FALSE)
+  built_names <- lapply(code_text_list, .repro_built_names, "R")
+  unresolved_refs <- unlist(lapply(seq_len(n_code), function(i) {
+    d <- rewrite_list[[i]]
+    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d, built_names[[i]])] else character(0)
+  }), use.names = FALSE)
 
   # Paths assembled at runtime (sprintf()/paste()-family — see
   # repro_rewrite_paths()'s `is_call` rows) are fragile authoring regardless of
@@ -1445,7 +1448,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   unresolved_list <- lapply(seq_len(n_code), function(i) {
     d <- rewrite_list[[i]]
     if (!nrow(d)) return(character(0))
-    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d) &
+    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d, built_names[[i]]) &
                                  !(tolower(d$basename) %in% produced_before[[i]])])
   })
   file_unresolved <- lengths(unresolved_list) > 0L
@@ -1472,15 +1475,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
   # ── 7. Traffic light (static part) ──────────────────────────────────────────
-  # Static red is the "code cannot run only because size-gated inputs were
-  # withheld" story: some inputs missing, and all of them size-gated. When the
-  # code is actually run (execute = TRUE), an execution ERROR overrides this to
-  # red below — a script that crashes is a reproduction failure.
-  tl <- if (n_missing_inputs > 0 && n_withheld == n_missing_inputs) "red"
-        else if (parse_errs == 0 && n_missing_inputs == 0 &&
-                 length(cycle) == 0 && !ambiguous_order &&
-                 sum(ambiguous_n) == 0) "green"
-        else "yellow"
+  # When the code is actually run (execute = TRUE), the light is worked out again
+  # below from what still counts as missing, and an execution ERROR overrides it
+  # to red — a script that crashes is a reproduction failure.
+  tl_clean <- parse_errs == 0 && length(cycle) == 0 && !ambiguous_order &&
+    sum(ambiguous_n) == 0
+  tl <- .repro_static_light(missing_inputs, tl_clean)
 
   # (SPSS/Stata data without syntax turns the light red for the paper as a
   # whole, after both languages -- see "## Shared across languages" below.)
@@ -1812,6 +1812,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
     attr(run_results, "reran_for_order") <- reran
     attr(run_results, "reran_for_reorder") <- reran_for_reorder
+
+    # A predicted missing file no longer counts for a script that ran through.
+    tl <- .repro_static_light(
+      .repro_inputs_after_run(missing_inputs, unresolved_list, r_files$file_name, run_results),
+      tl_clean)
 
     # An execution error (errored / timed_out) is a reproduction failure: force
     # the traffic light red, whatever the static signals said. A
@@ -2710,8 +2715,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
   py_ambiguous_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$ambiguous) else 0L, integer(1))
-  py_unresolved_refs <- unlist(lapply(py_rewrite_list, function(d)
-    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d)] else character(0)), use.names = FALSE)
+  py_built_names <- lapply(py_code_text_list, .repro_built_names, "Python")
+  py_unresolved_refs <- unlist(lapply(seq_len(n_py_code), function(i) {
+    d <- py_rewrite_list[[i]]
+    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d, py_built_names[[i]])] else character(0)
+  }), use.names = FALSE)
 
   # ── Run order ──────────────────────────────────────────────────────────
   py_order_tbl <- repro_run_order(py_io)
@@ -2755,7 +2763,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_unresolved_list <- lapply(seq_len(n_py_code), function(i) {
     d <- py_rewrite_list[[i]]
     if (!nrow(d)) return(character(0))
-    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d) &
+    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d, py_built_names[[i]]) &
                                  !(tolower(d$basename) %in% py_produced_before[[i]])])
   })
   py_file_unresolved <- lengths(py_unresolved_list) > 0L
@@ -2771,11 +2779,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── Traffic light (static part) ───────────────────────────────────────────
   # Same priority structure as the R path's own static tl (section 7 above).
-  py_tl <- if (n_py_missing_inputs > 0 && n_py_withheld == n_py_missing_inputs) "red"
-           else if (n_py_noparse_static == 0 && n_py_missing_inputs == 0 &&
-                    length(py_cycle) == 0 && !py_ambiguous_order &&
-                    sum(py_ambiguous_n) == 0) "green"
-           else "yellow"
+  py_tl_clean <- n_py_noparse_static == 0 && length(py_cycle) == 0 &&
+    !py_ambiguous_order && sum(py_ambiguous_n) == 0
+  py_tl <- .repro_static_light(py_missing_inputs, py_tl_clean)
 
   ## ── Execution (opt-in; runs downloaded code) ────────────────────────────
   if (isTRUE(execute)) {
@@ -2908,6 +2914,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       }
     }
 
+    py_tl <- .repro_static_light(
+      .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
+      py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
     else if (any(py_run_results$outcome == "skipped_time_limit") && py_tl == "green") py_tl <- "yellow"
 

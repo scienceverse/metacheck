@@ -533,14 +533,32 @@ test_that(".repro_py_defined_vars returns an empty frame for no files", {
 test_that(".repro_ref_checkable keeps only complete literal names (#568)", {
   d <- data.frame(
     ref = c("data/x.csv", "{name}.csv", "out/%s.pdf", "_field.csv", ".png", "input$a", "paste0(x, 'y.csv')",
-            "{path}/weights/model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab"),
+            "{path}/weights/model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab", "data\\\\win.csv"),
     basename = c("x.csv", "{name}.csv", "%s.pdf", "_field.csv", ".png", "input$a", "y.csv",
-                 "model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab"),
-    is_call = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE))
+                 "model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab", "win.csv"),
+    is_call = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE))
   expect_equal(.repro_ref_checkable(d),
-               c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE))
+               c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE))
   # Python rows can lack is_call
   expect_true(.repro_ref_checkable(data.frame(ref = "x.csv", basename = "x.csv")))
+  # a name the script builds, in any case
+  expect_false(.repro_ref_checkable(data.frame(ref = "/X.csv", basename = "x.csv"), "x.csv"))
+})
+
+test_that(".repro_built_names finds names joined to a variable (#568)", {
+  code <- c('a <- read.csv(paste0(x, "Field.csv"))',
+            'b <- read.csv(base::paste(dir, "sub/site.csv", sep = "/"))',
+            'f <- function(y) readRDS(paste0(y, "inner.rds"))',
+            'g <- d[, paste0(x, "col.csv")]',
+            'h <- paste0(x, )',
+            'c <- read.csv(paste0("data/", "whole.csv"))',
+            'e <- read.csv(file.path(x, "folder.csv"))')
+  expect_setequal(.repro_built_names(code), c("field.csv", "site.csv", "inner.rds", "col.csv"))
+  expect_equal(.repro_built_names('read.csv(paste0(x, "a.csv")'), character(0)) # does not parse
+  expect_equal(.repro_built_names(NULL), character(0))
+  py <- c('a = pd.read_csv(x + "Field.csv")', 'b = pd.read_csv("whole.csv")',
+          '# c = pd.read_csv(x + "comment.csv")')
+  expect_equal(.repro_built_names(py, "Python"), "field.csv")
 })
 
 test_that(".repro_inputs_to_report keeps what a run cannot show (#568)", {
@@ -550,6 +568,30 @@ test_that(".repro_inputs_to_report keeps what a run cannot show (#568)", {
   expect_equal(.repro_inputs_to_report(m, FALSE), m)
   expect_equal(.repro_inputs_to_report(m, TRUE)$basename, c("b.csv", "c.csv", "d.csv"))
   expect_equal(nrow(.repro_inputs_to_report(m[0, ], TRUE)), 0)
+})
+
+test_that(".repro_inputs_after_run keeps only files of scripts that did not run through (#568)", {
+  m <- data.frame(basename = c("a.csv", "b.csv", "c.csv"), status = "absent",
+                  detail = "", similar_to = NA_character_)
+  unresolved <- list("a.csv", "b.csv", "c.csv", character(0))
+  files <- c("ok.R", "stops.R", "nopkg.R", "other.R")
+  rr <- data.frame(file_name = files, outcome = c("ran_ok", "errored", "dependency_unavailable", "ran_ok"))
+  expect_equal(.repro_inputs_after_run(m, unresolved, files, rr)$basename, c("b.csv", "c.csv"))
+  rr$outcome <- c("ran_ok", "run_by_source", "ran_ok", "ran_ok")
+  expect_equal(nrow(.repro_inputs_after_run(m, unresolved, files, rr)), 0)
+  # no run, nothing changes; a script with no result counts as not run
+  expect_equal(.repro_inputs_after_run(m, unresolved, files, NULL), m)
+  expect_equal(.repro_inputs_after_run(m, unresolved, files, rr[rr$file_name != "ok.R", ])$basename, "a.csv")
+})
+
+test_that(".repro_static_light follows the missing inputs and the other checks (#568)", {
+  none <- data.frame(basename = character(0), status = character(0))
+  withheld <- data.frame(basename = "a.csv", status = "withheld_size")
+  mixed <- data.frame(basename = c("a.csv", "b.csv"), status = c("withheld_size", "absent"))
+  expect_equal(.repro_static_light(none, TRUE), "green")
+  expect_equal(.repro_static_light(none, FALSE), "yellow")
+  expect_equal(.repro_static_light(withheld, TRUE), "red")
+  expect_equal(.repro_static_light(mixed, TRUE), "yellow")
 })
 
 # repro_missing_inputs() ----

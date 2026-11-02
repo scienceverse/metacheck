@@ -672,15 +672,46 @@ test_that("static analysis: a name built at run time is not predicted to be miss
   paper <- test_paper()
   script <- withr::local_tempfile(fileext = ".R")
   writeLines(c('x <- "a"', 'd <- read.csv(paste0(x, "_field.csv"))',
-               'e <- read.csv(sprintf("%s/results.csv", x))', 'f <- read.csv("absent.csv")'), script)
+               'e <- read.csv(sprintf("%s/results.csv", x))', 'f <- read.csv("absent.csv")',
+               'g <- read.csv(paste0(x, "field.csv"))', 'h <- read.csv(paste0(x, "/site.csv"))',
+               'i <- read.csv(paste0("data/", "whole.csv"))', 'j <- read.csv("sub\\\\windows.csv")'), script)
   code_tbl <- code_tbl_row(paper, "built.R", script)
   structure_df <- data.frame(paper_id = paper_id(paper), file_name = "data.csv",
                              file_location = repro_fixture("data.csv"))
   fake_code <- fake_module_output("code_check", code_tbl, paper)
   fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
   mo <- module_run(fake_code, "reproducibility_check")
+  expect_setequal(strsplit(mo$table$unresolved_inputs, ", ", fixed = TRUE)[[1]],
+                  c("absent.csv", "whole.csv", "windows.csv"))
+  expect_equal(mo$summary_table$repro_missing_inputs, 3)
+})
+
+test_that("static analysis: a Python name joined to a variable is not predicted to be missing (#568)", {
+  paper <- test_paper()
+  script <- withr::local_tempfile(fileext = ".py")
+  writeLines(c('import pandas as pd', 'x = "a"', 'd = pd.read_csv(x + "field.csv")',
+               'e = pd.read_csv("absent.csv")'), script)
+  code_tbl <- code_tbl_row(paper, "built.py", script, language = "Python")
+  structure_df <- data.frame(paper_id = paper_id(paper), file_name = "data.csv",
+                             file_location = repro_fixture("data.csv"))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- module_run(fake_code, "reproducibility_check")
   expect_equal(mo$table$unresolved_inputs, "absent.csv")
+})
+
+test_that("execute = TRUE: a predicted missing file does not colour the light of a script that ran (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  writeLines(c('if (file.exists("absent.csv")) d <- read.csv("absent.csv")', 'cat("done\\n")'),
+             file.path(d, "guarded.R"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE,
+                                    layout = "psychds"))
+  expect_equal(mo$run_results$outcome, "ran_ok")
   expect_equal(mo$summary_table$repro_missing_inputs, 1)
+  expect_equal(mo$traffic_light, "green")
 })
 
 test_that("execute = TRUE runs a script with a predicted missing file (#568)", {

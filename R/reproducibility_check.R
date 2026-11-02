@@ -1462,6 +1462,77 @@ repro_defined_vars <- function(code_text_list) {
   if (length(hits) == 1) hits else NA_character_
 }
 
+# File names a script joins to a variable, as lower-case base names: the literal parts
+# of paste(x, "field.csv"), paste0(x, "/field.csv") and, in Python, x + "field.csv". The
+# whole name is known only when the code runs. A script that does not parse gives none.
+.repro_built_names <- function(code_text, lang = "R") {
+  if (is.null(code_text) || length(code_text) == 0) return(character(0))
+  found <- if (identical(lang, "Python")) {
+    nc <- paste(code_remove_comments(code_text, "Python"), collapse = "\n")
+    hits <- regmatches(nc, gregexpr("\\+\\s*(['\"])[^'\"\n]+\\1", nc, perl = TRUE))[[1]]
+    gsub("^\\+\\s*['\"]|['\"]$", "", hits, perl = TRUE)
+  } else {
+    walk <- function(e) {
+      out <- character(0)
+      if (deparse(e[[1]])[1] %in% c("paste", "paste0", "base::paste", "base::paste0")) {
+        args <- as.list(e)[-1]
+        if (!is.null(names(args))) args <- args[!nzchar(names(args))]
+        literal <- vapply(args, is.character, logical(1))
+        if (!all(literal)) out <- unlist(args[literal])
+      }
+      # e[[i]] is tested directly because x[, 1] holds an empty argument, which
+      # cannot be passed on to a function of our own
+      for (i in seq_along(e)) if (is.call(e[[i]])) out <- c(out, walk(e[[i]]))
+      out
+    }
+    exprs <- tryCatch(parse(text = code_text, keep.source = FALSE), error = function(e) NULL)
+    unlist(lapply(Filter(is.call, as.list(exprs)), walk), use.names = FALSE)
+  }
+  unique(tolower(basename(gsub("\\\\", "/", found %||% character(0)))))
+}
+
+# Which rows of a repro_rewrite_paths() table name a file that can be checked before
+# the code runs. A name built at run time cannot: the row of a paste() or sprintf() call,
+# a name from .repro_built_names() (`built`), a name with a placeholder ({name}.csv,
+# %s.pdf), or a piece of one (_field.csv, .png). Such a name is only left out of the
+# prediction, and the script is run in any case, so a real file called _data.csv does no
+# harm here. A backslash is no such sign, because it separates folders on Windows.
+.repro_ref_checkable <- function(d, built = character(0)) {
+  is_call <- if ("is_call" %in% names(d)) d$is_call %in% TRUE else rep(FALSE, nrow(d))
+  piece <- grepl("^[._]", d$basename) | !grepl(".", d$basename, fixed = TRUE)
+  placeholder <- grepl("[%{}$*]|: ", d$ref)
+  !is_call & !piece & !placeholder & !(tolower(d$basename) %in% built)
+}
+
+# The predicted missing files worth reporting. Without a run, all of them. After a run,
+# only files the deposit does hold but the code could not use: code_check already lists
+# files that are not in the repository, and the run shows what happened to each script.
+.repro_inputs_to_report <- function(missing_inputs, execute = FALSE) {
+  if (!isTRUE(execute) || nrow(missing_inputs) == 0) return(missing_inputs)
+  missing_inputs[missing_inputs$status != "absent" | !is.na(missing_inputs$similar_to), , drop = FALSE]
+}
+
+# The predicted missing files that still count after a run: those a script names that
+# did not run through. A script that ran without an error did not need its file, as when
+# it reads the file only inside if (file.exists()).
+.repro_inputs_after_run <- function(missing_inputs, unresolved, file_names, run_results) {
+  if (is.null(run_results) || nrow(missing_inputs) == 0) return(missing_inputs)
+  ran <- file_names %in% run_results$file_name[
+    run_results$outcome %in% c("ran_ok", "run_by_source", "run_by_import")]
+  needed <- unlist(unresolved[!ran], use.names = FALSE)
+  missing_inputs[missing_inputs$basename %in% needed, , drop = FALSE]
+}
+
+# The traffic light before any error in a run is counted. Red is the "code cannot run
+# only because size-gated inputs were withheld" story: some inputs missing, and all of
+# them size-gated. `clean` says that nothing else in the static check found a problem.
+.repro_static_light <- function(missing_inputs, clean) {
+  n <- nrow(missing_inputs)
+  if (n > 0 && sum(missing_inputs$status == "withheld_size") == n) "red"
+  else if (clean && n == 0) "green"
+  else "yellow"
+}
+
 #' Diagnose why a referenced input file is unavailable
 #'
 #' When a script reads a file that is not present, the reason matters: a file
@@ -1485,26 +1556,6 @@ repro_defined_vars <- function(code_text_list) {
 #'   `similar_to` (a candidate near-match basename from the repository's file
 #'   list, or `NA` — only ever set for `absent` rows; see below).
 #' @export
-# Which rows of a repro_rewrite_paths() table name a file that can be checked before
-# the code runs. A name built at run time cannot: the row of a paste() or sprintf() call,
-# a name with a placeholder ({name}.csv, %s.pdf), or a piece of one (_field.csv, .png).
-# Such a name is only left out of the prediction, and the script is run in any case, so
-# a real file called _data.csv does no harm here.
-.repro_ref_checkable <- function(d) {
-  is_call <- if ("is_call" %in% names(d)) d$is_call %in% TRUE else rep(FALSE, nrow(d))
-  piece <- grepl("^[._]", d$basename) | !grepl(".", d$basename, fixed = TRUE)
-  built <- grepl("[%{}$*\\\\]|: ", d$ref)
-  !is_call & !piece & !built
-}
-
-# The predicted missing files worth reporting. Without a run, all of them. After a run,
-# only files the deposit does hold but the code could not use: code_check already lists
-# files that are not in the repository, and the run shows what happened to each script.
-.repro_inputs_to_report <- function(missing_inputs, execute = FALSE) {
-  if (!isTRUE(execute) || nrow(missing_inputs) == 0) return(missing_inputs)
-  missing_inputs[missing_inputs$status != "absent" | !is.na(missing_inputs$similar_to), , drop = FALSE]
-}
-
 repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   refs <- unique(tolower(basename(gsub("\\\\", "/", refs))))
   empty <- data.frame(basename = character(0), status = character(0),
