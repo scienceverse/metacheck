@@ -2628,6 +2628,56 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_path_named finds the file a path names among same-named files (#568)", {
+  paths <- c("Data/test/d.csv", "Data/d.csv", "repo.zip/top/R/h.R", "other.zip/top/R/h.R")
+  expect_equal(.repro_path_named(paths[1:2], "Data/test/d.csv"), 1L)
+  expect_equal(.repro_path_named(paths[1:2], "Data/d.csv"), 2L)
+  expect_equal(.repro_path_named(paths[1:2], "./data/TEST/d.csv"), 1L)
+  # an absolute path from the author's computer
+  expect_equal(.repro_path_named(paths[1:2], "/Users/me/proj/Data/test/d.csv"), 1L)
+  # the name alone, or the same ending twice: no guess
+  expect_length(.repro_path_named(paths[1:2], "d.csv"), 0)
+  expect_length(.repro_path_named(paths[3:4], "R/h.R"), 0)
+  expect_length(.repro_path_named(c("x/y/d.csv", "z/d.csv"), "q/d.csv"), 0)
+  # from the script's own folder, or a folder above it, nearest first
+  expect_equal(.repro_path_named(paths[3:4], "./R/h.R", "other.zip/top/s.R"), 2L)
+  expect_equal(.repro_path_named(paths[3:4], "R/h.R", "other.zip/top/analysis/s.R"), 2L)
+  expect_equal(.repro_path_named(paths[3:4], "../R/h.R", "repo.zip/top/scripts/s.R"), 1L)
+  expect_equal(.repro_path_named(c("a/x.csv", "c/x.csv"), "x.csv", "a/b/s.R"), 1L)
+  expect_equal(.repro_path_named(c("a/x.csv", "a/b/x.csv"), "x.csv", "a/b/s.R"), 2L)
+  # a row without a path
+  expect_equal(.repro_path_named(c(NA, "a/d.csv"), "a/d.csv"), 2L)
+})
+
+test_that(".repro_assigned_names finds text assigned to a variable (#568)", {
+  expect_equal(.repro_assigned_names(c('f <- c("N.R", "S.R")', 'x = "d.csv"', 'for (i in f) source(i)',
+                                       'g <- paste0("a", "b.csv")', 'read.csv(file = "z.csv")')),
+               c("N.R", "S.R", "d.csv"))
+  expect_equal(.repro_assigned_names('if (TRUE) { y <<- "in.csv" }'), "in.csv")
+  expect_length(.repro_assigned_names("x <- ("), 0)
+  expect_equal(.repro_assigned_names(c('f = "d.csv"', 'g = "e.csv"  # note', 'pd.read_csv("z.csv")',
+                                       'h = x + "w.csv"'), "Python"), c("d.csv", "e.csv"))
+})
+
+test_that("repro_rewrite_paths follows a name in a variable and the folders in a path (#568)", {
+  plan <- data.frame(file_name = c("NetworkFunction.R", "d.csv", "d.csv"),
+                     current_path = c("top/NetworkFunction.R", "Data/test/d.csv", "Data/d.csv"),
+                     target_path = c("analysis/NetworkFunction.R", "d/a/d.csv", "d/b/d.csv"))
+  rw <- function(code) repro_rewrite_paths(code, "m.R", plan)
+  one <- rw(c('f <- c("NetworkFunction.R")', 'for (i in f) source(i)'))
+  expect_equal(one$target, "analysis/NetworkFunction.R")
+  expect_equal(.repro_apply_rewrites('f <- c("NetworkFunction.R")', one), 'f <- c("analysis/NetworkFunction.R")')
+  # a name that is not listed, or that fits two files, adds no row
+  expect_equal(nrow(rw('x <- "notlisted.csv"')), 0)
+  expect_equal(nrow(rw('x <- "d.csv"')), 0)
+  # in a read call the name alone stays ambiguous, as before
+  expect_true(rw('read.csv("d.csv")')$ambiguous)
+  expect_equal(rw('read.csv("Data/test/d.csv")')$target, "d/a/d.csv")
+  expect_equal(rw('read.csv("Data/d.csv")')$target, "d/b/d.csv")
+  expect_equal(rw('read.csv("/home/me/Data/d.csv")')$target, "d/b/d.csv")
+  expect_equal(rw('x <- "Data/test/d.csv"')$target, "d/a/d.csv")
+})
+
 test_that(".repro_name_key ignores case, spaces and punctuation, but keeps numbers apart (#568)", {
   expect_equal(.repro_name_key("Relative cover.csv"), .repro_name_key("relative_cover.csv"))
   expect_equal(.repro_name_key("EU-Forest-species.csv"), .repro_name_key("euforestspecies.csv"))

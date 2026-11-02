@@ -688,8 +688,9 @@ repro_dependencies <- function(code_text, lang = "R") {
 #'   collapsing described above. `NULL` (default) skips it.
 #' @param script_path optional path of the script in its repository. When
 #'   several files share the name a reference gives, the one the reference
-#'   names counted from the script's own folder (`current_path` in `plan`) is
-#'   the file it means. `NULL` (default) skips this.
+#'   names counted from the script's own folder or a folder above it
+#'   (`current_path` in `plan`) is the file it means. `NULL` (default) skips
+#'   this; the folders in the reference's own path still count.
 #'
 #' @returns a data frame with one row per referenced path, columns `ref` (the
 #'   path as written, or the full call text when `is_call`), `basename`,
@@ -723,6 +724,14 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
       !all(c("file_name", "target_path") %in% names(plan))) return(empty)
 
   refs <- code_file_refs(code_text, lang)
+  # A listed file's name held in a variable, as in f <- c("NetworkFunction.R")
+  # and later source(f): the code_file_refs() scan only sees a name in the call.
+  # Kept below only when it resolves to one file, so it adds no missing file and
+  # no ambiguous reference.
+  plan_base <- tolower(basename(gsub("\\\\", "/", plan$file_name)))
+  assigned <- setdiff(.repro_assigned_names(code_text, lang), refs)
+  assigned <- assigned[tolower(basename(gsub("\\\\", "/", assigned))) %in% plan_base]
+  refs <- c(refs, assigned)
   # Format-string calls (sprintf()/paste()/paste0()/file.path()) are a SEPARATE
   # source of references: code_file_refs() already returns their raw format
   # string as a "reference" too (it matches the quoted-filename pattern), so
@@ -744,7 +753,6 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 
   # Candidate plan files by basename. Only rows with a real (non-NA) target are
   # reachable in the release; NA-target rows (consumed archives) are not.
-  plan_base <- tolower(basename(gsub("\\\\", "/", plan$file_name)))
   has_target <- !is.na(plan$target_path) & nzchar(plan$target_path %||% "")
 
   # A converted row's ORIGINAL extension, so a reference naming that same
@@ -765,16 +773,11 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   # The script's own study group, for disambiguation.
   script_grp <- .data_group_from_path(file_name)
 
-  # The candidates a reference names when counted from the script's own folder
-  # (two folders that each hold a helpers.R and a main.R).
+  # The one candidate a reference's own path names, among files with one name
+  # (see .repro_path_named()).
   plan_current <- if ("current_path" %in% names(plan))
     sub("^(\\./|/)+", "", gsub("\\\\", "/", plan$current_path)) else rep(NA_character_, nrow(plan))
-  in_own_folder <- function(cand, ref) {
-    if (is.null(script_path) || is.na(script_path) || !nzchar(script_path)) return(integer(0))
-    from_script <- .repro_norm_rel(file.path(dirname(script_path), ref))
-    if (is.na(from_script)) return(integer(0))
-    cand[plan_current[cand] %in% from_script]
-  }
+  named_by_path <- function(cand, ref) cand[.repro_path_named(plan_current[cand], ref, script_path)]
 
   # Resolve each PLAN ROW's own on-disk source (see .repro_plan_sources()),
   # for the content-hash mirror collapsing below. Only built when
@@ -868,7 +871,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
                         target = cand_targets, ambiguous = FALSE,
                         n_candidates = n, is_call = FALSE))
     }
-    own <- in_own_folder(cand, refs[i])
+    own <- named_by_path(cand, refs[i])
     if (length(own) == 1) {
       return(data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
                         target = pick_target(own, ref_ext[i]), ambiguous = FALSE,
@@ -930,7 +933,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
       return(data.frame(ref = call_refs$call_text[i], basename = key_base,
                         matched = TRUE, target = cand_targets, ambiguous = FALSE,
                         n_candidates = n, is_call = TRUE))
-    own <- if (!is.na(call_refs$resolved[i])) in_own_folder(cand, key) else integer(0)
+    own <- if (!is.na(call_refs$resolved[i])) named_by_path(cand, key) else integer(0)
     if (length(own) == 1)
       return(data.frame(ref = call_refs$call_text[i], basename = key_base, matched = TRUE,
                         target = pick_target(own, key_ext), ambiguous = FALSE,
@@ -952,6 +955,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   }) else list()
 
   out <- dplyr::bind_rows(c(rows, call_rows))
+  # a name in a variable counts only when it resolves to one file
+  out <- out[!(out$ref %in% assigned & !out$is_call & (!out$matched | out$ambiguous)), , drop = FALSE]
 
   # Where the name in the code is not the name in the deposit, both names, so the
   # report can tell the authors. Only the name's case counts here too, since that
@@ -969,6 +974,61 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   out$name_in_code <- ifelse(differs, in_code, NA_character_)
   out$name_in_deposit <- ifelse(differs, listed, NA_character_)
   out
+}
+
+# Which of several same-named files a reference means, by the path it gives. The
+# file it names counted from the script's own folder, else from each folder above
+# that, nearest first: a script often counts from the top of its project. Else the
+# one file sharing the most of the reference's last folders, at least one, which
+# also serves an absolute path from the author's computer. Case does not count.
+# Returns an index into `paths`; none when that leaves no file or several, since
+# the code is not guessed at.
+.repro_path_named <- function(paths, ref, script_path = NULL) {
+  paths <- tolower(gsub("\\\\", "/", paths))
+  ref <- tolower(gsub("\\\\", "/", ref))
+  if (!is.null(script_path) && !is.na(script_path) && nzchar(script_path)) {
+    d <- dirname(tolower(gsub("\\\\", "/", script_path)))
+    repeat {
+      from_d <- .repro_norm_rel(if (d %in% c(".", "")) ref else file.path(d, ref))
+      hit <- if (is.na(from_d)) integer(0) else which(paths == from_d)
+      if (length(hit)) return(if (length(hit) == 1) hit else integer(0))
+      if (d %in% c(".", "")) break
+      d <- dirname(d)
+    }
+  }
+  parts <- strsplit(ref, "/", fixed = TRUE)[[1]]
+  parts <- parts[!parts %in% c("", ".", "..")]
+  if (length(parts) < 2) return(integer(0))
+  shared <- vapply(strsplit(paths, "/", fixed = TRUE), function(p) {
+    n <- min(length(p), length(parts))
+    if (n == 0 || anyNA(p)) return(0L)
+    same <- rev(p)[seq_len(n)] == rev(parts)[seq_len(n)]
+    if (all(same)) n else which(!same)[1] - 1L
+  }, integer(1))
+  best <- which(shared == max(shared))
+  if (max(shared) >= 2 && length(best) == 1) best else integer(0)
+}
+
+# Text assigned to a variable, alone or in c(): names a later call may read.
+.repro_assigned_names <- function(code_text, lang = "R") {
+  if (identical(lang, "Python")) {
+    m <- regmatches(code_text, regexec("^\\s*[A-Za-z_][A-Za-z0-9_.]*\\s*=\\s*[\"']([^\"']+)[\"']\\s*(#.*)?$", code_text))
+    return(unique(vapply(m[lengths(m) > 1], `[`, character(1), 2)))
+  }
+  ex <- tryCatch(parse(text = code_text, keep.source = FALSE), error = function(e) NULL)
+  found <- character(0)
+  text_of <- function(x) {
+    if (is.character(x) && length(x) == 1 && !is.na(x)) return(x)
+    if (is.call(x) && identical(x[[1]], as.name("c"))) return(unlist(lapply(as.list(x)[-1], text_of)))
+    NULL
+  }
+  walk <- function(e) {
+    if (is.name(e[[1]]) && as.character(e[[1]]) %in% c("<-", "=", "<<-") && length(e) == 3)
+      found <<- c(found, text_of(e[[3]]))
+    for (a in as.list(e)) if (is.call(a)) walk(a)
+  }
+  for (e in ex) if (is.call(e)) walk(e)
+  unique(found[nzchar(found)])
 }
 
 # A file name for comparing spellings: no extension, case, spaces or punctuation.
@@ -1242,19 +1302,9 @@ repro_run_order <- function(files, extra_edges = NULL) {
 }
 
 # Which of several same-named files `cand` a source() reference in script `from`
-# names: counted from the script's own folder, else from the top, else the one
-# whose path ends in the reference's folders, or the end of whose absolute path
-# (on the author's computer) is the file's path. None when that leaves more than
-# one or none: the code is not guessed at.
+# names (see .repro_path_named()).
 .repro_sourced_file <- function(cand, ref, paths, from) {
-  ref <- tolower(gsub("\\\\", "/", ref))
-  paths <- tolower(gsub("\\\\", "/", paths))
-  hit <- cand[paths[cand] %in% .repro_norm_rel(file.path(dirname(paths[from]), ref))]
-  if (!length(hit)) hit <- cand[paths[cand] %in% .repro_norm_rel(ref)]
-  if (!length(hit) && grepl("/", ref, fixed = TRUE))
-    hit <- cand[endsWith(paths[cand], paste0("/", sub("^((\\.|\\.\\.)/)+", "", ref))) |
-                  endsWith(ref, paste0("/", paths[cand]))]
-  if (length(hit) == 1) hit else integer(0)
+  cand[.repro_path_named(paths[cand], ref, paths[from])]
 }
 
 #' Which scripts run inside another script, through `source()`

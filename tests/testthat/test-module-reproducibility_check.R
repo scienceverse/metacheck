@@ -734,6 +734,27 @@ test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
   expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
 })
 
+test_that("execute = TRUE: a name in a variable and a path among same-named files are followed (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  for (layout in c("package", "psychds")) {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "Data", "test"), recursive = TRUE)
+    dir.create(file.path(d, "scripts"))
+    writeLines("h <- 1", file.path(d, "scripts", "NetworkFunction.R"))
+    writeLines(c('f <- c("NetworkFunction.R")', 'for (i in f) source(i)', 'stopifnot(h == 1)'),
+               file.path(d, "scripts", "viavar.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "Data", "d.csv"))
+    writeLines(c("x,y", "1,2", "1,2"), file.path(d, "Data", "test", "d.csv"))
+    writeLines(c('a <- read.csv("Data/test/d.csv")', 'stopifnot(ncol(a) == 2, nrow(a) == 2)'), file.path(d, "deep.R"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE, layout = layout))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["deep.R"]], "ran_ok")
+    expect_equal(outcome[["viavar.R"]], "ran_ok")
+  }
+})
+
 test_that("execute = TRUE: a model file has its own outcome, and the script that reads it finds it (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")
