@@ -2829,6 +2829,24 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out
 }
 
+# One line per repository when a paper links several, so a reader can see when the
+# failures lie in one of them, such as software by others that the paper only uses.
+# Nothing is left out or labelled: a repository whose owner is no author is often the
+# authors' own, and skipping those would hide 575 real failures (#568, item 8).
+.repro_by_repository <- function(table) {
+  if (is.null(table) || !nrow(table) || !all(c("repo_name", "outcome") %in% names(table))) return(NULL)
+  counted <- !table$outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
+                                   "defines_functions", "not_analysis") & !is.na(table$outcome)
+  repos <- table$repo_name[counted]
+  if (length(unique(repos[!is.na(repos)])) < 2) return(NULL)
+  ok <- table$outcome[counted] == "ran_ok"
+  c("#### Results by repository", scroll_table(data.frame(
+    Repository = sort(unique(repos[!is.na(repos)])),
+    Scripts = as.integer(table(repos)[sort(unique(repos[!is.na(repos)]))]),
+    `Ran to the end` = vapply(sort(unique(repos[!is.na(repos)])), function(r) sum(ok & repos %in% r), integer(1), USE.NAMES = FALSE),
+    check.names = FALSE), maxrows = 10))
+}
+
 # What the deposit does not hold, for the scripts that did not run through, with
 # scripts apart from data: authors can act on this (#568, item 23). NULL when none.
 .repro_absent_report <- function(absent) {

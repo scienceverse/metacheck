@@ -2628,6 +2628,14 @@ test_that(".repro_py_imported: of same-named modules, only the one the importer 
   expect_equal(imp[["b/utils.py"]], "c/n.py")
 })
 
+test_that(".repro_by_repository gives a line per repository when there are several (#568)", {
+  tb <- data.frame(repo_name = c("a", "a", "b", "b"), outcome = c("ran_ok", "errored", "errored", "defines_functions"))
+  out <- paste(.repro_by_repository(tb), collapse = "\n")
+  expect_match(out, "#### Results by repository", fixed = TRUE)
+  expect_null(.repro_by_repository(tb[1:2, ]))
+  expect_null(.repro_by_repository(data.frame(outcome = "ran_ok")))
+})
+
 test_that(".repro_py_module_folders finds the repository's own modules (#568)", {
   files <- c("repo/maad/__init__.py", "repo/maad/sound.py", "repo/scripts/run.py", "repo/lib/helper.py",
              "repo/scripts/beside.py", "other/maad/__init__.py", "bad/json.py", "bad/own.py")

@@ -2044,6 +2044,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   name_corrections <- .repro_name_corrections(rewrite_list)
   table$names_corrected <- .repro_names_corrected(name_corrections, r_files$file_name)
   table$used_by <- r_used_by
+  table$repo_name <- if ("repo_name" %in% names(r_files)) r_files$repo_name else NA_character_
   table$reason <- if (!is.null(run_results) && "reason" %in% names(run_results))
     run_results$reason[match(r_files$file_name, run_results$file_name)] else NA_character_
 
@@ -3221,6 +3222,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_table$writes <- py_writes_of
   py_name_corrections <- .repro_name_corrections(py_rewrite_list)
   py_table$names_corrected <- .repro_names_corrected(py_name_corrections, py_files$file_name)
+  py_table$repo_name <- if ("repo_name" %in% names(py_files)) py_files$repo_name else NA_character_
   py_table$reason <- if (!is.null(py_run_results) && "reason" %in% names(py_run_results))
     py_run_results$reason[match(py_files$file_name, py_run_results$file_name)] else NA_character_
   py_table$commands_removed <- vapply(py_commands_removed, function(x)
@@ -3637,7 +3639,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Python code: SPSS/Stata data and syntax, self-reproducible output
   # (JASP/jamovi/SPSS-Viewer, Stata .smcl logs, notebook outputs), and other
   # code (SAS, MATLAB, ...) with no reproducible output to fall back on.
-  shared_report <- c(shared_match$report, spss_report, stata_report,
+  shared_report <- c(.repro_by_repository(table), shared_match$report, spss_report, stata_report,
                      self_repro_report, nonr_report)
   shared_summary_text <- if (!is.null(shared_match$summary)) paste0("\n- ", sprintf(
     "%d statistic%s stored from the extracted output; %d of %d reported test%s matched (%s%%).",

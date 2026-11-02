@@ -313,7 +313,8 @@ repro_docker_available <- function() {
 #' @keywords internal
 .repro_docker_image_for <- function(r_versions = character(0),
                                     use_declared_version = FALSE) {
-  if (!isTRUE(use_declared_version)) return(.repro_docker_default_image)
+  # the option `metacheck.docker_image` names another image, to try one before it is published
+  if (!isTRUE(use_declared_version)) return(getOption("metacheck.docker_image", .repro_docker_default_image))
 
   # Only a clean X.Y[.Z] shape is trusted as a tag -- anything else (embedded
   # whitespace/newlines from a malformed extraction upstream, a version with
