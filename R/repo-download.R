@@ -1248,6 +1248,34 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 }
 
 
+# Whether the modules of this check will run the repository's code
+# (reproducibility_check with execute = TRUE). report_module_run() and
+# reproducibility_check() set the option for the duration of the check, so the
+# first module that downloads (code_check, then data_check) fetches what a run
+# needs in the same call, and no module asks a host for the same repository
+# twice (#568). A whole-repository archive (GitHub, GitLab, Dryad) was downloaded
+# once by code_check and again by data_check.
+.download_for_run <- function() isTRUE(getOption("metacheck.download_for_run"))
+
+# The files of a listing a run of the code could need: every file, except
+# images, sound, video and documents that hosts send one by one, since there each
+# such file is a request of its own and a script rarely reads one; a script that
+# names one gets it from reproducibility_check() before the run. From a host that
+# download_repo_files() fetches as one archive of the whole repository (GitHub,
+# GitLab, Dryad), every file is kept: its bytes arrive anyway (#568). renv's own
+# library is left out, as in code_check. The size limits of download_repo_files()
+# still apply.
+.run_download_want <- function(files) {
+  if (is.null(files) || !nrow(files)) return(logical(0))
+  media <- grepl(paste0("\\.(png|jpe?g|gif|bmp|svg|eps|ps|ico|webp|heic|",
+                        "wav|mp3|flac|ogg|m4a|aac|mp4|avi|mov|mkv|wmv|webm|",
+                        "pdf|docx?|pptx?|odt|odp|key|pages)$"),
+                 files$file_name %||% "", ignore.case = TRUE)
+  whole_archive <- grepl("github\\.com|gitlab\\.com|datadryad\\.org",
+                         files$repo_url %||% "", ignore.case = TRUE)
+  (!media | whole_archive) & !.in_renv_folder(files)
+}
+
 #' Download the files listed by `repo_check()`
 #'
 #' Fetches the bytes for a table of repository files (as produced by

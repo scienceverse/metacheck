@@ -2,15 +2,15 @@
 # paper's code be run on its data?" in two phases.
 #
 # STATIC helpers (never run downloaded code): collect the dependencies a run
-# would need, rewrite each script's file paths to the Psych-DS layout the release
-# uses, work out the order the scripts must run in, and diagnose why a referenced
-# input is unavailable. Built on the static analysis already in code_check.R
-# (code_library_names, code_file_refs, code_parse_r) and the file→location plan
-# from psychds_check / data_check.
+# would need, rewrite the file paths that do not work in the repository as the
+# authors organised it, work out the order the scripts must run in, and diagnose
+# why a referenced input is unavailable. Built on the static analysis already in
+# code_check.R (code_library_names, code_file_refs, code_parse_r) and the files
+# data_check lists.
 #
 # EXECUTION helpers (run only when the module is called with execute = TRUE):
 # repro_materialize_layout / repro_write_scripts build a throwaway copy of the
-# Psych-DS layout, repro_install_deps installs the declared packages into a
+# repository, repro_install_deps installs the declared packages into a
 # throwaway library, and repro_run_scripts runs each script in an isolated
 # subprocess (callr) with a per-script timeout, capturing its outcome and output.
 # Running downloaded code is a deliberate, opt-in action; see those functions.
@@ -1098,6 +1098,91 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
                             check.names = FALSE), maxrows = 10))
 }
 
+# The rows of a repository listing (data_check's `structure`) that are not on
+# disk but can be fetched: a file address, or an archive and the member in it.
+.repro_fetchable <- function(structure_df) {
+  if (is.null(structure_df) || !nrow(structure_df)) return(logical(0))
+  loc <- structure_df$file_location %||% rep(NA_character_, nrow(structure_df))
+  url <- structure_df$file_url %||% rep(NA_character_, nrow(structure_df))
+  arc <- structure_df$archive_url %||% rep(NA_character_, nrow(structure_df))
+  mem <- structure_df$archive_member %||% rep(NA_character_, nrow(structure_df))
+  (is.na(loc) | !nzchar(loc)) &
+    ((!is.na(url) & nzchar(url)) | (!is.na(arc) & nzchar(arc) & !is.na(mem)))
+}
+
+# Before a run: the files the repository lists, but that were not downloaded,
+# which the code names, by file name, or by extension in a pattern such as
+# `list.files(pattern = "\\.wav$")` or `glob("*.tif")`. The first download leaves
+# out images, sound, video and documents from hosts that send files one by one
+# (see .run_download_want()); a script that reads one gets it here (#568).
+.repro_named_files <- function(structure_df, code_text) {
+  want <- .repro_fetchable(structure_df)
+  if (!any(want) || !length(code_text)) return(want)
+  txt <- tolower(paste(code_text, collapse = "\n"))
+  base <- tolower(basename(gsub("\\\\", "/", structure_df$file_name)))
+  ext <- ifelse(grepl("\\.", base), sub(".*\\.", "", base), "")
+  by_name <- vapply(base, function(b) grepl(b, txt, fixed = TRUE), logical(1), USE.NAMES = FALSE)
+  exts <- unique(ext[want & nzchar(ext)])
+  ext_named <- exts[vapply(exts, function(e)
+    grepl(paste0("(\\\\{1,2}\\.|\\*\\.|['\"]\\.)", e, "\\b"), txt, perl = TRUE), logical(1))]
+  want & (by_name | ext %in% ext_named)
+}
+
+# After a run: the names of the files scripts could not open, from their errors.
+.repro_unopened_files <- function(msgs) {
+  pat <- paste0("(?:cannot open (?:compressed )?file|No such file or directory:?|does not exist)",
+                "[^'\"\n]*['\"]([^'\"\n]+)['\"]|['\"]([^'\"\n]+)['\"]:? No such file|['\"]([^'\"\n]+)['\"] does not exist")
+  out <- unlist(lapply(msgs[!is.na(msgs)], function(m) {
+    k <- regmatches(m, gregexpr(pat, m, perl = TRUE))[[1]]
+    vapply(k, function(x) { g <- regmatches(x, regexec(pat, x, perl = TRUE))[[1]][-1]; g[nzchar(g)][1] },
+           character(1), USE.NAMES = FALSE)
+  }))
+  unique(basename(gsub("\\\\", "/", out[!is.na(out)])))
+}
+
+# Fetch rows `rows` of a repository listing with download_repo_files(), within
+# the module's own size limits; returns the listing with the locations filled in.
+.repro_fetch_files <- function(structure_df, rows, max_file_size = 100, max_download_size = 500,
+                               cache = FALSE, skip_on_api_limit = FALSE) {
+  if (!any(rows)) return(structure_df)
+  dl <- tryCatch(download_repo_files(structure_df[rows, , drop = FALSE],
+                                     max_file_size = max_file_size,
+                                     max_download_size = max_download_size,
+                                     repo_file_counts = table(structure_df$repo_url),
+                                     cache = cache, skip_on_api_limit = skip_on_api_limit),
+                 error = function(e) NULL)
+  if (!is.null(dl)) structure_df$file_location[rows] <- dl$file_location
+  structure_df
+}
+
+# The report's sentence on the paths that do not work in the repository as
+# deposited and were pointed to the file (#568), so authors can change their code: an
+# absolute path on their computer, a path from another folder, or a file that is
+# elsewhere in the repository (see .repro_keep_working_refs()). One string, since
+# the module adds sentences to it. `rewrite_list` holds a repro_rewrite_paths()
+# result per script, named by script.
+.repro_path_fix_text <- function(rewrite_list, execute = FALSE) {
+  fixes <- do.call(rbind, lapply(names(rewrite_list), function(f) {
+    d <- rewrite_list[[f]]
+    if (!nrow(d)) return(NULL)
+    ok <- d$matched %in% TRUE & !(d$ambiguous %in% TRUE) & !(d$as_written %in% TRUE) &
+      !is.na(d$target) & d$target != d$ref
+    if (!any(ok)) return(NULL)
+    data.frame(file = f, ref = d$ref[ok], target = d$target[ok])
+  }))
+  n <- NROW(fixes)
+  if (!n) return("Every data path in the code works in the repository as deposited.")
+  shown <- utils::head(fixes, 10)
+  sprintf(paste0("**%d data path%s in the code %s not work in the repository as deposited.** ",
+                 "%s %s to where the file is, so the code could run: %s%s. ",
+                 "The code should be changed, because as written it does not find %s."),
+          n, plural(n), plural(n, "does", "do"),
+          if (isTRUE(execute)) "We pointed" else "We would point", plural(n, "it", "them"),
+          paste(sprintf("`%s` to `%s` (in %s)", shown$ref, shown$target, shown$file), collapse = "; "),
+          if (n > 10) sprintf(", and %d more", n - 10) else "",
+          plural(n, "the file", "these files"))
+}
+
 #' Determine the order code files must run in
 #'
 #' Scripts in a repository usually depend on each other: a preparation script
@@ -2084,7 +2169,9 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 }
 
 # The report's section on files that are not run on their own; NULL when none.
-.repro_not_run_report <- function(file_names, kinds, used_by = NULL) {
+# `why` gives, for a file that is not part of the analysis, the sentence of
+# .repro_software_kind() (NA for a package's tests and setup.py).
+.repro_not_run_report <- function(file_names, kinds, used_by = NULL, why = NULL) {
   fn <- kinds %in% "defines_functions"
   ts <- kinds %in% "not_analysis"
   if (!any(fn) && !any(ts)) return(NULL)
@@ -2101,10 +2188,13 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
       `Used by` = ifelse(is.na(used[fn]), "no script", used[fn]),
       check.names = FALSE), maxrows = 10),
     if (any(ts)) sprintf(
-      paste0("%d file%s %s the tests of a package or the file that installs it, not part of ",
-             "the analysis, so %s not run or counted as scripts: %s."),
-      sum(ts), plural(sum(ts)), plural(sum(ts), "is one of", "are"),
-      plural(sum(ts), "it was", "they were"), paste(file_names[ts], collapse = ", ")))
+      paste0("%d file%s %s not part of the analysis but of software (a package, its tests or ",
+             "documentation, a tool, a web application), so %s not run or counted as scripts."),
+      sum(ts), plural(sum(ts)), plural(sum(ts), "is", "are"), plural(sum(ts), "it was", "they were")),
+    if (any(ts)) scroll_table(data.frame(
+      File = file_names[ts],
+      Why = .repro_not_analysis_why(if (is.null(why)) rep(NA_character_, sum(ts)) else why[ts]),
+      check.names = FALSE), maxrows = 10))
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2170,10 +2260,11 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   out
 }
 
-#' Materialise the Psych-DS layout for a paper into a throwaway directory
+#' Copy a paper's files into a throwaway directory, as a plan places them
 #'
-#' The execute phase runs the paper's code against the Psych-DS layout, but the
-#' module has only the *plan* (`psychds_check`'s file → `target_path`) and the
+#' The execute phase runs the paper's code in the repository as the authors
+#' organised it ([.repro_package_plan()]: every file at its own path), but the
+#' module has only the *plan* (file → `target_path`) and the
 #' current on-disk location of each source file (`data_check`'s `structure`).
 #' This builds the tree the plan describes inside a fresh temp directory: for
 #' each planned file with a real target and an available source copy, the source
@@ -2297,17 +2388,22 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   plan
 }
 
-#' Rewrite only the references that cannot work as written (package layout)
+#' Rewrite only the references that cannot work as written
 #'
-#' Every script runs from the top of the package, with every file at its own
-#' path. A reference is then:
+#' Every script runs in the repository as the authors organised it, with every
+#' file at its own path, from the folder [.repro_run_folders()] chooses. A
+#' reference is then:
 #' * left as written when it names a file's path from the top
 #'   (`"raw_data/scan1/log.csv"`), also when other files share the name (20
 #'   scan folders each with a `log.csv`), and when it is a relative path that
-#'   names no file from the top or from the script's folder: the code
-#'   probably joins it with a folder of its own (`os.path.join(base,
-#'   "fig7/x.csv")`), and rewriting it to the full path gave
-#'   `processed_data/fig7/processed_data/fig7/x.csv`;
+#'   names no file and no file with its name was found, or the file found has a
+#'   path that ends in the path as written: the code probably joins it with a
+#'   folder of its own (`os.path.join(base, "fig7/x.csv")`), and rewriting it
+#'   to the full path gave `processed_data/fig7/processed_data/fig7/x.csv`;
+#' * rewritten to the one file with its name elsewhere in the repository when
+#'   it names no file as written (`"./data/x.csv"` with the file in
+#'   `exploratory/`): the authors moved or left out a folder when they
+#'   deposited;
 #' * rewritten to the file's path from the top when it names a file relative
 #'   to the script's own folder (`source("helpers.R")`,
 #'   `"../raw_data/scores.csv"`), since the script does not run from there;
@@ -2316,7 +2412,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   goes up out of the package.
 #'
 #' A reference left as written is marked `as_written`; it is not counted as
-#' rewritten, and not as a missing input. The exception is a file the
+#' rewritten, and not as a missing input, unless it names no file and no file
+#' with its name is in the repository. Another exception is a file the
 #' package has only inside an archive, read at the path unpacking it would
 #' give: as the package is, that path does not exist, so the reference is
 #' not found, and the file becomes a missing input (`in_archive` in
@@ -2338,7 +2435,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   absolute <- grepl("^([A-Za-z]:/|/|~)", ref)
   # the path from the top, when the reference names a file relative to the
   # script's own folder
-  script_dir <- if (!is.na(script_path) && nzchar(script_path)) dirname(gsub("\\\\", "/", script_path)) else "."
+  script_dir <- if (length(script_path) == 1 && !is.na(script_path) && nzchar(script_path))
+    dirname(gsub("\\\\", "/", script_path)) else "."
   from_script <- vapply(ref, function(r) {
     if (grepl("^([A-Za-z]:/|/|~)", r)) return(NA_character_)
     p <- .repro_norm_rel(if (script_dir %in% c(".", "")) r else file.path(script_dir, r))
@@ -2356,12 +2454,24 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   keep <- in_place | (!relocate & ((is_call & !absolute_call) | (!is_call & !absolute & !up)))
   # a name spelled otherwise than the file's does not work as written
   if ("name_in_deposit" %in% names(rw)) keep <- keep & is.na(rw$name_in_deposit)
+  tgt <- if ("target" %in% names(rw)) sub("^(\\./)+", "", gsub("\\\\", "/", rw$target)) else rep(NA_character_, nrow(rw))
+  # A path that names no file, while repro_rewrite_paths() found the one file with
+  # that name elsewhere in the repository: the authors moved or left out a folder
+  # when they deposited (`./data/x.csv` with the file in `exploratory/`), and the
+  # path is pointed there (#568). Not when the file's path ends in the path as
+  # written: the code then probably joins it to a folder of its own
+  # (`os.path.join(base, "fig7/x.csv")`).
+  found <- !is.na(tgt) & nzchar(tgt) & rw$matched %in% TRUE & !(rw$ambiguous %in% TRUE)
+  joined <- found & (tolower(tgt) == tolower(ref) | endsWith(tolower(tgt), paste0("/", tolower(ref))))
+  keep <- keep & !(!in_place & !is_call & !absolute & !up & found & !joined)
+  # a path that names no file, with no file of its name in the repository, stays
+  # as written and is a missing input
+  absent <- keep & !in_place & !is_call & !(rw$matched %in% TRUE)
   # A file found by name only inside an archive ("data.zip/data/x.csv"),
   # read at the path unpacking the archive would give it ("data/x.csv"): the
   # code runs on the package as it is, where that path does not exist, so the
   # reference is not found, and the file is a missing input (#520, item 2).
   arch_re <- "(^|/)[^/]+\\.(zip|tar|tgz|tar\\.gz)/"
-  tgt <- if ("target" %in% names(rw)) sub("^(\\./)+", "", gsub("\\\\", "/", rw$target)) else rep(NA_character_, nrow(rw))
   unpacked <- sub(arch_re, "\\1", tgt)
   in_archive <- keep & !in_place & !is.na(tgt) & grepl(arch_re, tgt) &
     (unpacked == ref | endsWith(unpacked, paste0("/", ref)))
@@ -2376,6 +2486,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   rw$target[keep] <- rw$ref[keep]
   rw$matched[in_archive] <- FALSE
   rw$target[in_archive] <- NA_character_
+  rw$matched[absent] <- FALSE
   # a rewritten path counts from where the script runs
   moved <- !keep & !is.na(rw$target) & nzchar(rw$target)
   rw$target[moved] <- vapply(rw$target[moved], .repro_rel_from, character(1), dir = run_dir, USE.NAMES = FALSE)
@@ -2402,13 +2513,12 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # most of the files and folders it names exist. On a tie: the nearest folder with an
 # .Rproj file, which is where RStudio runs a project, else the script's own folder.
 # A script run with source() takes the folder of the script that sources it, since
-# source() does not change the working folder. Outside the package layout every
-# script runs from the top, where its paths have been rewritten to.
+# source() does not change the working folder.
 # `places` are the scripts' paths from the top (.repro_script_places()); returns
 # one folder per script from the top, "." being the top.
-.repro_run_folders <- function(places, code_text_list, plan, order_tbl, layout, lang = "R") {
+.repro_run_folders <- function(places, code_text_list, plan, order_tbl, lang = "R") {
   out <- rep(".", length(places))
-  if (layout != "package" || is.null(plan) || !nrow(plan)) return(out)
+  if (is.null(plan) || !nrow(plan)) return(out)
   files <- tolower(gsub("\\\\", "/", plan$target_path))
   folders <- character(0)
   d <- dirname(files)
@@ -2803,6 +2913,31 @@ repro_materialize_layout <- function(plan, structure_df, root) {
         txt %||% "", perl = TRUE)
 }
 
+# The report's sentence that scripts could use the internet, with its limits (see
+# .repro_download_limits()), so a reader knows that what they downloaded may differ
+# from what the authors had.
+.repro_internet_text <- function(net) {
+  lim <- function(b, what) if (is.finite(b)) sprintf("%s MB %s", .repro_mb(b), what) else NULL
+  limits <- c(lim(net$max_file, "per file"), lim(net$max_total, "for all scripts together"))
+  paste0("The scripts could use the internet",
+         if (length(limits)) paste0(", up to ", paste(limits, collapse = " and ")), ", ",
+         "so what they downloaded may differ from what the authors had.")
+}
+
+.repro_needs_internet_text <- function(files, internet = FALSE) {
+  n <- length(files)
+  sprintf(" **%d script%s need%s the internet**, %s: %s. Keeping what they download in the deposit solves this.",
+          n, plural(n), plural(n, "s", ""),
+          if (internet) "and could not reach what they asked for" else "which is off during the run",
+          paste(files, collapse = ", "))
+}
+
+.repro_download_stop_text <- function(files) {
+  n <- length(files)
+  sprintf(" **%d script%s %s stopped for downloading more than our limits allow**: %s. Keeping what they download in the deposit solves this.",
+          n, plural(n), plural(n, "was", "were"), paste(files, collapse = ", "))
+}
+
 # Why a script did not run through, as one word, so reasons need not be recovered
 # from messages afterwards (#568, item 24). NA for what is not a failure of the script.
 .repro_failure_reason <- function(outcome, msg) {
@@ -2814,6 +2949,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out[outcome %in% c("timed_out", "skipped_time_limit")] <- "time"
   out[outcome %in% c("needs_a_person")] <- "interactive"
   out[outcome %in% c("needs_internet")] <- "internet"
+  # a download that was too large, or still arriving when the time ran out
+  out[outcome %in% c("download_too_large")] <- "download"
+  out[outcome %in% c("timed_out") & has("while a download was still arriving")] <- "download"
   out[outcome %in% c("skipped_missing_inputs")] <- "file"
   err <- outcome == "errored"
   set <- function(pat, label) out[err & is.na(out) & has(pat)] <<- label
@@ -4298,30 +4436,12 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
   ifelse(grepl("/", files$file_name, fixed = TRUE), files$file_name, .repro_script_path(files))
 }
 
-# Where repro_write_scripts() puts each script (`script_paths`). The package
-# layout: its own path. Otherwise a script with a name of its own stays NA, to be
-# placed by its name in the plan, and a script that shares its name goes to its
-# own row of the plan, or else to its own path, because by name they all landed
-# on the first row and overwrote each other. Two scripts with one place (the same
-# path in two repositories) go by their unique names, and no script is put above
-# the sandbox.
-.repro_script_places <- function(files, plan, layout) {
+# Where repro_write_scripts() puts each script (`script_paths`): its own path in
+# the repository. Two scripts with one place (the same path in two repositories)
+# go by their unique names, and no script is put above the sandbox.
+.repro_script_places <- function(files) {
   fname <- files$file_name
-  path <- .repro_script_path(files)
-  if (layout == "package") {
-    out <- path
-  } else {
-    base <- tolower(basename(gsub("\\\\", "/", fname)))
-    shared <- grepl("/", fname, fixed = TRUE) | base %in% base[duplicated(base)]
-    has_current <- !is.null(plan) && all(c("current_path", "target_path") %in% names(plan))
-    current <- if (has_current) sub("^(\\./|/)+", "", gsub("\\\\", "/", plan$current_path))
-    out <- rep(NA_character_, length(fname))
-    for (i in which(shared)) {
-      hit <- if (has_current) unique(plan$target_path[which(
-        current == path[i] & !is.na(plan$target_path) & nzchar(plan$target_path))])
-      out[i] <- if (length(hit) == 1) hit else fname[i]
-    }
-  }
+  out <- .repro_script_path(files)
   k <- tolower(out)
   clash <- !is.na(k) & k %in% k[!is.na(k) & duplicated(k)]
   out[clash] <- fname[clash]

@@ -62,6 +62,11 @@
 #' more — confirmed as a real, measured ~700MB+ cost for a package this
 #' module's own execution path has no legitimate use for.
 #'
+#' The option `metacheck.docker_image_py` names another image, such as
+#' `"ghcr.io/scienceverse/metacheck_py_large:latest"`, which adds about 70
+#' packages and `torch` and `tensorflow` for ordinary processors; the metacheck
+#' server uses that one.
+#'
 #' @returns the pre-built Python sandbox image reference,
 #'   `"ghcr.io/scienceverse/metacheck_py_small:latest"` (see
 #'   https://github.com/scienceverse/metacheck_docker_reproducibility for the
@@ -96,7 +101,7 @@
 #'   to branch on which backend ran.
 #' @export
 repro_install_deps_py_docker <- function(install_deps, lib_dir,
-                                         image = .repro_docker_default_image_py,
+                                         image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                          timeout = 600) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
@@ -224,8 +229,9 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #' same per-script semantics (skip on missing inputs / parse failure,
 #' timeout, error classification), but each script runs via `docker run
 #' --network none --read-only --user <non-root>` instead of a `processx`
-#' subprocess on the host — so the code cannot reach the network or touch
-#' anything outside the mounted sandbox and library, even deliberately.
+#' subprocess on the host — so the code cannot reach the network (unless `net`
+#' is given) or touch anything outside the mounted sandbox and library, even
+#' deliberately.
 #'
 #' @param run_tbl `repro_write_scripts()` output (`file_name`, `script_path`,
 #'   `run_dir`) — `run_dir` must be the SAME directory as (or a subdirectory
@@ -252,12 +258,14 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
+#' @param net `NULL` (the default) runs with the network off; see
+#'   [repro_run_scripts_docker()].
 #' @export
 repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
-                                        image = .repro_docker_default_image_py,
+                                        image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                         timeout = 600, skip = character(0),
                                         parses = NULL, failed_deps = character(0),
-                                        deadline = NULL) {
+                                        deadline = NULL, net = NULL) {
   if (is.null(run_tbl) || nrow(run_tbl) == 0)
     return(data.frame(file_name = character(0), outcome = character(0),
                       error = character(0), error_type = character(0),
@@ -316,7 +324,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     # time, not something the (shared, reused-across-papers) image itself
     # hardcodes.
     args <- c("run", "--rm", "--name", container_name,
-             "--network", "none", "--read-only",
+             .repro_docker_network_args(net), "--read-only",
              "--tmpfs", "/tmp",
              "--user", .repro_docker_uid,
              "--cap-drop", "ALL",
@@ -339,15 +347,14 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     py_path <- c(if (length(own)) ifelse(own == ".", "/sandbox", paste0("/sandbox/", own)),
                  if (!is.null(lib_dir_norm)) "/pylib")
     if (length(py_path)) args <- c(args, "-e", paste0("PYTHONPATH=", paste(py_path, collapse = ":")))
-    args <- c(args, image, "python", container_script)
+    args <- c(args, image, .repro_docker_counted_cmd(c("python", container_script), net))
 
     out_file <- tempfile(fileext = ".out")
     err_file <- tempfile(fileext = ".err")
     t0 <- Sys.time()
-    res <- tryCatch(
-      processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
-                    stdout = out_file, stderr = err_file),
-      error = function(e) e)
+    watched <- .repro_docker_run_watched(args, container_name, timeout, out_file, err_file,
+                                         sandbox_root, net)
+    res <- watched$res
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
 
     is_timeout <- (inherits(res, "condition") &&
@@ -362,6 +369,13 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
 
     message("[repro/py-docker]   <- '", fn, "' done in ", round(elapsed, 1), "s")
 
+    # stopped for what it downloaded, with the internet on
+    if (!is.na(watched$stopped))
+      return(data.frame(file_name = fn, outcome = "download_too_large", error = watched$stopped,
+                        error_type = NA_character_, undefined_var = NA_character_,
+                        stdout = so, stderr = se, elapsed = elapsed) |>
+               dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL)))
+
     if (inherits(res, "condition")) {
       msg <- conditionMessage(res)
       etype <- if (is_timeout) "timeout" else "runtime"
@@ -373,7 +387,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     }
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
-                        error = paste0("timed out after ", round(timeout), "s"),
+                        error = .repro_timeout_text(timeout, watched),
                         error_type = "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL)))

@@ -339,6 +339,10 @@ code_lang <- function(file_name) {
                         c("JASP", "jamovi"))
   is_candidate <- grepl("\\.(spv|smcl|out|html?)$", all_files$file_name, ignore.case = TRUE) |
     all_files$language %in% union(code_langs, "Python")
+  # When the code will run, this first download also fetches what the run needs
+  # (data, models, configuration), so no host is asked for the repository twice
+  # (see .download_for_run())
+  if (.download_for_run()) is_candidate <- is_candidate | .run_download_want(all_files)
   # A row has a real file_url, OR (for a member of a zip repo_check's own peek
   # already expanded) an archive_url + archive_member pair instead --
   # download_repo_files() fetches that member on its own via a byte-range

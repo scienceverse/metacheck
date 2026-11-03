@@ -126,6 +126,132 @@ repro_docker_available <- function() {
     "--memory", paste0(limits$memory_gb, "g"))
 }
 
+# The limits on what scripts download when the internet is on during a run (#568,
+# item 21): the module's own max_file_size and max_download_size, in MB, as for the
+# files of the repository, and what the paper's scripts received so far, which all
+# of them share. NULL when the internet is off.
+.repro_download_limits <- function(internet = FALSE, max_file_size = 100, max_download_size = 500) {
+  if (!isTRUE(internet)) return(NULL)
+  used <- new.env()
+  used$bytes <- 0
+  list(max_file = (max_file_size %||% Inf) * 1024^2,
+       max_total = (max_download_size %||% Inf) * 1024^2, used = used)
+}
+
+# `docker run` arguments for the network: off, unless the internet is on.
+.repro_docker_network_args <- function(net) {
+  if (is.null(net)) c("--network", "none") else character(0)
+}
+
+# The command a container runs, with the internet on: it first marks its start in
+# /tmp, so a file is known to be new, and at the end writes what it received to the
+# sandbox, so a script that ends between two checks is still counted. The command's
+# own exit status is kept.
+.repro_docker_counted_cmd <- function(cmd, net) {
+  if (is.null(net)) return(cmd)
+  c("sh", "-c", paste0('touch /tmp/.repro_t0; "$@"; s=$?; ',
+                       'cat /sys/class/net/eth0/statistics/rx_bytes > /sandbox/.repro_received 2>/dev/null; exit $s'),
+    "sh", cmd)
+}
+
+# What a running container has received over the network, in bytes, and, once that
+# is at least `max_file`, the first file of at least that size that appeared in the
+# sandbox or /tmp since the script started. NA when the container could not be asked.
+.repro_docker_received <- function(name, max_file = Inf) {
+  find <- if (is.finite(max_file))
+    sprintf(paste0('; [ "$r" -ge %.0f ] && find /sandbox /tmp -type f -newer /tmp/.repro_t0 ',
+                   '-size +%.0fk -printf "%%s %%p\\n" 2>/dev/null | head -n 1'),
+            max_file, floor(max_file / 1024)) else ""
+  res <- tryCatch(processx::run("docker", c("exec", name, "sh", "-c",
+                    paste0("r=$(cat /sys/class/net/eth0/statistics/rx_bytes); echo $r", find)),
+                    error_on_status = FALSE, timeout = 20),
+                  error = function(e) NULL)
+  out <- if (is.null(res)) character(0) else strsplit(trimws(res$stdout), "\n", fixed = TRUE)[[1]]
+  bytes <- suppressWarnings(as.numeric(out[1]))
+  big <- if (length(out) > 1) regmatches(out[2], regexec("^(\\d+) (.+)$", out[2]))[[1]] else character(0)
+  list(bytes = if (length(bytes) && !is.na(bytes)) bytes else NA_real_,
+       file = if (length(big) == 3) big[3] else NA_character_,
+       file_bytes = if (length(big) == 3) as.numeric(big[2]) else NA_real_)
+}
+
+.repro_mb <- function(bytes) format(round(bytes / 1024^2, 1), big.mark = ",")
+
+# The error of a script that ran out of time, which names a download that was still
+# coming in (see .repro_docker_run_watched()).
+.repro_timeout_text <- function(timeout, watched = NULL) {
+  paste0("timed out after ", round(timeout), "s",
+         if (isTRUE(watched$arriving))
+           sprintf(" while a download was still arriving (%s MB received)", .repro_mb(watched$received)))
+}
+
+# Run a `docker run` and wait for it. With the internet off (`net` NULL) this is
+# processx::run(). With it on, the container is checked every two seconds (a check
+# takes about 0.15 seconds), and
+# stopped when the paper's scripts together have downloaded more than
+# max_download_size, or a file larger than max_file_size has appeared (#568, item
+# 21), as the repository's own files are limited. A download that ends between two
+# checks is still counted towards the total, so a later script is stopped.
+# `arriving` says whether data was still coming in when the time ran out, so a slow
+# download is named as the reason.
+.repro_docker_run_watched <- function(args, name, timeout, stdout, stderr, sandbox_root, net = NULL) {
+  if (is.null(net))
+    return(list(res = tryCatch(
+      processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
+                    stdout = stdout, stderr = stderr),
+      error = function(e) e), stopped = NA_character_, arriving = FALSE))
+
+  received_file <- file.path(sandbox_root, ".repro_received")
+  unlink(received_file)
+  p <- tryCatch(processx::process$new("docker", args, stdout = stdout, stderr = stderr),
+                error = function(e) e)
+  if (inherits(p, "condition")) return(list(res = p, stopped = NA_character_, arriving = FALSE))
+  t0 <- Sys.time()
+  before <- net$used$bytes
+  rx <- 0
+  rx_prev <- 0
+  stopped <- NA_character_
+  timed_out <- FALSE
+  repeat {
+    left <- timeout - as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    if (left <= 0) { timed_out <- TRUE; break }
+    p$wait(as.integer(ceiling(min(2, left) * 1000)))
+    if (!p$is_alive()) break
+    seen <- .repro_docker_received(name, net$max_file)
+    if (is.na(seen$bytes)) next
+    rx_prev <- rx
+    rx <- seen$bytes
+    if (before + rx > net$max_total) {
+      stopped <- sprintf(paste0("stopped: the paper's scripts downloaded %s MB, more than the limit ",
+                                "of %s MB (max_download_size)"),
+                         .repro_mb(before + rx), .repro_mb(net$max_total))
+      break
+    }
+    if (!is.na(seen$file)) {
+      stopped <- sprintf(paste0("stopped: it downloaded %s, a file of %s MB, more than the limit ",
+                                "of %s MB per file (max_file_size)"),
+                         sub("^/sandbox/", "", seen$file), .repro_mb(seen$file_bytes),
+                         .repro_mb(net$max_file))
+      break
+    }
+  }
+  if (timed_out || !is.na(stopped)) {
+    .repro_docker_stop(name)
+    p$wait(10000)
+    if (p$is_alive()) p$kill()
+  }
+  if (file.exists(received_file)) {
+    final <- suppressWarnings(as.numeric(readLines(received_file, warn = FALSE)[1]))
+    if (length(final) && !is.na(final)) rx <- max(rx, final)
+    unlink(received_file)
+  }
+  net$used$bytes <- before + rx
+  res <- if (timed_out) list(status = NA_integer_, timeout = TRUE) else
+    list(status = p$get_exit_status() %||% NA_integer_, timeout = FALSE)
+  # more than 64 KB since the check before: data was still coming in
+  list(res = res, stopped = stopped, received = rx,
+       arriving = timed_out && rx - rx_prev > 64 * 1024)
+}
+
 # Whether a run's message comes from Docker itself rather than from the script: a
 # script cannot be judged when its container never started. While Docker Desktop
 # was down, every script of a paper was recorded as a failing script (#568, item 27).
@@ -629,7 +755,7 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   if (!"version_installed" %in% names(out)) out$version_installed <- NA_character_
   if (!"version_note" %in% names(out)) out$version_note <- ""
   out$version_note[is.na(out$version_note)] <- ""
-  out$via_archive <- out$via_archive %in% TRUE
+  out$via_archive <- if ("via_archive" %in% names(out)) out$via_archive %in% TRUE else rep(FALSE, nrow(out))
   # Classified on the HOST, not inside the container script: the container has
   # no access to this package's own R functions (it runs install.R as a
   # standalone Rscript with no library() of this package available), so each
@@ -702,8 +828,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #' undefined-variable / dependency-unavailable classification, captured
 #' result objects), but each script runs via `docker run --network none
 #' --read-only --user <non-root>` instead of a `callr` subprocess — so the
-#' code cannot reach the network or touch anything outside the mounted
-#' sandbox and library, even deliberately. See this file's header comment for
+#' code cannot reach the network (unless `net` is given) or touch anything
+#' outside the mounted sandbox and library, even deliberately. See this file's header comment for
 #' the two-phase (install-then-run) design and why the library is mounted at
 #' `/rlib`, not `/lib`.
 #'
@@ -731,11 +857,16 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
+#' @param net `NULL` (the default) runs with the network off. With the limits from
+#'   `.repro_download_limits()`, scripts can use the internet, and a script is
+#'   stopped (outcome `download_too_large`) when the scripts together download
+#'   more than the total limit, or a file larger than the limit per file appears.
 #' @export
 repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
                                      image = "rocker/r-ver:latest", timeout = 600,
                                      skip = character(0), parses = NULL,
-                                     failed_deps = character(0), deadline = NULL) {
+                                     failed_deps = character(0), deadline = NULL,
+                                     net = NULL) {
   if (is.null(run_tbl) || nrow(run_tbl) == 0)
     return(data.frame(file_name = character(0), outcome = character(0),
                       error = character(0), error_type = character(0),
@@ -889,7 +1020,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     # which is the sandbox root unless the package layout chose a folder below it.
     container_name <- .repro_docker_container_name()
     args <- c("run", "--rm", "--name", container_name,
-             "--network", "none", "--read-only",
+             .repro_docker_network_args(net), "--read-only",
              "--tmpfs", "/tmp",
              "--user", .repro_docker_uid,
              "--cap-drop", "ALL",
@@ -900,15 +1031,14 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              "-v", paste0(sandbox_root, ":/sandbox"))
     if (!is.null(lib_dir_norm))
       args <- c(args, "-v", paste0(lib_dir_norm, ":/rlib:ro"))
-    args <- c(args, image, "Rscript", container_wrapper)
+    args <- c(args, image, .repro_docker_counted_cmd(c("Rscript", container_wrapper), net))
 
     out_file <- tempfile(fileext = ".out")
     err_file <- tempfile(fileext = ".err")
     t0 <- Sys.time()
-    res <- tryCatch(
-      processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
-                    stdout = out_file, stderr = err_file),
-      error = function(e) e)
+    watched <- .repro_docker_run_watched(args, container_name, timeout, out_file, err_file,
+                                         sandbox_root, net)
+    res <- watched$res
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
 
     # is_timeout also drives error_type/outcome further below (moved up from
@@ -940,6 +1070,13 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
 
     message("[repro/docker]   <- '", fn, "' done in ", round(elapsed, 1), "s")
 
+    # stopped for what it downloaded, with the internet on
+    if (!is.na(watched$stopped))
+      return(data.frame(file_name = fn, outcome = "download_too_large", error = watched$stopped,
+                        error_type = NA_character_, undefined_var = NA_character_,
+                        stdout = so, stderr = se, elapsed = elapsed) |>
+               dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))
+
     # is_timeout was already computed above (right after `res`, so the
     # container-stop call could reuse it too) -- not recomputed here.
     # processx::run(error_on_status = FALSE) never throws for a nonzero exit;
@@ -956,7 +1093,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     }
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
-                        error = paste0("timed out after ", round(timeout), "s"),
+                        error = .repro_timeout_text(timeout, watched),
                         error_type = "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))

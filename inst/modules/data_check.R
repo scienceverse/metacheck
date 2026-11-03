@@ -491,6 +491,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     keep_archive <- .is_readable_archive(all_files$file_name)
     want <- (want & !(all_files$data_type %in% never_fetch)) | keep_archive
   }
+  # When the code will run, every file the run could need is fetched too (see
+  # .download_for_run()); code_check, which runs first in a chain, has usually
+  # fetched them already, and download_repo_files() then finds them on disk.
+  if (download != "none" && .download_for_run()) want <- want | .run_download_want(all_files)
 
   # Peek inside zips (HTTP range request, no full download) and only keep those
   # that hold actual data/documentation content; a zip of only materials is
@@ -759,7 +763,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (nrow(data_files) > 0) {
     pb_cols <- pb(nrow(data_files), ":what [:bar] :current/:total")
     pb_cols$tick(0, list(what = ""))
-    on.exit(pb_cols$terminate())
+    on.exit(pb_cols$terminate(), add = TRUE)
 
     per_file <- lapply(seq_len(nrow(data_files)), function(i) {
       f <- data_files[i, ]

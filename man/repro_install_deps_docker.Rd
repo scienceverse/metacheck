@@ -27,9 +27,10 @@ source)}
 }
 \value{
 a data frame with \code{package}, \code{source}, \code{installed} (logical),
-\code{message} (error text on failure, else ""), \code{via_archive} (always FALSE
-— the CRAN Archive retry \code{\link[=repro_install_deps]{repro_install_deps()}} does is not duplicated
-here; a package unavailable on live CRAN is simply recorded as failed),
+\code{message} (error text on failure, else ""), \code{via_archive} (\code{TRUE} when the
+package was not on CRAN and came from the CRAN Archive; a package not on
+CRAN is first looked for on Bioconductor, see
+\code{\link[=.repro_docker_elsewhere_lines]{.repro_docker_elsewhere_lines()}}),
 \code{category} (see \code{\link[=.repro_classify_install_message]{.repro_classify_install_message()}}; \code{NA} for a
 successful install), \code{version_recorded}, \code{version_installed} and
 \code{version_note} — same columns as \code{\link[=repro_install_deps]{repro_install_deps()}} so callers

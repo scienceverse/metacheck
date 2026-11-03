@@ -452,6 +452,15 @@ report_module_run <- function(paper, modules, args = list()) {
   on.exit(pb$terminate())
   pb$tick(0, tokens = list(what = "Running modules"))
 
+  # When the code will run, the first module that downloads fetches what the run
+  # needs as well, so no host is asked for the repository twice (#568; see
+  # .download_for_run())
+  if ("reproducibility_check" %in% modules && isTRUE(args$reproducibility_check$execute)) {
+    prev_for_run <- getOption("metacheck.download_for_run")
+    options(metacheck.download_for_run = TRUE)
+    on.exit(options(metacheck.download_for_run = prev_for_run), add = TRUE)
+  }
+
   # run each module ----
   # module_output <- lapply(modules, \(module) {
   op <- paper

@@ -52,7 +52,8 @@
 .repro_checklist_section <- function(table, run_results, missing_inputs = NULL,
                                      n_dup = 0, n_tests = NA, n_found = NA,
                                      sandbox = "docker", timeout = 600,
-                                     install_missing = FALSE, recorded_note = NULL) {
+                                     install_missing = FALSE, recorded_note = NULL,
+                                     net = NULL) {
   if (is.null(table) || !nrow(table) || is.null(run_results) || !nrow(run_results)) {
     return(NULL)
   }
@@ -81,6 +82,9 @@
   }
 
   used_by <- if ("used_by" %in% names(tbl)) tbl$used_by else rep(NA_character_, nrow(tbl))
+  # why a file is not part of the analysis (see .repro_software_kind())
+  not_analysis_why <- .repro_not_analysis_why(
+    if ("not_analysis_why" %in% names(tbl)) tbl$not_analysis_why else rep(NA_character_, nrow(tbl)))
 
   # one row per script: its result and what happened, in run order
   rows <- vapply(seq_len(nrow(tbl)), \(i) {
@@ -103,9 +107,15 @@
       errored = c("Stopped with an error",
                   if (nzchar(err)) sprintf("<code>%s</code>", .repro_cell(err))
                   else "The script stopped with an error (see its output below)."),
-      timed_out = c("Ran out of time",
-                    sprintf("It was still running after %s seconds, our time limit per script.",
-                            timeout)),
+      timed_out = c("Ran out of time", paste0(
+        sprintf("It was still running after %s seconds, our time limit per script", timeout),
+        if (grepl("while a download was still arriving", rr$error[[i]] %||% ""))
+          ", while it was still downloading." else ".")),
+      download_too_large = c("Stopped", paste0(
+        "It downloaded more than our limits allow",
+        if (grepl("^stopped: ", rr$error[[i]] %||% ""))
+          sprintf(" (%s)", .repro_cell(sub("^stopped: ", "", rr$error[[i]]))),
+        ". Keeping what it downloads in the deposit solves this.")),
       dependency_unavailable = c("Could not run on our server", sprintf(
         "It needs the %s package %s, which %s. This is not an error in the script.",
         lang, if (nzchar(pkg)) .repro_cell(pkg) else "(see its output below)",
@@ -132,11 +142,13 @@
         if (!is.na(used_by[[i]])) sprintf("It only defines functions, which %s uses.", .repro_cell(used_by[[i]]))
         else "It only defines functions, and no script in the deposit uses them."),
       docker_failed = c("Not run", "Docker failed on our side, so this says nothing about the script."),
-      needs_internet = c("Stopped", "It needs the internet, which is off while we run code. Keeping what it downloads in the deposit solves this."),
+      needs_internet = c("Stopped", paste(
+        if (is.null(net)) "It needs the internet, which is off while we run code."
+        else "It could not reach what it asked for on the internet.",
+        "Keeping what it downloads in the deposit solves this.")),
       needs_a_person = , static_needs_a_person = c(
         "Stopped", "It asks a person to choose a file or answer a question, or starts an app. Naming the file in the script solves this."),
-      not_analysis = , static_not_analysis = c(
-        "Not run", "It is a test of a package or the file that installs it, not part of the analysis."),
+      not_analysis = , static_not_analysis = c("Not run", .repro_cell(not_analysis_why[[i]])),
       c("Not run", ""))
     sprintf("| %s | %s | %s |", .repro_cell(tbl$file_name[[i]]), res[[1]], res[[2]])
   }, character(1))
@@ -157,6 +169,7 @@
     "We ran the paper's %s in the order they depend on each other, %s, for at most %s minute%s per script.%s",
     scripts, how, format(round(timeout / 60, 1)), plural(round(timeout / 60, 1)),
     if (!isTRUE(install_missing)) " We did not install packages the scripts need." else "")
+  if (!is.null(net)) intro <- paste(intro, .repro_internet_text(net))
   if (length(recorded_note) > 0) intro <- paste(intro, recorded_note)
   if (n_dup > 0) {
     intro <- paste(intro, sprintf(
@@ -168,7 +181,8 @@
   groups <- c(errored = "stopped with an error", timed_out = "ran out of time",
               dependency_unavailable = "could not run on our server",
               docker_failed = "could not run on our server",
-              needs_a_person = "needed a person", needs_internet = "needed the internet")
+              needs_a_person = "needed a person", needs_internet = "needed the internet",
+              download_too_large = "downloaded too much")
   n_ok <- sum(outcome[counted] == "ran_ok")
   parts <- vapply(names(groups), \(g) {
     n <- sum(outcome[counted] == g)

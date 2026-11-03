@@ -1523,7 +1523,7 @@ test_that("repro_install_deps_docker passes the versions to its script and repor
   expect_true(any(grepl("/sandbox/.install_status", captured, fixed = TRUE)))
   # a bare image has no remotes, and before R 4.0 data.frame() makes factors
   expect_true(any(grepl('install.packages("remotes", lib = lib', captured, fixed = TRUE)))
-  expect_true(any(grepl("version_note = note, stringsAsFactors = FALSE", captured, fixed = TRUE)))
+  expect_true(any(grepl("version_note = note, via_archive = FALSE, stringsAsFactors = FALSE", captured, fixed = TRUE)))
   # the row the script reached, and one it did not
   expect_equal(out$package, c("a", "b"))
   expect_equal(out$installed, c(TRUE, FALSE))
@@ -2211,12 +2211,6 @@ test_that("the package layout runs code that reads folders and imports its own m
   expect_equal(oc[["other.py"]], "ran_ok")      # absolute path rewritten
   expect_equal(oc[["helpers.py"]], "run_by_import")
   expect_match(mo$summary_text, "2 of 2 Python scripts ran without error", fixed = TRUE)
-
-  # the Psych-DS layout moves the helper module, so the import fails
-  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = pkg,
-                                    local_only = TRUE, execute = TRUE, layout = "psychds"))
-  oc <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
-  expect_equal(oc[["main.py"]], "errored")
 })
 
 test_that(".repro_keep_working_refs rewrites only what cannot work as written", {
@@ -2237,6 +2231,28 @@ test_that(".repro_keep_working_refs rewrites only what cannot work as written", 
   expect_equal(rw$target[rw$ref == "helpers.R"], "code/helpers.R")
   expect_equal(rw$target[rw$ref == "../raw_data/scores.csv"], "raw_data/scores.csv")
   expect_false(any(rw$as_written[rw$ref %in% c("helpers.R", "../raw_data/scores.csv")]))
+})
+
+test_that(".repro_keep_working_refs points a path that works nowhere to the file of its name (#568)", {
+  # the authors moved or left out a folder when they deposited
+  plan <- data.frame(file_name = c("VEG.csv", "forest_age.R"),
+                     target_path = c("exploratory/VEG.csv", "exploratory/forest_age.R"))
+  code <- c('d <- read.csv("./data/VEG.csv")', 'e <- read.csv("data/absent.csv")')
+  rw <- repro_rewrite_paths(code, "forest_age.R", plan, "R", script_path = "exploratory/forest_age.R")
+  rw <- .repro_keep_working_refs(rw, plan, "exploratory/forest_age.R", "exploratory")
+  veg <- rw[rw$ref == "./data/VEG.csv", ]
+  expect_false(veg$as_written)
+  # counted from the folder the script runs from
+  expect_equal(veg$target, "VEG.csv")
+  # no file of its name anywhere: as written, and a missing input
+  absent <- rw[rw$ref == "data/absent.csv", ]
+  expect_true(absent$as_written)
+  expect_false(absent$matched)
+  # the report tells the authors
+  txt <- .repro_path_fix_text(list(forest_age.R = rw), execute = TRUE)
+  expect_match(txt, "**1 data path in the code does not work in the repository as deposited.**", fixed = TRUE)
+  expect_match(txt, "`./data/VEG.csv` to `VEG.csv` (in forest_age.R)", fixed = TRUE)
+  expect_match(.repro_path_fix_text(list(a.R = rw[0, ])), "Every data path", fixed = TRUE)
 })
 
 test_that(".repro_norm_rel resolves . and ..", {
@@ -2561,21 +2577,15 @@ test_that(".repro_unique_script_names changes only names that repeat (#568)", {
 })
 
 test_that(".repro_script_places gives same-named scripts places of their own (#568)", {
-  plan <- data.frame(file_name = c("a.R", "a.R", "b.R"), current_path = c("x/a.R", "y/a.R", "z/b.R"),
-                     target_path = c("unknown/x/a.R", "unknown/y/a.R", "unknown/z/b.R"))
   files <- data.frame(file_name = c("x/a.R", "y/a.R", "b.R"), file_path = c("x/a.R", "y/a.R", "z/b.R"))
-  # their own row of the plan; a script with a name of its own is placed by name
-  expect_equal(.repro_script_places(files, plan, "psychds"), c("unknown/x/a.R", "unknown/y/a.R", NA))
-  # not in the plan: its own path
-  expect_equal(.repro_script_places(files, NULL, "psychds"), c("x/a.R", "y/a.R", NA))
-  expect_equal(.repro_script_places(files, plan, "package"), c("x/a.R", "y/a.R", "z/b.R"))
+  # each its own path
+  expect_equal(.repro_script_places(files), c("x/a.R", "y/a.R", "z/b.R"))
   # the same path in two repositories
   files <- data.frame(file_name = c("r1/x/a.R", "r2/x/a.R"), file_path = c("x/a.R", "x/a.R"))
-  expect_equal(.repro_script_places(files, plan[1, ], "psychds"), c("r1/x/a.R", "r2/x/a.R"))
-  expect_equal(.repro_script_places(files, plan, "package"), c("r1/x/a.R", "r2/x/a.R"))
+  expect_equal(.repro_script_places(files), c("r1/x/a.R", "r2/x/a.R"))
   # never above the sandbox
   files <- data.frame(file_name = c("../a.R", "x/../../a.R"), file_path = c("../a.R", "x/../../a.R"))
-  expect_equal(.repro_script_places(files, NULL, "psychds"), c("_/a.R", "x/_/_/a.R"))
+  expect_equal(.repro_script_places(files), c("_/a.R", "x/_/_/a.R"))
 })
 
 test_that("repro_run_order follows source() to the file it names among same-named files (#568)", {
@@ -2807,14 +2817,14 @@ test_that(".repro_run_folders runs a script from where its paths work (#568)", {
   places <- c("top/R/a.R", "top/R/b.R", "top/R/h.R", "other/s.R", "tie/c.R", "tie/x/e.R")
   order_tbl <- structure(data.frame(file_name = names(code)),
                          source_edges = data.frame(from = "h.R", to = "b.R"))
-  out <- .repro_run_folders(places, code, plan, order_tbl, "package")
+  out <- .repro_run_folders(places, code, plan, order_tbl)
   expect_equal(out, c("top", "top/R", "top/R", "other", "tie", "tie"))
-  # only in the package layout
-  expect_equal(.repro_run_folders(places, code, plan, order_tbl, "psychds"), rep(".", 6))
+  # no plan: from the top
+  expect_equal(.repro_run_folders(places, code, NULL, order_tbl), rep(".", 6))
   # a script at the top stays there, and a folder keeps its spelling
   p2 <- data.frame(target_path = c("Top/a.R", "Top/d.csv", "m.R"))
   out2 <- .repro_run_folders(c("Top/a.R", "m.R"), list(`a.R` = 'read.csv("d.csv")', `m.R` = "x"), p2,
-                             data.frame(file_name = c("a.R", "m.R")), "package")
+                             data.frame(file_name = c("a.R", "m.R")))
   expect_equal(out2, c("Top", "."))
 })
 
@@ -3048,4 +3058,161 @@ test_that(".repro_checklist_section notes a corrected name (#568)", {
   out <- .repro_checklist_section(tb, rr)
   expect_match(out, .repro_cell("a b.csv -> a_b.csv"), fixed = TRUE)
   expect_match(out, "should be changed in the script", fixed = TRUE)
+})
+
+# #568: one download for what a run needs, and fetching what the code names or misses
+
+test_that(".run_download_want leaves out media from hosts that send files one by one (#568)", {
+  files <- data.frame(file_name = c("a.R", "x.csv", "model.stan", "fig.png", "song.wav", "paper.pdf",
+                                    "fig.png", "lib.R"),
+                      file_path = c("a.R", "x.csv", "model.stan", "fig.png", "song.wav", "paper.pdf",
+                                    "fig.png", "renv/library/lib.R"),
+                      repo_url = c(rep("https://zenodo.org/records/1", 6), "https://github.com/a/b",
+                                   "https://zenodo.org/records/1"))
+  expect_equal(.run_download_want(files), c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE))
+  expect_length(.run_download_want(files[0, ]), 0)
+})
+
+test_that("code_check fetches what a run needs in its own first download (#568)", {
+  paper <- test_paper()
+  tbl <- data.frame(paper_id = paper_id(paper), repo_url = "https://zenodo.org/records/1",
+                    file_name = c("a.R", "x.csv", "model.stan", "fig.png"),
+                    file_url = paste0("https://zenodo.org/f/", 1:4),
+                    file_location = NA_character_, file_size = 100)
+  asked <- list()
+  local_mocked_bindings(download_repo_files = function(files, ...) {
+    asked[[length(asked) + 1]] <<- files$file_name
+    files
+  })
+  fake <- structure(list(module = "repo_check", table = tbl, paper = paper,
+                         summary_table = data.frame(paper_id = paper_id(paper))),
+                    class = "metacheck_module_output")
+  suppressWarnings(module_run(fake, "code_check"))
+  expect_equal(asked[[1]], "a.R")
+  asked <- list()
+  withr::local_options(metacheck.download_for_run = TRUE)
+  suppressWarnings(module_run(fake, "code_check"))
+  expect_setequal(asked[[1]], c("a.R", "x.csv", "model.stan"))
+})
+
+test_that(".repro_named_files finds the files the code names, by name or extension (#568)", {
+  s <- data.frame(file_name = c("fig.png", "call.wav", "other.wav", "notes.pdf", "here.csv"),
+                  file_url = c("u1", "u2", "u3", "u4", NA), file_location = c(NA, NA, NA, NA, "x/here.csv"))
+  code <- c('img <- png::readPNG("figs/fig.png")', 'w <- list.files("audio", pattern = "\\\\.wav$")')
+  expect_equal(.repro_named_files(s, code), c(TRUE, TRUE, TRUE, FALSE, FALSE))
+  expect_equal(.repro_named_files(s, 'x <- 1'), rep(FALSE, 5))
+  expect_equal(.repro_named_files(s, 'glob.glob("*.wav")'), c(FALSE, TRUE, TRUE, FALSE, FALSE))
+  expect_equal(.repro_named_files(s, 're.search(r"\\.wav$", f)'), c(FALSE, TRUE, TRUE, FALSE, FALSE))
+})
+
+test_that(".repro_unopened_files reads the files scripts could not open (#568)", {
+  msgs <- c("Error in file(file, \"rt\") : cannot open file 'data/late.csv': No such file or directory",
+            "FileNotFoundError: [Errno 2] No such file or directory: 'in/x.tif'",
+            "Error: 'C:/Users/a/b.rds' does not exist in current working directory",
+            "object 'x' not found", NA)
+  expect_setequal(.repro_unopened_files(msgs), c("late.csv", "x.tif", "b.rds"))
+})
+
+# #568, item 21: the internet during a run, with the limits for the repository's files
+
+test_that(".repro_download_limits keeps the network off unless asked (#568)", {
+  expect_null(.repro_download_limits(FALSE))
+  expect_equal(.repro_docker_network_args(NULL), c("--network", "none"))
+  expect_equal(.repro_docker_counted_cmd(c("python", "a.py"), NULL), c("python", "a.py"))
+  net <- .repro_download_limits(TRUE, 100, 500)
+  expect_equal(net$max_file, 100 * 1024^2)
+  expect_equal(net$max_total, 500 * 1024^2)
+  expect_equal(net$used$bytes, 0)
+  expect_length(.repro_docker_network_args(net), 0)
+  cmd <- .repro_docker_counted_cmd(c("python", "a.py"), net)
+  expect_equal(cmd[c(1, 2, 4:6)], c("sh", "-c", "sh", "python", "a.py"))
+  # the script's own exit status is what the container returns
+  expect_match(cmd[3], "exit $s", fixed = TRUE)
+  # no limit
+  expect_equal(.repro_download_limits(TRUE, Inf, NULL)$max_total, Inf)
+})
+
+test_that("a download that is too large or too slow is the reason a script failed (#568)", {
+  r <- .repro_failure_reason
+  expect_equal(r("download_too_large", "stopped: ..."), "download")
+  expect_equal(r("timed_out", .repro_timeout_text(60, list(arriving = TRUE, received = 5e6))), "download")
+  expect_equal(r("timed_out", .repro_timeout_text(60, list(arriving = FALSE, received = 5e6))), "time")
+  expect_equal(.repro_timeout_text(60), "timed out after 60s")
+})
+
+test_that("the report says the scripts could use the internet, and what stopped one (#568)", {
+  net <- .repro_download_limits(TRUE, 100, 500)
+  expect_match(.repro_internet_text(net), "up to 100 MB per file and 500 MB for all scripts together", fixed = TRUE)
+  expect_match(.repro_needs_internet_text("a.R", TRUE), "could not reach what they asked for", fixed = TRUE)
+  expect_match(.repro_needs_internet_text("a.R", FALSE), "which is off during the run", fixed = TRUE)
+  tb <- data.frame(file_name = c("a.R", "b.R"), run_order = 1:2, outcome = c("download_too_large", "timed_out"),
+                   setwd_removed = 0, not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = c("a.R", "b.R"), outcome = c("download_too_large", "timed_out"),
+                   error = c("stopped: it downloaded x.zip, a file of 120 MB, more than the limit of 100 MB per file (max_file_size)",
+                             "timed out after 60s while a download was still arriving (12 MB received)"),
+                   stderr = "")
+  out <- .repro_checklist_section(tb, rr, timeout = 60, net = net)
+  expect_match(out, "The scripts could use the internet", fixed = TRUE)
+  expect_match(out, "a file of 120 MB", fixed = TRUE)
+  expect_match(out, "while it was still downloading", fixed = TRUE)
+  expect_match(out, "1 downloaded too much", fixed = TRUE)
+  # with the network off, nothing about the internet
+  expect_no_match(.repro_checklist_section(tb[2, ], rr[2, ], timeout = 60), "could use the internet", fixed = TRUE)
+})
+
+# Real containers and a real download, gated like the other Docker tests.
+test_that("repro_run_scripts_docker uses the internet only when asked, within the limits (#568)", {
+  skip_if_quick()
+  skip_if_offline()
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  img <- "ghcr.io/scienceverse/metacheck_r_large:latest"
+  # about 30 KB, so a slow connection does not matter; the limits are below it
+  url <- "https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz"
+  run1 <- function(code, net, timeout = 120) {
+    root <- withr::local_tempdir(.local_envir = parent.frame())
+    writeLines(code, file.path(root, "d.R"))
+    run_tbl <- data.frame(file_name = "d.R", script_path = file.path(root, "d.R"), run_dir = root)
+    repro_run_scripts_docker(run_tbl, "d.R", root, image = img, timeout = timeout, net = net)
+  }
+  dl <- sprintf('download.file("%s", "x.tar.gz", mode = "wb", quiet = TRUE)', url)
+
+  expect_equal(run1(dl, NULL)$outcome, "errored")
+  net <- .repro_download_limits(TRUE, 100, 500)
+  expect_equal(run1(dl, net)$outcome, "ran_ok")
+  # what it received is counted for the paper's scripts together
+  expect_gt(net$used$bytes, 2e4)
+
+  # a file over the limit per file (10 KB), found while the script still runs
+  out <- run1(c(dl, "Sys.sleep(30)"), .repro_download_limits(TRUE, 0.01, 500))
+  expect_equal(out$outcome, "download_too_large")
+  expect_match(out$error, "x.tar.gz", fixed = TRUE)
+  expect_lt(out$elapsed, 25)
+  # the scripts together over the total
+  out <- run1(c(dl, "Sys.sleep(30)"), .repro_download_limits(TRUE, 100, 0.01))
+  expect_equal(out$outcome, "download_too_large")
+  expect_match(out$error, "max_download_size", fixed = TRUE)
+})
+
+test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
+  skip_if_quick()
+  skip_if_offline()
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  root <- withr::local_tempdir()
+  writeLines(c("import urllib.request",
+               'd = urllib.request.urlopen("https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz").read()',
+               "print(len(d))"), file.path(root, "d.py"))
+  writeLines(c("import sys", "sys.exit(3)"), file.path(root, "e.py"))
+  run_tbl <- data.frame(file_name = c("d.py", "e.py"), script_path = file.path(root, c("d.py", "e.py")), run_dir = root)
+  off <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120)
+  expect_equal(off$outcome, c("errored", "errored"))
+  on <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120,
+                                    net = .repro_download_limits(TRUE))
+  # the script's own failure is still a failure
+  expect_equal(on$outcome, c("ran_ok", "errored"))
 })

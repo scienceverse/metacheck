@@ -2,7 +2,7 @@
 % Please edit documentation in R/reproducibility_check.R
 \name{repro_materialize_layout}
 \alias{repro_materialize_layout}
-\title{Materialise the Psych-DS layout for a paper into a throwaway directory}
+\title{Copy a paper's files into a throwaway directory, as a plan places them}
 \usage{
 repro_materialize_layout(plan, structure_df, root)
 }
@@ -21,8 +21,9 @@ names each row's own file}
 \code{target_path} / \code{source} / \code{ok} (whether the copy succeeded) rows.
 }
 \description{
-The execute phase runs the paper's code against the Psych-DS layout, but the
-module has only the \emph{plan} (\code{psychds_check}'s file → \code{target_path}) and the
+The execute phase runs the paper's code in the repository as the authors
+organised it (\code{\link[=.repro_package_plan]{.repro_package_plan()}}: every file at its own path), but the
+module has only the \emph{plan} (file → \code{target_path}) and the
 current on-disk location of each source file (\code{data_check}'s \code{structure}).
 This builds the tree the plan describes inside a fresh temp directory: for
 each planned file with a real target and an available source copy, the source

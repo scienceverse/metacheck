@@ -14,7 +14,8 @@ repro_run_scripts_docker(
   skip = character(0),
   parses = NULL,
   failed_deps = character(0),
-  deadline = NULL
+  deadline = NULL,
+  net = NULL
 )
 }
 \arguments{
@@ -47,6 +48,11 @@ recorded \code{not_parsed} and not run}
 together) after which no script is started, recorded as
 \code{skipped_time_limit}; a running script is stopped then. \code{NULL} (the
 default) sets no such limit.}
+
+\item{net}{\code{NULL} (the default) runs with the network off. With the limits from
+\code{.repro_download_limits()}, scripts can use the internet, and a script is
+stopped (outcome \code{download_too_large}) when the scripts together download
+more than the total limit, or a file larger than the limit per file appears.}
 }
 \value{
 a data frame — identical columns to \code{\link[=repro_run_scripts]{repro_run_scripts()}}'s
@@ -58,8 +64,8 @@ The Docker-backed twin of \code{\link[=repro_run_scripts]{repro_run_scripts()}}:
 per-script semantics (skip on missing inputs / parse failure, timeout,
 undefined-variable / dependency-unavailable classification, captured
 result objects), but each script runs via \verb{docker run --network none --read-only --user <non-root>} instead of a \code{callr} subprocess — so the
-code cannot reach the network or touch anything outside the mounted
-sandbox and library, even deliberately. See this file's header comment for
+code cannot reach the network (unless \code{net} is given) or touch anything
+outside the mounted sandbox and library, even deliberately. See this file's header comment for
 the two-phase (install-then-run) design and why the library is mounted at
 \verb{/rlib}, not \verb{/lib}.
 }
