@@ -340,6 +340,52 @@ test_that("execute = TRUE: the code of a package the deposit is made of is not r
   why <- stats::setNames(mo$table$not_analysis_why, basename(mo$table$file_name))
   expect_match(why[["f.R"]], "part of the code of the package", fixed = TRUE)
   expect_match(why[["tutorial.Rmd"]], "nothing links it to the paper's results", fixed = TRUE)
+  link <- stats::setNames(mo$table$paper_link, basename(mo$table$file_name))
+  expect_equal(link[["intro.Rmd"]], "it names the paper's figures or tables")
+  expect_true(is.na(link[["tutorial.Rmd"]]))
   report <- paste(unlist(mo$report), collapse = "\n")
   expect_match(report, "2 files are not part of the analysis", fixed = TRUE)
+})
+
+test_that(".repro_sw_chain links the scripts the paper's analysis depends on (#568)", {
+  io <- function(...) {
+    x <- list(...)
+    d <- data.frame(file_name = names(x))
+    d$reads <- lapply(x, `[[`, "reads"); d$writes <- lapply(x, `[[`, "writes")
+    d$sources <- lapply(x, function(e) e$sources %||% character(0))
+    d
+  }
+  # a figure notebook (linked) reads what the pipeline writes, with a pattern
+  f <- c("figures.ipynb", "train.py", "metrics.py", "tutorial.py", "driver.py")
+  k <- c(NA, "unlinked", "unlinked", "unlinked", "unlinked")
+  links <- c("names Figure 3", NA, NA, NA, NA)
+  x <- io(figures.ipynb = list(reads = "rmse_per_hour.csv", writes = "fig3.png"),
+          train.py = list(reads = "raw.csv", writes = "model.pkl"),
+          metrics.py = list(reads = "model.pkl", writes = "{metric}_per_hour.csv"),
+          tutorial.py = list(reads = "example.csv", writes = "out.png"),
+          driver.py = list(reads = character(0), writes = character(0)))
+  imp <- list(train.py = "driver.py")
+  ch <- .repro_sw_chain(k, f, x, imported = imp, links = links)
+  # the metrics script makes what the figure notebook reads, by a pattern
+  expect_equal(ch[3], "figures.ipynb needs what it makes")
+  # the training script makes what the metrics script reads: along the chain
+  expect_equal(ch[2], "metrics.py needs what it makes")
+  # a tutorial on example data stays unlinked
+  expect_true(is.na(ch[4]))
+  # a driver that imports a linked script runs that part of the analysis
+  expect_equal(ch[5], "it runs train.py")
+  # a script that works on what the analysis makes
+  x2 <- io(a.R = list(reads = "d.csv", writes = "res.csv"), b.R = list(reads = "res.csv", writes = character(0)))
+  expect_equal(.repro_sw_chain(c(NA, "unlinked"), c("a.R", "b.R"), x2), c(NA, "it works on what a.R makes"))
+  # source() counts, and nothing across repositories
+  x3 <- io(a.R = list(reads = character(0), writes = character(0), sources = "helpers.r"),
+           helpers.R = list(reads = character(0), writes = character(0)))
+  expect_equal(.repro_sw_chain(c(NA, "unlinked"), c("a.R", "helpers.R"), x3)[2], "a.R needs what it makes")
+  expect_true(is.na(.repro_sw_chain(c(NA, "unlinked"), c("a.R", "helpers.R"), x3, repos = c("r1", "r2"))[2]))
+  # nothing to do without unlinked scripts
+  expect_equal(.repro_sw_chain(c(NA, NA), c("a.R", "b.R"), x2), c(NA_character_, NA_character_))
+  # the links in words, for table$paper_link
+  expect_equal(.repro_sw_link_text(c("names_results, data", "a.R needs what it makes", NA)),
+               c("it names the paper's figures or tables; it reads data deposited with the paper",
+                 "a.R needs what it makes", NA))
 })

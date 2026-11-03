@@ -112,6 +112,13 @@
 #       sit inside it), or one inside that the paper itself names.
 #    Whether the numbers a script prints match the paper is not used here: the
 #    module reports that after a run.
+# 7. A script left unlinked is linked after all, in the same repository, when a
+#    script that runs reads a file it writes, source()s it or imports it; when it
+#    reads a file a script that runs writes; or when it source()s or imports a
+#    script linked to the paper; and so on along the chain (.repro_sw_chain()).
+#    The pipeline that feeds a figure is part of the analysis even when nothing
+#    names it. A name built from a pattern ("{metric}_per_hour.csv") matches
+#    the names it can stand for.
 #
 # What the paths cannot tell is whether a package or tool is the paper's own.
 # A tool's repository without any of the files of step 2 (PyRate, a set of
@@ -664,6 +671,93 @@
 # setup.py that installs a package (.repro_is_r_test(), .repro_is_py_test()).
 .repro_not_analysis_why <- function(why) {
   ifelse(is.na(why), "It is a test of a package or the file that installs it, not part of the analysis.", why)
+}
+
+# Step 7, after stage 2: the scripts the paper's analysis depends on. Nothing
+# may name the pipeline that feeds a figure: in FluxRGNN, run_baselines.py
+# writes the summary.csv that run_experiments.py reads, and evaluate_performance.py
+# writes the rmse_per_hour.csv a notebook reads as "{metric}_per_hour.csv". So a
+# script left unlinked by stage 2 is linked after all, in the same repository,
+# when
+#   a. a script that runs (kind NA) reads a file it writes, source()s it or
+#      imports it: the analysis needs it;
+#   b. it reads a file that a script that runs writes: it works on the
+#      analysis's results;
+#   c. it source()s or imports a script linked to the paper (a link of stage 2,
+#      or of this step): it drives that part of the analysis;
+# repeated, so the whole chain is linked. A name built from a pattern
+# ("{metric}_per_hour.csv", "fig_%d.png") matches any name it can stand for.
+# `kind` is .repro_software_kind()'s column, `links` its column of links (NA
+# when none), `file_names` the scripts' names (as in `io`), `io`
+# repro_file_io()'s result, `imported` .repro_py_imported()'s (imported file ->
+# the files that import it), `repos` each script's repository.
+# Returns, per script, how it is linked ("run.py needs what it makes"; NA when
+# not linked).
+.repro_sw_chain <- function(kind, file_names, io = NULL, imported = NULL, repos = NULL, links = NULL) {
+  n <- length(kind)
+  through <- rep(NA_character_, n)
+  if (!any(kind %in% "unlinked") || is.null(io) || !nrow(io)) return(through)
+  repos <- if (is.null(repos)) rep("", n) else ifelse(is.na(repos), "", as.character(repos))
+  at <- match(file_names, io$file_name)
+  get <- function(col, i) if (is.na(at[i]) || is.null(io[[col]])) character(0) else tolower(io[[col]][[at[i]]])
+  stem <- function(f) tolower(basename(gsub("\\\\", "/", f)))
+  # whether a name in one list can be a name in the other, patterns included
+  as_regex <- function(x) {
+    x <- gsub("([.+^$()|\\[\\]\\\\])", "\\\\\\1", x, perl = TRUE)
+    x <- gsub("\\{[^}]*\\}|%[0-9.]*[sdif]|\\*", ".+", x, perl = TRUE)
+    paste0("^", x, "$")
+  }
+  meets <- function(a, b) {
+    if (!length(a) || !length(b)) return(FALSE)
+    if (length(intersect(a, b))) return(TRUE)
+    pat_a <- a[grepl("\\{|%|\\*", a)]; pat_b <- b[grepl("\\{|%|\\*", b)]
+    any(vapply(as_regex(pat_a), function(p) any(grepl(p, b, perl = TRUE)), logical(1))) ||
+      any(vapply(as_regex(pat_b), function(p) any(grepl(p, a, perl = TRUE)), logical(1)))
+  }
+  # what u imports: the files whose importers include u
+  imports_of <- function(u) names(imported)[vapply(imported, function(v) file_names[u] %in% v, logical(1))]
+  runs <- is.na(kind)
+  strong <- runs & !is.na(links %||% rep(NA_character_, n))
+  repeat {
+    added <- FALSE
+    for (u in which(kind %in% "unlinked" & is.na(through))) {
+      same <- repos == repos[u]
+      writes <- get("writes", u); reads <- get("reads", u)
+      needed_by <- which(runs & same)[vapply(which(runs & same), function(j)
+        meets(writes, get("reads", j)) || stem(file_names[u]) %in% get("sources", j) ||
+          file_names[j] %in% (imported[[file_names[u]]] %||% character(0)), logical(1))]
+      works_on <- which(runs & same)[vapply(which(runs & same), function(j) meets(reads, get("writes", j)), logical(1))]
+      drives <- which(strong & same)[stem(file_names[which(strong & same)]) %in%
+                                       c(get("sources", u), tolower(imports_of(u)))]
+      hit <- c(needed_by, works_on, drives)
+      if (length(hit)) {
+        through[u] <- if (length(needed_by)) sprintf("%s needs what it makes", file_names[needed_by[1]])
+          else if (length(works_on)) sprintf("it works on what %s makes", file_names[works_on[1]])
+          else sprintf("it runs %s", file_names[drives[1]])
+        runs[u] <- TRUE
+        strong[u] <- TRUE
+        added <- TRUE
+      }
+    }
+    if (!added) break
+  }
+  through
+}
+
+# What links a file of software to the paper, in words, for `table$paper_link`:
+# the codes of stage 2 ("paper_names_it, data") become sentences, a link of step
+# 7 is one already.
+.repro_sw_link_text <- function(links) {
+  words <- c(paper_names_it = "the paper names it",
+             appendix = "it names an appendix or supplement the paper names",
+             names_results = "it names the paper's figures or tables",
+             readme = "a README names it next to a figure or table",
+             data = "it reads data deposited with the paper")
+  vapply(links, function(l) {
+    if (is.na(l) || !nzchar(l)) return(NA_character_)
+    parts <- strsplit(l, ", ", fixed = TRUE)[[1]]
+    paste(ifelse(parts %in% names(words), words[parts], parts), collapse = "; ")
+  }, character(1), USE.NAMES = FALSE)
 }
 
 # The sentence the report gives for each kind of file.

@@ -1470,6 +1470,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   r_software <- .repro_software_kind(r_script_paths, code_text_list, structure_df, r_files$repo_name,
                                      paper_text = .repro_paper_text(paper), raw_text_list = raw_text_list)
   r_software$kind[r_software$kind %in% "unlinked" & lengths(r_function_names) > 0] <- NA_character_
+  # a script the analysis depends on (it writes what a running script reads, or
+  # a running script sources it) is linked through that script
+  r_chain <- .repro_sw_chain(r_software$kind, r_files$file_name, io, repos = r_files$repo_name,
+                             links = r_software$links)
+  r_software$kind[!is.na(r_chain)] <- NA_character_
+  r_software$links[!is.na(r_chain)] <- r_chain[!is.na(r_chain)]
   sniff_type[is.na(sniff_type) & (.repro_is_r_test(r_script_paths) | !is.na(r_software$kind))] <- "not_analysis"
   r_software$why[!sniff_type %in% "not_analysis"] <- NA_character_
   only_functions <- is.na(sniff_type) & grepl("\\.[Rr]$", r_files$file_name) & lengths(r_function_names) > 0
@@ -2110,6 +2116,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   table$names_corrected <- .repro_names_corrected(name_corrections, r_files$file_name)
   table$used_by <- r_used_by
   table$not_analysis_why <- r_software$why
+  # for a file of software that runs: what links it to the paper's results
+  table$paper_link <- ifelse(is.na(r_software$kind), .repro_sw_link_text(r_software$links), NA_character_)
   table$repo_name <- if ("repo_name" %in% names(r_files)) r_files$repo_name else NA_character_
   table$reason <- if (!is.null(run_results) && "reason" %in% names(run_results))
     run_results$reason[match(r_files$file_name, run_results$file_name)] else NA_character_
@@ -2982,6 +2990,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   })
   py_software <- .repro_software_kind(py_script_paths, py_code_text_list, structure_df, py_files$repo_name,
                                       paper_text = .repro_paper_text(paper), raw_text_list = py_raw_text_list)
+  py_chain <- .repro_sw_chain(py_software$kind, py_files$file_name, py_io,
+                              imported = .repro_py_imported(py_code_text_list, py_files$file_path),
+                              repos = py_files$repo_name, links = py_software$links)
+  py_software$kind[!is.na(py_chain)] <- NA_character_
+  py_software$links[!is.na(py_chain)] <- py_chain[!is.na(py_chain)]
   py_not_analysis <- vapply(seq_len(n_py_code), function(i)
     .repro_is_py_test(py_script_paths[i], py_code_text_list[[i]]), logical(1)) | !is.na(py_software$kind)
   n_py_noparse_static <- sum(!py_parses & !py_not_analysis)
@@ -3328,6 +3341,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_name_corrections <- .repro_name_corrections(py_rewrite_list)
   py_table$names_corrected <- .repro_names_corrected(py_name_corrections, py_files$file_name)
   py_table$not_analysis_why <- ifelse(py_not_analysis, py_software$why, NA_character_)
+  py_table$paper_link <- ifelse(py_not_analysis, NA_character_, .repro_sw_link_text(py_software$links))
   py_table$repo_name <- if ("repo_name" %in% names(py_files)) py_files$repo_name else NA_character_
   py_table$reason <- if (!is.null(py_run_results) && "reason" %in% names(py_run_results))
     py_run_results$reason[match(py_files$file_name, py_run_results$file_name)] else NA_character_

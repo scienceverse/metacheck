@@ -2182,6 +2182,9 @@ test_that(".repro_py_imported finds modules, not scripts", {
   # a file with a __main__ block, or that nothing imports, is a script
   code$main.py <- c(code$main.py, "import tool")
   expect_false("tool.py" %in% names(.repro_py_imported(code, paths)))
+  # a notebook cannot be imported: `import audio` names a module, not audio.ipynb (#568)
+  nb <- list(demo.ipynb = c("from opensoundscape import audio", "import audio"), audio.ipynb = "x = 1")
+  expect_length(.repro_py_imported(nb, c("docs/demo.ipynb", "docs/audio.ipynb")), 0)
 })
 
 test_that("the package layout runs code that reads folders and imports its own modules", {

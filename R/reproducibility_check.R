@@ -2739,9 +2739,13 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     j != i && stem[[i]] %in% imports[[j]] &&
       (!repeated[[i]] || dirs[[j]] == dirs[[i]] || basename(dirs[[i]]) %in% imports[[j]])
   }
+  # Only a .py file can be imported. `import audio` named the package's module,
+  # and a tutorial notebook called audio.ipynb was taken as imported, so it was
+  # never run (#568).
+  importable <- grepl("\\.py$", paths, ignore.case = TRUE)
   out <- list()
   for (i in seq_along(fns)) {
-    if (is_main[[i]] || stem[[i]] %in% c("", ".")) next
+    if (is_main[[i]] || stem[[i]] %in% c("", ".") || !importable[[i]]) next
     by <- fns[vapply(seq_along(fns), imports_it, logical(1), i = i)]
     if (length(by)) out[[fns[[i]]]] <- unique(by)
   }
