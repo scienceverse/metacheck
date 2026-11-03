@@ -294,7 +294,7 @@ repro_docker_available <- function() {
     # This R treats a warning old packages cause as an error, and has dropped
     # Calloc() and the like, so maptools did not compile. Only for this pass.
     r"(makevars <- file.path(tempdir(), "Makevars"))",
-    r"(writeLines(c("CFLAGS += -Wno-error=format-security -DCalloc=R_Calloc -DRealloc=R_Realloc -DFree=R_Free", paste0(c("CXXFLAGS", "CXX11FLAGS", "CXX14FLAGS", "CXX17FLAGS"), " += -Wno-error=format-security")), makevars))",
+    r"(writeLines(c("CFLAGS += -Wno-error=format-security -DCalloc=R_Calloc -DRealloc=R_Realloc -DFree=R_Free", paste0(c("CXXFLAGS", "CXX11FLAGS", "CXX14FLAGS", "CXX17FLAGS", "CXX20FLAGS"), " += -Wno-error=format-security")), makevars))",
     r"(Sys.setenv(R_MAKEVARS_USER = makevars, R_LIBS = paste(.libPaths(), collapse = ":")))",
     r"(retry_rows <- function() which(vapply(out, function(x) !x$installed && identical(x$source, "cran") && grepl("is not available|there is no package called", x$message), logical(1))))",
     r"(bioc_known <- NULL)",
@@ -315,8 +315,14 @@ repro_docker_available <- function() {
     r"(    return("bioc"))",
     r"(  })",
     r"(  listing <- suppressWarnings(tryCatch(readLines(paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/"), warn = FALSE), error = function(e) character(0))))",
-    # The image's copy of sp lacks the header files rgdal and rgeos compile against.
-    r"(  if (pkg %in% c("rgdal", "rgeos") && !file.exists(file.path(lib, "sp", "include", "sp.h"))) install.packages("sp", lib = lib, quiet = TRUE))",
+    # rgdal and rgeos compile against sp's header files, which sp dropped in
+    # version 2.2 after they left CRAN; 2.1-4 is the last version that has them
+    # (#568). The run then loads this sp, from the temporary library.
+    r"(  if (pkg %in% c("rgdal", "rgeos") && !file.exists(file.path(lib, "sp", "include", "sp.h"))) {)",
+    r"(    sp_src <- file.path(tempdir(), "sp_2.1-4.tar.gz"))",
+    r"(    try(utils::download.file("https://cran.r-project.org/src/contrib/Archive/sp/sp_2.1-4.tar.gz", sp_src, quiet = TRUE), silent = TRUE))",
+    r"(    if (file.exists(sp_src)) try(install.packages(sp_src, lib = lib, repos = NULL, type = "source", quiet = TRUE), silent = TRUE))",
+    r"(  })",
     r"(  hits <- grep(paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz"), listing, value = TRUE))",
     r"(  if (!length(hits)) return(NA_character_))",
     r"(  dates <- sub(".*(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}).*", "\\1", hits))",

@@ -2678,6 +2678,7 @@ test_that(".repro_failure_reason names why a script did not run through (#568)",
   expect_equal(r("errored", "there is no package called 'x'"), "package")
   expect_equal(r("errored", "object 'x' not found"), "undefined")
   expect_equal(r("errored", "cannot cache function 'f'"), "environment")
+  expect_equal(r("errored", " *** caught segfault ***\naddress 0x10, cause 'memory not mapped'"), "environment")
   expect_equal(r("errored", " "), "no_message")
   expect_equal(r("errored", "list index out of range"), "other")
   expect_equal(r(c("python2", "needs_a_person", "needs_internet", "timed_out"), ""), c("syntax", "interactive", "internet", "time"))

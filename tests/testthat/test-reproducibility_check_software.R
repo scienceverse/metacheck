@@ -3,10 +3,10 @@
 # the deposit's files, one repository unless named
 sw_files <- function(paths, repo = "repo") data.frame(file_path = paths, repo_name = repo)
 # the kind of each script; code is a list of character vectors, one per script
-sw_kind <- function(scripts, files = scripts, code = NULL, repos = "repo") {
+sw_kind <- function(scripts, files = scripts, code = NULL, repos = "repo", paper = NULL, raw = NULL) {
   if (is.null(code)) code <- rep(list("x <- 1"), length(scripts))
   st <- if (is.data.frame(files)) files else sw_files(files, repos[1])
-  .repro_software_kind(scripts, code, st, rep(repos, length.out = length(scripts)))
+  .repro_software_kind(scripts, code, st, rep(repos, length.out = length(scripts)), paper_text = paper, raw_text_list = raw)
 }
 
 test_that("an ordinary analysis deposit has no software (#568)", {
@@ -74,9 +74,9 @@ test_that("steps 2a and 5c: an R package's code and tests, but not its vignettes
   k <- stats::setNames(out$kind, scripts)
   expect_equal(unname(k[c("R/model.R", "tools/make.R")]), c("package", "package"))
   expect_equal(unname(k[c("tests/testthat/test-model.R", "tests/testthat.R")]), c("test", "test"))
-  kept <- c("vignettes/intro.Rmd", "inst/examples/ex.R", "data-raw/make_data.R", "README.Rmd", "notes.R",
-            "paper/figure1.R", "paper/sims/run.R")
-  expect_true(all(is.na(k[kept])))
+  unlinked <- c("vignettes/intro.Rmd", "inst/examples/ex.R", "data-raw/make_data.R", "README.Rmd", "notes.R")
+  expect_true(all(k[unlinked] == "unlinked"))
+  expect_true(all(is.na(k[c("paper/figure1.R", "paper/sims/run.R")])))
   expect_equal(out$software[scripts == "R/model.R"], "repo")
   expect_match(out$why[scripts == "R/model.R"], "part of the code of the package repo", fixed = TRUE)
   # an R/ folder alone is no package: authors keep their functions there too
@@ -101,8 +101,8 @@ test_that("steps 2b and 5d: a Python package's code, tests and documentation (#5
                rep("package", 4))
   expect_equal(unname(k["tests/test_sound.py"]), "test")
   expect_equal(unname(k[c("docs/make_figures.py", "ci/check.py")]), c("docs", "ci"))
-  expect_true(all(is.na(k[c("maad/demo.ipynb", "example_gallery/plot_a.py", "scripts/run_experiment.py",
-                                   "notebooks/fig1.ipynb", "download.py")])))
+  expect_true(all(k[c("maad/demo.ipynb", "example_gallery/plot_a.py", "scripts/run_experiment.py",
+                     "notebooks/fig1.ipynb", "download.py")] == "unlinked"))
 })
 
 test_that("step 2b: pyproject.toml alone does not make a package; next to a package folder it does (#568)", {
@@ -130,7 +130,7 @@ test_that("steps 2d and 5b: compiled software's own tools are software, the anal
   scripts <- c("tools/gen_table.py", "components/x/make.py", "examples/blink/example_test.py",
                "plot_results.R", "R/summarise.R", "analysis/fig2.R", "tests/run_tests.py")
   out <- sw_kind(scripts, files, repos = "logger")
-  expect_equal(out$kind, c("tool", "tool", "tool", NA, NA, NA, "test"))
+  expect_equal(out$kind, c("tool", "tool", "tool", "unlinked", "unlinked", NA, "test"))
   # the outermost root names the software, not one of its components
   expect_equal(out$software[2], "logger")
   # a compiled project nested in another one is a part of it (a module of an extension)
@@ -161,13 +161,109 @@ test_that("steps 2e and 3: a copy of a released tool in an analysis deposit (#56
   files <- c("cutadapt-1.1/setup.py", "cutadapt-1.1/cutadapt/__init__.py", "cutadapt-1.1/cutadapt/align.py",
              "cutadapt-1.1/cutadapt/align.c", "cutadapt-1.1/examples/demo.py", "trim.py")
   out <- sw_kind(c("cutadapt-1.1/cutadapt/align.py", "cutadapt-1.1/examples/demo.py", "trim.py"), files)
-  expect_equal(out$kind, c("package", NA, NA))
+  expect_equal(out$kind, c("package", "unlinked", NA))
 })
 
 test_that("step 4: tests/analysis/ holds tests, analysis/tests/ is analysis (#568)", {
   files <- c("DESCRIPTION", "NAMESPACE", "R/a.R", "tests/analysis/check.R", "analysis/tests/power.R")
   out <- sw_kind(files[4:5], files)
   expect_equal(out$kind, c("test", NA))
+})
+
+# stage 2: what links a file of software to the paper's results
+sw_pkg <- c("DESCRIPTION", "NAMESPACE", "R/model.R")
+
+test_that("step 6a: the paper names the script, its specific folder, or an appendix the script names (#568)", {
+  paper <- paste("The simulations were run with run_sims_v2.R, and the long form of the analysis is",
+                 "in Appendix S2. A demo is included. The examples in BeeCaseStudy show the method.")
+  scripts <- c("examples/run_sims_v2.R", "vignettes/long_form.Rmd", "vignettes/other.Rmd", "examples/demo.R",
+               "inst/BeeCaseStudy/fit.R", "inst/model/fit2.R")
+  raw <- list("x <- 1", c("---", "title: 'APPENDIX S2: analytical demonstrations'", "---"),
+              c("---", "title: 'Appendix S3'", "---"), "x <- 1", "x <- 1", "x <- 1")
+  out <- sw_kind(scripts, c(sw_pkg, scripts), paper = paper, raw = raw)
+  # "demo" and "model" are words, not names of this file or folder; S3 is not in the paper
+  expect_equal(out$kind, c(NA, NA, "unlinked", "unlinked", NA, "unlinked"))
+  expect_match(out$links[2], "appendix")
+  expect_match(out$why[3], "documents or tests the software repo; nothing links it to the paper's results", fixed = TRUE)
+  # without the paper's text, this signal is absent
+  out <- sw_kind(scripts[1], c(sw_pkg, scripts[1]))
+  expect_equal(out$kind, "unlinked")
+  # the paper links to the rendered vignette; "step-by-step" is also a phrase
+  paper <- "The sources of Table 1 are in https://docs.ropensci.org/pkg/articles/data-sources.html."
+  scripts <- c("vignettes/data-sources.Rmd", "vignettes/step-by-step.Rmd")
+  expect_equal(sw_kind(scripts, c(sw_pkg, scripts), paper = paper)$kind, c(NA, "unlinked"))
+  expect_equal(sw_kind(scripts[2], c(sw_pkg, scripts), paper = "We give a step-by-step account.")$kind,
+               "unlinked")
+  # a paper that points to its tutorials as documentation does not link them to its
+  # results, nor does naming the software name its main vignette
+  paper <- paste("See the main tutorial on the website https://x.github.io/gift/articles/gift_api.html",
+                 "for more details. The repo package provides ...")
+  scripts <- c("vignettes/gift_api.Rmd", "vignettes/repo.Rmd")
+  expect_equal(sw_kind(scripts, c(sw_pkg, scripts), paper = paper)$kind, c("unlinked", "unlinked"))
+})
+
+test_that("step 6b: the script names the paper's figures or tables, not its own captions (#568)", {
+  scripts <- c("inst/scripts/a.R", "inst/scripts/b.R", "vignettes/c.Rmd", "vignettes/d.Rmd", "vignettes/e.Rmd",
+               "inst/scripts/f.py")
+  code <- list(c("p <- plot(1)", "ggsave('output/fig3.png', p)"),
+               c("# Figure 2: survival by site", "plot(1)"),
+               c("```{r, fig.cap = 'Figure 1. The example data'}", "plot(1)", "```"),
+               c("As shown in Figure 4 of the paper, the model fits.", "```{r}", "plot(1)", "```"),
+               c("```{r}", "write.csv(d, 'example_output.csv')", "```"),
+               c("import pandas as pd", "df.to_csv('table_S1.csv')"))
+  out <- sw_kind(scripts, c(sw_pkg, scripts), code = code, raw = code)
+  expect_equal(out$kind, c(NA, NA, "unlinked", NA, "unlinked", NA))
+})
+
+test_that("step 6c: a README names the script next to the paper's figure (#568)", {
+  d <- withr::local_tempdir()
+  writeLines(c("# Code", "Run `scripts/model_fit.R` to make Figure 2 and Table 1.", "",
+               "`scripts/helper_plot.R` holds plotting helpers."), file.path(d, "README.md"))
+  st <- data.frame(file_path = c(sw_pkg, "README.md", "scripts/model_fit.R", "scripts/helper_plot.R"),
+                   repo_name = "repo",
+                   file_location = c(NA, NA, NA, file.path(d, "README.md"), NA, NA))
+  out <- .repro_software_kind(c("scripts/model_fit.R", "scripts/helper_plot.R"), list("x <- 1", "x <- 2"), st, "repo")
+  expect_equal(out$kind, c(NA, "unlinked"))
+  expect_equal(out$links[1], "readme")
+})
+
+test_that("step 6d: the script reads data deposited outside the software, not the package's own example data (#568)", {
+  files <- rbind(sw_files(c(sw_pkg, "inst/extdata/example.csv", "vignettes/a.Rmd", "vignettes/b.Rmd",
+                            "vignettes/c.Rmd"), "pkg"),
+                 sw_files(c("data/field_counts.csv", "analysis.R"), "study"))
+  code <- list("d <- read.csv('../study/data/field_counts.csv')",
+               "d <- read.csv(system.file('extdata', 'example.csv', package = 'pkg'))",
+               "d <- read.csv('example.csv')")
+  out <- .repro_software_kind(c("vignettes/a.Rmd", "vignettes/b.Rmd", "vignettes/c.Rmd"), code, files, "pkg")
+  expect_equal(out$kind, c(NA, "unlinked", "unlinked"))
+  expect_equal(out$links[1], "data")
+  # a data file inside the package that the paper names is the paper's data
+  out <- .repro_software_kind("vignettes/c.Rmd", code[3], files, "pkg",
+                              paper_text = "The counts are in example.csv, deposited with the package.")
+  expect_true(is.na(out$kind))
+})
+
+test_that("a script a program wrote that reads the paper's data, outside software, is analysis (#568)", {
+  files <- c("DE/DC12/__tmp_runTMM.R", "DE/DC12/counts.matrix",
+             "trinity_r2012-06-08.tgz/trinity_r2012-06-08/Trinity.pl",
+             "trinity_r2012-06-08.tgz/trinity_r2012-06-08/sample/__tmp_runTMM.R", "DE/plots.R")
+  code <- list(c("library(edgeR)", "m = read.table('DC12vDC20.fpkm.tmp', header = T)"),
+               c("library(edgeR)", "m = read.table('x.fpkm.tmp', header = T)"))
+  out <- sw_kind(files[c(1, 4)], files, code = code, repos = "Dimensions")
+  expect_equal(out$kind, c(NA, "tool"))
+  # without reading anything it is still a program's file
+  expect_equal(sw_kind("DE/__tmp_x.R", code = list("library(edgeR)"))$kind, "generated")
+})
+
+test_that("a package that a workflow beside it runs is the analysis, not software (#568)", {
+  files <- c("setup.py", "Snakefile", "src/reef/__init__.py", "src/reef/models.py", "src/reef/cli.py",
+             "src/reef/tune/setup.py", "src/reef/tune/__init__.py", "src/reef/tune/search.py")
+  out <- sw_kind(files[c(4, 5, 8)], files)
+  expect_true(all(is.na(out$kind)))
+  # a research compendium: an R package with make.R that runs its analyses
+  files <- c("DESCRIPTION", "NAMESPACE", "R/utils.R", "make.R", "analyses/01_fit.R")
+  out <- sw_kind(files[3:5], files)
+  expect_true(all(is.na(out$kind)))
 })
 
 test_that("a root belongs to its repository (#568)", {
@@ -230,14 +326,20 @@ test_that("execute = TRUE: the code of a package the deposit is made of is not r
   writeLines("export(f)", file.path(d, "NAMESPACE"))
   # not only function definitions, so on its own it would "run"
   writeLines(c("f <- function(x) x + 1", "y <- f(1)"), file.path(d, "R", "f.R"))
-  writeLines(c("---", "title: intro", "---", "```{r}", "x <- 1 + 1", "stopifnot(x == 2)", "```"),
+  # a vignette that says which of the paper's figures it makes, and one that
+  # nothing links to the paper
+  writeLines(c("---", "title: intro", "---", "```{r}", "# Figure 2", "x <- 1 + 1", "stopifnot(x == 2)", "```"),
              file.path(d, "vignettes", "intro.Rmd"))
+  writeLines(c("---", "title: tutorial", "---", "```{r}", "x <- 1 + 1", "```"),
+             file.path(d, "vignettes", "tutorial.Rmd"))
   mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
   outcome <- stats::setNames(mo$run_results$outcome, basename(mo$run_results$file_name))
   expect_equal(outcome[["f.R"]], "not_analysis")
   expect_equal(outcome[["intro.Rmd"]], "ran_ok")
-  why <- mo$table$not_analysis_why[basename(mo$table$file_name) == "f.R"]
-  expect_match(why, "part of the code of the package", fixed = TRUE)
+  expect_equal(outcome[["tutorial.Rmd"]], "not_analysis")
+  why <- stats::setNames(mo$table$not_analysis_why, basename(mo$table$file_name))
+  expect_match(why[["f.R"]], "part of the code of the package", fixed = TRUE)
+  expect_match(why[["tutorial.Rmd"]], "nothing links it to the paper's results", fixed = TRUE)
   report <- paste(unlist(mo$report), collapse = "\n")
-  expect_match(report, "1 file is not part of the analysis", fixed = TRUE)
+  expect_match(report, "2 files are not part of the analysis", fixed = TRUE)
 })

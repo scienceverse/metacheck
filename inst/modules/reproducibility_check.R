@@ -1463,9 +1463,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # is used, not run: running it on its own "succeeds" without doing anything, which
   # made up most of the R files that ran in the corpus (#568).
   r_function_names <- lapply(code_text_list, .repro_function_names)
-  # Nor are the files of software: a package's code, a tool, a web application
-  # (see R/reproducibility_check_software.R).
-  r_software <- .repro_software_kind(r_script_paths, code_text_list, structure_df, r_files$repo_name)
+  # Nor are the files of software: a package's code, a tool, a web application,
+  # and examples and vignettes that nothing links to the paper's results (see
+  # R/reproducibility_check_software.R); a file that only defines functions
+  # stays one, used by the scripts that call it.
+  r_software <- .repro_software_kind(r_script_paths, code_text_list, structure_df, r_files$repo_name,
+                                     paper_text = .repro_paper_text(paper), raw_text_list = raw_text_list)
+  r_software$kind[r_software$kind %in% "unlinked" & lengths(r_function_names) > 0] <- NA_character_
   sniff_type[is.na(sniff_type) & (.repro_is_r_test(r_script_paths) | !is.na(r_software$kind))] <- "not_analysis"
   r_software$why[!sniff_type %in% "not_analysis"] <- NA_character_
   only_functions <- is.na(sniff_type) & grepl("\\.[Rr]$", r_files$file_name) & lengths(r_function_names) > 0
@@ -2972,7 +2976,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_python2 <- as.vector(attr(py_parse_result, "python2") %||% rep(FALSE, n_py_code))
   # A package's tests and setup.py are not the analysis, nor are the files of
   # software, as for R above.
-  py_software <- .repro_software_kind(py_script_paths, py_code_text_list, structure_df, py_files$repo_name)
+  py_raw_text_list <- lapply(seq_len(n_py_code), function(i) {
+    path <- py_resolve_row_path(i)
+    if (is.na(path)) character(0) else tryCatch(code_read(path), error = function(e) character(0))
+  })
+  py_software <- .repro_software_kind(py_script_paths, py_code_text_list, structure_df, py_files$repo_name,
+                                      paper_text = .repro_paper_text(paper), raw_text_list = py_raw_text_list)
   py_not_analysis <- vapply(seq_len(n_py_code), function(i)
     .repro_is_py_test(py_script_paths[i], py_code_text_list[[i]]), logical(1)) | !is.na(py_software$kind)
   n_py_noparse_static <- sum(!py_parses & !py_not_analysis)

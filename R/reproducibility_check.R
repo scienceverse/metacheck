@@ -2962,6 +2962,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   set("object '[^']*' not found|could not find function|NameError|is not defined", "undefined")
   set("SyntaxError|IndentationError", "syntax")
   set("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11", "environment")
+  # R itself crashed, in a package's compiled code: rgeos, installed from the
+  # CRAN Archive, crashes on every geometry against the GEOS of the image (#568)
+  set("caught segfault|Segmentation fault|core dumped|caught illegal operation", "environment")
   out[err & is.na(out) & !grepl("\\S", msg)] <- "no_message"
   out[err & is.na(out)] <- "other"
   out
