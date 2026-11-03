@@ -165,18 +165,32 @@ repro_docker_available <- function() {
 #' @keywords internal
 .repro_docker_elsewhere_lines <- function() {
   c(
-    r"(retry_rows <- function() which(vapply(out, function(x) !x$installed && identical(x$source, "cran") && grepl("is not available", x$message, fixed = TRUE), logical(1))))",
+    # This R treats a warning old packages cause as an error, and has dropped
+    # Calloc() and the like, so maptools did not compile. Only for this pass.
+    r"(makevars <- file.path(tempdir(), "Makevars"))",
+    r"(writeLines(c("CFLAGS += -Wno-error=format-security -DCalloc=R_Calloc -DRealloc=R_Realloc -DFree=R_Free", paste0(c("CXXFLAGS", "CXX11FLAGS", "CXX14FLAGS", "CXX17FLAGS"), " += -Wno-error=format-security")), makevars))",
+    r"(Sys.setenv(R_MAKEVARS_USER = makevars, R_LIBS = paste(.libPaths(), collapse = ":")))",
+    r"(retry_rows <- function() which(vapply(out, function(x) !x$installed && identical(x$source, "cran") && grepl("is not available|there is no package called", x$message), logical(1))))",
     r"(bioc_known <- NULL)",
     r"(in_elsewhere <- function(pkg) {)",
     r"(  if (is.null(bioc_known)) bioc_known <<- tryCatch({)",
     r"(    if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", lib = lib, quiet = TRUE))",
     r"(    rownames(utils::available.packages(repos = BiocManager::repositories())))",
     r"(  }, error = function(e) character(0)))",
+    # A package on CRAN can need one from Bioconductor, which install.packages()
+    # does not find: speaq needs MassSpecWavelet.
+    r"(  bioc_needed <- regmatches(paste(out[[match(pkg, pkgs)]]$message), regexpr("(?<=there is no package called .)[A-Za-z0-9.]+", paste(out[[match(pkg, pkgs)]]$message), perl = TRUE)))",
+    r"(  if (length(bioc_needed) && bioc_needed %in% bioc_known) {)",
+    r"(    BiocManager::install(bioc_needed, lib = lib, update = FALSE, ask = FALSE))",
+    r"(    return("bioc"))",
+    r"(  })",
     r"(  if (pkg %in% bioc_known) {)",
     r"(    BiocManager::install(pkg, lib = lib, update = FALSE, ask = FALSE))",
     r"(    return("bioc"))",
     r"(  })",
     r"(  listing <- suppressWarnings(tryCatch(readLines(paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/"), warn = FALSE), error = function(e) character(0))))",
+    # The image's copy of sp lacks the header files rgdal and rgeos compile against.
+    r"(  if (pkg %in% c("rgdal", "rgeos") && !file.exists(file.path(lib, "sp", "include", "sp.h"))) install.packages("sp", lib = lib, quiet = TRUE))",
     r"(  hits <- grep(paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz"), listing, value = TRUE))",
     r"(  if (!length(hits)) return(NA_character_))",
     r"(  dates <- sub(".*(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}).*", "\\1", hits))",
@@ -213,7 +227,11 @@ repro_docker_available <- function() {
     r"(  writeLines(as.character(i), "/sandbox/.install_status"))",
     r"(  from <- tryCatch(in_elsewhere(pkg), error = function(e) conditionMessage(e)))",
     r"(  usable <- function() file.exists(file.path(lib, pkg, "DESCRIPTION")) && requireNamespace(pkg, quietly = TRUE, lib.loc = lib))",
+    # what stopped it is kept, next to the first pass's "not available"
+    r"(  tried <- from)",
     r"(  if (!usable()) from <- tryCatch(in_known_place(pkg), error = function(e) conditionMessage(e)))",
+    r"(  stopped <- c(tried, from)[!is.na(c(tried, from)) & !c(tried, from) %in% c("bioc", "archive") & !grepl("^https://|^github", c(tried, from))])",
+    r"(  if (!usable() && round == 2 && length(stopped)) out[[i]]$message <- paste0(out[[i]]$message, "; also tried elsewhere: ", substr(stopped[1], 1, 300)))",
     r"(  if (usable()) {)",
     r"(    out[[i]]$installed <- TRUE)",
     r"(    out[[i]]$message <- "")",
