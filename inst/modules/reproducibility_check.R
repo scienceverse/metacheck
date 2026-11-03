@@ -2562,7 +2562,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       # which stays the authoritative text. Absent (older saved results, or a
       # category of NA) falls back to no label, same as before this was added.
       cat_label <- function(cat) {
-        nm <- c(cran_unavailable = "not available on CRAN for this R version",
+        nm <- c(source_unknown = "not on CRAN or Bioconductor, and the code does not say where it comes from",
+               cran_unavailable = "not available on CRAN for this R version",
                compile_failure = "compilation/configure failure",
                network = "network issue",
                transitive_dependency_missing = "a dependency of this package is unavailable",
@@ -2579,7 +2580,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           ifelse(nzchar(failed_cat), sprintf(" [%s]", failed_cat), ""),
           ifelse(nzchar(failed$message), sprintf(" (%s)", failed$message), "")),
           collapse = "; ")) else NULL
-      report <- c(report, report_inst, report_arch, report_fail)
+      report <- c(report, report_inst, report_arch, report_fail,
+                  .repro_source_unknown_text(.repro_source_unknown(install_results)))
     }
     report <- c(report, .repro_recorded_report(recorded, install_results, version_pin,
                                                sandbox, docker_use_declared_version))
@@ -3830,13 +3832,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   install_results <- dplyr::bind_rows(r_install_results, py_install_results)
   if (!nrow(install_results)) install_results <- r_install_results %||% py_install_results
   modifications <- dplyr::bind_rows(r_modifications, py_modifications)
+  # the scripts, the software not run, and why scripts did not run through (#568, item 24)
+  run_counts <- .repro_run_counts(run_results)
+  summary_table <- cbind(summary_table, run_counts)
 
   out <- list(
     table = table,
     summary_table = summary_table,
     na_replace = c(repro_code_n = 0, repro_runnable = 0,
                    repro_missing_inputs = 0, repro_deps = 0,
-                   repro_ran_ok = 0),
+                   repro_ran_ok = 0,
+                   stats::setNames(rep(0, ncol(run_counts)), names(run_counts))),
     traffic_light = tl,
     report = report,
     summary_text = summary_text,
@@ -3878,7 +3884,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_found = shared_match$summary$n_found %||% NA_integer_,
       sandbox = sandbox, timeout = timeout, install_missing = install_r,
       recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice),
-      net = net)
+      net = net, source_unknown = .repro_source_unknown(install_results))
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

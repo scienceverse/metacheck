@@ -1862,6 +1862,32 @@ test_that(".repro_classify_install_message does not call the install time limit 
   expect_equal(metacheck:::.repro_classify_install_message("Timeout was reached: connection timed out"), "network")
 })
 
+test_that("a package found nowhere is reported as one the code does not say where to get (#389)", {
+  msg <- paste0("package 'ecodeal' is not available for this version of R; found nowhere else: ",
+                "not on Bioconductor, in the CRAN Archive, in our list of known places or on R-universe")
+  expect_equal(.repro_classify_install_message(msg), "source_unknown")
+  # a package that was looked for elsewhere and failed there is not unknown
+  expect_equal(.repro_classify_install_message(
+    "package 'x' is not available for this version of R; also tried elsewhere: the search of R-universe failed: timeout"),
+    "network")
+  ir <- data.frame(package = c("ecodeal", "dplyr", "rgdal"), installed = c(FALSE, TRUE, FALSE),
+                   category = c("source_unknown", NA, "compile_failure"))
+  expect_equal(.repro_source_unknown(ir), "ecodeal")
+  expect_equal(.repro_source_unknown(ir[2:3, ]), character(0))
+  expect_null(.repro_source_unknown_text(character(0)))
+  expect_match(.repro_source_unknown_text("ecodeal"),
+               "**1 package the code loads is not on CRAN or Bioconductor, and the code does not say where it comes from**: `ecodeal`", fixed = TRUE)
+  expect_match(.repro_source_unknown_text(c("a", "b")), "where they come from**: `a`, `b`. ", fixed = TRUE)
+  # the checklist says so for the script that needs it
+  tb <- data.frame(file_name = "a.R", run_order = 1, outcome = "dependency_unavailable",
+                   setwd_removed = 0, not_runnable_reason = NA, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "a.R", outcome = "dependency_unavailable", error = "",
+                   stderr = "Error in library(ecodeal) : there is no package called 'ecodeal'")
+  out <- .repro_checklist_section(tb, rr, install_missing = TRUE, source_unknown = "ecodeal")
+  expect_match(out, "which is not on CRAN or Bioconductor, and the code does not say where it comes from", fixed = TRUE)
+  expect_match(.repro_checklist_section(tb, rr, install_missing = TRUE), "which we could not install", fixed = TRUE)
+})
+
 test_that("repro_dependencies does not list a package-list variable as a package", {
   # Issue #421, end to end through the dependency list reproducibility_check
   # installs from.
@@ -2689,6 +2715,31 @@ test_that(".repro_failure_reason names why a script did not run through (#568)",
   expect_true(all(is.na(r(c("ran_ok", "run_by_source", "defines_functions", "not_analysis", "jags_model", "docker_failed"), "x"))))
 })
 
+test_that(".repro_run_counts gives a paper's scripts, its software and its reasons (#568, item 24)", {
+  rr <- data.frame(
+    outcome = c("ran_ok", "errored", "errored", "dependency_unavailable", "run_by_source",
+                "not_analysis", "not_analysis", "defines_functions", "docker_failed"),
+    error = c("", "cannot open file 'a.csv'", "list index out of range", "", "", "", "", "", "x"),
+    stderr = "")
+  rc <- .repro_run_counts(rr)
+  expect_equal(nrow(rc), 1)
+  expect_equal(rc$repro_scripts_n, 4)
+  expect_equal(rc$repro_not_analysis_n, 2)
+  expect_equal(c(rc$repro_fail_file, rc$repro_fail_other, rc$repro_fail_package), c(1, 1, 1))
+  # every reason has its column, also with no script that failed for it
+  expect_equal(rc$repro_fail_time, 0)
+  expect_setequal(names(rc), c("repro_scripts_n", "repro_not_analysis_n",
+                               paste0("repro_fail_", .repro_reason_levels)))
+  # the reason column is read when the run results have one
+  rr$reason <- .repro_failure_reason(rr$outcome, rr$error)
+  rr$reason[2] <- "undefined"
+  expect_equal(.repro_run_counts(rr)$repro_fail_undefined, 1)
+  # nothing run: the same columns, all NA
+  none <- .repro_run_counts(NULL)
+  expect_named(none, names(rc))
+  expect_true(all(is.na(unlist(none))))
+})
+
 test_that(".repro_needs_internet_error reads a network error (#568)", {
   expect_true(.repro_needs_internet_error("cannot open URL 'https://a'"))
   expect_true(.repro_needs_internet_error("requests.exceptions.ConnectionError: x"))
@@ -2712,6 +2763,8 @@ test_that("the Docker install script knows where packages only elsewhere are (#5
   expect_no_error(parse(text = lines))
   expect_true(any(grepl("rmcelreath/rethinking", lines, fixed = TRUE)))
   expect_true(any(grepl("r-universe.dev/api/search", lines, fixed = TRUE)))
+  # a package found in none of the places is marked so (#389)
+  expect_true(any(grepl("found nowhere else: ", lines, fixed = TRUE)))
 })
 
 test_that(".repro_run_after_lines loads a script from its own folder (#568)", {

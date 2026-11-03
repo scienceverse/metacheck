@@ -2974,6 +2974,54 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out
 }
 
+# The packages the code loads that are on neither CRAN nor Bioconductor and that
+# the install found nowhere else, since the code does not say where they come from
+# (#389). character(0) when there are none.
+.repro_source_unknown <- function(install_results) {
+  if (is.null(install_results) || !nrow(install_results) || !"category" %in% names(install_results))
+    return(character(0))
+  unique(install_results$package[!install_results$installed &
+                                   install_results$category %in% "source_unknown"])
+}
+
+.repro_source_unknown_text <- function(pkgs) {
+  if (!length(pkgs)) return(NULL)
+  n <- length(pkgs)
+  sprintf(paste0("**%d package%s the code loads %s not on CRAN or Bioconductor, and the code ",
+                 "does not say where %s from**: %s. We also looked in the CRAN Archive, on ",
+                 "R-universe and in a list of known places. Saying where to install %s from, ",
+                 "such as with `remotes::install_github()` or in the README, solves this."),
+          n, plural(n), plural(n, "is", "are"), plural(n, "it comes", "they come"),
+          paste(sprintf("`%s`", pkgs), collapse = ", "), plural(n, "it", "them"))
+}
+
+# Every reason .repro_failure_reason() gives, so each paper's row of summary_table
+# has the same columns, also for a reason none of its scripts had.
+.repro_reason_levels <- c("file", "package", "undefined", "syntax", "environment",
+                          "internet", "download", "interactive", "time",
+                          "no_message", "other")
+
+# Per-paper counts for summary_table (#568, item 24): the scripts with a result
+# of their own, the files of software that were not run (not analyses, counted
+# apart), and for each reason how many scripts did not run through for it. A
+# sourced or imported file, a model or function file and a Docker failure on our
+# side are not scripts with a result of their own. NA when nothing was run.
+.repro_run_counts <- function(run_results) {
+  cols <- c("repro_scripts_n", "repro_not_analysis_n",
+            paste0("repro_fail_", .repro_reason_levels))
+  if (is.null(run_results) || !nrow(run_results) || !"outcome" %in% names(run_results))
+    return(as.data.frame(as.list(stats::setNames(rep(NA_integer_, length(cols)), cols))))
+  outcome <- run_results$outcome
+  reason <- if ("reason" %in% names(run_results)) run_results$reason else
+    .repro_failure_reason(outcome, paste(run_results$error, run_results$stderr))
+  counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
+                             "defines_functions", "not_analysis", "docker_failed") &
+    !is.na(outcome)
+  fails <- vapply(.repro_reason_levels, function(r) sum(counted & reason %in% r), integer(1))
+  as.data.frame(as.list(stats::setNames(
+    c(sum(counted), sum(outcome %in% "not_analysis"), fails), cols)))
+}
+
 # One line per repository when a paper links several, so a reader can see when the
 # failures lie in one of them, such as software by others that the paper only uses.
 # Nothing is left out or labelled: a repository whose owner is no author is often the
@@ -4252,7 +4300,11 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
 #' @param msg the error message text (`repro_install_deps()`'s own `message`
 #'   column for one failed row)
 #'
-#' @returns a single category string: `"cran_unavailable"`,
+#' A package that Docker's second pass found in none of the places it looks
+#' (Bioconductor, the CRAN Archive, the list of known places, R-universe) is
+#' `"source_unknown"`: the code loads it without saying where it comes from.
+#'
+#' @returns a single category string: `"source_unknown"`, `"cran_unavailable"`,
 #'   `"compile_failure"`, `"network"`, `"transitive_dependency_missing"`, or
 #'   `"other"`
 #' @keywords internal
@@ -4262,6 +4314,11 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
   # Our own time limit for installing in Docker ran out, which says nothing
   # about the network, so it must not reach the "timed out" pattern below.
   if (grepl("^docker install timed out after", msg)) return("other")
+
+  # Docker's second pass looked everywhere it knows and found the package in
+  # none of those places (see .repro_docker_elsewhere_lines()): the code does not
+  # say where it comes from (#389). Before "not available", which it also says.
+  if (grepl("found nowhere else: ", msg, fixed = TRUE)) return("source_unknown")
 
   # A source build that failed partway through compiling/configuring — most
   # often a missing system library or compiler toolchain, not an R-level

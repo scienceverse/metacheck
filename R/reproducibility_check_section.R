@@ -47,13 +47,14 @@
 # repro_missing_inputs() for both languages, `n_dup` the number of identical
 # copies that were not run again, `n_tests`/`n_found` the comparison with the
 # paper (NA when there was none), `recorded_note` a sentence on the recorded
-# package versions used (see .repro_recorded_summary()). NULL when no script
+# package versions used (see .repro_recorded_summary()), `source_unknown` the
+# packages found nowhere (see .repro_source_unknown()). NULL when no script
 # was run.
 .repro_checklist_section <- function(table, run_results, missing_inputs = NULL,
                                      n_dup = 0, n_tests = NA, n_found = NA,
                                      sandbox = "docker", timeout = 600,
                                      install_missing = FALSE, recorded_note = NULL,
-                                     net = NULL) {
+                                     net = NULL, source_unknown = character(0)) {
   if (is.null(table) || !nrow(table) || is.null(run_results) || !nrow(run_results)) {
     return(NULL)
   }
@@ -119,7 +120,9 @@
       dependency_unavailable = c("Could not run on our server", sprintf(
         "It needs the %s package %s, which %s. This is not an error in the script.",
         lang, if (nzchar(pkg)) .repro_cell(pkg) else "(see its output below)",
-        if (isTRUE(install_missing)) "we could not install"
+        if (pkg %in% source_unknown)
+          "is not on CRAN or Bioconductor, and the code does not say where it comes from"
+        else if (isTRUE(install_missing)) "we could not install"
         else "is not installed on our server (we do not install packages)")),
       skipped_missing_inputs = c("Not run", sprintf(
         "It reads %s that %s not available: %s.",

@@ -346,7 +346,11 @@ repro_docker_available <- function() {
     r"(    remotes::install_url(paste0("https://github.com/", place, "/archive/HEAD.tar.gz"), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE))",
     r"(    return(paste0("github.com/", place)))",
     r"(  })",
-    r"(  found <- tryCatch(jsonlite::fromJSON(paste0("https://r-universe.dev/api/search?q=", pkg, "&limit=20"))$results, error = function(e) NULL))",
+    # a search that fails is not a package R-universe lacks (#389); a bare
+    # rocker/r-ver image has no jsonlite, so the search always failed there
+    r"(  if (!requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite", lib = lib, quiet = TRUE))",
+    r"(  found <- tryCatch(jsonlite::fromJSON(paste0("https://r-universe.dev/api/search?q=", pkg, "&limit=20"))$results, error = function(e) e))",
+    r"(  if (inherits(found, "error")) return(paste("the search of R-universe failed:", conditionMessage(found))))",
     r"(  if (is.null(found) || !NROW(found)) return(NA_character_))",
     r"(  who <- found[["_user"]][found$Package == pkg])",
     r"(  if (!length(who)) return(NA_character_))",
@@ -364,6 +368,9 @@ repro_docker_available <- function() {
     r"(  if (!usable()) from <- tryCatch(in_known_place(pkg), error = function(e) conditionMessage(e)))",
     r"(  stopped <- c(tried, from)[!is.na(c(tried, from)) & !c(tried, from) %in% c("bioc", "archive") & !grepl("^https://|^github", c(tried, from))])",
     r"(  if (!usable() && round == 2 && length(stopped)) out[[i]]$message <- paste0(out[[i]]$message, "; also tried elsewhere: ", substr(stopped[1], 1, 300)))",
+    # Found in none of the places: the code does not say where the package comes
+    # from, which authors can act on (#389). See .repro_classify_install_message().
+    r"(  if (!usable() && round == 2 && is.na(tried) && is.na(from)) out[[i]]$message <- paste0(out[[i]]$message, "; found nowhere else: not on Bioconductor, in the CRAN Archive, in our list of known places or on R-universe"))",
     r"(  if (usable()) {)",
     r"(    out[[i]]$installed <- TRUE)",
     r"(    out[[i]]$message <- "")",
