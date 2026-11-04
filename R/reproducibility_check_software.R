@@ -278,6 +278,9 @@
   root_name <- place$root_name
   links <- character(0)
   base <- basename(path)
+  # bytes that are not UTF-8 stop tolower() and the searches below
+  code <- .utf8_lines(code)
+  text <- .utf8_lines(text)
   # 2. the paper names the code, or an appendix the code names
   if (nzchar(ctx$paper)) {
     if (.repro_sw_named_in(ctx$paper, path, root_name, repo)) links <- c(links, "paper_names_it")

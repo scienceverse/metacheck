@@ -973,8 +973,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   listed[from_original] <- plan$file_name[match(out$target[from_original], orig_target)]
   listed <- basename(gsub("\\\\", "/", listed))
   differs <- !is.na(listed) & !out$ambiguous & listed != in_code
-  out$name_in_code <- ifelse(differs, in_code, NA_character_)
-  out$name_in_deposit <- ifelse(differs, listed, NA_character_)
+  # as.character(): ifelse() of no rows gives logical(0), and joining that script's
+  # rows with another's names then stopped the module for the paper
+  out$name_in_code <- as.character(ifelse(differs, in_code, NA_character_))
+  out$name_in_deposit <- as.character(ifelse(differs, listed, NA_character_))
   out
 }
 
@@ -1118,8 +1120,9 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 .repro_named_files <- function(structure_df, code_text) {
   want <- .repro_fetchable(structure_df)
   if (!any(want) || !length(code_text)) return(want)
-  txt <- tolower(paste(code_text, collapse = "\n"))
-  base <- tolower(basename(gsub("\\\\", "/", structure_df$file_name)))
+  # bytes that are not UTF-8 stopped tolower() for the whole paper (#568)
+  txt <- tolower(paste(.utf8_lines(code_text), collapse = "\n"))
+  base <- tolower(basename(gsub("\\\\", "/", .utf8_lines(structure_df$file_name))))
   ext <- ifelse(grepl("\\.", base), sub(".*\\.", "", base), "")
   by_name <- vapply(base, function(b) grepl(b, txt, fixed = TRUE), logical(1), USE.NAMES = FALSE)
   exts <- unique(ext[want & nzchar(ext)])
@@ -1132,7 +1135,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 .repro_unopened_files <- function(msgs) {
   pat <- paste0("(?:cannot open (?:compressed )?file|No such file or directory:?|does not exist)",
                 "[^'\"\n]*['\"]([^'\"\n]+)['\"]|['\"]([^'\"\n]+)['\"]:? No such file|['\"]([^'\"\n]+)['\"] does not exist")
-  out <- unlist(lapply(msgs[!is.na(msgs)], function(m) {
+  out <- unlist(lapply(.utf8_lines(msgs[!is.na(msgs)]), function(m) {
     k <- regmatches(m, gregexpr(pat, m, perl = TRUE))[[1]]
     vapply(k, function(x) { g <- regmatches(x, regexec(pat, x, perl = TRUE))[[1]][-1]; g[nzchar(g)][1] },
            character(1), USE.NAMES = FALSE)

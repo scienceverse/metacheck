@@ -3091,6 +3091,21 @@ test_that("repro_rewrite_paths finds a file spelled otherwise, and names both sp
   expect_equal(call$name_in_deposit[call$is_call], "relative_cover.csv")
 })
 
+test_that("a script whose only reference is left out joins the others' path rows (#568)", {
+  # 10_1111_1365_2664_14541 stopped: "Can't combine `..1$name_in_code` <character>
+  # and `..18$name_in_code` <logical>". A name in a variable that fits two files is
+  # left out, which left no rows, and ifelse() of no rows gives logical(0).
+  plan <- data.frame(file_name = c("relative_cover.csv", "b.csv", "b.csv"),
+                     target_path = c("d/relative_cover.csv", "x/b.csv", "y/b.csv"))
+  none <- repro_rewrite_paths(c('f <- "b.csv"', "d <- read.csv(f)"), "a.R", plan)
+  expect_equal(nrow(none), 0)
+  expect_type(none$name_in_code, "character")
+  expect_type(none$name_in_deposit, "character")
+  one <- repro_rewrite_paths('d <- read.csv("relative cover.csv")', "b.R", plan)
+  expect_no_error(both <- dplyr::bind_rows(list(b.R = one, a.R = none)))
+  expect_equal(.repro_name_corrections(list(b.R = one, a.R = none))$name_in_deposit, "relative_cover.csv")
+})
+
 test_that(".repro_keep_working_refs rewrites a name spelled otherwise in the package layout (#568)", {
   plan <- .repro_package_plan(data.frame(file_name = "relative_cover.csv", file_path = "data/relative_cover.csv"))
   rw <- repro_rewrite_paths('d <- read.csv("relative cover.csv")', "m.R", plan)
@@ -3160,6 +3175,18 @@ test_that(".repro_named_files finds the files the code names, by name or extensi
   expect_equal(.repro_named_files(s, 'x <- 1'), rep(FALSE, 5))
   expect_equal(.repro_named_files(s, 'glob.glob("*.wav")'), c(FALSE, TRUE, TRUE, FALSE, FALSE))
   expect_equal(.repro_named_files(s, 're.search(r"\\.wav$", f)'), c(FALSE, TRUE, TRUE, FALSE, FALSE))
+})
+
+test_that("code and messages with bytes that are not UTF-8 do not stop the module (#568)", {
+  # 10_1111_2041_210x_13721 stopped with "invalid multibyte string 1": a script
+  # in Latin-1, as many written on Windows are
+  latin1 <- rawToChar(as.raw(c(0x23, 0x20, 0x63, 0x61, 0x66, 0xe9)))  # "# café" in Latin-1
+  expect_false(validUTF8(latin1))
+  s <- data.frame(file_name = c("fig.png", "notes.pdf"), file_url = c("u1", "u2"),
+                  file_location = NA_character_)
+  expect_equal(.repro_named_files(s, c(latin1, 'img <- png::readPNG("fig.png")')), c(TRUE, FALSE))
+  msg <- paste(latin1, "Error in file(file, \"rt\") : cannot open file 'data/late.csv': No such file or directory")
+  expect_equal(.repro_unopened_files(msg), "late.csv")
 })
 
 test_that(".repro_unopened_files reads the files scripts could not open (#568)", {
