@@ -1644,8 +1644,17 @@ repro_file_io <- function(code_text_list, lang = "R") {
     ref_base <- tolower(basename(gsub("\\\\", "/", all_refs)))
     is_write <- rep(FALSE, length(all_refs))
     is_read  <- rep(FALSE, length(all_refs))
+    # A call over several lines is judged as a whole: its file name on a later
+    # line has no call beside it, so `write.csv(x,` then `"out.csv")` counted as a
+    # read (#568)
+    io_regex <- paste0("\\b(read[._][A-Za-z._0-9]+|import(_list)?|fread|readRDS|load|readLines|",
+                       "fromJSON|readtext|vroom|source|read_[A-Za-z_0-9]+|loadtxt|genfromtxt|",
+                       "loadmat|open|", sub("^\\\\b\\(", "", sub("\\)\\\\s\\*\\\\\\($", "", write_fns)),
+                       ")\\s*\\(")
+    open_calls <- .code_open_calls(nc, io_regex)
+    units <- c(if (length(open_calls$lines)) nc[-open_calls$lines] else nc, open_calls$calls)
     for (i in seq_along(all_refs)) {
-      lines <- grep(all_refs[i], nc, fixed = TRUE, value = TRUE)
+      lines <- grep(all_refs[i], units, fixed = TRUE, value = TRUE)
       w <- grepl(write_fns, lines, perl = TRUE, ignore.case = TRUE)
       if (identical(fn_lang, "Python"))
         w <- w | vapply(lines, .py_open_writes, logical(1), USE.NAMES = FALSE)
@@ -2519,7 +2528,11 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   # written: the code then probably joins it to a folder of its own
   # (`os.path.join(base, "fig7/x.csv")`).
   found <- !is.na(tgt) & nzchar(tgt) & rw$matched %in% TRUE & !(rw$ambiguous %in% TRUE)
-  joined <- found & (tolower(tgt) == tolower(ref) | endsWith(tolower(tgt), paste0("/", tolower(ref))))
+  # A file at the top named as it is there is no joined path: the authors ran the
+  # script from the top, while here it runs from its own folder. In
+  # 10.1002/pan3.10310 the data, a deposit of its own, lies at the top, and
+  # "./kilimanjaro_..._questionnaire.csv" was kept as written and not found (#568).
+  joined <- found & endsWith(tolower(tgt), paste0("/", tolower(ref)))
   keep <- keep & !(!in_place & !is_call & !absolute & !up & found & !joined)
   # a path that names no file, with no file of its name in the repository, stays
   # as written and is a missing input
@@ -2965,12 +2978,15 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 }
 
 # Whether a run's error shows that the code needs the internet, which is off during a
-# Docker run, since this runs code nobody has checked (#568, item 21).
+# Docker run, since this runs code nobody has checked (#568, item 21). A package
+# that keeps data it downloads once, as tidyhydat keeps its HYDAT database, says
+# so when the data is not there yet ("Run download_hydat()").
 .repro_needs_internet_error <- function(txt) {
   grepl(paste0("cannot open URL|[Cc]ould not resolve host|Couldn't resolve host|Temporary failure in name resolution|",
                "Name or service not known|NameResolutionError|Max retries exceeded|urlopen error|",
                "ConnectionError|LocalEntryNotFound|Could not reach|Failed to connect|Network is unreachable|",
-               "getaddrinfo failed|Timeout was reached|no internet|internet connection"),
+               "getaddrinfo failed|Timeout was reached|no internet|internet connection|",
+               "Run download_hydat\\(\\)"),
         txt %||% "", perl = TRUE)
 }
 
@@ -3239,6 +3255,61 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   }), names(run_after))
 }
 
+# Defaults the code was written for that current R lacks, from a script's error
+# (#568): before R 4.0, read.csv(), read.table() and data.frame() turned text into
+# factors ("'relevel' only for (unordered) factors", "invalid 'labels'"), and
+# code written on Windows reads data files in Latin-1 ("invalid multibyte
+# string"). options(stringsAsFactors = TRUE) no longer has any effect in R 4.5.
+# Returns, for each script that stopped on such an error, "factors", "latin1" or
+# both; an empty list when none did.
+.repro_old_defaults <- function(run_results) {
+  if (is.null(run_results) || !nrow(run_results)) return(list())
+  msg <- paste(run_results$error, run_results$stderr)
+  stopped <- run_results$outcome %in% "errored"
+  factors <- stopped & grepl(paste0("only for \\(unordered\\) factors|invalid 'labels'; length|",
+                                    "is not a factor|level sets of factors are different|",
+                                    "argument is not a factor|must be a factor"), msg, perl = TRUE)
+  latin1 <- stopped & grepl("invalid multibyte string|is invalid in this locale|utf8towcs", msg, perl = TRUE)
+  out <- lapply(which(factors | latin1), function(i) c(if (factors[i]) "factors", if (latin1[i]) "latin1"))
+  stats::setNames(out, run_results$file_name[factors | latin1])
+}
+
+# The lines put at the top of a script for .repro_old_defaults()'s defaults. The
+# default is changed in R's own functions, not only in the script: before R 4.0 it
+# held inside packages too, and in 10.1111/1365-2435.13388 reshape2's dcast() gave
+# the dates as text again, so the script still stopped. An argument the code
+# gives itself still counts.
+.repro_old_default_lines <- function(kinds) {
+  c(if ("factors" %in% kinds) paste0(
+      'local({ for (w in list(c("base", "data.frame"), c("base", "as.data.frame.character"), ',
+      'c("base", "as.data.frame.list"), c("base", "rbind.data.frame"), c("base", "cbind.data.frame"), ',
+      'c("utils", "read.table"))) for (env in list(asNamespace(w[1]), as.environment(paste0("package:", w[1])))) { ',
+      'if (!exists(w[2], envir = env, inherits = FALSE)) next; f <- get(w[2], envir = env); ',
+      'if (!"stringsAsFactors" %in% names(formals(f))) next; formals(f)$stringsAsFactors <- TRUE; ',
+      'unlockBinding(w[2], env); assign(w[2], f, envir = env); lockBinding(w[2], env) } })',
+      "  # [reproducibility_check: text read as factors, as before R 4.0]"),
+    if ("latin1" %in% kinds)
+      'options(encoding = "latin1")  # [reproducibility_check: data files written on Windows, in Latin-1]')
+}
+
+# The report's sentence on the scripts run again with the old defaults, and which
+# of them then ran to the end.
+.repro_old_defaults_text <- function(used, ran_ok = character(0)) {
+  if (!length(used)) return(NULL)
+  n <- length(used)
+  kinds <- unique(unlist(used))
+  what <- c(factors = "text read as factors, as R did before version 4.0",
+            latin1 = "data files read as Latin-1, as written on Windows")[kinds]
+  ok <- intersect(names(used), ran_ok)
+  fix <- c(factors = "`stringsAsFactors = TRUE`", latin1 = "`fileEncoding = \"latin1\"`")[kinds]
+  paste0(sprintf(" **%d script%s ran again with a default R had when the code was written** (%s), because %s, or a script that writes a file %s, stopped on a default that has changed since: %s.",
+                 n, plural(n), paste(what, collapse = "; "), plural(n, "it", "they"),
+                 plural(n, "it reads", "they read"), paste(names(used), collapse = ", ")),
+         if (length(ok)) sprintf(" %s then ran to the end: %s.",
+                                 plural(length(ok), "It", "These"), paste(ok, collapse = ", ")) else "",
+         sprintf(" Setting %s in the code itself solves this.", paste(fix, collapse = " or ")))
+}
+
 # Make the folders of the relative paths in write calls, counted from where the
 # script runs. Never above the sandbox. `wr` is a .repro_redirect_writes() result.
 .repro_make_write_folders <- function(wr, root, run_dir = ".") {
@@ -3337,6 +3408,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   `setwd_removed` (count of `setwd()`/`os.chdir()` calls replaced with a
 #'   statement that does nothing),
 #'   `env_calls_replaced` (count of groundhog, checkpoint and renv calls replaced),
+#'   `slashes_fixed` (the quoted Windows paths given `/`, as they were, joined by
+#'   "; "; see `.repro_slash_paths()`),
 #'   `setwd_paths` (comma-joined paths those calls named, for the warning),
 #'   `family_replaced` (count of `family =`/`base_family =` named-font
 #'   arguments replaced with `"sans"`, so a plot call does not fail with
@@ -3379,6 +3452,8 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     message("[repro]   rewriting '", fn, "' (", sum(nchar(txt, type = "bytes")), " bytes) ...")
     fn_lang <- lang_for[[i]] %||% "R"
     txt <- .repro_apply_rewrites(txt, rw)
+    slashed <- .repro_slash_paths(txt)
+    txt <- slashed$txt
 
     # Redirect WRITE calls into the sandbox's flat output/ folder (see
     # .repro_redirect_writes()'s own roxygen for why: an unrewritten write
@@ -3501,6 +3576,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                run_dir = if (run_dir == ".") root else file.path(root, .portable_path(run_dir)),
                setwd_removed = setwd_n,
                env_calls_replaced = env_n,
+               slashes_fixed = paste(slashed$paths, collapse = "; "),
                setwd_paths = paste(setwd_paths, collapse = ", "),
                family_replaced = family_n,
                family_detail = paste(
@@ -3509,6 +3585,64 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                  paste(injected_pkg, collapse = ", ") else NA_character_)
   })
   dplyr::bind_rows(rows)
+}
+
+# Windows paths in quoted file names, "Data\\MatrixNoct.txt", get "/": on Linux
+# the backslash is part of the name, so write.table() made one file named
+# "Data\MatrixNoct.txt" beside the script and the scripts reading
+# "Data/MatrixNoct.txt" stopped (#568). Only a quoted text that ends in a file
+# extension and has no sign of a regular expression is changed, so
+# list.files(pattern = "\\.csv$") stays as it is. Returns the lines and the
+# paths changed, as they were.
+.repro_slash_paths <- function(txt) {
+  if (!length(txt)) return(list(txt = txt, paths = character(0)))
+  pat <- "([\"'])((?:[^\"'\\\\\n]|\\\\\\\\)*\\\\\\\\(?:[^\"'\\\\\n]|\\\\\\\\)*\\.[A-Za-z0-9]{1,8})\\1"
+  changed <- character(0)
+  txt <- vapply(txt, function(line) {
+    if (!grepl("\\\\\\\\", line)) return(line)
+    m <- gregexpr(pat, line, perl = TRUE)[[1]]
+    if (m[1] == -1) return(line)
+    hits <- regmatches(line, list(m))[[1]]
+    inner <- substr(hits, 2, nchar(hits) - 1)
+    # a regular expression: an escaped dot, or one of ^ $ * + ? | ( ) [ ] { }
+    path_like <- !grepl("\\\\\\\\\\.", inner, perl = TRUE) &
+      !grepl("[\\^$*+?|()\\[\\]{}]", inner, perl = TRUE)
+    if (!any(path_like)) return(line)
+    new <- hits
+    new[path_like] <- paste0(substr(hits[path_like], 1, 1),
+                             gsub("\\\\\\\\", "/", inner[path_like]),
+                             substr(hits[path_like], 1, 1))
+    changed <<- c(changed, hits[path_like])
+    regmatches(line, list(m)) <- list(new)
+    line
+  }, character(1), USE.NAMES = FALSE)
+  list(txt = txt, paths = changed)
+}
+
+# The modifications rows for the Windows paths repro_write_scripts() changed, one
+# per path; NULL when there were none.
+.repro_slash_rows <- function(run_tbl) {
+  if (is.null(run_tbl) || !nrow(run_tbl) || !"slashes_fixed" %in% names(run_tbl)) return(NULL)
+  hit <- !is.na(run_tbl$slashes_fixed) & nzchar(run_tbl$slashes_fixed)
+  if (!any(hit)) return(NULL)
+  dplyr::bind_rows(lapply(which(hit), function(i) {
+    p <- strsplit(run_tbl$slashes_fixed[i], "; ", fixed = TRUE)[[1]]
+    data.frame(file_name = run_tbl$file_name[i], change_type = "windows_path",
+               detail = sprintf("%s -> %s", p, gsub("\\\\\\\\", "/", p)))
+  }))
+}
+
+# The report's part on Windows paths: a sentence and a table; NULL when none.
+.repro_slash_report <- function(run_tbl) {
+  rows <- .repro_slash_rows(run_tbl)
+  if (is.null(rows)) return(NULL)
+  n <- length(unique(rows$file_name))
+  c(sprintf(paste0("**%d script%s use%s Windows paths**, with `\\` between folders, which ",
+                   "works only on Windows. To run the code we put `/` instead, which works on ",
+                   "every system, Windows included."),
+            n, plural(n), plural(n, "s", "")),
+    scroll_table(data.frame(File = rows$file_name, `Path in the code` = sub(" -> .*", "", rows$detail),
+                            check.names = FALSE), maxrows = 10))
 }
 
 # The highest of several version strings; NA when none can be read as a version.

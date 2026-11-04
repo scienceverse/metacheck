@@ -2413,6 +2413,64 @@ code_packages <- function(packages) {
     (!has_py || isTRUE(version_pin$python_pinned))
 }
 
+#' Calls that go on over the next lines
+#'
+#' A call matched by `call_regex` whose closing parenthesis is on a later line,
+#' as in `read.csv(` with `"./data.csv")` on the next line: the line-by-line
+#' search for file names saw the call without its file name, and the file name
+#' without its call (#568). Quotes and brackets are counted; a call not closed
+#' within `max_lines` lines is left out.
+#'
+#' @param code_text the lines of one file, comments removed
+#' @param call_regex a regular expression ending in the call's opening `\\(`
+#' @param max_lines the most lines one call may take
+#'
+#' @returns a list: `calls`, the text of each such call from its name to its
+#'   closing parenthesis, and `lines`, the numbers of the lines after the first
+#'   that the calls take
+#' @keywords internal
+.code_open_calls <- function(code_text, call_regex, max_lines = 20L) {
+  out <- list(calls = character(0), lines = integer(0))
+  n <- length(code_text)
+  if (n < 2) return(out)
+  hits <- which(grepl(call_regex, code_text, perl = TRUE))
+  for (i in hits[hits < n]) {
+    starts <- gregexpr(call_regex, code_text[i], perl = TRUE)[[1]]
+    for (k in seq_along(starts)) {
+      first <- starts[k] + attr(starts, "match.length")[k] - 1L   # the "("
+      depth <- 0L; in_str <- NA_character_; closed <- FALSE; j <- i
+      pieces <- character(0)
+      while (j <= min(n, i + max_lines - 1L) && !closed) {
+        line <- code_text[j]
+        from <- if (j == i) first else 1L
+        chars <- strsplit(substring(line, from), "", fixed = TRUE)[[1]]
+        p <- 0L
+        while (p < length(chars)) {
+          p <- p + 1L; ch <- chars[p]
+          if (!is.na(in_str)) {
+            if (ch == "\\") p <- p + 1L
+            else if (ch == in_str) in_str <- NA_character_
+          } else if (ch %in% c("'", '"')) in_str <- ch
+          else if (ch %in% c("(", "[", "{")) depth <- depth + 1L
+          else if (ch %in% c(")", "]", "}")) {
+            depth <- depth - 1L
+            if (depth == 0L) { closed <- TRUE; break }
+          }
+        }
+        pieces <- c(pieces, if (j == i) substring(line, starts[k]) else
+          if (closed) substr(line, 1L, p) else line)
+        if (!closed) j <- j + 1L
+      }
+      if (closed && j > i) {
+        out$calls <- c(out$calls, paste(pieces, collapse = " "))
+        out$lines <- c(out$lines, (i + 1L):j)
+      }
+    }
+  }
+  out$lines <- unique(out$lines)
+  out
+}
+
 #' Get files referenced in code
 #'
 #' @param code_text the code text for a single file
@@ -2563,6 +2621,10 @@ code_file_refs <- function(code_text,
   }
 
   load_lines <- grep(grepl_load, code_text, value = TRUE, perl = TRUE)
+  # A call whose file name is on a line after it, as in `read.csv(` and then
+  # `"./data.csv")`, is searched as a whole too (#568)
+  if (lang %in% c("R", "Python"))
+    load_lines <- c(load_lines, .code_open_calls(code_text, grepl_load)$calls)
 
   # Quoted filenames
   quoted_filename_pattern <- "(['\"])(?!\\.\\1)[^'\"]+\\.[A-Za-z0-9]{1,8}(?:\\.[A-Za-z0-9]{1,8})*\\1"

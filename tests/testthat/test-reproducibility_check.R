@@ -2904,6 +2904,21 @@ test_that(".repro_keep_working_refs counts from where the script runs (#568)", {
   expect_equal(beside$target, "R/h.R")
 })
 
+test_that("a file at the top named as it is there counts from where the script runs (#568)", {
+  # 10_1002_pan3_10310: the data is a deposit of its own, at the top; the R
+  # Markdown files are three folders down and read "./<name>.csv"
+  plan <- .repro_package_plan(data.frame(file_name = c("q.csv", "a.Rmd"),
+                                         file_path = c("q.csv", "g/x.zip/x-1/a.Rmd")))
+  rw <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv("./q.csv")', "a.Rmd", plan),
+                                 plan, "g/x.zip/x-1/a.Rmd", "g/x.zip/x-1")
+  expect_false(rw$as_written)
+  expect_equal(rw$target, "../../../q.csv")
+  # from the top it works as written
+  top <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv("./q.csv")', "a.Rmd", plan),
+                                  plan, "g/x.zip/x-1/a.Rmd", ".")
+  expect_true(top$as_written)
+})
+
 test_that(".repro_docker_failed reads an error from Docker itself (#568)", {
   expect_true(.repro_docker_failed("Error response from daemon: Docker Desktop is unable to start"))
   expect_true(.repro_docker_failed("failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine"))
@@ -3200,6 +3215,81 @@ test_that(".repro_unopened_files reads the files scripts could not open (#568)",
             "object 'x' not found", NA)
   expect_setequal(.repro_unopened_files(msgs), c("late.csv", "x.tif", "b.rds"))
   expect_setequal(.repro_unopened_files(msgs, full = TRUE), c("data/late.csv", "in/x.tif", "C:/Users/a/b.rds"))
+})
+
+test_that("a file name on the line after its call is found (#568)", {
+  # 10_1002_pan3_10310: read.csv( and then "./kilimanjaro_...csv") on the next line
+  code <- c('habitat <- read.csv(',
+            '  "./kilimanjaro_habitat.csv")',
+            'x <- list(a = read.csv("a.csv"),',
+            '  b = "label.txt")',
+            'write.csv(x,',
+            '          "out.csv", row.names = FALSE)')
+  expect_setequal(code_file_refs(code, "R"), c("./kilimanjaro_habitat.csv", "a.csv"))
+  io <- repro_file_io(list(s.R = code))
+  expect_setequal(io$reads[[1]], c("kilimanjaro_habitat.csv", "a.csv"))
+  # a write over two lines is a write, not a read
+  expect_equal(io$writes[[1]], "out.csv")
+  py <- repro_file_io(list(s.py = c('df = pd.read_csv(', '    "data/in.csv")',
+                                    'df.to_csv(', '    "out/res.csv")')), "Python")
+  expect_equal(c(py$reads[[1]], py$writes[[1]]), c("in.csv", "res.csv"))
+  # a call that is not closed within 20 lines is left out, as before
+  expect_length(code_file_refs(c("read.csv(", rep("x,", 25), '"late.csv")'), "R"), 0)
+})
+
+test_that("Windows paths in quoted file names get / (#568)", {
+  # 10_1111_1365_2435_13388 wrote "Data\\SamplesNoct.txt", one file on Linux
+  s <- .repro_slash_paths(c('write.table(m, "Data\\\\MatrixNoct.txt", sep = "\\t")',
+                            'f <- list.files(pattern = "\\\\.csv$")',
+                            'd <- read.csv("C:\\\\Users\\\\a\\\\data.csv")',
+                            'g <- gsub("\\\\d+", "", x)',
+                            'p <- "results/plain.csv"'))
+  expect_equal(s$txt, c('write.table(m, "Data/MatrixNoct.txt", sep = "\\t")',
+                        'f <- list.files(pattern = "\\\\.csv$")',
+                        'd <- read.csv("C:/Users/a/data.csv")',
+                        'g <- gsub("\\\\d+", "", x)',
+                        'p <- "results/plain.csv"'))
+  expect_length(s$paths, 2)
+  rows <- .repro_slash_rows(data.frame(file_name = "a.R", slashes_fixed = paste(s$paths, collapse = "; ")))
+  expect_equal(rows$change_type, c("windows_path", "windows_path"))
+  expect_equal(rows$detail[1], '"Data\\\\MatrixNoct.txt" -> "Data/MatrixNoct.txt"')
+  expect_match(.repro_slash_report(data.frame(file_name = "a.R", slashes_fixed = s$paths[1]))[1],
+               "1 script uses Windows paths")
+  expect_null(.repro_slash_rows(data.frame(file_name = "a.R", slashes_fixed = "")))
+})
+
+test_that("a script that stops on a changed default of R runs again with the old one (#568)", {
+  rr <- data.frame(
+    file_name = c("prep.R", "map.R", "other.R", "ok.R"),
+    outcome = c("errored", "errored", "errored", "ran_ok"),
+    error = c("Error in relevel.default(dframe1$Treatment, \"NoFire\") : 'relevel' only for (unordered) factors",
+              "Error in type.convert.default(data[[i]], as.is = as.is[i], dec = dec, : invalid multibyte string at '<b0>10'",
+              "Error: object 'x' not found", ""),
+    stderr = "")
+  od <- .repro_old_defaults(rr)
+  expect_equal(od, list(prep.R = "factors", map.R = "latin1"))
+  expect_equal(.repro_old_defaults(rr[3:4, ]), stats::setNames(list(), character(0)))
+  lines <- .repro_old_default_lines(c("factors", "latin1"))
+  expect_length(lines, 2)
+  expect_true(any(grepl('options(encoding = "latin1")', lines, fixed = TRUE)))
+  # the lines give R's old behaviour, also inside packages; in a session of its
+  # own, since they change R's functions for the rest of the session
+  skip_if_not(nzchar(Sys.which("Rscript")))
+  f <- tempfile(fileext = ".R")
+  writeLines(c(.repro_old_default_lines("factors"),
+               'cat(class(read.csv(text = "a\\nx")$a), class(data.frame(a = "u")$a),',
+               '    class(data.frame(a = "u", stringsAsFactors = FALSE)$a))'), f)
+  out <- system2("Rscript", shQuote(f), stdout = TRUE)
+  expect_equal(out, "factor factor character")
+  txt <- .repro_old_defaults_text(od, ran_ok = "prep.R")
+  expect_match(txt, "2 scripts ran again with a default R had when the code was written")
+  expect_match(txt, "It then ran to the end: prep.R.", fixed = TRUE)
+  expect_null(.repro_old_defaults_text(list()))
+})
+
+test_that("a package's data downloaded once counts as needing the internet (#568)", {
+  expect_true(.repro_needs_internet_error(
+    "Error in hy_src(hydat_path) : No Hydat.sqlite3 found at /tmp/.local/share/tidyhydat. Run download_hydat() to download the database."))
 })
 
 test_that("a script that stops on a file we did not download was not tried (#568)", {

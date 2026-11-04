@@ -88,6 +88,8 @@ a data frame with \code{file_name}, \code{script_path} (absolute path written),
 \code{setwd_removed} (count of \code{setwd()}/\code{os.chdir()} calls replaced with a
 statement that does nothing),
 \code{env_calls_replaced} (count of groundhog, checkpoint and renv calls replaced),
+\code{slashes_fixed} (the quoted Windows paths given \code{/}, as they were, joined by
+"; "; see \code{.repro_slash_paths()}),
 \code{setwd_paths} (comma-joined paths those calls named, for the warning),
 \code{family_replaced} (count of \verb{family =}/\verb{base_family =} named-font
 arguments replaced with \code{"sans"}, so a plot call does not fail with

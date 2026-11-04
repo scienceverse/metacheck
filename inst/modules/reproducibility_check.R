@@ -1920,6 +1920,42 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                    collapse = "; "))
       }
     }
+    # A script that stopped on a default of R that has changed since the code was
+    # written (text read as factors before R 4.0, data files in Latin-1) runs once
+    # more with the old default set at its top, and so do the scripts that
+    # stopped on a file it writes, which it may now make (#568).
+    old_defaults_used <- .repro_old_defaults(run_results)
+    if (length(old_defaults_used)) {
+      makers_write <- unlist(io$writes[io$file_name %in% names(old_defaults_used)])
+      stopped_on <- vapply(seq_len(nrow(run_results)), function(i)
+        run_results$outcome[i] %in% "errored" &&
+          any(tolower(.repro_unopened_files(paste(run_results$error[i], run_results$stderr[i]))) %in% makers_write),
+        logical(1))
+      redo <- unique(c(names(old_defaults_used), run_results$file_name[stopped_on]))
+      # a script waiting for such a script's file was written for the same R, and
+      # in 10.1111/1365-2435.13388 then stopped on relevel(): it gets the same defaults
+      for (f in setdiff(redo, names(old_defaults_used)))
+        old_defaults_used[[f]] <- unique(unlist(old_defaults_used))
+      prepend_lines <- .repro_run_after_lines(run_after, run_tbl, sandbox_root)
+      for (f in names(old_defaults_used))
+        prepend_lines[[f]] <- c(.repro_old_default_lines(old_defaults_used[[f]]), prepend_lines[[f]])
+      .dbg("re-running ", length(redo), " script(s) with R's old defaults: ", paste(redo, collapse = ", "))
+      run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
+                                     inject_libs = library_injections,
+                                     script_paths = r_script_places,
+                                     writes_in_place = TRUE,
+                                     replace_env_calls = replace_env_calls,
+                                     run_dirs = r_run_dirs,
+                                     prepend = prepend_lines)
+      run_now <- order_tbl$file_name[order(order_tbl$order)]
+      res_old <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                               c(intersect(run_now, redo), setdiff(redo, run_now)))
+      res_old <- res_old[res_old$outcome != "skipped_time_limit", , drop = FALSE]
+      run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res_old$file_name, , drop = FALSE],
+                                      res_old)
+      run_results <- run_results[order(match(run_results$file_name, run_now)), , drop = FALSE]
+    }
+
     # A file a script could not open, which the repository lists but which was
     # not downloaded, is fetched now, and the scripts that stopped on it run once
     # more (#568). The first download leaves out some kinds of files, and a name
@@ -2316,6 +2352,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       report_exec <- paste0(report_exec, .repro_not_downloaded_text(
         r_not_downloaded[r_not_downloaded$script %in% run_results$file_name[oc == "not_downloaded"], , drop = FALSE],
         max_file_size))
+    if (exists("old_defaults_used", inherits = FALSE) && length(old_defaults_used))
+      report_exec <- paste0(report_exec, .repro_old_defaults_text(
+        old_defaults_used, run_results$file_name[oc == "ran_ok"]))
     if (length(run_after) > 0)
       report_exec <- paste0(report_exec, sprintf(
         " **%d script%s use%s an object or function that only another script defines**, so in the second run that script was loaded first, in the same session: %s. Such a script should `source()` the other itself, since it does not run on its own.",
@@ -2535,6 +2574,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                 if (!is.null(report_undef)) c("**Undefined-variable errors**", report_undef),
                 if (!is.null(report_nodep)) c("**Dependency-unavailable errors**", report_nodep),
                 if (!is.null(report_setwd)) c("**`setwd()` in the code**", report_setwd),
+                if (exists("run_tbl", inherits = FALSE)) .repro_slash_report(run_tbl),
                 # The calls that install packages themselves cannot run here.
                 if (sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced > 0) c(
                   "**Calls that install packages in the code**", sprintf(paste0(
@@ -2744,7 +2784,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                 plural(run_tbl$env_calls_replaced[hit]))) else NULL
     } else NULL
 
-    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod, run_after_rows)
+    slash_rows_mod <- if (exists("run_tbl", inherits = FALSE)) .repro_slash_rows(run_tbl)
+    old_default_rows <- if (exists("old_defaults_used", inherits = FALSE) && length(old_defaults_used))
+      data.frame(file_name = rep(names(old_defaults_used), lengths(old_defaults_used)),
+                 change_type = "old_default",
+                 detail = c(factors = "text read as factors, as before R 4.0",
+                            latin1 = "data files read as Latin-1")[unlist(old_defaults_used, use.names = FALSE)])
+    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
+                     slash_rows_mod, old_default_rows, run_after_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
     modifications <- data.frame(file_name = character(0), change_type = character(0),
@@ -3643,6 +3690,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                    if (!is.null(py_report_undef)) c("**Undefined-name errors**", py_report_undef),
                    if (!is.null(py_report_nodep)) c("**Dependency-unavailable errors**", py_report_nodep),
                    if (!is.null(py_report_setwd)) c("**`os.chdir()` in the code**", py_report_setwd),
+                   if (exists("py_run_tbl", inherits = FALSE)) .repro_slash_report(py_run_tbl),
                    if (length(py_output_blocks) > 0)
                      "*Expand a row below to see the output each script produced.*",
                    py_output_blocks, py_truncation_note, .repro_output_cut_note(py_stat_cut))
@@ -3757,7 +3805,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                   stringsAsFactors = FALSE)))
       else NULL
     } else NULL
-    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod)
+    py_slash_rows_mod <- if (exists("py_run_tbl", inherits = FALSE)) .repro_slash_rows(py_run_tbl)
+    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))
     py_modifications <- data.frame(file_name = character(0), change_type = character(0),
