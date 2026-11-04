@@ -145,6 +145,9 @@
         if (!is.na(used_by[[i]])) sprintf("It only defines functions, which %s uses.", .repro_cell(used_by[[i]]))
         else "It only defines functions, and no script in the deposit uses them."),
       docker_failed = c("Not run", "Docker failed on our side, so this says nothing about the script."),
+      not_downloaded = c("Not tried", paste(
+        "It needs a file that the deposit holds but that we did not download, such as one",
+        "over our size limit, so this says nothing about the script.")),
       needs_internet = c("Stopped", paste(
         if (is.null(net)) "It needs the internet, which is off while we run code."
         else "It could not reach what it asked for on the internet.",
@@ -160,7 +163,8 @@
   counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
                              "static_jags_model", "static_not_r_content",
                              "defines_functions", "not_analysis",
-                             "static_defines_functions", "static_not_analysis")
+                             "static_defines_functions", "static_not_analysis",
+                             "not_downloaded")
   n_r <- sum(!is_py & counted)
   n_py <- sum(is_py & counted)
   scripts <- paste(c(
@@ -197,6 +201,10 @@
   headline <- sprintf("**%d of %d script%s ran to the end**%s.",
                       n_ok, sum(counted), plural(sum(counted)),
                       if (length(parts)) paste0(": ", paste(parts, collapse = ", ")) else "")
+  n_nd <- sum(outcome %in% "not_downloaded")
+  if (n_nd) headline <- paste(headline, sprintf(
+    "%d more %s not tried, because %s a file that we did not download.",
+    n_nd, plural(n_nd, "script was", "scripts were"), plural(n_nd, "it needs", "they need")))
 
   # problems in the files the table does not show: setwd() / os.chdir()
   setwd_n <- suppressWarnings(as.integer(tbl$setwd_removed))

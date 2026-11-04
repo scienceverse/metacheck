@@ -2718,17 +2718,21 @@ test_that(".repro_failure_reason names why a script did not run through (#568)",
 test_that(".repro_run_counts gives a paper's scripts, its software and its reasons (#568, item 24)", {
   rr <- data.frame(
     outcome = c("ran_ok", "errored", "errored", "dependency_unavailable", "run_by_source",
-                "not_analysis", "not_analysis", "defines_functions", "docker_failed"),
-    error = c("", "cannot open file 'a.csv'", "list index out of range", "", "", "", "", "", "x"),
+                "not_analysis", "not_analysis", "defines_functions", "docker_failed",
+                "not_downloaded"),
+    error = c("", "cannot open file 'a.csv'", "list index out of range", "", "", "", "", "", "x",
+              "cannot open file 'big.rds'"),
     stderr = "")
   rc <- .repro_run_counts(rr)
   expect_equal(nrow(rc), 1)
   expect_equal(rc$repro_scripts_n, 4)
   expect_equal(rc$repro_not_analysis_n, 2)
+  # a script that stopped on a file we did not download is counted apart, not as a failure
+  expect_equal(rc$repro_not_downloaded_n, 1)
   expect_equal(c(rc$repro_fail_file, rc$repro_fail_other, rc$repro_fail_package), c(1, 1, 1))
   # every reason has its column, also with no script that failed for it
   expect_equal(rc$repro_fail_time, 0)
-  expect_setequal(names(rc), c("repro_scripts_n", "repro_not_analysis_n",
+  expect_setequal(names(rc), c("repro_scripts_n", "repro_not_analysis_n", "repro_not_downloaded_n",
                                paste0("repro_fail_", .repro_reason_levels)))
   # the reason column is read when the run results have one
   rr$reason <- .repro_failure_reason(rr$outcome, rr$error)
@@ -3195,6 +3199,39 @@ test_that(".repro_unopened_files reads the files scripts could not open (#568)",
             "Error: 'C:/Users/a/b.rds' does not exist in current working directory",
             "object 'x' not found", NA)
   expect_setequal(.repro_unopened_files(msgs), c("late.csv", "x.tif", "b.rds"))
+  expect_setequal(.repro_unopened_files(msgs, full = TRUE), c("data/late.csv", "in/x.tif", "C:/Users/a/b.rds"))
+})
+
+test_that("a script that stops on a file we did not download was not tried (#568)", {
+  # 10_1111_1365_2664_13614: Outputs/BF/BF.rds (653 MB) was over the size limit;
+  # another BF.rds, in another folder, was downloaded
+  s <- data.frame(
+    file_name = c("BF.rds", "BF.rds", "occurrences.csv", "a.csv", "a.csv"),
+    file_path = c("Data & code.zip/Data & code/Outputs/BF/BF.rds", "Detectability models/BF.rds",
+                  "SCAN.zip/SCAN1/occurrences.csv", "x/a.csv", "y/a.csv"),
+    file_location = c(NA, "/tmp/BF.rds", NA, NA, "/tmp/a.csv"),
+    file_size = c(652.8 * 1024^2, 2e5, 293 * 1024^2, 10, 10))
+  rr <- data.frame(
+    file_name = c("fit.R", "detect.R", "occ.py", "plain.R", "ok.R"),
+    outcome = c("errored", "errored", "errored", "errored", "ran_ok"),
+    error = c("Error in gzfile(file, \"rb\") : cannot open the connection",
+              "Error in gzfile(file, \"rb\") : cannot open compressed file 'Detectability models/BF.rds', probable reason 'No such file or directory'",
+              "FileNotFoundError: [Errno 2] No such file or directory: '../SCAN.zip/SCAN1/occurrences.csv'",
+              "Error in file(file, \"rt\") : cannot open file 'a.csv': No such file or directory", ""),
+    stderr = c("cannot open compressed file 'Outputs/BF/BF.rds', probable reason 'No such file or directory'",
+               "", "", "", ""))
+  nd <- .repro_not_downloaded(rr, s)
+  # fit.R and occ.py needed files that were not downloaded; detect.R's file was
+  # downloaded, so it looked in the wrong place; for plain.R one a.csv was downloaded
+  expect_setequal(nd$script, c("fit.R", "occ.py"))
+  expect_equal(nd$file[nd$script == "fit.R"], "Data & code.zip/Data & code/Outputs/BF/BF.rds")
+  expect_equal(nrow(.repro_not_downloaded(rr, s[0, ])), 0)
+  expect_equal(nrow(.repro_not_downloaded(NULL, s)), 0)
+  txt <- .repro_not_downloaded_text(nd, max_file_size = 100)
+  expect_match(txt, "2 scripts could not be tried")
+  expect_match(txt, "Outputs/BF/BF.rds (652.8 MB)", fixed = TRUE)
+  expect_match(txt, "files over 100 MB are not downloaded", fixed = TRUE)
+  expect_null(.repro_not_downloaded_text(nd[0, ]))
 })
 
 # #568, item 21: the internet during a run, with the limits for the repository's files

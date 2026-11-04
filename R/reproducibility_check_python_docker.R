@@ -147,14 +147,24 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
     # time for the others: "requests" and "tqdm" failed only because the batch ran
     # out of time. A pinned version that does not install, as an old numpy does on
     # this Python, is replaced by the current one (#568, item 13).
+    # pip installs inside the container and the result is then copied to /pylib:
+    # pip's own move to /pylib copies file permissions, which a library on an
+    # exFAT drive refuses ("Operation not permitted"), so numpy, pandas and most
+    # others failed in 15 papers (#568). As with pip's --target, a package
+    # already in /pylib is kept.
     unlist(lapply(seq_along(reqs), function(i) {
       pkg <- install_deps$package[i]; req <- reqs[i]; src <- install_deps$source[i]
-      pip <- sprintf("timeout %d pip install --quiet --prefer-binary --no-input --target /pylib", per_package)
+      tmp <- sprintf("/tmp/pyt_%d", i)
+      pip <- sprintf("timeout %d pip install --quiet --prefer-binary --no-input --target %s", per_package, tmp)
+      copy <- sprintf('  for f in %s/* %s/.[!.]*; do [ -e "$f" ] && [ ! -e "/pylib/${f##*/}" ] && cp -r "$f" /pylib/; done; rm -rf %s',
+                      tmp, tmp, tmp)
       c(sprintf('if %s %s 2> /tmp/err_%d.txt; then', pip, shQuote(req), i),
+        copy,
         sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":""}\\n\' >> "$OUT"',
                pkg, src),
         if (!identical(req, pkg)) c(
           sprintf('elif %s %s 2>> /tmp/err_%d.txt; then', pip, shQuote(pkg), i),
+          copy,
           sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":"","version_note":"the pinned version %s could not be installed, so the current one was"}\\n\' >> "$OUT"',
                   pkg, src, gsub("['\"\\\\%]", "", req))),
         'else',

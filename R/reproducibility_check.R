@@ -1131,8 +1131,9 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   want & (by_name | ext %in% ext_named)
 }
 
-# After a run: the names of the files scripts could not open, from their errors.
-.repro_unopened_files <- function(msgs) {
+# After a run: the names of the files scripts could not open, from their errors;
+# with `full = TRUE` the paths as the errors give them.
+.repro_unopened_files <- function(msgs, full = FALSE) {
   pat <- paste0("(?:cannot open (?:compressed )?file|No such file or directory:?|does not exist)",
                 "[^'\"\n]*['\"]([^'\"\n]+)['\"]|['\"]([^'\"\n]+)['\"]:? No such file|['\"]([^'\"\n]+)['\"] does not exist")
   out <- unlist(lapply(.utf8_lines(msgs[!is.na(msgs)]), function(m) {
@@ -1140,7 +1141,60 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     vapply(k, function(x) { g <- regmatches(x, regexec(pat, x, perl = TRUE))[[1]][-1]; g[nzchar(g)][1] },
            character(1), USE.NAMES = FALSE)
   }))
-  unique(basename(gsub("\\\\", "/", out[!is.na(out)])))
+  out <- gsub("\\\\", "/", out[!is.na(out)])
+  unique(if (full) out else basename(out))
+}
+
+# The scripts that stopped on a file the repository lists but that was not
+# downloaded, such as one over the size limit: one row per script and file
+# (#568). Such a script was not tried, so it says nothing about the code. A file
+# is matched by its name and the folder above it, as far as the error gives
+# them; when a downloaded file matches as well, the script may have looked in
+# the wrong place, and it stays a failure.
+.repro_not_downloaded <- function(run_results, structure_df) {
+  none <- data.frame(script = character(0), file = character(0), size = numeric(0))
+  if (is.null(run_results) || !nrow(run_results) || is.null(structure_df) || !nrow(structure_df))
+    return(none)
+  loc <- structure_df$file_location %||% rep(NA_character_, nrow(structure_df))
+  absent <- is.na(loc) | !nzchar(loc)
+  if (!any(absent)) return(none)
+  listed <- .utf8_lines(structure_df$file_path %||% structure_df$file_name)
+  listed[is.na(listed)] <- .utf8_lines(structure_df$file_name)[is.na(listed)]
+  parts <- function(p) { x <- strsplit(tolower(p), "/", fixed = TRUE)[[1]]; x[nzchar(x) & !x %in% c(".", "..")] }
+  listed_parts <- lapply(gsub("\\\\", "/", listed), parts)
+  ends_with <- function(lp, up) length(lp) >= length(up) && identical(utils::tail(lp, length(up)), up)
+  size <- suppressWarnings(as.numeric(structure_df$file_size %||% rep(NA, nrow(structure_df))))
+  rows <- lapply(which(run_results$outcome %in% "errored"), function(i) {
+    unopened <- .repro_unopened_files(paste(run_results$error[i], run_results$stderr[i]), full = TRUE)
+    hits <- unlist(lapply(unopened, function(u) {
+      up <- utils::tail(parts(u), 2)
+      if (!length(up)) return(integer(0))
+      m <- vapply(listed_parts, ends_with, logical(1), up = up)
+      if (any(m & !absent)) integer(0) else which(m & absent)
+    }))
+    if (!length(hits)) return(NULL)
+    hits <- unique(hits)
+    data.frame(script = run_results$file_name[i], file = listed[hits], size = size[hits])
+  })
+  out <- do.call(rbind, rows)
+  if (is.null(out)) none else out
+}
+
+# The report's sentence on scripts that could not be tried, naming each file
+# and, when it was over the limit, its size.
+.repro_not_downloaded_text <- function(nd, max_file_size = 100) {
+  if (is.null(nd) || !nrow(nd)) return(NULL)
+  n <- length(unique(nd$script))
+  files <- nd[!duplicated(nd$file), , drop = FALSE]
+  too_large <- !is.na(files$size) & files$size > max_file_size * 1024^2
+  desc <- ifelse(too_large, sprintf("%s (%s MB)", files$file, .repro_mb(files$size)), files$file)
+  sprintf(paste0(" **%d script%s could not be tried, because a file %s need%s was not downloaded**: %s. ",
+                 "%s not counted as %s that did not reproduce. The file%s: %s%s."),
+          n, plural(n), plural(n, "it", "they"), plural(n, "s", ""),
+          paste(unique(nd$script), collapse = ", "),
+          plural(n, "It is", "They are"), plural(n, "a script", "scripts"),
+          plural(nrow(files)), paste(desc, collapse = ", "),
+          if (any(too_large)) sprintf("; files over %s MB are not downloaded", max_file_size) else "")
 }
 
 # Fetch rows `rows` of a repository listing with download_repo_files(), within
@@ -3008,9 +3062,10 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # of their own, the files of software that were not run (not analyses, counted
 # apart), and for each reason how many scripts did not run through for it. A
 # sourced or imported file, a model or function file and a Docker failure on our
-# side are not scripts with a result of their own. NA when nothing was run.
+# side are not scripts with a result of their own, nor is a script that stopped on
+# a file we did not download (counted apart as well). NA when nothing was run.
 .repro_run_counts <- function(run_results) {
-  cols <- c("repro_scripts_n", "repro_not_analysis_n",
+  cols <- c("repro_scripts_n", "repro_not_analysis_n", "repro_not_downloaded_n",
             paste0("repro_fail_", .repro_reason_levels))
   if (is.null(run_results) || !nrow(run_results) || !"outcome" %in% names(run_results))
     return(as.data.frame(as.list(stats::setNames(rep(NA_integer_, length(cols)), cols))))
@@ -3018,11 +3073,13 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   reason <- if ("reason" %in% names(run_results)) run_results$reason else
     .repro_failure_reason(outcome, paste(run_results$error, run_results$stderr))
   counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
-                             "defines_functions", "not_analysis", "docker_failed") &
+                             "defines_functions", "not_analysis", "docker_failed",
+                             "not_downloaded") &
     !is.na(outcome)
   fails <- vapply(.repro_reason_levels, function(r) sum(counted & reason %in% r), integer(1))
   as.data.frame(as.list(stats::setNames(
-    c(sum(counted), sum(outcome %in% "not_analysis"), fails), cols)))
+    c(sum(counted), sum(outcome %in% "not_analysis"), sum(outcome %in% "not_downloaded"), fails),
+    cols)))
 }
 
 # One line per repository when a paper links several, so a reader can see when the
@@ -3032,7 +3089,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 .repro_by_repository <- function(table) {
   if (is.null(table) || !nrow(table) || !all(c("repo_name", "outcome") %in% names(table))) return(NULL)
   counted <- !table$outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
-                                   "defines_functions", "not_analysis") & !is.na(table$outcome)
+                                   "defines_functions", "not_analysis", "not_downloaded") &
+    !is.na(table$outcome)
   repos <- table$repo_name[counted]
   if (length(unique(repos[!is.na(repos)])) < 2) return(NULL)
   ok <- table$outcome[counted] == "ran_ok"

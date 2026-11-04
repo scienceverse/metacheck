@@ -51,6 +51,10 @@
 #' could not reach what it asked for; `download_too_large` is a script stopped
 #' for downloading more than the limits allow (see `internet`). All three are
 #' treated the same way.
+#' `not_downloaded` is a script that stopped on a file the repository lists but
+#' that was not downloaded, such as one over `max_file_size`: it could not be
+#' tried, so it is not counted as a script that did not reproduce
+#' (`summary_table$repro_not_downloaded_n` counts them apart).
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -1578,6 +1582,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # timed-out script forces red (see after the block).
   run_results <- NULL
   install_results <- NULL
+  r_not_downloaded <- NULL
   # scripts whose output was searched only in part (see .repro_output_head())
   stat_cut <- integer(0)
   if (isTRUE(execute)) {
@@ -1981,6 +1986,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       run_results$outcome[off_line] <- "needs_internet"
       run_results$error_type[off_line] <- NA_character_
     }
+    # Stopped on a file the repository lists but that we did not download, such
+    # as one over the size limit: the script could not be tried (#568).
+    r_not_downloaded <- .repro_not_downloaded(run_results, structure_df)
+    nd_rows <- run_results$file_name %in% r_not_downloaded$script
+    run_results$outcome[nd_rows] <- "not_downloaded"
+    run_results$error_type[nd_rows] <- NA_character_
     # Always a message, and a reason for each script that did not run through.
     no_message <- run_results$outcome == "errored" & !grepl("\\S", paste0(run_results$error, run_results$stderr))
     run_results$error[no_message] <- "the script stopped without a message"
@@ -1998,7 +2009,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large")) && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2261,7 +2272,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_nodep   <- sum(oc == "dependency_unavailable")
     n_by_src  <- sum(oc == "run_by_source")
     n_late    <- sum(oc == "skipped_time_limit")
-    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content", "defines_functions", "not_analysis"))
+    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content", "defines_functions", "not_analysis", "not_downloaded"))
     report_exec <- sprintf(
       paste0("**The code was run.** Each script ran in an isolated %s ",
              "against a throwaway copy of ", layout_name, ", in the run order ",
@@ -2301,6 +2312,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       report_exec <- paste0(report_exec, .repro_needs_internet_text(run_results$file_name[oc == "needs_internet"], internet))
     if (sum(oc == "download_too_large") > 0)
       report_exec <- paste0(report_exec, .repro_download_stop_text(run_results$file_name[oc == "download_too_large"]))
+    if (sum(oc == "not_downloaded") > 0)
+      report_exec <- paste0(report_exec, .repro_not_downloaded_text(
+        r_not_downloaded[r_not_downloaded$script %in% run_results$file_name[oc == "not_downloaded"], , drop = FALSE],
+        max_file_size))
     if (length(run_after) > 0)
       report_exec <- paste0(report_exec, sprintf(
         " **%d script%s use%s an object or function that only another script defines**, so in the second run that script was loaded first, in the same session: %s. Such a script should `source()` the other itself, since it does not run on its own.",
@@ -2797,6 +2812,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_summary_text <- NULL
   py_run_results <- NULL
   py_install_results <- NULL
+  py_not_downloaded <- NULL
   py_stat_cut <- integer(0)
   py_modifications <- data.frame(file_name = character(0), change_type = character(0),
                                  detail = character(0))
@@ -3215,6 +3231,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (sandbox == "docker")
         py_run_results$outcome[py_run_results$outcome == "errored" &
           .repro_needs_internet_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_internet"
+      # stopped on a file we did not download (#568; as for R above)
+      py_not_downloaded <- .repro_not_downloaded(py_run_results, structure_df)
+      py_run_results$outcome[py_run_results$file_name %in% py_not_downloaded$script] <- "not_downloaded"
       py_no_message <- py_run_results$outcome == "errored" & !grepl("\\S", paste0(py_run_results$error, py_run_results$stderr))
       py_run_results$error[py_no_message] <- "the script stopped without a message"
       py_run_results$reason <- .repro_failure_reason(py_run_results$outcome, paste(py_run_results$error, py_run_results$stderr))
@@ -3249,7 +3268,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large")) && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -3477,7 +3496,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "drift, which argues for pinning versions (e.g. in a ",
              "`requirements.txt`)."),
       if (sandbox == "docker") "Docker container" else "subprocess",
-      layout_name, timeout, sum(py_oc != "not_analysis"), plural(sum(py_oc != "not_analysis")),
+      layout_name, timeout, sum(!py_oc %in% c("not_analysis", "not_downloaded")),
+      plural(sum(!py_oc %in% c("not_analysis", "not_downloaded"))),
       n_py_ran_ok, n_py_errored, n_py_timeout, n_py_nodep, n_py_noparse,
       n_py_python2, plural(n_py_python2, "is", "are"),
       if (n_py_import) sprintf(
@@ -3506,6 +3526,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_report_exec <- paste0(py_report_exec, .repro_needs_internet_text(py_run_results$file_name[py_oc == "needs_internet"], internet))
     if (sum(py_oc == "download_too_large") > 0)
       py_report_exec <- paste0(py_report_exec, .repro_download_stop_text(py_run_results$file_name[py_oc == "download_too_large"]))
+    if (sum(py_oc == "not_downloaded") > 0)
+      py_report_exec <- paste0(py_report_exec, .repro_not_downloaded_text(
+        py_not_downloaded[py_not_downloaded$script %in% py_run_results$file_name[py_oc == "not_downloaded"], , drop = FALSE],
+        max_file_size))
 
     py_setwd_rows <- if (exists("py_run_tbl", inherits = FALSE) &&
                          "setwd_removed" %in% names(py_run_tbl))

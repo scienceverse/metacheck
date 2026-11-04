@@ -743,6 +743,7 @@ report_type <- function(report_type = NULL) {
           not_parsed              = "could not be parsed and so could not be run",
           python2                 = "are written for Python 2 and so could not be run",
           docker_failed           = "could not be run because Docker failed, which says nothing about the code",
+          not_downloaded          = "could not be tried, because they need a file the deposit holds but that we did not download",
           needs_a_person          = "need a person to choose a file, answer a question or use an app",
           needs_internet          = "need the internet, which is off during the run, or could not reach what they asked for",
           download_too_large      = "were stopped for downloading more than our limits allow",
