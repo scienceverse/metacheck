@@ -1450,8 +1450,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # issue text for why they must stay consistent with each other).
   sniff_type <- rep(NA_character_, n_code)   # "not_r_content" | "jags_model" | NA
   sniff_detail <- rep(NA_character_, n_code)
-  if (any(parse_error_raw)) {
-    for (i in which(parse_error_raw)) {
+  # A file that is not text (R data saved as .R) is read as no lines, so it
+  # "parses"; it is looked at too, else it was run as a script (#568:
+  # 10.1111/2041-210X.13967's 109 MB Training_Dataset_1.r)
+  is_binary <- vapply(seq_len(n_code), function(i) !is.null(attr(raw_text_list[[i]], "binary")), logical(1))
+  if (any(parse_error_raw | is_binary)) {
+    for (i in which(parse_error_raw | is_binary)) {
       raw <- raw_text_list[[i]]
       fn  <- r_files$file_name[i]
       jags_hit <- .repro_is_jags_model(
@@ -1522,7 +1526,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # parse"* -- see not_runnable_reason below, which gives it its own reason
   # instead of lumping it in with "parse_error".
   parses <- !parse_error_genuine
-  runs_as_r <- !parse_error_raw   # still gates execution (parses_named), below
+  runs_as_r <- !parse_error_raw & !is_binary   # still gates execution (parses_named), below
   file_order <- order_tbl$order[match(r_files$file_name, order_tbl$file_name)]
   placeable <- !is.na(file_order)
 

@@ -702,8 +702,9 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
       # check mirroring the docker backend) so the module's corrective re-run
       # logic can check ONE consistent string regardless of which backend ran
       # -- see repro_run_scripts_py_docker()'s identical classification for
-      # the twin of this logic.
-      nomod_pat <- "No module named ['\"]([^'\"]+)['\"]"
+      # the twin of this logic. With or without quotes: Python 2 writes
+      # "No module named librosa" (#568).
+      nomod_pat <- "No module named ['\"]?([A-Za-z0-9_.]+)['\"]?"
       nomod_src <- if (grepl(nomod_pat, se)) se else NA_character_
       nomod_var <- if (!is.na(nomod_src))
         sub(paste0(".*", nomod_pat, ".*"), "\\1",

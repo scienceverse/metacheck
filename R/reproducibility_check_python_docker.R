@@ -441,7 +441,9 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
            perl = TRUE) else NA_character_
       if (identical(undefined_var, last_line)) undefined_var <- NA_character_
 
-      nomod_pat <- "No module named ['\"]([^'\"]+)['\"]"
+      # with or without quotes: Python 2 writes "No module named librosa"
+      # (10.1111/2041-210X.13114; #568)
+      nomod_pat <- "No module named ['\"]?([A-Za-z0-9_.]+)['\"]?"
       nomod_src <- if (grepl(nomod_pat, se)) se else NA_character_
       nomod_var <- if (!is.na(nomod_src))
         sub(paste0(".*", nomod_pat, ".*"), "\\1",

@@ -1,5 +1,7 @@
 # metacheck 0.4.2
 
+* A Python 2 script that stops on a package that could not be installed gets the outcome `dependency_unavailable`, as in Python 3 (#568). Python 2 writes "No module named librosa" without quotes, which was not recognised, so the script read as `errored` (10.1111/2041-210X.13114).
+
 * `file_category()`, and with it `data_check` and `repo_check`, finds each file's type much faster: each of the 377 known extensions is compared once with all names, instead of a regular expression per extension and per name (#568). It took most of a half-hour `data_check` for 10.1111/2041-210X.14428; 8258 names now take under two seconds, with the same types.
 * `reproducibility_check(execute = TRUE)` reads the code with `code_read()` when it looks for the files the code names, so a file that is not text gives no lines (#568). It still read 10.1111/2041-210X.13967's 109 MB of R data named `.r` as text there, for more than an hour.
 
@@ -10,7 +12,7 @@
 
 * `repro_rewrite_paths()` computes file checksums only for the candidate files it compares, when it compares them, and keeps them for the session (#568). It computed a checksum of every file of the plan for every script: in 10.1111/2041-210X.13798 (12064 files, 281 scripts) that was 75% of a 34-minute check in which no script ran.
 
-* `code_read()`, and with it `code_check` and `reproducibility_check`, returns no lines for a file that is not text, such as R data saved under a name ending in `.R`, with an attribute `binary` saying what it is (#568). 10.1111/2041-210X.13967's `Training_Dataset_1.r` is 109 MB of compressed R data: `code_check` read it as code, and removing its "comments" took more than 35 minutes; it now takes a second. Text in UTF-16 is still read.
+* `code_read()`, and with it `code_check` and `reproducibility_check`, returns no lines for a file that is not text, such as R data saved under a name ending in `.R`, with an attribute `binary` saying what it is (#568). 10.1111/2041-210X.13967's `Training_Dataset_1.r` is 109 MB of compressed R data: `code_check` read it as code, and removing its "comments" took more than 35 minutes; it now takes a second. `reproducibility_check` gives such a file the outcome `not_r_content` instead of running it. Text in UTF-16 is still read.
 
 * Downloads accept an empty answer for a file the repository lists with a size of 0, instead of reporting it as a failed download (#568). In 10.1111/2041-210X.13798, 55 of a repository's 64 empty files were reported as failed with "empty response".
 
