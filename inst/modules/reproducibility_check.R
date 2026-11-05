@@ -3171,6 +3171,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # the scripts run with Python 2.7, and those run once more after a later script
   # wrote their file (see the execute phase)
   py_ran_py2 <- character(0)
+  py2_tried <- character(0)
   py_written_later <- list()
   py_placed <- .repro_place_written(list(), NULL, NULL, ".", character(0), character(0))
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
@@ -3457,8 +3458,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           timeout = timeout, failed_deps = py2_failed_deps, deadline = script_deadline, net = net),
           error = function(e) NULL)
         if (!is.null(res2) && nrow(res2)) {
-          res2 <- res2[res2$outcome != "skipped_time_limit", , drop = FALSE]
-          py_ran_py2 <- res2$file_name
+          # a script not started for lack of time says so, not "python2" (#568)
+          py_ran_py2 <- res2$file_name[res2$outcome != "skipped_time_limit"]
+          py2_tried <- res2$file_name
           keep_order <- py_run_results$file_name
           py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res2$file_name, , drop = FALSE], res2)
           py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
@@ -3477,7 +3479,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_is_py2 <- (py_run_results$file_name %in% py_files$file_name[py_python2] |
         (py_run_results$outcome == "errored" &
            .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))) &
-        !py_run_results$file_name %in% py_ran_py2
+        !py_run_results$file_name %in% py2_tried
       py_run_results$outcome[py_is_py2] <- "python2"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_server]] <- "needs_a_person"
