@@ -1405,6 +1405,14 @@ download_repo_files <- function(files,
   }, character(1))
 
   already <- file.exists(files$.cache_path)
+  # An empty cached file of a file the listing says has bytes is a download that
+  # failed, so it is fetched again: an empty copy of phy_spp_names.csv (18 KB),
+  # cached in August, made 23 scripts of 10.1111/1365-2435.14173 stop with "no
+  # lines available in input" (#568).
+  listed_size <- suppressWarnings(as.numeric(files$file_size %||% rep(NA_real_, nrow(files))))
+  empty_copy <- already & !is.na(listed_size) & listed_size > 0 &
+    file.size(files$.cache_path) %in% 0
+  already <- already & !empty_copy
   files$file_location[already] <- files$.cache_path[already]
 
   mb <- 1024 * 1024

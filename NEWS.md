@@ -1,5 +1,7 @@
 # metacheck 0.4.2
 
+* With `cache = TRUE`, an empty cached file of a file the repository lists with a size above 0 is downloaded again instead of reused (#568). Older versions kept an empty file when a download failed: an empty copy of `phy_spp_names.csv` (18 KB), cached in August, made 23 scripts of 10.1111/1365-2435.14173 stop with "no lines available in input".
+
 * `reproducibility_check(sandbox = "docker")` runs code written for Python 2 with Python 2.7, in the official image `python:2.7-slim`, instead of only naming it (#568). Its packages are installed in a library of their own, where pip picks the last version of each that supports Python 2. A script that stopped on a Python 2 module it imports (`cPickle`, `urllib2`) runs this way too. The code is not converted, since that can change results (`/` between whole numbers divides differently). The report says which scripts ran with Python 2.7, and the modifications table lists each (`python2`). The option `metacheck.docker_image_py2` names another image; `FALSE` keeps the old behaviour, outcome `python2` without a run.
 
 * A script whose container Docker lost while it ran ("error waiting for container: unexpected EOF") gets the outcome `docker_failed`, which says nothing about the code, not `errored` (#568). It happened to scripts of three papers at the same second.
