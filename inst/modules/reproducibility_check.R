@@ -2102,6 +2102,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     no_message <- run_results$outcome == "errored" & !grepl("\\S", paste0(run_results$error, run_results$stderr))
     run_results$error[no_message] <- "the script stopped without a message"
     run_results$reason <- .repro_failure_reason(run_results$outcome, paste(run_results$error, run_results$stderr))
+    # stopped on a Git LFS pointer the deposit has no file for: a missing file (#568)
+    r_lfs_stopped <- .repro_lfs_stopped(run_results, sandbox_root)
+    run_results$reason[run_results$file_name %in% names(r_lfs_stopped)] <- "file"
 
     # A predicted missing file no longer counts for a script that ran through.
     tl <- .repro_static_light(
@@ -2433,6 +2436,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (exists("r_written_later", inherits = FALSE) && length(r_written_later))
       report_exec <- paste0(report_exec, .repro_written_later_text(
         r_written_later, run_results$file_name[oc == "ran_ok"], r_placed))
+    if (exists("r_lfs_stopped", inherits = FALSE) && length(r_lfs_stopped))
+      report_exec <- paste0(report_exec, .repro_lfs_stopped_text(r_lfs_stopped))
     if (sum(lengths(r_choices_filled)) > 0)
       report_exec <- paste0(report_exec, sprintf(
         " **%d `file.choose()` call%s replaced by the file the code names**, so the script could run; the script should name the file itself.",
@@ -3238,10 +3243,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py_sandbox_files <- gsub("\\\\", "/", list.files(sandbox_root, recursive = TRUE))
     py_sandbox_files <- py_sandbox_files[!grepl("^(_pylib|_rlib|output|statistical_output)/", py_sandbox_files)]
     py_run_tbl$module_root <- sandbox_root
+    py_import_names <- .repro_py_import_names(py_code_text_list)
+    py_import_links <- .repro_py_import_links(py_import_names, py_files$file_path)
     py_run_tbl$module_folders <- vapply(seq_len(nrow(py_run_tbl)), function(i) {
       place <- sub(paste0(gsub("\\\\", "/", normalizePath(sandbox_root, mustWork = FALSE)), "/"), "",
                    gsub("\\\\", "/", normalizePath(py_run_tbl$script_path[i], mustWork = FALSE)), fixed = TRUE)
-      paste(.repro_py_module_folders(py_code_text_list[[py_run_tbl$file_name[i]]], place, py_sandbox_files), collapse = "\n")
+      # the script's imports and those of the repository's files it imports (#568);
+      # only for files that run, which keeps this short in a copy of a tool
+      fn <- py_run_tbl$file_name[i]
+      if (fn %in% py_files$file_name[py_not_analysis | py_server]) return("")
+      own_mods <- .repro_py_local_closure(py_import_names, py_files$file_path, fn, py_import_links)
+      paste(.repro_py_module_folders(unlist(py_code_text_list[c(fn, own_mods)], use.names = FALSE),
+                                     place, py_sandbox_files), collapse = "\n")
     }, character(1))
 
     # The process sandbox needs a Python interpreter on this computer (looked
@@ -3478,6 +3491,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_no_message <- py_run_results$outcome == "errored" & !grepl("\\S", paste0(py_run_results$error, py_run_results$stderr))
       py_run_results$error[py_no_message] <- "the script stopped without a message"
       py_run_results$reason <- .repro_failure_reason(py_run_results$outcome, paste(py_run_results$error, py_run_results$stderr))
+      py_lfs_stopped <- .repro_lfs_stopped(py_run_results, sandbox_root)
+      py_run_results$reason[py_run_results$file_name %in% names(py_lfs_stopped)] <- "file"
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -3770,6 +3785,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(py_written_later))
       py_report_exec <- paste0(py_report_exec, .repro_written_later_text(
         py_written_later, py_run_results$file_name[py_oc == "ran_ok"], py_placed))
+    if (exists("py_lfs_stopped", inherits = FALSE) && length(py_lfs_stopped))
+      py_report_exec <- paste0(py_report_exec, .repro_lfs_stopped_text(py_lfs_stopped))
     py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
     if (length(py_ran_py2_here))
       py_report_exec <- paste0(py_report_exec, sprintf(

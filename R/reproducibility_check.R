@@ -2558,6 +2558,48 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # The Git LFS pointers among `sources` (files on disk) and, for each, the file
 # of the same name, elsewhere among them, of the size the pointer states. A
 # pointer with no such file is left out. Returns a data frame `pointer`, `file`.
+# After a run: the scripts that stopped while reading a Git LFS pointer for which
+# the deposit has no copy of the file itself (a GitHub archive and a Zenodo copy
+# made from it hold only the pointer): in 10.1111/2041-210X.14054 five scripts
+# stopped on readRDS() with "unknown input format" (#568). The file was never
+# deposited, so the script stopped on a missing file, not on its code. Returns a
+# named list: script -> the pointer files it named.
+.repro_lfs_stopped <- function(results, root) {
+  if (is.null(results) || !nrow(results)) return(list())
+  f <- list.files(root, recursive = TRUE, full.names = TRUE)
+  f <- f[!grepl("/(_rlib|_pylib2?)/", gsub("\\\\", "/", f))]
+  sz <- file.size(f)
+  small <- f[!is.na(sz) & sz < 1024]
+  is_ptr <- vapply(small, function(p) {
+    l <- tryCatch(readLines(p, n = 1, warn = FALSE), error = function(e) character(0))
+    length(l) && startsWith(l[1], "version https://git-lfs.github.com/spec/")
+  }, logical(1))
+  ptr <- unique(basename(small[is_ptr]))
+  if (!length(ptr)) return(list())
+  stopped <- which(results$outcome %in% "errored")
+  out <- lapply(stopped, function(i) {
+    msg <- paste(results$error[i], results$stderr[i])
+    ptr[vapply(ptr, function(p) grepl(p, msg, fixed = TRUE), logical(1))]
+  })
+  names(out) <- results$file_name[stopped]
+  out[lengths(out) > 0]
+}
+
+# The report's sentence on scripts that stopped on a Git LFS pointer (see
+# .repro_lfs_stopped()).
+.repro_lfs_stopped_text <- function(lfs_stopped) {
+  if (!length(lfs_stopped)) return("")
+  n <- length(lfs_stopped)
+  files <- unique(unlist(lfs_stopped, use.names = FALSE))
+  sprintf(paste0(" **%d %s while reading a file the deposit holds only as a Git LFS pointer**, ",
+                 "a small text file that names the file: %s. The file itself was never deposited ",
+                 "(a GitHub archive does not include such files), so this is a missing file, not an ",
+                 "error in the code: %s. Depositing the files themselves solves this."),
+          n, plural(n, "script stopped", "scripts stopped"),
+          paste(sprintf("`%s`", files), collapse = ", "),
+          paste(sprintf("`%s`", names(lfs_stopped)), collapse = ", "))
+}
+
 .repro_lfs_swaps <- function(sources) {
   none <- data.frame(pointer = character(0), file = character(0))
   src <- unique(sources[!is.na(sources) & file.exists(sources %||% "")])
@@ -3066,6 +3108,52 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   imports (`from utils.data_handling import x`); `NULL` uses the names
 #' @returns a named list: for each imported file, the files that import it
 #' @keywords internal
+# The repository's own files a Python file imports, and the files those import in
+# turn: `start` is a file name of `code_text_list`, `paths` their places. The
+# folders a script needs on Python's search path follow from all their imports:
+# 10.1111/2041-210X.14007's scripts/run.py imports run_NNs, which imports the
+# package fluxrgnn at the top of the repository (#568).
+# `imports` is .repro_py_import_names() of all files, read once for all scripts;
+# `links`, from .repro_py_import_links(), can be passed to reuse it too.
+.repro_py_local_closure <- function(imports, paths, start, links = .repro_py_import_links(imports, paths)) {
+  fns <- names(imports)
+  seen <- rep(FALSE, length(fns))
+  todo <- match(start, fns)
+  todo <- todo[!is.na(todo)]
+  seen[todo] <- TRUE
+  while (length(todo)) {
+    nxt <- unique(unlist(links[todo], use.names = FALSE))
+    nxt <- nxt[!seen[nxt]]
+    seen[nxt] <- TRUE
+    todo <- nxt
+  }
+  setdiff(fns[seen], start)
+}
+
+# For each file, the positions of the repository's files it imports.
+.repro_py_import_links <- function(imports, paths) {
+  fns <- names(imports)
+  paths <- gsub("\\\\", "/", ifelse(is.na(paths) | !nzchar(paths), fns, paths))
+  stem <- tools::file_path_sans_ext(basename(paths))
+  by_stem <- split(seq_along(stem), stem)
+  lapply(imports, function(nm) unique(unlist(by_stem[intersect(nm, names(by_stem))], use.names = FALSE)))
+}
+
+# The module names each Python file imports ("a.b" gives a and b; "from a import
+# b" gives a and b), by file.
+.repro_py_import_names <- function(code_text_list) {
+  lapply(code_text_list, function(txt) {
+    txt <- txt[!grepl("^\\s*#", txt)]
+    m1 <- regmatches(txt, regexec("^\\s*import\\s+([A-Za-z0-9_., ]+)", txt))
+    m2 <- regmatches(txt, regexec("^\\s*from\\s+([A-Za-z0-9_.]+)\\s+import\\s+([A-Za-z0-9_, ()*]+)", txt))
+    n1 <- unlist(lapply(m1, function(m) if (length(m) > 1)
+      trimws(sub("\\s+as\\s+.*$", "", strsplit(m[[2]], ",")[[1]]))))
+    n2 <- unlist(lapply(m2, function(m) if (length(m) > 2)
+      c(m[[2]], trimws(sub("\\s+as\\s+.*$", "", strsplit(gsub("[()]", "", m[[3]]), ",")[[1]])))))
+    unique(unlist(strsplit(as.character(c(n1, n2)), ".", fixed = TRUE)))
+  })
+}
+
 .repro_py_imported <- function(code_text_list, paths = NULL) {
   fns <- names(code_text_list)
   if (!length(fns)) return(list())

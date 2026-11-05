@@ -3669,3 +3669,20 @@ test_that("a file written during the run is found, and copied to where a script 
   expect_true(file.exists(file.path(root, "c", "Ha_daily.Rdata")))
   expect_match(.repro_written_later_text(later, "s2.R", placed), "copied them there|copied it there")
 })
+
+test_that("a script that stopped on a Git LFS pointer stopped on a missing file (#568)", {
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "data"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1",
+               "oid sha256:625d8398ce0000000000000000000000000000000000000000000000000000",
+               "size 123456"), file.path(root, "data", "results.rds"))
+  writeLines("a,b", file.path(root, "data", "ok.csv"))
+  res <- data.frame(file_name = c("a.R", "b.R", "c.R"), outcome = c("errored", "errored", "ran_ok"),
+                    error = c('Error in readRDS(here::here("data", "results.rds")) : unknown input format',
+                              "Error in f() : something else", ""),
+                    stderr = "")
+  st <- .repro_lfs_stopped(res, root)
+  expect_equal(st, list(a.R = "results.rds"))
+  expect_match(.repro_lfs_stopped_text(st), "only as a Git LFS pointer")
+  expect_equal(.repro_lfs_stopped(res[2:3, ], root), stats::setNames(list(), character(0)))
+})

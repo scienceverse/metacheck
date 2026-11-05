@@ -1125,6 +1125,9 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              "--pids-limit", "512",
              .repro_docker_resource_args(),
              "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
+             # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
+             # stopped three scripts of 10.1111/2041-210X.14007 (#568)
+             "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
              "-v", paste0(sandbox_root, ":/sandbox"))
     if (!is.null(lib_dir_norm))
       args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", read_only = TRUE))

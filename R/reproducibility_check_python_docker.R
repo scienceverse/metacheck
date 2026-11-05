@@ -354,6 +354,9 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              "--pids-limit", "512",
              .repro_docker_resource_args(),
              "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
+             # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
+             # stopped three scripts of 10.1111/2041-210X.14007 (#568)
+             "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
              "-v", paste0(sandbox_root, ":/sandbox"),
              # the container is read-only apart from /tmp, so caches go there: Numba
              # stopped with "cannot cache function" (#568, item 19). There is no
