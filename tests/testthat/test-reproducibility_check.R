@@ -3734,3 +3734,13 @@ test_that(".repro_md5 keeps checksums for the session and sees a changed file (#
   expect_false(identical(h2[2], h1[2]))
   expect_true(is.na(.repro_md5(file.path(d, "none.csv"))))
 })
+
+test_that("a script stopped by the memory limit says so, with the reason environment (#568)", {
+  withr::local_options(metacheck.docker_resource_limits = list(cpus = 2, memory_gb = 3))
+  note <- .repro_oom_text(137)
+  expect_match(note, "memory limit of 3 GB")
+  expect_null(.repro_oom_text(1))
+  expect_equal(.repro_failure_reason("errored", paste("Compiling", note)), "environment")
+  withr::local_options(metacheck.docker_resource_limits = NULL)
+  expect_null(.repro_oom_text(137))
+})

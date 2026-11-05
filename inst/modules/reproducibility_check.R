@@ -179,7 +179,7 @@
 #'   records versions, the report recommends a run with TRUE.
 #'   Not used when `install_missing = FALSE`, nor when several papers run as one
 #'   (one at a time, or `workers > 1` with `sandbox = "docker"`, does use them).
-#' @param install_timeout the time in seconds for installing a paper's R
+#' @param install_timeout the time in seconds for installing a paper's R and Python
 #'   packages. `NULL` (the default) uses `timeout`, or an hour when recorded
 #'   versions are installed. With a clock time as `total_timeout`, installing
 #'   takes at most half of the time that is left. With `sandbox = "process"` a
@@ -3288,10 +3288,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
            paste(py_to_install$package, collapse = ", "))
       py_install_results <- tryCatch(
         if (sandbox == "docker") {
-          repro_install_deps_py_docker(py_to_install, py_lib_dir, timeout = timeout)
+          repro_install_deps_py_docker(py_to_install, py_lib_dir, timeout = .repro_install_limit(install_timeout, timeout, total_timeout))
         } else {
           repro_install_deps_py(py_to_install, py_lib_dir, python_bin = py_parse_bin,
-                                timeout = timeout)
+                                timeout = .repro_install_limit(install_timeout, timeout, total_timeout))
         },
         error = function(e) {
           py_exec_error <<- conditionMessage(e)
@@ -3433,7 +3433,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                paste(py2_deps$package, collapse = ", "))
           if (nrow(py2_deps)) {
             py2_install <- tryCatch(
-              repro_install_deps_py_docker(py2_deps, py2_lib_dir, image = py2_image, timeout = timeout),
+              repro_install_deps_py_docker(py2_deps, py2_lib_dir, image = py2_image, timeout = .repro_install_limit(install_timeout, timeout, total_timeout)),
               error = function(e) {
                 .dbg("[repro/py]   Python 2 install stopped: ", conditionMessage(e))
                 NULL

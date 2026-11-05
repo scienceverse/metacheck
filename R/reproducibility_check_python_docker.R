@@ -166,8 +166,18 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
     unlist(lapply(seq_along(reqs), function(i) {
       pkg <- install_deps$package[i]; req <- reqs[i]; src <- install_deps$source[i]
       tmp <- sprintf("/tmp/pyt_%d", i)
-      pip <- sprintf("timeout %d pip install --quiet --prefer-binary --no-input --target %s", per_package, tmp)
-      copy <- sprintf('  for f in %s/* %s/.[!.]*; do [ -e "$f" ] && [ ! -e "/pylib/${f##*/}" ] && cp -r "$f" /pylib/; done; rm -rf %s',
+      # PyTorch's own index too: the large image has torch for processors only
+      # ("+cpu"), and torchvision from PyPI, built for the other torch, stopped with
+      # "operator torchvision::nms does not exist"; the index has "+cpu" builds,
+      # which pip prefers as the higher version (#568)
+      pip <- sprintf(paste0("timeout %d pip install --quiet --prefer-binary --no-input --prefix %s",
+                            " --extra-index-url https://download.pytorch.org/whl/cpu"), per_package, tmp)
+      # --prefix, not --target: pip then uses what the image has. With --target it
+      # installed everything again, so torch (about 800 MB, in the large image) for
+      # segmentation_models_pytorch, and the install ran out of time
+      # (10.1111/2041-210X.14327; #568). The packages are in
+      # <prefix>/lib/python<version>/site-packages.
+      copy <- sprintf('  for f in %s/lib*/python*/site-packages/* %s/lib*/python*/site-packages/.[!.]*; do [ -e "$f" ] && [ ! -e "/pylib/${f##*/}" ] && cp -r "$f" /pylib/; done; rm -rf %s',
                       tmp, tmp, tmp)
       c(sprintf('if %s %s 2> /tmp/err_%d.txt; then', pip, shQuote(req), i),
         copy,
@@ -418,6 +428,8 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
                dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL)))
     }
     if (res$status != 0) {
+      # stopped for using more memory than the limit (#568; see .repro_oom_text())
+      se <- paste0(se, .repro_oom_text(res$status))
       err_lines <- strsplit(se, "\n", fixed = TRUE)[[1]]
       err_lines <- err_lines[nzchar(trimws(err_lines))]
       last_line <- if (length(err_lines)) err_lines[length(err_lines)] else se

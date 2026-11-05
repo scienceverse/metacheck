@@ -3438,6 +3438,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out[outcome %in% c("skipped_missing_inputs")] <- "file"
   err <- outcome == "errored"
   set <- function(pat, label) out[err & is.na(out) & has(pat)] <<- label
+  # stopped by the memory limit of the run (see .repro_oom_text()), before any
+  # message the script's own output happens to contain
+  set("was stopped for using more than the memory limit", "environment")
   # provided by Snakemake when it runs the script, so only there
   set("object 'snakemake' not found|name 'snakemake' is not defined", "environment")
   set("there is no package called|ModuleNotFoundError|No module named|ImportError|package or namespace|Error: package ", "package")

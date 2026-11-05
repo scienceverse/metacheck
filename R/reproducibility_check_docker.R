@@ -154,6 +154,19 @@ repro_docker_available <- function() {
 # WSL writes a file of about 2.5 GB to the user's temp folder. Ten crashing
 # scripts filled a disk. A limit of 0 does not stop WSL (confirmed directly);
 # the kernel only leaves out the file for a limit of 1.
+# The note added to a script's error output when its container was stopped for
+# using more memory than the limit: Docker gives the process the exit status 137,
+# and the script ends without a message. In 10.1111/2041-210X.14359 nimble's C++
+# compiler went over 3 GB, and three scripts read as failures with no message and
+# the reason "other" (#568). NULL when no memory limit is set.
+.repro_oom_text <- function(status) {
+  limits <- getOption("metacheck.docker_resource_limits")
+  if (!identical(suppressWarnings(as.integer(status)), 137L) || is.null(limits$memory_gb)) return(NULL)
+  sprintf(paste0("\n[reproducibility_check] The script was stopped for using more than the memory ",
+                 "limit of %s GB that each script has here; this says nothing about the code."),
+          format(limits$memory_gb))
+}
+
 .repro_docker_resource_args <- function() {
   no_crash_file <- c("--ulimit", "core=1")
   limits <- getOption("metacheck.docker_resource_limits")
@@ -1199,6 +1212,8 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
                dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))
     }
     if (res$status != 0) {
+      # stopped for using more memory than the limit (#568; see .repro_oom_text())
+      se <- paste0(se, .repro_oom_text(res$status))
       # See repro_run_scripts()'s twin of this block (R/reproducibility_check.R)
       # for why a missing FUNCTION ("could not find function ...") is matched
       # alongside a missing variable ("object ... not found") into the same

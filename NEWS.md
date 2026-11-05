@@ -1,5 +1,10 @@
 # metacheck 0.4.2
 
+* `reproducibility_check(sandbox = "docker")` installs Python packages with pip's `--prefix`, not `--target`, so pip uses the packages the image already has, and also looks in PyTorch's own index of builds for processors only (#568). With `--target` every dependency was installed again: for `segmentation_models_pytorch` in 10.1111/2041-210X.14327 that included torch (about 800 MB), and the install ran out of time, so ten notebooks stopped on a missing package. It now takes seconds. Without PyTorch's index, torchvision from PyPI did not fit the image's torch ("operator torchvision::nms does not exist").
+* `install_timeout` is also the time for installing a paper's Python packages, which had the time limit of one script (#568).
+
+* `reproducibility_check(sandbox = "docker")` says when a script was stopped for using more memory than the limit each script has (exit status 137), and gives it the reason `environment`, not `other` (#568). Such a script ended without a message: in 10.1111/2041-210X.14359 nimble's C++ compiler went over 3 GB in three scripts.
+
 * `repro_rewrite_paths()` computes file checksums only for the candidate files it compares, when it compares them, and keeps them for the session (#568). It computed a checksum of every file of the plan for every script: in 10.1111/2041-210X.13798 (12064 files, 281 scripts) that was 75% of a 34-minute check in which no script ran.
 
 * `code_read()`, and with it `code_check` and `reproducibility_check`, returns no lines for a file that is not text, such as R data saved under a name ending in `.R`, with an attribute `binary` saying what it is (#568). 10.1111/2041-210X.13967's `Training_Dataset_1.r` is 109 MB of compressed R data: `code_check` read it as code, and removing its "comments" took more than 35 minutes; it now takes a second. Text in UTF-16 is still read.
