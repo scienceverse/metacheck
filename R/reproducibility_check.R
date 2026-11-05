@@ -1136,7 +1136,17 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   txt <- tolower(paste(.utf8_lines(code_text), collapse = "\n"))
   base <- tolower(basename(gsub("\\\\", "/", .utf8_lines(structure_df$file_name))))
   ext <- ifelse(grepl("\\.", base), sub(".*\\.", "", base), "")
-  by_name <- vapply(base, function(b) grepl(b, txt, fixed = TRUE), logical(1), USE.NAMES = FALSE)
+  # Only the files still to fetch are looked for, each name once, among the words
+  # of the code: searching all of the code for every listed file took more than 4
+  # minutes in 10.1111/2041-210X.13798, a software repository (#568). A name with
+  # other characters than these is still searched for in the text.
+  cand <- unique(base[want])
+  words <- unique(strsplit(txt, "[^a-z0-9._+-]+")[[1]])
+  plain <- grepl("^[a-z0-9._+-]+$", cand)
+  found <- cand[plain][cand[plain] %in% words]
+  if (any(!plain)) found <- c(found, cand[!plain][vapply(cand[!plain], function(b)
+    grepl(b, txt, fixed = TRUE), logical(1), USE.NAMES = FALSE)])
+  by_name <- base %in% found
   exts <- unique(ext[want & nzchar(ext)])
   ext_named <- exts[vapply(exts, function(e)
     grepl(paste0("(\\\\{1,2}\\.|\\*\\.|['\"]\\.)", e, "\\b"), txt, perl = TRUE), logical(1))]

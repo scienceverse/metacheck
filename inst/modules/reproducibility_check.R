@@ -1631,6 +1631,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                       docker_use_declared_version), call. = FALSE)
     install_r <- isTRUE(install_missing) || (is.null(install_missing) && !is.null(recorded))
     to_install <- if (!is.null(recorded)) .repro_install_order(recorded$deps) else install_deps
+    # Only the packages of files that run are installed, not those of a package's
+    # code, its tests or a copy of a tool, which are not run (#568): in
+    # 10.1111/2041-210X.13787 one script ran, for 2 seconds, after 35 minutes of
+    # installing what 766 files of a web application import.
+    if (is.null(recorded) && any(sniff_type %in% "not_analysis")) {
+      r_run_rows <- !sniff_type %in% "not_analysis"
+      r_needed <- unique(c(repro_dependencies(code_text_list[r_run_rows], "R")$package,
+                           tryCatch(code_packages(r_files$packages[r_run_rows]), error = function(e) character(0))))
+      if (any(!to_install$package %in% r_needed))
+        .dbg("not installing ", sum(!to_install$package %in% r_needed),
+             " package(s) only files that are not run use: ",
+             paste(to_install$package[!to_install$package %in% r_needed], collapse = ", "))
+      to_install <- to_install[to_install$package %in% r_needed, , drop = FALSE]
+    }
 
     # Docker base image: by default the pre-built metacheck_r_large image (fast --
     # most dependencies already installed), regardless of what R version the
@@ -3194,14 +3208,31 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_exec_error <- paste0(.repro_python_missing_reason(), ".")
 
     py_failed_deps <- character(0)
-    if (is.null(py_exec_error) && isTRUE(install_missing) && n_py_deps > 0) {
-      .dbg("[repro/py] installing ", n_py_deps, " dependenc(y/ies): ",
-           paste(py_install_deps$package, collapse = ", "))
+    # Only the packages of files that run, and of the files they import, are
+    # installed, as for R above (#568): not those of a package's code, its tests,
+    # a copy of a tool or a server, which are not run.
+    py_run_set <- py_files$file_name[py_parses & !py_not_analysis & !py_server]
+    py_imports_of <- .repro_py_imported(py_code_text_list, py_files$file_path)
+    repeat {
+      more <- setdiff(names(py_imports_of)[vapply(py_imports_of, function(x) any(x %in% py_run_set), logical(1))],
+                      py_run_set)
+      if (!length(more)) break
+      py_run_set <- c(py_run_set, more)
+    }
+    py_needed <- repro_dependencies_py(py_code_text_list[py_run_set], manifest_text = py_manifest_text)$package
+    if (any(!py_install_deps$package %in% py_needed))
+      .dbg("[repro/py] not installing ", sum(!py_install_deps$package %in% py_needed),
+           " package(s) only files that are not run use: ",
+           paste(py_install_deps$package[!py_install_deps$package %in% py_needed], collapse = ", "))
+    py_to_install <- py_install_deps[py_install_deps$package %in% py_needed, , drop = FALSE]
+    if (is.null(py_exec_error) && isTRUE(install_missing) && nrow(py_to_install) > 0) {
+      .dbg("[repro/py] installing ", nrow(py_to_install), " dependenc(y/ies): ",
+           paste(py_to_install$package, collapse = ", "))
       py_install_results <- tryCatch(
         if (sandbox == "docker") {
-          repro_install_deps_py_docker(py_install_deps, py_lib_dir, timeout = timeout)
+          repro_install_deps_py_docker(py_to_install, py_lib_dir, timeout = timeout)
         } else {
-          repro_install_deps_py(py_install_deps, py_lib_dir, python_bin = py_parse_bin,
+          repro_install_deps_py(py_to_install, py_lib_dir, python_bin = py_parse_bin,
                                 timeout = timeout)
         },
         error = function(e) {
