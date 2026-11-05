@@ -528,6 +528,72 @@ test_that(".repro_py_defined_vars returns an empty frame for no files", {
 })
 
 
+# .repro_ref_checkable() and .repro_inputs_to_report() ----
+
+test_that(".repro_ref_checkable keeps only complete literal names (#568)", {
+  d <- data.frame(
+    ref = c("data/x.csv", "{name}.csv", "out/%s.pdf", "_field.csv", ".png", "input$a", "paste0(x, 'y.csv')",
+            "{path}/weights/model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab", "data\\\\win.csv"),
+    basename = c("x.csv", "{name}.csv", "%s.pdf", "_field.csv", ".png", "input$a", "y.csv",
+                 "model.pth", "log(4runs)10k_3p.p", "fst=0.2_x.tab", "win.csv"),
+    is_call = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE))
+  expect_equal(.repro_ref_checkable(d),
+               c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE))
+  # Python rows can lack is_call
+  expect_true(.repro_ref_checkable(data.frame(ref = "x.csv", basename = "x.csv")))
+  # a name the script builds, in any case
+  expect_false(.repro_ref_checkable(data.frame(ref = "/X.csv", basename = "x.csv"), "x.csv"))
+})
+
+test_that(".repro_built_names finds names joined to a variable (#568)", {
+  code <- c('a <- read.csv(paste0(x, "Field.csv"))',
+            'b <- read.csv(base::paste(dir, "sub/site.csv", sep = "/"))',
+            'f <- function(y) readRDS(paste0(y, "inner.rds"))',
+            'g <- d[, paste0(x, "col.csv")]',
+            'h <- paste0(x, )',
+            'c <- read.csv(paste0("data/", "whole.csv"))',
+            'e <- read.csv(file.path(x, "folder.csv"))')
+  expect_setequal(.repro_built_names(code), c("field.csv", "site.csv", "inner.rds", "col.csv"))
+  expect_equal(.repro_built_names('read.csv(paste0(x, "a.csv")'), character(0)) # does not parse
+  expect_equal(.repro_built_names(NULL), character(0))
+  py <- c('a = pd.read_csv(x + "Field.csv")', 'b = pd.read_csv("whole.csv")',
+          '# c = pd.read_csv(x + "comment.csv")')
+  expect_equal(.repro_built_names(py, "Python"), "field.csv")
+})
+
+test_that(".repro_inputs_to_report keeps what a run cannot show (#568)", {
+  m <- data.frame(basename = c("a.csv", "b.csv", "c.csv", "d.csv"),
+                  status = c("absent", "withheld_size", "in_archive", "absent"),
+                  detail = "", similar_to = c(NA, NA, NA, "D_.csv"))
+  expect_equal(.repro_inputs_to_report(m, FALSE), m)
+  expect_equal(.repro_inputs_to_report(m, TRUE)$basename, c("b.csv", "c.csv", "d.csv"))
+  expect_equal(nrow(.repro_inputs_to_report(m[0, ], TRUE)), 0)
+})
+
+test_that(".repro_inputs_after_run keeps only files of scripts that did not run through (#568)", {
+  m <- data.frame(basename = c("a.csv", "b.csv", "c.csv"), status = "absent",
+                  detail = "", similar_to = NA_character_)
+  unresolved <- list("a.csv", "b.csv", "c.csv", character(0))
+  files <- c("ok.R", "stops.R", "nopkg.R", "other.R")
+  rr <- data.frame(file_name = files, outcome = c("ran_ok", "errored", "dependency_unavailable", "ran_ok"))
+  expect_equal(.repro_inputs_after_run(m, unresolved, files, rr)$basename, c("b.csv", "c.csv"))
+  rr$outcome <- c("ran_ok", "run_by_source", "ran_ok", "ran_ok")
+  expect_equal(nrow(.repro_inputs_after_run(m, unresolved, files, rr)), 0)
+  # no run, nothing changes; a script with no result counts as not run
+  expect_equal(.repro_inputs_after_run(m, unresolved, files, NULL), m)
+  expect_equal(.repro_inputs_after_run(m, unresolved, files, rr[rr$file_name != "ok.R", ])$basename, "a.csv")
+})
+
+test_that(".repro_static_light follows the missing inputs and the other checks (#568)", {
+  none <- data.frame(basename = character(0), status = character(0))
+  withheld <- data.frame(basename = "a.csv", status = "withheld_size")
+  mixed <- data.frame(basename = c("a.csv", "b.csv"), status = c("withheld_size", "absent"))
+  expect_equal(.repro_static_light(none, TRUE), "green")
+  expect_equal(.repro_static_light(none, FALSE), "yellow")
+  expect_equal(.repro_static_light(withheld, TRUE), "red")
+  expect_equal(.repro_static_light(mixed, TRUE), "yellow")
+})
+
 # repro_missing_inputs() ----
 
 test_that("repro_missing_inputs classifies an absent file", {
@@ -610,6 +676,23 @@ test_that(".repro_is_jags_model detects a calling reference in another file's co
 
 test_that(".repro_is_jags_model is FALSE for ordinary R code", {
   expect_false(.repro_is_jags_model(c("x <- 1", "y <- 2"), file_name = "analysis.R"))
+  expect_false(.repro_is_jags_model(c("model <- lm(y ~ x)", "{", "1", "}"), file_name = "analysis.R"))
+  expect_false(.repro_is_jags_model(c("data <- 1", "model <- 2"), file_name = "analysis.R"))
+})
+
+test_that(".repro_is_jags_model detects a brace on the next line and a data block first (#568)", {
+  expect_true(.repro_is_jags_model(c("# a model", "model", "{", "  x ~ dnorm(0, 1)", "}")))
+  expect_true(.repro_is_jags_model(c("data {", "  y <- 1", "}", "model {", "  x ~ dnorm(0, 1)", "}")))
+})
+
+test_that(".repro_checklist_section does not count a model file as a script that failed (#568)", {
+  tb <- data.frame(file_name = c("m.R", "run.R"), run_order = 1:2, outcome = c("jags_model", "ran_ok"),
+                   setwd_removed = 0, not_runnable_reason = c("jags_model", NA),
+                   unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = c("m.R", "run.R"), outcome = c("jags_model", "ran_ok"), error = "", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "**1 of 1 script ran to the end**", fixed = TRUE)
+  expect_match(out, "It is a JAGS model, which another script reads.", fixed = TRUE)
 })
 
 
@@ -1370,9 +1453,9 @@ test_that(".repro_neutralise_env_calls replaces calls that would install package
                  'set.groundhog.folder("x")', 'groundhog::meta.groundhog("2023-01-01")'))
     expect_match(one(call), '^invisible\\("reproducibility_check removed ')
   expect_match(one('renv::restore(', '  lockfile = "renv.lock"', ')'), '^invisible\\([^\n]*\\)$')
-  expect_equal(one('if (!require(renv)) install.packages("renv")'), 'if (!TRUE) install.packages("renv")')
+  expect_equal(one('if (!require(renv)) install.packages("renv")'), 'if (!TRUE) invisible(NULL)')
   expect_equal(one('if (!requireNamespace("groundhog", quietly = TRUE)) install.packages("groundhog")'),
-               'if (!TRUE) install.packages("groundhog")')
+               'if (!TRUE) invisible(NULL)')
 
   # checkpoint() only when the script names the package
   expect_equal(one('checkpoint("my result")'), 'checkpoint("my result")')
@@ -1440,7 +1523,7 @@ test_that("repro_install_deps_docker passes the versions to its script and repor
   expect_true(any(grepl("/sandbox/.install_status", captured, fixed = TRUE)))
   # a bare image has no remotes, and before R 4.0 data.frame() makes factors
   expect_true(any(grepl('install.packages("remotes", lib = lib', captured, fixed = TRUE)))
-  expect_true(any(grepl("version_note = note, stringsAsFactors = FALSE", captured, fixed = TRUE)))
+  expect_true(any(grepl("version_note = note, via_archive = FALSE, stringsAsFactors = FALSE", captured, fixed = TRUE)))
   # the row the script reached, and one it did not
   expect_equal(out$package, c("a", "b"))
   expect_equal(out$installed, c(TRUE, FALSE))
@@ -1779,6 +1862,32 @@ test_that(".repro_classify_install_message does not call the install time limit 
   expect_equal(metacheck:::.repro_classify_install_message("Timeout was reached: connection timed out"), "network")
 })
 
+test_that("a package found nowhere is reported as one the code does not say where to get (#389)", {
+  msg <- paste0("package 'ecodeal' is not available for this version of R; found nowhere else: ",
+                "not on Bioconductor, in the CRAN Archive, in our list of known places or on R-universe")
+  expect_equal(.repro_classify_install_message(msg), "source_unknown")
+  # a package that was looked for elsewhere and failed there is not unknown
+  expect_equal(.repro_classify_install_message(
+    "package 'x' is not available for this version of R; also tried elsewhere: the search of R-universe failed: timeout"),
+    "network")
+  ir <- data.frame(package = c("ecodeal", "dplyr", "rgdal"), installed = c(FALSE, TRUE, FALSE),
+                   category = c("source_unknown", NA, "compile_failure"))
+  expect_equal(.repro_source_unknown(ir), "ecodeal")
+  expect_equal(.repro_source_unknown(ir[2:3, ]), character(0))
+  expect_null(.repro_source_unknown_text(character(0)))
+  expect_match(.repro_source_unknown_text("ecodeal"),
+               "**1 package the code loads is not on CRAN or Bioconductor, and the code does not say where it comes from**: `ecodeal`", fixed = TRUE)
+  expect_match(.repro_source_unknown_text(c("a", "b")), "where they come from**: `a`, `b`. ", fixed = TRUE)
+  # the checklist says so for the script that needs it
+  tb <- data.frame(file_name = "a.R", run_order = 1, outcome = "dependency_unavailable",
+                   setwd_removed = 0, not_runnable_reason = NA, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "a.R", outcome = "dependency_unavailable", error = "",
+                   stderr = "Error in library(ecodeal) : there is no package called 'ecodeal'")
+  out <- .repro_checklist_section(tb, rr, install_missing = TRUE, source_unknown = "ecodeal")
+  expect_match(out, "which is not on CRAN or Bioconductor, and the code does not say where it comes from", fixed = TRUE)
+  expect_match(.repro_checklist_section(tb, rr, install_missing = TRUE), "which we could not install", fixed = TRUE)
+})
+
 test_that("repro_dependencies does not list a package-list variable as a package", {
   # Issue #421, end to end through the dependency list reproducibility_check
   # installs from.
@@ -2099,6 +2208,9 @@ test_that(".repro_py_imported finds modules, not scripts", {
   # a file with a __main__ block, or that nothing imports, is a script
   code$main.py <- c(code$main.py, "import tool")
   expect_false("tool.py" %in% names(.repro_py_imported(code, paths)))
+  # a notebook cannot be imported: `import audio` names a module, not audio.ipynb (#568)
+  nb <- list(demo.ipynb = c("from opensoundscape import audio", "import audio"), audio.ipynb = "x = 1")
+  expect_length(.repro_py_imported(nb, c("docs/demo.ipynb", "docs/audio.ipynb")), 0)
 })
 
 test_that("the package layout runs code that reads folders and imports its own modules", {
@@ -2128,12 +2240,6 @@ test_that("the package layout runs code that reads folders and imports its own m
   expect_equal(oc[["other.py"]], "ran_ok")      # absolute path rewritten
   expect_equal(oc[["helpers.py"]], "run_by_import")
   expect_match(mo$summary_text, "2 of 2 Python scripts ran without error", fixed = TRUE)
-
-  # the Psych-DS layout moves the helper module, so the import fails
-  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = pkg,
-                                    local_only = TRUE, execute = TRUE, layout = "psychds"))
-  oc <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
-  expect_equal(oc[["main.py"]], "errored")
 })
 
 test_that(".repro_keep_working_refs rewrites only what cannot work as written", {
@@ -2154,6 +2260,28 @@ test_that(".repro_keep_working_refs rewrites only what cannot work as written", 
   expect_equal(rw$target[rw$ref == "helpers.R"], "code/helpers.R")
   expect_equal(rw$target[rw$ref == "../raw_data/scores.csv"], "raw_data/scores.csv")
   expect_false(any(rw$as_written[rw$ref %in% c("helpers.R", "../raw_data/scores.csv")]))
+})
+
+test_that(".repro_keep_working_refs points a path that works nowhere to the file of its name (#568)", {
+  # the authors moved or left out a folder when they deposited
+  plan <- data.frame(file_name = c("VEG.csv", "forest_age.R"),
+                     target_path = c("exploratory/VEG.csv", "exploratory/forest_age.R"))
+  code <- c('d <- read.csv("./data/VEG.csv")', 'e <- read.csv("data/absent.csv")')
+  rw <- repro_rewrite_paths(code, "forest_age.R", plan, "R", script_path = "exploratory/forest_age.R")
+  rw <- .repro_keep_working_refs(rw, plan, "exploratory/forest_age.R", "exploratory")
+  veg <- rw[rw$ref == "./data/VEG.csv", ]
+  expect_false(veg$as_written)
+  # counted from the folder the script runs from
+  expect_equal(veg$target, "VEG.csv")
+  # no file of its name anywhere: as written, and a missing input
+  absent <- rw[rw$ref == "data/absent.csv", ]
+  expect_true(absent$as_written)
+  expect_false(absent$matched)
+  # the report tells the authors
+  txt <- .repro_path_fix_text(list(forest_age.R = rw), execute = TRUE)
+  expect_match(txt, "**1 data path in the code does not work in the repository as deposited.**", fixed = TRUE)
+  expect_match(txt, "`./data/VEG.csv` to `VEG.csv` (in forest_age.R)", fixed = TRUE)
+  expect_match(.repro_path_fix_text(list(a.R = rw[0, ])), "Every data path", fixed = TRUE)
 })
 
 test_that(".repro_norm_rel resolves . and ..", {
@@ -2458,4 +2586,1226 @@ test_that("a value exactly halfway matches both of its correct roundings", {
   expect_true(all(found("The congruent condition (M = 13.62) was faster.")))
   expect_false(any(found("The congruent condition (M = 13.64) was faster.")))
   expect_false(any(found("The congruent condition (M = 13.61) was faster.")))
+})
+
+test_that(".repro_unique_script_names changes only names that repeat (#568)", {
+  files <- data.frame(file_name = c("a.R", "a.R", "b.R"), file_path = c("x/a.R", ".\\y\\a.R", "z/b.R"))
+  expect_equal(.repro_unique_script_names(files), c("x/a.R", "y/a.R", "b.R"))
+  # no repeats, no change
+  expect_equal(.repro_unique_script_names(files[2:3, ]), c("a.R", "b.R"))
+  # the same path in two repositories
+  files <- data.frame(file_name = c("a.R", "a.R"), file_path = c("x/a.R", "x/a.R"),
+                      repo_name = c("github", "zenodo.1"))
+  expect_equal(.repro_unique_script_names(files), c("github/x/a.R", "zenodo.1/x/a.R"))
+  # nothing to tell them apart by: a number, and the name still ends in the file name
+  files <- data.frame(file_name = c("a.R", "a.R"))
+  expect_equal(.repro_unique_script_names(files), c("1/a.R", "2/a.R"))
+  # a name the other language already has
+  files <- data.frame(file_name = "n.ipynb", file_path = "py/n.ipynb")
+  expect_equal(.repro_unique_script_names(files, taken = "n.ipynb"), "py/n.ipynb")
+})
+
+test_that(".repro_script_places gives same-named scripts places of their own (#568)", {
+  files <- data.frame(file_name = c("x/a.R", "y/a.R", "b.R"), file_path = c("x/a.R", "y/a.R", "z/b.R"))
+  # each its own path
+  expect_equal(.repro_script_places(files), c("x/a.R", "y/a.R", "z/b.R"))
+  # the same path in two repositories
+  files <- data.frame(file_name = c("r1/x/a.R", "r2/x/a.R"), file_path = c("x/a.R", "x/a.R"))
+  expect_equal(.repro_script_places(files), c("r1/x/a.R", "r2/x/a.R"))
+  # never above the sandbox
+  files <- data.frame(file_name = c("../a.R", "x/../../a.R"), file_path = c("../a.R", "x/../../a.R"))
+  expect_equal(.repro_script_places(files), c("_/a.R", "x/_/_/a.R"))
+})
+
+test_that("repro_run_order follows source() to the file it names among same-named files (#568)", {
+  files <- data.frame(file_name = c("a/h.R", "b/h.R", "a/m.R", "top.R", "other.R"))
+  files$file_path <- files$file_name
+  files$reads <- files$writes <- replicate(5, character(0), simplify = FALSE)
+  files$sources <- list(character(0), character(0), "h.r", "h.r", "h.r")
+  files$source_refs <- list(character(0), character(0), "h.R", "b/h.R", "h.R")
+  edges <- attr(repro_run_order(files), "source_edges")
+  expect_equal(edges$from[edges$to == "a/m.R"], "a/h.R")
+  expect_equal(edges$from[edges$to == "top.R"], "b/h.R")
+  expect_equal(.repro_sourced_file(1:2, "C:/Users/me/proj/b/h.R", c("a/h.R", "b/h.R", "m.R"), 3), 2L)
+  # no file with that name beside it, and no folder in the call: no guess
+  expect_length(edges$from[edges$to == "other.R"], 0)
+  # one file with the name: as before, from any folder
+  files <- data.frame(file_name = c("a/h.R", "m.R"))
+  files$sources <- list(character(0), "h.r")
+  expect_equal(attr(repro_run_order(files), "source_edges")$from, "a/h.R")
+})
+
+test_that("repro_file_io keeps each source() reference as written (#568)", {
+  io <- repro_file_io(list(m.R = c('source("../Lib/H.R")', 'source("g.R")', 'source("x/g.R")')))
+  expect_equal(io$sources[[1]], c("h.r", "g.r"))
+  expect_equal(io$source_refs[[1]], c("../Lib/H.R", "g.R"))
+})
+
+test_that("repro_rewrite_paths takes the file in the script's own folder among same-named files (#568)", {
+  plan <- data.frame(file_name = c("d.csv", "d.csv"), current_path = c("x/d.csv", "y/d.csv"),
+                     target_path = c("unknown/x/d.csv", "unknown/y/d.csv"))
+  code <- 'read.csv("d.csv")'
+  own <- repro_rewrite_paths(code, "m.R", plan, script_path = "y/m.R")
+  expect_equal(own$target, "unknown/y/d.csv")
+  expect_false(own$ambiguous)
+  # no file with that name in the script's folder: no guess
+  expect_true(repro_rewrite_paths(code, "m.R", plan, script_path = "z/m.R")$ambiguous)
+  # without the path, as before
+  expect_true(repro_rewrite_paths(code, "m.R", plan)$ambiguous)
+  # a reference above the top folder, with a plan that holds no paths
+  plan$current_path <- NULL
+  up <- repro_rewrite_paths('read.csv("../d.csv")', "m.R", plan, script_path = "m.R")
+  expect_true(up$ambiguous)
+})
+
+test_that(".repro_py_imported: of same-named modules, only the one the importer can reach (#568)", {
+  code <- list(`a/m.py` = "import utils", `a/utils.py` = "x = 1", `b/utils.py` = "x = 2",
+               `c/n.py` = "from b.utils import x", `d/utils.py` = "x = 3")
+  imp <- .repro_py_imported(code, names(code))
+  expect_setequal(names(imp), c("a/utils.py", "b/utils.py"))
+  expect_equal(imp[["a/utils.py"]], "a/m.py")
+  expect_equal(imp[["b/utils.py"]], "c/n.py")
+})
+
+test_that(".repro_by_repository gives a line per repository when there are several (#568)", {
+  tb <- data.frame(repo_name = c("a", "a", "b", "b"), outcome = c("ran_ok", "errored", "errored", "defines_functions"))
+  out <- paste(.repro_by_repository(tb), collapse = "\n")
+  expect_match(out, "#### Results by repository", fixed = TRUE)
+  expect_null(.repro_by_repository(tb[1:2, ]))
+  expect_null(.repro_by_repository(data.frame(outcome = "ran_ok")))
+})
+
+test_that(".repro_py_module_folders finds the repository's own modules (#568)", {
+  files <- c("repo/maad/__init__.py", "repo/maad/sound.py", "repo/scripts/run.py", "repo/lib/helper.py",
+             "repo/scripts/beside.py", "other/maad/__init__.py", "bad/json.py", "bad/own.py")
+  f <- .repro_py_module_folders
+  expect_equal(f("from maad import sound", "repo/scripts/run.py", files), "repo")
+  expect_equal(f("import helper", "repo/scripts/run.py", files), "repo/lib")
+  # nearest to the script, when a name is in two places
+  expect_equal(f("import maad", "other/sub/x.py", files), "other")
+  # beside the script Python finds it already; what is not in the repository is not looked for
+  expect_length(f("import beside", "repo/scripts/run.py", files), 0)
+  expect_length(f(c("import numpy", "import os"), "repo/scripts/run.py", files), 0)
+  # a folder that would hide a standard module the script uses
+  expect_length(f(c("import json", "import own"), "repo/scripts/run.py", files), 0)
+  expect_equal(f("import own", "repo/scripts/run.py", files), "bad")
+  # comments do not count
+  expect_length(f("# import helper", "repo/scripts/run.py", files), 0)
+})
+
+test_that(".repro_py_starts_server recognises a script that waits for connections (#568)", {
+  expect_true(.repro_py_starts_server(c("import http.server", "httpd.serve_forever()")))
+  expect_true(.repro_py_starts_server(c("s = socket.socket()", "s.listen(5)")))
+  expect_true(.repro_py_starts_server("app.run(debug = True)"))
+  expect_false(.repro_py_starts_server(c("import numpy", "# s.listen(5)", "print(1)")))
+  expect_false(.repro_py_starts_server("model.run(x)"))
+})
+
+test_that(".repro_failure_reason names why a script did not run through (#568)", {
+  r <- .repro_failure_reason
+  expect_equal(r("errored", "cannot open file 'a.csv'"), "file")
+  expect_equal(r("errored", "there is no package called 'x'"), "package")
+  expect_equal(r("errored", "object 'x' not found"), "undefined")
+  expect_equal(r("errored", "cannot cache function 'f'"), "environment")
+  expect_equal(r("errored", " *** caught segfault ***\naddress 0x10, cause 'memory not mapped'"), "environment")
+  expect_equal(r("errored", " "), "no_message")
+  expect_equal(r("errored", "list index out of range"), "other")
+  expect_equal(r(c("python2", "needs_a_person", "needs_internet", "timed_out"), ""), c("syntax", "interactive", "internet", "time"))
+  # what is not a failure of the script has none
+  expect_true(all(is.na(r(c("ran_ok", "run_by_source", "defines_functions", "not_analysis", "jags_model", "docker_failed"), "x"))))
+})
+
+test_that(".repro_run_counts gives a paper's scripts, its software and its reasons (#568, item 24)", {
+  rr <- data.frame(
+    outcome = c("ran_ok", "errored", "errored", "dependency_unavailable", "run_by_source",
+                "not_analysis", "not_analysis", "defines_functions", "docker_failed",
+                "not_downloaded"),
+    error = c("", "cannot open file 'a.csv'", "list index out of range", "", "", "", "", "", "x",
+              "cannot open file 'big.rds'"),
+    stderr = "")
+  rc <- .repro_run_counts(rr)
+  expect_equal(nrow(rc), 1)
+  expect_equal(rc$repro_scripts_n, 4)
+  expect_equal(rc$repro_not_analysis_n, 2)
+  # a script that stopped on a file we did not download is counted apart, not as a failure
+  expect_equal(rc$repro_not_downloaded_n, 1)
+  expect_equal(c(rc$repro_fail_file, rc$repro_fail_other, rc$repro_fail_package), c(1, 1, 1))
+  # every reason has its column, also with no script that failed for it
+  expect_equal(rc$repro_fail_time, 0)
+  expect_setequal(names(rc), c("repro_scripts_n", "repro_not_analysis_n", "repro_not_downloaded_n",
+                               paste0("repro_fail_", .repro_reason_levels)))
+  # the reason column is read when the run results have one
+  rr$reason <- .repro_failure_reason(rr$outcome, rr$error)
+  rr$reason[2] <- "undefined"
+  expect_equal(.repro_run_counts(rr)$repro_fail_undefined, 1)
+  # nothing run: the same columns, all NA
+  none <- .repro_run_counts(NULL)
+  expect_named(none, names(rc))
+  expect_true(all(is.na(unlist(none))))
+})
+
+test_that(".repro_needs_internet_error reads a network error (#568)", {
+  expect_true(.repro_needs_internet_error("cannot open URL 'https://a'"))
+  expect_true(.repro_needs_internet_error("requests.exceptions.ConnectionError: x"))
+  expect_false(.repro_needs_internet_error("cannot open file 'a.csv'"))
+})
+
+test_that(".repro_absent_report puts scripts apart from data, and leaves out what has a near match (#568)", {
+  mi <- data.frame(basename = c("a.csv", "helpers.r", "b.csv", "c.csv"), status = c("absent", "absent", "absent", "in_archive"),
+                   detail = "", similar_to = c(NA, NA, "b_.csv", NA))
+  out <- paste(.repro_absent_report(mi), collapse = "\n")
+  expect_match(out, "1 data file that is not in the deposit", fixed = TRUE)
+  expect_match(out, "`a.csv`", fixed = TRUE)
+  expect_match(out, "1 script that is not in the deposit: `helpers.r`", fixed = TRUE)
+  expect_no_match(out, "b.csv", fixed = TRUE)
+  expect_no_match(out, "c.csv", fixed = TRUE)
+  expect_null(.repro_absent_report(mi[3:4, ]))
+})
+
+test_that("the Docker install script knows where packages only elsewhere are (#568)", {
+  lines <- .repro_docker_elsewhere_lines()
+  expect_no_error(parse(text = lines))
+  expect_true(any(grepl("rmcelreath/rethinking", lines, fixed = TRUE)))
+  expect_true(any(grepl("r-universe.dev/api/search", lines, fixed = TRUE)))
+  # a package found in none of the places is marked so (#389)
+  expect_true(any(grepl("found nowhere else: ", lines, fixed = TRUE)))
+})
+
+test_that(".repro_run_after_lines loads a script from its own folder (#568)", {
+  root <- withr::local_tempdir()
+  run_tbl <- data.frame(file_name = c("use.R", "def.R", "top.R"),
+                        script_path = file.path(root, c("a/use.R", "b/c/def.R", "top.R")),
+                        run_dir = file.path(root, c("a", "b", ".")))
+  run_tbl$run_dir[3] <- root
+  out <- .repro_run_after_lines(list(use.R = "def.R", top.R = "use.R"), run_tbl, root)
+  expect_match(out$use.R, 'setwd("../b")', fixed = TRUE)
+  expect_match(out$use.R, 'source("c/def.R", local = globalenv())', fixed = TRUE)
+  expect_match(out$top.R, 'setwd("a")', fixed = TRUE)
+  expect_match(out$top.R, 'source("use.R", local = globalenv())', fixed = TRUE)
+  expect_no_error(parse(text = unlist(out)))
+  expect_null(.repro_run_after_lines(list(), run_tbl, root))
+})
+
+test_that("Python install names, and Python 2's modules (#568)", {
+  deps <- repro_dependencies_py(c("import pywt", "import ruamel.yaml", "import pylab", "import cPickle", "import urlparse"))
+  expect_setequal(deps$package[!deps$base], c("PyWavelets", "ruamel.yaml", "matplotlib"))
+  expect_true(all(c("cPickle", "urlparse") %in% deps$package[deps$base]))
+  expect_true(.repro_py2_error("ModuleNotFoundError: No module named 'cPickle'"))
+  expect_false(.repro_py2_error("ModuleNotFoundError: No module named 'numpy'"))
+})
+
+test_that("the Docker install script parses, with its second pass (#568)", {
+  expect_no_error(parse(text = .repro_docker_elsewhere_lines()))
+  expect_true(any(grepl("BiocManager::install", .repro_docker_elsewhere_lines(), fixed = TRUE)))
+})
+
+test_that(".repro_neutralise_env_calls replaces calls that install packages (#568)", {
+  n <- function(x) .repro_neutralise_env_calls(x)$txt
+  expect_equal(n('install.packages("a")'), "invisible(NULL)")
+  expect_equal(n('if (!require(a)) install.packages("a", dependencies = TRUE)'), "if (!require(a)) invisible(NULL)")
+  expect_equal(n('devtools::install_github("u/r")'), "invisible(NULL)")
+  expect_equal(n('remotes::install_github("u/r", ref = c("a"))'), "invisible(NULL)")
+  expect_equal(n('BiocManager::install("a")'), "invisible(NULL)")
+  expect_equal(n('sapply(p, install.packages)'), "sapply(p, invisible)")
+  # p_load becomes library()
+  expect_equal(n('pacman::p_load(a, b)'), '{ library("a"); library("b") }')
+  expect_equal(n('p_load(char = pk)'), "{ for (.pkg in pk) library(.pkg, character.only = TRUE) }")
+  expect_equal(n('library(pacman)'), 'invisible("reproducibility_check removed the loading of a package manager")')
+  # a message about it stays valid code, and other names stay
+  msg <- n('message("run install.packages(\'a\') first")')
+  expect_no_error(parse(text = msg))
+  expect_equal(n('my.install.packages("a")'), 'my.install.packages("a")')
+  expect_equal(n('x <- 1'), 'x <- 1')
+})
+
+test_that(".repro_fill_file_choice fills in the file the code names (#568)", {
+  files <- c("nest_outcomes.csv", "transects.csv")
+  f <- function(x, d = files) .repro_fill_file_choice(x, d)
+  same_line <- f('d <- read.csv(file.choose())   # Select "nest_outcomes" here')
+  expect_equal(same_line$txt, 'd <- read.csv("nest_outcomes.csv")   # Select "nest_outcomes" here')
+  expect_equal(same_line$filled, "nest_outcomes.csv")
+  above <- f(c("# the transects file", "d <- read.csv(file.choose())"))
+  expect_equal(above$txt[2], 'd <- read.csv("transects.csv")')
+  # the only data file of the deposit
+  expect_equal(f("d <- read.csv(file.choose())", "a.csv")$txt, 'd <- read.csv("a.csv")')
+  # nothing says which, or two fit: it stays
+  expect_equal(f("d <- read.csv(file.choose())")$txt, "d <- read.csv(file.choose())")
+  expect_length(f("d <- read.csv(file.choose())")$filled, 0)
+  expect_equal(f("d <- file.choose() # nest_outcomes or transects")$filled, character(0))
+  # a comment is left alone, other forms too
+  expect_equal(f("# file.choose()", "a.csv")$txt, "# file.choose()")
+  expect_equal(f('p <- choose.files(multi = F, caption = c("a"))', "a.csv")$txt, 'p <- "a.csv"')
+})
+
+test_that(".repro_starts_app and .repro_needs_person_error (#568)", {
+  expect_true(.repro_starts_app(c("library(shiny)", "shiny::runApp('a')")))
+  expect_true(.repro_starts_app("shinyApp(ui, server)"))
+  expect_false(.repro_starts_app(c("f <- function() runApp('a')", "x <- 1")))
+  expect_false(.repro_starts_app("runApp("))
+  expect_true(.repro_needs_person_error("Error in file.choose() : file choice cancelled"))
+  expect_true(.repro_needs_person_error("EOFError: EOF when reading a line"))
+  expect_false(.repro_needs_person_error("Error: cannot open the connection"))
+})
+
+test_that(".repro_make_write_folders makes a relative folder, never above the sandbox (#568)", {
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "a", "b"), recursive = TRUE)
+  wr <- data.frame(call_text = c('write.csv(x, "out/r.csv")', "ggsave('../fig/p.png')", "ggsave('../../../up/q.png')",
+                                 'write.csv(x, "/abs/s.csv")', 'write.csv(x, "here.csv")'))
+  .repro_make_write_folders(wr, d, "a/b")
+  expect_true(dir.exists(file.path(d, "a", "b", "out")))
+  expect_true(dir.exists(file.path(d, "a", "fig")))
+  expect_false(dir.exists(file.path(d, "up")))
+  expect_false(dir.exists(file.path(dirname(d), "up")))
+})
+
+test_that(".repro_rel_from counts a path from a folder of the package (#568)", {
+  expect_equal(.repro_rel_from("a/b.csv"), "a/b.csv")
+  expect_equal(.repro_rel_from("a/b.csv", "a"), "b.csv")
+  expect_equal(.repro_rel_from("a/b.csv", "a/c"), "../b.csv")
+  expect_equal(.repro_rel_from("x/y.csv", "a/c"), "../../x/y.csv")
+})
+
+test_that(".repro_run_folders runs a script from where its paths work (#568)", {
+  plan <- data.frame(target_path = c("top/R/a.R", "top/R/b.R", "top/R/h.R", "top/data/d.csv", "top/p.Rproj",
+                                     "other/s.R", "other/near.csv", "tie/c.R", "tie/x/e.R", "tie/p.Rproj"))
+  code <- list(`a.R` = 'read.csv("data/d.csv")',       # from the top of the project
+               `b.R` = 'source("h.R")',                # from its own folder
+               `h.R` = 'x <- 1',                       # sourced: runs where b.R runs
+               `s.R` = 'read.csv("near.csv")',
+               `c.R` = 'x <- 1',                       # names nothing: its own folder
+               `e.R` = 'x <- 1')                       # a tie: the .Rproj folder
+  places <- c("top/R/a.R", "top/R/b.R", "top/R/h.R", "other/s.R", "tie/c.R", "tie/x/e.R")
+  order_tbl <- structure(data.frame(file_name = names(code)),
+                         source_edges = data.frame(from = "h.R", to = "b.R"))
+  out <- .repro_run_folders(places, code, plan, order_tbl)
+  expect_equal(out, c("top", "top/R", "top/R", "other", "tie", "tie"))
+  # no plan: from the top
+  expect_equal(.repro_run_folders(places, code, NULL, order_tbl), rep(".", 6))
+  # a script at the top stays there, and a folder keeps its spelling
+  p2 <- data.frame(target_path = c("Top/a.R", "Top/d.csv", "m.R"))
+  out2 <- .repro_run_folders(c("Top/a.R", "m.R"), list(`a.R` = 'read.csv("d.csv")', `m.R` = "x"), p2,
+                             data.frame(file_name = c("a.R", "m.R")))
+  expect_equal(out2, c("Top", "."))
+})
+
+test_that(".repro_keep_working_refs counts from where the script runs (#568)", {
+  plan <- .repro_package_plan(data.frame(file_name = c("d.csv", "h.R"), file_path = c("top/data/d.csv", "top/R/h.R")))
+  keep <- function(code, dir) .repro_keep_working_refs(repro_rewrite_paths(code, "m.R", plan), plan, "top/R/m.R", dir)
+  # works as written from the folder it runs in
+  from_top <- keep('read.csv("data/d.csv")', "top")
+  expect_true(from_top$as_written)
+  # a file named from elsewhere is rewritten, counted from that folder
+  abs <- keep('read.csv("/home/me/data/d.csv")', "top/R")
+  expect_equal(abs$target, "../data/d.csv")
+  expect_false(abs$as_written)
+  # beside the script, while it runs from above it
+  beside <- keep('source("h.R")', "top")
+  expect_equal(beside$target, "R/h.R")
+})
+
+test_that("a file at the top named as it is there counts from where the script runs (#568)", {
+  # 10_1002_pan3_10310: the data is a deposit of its own, at the top; the R
+  # Markdown files are three folders down and read "./<name>.csv"
+  plan <- .repro_package_plan(data.frame(file_name = c("q.csv", "a.Rmd"),
+                                         file_path = c("q.csv", "g/x.zip/x-1/a.Rmd")))
+  rw <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv("./q.csv")', "a.Rmd", plan),
+                                 plan, "g/x.zip/x-1/a.Rmd", "g/x.zip/x-1")
+  expect_false(rw$as_written)
+  expect_equal(rw$target, "../../../q.csv")
+  # from the top it works as written
+  top <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv("./q.csv")', "a.Rmd", plan),
+                                  plan, "g/x.zip/x-1/a.Rmd", ".")
+  expect_true(top$as_written)
+})
+
+test_that(".repro_docker_failed reads an error from Docker itself (#568)", {
+  expect_true(.repro_docker_failed("Error response from daemon: Docker Desktop is unable to start"))
+  expect_true(.repro_docker_failed("failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine"))
+  expect_false(.repro_docker_failed("Error in read.csv(f): cannot open the connection"))
+})
+
+test_that(".repro_checklist_section does not count Docker's failure as the script's (#568)", {
+  tb <- data.frame(file_name = "a.R", run_order = 1, outcome = "docker_failed", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "a.R", outcome = "docker_failed", error = "x", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "says nothing about the script", fixed = TRUE)
+  expect_no_match(out, "stopped with an error", fixed = TRUE)
+})
+
+test_that(".repro_function_names recognises a file that only defines functions (#568)", {
+  expect_equal(.repro_function_names(c("library(a)", "k <- 1", "f <- function(x) x", "g = function() 2")), c("f", "g"))
+  expect_equal(.repro_function_names(c('"doc"', 'pal <- c("a", "b")', "setClass('A')", "h <- function() 1")), "h")
+  # anything else it does makes it a script
+  expect_length(.repro_function_names(c("f <- function(x) x", "f(1)")), 0)
+  expect_length(.repro_function_names(c("f <- function(x) x", "d <- read.csv('a.csv')")), 0)
+  expect_length(.repro_function_names(c("f <- function(x) x", "print(1)")), 0)
+  # no functions at all, or a file that does not parse
+  expect_length(.repro_function_names(c("library(a)", "k <- 1")), 0)
+  expect_length(.repro_function_names("f <- function("), 0)
+})
+
+test_that(".repro_function_users names the scripts that use a file's functions (#568)", {
+  code <- list(`f.R` = "fit <- function(x) x", `a.R` = "fit(1)", `b.R` = "misfit(1)", `c.R` = "x <- fit",
+               `d.R` = 'source("f.R")', `e.R` = "stats::fit(2)")
+  users <- .repro_function_users("f.R", "fit", code, list(`d.R` = "f.r"))
+  expect_setequal(users, c("a.R", "d.R", "e.R"))
+  expect_length(.repro_function_users("f.R", "nothing", code), 0)
+  # a dot in a name is a dot
+  expect_length(.repro_function_users("f.R", "a.b", list(`f.R` = "", `g.R` = "axb(1)")), 0)
+  expect_equal(.repro_function_users("f.R", "a.b", list(`f.R` = "", `g.R` = "a.b(1)")), "g.R")
+})
+
+test_that("a package's tests and setup.py are recognised, and analyses are not (#568)", {
+  expect_true(.repro_is_r_test("pkg/tests/testthat/test-a.R"))
+  expect_true(.repro_is_r_test("tests/testthat.R"))
+  expect_false(.repro_is_r_test("analysis/tests.R"))
+  t <- .repro_is_py_test
+  expect_true(t("a/conftest.py", "x = 1"))
+  expect_true(t("test_a.py", "import pytest"))
+  expect_true(t("a/tests/b.py", "from unittest import TestCase"))
+  expect_true(t("a/tests/b.py", c("def test_one():", "    pass")))
+  expect_true(t("setup.py", c("from setuptools import setup", "setup(name = 'a')")))
+  # a name alone is not enough
+  expect_false(t("model_test.py", "import numpy"))
+  expect_false(t("predict_test.py", "x = 1"))
+  expect_false(t("setup.py", "x = 1"))
+  expect_false(t("a/b.py", c("def test_one():", "    pass")))
+})
+
+test_that(".repro_checklist_section leaves function files and tests out of the count (#568)", {
+  tb <- data.frame(file_name = c("f.R", "t.R", "g.R", "run.R"), run_order = 1:4,
+                   outcome = c("defines_functions", "not_analysis", "defines_functions", "ran_ok"),
+                   setwd_removed = 0, not_runnable_reason = c("defines_functions", "not_analysis", "defines_functions", NA),
+                   unresolved_inputs = NA_character_, used_by = c("run.R", NA, NA, NA))
+  rr <- data.frame(file_name = tb$file_name, outcome = tb$outcome, error = "", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "**1 of 1 script ran to the end**", fixed = TRUE)
+  expect_match(out, "We ran the paper's 1 R script", fixed = TRUE)
+  expect_match(out, "which run.R uses", fixed = TRUE)
+  expect_match(out, "no script in the deposit uses them", fixed = TRUE)
+})
+
+test_that(".repro_py_parses marks Python 2 code apart from other syntax errors (#568)", {
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  out <- .repro_py_parses(list(ok = "x = 1", py2 = 'print "a"', ex = c("try:", "    x = 1", "except E, e:", "    pass"),
+                               tabs = c("if a:", "        x = 1", "\ty = 2"), bad = "def ("))
+  expect_equal(unname(as.vector(out)), c(TRUE, FALSE, FALSE, FALSE, FALSE))
+  expect_equal(attr(out, "python2"), c(FALSE, TRUE, TRUE, TRUE, FALSE))
+  # no attribute when there is none
+  expect_null(attr(.repro_py_parses(list(ok = "x = 1", bad = "def (")), "python2"))
+})
+
+test_that(".repro_py2_error reads Python 2 code from an error message (#568)", {
+  expect_true(.repro_py2_error("  File \"a.py\"\nSyntaxError: Missing parentheses in call to 'print'. Did you mean print(...)?"))
+  expect_true(.repro_py2_error("TabError: inconsistent use of tabs and spaces in indentation"))
+  expect_false(.repro_py2_error("SyntaxError: invalid syntax"))
+  expect_false(.repro_py2_error("NameError: name 'x' is not defined"))
+})
+
+test_that(".repro_py_get_ipython adds a stand-in only when needed, and in a valid place (#568)", {
+  expect_equal(.repro_py_get_ipython("x = 1"), "x = 1")
+  txt <- c("# -*- coding: latin-1 -*-", "", 'if "colab" in str(get_ipython()):', "    pass")
+  out <- .repro_py_get_ipython(txt)
+  expect_equal(out[1:2], txt[1:2])
+  expect_match(out[3], "^get_ipython = lambda")
+  fut <- .repro_py_get_ipython(c('"""doc"""', "from __future__ import print_function", "get_ipython().system('ls')"))
+  expect_match(fut[3], "^get_ipython = lambda")
+  expect_equal(.repro_py_get_ipython(c("def get_ipython(): pass", "get_ipython()")), c("def get_ipython(): pass", "get_ipython()"))
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  expect_true(all(.repro_py_parses(list(a = out, b = fut))))
+})
+
+test_that(".repro_path_named finds the file a path names among same-named files (#568)", {
+  paths <- c("Data/test/d.csv", "Data/d.csv", "repo.zip/top/R/h.R", "other.zip/top/R/h.R")
+  expect_equal(.repro_path_named(paths[1:2], "Data/test/d.csv"), 1L)
+  expect_equal(.repro_path_named(paths[1:2], "Data/d.csv"), 2L)
+  expect_equal(.repro_path_named(paths[1:2], "./data/TEST/d.csv"), 1L)
+  # an absolute path from the author's computer
+  expect_equal(.repro_path_named(paths[1:2], "/Users/me/proj/Data/test/d.csv"), 1L)
+  # the name alone, or the same ending twice: no guess
+  expect_length(.repro_path_named(paths[1:2], "d.csv"), 0)
+  expect_length(.repro_path_named(paths[3:4], "R/h.R"), 0)
+  expect_length(.repro_path_named(c("x/y/d.csv", "z/d.csv"), "q/d.csv"), 0)
+  # from the script's own folder, or a folder above it, nearest first
+  expect_equal(.repro_path_named(paths[3:4], "./R/h.R", "other.zip/top/s.R"), 2L)
+  expect_equal(.repro_path_named(paths[3:4], "R/h.R", "other.zip/top/analysis/s.R"), 2L)
+  expect_equal(.repro_path_named(paths[3:4], "../R/h.R", "repo.zip/top/scripts/s.R"), 1L)
+  expect_equal(.repro_path_named(c("a/x.csv", "c/x.csv"), "x.csv", "a/b/s.R"), 1L)
+  expect_equal(.repro_path_named(c("a/x.csv", "a/b/x.csv"), "x.csv", "a/b/s.R"), 2L)
+  # a row without a path
+  expect_equal(.repro_path_named(c(NA, "a/d.csv"), "a/d.csv"), 2L)
+})
+
+test_that(".repro_assigned_names finds text assigned to a variable (#568)", {
+  expect_equal(.repro_assigned_names(c('f <- c("N.R", "S.R")', 'x = "d.csv"', 'for (i in f) source(i)',
+                                       'g <- paste0("a", "b.csv")', 'read.csv(file = "z.csv")')),
+               c("N.R", "S.R", "d.csv"))
+  expect_equal(.repro_assigned_names('if (TRUE) { y <<- "in.csv" }'), "in.csv")
+  # an empty argument, which is in nearly every script
+  expect_equal(.repro_assigned_names(c('a <- x[1, ]', 'f <- "d.csv"', 'b <- y[, 2][1, , 3]', 'g <- c("e.csv", )')),
+               c("d.csv", "e.csv"))
+  expect_length(.repro_function_names(c("f <- function(x) x", "k <- x[1, ]")), 0)
+  expect_equal(.repro_function_names(c("f <- function(x) x[1, ]", "k <- c(1, )")), "f")
+  expect_length(.repro_assigned_names("x <- ("), 0)
+  expect_equal(.repro_assigned_names(c('f = "d.csv"', 'g = "e.csv"  # note', 'pd.read_csv("z.csv")',
+                                       'h = x + "w.csv"'), "Python"), c("d.csv", "e.csv"))
+})
+
+test_that("repro_rewrite_paths follows a name in a variable and the folders in a path (#568)", {
+  plan <- data.frame(file_name = c("NetworkFunction.R", "d.csv", "d.csv"),
+                     current_path = c("top/NetworkFunction.R", "Data/test/d.csv", "Data/d.csv"),
+                     target_path = c("analysis/NetworkFunction.R", "d/a/d.csv", "d/b/d.csv"))
+  rw <- function(code) repro_rewrite_paths(code, "m.R", plan)
+  one <- rw(c('f <- c("NetworkFunction.R")', 'for (i in f) source(i)'))
+  expect_equal(one$target, "analysis/NetworkFunction.R")
+  expect_equal(.repro_apply_rewrites('f <- c("NetworkFunction.R")', one), 'f <- c("analysis/NetworkFunction.R")')
+  # a name that is not listed, or that fits two files, adds no row
+  expect_equal(nrow(rw('x <- "notlisted.csv"')), 0)
+  expect_equal(nrow(rw('x <- "d.csv"')), 0)
+  # in a read call the name alone stays ambiguous, as before
+  expect_true(rw('read.csv("d.csv")')$ambiguous)
+  expect_equal(rw('read.csv("Data/test/d.csv")')$target, "d/a/d.csv")
+  expect_equal(rw('read.csv("Data/d.csv")')$target, "d/b/d.csv")
+  expect_equal(rw('read.csv("/home/me/Data/d.csv")')$target, "d/b/d.csv")
+  expect_equal(rw('x <- "Data/test/d.csv"')$target, "d/a/d.csv")
+})
+
+test_that(".repro_name_key ignores case, spaces and punctuation, but keeps numbers apart (#568)", {
+  expect_equal(.repro_name_key("Relative cover.csv"), .repro_name_key("relative_cover.csv"))
+  expect_equal(.repro_name_key("EU-Forest-species.csv"), .repro_name_key("euforestspecies.csv"))
+  expect_equal(.repro_name_key("a__24_03.csv"), .repro_name_key("a_24.03.csv"))
+  expect_false(.repro_name_key("s1_2.csv") == .repro_name_key("s12.csv"))
+  expect_false(.repro_name_key("1_data.csv") == .repro_name_key("2_data.csv"))
+})
+
+test_that("repro_rewrite_paths finds a file spelled otherwise, and names both spellings (#568)", {
+  plan <- data.frame(file_name = c("relative_cover.csv", "s12.csv", "x_1.csv", "x-1.csv", "field.csv"),
+                     target_path = c("d/relative_cover.csv", "d/s12.csv", "d/a/x_1.csv", "d/b/x-1.csv", "d/field.csv"))
+  rw <- function(code) repro_rewrite_paths(code, "m.R", plan)
+  one <- rw('d <- read.csv("relative cover.csv")')
+  expect_true(one$matched)
+  expect_equal(one$target, "d/relative_cover.csv")
+  expect_equal(one$name_in_code, "relative cover.csv")
+  expect_equal(one$name_in_deposit, "relative_cover.csv")
+  # case only: the file was found before, and now also gets a note
+  case <- rw('d <- read.csv("RELATIVE_cover.csv")')
+  expect_equal(case$name_in_deposit, "relative_cover.csv")
+  # the same name: no note
+  expect_true(is.na(rw('d <- read.csv("field.csv")')$name_in_deposit))
+  # numbers stay apart; another extension; two files that fit: not matched
+  expect_false(rw('d <- read.csv("s1_2.csv")')$matched)
+  expect_false(rw('d <- read.csv("relative cover.xlsx")')$matched)
+  expect_false(rw('d <- read.csv("x 1.csv")')$matched)
+  # a piece of a name, and a name built from a variable, are not compared
+  expect_false(any(rw('d <- read.csv(paste0(x, "_field.csv"))')$matched))
+  expect_false(any(rw('d <- read.csv(paste(x, "fie ld.csv"))')$matched))
+  # a file the script writes itself
+  own <- rw(c('write.csv(d, "relative cover.csv")', 'e <- read.csv("relative cover.csv")'))
+  expect_false(any(own$matched))
+  # a call that holds the whole name, with only the folder unknown
+  call <- rw('d <- read.csv(sprintf("%s/relative cover.csv", dir))')
+  expect_equal(call$target[call$is_call], "d/relative_cover.csv")
+  expect_equal(call$name_in_deposit[call$is_call], "relative_cover.csv")
+})
+
+test_that("a script whose only reference is left out joins the others' path rows (#568)", {
+  # 10_1111_1365_2664_14541 stopped: "Can't combine `..1$name_in_code` <character>
+  # and `..18$name_in_code` <logical>". A name in a variable that fits two files is
+  # left out, which left no rows, and ifelse() of no rows gives logical(0).
+  plan <- data.frame(file_name = c("relative_cover.csv", "b.csv", "b.csv"),
+                     target_path = c("d/relative_cover.csv", "x/b.csv", "y/b.csv"))
+  none <- repro_rewrite_paths(c('f <- "b.csv"', "d <- read.csv(f)"), "a.R", plan)
+  expect_equal(nrow(none), 0)
+  expect_type(none$name_in_code, "character")
+  expect_type(none$name_in_deposit, "character")
+  one <- repro_rewrite_paths('d <- read.csv("relative cover.csv")', "b.R", plan)
+  expect_no_error(both <- dplyr::bind_rows(list(b.R = one, a.R = none)))
+  expect_equal(.repro_name_corrections(list(b.R = one, a.R = none))$name_in_deposit, "relative_cover.csv")
+})
+
+test_that(".repro_keep_working_refs rewrites a name spelled otherwise in the package layout (#568)", {
+  plan <- .repro_package_plan(data.frame(file_name = "relative_cover.csv", file_path = "data/relative_cover.csv"))
+  rw <- repro_rewrite_paths('d <- read.csv("relative cover.csv")', "m.R", plan)
+  out <- .repro_keep_working_refs(rw, plan, "m.R")
+  expect_false(out$as_written)
+  expect_equal(out$target, "data/relative_cover.csv")
+})
+
+test_that("repro_missing_inputs names another format only between data formats (#568)", {
+  structure_df <- data.frame(file_name = c("Baja_data.csv", "ranta_1985.html"))
+  out <- repro_missing_inputs(c("baja data.xlsx", "ranta_1985.csv"), NULL, structure_df)
+  expect_equal(out$similar_to[out$basename == "baja data.xlsx"], "baja_data.csv")
+  expect_equal(out$detail[out$basename == "baja data.xlsx"], "the deposit holds baja_data.csv, the code reads baja data.xlsx")
+  expect_true(is.na(out$similar_to[out$basename == "ranta_1985.csv"]))
+})
+
+test_that(".repro_checklist_section notes a corrected name (#568)", {
+  tb <- data.frame(file_name = "m.R", run_order = 1, outcome = "ran_ok", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_,
+                   names_corrected = "a b.csv -> a_b.csv")
+  rr <- data.frame(file_name = "m.R", outcome = "ran_ok", error = "", stderr = "")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, .repro_cell("a b.csv -> a_b.csv"), fixed = TRUE)
+  expect_match(out, "should be changed in the script", fixed = TRUE)
+})
+
+# #568: one download for what a run needs, and fetching what the code names or misses
+
+test_that(".run_download_want leaves out media from hosts that send files one by one (#568)", {
+  files <- data.frame(file_name = c("a.R", "x.csv", "model.stan", "fig.png", "song.wav", "paper.pdf",
+                                    "fig.png", "lib.R"),
+                      file_path = c("a.R", "x.csv", "model.stan", "fig.png", "song.wav", "paper.pdf",
+                                    "fig.png", "renv/library/lib.R"),
+                      repo_url = c(rep("https://zenodo.org/records/1", 6), "https://github.com/a/b",
+                                   "https://zenodo.org/records/1"))
+  expect_equal(.run_download_want(files), c(TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE))
+  expect_length(.run_download_want(files[0, ]), 0)
+})
+
+test_that("code_check fetches what a run needs in its own first download (#568)", {
+  paper <- test_paper()
+  tbl <- data.frame(paper_id = paper_id(paper), repo_url = "https://zenodo.org/records/1",
+                    file_name = c("a.R", "x.csv", "model.stan", "fig.png"),
+                    file_url = paste0("https://zenodo.org/f/", 1:4),
+                    file_location = NA_character_, file_size = 100)
+  asked <- list()
+  local_mocked_bindings(download_repo_files = function(files, ...) {
+    asked[[length(asked) + 1]] <<- files$file_name
+    files
+  })
+  fake <- structure(list(module = "repo_check", table = tbl, paper = paper,
+                         summary_table = data.frame(paper_id = paper_id(paper))),
+                    class = "metacheck_module_output")
+  suppressWarnings(module_run(fake, "code_check"))
+  expect_equal(asked[[1]], "a.R")
+  asked <- list()
+  withr::local_options(metacheck.download_for_run = TRUE)
+  suppressWarnings(module_run(fake, "code_check"))
+  expect_setequal(asked[[1]], c("a.R", "x.csv", "model.stan"))
+})
+
+test_that(".repro_named_files finds the files the code names, by name or extension (#568)", {
+  s <- data.frame(file_name = c("fig.png", "call.wav", "other.wav", "notes.pdf", "here.csv"),
+                  file_url = c("u1", "u2", "u3", "u4", NA), file_location = c(NA, NA, NA, NA, "x/here.csv"))
+  code <- c('img <- png::readPNG("figs/fig.png")', 'w <- list.files("audio", pattern = "\\\\.wav$")')
+  expect_equal(.repro_named_files(s, code), c(TRUE, TRUE, TRUE, FALSE, FALSE))
+  expect_equal(.repro_named_files(s, 'x <- 1'), rep(FALSE, 5))
+  expect_equal(.repro_named_files(s, 'glob.glob("*.wav")'), c(FALSE, TRUE, TRUE, FALSE, FALSE))
+  expect_equal(.repro_named_files(s, 're.search(r"\\.wav$", f)'), c(FALSE, TRUE, TRUE, FALSE, FALSE))
+})
+
+test_that("code and messages with bytes that are not UTF-8 do not stop the module (#568)", {
+  # 10_1111_2041_210x_13721 stopped with "invalid multibyte string 1": a script
+  # in Latin-1, as many written on Windows are
+  latin1 <- rawToChar(as.raw(c(0x23, 0x20, 0x63, 0x61, 0x66, 0xe9)))  # "# café" in Latin-1
+  expect_false(validUTF8(latin1))
+  s <- data.frame(file_name = c("fig.png", "notes.pdf"), file_url = c("u1", "u2"),
+                  file_location = NA_character_)
+  expect_equal(.repro_named_files(s, c(latin1, 'img <- png::readPNG("fig.png")')), c(TRUE, FALSE))
+  msg <- paste(latin1, "Error in file(file, \"rt\") : cannot open file 'data/late.csv': No such file or directory")
+  expect_equal(.repro_unopened_files(msg), "late.csv")
+})
+
+test_that(".repro_unopened_files reads the files scripts could not open (#568)", {
+  msgs <- c("Error in file(file, \"rt\") : cannot open file 'data/late.csv': No such file or directory",
+            "FileNotFoundError: [Errno 2] No such file or directory: 'in/x.tif'",
+            "Error: 'C:/Users/a/b.rds' does not exist in current working directory",
+            "object 'x' not found", NA)
+  expect_setequal(.repro_unopened_files(msgs), c("late.csv", "x.tif", "b.rds"))
+  expect_setequal(.repro_unopened_files(msgs, full = TRUE), c("data/late.csv", "in/x.tif", "C:/Users/a/b.rds"))
+})
+
+test_that("a file name on the line after its call is found (#568)", {
+  # 10_1002_pan3_10310: read.csv( and then "./kilimanjaro_...csv") on the next line
+  code <- c('habitat <- read.csv(',
+            '  "./kilimanjaro_habitat.csv")',
+            'x <- list(a = read.csv("a.csv"),',
+            '  b = "label.txt")',
+            'write.csv(x,',
+            '          "out.csv", row.names = FALSE)')
+  expect_setequal(code_file_refs(code, "R"), c("./kilimanjaro_habitat.csv", "a.csv"))
+  io <- repro_file_io(list(s.R = code))
+  expect_setequal(io$reads[[1]], c("kilimanjaro_habitat.csv", "a.csv"))
+  # a write over two lines is a write, not a read
+  expect_equal(io$writes[[1]], "out.csv")
+  py <- repro_file_io(list(s.py = c('df = pd.read_csv(', '    "data/in.csv")',
+                                    'df.to_csv(', '    "out/res.csv")')), "Python")
+  expect_equal(c(py$reads[[1]], py$writes[[1]]), c("in.csv", "res.csv"))
+  # a call that is not closed within 20 lines is left out, as before
+  expect_length(code_file_refs(c("read.csv(", rep("x,", 25), '"late.csv")'), "R"), 0)
+})
+
+test_that("Windows paths in quoted file names get / (#568)", {
+  # 10_1111_1365_2435_13388 wrote "Data\\SamplesNoct.txt", one file on Linux
+  s <- .repro_slash_paths(c('write.table(m, "Data\\\\MatrixNoct.txt", sep = "\\t")',
+                            'f <- list.files(pattern = "\\\\.csv$")',
+                            'd <- read.csv("C:\\\\Users\\\\a\\\\data.csv")',
+                            'g <- gsub("\\\\d+", "", x)',
+                            'p <- "results/plain.csv"'))
+  expect_equal(s$txt, c('write.table(m, "Data/MatrixNoct.txt", sep = "\\t")',
+                        'f <- list.files(pattern = "\\\\.csv$")',
+                        'd <- read.csv("C:/Users/a/data.csv")',
+                        'g <- gsub("\\\\d+", "", x)',
+                        'p <- "results/plain.csv"'))
+  expect_length(s$paths, 2)
+  rows <- .repro_slash_rows(data.frame(file_name = "a.R", slashes_fixed = paste(s$paths, collapse = "; ")))
+  expect_equal(rows$change_type, c("windows_path", "windows_path"))
+  expect_equal(rows$detail[1], '"Data\\\\MatrixNoct.txt" -> "Data/MatrixNoct.txt"')
+  expect_match(.repro_slash_report(data.frame(file_name = "a.R", slashes_fixed = s$paths[1]))[1],
+               "1 script uses Windows paths")
+  expect_null(.repro_slash_rows(data.frame(file_name = "a.R", slashes_fixed = "")))
+})
+
+test_that("a script that stops on a changed default of R runs again with the old one (#568)", {
+  rr <- data.frame(
+    file_name = c("prep.R", "map.R", "other.R", "ok.R"),
+    outcome = c("errored", "errored", "errored", "ran_ok"),
+    error = c("Error in relevel.default(dframe1$Treatment, \"NoFire\") : 'relevel' only for (unordered) factors",
+              "Error in type.convert.default(data[[i]], as.is = as.is[i], dec = dec, : invalid multibyte string at '<b0>10'",
+              "Error: object 'x' not found", ""),
+    stderr = "")
+  od <- .repro_old_defaults(rr)
+  expect_equal(od, list(prep.R = "factors", map.R = "latin1"))
+  expect_equal(.repro_old_defaults(rr[3:4, ]), stats::setNames(list(), character(0)))
+  lines <- .repro_old_default_lines(c("factors", "latin1"))
+  expect_length(lines, 2)
+  expect_true(any(grepl('options(encoding = "latin1")', lines, fixed = TRUE)))
+  # the lines give R's old behaviour, also inside packages; in a session of its
+  # own, since they change R's functions for the rest of the session
+  skip_if_not(nzchar(Sys.which("Rscript")))
+  f <- tempfile(fileext = ".R")
+  writeLines(c(.repro_old_default_lines("factors"),
+               'cat(class(read.csv(text = "a\\nx")$a), class(data.frame(a = "u")$a),',
+               '    class(data.frame(a = "u", stringsAsFactors = FALSE)$a))'), f)
+  out <- system2("Rscript", shQuote(f), stdout = TRUE)
+  expect_equal(out, "factor factor character")
+  txt <- .repro_old_defaults_text(od, ran_ok = "prep.R")
+  expect_match(txt, "2 scripts ran again with a default R had when the code was written")
+  expect_match(txt, "It then ran to the end: prep.R.", fixed = TRUE)
+  expect_null(.repro_old_defaults_text(list()))
+})
+
+test_that("a model's family is not taken for a font (#568)", {
+  # 10_1111_1365_2435_14353: glmmTMB(..., family = "nbinom2") became "sans"
+  expect_equal(.repro_is_font_family(c('family="nbinom2"', 'family = "binomial"', 'family = "Gamma"',
+                                       'family = "zero_inflated_poisson"', 'family = "Times New Roman"',
+                                       "family = 'serif'", 'base_family = "Arial"')),
+               c(FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE))
+  root <- withr::local_tempdir()
+  rt <- repro_write_scripts(list(m.R = c('m <- glmmTMB(y ~ x, family="nbinom2", data = d)',
+                                         'p <- ggplot(d) + theme_bw(base_family = "Times New Roman")')),
+                            list(m.R = data.frame()), NULL, root)
+  out <- readLines(rt$script_path)
+  expect_match(out[1], 'family="nbinom2"', fixed = TRUE)
+  expect_match(out[2], 'base_family = "sans"', fixed = TRUE)
+  expect_equal(rt$family_replaced, 1)
+})
+
+test_that("packages loaded from a list through a function of its own are found (#568)", {
+  # 10_1002_pan3_10736: tmap was in the list and never installed
+  code <- c("my_packages <-  c('tidyverse', 'plyr', 'tmap',",
+            "                  'scales')",
+            "lapply(my_packages, function(x) library(x, character.only = T))",
+            "p <- c('a1', 'b2')",
+            "invisible(lapply(p, \\(x) suppressMessages(require(x, character.only = TRUE))))")
+  pk <- code_library_names(code, "R")$package
+  expect_true(all(c("tidyverse", "plyr", "tmap", "scales", "a1", "b2") %in% pk))
+})
+
+test_that("a folder on the authors' computer held in a variable gets the deposit's folder (#568)", {
+  # 10_1111_1365_2656_14164: root <- "~/Data_to_publish/", and the files are in
+  # Data_Dryad.zip/Data_Dryad/
+  plan <- .repro_package_plan(data.frame(
+    file_name = c("0_FUNCTIONS.R", "a.rds", "m.R"),
+    file_path = c("Data_Dryad.zip/Data_Dryad/1_scripts/0_FUNCTIONS.R",
+                  "Data_Dryad.zip/Data_Dryad/2_data/a.rds", "Data_Dryad.zip/Data_Dryad/1_scripts/m.R")))
+  code <- c('root <- "~/Data_to_publish/"', 'p <- paste0(root,"2_data/")',
+            'source(paste0(root,"/1_scripts/0_FUNCTIONS.R"))')
+  fv <- .repro_folder_vars(code, plan, "Data_Dryad.zip/Data_Dryad/1_scripts")
+  expect_equal(fv$value, "~/Data_to_publish/")
+  expect_equal(fv$target, "../")
+  expect_setequal(fv$pieces[[1]], c("2_data/", "/1_scripts/0_FUNCTIONS.R"))
+  # the pasted piece is no longer rewritten on its own; the folder is
+  rw <- data.frame(ref = "/1_scripts/0_FUNCTIONS.R", basename = "0_functions.r", matched = TRUE,
+                   target = "0_FUNCTIONS.R", ambiguous = FALSE, n_candidates = 1L, is_call = FALSE,
+                   as_written = FALSE)
+  rw2 <- .repro_apply_folder_vars(rw, fv)
+  expect_equal(rw2$ref, "~/Data_to_publish/")
+  expect_equal(.repro_apply_rewrites(code, rw2)[1], 'root <- "../"')
+  # a piece that goes up first: paste0(root, "../2_data/a.rds"), root being the scripts' folder
+  fv_up <- .repro_folder_vars(c('root <- "C:/Users/me/Data_to_publish/1_scripts/"',
+                                'd <- readRDS(paste0(root, "../2_data/a.rds"))'),
+                              plan, "Data_Dryad.zip/Data_Dryad/1_scripts")
+  expect_equal(fv_up$target, "./")
+  # file.path() and a folder without the final slash (10_1111_2041_210x_13318)
+  plan2 <- .repro_package_plan(data.frame(file_name = c("k.csv", "s.R"),
+                                          file_path = c("Examples/P2/Data/k.csv", "Examples/P2/s.R")))
+  fv2 <- .repro_folder_vars(c('dataDir <- "~/MGDrivE/Main/P2"', 'k <- read.csv(file.path(dataDir, "Data/k.csv"))'),
+                            plan2, "Examples/P2")
+  expect_equal(fv2$target, ".")
+  # nothing of the deposit under any folder: left alone
+  expect_equal(nrow(.repro_folder_vars(c('d <- "C:/me/"', 'x <- read.csv(paste0(d, "none/x.csv"))'), plan2, ".")), 0)
+  # a relative folder is left alone
+  expect_equal(nrow(.repro_folder_vars(c('d <- "Data/"', 'x <- read.csv(paste0(d, "k.csv"))'), plan2, "Examples/P2")), 0)
+})
+
+test_that("a folder held in a variable that a write uses is made (#568)", {
+  # 10_1111_1365_2435_14353: dirF <- "../Figures/"; ggsave(paste0(dirF, "a.png"))
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "R_scripts"))
+  txt <- c('dirF <- "../Figures/"', 'ggsave(paste0(dirF, "App5_hab_size.png"), width = 10)')
+  .repro_make_write_folders(.repro_redirect_writes(txt), root, "R_scripts", txt)
+  expect_true(dir.exists(file.path(root, "Figures")))
+})
+
+test_that("Stan code from before 2.33 gets the newer syntax (#568)", {
+  # 10_1111_1365_2656_12673: DegDay.stan, ChillDev.stan, two_phase.stan
+  old <- c("# Stan code for degree days", "data {", "  int<lower=0> N;",
+           "  real<lower=0, upper=0.2> r_hat[3];", "  vector[ndays] Tn[N];", "  int loc[N];   // # a note",
+           "}", "model {", "  y ~ normal(mu, sigma);", "  increment_log_prob(normal_log(y, mu, sigma));",
+           "  real a <- fabs(b);", "  target += poisson_log(k, lambda);", "}",
+           "functions { real f(real[] x, int[,] m) { return x[1]; } }", "#include other.stan")
+  up <- .repro_upgrade_stan(old)
+  expect_equal(up$txt[1], "// Stan code for degree days")
+  expect_equal(up$txt[4], "  array[3] real<lower=0, upper=0.2> r_hat;")
+  expect_equal(up$txt[5], "  array[N] vector[ndays] Tn;")
+  expect_equal(up$txt[6], "  array[N] int loc;   // // a note")
+  expect_equal(up$txt[3], "  int<lower=0> N;")
+  expect_equal(up$txt[9], "  y ~ normal(mu, sigma);")
+  expect_equal(up$txt[10], "  target += normal_lpdf(y | mu, sigma);")
+  expect_equal(up$txt[11], "  real a = abs(b);")
+  expect_equal(up$txt[12], "  target += poisson_lpmf(k | lambda);")
+  expect_equal(up$txt[14], "functions { real f(array[] real x, array[,] int m) { return x[1]; } }")
+  expect_equal(up$txt[15], "#include other.stan")
+  # new syntax stays as it is
+  new <- c("data {", "  array[N] int<lower=0> y;", "}", "model { target += normal_lpdf(y | 0, 1); }")
+  expect_equal(.repro_upgrade_stan(new)$txt, new)
+  expect_length(.repro_upgrade_stan(new)$changes, 0)
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "m"))
+  writeLines(old, file.path(root, "m", "DegDay.stan"))
+  rows <- .repro_upgrade_stan_files(root)
+  expect_equal(rows$file_name, "m/DegDay.stan")
+  expect_match(rows$detail, "array declarations")
+  expect_null(.repro_upgrade_stan_files(root))   # already converted
+})
+
+test_that("a Python program with a window counts as needing a person (#568)", {
+  # 10_1111_1365_2435_14173: a Qt application waited until its time ran out
+  expect_true(.repro_py_starts_server(c("from PyQt5.QtWidgets import QApplication", "app = QApplication(sys.argv)")))
+  expect_true(.repro_py_starts_server(c("root = tk.Tk()", "root.mainloop()")))
+  expect_false(.repro_py_starts_server(c("import matplotlib.pyplot as plt", "plt.show()")))
+})
+
+test_that("the clipboard and a screen device are not failures of the code (#568)", {
+  expect_true(.repro_needs_person_error("Error in file(file, ifelse(append, \"a\", \"w\")) : 'mode' for the clipboard must be 'r' on Unix"))
+  expect_equal(.repro_failure_reason("errored", "Error in dev.copy2eps(file = \"x.eps\") : can only print from a screen device"),
+               "environment")
+})
+
+test_that("the folder of a path given as file = is made (#568)", {
+  # 10_1111_1365_2435_14173: tab_model(m, file = "tables/duration_LMM_revision.doc")
+  root <- withr::local_tempdir()
+  txt <- c('tab_model(m1, file = "tables/duration_LMM_revision.doc")', 'write.csv(x, "out/x.csv")')
+  .repro_make_write_folders(.repro_redirect_writes(txt), root, ".", txt)
+  expect_true(dir.exists(file.path(root, "tables")))
+  expect_true(dir.exists(file.path(root, "out")))
+})
+
+test_that("a library in Docker is a volume named after its folder (#568)", {
+  lib <- file.path(tempdir(), "repro_sandbox_ab12", "_lib")
+  expect_equal(.repro_docker_lib_volume_name(lib), "metacheck_lib_repro_sandbox_ab12__lib")
+  withr::with_options(list(metacheck.docker_lib_volume = FALSE),
+    expect_equal(.repro_docker_lib_mount(lib, "/rlib", read_only = TRUE),
+                 paste0(normalizePath(lib, mustWork = FALSE), ":/rlib:ro")))
+})
+
+test_that("here() gets the folder its paths point to as the project's top (#568)", {
+  # 10_1111_1365_2664_14317: here("scripts", "functions.R") from scripts/
+  code <- list(a.Rmd = c('source(here("scripts", "functions.R"))', 'd <- readRDS(here("data", "soil.rds"))'),
+               b.R = 'x <- 1')
+  plan <- .repro_package_plan(data.frame(file_name = c("functions.R", "soil.rds", "a.Rmd", "b.R"),
+                                         file_path = c("scripts/functions.R", "data/soil.rds", "scripts/a.Rmd", "scripts/b.R")))
+  expect_equal(unname(.repro_here_roots(code, c("scripts", "scripts"), plan)), c(".", NA))
+  # the authors' .Rproj at the top: here() finds it, nothing to add
+  plan2 <- .repro_package_plan(data.frame(file_name = c("functions.R", "soil.rds", "p.Rproj"),
+                                          file_path = c("scripts/functions.R", "data/soil.rds", "p.Rproj")))
+  expect_true(is.na(.repro_here_roots(code[1], "scripts", plan2)))
+  # paths that exist from the run folder itself
+  plan3 <- .repro_package_plan(data.frame(file_name = c("functions.R", "soil.rds"),
+                                          file_path = c("proj/scripts/functions.R", "proj/data/soil.rds")))
+  expect_equal(unname(.repro_here_roots(code[1], "proj/scripts", plan3)), "proj")
+})
+
+test_that("a bare name read directly is pointed to its file in a folder below (#568)", {
+  # 10_1111_1365_2664_14633: setwd('./data') and then read.csv("x.csv"); the
+  # setwd() is taken out, so the name was not found
+  plan <- .repro_package_plan(data.frame(file_name = c("x.csv", "m.R"), file_path = c("data/x.csv", "scripts/m.R")))
+  rw <- .repro_keep_working_refs(repro_rewrite_paths(c("setwd('./data')", 'd <- read.csv("x.csv")'), "m.R", plan,
+                                                     script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
+  expect_false(rw$as_written)
+  expect_equal(rw$target, "data/x.csv")
+  # in a joining call it stays as written: the code joins it to a folder of its own
+  rw2 <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv(file.path(dir, "x.csv"))', "m.R", plan,
+                                                      script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
+  expect_true(all(rw2$as_written[rw2$ref == "x.csv"]))
+})
+
+test_that("a Git LFS pointer is replaced by the deposit's copy of the file (#568)", {
+  # 10_1111_1365_2664_14751: the GitHub archive held pointers, the Zenodo copy the files
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "gh")); dir.create(file.path(d, "zen"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:abc", "size 2000"),
+             file.path(d, "gh", "covariates.RDS"))
+  saveRDS(1:10, file.path(d, "zen", "other.RDS"))
+  writeBin(as.raw(rep(1, 2000)), file.path(d, "zen", "covariates.RDS"))
+  writeBin(as.raw(rep(1, 1999)), file.path(d, "zen", "x.RDS"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:def", "size 1999"),
+             file.path(d, "gh", "missing.RDS"))
+  src <- file.path(d, c("gh/covariates.RDS", "zen/covariates.RDS", "zen/other.RDS", "gh/missing.RDS"))
+  sw <- .repro_lfs_swaps(src)
+  expect_equal(sw$pointer, file.path(d, "gh/covariates.RDS"))
+  expect_equal(sw$file, file.path(d, "zen/covariates.RDS"))
+  expect_equal(nrow(.repro_lfs_swaps(file.path(d, "zen/other.RDS"))), 0)
+})
+
+test_that("a package's data downloaded once counts as needing the internet (#568)", {
+  expect_true(.repro_needs_internet_error(
+    "Error in hy_src(hydat_path) : No Hydat.sqlite3 found at /tmp/.local/share/tidyhydat. Run download_hydat() to download the database."))
+})
+
+test_that("a script that stops on a file we did not download was not tried (#568)", {
+  # 10_1111_1365_2664_13614: Outputs/BF/BF.rds (653 MB) was over the size limit;
+  # another BF.rds, in another folder, was downloaded
+  s <- data.frame(
+    file_name = c("BF.rds", "BF.rds", "occurrences.csv", "a.csv", "a.csv"),
+    file_path = c("Data & code.zip/Data & code/Outputs/BF/BF.rds", "Detectability models/BF.rds",
+                  "SCAN.zip/SCAN1/occurrences.csv", "x/a.csv", "y/a.csv"),
+    file_location = c(NA, "/tmp/BF.rds", NA, NA, "/tmp/a.csv"),
+    file_size = c(652.8 * 1024^2, 2e5, 293 * 1024^2, 10, 10))
+  rr <- data.frame(
+    file_name = c("fit.R", "detect.R", "occ.py", "plain.R", "ok.R"),
+    outcome = c("errored", "errored", "errored", "errored", "ran_ok"),
+    error = c("Error in gzfile(file, \"rb\") : cannot open the connection",
+              "Error in gzfile(file, \"rb\") : cannot open compressed file 'Detectability models/BF.rds', probable reason 'No such file or directory'",
+              "FileNotFoundError: [Errno 2] No such file or directory: '../SCAN.zip/SCAN1/occurrences.csv'",
+              "Error in file(file, \"rt\") : cannot open file 'a.csv': No such file or directory", ""),
+    stderr = c("cannot open compressed file 'Outputs/BF/BF.rds', probable reason 'No such file or directory'",
+               "", "", "", ""))
+  nd <- .repro_not_downloaded(rr, s)
+  # fit.R and occ.py needed files that were not downloaded; detect.R's file was
+  # downloaded, so it looked in the wrong place; for plain.R one a.csv was downloaded
+  expect_setequal(nd$script, c("fit.R", "occ.py"))
+  expect_equal(nd$file[nd$script == "fit.R"], "Data & code.zip/Data & code/Outputs/BF/BF.rds")
+  expect_equal(nrow(.repro_not_downloaded(rr, s[0, ])), 0)
+  expect_equal(nrow(.repro_not_downloaded(NULL, s)), 0)
+  txt <- .repro_not_downloaded_text(nd, max_file_size = 100)
+  expect_match(txt, "2 scripts could not be tried")
+  expect_match(txt, "Outputs/BF/BF.rds (652.8 MB)", fixed = TRUE)
+  expect_match(txt, "files over 100 MB are not downloaded", fixed = TRUE)
+  expect_null(.repro_not_downloaded_text(nd[0, ]))
+})
+
+# #568, item 21: the internet during a run, with the limits for the repository's files
+
+test_that(".repro_download_limits keeps the network off unless asked (#568)", {
+  expect_null(.repro_download_limits(FALSE))
+  expect_equal(.repro_docker_network_args(NULL), c("--network", "none"))
+  expect_equal(.repro_docker_counted_cmd(c("python", "a.py"), NULL), c("python", "a.py"))
+  net <- .repro_download_limits(TRUE, 100, 500)
+  expect_equal(net$max_file, 100 * 1024^2)
+  expect_equal(net$max_total, 500 * 1024^2)
+  expect_equal(net$used$bytes, 0)
+  expect_length(.repro_docker_network_args(net), 0)
+  cmd <- .repro_docker_counted_cmd(c("python", "a.py"), net)
+  expect_equal(cmd[c(1, 2, 4:6)], c("sh", "-c", "sh", "python", "a.py"))
+  # the script's own exit status is what the container returns
+  expect_match(cmd[3], "exit $s", fixed = TRUE)
+  # no limit
+  expect_equal(.repro_download_limits(TRUE, Inf, NULL)$max_total, Inf)
+})
+
+test_that("a download that is too large or too slow is the reason a script failed (#568)", {
+  r <- .repro_failure_reason
+  expect_equal(r("download_too_large", "stopped: ..."), "download")
+  expect_equal(r("timed_out", .repro_timeout_text(60, list(arriving = TRUE, received = 5e6))), "download")
+  expect_equal(r("timed_out", .repro_timeout_text(60, list(arriving = FALSE, received = 5e6))), "time")
+  expect_equal(.repro_timeout_text(60), "timed out after 60s")
+})
+
+test_that("the report says the scripts could use the internet, and what stopped one (#568)", {
+  net <- .repro_download_limits(TRUE, 100, 500)
+  expect_match(.repro_internet_text(net), "up to 100 MB per file and 500 MB for all scripts together", fixed = TRUE)
+  expect_match(.repro_needs_internet_text("a.R", TRUE), "could not reach what they asked for", fixed = TRUE)
+  expect_match(.repro_needs_internet_text("a.R", FALSE), "which is off during the run", fixed = TRUE)
+  tb <- data.frame(file_name = c("a.R", "b.R"), run_order = 1:2, outcome = c("download_too_large", "timed_out"),
+                   setwd_removed = 0, not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = c("a.R", "b.R"), outcome = c("download_too_large", "timed_out"),
+                   error = c("stopped: it downloaded x.zip, a file of 120 MB, more than the limit of 100 MB per file (max_file_size)",
+                             "timed out after 60s while a download was still arriving (12 MB received)"),
+                   stderr = "")
+  out <- .repro_checklist_section(tb, rr, timeout = 60, net = net)
+  expect_match(out, "The scripts could use the internet", fixed = TRUE)
+  expect_match(out, "a file of 120 MB", fixed = TRUE)
+  expect_match(out, "while it was still downloading", fixed = TRUE)
+  expect_match(out, "1 downloaded too much", fixed = TRUE)
+  # with the network off, nothing about the internet
+  expect_no_match(.repro_checklist_section(tb[2, ], rr[2, ], timeout = 60), "could use the internet", fixed = TRUE)
+})
+
+# Real containers and a real download, gated like the other Docker tests.
+test_that("repro_run_scripts_docker uses the internet only when asked, within the limits (#568)", {
+  skip_if_quick()
+  skip_if_offline()
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  img <- "ghcr.io/scienceverse/metacheck_r_large:latest"
+  # about 30 KB, so a slow connection does not matter; the limits are below it
+  url <- "https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz"
+  run1 <- function(code, net, timeout = 120) {
+    root <- withr::local_tempdir(.local_envir = parent.frame())
+    writeLines(code, file.path(root, "d.R"))
+    run_tbl <- data.frame(file_name = "d.R", script_path = file.path(root, "d.R"), run_dir = root)
+    repro_run_scripts_docker(run_tbl, "d.R", root, image = img, timeout = timeout, net = net)
+  }
+  dl <- sprintf('download.file("%s", "x.tar.gz", mode = "wb", quiet = TRUE)', url)
+
+  expect_equal(run1(dl, NULL)$outcome, "errored")
+  net <- .repro_download_limits(TRUE, 100, 500)
+  expect_equal(run1(dl, net)$outcome, "ran_ok")
+  # what it received is counted for the paper's scripts together
+  expect_gt(net$used$bytes, 2e4)
+
+  # a file over the limit per file (10 KB), found while the script still runs
+  out <- run1(c(dl, "Sys.sleep(30)"), .repro_download_limits(TRUE, 0.01, 500))
+  expect_equal(out$outcome, "download_too_large")
+  expect_match(out$error, "x.tar.gz", fixed = TRUE)
+  expect_lt(out$elapsed, 25)
+  # the scripts together over the total
+  out <- run1(c(dl, "Sys.sleep(30)"), .repro_download_limits(TRUE, 100, 0.01))
+  expect_equal(out$outcome, "download_too_large")
+  expect_match(out$error, "max_download_size", fixed = TRUE)
+})
+
+test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
+  skip_if_quick()
+  skip_if_offline()
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  root <- withr::local_tempdir()
+  writeLines(c("import urllib.request",
+               'd = urllib.request.urlopen("https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz").read()',
+               "print(len(d))"), file.path(root, "d.py"))
+  writeLines(c("import sys", "sys.exit(3)"), file.path(root, "e.py"))
+  run_tbl <- data.frame(file_name = c("d.py", "e.py"), script_path = file.path(root, c("d.py", "e.py")), run_dir = root)
+  off <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120)
+  expect_equal(off$outcome, c("errored", "errored"))
+  on <- repro_run_scripts_py_docker(run_tbl, c("d.py", "e.py"), root, timeout = 120,
+                                    net = .repro_download_limits(TRUE))
+  # the script's own failure is still a failure
+  expect_equal(on$outcome, c("ran_ok", "errored"))
+})
+
+test_that(".repro_binary_kind tells saved data and other binary files from code (#568)", {
+  d <- withr::local_tempdir()
+  x <- data.frame(a = 1:3)
+  save(x, file = file.path(d, "gz.R"))
+  save(x, file = file.path(d, "xz.R"), compress = "xz")
+  saveRDS(x, file.path(d, "plain.R"), compress = FALSE)
+  writeLines(c("RDA <- 1", "BZh <- 2", "X"), file.path(d, "code.R"))
+  writeBin(as.raw(c(0x23, 0x20, 0x63, 0x61, 0x66, 0xe9, 0x0a)), file.path(d, "latin1.R"))
+  expect_match(.repro_binary_kind(file.path(d, "gz.R")), "gzip")
+  expect_match(.repro_binary_kind(file.path(d, "xz.R")), "xz")
+  expect_equal(.repro_binary_kind(file.path(d, "plain.R")), "binary")
+  expect_true(is.na(.repro_binary_kind(file.path(d, "code.R"))))
+  expect_true(is.na(.repro_binary_kind(file.path(d, "latin1.R"))))
+  # the writer keeps such a file instead of writing a script over it
+  root <- file.path(d, "root"); dir.create(root)
+  file.copy(file.path(d, "gz.R"), file.path(root, "b.R"))
+  before <- unname(tools::md5sum(file.path(root, "b.R")))
+  suppressMessages(repro_write_scripts(list(b.R = "x <- 1"), list(b.R = data.frame()), NULL, root))
+  expect_equal(unname(tools::md5sum(file.path(root, "b.R"))), before)
+})
+
+test_that(".repro_needs_arguments: programs that stopped for want of their arguments (#568)", {
+  py <- list(a = c("import sys", "f = sys.argv[1]"), b = "import argparse", c = "x = [1][2]")
+  err <- c('File "a.py", line 2, in <module>\n    f = sys.argv[1]\nIndexError: list index out of range',
+           "a.py: error: the following arguments are required: -i",
+           'File "c.py", line 1\nIndexError: list index out of range')
+  expect_equal(.repro_needs_arguments(py, err, "Python"), c(TRUE, TRUE, FALSE))
+  r <- list(a = "args <- commandArgs(TRUE)", b = "args <- commandArgs(TRUE)", c = "x <- 1")
+  err <- c("Error in args[1] : object of type 'closure' is not subsettable",
+           "Error in read.csv(\"x.csv\") : cannot open file",
+           "Error in args[1] : object of type 'closure' is not subsettable")
+  expect_equal(.repro_needs_arguments(r, err, "R"), c(TRUE, FALSE, FALSE))
+})
+
+test_that("a file written during the run is found, and copied to where a script looked (#568)", {
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "a")); dir.create(file.path(root, "b"))
+  writeLines("old", file.path(root, "b", "input0.txt"))     # the deposit's own copy elsewhere
+  before <- .repro_sandbox_names(root)
+  writeLines("new", file.path(root, "a", "input0.txt"))     # written during the run
+  writeLines("x", file.path(root, "a", "Ha_daily.Rdata"))
+  after <- .repro_sandbox_names(root)
+  res <- data.frame(file_name = c("s1.py", "s2.R", "s3.R"), outcome = c("errored", "errored", "errored"),
+                    error = c("", "", ""),
+                    stderr = c("FileNotFoundError: [Errno 2] No such file or directory: 'input0.txt'",
+                               "cannot open compressed file 'Ha_daily.Rdata', probable reason 'No such file or directory'",
+                               "cannot open file 'deposit.csv': No such file or directory"))
+  later <- .repro_written_later(res, before, after)
+  expect_equal(later, list(s1.py = "input0.txt", s2.R = "Ha_daily.Rdata"))
+  run_tbl <- data.frame(file_name = c("s1.py", "s2.R"), run_dir = c(file.path(root, "a"), file.path(root, "c")))
+  placed <- .repro_place_written(later, res, run_tbl, root, before, after)
+  # s1 looks where the file now is; s2 gets a copy in its own folder
+  expect_equal(placed$script, "s2.R")
+  expect_equal(placed$to, "c/Ha_daily.Rdata")
+  expect_true(file.exists(file.path(root, "c", "Ha_daily.Rdata")))
+  expect_match(.repro_written_later_text(later, "s2.R", placed), "copied them there|copied it there")
+})
+
+test_that("a script that stopped on a Git LFS pointer stopped on a missing file (#568)", {
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "data"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1",
+               "oid sha256:625d8398ce0000000000000000000000000000000000000000000000000000",
+               "size 123456"), file.path(root, "data", "results.rds"))
+  writeLines("a,b", file.path(root, "data", "ok.csv"))
+  res <- data.frame(file_name = c("a.R", "b.R", "c.R"), outcome = c("errored", "errored", "ran_ok"),
+                    error = c('Error in readRDS(here::here("data", "results.rds")) : unknown input format',
+                              "Error in f() : something else", ""),
+                    stderr = "")
+  st <- .repro_lfs_stopped(res, root)
+  expect_equal(st, list(a.R = "results.rds"))
+  expect_match(.repro_lfs_stopped_text(st), "only as a Git LFS pointer")
+  expect_equal(.repro_lfs_stopped(res[2:3, ], root), stats::setNames(list(), character(0)))
+})
+
+test_that(".repro_upgrade_stan puts the vertical bar in _cdf() and _lpdf() calls (#568)", {
+  stan <- c("functions {",
+            "  real foo_lpdf(real y, real mu) { return normal_lpdf(y | mu, 1); }",
+            "}",
+            "model {",
+            "  p_zero[i] = logistic_cdf(cutoff, log(growth[i]), 1);",
+            "  target += foo_lpdf(y[i], f(a, b));",
+            "  target += normal_lcdf(x | 0, 1) + normal_lccdf(z, 0, 1);",
+            "}")
+  out <- .repro_upgrade_stan(stan)
+  txt <- if (is.list(out)) out$txt else out
+  expect_equal(txt[2], stan[2])                                   # the definition keeps its commas
+  expect_equal(trimws(txt[5]), "p_zero[i] = logistic_cdf(cutoff | log(growth[i]), 1);")
+  expect_equal(trimws(txt[6]), "target += foo_lpdf(y[i] | f(a, b));")
+  expect_equal(trimws(txt[7]), "target += normal_lcdf(x | 0, 1) + normal_lccdf(z | 0, 1);")
+})
+
+test_that("code_read() returns no lines for a file that is not text, but reads UTF-16 (#568)", {
+  d <- withr::local_tempdir()
+  x <- data.frame(a = 1:3)
+  save(x, file = file.path(d, "data.R"))
+  out <- code_read(file.path(d, "data.R"))
+  expect_length(out, 0)
+  expect_match(attr(out, "binary"), "gzip")
+  # a script saved as UTF-16 (with and without a byte order mark) is text
+  txt <- "x <- 1\ny <- read.csv('a.csv')\n"
+  le <- unlist(lapply(utf8ToInt(txt), function(i) as.raw(c(i, 0))))
+  writeBin(c(as.raw(c(0xff, 0xfe)), le), file.path(d, "bom.R"))
+  writeBin(le, file.path(d, "nobom.R"))
+  expect_true(is.na(.binary_kind_raw(readBin(file.path(d, "bom.R"), "raw", 100))))
+  expect_true(is.na(.binary_kind_raw(readBin(file.path(d, "nobom.R"), "raw", 100))))
+  expect_equal(code_read(file.path(d, "bom.R"))[1], "x <- 1")
+})
+
+test_that(".repro_md5 keeps checksums for the session and sees a changed file (#568)", {
+  d <- withr::local_tempdir()
+  f <- file.path(d, c("a.csv", "b.csv"))
+  writeLines("x", f[1]); writeLines("x", f[2])
+  h1 <- .repro_md5(f)
+  expect_equal(h1[1], h1[2])
+  expect_equal(.repro_md5(f), h1)                      # from the cache
+  Sys.sleep(1.1); writeLines("a longer line", f[2])    # another size and time
+  h2 <- .repro_md5(f)
+  expect_equal(h2[1], h1[1])
+  expect_false(identical(h2[2], h1[2]))
+  expect_true(is.na(.repro_md5(file.path(d, "none.csv"))))
+})
+
+test_that("a script stopped by the memory limit says so, with the reason environment (#568)", {
+  withr::local_options(metacheck.docker_resource_limits = list(cpus = 2, memory_gb = 3))
+  note <- .repro_oom_text(137)
+  expect_match(note, "memory limit of 3 GB")
+  expect_null(.repro_oom_text(1))
+  expect_equal(.repro_failure_reason("errored", paste("Compiling", note)), "environment")
+  withr::local_options(metacheck.docker_resource_limits = NULL)
+  expect_null(.repro_oom_text(137))
+})
+
+test_that("a name kept in a variable that the code joins to a folder is left as written (#568)", {
+  plan <- data.frame(file_name = c("Fig_2", "x.csv"), target_path = c("Data/Fig_2", "data/x.csv"),
+                     current_path = c("Data/Fig_2", "data/x.csv"))
+  # R: the variable is pasted to the folder later
+  code <- c('datname <- "Fig_2"', 'f <- paste("Data/", datname, sep = "")', 'd <- read.table(f)')
+  rw <- repro_rewrite_paths(code, "Simulate.R", plan)
+  expect_true(rw$in_join[rw$ref == "Fig_2"])
+  # Python: an f-string after a slash
+  rw <- repro_rewrite_paths(c('name = "x.csv"', 'df = pd.read_csv(f"data/{name}")'), "a.py", plan, lang = "Python")
+  expect_true(rw$in_join[rw$ref == "x.csv"])
+  # a name read directly, also when kept in a variable that is not joined, is not
+  rw <- repro_rewrite_paths(c('f <- "x.csv"', 'd <- read.csv(f)'), "b.R", plan)
+  expect_false(rw$in_join[rw$ref == "x.csv"])
+  rw <- repro_rewrite_paths('d <- read.csv("x.csv")', "c.R", plan)
+  expect_false(rw$in_join[rw$ref == "x.csv"])
+})
+
+test_that(".repro_install_error_lines finds why a package did not install (#568)", {
+  txt <- paste(c("* installing *source* package 'XVector' ...",
+                 "io_utils.c:16:10: fatal error: zlib.h: No such file or directory",
+                 "ERROR: compilation failed for package 'XVector'",
+                 "* installing *source* package 'DESeq2' ...",
+                 "ERROR: dependency 'XVector' is not available for package 'DESeq2'",
+                 "ERROR: dependencies ‘rgdal’, ‘rgeos’ are not available for package ‘ellipsenm’",
+                 "* DONE (other)"), collapse = "\n")
+  x <- .repro_install_error_lines(txt, "XVector")
+  expect_match(x, "zlib.h", fixed = TRUE)
+  expect_match(x, "compilation failed for package 'XVector'", fixed = TRUE)
+  expect_false(grepl("DESeq2", x))
+  expect_equal(.repro_install_error_lines(txt, "DESeq2"), "ERROR: dependency 'XVector' is not available for package 'DESeq2'")
+  expect_match(.repro_install_error_lines(txt, "ellipsenm"), "rgdal")
+  expect_equal(.repro_install_error_lines(txt, "other"), "")
+})
+
+test_that("Stan programs held in R code get the newer syntax, and other R text is left alone (#568)", {
+  r <- c('library(rstan)',
+         'write("data{',
+         '  int<lower=0> N;',
+         '  int<lower=0> y[N];  # counts',
+         '}',
+         'parameters{ real mu; }',
+         'model{ y ~ poisson(exp(mu)); }",',
+         '      "m.stan")',
+         'x <- "a text with a # and model { inside, on one line"',
+         'note <- "not stan:',
+         '  y[N] means something else here',
+         '"')
+  up <- .repro_upgrade_stan_in_r(r)
+  expect_true(length(up$changes) > 0)
+  expect_equal(trimws(up$txt[4]), "array[N] int<lower=0> y;  // counts")
+  expect_equal(up$txt[c(1, 2, 7:12)], r[c(1, 2, 7:12)])      # R code and the other texts unchanged
+  # model_code in single quotes
+  r2 <- c("m <- stan_model(model_code = 'data {", "  int N;", "  real x[N];", "}", "parameters { real b; }",
+          "model { x ~ normal(b, 1); }", "')")
+  up2 <- .repro_upgrade_stan_in_r(r2)
+  expect_equal(trimws(up2$txt[3]), "array[N] real x;")
+  # a distribution with a log link after ~ stays; the old density name in a call is converted
+  st <- .repro_upgrade_stan(c("y ~ poisson_log(y_1);", "z ~ neg_binomial_2_log(eta, phi);",
+                              "target += poisson_log(n, lambda);", "w ~ normal(0, 1);"))
+  expect_equal(st$txt[1:2], c("y ~ poisson_log(y_1);", "z ~ neg_binomial_2_log(eta, phi);"))
+  expect_equal(st$txt[3], "target += poisson_lpmf(n | lambda);")
+  # no Stan, nothing changed
+  expect_equal(.repro_upgrade_stan_in_r(c('a <- "x', 'y"'))$changes, character(0))
 })

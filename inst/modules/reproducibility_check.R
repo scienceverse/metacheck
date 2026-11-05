@@ -3,12 +3,12 @@
 #' @description
 #' This module assesses whether a paper's R and Python code can be run on its
 #' data. It works in two phases. The **static** phase (always run) collects the package
-#' dependencies the code declares, rewrites each script's data-file paths to the
-#' Psych-DS layout the release uses, works out the order the scripts must run in,
+#' dependencies the code declares, rewrites the data-file paths that do not work
+#' in the repository as the authors organised it, works out the order the scripts must run in,
 #' and diagnoses why any referenced input file is unavailable — reporting what a
 #' reproduction attempt would involve and where it is likely to break. The
 #' **execution** phase (opt-in, `execute = TRUE`) then actually runs the code:
-#' it materialises the Psych-DS layout into a throwaway directory, optionally
+#' it copies the repository into a throwaway directory, optionally
 #' installs the declared dependencies into a throwaway library, runs each script
 #' in order in an isolated subprocess with a per-script timeout, and captures the
 #' outcome and full output of each run.
@@ -16,8 +16,8 @@
 #' @details
 #' By default (`execute = FALSE`) the module does **not run any code** — it
 #' performs only static analysis: reading dependencies with the same extractors
-#' as `code_check`, mapping referenced files to their new locations with the
-#' plan from `psychds_file_plan()`, and building a run-order dependency graph.
+#' as `code_check`, finding the files the code references in the repository,
+#' and building a run-order dependency graph.
 #' It reports what *would* be installed and run rather than doing it.
 #'
 #' When `execute = TRUE`, the module additionally **runs the downloaded code on
@@ -26,13 +26,38 @@
 #' cannot take down the R session; note this isolates crashes, **not** the
 #' filesystem or network. Installs (when `install_missing = TRUE`) and the
 #' throwaway run library never touch your main R library. Each script's outcome
-#' is one of `ran_ok`, `errored`, `timed_out`, `skipped_missing_inputs`,
+#' is one of `ran_ok`, `errored`, `timed_out`,
 #' `dependency_unavailable`, `not_parsed`, `run_by_source` (an R script
 #' another script runs with `source()`, which is run only inside that script,
 #' since on its own it lacks the packages and objects the sourcing script sets
-#' up first), or `run_by_import` (a Python file other files import, a module
+#' up first), `run_by_import` (a Python file other files import, a module
 #' rather than a script, unless it has an `if __name__ == "__main__":`
-#' block); a timeout means "still running at
+#' block), `jags_model` (a JAGS or BUGS model saved with an R extension, which
+#' another script reads) or `not_r_content` (a file that is not R at all, such
+#' as a JSON or HTML dump); these last two are not run and are not failures.
+#' `python2` marks Python 2 code that was not run. With `sandbox = "docker"`
+#' such code runs with Python 2.7 (option `metacheck.docker_image_py2`; FALSE
+#' turns this off), which `modifications` records; it is never converted, since
+#' that can change results.
+#' `defines_functions` is a file that only defines functions, which is used, not
+#' run (`table$used_by` names the scripts that use it), and `not_analysis` is a
+#' file of software rather than of the analysis: a package's code, tests,
+#' documentation or `setup.py`, a copy of a tool, a web application, a script a
+#' program wrote (`table$not_analysis_why` says which); neither is run or
+#' counted as a script.
+#' `docker_failed` means the container never started, which says nothing about
+#' the script, so it keeps the light from being green but does not make it red.
+#' `needs_a_person` is a script that stopped because it asks a person to choose a
+#' file or answer a question, or that starts an app, and `needs_internet` one that
+#' stopped because the network is off in a Docker run, or, with `internet = TRUE`,
+#' could not reach what it asked for; `download_too_large` is a script stopped
+#' for downloading more than the limits allow (see `internet`). All three are
+#' treated the same way.
+#' `not_downloaded` is a script that stopped on a file the repository lists but
+#' that was not downloaded, such as one over `max_file_size`: it could not be
+#' tried, so it is not counted as a script that did not reproduce
+#' (`summary_table$repro_not_downloaded_n` counts them apart).
+#' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
 #' package could not be installed from live CRAN, the CRAN Archive, or a named
@@ -92,8 +117,13 @@
 #' @param model the LLM model name used only when `llm_use(TRUE)` (passed to the
 #'   upstream modules whose study grouping the path rewrite relies on)
 #' @param params a named list passed to `llm()`, used only when `llm_use(TRUE)`
-#' @param execute if TRUE, actually RUN the paper's code (against a throwaway
-#'   copy of the package or the Psych-DS layout, see `layout`). This runs
+#' @param execute if TRUE, actually RUN the paper's code, in a throwaway copy
+#'   of the repository as the authors organised it: every file the run has
+#'   (every file of a local folder; of a repository, every file that was
+#'   downloaded, see `download`) at its own path. Only a path that does not
+#'   work there is rewritten: an absolute path on the author's computer, a
+#'   path from another folder, or a path to a file that is elsewhere in the
+#'   repository, found by its name; the report notes each. This runs
 #'   downloaded code on your machine
 #'   and is off by default; it is a deliberate, opt-in action. See `sandbox`
 #'   for how it is isolated.
@@ -114,16 +144,6 @@
 #'   Python code runs in `ghcr.io/scienceverse/metacheck_py_small:latest`.
 #'   `"process"` needs `callr` for R code and `processx` and a Python
 #'   interpreter for Python code; `"docker"` needs `processx`.
-#' @param layout the files the code runs against when `execute = TRUE`.
-#'   `"package"` copies every file the run has (every file of a local folder;
-#'   of a repository, every file that was downloaded, see `download`) to its
-#'   own path, so the code finds the folders and files it reads where they
-#'   are in the package, and only a path that does not work there (an
-#'   absolute path on the author's computer, a file in another folder) is
-#'   rewritten. `"psychds"` copies only the data files, laid out as a
-#'   Psych-DS release, and rewrites the code's paths to match. `"auto"` (the
-#'   default) uses `"package"` for a local folder (`local_path`) and
-#'   `"psychds"` otherwise.
 #' @param docker_use_declared_version if TRUE (and `sandbox = "docker"`), use
 #'   the R version `code_check`'s version-pinning detection found declared in
 #'   the repository (an `renv.lock`/`sessionInfo()` record) instead of the
@@ -159,7 +179,7 @@
 #'   records versions, the report recommends a run with TRUE.
 #'   Not used when `install_missing = FALSE`, nor when several papers run as one
 #'   (one at a time, or `workers > 1` with `sandbox = "docker"`, does use them).
-#' @param install_timeout the time in seconds for installing a paper's R
+#' @param install_timeout the time in seconds for installing a paper's R and Python
 #'   packages. `NULL` (the default) uses `timeout`, or an hour when recorded
 #'   versions are installed. With a clock time as `total_timeout`, installing
 #'   takes at most half of the time that is left. With `sandbox = "process"` a
@@ -180,6 +200,18 @@
 #'   throwaway library regardless of this argument.
 #' @param timeout per-script timeout in seconds for the execute phase
 #'   (default 600).
+#' @param internet if TRUE (and `sandbox = "docker"`), scripts can use the
+#'   internet while they run, so a script that downloads its data can run. What
+#'   they download follows the limits for the repository's own files: a script is
+#'   stopped (outcome `download_too_large`) when the paper's scripts together have
+#'   downloaded more than `max_download_size`, or a file larger than
+#'   `max_file_size` appears; a download that is still arriving when `timeout`
+#'   runs out is named as the reason. The container is checked every two seconds,
+#'   so a download that ends in between still counts towards the total. FALSE (the
+#'   default, or the option `metacheck.repro_internet`) keeps the network off, since
+#'   the code has not been checked by anyone; installing packages always has the
+#'   internet. With `sandbox = "process"` scripts always have the internet, without
+#'   these limits.
 #' @param total_timeout the time in seconds for running all scripts together,
 #'   R and Python, counted from when the first script starts (default 3600,
 #'   one hour; `NULL` or `Inf` for no limit), or a clock time (`POSIXct`) by
@@ -260,13 +292,13 @@
 reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                   model = llm_model(), params = list(),
                                   execute = FALSE, sandbox = c("process", "docker"),
-                                  layout = c("auto", "package", "psychds"),
                                   docker_use_declared_version = FALSE,
                                   install_missing = NULL,
                                   recorded_versions = FALSE,
                                   install_timeout = NULL,
                                   cran_install_main = FALSE,
                                   timeout = 600, total_timeout = 3600,
+                                  internet = getOption("metacheck.repro_internet", FALSE),
                                   keep_sandbox = FALSE,
                                   cache = FALSE,
                                   download = "data",
@@ -287,11 +319,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   install_r <- isTRUE(install_missing)
   recorded <- NULL
   recorded_advice <- NULL
-  layout <- match.arg(layout)
-  # A local folder has every file on disk: run the code in a copy of the
-  # package as it is (see .repro_package_plan()).
-  if (layout == "auto") layout <- if (!is.null(local_path)) "package" else "psychds"
-  layout_name <- if (layout == "package") "the package" else "the Psych-DS layout"
+  layout_name <- "the repository"
+  # the limits on what scripts download, shared by all of the paper's scripts; NULL
+  # keeps the network off (#568, item 21)
+  internet <- isTRUE(internet) && sandbox == "docker"
+  net <- .repro_download_limits(internet, max_file_size, max_download_size)
 
   # ── Paperlist + workers > 1: run papers CONCURRENTLY ────────────────────────
   # Every argument above is still just for ONE paper's own reproducibility
@@ -311,13 +343,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       paper, workers = workers, results_dir = results_dir,
       local_path = local_path, local_only = local_only,
       model = model, params = params,
-      execute = execute, sandbox = sandbox, layout = layout,
+      execute = execute, sandbox = sandbox,
       docker_use_declared_version = docker_use_declared_version,
       install_missing = install_missing,
       recorded_versions = recorded_versions,
       install_timeout = install_timeout,
       cran_install_main = cran_install_main,
-      timeout = timeout, total_timeout = total_timeout,
+      timeout = timeout, total_timeout = total_timeout, internet = internet,
       keep_sandbox = keep_sandbox,
       cache = cache, download = download, skip_types = skip_types,
       peek_zips = peek_zips, max_file_size = max_file_size,
@@ -351,6 +383,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   prev_skip_opt <- getOption("metacheck.skip_on_api_limit")
   options(metacheck.skip_on_api_limit = skip_on_api_limit)
   on.exit(options(metacheck.skip_on_api_limit = prev_skip_opt), add = TRUE)
+  # When the code runs, the data_check and code_check this check runs itself
+  # fetch what the run needs in their first download (see .download_for_run())
+  if (isTRUE(execute)) {
+    prev_for_run <- getOption("metacheck.download_for_run")
+    options(metacheck.download_for_run = TRUE)
+    on.exit(options(metacheck.download_for_run = prev_for_run), add = TRUE)
+  }
 
   .pid <- function(...) {
     id <- paper_id(paper)
@@ -383,23 +422,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── 1. Inputs from the upstream modules ─────────────────────────────────────
   # code_check gives the code files + their per-file analysis (parse status,
-  # packages); psychds_file_plan() gives the file→target plan the path rewrite
-  # needs (plain file/folder organisation, no Psych-DS compliance checking);
-  # data_check gives the download status behind a missing input. Reuse chained
-  # outputs first (a live report() chain that already ran these modules);
+  # packages); data_check gives the files of the repository, from which the plan
+  # the path rewrite needs is built (every file at its own path, see
+  # .repro_package_plan()), and the download status behind a missing input. Reuse
+  # chained outputs first (a live report() chain that already ran these modules);
   # then a prior full build's saved tables (tables_dir, above); run what is
   # still missing after both.
   code_tbl     <- get_prev_outputs("code_check", "table") %||% get_saved_output("code_check", "table")
-  # psychds_check's own `table` IS the plan (unchanged shape after the
-  # psychds_file_plan() split below), so a live chain that already ran
-  # psychds_check, or a prior saved build, both still supply it under that
-  # name; only a genuinely missing plan is built fresh, directly from
-  # structure_df, without going through the psychds_check module at all.
-  plan         <- get_prev_outputs("psychds_check", "table") %||%
-    get_saved_output("psychds_check", "table")
   structure_df <- get_prev_outputs("data_check", "structure") %||% get_saved_output("data_check", "structure")
-  group_no_evidence <- get_prev_outputs("data_check", "group_no_evidence") %||%
-    get_saved_output("data_check", "group_no_evidence")
   # code_check's declared-version detection (renv.lock/sessionInfo/groundhog/
   # checkpoint — see .code_version_pin_check()), reused by the Docker backend
   # below to pick the base image's R version. NULL until code_tbl's source is
@@ -444,21 +474,30 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
     do.call(module_run, args)
   }
-  if (is.null(structure_df)) {
-    dc <- run_missing("data_check")
-    structure_df <- dc$structure
-    group_no_evidence <- dc$group_no_evidence
-  }
-  if (is.null(plan)) {
-    # psychds_file_plan() is a pure function of structure_df -- no module_run()
-    # needed, so building a missing plan here never re-downloads or re-runs
-    # data_check the way going through the psychds_check module used to.
-    plan <- psychds_file_plan(structure_df, group_no_evidence)$table
-  }
-  if (layout == "package") plan <- .repro_package_plan(structure_df)
+  if (is.null(structure_df)) structure_df <- run_missing("data_check")$structure
+  # The code runs in the repository as the authors organised it; only paths that
+  # do not work there are rewritten (#568)
+  plan <- .repro_package_plan(structure_df)
   if (is.null(code_tbl)) {
     cc <- run_missing("code_check"); code_tbl <- cc$table
     version_pin <- cc$version_pin
+  }
+  # Before a run, the files the code names that the repository lists but the
+  # first download left out (an image, a sound file) are fetched, in one call for
+  # those files only (#568; see .repro_named_files())
+  if (isTRUE(execute) && !identical(download, "none") && !isFALSE(download) &&
+      !is.null(code_tbl) && nrow(code_tbl) && any(.repro_fetchable(structure_df))) {
+    code_locs <- code_tbl$file_location[!is.na(code_tbl$file_location) & file.exists(code_tbl$file_location %||% "")]
+    # code_read(), not readLines(): a file that is not text gives no lines, where
+    # 10.1111/2041-210X.13967's 109 MB of R data named .r was read as text (#568)
+    code_txt <- unlist(lapply(code_locs, function(f) tryCatch(code_read(f), error = function(e) character(0))))
+    named <- .repro_named_files(structure_df, code_txt)
+    if (any(named)) {
+      message("[repro] fetching ", sum(named), " file(s) the code names that were not downloaded")
+      structure_df <- .repro_fetch_files(structure_df, named, max_file_size, max_download_size,
+                                         cache, skip_on_api_limit)
+      plan <- .repro_package_plan(structure_df)
+    }
   }
 
   # ── SPSS / Stata data without syntax ─────────────────────────────────────────
@@ -1263,10 +1302,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     r_files <- r_files[!dup, , drop = FALSE]
     n_code <- nrow(r_files)
   }
+  # Scripts that still share a name differ: each gets a name of its own, which
+  # every step below knows it by (#568).
+  r_files$file_name <- .repro_unique_script_names(r_files)
 
   pb_read <- pb(n_code, ":what [:bar] :current/:total")
   pb_read$tick(0, list(what = ""))
-  on.exit(pb_read$terminate())
+  # add = TRUE: without it, this replaced every earlier exit action, so the
+  # options set above stayed set after the check, and a sandbox made above was
+  # not removed
+  on.exit(pb_read$terminate(), add = TRUE)
 
   # raw_text_list keeps each file's UNEXTRACTED text alongside code_text_list
   # (which, for an .Rmd/.qmd, is already knitr::purl()'d down to just its {r}
@@ -1298,6 +1343,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   })
   names(code_text_list) <- r_files$file_name
 
+  # Fill in the file where a script asks a person to choose one and the code says
+  # which (see .repro_fill_file_choice()).
+  deposit_data <- if (!is.null(structure_df) && "file_name" %in% names(structure_df))
+    unique(basename(gsub("\\\\", "/", structure_df$file_name[grepl(
+      "\\.(csv|tsv|txt|dat|tab|xls|xlsx|ods|rds|rda|rdata|sav|dta)$", structure_df$file_name, ignore.case = TRUE)]))) else character(0)
+  r_choices <- lapply(code_text_list, .repro_fill_file_choice, deposit_data)
+  code_text_list <- lapply(r_choices, `[[`, "txt")
+  r_choices_filled <- lapply(r_choices, `[[`, "filled")
+
   # ── 3. Dependencies (pooled across files) ───────────────────────────────────
   # repro_dependencies() adds the install source (cran/github/url/base) + ref
   # that code_check's `packages` column does not carry. But if a file's text
@@ -1319,22 +1373,35 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── 4. Per-file path rewrite + I/O for ordering ─────────────────────────────
   io <- repro_file_io(code_text_list)
+  io$file_path <- .repro_order_path(r_files)
 
+  r_script_paths <- .repro_script_path(r_files)
   rewrite_list <- lapply(seq_len(n_code), function(i)
     repro_rewrite_paths(code_text_list[[i]], r_files$file_name[i], plan, "R",
-                       structure_df = structure_df))
+                       structure_df = structure_df, script_path = r_script_paths[i]))
   names(rewrite_list) <- r_files$file_name
-  # the package layout leaves a reference that works as written as it is
-  if (layout == "package") rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
-    .repro_keep_working_refs(rewrite_list[[i]], plan, r_files$file_path[i])), names(rewrite_list))
+  order_tbl <- repro_run_order(io)
+  r_script_places <- .repro_script_places(r_files)
+  # the folder each script runs from
+  r_run_dirs <- .repro_run_folders(r_script_places, code_text_list, plan, order_tbl, "R")
+  # a reference that works as written stays as it is
+  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
+    .repro_keep_working_refs(rewrite_list[[i]], plan, r_script_paths[i], r_run_dirs[i])), names(rewrite_list))
+  # a folder on the authors' computer held in a variable gets the deposit's folder
+  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
+    .repro_apply_folder_vars(rewrite_list[[i]],
+                             .repro_folder_vars(code_text_list[[i]], plan, r_run_dirs[i]))), names(rewrite_list))
 
   # Per-file rewrite counts + unresolved reads (referenced, not matched in plan).
   rewrites_n  <- vapply(rewrite_list, function(d)
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
   ambiguous_n <- vapply(rewrite_list, function(d)
     if (nrow(d)) sum(d$ambiguous) else 0L, integer(1))
-  unresolved_refs <- unlist(lapply(rewrite_list, function(d)
-    if (nrow(d)) d$basename[!d$matched] else character(0)), use.names = FALSE)
+  built_names <- lapply(code_text_list, .repro_built_names, "R")
+  unresolved_refs <- unlist(lapply(seq_len(n_code), function(i) {
+    d <- rewrite_list[[i]]
+    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d, built_names[[i]])] else character(0)
+  }), use.names = FALSE)
 
   # Paths assembled at runtime (sprintf()/paste()-family — see
   # repro_rewrite_paths()'s `is_call` rows) are fragile authoring regardless of
@@ -1348,7 +1415,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_call_unresolved <- if (n_call_paths) sum(!call_rows_all$matched) else 0L
 
   # ── 5. Run order ────────────────────────────────────────────────────────────
-  order_tbl <- repro_run_order(io)
   cycle     <- attr(order_tbl, "cycle") %||% character(0)
   ambiguous_order <- isTRUE(attr(order_tbl, "ambiguous"))
   # source() edges resolved only after normalising both basenames (a
@@ -1384,8 +1450,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # issue text for why they must stay consistent with each other).
   sniff_type <- rep(NA_character_, n_code)   # "not_r_content" | "jags_model" | NA
   sniff_detail <- rep(NA_character_, n_code)
-  if (any(parse_error_raw)) {
-    for (i in which(parse_error_raw)) {
+  # A file that is not text (R data saved as .R) is read as no lines, so it
+  # "parses"; it is looked at too, else it was run as a script (#568:
+  # 10.1111/2041-210X.13967's 109 MB Training_Dataset_1.r)
+  is_binary <- vapply(seq_len(n_code), function(i) !is.null(attr(raw_text_list[[i]], "binary")), logical(1))
+  if (any(parse_error_raw | is_binary)) {
+    for (i in which(parse_error_raw | is_binary)) {
       raw <- raw_text_list[[i]]
       fn  <- r_files$file_name[i]
       jags_hit <- .repro_is_jags_model(
@@ -1395,7 +1465,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         sniff_detail[i] <- "JAGS/BUGS model definition (not standalone R)"
         next
       }
-      detected <- .repro_content_sniff(raw)
+      # a file that is not text, such as R data saved as .R (#568)
+      path_i <- resolve_row_path(i)
+      detected <- if (!is.na(path_i)) .repro_binary_kind(path_i) else NA_character_
+      if (is.na(detected)) detected <- .repro_content_sniff(raw)
       if (!is.na(detected)) {
         sniff_type[i] <- "not_r_content"
         sniff_detail[i] <- sprintf(
@@ -1405,6 +1478,39 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   n_not_r_content <- sum(sniff_type == "not_r_content", na.rm = TRUE)
   n_jags_model    <- sum(sniff_type == "jags_model", na.rm = TRUE)
+  # A package's tests are not the analysis, and a file that only defines functions
+  # is used, not run: running it on its own "succeeds" without doing anything, which
+  # made up most of the R files that ran in the corpus (#568).
+  r_function_names <- lapply(code_text_list, .repro_function_names)
+  # Nor are the files of software: a package's code, a tool, a web application,
+  # and examples and vignettes that nothing links to the paper's results (see
+  # R/reproducibility_check_software.R); a file that only defines functions
+  # stays one, used by the scripts that call it.
+  r_software <- .repro_software_kind(r_script_paths, code_text_list, structure_df, r_files$repo_name,
+                                     paper_text = .repro_paper_text(paper), raw_text_list = raw_text_list)
+  r_software$kind[r_software$kind %in% "unlinked" & lengths(r_function_names) > 0] <- NA_character_
+  # a script the analysis depends on (it writes what a running script reads, or
+  # a running script sources it) is linked through that script
+  r_chain <- .repro_sw_chain(r_software$kind, r_files$file_name, io, repos = r_files$repo_name,
+                             links = r_software$links)
+  r_software$kind[!is.na(r_chain)] <- NA_character_
+  r_software$links[!is.na(r_chain)] <- r_chain[!is.na(r_chain)]
+  sniff_type[is.na(sniff_type) & (.repro_is_r_test(r_script_paths) | !is.na(r_software$kind))] <- "not_analysis"
+  r_software$why[!sniff_type %in% "not_analysis"] <- NA_character_
+  only_functions <- is.na(sniff_type) & grepl("\\.[Rr]$", r_files$file_name) & lengths(r_function_names) > 0
+  sniff_type[only_functions] <- "defines_functions"
+  # A script that starts an app waits for a person until the time limit.
+  starts_app <- is.na(sniff_type) & vapply(code_text_list, .repro_starts_app, logical(1))
+  sniff_type[starts_app] <- "needs_a_person"
+  r_used_by <- vapply(seq_len(n_code), function(i) {
+    if (!only_functions[i]) return(NA_character_)
+    users <- .repro_function_users(r_files$file_name[i], r_function_names[[i]], code_text_list,
+                                   stats::setNames(io$sources, io$file_name))
+    if (length(users)) paste(users, collapse = ", ") else NA_character_
+  }, character(1))
+  # Such a file has no place in the run order, so one script and a model file
+  # are not two scripts whose order is unknown.
+  if (sum(is.na(sniff_type)) <= 1) ambiguous_order <- FALSE
 
   # A "genuine" parse error excludes both sniffed categories -- this is what
   # feeds parse_errs/the traffic light/the "Parsing" report section below, so
@@ -1420,7 +1526,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # parse"* -- see not_runnable_reason below, which gives it its own reason
   # instead of lumping it in with "parse_error".
   parses <- !parse_error_genuine
-  runs_as_r <- !parse_error_raw   # still gates execution (parses_named), below
+  runs_as_r <- !parse_error_raw & !is_binary   # still gates execution (parses_named), below
   file_order <- order_tbl$order[match(r_files$file_name, order_tbl$file_name)]
   placeable <- !is.na(file_order)
 
@@ -1445,7 +1551,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   unresolved_list <- lapply(seq_len(n_code), function(i) {
     d <- rewrite_list[[i]]
     if (!nrow(d)) return(character(0))
-    unique(tolower(d$basename)[!d$matched &
+    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d, built_names[[i]]) &
                                  !(tolower(d$basename) %in% produced_before[[i]])])
   })
   file_unresolved <- lengths(unresolved_list) > 0L
@@ -1472,15 +1578,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
   # ── 7. Traffic light (static part) ──────────────────────────────────────────
-  # Static red is the "code cannot run only because size-gated inputs were
-  # withheld" story: some inputs missing, and all of them size-gated. When the
-  # code is actually run (execute = TRUE), an execution ERROR overrides this to
-  # red below — a script that crashes is a reproduction failure.
-  tl <- if (n_missing_inputs > 0 && n_withheld == n_missing_inputs) "red"
-        else if (parse_errs == 0 && n_missing_inputs == 0 &&
-                 length(cycle) == 0 && !ambiguous_order &&
-                 sum(ambiguous_n) == 0) "green"
-        else "yellow"
+  # When the code is actually run (execute = TRUE), the light is worked out again
+  # below from what still counts as missing, and an execution ERROR overrides it
+  # to red — a script that crashes is a reproduction failure.
+  tl_clean <- parse_errs == 0 && length(cycle) == 0 && !ambiguous_order &&
+    sum(ambiguous_n) == 0
+  tl <- .repro_static_light(missing_inputs, tl_clean)
 
   # (SPSS/Stata data without syntax turns the light red for the paper as a
   # whole, after both languages -- see "## Shared across languages" below.)
@@ -1494,6 +1597,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # timed-out script forces red (see after the block).
   run_results <- NULL
   install_results <- NULL
+  r_not_downloaded <- NULL
   # scripts whose output was searched only in part (see .repro_output_head())
   stat_cut <- integer(0)
   if (isTRUE(execute)) {
@@ -1512,6 +1616,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
     }
     lib_dir <- file.path(sandbox_root, "_lib")
+    # in Docker the library is a volume, removed with the sandbox (#568)
+    if (sandbox == "docker" && !isTRUE(keep_sandbox))
+      on.exit(.repro_docker_lib_remove(lib_dir), add = TRUE)
     .dbg("sandbox root: ", sandbox_root)
 
     # With recorded_versions = TRUE, when the repository records package versions,
@@ -1533,6 +1640,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                       docker_use_declared_version), call. = FALSE)
     install_r <- isTRUE(install_missing) || (is.null(install_missing) && !is.null(recorded))
     to_install <- if (!is.null(recorded)) .repro_install_order(recorded$deps) else install_deps
+    # Only the packages of files that run are installed, not those of a package's
+    # code, its tests or a copy of a tool, which are not run (#568): in
+    # 10.1111/2041-210X.13787 one script ran, for 2 seconds, after 35 minutes of
+    # installing what 766 files of a web application import.
+    if (is.null(recorded) && any(sniff_type %in% "not_analysis")) {
+      r_run_rows <- !sniff_type %in% "not_analysis"
+      r_needed <- unique(c(repro_dependencies(code_text_list[r_run_rows], "R")$package,
+                           tryCatch(code_packages(r_files$packages[r_run_rows]), error = function(e) character(0))))
+      if (any(!to_install$package %in% r_needed))
+        .dbg("not installing ", sum(!to_install$package %in% r_needed),
+             " package(s) only files that are not run use: ",
+             paste(to_install$package[!to_install$package %in% r_needed], collapse = ", "))
+      to_install <- to_install[to_install$package %in% r_needed, , drop = FALSE]
+    }
 
     # Docker base image: by default the pre-built metacheck_r_large image (fast --
     # most dependencies already installed), regardless of what R version the
@@ -1560,20 +1681,50 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (sandbox == "docker") .dbg("docker image: ", docker_image)
 
     # 1. Build the data tree the plan describes, and write the scripts into it.
-    .dbg("materialising Psych-DS layout from plan (", nrow(plan %||% data.frame()),
-         " plan rows) ...")
+    .dbg("copying the repository (", nrow(plan %||% data.frame()), " files) ...")
     ml <- repro_materialize_layout(plan, structure_df, sandbox_root)
     .dbg("  materialised ", sum(attr(ml, "materialised")$ok %||% FALSE), "/",
          nrow(attr(ml, "materialised") %||% data.frame()), " files.")
+    # Stan files in the syntax Stan removed in 2.33 get the newer form (#568)
+    stan_rows <- .repro_upgrade_stan_files(sandbox_root)
+    # and Stan programs held in the R code as a quoted text (#568; see
+    # .repro_upgrade_stan_in_r())
+    for (k in seq_along(code_text_list)) {
+      up <- .repro_upgrade_stan_in_r(code_text_list[[k]])
+      if (!length(up$changes)) next
+      code_text_list[[k]] <- up$txt
+      stan_rows <- dplyr::bind_rows(stan_rows, data.frame(
+        file_name = names(code_text_list)[k], change_type = "stan_syntax",
+        detail = paste("Stan in the R code, from before 2.33:", paste(up$changes, collapse = ", "))))
+    }
+    # Git LFS pointers replaced by the deposit's copy of the file (#568)
+    lfs <- attr(ml, "lfs")
+    if (NROW(lfs)) stan_rows <- dplyr::bind_rows(stan_rows, data.frame(
+      file_name = basename(lfs$pointer), change_type = "lfs_pointer",
+      detail = "a Git LFS pointer, not the file; the deposit's copy of the stated size was used"))
     .dbg("writing ", n_code, " rewritten script(s) into the layout ...")
     # groundhog, checkpoint and renv calls would need the network, which is off
     # in a Docker run, and recorded versions are installed before the run.
     replace_env_calls <- !is.null(recorded) || sandbox == "docker"
     run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
-                                   script_paths = if (layout == "package") r_files$file_path,
-                                   writes_in_place = layout == "package",
-                                   replace_env_calls = replace_env_calls)
+                                   script_paths = r_script_places,
+                                   writes_in_place = TRUE,
+                                   replace_env_calls = replace_env_calls,
+                                   run_dirs = r_run_dirs)
     rprofile_replaced <- if (replace_env_calls) .repro_neutralise_rprofile(sandbox_root) else 0L
+    # here::here() needs a mark for the top of the project, which is often not
+    # deposited: it stopped with "Could not find a root" (#568, item 20). The
+    # mark goes where the script's own here() paths point, when they show it, not
+    # in its run folder: here("scripts", "functions.R") from scripts/ became
+    # scripts/scripts/functions.R (10.1111/1365-2664.14317; #568).
+    # The top always has a mark, so here() finds a root from every folder; a
+    # mark in each run folder came before the authors' own .Rproj at the top.
+    here_roots <- .repro_here_roots(code_text_list, r_run_dirs, plan)
+    rooted <- !is.na(here_roots)
+    root_dirs <- ifelse(here_roots[rooted] == ".", sandbox_root,
+                        file.path(sandbox_root, .portable_path(here_roots[rooted])))
+    for (d in unique(c(sandbox_root, root_dirs))) if (!length(list.files(d, pattern = "\\.Rproj$|^\\.here$|^DESCRIPTION$", all.files = TRUE)))
+      suppressWarnings(file.create(file.path(d, ".here")))
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
     # 2. Optionally install dependencies. sandbox = "process": CRAN sources
@@ -1625,10 +1776,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     #    on runs_as_r (not `parses`): a sniffed file (#394/#396) "parses" for
     #    the runnable/traffic-light bookkeeping above, but it is still not R
     #    and must not actually be handed to callr/Docker to execute.
-    parses_named <- stats::setNames(runs_as_r, r_files$file_name)
-    skip_files <- r_files$file_name[file_unresolved]
-    if (length(skip_files))
-      .dbg("skipping (missing inputs): ", paste(skip_files, collapse = ", "))
+    parses_named <- stats::setNames(runs_as_r & is.na(sniff_type), r_files$file_name)
+    # A file predicted to be missing does not stop a script from being run: the
+    # prediction is often wrong (a read inside if (file.exists()), a name built at
+    # run time), and running the script gives its real outcome and error.
     run_order_names <- order_tbl$file_name[order(order_tbl$order)]
 
     # A script another script runs with source() (main.R loads tidyverse,
@@ -1638,8 +1789,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # therefore not run on its own; it runs inside the script that sources it,
     # and is recorded as `run_by_source`. See .repro_run_by_source() for when
     # a sourced script still runs on its own.
-    can_run <- stats::setNames(runs_as_r & !(r_files$file_name %in% skip_files),
-                               r_files$file_name)
+    # A test is not run, so what it sources is not run by it either.
+    can_run <- stats::setNames(runs_as_r & !sniff_type %in% "not_analysis", r_files$file_name)
     run_by_source <- .repro_run_by_source(order_tbl, can_run)
     if (length(run_by_source))
       .dbg("run only through source(): ", paste(sprintf("%s (by %s)", names(run_by_source),
@@ -1650,14 +1801,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         repro_run_scripts_docker(
           own, ord, sandbox_root = sandbox_root,
           lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
-          image = docker_image, timeout = timeout, skip = skip_files,
+          image = docker_image, timeout = timeout,
           parses = parses_named, failed_deps = failed_deps,
-          deadline = script_deadline)
+          deadline = script_deadline, net = net)
       } else {
         repro_run_scripts(
           own, ord,
           lib_dir = if (dir.exists(lib_dir)) lib_dir else NULL,
-          timeout = timeout, skip = skip_files, parses = parses_named,
+          timeout = timeout, parses = parses_named,
           failed_deps = failed_deps, deadline = script_deadline)
       }
       if (!length(run_by_source)) return(res)
@@ -1674,6 +1825,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     .dbg("running ", length(run_order_names), " script(s) in order: ",
          paste(run_order_names, collapse = " -> "))
     if (is.null(script_deadline)) script_deadline <- .repro_deadline(total_timeout)
+    # the files there before the run, to see which a script wrote (see the end)
+    r_names_before <- .repro_sandbox_names(sandbox_root)
     run_results <- run_r_scripts(run_tbl, run_order_names)
     .dbg("execution finished (pass 1). outcomes: ",
          paste(sprintf("%s=%s", run_results$file_name, run_results$outcome),
@@ -1716,6 +1869,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # definer_lookup survives for the reorder case. A list, since a script
     # can get several packages (see .repro_missing_fn_pkgs()).
     library_injections <- list()
+    # file_name -> the scripts to load first in the re-run
+    run_after <- list()
     if (nrow(undef_err) > 0) {
       # "could not find function \"X\"" vs "object 'X' not found" — the SAME
       # regexes repro_run_scripts() itself matched against (R/reproducibility_
@@ -1746,10 +1901,22 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         definers <- setdiff(def_of(v), user)
         if (length(definers) > 0)
           definer_lookup[[paste0(user, "||", v)]] <- paste(definers, collapse = ", ")
+        # Of several, the one in the user's own folder, when that is one file.
+        if (length(definers) > 1) {
+          near <- definers[dirname(r_script_paths[match(definers, r_files$file_name)]) ==
+                             dirname(r_script_paths[match(user, r_files$file_name)])]
+          if (length(near) == 1) definers <- near
+        }
         # Only act when exactly one file defines it (unambiguous); 0 = genuinely
         # undefined (a real bug, leave it), >1 = ambiguous (do not guess).
         if (length(definers) == 1) {
           extra_edges <- c(extra_edges, list(c(definers, user)))
+          # Authors often run scripts one after another in one session. Each script
+          # here has a session of its own, so the order alone cannot give it the
+          # object: the re-run loads the defining script first (#568, item 16).
+          # Not when the defining script already loads this one: that never ends.
+          if (!user %in% run_after[[definers]] && !definers %in% run_after[[user]])
+            run_after[[user]] <- c(run_after[[user]], definers)
           .dbg("undefined-var edge: '", definers, "' defines '", v,
                "' needed by '", user, "'")
         } else if (length(definers) == 0 && isTRUE(is_fn_missing[i]) &&
@@ -1777,12 +1944,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         # (repro_write_scripts()'s own `inject_libs` param — see #390) before
         # re-running; a file with no injection this pass is written exactly
         # as before (inject_libs only touches files named in it).
-        run_tbl2 <- if (length(library_injections) > 0)
+        run_tbl2 <- if (length(library_injections) > 0 || length(run_after) > 0)
           repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
                               inject_libs = library_injections,
-                              script_paths = if (layout == "package") r_files$file_path,
-                              writes_in_place = layout == "package",
-                              replace_env_calls = replace_env_calls) else run_tbl
+                              script_paths = r_script_places,
+                              writes_in_place = TRUE,
+                              replace_env_calls = replace_env_calls,
+                              run_dirs = r_run_dirs,
+                              prepend = .repro_run_after_lines(run_after, run_tbl, sandbox_root)) else run_tbl
         .dbg("re-running ", length(run_order2), " script(s) in corrected order",
              if (length(library_injections) > 0) sprintf(
                " (with %d library() injection(s): %s)",
@@ -1811,8 +1980,152 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                    collapse = "; "))
       }
     }
+    # A script that stopped on a default of R that has changed since the code was
+    # written (text read as factors before R 4.0, data files in Latin-1) runs once
+    # more with the old default set at its top, and so do the scripts that
+    # stopped on a file it writes, which it may now make (#568).
+    old_defaults_used <- .repro_old_defaults(run_results)
+    if (length(old_defaults_used)) {
+      makers_write <- unlist(io$writes[io$file_name %in% names(old_defaults_used)])
+      stopped_on <- vapply(seq_len(nrow(run_results)), function(i)
+        run_results$outcome[i] %in% "errored" &&
+          any(tolower(.repro_unopened_files(paste(run_results$error[i], run_results$stderr[i]))) %in% makers_write),
+        logical(1))
+      redo <- unique(c(names(old_defaults_used), run_results$file_name[stopped_on]))
+      # a script waiting for such a script's file was written for the same R, and
+      # in 10.1111/1365-2435.13388 then stopped on relevel(): it gets the same defaults
+      for (f in setdiff(redo, names(old_defaults_used)))
+        old_defaults_used[[f]] <- unique(unlist(old_defaults_used))
+      prepend_lines <- .repro_run_after_lines(run_after, run_tbl, sandbox_root)
+      for (f in names(old_defaults_used))
+        prepend_lines[[f]] <- c(.repro_old_default_lines(old_defaults_used[[f]]), prepend_lines[[f]])
+      .dbg("re-running ", length(redo), " script(s) with R's old defaults: ", paste(redo, collapse = ", "))
+      run_tbl <- repro_write_scripts(code_text_list, rewrite_list, plan, sandbox_root,
+                                     inject_libs = library_injections,
+                                     script_paths = r_script_places,
+                                     writes_in_place = TRUE,
+                                     replace_env_calls = replace_env_calls,
+                                     run_dirs = r_run_dirs,
+                                     prepend = prepend_lines)
+      run_now <- order_tbl$file_name[order(order_tbl$order)]
+      res_old <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                               c(intersect(run_now, redo), setdiff(redo, run_now)))
+      res_old <- res_old[res_old$outcome != "skipped_time_limit", , drop = FALSE]
+      run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res_old$file_name, , drop = FALSE],
+                                      res_old)
+      run_results <- run_results[order(match(run_results$file_name, run_now)), , drop = FALSE]
+    }
+
+    # A file a script could not open, which the repository lists but which was
+    # not downloaded, is fetched now, and the scripts that stopped on it run once
+    # more (#568). The first download leaves out some kinds of files, and a name
+    # built while the script runs cannot be seen before.
+    fetched_after <- character(0)
+    if (!identical(download, "none") && !isFALSE(download) && any(.repro_fetchable(structure_df))) {
+      stopped <- run_results$outcome %in% "errored"
+      unopened <- .repro_unopened_files(paste(run_results$error[stopped], run_results$stderr[stopped]))
+      rows <- .repro_fetchable(structure_df) &
+        tolower(basename(gsub("\\\\", "/", structure_df$file_name))) %in% tolower(unopened)
+      if (any(rows)) {
+        .dbg("fetching ", sum(rows), " file(s) scripts could not open: ",
+             paste(structure_df$file_name[rows], collapse = ", "))
+        structure_df <- .repro_fetch_files(structure_df, rows, max_file_size, max_download_size,
+                                           cache, skip_on_api_limit)
+        got <- rows & !is.na(structure_df$file_location)
+        if (any(got)) {
+          plan <- .repro_package_plan(structure_df)
+          new_plan <- plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE]
+          repro_materialize_layout(new_plan, structure_df, sandbox_root)
+          fetched_after <- structure_df$file_name[got]
+          redo <- run_results$file_name[stopped][vapply(which(stopped), function(i)
+            any(vapply(tolower(fetched_after), grepl, logical(1),
+                       x = tolower(paste(run_results$error[i], run_results$stderr[i])), fixed = TRUE)),
+            logical(1))]
+          if (length(redo)) {
+            .dbg("re-running ", length(redo), " script(s) with the fetched file(s): ", paste(redo, collapse = ", "))
+            res3 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                                  c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
+            keep <- !run_results$file_name %in% res3$file_name[res3$outcome != "skipped_time_limit"]
+            run_results <- dplyr::bind_rows(run_results[keep, , drop = FALSE],
+                                            res3[res3$outcome != "skipped_time_limit", , drop = FALSE])
+            run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
+          }
+        }
+      }
+    }
+    # A script that stopped on a file another script wrote later runs once more:
+    # a name built while a script runs cannot be seen before, so the order missed
+    # it (#568; see .repro_written_later()). Twice at most, for a chain.
+    r_written_later <- list()
+    r_placed <- .repro_place_written(list(), NULL, NULL, sandbox_root, character(0), character(0))
+    for (pass in 1:2) {
+      names_after <- .repro_sandbox_names(sandbox_root)
+      later <- .repro_written_later(run_results, r_names_before, names_after)
+      later <- later[!names(later) %in% names(r_written_later)]
+      if (!length(later)) break
+      redo <- names(later)
+      # a file written in another folder is copied to where the script looks
+      r_placed <- rbind(r_placed, .repro_place_written(later, run_results, run_tbl, sandbox_root,
+                                                       r_names_before, names_after))
+      .dbg("re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
+           paste(redo, collapse = ", "))
+      res4 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                            c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
+      res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
+      r_written_later <- c(r_written_later, later[names(later) %in% res4$file_name])
+      run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
+      run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
+    }
     attr(run_results, "reran_for_order") <- reran
     attr(run_results, "reran_for_reorder") <- reran_for_reorder
+
+    # A model file or other non-R content (see the sniff step above) was never a
+    # script to run: it gets an outcome of its own, not `not_parsed`, which
+    # counted it as a failure in the results (#568).
+    sniff_i <- match(run_results$file_name, r_files$file_name)
+    sniffed <- !is.na(sniff_i) & !is.na(sniff_type[sniff_i]) &
+      run_results$outcome != "run_by_source"   # functions a script sources were used
+    run_results$outcome[sniffed] <- sniff_type[sniff_i[sniffed]]
+    # A script whose container never started says nothing about the script.
+    if (sandbox == "docker") {
+      no_container <- run_results$outcome == "errored" &
+        .repro_docker_failed(paste(run_results$error, run_results$stderr))
+      run_results$outcome[no_container] <- "docker_failed"
+      run_results$error_type[no_container] <- NA_character_
+    }
+    # A script that stopped because nobody could answer it says nothing about the code.
+    asks_person <- run_results$outcome == "errored" &
+      (.repro_needs_person_error(paste(run_results$error, run_results$stderr)) |
+         # a program that needs its arguments from the person running it (#568)
+         .repro_needs_arguments(code_text_list[run_results$file_name],
+                                paste(run_results$error, run_results$stderr), "R"))
+    run_results$outcome[asks_person] <- "needs_a_person"
+    run_results$error_type[asks_person] <- NA_character_
+    # Stopped because the network is off, which says nothing about the code either.
+    if (sandbox == "docker") {
+      off_line <- run_results$outcome == "errored" &
+        .repro_needs_internet_error(paste(run_results$error, run_results$stderr))
+      run_results$outcome[off_line] <- "needs_internet"
+      run_results$error_type[off_line] <- NA_character_
+    }
+    # Stopped on a file the repository lists but that we did not download, such
+    # as one over the size limit: the script could not be tried (#568).
+    r_not_downloaded <- .repro_not_downloaded(run_results, structure_df)
+    nd_rows <- run_results$file_name %in% r_not_downloaded$script
+    run_results$outcome[nd_rows] <- "not_downloaded"
+    run_results$error_type[nd_rows] <- NA_character_
+    # Always a message, and a reason for each script that did not run through.
+    no_message <- run_results$outcome == "errored" & !grepl("\\S", paste0(run_results$error, run_results$stderr))
+    run_results$error[no_message] <- "the script stopped without a message"
+    run_results$reason <- .repro_failure_reason(run_results$outcome, paste(run_results$error, run_results$stderr))
+    # stopped on a Git LFS pointer the deposit has no file for: a missing file (#568)
+    r_lfs_stopped <- .repro_lfs_stopped(run_results, sandbox_root)
+    run_results$reason[run_results$file_name %in% names(r_lfs_stopped)] <- "file"
+
+    # A predicted missing file no longer counts for a script that ran through.
+    tl <- .repro_static_light(
+      .repro_inputs_after_run(missing_inputs, unresolved_list, r_files$file_name, run_results),
+      tl_clean)
 
     # An execution error (errored / timed_out) is a reproduction failure: force
     # the traffic light red, whatever the static signals said. A
@@ -1821,7 +2134,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome == "skipped_time_limit") && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -1918,6 +2231,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   table <- data.frame(
     paper_id       = if ("paper_id" %in% names(r_files)) r_files$paper_id else .pid(),
     file_name      = r_files$file_name,
+    file_path      = r_script_paths,
     parses         = parses,
     run_order      = ord_of,
     order_basis    = basis_of,
@@ -1934,6 +2248,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
   table$reads  <- reads_of
   table$writes <- writes_of
+  name_corrections <- .repro_name_corrections(rewrite_list)
+  table$names_corrected <- .repro_names_corrected(name_corrections, r_files$file_name)
+  table$used_by <- r_used_by
+  table$not_analysis_why <- r_software$why
+  # for a file of software that runs: what links it to the paper's results
+  table$paper_link <- ifelse(is.na(r_software$kind), .repro_sw_link_text(r_software$links), NA_character_)
+  table$repo_name <- if ("repo_name" %in% names(r_files)) r_files$repo_name else NA_character_
+  table$reason <- if (!is.null(run_results) && "reason" %in% names(run_results))
+    run_results$reason[match(r_files$file_name, run_results$file_name)] else NA_character_
 
   # ── 9. Report ───────────────────────────────────────────────────────────────
   intro <- if (isTRUE(execute))
@@ -1978,12 +2301,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   ## Path rewriting ----
   total_rewrites <- sum(rewrites_n)
   total_ambiguous <- sum(ambiguous_n)
-  report_paths <- if (layout == "package") sprintf(
-    "To run against the package, %d referenced data path%s that do%s not work as written would be rewritten to where the file is in the package.",
-    total_rewrites, plural(total_rewrites), plural(total_rewrites, "es", "")) else sprintf(
-    "To run against the Psych-DS layout, %d referenced data path%s would be rewritten to %s new location%s.",
-    total_rewrites, plural(total_rewrites),
-    plural(total_rewrites, "its", "their"), plural(total_rewrites))
+  report_paths <- .repro_path_fix_text(rewrite_list, execute)
   if (total_ambiguous > 0)
     report_paths <- paste(report_paths, sprintf(
       "%d reference%s matched several files sharing a name and could not be resolved by study group; %s left unrewritten and flagged.",
@@ -2003,11 +2321,25 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         "; %d could not be resolved and %s left unrewritten (the script runs ",
         n_call_unresolved, plural(n_call_unresolved, "was", "were")) |>
         paste0("against the original, un-rewritten call and will likely fail") else ""))
+  report_names <- .repro_name_report(name_corrections, execute)
 
   ## Missing inputs ----
-  if (n_missing_inputs == 0) {
-    report_missing <- "Every data file the code reads is either produced by an earlier script or present in the repository."
+  # When the code was run, its outcomes show what is missing, and code_check lists
+  # files that are not in the repository, so only what those two cannot say remains.
+  reported_inputs <- .repro_inputs_to_report(missing_inputs, execute)
+  if (nrow(reported_inputs) == 0) {
+    report_missing <- if (!isTRUE(execute)) "Every data file the code reads is either produced by an earlier script or present in the repository."
     missing_table <- NULL
+  } else if (isTRUE(execute)) {
+    report_missing <- sprintf(
+      "%d input file%s the code reads %s in the deposit but not usable as named: too large to download, inside an archive, or under a similar name.",
+      nrow(reported_inputs), plural(nrow(reported_inputs)),
+      plural(nrow(reported_inputs), "is", "are"))
+    missing_table <- data.frame(
+      File   = reported_inputs$basename,
+      Status = reported_inputs$status,
+      Reason = reported_inputs$detail
+    )
   } else {
     report_missing <- sprintf(
       "%d input file%s the code reads %s not available. Files withheld only because of their size are distinguished from files absent from the repository — the former are a size-cap issue, not a reproducibility failure.",
@@ -2023,9 +2355,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   report <- c(
     report,
     "#### Run order", report_order, scroll_table(order_table, maxrows = 10),
-    "#### File paths", report_paths,
-    "#### Missing inputs", report_missing,
-    if (!is.null(missing_table)) scroll_table(missing_table, maxrows = 10)
+    "#### File paths", report_paths, report_names,
+    if (!is.null(report_missing)) c("#### Missing inputs", report_missing),
+    if (!is.null(missing_table)) scroll_table(missing_table, maxrows = 10),
+    if (isTRUE(execute) && !is.null(run_results))
+      .repro_absent_report(.repro_inputs_after_run(missing_inputs, unresolved_list, r_files$file_name, run_results))
   )
   if (parse_errs > 0)
     report <- c(report, "#### Parsing", sprintf(
@@ -2037,7 +2371,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # does not read "the author has a bug" into a file that was never meant to
   # be standalone R in the first place.
   if (n_not_r_content > 0 || n_jags_model > 0) {
-    sniff_rows <- which(!is.na(sniff_type))
+    sniff_rows <- which(sniff_type %in% c("not_r_content", "jags_model"))
     report <- c(report, "#### Non-R content detected",
       if (n_not_r_content > 0) sprintf(
         "%d file%s that failed to parse %s not actually R content (a JSON/HTML/XML dump saved with an R-type extension) -- this is informational, not a reproducibility defect.",
@@ -2051,6 +2385,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         Detail = sniff_detail[sniff_rows],
         check.names = FALSE), maxrows = 10))
   }
+  report <- c(report, .repro_not_run_report(r_files$file_name, sniff_type, r_used_by, r_software$why))
 
   ## Execution ----
   if (!is.null(run_results) && nrow(run_results) > 0) {
@@ -2058,22 +2393,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_ran_ok  <- sum(oc == "ran_ok")
     n_errored <- sum(oc == "errored")
     n_timeout <- sum(oc == "timed_out")
-    n_skipped <- sum(oc == "skipped_missing_inputs")
     n_noparse <- sum(oc == "not_parsed")
     n_nodep   <- sum(oc == "dependency_unavailable")
     n_by_src  <- sum(oc == "run_by_source")
     n_late    <- sum(oc == "skipped_time_limit")
+    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content", "defines_functions", "not_analysis", "not_downloaded"))
     report_exec <- sprintf(
       paste0("**The code was run.** Each script ran in an isolated %s ",
              "against a throwaway copy of ", layout_name, ", in the run order ",
              "above, with a %d-second per-script timeout. Of %d script%s: %d ran ",
-             "without error, %d errored, %d timed out, %d %s skipped (inputs ",
-             "unavailable), %d could not run because one of its own ",
-             "dependencies is unavailable, %d did not parse%s.%s"),
+             "without error, %d errored, %d timed out, %d could not run because ",
+             "one of its own dependencies is unavailable, %d did not parse%s.%s"),
       if (sandbox == "docker") "Docker container" else "subprocess",
-      timeout, nrow(run_results), plural(nrow(run_results)),
-      n_ran_ok, n_errored, n_timeout, n_skipped,
-      plural(n_skipped, "was", "were"), n_nodep, n_noparse,
+      timeout, n_scripts, plural(n_scripts),
+      n_ran_ok, n_errored, n_timeout, n_nodep, n_noparse,
       if (n_by_src > 0) sprintf(", and %d %s run by another script with `source()`",
                                 n_by_src, plural(n_by_src, "was", "were")) else "",
       # recorded versions have their own part of the report (see below)
@@ -2088,6 +2421,43 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " %d %s not started, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
+    if (sum(oc == "docker_failed") > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **Docker failed for %d script%s, so %s not run.** This says nothing about the code; run the check again when Docker works.",
+        sum(oc == "docker_failed"), plural(sum(oc == "docker_failed")),
+        plural(sum(oc == "docker_failed"), "it was", "they were")))
+    if (sum(oc == "needs_a_person") > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **%d script%s need%s a person** to choose a file, answer a question or use an app, which cannot be reproduced without one: %s. Naming the file in the script solves this.",
+        sum(oc == "needs_a_person"), plural(sum(oc == "needs_a_person")), plural(sum(oc == "needs_a_person"), "s", ""),
+        paste(run_results$file_name[oc == "needs_a_person"], collapse = ", ")))
+    if (internet)
+      report_exec <- paste0(report_exec, " ", .repro_internet_text(net))
+    if (sum(oc == "needs_internet") > 0)
+      report_exec <- paste0(report_exec, .repro_needs_internet_text(run_results$file_name[oc == "needs_internet"], internet))
+    if (sum(oc == "download_too_large") > 0)
+      report_exec <- paste0(report_exec, .repro_download_stop_text(run_results$file_name[oc == "download_too_large"]))
+    if (sum(oc == "not_downloaded") > 0)
+      report_exec <- paste0(report_exec, .repro_not_downloaded_text(
+        r_not_downloaded[r_not_downloaded$script %in% run_results$file_name[oc == "not_downloaded"], , drop = FALSE],
+        max_file_size))
+    if (exists("old_defaults_used", inherits = FALSE) && length(old_defaults_used))
+      report_exec <- paste0(report_exec, .repro_old_defaults_text(
+        old_defaults_used, run_results$file_name[oc == "ran_ok"]))
+    if (length(run_after) > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **%d script%s use%s an object or function that only another script defines**, so in the second run that script was loaded first, in the same session: %s. Such a script should `source()` the other itself, since it does not run on its own.",
+        length(run_after), plural(length(run_after)), plural(length(run_after), "s", ""),
+        paste(sprintf("`%s` after `%s`", names(run_after), vapply(run_after, paste, character(1), collapse = "`, `")), collapse = "; ")))
+    if (exists("r_written_later", inherits = FALSE) && length(r_written_later))
+      report_exec <- paste0(report_exec, .repro_written_later_text(
+        r_written_later, run_results$file_name[oc == "ran_ok"], r_placed))
+    if (exists("r_lfs_stopped", inherits = FALSE) && length(r_lfs_stopped))
+      report_exec <- paste0(report_exec, .repro_lfs_stopped_text(r_lfs_stopped))
+    if (sum(lengths(r_choices_filled)) > 0)
+      report_exec <- paste0(report_exec, sprintf(
+        " **%d `file.choose()` call%s replaced by the file the code names**, so the script could run; the script should name the file itself.",
+        sum(lengths(r_choices_filled)), plural(sum(lengths(r_choices_filled)), " was", "s were")))
 
     # Scripts run only inside the script that sources them (see
     # run_by_source above): say which, and why they were not run on their own.
@@ -2298,11 +2668,21 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                 if (!is.null(report_undef)) c("**Undefined-variable errors**", report_undef),
                 if (!is.null(report_nodep)) c("**Dependency-unavailable errors**", report_nodep),
                 if (!is.null(report_setwd)) c("**`setwd()` in the code**", report_setwd),
+                if (exists("run_tbl", inherits = FALSE)) .repro_slash_report(run_tbl),
+                # what else we changed to run the code, so the authors can fix it themselves
+                if (exists("stan_rows", inherits = FALSE) && NROW(stan_rows)) c(
+                  "**Other changes we made to run the code**",
+                  paste("Stan files in the syntax Stan removed in version 2.33 were given the newer syntax,",
+                        "and Git LFS pointers (placeholders a GitHub archive holds instead of the file) were",
+                        "replaced by the deposit's copy of the file. Updating the Stan files, and depositing",
+                        "the files themselves, solves this."),
+                  scroll_table(data.frame(File = stan_rows$file_name, Change = stan_rows$detail), maxrows = 10)),
                 # The calls that install packages themselves cannot run here.
                 if (sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced > 0) c(
-                  "**`groundhog`, `checkpoint` and `renv` in the code**", sprintf(paste0(
-                    "%d call%s to these packages %s replaced, since they install packages ",
-                    "themselves: `groundhog.library()` by `library()`, the others by a ",
+                  "**Calls that install packages in the code**", sprintf(paste0(
+                    "%d call%s to `install.packages()`, `groundhog`, `checkpoint`, `renv`, `pacman` ",
+                    "and the like %s replaced, since they install packages themselves: ",
+                    "`groundhog.library()` and `p_load()` by `library()`, the others by a ",
                     "statement that does nothing. The scripts ran with the packages ",
                     "installed before the run."),
                     sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced,
@@ -2339,7 +2719,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       # which stays the authoritative text. Absent (older saved results, or a
       # category of NA) falls back to no label, same as before this was added.
       cat_label <- function(cat) {
-        nm <- c(cran_unavailable = "not available on CRAN for this R version",
+        nm <- c(source_unknown = "not on CRAN or Bioconductor, and the code does not say where it comes from",
+               cran_unavailable = "not available on CRAN for this R version",
                compile_failure = "compilation/configure failure",
                network = "network issue",
                transitive_dependency_missing = "a dependency of this package is unavailable",
@@ -2356,7 +2737,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           ifelse(nzchar(failed_cat), sprintf(" [%s]", failed_cat), ""),
           ifelse(nzchar(failed$message), sprintf(" (%s)", failed$message), "")),
           collapse = "; ")) else NULL
-      report <- c(report, report_inst, report_arch, report_fail)
+      report <- c(report, report_inst, report_arch, report_fail,
+                  .repro_source_unknown_text(.repro_source_unknown(install_results)))
     }
     report <- c(report, .repro_recorded_report(recorded, install_results, version_pin,
                                                sandbox, docker_use_declared_version))
@@ -2387,7 +2769,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_code, plural(n_code), if (sandbox == "docker") "Docker container" else "subprocess") else sprintf(
       "We assessed %d R code file%s for reproducibility (static analysis; no code was run).",
       n_code, plural(n_code)),
-    sprintf("%d file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
+    if (!isTRUE(execute)) sprintf("%d file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
             n_runnable, plural(n_runnable), if (n_runnable == 1) "s" else ""),
     if (n_dup > 0) sprintf(
       "%d file%s skipped as byte-identical duplicate%s of another file already in the run (the paper links more than one repository/component).",
@@ -2403,9 +2785,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (n_nodep_sum > 0) sprintf(
       "%d script%s could not run because %s own dependency is unavailable (not counted against the traffic light).",
       n_nodep_sum, plural(n_nodep_sum), plural(n_nodep_sum, "its", "their")),
-    if (n_missing_inputs > 0) sprintf(
+    if (nrow(reported_inputs) > 0) sprintf(
       "%d referenced input%s unavailable (%d withheld due to size).",
-      n_missing_inputs, plural(n_missing_inputs), n_withheld),
+      nrow(reported_inputs), plural(nrow(reported_inputs)), n_withheld),
     sprintf("%d installable dependenc%s detected.", n_deps,
             if (n_deps == 1) "y" else "ies"),
     .repro_recorded_summary(recorded, install_results),
@@ -2454,8 +2836,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
               detail = sprintf('"%s" -> "%s"', d$ref[good], d$target[good]),
               stringsAsFactors = FALSE)
   }))
+  # a name in the code spelled otherwise than in the deposit, for the authors
+  if (nrow(name_corrections))
+    rw_rows <- dplyr::bind_rows(rw_rows, data.frame(
+      file_name = name_corrections$file_name, change_type = "name_corrected",
+      detail = sprintf('"%s" -> "%s"', name_corrections$name_in_code, name_corrections$name_in_deposit)))
+  if (sum(lengths(r_choices_filled)) > 0)
+    rw_rows <- dplyr::bind_rows(rw_rows, data.frame(
+      file_name = rep(names(r_choices_filled), lengths(r_choices_filled)), change_type = "file_choice_filled",
+      detail = unlist(r_choices_filled, use.names = FALSE)))
 
   modifications <- if (isTRUE(execute)) {
+    run_after_rows <- if (exists("run_after", inherits = FALSE) && length(run_after))
+      data.frame(file_name = rep(names(run_after), lengths(run_after)), change_type = "loaded_first",
+                 detail = unlist(run_after, use.names = FALSE))
     setwd_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
                           "setwd_paths" %in% names(run_tbl)) {
       hit <- run_tbl$setwd_removed > 0 & nzchar(run_tbl$setwd_paths %||% "")
@@ -2492,7 +2886,23 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                 plural(run_tbl$env_calls_replaced[hit]))) else NULL
     } else NULL
 
-    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod)
+    slash_rows_mod <- if (exists("run_tbl", inherits = FALSE)) .repro_slash_rows(run_tbl)
+    old_default_rows <- if (exists("old_defaults_used", inherits = FALSE) && length(old_defaults_used))
+      data.frame(file_name = rep(names(old_defaults_used), lengths(old_defaults_used)),
+                 change_type = "old_default",
+                 detail = c(factors = "text read as factors, as before R 4.0",
+                            latin1 = "data files read as Latin-1")[unlist(old_defaults_used, use.names = FALSE)])
+    stan_rows_mod <- if (exists("stan_rows", inherits = FALSE)) stan_rows
+    later_rows <- if (exists("r_written_later", inherits = FALSE) && length(r_written_later))
+      data.frame(file_name = rep(names(r_written_later), lengths(r_written_later)),
+                 change_type = "run_again",
+                 detail = paste("run once more after another script wrote",
+                                unlist(r_written_later, use.names = FALSE)))
+    if (exists("r_placed", inherits = FALSE) && nrow(r_placed))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_placed$script, change_type = "output_copied",
+        detail = sprintf("copied %s, written by another script, to %s", r_placed$from, r_placed$to)))
+    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
+                     slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
     modifications <- data.frame(file_name = character(0), change_type = character(0),
@@ -2560,6 +2970,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_summary_text <- NULL
   py_run_results <- NULL
   py_install_results <- NULL
+  py_not_downloaded <- NULL
   py_stat_cut <- integer(0)
   py_modifications <- data.frame(file_name = character(0), change_type = character(0),
                                  detail = character(0))
@@ -2636,6 +3047,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py_files <- py_files[!py_dup, , drop = FALSE]
     n_py_code <- nrow(py_files)
   }
+  # a name of its own for each file, as for R above; also apart from R's names,
+  # since an R and a Python notebook can share one
+  py_files$file_name <- .repro_unique_script_names(py_files, taken = r_files$file_name)
 
   # A notebook is JSON and a Quarto document is Markdown: their Python code is
   # extracted first, as code_check does (and as the R path purls an
@@ -2651,6 +3065,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       error = function(e) character(0))
   })
   names(py_code_text_list) <- py_files$file_name
+  # What was left out of a notebook or added to a script to run it, to report.
+  py_commands_removed <- lapply(seq_len(n_py_code), function(i) {
+    if (!grepl("\\.ipynb$", py_files$file_name[i], ignore.case = TRUE)) return(character(0))
+    path <- py_resolve_row_path(i)
+    if (is.na(path)) return(character(0))
+    tryCatch(.code_notebook_parts(code_read(path))$removed, error = function(e) character(0))
+  })
+  names(py_commands_removed) <- py_files$file_name
+  py_uses_get_ipython <- vapply(py_code_text_list, function(txt)
+    !identical(.repro_py_get_ipython(txt), txt), logical(1))
+  py_code_text_list <- lapply(py_code_text_list, .repro_py_get_ipython)
 
   # ── Dependencies (pooled across files) ────────────────────────────────────
   # requirements.txt / pyproject.toml, if the repository has one: preferred
@@ -2690,22 +3115,28 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── Per-file path rewrite + I/O for ordering ──────────────────────────────
   py_io <- repro_file_io(py_code_text_list, "Python")
 
+  py_script_paths <- .repro_script_path(py_files)
   py_rewrite_list <- lapply(seq_len(n_py_code), function(i)
     repro_rewrite_paths(py_code_text_list[[i]], py_files$file_name[i], plan, "Python",
-                       structure_df = structure_df))
+                       structure_df = structure_df, script_path = py_script_paths[i]))
   names(py_rewrite_list) <- py_files$file_name
-  if (layout == "package") py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i)
-    .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_files$file_path[i])), names(py_rewrite_list))
+  py_order_tbl <- repro_run_order(py_io)
+  py_script_places <- .repro_script_places(py_files)
+  py_run_dirs <- .repro_run_folders(py_script_places, py_code_text_list, plan, py_order_tbl, "Python")
+  py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i)
+    .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_script_paths[i], py_run_dirs[i])), names(py_rewrite_list))
 
   py_rewrites_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
   py_ambiguous_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$ambiguous) else 0L, integer(1))
-  py_unresolved_refs <- unlist(lapply(py_rewrite_list, function(d)
-    if (nrow(d)) d$basename[!d$matched] else character(0)), use.names = FALSE)
+  py_built_names <- lapply(py_code_text_list, .repro_built_names, "Python")
+  py_unresolved_refs <- unlist(lapply(seq_len(n_py_code), function(i) {
+    d <- py_rewrite_list[[i]]
+    if (nrow(d)) d$basename[!d$matched & .repro_ref_checkable(d, py_built_names[[i]])] else character(0)
+  }), use.names = FALSE)
 
   # ── Run order ──────────────────────────────────────────────────────────
-  py_order_tbl <- repro_run_order(py_io)
   py_cycle <- attr(py_order_tbl, "cycle") %||% character(0)
   py_ambiguous_order <- isTRUE(attr(py_order_tbl, "ambiguous"))
   py_fuzzy_sources <- attr(py_order_tbl, "fuzzy_sources") %||%
@@ -2724,10 +3155,35 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # none (e.g. sandbox = "docker" on a machine without Python), every file
   # counts as parsing and a syntax error only shows when the code is run.
   py_parse_bin <- .repro_find_python()
-  py_parses <- unname(.repro_py_parses(py_code_text_list))
-  n_py_noparse_static <- sum(!py_parses)
+  py_parse_result <- .repro_py_parses(py_code_text_list)
+  py_parses <- as.vector(py_parse_result)
+  py_python2 <- as.vector(attr(py_parse_result, "python2") %||% rep(FALSE, n_py_code))
+  # A package's tests and setup.py are not the analysis, nor are the files of
+  # software, as for R above.
+  py_raw_text_list <- lapply(seq_len(n_py_code), function(i) {
+    path <- py_resolve_row_path(i)
+    if (is.na(path)) character(0) else tryCatch(code_read(path), error = function(e) character(0))
+  })
+  py_software <- .repro_software_kind(py_script_paths, py_code_text_list, structure_df, py_files$repo_name,
+                                      paper_text = .repro_paper_text(paper), raw_text_list = py_raw_text_list)
+  py_chain <- .repro_sw_chain(py_software$kind, py_files$file_name, py_io,
+                              imported = .repro_py_imported(py_code_text_list, py_files$file_path),
+                              repos = py_files$repo_name, links = py_software$links)
+  py_software$kind[!is.na(py_chain)] <- NA_character_
+  py_software$links[!is.na(py_chain)] <- py_chain[!is.na(py_chain)]
+  py_not_analysis <- vapply(seq_len(n_py_code), function(i)
+    .repro_is_py_test(py_script_paths[i], py_code_text_list[[i]]), logical(1)) | !is.na(py_software$kind)
+  n_py_noparse_static <- sum(!py_parses & !py_not_analysis)
+  # A server waits for a connection until the time limit, so it is not run.
+  py_server <- vapply(py_code_text_list, .repro_py_starts_server, logical(1), USE.NAMES = FALSE) & !py_not_analysis
   # Set when the execute phase below could not run the Python code at all.
   py_exec_error <- NULL
+  # the scripts run with Python 2.7, and those run once more after a later script
+  # wrote their file (see the execute phase)
+  py_ran_py2 <- character(0)
+  py2_tried <- character(0)
+  py_written_later <- list()
+  py_placed <- .repro_place_written(list(), NULL, NULL, ".", character(0), character(0))
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
   py_placeable <- !is.na(py_file_order)
 
@@ -2746,27 +3202,26 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_unresolved_list <- lapply(seq_len(n_py_code), function(i) {
     d <- py_rewrite_list[[i]]
     if (!nrow(d)) return(character(0))
-    unique(tolower(d$basename)[!d$matched &
+    unique(tolower(d$basename)[!d$matched & .repro_ref_checkable(d, py_built_names[[i]]) &
                                  !(tolower(d$basename) %in% py_produced_before[[i]])])
   })
   py_file_unresolved <- lengths(py_unresolved_list) > 0L
-  py_runnable <- py_parses & py_placeable & !py_file_unresolved
+  py_runnable <- py_parses & py_placeable & !py_file_unresolved & !py_not_analysis
   n_py_runnable <- sum(py_runnable)
 
   py_not_runnable_reason <- ifelse(
     py_runnable, NA_character_,
-    ifelse(!py_parses, "parse_error",
-           ifelse(!py_placeable, "unplaceable", "missing_input")))
+    ifelse(py_not_analysis, "not_analysis",
+    ifelse(py_python2, "python2", ifelse(!py_parses, "parse_error",
+           ifelse(!py_placeable, "unplaceable", "missing_input")))))
   py_unresolved_inputs <- vapply(py_unresolved_list, function(x)
     if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
   # ── Traffic light (static part) ───────────────────────────────────────────
   # Same priority structure as the R path's own static tl (section 7 above).
-  py_tl <- if (n_py_missing_inputs > 0 && n_py_withheld == n_py_missing_inputs) "red"
-           else if (n_py_noparse_static == 0 && n_py_missing_inputs == 0 &&
-                    length(py_cycle) == 0 && !py_ambiguous_order &&
-                    sum(py_ambiguous_n) == 0) "green"
-           else "yellow"
+  py_tl_clean <- n_py_noparse_static == 0 && length(py_cycle) == 0 &&
+    !py_ambiguous_order && sum(py_ambiguous_n) == 0
+  py_tl <- .repro_static_light(py_missing_inputs, py_tl_clean)
 
   ## ── Execution (opt-in; runs downloaded code) ────────────────────────────
   if (isTRUE(execute)) {
@@ -2791,13 +3246,33 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       repro_materialize_layout(plan, structure_df, sandbox_root)
     }
     py_lib_dir <- file.path(sandbox_root, "_pylib")
+    if (sandbox == "docker" && !isTRUE(keep_sandbox))
+      on.exit(.repro_docker_lib_remove(py_lib_dir), add = TRUE)
 
     .dbg("[repro/py] writing ", n_py_code, " rewritten script(s) into the layout ...")
     py_run_tbl <- repro_write_scripts(py_code_text_list, py_rewrite_list, plan,
                                       sandbox_root, lang = "Python",
-                                      script_paths = if (layout == "package") py_files$file_path,
-                                      writes_in_place = layout == "package")
+                                      script_paths = py_script_places,
+                                      writes_in_place = TRUE,
+                                      run_dirs = py_run_dirs)
     .dbg("[repro/py]   wrote ", nrow(py_run_tbl), " script(s).")
+    # where each script finds the repository's own modules
+    py_sandbox_files <- gsub("\\\\", "/", list.files(sandbox_root, recursive = TRUE))
+    py_sandbox_files <- py_sandbox_files[!grepl("^(_pylib|_rlib|output|statistical_output)/", py_sandbox_files)]
+    py_run_tbl$module_root <- sandbox_root
+    py_import_names <- .repro_py_import_names(py_code_text_list)
+    py_import_links <- .repro_py_import_links(py_import_names, py_files$file_path)
+    py_run_tbl$module_folders <- vapply(seq_len(nrow(py_run_tbl)), function(i) {
+      place <- sub(paste0(gsub("\\\\", "/", normalizePath(sandbox_root, mustWork = FALSE)), "/"), "",
+                   gsub("\\\\", "/", normalizePath(py_run_tbl$script_path[i], mustWork = FALSE)), fixed = TRUE)
+      # the script's imports and those of the repository's files it imports (#568);
+      # only for files that run, which keeps this short in a copy of a tool
+      fn <- py_run_tbl$file_name[i]
+      if (fn %in% py_files$file_name[py_not_analysis | py_server]) return("")
+      own_mods <- .repro_py_local_closure(py_import_names, py_files$file_path, fn, py_import_links)
+      paste(.repro_py_module_folders(unlist(py_code_text_list[c(fn, own_mods)], use.names = FALSE),
+                                     place, py_sandbox_files), collapse = "\n")
+    }, character(1))
 
     # The process sandbox needs a Python interpreter on this computer (looked
     # up above as py_parse_bin: `python`, else `python3`); sandbox = "docker"
@@ -2808,15 +3283,32 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_exec_error <- paste0(.repro_python_missing_reason(), ".")
 
     py_failed_deps <- character(0)
-    if (is.null(py_exec_error) && isTRUE(install_missing) && n_py_deps > 0) {
-      .dbg("[repro/py] installing ", n_py_deps, " dependenc(y/ies): ",
-           paste(py_install_deps$package, collapse = ", "))
+    # Only the packages of files that run, and of the files they import, are
+    # installed, as for R above (#568): not those of a package's code, its tests,
+    # a copy of a tool or a server, which are not run.
+    py_run_set <- py_files$file_name[py_parses & !py_not_analysis & !py_server]
+    py_imports_of <- .repro_py_imported(py_code_text_list, py_files$file_path)
+    repeat {
+      more <- setdiff(names(py_imports_of)[vapply(py_imports_of, function(x) any(x %in% py_run_set), logical(1))],
+                      py_run_set)
+      if (!length(more)) break
+      py_run_set <- c(py_run_set, more)
+    }
+    py_needed <- repro_dependencies_py(py_code_text_list[py_run_set], manifest_text = py_manifest_text)$package
+    if (any(!py_install_deps$package %in% py_needed))
+      .dbg("[repro/py] not installing ", sum(!py_install_deps$package %in% py_needed),
+           " package(s) only files that are not run use: ",
+           paste(py_install_deps$package[!py_install_deps$package %in% py_needed], collapse = ", "))
+    py_to_install <- py_install_deps[py_install_deps$package %in% py_needed, , drop = FALSE]
+    if (is.null(py_exec_error) && isTRUE(install_missing) && nrow(py_to_install) > 0) {
+      .dbg("[repro/py] installing ", nrow(py_to_install), " dependenc(y/ies): ",
+           paste(py_to_install$package, collapse = ", "))
       py_install_results <- tryCatch(
         if (sandbox == "docker") {
-          repro_install_deps_py_docker(py_install_deps, py_lib_dir, timeout = timeout)
+          repro_install_deps_py_docker(py_to_install, py_lib_dir, timeout = .repro_install_limit(install_timeout, timeout, total_timeout))
         } else {
-          repro_install_deps_py(py_install_deps, py_lib_dir, python_bin = py_parse_bin,
-                                timeout = timeout)
+          repro_install_deps_py(py_to_install, py_lib_dir, python_bin = py_parse_bin,
+                                timeout = .repro_install_limit(install_timeout, timeout, total_timeout))
         },
         error = function(e) {
           py_exec_error <<- conditionMessage(e)
@@ -2834,12 +3326,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (!isTRUE(install_missing)) py_failed_deps <- py_install_deps$package
     }
 
-    py_parses_named <- stats::setNames(py_parses, py_files$file_name)
-    py_skip_files <- py_files$file_name[py_file_unresolved]
+    py_parses_named <- stats::setNames(py_parses & !py_not_analysis & !py_server, py_files$file_name)
     py_run_order_names <- py_order_tbl$file_name[order(py_order_tbl$order)]
     # A module other files import is not run on its own (see
     # .repro_py_imported()), like an R script another script source()s.
     py_imported <- .repro_py_imported(py_code_text_list, py_files$file_path)
+    # a file that does not parse keeps that outcome: it cannot run when imported either
+    py_imported <- py_imported[names(py_imported) %in% py_files$file_name[py_parses]]
+    # a test is not run, so a module only a test imports is not run by it
+    py_imported <- lapply(py_imported, setdiff, py_files$file_name[py_not_analysis])
+    py_imported <- py_imported[lengths(py_imported) > 0]
     if (length(py_imported))
       .dbg("[repro/py] imported by other files, not run on their own: ",
            paste(names(py_imported), collapse = ", "))
@@ -2848,31 +3344,173 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (is.null(script_deadline)) script_deadline <- .repro_deadline(total_timeout)
       .dbg("[repro/py] running ", length(py_run_order_names), " script(s) in order: ",
            paste(py_run_order_names, collapse = " -> "))
-      py_run_results <- tryCatch(
+      run_py <- function(tbl, ord) tryCatch(
         if (sandbox == "docker") {
           repro_run_scripts_py_docker(
-            py_run_tbl, py_run_order_names, sandbox_root = sandbox_root,
+            tbl, ord, sandbox_root = sandbox_root,
             lib_dir = if (dir.exists(py_lib_dir)) py_lib_dir else NULL,
-            timeout = timeout, skip = py_skip_files, parses = py_parses_named,
-            failed_deps = py_failed_deps, deadline = script_deadline)
+            timeout = timeout, parses = py_parses_named,
+            failed_deps = py_failed_deps, deadline = script_deadline, net = net)
         } else {
           repro_run_scripts_py(
-            py_run_tbl, py_run_order_names,
+            tbl, ord,
             lib_dir = if (dir.exists(py_lib_dir)) py_lib_dir else NULL,
             python_bin = py_parse_bin,
-            timeout = timeout, skip = py_skip_files, parses = py_parses_named,
+            timeout = timeout, parses = py_parses_named,
             failed_deps = py_failed_deps, deadline = script_deadline)
         },
         error = function(e) {
           py_exec_error <<- conditionMessage(e)
           NULL
         })
+      py_names_before <- .repro_sandbox_names(sandbox_root)
+      py_run_results <- run_py(py_run_tbl, py_run_order_names)
+      # A file a script could not open, which the repository lists but which was
+      # not downloaded, is fetched now, and those scripts run once more (#568; as
+      # for R above)
+      if (!is.null(py_run_results) && !identical(download, "none") && !isFALSE(download) &&
+          any(.repro_fetchable(structure_df))) {
+        py_stopped <- py_run_results$outcome %in% "errored"
+        py_unopened <- .repro_unopened_files(paste(py_run_results$error[py_stopped], py_run_results$stderr[py_stopped]))
+        rows <- .repro_fetchable(structure_df) &
+          tolower(basename(gsub("\\\\", "/", structure_df$file_name))) %in% tolower(py_unopened)
+        if (any(rows)) {
+          .dbg("[repro/py] fetching ", sum(rows), " file(s) scripts could not open")
+          structure_df <- .repro_fetch_files(structure_df, rows, max_file_size, max_download_size,
+                                             cache, skip_on_api_limit)
+          got <- rows & !is.na(structure_df$file_location)
+          if (any(got)) {
+            plan <- .repro_package_plan(structure_df)
+            repro_materialize_layout(plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE],
+                                     structure_df, sandbox_root)
+            got_names <- tolower(structure_df$file_name[got])
+            redo <- py_run_results$file_name[py_stopped][vapply(which(py_stopped), function(i)
+              any(vapply(got_names, grepl, logical(1),
+                         x = tolower(paste(py_run_results$error[i], py_run_results$stderr[i])), fixed = TRUE)),
+              logical(1))]
+            if (length(redo)) {
+              res3 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
+                             c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
+              if (!is.null(res3)) {
+                res3 <- res3[res3$outcome != "skipped_time_limit", , drop = FALSE]
+                py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res3$file_name, , drop = FALSE], res3)
+                py_run_results <- py_run_results[order(match(py_run_results$file_name, py_run_order_names)), , drop = FALSE]
+              }
+            }
+          }
+        }
+      }
+    }
+    # A script that stopped on a file another script wrote later runs once more,
+    # as for R above (#568): in 10.1111/2041-210X.13814 "analyse_results.py" ran
+    # before "create_inputs.py", which writes f"input{i}.txt".
+    if (!is.null(py_run_results) && exists("py_names_before", inherits = FALSE)) {
+      for (pass in 1:2) {
+        names_after <- .repro_sandbox_names(sandbox_root)
+        later <- .repro_written_later(py_run_results, py_names_before, names_after)
+        later <- later[!names(later) %in% names(py_written_later)]
+        if (!length(later)) break
+        redo <- names(later)
+        # a file written in another folder is copied to where the script looks
+        py_placed <- rbind(py_placed, .repro_place_written(later, py_run_results, py_run_tbl, sandbox_root,
+                                                           py_names_before, names_after))
+        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
+             paste(redo, collapse = ", "))
+        res4 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
+                       c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
+        if (is.null(res4)) break
+        res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
+        py_written_later <- c(py_written_later, later[names(later) %in% res4$file_name])
+        keep_order <- py_run_results$file_name
+        py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
+        py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
+      }
+    }
+    # Code written for Python 2 runs again with Python 2.7, with its own packages
+    # in _pylib2: the last versions that support Python 2 (#568). The code is not
+    # converted, since that can change results (`/` between whole numbers). A
+    # script that stopped on a Python 2 module it imports is run this way too.
+    py_ran_py2 <- character(0)
+    py2_image <- if (sandbox == "docker") .repro_docker_image_py2()
+    if (!is.null(py_run_results) && !is.null(py2_image)) {
+      py2_names <- py_run_results$file_name[
+        (py_run_results$file_name %in% py_files$file_name[py_python2] |
+           (py_run_results$outcome == "errored" &
+              .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))) &
+          !py_run_results$file_name %in% py_files$file_name[py_not_analysis | py_server]]
+      if (length(py2_names)) {
+        .dbg("[repro/py] running ", length(py2_names), " Python 2 script(s) with ", py2_image)
+        py2_lib_dir <- file.path(sandbox_root, "_pylib2")
+        if (!isTRUE(keep_sandbox)) on.exit(.repro_docker_lib_remove(py2_lib_dir), add = TRUE)
+        py2_failed_deps <- character(0)
+        if (isTRUE(install_missing)) {
+          py2_deps <- repro_dependencies_py(py_code_text_list[py2_names], manifest_text = py_manifest_text)
+          py2_deps <- py2_deps[!py2_deps$base & !py2_deps$package %in% py_local_modules, , drop = FALSE]
+          .dbg("[repro/py] installing ", nrow(py2_deps), " Python 2 dependenc(y/ies): ",
+               paste(py2_deps$package, collapse = ", "))
+          if (nrow(py2_deps)) {
+            py2_install <- tryCatch(
+              repro_install_deps_py_docker(py2_deps, py2_lib_dir, image = py2_image, timeout = .repro_install_limit(install_timeout, timeout, total_timeout)),
+              error = function(e) {
+                .dbg("[repro/py]   Python 2 install stopped: ", conditionMessage(e))
+                NULL
+              })
+            py2_failed_deps <- if (is.null(py2_install)) py2_deps$package else
+              py2_install$package[!py2_install$installed]
+            .dbg("[repro/py]   Python 2 install done; not installed: ",
+                 if (length(py2_failed_deps)) paste(py2_failed_deps, collapse = ", ") else "none")
+          }
+        }
+        res2 <- tryCatch(repro_run_scripts_py_docker(
+          py_run_tbl[py_run_tbl$file_name %in% py2_names, , drop = FALSE],
+          intersect(py_run_order_names, py2_names), sandbox_root = sandbox_root,
+          lib_dir = if (dir.exists(py2_lib_dir)) py2_lib_dir else NULL, image = py2_image,
+          timeout = timeout, failed_deps = py2_failed_deps, deadline = script_deadline, net = net),
+          error = function(e) NULL)
+        if (!is.null(res2) && nrow(res2)) {
+          # a script not started for lack of time says so, not "python2" (#568)
+          py_ran_py2 <- res2$file_name[res2$outcome != "skipped_time_limit"]
+          py2_tried <- res2$file_name
+          keep_order <- py_run_results$file_name
+          py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res2$file_name, , drop = FALSE], res2)
+          py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
+        }
+      }
     }
     if (!is.null(py_run_results) && length(py_imported)) {
       py_run_results <- py_run_results[!py_run_results$file_name %in% names(py_imported), , drop = FALSE]
       py_run_results <- dplyr::bind_rows(py_run_results, data.frame(
         file_name = names(py_imported), outcome = "run_by_import",
         error = "", stdout = "", stderr = ""))
+    }
+    # Python 2 code gets an outcome of its own: the parser's verdict, or, with no
+    # Python on this computer or for a script importing such a file, the error.
+    if (!is.null(py_run_results)) {
+      py_is_py2 <- (py_run_results$file_name %in% py_files$file_name[py_python2] |
+        (py_run_results$outcome == "errored" &
+           .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))) &
+        !py_run_results$file_name %in% py2_tried
+      py_run_results$outcome[py_is_py2] <- "python2"
+      py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
+      py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_server]] <- "needs_a_person"
+      if (sandbox == "docker") py_run_results$outcome[py_run_results$outcome == "errored" &
+        .repro_docker_failed(paste(py_run_results$error, py_run_results$stderr))] <- "docker_failed"
+      py_run_results$outcome[py_run_results$outcome == "errored" &
+        (.repro_needs_person_error(paste(py_run_results$error, py_run_results$stderr)) |
+           # a program that needs its arguments from the person running it (#568)
+           .repro_needs_arguments(py_code_text_list[py_run_results$file_name],
+                                  paste(py_run_results$error, py_run_results$stderr), "Python"))] <- "needs_a_person"
+      if (sandbox == "docker")
+        py_run_results$outcome[py_run_results$outcome == "errored" &
+          .repro_needs_internet_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_internet"
+      # stopped on a file we did not download (#568; as for R above)
+      py_not_downloaded <- .repro_not_downloaded(py_run_results, structure_df)
+      py_run_results$outcome[py_run_results$file_name %in% py_not_downloaded$script] <- "not_downloaded"
+      py_no_message <- py_run_results$outcome == "errored" & !grepl("\\S", paste0(py_run_results$error, py_run_results$stderr))
+      py_run_results$error[py_no_message] <- "the script stopped without a message"
+      py_run_results$reason <- .repro_failure_reason(py_run_results$outcome, paste(py_run_results$error, py_run_results$stderr))
+      py_lfs_stopped <- .repro_lfs_stopped(py_run_results, sandbox_root)
+      py_run_results$reason[py_run_results$file_name %in% names(py_lfs_stopped)] <- "file"
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -2900,8 +3538,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       }
     }
 
+    py_tl <- .repro_static_light(
+      .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
+      py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome == "skipped_time_limit") && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -2975,7 +3616,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_table <- data.frame(
     paper_id        = if ("paper_id" %in% names(py_files)) py_files$paper_id else .pid(),
     file_name       = py_files$file_name,
-    parses          = py_parses,
+    file_path       = py_script_paths,
+    parses          =py_parses,
     run_order       = py_ord_of,
     order_basis     = py_basis_of,
     depends_on      = py_dep_of,
@@ -2991,6 +3633,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
   py_table$reads  <- py_reads_of
   py_table$writes <- py_writes_of
+  py_name_corrections <- .repro_name_corrections(py_rewrite_list)
+  py_table$names_corrected <- .repro_names_corrected(py_name_corrections, py_files$file_name)
+  py_table$not_analysis_why <- ifelse(py_not_analysis, py_software$why, NA_character_)
+  py_table$paper_link <- ifelse(py_not_analysis, NA_character_, .repro_sw_link_text(py_software$links))
+  py_table$repo_name <- if ("repo_name" %in% names(py_files)) py_files$repo_name else NA_character_
+  py_table$reason <- if (!is.null(py_run_results) && "reason" %in% names(py_run_results))
+    py_run_results$reason[match(py_files$file_name, py_run_results$file_name)] else NA_character_
+  py_table$commands_removed <- vapply(py_commands_removed, function(x)
+    if (length(x)) paste(x, collapse = "; ") else NA_character_, character(1), USE.NAMES = FALSE)
 
   ## ── Report ────────────────────────────────────────────────────────────
   py_intro <- if (isTRUE(execute))
@@ -3022,21 +3673,27 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   py_total_rewrites <- sum(py_rewrites_n)
   py_total_ambiguous <- sum(py_ambiguous_n)
-  py_report_paths <- if (layout == "package") sprintf(
-    "To run against the package, %d referenced data path%s that do%s not work as written would be rewritten to where the file is in the package.",
-    py_total_rewrites, plural(py_total_rewrites), plural(py_total_rewrites, "es", "")) else sprintf(
-    "To run against the Psych-DS layout, %d referenced data path%s would be rewritten to %s new location%s.",
-    py_total_rewrites, plural(py_total_rewrites),
-    plural(py_total_rewrites, "its", "their"), plural(py_total_rewrites))
+  py_report_paths <- .repro_path_fix_text(py_rewrite_list, execute)
   if (py_total_ambiguous > 0)
     py_report_paths <- paste(py_report_paths, sprintf(
       "%d reference%s matched several files sharing a name and could not be resolved by study group; %s left unrewritten and flagged.",
       py_total_ambiguous, plural(py_total_ambiguous),
       plural(py_total_ambiguous, "it was", "they were")))
 
-  if (n_py_missing_inputs == 0) {
-    py_report_missing <- "Every data file the code reads is either produced by an earlier script or present in the repository."
+  py_reported_inputs <- .repro_inputs_to_report(py_missing_inputs, execute)
+  if (nrow(py_reported_inputs) == 0) {
+    py_report_missing <- if (!isTRUE(execute)) "Every data file the code reads is either produced by an earlier script or present in the repository."
     py_missing_table <- NULL
+  } else if (isTRUE(execute)) {
+    py_report_missing <- sprintf(
+      "%d input file%s the code reads %s in the deposit but not usable as named: too large to download, inside an archive, or under a similar name.",
+      nrow(py_reported_inputs), plural(nrow(py_reported_inputs)),
+      plural(nrow(py_reported_inputs), "is", "are"))
+    py_missing_table <- data.frame(
+      File   = py_reported_inputs$basename,
+      Status = py_reported_inputs$status,
+      Reason = py_reported_inputs$detail
+    )
   } else {
     py_report_missing <- sprintf(
       "%d input file%s the code reads %s not available. Files withheld only because of their size are distinguished from files absent from the repository — the former are a size-cap issue, not a reproducibility failure.",
@@ -3052,19 +3709,55 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_report <- c(
     py_report,
     "#### Run order", py_report_order, scroll_table(py_order_table, maxrows = 10),
-    "#### File paths", py_report_paths,
-    "#### Missing inputs", py_report_missing,
+    "#### File paths", py_report_paths, .repro_name_report(py_name_corrections, execute),
+    if (!is.null(py_report_missing)) c("#### Missing inputs", py_report_missing),
     if (!is.null(py_missing_table)) scroll_table(py_missing_table, maxrows = 10),
+    if (isTRUE(execute) && !is.null(py_run_results))
+      .repro_absent_report(.repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results)),
     # Same position as the R path's own "#### Parsing" subsection. Also shown
     # when the check could not be done, so a reader does not take a missing
     # section to mean every file parsed.
     if (!nzchar(py_parse_bin)) c("#### Parsing",
       sprintf("The Python files were not checked for syntax errors, because %s; a syntax error will only show if the code is run.",
               .repro_python_missing_reason()))
-    else if (n_py_noparse_static > 0) c("#### Parsing", sprintf(
-      "%d Python file%s did not parse and cannot be run (Python's own parser found a syntax error; code written for Python 2 also fails this check): %s.",
-      n_py_noparse_static, plural(n_py_noparse_static),
-      paste(py_files$file_name[!py_parses], collapse = ", ")))
+    else if (n_py_noparse_static > 0) c("#### Parsing",
+      if (sum(!py_parses & !py_python2) > 0) sprintf(
+        "%d Python file%s did not parse and cannot be run (Python's own parser found a syntax error): %s.",
+        sum(!py_parses & !py_python2), plural(sum(!py_parses & !py_python2)),
+        paste(py_files$file_name[!py_parses & !py_python2], collapse = ", ")),
+      if (sum(py_python2) > 0 && length(py_ran_py2)) sprintf(
+        paste0("%d Python file%s written for Python 2, which has been unsupported since 2020. ",
+               "We ran %s with Python 2.7 (Docker image `%s`), with the last versions of %s ",
+               "packages that support Python 2, which can differ from the versions the authors used. ",
+               "We did not convert the code. Python 2 gets no more fixes, so the authors could ",
+               "convert %s to Python 3: %s."),
+        sum(py_python2), plural(sum(py_python2), " is", "s are"),
+        plural(length(py_ran_py2), "it", "them"), .repro_docker_image_py2() %||% "",
+        plural(length(py_ran_py2), "its", "their"),
+        plural(sum(py_python2), "it", "them"),
+        paste(py_files$file_name[py_python2], collapse = ", "))
+      else if (sum(py_python2) > 0) sprintf(
+        paste0("%d Python file%s written for Python 2, which has been unsupported since 2020. ",
+               "We run Python 3, so %s not run, and we do not convert code, since that ",
+               "can change results: `/` between whole numbers divides differently. To be ",
+               "run, %s to be converted to Python 3 by the authors: %s."),
+        sum(py_python2), plural(sum(py_python2), " is", "s are"),
+        plural(sum(py_python2), "it was", "they were"),
+        plural(sum(py_python2), "it needs", "they need"),
+        paste(py_files$file_name[py_python2], collapse = ", "))),
+    .repro_not_run_report(py_files$file_name, ifelse(py_not_analysis, "not_analysis", NA_character_),
+                          why = py_software$why),
+    if (sum(lengths(py_commands_removed)) > 0 || any(py_uses_get_ipython)) c("#### Notebook commands", sprintf(
+      paste0("To run the Python code we left out %d notebook command%s, which %s not Python",
+             "%s. A command that installs a package or prepares a file did not run, so a ",
+             "later error can follow from that. A script that runs outside a notebook should not rely on them."),
+      sum(lengths(py_commands_removed)), plural(sum(lengths(py_commands_removed))),
+      plural(sum(lengths(py_commands_removed)), "is", "are"),
+      if (any(py_uses_get_ipython)) ", and added a stand-in for `get_ipython()` that does nothing" else ""),
+      if (sum(lengths(py_commands_removed)) > 0) scroll_table(data.frame(
+        File = rep(names(py_commands_removed), lengths(py_commands_removed)),
+        Command = unlist(py_commands_removed, use.names = FALSE),
+        check.names = FALSE), maxrows = 10))
   )
 
   if (!is.null(py_run_results) && nrow(py_run_results) > 0) {
@@ -3072,8 +3765,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_py_ran_ok  <- sum(py_oc == "ran_ok")
     n_py_errored <- sum(py_oc == "errored")
     n_py_timeout <- sum(py_oc == "timed_out")
-    n_py_skipped <- sum(py_oc == "skipped_missing_inputs")
     n_py_noparse <- sum(py_oc == "not_parsed")
+    n_py_python2 <- sum(py_oc == "python2")
     n_py_nodep   <- sum(py_oc == "dependency_unavailable")
     n_py_import  <- sum(py_oc == "run_by_import")
     n_late       <- sum(py_oc == "skipped_time_limit")
@@ -3081,16 +3774,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       paste0("**The Python code was run.** Each script ran in an isolated ",
              "%s against a throwaway copy of %s, in the run ",
              "order above, with a %d-second per-script timeout. Of %d script%s: ",
-             "%d ran without error, %d errored, %d timed out, %d %s skipped ",
-             "(inputs unavailable), %d could not run because one of its own ",
-             "dependencies is unavailable, and %d did not parse.%s Running ",
+             "%d ran without error, %d errored, %d timed out, %d could not run ",
+             "because one of its own dependencies is unavailable, %d did not ",
+             "parse, and %d %s written for Python 2 and not run.%s Running ",
              "against current package versions: a break can reflect version ",
              "drift, which argues for pinning versions (e.g. in a ",
              "`requirements.txt`)."),
       if (sandbox == "docker") "Docker container" else "subprocess",
-      layout_name, timeout, nrow(py_run_results), plural(nrow(py_run_results)),
-      n_py_ran_ok, n_py_errored, n_py_timeout, n_py_skipped,
-      plural(n_py_skipped, "was", "were"), n_py_nodep, n_py_noparse,
+      layout_name, timeout, sum(!py_oc %in% c("not_analysis", "not_downloaded")),
+      plural(sum(!py_oc %in% c("not_analysis", "not_downloaded"))),
+      n_py_ran_ok, n_py_errored, n_py_timeout, n_py_nodep, n_py_noparse,
+      n_py_python2, plural(n_py_python2, "is", "are"),
       if (n_py_import) sprintf(
         " %d %s not run on %s own, because other files import %s: %s.",
         n_py_import, plural(n_py_import, "file was", "files were"),
@@ -3106,6 +3800,32 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " %d %s not started, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
+    if (length(py_written_later))
+      py_report_exec <- paste0(py_report_exec, .repro_written_later_text(
+        py_written_later, py_run_results$file_name[py_oc == "ran_ok"], py_placed))
+    if (exists("py_lfs_stopped", inherits = FALSE) && length(py_lfs_stopped))
+      py_report_exec <- paste0(py_report_exec, .repro_lfs_stopped_text(py_lfs_stopped))
+    py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
+    if (length(py_ran_py2_here))
+      py_report_exec <- paste0(py_report_exec, sprintf(
+        " %d %s written for Python 2, so %s run with Python 2.7 instead of Python 3: %s.",
+        length(py_ran_py2_here), plural(length(py_ran_py2_here), "script is", "scripts are"),
+        plural(length(py_ran_py2_here), "it was", "they were"), paste(py_ran_py2_here, collapse = ", ")))
+    if (sum(py_oc == "docker_failed") > 0)
+      py_report_exec <- paste0(py_report_exec, sprintf(
+        " **Docker failed for %d script%s, so %s not run.** This says nothing about the code; run the check again when Docker works.",
+        sum(py_oc == "docker_failed"), plural(sum(py_oc == "docker_failed")),
+        plural(sum(py_oc == "docker_failed"), "it was", "they were")))
+    if (internet)
+      py_report_exec <- paste0(py_report_exec, " ", .repro_internet_text(net))
+    if (sum(py_oc == "needs_internet") > 0)
+      py_report_exec <- paste0(py_report_exec, .repro_needs_internet_text(py_run_results$file_name[py_oc == "needs_internet"], internet))
+    if (sum(py_oc == "download_too_large") > 0)
+      py_report_exec <- paste0(py_report_exec, .repro_download_stop_text(py_run_results$file_name[py_oc == "download_too_large"]))
+    if (sum(py_oc == "not_downloaded") > 0)
+      py_report_exec <- paste0(py_report_exec, .repro_not_downloaded_text(
+        py_not_downloaded[py_not_downloaded$script %in% py_run_results$file_name[py_oc == "not_downloaded"], , drop = FALSE],
+        max_file_size))
 
     py_setwd_rows <- if (exists("py_run_tbl", inherits = FALSE) &&
                          "setwd_removed" %in% names(py_run_tbl))
@@ -3219,6 +3939,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                    if (!is.null(py_report_undef)) c("**Undefined-name errors**", py_report_undef),
                    if (!is.null(py_report_nodep)) c("**Dependency-unavailable errors**", py_report_nodep),
                    if (!is.null(py_report_setwd)) c("**`os.chdir()` in the code**", py_report_setwd),
+                   if (exists("py_run_tbl", inherits = FALSE)) .repro_slash_report(py_run_tbl),
                    if (length(py_output_blocks) > 0)
                      "*Expand a row below to see the output each script produced.*",
                    py_output_blocks, py_truncation_note, .repro_output_cut_note(py_stat_cut))
@@ -3257,7 +3978,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_py_code, plural(n_py_code)) else sprintf(
       "We assessed %d Python code file%s for reproducibility (static analysis; no code was run).",
       n_py_code, plural(n_py_code)),
-    sprintf("%d Python file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
+    if (!isTRUE(execute)) sprintf("%d Python file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
             n_py_runnable, plural(n_py_runnable), if (n_py_runnable == 1) "s" else ""),
     if (n_py_dup > 0) sprintf(
       "%d Python file%s skipped as byte-identical duplicate%s of another file already in the run.",
@@ -3265,16 +3986,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Files other files import are not counted, as R's sourced scripts are not.
     if (isTRUE(execute) && !is.null(py_run_results)) {
       n_py_imp <- sum(py_run_results$outcome == "run_by_import")
-      n_py_own <- nrow(py_run_results) - n_py_imp
+      # nor are files of software (a package's tests, __init__.py)
+      n_py_own <- nrow(py_run_results) - n_py_imp - sum(py_run_results$outcome == "not_analysis")
       sprintf("%d of %d Python script%s ran without error when executed%s.",
               n_py_ran_ok_sum, n_py_own, plural(n_py_own),
               if (n_py_imp > 0) sprintf(" (%d more %s imported by other files, not run on %s own)",
                                         n_py_imp, plural(n_py_imp, "file is", "files are"),
                                         plural(n_py_imp, "its", "their")) else "")
     },
-    if (n_py_missing_inputs > 0) sprintf(
+    if (nrow(py_reported_inputs) > 0) sprintf(
       "%d referenced Python input%s unavailable (%d withheld due to size).",
-      n_py_missing_inputs, plural(n_py_missing_inputs), n_py_withheld),
+      nrow(py_reported_inputs), plural(nrow(py_reported_inputs)), n_py_withheld),
     sprintf("%d installable Python dependenc%s detected.", n_py_deps,
             if (n_py_deps == 1) "y" else "ies")
   ) |> paste("\n- ", x = _, collapse = "")
@@ -3301,6 +4023,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
               detail = sprintf('"%s" -> "%s"', d$ref[good], d$target[good]),
               stringsAsFactors = FALSE)
   }))
+  if (nrow(py_name_corrections))
+    py_rw_rows <- dplyr::bind_rows(py_rw_rows, data.frame(
+      file_name = py_name_corrections$file_name, change_type = "name_corrected",
+      detail = sprintf('"%s" -> "%s"', py_name_corrections$name_in_code, py_name_corrections$name_in_deposit)))
+  # notebook commands left out, and the stand-in for get_ipython(), for the authors
+  if (sum(lengths(py_commands_removed)) > 0)
+    py_rw_rows <- dplyr::bind_rows(py_rw_rows, data.frame(
+      file_name = rep(names(py_commands_removed), lengths(py_commands_removed)),
+      change_type = "notebook_command_removed",
+      detail = unlist(py_commands_removed, use.names = FALSE)))
+  if (any(py_uses_get_ipython))
+    py_rw_rows <- dplyr::bind_rows(py_rw_rows, data.frame(
+      file_name = py_files$file_name[py_uses_get_ipython], change_type = "get_ipython_added",
+      detail = "a stand-in for get_ipython() that does nothing"))
 
   py_modifications <- if (isTRUE(execute)) {
     # Reusing "setwd_removed" as the change_type label for os.chdir() removal
@@ -3318,7 +4054,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                   stringsAsFactors = FALSE)))
       else NULL
     } else NULL
-    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod)
+    py_slash_rows_mod <- if (exists("py_run_tbl", inherits = FALSE)) .repro_slash_rows(py_run_tbl)
+    py2_rows_mod <- if (length(py_ran_py2)) data.frame(
+      file_name = py_ran_py2, change_type = "python2",
+      detail = paste0("run with Python 2.7 (", .repro_docker_image_py2() %||% "", ")"))
+    py_later_rows <- if (length(py_written_later))
+      data.frame(file_name = rep(names(py_written_later), lengths(py_written_later)),
+                 change_type = "run_again",
+                 detail = paste("run once more after another script wrote",
+                                unlist(py_written_later, use.names = FALSE)))
+    if (nrow(py_placed))
+      py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_placed$script, change_type = "output_copied",
+        detail = sprintf("copied %s, written by another script, to %s", py_placed$from, py_placed$to)))
+    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod, py_later_rows)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))
     py_modifications <- data.frame(file_name = character(0), change_type = character(0),
@@ -3349,7 +4097,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Python code: SPSS/Stata data and syntax, self-reproducible output
   # (JASP/jamovi/SPSS-Viewer, Stata .smcl logs, notebook outputs), and other
   # code (SAS, MATLAB, ...) with no reproducible output to fall back on.
-  shared_report <- c(shared_match$report, spss_report, stata_report,
+  shared_report <- c(.repro_by_repository(table), shared_match$report, spss_report, stata_report,
                      self_repro_report, nonr_report)
   shared_summary_text <- if (!is.null(shared_match$summary)) paste0("\n- ", sprintf(
     "%d statistic%s stored from the extracted output; %d of %d reported test%s matched (%s%%).",
@@ -3417,13 +4165,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   install_results <- dplyr::bind_rows(r_install_results, py_install_results)
   if (!nrow(install_results)) install_results <- r_install_results %||% py_install_results
   modifications <- dplyr::bind_rows(r_modifications, py_modifications)
+  # the scripts, the software not run, and why scripts did not run through (#568, item 24)
+  run_counts <- .repro_run_counts(run_results)
+  summary_table <- cbind(summary_table, run_counts)
 
   out <- list(
     table = table,
     summary_table = summary_table,
     na_replace = c(repro_code_n = 0, repro_runnable = 0,
                    repro_missing_inputs = 0, repro_deps = 0,
-                   repro_ran_ok = 0),
+                   repro_ran_ok = 0,
+                   stats::setNames(rep(0, ncol(run_counts)), names(run_counts))),
     traffic_light = tl,
     report = report,
     summary_text = summary_text,
@@ -3464,7 +4216,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_tests = shared_match$summary$n_tests %||% NA_integer_,
       n_found = shared_match$summary$n_found %||% NA_integer_,
       sandbox = sandbox, timeout = timeout, install_missing = install_r,
-      recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice))
+      recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice),
+      net = net, source_unknown = .repro_source_unknown(install_results))
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

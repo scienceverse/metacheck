@@ -515,7 +515,30 @@ test_that("a script's groundhog and renv calls are replaced when recorded versio
   expect_equal(mo$run_results$outcome, "ran_ok")
   expect_match(mo$run_results$stdout, "VERSION 2.4.0", fixed = TRUE)
   expect_true("env_call_replaced" %in% mo$modifications$change_type)
-  expect_match(paste(unlist(mo$report), collapse = "\n"), "3 calls to these packages were replaced", fixed = TRUE)
+  expect_match(paste(unlist(mo$report), collapse = "\n"), "3 calls to `install.packages()`", fixed = TRUE)
+})
+
+test_that("internet = TRUE lets a script download what it reads, and the report says so (#568)", {
+  skip_if_quick()
+  skip_if_offline()
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  d <- withr::local_tempdir()
+  # about 30 KB, so a slow connection does not matter
+  writeLines(c(paste0('download.file("https://cloud.r-project.org/src/contrib/Archive/R6/R6_2.4.0.tar.gz", ',
+                      '"r6.tar.gz", mode = "wb", quiet = TRUE)'),
+               'stopifnot(file.size("r6.tar.gz") > 1e4)'), file.path(d, "get.R"))
+  run <- function(internet) suppressWarnings(suppressMessages(module_run(
+    test_paper(), "reproducibility_check", local_path = d, execute = TRUE,
+    sandbox = "docker", internet = internet, timeout = 120)))
+  off <- run(FALSE)
+  expect_equal(off$run_results$outcome, "needs_internet")
+  on <- run(TRUE)
+  expect_equal(on$run_results$outcome, "ran_ok")
+  expect_match(paste(unlist(on$report), collapse = "\n"), "The scripts could use the internet", fixed = TRUE)
+  expect_match(paste(unlist(on$checklist_section), collapse = "\n"), "The scripts could use the internet", fixed = TRUE)
 })
 
 # execute = TRUE, sandbox = "docker", workers > 1 (concurrent multi-paper) ----
@@ -666,6 +689,418 @@ test_that("static analysis: an R script that reads back the file it saved is run
   fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
   mo <- module_run(fake_code, "reproducibility_check")
   expect_true(mo$table$runnable)
+})
+
+test_that("static analysis: a name built at run time is not predicted to be missing (#568)", {
+  paper <- test_paper()
+  script <- withr::local_tempfile(fileext = ".R")
+  writeLines(c('x <- "a"', 'd <- read.csv(paste0(x, "_field.csv"))',
+               'e <- read.csv(sprintf("%s/results.csv", x))', 'f <- read.csv("absent.csv")',
+               'g <- read.csv(paste0(x, "field.csv"))', 'h <- read.csv(paste0(x, "/site.csv"))',
+               'i <- read.csv(paste0("data/", "whole.csv"))', 'j <- read.csv("sub\\\\windows.csv")'), script)
+  code_tbl <- code_tbl_row(paper, "built.R", script)
+  structure_df <- data.frame(paper_id = paper_id(paper), file_name = "data.csv",
+                             file_location = repro_fixture("data.csv"))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- module_run(fake_code, "reproducibility_check")
+  expect_setequal(strsplit(mo$table$unresolved_inputs, ", ", fixed = TRUE)[[1]],
+                  c("absent.csv", "whole.csv", "windows.csv"))
+  expect_equal(mo$summary_table$repro_missing_inputs, 3)
+})
+
+test_that("static analysis: a Python name joined to a variable is not predicted to be missing (#568)", {
+  paper <- test_paper()
+  script <- withr::local_tempfile(fileext = ".py")
+  writeLines(c('import pandas as pd', 'x = "a"', 'd = pd.read_csv(x + "field.csv")',
+               'e = pd.read_csv("absent.csv")'), script)
+  code_tbl <- code_tbl_row(paper, "built.py", script, language = "Python")
+  structure_df <- data.frame(paper_id = paper_id(paper), file_name = "data.csv",
+                             file_location = repro_fixture("data.csv"))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- module_run(fake_code, "reproducibility_check")
+  expect_equal(mo$table$unresolved_inputs, "absent.csv")
+})
+
+test_that("execute = TRUE: a predicted missing file does not colour the light of a script that ran (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  writeLines(c('if (file.exists("absent.csv")) d <- read.csv("absent.csv")', 'cat("done\\n")'),
+             file.path(d, "guarded.R"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  expect_equal(mo$run_results$outcome, "ran_ok")
+  expect_equal(mo$summary_table$repro_missing_inputs, 1)
+  expect_equal(mo$traffic_light, "green")
+})
+
+test_that("execute = TRUE runs a script with a predicted missing file (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  writeLines(c('if (file.exists("absent.csv")) d <- read.csv("absent.csv")', 'cat("done\\n")'),
+             file.path(d, "guarded.R"))
+  writeLines('d <- read.csv("really_absent.csv")', file.path(d, "stops.R"))
+  # without a data file there is no file plan, and so no prediction to test
+  file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["guarded.R"]], "ran_ok")
+  expect_equal(outcome[["stops.R"]], "errored")
+  # the prediction stays in the table, and code_check reports absent files
+  expect_match(mo$table$unresolved_inputs[mo$table$file_name == "stops.R"], "really_absent.csv", fixed = TRUE)
+  expect_no_match(paste(unlist(mo$report), collapse = "\n"), "#### Missing inputs", fixed = TRUE)
+})
+
+test_that("execute = TRUE: a Python script finds the repository's own modules (#568)", {
+  skip_if_quick()
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  {
+    d <- withr::local_tempdir()
+    for (f in c("proj/mymod", "proj/scripts")) dir.create(file.path(d, f), recursive = TRUE)
+    writeLines("", file.path(d, "proj", "mymod", "__init__.py"))
+    writeLines("VALUE = 1", file.path(d, "proj", "mymod", "core.py"))
+    writeLines(c("from mymod import core", "assert core.VALUE == 1", "print('ok')"), file.path(d, "proj", "scripts", "run.py"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["run.py"]], "ran_ok")
+  }
+})
+
+test_that("execute = TRUE: a script that uses what another script defines runs after it (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "one")); dir.create(file.path(d, "two"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "one", "d.csv"))
+    writeLines(c('dat <- read.csv("d.csv")', 'x <- nrow(dat)'), file.path(d, "one", "make.R"))
+    writeLines('stopifnot(x > 0)', file.path(d, "two", "use.R"))
+    # defined nowhere: stays a failure
+    writeLines('stopifnot(nothing > 0)', file.path(d, "two", "broken.R"))
+    # two scripts in other folders define it: not guessed
+    writeLines('w <- 1', file.path(d, "one", "w1.R")); writeLines('w <- 2', file.path(d, "w2.R"))
+    writeLines('stopifnot(w > 0)', file.path(d, "two", "unclear.R"))
+    # two scripts that need each other do not load each other for ever
+    writeLines(c('b <- 1', 'stopifnot(a == 1)'), file.path(d, "ca.R"))
+    writeLines(c('a <- 1', 'stopifnot(b == 1)'), file.path(d, "cb.R"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["use.R"]], "ran_ok")
+    expect_equal(outcome[["make.R"]], "ran_ok")
+    expect_equal(outcome[["broken.R"]], "errored")
+    expect_equal(outcome[["unclear.R"]], "errored")
+    expect_equal(mo$modifications$detail[mo$modifications$change_type == "loaded_first" &
+                                           mo$modifications$file_name == "use.R"], "make.R")
+    expect_match(paste(unlist(mo$report), collapse = "\n"), "`use.R` after `make.R`", fixed = TRUE)
+  }
+})
+
+test_that("execute = TRUE: scripts that ask a person, or need what a person's computer has (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  file.copy(repro_fixture("data.csv"), file.path(d, "only.csv"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "second.csv"))
+  writeLines(c('# the file is second.csv', 'a <- read.csv(file.choose())', 'stopifnot(nrow(a) > 0)'), file.path(d, "named.R"))
+  writeLines('a <- read.csv(file.choose())', file.path(d, "unnamed.R"))
+  writeLines(c('library(shiny)', 'runApp("nothing")'), file.path(d, "app.R"))
+  writeLines(c('View(1)', 'windowsFonts(A = windowsFont("Arial"))', 'dir.create("x", showWarnings = FALSE)',
+               'write.csv(1, "newfolder/deep/r.csv")', 'stopifnot(file.exists("newfolder/deep/r.csv"))'), file.path(d, "pc.R"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["named.R"]], "ran_ok")
+  expect_equal(outcome[["unnamed.R"]], "needs_a_person")
+  expect_equal(outcome[["app.R"]], "needs_a_person")
+  expect_equal(outcome[["pc.R"]], "ran_ok")
+  expect_equal(mo$modifications$detail[mo$modifications$change_type == "file_choice_filled"], "second.csv")
+  expect_false(identical(mo$traffic_light, "red"))
+})
+
+test_that("execute = TRUE: a file the code names, or a script could not open, is fetched (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  paper <- test_paper()
+  d <- withr::local_tempdir()
+  # named in the code: fetched before the run
+  writeLines(c('stopifnot(file.exists("fig.png"))'), file.path(d, "named.R"))
+  # a name built while the script runs: fetched after it stopped, and run again
+  writeLines(c('f <- paste0("la", "te.csv")', 'x <- read.csv(f)', 'stopifnot(nrow(x) > 0)'),
+             file.path(d, "built.R"))
+  code_tbl <- rbind(code_tbl_row(paper, "named.R", file.path(d, "named.R")),
+                    code_tbl_row(paper, "built.R", file.path(d, "built.R")))
+  structure_df <- data.frame(paper_id = paper_id(paper), repo_url = "https://zenodo.org/records/1",
+                             file_name = c("fig.png", "late.csv"), file_path = c("fig.png", "late.csv"),
+                             file_url = c("https://zenodo.org/f/1", "https://zenodo.org/f/2"),
+                             file_location = NA_character_, file_size = 100)
+  asked <- list()
+  local_mocked_bindings(download_repo_files = function(files, ...) {
+    asked[[length(asked) + 1]] <<- files$file_name
+    files$file_location <- vapply(files$file_name, function(f) {
+      p <- file.path(withr::local_tempdir(.local_envir = globalenv()), f)
+      file.copy(repro_fixture("data.csv"), p); p }, character(1), USE.NAMES = FALSE)
+    files
+  })
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- suppressMessages(module_run(fake_code, "reproducibility_check", execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(asked, list("fig.png", "late.csv"))
+  # the setting for the run is undone afterwards
+  expect_null(getOption("metacheck.download_for_run"))
+  expect_equal(outcome[["named.R"]], "ran_ok")
+  expect_equal(outcome[["built.R"]], "ran_ok")
+})
+
+test_that("execute = TRUE: a path to a folder the deposit lacks finds the file of its name (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "exploratory"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "exploratory", "VEG.csv"))
+  writeLines(c('d <- read.csv("./data/VEG.csv")', 'stopifnot(nrow(d) > 0)'),
+             file.path(d, "exploratory", "forest_age.R"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  expect_equal(mo$run_results$outcome, "ran_ok")
+  expect_match(paste(unlist(mo$report), collapse = "\n"), "does not work in the repository as deposited", fixed = TRUE)
+})
+
+test_that("execute = TRUE: a script runs from where its paths work (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  for (f in c("proj/R", "proj/data", "study", "study/out")) dir.create(file.path(d, f), recursive = TRUE)
+  file.copy(repro_fixture("data.csv"), file.path(d, "proj", "data", "d.csv"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "study", "near.csv"))
+  writeLines("x", file.path(d, "study", "out", "keep.txt"))
+  # the name is only known while the script runs, so no rewriting can follow it
+  writeLines(c('f <- paste0("data", "/", "d.csv")', 'stopifnot(file.exists("data/d.csv"))', "a <- read.csv(f)"),
+             file.path(d, "proj", "R", "from_top.R"))
+  writeLines(c('n <- paste0("near", ".csv")', 'stopifnot(file.exists("near.csv"))', "a <- read.csv(n)",
+               'write.csv(a, "out/result.csv")', 'stopifnot(file.exists("out/result.csv"))'),
+             file.path(d, "study", "own.R"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                    execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["from_top.R"]], "ran_ok")
+  expect_equal(outcome[["own.R"]], "ran_ok")
+})
+
+test_that("execute = TRUE: function files and tests are not run or counted as scripts (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "tests", "testthat"), recursive = TRUE)
+  writeLines("fit <- function(x) x + 1", file.path(d, "used.R"))
+  writeLines("other <- function(x) x", file.path(d, "unused.R"))
+  writeLines("helper <- function() 1", file.path(d, "sourced.R"))
+  writeLines(c('source("sourced.R")', "stopifnot(helper() == 1)"), file.path(d, "main.R"))
+  writeLines(c("fit <- function(x) x + 1", "stopifnot(fit(1) == 2)"), file.path(d, "script.R"))
+  writeLines('stop("a test that fails")', file.path(d, "tests", "testthat", "test-a.R"))
+  file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["unused.R"]], "defines_functions")
+  expect_equal(outcome[["sourced.R"]], "run_by_source")
+  expect_equal(outcome[["main.R"]], "ran_ok")
+  expect_equal(outcome[["script.R"]], "ran_ok")
+  expect_equal(outcome[["test-a.R"]], "not_analysis")
+  expect_true(is.na(mo$table$used_by[mo$table$file_name == "unused.R"]))
+  expect_equal(mo$traffic_light, "green")
+  report <- paste(unlist(mo$report), collapse = "\n")
+  expect_match(report, "#### Files not run on their own", fixed = TRUE)
+  expect_match(report, "Of 3 scripts: 2 ran without error", fixed = TRUE)
+})
+
+test_that("execute = TRUE: Python 2 code has its own outcome, and notebook commands are noted (#568)", {
+  skip_if_quick()
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  d <- withr::local_tempdir()
+  writeLines('print "old"', file.path(d, "old.py"))
+  writeLines('print("new")', file.path(d, "new.py"))
+  writeLines('import oldmod', file.path(d, "uses.py"))
+  writeLines('print "module"', file.path(d, "oldmod.py"))
+  jsonlite::write_json(list(
+    metadata = list(kernelspec = list(language = "python", name = "python3")),
+    cells = list(list(cell_type = "code", source = "%%bash\nls -l"),
+                 list(cell_type = "code", source = 'if "colab" in str(get_ipython()):\n    !pip install a\nprint("nb")'))),
+    file.path(d, "n.ipynb"), auto_unbox = TRUE)
+  file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+  mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d, execute = TRUE))
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["old.py"]], "python2")
+  expect_equal(outcome[["oldmod.py"]], "python2")
+  expect_equal(outcome[["new.py"]], "ran_ok")
+  expect_equal(outcome[["n.ipynb"]], "ran_ok")
+  expect_equal(mo$table$not_runnable_reason[mo$table$file_name == "old.py"], "python2")
+  expect_setequal(mo$modifications$detail[mo$modifications$change_type == "notebook_command_removed"],
+                  c("%%bash", "!pip install a"))
+  expect_true("get_ipython_added" %in% mo$modifications$change_type)
+  report <- paste(unlist(mo$report), collapse = "\n")
+  expect_match(report, "written for Python 2", fixed = TRUE)
+  expect_match(report, "#### Notebook commands", fixed = TRUE)
+})
+
+test_that("sandbox = \"docker\": Python 2 code runs with Python 2.7, with its own packages, and the report says so (#568)", {
+  skip_if_quick()
+  skip_if_offline()
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  d <- withr::local_tempdir()
+  # 5/2 is 2 in Python 2; six is installed into the Python 2 library
+  writeLines(c("import six", "print 'half', 5/2"), file.path(d, "old.py"))
+  writeLines('import oldmod', file.path(d, "uses.py"))
+  writeLines('import cPickle\nprint "module"', file.path(d, "oldmod.py"))
+  writeLines('print("new")', file.path(d, "new.py"))
+  run <- function() suppressWarnings(suppressMessages(module_run(
+    test_paper(), "reproducibility_check", local_path = d, execute = TRUE,
+    sandbox = "docker", install_missing = TRUE, timeout = 300)))
+  mo <- run()
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["old.py"]], "ran_ok")
+  expect_match(mo$run_results$stdout[mo$run_results$file_name == "old.py"], "half 2", fixed = TRUE)
+  expect_equal(outcome[["new.py"]], "ran_ok")
+  expect_true("old.py" %in% mo$modifications$file_name[mo$modifications$change_type == "python2"])
+  report <- paste(unlist(mo$report), collapse = "\n")
+  expect_match(report, "with Python 2.7 (Docker image `python:2.7-slim`)", fixed = TRUE)
+
+  # the option turns it off: the old outcome, without a run
+  withr::local_options(metacheck.docker_image_py2 = FALSE)
+  off <- run()
+  expect_equal(off$run_results$outcome[off$run_results$file_name == "old.py"], "python2")
+  expect_false("python2" %in% off$modifications$change_type)
+})
+
+test_that("execute = TRUE: a name in a variable and a path among same-named files are followed (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "Data", "test"), recursive = TRUE)
+    dir.create(file.path(d, "scripts"))
+    writeLines("h <- 1", file.path(d, "scripts", "NetworkFunction.R"))
+    writeLines(c('f <- c("NetworkFunction.R")', 'for (i in f) source(i)', 'stopifnot(h == 1)'),
+               file.path(d, "scripts", "viavar.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "Data", "d.csv"))
+    writeLines(c("x,y", "1,2", "1,2"), file.path(d, "Data", "test", "d.csv"))
+    writeLines(c('a <- read.csv("Data/test/d.csv")', 'stopifnot(ncol(a) == 2, nrow(a) == 2)'), file.path(d, "deep.R"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["deep.R"]], "ran_ok")
+    expect_equal(outcome[["viavar.R"]], "ran_ok")
+  }
+})
+
+test_that("execute = TRUE: a model file has its own outcome, and the script that reads it finds it (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "jags_script"))
+    writeLines(c("model {", "  x ~ dnorm(0, 1)", "}"), file.path(d, "jags_script", "m.R"))
+    writeLines(c('m <- readLines("./jags_script/m.R")', 'stopifnot(any(grepl("dnorm", m)))'), file.path(d, "run.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["m.R"]], "jags_model")
+    expect_equal(outcome[["run.R"]], "ran_ok")
+    expect_equal(mo$table$outcome[mo$table$file_name == "m.R"], "jags_model")
+    expect_equal(mo$traffic_light, "green")
+    expect_match(paste(unlist(mo$report), collapse = "\n"), "Of 1 script: 1 ran without error", fixed = TRUE)
+  }
+})
+
+test_that("execute = TRUE: a file spelled otherwise is read, and the correction is noted (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  {
+    d <- withr::local_tempdir()
+    writeLines(c('d <- read.csv("my data.csv")', 'stopifnot(nrow(d) > 0)'), file.path(d, "a.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "my_data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE))
+    expect_equal(mo$run_results$outcome, "ran_ok")
+    expect_equal(mo$table$names_corrected, "my data.csv -> my_data.csv")
+    fixed <- mo$modifications[mo$modifications$change_type == "name_corrected", ]
+    expect_equal(fixed$detail, '"my data.csv" -> "my_data.csv"')
+    report <- paste(unlist(mo$report), collapse = "\n")
+    expect_match(report, "should be changed", fixed = TRUE)
+    expect_match(report, "my_data.csv", fixed = TRUE)
+  }
+})
+
+test_that("execute = TRUE: same-named scripts each run and get their own outcome (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  {
+    d <- withr::local_tempdir()
+    dir.create(file.path(d, "good"))
+    dir.create(file.path(d, "bad"))
+    writeLines(c('d <- read.csv("data.csv")', 'cat("good\\n")'), file.path(d, "good", "analysis.R"))
+    writeLines('d <- read.csv("really_absent.csv")', file.path(d, "bad", "analysis.R"))
+    file.copy(repro_fixture("data.csv"), file.path(d, "good", "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["good/analysis.R"]], "ran_ok")
+    expect_equal(outcome[["bad/analysis.R"]], "errored")
+    expect_setequal(mo$table$file_name, c("good/analysis.R", "bad/analysis.R"))
+    expect_setequal(mo$table$file_name, mo$run_results$file_name)
+    expect_equal(mo$table$outcome[mo$table$file_name == "bad/analysis.R"], "errored")
+    expect_equal(mo$table$file_path, mo$table$file_name)
+  }
+})
+
+test_that("execute = TRUE: source() runs the same-named script of the script's own folder (#568)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  {
+    d <- withr::local_tempdir()
+    for (f in c("a", "b")) {
+      dir.create(file.path(d, f))
+      writeLines(sprintf('from <- "%s"', f), file.path(d, f, "helpers.R"))
+      writeLines(c('source("helpers.R")', sprintf('stopifnot(from == "%s")', f)),
+                 file.path(d, f, "main.R"))
+    }
+    file.copy(repro_fixture("data.csv"), file.path(d, "data.csv"))
+    mo <- suppressMessages(module_run(test_paper(), "reproducibility_check", local_path = d,
+                                      execute = TRUE))
+    outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+    expect_equal(outcome[["a/main.R"]], "ran_ok")
+    expect_equal(outcome[["b/main.R"]], "ran_ok")
+    expect_equal(outcome[["a/helpers.R"]], "run_by_source")
+    expect_equal(outcome[["b/helpers.R"]], "run_by_source")
+  }
+})
+
+test_that("static analysis: same-named scripts that differ each keep a row, and a name that occurs once stays as it is (#568)", {
+  paper <- test_paper()
+  d <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(d, "one.R"))
+  writeLines("x <- 2", file.path(d, "two.R"))
+  writeLines("x <- 3", file.path(d, "other.R"))
+  code_tbl <- dplyr::bind_rows(
+    code_tbl_row(paper, "a.R", file.path(d, "one.R")),
+    code_tbl_row(paper, "a.R", file.path(d, "two.R")),
+    code_tbl_row(paper, "b.R", file.path(d, "other.R")))
+  code_tbl$file_path <- c("x/a.R", "y/a.R", "z/b.R")
+  structure_df <- data.frame(paper_id = paper_id(paper), file_name = "data.csv",
+                             file_location = repro_fixture("data.csv"))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+  mo <- module_run(fake_code, "reproducibility_check")
+  expect_equal(mo$table$file_name, c("x/a.R", "y/a.R", "b.R"))
+  expect_equal(mo$table$file_path, c("x/a.R", "y/a.R", "z/b.R"))
 })
 
 test_that("static analysis: a paper with BOTH R and Python code combines into one summary row", {
@@ -998,7 +1433,7 @@ test_that("a script reading a file that is only inside a .zip is not run, and th
                              file_location = repro_fixture("data.csv"))
   fake_code <- fake_module_output("code_check", code_tbl, paper)
   fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
-  mo <- module_run(fake_code, "reproducibility_check", layout = "package")
+  mo <- module_run(fake_code, "reproducibility_check")
   txt <- paste(mo$report, collapse = "\n")
   expect_match(txt, "in_archive", fixed = TRUE)
   expect_match(txt, "only inside data.zip; unpack it so the code finds it", fixed = TRUE)

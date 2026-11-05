@@ -85,7 +85,7 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
   if (length(pkgs) == 0) return(empty)
 
   pins <- .repro_py_manifest_pins(manifest_text)
-  base_pkgs <- .repro_py_stdlib_modules()
+  base_pkgs <- c(.repro_py_stdlib_modules(), .repro_py2_modules())
   is_base <- pkgs %in% base_pkgs
   # The import name is not always the name pip installs (`import sklearn`
   # comes from `scikit-learn`), so the pip name is what is reported, installed
@@ -115,8 +115,29 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
     mpl_toolkits = "matplotlib", fitz = "PyMuPDF", Crypto = "pycryptodome",
     serial = "pyserial", dotenv = "python-dotenv", community = "python-louvain",
     wx = "wxPython", zmq = "pyzmq", attr = "attrs", jwt = "PyJWT",
-    OpenSSL = "pyOpenSSL"
+    OpenSSL = "pyOpenSSL",
+    pywt = "PyWavelets", ruamel = "ruamel.yaml", osgeo = "GDAL", pkg_resources = "setuptools",
+    pylab = "matplotlib", skbio = "scikit-bio", gi = "PyGObject", git = "GitPython",
+    MySQLdb = "mysqlclient", psycopg2 = "psycopg2-binary", argon2 = "argon2-cffi",
+    elftools = "pyelftools", paho = "paho-mqtt", past = "future", vcf = "PyVCF3",
+    rapidjson = "python-rapidjson", gitlab = "python-gitlab", primer3 = "primer3-py",
+    hydra = "hydra-core", skbuild = "scikit-build", pytorch_grad_cam = "grad-cam",
+    rest_framework = "djangorestframework", rest_framework_api_key = "djangorestframework-api-key",
+    corsheaders = "django-cors-headers", django_filters = "django-filter",
+    allauth = "django-allauth", dirtyfields = "django-dirtyfields", silk = "django-silk",
+    crum = "django-crum", django_auth_ldap = "django-auth-ldap",
+    logstash_async = "python-logstash-async"
   )
+}
+
+# Modules of Python 2's standard library, which have other names in Python 3 and
+# cannot be installed: importing one shows that the code is Python 2 (#568, item 13).
+.repro_py2_modules <- function() {
+  c("cPickle", "cStringIO", "StringIO", "Queue", "BaseHTTPServer", "SocketServer",
+    "SimpleHTTPServer", "CGIHTTPServer", "Tkinter", "tkFileDialog", "tkMessageBox",
+    "ttk", "urlparse", "urllib2", "httplib", "ConfigParser", "commands", "HTMLParser",
+    "cookielib", "exceptions", "__builtin__", "sets", "thread", "dummy_thread", "anydbm",
+    "dumbdbm", "gdbm", "whichdb", "copy_reg", "repr", "xmlrpclib", "htmlentitydefs")
 }
 
 # The pip name for each import name (only the top-level module counts, so
@@ -162,7 +183,9 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
 # the code without running it and writes no files (`python -m py_compile`
 # would write a __pycache__ folder). Returns a named logical vector (by file),
 # FALSE for a file with a syntax error; every file is TRUE when no working
-# Python interpreter was found, since nothing could be checked.
+# Python interpreter was found, since nothing could be checked. When a file fails
+# because it is Python 2 code, attribute "python2" marks which (see
+# .repro_py2_error() for how Python 3 words that).
 .repro_py_parses <- function(code_text_list, python_bin = "python") {
   out <- stats::setNames(rep(TRUE, length(code_text_list)), names(code_text_list))
   if (!length(code_text_list) || !requireNamespace("processx", quietly = TRUE))
@@ -172,7 +195,8 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
 
   # One Python process for all files (starting Python once per file is slow
   # for a repository with many scripts): it prints one line per file, "1"
-  # when it parses and "0" when it does not.
+  # when it parses, "2" when it does not because it is Python 2, and "0" when
+  # it does not for another reason.
   tfs <- vapply(seq_along(code_text_list), function(k) {
     tf <- tempfile(fileext = ".py")
     writeLines(enc2utf8(code_text_list[[k]]), tf, useBytes = TRUE)
@@ -189,8 +213,9 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
     "    try:",
     "        ast.parse(open(f, encoding='utf-8', errors='replace').read())",
     "        print(1)",
-    "    except Exception:",
-    "        print(0)",
+    "    except Exception as e:",
+    "        words = ('Missing parentheses in call to', 'multiple exception types must be parenthesized')",
+    "        print(2 if isinstance(e, TabError) or any(w in str(e) for w in words) else 0)",
     sep = "\n")
   res <- tryCatch(
     processx::run(bin, c("-c", script, list_file), error_on_status = FALSE,
@@ -199,8 +224,86 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
   ok <- if (!is.null(res)) trimws(strsplit(res$stdout, "\n", fixed = TRUE)[[1]])
   # Anything unexpected (a timeout, a crash, missing lines) leaves every file
   # counted as parsing, the same as having no interpreter.
-  if (length(ok) == length(tfs) && all(ok %in% c("0", "1"))) out[] <- ok == "1"
+  if (length(ok) == length(tfs) && all(ok %in% c("0", "1", "2"))) {
+    out[] <- ok == "1"
+    if (any(ok == "2")) attr(out, "python2") <- ok == "2"
+  }
   out
+}
+
+# Whether a run's error output shows Python 2 code: a print or exec statement, the
+# form `except E, e`, or tabs mixed with spaces, which Python 2 accepted. The image
+# only has Python 3, and converting the code could change results without a word
+# (`/` between whole numbers divides differently), so these are only named.
+.repro_py2_error <- function(txt) {
+  grepl(paste0("SyntaxError: (Missing parentheses in call to|multiple exception types must be parenthesized)",
+               "|TabError:|No module named '(", paste(.repro_py2_modules(), collapse = "|"), ")'"),
+        txt %||% "", perl = TRUE)
+}
+
+# The folders Python must look in to find the repository's own modules that a script
+# imports. Python only looks beside the script, so `from maad import sound` stopped
+# with "No module named 'maad'" while maad/ is in the repository: 365 scripts in 23
+# papers (#568, item 10). For each imported name that is no standard module, the
+# folder holding a file or folder of that name, nearest to the script first. A folder
+# is left out when it would hide a standard module the script uses, such as one with
+# its own json.py, since these folders come before the standard library. `files` are
+# the paths in the sandbox from its top; returns folders from the top.
+.repro_py_module_folders <- function(code_text, script_path, files) {
+  txt <- code_text[!grepl("^\\s*#", code_text)]
+  m1 <- regmatches(txt, regexec("^\\s*import\\s+([A-Za-z0-9_., ]+)", txt))
+  m2 <- regmatches(txt, regexec("^\\s*from\\s+([A-Za-z0-9_]+)[A-Za-z0-9_.]*\\s+import\\s", txt))
+  names1 <- unlist(lapply(m1[lengths(m1) > 1], function(m) trimws(sub("\\s+as\\s+.*$", "", strsplit(m[[2]], ",")[[1]]))))
+  names2 <- vapply(m2[lengths(m2) > 1], `[`, character(1), 2)
+  tops <- unique(sub("\\..*$", "", c(names1, names2)))
+  stdlib <- .repro_py_stdlib_modules()
+  own <- setdiff(tops, stdlib)
+  if (!length(own) || !length(files)) return(character(0))
+  files <- gsub("\\\\", "/", files)
+  script_dir <- dirname(gsub("\\\\", "/", script_path))
+  depth_shared <- function(a, b) {
+    x <- strsplit(a, "/", fixed = TRUE)[[1]]; y <- strsplit(b, "/", fixed = TRUE)[[1]]
+    n <- min(length(x), length(y))
+    if (n == 0) return(0L)
+    same <- x[seq_len(n)] == y[seq_len(n)]
+    if (all(same)) n else which(!same)[1] - 1L
+  }
+  used_std <- intersect(tops, stdlib)
+  hides <- function(dir) {
+    prefix <- if (dir == ".") "" else paste0(dir, "/")
+    any(paste0(prefix, used_std, ".py") %in% files) ||
+      any(vapply(used_std, function(s) any(startsWith(files, paste0(prefix, s, "/"))), logical(1)))
+  }
+  out <- character(0)
+  for (nm in own) {
+    hit <- grep(paste0("(^|/)", nm, "(\\.py$|/)"), files, value = TRUE)
+    if (!length(hit)) next
+    # the folder that holds the module, not one further down
+    parents <- unique(vapply(hit, function(f) {
+      parts <- strsplit(f, "/", fixed = TRUE)[[1]]
+      k <- which(parts == nm | parts == paste0(nm, ".py"))[1]
+      if (k <= 1) "." else paste(parts[seq_len(k - 1)], collapse = "/")
+    }, character(1), USE.NAMES = FALSE))
+    parents <- parents[order(-vapply(parents, depth_shared, integer(1), b = script_dir))]
+    parents <- parents[!vapply(parents, hides, logical(1))]
+    if (length(parents) && parents[1] != script_dir) out <- c(out, parents[1])
+  }
+  unique(out)
+}
+
+# A stand-in for get_ipython(), which only exists inside IPython: without it a
+# notebook's `if "google.colab" in str(get_ipython()):` stops with a NameError. Its
+# methods (run_line_magic, system) do nothing, as the commands are left out too.
+# Placed after leading comments (an encoding line must stay on top) and after
+# `from __future__` imports (which must come first).
+.repro_py_get_ipython <- function(txt) {
+  if (!any(grepl("\\bget_ipython\\s*\\(", txt)) || any(grepl("\\bget_ipython\\s*=|def\\s+get_ipython\\b", txt)))
+    return(txt)
+  stub <- paste0('get_ipython = lambda: type("ipython", (), {"__getattr__": lambda self, name: ',
+                 '(lambda *a, **k: None)})()  # [reproducibility_check added]')
+  future <- which(grepl("^\\s*from\\s+__future__\\s+import", txt))
+  comments <- cumprod(grepl("^\\s*(#.*)?$", txt))
+  append(txt, stub, after = if (length(future)) max(future) else sum(comments))
 }
 
 #' Parse a requirements.txt / pyproject.toml dependency block into per-package pins
@@ -424,11 +527,14 @@ repro_install_deps_py <- function(install_deps, lib_dir, python_bin = "python",
     pkg <- install_deps$package[i]
     req <- if (!is.na(install_deps$ref[i]) && nzchar(install_deps$ref[i]))
       install_deps$ref[i] else pkg
-    res <- tryCatch(
-      processx::run(bin, c("-m", "pip", "install", "--quiet",
-                          "--target", lib_dir, req),
+    pip <- function(r) tryCatch(
+      processx::run(bin, c("-m", "pip", "install", "--quiet", "--prefer-binary",
+                          "--target", lib_dir, r),
                    error_on_status = FALSE, timeout = timeout),
       error = function(e) list(status = 1L, stderr = conditionMessage(e)))
+    res <- pip(req)
+    # a pinned version that does not install is replaced by the current one
+    if (!identical(res$status, 0L) && !identical(req, pkg)) res <- pip(pkg)
     ok <- identical(res$status, 0L)
     data.frame(package = pkg, source = install_deps$source[i], installed = ok,
               message = if (ok) "" else trimws(res$stderr %||% ""),
@@ -540,10 +646,16 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
                            error = function(e) character(0))
 
     message("[repro/py]   -> running '", fn, "' (timeout ", timeout, "s) ...")
+    # the repository's own modules first (see .repro_py_module_folders()); the
+    # folders count from the sandbox's top, which `module_root` names
+    own_modules <- if ("module_folders" %in% names(row) && !is.na(row$module_folders) && nzchar(row$module_folders))
+      file.path(row$module_root, strsplit(row$module_folders, "\n", fixed = TRUE)[[1]]) else character(0)
     t0 <- Sys.time()
     res <- tryCatch(
       processx::run(bin, row$script_path, wd = row$run_dir,
-                   env = c("current", PYTHONPATH = pythonpath),
+                   env = c("current", PYTHONPATH = paste(c(own_modules, if (nzchar(pythonpath)) pythonpath),
+                                                         collapse = .Platform$path.sep),
+                           MPLBACKEND = "Agg", QT_QPA_PLATFORM = "offscreen"),
                    error_on_status = FALSE, timeout = timeout),
       error = function(e) e)
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
@@ -590,8 +702,9 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
       # check mirroring the docker backend) so the module's corrective re-run
       # logic can check ONE consistent string regardless of which backend ran
       # -- see repro_run_scripts_py_docker()'s identical classification for
-      # the twin of this logic.
-      nomod_pat <- "No module named ['\"]([^'\"]+)['\"]"
+      # the twin of this logic. With or without quotes: Python 2 writes
+      # "No module named librosa" (#568).
+      nomod_pat <- "No module named ['\"]?([A-Za-z0-9_.]+)['\"]?"
       nomod_src <- if (grepl(nomod_pat, se)) se else NA_character_
       nomod_var <- if (!is.na(nomod_src))
         sub(paste0(".*", nomod_pat, ".*"), "\\1",

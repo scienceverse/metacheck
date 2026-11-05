@@ -7,7 +7,7 @@
 repro_install_deps_py_docker(
   install_deps,
   lib_dir,
-  image = .repro_docker_default_image_py,
+  image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
   timeout = 600
 )
 }

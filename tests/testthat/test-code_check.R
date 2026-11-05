@@ -1255,6 +1255,18 @@ test_that("code_extract_py", {
   # IPython magics and shell escapes are dropped (not statements in any kernel).
   expect_false(any(grepl("^%matplotlib", obs)))
   expect_false(any(grepl("^!pip", obs)))
+  # A whole %%bash cell is not Python; %%time only wraps Python (#568).
+  nb <- function(cells, language = "python") jsonlite::toJSON(list(
+    metadata = list(kernelspec = list(language = language, name = language)),
+    cells = lapply(cells, function(s) list(cell_type = "code", source = s))), auto_unbox = TRUE)
+  expect_equal(code_extract_py(text = nb(list("%%bash\nls -l\nfor i in 1 2; do echo $i; done"))), character(0))
+  expect_equal(code_extract_py(text = nb(list("%%time\nx = 1"))), c("x = 1", ""))
+  # An indented command leaves its block valid.
+  expect_equal(code_extract_py(text = nb(list("if a:\n    !pip install b"))), c("if a:", "    pass", ""))
+  # Commands without a %, and what must stay.
+  expect_equal(code_extract_py(text = nb(list("cd data\nnp.mean?\ncd = 3\nx = 1"))), c("cd = 3", "x = 1", ""))
+  # In an R notebook these are code.
+  expect_equal(code_extract_py(text = nb(list("d\n  %>% f()\n!x"), "R")), c("d", "  %>% f()", "!x", ""))
   # Real source survives, in document order.
   expect_true("import pandas as pd" %in% obs)
   expect_true("df = pd.read_csv('data/trials.csv')" %in% obs)

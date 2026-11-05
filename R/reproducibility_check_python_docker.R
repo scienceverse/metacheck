@@ -62,6 +62,11 @@
 #' more — confirmed as a real, measured ~700MB+ cost for a package this
 #' module's own execution path has no legitimate use for.
 #'
+#' The option `metacheck.docker_image_py` names another image, such as
+#' `"ghcr.io/scienceverse/metacheck_py_large:latest"`, which adds about 70
+#' packages and `torch` and `tensorflow` for ordinary processors; the metacheck
+#' server uses that one.
+#'
 #' @returns the pre-built Python sandbox image reference,
 #'   `"ghcr.io/scienceverse/metacheck_py_small:latest"` (see
 #'   https://github.com/scienceverse/metacheck_docker_reproducibility for the
@@ -69,6 +74,17 @@
 #'   the R images)
 #' @keywords internal
 .repro_docker_default_image_py <- "ghcr.io/scienceverse/metacheck_py_small:latest"
+
+# The image that runs code written for Python 2 (#568): the official Python 2.7
+# image. pip there installs the last version of each package that supports
+# Python 2. The option `metacheck.docker_image_py2` names another image; set it
+# to FALSE or "" to not run Python 2 code (it is then only named, as before).
+.repro_docker_default_image_py2 <- "python:2.7-slim"
+
+.repro_docker_image_py2 <- function() {
+  img <- getOption("metacheck.docker_image_py2", .repro_docker_default_image_py2)
+  if (isFALSE(img) || is.null(img) || !nzchar(img[1])) NULL else img[1]
+}
 
 #' Install Python dependencies inside a throwaway Docker container
 #'
@@ -96,7 +112,7 @@
 #'   to branch on which backend ran.
 #' @export
 repro_install_deps_py_docker <- function(install_deps, lib_dir,
-                                         image = .repro_docker_default_image_py,
+                                         image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                          timeout = 600) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
@@ -121,6 +137,7 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
   dir.create(sandbox_dir, recursive = TRUE)
   on.exit(unlink(sandbox_dir, recursive = TRUE), add = TRUE)
 
+  per_package <- max(120L, min(900L, as.integer(ceiling(timeout / 2))))
   results_path <- file.path(sandbox_dir, ".install_results.jsonl")
   # A tiny shell driver, not a Python script: pip itself is the thing being
   # invoked per requirement, and a results line is appended after each one
@@ -136,10 +153,52 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
     "set -u",
     paste0('OUT="', .repro_docker_container_path(results_path, sandbox_dir), '"'),
     ': > "$OUT"',
+    # A wheel is preferred, since a package that must be compiled can take the whole
+    # time limit; each package has a limit of its own, so one slow package leaves
+    # time for the others: "requests" and "tqdm" failed only because the batch ran
+    # out of time. A pinned version that does not install, as an old numpy does on
+    # this Python, is replaced by the current one (#568, item 13).
+    # pip installs inside the container and the result is then copied to /pylib:
+    # pip's own move to /pylib copies file permissions, which a library on an
+    # exFAT drive refuses ("Operation not permitted"), so numpy, pandas and most
+    # others failed in 15 papers (#568). As with pip's --target, a package
+    # already in /pylib is kept.
     unlist(lapply(seq_along(reqs), function(i) {
       pkg <- install_deps$package[i]; req <- reqs[i]; src <- install_deps$source[i]
-      c(sprintf('if pip install --quiet --target /pylib %s 2> /tmp/err_%d.txt; then',
-               shQuote(req), i),
+      tmp <- sprintf("/tmp/pyt_%d", i)
+      # PyTorch's own index too: the large image has torch for processors only
+      # ("+cpu"), and torchvision from PyPI, built for the other torch, stopped with
+      # "operator torchvision::nms does not exist"; the index has "+cpu" builds,
+      # which pip prefers as the higher version (#568)
+      pip <- sprintf(paste0("timeout %d pip install --quiet --prefer-binary --no-input --prefix %s",
+                            " --extra-index-url https://download.pytorch.org/whl/cpu"), per_package, tmp)
+      # --prefix, not --target: pip then uses what the image has. With --target it
+      # installed everything again, so torch (about 800 MB, in the large image) for
+      # segmentation_models_pytorch, and the install ran out of time
+      # (10.1111/2041-210X.14327; #568). The packages are in
+      # <prefix>/lib/python<version>/site-packages.
+      copy <- sprintf('  for f in %s/lib*/python*/site-packages/* %s/lib*/python*/site-packages/.[!.]*; do [ -e "$f" ] && [ ! -e "/pylib/${f##*/}" ] && cp -r "$f" /pylib/; done; rm -rf %s',
+                      tmp, tmp, tmp)
+      tmp_t <- sprintf("/tmp/pyt_t%d", i)
+      target_pip <- sprintf(paste0("rm -rf %s; timeout %d pip install --quiet --prefer-binary --no-input --target %s",
+                                   " --extra-index-url https://download.pytorch.org/whl/cpu"), tmp_t, per_package, tmp_t)
+      target_copy <- sprintf('  for f in %s/* %s/.[!.]*; do [ -e "$f" ] && [ ! -e "/pylib/${f##*/}" ] && cp -r "$f" /pylib/; done; rm -rf %s',
+                             tmp_t, tmp_t, tmp_t)
+      c(sprintf('if %s %s 2> /tmp/err_%d.txt; then', pip, shQuote(req), i),
+        copy,
+        sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":""}\\n\' >> "$OUT"',
+               pkg, src),
+        if (!identical(req, pkg)) c(
+          sprintf('elif %s %s 2>> /tmp/err_%d.txt; then', pip, shQuote(pkg), i),
+          copy,
+          sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":"","version_note":"the pinned version %s could not be installed, so the current one was"}\\n\' >> "$OUT"',
+                  pkg, src, gsub("['\"\\\\%]", "", req))),
+        # When a package needs another version of one the image has, pip with
+        # --prefix tries to change the image's copy, which it may not ("Permission
+        # denied: 'REQUESTED'": pygam in 10.1111/2041-210X.14007; #568): then the
+        # package and all it needs are installed apart, with --target, as before
+        sprintf('elif %s %s 2>> /tmp/err_%d.txt; then', target_pip, shQuote(req), i),
+        target_copy,
         sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":""}\\n\' >> "$OUT"',
                pkg, src),
         'else',
@@ -164,7 +223,7 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
            "--pids-limit", "512",
            .repro_docker_resource_args(),
            "-v", paste0(sandbox_dir, ":/sandbox"),
-           "-v", paste0(normalizePath(lib_dir, mustWork = FALSE), ":/pylib"),
+           "-v", .repro_docker_lib_mount(lib_dir, "/pylib", image = image),
            image, "sh", container_driver)
 
   out_file <- tempfile(fileext = ".out")
@@ -214,8 +273,9 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #' same per-script semantics (skip on missing inputs / parse failure,
 #' timeout, error classification), but each script runs via `docker run
 #' --network none --read-only --user <non-root>` instead of a `processx`
-#' subprocess on the host — so the code cannot reach the network or touch
-#' anything outside the mounted sandbox and library, even deliberately.
+#' subprocess on the host — so the code cannot reach the network (unless `net`
+#' is given) or touch anything outside the mounted sandbox and library, even
+#' deliberately.
 #'
 #' @param run_tbl `repro_write_scripts()` output (`file_name`, `script_path`,
 #'   `run_dir`) — `run_dir` must be the SAME directory as (or a subdirectory
@@ -242,12 +302,14 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
+#' @param net `NULL` (the default) runs with the network off; see
+#'   [repro_run_scripts_docker()].
 #' @export
 repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
-                                        image = .repro_docker_default_image_py,
+                                        image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                         timeout = 600, skip = character(0),
                                         parses = NULL, failed_deps = character(0),
-                                        deadline = NULL) {
+                                        deadline = NULL, net = NULL) {
   if (is.null(run_tbl) || nrow(run_tbl) == 0)
     return(data.frame(file_name = character(0), outcome = character(0),
                       error = character(0), error_type = character(0),
@@ -306,27 +368,41 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     # time, not something the (shared, reused-across-papers) image itself
     # hardcodes.
     args <- c("run", "--rm", "--name", container_name,
-             "--network", "none", "--read-only",
-             "--tmpfs", "/tmp",
+             .repro_docker_network_args(net), "--read-only",
+             # exec: compiled code in /tmp must load (see the R runner; #568)
+             "--tmpfs", "/tmp:exec",
              "--user", .repro_docker_uid,
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
              .repro_docker_resource_args(),
-             "-w", "/sandbox",
-             "-v", paste0(sandbox_root, ":/sandbox"))
+             "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
+             # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
+             # stopped three scripts of 10.1111/2041-210X.14007 (#568)
+             "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
+             "-v", paste0(sandbox_root, ":/sandbox"),
+             # the container is read-only apart from /tmp, so caches go there: Numba
+             # stopped with "cannot cache function" (#568, item 19). There is no
+             # screen, so plots and windows must not ask for one.
+             "-e", "HOME=/tmp", "-e", "NUMBA_CACHE_DIR=/tmp/numba", "-e", "MPLCONFIGDIR=/tmp/matplotlib",
+             "-e", "XDG_CACHE_HOME=/tmp/.cache", "-e", "MPLBACKEND=Agg", "-e", "QT_QPA_PLATFORM=offscreen")
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", paste0(lib_dir_norm, ":/pylib:ro"),
-               "-e", "PYTHONPATH=/pylib")
-    args <- c(args, image, "python", container_script)
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/pylib", read_only = TRUE))
+    # the repository's own modules first, then what was installed (see
+    # .repro_py_module_folders())
+    own <- if ("module_folders" %in% names(row)) row$module_folders else NA_character_
+    own <- if (!is.na(own) && nzchar(own)) strsplit(own, "\n", fixed = TRUE)[[1]] else character(0)
+    py_path <- c(if (length(own)) ifelse(own == ".", "/sandbox", paste0("/sandbox/", own)),
+                 if (!is.null(lib_dir_norm)) "/pylib")
+    if (length(py_path)) args <- c(args, "-e", paste0("PYTHONPATH=", paste(py_path, collapse = ":")))
+    args <- c(args, image, .repro_docker_counted_cmd(c("python", container_script), net))
 
     out_file <- tempfile(fileext = ".out")
     err_file <- tempfile(fileext = ".err")
     t0 <- Sys.time()
-    res <- tryCatch(
-      processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
-                    stdout = out_file, stderr = err_file),
-      error = function(e) e)
+    watched <- .repro_docker_run_watched(args, container_name, timeout, out_file, err_file,
+                                         sandbox_root, net)
+    res <- watched$res
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
 
     is_timeout <- (inherits(res, "condition") &&
@@ -341,6 +417,13 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
 
     message("[repro/py-docker]   <- '", fn, "' done in ", round(elapsed, 1), "s")
 
+    # stopped for what it downloaded, with the internet on
+    if (!is.na(watched$stopped))
+      return(data.frame(file_name = fn, outcome = "download_too_large", error = watched$stopped,
+                        error_type = NA_character_, undefined_var = NA_character_,
+                        stdout = so, stderr = se, elapsed = elapsed) |>
+               dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL)))
+
     if (inherits(res, "condition")) {
       msg <- conditionMessage(res)
       etype <- if (is_timeout) "timeout" else "runtime"
@@ -352,12 +435,14 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     }
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
-                        error = paste0("timed out after ", round(timeout), "s"),
+                        error = .repro_timeout_text(timeout, watched),
                         error_type = "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL)))
     }
     if (res$status != 0) {
+      # stopped for using more memory than the limit (#568; see .repro_oom_text())
+      se <- paste0(se, .repro_oom_text(res$status))
       err_lines <- strsplit(se, "\n", fixed = TRUE)[[1]]
       err_lines <- err_lines[nzchar(trimws(err_lines))]
       last_line <- if (length(err_lines)) err_lines[length(err_lines)] else se
@@ -369,7 +454,9 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
            perl = TRUE) else NA_character_
       if (identical(undefined_var, last_line)) undefined_var <- NA_character_
 
-      nomod_pat <- "No module named ['\"]([^'\"]+)['\"]"
+      # with or without quotes: Python 2 writes "No module named librosa"
+      # (10.1111/2041-210X.13114; #568)
+      nomod_pat <- "No module named ['\"]?([A-Za-z0-9_.]+)['\"]?"
       nomod_src <- if (grepl(nomod_pat, se)) se else NA_character_
       nomod_var <- if (!is.na(nomod_src))
         sub(paste0(".*", nomod_pat, ".*"), "\\1",

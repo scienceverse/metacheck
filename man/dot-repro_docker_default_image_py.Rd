@@ -50,5 +50,10 @@ experiment SCRIPT is not something this module runs, let alone
 pulls in PyQt6 (261MB), ffmpeg/moviepy/pyglet (another ~250MB+), and
 more — confirmed as a real, measured ~700MB+ cost for a package this
 module's own execution path has no legitimate use for.
+
+The option \code{metacheck.docker_image_py} names another image, such as
+\code{"ghcr.io/scienceverse/metacheck_py_large:latest"}, which adds about 70
+packages and \code{torch} and \code{tensorflow} for ordinary processors; the metacheck
+server uses that one.
 }
 \keyword{internal}

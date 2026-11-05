@@ -810,7 +810,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       unlink(dest)
       return("not authorised (the OSF returned a sign-in page; see ?osf_pat)")
     }
-    if (!(file.exists(dest) && file.size(dest) > 0)) return("empty response")
+    # A file the listing says is empty is empty: in 10.1111/2041-210X.13798, 55
+    # of the 64 empty files of a repository were reported as failed downloads (#568)
+    if (!(file.exists(dest) && file.size(dest) > 0)) {
+      if (!isTRUE(as.numeric(expected_bytes) == 0)) return("empty response")
+      if (!file.exists(dest)) file.create(dest)
+    }
     if (!file.rename(dest, final)) return("could not move the download into place")
     NA_character_
   }, error = function(e) {
@@ -951,11 +956,13 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       # has no body either, so this still reports "empty response" for that
       # case (checked below).
       body <- tryCatch(httr2::resp_body_raw(r), error = \(e) raw(0))
-      if (length(body) == 0) {
+      if (length(body) == 0 && isTRUE(expected_size[i] == 0)) {
+        # a file the listing says is empty is empty (#568; see .download_one())
+        file.create(dests[i])
+      } else if (length(body) == 0) {
         if (file.exists(dests[i])) unlink(dests[i])   # no 0-byte file (U75)
         return("empty response")
-      }
-      writeBin(body, dests[i])
+      } else writeBin(body, dests[i])
     }
     # A sign-in page served in place of the file: the file is private and the
     # request was not authorised. Named as such, because "truncated" sent
@@ -1248,6 +1255,34 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 }
 
 
+# Whether the modules of this check will run the repository's code
+# (reproducibility_check with execute = TRUE). report_module_run() and
+# reproducibility_check() set the option for the duration of the check, so the
+# first module that downloads (code_check, then data_check) fetches what a run
+# needs in the same call, and no module asks a host for the same repository
+# twice (#568). A whole-repository archive (GitHub, GitLab, Dryad) was downloaded
+# once by code_check and again by data_check.
+.download_for_run <- function() isTRUE(getOption("metacheck.download_for_run"))
+
+# The files of a listing a run of the code could need: every file, except
+# images, sound, video and documents that hosts send one by one, since there each
+# such file is a request of its own and a script rarely reads one; a script that
+# names one gets it from reproducibility_check() before the run. From a host that
+# download_repo_files() fetches as one archive of the whole repository (GitHub,
+# GitLab, Dryad), every file is kept: its bytes arrive anyway (#568). renv's own
+# library is left out, as in code_check. The size limits of download_repo_files()
+# still apply.
+.run_download_want <- function(files) {
+  if (is.null(files) || !nrow(files)) return(logical(0))
+  media <- grepl(paste0("\\.(png|jpe?g|gif|bmp|svg|eps|ps|ico|webp|heic|",
+                        "wav|mp3|flac|ogg|m4a|aac|mp4|avi|mov|mkv|wmv|webm|",
+                        "pdf|docx?|pptx?|odt|odp|key|pages)$"),
+                 files$file_name %||% "", ignore.case = TRUE)
+  whole_archive <- grepl("github\\.com|gitlab\\.com|datadryad\\.org",
+                         files$repo_url %||% "", ignore.case = TRUE)
+  (!media | whole_archive) & !.in_renv_folder(files)
+}
+
 #' Download the files listed by `repo_check()`
 #'
 #' Fetches the bytes for a table of repository files (as produced by
@@ -1377,6 +1412,14 @@ download_repo_files <- function(files,
   }, character(1))
 
   already <- file.exists(files$.cache_path)
+  # An empty cached file of a file the listing says has bytes is a download that
+  # failed, so it is fetched again: an empty copy of phy_spp_names.csv (18 KB),
+  # cached in August, made 23 scripts of 10.1111/1365-2435.14173 stop with "no
+  # lines available in input" (#568).
+  listed_size <- suppressWarnings(as.numeric(files$file_size %||% rep(NA_real_, nrow(files))))
+  empty_copy <- already & !is.na(listed_size) & listed_size > 0 &
+    file.size(files$.cache_path) %in% 0
+  already <- already & !empty_copy
   files$file_location[already] <- files$.cache_path[already]
 
   mb <- 1024 * 1024

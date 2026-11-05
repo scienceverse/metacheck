@@ -13,7 +13,9 @@ repro_write_scripts(
   lang = "R",
   script_paths = NULL,
   writes_in_place = FALSE,
-  replace_env_calls = FALSE
+  replace_env_calls = FALSE,
+  run_dirs = NULL,
+  prepend = NULL
 )
 }
 \arguments{
@@ -72,6 +74,13 @@ rewritten to its path from the top, for reads and writes alike.
 in R code are replaced, since packages are installed before the run, and such
 a call would need the network (see \code{.repro_neutralise_env_calls()}).
 \code{FALSE} (default) leaves them.}
+
+\item{run_dirs}{optional folder each script runs from, from \code{root}
+(\code{\link[=.repro_run_folders]{.repro_run_folders()}}), which becomes its \code{run_dir}. \code{NULL} (default) runs
+every script from \code{root}.}
+
+\item{prepend}{optional named list, by file name: lines to put at the top of a
+script, such as loading another script first (\code{\link[=.repro_run_after_lines]{.repro_run_after_lines()}}).}
 }
 \value{
 a data frame with \code{file_name}, \code{script_path} (absolute path written),
@@ -79,6 +88,8 @@ a data frame with \code{file_name}, \code{script_path} (absolute path written),
 \code{setwd_removed} (count of \code{setwd()}/\code{os.chdir()} calls replaced with a
 statement that does nothing),
 \code{env_calls_replaced} (count of groundhog, checkpoint and renv calls replaced),
+\code{slashes_fixed} (the quoted Windows paths given \code{/}, as they were, joined by
+"; "; see \code{.repro_slash_paths()}),
 \code{setwd_paths} (comma-joined paths those calls named, for the warning),
 \code{family_replaced} (count of \verb{family =}/\verb{base_family =} named-font
 arguments replaced with \code{"sans"}, so a plot call does not fail with

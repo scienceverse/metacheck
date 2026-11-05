@@ -710,7 +710,10 @@ report_type <- function(report_type = NULL) {
                        tbls)
     exec_bullets <- if (length(exec_tbl) > 0) {
       exec_tbl <- exec_tbl[[1]]
-      flagged <- exec_tbl[exec_tbl$Outcome != "ran_ok", c("File", "Outcome", "Detail")]
+      # a model file or other non-R content is not a script, so not a failure
+      flagged <- exec_tbl[!exec_tbl$Outcome %in% c("ran_ok", "jags_model", "not_r_content",
+                                                   "defines_functions", "not_analysis"),
+                          c("File", "Outcome", "Detail")]
 
       # errored/timed_out are the two outcomes with a real, distinct
       # stdout/stderr transcript per file worth reading (per the user's
@@ -738,6 +741,12 @@ report_type <- function(report_type = NULL) {
         outcome_labels <- c(
           skipped_missing_inputs = "could not be run because a referenced input file is missing",
           not_parsed              = "could not be parsed and so could not be run",
+          python2                 = "are written for Python 2 and so could not be run",
+          docker_failed           = "could not be run because Docker failed, which says nothing about the code",
+          not_downloaded          = "could not be tried, because they need a file the deposit holds but that we did not download",
+          needs_a_person          = "need a person to choose a file, answer a question, use an app or give a program its arguments",
+          needs_internet          = "need the internet, which is off during the run, or could not reach what they asked for",
+          download_too_large      = "were stopped for downloading more than our limits allow",
           dependency_unavailable  = "could not be run because a required dependency is unavailable",
           skipped_time_limit      = "could not be started because the time for all scripts together had run out"
         )

@@ -21,15 +21,16 @@ file_category <- function(contents) {
   if (is.null(contents$filetype)) {
     file_types <- metacheck::file_types
 
-    contents$filetype <- lapply(name_utf8, \(nm) {
-      types <- file_types$ext |>
-        gsub("\\+", "\\\\+", x = _) |>
-        gsub("\\.", "\\\\.", x = _) |>
-        paste0("\\.", x = _ , "$") |>
-        sapply(grepl, x = nm, ignore.case = TRUE) |>
-        which() |>
-        unname()
-      file_types[types, ]$type |>
+    # Each extension is compared once with all names, as the end of the name in
+    # lower case: a regular expression per extension and per name took most of
+    # data_check's half hour for a repository with thousands of files
+    # (10.1111/2041-210X.14428; metacheck#568). Same result: ".ext$", case ignored.
+    lnm <- tolower(name_utf8)
+    ends <- paste0(".", tolower(file_types$ext))
+    hits <- matrix(FALSE, nrow = length(lnm), ncol = length(ends))
+    for (j in seq_along(ends)) hits[, j] <- endsWith(lnm, ends[j]) %in% TRUE
+    contents$filetype <- lapply(seq_along(lnm), \(i) {
+      file_types$type[hits[i, ]] |>
         unique() |>
         paste(collapse = ";")
     })

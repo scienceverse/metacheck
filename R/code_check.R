@@ -8,6 +8,36 @@
 #' @examples
 #' file_path <- demofile("json")
 #' text <- code_read(file_path)
+# What bytes are when they are not text, from the first ones: saved R data
+# compressed with gzip, bzip2 or xz, or zero bytes, which text does not have.
+# NA for text, which includes UTF-16 (a byte order mark, or zero bytes in every
+# other place). Authors save data under names ending in .R: 10.1111/2041-210X.13967's
+# Training_Dataset_1.r is 109 MB of compressed R data, which code_check read as
+# code for more than 35 minutes, and 10.1111/2041-210X.13897's bbs-btnw-bundle.R
+# (#568).
+.binary_kind_raw <- function(b) {
+  b <- b[seq_len(min(length(b), 4096L))]
+  if (!length(b)) return(NA_character_)
+  starts <- function(x) length(b) >= length(x) && identical(b[seq_along(x)], x)
+  if (starts(as.raw(c(0x1f, 0x8b)))) return("compressed with gzip (as R saves data)")
+  # bzip2: "BZh", the block size 1-9, then the block's own mark, so a script
+  # starting with "BZh" is not taken for one
+  if (length(b) >= 10 && identical(b[1:3], charToRaw("BZh")) && b[4] %in% charToRaw("123456789") &&
+      identical(b[5:10], as.raw(c(0x31, 0x41, 0x59, 0x26, 0x53, 0x59)))) return("compressed with bzip2")
+  if (starts(as.raw(c(0xfd, 0x37, 0x7a, 0x58, 0x5a)))) return("compressed with xz")
+  zero <- b == as.raw(0)
+  if (!any(zero)) return(NA_character_)
+  # UTF-16 or UTF-32 text: a byte order mark, or the zero bytes in every other place
+  if (starts(as.raw(c(0xff, 0xfe))) || starts(as.raw(c(0xfe, 0xff)))) return(NA_character_)
+  n <- length(b) - length(b) %% 2L
+  if (n >= 4) {
+    odd <- zero[seq(1L, n, 2L)]; even <- zero[seq(2L, n, 2L)]
+    if (mean(odd) > 0.9 && mean(even) < 0.1 || mean(even) > 0.9 && mean(odd) < 0.1) return(NA_character_)
+  }
+  # R data saved without compression has zero bytes, as other binary files do
+  "binary"
+}
+
 code_read <- function(file_path) {
   # A genuinely empty (0-byte) local file crashes readr::guess_encoding()
   # itself, deep inside stringi (`if (stringi::stri_enc_isascii(lines))`,
@@ -45,6 +75,10 @@ code_read <- function(file_path) {
     resp$content
   }
   if (!length(raw)) return(character(0))
+  # not text, such as R data saved under a name ending in .R: no lines, marked,
+  # instead of decoding and scanning megabytes of it as code (#568)
+  binary <- .binary_kind_raw(raw)
+  if (!is.na(binary)) return(structure(character(0), binary = binary))
   enc <- readr::guess_encoding(raw)$encoding
   enc <- if (length(enc) && !is.na(enc[[1]])) enc[[1]] else "UTF-8"
 
@@ -339,6 +373,10 @@ code_lang <- function(file_name) {
                         c("JASP", "jamovi"))
   is_candidate <- grepl("\\.(spv|smcl|out|html?)$", all_files$file_name, ignore.case = TRUE) |
     all_files$language %in% union(code_langs, "Python")
+  # When the code will run, this first download also fetches what the run needs
+  # (data, models, configuration), so no host is asked for the repository twice
+  # (see .download_for_run())
+  if (.download_for_run()) is_candidate <- is_candidate | .run_download_want(all_files)
   # A row has a real file_url, OR (for a member of a zip repo_check's own peek
   # already expanded) an archive_url + archive_member pair instead --
   # download_repo_files() fetches that member on its own via a byte-range
@@ -862,33 +900,7 @@ code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
     text <- code_read(file_path)
   }
 
-  nb <- tryCatch(jsonlite::fromJSON(paste(text, collapse = "\n"),
-                                    simplifyVector = FALSE),
-                 error = function(e) NULL)
-  cells <- nb$cells
-  if (is.null(cells) || !length(cells)) {
-    out <- character(0)
-    if (is.null(save_path)) return(out)
-    writeLines(out, save_path)
-    return(save_path)
-  }
-
-  src <- lapply(cells, function(cl) {
-    if (!identical(cl$cell_type, "code")) return(NULL)
-    # `source` is normally an array of lines (each keeping its trailing "\n"),
-    # but the schema also permits a single string -- handle both.
-    s <- cl$source
-    if (is.null(s) || !length(s)) return(NULL)
-    lines <- unlist(strsplit(paste(unlist(s), collapse = ""), "\n"))
-    # Drop IPython magics ("%cd ..", "%%timeit") and shell escapes ("!pip
-    # install x"): neither is Python, and both would otherwise be scanned for
-    # imports and file references as though they were.
-    lines <- lines[!grepl("^\\s*[%!]", lines)]
-    if (!length(lines)) return(NULL)
-    c(lines, "")   # blank line marks the cell boundary
-  })
-
-  out <- unlist(Filter(Negate(is.null), src)) %||% character(0)
+  out <- .code_notebook_parts(text)$lines
 
   if (is.null(save_path)) {
     out
@@ -896,6 +908,54 @@ code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
     writeLines(out, save_path)
     save_path
   }
+}
+
+# A notebook's code, and the commands left out of it, from its JSON text. Commands
+# are IPython magics ("%cd ..") and shell escapes ("!pip install x"), which are not
+# Python and would otherwise be scanned as though they were. An R-kernel notebook
+# has no such commands, and "  %>% filter()" and "!x" are code there.
+.code_notebook_parts <- function(text) {
+  nb <- tryCatch(jsonlite::fromJSON(paste(text, collapse = "\n"),
+                                    simplifyVector = FALSE),
+                 error = function(e) NULL)
+  cells <- nb$cells
+  if (is.null(cells) || !length(cells))
+    return(list(lines = character(0), removed = character(0)))
+  kernel <- nb$metadata$kernelspec
+  is_r <- tolower(kernel$language %||% "") == "r" || tolower(kernel$name %||% "") %in% c("ir", "r")
+
+  parts <- lapply(cells, function(cl) {
+    if (!identical(cl$cell_type, "code")) return(NULL)
+    # `source` is normally an array of lines (each keeping its trailing "\n"),
+    # but the schema also permits a single string -- handle both.
+    s <- cl$source
+    if (is.null(s) || !length(s)) return(NULL)
+    lines <- unlist(strsplit(paste(unlist(s), collapse = ""), "\n"))
+    part <- if (is_r) list(lines = lines, removed = character(0)) else .code_notebook_cell(lines)
+    if (length(part$lines)) part$lines <- c(part$lines, "")   # blank line marks the cell boundary
+    part
+  })
+  list(lines = unlist(lapply(parts, `[[`, "lines")) %||% character(0),
+       removed = unlist(lapply(parts, `[[`, "removed")) %||% character(0))
+}
+
+# One notebook cell of a non-R kernel without its commands. A cell that starts with
+# %%bash and the like is not Python at all, so the whole cell goes; %%time and the
+# like only wrap Python. An indented command becomes `pass`, since removing the
+# only line of an `if` block would leave code that does not parse. Also removed:
+# the commands IPython accepts without a %: "cd folder", and "name?" for help.
+.code_notebook_cell <- function(lines) {
+  first <- lines[nzchar(trimws(lines))][1]
+  if (!is.na(first) && grepl("^\\s*%%", first) &&
+      !grepl("^\\s*%%(time|timeit|capture|prun)\\b", first))
+    return(list(lines = character(0), removed = trimws(first)))
+  is_cmd <- grepl("^\\s*[%!?]", lines) |
+    grepl("^\\s*cd(\\s+[^=(\\s].*)?$", lines, perl = TRUE) |
+    grepl("^\\s*[A-Za-z_][A-Za-z0-9_.]*\\?{1,2}\\s*$", lines)
+  indented <- is_cmd & grepl("^\\s", lines)
+  removed <- trimws(lines[is_cmd])
+  lines[indented] <- sub("^(\\s*).*$", "\\1pass", lines[indented])
+  list(lines = lines[!is_cmd | indented], removed = removed)
 }
 
 #' Extract Python chunks from a Quarto document
@@ -1827,13 +1887,16 @@ code_library_names <- function(code_text,
       }
       # lapply(pkgs, library, character.only = TRUE) and the same with
       # sapply/vapply/Map/purrr's map/walk and require: loads every package
-      # in the variable.
+      # in the variable. Also through a function of its own,
+      # lapply(pkgs, function(x) library(x, character.only = T)), which left
+      # tmap uninstalled in 10.1002/pan3.10736 (#568).
+      fn_wrap <- "(?:function\\s*\\([^)]*\\)|\\\\\\s*\\([^)]*\\))?\\s*\\{?\\s*(?:suppress\\w+\\s*\\(\\s*)?"
       ap <- regmatches(L, gregexpr(paste0(
         "\\b(?:lapply|sapply|vapply|walk|map)\\s*\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)",
-        "\\s*,\\s*(?:FUN\\s*=\\s*)?(library|require)\\b"), L, perl = TRUE))[[1]]
+        "\\s*,\\s*(?:FUN\\s*=\\s*)?", fn_wrap, "(library|require)\\b"), L, perl = TRUE))[[1]]
       for (call in ap) {
         parts <- regmatches(call, regexec(
-          "\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)\\s*,\\s*(?:FUN\\s*=\\s*)?(library|require)\\b",
+          paste0("\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)\\s*,\\s*(?:FUN\\s*=\\s*)?", fn_wrap, "(library|require)\\b"),
           call, perl = TRUE))[[1]]
         add(vars[[parts[2]]] %||% character(0), parts[3], ln)
       }
@@ -2387,6 +2450,64 @@ code_packages <- function(packages) {
     (!has_py || isTRUE(version_pin$python_pinned))
 }
 
+#' Calls that go on over the next lines
+#'
+#' A call matched by `call_regex` whose closing parenthesis is on a later line,
+#' as in `read.csv(` with `"./data.csv")` on the next line: the line-by-line
+#' search for file names saw the call without its file name, and the file name
+#' without its call (#568). Quotes and brackets are counted; a call not closed
+#' within `max_lines` lines is left out.
+#'
+#' @param code_text the lines of one file, comments removed
+#' @param call_regex a regular expression ending in the call's opening `\\(`
+#' @param max_lines the most lines one call may take
+#'
+#' @returns a list: `calls`, the text of each such call from its name to its
+#'   closing parenthesis, and `lines`, the numbers of the lines after the first
+#'   that the calls take
+#' @keywords internal
+.code_open_calls <- function(code_text, call_regex, max_lines = 20L) {
+  out <- list(calls = character(0), lines = integer(0))
+  n <- length(code_text)
+  if (n < 2) return(out)
+  hits <- which(grepl(call_regex, code_text, perl = TRUE))
+  for (i in hits[hits < n]) {
+    starts <- gregexpr(call_regex, code_text[i], perl = TRUE)[[1]]
+    for (k in seq_along(starts)) {
+      first <- starts[k] + attr(starts, "match.length")[k] - 1L   # the "("
+      depth <- 0L; in_str <- NA_character_; closed <- FALSE; j <- i
+      pieces <- character(0)
+      while (j <= min(n, i + max_lines - 1L) && !closed) {
+        line <- code_text[j]
+        from <- if (j == i) first else 1L
+        chars <- strsplit(substring(line, from), "", fixed = TRUE)[[1]]
+        p <- 0L
+        while (p < length(chars)) {
+          p <- p + 1L; ch <- chars[p]
+          if (!is.na(in_str)) {
+            if (ch == "\\") p <- p + 1L
+            else if (ch == in_str) in_str <- NA_character_
+          } else if (ch %in% c("'", '"')) in_str <- ch
+          else if (ch %in% c("(", "[", "{")) depth <- depth + 1L
+          else if (ch %in% c(")", "]", "}")) {
+            depth <- depth - 1L
+            if (depth == 0L) { closed <- TRUE; break }
+          }
+        }
+        pieces <- c(pieces, if (j == i) substring(line, starts[k]) else
+          if (closed) substr(line, 1L, p) else line)
+        if (!closed) j <- j + 1L
+      }
+      if (closed && j > i) {
+        out$calls <- c(out$calls, paste(pieces, collapse = " "))
+        out$lines <- c(out$lines, (i + 1L):j)
+      }
+    }
+  }
+  out$lines <- unique(out$lines)
+  out
+}
+
 #' Get files referenced in code
 #'
 #' @param code_text the code text for a single file
@@ -2537,6 +2658,10 @@ code_file_refs <- function(code_text,
   }
 
   load_lines <- grep(grepl_load, code_text, value = TRUE, perl = TRUE)
+  # A call whose file name is on a line after it, as in `read.csv(` and then
+  # `"./data.csv")`, is searched as a whole too (#568)
+  if (lang %in% c("R", "Python"))
+    load_lines <- c(load_lines, .code_open_calls(code_text, grepl_load)$calls)
 
   # Quoted filenames
   quoted_filename_pattern <- "(['\"])(?!\\.\\1)[^'\"]+\\.[A-Za-z0-9]{1,8}(?:\\.[A-Za-z0-9]{1,8})*\\1"

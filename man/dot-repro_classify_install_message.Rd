@@ -8,10 +8,14 @@
 }
 \arguments{
 \item{msg}{the error message text (\code{repro_install_deps()}'s own \code{message}
-column for one failed row)}
+column for one failed row)
+
+A package that Docker's second pass found in none of the places it looks
+(Bioconductor, the CRAN Archive, the list of known places, R-universe) is
+\code{"source_unknown"}: the code loads it without saying where it comes from.}
 }
 \value{
-a single category string: \code{"cran_unavailable"},
+a single category string: \code{"source_unknown"}, \code{"cran_unavailable"},
 \code{"compile_failure"}, \code{"network"}, \code{"transitive_dependency_missing"}, or
 \code{"other"}
 }
