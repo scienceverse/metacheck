@@ -75,6 +75,17 @@
 #' @keywords internal
 .repro_docker_default_image_py <- "ghcr.io/scienceverse/metacheck_py_small:latest"
 
+# The image that runs code written for Python 2 (#568): the official Python 2.7
+# image. pip there installs the last version of each package that supports
+# Python 2. The option `metacheck.docker_image_py2` names another image; set it
+# to FALSE or "" to not run Python 2 code (it is then only named, as before).
+.repro_docker_default_image_py2 <- "python:2.7-slim"
+
+.repro_docker_image_py2 <- function() {
+  img <- getOption("metacheck.docker_image_py2", .repro_docker_default_image_py2)
+  if (isFALSE(img) || is.null(img) || !nzchar(img[1])) NULL else img[1]
+}
+
 #' Install Python dependencies inside a throwaway Docker container
 #'
 #' The Docker-backed twin of [repro_install_deps_py()]: same return contract,

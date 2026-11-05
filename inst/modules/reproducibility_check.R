@@ -35,8 +35,10 @@
 #' block), `jags_model` (a JAGS or BUGS model saved with an R extension, which
 #' another script reads) or `not_r_content` (a file that is not R at all, such
 #' as a JSON or HTML dump); these last two are not run and are not failures.
-#' `python2` marks Python 2 code, which is not run, since only Python 3 is
-#' available, and is not converted, since that can change results.
+#' `python2` marks Python 2 code that was not run. With `sandbox = "docker"`
+#' such code runs with Python 2.7 (option `metacheck.docker_image_py2`; FALSE
+#' turns this off), which `modifications` records; it is never converted, since
+#' that can change results.
 #' `defines_functions` is a file that only defines functions, which is used, not
 #' run (`table$used_by` names the scripts that use it), and `not_analysis` is a
 #' file of software rather than of the analysis: a package's code, tests,
@@ -3099,6 +3101,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_server <- vapply(py_code_text_list, .repro_py_starts_server, logical(1), USE.NAMES = FALSE) & !py_not_analysis
   # Set when the execute phase below could not run the Python code at all.
   py_exec_error <- NULL
+  # the scripts run with Python 2.7 (see the execute phase)
+  py_ran_py2 <- character(0)
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
   py_placeable <- !is.na(py_file_order)
 
@@ -3290,6 +3294,56 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         }
       }
     }
+    # Code written for Python 2 runs again with Python 2.7, with its own packages
+    # in _pylib2: the last versions that support Python 2 (#568). The code is not
+    # converted, since that can change results (`/` between whole numbers). A
+    # script that stopped on a Python 2 module it imports is run this way too.
+    py_ran_py2 <- character(0)
+    py2_image <- if (sandbox == "docker") .repro_docker_image_py2()
+    if (!is.null(py_run_results) && !is.null(py2_image)) {
+      py2_names <- py_run_results$file_name[
+        (py_run_results$file_name %in% py_files$file_name[py_python2] |
+           (py_run_results$outcome == "errored" &
+              .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))) &
+          !py_run_results$file_name %in% py_files$file_name[py_not_analysis | py_server]]
+      if (length(py2_names)) {
+        .dbg("[repro/py] running ", length(py2_names), " Python 2 script(s) with ", py2_image)
+        py2_lib_dir <- file.path(sandbox_root, "_pylib2")
+        if (!isTRUE(keep_sandbox)) on.exit(.repro_docker_lib_remove(py2_lib_dir), add = TRUE)
+        py2_failed_deps <- character(0)
+        if (isTRUE(install_missing)) {
+          py2_deps <- repro_dependencies_py(py_code_text_list[py2_names], manifest_text = py_manifest_text)
+          py2_deps <- py2_deps[!py2_deps$base & !py2_deps$package %in% py_local_modules, , drop = FALSE]
+          .dbg("[repro/py] installing ", nrow(py2_deps), " Python 2 dependenc(y/ies): ",
+               paste(py2_deps$package, collapse = ", "))
+          if (nrow(py2_deps)) {
+            py2_install <- tryCatch(
+              repro_install_deps_py_docker(py2_deps, py2_lib_dir, image = py2_image, timeout = timeout),
+              error = function(e) {
+                .dbg("[repro/py]   Python 2 install stopped: ", conditionMessage(e))
+                NULL
+              })
+            py2_failed_deps <- if (is.null(py2_install)) py2_deps$package else
+              py2_install$package[!py2_install$installed]
+            .dbg("[repro/py]   Python 2 install done; not installed: ",
+                 if (length(py2_failed_deps)) paste(py2_failed_deps, collapse = ", ") else "none")
+          }
+        }
+        res2 <- tryCatch(repro_run_scripts_py_docker(
+          py_run_tbl[py_run_tbl$file_name %in% py2_names, , drop = FALSE],
+          intersect(py_run_order_names, py2_names), sandbox_root = sandbox_root,
+          lib_dir = if (dir.exists(py2_lib_dir)) py2_lib_dir else NULL, image = py2_image,
+          timeout = timeout, failed_deps = py2_failed_deps, deadline = script_deadline, net = net),
+          error = function(e) NULL)
+        if (!is.null(res2) && nrow(res2)) {
+          res2 <- res2[res2$outcome != "skipped_time_limit", , drop = FALSE]
+          py_ran_py2 <- res2$file_name
+          keep_order <- py_run_results$file_name
+          py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res2$file_name, , drop = FALSE], res2)
+          py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
+        }
+      }
+    }
     if (!is.null(py_run_results) && length(py_imported)) {
       py_run_results <- py_run_results[!py_run_results$file_name %in% names(py_imported), , drop = FALSE]
       py_run_results <- dplyr::bind_rows(py_run_results, data.frame(
@@ -3299,9 +3353,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Python 2 code gets an outcome of its own: the parser's verdict, or, with no
     # Python on this computer or for a script importing such a file, the error.
     if (!is.null(py_run_results)) {
-      py_is_py2 <- py_run_results$file_name %in% py_files$file_name[py_python2] |
+      py_is_py2 <- (py_run_results$file_name %in% py_files$file_name[py_python2] |
         (py_run_results$outcome == "errored" &
-           .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))
+           .repro_py2_error(paste(py_run_results$stderr, py_run_results$error)))) &
+        !py_run_results$file_name %in% py_ran_py2
       py_run_results$outcome[py_is_py2] <- "python2"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_server]] <- "needs_a_person"
@@ -3532,7 +3587,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         "%d Python file%s did not parse and cannot be run (Python's own parser found a syntax error): %s.",
         sum(!py_parses & !py_python2), plural(sum(!py_parses & !py_python2)),
         paste(py_files$file_name[!py_parses & !py_python2], collapse = ", ")),
-      if (sum(py_python2) > 0) sprintf(
+      if (sum(py_python2) > 0 && length(py_ran_py2)) sprintf(
+        paste0("%d Python file%s written for Python 2, which has been unsupported since 2020. ",
+               "We ran %s with Python 2.7 (Docker image `%s`), with the last versions of %s ",
+               "packages that support Python 2, which can differ from the versions the authors used. ",
+               "We did not convert the code. Python 2 gets no more fixes, so the authors could ",
+               "convert %s to Python 3: %s."),
+        sum(py_python2), plural(sum(py_python2), " is", "s are"),
+        plural(length(py_ran_py2), "it", "them"), .repro_docker_image_py2() %||% "",
+        plural(length(py_ran_py2), "its", "their"),
+        plural(sum(py_python2), "it", "them"),
+        paste(py_files$file_name[py_python2], collapse = ", "))
+      else if (sum(py_python2) > 0) sprintf(
         paste0("%d Python file%s written for Python 2, which has been unsupported since 2020. ",
                "We run Python 3, so %s not run, and we do not convert code, since that ",
                "can change results: `/` between whole numbers divides differently. To be ",
@@ -3572,7 +3638,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "order above, with a %d-second per-script timeout. Of %d script%s: ",
              "%d ran without error, %d errored, %d timed out, %d could not run ",
              "because one of its own dependencies is unavailable, %d did not ",
-             "parse, and %d %s written for Python 2.%s Running ",
+             "parse, and %d %s written for Python 2 and not run.%s Running ",
              "against current package versions: a break can reflect version ",
              "drift, which argues for pinning versions (e.g. in a ",
              "`requirements.txt`)."),
@@ -3596,6 +3662,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " %d %s not started, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
+    py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
+    if (length(py_ran_py2_here))
+      py_report_exec <- paste0(py_report_exec, sprintf(
+        " %d %s written for Python 2, so %s run with Python 2.7 instead of Python 3: %s.",
+        length(py_ran_py2_here), plural(length(py_ran_py2_here), "script is", "scripts are"),
+        plural(length(py_ran_py2_here), "it was", "they were"), paste(py_ran_py2_here, collapse = ", ")))
     if (sum(py_oc == "docker_failed") > 0)
       py_report_exec <- paste0(py_report_exec, sprintf(
         " **Docker failed for %d script%s, so %s not run.** This says nothing about the code; run the check again when Docker works.",
@@ -3840,7 +3912,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       else NULL
     } else NULL
     py_slash_rows_mod <- if (exists("py_run_tbl", inherits = FALSE)) .repro_slash_rows(py_run_tbl)
-    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod)
+    py2_rows_mod <- if (length(py_ran_py2)) data.frame(
+      file_name = py_ran_py2, change_type = "python2",
+      detail = paste0("run with Python 2.7 (", .repro_docker_image_py2() %||% "", ")"))
+    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))
     py_modifications <- data.frame(file_name = character(0), change_type = character(0),

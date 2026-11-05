@@ -946,6 +946,39 @@ test_that("execute = TRUE: Python 2 code has its own outcome, and notebook comma
   expect_match(report, "#### Notebook commands", fixed = TRUE)
 })
 
+test_that("sandbox = \"docker\": Python 2 code runs with Python 2.7, with its own packages, and the report says so (#568)", {
+  skip_if_quick()
+  skip_if_offline()
+  skip_if(!nzchar(.repro_find_python()), "needs Python")
+  skip_if_not_installed("processx")
+  docker_ok <- tryCatch(repro_docker_available(), error = function(e) list(ok = FALSE))
+  skip_if_not(isTRUE(docker_ok$ok), "Docker not available")
+
+  d <- withr::local_tempdir()
+  # 5/2 is 2 in Python 2; six is installed into the Python 2 library
+  writeLines(c("import six", "print 'half', 5/2"), file.path(d, "old.py"))
+  writeLines('import oldmod', file.path(d, "uses.py"))
+  writeLines('import cPickle\nprint "module"', file.path(d, "oldmod.py"))
+  writeLines('print("new")', file.path(d, "new.py"))
+  run <- function() suppressWarnings(suppressMessages(module_run(
+    test_paper(), "reproducibility_check", local_path = d, execute = TRUE,
+    sandbox = "docker", install_missing = TRUE, timeout = 300)))
+  mo <- run()
+  outcome <- stats::setNames(mo$run_results$outcome, mo$run_results$file_name)
+  expect_equal(outcome[["old.py"]], "ran_ok")
+  expect_match(mo$run_results$stdout[mo$run_results$file_name == "old.py"], "half 2", fixed = TRUE)
+  expect_equal(outcome[["new.py"]], "ran_ok")
+  expect_true("old.py" %in% mo$modifications$file_name[mo$modifications$change_type == "python2"])
+  report <- paste(unlist(mo$report), collapse = "\n")
+  expect_match(report, "with Python 2.7 (Docker image `python:2.7-slim`)", fixed = TRUE)
+
+  # the option turns it off: the old outcome, without a run
+  withr::local_options(metacheck.docker_image_py2 = FALSE)
+  off <- run()
+  expect_equal(off$run_results$outcome[off$run_results$file_name == "old.py"], "python2")
+  expect_false("python2" %in% off$modifications$change_type)
+})
+
 test_that("execute = TRUE: a name in a variable and a path among same-named files are followed (#568)", {
   skip_if_quick()
   skip_if_not_installed("callr")
