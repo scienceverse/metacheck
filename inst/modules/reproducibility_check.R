@@ -1383,6 +1383,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # a reference that works as written stays as it is
   rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
     .repro_keep_working_refs(rewrite_list[[i]], plan, r_script_paths[i], r_run_dirs[i])), names(rewrite_list))
+  # a folder on the authors' computer held in a variable gets the deposit's folder
+  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
+    .repro_apply_folder_vars(rewrite_list[[i]],
+                             .repro_folder_vars(code_text_list[[i]], plan, r_run_dirs[i]))), names(rewrite_list))
 
   # Per-file rewrite counts + unresolved reads (referenced, not matched in plan).
   rewrites_n  <- vapply(rewrite_list, function(d)
@@ -1601,6 +1605,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
     }
     lib_dir <- file.path(sandbox_root, "_lib")
+    # in Docker the library is a volume, removed with the sandbox (#568)
+    if (sandbox == "docker" && !isTRUE(keep_sandbox))
+      on.exit(.repro_docker_lib_remove(lib_dir), add = TRUE)
     .dbg("sandbox root: ", sandbox_root)
 
     # With recorded_versions = TRUE, when the repository records package versions,
@@ -1653,6 +1660,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     ml <- repro_materialize_layout(plan, structure_df, sandbox_root)
     .dbg("  materialised ", sum(attr(ml, "materialised")$ok %||% FALSE), "/",
          nrow(attr(ml, "materialised") %||% data.frame()), " files.")
+    # Stan files in the syntax Stan removed in 2.33 get the newer form (#568)
+    stan_rows <- .repro_upgrade_stan_files(sandbox_root)
+    # Git LFS pointers replaced by the deposit's copy of the file (#568)
+    lfs <- attr(ml, "lfs")
+    if (NROW(lfs)) stan_rows <- dplyr::bind_rows(stan_rows, data.frame(
+      file_name = basename(lfs$pointer), change_type = "lfs_pointer",
+      detail = "a Git LFS pointer, not the file; the deposit's copy of the stated size was used"))
     .dbg("writing ", n_code, " rewritten script(s) into the layout ...")
     # groundhog, checkpoint and renv calls would need the network, which is off
     # in a Docker run, and recorded versions are installed before the run.
@@ -1664,8 +1678,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                    run_dirs = r_run_dirs)
     rprofile_replaced <- if (replace_env_calls) .repro_neutralise_rprofile(sandbox_root) else 0L
     # here::here() needs a mark for the top of the project, which is often not
-    # deposited: it stopped with "Could not find a root" (#568, item 20).
-    for (d in unique(c(sandbox_root, run_tbl$run_dir))) if (!length(list.files(d, pattern = "\\.Rproj$|^\\.here$|^DESCRIPTION$", all.files = TRUE)))
+    # deposited: it stopped with "Could not find a root" (#568, item 20). The
+    # mark goes where the script's own here() paths point, when they show it, not
+    # in its run folder: here("scripts", "functions.R") from scripts/ became
+    # scripts/scripts/functions.R (10.1111/1365-2664.14317; #568).
+    # The top always has a mark, so here() finds a root from every folder; a
+    # mark in each run folder came before the authors' own .Rproj at the top.
+    here_roots <- .repro_here_roots(code_text_list, r_run_dirs, plan)
+    rooted <- !is.na(here_roots)
+    root_dirs <- ifelse(here_roots[rooted] == ".", sandbox_root,
+                        file.path(sandbox_root, .portable_path(here_roots[rooted])))
+    for (d in unique(c(sandbox_root, root_dirs))) if (!length(list.files(d, pattern = "\\.Rproj$|^\\.here$|^DESCRIPTION$", all.files = TRUE)))
       suppressWarnings(file.create(file.path(d, ".here")))
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
@@ -2575,6 +2598,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                 if (!is.null(report_nodep)) c("**Dependency-unavailable errors**", report_nodep),
                 if (!is.null(report_setwd)) c("**`setwd()` in the code**", report_setwd),
                 if (exists("run_tbl", inherits = FALSE)) .repro_slash_report(run_tbl),
+                # what else we changed to run the code, so the authors can fix it themselves
+                if (exists("stan_rows", inherits = FALSE) && NROW(stan_rows)) c(
+                  "**Other changes we made to run the code**",
+                  paste("Stan files in the syntax Stan removed in version 2.33 were given the newer syntax,",
+                        "and Git LFS pointers (placeholders a GitHub archive holds instead of the file) were",
+                        "replaced by the deposit's copy of the file. Updating the Stan files, and depositing",
+                        "the files themselves, solves this."),
+                  scroll_table(data.frame(File = stan_rows$file_name, Change = stan_rows$detail), maxrows = 10)),
                 # The calls that install packages themselves cannot run here.
                 if (sum(run_tbl$env_calls_replaced %||% 0L) + rprofile_replaced > 0) c(
                   "**Calls that install packages in the code**", sprintf(paste0(
@@ -2790,8 +2821,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                  change_type = "old_default",
                  detail = c(factors = "text read as factors, as before R 4.0",
                             latin1 = "data files read as Latin-1")[unlist(old_defaults_used, use.names = FALSE)])
+    stan_rows_mod <- if (exists("stan_rows", inherits = FALSE)) stan_rows
     dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
-                     slash_rows_mod, old_default_rows, run_after_rows)
+                     slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
     modifications <- data.frame(file_name = character(0), change_type = character(0),
@@ -3129,6 +3161,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       repro_materialize_layout(plan, structure_df, sandbox_root)
     }
     py_lib_dir <- file.path(sandbox_root, "_pylib")
+    if (sandbox == "docker" && !isTRUE(keep_sandbox))
+      on.exit(.repro_docker_lib_remove(py_lib_dir), add = TRUE)
 
     .dbg("[repro/py] writing ", n_py_code, " rewritten script(s) into the layout ...")
     py_run_tbl <- repro_write_scripts(py_code_text_list, py_rewrite_list, plan,

@@ -71,6 +71,42 @@ repro_docker_available <- function() {
 # non-root id on both sides of the mount.
 .repro_docker_uid <- "1000:1000"
 
+# The `-v` argument that mounts a package library at `target` (/rlib, /pylib).
+# The library is a Docker volume, not the host folder `lib_dir` itself (#568): a
+# Windows drive does not tell file names apart by case, so INLA, whose help files
+# include names that differ only in capitals, failed with "cannot create regular
+# file ... File exists" (10.1111/1365-2435.14173, 18 scripts; the baseline run too);
+# an exFAT drive also refuses Linux file permissions and stores every small file
+# in a 1 MB block. The volume is named after `lib_dir`, made on first use and owned
+# by the user the containers run as; .repro_docker_lib_remove() removes it. The
+# option `metacheck.docker_lib_volume = FALSE` mounts the host folder, as before.
+.repro_docker_lib_volume_name <- function(lib_dir) {
+  p <- gsub("\\\\", "/", normalizePath(lib_dir, mustWork = FALSE))
+  paste0("metacheck_lib_", gsub("[^A-Za-z0-9_.-]", "", paste0(basename(dirname(p)), "_", basename(p))))
+}
+
+.repro_docker_lib_mount <- function(lib_dir, target, read_only = FALSE, image = NULL) {
+  ro <- if (read_only) ":ro" else ""
+  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE)))
+    return(paste0(normalizePath(lib_dir, mustWork = FALSE), ":", target, ro))
+  vol <- .repro_docker_lib_volume_name(lib_dir)
+  have <- tryCatch(processx::run("docker", c("volume", "inspect", vol), error_on_status = FALSE)$status == 0,
+                   error = function(e) FALSE)
+  if (!have && !read_only && !is.null(image)) {
+    processx::run("docker", c("volume", "create", vol), error_on_status = FALSE)
+    processx::run("docker", c("run", "--rm", "--network", "none", "-v", paste0(vol, ":/v"), image,
+                              "chown", .repro_docker_uid, "/v"), error_on_status = FALSE)
+  }
+  paste0(vol, ":", target, ro)
+}
+
+.repro_docker_lib_remove <- function(lib_dir) {
+  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE))) return(invisible(NULL))
+  tryCatch(processx::run("docker", c("volume", "rm", "-f", .repro_docker_lib_volume_name(lib_dir)),
+                         error_on_status = FALSE), error = function(e) NULL)
+  invisible(NULL)
+}
+
 # A unique container name for one docker run, so it can be `docker stop`ped
 # by name afterwards if needed (see .repro_docker_stop() and its call sites
 # below -- GitHub issue #417). Built from tempfile()'s own randomness
@@ -297,15 +333,21 @@ repro_docker_available <- function() {
     r"(writeLines(c("CFLAGS += -Wno-error=format-security -DCalloc=R_Calloc -DRealloc=R_Realloc -DFree=R_Free", paste0(c("CXXFLAGS", "CXX11FLAGS", "CXX14FLAGS", "CXX17FLAGS", "CXX20FLAGS"), " += -Wno-error=format-security")), makevars))",
     r"(Sys.setenv(R_MAKEVARS_USER = makevars, R_LIBS = paste(.libPaths(), collapse = ":")))",
     r"(retry_rows <- function() which(vapply(out, function(x) !x$installed && identical(x$source, "cran") && grepl("is not available|there is no package called", x$message), logical(1))))",
+    # What an install here says, kept: an install that gives only warnings
+    # returned as if it had worked, and INLA, from its own repository, failed
+    # without a word in 10.1111/1365-2435.14173 (#568)
+    r"(last_log <- character(0))",
+    r"(logged <- function(expr) withCallingHandlers(expr, warning = function(w) { last_log <<- c(last_log, conditionMessage(w)); invokeRestart("muffleWarning") }, error = function(e) last_log <<- c(last_log, conditionMessage(e))))",
     r"(bioc_known <- NULL)",
-    r"(in_elsewhere <- function(pkg) {)",
+    r"(in_elsewhere <- function(pkg, depth = 1) {)",
     r"(  if (is.null(bioc_known)) bioc_known <<- tryCatch({)",
     r"(    if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", lib = lib, quiet = TRUE))",
     r"(    rownames(utils::available.packages(repos = BiocManager::repositories())))",
     r"(  }, error = function(e) character(0)))",
     # A package on CRAN can need one from Bioconductor, which install.packages()
     # does not find: speaq needs MassSpecWavelet.
-    r"(  bioc_needed <- regmatches(paste(out[[match(pkg, pkgs)]]$message), regexpr("(?<=there is no package called .)[A-Za-z0-9.]+", paste(out[[match(pkg, pkgs)]]$message), perl = TRUE)))",
+    r"(  first_msg <- if (pkg %in% pkgs) paste(out[[match(pkg, pkgs)]]$message) else "")",
+    r"(  bioc_needed <- regmatches(first_msg, regexpr("(?<=there is no package called .)[A-Za-z0-9.]+", first_msg, perl = TRUE)))",
     r"(  if (length(bioc_needed) && bioc_needed %in% bioc_known) {)",
     r"(    BiocManager::install(bioc_needed, lib = lib, update = FALSE, ask = FALSE))",
     r"(    return("bioc"))",
@@ -329,7 +371,22 @@ repro_docker_available <- function() {
     r"(  latest <- hits[order(dates, decreasing = TRUE)][1])",
     r"(  tarball <- regmatches(latest, regexpr(paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz"), latest)))",
     r"(  if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
-    r"(  remotes::install_url(paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/", tarball), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE))",
+    r"(  archive_url <- paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/", tarball))",
+    # A dependency that has left CRAN too is installed from the Archive first: the
+    # install takes dependencies from CRAN only, so ggsn, which needs maptools,
+    # stopped (10.1111/1365-2435.14195; #568). Read from the package's DESCRIPTION.
+    r"(  if (depth < 3) tryCatch({)",
+    r"(    tb <- file.path(tempdir(), tarball))",
+    r"(    utils::download.file(archive_url, tb, quiet = TRUE))",
+    r"(    ex <- file.path(tempdir(), paste0("desc_", pkg)))",
+    r"(    utils::untar(tb, files = paste0(pkg, "/DESCRIPTION"), exdir = ex))",
+    r"(    dcf <- read.dcf(file.path(ex, pkg, "DESCRIPTION")))",
+    r"(    fields <- intersect(c("Depends", "Imports", "LinkingTo"), colnames(dcf)))",
+    r"(    needs <- trimws(sub("\\(.*", "", unlist(strsplit(paste(dcf[1, fields], collapse = ","), ",")))))",
+    r"(    needs <- setdiff(needs[nzchar(needs)], c("R", rownames(utils::installed.packages(lib.loc = .libPaths())), rownames(utils::available.packages()))))",
+    r"(    for (d in needs) tryCatch(in_elsewhere(d, depth + 1), error = function(e) NULL))",
+    r"(  }, error = function(e) NULL))",
+    r"(  logged(remotes::install_url(archive_url, lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE)))",
     r"(  "archive")",
     r"(})",
     # Packages only elsewhere (#568, item 12): a table of known places, then
@@ -338,12 +395,12 @@ repro_docker_available <- function() {
     r"(in_known_place <- function(pkg) {)",
     r"(  place <- unname(known_places[pkg]))",
     r"(  if (!is.na(place) && startsWith(place, "https://")) {)",
-    r"(    install.packages(pkg, lib = lib, repos = c(place, getOption("repos")), quiet = TRUE))",
+    r"(    logged(install.packages(pkg, lib = lib, repos = c(place, getOption("repos")), quiet = TRUE)))",
     r"(    return(place))",
     r"(  })",
     r"(  if (!is.na(place)) {)",
     r"(    if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
-    r"(    remotes::install_url(paste0("https://github.com/", place, "/archive/HEAD.tar.gz"), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE))",
+    r"(    logged(remotes::install_url(paste0("https://github.com/", place, "/archive/HEAD.tar.gz"), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE)))",
     r"(    return(paste0("github.com/", place)))",
     r"(  })",
     # a search that fails is not a package R-universe lacks (#389); a bare
@@ -355,12 +412,13 @@ repro_docker_available <- function() {
     r"(  who <- found[["_user"]][found$Package == pkg])",
     r"(  if (!length(who)) return(NA_character_))",
     r"(  repo <- paste0("https://", who[1], ".r-universe.dev"))",
-    r"(  install.packages(pkg, lib = lib, repos = c(repo, getOption("repos")), quiet = TRUE))",
+    r"(  logged(install.packages(pkg, lib = lib, repos = c(repo, getOption("repos")), quiet = TRUE)))",
     r"(  repo)",
     r"(})",
     r"(for (round in 1:2) for (i in retry_rows()) {)",
     r"(  pkg <- pkgs[i])",
     r"(  writeLines(as.character(i), "/sandbox/.install_status"))",
+    r"(  last_log <- character(0))",
     r"(  from <- tryCatch(in_elsewhere(pkg), error = function(e) conditionMessage(e)))",
     r"(  usable <- function() file.exists(file.path(lib, pkg, "DESCRIPTION")) && requireNamespace(pkg, quietly = TRUE, lib.loc = lib))",
     # what stopped it is kept, next to the first pass's "not available"
@@ -368,6 +426,7 @@ repro_docker_available <- function() {
     r"(  if (!usable()) from <- tryCatch(in_known_place(pkg), error = function(e) conditionMessage(e)))",
     r"(  stopped <- c(tried, from)[!is.na(c(tried, from)) & !c(tried, from) %in% c("bioc", "archive") & !grepl("^https://|^github", c(tried, from))])",
     r"(  if (!usable() && round == 2 && length(stopped)) out[[i]]$message <- paste0(out[[i]]$message, "; also tried elsewhere: ", substr(stopped[1], 1, 300)))",
+    r"(  if (!usable() && round == 2 && !length(stopped) && length(last_log)) out[[i]]$message <- paste0(out[[i]]$message, "; installing it from ", c(from, tried)[!is.na(c(from, tried))][1], " failed: ", substr(paste(unique(last_log), collapse = " | "), 1, 400)))",
     # Found in none of the places: the code does not say where the package comes
     # from, which authors can act on (#389). See .repro_classify_install_message().
     r"(  if (!usable() && round == 2 && is.na(tried) && is.na(from)) out[[i]]$message <- paste0(out[[i]]$message, "; found nowhere else: not on Bioconductor, in the CRAN Archive, in our list of known places or on R-universe"))",
@@ -716,7 +775,7 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
            "--pids-limit", "512",
            .repro_docker_resource_args(),
            "-v", paste0(sandbox_dir, ":/sandbox"),
-           "-v", paste0(normalizePath(lib_dir, mustWork = FALSE), ":/rlib"),
+           "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
            image, "Rscript", "/sandbox/install.R")
 
   out_file <- tempfile(fileext = ".out")
@@ -1003,11 +1062,20 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       paste0('  exprs <- parse("', container_script, '", keep.source = TRUE)'),
       '  srcrefs <- attr(exprs, "srcref")',
       '  env <- globalenv()',
+      # The echo of each expression goes past a sink() the script opened: a model
+      # written with sink("m.jags"); cat("model {...}"); sink() got our "> cat(..."
+      # lines, and JAGS stopped on "syntax error on line 1 near '>'"
+      # (10.1111/1365-2656.14188, 10.1111/1365-2656.14113; #568)
+      '  echo_con <- NULL',
       '  for (i in seq_along(exprs)) {',
       '    e <- exprs[[i]]',
       '    sr <- if (!is.null(srcrefs) && length(srcrefs) >= i) srcrefs[[i]] else NULL',
       '    txt <- if (!is.null(sr)) as.character(sr) else deparse(e)',
-      '    cat(paste0("> ", txt, collapse = "\\n"), "\\n", sep = "")',
+      '    echo <- paste0(paste0("> ", txt, collapse = "\\n"), "\\n")',
+      '    if (sink.number() > 0) {',
+      '      if (is.null(echo_con)) echo_con <- suppressWarnings(file("/dev/stdout", "w", raw = TRUE))',
+      '      cat(echo, file = echo_con); flush(echo_con)',
+      '    } else cat(echo)',
       '    res <- withVisible(eval(e, envir = env))',
       '    if (res$visible) print(res$value)',
       '    call_txt <- paste(txt, collapse = " ")',
@@ -1043,7 +1111,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
              "-v", paste0(sandbox_root, ":/sandbox"))
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", paste0(lib_dir_norm, ":/rlib:ro"))
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", read_only = TRUE))
     args <- c(args, image, .repro_docker_counted_cmd(c("Rscript", container_wrapper), net))
 
     out_file <- tempfile(fileext = ".out")

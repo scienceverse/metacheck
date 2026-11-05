@@ -977,6 +977,18 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   # rows with another's names then stopped the module for the paper
   out$name_in_code <- as.character(ifelse(differs, in_code, NA_character_))
   out$name_in_deposit <- as.character(ifelse(differs, listed, NA_character_))
+  # Whether the name stands in a call that joins it to a folder of the code's own
+  # (file.path(dir, "x.csv"), os.path.join(base, "x.csv")): such a name is left
+  # as written when the file's path ends in it (.repro_keep_working_refs()). A
+  # bare name read directly, after setwd("./data") was taken out, is not
+  # (10.1111/1365-2664.14633; #568).
+  joined_text <- paste(code_text, collapse = "\n")
+  out$in_join <- vapply(seq_len(nrow(out)), function(i) {
+    if (isTRUE(out$is_call[i])) return(FALSE)
+    q <- gsub("([.\\\\+*?^$()|{}\\[\\]])", "\\\\\\1", out$ref[i])
+    grepl(paste0("\\b(?:file\\.path|paste0?|os\\.path\\.join|here|Path|sprintf)\\s*\\([^()\n]*?[\"']", q, "[\"']"),
+          joined_text, perl = TRUE)
+  }, logical(1))
   out
 }
 
@@ -2364,6 +2376,14 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   # Each row's own source file (see .repro_plan_sources()): looked up by name,
   # the 20 log.csv files of 20 scan folders all got the first one's content.
   sources <- .repro_plan_sources(plan, structure_df)
+  # A Git LFS pointer in place of the file, as GitHub's archives hold for files
+  # kept in LFS: the copy of the same name and of the size the pointer states,
+  # elsewhere in the deposit, is used instead. In 10.1111/1365-2664.14751 the
+  # GitHub archive had pointers for the .RDS files, the Zenodo copy the files,
+  # and five scripts stopped with "unknown input format" (#568).
+  lfs <- .repro_lfs_swaps(sources)
+  is_ptr <- sources %in% lfs$pointer
+  if (any(is_ptr)) sources[is_ptr] <- lfs$file[match(sources[is_ptr], lfs$pointer)]
 
   has_target <- !is.na(plan$target_path) & nzchar(plan$target_path %||% "")
   rows <- lapply(which(has_target), function(i) {
@@ -2412,7 +2432,33 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   done <- if (length(rows)) dplyr::bind_rows(rows) else done
   # and its folders, so a script can save a new file next to the data
   Sys.chmod(list.dirs(root, recursive = TRUE), "0777", use_umask = FALSE)
-  invisible(structure(root, materialised = done))
+  invisible(structure(root, materialised = done, lfs = lfs))
+}
+
+# The Git LFS pointers among `sources` (files on disk) and, for each, the file
+# of the same name, elsewhere among them, of the size the pointer states. A
+# pointer with no such file is left out. Returns a data frame `pointer`, `file`.
+.repro_lfs_swaps <- function(sources) {
+  none <- data.frame(pointer = character(0), file = character(0))
+  src <- unique(sources[!is.na(sources) & file.exists(sources %||% "")])
+  if (!length(src)) return(none)
+  size <- file.size(src)
+  small <- src[!is.na(size) & size < 1024]
+  if (!length(small)) return(none)
+  stated <- vapply(small, function(f) {
+    l <- tryCatch(readLines(f, n = 3, warn = FALSE), error = function(e) character(0))
+    if (!length(l) || !startsWith(l[1], "version https://git-lfs.github.com/spec/")) return(NA_real_)
+    s <- suppressWarnings(as.numeric(sub("^size ", "", grep("^size [0-9]+$", l, value = TRUE)[1])))
+    if (is.na(s)) NA_real_ else s
+  }, numeric(1))
+  pointers <- small[!is.na(stated)]
+  if (!length(pointers)) return(none)
+  rows <- lapply(pointers, function(p) {
+    same <- src[tolower(basename(src)) == tolower(basename(p)) & size == stated[[p]] & src != p]
+    if (length(same)) data.frame(pointer = p, file = same[1]) else NULL
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (!length(rows)) none else dplyr::bind_rows(rows)
 }
 
 #' The package layout's plan: every file in its own place
@@ -2533,6 +2579,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   # 10.1002/pan3.10310 the data, a deposit of its own, lies at the top, and
   # "./kilimanjaro_..._questionnaire.csv" was kept as written and not found (#568).
   joined <- found & endsWith(tolower(tgt), paste0("/", tolower(ref)))
+  # a bare name counts as joined only when it stands in a joining call
+  if ("in_join" %in% names(rw))
+    joined <- joined & (grepl("/", ref, fixed = TRUE) | rw$in_join %in% TRUE)
   keep <- keep & !(!in_place & !is_call & !absolute & !up & found & !joined)
   # a path that names no file, with no file of its name in the repository, stays
   # as written and is a missing input
@@ -2561,6 +2610,129 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   moved <- !keep & !is.na(rw$target) & nzchar(rw$target)
   rw$target[moved] <- vapply(rw$target[moved], .repro_rel_from, character(1), dir = run_dir, USE.NAMES = FALSE)
   rw
+}
+
+# Folders on the authors' computer held in a variable (#568): `root <-
+# "~/Data_to_publish/"` with `paste0(root, "2_data/")` and `source(paste0(root,
+# "/1_scripts/0_FUNCTIONS.R"))` (10.1111/1365-2656.14164), or `dataDir <-
+# "~/MGDrivE/Main/SoftwarePaper2"` with `file.path(dataDir, "Data/k.csv")`
+# (10.1111/2041-210X.13318). The variable gets the folder of the deposit under
+# which the most of the paths pasted to it exist, counted from `run_dir`, the
+# folder the script runs from; the pasted pieces are then not rewritten on their
+# own (they were, so "/1_scripts/0_FUNCTIONS.R" became "0_FUNCTIONS.R" after the
+# author's folder). Only an absolute folder ("C:/...", "/...", "~/...") is
+# changed, and only when at least one pasted path exists in the deposit. Returns
+# a data frame: `value` (the folder as written), `target` (its new value) and a
+# list-column `pieces` (the texts pasted to it, as written).
+.repro_folder_vars <- function(code_text, plan, run_dir = ".") {
+  empty <- data.frame(value = character(0), target = character(0))
+  empty$pieces <- list()
+  if (is.null(plan) || !nrow(plan) || !length(code_text)) return(empty)
+  nc <- tryCatch(code_remove_comments(.utf8_lines(code_text), "R"), error = function(e) .utf8_lines(code_text))
+  vars <- .repro_simple_string_vars(nc)
+  vars <- vars[grepl("^([A-Za-z]:[/\\\\]|/|~)", vars) & !grepl("\\.[A-Za-z0-9]{1,8}$", vars)]
+  if (!length(vars)) return(empty)
+  joined <- paste(nc, collapse = "\n")
+  files <- tolower(gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)]))
+  folders <- character(0)
+  d <- dirname(files)
+  while (length(d <- setdiff(d[d != "."], folders))) {
+    folders <- c(folders, d)
+    d <- dirname(d)
+  }
+  known <- c(files, folders)
+  rows <- lapply(names(vars), function(v) {
+    vq <- gsub("([.\\\\])", "\\\\\\1", v)
+    pat <- paste0("\\b(?:paste0|file\\.path|paste)\\s*\\(\\s*", vq, "\\s*,\\s*(['\"])([^'\"\n]*)\\1")
+    hits <- regmatches(joined, gregexpr(pat, joined, perl = TRUE))[[1]]
+    if (!length(hits)) return(NULL)
+    pieces <- unique(sub(pat, "\\2", hits, perl = TRUE))
+    rel <- sub("/+$", "", sub("^[/\\\\]+", "", gsub("\\\\", "/", pieces)))
+    rel <- rel[nzchar(rel)]
+    if (!length(rel)) return(NULL)
+    # "../2_data/x.csv" counts from the folder too (10.1111/1365-2656.14164)
+    score <- vapply(c(".", folders), function(f) {
+      p <- vapply(if (f == ".") rel else file.path(f, rel), .repro_norm_rel, character(1), USE.NAMES = FALSE)
+      sum(tolower(p[!is.na(p)]) %in% known)
+    }, numeric(1))
+    if (max(score) < 1) return(NULL)
+    best <- c(".", folders)[score == max(score)]
+    # several equally good: the one nearest the script's own folder, else none
+    near <- best[startsWith(paste0(tolower(run_dir), "/"), paste0(best, "/")) | best == "."]
+    pick <- if (length(best) == 1) best else if (length(near)) near[which.max(nchar(near))] else NA
+    if (is.na(pick)) return(NULL)
+    # the original spelling of the folder, as case can matter
+    if (pick != ".") {
+      tp <- gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)])
+      under <- tp[startsWith(tolower(tp), paste0(pick, "/"))]
+      if (!length(under)) return(NULL)
+      pick <- substr(under[1], 1, nchar(pick))
+    }
+    to <- dirname(.repro_rel_from(if (pick == ".") "./x" else file.path(pick, "x"), run_dir))
+    if (grepl("[/\\\\]$", vars[[v]])) to <- paste0(if (to == ".") "." else to, "/")
+    out <- data.frame(value = vars[[v]], target = to)
+    out$pieces <- list(pieces)
+    out
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (!length(rows)) return(empty)
+  dplyr::bind_rows(rows)
+}
+
+# The folder here() should take as the project's top, for scripts that use it
+# (#568). With no .Rproj, .here or the like in the deposit, here() starts in the
+# folder the script runs from, so in 10.1111/1365-2664.14317 here("scripts",
+# "functions.R") became /sandbox/scripts/scripts/functions.R. For each script,
+# the folder at or above the one it runs from from which the most of its
+# here("a", "b") paths exist; a `.here` file there makes here() start there. Not
+# when a project marker already lies between. `code_text_list` and `run_dirs`
+# (folders from the top) are per script; returns per script the folder, from the
+# top in the deposit's spelling, or NA (no here() paths, or none found).
+.repro_here_roots <- function(code_text_list, run_dirs, plan) {
+  out <- stats::setNames(rep(NA_character_, length(code_text_list)), names(code_text_list))
+  if (is.null(plan) || !nrow(plan) || !length(code_text_list)) return(out)
+  tp <- gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)])
+  files <- tolower(gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)]))
+  folders <- character(0)
+  d <- dirname(files)
+  while (length(d <- setdiff(d[d != "."], folders))) {
+    folders <- c(folders, d)
+    d <- dirname(d)
+  }
+  known <- c(files, folders)
+  markers <- unique(dirname(files[grepl("(^|/)(\\.here|[^/]*\\.rproj|description|\\.git)$", files)]))
+  for (i in seq_along(code_text_list)) {
+    txt <- paste(.utf8_lines(code_text_list[[i]]), collapse = "\n")
+    calls <- regmatches(txt, gregexpr("\\bhere(?:::here)?\\s*\\(\\s*([\"'][^\"'\n]*[\"']\\s*,?\\s*)+\\)", txt, perl = TRUE))[[1]]
+    if (!length(calls)) next
+    paths <- vapply(calls, function(cl) {
+      a <- regmatches(cl, gregexpr("[\"'][^\"'\n]*[\"']", cl))[[1]]
+      paste(gsub("^[\"']|[\"']$", "", a), collapse = "/")
+    }, character(1), USE.NAMES = FALSE)
+    paths <- tolower(sub("/+$", "", gsub("/+", "/", paths)))
+    chain <- tolower(run_dirs[[i]] %||% ".")
+    while (!chain[length(chain)] %in% c(".", "")) chain <- c(chain, dirname(chain[length(chain)]))
+    score <- vapply(chain, function(f) sum((if (f == ".") paths else file.path(f, paths)) %in% known), numeric(1))
+    if (max(score) < 1) next
+    pick <- chain[which(score == max(score))[1]]
+    # a marker at or below the pick, on the way from the run folder, wins already
+    between <- chain[seq_len(match(pick, chain))]
+    if (any(between %in% markers)) next
+    under <- tp[startsWith(tolower(tp), paste0(pick, "/"))]
+    out[i] <- if (pick == ".") "." else if (length(under)) substr(under[1], 1, nchar(pick)) else NA_character_
+  }
+  out
+}
+
+# Apply .repro_folder_vars() to one script's rewrites: a row for each folder's
+# new value, and the pasted pieces no longer rewritten on their own.
+.repro_apply_folder_vars <- function(rw, fv) {
+  if (is.null(fv) || !nrow(fv)) return(rw)
+  if (nrow(rw)) rw <- rw[!rw$ref %in% unlist(fv$pieces), , drop = FALSE]
+  add <- data.frame(ref = fv$value, basename = basename(gsub("\\\\", "/", fv$value)), matched = TRUE,
+                    target = fv$target, ambiguous = FALSE, n_candidates = 1L, is_call = FALSE,
+                    name_in_code = NA_character_, name_in_deposit = NA_character_, as_written = FALSE)
+  dplyr::bind_rows(rw, add)
 }
 
 # A path from the top of the package, counted from folder `dir` of the package.
@@ -2972,9 +3144,15 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 
 # Whether a Python script serves others: it waits for a connection until the time
 # limit, with nothing to show for it (#568, item 22). `tcpserver.py` took 50 minutes.
+# A program with a window waits for a person the same way: in
+# 10.1111/1365-2435.14173 a Qt application waited 38 minutes, and 13 more
+# scripts then had no time left (#568).
 .repro_py_starts_server <- function(code_text) {
   nc <- code_text[!grepl("^\\s*#", code_text)]
-  any(grepl("\\.serve_forever\\s*\\(|\\bsocketserver\\.|\\bapp\\.run\\s*\\(|\\buvicorn\\.run\\s*\\(|\\.listen\\s*\\(\\s*\\d*\\s*\\).*$|\\bwhile True:.*\\.accept\\(", nc, perl = TRUE, useBytes = TRUE))
+  any(grepl(paste0("\\.serve_forever\\s*\\(|\\bsocketserver\\.|\\bapp\\.run\\s*\\(|\\buvicorn\\.run\\s*\\(|",
+                   "\\.listen\\s*\\(\\s*\\d*\\s*\\).*$|\\bwhile True:.*\\.accept\\(|",
+                   "\\bQ(?:Gui)?Application\\s*\\(|\\.mainloop\\s*\\(\\s*\\)|\\.MainLoop\\s*\\(\\s*\\)|",
+                   "\\bpygame\\.display\\.set_mode\\s*\\("), nc, perl = TRUE, useBytes = TRUE))
 }
 
 # Whether a run's error shows that the code needs the internet, which is off during a
@@ -3038,7 +3216,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   set("cannot open the connection|cannot open file|No such file|FileNotFoundError|does not exist|Cannot find the file|Could not find a root|cannot open compressed", "file")
   set("object '[^']*' not found|could not find function|NameError|is not defined", "undefined")
   set("SyntaxError|IndentationError", "syntax")
-  set("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11", "environment")
+  set("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11|can only print from a screen device", "environment")
   # R itself crashed, in a package's compiled code: rgeos, installed from the
   # CRAN Archive, crashes on every geometry against the GEOS of the image (#568)
   set("caught segfault|Segmentation fault|core dumped|caught illegal operation", "environment")
@@ -3139,7 +3317,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   grepl(paste0("file choice cancelled|invalid 'description' argument|menu\\(\\) cannot be used non-interactively|",
                "could not find function \"(choose\\.files|choose\\.dir)\"|",
                "RStudio not running|tcltk|EOFError: EOF when reading a line|",
-               "no display name and no \\$DISPLAY|couldn't connect to display"),
+               "no display name and no \\$DISPLAY|couldn't connect to display|",
+               # read.table("clipboard"): what a person copied (10.1111/1365-2656.14113)
+               "for the clipboard must be|clipboard cannot be opened"),
         txt %||% "", perl = TRUE)
 }
 
@@ -3312,10 +3492,29 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 
 # Make the folders of the relative paths in write calls, counted from where the
 # script runs. Never above the sandbox. `wr` is a .repro_redirect_writes() result.
-.repro_make_write_folders <- function(wr, root, run_dir = ".") {
+# A folder held in a variable that a write call uses counts too, given the
+# script's lines `txt`: `dirF <- "../Figures/"` with `ggsave(paste0(dirF,
+# "x.png"))` stopped on "Cannot find directory" (10.1111/1365-2435.14353; #568).
+.repro_make_write_folders <- function(wr, root, run_dir = ".", txt = NULL) {
   if (!nrow(wr)) return(invisible(NULL))
   quoted <- unlist(regmatches(wr$call_text, gregexpr("[\"'][^\"'\n]*[/\\\\][^\"'\n]*\\.[A-Za-z0-9]{1,8}[\"']", wr$call_text)))
-  for (q in unique(gsub("^[\"']|[\"']$", "", quoted))) {
+  in_vars <- character(0)
+  if (length(txt)) {
+    vars <- .repro_simple_string_vars(tryCatch(code_remove_comments(.utf8_lines(txt), "R"),
+                                               error = function(e) .utf8_lines(txt)))
+    vars <- vars[grepl("[/\\\\]$", vars)]
+    used <- vapply(names(vars), function(v)
+      any(grepl(paste0("(?<![.\\w])", gsub("\\.", "\\\\.", v), "(?![.\\w])"), wr$call_text, perl = TRUE)),
+      logical(1))
+    in_vars <- paste0(sub("[/\\\\]+$", "", vars[used]), "/x")
+    # a path given as `file =` and the like, to a function not on the list of
+    # writers: "tables/duration_LMM_revision.doc" (10.1111/1365-2435.14173)
+    named <- unlist(regmatches(txt, gregexpr(
+      "\\b(?:file|out|outfile|filename|output)\\s*=\\s*[\"'][^\"'\n]*[/\\\\][^\"'\n]*\\.[A-Za-z0-9]{1,8}[\"']",
+      txt, perl = TRUE)))
+    in_vars <- c(in_vars, sub("^[^\"']*[\"']", "", sub("[\"']$", "", named)))
+  }
+  for (q in unique(c(gsub("^[\"']|[\"']$", "", quoted), in_vars))) {
     q <- gsub("\\\\", "/", q)
     if (grepl("^([A-Za-z]:/|/|~)|://", q)) next
     p <- .repro_norm_rel(if (run_dir == ".") q else file.path(run_dir, q))
@@ -3489,7 +3688,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     }
     # A write stays in place, so a folder the deposit lacks must exist: an empty
     # output folder is often not deposited, and the write stopped (#568, item 20).
-    if (isTRUE(writes_in_place)) .repro_make_write_folders(all_wr, root, run_dir)
+    if (isTRUE(writes_in_place)) .repro_make_write_folders(all_wr, root, run_dir, txt)
     if (nrow(wr) > 0) {
       joined_txt <- paste(txt, collapse = "\n")
       for (k in seq_len(nrow(wr))) {
@@ -3533,13 +3732,16 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     # function's own `lang` docs for why Python has no equivalent here.
     family_pat <- "\\b(base_family|family)\\s*=\\s*(['\"])[^'\"]*\\2"
     joined_for_family <- paste(txt, collapse = "\n")
-    family_matches <- if (identical(fn_lang, "R"))
-      regmatches(joined_for_family,
-                gregexpr(family_pat, joined_for_family, perl = TRUE))[[1]] else
-      character(0)
+    family_m <- gregexpr(family_pat, joined_for_family, perl = TRUE)
+    family_all <- if (identical(fn_lang, "R")) regmatches(joined_for_family, family_m)[[1]] else character(0)
+    # A model's family is no font: glmmTMB(..., family = "nbinom2") became
+    # family = "sans" and stopped (#568)
+    is_font <- .repro_is_font_family(family_all)
+    family_matches <- family_all[is_font]
     family_n <- length(family_matches)
     if (family_n > 0) {
-      joined_for_family <- gsub(family_pat, "\\1 = \"sans\"", joined_for_family, perl = TRUE)
+      regmatches(joined_for_family, family_m) <- list(ifelse(
+        is_font, sub(family_pat, "\\1 = \"sans\"", family_all, perl = TRUE), family_all))
       txt <- strsplit(joined_for_family, "\n", fixed = TRUE)[[1]]
     }
 
@@ -3585,6 +3787,113 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                  paste(injected_pkg, collapse = ", ") else NA_character_)
   })
   dplyr::bind_rows(rows)
+}
+
+# Stan code in the syntax Stan removed in version 2.33 (2023), in the newer form
+# that means the same (#568): `#` comments, `<-`, `increment_log_prob()`,
+# `get_lp()`, `fabs()`, `_log`/`_cdf_log`/`_ccdf_log` functions, and arrays
+# declared after the name (`int y[N];`, `real[] x`). stanc() stopped on them in
+# 12 scripts of 10.1111/1365-2656.12673 and 10.1111/1365-2656.13534. Returns the
+# lines and the kinds of change made.
+.repro_upgrade_stan <- function(txt) {
+  if (!length(txt)) return(list(txt = txt, changes = character(0)))
+  orig <- txt
+  changes <- character(0)
+  sub_all <- function(pat, rep, what) {
+    new <- gsub(pat, rep, txt, perl = TRUE)
+    if (!identical(new, txt)) changes <<- c(changes, what)
+    txt <<- new
+  }
+  sub_all("(?<![/\"])#(?!include)", "//", "# comments")
+  sub_all("\\s<-\\s", " = ", "<- assignments")
+  sub_all("\\bincrement_log_prob\\s*\\((.*)\\)\\s*;", "target += \\1;", "increment_log_prob()")
+  sub_all("\\bget_lp\\s*\\(\\s*\\)", "target()", "get_lp()")
+  sub_all("\\bfabs\\s*\\(", "abs(", "fabs()")
+  sub_all("_ccdf_log\\s*\\(", "_lccdf(", "_ccdf_log()")
+  sub_all("_cdf_log\\s*\\(", "_lcdf(", "_cdf_log()")
+  # name_log(y, a, b) -> name_lpdf(y | a, b), or _lpmf for a discrete distribution
+  discrete <- c("bernoulli", "bernoulli_logit", "binomial", "binomial_logit", "beta_binomial",
+                "hypergeometric", "categorical", "categorical_logit", "ordered_logistic",
+                "ordered_probit", "neg_binomial", "neg_binomial_2", "neg_binomial_2_log",
+                "poisson", "poisson_log", "multinomial", "discrete_range")
+  continuous <- c("normal", "normal_id_glm", "std_normal", "student_t", "cauchy", "double_exponential",
+                  "logistic", "gumbel", "skew_normal", "lognormal", "chi_square", "inv_chi_square",
+                  "scaled_inv_chi_square", "exponential", "gamma", "inv_gamma", "weibull", "frechet",
+                  "rayleigh", "pareto", "pareto_type_2", "beta", "beta_proportion", "von_mises",
+                  "uniform", "multi_normal", "multi_normal_cholesky", "multi_normal_prec",
+                  "multi_student_t", "dirichlet", "lkj_corr", "lkj_corr_cholesky", "wishart",
+                  "inv_wishart", "exp_mod_normal", "skew_double_exponential")
+  dist_pat <- paste0("\\b(", paste(c(discrete, continuous), collapse = "|"), ")_log\\s*\\(")
+  for (i in grep(dist_pat, txt, perl = TRUE)) {
+    line <- txt[i]
+    repeat {
+      m <- regexpr(dist_pat, line, perl = TRUE)
+      if (m == -1) break
+      name <- sub("_log\\s*\\($", "", regmatches(line, m))
+      open <- m + attr(m, "match.length") - 1L
+      chars <- strsplit(line, "", fixed = TRUE)[[1]]
+      depth <- 0L; comma <- NA_integer_
+      for (k in seq.int(open, length(chars))) {
+        ch <- chars[k]
+        if (ch %in% c("(", "[", "{")) depth <- depth + 1L
+        else if (ch %in% c(")", "]", "}")) { depth <- depth - 1L; if (depth == 0L) break }
+        else if (ch == "," && depth == 1L) { comma <- k; break }
+      }
+      suffix <- if (name %in% discrete) "_lpmf(" else "_lpdf("
+      rest <- substring(line, open + 1L)
+      if (!is.na(comma)) rest <- paste0(substr(line, open + 1L, comma - 1L), " |", substring(line, comma + 1L))
+      line <- paste0(substr(line, 1L, m - 1L), name, suffix, rest)
+    }
+    if (!identical(line, txt[i])) { changes <- c(changes, "_log() functions"); txt[i] <- line }
+  }
+  # arrays: `int<lower=0> y[N];` -> `array[N] int<lower=0> y;`, and in function
+  # arguments `real[] x` -> `array[] real x`
+  types <- paste0("(?:int|real|complex|vector|row_vector|matrix|simplex|unit_vector|ordered|",
+                  "positive_ordered|cov_matrix|corr_matrix|cholesky_factor_cov|cholesky_factor_corr)")
+  dims <- "((?:[^\\[\\]]|\\[[^\\[\\]]*\\])+)"
+  sub_all(paste0("^(\\s*)((?:data\\s+)?", types, "\\s*(?:<[^<>;]*>)?\\s*(?:\\[[^\\[\\]]*\\])?)\\s+",
+                 "([A-Za-z_][A-Za-z0-9_]*)\\s*\\[", dims, "\\]"),
+          "\\1array[\\4] \\2 \\3", "array declarations")
+  sub_all(paste0("\\b((?:data\\s+)?", types, ")\\s*\\[(\\s*(?:,\\s*)*)\\]\\s+([A-Za-z_][A-Za-z0-9_]*)"),
+          "array[\\2] \\1 \\3", "array arguments")
+  list(txt = txt, changes = unique(changes))
+}
+
+# Give every Stan file in the sandbox the newer syntax (.repro_upgrade_stan());
+# returns the files changed and how, as modifications rows (NULL when none).
+.repro_upgrade_stan_files <- function(root) {
+  files <- list.files(root, pattern = "\\.stan$", recursive = TRUE, full.names = TRUE, ignore.case = TRUE)
+  rows <- lapply(files, function(f) {
+    txt <- tryCatch(readLines(f, warn = FALSE), error = function(e) NULL)
+    if (is.null(txt)) return(NULL)
+    up <- .repro_upgrade_stan(txt)
+    if (!length(up$changes)) return(NULL)
+    writeLines(up$txt, f)
+    data.frame(file_name = sub(paste0("^", gsub("([.\\\\+*?^$()|{}\\[\\]])", "\\\\\\1", normalizePath(root, "/", mustWork = FALSE)), "/"), "",
+                               normalizePath(f, "/", mustWork = FALSE)),
+               change_type = "stan_syntax",
+               detail = paste("Stan from before 2.33:", paste(up$changes, collapse = ", ")))
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (!length(rows)) NULL else dplyr::bind_rows(rows)
+}
+
+# Which `family = "..."` / `base_family = "..."` arguments name a font, not a
+# model's family. `base_family` is always a font. A model family is a lowercase
+# name (binomial, nbinom2, zero_inflated_poisson) or a function in stats (Gamma);
+# a font has capitals or spaces (Times New Roman, Arial), or is one of R's
+# generic fonts (serif, mono). `args` are the matched argument texts.
+.repro_is_font_family <- function(args) {
+  if (!length(args)) return(logical(0))
+  value <- sub("^.*=\\s*['\"]([^'\"]*)['\"]$", "\\1", args, perl = TRUE)
+  base <- grepl("^base_family", args)
+  generic <- tolower(value) %in% c("serif", "sans", "mono", "symbol", "times", "helvetica",
+                                   "arial", "courier", "palatino", "calibri", "verdana", "georgia")
+  stats_fn <- vapply(value, function(v) nzchar(v) &&
+                       exists(v, envir = asNamespace("stats"), mode = "function", inherits = FALSE),
+                     logical(1), USE.NAMES = FALSE)
+  model <- !generic & (stats_fn | grepl("^[a-z][a-z0-9_.]*$", value))
+  base | !model
 }
 
 # Windows paths in quoted file names, "Data\\MatrixNoct.txt", get "/": on Linux
@@ -4359,7 +4668,10 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
 #'   for a replaced package, and `installed` FALSE for a package that does not load
 #' @keywords internal
 .repro_load_check <- function(install_results, lib_dir, image = NULL, timeout = 1800) {
-  in_lib <- file.exists(file.path(lib_dir, install_results$package, "DESCRIPTION"))
+  # in Docker the library is a volume (see .repro_docker_lib_mount()), not this folder
+  in_lib <- if (!is.null(image) && !isFALSE(getOption("metacheck.docker_lib_volume", TRUE)))
+    install_results$installed %in% TRUE else
+    file.exists(file.path(lib_dir, install_results$package, "DESCRIPTION"))
   if (!any(in_lib)) return(install_results)
   at_recorded <- in_lib & install_results$installed & !is.na(install_results$version_recorded) &
     mapply(.repro_same_version, as.character(install_results$version_installed),
@@ -4394,7 +4706,7 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
                                 "--pids-limit", "512",
                                 .repro_docker_resource_args(),
                                 "-v", paste0(sandbox_dir, ":/sandbox"),
-                                "-v", paste0(lib_path, ":/rlib"),
+                                "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
                                 image, "Rscript", "/sandbox/check.R"),
                     error_on_status = FALSE, timeout = timeout)
     } else {

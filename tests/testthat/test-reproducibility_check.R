@@ -3287,6 +3287,190 @@ test_that("a script that stops on a changed default of R runs again with the old
   expect_null(.repro_old_defaults_text(list()))
 })
 
+test_that("a model's family is not taken for a font (#568)", {
+  # 10_1111_1365_2435_14353: glmmTMB(..., family = "nbinom2") became "sans"
+  expect_equal(.repro_is_font_family(c('family="nbinom2"', 'family = "binomial"', 'family = "Gamma"',
+                                       'family = "zero_inflated_poisson"', 'family = "Times New Roman"',
+                                       "family = 'serif'", 'base_family = "Arial"')),
+               c(FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE))
+  root <- withr::local_tempdir()
+  rt <- repro_write_scripts(list(m.R = c('m <- glmmTMB(y ~ x, family="nbinom2", data = d)',
+                                         'p <- ggplot(d) + theme_bw(base_family = "Times New Roman")')),
+                            list(m.R = data.frame()), NULL, root)
+  out <- readLines(rt$script_path)
+  expect_match(out[1], 'family="nbinom2"', fixed = TRUE)
+  expect_match(out[2], 'base_family = "sans"', fixed = TRUE)
+  expect_equal(rt$family_replaced, 1)
+})
+
+test_that("packages loaded from a list through a function of its own are found (#568)", {
+  # 10_1002_pan3_10736: tmap was in the list and never installed
+  code <- c("my_packages <-  c('tidyverse', 'plyr', 'tmap',",
+            "                  'scales')",
+            "lapply(my_packages, function(x) library(x, character.only = T))",
+            "p <- c('a1', 'b2')",
+            "invisible(lapply(p, \\(x) suppressMessages(require(x, character.only = TRUE))))")
+  pk <- code_library_names(code, "R")$package
+  expect_true(all(c("tidyverse", "plyr", "tmap", "scales", "a1", "b2") %in% pk))
+})
+
+test_that("a folder on the authors' computer held in a variable gets the deposit's folder (#568)", {
+  # 10_1111_1365_2656_14164: root <- "~/Data_to_publish/", and the files are in
+  # Data_Dryad.zip/Data_Dryad/
+  plan <- .repro_package_plan(data.frame(
+    file_name = c("0_FUNCTIONS.R", "a.rds", "m.R"),
+    file_path = c("Data_Dryad.zip/Data_Dryad/1_scripts/0_FUNCTIONS.R",
+                  "Data_Dryad.zip/Data_Dryad/2_data/a.rds", "Data_Dryad.zip/Data_Dryad/1_scripts/m.R")))
+  code <- c('root <- "~/Data_to_publish/"', 'p <- paste0(root,"2_data/")',
+            'source(paste0(root,"/1_scripts/0_FUNCTIONS.R"))')
+  fv <- .repro_folder_vars(code, plan, "Data_Dryad.zip/Data_Dryad/1_scripts")
+  expect_equal(fv$value, "~/Data_to_publish/")
+  expect_equal(fv$target, "../")
+  expect_setequal(fv$pieces[[1]], c("2_data/", "/1_scripts/0_FUNCTIONS.R"))
+  # the pasted piece is no longer rewritten on its own; the folder is
+  rw <- data.frame(ref = "/1_scripts/0_FUNCTIONS.R", basename = "0_functions.r", matched = TRUE,
+                   target = "0_FUNCTIONS.R", ambiguous = FALSE, n_candidates = 1L, is_call = FALSE,
+                   as_written = FALSE)
+  rw2 <- .repro_apply_folder_vars(rw, fv)
+  expect_equal(rw2$ref, "~/Data_to_publish/")
+  expect_equal(.repro_apply_rewrites(code, rw2)[1], 'root <- "../"')
+  # a piece that goes up first: paste0(root, "../2_data/a.rds"), root being the scripts' folder
+  fv_up <- .repro_folder_vars(c('root <- "C:/Users/me/Data_to_publish/1_scripts/"',
+                                'd <- readRDS(paste0(root, "../2_data/a.rds"))'),
+                              plan, "Data_Dryad.zip/Data_Dryad/1_scripts")
+  expect_equal(fv_up$target, "./")
+  # file.path() and a folder without the final slash (10_1111_2041_210x_13318)
+  plan2 <- .repro_package_plan(data.frame(file_name = c("k.csv", "s.R"),
+                                          file_path = c("Examples/P2/Data/k.csv", "Examples/P2/s.R")))
+  fv2 <- .repro_folder_vars(c('dataDir <- "~/MGDrivE/Main/P2"', 'k <- read.csv(file.path(dataDir, "Data/k.csv"))'),
+                            plan2, "Examples/P2")
+  expect_equal(fv2$target, ".")
+  # nothing of the deposit under any folder: left alone
+  expect_equal(nrow(.repro_folder_vars(c('d <- "C:/me/"', 'x <- read.csv(paste0(d, "none/x.csv"))'), plan2, ".")), 0)
+  # a relative folder is left alone
+  expect_equal(nrow(.repro_folder_vars(c('d <- "Data/"', 'x <- read.csv(paste0(d, "k.csv"))'), plan2, "Examples/P2")), 0)
+})
+
+test_that("a folder held in a variable that a write uses is made (#568)", {
+  # 10_1111_1365_2435_14353: dirF <- "../Figures/"; ggsave(paste0(dirF, "a.png"))
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "R_scripts"))
+  txt <- c('dirF <- "../Figures/"', 'ggsave(paste0(dirF, "App5_hab_size.png"), width = 10)')
+  .repro_make_write_folders(.repro_redirect_writes(txt), root, "R_scripts", txt)
+  expect_true(dir.exists(file.path(root, "Figures")))
+})
+
+test_that("Stan code from before 2.33 gets the newer syntax (#568)", {
+  # 10_1111_1365_2656_12673: DegDay.stan, ChillDev.stan, two_phase.stan
+  old <- c("# Stan code for degree days", "data {", "  int<lower=0> N;",
+           "  real<lower=0, upper=0.2> r_hat[3];", "  vector[ndays] Tn[N];", "  int loc[N];   // # a note",
+           "}", "model {", "  y ~ normal(mu, sigma);", "  increment_log_prob(normal_log(y, mu, sigma));",
+           "  real a <- fabs(b);", "  target += poisson_log(k, lambda);", "}",
+           "functions { real f(real[] x, int[,] m) { return x[1]; } }", "#include other.stan")
+  up <- .repro_upgrade_stan(old)
+  expect_equal(up$txt[1], "// Stan code for degree days")
+  expect_equal(up$txt[4], "  array[3] real<lower=0, upper=0.2> r_hat;")
+  expect_equal(up$txt[5], "  array[N] vector[ndays] Tn;")
+  expect_equal(up$txt[6], "  array[N] int loc;   // // a note")
+  expect_equal(up$txt[3], "  int<lower=0> N;")
+  expect_equal(up$txt[9], "  y ~ normal(mu, sigma);")
+  expect_equal(up$txt[10], "  target += normal_lpdf(y | mu, sigma);")
+  expect_equal(up$txt[11], "  real a = abs(b);")
+  expect_equal(up$txt[12], "  target += poisson_lpmf(k | lambda);")
+  expect_equal(up$txt[14], "functions { real f(array[] real x, array[,] int m) { return x[1]; } }")
+  expect_equal(up$txt[15], "#include other.stan")
+  # new syntax stays as it is
+  new <- c("data {", "  array[N] int<lower=0> y;", "}", "model { target += normal_lpdf(y | 0, 1); }")
+  expect_equal(.repro_upgrade_stan(new)$txt, new)
+  expect_length(.repro_upgrade_stan(new)$changes, 0)
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "m"))
+  writeLines(old, file.path(root, "m", "DegDay.stan"))
+  rows <- .repro_upgrade_stan_files(root)
+  expect_equal(rows$file_name, "m/DegDay.stan")
+  expect_match(rows$detail, "array declarations")
+  expect_null(.repro_upgrade_stan_files(root))   # already converted
+})
+
+test_that("a Python program with a window counts as needing a person (#568)", {
+  # 10_1111_1365_2435_14173: a Qt application waited until its time ran out
+  expect_true(.repro_py_starts_server(c("from PyQt5.QtWidgets import QApplication", "app = QApplication(sys.argv)")))
+  expect_true(.repro_py_starts_server(c("root = tk.Tk()", "root.mainloop()")))
+  expect_false(.repro_py_starts_server(c("import matplotlib.pyplot as plt", "plt.show()")))
+})
+
+test_that("the clipboard and a screen device are not failures of the code (#568)", {
+  expect_true(.repro_needs_person_error("Error in file(file, ifelse(append, \"a\", \"w\")) : 'mode' for the clipboard must be 'r' on Unix"))
+  expect_equal(.repro_failure_reason("errored", "Error in dev.copy2eps(file = \"x.eps\") : can only print from a screen device"),
+               "environment")
+})
+
+test_that("the folder of a path given as file = is made (#568)", {
+  # 10_1111_1365_2435_14173: tab_model(m, file = "tables/duration_LMM_revision.doc")
+  root <- withr::local_tempdir()
+  txt <- c('tab_model(m1, file = "tables/duration_LMM_revision.doc")', 'write.csv(x, "out/x.csv")')
+  .repro_make_write_folders(.repro_redirect_writes(txt), root, ".", txt)
+  expect_true(dir.exists(file.path(root, "tables")))
+  expect_true(dir.exists(file.path(root, "out")))
+})
+
+test_that("a library in Docker is a volume named after its folder (#568)", {
+  lib <- file.path(tempdir(), "repro_sandbox_ab12", "_lib")
+  expect_equal(.repro_docker_lib_volume_name(lib), "metacheck_lib_repro_sandbox_ab12__lib")
+  withr::with_options(list(metacheck.docker_lib_volume = FALSE),
+    expect_equal(.repro_docker_lib_mount(lib, "/rlib", read_only = TRUE),
+                 paste0(normalizePath(lib, mustWork = FALSE), ":/rlib:ro")))
+})
+
+test_that("here() gets the folder its paths point to as the project's top (#568)", {
+  # 10_1111_1365_2664_14317: here("scripts", "functions.R") from scripts/
+  code <- list(a.Rmd = c('source(here("scripts", "functions.R"))', 'd <- readRDS(here("data", "soil.rds"))'),
+               b.R = 'x <- 1')
+  plan <- .repro_package_plan(data.frame(file_name = c("functions.R", "soil.rds", "a.Rmd", "b.R"),
+                                         file_path = c("scripts/functions.R", "data/soil.rds", "scripts/a.Rmd", "scripts/b.R")))
+  expect_equal(unname(.repro_here_roots(code, c("scripts", "scripts"), plan)), c(".", NA))
+  # the authors' .Rproj at the top: here() finds it, nothing to add
+  plan2 <- .repro_package_plan(data.frame(file_name = c("functions.R", "soil.rds", "p.Rproj"),
+                                          file_path = c("scripts/functions.R", "data/soil.rds", "p.Rproj")))
+  expect_true(is.na(.repro_here_roots(code[1], "scripts", plan2)))
+  # paths that exist from the run folder itself
+  plan3 <- .repro_package_plan(data.frame(file_name = c("functions.R", "soil.rds"),
+                                          file_path = c("proj/scripts/functions.R", "proj/data/soil.rds")))
+  expect_equal(unname(.repro_here_roots(code[1], "proj/scripts", plan3)), "proj")
+})
+
+test_that("a bare name read directly is pointed to its file in a folder below (#568)", {
+  # 10_1111_1365_2664_14633: setwd('./data') and then read.csv("x.csv"); the
+  # setwd() is taken out, so the name was not found
+  plan <- .repro_package_plan(data.frame(file_name = c("x.csv", "m.R"), file_path = c("data/x.csv", "scripts/m.R")))
+  rw <- .repro_keep_working_refs(repro_rewrite_paths(c("setwd('./data')", 'd <- read.csv("x.csv")'), "m.R", plan,
+                                                     script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
+  expect_false(rw$as_written)
+  expect_equal(rw$target, "data/x.csv")
+  # in a joining call it stays as written: the code joins it to a folder of its own
+  rw2 <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv(file.path(dir, "x.csv"))', "m.R", plan,
+                                                      script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
+  expect_true(all(rw2$as_written[rw2$ref == "x.csv"]))
+})
+
+test_that("a Git LFS pointer is replaced by the deposit's copy of the file (#568)", {
+  # 10_1111_1365_2664_14751: the GitHub archive held pointers, the Zenodo copy the files
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "gh")); dir.create(file.path(d, "zen"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:abc", "size 2000"),
+             file.path(d, "gh", "covariates.RDS"))
+  saveRDS(1:10, file.path(d, "zen", "other.RDS"))
+  writeBin(as.raw(rep(1, 2000)), file.path(d, "zen", "covariates.RDS"))
+  writeBin(as.raw(rep(1, 1999)), file.path(d, "zen", "x.RDS"))
+  writeLines(c("version https://git-lfs.github.com/spec/v1", "oid sha256:def", "size 1999"),
+             file.path(d, "gh", "missing.RDS"))
+  src <- file.path(d, c("gh/covariates.RDS", "zen/covariates.RDS", "zen/other.RDS", "gh/missing.RDS"))
+  sw <- .repro_lfs_swaps(src)
+  expect_equal(sw$pointer, file.path(d, "gh/covariates.RDS"))
+  expect_equal(sw$file, file.path(d, "zen/covariates.RDS"))
+  expect_equal(nrow(.repro_lfs_swaps(file.path(d, "zen/other.RDS"))), 0)
+})
+
 test_that("a package's data downloaded once counts as needing the internet (#568)", {
   expect_true(.repro_needs_internet_error(
     "Error in hy_src(hydat_path) : No Hydat.sqlite3 found at /tmp/.local/share/tidyhydat. Run download_hydat() to download the database."))

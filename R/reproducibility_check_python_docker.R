@@ -189,7 +189,7 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
            "--pids-limit", "512",
            .repro_docker_resource_args(),
            "-v", paste0(sandbox_dir, ":/sandbox"),
-           "-v", paste0(normalizePath(lib_dir, mustWork = FALSE), ":/pylib"),
+           "-v", .repro_docker_lib_mount(lib_dir, "/pylib", image = image),
            image, "sh", container_driver)
 
   out_file <- tempfile(fileext = ".out")
@@ -349,7 +349,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              "-e", "HOME=/tmp", "-e", "NUMBA_CACHE_DIR=/tmp/numba", "-e", "MPLCONFIGDIR=/tmp/matplotlib",
              "-e", "XDG_CACHE_HOME=/tmp/.cache", "-e", "MPLBACKEND=Agg", "-e", "QT_QPA_PLATFORM=offscreen")
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", paste0(lib_dir_norm, ":/pylib:ro"))
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/pylib", read_only = TRUE))
     # the repository's own modules first, then what was installed (see
     # .repro_py_module_folders())
     own <- if ("module_folders" %in% names(row)) row$module_folders else NA_character_

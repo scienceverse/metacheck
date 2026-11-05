@@ -397,7 +397,9 @@
       # Echo the statement exactly as source(echo = TRUE) would, so the text
       # parser still sees the "> " prompts it keys line attribution on.
       txt <- if (!is.null(sr)) as.character(sr) else deparse(e)
-      cat(paste0("> ", txt, collapse = "\n"), "\n", sep = "")
+      # not into a file the script sink()s to: a JAGS model written that way got
+      # these lines and did not parse (#568)
+      if (sink.number() == 0) cat(paste0("> ", txt, collapse = "\n"), "\n", sep = "")
 
       res <- withVisible(eval(e, envir = env))
       if (res$visible) {

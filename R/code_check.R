@@ -1853,13 +1853,16 @@ code_library_names <- function(code_text,
       }
       # lapply(pkgs, library, character.only = TRUE) and the same with
       # sapply/vapply/Map/purrr's map/walk and require: loads every package
-      # in the variable.
+      # in the variable. Also through a function of its own,
+      # lapply(pkgs, function(x) library(x, character.only = T)), which left
+      # tmap uninstalled in 10.1002/pan3.10736 (#568).
+      fn_wrap <- "(?:function\\s*\\([^)]*\\)|\\\\\\s*\\([^)]*\\))?\\s*\\{?\\s*(?:suppress\\w+\\s*\\(\\s*)?"
       ap <- regmatches(L, gregexpr(paste0(
         "\\b(?:lapply|sapply|vapply|walk|map)\\s*\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)",
-        "\\s*,\\s*(?:FUN\\s*=\\s*)?(library|require)\\b"), L, perl = TRUE))[[1]]
+        "\\s*,\\s*(?:FUN\\s*=\\s*)?", fn_wrap, "(library|require)\\b"), L, perl = TRUE))[[1]]
       for (call in ap) {
         parts <- regmatches(call, regexec(
-          "\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)\\s*,\\s*(?:FUN\\s*=\\s*)?(library|require)\\b",
+          paste0("\\(\\s*([.A-Za-z][.A-Za-z0-9_]*)\\s*,\\s*(?:FUN\\s*=\\s*)?", fn_wrap, "(library|require)\\b"),
           call, perl = TRUE))[[1]]
         add(vars[[parts[2]]] %||% character(0), parts[3], ln)
       }
