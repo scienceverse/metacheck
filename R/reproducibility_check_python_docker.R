@@ -335,7 +335,8 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     # hardcodes.
     args <- c("run", "--rm", "--name", container_name,
              .repro_docker_network_args(net), "--read-only",
-             "--tmpfs", "/tmp",
+             # exec: compiled code in /tmp must load (see the R runner; #568)
+             "--tmpfs", "/tmp:exec",
              "--user", .repro_docker_uid,
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",

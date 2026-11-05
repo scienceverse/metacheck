@@ -294,7 +294,10 @@ repro_docker_available <- function() {
 .repro_docker_failed <- function(txt) {
   grepl(paste0("Error response from daemon|Docker Desktop is unable to start|",
                "Cannot connect to the Docker daemon|failed to connect to the docker API|",
-               "error during connect|dockerDesktopLinuxEngine"), txt %||% "", ignore.case = TRUE)
+               "error during connect|dockerDesktopLinuxEngine|",
+               # Docker lost the container while it ran: three papers' scripts at
+               # the same second (#568)
+               "error waiting for container"), txt %||% "", ignore.case = TRUE)
 }
 
 # Where packages live that are on neither CRAN nor Bioconductor (#568, item 12): a
@@ -1046,6 +1049,10 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       '  }',
       # as in .r_capture_runner(): what a person\'s computer has and a check does not
       '  options(knitr.graphics.error = FALSE)',
+      # Plots without a screen go to R's pdf device, which stops on a font it does
+      # not know: theme_ipsum() asks for "Arial Narrow", "invalid font type"
+      # (10.1111/1365-2435.14195; #568). Cairo's device takes any font name.
+      '  if (isTRUE(capabilities("cairo"))) options(device = function(...) grDevices::cairo_pdf("Rplots.pdf", onefile = TRUE))',
       '  assign("View", function(...) invisible(NULL), envir = globalenv())',
       '  assign("windowsFonts", function(...) invisible(NULL), envir = globalenv())',
       '  assign("windowsFont", function(...) "sans", envir = globalenv())',
@@ -1102,7 +1109,12 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     container_name <- .repro_docker_container_name()
     args <- c("run", "--rm", "--name", container_name,
              .repro_docker_network_args(net), "--read-only",
-             "--tmpfs", "/tmp",
+             # exec: Docker mounts /tmp noexec by default, so code compiled while
+             # the script runs (rstan's models, Rcpp::sourceCpp(), TMB) could not be
+             # loaded: "failed to map segment from shared object"
+             # (10.1111/1365-2656.12673, 10.1111/1365-2656.13608; #568). The code can
+             # already run anything R can; the other limits stay.
+             "--tmpfs", "/tmp:exec",
              "--user", .repro_docker_uid,
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
