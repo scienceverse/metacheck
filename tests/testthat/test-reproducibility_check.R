@@ -3611,3 +3611,61 @@ test_that("repro_run_scripts_py_docker uses the internet when asked (#568)", {
   # the script's own failure is still a failure
   expect_equal(on$outcome, c("ran_ok", "errored"))
 })
+
+test_that(".repro_binary_kind tells saved data and other binary files from code (#568)", {
+  d <- withr::local_tempdir()
+  x <- data.frame(a = 1:3)
+  save(x, file = file.path(d, "gz.R"))
+  save(x, file = file.path(d, "xz.R"), compress = "xz")
+  saveRDS(x, file.path(d, "plain.R"), compress = FALSE)
+  writeLines(c("RDA <- 1", "BZh <- 2", "X"), file.path(d, "code.R"))
+  writeBin(as.raw(c(0x23, 0x20, 0x63, 0x61, 0x66, 0xe9, 0x0a)), file.path(d, "latin1.R"))
+  expect_match(.repro_binary_kind(file.path(d, "gz.R")), "gzip")
+  expect_match(.repro_binary_kind(file.path(d, "xz.R")), "xz")
+  expect_equal(.repro_binary_kind(file.path(d, "plain.R")), "binary")
+  expect_true(is.na(.repro_binary_kind(file.path(d, "code.R"))))
+  expect_true(is.na(.repro_binary_kind(file.path(d, "latin1.R"))))
+  # the writer keeps such a file instead of writing a script over it
+  root <- file.path(d, "root"); dir.create(root)
+  file.copy(file.path(d, "gz.R"), file.path(root, "b.R"))
+  before <- unname(tools::md5sum(file.path(root, "b.R")))
+  suppressMessages(repro_write_scripts(list(b.R = "x <- 1"), list(b.R = data.frame()), NULL, root))
+  expect_equal(unname(tools::md5sum(file.path(root, "b.R"))), before)
+})
+
+test_that(".repro_needs_arguments: programs that stopped for want of their arguments (#568)", {
+  py <- list(a = c("import sys", "f = sys.argv[1]"), b = "import argparse", c = "x = [1][2]")
+  err <- c('File "a.py", line 2, in <module>\n    f = sys.argv[1]\nIndexError: list index out of range',
+           "a.py: error: the following arguments are required: -i",
+           'File "c.py", line 1\nIndexError: list index out of range')
+  expect_equal(.repro_needs_arguments(py, err, "Python"), c(TRUE, TRUE, FALSE))
+  r <- list(a = "args <- commandArgs(TRUE)", b = "args <- commandArgs(TRUE)", c = "x <- 1")
+  err <- c("Error in args[1] : object of type 'closure' is not subsettable",
+           "Error in read.csv(\"x.csv\") : cannot open file",
+           "Error in args[1] : object of type 'closure' is not subsettable")
+  expect_equal(.repro_needs_arguments(r, err, "R"), c(TRUE, FALSE, FALSE))
+})
+
+test_that("a file written during the run is found, and copied to where a script looked (#568)", {
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "a")); dir.create(file.path(root, "b"))
+  writeLines("old", file.path(root, "b", "input0.txt"))     # the deposit's own copy elsewhere
+  before <- .repro_sandbox_names(root)
+  writeLines("new", file.path(root, "a", "input0.txt"))     # written during the run
+  writeLines("x", file.path(root, "a", "Ha_daily.Rdata"))
+  after <- .repro_sandbox_names(root)
+  res <- data.frame(file_name = c("s1.py", "s2.R", "s3.R"), outcome = c("errored", "errored", "errored"),
+                    error = c("", "", ""),
+                    stderr = c("FileNotFoundError: [Errno 2] No such file or directory: 'input0.txt'",
+                               "cannot open compressed file 'Ha_daily.Rdata', probable reason 'No such file or directory'",
+                               "cannot open file 'deposit.csv': No such file or directory"))
+  later <- .repro_written_later(res, before, after)
+  expect_equal(later, list(s1.py = "input0.txt", s2.R = "Ha_daily.Rdata"))
+  run_tbl <- data.frame(file_name = c("s1.py", "s2.R"), run_dir = c(file.path(root, "a"), file.path(root, "c")))
+  placed <- .repro_place_written(later, res, run_tbl, root, before, after)
+  # s1 looks where the file now is; s2 gets a copy in its own folder
+  expect_equal(placed$script, "s2.R")
+  expect_equal(placed$to, "c/Ha_daily.Rdata")
+  expect_true(file.exists(file.path(root, "c", "Ha_daily.Rdata")))
+  expect_match(.repro_written_later_text(later, "s2.R", placed), "copied them there|copied it there")
+})

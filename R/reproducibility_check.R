@@ -1153,6 +1153,96 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   want & (by_name | ext %in% ext_named)
 }
 
+# The paths of the files in the sandbox, to see later which files the scripts
+# wrote. Installed packages are not counted.
+.repro_sandbox_names <- function(root) {
+  f <- gsub("\\\\", "/", list.files(root, recursive = TRUE))
+  f[!grepl("^(_rlib|_pylib2?)/", f)]
+}
+
+# Before a script runs once more (see .repro_written_later()): a file it looked
+# for in vain, which another script wrote during the run in another folder, is
+# copied to where it looked. Authors often run every script from one folder, so a
+# file saved by one is where the next looks; here each script runs from its own
+# folder: in 10.1111/2041-210X.13923 "1_format/220520_format-datasets.R" saves
+# Ha_daily.Rdata, and five scripts in "2_suit-corr/" and other folders load
+# "Ha_daily.Rdata" (#568). Only when exactly one file of that name was written
+# during the run. Returns the copies: script, file, from, to (from the top).
+.repro_place_written <- function(later, results, run_tbl, root, before, after) {
+  none <- data.frame(script = character(0), file = character(0), from = character(0), to = character(0))
+  if (!length(later)) return(none)
+  new <- setdiff(after, before)
+  root_n <- gsub("\\\\", "/", normalizePath(root, mustWork = FALSE))
+  rows <- list()
+  for (s in names(later)) {
+    i <- match(s, results$file_name); k <- match(s, run_tbl$file_name)
+    if (is.na(i) || is.na(k)) next
+    wanted <- .repro_unopened_files(paste(results$error[i], results$stderr[i]), full = TRUE)
+    wanted <- wanted[tolower(basename(wanted)) %in% tolower(later[[s]])]
+    for (p in unique(wanted)) {
+      dest <- if (startsWith(p, "/sandbox/")) file.path(root, sub("^/sandbox/", "", p))
+              else if (grepl("^(/|~|[A-Za-z]:)", p)) NA_character_      # the authors' own computer
+              else file.path(run_tbl$run_dir[k], p)
+      if (is.na(dest) || file.exists(dest)) next
+      cand <- new[tolower(basename(new)) == tolower(basename(p))]
+      if (length(cand) != 1) next
+      dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+      if (isTRUE(file.copy(file.path(root, cand), dest)))
+        rows[[length(rows) + 1]] <- data.frame(
+          script = s, file = basename(p), from = cand,
+          to = sub(paste0("^", gsub("([.|()\\^{}+$*?\\[\\]])", "\\\\\\1", root_n), "/"), "",
+                   gsub("\\\\", "/", normalizePath(dest, mustWork = FALSE))))
+    }
+  }
+  if (length(rows)) do.call(rbind, rows) else none
+}
+
+# After a run: the scripts that stopped on a file of a name a script wrote at a
+# path that was not in the sandbox before the run (`before` and `after`, from
+# .repro_sandbox_names()). A name built while a script runs, such as
+# f"input{i}.txt", cannot be seen before, so the run order missed it: in
+# 10.1111/2041-210X.13814 "analyse_results.py" ran before "create_inputs.py"
+# (#568). Paths, not names, are compared, since the deposit can hold a file of
+# the same name elsewhere (there in a zip's folder). Returns a named list:
+# script -> the files it can now open.
+.repro_written_later <- function(results, before, after) {
+  new <- unique(tolower(basename(setdiff(after, before))))
+  if (!length(new) || is.null(results) || !nrow(results)) return(list())
+  stopped <- which(results$outcome %in% "errored")
+  out <- lapply(stopped, function(i) {
+    u <- .repro_unopened_files(paste(results$error[i], results$stderr[i]))
+    unique(u[tolower(u) %in% new])     # the name as the error gives it
+  })
+  names(out) <- results$file_name[stopped]
+  out[lengths(out) > 0]
+}
+
+# The report's sentence on the scripts run once more after a later script wrote the
+# file they stopped on (see .repro_written_later()); `ran_ok` names the scripts that
+# then ran to the end.
+.repro_written_later_text <- function(later, ran_ok = character(0), placed = NULL) {
+  if (!length(later)) return("")
+  n <- length(later)
+  ok <- intersect(names(later), ran_ok)
+  copied <- if (!is.null(placed) && nrow(placed)) sprintf(paste0(
+    " %s in another folder than where the script looked, so before that run we copied ",
+    "%s there: %s. The scripts assume they all run from one folder; saying which, or ",
+    "building paths from the top of the project (as with `here::here()`), solves this."),
+    plural(nrow(placed), "One file was written", sprintf("%d files were written", nrow(placed))),
+    plural(nrow(placed), "it", "them"),
+    paste(sprintf("`%s` to `%s` for `%s`", placed$from, placed$to, placed$script), collapse = "; ")) else ""
+  sprintf(paste0(" **%d %s on a file another script writes**, so %s run once more after ",
+                 "the other scripts: %s.%s%s Which script must run first can ",
+                 "be stated in a README, or shown by numbering the file names (01_, 02_)."),
+          n, plural(n, "script stopped", "scripts stopped"),
+          plural(n, "it was", "they were"),
+          paste(sprintf("`%s` (%s)", names(later), vapply(later, paste, character(1), collapse = ", ")),
+                collapse = "; "),
+          copied,
+          if (length(ok)) sprintf(" Then %s ran to the end: %s.", plural(length(ok), "this one", "these"),
+                                  paste(sprintf("`%s`", ok), collapse = ", ")) else "")
+}
+
 # After a run: the names of the files scripts could not open, from their errors;
 # with `full = TRUE` the paths as the errors give them.
 .repro_unopened_files <- function(msgs, full = FALSE) {
@@ -2080,6 +2170,26 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #'   failure), else one of `"JSON"`, `"HTML"`, `"XML"` naming what was
 #'   detected
 #' @keywords internal
+# What a file is when it is not text, from its first bytes: saved R data
+# (save()/saveRDS(), compressed or not), another compressed file, or a file with
+# zero bytes in its first 4 KB, which text does not have. NA for text. Authors
+# sometimes save data under a name ending in .R: 10.1111/2041-210X.13897's
+# bbs-btnw-bundle.R is R data compressed with gzip (#568).
+.repro_binary_kind <- function(path) {
+  b <- tryCatch(readBin(path, "raw", 4096L), error = function(e) raw(0))
+  if (!length(b)) return(NA_character_)
+  starts <- function(x) length(b) >= length(x) && identical(b[seq_along(x)], x)
+  if (starts(as.raw(c(0x1f, 0x8b)))) return("compressed with gzip (as R saves data)")
+  # bzip2: "BZh", the block size 1-9, then the block's own mark, so a script
+  # starting with "BZh" is not taken for one
+  if (length(b) >= 10 && identical(b[1:3], charToRaw("BZh")) && b[4] %in% charToRaw("123456789") &&
+      identical(b[5:10], as.raw(c(0x31, 0x41, 0x59, 0x26, 0x53, 0x59)))) return("compressed with bzip2")
+  if (starts(as.raw(c(0xfd, 0x37, 0x7a, 0x58, 0x5a)))) return("compressed with xz")
+  # R data saved without compression has zero bytes, as other binary files do
+  if (any(b == as.raw(0))) return("binary")
+  NA_character_
+}
+
 .repro_content_sniff <- function(code_text) {
   if (is.null(code_text) || !length(code_text)) return(NA_character_)
   txt <- trimws(paste(code_text, collapse = "\n"))
@@ -3323,6 +3433,25 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 }
 
 # Whether a run's error shows that the script waited for a person.
+# Whether a script is a program that needs arguments from the person running it,
+# and stopped for want of them: its code reads command-line arguments and its
+# error points at them. In R the call that failed names `args[`/`argv[` or
+# commandArgs(); in Python argparse says which are required, or the failing line
+# (which Python prints) reads sys.argv or parse_args(). 53 failed scripts in 8
+# papers of the corpus read arguments, as in 10.1111/2041-210X.13845 (PyRate) and
+# 10.1111/2041-210X.13721 (#568). `code` is a list of the scripts' lines.
+.repro_needs_arguments <- function(code, txt, lang = "R") {
+  txt <- txt %||% rep("", length(code))
+  reads <- vapply(code, function(s) grepl(
+    if (identical(lang, "Python")) "argparse|sys[.]argv|getopt|docopt|click[.](command|argument|option)"
+    else "commandArgs[(]", paste(s, collapse = "\n"), perl = TRUE), logical(1))
+  points <- if (identical(lang, "Python"))
+    grepl(paste0("the following arguments are required|: error: (argument|unrecognized arguments)|",
+                 "Use '-h'|sys[.]argv\\[|parse_args\\("), txt, perl = TRUE)
+  else grepl("Error in [^\n:]*(\\bargs?\\[|\\bargv\\[|commandArgs)", txt, perl = TRUE)
+  unname(reads & points)
+}
+
 .repro_needs_person_error <- function(txt) {
   grepl(paste0("file choice cancelled|invalid 'description' argument|menu\\(\\) cannot be used non-interactively|",
                "could not find function \"(choose\\.files|choose\\.dir)\"|",
@@ -3778,8 +3907,12 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     dest <- file.path(root, .portable_path(tgt))
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
     # A script that cannot be written (a path too long for the system) is run and
-    # reported as failed, and the paper's other scripts still run.
-    written <- tryCatch({
+    # reported as failed, and the paper's other scripts still run. A file there
+    # that is not text, such as R data saved under a name ending in .R, is kept:
+    # writing over it made load() fail in five scripts of 10.1111/2041-210X.13897
+    # with "bad restore file magic number" (#568).
+    keep_binary <- file.exists(dest) && !is.na(.repro_binary_kind(dest))
+    written <- keep_binary || tryCatch({
       suppressWarnings(writeLines(txt, dest))
       TRUE
     }, error = function(e) FALSE)

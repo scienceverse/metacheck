@@ -153,7 +153,7 @@
         else "It could not reach what it asked for on the internet.",
         "Keeping what it downloads in the deposit solves this.")),
       needs_a_person = , static_needs_a_person = c(
-        "Stopped", "It asks a person to choose a file or answer a question, or starts an app. Naming the file in the script solves this."),
+        "Stopped", "It asks a person to choose a file or answer a question, starts an app, or is a program that needs its arguments. Naming the file in the script, or the arguments in a README, solves this."),
       not_analysis = , static_not_analysis = c("Not run", .repro_cell(not_analysis_why[[i]])),
       c("Not run", ""))
     sprintf("| %s | %s | %s |", .repro_cell(tbl$file_name[[i]]), res[[1]], res[[2]])

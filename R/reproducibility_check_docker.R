@@ -1025,8 +1025,12 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     # a real bug: a package installed by repro_install_deps_docker() into the
     # SAME mounted /rlib was still reported "there is no package called" by the
     # run phase before this line was added.
+    # R_LIBS too, so the R processes a script starts find the packages: gbm()'s
+    # cross-validation workers stopped with "there is no package called 'gbm'"
+    # in 10.1111/1365-2656.13910, as would a makeCluster() of the script's own (#568).
     libpath_setup <- if (!is.null(lib_dir_norm))
-      '  .libPaths(c("/rlib", .libPaths()))' else NULL
+      c('  .libPaths(c("/rlib", .libPaths()))',
+        '  Sys.setenv(R_LIBS = paste(.libPaths(), collapse = ":"))') else NULL
     # The container is read-only apart from /tmp, its home folder too, so a
     # package that keeps files in the user's cache, configuration or data
     # folder stopped: renv::restore() with "failed to create directory at

@@ -1459,7 +1459,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         sniff_detail[i] <- "JAGS/BUGS model definition (not standalone R)"
         next
       }
-      detected <- .repro_content_sniff(raw)
+      # a file that is not text, such as R data saved as .R (#568)
+      path_i <- resolve_row_path(i)
+      detected <- if (!is.na(path_i)) .repro_binary_kind(path_i) else NA_character_
+      if (is.na(detected)) detected <- .repro_content_sniff(raw)
       if (!is.na(detected)) {
         sniff_type[i] <- "not_r_content"
         sniff_detail[i] <- sprintf(
@@ -1806,6 +1809,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     .dbg("running ", length(run_order_names), " script(s) in order: ",
          paste(run_order_names, collapse = " -> "))
     if (is.null(script_deadline)) script_deadline <- .repro_deadline(total_timeout)
+    # the files there before the run, to see which a script wrote (see the end)
+    r_names_before <- .repro_sandbox_names(sandbox_root)
     run_results <- run_r_scripts(run_tbl, run_order_names)
     .dbg("execution finished (pass 1). outcomes: ",
          paste(sprintf("%s=%s", run_results$file_name, run_results$outcome),
@@ -2032,6 +2037,29 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         }
       }
     }
+    # A script that stopped on a file another script wrote later runs once more:
+    # a name built while a script runs cannot be seen before, so the order missed
+    # it (#568; see .repro_written_later()). Twice at most, for a chain.
+    r_written_later <- list()
+    r_placed <- .repro_place_written(list(), NULL, NULL, sandbox_root, character(0), character(0))
+    for (pass in 1:2) {
+      names_after <- .repro_sandbox_names(sandbox_root)
+      later <- .repro_written_later(run_results, r_names_before, names_after)
+      later <- later[!names(later) %in% names(r_written_later)]
+      if (!length(later)) break
+      redo <- names(later)
+      # a file written in another folder is copied to where the script looks
+      r_placed <- rbind(r_placed, .repro_place_written(later, run_results, run_tbl, sandbox_root,
+                                                       r_names_before, names_after))
+      .dbg("re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
+           paste(redo, collapse = ", "))
+      res4 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                            c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
+      res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
+      r_written_later <- c(r_written_later, later[names(later) %in% res4$file_name])
+      run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
+      run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
+    }
     attr(run_results, "reran_for_order") <- reran
     attr(run_results, "reran_for_reorder") <- reran_for_reorder
 
@@ -2051,7 +2079,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
     # A script that stopped because nobody could answer it says nothing about the code.
     asks_person <- run_results$outcome == "errored" &
-      .repro_needs_person_error(paste(run_results$error, run_results$stderr))
+      (.repro_needs_person_error(paste(run_results$error, run_results$stderr)) |
+         # a program that needs its arguments from the person running it (#568)
+         .repro_needs_arguments(code_text_list[run_results$file_name],
+                                paste(run_results$error, run_results$stderr), "R"))
     run_results$outcome[asks_person] <- "needs_a_person"
     run_results$error_type[asks_person] <- NA_character_
     # Stopped because the network is off, which says nothing about the code either.
@@ -2399,6 +2430,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " **%d script%s use%s an object or function that only another script defines**, so in the second run that script was loaded first, in the same session: %s. Such a script should `source()` the other itself, since it does not run on its own.",
         length(run_after), plural(length(run_after)), plural(length(run_after), "s", ""),
         paste(sprintf("`%s` after `%s`", names(run_after), vapply(run_after, paste, character(1), collapse = "`, `")), collapse = "; ")))
+    if (exists("r_written_later", inherits = FALSE) && length(r_written_later))
+      report_exec <- paste0(report_exec, .repro_written_later_text(
+        r_written_later, run_results$file_name[oc == "ran_ok"], r_placed))
     if (sum(lengths(r_choices_filled)) > 0)
       report_exec <- paste0(report_exec, sprintf(
         " **%d `file.choose()` call%s replaced by the file the code names**, so the script could run; the script should name the file itself.",
@@ -2838,8 +2872,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                  detail = c(factors = "text read as factors, as before R 4.0",
                             latin1 = "data files read as Latin-1")[unlist(old_defaults_used, use.names = FALSE)])
     stan_rows_mod <- if (exists("stan_rows", inherits = FALSE)) stan_rows
+    later_rows <- if (exists("r_written_later", inherits = FALSE) && length(r_written_later))
+      data.frame(file_name = rep(names(r_written_later), lengths(r_written_later)),
+                 change_type = "run_again",
+                 detail = paste("run once more after another script wrote",
+                                unlist(r_written_later, use.names = FALSE)))
+    if (exists("r_placed", inherits = FALSE) && nrow(r_placed))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_placed$script, change_type = "output_copied",
+        detail = sprintf("copied %s, written by another script, to %s", r_placed$from, r_placed$to)))
     dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
-                     slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows)
+                     slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
     modifications <- data.frame(file_name = character(0), change_type = character(0),
@@ -3115,8 +3157,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_server <- vapply(py_code_text_list, .repro_py_starts_server, logical(1), USE.NAMES = FALSE) & !py_not_analysis
   # Set when the execute phase below could not run the Python code at all.
   py_exec_error <- NULL
-  # the scripts run with Python 2.7 (see the execute phase)
+  # the scripts run with Python 2.7, and those run once more after a later script
+  # wrote their file (see the execute phase)
   py_ran_py2 <- character(0)
+  py_written_later <- list()
+  py_placed <- .repro_place_written(list(), NULL, NULL, ".", character(0), character(0))
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
   py_placeable <- !is.na(py_file_order)
 
@@ -3288,6 +3333,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           py_exec_error <<- conditionMessage(e)
           NULL
         })
+      py_names_before <- .repro_sandbox_names(sandbox_root)
       py_run_results <- run_py(py_run_tbl, py_run_order_names)
       # A file a script could not open, which the repository lists but which was
       # not downloaded, is fetched now, and those scripts run once more (#568; as
@@ -3323,6 +3369,31 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
             }
           }
         }
+      }
+    }
+    # A script that stopped on a file another script wrote later runs once more,
+    # as for R above (#568): in 10.1111/2041-210X.13814 "analyse_results.py" ran
+    # before "create_inputs.py", which writes f"input{i}.txt".
+    if (!is.null(py_run_results) && exists("py_names_before", inherits = FALSE)) {
+      for (pass in 1:2) {
+        names_after <- .repro_sandbox_names(sandbox_root)
+        later <- .repro_written_later(py_run_results, py_names_before, names_after)
+        later <- later[!names(later) %in% names(py_written_later)]
+        if (!length(later)) break
+        redo <- names(later)
+        # a file written in another folder is copied to where the script looks
+        py_placed <- rbind(py_placed, .repro_place_written(later, py_run_results, py_run_tbl, sandbox_root,
+                                                           py_names_before, names_after))
+        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
+             paste(redo, collapse = ", "))
+        res4 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
+                       c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
+        if (is.null(res4)) break
+        res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
+        py_written_later <- c(py_written_later, later[names(later) %in% res4$file_name])
+        keep_order <- py_run_results$file_name
+        py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
+        py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
       }
     }
     # Code written for Python 2 runs again with Python 2.7, with its own packages
@@ -3394,7 +3465,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (sandbox == "docker") py_run_results$outcome[py_run_results$outcome == "errored" &
         .repro_docker_failed(paste(py_run_results$error, py_run_results$stderr))] <- "docker_failed"
       py_run_results$outcome[py_run_results$outcome == "errored" &
-        .repro_needs_person_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_a_person"
+        (.repro_needs_person_error(paste(py_run_results$error, py_run_results$stderr)) |
+           # a program that needs its arguments from the person running it (#568)
+           .repro_needs_arguments(py_code_text_list[py_run_results$file_name],
+                                  paste(py_run_results$error, py_run_results$stderr), "Python"))] <- "needs_a_person"
       if (sandbox == "docker")
         py_run_results$outcome[py_run_results$outcome == "errored" &
           .repro_needs_internet_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_internet"
@@ -3693,6 +3767,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " %d %s not started, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
+    if (length(py_written_later))
+      py_report_exec <- paste0(py_report_exec, .repro_written_later_text(
+        py_written_later, py_run_results$file_name[py_oc == "ran_ok"], py_placed))
     py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
     if (length(py_ran_py2_here))
       py_report_exec <- paste0(py_report_exec, sprintf(
@@ -3946,7 +4023,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py2_rows_mod <- if (length(py_ran_py2)) data.frame(
       file_name = py_ran_py2, change_type = "python2",
       detail = paste0("run with Python 2.7 (", .repro_docker_image_py2() %||% "", ")"))
-    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod)
+    py_later_rows <- if (length(py_written_later))
+      data.frame(file_name = rep(names(py_written_later), lengths(py_written_later)),
+                 change_type = "run_again",
+                 detail = paste("run once more after another script wrote",
+                                unlist(py_written_later, use.names = FALSE)))
+    if (nrow(py_placed))
+      py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_placed$script, change_type = "output_copied",
+        detail = sprintf("copied %s, written by another script, to %s", py_placed$from, py_placed$to)))
+    dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod, py_later_rows)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))
     py_modifications <- data.frame(file_name = character(0), change_type = character(0),
