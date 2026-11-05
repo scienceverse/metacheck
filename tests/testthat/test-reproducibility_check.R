@@ -3761,3 +3761,20 @@ test_that("a name kept in a variable that the code joins to a folder is left as 
   rw <- repro_rewrite_paths('d <- read.csv("x.csv")', "c.R", plan)
   expect_false(rw$in_join[rw$ref == "x.csv"])
 })
+
+test_that(".repro_install_error_lines finds why a package did not install (#568)", {
+  txt <- paste(c("* installing *source* package 'XVector' ...",
+                 "io_utils.c:16:10: fatal error: zlib.h: No such file or directory",
+                 "ERROR: compilation failed for package 'XVector'",
+                 "* installing *source* package 'DESeq2' ...",
+                 "ERROR: dependency 'XVector' is not available for package 'DESeq2'",
+                 "ERROR: dependencies ‘rgdal’, ‘rgeos’ are not available for package ‘ellipsenm’",
+                 "* DONE (other)"), collapse = "\n")
+  x <- .repro_install_error_lines(txt, "XVector")
+  expect_match(x, "zlib.h", fixed = TRUE)
+  expect_match(x, "compilation failed for package 'XVector'", fixed = TRUE)
+  expect_false(grepl("DESeq2", x))
+  expect_equal(.repro_install_error_lines(txt, "DESeq2"), "ERROR: dependency 'XVector' is not available for package 'DESeq2'")
+  expect_match(.repro_install_error_lines(txt, "ellipsenm"), "rgdal")
+  expect_equal(.repro_install_error_lines(txt, "other"), "")
+})

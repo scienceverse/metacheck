@@ -154,6 +154,32 @@ repro_docker_available <- function() {
 # WSL writes a file of about 2.5 GB to the user's temp folder. Ten crashing
 # scripts filled a disk. A limit of 0 does not stop WSL (confirmed directly);
 # the kernel only leaves out the file for a limit of 1.
+# The lines of an install's output that say why a package did not install: an
+# "ERROR:" line that names it ("ERROR: dependencies 'rgdal', 'rgeos' are not
+# available for package 'ellipsenm'"), and the errors in its own part of the
+# output, from "installing *source* package 'pkg'" to the next package (a
+# compiler's "fatal error: zlib.h: No such file or directory"). "" when none.
+.repro_install_error_lines <- function(txt, pkg) {
+  l <- strsplit(txt %||% "", "\n", fixed = TRUE)[[1]]
+  if (!length(l) || is.na(pkg) || !nzchar(pkg)) return("")
+  q <- gsub("([.|()\\^{}+$*?\\[\\]\\\\])", "\\\\\\1", pkg)
+  # "... for package 'pkg'": the package that failed, not one it needs
+  named <- grep(paste0("^ERROR: .*package ['‘\"]", q, "['’\"]"), l, value = TRUE, perl = TRUE)
+  start <- grep(paste0("installing \\*source\\* package ['‘\"]", q, "['’\"]"), l, perl = TRUE)
+  own <- character(0)
+  if (length(start)) {
+    s <- start[length(start)]
+    nxt <- grep("^\\* (installing|DONE)", l)
+    e <- c(nxt[nxt > s], length(l) + 1L)[1] - 1L
+    # the compiler's errors; an "ERROR:" line counts only when it names this package (above)
+    sect <- l[s:e]
+    own <- sect[grepl("fatal error|error: ", sect) & !grepl("^ERROR: ", sect)]
+  }
+  out <- unique(trimws(c(named, own)))
+  if (!length(out)) return("")
+  substr(paste(utils::head(out, 4), collapse = " | "), 1, 500)
+}
+
 # The note added to a script's error output when its container was stopped for
 # using more memory than the limit: Docker gives the process the exit status 137,
 # and the script ends without a message. In 10.1111/2041-210X.14359 nimble's C++
@@ -823,9 +849,21 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   tbl <- if (!is.null(res) && file.exists(results_path))
     tryCatch(readRDS(results_path), error = function(e) NULL) else NULL
 
+  txt <- if (!is.null(res)) tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
+                                     error = function(e) "") else ""
+  # A failed install whose message gives no reason, only "had non-zero exit
+  # status", gets the reason from the install's own output (#568): 7 of 111
+  # failed installs in the corpus, such as ellipsenm (10.1111/1365-2656.13895),
+  # whose output said "ERROR: dependencies 'rgdal', 'rgeos' are not available".
+  if (!is.null(tbl) && nrow(tbl) && nzchar(txt)) {
+    vague <- !tbl$installed & !grepl("ERROR: |error: |not available|there is no package|cannot ",
+                                     tbl$message %||% "", ignore.case = FALSE)
+    for (i in which(vague)) {
+      why <- .repro_install_error_lines(txt, tbl$package[i])
+      if (nzchar(why)) tbl$message[i] <- paste0(tbl$message[i], if (nzchar(tbl$message[i])) "; " else "", why)
+    }
+  }
   msg <- if (!is.null(res)) {
-    txt <- tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
-                    error = function(e) "")
     if (isTRUE(res$timeout)) paste0("docker install timed out after ", round(timeout), "s")
     else paste0("docker install failed (status ", res$status, "): ", txt)
   } else "docker run could not be started"

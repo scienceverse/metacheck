@@ -1,5 +1,7 @@
 # metacheck 0.4.2
 
+* A package that `reproducibility_check(sandbox = "docker")` could not install says why, from the install's own output, where its message gave only "had non-zero exit status" (#568): "ERROR: dependencies 'rgdal', 'rgeos' are not available for package 'ellipsenm'" (10.1111/1365-2656.13895), or a compiler's "fatal error: zlib.h: No such file or directory". 7 of 111 failed installs in the corpus gave no reason.
+
 * `repro_rewrite_paths()` leaves a file name as written when the code keeps it in a variable that it later joins to a folder, as it already did for a name inside the joining call (#568). `datname <- "Fig_2"` with `paste("Data/", datname)` became `"Data/Fig_2"`, so the code used `Data/Data/Fig_2`: in 10.1111/1365-2664.13539 the simulation scripts could not write their results and the scripts that plot them had nothing to read; 10 scripts now run, where 5 did. The variable counts as joined in `file.path()`, `paste()`, `paste0()`, `os.path.join()`, `here()`, `Path()`, `sprintf()`, `glue()`, `str_c()`, or a Python f-string after a `/`. In the corpus this applied to 9 names in 5 scripts of 2 papers.
 
 * A Python 2 script that stops on a package that could not be installed gets the outcome `dependency_unavailable`, as in Python 3 (#568). Python 2 writes "No module named librosa" without quotes, which was not recognised, so the script read as `errored` (10.1111/2041-210X.13114).
