@@ -3744,3 +3744,20 @@ test_that("a script stopped by the memory limit says so, with the reason environ
   withr::local_options(metacheck.docker_resource_limits = NULL)
   expect_null(.repro_oom_text(137))
 })
+
+test_that("a name kept in a variable that the code joins to a folder is left as written (#568)", {
+  plan <- data.frame(file_name = c("Fig_2", "x.csv"), target_path = c("Data/Fig_2", "data/x.csv"),
+                     current_path = c("Data/Fig_2", "data/x.csv"))
+  # R: the variable is pasted to the folder later
+  code <- c('datname <- "Fig_2"', 'f <- paste("Data/", datname, sep = "")', 'd <- read.table(f)')
+  rw <- repro_rewrite_paths(code, "Simulate.R", plan)
+  expect_true(rw$in_join[rw$ref == "Fig_2"])
+  # Python: an f-string after a slash
+  rw <- repro_rewrite_paths(c('name = "x.csv"', 'df = pd.read_csv(f"data/{name}")'), "a.py", plan, lang = "Python")
+  expect_true(rw$in_join[rw$ref == "x.csv"])
+  # a name read directly, also when kept in a variable that is not joined, is not
+  rw <- repro_rewrite_paths(c('f <- "x.csv"', 'd <- read.csv(f)'), "b.R", plan)
+  expect_false(rw$in_join[rw$ref == "x.csv"])
+  rw <- repro_rewrite_paths('d <- read.csv("x.csv")', "c.R", plan)
+  expect_false(rw$in_join[rw$ref == "x.csv"])
+})

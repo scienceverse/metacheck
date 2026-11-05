@@ -1012,11 +1012,23 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   # bare name read directly, after setwd("./data") was taken out, is not
   # (10.1111/1365-2664.14633; #568).
   joined_text <- paste(code_text, collapse = "\n")
+  join_calls <- "\\b(?:file\\.path|paste0?|os\\.path\\.join|here|Path|sprintf|glue|str_c)\\s*\\([^()\n]*?"
   out$in_join <- vapply(seq_len(nrow(out)), function(i) {
     if (isTRUE(out$is_call[i])) return(FALSE)
     q <- gsub("([.\\\\+*?^$()|{}\\[\\]])", "\\\\\\1", out$ref[i])
-    grepl(paste0("\\b(?:file\\.path|paste0?|os\\.path\\.join|here|Path|sprintf)\\s*\\([^()\n]*?[\"']", q, "[\"']"),
-          joined_text, perl = TRUE)
+    if (grepl(paste0(join_calls, "[\"']", q, "[\"']"), joined_text, perl = TRUE)) return(TRUE)
+    # The name kept in a variable that such a call, or an f-string after a "/",
+    # joins to a folder later: `datname <- "Fig_2"` with `paste("Data/", datname)`
+    # became "Data/Data/Fig_2" in 10.1111/1365-2664.13539 (#568)
+    assigned <- regmatches(joined_text, gregexpr(paste0(
+      "(?m)^\\s*([A-Za-z_.][A-Za-z0-9_.]*)(?:\\[[^]\n]*\\])?\\s*(?:<-|=)\\s*[\"']", q, "[\"']"),
+      joined_text, perl = TRUE))[[1]]
+    vars <- unique(sub("^\\s*([A-Za-z_.][A-Za-z0-9_.]*).*$", "\\1", assigned))
+    any(vapply(vars, function(v) {
+      vq <- gsub(".", "\\.", v, fixed = TRUE)
+      grepl(paste0(join_calls, "\\b", vq, "\\b"), joined_text, perl = TRUE) ||
+        grepl(paste0("/\\{", vq, "\\}"), joined_text, perl = TRUE)
+    }, logical(1)))
   }, logical(1))
   out
 }
