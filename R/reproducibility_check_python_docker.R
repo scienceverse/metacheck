@@ -179,6 +179,11 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
       # <prefix>/lib/python<version>/site-packages.
       copy <- sprintf('  for f in %s/lib*/python*/site-packages/* %s/lib*/python*/site-packages/.[!.]*; do [ -e "$f" ] && [ ! -e "/pylib/${f##*/}" ] && cp -r "$f" /pylib/; done; rm -rf %s',
                       tmp, tmp, tmp)
+      tmp_t <- sprintf("/tmp/pyt_t%d", i)
+      target_pip <- sprintf(paste0("rm -rf %s; timeout %d pip install --quiet --prefer-binary --no-input --target %s",
+                                   " --extra-index-url https://download.pytorch.org/whl/cpu"), tmp_t, per_package, tmp_t)
+      target_copy <- sprintf('  for f in %s/* %s/.[!.]*; do [ -e "$f" ] && [ ! -e "/pylib/${f##*/}" ] && cp -r "$f" /pylib/; done; rm -rf %s',
+                             tmp_t, tmp_t, tmp_t)
       c(sprintf('if %s %s 2> /tmp/err_%d.txt; then', pip, shQuote(req), i),
         copy,
         sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":""}\\n\' >> "$OUT"',
@@ -188,6 +193,14 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
           copy,
           sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":"","version_note":"the pinned version %s could not be installed, so the current one was"}\\n\' >> "$OUT"',
                   pkg, src, gsub("['\"\\\\%]", "", req))),
+        # When a package needs another version of one the image has, pip with
+        # --prefix tries to change the image's copy, which it may not ("Permission
+        # denied: 'REQUESTED'": pygam in 10.1111/2041-210X.14007; #568): then the
+        # package and all it needs are installed apart, with --target, as before
+        sprintf('elif %s %s 2>> /tmp/err_%d.txt; then', target_pip, shQuote(req), i),
+        target_copy,
+        sprintf('  printf \'{"package":"%s","source":"%s","installed":true,"message":""}\\n\' >> "$OUT"',
+               pkg, src),
         'else',
         sprintf('  ERR=$(tr -d \'\\n\' < /tmp/err_%d.txt | sed \'s/"/\\\\"/g\')', i),
         sprintf('  printf \'{"package":"%s","source":"%s","installed":false,"message":"%%s"}\\n\' "$ERR" >> "$OUT"',
