@@ -810,7 +810,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       unlink(dest)
       return("not authorised (the OSF returned a sign-in page; see ?osf_pat)")
     }
-    if (!(file.exists(dest) && file.size(dest) > 0)) return("empty response")
+    # A file the listing says is empty is empty: in 10.1111/2041-210X.13798, 55
+    # of the 64 empty files of a repository were reported as failed downloads (#568)
+    if (!(file.exists(dest) && file.size(dest) > 0)) {
+      if (!isTRUE(as.numeric(expected_bytes) == 0)) return("empty response")
+      if (!file.exists(dest)) file.create(dest)
+    }
     if (!file.rename(dest, final)) return("could not move the download into place")
     NA_character_
   }, error = function(e) {
@@ -951,11 +956,13 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       # has no body either, so this still reports "empty response" for that
       # case (checked below).
       body <- tryCatch(httr2::resp_body_raw(r), error = \(e) raw(0))
-      if (length(body) == 0) {
+      if (length(body) == 0 && isTRUE(expected_size[i] == 0)) {
+        # a file the listing says is empty is empty (#568; see .download_one())
+        file.create(dests[i])
+      } else if (length(body) == 0) {
         if (file.exists(dests[i])) unlink(dests[i])   # no 0-byte file (U75)
         return("empty response")
-      }
-      writeBin(body, dests[i])
+      } else writeBin(body, dests[i])
     }
     # A sign-in page served in place of the file: the file is private and the
     # request was not authorised. Named as such, because "truncated" sent

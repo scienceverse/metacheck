@@ -3686,3 +3686,37 @@ test_that("a script that stopped on a Git LFS pointer stopped on a missing file 
   expect_match(.repro_lfs_stopped_text(st), "only as a Git LFS pointer")
   expect_equal(.repro_lfs_stopped(res[2:3, ], root), stats::setNames(list(), character(0)))
 })
+
+test_that(".repro_upgrade_stan puts the vertical bar in _cdf() and _lpdf() calls (#568)", {
+  stan <- c("functions {",
+            "  real foo_lpdf(real y, real mu) { return normal_lpdf(y | mu, 1); }",
+            "}",
+            "model {",
+            "  p_zero[i] = logistic_cdf(cutoff, log(growth[i]), 1);",
+            "  target += foo_lpdf(y[i], f(a, b));",
+            "  target += normal_lcdf(x | 0, 1) + normal_lccdf(z, 0, 1);",
+            "}")
+  out <- .repro_upgrade_stan(stan)
+  txt <- if (is.list(out)) out$txt else out
+  expect_equal(txt[2], stan[2])                                   # the definition keeps its commas
+  expect_equal(trimws(txt[5]), "p_zero[i] = logistic_cdf(cutoff | log(growth[i]), 1);")
+  expect_equal(trimws(txt[6]), "target += foo_lpdf(y[i] | f(a, b));")
+  expect_equal(trimws(txt[7]), "target += normal_lcdf(x | 0, 1) + normal_lccdf(z | 0, 1);")
+})
+
+test_that("code_read() returns no lines for a file that is not text, but reads UTF-16 (#568)", {
+  d <- withr::local_tempdir()
+  x <- data.frame(a = 1:3)
+  save(x, file = file.path(d, "data.R"))
+  out <- code_read(file.path(d, "data.R"))
+  expect_length(out, 0)
+  expect_match(attr(out, "binary"), "gzip")
+  # a script saved as UTF-16 (with and without a byte order mark) is text
+  txt <- "x <- 1\ny <- read.csv('a.csv')\n"
+  le <- unlist(lapply(utf8ToInt(txt), function(i) as.raw(c(i, 0))))
+  writeBin(c(as.raw(c(0xff, 0xfe)), le), file.path(d, "bom.R"))
+  writeBin(le, file.path(d, "nobom.R"))
+  expect_true(is.na(.binary_kind_raw(readBin(file.path(d, "bom.R"), "raw", 100))))
+  expect_true(is.na(.binary_kind_raw(readBin(file.path(d, "nobom.R"), "raw", 100))))
+  expect_equal(code_read(file.path(d, "bom.R"))[1], "x <- 1")
+})

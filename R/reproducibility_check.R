@@ -2176,18 +2176,7 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 # sometimes save data under a name ending in .R: 10.1111/2041-210X.13897's
 # bbs-btnw-bundle.R is R data compressed with gzip (#568).
 .repro_binary_kind <- function(path) {
-  b <- tryCatch(readBin(path, "raw", 4096L), error = function(e) raw(0))
-  if (!length(b)) return(NA_character_)
-  starts <- function(x) length(b) >= length(x) && identical(b[seq_along(x)], x)
-  if (starts(as.raw(c(0x1f, 0x8b)))) return("compressed with gzip (as R saves data)")
-  # bzip2: "BZh", the block size 1-9, then the block's own mark, so a script
-  # starting with "BZh" is not taken for one
-  if (length(b) >= 10 && identical(b[1:3], charToRaw("BZh")) && b[4] %in% charToRaw("123456789") &&
-      identical(b[5:10], as.raw(c(0x31, 0x41, 0x59, 0x26, 0x53, 0x59)))) return("compressed with bzip2")
-  if (starts(as.raw(c(0xfd, 0x37, 0x7a, 0x58, 0x5a)))) return("compressed with xz")
-  # R data saved without compression has zero bytes, as other binary files do
-  if (any(b == as.raw(0))) return("binary")
-  NA_character_
+  .binary_kind_raw(tryCatch(readBin(path, "raw", 4096L), error = function(e) raw(0)))
 }
 
 .repro_content_sniff <- function(code_text) {
@@ -3372,7 +3361,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
                "Name or service not known|NameResolutionError|Max retries exceeded|urlopen error|",
                "ConnectionError|LocalEntryNotFound|Could not reach|Failed to connect|Network is unreachable|",
                "getaddrinfo failed|Timeout was reached|no internet|internet connection|",
-               "Run download_hydat\\(\\)"),
+               "Run download_hydat\\(\\)|",
+               # GDAL reading from the web (sf, terra): Cannot open "/vsizip//vsicurl/https://..." (14079)
+               "/vsicurl/"),
         txt %||% "", perl = TRUE)
 }
 
@@ -4076,6 +4067,32 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
       line <- paste0(substr(line, 1L, m - 1L), name, suffix, rest)
     }
     if (!identical(line, txt[i])) { changes <- c(changes, "_log() functions"); txt[i] <- line }
+  }
+  # name_cdf(y, a), _lcdf, _lccdf, _lpdf, _lpmf: since 2.33 a vertical bar after
+  # the first argument, name_cdf(y | a); `logistic_cdf(cutoff, log(g), 1)` stopped
+  # stanc in 10.1111/2041-210X.14079 (#568). A function's definition (`real
+  # foo_lpdf(real y, ...)`) keeps its commas, and a call with a bar is left as it is.
+  bar_pat <- "\\b[A-Za-z_][A-Za-z0-9_]*_(cdf|lcdf|lccdf|lpdf|lpmf|lupdf|lupmf)\\s*\\("
+  def_before <- paste0("(\\b(real|int|vector|row_vector|matrix|void|complex|array\\[[^]]*\\]\\s*\\w+)",
+                       "(\\[[^]]*\\])?\\s+)$")
+  for (i in grep(bar_pat, txt, perl = TRUE)) {
+    line <- txt[i]
+    ms <- gregexpr(bar_pat, line, perl = TRUE)[[1]]
+    for (m in rev(as.integer(ms))) {
+      len <- attr(regexpr(bar_pat, substring(line, m), perl = TRUE), "match.length")
+      if (grepl(def_before, substr(line, 1L, m - 1L), perl = TRUE)) next
+      open <- m + len - 1L
+      chars <- strsplit(line, "", fixed = TRUE)[[1]]
+      depth <- 0L; at <- NA_integer_
+      for (k in seq.int(open, length(chars))) {
+        ch <- chars[k]
+        if (ch %in% c("(", "[", "{")) depth <- depth + 1L
+        else if (ch %in% c(")", "]", "}")) { depth <- depth - 1L; if (depth == 0L) break }
+        else if (ch %in% c(",", "|") && depth == 1L) { at <- if (ch == ",") k else NA_integer_; break }
+      }
+      if (!is.na(at)) line <- paste0(substr(line, 1L, at - 1L), " |", substring(line, at + 1L))
+    }
+    if (!identical(line, txt[i])) { changes <- c(changes, "a vertical bar in _cdf()/_lpdf() calls"); txt[i] <- line }
   }
   # arrays: `int<lower=0> y[N];` -> `array[N] int<lower=0> y;`, and in function
   # arguments `real[] x` -> `array[] real x`

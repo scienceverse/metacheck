@@ -8,6 +8,36 @@
 #' @examples
 #' file_path <- demofile("json")
 #' text <- code_read(file_path)
+# What bytes are when they are not text, from the first ones: saved R data
+# compressed with gzip, bzip2 or xz, or zero bytes, which text does not have.
+# NA for text, which includes UTF-16 (a byte order mark, or zero bytes in every
+# other place). Authors save data under names ending in .R: 10.1111/2041-210X.13967's
+# Training_Dataset_1.r is 109 MB of compressed R data, which code_check read as
+# code for more than 35 minutes, and 10.1111/2041-210X.13897's bbs-btnw-bundle.R
+# (#568).
+.binary_kind_raw <- function(b) {
+  b <- b[seq_len(min(length(b), 4096L))]
+  if (!length(b)) return(NA_character_)
+  starts <- function(x) length(b) >= length(x) && identical(b[seq_along(x)], x)
+  if (starts(as.raw(c(0x1f, 0x8b)))) return("compressed with gzip (as R saves data)")
+  # bzip2: "BZh", the block size 1-9, then the block's own mark, so a script
+  # starting with "BZh" is not taken for one
+  if (length(b) >= 10 && identical(b[1:3], charToRaw("BZh")) && b[4] %in% charToRaw("123456789") &&
+      identical(b[5:10], as.raw(c(0x31, 0x41, 0x59, 0x26, 0x53, 0x59)))) return("compressed with bzip2")
+  if (starts(as.raw(c(0xfd, 0x37, 0x7a, 0x58, 0x5a)))) return("compressed with xz")
+  zero <- b == as.raw(0)
+  if (!any(zero)) return(NA_character_)
+  # UTF-16 or UTF-32 text: a byte order mark, or the zero bytes in every other place
+  if (starts(as.raw(c(0xff, 0xfe))) || starts(as.raw(c(0xfe, 0xff)))) return(NA_character_)
+  n <- length(b) - length(b) %% 2L
+  if (n >= 4) {
+    odd <- zero[seq(1L, n, 2L)]; even <- zero[seq(2L, n, 2L)]
+    if (mean(odd) > 0.9 && mean(even) < 0.1 || mean(even) > 0.9 && mean(odd) < 0.1) return(NA_character_)
+  }
+  # R data saved without compression has zero bytes, as other binary files do
+  "binary"
+}
+
 code_read <- function(file_path) {
   # A genuinely empty (0-byte) local file crashes readr::guess_encoding()
   # itself, deep inside stringi (`if (stringi::stri_enc_isascii(lines))`,
@@ -45,6 +75,10 @@ code_read <- function(file_path) {
     resp$content
   }
   if (!length(raw)) return(character(0))
+  # not text, such as R data saved under a name ending in .R: no lines, marked,
+  # instead of decoding and scanning megabytes of it as code (#568)
+  binary <- .binary_kind_raw(raw)
+  if (!is.na(binary)) return(structure(character(0), binary = binary))
   enc <- readr::guess_encoding(raw)$encoding
   enc <- if (length(enc) && !is.na(enc[[1]])) enc[[1]] else "UTF-8"
 
