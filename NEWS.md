@@ -1,5 +1,8 @@
 # metacheck 0.4.2
 
+* `file_category()`, and with it `data_check` and `repo_check`, finds each file's type much faster: each of the 377 known extensions is compared once with all names, instead of a regular expression per extension and per name (#568). It took most of a half-hour `data_check` for 10.1111/2041-210X.14428; 8258 names now take under two seconds, with the same types.
+* `reproducibility_check(execute = TRUE)` reads the code with `code_read()` when it looks for the files the code names, so a file that is not text gives no lines (#568). It still read 10.1111/2041-210X.13967's 109 MB of R data named `.r` as text there, for more than an hour.
+
 * `reproducibility_check(sandbox = "docker")` installs Python packages with pip's `--prefix`, not `--target`, so pip uses the packages the image already has, and also looks in PyTorch's own index of builds for processors only (#568). With `--target` every dependency was installed again: for `segmentation_models_pytorch` in 10.1111/2041-210X.14327 that included torch (about 800 MB), and the install ran out of time, so ten notebooks stopped on a missing package. It now takes seconds. Without PyTorch's index, torchvision from PyPI did not fit the image's torch ("operator torchvision::nms does not exist").
 * `install_timeout` is also the time for installing a paper's Python packages, which had the time limit of one script (#568).
 

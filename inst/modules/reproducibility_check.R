@@ -488,7 +488,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   if (isTRUE(execute) && !identical(download, "none") && !isFALSE(download) &&
       !is.null(code_tbl) && nrow(code_tbl) && any(.repro_fetchable(structure_df))) {
     code_locs <- code_tbl$file_location[!is.na(code_tbl$file_location) & file.exists(code_tbl$file_location %||% "")]
-    code_txt <- unlist(lapply(code_locs, function(f) tryCatch(readLines(f, warn = FALSE), error = function(e) character(0))))
+    # code_read(), not readLines(): a file that is not text gives no lines, where
+    # 10.1111/2041-210X.13967's 109 MB of R data named .r was read as text (#568)
+    code_txt <- unlist(lapply(code_locs, function(f) tryCatch(code_read(f), error = function(e) character(0))))
     named <- .repro_named_files(structure_df, code_txt)
     if (any(named)) {
       message("[repro] fetching ", sum(named), " file(s) the code names that were not downloaded")
