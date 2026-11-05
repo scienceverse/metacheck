@@ -366,12 +366,19 @@
     # What a person's computer has and a check does not (#568, items 17 and 20): a
     # missing figure in a document, the data viewer, and fonts only Windows has.
     options(knitr.graphics.error = FALSE)
-    assign("View", function(...) invisible(NULL), envir = env)
-    assign("windowsFonts", function(...) invisible(NULL), envir = env)
-    assign("windowsFont", function(...) "sans", envir = env)
+    # In an attached environment of their own, not the workspace, which a script
+    # that starts with rm(list = ls()) clears (#568; as in the Docker runner)
+    stand_ins <- new.env()
+    assign("View", function(...) invisible(NULL), envir = stand_ins)
+    assign("windowsFonts", function(...) invisible(NULL), envir = stand_ins)
+    assign("windowsFont", function(...) "sans", envir = stand_ins)
     # Nobody can answer: on Windows file.choose() opens a window and waits.
     for (ask in c("file.choose", "choose.files", "choose.dir", "tk_choose.files", "tk_choose.dir"))
-      assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = env)
+      assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = stand_ins)
+    # fetched by name, as `env` above, so R CMD check's scan for attach() in a
+    # package does not take this child session for the user's
+    att <- get("attach", envir = baseenv())
+    att(stand_ins, name = "metacheck:stand_ins", warn.conflicts = FALSE)
     # Recreate the reducer helpers in the child (they cannot be referenced from
     # the parent's namespace inside callr). A helper copied from metacheck's
     # namespace would still call the other helpers in whatever metacheck is

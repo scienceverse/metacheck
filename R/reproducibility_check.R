@@ -4092,11 +4092,18 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
   dist_pat <- paste0("\\b(", paste(c(discrete, continuous), collapse = "|"), ")_log\\s*\\(")
   for (i in grep(dist_pat, txt, perl = TRUE)) {
     line <- txt[i]
-    repeat {
-      m <- regexpr(dist_pat, line, perl = TRUE)
-      if (m == -1) break
-      name <- sub("_log\\s*\\($", "", regmatches(line, m))
-      open <- m + attr(m, "match.length") - 1L
+    ms <- gregexpr(dist_pat, line, perl = TRUE)[[1]]
+    for (j in rev(seq_along(ms))) {
+      m <- ms[j]
+      if (m == -1) next
+      name <- sub("_log\\s*\\($", "", substr(line, m, m + attr(ms, "match.length")[j] - 1L))
+      # After `~`, poisson_log() and neg_binomial_2_log() are distributions of
+      # their own (a log link), not poisson with the old _log suffix:
+      # `y ~ poisson_log(x)` became poisson_lpmf in 10.1111/1365-2435.14436 (#568).
+      # In a function call, poisson_log(y, l) was the old name of poisson's density.
+      if (paste0(name, "_log") %in% c(discrete, continuous) &&
+          grepl("~\\s*$", substr(line, 1L, m - 1L))) next
+      open <- m + attr(ms, "match.length")[j] - 1L
       chars <- strsplit(line, "", fixed = TRUE)[[1]]
       depth <- 0L; comma <- NA_integer_
       for (k in seq.int(open, length(chars))) {
@@ -4153,6 +4160,48 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 
 # Give every Stan file in the sandbox the newer syntax (.repro_upgrade_stan());
 # returns the files changed and how, as modifications rows (NULL when none).
+# Stan programs held in R code, as a quoted text over several lines that the code
+# writes to a .stan file or passes as model_code: write("data{ ... }",
+# "TempCater.stan") in 10.1111/1365-2435.14436 (#568). The lines inside such a text
+# get the same update as a .stan file (see .repro_upgrade_stan()); the lines where
+# the text opens and closes also hold R code and are left as they are. A text
+# counts as a Stan program when it has a model block and a data or parameters
+# block. Returns list(txt, changes).
+.repro_upgrade_stan_in_r <- function(txt) {
+  none <- list(txt = txt, changes = character(0))
+  if (!length(txt) || !any(grepl("model\\s*\\{", txt))) return(none)
+  # where quoted texts that run over several lines start and end
+  spans <- list(); q <- NA_character_; start <- NA_integer_
+  for (i in seq_along(txt)) {
+    ch <- strsplit(txt[i], "", fixed = TRUE)[[1]]
+    k <- 1L
+    while (k <= length(ch)) {
+      c1 <- ch[k]
+      if (is.na(q)) {
+        if (c1 == "#") break                                   # an R comment
+        if (c1 %in% c("\"", "'")) { q <- c1; start <- i }
+      } else if (c1 == "\\") {
+        k <- k + 1L                                            # an escaped character
+      } else if (c1 == q) {
+        if (i > start) spans[[length(spans) + 1]] <- c(start, i)
+        q <- NA_character_
+      }
+      k <- k + 1L
+    }
+  }
+  changes <- character(0)
+  for (s in spans) {
+    whole <- paste(txt[s[1]:s[2]], collapse = "\n")
+    if (!grepl("\\bmodel\\s*\\{", whole, perl = TRUE) ||
+        !grepl("\\b(data|parameters)\\s*\\{", whole, perl = TRUE)) next
+    inner <- if (s[2] - s[1] >= 2) (s[1] + 1L):(s[2] - 1L) else integer(0)
+    if (!length(inner)) next
+    up <- .repro_upgrade_stan(txt[inner])
+    if (length(up$changes)) { txt[inner] <- up$txt; changes <- c(changes, up$changes) }
+  }
+  list(txt = txt, changes = unique(changes))
+}
+
 .repro_upgrade_stan_files <- function(root) {
   files <- list.files(root, pattern = "\\.stan$", recursive = TRUE, full.names = TRUE, ignore.case = TRUE)
   rows <- lapply(files, function(f) {

@@ -1108,11 +1108,16 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       # not know: theme_ipsum() asks for "Arial Narrow", "invalid font type"
       # (10.1111/1365-2435.14195; #568). Cairo's device takes any font name.
       '  if (isTRUE(capabilities("cairo"))) options(device = function(...) grDevices::cairo_pdf("Rplots.pdf", onefile = TRUE))',
-      '  assign("View", function(...) invisible(NULL), envir = globalenv())',
-      '  assign("windowsFonts", function(...) invisible(NULL), envir = globalenv())',
-      '  assign("windowsFont", function(...) "sans", envir = globalenv())',
+      # In an attached environment of their own, not the workspace: a script that
+      # starts with rm(list = ls()) removed them, and stopped with "could not find
+      # function windowsFonts" (10.1111/1365-2656.13193; #568)
+      '  stand_ins <- new.env()',
+      '  assign("View", function(...) invisible(NULL), envir = stand_ins)',
+      '  assign("windowsFonts", function(...) invisible(NULL), envir = stand_ins)',
+      '  assign("windowsFont", function(...) "sans", envir = stand_ins)',
       '  for (ask in c("file.choose", "choose.files", "choose.dir", "tk_choose.files", "tk_choose.dir"))',
-      '    assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = globalenv())'
+      '    assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = stand_ins)',
+      '  attach(stand_ins, name = "metacheck:stand_ins", warn.conflicts = FALSE)'
     )
     wrapper_lines <- c(
       capture_preamble,

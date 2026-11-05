@@ -3778,3 +3778,34 @@ test_that(".repro_install_error_lines finds why a package did not install (#568)
   expect_match(.repro_install_error_lines(txt, "ellipsenm"), "rgdal")
   expect_equal(.repro_install_error_lines(txt, "other"), "")
 })
+
+test_that("Stan programs held in R code get the newer syntax, and other R text is left alone (#568)", {
+  r <- c('library(rstan)',
+         'write("data{',
+         '  int<lower=0> N;',
+         '  int<lower=0> y[N];  # counts',
+         '}',
+         'parameters{ real mu; }',
+         'model{ y ~ poisson(exp(mu)); }",',
+         '      "m.stan")',
+         'x <- "a text with a # and model { inside, on one line"',
+         'note <- "not stan:',
+         '  y[N] means something else here',
+         '"')
+  up <- .repro_upgrade_stan_in_r(r)
+  expect_true(length(up$changes) > 0)
+  expect_equal(trimws(up$txt[4]), "array[N] int<lower=0> y;  // counts")
+  expect_equal(up$txt[c(1, 2, 7:12)], r[c(1, 2, 7:12)])      # R code and the other texts unchanged
+  # model_code in single quotes
+  r2 <- c("m <- stan_model(model_code = 'data {", "  int N;", "  real x[N];", "}", "parameters { real b; }",
+          "model { x ~ normal(b, 1); }", "')")
+  up2 <- .repro_upgrade_stan_in_r(r2)
+  expect_equal(trimws(up2$txt[3]), "array[N] real x;")
+  # a distribution with a log link after ~ stays; the old density name in a call is converted
+  st <- .repro_upgrade_stan(c("y ~ poisson_log(y_1);", "z ~ neg_binomial_2_log(eta, phi);",
+                              "target += poisson_log(n, lambda);", "w ~ normal(0, 1);"))
+  expect_equal(st$txt[1:2], c("y ~ poisson_log(y_1);", "z ~ neg_binomial_2_log(eta, phi);"))
+  expect_equal(st$txt[3], "target += poisson_lpmf(n | lambda);")
+  # no Stan, nothing changed
+  expect_equal(.repro_upgrade_stan_in_r(c('a <- "x', 'y"'))$changes, character(0))
+})

@@ -1687,6 +1687,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
          nrow(attr(ml, "materialised") %||% data.frame()), " files.")
     # Stan files in the syntax Stan removed in 2.33 get the newer form (#568)
     stan_rows <- .repro_upgrade_stan_files(sandbox_root)
+    # and Stan programs held in the R code as a quoted text (#568; see
+    # .repro_upgrade_stan_in_r())
+    for (k in seq_along(code_text_list)) {
+      up <- .repro_upgrade_stan_in_r(code_text_list[[k]])
+      if (!length(up$changes)) next
+      code_text_list[[k]] <- up$txt
+      stan_rows <- dplyr::bind_rows(stan_rows, data.frame(
+        file_name = names(code_text_list)[k], change_type = "stan_syntax",
+        detail = paste("Stan in the R code, from before 2.33:", paste(up$changes, collapse = ", "))))
+    }
     # Git LFS pointers replaced by the deposit's copy of the file (#568)
     lfs <- attr(ml, "lfs")
     if (NROW(lfs)) stan_rows <- dplyr::bind_rows(stan_rows, data.frame(
