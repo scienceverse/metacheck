@@ -1,13 +1,3 @@
-#' Read code from files
-#'
-#' @param file_path a file path or url to read in
-#'
-#' @returns a character vector of the file contents
-#' @export
-#'
-#' @examples
-#' file_path <- demofile("json")
-#' text <- code_read(file_path)
 # What bytes are when they are not text, from the first ones: saved R data
 # compressed with gzip, bzip2 or xz, or zero bytes, which text does not have.
 # NA for text, which includes UTF-16 (a byte order mark, or zero bytes in every
@@ -38,6 +28,16 @@
   "binary"
 }
 
+#' Read code from files
+#'
+#' @param file_path a file path or url to read in
+#'
+#' @returns a character vector of the file contents
+#' @export
+#'
+#' @examples
+#' file_path <- demofile("json")
+#' text <- code_read(file_path)
 code_read <- function(file_path) {
   # A genuinely empty (0-byte) local file crashes readr::guess_encoding()
   # itself, deep inside stringi (`if (stringi::stri_enc_isascii(lines))`,
