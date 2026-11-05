@@ -3720,3 +3720,17 @@ test_that("code_read() returns no lines for a file that is not text, but reads U
   expect_true(is.na(.binary_kind_raw(readBin(file.path(d, "nobom.R"), "raw", 100))))
   expect_equal(code_read(file.path(d, "bom.R"))[1], "x <- 1")
 })
+
+test_that(".repro_md5 keeps checksums for the session and sees a changed file (#568)", {
+  d <- withr::local_tempdir()
+  f <- file.path(d, c("a.csv", "b.csv"))
+  writeLines("x", f[1]); writeLines("x", f[2])
+  h1 <- .repro_md5(f)
+  expect_equal(h1[1], h1[2])
+  expect_equal(.repro_md5(f), h1)                      # from the cache
+  Sys.sleep(1.1); writeLines("a longer line", f[2])    # another size and time
+  h2 <- .repro_md5(f)
+  expect_equal(h2[1], h1[1])
+  expect_false(identical(h2[2], h1[2]))
+  expect_true(is.na(.repro_md5(file.path(d, "none.csv"))))
+})

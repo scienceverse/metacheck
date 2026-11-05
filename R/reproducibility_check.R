@@ -613,6 +613,24 @@ repro_dependencies <- function(code_text, lang = "R") {
   args
 }
 
+# MD5 checksums of files, kept for the session by path, size and modification
+# time, so a file compared for several scripts is read once (#568).
+.repro_md5_cache <- new.env(parent = emptyenv())
+.repro_md5 <- function(paths) {
+  info <- file.info(paths, extra_cols = FALSE)
+  key <- paste(paths, info$size, as.numeric(info$mtime), sep = "|")
+  out <- rep(NA_character_, length(paths))
+  known <- vapply(key, exists, logical(1), envir = .repro_md5_cache, inherits = FALSE)
+  if (any(known)) out[known] <- unlist(mget(key[known], envir = .repro_md5_cache), use.names = FALSE)
+  todo <- which(!known & !is.na(info$size))
+  if (length(todo)) {
+    h <- unname(tools::md5sum(paths[todo]))
+    out[todo] <- h
+    for (k in seq_along(todo)) assign(key[todo[k]], h[k], envir = .repro_md5_cache)
+  }
+  out
+}
+
 #' Rewrite a code file's data-file paths to the Psych-DS layout
 #'
 #' A script reads and writes data by relative path (`read_csv("raw/x.csv")`,
@@ -788,8 +806,18 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   plan_source_path <- if (!is.null(structure_df) &&
                           all(c("file_name", "file_location") %in% names(structure_df)))
     .repro_plan_sources(plan, structure_df) else rep(NA_character_, nrow(plan))
-  plan_hash <- ifelse(is.na(plan_source_path), NA_character_,
-                      unname(tools::md5sum(plan_source_path)))
+  # Checksums only of the candidates that are compared, when they are compared,
+  # and kept for the session (see .repro_md5()): all files of the plan were
+  # hashed for every script, which in 10.1111/2041-210X.13798 (12064 files, 281
+  # scripts) was 75% of a 34-minute check (#568).
+  plan_hash <- rep(NA_character_, nrow(plan))
+  hashed <- rep(FALSE, nrow(plan))
+  hash_rows <- function(rows) {
+    todo <- rows[!hashed[rows] & !is.na(plan_source_path[rows])]
+    if (length(todo)) plan_hash[todo] <<- .repro_md5(plan_source_path[todo])
+    hashed[rows] <<- TRUE
+    plan_hash[rows]
+  }
 
   # Collapse candidates that are BYTE-IDENTICAL mirrors of the same real file
   # into one representative before any target/group comparison runs — a
@@ -799,7 +827,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   # not supplied, or its source unreadable) is never collapsed with anything
   # — it keeps comparing exactly as before.
   collapse_by_hash <- function(cand) {
-    h <- plan_hash[cand]
+    if (length(cand) < 2) return(cand)
+    h <- hash_rows(cand)
     has_hash <- !is.na(h)
     if (sum(has_hash) < 2) return(cand)   # nothing to collapse
     keep <- cand[!has_hash]                # hash-less candidates: untouched

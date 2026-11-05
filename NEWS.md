@@ -1,5 +1,7 @@
 # metacheck 0.4.2
 
+* `repro_rewrite_paths()` computes file checksums only for the candidate files it compares, when it compares them, and keeps them for the session (#568). It computed a checksum of every file of the plan for every script: in 10.1111/2041-210X.13798 (12064 files, 281 scripts) that was 75% of a 34-minute check in which no script ran.
+
 * `code_read()`, and with it `code_check` and `reproducibility_check`, returns no lines for a file that is not text, such as R data saved under a name ending in `.R`, with an attribute `binary` saying what it is (#568). 10.1111/2041-210X.13967's `Training_Dataset_1.r` is 109 MB of compressed R data: `code_check` read it as code, and removing its "comments" took more than 35 minutes; it now takes a second. Text in UTF-16 is still read.
 
 * Downloads accept an empty answer for a file the repository lists with a size of 0, instead of reporting it as a failed download (#568). In 10.1111/2041-210X.13798, 55 of a repository's 64 empty files were reported as failed with "empty response".
