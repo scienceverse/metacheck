@@ -22,4 +22,11 @@ unambiguously a Qualtrics export -- these exact names essentially never
 co-occur outside Qualtrics. The \code{ResponseId} column (values like \code{R_xxxxx})
 or a leftover \code{ImportId} JSON header cell is treated as corroborating.
 }
+\examples{
+df <- data.frame(StartDate = "2024-01-01 10:00", EndDate = "2024-01-01 10:05",
+                 Status = 0, IPAddress = "0.0.0.0", Progress = 100,
+                 ResponseId = "R_1", Q1 = 3)
+data_check_is_qualtrics(df)
+data_check_is_qualtrics(data.frame(id = 1:3, rt = c(512, 640, 498)))
+}
 \keyword{internal}

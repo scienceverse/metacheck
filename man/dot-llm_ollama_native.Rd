@@ -33,6 +33,10 @@ stuck/overloaded local Ollama server otherwise blocks here with no log
 output for as long as curl is willing to wait -- this turns that into a
 visible, retriable per-call failure instead.}
 }
+\value{
+the model's answer (character), without leading or trailing
+white space
+}
 \description{
 ellmer routes ollama via the OpenAI-compatible /v1/ endpoint, which ignores
 think=FALSE. This helper calls /api/chat directly where think is honoured.

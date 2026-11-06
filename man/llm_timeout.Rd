@@ -25,7 +25,7 @@ error handling), so a large batch run fails fast and retries instead of
 hanging.
 }
 \examples{
-\dontrun{
+old <- llm_timeout()
 llm_timeout(120)
-}
+llm_timeout(old)
 }

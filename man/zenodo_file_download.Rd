@@ -6,7 +6,7 @@
 \usage{
 zenodo_file_download(
   zenodo_id,
-  download_to = ".",
+  download_to,
   max_file_size = 10,
   max_download_size = 100,
   unzip_types = NULL,
@@ -16,7 +16,8 @@ zenodo_file_download(
 \arguments{
 \item{zenodo_id}{an Zenodo ID or URL}
 
-\item{download_to}{path to download to}
+\item{download_to}{path to download to; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{max_file_size}{maximum file size to download (in MB) - set to NULL or Inf for no restrictions}
 
@@ -53,10 +54,11 @@ then costs the three data files. When the archive cannot be read that way
 before, so this never loses a file -- it only avoids transferring one.
 }
 \examples{
-\dontrun{
-  zenodo_file_download("2591593")
-
-  # take only the data files out of any zip in the record
-  zenodo_file_download("2591593", unzip_types = "data")
+\donttest{
+if (online("zenodo.org")) {
+  dl <- zenodo_file_download("2591593",
+                             download_to = file.path(tempdir(), "zenodo"),
+                             max_download_size = 10)
+}
 }
 }

@@ -22,8 +22,6 @@ document itself made clickable. Same two-tier approach \code{github_links()}
 uses for GitHub.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-rbox_links(psychsci)
-}
+paper <- demopaper()
+rbox_links(paper)
 }

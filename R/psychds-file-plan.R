@@ -48,6 +48,11 @@
 #'   data.frame when `structure_df` is NULL or has no rows.
 #' @export
 #' @keywords internal
+#' @examples
+#' paths <- list.files(demofile("repo"), recursive = TRUE)
+#' structure_df <- data.frame(file_name = basename(paths), file_path = paths,
+#'                            data_type = data_classify_files(basename(paths)))
+#' psychds_file_plan(structure_df)$table[, c("file_name", "status", "target_path")]
 psychds_file_plan <- function(structure_df, group_no_evidence = FALSE) {
 
   group_no_evidence <- isTRUE(group_no_evidence)

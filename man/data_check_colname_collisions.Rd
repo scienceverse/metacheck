@@ -29,4 +29,9 @@ letter or digit becomes \verb{_}) is the one the codebook package uses for its
 section ids, where collisions surface as pandoc "Duplicate identifier"
 warnings.
 }
+\examples{
+# "score 1" and "score_1" both become "score_1" when special characters
+# are replaced
+data_check_colname_collisions(c("score 1", "score_1", "age"))
+}
 \keyword{internal}

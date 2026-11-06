@@ -21,8 +21,6 @@ table only ever contains links the source document itself made clickable.
 Same two-tier approach \code{zenodo_links()} uses.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-mendeley_links(psychsci)
-}
+paper <- demopaper()
+mendeley_links(paper)
 }

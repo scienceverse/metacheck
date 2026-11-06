@@ -76,11 +76,11 @@ a call would need the network (see \code{.repro_neutralise_env_calls()}).
 \code{FALSE} (default) leaves them.}
 
 \item{run_dirs}{optional folder each script runs from, from \code{root}
-(\code{\link[=.repro_run_folders]{.repro_run_folders()}}), which becomes its \code{run_dir}. \code{NULL} (default) runs
+(\code{.repro_run_folders()}), which becomes its \code{run_dir}. \code{NULL} (default) runs
 every script from \code{root}.}
 
 \item{prepend}{optional named list, by file name: lines to put at the top of a
-script, such as loading another script first (\code{\link[=.repro_run_after_lines]{.repro_run_after_lines()}}).}
+script, such as loading another script first (\code{.repro_run_after_lines()}).}
 }
 \value{
 a data frame with \code{file_name}, \code{script_path} (absolute path written),
@@ -123,4 +123,13 @@ spirit as the path rewriting: it makes the author's script runnable in its new
 location without changing the analysis. A script that only reproduces after a
 \code{setwd()} is removed is reported as "reproducible after ignoring a \code{setwd()}
 that should not have been in the code and needs to be fixed".
+}
+\examples{
+root <- file.path(tempdir(), "scripts_demo")
+plan <- data.frame(file_name = c("analysis.R", "x.csv"),
+                   target_path = c("analysis/analysis.R", "data/study-x_data.csv"))
+code <- list(analysis.R = 'a <- read.csv("x.csv")')
+rw <- list(analysis.R = repro_rewrite_paths(code$analysis.R, "analysis.R", plan))
+out <- repro_write_scripts(code, rw, plan, root)
+readLines(out$script_path)
 }

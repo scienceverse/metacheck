@@ -69,9 +69,11 @@ doi_valid_format <- function(doi) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' doi_resolves("10.1038/nphys1170") # Expected: TRUE
-#' doi_resolves("10.1234/invalid.doi") # Expected: FALSE
+#' \donttest{
+#' if (online("doi.org")) {
+#'   doi_resolves("10.1038/nphys1170") # Expected: TRUE
+#'   doi_resolves("10.1234/invalid.doi") # Expected: FALSE
+#' }
 #' }
 doi_resolves <- function(doi, timeout = 10) {
   doi <- doi_clean(doi)
@@ -126,8 +128,10 @@ doi_resolves <- function(doi, timeout = 10) {
 #' @export
 #' @examples
 #' doi <- "10.7717/peerj.4375"
-#' \dontrun{
-#' doi_info <- doi_lookup(doi)
+#' \donttest{
+#' if (online("doi.org")) {
+#'   doi_info <- doi_lookup(doi)
+#' }
 #' }
 doi_lookup <- function(doi) {
   if (length(doi) == 0) {

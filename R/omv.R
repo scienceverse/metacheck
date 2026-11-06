@@ -47,6 +47,10 @@
 #'   recoverable, the reproducible R syntax), `format` (`"jamovi"`), and
 #'   `data_file_path` (`NA`; jamovi does not record the original import path).
 #' @export
+#' @examples
+#' omv <- system.file("extdata", "sample.omv", package = "metacheck")
+#' res <- import_omv(omv)
+#' head(res$data)
 import_omv <- function(path) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.omv$", path, ignore.case = TRUE))
@@ -232,16 +236,25 @@ import_omv <- function(path) {
 #' it.
 #'
 #' @param path path to a `.omv` file
-#' @param out path to write the HTML file to; defaults to `path` with its
-#'   extension replaced by `.html`, written alongside the source file
+#' @param out path to write the HTML file to. Without it, the file is named
+#'   after `path` with the extension `.html` and written to the R session's
+#'   temporary folder, which R removes when the session ends (CRAN does not
+#'   allow writing elsewhere unless you ask for it); a message says where.
 #'
 #' @returns the path written to, invisibly
 #' @export
+#' @examples
+#' omv <- system.file("extdata", "sample.omv", package = "metacheck")
+#' html <- export_omv_html(omv, file.path(tempdir(), "sample_omv.html"))
+#' file.exists(html)
 export_omv_html <- function(path, out = NULL) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.omv$", path, ignore.case = TRUE))
     stop("Not a .omv file: ", path)
-  if (is.null(out)) out <- sub("\\.omv$", ".html", path, ignore.case = TRUE)
+  if (is.null(out)) {
+    out <- file.path(tempdir(), sub("\\.omv$", ".html", basename(path), ignore.case = TRUE))
+    message("Written to the temporary folder, which R removes when it closes: ", out)
+  }
 
   tmp <- tempfile("omvexport_")
   dir.create(tmp)

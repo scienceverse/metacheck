@@ -16,8 +16,8 @@ the current key (character; \code{""} when none is set)
 OpenAlex works without a key, with a budget of US$0.10 per day: about
 1,000 searches, while looking up a work by its DOI or OpenAlex ID is free.
 A free key raises the budget to US$1 per day. Make one by signing up at
-\url{https://openalex.org/signup} and copying the key from
-\url{https://openalex.org/settings/api-key}.
+\verb{https://openalex.org/signup} and copying the key from
+\verb{https://openalex.org/settings/api-key}.
 }
 \details{
 Store it as the \code{OPENALEX_API_KEY} environment variable so it is read every

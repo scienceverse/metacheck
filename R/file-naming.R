@@ -295,6 +295,8 @@
 #' all, for the same reason: metacheck's classifiers never depend on them.
 #' @export
 #' @keywords internal
+#' @examples
+#' check_file_naming(c("data final (2).csv", "analysis.R", "My Data.xlsx"))
 check_file_naming <- function(file_name, file_path = file_name,
                               data_type = NA_character_) {
   n <- length(file_name)

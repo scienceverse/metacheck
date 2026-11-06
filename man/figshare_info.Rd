@@ -36,7 +36,9 @@ a data frame of information
 Retrieve info from Figshare by URL
 }
 \examples{
-\dontrun{
-  figshare_info("https://doi.org/10.6084/m9.figshare.18093368.v1")
+\donttest{
+if (online("api.figshare.com")) {
+    figshare_info("https://doi.org/10.6084/m9.figshare.18093368.v1")
+}
 }
 }

@@ -44,3 +44,8 @@ row per (analysis, table, result-row, statistic) cell, carrying the STATO
 typing. This is the form stored in the scienceverse SQLite database, and the
 basis for later matching of extracted results against the manuscript.
 }
+\examples{
+out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+long <- stat_results_long(read_r_output(out))
+long[, c("statistic", "stato_label", "value")]
+}

@@ -14,3 +14,6 @@ Deletes all cached zip listings (see \code{\link[=zip_peek]{zip_peek()}}'s \code
 Safe at any time -- a cleared entry is simply re-peeked over HTTP the next
 time it is needed.
 }
+\examples{
+zip_peek_cache_clear()
+}

@@ -34,6 +34,11 @@
 #'
 #' @return invisibly, the path to the virtual environment
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Python 3.12 or later; installs RegCheck's Python packages
+#' regcheck_setup_local()
+#' }
 regcheck_setup_local <- function(python = NULL) {
   app_dir <- .regcheck_app_dir()
   if (!nzchar(app_dir)) {
@@ -124,6 +129,12 @@ regcheck_setup_local <- function(python = NULL) {
 #'
 #' @return invisibly, the process object
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker (or Python, after regcheck_setup_local()) and Ollama
+#' regcheck_start_local(method = "docker")
+#' regcheck_stop_local()
+#' }
 regcheck_start_local <- function(method = c("docker", "python"),
                                  model  = NULL,
                                  port   = 8000) {
@@ -252,6 +263,11 @@ regcheck_start_local <- function(method = c("docker", "python"),
 #'
 #' @return invisibly NULL
 #' @export
+#' @examples
+#' \dontrun{
+#' regcheck_start_local(method = "docker")
+#' regcheck_stop_local()
+#' }
 regcheck_stop_local <- function() {
   proc <- tryCatch(get(".regcheck_proc", envir = .regcheckEnv),
                    error = function(e) NULL)

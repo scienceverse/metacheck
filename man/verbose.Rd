@@ -21,4 +21,3 @@ session. Defaults to \code{TRUE} when never set.
 \examples{
 verbose()
 }
-\keyword{internal}

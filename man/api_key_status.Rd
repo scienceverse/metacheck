@@ -22,12 +22,10 @@ show the \code{message} to visitors so they can enter their own key.
 Problems are recorded in a file in metacheck's state folder, shared by
 every R session of the same user on the computer. Its location is the
 \code{metacheck.state.dir} option, else the \code{METACHECK_STATE_DIR} environment
-variable, else a folder \code{state} in \code{rappdirs::user_data_dir("metacheck", "scienceverse")}.
+variable, else a folder \code{state} in \code{tools::R_user_dir("metacheck", "data")}.
 }
 \examples{
-\dontrun{
-api_key_status()
-}
+api_key_status()[, c("service", "key", "problem")]
 }
 \seealso{
 \code{\link[=api_keys_use]{api_keys_use()}}

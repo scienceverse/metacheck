@@ -1,12 +1,19 @@
 #' Convert a PDF to Grobid XML
 #'
-#' This function uses a GDPR-compliant public grobid server maintained by Eindhoven Technical University. You can set up your own local grobid server following instructions from <https://grobid.readthedocs.io/> and set the argument `api_url` to its path (probably <http://localhost:8070>). See <https://github.com/grobidOrg/grobid#demo> for other publicly available servers (we cannot guarantee their privay).
+#' This function uses a GDPR-compliant public grobid server maintained by Eindhoven Technical University. You can set up your own local grobid server following instructions from <https://grobid.readthedocs.io/> and set the argument `api_url` to its path (probably `http://localhost:8070`). See <https://github.com/grobidOrg/grobid#demo> for other publicly available servers (we cannot guarantee their privay).
 #'
 #' Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see <https://grobid.readthedocs.io/en/latest/Consolidation/>). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep. We recommend you leave these defaults at 0 and use crossref_loookup = TRUE when converting from grobid XML to bibr JSON format with the convert() function.
 #'
 #' @param file_path path to the PDF, a vector of paths, or a directory name that contains PDFs
-#' @param save_path directory or file path to save to; set to NULL to return the XML directly
-#' @param api_url the URL to the grobid server
+#' @param save_path directory or file path to save to; set to NULL to return the XML
+#'   directly (one file only). There is no default, because CRAN does not allow
+#'   writing into the working directory unless you ask for it
+#' @param api_url the URL to the grobid server. When it is not given, the first
+#'   of these that answers is used: the TU/e server, a GROBID on this computer
+#'   (`http://localhost:8070`), then the other GROBID servers in the online list
+#'   at `https://www.scienceverse.org/metacheck/convert.json`. (metacheck's
+#'   server on SURF is not among them: it returns the paper, not GROBID's XML;
+#'   [convert()] tries it first.)
 #' @param start_page the first page of the PDF to read (defaults to -1 to read all pages)
 #' @param end_page the last page of the PDF to read (defaults to -1 to read all pages)
 #' @param consolidate_citations whether to fix/enhance citations
@@ -16,7 +23,16 @@
 #' @return XML object
 #' @export
 #'
-convert_grobid <- function(file_path, save_path = ".",
+#' @examples
+#' \donttest{
+#' if (online("grobid.hti.ieis.tue.nl")) {
+#'   # the server can be busy or down; then this gives a message instead
+#'   xml <- tryCatch(convert_grobid(demofile("pdf"), tempdir()),
+#'                   error = function(e) message(conditionMessage(e)))
+#'   if (!is.null(xml)) paper <- read(xml)
+#' }
+#' }
+convert_grobid <- function(file_path, save_path,
                            api_url = "https://grobid.hti.ieis.tue.nl",
                            start_page = -1,
                            end_page = -1,
@@ -26,13 +42,20 @@ convert_grobid <- function(file_path, save_path = ".",
   if (!all(file.exists(file_path))) {
     stop("Files do not exist")
   }
+  # no server given: the TU/e server, or else the first GROBID server of the
+  # online list that answers (see .convert_servers())
+  if (missing(api_url)) api_url <- .grobid_first_alive(api_url)
 
   # test if the server is up
   .grobid_isalive(api_url)
 
+  # before any file is sent to the server: there is no default folder
+  force(save_path)
+
   # handle list of files or a directory----
   if (length(file_path) > 1) {
-    if (is.null(save_path)) save_path <- "."
+    if (is.null(save_path))
+      stop("Converting several files needs a folder in `save_path`.", call. = FALSE)
     if (length(save_path) == 1) {
       dir.create(save_path, FALSE)
       save_path <- rep_len(save_path, length(file_path))
@@ -165,7 +188,9 @@ convert_grobid <- function(file_path, save_path = ".",
 #' Convert Grobid TEI XML file to bibr format
 #'
 #' @param xml_path the path to the XML file
-#' @param save_path directory or file path to save to; set to NULL to return a paper object
+#' @param save_path directory or file path to save to; set to NULL to return a paper
+#'   object. There is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param crossref_lookup whether to look up references in crossref
 #' @param schema_version NULL (the default) converts as before; "12.0" makes
 #'   a paper in bibr export schema 12.x form and saves a bibr 12.0 file (see
@@ -175,13 +200,18 @@ convert_grobid <- function(file_path, save_path = ".",
 #'
 #' @returns a paper object
 #' @export
+#' @examples
+#' # NULL returns the paper instead of writing a JSON file
+#' paper <- grobid_to_bibr(demofile("xml"), NULL)
+#' paper$info$title
 grobid_to_bibr <- function(xml_path,
-                           save_path = ".",
+                           save_path,
                            crossref_lookup = FALSE,
                            schema_version = NULL) {
   if (!is.null(schema_version) && !identical(schema_version, "12.0")) {
     stop("schema_version must be NULL or \"12.0\"", call. = FALSE)
   }
+  force(save_path)   # there is no default folder
 
   # handle directory or multiple files ----
   if (length(xml_path) == 1 && dir.exists(xml_path)) {
@@ -306,6 +336,9 @@ grobid_to_bibr <- function(xml_path,
 #' @returns a paper object
 #' @export
 #' @keywords internal
+#' @examples
+#' paper <- .grobid_to_bibr(demofile("xml"))
+#' paper$info$title
 .grobid_to_bibr <- function(xml_path, pb = NULL, schema_version = NULL) {
   header <- section_type <- NULL
 
@@ -1022,7 +1055,7 @@ grobid_to_bibr <- function(xml_path,
 #' span SEVERAL leading rows (a super-header naming a group of columns, a
 #' sub-header, then the actual column names — confirmed against a real corpus
 #' paper's regression table: "Association with mean reappraisal" / "" /
-#' "β01 (SE)", three leading rows before any data). Treating only the first
+#' "\eqn{\beta}{beta}01 (SE)", three leading rows before any data). Treating only the first
 #' `<row>` as the header (as an earlier version of this function did) reads
 #' the REAL column names as if they were a data row, and scans genuine data as
 #' if it were headers. The leading rows are instead scanned from the top:
@@ -1032,7 +1065,7 @@ grobid_to_bibr <- function(xml_path,
 #' mirroring `.stat_table_parse()`'s own "last distinct-label row is the real
 #' header" heuristic, adapted for Grobid's lack of `<th>`. Folded header rows
 #' are joined per column with " / " (so "Association with" / "mean
-#' reappraisal" / "β01 (SE)" becomes one combined column name), which keeps
+#' reappraisal" / "\eqn{\beta}{beta}01 (SE)" becomes one combined column name), which keeps
 #' the super-header's grouping information rather than discarding it.
 #'
 #' Ragged rows (a row with fewer/more cells than the header — GroBid's
@@ -1143,7 +1176,6 @@ grobid_to_bibr <- function(xml_path,
 #' @param ref the biblStruct xml object
 #'
 #' @returns a bibentry
-#' @export
 #' @keywords internal
 .xml2bib <- function(ref) {
   b <- list(bib_type = "misc")

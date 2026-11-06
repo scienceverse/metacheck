@@ -118,8 +118,8 @@
   rename <- c(d_z = "d", d_rm = "d", d_av = "d", d_b = "d", d_d = "d",
               d_r = "d", cohens_d = "d", hedges_g = "Hedges' g",
               glass_delta = "Glass' delta", glass_delta_adjusted = "Glass' delta",
-              eta2 = "η²", eta2_partial = "partial eta squared",
-              omega2 = "ω²", r = "r", odds_ratio = "odds ratio",
+              eta2 = "\u03B7\u00B2", eta2_partial = "partial eta squared",
+              omega2 = "\u03C9\u00B2", r = "r", odds_ratio = "odds ratio",
               ci_low = "conf.low", ci_high = "conf.high")
   cn <- names(df)
   is_num <- vapply(df, is.numeric, logical(1)) & tolower(cn) != "ci"

@@ -49,4 +49,7 @@ path past Windows' 260-character limit -- the one case where a name makes
 rendering impossible; that budget depends on the output path, so it is
 computed there, not here.)
 }
-\keyword{internal}
+\examples{
+data_check_colname("this/is:an*illegal|name")$problem
+data_check_colname("reaction_time")$problem
+}

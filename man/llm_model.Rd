@@ -9,6 +9,13 @@ llm_model(model = NULL)
 \arguments{
 \item{model}{the name of the model}
 }
+\value{
+the name of the default model, or \code{NULL} when none is set;
+invisibly when setting it
+}
 \description{
 Use \code{llm_model_list()} to get a list of available models
+}
+\examples{
+llm_model()
 }

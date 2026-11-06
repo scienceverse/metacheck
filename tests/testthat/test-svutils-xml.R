@@ -1,5 +1,5 @@
 test_that(".xml_find_text", {
-  expect_true(is.function(metacheck::.xml_find_text))
+  expect_true(is.function(metacheck:::.xml_find_text))
   expect_no_error(helplist <- help(.xml_find_text, metacheck))
 
   expect_error(.xml_find_text("string"))
@@ -17,7 +17,7 @@ test_that(".xml_find_text", {
 })
 
 test_that(".xml_find1_text", {
-  expect_true(is.function(metacheck::.xml_find1_text))
+  expect_true(is.function(metacheck:::.xml_find1_text))
   expect_no_error(helplist <- help(.xml_find1_text, metacheck))
 
   expect_error(.xml_find1_text("string"))
@@ -34,7 +34,7 @@ test_that(".xml_find1_text", {
 })
 
 test_that(".xml_read_grobid", {
-  expect_true(is.function(metacheck::.xml_read_grobid))
+  expect_true(is.function(metacheck:::.xml_read_grobid))
   expect_no_error(helplist <- help(.xml_read_grobid, metacheck))
 
   expect_error(.xml_read_grobid("bad_arg"))

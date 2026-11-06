@@ -17,4 +17,6 @@ All values are NA (or, for text, blank/whitespace-only). Such a column
 usually means a variable that never recorded anything or an export
 artifact, and it is invisible to \code{\link[=data_check_constant]{data_check_constant()}} which strips NAs.
 }
-\keyword{internal}
+\examples{
+data_check_empty(c(NA, NA, NA))$message
+}

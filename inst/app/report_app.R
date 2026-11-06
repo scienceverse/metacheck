@@ -57,7 +57,7 @@ source("tabs/options.R")
 # in the same folder, so the two can be reported together.
 # Where the file goes. On a Shiny Server the app runs as the `shiny` user,
 # whose home directory may not be writable (or set at all), and
-# rappdirs::user_data_dir() resolves to ~/.local/share/metacheck there. So the
+# tools::R_user_dir() resolves to ~/.local/share/R/metacheck there. So the
 # location can be set explicitly with the METACHECK_USAGE_DIR environment
 # variable in the app's Renviron, and the default is only used when it can
 # actually be written to. Returns "" when there is nowhere to write, and
@@ -65,7 +65,7 @@ source("tabs/options.R")
 usage_file <- function(filename = "report_app_usage.csv") {
   dir <- Sys.getenv("METACHECK_USAGE_DIR")
   if (!nzchar(dir)) {
-    dir <- rappdirs::user_data_dir("metacheck", "scienceverse")
+    dir <- tools::R_user_dir("metacheck", "data")
   }
   ok <- tryCatch({
     dir.create(dir, showWarnings = FALSE, recursive = TRUE)
@@ -383,7 +383,7 @@ server <- function(input, output, session) {
       'library(metacheck)\n\n',
       llm_code,
       '# convert PDF to JSON and read in\n',
-      sprintf('convert("%s", method = "grobid"%s%s)\n',
+      sprintf('convert("%s", save_path = ".", method = "grobid"%s%s)\n',
               fname, crossref_arg, grobid_server_arg),
       'paper <- read("', json_name, '")\n\n',
       '# choose modules and run the report\n',

@@ -44,6 +44,11 @@
 #'   otherwise a human-readable reason, e.g. Docker not installed, the
 #'   daemon not running, or the daemon too busy to answer)
 #' @export
+#' @examples
+#' \donttest{
+#' # can wait up to 105 seconds for a busy Docker
+#' repro_docker_available()$ok
+#' }
 repro_docker_available <- function() {
   bin <- tryCatch(Sys.which("docker"), error = function(e) "")
   if (!nzchar(bin))
@@ -164,8 +169,8 @@ repro_docker_available <- function() {
   if (!length(l) || is.na(pkg) || !nzchar(pkg)) return("")
   q <- gsub("([.|()\\^{}+$*?\\[\\]\\\\])", "\\\\\\1", pkg)
   # "... for package 'pkg'": the package that failed, not one it needs
-  named <- grep(paste0("^ERROR: .*package ['‘\"]", q, "['’\"]"), l, value = TRUE, perl = TRUE)
-  start <- grep(paste0("installing \\*source\\* package ['‘\"]", q, "['’\"]"), l, perl = TRUE)
+  named <- grep(paste0("^ERROR: .*package ['\u2018\"]", q, "['\u2019\"]"), l, value = TRUE, perl = TRUE)
+  start <- grep(paste0("installing \\*source\\* package ['\u2018\"]", q, "['\u2019\"]"), l, perl = TRUE)
   own <- character(0)
   if (length(start)) {
     s <- start[length(start)]
@@ -377,7 +382,7 @@ repro_docker_available <- function() {
 #'
 #' A second pass after every package has had its turn, since one time limit
 #' covers the whole install: first Bioconductor, because the fixed list of
-#' [.repro_bioc_packages()] misses many names and some packages moved there,
+#' `.repro_bioc_packages()` misses many names and some packages moved there,
 #' keeping only an old copy in the CRAN Archive; then the latest version in the
 #' CRAN Archive, as [.repro_cran_archive_install()] does outside Docker. Two rounds,
 #' because a package can need another archived one (#568, items 9 and 11).
@@ -647,6 +652,12 @@ repro_docker_available <- function() {
 #'   do not need to branch on which backend ran. A row with a `version` is
 #'   treated as there (see [repro_install_deps()]).
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' deps <- repro_dependencies("library(pwr)")
+#' repro_install_deps_docker(deps, file.path(tempdir(), "lib"))
+#' }
 repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-ver:latest",
                                       timeout = 600) {
   empty <- data.frame(package = character(0), source = character(0),
@@ -1007,6 +1018,15 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #'   stopped (outcome `download_too_large`) when the scripts together download
 #'   more than the total limit, or a file larger than the limit per file appears.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' root <- file.path(tempdir(), "run_demo")
+#' plan <- data.frame(file_name = "analysis.R", target_path = "analysis/analysis.R")
+#' code <- list(analysis.R = c("x <- c(1, 2, 3)", "print(mean(x))"))
+#' run_tbl <- repro_write_scripts(code, list(), plan, root)
+#' repro_run_scripts_docker(run_tbl, order = "analysis.R", sandbox_root = root)
+#' }
 repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
                                      image = "rocker/r-ver:latest", timeout = 600,
                                      skip = character(0), parses = NULL,

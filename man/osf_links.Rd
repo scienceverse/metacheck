@@ -22,8 +22,6 @@ clickable, so a repository this important cannot rely on that alone. Same
 two-tier approach \code{github_links()} already uses for GitHub.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-osf_links(psychsci)
-}
+paper <- demopaper()
+osf_links(paper)
 }

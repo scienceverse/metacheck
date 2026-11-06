@@ -38,4 +38,3 @@ applies format-locked extension overrides.
 \examples{
 data_classify_files(c("data.csv", "analysis.R", "README.md", "codebook.xlsx"))
 }
-\keyword{internal}

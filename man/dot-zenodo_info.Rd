@@ -17,4 +17,11 @@ a data frame of information
 \description{
 Retrieve info from Zenodo by ID
 }
+\examples{
+\donttest{
+if (online("zenodo.org")) {
+  .zenodo_info("https://doi.org/10.5281/zenodo.18648142")
+}
+}
+}
 \keyword{internal}

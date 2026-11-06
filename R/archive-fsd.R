@@ -54,10 +54,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' fsd_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' fsd_links(paper)
 fsd_links <- function(paper) {
   href <- text <- NULL
 
@@ -104,8 +102,10 @@ fsd_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#' fsd_info("https://services.fsd.tuni.fi/catalogue/FSD2653")
+#' \donttest{
+#' if (online("services.fsd.tuni.fi")) {
+#'   fsd_info("https://services.fsd.tuni.fi/catalogue/FSD2653")
+#' }
 #' }
 fsd_info <- function(fsd_url, id_col = 1, pb = NULL, cache = FALSE) {
   # The bare domain does not resolve at all (confirmed live: fsd.tuni.fi
@@ -197,7 +197,6 @@ fsd_info <- function(fsd_url, id_col = 1, pb = NULL, cache = FALSE) {
 #' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
-#' @export
 #' @keywords internal
 .fsd_info <- function(fsd_url, pb = NULL) {
   if (is.null(pb)) {

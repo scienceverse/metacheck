@@ -12,3 +12,6 @@ the number of cached listings removed, invisibly
 \description{
 Clear the session cache of OSF listings
 }
+\examples{
+osf_cache_clear()
+}

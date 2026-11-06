@@ -6,7 +6,7 @@
 \usage{
 reshare_file_download(
   reshare_id,
-  download_to = ".",
+  download_to,
   max_file_size = 10,
   max_download_size = 100,
   unzip_types = NULL,
@@ -16,7 +16,8 @@ reshare_file_download(
 \arguments{
 \item{reshare_id}{a ReShare eprint ID, URL, or DOI}
 
-\item{download_to}{path to download to}
+\item{download_to}{path to download to; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{max_file_size}{maximum file size to download (in MB) - set to NULL or
 Inf for no restrictions}
@@ -61,10 +62,11 @@ verbose mode, and included in the returned data frame with the \code{downloaded}
 column value set to FALSE.
 }
 \examples{
-\dontrun{
-  reshare_file_download("854001")
-
-  # take only the data files out of any zip in the deposit
-  reshare_file_download("854001", unzip_types = "data")
+\donttest{
+if (online("reshare.ukdataservice.ac.uk")) {
+  dl <- reshare_file_download("854001",
+                              download_to = file.path(tempdir(), "reshare"),
+                              max_download_size = 10)
+}
 }
 }

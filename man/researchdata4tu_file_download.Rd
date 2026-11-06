@@ -6,7 +6,7 @@
 \usage{
 researchdata4tu_file_download(
   researchdata4tu_id,
-  download_to = ".",
+  download_to,
   max_file_size = 10,
   max_download_size = 100,
   unzip_types = NULL,
@@ -16,7 +16,8 @@ researchdata4tu_file_download(
 \arguments{
 \item{researchdata4tu_id}{a 4TU.ResearchData article ID, uuid, URL, or DOI}
 
-\item{download_to}{path to download to}
+\item{download_to}{path to download to; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{max_file_size}{maximum file size to download (in MB) - set to NULL or
 Inf for no restrictions}
@@ -52,10 +53,11 @@ Uses \code{\link[=researchdata4tu_pat]{researchdata4tu_pat()}}, not \code{\link[
 (see that function's documentation for why the two are separate).
 }
 \examples{
-\dontrun{
-  researchdata4tu_file_download("16766929")
-
-  # take only the data files out of any zip in the article
-  researchdata4tu_file_download("16766929", unzip_types = "data")
+\donttest{
+if (online("data.4tu.nl")) {
+  dl <- researchdata4tu_file_download("16766929",
+                                      download_to = file.path(tempdir(), "4tu"),
+                                      max_download_size = 10)
+}
 }
 }

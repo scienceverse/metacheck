@@ -37,8 +37,10 @@ of the box's files; from the API it also has each file's section, type,
 description, extension, size and MD5 checksum.
 }
 \examples{
-\dontrun{
-# get info on one box
-rbox_info("https://researchbox.org/801")
+\donttest{
+if (online("researchbox.org")) {
+  # get info on one box
+  rbox_info("https://researchbox.org/801")
+}
 }
 }

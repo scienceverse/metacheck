@@ -4,19 +4,14 @@
 \alias{FAIR_repo}
 \title{Convert a research folder into a clean, FAIR copy}
 \usage{
-FAIR_repo(
-  path,
-  output_dir = NULL,
-  paper = NULL,
-  overwrite = FALSE,
-  execute = FALSE
-)
+FAIR_repo(path, output_dir, paper = NULL, overwrite = FALSE, execute = FALSE)
 }
 \arguments{
 \item{path}{the folder to convert}
 
-\item{output_dir}{the folder to write into; created if needed. Defaults to
-the folder's own name with \verb{_FAIR} appended, in the working directory.}
+\item{output_dir}{the folder to write into; created if needed. There is no
+default, because CRAN does not allow writing into the working directory
+unless you ask for it.}
 
 \item{paper}{optionally, the paper that uses these files (see \code{\link[=read]{read()}}),
 for its title, authors, DOI, CRediT roles and funding. Its links are not
@@ -125,11 +120,11 @@ places on this computer the files are in;
 }
 }
 \examples{
-\dontrun{
-# convert a folder; the copy is written to "my_study_FAIR"
-FAIR_repo("my_study")
-
-# with the paper, for its title, authors and funding
-FAIR_repo("my_study", paper = read("my_study_paper.xml"))
+# convert the demo repository bundled with metacheck, with its paper for
+# the title, authors and funding; the copy is written to a temporary folder
+\donttest{
+out <- file.path(tempdir(), "stroop_effect_paper_FAIR")
+FAIR_repo(demofile("repo"), output_dir = out,
+          paper = demopaper("stroop_effect"))
 }
 }

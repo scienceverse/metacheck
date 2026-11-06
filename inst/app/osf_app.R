@@ -88,7 +88,7 @@ dir_writable <- function(path) {
 # so development and testing do not inflate the figures.
 # Where the file goes. On a Shiny Server the app runs as the `shiny` user,
 # whose home directory may not be writable (or set at all), and
-# rappdirs::user_data_dir() resolves to ~/.local/share/metacheck there. So the
+# tools::R_user_dir() resolves to ~/.local/share/R/metacheck there. So the
 # location can be set explicitly with the METACHECK_USAGE_DIR environment
 # variable in the app's Renviron, and the default is only used when it can
 # actually be written to. Returns "" when there is nowhere to write, and
@@ -96,7 +96,7 @@ dir_writable <- function(path) {
 usage_file <- function(filename = "osf_app_usage.csv") {
   dir <- Sys.getenv("METACHECK_USAGE_DIR")
   if (!nzchar(dir)) {
-    dir <- rappdirs::user_data_dir("metacheck", "scienceverse")
+    dir <- tools::R_user_dir("metacheck", "data")
   }
   ok <- tryCatch({
     dir.create(dir, showWarnings = FALSE, recursive = TRUE)

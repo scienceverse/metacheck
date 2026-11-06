@@ -20,8 +20,6 @@ indistinguishable from an arbitrary institutional website (see the file
 header comment).
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-gitlab_links(psychsci)
-}
+paper <- demopaper()
+gitlab_links(paper)
 }

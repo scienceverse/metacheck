@@ -99,7 +99,7 @@ test_that("METACHECK_MODULES_DIR", {
   # unset: the user data folder
   withr::local_envvar(METACHECK_MODULES_DIR = NA)
   expect_equal(metacheck:::.modules_dir(),
-               file.path(rappdirs::user_data_dir("metacheck", "scienceverse"),
+               file.path(tools::R_user_dir("metacheck", "data"),
                          "modules"))
 })
 

@@ -40,3 +40,10 @@ into \code{lib_dir} via a bind mount — so the run phase
 (\code{\link[=repro_run_scripts_py_docker]{repro_run_scripts_py_docker()}}), which mounts the same \code{lib_dir} with the
 network off, finds the packages already there.
 }
+\examples{
+\dontrun{
+# needs Docker
+deps <- repro_dependencies_py("import numpy as np")
+repro_install_deps_py_docker(deps, file.path(tempdir(), "pylib"))
+}
+}

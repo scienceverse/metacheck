@@ -11,23 +11,22 @@ the cache root directory path (character), invisibly
 }
 \description{
 Files fetched from OSF/GitHub/Zenodo/ResearchBox by \code{data_check} and
-\code{code_check} are stored in a persistent on-disk cache so they are reused
-across modules and R sessions (never re-downloaded). This returns that
-cache's root directory.
+\code{code_check} with \code{cache = TRUE} are stored in a lasting on-disk cache so
+they are reused across modules and R sessions (never re-downloaded). This
+returns that cache's root directory. With \code{cache = FALSE} (the default) the
+files are kept in a temporary folder that R removes when the session ends.
 }
 \details{
 The cache is never cleared automatically — it has no size cap or expiry, so
 it is safe to reuse but grows without bound. Use \code{\link[=repo_cache_clear]{repo_cache_clear()}} to
 delete it (e.g. to reclaim disk space after a large corpus run).
 
-The location defaults to \code{rappdirs::user_cache_dir("metacheck/repo_files")};
-override it with \code{options(metacheck.repo_cache.dir = "/some/path")} (e.g. for
-a project-local cache).
+The location defaults to the folder \code{.metacheck_repo_cache} in the working
+directory; override it with \code{options(metacheck.repo_cache.dir = "/some/path")},
+or move all caches with \code{options(metacheck.cache.dir = "/some/path")}.
 }
 \examples{
-\dontrun{
 repo_cache_dir()
-}
 }
 \seealso{
 \code{\link[=repo_cache_clear]{repo_cache_clear()}}, \code{\link[=repo_cache_size]{repo_cache_size()}}

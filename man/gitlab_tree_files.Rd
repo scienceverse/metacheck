@@ -9,16 +9,8 @@ gitlab_tree_files(repo)
 \arguments{
 \item{repo}{GitLab project URL or "namespace/project" string}
 }
-\description{
-Fetches a GitLab project's file tree (following pagination, since
-GitLab's tree endpoint caps at 100 entries per page, unlike GitHub's
-single-request Git Trees API), its detected licence, and default branch.
-File sizes are backfilled with a single batched GraphQL
-\verb{repository.blobs(paths: [...])} query, since the REST tree listing does
-not include size.
-}
-\details{
-Returns a list with:
+\value{
+a list with:
 \describe{
 \item{\code{gated}}{logical; \code{TRUE} only when the project could
 not be listed at all (invalid/inaccessible)}
@@ -28,6 +20,22 @@ download_url/size/type, or \code{NULL} when the tree could not be
 fetched}
 \item{\code{default_branch}}{character}
 \item{\code{license}}{character SPDX-style key (e.g. "mit"), or NA}
+}
+}
+\description{
+Fetches a GitLab project's file tree (following pagination, since
+GitLab's tree endpoint caps at 100 entries per page, unlike GitHub's
+single-request Git Trees API), its detected licence, and default branch.
+File sizes are backfilled with a single batched GraphQL
+\verb{repository.blobs(paths: [...])} query, since the REST tree listing does
+not include size.
+}
+\examples{
+\donttest{
+if (online("gitlab.com")) {
+  tree <- gitlab_tree_files("gitlab.com/gitlab-org/gitlab-test")
+  head(tree$files$name)
+}
 }
 }
 \keyword{internal}

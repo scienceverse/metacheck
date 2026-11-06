@@ -482,8 +482,9 @@ test_that("repo_cache_clear() with no args empties the whole cache", {
 
   freed <- suppressMessages(repo_cache_clear())
   expect_gt(freed, 0)
-  # Root still exists (recreated empty) so later downloads can write.
-  expect_true(dir.exists(repo_cache_dir()))
+  # The root is not recreated: an empty folder is not left behind, and the
+  # downloads create their own folders.
+  expect_false(dir.exists(repo_cache_dir()))
   expect_equal(repo_cache_size(), 0)
 })
 

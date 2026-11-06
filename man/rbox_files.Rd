@@ -32,7 +32,10 @@ exhausted: ", so it can be requested again later; \code{cache = TRUE} avoids
 asking again for a box already listed.
 }
 \examples{
-\dontrun{
-rbox_files("https://researchbox.org/801")
+\donttest{
+# needs a ResearchBox API key (see rbox_token())
+if (online("researchbox.org") && nzchar(rbox_token())) {
+  rbox_files("https://researchbox.org/801")
+}
 }
 }

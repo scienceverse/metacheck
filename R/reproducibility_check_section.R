@@ -27,7 +27,7 @@
     out <- paste(lines[start:end], collapse = " ")
   }
   out <- gsub("\\s+", " ", out)
-  if (nchar(out) > max_chars) out <- paste0(substr(out, 1, max_chars - 1), "…")
+  if (nchar(out) > max_chars) out <- paste0(substr(out, 1, max_chars - 1), "\u2026")
   out
 }
 
@@ -165,7 +165,7 @@
 
   # A package the code loads that was not there, which the install did not know of
   pkg_of <- function(m) {
-    hit <- regmatches(m, regexec("(?:no package called|No module named) ['\"‘]([^'\"’]+)['\"’]", m, perl = TRUE))[[1]]
+    hit <- regmatches(m, regexec("(?:no package called|No module named) ['\"\u2018]([^'\"\u2019]+)['\"\u2019]", m, perl = TRUE))[[1]]
     if (length(hit) > 1) hit[2] else NA_character_
   }
   missing_pkg <- setdiff(which(err & reason %in% "package"), covered)
@@ -351,8 +351,8 @@
     se <- rr$stderr[[i]] %||% ""
     if (is.na(se)) se <- ""
     pkg <- regmatches(se, regexpr(paste0("(no package called|No module named) ",
-                                         "['\"‘]([^'\"’]+)['\"’]"), se))
-    pkg <- if (length(pkg)) sub(".*['\"‘]([^'\"’]+)['\"’].*", "\\1", pkg) else ""
+                                         "['\"\u2018]([^'\"\u2019]+)['\"\u2019]"), se))
+    pkg <- if (length(pkg)) sub(".*['\"\u2018]([^'\"\u2019]+)['\"\u2019].*", "\\1", pkg) else ""
     inputs <- strsplit(tbl$unresolved_inputs[[i]] %||% NA_character_, ", ", fixed = TRUE)[[1]]
     inputs <- inputs[!is.na(inputs) & nzchar(inputs)]
     res <- switch(outcome[[i]],

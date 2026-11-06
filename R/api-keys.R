@@ -95,7 +95,7 @@
 .metacheck_state_dir <- function() {
   dir <- getOption("metacheck.state.dir") %||% Sys.getenv("METACHECK_STATE_DIR")
   if (!nzchar(dir)) {
-    dir <- file.path(rappdirs::user_data_dir("metacheck", "scienceverse"), "state")
+    dir <- file.path(tools::R_user_dir("metacheck", "data"), "state")
   }
   dir
 }
@@ -260,8 +260,7 @@
 #' Problems are recorded in a file in metacheck's state folder, shared by
 #' every R session of the same user on the computer. Its location is the
 #' `metacheck.state.dir` option, else the `METACHECK_STATE_DIR` environment
-#' variable, else a folder `state` in `rappdirs::user_data_dir("metacheck",
-#' "scienceverse")`.
+#' variable, else a folder `state` in `tools::R_user_dir("metacheck", "data")`.
 #'
 #' @returns a data frame with one row per service: `service`, `label`, `key`
 #'   (`"user"`, `"server"` or `"none"`, see [api_keys_use()]), `problem`
@@ -270,9 +269,7 @@
 #' @seealso [api_keys_use()]
 #' @export
 #' @examples
-#' \dontrun{
-#' api_key_status()
-#' }
+#' api_key_status()[, c("service", "key", "problem")]
 api_key_status <- function() {
   rows <- lapply(names(.key_services), \(service) {
     s <- .key_services[[service]]
@@ -318,10 +315,8 @@ api_key_status <- function() {
 #' @seealso [api_key_status()]
 #' @export
 #' @examples
-#' \dontrun{
 #' old <- api_keys_use(list(github = "github_pat_...", osf = ""))
 #' options(old)
-#' }
 api_keys_use <- function(keys = list(), shared = FALSE) {
   keys <- as.list(keys)
   unknown <- setdiff(names(keys), names(.key_services))

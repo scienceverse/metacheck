@@ -25,3 +25,8 @@ executed external JSON Schema — there is no external standard this document
 conforms to, by design (see the file header comment). Mirrors
 \code{behaverse_validate()}'s and \code{psychds-validate.R}'s hand-rolled approach.
 }
+\examples{
+out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+doc <- stat_output_json(read_r_output(out), paper_id = "demo")
+stat_output_validate(doc)$valid
+}

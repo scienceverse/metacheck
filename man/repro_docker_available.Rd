@@ -18,3 +18,9 @@ papers with a cryptic \verb{docker run} error. Used as the guard for
 \code{sandbox = "docker"} the same way \code{requireNamespace("callr", ...)} guards
 the process backend.
 }
+\examples{
+\donttest{
+# can wait up to 105 seconds for a busy Docker
+repro_docker_available()$ok
+}
+}

@@ -25,7 +25,9 @@ covers, and so on. See each corpus's \code{README.md} on the
 narrative description, including known gaps and data-quality caveats.
 }
 \examples{
-\dontrun{
-papers_metadata("jdm")$dc_coverage
+\donttest{
+if (online("api.github.com")) {
+  papers_metadata("jdm")$dc_coverage
+}
 }
 }

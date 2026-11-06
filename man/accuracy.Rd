@@ -17,3 +17,8 @@ a list of accuracy parameters
 \description{
 Signal detection values for modules that classify papers as having a feature or not
 }
+\examples{
+expected <- c(TRUE, TRUE, FALSE, FALSE, TRUE)
+observed <- c(TRUE, FALSE, FALSE, TRUE, TRUE)
+accuracy(expected, observed)
+}

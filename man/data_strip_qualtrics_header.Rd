@@ -23,4 +23,14 @@ leading rows that look like Qualtrics header rows (see
 \code{.qualtrics_is_header_row}) and coerces columns that are now fully numeric
 back to numeric, so the rest of \code{data_check} types the file correctly.
 }
+\examples{
+# a Qualtrics export: question text and import ids above the answers
+df <- data.frame(
+  StartDate = c("Start Date", '{"ImportId":"startDate"}', "2024-01-01", "2024-01-02"),
+  EndDate = c("End Date", '{"ImportId":"endDate"}', "2024-01-01", "2024-01-02"),
+  Progress = c("Progress", '{"ImportId":"progress"}', "100", "100"),
+  ResponseId = c("Response ID", '{"ImportId":"_recordId"}', "R_1", "R_2"),
+  Q1 = c("How old are you?", '{"ImportId":"QID1"}', "21", "34"))
+data_strip_qualtrics_header(df)
+}
 \keyword{internal}

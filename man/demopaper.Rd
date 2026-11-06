@@ -4,14 +4,21 @@
 \alias{demopaper}
 \title{Get demo paper}
 \usage{
-demopaper()
+demopaper(paper = c("to_err_is_human", "stroop_effect"))
+}
+\arguments{
+\item{paper}{which demo paper: \code{"to_err_is_human"} or \code{"stroop_effect"}}
 }
 \value{
 paper object
 }
 \description{
-Get demo paper
+\code{"to_err_is_human"} (the default) is a short paper written to show
+metacheck's checks. \code{"stroop_effect"} is a small reproducible analysis
+whose data and code are bundled as a demo repository (see
+\code{demofile("repo")}); the paper is its manuscript, converted with Grobid.
 }
 \examples{
 paper <- demopaper()
+stroop <- demopaper("stroop_effect")
 }

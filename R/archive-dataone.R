@@ -83,10 +83,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' dataone_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' dataone_links(paper)
 dataone_links <- function(paper) {
   href <- text <- NULL
 
@@ -226,8 +224,10 @@ dataone_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#'   dataone_info("https://doi.org/10.18739/A2GT5FG86")
+#' \donttest{
+#' if (online("cn.dataone.org")) {
+#'     dataone_info("https://doi.org/10.18739/A2GT5FG86")
+#' }
 #' }
 dataone_info <- function(dataone_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (is.null(pb)) {

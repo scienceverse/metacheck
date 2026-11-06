@@ -103,19 +103,22 @@ test_that("module_template", {
   expect_true(is.function(metacheck::module_template))
   expect_no_error(helplist <- help(module_template, metacheck))
 
-  expect_error(module_template("a module"),
+  expect_error(module_template("a module", tempdir()),
                "The module_name must contain only letters, numbers, and _",
                fixed = TRUE)
 
-  module_template("demo")
-  expect_true(file.exists("modules/demo.R"))
+  # there is no default folder (CRAN: no writing into the working directory)
+  expect_error(module_template("demo"), "path")
+
+  mod_dir <- withr::local_tempdir()
+  module_template("demo", mod_dir)
+  expect_true(file.exists(file.path(mod_dir, "demo.R")))
 
   # the module the template writes runs (#532): it used columns id and
   # section, which text_search() does not return
-  expect_no_error(mo <- module_run(demopaper(), "modules/demo.R"))
+  expect_no_error(mo <- module_run(demopaper(), file.path(mod_dir, "demo.R")))
   expect_true("paper_id" %in% names(mo$summary_table))
   expect_equal(mo$traffic_light, "info")
-  unlink("modules/demo.R")
 })
 
 test_that("module_run", {

@@ -24,4 +24,8 @@ agreement like \code{\link[=data_check_demographic]{data_check_demographic()}}, 
 concepts. Rules-only and deterministic; concepts under cryptic names are left
 \code{NA} for the LLM tier in \code{data_check} to fill.
 }
+\examples{
+data_col_concept("rt", c(512, 640, 498))
+data_col_concept("gender", c("male", "female", "female"))
+}
 \keyword{internal}

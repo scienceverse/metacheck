@@ -18,14 +18,11 @@ An object with class scivrs_paperlist
 Create a new paperlist object from individual paper objects or lists of paper objects
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-p1 <- psychsci[[1]]
-p2 <- psychsci[[2]]
+p1 <- demopaper()
+p2 <- read(demofile("xml"))
 plist <- paperlist(p1, p2)
 
-merged <- paperlist(psychsci[1:2], psychsci[2:3],
-                    merge_duplicates = TRUE)
-}
+# the two are the same paper, read from two files
+merged <- paperlist(p1, p2, merge_duplicates = TRUE)
 }
 \keyword{internal}

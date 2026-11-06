@@ -25,4 +25,8 @@ auto-detected for delimited text; invalid UTF-8 triggers a latin1 retry.
 Reading \code{.ods}/\code{.fods} needs the suggested \code{readODS} package; without it the
 function returns \code{NULL} for those formats.
 }
+\examples{
+path <- file.path(demofile("repo"), "data", "stroop_data.csv")
+data_read_head(path, n_rows = 3)
+}
 \keyword{internal}

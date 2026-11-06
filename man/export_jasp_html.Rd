@@ -9,8 +9,10 @@ export_jasp_html(path, out = NULL)
 \arguments{
 \item{path}{path to a \code{.jasp} file}
 
-\item{out}{path to write the HTML file to; defaults to \code{path} with its
-extension replaced by \code{.html}, written alongside the source file}
+\item{out}{path to write the HTML file to. Without it, the file is named
+after \code{path} with the extension \code{.html} and written to the R session's
+temporary folder, which R removes when the session ends (CRAN does not
+allow writing elsewhere unless you ask for it); a message says where.}
 }
 \value{
 the path written to, invisibly
@@ -23,4 +25,9 @@ inlines every plot it references (an \verb{<img src="resources/.../*.png">}) as
 a base64 \verb{data:} URI, so the result is a single, portable, self-contained
 file that looks exactly like JASP's own output window, with no external
 image files to keep alongside it.
+}
+\examples{
+jasp <- system.file("extdata", "sample.jasp", package = "metacheck")
+html <- export_jasp_html(jasp, file.path(tempdir(), "sample_jasp.html"))
+file.exists(html)
 }

@@ -11,6 +11,9 @@
 
 \item{...}{Additional parameters for print}
 }
+\value{
+\code{x}, invisibly
+}
 \description{
 Print Module List Object
 }

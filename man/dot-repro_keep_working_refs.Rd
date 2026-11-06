@@ -20,11 +20,11 @@
 \item{script_path}{the script's own path in the package}
 
 \item{run_dir}{the folder the script runs from, from the top of the package
-(see \code{\link[=.repro_run_folders]{.repro_run_folders()}}); a reference works as written when it names a
+(see \code{.repro_run_folders()}); a reference works as written when it names a
 file counted from there, and a rewritten path is counted from there too}
 
 \item{here_dir}{the folder \code{here()} starts in, from the top of the package
-(see \code{\link[=.repro_here_start]{.repro_here_start()}}): a path that is the one argument of \code{here()}
+(see \code{.repro_here_start()}): a path that is the one argument of \code{here()}
 (\code{in_here}) counts from there, not from \code{run_dir}}
 }
 \value{
@@ -32,7 +32,7 @@ file counted from there, and a rewritten path is counted from there too}
 }
 \description{
 Every script runs in the repository as the authors organised it, with every
-file at its own path, from the folder \code{\link[=.repro_run_folders]{.repro_run_folders()}} chooses. A
+file at its own path, from the folder \code{.repro_run_folders()} chooses. A
 reference is then:
 \itemize{
 \item left as written when it names a file's path from the top

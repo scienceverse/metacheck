@@ -201,10 +201,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' figshare_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' figshare_links(paper)
 figshare_links <- function(paper) {
   href <- text <- NULL
 
@@ -663,8 +661,10 @@ figshare_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#'   figshare_info("https://doi.org/10.6084/m9.figshare.18093368.v1")
+#' \donttest{
+#' if (online("api.figshare.com")) {
+#'     figshare_info("https://doi.org/10.6084/m9.figshare.18093368.v1")
+#' }
 #' }
 figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
                           pb = NULL, cache = FALSE) {
@@ -1078,7 +1078,8 @@ figshare_pat <- function(pat = NULL) {
 #' column value set to FALSE.
 #'
 #' @param figshare_id a Figshare article ID, URL, or DOI
-#' @param download_to path to download to
+#' @param download_to path to download to; there is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param max_file_size maximum file size to download (in MB) - set to NULL or
 #'   Inf for no restrictions
 #' @param max_download_size maximum total size to download - set to NULL or
@@ -1102,14 +1103,15 @@ figshare_pat <- function(pat = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   figshare_file_download("18093368")
-#'
-#'   # take only the data files out of any zip in the article
-#'   figshare_file_download("18093368", unzip_types = "data")
+#' \donttest{
+#' if (online("api.figshare.com")) {
+#'   dl <- figshare_file_download("18093368",
+#'                                download_to = file.path(tempdir(), "figshare"),
+#'                                max_download_size = 10)
+#' }
 #' }
 figshare_file_download <- function(figshare_id,
-                                   download_to = ".",
+                                   download_to,
                                    max_file_size = 10,
                                    max_download_size = 100,
                                    unzip_types = NULL,

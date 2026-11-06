@@ -671,8 +671,11 @@
 #' @export
 #' @keywords internal
 #' @examples
-#' \dontrun{
-#' zip_peek("https://osf.io/download/abcde/")
+#' if (requireNamespace("zip", quietly = TRUE)) {
+#'   # a zip of the demo repository; a URL of a zip on a server works the same
+#'   z <- file.path(tempdir(), "stroop_effect_paper.zip")
+#'   zip::zipr(z, file.path(demofile("repo"), c("data", "code", "README.md")))
+#'   zip_peek(z)
 #' }
 zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
                      skip_on_api_limit = FALSE, size = NULL) {
@@ -1727,6 +1730,14 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 #'   (table of inner types), and `contents` (the peeked data.frame or `NULL`).
 #' @export
 #' @keywords internal
+#' @examples
+#' if (requireNamespace("zip", quietly = TRUE)) {
+#'   # a zip of the demo repository; a URL of a zip on a server works the same
+#'   z <- file.path(tempdir(), "stroop_effect_paper.zip")
+#'   zip::zipr(z, file.path(demofile("repo"), c("data", "code", "README.md")))
+#'   dec <- zip_decision(z)
+#'   dec[c("worth", "reason")]
+#' }
 zip_decision <- function(url, skip_types = "materials", cache = FALSE,
                          skip_on_api_limit = FALSE, size = NULL) {
   peek <- zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit,

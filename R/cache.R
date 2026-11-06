@@ -1,8 +1,13 @@
-# Shared cache-location logic for metacheck's two on-disk caches:
+# Shared cache-location logic for metacheck's lasting on-disk caches:
 #   * the downloaded-repository-file cache (see repo-download.R)
+#   * the repository-listing and zip-listing caches (repo-info-cache.R,
+#     zip-peek-cache.R)
 #   * the LLM-response cache (see llm-cache.R)
 #
-# Both default to a folder in the CURRENT WORKING DIRECTORY, so a project's
+# None of them lasts beyond the session unless the user asks for it (cache =
+# TRUE in a module, or llm_cache(TRUE)): CRAN does not allow a package to keep
+# files outside the session's temporary folder by default. A lasting cache
+# the user asks for goes in a folder in the CURRENT WORKING DIRECTORY, so a project's
 # cache lives with the project — easy to find, easy to inspect, easy to delete,
 # and gone when the project folder is. This is a deliberate choice over a hidden
 # per-user OS cache: metacheck caches are per-analysis, not shared across
@@ -20,16 +25,18 @@
   getOption("metacheck.cache.dir", getwd())
 }
 
-# Resolve one named cache directory (creating it if needed). `subdir` is the
-# folder name under the root (e.g. ".metacheck_repo_cache"). `override` is an
-# already-resolved path from a cache-specific option/env var, or NULL/"" to use
-# the shared root. The cache folders are named ".metacheck_*"; a user who wants
-# them out of git can add ".metacheck_*" to their own .gitignore (metacheck does
-# not write into the project itself — see metacheck_cache_info()).
+# Resolve one named cache directory. `subdir` is the folder name under the
+# root (e.g. ".metacheck_repo_cache"). `override` is an already-resolved path
+# from a cache-specific option/env var, or NULL/"" to use the shared root. The
+# folder is NOT created here: looking up a location (metacheck_cache_info(),
+# the *_cache_clear() functions) must not leave empty folders in the working
+# directory; the functions that write a cache entry create it. The cache
+# folders are named ".metacheck_*"; a user who wants them out of git can add
+# ".metacheck_*" to their own .gitignore (metacheck does not write into the
+# project itself — see metacheck_cache_info()).
 .metacheck_cache_subdir <- function(subdir, override = NULL) {
   dir <- if (!is.null(override) && nzchar(override)) override
          else file.path(.metacheck_cache_root(), subdir)
-  if (!dir.exists(dir)) dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   normalizePath(dir, winslash = "/", mustWork = FALSE)
 }
 
@@ -47,19 +54,20 @@
 #' Prints the location and size of all three on-disk caches — the downloaded
 #' repository-FILE cache, the repository-LISTING cache (dataset/record
 #' metadata, off by default -- see [repo_info_cache_clear()]), and the LLM-response
-#' cache — so they are never hidden. By default each sits in a folder in the
-#' current working directory (`.metacheck_repo_cache`,
-#' `.metacheck_repo_info_cache`, and `.metacheck_llm_cache`); relocate all
-#' three with `options(metacheck.cache.dir = "/some/path")`.
+#' cache — so they are never hidden. Files are kept between sessions only when
+#' you ask for it (`cache = TRUE` in a module, or `llm_cache(TRUE)`); each
+#' lasting cache then sits in a folder in the current working directory
+#' (`.metacheck_repo_cache`, `.metacheck_repo_info_cache`, and
+#' `.metacheck_llm_cache`); relocate all three with
+#' `options(metacheck.cache.dir = "/some/path")`. While [llm_cache()] is
+#' `FALSE`, the LLM row shows this session's temporary folder.
 #'
 #' @returns a data.frame (`cache`, `path`, `size_mb`), invisibly.
 #' @seealso [repo_cache_dir()], [repo_cache_clear()], [repo_info_cache_clear()],
 #'   [llm_cache_clear()]
 #' @export
 #' @examples
-#' \dontrun{
 #' metacheck_cache_info()
-#' }
 metacheck_cache_info <- function() {
   repo_dir <- .repo_cache_dir()
   info_dir <- .repo_info_cache_dir()

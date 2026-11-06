@@ -111,6 +111,12 @@
 #'   NA) — same columns as [repro_install_deps_py()] so callers do not need
 #'   to branch on which backend ran.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' deps <- repro_dependencies_py("import numpy as np")
+#' repro_install_deps_py_docker(deps, file.path(tempdir(), "pylib"))
+#' }
 repro_install_deps_py_docker <- function(install_deps, lib_dir,
                                          image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                          timeout = 600) {
@@ -306,6 +312,15 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #' @param net `NULL` (the default) runs with the network off; see
 #'   [repro_run_scripts_docker()].
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' root <- file.path(tempdir(), "run_demo_py")
+#' plan <- data.frame(file_name = "analysis.py", target_path = "analysis/analysis.py")
+#' code <- list(analysis.py = "print(sum([1, 2, 3]))")
+#' run_tbl <- repro_write_scripts(code, list(), plan, root, lang = "Python")
+#' repro_run_scripts_py_docker(run_tbl, order = "analysis.py", sandbox_root = root)
+#' }
 repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
                                         image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                         timeout = 600, skip = character(0),

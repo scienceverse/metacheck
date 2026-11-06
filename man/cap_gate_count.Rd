@@ -41,4 +41,10 @@ half its variables. Download SIZE limits behave differently: they fill to
 the budget smallest-file-first and report what was omitted (see
 \code{download_repo_files()}).
 }
+\examples{
+cap_gate_count(12, "codebook_max_calls", 10, unit = "codebook",
+               context = "https://osf.io/abcde", action = "parse")
+# within the cap: NULL
+cap_gate_count(5, "codebook_max_calls", 10)
+}
 \keyword{internal}

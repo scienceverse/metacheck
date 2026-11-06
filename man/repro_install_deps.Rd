@@ -61,7 +61,7 @@ successful install), \code{version_recorded} (the version asked for, or \code{NA
 Installs each non-base dependency into \code{lib_dir} (a temp library, never the
 user's), so a run does not mutate the user's installed packages. CRAN packages
 come from \code{install.packages()}; Bioconductor packages (\code{source == "bioc"},
-see \code{\link[=repro_dependencies]{repro_dependencies()}}/\code{\link[=.repro_bioc_packages]{.repro_bioc_packages()}}) from
+see \code{\link[=repro_dependencies]{repro_dependencies()}}/\code{.repro_bioc_packages()}) from
 \code{BiocManager::install()}, installing \code{BiocManager} itself first if absent;
 GitHub/URL sources from the ref the code named
 (\code{remotes::install_github()} / \code{install.packages(url)}), honouring a pinned
@@ -77,4 +77,11 @@ version cannot be installed, the current version is installed instead and
 so an old version can never replace one in your own library. A Bioconductor
 package always gets its current version, since Bioconductor versions follow
 the R version.
+}
+\examples{
+\dontrun{
+# installs packages into a throwaway library
+deps <- repro_dependencies("library(pwr)")
+repro_install_deps(deps, file.path(tempdir(), "lib"))
+}
 }

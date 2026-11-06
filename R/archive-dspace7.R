@@ -203,10 +203,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' dspace7_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' dspace7_links(paper)
 dspace7_links <- function(paper) {
   href <- text <- NULL
   host_regex <- .dspace7_host_regex()
@@ -644,6 +642,13 @@ dspace7_links <- function(paper) {
 #'
 #' @returns a data frame of file information (one row per public file)
 #' @export
+#' @examples
+#' \donttest{
+#' if (online("conservancy.umn.edu")) {
+#'   # lists the public files, which download_repo_files() can then fetch
+#'   dspace7_file_download("https://conservancy.umn.edu/handle/11299/208294")
+#' }
+#' }
 dspace7_file_download <- function(dspace7_url, pb = NULL) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")

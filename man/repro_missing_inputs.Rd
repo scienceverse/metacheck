@@ -33,3 +33,8 @@ finding from a file simply absent from the repository. This cross-references
 the referenced basenames against the file plan and the download-skip records
 \code{download_repo_files()} attaches, and classifies each unresolved reference.
 }
+\examples{
+skipped <- data.frame(file_name = "big.csv", file_size = 200 * 1024 * 1024)
+repro_missing_inputs(c("missing.csv", "big.csv"), plan = NULL,
+                     structure_df = NULL, skipped = skipped)
+}

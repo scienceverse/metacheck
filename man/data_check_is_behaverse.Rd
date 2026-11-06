@@ -46,4 +46,12 @@ E-Prime is detected from file text, not a data frame (see
 \code{.bh_parse_eprime()}), because its export is a header + \code{Level: 3} frames
 rather than a flat table.
 }
+\examples{
+df <- data.frame(trial_type = "html-keyboard-response", trial_index = 0:2,
+                 time_elapsed = c(1200, 2500, 3900), rt = c(512, 640, 498))
+data_check_is_jspsych(df)
+data_check_is_psychopy(df)
+data_check_is_inquisit(df)
+data_check_is_behaverse(df)
+}
 \keyword{internal}

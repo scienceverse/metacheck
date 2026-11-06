@@ -28,3 +28,9 @@ A table that fails to decode (an unsupported construct in either format,
 or real malformation) is skipped rather than aborting the whole file, so
 one bad table does not lose every other result in the same archive.
 }
+\examples{
+\dontrun{
+# needs an SPSS output file (.spv), which only SPSS writes
+res <- import_spv("my_analysis.spv")
+}
+}

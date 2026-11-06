@@ -6,6 +6,10 @@
 \usage{
 .papers_release_assets(repo = "scienceverse/papers")
 }
+\value{
+a data frame with columns \code{name}, \code{tag}, \code{size} and
+\code{download_url}, one row per .rds asset (no rows when there is none)
+}
 \description{
 Queries all releases (not just the latest) so corpora can be spread across
 multiple releases. Release tags follow a \code{{corpus}-{date}} convention

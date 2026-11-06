@@ -30,11 +30,13 @@ with \code{\link[=osf_cache_clear]{osf_cache_clear()}} or disable it with
 \code{options(metacheck.osf.cache = FALSE)}.
 }
 \examples{
-\dontrun{
-# get info on one OSF node
-osf_info("pngda")
+\donttest{
+if (online("api.osf.io")) {
+  # get info on one OSF node
+  osf_info("pngda")
 
-# also get child nodes and files
-osf_info("https://osf.io/6nt4v", recursive = TRUE)
+  # also get child nodes and files
+  osf_info("https://osf.io/6nt4v", recursive = TRUE)
+}
 }
 }

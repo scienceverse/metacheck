@@ -9,6 +9,9 @@ osf_delay(delay = NULL)
 \arguments{
 \item{delay}{the number of seconds to wait between OSF calls}
 }
+\value{
+the delay in seconds (numeric); invisibly when setting it
+}
 \description{
 Sometimes the OSF gets fussy if you make too many calls, so you can set a delay of a few seconds before each call. Use \code{osf_delay()} to get or set the OSF delay.
 }

@@ -22,4 +22,6 @@ saved after deleting unselected cases, so the shared data are a
 pre-filtered subset; if it varies, the reported analyses likely used only
 the selected rows and the filter must be re-applied to reproduce them.
 }
-\keyword{internal}
+\examples{
+data_check_spss_filter("filter_$", rep(1, 30))$problem
+}

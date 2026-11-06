@@ -507,6 +507,12 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
 #'   SET as [repro_install_deps()] so callers do not need to branch on which
 #'   language ran.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Python; installs packages with pip into a throwaway folder
+#' deps <- repro_dependencies_py("import numpy as np")
+#' repro_install_deps_py(deps, file.path(tempdir(), "pylib"))
+#' }
 repro_install_deps_py <- function(install_deps, lib_dir, python_bin = "python",
                                   timeout = 300) {
   empty <- data.frame(package = character(0), source = character(0),
@@ -586,6 +592,15 @@ repro_install_deps_py <- function(install_deps, lib_dir, python_bin = "python",
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Python
+#' root <- file.path(tempdir(), "run_demo_py")
+#' plan <- data.frame(file_name = "analysis.py", target_path = "analysis/analysis.py")
+#' code <- list(analysis.py = "print(sum([1, 2, 3]))")
+#' run_tbl <- repro_write_scripts(code, list(), plan, root, lang = "Python")
+#' repro_run_scripts_py(run_tbl, order = "analysis.py")
+#' }
 repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
                                  python_bin = "python", timeout = 600,
                                  skip = character(0), parses = NULL,

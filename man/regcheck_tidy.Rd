@@ -18,4 +18,11 @@ a data frame with one row per dimension and columns \code{dimension},
 Converts the raw result of a RegCheck comparison (a list with an \code{items}
 element, one item per compared dimension) into a data frame.
 }
+\examples{
+result <- list(items = list(list(dimension = "Sample size",
+  deviation_judgement = "No deviation",
+  paper_content_summary = "131 students took part.",
+  registration_content_summary = "At least 100 students.")))
+regcheck_tidy(result)[, c("dimension", "deviation_judgement")]
+}
 \keyword{internal}

@@ -56,4 +56,10 @@ chain lookup every module relies on only works correctly one call deep from
 \code{module_run()}'s own \code{eval()}, not from a second, ordinary function call
 nested inside it.
 }
+\examples{
+paths <- list.files(demofile("repo"), recursive = TRUE)
+structure_df <- data.frame(file_name = basename(paths), file_path = paths,
+                           data_type = data_classify_files(basename(paths)))
+psychds_file_plan(structure_df)$table[, c("file_name", "status", "target_path")]
+}
 \keyword{internal}

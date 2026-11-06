@@ -7,7 +7,7 @@
 dataverse_file_download(
   host,
   doi,
-  download_to = ".",
+  download_to,
   max_file_size = 10,
   max_download_size = 100,
   unzip_types = NULL,
@@ -19,7 +19,8 @@ dataverse_file_download(
 
 \item{doi}{the dataset's persistentId (a DOI, e.g. "10.7910/DVN/GGDUND")}
 
-\item{download_to}{path to download to}
+\item{download_to}{path to download to; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{max_file_size}{maximum file size to download (in MB) - set to NULL or
 Inf for no restrictions}
@@ -65,11 +66,11 @@ uses. When the archive cannot be read that way, it is downloaded whole as
 before, so this never loses a file -- it only avoids transferring one.
 }
 \examples{
-\dontrun{
-  dataverse_file_download("dataverse.harvard.edu", "10.7910/DVN/GGDUND")
-
-  # take only the data files out of any zip in the dataset
-  dataverse_file_download("dataverse.harvard.edu", "10.7910/DVN/GGDUND",
-                          unzip_types = "data")
+\donttest{
+if (online("dataverse.harvard.edu")) {
+  dl <- dataverse_file_download("dataverse.harvard.edu", "10.7910/DVN/GGDUND",
+                                download_to = file.path(tempdir(), "dataverse"),
+                                max_download_size = 10)
+}
 }
 }

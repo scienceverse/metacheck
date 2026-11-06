@@ -15,6 +15,11 @@ column holds each file's path, and an optional \code{source_refs} list-column
 each \code{source()} reference as written, in the order of \code{sources}: when
 several files share the name a \code{source()} call gives, these decide which
 one it means, and if they cannot, no edge is added.}
+
+\item{extra_edges}{a list of \code{c(from_file_name, to_file_name)} pairs, or
+\code{NULL} (default). Each pair adds the rule that the file \code{from_file_name}
+runs before the file \code{to_file_name}, such as when an error about an
+undefined variable shows that the file defining it must run first.}
 }
 \value{
 a data frame with columns \code{file_name}, \code{order} (1-based run
@@ -25,7 +30,7 @@ cycle (empty when acyclic); attribute \code{"ambiguous"} is TRUE when no orderin
 signal placed a multi-file set (they share \code{order = NA}, basis \code{none}).
 Attribute \code{"fuzzy_sources"} is a data frame (\code{from}, \code{to}) of \code{source()}
 edges that only resolved after normalising both basenames (a renumbered/
-reworded script reference — see \code{\link[=.repro_normalize_basename]{.repro_normalize_basename()}}), empty
+reworded script reference — see \code{.repro_normalize_basename()}), empty
 when every \code{source()} reference matched an exact basename. Attribute
 \code{"source_edges"} is a data frame (\code{from}, \code{to}) of every resolved
 \code{source()} edge, exact or fuzzy: \code{from} is the sourced file, \code{to} the

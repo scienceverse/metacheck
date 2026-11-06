@@ -11,9 +11,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   local_files("my_project")
-#' }
+#' # the demo repository bundled with metacheck
+#' local_files(demofile("repo"), recursive = TRUE)
 local_files <- function(path, recursive = FALSE) {
   if (length(path) > 1) {
     # `recursive` passed on: several paths were always listed without

@@ -42,12 +42,12 @@ withr::defer(unlink(.mc_test_cache, recursive = TRUE), teardown_env())
 # psychsci was removed from data/ (LazyData) to reduce package size and is
 # now downloaded on demand from the GitHub release and cached in the same
 # directory metacheck already uses for other downloaded data
-# (see rappdirs::user_data_dir() usage in R/db-retractionwatch.R).
+# (see tools::R_user_dir() usage in R/db-retractionwatch.R).
 #
 # If it can't be downloaded (e.g. no internet, as on CRAN), tests that need
 # it are skipped via skip_if_no_psychsci(), not failed.
 
-psychsci_cache_path <- rappdirs::user_data_dir("metacheck", "scienceverse") |>
+psychsci_cache_path <- tools::R_user_dir("metacheck", "data") |>
   file.path("psychsci.rds")
 
 if (!file.exists(psychsci_cache_path)) {

@@ -26,7 +26,9 @@ a data frame of information
 Retrieve info from PsychArchives by URL
 }
 \examples{
-\dontrun{
-psycharchives_info("https://hdl.handle.net/20.500.12034/17526")
+\donttest{
+if (online("www.psycharchives.org")) {
+  psycharchives_info("https://hdl.handle.net/20.500.12034/17526")
+}
 }
 }

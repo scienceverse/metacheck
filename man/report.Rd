@@ -9,7 +9,7 @@ report(
   modules = c("prereg_check", "funding_check", "coi_check", "power", "repo_check",
     "code_check", "stat_check", "stat_p_exact", "stat_p_nonsig", "stat_effect_size",
     "marginal", "ref_replication", "ref_retraction", "ref_pubpeer", "ref_summary"),
-  output_file = paste0(paper$paper_id, "_report.", output_format),
+  output_file = file.path(tempdir(), paste0(paper$paper_id, "_report.", output_format)),
   output_format = c("html", "qmd"),
   report_type = c("full", "brief", "simple", "simple_brief", "checklist"),
   args = list()
@@ -20,7 +20,10 @@ report(
 
 \item{modules}{a vector of modules to run (names for built-in modules or paths for custom modules)}
 
-\item{output_file}{the name of the output file}
+\item{output_file}{the name of the output file. Without it, the report is
+named \code{"<paper_id>_report.html"} and written to the R session's temporary
+folder, which R removes when the session ends (CRAN does not allow
+writing elsewhere unless you ask for it); a message says where.}
 
 \item{output_format}{the format to create the report in}
 
@@ -53,9 +56,13 @@ Pass arguments to modules in a named list of lists, using the same names as the 
 }\if{html}{\out{</div>}}
 }
 \examples{
-\dontrun{
 paper <- demopaper()
-report(paper)
+res <- report(paper, modules = c("all_p_values", "stat_p_exact"),
+              output_format = "qmd")
+attr(res, "save_path")
+\dontrun{
+# the default modules use the internet, and HTML needs Quarto
+report(paper, output_file = "my_report.html")
 report(paper, report_type = "simple") # email-safe, no embedded JS
 }
 }

@@ -174,6 +174,10 @@
 #'   the same row share that prefix — only the final segment tells them apart.
 #'   Empty frame (same columns) when there is nothing to flatten.
 #' @export
+#' @examples
+#' out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+#' long <- stat_results_long(read_r_output(out))
+#' long[, c("statistic", "stato_label", "value")]
 stat_results_long <- function(tables, paper_id = NA_character_,
                               source_file = NA_character_) {
   empty <- data.frame(paper_id = character(0), source_file = character(0),
@@ -366,6 +370,10 @@ stat_results_long <- function(tables, paper_id = NA_character_,
 #'   produced it — see [stat_results_long()] for the id format (shared between
 #'   both serialisations of one extraction).
 #' @export
+#' @examples
+#' out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+#' doc <- stat_output_json(read_r_output(out), paper_id = "demo")
+#' names(doc)
 stat_output_json <- function(tables, paper_id = "metacheck",
                             source_file = NA_character_) {
   if (is.null(tables) || length(tables) == 0) return(NULL)
@@ -464,6 +472,10 @@ stat_output_json <- function(tables, paper_id = "metacheck",
 #'   vector of problem descriptions), and `summary` (`n_errors`, `n_analyses`,
 #'   `n_results`).
 #' @export
+#' @examples
+#' out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+#' doc <- stat_output_json(read_r_output(out), paper_id = "demo")
+#' stat_output_validate(doc)$valid
 stat_output_validate <- function(doc) {
   if (is.character(doc) && length(doc) == 1L) {
     # a JSON string as it is: fromJSON() cannot read a text connection
@@ -547,6 +559,14 @@ stat_output_validate <- function(doc) {
 #' @returns the path to `statistical_output/`, invisibly, or `NULL` (nothing
 #'   written) when `stat_output` is empty or carries no rows/documents.
 #' @export
+#' @examples
+#' out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+#' tables <- read_r_output(out, source_label = "analysis.R")
+#' so <- list(list(file = "analysis.R",
+#'                 json = stat_output_json(tables, source_file = "analysis.R"),
+#'                 long = stat_results_long(tables, source_file = "analysis.R")))
+#' dir <- stat_output_write(so, file.path(tempdir(), "stat_demo"))
+#' list.files(dir)
 stat_output_write <- function(stat_output, root) {
   if (is.null(stat_output) || !length(stat_output)) return(invisible(NULL))
 

@@ -28,7 +28,9 @@ the note at the top of this file for why 4TU.ResearchData's Djehuty
 platform can reuse the Figshare-family implementation directly.
 }
 \examples{
-\dontrun{
-  researchdata4tu_info("https://doi.org/10.4121/16766929.v1")
+\donttest{
+if (online("data.4tu.nl")) {
+    researchdata4tu_info("https://doi.org/10.4121/16766929.v1")
+}
 }
 }

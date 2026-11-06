@@ -44,3 +44,8 @@ each iteration) yields several results sharing one \code{line}; these are
 distinguished by \code{line_seq} (1, 2, 3, ... within that line). Without
 \code{code_lines} the echo is not parsed and \code{line}/\code{line_seq} are \code{NA}.
 }
+\examples{
+out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+res <- read_r_output(out)
+res[[1]]$data
+}

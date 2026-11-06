@@ -52,7 +52,7 @@ caller that has not been updated to pass it), falls back to
 \item{zip_timeout_s}{timeout (seconds) for a whole-repo zip download attempt
 before falling back to file-by-file fetching}
 
-\item{cache}{if \code{TRUE}, write into the persistent rappdirs cache (survives
+\item{cache}{if \code{TRUE}, write into the lasting cache (see \code{\link[=repo_cache_dir]{repo_cache_dir()}}; survives
 across sessions, never cleared automatically — see \code{repo_cache_clear()});
 if \code{FALSE} (default), write into a per-session temp directory that R
 removes on exit}
@@ -113,5 +113,18 @@ newly-downloaded), not on a single run's increment — already-cached files are
 kept for free, then the smallest still-missing files are added until the next
 one would exceed the budget, so re-running never grows a repository's cache
 past the budget and the canonical "files we ever download" set is fixed.
+}
+\examples{
+\donttest{
+if (online("raw.githubusercontent.com")) {
+  files <- data.frame(
+    repo_url = "https://github.com/scienceverse/metacheck",
+    file_url = "https://raw.githubusercontent.com/scienceverse/metacheck/main/DESCRIPTION",
+    file_name = "DESCRIPTION", file_path = "DESCRIPTION", file_size = 3000)
+  # kept in this session's temporary folder (cache = FALSE)
+  dl <- download_repo_files(files)
+  dl$file_location
+}
+}
 }
 \keyword{internal}

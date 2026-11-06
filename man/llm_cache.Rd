@@ -2,28 +2,39 @@
 % Please edit documentation in R/llm-cache.R
 \name{llm_cache}
 \alias{llm_cache}
-\title{Enable, disable, or query the LLM response cache}
+\title{Turn the lasting LLM response cache on or off, or query it}
 \usage{
 llm_cache(enabled = NULL)
 }
 \arguments{
-\item{enabled}{if logical, sets whether the cache is used; if \code{NULL}
-(default) returns the current setting}
+\item{enabled}{\code{TRUE} to keep responses between sessions, \code{FALSE} to store
+none; if \code{NULL} (default) returns whether responses are kept between
+sessions}
 }
 \value{
 the current setting (logical), invisibly when setting
 }
 \description{
-When enabled (the default), \code{\link[=llm]{llm()}} stores each structured or free-text
-response on disk and replays it on identical later calls, so re-running a
-report on the same paper does not re-issue (or re-bill) the LLM requests.
-Because \code{\link[=llm]{llm()}} runs at temperature 0 the replayed answer matches a fresh
-call. Cached entries are keyed by model, system prompt, input text, type
-spec, and params; changing any of these produces a fresh call.
+\code{\link[=llm]{llm()}} stores each structured or free-text response and replays it on
+identical later calls, so asking the same question again does not re-issue
+(or re-bill) the LLM request. Because \code{\link[=llm]{llm()}} runs at temperature 0 the
+replayed answer matches a fresh call. Cached entries are keyed by model,
+system prompt, input text, type spec, and params; changing any of these
+produces a fresh call.
+}
+\details{
+By default the responses are kept only in the R session's temporary folder,
+which R removes when the session ends. With \code{llm_cache(TRUE)} they are kept
+between sessions, in the folder \code{.metacheck_llm_cache} in the working
+directory, or under the folder set with \code{options(metacheck.cache.dir = )} or
+the \code{METACHECK_LLM_CACHE_DIR} environment variable. With \code{llm_cache(FALSE)}
+no response is stored or replayed, so every call asks the model again;
+\code{options(metacheck.llm.cache = NULL)} returns to the default. Use
+\code{\link[=llm_cache_clear]{llm_cache_clear()}} to remove the stored responses.
 }
 \examples{
-llm_cache()          # is the cache on?
-\dontrun{
-llm_cache(FALSE)     # force fresh calls
-}
+llm_cache()          # are responses kept between sessions? (FALSE by default)
+llm_cache(TRUE)      # keep responses between sessions
+llm_cache(FALSE)     # no cache: every call asks the model again
+options(metacheck.llm.cache = NULL)  # back to the default: this session only
 }

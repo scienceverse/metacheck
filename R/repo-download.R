@@ -15,14 +15,18 @@
 
 # Stable per-repo cache subdirectory. Keyed by a filesystem-safe encoding of the
 # repo URL so different repos never collide and the same repo always resolves to
-# the same folder (enabling cross-session reuse).
-.repo_cache_subdir <- function(repo_url) {
+# the same folder (enabling cross-session reuse). With `cache = FALSE` the
+# folder is in the session's temporary cache (.repo_session_dir()) instead,
+# which R removes when the session ends: CRAN does not allow keeping files
+# outside the temporary folder unless the user asks for it.
+.repo_cache_subdir <- function(repo_url, cache = TRUE) {
   key <- as.character(repo_url %||% "unknown")
   key <- gsub("^https?://", "", key)          # scheme is noise
   key <- gsub("[^A-Za-z0-9._-]+", "_", key)   # filesystem-safe
   key <- gsub("^_+|_+$", "", key)
   if (!nzchar(key)) key <- "unknown"
-  file.path(.repo_cache_dir(), key)
+  root <- if (isTRUE(cache)) .repo_cache_dir() else .repo_session_dir()
+  file.path(root, key)
 }
 
 # Repo-relative cache location (per-repo key + repo-relative path), shared by the
@@ -39,9 +43,11 @@
 }
 
 # Local cache path for one file, preserving its repo-relative path so files with
-# the same basename in different folders don't collide.
-.repo_cache_path <- function(repo_url, file_path) {
-  file.path(.repo_cache_dir(), .repo_cache_rel(repo_url, file_path))
+# the same basename in different folders don't collide. With `cache = FALSE`
+# the path is in the session's temporary cache (see .repo_cache_subdir()).
+.repo_cache_path <- function(repo_url, file_path, cache = TRUE) {
+  root <- if (isTRUE(cache)) .repo_cache_dir() else .repo_session_dir()
+  file.path(root, .repo_cache_rel(repo_url, file_path))
 }
 
 # Per-session scratch cache used when cache = FALSE: a single temp directory
@@ -58,25 +64,24 @@
 #' Locate the downloaded-repository file cache
 #'
 #' Files fetched from OSF/GitHub/Zenodo/ResearchBox by `data_check` and
-#' `code_check` are stored in a persistent on-disk cache so they are reused
-#' across modules and R sessions (never re-downloaded). This returns that
-#' cache's root directory.
+#' `code_check` with `cache = TRUE` are stored in a lasting on-disk cache so
+#' they are reused across modules and R sessions (never re-downloaded). This
+#' returns that cache's root directory. With `cache = FALSE` (the default) the
+#' files are kept in a temporary folder that R removes when the session ends.
 #'
 #' The cache is never cleared automatically — it has no size cap or expiry, so
 #' it is safe to reuse but grows without bound. Use [repo_cache_clear()] to
 #' delete it (e.g. to reclaim disk space after a large corpus run).
 #'
-#' The location defaults to `rappdirs::user_cache_dir("metacheck/repo_files")`;
-#' override it with `options(metacheck.repo_cache.dir = "/some/path")` (e.g. for
-#' a project-local cache).
+#' The location defaults to the folder `.metacheck_repo_cache` in the working
+#' directory; override it with `options(metacheck.repo_cache.dir = "/some/path")`,
+#' or move all caches with `options(metacheck.cache.dir = "/some/path")`.
 #'
 #' @returns the cache root directory path (character), invisibly
 #' @seealso [repo_cache_clear()], [repo_cache_size()]
 #' @export
 #' @examples
-#' \dontrun{
 #' repo_cache_dir()
-#' }
 repo_cache_dir <- function() {
   invisible(.repo_cache_dir())
 }
@@ -88,10 +93,8 @@ repo_cache_dir <- function() {
 #' @seealso [repo_cache_dir()], [repo_cache_clear()]
 #' @export
 #' @examples
-#' \dontrun{
 #' # human-readable
 #' format(structure(repo_cache_size(), class = "object_size"), units = "auto")
-#' }
 repo_cache_size <- function() {
   .metacheck_dir_size(.repo_cache_dir())
 }
@@ -116,13 +119,13 @@ repo_cache_size <- function() {
 #' @seealso [repo_cache_dir()], [repo_cache_size()]
 #' @export
 #' @examples
-#' \dontrun{
-#' # clear everything
+#' # a cache in a temporary folder, so no real cache is cleared
+#' old <- options(metacheck.repo_cache.dir = file.path(tempdir(), "repo_cache"))
 #' repo_cache_clear()
 #'
 #' # clear one repository only
 #' repo_cache_clear("https://osf.io/abcde")
-#' }
+#' options(old)
 repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   # Safety guard: refuse to delete a real cache while tests are running unless
   # the test has redirected the cache location (via metacheck.repo_cache.dir or
@@ -149,10 +152,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     if (length(files) == 0) 0 else sum(file.size(files), na.rm = TRUE)
   }, numeric(1)))
 
+  # The root is not recreated: the downloads create their own folders.
   for (d in targets) unlink(d, recursive = TRUE)
-  # Recreate the (empty) root so later downloads have somewhere to write.
-  if (is.null(repo_url)) dir.create(.repo_cache_dir(), showWarnings = FALSE,
-                                    recursive = TRUE)
 
   if (!isTRUE(quiet)) {
     human <- format(structure(freed, class = "object_size"), units = "auto")
@@ -1345,7 +1346,7 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   `length(idx)` exactly as before.
 #' @param zip_timeout_s timeout (seconds) for a whole-repo zip download attempt
 #'   before falling back to file-by-file fetching
-#' @param cache if `TRUE`, write into the persistent rappdirs cache (survives
+#' @param cache if `TRUE`, write into the lasting cache (see [repo_cache_dir()]; survives
 #'   across sessions, never cleared automatically — see `repo_cache_clear()`);
 #'   if `FALSE` (default), write into a per-session temp directory that R
 #'   removes on exit
@@ -1384,6 +1385,18 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 #'   to the paper it belongs to without re-joining on `repo_url`).
 #' @export
 #' @keywords internal
+#' @examples
+#' \donttest{
+#' if (online("raw.githubusercontent.com")) {
+#'   files <- data.frame(
+#'     repo_url = "https://github.com/scienceverse/metacheck",
+#'     file_url = "https://raw.githubusercontent.com/scienceverse/metacheck/main/DESCRIPTION",
+#'     file_name = "DESCRIPTION", file_path = "DESCRIPTION", file_size = 3000)
+#'   # kept in this session's temporary folder (cache = FALSE)
+#'   dl <- download_repo_files(files)
+#'   dl$file_location
+#' }
+#' }
 download_repo_files <- function(files,
                                 max_file_size = 100,
                                 max_download_size = 500,
@@ -1398,7 +1411,7 @@ download_repo_files <- function(files,
     files$file_location <- NA_character_
 
   # Where downloaded files are written.
-  #   cache = TRUE  → the persistent rappdirs cache: files survive the session
+  #   cache = TRUE  → the lasting cache (see repo_cache_dir()): files survive the session
   #     and are reused on later runs (but the cache grows without bound and is
   #     never cleared automatically; see repo_cache_clear()).
   #   cache = FALSE (default) → a per-session temp directory that R removes on

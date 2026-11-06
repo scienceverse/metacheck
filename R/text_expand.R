@@ -17,12 +17,9 @@
 #' res_tbl <- text_search(paper, "p =", return = "match")
 #' expanded <- text_expand(res_tbl, paper)
 #'
-#' # multiple paper search
-#' \dontrun{
-#' papers <- papers_load("psychsci", cache = TRUE)
-#' res_tbl <- text_search(papers, "replicate")
-#' expanded <- text_expand(res_tbl, papers, plus = 1, minus = 1)
-#' }
+#' # with the sentences before and after
+#' res_tbl <- text_search(paper, "error")
+#' expanded <- text_expand(res_tbl, paper, plus = 1, minus = 1)
 text_expand <- function(results_table,
                         paper,
                         expand_to = c("sentence", "paragraph", "div", "section"),

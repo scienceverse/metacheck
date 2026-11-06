@@ -10,6 +10,12 @@ logpath()
 the log file path
 }
 \description{
-Checks the most recent log file created that day and creates a new one if missing.
+Returns the log file of this R session, and creates it if missing. The log
+is kept in the session's temporary folder, which R removes when the session
+ends: CRAN does not allow a package to keep files elsewhere unless the user
+asks for it.
+}
+\examples{
+logpath()
 }
 \keyword{internal}

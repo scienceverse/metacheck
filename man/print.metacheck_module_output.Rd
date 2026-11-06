@@ -11,6 +11,9 @@
 
 \item{...}{Additional parameters for \code{module_report()}}
 }
+\value{
+\code{x}, invisibly
+}
 \description{
 Print Module Output
 }

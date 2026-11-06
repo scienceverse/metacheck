@@ -1,0 +1,164 @@
+---
+title: "The Stroop Effect: A Reproducible Analysis"
+shorttitle: "The Stroop Effect"
+author:
+  - name: Daniël Lakens
+    corresponding: true
+    orcid: 0000-0002-0247-239X
+    email: D.Lakens@tue.nl
+    affiliations:
+      - name: Eindhoven University of Technology
+        department: Industrial Engineering and Innovation Sciences
+        address: Den Dolech 2, 5600 MB
+        city: Eindhoven
+abstract: "Students in an introductory psychology course completed an online Stroop task, naming the font colors of words in congruent trials (e.g., the word 'red' printed in red) and incongruent trials (e.g., the word 'red' printed in green). We tested whether reaction times differed between the two conditions, as predicted by the Stroop effect."
+keywords: [Stroop effect, reaction time, reproducibility]
+author-note:
+  disclosures:
+    conflict-of-interest: "The authors have no conflict of interest to declare."
+    data-sharing: "All data, code, and materials are available at https://github.com/Lakens/stroop_effect_paper."
+    financial-support: "This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors."
+date: "20 July 2018"
+bibliography: references.bib
+format: html
+---
+
+```{r global_options, echo=FALSE, warning=FALSE, message=FALSE, include=FALSE}
+#This code will check if ggplot2, reshape2, pwr, and effectsize are installed.
+#If not, this code will install these packages.
+if(!require(ggplot2)){install.packages('ggplot2')}
+library(ggplot2)
+if(!require(reshape2)){install.packages('reshape2')}
+library(reshape2)
+if(!require(pwr)){install.packages('pwr')}
+library(pwr)
+if(!require(effectsize)){install.packages('effectsize')}
+library(effectsize)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE, include=TRUE)
+```
+
+# Introduction
+
+The Stroop effect -- the finding that it takes longer to name the font color of a word when that word names a different color (e.g., the word "red" printed in green ink) than when the word and its color match -- is one of the most robust and widely replicated phenomena in cognitive psychology [@macleod1991]. Here, we analyze a simple dataset of a Stroop experiment. Students in an introduction to psychology course completed an online Stroop task (<http://faculty.washington.edu/chudler/java/ready.html>) and named the colors in congruent trials (e.g., the word 'red' written in a red font) and in incongruent trials (e.g., the word 'red' written in a green font). The time they took to name all words was self-reported in seconds (e.g., 21.3 seconds) for both the congruent and incongruent blocks. In this analysis, we are interested in examining whether there is a Stroop effect.
+
+## Ethical approval
+
+All participants completed the task voluntarily as part of a classroom demonstration of research methods, and no identifying information was collected. Because no personally identifiable information was recorded and the task carried no more than minimal risk, this classroom demonstration was exempt from formal review by the Eindhoven University of Technology Ethics Review Board.
+
+## Power analysis
+
+The Stroop effect is one of the largest and most consistently replicated effects in cognitive psychology [@macleod1991], so we planned our sample size assuming a conservatively large effect.
+
+```{r}
+#| include: false
+power_result <- pwr.t.test(d = 0.8, sig.level = 0.01, power = 0.9,
+                           type = "paired", alternative = "two.sided")
+required_n <- ceiling(power_result$n)
+```
+
+An a priori power analysis for a paired-samples *t*-test, conducted using the `pwr.t.test()` function from the `pwr` package [@champely2020], indicated that to detect a true effect of `r power_result$d` standard deviations of the difference scores, with an alpha level of `r power_result$sig.level`, and a desired power of `r power_result$power * 100`%, at least `r required_n` participants would be needed. We report data from all students who completed the task in a single course offering, exceeding this minimum.
+
+```{r}
+# The raw data (data/raw/stroop_raw.csv) were downloaded from
+# https://raw.githubusercontent.com/Lakens/Stroop/master/stroop.txt and saved
+# as a comma-separated file. code/clean_data.R converts them into the
+# consistently-named file read in below; see documentation/stroop_data_codebook.csv
+# for a description of each column.
+
+stroop_data <- read.csv("../data/stroop_data.csv")
+```
+
+# Plotting the data
+
+When we plot the reaction times, we can visually see that there are no extreme outliers. It is also clear that response times are generally faster for the congruent trials, compared to the incongruent trials. 
+
+```{r}
+#| fig-width: 4
+#| fig-height: 4
+#| dpi: 150
+
+#Draw scatterplot
+
+# Main scatterplot
+ggplot(stroop_data, aes(x = congruent, y = incongruent)) +
+  geom_point(alpha = 0.35) +
+  theme_bw(base_size = 14) +
+  geom_smooth(method = 'lm', formula = y~x, color = 'black') +
+  coord_fixed() +
+  ylab("Incongruent") + xlab("Congruent") +
+  theme(plot.margin = unit(c(0, 0, 0.5, 0.5), "lines"))
+```
+
+```{r}
+#| include: false
+#Every result reported in the text is computed in this chunk, and the text
+#only rounds these values.
+
+#Means and standard deviations of the reaction times in each condition.
+sapply(stroop_data[, c("congruent", "incongruent")], mean)
+sapply(stroop_data[, c("congruent", "incongruent")], sd)
+
+#Correlation between the reaction times in the two conditions.
+cor_result <- cor.test(stroop_data$congruent, stroop_data$incongruent)
+
+#Perform the dependent t-test. Store results a ttest_result.
+ttest_result <- t.test(stroop_data$incongruent,
+                       stroop_data$congruent,
+                       alternative = "two.sided",
+                       paired = TRUE,
+                       var.equal = TRUE,
+                       conf.level = 0.95)
+
+#Cohen's dz, the standardized effect size for a paired-samples t-test: the
+#mean difference divided by the standard deviation of the differences.
+dz_result <- repeated_measures_d(stroop_data$incongruent,
+                                 stroop_data$congruent,
+                                 method = "z", adjust = FALSE)
+dz_result
+
+#The Stroop effect (incongruent minus congruent) for each cohort of
+#students, and a Welch's t-test comparing the two cohorts.
+stroop_data$stroop_effect <- stroop_data$incongruent - stroop_data$congruent
+tapply(stroop_data$stroop_effect, stroop_data$year, mean)
+year_result <- t.test(stroop_effect ~ year, data = stroop_data)
+
+#Cohen's d for the difference between the cohorts, standardized by the
+#unpooled standard deviation, to match the Welch's t-test.
+year_d_result <- cohens_d(stroop_effect ~ year, data = stroop_data,
+                          pooled_sd = FALSE)
+year_d_result
+
+#Report a p-value with three decimals, or as "< 0.001".
+format_p <- function(p) {
+  if (p < 0.001) "< 0.001" else paste("=", formatC(p, digits = 3, format = "f"))
+}
+```
+
+# Results
+
+The mean reaction time (in seconds) of participants in the Congruent condition (*M* = `r round(mean(stroop_data$congruent), digits = 2)`, *SD* = `r round(sd(stroop_data$congruent), digits = 2)`) was lower than the mean of participants in the Incongruent condition (*M* = `r round(mean(stroop_data$incongruent), digits = 2)`, *SD* = `r round(sd(stroop_data$incongruent), digits = 2)`). Reaction times in the two conditions were positively correlated, *r* = `r round(cor_result$estimate, digits = 2)`, *t*(`r cor_result$parameter`) = `r round(cor_result$statistic, digits = 2)`, *p* `r format_p(cor_result$p.value)`. A dependent *t*-test indicated that based on our alpha level of 0.01 we could reject the null-hypothesis, *t*(`r round(ttest_result$parameter, digits=2)`) = `r round(ttest_result$statistic, digits=2)`, *p* `r format_p(ttest_result$p.value)`, Cohen's *d~z~* = `r round(dz_result$d_z, digits=2)`, 95% CI [`r round(dz_result$CI_low, digits=2)`, `r round(dz_result$CI_high, digits=2)`] [@lakens2013]. As we can expect from the Stroop effect, the standardized effect size is very large. The congruency effect is very clear when we plot the data from the two groups.
+
+```{r}
+#| echo: false 
+#| fig-width: 4
+#| fig-height: 4
+#| dpi: 150
+
+#Data to long format
+stroop_data_long <- melt(stroop_data, id.vars = "participant_id", measure.vars = c("congruent", "incongruent"), variable.name = "congruency", value.name = "reactiontimes")
+
+ggplot(stroop_data_long, aes(x = congruency, y = reactiontimes)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.25, width = 0.2) +
+  ylab("Reaction Times")  + xlab("Condition") + theme_bw(base_size = 14) +
+  theme(panel.grid.major.x = element_blank())
+```
+
+## Differences between cohorts
+
+The students were taught in two different years, 2013 and 2014. To examine whether the Stroop effect (the reaction time in the incongruent condition minus the reaction time in the congruent condition) differed between the two cohorts, we performed a Welch's *t*-test. The Stroop effect in the 2013 cohort (*M* = `r round(year_result$estimate[1], digits = 2)`) did not differ from the Stroop effect in the 2014 cohort (*M* = `r round(year_result$estimate[2], digits = 2)`), *t*(`r round(year_result$parameter, digits = 2)`) = `r round(year_result$statistic, digits = 2)`, *p* `r format_p(year_result$p.value)`, Cohen's *d* = `r round(year_d_result$Cohens_d, digits = 2)`, 95% CI [`r round(year_d_result$CI_low, digits = 2)`, `r round(year_d_result$CI_high, digits = 2)`].
+
+# Open Practices Statement
+
+The raw data, the processed data, the analysis code, and the code used to generate this manuscript are all openly available in a GitHub repository at <https://github.com/Lakens/stroop_effect_paper>. No preregistration was filed for this classroom demonstration.
+

@@ -52,10 +52,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' dryad_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' dryad_links(paper)
 dryad_links <- function(paper) {
   href <- text <- NULL
 
@@ -200,8 +198,10 @@ dryad_links <- function(paper) {
 #'   could not be found does.
 #' @export
 #' @examples
-#' \dontrun{
-#'   dryad_info("https://doi.org/10.5061/dryad.j1fd7")
+#' \donttest{
+#' if (online("datadryad.org")) {
+#'     dryad_info("https://doi.org/10.5061/dryad.j1fd7")
+#' }
 #' }
 dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("datadryad.org")) {
@@ -633,7 +633,7 @@ dryad_auth <- function(client_id = NULL, client_secret = NULL,
     stop("Set dryad_auth with a single client_id string and a single ",
          "client_secret string", call. = FALSE)
   }
-  options(setNames(list(client_id, client_secret, token_url),
+  options(stats::setNames(list(client_id, client_secret, token_url),
                    c(opt_id, opt_secret, opt_url)))
   invisible(httr2::oauth_client(id = client_id, token_url = token_url,
                                 secret = client_secret))
@@ -729,7 +729,8 @@ dryad_auth <- function(client_id = NULL, client_secret = NULL,
 #' as [dataverse_file_download()] and [zenodo_file_download()] do.
 #'
 #' @param dryad_doi the dataset's DOI, or a URL containing it
-#' @param download_to path to download to
+#' @param download_to path to download to; there is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param max_file_size maximum file size to download (in MB) - set to NULL or
 #'   Inf for no restrictions
 #' @param max_download_size maximum total size to download - set to NULL or
@@ -751,13 +752,17 @@ dryad_auth <- function(client_id = NULL, client_secret = NULL,
 #'
 #' @examples
 #' \dontrun{
-#'   dryad_file_download("10.5061/dryad.j1fd7")
+#' # Dryad needs a client id and secret for downloads (see dryad_auth())
+#' dl <- dryad_file_download("10.5061/dryad.j1fd7",
+#'                           download_to = file.path(tempdir(), "dryad"))
 #'
-#'   # take only the data files out of any zip in the dataset
-#'   dryad_file_download("10.5061/dryad.j1fd7", unzip_types = "data")
+#' # take only the data files out of any zip in the dataset
+#' dl <- dryad_file_download("10.5061/dryad.j1fd7",
+#'                           download_to = file.path(tempdir(), "dryad"),
+#'                           unzip_types = "data")
 #' }
 dryad_file_download <- function(dryad_doi,
-                                download_to = ".",
+                                download_to,
                                 max_file_size = 10,
                                 max_download_size = 100,
                                 unzip_types = NULL,

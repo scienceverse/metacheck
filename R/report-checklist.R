@@ -233,7 +233,7 @@
     LOGOS = paste(logos, collapse = ""),
     TITLE = .spv_html_escape(title),
     SUBTITLE = .spv_html_escape(subtitle),
-    META = .spv_html_escape(paste(meta, collapse = " · "))
+    META = .spv_html_escape(paste(meta, collapse = " \u00B7 "))
   )
   for (token in names(fill)) {
     head <- paste(strsplit(head, paste0("{{", token, "}}"), fixed = TRUE)[[1]],

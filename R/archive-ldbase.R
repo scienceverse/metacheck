@@ -120,6 +120,12 @@ ldbase_links <- function(paper) {
 #'   `file_name`, `file_path`, `file_url`, `item_type`, `item_url`) and
 #'   `error` (NA, or why the link could not be listed)
 #' @export
+#' @examples
+#' \donttest{
+#' if (online("ldbase.org")) {
+#'   ldbase_info("https://ldbase.org/datasets/ef328591-e249-4803-b673-76f237717d1d")
+#' }
+#' }
 ldbase_info <- function(ldbase_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("ldbase.org")) {
     stop("ldbase.org seems to be offline")

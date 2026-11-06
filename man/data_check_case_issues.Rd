@@ -15,4 +15,6 @@ list(problem, message, values)
 \description{
 e.g. "Male" and "male" -- likely the same category entered inconsistently.
 }
-\keyword{internal}
+\examples{
+data_check_case_issues(c("Male", "male", "Female"))$message
+}

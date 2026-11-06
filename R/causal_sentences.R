@@ -41,25 +41,27 @@
 #' https://huggingface.co/rasoultilburg/SocioCausaNet
 #'
 #' @examples
-#' \dontrun{
-#' # Single sentence
-#' df1 <- causal_relations("Smoking causes cancer")
-#' print(df1)
+#' \donttest{
+#' if (online("lakens-causal-sentences.hf.space")) {
+#'   # Single sentence
+#'   df1 <- causal_relations("Smoking causes cancer")
+#'   print(df1)
 #'
-#' # Multiple sentences (batch)
-#' df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
-#' print(df2)
+#'   # Multiple sentences (batch)
+#'   df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
+#'   print(df2)
 #'
-#' # Custom parameters and verbose diagnostics
-#' df3 <- causal_relations(
-#'   sentence = "Stress increases blood pressure.",
-#'   rel_mode = "auto",
-#'   rel_threshold = 0.4,
-#'   cause_decision = "cls+span",
-#'   timeout = 10,
-#'   verbose = TRUE
-#' )
-#' print(df3)
+#'   # Custom parameters and verbose diagnostics
+#'   df3 <- causal_relations(
+#'     sentence = "Stress increases blood pressure.",
+#'     rel_mode = "auto",
+#'     rel_threshold = 0.4,
+#'     cause_decision = "cls+span",
+#'     timeout = 10,
+#'     verbose = TRUE
+#'   )
+#'   print(df3)
+#' }
 #' }
 causal_relations <- function(sentence,
                              rel_mode = "auto",

@@ -41,6 +41,8 @@
 #'
 #' @returns the number of cache entries removed, invisibly
 #' @export
+#' @examples
+#' repo_info_cache_clear()
 repo_info_cache_clear <- function() {
   dir <- .repo_info_cache_dir()
   files <- list.files(dir, pattern = "\\.rds$", full.names = TRUE)
@@ -82,7 +84,9 @@ repo_info_cache_clear <- function() {
 # Write a listing result for one host + identifier pair. Failures are
 # swallowed (a caching miss is never worse than the uncached behaviour).
 .repo_info_cache_put <- function(host, id, value) {
-  tryCatch(saveRDS(value, .repo_info_cache_path(host, id)), error = function(e) NULL)
+  path <- .repo_info_cache_path(host, id)
+  dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
+  tryCatch(saveRDS(value, path), error = function(e) NULL)
   invisible(value)
 }
 

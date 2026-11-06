@@ -9,6 +9,18 @@ github_tree_files(repo)
 \arguments{
 \item{repo}{GitHub repo URL or \code{"owner/repo"} string}
 }
+\value{
+a list with:
+\describe{
+\item{\code{gated}}{logical; \code{TRUE} only when the repository could
+not be listed at all (invalid/inaccessible, or a truncated tree)}
+\item{\code{reason}}{character reason, or \code{NA}}
+\item{\code{files}}{data.frame shaped like \code{github_files()} output,
+or \code{NULL} when the tree could not be fetched}
+\item{\code{default_branch}}{character}
+\item{\code{license}}{character licence key, or NA}
+}
+}
 \description{
 Fetches the complete file tree of a GitHub repository in two API calls
 (repo metadata + recursive tree), rather than the N-request recursive
@@ -29,15 +41,13 @@ more than 100,000 entries comes back flagged \code{truncated}, meaning the
 response is incomplete. There is no way to list such a repository through
 this endpoint, so it is reported rather than silently returning a partial
 file list.
-
-Returns a list with:
-\describe{
-\item{\code{gated}}{logical; \code{TRUE} only when the repository could
-not be listed at all (invalid/inaccessible, or a truncated tree)}
-\item{\code{reason}}{character reason, or \code{NA}}
-\item{\code{files}}{data.frame shaped like \code{github_files()} output,
-or \code{NULL} when the tree could not be fetched}
-\item{\code{default_branch}}{character}
+}
+\examples{
+\donttest{
+if (online("api.github.com")) {
+  tree <- github_tree_files("scienceverse/metacheck")
+  head(tree$files$name)
+}
 }
 }
 \keyword{internal}

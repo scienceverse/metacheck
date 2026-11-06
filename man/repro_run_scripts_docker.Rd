@@ -70,3 +70,13 @@ outside the mounted sandbox and library, even deliberately. See this file's head
 the two-phase (install-then-run) design and why the library is mounted at
 \verb{/rlib}, not \verb{/lib}.
 }
+\examples{
+\dontrun{
+# needs Docker
+root <- file.path(tempdir(), "run_demo")
+plan <- data.frame(file_name = "analysis.R", target_path = "analysis/analysis.R")
+code <- list(analysis.R = c("x <- c(1, 2, 3)", "print(mean(x))"))
+run_tbl <- repro_write_scripts(code, list(), plan, root)
+repro_run_scripts_docker(run_tbl, order = "analysis.R", sandbox_root = root)
+}
+}

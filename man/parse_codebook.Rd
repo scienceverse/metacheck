@@ -39,4 +39,8 @@ rich-text formats (docx/pdf/rtf/odt) it extracts plain text. Files that yield
 no structured definitions return their raw text lines (character vector) so
 the caller can route them to an LLM when \code{llm_use(TRUE)}.
 }
+\examples{
+parse_codebook(file.path(demofile("repo"), "documentation",
+                          "stroop_data_codebook.csv"))
+}
 \keyword{internal}

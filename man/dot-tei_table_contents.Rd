@@ -30,7 +30,7 @@ Grobid's \verb{<row>}/\verb{<cell>} structure makes no header/data distinction a
 span SEVERAL leading rows (a super-header naming a group of columns, a
 sub-header, then the actual column names — confirmed against a real corpus
 paper's regression table: "Association with mean reappraisal" / "" /
-"β01 (SE)", three leading rows before any data). Treating only the first
+"\eqn{\beta}{beta}01 (SE)", three leading rows before any data). Treating only the first
 \verb{<row>} as the header (as an earlier version of this function did) reads
 the REAL column names as if they were a data row, and scans genuine data as
 if it were headers. The leading rows are instead scanned from the top:
@@ -40,7 +40,7 @@ first row that looks like real data (mostly numeric/bracket/dash cells) —
 mirroring \code{.stat_table_parse()}'s own "last distinct-label row is the real
 header" heuristic, adapted for Grobid's lack of \verb{<th>}. Folded header rows
 are joined per column with " / " (so "Association with" / "mean
-reappraisal" / "β01 (SE)" becomes one combined column name), which keeps
+reappraisal" / "\eqn{\beta}{beta}01 (SE)" becomes one combined column name), which keeps
 the super-header's grouping information rather than discarding it.
 
 Ragged rows (a row with fewer/more cells than the header — GroBid's

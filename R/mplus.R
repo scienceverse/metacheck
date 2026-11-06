@@ -510,6 +510,16 @@
 #'   same text on every table, since one `.out` file is one Mplus run).
 #'   Empty list if the file has no recoverable section.
 #' @export
+#' @examples
+#' out <- tempfile(fileext = ".out")
+#' writeLines(c("Mplus VERSION 8.8", "", "INPUT INSTRUCTIONS", "",
+#'   "  MODEL: incongruent ON congruent;", "", "MODEL RESULTS", "",
+#'   "                                                    Two-Tailed",
+#'   "                    Estimate       S.E.  Est./S.E.    P-Value", "",
+#'   " INCONGRUENT ON",
+#'   "    CONGRUENT          0.432      0.093      4.645      0.000", ""), out)
+#' tables <- import_mplus_output(out)
+#' tables[[1]]$data
 import_mplus_output <- function(path) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.out$", path, ignore.case = TRUE))
@@ -609,16 +619,31 @@ import_mplus_output <- function(path) {
 #' writes chart data into the `.out` text file itself (see the file header).
 #'
 #' @param path path to a `.out` file
-#' @param out path to write the HTML file to; defaults to `path` with its
-#'   extension replaced by `.html`, written alongside the source file
+#' @param out path to write the HTML file to. Without it, the file is named
+#'   after `path` with the extension `.html` and written to the R session's
+#'   temporary folder, which R removes when the session ends (CRAN does not
+#'   allow writing elsewhere unless you ask for it); a message says where.
 #'
 #' @returns the path written to, invisibly
 #' @export
+#' @examples
+#' out <- tempfile(fileext = ".out")
+#' writeLines(c("Mplus VERSION 8.8", "", "INPUT INSTRUCTIONS", "",
+#'   "  MODEL: incongruent ON congruent;", "", "MODEL RESULTS", "",
+#'   "                                                    Two-Tailed",
+#'   "                    Estimate       S.E.  Est./S.E.    P-Value", "",
+#'   " INCONGRUENT ON",
+#'   "    CONGRUENT          0.432      0.093      4.645      0.000", ""), out)
+#' html <- export_mplus_html(out, file.path(tempdir(), "mplus.html"))
+#' file.exists(html)
 export_mplus_html <- function(path, out = NULL) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.out$", path, ignore.case = TRUE))
     stop("Not a .out file: ", path)
-  if (is.null(out)) out <- sub("\\.out$", ".html", path, ignore.case = TRUE)
+  if (is.null(out)) {
+    out <- file.path(tempdir(), sub("\\.out$", ".html", basename(path), ignore.case = TRUE))
+    message("Written to the temporary folder, which R removes when it closes: ", out)
+  }
 
   tables <- import_mplus_output(path)
 

@@ -36,7 +36,9 @@ the cached copy rather than re-downloading. Use \code{\link[=papers_remove]{pape
 delete a cached corpus.
 }
 \examples{
-\dontrun{
-collabra <- papers_load("collabra")
+\donttest{
+if (online("api.github.com")) {
+  collabra <- papers_load("collabra")
+}
 }
 }
