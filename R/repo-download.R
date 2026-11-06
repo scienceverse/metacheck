@@ -757,6 +757,69 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 # attribute) can filter these out from every other kind of download failure
 # and know a plain re-run, once the host's own quota has reset, is expected
 # to succeed rather than needing any other fix.
+# Download a file whose size is not known in advance, stopping once more than
+# `max_bytes` have arrived (#583): .download_one()'s req_perform() cannot stop
+# a transfer partway, and older libcurl versions cannot either when no size
+# was announced. The bytes are streamed to "<dest>.part" and the file is moved
+# into place only when complete, as in .download_one(). Returns NA on success,
+# else the reason; a file over the limit returns "over the byte limit" with
+# attributes over_cap = TRUE and bytes (how many had arrived).
+.download_capped <- function(url, dest, max_bytes = Inf, timeout_s = 120,
+                             skip_on_api_limit = FALSE) {
+  dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
+  final <- dest
+  dest <- paste0(final, ".part")
+  on.exit(if (file.exists(dest)) unlink(dest), add = TRUE)
+  if (!.wait_out_known_rate_limit(url, skip_on_api_limit)) {
+    return("API rate limit exhausted: known rate-limited host, skip_on_api_limit")
+  }
+  timeout_s <- .zip_timeout_for_size(timeout_s,
+                                     if (is.finite(max_bytes)) max_bytes else NA_real_)
+  resp <- tryCatch(
+    httr2::request(url) |>
+      .auth_for_url() |>
+      httr2::req_error(is_error = function(r) FALSE) |>
+      # non-blocking, so a stalled read cannot defeat the deadline below (see
+      # .download_zip_to_cache())
+      httr2::req_perform_connection(blocking = FALSE),
+    error = function(e) e)
+  if (inherits(resp, "error")) return(conditionMessage(resp))
+  on.exit(close(resp), add = TRUE)
+  status <- httr2::resp_status(resp)
+  if (status >= 400) return(sprintf("HTTP %d", status))
+
+  con <- file(dest, open = "wb")
+  written <- 0
+  why <- NA_character_
+  deadline <- Sys.time() + timeout_s
+  repeat {
+    if (Sys.time() > deadline) {
+      why <- sprintf("download exceeded the %ds timeout", as.integer(ceiling(timeout_s)))
+      break
+    }
+    chunk <- httr2::resp_stream_raw(resp, kb = 512)
+    if (length(chunk) == 0) {
+      if (httr2::resp_stream_is_complete(resp)) break
+      Sys.sleep(0.1)
+      next
+    }
+    writeBin(chunk, con)
+    written <- written + length(chunk)
+    if (is.finite(max_bytes) && written > max_bytes) {
+      why <- structure("over the byte limit", over_cap = TRUE, bytes = written)
+      break
+    }
+  }
+  close(con)
+  if (!is.na(why)) return(why)
+  if (.is_login_page(dest)) {
+    return("not authorised (the OSF returned a sign-in page; see ?osf_pat)")
+  }
+  if (!(file.exists(dest) && file.size(dest) > 0)) return("empty response")
+  if (!file.rename(dest, final)) return("could not move the download into place")
+  NA_character_
+}
+
 .download_one <- function(url, dest, skip_on_api_limit = FALSE,
                           expected_bytes = NA_real_) {
   dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
@@ -1409,6 +1472,11 @@ download_repo_files <- function(files,
   if (is.null(files) || nrow(files) == 0) return(files)
   if (!"file_location" %in% names(files))
     files$file_location <- NA_character_
+  # Without a file_size column, files$file_size[idx] was NULL, so no size was
+  # looked up and every file was left out without a record (#583). An empty
+  # column for the duration of the call; removed again at the end.
+  had_size <- "file_size" %in% names(files)
+  if (!had_size) files$file_size <- NA_real_
 
   # Where downloaded files are written.
   #   cache = TRUE  → the lasting cache (see repo_cache_dir()): files survive the session
@@ -1671,6 +1739,8 @@ download_repo_files <- function(files,
   has_url <- !is.na(files$file_url) & nzchar(files$file_url) &
     !((files$file_restricted %||% rep(FALSE, nrow(files))) %in% TRUE)
   to_get <- integer(0)
+  # the byte limit for a file of unknown size (see below); NA for the others
+  files$.byte_cap <- rep(NA_real_, nrow(files))
 
   # ── Per-repository budget + per-file size filter ────────────────────────────
   # max_file_size is a PER-FILE filter: files over it are skipped individually,
@@ -1755,8 +1825,9 @@ download_repo_files <- function(files,
 
     # Unknown-size files are excluded from the candidate set (we cannot budget
     # them), rather than gating the whole repo. Candidates = kept, known-size.
+    # A repo with no known-size file goes on too: its unknown-size files are
+    # downloaded with a limit below (it used to be skipped here, #583).
     cand <- !over & !is.na(sizes)
-    if (!any(cand)) next
     c_idx    <- idx[cand]
     c_size   <- sizes[cand]
     c_cached <- is_cached[cand]
@@ -1782,6 +1853,30 @@ download_repo_files <- function(files,
 
     # Download only the newly-selected (still-missing) members of the set.
     to_get <- c(to_get, c_idx[take_missing])
+
+    # A still-missing file whose size neither the listing nor the host gives
+    # was left out without any record (#583). It is downloaded with a limit
+    # instead: the per-file cap, or what the budget has left if that is less.
+    # .download_capped() stops the transfer once the limit is passed, and the
+    # file is then reported as over the limit.
+    unknown <- idx[!over & is.na(sizes) & !is_cached]
+    if (length(unknown) > 0) {
+      left <- max(cap_bytes - used, 0)
+      lim <- min(if (is.finite(repo_file_cap)) repo_file_cap * mb else Inf, left)
+      if (lim > 0) {
+        files$.byte_cap[unknown] <- lim
+        to_get <- c(to_get, unknown)
+      } else {
+        msg <- sprintf(
+          paste0("Repository %s: %d file%s of unknown size not downloaded, ",
+                 "because the %s MB per-repository budget is spent. ",
+                 "Raise `max_download_size` to include more."),
+          repo, length(unknown), plural(length(unknown)), .cap_num(repo_total_cap))
+        .cap_report(msg)
+        gated <- rbind(gated, data.frame(repo_url = repo, message = msg,
+                                         stringsAsFactors = FALSE))
+      }
+    }
 
     # Report a partial fill: some kept files were left out because the budget was
     # reached (distinct from the per-file oversize skips reported separately).
@@ -2077,7 +2172,10 @@ download_repo_files <- function(files,
       # unthrottled path too. is_osfstorage() (defined above) already makes
       # this per-file distinction; reuse it here.
       is_zenodo_file <- grepl("zenodo\\.org", files$file_url[remaining], ignore.case = TRUE)
-      is_parallel_safe <- vapply(remaining, is_osfstorage, logical(1)) | is_zenodo_file
+      # a file of unknown size is fetched one at a time with its byte limit
+      # (.download_capped(), #583)
+      is_parallel_safe <- (vapply(remaining, is_osfstorage, logical(1)) | is_zenodo_file) &
+        is.na(files$.byte_cap[remaining])
       remaining_parallel <- remaining[is_parallel_safe]
       remaining_seq <- remaining[!is_parallel_safe]
 
@@ -2102,10 +2200,28 @@ download_repo_files <- function(files,
       }
 
       for (i in remaining_seq) {
-        err <- .download_one(files$file_url[i], files$.cache_path[i],
-                             skip_on_api_limit = skip_on_api_limit,
-                             expected_bytes = as.numeric(files$file_size[i]))
-        if (is.na(err)) {
+        err <- if (!is.na(files$.byte_cap[i])) {
+          .download_capped(files$file_url[i], files$.cache_path[i],
+                           max_bytes = files$.byte_cap[i],
+                           skip_on_api_limit = skip_on_api_limit)
+        } else {
+          .download_one(files$file_url[i], files$.cache_path[i],
+                        skip_on_api_limit = skip_on_api_limit,
+                        expected_bytes = as.numeric(files$file_size[i]))
+        }
+        if (identical(attr(err, "over_cap"), TRUE)) {
+          # a file of unknown size that passed its limit: reported as over the
+          # limit, like a file whose listed size is over it
+          oversize_skipped <- rbind(oversize_skipped, data.frame(
+            repo_url = files$repo_url[i], file_name = files$file_name[i],
+            file_size = attr(err, "bytes"), stringsAsFactors = FALSE))
+          message(sprintf(
+            paste0("%s in %s had no known size and was larger than its %s MB ",
+                   "limit, so it was not kept. Raise max_file_size (or ",
+                   "max_download_size) to include it."),
+            files$file_name[i], files$repo_url[i],
+            .cap_num(round(files$.byte_cap[i] / mb))))
+        } else if (is.na(err)) {
           files$file_location[i] <- files$.cache_path[i]
         } else {
           failed <- rbind(failed, data.frame(
@@ -2150,6 +2266,8 @@ download_repo_files <- function(files,
   }
 
   files$.cache_path <- NULL
+  files$.byte_cap <- NULL
+  if (!had_size) files$file_size <- NULL
   attr(files, "gated") <- gated
   attr(files, "oversize_skipped") <- oversize_skipped
   attr(files, "failed") <- failed

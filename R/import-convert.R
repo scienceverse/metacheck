@@ -19,8 +19,10 @@
 #' @examples
 #' \donttest{
 #' if (online("grobid.hti.ieis.tue.nl")) {
-#'   json <- convert(demofile("pdf"), tempdir(), method = "grobid")
-#'   paper <- read(json)
+#'   # the servers can be busy or down; then this says why
+#'   json <- tryCatch(convert(demofile("pdf"), tempdir(), method = "grobid"),
+#'                    error = function(e) message(conditionMessage(e)))
+#'   if (!is.null(json)) paper <- read(json)
 #' }
 #' }
 convert <- function(file_path,

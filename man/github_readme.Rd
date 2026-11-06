@@ -18,7 +18,9 @@ Get README from GitHub
 \examples{
 \donttest{
 if (online("api.github.com")) {
-  github_readme("scienceverse/metacheck")
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(github_readme("scienceverse/metacheck"),
+           error = function(e) message(conditionMessage(e)))
 }
 }
 }

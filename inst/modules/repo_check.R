@@ -1004,11 +1004,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           }
 
           rows_i <- lapply(files_i, function(f) {
-            df <- f$dataFile %||% list()
-            file_url <- if (length(df$id) > 0)
-              sprintf("https://%s/api/access/datafile/%s",
-                     .dv_info$dataverse_host[[i]], df$id)
-            else NA_character_
+            # name, size and URL; a file Dataverse converted on upload (a
+            # .tab made from a .sav) as it was uploaded (#582), the same as
+            # dataverse_file_download()
+            fe <- .dataverse_file_entry(f, .dv_info$dataverse_host[[i]])
 
             # %empty_or% (not %||%) because a field can come back as a
             # length-zero value (e.g. an empty array) rather than NULL; %||%
@@ -1016,11 +1015,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
             # "arguments imply differing number of rows".
             data.frame(
               repo_url = as.character(.dv_info$dataverse_url[[i]]),
-              file_name = as.character(f$label %empty_or% df$filename %empty_or% NA_character_),
-              file_path = as.character(f$label %empty_or% df$filename %empty_or% NA_character_),
-              file_url = file_url,
+              file_name = as.character(fe$name),
+              file_path = as.character(fe$name),
+              file_url = fe$url,
               file_location = NA_character_,
-              file_size = as.numeric(df$filesize %empty_or% NA_real_),
+              file_size = fe$size,
               file_restricted = isTRUE(f$restricted)
             )
           })

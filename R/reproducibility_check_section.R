@@ -249,7 +249,7 @@
   minutes <- format(round(timeout / 60, 1))
   block("slow", slow, sprintf("A script runs longer than our limit of %s minute%s.", minutes, plural(as.numeric(minutes))),
         ifelse(outcome[slow] %in% "skipped_time_limit",
-               sprintf("%s was not started, because the time for all scripts together had run out.", code(name[slow])),
+               sprintf("%s was not started, or was stopped early, because the time for all scripts together had run out.", code(name[slow])),
                code(name[slow])),
         paste("State in the README how long each script runs. If some steps take hours, save their results",
               "(such as fitted models) to files, add those to the deposit, and let the script read them, so",
@@ -386,7 +386,7 @@
         if (length(inputs) == 1) "is" else "are",
         .repro_cell(paste(vapply(inputs, input_reason, character(1)), collapse = "; ")))),
       skipped_time_limit = c("Not run",
-                             "The time for all scripts together had run out before it could start."),
+                             "The time for all scripts together had run out before it could start or finish."),
       not_parsed = , static_parse_error = c("Not run", sprintf(
         "%s cannot read the script: it contains a syntax error.", lang)),
       python2 = , static_python2 = c("Not run", paste0(

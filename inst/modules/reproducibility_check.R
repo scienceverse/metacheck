@@ -1974,16 +1974,37 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                              vapply(library_injections, paste, character(1),
                                     collapse = ", ")), collapse = "; ")) else "",
              ": ", paste(run_order2, collapse = " -> "))
-        run_results2 <- run_r_scripts(run_tbl2, run_order2)
-        # a script the second run had no time left for keeps its first result
-        late <- run_results2$outcome == "skipped_time_limit" &
-          run_results2$file_name %in% run_results$file_name
-        if (any(late)) {
-          run_results2 <- dplyr::bind_rows(
-            run_results2[!late, , drop = FALSE],
-            run_results[match(run_results2$file_name[late], run_results$file_name), , drop = FALSE])
-          run_results2 <- run_results2[order(match(run_results2$file_name, run_order2)), , drop = FALSE]
+        # Only what this pass changes runs again (#581): the scripts that got
+        # library() lines or another script to load first, the scripts the new
+        # order moves (the users of the new edges), and the scripts that read
+        # what those write. Running every script again let an unchanged script
+        # that had timed out use the paper's remaining time a second time, and
+        # the changed script then got none. An unchanged script keeps its first
+        # result; so does a reader of a changed script's files that timed out
+        # in the first pass, which would only time out again.
+        redo2 <- unique(c(names(library_injections), names(run_after),
+                          vapply(extra_edges, function(e) e[[2]], character(1))))
+        reads_of <- stats::setNames(io$reads, io$file_name)
+        writes_of <- stats::setNames(io$writes, io$file_name)
+        repeat {
+          written <- tolower(unlist(writes_of[intersect(redo2, names(writes_of))]))
+          readers <- names(reads_of)[vapply(reads_of, function(r) any(tolower(r) %in% written),
+                                            logical(1))]
+          readers <- setdiff(readers, redo2)
+          readers <- readers[!run_results$outcome[match(readers, run_results$file_name)] %in% "timed_out"]
+          if (!length(readers)) break
+          redo2 <- c(redo2, readers)
         }
+        run_results2 <- .repro_later_pass(
+          run_r_scripts(run_tbl2[run_tbl2$file_name %in% redo2, , drop = FALSE],
+                        intersect(run_order2, redo2)))
+        # A script this pass changed but had no time left for is skipped_time_limit,
+        # not its first result: that was the failure the change was meant to fix,
+        # and it was never run in the form the check meant to test (#581).
+        run_results2 <- dplyr::bind_rows(
+          run_results[!run_results$file_name %in% run_results2$file_name, , drop = FALSE],
+          run_results2)
+        run_results2 <- run_results2[order(match(run_results2$file_name, run_order2)), , drop = FALSE]
         run_results <- run_results2
         order_tbl <- order_tbl2   # report the corrected order
         run_tbl <- run_tbl2       # so downstream setwd/family/injection detail (#391) reflects pass 2
@@ -2022,9 +2043,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                      run_dirs = r_run_dirs,
                                      prepend = prepend_lines)
       run_now <- order_tbl$file_name[order(order_tbl$order)]
-      res_old <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
-                               c(intersect(run_now, redo), setdiff(redo, run_now)))
-      res_old <- res_old[res_old$outcome != "skipped_time_limit", , drop = FALSE]
+      res_old <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                               c(intersect(run_now, redo), setdiff(redo, run_now))))
+      # a script given the old defaults but no time is skipped_time_limit, not
+      # the failure the old defaults were meant to fix (#581)
       run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res_old$file_name, , drop = FALSE],
                                       res_old)
       run_results <- run_results[order(match(run_results$file_name, run_now)), , drop = FALSE]
@@ -2057,11 +2079,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
             logical(1))]
           if (length(redo)) {
             .dbg("re-running ", length(redo), " script(s) with the fetched file(s): ", paste(redo, collapse = ", "))
-            res3 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
-                                  c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
-            keep <- !run_results$file_name %in% res3$file_name[res3$outcome != "skipped_time_limit"]
-            run_results <- dplyr::bind_rows(run_results[keep, , drop = FALSE],
-                                            res3[res3$outcome != "skipped_time_limit", , drop = FALSE])
+            res3 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                                  c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
+            # a script with its file fetched but no time is skipped_time_limit,
+            # not the missing-file failure the fetch was meant to fix (#581)
+            keep <- !run_results$file_name %in% res3$file_name
+            run_results <- dplyr::bind_rows(run_results[keep, , drop = FALSE], res3)
             run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
           }
         }
@@ -2093,16 +2116,18 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (!length(redo)) break
       .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
            "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
-      res4 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
-                            c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
-      res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
-      for (s in intersect(names(later), res4$file_name)) {
+      res4 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                            c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
+      ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
+      for (s in intersect(names(later), ran4)) {
         r_written_later[[s]] <- unique(c(r_written_later[[s]], later[[s]]))
         r_seen[[s]] <- unique(c(r_seen[[s]], later[[s]]))
       }
+      # a script this pass was to run but had no time for is skipped_time_limit,
+      # not the failure the pass was meant to fix (#581)
       run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
       run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
-      if (!nrow(res4)) break
+      if (!length(ran4)) break
     }
     attr(run_results, "reran_for_order") <- reran
     attr(run_results, "reran_for_reorder") <- reran_for_reorder
@@ -2452,7 +2477,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (Lakens/tue_datamanager_check#4, item 6)
     if (n_late > 0) {
       report_exec <- paste0(report_exec, sprintf(
-        " %d %s not started, because %s had run out.",
+        " %d %s not started, or stopped early, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
     if (sum(oc == "docker_failed") > 0)
@@ -3436,10 +3461,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                          x = tolower(paste(py_run_results$error[i], py_run_results$stderr[i])), fixed = TRUE)),
               logical(1))]
             if (length(redo)) {
-              res3 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
-                             c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
+              res3 <- .repro_later_pass(run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
+                             c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names))))
               if (!is.null(res3)) {
-                res3 <- res3[res3$outcome != "skipped_time_limit", , drop = FALSE]
+                # a script with its file fetched but no time is skipped_time_limit,
+                # not the missing-file failure the fetch was meant to fix (#581)
                 py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res3$file_name, , drop = FALSE], res3)
                 py_run_results <- py_run_results[order(match(py_run_results$file_name, py_run_order_names)), , drop = FALSE]
               }
@@ -3470,18 +3496,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (!length(redo)) break
         .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
              "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
-        res4 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
-                       c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
+        res4 <- .repro_later_pass(run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
+                       c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names))))
         if (is.null(res4)) break
-        res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
-        for (s in intersect(names(later), res4$file_name)) {
+        ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
+        for (s in intersect(names(later), ran4)) {
           py_written_later[[s]] <- unique(c(py_written_later[[s]], later[[s]]))
           py_seen[[s]] <- unique(c(py_seen[[s]], later[[s]]))
         }
+        # a script this pass was to run but had no time for is skipped_time_limit,
+        # not the failure the pass was meant to fix (#581)
         keep_order <- py_run_results$file_name
         py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
         py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
-        if (!nrow(res4)) break
+        if (!length(ran4)) break
       }
     }
     # Code written for Python 2 runs again with Python 2.7, with its own packages
@@ -3525,6 +3553,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           lib_dir = if (dir.exists(py2_lib_dir)) py2_lib_dir else NULL, image = py2_image,
           timeout = timeout, failed_deps = py2_failed_deps, deadline = script_deadline, net = net),
           error = function(e) NULL)
+        res2 <- .repro_later_pass(res2)   # see .repro_later_pass() (#581)
         if (!is.null(res2) && nrow(res2)) {
           # a script not started for lack of time says so, not "python2" (#568)
           py_ran_py2 <- res2$file_name[res2$outcome != "skipped_time_limit"]
@@ -3859,7 +3888,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (Lakens/tue_datamanager_check#4, item 6)
     if (n_late > 0) {
       py_report_exec <- paste0(py_report_exec, sprintf(
-        " %d %s not started, because %s had run out.",
+        " %d %s not started, or stopped early, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
     if (length(py_written_later))

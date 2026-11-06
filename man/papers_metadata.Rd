@@ -27,7 +27,10 @@ narrative description, including known gaps and data-quality caveats.
 \examples{
 \donttest{
 if (online("api.github.com")) {
-  papers_metadata("jdm")$dc_coverage
+  # GitHub can refuse when its request limit is reached; then this says why
+  meta <- tryCatch(papers_metadata("jdm"),
+                   error = function(e) message(conditionMessage(e)))
+  if (!is.null(meta)) meta$dc_coverage
 }
 }
 }

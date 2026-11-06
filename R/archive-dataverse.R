@@ -891,6 +891,39 @@ dataverse_pat <- function(host, pat = NULL) {
   invisible(pat)
 }
 
+# The name, size and download URL of one entry of a Dataverse file listing.
+# A tabular file Dataverse converted on upload (an SPSS .sav, a Stata .dta or
+# a .csv made into a .tab; the listing then gives originalFileFormat) is taken
+# as it was uploaded: /api/access/datafile/<id> sends the converted .tab, while
+# the listing's checksum is the original's, so every such file failed the
+# checksum and was reported as damaged (#582). With ?format=original Dataverse
+# sends the original, which matches the checksum, is the file the authors'
+# own code reads, and keeps an SPSS file's value labels. Its name is the
+# listed name with the original's extension (originalFileName as a fallback),
+# its size originalFileSize.
+.dataverse_file_entry <- function(x, host) {
+  df <- x$dataFile %||% list()
+  name <- x$label %empty_or% df$filename %empty_or% NA_character_
+  size <- as.numeric(df$filesize %empty_or% NA_real_)
+  url <- if (length(df$id) > 0)
+    sprintf("https://%s/api/access/datafile/%s", host, df$id) else NA_character_
+  orig_format <- df$originalFileFormat %empty_or% NA_character_
+  if (!is.na(orig_format) && nzchar(orig_format) && !is.na(url)) {
+    orig_name <- df$originalFileName %empty_or% NA_character_
+    orig_ext <- if (!is.na(orig_name)) tools::file_ext(orig_name) else ""
+    if (!is.na(name) && nzchar(orig_ext)) {
+      name <- paste0(tools::file_path_sans_ext(name), ".", orig_ext)
+    } else if (!is.na(orig_name)) {
+      name <- orig_name
+    }
+    # the converted file's size does not describe the original: unknown when
+    # the listing does not give the original's
+    size <- as.numeric(df$originalFileSize %empty_or% NA_real_)
+    url <- paste0(url, "?format=original")
+  }
+  list(name = name, size = size, url = url)
+}
+
 #' Download all files from a Dataverse dataset
 #'
 #' Creates a directory for the dataset and downloads all of its files. Returns
@@ -1029,15 +1062,16 @@ dataverse_file_download <- function(host, doi,
   # dplyr::tibble()'s recycling with a "must be size 1, not 0" error.
   rows <- lapply(files_list, function(x) {
     df <- x$dataFile %||% list()
+    # a file Dataverse converted (a .tab made from a .sav) as it was uploaded,
+    # see .dataverse_file_entry() (#582)
+    fe <- .dataverse_file_entry(x, host)
     dplyr::tibble(
       id       = as.character(df$id %empty_or% NA_character_),
-      key      = x$label %empty_or% df$filename %empty_or% NA_character_,
-      size     = as.numeric(df$filesize %empty_or% NA_real_),
+      key      = fe$name,
+      size     = fe$size,
       checksum = (df$checksum$value %empty_or% NA_character_),
       checksum_type = tolower(df$checksum$type %empty_or% NA_character_),
-      self     = if (length(df$id) > 0)
-        sprintf("https://%s/api/access/datafile/%s", host, df$id)
-      else NA_character_
+      self     = fe$url
     )
   })
 

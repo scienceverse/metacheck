@@ -18,7 +18,9 @@ Get Languages from GitHub Repo
 \examples{
 \donttest{
 if (online("api.github.com")) {
-  github_languages("scienceverse/metacheck")
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(github_languages("scienceverse/metacheck"),
+           error = function(e) message(conditionMessage(e)))
 }
 }
 }
