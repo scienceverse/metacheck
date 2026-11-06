@@ -2185,6 +2185,15 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   out[out$status != "present", , drop = FALSE]
 }
 
+# What a file is when it is not text, from its first bytes: saved R data
+# (save()/saveRDS(), compressed or not), another compressed file, or a file with
+# zero bytes in its first 4 KB, which text does not have. NA for text. Authors
+# sometimes save data under a name ending in .R: 10.1111/2041-210X.13897's
+# bbs-btnw-bundle.R is R data compressed with gzip (#568).
+.repro_binary_kind <- function(path) {
+  .binary_kind_raw(tryCatch(readBin(path, "raw", 4096L), error = function(e) raw(0)))
+}
+
 #' Sniff whether a `.R`/`.Rmd` file that failed to parse is actually R
 #'
 #' A parse failure ([code_parse_r()], via `code_check`'s `parse_error`) is
@@ -2211,15 +2220,6 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #'   failure), else one of `"JSON"`, `"HTML"`, `"XML"` naming what was
 #'   detected
 #' @keywords internal
-# What a file is when it is not text, from its first bytes: saved R data
-# (save()/saveRDS(), compressed or not), another compressed file, or a file with
-# zero bytes in its first 4 KB, which text does not have. NA for text. Authors
-# sometimes save data under a name ending in .R: 10.1111/2041-210X.13897's
-# bbs-btnw-bundle.R is R data compressed with gzip (#568).
-.repro_binary_kind <- function(path) {
-  .binary_kind_raw(tryCatch(readBin(path, "raw", 4096L), error = function(e) raw(0)))
-}
-
 .repro_content_sniff <- function(code_text) {
   if (is.null(code_text) || !length(code_text)) return(NA_character_)
   txt <- trimws(paste(code_text, collapse = "\n"))
@@ -3123,21 +3123,6 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   paste(out, collapse = "/")
 }
 
-#' Python files that other files of the run import
-#'
-#' A module such as `utils/data_handling.py` is not a script: it defines
-#' functions for the scripts that import it, and run on its own it does
-#' nothing, or fails on code meant to run only when imported. Like an R
-#' script another script `source()`s, such a file is not run on its own. A
-#' file with an `if __name__ == "__main__":` block is a script too, and still
-#' runs.
-#'
-#' @param code_text_list named list of the Python files' code (names are
-#'   file names)
-#' @param paths the files' paths in the package (same order), for dotted
-#'   imports (`from utils.data_handling import x`); `NULL` uses the names
-#' @returns a named list: for each imported file, the files that import it
-#' @keywords internal
 # The repository's own files a Python file imports, and the files those import in
 # turn: `start` is a file name of `code_text_list`, `paths` their places. The
 # folders a script needs on Python's search path follow from all their imports:
@@ -3184,6 +3169,21 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   })
 }
 
+#' Python files that other files of the run import
+#'
+#' A module such as `utils/data_handling.py` is not a script: it defines
+#' functions for the scripts that import it, and run on its own it does
+#' nothing, or fails on code meant to run only when imported. Like an R
+#' script another script `source()`s, such a file is not run on its own. A
+#' file with an `if __name__ == "__main__":` block is a script too, and still
+#' runs.
+#'
+#' @param code_text_list named list of the Python files' code (names are
+#'   file names)
+#' @param paths the files' paths in the package (same order), for dotted
+#'   imports (`from utils.data_handling import x`); `NULL` uses the names
+#' @returns a named list: for each imported file, the files that import it
+#' @keywords internal
 .repro_py_imported <- function(code_text_list, paths = NULL) {
   fns <- names(code_text_list)
   if (!length(fns)) return(list())
