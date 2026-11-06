@@ -274,7 +274,7 @@ export_omv_html <- function(path, out = NULL) {
     rel <- sub('^src="(.*)"$', "\\1", src, ignore.case = TRUE)
     if (grepl("^(https?:)?//|^data:", rel, ignore.case = TRUE)) next
     # a malformed %-escape is kept as written instead of stopping (U148)
-    img_path <- file.path(root, tryCatch(utils::URLdecode(rel), error = function(e) rel))
+    img_path <- file.path(root, .url_decode(rel))
     if (!file.exists(img_path)) next
     ext <- tolower(tools::file_ext(img_path))
     mime <- if (ext == "png") "image/png" else if (ext == "gif") "image/gif" else "image/jpeg"

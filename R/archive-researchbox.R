@@ -91,7 +91,7 @@ rbox_links <- function(paper) {
 #' Get or Set the ResearchBox API Key
 #'
 #' ResearchBox's API (`https://researchbox.org/api_call.php`) needs a personal
-#' key. metacheck reads it from the `RESEARCHBOX_API_KEY` environment variable,
+#' key, which you can make at <https://researchbox.org/api>. metacheck reads it from the `RESEARCHBOX_API_KEY` environment variable,
 #' which you can set in your `.Renviron` file (`usethis::edit_r_environ()`):
 #'
 #' `RESEARCHBOX_API_KEY="your-key"`
@@ -100,6 +100,12 @@ rbox_links <- function(paper) {
 #' only. Without a key, [rbox_info()] and [rbox_file_download()] read the
 #' box's web page instead, and [rbox_files()] and [rbox_search()] are not
 #' available.
+#'
+#' [aspredicted_info()] and the `prereg_check` module also use the key:
+#' ResearchBox's API serves AsPredicted's public preregistrations. Without a
+#' key, the preregistrations are read from AsPredicted's web pages, and
+#' AsPredicted asks for a captcha after several pages, after which no more are
+#' read.
 #'
 #' @param token the key to set, or NULL to get the current key
 #'
@@ -183,6 +189,11 @@ rbox_token <- function(token = NULL) {
 # limit) is reported instead, with the wait in the message.
 .rbox_max_wait <- 60
 
+# The name of ResearchBox's limit for AsPredicted preregistrations in the
+# messages, which is recorded apart from its limit for boxes (see .rbox_api()
+# and api_key_status())
+.rbox_aspredicted_limit <- "ResearchBox's limit for AsPredicted preregistrations"
+
 # ResearchBox blocks a key for 10 days after 10 requests within 10 days for
 # boxes that are not public, sent without the passcode. The API answers such a
 # request exactly as one for a box that does not exist: HTTP 500 with an empty
@@ -232,8 +243,15 @@ rbox_token <- function(token = NULL) {
 #' did not exist. After 8 such answers within 10 days, a request for a box
 #' without a passcode is not sent; the error says why.
 #'
+#' `"get_aspredicted"` (AsPredicted's preregistrations, see
+#' [aspredicted_info()]) has limits of its own: its daily limit is recorded
+#' apart from the limit for boxes, so reaching one does not stop requests of
+#' the other kind. A key ResearchBox refuses stops both. Its count of
+#' preregistrations that could not be found is kept by
+#' `.aspredicted_info_api()`.
+#'
 #' @param action the API action (`"box_meta"`, `"list_files"`,
-#'   `"download_files"` or `"search"`)
+#'   `"download_files"`, `"search"` or `"get_aspredicted"`)
 #' @param ... further form fields for the action (e.g. `box_id`)
 #' @param code a box's peer-review passcode (see `.rbox_code()`), sent only
 #'   when it is not NA
@@ -250,12 +268,24 @@ rbox_token <- function(token = NULL) {
                 body = NULL))
   }
   # A limit another job reached with the same key (an hourly or daily limit,
-  # recorded below) is not asked again before it ends.
+  # recorded below) is not asked again before it ends. AsPredicted's limits
+  # are ResearchBox's limits for get_aspredicted only, so they are recorded
+  # under a name of their own (with the key's source, as the service is
+  # ResearchBox's); a refused key, recorded as "researchbox", stops both.
+  aspredicted <- identical(action, "get_aspredicted")
+  limit_record <- if (aspredicted) "researchbox_aspredicted" else "researchbox"
+  key_source <- .key_source("researchbox")
   problem <- .key_problem("researchbox")
+  if (aspredicted) {
+    if (!identical(problem$problem, "rejected")) problem <- NULL
+    problem <- problem %||% .key_problem(limit_record, source = key_source)
+  }
+  limit_name <- if (aspredicted) .rbox_aspredicted_limit
   if (!is.null(problem)) {
     return(list(ok = FALSE, body = NULL, error = paste0(
       if (problem$problem == "limit") "API rate limit exhausted: ",
-      .key_problem_message("researchbox", problem$problem, problem$until))))
+      .key_problem_message("researchbox", problem$problem, problem$until,
+                           limit = limit_name))))
   }
   fields <- list(...)
   if (!is.na(code)) fields$code <- code
@@ -310,6 +340,10 @@ rbox_token <- function(token = NULL) {
   error <- if (status == 500L && !httr2::resp_has_body(resp)) {
     if (about_box) .rbox_unfound_add()
     "unfound"
+  } else if (aspredicted && status == 404L) {
+    # "not found or not public", for a preregistration that does not exist or
+    # is not public, and for a link form it does not take (checked 2026-11-05)
+    "unfound"
   } else if (status == 429L) {
     wait <- .rbox_retry_after(resp)
     # The key's hourly or daily limit holds for every box, so it is recorded
@@ -318,11 +352,13 @@ rbox_token <- function(token = NULL) {
     # same-box hourly limit"), which other boxes are not held to.
     key_wide <- !is.na(wait) && wait > .rbox_max_wait &&
       !grepl("same[- ](box|file)", body$error %||% "", ignore.case = TRUE)
-    if (key_wide) .key_problem_record("researchbox", "limit", Sys.time() + wait)
+    if (key_wide) .key_problem_record(limit_record, "limit", Sys.time() + wait,
+                                      source = key_source)
     paste0("API rate limit exhausted: ", body$error %||% "HTTP 429",
            if (!is.na(wait)) paste0(" (ResearchBox asks to wait ", wait, " seconds)"),
            if (key_wide) paste0(". ", .key_problem_message("researchbox", "limit",
-                                                         Sys.time() + wait)))
+                                                         Sys.time() + wait,
+                                                         limit = limit_name)))
   } else if (status %in% c(401L, 403L)) {
     # a key ResearchBox does not know: 401, "token invalid" (checked 2026-10-28)
     .key_problem_record("researchbox", "rejected")

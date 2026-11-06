@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{action}{the API action (\code{"box_meta"}, \code{"list_files"},
-\code{"download_files"} or \code{"search"})}
+\code{"download_files"}, \code{"search"} or \code{"get_aspredicted"})}
 
 \item{...}{further form fields for the action (e.g. \code{box_id})}
 
@@ -38,5 +38,12 @@ ResearchBox blocks a key for 10 days after 10 requests for boxes that are
 not public, sent without their passcode, and answers those as if the box
 did not exist. After 8 such answers within 10 days, a request for a box
 without a passcode is not sent; the error says why.
+
+\code{"get_aspredicted"} (AsPredicted's preregistrations, see
+\code{\link[=aspredicted_info]{aspredicted_info()}}) has limits of its own: its daily limit is recorded
+apart from the limit for boxes, so reaching one does not stop requests of
+the other kind. A key ResearchBox refuses stops both. Its count of
+preregistrations that could not be found is kept by
+\code{.aspredicted_info_api()}.
 }
 \keyword{internal}

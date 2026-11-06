@@ -14,7 +14,7 @@ the current key (character; \code{""} when none is set)
 }
 \description{
 ResearchBox's API (\verb{https://researchbox.org/api_call.php}) needs a personal
-key. metacheck reads it from the \code{RESEARCHBOX_API_KEY} environment variable,
+key, which you can make at \url{https://researchbox.org/api}. metacheck reads it from the \code{RESEARCHBOX_API_KEY} environment variable,
 which you can set in your \code{.Renviron} file (\code{usethis::edit_r_environ()}):
 }
 \details{
@@ -24,6 +24,12 @@ Setting the key with \code{rbox_token()} overrides that for the current session
 only. Without a key, \code{\link[=rbox_info]{rbox_info()}} and \code{\link[=rbox_file_download]{rbox_file_download()}} read the
 box's web page instead, and \code{\link[=rbox_files]{rbox_files()}} and \code{\link[=rbox_search]{rbox_search()}} are not
 available.
+
+\code{\link[=aspredicted_info]{aspredicted_info()}} and the \code{prereg_check} module also use the key:
+ResearchBox's API serves AsPredicted's public preregistrations. Without a
+key, the preregistrations are read from AsPredicted's web pages, and
+AsPredicted asks for a captcha after several pages, after which no more are
+read.
 }
 \examples{
 rbox_token() # returns "" unless a key is set

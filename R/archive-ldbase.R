@@ -304,7 +304,7 @@ ldbase_info <- function(ldbase_url, id_col = 1, pb = NULL, cache = FALSE) {
   }
   file_url <- ifelse(grepl("^https?://", hrefs), hrefs, paste0("https://ldbase.org", hrefs))
   file_url <- sub("^http://", "https://", file_url)
-  file_name <- vapply(basename(hrefs), utils::URLdecode, character(1), USE.NAMES = FALSE)
+  file_name <- .url_decode(basename(hrefs))
   data.frame(file_name = file_name, file_path = file_name, file_url = file_url,
              item_type = .ldbase_type(item_url), item_url = item_url)
 }

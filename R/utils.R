@@ -70,6 +70,21 @@
   }, character(1))
 }
 
+# Decode %-codes ("%20" -> " ") in each value of `x`. utils::URLdecode() given
+# a "%" that does not start a two-digit hexadecimal code ("50%", "a%2",
+# "bad%zz.png") warns, and then drops characters ("50%" became "50", "a%2"
+# became "a") or stops ("embedded nul in string"), as "%00" does too. Here
+# such a "%" is kept as written, and a value that still cannot be decoded is
+# returned as given. NA stays NA. A result may be invalid UTF-8 ("%FF"); a
+# caller that needs text checks with validUTF8().
+.url_decode <- function(x) {
+  vapply(as.character(x), function(s) {
+    if (is.na(s) || !grepl("%", s, fixed = TRUE)) return(s)
+    kept <- gsub("%(?![0-9A-Fa-f]{2})", "%25", s, perl = TRUE)
+    tryCatch(utils::URLdecode(kept), error = function(e) s)
+  }, character(1), USE.NAMES = FALSE)
+}
+
 # A request with a stall guard (#473): curl gives up when the connection
 # moves less than 1 KB/s for `low_speed_time` seconds, or cannot connect
 # within 30 s. Without one, a connection that stalled without closing (a

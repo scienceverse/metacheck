@@ -4,15 +4,21 @@
 \alias{.aspredicted_info}
 \title{Retrieve and process info from AsPredicted by URL}
 \usage{
-.aspredicted_info(ap_url)
+.aspredicted_info(ap_url, page = TRUE)
 }
 \arguments{
 \item{ap_url}{an AsPredicted URL}
+
+\item{page}{if \code{FALSE}, the web page is not read when the API fails (after
+AsPredicted asked for a captcha)}
 }
 \value{
-a data frame of information
+a data frame of information; attribute \code{route} is \code{"api"} or
+\code{"page"} when that was asked
 }
 \description{
-Retrieve and process info from AsPredicted by URL
+Uses ResearchBox's API when a key is set (see \code{\link[=rbox_token]{rbox_token()}}), and reads
+the preregistration's web page otherwise, or when the API fails. See
+\code{\link[=aspredicted_info]{aspredicted_info()}} for the columns.
 }
 \keyword{internal}
