@@ -51,8 +51,9 @@
 #' file or answer a question, or that starts an app, and `needs_internet` one that
 #' stopped because the network is off in a Docker run, or, with `internet = TRUE`,
 #' could not reach what it asked for; `download_too_large` is a script stopped
-#' for downloading more than the limits allow (see `internet`). All three are
-#' treated the same way.
+#' for downloading more than the limits allow (see `internet`), and
+#' `out_of_memory` one that, or a program it started (such as a compiler), ran
+#' out of the memory each script may use. All four are treated the same way.
 #' `not_downloaded` is a script that stopped on a file the repository lists but
 #' that was not downloaded, such as one over `max_file_size`: it could not be
 #' tried, so it is not counted as a script that did not reproduce
@@ -1396,7 +1397,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # a folder on the authors' computer held in a variable gets the deposit's folder
   rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
     .repro_apply_folder_vars(rewrite_list[[i]],
-                             .repro_folder_vars(code_text_list[[i]], plan, r_run_dirs[i]))), names(rewrite_list))
+                             .repro_folder_vars(code_text_list[[i]], plan, r_run_dirs[i],
+                                                rw = rewrite_list[[i]]))), names(rewrite_list))
+  # a folder the script lists, where the deposit holds it (#578, item 2)
+  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i) {
+    d <- rewrite_list[[i]]
+    lf <- .repro_listed_folders(code_text_list[[i]], plan, r_run_dirs[i], "R")
+    dplyr::bind_rows(d, lf[!lf$ref %in% d$ref, , drop = FALSE])
+  }), names(rewrite_list))
 
   # Per-file rewrite counts + unresolved reads (referenced, not matched in plan).
   rewrites_n  <- vapply(rewrite_list, function(d)
@@ -2118,7 +2126,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       (.repro_needs_person_error(paste(run_results$error, run_results$stderr)) |
          # a program that needs its arguments from the person running it (#568)
          .repro_needs_arguments(code_text_list[run_results$file_name],
-                                paste(run_results$error, run_results$stderr), "R"))
+                                paste(run_results$error, run_results$stderr), "R",
+                                out = run_results$stdout))
     run_results$outcome[asks_person] <- "needs_a_person"
     run_results$error_type[asks_person] <- NA_character_
     # Stopped because the network is off, which says nothing about the code either.
@@ -2128,6 +2137,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       run_results$outcome[off_line] <- "needs_internet"
       run_results$error_type[off_line] <- NA_character_
     }
+    # Ran out of the memory each script may use, which says nothing about the code
+    # either (#578, item 8; see .repro_out_of_memory())
+    oom <- run_results$outcome == "errored" & .repro_out_of_memory(paste(run_results$error, run_results$stderr))
+    run_results$outcome[oom] <- "out_of_memory"
+    run_results$error_type[oom] <- NA_character_
     # Stopped on a file the repository lists but that we did not download, such
     # as one over the size limit: the script could not be tried (#568).
     r_not_downloaded <- .repro_not_downloaded(run_results, structure_df)
@@ -2154,7 +2168,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -3151,6 +3165,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_run_dirs <- .repro_run_folders(py_script_places, py_code_text_list, plan, py_order_tbl, "Python")
   py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i)
     .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_script_paths[i], py_run_dirs[i])), names(py_rewrite_list))
+  # a folder the script lists, where the deposit holds it (#578, item 2)
+  py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i) {
+    d <- py_rewrite_list[[i]]
+    lf <- .repro_listed_folders(py_code_text_list[[i]], plan, py_run_dirs[i], "Python")
+    dplyr::bind_rows(d, lf[!lf$ref %in% d$ref, , drop = FALSE])
+  }), names(py_rewrite_list))
 
   py_rewrites_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
@@ -3537,10 +3557,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         (.repro_needs_person_error(paste(py_run_results$error, py_run_results$stderr)) |
            # a program that needs its arguments from the person running it (#568)
            .repro_needs_arguments(py_code_text_list[py_run_results$file_name],
-                                  paste(py_run_results$error, py_run_results$stderr), "Python"))] <- "needs_a_person"
+                                  paste(py_run_results$error, py_run_results$stderr), "Python",
+                                  out = py_run_results$stdout))] <- "needs_a_person"
       if (sandbox == "docker")
         py_run_results$outcome[py_run_results$outcome == "errored" &
           .repro_needs_internet_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_internet"
+      # ran out of memory (#578, item 8; as for R above)
+      py_run_results$outcome[py_run_results$outcome == "errored" &
+        .repro_out_of_memory(paste(py_run_results$error, py_run_results$stderr))] <- "out_of_memory"
       # stopped on a file we did not download (#568; as for R above)
       py_not_downloaded <- .repro_not_downloaded(py_run_results, structure_df)
       py_run_results$outcome[py_run_results$file_name %in% py_not_downloaded$script] <- "not_downloaded"
@@ -3580,7 +3604,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output

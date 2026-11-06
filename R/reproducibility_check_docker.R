@@ -193,6 +193,24 @@ repro_docker_available <- function() {
           format(limits$memory_gb))
 }
 
+# Whether a script's output shows that it, or a program it started, ran out of
+# memory. A compiler that runs out is stopped on its own, and R carries on:
+# in 10.1111/1365-2435.14319 compiling a Stan model ended with "g++: fatal error:
+# Killed signal terminated program cc1plus", and the script then failed on sink()
+# (#578, item 8). Also R's own "cannot allocate vector of size", C++'s
+# std::bad_alloc, Python's MemoryError, and the note of .repro_oom_text().
+.repro_out_of_memory <- function(txt) {
+  grepl(paste0("Killed signal terminated program|cannot allocate vector of size|std::bad_alloc|",
+               "(?m)^\\s*MemoryError\\b|was stopped for using more than the memory limit"),
+        ifelse(is.na(txt), "", txt), perl = TRUE)
+}
+
+# The memory each script may use here, as text ("4 GB"), or NA when no limit is set.
+.repro_memory_limit_text <- function() {
+  gb <- getOption("metacheck.docker_resource_limits")$memory_gb
+  if (is.null(gb)) NA_character_ else paste(format(gb), "GB")
+}
+
 .repro_docker_resource_args <- function() {
   no_crash_file <- c("--ulimit", "core=1")
   limits <- getOption("metacheck.docker_resource_limits")
@@ -1185,6 +1203,14 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
              # stopped three scripts of 10.1111/2041-210X.14007 (#568)
              "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
+             # Java 17 and later keep other code out of their own classes, and
+             # rJava, which calls Java's methods by reflection, was refused the
+             # iterator of an ArrayList: tabulizer::extract_tables() stopped with
+             # "IllegalAccessException: class RJavaTools cannot access a member
+             # of class java.util.ArrayList$Itr" (10.1002/2688-8319.12124). Java
+             # reads this when it starts, also inside R (#578, item 7); tested in
+             # the image with Java 21.
+             "-e", "JAVA_TOOL_OPTIONS=--add-opens=java.base/java.util=ALL-UNNAMED",
              "-v", paste0(sandbox_root, ":/sandbox"))
     # The library is writable: a package can keep data in its own folder, as
     # zipcodeR::download_zip_data() does in /rlib/zipcodeR/data, which stopped

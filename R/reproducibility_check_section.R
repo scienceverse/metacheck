@@ -212,7 +212,7 @@
         sprintf("%s starts %s.", code(name[prog]), code(program[prog])),
         paste("Our computer does not have this program, and neither will most readers'. Name the program,",
               "its version and where to get it in the README. A Docker image can include it."))
-  memory <- which(err & grepl("was stopped for using more than the memory limit", msg, fixed = TRUE))
+  memory <- which(outcome %in% "out_of_memory" | (err & .repro_out_of_memory(msg)))
   keys <- setdiff(which(err & grepl("API key|api[_ ]key|set env(ironment)? var", key, ignore.case = TRUE)), prog)
   windows <- setdiff(which(err & grepl("RODBC|odbcConnect|\\.accdb|\\.mdb\\b", msg)), prog)
   env <- setdiff(which(err & reason %in% "environment"), c(prog, memory, keys, windows))
@@ -255,6 +255,7 @@
               "(such as fitted models) to files, add those to the deposit, and let the script read them, so",
               "readers can check the rest without waiting."))
   gb <- regmatches(msg[memory], regexpr("memory limit of [0-9.]+ GB", msg[memory]))
+  if (!length(gb) && !is.na(.repro_memory_limit_text())) gb <- paste("memory limit of", .repro_memory_limit_text())
   block("memory", memory, if (length(gb)) sprintf("A script needs more memory than our %s.", sub("memory limit of", "limit of", gb[[1]]))
         else "A script needs more memory than our limit.",
         code(name[memory]), "State in the README how much memory the code needs.")
@@ -271,7 +272,7 @@
   # A failure no block explains is said to be one, not left out
   unknown <- setdiff(which(err | outcome %in% c("dependency_unavailable", "timed_out", "skipped_time_limit",
                                                  "needs_internet", "download_too_large", "needs_a_person",
-                                                 "not_parsed")), covered)
+                                                 "not_parsed", "out_of_memory")), covered)
   block("unknown", unknown, "Metacheck can't automatically establish what caused the error, or how it should be improved.",
         code(name[unknown]), "The error message of each script is in the table above.")
 
@@ -403,6 +404,9 @@
       not_downloaded = c("Not tried", paste(
         "It needs a file that the deposit holds but that we did not download, such as one",
         "over our size limit, so this says nothing about the script.")),
+      out_of_memory = c("Ran out of memory", if (is.na(.repro_memory_limit_text()))
+        "It needed more memory than it could use here." else
+        sprintf("It needed more than the %s of memory it could use here.", .repro_memory_limit_text())),
       needs_internet = c("Stopped",
         if (is.null(net)) "It needs the internet, which is off while we run code."
         else "It could not reach what it asked for on the internet."),
@@ -443,6 +447,7 @@
               dependency_unavailable = "could not run on our server",
               docker_failed = "could not run on our server",
               needs_a_person = "needed a person", needs_internet = "needed the internet",
+              out_of_memory = "ran out of memory",
               download_too_large = "downloaded too much")
   n_ok <- sum(outcome[counted] == "ran_ok")
   parts <- vapply(names(groups), \(g) {

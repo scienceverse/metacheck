@@ -90,6 +90,9 @@ statement that does nothing),
 \code{env_calls_replaced} (count of groundhog, checkpoint and renv calls replaced),
 \code{slashes_fixed} (the quoted Windows paths given \code{/}, as they were, joined by
 "; "; see \code{.repro_slash_paths()}),
+\code{setwd_folder_removed} (the paths made relative to the working folder
+because they lay under the folder of a removed \code{setwd()}, as
+"before -> after", joined by "; "; see \code{.repro_strip_setwd_folder()}),
 \code{setwd_paths} (comma-joined paths those calls named, for the warning),
 \code{family_replaced} (count of \verb{family =}/\verb{base_family =} named-font
 arguments replaced with \code{"sans"}, so a plot call does not fail with

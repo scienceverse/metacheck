@@ -4018,3 +4018,125 @@ test_that("the checklist says how to make the code run on another computer (#575
   ok <- .repro_checklist_section(tb, transform(rr, outcome = "ran_ok", stderr = ""))
   expect_false(grepl("How to make your code run", ok, fixed = TRUE))
 })
+
+test_that("a setwd() call written over several lines is taken out whole (#578, item 1)", {
+  # 10.1111/1365-2656.13801: only the first line was replaced, and R stopped on ")"
+  sw <- .repro_neutralise_setwd(c("setwd(", '  "SET WORKING DIRECORY HERE"', ")", "x <- 1"))
+  expect_length(sw$txt, 4)
+  expect_no_error(parse(text = sw$txt))
+  expect_equal(sw$n, 1)
+  expect_equal(sw$paths, "SET WORKING DIRECORY HERE")
+  expect_equal(sw$txt[2:4], c('  # "SET WORKING DIRECORY HERE"', "# )", "x <- 1"))
+  # a call on one line, and brackets inside its text, are as before
+  one <- .repro_neutralise_setwd(c('setwd("a")', "y <- 2"))
+  expect_equal(one$txt[2], "y <- 2")
+  expect_equal(one$paths, "a")
+  br <- .repro_neutralise_setwd(c('setwd(paste0("a(", "b"))', "y <- 2"))
+  expect_equal(br$txt[2], "y <- 2")
+  # Python
+  py <- .repro_neutralise_setwd(c("os.chdir(", "    '/home/me/x'", ")", "y = 1"), "Python")
+  expect_equal(py$txt[2:4], c("    # '/home/me/x'", "# )", "y = 1"))
+  expect_equal(py$paths, "/home/me/x")
+})
+
+test_that("a folder a script lists is rewritten to where the deposit holds it (#578, item 2)", {
+  # 10.1111/1365-2435.14241: list.files() of a folder that is in a zip of the deposit
+  plan <- .repro_package_plan(data.frame(file_name = c("a.csv", "b.csv", "m.R"),
+    file_path = c("x.zip/top/ir_data/control_forage_data/a.csv", "x.zip/top/ir_data/control_forage_data/b.csv", "scripts/m.R")))
+  lf <- .repro_listed_folders('d <- list.files("../data/ir_data/control_forage_data/", full.names = TRUE)', plan, "scripts")
+  expect_equal(lf$target, "../x.zip/top/ir_data/control_forage_data/")
+  expect_equal(.repro_apply_rewrites('d <- list.files("../data/ir_data/control_forage_data/")', lf),
+               'd <- list.files("../x.zip/top/ir_data/control_forage_data/")')
+  # a folder that works as written stays
+  expect_equal(nrow(.repro_listed_folders('d <- list.files("../x.zip/top/ir_data/control_forage_data")', plan, "scripts")), 0)
+  # two folders with the same last parts: no guess
+  plan2 <- .repro_package_plan(data.frame(file_name = c("a.csv", "b.csv"),
+    file_path = c("s1/ir_data/control_forage_data/a.csv", "s2/ir_data/control_forage_data/b.csv")))
+  expect_equal(nrow(.repro_listed_folders('d <- list.files("../data/ir_data/control_forage_data/")', plan2, "scripts")), 0)
+  # a glob pattern, and Python
+  expect_equal(.repro_listed_folders('f <- Sys.glob("data/control_forage_data/*.csv")', plan, ".")$target,
+               "x.zip/top/ir_data/control_forage_data/*.csv")
+  py <- .repro_listed_folders(c('f = glob.glob("data/control_forage_data/*.csv")',
+                                'g = Path("data/control_forage_data").glob("*.csv")', 'h = Path("data/x.csv")'),
+                              plan, ".", "Python")
+  expect_equal(py$ref, c("data/control_forage_data/*.csv", "data/control_forage_data"))
+})
+
+test_that("a path under the folder of a removed setwd() counts from the working folder (#578, item 3)", {
+  # 10.1111/1365-2656.13449: setwd("C:\\specify_directory_here") and a model file in that folder
+  code <- c('setwd("C:\\\\proj")', 'x <- read.csv("C:\\\\proj\\\\data\\\\a.csv")', 'y <- "C:/PROJ/b.txt"',
+            'z <- "C:\\\\other\\\\c.csv"')
+  out <- .repro_strip_setwd_folder(code, .repro_neutralise_setwd(code)$paths)
+  expect_equal(out$txt[2:4], c('x <- read.csv("data/a.csv")', 'y <- "b.txt"', 'z <- "C:\\\\other\\\\c.csv"'))
+  expect_length(out$paths, 2)
+  rows <- .repro_slash_rows(data.frame(file_name = "a.R", slashes_fixed = "",
+                                       setwd_folder_removed = paste(out$paths, collapse = "; ")))
+  expect_equal(unique(rows$change_type), "path_rewrite")
+  # those rows are not Windows paths in the report
+  expect_null(.repro_slash_report(data.frame(file_name = "a.R", slashes_fixed = "",
+                                             setwd_folder_removed = paste(out$paths, collapse = "; "))))
+  # a relative setwd() folder is left alone
+  expect_length(.repro_strip_setwd_folder('x <- "data/a.csv"', "data")$paths, 0)
+})
+
+test_that("a folder in a variable made with paste0() becomes the run folder when its file is found (#578, item 4)", {
+  # 10.1111/1365-2435.14620: main_address = paste0("~/Library/.../"), set twice
+  expect_equal(.repro_simple_string_vars('a = paste0("~/x/")'), character(0))
+  expect_equal(unname(.repro_simple_string_vars('a = paste0("~/x/")', calls = TRUE)), "~/x/")
+  code <- c('main_address = paste0("~/x/")',
+            'd <- read_xlsx(file.path(main_address, "sub/a.xlsx"))',
+            'dir.create(file.path(main_address, "Outputs"))',
+            'main_address = "~/x"')
+  plan <- .repro_package_plan(data.frame(file_name = c("a.xlsx", "m.R"), file_path = c("D.zip/D/a.xlsx", "m.R")))
+  rw <- .repro_keep_working_refs(repro_rewrite_paths(code, "m.R", plan, script_path = "m.R"), plan, "m.R", ".")
+  fv <- .repro_folder_vars(code, plan, ".", rw = rw)
+  expect_true(all(fv$keep_pieces))
+  out <- .repro_apply_rewrites(code, .repro_apply_folder_vars(rw, fv))
+  expect_equal(out, c('main_address = paste0("./")', 'd <- read_xlsx(file.path(main_address, "D.zip/D/a.xlsx"))',
+                      'dir.create(file.path(main_address, "Outputs"))', 'main_address = "./"'))
+})
+
+test_that("four more messages of text that is no longer a factor start the old default (#578, item 5)", {
+  rr <- function(m) data.frame(file_name = "s.R", outcome = "errored", error = "", stderr = m)
+  expect_equal(.repro_old_defaults(rr("Error in `levels<-`(x, value = l) : factor level [3] is duplicated"))$s.R, "factors")
+  expect_equal(.repro_old_defaults(rr("Error in UseMethod(\"droplevels\") : \n  no applicable method for 'droplevels' applied to an object of class \"character\""))$s.R,
+               "factors")
+  expect_equal(.repro_old_defaults(rr("Error in standardize(m) : The object area must be either numeric or a factor."))$s.R, "factors")
+  xlim <- "Error in plot.window(...) : need finite 'xlim' values"
+  expect_equal(.repro_old_defaults(rr(paste0(xlim, "\nIn addition: Warning message:\nIn xy.coords(x, y, xlabel, ylabel, log) :\n  NAs introduced by coercion")))$s.R,
+               "factors")
+  # without the warning, it has other causes
+  expect_length(.repro_old_defaults(rr(xlim)), 0)
+})
+
+test_that("a program that prints how to use it needs arguments (#578, item 6)", {
+  # 10.1111/1365-2656.13545: Stacks tools that print their usage and stop
+  py <- list(t = c("import sys", "try:", "    input_vcf = sys.argv[1]", "except:", "    print(__doc__)", "    sys.exit(1)"))
+  expect_true(.repro_needs_arguments(py, "the script stopped without a message", "Python",
+    out = "Keep only the first SNP...\n\nUsage:\n    ./extract_first_snp.py input_vcf output_vcf\n"))
+  r <- list(o = c("library(optparse)", "opt <- parse_args(OptionParser(option_list = l))",
+                  'if (is.null(opt$prefix)) { print_help(p); stop("Please provide the prefix") }'))
+  expect_true(.repro_needs_arguments(r, "Error: Please provide the prefix", "R",
+    out = "Usage: popgen.R [options]\n\t-h, --help\n\t\tShow this help message and exit"))
+  # no arguments read, the word "usage" in its results
+  expect_false(.repro_needs_arguments(list(a = "x <- 1"), "Error: boom", "R", out = "usage: 3 times"))
+  # without the output, as before
+  expect_false(.repro_needs_arguments(py, "the script stopped without a message", "Python"))
+})
+
+test_that("a script that ran out of memory says so, also when a compiler did (#578, item 8)", {
+  # 10.1111/1365-2435.14319: g++ ran out of memory compiling a Stan model
+  gpp <- "g++: fatal error: Killed signal terminated program cc1plus"
+  expect_equal(.repro_out_of_memory(c(gpp, "Error: Killed: wrong input", "Traceback\nMemoryError",
+                                      "Error: cannot allocate vector of size 2.3 Gb", NA)),
+               c(TRUE, FALSE, TRUE, TRUE, FALSE))
+  expect_equal(.repro_failure_reason("out_of_memory", gpp), "environment")
+  withr::local_options(metacheck.docker_resource_limits = list(cpus = 2, memory_gb = 4))
+  tb <- data.frame(file_name = "m.R", run_order = 1L, outcome = "out_of_memory", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "m.R", outcome = "out_of_memory", error = "", stderr = gpp)
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "1 ran out of memory", fixed = TRUE)
+  expect_match(out, "It needed more than the 4 GB of memory it could use here.", fixed = TRUE)
+  expect_match(out, "**A script needs more memory than our limit of 4 GB.**", fixed = TRUE)
+})

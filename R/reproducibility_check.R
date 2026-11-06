@@ -338,11 +338,21 @@ repro_dependencies <- function(code_text, lang = "R") {
 #' gets `NA`, never a guess.
 #'
 #' @param code_text the code text for a single file, comments already stripped
+#' @param calls also resolve a call holding one quoted text and nothing else,
+#'   `paste0("...")`, `paste("...")`, `file.path("...")`, `path.expand("...")`
+#'   or `normalizePath("...")`, which give that text: a folder on the authors'
+#'   computer was held as `main_address = paste0("~/Library/...")` in
+#'   10.1111/1365-2435.14620 (#578, item 4). `FALSE` by default.
 #'
 #' @returns a named character vector (name = literal value), possibly empty
 #' @keywords internal
-.repro_simple_string_vars <- function(code_text) {
+.repro_simple_string_vars <- function(code_text, calls = FALSE) {
   pat <- "^([.a-zA-Z][.a-zA-Z0-9_]*)\\s*(?:<<-|<-|=)\\s*(['\"])((?:[^'\"\\\\]|\\\\.)*)\\2\\s*$"
+  if (isTRUE(calls))
+    code_text <- sub(paste0("^([.a-zA-Z][.a-zA-Z0-9_]*\\s*(?:<<-|<-|=)\\s*)",
+                            "(?:base::)?(?:paste0|paste|file\\.path|path\\.expand|normalizePath)",
+                            "\\s*\\(\\s*((['\"])(?:[^'\"\\\\]|\\\\.)*\\3)\\s*\\)\\s*$"),
+                     "\\1\\2", code_text, perl = TRUE)
   m <- regmatches(code_text, regexec(pat, code_text, perl = TRUE))
   hits <- Filter(function(x) length(x) == 4, m)
   if (length(hits) == 0) return(character(0))
@@ -2985,17 +2995,38 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # folder the script runs from; the pasted pieces are then not rewritten on their
 # own (they were, so "/1_scripts/0_FUNCTIONS.R" became "0_FUNCTIONS.R" after the
 # author's folder). Only an absolute folder ("C:/...", "/...", "~/...") is
-# changed, and only when at least one pasted path exists in the deposit. Returns
-# a data frame: `value` (the folder as written), `target` (its new value) and a
-# list-column `pieces` (the texts pasted to it, as written).
-.repro_folder_vars <- function(code_text, plan, run_dir = ".") {
-  empty <- data.frame(value = character(0), target = character(0))
+# changed, and only when at least one pasted path exists in the deposit, or a
+# pasted file is in the deposit by its name (see below): a piece the script's
+# rewrites `rw` point to a file, or without them, a name one file has. Returns a data frame:
+# `value` (the folder as written), `target` (its new value), `keep_pieces`
+# (whether the pasted pieces keep their own rewrites) and a list-column `pieces`
+# (the texts pasted to it, as written).
+.repro_folder_vars <- function(code_text, plan, run_dir = ".", rw = NULL) {
+  empty <- data.frame(value = character(0), target = character(0), keep_pieces = logical(0))
   empty$pieces <- list()
   if (is.null(plan) || !nrow(plan) || !length(code_text)) return(empty)
   nc <- tryCatch(code_remove_comments(.utf8_lines(code_text), "R"), error = function(e) .utf8_lines(code_text))
-  vars <- .repro_simple_string_vars(nc)
-  vars <- vars[grepl("^([A-Za-z]:[/\\\\]|/|~)", vars) & !grepl("\\.[A-Za-z0-9]{1,8}$", vars)]
+  absolute_folder <- function(x) grepl("^([A-Za-z]:[/\\\\]|/|~)", x) & !grepl("\\.[A-Za-z0-9]{1,8}$", x)
+  # Every value a variable is given, not only the last: in 10.1111/1365-2435.14620
+  # main_address is set four times, to the folder with and without a final "/",
+  # and only the last value was rewritten (#578, item 4)
+  per_line <- lapply(nc, .repro_simple_string_vars, calls = TRUE)
+  assigned <- unlist(per_line)
+  assigned <- assigned[absolute_folder(assigned)]
+  vars <- assigned[!duplicated(names(assigned), fromLast = TRUE)]
   if (!length(vars)) return(empty)
+  # the rows of one variable: each value it is given, with the new folder, and a
+  # final "/" where the value has one
+  rows_for <- function(v, to, keep) {
+    vals <- unique(assigned[names(assigned) == v])
+    base <- sub("/+$", "", to)
+    if (!nzchar(base)) base <- "."
+    out <- data.frame(value = vals, target = ifelse(grepl("[/\\\\]$", vals), paste0(base, "/"), base),
+                      keep_pieces = keep)
+    out$pieces <- rep(list(pieces_of[[v]]), nrow(out))
+    out
+  }
+  pieces_of <- list()
   joined <- paste(nc, collapse = "\n")
   files <- tolower(gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)]))
   folders <- character(0)
@@ -3011,6 +3042,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     hits <- regmatches(joined, gregexpr(pat, joined, perl = TRUE))[[1]]
     if (!length(hits)) return(NULL)
     pieces <- unique(sub(pat, "\\2", hits, perl = TRUE))
+    pieces_of[[v]] <<- pieces
     rel <- sub("/+$", "", sub("^[/\\\\]+", "", gsub("\\\\", "/", pieces)))
     rel <- rel[nzchar(rel)]
     if (!length(rel)) return(NULL)
@@ -3019,7 +3051,27 @@ repro_materialize_layout <- function(plan, structure_df, root) {
       p <- vapply(if (f == ".") rel else file.path(f, rel), .repro_norm_rel, character(1), USE.NAMES = FALSE)
       sum(tolower(p[!is.na(p)]) %in% known)
     }, numeric(1))
-    if (max(score) < 1) return(NULL)
+    if (max(score) < 1) {
+      # No pasted path exists as written, but a pasted file is in the deposit by
+      # its name, and the path rewrite points the piece there, counted from the
+      # run folder: the folder then becomes the run folder, and the piece keeps
+      # its rewrite. In 10.1111/1365-2435.14620 "obsSurvival_Temperature_dfs/
+      # observed_surv_df.xlsx" is in DATA.zip/DATA/..., and main_address stayed
+      # the authors' folder (#578, item 4).
+      by_name <- if (!is.null(rw) && nrow(rw))
+        pieces[pieces %in% rw$ref[rw$matched %in% TRUE & !(rw$ambiguous %in% TRUE) &
+                                    !is.na(rw$target) & !(rw$as_written %in% TRUE)]]
+      else {
+        # without the rewrites, a name that one file of the deposit has
+        named <- tolower(basename(rel[grepl("\\.[A-Za-z0-9]{1,8}$", rel)]))
+        named[vapply(named, function(b) sum(basename(files) == b) == 1, logical(1))]
+      }
+      if (!length(by_name)) return(NULL)
+      # "./" with every value, so paste0() and file.path() both still join
+      out <- rows_for(v, ".", TRUE)
+      out$target <- "./"
+      return(out)
+    }
     best <- c(".", folders)[score == max(score)]
     # several equally good: the one nearest the script's own folder, else none
     near <- best[startsWith(paste0(tolower(run_dir), "/"), paste0(best, "/")) | best == "."]
@@ -3033,10 +3085,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
       pick <- substr(under[1], 1, nchar(pick))
     }
     to <- dirname(.repro_rel_from(if (pick == ".") "./x" else file.path(pick, "x"), run_dir))
-    if (grepl("[/\\\\]$", vars[[v]])) to <- paste0(if (to == ".") "." else to, "/")
-    out <- data.frame(value = vars[[v]], target = to)
-    out$pieces <- list(pieces)
-    out
+    rows_for(v, to, FALSE)
   })
   rows <- Filter(Negate(is.null), rows)
   if (!length(rows)) return(empty)
@@ -3093,11 +3142,87 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out
 }
 
+# Folders a script lists, with list.files(), dir(), list.dirs(), Sys.glob() or
+# fs::dir_ls() in R and os.listdir(), os.scandir(), glob.glob() or
+# Path(...).glob() in Python, rewritten to where the deposit holds them: in
+# 10.1111/1365-2435.14241 list.files("../data/ir_data/control_forage_data/")
+# found nothing, while the folder is in heatwave_data_07_25_22.zip/heatwave_data/,
+# and the data frame had no columns (#578, item 2). code_file_refs() returns only
+# file names, so the path rewrite never saw the folder. A folder that works as
+# written from `run_dir` stays. Otherwise its last parts are compared with the
+# folders of the plan, as many as match, and it is rewritten only when that
+# leaves one folder, counted from `run_dir`, with its final "/" kept. For a glob
+# pattern ("data/*.csv") the folder before the pattern counts. Returns rows in
+# the form of repro_rewrite_paths(), for the rewrites of the script.
+.repro_listed_folders <- function(code_text, plan, run_dir = ".", lang = "R") {
+  empty <- data.frame(ref = character(0), basename = character(0), matched = logical(0),
+                      target = character(0), ambiguous = logical(0), n_candidates = integer(0),
+                      is_call = logical(0), name_in_code = character(0), name_in_deposit = character(0),
+                      as_written = logical(0))
+  if (is.null(plan) || !nrow(plan) || !length(code_text)) return(empty)
+  txt <- paste(tryCatch(code_remove_comments(.utf8_lines(code_text), lang), error = function(e) .utf8_lines(code_text)),
+               collapse = "\n")
+  pat <- if (identical(lang, "Python"))
+    "\\b(?:os\\.listdir|os\\.scandir|glob\\.i?glob|Path)\\s*\\(\\s*([\"'])([^\"'\n]+)\\1" else
+    "\\b(?:list\\.files|list\\.dirs|dir|Sys\\.glob|(?:fs::)?dir_ls)\\s*\\(\\s*(?:path\\s*=\\s*)?([\"'])([^\"'\n]+)\\1"
+  hits <- regmatches(txt, gregexpr(pat, txt, perl = TRUE))[[1]]
+  if (identical(lang, "Python")) {
+    # Path("x") only when it is listed: Path("x").glob() or .iterdir()
+    listed <- function(h) {
+      at <- gregexpr(h, txt, fixed = TRUE)[[1]]
+      after <- substring(txt, at + nchar(h), at + nchar(h) + 40)
+      any(grepl("^\\s*\\)\\s*\\.(?:r?glob|iterdir)\\b", after, perl = TRUE))
+    }
+    keep <- vapply(hits, function(h) !startsWith(h, "Path") || listed(h), logical(1), USE.NAMES = FALSE)
+    hits <- hits[keep]
+  }
+  refs <- unique(sub(paste0("(?s)", pat), "\\2", hits, perl = TRUE))
+  if (!length(refs)) return(empty)
+  files <- gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)])
+  folders <- character(0)
+  d <- unique(dirname(files))
+  while (length(d <- setdiff(d[d != "."], folders))) {
+    folders <- c(folders, d)
+    d <- unique(dirname(d))
+  }
+  if (!length(folders)) return(empty)
+  folder_parts <- strsplit(tolower(folders), "/", fixed = TRUE)
+  rows <- lapply(refs, function(ref) {
+    r <- gsub("\\\\+", "/", ref)
+    glob <- grepl("[*?]", basename(r))
+    dir_part <- if (glob) dirname(r) else sub("/+$", "", r)
+    rest <- if (glob) basename(r) else ""
+    # works as written from where the script runs
+    from_run <- if (grepl("^([A-Za-z]:/|/|~)", dir_part)) NA_character_ else
+      .repro_norm_rel(if (run_dir %in% c(".", "")) dir_part else file.path(run_dir, dir_part))
+    if (!is.na(from_run) && tolower(from_run) %in% tolower(folders)) return(NULL)
+    parts <- strsplit(tolower(dir_part), "/", fixed = TRUE)[[1]]
+    parts <- parts[nzchar(parts) & !parts %in% c(".", "..", "~") & !grepl("^[a-z]:$", parts)]
+    if (!length(parts)) return(NULL)
+    shared <- vapply(folder_parts, function(fp) {
+      n <- min(length(fp), length(parts))
+      same <- rev(fp)[seq_len(n)] == rev(parts)[seq_len(n)]
+      if (all(same)) n else which(!same)[1] - 1L
+    }, integer(1))
+    best <- which(shared == max(shared))
+    if (max(shared) < 1 || length(best) != 1) return(NULL)
+    to <- .repro_rel_from(folders[best], run_dir)
+    to <- if (glob) paste0(to, "/", rest) else paste0(to, if (grepl("[/\\\\]$", ref)) "/" else "")
+    data.frame(ref = ref, basename = basename(dir_part), matched = TRUE, target = to, ambiguous = FALSE,
+               n_candidates = 1L, is_call = FALSE, name_in_code = NA_character_,
+               name_in_deposit = NA_character_, as_written = FALSE)
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (!length(rows)) empty else dplyr::bind_rows(rows)
+}
+
 # Apply .repro_folder_vars() to one script's rewrites: a row for each folder's
 # new value, and the pasted pieces no longer rewritten on their own.
 .repro_apply_folder_vars <- function(rw, fv) {
   if (is.null(fv) || !nrow(fv)) return(rw)
-  if (nrow(rw)) rw <- rw[!rw$ref %in% unlist(fv$pieces), , drop = FALSE]
+  # pieces of a folder that became the run folder keep their rewrites (#578, item 4)
+  dropped <- unlist(fv$pieces[!(fv$keep_pieces %in% TRUE)])
+  if (nrow(rw)) rw <- rw[!rw$ref %in% dropped, , drop = FALSE]
   add <- data.frame(ref = fv$value, basename = basename(gsub("\\\\", "/", fv$value)), matched = TRUE,
                     target = fv$target, ambiguous = FALSE, n_candidates = 1L, is_call = FALSE,
                     name_in_code = NA_character_, name_in_deposit = NA_character_, as_written = FALSE)
@@ -3487,15 +3612,53 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   n <- sum(is_setwd)
   paths <- character(0)
   if (n > 0) {
-    hit_lines <- txt[is_setwd]
-    m <- regmatches(hit_lines, regexpr(setwd_arg, hit_lines, perl = TRUE))
-    paths <- sub(paste0(".*", setwd_arg, ".*"), "\\1", m[nzchar(m)], perl = TRUE)
+    # A call written over several lines, as setwd(\n "SET WORKING DIRECORY
+    # HERE"\n) in 10.1111/1365-2656.13801: its further lines up to the closing
+    # bracket are made comments too, keeping their indentation, so the script
+    # parses and keeps its number of lines. Only the first line was replaced,
+    # and R stopped on the lone ")" (#578, item 1).
+    call_start <- sub(".*?((?:[A-Za-z_][A-Za-z0-9_]*(?:::|\\.))?(?:setwd|chdir)\\s*\\(.*)$", "\\1",
+                      txt, perl = TRUE)
+    calls <- character(0)
+    more <- integer(0)
+    for (i in which(is_setwd)) {
+      depth <- .repro_bracket_depth(call_start[[i]], lang)
+      j <- i
+      while (depth > 0 && j < length(txt) && j - i < 50) {
+        j <- j + 1
+        depth <- depth + .repro_bracket_depth(txt[[j]], lang)
+      }
+      if (j > i && depth <= 0) more <- c(more, seq.int(i + 1, j))
+      calls <- c(calls, paste(c(call_start[[i]], if (j > i) txt[seq.int(i + 1, j)]), collapse = "\n"))
+    }
+    m <- regmatches(calls, regexpr(setwd_arg, calls, perl = TRUE))
+    paths <- sub(paste0("(?s).*", setwd_arg, ".*"), "\\1", m[nzchar(m)], perl = TRUE)
     no_op <- if (identical(lang, "Python"))
       sprintf("\\1pass  # [%s removed os.chdir] \\2", by) else
       sprintf("\\1invisible(NULL)  # [%s removed setwd] \\2", by)
     txt[is_setwd] <- sub(setwd_line, no_op, txt[is_setwd], perl = TRUE)
+    txt[more] <- sub("^(\\s*)", "\\1# ", txt[more], perl = TRUE)
   }
   list(txt = txt, n = n, paths = paths)
+}
+
+# How many more brackets a line of code opens than it closes, leaving out
+# brackets in quoted text and after a comment sign.
+.repro_bracket_depth <- function(line, lang = "R") {
+  if (is.na(line) || !nzchar(line)) return(0L)
+  ch <- strsplit(line, "", fixed = TRUE)[[1]]
+  depth <- 0L; quote <- ""; esc <- FALSE
+  for (c in ch) {
+    if (nzchar(quote)) {
+      if (esc) esc <- FALSE
+      else if (c == "\\") esc <- TRUE
+      else if (c == quote) quote <- ""
+    } else if (c %in% c("'", '"', if (identical(lang, "R")) "`")) quote <- c
+    else if (c == "#") break
+    else if (c == "(") depth <- depth + 1L
+    else if (c == ")") depth <- depth - 1L
+  }
+  depth
 }
 
 # groundhog.library(...) as the library() calls that load the same packages: the
@@ -3655,6 +3818,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out[outcome %in% c("timed_out", "skipped_time_limit")] <- "time"
   out[outcome %in% c("needs_a_person")] <- "interactive"
   out[outcome %in% c("needs_internet")] <- "internet"
+  out[outcome %in% c("out_of_memory")] <- "environment"   # #578, item 8
   # a download that was too large, or still arriving when the time ran out
   out[outcome %in% c("download_too_large")] <- "download"
   out[outcome %in% c("timed_out") & has("while a download was still arriving")] <- "download"
@@ -3794,16 +3958,26 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # (which Python prints) reads sys.argv or parse_args(). 53 failed scripts in 8
 # papers of the corpus read arguments, as in 10.1111/2041-210X.13845 (PyRate) and
 # 10.1111/2041-210X.13721 (#568). `code` is a list of the scripts' lines.
-.repro_needs_arguments <- function(code, txt, lang = "R") {
+# A program that prints how to use it, on its standard output (`out`) or in its
+# error, also stopped for want of arguments: 45 tools of the Stacks pipeline of
+# 10.1111/1365-2656.13545 print "Usage: ./extract_first_snp.py input_vcf
+# output_vcf" when sys.argv is short, and stop without a message, and an R
+# script with optparse prints its help before stop() (#578, item 6). In R,
+# optparse, argparser and docopt read arguments too.
+.repro_needs_arguments <- function(code, txt, lang = "R", out = NULL) {
   txt <- txt %||% rep("", length(code))
+  txt[is.na(txt)] <- ""
+  out <- if (is.null(out)) rep("", length(txt)) else ifelse(is.na(out), "", out)
   reads <- vapply(code, function(s) grepl(
     if (identical(lang, "Python")) "argparse|sys[.]argv|getopt|docopt|click[.](command|argument|option)"
-    else "commandArgs[(]", paste(s, collapse = "\n"), perl = TRUE), logical(1))
+    else "commandArgs[(]|optparse|OptionParser[(]|parse_args[(]|argparser::|arg_parser[(]|docopt[(]",
+    paste(s, collapse = "\n"), perl = TRUE), logical(1))
   points <- if (identical(lang, "Python"))
     grepl(paste0("the following arguments are required|: error: (argument|unrecognized arguments)|",
                  "Use '-h'|sys[.]argv\\[|parse_args\\("), txt, perl = TRUE)
   else grepl("Error in [^\n:]*(\\bargs?\\[|\\bargv\\[|commandArgs)", txt, perl = TRUE)
-  unname(reads & points)
+  usage <- grepl("(?im)^\\s*usage\\s*:|Show this help message and exit", paste(txt, out), perl = TRUE)
+  unname(reads & (points | usage))
 }
 
 .repro_needs_person_error <- function(txt) {
@@ -3933,15 +4107,27 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # factors ("'relevel' only for (unordered) factors", "invalid 'labels'"), and
 # code written on Windows reads data files in Latin-1 ("invalid multibyte
 # string"). options(stringsAsFactors = TRUE) no longer has any effect in R 4.5.
+# Four more messages of text that is no longer a factor (#578, item 5):
+# "factor level [3] is duplicated" when levels(x) of text is NULL
+# (10.1111/1365-2435.13548), droplevels() on text (10.1111/1365-2435.13795),
+# arm::standardize()'s "must be either numeric or a factor"
+# (10.1002/2688-8319.12171), and plot() of text, "need finite 'xlim' values",
+# only with the warning that the text became NA (10.1111/1365-2664.13770):
+# without it the message has other causes (10.1111/1365-2435.13388, binnedplot()).
 # Returns, for each script that stopped on such an error, "factors", "latin1" or
 # both; an empty list when none did.
 .repro_old_defaults <- function(run_results) {
   if (is.null(run_results) || !nrow(run_results)) return(list())
   msg <- paste(run_results$error, run_results$stderr)
   stopped <- run_results$outcome %in% "errored"
-  factors <- stopped & grepl(paste0("only for \\(unordered\\) factors|invalid 'labels'; length|",
-                                    "is not a factor|level sets of factors are different|",
-                                    "argument is not a factor|must be a factor"), msg, perl = TRUE)
+  factors <- stopped & (grepl(paste0(
+    "only for \\(unordered\\) factors|invalid 'labels'; length|",
+    "is not a factor|level sets of factors are different|",
+    "argument is not a factor|must be a factor|factor level \\[\\d+\\] is duplicated|",
+    "no applicable method for '(?:droplevels|levels|relevel|reorder|nlevels)' applied to an object of class \"character\"|",
+    "must be either numeric or a factor"), msg, perl = TRUE) |
+      (grepl("need finite 'xlim' values", msg, fixed = TRUE) &
+         grepl("xy\\.coords[^\n]*(?:\n[^\n]*)?NAs introduced by coercion", msg, perl = TRUE)))
   latin1 <- stopped & grepl("invalid multibyte string|is invalid in this locale|utf8towcs", msg, perl = TRUE)
   out <- lapply(which(factors | latin1), function(i) c(if (factors[i]) "factors", if (latin1[i]) "latin1"))
   stats::setNames(out, run_results$file_name[factors | latin1])
@@ -4102,6 +4288,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   `env_calls_replaced` (count of groundhog, checkpoint and renv calls replaced),
 #'   `slashes_fixed` (the quoted Windows paths given `/`, as they were, joined by
 #'   "; "; see `.repro_slash_paths()`),
+#'   `setwd_folder_removed` (the paths made relative to the working folder
+#'   because they lay under the folder of a removed `setwd()`, as
+#'   "before -> after", joined by "; "; see `.repro_strip_setwd_folder()`),
 #'   `setwd_paths` (comma-joined paths those calls named, for the warning),
 #'   `family_replaced` (count of `family =`/`base_family =` named-font
 #'   arguments replaced with `"sans"`, so a plot call does not fail with
@@ -4144,6 +4333,10 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     message("[repro]   rewriting '", fn, "' (", sum(nchar(txt, type = "bytes")), " bytes) ...")
     fn_lang <- lang_for[[i]] %||% "R"
     txt <- .repro_apply_rewrites(txt, rw)
+    # a path under the folder of a setwd() removed below counts from the working
+    # folder, before the Windows paths are changed (#578, item 3)
+    under_setwd <- .repro_strip_setwd_folder(txt, .repro_neutralise_setwd(txt, fn_lang)$paths)
+    txt <- under_setwd$txt
     slashed <- .repro_slash_paths(txt)
     txt <- slashed$txt
 
@@ -4276,6 +4469,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                setwd_removed = setwd_n,
                env_calls_replaced = env_n,
                slashes_fixed = paste(slashed$paths, collapse = "; "),
+               setwd_folder_removed = paste(under_setwd$paths, collapse = "; "),
                setwd_paths = paste(setwd_paths, collapse = ", "),
                family_replaced = family_n,
                family_detail = paste(
@@ -4468,6 +4662,46 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
   base | !model
 }
 
+# A path under the folder of a setwd() the check removes is made relative to the
+# working folder, which is what the authors meant: in 10.1111/1365-2656.13449
+# setwd("C:\\specify_directory_here") was removed, and jags() then could not open
+# "C:\\specify_directory_here\\EGVU_mig_lat_survival_model.jags", a file the script
+# writes itself into its working folder (#578, item 3). `folders` are the paths
+# the setwd() calls named; only an absolute one counts ("C:/...", "/...", "~/...").
+# Case does not count after a drive letter. Returns the lines and the paths
+# changed, as "before -> after".
+.repro_strip_setwd_folder <- function(txt, folders) {
+  none <- list(txt = txt, paths = character(0))
+  norm <- function(p) sub("/+$", "", gsub("\\\\+", "/", p))
+  folders <- unique(norm(folders[grepl("^([A-Za-z]:[/\\\\]|/|~)", folders)]))
+  folders <- folders[nzchar(folders) & !folders %in% c("/", "~")]
+  if (!length(txt) || !length(folders)) return(none)
+  changed <- character(0)
+  pat <- "([\"'])((?:[^\"'\\\\\n]|\\\\.)*)\\1"
+  txt <- vapply(txt, function(line) {
+    if (!grepl("[\"']", line)) return(line)
+    m <- gregexpr(pat, line, perl = TRUE)[[1]]
+    if (m[1] == -1) return(line)
+    hits <- regmatches(line, list(m))[[1]]
+    new <- vapply(hits, function(h) {
+      inner <- norm(substr(h, 2, nchar(h) - 1))
+      for (f in folders) {
+        drive <- grepl("^[A-Za-z]:", f)
+        starts <- if (drive) startsWith(tolower(inner), paste0(tolower(f), "/")) else startsWith(inner, paste0(f, "/"))
+        if (starts && nchar(inner) > nchar(f) + 1) {
+          out <- paste0(substr(h, 1, 1), substring(inner, nchar(f) + 2), substr(h, 1, 1))
+          changed <<- c(changed, sprintf("%s -> %s", h, out))
+          return(out)
+        }
+      }
+      h
+    }, character(1), USE.NAMES = FALSE)
+    regmatches(line, list(m)) <- list(new)
+    line
+  }, character(1), USE.NAMES = FALSE)
+  list(txt = txt, paths = changed)
+}
+
 # Windows paths in quoted file names, "Data\\MatrixNoct.txt", get "/": on Linux
 # the backslash is part of the name, so write.table() made one file named
 # "Data\MatrixNoct.txt" beside the script and the scripts reading
@@ -4501,22 +4735,31 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 }
 
 # The modifications rows for the Windows paths repro_write_scripts() changed, one
-# per path; NULL when there were none.
+# per path, and for the paths it made relative to the working folder because
+# they lay under the folder of a removed setwd() (`path_rewrite`, #578, item 3);
+# NULL when there were none.
 .repro_slash_rows <- function(run_tbl) {
-  if (is.null(run_tbl) || !nrow(run_tbl) || !"slashes_fixed" %in% names(run_tbl)) return(NULL)
-  hit <- !is.na(run_tbl$slashes_fixed) & nzchar(run_tbl$slashes_fixed)
-  if (!any(hit)) return(NULL)
-  dplyr::bind_rows(lapply(which(hit), function(i) {
-    p <- strsplit(run_tbl$slashes_fixed[i], "; ", fixed = TRUE)[[1]]
-    data.frame(file_name = run_tbl$file_name[i], change_type = "windows_path",
-               detail = sprintf("%s -> %s", p, gsub("\\\\\\\\", "/", p)))
-  }))
+  if (is.null(run_tbl) || !nrow(run_tbl)) return(NULL)
+  rows_of <- function(col, type, detail) {
+    if (!col %in% names(run_tbl)) return(NULL)
+    hit <- !is.na(run_tbl[[col]]) & nzchar(run_tbl[[col]])
+    dplyr::bind_rows(lapply(which(hit), function(i) {
+      p <- strsplit(run_tbl[[col]][i], "; ", fixed = TRUE)[[1]]
+      data.frame(file_name = run_tbl$file_name[i], change_type = type, detail = detail(p))
+    }))
+  }
+  out <- dplyr::bind_rows(
+    rows_of("setwd_folder_removed", "path_rewrite", \(p) paste(p, "(under the folder of a removed setwd())")),
+    rows_of("slashes_fixed", "windows_path", \(p) sprintf("%s -> %s", p, gsub("\\\\\\\\", "/", p))))
+  if (!nrow(out)) NULL else out
 }
 
 # The report's part on Windows paths: a sentence and a table; NULL when none.
 .repro_slash_report <- function(run_tbl) {
   rows <- .repro_slash_rows(run_tbl)
   if (is.null(rows)) return(NULL)
+  rows <- rows[rows$change_type %in% "windows_path", , drop = FALSE]
+  if (!nrow(rows)) return(NULL)
   n <- length(unique(rows$file_name))
   c(sprintf(paste0("**%d script%s use%s Windows paths**, with `\\` between folders, which ",
                    "works only on Windows. To run the code we put `/` instead, which works on ",
