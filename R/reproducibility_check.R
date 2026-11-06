@@ -5900,6 +5900,25 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
   if (inherits(total_timeout, "POSIXct")) return("the time for all scripts together")
   sprintf("the time for all scripts together (%g minutes, `total_timeout`)", total_timeout / 60)
 }
+# A pass after the first runs scripts it changed (added lines, a new order,
+# old defaults, a fetched or placed file). A script of such a pass that the
+# time left for all scripts stopped (error_type "deadline", set by the
+# runners), or did not start, says nothing about the change: it is
+# skipped_time_limit, never the first pass's failure the change was meant to
+# fix. A script got the last second of the paper and was reported as timed
+# out (#581). In the first pass, such a script stays timed_out: it is slow.
+.repro_later_pass <- function(res) {
+  if (is.null(res) || !nrow(res)) return(res)
+  cut <- res$outcome %in% "timed_out" & res$error_type %in% "deadline"
+  if (any(cut)) {
+    res$outcome[cut] <- "skipped_time_limit"
+    res$error[cut] <- sprintf(
+      "stopped after %d s: the time for all scripts together had run out",
+      as.integer(ceiling(as.numeric(res$elapsed[cut]))))
+  }
+  res
+}
+
 .repro_time_left <- function(deadline) {
   if (is.null(deadline)) return(Inf)
   as.numeric(difftime(deadline, Sys.time(), units = "secs"))
@@ -6034,6 +6053,8 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
                         error = "not started: the time for all scripts together had run out",
                         error_type = NA_character_, undefined_var = NA_character_,
                         stdout = "", stderr = "", elapsed = 0)))
+    # the time left for all scripts, not the script's own limit, may stop it (#581)
+    cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
     # The EXECUTED script's own text (path-rewritten, setwd()-commented — what
@@ -6151,6 +6172,8 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
       outc <- if (is_timeout) "timed_out"
               else if (dep_unavailable) "dependency_unavailable"
               else "errored"
+      # stopped by the time left for all scripts, not its own limit (#581)
+      if (is_timeout && isTRUE(cut_by_deadline)) etype <- "deadline"
       data.frame(file_name = fn, outcome = outc,
                  error = msg, error_type = etype, undefined_var = undef_var,
                  stdout = so, stderr = se, elapsed = elapsed) |>

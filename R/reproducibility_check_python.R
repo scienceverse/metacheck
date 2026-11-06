@@ -655,6 +655,8 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
                         error = "not started: the time for all scripts together had run out",
                         error_type = NA_character_, undefined_var = NA_character_,
                         stdout = "", stderr = "", elapsed = 0)))
+    # the time left for all scripts, not the script's own limit, may stop it (#581)
+    cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
     exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
@@ -682,7 +684,9 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
               if (is_timeout) "timed out" else "condition/error", ")")
       return(no_lines(data.frame(
         file_name = fn, outcome = if (is_timeout) "timed_out" else "errored",
-        error = msg, error_type = NA_character_, undefined_var = NA_character_,
+        error = msg,
+        # stopped by the time left for all scripts, not its own limit (#581)
+        error_type = if (is_timeout && isTRUE(cut_by_deadline)) "deadline" else NA_character_, undefined_var = NA_character_,
         stdout = "", stderr = "", elapsed = elapsed)))
     }
 

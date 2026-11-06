@@ -1080,6 +1080,8 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
                         error = "not started: the time for all scripts together had run out",
                         error_type = NA_character_, undefined_var = NA_character_,
                         stdout = "", stderr = "", elapsed = 0)))
+    # the time left for all scripts, not the script's own limit, may stop it (#581)
+    cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
     exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
@@ -1293,6 +1295,8 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       msg <- conditionMessage(res)
       etype <- if (is_timeout) "timeout" else "runtime"
       outc <- if (is_timeout) "timed_out" else "errored"
+      # stopped by the time left for all scripts, not its own limit (#581)
+      if (is_timeout && isTRUE(cut_by_deadline)) etype <- "deadline"
       return(data.frame(file_name = fn, outcome = outc, error = msg,
                         error_type = etype, undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
@@ -1301,7 +1305,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
                         error = .repro_timeout_text(timeout, watched),
-                        error_type = "timeout", undefined_var = NA_character_,
+                        error_type = if (isTRUE(cut_by_deadline)) "deadline" else "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))
     }
