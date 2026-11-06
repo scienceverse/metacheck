@@ -1297,3 +1297,18 @@ test_that(".auth_for_url never sends a token to every redirect (#508)", local({
   expect_equal(httr2::req_get_headers(req, "reveal")$Authorization, "Bearer ztok")
   expect_null(req$options$unrestricted_auth)
 }))
+
+test_that("a file the listing says is empty is written when the host refuses it (#575, item 5)", {
+  # GitHub answered "HTTP 501 Not Implemented" for the empty data/*/.dummy files
+  # of pgcorpus/gutenberg (10.1002/pan3.10256)
+  tmp <- withr::local_tempdir()
+  local_mocked_bindings(
+    req_perform = function(...) rlang::abort("HTTP 501 Not Implemented.",
+                                             class = c("httr2_http_501", "httr2_http", "httr2_error")),
+    .package = "httr2")
+  expect_true(is.na(.download_one("https://example.org/.dummy", file.path(tmp, ".dummy"), expected_bytes = 0)))
+  expect_equal(file.size(file.path(tmp, ".dummy")), 0)
+  # a file with bytes is still a failed download
+  expect_false(is.na(.download_one("https://example.org/x.csv", file.path(tmp, "x.csv"), expected_bytes = 10)))
+  expect_false(file.exists(file.path(tmp, "x.csv")))
+})

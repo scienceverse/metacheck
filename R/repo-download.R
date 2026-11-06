@@ -823,6 +823,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     guestbook <- if (inherits(e, "httr2_http_400") && !is.null(e$resp))
       .dataverse_guestbook_hint(e$resp) else ""
     if (file.exists(dest)) unlink(dest)
+    # A file the listing says is empty needs nothing from the host: GitHub
+    # answered "HTTP 501 Not Implemented" for three empty data/*/.dummy files of
+    # pgcorpus/gutenberg, which then had no location, and the scripts that write
+    # into their folders stopped (10.1002/pan3.10256; #575, item 5)
+    if (inherits(e, "httr2_http") && isTRUE(as.numeric(expected_bytes) == 0) &&
+        isTRUE(file.create(final))) return(NA_character_)
     # A 429 caught here (rather than retried away) means .storage_is_transient
     # -- via the skip_on_api_limit factory -- declared it non-transient, i.e.
     # gave up specifically because the bucket is confirmed exhausted. e$resp
@@ -944,6 +950,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     # non-empty). Real HTTP failures (4xx/5xx) still get caught below.
     if (!sc %in% c(200, 0)) {
       if (file.exists(dests[i])) unlink(dests[i])
+      # a file the listing says is empty needs nothing from the host (#575, item 5;
+      # see .download_one())
+      if (isTRUE(expected_size[i] == 0) && isTRUE(file.create(dests[i]))) return(NA_character_)
       if (isTRUE(skip_on_api_limit) && sc == 429L && !is.na(.rate_limit_wait(r)))
         return(paste0("API rate limit exhausted: HTTP ", sc))
       return(paste0(sprintf("HTTP %d", sc), .dryad_401_hint(urls[i], sc)))
@@ -1235,7 +1244,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     if (is.na(matched_entry[j])) next
     src  <- file.path(extract_dir, matched_entry[j])
     dest <- files$.cache_path[row_idx[j]]
-    if (file.exists(src) && file.size(src) > 0) {
+    # an empty member is an empty file, as the archive itself states (#575, item 5)
+    empty_member <- isTRUE(entries$Length[match(matched_entry[j], entries$Name)] == 0)
+    if (file.exists(src) && (file.size(src) > 0 || empty_member)) {
       dir.create(dirname(dest), showWarnings = FALSE, recursive = TRUE)
       if (.copy_into_place(src, dest))
         files$file_location[row_idx[j]] <- dest

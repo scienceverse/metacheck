@@ -747,6 +747,7 @@ report_type <- function(report_type = NULL) {
           needs_a_person          = "need a person to choose a file, answer a question, use an app or give a program its arguments",
           needs_internet          = "need the internet, which is off during the run, or could not reach what they asked for",
           download_too_large      = "were stopped for downloading more than our limits allow",
+          out_of_memory           = "ran out of the memory each script can use here, which says nothing about the code",
           dependency_unavailable  = "could not be run because a required dependency is unavailable",
           skipped_time_limit      = "could not be started because the time for all scripts together had run out"
         )

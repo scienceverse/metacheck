@@ -284,7 +284,8 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #' @param sandbox_root the materialised layout root on the HOST — mounted
 #'   read-write at `/sandbox`
 #' @param lib_dir throwaway `pip install --target` library ON THE HOST (or
-#'   NULL) — mounted read-only at `/pylib` when supplied
+#'   NULL) — mounted at `/pylib` when supplied, writable, so a package can keep
+#'   data in its own folder
 #' @param image the Docker image to run scripts in (see
 #'   [.repro_docker_default_image_py])
 #' @param timeout per-script timeout in seconds
@@ -386,8 +387,9 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              # screen, so plots and windows must not ask for one.
              "-e", "HOME=/tmp", "-e", "NUMBA_CACHE_DIR=/tmp/numba", "-e", "MPLCONFIGDIR=/tmp/matplotlib",
              "-e", "XDG_CACHE_HOME=/tmp/.cache", "-e", "MPLBACKEND=Agg", "-e", "QT_QPA_PLATFORM=offscreen")
+    # writable, so a package can keep data in its own folder, as in R (#575, item 8)
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/pylib", read_only = TRUE))
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/pylib", image = image))
     # the repository's own modules first, then what was installed (see
     # .repro_py_module_folders())
     own <- if ("module_folders" %in% names(row)) row$module_folders else NA_character_

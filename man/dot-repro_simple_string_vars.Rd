@@ -4,10 +4,16 @@
 \alias{.repro_simple_string_vars}
 \title{Simple top-level string-literal variable assignments in a script}
 \usage{
-.repro_simple_string_vars(code_text)
+.repro_simple_string_vars(code_text, calls = FALSE)
 }
 \arguments{
 \item{code_text}{the code text for a single file, comments already stripped}
+
+\item{calls}{also resolve a call holding one quoted text and nothing else,
+\code{paste0("...")}, \code{paste("...")}, \code{file.path("...")}, \code{path.expand("...")}
+or \code{normalizePath("...")}, which give that text: a folder on the authors'
+computer was held as \code{main_address = paste0("~/Library/...")} in
+10.1111/1365-2435.14620 (#578, item 4). \code{FALSE} by default.}
 }
 \value{
 a named character vector (name = literal value), possibly empty
