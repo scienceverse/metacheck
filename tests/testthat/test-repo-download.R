@@ -140,17 +140,18 @@ test_that("NA manifest size falls back to a HEAD Content-Length probe", {
   expect_equal(nrow(attr(dl, "oversize_skipped")), 2)
 })
 
-test_that("a file whose size cannot be determined is excluded, not gating the repo", {
-  # An unknown-size file cannot be budgeted, so it is left out of the candidate
-  # set (rather than gating the whole repository). With BOTH files unknown-size,
-  # nothing downloads, but the repo is not "gated".
+test_that("a file whose size cannot be determined is downloaded with a limit, not gating the repo", {
+  # An unknown-size file cannot be budgeted in advance. It used to be left out
+  # without any record (#583); it is now downloaded with the per-file limit,
+  # and the repository is not "gated".
   files <- make_dl_files()
   unlink(metacheck:::.repo_cache_subdir(files$repo_url[1]), recursive = TRUE)
   files$file_size <- NA_real_
 
   local_mocked_bindings(.remote_size = function(url) NA_real_)  # no header
   dl <- download_repo_files(files, max_file_size = 100, max_download_size = 500)
-  expect_equal(sum(!is.na(dl$file_location)), 0)   # excluded, nothing downloaded
+  expect_equal(sum(!is.na(dl$file_location)), 2)   # both downloaded
+  expect_equal(nrow(attr(dl, "gated")), 0)
 })
 
 test_that("failed downloads are reported and recorded, not swallowed", {
@@ -1312,4 +1313,39 @@ test_that("a file the listing says is empty is written when the host refuses it 
   # a file with bytes is still a failed download
   expect_false(is.na(.download_one("https://example.org/x.csv", file.path(tmp, "x.csv"), expected_bytes = 10)))
   expect_false(file.exists(file.path(tmp, "x.csv")))
+})
+
+test_that("a file of unknown size is downloaded with a limit, not left out (#583)", {
+  withr::local_options(
+    metacheck.repo_cache.dir = withr::local_tempdir(),
+    metacheck.repo_cache.session_dir = withr::local_tempdir())
+  # the host gives no size either
+  local_mocked_bindings(.remote_size = function(...) NA_real_)
+
+  # no file_size column at all: it was left out with no record
+  files <- make_dl_files(c(500, 600))
+  files$file_size <- NULL
+  dl <- suppressMessages(download_repo_files(files))
+  expect_true(all(file.exists(dl$file_location)))
+  expect_false("file_size" %in% names(dl))   # the column is not added
+  expect_false(".byte_cap" %in% names(dl))
+
+  # over its limit: stopped, reported as over the limit, nothing left behind
+  files <- make_dl_files(c(5000))
+  files$file_size <- NA_real_
+  expect_message(dl <- download_repo_files(files, max_file_size = 0.001),
+                 "had no known size and was larger than")
+  expect_true(is.na(dl$file_location))
+  ov <- attr(dl, "oversize_skipped")
+  expect_equal(nrow(ov), 1)
+  expect_gt(ov$file_size, 0.001 * 1024 * 1024)
+  expect_length(list.files(getOption("metacheck.repo_cache.session_dir"), "[.]part$",
+                           recursive = TRUE), 0)
+
+  # no budget left: not downloaded, with a record
+  files <- make_dl_files(c(500))
+  files$file_size <- NA_real_
+  dl <- suppressWarnings(suppressMessages(download_repo_files(files, max_download_size = 0)))
+  expect_true(is.na(dl$file_location))
+  expect_match(attr(dl, "gated")$message, "unknown size not downloaded")
 })
