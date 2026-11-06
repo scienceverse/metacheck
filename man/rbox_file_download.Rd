@@ -70,9 +70,11 @@ cache.
 \examples{
 \donttest{
 if (online("researchbox.org")) {
-  # kept in this session's temporary folder (cache = FALSE)
-  files <- rbox_file_download("https://researchbox.org/801")
-  files[, c("name", "size")]
+  # kept in this session's temporary folder (cache = FALSE); the server can
+  # be busy, then this says why
+  files <- tryCatch(rbox_file_download("https://researchbox.org/801"),
+                    error = function(e) message(conditionMessage(e)))
+  if (!is.null(files)) files[, c("name", "size")]
 }
 }
 }

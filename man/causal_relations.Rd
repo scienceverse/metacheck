@@ -55,24 +55,27 @@ sentences with \strong{multiple relations}, the function returns one row per rel
 \examples{
 \donttest{
 if (online("lakens-causal-sentences.hf.space")) {
-  # Single sentence
-  df1 <- causal_relations("Smoking causes cancer")
-  print(df1)
+  # the service can be busy or asleep; then this says why
+  tryCatch({
+    # Single sentence
+    df1 <- causal_relations("Smoking causes cancer")
+    print(df1)
 
-  # Multiple sentences (batch)
-  df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
-  print(df2)
+    # Multiple sentences (batch)
+    df2 <- causal_relations(c("Insomnia causes depression.", "Rain leads to flooding."))
+    print(df2)
 
-  # Custom parameters and verbose diagnostics
-  df3 <- causal_relations(
-    sentence = "Stress increases blood pressure.",
-    rel_mode = "auto",
-    rel_threshold = 0.4,
-    cause_decision = "cls+span",
-    timeout = 10,
-    verbose = TRUE
-  )
-  print(df3)
+    # Custom parameters and verbose diagnostics
+    df3 <- causal_relations(
+      sentence = "Stress increases blood pressure.",
+      rel_mode = "auto",
+      rel_threshold = 0.4,
+      cause_decision = "cls+span",
+      timeout = 10,
+      verbose = TRUE
+    )
+    print(df3)
+  }, error = function(e) message(conditionMessage(e)))
 }
 }
 }

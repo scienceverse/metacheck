@@ -396,8 +396,9 @@ rbox_token <- function(token = NULL) {
 #' @examples
 #' \donttest{
 #' if (online("researchbox.org")) {
-#'   # get info on one box
-#'   rbox_info("https://researchbox.org/801")
+#'   # get info on one box; the server can be busy, then this says why
+#'   tryCatch(rbox_info("https://researchbox.org/801"),
+#'            error = function(e) message(conditionMessage(e)))
 #' }
 #' }
 rbox_info <- function(rb_url, id_col = 1, pb = NULL, cache = FALSE) {
@@ -1001,9 +1002,11 @@ rbox_search <- function(q, type = c("data", "code", "paper"), limit = 100,
 #' @examples
 #' \donttest{
 #' if (online("researchbox.org")) {
-#'   # kept in this session's temporary folder (cache = FALSE)
-#'   files <- rbox_file_download("https://researchbox.org/801")
-#'   files[, c("name", "size")]
+#'   # kept in this session's temporary folder (cache = FALSE); the server can
+#'   # be busy, then this says why
+#'   files <- tryCatch(rbox_file_download("https://researchbox.org/801"),
+#'                     error = function(e) message(conditionMessage(e)))
+#'   if (!is.null(files)) files[, c("name", "size")]
 #' }
 #' }
 rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",

@@ -20,7 +20,8 @@ returns a table of available paper corpora that can be loaded with
 \examples{
 \donttest{
 if (online("api.github.com")) {
-  papers_available()
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(papers_available(), error = function(e) message(conditionMessage(e)))
 }
 }
 }

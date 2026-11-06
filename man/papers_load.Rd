@@ -38,7 +38,9 @@ delete a cached corpus.
 \examples{
 \donttest{
 if (online("api.github.com")) {
-  collabra <- papers_load("collabra")
+  # GitHub can refuse when its request limit is reached; then this says why
+  collabra <- tryCatch(papers_load("collabra"),
+                       error = function(e) message(conditionMessage(e)))
 }
 }
 }

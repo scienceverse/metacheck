@@ -39,8 +39,9 @@ description, extension, size and MD5 checksum.
 \examples{
 \donttest{
 if (online("researchbox.org")) {
-  # get info on one box
-  rbox_info("https://researchbox.org/801")
+  # get info on one box; the server can be busy, then this says why
+  tryCatch(rbox_info("https://researchbox.org/801"),
+           error = function(e) message(conditionMessage(e)))
 }
 }
 }

@@ -22,7 +22,9 @@ Get File List from GitHub
 \examples{
 \donttest{
 if (online("api.github.com")) {
-  github_files("scienceverse/metacheck")
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(github_files("scienceverse/metacheck"),
+           error = function(e) message(conditionMessage(e)))
 }
 }
 }

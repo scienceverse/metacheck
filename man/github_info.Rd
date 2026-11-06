@@ -20,7 +20,9 @@ Get GitHub Repo Info
 \examples{
 \donttest{
 if (online("api.github.com")) {
-  github_info("scienceverse/metacheck")
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(github_info("scienceverse/metacheck"),
+           error = function(e) message(conditionMessage(e)))
 }
 }
 }

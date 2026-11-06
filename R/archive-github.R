@@ -74,7 +74,9 @@ github_links <- function(paper) {
 #' @examples
 #' \donttest{
 #' if (online("api.github.com")) {
-#'   github_info("scienceverse/metacheck")
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_info("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
 #' }
 #' }
 github_info <- function(repo, recursive = FALSE) {
@@ -195,7 +197,9 @@ github_repo <- function(repo) {
 #' @examples
 #' \donttest{
 #' if (online("api.github.com")) {
-#'   github_readme("scienceverse/metacheck")
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_readme("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
 #' }
 #' }
 github_readme <- function(repo) {
@@ -240,7 +244,9 @@ github_readme <- function(repo) {
 #' @examples
 #' \donttest{
 #' if (online("api.github.com")) {
-#'   github_files("scienceverse/metacheck")
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_files("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
 #' }
 #' }
 github_files <- function(repo, dir = "",
@@ -616,7 +622,9 @@ github_pat <- function(pat = NULL) {
 #' @examples
 #' \donttest{
 #' if (online("api.github.com")) {
-#'   github_languages("scienceverse/metacheck")
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_languages("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
 #' }
 #' }
 github_languages <- function(repo) {

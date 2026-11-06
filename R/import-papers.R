@@ -12,7 +12,8 @@
 #' @examples
 #' \donttest{
 #' if (online("api.github.com")) {
-#'   papers_available()
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(papers_available(), error = function(e) message(conditionMessage(e)))
 #' }
 #' }
 papers_available <- function(repo = "scienceverse/papers") {
@@ -54,7 +55,9 @@ papers_available <- function(repo = "scienceverse/papers") {
 #' @examples
 #' \donttest{
 #' if (online("api.github.com")) {
-#'   collabra <- papers_load("collabra")
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   collabra <- tryCatch(papers_load("collabra"),
+#'                        error = function(e) message(conditionMessage(e)))
 #' }
 #' }
 papers_load <- function(name,
@@ -158,7 +161,10 @@ papers_remove <- function(name) {
 #' @examples
 #' \donttest{
 #' if (online("api.github.com")) {
-#'   papers_metadata("jdm")$dc_coverage
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   meta <- tryCatch(papers_metadata("jdm"),
+#'                    error = function(e) message(conditionMessage(e)))
+#'   if (!is.null(meta)) meta$dc_coverage
 #' }
 #' }
 papers_metadata <- function(name, repo = "scienceverse/papers") {
