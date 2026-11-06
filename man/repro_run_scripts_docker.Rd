@@ -29,7 +29,8 @@ of) \code{sandbox_root}, so it can be bind-mounted as a whole}
 \code{\link[=repro_materialize_layout]{repro_materialize_layout()}}) — mounted read-write at \verb{/sandbox}}
 
 \item{lib_dir}{throwaway library ON THE HOST (or NULL) — mounted
-read-only at \verb{/rlib} when supplied}
+at \verb{/rlib} when supplied, writable, so a package can keep data in its own
+folder}
 
 \item{image}{the Docker image to run scripts in (see \code{\link[=.repro_docker_image_for]{.repro_docker_image_for()}})}
 

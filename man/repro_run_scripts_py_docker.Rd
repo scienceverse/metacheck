@@ -29,7 +29,8 @@ of) \code{sandbox_root}}
 read-write at \verb{/sandbox}}
 
 \item{lib_dir}{throwaway \verb{pip install --target} library ON THE HOST (or
-NULL) — mounted read-only at \verb{/pylib} when supplied}
+NULL) — mounted at \verb{/pylib} when supplied, writable, so a package can keep
+data in its own folder}
 
 \item{image}{the Docker image to run scripts in (see
 \link{.repro_docker_default_image_py})}

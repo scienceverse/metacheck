@@ -1384,9 +1384,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   r_script_places <- .repro_script_places(r_files)
   # the folder each script runs from
   r_run_dirs <- .repro_run_folders(r_script_places, code_text_list, plan, order_tbl, "R")
+  # where here() starts for each script (see .repro_here_roots() and the .here
+  # marks written with the scripts below): a path given to here() counts from there
+  here_roots <- .repro_here_roots(code_text_list, r_run_dirs, plan)
+  r_here_dirs <- vapply(seq_along(r_run_dirs), function(i)
+    .repro_here_start(r_run_dirs[i], here_roots[i], plan), character(1))
   # a reference that works as written stays as it is
   rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
-    .repro_keep_working_refs(rewrite_list[[i]], plan, r_script_paths[i], r_run_dirs[i])), names(rewrite_list))
+    .repro_keep_working_refs(rewrite_list[[i]], plan, r_script_paths[i], r_run_dirs[i],
+                             here_dir = r_here_dirs[i])), names(rewrite_list))
   # a folder on the authors' computer held in a variable gets the deposit's folder
   rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
     .repro_apply_folder_vars(rewrite_list[[i]],
@@ -1719,7 +1725,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # scripts/scripts/functions.R (10.1111/1365-2664.14317; #568).
     # The top always has a mark, so here() finds a root from every folder; a
     # mark in each run folder came before the authors' own .Rproj at the top.
-    here_roots <- .repro_here_roots(code_text_list, r_run_dirs, plan)
+    # (here_roots was worked out with the paths, above.)
     rooted <- !is.na(here_roots)
     root_dirs <- ifelse(here_roots[rooted] == ".", sandbox_root,
                         file.path(sandbox_root, .portable_path(here_roots[rooted])))
@@ -2055,26 +2061,40 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
     # A script that stopped on a file another script wrote later runs once more:
     # a name built while a script runs cannot be seen before, so the order missed
-    # it (#568; see .repro_written_later()). Twice at most, for a chain.
+    # it (#568; see .repro_written_later()). So does a script that stopped on a
+    # file the deposit holds in another folder, once that file is copied to where
+    # it looked (see .repro_place_from_deposit()). A script runs again each time
+    # it stops on a file it did not stop on before: a figure script that loads
+    # the files of four analysis scripts stops on each in turn (#575, item 4).
+    # Five passes at most, for a chain.
     r_written_later <- list()
     r_placed <- .repro_place_written(list(), NULL, NULL, sandbox_root, character(0), character(0))
-    for (pass in 1:2) {
+    r_deposit_placed <- r_placed
+    r_seen <- list()   # script -> the files it stopped on when it was run again
+    for (pass in 1:5) {
       names_after <- .repro_sandbox_names(sandbox_root)
       later <- .repro_written_later(run_results, r_names_before, names_after)
-      later <- later[!names(later) %in% names(r_written_later)]
-      if (!length(later)) break
-      redo <- names(later)
+      later <- later[vapply(names(later), function(s)
+        length(setdiff(tolower(later[[s]]), tolower(r_seen[[s]]))) > 0, logical(1))]
       # a file written in another folder is copied to where the script looks
       r_placed <- rbind(r_placed, .repro_place_written(later, run_results, run_tbl, sandbox_root,
                                                        r_names_before, names_after))
-      .dbg("re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
-           paste(redo, collapse = ", "))
+      from_deposit <- .repro_place_from_deposit(run_results, run_tbl, sandbox_root, r_names_before)
+      r_deposit_placed <- rbind(r_deposit_placed, from_deposit)
+      redo <- unique(c(names(later), from_deposit$script))
+      if (!length(redo)) break
+      .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
+           "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
       res4 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
                             c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
       res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
-      r_written_later <- c(r_written_later, later[names(later) %in% res4$file_name])
+      for (s in intersect(names(later), res4$file_name)) {
+        r_written_later[[s]] <- unique(c(r_written_later[[s]], later[[s]]))
+        r_seen[[s]] <- unique(c(r_seen[[s]], later[[s]]))
+      }
       run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
       run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
+      if (!nrow(res4)) break
     }
     attr(run_results, "reran_for_order") <- reran
     attr(run_results, "reran_for_reorder") <- reran_for_reorder
@@ -2304,7 +2324,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   report_paths <- .repro_path_fix_text(rewrite_list, execute)
   if (total_ambiguous > 0)
     report_paths <- paste(report_paths, sprintf(
-      "%d reference%s matched several files sharing a name and could not be resolved by study group; %s left unrewritten and flagged.",
+      "%d reference%s matched several files sharing a name and could not be resolved by study group or folder; %s left unrewritten and flagged.",
       total_ambiguous, plural(total_ambiguous),
       plural(total_ambiguous, "it was", "they were")))
   if (n_call_paths > 0)
@@ -2452,6 +2472,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (exists("r_written_later", inherits = FALSE) && length(r_written_later))
       report_exec <- paste0(report_exec, .repro_written_later_text(
         r_written_later, run_results$file_name[oc == "ran_ok"], r_placed))
+    if (exists("r_deposit_placed", inherits = FALSE) && nrow(r_deposit_placed))
+      report_exec <- paste0(report_exec, .repro_placed_text(r_deposit_placed))
     if (exists("r_lfs_stopped", inherits = FALSE) && length(r_lfs_stopped))
       report_exec <- paste0(report_exec, .repro_lfs_stopped_text(r_lfs_stopped))
     if (sum(lengths(r_choices_filled)) > 0)
@@ -2901,6 +2923,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (exists("r_placed", inherits = FALSE) && nrow(r_placed))
       later_rows <- rbind(later_rows, data.frame(file_name = r_placed$script, change_type = "output_copied",
         detail = sprintf("copied %s, written by another script, to %s", r_placed$from, r_placed$to)))
+    if (exists("r_deposit_placed", inherits = FALSE) && nrow(r_deposit_placed))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_deposit_placed$script, change_type = "file_placed",
+        detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
+                         r_deposit_placed$from, r_deposit_placed$to)))
     dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
                      slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
@@ -3184,6 +3210,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py2_tried <- character(0)
   py_written_later <- list()
   py_placed <- .repro_place_written(list(), NULL, NULL, ".", character(0), character(0))
+  py_deposit_placed <- py_placed
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
   py_placeable <- !is.na(py_file_order)
 
@@ -3404,26 +3431,37 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # A script that stopped on a file another script wrote later runs once more,
     # as for R above (#568): in 10.1111/2041-210X.13814 "analyse_results.py" ran
     # before "create_inputs.py", which writes f"input{i}.txt".
+    # A file the deposit holds in another folder is copied to where a script
+    # looked, and a script runs again each time it stops on a new file (#575,
+    # items 2 and 4; see the R loop above).
     if (!is.null(py_run_results) && exists("py_names_before", inherits = FALSE)) {
-      for (pass in 1:2) {
+      py_seen <- list()
+      for (pass in 1:5) {
         names_after <- .repro_sandbox_names(sandbox_root)
         later <- .repro_written_later(py_run_results, py_names_before, names_after)
-        later <- later[!names(later) %in% names(py_written_later)]
-        if (!length(later)) break
-        redo <- names(later)
+        later <- later[vapply(names(later), function(s)
+          length(setdiff(tolower(later[[s]]), tolower(py_seen[[s]]))) > 0, logical(1))]
         # a file written in another folder is copied to where the script looks
         py_placed <- rbind(py_placed, .repro_place_written(later, py_run_results, py_run_tbl, sandbox_root,
                                                            py_names_before, names_after))
-        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
-             paste(redo, collapse = ", "))
+        from_deposit <- .repro_place_from_deposit(py_run_results, py_run_tbl, sandbox_root, py_names_before)
+        py_deposit_placed <- rbind(py_deposit_placed, from_deposit)
+        redo <- unique(c(names(later), from_deposit$script))
+        if (!length(redo)) break
+        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
+             "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
         res4 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
                        c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
         if (is.null(res4)) break
         res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
-        py_written_later <- c(py_written_later, later[names(later) %in% res4$file_name])
+        for (s in intersect(names(later), res4$file_name)) {
+          py_written_later[[s]] <- unique(c(py_written_later[[s]], later[[s]]))
+          py_seen[[s]] <- unique(c(py_seen[[s]], later[[s]]))
+        }
         keep_order <- py_run_results$file_name
         py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
         py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
+        if (!nrow(res4)) break
       }
     }
     # Code written for Python 2 runs again with Python 2.7, with its own packages
@@ -3676,7 +3714,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_report_paths <- .repro_path_fix_text(py_rewrite_list, execute)
   if (py_total_ambiguous > 0)
     py_report_paths <- paste(py_report_paths, sprintf(
-      "%d reference%s matched several files sharing a name and could not be resolved by study group; %s left unrewritten and flagged.",
+      "%d reference%s matched several files sharing a name and could not be resolved by study group or folder; %s left unrewritten and flagged.",
       py_total_ambiguous, plural(py_total_ambiguous),
       plural(py_total_ambiguous, "it was", "they were")))
 
@@ -3803,6 +3841,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (length(py_written_later))
       py_report_exec <- paste0(py_report_exec, .repro_written_later_text(
         py_written_later, py_run_results$file_name[py_oc == "ran_ok"], py_placed))
+    if (nrow(py_deposit_placed))
+      py_report_exec <- paste0(py_report_exec, .repro_placed_text(py_deposit_placed))
     if (exists("py_lfs_stopped", inherits = FALSE) && length(py_lfs_stopped))
       py_report_exec <- paste0(py_report_exec, .repro_lfs_stopped_text(py_lfs_stopped))
     py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
@@ -4066,6 +4106,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (nrow(py_placed))
       py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_placed$script, change_type = "output_copied",
         detail = sprintf("copied %s, written by another script, to %s", py_placed$from, py_placed$to)))
+    if (nrow(py_deposit_placed))
+      py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_deposit_placed$script, change_type = "file_placed",
+        detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
+                         py_deposit_placed$from, py_deposit_placed$to)))
     dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod, py_later_rows)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))
@@ -4217,7 +4261,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_found = shared_match$summary$n_found %||% NA_integer_,
       sandbox = sandbox, timeout = timeout, install_missing = install_r,
       recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice),
-      net = net, source_unknown = .repro_source_unknown(install_results))
+      net = net, source_unknown = .repro_source_unknown(install_results),
+      install_results = install_results, versions_recorded = !is.null(recorded_advice))
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

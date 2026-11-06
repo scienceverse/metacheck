@@ -966,7 +966,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #' @param sandbox_root the materialised layout root on the HOST (from
 #'   [repro_materialize_layout()]) — mounted read-write at `/sandbox`
 #' @param lib_dir throwaway library ON THE HOST (or NULL) — mounted
-#'   read-only at `/rlib` when supplied
+#'   at `/rlib` when supplied, writable, so a package can keep data in its own
+#'   folder
 #' @param image the Docker image to run scripts in (see [.repro_docker_image_for()])
 #' @param timeout per-script timeout in seconds
 #' @param skip character vector of `file_name`s to record as
@@ -1185,8 +1186,12 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              # stopped three scripts of 10.1111/2041-210X.14007 (#568)
              "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
              "-v", paste0(sandbox_root, ":/sandbox"))
+    # The library is writable: a package can keep data in its own folder, as
+    # zipcodeR::download_zip_data() does in /rlib/zipcodeR/data, which stopped
+    # with "Read-only file system" (10.1002/pan3.10527; #575, item 8). The
+    # library is the paper's own and is removed after the check.
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", read_only = TRUE))
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", image = image))
     args <- c(args, image, .repro_docker_counted_cmd(c("Rscript", container_wrapper), net))
 
     out_file <- tempfile(fileext = ".out")
