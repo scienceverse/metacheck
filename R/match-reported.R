@@ -684,7 +684,9 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
   # sentence reporting two t-tests becomes one un-matchable ten-component
   # "test". See R/extract-tests.R.
   # one paper at a time: a list's $eq is NULL, and nrow(NULL) inside || stopped
-  # with "missing value where TRUE/FALSE needed" (U142)
+  # with "missing value where TRUE/FALSE needed" (U142). A list of one paper is
+  # that paper: module_run() on one paper of a list passes it on as a list.
+  if (.is_paper_list(paper) && length(paper) == 1L) paper <- paper[[1]]
   if (.is_paper_list(paper))
     stop("match_reported_output() takes one paper; call it for each paper of a list",
          call. = FALSE)

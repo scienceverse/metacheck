@@ -16,8 +16,8 @@ code_library_names(
 }
 \value{
 a data frame with columns \code{package}, \code{source} (how the package was
-referenced: \code{library}, \code{require}, \code{requireNamespace}, \code{p_load}, \code{namespace},
-\code{install}, or \code{import}), and \code{line} (the line number). Rows are unique on
+referenced: \code{library}, \code{require}, \code{requireNamespace}, \code{p_load}, \code{groundhog},
+\code{namespace}, \code{install}, or \code{import}), and \code{line} (the line number). Rows are unique on
 \code{package} + \code{source} + \code{line}. An empty frame (same columns) when none found.
 }
 \description{
@@ -29,8 +29,9 @@ catalogued and searched, or written to a \code{requirements.txt}.
 \details{
 For R this captures \code{library()} / \code{require()} / \code{requireNamespace()} (bare or
 quoted argument), pacman's \code{p_load()} (which may list several packages at
-once), namespace-qualified calls (\code{pkg::fun} / \code{pkg:::fun}), and
-\code{install.packages()} / \code{renv::install()}. For Python it captures \verb{import a},
+once), \code{groundhog.library()}, namespace-qualified calls (\code{pkg::fun} /
+\code{pkg:::fun}), and \code{install.packages()} / \code{renv::install()}. For Python it
+captures \verb{import a},
 \verb{import a as b}, \verb{import a, b}, and \verb{from a.b import c} (recording the
 top-level package \code{a}). SAS / SPSS / Stata have no package concept, so an
 empty frame is returned.

@@ -27,12 +27,15 @@ source)}
 }
 \value{
 a data frame with \code{package}, \code{source}, \code{installed} (logical),
-\code{message} (error text on failure, else ""), \code{via_archive} (always FALSE
-— the CRAN Archive retry \code{\link[=repro_install_deps]{repro_install_deps()}} does is not duplicated
-here; a package unavailable on live CRAN is simply recorded as failed),
-and \code{category} (see \code{\link[=.repro_classify_install_message]{.repro_classify_install_message()}}; \code{NA} for a
-successful install) — same columns as \code{\link[=repro_install_deps]{repro_install_deps()}} so callers
-do not need to branch on which backend ran.
+\code{message} (error text on failure, else ""), \code{via_archive} (\code{TRUE} when the
+package was not on CRAN and came from the CRAN Archive; a package not on
+CRAN is first looked for on Bioconductor, see
+\code{\link[=.repro_docker_elsewhere_lines]{.repro_docker_elsewhere_lines()}}),
+\code{category} (see \code{\link[=.repro_classify_install_message]{.repro_classify_install_message()}}; \code{NA} for a
+successful install), \code{version_recorded}, \code{version_installed} and
+\code{version_note} — same columns as \code{\link[=repro_install_deps]{repro_install_deps()}} so callers
+do not need to branch on which backend ran. A row with a \code{version} is
+treated as there (see \code{\link[=repro_install_deps]{repro_install_deps()}}).
 }
 \description{
 The Docker-backed twin of \code{\link[=repro_install_deps]{repro_install_deps()}}: same return contract,

@@ -159,11 +159,14 @@
 
 # The sentence shown to the user for a key problem. `shared` is TRUE in the
 # apps and the API (see api_keys_use()), where the key is metacheck's, not the
-# user's own.
+# user's own. `limit` names the limit that was reached, for a service with
+# more than one (ResearchBox's limit for AsPredicted preregistrations).
 .key_problem_message <- function(service, problem, until = NA,
                                  source = .key_source(service),
-                                 shared = isTRUE(getOption("metacheck.keys.shared"))) {
+                                 shared = isTRUE(getOption("metacheck.keys.shared")),
+                                 limit = NULL) {
   s <- .key_services[[service]]
+  limit <- limit %||% sprintf("%s's limit", s$label)
   when <- if (length(until) == 1 && !is.na(until)) {
     paste0(" until ", format(as.POSIXct(until), "%Y-%m-%d %H:%M UTC", tz = "UTC"))
   } else ""
@@ -178,7 +181,7 @@
   } else if (source == "none") {
     sprintf("%s was reached%s.", whose, when)
   } else {
-    sprintf("%s has reached %s's limit%s.", whose, s$label, when)
+    sprintf("%s has reached %s%s.", whose, limit, when)
   }
   ask <- if (source == "user") {
     sprintf("Check the key, or make a new one at %s", s$url)
@@ -275,13 +278,22 @@ api_key_status <- function() {
     s <- .key_services[[service]]
     source <- .key_source(service)
     p <- .key_problem(service, source)
+    # ResearchBox's limit for AsPredicted preregistrations is recorded apart
+    # from its limit for boxes (see .rbox_api()); the apps' notice reads only
+    # this table, so without this a visitor is not told when it is reached
+    limit <- NULL
+    if (is.null(p) && service == "researchbox") {
+      p <- .key_problem("researchbox_aspredicted", source)
+      if (!is.null(p)) limit <- .rbox_aspredicted_limit
+    }
     data.frame(
       service = service, label = s$label, key = source,
       problem = p$problem %||% NA_character_,
       until = if (is.null(p)) as.POSIXct(NA) else p$until,
       url = s$url,
       message = if (is.null(p)) NA_character_
-                else .key_problem_message(service, p$problem, p$until, source),
+                else .key_problem_message(service, p$problem, p$until, source,
+                                          limit = limit),
       stringsAsFactors = FALSE)
   })
   do.call(rbind, rows)

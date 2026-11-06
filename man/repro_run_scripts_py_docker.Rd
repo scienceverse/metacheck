@@ -9,12 +9,13 @@ repro_run_scripts_py_docker(
   order,
   sandbox_root,
   lib_dir = NULL,
-  image = .repro_docker_default_image_py,
+  image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
   timeout = 600,
   skip = character(0),
   parses = NULL,
   failed_deps = character(0),
-  deadline = NULL
+  deadline = NULL,
+  net = NULL
 )
 }
 \arguments{
@@ -48,6 +49,9 @@ recorded \code{not_parsed} and not run}
 together) after which no script is started, recorded as
 \code{skipped_time_limit}; a running script is stopped then. \code{NULL} (the
 default) sets no such limit.}
+
+\item{net}{\code{NULL} (the default) runs with the network off; see
+\code{\link[=repro_run_scripts_docker]{repro_run_scripts_docker()}}.}
 }
 \value{
 a data frame — identical columns to \code{\link[=repro_run_scripts_py]{repro_run_scripts_py()}}'s
@@ -58,6 +62,7 @@ return: \code{file_name}, \code{outcome}, \code{error}, \code{error_type}, \code
 The Docker-backed twin of \code{\link[=repro_run_scripts_py]{repro_run_scripts_py()}}: same return contract,
 same per-script semantics (skip on missing inputs / parse failure,
 timeout, error classification), but each script runs via \verb{docker run --network none --read-only --user <non-root>} instead of a \code{processx}
-subprocess on the host — so the code cannot reach the network or touch
-anything outside the mounted sandbox and library, even deliberately.
+subprocess on the host — so the code cannot reach the network (unless \code{net}
+is given) or touch anything outside the mounted sandbox and library, even
+deliberately.
 }

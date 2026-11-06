@@ -46,16 +46,20 @@
 # `run_results` its per-script run results, `missing_inputs` the rows of
 # repro_missing_inputs() for both languages, `n_dup` the number of identical
 # copies that were not run again, `n_tests`/`n_found` the comparison with the
-# paper (NA when there was none). NULL when no script was run.
+# paper (NA when there was none), `recorded_note` a sentence on the recorded
+# package versions used (see .repro_recorded_summary()), `source_unknown` the
+# packages found nowhere (see .repro_source_unknown()). NULL when no script
+# was run.
 .repro_checklist_section <- function(table, run_results, missing_inputs = NULL,
                                      n_dup = 0, n_tests = NA, n_found = NA,
                                      sandbox = "docker", timeout = 600,
-                                     install_missing = FALSE) {
+                                     install_missing = FALSE, recorded_note = NULL,
+                                     net = NULL, source_unknown = character(0)) {
   if (is.null(table) || !nrow(table) || is.null(run_results) || !nrow(run_results)) {
     return(NULL)
   }
   tbl <- table[order(is.na(table$run_order), table$run_order), , drop = FALSE]
-  is_py <- grepl("\\.py$", tbl$file_name, ignore.case = TRUE)
+  is_py <- grepl("\\.(py|ipynb)$", tbl$file_name, ignore.case = TRUE)
   rr <- run_results[match(tbl$file_name, run_results$file_name), , drop = FALSE]
   outcome <- ifelse(is.na(rr$outcome), tbl$outcome, rr$outcome)
   # a file that was not handed to R or Python: why, from the static check
@@ -78,6 +82,11 @@
     sprintf("%s (%s)", f, why)
   }
 
+  used_by <- if ("used_by" %in% names(tbl)) tbl$used_by else rep(NA_character_, nrow(tbl))
+  # why a file is not part of the analysis (see .repro_software_kind())
+  not_analysis_why <- .repro_not_analysis_why(
+    if ("not_analysis_why" %in% names(tbl)) tbl$not_analysis_why else rep(NA_character_, nrow(tbl)))
+
   # one row per script: its result and what happened, in run order
   rows <- vapply(seq_len(nrow(tbl)), \(i) {
     lang <- if (is_py[[i]]) "Python" else "R"
@@ -99,13 +108,21 @@
       errored = c("Stopped with an error",
                   if (nzchar(err)) sprintf("<code>%s</code>", .repro_cell(err))
                   else "The script stopped with an error (see its output below)."),
-      timed_out = c("Ran out of time",
-                    sprintf("It was still running after %s seconds, our time limit per script.",
-                            timeout)),
+      timed_out = c("Ran out of time", paste0(
+        sprintf("It was still running after %s seconds, our time limit per script", timeout),
+        if (grepl("while a download was still arriving", rr$error[[i]] %||% ""))
+          ", while it was still downloading." else ".")),
+      download_too_large = c("Stopped", paste0(
+        "It downloaded more than our limits allow",
+        if (grepl("^stopped: ", rr$error[[i]] %||% ""))
+          sprintf(" (%s)", .repro_cell(sub("^stopped: ", "", rr$error[[i]]))),
+        ". Keeping what it downloads in the deposit solves this.")),
       dependency_unavailable = c("Could not run on our server", sprintf(
         "It needs the %s package %s, which %s. This is not an error in the script.",
         lang, if (nzchar(pkg)) .repro_cell(pkg) else "(see its output below)",
-        if (isTRUE(install_missing)) "we could not install"
+        if (pkg %in% source_unknown)
+          "is not on CRAN or Bioconductor, and the code does not say where it comes from"
+        else if (isTRUE(install_missing)) "we could not install"
         else "is not installed on our server (we do not install packages)")),
       skipped_missing_inputs = c("Not run", sprintf(
         "It reads %s that %s not available: %s.",
@@ -116,17 +133,40 @@
                              "The time for all scripts together had run out before it could start."),
       not_parsed = , static_parse_error = c("Not run", sprintf(
         "%s cannot read the script: it contains a syntax error.", lang)),
+      python2 = , static_python2 = c("Not run", paste0(
+        "It is written for Python 2, which has been unsupported since 2020. We run Python 3, ",
+        "and do not convert code, since that can change results.")),
       static_unplaceable = c("Not run",
                              "We could not work out when to run it, relative to the other scripts."),
-      static_jags_model = c("Not run", "It is a JAGS model, which another script reads."),
-      static_not_r_content = c("Not run", "It is not R code that can run on its own."),
+      jags_model = , static_jags_model = c("Not run", "It is a JAGS model, which another script reads."),
+      not_r_content = , static_not_r_content = c("Not run", "It is not R code that can run on its own."),
+      defines_functions = , static_defines_functions = c(
+        "Not run",
+        if (!is.na(used_by[[i]])) sprintf("It only defines functions, which %s uses.", .repro_cell(used_by[[i]]))
+        else "It only defines functions, and no script in the deposit uses them."),
+      docker_failed = c("Not run", "Docker failed on our side, so this says nothing about the script."),
+      not_downloaded = c("Not tried", paste(
+        "It needs a file that the deposit holds but that we did not download, such as one",
+        "over our size limit, so this says nothing about the script.")),
+      needs_internet = c("Stopped", paste(
+        if (is.null(net)) "It needs the internet, which is off while we run code."
+        else "It could not reach what it asked for on the internet.",
+        "Keeping what it downloads in the deposit solves this.")),
+      needs_a_person = , static_needs_a_person = c(
+        "Stopped", "It asks a person to choose a file or answer a question, starts an app, or is a program that needs its arguments. Naming the file in the script, or the arguments in a README, solves this."),
+      not_analysis = , static_not_analysis = c("Not run", .repro_cell(not_analysis_why[[i]])),
       c("Not run", ""))
     sprintf("| %s | %s | %s |", .repro_cell(tbl$file_name[[i]]), res[[1]], res[[2]])
   }, character(1))
 
   # the opening sentences: what was run, and how
-  n_r <- sum(!is_py)
-  n_py <- sum(is_py)
+  counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
+                             "static_jags_model", "static_not_r_content",
+                             "defines_functions", "not_analysis",
+                             "static_defines_functions", "static_not_analysis",
+                             "not_downloaded")
+  n_r <- sum(!is_py & counted)
+  n_py <- sum(is_py & counted)
   scripts <- paste(c(
     if (n_r) sprintf("%d R script%s", n_r, plural(n_r)),
     if (n_py) sprintf("%d Python script%s", n_py, plural(n_py))), collapse = " and ")
@@ -136,6 +176,8 @@
     "We ran the paper's %s in the order they depend on each other, %s, for at most %s minute%s per script.%s",
     scripts, how, format(round(timeout / 60, 1)), plural(round(timeout / 60, 1)),
     if (!isTRUE(install_missing)) " We did not install packages the scripts need." else "")
+  if (!is.null(net)) intro <- paste(intro, .repro_internet_text(net))
+  if (length(recorded_note) > 0) intro <- paste(intro, recorded_note)
   if (n_dup > 0) {
     intro <- paste(intro, sprintf(
       "%d identical cop%s of these scripts, which other links in the paper lead to, %s not run again.",
@@ -143,9 +185,11 @@
   }
 
   # the headline: how many ran to the end, and what happened to the others
-  counted <- !outcome %in% c("run_by_source", "run_by_import")
   groups <- c(errored = "stopped with an error", timed_out = "ran out of time",
-              dependency_unavailable = "could not run on our server")
+              dependency_unavailable = "could not run on our server",
+              docker_failed = "could not run on our server",
+              needs_a_person = "needed a person", needs_internet = "needed the internet",
+              download_too_large = "downloaded too much")
   n_ok <- sum(outcome[counted] == "ran_ok")
   parts <- vapply(names(groups), \(g) {
     n <- sum(outcome[counted] == g)
@@ -157,6 +201,10 @@
   headline <- sprintf("**%d of %d script%s ran to the end**%s.",
                       n_ok, sum(counted), plural(sum(counted)),
                       if (length(parts)) paste0(": ", paste(parts, collapse = ", ")) else "")
+  n_nd <- sum(outcome %in% "not_downloaded")
+  if (n_nd) headline <- paste(headline, sprintf(
+    "%d more %s not tried, because %s a file that we did not download.",
+    n_nd, plural(n_nd, "script was", "scripts were"), plural(n_nd, "it needs", "they need")))
 
   # problems in the files the table does not show: setwd() / os.chdir()
   setwd_n <- suppressWarnings(as.integer(tbl$setwd_removed))
@@ -168,6 +216,20 @@
                    "nothing so the script could run; it should be removed from the script."),
             .repro_cell(tbl$file_name[[i]]), fun)
   }, character(1))
+  # file names spelled otherwise in the code than in the deposit
+  names_fixed <- if ("names_corrected" %in% names(tbl)) tbl$names_corrected else rep(NA_character_, nrow(tbl))
+  problems <- c(problems, vapply(which(!is.na(names_fixed)), \(i) {
+    sprintf(paste0("- %s reads files under another name than the deposit holds (%s). We ",
+                   "corrected the names so the script could run; they should be changed in the script."),
+            .repro_cell(tbl$file_name[[i]]), .repro_cell(names_fixed[[i]]))
+  }, character(1)))
+  # notebook commands left out to run the code
+  commands <- if ("commands_removed" %in% names(tbl)) tbl$commands_removed else rep(NA_character_, nrow(tbl))
+  problems <- c(problems, vapply(which(!is.na(commands)), \(i) {
+    sprintf(paste0("- %s holds notebook commands that are not Python (%s). We left them out ",
+                   "so the code could run; what they install or prepare was not done."),
+            .repro_cell(tbl$file_name[[i]]), .repro_cell(commands[[i]]))
+  }, character(1)))
 
   # the comparison with the paper
   if (is.null(n_found) || is.na(n_found)) n_found <- 0L

@@ -41,8 +41,8 @@
 #' the process backend.
 #'
 #' @returns a list `ok` (logical) and `msg` (character, empty on success —
-#'   otherwise a human-readable reason, e.g. Docker not installed or the
-#'   daemon not running)
+#'   otherwise a human-readable reason, e.g. Docker not installed, the
+#'   daemon not running, or the daemon too busy to answer)
 #' @export
 repro_docker_available <- function() {
   bin <- tryCatch(Sys.which("docker"), error = function(e) "")
@@ -50,9 +50,16 @@ repro_docker_available <- function() {
     return(list(ok = FALSE, msg = "the 'docker' command was not found on PATH. Install Docker Desktop (https://www.docker.com/products/docker-desktop/) and ensure it is running."))
   if (!requireNamespace("processx", quietly = TRUE))
     return(list(ok = FALSE, msg = "the 'processx' package is required for sandbox = \"docker\"."))
-  res <- tryCatch(
-    processx::run("docker", c("info"), error_on_status = FALSE, timeout = 15),
-    error = function(e) NULL)
+  # A running Docker can be slow to answer while other containers are busy, so
+  # only a late answer earns another, longer try (GitHub issue #560).
+  for (wait in c(15, 30, 60)) {
+    res <- tryCatch(
+      processx::run("docker", c("info"), error_on_status = FALSE, timeout = wait),
+      error = function(e) NULL)
+    if (is.null(res) || !isTRUE(res$timeout)) break
+  }
+  if (!is.null(res) && isTRUE(res$timeout))
+    return(list(ok = FALSE, msg = "Docker did not answer within 60 seconds, after two shorter tries. It may be busy; try again when it has less to do."))
   if (is.null(res) || res$status != 0)
     return(list(ok = FALSE, msg = "Docker does not appear to be running. Start Docker Desktop and try again."))
   list(ok = TRUE, msg = "")
@@ -63,6 +70,42 @@ repro_docker_available <- function() {
 # materialised sandbox, the throwaway library) are owned by a predictable,
 # non-root id on both sides of the mount.
 .repro_docker_uid <- "1000:1000"
+
+# The `-v` argument that mounts a package library at `target` (/rlib, /pylib).
+# The library is a Docker volume, not the host folder `lib_dir` itself (#568): a
+# Windows drive does not tell file names apart by case, so INLA, whose help files
+# include names that differ only in capitals, failed with "cannot create regular
+# file ... File exists" (10.1111/1365-2435.14173, 18 scripts; the baseline run too);
+# an exFAT drive also refuses Linux file permissions and stores every small file
+# in a 1 MB block. The volume is named after `lib_dir`, made on first use and owned
+# by the user the containers run as; .repro_docker_lib_remove() removes it. The
+# option `metacheck.docker_lib_volume = FALSE` mounts the host folder, as before.
+.repro_docker_lib_volume_name <- function(lib_dir) {
+  p <- gsub("\\\\", "/", normalizePath(lib_dir, mustWork = FALSE))
+  paste0("metacheck_lib_", gsub("[^A-Za-z0-9_.-]", "", paste0(basename(dirname(p)), "_", basename(p))))
+}
+
+.repro_docker_lib_mount <- function(lib_dir, target, read_only = FALSE, image = NULL) {
+  ro <- if (read_only) ":ro" else ""
+  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE)))
+    return(paste0(normalizePath(lib_dir, mustWork = FALSE), ":", target, ro))
+  vol <- .repro_docker_lib_volume_name(lib_dir)
+  have <- tryCatch(processx::run("docker", c("volume", "inspect", vol), error_on_status = FALSE)$status == 0,
+                   error = function(e) FALSE)
+  if (!have && !read_only && !is.null(image)) {
+    processx::run("docker", c("volume", "create", vol), error_on_status = FALSE)
+    processx::run("docker", c("run", "--rm", "--network", "none", "-v", paste0(vol, ":/v"), image,
+                              "chown", .repro_docker_uid, "/v"), error_on_status = FALSE)
+  }
+  paste0(vol, ":", target, ro)
+}
+
+.repro_docker_lib_remove <- function(lib_dir) {
+  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE))) return(invisible(NULL))
+  tryCatch(processx::run("docker", c("volume", "rm", "-f", .repro_docker_lib_volume_name(lib_dir)),
+                         error_on_status = FALSE), error = function(e) NULL)
+  invisible(NULL)
+}
 
 # A unique container name for one docker run, so it can be `docker stop`ped
 # by name afterwards if needed (see .repro_docker_stop() and its call sites
@@ -105,13 +148,349 @@ repro_docker_available <- function() {
 # containers cannot collectively exceed the host. A single-paper,
 # sequential call (workers = 1, the default, or reproducibility_check()
 # called directly rather than through the batch path) never sets this option,
-# so it returns character(0) here -- exactly the previous behaviour
-# (unlimited container), unchanged for every existing caller.
-.repro_docker_resource_args <- function() {
+# so there is no limit on the processors or memory of the container.
+#
+# `--ulimit core=1` is always there: when R crashes in a container on Windows,
+# WSL writes a file of about 2.5 GB to the user's temp folder. Ten crashing
+# scripts filled a disk. A limit of 0 does not stop WSL (confirmed directly);
+# the kernel only leaves out the file for a limit of 1.
+# The lines of an install's output that say why a package did not install: an
+# "ERROR:" line that names it ("ERROR: dependencies 'rgdal', 'rgeos' are not
+# available for package 'ellipsenm'"), and the errors in its own part of the
+# output, from "installing *source* package 'pkg'" to the next package (a
+# compiler's "fatal error: zlib.h: No such file or directory"). "" when none.
+.repro_install_error_lines <- function(txt, pkg) {
+  l <- strsplit(txt %||% "", "\n", fixed = TRUE)[[1]]
+  if (!length(l) || is.na(pkg) || !nzchar(pkg)) return("")
+  q <- gsub("([.|()\\^{}+$*?\\[\\]\\\\])", "\\\\\\1", pkg)
+  # "... for package 'pkg'": the package that failed, not one it needs
+  named <- grep(paste0("^ERROR: .*package ['‘\"]", q, "['’\"]"), l, value = TRUE, perl = TRUE)
+  start <- grep(paste0("installing \\*source\\* package ['‘\"]", q, "['’\"]"), l, perl = TRUE)
+  own <- character(0)
+  if (length(start)) {
+    s <- start[length(start)]
+    nxt <- grep("^\\* (installing|DONE)", l)
+    e <- c(nxt[nxt > s], length(l) + 1L)[1] - 1L
+    # the compiler's errors; an "ERROR:" line counts only when it names this package (above)
+    sect <- l[s:e]
+    own <- sect[grepl("fatal error|error: ", sect) & !grepl("^ERROR: ", sect)]
+  }
+  out <- unique(trimws(c(named, own)))
+  if (!length(out)) return("")
+  substr(paste(utils::head(out, 4), collapse = " | "), 1, 500)
+}
+
+# The note added to a script's error output when its container was stopped for
+# using more memory than the limit: Docker gives the process the exit status 137,
+# and the script ends without a message. In 10.1111/2041-210X.14359 nimble's C++
+# compiler went over 3 GB, and three scripts read as failures with no message and
+# the reason "other" (#568). NULL when no memory limit is set.
+.repro_oom_text <- function(status) {
   limits <- getOption("metacheck.docker_resource_limits")
-  if (is.null(limits)) return(character(0))
-  c("--cpus", as.character(limits$cpus),
+  if (!identical(suppressWarnings(as.integer(status)), 137L) || is.null(limits$memory_gb)) return(NULL)
+  sprintf(paste0("\n[reproducibility_check] The script was stopped for using more than the memory ",
+                 "limit of %s GB that each script has here; this says nothing about the code."),
+          format(limits$memory_gb))
+}
+
+.repro_docker_resource_args <- function() {
+  no_crash_file <- c("--ulimit", "core=1")
+  limits <- getOption("metacheck.docker_resource_limits")
+  if (is.null(limits)) return(no_crash_file)
+  c(no_crash_file, "--cpus", as.character(limits$cpus),
     "--memory", paste0(limits$memory_gb, "g"))
+}
+
+# The limits on what scripts download when the internet is on during a run (#568,
+# item 21): the module's own max_file_size and max_download_size, in MB, as for the
+# files of the repository, and what the paper's scripts received so far, which all
+# of them share. NULL when the internet is off.
+.repro_download_limits <- function(internet = FALSE, max_file_size = 100, max_download_size = 500) {
+  if (!isTRUE(internet)) return(NULL)
+  used <- new.env()
+  used$bytes <- 0
+  list(max_file = (max_file_size %||% Inf) * 1024^2,
+       max_total = (max_download_size %||% Inf) * 1024^2, used = used)
+}
+
+# `docker run` arguments for the network: off, unless the internet is on.
+.repro_docker_network_args <- function(net) {
+  if (is.null(net)) c("--network", "none") else character(0)
+}
+
+# The command a container runs, with the internet on: it first marks its start in
+# /tmp, so a file is known to be new, and at the end writes what it received to the
+# sandbox, so a script that ends between two checks is still counted. The command's
+# own exit status is kept.
+.repro_docker_counted_cmd <- function(cmd, net) {
+  if (is.null(net)) return(cmd)
+  c("sh", "-c", paste0('touch /tmp/.repro_t0; "$@"; s=$?; ',
+                       'cat /sys/class/net/eth0/statistics/rx_bytes > /sandbox/.repro_received 2>/dev/null; exit $s'),
+    "sh", cmd)
+}
+
+# What a running container has received over the network, in bytes, and, once that
+# is at least `max_file`, the first file of at least that size that appeared in the
+# sandbox or /tmp since the script started. NA when the container could not be asked.
+.repro_docker_received <- function(name, max_file = Inf) {
+  find <- if (is.finite(max_file))
+    sprintf(paste0('; [ "$r" -ge %.0f ] && find /sandbox /tmp -type f -newer /tmp/.repro_t0 ',
+                   '-size +%.0fk -printf "%%s %%p\\n" 2>/dev/null | head -n 1'),
+            max_file, floor(max_file / 1024)) else ""
+  res <- tryCatch(processx::run("docker", c("exec", name, "sh", "-c",
+                    paste0("r=$(cat /sys/class/net/eth0/statistics/rx_bytes); echo $r", find)),
+                    error_on_status = FALSE, timeout = 20),
+                  error = function(e) NULL)
+  out <- if (is.null(res)) character(0) else strsplit(trimws(res$stdout), "\n", fixed = TRUE)[[1]]
+  bytes <- suppressWarnings(as.numeric(out[1]))
+  big <- if (length(out) > 1) regmatches(out[2], regexec("^(\\d+) (.+)$", out[2]))[[1]] else character(0)
+  list(bytes = if (length(bytes) && !is.na(bytes)) bytes else NA_real_,
+       file = if (length(big) == 3) big[3] else NA_character_,
+       file_bytes = if (length(big) == 3) as.numeric(big[2]) else NA_real_)
+}
+
+.repro_mb <- function(bytes) format(round(bytes / 1024^2, 1), big.mark = ",")
+
+# The error of a script that ran out of time, which names a download that was still
+# coming in (see .repro_docker_run_watched()).
+.repro_timeout_text <- function(timeout, watched = NULL) {
+  paste0("timed out after ", round(timeout), "s",
+         if (isTRUE(watched$arriving))
+           sprintf(" while a download was still arriving (%s MB received)", .repro_mb(watched$received)))
+}
+
+# Run a `docker run` and wait for it. With the internet off (`net` NULL) this is
+# processx::run(). With it on, the container is checked every two seconds (a check
+# takes about 0.15 seconds), and
+# stopped when the paper's scripts together have downloaded more than
+# max_download_size, or a file larger than max_file_size has appeared (#568, item
+# 21), as the repository's own files are limited. A download that ends between two
+# checks is still counted towards the total, so a later script is stopped.
+# `arriving` says whether data was still coming in when the time ran out, so a slow
+# download is named as the reason.
+.repro_docker_run_watched <- function(args, name, timeout, stdout, stderr, sandbox_root, net = NULL) {
+  if (is.null(net))
+    return(list(res = tryCatch(
+      processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
+                    stdout = stdout, stderr = stderr),
+      error = function(e) e), stopped = NA_character_, arriving = FALSE))
+
+  received_file <- file.path(sandbox_root, ".repro_received")
+  unlink(received_file)
+  p <- tryCatch(processx::process$new("docker", args, stdout = stdout, stderr = stderr),
+                error = function(e) e)
+  if (inherits(p, "condition")) return(list(res = p, stopped = NA_character_, arriving = FALSE))
+  t0 <- Sys.time()
+  before <- net$used$bytes
+  rx <- 0
+  rx_prev <- 0
+  stopped <- NA_character_
+  timed_out <- FALSE
+  repeat {
+    left <- timeout - as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    if (left <= 0) { timed_out <- TRUE; break }
+    p$wait(as.integer(ceiling(min(2, left) * 1000)))
+    if (!p$is_alive()) break
+    seen <- .repro_docker_received(name, net$max_file)
+    if (is.na(seen$bytes)) next
+    rx_prev <- rx
+    rx <- seen$bytes
+    if (before + rx > net$max_total) {
+      stopped <- sprintf(paste0("stopped: the paper's scripts downloaded %s MB, more than the limit ",
+                                "of %s MB (max_download_size)"),
+                         .repro_mb(before + rx), .repro_mb(net$max_total))
+      break
+    }
+    if (!is.na(seen$file)) {
+      stopped <- sprintf(paste0("stopped: it downloaded %s, a file of %s MB, more than the limit ",
+                                "of %s MB per file (max_file_size)"),
+                         sub("^/sandbox/", "", seen$file), .repro_mb(seen$file_bytes),
+                         .repro_mb(net$max_file))
+      break
+    }
+  }
+  if (timed_out || !is.na(stopped)) {
+    .repro_docker_stop(name)
+    p$wait(10000)
+    if (p$is_alive()) p$kill()
+  }
+  if (file.exists(received_file)) {
+    final <- suppressWarnings(as.numeric(readLines(received_file, warn = FALSE)[1]))
+    if (length(final) && !is.na(final)) rx <- max(rx, final)
+    unlink(received_file)
+  }
+  net$used$bytes <- before + rx
+  res <- if (timed_out) list(status = NA_integer_, timeout = TRUE) else
+    list(status = p$get_exit_status() %||% NA_integer_, timeout = FALSE)
+  # more than 64 KB since the check before: data was still coming in
+  list(res = res, stopped = stopped, received = rx,
+       arriving = timed_out && rx - rx_prev > 64 * 1024)
+}
+
+# Whether a run's message comes from Docker itself rather than from the script: a
+# script cannot be judged when its container never started. While Docker Desktop
+# was down, every script of a paper was recorded as a failing script (#568, item 27).
+.repro_docker_failed <- function(txt) {
+  grepl(paste0("Error response from daemon|Docker Desktop is unable to start|",
+               "Cannot connect to the Docker daemon|failed to connect to the docker API|",
+               "error during connect|dockerDesktopLinuxEngine|",
+               # Docker lost the container while it ran: three papers' scripts at
+               # the same second (#568)
+               "error waiting for container"), txt %||% "", ignore.case = TRUE)
+}
+
+# Where packages live that are on neither CRAN nor Bioconductor (#568, item 12): a
+# GitHub owner/repository, or the address of a repository of packages.
+.repro_known_package_places <- function() {
+  c(INLA = "https://inla.r-inla-download.org/R/stable",
+    NicheMapR = "mrke/NicheMapR", glmmADMB = "bbolker/glmmadmb", rethinking = "rmcelreath/rethinking",
+    cmdstanr = "stan-dev/cmdstanr", TwGeos = "SLisovski/TwGeos", GeoLocTools = "SLisovski/GeoLocTools",
+    SGAT = "SWotherspoon/SGAT", microclima = "ilyamaclean/microclima", V.PhyloMaker = "jinyizju/V.PhyloMaker",
+    metabaR = "metabaRfactory/metabaR", calecopal = "an-bui/calecopal", easyGgplot2 = "kassambara/easyGgplot2",
+    ggthemr = "Mikata-Project/ggthemr", BuenColors = "caleblareau/BuenColors", coefplot2 = "palday/coefplot2",
+    tess3r = "bcm-uga/TESS3_encho_sen", PAMLr = "KiranLDA/PAMLr", rcoalescence = "thompsonsed/rcoalescence",
+    datamodelr = "bergant/datamodelr", biomonitoR = "alexology/biomonitoR", scampr = "ElliotDovers/scampr",
+    mapppdr = "CCheCastaldo/mapppdr", riojaPlot = "nsj3/riojaPlot", PCAviz = "NovembreLab/PCAviz",
+    methClust = "kkdey/methClust", remake = "richfitz/remake", ascr = "b-steve/ascr",
+    dentist = "phylotastic/dentist", Hmsc = "hmsc-r/HMSC", HMSC = "hmsc-r/HMSC")
+}
+
+#' The part of the install script for packages that are not on CRAN
+#'
+#' A second pass after every package has had its turn, since one time limit
+#' covers the whole install: first Bioconductor, because the fixed list of
+#' [.repro_bioc_packages()] misses many names and some packages moved there,
+#' keeping only an old copy in the CRAN Archive; then the latest version in the
+#' CRAN Archive, as [.repro_cran_archive_install()] does outside Docker. Two rounds,
+#' because a package can need another archived one (#568, items 9 and 11).
+#' Runs inside the container, without this package.
+#'
+#' @returns lines of R code that follow the install loop
+#' @keywords internal
+.repro_docker_elsewhere_lines <- function() {
+  c(
+    # This R treats a warning old packages cause as an error, and has dropped
+    # Calloc() and the like, so maptools did not compile. Only for this pass.
+    r"(makevars <- file.path(tempdir(), "Makevars"))",
+    r"(writeLines(c("CFLAGS += -Wno-error=format-security -DCalloc=R_Calloc -DRealloc=R_Realloc -DFree=R_Free", paste0(c("CXXFLAGS", "CXX11FLAGS", "CXX14FLAGS", "CXX17FLAGS", "CXX20FLAGS"), " += -Wno-error=format-security")), makevars))",
+    r"(Sys.setenv(R_MAKEVARS_USER = makevars, R_LIBS = paste(.libPaths(), collapse = ":")))",
+    r"(retry_rows <- function() which(vapply(out, function(x) !x$installed && identical(x$source, "cran") && grepl("is not available|there is no package called", x$message), logical(1))))",
+    # What an install here says, kept: an install that gives only warnings
+    # returned as if it had worked, and INLA, from its own repository, failed
+    # without a word in 10.1111/1365-2435.14173 (#568)
+    r"(last_log <- character(0))",
+    r"(logged <- function(expr) withCallingHandlers(expr, warning = function(w) { last_log <<- c(last_log, conditionMessage(w)); invokeRestart("muffleWarning") }, error = function(e) last_log <<- c(last_log, conditionMessage(e))))",
+    r"(bioc_known <- NULL)",
+    r"(in_elsewhere <- function(pkg, depth = 1) {)",
+    r"(  if (is.null(bioc_known)) bioc_known <<- tryCatch({)",
+    r"(    if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", lib = lib, quiet = TRUE))",
+    r"(    rownames(utils::available.packages(repos = BiocManager::repositories())))",
+    r"(  }, error = function(e) character(0)))",
+    # A package on CRAN can need one from Bioconductor, which install.packages()
+    # does not find: speaq needs MassSpecWavelet.
+    r"(  first_msg <- if (pkg %in% pkgs) paste(out[[match(pkg, pkgs)]]$message) else "")",
+    r"(  bioc_needed <- regmatches(first_msg, regexpr("(?<=there is no package called .)[A-Za-z0-9.]+", first_msg, perl = TRUE)))",
+    r"(  if (length(bioc_needed) && bioc_needed %in% bioc_known) {)",
+    r"(    BiocManager::install(bioc_needed, lib = lib, update = FALSE, ask = FALSE))",
+    r"(    return("bioc"))",
+    r"(  })",
+    r"(  if (pkg %in% bioc_known) {)",
+    r"(    BiocManager::install(pkg, lib = lib, update = FALSE, ask = FALSE))",
+    r"(    return("bioc"))",
+    r"(  })",
+    r"(  listing <- suppressWarnings(tryCatch(readLines(paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/"), warn = FALSE), error = function(e) character(0))))",
+    # rgdal and rgeos compile against sp's header files, which sp dropped in
+    # version 2.2 after they left CRAN; 2.1-4 is the last version that has them
+    # (#568). The run then loads this sp, from the temporary library.
+    r"(  if (pkg %in% c("rgdal", "rgeos") && !file.exists(file.path(lib, "sp", "include", "sp.h"))) {)",
+    r"(    sp_src <- file.path(tempdir(), "sp_2.1-4.tar.gz"))",
+    r"(    try(utils::download.file("https://cran.r-project.org/src/contrib/Archive/sp/sp_2.1-4.tar.gz", sp_src, quiet = TRUE), silent = TRUE))",
+    r"(    if (file.exists(sp_src)) try(install.packages(sp_src, lib = lib, repos = NULL, type = "source", quiet = TRUE), silent = TRUE))",
+    r"(  })",
+    r"(  hits <- grep(paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz"), listing, value = TRUE))",
+    r"(  if (!length(hits)) return(NA_character_))",
+    r"(  dates <- sub(".*(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}).*", "\\1", hits))",
+    r"(  latest <- hits[order(dates, decreasing = TRUE)][1])",
+    r"(  tarball <- regmatches(latest, regexpr(paste0(pkg, "_[0-9][^\"']*\\.tar\\.gz"), latest)))",
+    r"(  if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
+    r"(  archive_url <- paste0("https://cran.r-project.org/src/contrib/Archive/", pkg, "/", tarball))",
+    # A dependency that has left CRAN too is installed from the Archive first: the
+    # install takes dependencies from CRAN only, so ggsn, which needs maptools,
+    # stopped (10.1111/1365-2435.14195; #568). Read from the package's DESCRIPTION.
+    r"(  if (depth < 3) tryCatch({)",
+    r"(    tb <- file.path(tempdir(), tarball))",
+    r"(    utils::download.file(archive_url, tb, quiet = TRUE))",
+    r"(    ex <- file.path(tempdir(), paste0("desc_", pkg)))",
+    r"(    utils::untar(tb, files = paste0(pkg, "/DESCRIPTION"), exdir = ex))",
+    r"(    dcf <- read.dcf(file.path(ex, pkg, "DESCRIPTION")))",
+    r"(    fields <- intersect(c("Depends", "Imports", "LinkingTo"), colnames(dcf)))",
+    r"(    needs <- trimws(sub("\\(.*", "", unlist(strsplit(paste(dcf[1, fields], collapse = ","), ",")))))",
+    r"(    needs <- setdiff(needs[nzchar(needs)], c("R", rownames(utils::installed.packages(lib.loc = .libPaths())), rownames(utils::available.packages()))))",
+    r"(    for (d in needs) tryCatch(in_elsewhere(d, depth + 1), error = function(e) NULL))",
+    r"(  }, error = function(e) NULL))",
+    r"(  logged(remotes::install_url(archive_url, lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE)))",
+    r"(  "archive")",
+    r"(})",
+    # Packages only elsewhere (#568, item 12): a table of known places, then
+    # R-universe's search for that exact name. A GitHub tarball needs no token.
+    paste0("known_places <- ", deparse1(.repro_known_package_places())),
+    r"(in_known_place <- function(pkg) {)",
+    r"(  place <- unname(known_places[pkg]))",
+    r"(  if (!is.na(place) && startsWith(place, "https://")) {)",
+    r"(    logged(install.packages(pkg, lib = lib, repos = c(place, getOption("repos")), quiet = TRUE)))",
+    r"(    return(place))",
+    r"(  })",
+    r"(  if (!is.na(place)) {)",
+    r"(    if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes", lib = lib, quiet = TRUE))",
+    r"(    logged(remotes::install_url(paste0("https://github.com/", place, "/archive/HEAD.tar.gz"), lib = lib, upgrade = "never", dependencies = TRUE, quiet = TRUE)))",
+    r"(    return(paste0("github.com/", place)))",
+    r"(  })",
+    # a search that fails is not a package R-universe lacks (#389); a bare
+    # rocker/r-ver image has no jsonlite, so the search always failed there
+    r"(  if (!requireNamespace("jsonlite", quietly = TRUE)) install.packages("jsonlite", lib = lib, quiet = TRUE))",
+    r"(  found <- tryCatch(jsonlite::fromJSON(paste0("https://r-universe.dev/api/search?q=", pkg, "&limit=20"))$results, error = function(e) e))",
+    r"(  if (inherits(found, "error")) return(paste("the search of R-universe failed:", conditionMessage(found))))",
+    r"(  if (is.null(found) || !NROW(found)) return(NA_character_))",
+    r"(  who <- found[["_user"]][found$Package == pkg])",
+    r"(  if (!length(who)) return(NA_character_))",
+    r"(  repo <- paste0("https://", who[1], ".r-universe.dev"))",
+    r"(  logged(install.packages(pkg, lib = lib, repos = c(repo, getOption("repos")), quiet = TRUE)))",
+    r"(  repo)",
+    r"(})",
+    r"(for (round in 1:2) for (i in retry_rows()) {)",
+    r"(  pkg <- pkgs[i])",
+    r"(  writeLines(as.character(i), "/sandbox/.install_status"))",
+    r"(  last_log <- character(0))",
+    r"(  from <- tryCatch(in_elsewhere(pkg), error = function(e) conditionMessage(e)))",
+    r"(  usable <- function() file.exists(file.path(lib, pkg, "DESCRIPTION")) && requireNamespace(pkg, quietly = TRUE, lib.loc = lib))",
+    # what stopped it is kept, next to the first pass's "not available"
+    r"(  tried <- from)",
+    r"(  if (!usable()) from <- tryCatch(in_known_place(pkg), error = function(e) conditionMessage(e)))",
+    r"(  stopped <- c(tried, from)[!is.na(c(tried, from)) & !c(tried, from) %in% c("bioc", "archive") & !grepl("^https://|^github", c(tried, from))])",
+    r"(  if (!usable() && round == 2 && length(stopped)) out[[i]]$message <- paste0(out[[i]]$message, "; also tried elsewhere: ", substr(stopped[1], 1, 300)))",
+    r"(  if (!usable() && round == 2 && !length(stopped) && length(last_log)) out[[i]]$message <- paste0(out[[i]]$message, "; installing it from ", c(from, tried)[!is.na(c(from, tried))][1], " failed: ", substr(paste(unique(last_log), collapse = " | "), 1, 400)))",
+    # Found in none of the places: the code does not say where the package comes
+    # from, which authors can act on (#389). See .repro_classify_install_message().
+    r"(  if (!usable() && round == 2 && is.na(tried) && is.na(from)) out[[i]]$message <- paste0(out[[i]]$message, "; found nowhere else: not on Bioconductor, in the CRAN Archive, in our list of known places or on R-universe"))",
+    r"(  if (usable()) {)",
+    r"(    out[[i]]$installed <- TRUE)",
+    r"(    out[[i]]$message <- "")",
+    r"(    out[[i]]$version_installed <- have_version(pkg))",
+    r"(    out[[i]]$via_archive <- identical(from, "archive"))",
+    r"(    if (identical(from, "bioc")) out[[i]]$source <- "bioc")",
+    r"(    if (!from %in% c("bioc", "archive")) { out[[i]]$source <- "elsewhere"; out[[i]]$version_note <- paste0("installed from ", from) })",
+    r"(  })",
+    r"(  saveRDS(do.call(rbind, out), "/sandbox/.install_results.rds"))",
+    r"(})"
+  )
+}
+
+# The container's working directory for a script's run_dir: /sandbox itself, also
+# when run_dir is missing, or a folder below it.
+.repro_docker_workdir <- function(run_dir, sandbox_root) {
+  if (is.null(run_dir) || is.na(run_dir) || !nzchar(run_dir)) return("/sandbox")
+  if (normalizePath(run_dir, mustWork = FALSE) == normalizePath(sandbox_root, mustWork = FALSE)) return("/sandbox")
+  .repro_docker_container_path(run_dir, sandbox_root)
 }
 
 # A HOST path known to be under sandbox_root -> its path INSIDE the container
@@ -142,8 +521,8 @@ repro_docker_available <- function() {
 #' for the Dockerfile/package list/build instructions -- that repo also
 #' publishes a smaller `metacheck_r_small` variant, ~390 packages, seen in
 #' at least 3 corpus files, also with JAGS/a JDK but without the geospatial
-#' stack), so a run against it skips most of the install phase entirely
-#' instead of reinstalling every dependency from scratch. This is the
+#' stack), so a run against it needs no install for most papers. (With
+#' `install_missing = TRUE` every declared package is still installed.) This is the
 #' DEFAULT image (see `.repro_docker_image_for()`'s `use_declared_version`
 #' argument) -- pinned to whatever R version it was built against, NOT the
 #' paper's own declared version, which is the tradeoff
@@ -192,7 +571,8 @@ repro_docker_available <- function() {
 #' @keywords internal
 .repro_docker_image_for <- function(r_versions = character(0),
                                     use_declared_version = FALSE) {
-  if (!isTRUE(use_declared_version)) return(.repro_docker_default_image)
+  # the option `metacheck.docker_image` names another image, to try one before it is published
+  if (!isTRUE(use_declared_version)) return(getOption("metacheck.docker_image", .repro_docker_default_image))
 
   # Only a clean X.Y[.Z] shape is trusted as a tag -- anything else (embedded
   # whitespace/newlines from a malformed extraction upstream, a version with
@@ -239,20 +619,27 @@ repro_docker_available <- function() {
 #'   source)
 #'
 #' @returns a data frame with `package`, `source`, `installed` (logical),
-#'   `message` (error text on failure, else ""), `via_archive` (always FALSE
-#'   — the CRAN Archive retry [repro_install_deps()] does is not duplicated
-#'   here; a package unavailable on live CRAN is simply recorded as failed),
-#'   and `category` (see [.repro_classify_install_message()]; `NA` for a
-#'   successful install) — same columns as [repro_install_deps()] so callers
-#'   do not need to branch on which backend ran.
+#'   `message` (error text on failure, else ""), `via_archive` (`TRUE` when the
+#'   package was not on CRAN and came from the CRAN Archive; a package not on
+#'   CRAN is first looked for on Bioconductor, see
+#'   [.repro_docker_elsewhere_lines()]),
+#'   `category` (see [.repro_classify_install_message()]; `NA` for a
+#'   successful install), `version_recorded`, `version_installed` and
+#'   `version_note` — same columns as [repro_install_deps()] so callers
+#'   do not need to branch on which backend ran. A row with a `version` is
+#'   treated as there (see [repro_install_deps()]).
 #' @export
 repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-ver:latest",
                                       timeout = 600) {
   empty <- data.frame(package = character(0), source = character(0),
                       installed = logical(0), message = character(0),
-                      via_archive = logical(0), category = character(0))
+                      via_archive = logical(0), category = character(0),
+                      version_recorded = character(0),
+                      version_installed = character(0),
+                      version_note = character(0))
   if (is.null(install_deps) || nrow(install_deps) == 0) return(empty)
   dir.create(lib_dir, recursive = TRUE, showWarnings = FALSE)
+  versions <- install_deps$version %||% rep(NA_character_, nrow(install_deps))
 
   # One install SCRIPT per call (not one docker run per package): a single
   # container start pays Docker's own startup overhead once for the whole
@@ -278,20 +665,60 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     'lib <- "/rlib"',
     'dir.create(lib, recursive = TRUE, showWarnings = FALSE)',
     '.libPaths(c(lib, .libPaths()))',
-    'repos <- getOption("repos")',
-    'if (is.null(repos) || !length(repos) || any(!nzchar(repos)) || any(repos == "@CRAN@"))',
-    '  options(repos = c(CRAN = "https://cloud.r-project.org"))',
-    'gh_avail <- requireNamespace("remotes", quietly = TRUE)',
+    .repro_repos_lines(),
     'pkgs   <- .repro_docker_pkgs',
     'srcs   <- .repro_docker_srcs',
     'refs   <- .repro_docker_refs',
+    'vers   <- .repro_docker_vers',
+    # A bare rocker/r-ver image does not have remotes, and without it no
+    # recorded version and no GitHub package can be installed.
+    'gh_avail <- requireNamespace("remotes", quietly = TRUE)',
+    'if (!gh_avail && (any(!is.na(vers)) || any(srcs == "github"))) {',
+    '  try(install.packages("remotes", lib = lib, quiet = TRUE))',
+    '  gh_avail <- requireNamespace("remotes", quietly = TRUE)',
+    '}',
+    # The same rules as .repro_installed_version() and .repro_same_version()
+    # (R/reproducibility_check.R), inlined because this script runs without
+    # this package.
+    'have_version <- function(pkg) {',
+    '  v <- suppressWarnings(tryCatch(utils::packageDescription(pkg, lib.loc = .libPaths(), fields = "Version"),',
+    '                                 error = function(e) NA_character_))',
+    '  if (length(v) != 1 || is.na(v)) NA_character_ else as.character(v)',
+    '}',
+    'same_version <- function(a, b) {',
+    '  if (is.na(a) || is.na(b)) return(FALSE)',
+    '  isTRUE(tryCatch(package_version(a) == package_version(b), error = function(e) FALSE))',
+    '}',
+    # The same rule as .repro_load_error() (R/reproducibility_check.R): a bare
+    # image often lacks a system library, which only this message tells.
+    'load_error <- function(pkg) {',
+    '  msg <- tryCatch({ loadNamespace(pkg); "" }, error = function(e) conditionMessage(e))',
+    '  substr(gsub("[[:space:]]+", " ", msg), 1, 300)',
+    '}',
     'out <- list()',
     'for (i in seq_along(pkgs)) {',
-    '  pkg <- pkgs[i]; src <- srcs[i]; ref <- refs[i]',
+    '  pkg <- pkgs[i]; src <- srcs[i]; ref <- refs[i]; ver <- vers[i]',
+    # Read by the host while this runs, for the progress display.
+    '  writeLines(as.character(i), "/sandbox/.install_status")',
     '  warns <- character(0)',
+    '  note <- ""',
+    '  version_done <- same_version(have_version(pkg), ver)',
+    '  if (!version_done && !is.na(ver) && identical(src, "bioc")) {',
+    '    note <- "Bioconductor versions follow the R version, so the current version was installed"',
+    '  } else if (!version_done && !is.na(ver) && identical(src, "cran")) {',
+    '    if (gh_avail) {',
+    '      version_done <- tryCatch({',
+    '        remotes::install_version(pkg, version = ver, lib = lib, upgrade = "never",',
+    '                                 dependencies = NA, force = TRUE, quiet = FALSE)',
+    '        same_version(have_version(pkg), ver)',
+    '      }, error = function(e) { note <<- conditionMessage(e); FALSE })',
+    '      if (!version_done && !nzchar(note)) note <- paste0("the recorded version could not be installed on R ", getRversion())',
+    '    } else note <- "the remotes package is not available in this image"',
+    '  }',
     '  res <- tryCatch({',
     '    withCallingHandlers({',
-    '    if (identical(src, "github")) {',
+    '    if (version_done) {',
+    '    } else if (identical(src, "github")) {',
     '      if (!gh_avail) stop("the remotes package is not available in this image")',
     '      remotes::install_github(ref, lib = lib, upgrade = "never", quiet = FALSE)',
     '    } else if (identical(src, "url")) {',
@@ -308,16 +735,30 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     # inlined because this script runs without this package: a package
     # install.packages() could not find only produces a "not available"
     # warning, which is the real reason (issue #421).
-    '    if (!requireNamespace(pkg, quietly = TRUE, lib.loc = lib)) {',
-    '      na <- unique(grep("is not available", warns, value = TRUE, fixed = TRUE))',
+    # A recorded version already in the image is not in lib. Being in lib is
+    # checked as well, since the load check also passes for a namespace an
+    # earlier package loaded, and a failed install_github() does not stop. A
+    # package that is gone from CRAN may still be in the image.
+    '    in_lib <- file.exists(file.path(lib, pkg, "DESCRIPTION"))',
+    '    in_image <- !in_lib && identical(src, "cran") && is.na(ver) && !is.na(have_version(pkg))',
+    '    if (!(version_done || in_lib || in_image) ||',
+    '        !requireNamespace(pkg, quietly = TRUE, lib.loc = if (in_lib && !version_done) lib else .libPaths())) {',
+    '      na <- unique(grep("is not available|non-zero exit status", warns, value = TRUE))',
     '      stop(if (length(na) > 0) paste(na, collapse = "; ")',
-    '           else "installed but package is not loadable")',
+    '           else if (!(version_done || in_lib)) "the install did not put the package in the library"',
+    '           else paste0("installed but package is not loadable: ", load_error(pkg)))',
     '    }',
     '    list(ok = TRUE, msg = "")',
     '  }, error = function(e) list(ok = FALSE, msg = conditionMessage(e)))',
-    '  out[[i]] <- data.frame(package = pkg, source = src, installed = res$ok, message = res$msg)',
+    '  v <- have_version(pkg)',
+    '  if (res$ok && !is.na(ver) && !same_version(v, ver) && !nzchar(note))',
+    '    note <- "the source gave another version than the recorded one"',
+    # stringsAsFactors: the default is TRUE before R 4.0, and the image may be that old
+    '  out[[i]] <- data.frame(package = pkg, source = src, installed = res$ok, message = res$msg,',
+    '                         version_installed = v, version_note = note, via_archive = FALSE, stringsAsFactors = FALSE)',
     '  saveRDS(do.call(rbind, out), "/sandbox/.install_results.rds")',
-    '}'
+    '}',
+    .repro_docker_elsewhere_lines()
   )
 
   sandbox_dir <- tempfile("repro_docker_install_")
@@ -349,7 +790,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   header <- c(
     paste0(".repro_docker_pkgs <- ", deparse1(install_deps$package)),
     paste0(".repro_docker_srcs <- ", deparse1(install_deps$source)),
-    paste0(".repro_docker_refs <- ", deparse1(install_deps$ref))
+    paste0(".repro_docker_refs <- ", deparse1(install_deps$ref)),
+    paste0(".repro_docker_vers <- ", deparse1(as.character(versions)))
   )
   script_path <- file.path(sandbox_dir, "install.R")
   # No BOM: writeLines()/UTF-8 without a BOM is R's own default, but Docker
@@ -375,26 +817,23 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
            "--pids-limit", "512",
            .repro_docker_resource_args(),
            "-v", paste0(sandbox_dir, ":/sandbox"),
-           "-v", paste0(normalizePath(lib_dir, mustWork = FALSE), ":/rlib"),
+           "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
            image, "Rscript", "/sandbox/install.R")
 
   out_file <- tempfile(fileext = ".out")
   res <- tryCatch(
-    processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
-                  stdout = out_file, stderr = out_file),
+    .repro_docker_run_install("docker", args, timeout, out_file,
+                              file.path(sandbox_dir, ".install_status"), install_deps, versions),
     error = function(e) NULL)
 
-  # processx::run(timeout = ...) only kills the HOST-SIDE `docker run` CLI
-  # process; it does not stop the container that CLI started (confirmed
-  # directly: a container survives its own `docker run` wrapper being
-  # killed on timeout, still consuming CPU indefinitely afterwards -- see
-  # GitHub issue #417). `--name` above makes the container reachable by name
-  # regardless of whether processx reports the timeout as a normal return
-  # ($timeout == TRUE) or, less commonly, as a thrown condition -- either
-  # way, `res` will not reflect a clean exit, so any non-clean outcome here
-  # gets a stop attempt; a container that already exited on its own before
-  # this runs is simply a harmless no-op (.repro_docker_stop() swallows the
-  # "no such container" error).
+  # Stopping the `docker run` CLI at the timeout does not stop the container
+  # that CLI started (confirmed directly: a container survives its own
+  # `docker run` wrapper being killed on timeout, still consuming CPU
+  # indefinitely afterwards -- see GitHub issue #417). `--name` above makes the
+  # container reachable by name, so any non-clean outcome here gets a stop
+  # attempt; a container that already exited on its own before this runs is
+  # simply a harmless no-op (.repro_docker_stop() swallows the "no such
+  # container" error).
   if (is.null(res) || isTRUE(res$timeout)) .repro_docker_stop(container_name)
 
   # A results file with FEWER rows than install_deps is a real, expected
@@ -410,10 +849,22 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   tbl <- if (!is.null(res) && file.exists(results_path))
     tryCatch(readRDS(results_path), error = function(e) NULL) else NULL
 
+  txt <- if (!is.null(res)) tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
+                                     error = function(e) "") else ""
+  # A failed install whose message gives no reason, only "had non-zero exit
+  # status", gets the reason from the install's own output (#568): 7 of 111
+  # failed installs in the corpus, such as ellipsenm (10.1111/1365-2656.13895),
+  # whose output said "ERROR: dependencies 'rgdal', 'rgeos' are not available".
+  if (!is.null(tbl) && nrow(tbl) && nzchar(txt)) {
+    vague <- !tbl$installed & !grepl("ERROR: |error: |not available|there is no package|cannot ",
+                                     tbl$message %||% "", ignore.case = FALSE)
+    for (i in which(vague)) {
+      why <- .repro_install_error_lines(txt, tbl$package[i])
+      if (nzchar(why)) tbl$message[i] <- paste0(tbl$message[i], if (nzchar(tbl$message[i])) "; " else "", why)
+    }
+  }
   msg <- if (!is.null(res)) {
-    txt <- tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
-                    error = function(e) "")
-    if (isTRUE(res$timeout)) paste0("docker install timed out after ", timeout, "s")
+    if (isTRUE(res$timeout)) paste0("docker install timed out after ", round(timeout), "s")
     else paste0("docker install failed (status ", res$status, "): ", txt)
   } else "docker run could not be started"
   unlink(out_file)
@@ -426,7 +877,11 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   } else NULL
 
   out <- dplyr::bind_rows(tbl, padding)
-  out$via_archive <- FALSE   # the CRAN Archive retry repro_install_deps() does is not duplicated here
+  out$version_recorded <- as.character(versions)[match(out$package, install_deps$package)]
+  if (!"version_installed" %in% names(out)) out$version_installed <- NA_character_
+  if (!"version_note" %in% names(out)) out$version_note <- ""
+  out$version_note[is.na(out$version_note)] <- ""
+  out$via_archive <- if ("via_archive" %in% names(out)) out$via_archive %in% TRUE else rep(FALSE, nrow(out))
   # Classified on the HOST, not inside the container script: the container has
   # no access to this package's own R functions (it runs install.R as a
   # standalone Rscript with no library() of this package available), so each
@@ -436,6 +891,36 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
                          vapply(out$message, .repro_classify_install_message,
                                 character(1)))
   out
+}
+
+# Run the install container and show what it is doing. The container writes the
+# number of the package it has started to `status_file`, on a mounted folder;
+# this reads it every second, and shows the package, the count and the time so far
+# (see .repro_install_what()). Returns a list `status`, `timeout`. A `docker run`
+# in the foreground showed nothing until the whole install had ended.
+.repro_docker_run_install <- function(command, args, timeout, out_file, status_file,
+                                      install_deps, versions) {
+  n <- nrow(install_deps)
+  bar <- pb(NA, "(:spin) :what")
+  on.exit(bar$terminate(), add = TRUE)
+  started <- Sys.time()
+  p <- processx::process$new(command, args, stdout = out_file, stderr = "2>&1")
+  on.exit(if (p$is_alive()) p$kill(), add = TRUE)
+  current <- 0L
+  repeat {
+    p$wait(1000)
+    i <- suppressWarnings(tryCatch(as.integer(readLines(status_file, n = 1, warn = FALSE)),
+                                   error = function(e) NA_integer_))
+    if (length(i) == 1 && !is.na(i) && i >= 1L && i <= n) {
+      what <- .repro_install_what(i, n, install_deps$package[i], versions[i], started)
+      if (i != current) message("[repro/docker]   ", what)
+      bar$tick(max(0L, i - current), list(what = what))
+      current <- i
+    }
+    if (!p$is_alive()) return(list(status = p$get_exit_status(), timeout = FALSE))
+    if (as.numeric(difftime(Sys.time(), started, units = "secs")) >= timeout)
+      return(list(status = NA_integer_, timeout = TRUE))
+  }
 }
 
 # Render .r_capture_runner()/.r_capture_helpers()'s logic (R/r-capture.R) as
@@ -469,8 +954,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #' undefined-variable / dependency-unavailable classification, captured
 #' result objects), but each script runs via `docker run --network none
 #' --read-only --user <non-root>` instead of a `callr` subprocess — so the
-#' code cannot reach the network or touch anything outside the mounted
-#' sandbox and library, even deliberately. See this file's header comment for
+#' code cannot reach the network (unless `net` is given) or touch anything
+#' outside the mounted sandbox and library, even deliberately. See this file's header comment for
 #' the two-phase (install-then-run) design and why the library is mounted at
 #' `/rlib`, not `/lib`.
 #'
@@ -498,11 +983,16 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #'   together) after which no script is started, recorded as
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
+#' @param net `NULL` (the default) runs with the network off. With the limits from
+#'   `.repro_download_limits()`, scripts can use the internet, and a script is
+#'   stopped (outcome `download_too_large`) when the scripts together download
+#'   more than the total limit, or a file larger than the limit per file appears.
 #' @export
 repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
                                      image = "rocker/r-ver:latest", timeout = 600,
                                      skip = character(0), parses = NULL,
-                                     failed_deps = character(0), deadline = NULL) {
+                                     failed_deps = character(0), deadline = NULL,
+                                     net = NULL) {
   if (is.null(run_tbl) || nrow(run_tbl) == 0)
     return(data.frame(file_name = character(0), outcome = character(0),
                       error = character(0), error_type = character(0),
@@ -522,11 +1012,13 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
   pb_run <- pb(length(ordered_names), ":what [:bar] :current/:total")
   pb_run$tick(0, list(what = ""))
   on.exit(pb_run$terminate())
+  run_started <- Sys.time()
 
   capture_preamble <- .repro_docker_capture_preamble()
 
   rows <- lapply(ordered_names, function(fn) {
-    pb_run$tick(1, list(what = fn))
+    pb_run$tick(1, list(what = sprintf("Running %s (%s so far)", fn, .repro_duration(
+      as.numeric(difftime(Sys.time(), run_started, units = "secs"))))))
     row <- run_tbl[run_tbl$file_name == fn, ][1, ]
 
     no_lines <- function(df) dplyr::mutate(df, script_lines = list(character(0)),
@@ -584,8 +1076,12 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     # a real bug: a package installed by repro_install_deps_docker() into the
     # SAME mounted /rlib was still reported "there is no package called" by the
     # run phase before this line was added.
+    # R_LIBS too, so the R processes a script starts find the packages: gbm()'s
+    # cross-validation workers stopped with "there is no package called 'gbm'"
+    # in 10.1111/1365-2656.13910, as would a makeCluster() of the script's own (#568).
     libpath_setup <- if (!is.null(lib_dir_norm))
-      '  .libPaths(c("/rlib", .libPaths()))' else NULL
+      c('  .libPaths(c("/rlib", .libPaths()))',
+        '  Sys.setenv(R_LIBS = paste(.libPaths(), collapse = ":"))') else NULL
     # The container is read-only apart from /tmp, its home folder too, so a
     # package that keeps files in the user's cache, configuration or data
     # folder stopped: renv::restore() with "failed to create directory at
@@ -605,7 +1101,23 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       '    pandoc <- c(file.path(tools, "pandoc"), Sys.glob(file.path(tools, "*", "pandoc")))',
       '    pandoc <- pandoc[file.exists(pandoc)]',
       '    if (length(pandoc)) Sys.setenv(RSTUDIO_PANDOC = dirname(pandoc[1]))',
-      '  }'
+      '  }',
+      # as in .r_capture_runner(): what a person\'s computer has and a check does not
+      '  options(knitr.graphics.error = FALSE)',
+      # Plots without a screen go to R's pdf device, which stops on a font it does
+      # not know: theme_ipsum() asks for "Arial Narrow", "invalid font type"
+      # (10.1111/1365-2435.14195; #568). Cairo's device takes any font name.
+      '  if (isTRUE(capabilities("cairo"))) options(device = function(...) grDevices::cairo_pdf("Rplots.pdf", onefile = TRUE))',
+      # In an attached environment of their own, not the workspace: a script that
+      # starts with rm(list = ls()) removed them, and stopped with "could not find
+      # function windowsFonts" (10.1111/1365-2656.13193; #568)
+      '  stand_ins <- new.env()',
+      '  assign("View", function(...) invisible(NULL), envir = stand_ins)',
+      '  assign("windowsFonts", function(...) invisible(NULL), envir = stand_ins)',
+      '  assign("windowsFont", function(...) "sans", envir = stand_ins)',
+      '  for (ask in c("file.choose", "choose.files", "choose.dir", "tk_choose.files", "tk_choose.dir"))',
+      '    assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = stand_ins)',
+      '  attach(stand_ins, name = "metacheck:stand_ins", warn.conflicts = FALSE)'
     )
     wrapper_lines <- c(
       capture_preamble,
@@ -617,11 +1129,20 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       paste0('  exprs <- parse("', container_script, '", keep.source = TRUE)'),
       '  srcrefs <- attr(exprs, "srcref")',
       '  env <- globalenv()',
+      # The echo of each expression goes past a sink() the script opened: a model
+      # written with sink("m.jags"); cat("model {...}"); sink() got our "> cat(..."
+      # lines, and JAGS stopped on "syntax error on line 1 near '>'"
+      # (10.1111/1365-2656.14188, 10.1111/1365-2656.14113; #568)
+      '  echo_con <- NULL',
       '  for (i in seq_along(exprs)) {',
       '    e <- exprs[[i]]',
       '    sr <- if (!is.null(srcrefs) && length(srcrefs) >= i) srcrefs[[i]] else NULL',
       '    txt <- if (!is.null(sr)) as.character(sr) else deparse(e)',
-      '    cat(paste0("> ", txt, collapse = "\\n"), "\\n", sep = "")',
+      '    echo <- paste0(paste0("> ", txt, collapse = "\\n"), "\\n")',
+      '    if (sink.number() > 0) {',
+      '      if (is.null(echo_con)) echo_con <- suppressWarnings(file("/dev/stdout", "w", raw = TRUE))',
+      '      cat(echo, file = echo_con); flush(echo_con)',
+      '    } else cat(echo)',
       '    res <- withVisible(eval(e, envir = env))',
       '    if (res$visible) print(res$value)',
       '    call_txt <- paste(txt, collapse = " ")',
@@ -643,32 +1164,37 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     on.exit(unlink(wrapper_path), add = TRUE)
     container_wrapper <- .repro_docker_container_path(wrapper_path, sandbox_root)
 
-    # Working directory is always /sandbox itself: repro_write_scripts()'s own
-    # contract is "run_dir is always root" (every script's relative paths are
-    # rewritten against the sandbox ROOT, not its own subdirectory -- see that
-    # function's roxygen), so there is no per-script subdirectory to cd into.
+    # The working directory is the script's run_dir (see repro_write_scripts()),
+    # which is the sandbox root unless the package layout chose a folder below it.
     container_name <- .repro_docker_container_name()
     args <- c("run", "--rm", "--name", container_name,
-             "--network", "none", "--read-only",
-             "--tmpfs", "/tmp",
+             .repro_docker_network_args(net), "--read-only",
+             # exec: Docker mounts /tmp noexec by default, so code compiled while
+             # the script runs (rstan's models, Rcpp::sourceCpp(), TMB) could not be
+             # loaded: "failed to map segment from shared object"
+             # (10.1111/1365-2656.12673, 10.1111/1365-2656.13608; #568). The code can
+             # already run anything R can; the other limits stay.
+             "--tmpfs", "/tmp:exec",
              "--user", .repro_docker_uid,
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
              .repro_docker_resource_args(),
-             "-w", "/sandbox",
+             "-w", .repro_docker_workdir(row$run_dir, sandbox_root),
+             # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
+             # stopped three scripts of 10.1111/2041-210X.14007 (#568)
+             "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
              "-v", paste0(sandbox_root, ":/sandbox"))
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", paste0(lib_dir_norm, ":/rlib:ro"))
-    args <- c(args, image, "Rscript", container_wrapper)
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", read_only = TRUE))
+    args <- c(args, image, .repro_docker_counted_cmd(c("Rscript", container_wrapper), net))
 
     out_file <- tempfile(fileext = ".out")
     err_file <- tempfile(fileext = ".err")
     t0 <- Sys.time()
-    res <- tryCatch(
-      processx::run("docker", args, error_on_status = FALSE, timeout = timeout,
-                    stdout = out_file, stderr = err_file),
-      error = function(e) e)
+    watched <- .repro_docker_run_watched(args, container_name, timeout, out_file, err_file,
+                                         sandbox_root, net)
+    res <- watched$res
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
 
     # is_timeout also drives error_type/outcome further below (moved up from
@@ -700,6 +1226,13 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
 
     message("[repro/docker]   <- '", fn, "' done in ", round(elapsed, 1), "s")
 
+    # stopped for what it downloaded, with the internet on
+    if (!is.na(watched$stopped))
+      return(data.frame(file_name = fn, outcome = "download_too_large", error = watched$stopped,
+                        error_type = NA_character_, undefined_var = NA_character_,
+                        stdout = so, stderr = se, elapsed = elapsed) |>
+               dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))
+
     # is_timeout was already computed above (right after `res`, so the
     # container-stop call could reuse it too) -- not recomputed here.
     # processx::run(error_on_status = FALSE) never throws for a nonzero exit;
@@ -716,12 +1249,14 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     }
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
-                        error = paste0("timed out after ", timeout, "s"),
+                        error = .repro_timeout_text(timeout, watched),
                         error_type = "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))
     }
     if (res$status != 0) {
+      # stopped for using more memory than the limit (#568; see .repro_oom_text())
+      se <- paste0(se, .repro_oom_text(res$status))
       # See repro_run_scripts()'s twin of this block (R/reproducibility_check.R)
       # for why a missing FUNCTION ("could not find function ...") is matched
       # alongside a missing variable ("object ... not found") into the same

@@ -81,7 +81,7 @@ rw_update <- function() {
     httr2::req_error(is_error = ~ FALSE) |>  # optional: don't auto-stop
     httr2::req_perform(path = tmp)
 
-  on.exit(unlink(tmp))
+  on.exit(unlink(tmp), add = TRUE)
 
   # decrease size
   retractionwatch <- utils::read.csv(tmp) |>

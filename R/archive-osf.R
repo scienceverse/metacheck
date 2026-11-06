@@ -1319,7 +1319,7 @@ osf_file_download <- function(osf_id,
     ## download all to temp folder ----
     # temppath <- fs::file_temp()
     temppath <- tempfile()
-    on.exit(unlink(temppath, recursive = TRUE))
+    on.exit(unlink(temppath, recursive = TRUE), add = TRUE)
     dir.create(temppath)
 
     files_to_download <- which(files$kind == "file")

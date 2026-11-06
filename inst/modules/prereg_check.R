@@ -5,7 +5,7 @@
 #' and make them easier to check.
 #'
 #' @details
-#' The Preregistration Check module identifies preregistrations on the OSF and AsPredicted based on links in the manuscript, retrieves the preregistration text, and organizes the information into a template. The module then uses regular expressions to identify text from AsPredicted, and the API to retrieve text from the OSF. The information in the preregistration is returned.
+#' The Preregistration Check module identifies preregistrations on the OSF and AsPredicted based on links in the manuscript, retrieves the preregistration text, and organizes the information into a template. The module retrieves text from the OSF with its API, and from AsPredicted with ResearchBox's API when a ResearchBox key is set (see `rbox_token()`), or else from the preregistration's web page. The information in the preregistration is returned. An AsPredicted link that could not be read is named in the report, with the reason.
 #'
 #' The module can’t extract information from non-structured preregistration templates (i.e., where the preregistration is uploaded in a single text field) and it can’t retrieve information in preregistrations that are stored as text documents on the OSF.
 #'
@@ -20,9 +20,12 @@
 #' @import dplyr
 #'
 #' @param paper a paper object or paperlist object
+#' @param cache if TRUE, reuse a previously cached AsPredicted preregistration
+#'   (see `aspredicted_info()` and `repo_info_cache_clear()`) instead of asking
+#'   again
 #'
 #' @returns a list
-prereg_check <- function(paper) {
+prereg_check <- function(paper, cache = FALSE) {
   # paper <- psychsci[[218]] # to test
   # and paper <- xml[["09567976251396084"]] for multiple aspredicted
   # osf: paper <- xml[["09567976221114055"]]
@@ -48,11 +51,21 @@ prereg_check <- function(paper) {
   # Only with AsPredicted links: aspredicted_info() first checks that
   # aspredicted.org is online, so an OSF-only paper failed offline (U109).
   table_ap <- if (nrow(links_ap) > 0) {
-    suppressMessages(aspredicted_info(links_ap$href))
+    suppressMessages(aspredicted_info(links_ap$href, cache = cache))
   } else {
     data.frame()
   }
-  ap_schema_table <- ap_schema(table_ap)
+  # A preregistration that could not be read is named in the report with the
+  # reason, like an OSF registration that cannot be accessed: it was a row
+  # with every field empty, counted as a preregistration found.
+  ap_failed <- if ("error" %in% names(table_ap)) !is.na(table_ap$error) else
+    rep(FALSE, nrow(table_ap))
+  inaccessible_ap <- if (any(ap_failed)) {
+    unique(paste0(table_ap$ap_url[ap_failed], " (", table_ap$error[ap_failed], ")"))
+  } else {
+    character(0)
+  }
+  ap_schema_table <- ap_schema(table_ap[!ap_failed, , drop = FALSE])
 
   ## OSF prereg ----
   osf_ids <- links_osf$href |>
@@ -134,23 +147,65 @@ prereg_check <- function(paper) {
   # is skipped for zero rows), so falling through to the accessible-
   # registration reporting logic past this point would error. Same shape as
   # the early guard, with the inaccessible links named instead of omitted.
-  if (nrow(prereg_info) == 0 && length(inaccessible_regs) > 0) {
+  # The sentences naming the links that could not be read, used below
+  inaccessible_summary <- c(
+    if (length(inaccessible_regs) > 0) sprintf(
+      "%d registration link%s could not be accessed (private, embargoed, or withdrawn).",
+      length(inaccessible_regs), length(inaccessible_regs) |> plural()
+    ),
+    if (length(inaccessible_ap) > 0) sprintf(
+      "%d AsPredicted link%s could not be read.",
+      length(inaccessible_ap), length(inaccessible_ap) |> plural()
+    )
+  )
+  inaccessible_text <- c(
+    if (length(inaccessible_regs) > 0) sprintf(
+      "The following registration link%s could not be accessed and may be private, embargoed, or withdrawn: %s.",
+      length(inaccessible_regs) |> plural(),
+      paste(inaccessible_regs, collapse = ", ")
+    ),
+    if (length(inaccessible_ap) > 0) sprintf(
+      "The following AsPredicted link%s could not be read, for the reason given: %s.",
+      length(inaccessible_ap) |> plural(),
+      paste(inaccessible_ap, collapse = ", ")
+    )
+  )
+  # Without a ResearchBox API key AsPredicted's web pages are read, which stop
+  # after AsPredicted's captcha. In the apps and the API (metacheck.keys.shared,
+  # see api_keys_use()) the visitor cannot run R, so is pointed to the app's
+  # key field instead of rbox_token().
+  no_key_text <- if (nrow(links_ap) > 0 && !nzchar(rbox_token())) {
+    paste0(
+      "These AsPredicted preregistrations were read from AsPredicted's web ",
+      "pages, because no ResearchBox API key is set. AsPredicted asks for a ",
+      "captcha after several pages, after which no more are read. ",
+      if (isTRUE(getOption("metacheck.keys.shared"))) {
+        "You can enter your own ResearchBox key under \"Your own API keys\""
+      } else {
+        "Set a key with `rbox_token()`"
+      },
+      " (make one at ", .key_services$researchbox$url, ")."
+    )
+  }
+
+  if (nrow(prereg_info) == 0 &&
+      (length(inaccessible_regs) > 0 || length(inaccessible_ap) > 0)) {
+    n_links <- nrow(links_osf) + nrow(links_ap)
     resp <- list(
       traffic_light = "na",
-      summary_text = sprintf(
-        "We found %d OSF link%s, but no accessible registrations. %d registration link%s could not be accessed (private, embargoed, or withdrawn).",
-        nrow(links_osf), nrow(links_osf) |> plural(),
-        length(inaccessible_regs), length(inaccessible_regs) |> plural()
+      summary_text = paste(
+        sprintf(
+          "We found %d %s link%s, but no accessible registrations.",
+          n_links, if (nrow(links_ap) > 0) "OSF or AsPredicted" else "OSF",
+          n_links |> plural()
+        ),
+        paste(inaccessible_summary, collapse = " ")
       ),
       na_replace = 0,
       summary_table = .per_paper_table(paper,
                 preregistration = 0
       ),
-      report = sprintf(
-        "The following registration link%s could not be accessed and may be private, embargoed, or withdrawn: %s.",
-        length(inaccessible_regs) |> plural(),
-        paste(inaccessible_regs, collapse = ", ")
-      )
+      report = c(inaccessible_text, no_key_text)
     )
     return(resp)
   }
@@ -188,11 +243,8 @@ prereg_check <- function(paper) {
   # -- name it in the same headline sentence a reader sees first, rather than
   # only in the fuller report text below, so it isn't missed wherever
   # summary_text alone is surfaced (e.g. a paperlist's summary_table).
-  if (length(inaccessible_regs) > 0) {
-    summary_text <- paste(summary_text, sprintf(
-      "%d registration link%s could not be accessed (private, embargoed, or withdrawn).",
-      length(inaccessible_regs), length(inaccessible_regs) |> plural()
-    ))
+  if (length(inaccessible_summary) > 0) {
+    summary_text <- paste(c(summary_text, inaccessible_summary), collapse = " ")
   }
 
   # report ----
@@ -209,18 +261,9 @@ prereg_check <- function(paper) {
   } else {
     NULL
   }
-  # Names which links were skipped and why, so a reader checking the paper
-  # can go verify them by hand instead of the report reading as if no
-  # registration were ever linked there.
-  inaccessible_text <- if (length(inaccessible_regs) > 0) {
-    sprintf(
-      "The following registration link%s could not be accessed and may be private, embargoed, or withdrawn: %s.",
-      length(inaccessible_regs) |> plural(),
-      paste(inaccessible_regs, collapse = ", ")
-    )
-  } else {
-    NULL
-  }
+  # inaccessible_text (made above) names which links were skipped and why, so
+  # a reader checking the paper can go verify them by hand instead of the
+  # report reading as if no registration were ever linked there.
 
   prereg_link_table <- data.frame(
     id = link(prereg_info$link, prereg_info$id),
@@ -268,6 +311,7 @@ prereg_check <- function(paper) {
     scroll_table(prereg_link_table),
     report_text,
     inaccessible_text,
+    no_key_text,
     scroll_table(samplesize_table),
     collapse_section(
       scroll_table(prereg_table, maxrows = 5),
@@ -629,20 +673,27 @@ ap_schema <- function(table_ap) {
     sub("\\.pdf.*", "", x = _) |>
     sub("blind\\.php\\?x\\=", "", x = _)
 
+  # a column aspredicted_info() did not give (an older cached result) is NA
+  col <- \(name) if (name %in% names(table_ap)) table_ap[[name]] else NA_character_
+
   data.frame(
     template_name = "AsPredicted",
     id = ap_id,
     link = table_ap$ap_url,
-    title = table_ap$AP_title,
-    date_created = table_ap$AP_created,
-    existing_data_explanation = table_ap$AP_data,
-    research_questions = table_ap$AP_hypotheses,
-    design_dependent_variables = table_ap$AP_key_dv,
-    study_design_overview = table_ap$AP_conditions,
-    statistical_tests = table_ap$AP_analyses,
-    outliers_and_exclusions = table_ap$AP_outliers,
-    sample_size = table_ap$AP_sample_size,
-    additional_comments = table_ap$AP_anything_else
+    title = col("AP_title"),
+    date_created = col("AP_created"),
+    date_registered = col("AP_registered"),
+    existing_data_explanation = col("AP_data"),
+    research_questions = col("AP_hypotheses"),
+    design_dependent_variables = col("AP_key_dv"),
+    study_design_overview = col("AP_conditions"),
+    statistical_tests = col("AP_analyses"),
+    outliers_and_exclusions = col("AP_outliers"),
+    # version 1.05 of AsPredicted's questions asks about secondary analyses
+    # where version 2.00 asks about outliers
+    exploratory_analyses = col("AP_secondary"),
+    sample_size = col("AP_sample_size"),
+    additional_comments = col("AP_anything_else")
   )
 }
 

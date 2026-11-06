@@ -534,13 +534,15 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (is.na(f) || is.na(cn) || is.null(previews[[f]])) next
       df_i <- previews[[f]]
       if (!cn %in% names(df_i)) next
-      x <- suppressWarnings(as.numeric(as.character(df_i[[cn]])))
-      if (all(is.na(x))) next
-
       codes <- .decode_value_labels(labels_df$value_labels[i])
       valid <- suppressWarnings(as.numeric(names(codes) %||% codes))
       valid <- valid[!is.na(valid)]
       if (length(valid) < 2) next          # no documented range to violate
+
+      # after the test above: turning every value of a large column into text
+      # and back took 39 s for columns without documented codes (#554)
+      x <- suppressWarnings(as.numeric(as.character(df_i[[cn]])))
+      if (all(is.na(x))) next
 
       miss <- .decode_value_labels(labels_df$missing_values[i] %||% NA_character_)
       declared <- suppressWarnings(as.numeric(names(miss) %||% miss))

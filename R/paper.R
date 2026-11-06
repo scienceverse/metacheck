@@ -700,8 +700,9 @@ paper_write <- function(paper, file_name = NULL, save_path = ".",
     stop("schema_version must be NULL or \"12.0\"", call. = FALSE)
   }
 
-  save_path <- normalizePath(save_path)
+  # made before its full path is asked for, which warned for a new folder
   dir.create(save_path, showWarnings = FALSE, recursive = TRUE)
+  save_path <- normalizePath(save_path)
 
   if (.is_paper_list(paper)) {
     if (is.null(file_name)) file_name <- names(paper)

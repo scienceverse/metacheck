@@ -810,10 +810,18 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       unlink(dest)
       return("not authorised (the OSF returned a sign-in page; see ?osf_pat)")
     }
-    if (!(file.exists(dest) && file.size(dest) > 0)) return("empty response")
+    # A file the listing says is empty is empty: in 10.1111/2041-210X.13798, 55
+    # of the 64 empty files of a repository were reported as failed downloads (#568)
+    if (!(file.exists(dest) && file.size(dest) > 0)) {
+      if (!isTRUE(as.numeric(expected_bytes) == 0)) return("empty response")
+      if (!file.exists(dest)) file.create(dest)
+    }
     if (!file.rename(dest, final)) return("could not move the download into place")
     NA_character_
   }, error = function(e) {
+    # Read before the file goes: the response body was written to `dest`.
+    guestbook <- if (inherits(e, "httr2_http_400") && !is.null(e$resp))
+      .dataverse_guestbook_hint(e$resp) else ""
     if (file.exists(dest)) unlink(dest)
     # A 429 caught here (rather than retried away) means .storage_is_transient
     # -- via the skip_on_api_limit factory -- declared it non-transient, i.e.
@@ -825,8 +833,19 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     }
     hint <- if (inherits(e, "httr2_http_401") && !is.null(e$resp))
       .dryad_401_hint(url, httr2::resp_status(e$resp)) else ""
-    paste0(conditionMessage(e), hint)
+    paste0(conditionMessage(e), hint, guestbook)
   })
+}
+
+# A Dataverse depositor can ask people to fill in a form (a guestbook) before
+# downloading. The listing does not say so; the host answers 400 with this
+# message (verified live 2026-10-31, Harvard Dataverse datafile 3670464). The
+# form asks for a person's details, so metacheck does not submit it.
+.dataverse_guestbook_hint <- function(resp) {
+  txt <- tryCatch(httr2::resp_body_string(resp), error = \(e) "")
+  if (grepl("Guestbook response", txt, fixed = TRUE))
+    " (the depositor requires a guestbook form to be filled in before download)"
+  else ""
 }
 
 # Download several files in parallel, with no proactive throttle. Only used for
@@ -937,11 +956,13 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
       # has no body either, so this still reports "empty response" for that
       # case (checked below).
       body <- tryCatch(httr2::resp_body_raw(r), error = \(e) raw(0))
-      if (length(body) == 0) {
+      if (length(body) == 0 && isTRUE(expected_size[i] == 0)) {
+        # a file the listing says is empty is empty (#568; see .download_one())
+        file.create(dests[i])
+      } else if (length(body) == 0) {
         if (file.exists(dests[i])) unlink(dests[i])   # no 0-byte file (U75)
         return("empty response")
-      }
-      writeBin(body, dests[i])
+      } else writeBin(body, dests[i])
     }
     # A sign-in page served in place of the file: the file is private and the
     # request was not authorised. Named as such, because "truncated" sent
@@ -1234,6 +1255,34 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 }
 
 
+# Whether the modules of this check will run the repository's code
+# (reproducibility_check with execute = TRUE). report_module_run() and
+# reproducibility_check() set the option for the duration of the check, so the
+# first module that downloads (code_check, then data_check) fetches what a run
+# needs in the same call, and no module asks a host for the same repository
+# twice (#568). A whole-repository archive (GitHub, GitLab, Dryad) was downloaded
+# once by code_check and again by data_check.
+.download_for_run <- function() isTRUE(getOption("metacheck.download_for_run"))
+
+# The files of a listing a run of the code could need: every file, except
+# images, sound, video and documents that hosts send one by one, since there each
+# such file is a request of its own and a script rarely reads one; a script that
+# names one gets it from reproducibility_check() before the run. From a host that
+# download_repo_files() fetches as one archive of the whole repository (GitHub,
+# GitLab, Dryad), every file is kept: its bytes arrive anyway (#568). renv's own
+# library is left out, as in code_check. The size limits of download_repo_files()
+# still apply.
+.run_download_want <- function(files) {
+  if (is.null(files) || !nrow(files)) return(logical(0))
+  media <- grepl(paste0("\\.(png|jpe?g|gif|bmp|svg|eps|ps|ico|webp|heic|",
+                        "wav|mp3|flac|ogg|m4a|aac|mp4|avi|mov|mkv|wmv|webm|",
+                        "pdf|docx?|pptx?|odt|odp|key|pages)$"),
+                 files$file_name %||% "", ignore.case = TRUE)
+  whole_archive <- grepl("github\\.com|gitlab\\.com|datadryad\\.org",
+                         files$repo_url %||% "", ignore.case = TRUE)
+  (!media | whole_archive) & !.in_renv_folder(files)
+}
+
 #' Download the files listed by `repo_check()`
 #'
 #' Fetches the bytes for a table of repository files (as produced by
@@ -1363,6 +1412,14 @@ download_repo_files <- function(files,
   }, character(1))
 
   already <- file.exists(files$.cache_path)
+  # An empty cached file of a file the listing says has bytes is a download that
+  # failed, so it is fetched again: an empty copy of phy_spp_names.csv (18 KB),
+  # cached in August, made 23 scripts of 10.1111/1365-2435.14173 stop with "no
+  # lines available in input" (#568).
+  listed_size <- suppressWarnings(as.numeric(files$file_size %||% rep(NA_real_, nrow(files))))
+  empty_copy <- already & !is.na(listed_size) & listed_size > 0 &
+    file.size(files$.cache_path) %in% 0
+  already <- already & !empty_copy
   files$file_location[already] <- files$.cache_path[already]
 
   mb <- 1024 * 1024
@@ -1430,6 +1487,16 @@ download_repo_files <- function(files,
             file_size = member_sizes[over],
             stringsAsFactors = FALSE))
         }
+        # A member without a size cannot be held to the caps, so it is not
+        # fetched; recorded here so that the reason is not lost.
+        unsized <- idx[is.na(member_sizes)]
+        if (length(unsized) > 0) {
+          failed <- rbind(failed, data.frame(
+            repo_url = files$repo_url[unsized], file_name = files$file_name[unsized],
+            file_url = arc,
+            paper_id = if ("paper_id" %in% names(files)) files$paper_id[unsized] else NA_character_,
+            error = "the archive's list of contents gives no size for this file"))
+        }
         cand <- idx[!over & !is.na(member_sizes)]
         cand_size <- member_sizes[!over & !is.na(member_sizes)]
         if (length(cand) == 0) next
@@ -1478,6 +1545,20 @@ download_repo_files <- function(files,
                                                 file.path(".archive_members", arc_key)))
         member_dest <- .safe_write_path(paste0(arc_path, ".contents"))
         dir.create(member_dest, showWarnings = FALSE, recursive = TRUE)
+
+        # A member saved by an earlier run is used as it is. `already` above
+        # cannot see it: it looks at .cache_path, and a member is stored here,
+        # under ".contents" (#561). Without this check every member is unpacked
+        # or fetched from the host again on every run.
+        member_target <- vapply(files$archive_member[idx], .zip_member_target, character(1),
+                                dest = member_dest, USE.NAMES = FALSE)
+        member_bytes <- file.size(member_target)
+        saved <- !is.na(member_target) & !is.na(member_bytes) & member_bytes > 0 &
+          member_bytes == as.numeric(files$file_size[idx])
+        files$file_location[idx[saved]] <- member_target[saved]
+        idx <- idx[!saved]
+        if (length(idx) == 0) next
+
         # An archive within this archive's budget may be downloaded once and
         # the members extracted locally instead of fetched by byte range
         # (.zip_fetch_members()'s whole-archive mode). The archive is kept at
@@ -1563,7 +1644,8 @@ download_repo_files <- function(files,
     }
   }
 
-  has_url <- !is.na(files$file_url) & nzchar(files$file_url)
+  has_url <- !is.na(files$file_url) & nzchar(files$file_url) &
+    !((files$file_restricted %||% rep(FALSE, nrow(files))) %in% TRUE)
   to_get <- integer(0)
 
   # ── Per-repository budget + per-file size filter ────────────────────────────

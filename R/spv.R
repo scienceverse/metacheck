@@ -1982,6 +1982,8 @@ import_spv <- function(path) {
 #' @param spv_path path to the `.spv` file.
 #' @param code_dir_name name of the sibling code subdirectory to write into,
 #'   relative to `spv_path`'s own directory. Default `"code"`.
+#'   A file of the user's own gets this folder in the temporary folder
+#'   instead, so the user's folder is not changed (see .recovered_code_dir()).
 #' @return the path to the written `.sps` file, or `NA_character_` if the
 #'   archive has no recoverable syntax (e.g. every command was skipped by
 #'   this port's "core tables only" scope, or the file has no structure XML
@@ -2007,7 +2009,7 @@ import_spv <- function(path) {
   syntaxes <- syntaxes[keep & !is.na(syntaxes) & nzchar(syntaxes)]
   if (!length(syntaxes)) return(NA_character_)
 
-  code_dir <- file.path(dirname(spv_path), code_dir_name)
+  code_dir <- .recovered_code_dir(spv_path, code_dir_name)
   dir.create(code_dir, recursive = TRUE, showWarnings = FALSE)
   out_path <- file.path(code_dir, paste0(tools::file_path_sans_ext(basename(spv_path)), ".sps"))
   writeLines(paste(syntaxes, collapse = "\n\n"), out_path, useBytes = TRUE)

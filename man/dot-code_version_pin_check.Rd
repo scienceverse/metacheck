@@ -20,8 +20,8 @@
 \code{file_location} where available)}
 
 \item{code_text_list}{a named list of already-read R file text (names are
-file_names) — reused for the groundhog/checkpoint scan so no file is
-downloaded or read twice}
+file_names) — reused for the groundhog/checkpoint scan and for records
+pasted into scripts, so no file is downloaded or read twice}
 
 \item{max_file_size}{passed to \code{\link[=download_repo_files]{download_repo_files()}}
 for any candidate file not yet local}
@@ -39,9 +39,14 @@ a list:
 \code{renv.lock}, \code{sessionInfo}, \code{groundhog}, \code{checkpoint}),
 \code{r_versions} (character vector of R version strings found, one per source),
 \code{renv_files} (character vector of \code{renv.lock} file_names found),
-\code{renv_packages} (data frame \code{file_name}, \code{package}, \code{version}, \code{source}
+\code{renv_packages} (data frame \code{file_name}, \code{package}, \code{version}, \code{source},
+\code{remote} (\code{"user/repo@ref"} for a package from GitHub, else \code{NA})
 — one row per locked package, across all \code{renv.lock} files found),
 \code{sessioninfo_files} (character vector of matched file_names),
+\code{session_packages} (data frame with the same columns — one row per package
+version the \code{sessionInfo()}/\code{session_info()} records list),
+\code{pin_dates} (data frame \code{mechanism} (\code{groundhog} or \code{checkpoint}), \code{date}
+— one row per distinct date),
 \code{python_files} (character vector of the file_names of Python package
 lists: \code{requirements*.txt}, \code{environment.yml}, \code{Pipfile(.lock)},
 \code{poetry.lock}, \code{uv.lock}, \code{pyproject.toml}),
@@ -88,6 +93,13 @@ one (e.g. one per study folder), and all are reported.
 (\code{groundhog.library(pkg, "YYYY-MM-DD")}, \code{checkpoint("YYYY-MM-DD")}), not
 merely \code{library(groundhog)}/\code{library(checkpoint)}: loading the package is
 not evidence it was used to pin anything, so a bare \code{library()} call does
-not count.
+not count. The date may be held in a variable the same script assigns it
+to; a call in a comment does not count.
+
+The packages a \code{sessionInfo()} or \code{session_info()} record lists are read by
+\code{\link[=.code_session_packages]{.code_session_packages()}}. A file that only mentions an R version still
+counts as a \code{sessionInfo} record, but has no rows in \code{session_packages}.
+A record pasted into an R script, usually as comments, also counts, but only
+when it lists packages: a comment such as "needs R version 4.2.0" does not.
 }
 \keyword{internal}

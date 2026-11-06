@@ -2,9 +2,9 @@
 % Please edit documentation in R/reproducibility_check.R
 \name{.repro_keep_working_refs}
 \alias{.repro_keep_working_refs}
-\title{Rewrite only the references that cannot work as written (package layout)}
+\title{Rewrite only the references that cannot work as written}
 \usage{
-.repro_keep_working_refs(rw, plan, script_path = NA_character_)
+.repro_keep_working_refs(rw, plan, script_path = NA_character_, run_dir = ".")
 }
 \arguments{
 \item{rw}{a \code{\link[=repro_rewrite_paths]{repro_rewrite_paths()}} result for one script}
@@ -12,20 +12,30 @@
 \item{plan}{the package layout's plan (\code{\link[=.repro_package_plan]{.repro_package_plan()}})}
 
 \item{script_path}{the script's own path in the package}
+
+\item{run_dir}{the folder the script runs from, from the top of the package
+(see \code{\link[=.repro_run_folders]{.repro_run_folders()}}); a reference works as written when it names a
+file counted from there, and a rewritten path is counted from there too}
 }
 \value{
 \code{rw} with a logical \code{as_written} column
 }
 \description{
-Every script runs from the top of the package, with every file at its own
-path. A reference is then:
+Every script runs in the repository as the authors organised it, with every
+file at its own path, from the folder \code{\link[=.repro_run_folders]{.repro_run_folders()}} chooses. A
+reference is then:
 \itemize{
 \item left as written when it names a file's path from the top
 (\code{"raw_data/scan1/log.csv"}), also when other files share the name (20
 scan folders each with a \code{log.csv}), and when it is a relative path that
-names no file from the top or from the script's folder: the code
-probably joins it with a folder of its own (\code{os.path.join(base, "fig7/x.csv")}), and rewriting it to the full path gave
-\code{processed_data/fig7/processed_data/fig7/x.csv};
+names no file and no file with its name was found, or the file found has a
+path that ends in the path as written: the code probably joins it with a
+folder of its own (\code{os.path.join(base, "fig7/x.csv")}), and rewriting it
+to the full path gave \code{processed_data/fig7/processed_data/fig7/x.csv};
+\item rewritten to the one file with its name elsewhere in the repository when
+it names no file as written (\code{"./data/x.csv"} with the file in
+\verb{exploratory/}): the authors moved or left out a folder when they
+deposited;
 \item rewritten to the file's path from the top when it names a file relative
 to the script's own folder (\code{source("helpers.R")},
 \code{"../raw_data/scores.csv"}), since the script does not run from there;
@@ -36,7 +46,8 @@ goes up out of the package.
 }
 \details{
 A reference left as written is marked \code{as_written}; it is not counted as
-rewritten, and not as a missing input. The exception is a file the
+rewritten, and not as a missing input, unless it names no file and no file
+with its name is in the repository. Another exception is a file the
 package has only inside an archive, read at the path unpacking it would
 give: as the package is, that path does not exist, so the reference is
 not found, and the file becomes a missing input (\code{in_archive} in

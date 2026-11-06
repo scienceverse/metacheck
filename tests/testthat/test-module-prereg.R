@@ -1,4 +1,6 @@
 test_that("multiple prereg", {
+  # the recorded AsPredicted web page, not the API
+  withr::local_options(metacheck.researchbox.token = "")
   paper <- demopaper()
   mo <- module_run(paper, "prereg_check")
   expect_equal(nrow(mo$table), 2)
@@ -138,6 +140,8 @@ test_that("AsPredicted-on-OSF extraction maps to canonical fields", {
 }, "mock")
 
 test_that("multiple papers", {
+  # the recorded AsPredicted web page, not the API
+  withr::local_options(metacheck.researchbox.token = "")
   guid1 <- "48ncu"
   text1 <- paste0("https://osf.io/", guid1)
   paper1 <- test_paper(url = text1)
@@ -290,4 +294,79 @@ test_that("prsp reads response keys exactly, and a U+FFFE label does not stop th
   expect_false(grepl("another question", env$prsp(info)$research_questions))
   expect_equal(env$osf_label_to_field("Study Design\ufffe"),
                env$osf_label_to_field("Study Design"))
+})
+
+test_that("an AsPredicted link that could not be read is named with its reason, not counted", {
+  # it was a row with every field empty, counted as a preregistration found
+  llm_use(FALSE)
+  local_mocked_bindings(
+    aspredicted_info = function(urls, ...) {
+      rows <- lapply(urls, \(u) if (grepl("abc12", u)) {
+        data.frame(ap_url = u, AP_title = "Study A", AP_created = "2017/08/18 06:55 (PT)",
+                   AP_registered = "2017-08-18", AP_analyses = "ANOVA", AP_outliers = NA,
+                   AP_secondary = "Exploratory: domains", AP_sample_size = "35",
+                   error = NA_character_)
+      } else {
+        data.frame(ap_url = u, error = "Not Found")
+      })
+      dplyr::bind_rows(rows)
+    },
+    osf_type = function(ids, ...) rep("nodes", length(ids))
+  )
+  urls <- c("https://aspredicted.org/abc12.pdf", "https://aspredicted.org/zzz99.pdf")
+  mo <- suppressMessages(module_run(test_paper(url = urls), "prereg_check"))
+  expect_equal(nrow(mo$table), 1)
+  expect_equal(mo$summary_table$preregistration, 1)
+  expect_match(mo$summary_text, "1 AsPredicted link could not be read")
+  expect_true(any(grepl("zzz99.pdf (Not Found)", mo$report, fixed = TRUE)))
+  # version 1.05 of AsPredicted's questions asks about secondary analyses
+  # where version 2.00 asks about outliers
+  expect_equal(mo$table$exploratory_analyses, "Exploratory: domains")
+  expect_equal(mo$table$date_registered, "2017-08-18")
+
+  # nothing could be read: not "0 OSF links"
+  mo <- suppressMessages(module_run(test_paper(url = urls[2]), "prereg_check"))
+  expect_match(mo$summary_text,
+               "^We found 1 OSF or AsPredicted link, but no accessible registrations")
+  expect_equal(mo$summary_table$preregistration, 0)
+  expect_true(any(grepl("zzz99.pdf (Not Found)", mo$report, fixed = TRUE)))
+})
+
+test_that("without a ResearchBox key, the report says AsPredicted's web pages were read", {
+  llm_use(FALSE)
+  local_mocked_bindings(
+    aspredicted_info = function(urls, ...) {
+      dplyr::bind_rows(lapply(urls, \(u) if (grepl("abc12", u)) {
+        data.frame(ap_url = u, AP_title = "Study A", error = NA_character_)
+      } else {
+        data.frame(ap_url = u, error = "captcha")
+      }))
+    },
+    osf_type = function(ids, ...) rep("nodes", length(ids))
+  )
+  note <- "were read from AsPredicted's web pages, because no ResearchBox API key is set"
+  urls <- c("https://aspredicted.org/abc12.pdf", "https://aspredicted.org/zzz99.pdf")
+
+  # in R: set a key with rbox_token()
+  withr::local_options(metacheck.researchbox.token = "", metacheck.keys.shared = NULL)
+  mo <- suppressMessages(module_run(test_paper(url = urls), "prereg_check"))
+  r <- paste(unlist(mo$report), collapse = "\n")
+  expect_match(r, note, fixed = TRUE)
+  expect_match(r, "Set a key with `rbox_token()` (make one at https://researchbox.org/api).",
+               fixed = TRUE)
+  # also when none could be read
+  mo <- suppressMessages(module_run(test_paper(url = urls[2]), "prereg_check"))
+  expect_match(paste(unlist(mo$report), collapse = "\n"), note, fixed = TRUE)
+
+  # in the apps: the key field
+  withr::local_options(metacheck.keys.shared = TRUE)
+  mo <- suppressMessages(module_run(test_paper(url = urls), "prereg_check"))
+  expect_match(paste(unlist(mo$report), collapse = "\n"),
+               "You can enter your own ResearchBox key under \"Your own API keys\"",
+               fixed = TRUE)
+
+  # not with a key
+  withr::local_options(metacheck.researchbox.token = "test-token")
+  mo <- suppressMessages(module_run(test_paper(url = urls), "prereg_check"))
+  expect_false(grepl(note, paste(unlist(mo$report), collapse = "\n"), fixed = TRUE))
 })

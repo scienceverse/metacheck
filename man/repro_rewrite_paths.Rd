@@ -9,7 +9,8 @@ repro_rewrite_paths(
   file_name,
   plan,
   lang = "R",
-  structure_df = NULL
+  structure_df = NULL,
+  script_path = NULL
 )
 }
 \arguments{
@@ -33,6 +34,12 @@ rather than guessed at.}
 \item{structure_df}{optional \code{data_check} structure table (\code{file_name},
 \code{file_location}) — when supplied, enables the content-hash mirror
 collapsing described above. \code{NULL} (default) skips it.}
+
+\item{script_path}{optional path of the script in its repository. When
+several files share the name a reference gives, the one the reference
+names counted from the script's own folder or a folder above it
+(\code{current_path} in \code{plan}) is the file it means. \code{NULL} (default) skips
+this; the folders in the reference's own path still count.}
 }
 \value{
 a data frame with one row per referenced path, columns \code{ref} (the
@@ -41,7 +48,10 @@ path as written, or the full call text when \code{is_call}), \code{basename},
 or NA), \code{ambiguous} (logical, several plan files matched and the study
 could not disambiguate), \code{n_candidates}, and \code{is_call} (logical, TRUE when
 \code{ref} is a whole \code{sprintf()}/\code{paste()}-family call rather than a literal
-path — see above). Empty frame when the script references no files.
+path — see above), and \code{name_in_code} and \code{name_in_deposit} (both names when
+they differ, else NA). A reference with no exact match also matches the one
+plan file with the same extension and the same name apart from case, spaces
+and punctuation. Empty frame when the script references no files.
 }
 \description{
 A script reads and writes data by relative path (\code{read_csv("raw/x.csv")},

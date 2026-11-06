@@ -126,6 +126,29 @@ test_that("api_key_status lists each service with its problem", local({
   expect_true(all(is.na(st$message[st$service != "researchbox"])))
 }))
 
+test_that("api_key_status names ResearchBox's limit for AsPredicted preregistrations", local({
+  # recorded apart from the limit for boxes (.rbox_api()), so the apps'
+  # notice, which reads api_key_status(), did not tell visitors about it
+  local_no_keys()
+  local_mocked_bindings(github_pat = function(...) "")
+  withr::local_envvar(RESEARCHBOX_API_KEY = "server-key")
+  withr::local_options(metacheck.keys.shared = TRUE)
+  .key_problem_record("researchbox_aspredicted", "limit", Sys.time() + 600,
+                      source = .key_source("researchbox"))
+  st <- api_key_status()
+  rb <- st$service == "researchbox"
+  expect_equal(st$problem[rb], "limit")
+  expect_match(st$message[rb], paste0(
+    "^The ResearchBox key provided by metacheck has reached ResearchBox's ",
+    "limit for AsPredicted preregistrations until .*Please provide your own ",
+    "ResearchBox key"))
+  # the limit for boxes, when both are reached, is the one named
+  .key_problem_record("researchbox", "limit", Sys.time() + 600)
+  st <- api_key_status()
+  expect_match(st$message[st$service == "researchbox"],
+               "has reached ResearchBox's limit until")
+}))
+
 test_that("a refused key is checked once and then left out", local({
   local_no_keys()
   withr::local_envvar(GITLAB_PAT = "refused-key-for-test")

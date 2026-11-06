@@ -174,6 +174,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     ldbase_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
+  # The punctuation that ends a sentence is not part of an address: taken along
+  # ("https://doi.org/10.5063/f1mc8x92."), it made one repository into two, each
+  # listing the same files, or one that could not be found.
+  repos$repo_url <- sub("[.,;:]+$", "", repos$repo_url)
+  repos <- dplyr::distinct(repos)
   repos$repo_error <- NA_character_
 
   # A Figshare private "share link" (figshare.com/s/<hash>) is a real,
@@ -1015,7 +1020,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
               file_path = as.character(f$label %empty_or% df$filename %empty_or% NA_character_),
               file_url = file_url,
               file_location = NA_character_,
-              file_size = as.numeric(df$filesize %empty_or% NA_real_)
+              file_size = as.numeric(df$filesize %empty_or% NA_real_),
+              file_restricted = isTRUE(f$restricted)
             )
           })
 
@@ -1025,6 +1031,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         dv_files_df <- dplyr::bind_rows(file_rows)
 
         if (nrow(dv_files_df) > 0) {
+          # A restricted file is listed but served only on request (the host
+          # answers 403), so download_repo_files() does not ask for it. The
+          # column exists only when a file needs it.
+          if (!any(dv_files_df$file_restricted)) dv_files_df$file_restricted <- NULL
+
           dv_files_df$ext <- tolower(sub("^.*\\.", "", basename(dv_files_df$file_name)))
           no_ext <- !is.na(dv_files_df$file_name) &
             !grepl("\\.", basename(dv_files_df$file_name))

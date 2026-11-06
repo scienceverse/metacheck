@@ -1602,3 +1602,129 @@ test_that("data_check warns about an .rds file made with save() (Lakens/tue_data
   expect_false(mo$traffic_light == "green")
   expect_match(mo$summary_text, "saved with save() instead of saveRDS()", fixed = TRUE)
 })
+
+test_that("the column checks count each value as often as it occurs (#554)", {
+  # They work on each distinct value once; a value that occurs 90 times must
+  # still weigh 90 times, not once.
+  tc <- metacheck:::.text_counts(c(" a", "a", "b", NA, " a", "a "))
+  expect_equal(tc$values, c("a", "b", NA))
+  expect_equal(tc$n, c(4L, 1L, 1L))
+  expect_equal(metacheck:::.text_counts(factor(c("x", "y", "x")), trim = FALSE),
+               list(values = c("x", "y"), n = c(2L, 1L)))
+  expect_equal(metacheck:::.parse_comma_numeric(c("1,5", NA, "x", "1,5")),
+               c(1.5, NA, NA, 1.5))
+  expect_equal(metacheck:::.median_nchar(c("ab", "ab", "abcdef")), 2)
+
+  # 90% numbers: flagged, each unparseable value listed once
+  r <- data_check_numeric_in_text(c(rep("1", 45), rep("2", 45), rep("n/a", 10)))
+  expect_true(r$problem)
+  expect_equal(r$values, "n/a")
+  expect_match(r$message, "90% numeric")
+  # 3 distinct values, of which 2 numbers, but 2% numbers: not flagged
+  expect_false(data_check_numeric_in_text(c("1", "2", rep("n/a", 98)))$problem)
+
+  # one email in many rows of text is still a disclosure; its count is reported
+  r <- data_check_pii_values(c(rep("abc", 50), rep("ann@uni.nl", 3)))
+  expect_true(r$problem)
+  expect_match(r$message, "3 values")
+
+  # a long text repeated in most rows is not free text (few distinct values)
+  long <- "the participant said that the task was long and quite boring today"
+  expect_false(data_check_pii_freetext(rep(long, 20))$problem)
+
+  # a column naming files in 9 of 10 rows, with two kinds of files
+  df <- data.frame(f = c(rep("a.csv", 5), rep("b.R", 4), "x"))
+  expect_true(data_is_manifest(df, c("a.csv", "b.R")))
+  df <- data.frame(f = c("a.csv", "b.R", rep("x", 8)))
+  expect_false(data_is_manifest(df, c("a.csv", "b.R")))
+
+  expect_equal(data_check_whitespace(c(rep("Male ", 3), "Male", " Male"))$values,
+               c("Male ", " Male"))
+  expect_true(data_check_empty(c(NA, "", rep("  ", 10)))$problem)
+})
+
+test_that("data_check reads every sheet of a spreadsheet that holds a table (#555)", {
+  skip_if_not_installed("openxlsx")
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- withr::local_tempdir()
+  wb <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb, "README")
+  openxlsx::writeData(wb, "README", data.frame(about = c("Harvest data", "see the other sheets"),
+                                               more = c(NA, "x")))
+  openxlsx::addWorksheet(wb, "plants")
+  openxlsx::writeData(wb, "plants", data.frame(id = 1:6, weight = c(2.5, 3.1, 2.8, 4, 3, 2)))
+  openxlsx::addWorksheet(wb, "soil")
+  openxlsx::writeData(wb, "soil", data.frame(id = 1:6, ph = c(6.5, 7.1, 6.8, 7, 6.2, 6.9)))
+  openxlsx::addWorksheet(wb, "vars")
+  openxlsx::writeData(wb, "vars", data.frame(variable = c("id", "weight"),
+                                             description = c("the plant", "in grams")))
+  openxlsx::saveWorkbook(wb, file.path(d, "harvest.xlsx"))
+  # one table besides a README: the file keeps its own name
+  wb2 <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb2, "Notes")
+  openxlsx::writeData(wb2, "Notes", data.frame(a = "text", b = "more"))
+  openxlsx::addWorksheet(wb2, "data")
+  openxlsx::writeData(wb2, "data", data.frame(x = 1:5, y = 5:1))
+  openxlsx::saveWorkbook(wb2, file.path(d, "single.xlsx"))
+  utils::write.csv(data.frame(u = 1:3), file.path(d, "plain.csv"), row.names = FALSE)
+
+  mo <- module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE)
+  cols <- mo$table
+  expect_setequal(cols$column_name[cols$source_file == "harvest.xlsx [plants]"], c("id", "weight"))
+  expect_setequal(cols$column_name[cols$source_file == "harvest.xlsx [soil]"], c("id", "ph"))
+  expect_equal(unique(cols$sheet[cols$source_file == "harvest.xlsx [soil]"]), "soil")
+  # the README and the codebook sheet are not data
+  expect_false(any(grepl("README|vars", cols$source_file)))
+  expect_false(any(c("about", "variable", "description") %in% cols$column_name))
+  expect_setequal(cols$column_name[cols$source_file == "single.xlsx"], c("x", "y"))
+  expect_equal(unique(cols$sheet[cols$source_file == "single.xlsx"]), "data")
+  expect_true(is.na(unique(cols$sheet[cols$source_file == "plain.csv"])))
+  # each sheet has its own preview, and a file counts once
+  expect_true(all(c("harvest.xlsx [plants]", "harvest.xlsx [soil]", "single.xlsx") %in%
+                    names(mo$previews)))
+  expect_match(mo$summary_text %||% paste(mo$report, collapse = " "), "3 of them|from 3", all = FALSE)
+})
+
+test_that("a spreadsheet with only notes is still reported as before (#555)", {
+  expect_true(all(metacheck:::.sheet_is_notes(c("README", "read me", " Notes ", "Metadata", "Codebook"))))
+  expect_false(any(metacheck:::.sheet_is_notes(c("data", "notes_2020", "Sheet1"))))
+  expect_null(metacheck:::.data_file_sheets("x.csv"))
+})
+
+test_that("a column of numbers skips the text work and gives the same results (#554)", {
+  # a whole number of 13 or more digits can be a card number; its share of the
+  # column counts every value, the ones not written as text too
+  r <- data_check_pii_values(c(4111111111111111, rep(1.5, 2), NaN, NA))
+  expect_true(r$problem)
+  expect_match(r$message, "credit_card (1 value, 25%)", fixed = TRUE)
+  # below 13 digits or with decimals it cannot
+  expect_false(data_check_pii_values(c(123456789012, 1.5, 2.5))$problem)
+  expect_false(data_check_pii_values(c(1234567890123.5, 2.5, 3.5))$problem)
+  # fewer than three values are not looked at
+  expect_false(data_check_pii_values(c(4111111111111111, NA))$problem)
+  # a column of numbers or logicals names no files; one holding text does
+  df <- data.frame(n = 1:10, l = rep(TRUE, 10), f = rep(c("a.csv", "b.R"), 5))
+  expect_true(data_is_manifest(df, c("a.csv", "b.R")))
+  expect_false(data_is_manifest(df[, c("n", "l")], c("1", "2", "a.csv")))
+  # a column of numbers is never long free text; long text is
+  expect_false(identical(data_col_type("v", rnorm(30))$col_type, "text"))
+  long <- paste(rep("word", 12), collapse = " ")
+  expect_equal(data_col_type("v", paste(long, seq_len(30)))$col_type, "text")
+  # spaces are trimmed from text, and a number is written as before
+  expect_equal(metacheck:::.text_counts(c(1.5, 1.5, 2))$values, c("1.5", "2"))
+  expect_true(metacheck:::.plain_number(1:2))
+  expect_false(metacheck:::.plain_number(as.Date("2020-01-01")))
+})
+
+test_that("a page of an R package's website is not taken for a rendered analysis", {
+  # its help pages hold examples with their output; recovering them gave
+  # scripts of up to 10 MB
+  p <- withr::local_tempfile(fileext = ".html")
+  writeLines(c("<!DOCTYPE html>",
+               "<!-- Generated by pkgdown: do not edit by hand --><html><head></head><body>",
+               "<pre class=\"r\"><code>plot(1)</code></pre></body></html>"), p)
+  expect_true(is.na(metacheck:::.html_sniff_kind(p)))
+  writeLines(c("<html><head><meta name=\"generator\" content=\"pandoc\" /></head><body>",
+               "<pre class=\"r\"><code>plot(1)</code></pre></body></html>"), p)
+  expect_equal(metacheck:::.html_sniff_kind(p), "rmd")
+})

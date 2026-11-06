@@ -375,6 +375,107 @@ test_that("code_check detects a real groundhog.library() date-pin", {
   expect_match(paste(mo$report, collapse = "\n"), "groundhog", fixed = TRUE)
 })
 
+test_that("code_check detects a groundhog date held in a variable, not one in a comment", {
+  tmp <- withr::local_tempdir()
+  writeLines(c('day <- "2022-01-01"', 'groundhog.library("dplyr", day)'), file.path(tmp, "analysis.R"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_true(mo$summary_table$code_version_pinned)
+  expect_equal(mo$version_pin$pin_dates$date, "2022-01-01")
+  expect_match(paste(mo$report, collapse = "\n"), "2022-01-01", fixed = TRUE)
+
+  tmp <- withr::local_tempdir()
+  writeLines(c('# groundhog.library("dplyr", "2022-01-01")', "x <- 1"), file.path(tmp, "analysis.R"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_false(mo$summary_table$code_version_pinned)
+})
+
+test_that("code_check keeps the package versions of a sessionInfo record", {
+  tmp <- withr::local_tempdir()
+  writeLines(c("library(lme4)", "x <- 1"), file.path(tmp, "analysis.R"))
+  writeLines(c("R version 4.2.0 (2022-04-22)", "other attached packages:", "[1] lme4_1.1-21"),
+             file.path(tmp, "sessionInfo.txt"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_equal(mo$version_pin$session_packages$package, "lme4")
+  expect_equal(mo$version_pin$session_packages$version, "1.1-21")
+  expect_equal(mo$version_pin$session_packages$file_name, "sessionInfo.txt")
+  expect_match(paste(mo$report, collapse = "\n"), "lists 1 package version", fixed = TRUE)
+
+  # a README that only names an R version still counts, but lists no packages
+  tmp <- withr::local_tempdir()
+  writeLines("x <- 1", file.path(tmp, "analysis.R"))
+  writeLines("We used R version 4.0.0.", file.path(tmp, "README.md"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_true("sessionInfo" %in% mo$version_pin$mechanisms)
+  expect_equal(nrow(mo$version_pin$session_packages), 0)
+})
+
+test_that("code_check reads a sessionInfo record pasted into a script", {
+  record <- c("# R version 4.2.0 (2022-04-22)", "#other attached packages:",
+              "#  [1] lme4_1.1-21   dplyr_1.0.7", "#[3] R6_2.5.1")
+  tmp <- withr::local_tempdir()
+  writeLines(c("library(lme4)", record, "x <- 1"), file.path(tmp, "a.R"))
+  writeLines(c(record, "y <- 2"), file.path(tmp, "b.R"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_true(mo$summary_table$code_version_pinned)
+  expect_true("sessionInfo" %in% mo$version_pin$mechanisms)
+  expect_setequal(mo$version_pin$session_packages$package, c("lme4", "dplyr", "R6"))
+  # named by the script, and counted once when two scripts hold the same record
+  expect_setequal(mo$version_pin$session_packages$file_name, c("a.R", "b.R"))
+  expect_equal(mo$version_pin$r_versions, "4.2.0")
+  expect_match(paste(mo$report, collapse = "\n"), "lists 3 package versions", fixed = TRUE)
+
+  # a session_info() record without comment signs; code that names a version is not a record of it
+  tmp <- withr::local_tempdir()
+  writeLines(c('print("R version 3.1.0")', " version  R version 4.3.0 (2023-04-21 ucrt)",
+               " package * version date (UTC) lib source", " lme4    * 1.1-21  2019-03-05 [1] CRAN (R 4.3.0)"),
+             file.path(tmp, "a.R"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_equal(mo$version_pin$session_packages$package, "lme4")
+  expect_equal(mo$version_pin$r_versions, "4.3.0")
+
+  # a comment that only names an R version, or heads a list with nothing in it
+  tmp <- withr::local_tempdir()
+  writeLines(c("# needs R version 4.2.0", "# other attached packages:", "x <- 1"), file.path(tmp, "a.R"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_false(mo$summary_table$code_version_pinned)
+  expect_length(mo$version_pin$r_versions, 0)
+})
+
+test_that("code_check does not count a README in a revdep folder as a version record", {
+  tmp <- withr::local_tempdir()
+  dir.create(file.path(tmp, "revdep"))
+  writeLines("x <- 1", file.path(tmp, "a.R"))
+  writeLines("|version  |R version 4.1.2 (2021-11-01) |", file.path(tmp, "revdep", "README.md"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_false(mo$version_pin$pinned)
+  expect_length(mo$version_pin$r_versions, 0)
+
+  # the README at the top of the repository still counts
+  writeLines("Analyses were carried out using R version 4.1.0 (2021-05-18).", file.path(tmp, "README.md"))
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  expect_true(mo$version_pin$pinned)
+  expect_equal(mo$version_pin$r_versions, "4.1.0")
+})
+
+test_that("code_check keeps where a GitHub package in renv.lock came from", {
+  tmp <- withr::local_tempdir()
+  writeLines("library(papaja)", file.path(tmp, "analysis.R"))
+  writeLines(jsonlite::toJSON(list(
+    R = list(Version = "4.3.1"),
+    Packages = list(
+      dplyr = list(Package = "dplyr", Version = "1.1.3", Source = "Repository", Repository = "CRAN"),
+      papaja = list(Package = "papaja", Version = "0.1.2", Source = "GitHub",
+                    RemoteUsername = "crsh", RemoteRepo = "papaja", RemoteSha = "abc123"))
+  ), auto_unbox = TRUE, pretty = TRUE), file.path(tmp, "renv.lock"))
+
+  mo <- module_run(test_paper(), "code_check", local_path = tmp)
+  renv <- mo$version_pin$renv_packages
+  expect_equal(renv$remote[renv$package == "papaja"], "crsh/papaja@abc123")
+  expect_true(is.na(renv$remote[renv$package == "dplyr"]))
+  # the report's table still has its four columns
+  expect_match(paste(mo$report, collapse = "\n"), "Lockfile", fixed = TRUE)
+})
+
 test_that("code_check reports a refused repository once, with its whole listing (U88)", {
   # the catch-up download counted the code files only, so the refusal was
   # reported twice: "holds 6 files" and "holds 4 files"
