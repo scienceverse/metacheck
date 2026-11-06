@@ -30,3 +30,12 @@ each planned file with a real target and an available source copy, the source
 is copied to \verb{<root>/<target_path>}. Nothing outside \code{root} is written, and
 \code{root} is the caller's to delete.
 }
+\examples{
+src <- tempfile(fileext = ".csv")
+writeLines(c("a,b", "1,2"), src)
+plan <- data.frame(file_name = "x.csv", target_path = "data/x.csv")
+structure_df <- data.frame(file_name = "x.csv", file_location = src)
+root <- file.path(tempdir(), "layout_demo")
+repro_materialize_layout(plan, structure_df, root)
+list.files(root, recursive = TRUE)
+}

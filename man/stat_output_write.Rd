@@ -32,3 +32,12 @@ and one \verb{<codename>.statistical_output.json} per source file (its
 itself (not from the later psychds/scienceverse conversion step), so the
 folder exists at the same point in the pipeline the data/code files do.
 }
+\examples{
+out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+tables <- read_r_output(out, source_label = "analysis.R")
+so <- list(list(file = "analysis.R",
+                json = stat_output_json(tables, source_file = "analysis.R"),
+                long = stat_results_long(tables, source_file = "analysis.R")))
+dir <- stat_output_write(so, file.path(tempdir(), "stat_demo"))
+list.files(dir)
+}

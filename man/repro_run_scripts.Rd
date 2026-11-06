@@ -65,3 +65,15 @@ recorded \code{skipped_missing_inputs}, since it cannot succeed and would only
 produce a confusing error. callr isolates a crash to the subprocess; it does
 not sandbox the filesystem or network, so this only runs on explicit opt-in.
 }
+\examples{
+\donttest{
+if (requireNamespace("callr", quietly = TRUE)) {
+  root <- file.path(tempdir(), "run_demo")
+  plan <- data.frame(file_name = "analysis.R", target_path = "analysis/analysis.R")
+  code <- list(analysis.R = c("x <- c(1, 2, 3)", "print(mean(x))"))
+  run_tbl <- repro_write_scripts(code, list(), plan, root)
+  res <- repro_run_scripts(run_tbl, order = "analysis.R")
+  res[, c("file_name", "outcome")]
+}
+}
+}

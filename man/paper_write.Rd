@@ -4,14 +4,15 @@
 \alias{paper_write}
 \title{Write paper}
 \usage{
-paper_write(paper, file_name = NULL, save_path = ".", schema_version = NULL)
+paper_write(paper, file_name = NULL, save_path, schema_version = NULL)
 }
 \arguments{
 \item{paper}{a paper object}
 
 \item{file_name}{the name of the file (if NULL, defaults to the paper_id)}
 
-\item{save_path}{the directory to save the JSON file in}
+\item{save_path}{the directory to save the JSON file in; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{schema_version}{NULL (the default) saves the paper object as is;
 "12.0" saves a bibr export schema 12.0 file, for a paper read from a bibr
@@ -27,9 +28,8 @@ the path to the JSON file
 Save a paper as a JSON file.
 }
 \examples{
-\dontrun{
 paper <- demopaper()
 paper$info$title <- "New title"
-paper_write(paper, "new_paper")
-}
+json <- paper_write(paper, "new_paper", tempdir())
+read(json)$info$title
 }

@@ -17,4 +17,8 @@ a one-row data.frame of statistics.
 \description{
 Summary statistics for a numeric column
 }
+\examples{
+x <- c(1, 2, NA, 4)
+data_col_stats(x, x)
+}
 \keyword{internal}

@@ -91,7 +91,7 @@ code_read <- function(file_path) {
   }
   text <- to_utf8(enc)
   if (is.na(text)) text <- to_utf8("latin1")   # an encoding name iconv() does not know
-  text <- sub("^﻿", "", text)             # a byte order mark
+  text <- sub("^\uFEFF", "", text)             # a byte order mark
   file_lines <- strsplit(text, "\r\n|\r|\n")[[1]]
   # Remove any NA entries resulting from failed conversions
   file_lines <- file_lines[!is.na(file_lines)]
@@ -750,7 +750,8 @@ code_lang <- function(file_name) {
 
     dest <- .repo_cache_path(all_files$repo_url[i],
                              paste0(all_files$file_path[i] %||% all_files$file_name[i],
-                                    ".contents"))
+                                    ".contents"),
+                             cache = cache)
     # An archive within the download budget may be fetched whole, once,
     # instead of by byte range, whenever that is cheaper (see
     # .zip_fetch_members()) -- this used to be done for Dryad only. Dryad
@@ -893,6 +894,11 @@ code_extract_r <- function(file_path = NULL, save_path = NULL, documentation = 0
 #' @returns a character vector of source lines (empty when the file has
 #'   no code cells or is not parseable JSON)
 #' @export
+#' @examples
+#' nb <- '{"cells": [{"cell_type": "code", "source": ["import pandas as pd"]},
+#'   {"cell_type": "code", "source": ["df = pd.read_csv(\'data.csv\')"]},
+#'   {"cell_type": "markdown", "source": ["# Notes"]}]}'
+#' code_extract_py(text = nb)
 code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
   if (is.null(file_path) & is.null(text)) {
     stop("You must specify one of file_path or text")
@@ -984,6 +990,10 @@ code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
 #' @returns a character vector of Python source lines (empty when the
 #'   document has no Python chunks)
 #' @export
+#' @examples
+#' qmd <- c("---", "title: Demo", "---", "Some text.", "```{python}",
+#'          "x = [1, 2, 3]", "print(sum(x))", "```")
+#' code_extract_qmd_py(text = qmd)
 code_extract_qmd_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
   if (is.null(file_path) & is.null(text)) {
     stop("You must specify one of file_path or text")

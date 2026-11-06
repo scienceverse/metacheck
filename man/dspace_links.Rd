@@ -24,8 +24,6 @@ This is the general (all-hosts) counterpart to \code{psycharchives_links()},
 which stays PsychArchives-only for anyone calling it directly.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-dspace_links(psychsci)
-}
+paper <- demopaper()
+dspace_links(paper)
 }

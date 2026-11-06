@@ -33,3 +33,10 @@ needs. Reads/writes come from \code{\link[=code_file_refs]{code_file_refs()}} sp
 from a scan for \code{source()} (R only — see \code{lang} below). All returned as
 lowercased basenames.
 }
+\examples{
+code <- list(clean.R = c("d <- read.csv('raw.csv')", "write.csv(d, 'clean.csv')"),
+             analysis.R = c("source('clean.R')", "d <- read.csv('clean.csv')"))
+io <- repro_file_io(code)
+io$reads
+io$writes
+}

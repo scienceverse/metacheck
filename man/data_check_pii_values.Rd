@@ -29,4 +29,8 @@ a Luhn checksum, which keeps ordinary numbers from tripping the flag. (A
 broad-pattern path with a per-column fraction threshold, \code{broad_min_frac}, is
 retained for future patterns but is currently unused.)
 }
+\examples{
+data_check_pii_values(c("ann@example.org", "bob@example.org", "cy@example.org"))$values
+data_check_pii_values(c("512", "640"))$problem
+}
 \keyword{internal}

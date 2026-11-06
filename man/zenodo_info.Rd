@@ -24,8 +24,10 @@ a data frame of information
 Retrieve info from Zenodo by URL
 }
 \examples{
-\dontrun{
+\donttest{
+if (online("zenodo.org")) {
   # get info on one zenodo link
   zenodo_info("https://doi.org/10.5281/zenodo.18648142")
+}
 }
 }

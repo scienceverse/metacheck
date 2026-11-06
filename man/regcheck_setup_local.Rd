@@ -28,3 +28,9 @@ use \code{\link[=regcheck_start_local]{regcheck_start_local()}} directly with \c
 \code{ollama pull nomic-embed-text-v2-moe} in a terminal.
 }
 }
+\examples{
+\dontrun{
+# needs Python 3.12 or later; installs RegCheck's Python packages
+regcheck_setup_local()
+}
+}

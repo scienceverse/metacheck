@@ -21,3 +21,8 @@ Extracts the dataset, its variable metadata (measurement level, value labels)
 and the list of analyses stored in a \code{.jasp} archive. Handles both the legacy
 binary format and the modern embedded-SQLite format.
 }
+\examples{
+jasp <- system.file("extdata", "sample.jasp", package = "metacheck")
+res <- import_jasp(jasp)
+head(res$data)
+}

@@ -43,4 +43,7 @@ string, tie-break). Letter case (uppercase, CamelCase) and
 underscore-vs-dash separator consistency are deliberately NOT checked at
 all, for the same reason: metacheck's classifiers never depend on them.
 }
+\examples{
+check_file_naming(c("data final (2).csv", "analysis.R", "My Data.xlsx"))
+}
 \keyword{internal}

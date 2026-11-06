@@ -15,7 +15,10 @@
 boolean
 }
 \description{
-Its /health endpoint answers with \code{status} "ok" and \code{bibr} TRUE when the
-server's bibr is ready.
+Its /health endpoint answers with \code{status} "ok", \code{bibr} TRUE when the
+server's bibr is ready, and \code{grobid} "local" when the server has a GROBID of
+its own. Its /convert uses that GROBID when bibr is not ready or fails
+(\code{.convert_paper()} in the surf-research-cloud repository), so the server can
+convert a PDF when either one is there.
 }
 \keyword{internal}

@@ -57,4 +57,11 @@ never become a study directory name. The sent files are batched (see
 \code{.data_check_llm_batch}) so large repositories do not exceed the model's
 request/output limits.
 }
+\examples{
+\dontrun{
+# needs an LLM (see llm_use())
+files <- local_files(demofile("repo"), recursive = TRUE)
+data_group_llm(files)
+}
+}
 \keyword{internal}

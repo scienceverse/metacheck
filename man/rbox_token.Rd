@@ -14,7 +14,7 @@ the current key (character; \code{""} when none is set)
 }
 \description{
 ResearchBox's API (\verb{https://researchbox.org/api_call.php}) needs a personal
-key, which you can make at \url{https://researchbox.org/api}. metacheck reads it from the \code{RESEARCHBOX_API_KEY} environment variable,
+key, which you can make at \verb{https://researchbox.org/api}. metacheck reads it from the \code{RESEARCHBOX_API_KEY} environment variable,
 which you can set in your \code{.Renviron} file (\code{usethis::edit_r_environ()}):
 }
 \details{

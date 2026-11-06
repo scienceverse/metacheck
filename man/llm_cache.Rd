@@ -2,28 +2,36 @@
 % Please edit documentation in R/llm-cache.R
 \name{llm_cache}
 \alias{llm_cache}
-\title{Enable, disable, or query the LLM response cache}
+\title{Turn the lasting LLM response cache on or off, or query it}
 \usage{
 llm_cache(enabled = NULL)
 }
 \arguments{
-\item{enabled}{if logical, sets whether the cache is used; if \code{NULL}
-(default) returns the current setting}
+\item{enabled}{if logical, sets whether responses are kept between sessions;
+if \code{NULL} (default) returns the current setting}
 }
 \value{
 the current setting (logical), invisibly when setting
 }
 \description{
-When enabled (the default), \code{\link[=llm]{llm()}} stores each structured or free-text
-response on disk and replays it on identical later calls, so re-running a
-report on the same paper does not re-issue (or re-bill) the LLM requests.
-Because \code{\link[=llm]{llm()}} runs at temperature 0 the replayed answer matches a fresh
-call. Cached entries are keyed by model, system prompt, input text, type
-spec, and params; changing any of these produces a fresh call.
+\code{\link[=llm]{llm()}} stores each structured or free-text response and replays it on
+identical later calls, so asking the same question again does not re-issue
+(or re-bill) the LLM request. Because \code{\link[=llm]{llm()}} runs at temperature 0 the
+replayed answer matches a fresh call. Cached entries are keyed by model,
+system prompt, input text, type spec, and params; changing any of these
+produces a fresh call.
+}
+\details{
+By default (\code{FALSE}) the responses are kept only in the R session's
+temporary folder, which R removes when the session ends. With \code{TRUE} they
+are kept between sessions, in the folder \code{.metacheck_llm_cache} in the
+working directory, or under the folder set with
+\code{options(metacheck.cache.dir = )} or the \code{METACHECK_LLM_CACHE_DIR}
+environment variable. Use \code{\link[=llm_cache_clear]{llm_cache_clear()}} to remove the stored responses
+and force fresh calls.
 }
 \examples{
-llm_cache()          # is the cache on?
-\dontrun{
-llm_cache(FALSE)     # force fresh calls
-}
+llm_cache()          # are responses kept between sessions?
+llm_cache(TRUE)      # keep responses between sessions
+llm_cache(FALSE)     # back to this session only
 }

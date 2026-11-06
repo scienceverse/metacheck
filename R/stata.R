@@ -389,6 +389,16 @@
 #'   different structure). Empty list if the file has no recoverable
 #'   command output.
 #' @export
+#' @examples
+#' smcl <- tempfile(fileext = ".smcl")
+#' writeLines(c("{smcl}", "{com}. summarize congruent incongruent", "",
+#'   "{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max",
+#'   "{hline 13}{c +}{hline 57}",
+#'   "{space 3}congruent {c |}{res}        131    15.10411    4.118164      8.63     27.226",
+#'   "{txt}{space 1}incongruent {c |}{res}        131    23.00398    4.783391    13.556     38.891",
+#'   "{txt}"), smcl)
+#' tables <- import_stata_smcl(smcl)
+#' tables[[1]]$data
 import_stata_smcl <- function(path) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.smcl$", path, ignore.case = TRUE))
@@ -427,16 +437,30 @@ import_stata_smcl <- function(path) {
 #' export` command is shown as recovered command text only.
 #'
 #' @param path path to a `.smcl` file
-#' @param out path to write the HTML file to; defaults to `path` with its
-#'   extension replaced by `.html`, written alongside the source file
+#' @param out path to write the HTML file to. Without it, the file is named
+#'   after `path` with the extension `.html` and written to the R session's
+#'   temporary folder, which R removes when the session ends (CRAN does not
+#'   allow writing elsewhere unless you ask for it); a message says where.
 #'
 #' @returns the path written to, invisibly
 #' @export
+#' @examples
+#' smcl <- tempfile(fileext = ".smcl")
+#' writeLines(c("{smcl}", "{com}. summarize congruent", "",
+#'   "{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max",
+#'   "{hline 13}{c +}{hline 57}",
+#'   "{space 3}congruent {c |}{res}        131    15.10411    4.118164      8.63     27.226",
+#'   "{txt}"), smcl)
+#' html <- export_stata_smcl_html(smcl, file.path(tempdir(), "stata.html"))
+#' file.exists(html)
 export_stata_smcl_html <- function(path, out = NULL) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.smcl$", path, ignore.case = TRUE))
     stop("Not a .smcl file: ", path)
-  if (is.null(out)) out <- sub("\\.smcl$", ".html", path, ignore.case = TRUE)
+  if (is.null(out)) {
+    out <- file.path(tempdir(), sub("\\.smcl$", ".html", basename(path), ignore.case = TRUE))
+    message("Written to the temporary folder, which R removes when it closes: ", out)
+  }
 
   tables <- import_stata_smcl(path)
 

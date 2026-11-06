@@ -7,7 +7,6 @@
 #' @param join optional string to join vectors
 #'
 #' @returns text
-#' @export
 #' @keywords internal
 .xml_find_text <- function(xml, xpath, join = NULL) {
   text <- xml2::xml_find_all(xml, xpath) |>
@@ -27,7 +26,6 @@
 #' @param xpath a string containing an xpath expression
 #'
 #' @returns text
-#' @export
 #' @keywords internal
 .xml_find1_text <- function(xml, xpath) {
   .xml_find_text(xml, xpath, join = NULL)[[1]]
@@ -41,12 +39,8 @@
 #' @param path Path to a grobid/TEI XML file
 #'
 #' @returns a list with class "xml_document" for xml2
-#' @export
 #' @keywords internal
 #'
-#' @examples
-#' path <- demofile("xml")
-#' xml <- .xml_read_grobid(path)
 .xml_read_grobid <- function(path) {
   if (!file.exists(path)) stop("The XML file does not exist.")
 

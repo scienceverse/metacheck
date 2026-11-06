@@ -41,3 +41,9 @@ The OUTPUTS a notebook stores alongside its code are not touched here — see
 \code{\link[=read_stat_tables]{read_stat_tables()}}, which reads those as result tables the same way it
 reads a \code{.jasp}/\code{.omv} archive.
 }
+\examples{
+nb <- '{"cells": [{"cell_type": "code", "source": ["import pandas as pd"]},
+  {"cell_type": "code", "source": ["df = pd.read_csv(\'data.csv\')"]},
+  {"cell_type": "markdown", "source": ["# Notes"]}]}'
+code_extract_py(text = nb)
+}

@@ -39,4 +39,13 @@ Peeks inside the zip (see \code{\link[=zip_peek]{zip_peek()}}) and classifies it
 worth downloading if it contains actual data or a codebook; a zip of only
 stimuli/software is better linked than mirrored.
 }
+\examples{
+if (requireNamespace("zip", quietly = TRUE)) {
+  # a zip of the demo repository; a URL of a zip on a server works the same
+  z <- file.path(tempdir(), "stroop_effect_paper.zip")
+  zip::zipr(z, file.path(demofile("repo"), c("data", "code", "README.md")))
+  dec <- zip_decision(z)
+  dec[c("worth", "reason")]
+}
+}
 \keyword{internal}

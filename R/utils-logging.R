@@ -1,13 +1,18 @@
 #' Get log path
 #'
-#' Checks the most recent log file created that day and creates a new one if missing.
+#' Returns the log file of this R session, and creates it if missing. The log
+#' is kept in the session's temporary folder, which R removes when the session
+#' ends: CRAN does not allow a package to keep files elsewhere unless the user
+#' asks for it.
 #'
 #' @returns the log file path
 #' @export
 #'
 #' @keywords internal
+#' @examples
+#' logpath()
 logpath <- function() {
-  dir <- rappdirs::user_data_dir("metacheck/log", "scienceverse")
+  dir <- file.path(tempdir(), "metacheck-log")
   dir.create(dir, showWarnings = FALSE, recursive = TRUE)
 
   # get most recent log

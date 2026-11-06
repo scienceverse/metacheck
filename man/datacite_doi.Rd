@@ -17,7 +17,9 @@ Doi.org Info from DataCite
 }
 \examples{
 doi <- "10.5281/zenodo.2669586"
-\dontrun{
-doi_info <- datacite_doi(doi)
+\donttest{
+if (online("api.datacite.org")) {
+  doi_info <- datacite_doi(doi)
+}
 }
 }

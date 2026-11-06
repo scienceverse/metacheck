@@ -60,8 +60,11 @@ inside. This lets a downloader decide whether a zip is worth fetching (does it
 contain data, or only stimuli/assets?) before spending the bandwidth.
 }
 \examples{
-\dontrun{
-zip_peek("https://osf.io/download/abcde/")
+if (requireNamespace("zip", quietly = TRUE)) {
+  # a zip of the demo repository; a URL of a zip on a server works the same
+  z <- file.path(tempdir(), "stroop_effect_paper.zip")
+  zip::zipr(z, file.path(demofile("repo"), c("data", "code", "README.md")))
+  zip_peek(z)
 }
 }
 \keyword{internal}

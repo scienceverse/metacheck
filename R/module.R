@@ -9,10 +9,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' module_run(psychsci[[1]], "all_p_values")
-#' }
+#' paper <- demopaper()
+#' module_run(paper, "all_p_values")
 module_run <- function(paper, module, ...) {
   module_path <- module_find(module)
 
@@ -364,6 +362,7 @@ module_help <- function(module = NULL) {
 #'
 #' @param x The metacheck_module_list object
 #' @param ... Additional parameters for print
+#' @returns `x`, invisibly
 #'
 #' @export
 #' @keywords internal
@@ -384,12 +383,14 @@ print.metacheck_module_list <- function(x, ...) {
 
   # txt <- paste0("* ", x$name, ": ", x$description, "\n")
   cat("", txt, "\nUse `module_help(\"module_name\")` for help with a specific module\n", sep = "")
+  invisible(x)
 }
 
 #' Print Module Output
 #'
 #' @param x The metacheck_module_output object
 #' @param ... Additional parameters for `module_report()`
+#' @returns `x`, invisibly
 #'
 #' @export
 #' @keywords internal
@@ -408,12 +409,14 @@ print.metacheck_module_output <- function(x, ...) {
   txt <- sprintf("%s: %s", x$title, x$summary_text)
 
   cat(txt)
+  invisible(x)
 }
 
 #' Print Module Help Object
 #'
 #' @param x The metacheck_module_help object
 #' @param ... Additional parameters for print
+#' @returns `x`, invisibly
 #'
 #' @export
 #' @keywords internal
@@ -449,17 +452,23 @@ print.metacheck_module_help <- function(x, ...) {
     gsub("\n{2,}", "\n\n", x = _) |>
     trimws() |>
     cat()
+  invisible(x)
 }
 
 
 #' Create a Module from a Template
 #'
 #' @param module_name The short name of the module (should contain only letters, numbers, and _)
-#' @param path The path of the directory to save the module in (defaults to a directory called "modules" in the working directory)
+#' @param path The path of the directory to save the module in, such as
+#'   `"modules"`; there is no default, because CRAN does not allow writing into
+#'   the working directory unless you ask for it
 #'
 #' @returns the file path (invisibly)
 #' @export
-module_template <- function(module_name, path = "./modules") {
+#' @examples
+#' path <- module_template("my_check", file.path(tempdir(), "modules"))
+#' head(readLines(path))
+module_template <- function(module_name, path) {
   if (!grepl("^[a-zA-Z0-9_]+$", module_name)) {
     stop("The module_name must contain only letters, numbers, and _")
   }
@@ -665,7 +674,7 @@ collect_module_tables <- function(results_dir, module, element = "table") {
   if (is.null(saved) || length(saved$modules) == 0) return(NULL)
 
   mod_names <- names(saved$modules)
-  prev_outputs <- setNames(lapply(mod_names, function(m) {
+  prev_outputs <- stats::setNames(lapply(mod_names, function(m) {
     mo <- saved$modules[[m]]
     mo$module <- m
     mo$title <- mo$title %||% m

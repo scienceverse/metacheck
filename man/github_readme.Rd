@@ -16,7 +16,9 @@ a character string of the README contents
 Get README from GitHub
 }
 \examples{
-\dontrun{
-github_readme("scienceverse/metacheck")
+\donttest{
+if (online("api.github.com")) {
+  github_readme("scienceverse/metacheck")
+}
 }
 }

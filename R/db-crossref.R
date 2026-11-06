@@ -7,8 +7,10 @@
 #' @export
 #' @examples
 #' doi <- "10.5281/zenodo.2669586"
-#' \dontrun{
-#' doi_info <- datacite_doi(doi)
+#' \donttest{
+#' if (online("api.datacite.org")) {
+#'   doi_info <- datacite_doi(doi)
+#' }
 #' }
 datacite_doi <- function(doi) {
   if (length(doi) == 0) {
@@ -96,16 +98,8 @@ datacite_doi <- function(doi) {
 #' @param type a vector of crossref types
 #'
 #' @returns a vector of bibtext types
-#' @export
 #' @keywords internal
 #'
-#' @examples
-#' crossref_types <- c("book-part",
-#'                     "journal-article",
-#'                     "monograph",
-#'                     NA,
-#'                     "unmatched-type")
-#' .bibtype_convert(crossref_types)
 .bibtype_convert <- function(type) {
   if (is.null(type)) return(NULL)
 
@@ -169,8 +163,10 @@ datacite_doi <- function(doi) {
 #' @export
 #' @examples
 #' doi <- "10.7717/peerj.4375"
-#' \dontrun{
-#' # cr_info <- crossref_doi(doi)
+#' \donttest{
+#' if (online("api.crossref.org")) {
+#'   cr_info <- crossref_doi(doi)
+#' }
 #' }
 crossref_doi <- function(doi, select = c(
                            "DOI",
@@ -344,8 +340,10 @@ crossref_doi <- function(doi, select = c(
 #'   "The benefits of preregistration and Registered Reports.",
 #'   "Evidence-Based Toxicology, 2(1)."
 #' )
-#' \dontrun{
-#' cr <- crossref_query(ref)
+#' \donttest{
+#' if (online("api.crossref.org")) {
+#'   cr <- crossref_query(ref)
+#' }
 #' }
 crossref_query <- function(ref, min_score = 50, rows = 1,
                            select = c(
@@ -500,11 +498,13 @@ crossref_query <- function(ref, min_score = 50, rows = 1,
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' paper <- demopaper()
-#' paper$bib_match <- NULL # remove existing
-#' paper2 <- add_bib_match(paper)
-#' paper2$bib_match
+#' \donttest{
+#' if (online("api.crossref.org")) {
+#'   paper <- demopaper()
+#'   paper$bib_match <- NULL # remove existing
+#'   paper2 <- add_bib_match(paper)
+#'   paper2$bib_match
+#' }
 #' }
 add_bib_match <- function(paper, min_score = 50) {
   page <- paper_id <- bib_id <- NULL
@@ -702,9 +702,11 @@ add_bib_match <- function(paper, min_score = 50) {
 #'
 #' @examples
 #' doi <- "10.7717/peerj.4375"
-#' \dontrun{
-#' oa_info <- openalex_doi(doi)
-#' oa_info <- openalex_doi(doi, "title")
+#' \donttest{
+#' if (online("api.openalex.org")) {
+#'   oa_info <- openalex_doi(doi)
+#'   oa_info <- openalex_doi(doi, "title")
+#' }
 #' }
 openalex_doi <- function(doi, select = NULL) {
   # handle papers, paperlists, and vectors of multiple dois
@@ -770,8 +772,8 @@ openalex_doi <- function(doi, select = NULL) {
 #' OpenAlex works without a key, with a budget of US$0.10 per day: about
 #' 1,000 searches, while looking up a work by its DOI or OpenAlex ID is free.
 #' A free key raises the budget to US$1 per day. Make one by signing up at
-#' <https://openalex.org/signup> and copying the key from
-#' <https://openalex.org/settings/api-key>.
+#' `https://openalex.org/signup` and copying the key from
+#' `https://openalex.org/settings/api-key`.
 #'
 #' Store it as the `OPENALEX_API_KEY` environment variable so it is read every
 #' time R starts. A key OpenAlex refuses makes it refuse every request, so a
@@ -857,8 +859,10 @@ openalex_key <- function(key = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' openalex_query("Sample Size Justification", "Collabra Psychology")
+#' \donttest{
+#' if (online("api.openalex.org")) {
+#'   openalex_query("Sample Size Justification", "Collabra Psychology")
+#' }
 #' }
 openalex_query <- function(title, source = NA, authors = NA, strict = TRUE) {
   relevance_score <- title_match <- source_match <- NULL

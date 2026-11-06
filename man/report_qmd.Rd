@@ -17,3 +17,9 @@ report text
 \description{
 Create Report from Module Output
 }
+\examples{
+paper <- demopaper()
+mo <- module_run(paper, "all_p_values")
+txt <- report_qmd(list(mo), paper)
+cat(substr(txt, 1, 300))
+}

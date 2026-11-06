@@ -51,3 +51,10 @@ Unlike \code{\link[=repro_install_deps]{repro_install_deps()}}, there is no \cod
 container has no access to (and must not be given access to) the host's
 real R library, so every install always goes into the throwaway \code{lib_dir}.
 }
+\examples{
+\dontrun{
+# needs Docker
+deps <- repro_dependencies("library(pwr)")
+repro_install_deps_docker(deps, file.path(tempdir(), "lib"))
+}
+}

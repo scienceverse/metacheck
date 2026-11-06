@@ -26,7 +26,9 @@ a data frame of information
 Retrieve info from ReShare by URL
 }
 \examples{
-\dontrun{
-  reshare_info("https://doi.org/10.5255/UKDA-SN-854001")
+\donttest{
+if (online("reshare.ukdataservice.ac.uk")) {
+    reshare_info("https://doi.org/10.5255/UKDA-SN-854001")
+}
 }
 }

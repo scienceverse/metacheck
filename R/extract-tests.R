@@ -311,6 +311,9 @@
 #'   `components` (a list-column of `name`/`comp`/`value`/`df`), and `reported`
 #'   (the test rendered back as text, e.g. `"t(23) = 3.77, p = .001, d = 0.77"`).
 #' @export
+#' @examples
+#' tests <- extract_tests(demopaper("stroop_effect"))
+#' tests[, c("anchor", "reported")]
 extract_tests <- function(paper) {
   # each paper of a list on its own: paper_id() gave every id, so every test
   # was repeated for every paper (U10)

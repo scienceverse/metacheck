@@ -9,8 +9,10 @@ export_mplus_html(path, out = NULL)
 \arguments{
 \item{path}{path to a \code{.out} file}
 
-\item{out}{path to write the HTML file to; defaults to \code{path} with its
-extension replaced by \code{.html}, written alongside the source file}
+\item{out}{path to write the HTML file to. Without it, the file is named
+after \code{path} with the extension \code{.html} and written to the R session's
+temporary folder, which R removes when the session ends (CRAN does not
+allow writing elsewhere unless you ask for it); a message says where.}
 }
 \value{
 the path written to, invisibly
@@ -21,4 +23,15 @@ one heading per section (\verb{SUMMARY OF ANALYSIS}, \verb{MODEL FIT INFORMATION
 \verb{MODEL RESULTS}, ...) and one \verb{<table>} per detected result. Like
 \code{\link[=export_stata_smcl_html]{export_stata_smcl_html()}}, this has no figures to embed: Mplus never
 writes chart data into the \code{.out} text file itself (see the file header).
+}
+\examples{
+out <- tempfile(fileext = ".out")
+writeLines(c("Mplus VERSION 8.8", "", "INPUT INSTRUCTIONS", "",
+  "  MODEL: incongruent ON congruent;", "", "MODEL RESULTS", "",
+  "                                                    Two-Tailed",
+  "                    Estimate       S.E.  Est./S.E.    P-Value", "",
+  " INCONGRUENT ON",
+  "    CONGRUENT          0.432      0.093      4.645      0.000", ""), out)
+html <- export_mplus_html(out, file.path(tempdir(), "mplus.html"))
+file.exists(html)
 }

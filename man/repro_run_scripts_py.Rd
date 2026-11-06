@@ -69,3 +69,13 @@ identically here: the script can read/write/delete anywhere this process
 can, and reach the network freely. Use \code{sandbox = "docker"}
 (\code{\link[=repro_run_scripts_py_docker]{repro_run_scripts_py_docker()}}) for code you do not trust.
 }
+\examples{
+\dontrun{
+# needs Python
+root <- file.path(tempdir(), "run_demo_py")
+plan <- data.frame(file_name = "analysis.py", target_path = "analysis/analysis.py")
+code <- list(analysis.py = "print(sum([1, 2, 3]))")
+run_tbl <- repro_write_scripts(code, list(), plan, root, lang = "Python")
+repro_run_scripts_py(run_tbl, order = "analysis.py")
+}
+}

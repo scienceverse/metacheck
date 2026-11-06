@@ -9,8 +9,10 @@ export_stata_smcl_html(path, out = NULL)
 \arguments{
 \item{path}{path to a \code{.smcl} file}
 
-\item{out}{path to write the HTML file to; defaults to \code{path} with its
-extension replaced by \code{.html}, written alongside the source file}
+\item{out}{path to write the HTML file to. Without it, the file is named
+after \code{path} with the extension \code{.html} and written to the R session's
+temporary folder, which R removes when the session ends (CRAN does not
+allow writing elsewhere unless you ask for it); a message says where.}
 }
 \value{
 the path written to, invisibly
@@ -23,4 +25,14 @@ IS the syntax) and one \verb{<table>} per detected result. Unlike
 already-rendered view) or \code{\link[=export_spv_html]{export_spv_html()}} (which renders decoded
 charts as images), this has no figures to embed at all: a \code{.smcl} file
 never contains chart image data (see the file header) -- a \verb{graph export} command is shown as recovered command text only.
+}
+\examples{
+smcl <- tempfile(fileext = ".smcl")
+writeLines(c("{smcl}", "{com}. summarize congruent", "",
+  "{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max",
+  "{hline 13}{c +}{hline 57}",
+  "{space 3}congruent {c |}{res}        131    15.10411    4.118164      8.63     27.226",
+  "{txt}"), smcl)
+html <- export_stata_smcl_html(smcl, file.path(tempdir(), "stata.html"))
+file.exists(html)
 }

@@ -6,7 +6,7 @@
 \usage{
 convert(
   file_path,
-  save_path = ".",
+  save_path,
   method = c("auto", "bibr", "grobid", "xml"),
   crossref_lookup = FALSE,
   keep_xml = TRUE,
@@ -16,7 +16,8 @@ convert(
 \arguments{
 \item{file_path}{Path to the document file, or a directory of documents}
 
-\item{save_path}{Path to a directory in which to save the JSON file}
+\item{save_path}{Path to a directory in which to save the JSON file; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{method}{whether to use bibr, grobid, or xml (grobid_to_bibr) to convert a file (see Details)}
 
@@ -35,5 +36,13 @@ Uses grobid or bibr to convert a file to paper format.
 \details{
 Both bibr and grobid can handle PDF files. Only bibr can convert doc or docx files. Already-converted grobid XML files can be converted to bibr format (set crossref_lookup=TRUE to add a bib_match table). If the file_path is a directory, the method will be xml if any XML files are present, and bibr if only doc or docx files are present.
 
-With method "auto" or "bibr", PDF files are converted with bibr on metacheck's API on SURF Research Cloud (see \code{\link{convert_bibr}}) when it is available, unless \code{api_url}, \code{api_key} or \code{backend} is given, or there are doc or docx files. Otherwise the method "auto" uses a local grobid (\code{http://localhost:8070}), then a local bibr (\code{http://localhost:8000}), then the first available server in the online list at \url{https://www.scienceverse.org/metacheck/convert.json}.
+Unless \code{api_url}, \code{api_key} or \code{backend} is given, the servers are tried in this order: metacheck's API on SURF Research Cloud (see \code{\link{convert_bibr}}; it uses its bibr, or its own grobid when its bibr is not ready, and converts PDF files, not doc or docx files), the grobid server of TU/e, a grobid on this computer (\code{http://localhost:8070}), then the other servers in the online list at \url{https://www.scienceverse.org/metacheck/convert.json} (public grobid servers on Hugging Face). This is the same for the methods "auto", "bibr" and "grobid"; a server of the wrong kind for the method is skipped. While bibr does not work, no bibr server on this computer or in the list is looked for. A server, key or backend that is given is used as given.
+}
+\examples{
+\donttest{
+if (online("grobid.hti.ieis.tue.nl")) {
+  json <- convert(demofile("pdf"), tempdir(), method = "grobid")
+  paper <- read(json)
+}
+}
 }

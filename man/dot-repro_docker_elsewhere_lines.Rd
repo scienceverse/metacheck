@@ -12,7 +12,7 @@ lines of R code that follow the install loop
 \description{
 A second pass after every package has had its turn, since one time limit
 covers the whole install: first Bioconductor, because the fixed list of
-\code{\link[=.repro_bioc_packages]{.repro_bioc_packages()}} misses many names and some packages moved there,
+\code{.repro_bioc_packages()} misses many names and some packages moved there,
 keeping only an old copy in the CRAN Archive; then the latest version in the
 CRAN Archive, as \code{\link[=.repro_cran_archive_install]{.repro_cran_archive_install()}} does outside Docker. Two rounds,
 because a package can need another archived one (#568, items 9 and 11).

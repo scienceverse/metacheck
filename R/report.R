@@ -61,7 +61,10 @@
 #'
 #' @param paper a paper object or a paperlist object
 #' @param modules a vector of modules to run (names for built-in modules or paths for custom modules)
-#' @param output_file the name of the output file
+#' @param output_file the name of the output file. Without it, the report is
+#'   named `"<paper_id>_report.html"` and written to the R session's temporary
+#'   folder, which R removes when the session ends (CRAN does not allow
+#'   writing elsewhere unless you ask for it); a message says where.
 #' @param output_format the format to create the report in
 #' @param report_type `"full"` (the default) for the normal interactive
 #'   report (theme toggle, sortable/paginated JavaScript tables, tabbed
@@ -82,9 +85,13 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' paper <- demopaper()
-#' report(paper)
+#' res <- report(paper, modules = c("all_p_values", "stat_p_exact"),
+#'               output_format = "qmd")
+#' attr(res, "save_path")
+#' \dontrun{
+#' # the default modules use the internet, and HTML needs Quarto
+#' report(paper, output_file = "my_report.html")
 #' report(paper, report_type = "simple") # email-safe, no embedded JS
 #' }
 report <- function(paper,
@@ -105,13 +112,17 @@ report <- function(paper,
                      "ref_pubpeer",
                      "ref_summary"
                    ),
-                   output_file = paste0(paper$paper_id,
-                                        "_report.",
-                                        output_format),
+                   output_file = file.path(tempdir(), paste0(paper$paper_id,
+                                                             "_report.",
+                                                             output_format)),
                    output_format = c("html", "qmd"),
                    report_type = c("full", "brief", "simple",
                                    "simple_brief", "checklist"),
                    args = list()) {
+  # no file name given: the report goes to the temporary folder, and a message
+  # says where (see .report_temp_message())
+  default_file <- missing(output_file)
+
   # error catching ----
   ## check output format
   output_format <- tolower(output_format[[1]])
@@ -187,6 +198,7 @@ report <- function(paper,
     }, x = paper, of = output_file, SIMPLIFY = FALSE)
 
     attr(reports, "save_path") <- sapply(reports, attr, "save_path")
+    if (default_file) .report_temp_message(attr(reports, "save_path"))
 
     return(invisible(reports))
   }
@@ -312,8 +324,16 @@ report <- function(paper,
   }
 
   attr(module_output, "save_path") <- save_path
+  if (default_file) .report_temp_message(save_path)
 
   invisible(module_output)
+}
+
+# Say where a report without a file name went: the temporary folder.
+.report_temp_message <- function(path) {
+  message("The report is in the temporary folder, which R removes when it ",
+          "closes:\n", paste(unlist(path), collapse = "\n"),
+          "\nGive `output_file` to save it somewhere else.")
 }
 
 #' Create a Report for a Local Repository
@@ -337,9 +357,10 @@ report <- function(paper,
 #'
 #' @param path path to the repository folder to check
 #' @param output_file the name of the output file. Defaults to the folder's own
-#'   name with `_report.html` appended, written to the working directory. Give a
-#'   path here to write it somewhere else; any folders in that path must already
-#'   exist.
+#'   name with `_report.html` appended, written to the R session's temporary
+#'   folder, which R removes when the session ends (CRAN does not allow writing
+#'   elsewhere unless you ask for it). Give a path here to keep it; any folders
+#'   in that path must already exist.
 #' @param output_format the format to create the report in, `"html"` (the
 #'   default) or `"qmd"`
 #' @param report_type `"full"` (the default), `"brief"` (only the modules
@@ -357,15 +378,11 @@ report <- function(paper,
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # check a folder you have downloaded
-#' report_repository("how_many_registered_studies_are_published")
-#'
-#' # write the report somewhere else
-#' report_repository("my_study", output_file = "reports/my_study.html")
-#'
-#' # a static, email-safe report
-#' report_repository("my_study", report_type = "simple")
+#' \donttest{
+#' # check the demo repository; the report goes to the temporary folder
+#' res <- report_repository(demofile("repo"), output_format = "qmd",
+#'                          modules = "repo_check")
+#' attr(res, "save_path")
 #' }
 report_repository <- function(path,
                               output_file = NULL,
@@ -392,8 +409,10 @@ report_repository <- function(path,
   # normalizePath so a trailing slash or "." resolves to a real folder name
   # rather than an empty string or a dot.
   full_path <- normalizePath(path, winslash = "/", mustWork = TRUE)
-  if (is.null(output_file)) {
-    output_file <- paste0(basename(full_path), "_report.", output_format)
+  default_file <- is.null(output_file)
+  if (default_file) {
+    output_file <- file.path(tempdir(),
+                             paste0(basename(full_path), "_report.", output_format))
   }
 
   ## the first module reads the folder; the rest reuse its results ----
@@ -413,7 +432,7 @@ report_repository <- function(path,
   paper <- test_paper()
   paper$info$title <- basename(full_path)
 
-  report(
+  res <- report(
     paper = paper,
     modules = modules,
     output_file = output_file,
@@ -421,6 +440,8 @@ report_repository <- function(path,
     report_type = report_type,
     args = args
   )
+  if (default_file) .report_temp_message(attr(res, "save_path"))
+  invisible(res)
 }
 
 #' Run modules for a report
@@ -540,6 +561,11 @@ report_module_run <- function(paper, modules, args = list()) {
 #'
 #' @returns report text
 #' @export
+#' @examples
+#' paper <- demopaper()
+#' mo <- module_run(paper, "all_p_values")
+#' txt <- report_qmd(list(mo), paper)
+#' cat(substr(txt, 1, 300))
 report_qmd <- function(module_output, paper = list()) {
   # the checklist report has its own template and layout (report-checklist.R)
   if (report_type() == "checklist") {
@@ -678,12 +704,12 @@ report_qmd <- function(module_output, paper = list()) {
       paste(collapse = "  \n")
 
     legend_items <- paste(
-      "Legend: ⚠️ possible problems detected;",
+      "Legend: \u26A0\uFE0F possible problems detected;",
       "\U0001F50D something to check;",
-      "✅️ no problems detected;",
-      "ℹ️ informational only;",
-      "⬜ not applicable;",
-      "☠️ check failed."
+      "\u2705\uFE0F no problems detected;",
+      "\u2139\uFE0F informational only;",
+      "\u2B1C not applicable;",
+      "\u2620\uFE0F check failed."
     )
     info_box <- sprintf(
       "::: {.legend}\n%s\n\n---\n\n%s\n:::",

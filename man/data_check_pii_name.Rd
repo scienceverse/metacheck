@@ -36,4 +36,8 @@ Measured against 2113 real column names and a decoy set of ordinary research
 vocabulary, this cut false positives from 14 to 2 while missing nothing the
 previous substring rule caught.
 }
+\examples{
+data_check_pii_name("email")$problem
+data_check_pii_name("rt")$problem
+}
 \keyword{internal}

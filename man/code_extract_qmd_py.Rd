@@ -36,3 +36,8 @@ mirrors the fence-based approach already used elsewhere in the module
 (e.g. \code{code_parse_r()}'s own \verb{^---\\\\s*$} front-matter check) rather than
 introducing a new parsing dependency for a single edge case.
 }
+\examples{
+qmd <- c("---", "title: Demo", "---", "Some text.", "```{python}",
+         "x = [1, 2, 3]", "print(sum(x))", "```")
+code_extract_qmd_py(text = qmd)
+}

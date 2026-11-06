@@ -1408,7 +1408,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 .repro_unopened_files <- function(msgs, full = FALSE) {
   # also sf's 'Cannot open "x.shp"' and terra's 'file does not exist: x.tif' (#575, item 2)
   # and the curly quotes R uses in a UTF-8 locale: readxl's "`path` does not exist: '~/...'"
-  q <- "['\"‘’]"; nq <- "[^'\"‘’\n]"
+  q <- "['\"\u2018\u2019]"; nq <- "[^'\"\u2018\u2019\n]"
   pat <- paste0("(?:cannot open (?:compressed )?file|No such file or directory:?|does not exist)",
                 nq, "*", q, "(", nq, "+)", q, "|", q, "(", nq, "+)", q, ":? No such file|",
                 q, "(", nq, "+)", q, " does not exist",
@@ -1544,6 +1544,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 #'   each `source()` reference as written, in the order of `sources`: when
 #'   several files share the name a `source()` call gives, these decide which
 #'   one it means, and if they cannot, no edge is added.
+#' @param extra_edges a list of `c(from_file_name, to_file_name)` pairs, or
+#'   `NULL` (default). Each pair adds the rule that the file `from_file_name`
+#'   runs before the file `to_file_name`, such as when an error about an
+#'   undefined variable shows that the file defining it must run first.
 #'
 #' @returns a data frame with columns `file_name`, `order` (1-based run
 #'   position, NA when unplaceable), `depends_on` (comma-joined file_names that
@@ -1553,7 +1557,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 #'   signal placed a multi-file set (they share `order = NA`, basis `none`).
 #'   Attribute `"fuzzy_sources"` is a data frame (`from`, `to`) of `source()`
 #'   edges that only resolved after normalising both basenames (a renumbered/
-#'   reworded script reference — see [.repro_normalize_basename()]), empty
+#'   reworded script reference — see `.repro_normalize_basename()`), empty
 #'   when every `source()` reference matched an exact basename. Attribute
 #'   `"source_edges"` is a data frame (`from`, `to`) of every resolved
 #'   `source()` edge, exact or fuzzy: `from` is the sourced file, `to` the
@@ -1885,6 +1889,12 @@ repro_run_order <- function(files, extra_edges = NULL) {
 #' @returns a data frame with `file_name` and list-columns `reads`, `writes`,
 #'   `sources` (each a character vector of basenames).
 #' @export
+#' @examples
+#' code <- list(clean.R = c("d <- read.csv('raw.csv')", "write.csv(d, 'clean.csv')"),
+#'              analysis.R = c("source('clean.R')", "d <- read.csv('clean.csv')"))
+#' io <- repro_file_io(code)
+#' io$reads
+#' io$writes
 repro_file_io <- function(code_text_list, lang = "R") {
   if (is.null(code_text_list) || length(code_text_list) == 0)
     return(data.frame(file_name = character(0)))
@@ -2030,6 +2040,9 @@ repro_file_io <- function(code_text_list, lang = "R") {
 #' @returns a data frame with `file_name` and a list-column `defines` (character
 #'   vector of variable names each file assigns at top level).
 #' @export
+#' @examples
+#' code <- list(prep.R = c("x <- 1", "y <- x + 1"), analysis.R = "print(y)")
+#' repro_defined_vars(code)
 repro_defined_vars <- function(code_text_list) {
   if (is.null(code_text_list) || length(code_text_list) == 0)
     return(data.frame(file_name = character(0)))
@@ -2079,7 +2092,7 @@ repro_defined_vars <- function(code_text_list) {
 #' PACKAGE export the author simply forgot to `library()`, not a local
 #' variable/function). Deliberately scoped, not a blind search of every
 #' installed or CRAN package: only `candidates` (the paper's own declared
-#' dependencies plus [.repro_common_pkgs()]'s small curated safe-list) are
+#' dependencies plus `.repro_common_pkgs()`'s small curated safe-list) are
 #' checked, so an ambiguous common name (`%>%`, `select`, ...) across the
 #' package universe at large is never even considered — see this function's
 #' caller for why a blind scan is unsafe (a real corpus check found `%>%`
@@ -2205,6 +2218,10 @@ repro_defined_vars <- function(code_text_list) {
 #'   `similar_to` (a candidate near-match basename from the repository's file
 #'   list, or `NA` — only ever set for `absent` rows; see below).
 #' @export
+#' @examples
+#' skipped <- data.frame(file_name = "big.csv", file_size = 200 * 1024 * 1024)
+#' repro_missing_inputs(c("missing.csv", "big.csv"), plan = NULL,
+#'                      structure_df = NULL, skipped = skipped)
 repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   refs <- unique(tolower(basename(gsub("\\\\", "/", refs))))
   empty <- data.frame(basename = character(0), status = character(0),
@@ -2648,6 +2665,14 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #' @returns `root`, invisibly, with attribute `"materialised"`: a data frame of
 #'   `target_path` / `source` / `ok` (whether the copy succeeded) rows.
 #' @export
+#' @examples
+#' src <- tempfile(fileext = ".csv")
+#' writeLines(c("a,b", "1,2"), src)
+#' plan <- data.frame(file_name = "x.csv", target_path = "data/x.csv")
+#' structure_df <- data.frame(file_name = "x.csv", file_location = src)
+#' root <- file.path(tempdir(), "layout_demo")
+#' repro_materialize_layout(plan, structure_df, root)
+#' list.files(root, recursive = TRUE)
 repro_materialize_layout <- function(plan, structure_df, root) {
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
   # A flat folder every write call is redirected into (see
@@ -2841,7 +2866,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' Rewrite only the references that cannot work as written
 #'
 #' Every script runs in the repository as the authors organised it, with every
-#' file at its own path, from the folder [.repro_run_folders()] chooses. A
+#' file at its own path, from the folder `.repro_run_folders()` chooses. A
 #' reference is then:
 #' * left as written when it names a file's path from the top
 #'   (`"raw_data/scan1/log.csv"`), also when other files share the name (20
@@ -2873,10 +2898,10 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' @param plan the package layout's plan ([.repro_package_plan()])
 #' @param script_path the script's own path in the package
 #' @param run_dir the folder the script runs from, from the top of the package
-#'   (see [.repro_run_folders()]); a reference works as written when it names a
+#'   (see `.repro_run_folders()`); a reference works as written when it names a
 #'   file counted from there, and a rewritten path is counted from there too
 #' @param here_dir the folder `here()` starts in, from the top of the package
-#'   (see [.repro_here_start()]): a path that is the one argument of `here()`
+#'   (see `.repro_here_start()`): a path that is the one argument of `here()`
 #'   (`in_here`) counts from there, not from `run_dir`
 #' @returns `rw` with a logical `as_written` column
 #' @keywords internal
@@ -3846,8 +3871,8 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   # "does not exist" only of a file: Stan's "variable does not exist" is not one
   # (10.1111/1365-2435.14436; #575, item 10)
   file_pat <- paste0("cannot open the connection|cannot open file|No such file|FileNotFoundError|",
-                     "(?:[Ff]ile|[Pp]ath|[Dd]irectory|[Ff]older|['\"‘’`])[^\n]{0,300}?does not exist|",
-                     "does not exist:? *['\"‘`/~.]|Cannot find the file|Could not find a root|cannot open compressed")
+                     "(?:[Ff]ile|[Pp]ath|[Dd]irectory|[Ff]older|['\"\u2018\u2019`])[^\n]{0,300}?does not exist|",
+                     "does not exist:? *['\"\u2018`/~.]|Cannot find the file|Could not find a root|cannot open compressed")
   # a file error after a program could not be started is about the program
   # (#575, item 7): "Output file does not exist. Unable to find or run mark.exe"
   out[err & is.na(out) & has(file_pat) & !is.na(.repro_missing_program(full))] <- "environment"
@@ -4273,10 +4298,10 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   rewritten to its path from the top, for reads and writes alike.
 #'   `FALSE` (default) redirects every write, as before.
 #' @param run_dirs optional folder each script runs from, from `root`
-#'   ([.repro_run_folders()]), which becomes its `run_dir`. `NULL` (default) runs
+#'   (`.repro_run_folders()`), which becomes its `run_dir`. `NULL` (default) runs
 #'   every script from `root`.
 #' @param prepend optional named list, by file name: lines to put at the top of a
-#'   script, such as loading another script first ([.repro_run_after_lines()]).
+#'   script, such as loading another script first (`.repro_run_after_lines()`).
 #' @param replace_env_calls if `TRUE`, the calls to groundhog, checkpoint and renv
 #'   in R code are replaced, since packages are installed before the run, and such
 #'   a call would need the network (see `.repro_neutralise_env_calls()`).
@@ -4299,6 +4324,14 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   each replacement), and `library_injected` (the package name(s) injected
 #'   via `inject_libs` for that file, comma-joined, or `NA` when none was).
 #' @export
+#' @examples
+#' root <- file.path(tempdir(), "scripts_demo")
+#' plan <- data.frame(file_name = c("analysis.R", "x.csv"),
+#'                    target_path = c("analysis/analysis.R", "data/study-x_data.csv"))
+#' code <- list(analysis.R = 'a <- read.csv("x.csv")')
+#' rw <- list(analysis.R = repro_rewrite_paths(code$analysis.R, "analysis.R", plan))
+#' out <- repro_write_scripts(code, rw, plan, root)
+#' readLines(out$script_path)
 repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                                 inject_libs = NULL, lang = "R",
                                 script_paths = NULL, writes_in_place = FALSE,
@@ -5060,7 +5093,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 #' Installs each non-base dependency into `lib_dir` (a temp library, never the
 #' user's), so a run does not mutate the user's installed packages. CRAN packages
 #' come from `install.packages()`; Bioconductor packages (`source == "bioc"`,
-#' see [repro_dependencies()]/[.repro_bioc_packages()]) from
+#' see [repro_dependencies()]/`.repro_bioc_packages()`) from
 #' `BiocManager::install()`, installing `BiocManager` itself first if absent;
 #' GitHub/URL sources from the ref the code named
 #' (`remotes::install_github()` / `install.packages(url)`), honouring a pinned
@@ -5117,6 +5150,12 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 #'   `version_installed` (the version now in the libraries, or `NA`) and
 #'   `version_note` (why the recorded version was not installed, else "").
 #' @export
+#' @examples
+#' \dontrun{
+#' # installs packages into a throwaway library
+#' deps <- repro_dependencies("library(pwr)")
+#' repro_install_deps(deps, file.path(tempdir(), "lib"))
+#' }
 repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
                                deadline = NULL) {
   empty <- data.frame(package = character(0), source = character(0),
@@ -5936,6 +5975,17 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
 #' @export
+#' @examples
+#' \donttest{
+#' if (requireNamespace("callr", quietly = TRUE)) {
+#'   root <- file.path(tempdir(), "run_demo")
+#'   plan <- data.frame(file_name = "analysis.R", target_path = "analysis/analysis.R")
+#'   code <- list(analysis.R = c("x <- c(1, 2, 3)", "print(mean(x))"))
+#'   run_tbl <- repro_write_scripts(code, list(), plan, root)
+#'   res <- repro_run_scripts(run_tbl, order = "analysis.R")
+#'   res[, c("file_name", "outcome")]
+#' }
+#' }
 repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
                               skip = character(0), parses = NULL,
                               failed_deps = character(0), deadline = NULL) {

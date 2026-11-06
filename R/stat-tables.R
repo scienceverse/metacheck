@@ -45,6 +45,11 @@
 #'   GUI-produced). Empty list when the archive has no `index.html` or no
 #'   tables.
 #' @export
+#' @examples
+#' jasp <- system.file("extdata", "sample.jasp", package = "metacheck")
+#' tables <- read_stat_tables(jasp)
+#' length(tables)
+#' tables[[1]]$data
 read_stat_tables <- function(path) {
   if (!file.exists(path)) stop("File not found: ", path, call. = FALSE)
   if (!requireNamespace("xml2", quietly = TRUE) ||

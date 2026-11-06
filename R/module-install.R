@@ -265,7 +265,7 @@ roxy_tag_parse.roxy_tag_metacheck <- function(x) {
   override <- Sys.getenv("METACHECK_MODULES_DIR", "")
   if (nzchar(override)) return(override)
 
-  rappdirs::user_data_dir("metacheck", "scienceverse") |>
+  tools::R_user_dir("metacheck", "data") |>
     file.path("modules")
 }
 

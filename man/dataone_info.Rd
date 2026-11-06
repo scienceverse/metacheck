@@ -26,7 +26,9 @@ a data frame of information
 Retrieve info from DataONE by URL
 }
 \examples{
-\dontrun{
-  dataone_info("https://doi.org/10.18739/A2GT5FG86")
+\donttest{
+if (online("cn.dataone.org")) {
+    dataone_info("https://doi.org/10.18739/A2GT5FG86")
+}
 }
 }

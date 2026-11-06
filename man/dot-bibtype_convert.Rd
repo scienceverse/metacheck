@@ -15,12 +15,4 @@ a vector of bibtext types
 \description{
 Convert crossref/doi types to bibtex types
 }
-\examples{
-crossref_types <- c("book-part",
-                    "journal-article",
-                    "monograph",
-                    NA,
-                    "unmatched-type")
-.bibtype_convert(crossref_types)
-}
 \keyword{internal}

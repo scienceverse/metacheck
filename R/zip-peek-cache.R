@@ -20,6 +20,8 @@
 #'
 #' @returns the number of cache entries removed, invisibly
 #' @export
+#' @examples
+#' zip_peek_cache_clear()
 zip_peek_cache_clear <- function() {
   dir <- .zip_peek_cache_dir()
   files <- list.files(dir, pattern = "\\.rds$", full.names = TRUE)
@@ -76,6 +78,7 @@ zip_peek_cache_clear <- function() {
 # behaviour).
 .zip_peek_cache_put <- function(url, value) {
   path <- .zip_peek_cache_path(url)
+  dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
   tmp <- sub("\\.rds$", paste0(".tmp", Sys.getpid(), ".rds"), path)
   tryCatch({
     saveRDS(value, tmp)

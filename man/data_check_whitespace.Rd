@@ -16,4 +16,7 @@ list(problem, message, values)
 Padded values (e.g. "Male " vs "Male") silently split a category. Flags the
 affected values in a character/factor column.
 }
+\examples{
+data_check_whitespace(c("a", " b", "c "))$message
+}
 \keyword{internal}

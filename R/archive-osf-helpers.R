@@ -14,7 +14,6 @@
 #'   [osf_pat()] function supplying its own default.
 #'
 #' @returns the modified request
-#' @export
 #' @keywords internal
 .osf_headers <- function(req, pat = .key_use("osf", check = .osf_key_check)) {
   req <- req |>
@@ -85,6 +84,11 @@ osf_pat <- function(pat = NULL) {
 #' @returns logical (TRUE if OSF_PAT is set and valid)
 #' @export
 #' @keywords internal
+#' @examples
+#' \dontrun{
+#' # needs an OSF personal access token
+#' .osf_pat_validate("your-token")
+#' }
 .osf_pat_validate <- function(osf_pat = Sys.getenv("OSF_PAT")) {
   if (osf_pat == "") return(FALSE)
   if (!online("api.osf.io")) return(FALSE)
@@ -182,6 +186,12 @@ osf_pat <- function(pat = NULL) {
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
+#' @examples
+#' \donttest{
+#' if (online("api.osf.io")) {
+#'   .osf_info("pngda")
+#' }
+#' }
 .osf_info <- function(osf_id, pb = NULL, cache = FALSE) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
@@ -546,7 +556,6 @@ osf_pat <- function(pat = NULL) {
 #' @param data the data object from an OSF API call
 #'
 #' @returns a data frame with a subset of data
-#' @export
 #' @keywords internal
 .osf_node_data <- function(data) {
   if (is.null(data) | length(data) == 0) {
@@ -579,7 +588,6 @@ osf_pat <- function(pat = NULL) {
 #' @param data the data object from an OSF API call
 #'
 #' @returns a data frame with a subset of data
-#' @export
 #' @keywords internal
 .osf_file_data <- function(data) {
   if (is.null(data) | length(data) == 0) {
@@ -634,7 +642,6 @@ osf_pat <- function(pat = NULL) {
 #' @param data the data object from an OSF API call
 #'
 #' @returns a data frame with a subset of data
-#' @export
 #' @keywords internal
 .osf_preprint_data <- function(data) {
   if (is.null(data) | length(data) == 0) {
@@ -670,7 +677,6 @@ osf_pat <- function(pat = NULL) {
 #' @param data the data object from an OSF API call
 #'
 #' @returns a data frame with a subset of data
-#' @export
 #' @keywords internal
 .osf_reg_data <- function(data) {
   if (is.null(data) | length(data) == 0) {
@@ -701,7 +707,6 @@ osf_pat <- function(pat = NULL) {
 #' @param data the data object from an OSF API call
 #'
 #' @returns a data frame with a subset of data
-#' @export
 #' @keywords internal
 .osf_user_data <- function(data) {
   if (is.null(data) | length(data) == 0) {
@@ -753,19 +758,17 @@ osf_pat <- function(pat = NULL) {
 #' @export
 #'
 #' @examples
+#' \donttest{
+#' if (online("api.osf.io")) {
+#'   projects <- osf_user_projects("4i578")
+#'   projects[, c("name", "public")]
+#' }
+#' }
 #' \dontrun{
-#' # see what there is
-#' projects <- osf_user_projects("4i578")
-#'
 #' # download only the public ones
 #' projects |>
 #'   subset(public) |>
 #'   osf_file_download(download_to = "my_osf")
-#'
-#' # or pick by name
-#' projects |>
-#'   subset(grepl("ManyLabs", name)) |>
-#'   osf_file_download(download_to = "manylabs")
 #' }
 osf_user_projects <- function(user_id, pb = NULL) {
   user_id <- osf_check_id(user_id) |> stats::na.omit() |> unique()
@@ -980,7 +983,6 @@ osf_user_projects <- function(user_id, pb = NULL) {
 #' @param osf_id an OSF ID
 #'
 #' @returns the ID of the parent project
-#' @export
 #' @keywords internal
 .osf_parent_project <- function(osf_id) {
   valid_id <- osf_check_id(osf_id)

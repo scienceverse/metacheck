@@ -13,6 +13,10 @@ rep_if(x, y, replace = NULL)
 
 \item{replace}{values in \code{x} to replace}
 }
+\value{
+\code{x}, with each \code{NULL} element and each value in \code{replace} replaced
+by the matching value of \code{y}
+}
 \description{
 Replace values if NULL, NA, or specified value
 }

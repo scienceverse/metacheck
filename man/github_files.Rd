@@ -20,7 +20,9 @@ a data frame of files
 Get File List from GitHub
 }
 \examples{
-\dontrun{
-github_files("scienceverse/metacheck")
+\donttest{
+if (online("api.github.com")) {
+  github_files("scienceverse/metacheck")
+}
 }
 }

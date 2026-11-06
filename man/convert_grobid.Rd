@@ -6,7 +6,7 @@
 \usage{
 convert_grobid(
   file_path,
-  save_path = ".",
+  save_path,
   api_url = "https://grobid.hti.ieis.tue.nl",
   start_page = -1,
   end_page = -1,
@@ -18,9 +18,16 @@ convert_grobid(
 \arguments{
 \item{file_path}{path to the PDF, a vector of paths, or a directory name that contains PDFs}
 
-\item{save_path}{directory or file path to save to; set to NULL to return the XML directly}
+\item{save_path}{directory or file path to save to; set to NULL to return the XML
+directly (one file only). There is no default, because CRAN does not allow
+writing into the working directory unless you ask for it}
 
-\item{api_url}{the URL to the grobid server}
+\item{api_url}{the URL to the grobid server. When it is not given, the first
+of these that answers is used: the TU/e server, a GROBID on this computer
+(\verb{http://localhost:8070}), then the other GROBID servers in the online list
+at \verb{https://www.scienceverse.org/metacheck/convert.json}. (metacheck's
+server on SURF is not among them: it returns the paper, not GROBID's XML;
+\code{\link[=convert]{convert()}} tries it first.)}
 
 \item{start_page}{the first page of the PDF to read (defaults to -1 to read all pages)}
 
@@ -36,8 +43,18 @@ convert_grobid(
 XML object
 }
 \description{
-This function uses a GDPR-compliant public grobid server maintained by Eindhoven Technical University. You can set up your own local grobid server following instructions from \url{https://grobid.readthedocs.io/} and set the argument \code{api_url} to its path (probably \url{http://localhost:8070}). See \url{https://github.com/grobidOrg/grobid#demo} for other publicly available servers (we cannot guarantee their privay).
+This function uses a GDPR-compliant public grobid server maintained by Eindhoven Technical University. You can set up your own local grobid server following instructions from \url{https://grobid.readthedocs.io/} and set the argument \code{api_url} to its path (probably \verb{http://localhost:8070}). See \url{https://github.com/grobidOrg/grobid#demo} for other publicly available servers (we cannot guarantee their privay).
 }
 \details{
 Consolidation of citations, headers, and funders looks up these items in CrossRef or another database to fix or enhance information (see \url{https://grobid.readthedocs.io/en/latest/Consolidation/}). This can slow down conversion. Consolidating headers is only useful for published papers, and can be set to 0 for work in prep. We recommend you leave these defaults at 0 and use crossref_loookup = TRUE when converting from grobid XML to bibr JSON format with the convert() function.
+}
+\examples{
+\donttest{
+if (online("grobid.hti.ieis.tue.nl")) {
+  # the server can be busy or down; then this gives a message instead
+  xml <- tryCatch(convert_grobid(demofile("pdf"), tempdir()),
+                  error = function(e) message(conditionMessage(e)))
+  if (!is.null(xml)) paper <- read(xml)
+}
+}
 }

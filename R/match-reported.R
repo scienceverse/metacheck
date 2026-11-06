@@ -672,6 +672,13 @@
 #'   `source_file`/`analysis` of every piece involved). Attribute
 #'   `"summary"` holds the roll-up.
 #' @export
+#' @examples
+#' # run the paper's paired t-test and compare it with what the paper reports
+#' stroop <- read.csv(file.path(demofile("repo"), "data", "stroop_data.csv"))
+#' out <- utils::capture.output(
+#'   t.test(stroop$incongruent, stroop$congruent, paired = TRUE))
+#' long <- stat_results_long(read_r_output(out))
+#' match_reported_output(demopaper("stroop_effect"), long)
 match_reported_output <- function(paper, output, include_tables = FALSE,
                                   min_components = 1L) {
   # THREE accepted paper-side inputs, in order of preference:

@@ -15,4 +15,10 @@ logical (TRUE if OSF_PAT is set and valid)
 \description{
 Checks for validity of the OSF PAT and unsets it if needed.
 }
+\examples{
+\dontrun{
+# needs an OSF personal access token
+.osf_pat_validate("your-token")
+}
+}
 \keyword{internal}

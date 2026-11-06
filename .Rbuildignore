@@ -27,3 +27,4 @@ inst/templates/_report.html
 ^CLAUDE\.md$
 ^tests$
 ^researchbox_api_changes\.md$
+^tmp_output$

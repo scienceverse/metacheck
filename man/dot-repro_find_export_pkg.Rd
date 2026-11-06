@@ -23,7 +23,7 @@ error that no file in the paper's own code defines (the sibling case to
 PACKAGE export the author simply forgot to \code{library()}, not a local
 variable/function). Deliberately scoped, not a blind search of every
 installed or CRAN package: only \code{candidates} (the paper's own declared
-dependencies plus \code{\link[=.repro_common_pkgs]{.repro_common_pkgs()}}'s small curated safe-list) are
+dependencies plus \code{.repro_common_pkgs()}'s small curated safe-list) are
 checked, so an ambiguous common name (\verb{\%>\%}, \code{select}, ...) across the
 package universe at large is never even considered — see this function's
 caller for why a blind scan is unsafe (a real corpus check found \verb{\%>\%}

@@ -20,7 +20,6 @@ Lists all files in a local directory recursively and returns a data frame
 compatible with the \code{repo_check} output table, for use with \code{code_check}.
 }
 \examples{
-\dontrun{
-  local_files("my_project")
-}
+# the demo repository bundled with metacheck
+local_files(demofile("repo"), recursive = TRUE)
 }

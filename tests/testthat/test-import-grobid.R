@@ -232,10 +232,12 @@ test_that("non-Grobid URL rejected", {
 
 test_that("bad PDF", {
   filename <- test_path("fixtures", "problems", "xml_with_pdf_extension.pdf")
-  expect_error(convert_grobid(filename, api_url = grobid_url))
+  # a folder is given, so the error is the bad PDF, not the missing folder
+  out <- withr::local_tempdir()
+  expect_error(convert_grobid(filename, out, api_url = grobid_url))
 
   filename2 <- c(filename, "wrongfile.pdf")
-  expect_error( x <- convert_grobid(filename2, api_url = grobid_url) )
+  expect_error( x <- convert_grobid(filename2, out, api_url = grobid_url) )
   # expect_warning( x <- convert_grobid(filename2), "2 of 2 files did not convert")
   # exp <- c(NA_character_, NA_character_)
   # names(exp) <- filename2
@@ -410,7 +412,9 @@ test_that(".grobid_isalive", {
 
 test_that("null section import", {
   xml_file <- test_path("fixtures", "problems", "203020.xml")
-  dir <- test_path("fixtures", "problems")
+  # written to a temporary folder: written next to the fixture, every test run
+  # changed 203020.json in the package source
+  dir <- withr::local_tempdir()
   json <- convert(xml_file, dir)
 
   paper <- read(json)

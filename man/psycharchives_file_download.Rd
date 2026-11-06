@@ -25,3 +25,11 @@ absolute \code{file_url} (the bitstream retrieve endpoint) so the actual bytes a
 fetched later by \code{\link[=download_repo_files]{download_repo_files()}}, the same deferred path used for
 Zenodo and OSF. Restricted files are omitted by the API and never appear here.
 }
+\examples{
+\donttest{
+if (online("www.psycharchives.org")) {
+  # lists the public files, which download_repo_files() can then fetch
+  psycharchives_file_download("https://hdl.handle.net/20.500.12034/17526")
+}
+}
+}

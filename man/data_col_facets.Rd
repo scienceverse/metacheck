@@ -44,4 +44,3 @@ from the value magnitude.
 data_col_facets("RT", c(543, 612, 498, 701))
 data_col_facets("subject_id", c("s01", "s02", "s03"))
 }
-\keyword{internal}

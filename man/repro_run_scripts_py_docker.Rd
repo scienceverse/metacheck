@@ -67,3 +67,13 @@ subprocess on the host — so the code cannot reach the network (unless \code{ne
 is given) or touch anything outside the mounted sandbox and library, even
 deliberately.
 }
+\examples{
+\dontrun{
+# needs Docker
+root <- file.path(tempdir(), "run_demo_py")
+plan <- data.frame(file_name = "analysis.py", target_path = "analysis/analysis.py")
+code <- list(analysis.py = "print(sum([1, 2, 3]))")
+run_tbl <- repro_write_scripts(code, list(), plan, root, lang = "Python")
+repro_run_scripts_py_docker(run_tbl, order = "analysis.py", sandbox_root = root)
+}
+}

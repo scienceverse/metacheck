@@ -38,10 +38,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' researchdata4tu_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' researchdata4tu_links(paper)
 researchdata4tu_links <- function(paper) {
   href <- text <- NULL
 
@@ -191,8 +189,10 @@ researchdata4tu_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#'   researchdata4tu_info("https://doi.org/10.4121/16766929.v1")
+#' \donttest{
+#' if (online("data.4tu.nl")) {
+#'     researchdata4tu_info("https://doi.org/10.4121/16766929.v1")
+#' }
 #' }
 researchdata4tu_info <- function(researchdata4tu_url, id_col = 1, pb = NULL,
                                  cache = FALSE) {
@@ -343,7 +343,8 @@ researchdata4tu_pat <- function(pat = NULL) {
 #' (see that function's documentation for why the two are separate).
 #'
 #' @param researchdata4tu_id a 4TU.ResearchData article ID, uuid, URL, or DOI
-#' @param download_to path to download to
+#' @param download_to path to download to; there is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param max_file_size maximum file size to download (in MB) - set to NULL or
 #'   Inf for no restrictions
 #' @param max_download_size maximum total size to download - set to NULL or
@@ -365,14 +366,15 @@ researchdata4tu_pat <- function(pat = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   researchdata4tu_file_download("16766929")
-#'
-#'   # take only the data files out of any zip in the article
-#'   researchdata4tu_file_download("16766929", unzip_types = "data")
+#' \donttest{
+#' if (online("data.4tu.nl")) {
+#'   dl <- researchdata4tu_file_download("16766929",
+#'                                       download_to = file.path(tempdir(), "4tu"),
+#'                                       max_download_size = 10)
+#' }
 #' }
 researchdata4tu_file_download <- function(researchdata4tu_id,
-                                          download_to = ".",
+                                          download_to,
                                           max_file_size = 10,
                                           max_download_size = 100,
                                           unzip_types = NULL,
@@ -392,7 +394,8 @@ researchdata4tu_file_download <- function(researchdata4tu_id,
     unique()
   if (length(researchdata4tu_id) == 0) return(NULL)
 
-  withr::local_options(list(metacheck.figshare.pat = .researchdata4tu_pat()))
+  old_pat <- options(metacheck.figshare.pat = .researchdata4tu_pat())
+  on.exit(options(old_pat), add = TRUE)
 
   dl <- figshare_file_download(
     researchdata4tu_id,

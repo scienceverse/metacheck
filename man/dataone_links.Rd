@@ -28,8 +28,6 @@ its DOI prefix is not one this package can currently query, even if it is
 a real DataONE member node.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-dataone_links(psychsci)
-}
+paper <- demopaper()
+dataone_links(paper)
 }

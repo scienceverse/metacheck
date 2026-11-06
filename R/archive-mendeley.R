@@ -41,10 +41,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' mendeley_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' mendeley_links(paper)
 mendeley_links <- function(paper) {
   href <- text <- NULL
 
@@ -136,8 +134,10 @@ mendeley_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#'   mendeley_info("https://doi.org/10.17632/vjtxybrc28.1")
+#' \donttest{
+#' if (online("data.mendeley.com")) {
+#'     mendeley_info("https://doi.org/10.17632/vjtxybrc28.1")
+#' }
 #' }
 mendeley_info <- function(mendeley_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("data.mendeley.com")) {

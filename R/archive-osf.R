@@ -71,10 +71,8 @@ osf_api_check <- function(osf_api = getOption("metacheck.osf.api"),
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' osf_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' osf_links(paper)
 osf_links <- function(paper) {
   href <- text <- NULL
 
@@ -123,6 +121,8 @@ osf_links <- function(paper) {
 #'
 #' @returns the number of cached listings removed, invisibly
 #' @export
+#' @examples
+#' osf_cache_clear()
 osf_cache_clear <- function() {
   n <- length(ls(.osf_listing_cache))
   rm(list = ls(.osf_listing_cache), envir = .osf_listing_cache)
@@ -148,12 +148,14 @@ osf_cache_clear <- function() {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#' # get info on one OSF node
-#' osf_info("pngda")
+#' \donttest{
+#' if (online("api.osf.io")) {
+#'   # get info on one OSF node
+#'   osf_info("pngda")
 #'
-#' # also get child nodes and files
-#' osf_info("https://osf.io/6nt4v", recursive = TRUE)
+#'   # also get child nodes and files
+#'   osf_info("https://osf.io/6nt4v", recursive = TRUE)
+#' }
 #' }
 osf_info <- function(osf_url, id_col = 1,
                      recursive = FALSE,
@@ -535,10 +537,12 @@ osf_type <- function(guid) {
 #' @export
 #' @examples
 #' # get the 20 newest preprints
-#' \dontrun{
-#' osf_api <- getOption("metacheck.osf.api")
-#' url <- sprintf("%s/preprints/?search=date_created-desc", osf_api)
-#' preprints <- osf_get_all_pages(url, 2)
+#' \donttest{
+#' if (online("api.osf.io")) {
+#'   osf_api <- getOption("metacheck.osf.api")
+#'   url <- sprintf("%s/preprints/?search=date_created-desc", osf_api)
+#'   preprints <- osf_get_all_pages(url, 2)
+#' }
 #' }
 osf_get_all_pages <- function(url, page_end = Inf) {
   Sys.sleep(osf_delay())
@@ -751,7 +755,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 #'
 #' @param delay the number of seconds to wait between OSF calls
 #'
-#' @return NULL
+#' @returns the delay in seconds (numeric); invisibly when setting it
 #' @export
 #'
 #' @examples
@@ -828,7 +832,9 @@ osf_delay <- function(delay = NULL) {
 #'   contributes to, so a whole account can be archived in one call. To choose
 #'   a subset instead, pass the table from [osf_user_projects()] (filtered
 #'   however you like) -- any data frame with an `osf_id` column works.
-#' @param download_to path to download to. Each project is saved in its own
+#' @param download_to path to download to (there is no default: CRAN does not
+#'   allow writing into the working directory unless you ask for it). Each
+#'   project is saved in its own
 #'   folder here, named after its OSF ID. Downloading the same project again
 #'   reuses that folder and fetches only what is missing, so re-running after a
 #'   partial download resumes it instead of making a second copy.
@@ -888,16 +894,20 @@ osf_delay <- function(delay = NULL) {
 #' @export
 #'
 #' @examples
+#' \donttest{
+#' if (online("api.osf.io")) {
+#'   dl <- osf_file_download("6nt4v", download_to = file.path(tempdir(), "osf"),
+#'                           max_download_size = 10)
+#' }
+#' }
 #' \dontrun{
-#' osf_file_download("6nt4v")
-#'
 #' # download everything one user has, then archive it on Zenodo
-#' osf_file_download("4i578", download_to = "my_osf",
-#'                   max_file_size = NULL) |>
+#' # (needs a Zenodo token)
+#' osf_file_download("4i578", download_to = "my_osf", max_file_size = NULL) |>
 #'   zenodo_upload()
 #' }
 osf_file_download <- function(osf_id,
-                              download_to = ".",
+                              download_to,
                               max_file_size = NULL,
                               max_download_size = NULL,
                               max_folder_length = Inf,
@@ -1735,7 +1745,7 @@ osf_file_download <- function(osf_id,
 
 #' Get A list of preprints from the OSF
 #'
-#' @param provider a vector of the preprint providers, e.g. psyarxiv, socarxiv, edarxiv (see <https://osf.io/preprints/discover>)
+#' @param provider a vector of the preprint providers, e.g. psyarxiv, socarxiv, edarxiv (see `https://osf.io/preprints/discover`)
 #' @param date_created a single date or a vector of two date (min and max)
 #' @param date_modified a single date or a vector of two date (min and max)
 #' @param page_start the first page of 10 entries
@@ -1744,10 +1754,12 @@ osf_file_download <- function(osf_id,
 #' @returns a table of preprint info
 #' @export
 #' @examples
-#' \dontrun{
-#' dc <- c("2025-09-01", "2025-10-01")
-#' pp <- osf_preprint_list("psyarxiv", date_created = dc)
-#' files <- pp$primary_file
+#' \donttest{
+#' if (online("api.osf.io")) {
+#'   dc <- c("2025-09-01", "2025-10-01")
+#'   pp <- osf_preprint_list("psyarxiv", date_created = dc)
+#'   files <- pp$primary_file
+#' }
 #' }
 osf_preprint_list <- function(provider = NULL,
                               date_created = NULL,

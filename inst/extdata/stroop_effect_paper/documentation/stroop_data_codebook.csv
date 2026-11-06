@@ -1,0 +1,5 @@
+variable-name,label,values,missing-values,question,coding-instructions
+participant_id,Participant identifier,,,,
+congruent,Reaction time (in seconds) to name all words in the congruent block of the Stroop task,,,,
+incongruent,Reaction time (in seconds) to name all words in the incongruent block of the Stroop task,,,,
+year,Year in which the data were collected,,,,

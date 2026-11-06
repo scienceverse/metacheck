@@ -37,7 +37,9 @@ could not be found does.
 Retrieve info from Dryad by URL
 }
 \examples{
-\dontrun{
-  dryad_info("https://doi.org/10.5061/dryad.j1fd7")
+\donttest{
+if (online("datadryad.org")) {
+    dryad_info("https://doi.org/10.5061/dryad.j1fd7")
+}
 }
 }

@@ -19,3 +19,7 @@ a paper or paperlist
 \description{
 Read in grobid XML or bibr JSON
 }
+\examples{
+paper <- read(demofile("xml"))
+paper$info$title
+}

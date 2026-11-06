@@ -13,6 +13,9 @@
 
 \item{drop}{relevant for matrices and arrays. If TRUE the result is coerced to the lowest possible dimension (see the examples).}
 }
+\value{
+a \code{scivrs_paperlist} with the selected papers
+}
 \description{
 Subset PaperList Object
 }

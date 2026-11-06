@@ -44,7 +44,9 @@ ref <- paste(
   "The benefits of preregistration and Registered Reports.",
   "Evidence-Based Toxicology, 2(1)."
 )
-\dontrun{
-cr <- crossref_query(ref)
+\donttest{
+if (online("api.crossref.org")) {
+  cr <- crossref_query(ref)
+}
 }
 }

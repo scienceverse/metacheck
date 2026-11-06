@@ -26,10 +26,8 @@ visitor's own job with the keys the visitor entered, so the keys are used
 for that job only.
 }
 \examples{
-\dontrun{
 old <- api_keys_use(list(github = "github_pat_...", osf = ""))
 options(old)
-}
 }
 \seealso{
 \code{\link[=api_key_status]{api_key_status()}}

@@ -34,4 +34,10 @@ The file is only read, never modified or removed: the download cache is
 persistent by design (see \code{\link[=repo_cache_dir]{repo_cache_dir()}}), so classification decides how a
 file is \emph{used}, not whether it survives.
 }
+\examples{
+txt <- tempfile(fileext = ".txt")
+writeLines(c("id	rt	condition", "1	512	congruent", "2	640	incongruent",
+             "3	498	congruent"), txt)
+txt_classify_content(txt)
+}
 \keyword{internal}

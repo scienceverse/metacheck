@@ -13,7 +13,7 @@ osf_preprint_list(
 )
 }
 \arguments{
-\item{provider}{a vector of the preprint providers, e.g. psyarxiv, socarxiv, edarxiv (see \url{https://osf.io/preprints/discover})}
+\item{provider}{a vector of the preprint providers, e.g. psyarxiv, socarxiv, edarxiv (see \verb{https://osf.io/preprints/discover})}
 
 \item{date_created}{a single date or a vector of two date (min and max)}
 
@@ -30,9 +30,11 @@ a table of preprint info
 Get A list of preprints from the OSF
 }
 \examples{
-\dontrun{
-dc <- c("2025-09-01", "2025-10-01")
-pp <- osf_preprint_list("psyarxiv", date_created = dc)
-files <- pp$primary_file
+\donttest{
+if (online("api.osf.io")) {
+  dc <- c("2025-09-01", "2025-10-01")
+  pp <- osf_preprint_list("psyarxiv", date_created = dc)
+  files <- pp$primary_file
+}
 }
 }

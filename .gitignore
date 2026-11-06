@@ -35,9 +35,9 @@ CLAUDE.md
 .positai
 
 # metacheck's on-disk caches (downloaded repository files and LLM responses).
-# Created in the working directory by default, so they appear wherever code is
-# run from; see metacheck_cache_info() to locate them or the metacheck.cache.dir
-# option to move them elsewhere.
+# Created in the working directory when a lasting cache is asked for
+# (cache = TRUE, llm_cache(TRUE)); see metacheck_cache_info() to locate them or
+# the metacheck.cache.dir option to move them elsewhere.
 #
 # Only ignored at the repository root. NOT a blanket `.metacheck_*`: the folder
 # tests/testthat/.metacheck_repo_cache holds COMMITTED ResearchBox fixtures that
@@ -46,6 +46,9 @@ CLAUDE.md
 /.metacheck_llm_cache/
 /.metacheck_repo_info_cache/
 /.metacheck_zip_peek_cache/
+
+# testthat writes a copy of each failing test here, to help find the fault
+/tests/testthat/_problems/
 
 .comments/
 

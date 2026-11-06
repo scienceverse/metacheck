@@ -25,3 +25,14 @@ section (Mplus's own verbatim analysis syntax) is skipped here -- see
 \code{\link[=.mplus_export_syntax]{.mplus_export_syntax()}} for recovering it separately as a sibling \code{.inp}
 file, the same way \code{\link[=.spv_export_syntax]{.spv_export_syntax()}} recovers \code{.sps} from \code{.spv}.
 }
+\examples{
+out <- tempfile(fileext = ".out")
+writeLines(c("Mplus VERSION 8.8", "", "INPUT INSTRUCTIONS", "",
+  "  MODEL: incongruent ON congruent;", "", "MODEL RESULTS", "",
+  "                                                    Two-Tailed",
+  "                    Estimate       S.E.  Est./S.E.    P-Value", "",
+  " INCONGRUENT ON",
+  "    CONGRUENT          0.432      0.093      4.645      0.000", ""), out)
+tables <- import_mplus_output(out)
+tables[[1]]$data
+}

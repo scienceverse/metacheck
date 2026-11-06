@@ -48,4 +48,13 @@ typical value actually reads like written language:
 \item \strong{predominantly alphabetic} -- letters, not mostly digits/punctuation.
 }
 }
+\examples{
+x <- c("I found the task long and I lost focus near the end of it",
+       "My little brother was ill so I did this at night after work",
+       "The second block felt much harder than the first one to me",
+       "I live close to the lab and walked over in the morning sun",
+       "Nothing to add, everything went fine during the whole study")
+data_check_pii_freetext(x)$problem
+data_check_pii_freetext(c("yes", "no", "yes"))$problem
+}
 \keyword{internal}

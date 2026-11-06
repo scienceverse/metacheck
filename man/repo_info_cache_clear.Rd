@@ -27,3 +27,6 @@ dataset's own metadata/file list rarely changes once public, but if a
 paper's repository has genuinely been updated, clear the cache with this
 function.
 }
+\examples{
+repo_info_cache_clear()
+}

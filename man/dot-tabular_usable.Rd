@@ -40,4 +40,9 @@ Exclude when the file is almost entirely empty, or overwhelmingly free text,
 or moderately both. A file with an ordinary structure (a few open-response
 columns, or a legitimately sparse but numeric design) trips none of these.
 }
+\examples{
+df <- read.csv(file.path(demofile("repo"), "data", "stroop_data.csv"))
+facets <- Map(data_col_facets, names(df), df)
+.tabular_usable(facets, df)
+}
 \keyword{internal}

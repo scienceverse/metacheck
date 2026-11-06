@@ -6,6 +6,9 @@
 #'
 #' @returns a paper or paperlist
 #' @export
+#' @examples
+#' paper <- read(demofile("xml"))
+#' paper$info$title
 read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   # handle directory or multiple files ----
   if (length(file_path) == 1 && dir.exists(file_path)) {
@@ -56,6 +59,9 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
 #' @export
 #'
 #' @keywords internal
+#' @examples
+#' paper <- .read_bibr(demofile("json"))
+#' paper$info$title
 .read_bibr <- function(file_path, include_images = FALSE) {
   # read JSON ----
   # keys read exactly ([[ ]], not $): with no bib key, data$bib read the

@@ -28,3 +28,14 @@ are recovered as ordinary command text; the PNG itself is never embedded
 in a \code{.smcl} file (Stata writes it to disk separately), so no chart data
 exists in this format to extract (see the file header).
 }
+\examples{
+smcl <- tempfile(fileext = ".smcl")
+writeLines(c("{smcl}", "{com}. summarize congruent incongruent", "",
+  "{txt}    Variable {c |}        Obs        Mean    Std. dev.       Min        Max",
+  "{hline 13}{c +}{hline 57}",
+  "{space 3}congruent {c |}{res}        131    15.10411    4.118164      8.63     27.226",
+  "{txt}{space 1}incongruent {c |}{res}        131    23.00398    4.783391    13.556     38.891",
+  "{txt}"), smcl)
+tables <- import_stata_smcl(smcl)
+tables[[1]]$data
+}

@@ -18,7 +18,9 @@ a list of information about the repo
 Get GitHub Repo Info
 }
 \examples{
-\dontrun{
-github_info("scienceverse/metacheck")
+\donttest{
+if (online("api.github.com")) {
+  github_info("scienceverse/metacheck")
+}
 }
 }

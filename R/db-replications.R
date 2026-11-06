@@ -24,7 +24,7 @@ FLoRA <- function() {
   int <- system.file("databases/FLoRA.Rds", package = "metacheck")
   int_FLoRA <- readRDS(int)
 
-  ext <- rappdirs::user_data_dir("metacheck", "scienceverse") |>
+  ext <- tools::R_user_dir("metacheck", "data") |>
     file.path("FLoRA.Rds")
 
   if (file.exists(ext)) {
@@ -58,6 +58,11 @@ FLoRA_date <- function() {
 #' @returns the path to the data frame (invisibly)
 #' @export
 #'
+#' @examples
+#' \dontrun{
+#' # downloads the FLoRA database into tools::R_user_dir("metacheck", "data")
+#' FLoRA_update()
+#' }
 FLoRA_update <- function() {
   # download newest FLoRA update
   old_timeout <- getOption("timeout")
@@ -100,7 +105,7 @@ FLoRA_update <- function() {
 
   # how/where to save this file?
   # https://blog.r-hub.io/2020/03/12/user-preferences/
-  dir <- rappdirs::user_data_dir("metacheck", "scienceverse")
+  dir <- tools::R_user_dir("metacheck", "data")
   dir.create(dir, FALSE, TRUE)
   path <- file.path(dir, "FLoRA.Rds")
   saveRDS(FLoRA, path, compress = "xz")

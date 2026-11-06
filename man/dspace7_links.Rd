@@ -31,8 +31,6 @@ URL registered for the DOI from doi.org's handle API rather than visiting
 the landing page, and each DOI is looked up once per R session.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-dspace7_links(psychsci)
-}
+paper <- demopaper()
+dspace7_links(paper)
 }

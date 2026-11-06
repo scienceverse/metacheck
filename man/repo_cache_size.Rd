@@ -14,10 +14,8 @@ empty or absent.
 Size of the downloaded-repository file cache
 }
 \examples{
-\dontrun{
 # human-readable
 format(structure(repo_cache_size(), class = "object_size"), units = "auto")
-}
 }
 \seealso{
 \code{\link[=repo_cache_dir]{repo_cache_dir()}}, \code{\link[=repo_cache_clear]{repo_cache_clear()}}

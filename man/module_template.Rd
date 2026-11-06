@@ -4,16 +4,22 @@
 \alias{module_template}
 \title{Create a Module from a Template}
 \usage{
-module_template(module_name, path = "./modules")
+module_template(module_name, path)
 }
 \arguments{
 \item{module_name}{The short name of the module (should contain only letters, numbers, and _)}
 
-\item{path}{The path of the directory to save the module in (defaults to a directory called "modules" in the working directory)}
+\item{path}{The path of the directory to save the module in, such as
+\code{"modules"}; there is no default, because CRAN does not allow writing into
+the working directory unless you ask for it}
 }
 \value{
 the file path (invisibly)
 }
 \description{
 Create a Module from a Template
+}
+\examples{
+path <- module_template("my_check", file.path(tempdir(), "modules"))
+head(readLines(path))
 }

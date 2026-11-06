@@ -45,3 +45,10 @@ ollama pull llama3.2          # or llama3.1, mistral, etc.
 The API token is set automatically to \code{"metacheck-local"} -- no manual
 token configuration needed.
 }
+\examples{
+\dontrun{
+# needs Docker (or Python, after regcheck_setup_local()) and Ollama
+regcheck_start_local(method = "docker")
+regcheck_stop_local()
+}
+}

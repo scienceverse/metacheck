@@ -10,5 +10,9 @@ llm_cache_clear()
 the number of cache entries removed, invisibly
 }
 \description{
-Deletes all cached LLM responses (see \code{\link[=llm_cache]{llm_cache()}}).
+Deletes all cached LLM responses in the cache that is in use: the lasting
+cache when \code{\link[=llm_cache]{llm_cache()}} is \code{TRUE}, otherwise this session's temporary one.
+}
+\examples{
+llm_cache_clear()
 }

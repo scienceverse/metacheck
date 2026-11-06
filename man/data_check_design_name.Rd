@@ -19,4 +19,8 @@ boundary so e.g. "charm" does not match "arm". Used to decide whether a
 constant column is suspicious: a design variable with one value suggests
 the file was filtered to a single condition before export.
 }
+\examples{
+data_check_design_name("condition")
+data_check_design_name("rt")
+}
 \keyword{internal}

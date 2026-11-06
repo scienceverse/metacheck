@@ -202,7 +202,7 @@
 # The dataset_description.json of one study.
 .FAIR_repo_dataset_description <- function(paper, title, study_label, variables,
                                            reused = character(0)) {
-  suffix <- if (nzchar(study_label)) paste0(" — ", study_label) else ""
+  suffix <- if (nzchar(study_label)) paste0(" \u2014 ", study_label) else ""
   desc <- list(
     `@context`       = "https://schema.org/",
     `@type`          = "Dataset",
@@ -260,7 +260,7 @@
   if (!nrow(at)) return("")
   if ("text_id" %in% names(at)) at <- at[order(at$text_id), , drop = FALSE]
   txt <- trimws(paste(at$text[nzchar(trimws(at$text))], collapse = " "))
-  if (nchar(txt) > max_chars) txt <- paste0(substr(txt, 1L, max_chars), "…")
+  if (nchar(txt) > max_chars) txt <- paste0(substr(txt, 1L, max_chars), "\u2026")
   txt
 }
 
@@ -1377,7 +1377,7 @@
 .FAIR_repo_readme_study <- function(info, root, plan, files, columns_df, labels_df) {
   rows <- which(!is.na(plan$written) & startsWith(plan$written, paste0(root$dir, "/data/")) &
                   grepl("\\.csv$", plan$written) & plan$data_type %in% "data")
-  c(paste0("# ", info$title, " — ", .FAIR_repo_label(root$grp)), "",
+  c(paste0("# ", info$title, " \u2014 ", .FAIR_repo_label(root$grp)), "",
     paste0("One study of the research files, reorganised by ",
            "[metacheck](https://scienceverse.github.io/metacheck/). The ",
            "authors, licence, software and scripts are described in ",

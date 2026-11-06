@@ -32,7 +32,9 @@ the file header comment) -- so \code{files} is for REPORTING what a study
 contains, not for \code{download_repo_files()} to fetch.
 }
 \examples{
-\dontrun{
-fsd_info("https://services.fsd.tuni.fi/catalogue/FSD2653")
+\donttest{
+if (online("services.fsd.tuni.fi")) {
+  fsd_info("https://services.fsd.tuni.fi/catalogue/FSD2653")
+}
 }
 }
