@@ -255,9 +255,10 @@ llm <- function(text, system_prompt,
   # response cache ----
   # A call at temperature 0 is deterministic in (model, prompt, text, type,
   # params), so replay a stored result instead of re-issuing (and re-billing)
-  # the request. Errors are never cached. The cache is always used: llm_cache()
-  # only decides whether it lasts beyond the session. See R/llm-cache.R.
-  use_cache <- TRUE
+  # the request. Errors are never cached. By default (option unset) the cache
+  # lasts only for the session, llm_cache(TRUE) keeps it between sessions, and
+  # llm_cache(FALSE) turns it off. See R/llm-cache.R.
+  use_cache <- !isFALSE(getOption("metacheck.llm.cache"))
 
   # iterate over the text ----
   responses <- lapply(seq_along(unique_text), function(i) {

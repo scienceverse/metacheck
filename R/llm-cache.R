@@ -20,24 +20,27 @@
 #' system prompt, input text, type spec, and params; changing any of these
 #' produces a fresh call.
 #'
-#' By default (`FALSE`) the responses are kept only in the R session's
-#' temporary folder, which R removes when the session ends. With `TRUE` they
-#' are kept between sessions, in the folder `.metacheck_llm_cache` in the
-#' working directory, or under the folder set with
-#' `options(metacheck.cache.dir = )` or the `METACHECK_LLM_CACHE_DIR`
-#' environment variable. Use [llm_cache_clear()] to remove the stored responses
-#' and force fresh calls.
+#' By default the responses are kept only in the R session's temporary folder,
+#' which R removes when the session ends. With `llm_cache(TRUE)` they are kept
+#' between sessions, in the folder `.metacheck_llm_cache` in the working
+#' directory, or under the folder set with `options(metacheck.cache.dir = )` or
+#' the `METACHECK_LLM_CACHE_DIR` environment variable. With `llm_cache(FALSE)`
+#' no response is stored or replayed, so every call asks the model again;
+#' `options(metacheck.llm.cache = NULL)` returns to the default. Use
+#' [llm_cache_clear()] to remove the stored responses.
 #'
-#' @param enabled if logical, sets whether responses are kept between sessions;
-#'   if `NULL` (default) returns the current setting
+#' @param enabled `TRUE` to keep responses between sessions, `FALSE` to store
+#'   none; if `NULL` (default) returns whether responses are kept between
+#'   sessions
 #'
 #' @returns the current setting (logical), invisibly when setting
 #' @export
 #'
 #' @examples
-#' llm_cache()          # are responses kept between sessions?
+#' llm_cache()          # are responses kept between sessions? (FALSE by default)
 #' llm_cache(TRUE)      # keep responses between sessions
-#' llm_cache(FALSE)     # back to this session only
+#' llm_cache(FALSE)     # no cache: every call asks the model again
+#' options(metacheck.llm.cache = NULL)  # back to the default: this session only
 llm_cache <- function(enabled = NULL) {
   if (is.null(enabled)) {
     return(isTRUE(getOption("metacheck.llm.cache", FALSE)))

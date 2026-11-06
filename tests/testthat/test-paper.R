@@ -48,7 +48,7 @@ test_that("paper", {
 })
 
 test_that(".paper_coerce", {
-  expect_true(is.function(metacheck::.paper_coerce))
+  expect_true(is.function(metacheck:::.paper_coerce))
   expect_no_error(helplist <- help(.paper_coerce, metacheck))
 
   expect_error(.paper_coerce("no"))
