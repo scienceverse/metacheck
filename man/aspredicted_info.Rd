@@ -4,18 +4,45 @@
 \alias{aspredicted_info}
 \title{Retrieve info from AsPredicted by URL}
 \usage{
-aspredicted_info(ap_url, id_col = 1, wait = 1)
+aspredicted_info(ap_url, id_col = 1, wait = 1, cache = FALSE)
 }
 \arguments{
 \item{ap_url}{an AsPredicted URL, or a table containing them (e.g., as created by \code{aspredicted_links()})}
 
 \item{id_col}{the index or name of the column that contains AsPredicted URLs, if id is a table}
 
-\item{wait}{wait time in seconds}
+\item{wait}{wait time in seconds after each web page read (the API's
+requests are spaced by ResearchBox's own limits)}
+
+\item{cache}{if \code{TRUE}, reuse a previously cached result for a
+preregistration already looked up (see \code{\link[=repo_info_cache_clear]{repo_info_cache_clear()}})
+instead of asking again. Off by default.}
 }
 \value{
 a data frame of information
 }
 \description{
-Retrieve info from AsPredicted by URL
+With a ResearchBox API key set (see \code{\link[=rbox_token]{rbox_token()}}), each preregistration
+is read through ResearchBox's API, which serves AsPredicted's public
+preregistrations, with one request each. Without a key, or when the API
+fails, the preregistration's web page on AsPredicted is read instead;
+AsPredicted asks for a captcha after several pages, and no page is read
+after that.
+}
+\details{
+Both routes give the same columns. Each answer is placed by the wording of
+its question, so both versions of AsPredicted's questions found so far
+(1.05 and 2.00) are read: version 1.05 asks about secondary analyses
+(\code{AP_secondary}) where version 2.00 asks about outliers (\code{AP_outliers}). An
+answer to a question that is not recognised is added to \code{AP_anything_else},
+after its question. \code{AP_created} is the time of registration as AsPredicted
+shows it ("2021/06/14 02:17 (PT)") and \code{AP_registered} its date
+("2021-06-14"). \code{AP_number} (AsPredicted's number), \code{AP_status},
+\code{AP_authors_count} and \code{AP_bundle} (the numbers of the preregistrations
+registered together with this one) come from the API only, and are \code{NA}
+when the web page was read. From the API, \code{AP_authors} gives each author's
+name and university, without the e-mail address the web page shows.
+
+A link that names no preregistration, such as AsPredicted's home page, is
+not looked up: its row has an \code{error}.
 }

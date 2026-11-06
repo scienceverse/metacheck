@@ -566,7 +566,7 @@ dataverse_links <- function(paper) {
   # A value whose %-escapes decode to invalid UTF-8 ("%FF") is no DOI: kept,
   # it stopped the later string functions for every URL in the call (U39).
   decode <- function(x) {
-    d <- utils::URLdecode(x)
+    d <- .url_decode(x)
     if (validUTF8(d)) d else NA_character_
   }
   doi_pattern <- "persistentId=doi(?::|%3A)([^&\\s\"']+)"

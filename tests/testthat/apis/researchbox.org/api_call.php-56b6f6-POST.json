@@ -1,0 +1,58 @@
+{
+    "ok": true,
+    "a_id": 67958,
+    "status": "public",
+    "anonymous": true,
+    "url": "https://aspredicted.org/Y2F_6B7",
+    "title": "Children's prosocial behavior in response to awe-inspiring art",
+    "registration_time": "06/08/2021 05:33 AM",
+    "authors_count": 5,
+    "authors": null,
+    "any_data_yet": "It's complicated. We have already collected some data but explain in Question 8 why readers may consider this a valid pre-registration nevertheless.",
+    "questions": [
+        {
+            "n": 1,
+            "question": "Have any data been collected for this study already?",
+            "answer": "It's complicated. We have already collected some data but explain in Question 8 why readers may consider this a valid pre-registration nevertheless."
+        },
+        {
+            "n": 2,
+            "question": "What's the main question being asked or hypothesis being tested in this study?",
+            "answer": "Children (aged 8 to 13) who will be exposed to awe-inspiring art will show greater prosocial helping behavior than children who will be exposed to art that evokes other positive emotions (i.e., joy) or an emotionally neutral stimulus."
+        },
+        {
+            "n": 3,
+            "question": "Describe the key dependent variable(s) specifying how they will be measured.",
+            "answer": "Prosocial helping will be measured in two ways: \r\n(1) Number of food items counted in an effortful task that benefits refugee families. The more items counted, the more participants help refugees. Item count can range from 0 (in case a participant did not count any items) to 210 (in case a participant counted all items). \r\n(2) Probability of donating a raffle ticket that participants will receive as reward for their participation. Donating the ticket to a refugee family (vs. not) indicates prosocial helping."
+        },
+        {
+            "n": 4,
+            "question": "How many and which conditions will participants be assigned to?",
+            "answer": "Three conditions in a between-subjects design: awe condition (awe-evoking film clip), joy condition (joy-evoking film clip), control condition (film clip that evokes neither awe nor joy). The videos used in each condition will be selected based on the results of a pilot study that pre-tested whether different film clips evoke the intended emotions."
+        },
+        {
+            "n": 5,
+            "question": "Specify exactly which analyses you will conduct to examine the main question/hypothesis.",
+            "answer": "(1) Negative binomial regression to examine the effect of emotion condition on number of items counted (count data). The awe condition will be compared to the joy and control conditions.\r\n(2) Fisher's exact test (chi-square test) to examine the association between emotion condition and probability of donating one's raffle ticket. We will calculate odds ratios comparing the awe condition to the joy and control conditions."
+        },
+        {
+            "n": 6,
+            "question": "Describe exactly how outliers will be defined and handled, and your precise rule(s) for excluding observations.",
+            "answer": "Participants who will not respond to our main dependent variables (food item count, ticket donation) will be excluded from the analyses."
+        },
+        {
+            "n": 7,
+            "question": "How many observations will be collected or what will determine sample size?<BR><font size='2'> No need to justify decision, but be precise about <u>exactly</u> how the number will be determined.</font>",
+            "answer": "According to a power analysis, to detect a small to medium effect size with .80 statistical power and alpha error probability of .05, we need:\r\n(1) 158 participants in the above specified negative binomial regression test\r\n(2) 124 participants in the above specified Fisher's exact test\r\nTherefore, we aim to collect data from 158 children aged 8 to 13 to satisfy the power needs of the more demanding statistical test."
+        },
+        {
+            "n": 8,
+            "question": "Anything else you would like to pre-register? <BR><font size='2'>(e.g., secondary analyses, variables collected for exploratory purposes, unusual analyses planned?)</font>",
+            "answer": "* Variables collected for exploratory purposes: 5 items measuring the psychological experience of \"small self\"; 2 items measuring overlap between self & a friend as well as self & a stranger; 1 item measuring whether the participant had previously seen the video; 1 item measuring whether the participant could understand the language of the song lyrics in the awe condition\r\n* Variables collected as manipulation/validity check: 6 items measuring experienced emotions in response to the film clip\r\n* Why this should be taken as a valid pre-registration: Although data collection started before pre-registering this study, we have finalized neither the data collection nor the analyses."
+        }
+    ],
+    "question_version": "2.00",
+    "bundle_a_ids": [
+        67958
+    ]
+}

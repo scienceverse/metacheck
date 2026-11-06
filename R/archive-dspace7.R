@@ -412,7 +412,7 @@ dspace7_links <- function(paper) {
 
   hdl_rx <- "^https?://(?:hdl\\.)?handle\\.net/([^?#]+)"
   if (ok && !is.na(url) && grepl(hdl_rx, url, ignore.case = TRUE, perl = TRUE)) {
-    handle <- utils::URLdecode(sub(hdl_rx, "\\1", url, ignore.case = TRUE, perl = TRUE))
+    handle <- .url_decode(sub(hdl_rx, "\\1", url, ignore.case = TRUE, perl = TRUE))
     reg <- .handle_registered_url(handle, api = hdl_api)
     url <- reg$url
     ok <- reg$ok

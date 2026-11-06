@@ -61,6 +61,8 @@ test_that("standalone run (prereg_check run internally)", {
 }, "mock")
 
 test_that("chained after prereg_check", {
+  # the recorded AsPredicted web page, not the API
+  withr::local_options(metacheck.researchbox.token = "")
   testthat::local_mocked_bindings(
     regcheck_compare = function(...) mock_regcheck_table,
     .package = "metacheck"

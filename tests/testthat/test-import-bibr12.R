@@ -327,6 +327,11 @@ test_that("paper_write keeps its default output", {
   expect_null(json$schema_version)
   expect_equal(json$info[[1]]$title, paper$info$title)
 
+  # a folder that does not exist yet is made, without a warning
+  new_folder <- file.path(save_path, "new", "folder")
+  expect_no_warning(json_path <- paper_write(paper, save_path = new_folder))
+  expect_true(file.exists(json_path))
+
   # 12.0 needs a 12.x paper
   expect_error(paper_write(demopaper(), save_path = save_path,
                            schema_version = "12.0"),

@@ -925,7 +925,7 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
         lead <- sub(pat, "\\1", s, perl = TRUE)
         link <- sub(pat, "\\2", s, perl = TRUE)
         if (grepl("^[A-Za-z][A-Za-z0-9+.-]*:|^/", link)) next   # web, mail, absolute
-        plain <- tryCatch(utils::URLdecode(link), error = function(e) link)
+        plain <- .url_decode(link)
         rel <- .FAIR_repo_join_path(from_dir, plain)
         to <- if (is.na(rel)) NA_character_ else place_of[tolower(rel)]
         if (is.na(to)) next

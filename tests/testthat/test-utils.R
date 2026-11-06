@@ -232,6 +232,15 @@ test_that(".safe_write_path makes each part portable but keeps a drive (#557)", 
   expect_equal(.safe_write_path("x/a.txt"), "x/a.txt")
 })
 
+test_that(".url_decode keeps a % that starts no code, where URLdecode dropped or stopped", {
+  # utils::URLdecode() warned, made "50%" "50" and "a%2" "a", and stopped on
+  # "bad%zz.png" and "%00"
+  expect_no_warning(out <- .url_decode(c("a%20b", "50%", "a%2", "bad%zz.png",
+                                         "x%00y", "plain", NA, "%3A%2f")))
+  expect_equal(out, c("a b", "50%", "a%2", "bad%zz.png", "x%00y", "plain", NA, ":/"))
+  expect_equal(.url_decode(character(0)), character(0))
+})
+
 test_that(".zip_member_target makes a member's name portable and still refuses leaving the folder (#557)", {
   expect_equal(.zip_member_target("File S5/ Almont*1.jpg", "dest"), "dest/File S5/ Almont_1.jpg")
   expect_true(is.na(.zip_member_target("../x.csv", "dest")))

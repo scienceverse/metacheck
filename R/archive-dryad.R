@@ -122,7 +122,7 @@ dryad_links <- function(paper) {
     return(NA_character_)
   }
 
-  dryad_url <- utils::URLdecode(dryad_url)
+  dryad_url <- .url_decode(dryad_url)
 
   alt_prefixes <- setdiff(.dryad_doi_prefixes(), "10.5061")
   alt_prefix_regex <- paste(gsub("\\.", "\\\\.", alt_prefixes), collapse = "|")
