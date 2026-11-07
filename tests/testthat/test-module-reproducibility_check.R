@@ -1501,6 +1501,10 @@ test_that("execute = TRUE: stored sapply() summaries and a stored effectsize res
 
 test_that("the second pass runs only what it changes, and a changed script without time is skipped (#581)", {
   skip_on_cran()
+  # The coverage run makes R many times slower (a one-line script took 19
+  # seconds there), so the scripts cannot finish within these time limits;
+  # the full tests run it
+  skip_on_covr()
   skip_if_quick()
   skip_if_not_installed("callr")
   llm_use(FALSE)
