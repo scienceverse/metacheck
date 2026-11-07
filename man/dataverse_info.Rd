@@ -27,7 +27,10 @@ a data frame of information
 Retrieve info from Dataverse by URL
 }
 \examples{
-\dontrun{
-  dataverse_info("https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/GGDUND")
+\donttest{
+if (online("dataverse.harvard.edu")) {
+    dataverse_info(paste0("https://dataverse.harvard.edu/dataset.xhtml?",
+                          "persistentId=doi:10.7910/DVN/GGDUND"))
+}
 }
 }

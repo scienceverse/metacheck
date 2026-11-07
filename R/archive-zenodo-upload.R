@@ -944,7 +944,11 @@ zenodo_upload <- function(folders,
         if (length(which_rels) == 0) return(NULL)
         zf <- file.path(zip_dir, paste0(stem, suffix, ".zip"))
         unlink(zf)
-        withr::with_dir(parent, utils::zip(zf, which_rels, flags = "-q"))
+        # zip from `parent`, so the names inside are relative to it; the
+        # working directory is restored when make_zip() ends (zf is absolute)
+        old_wd <- setwd(parent)
+        on.exit(setwd(old_wd), add = TRUE)
+        utils::zip(zf, which_rels, flags = "-q")
         if (file.exists(zf) && file.size(zf) > 0) zf else NULL
       }
 

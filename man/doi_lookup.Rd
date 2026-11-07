@@ -17,7 +17,9 @@ Doi.org Info from DOI
 }
 \examples{
 doi <- "10.7717/peerj.4375"
-\dontrun{
-doi_info <- doi_lookup(doi)
+\donttest{
+if (online("doi.org")) {
+  doi_info <- doi_lookup(doi)
+}
 }
 }

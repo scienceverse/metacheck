@@ -482,10 +482,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' dataverse_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' dataverse_links(paper)
 dataverse_links <- function(paper) {
   href <- text <- NULL
 
@@ -643,8 +641,11 @@ dataverse_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#'   dataverse_info("https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/GGDUND")
+#' \donttest{
+#' if (online("dataverse.harvard.edu")) {
+#'     dataverse_info(paste0("https://dataverse.harvard.edu/dataset.xhtml?",
+#'                           "persistentId=doi:10.7910/DVN/GGDUND"))
+#' }
 #' }
 dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (is.null(pb)) {
@@ -890,6 +891,39 @@ dataverse_pat <- function(host, pat = NULL) {
   invisible(pat)
 }
 
+# The name, size and download URL of one entry of a Dataverse file listing.
+# A tabular file Dataverse converted on upload (an SPSS .sav, a Stata .dta or
+# a .csv made into a .tab; the listing then gives originalFileFormat) is taken
+# as it was uploaded: /api/access/datafile/<id> sends the converted .tab, while
+# the listing's checksum is the original's, so every such file failed the
+# checksum and was reported as damaged (#582). With ?format=original Dataverse
+# sends the original, which matches the checksum, is the file the authors'
+# own code reads, and keeps an SPSS file's value labels. Its name is the
+# listed name with the original's extension (originalFileName as a fallback),
+# its size originalFileSize.
+.dataverse_file_entry <- function(x, host) {
+  df <- x$dataFile %||% list()
+  name <- x$label %empty_or% df$filename %empty_or% NA_character_
+  size <- as.numeric(df$filesize %empty_or% NA_real_)
+  url <- if (length(df$id) > 0)
+    sprintf("https://%s/api/access/datafile/%s", host, df$id) else NA_character_
+  orig_format <- df$originalFileFormat %empty_or% NA_character_
+  if (!is.na(orig_format) && nzchar(orig_format) && !is.na(url)) {
+    orig_name <- df$originalFileName %empty_or% NA_character_
+    orig_ext <- if (!is.na(orig_name)) tools::file_ext(orig_name) else ""
+    if (!is.na(name) && nzchar(orig_ext)) {
+      name <- paste0(tools::file_path_sans_ext(name), ".", orig_ext)
+    } else if (!is.na(orig_name)) {
+      name <- orig_name
+    }
+    # the converted file's size does not describe the original: unknown when
+    # the listing does not give the original's
+    size <- as.numeric(df$originalFileSize %empty_or% NA_real_)
+    url <- paste0(url, "?format=original")
+  }
+  list(name = name, size = size, url = url)
+}
+
 #' Download all files from a Dataverse dataset
 #'
 #' Creates a directory for the dataset and downloads all of its files. Returns
@@ -913,7 +947,8 @@ dataverse_pat <- function(host, pat = NULL) {
 #'
 #' @param host the Dataverse installation's hostname (e.g. "dataverse.harvard.edu")
 #' @param doi the dataset's persistentId (a DOI, e.g. "10.7910/DVN/GGDUND")
-#' @param download_to path to download to
+#' @param download_to path to download to; there is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param max_file_size maximum file size to download (in MB) - set to NULL or
 #'   Inf for no restrictions
 #' @param max_download_size maximum total size to download - set to NULL or
@@ -934,15 +969,15 @@ dataverse_pat <- function(host, pat = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   dataverse_file_download("dataverse.harvard.edu", "10.7910/DVN/GGDUND")
-#'
-#'   # take only the data files out of any zip in the dataset
-#'   dataverse_file_download("dataverse.harvard.edu", "10.7910/DVN/GGDUND",
-#'                           unzip_types = "data")
+#' \donttest{
+#' if (online("dataverse.harvard.edu")) {
+#'   dl <- dataverse_file_download("dataverse.harvard.edu", "10.7910/DVN/GGDUND",
+#'                                 download_to = file.path(tempdir(), "dataverse"),
+#'                                 max_download_size = 10)
+#' }
 #' }
 dataverse_file_download <- function(host, doi,
-                                    download_to = ".",
+                                    download_to,
                                     max_file_size = 10,
                                     max_download_size = 100,
                                     unzip_types = NULL,
@@ -1027,15 +1062,16 @@ dataverse_file_download <- function(host, doi,
   # dplyr::tibble()'s recycling with a "must be size 1, not 0" error.
   rows <- lapply(files_list, function(x) {
     df <- x$dataFile %||% list()
+    # a file Dataverse converted (a .tab made from a .sav) as it was uploaded,
+    # see .dataverse_file_entry() (#582)
+    fe <- .dataverse_file_entry(x, host)
     dplyr::tibble(
       id       = as.character(df$id %empty_or% NA_character_),
-      key      = x$label %empty_or% df$filename %empty_or% NA_character_,
-      size     = as.numeric(df$filesize %empty_or% NA_real_),
+      key      = fe$name,
+      size     = fe$size,
       checksum = (df$checksum$value %empty_or% NA_character_),
       checksum_type = tolower(df$checksum$type %empty_or% NA_character_),
-      self     = if (length(df$id) > 0)
-        sprintf("https://%s/api/access/datafile/%s", host, df$id)
-      else NA_character_
+      self     = fe$url
     )
   })
 

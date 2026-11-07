@@ -25,10 +25,12 @@ codebook to the download. Needs an API key.}
 default; "Data", "Code", "Materials", ...) or \code{"section"} ("Study 1",
 ...). Anything other than the default needs an API key.}
 
-\item{cache}{if \code{TRUE}, reuse a previously cached file list for the
-checksums of a download without a table of contents (see \code{\link[=rbox_files]{rbox_files()}})
-instead of asking ResearchBox again. The downloaded files themselves are
-always reused.}
+\item{cache}{if \code{TRUE}, keep the downloaded files in the lasting on-disk
+cache (see \code{\link[=repo_cache_dir]{repo_cache_dir()}}) so later sessions reuse them, and reuse a
+previously cached file list for the checksums of a download without a
+table of contents (see \code{\link[=rbox_files]{rbox_files()}}) instead of asking ResearchBox
+again. If \code{FALSE} (the default), the files are kept in a temporary folder
+that R removes when the session ends; within the session they are reused.}
 }
 \value{
 a data frame with one row per file (\code{rb_url}, \code{name},
@@ -66,11 +68,13 @@ times in 30 days, so a box is downloaded once and then reused from the
 cache.
 }
 \examples{
-\dontrun{
-rbox_file_download("https://researchbox.org/801")
-
-# only two files, in folders by section
-rbox_file_download("https://researchbox.org/801", file_ids = c(10, 16),
-                   subfolders = "section")
+\donttest{
+if (online("researchbox.org")) {
+  # kept in this session's temporary folder (cache = FALSE); the server can
+  # be busy, then this says why
+  files <- tryCatch(rbox_file_download("https://researchbox.org/801"),
+                    error = function(e) message(conditionMessage(e)))
+  if (!is.null(files)) files[, c("name", "size")]
+}
 }
 }

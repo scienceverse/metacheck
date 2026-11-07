@@ -4,18 +4,25 @@
 \alias{demofile}
 \title{Get a demo file}
 \usage{
-demofile(ext = c("json", "pdf", "docx", "doc", "xml", "qmd"))
+demofile(ext = c("json", "pdf", "docx", "doc", "xml", "qmd", "repo"))
 }
 \arguments{
-\item{ext}{the extension of the file}
+\item{ext}{the extension of the file, or \code{"repo"} for the demo repository}
 }
 \value{
-file path
+file path (a folder for \code{"repo"})
 }
 \description{
 Return the file path for various versions of the demo paper. Use \code{demopaper()} to directly read it as a paper object from the json file.
 }
+\details{
+\code{demofile("repo")} returns the folder of a demo repository instead: a
+small copy of \url{https://github.com/Lakens/stroop_effect_paper} (data, code,
+codebook, README, licence and \code{renv.lock}), for functions that check a
+repository on your own computer, such as \code{\link[=local_files]{local_files()}}.
+}
 \examples{
 json <- demofile()
 pdf <- demofile("pdf")
+repo <- demofile("repo")
 }

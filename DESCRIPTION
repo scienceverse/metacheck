@@ -1,7 +1,7 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.4.3.3
-Date: 2026-10-20
+Version: 0.4.3.8
+Date: 2026-11-06
 Authors@R: c(
   person(  given = "Lisa",
            family = "DeBruine",
@@ -33,7 +33,17 @@ Authors@R: c(
            role = c("aut"),
            email = "lakens@gmail.com",
            comment = c(ORCID = "0000-0002-0247-239X")))
-Description: A modular, extendable system for checking research outputs for best practices using text search, R code, and/or (optional) LLM queries.
+Description: Screens scientific manuscripts and data repositories and flags
+    potential issues for improvement, to help researchers adopt best
+    practices. It is an open source, modular tool that allows anyone to
+    create automated checks. These checks are meant to assist, not replace,
+    human expertise. It can check reporting guidelines (such as statements
+    about conflicts of interest, funding, and ethics approval), statistical
+    reporting (such as p values, power analyses, and effect sizes), and
+    references (such as retracted or replicated studies). It also examines
+    whether repositories, data, code, and codebooks are findable, accessible,
+    interoperable, and reusable, and it can check whether the code in a
+    repository reproduces its results.
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -83,7 +93,6 @@ Imports:
     curl,
     httr2 (>= 1.1.0),
     rvest,
-    rappdirs,
     tidytext,
     statcheck,
     base64enc,
@@ -93,8 +102,9 @@ Imports:
     progress,
     graphics,
     grDevices,
+    methods,
     utils
-URL: https://github.com/scienceverse/metacheck, https://scienceverse.github.io/metacheck/
+URL: https://github.com/scienceverse/metacheck, https://www.scienceverse.org/metacheck/
 BugReports: https://github.com/scienceverse/metacheck/issues
 Depends: 
     R (>= 4.3.0) 

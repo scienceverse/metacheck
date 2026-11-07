@@ -6,7 +6,7 @@
 \usage{
 grobid_to_bibr(
   xml_path,
-  save_path = ".",
+  save_path,
   crossref_lookup = FALSE,
   schema_version = NULL
 )
@@ -14,7 +14,9 @@ grobid_to_bibr(
 \arguments{
 \item{xml_path}{the path to the XML file}
 
-\item{save_path}{directory or file path to save to; set to NULL to return a paper object}
+\item{save_path}{directory or file path to save to; set to NULL to return a paper
+object. There is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{crossref_lookup}{whether to look up references in crossref}
 
@@ -29,4 +31,9 @@ a paper object
 }
 \description{
 Convert Grobid TEI XML file to bibr format
+}
+\examples{
+# NULL returns the paper instead of writing a JSON file
+paper <- grobid_to_bibr(demofile("xml"), NULL)
+paper$info$title
 }

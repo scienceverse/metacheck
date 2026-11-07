@@ -21,4 +21,10 @@ Metacheck's replacement for \code{\link[base:message]{base::message()}}: prints 
 interactively (so it reads as informational rather than a warning), and
 is silent entirely when \code{\link[=verbose]{verbose()}} is \code{FALSE}.
 }
+\examples{
+message("shown while verbose() is TRUE")
+old <- verbose(FALSE)
+message("not shown")
+verbose(TRUE)
+}
 \keyword{internal}

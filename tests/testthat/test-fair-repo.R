@@ -302,13 +302,10 @@ test_that("FAIR_repo leaves an existing folder alone unless overwrite = TRUE", {
   expect_false(file.exists(file.path(out, "mine.txt")))
 })
 
-test_that("FAIR_repo names the copy after the folder by default", {
-  withr::local_options(metacheck.llm.use = FALSE)
+test_that("FAIR_repo needs a folder for the copy", {
+  # there is no default (CRAN: no writing into the working directory)
   d <- fair_fixture()
-  withr::local_dir(withr::local_tempdir())
-  res <- suppressMessages(FAIR_repo(d))
-  expect_equal(res$output_dir, paste0(basename(d), "_FAIR"))
-  expect_true(dir.exists(res$output_dir))
+  expect_error(FAIR_repo(d), "output_dir")
 })
 
 test_that("FAIR_repo stops for a path that is not a folder, or a copy inside it", {

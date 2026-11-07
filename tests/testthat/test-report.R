@@ -159,11 +159,17 @@ test_that("report_repository defaults output_file to the folder's own name", {
   dir.create(file.path(d, "my_repo"))
   writeLines("id,x\n1,2", file.path(d, "my_repo", "data.csv"))
 
-  rep <- in_dir(d, report_repository("my_repo", output_format = "qmd",
-                                     modules = "repo_check"))
+  # without output_file the report goes to the temporary folder (CRAN: no
+  # writing into the working directory by default), and a message says where
+  expect_message(
+    rep <- in_dir(d, report_repository("my_repo", output_format = "qmd",
+                                       modules = "repo_check")),
+    "temporary folder")
   save_path <- attr(rep, "save_path")
-  expect_equal(save_path, "my_repo_report.qmd")
-  expect_true(file.exists(file.path(d, save_path)))
+  expect_equal(basename(save_path), "my_repo_report.qmd")
+  expect_equal(normalizePath(dirname(save_path)), normalizePath(tempdir()))
+  expect_true(file.exists(save_path))
+  expect_false(file.exists(file.path(d, "my_repo_report.qmd")))
   # The working directory must be back to normal: a leftover change here
   # would silently break every later test using a relative path (e.g.
   # module_find()'s own "modules/..." lookups) -- see this test's own

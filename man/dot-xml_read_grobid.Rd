@@ -15,8 +15,4 @@ a list with class "xml_document" for xml2
 \description{
 Read in, strip TEI namespace, and fix common problems.
 }
-\examples{
-path <- demofile("xml")
-xml <- .xml_read_grobid(path)
-}
 \keyword{internal}

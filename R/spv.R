@@ -1883,6 +1883,11 @@ spv_assemble_table <- function(dims, axes, cells, title = NA_character_,
 #'   produced the table, when recoverable). Empty list if the archive has no
 #'   structure XML or no tables decode.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs an SPSS output file (.spv), which only SPSS writes
+#' res <- import_spv("my_analysis.spv")
+#' }
 import_spv <- function(path) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.spv$", path, ignore.case = TRUE))
@@ -2030,14 +2035,24 @@ import_spv <- function(path) {
 #' PNG the same way [export_jasp_html()] inlines its own plots.
 #'
 #' @param path path to a `.spv` file
-#' @param out path to write the HTML file to; defaults to `path` with its
-#'   extension replaced by `.html`, written alongside the source file
+#' @param out path to write the HTML file to. Without it, the file is named
+#'   after `path` with the extension `.html` and written to the R session's
+#'   temporary folder, which R removes when the session ends (CRAN does not
+#'   allow writing elsewhere unless you ask for it); a message says where.
 #'
 #' @returns the path written to, invisibly
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs an SPSS output file (.spv), which only SPSS writes
+#' export_spv_html("my_analysis.spv", file.path(tempdir(), "my_analysis.html"))
+#' }
 export_spv_html <- function(path, out = NULL) {
   if (!file.exists(path)) stop("File not found: ", path)
-  if (is.null(out)) out <- sub("\\.spv$", ".html", path, ignore.case = TRUE)
+  if (is.null(out)) {
+    out <- file.path(tempdir(), sub("\\.spv$", ".html", basename(path), ignore.case = TRUE))
+    message("Written to the temporary folder, which R removes when it closes: ", out)
+  }
 
   tables <- import_spv(path)
 

@@ -39,18 +39,16 @@ already lists each project in full, so the true size is discovered there
 anyway.
 }
 \examples{
+\donttest{
+if (online("api.osf.io")) {
+  projects <- osf_user_projects("4i578")
+  projects[, c("name", "public")]
+}
+}
 \dontrun{
-# see what there is
-projects <- osf_user_projects("4i578")
-
 # download only the public ones
 projects |>
   subset(public) |>
   osf_file_download(download_to = "my_osf")
-
-# or pick by name
-projects |>
-  subset(grepl("ManyLabs", name)) |>
-  osf_file_download(download_to = "manylabs")
 }
 }

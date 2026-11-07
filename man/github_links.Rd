@@ -16,8 +16,6 @@ a table with the GitHub url in the first (text) column
 GitHub links can be in PDFs in several ways.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-github_links(psychsci)
-}
+paper <- demopaper()
+github_links(paper)
 }

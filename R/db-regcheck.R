@@ -25,6 +25,9 @@
 #' @returns the base URL with any trailing slash removed
 #' @export
 #' @keywords internal
+#' @examples
+#' regcheck_base_url()
+#' regcheck_base_url(base_url = "http://localhost:11434/")
 regcheck_base_url <- function(client = "ollama", base_url = NULL) {
   url <- base_url %||% ""
   if (!nzchar(url)) url <- Sys.getenv("REGCHECK_BASE_URL")
@@ -403,6 +406,12 @@ regcheck_compare <- function(paper_text,
 #'   `deviation_information`, `paper_quotes`, and `prereg_quotes`
 #' @export
 #' @keywords internal
+#' @examples
+#' result <- list(items = list(list(dimension = "Sample size",
+#'   deviation_judgement = "No deviation",
+#'   paper_content_summary = "131 students took part.",
+#'   registration_content_summary = "At least 100 students.")))
+#' regcheck_tidy(result)[, c("dimension", "deviation_judgement")]
 regcheck_tidy <- function(result) {
   items <- result$items %||% list()
 

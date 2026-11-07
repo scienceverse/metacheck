@@ -7,6 +7,10 @@
 #'
 #' @returns a list of accuracy parameters
 #' @export
+#' @examples
+#' expected <- c(TRUE, TRUE, FALSE, FALSE, TRUE)
+#' observed <- c(TRUE, FALSE, FALSE, TRUE, TRUE)
+#' accuracy(expected, observed)
 accuracy <- function(expected, observed) {
   # categorise the sample
   hit <- sum(expected & observed)

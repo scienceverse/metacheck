@@ -28,13 +28,13 @@ By default the whole cache is removed. Pass \code{repo_url} to remove only the
 cached files of specific repositories.
 }
 \examples{
-\dontrun{
-# clear everything
+# a cache in a temporary folder, so no real cache is cleared
+old <- options(metacheck.repo_cache.dir = file.path(tempdir(), "repo_cache"))
 repo_cache_clear()
 
 # clear one repository only
 repo_cache_clear("https://osf.io/abcde")
-}
+options(old)
 }
 \seealso{
 \code{\link[=repo_cache_dir]{repo_cache_dir()}}, \code{\link[=repo_cache_size]{repo_cache_size()}}

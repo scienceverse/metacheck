@@ -30,4 +30,12 @@ and multi-answer questions expand to \verb{<DataExportTag>_<choiceCode>} (honour
 response scale points (the value labels); for single/multiple choice the
 \code{Choices} are themselves the value labels.
 }
+\examples{
+# a minimal Qualtrics survey file with one question
+qsf <- tempfile(fileext = ".qsf")
+writeLines('{"SurveyEntry": {"SurveyName": "Demo"}, "SurveyElements": [{"Element": "SQ",
+  "PrimaryAttribute": "QID1", "Payload": {"QuestionText": "How old are you?",
+  "DataExportTag": "age", "QuestionType": "TE", "QuestionID": "QID1"}}]}', qsf)
+parse_qsf(qsf)
+}
 \keyword{internal}

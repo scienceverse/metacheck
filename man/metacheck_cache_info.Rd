@@ -13,15 +13,16 @@ a data.frame (\code{cache}, \code{path}, \code{size_mb}), invisibly.
 Prints the location and size of all three on-disk caches — the downloaded
 repository-FILE cache, the repository-LISTING cache (dataset/record
 metadata, off by default -- see \code{\link[=repo_info_cache_clear]{repo_info_cache_clear()}}), and the LLM-response
-cache — so they are never hidden. By default each sits in a folder in the
-current working directory (\code{.metacheck_repo_cache},
-\code{.metacheck_repo_info_cache}, and \code{.metacheck_llm_cache}); relocate all
-three with \code{options(metacheck.cache.dir = "/some/path")}.
+cache — so they are never hidden. Files are kept between sessions only when
+you ask for it (\code{cache = TRUE} in a module, or \code{llm_cache(TRUE)}); each
+lasting cache then sits in a folder in the current working directory
+(\code{.metacheck_repo_cache}, \code{.metacheck_repo_info_cache}, and
+\code{.metacheck_llm_cache}); relocate all three with
+\code{options(metacheck.cache.dir = "/some/path")}. While \code{\link[=llm_cache]{llm_cache()}} is
+\code{FALSE}, the LLM row shows this session's temporary folder.
 }
 \examples{
-\dontrun{
 metacheck_cache_info()
-}
 }
 \seealso{
 \code{\link[=repo_cache_dir]{repo_cache_dir()}}, \code{\link[=repo_cache_clear]{repo_cache_clear()}}, \code{\link[=repo_info_cache_clear]{repo_info_cache_clear()}},

@@ -118,10 +118,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' dspace_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' dspace_links(paper)
 dspace_links <- function(paper) {
   href <- text <- NULL
   host_regex <- .dspace_legacy_host_regex()
@@ -156,10 +154,8 @@ dspace_links <- function(paper) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' psycharchives_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' psycharchives_links(paper)
 psycharchives_links <- function(paper) {
   href <- text <- NULL
 
@@ -199,8 +195,10 @@ psycharchives_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#' psycharchives_info("https://hdl.handle.net/20.500.12034/17526")
+#' \donttest{
+#' if (online("www.psycharchives.org")) {
+#'   psycharchives_info("https://hdl.handle.net/20.500.12034/17526")
+#' }
 #' }
 psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("psycharchives.org")) {
@@ -289,7 +287,6 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
 #' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
-#' @export
 #' @keywords internal
 .psycharchives_info <- function(pa_url, pb = NULL) {
   if (is.null(pb)) {
@@ -469,6 +466,13 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
 #'
 #' @returns a data frame of file information (one row per public bitstream)
 #' @export
+#' @examples
+#' \donttest{
+#' if (online("www.psycharchives.org")) {
+#'   # lists the public files, which download_repo_files() can then fetch
+#'   psycharchives_file_download("https://hdl.handle.net/20.500.12034/17526")
+#' }
+#' }
 psycharchives_file_download <- function(pa_url, pb = NULL, cache = FALSE) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")

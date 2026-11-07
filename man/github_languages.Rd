@@ -16,7 +16,11 @@ vector of languages
 Get Languages from GitHub Repo
 }
 \examples{
-\dontrun{
-github_languages("scienceverse/metacheck")
+\donttest{
+if (online("api.github.com")) {
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(github_languages("scienceverse/metacheck"),
+           error = function(e) message(conditionMessage(e)))
+}
 }
 }

@@ -23,3 +23,8 @@ counterpart of \code{\link[=import_jasp]{import_jasp()}}, returning the same str
 code (codebook extraction, data checks) treats an \code{.omv} like a \code{.jasp} or
 \code{.sav}.
 }
+\examples{
+omv <- system.file("extdata", "sample.omv", package = "metacheck")
+res <- import_omv(omv)
+head(res$data)
+}

@@ -45,3 +45,10 @@ installed by bare name, latest version. Installing runs a package's own
 build/setup code, so this is part of the gated execute phase, same as its
 R counterpart.
 }
+\examples{
+\dontrun{
+# needs Python; installs packages with pip into a throwaway folder
+deps <- repro_dependencies_py("import numpy as np")
+repro_install_deps_py(deps, file.path(tempdir(), "pylib"))
+}
+}

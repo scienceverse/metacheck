@@ -13,10 +13,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' zenodo_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' zenodo_links(paper)
 zenodo_links <- function(paper) {
   href <- text <- NULL
 
@@ -104,9 +102,11 @@ zenodo_links <- function(paper) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' if (online("zenodo.org")) {
 #'   # get info on one zenodo link
 #'   zenodo_info("https://doi.org/10.5281/zenodo.18648142")
+#' }
 #' }
 zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("zenodo.org")) {
@@ -248,6 +248,12 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
 #' @returns a data frame of information
 #' @export
 #' @keywords internal
+#' @examples
+#' \donttest{
+#' if (online("zenodo.org")) {
+#'   .zenodo_info("https://doi.org/10.5281/zenodo.18648142")
+#' }
+#' }
 .zenodo_info <- function(zenodo_id, pb = NULL) {
   if (is.null(pb)) {
     pb <- pb(NA, "(:spin) :what")
@@ -335,7 +341,8 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
 #' before, so this never loses a file -- it only avoids transferring one.
 #'
 #' @param zenodo_id an Zenodo ID or URL
-#' @param download_to path to download to
+#' @param download_to path to download to; there is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param max_file_size maximum file size to download (in MB) - set to NULL or Inf for no restrictions
 #' @param max_download_size maximum total size to download - set to NULL of Inf for no restrictions
 #' @param unzip_types file categories to extract from `.zip` files in the record
@@ -353,14 +360,15 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   zenodo_file_download("2591593")
-#'
-#'   # take only the data files out of any zip in the record
-#'   zenodo_file_download("2591593", unzip_types = "data")
+#' \donttest{
+#' if (online("zenodo.org")) {
+#'   dl <- zenodo_file_download("2591593",
+#'                              download_to = file.path(tempdir(), "zenodo"),
+#'                              max_download_size = 10)
+#' }
 #' }
 zenodo_file_download <- function(zenodo_id,
-                                 download_to = ".",
+                                 download_to,
                                  max_file_size = 10,
                                  max_download_size = 100,
                                  unzip_types = NULL,

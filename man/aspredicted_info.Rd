@@ -46,3 +46,10 @@ name and university, without the e-mail address the web page shows.
 A link that names no preregistration, such as AsPredicted's home page, is
 not looked up: its row has an \code{error}.
 }
+\examples{
+\donttest{
+if (online("aspredicted.org")) {
+  aspredicted_info("https://aspredicted.org/blind.php?x=nq4xa3")
+}
+}
+}

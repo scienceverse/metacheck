@@ -17,9 +17,10 @@ report_repository(
 \item{path}{path to the repository folder to check}
 
 \item{output_file}{the name of the output file. Defaults to the folder's own
-name with \verb{_report.html} appended, written to the working directory. Give a
-path here to write it somewhere else; any folders in that path must already
-exist.}
+name with \verb{_report.html} appended, written to the R session's temporary
+folder, which R removes when the session ends (CRAN does not allow writing
+elsewhere unless you ask for it). Give a path here to keep it; any folders
+in that path must already exist.}
 
 \item{output_format}{the format to create the report in, \code{"html"} (the
 default) or \code{"qmd"}}
@@ -60,14 +61,10 @@ read. Whether a language model is used is decided by \code{\link[=llm_use]{llm_u
 when running the modules individually.
 }
 \examples{
-\dontrun{
-# check a folder you have downloaded
-report_repository("how_many_registered_studies_are_published")
-
-# write the report somewhere else
-report_repository("my_study", output_file = "reports/my_study.html")
-
-# a static, email-safe report
-report_repository("my_study", report_type = "simple")
+\donttest{
+# check the demo repository; the report goes to the temporary folder
+res <- report_repository(demofile("repo"), output_format = "qmd",
+                         modules = "repo_check")
+attr(res, "save_path")
 }
 }

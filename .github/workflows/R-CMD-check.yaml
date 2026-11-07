@@ -1,0 +1,135 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# R CMD check --as-cran on the systems CRAN checks on: Windows with the
+# released and the development R, macOS with the released R, and Linux with
+# the development, released and previous R. A note fails the check too, as a
+# warning or an error does, because CRAN asks for every note to be fixed or
+# explained. Two more checks, as CRAN also runs them:
+# - with only the packages metacheck requires (Imports), so an example that
+#   uses an optional package (Suggests) without checking for it first fails;
+# - with the PDF manual built, which finds problems in the help pages that the
+#   web pages do not show.
+# A last job checks every web address in the documentation.
+# Runs on a push to dev or cran_fixes (from that branch's own copy of this
+# file, so it does not need to be on main), on a pull request into dev, and by
+# hand. The tests are not part of the build (.Rbuildignore), so this checks
+# the package and runs its examples, including the \donttest ones; the tests
+# run in full-tests.yaml.
+on:
+  push:
+    branches: [dev, cran_fixes, linux_docker_fixes]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+name: R-CMD-check
+
+permissions: read-all
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})${{ matrix.config.name }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: windows-latest, r: 'release'}
+          - {os: windows-latest, r: 'devel'}
+          - {os: macos-latest,   r: 'release'}
+          - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
+          - {os: ubuntu-latest,  r: 'release', manual: true, name: ' with the PDF manual'}
+          - {os: ubuntu-latest,  r: 'oldrel-1'}
+          - {os: ubuntu-latest,  r: 'release', depends-only: true, name: ' with only the required packages'}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      # R CMD check then offers the package only what it requires
+      _R_CHECK_DEPENDS_ONLY_: ${{ matrix.config.depends-only && 'true' || 'false' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-tinytex@v2
+        if: matrix.config.manual
+
+      # R checks the help pages' HTML with HTML Tidy, as CRAN does; without it
+      # the check gives a note that it skipped this
+      - name: Install HTML Tidy
+        if: matrix.config.manual
+        run: sudo apt-get update && sudo apt-get install -y tidy
+        shell: bash
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          build_args: ${{ matrix.config.manual && '"--compact-vignettes=gs+qpdf"' || 'c("--no-manual", "--compact-vignettes=gs+qpdf")' }}
+          args: ${{ matrix.config.manual && '"--as-cran"' || 'c("--no-manual", "--as-cran")' }}
+          error-on: '"note"'
+
+  url-check:
+    runs-on: ubuntu-latest
+    name: Web addresses in the documentation
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::urlchecker
+          needs: check
+
+      # A second try a minute later, so a server that did not answer within the
+      # checker's 5 seconds once (CRAN's own website did) does not fail the check.
+      # An address that is a large file (the Retraction Watch database) times
+      # out while it arrives: one that sent data before the time-out works.
+      - name: Check every web address
+        run: |
+          check <- function() {
+            # urlchecker 2.0.0 stops by itself on a bad address (fail = TRUE),
+            # before these rules could look at it
+            args <- if ("fail" %in% names(formals(urlchecker::url_check))) list(fail = FALSE) else list()
+            res <- do.call(urlchecker::url_check, args)
+            arriving <- grepl("Timeout was reached", res$Message) &
+              grepl("with [1-9][0-9]* bytes received", res$Message)
+            if (any(arriving)) message("Working, but large (still arriving after 5 seconds): ",
+                                       paste(res$URL[arriving], collapse = ", "))
+            res[!arriving, ]
+          }
+          res <- check()
+          if (nrow(res)) {
+            message("Trying the ", nrow(res), " failed addresses again in a minute")
+            Sys.sleep(60)
+            res <- check()
+          }
+          # Still no answer at all after the second try: a network condition
+          # between GitHub and that server (GitHub's machines could not connect
+          # to CRAN.R-project.org twice in a row), not a wrong address. Reported,
+          # not failed; every other error (not found, moved, certificate,
+          # unknown host) fails the check.
+          silent <- grepl("Timeout was reached", res$Message)
+          if (any(silent)) message("::warning::No answer from: ", paste(unique(res$URL[silent]), collapse = ", "))
+          res <- res[!silent, ]
+          print(res)
+          if (nrow(res)) quit(status = 1)
+        shell: Rscript {0}

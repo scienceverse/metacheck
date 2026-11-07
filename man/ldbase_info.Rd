@@ -34,3 +34,10 @@ page it leads to. LDbase has no API, so this reads the public pages (one
 request per project or item). Items stored elsewhere (LDbase's "external
 link" option) have no file here and are not listed.
 }
+\examples{
+\donttest{
+if (online("ldbase.org")) {
+  ldbase_info("https://ldbase.org/datasets/ef328591-e249-4803-b673-76f237717d1d")
+}
+}
+}

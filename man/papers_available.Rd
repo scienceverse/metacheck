@@ -18,7 +18,10 @@ returns a table of available paper corpora that can be loaded with
 \code{\link[=papers_load]{papers_load()}}.
 }
 \examples{
-\dontrun{
-papers_available()
+\donttest{
+if (online("api.github.com")) {
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(papers_available(), error = function(e) message(conditionMessage(e)))
+}
 }
 }

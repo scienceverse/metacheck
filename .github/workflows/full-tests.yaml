@@ -1,0 +1,72 @@
+# Every test, including the ones that run code in Docker and Python, on Linux,
+# before code reaches main. R CMD check (R-CMD-check.yaml) does not run the
+# tests (they are not part of the build, see .Rbuildignore), and the coverage
+# run (test-coverage.yaml) runs only on main, so 15 tests that fail on Linux
+# were found only after the code was there. Runs on a push to dev, on a pull
+# request into dev, and by hand.
+on:
+  push:
+    branches: [dev, linux_docker_fixes]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+name: Full tests
+
+permissions: read-all
+
+jobs:
+  full-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      # run every test, not only the quick ones (tests/testthat/helper.R)
+      METACHECK_FULL_TESTS: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The containers write in folders R makes. On Linux only the folder's
+      # owner may write there, which Docker Desktop on Windows and macOS hides.
+      # The image's own user is 1000, so the tests show this only when R runs
+      # as another user, as it does on servers.
+      - name: Check that R does not run as user 1000
+        run: |
+          id
+          docker --version
+          python3 --version
+          if [ "$(id -u)" = "1000" ]; then
+            echo "::error::This machine's user is 1000, the containers' own user, so the tests cannot find folder permission problems"
+            exit 1
+          fi
+        shell: bash
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Install dependencies (with cache)
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          # local::. installs metacheck itself from this branch: the parallel
+          # workers (callr) and the rendered reports (library(metacheck) in
+          # inst/templates/_report.qmd) load the installed package, not the
+          # source the tests load
+          extra-packages: any::devtools, any::xml2, any::plumber, any::logger, local::.
+          cache: true
+          cache-version: 1
+
+      - name: Run every test
+        run: |
+          options(testthat.progress.max_fails = 1000)
+          res <- devtools::test(stop_on_failure = FALSE)
+          df <- as.data.frame(res)
+          bad <- df[df$failed > 0 | df$error, c("file", "test")]
+          if (nrow(bad)) {
+            message(nrow(bad), " tests failed:")
+            print(bad, row.names = FALSE)
+            quit(status = 1)
+          }
+        shell: Rscript {0}

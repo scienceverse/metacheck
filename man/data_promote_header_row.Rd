@@ -36,4 +36,12 @@ via \code{raw_rows} (the file re-read headerless as character) so the detector c
 see the row the reader swallowed as the header; without it the function falls
 back to treating \code{df}'s own first rows as the scan window.
 }
+\examples{
+# a title row above the real header, read as the header
+df <- data.frame(`Stroop study export` = c("id", "1", "2", "3"),
+                 X = c("rt", "512", "640", "498"), check.names = FALSE)
+res <- data_promote_header_row(df)
+res$promoted
+res$df
+}
 \keyword{internal}

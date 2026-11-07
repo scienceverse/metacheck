@@ -16,8 +16,6 @@ a vector of paper_ids
 Get Paper IDs
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-paper_id(psychsci)
-}
+paper <- demopaper()
+paper_id(paper)
 }

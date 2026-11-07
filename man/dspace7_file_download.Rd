@@ -21,3 +21,11 @@ carries an absolute \code{file_url} so the actual bytes are fetched later
 by \code{\link{download_repo_files}}, the same deferred path used for
 Zenodo, OSF, and legacy DSpace (\code{psycharchives_file_download()}).
 }
+\examples{
+\donttest{
+if (online("conservancy.umn.edu")) {
+  # lists the public files, which download_repo_files() can then fetch
+  dspace7_file_download("https://conservancy.umn.edu/handle/11299/208294")
+}
+}
+}

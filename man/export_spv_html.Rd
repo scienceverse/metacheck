@@ -9,8 +9,10 @@ export_spv_html(path, out = NULL)
 \arguments{
 \item{path}{path to a \code{.spv} file}
 
-\item{out}{path to write the HTML file to; defaults to \code{path} with its
-extension replaced by \code{.html}, written alongside the source file}
+\item{out}{path to write the HTML file to. Without it, the file is named
+after \code{path} with the extension \code{.html} and written to the R session's
+temporary folder, which R removes when the session ends (CRAN does not
+allow writing elsewhere unless you ask for it); a message says where.}
 }
 \value{
 the path written to, invisibly
@@ -26,4 +28,10 @@ recoverable), one \verb{<table>} per result table, and -- for a chart entry
 own decoded \verb{(x, y)} points with any fitted trend lines SPSS itself
 computed drawn over it (see \code{\link[=.spv_decode_chart]{.spv_decode_chart()}}), embedded as a base64
 PNG the same way \code{\link[=export_jasp_html]{export_jasp_html()}} inlines its own plots.
+}
+\examples{
+\dontrun{
+# needs an SPSS output file (.spv), which only SPSS writes
+export_spv_html("my_analysis.spv", file.path(tempdir(), "my_analysis.html"))
+}
 }

@@ -875,6 +875,9 @@
 #'   text when unmapped), `termSource` (`"STATO"`, `"metacheck"`, or `""`), and
 #'   `termAccession` (the term IRI, or `""`).
 #' @export
+#' @examples
+#' stato_type_column("t")$annotationValue
+#' stato_type_column("p")$termAccession
 stato_type_column <- function(header, call_fn = NULL) {
   key <- tolower(trimws(header %||% ""))
   # R's t.test prints its group means as "mean in group <level>" (and a paired

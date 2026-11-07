@@ -91,7 +91,7 @@ code_read <- function(file_path) {
   }
   text <- to_utf8(enc)
   if (is.na(text)) text <- to_utf8("latin1")   # an encoding name iconv() does not know
-  text <- sub("^﻿", "", text)             # a byte order mark
+  text <- sub("^\uFEFF", "", text)             # a byte order mark
   file_lines <- strsplit(text, "\r\n|\r|\n")[[1]]
   # Remove any NA entries resulting from failed conversions
   file_lines <- file_lines[!is.na(file_lines)]
@@ -750,7 +750,8 @@ code_lang <- function(file_name) {
 
     dest <- .repo_cache_path(all_files$repo_url[i],
                              paste0(all_files$file_path[i] %||% all_files$file_name[i],
-                                    ".contents"))
+                                    ".contents"),
+                             cache = cache)
     # An archive within the download budget may be fetched whole, once,
     # instead of by byte range, whenever that is cheaper (see
     # .zip_fetch_members()) -- this used to be done for Dryad only. Dryad
@@ -893,6 +894,11 @@ code_extract_r <- function(file_path = NULL, save_path = NULL, documentation = 0
 #' @returns a character vector of source lines (empty when the file has
 #'   no code cells or is not parseable JSON)
 #' @export
+#' @examples
+#' nb <- '{"cells": [{"cell_type": "code", "source": ["import pandas as pd"]},
+#'   {"cell_type": "code", "source": ["df = pd.read_csv(\'data.csv\')"]},
+#'   {"cell_type": "markdown", "source": ["# Notes"]}]}'
+#' code_extract_py(text = nb)
 code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
   if (is.null(file_path) & is.null(text)) {
     stop("You must specify one of file_path or text")
@@ -984,6 +990,10 @@ code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
 #' @returns a character vector of Python source lines (empty when the
 #'   document has no Python chunks)
 #' @export
+#' @examples
+#' qmd <- c("---", "title: Demo", "---", "Some text.", "```{python}",
+#'          "x = [1, 2, 3]", "print(sum(x))", "```")
+#' code_extract_qmd_py(text = qmd)
 code_extract_qmd_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
   if (is.null(file_path) & is.null(text)) {
     stop("You must specify one of file_path or text")
@@ -2508,6 +2518,96 @@ code_packages <- function(packages) {
   out
 }
 
+#' Calls that open a file for writing, blanked out
+#'
+#' Python's `open()` and MATLAB's `fopen()` read a file or write one, decided
+#' only by their mode argument. [code_file_refs()] took the file name in every
+#' such call as an input, so `open("out.txt", "w")` was reported as a missing
+#' file when the script itself creates it. This replaces the text of each
+#' call that writes with spaces, so its file name is not found; the lines and
+#' their number stay as they were. A call over several lines is judged as a
+#' whole.
+#'
+#' The mode is the second argument without a name, or (Python) `mode =`. The
+#' default modes are those that create the file: Python's `w`, `a` and `x`,
+#' MATLAB's `w` and `a`. `r+` changes a file that must already exist, so it is
+#' left as an input; [.py_open_writes()] passes its own modes, which count `r+`.
+#'
+#' @param code_text the lines of one file, comments removed
+#' @param lang the language; only `"Python"` and `"MATLAB"` are changed
+#' @param mode_regex the modes that count as a write, matched against the mode
+#'   argument with its quotes
+#'
+#' @returns `code_text`, with each writing call's text replaced by spaces
+#' @keywords internal
+.code_blank_write_opens <- function(code_text, lang, mode_regex = NULL) {
+  call_regex <- switch(lang, Python = "\\bopen\\s*\\(", MATLAB = "\\bfopen\\s*\\(", NULL)
+  if (is.null(call_regex) || length(code_text) == 0) return(code_text)
+  mode_regex <- mode_regex %||% switch(lang,
+    Python = "^(['\"])(?=[^'\"]*[wax])[rwaxbt+]+\\1$",
+    MATLAB = "^(['\"])[wWaA][+tb]*\\1$")
+  joined <- paste(code_text, collapse = "\n")
+  starts <- gregexpr(call_regex, joined, perl = TRUE)[[1]]
+  if (starts[1] == -1) return(code_text)
+  chars <- strsplit(joined, "", fixed = TRUE)[[1]]
+  first <- starts + attr(starts, "match.length")   # first character after "("
+  blank <- logical(length(chars))
+  for (k in seq_along(starts)) {
+    # the call's closing parenthesis, skipping quoted text and nested brackets
+    depth <- 1L; in_str <- NA_character_; end <- NA_integer_; i <- first[k]
+    while (i <= length(chars)) {
+      ch <- chars[i]
+      if (!is.na(in_str)) {
+        if (ch == "\\") i <- i + 1L
+        else if (ch == in_str) in_str <- NA_character_
+      } else if (ch %in% c("'", '"')) in_str <- ch
+      else if (ch %in% c("(", "[", "{")) depth <- depth + 1L
+      else if (ch %in% c(")", "]", "}")) {
+        depth <- depth - 1L
+        if (depth == 0L) { end <- i; break }
+      }
+      i <- i + 1L
+    }
+    if (is.na(end) || end == first[k]) next
+    args <- vapply(.repro_split_args(paste(chars[first[k]:(end - 1L)], collapse = "")),
+                   function(a) trimws(a$text), character(1))
+    named <- grepl("^[A-Za-z_][A-Za-z0-9_]*\\s*=(?!=)", args, perl = TRUE)
+    is_mode <- named & grepl("^mode\\s*=", args)
+    mode <- if (any(is_mode)) sub("^mode\\s*=\\s*", "", args[is_mode][1])
+            else args[!named][2]
+    if (!is.na(mode) && grepl(mode_regex, mode, perl = TRUE))
+      blank[starts[k]:end] <- TRUE
+  }
+  if (!any(blank)) return(code_text)
+  chars[blank & chars != "\n"] <- " "
+  # the "\n" added keeps a last empty line, which strsplit() would drop
+  strsplit(paste0(paste(chars, collapse = ""), "\n"), "\n", fixed = TRUE)[[1]]
+}
+
+#' Mplus's SAVEDATA command, blanked out
+#'
+#' Mplus names its input with `FILE =` under `DATA:`, and the file it writes
+#' with `FILE =` under `SAVEDATA:`. [code_file_refs()] took both as inputs, so
+#' a file of factor scores the model writes was reported as missing. This
+#' empties every line from `SAVEDATA:` up to the next command.
+#'
+#' @param code_text the lines of one Mplus input, comments removed
+#'
+#' @returns `code_text`, with the lines of the SAVEDATA command made empty
+#' @keywords internal
+.code_blank_mplus_savedata <- function(code_text) {
+  if (length(code_text) == 0) return(code_text)
+  header <- paste0("^\\s*(TITLE|DATA(\\s+[A-Za-z]+)*|VARIABLE|DEFINE|ANALYSIS|",
+                   "MODEL(\\s+[A-Za-z]+)*|OUTPUT|SAVEDATA|PLOT|MONTECARLO)\\s*:")
+  cmd <- toupper(trimws(sub(paste0(header, ".*"), "\\1", code_text, perl = TRUE, ignore.case = TRUE)))
+  cmd[!grepl(header, code_text, perl = TRUE, ignore.case = TRUE)] <- NA
+  # each line belongs to the last command named on or above it
+  idx <- cummax(ifelse(is.na(cmd), 0L, seq_along(cmd)))
+  in_savedata <- idx > 0 & cmd[pmax(idx, 1L)] %in% "SAVEDATA"
+  code_text[in_savedata] <- ""
+  code_text
+}
+
 #' Get files referenced in code
 #'
 #' @param code_text the code text for a single file
@@ -2535,6 +2635,13 @@ code_file_refs <- function(code_text,
                            include_writes = FALSE) {
   lang <- match.arg(lang)
   code_text <- code_remove_comments(code_text, lang)
+  # Python's open() and MATLAB's fopen() are reading calls below, but with a
+  # writing mode they create the file, and Mplus's SAVEDATA names a file the
+  # model writes: outputs, left out unless writes are asked for
+  if (!isTRUE(include_writes)) {
+    code_text <- .code_blank_write_opens(code_text, lang)
+    if (identical(lang, "Mplus")) code_text <- .code_blank_mplus_savedata(code_text)
+  }
 
   # Examine files loaded, but missing in repo
   lang_load_regex <- list(
@@ -2617,6 +2724,11 @@ code_file_refs <- function(code_text,
       paste0("\\b(", x = _, ")\\s*\\(")
   )
   grepl_load <- lang_load_regex[[lang]]
+  # SAS, SPSS and Mplus ignore capitals: PROC IMPORT DATAFILE= and proc import
+  # datafile=, GET FILE= and get file=, FILE = and file = are the same command.
+  # The patterns above match only one way of writing them.
+  no_case <- lang %in% c("SAS", "SPSS", "Mplus")
+  if (no_case) grepl_load <- paste0("(?i)", grepl_load)
 
   # Write calls are *not* part of the default reference set: a written file is an
   # output, and the main consumer (code_check) reports referenced files that are
@@ -2637,11 +2749,11 @@ code_file_refs <- function(code_text,
     # generic "to_[A-Za-z_0-9]+" covers the whole family the same way. The
     # rest are named individually because they do not begin with "to_":
     # numpy (save/savetxt), pickle (dump), json (dump), matplotlib
-    # (savefig), and Python's own open(..., "w"/"a"/"wb") — open() is ALSO a
-    # read call (see the Python entry in lang_load_regex above), so a plain
-    # open() hit is not itself evidence of a write; it is only treated as one
-    # when the SAME line also carries a write/append mode flag, checked
-    # below via write_mode_pattern rather than listed in this regex.
+    # (savefig). Python's own open(..., "w"/"a"/"wb") is not listed: open() is
+    # ALSO a read call (see the Python entry in lang_load_regex above), decided
+    # by its mode argument. Without include_writes its writing calls are
+    # blanked out above (.code_blank_write_opens()); with it, repro_file_io()
+    # sorts each open() by its mode (.py_open_writes()).
     Python = c(
       "to_[A-Za-z_0-9]+",
       "savetxt",
@@ -2728,7 +2840,8 @@ code_file_refs <- function(code_text,
   extra <- character(0)
   caps <- lang_unquoted_captures[[lang]]
   for (cap in caps) {
-    m <- regexec(cap$regex, unquoted_lines, perl = TRUE)
+    m <- regexec(if (no_case) paste0("(?i)", cap$regex) else cap$regex,
+                 unquoted_lines, perl = TRUE)
     reg <- regmatches(unquoted_lines, m)
     if (length(reg) > 0) {
       vals <- vapply(reg, function(x) if (length(x) >= cap$group + 1) x[cap$group + 1] else NA_character_, character(1))

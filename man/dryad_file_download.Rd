@@ -6,7 +6,7 @@
 \usage{
 dryad_file_download(
   dryad_doi,
-  download_to = ".",
+  download_to,
   max_file_size = 10,
   max_download_size = 100,
   unzip_types = NULL,
@@ -16,7 +16,8 @@ dryad_file_download(
 \arguments{
 \item{dryad_doi}{the dataset's DOI, or a URL containing it}
 
-\item{download_to}{path to download to}
+\item{download_to}{path to download to; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{max_file_size}{maximum file size to download (in MB) - set to NULL or
 Inf for no restrictions}
@@ -63,9 +64,13 @@ as \code{\link[=dataverse_file_download]{dataverse_file_download()}} and \code{\
 }
 \examples{
 \dontrun{
-  dryad_file_download("10.5061/dryad.j1fd7")
+# Dryad needs a client id and secret for downloads (see dryad_auth())
+dl <- dryad_file_download("10.5061/dryad.j1fd7",
+                          download_to = file.path(tempdir(), "dryad"))
 
-  # take only the data files out of any zip in the dataset
-  dryad_file_download("10.5061/dryad.j1fd7", unzip_types = "data")
+# take only the data files out of any zip in the dataset
+dl <- dryad_file_download("10.5061/dryad.j1fd7",
+                          download_to = file.path(tempdir(), "dryad"),
+                          unzip_types = "data")
 }
 }

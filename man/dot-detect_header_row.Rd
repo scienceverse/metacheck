@@ -38,4 +38,9 @@ The header is the SMALLEST \code{h} such that every row above \code{h} is junk, 
 below \code{h} is type-consistent, and promoting \code{h} does not make the typing worse.
 When no leading row is junk, the header is row 1 (already correct).
 }
+\examples{
+rows <- list(c("Exported by lab software", ""), c("id", "rt"),
+             c("1", "512"), c("2", "640"), c("3", "498"))
+.detect_header_row(rows)$header_row
+}
 \keyword{internal}

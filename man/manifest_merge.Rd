@@ -28,3 +28,9 @@ The rule that makes this safe against run order: each writer's \code{patch} must
 contain only the keys it owns. \code{data_check} patches everything except \code{code};
 \code{code_check} patches only \code{code}. Overlapping keys would still clobber.
 }
+\examples{
+path <- tempfile(fileext = ".manifest.json")
+writeLines("{}", path)
+manifest_merge(path, list(paper_id = "stroop_effect"))
+readLines(path)
+}

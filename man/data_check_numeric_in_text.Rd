@@ -25,4 +25,6 @@ error. A \emph{fully} numeric text column is not flagged here: the file readers
 auto-type clean numeric columns, so an all-numeric character column would
 indicate a reader problem rather than a data problem.
 }
-\keyword{internal}
+\examples{
+data_check_numeric_in_text(c("1", "2", "3", "see note", "5"))$problem
+}

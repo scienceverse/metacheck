@@ -23,8 +23,12 @@ and gives a count to validate any file grouping against (see
 already extracted -- so it runs BEFORE any LLM.
 }
 \details{
-Only mentions of the form \if{html}{\out{<word>}}<optional space/punct>\if{html}{\out{<number>}}\if{html}{\out{<optional
-single letter>}} count; a bare "the experiment" names no specific study and is
+Only mentions of the form \verb{<word><optional space/punct><number><optional single letter>} count; a bare "the experiment" names no specific study and is
 ignored. Sorted by number then letter, so the order is stable.
+}
+\examples{
+paper <- demopaper()
+paper$text$text[1] <- "We report Study 1, Study 2a and a pilot (Pilot 1)."
+data_study_roster(paper)
 }
 \keyword{internal}

@@ -57,6 +57,10 @@
 #'   returns, plus these three fields. `call_fn` lets [stato_type_column()]
 #'   resolve statistic letters that are ambiguous in the printed output alone.
 #' @export
+#' @examples
+#' out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+#' res <- read_r_output(out)
+#' res[[1]]$data
 read_r_output <- function(text, source_label = NA_character_, code_lines = NULL) {
   if (is.null(text)) return(list())
   # A captured subprocess console can carry ANSI SGR colour codes (e.g.

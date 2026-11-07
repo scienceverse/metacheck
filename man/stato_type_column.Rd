@@ -34,3 +34,7 @@ class, \code{"metacheck"} for a minted term (see \code{.MC_STAT_LABELS} for what
 one means and why STATO has no equivalent), or \code{""} when the header could
 not be typed at all.
 }
+\examples{
+stato_type_column("t")$annotationValue
+stato_type_column("p")$termAccession
+}

@@ -9,8 +9,10 @@ export_omv_html(path, out = NULL)
 \arguments{
 \item{path}{path to a \code{.omv} file}
 
-\item{out}{path to write the HTML file to; defaults to \code{path} with its
-extension replaced by \code{.html}, written alongside the source file}
+\item{out}{path to write the HTML file to. Without it, the file is named
+after \code{path} with the extension \code{.html} and written to the R session's
+temporary folder, which R removes when the session ends (CRAN does not
+allow writing elsewhere unless you ask for it); a message says where.}
 }
 \value{
 the path written to, invisibly
@@ -24,4 +26,9 @@ the per-analysis \verb{resources/} folders) as a base64 \verb{data:} URI, so the
 result is a single, portable, self-contained file that looks exactly like
 jamovi's own output window, with no external image files to keep alongside
 it.
+}
+\examples{
+omv <- system.file("extdata", "sample.omv", package = "metacheck")
+html <- export_omv_html(omv, file.path(tempdir(), "sample_omv.html"))
+file.exists(html)
 }

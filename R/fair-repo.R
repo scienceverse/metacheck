@@ -73,8 +73,9 @@
 #' * `CHANGES.md`, and a `CHANGES.md` in each study folder that has none.
 #'
 #' @param path the folder to convert
-#' @param output_dir the folder to write into; created if needed. Defaults to
-#'   the folder's own name with `_FAIR` appended, in the working directory.
+#' @param output_dir the folder to write into; created if needed. There is no
+#'   default, because CRAN does not allow writing into the working directory
+#'   unless you ask for it.
 #' @param paper optionally, the paper that uses these files (see [read()]),
 #'   for its title, authors, DOI, CRediT roles and funding. Its links are not
 #'   followed. Without it, these are listed in the README as still to be
@@ -103,14 +104,14 @@
 #'   only `output_dir`, the counts, and `existed = TRUE`.
 #' @export
 #' @examples
-#' \dontrun{
-#' # convert a folder; the copy is written to "my_study_FAIR"
-#' FAIR_repo("my_study")
-#'
-#' # with the paper, for its title, authors and funding
-#' FAIR_repo("my_study", paper = read("my_study_paper.xml"))
+#' # convert the demo repository bundled with metacheck, with its paper for
+#' # the title, authors and funding; the copy is written to a temporary folder
+#' \donttest{
+#' out <- file.path(tempdir(), "stroop_effect_paper_FAIR")
+#' FAIR_repo(demofile("repo"), output_dir = out,
+#'           paper = demopaper("stroop_effect"))
 #' }
-FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
+FAIR_repo <- function(path, output_dir, paper = NULL,
                       overwrite = FALSE, execute = FALSE) {
   if (!is.character(path) || length(path) != 1 || is.na(path))
     stop("`path` must be a single path to a folder", call. = FALSE)
@@ -118,7 +119,7 @@ FAIR_repo <- function(path, output_dir = NULL, paper = NULL,
   if (!is.null(paper) && !.is_paper(paper))
     stop("`paper` must be a single paper object (see read())", call. = FALSE)
   full_path <- normalizePath(path, winslash = "/", mustWork = TRUE)
-  if (is.null(output_dir)) output_dir <- paste0(basename(full_path), "_FAIR")
+  force(output_dir)   # there is no default folder
   out_full <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
   if (identical(out_full, full_path) || startsWith(out_full, paste0(full_path, "/")))
     stop("`output_dir` must be outside the folder being converted", call. = FALSE)

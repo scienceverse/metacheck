@@ -18,4 +18,6 @@ list(problem, message, values)
 \description{
 Flag a constant or near-constant column
 }
-\keyword{internal}
+\examples{
+data_check_constant(rep(1, 40))$message
+}

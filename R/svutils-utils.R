@@ -3,6 +3,7 @@
 #' This infix function makes it easy to replace `NULL`s with a default value. It's inspired by the way that Ruby's or operation (`||`) works.
 #'
 #' @param x,y If `x` is NULL, will return `y`; otherwise returns `x`.
+#' @returns `y` if `x` is `NULL`, otherwise `x`
 #' @export
 #' @keywords internal
 #' @name op-null-default
@@ -29,6 +30,7 @@ if (exists("%||%", envir = baseenv())) {
 #' typically aborts and silently drops the whole record it belongs to.
 #'
 #' @param x,y If `x` is `NULL` or has length 0, will return `y`; otherwise returns `x`.
+#' @returns `y` if `x` is `NULL` or has length 0, otherwise `x`
 #' @export
 #' @keywords internal
 #' @name op-empty-default
@@ -54,6 +56,8 @@ if (exists("%||%", envir = baseenv())) {
 #' @param x For each `x[[i]]` if a value in `replace`, return `y[[i]]`; otherwise return `x[[i]]`.
 #' @param y Replacement value(s); if not the same length as `x`, then values will be recycled
 #' @param replace values in `x` to replace
+#' @returns `x`, with each `NULL` element and each value in `replace` replaced
+#'   by the matching value of `y`
 #' @export
 #' @keywords internal
 #' @examples
@@ -79,7 +83,6 @@ rep_if <- function(x, y, replace = NULL) {
 #'
 #' @returns the current option value (logical)
 #' @export
-#' @keywords internal
 #'
 #' @examples
 #' verbose()

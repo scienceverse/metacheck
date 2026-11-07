@@ -23,4 +23,11 @@ a data frame of information
 \description{
 Retrieve info from the OSF by ID
 }
+\examples{
+\donttest{
+if (online("api.osf.io")) {
+  .osf_info("pngda")
+}
+}
+}
 \keyword{internal}

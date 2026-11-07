@@ -1630,6 +1630,41 @@ test_that("the load check script parses and runs from R 3.6", {
   expect_false(any(grepl("deparse1|\\|>", lines)))
 })
 
+test_that(".repro_docker_uid runs the containers as the user running R on Linux", {
+  withr::local_options(metacheck.docker_user = "123:456")
+  expect_equal(.repro_docker_uid(), "123:456")
+  withr::local_options(metacheck.docker_user = NULL)
+  expected <- "1000:1000"
+  if (identical(Sys.info()[["sysname"]], "Linux")) {
+    ids <- c(system2("id", "-u", stdout = TRUE), system2("id", "-g", stdout = TRUE))
+    if (ids[1] != "0") expected <- paste(ids, collapse = ":")
+  }
+  expect_equal(.repro_docker_uid(), expected)
+})
+
+test_that(".repro_docker_share opens a folder only to another user, and not through links", {
+  skip_if_not(identical(Sys.info()[["sysname"]], "Linux"), "folder permissions are Linux's")
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "sub"))
+  writeLines("x", file.path(d, "sub", "a.csv"))
+  outside <- withr::local_tempfile()
+  writeLines("y", outside)
+  Sys.chmod(outside, "600", use_umask = FALSE)
+  file.symlink(outside, file.path(d, "link"))
+  before <- file.mode(file.path(d, "sub"))
+  # the containers run as the user running R: nothing changes
+  withr::local_options(metacheck.docker_user = NULL)
+  .repro_docker_share(d)
+  expect_equal(file.mode(file.path(d, "sub")), before)
+  # another user: the folders and files are opened, the linked file is not
+  own <- paste(system2("id", "-u", stdout = TRUE), system2("id", "-g", stdout = TRUE), sep = ":")
+  withr::local_options(metacheck.docker_user = if (own == "1000:1000") "1001:1001" else "1000:1000")
+  expect_equal(.repro_docker_bind(d, "/sandbox"), paste0(d, ":/sandbox"))
+  expect_equal(format(file.mode(c(d, file.path(d, "sub")))), c("777", "777"))
+  expect_equal(format(file.mode(file.path(d, "sub", "a.csv"))), "666")
+  expect_equal(format(file.mode(outside)), "600")
+})
+
 test_that("repro_install_deps_docker installs recorded versions in a real container", {
   skip_if_quick()
   skip_if_offline()
@@ -3808,4 +3843,335 @@ test_that("Stan programs held in R code get the newer syntax, and other R text i
   expect_equal(st$txt[3], "target += poisson_lpmf(n | lambda);")
   # no Stan, nothing changed
   expect_equal(.repro_upgrade_stan_in_r(c('a <- "x', 'y"'))$changes, character(0))
+})
+
+test_that("a path written into a script gets the changed name its copy has (#575, item 1)", {
+  # 10.1002/2688-8319.12229: the copy went to "x_ y/", the script read "x: y/"
+  rw <- data.frame(ref = c("Data/x.csv", "a: b/y.csv", "old/"), basename = c("x.csv", "y.csv", "old"),
+                   matched = TRUE, target = c("Study: one/Data/x.csv", "a: b/y.csv", "Folder: two/"),
+                   ambiguous = FALSE, n_candidates = 1L, is_call = FALSE, as_written = c(FALSE, TRUE, FALSE))
+  out <- .repro_apply_rewrites(c('read.csv("Data/x.csv")', "read.csv('a: b/y.csv')", 'd <- "old/"'), rw)
+  expect_equal(out, c('read.csv("Study_ one/Data/x.csv")', "read.csv('a_ b/y.csv')", 'd <- "Folder_ two/"'))
+  # a path kept as written without such a character stays as it is
+  rw2 <- data.frame(ref = "data/x.csv", basename = "x.csv", matched = TRUE, target = "data/x.csv",
+                    ambiguous = FALSE, n_candidates = 1L, is_call = FALSE, as_written = TRUE)
+  expect_equal(.repro_apply_rewrites('read.csv("data/x.csv")', rw2), 'read.csv("data/x.csv")')
+})
+
+test_that("of two files with one name, the one outside another project is chosen (#575, item 3)", {
+  # 10.1111/1365-2656.13220: Data/ and NRSA-CA-QC/data/ both hold the file;
+  # NRSA-CA-QC/ has scripts of its own
+  plan <- .repro_package_plan(data.frame(
+    file_name = c("n.csv", "n.csv", "a.Rmd", "b.Rmd"),
+    file_path = c("Data/n.csv", "QC/data/n.csv", "R Code/1/a.Rmd", "QC/R/b.Rmd")))
+  rw <- repro_rewrite_paths('d <- read.csv("n.csv")', "a.Rmd", plan, script_path = "R Code/1/a.Rmd")
+  expect_false(rw$ambiguous)
+  expect_equal(rw$target, "Data/n.csv")
+  expect_equal(.repro_nearest_copy(c("Data/n.csv", "QC/data/n.csv"), "R Code/1/a.Rmd", plan$current_path), 1L)
+  # two studies, each with scripts, and the script above both: no guess
+  expect_equal(.repro_nearest_copy(c("s1/data/n.csv", "s2/data/n.csv"), "main.R",
+                                   c("main.R", "s1/x.R", "s2/y.R")), integer(0))
+  # the copy whose folder shares the most with the script's own
+  expect_equal(.repro_nearest_copy(c("other/n.csv", "code/data/n.csv"), "code/a.R", "code/a.R"), 2L)
+})
+
+test_that("a name still ambiguous is counted, not kept as written (#575, item 3)", {
+  plan <- .repro_package_plan(data.frame(file_name = c("n.csv", "n.csv", "m.R"),
+                                         file_path = c("s1/n.csv", "s2/n.csv", "m.R")))
+  rw <- repro_rewrite_paths('d <- read.csv("n.csv")', "m.R", plan, script_path = "m.R")
+  expect_true(rw$ambiguous)
+  kept <- .repro_keep_working_refs(rw, plan, "m.R", ".")
+  expect_true(kept$ambiguous)
+  expect_false(kept$as_written)
+})
+
+test_that("a file the deposit holds elsewhere is copied to where a script looked (#575, item 2)", {
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "code")); dir.create(file.path(root, "b"))
+  dir.create(file.path(root, "_lib", "p"), recursive = TRUE)
+  writeLines("a,b", file.path(root, "HMSC_YXdata.csv"))
+  writeLines("1", file.path(root, "dup.csv")); writeLines("1", file.path(root, "b", "dup.csv"))
+  writeLines("1", file.path(root, "two.csv")); writeLines("2", file.path(root, "b", "two.csv"))
+  writeLines("x", file.path(root, "_lib", "p", "lib.csv"))
+  before <- .repro_sandbox_names(root)
+  expect_false(any(grepl("^_lib/", before)))   # the R library is no file of the deposit
+  res <- data.frame(file_name = c("S1.R", "S2.R", "S3.R", "S4.R", "S5.R"), outcome = "errored",
+                    error = c("Error in file(file, \"rt\") : cannot open the connection",
+                              "cannot open file './data/dup.csv': No such file or directory",
+                              "cannot open file 'two.csv': No such file or directory",
+                              "cannot open file '../../out.csv': No such file or directory",
+                              "cannot open file 'lib.csv': No such file or directory"),
+                    stderr = c("cannot open file './data/HMSC_YXdata.csv': No such file or directory", "", "", "", ""))
+  run_tbl <- data.frame(file_name = res$file_name, run_dir = file.path(root, "code"))
+  placed <- .repro_place_from_deposit(res, run_tbl, root, before)
+  # one file of the name, or identical copies; not two different files, a path
+  # outside the sandbox, or a file of the library
+  expect_equal(placed$script, c("S1.R", "S2.R"))
+  expect_equal(placed$to, c("code/data/HMSC_YXdata.csv", "code/data/dup.csv"))
+  expect_true(file.exists(file.path(root, "code", "data", "HMSC_YXdata.csv")))
+  expect_match(.repro_placed_text(placed), "we copied them there", fixed = TRUE)
+  # placed once: the second time there is nothing left to copy
+  expect_equal(nrow(.repro_place_from_deposit(res, run_tbl, root, before)), 0)
+  expect_equal(.repro_placed_text(placed[0, ]), "")
+})
+
+test_that("the files sf and terra could not open are read from their errors (#575, item 2)", {
+  msgs <- c("Error: Cannot open \"data/x.shp\"; The file doesn't seem to exist.",
+            "Error: [rast] file does not exist: data/y.tif")
+  expect_setequal(.repro_unopened_files(msgs, full = TRUE), c("data/x.shp", "data/y.tif"))
+})
+
+test_that("a folder of the deposit is made when its file could not be copied (#575, item 5)", {
+  root <- withr::local_tempdir()
+  plan <- data.frame(file_name = c(".dummy", "x.csv"), target_path = c("data/raw/.dummy", "data/x.csv"))
+  st <- data.frame(file_name = c(".dummy", "x.csv"), file_location = NA_character_)
+  ml <- repro_materialize_layout(plan, st, root)
+  expect_false(any(attr(ml, "materialised")$ok))
+  expect_true(dir.exists(file.path(root, "data", "raw")))
+})
+
+test_that("a path given to here() counts from where here() starts (#575, item 6)", {
+  # 10.1111/1365-2656.12852: here("JohnstoneStrait/dateModPars.csv") from
+  # scripts/ became here("../data/dateModPars.csv"), above the top
+  plan <- .repro_package_plan(data.frame(file_name = c("dateModPars.csv", "sim.R"),
+                                         file_path = c("p/data/dateModPars.csv", "p/scripts/sim.R")))
+  rw <- repro_rewrite_paths('d <- read.csv(here::here("JohnstoneStrait/dateModPars.csv"))', "sim.R", plan)
+  expect_true(rw$in_here)
+  kept <- .repro_keep_working_refs(rw, plan, "p/scripts/sim.R", "p/scripts", here_dir = ".")
+  expect_equal(kept$target, "p/data/dateModPars.csv")
+  # an .Rproj above the run folder is where here() starts
+  plan2 <- .repro_package_plan(data.frame(file_name = c("d.csv", "p.Rproj"), file_path = c("p/data/d.csv", "p/p.Rproj")))
+  expect_equal(.repro_here_start("p/scripts", NA, plan2), "p")
+  expect_equal(.repro_here_start("p/scripts", "q", plan2), "q")
+  expect_equal(.repro_here_start("p/scripts", NA, plan), ".")
+  # here("../data/x.csv") from scripts/ names data/x.csv
+  code <- list(a.R = 'd <- read.csv(here("../data/dateModPars.csv"))')
+  expect_equal(unname(.repro_here_roots(code, "p/scripts", plan)), "p/scripts")
+})
+
+test_that("the reason comes from the error that stopped the script (#575, item 10)", {
+  # 10.1111/1365-2435.12953: a warning on a file, an error on an object
+  se <- paste("Error in eval(ei, envir) : object 'egg_hatching_date' not found",
+              "Calls: source -> withVisible -> eval -> eval",
+              "In addition: Warning message:",
+              "In tiff(\"C://your.file.directory/Figure1.tiff\") : TIFFOpen: C://your.file.directory/Figure1.tiff: No such file or directory",
+              "Execution halted", sep = "\n")
+  expect_equal(.repro_failure_reason("errored", se), "undefined")
+  # Stan's "variable does not exist" is no file
+  expect_equal(.repro_failure_reason("errored", "Error in eval(e) : Exception: variable does not exist; processing stage=data initialization"),
+               "other")
+  # "cannot open the connection" names no file: the warning that does counts
+  conn <- "Error in file(file, \"rt\") : cannot open the connection\nIn addition: Warning message:\ncannot open file 'x.csv': No such file or directory"
+  expect_equal(.repro_failure_reason("errored", conn), "file")
+  expect_equal(.repro_failure_reason("errored", "Error: `path` does not exist: 'x.xlsx'"), "file")
+  expect_equal(.repro_failure_reason("errored", "FileNotFoundError: [Errno 2] No such file or directory: 'x.csv'"), "file")
+})
+
+test_that("a program a script could not start is the reason environment (#575, item 7)", {
+  mark <- paste("sh: 1: mark: not found",
+                "Error in run.mark.model(model) : ",
+                "Output file does not exist. Unable to find or run mark.exe",
+                "Execution halted", sep = "\n")
+  rsync <- paste("  File \"/usr/local/lib/python3.11/subprocess.py\", line 1955, in _execute_child",
+                 "FileNotFoundError: [Errno 2] No such file or directory: 'rsync'", sep = "\n")
+  expect_equal(.repro_missing_program(c(mark, rsync, "Error: x", NA)), c("mark", "rsync", NA, NA))
+  expect_equal(.repro_failure_reason(c("errored", "errored"), c(mark, rsync)), c("environment", "environment"))
+  # a missing data file read by Python is still a file
+  expect_true(is.na(.repro_missing_program("FileNotFoundError: [Errno 2] No such file or directory: 'data'")))
+  tb <- data.frame(file_name = "m.R", run_order = 1L, outcome = "errored", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "m.R", outcome = "errored", error = "", stderr = mark)
+  expect_match(.repro_checklist_section(tb, rr), "<code>m.R</code> starts <code>mark</code>.", fixed = TRUE)
+})
+
+test_that("a file renamed before it was shared is named, not used (#575, item 11)", {
+  st <- data.frame(file_name = c("Plants.txt", "2_box.data.select.csv", "FSVideoData.csv",
+                                 "Data_DRYAD.xlsx", "data_clean.csv", "abcdef.csv"))
+  out <- repro_missing_inputs(c("Plants2024.txt", "box.data.select.csv", "VideoData.csv", "var.csv", "x.csv", "abc.csv"),
+                              NULL, st)
+  expect_equal(out$similar_to[match(c("plants2024.txt", "box.data.select.csv", "videodata.csv"), out$basename)],
+               c("plants.txt", "2_box.data.select.csv", "fsvideodata.csv"))
+  # nothing alike, or a name too short to tell
+  expect_true(all(is.na(out$similar_to[match(c("var.csv", "x.csv", "abc.csv"), out$basename)])))
+  # the report names the deposit's file for the script that stopped on it
+  tb <- data.frame(file_name = "p.R", run_order = 1L, outcome = "errored", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = "plants2024.txt")
+  rr <- data.frame(file_name = "p.R", outcome = "errored", error = "",
+                   stderr = "Error in file(file, \"rt\") : cannot open the connection\nIn addition: Warning message:\ncannot open file 'Plants2024.txt': No such file or directory")
+  expect_match(.repro_checklist_section(tb, rr, missing_inputs = out),
+               "<code>p.R</code> reads <code>Plants2024.txt</code>; your deposit holds <code>plants.txt</code>.", fixed = TRUE)
+})
+
+test_that("how to make the code run is given per problem, in the order to fix them (#575)", {
+  tbl <- data.frame(file_name = c("a.R", "b.R", "c.R", "d.R", "e.R", "f.R", "g.R", "h.R", "i.R"),
+                    writes = c(NA, NA, "y.csv", NA, NA, NA, NA, NA, NA))
+  rr <- data.frame(file_name = tbl$file_name, error = "",
+                   stderr = c("Error in file(file, \"rt\") : cannot open the connection\nIn addition: Warning message:\ncannot open file '/Users/me/x.csv': No such file or directory",
+                              "Error in file(file, \"rt\") : cannot open the connection\nIn addition: Warning message:\ncannot open file 'y.csv': No such file or directory",
+                              "Error in f() : object 'z' not found",
+                              "Error: `funs()` was deprecated in dplyr 0.8.0 and is now defunct.",
+                              "Error in library(rgdal) : there is no package called 'rgdal'",
+                              "Error in `$<-.data.frame`(x, a, value = 1) : replacement has 1 row, data has 0",
+                              "", "", ""))
+  outcome <- c("errored", "errored", "errored", "errored", "dependency_unavailable", "errored",
+               "needs_a_person", "timed_out", "ran_ok")
+  ir <- data.frame(package = "rgdal", installed = FALSE, category = "cran_unavailable")
+  adv <- .repro_advice(tbl, rr, outcome, data.frame(basename = character(0)), ir, timeout = 3000)
+  # a script that needs another script's file comes first: that one is fixed first
+  expect_match(adv[1], "**A script needs a file that another script should have made.**", fixed = TRUE)
+  expect_match(adv[1], "<code>b.R</code> needs <code>y.csv</code>, which <code>c.R</code> makes.", fixed = TRUE)
+  expect_match(adv, "**A script uses a location that exists only on your computer.**\n\n- <code>a.R</code> reads <code>/Users/me/x.csv</code>.",
+               fixed = TRUE, all = FALSE)
+  expect_match(adv, "1. Add the file to the deposit.", fixed = TRUE, all = FALSE)
+  expect_match(adv, "**Your code was written for older versions of its packages.**", fixed = TRUE, all = FALSE)
+  expect_match(adv, "<code>rgdal</code> was removed from CRAN in 2023 and can no longer be installed. Replace it with <code>sf</code> or <code>terra</code>",
+               fixed = TRUE, all = FALSE)
+  expect_match(adv, "- <code>c.R</code>: <code>z</code>", fixed = TRUE, all = FALSE)
+  expect_match(adv, "**A script runs longer than our limit of 50 minutes.**", fixed = TRUE, all = FALSE)
+  expect_match(adv, "**A script waits for a person", fixed = TRUE, all = FALSE)
+  # a cause it cannot tell is said to be unknown, last
+  expect_match(adv[length(adv)], paste0("**Metacheck can't automatically establish what caused the error, ",
+                                         "or how it should be improved.**\n\n- <code>f.R</code>"), fixed = TRUE)
+  # every script that did not run through is in a block, the one that ran in none
+  expect_equal(attr(adv, "scripts"), 1:8)
+  # with recorded versions, a run with them is suggested instead of recording them
+  rec <- .repro_advice(tbl, rr, outcome, data.frame(basename = character(0)), ir, versions_recorded = TRUE)
+  expect_match(rec, "Your deposit records which package versions you used", fixed = TRUE, all = FALSE)
+  expect_false(any(grepl("renv::init()</code> in your project", rec, fixed = TRUE)))
+  # nothing failed, nothing to say
+  expect_no_warning(none <- .repro_advice(tbl[9, ], rr[9, ], "ran_ok", data.frame(basename = character(0))))
+  expect_length(none, 0)
+})
+
+test_that("the checklist says how to make the code run on another computer (#575)", {
+  tb <- data.frame(file_name = "m.R", run_order = 1L, outcome = "errored", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "m.R", outcome = "errored", error = "", stderr = "Error in f() : object 'z' not found")
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "### How to make your code run on another computer", fixed = TRUE)
+  expect_match(out, "**A script uses something it does not create or load itself.**", fixed = TRUE)
+  ok <- .repro_checklist_section(tb, transform(rr, outcome = "ran_ok", stderr = ""))
+  expect_false(grepl("How to make your code run", ok, fixed = TRUE))
+})
+
+test_that("a setwd() call written over several lines is taken out whole (#578, item 1)", {
+  # 10.1111/1365-2656.13801: only the first line was replaced, and R stopped on ")"
+  sw <- .repro_neutralise_setwd(c("setwd(", '  "SET WORKING DIRECORY HERE"', ")", "x <- 1"))
+  expect_length(sw$txt, 4)
+  expect_no_error(parse(text = sw$txt))
+  expect_equal(sw$n, 1)
+  expect_equal(sw$paths, "SET WORKING DIRECORY HERE")
+  expect_equal(sw$txt[2:4], c('  # "SET WORKING DIRECORY HERE"', "# )", "x <- 1"))
+  # a call on one line, and brackets inside its text, are as before
+  one <- .repro_neutralise_setwd(c('setwd("a")', "y <- 2"))
+  expect_equal(one$txt[2], "y <- 2")
+  expect_equal(one$paths, "a")
+  br <- .repro_neutralise_setwd(c('setwd(paste0("a(", "b"))', "y <- 2"))
+  expect_equal(br$txt[2], "y <- 2")
+  # Python
+  py <- .repro_neutralise_setwd(c("os.chdir(", "    '/home/me/x'", ")", "y = 1"), "Python")
+  expect_equal(py$txt[2:4], c("    # '/home/me/x'", "# )", "y = 1"))
+  expect_equal(py$paths, "/home/me/x")
+})
+
+test_that("a folder a script lists is rewritten to where the deposit holds it (#578, item 2)", {
+  # 10.1111/1365-2435.14241: list.files() of a folder that is in a zip of the deposit
+  plan <- .repro_package_plan(data.frame(file_name = c("a.csv", "b.csv", "m.R"),
+    file_path = c("x.zip/top/ir_data/control_forage_data/a.csv", "x.zip/top/ir_data/control_forage_data/b.csv", "scripts/m.R")))
+  lf <- .repro_listed_folders('d <- list.files("../data/ir_data/control_forage_data/", full.names = TRUE)', plan, "scripts")
+  expect_equal(lf$target, "../x.zip/top/ir_data/control_forage_data/")
+  expect_equal(.repro_apply_rewrites('d <- list.files("../data/ir_data/control_forage_data/")', lf),
+               'd <- list.files("../x.zip/top/ir_data/control_forage_data/")')
+  # a folder that works as written stays
+  expect_equal(nrow(.repro_listed_folders('d <- list.files("../x.zip/top/ir_data/control_forage_data")', plan, "scripts")), 0)
+  # two folders with the same last parts: no guess
+  plan2 <- .repro_package_plan(data.frame(file_name = c("a.csv", "b.csv"),
+    file_path = c("s1/ir_data/control_forage_data/a.csv", "s2/ir_data/control_forage_data/b.csv")))
+  expect_equal(nrow(.repro_listed_folders('d <- list.files("../data/ir_data/control_forage_data/")', plan2, "scripts")), 0)
+  # a glob pattern, and Python
+  expect_equal(.repro_listed_folders('f <- Sys.glob("data/control_forage_data/*.csv")', plan, ".")$target,
+               "x.zip/top/ir_data/control_forage_data/*.csv")
+  py <- .repro_listed_folders(c('f = glob.glob("data/control_forage_data/*.csv")',
+                                'g = Path("data/control_forage_data").glob("*.csv")', 'h = Path("data/x.csv")'),
+                              plan, ".", "Python")
+  expect_equal(py$ref, c("data/control_forage_data/*.csv", "data/control_forage_data"))
+})
+
+test_that("a path under the folder of a removed setwd() counts from the working folder (#578, item 3)", {
+  # 10.1111/1365-2656.13449: setwd("C:\\specify_directory_here") and a model file in that folder
+  code <- c('setwd("C:\\\\proj")', 'x <- read.csv("C:\\\\proj\\\\data\\\\a.csv")', 'y <- "C:/PROJ/b.txt"',
+            'z <- "C:\\\\other\\\\c.csv"')
+  out <- .repro_strip_setwd_folder(code, .repro_neutralise_setwd(code)$paths)
+  expect_equal(out$txt[2:4], c('x <- read.csv("data/a.csv")', 'y <- "b.txt"', 'z <- "C:\\\\other\\\\c.csv"'))
+  expect_length(out$paths, 2)
+  rows <- .repro_slash_rows(data.frame(file_name = "a.R", slashes_fixed = "",
+                                       setwd_folder_removed = paste(out$paths, collapse = "; ")))
+  expect_equal(unique(rows$change_type), "path_rewrite")
+  # those rows are not Windows paths in the report
+  expect_null(.repro_slash_report(data.frame(file_name = "a.R", slashes_fixed = "",
+                                             setwd_folder_removed = paste(out$paths, collapse = "; "))))
+  # a relative setwd() folder is left alone
+  expect_length(.repro_strip_setwd_folder('x <- "data/a.csv"', "data")$paths, 0)
+})
+
+test_that("a folder in a variable made with paste0() becomes the run folder when its file is found (#578, item 4)", {
+  # 10.1111/1365-2435.14620: main_address = paste0("~/Library/.../"), set twice
+  expect_equal(.repro_simple_string_vars('a = paste0("~/x/")'), character(0))
+  expect_equal(unname(.repro_simple_string_vars('a = paste0("~/x/")', calls = TRUE)), "~/x/")
+  code <- c('main_address = paste0("~/x/")',
+            'd <- read_xlsx(file.path(main_address, "sub/a.xlsx"))',
+            'dir.create(file.path(main_address, "Outputs"))',
+            'main_address = "~/x"')
+  plan <- .repro_package_plan(data.frame(file_name = c("a.xlsx", "m.R"), file_path = c("D.zip/D/a.xlsx", "m.R")))
+  rw <- .repro_keep_working_refs(repro_rewrite_paths(code, "m.R", plan, script_path = "m.R"), plan, "m.R", ".")
+  fv <- .repro_folder_vars(code, plan, ".", rw = rw)
+  expect_true(all(fv$keep_pieces))
+  out <- .repro_apply_rewrites(code, .repro_apply_folder_vars(rw, fv))
+  expect_equal(out, c('main_address = paste0("./")', 'd <- read_xlsx(file.path(main_address, "D.zip/D/a.xlsx"))',
+                      'dir.create(file.path(main_address, "Outputs"))', 'main_address = "./"'))
+})
+
+test_that("four more messages of text that is no longer a factor start the old default (#578, item 5)", {
+  rr <- function(m) data.frame(file_name = "s.R", outcome = "errored", error = "", stderr = m)
+  expect_equal(.repro_old_defaults(rr("Error in `levels<-`(x, value = l) : factor level [3] is duplicated"))$s.R, "factors")
+  expect_equal(.repro_old_defaults(rr("Error in UseMethod(\"droplevels\") : \n  no applicable method for 'droplevels' applied to an object of class \"character\""))$s.R,
+               "factors")
+  expect_equal(.repro_old_defaults(rr("Error in standardize(m) : The object area must be either numeric or a factor."))$s.R, "factors")
+  xlim <- "Error in plot.window(...) : need finite 'xlim' values"
+  expect_equal(.repro_old_defaults(rr(paste0(xlim, "\nIn addition: Warning message:\nIn xy.coords(x, y, xlabel, ylabel, log) :\n  NAs introduced by coercion")))$s.R,
+               "factors")
+  # without the warning, it has other causes
+  expect_length(.repro_old_defaults(rr(xlim)), 0)
+})
+
+test_that("a program that prints how to use it needs arguments (#578, item 6)", {
+  # 10.1111/1365-2656.13545: Stacks tools that print their usage and stop
+  py <- list(t = c("import sys", "try:", "    input_vcf = sys.argv[1]", "except:", "    print(__doc__)", "    sys.exit(1)"))
+  expect_true(.repro_needs_arguments(py, "the script stopped without a message", "Python",
+    out = "Keep only the first SNP...\n\nUsage:\n    ./extract_first_snp.py input_vcf output_vcf\n"))
+  r <- list(o = c("library(optparse)", "opt <- parse_args(OptionParser(option_list = l))",
+                  'if (is.null(opt$prefix)) { print_help(p); stop("Please provide the prefix") }'))
+  expect_true(.repro_needs_arguments(r, "Error: Please provide the prefix", "R",
+    out = "Usage: popgen.R [options]\n\t-h, --help\n\t\tShow this help message and exit"))
+  # no arguments read, the word "usage" in its results
+  expect_false(.repro_needs_arguments(list(a = "x <- 1"), "Error: boom", "R", out = "usage: 3 times"))
+  # without the output, as before
+  expect_false(.repro_needs_arguments(py, "the script stopped without a message", "Python"))
+})
+
+test_that("a script that ran out of memory says so, also when a compiler did (#578, item 8)", {
+  # 10.1111/1365-2435.14319: g++ ran out of memory compiling a Stan model
+  gpp <- "g++: fatal error: Killed signal terminated program cc1plus"
+  expect_equal(.repro_out_of_memory(c(gpp, "Error: Killed: wrong input", "Traceback\nMemoryError",
+                                      "Error: cannot allocate vector of size 2.3 Gb", NA)),
+               c(TRUE, FALSE, TRUE, TRUE, FALSE))
+  expect_equal(.repro_failure_reason("out_of_memory", gpp), "environment")
+  withr::local_options(metacheck.docker_resource_limits = list(cpus = 2, memory_gb = 4))
+  tb <- data.frame(file_name = "m.R", run_order = 1L, outcome = "out_of_memory", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = "m.R", outcome = "out_of_memory", error = "", stderr = gpp)
+  out <- .repro_checklist_section(tb, rr)
+  expect_match(out, "1 ran out of memory", fixed = TRUE)
+  expect_match(out, "It needed more than the 4 GB of memory it could use here.", fixed = TRUE)
+  expect_match(out, "**A script needs more memory than our limit of 4 GB.**", fixed = TRUE)
 })

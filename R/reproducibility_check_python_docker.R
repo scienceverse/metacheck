@@ -6,7 +6,7 @@
 # bind-mounted throwaway library so pip can reach PyPI; run phase has
 # --network none + --read-only so the script cannot reach the network or
 # touch anything outside the mounted sandbox). The container-lifecycle
-# helpers (.repro_docker_uid, .repro_docker_container_name(),
+# helpers (.repro_docker_uid(), .repro_docker_container_name(),
 # .repro_docker_stop(), .repro_docker_resource_args(),
 # .repro_docker_container_path()) are GENERIC -- not R-specific at all (they
 # only ever touch docker/processx and host/container path strings) -- so
@@ -111,6 +111,12 @@
 #'   NA) — same columns as [repro_install_deps_py()] so callers do not need
 #'   to branch on which backend ran.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' deps <- repro_dependencies_py("import numpy as np")
+#' repro_install_deps_py_docker(deps, file.path(tempdir(), "pylib"))
+#' }
 repro_install_deps_py_docker <- function(install_deps, lib_dir,
                                          image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                          timeout = 600) {
@@ -217,12 +223,12 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 
   container_name <- .repro_docker_container_name()
   args <- c("run", "--rm", "--name", container_name,
-           "--user", .repro_docker_uid,
+           "--user", .repro_docker_uid(),
            "--cap-drop", "ALL",
            "--security-opt", "no-new-privileges",
            "--pids-limit", "512",
            .repro_docker_resource_args(),
-           "-v", paste0(sandbox_dir, ":/sandbox"),
+           "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
            "-v", .repro_docker_lib_mount(lib_dir, "/pylib", image = image),
            image, "sh", container_driver)
 
@@ -284,7 +290,8 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #' @param sandbox_root the materialised layout root on the HOST — mounted
 #'   read-write at `/sandbox`
 #' @param lib_dir throwaway `pip install --target` library ON THE HOST (or
-#'   NULL) — mounted read-only at `/pylib` when supplied
+#'   NULL) — mounted at `/pylib` when supplied, writable, so a package can keep
+#'   data in its own folder
 #' @param image the Docker image to run scripts in (see
 #'   [.repro_docker_default_image_py])
 #' @param timeout per-script timeout in seconds
@@ -305,6 +312,15 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 #' @param net `NULL` (the default) runs with the network off; see
 #'   [repro_run_scripts_docker()].
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' root <- file.path(tempdir(), "run_demo_py")
+#' plan <- data.frame(file_name = "analysis.py", target_path = "analysis/analysis.py")
+#' code <- list(analysis.py = "print(sum([1, 2, 3]))")
+#' run_tbl <- repro_write_scripts(code, list(), plan, root, lang = "Python")
+#' repro_run_scripts_py_docker(run_tbl, order = "analysis.py", sandbox_root = root)
+#' }
 repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
                                         image = getOption("metacheck.docker_image_py", .repro_docker_default_image_py),
                                         timeout = 600, skip = character(0),
@@ -354,6 +370,8 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
                         error = "not started: the time for all scripts together had run out",
                         error_type = NA_character_, undefined_var = NA_character_,
                         stdout = "", stderr = "", elapsed = 0)))
+    # the time left for all scripts, not the script's own limit, may stop it (#581)
+    cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
     exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
@@ -371,7 +389,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              .repro_docker_network_args(net), "--read-only",
              # exec: compiled code in /tmp must load (see the R runner; #568)
              "--tmpfs", "/tmp:exec",
-             "--user", .repro_docker_uid,
+             "--user", .repro_docker_uid(),
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
@@ -380,14 +398,15 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
              # stopped three scripts of 10.1111/2041-210X.14007 (#568)
              "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
-             "-v", paste0(sandbox_root, ":/sandbox"),
+             "-v", .repro_docker_bind(sandbox_root, "/sandbox"),
              # the container is read-only apart from /tmp, so caches go there: Numba
              # stopped with "cannot cache function" (#568, item 19). There is no
              # screen, so plots and windows must not ask for one.
              "-e", "HOME=/tmp", "-e", "NUMBA_CACHE_DIR=/tmp/numba", "-e", "MPLCONFIGDIR=/tmp/matplotlib",
              "-e", "XDG_CACHE_HOME=/tmp/.cache", "-e", "MPLBACKEND=Agg", "-e", "QT_QPA_PLATFORM=offscreen")
+    # writable, so a package can keep data in its own folder, as in R (#575, item 8)
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/pylib", read_only = TRUE))
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/pylib", image = image))
     # the repository's own modules first, then what was installed (see
     # .repro_py_module_folders())
     own <- if ("module_folders" %in% names(row)) row$module_folders else NA_character_
@@ -428,6 +447,8 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
       msg <- conditionMessage(res)
       etype <- if (is_timeout) "timeout" else "runtime"
       outc <- if (is_timeout) "timed_out" else "errored"
+      # stopped by the time left for all scripts, not its own limit (#581)
+      if (is_timeout && isTRUE(cut_by_deadline)) etype <- "deadline"
       return(data.frame(file_name = fn, outcome = outc, error = msg,
                         error_type = etype, undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
@@ -436,7 +457,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
                         error = .repro_timeout_text(timeout, watched),
-                        error_type = "timeout", undefined_var = NA_character_,
+                        error_type = if (isTRUE(cut_by_deadline)) "deadline" else "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(NULL)))
     }

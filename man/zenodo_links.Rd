@@ -21,8 +21,6 @@ table only ever contains links the source document itself made clickable.
 Same two-tier approach \code{github_links()} uses for GitHub.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-zenodo_links(psychsci)
-}
+paper <- demopaper()
+zenodo_links(paper)
 }

@@ -20,4 +20,8 @@ a paper object
 \description{
 Convert grobid to Bibr format
 }
+\examples{
+paper <- .grobid_to_bibr(demofile("xml"))
+paper$info$title
+}
 \keyword{internal}

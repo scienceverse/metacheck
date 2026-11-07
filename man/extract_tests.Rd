@@ -39,3 +39,7 @@ match links a \code{result_id} to the sentence making the claim;
 recognised test statistic in it is dropped entirely.
 }
 }
+\examples{
+tests <- extract_tests(demopaper("stroop_effect"))
+tests[, c("anchor", "reported")]
+}

@@ -1,0 +1,51 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Stroop Effect Reproducibility Assignment",
+  "description": "Reaction times of introductory psychology students completing an online Stroop task, with reaction time (in seconds) to name all words in a congruent and an incongruent block.",
+  "license": "https://opensource.org/licenses/MIT",
+  "creator": [
+    {
+      "@type": "Person",
+      "name": "Daniel Lakens",
+      "@id": "https://orcid.org/0000-0002-0247-239X"
+    }
+  ],
+  "variableMeasured": [
+    {
+      "@type": "PropertyValue",
+      "name": "participant_id",
+      "description": "Participant identifier"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "congruent",
+      "description": "Reaction time (in seconds) to name all words in the congruent block of the Stroop task",
+      "unitText": "seconds"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "incongruent",
+      "description": "Reaction time (in seconds) to name all words in the incongruent block of the Stroop task",
+      "unitText": "seconds"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "year",
+      "description": "Year in which the data were collected"
+    }
+  ],
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "contentUrl": "data/stroop_data.csv",
+      "encodingFormat": "text/csv"
+    },
+    {
+      "@type": "DataDownload",
+      "contentUrl": "data/raw/stroop_raw.csv",
+      "encodingFormat": "text/csv",
+      "description": "Raw data as originally downloaded, saved as a comma-separated file with its values unchanged; see code/clean_data.R for the conversion to data/stroop_data.csv"
+    }
+  ]
+}

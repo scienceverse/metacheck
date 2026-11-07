@@ -6,10 +6,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' aspredicted_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' aspredicted_links(paper)
 aspredicted_links <- function(paper) {
   href <- NULL
 
@@ -52,6 +50,12 @@ aspredicted_links <- function(paper) {
 #'
 #' @returns a data frame of information
 #' @export
+#' @examples
+#' \donttest{
+#' if (online("aspredicted.org")) {
+#'   aspredicted_info("https://aspredicted.org/blind.php?x=nq4xa3")
+#' }
+#' }
 aspredicted_info <- function(ap_url, id_col = 1, wait = 1, cache = FALSE) {
   # aspredicted.org is only needed when its pages are read
   if (!nzchar(rbox_token()) && !online("aspredicted.org")) {
@@ -158,7 +162,6 @@ aspredicted_info <- function(ap_url, id_col = 1, wait = 1, cache = FALSE) {
 #'
 #' @returns a data frame of information; attribute `route` is `"api"` or
 #'   `"page"` when that was asked
-#' @export
 #' @keywords internal
 .aspredicted_info <- function(ap_url, page = TRUE) {
   message("* Retrieving info from ", ap_url, "...")

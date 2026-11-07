@@ -58,10 +58,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' gitlab_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' gitlab_links(paper)
 gitlab_links <- function(paper) {
   href <- text <- text_id <- NULL
 
@@ -172,7 +170,6 @@ gitlab_repo <- function(repo) {
 #' @param req an httr2 request object
 #'
 #' @returns the modified request
-#' @export
 #' @keywords internal
 .gitlab_config <- function(req) {
   req <- req |> httr2::req_headers(`User-Agent` = "scienceverse/metacheck")
@@ -252,7 +249,8 @@ gitlab_pat <- function(pat = NULL) {
 #' `repository.blobs(paths: [...])` query, since the REST tree listing does
 #' not include size.
 #'
-#' Returns a list with:
+#' @param repo GitLab project URL or "namespace/project" string
+#' @returns a list with:
 #' \describe{
 #'   \item{\code{gated}}{logical; \code{TRUE} only when the project could
 #'     not be listed at all (invalid/inaccessible)}
@@ -264,10 +262,15 @@ gitlab_pat <- function(pat = NULL) {
 #'   \item{\code{license}}{character SPDX-style key (e.g. "mit"), or NA}
 #' }
 #'
-#' @param repo GitLab project URL or "namespace/project" string
-#'
 #' @export
 #' @keywords internal
+#' @examples
+#' \donttest{
+#' if (online("gitlab.com")) {
+#'   tree <- gitlab_tree_files("gitlab.com/gitlab-org/gitlab-test")
+#'   head(tree$files$name)
+#' }
+#' }
 gitlab_tree_files <- function(repo) {
   # Path pattern only -- the project metadata request below reports a
   # missing/inaccessible project itself (see .gitlab_repo_path()).

@@ -207,11 +207,24 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
   list_file <- tempfile(fileext = ".txt")
   writeLines(enc2utf8(tfs), list_file, useBytes = TRUE)
   on.exit(unlink(c(tfs, list_file)), add = TRUE)
+  # Python 3.14 reads Python 2's `except E, e:` as two exception types
+  # (PEP 758), so that code parses there; the grammar of 3.13 still refuses it,
+  # and a file it refuses only for that is Python 2 (GitHub's Linux machine,
+  # Python 3.14). Research code written for 3.14's new form is far rarer than
+  # Python 2 code.
   script <- paste(
     "import ast, sys",
     "for f in open(sys.argv[1], encoding='utf-8').read().splitlines():",
     "    try:",
-    "        ast.parse(open(f, encoding='utf-8', errors='replace').read())",
+    "        src = open(f, encoding='utf-8', errors='replace').read()",
+    "        ast.parse(src)",
+    "        if sys.version_info >= (3, 14):",
+    "            try:",
+    "                ast.parse(src, feature_version=(3, 13))",
+    "            except SyntaxError as e3:",
+    "                if 'except expressions without parentheses' in str(e3):",
+    "                    print(2)",
+    "                    continue",
     "        print(1)",
     "    except Exception as e:",
     "        words = ('Missing parentheses in call to', 'multiple exception types must be parenthesized')",
@@ -507,6 +520,12 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
 #'   SET as [repro_install_deps()] so callers do not need to branch on which
 #'   language ran.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Python; installs packages with pip into a throwaway folder
+#' deps <- repro_dependencies_py("import numpy as np")
+#' repro_install_deps_py(deps, file.path(tempdir(), "pylib"))
+#' }
 repro_install_deps_py <- function(install_deps, lib_dir, python_bin = "python",
                                   timeout = 300) {
   empty <- data.frame(package = character(0), source = character(0),
@@ -586,6 +605,15 @@ repro_install_deps_py <- function(install_deps, lib_dir, python_bin = "python",
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Python
+#' root <- file.path(tempdir(), "run_demo_py")
+#' plan <- data.frame(file_name = "analysis.py", target_path = "analysis/analysis.py")
+#' code <- list(analysis.py = "print(sum([1, 2, 3]))")
+#' run_tbl <- repro_write_scripts(code, list(), plan, root, lang = "Python")
+#' repro_run_scripts_py(run_tbl, order = "analysis.py")
+#' }
 repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
                                  python_bin = "python", timeout = 600,
                                  skip = character(0), parses = NULL,
@@ -640,6 +668,8 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
                         error = "not started: the time for all scripts together had run out",
                         error_type = NA_character_, undefined_var = NA_character_,
                         stdout = "", stderr = "", elapsed = 0)))
+    # the time left for all scripts, not the script's own limit, may stop it (#581)
+    cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
     exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
@@ -667,7 +697,9 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
               if (is_timeout) "timed out" else "condition/error", ")")
       return(no_lines(data.frame(
         file_name = fn, outcome = if (is_timeout) "timed_out" else "errored",
-        error = msg, error_type = NA_character_, undefined_var = NA_character_,
+        error = msg,
+        # stopped by the time left for all scripts, not its own limit (#581)
+        error_type = if (is_timeout && isTRUE(cut_by_deadline)) "deadline" else NA_character_, undefined_var = NA_character_,
         stdout = "", stderr = "", elapsed = elapsed)))
     }
 

@@ -3,12 +3,8 @@
 #' Read in the JSON schema for bibr formatted paper objects
 #'
 #' @returns The schema as a list
-#' @export
 #' @keywords internal
 #'
-#' @examples
-#' schema <- .paper_schema()
-#' schema$`$defs`$info$required
 .paper_schema <- function() {
   json <- system.file("schema/paper.json", package = "metacheck")
   schema <- jsonlite::read_json(json, simplifyVector = TRUE)
@@ -26,16 +22,19 @@
 #' @return An object with class scivrs_paper
 #' @export
 #' @keywords internal
+#' @examples
+#' p <- paper("my_paper")
+#' p
 paper <- function(id = NULL, ...) {
   if (is.null(id)) {
-    # make a random hash from the time. digest::digest(serialize = FALSE) is
-    # used instead of tools::md5sum(bytes = _), which needs R >= 4.5.0, while
-    # DESCRIPTION allows R >= 4.3.0.
-    id <- Sys.time() |>
-      format("%s%OS6") |>
-      charToRaw() |>
-      digest::digest(algo = "md5", serialize = FALSE) |>
-      substr(1, 14)
+    # make a random hash from the time: the md5 of its text, written to a
+    # temporary file, because tools::md5sum(bytes = _) needs R >= 4.5.0 while
+    # DESCRIPTION allows R >= 4.3.0 (digest is only suggested). The same hash
+    # digest::digest(algo = "md5", serialize = FALSE) gave.
+    tmp <- tempfile()
+    on.exit(unlink(tmp), add = TRUE)
+    Sys.time() |> format("%s%OS6") |> charToRaw() |> writeBin(tmp)
+    id <- unname(tools::md5sum(tmp)) |> substr(1, 14)
   }
 
   paper <- list(
@@ -73,15 +72,12 @@ paper <- function(id = NULL, ...) {
 #' @export
 #' @keywords internal
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' p1 <- psychsci[[1]]
-#' p2 <- psychsci[[2]]
+#' p1 <- demopaper()
+#' p2 <- read(demofile("xml"))
 #' plist <- paperlist(p1, p2)
 #'
-#' merged <- paperlist(psychsci[1:2], psychsci[2:3],
-#'                     merge_duplicates = TRUE)
-#' }
+#' # the two are the same paper, read from two files
+#' merged <- paperlist(p1, p2, merge_duplicates = TRUE)
 paperlist <- function(..., merge_duplicates = FALSE) {
   dots <- list(...)
 
@@ -292,7 +288,6 @@ paper_validate <- function(paper) {
 #' @param paper  a paper object
 #'
 #' @returns a paper object
-#' @export
 #' @keywords internal
 .paper_coerce <- function(paper) {
   if (.is_paper_list(paper)) {
@@ -390,7 +385,6 @@ paper_validate <- function(paper) {
 #' @param paper the object to test
 #'
 #' @returns logical
-#' @export
 #' @keywords internal
 .is_paper <- function(paper) {
   if (!is.list(paper)) {
@@ -406,7 +400,6 @@ paper_validate <- function(paper) {
 #' @param paper the object to test
 #'
 #' @returns logical
-#' @export
 #' @keywords internal
 .is_paper_list <- function(paper) {
   if (!is.list(paper)) {
@@ -426,6 +419,7 @@ paper_validate <- function(paper) {
 #'
 #' @param x The scivrs_paper list
 #' @param ... Additional parameters for print
+#' @returns `x`, invisibly
 #'
 #' @export
 #' @keywords internal
@@ -443,12 +437,14 @@ print.scivrs_paper <- function(x, ...) {
   )
 
   cat(txt)
+  invisible(x)
 }
 
 #' Print PaperList Object
 #'
 #' @param x The scivrs_paperlist object
 #' @param ... Additional parameters for print
+#' @returns `x`, invisibly
 #'
 #' @export
 #' @keywords internal
@@ -456,6 +452,7 @@ print.scivrs_paperlist <- function(x, ...) {
   txt <- paper_table(x, "info", c("title", "doi"))
 
   print(txt)
+  invisible(x)
 }
 
 #' Subset PaperList Object
@@ -463,6 +460,7 @@ print.scivrs_paperlist <- function(x, ...) {
 #' @param x The scivrs_paperlist object
 #' @param ... Additional parameters for print
 #' @param drop relevant for matrices and arrays. If TRUE the result is coerced to the lowest possible dimension (see the examples).
+#' @returns a `scivrs_paperlist` with the selected papers
 #'
 #' @export
 #' @keywords internal
@@ -473,13 +471,22 @@ print.scivrs_paperlist <- function(x, ...) {
 
 #' Get demo paper
 #'
+#' `"to_err_is_human"` (the default) is a short paper written to show
+#' metacheck's checks. `"stroop_effect"` is a small reproducible analysis
+#' whose data and code are bundled as a demo repository (see
+#' `demofile("repo")`); the paper is its manuscript, converted with Grobid.
+#'
+#' @param paper which demo paper: `"to_err_is_human"` or `"stroop_effect"`
+#'
 #' @return paper object
 #' @export
 #'
 #' @examples
 #' paper <- demopaper()
-demopaper <- function() {
-  file_path <- system.file("demos/to_err_is_human.json",
+#' stroop <- demopaper("stroop_effect")
+demopaper <- function(paper = c("to_err_is_human", "stroop_effect")) {
+  paper <- match.arg(paper)
+  file_path <- system.file(paste0("demos/", paper, ".json"),
                            package = "metacheck")
 
   .read_bibr(file_path)
@@ -489,16 +496,26 @@ demopaper <- function() {
 #'
 #' Return the file path for various versions of the demo paper. Use `demopaper()` to directly read it as a paper object from the json file.
 #'
-#' @param ext the extension of the file
+#' `demofile("repo")` returns the folder of a demo repository instead: a
+#' small copy of <https://github.com/Lakens/stroop_effect_paper> (data, code,
+#' codebook, README, licence and `renv.lock`), for functions that check a
+#' repository on your own computer, such as [local_files()].
 #'
-#' @return file path
+#' @param ext the extension of the file, or `"repo"` for the demo repository
+#'
+#' @return file path (a folder for `"repo"`)
 #' @export
 #'
 #' @examples
 #' json <- demofile()
 #' pdf <- demofile("pdf")
-demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd")) {
+#' repo <- demofile("repo")
+demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd", "repo")) {
   ext <- match.arg(ext)
+
+  if (ext == "repo") {
+    return(system.file("extdata/stroop_effect_paper", package = "metacheck"))
+  }
 
   file_path <- paste0("demos/to_err_is_human.", ext) |>
     system.file(package = "metacheck")
@@ -518,11 +535,9 @@ demofile <- function(ext = c("json", "pdf", "docx", "doc", "xml", "qmd")) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' biblio <- paper_table(psychsci[1:10], "bib")
-#' xrefs <- paper_table(psychsci[1:10], "xref")
-#' }
+#' paper <- demopaper()
+#' biblio <- paper_table(paper, "bib")
+#' xrefs <- paper_table(paper, "xref")
 paper_table <- function(paper, table, cols = NULL) {
   if (!.is_paper_list(paper)) {
     if (!.is_paper(paper)) stop("paper must be a paper or paperlist object.")
@@ -562,10 +577,8 @@ paper_table <- function(paper, table, cols = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' paper_id(psychsci)
-#' }
+#' paper <- demopaper()
+#' paper_id(paper)
 paper_id <- function(paper) {
   # each paper's own id: read from the info tables, a paper whose info table
   # has no rows had no id, so a paper list lost it (U102)
@@ -642,10 +655,8 @@ paper_id <- function(paper) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' biblio <- ref_table(psychsci[[1]])
-#' }
+#' paper <- demopaper()
+#' biblio <- ref_table(paper)
 ref_table <- function(paper) {
   bib_id <- text <- NULL
   cols <- c("paper_id", "bib_id", "doi")
@@ -677,7 +688,8 @@ ref_table <- function(paper) {
 #'
 #' @param paper a paper object
 #' @param file_name the name of the file (if NULL, defaults to the paper_id)
-#' @param save_path the directory to save the JSON file in
+#' @param save_path the directory to save the JSON file in; there is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param schema_version NULL (the default) saves the paper object as is;
 #'   "12.0" saves a bibr export schema 12.0 file, for a paper read from a bibr
 #'   12.0 export or converted with `grobid_to_bibr(schema_version = "12.0")`.
@@ -689,12 +701,11 @@ ref_table <- function(paper) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' paper <- demopaper()
 #' paper$info$title <- "New title"
-#' paper_write(paper, "new_paper")
-#' }
-paper_write <- function(paper, file_name = NULL, save_path = ".",
+#' json <- paper_write(paper, "new_paper", tempdir())
+#' read(json)$info$title
+paper_write <- function(paper, file_name = NULL, save_path,
                         schema_version = NULL) {
   if (!is.null(schema_version) && !identical(schema_version, "12.0")) {
     stop("schema_version must be NULL or \"12.0\"", call. = FALSE)

@@ -21,8 +21,6 @@ all) that the source PDF/HTML never encoded as an actual hyperlink -- the
 clickable. Same two-tier approach \code{zenodo_links()} uses.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-figshare_links(psychsci)
-}
+paper <- demopaper()
+figshare_links(paper)
 }

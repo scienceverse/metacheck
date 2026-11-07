@@ -35,4 +35,9 @@ To avoid demoting genuine data that merely references assets (e.g. a
 extensions (a manifest points across code/data/docs; an asset column is
 usually one extension).
 }
+\examples{
+files <- c("data.csv", "analysis.R", "codebook.pdf")
+data_is_manifest(data.frame(file = files, size = c(10, 2, 5)), files)
+data_is_manifest(data.frame(id = 1:3, rt = c(512, 640, 498)), files)
+}
 \keyword{internal}

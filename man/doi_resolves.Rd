@@ -23,8 +23,10 @@ Clearly invalid DOIs (i.e. not starting with "10.") will return FALSE without
 server requests.
 }
 \examples{
-\dontrun{
-doi_resolves("10.1038/nphys1170") # Expected: TRUE
-doi_resolves("10.1234/invalid.doi") # Expected: FALSE
+\donttest{
+if (online("doi.org")) {
+  doi_resolves("10.1038/nphys1170") # Expected: TRUE
+  doi_resolves("10.1234/invalid.doi") # Expected: FALSE
+}
 }
 }

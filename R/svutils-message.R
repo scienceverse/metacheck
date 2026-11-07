@@ -11,6 +11,11 @@
 #' @return TRUE
 #' @export
 #' @keywords internal
+#' @examples
+#' message("shown while verbose() is TRUE")
+#' old <- verbose(FALSE)
+#' message("not shown")
+#' verbose(TRUE)
 message <- function(..., domain = NULL, appendLF = TRUE) {
   if (verbose()) {
     if (interactive()) {

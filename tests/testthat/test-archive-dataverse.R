@@ -652,3 +652,33 @@ test_that("a Dataverse Handle (persistentId=hdl:) is parsed and asked for as a H
     "https://dataverse.nl/api/datasets/:persistentId/?persistentId=hdl:10411/B2VWDH",
     "https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=doi:10.7910/DVN/GGDUND"))
 })
+
+test_that("a file Dataverse converted is taken as it was uploaded (#582)", {
+  # the listing's checksum is the original's, and /api/access/datafile/<id>
+  # sends the converted .tab, so every such file failed the checksum
+  plain <- list(label = "analysis.R",
+                dataFile = list(id = 1, filename = "analysis.R", filesize = 120))
+  e <- .dataverse_file_entry(plain, "dv.example.org")
+  expect_equal(e$name, "analysis.R")
+  expect_equal(e$size, 120)
+  expect_equal(e$url, "https://dv.example.org/api/access/datafile/1")
+
+  conv <- list(label = "Study 1.tab",
+               dataFile = list(id = 2, filename = "Study 1.tab", filesize = 900,
+                               originalFileFormat = "application/x-spss-sav",
+                               originalFileName = "study1.sav", originalFileSize = 1000))
+  e <- .dataverse_file_entry(conv, "dv.example.org")
+  expect_equal(e$name, "Study 1.sav")   # the listed name, the original's extension
+  expect_equal(e$size, 1000)            # the original's size
+  expect_equal(e$url, "https://dv.example.org/api/access/datafile/2?format=original")
+
+  # converted, but the original's name and size are not given
+  bare <- list(label = "x.tab",
+               dataFile = list(id = 3, filename = "x.tab", filesize = 50,
+                               originalFileFormat = "application/x-stata",
+                               originalFileName = list(), originalFileSize = list()))
+  e <- .dataverse_file_entry(bare, "dv.example.org")
+  expect_equal(e$name, "x.tab")
+  expect_true(is.na(e$size))            # not the converted file's size
+  expect_match(e$url, "format=original$")
+})

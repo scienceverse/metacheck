@@ -45,6 +45,10 @@
 #'   (`"binary"` or `"sqlite"`), and `data_file_path` (the original source path
 #'   recorded in the archive, or `NA`).
 #' @export
+#' @examples
+#' jasp <- system.file("extdata", "sample.jasp", package = "metacheck")
+#' res <- import_jasp(jasp)
+#' head(res$data)
 import_jasp <- function(path) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.jasp$", path, ignore.case = TRUE))
@@ -242,16 +246,25 @@ import_jasp <- function(path) {
 #' image files to keep alongside it.
 #'
 #' @param path path to a `.jasp` file
-#' @param out path to write the HTML file to; defaults to `path` with its
-#'   extension replaced by `.html`, written alongside the source file
+#' @param out path to write the HTML file to. Without it, the file is named
+#'   after `path` with the extension `.html` and written to the R session's
+#'   temporary folder, which R removes when the session ends (CRAN does not
+#'   allow writing elsewhere unless you ask for it); a message says where.
 #'
 #' @returns the path written to, invisibly
 #' @export
+#' @examples
+#' jasp <- system.file("extdata", "sample.jasp", package = "metacheck")
+#' html <- export_jasp_html(jasp, file.path(tempdir(), "sample_jasp.html"))
+#' file.exists(html)
 export_jasp_html <- function(path, out = NULL) {
   if (!file.exists(path)) stop("File not found: ", path)
   if (!grepl("\\.jasp$", path, ignore.case = TRUE))
     stop("Not a .jasp file: ", path)
-  if (is.null(out)) out <- sub("\\.jasp$", ".html", path, ignore.case = TRUE)
+  if (is.null(out)) {
+    out <- file.path(tempdir(), sub("\\.jasp$", ".html", basename(path), ignore.case = TRUE))
+    message("Written to the temporary folder, which R removes when it closes: ", out)
+  }
 
   tmp <- tempfile("jaspexport_")
   dir.create(tmp)

@@ -575,7 +575,6 @@
 #'   `"unknown"` when no rule fires. See `.data_doc_role()` for the finer
 #'   readme/codebook/supplemental distinction within `"documentation"`.
 #' @export
-#' @keywords internal
 #'
 #' @examples
 #' data_classify_files(c("data.csv", "analysis.R", "README.md", "codebook.xlsx"))
@@ -944,7 +943,6 @@ data_classify_files <- function(file_name, file_path = NULL) {
 #'   extensions fall back to `"raw"`, since an unrecognised format has no
 #'   reader).
 #' @export
-#' @keywords internal
 #'
 #' @examples
 #' data_format(c("csv", "edf", "mp4", "sav"))
@@ -1023,6 +1021,10 @@ data_format <- function(ext) {
 #' @returns `TRUE` when `df` looks like a file manifest, else `FALSE`.
 #' @export
 #' @keywords internal
+#' @examples
+#' files <- c("data.csv", "analysis.R", "codebook.pdf")
+#' data_is_manifest(data.frame(file = files, size = c(10, 2, 5)), files)
+#' data_is_manifest(data.frame(id = 1:3, rt = c(512, 640, 498)), files)
 data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
   if (is.null(df) || nrow(df) == 0 || ncol(df) == 0) return(FALSE)
   repo_files <- repo_files[!is.na(repo_files) & nzchar(repo_files)]
@@ -1332,6 +1334,11 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 #'
 #' @returns (invisibly) the manifest path
 #' @export
+#' @examples
+#' path <- tempfile(fileext = ".manifest.json")
+#' writeLines("{}", path)
+#' manifest_merge(path, list(paper_id = "stroop_effect"))
+#' readLines(path)
 manifest_merge <- function(path, patch) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
   existing <- list()
@@ -1445,6 +1452,12 @@ manifest_merge <- function(path, patch) {
 #'   `"shared"` value and no partial-failure NULL return.
 #' @export
 #' @keywords internal
+#' @examples
+#' \dontrun{
+#' # needs an LLM (see llm_use())
+#' files <- local_files(demofile("repo"), recursive = TRUE)
+#' data_group_llm(files)
+#' }
 data_group_llm <- function(files, model = llm_model(), params = list(),
                            batch_size = .data_check_llm_batch, paper = NULL) {
   return(.data_group_llm_impl(files, model, params, batch_size, paper))
@@ -1460,8 +1473,8 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 #' `.data_group_check_roster`). Deterministic and free -- a regex over text we
 #' already extracted -- so it runs BEFORE any LLM.
 #'
-#' Only mentions of the form <word><optional space/punct><number><optional
-#' single letter> count; a bare "the experiment" names no specific study and is
+#' Only mentions of the form `<word><optional space/punct><number><optional
+#' single letter>` count; a bare "the experiment" names no specific study and is
 #' ignored. Sorted by number then letter, so the order is stable.
 #'
 #' @param paper a paper object
@@ -1470,6 +1483,10 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 #'   names no numbered study.
 #' @export
 #' @keywords internal
+#' @examples
+#' paper <- demopaper()
+#' paper$text$text[1] <- "We report Study 1, Study 2a and a pilot (Pilot 1)."
+#' data_study_roster(paper)
 data_study_roster <- function(paper) {
   if (!.is_paper(paper)) return(character(0))
   hits <- tryCatch(
@@ -2067,6 +2084,11 @@ text_peek <- function(path, n = 20L) {
 #' @returns a single data_check type, or `NA_character_` when undecided.
 #' @export
 #' @keywords internal
+#' @examples
+#' txt <- tempfile(fileext = ".txt")
+#' writeLines(c("id	rt	condition", "1	512	congruent", "2	640	incongruent",
+#'              "3	498	congruent"), txt)
+#' txt_classify_content(txt)
 txt_classify_content <- function(path) {
   head_lines <- text_peek(path, n = 30L)
   if (!length(head_lines)) return(NA_character_)
@@ -2424,6 +2446,9 @@ txt_classify_content <- function(path) {
 #' @returns a data.frame, or `NULL` on failure / unsupported format.
 #' @export
 #' @keywords internal
+#' @examples
+#' path <- file.path(demofile("repo"), "data", "stroop_data.csv")
+#' data_read_head(path, n_rows = 3)
 #
 # The set of extensions handled by the switch below IS the package's definition
 # of "tabular", exported through .readable_extensions / data_format(). Any new
@@ -3011,6 +3036,9 @@ data_col_type <- function(col_name, values) {
 #' @returns a one-row data.frame of statistics.
 #' @export
 #' @keywords internal
+#' @examples
+#' x <- c(1, 2, NA, 4)
+#' data_col_stats(x, x)
 data_col_stats <- function(x_for_stats, x_raw) {
   # A column is not always a vector. `jsonlite` turns a nested API response into
   # a data frame whose columns are THEMSELVES data frames (or matrices, or
@@ -4300,6 +4328,9 @@ normalize_label <- function(x) {
 #'   lines when only unstructured text is available; or `NULL` on failure.
 #' @export
 #' @keywords internal
+#' @examples
+#' parse_codebook(file.path(demofile("repo"), "documentation",
+#'                           "stroop_data_codebook.csv"))
 parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
                            group = NA_character_) {
   if (!file.exists(path)) return(NULL)
@@ -4622,6 +4653,13 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
 #'   or yields no questions.
 #' @export
 #' @keywords internal
+#' @examples
+#' # a minimal Qualtrics survey file with one question
+#' qsf <- tempfile(fileext = ".qsf")
+#' writeLines('{"SurveyEntry": {"SurveyName": "Demo"}, "SurveyElements": [{"Element": "SQ",
+#'   "PrimaryAttribute": "QID1", "Payload": {"QuestionText": "How old are you?",
+#'   "DataExportTag": "age", "QuestionType": "TE", "QuestionID": "QID1"}}]}', qsf)
+#' parse_qsf(qsf)
 parse_qsf <- function(path) {
   if (!file.exists(path)) return(NULL)
   src <- basename(path)
@@ -4761,6 +4799,12 @@ parse_qsf <- function(path) {
 #'   `label_source`, `label_status`, `label_method`.
 #' @export
 #' @keywords internal
+#' @examples
+#' cb <- parse_codebook(file.path(demofile("repo"), "documentation",
+#'                                "stroop_data_codebook.csv"))
+#' cols <- data.frame(paper_id = "stroop_effect", source_file = "stroop_data.csv",
+#'                    column_name = c("congruent", "incongruent"))
+#' match_column_labels(cols, cb)[, c("column_name", "label")]
 match_column_labels <- function(columns_df, codebook_vars_df) {
   col_group <- if ("group" %in% names(columns_df)) columns_df$group else
                if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
@@ -5138,9 +5182,11 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 #'   nothing in that case. `codebook_check` uses `FALSE`: it reports only
 #'   values outside a range the authors documented, never a guessed one.
 #' @returns list(problem, message, values, lower, upper, classes) where `classes`
-#'   labels each flagged value "missing", "typo:<intended>", or "unexplained"
+#'   labels each flagged value "missing", `"typo:<intended>"`, or "unexplained"
 #' @export
-#' @keywords internal
+#' @examples
+#' # a 7-point scale with two values outside it
+#' data_check_scale_values(c(rep(1:7, 7), 99, 33))$message
 data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
                                     declared = NULL, valid_values = NULL,
                                     valid_range = NULL, n_max = 10,
@@ -5266,6 +5312,8 @@ data_check_scale_values <- function(x, sentinels = .data_missing_sentinels,
 #' @returns list(problem, message, values, lower, upper)
 #' @export
 #' @keywords internal
+#' @examples
+#' data_check_outliers(c(10, 11, 9, 12, 10, 95))$message
 data_check_outliers <- function(x, k = 1.5, n_max = 10) {
   none <- list(problem = FALSE, message = "", values = NULL,
                lower = NA_real_, upper = NA_real_)
@@ -5300,7 +5348,8 @@ data_check_outliers <- function(x, k = 1.5, n_max = 10) {
 #'   fraction, the column is near-constant
 #' @returns list(problem, message, values)
 #' @export
-#' @keywords internal
+#' @examples
+#' data_check_constant(rep(1, 40))$message
 data_check_constant <- function(x, threshold = 0.99) {
   x <- x[!is.na(x)]
   if (length(x) == 0)
@@ -5329,7 +5378,8 @@ data_check_constant <- function(x, threshold = 0.99) {
 #' @param x a vector
 #' @returns list(problem, message, values)
 #' @export
-#' @keywords internal
+#' @examples
+#' data_check_empty(c(NA, NA, NA))$message
 data_check_empty <- function(x) {
   none <- list(problem = FALSE, message = "", values = NULL)
   n <- length(x)
@@ -5357,6 +5407,9 @@ data_check_empty <- function(x) {
 #' @returns logical
 #' @export
 #' @keywords internal
+#' @examples
+#' data_check_design_name("condition")
+#' data_check_design_name("rt")
 data_check_design_name <- function(col) {
   grepl("(?i)(^|[._ -])(cond(ition)?|grp|group|treat(ment)?|arm|dose|manip(ulation)?|intervention)([._ -]|[0-9]|$)",
         col, perl = TRUE)
@@ -5375,7 +5428,8 @@ data_check_design_name <- function(col) {
 #' @param x the column's values
 #' @returns list(problem, message, values)
 #' @export
-#' @keywords internal
+#' @examples
+#' data_check_spss_filter("filter_$", rep(1, 30))$problem
 data_check_spss_filter <- function(col, x) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (!grepl("(?i)^filter_[$._]?$", col, perl = TRUE)) return(none)
@@ -5400,7 +5454,8 @@ data_check_spss_filter <- function(col, x) {
 #' @param x a character or factor vector
 #' @returns list(problem, message, values)
 #' @export
-#' @keywords internal
+#' @examples
+#' data_check_case_issues(c("Male", "male", "Female"))$message
 data_check_case_issues <- function(x) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
@@ -5427,6 +5482,8 @@ data_check_case_issues <- function(x) {
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
+#' @examples
+#' data_check_whitespace(c("a", " b", "c "))$message
 data_check_whitespace <- function(x) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
@@ -5457,7 +5514,8 @@ data_check_whitespace <- function(x) {
 #' @param n_max max number of non-numeric values to list
 #' @returns list(problem, message, values)
 #' @export
-#' @keywords internal
+#' @examples
+#' data_check_numeric_in_text(c("1", "2", "3", "see note", "5"))$problem
 data_check_numeric_in_text <- function(x, threshold = 0.8, n_max = 10) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
@@ -5520,7 +5578,9 @@ data_check_numeric_in_text <- function(x, threshold = 0.8, n_max = 10) {
 #'   the default is SPSS's 64-byte maximum variable-name length (see Details)
 #' @returns list(problem, message, values)
 #' @export
-#' @keywords internal
+#' @examples
+#' data_check_colname("this/is:an*illegal|name")$problem
+#' data_check_colname("reaction_time")$problem
 data_check_colname <- function(col_name, max_chars = 64L) {
   none <- list(problem = FALSE, message = "", values = NULL)
   nm <- as.character(col_name)
@@ -5577,6 +5637,10 @@ data_check_colname <- function(col_name, max_chars = 64L) {
 #'   (empty list when all names stay distinct)
 #' @export
 #' @keywords internal
+#' @examples
+#' # "score 1" and "score_1" both become "score_1" when special characters
+#' # are replaced
+#' data_check_colname_collisions(c("score 1", "score_1", "age"))
 data_check_colname_collisions <- function(col_names) {
   nms <- as.character(col_names)
   key <- gsub("[^\\p{L}\\p{N}]", "_", nms, perl = TRUE)
@@ -5792,6 +5856,9 @@ data_check_colname_collisions <- function(col_names) {
 #'   name(s), not the data
 #' @export
 #' @keywords internal
+#' @examples
+#' data_check_pii_values(c("ann@example.org", "bob@example.org", "cy@example.org"))$values
+#' data_check_pii_values(c("512", "640"))$problem
 data_check_pii_values <- function(x, broad_min_frac = 0.30) {
   none <- list(problem = FALSE, message = "", values = NULL)
   # A number written as text can only match the credit card pattern, and only
@@ -5904,6 +5971,9 @@ data_check_pii_values <- function(x, broad_min_frac = 0.30) {
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
+#' @examples
+#' data_check_pii_name("email")$problem
+#' data_check_pii_name("rt")$problem
 data_check_pii_name <- function(col_name) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.null(col_name) || is.na(col_name) || !nzchar(col_name)) return(none)
@@ -5966,6 +6036,9 @@ data_check_pii_name <- function(col_name) {
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
+#' @examples
+#' data_check_pii_geo("latitude", c(51.44, 52.37, 50.85),
+#'                    sibling_names = c("latitude", "longitude"))$problem
 data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
   none <- list(problem = FALSE, message = "", values = NULL)
 
@@ -6032,6 +6105,14 @@ data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
+#' @examples
+#' x <- c("I found the task long and I lost focus near the end of it",
+#'        "My little brother was ill so I did this at night after work",
+#'        "The second block felt much harder than the first one to me",
+#'        "I live close to the lab and walked over in the morning sun",
+#'        "Nothing to add, everything went fine during the whole study")
+#' data_check_pii_freetext(x)$problem
+#' data_check_pii_freetext(c("yes", "no", "yes"))$problem
 data_check_pii_freetext <- function(x, min_median_chars = 40,
                                     min_unique_frac = 0.8,
                                     min_multiword_frac = 0.6,
@@ -6177,7 +6258,6 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
 #' @returns `"age"`, `"gender"`, or `"race"` when the column matches one of
 #'   them, else `NA_character_`.
 #' @export
-#' @keywords internal
 #'
 #' @examples
 #' data_check_demographic("age", c(23, 45, 31, 29))
@@ -6382,6 +6462,9 @@ data_check_demographic <- function(col_name, x) {
 #'   representation / measurement level, not here.)
 #' @export
 #' @keywords internal
+#' @examples
+#' data_col_concept("rt", c(512, 640, 498))
+#' data_col_concept("gender", c("male", "female", "female"))
 data_col_concept <- function(col_name, x) {
   if (is.null(col_name) || length(col_name) != 1 || is.na(col_name) ||
       !nzchar(col_name)) return(NA_character_)
@@ -6457,7 +6540,6 @@ data_col_concept <- function(col_name, x) {
 #'   over from [data_col_type()] (`numeric_values`, `n_coerced`, `is_numeric`,
 #'   `ambiguous`) so `data_check` can compute statistics and target the LLM.
 #' @export
-#' @keywords internal
 #'
 #' @examples
 #' data_col_facets("RT", c(543, 612, 498, 701))
@@ -6635,6 +6717,10 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 #'   `reason` naming the signals that fired.
 #' @export
 #' @keywords internal
+#' @examples
+#' df <- read.csv(file.path(demofile("repo"), "data", "stroop_data.csv"))
+#' facets <- Map(data_col_facets, names(df), df)
+#' .tabular_usable(facets, df)
 .tabular_usable <- function(facets, df) {
   p <- length(facets)
   if (p == 0 || is.null(df) || nrow(df) == 0)
@@ -6763,6 +6849,12 @@ data_col_facets <- function(col_name, values, in_scale_block = NA) {
 #' @returns `TRUE` when `df` looks like a Qualtrics export, else `FALSE`.
 #' @export
 #' @keywords internal
+#' @examples
+#' df <- data.frame(StartDate = "2024-01-01 10:00", EndDate = "2024-01-01 10:05",
+#'                  Status = 0, IPAddress = "0.0.0.0", Progress = 100,
+#'                  ResponseId = "R_1", Q1 = 3)
+#' data_check_is_qualtrics(df)
+#' data_check_is_qualtrics(data.frame(id = 1:3, rt = c(512, 640, 498)))
 data_check_is_qualtrics <- function(df, min_meta = 4L) {
   if (is.null(df) || ncol(df) == 0) return(FALSE)
   tags <- .qualtrics_tag_cols(names(df))
@@ -6850,6 +6942,15 @@ data_check_is_qualtrics <- function(df, min_meta = 4L) {
 #' @returns the cleaned data.frame (unchanged if no header rows are found).
 #' @export
 #' @keywords internal
+#' @examples
+#' # a Qualtrics export: question text and import ids above the answers
+#' df <- data.frame(
+#'   StartDate = c("Start Date", '{"ImportId":"startDate"}', "2024-01-01", "2024-01-02"),
+#'   EndDate = c("End Date", '{"ImportId":"endDate"}', "2024-01-01", "2024-01-02"),
+#'   Progress = c("Progress", '{"ImportId":"progress"}', "100", "100"),
+#'   ResponseId = c("Response ID", '{"ImportId":"_recordId"}', "R_1", "R_2"),
+#'   Q1 = c("How old are you?", '{"ImportId":"QID1"}', "21", "34"))
+#' data_strip_qualtrics_header(df)
 data_strip_qualtrics_header <- function(df, max_strip = 2L) {
   if (is.null(df) || nrow(df) == 0) return(df)
   drop <- 0L
@@ -6991,6 +7092,10 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 #'   above it), and `improved` (body type-consistency gained by the promotion).
 #' @export
 #' @keywords internal
+#' @examples
+#' rows <- list(c("Exported by lab software", ""), c("id", "rt"),
+#'              c("1", "512"), c("2", "640"), c("3", "498"))
+#' .detect_header_row(rows)$header_row
 .detect_header_row <- function(rows, max_scan = 4L) {
   n <- length(rows)
   if (n < 2) return(list(header_row = 1L, stripped = list(), improved = 0))
@@ -7080,6 +7185,13 @@ data_strip_qualtrics_header <- function(df, max_strip = 2L) {
 #'   (character vectors of those removed rows, for reporting).
 #' @export
 #' @keywords internal
+#' @examples
+#' # a title row above the real header, read as the header
+#' df <- data.frame(`Stroop study export` = c("id", "1", "2", "3"),
+#'                  X = c("rt", "512", "640", "498"), check.names = FALSE)
+#' res <- data_promote_header_row(df)
+#' res$promoted
+#' res$df
 data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
   if (is.null(df) || nrow(df) < 2 || ncol(df) < 2)
     return(list(df = df, promoted = 0L, stripped = list()))
@@ -7237,6 +7349,13 @@ data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
 #' @returns `TRUE` when `df` matches the format, else `FALSE`.
 #' @export
 #' @keywords internal
+#' @examples
+#' df <- data.frame(trial_type = "html-keyboard-response", trial_index = 0:2,
+#'                  time_elapsed = c(1200, 2500, 3900), rt = c(512, 640, 498))
+#' data_check_is_jspsych(df)
+#' data_check_is_psychopy(df)
+#' data_check_is_inquisit(df)
+#' data_check_is_behaverse(df)
 data_check_is_behaverse <- function(df) {
   if (is.null(df) || ncol(df) == 0) return(FALSE)
   nm <- names(df)

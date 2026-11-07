@@ -29,7 +29,7 @@ box instead of a
 \code{DT::datatable()} widget -- no JavaScript at all, so the report stays safe
 to email. Every row is kept and reachable by scrolling (just like the full
 report's paginated widget, just without the JS), except for a pathologically
-large table, which is truncated to \link{.report_table_simple_max_rows} rows with
+large table, which is truncated to \code{.report_table_simple_max_rows} rows with
 a note, so one huge table cannot make the report unboundedly large.
 }
 \examples{

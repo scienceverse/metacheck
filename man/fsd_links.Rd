@@ -20,8 +20,6 @@ bare "FSD####" mention that the source PDF/HTML never encoded as an actual
 hyperlink. Same two-tier approach \code{github_links()} uses for GitHub.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-fsd_links(psychsci)
-}
+paper <- demopaper()
+fsd_links(paper)
 }

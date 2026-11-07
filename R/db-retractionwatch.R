@@ -27,7 +27,7 @@ retractionwatch <- function() {
   int <- system.file("databases/retractionwatch.Rds", package = "metacheck")
   int_rw <- no_blank(readRDS(int))
 
-  ext <- rappdirs::user_data_dir("metacheck", "scienceverse") |>
+  ext <- tools::R_user_dir("metacheck", "data") |>
     file.path("retractionwatch.Rds")
 
   if (file.exists(ext)) {
@@ -65,6 +65,11 @@ rw_date <- function() {
 #' @returns the path to the data frame (invisibly)
 #' @export
 #'
+#' @examples
+#' \dontrun{
+#' # downloads the Retraction Watch database into tools::R_user_dir("metacheck", "data")
+#' rw_update()
+#' }
 rw_update <- function() {
   OriginalPaperDOI <- RetractionNature <- doi <- NULL
 
@@ -99,7 +104,7 @@ rw_update <- function() {
 
   # how/where to save this file?
   # https://blog.r-hub.io/2020/03/12/user-preferences/
-  dir <- rappdirs::user_data_dir("metacheck", "scienceverse")
+  dir <- tools::R_user_dir("metacheck", "data")
   dir.create(dir, FALSE, TRUE)
   path <- file.path(dir, "retractionwatch.Rds")
   saveRDS(retractionwatch, path, compress = "xz")

@@ -42,4 +42,8 @@ any bounded measurement fits inside them.
 \code{gps}, \code{geolocation} and \code{coordinate} name a coordinate outright and need no
 partner.
 }
+\examples{
+data_check_pii_geo("latitude", c(51.44, 52.37, 50.85),
+                   sibling_names = c("latitude", "longitude"))$problem
+}
 \keyword{internal}

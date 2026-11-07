@@ -747,6 +747,7 @@ report_type <- function(report_type = NULL) {
           needs_a_person          = "need a person to choose a file, answer a question, use an app or give a program its arguments",
           needs_internet          = "need the internet, which is off during the run, or could not reach what they asked for",
           download_too_large      = "were stopped for downloading more than our limits allow",
+          out_of_memory           = "ran out of the memory each script can use here, which says nothing about the code",
           dependency_unavailable  = "could not be run because a required dependency is unavailable",
           skipped_time_limit      = "could not be started because the time for all scripts together had run out"
         )
@@ -772,7 +773,7 @@ report_type <- function(report_type = NULL) {
         outcome_text <- if (outcome == "timed_out") "timed out when run" else
           "resulted in an error when run"
         callout <- .report_find_callout(module_output$report,
-                                        sprintf("Output — %s \\(%s\\)",
+                                        sprintf("Output \u2014 %s \\(%s\\)",
                                                gsub("([.])", "\\\\\\1", file), outcome))
         bullet <- sprintf("- The following file %s (see Error details below for more information): %s",
                           outcome_text, file)
@@ -980,7 +981,7 @@ metacheck::report_table(table, %s, %s, %s)
 #' `DT::datatable()` widget -- no JavaScript at all, so the report stays safe
 #' to email. Every row is kept and reachable by scrolling (just like the full
 #' report's paginated widget, just without the JS), except for a pathologically
-#' large table, which is truncated to [.report_table_simple_max_rows] rows with
+#' large table, which is truncated to `.report_table_simple_max_rows` rows with
 #' a note, so one huge table cannot make the report unboundedly large.
 #'
 #' @param table the data frame to show in a table, or a vector for a list
@@ -1244,6 +1245,11 @@ plural <- function(n, singular = "", plural = "s") {
 #' @returns a single string, or `NULL` when `n_needed <= current`
 #' @export
 #' @keywords internal
+#' @examples
+#' cap_gate_count(12, "codebook_max_calls", 10, unit = "codebook",
+#'                context = "https://osf.io/abcde", action = "parse")
+#' # within the cap: NULL
+#' cap_gate_count(5, "codebook_max_calls", 10)
 cap_gate_count <- function(n_needed, param, current, unit = "item",
                            context = NULL, action = "process") {
   if (is.null(n_needed) || is.na(n_needed) || n_needed <= current) return(NULL)

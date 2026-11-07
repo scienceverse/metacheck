@@ -24,3 +24,7 @@ the start of a (comment-free) line are taken, which approximates "top level":
 an assignment indented inside a \code{function}/\code{for} body is not a global the next
 sourced script would see, and taking it would create false ordering edges.
 }
+\examples{
+code <- list(prep.R = c("x <- 1", "y <- x + 1"), analysis.R = "print(y)")
+repro_defined_vars(code)
+}

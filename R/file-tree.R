@@ -86,8 +86,8 @@
       tail_idx <- idx_subset[sel]
       tail_dir <- dir_subset[sel]
       is_last <- i == length(head_order)
-      branch <- if (is_last) "└── " else "├── "
-      next_prefix <- paste0(prefix, if (is_last) "    " else "│   ")
+      branch <- if (is_last) "\u2514\u2500\u2500 " else "\u251C\u2500\u2500 "
+      next_prefix <- paste0(prefix, if (is_last) "    " else "\u2502   ")
       deeper <- vapply(tails, length, integer(1)) > 0
       # the row of this head points at the input path that IS this head (a
       # file, or a folder given as an input), else NA (a plain folder row)

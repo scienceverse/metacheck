@@ -29,7 +29,8 @@ of) \code{sandbox_root}}
 read-write at \verb{/sandbox}}
 
 \item{lib_dir}{throwaway \verb{pip install --target} library ON THE HOST (or
-NULL) — mounted read-only at \verb{/pylib} when supplied}
+NULL) — mounted at \verb{/pylib} when supplied, writable, so a package can keep
+data in its own folder}
 
 \item{image}{the Docker image to run scripts in (see
 \link{.repro_docker_default_image_py})}
@@ -65,4 +66,14 @@ timeout, error classification), but each script runs via \verb{docker run --netw
 subprocess on the host — so the code cannot reach the network (unless \code{net}
 is given) or touch anything outside the mounted sandbox and library, even
 deliberately.
+}
+\examples{
+\dontrun{
+# needs Docker
+root <- file.path(tempdir(), "run_demo_py")
+plan <- data.frame(file_name = "analysis.py", target_path = "analysis/analysis.py")
+code <- list(analysis.py = "print(sum([1, 2, 3]))")
+run_tbl <- repro_write_scripts(code, list(), plan, root, lang = "Python")
+repro_run_scripts_py_docker(run_tbl, order = "analysis.py", sandbox_root = root)
+}
 }

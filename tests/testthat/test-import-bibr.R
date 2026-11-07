@@ -523,9 +523,16 @@ test_that(".surf_isalive", {
   })
   expect_true(.surf_isalive(api_url))
 
-  # up, but its bibr is not ready
+  # its bibr is not ready, but it has a GROBID of its own, which its /convert
+  # then uses
   httr2::local_mocked_responses(function(req) {
-    httr2::response_json(body = list(status = "ok", bibr = FALSE))
+    httr2::response_json(body = list(status = "ok", bibr = FALSE, grobid = "local"))
+  })
+  expect_true(.surf_isalive(api_url))
+
+  # up, but neither its bibr nor a GROBID of its own
+  httr2::local_mocked_responses(function(req) {
+    httr2::response_json(body = list(status = "ok", bibr = FALSE, grobid = "remote"))
   })
   expect_false(.surf_isalive(api_url, error = FALSE))
   expect_error(.surf_isalive(api_url), "bibr is not ready")

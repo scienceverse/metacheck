@@ -16,7 +16,11 @@ a character string of the README contents
 Get README from GitHub
 }
 \examples{
-\dontrun{
-github_readme("scienceverse/metacheck")
+\donttest{
+if (online("api.github.com")) {
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(github_readme("scienceverse/metacheck"),
+           error = function(e) message(conditionMessage(e)))
+}
 }
 }

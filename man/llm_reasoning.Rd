@@ -59,7 +59,8 @@ unsupported parameter onto a call, since providers vary in whether an
 unrecognised parameter is silently ignored or rejected outright.
 }
 \examples{
-\dontrun{
+old <- options(metacheck.llm_reasoning = NULL)
 llm_reasoning("low")
-}
+llm_reasoning()
+options(old)
 }

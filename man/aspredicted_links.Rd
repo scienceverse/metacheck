@@ -16,8 +16,6 @@ a table with the AsPredicted url in the first (href) column
 Find AsPredicted Links in Papers
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-aspredicted_links(psychsci)
-}
+paper <- demopaper()
+aspredicted_links(paper)
 }

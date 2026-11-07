@@ -5,35 +5,45 @@
 # with the same (model, system_prompt, text, type, params) is deterministic, so
 # its result can be stored and replayed without hitting the provider again.
 #
-# Each cache entry is one .rds file under a persistent rappdirs cache dir, named
-# by a hash of the call inputs. An entry stores the unnested data frame that the
+# Each cache entry is one .rds file in the cache folder (see .llm_cache_dir()),
+# named by a hash of the call inputs. An entry stores the unnested data frame that the
 # per-call loop in llm() would have produced, plus the raw ellmer result (which
 # carries any provider-returned reasoning/thinking content) and an optional
 # thinking trace, so traces are retained wherever a provider exposes them.
 
-#' Enable, disable, or query the LLM response cache
+#' Turn the lasting LLM response cache on or off, or query it
 #'
-#' When enabled (the default), [llm()] stores each structured or free-text
-#' response on disk and replays it on identical later calls, so re-running a
-#' report on the same paper does not re-issue (or re-bill) the LLM requests.
-#' Because [llm()] runs at temperature 0 the replayed answer matches a fresh
-#' call. Cached entries are keyed by model, system prompt, input text, type
-#' spec, and params; changing any of these produces a fresh call.
+#' [llm()] stores each structured or free-text response and replays it on
+#' identical later calls, so asking the same question again does not re-issue
+#' (or re-bill) the LLM request. Because [llm()] runs at temperature 0 the
+#' replayed answer matches a fresh call. Cached entries are keyed by model,
+#' system prompt, input text, type spec, and params; changing any of these
+#' produces a fresh call.
 #'
-#' @param enabled if logical, sets whether the cache is used; if `NULL`
-#'   (default) returns the current setting
+#' By default the responses are kept only in the R session's temporary folder,
+#' which R removes when the session ends. With `llm_cache(TRUE)` they are kept
+#' between sessions, in the folder `.metacheck_llm_cache` in the working
+#' directory, or under the folder set with `options(metacheck.cache.dir = )` or
+#' the `METACHECK_LLM_CACHE_DIR` environment variable. With `llm_cache(FALSE)`
+#' no response is stored or replayed, so every call asks the model again;
+#' `options(metacheck.llm.cache = NULL)` returns to the default. Use
+#' [llm_cache_clear()] to remove the stored responses.
+#'
+#' @param enabled `TRUE` to keep responses between sessions, `FALSE` to store
+#'   none; if `NULL` (default) returns whether responses are kept between
+#'   sessions
 #'
 #' @returns the current setting (logical), invisibly when setting
 #' @export
 #'
 #' @examples
-#' llm_cache()          # is the cache on?
-#' \dontrun{
-#' llm_cache(FALSE)     # force fresh calls
-#' }
+#' llm_cache()          # are responses kept between sessions? (FALSE by default)
+#' llm_cache(TRUE)      # keep responses between sessions
+#' llm_cache(FALSE)     # no cache: every call asks the model again
+#' options(metacheck.llm.cache = NULL)  # back to the default: this session only
 llm_cache <- function(enabled = NULL) {
   if (is.null(enabled)) {
-    return(isTRUE(getOption("metacheck.llm.cache", TRUE)))
+    return(isTRUE(getOption("metacheck.llm.cache", FALSE)))
   }
   if (!is.logical(enabled) || length(enabled) != 1 || is.na(enabled)) {
     stop("Set llm_cache with TRUE or FALSE", call. = FALSE)
@@ -44,10 +54,13 @@ llm_cache <- function(enabled = NULL) {
 
 #' Clear the on-disk LLM response cache
 #'
-#' Deletes all cached LLM responses (see [llm_cache()]).
+#' Deletes all cached LLM responses in the cache that is in use: the lasting
+#' cache when [llm_cache()] is `TRUE`, otherwise this session's temporary one.
 #'
 #' @returns the number of cache entries removed, invisibly
 #' @export
+#' @examples
+#' llm_cache_clear()
 llm_cache_clear <- function() {
   dir <- .llm_cache_dir()
   files <- list.files(dir, pattern = "\\.rds$", full.names = TRUE)
@@ -55,10 +68,18 @@ llm_cache_clear <- function() {
   invisible(length(files))
 }
 
-# Root directory for cached LLM responses. Defaults to ".metacheck_llm_cache" in
-# the working directory (see .metacheck_cache_subdir). The METACHECK_LLM_CACHE_DIR
-# env var overrides just this cache; `metacheck.cache.dir` relocates both caches.
+# Root directory for cached LLM responses. By default (llm_cache() FALSE) a
+# folder in the session's temporary directory, which R removes when the
+# session ends: CRAN does not allow a package to keep files elsewhere unless
+# the user asks for it. With llm_cache(TRUE) the lasting cache: the folder
+# ".metacheck_llm_cache" in the working directory (see .metacheck_cache_subdir),
+# or the METACHECK_LLM_CACHE_DIR env var (just this cache) or
+# `metacheck.cache.dir` (all caches) when set.
 .llm_cache_dir <- function() {
+  if (!llm_cache()) {
+    return(normalizePath(file.path(tempdir(), "metacheck-llm-cache"),
+                         winslash = "/", mustWork = FALSE))
+  }
   override <- Sys.getenv("METACHECK_LLM_CACHE_DIR", "")
   .metacheck_cache_subdir(".metacheck_llm_cache",
                           override = if (nzchar(override)) override else NULL)
@@ -108,6 +129,8 @@ llm_cache_clear <- function() {
     df = df, raw = raw, thinking = thinking,
     created = Sys.time(), version = 1L
   )
-  tryCatch(saveRDS(entry, .llm_cache_path(key)), error = function(e) NULL)
+  path <- .llm_cache_path(key)
+  dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
+  tryCatch(saveRDS(entry, path), error = function(e) NULL)
   invisible(entry)
 }

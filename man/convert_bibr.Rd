@@ -6,7 +6,7 @@
 \usage{
 convert_bibr(
   file_path,
-  save_path = ".",
+  save_path,
   backend = c("auto", "surf", "scivrs", "selfhosted"),
   api_key = NULL,
   api_url = NULL,
@@ -20,7 +20,8 @@ convert_bibr(
 \arguments{
 \item{file_path}{Path to the document file, or a directory of documents}
 
-\item{save_path}{Path to a directory in which to save the JSON file}
+\item{save_path}{Path to a directory in which to save the JSON file; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{backend}{Which backend to use: \code{"auto"} (default) detects from
 the available API key and URL (see Details), \code{"surf"} uses

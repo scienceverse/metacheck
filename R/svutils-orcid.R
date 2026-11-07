@@ -122,7 +122,11 @@ check_orcid <- function(orcid) {
 #'
 #' @examples
 #' \donttest{
-#' get_orcid("DeBruine", "Lisa")
+#' if (online("pub.orcid.org")) {
+#'   # the ORCID server can be busy; then this says why
+#'   tryCatch(get_orcid("DeBruine", "Lisa"),
+#'            error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 get_orcid <- function(family, given = "*") {
   if (is.null(family) || trimws(family) == "") {

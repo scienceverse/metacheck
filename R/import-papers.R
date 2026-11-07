@@ -10,8 +10,11 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' papers_available()
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(papers_available(), error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 papers_available <- function(repo = "scienceverse/papers") {
   assets <- .papers_release_assets(repo)
@@ -50,8 +53,12 @@ papers_available <- function(repo = "scienceverse/papers") {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' collabra <- papers_load("collabra")
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   collabra <- tryCatch(papers_load("collabra"),
+#'                        error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 papers_load <- function(name,
                          repo = "scienceverse/papers",
@@ -152,8 +159,13 @@ papers_remove <- function(name) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' papers_metadata("jdm")$dc_coverage
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   meta <- tryCatch(papers_metadata("jdm"),
+#'                    error = function(e) message(conditionMessage(e)))
+#'   if (!is.null(meta)) meta$dc_coverage
+#' }
 #' }
 papers_metadata <- function(name, repo = "scienceverse/papers") {
   url <- sprintf(
@@ -189,7 +201,7 @@ papers_metadata <- function(name, repo = "scienceverse/papers") {
 
 #' @keywords internal
 .papers_cache_dir <- function() {
-  rappdirs::user_data_dir("metacheck", "scienceverse") |>
+  tools::R_user_dir("metacheck", "data") |>
     file.path("papers")
 }
 
@@ -202,6 +214,8 @@ papers_metadata <- function(name, repo = "scienceverse/papers") {
 #' most recently published release for that corpus family is kept. Returns
 #' one row per .rds asset.
 #'
+#' @returns a data frame with columns `name`, `tag`, `size` and
+#'   `download_url`, one row per .rds asset (no rows when there is none)
 #' @keywords internal
 .papers_release_assets <- function(repo = "scienceverse/papers") {
   url <- sprintf("https://api.github.com/repos/%s/releases", repo)

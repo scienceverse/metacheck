@@ -6,7 +6,7 @@
 \usage{
 figshare_file_download(
   figshare_id,
-  download_to = ".",
+  download_to,
   max_file_size = 10,
   max_download_size = 100,
   unzip_types = NULL,
@@ -17,7 +17,8 @@ figshare_file_download(
 \arguments{
 \item{figshare_id}{a Figshare article ID, URL, or DOI}
 
-\item{download_to}{path to download to}
+\item{download_to}{path to download to; there is no default, because CRAN does not allow writing into the
+working directory unless you ask for it}
 
 \item{max_file_size}{maximum file size to download (in MB) - set to NULL or
 Inf for no restrictions}
@@ -68,10 +69,11 @@ verbose mode, and included in the returned data frame with the \code{downloaded}
 column value set to FALSE.
 }
 \examples{
-\dontrun{
-  figshare_file_download("18093368")
-
-  # take only the data files out of any zip in the article
-  figshare_file_download("18093368", unzip_types = "data")
+\donttest{
+if (online("api.figshare.com")) {
+  dl <- figshare_file_download("18093368",
+                               download_to = file.path(tempdir(), "figshare"),
+                               max_download_size = 10)
+}
 }
 }

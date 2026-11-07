@@ -51,8 +51,9 @@
 #' file or answer a question, or that starts an app, and `needs_internet` one that
 #' stopped because the network is off in a Docker run, or, with `internet = TRUE`,
 #' could not reach what it asked for; `download_too_large` is a script stopped
-#' for downloading more than the limits allow (see `internet`). All three are
-#' treated the same way.
+#' for downloading more than the limits allow (see `internet`), and
+#' `out_of_memory` one that, or a program it started (such as a compiler), ran
+#' out of the memory each script may use. All four are treated the same way.
 #' `not_downloaded` is a script that stopped on a file the repository lists but
 #' that was not downloaded, such as one over `max_file_size`: it could not be
 #' tried, so it is not counted as a script that did not reproduce
@@ -1384,13 +1385,26 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   r_script_places <- .repro_script_places(r_files)
   # the folder each script runs from
   r_run_dirs <- .repro_run_folders(r_script_places, code_text_list, plan, order_tbl, "R")
+  # where here() starts for each script (see .repro_here_roots() and the .here
+  # marks written with the scripts below): a path given to here() counts from there
+  here_roots <- .repro_here_roots(code_text_list, r_run_dirs, plan)
+  r_here_dirs <- vapply(seq_along(r_run_dirs), function(i)
+    .repro_here_start(r_run_dirs[i], here_roots[i], plan), character(1))
   # a reference that works as written stays as it is
   rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
-    .repro_keep_working_refs(rewrite_list[[i]], plan, r_script_paths[i], r_run_dirs[i])), names(rewrite_list))
+    .repro_keep_working_refs(rewrite_list[[i]], plan, r_script_paths[i], r_run_dirs[i],
+                             here_dir = r_here_dirs[i])), names(rewrite_list))
   # a folder on the authors' computer held in a variable gets the deposit's folder
   rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
     .repro_apply_folder_vars(rewrite_list[[i]],
-                             .repro_folder_vars(code_text_list[[i]], plan, r_run_dirs[i]))), names(rewrite_list))
+                             .repro_folder_vars(code_text_list[[i]], plan, r_run_dirs[i],
+                                                rw = rewrite_list[[i]]))), names(rewrite_list))
+  # a folder the script lists, where the deposit holds it (#578, item 2)
+  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i) {
+    d <- rewrite_list[[i]]
+    lf <- .repro_listed_folders(code_text_list[[i]], plan, r_run_dirs[i], "R")
+    dplyr::bind_rows(d, lf[!lf$ref %in% d$ref, , drop = FALSE])
+  }), names(rewrite_list))
 
   # Per-file rewrite counts + unresolved reads (referenced, not matched in plan).
   rewrites_n  <- vapply(rewrite_list, function(d)
@@ -1719,7 +1733,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # scripts/scripts/functions.R (10.1111/1365-2664.14317; #568).
     # The top always has a mark, so here() finds a root from every folder; a
     # mark in each run folder came before the authors' own .Rproj at the top.
-    here_roots <- .repro_here_roots(code_text_list, r_run_dirs, plan)
+    # (here_roots was worked out with the paths, above.)
     rooted <- !is.na(here_roots)
     root_dirs <- ifelse(here_roots[rooted] == ".", sandbox_root,
                         file.path(sandbox_root, .portable_path(here_roots[rooted])))
@@ -1960,16 +1974,37 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                              vapply(library_injections, paste, character(1),
                                     collapse = ", ")), collapse = "; ")) else "",
              ": ", paste(run_order2, collapse = " -> "))
-        run_results2 <- run_r_scripts(run_tbl2, run_order2)
-        # a script the second run had no time left for keeps its first result
-        late <- run_results2$outcome == "skipped_time_limit" &
-          run_results2$file_name %in% run_results$file_name
-        if (any(late)) {
-          run_results2 <- dplyr::bind_rows(
-            run_results2[!late, , drop = FALSE],
-            run_results[match(run_results2$file_name[late], run_results$file_name), , drop = FALSE])
-          run_results2 <- run_results2[order(match(run_results2$file_name, run_order2)), , drop = FALSE]
+        # Only what this pass changes runs again (#581): the scripts that got
+        # library() lines or another script to load first, the scripts the new
+        # order moves (the users of the new edges), and the scripts that read
+        # what those write. Running every script again let an unchanged script
+        # that had timed out use the paper's remaining time a second time, and
+        # the changed script then got none. An unchanged script keeps its first
+        # result; so does a reader of a changed script's files that timed out
+        # in the first pass, which would only time out again.
+        redo2 <- unique(c(names(library_injections), names(run_after),
+                          vapply(extra_edges, function(e) e[[2]], character(1))))
+        reads_of <- stats::setNames(io$reads, io$file_name)
+        writes_of <- stats::setNames(io$writes, io$file_name)
+        repeat {
+          written <- tolower(unlist(writes_of[intersect(redo2, names(writes_of))]))
+          readers <- names(reads_of)[vapply(reads_of, function(r) any(tolower(r) %in% written),
+                                            logical(1))]
+          readers <- setdiff(readers, redo2)
+          readers <- readers[!run_results$outcome[match(readers, run_results$file_name)] %in% "timed_out"]
+          if (!length(readers)) break
+          redo2 <- c(redo2, readers)
         }
+        run_results2 <- .repro_later_pass(
+          run_r_scripts(run_tbl2[run_tbl2$file_name %in% redo2, , drop = FALSE],
+                        intersect(run_order2, redo2)))
+        # A script this pass changed but had no time left for is skipped_time_limit,
+        # not its first result: that was the failure the change was meant to fix,
+        # and it was never run in the form the check meant to test (#581).
+        run_results2 <- dplyr::bind_rows(
+          run_results[!run_results$file_name %in% run_results2$file_name, , drop = FALSE],
+          run_results2)
+        run_results2 <- run_results2[order(match(run_results2$file_name, run_order2)), , drop = FALSE]
         run_results <- run_results2
         order_tbl <- order_tbl2   # report the corrected order
         run_tbl <- run_tbl2       # so downstream setwd/family/injection detail (#391) reflects pass 2
@@ -2008,9 +2043,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                      run_dirs = r_run_dirs,
                                      prepend = prepend_lines)
       run_now <- order_tbl$file_name[order(order_tbl$order)]
-      res_old <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
-                               c(intersect(run_now, redo), setdiff(redo, run_now)))
-      res_old <- res_old[res_old$outcome != "skipped_time_limit", , drop = FALSE]
+      res_old <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                               c(intersect(run_now, redo), setdiff(redo, run_now))))
+      # a script given the old defaults but no time is skipped_time_limit, not
+      # the failure the old defaults were meant to fix (#581)
       run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res_old$file_name, , drop = FALSE],
                                       res_old)
       run_results <- run_results[order(match(run_results$file_name, run_now)), , drop = FALSE]
@@ -2043,11 +2079,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
             logical(1))]
           if (length(redo)) {
             .dbg("re-running ", length(redo), " script(s) with the fetched file(s): ", paste(redo, collapse = ", "))
-            res3 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
-                                  c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
-            keep <- !run_results$file_name %in% res3$file_name[res3$outcome != "skipped_time_limit"]
-            run_results <- dplyr::bind_rows(run_results[keep, , drop = FALSE],
-                                            res3[res3$outcome != "skipped_time_limit", , drop = FALSE])
+            res3 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                                  c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
+            # a script with its file fetched but no time is skipped_time_limit,
+            # not the missing-file failure the fetch was meant to fix (#581)
+            keep <- !run_results$file_name %in% res3$file_name
+            run_results <- dplyr::bind_rows(run_results[keep, , drop = FALSE], res3)
             run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
           }
         }
@@ -2055,26 +2092,42 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
     # A script that stopped on a file another script wrote later runs once more:
     # a name built while a script runs cannot be seen before, so the order missed
-    # it (#568; see .repro_written_later()). Twice at most, for a chain.
+    # it (#568; see .repro_written_later()). So does a script that stopped on a
+    # file the deposit holds in another folder, once that file is copied to where
+    # it looked (see .repro_place_from_deposit()). A script runs again each time
+    # it stops on a file it did not stop on before: a figure script that loads
+    # the files of four analysis scripts stops on each in turn (#575, item 4).
+    # Five passes at most, for a chain.
     r_written_later <- list()
     r_placed <- .repro_place_written(list(), NULL, NULL, sandbox_root, character(0), character(0))
-    for (pass in 1:2) {
+    r_deposit_placed <- r_placed
+    r_seen <- list()   # script -> the files it stopped on when it was run again
+    for (pass in 1:5) {
       names_after <- .repro_sandbox_names(sandbox_root)
       later <- .repro_written_later(run_results, r_names_before, names_after)
-      later <- later[!names(later) %in% names(r_written_later)]
-      if (!length(later)) break
-      redo <- names(later)
+      later <- later[vapply(names(later), function(s)
+        length(setdiff(tolower(later[[s]]), tolower(r_seen[[s]]))) > 0, logical(1))]
       # a file written in another folder is copied to where the script looks
       r_placed <- rbind(r_placed, .repro_place_written(later, run_results, run_tbl, sandbox_root,
                                                        r_names_before, names_after))
-      .dbg("re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
-           paste(redo, collapse = ", "))
-      res4 <- run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
-                            c(intersect(run_order_names, redo), setdiff(redo, run_order_names)))
-      res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
-      r_written_later <- c(r_written_later, later[names(later) %in% res4$file_name])
+      from_deposit <- .repro_place_from_deposit(run_results, run_tbl, sandbox_root, r_names_before)
+      r_deposit_placed <- rbind(r_deposit_placed, from_deposit)
+      redo <- unique(c(names(later), from_deposit$script))
+      if (!length(redo)) break
+      .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
+           "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
+      res4 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
+                            c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
+      ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
+      for (s in intersect(names(later), ran4)) {
+        r_written_later[[s]] <- unique(c(r_written_later[[s]], later[[s]]))
+        r_seen[[s]] <- unique(c(r_seen[[s]], later[[s]]))
+      }
+      # a script this pass was to run but had no time for is skipped_time_limit,
+      # not the failure the pass was meant to fix (#581)
       run_results <- dplyr::bind_rows(run_results[!run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
       run_results <- run_results[order(match(run_results$file_name, run_order_names)), , drop = FALSE]
+      if (!length(ran4)) break
     }
     attr(run_results, "reran_for_order") <- reran
     attr(run_results, "reran_for_reorder") <- reran_for_reorder
@@ -2098,7 +2151,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       (.repro_needs_person_error(paste(run_results$error, run_results$stderr)) |
          # a program that needs its arguments from the person running it (#568)
          .repro_needs_arguments(code_text_list[run_results$file_name],
-                                paste(run_results$error, run_results$stderr), "R"))
+                                paste(run_results$error, run_results$stderr), "R",
+                                out = run_results$stdout))
     run_results$outcome[asks_person] <- "needs_a_person"
     run_results$error_type[asks_person] <- NA_character_
     # Stopped because the network is off, which says nothing about the code either.
@@ -2108,6 +2162,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       run_results$outcome[off_line] <- "needs_internet"
       run_results$error_type[off_line] <- NA_character_
     }
+    # Ran out of the memory each script may use, which says nothing about the code
+    # either (#578, item 8; see .repro_out_of_memory())
+    oom <- run_results$outcome == "errored" & .repro_out_of_memory(paste(run_results$error, run_results$stderr))
+    run_results$outcome[oom] <- "out_of_memory"
+    run_results$error_type[oom] <- NA_character_
     # Stopped on a file the repository lists but that we did not download, such
     # as one over the size limit: the script could not be tried (#568).
     r_not_downloaded <- .repro_not_downloaded(run_results, structure_df)
@@ -2134,7 +2193,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2304,7 +2363,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   report_paths <- .repro_path_fix_text(rewrite_list, execute)
   if (total_ambiguous > 0)
     report_paths <- paste(report_paths, sprintf(
-      "%d reference%s matched several files sharing a name and could not be resolved by study group; %s left unrewritten and flagged.",
+      "%d reference%s matched several files sharing a name and could not be resolved by study group or folder; %s left unrewritten and flagged.",
       total_ambiguous, plural(total_ambiguous),
       plural(total_ambiguous, "it was", "they were")))
   if (n_call_paths > 0)
@@ -2418,7 +2477,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (Lakens/tue_datamanager_check#4, item 6)
     if (n_late > 0) {
       report_exec <- paste0(report_exec, sprintf(
-        " %d %s not started, because %s had run out.",
+        " %d %s not started, or stopped early, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
     if (sum(oc == "docker_failed") > 0)
@@ -2452,6 +2511,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (exists("r_written_later", inherits = FALSE) && length(r_written_later))
       report_exec <- paste0(report_exec, .repro_written_later_text(
         r_written_later, run_results$file_name[oc == "ran_ok"], r_placed))
+    if (exists("r_deposit_placed", inherits = FALSE) && nrow(r_deposit_placed))
+      report_exec <- paste0(report_exec, .repro_placed_text(r_deposit_placed))
     if (exists("r_lfs_stopped", inherits = FALSE) && length(r_lfs_stopped))
       report_exec <- paste0(report_exec, .repro_lfs_stopped_text(r_lfs_stopped))
     if (sum(lengths(r_choices_filled)) > 0)
@@ -2901,6 +2962,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (exists("r_placed", inherits = FALSE) && nrow(r_placed))
       later_rows <- rbind(later_rows, data.frame(file_name = r_placed$script, change_type = "output_copied",
         detail = sprintf("copied %s, written by another script, to %s", r_placed$from, r_placed$to)))
+    if (exists("r_deposit_placed", inherits = FALSE) && nrow(r_deposit_placed))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_deposit_placed$script, change_type = "file_placed",
+        detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
+                         r_deposit_placed$from, r_deposit_placed$to)))
     dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
                      slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
@@ -3125,6 +3190,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_run_dirs <- .repro_run_folders(py_script_places, py_code_text_list, plan, py_order_tbl, "Python")
   py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i)
     .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_script_paths[i], py_run_dirs[i])), names(py_rewrite_list))
+  # a folder the script lists, where the deposit holds it (#578, item 2)
+  py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i) {
+    d <- py_rewrite_list[[i]]
+    lf <- .repro_listed_folders(py_code_text_list[[i]], plan, py_run_dirs[i], "Python")
+    dplyr::bind_rows(d, lf[!lf$ref %in% d$ref, , drop = FALSE])
+  }), names(py_rewrite_list))
 
   py_rewrites_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
@@ -3184,6 +3255,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py2_tried <- character(0)
   py_written_later <- list()
   py_placed <- .repro_place_written(list(), NULL, NULL, ".", character(0), character(0))
+  py_deposit_placed <- py_placed
   py_file_order <- py_order_tbl$order[match(py_files$file_name, py_order_tbl$file_name)]
   py_placeable <- !is.na(py_file_order)
 
@@ -3389,10 +3461,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                          x = tolower(paste(py_run_results$error[i], py_run_results$stderr[i])), fixed = TRUE)),
               logical(1))]
             if (length(redo)) {
-              res3 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
-                             c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
+              res3 <- .repro_later_pass(run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
+                             c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names))))
               if (!is.null(res3)) {
-                res3 <- res3[res3$outcome != "skipped_time_limit", , drop = FALSE]
+                # a script with its file fetched but no time is skipped_time_limit,
+                # not the missing-file failure the fetch was meant to fix (#581)
                 py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res3$file_name, , drop = FALSE], res3)
                 py_run_results <- py_run_results[order(match(py_run_results$file_name, py_run_order_names)), , drop = FALSE]
               }
@@ -3404,26 +3477,39 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # A script that stopped on a file another script wrote later runs once more,
     # as for R above (#568): in 10.1111/2041-210X.13814 "analyse_results.py" ran
     # before "create_inputs.py", which writes f"input{i}.txt".
+    # A file the deposit holds in another folder is copied to where a script
+    # looked, and a script runs again each time it stops on a new file (#575,
+    # items 2 and 4; see the R loop above).
     if (!is.null(py_run_results) && exists("py_names_before", inherits = FALSE)) {
-      for (pass in 1:2) {
+      py_seen <- list()
+      for (pass in 1:5) {
         names_after <- .repro_sandbox_names(sandbox_root)
         later <- .repro_written_later(py_run_results, py_names_before, names_after)
-        later <- later[!names(later) %in% names(py_written_later)]
-        if (!length(later)) break
-        redo <- names(later)
+        later <- later[vapply(names(later), function(s)
+          length(setdiff(tolower(later[[s]]), tolower(py_seen[[s]]))) > 0, logical(1))]
         # a file written in another folder is copied to where the script looks
         py_placed <- rbind(py_placed, .repro_place_written(later, py_run_results, py_run_tbl, sandbox_root,
                                                            py_names_before, names_after))
-        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file a later script wrote: ",
-             paste(redo, collapse = ", "))
-        res4 <- run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
-                       c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names)))
+        from_deposit <- .repro_place_from_deposit(py_run_results, py_run_tbl, sandbox_root, py_names_before)
+        py_deposit_placed <- rbind(py_deposit_placed, from_deposit)
+        redo <- unique(c(names(later), from_deposit$script))
+        if (!length(redo)) break
+        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
+             "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
+        res4 <- .repro_later_pass(run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
+                       c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names))))
         if (is.null(res4)) break
-        res4 <- res4[res4$outcome != "skipped_time_limit", , drop = FALSE]
-        py_written_later <- c(py_written_later, later[names(later) %in% res4$file_name])
+        ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
+        for (s in intersect(names(later), ran4)) {
+          py_written_later[[s]] <- unique(c(py_written_later[[s]], later[[s]]))
+          py_seen[[s]] <- unique(c(py_seen[[s]], later[[s]]))
+        }
+        # a script this pass was to run but had no time for is skipped_time_limit,
+        # not the failure the pass was meant to fix (#581)
         keep_order <- py_run_results$file_name
         py_run_results <- dplyr::bind_rows(py_run_results[!py_run_results$file_name %in% res4$file_name, , drop = FALSE], res4)
         py_run_results <- py_run_results[order(match(py_run_results$file_name, keep_order)), , drop = FALSE]
+        if (!length(ran4)) break
       }
     }
     # Code written for Python 2 runs again with Python 2.7, with its own packages
@@ -3467,6 +3553,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           lib_dir = if (dir.exists(py2_lib_dir)) py2_lib_dir else NULL, image = py2_image,
           timeout = timeout, failed_deps = py2_failed_deps, deadline = script_deadline, net = net),
           error = function(e) NULL)
+        res2 <- .repro_later_pass(res2)   # see .repro_later_pass() (#581)
         if (!is.null(res2) && nrow(res2)) {
           # a script not started for lack of time says so, not "python2" (#568)
           py_ran_py2 <- res2$file_name[res2$outcome != "skipped_time_limit"]
@@ -3499,10 +3586,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         (.repro_needs_person_error(paste(py_run_results$error, py_run_results$stderr)) |
            # a program that needs its arguments from the person running it (#568)
            .repro_needs_arguments(py_code_text_list[py_run_results$file_name],
-                                  paste(py_run_results$error, py_run_results$stderr), "Python"))] <- "needs_a_person"
+                                  paste(py_run_results$error, py_run_results$stderr), "Python",
+                                  out = py_run_results$stdout))] <- "needs_a_person"
       if (sandbox == "docker")
         py_run_results$outcome[py_run_results$outcome == "errored" &
           .repro_needs_internet_error(paste(py_run_results$error, py_run_results$stderr))] <- "needs_internet"
+      # ran out of memory (#578, item 8; as for R above)
+      py_run_results$outcome[py_run_results$outcome == "errored" &
+        .repro_out_of_memory(paste(py_run_results$error, py_run_results$stderr))] <- "out_of_memory"
       # stopped on a file we did not download (#568; as for R above)
       py_not_downloaded <- .repro_not_downloaded(py_run_results, structure_df)
       py_run_results$outcome[py_run_results$file_name %in% py_not_downloaded$script] <- "not_downloaded"
@@ -3542,7 +3633,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded")) && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -3676,7 +3767,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_report_paths <- .repro_path_fix_text(py_rewrite_list, execute)
   if (py_total_ambiguous > 0)
     py_report_paths <- paste(py_report_paths, sprintf(
-      "%d reference%s matched several files sharing a name and could not be resolved by study group; %s left unrewritten and flagged.",
+      "%d reference%s matched several files sharing a name and could not be resolved by study group or folder; %s left unrewritten and flagged.",
       py_total_ambiguous, plural(py_total_ambiguous),
       plural(py_total_ambiguous, "it was", "they were")))
 
@@ -3797,12 +3888,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (Lakens/tue_datamanager_check#4, item 6)
     if (n_late > 0) {
       py_report_exec <- paste0(py_report_exec, sprintf(
-        " %d %s not started, because %s had run out.",
+        " %d %s not started, or stopped early, because %s had run out.",
         n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
     }
     if (length(py_written_later))
       py_report_exec <- paste0(py_report_exec, .repro_written_later_text(
         py_written_later, py_run_results$file_name[py_oc == "ran_ok"], py_placed))
+    if (nrow(py_deposit_placed))
+      py_report_exec <- paste0(py_report_exec, .repro_placed_text(py_deposit_placed))
     if (exists("py_lfs_stopped", inherits = FALSE) && length(py_lfs_stopped))
       py_report_exec <- paste0(py_report_exec, .repro_lfs_stopped_text(py_lfs_stopped))
     py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
@@ -4066,6 +4159,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (nrow(py_placed))
       py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_placed$script, change_type = "output_copied",
         detail = sprintf("copied %s, written by another script, to %s", py_placed$from, py_placed$to)))
+    if (nrow(py_deposit_placed))
+      py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_deposit_placed$script, change_type = "file_placed",
+        detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
+                         py_deposit_placed$from, py_deposit_placed$to)))
     dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod, py_later_rows)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))
@@ -4217,7 +4314,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_found = shared_match$summary$n_found %||% NA_integer_,
       sandbox = sandbox, timeout = timeout, install_missing = install_r,
       recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice),
-      net = net, source_unknown = .repro_source_unknown(install_results))
+      net = net, source_unknown = .repro_source_unknown(install_results),
+      install_results = install_results, versions_recorded = !is.null(recorded_advice))
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

@@ -12,8 +12,4 @@ The schema as a list
 \description{
 Read in the JSON schema for bibr formatted paper objects
 }
-\examples{
-schema <- .paper_schema()
-schema$`$defs`$info$required
-}
 \keyword{internal}

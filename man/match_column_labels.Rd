@@ -25,4 +25,11 @@ definitions by haven priority, then rule-based label-equivalence
 \code{conflicting_definition}. The LLM tiers (fuzzy matching, semantic merge) are
 applied separately by codebook_check when \code{llm_use(TRUE)}.
 }
+\examples{
+cb <- parse_codebook(file.path(demofile("repo"), "documentation",
+                               "stroop_data_codebook.csv"))
+cols <- data.frame(paper_id = "stroop_effect", source_file = "stroop_data.csv",
+                   column_name = c("congruent", "incongruent"))
+match_column_labels(cols, cb)[, c("column_name", "label")]
+}
 \keyword{internal}

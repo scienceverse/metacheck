@@ -47,6 +47,33 @@
 # answer other than 206 is closed unread, so a host that ignores the range
 # cannot make this request transfer a whole archive.
 
+# The body of a streamed answer (req_perform_connection()). httr2's own
+# resp_body_raw() adds each 32 KB piece with c(), which copies everything read
+# so far each time: reading N MB copied about 16 N^2 MB, a 650 MB file inside a
+# zip took hours, and a Zenodo server broke the transfer off (#584). Here the
+# pieces are kept in a list and joined once. NULL for an empty body, as
+# resp_body_raw() gives. The connections here are blocking, so an empty piece
+# normally means the end; should one come earlier, the loop waits briefly
+# instead of reading in a tight loop.
+.resp_body_stream_raw <- function(resp, kb = 512) {
+  # an answer whose body is already in memory (not streamed, such as a mocked
+  # answer in the tests) is read as before
+  if (!is.null(resp) && is.raw(resp$body)) return(httr2::resp_body_raw(resp))
+  chunks <- list()
+  n <- 0L
+  repeat {
+    chunk <- httr2::resp_stream_raw(resp, kb = kb)
+    if (length(chunk) == 0) {
+      if (httr2::resp_stream_is_complete(resp)) break
+      Sys.sleep(0.01)
+      next
+    }
+    n <- n + 1L
+    chunks[[n]] <- chunk
+  }
+  if (n == 0L) NULL else unlist(chunks, use.names = FALSE)
+}
+
 # Retry rule for a SIZE request: the same transient/rate-limit rule
 # download_repo_files() uses for file bytes, minus 403. The storage rule
 # retries 403 because an OSF pre-signed download URL can answer 403 for a
@@ -140,7 +167,7 @@
   if (status == 200L && grepl("^bytes=-", range)) .range_ignored_record(url, resp)
   list(status = status,
        total = .content_range_total(resp),
-       body = if (status == 206L) httr2::resp_body_raw(resp) else NULL)
+       body = if (status == 206L) .resp_body_stream_raw(resp) else NULL)
 }
 
 # ── Hosts that ignore Range ──────────────────────────────────────────────────
@@ -268,7 +295,7 @@
     # 206 = partial content (range honoured). 200 = whole file: only read
     # when it is small (see the comment above).
     body <- NULL
-    if (status == 206L) body <- httr2::resp_body_raw(r)
+    if (status == 206L) body <- .resp_body_stream_raw(r)
     if (status == 200L) {
       # A range from byte 0 asks for the whole file, which a host may answer
       # with a plain 200 while still honouring other ranges, so only a range
@@ -277,7 +304,7 @@
       body_size <- .resp_content_length(r)
       if (is.na(body_size)) body_size <- total
       if (!is.finite(body_size) || body_size > max(n, 2 * 1048576)) return(NULL)
-      body <- utils::tail(httr2::resp_body_raw(r), n)
+      body <- utils::tail(.resp_body_stream_raw(r), n)
     }
     if (!is.null(body)) attr(body, "total") <- total
     body
@@ -389,7 +416,7 @@
     if (status == 200L && from == 0 && isTRUE(allow_short)) {
       cl <- .resp_content_length(r)
       if (is.finite(cl) && cl <= to + 1) {
-        body <- httr2::resp_body_raw(r)
+        body <- .resp_body_stream_raw(r)
         if (length(body) == cl) return(body)
       }
     }
@@ -400,7 +427,7 @@
       if (!is.null(reason)) reason$msg <- sprintf("HTTP %d (range not honoured)", status)
       return(NULL)
     }
-    body <- httr2::resp_body_raw(r)
+    body <- .resp_body_stream_raw(r)
     ends_at_eof <- function() {
       total <- .content_range_total(r)
       is.finite(total) && from + length(body) == total
@@ -671,8 +698,11 @@
 #' @export
 #' @keywords internal
 #' @examples
-#' \dontrun{
-#' zip_peek("https://osf.io/download/abcde/")
+#' if (requireNamespace("zip", quietly = TRUE)) {
+#'   # a zip of the demo repository; a URL of a zip on a server works the same
+#'   z <- file.path(tempdir(), "stroop_effect_paper.zip")
+#'   zip::zipr(z, file.path(demofile("repo"), c("data", "code", "README.md")))
+#'   zip_peek(z)
 #' }
 zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
                      skip_on_api_limit = FALSE, size = NULL) {
@@ -1727,6 +1757,14 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 #'   (table of inner types), and `contents` (the peeked data.frame or `NULL`).
 #' @export
 #' @keywords internal
+#' @examples
+#' if (requireNamespace("zip", quietly = TRUE)) {
+#'   # a zip of the demo repository; a URL of a zip on a server works the same
+#'   z <- file.path(tempdir(), "stroop_effect_paper.zip")
+#'   zip::zipr(z, file.path(demofile("repo"), c("data", "code", "README.md")))
+#'   dec <- zip_decision(z)
+#'   dec[c("worth", "reason")]
+#' }
 zip_decision <- function(url, skip_types = "materials", cache = FALSE,
                          skip_on_api_limit = FALSE, size = NULL) {
   peek <- zip_peek(url, cache = cache, skip_on_api_limit = skip_on_api_limit,

@@ -36,7 +36,11 @@ the cached copy rather than re-downloading. Use \code{\link[=papers_remove]{pape
 delete a cached corpus.
 }
 \examples{
-\dontrun{
-collabra <- papers_load("collabra")
+\donttest{
+if (online("api.github.com")) {
+  # GitHub can refuse when its request limit is reached; then this says why
+  collabra <- tryCatch(papers_load("collabra"),
+                       error = function(e) message(conditionMessage(e)))
+}
 }
 }

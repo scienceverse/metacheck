@@ -18,10 +18,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' github_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' github_links(paper)
 github_links <- function(paper) {
   href <- text <- text_id <- NULL
 
@@ -74,8 +72,12 @@ github_links <- function(paper) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' github_info("scienceverse/metacheck")
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_info("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 github_info <- function(repo, recursive = FALSE) {
   repo <- github_repo(repo)
@@ -193,8 +195,12 @@ github_repo <- function(repo) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' github_readme("scienceverse/metacheck")
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_readme("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 github_readme <- function(repo) {
   if (length(repo) > 1) {
@@ -236,8 +242,12 @@ github_readme <- function(repo) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' github_files("scienceverse/metacheck")
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_files("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 github_files <- function(repo, dir = "",
                          recursive = FALSE) {
@@ -356,7 +366,8 @@ github_files <- function(repo, dir = "",
 #' this endpoint, so it is reported rather than silently returning a partial
 #' file list.
 #'
-#' Returns a list with:
+#' @param repo GitHub repo URL or \code{"owner/repo"} string
+#' @returns a list with:
 #' \describe{
 #'   \item{\code{gated}}{logical; \code{TRUE} only when the repository could
 #'     not be listed at all (invalid/inaccessible, or a truncated tree)}
@@ -364,12 +375,18 @@ github_files <- function(repo, dir = "",
 #'   \item{\code{files}}{data.frame shaped like \code{github_files()} output,
 #'     or \code{NULL} when the tree could not be fetched}
 #'   \item{\code{default_branch}}{character}
+#'   \item{\code{license}}{character licence key, or NA}
 #' }
-#'
-#' @param repo GitHub repo URL or \code{"owner/repo"} string
 #'
 #' @export
 #' @keywords internal
+#' @examples
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   tree <- github_tree_files("scienceverse/metacheck")
+#'   head(tree$files$name)
+#' }
+#' }
 github_tree_files <- function(repo) {
   invalid <- list(gated = TRUE,
                   reason = "invalid or inaccessible GitHub repository",
@@ -532,7 +549,6 @@ github_tree_files <- function(repo) {
 #' @param req an httr2 request object
 #'
 #' @returns the modified request
-#' @export
 #'
 #' @keywords internal
 .github_config <- function(req) {
@@ -604,8 +620,12 @@ github_pat <- function(pat = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' github_languages("scienceverse/metacheck")
+#' \donttest{
+#' if (online("api.github.com")) {
+#'   # GitHub can refuse when its request limit is reached; then this says why
+#'   tryCatch(github_languages("scienceverse/metacheck"),
+#'            error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 github_languages <- function(repo) {
   if (length(repo) > 1) {

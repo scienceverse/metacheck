@@ -255,8 +255,10 @@ llm <- function(text, system_prompt,
   # response cache ----
   # A call at temperature 0 is deterministic in (model, prompt, text, type,
   # params), so replay a stored result instead of re-issuing (and re-billing)
-  # the request. Errors are never cached. See R/llm-cache.R.
-  use_cache <- llm_cache()
+  # the request. Errors are never cached. By default (option unset) the cache
+  # lasts only for the session, llm_cache(TRUE) keeps it between sessions, and
+  # llm_cache(FALSE) turns it off. See R/llm-cache.R.
+  use_cache <- !isFALSE(getOption("metacheck.llm.cache"))
 
   # iterate over the text ----
   responses <- lapply(seq_along(unique_text), function(i) {
@@ -269,6 +271,14 @@ llm <- function(text, system_prompt,
         return(hit$df)
       }
     }
+    # Each request waits at most llm_timeout() (ellmer's own default is 5
+    # minutes, with 3 tries). With metacheck's own 5 attempts below, one
+    # answer could take over an hour, and a job hung at "Querying LLM"
+    # until the server stopped it (Lakens/tue_datamanager_check#4, item 7).
+    # Set here, outside tryCatch(), so on.exit() restores it when this
+    # function ends; the native Ollama route does not use ellmer.
+    old_timeout <- options(ellmer_timeout_s = llm_timeout())
+    on.exit(options(old_timeout), add = TRUE)
     tryCatch({
       if (use_ollama_native) {
         # native ollama API: think=FALSE is honoured here, unlike /v1/
@@ -281,11 +291,6 @@ llm <- function(text, system_prompt,
         if (!is.null(key)) .llm_cache_put(key, out)
         out
       } else {
-        # Each request waits at most llm_timeout() (ellmer's own default is 5
-        # minutes, with 3 tries). With metacheck's own 5 attempts below, one
-        # answer could take over an hour, and a job hung at "Querying LLM"
-        # until the server stopped it (Lakens/tue_datamanager_check#4, item 7).
-        withr::local_options(list(ellmer_timeout_s = llm_timeout()))
         # fresh chat per call to avoid context accumulation
         msg <- utils::capture.output({
           chat <- make_chat()
@@ -444,7 +449,8 @@ llm <- function(text, system_prompt,
 #'   output for as long as curl is willing to wait -- this turns that into a
 #'   visible, retriable per-call failure instead.
 #'
-#' @export
+#' @returns the model's answer (character), without leading or trailing
+#'   white space
 #' @keywords internal
 .llm_ollama_native <- function(text, system_prompt,
                                model = NULL,
@@ -778,7 +784,6 @@ llm_model_list <- function(platform = NULL) {
 #' Returns a list of available models in groq, excluding whisper and vision models (for audio and images) See <https://console.groq.com/docs/models> for more information.
 #'
 #' @returns a table of model info
-#' @export
 #'
 #' @keywords internal
 .llm_model_list_groq <- function() {
@@ -809,9 +814,14 @@ llm_model_list <- function(platform = NULL) {
 #'
 #' @param n The maximum number of calls that the llm() function can make
 #'
-#' @return NULL
+#' @returns the maximum number of calls (integer); invisibly when setting it
 #' @export
 #'
+#' @examples
+#' llm_max_calls()
+#' old <- llm_max_calls()
+#' llm_max_calls(10)
+#' llm_max_calls(old)
 llm_max_calls <- function(n = NULL) {
   if (is.null(n)) {
     return(getOption("metacheck.llm_max_calls"))
@@ -847,9 +857,9 @@ llm_max_calls <- function(n = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' old <- llm_timeout()
 #' llm_timeout(120)
-#' }
+#' llm_timeout(old)
 llm_timeout <- function(seconds = NULL) {
   if (is.null(seconds)) {
     return(getOption("metacheck.llm_timeout", 180))
@@ -879,9 +889,10 @@ llm_timeout <- function(seconds = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' old <- options(metacheck.llm_max_tokens = NULL)
 #' llm_max_tokens(8192)
-#' }
+#' llm_max_tokens()
+#' options(old)
 llm_max_tokens <- function(n = NULL) {
   if (is.null(n)) {
     return(getOption("metacheck.llm_max_tokens"))
@@ -950,9 +961,10 @@ llm_max_tokens <- function(n = NULL) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' old <- options(metacheck.llm_reasoning = NULL)
 #' llm_reasoning("low")
-#' }
+#' llm_reasoning()
+#' options(old)
 llm_reasoning <- function(effort = NULL) {
   if (is.null(effort)) {
     return(getOption("metacheck.llm_reasoning"))
@@ -1062,9 +1074,12 @@ llm_reasoning <- function(effort = NULL) {
 #'
 #' @param model the name of the model
 #'
-#' @return NULL
+#' @returns the name of the default model, or `NULL` when none is set;
+#'   invisibly when setting it
 #' @export
 #'
+#' @examples
+#' llm_model()
 llm_model <- function(model = NULL) {
   if (missing(model)) {
     return(getOption("metacheck.llm.model"))

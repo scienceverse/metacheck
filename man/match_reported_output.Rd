@@ -71,3 +71,11 @@ reported result actually appears in the reproducible output rather than a value
 coinciding by chance. The result carries, per matched test, which output file
 and analysis produced it (provenance).
 }
+\examples{
+# run the paper's paired t-test and compare it with what the paper reports
+stroop <- read.csv(file.path(demofile("repo"), "data", "stroop_data.csv"))
+out <- utils::capture.output(
+  t.test(stroop$incongruent, stroop$congruent, paired = TRUE))
+long <- stat_results_long(read_r_output(out))
+match_reported_output(demopaper("stroop_effect"), long)
+}

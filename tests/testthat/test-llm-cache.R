@@ -6,6 +6,8 @@ local_cache_dir <- function(env = parent.frame()) {
   d <- file.path(tempdir(), paste0("llmcache_", as.integer(runif(1, 1, 1e7))))
   dir.create(d, showWarnings = FALSE, recursive = TRUE)
   withr::local_envvar(METACHECK_LLM_CACHE_DIR = d, .local_envir = env)
+  # the folder is used only for the lasting cache, which is off by default
+  withr::local_options(metacheck.llm.cache = TRUE, .local_envir = env)
   d
 }
 

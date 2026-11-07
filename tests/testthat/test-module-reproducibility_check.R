@@ -1338,7 +1338,7 @@ test_that("execute = TRUE: scripts are not started once total_timeout has run ou
   expect_equal(rr$outcome[match(c("1_slow.R", "2_next.R"), rr$file_name)],
                c("timed_out", "skipped_time_limit"))
   expect_match(paste(mo$report, collapse = "\n"),
-               "1 script was not started, because the time for all scripts together", fixed = TRUE)
+               "1 script was not started, or stopped early, because the time for all scripts together", fixed = TRUE)
 })
 
 test_that("total_timeout can be a clock time: the scripts must be done by then (#523)", {
@@ -1372,10 +1372,10 @@ test_that("total_timeout can be a clock time: the scripts must be done by then (
   expect_equal(rr$outcome[match(c("1_slow.R", "2_next.R"), rr$file_name)],
                c("timed_out", "skipped_time_limit"))
   expect_match(paste(mo$report, collapse = "\n"),
-               "1 script was not started, because the time for all scripts together had run out.", fixed = TRUE)
+               "1 script was not started, or stopped early, because the time for all scripts together had run out.", fixed = TRUE)
 })
 
-test_that("execute = TRUE: a script the second run has no time for keeps its first result (Lakens/tue_datamanager_check#4, item 6)", {
+test_that("execute = TRUE: a script the second run changed but has no time for is skipped, not its first result (#581)", {
   # on GitHub, covr slows R down so much that the first script does not
   # finish within the 8 s this test allows
   skip_on_ci()
@@ -1401,9 +1401,11 @@ test_that("execute = TRUE: a script the second run has no time for keeps its fir
                    timeout = 60, total_timeout = 8)
   rr <- mo$run_results
   expect_true(attr(rr, "reran_for_order"))
+  # 1_use.R is what the second run changed (it now loads 2_def.R first): with
+  # no time left it is skipped_time_limit, not the error the change was to fix.
+  # 2_def.R did not change and had timed out: it is not run again (#581).
   expect_equal(rr$outcome[match(c("1_use.R", "2_def.R"), rr$file_name)],
-               c("errored", "timed_out"))
-  expect_false(any(rr$outcome == "skipped_time_limit"))
+               c("skipped_time_limit", "timed_out"))
 })
 
 test_that("the duplicate note gives each copy's path in the package, not its place on this computer (Lakens/tue_datamanager_check#5, item 2)", {
@@ -1495,4 +1497,42 @@ test_that("execute = TRUE: stored sapply() summaries and a stored effectsize res
   expect_true(any(grepl("SD=2.76", mt$reported, fixed = TRUE)))
   expect_true(any(grepl("dz=4.59", mt$reported, fixed = TRUE)))
   expect_equal(mo$traffic_light, "green")
+})
+
+test_that("the second pass runs only what it changes, and a changed script without time is skipped (#581)", {
+  skip_on_cran()
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  llm_use(FALSE)
+  # a.R uses %>%, which only b.R loads, so the second pass gives a.R a
+  # library(magrittr) line; b.R, which runs after a.R, runs longer than a
+  # script may. a.R fails fast in the first pass, so how much time is left for
+  # its second run depends only on b.R, not on how fast the computer is (on
+  # GitHub's Linux machine a changed script that ran last still finished in
+  # the second that was left)
+  make_repo <- function() {
+    d <- file.path(withr::local_tempdir(.local_envir = parent.frame(2)), "deposit")
+    dir.create(d)
+    writeLines(c("y <- c(1, 2, 3) %>% sum()", "print(y)"), file.path(d, "a.R"))
+    writeLines(c("library(magrittr)", "x <- 1", "Sys.sleep(60)"), file.path(d, "b.R"))
+    d
+  }
+  run <- function(total) {
+    mo <- suppressWarnings(suppressMessages(module_run(
+      test_paper(), "reproducibility_check", local_path = make_repo(), local_only = TRUE,
+      execute = TRUE, sandbox = "process", timeout = 10, total_timeout = total)))
+    rr <- mo$run_results
+    stats::setNames(rr$outcome, rr$file_name)
+  }
+
+  # time for a.R again: b.R, unchanged, is not run again, so a.R runs
+  oc <- run(35)
+  expect_equal(oc[["a.R"]], "ran_ok")
+  expect_equal(oc[["b.R"]], "timed_out")
+
+  # b.R uses up the time for all scripts together: no time for a.R again, so
+  # it is skipped_time_limit, not its first error
+  oc <- run(8)
+  expect_equal(oc[["a.R"]], "skipped_time_limit")
+  expect_equal(oc[["b.R"]], "timed_out")
 })

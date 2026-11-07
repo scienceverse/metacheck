@@ -39,7 +39,7 @@ values outside a range the authors documented, never a guessed one.}
 }
 \value{
 list(problem, message, values, lower, upper, classes) where \code{classes}
-labels each flagged value "missing", "typo:\if{html}{\out{<intended>}}", or "unexplained"
+labels each flagged value "missing", \code{"typo:<intended>"}, or "unexplained"
 }
 \description{
 A rating scale (Likert / rating item) has a small set of consecutive valid
@@ -75,4 +75,7 @@ nothing is flagged for the column.
 This unifies the former \code{data_check_out_of_range} and
 \code{data_check_miscoded_missing}: one detector run, one finding per column.
 }
-\keyword{internal}
+\examples{
+# a 7-point scale with two values outside it
+data_check_scale_values(c(rep(1:7, 7), 99, 33))$message
+}

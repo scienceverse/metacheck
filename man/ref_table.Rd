@@ -16,8 +16,6 @@ a merged table
 Return a table with fixed DOIs and reference text from a paper object or concatenate tables across a list of paper objects.
 }
 \examples{
-\dontrun{
-psychsci <- papers_load("psychsci", cache = TRUE)
-biblio <- ref_table(psychsci[[1]])
-}
+paper <- demopaper()
+biblio <- ref_table(paper)
 }

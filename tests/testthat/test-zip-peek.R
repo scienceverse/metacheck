@@ -1168,3 +1168,39 @@ test_that("zip member names without the UTF-8 flag are read as CP437 (U76)", {
   # the stored length, which the UTF-8 name (9 bytes) no longer has
   expect_equal(cd$name_bytes, 8)
 })
+
+test_that(".resp_body_stream_raw joins the streamed pieces once (#584)", {
+  # pieces handed out one at a time, as httr2::resp_stream_raw() does for a
+  # streamed answer; an empty piece before the end is waited for, not taken
+  # as the end
+  pieces <- list(as.raw(1:3), raw(0), as.raw(4:6), as.raw(7))
+  i <- 0L
+  local_mocked_bindings(
+    resp_stream_raw = function(resp, kb) {
+      i <<- i + 1L
+      if (i <= length(pieces)) pieces[[i]] else raw(0)
+    },
+    resp_stream_is_complete = function(resp) i > length(pieces),
+    .package = "httr2")
+  expect_identical(.resp_body_stream_raw(NULL), as.raw(1:7))
+
+  # an empty answer gives NULL, as httr2::resp_body_raw() does
+  local_mocked_bindings(
+    resp_stream_raw = function(resp, kb) raw(0),
+    resp_stream_is_complete = function(resp) TRUE,
+    .package = "httr2")
+  expect_null(.resp_body_stream_raw(NULL))
+
+  # many pieces: joined once, so 64 MB in 512 KB pieces takes well under a
+  # second (with c() per piece it took minutes)
+  big <- as.raw(rep_len(0:255, 512 * 1024))
+  i <- 0L
+  local_mocked_bindings(
+    resp_stream_raw = function(resp, kb) { i <<- i + 1L; if (i <= 128) big else raw(0) },
+    resp_stream_is_complete = function(resp) i > 128,
+    .package = "httr2")
+  t0 <- Sys.time()
+  out <- .resp_body_stream_raw(NULL)
+  expect_equal(length(out), 128 * 512 * 1024)
+  expect_lt(as.numeric(Sys.time() - t0, units = "secs"), 10)
+})

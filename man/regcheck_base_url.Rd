@@ -21,4 +21,8 @@ then a client-specific default: the bundled local RegCheck server
 (\verb{http://localhost:8000}) for \code{"ollama"}, and the hosted RegCheck app for
 the API-based clients (\code{"groq"}, \code{"openai"}, \code{"deepseek"}).
 }
+\examples{
+regcheck_base_url()
+regcheck_base_url(base_url = "http://localhost:11434/")
+}
 \keyword{internal}

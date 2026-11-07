@@ -17,4 +17,8 @@ a paper object
 \description{
 Read bibr JSON file
 }
+\examples{
+paper <- .read_bibr(demofile("json"))
+paper$info$title
+}
 \keyword{internal}

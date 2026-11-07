@@ -26,7 +26,8 @@
 #' environment variable; its address can be set with \code{BIBR_API_URL}.
 #'
 #' @param file_path Path to the document file, or a directory of documents
-#' @param save_path Path to a directory in which to save the JSON file
+#' @param save_path Path to a directory in which to save the JSON file; there is no default, because CRAN does not allow writing into the
+#'   working directory unless you ask for it
 #' @param backend Which backend to use: \code{"auto"} (default) detects from
 #'   the available API key and URL (see Details), \code{"surf"} uses
 #'   metacheck's API on SURF Research Cloud, \code{"scivrs"} uses the
@@ -77,7 +78,7 @@
 #' convert_bibr(dir, save_path = "results/")
 #' }
 convert_bibr <- function(file_path,
-                         save_path = ".",
+                         save_path,
                          backend = c("auto", "surf", "scivrs", "selfhosted"),
                          api_key = NULL,
                          api_url = NULL,
@@ -87,6 +88,8 @@ convert_bibr <- function(file_path,
                          poll_interval = 2,
                          timeout = 600) {
   backend <- match.arg(backend)
+  # before any file is sent to a server: there is no default folder
+  force(save_path)
 
   # auto-detect backend ----
   # (a key means the Scienceverse platform, a bibr address a self-hosted
@@ -415,8 +418,11 @@ format_bib_authors <- function(authors) {
 
 #' Check that metacheck's API on SURF Research Cloud can convert PDFs
 #'
-#' Its /health endpoint answers with `status` "ok" and `bibr` TRUE when the
-#' server's bibr is ready.
+#' Its /health endpoint answers with `status` "ok", `bibr` TRUE when the
+#' server's bibr is ready, and `grobid` "local" when the server has a GROBID of
+#' its own. Its /convert uses that GROBID when bibr is not ready or fails
+#' (`.convert_paper()` in the surf-research-cloud repository), so the server can
+#' convert a PDF when either one is there.
 #'
 #' @param api_url the URL of the API
 #' @param error whether to generate an error on failure
@@ -448,11 +454,12 @@ format_bib_authors <- function(authors) {
 
   status <- httr2::resp_status(resp)
   body <- tryCatch(httr2::resp_body_json(resp), error = \(e) NULL)
-  ready <- status == 200 && identical(body$status, "ok") && isTRUE(body$bibr)
+  ready <- status == 200 && identical(body$status, "ok") &&
+    (isTRUE(body$bibr) || identical(body$grobid, "local"))
   if (!ready && error) {
     stop("The SURF API on ", api_url, " cannot convert PDFs at the moment",
          if (status != 200) paste0(" (HTTP ", status, ")")
-         else if (!isTRUE(body$bibr)) " (its bibr is not ready)",
+         else " (its bibr is not ready and it has no GROBID of its own)",
          call. = FALSE)
   }
 

@@ -10,6 +10,9 @@ x \%empty_or\% y
 \arguments{
 \item{x, y}{If \code{x} is \code{NULL} or has length 0, will return \code{y}; otherwise returns \code{x}.}
 }
+\value{
+\code{y} if \code{x} is \code{NULL} or has length 0, otherwise \code{x}
+}
 \description{
 Like \code{\link{\%||\%}}, but also substitutes \code{y} when \code{x} has length zero (for
 example an empty array in a parsed JSON API response), not only when \code{x}

@@ -36,3 +36,8 @@ self-describing document in the character of OSD/DDI-Lifecycle/Psych-DS —
 not a repurposing of an unrelated external standard's vocabulary; there is
 no external schema this validates against.
 }
+\examples{
+out <- utils::capture.output(t.test(extra ~ group, data = sleep))
+doc <- stat_output_json(read_r_output(out), paper_id = "demo")
+names(doc)
+}

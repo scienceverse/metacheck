@@ -35,10 +35,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' psychsci <- papers_load("psychsci", cache = TRUE)
-#' rbox_links(psychsci)
-#' }
+#' paper <- demopaper()
+#' rbox_links(paper)
 rbox_links <- function(paper) {
   href <- text <- NULL
 
@@ -91,7 +89,7 @@ rbox_links <- function(paper) {
 #' Get or Set the ResearchBox API Key
 #'
 #' ResearchBox's API (`https://researchbox.org/api_call.php`) needs a personal
-#' key, which you can make at <https://researchbox.org/api>. metacheck reads it from the `RESEARCHBOX_API_KEY` environment variable,
+#' key, which you can make at `https://researchbox.org/api`. metacheck reads it from the `RESEARCHBOX_API_KEY` environment variable,
 #' which you can set in your `.Renviron` file (`usethis::edit_r_environ()`):
 #'
 #' `RESEARCHBOX_API_KEY="your-key"`
@@ -396,9 +394,12 @@ rbox_token <- function(token = NULL) {
 #' @returns a data frame of information
 #' @export
 #' @examples
-#' \dontrun{
-#' # get info on one box
-#' rbox_info("https://researchbox.org/801")
+#' \donttest{
+#' if (online("researchbox.org")) {
+#'   # get info on one box; the server can be busy, then this says why
+#'   tryCatch(rbox_info("https://researchbox.org/801"),
+#'            error = function(e) message(conditionMessage(e)))
+#' }
 #' }
 rbox_info <- function(rb_url, id_col = 1, pb = NULL, cache = FALSE) {
   if (!online("researchbox.org")) {
@@ -493,7 +494,6 @@ rbox_info <- function(rb_url, id_col = 1, pb = NULL, cache = FALSE) {
 #' @param pb a progress bar passed from another function
 #'
 #' @returns a data frame of information
-#' @export
 #' @keywords internal
 .rbox_info <- function(rb_url, pb = NULL) {
   if (is.null(pb)) {
@@ -819,8 +819,11 @@ rbox_info <- function(rb_url, id_col = 1, pb = NULL, cache = FALSE) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' rbox_files("https://researchbox.org/801")
+#' \donttest{
+#' # needs a ResearchBox API key (see rbox_token())
+#' if (online("researchbox.org") && nzchar(rbox_token())) {
+#'   rbox_files("https://researchbox.org/801")
+#' }
 #' }
 rbox_files <- function(rb_url, pb = NULL, cache = FALSE) {
   if (!nzchar(rbox_token())) {
@@ -981,10 +984,12 @@ rbox_search <- function(q, type = c("data", "code", "paper"), limit = 100,
 #' @param subfolders how the files are put into folders: `"type"` (the
 #'   default; "Data", "Code", "Materials", ...) or `"section"` ("Study 1",
 #'   ...). Anything other than the default needs an API key.
-#' @param cache if `TRUE`, reuse a previously cached file list for the
-#'   checksums of a download without a table of contents (see [rbox_files()])
-#'   instead of asking ResearchBox again. The downloaded files themselves are
-#'   always reused.
+#' @param cache if `TRUE`, keep the downloaded files in the lasting on-disk
+#'   cache (see [repo_cache_dir()]) so later sessions reuse them, and reuse a
+#'   previously cached file list for the checksums of a download without a
+#'   table of contents (see [rbox_files()]) instead of asking ResearchBox
+#'   again. If `FALSE` (the default), the files are kept in a temporary folder
+#'   that R removes when the session ends; within the session they are reused.
 #'
 #' @returns a data frame with one row per file (`rb_url`, `name`,
 #'   `file_location`, `size`, `isdir`, `checksum_ok`, plus the file type
@@ -995,12 +1000,14 @@ rbox_search <- function(q, type = c("data", "code", "paper"), limit = 100,
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' rbox_file_download("https://researchbox.org/801")
-#'
-#' # only two files, in folders by section
-#' rbox_file_download("https://researchbox.org/801", file_ids = c(10, 16),
-#'                    subfolders = "section")
+#' \donttest{
+#' if (online("researchbox.org")) {
+#'   # kept in this session's temporary folder (cache = FALSE); the server can
+#'   # be busy, then this says why
+#'   files <- tryCatch(rbox_file_download("https://researchbox.org/801"),
+#'                     error = function(e) message(conditionMessage(e)))
+#'   if (!is.null(files)) files[, c("name", "size")]
+#' }
 #' }
 rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
                                subfolders = c("type", "section"),
@@ -1055,8 +1062,9 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
     list(what = _) |>
     pb$tick(0, tokens = _)
 
-  # Download the ZIP into a persistent cache keyed by the ResearchBox URL, so
-  # re-runs reuse the already-downloaded/unzipped files instead of re-fetching.
+  # Download the ZIP into a cache folder keyed by the ResearchBox URL, so
+  # re-runs reuse the already-downloaded/unzipped files instead of re-fetching
+  # (the lasting cache with cache = TRUE, else this session's temporary one).
   # A download of only some files, or in folders by section, is a different
   # set of files and is cached separately.
   all_files <- identical(as.character(file_ids), "all")
@@ -1067,7 +1075,7 @@ rbox_file_download <- function(rb_url, pb = NULL, file_ids = "all",
   if (!all_files || subfolders != "type") {
     cache_key <- paste(cache_key, subfolders, paste(sort(file_ids), collapse = "-"))
   }
-  tmp_dir <- .repo_cache_subdir(cache_key)
+  tmp_dir <- .repo_cache_subdir(cache_key, cache = cache)
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
   zip_path <- file.path(tmp_dir, "archive.zip")

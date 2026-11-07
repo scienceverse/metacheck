@@ -194,8 +194,8 @@ test_that("convert uses the SURF API first", {
   })
   save_path <- withr::local_tempdir()
 
-  # auto and bibr: SURF
-  for (method in c("auto", "bibr")) {
+  # auto, bibr and grobid: SURF first (it returns the paper JSON in each case)
+  for (method in c("auto", "bibr", "grobid")) {
     urls <- character(0)
     expect_message(
       json_path <- convert(demofile("pdf"), save_path, method = method),
@@ -228,6 +228,28 @@ test_that("convert uses the SURF API first", {
   suppressWarnings(convert(demofile("pdf"), save_path, method = "grobid",
                            api_url = "http://localhost:8070"))
   expect_false(any(grepl("surf.example.org", urls)))
+})
+
+test_that("after SURF, convert tries TU/e, then this computer, then the online list", {
+  local_mocked_bindings(.convert_servers = function(service = NULL) list(
+    list(id = "TUE grobid 0.8.2", service = "grobid", url = "https://grobid.hti.ieis.tue.nl"),
+    list(id = "Grobid FULL 0.9.0", service = "grobid", url = "https://grobidOrg-grobid.hf.space")))
+  ids <- vapply(.convert_candidates(), `[[`, "", "id")
+  expect_equal(ids, c("TUE grobid 0.8.2", "local grobid", "local bibr", "Grobid FULL 0.9.0"))
+
+  # the TU/e server is tried even when the online list cannot be read
+  local_mocked_bindings(.convert_servers = function(service = NULL) list())
+  cand <- .convert_candidates()
+  expect_equal(cand[[1]]$url, "https://grobid.hti.ieis.tue.nl")
+
+  # convert_grobid() without a server: the first GROBID server that answers
+  local_mocked_bindings(
+    .convert_servers = function(service = NULL) list(
+      list(id = "TUE grobid 0.8.2", service = "grobid", url = "https://grobid.hti.ieis.tue.nl"),
+      list(id = "Grobid FULL 0.9.0", service = "grobid", url = "https://grobidOrg-grobid.hf.space")),
+    .grobid_isalive = function(api_url, error = TRUE) grepl("hf.space", api_url))
+  expect_equal(suppressMessages(.grobid_first_alive("https://grobid.hti.ieis.tue.nl")),
+               "https://grobidOrg-grobid.hf.space")
 })
 
 test_that("convert passes over the SURF API when it cannot convert", {

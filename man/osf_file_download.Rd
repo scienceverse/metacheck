@@ -6,7 +6,7 @@
 \usage{
 osf_file_download(
   osf_id,
-  download_to = ".",
+  download_to,
   max_file_size = NULL,
   max_download_size = NULL,
   max_folder_length = Inf,
@@ -25,7 +25,9 @@ contributes to, so a whole account can be archived in one call. To choose
 a subset instead, pass the table from \code{\link[=osf_user_projects]{osf_user_projects()}} (filtered
 however you like) -- any data frame with an \code{osf_id} column works.}
 
-\item{download_to}{path to download to. Each project is saved in its own
+\item{download_to}{path to download to (there is no default: CRAN does not
+allow writing into the working directory unless you ask for it). Each
+project is saved in its own
 folder here, named after its OSF ID. Downloading the same project again
 reuses that folder and fetches only what is missing, so re-running after a
 partial download resumes it instead of making a second copy.}
@@ -149,12 +151,16 @@ were attempted but did not arrive raise a warning naming them.
 }
 
 \examples{
+\donttest{
+if (online("api.osf.io")) {
+  dl <- osf_file_download("6nt4v", download_to = file.path(tempdir(), "osf"),
+                          max_download_size = 10)
+}
+}
 \dontrun{
-osf_file_download("6nt4v")
-
 # download everything one user has, then archive it on Zenodo
-osf_file_download("4i578", download_to = "my_osf",
-                  max_file_size = NULL) |>
+# (needs a Zenodo token)
+osf_file_download("4i578", download_to = "my_osf", max_file_size = NULL) |>
   zenodo_upload()
 }
 }

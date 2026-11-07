@@ -12,3 +12,9 @@ invisibly NULL
 \description{
 Kills the background process started by \code{\link[=regcheck_start_local]{regcheck_start_local()}}.
 }
+\examples{
+\dontrun{
+regcheck_start_local(method = "docker")
+regcheck_stop_local()
+}
+}

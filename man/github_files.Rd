@@ -20,7 +20,11 @@ a data frame of files
 Get File List from GitHub
 }
 \examples{
-\dontrun{
-github_files("scienceverse/metacheck")
+\donttest{
+if (online("api.github.com")) {
+  # GitHub can refuse when its request limit is reached; then this says why
+  tryCatch(github_files("scienceverse/metacheck"),
+           error = function(e) message(conditionMessage(e)))
+}
 }
 }

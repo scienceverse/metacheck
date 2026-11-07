@@ -27,10 +27,10 @@
 # against a real Docker Desktop run before this was caught. /rlib is not a
 # path any Linux base image reserves.
 #
-# Both phases run as a fixed non-root uid/gid (1000:1000, arbitrary but
-# consistent across every run in this package): the image itself is root by
-# default (confirmed against rocker/r-ver:latest), and a container escape as
-# root is a strictly worse outcome than as an unprivileged uid.
+# Both phases run as a non-root uid/gid (see .repro_docker_uid()): the image
+# itself is root by default (confirmed against rocker/r-ver:latest), and a
+# container escape as root is a strictly worse outcome than as an
+# unprivileged uid.
 
 #' Is Docker available and running?
 #'
@@ -44,6 +44,11 @@
 #'   otherwise a human-readable reason, e.g. Docker not installed, the
 #'   daemon not running, or the daemon too busy to answer)
 #' @export
+#' @examples
+#' \donttest{
+#' # can wait up to 105 seconds for a busy Docker
+#' repro_docker_available()$ok
+#' }
 repro_docker_available <- function() {
   bin <- tryCatch(Sys.which("docker"), error = function(e) "")
   if (!nzchar(bin))
@@ -65,11 +70,59 @@ repro_docker_available <- function() {
   list(ok = TRUE, msg = "")
 }
 
-# Fixed non-root uid:gid every docker run in this backend uses. Arbitrary but
-# constant, so files written into a bind-mounted host directory (the
-# materialised sandbox, the throwaway library) are owned by a predictable,
-# non-root id on both sides of the mount.
-.repro_docker_uid <- "1000:1000"
+# The non-root user and group (uid:gid) every docker run in this backend uses.
+# On Linux it is the user running R: a folder R makes there may be written only
+# by the user who owns it, so the image's own user (1000:1000) was refused in
+# the folders it shares with R ("cannot open file '/sandbox/.install_status':
+# Permission denied", on GitHub's Linux machine, where R runs as user 1001).
+# Files the container writes then belong to the user running R, who can read
+# and delete them. Docker Desktop (Windows, macOS) shares folders without that
+# rule, so there it stays 1000:1000. When R runs as root, the containers still
+# do not: they run as 1000:1000, and the folders are opened to them
+# (.repro_docker_share()). options(metacheck.docker_user = "uid:gid") sets it.
+.repro_docker_user_cache <- new.env(parent = emptyenv())
+.repro_docker_uid <- function() {
+  opt <- getOption("metacheck.docker_user")
+  if (!is.null(opt)) return(as.character(opt))
+  if (!identical(Sys.info()[["sysname"]], "Linux")) return("1000:1000")
+  if (is.null(.repro_docker_user_cache$user)) {
+    ids <- tryCatch(c(system2("id", "-u", stdout = TRUE, stderr = FALSE),
+                      system2("id", "-g", stdout = TRUE, stderr = FALSE)),
+                    error = function(e) character(0), warning = function(w) character(0))
+    ok <- length(ids) == 2 && all(grepl("^[0-9]+$", ids)) && ids[1] != "0"
+    .repro_docker_user_cache$user <- if (ok) paste(ids, collapse = ":") else "1000:1000"
+  }
+  .repro_docker_user_cache$user
+}
+
+# Opens a folder that a container writes in to the container's user, when that
+# user is not the one running R on Linux (R runs as root, or
+# options(metacheck.docker_user) names another user): every folder in it may
+# then be written by anyone, and every file read and written, so a script can
+# also replace a file of the deposit. Symbolic links are left alone, so a link
+# in a deposit cannot open a folder outside it. R's temporary folder, which
+# holds these folders, can still be entered only by the user running R.
+.repro_docker_share <- function(dir) {
+  if (!identical(Sys.info()[["sysname"]], "Linux") || !dir.exists(dir)) return(invisible(dir))
+  own <- tryCatch(paste(system2("id", "-u", stdout = TRUE, stderr = FALSE),
+                        system2("id", "-g", stdout = TRUE, stderr = FALSE), sep = ":"),
+                  error = function(e) "", warning = function(w) "")
+  if (identical(own, .repro_docker_uid())) return(invisible(dir))
+  paths <- c(dir, list.files(dir, recursive = TRUE, full.names = TRUE, all.files = TRUE,
+                             include.dirs = TRUE, no.. = TRUE))
+  paths <- paths[!nzchar(Sys.readlink(paths))]
+  is_dir <- dir.exists(paths)
+  open_mode <- as.octmode(ifelse(is_dir, "777", "666"))
+  Sys.chmod(paths, file.mode(paths) | open_mode, use_umask = FALSE)
+  invisible(dir)
+}
+
+# The `-v` argument that mounts a folder of R's at `target` for the container to
+# write in, opened to the container's user first (.repro_docker_share()).
+.repro_docker_bind <- function(dir, target) {
+  .repro_docker_share(dir)
+  paste0(dir, ":", target)
+}
 
 # The `-v` argument that mounts a package library at `target` (/rlib, /pylib).
 # The library is a Docker volume, not the host folder `lib_dir` itself (#568): a
@@ -87,15 +140,17 @@ repro_docker_available <- function() {
 
 .repro_docker_lib_mount <- function(lib_dir, target, read_only = FALSE, image = NULL) {
   ro <- if (read_only) ":ro" else ""
-  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE)))
+  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE))) {
+    if (!read_only) .repro_docker_share(lib_dir)
     return(paste0(normalizePath(lib_dir, mustWork = FALSE), ":", target, ro))
+  }
   vol <- .repro_docker_lib_volume_name(lib_dir)
   have <- tryCatch(processx::run("docker", c("volume", "inspect", vol), error_on_status = FALSE)$status == 0,
                    error = function(e) FALSE)
   if (!have && !read_only && !is.null(image)) {
     processx::run("docker", c("volume", "create", vol), error_on_status = FALSE)
     processx::run("docker", c("run", "--rm", "--network", "none", "-v", paste0(vol, ":/v"), image,
-                              "chown", .repro_docker_uid, "/v"), error_on_status = FALSE)
+                              "chown", .repro_docker_uid(), "/v"), error_on_status = FALSE)
   }
   paste0(vol, ":", target, ro)
 }
@@ -164,8 +219,8 @@ repro_docker_available <- function() {
   if (!length(l) || is.na(pkg) || !nzchar(pkg)) return("")
   q <- gsub("([.|()\\^{}+$*?\\[\\]\\\\])", "\\\\\\1", pkg)
   # "... for package 'pkg'": the package that failed, not one it needs
-  named <- grep(paste0("^ERROR: .*package ['‘\"]", q, "['’\"]"), l, value = TRUE, perl = TRUE)
-  start <- grep(paste0("installing \\*source\\* package ['‘\"]", q, "['’\"]"), l, perl = TRUE)
+  named <- grep(paste0("^ERROR: .*package ['\u2018\"]", q, "['\u2019\"]"), l, value = TRUE, perl = TRUE)
+  start <- grep(paste0("installing \\*source\\* package ['\u2018\"]", q, "['\u2019\"]"), l, perl = TRUE)
   own <- character(0)
   if (length(start)) {
     s <- start[length(start)]
@@ -191,6 +246,24 @@ repro_docker_available <- function() {
   sprintf(paste0("\n[reproducibility_check] The script was stopped for using more than the memory ",
                  "limit of %s GB that each script has here; this says nothing about the code."),
           format(limits$memory_gb))
+}
+
+# Whether a script's output shows that it, or a program it started, ran out of
+# memory. A compiler that runs out is stopped on its own, and R carries on:
+# in 10.1111/1365-2435.14319 compiling a Stan model ended with "g++: fatal error:
+# Killed signal terminated program cc1plus", and the script then failed on sink()
+# (#578, item 8). Also R's own "cannot allocate vector of size", C++'s
+# std::bad_alloc, Python's MemoryError, and the note of .repro_oom_text().
+.repro_out_of_memory <- function(txt) {
+  grepl(paste0("Killed signal terminated program|cannot allocate vector of size|std::bad_alloc|",
+               "(?m)^\\s*MemoryError\\b|was stopped for using more than the memory limit"),
+        ifelse(is.na(txt), "", txt), perl = TRUE)
+}
+
+# The memory each script may use here, as text ("4 GB"), or NA when no limit is set.
+.repro_memory_limit_text <- function() {
+  gb <- getOption("metacheck.docker_resource_limits")$memory_gb
+  if (is.null(gb)) NA_character_ else paste(format(gb), "GB")
 }
 
 .repro_docker_resource_args <- function() {
@@ -359,7 +432,7 @@ repro_docker_available <- function() {
 #'
 #' A second pass after every package has had its turn, since one time limit
 #' covers the whole install: first Bioconductor, because the fixed list of
-#' [.repro_bioc_packages()] misses many names and some packages moved there,
+#' `.repro_bioc_packages()` misses many names and some packages moved there,
 #' keeping only an old copy in the CRAN Archive; then the latest version in the
 #' CRAN Archive, as [.repro_cran_archive_install()] does outside Docker. Two rounds,
 #' because a package can need another archived one (#568, items 9 and 11).
@@ -629,6 +702,12 @@ repro_docker_available <- function() {
 #'   do not need to branch on which backend ran. A row with a `version` is
 #'   treated as there (see [repro_install_deps()]).
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' deps <- repro_dependencies("library(pwr)")
+#' repro_install_deps_docker(deps, file.path(tempdir(), "lib"))
+#' }
 repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-ver:latest",
                                       timeout = 600) {
   empty <- data.frame(package = character(0), source = character(0),
@@ -811,12 +890,12 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   # do even with network access.
   container_name <- .repro_docker_container_name()
   args <- c("run", "--rm", "--name", container_name,
-           "--user", .repro_docker_uid,
+           "--user", .repro_docker_uid(),
            "--cap-drop", "ALL",
            "--security-opt", "no-new-privileges",
            "--pids-limit", "512",
            .repro_docker_resource_args(),
-           "-v", paste0(sandbox_dir, ":/sandbox"),
+           "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
            "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
            image, "Rscript", "/sandbox/install.R")
 
@@ -966,7 +1045,8 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #' @param sandbox_root the materialised layout root on the HOST (from
 #'   [repro_materialize_layout()]) — mounted read-write at `/sandbox`
 #' @param lib_dir throwaway library ON THE HOST (or NULL) — mounted
-#'   read-only at `/rlib` when supplied
+#'   at `/rlib` when supplied, writable, so a package can keep data in its own
+#'   folder
 #' @param image the Docker image to run scripts in (see [.repro_docker_image_for()])
 #' @param timeout per-script timeout in seconds
 #' @param skip character vector of `file_name`s to record as
@@ -988,6 +1068,15 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
 #'   stopped (outcome `download_too_large`) when the scripts together download
 #'   more than the total limit, or a file larger than the limit per file appears.
 #' @export
+#' @examples
+#' \dontrun{
+#' # needs Docker
+#' root <- file.path(tempdir(), "run_demo")
+#' plan <- data.frame(file_name = "analysis.R", target_path = "analysis/analysis.R")
+#' code <- list(analysis.R = c("x <- c(1, 2, 3)", "print(mean(x))"))
+#' run_tbl <- repro_write_scripts(code, list(), plan, root)
+#' repro_run_scripts_docker(run_tbl, order = "analysis.R", sandbox_root = root)
+#' }
 repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NULL,
                                      image = "rocker/r-ver:latest", timeout = 600,
                                      skip = character(0), parses = NULL,
@@ -1041,6 +1130,8 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
                         error = "not started: the time for all scripts together had run out",
                         error_type = NA_character_, undefined_var = NA_character_,
                         stdout = "", stderr = "", elapsed = 0)))
+    # the time left for all scripts, not the script's own limit, may stop it (#581)
+    cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
     exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
@@ -1175,7 +1266,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              # (10.1111/1365-2656.12673, 10.1111/1365-2656.13608; #568). The code can
              # already run anything R can; the other limits stay.
              "--tmpfs", "/tmp:exec",
-             "--user", .repro_docker_uid,
+             "--user", .repro_docker_uid(),
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
@@ -1184,9 +1275,21 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
              # stopped three scripts of 10.1111/2041-210X.14007 (#568)
              "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
-             "-v", paste0(sandbox_root, ":/sandbox"))
+             # Java 17 and later keep other code out of their own classes, and
+             # rJava, which calls Java's methods by reflection, was refused the
+             # iterator of an ArrayList: tabulizer::extract_tables() stopped with
+             # "IllegalAccessException: class RJavaTools cannot access a member
+             # of class java.util.ArrayList$Itr" (10.1002/2688-8319.12124). Java
+             # reads this when it starts, also inside R (#578, item 7); tested in
+             # the image with Java 21.
+             "-e", "JAVA_TOOL_OPTIONS=--add-opens=java.base/java.util=ALL-UNNAMED",
+             "-v", .repro_docker_bind(sandbox_root, "/sandbox"))
+    # The library is writable: a package can keep data in its own folder, as
+    # zipcodeR::download_zip_data() does in /rlib/zipcodeR/data, which stopped
+    # with "Read-only file system" (10.1002/pan3.10527; #575, item 8). The
+    # library is the paper's own and is removed after the check.
     if (!is.null(lib_dir_norm))
-      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", read_only = TRUE))
+      args <- c(args, "-v", .repro_docker_lib_mount(lib_dir_norm, "/rlib", image = image))
     args <- c(args, image, .repro_docker_counted_cmd(c("Rscript", container_wrapper), net))
 
     out_file <- tempfile(fileext = ".out")
@@ -1242,6 +1345,8 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       msg <- conditionMessage(res)
       etype <- if (is_timeout) "timeout" else "runtime"
       outc <- if (is_timeout) "timed_out" else "errored"
+      # stopped by the time left for all scripts, not its own limit (#581)
+      if (is_timeout && isTRUE(cut_by_deadline)) etype <- "deadline"
       return(data.frame(file_name = fn, outcome = outc, error = msg,
                         error_type = etype, undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
@@ -1250,7 +1355,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
     if (isTRUE(res$timeout)) {
       return(data.frame(file_name = fn, outcome = "timed_out",
                         error = .repro_timeout_text(timeout, watched),
-                        error_type = "timeout", undefined_var = NA_character_,
+                        error_type = if (isTRUE(cut_by_deadline)) "deadline" else "timeout", undefined_var = NA_character_,
                         stdout = so, stderr = se, elapsed = elapsed) |>
                dplyr::mutate(script_lines = list(exec_lines), captures = list(captures)))
     }

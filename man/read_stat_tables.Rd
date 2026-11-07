@@ -45,3 +45,9 @@ unnamed column), store values at full precision (a p of \code{0.000632} rather
 than the rendered \code{"< .001"}), and mark missing cells explicitly instead of
 as a rendered dash.
 }
+\examples{
+jasp <- system.file("extdata", "sample.jasp", package = "metacheck")
+tables <- read_stat_tables(jasp)
+length(tables)
+tables[[1]]$data
+}

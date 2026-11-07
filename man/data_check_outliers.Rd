@@ -20,4 +20,7 @@ list(problem, message, values, lower, upper)
 Values below Q1 - k\emph{IQR or above Q3 + k}IQR. This is the symmetric boxplot
 rule; a skew-aware (medcouple) variant can be added later.
 }
+\examples{
+data_check_outliers(c(10, 11, 9, 12, 10, 95))$message
+}
 \keyword{internal}

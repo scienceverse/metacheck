@@ -338,11 +338,21 @@ repro_dependencies <- function(code_text, lang = "R") {
 #' gets `NA`, never a guess.
 #'
 #' @param code_text the code text for a single file, comments already stripped
+#' @param calls also resolve a call holding one quoted text and nothing else,
+#'   `paste0("...")`, `paste("...")`, `file.path("...")`, `path.expand("...")`
+#'   or `normalizePath("...")`, which give that text: a folder on the authors'
+#'   computer was held as `main_address = paste0("~/Library/...")` in
+#'   10.1111/1365-2435.14620 (#578, item 4). `FALSE` by default.
 #'
 #' @returns a named character vector (name = literal value), possibly empty
 #' @keywords internal
-.repro_simple_string_vars <- function(code_text) {
+.repro_simple_string_vars <- function(code_text, calls = FALSE) {
   pat <- "^([.a-zA-Z][.a-zA-Z0-9_]*)\\s*(?:<<-|<-|=)\\s*(['\"])((?:[^'\"\\\\]|\\\\.)*)\\2\\s*$"
+  if (isTRUE(calls))
+    code_text <- sub(paste0("^([.a-zA-Z][.a-zA-Z0-9_]*\\s*(?:<<-|<-|=)\\s*)",
+                            "(?:base::)?(?:paste0|paste|file\\.path|path\\.expand|normalizePath)",
+                            "\\s*\\(\\s*((['\"])(?:[^'\"\\\\]|\\\\.)*\\3)\\s*\\)\\s*$"),
+                     "\\1\\2", code_text, perl = TRUE)
   m <- regmatches(code_text, regexec(pat, code_text, perl = TRUE))
   hits <- Filter(function(x) length(x) == 4, m)
   if (length(hits) == 0) return(character(0))
@@ -798,6 +808,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   plan_current <- if ("current_path" %in% names(plan))
     sub("^(\\./|/)+", "", gsub("\\\\", "/", plan$current_path)) else rep(NA_character_, nrow(plan))
   named_by_path <- function(cand, ref) cand[.repro_path_named(plan_current[cand], ref, script_path)]
+  # the one candidate nearest the script, when nothing else tells (see .repro_nearest_copy())
+  nearest <- function(cand) cand[.repro_nearest_copy(plan_current[cand], script_path, plan_current)]
 
   # Resolve each PLAN ROW's own on-disk source (see .repro_plan_sources()),
   # for the content-hash mirror collapsing below. Only built when
@@ -918,6 +930,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     if (!is.na(script_grp)) pick <- cand[cand_grp == script_grp & !is.na(cand_grp)]
     if (length(pick) != 1 && !is.na(ref_grp))
       pick <- cand[cand_grp == ref_grp & !is.na(cand_grp)]
+    if (length(pick) != 1) pick <- nearest(cand)
     if (length(pick) == 1) {
       data.frame(ref = refs[i], basename = ref_base[i], matched = TRUE,
                  target = pick_target(pick, ref_ext[i]), ambiguous = FALSE,
@@ -975,6 +988,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     if (!is.na(script_grp)) pick <- cand[cand_grp == script_grp & !is.na(cand_grp)]
     if (length(pick) != 1 && !is.na(key_grp))
       pick <- cand[cand_grp == key_grp & !is.na(cand_grp)]
+    if (length(pick) != 1) pick <- nearest(cand)
     if (length(pick) == 1)
       data.frame(ref = call_refs$call_text[i], basename = key_base, matched = TRUE,
                 target = pick_target(pick, key_ext), ambiguous = FALSE,
@@ -1030,6 +1044,14 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
         grepl(paste0("/\\{", vq, "\\}"), joined_text, perl = TRUE)
     }, logical(1)))
   }, logical(1))
+  # Whether the path is the one argument of here(): it then counts from the folder
+  # here() starts in, not from the folder the script runs from (see
+  # .repro_keep_working_refs()).
+  out$in_here <- vapply(seq_len(nrow(out)), function(i) {
+    if (isTRUE(out$is_call[i])) return(FALSE)
+    q <- gsub("([.\\\\+*?^$()|{}\\[\\]])", "\\\\\\1", out$ref[i])
+    grepl(paste0("\\bhere(?:::here)?\\s*\\(\\s*[\"']", q, "[\"']\\s*\\)"), joined_text, perl = TRUE)
+  }, logical(1))
   out
 }
 
@@ -1064,6 +1086,50 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   }, integer(1))
   best <- which(shared == max(shared))
   if (max(shared) >= 2 && length(best) == 1) best else integer(0)
+}
+
+# Which of several same-named files a script means, when neither the reference's
+# path nor the study tells. A copy inside a folder with scripts of its own, which
+# the script is not in, belongs to another project of the deposit: in
+# 10.1111/1365-2656.13220 "R Code/1-Primary Analysis/DMS-NRSA-CA.Rmd" reads
+# "NRSA-invertebrates.csv", which is in "Data/" and, with other content, in
+# "NRSA-CA-QC/data/", next to "NRSA-CA-QC/R/" and its own scripts (#575, item 3).
+# Of the copies left, the one whose folder shares the most folders from the top
+# with the script's own folder, when that is one copy and at least one folder.
+# `paths` are the candidates' paths, `all_paths` every path of the deposit, both
+# as `script_path`. Returns an index into `paths`; none when that leaves no copy
+# or several, since the code is not guessed at.
+.repro_nearest_copy <- function(paths, script_path = NULL, all_paths = character(0)) {
+  if (is.null(script_path) || length(script_path) != 1 || is.na(script_path) ||
+      !nzchar(script_path) || length(paths) < 2 || anyNA(paths)) return(integer(0))
+  norm <- function(p) sub("^(\\./|/)+", "", tolower(gsub("\\\\", "/", p)))
+  paths <- norm(paths)
+  script_dir <- dirname(norm(script_path))
+  code <- norm(all_paths[!is.na(all_paths) &
+                           grepl("\\.(r|rmd|qmd|py|ipynb|m|do|jl|sas|sps)$", all_paths, ignore.case = TRUE)])
+  inside <- function(p, f) startsWith(p, paste0(f, "/"))
+  other_project <- vapply(paths, function(p) {
+    d <- dirname(p)
+    while (!d %in% c(".", "")) {
+      if (any(inside(code, d)) && !inside(paste0(script_dir, "/x"), d)) return(TRUE)
+      d <- dirname(d)
+    }
+    FALSE
+  }, logical(1), USE.NAMES = FALSE)
+  keep <- which(!other_project)
+  if (length(keep) == 1) return(keep)
+  if (!length(keep)) return(integer(0))
+  sd <- if (script_dir %in% c(".", "")) character(0) else strsplit(script_dir, "/", fixed = TRUE)[[1]]
+  shared <- vapply(paths[keep], function(p) {
+    d <- dirname(p)
+    pd <- if (d %in% c(".", "")) character(0) else strsplit(d, "/", fixed = TRUE)[[1]]
+    n <- min(length(pd), length(sd))
+    if (n == 0) return(0L)
+    same <- pd[seq_len(n)] == sd[seq_len(n)]
+    if (all(same)) n else which(!same)[1] - 1L
+  }, integer(1), USE.NAMES = FALSE)
+  best <- keep[shared == max(shared)]
+  if (max(shared) >= 1 && length(best) == 1) best else integer(0)
 }
 
 # Text assigned to a variable, alone or in c(): names a later call may read.
@@ -1198,7 +1264,8 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 # wrote. Installed packages are not counted.
 .repro_sandbox_names <- function(root) {
   f <- gsub("\\\\", "/", list.files(root, recursive = TRUE))
-  f[!grepl("^(_rlib|_pylib2?)/", f)]
+  # _lib is the R library (see the module), in the sandbox outside Docker
+  f[!grepl("^(_r?lib|_pylib2?)/", f)]
 }
 
 # Before a script runs once more (see .repro_written_later()): a file it looked
@@ -1212,30 +1279,82 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 .repro_place_written <- function(later, results, run_tbl, root, before, after) {
   none <- data.frame(script = character(0), file = character(0), from = character(0), to = character(0))
   if (!length(later)) return(none)
-  new <- setdiff(after, before)
+  .repro_place_files(results, run_tbl, root, setdiff(after, before), later)
+}
+
+# Before a script runs once more: a file it looked for in vain, which the deposit
+# holds in another folder, is copied to where it looked. A path built while the
+# script runs cannot be rewritten: in 10.1111/1365-2656.13415
+# file.path(local.directory, "data") gave "./data/HMSC_YXdata.csv", while Dryad,
+# which keeps no folders, has the file at the top (#575, item 2). Only when one
+# file of the deposit has that name, or all that do have the same content.
+# `before` holds the sandbox's files before the run (.repro_sandbox_names()).
+# Returns the copies: script, file, from, to (from the top).
+.repro_place_from_deposit <- function(results, run_tbl, root, before) {
+  none <- data.frame(script = character(0), file = character(0), from = character(0), to = character(0))
+  if (is.null(results) || !nrow(results) || !length(before)) return(none)
+  .repro_place_files(results, run_tbl, root, before, NULL, same_content = TRUE)
+}
+
+# The copies of .repro_place_written() and .repro_place_from_deposit(): for each
+# script that stopped on a file (only the files in `wanted[[script]]` when that
+# is given), the one file of `pool` (paths from the top of `root`) with its name
+# is copied to the path the error gives, counted from the folder the script runs
+# in. Several files of that name count as one when `same_content` and they are
+# identical. A path on the authors' computer, or one outside the sandbox, gets no copy.
+.repro_place_files <- function(results, run_tbl, root, pool, wanted = NULL, same_content = FALSE) {
+  none <- data.frame(script = character(0), file = character(0), from = character(0), to = character(0))
+  if (is.null(results) || !nrow(results) || !length(pool) || is.null(run_tbl)) return(none)
   root_n <- gsub("\\\\", "/", normalizePath(root, mustWork = FALSE))
+  # an existing folder, from the top of the sandbox ("." for the top); NA outside it
+  rel_dir <- function(path) {
+    p <- gsub("\\\\", "/", normalizePath(path, mustWork = FALSE))
+    if (identical(tolower(p), tolower(root_n))) return(".")
+    if (!startsWith(tolower(p), paste0(tolower(root_n), "/"))) return(NA_character_)
+    substring(p, nchar(root_n) + 2)
+  }
+  pool_base <- tolower(basename(pool))
+  scripts <- if (is.null(wanted)) results$file_name[results$outcome %in% "errored"] else names(wanted)
   rows <- list()
-  for (s in names(later)) {
+  for (s in scripts) {
     i <- match(s, results$file_name); k <- match(s, run_tbl$file_name)
     if (is.na(i) || is.na(k)) next
-    wanted <- .repro_unopened_files(paste(results$error[i], results$stderr[i]), full = TRUE)
-    wanted <- wanted[tolower(basename(wanted)) %in% tolower(later[[s]])]
-    for (p in unique(wanted)) {
-      dest <- if (startsWith(p, "/sandbox/")) file.path(root, sub("^/sandbox/", "", p))
-              else if (grepl("^(/|~|[A-Za-z]:)", p)) NA_character_      # the authors' own computer
-              else file.path(run_tbl$run_dir[k], p)
-      if (is.na(dest) || file.exists(dest)) next
-      cand <- new[tolower(basename(new)) == tolower(basename(p))]
+    paths <- .repro_unopened_files(paste(results$error[i], results$stderr[i]), full = TRUE)
+    if (!is.null(wanted)) paths <- paths[tolower(basename(paths)) %in% tolower(wanted[[s]])]
+    run_dir <- rel_dir(run_tbl$run_dir[k])
+    for (p in unique(paths)) {
+      # the path from the top of the sandbox; NA for one on the authors' own
+      # computer, or one that leaves the sandbox
+      to <- if (startsWith(p, "/sandbox/")) .repro_norm_rel(sub("^/sandbox/", "", p))
+            else if (grepl("^(/|~|[A-Za-z]:)", p) || is.na(run_dir)) NA_character_
+            else .repro_norm_rel(if (run_dir == ".") p else file.path(run_dir, p))
+      if (is.na(to) || !nzchar(to)) next
+      dest <- file.path(root, to)
+      if (file.exists(dest)) next
+      cand <- pool[pool_base == tolower(basename(p)) & file.exists(file.path(root, pool))]
+      if (length(cand) > 1 && same_content &&
+          length(unique(.repro_md5(file.path(root, cand)))) == 1) cand <- cand[1]
       if (length(cand) != 1) next
       dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
       if (isTRUE(file.copy(file.path(root, cand), dest)))
-        rows[[length(rows) + 1]] <- data.frame(
-          script = s, file = basename(p), from = cand,
-          to = sub(paste0("^", gsub("([.|()\\^{}+$*?\\[\\]])", "\\\\\\1", root_n), "/"), "",
-                   gsub("\\\\", "/", normalizePath(dest, mustWork = FALSE))))
+        rows[[length(rows) + 1]] <- data.frame(script = s, file = basename(p), from = cand, to = to)
     }
   }
   if (length(rows)) do.call(rbind, rows) else none
+}
+
+# The report's sentence on the files of the deposit copied to where a script
+# looked for them (see .repro_place_from_deposit()).
+.repro_placed_text <- function(placed) {
+  if (is.null(placed) || !nrow(placed)) return("")
+  n <- nrow(placed)
+  sprintf(paste0(" **%s looked for %s in another folder than the deposit has %s**, so before ",
+                 "running %s once more we copied %s there: %s. Building paths from the top of ",
+                 "the project (as with `here::here()`), or keeping the folders the code expects, solves this."),
+          plural(length(unique(placed$script)), "A script", sprintf("%d scripts", length(unique(placed$script)))),
+          plural(n, "a file", sprintf("%d files", n)), plural(n, "it", "them"),
+          plural(length(unique(placed$script)), "it", "them"), plural(n, "it", "them"),
+          paste(sprintf("`%s` to `%s` for `%s`", placed$from, placed$to, placed$script), collapse = "; "))
 }
 
 # After a run: the scripts that stopped on a file of a name a script wrote at a
@@ -1287,8 +1406,13 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 # After a run: the names of the files scripts could not open, from their errors;
 # with `full = TRUE` the paths as the errors give them.
 .repro_unopened_files <- function(msgs, full = FALSE) {
+  # also sf's 'Cannot open "x.shp"' and terra's 'file does not exist: x.tif' (#575, item 2)
+  # and the curly quotes R uses in a UTF-8 locale: readxl's "`path` does not exist: '~/...'"
+  q <- "['\"\u2018\u2019]"; nq <- "[^'\"\u2018\u2019\n]"
   pat <- paste0("(?:cannot open (?:compressed )?file|No such file or directory:?|does not exist)",
-                "[^'\"\n]*['\"]([^'\"\n]+)['\"]|['\"]([^'\"\n]+)['\"]:? No such file|['\"]([^'\"\n]+)['\"] does not exist")
+                nq, "*", q, "(", nq, "+)", q, "|", q, "(", nq, "+)", q, ":? No such file|",
+                q, "(", nq, "+)", q, " does not exist",
+                "|Cannot open ", q, "(", nq, "+)", q, "|file does not exist: ([^\\s'\"]+)")
   out <- unlist(lapply(.utf8_lines(msgs[!is.na(msgs)]), function(m) {
     k <- regmatches(m, gregexpr(pat, m, perl = TRUE))[[1]]
     vapply(k, function(x) { g <- regmatches(x, regexec(pat, x, perl = TRUE))[[1]][-1]; g[nzchar(g)][1] },
@@ -1420,6 +1544,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 #'   each `source()` reference as written, in the order of `sources`: when
 #'   several files share the name a `source()` call gives, these decide which
 #'   one it means, and if they cannot, no edge is added.
+#' @param extra_edges a list of `c(from_file_name, to_file_name)` pairs, or
+#'   `NULL` (default). Each pair adds the rule that the file `from_file_name`
+#'   runs before the file `to_file_name`, such as when an error about an
+#'   undefined variable shows that the file defining it must run first.
 #'
 #' @returns a data frame with columns `file_name`, `order` (1-based run
 #'   position, NA when unplaceable), `depends_on` (comma-joined file_names that
@@ -1429,7 +1557,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 #'   signal placed a multi-file set (they share `order = NA`, basis `none`).
 #'   Attribute `"fuzzy_sources"` is a data frame (`from`, `to`) of `source()`
 #'   edges that only resolved after normalising both basenames (a renumbered/
-#'   reworded script reference — see [.repro_normalize_basename()]), empty
+#'   reworded script reference — see `.repro_normalize_basename()`), empty
 #'   when every `source()` reference matched an exact basename. Attribute
 #'   `"source_edges"` is a data frame (`from`, `to`) of every resolved
 #'   `source()` edge, exact or fuzzy: `from` is the sourced file, `to` the
@@ -1761,6 +1889,12 @@ repro_run_order <- function(files, extra_edges = NULL) {
 #' @returns a data frame with `file_name` and list-columns `reads`, `writes`,
 #'   `sources` (each a character vector of basenames).
 #' @export
+#' @examples
+#' code <- list(clean.R = c("d <- read.csv('raw.csv')", "write.csv(d, 'clean.csv')"),
+#'              analysis.R = c("source('clean.R')", "d <- read.csv('clean.csv')"))
+#' io <- repro_file_io(code)
+#' io$reads
+#' io$writes
 repro_file_io <- function(code_text_list, lang = "R") {
   if (is.null(code_text_list) || length(code_text_list) == 0)
     return(data.frame(file_name = character(0)))
@@ -1855,38 +1989,10 @@ repro_file_io <- function(code_text_list, lang = "R") {
 #' @returns TRUE when an `open()` call on the line has a write mode
 #' @keywords internal
 .py_open_writes <- function(line) {
-  starts <- gregexpr("\\bopen\\s*\\(", line, perl = TRUE)[[1]]
-  if (starts[1] == -1) return(FALSE)
-  chars <- strsplit(line, "", fixed = TRUE)[[1]]
-  first <- starts + attr(starts, "match.length")   # first character after "("
-  for (k in seq_along(starts)) {
-    # the call's closing parenthesis, skipping quoted text and nested brackets
-    depth <- 1L; in_str <- NA_character_; end <- NA_integer_; i <- first[k]
-    while (i <= length(chars)) {
-      ch <- chars[i]
-      if (!is.na(in_str)) {
-        if (ch == "\\") i <- i + 1L
-        else if (ch == in_str) in_str <- NA_character_
-      } else if (ch %in% c("'", '"')) in_str <- ch
-      else if (ch %in% c("(", "[", "{")) depth <- depth + 1L
-      else if (ch %in% c(")", "]", "}")) {
-        depth <- depth - 1L
-        if (depth == 0L) { end <- i; break }
-      }
-      i <- i + 1L
-    }
-    if (is.na(end) || end == first[k]) next
-    args <- vapply(.repro_split_args(paste(chars[first[k]:(end - 1L)], collapse = "")),
-                   function(a) trimws(a$text), character(1))
-    named <- grepl("^[A-Za-z_][A-Za-z0-9_]*\\s*=(?!=)", args, perl = TRUE)
-    is_mode <- named & grepl("^mode\\s*=", args)
-    mode <- if (any(is_mode)) sub("^mode\\s*=\\s*", "", args[is_mode][1])
-            else args[!named][2]
-    if (!is.na(mode) &&
-        grepl("^(['\"])(?=[^'\"]*[wax+])[rwaxbt+]+\\1$", mode, perl = TRUE))
-      return(TRUE)
-  }
-  FALSE
+  # the call text is blanked when its mode writes (code_check.R)
+  !identical(.code_blank_write_opens(line, "Python",
+                                     mode_regex = "^(['\"])(?=[^'\"]*[wax+])[rwaxbt+]+\\1$"),
+             line)
 }
 
 #' Find the variables each script defines at top level
@@ -1906,6 +2012,9 @@ repro_file_io <- function(code_text_list, lang = "R") {
 #' @returns a data frame with `file_name` and a list-column `defines` (character
 #'   vector of variable names each file assigns at top level).
 #' @export
+#' @examples
+#' code <- list(prep.R = c("x <- 1", "y <- x + 1"), analysis.R = "print(y)")
+#' repro_defined_vars(code)
 repro_defined_vars <- function(code_text_list) {
   if (is.null(code_text_list) || length(code_text_list) == 0)
     return(data.frame(file_name = character(0)))
@@ -1955,7 +2064,7 @@ repro_defined_vars <- function(code_text_list) {
 #' PACKAGE export the author simply forgot to `library()`, not a local
 #' variable/function). Deliberately scoped, not a blind search of every
 #' installed or CRAN package: only `candidates` (the paper's own declared
-#' dependencies plus [.repro_common_pkgs()]'s small curated safe-list) are
+#' dependencies plus `.repro_common_pkgs()`'s small curated safe-list) are
 #' checked, so an ambiguous common name (`%>%`, `select`, ...) across the
 #' package universe at large is never even considered — see this function's
 #' caller for why a blind scan is unsafe (a real corpus check found `%>%`
@@ -2081,6 +2190,10 @@ repro_defined_vars <- function(code_text_list) {
 #'   `similar_to` (a candidate near-match basename from the repository's file
 #'   list, or `NA` — only ever set for `absent` rows; see below).
 #' @export
+#' @examples
+#' skipped <- data.frame(file_name = "big.csv", file_size = 200 * 1024 * 1024)
+#' repro_missing_inputs(c("missing.csv", "big.csv"), plan = NULL,
+#'                      structure_df = NULL, skipped = skipped)
 repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
   refs <- unique(tolower(basename(gsub("\\\\", "/", refs))))
   empty <- data.frame(basename = character(0), status = character(0),
@@ -2128,12 +2241,27 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
     # match something unrelated purely because 3 edits is a large fraction of
     # it — same "do not guess" spirit as the rest of this file.
     max_dist <- min(3L, floor(nchar(b) / 4))
-    if (max_dist < 1L) return(NA_character_)
-    d <- utils::adist(b, all_candidates)[1, ]
-    d[cand_ext != ext] <- Inf
-    hit <- which(d <= max_dist)
-    if (length(hit) == 0) return(NA_character_)
-    all_candidates[hit[which.min(d[hit])]]
+    if (max_dist >= 1L) {
+      d <- utils::adist(b, all_candidates)[1, ]
+      d[cand_ext != ext] <- Inf
+      hit <- which(d <= max_dist)
+      if (length(hit) > 0) return(all_candidates[hit[which.min(d[hit])]])
+    }
+    # One name is the other with a piece added at its start or end, as a file
+    # numbered or dated before it was shared: Plants2024.txt for Plants.txt
+    # (10.1111/1365-2435.14714), VideoData.csv for FSVideoData.csv
+    # (10.1111/1365-2435.14431) (#575, item 11). Same extension, a name of at
+    # least four letters or digits, and only the one file with the shortest piece.
+    cand_key <- .repro_name_key(all_candidates)
+    if (nchar(key) < 4) return(NA_character_)
+    short <- ifelse(nchar(cand_key) < nchar(key), cand_key, key)
+    long <- ifelse(nchar(cand_key) < nchar(key), key, cand_key)
+    affix <- cand_ext == ext & nchar(short) >= 4 & cand_key != key &
+      (startsWith(long, short) | endsWith(long, short))
+    if (!any(affix)) return(NA_character_)
+    extra <- abs(nchar(cand_key) - nchar(key))
+    best <- which(affix & extra == min(extra[affix]))
+    if (length(best) == 1) all_candidates[best] else NA_character_
   }
 
   rows <- lapply(refs, function(b) {
@@ -2509,6 +2637,14 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #' @returns `root`, invisibly, with attribute `"materialised"`: a data frame of
 #'   `target_path` / `source` / `ok` (whether the copy succeeded) rows.
 #' @export
+#' @examples
+#' src <- tempfile(fileext = ".csv")
+#' writeLines(c("a,b", "1,2"), src)
+#' plan <- data.frame(file_name = "x.csv", target_path = "data/x.csv")
+#' structure_df <- data.frame(file_name = "x.csv", file_location = src)
+#' root <- file.path(tempdir(), "layout_demo")
+#' repro_materialize_layout(plan, structure_df, root)
+#' list.files(root, recursive = TRUE)
 repro_materialize_layout <- function(plan, structure_df, root) {
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
   # A flat folder every write call is redirected into (see
@@ -2539,9 +2675,16 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   rows <- lapply(which(has_target), function(i) {
     tgt <- plan$target_path[i]
     src <- sources[i]
-    if (is.na(src))
-      return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
+    # The folder is made also when its file cannot be copied: a script can
+    # write into a folder of the deposit that holds only a placeholder, as
+    # data/raw/.dummy in pgcorpus/gutenberg (10.1002/pan3.10256), where the
+    # empty placeholders had no source and their folders were not made (#575, item 5)
     dest <- file.path(root, .portable_path(tgt))
+    if (is.na(src)) {
+      if (!grepl("(^|/)\\.\\.(/|$)", gsub("\\\\", "/", tgt)))
+        dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+      return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
+    }
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
     ok <- isTRUE(file.copy(src, dest, overwrite = TRUE))
     # The copy is the code's to change: in the Docker sandbox the code runs
@@ -2695,7 +2838,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' Rewrite only the references that cannot work as written
 #'
 #' Every script runs in the repository as the authors organised it, with every
-#' file at its own path, from the folder [.repro_run_folders()] chooses. A
+#' file at its own path, from the folder `.repro_run_folders()` chooses. A
 #' reference is then:
 #' * left as written when it names a file's path from the top
 #'   (`"raw_data/scan1/log.csv"`), also when other files share the name (20
@@ -2727,16 +2870,26 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #' @param plan the package layout's plan ([.repro_package_plan()])
 #' @param script_path the script's own path in the package
 #' @param run_dir the folder the script runs from, from the top of the package
-#'   (see [.repro_run_folders()]); a reference works as written when it names a
+#'   (see `.repro_run_folders()`); a reference works as written when it names a
 #'   file counted from there, and a rewritten path is counted from there too
+#' @param here_dir the folder `here()` starts in, from the top of the package
+#'   (see `.repro_here_start()`): a path that is the one argument of `here()`
+#'   (`in_here`) counts from there, not from `run_dir`
 #' @returns `rw` with a logical `as_written` column
 #' @keywords internal
-.repro_keep_working_refs <- function(rw, plan, script_path = NA_character_, run_dir = ".") {
+.repro_keep_working_refs <- function(rw, plan, script_path = NA_character_, run_dir = ".",
+                                     here_dir = ".") {
   rw$as_written <- rep(FALSE, nrow(rw))
   if (!nrow(rw) || is.null(plan) || !nrow(plan)) return(rw)
   is_call <- if ("is_call" %in% names(rw)) rw$is_call %in% TRUE else rep(FALSE, nrow(rw))
   ref <- sub("^(\\./)+", "", gsub("\\\\", "/", rw$ref))
   absolute <- grepl("^([A-Za-z]:/|/|~)", ref)
+  # here("data/x.csv") counts from where here() starts: rewritten from the folder
+  # the script runs from, here("JohnstoneStrait/dateModPars.csv") became
+  # here("../data/dateModPars.csv"), above the top (10.1111/1365-2656.12852; #575, item 6)
+  in_here <- if ("in_here" %in% names(rw)) rw$in_here %in% TRUE & !absolute else rep(FALSE, nrow(rw))
+  if (is.null(here_dir) || length(here_dir) != 1 || is.na(here_dir)) here_dir <- "."
+  dir_of <- ifelse(in_here, here_dir, run_dir)
   # the path from the top, when the reference names a file relative to the
   # script's own folder
   script_dir <- if (length(script_path) == 1 && !is.na(script_path) && nzchar(script_path))
@@ -2746,9 +2899,10 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     p <- .repro_norm_rel(if (script_dir %in% c(".", "")) r else file.path(script_dir, r))
     if (!is.na(p) && p %in% plan$target_path) p else NA_character_
   }, character(1), USE.NAMES = FALSE)
-  from_run <- vapply(ref, function(r) {
+  from_run <- vapply(seq_along(ref), function(i) {
+    r <- ref[i]
     if (grepl("^([A-Za-z]:/|/|~)", r)) return(NA_character_)
-    .repro_norm_rel(if (run_dir %in% c(".", "")) r else file.path(run_dir, r))
+    .repro_norm_rel(if (dir_of[i] %in% c(".", "")) r else file.path(dir_of[i], r))
   }, character(1), USE.NAMES = FALSE)
   in_place <- !is_call & !is.na(from_run) & from_run %in% plan$target_path
   relocate <- !in_place & !is_call & !is.na(from_script)
@@ -2774,7 +2928,13 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   # a bare name counts as joined only when it stands in a joining call
   if ("in_join" %in% names(rw))
     joined <- joined & (grepl("/", ref, fixed = TRUE) | rw$in_join %in% TRUE)
+  # the one argument of here() is joined to nothing but where here() starts
+  joined <- joined & !in_here
   keep <- keep & !(!in_place & !is_call & !absolute & !up & found & !joined)
+  # A name several files of the deposit have, none of which the path as written
+  # names, is not one that works as written: it was kept, and its mark as
+  # ambiguous was taken away, so paths_ambiguous did not count it (#575, item 3).
+  keep <- keep & !(!in_place & rw$ambiguous %in% TRUE)
   # a path that names no file, with no file of its name in the repository, stays
   # as written and is a missing input
   absent <- keep & !in_place & !is_call & !(rw$matched %in% TRUE)
@@ -2798,10 +2958,29 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   rw$matched[in_archive] <- FALSE
   rw$target[in_archive] <- NA_character_
   rw$matched[absent] <- FALSE
-  # a rewritten path counts from where the script runs
+  # a rewritten path counts from where the script runs, or where here() starts
   moved <- !keep & !is.na(rw$target) & nzchar(rw$target)
-  rw$target[moved] <- vapply(rw$target[moved], .repro_rel_from, character(1), dir = run_dir, USE.NAMES = FALSE)
+  rw$target[moved] <- vapply(which(moved), function(i) .repro_rel_from(rw$target[i], dir_of[i]),
+                             character(1))
   rw
+}
+
+# The folder here() starts in for a script that runs from `run_dir` (both from the
+# top of the package): the folder .repro_here_roots() chose (`here_root`), else the
+# nearest folder at or above `run_dir` with a project's mark (.here, .Rproj,
+# DESCRIPTION, .git), else the top, which always gets a .here mark.
+.repro_here_start <- function(run_dir, here_root, plan) {
+  if (length(here_root) == 1 && !is.na(here_root)) return(here_root)
+  files <- if (is.null(plan) || !nrow(plan)) character(0) else
+    gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)])
+  marked <- unique(tolower(dirname(files[grepl("(^|/)(\\.here|[^/]*\\.rproj|description|\\.git)$",
+                                               files, ignore.case = TRUE)])))
+  d <- if (length(run_dir) == 1 && !is.na(run_dir) && nzchar(run_dir)) gsub("\\\\", "/", run_dir) else "."
+  while (!d %in% c(".", "")) {
+    if (tolower(d) %in% marked) return(d)
+    d <- dirname(d)
+  }
+  "."
 }
 
 # Folders on the authors' computer held in a variable (#568): `root <-
@@ -2813,17 +2992,38 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # folder the script runs from; the pasted pieces are then not rewritten on their
 # own (they were, so "/1_scripts/0_FUNCTIONS.R" became "0_FUNCTIONS.R" after the
 # author's folder). Only an absolute folder ("C:/...", "/...", "~/...") is
-# changed, and only when at least one pasted path exists in the deposit. Returns
-# a data frame: `value` (the folder as written), `target` (its new value) and a
-# list-column `pieces` (the texts pasted to it, as written).
-.repro_folder_vars <- function(code_text, plan, run_dir = ".") {
-  empty <- data.frame(value = character(0), target = character(0))
+# changed, and only when at least one pasted path exists in the deposit, or a
+# pasted file is in the deposit by its name (see below): a piece the script's
+# rewrites `rw` point to a file, or without them, a name one file has. Returns a data frame:
+# `value` (the folder as written), `target` (its new value), `keep_pieces`
+# (whether the pasted pieces keep their own rewrites) and a list-column `pieces`
+# (the texts pasted to it, as written).
+.repro_folder_vars <- function(code_text, plan, run_dir = ".", rw = NULL) {
+  empty <- data.frame(value = character(0), target = character(0), keep_pieces = logical(0))
   empty$pieces <- list()
   if (is.null(plan) || !nrow(plan) || !length(code_text)) return(empty)
   nc <- tryCatch(code_remove_comments(.utf8_lines(code_text), "R"), error = function(e) .utf8_lines(code_text))
-  vars <- .repro_simple_string_vars(nc)
-  vars <- vars[grepl("^([A-Za-z]:[/\\\\]|/|~)", vars) & !grepl("\\.[A-Za-z0-9]{1,8}$", vars)]
+  absolute_folder <- function(x) grepl("^([A-Za-z]:[/\\\\]|/|~)", x) & !grepl("\\.[A-Za-z0-9]{1,8}$", x)
+  # Every value a variable is given, not only the last: in 10.1111/1365-2435.14620
+  # main_address is set four times, to the folder with and without a final "/",
+  # and only the last value was rewritten (#578, item 4)
+  per_line <- lapply(nc, .repro_simple_string_vars, calls = TRUE)
+  assigned <- unlist(per_line)
+  assigned <- assigned[absolute_folder(assigned)]
+  vars <- assigned[!duplicated(names(assigned), fromLast = TRUE)]
   if (!length(vars)) return(empty)
+  # the rows of one variable: each value it is given, with the new folder, and a
+  # final "/" where the value has one
+  rows_for <- function(v, to, keep) {
+    vals <- unique(assigned[names(assigned) == v])
+    base <- sub("/+$", "", to)
+    if (!nzchar(base)) base <- "."
+    out <- data.frame(value = vals, target = ifelse(grepl("[/\\\\]$", vals), paste0(base, "/"), base),
+                      keep_pieces = keep)
+    out$pieces <- rep(list(pieces_of[[v]]), nrow(out))
+    out
+  }
+  pieces_of <- list()
   joined <- paste(nc, collapse = "\n")
   files <- tolower(gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)]))
   folders <- character(0)
@@ -2839,6 +3039,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     hits <- regmatches(joined, gregexpr(pat, joined, perl = TRUE))[[1]]
     if (!length(hits)) return(NULL)
     pieces <- unique(sub(pat, "\\2", hits, perl = TRUE))
+    pieces_of[[v]] <<- pieces
     rel <- sub("/+$", "", sub("^[/\\\\]+", "", gsub("\\\\", "/", pieces)))
     rel <- rel[nzchar(rel)]
     if (!length(rel)) return(NULL)
@@ -2847,7 +3048,27 @@ repro_materialize_layout <- function(plan, structure_df, root) {
       p <- vapply(if (f == ".") rel else file.path(f, rel), .repro_norm_rel, character(1), USE.NAMES = FALSE)
       sum(tolower(p[!is.na(p)]) %in% known)
     }, numeric(1))
-    if (max(score) < 1) return(NULL)
+    if (max(score) < 1) {
+      # No pasted path exists as written, but a pasted file is in the deposit by
+      # its name, and the path rewrite points the piece there, counted from the
+      # run folder: the folder then becomes the run folder, and the piece keeps
+      # its rewrite. In 10.1111/1365-2435.14620 "obsSurvival_Temperature_dfs/
+      # observed_surv_df.xlsx" is in DATA.zip/DATA/..., and main_address stayed
+      # the authors' folder (#578, item 4).
+      by_name <- if (!is.null(rw) && nrow(rw))
+        pieces[pieces %in% rw$ref[rw$matched %in% TRUE & !(rw$ambiguous %in% TRUE) &
+                                    !is.na(rw$target) & !(rw$as_written %in% TRUE)]]
+      else {
+        # without the rewrites, a name that one file of the deposit has
+        named <- tolower(basename(rel[grepl("\\.[A-Za-z0-9]{1,8}$", rel)]))
+        named[vapply(named, function(b) sum(basename(files) == b) == 1, logical(1))]
+      }
+      if (!length(by_name)) return(NULL)
+      # "./" with every value, so paste0() and file.path() both still join
+      out <- rows_for(v, ".", TRUE)
+      out$target <- "./"
+      return(out)
+    }
     best <- c(".", folders)[score == max(score)]
     # several equally good: the one nearest the script's own folder, else none
     near <- best[startsWith(paste0(tolower(run_dir), "/"), paste0(best, "/")) | best == "."]
@@ -2861,10 +3082,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
       pick <- substr(under[1], 1, nchar(pick))
     }
     to <- dirname(.repro_rel_from(if (pick == ".") "./x" else file.path(pick, "x"), run_dir))
-    if (grepl("[/\\\\]$", vars[[v]])) to <- paste0(if (to == ".") "." else to, "/")
-    out <- data.frame(value = vars[[v]], target = to)
-    out$pieces <- list(pieces)
-    out
+    rows_for(v, to, FALSE)
   })
   rows <- Filter(Negate(is.null), rows)
   if (!length(rows)) return(empty)
@@ -2904,7 +3122,12 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     paths <- tolower(sub("/+$", "", gsub("/+", "/", paths)))
     chain <- tolower(run_dirs[[i]] %||% ".")
     while (!chain[length(chain)] %in% c(".", "")) chain <- c(chain, dirname(chain[length(chain)]))
-    score <- vapply(chain, function(f) sum((if (f == ".") paths else file.path(f, paths)) %in% known), numeric(1))
+    # "../data/x.csv" counts from the folder too: here("../data/dateModPars.csv")
+    # from "scripts/" names "data/dateModPars.csv" (10.1111/1365-2656.12852; #575, item 6)
+    score <- vapply(chain, function(f) {
+      p <- vapply(if (f == ".") paths else file.path(f, paths), .repro_norm_rel, character(1), USE.NAMES = FALSE)
+      sum(p[!is.na(p)] %in% known)
+    }, numeric(1))
     if (max(score) < 1) next
     pick <- chain[which(score == max(score))[1]]
     # a marker at or below the pick, on the way from the run folder, wins already
@@ -2916,11 +3139,87 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out
 }
 
+# Folders a script lists, with list.files(), dir(), list.dirs(), Sys.glob() or
+# fs::dir_ls() in R and os.listdir(), os.scandir(), glob.glob() or
+# Path(...).glob() in Python, rewritten to where the deposit holds them: in
+# 10.1111/1365-2435.14241 list.files("../data/ir_data/control_forage_data/")
+# found nothing, while the folder is in heatwave_data_07_25_22.zip/heatwave_data/,
+# and the data frame had no columns (#578, item 2). code_file_refs() returns only
+# file names, so the path rewrite never saw the folder. A folder that works as
+# written from `run_dir` stays. Otherwise its last parts are compared with the
+# folders of the plan, as many as match, and it is rewritten only when that
+# leaves one folder, counted from `run_dir`, with its final "/" kept. For a glob
+# pattern ("data/*.csv") the folder before the pattern counts. Returns rows in
+# the form of repro_rewrite_paths(), for the rewrites of the script.
+.repro_listed_folders <- function(code_text, plan, run_dir = ".", lang = "R") {
+  empty <- data.frame(ref = character(0), basename = character(0), matched = logical(0),
+                      target = character(0), ambiguous = logical(0), n_candidates = integer(0),
+                      is_call = logical(0), name_in_code = character(0), name_in_deposit = character(0),
+                      as_written = logical(0))
+  if (is.null(plan) || !nrow(plan) || !length(code_text)) return(empty)
+  txt <- paste(tryCatch(code_remove_comments(.utf8_lines(code_text), lang), error = function(e) .utf8_lines(code_text)),
+               collapse = "\n")
+  pat <- if (identical(lang, "Python"))
+    "\\b(?:os\\.listdir|os\\.scandir|glob\\.i?glob|Path)\\s*\\(\\s*([\"'])([^\"'\n]+)\\1" else
+    "\\b(?:list\\.files|list\\.dirs|dir|Sys\\.glob|(?:fs::)?dir_ls)\\s*\\(\\s*(?:path\\s*=\\s*)?([\"'])([^\"'\n]+)\\1"
+  hits <- regmatches(txt, gregexpr(pat, txt, perl = TRUE))[[1]]
+  if (identical(lang, "Python")) {
+    # Path("x") only when it is listed: Path("x").glob() or .iterdir()
+    listed <- function(h) {
+      at <- gregexpr(h, txt, fixed = TRUE)[[1]]
+      after <- substring(txt, at + nchar(h), at + nchar(h) + 40)
+      any(grepl("^\\s*\\)\\s*\\.(?:r?glob|iterdir)\\b", after, perl = TRUE))
+    }
+    keep <- vapply(hits, function(h) !startsWith(h, "Path") || listed(h), logical(1), USE.NAMES = FALSE)
+    hits <- hits[keep]
+  }
+  refs <- unique(sub(paste0("(?s)", pat), "\\2", hits, perl = TRUE))
+  if (!length(refs)) return(empty)
+  files <- gsub("\\\\", "/", plan$target_path[!is.na(plan$target_path)])
+  folders <- character(0)
+  d <- unique(dirname(files))
+  while (length(d <- setdiff(d[d != "."], folders))) {
+    folders <- c(folders, d)
+    d <- unique(dirname(d))
+  }
+  if (!length(folders)) return(empty)
+  folder_parts <- strsplit(tolower(folders), "/", fixed = TRUE)
+  rows <- lapply(refs, function(ref) {
+    r <- gsub("\\\\+", "/", ref)
+    glob <- grepl("[*?]", basename(r))
+    dir_part <- if (glob) dirname(r) else sub("/+$", "", r)
+    rest <- if (glob) basename(r) else ""
+    # works as written from where the script runs
+    from_run <- if (grepl("^([A-Za-z]:/|/|~)", dir_part)) NA_character_ else
+      .repro_norm_rel(if (run_dir %in% c(".", "")) dir_part else file.path(run_dir, dir_part))
+    if (!is.na(from_run) && tolower(from_run) %in% tolower(folders)) return(NULL)
+    parts <- strsplit(tolower(dir_part), "/", fixed = TRUE)[[1]]
+    parts <- parts[nzchar(parts) & !parts %in% c(".", "..", "~") & !grepl("^[a-z]:$", parts)]
+    if (!length(parts)) return(NULL)
+    shared <- vapply(folder_parts, function(fp) {
+      n <- min(length(fp), length(parts))
+      same <- rev(fp)[seq_len(n)] == rev(parts)[seq_len(n)]
+      if (all(same)) n else which(!same)[1] - 1L
+    }, integer(1))
+    best <- which(shared == max(shared))
+    if (max(shared) < 1 || length(best) != 1) return(NULL)
+    to <- .repro_rel_from(folders[best], run_dir)
+    to <- if (glob) paste0(to, "/", rest) else paste0(to, if (grepl("[/\\\\]$", ref)) "/" else "")
+    data.frame(ref = ref, basename = basename(dir_part), matched = TRUE, target = to, ambiguous = FALSE,
+               n_candidates = 1L, is_call = FALSE, name_in_code = NA_character_,
+               name_in_deposit = NA_character_, as_written = FALSE)
+  })
+  rows <- Filter(Negate(is.null), rows)
+  if (!length(rows)) empty else dplyr::bind_rows(rows)
+}
+
 # Apply .repro_folder_vars() to one script's rewrites: a row for each folder's
 # new value, and the pasted pieces no longer rewritten on their own.
 .repro_apply_folder_vars <- function(rw, fv) {
   if (is.null(fv) || !nrow(fv)) return(rw)
-  if (nrow(rw)) rw <- rw[!rw$ref %in% unlist(fv$pieces), , drop = FALSE]
+  # pieces of a folder that became the run folder keep their rewrites (#578, item 4)
+  dropped <- unlist(fv$pieces[!(fv$keep_pieces %in% TRUE)])
+  if (nrow(rw)) rw <- rw[!rw$ref %in% dropped, , drop = FALSE]
   add <- data.frame(ref = fv$value, basename = basename(gsub("\\\\", "/", fv$value)), matched = TRUE,
                     target = fv$target, ambiguous = FALSE, n_candidates = 1L, is_call = FALSE,
                     name_in_code = NA_character_, name_in_deposit = NA_character_, as_written = FALSE)
@@ -3248,12 +3547,25 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 .repro_apply_rewrites <- function(txt, rw) {
   if (is.null(rw) || !nrow(rw)) return(txt)
   good <- rw$matched & !rw$ambiguous & !is.na(rw$target) & nzchar(rw$target)
+  is_call_col <- if ("is_call" %in% names(rw)) rw$is_call else rep(FALSE, nrow(rw))
+  # A file is copied into the sandbox under .portable_path() of its path (see
+  # repro_materialize_layout()), so the path written into the script is changed
+  # the same way: in 10.1002/2688-8319.12229 the copy went to "...Estimation_ a
+  # Preliminary Assessment/Data/", while the script still read the folder with
+  # its colon (#575, item 1). A relative path kept as written that holds such a
+  # character is changed as well.
+  kept <- if ("as_written" %in% names(rw)) rw$as_written %in% TRUE else rep(FALSE, nrow(rw))
+  # a folder's final "/" stays, as the code pastes a file name to it
+  portable <- function(p) paste0(.portable_path(p), ifelse(grepl("[/\\\\]$", p), "/", ""))
+  rw$target[good] <- portable(rw$target[good])
+  unportable <- kept & !(is_call_col %in% TRUE) & !is.na(rw$ref) &
+    !grepl("^([A-Za-z]:[/\\\\]|/|~)", rw$ref) & portable(rw$ref) != gsub("\\\\", "/", rw$ref)
+  rw$target[unportable] <- portable(rw$ref[unportable])
   # a reference kept as written is left alone: for a call its target is
   # the call itself, which was put in quotes, so `sprintf("%s/x.xlsx", wd)`
   # became the unparseable `"sprintf("%s/x.xlsx", wd)"`
   # (Lakens/tue_datamanager_check#4, item 9)
-  if ("as_written" %in% names(rw)) good <- good & !(rw$as_written %in% TRUE)
-  is_call_col <- if ("is_call" %in% names(rw)) rw$is_call else rep(FALSE, nrow(rw))
+  good <- good & (!kept | unportable)
   for (k in which(good)) {
     if (isTRUE(is_call_col[k])) {
       txt <- gsub(rw$ref[k], paste0('"', rw$target[k], '"'), txt, fixed = TRUE)
@@ -3297,15 +3609,53 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   n <- sum(is_setwd)
   paths <- character(0)
   if (n > 0) {
-    hit_lines <- txt[is_setwd]
-    m <- regmatches(hit_lines, regexpr(setwd_arg, hit_lines, perl = TRUE))
-    paths <- sub(paste0(".*", setwd_arg, ".*"), "\\1", m[nzchar(m)], perl = TRUE)
+    # A call written over several lines, as setwd(\n "SET WORKING DIRECORY
+    # HERE"\n) in 10.1111/1365-2656.13801: its further lines up to the closing
+    # bracket are made comments too, keeping their indentation, so the script
+    # parses and keeps its number of lines. Only the first line was replaced,
+    # and R stopped on the lone ")" (#578, item 1).
+    call_start <- sub(".*?((?:[A-Za-z_][A-Za-z0-9_]*(?:::|\\.))?(?:setwd|chdir)\\s*\\(.*)$", "\\1",
+                      txt, perl = TRUE)
+    calls <- character(0)
+    more <- integer(0)
+    for (i in which(is_setwd)) {
+      depth <- .repro_bracket_depth(call_start[[i]], lang)
+      j <- i
+      while (depth > 0 && j < length(txt) && j - i < 50) {
+        j <- j + 1
+        depth <- depth + .repro_bracket_depth(txt[[j]], lang)
+      }
+      if (j > i && depth <= 0) more <- c(more, seq.int(i + 1, j))
+      calls <- c(calls, paste(c(call_start[[i]], if (j > i) txt[seq.int(i + 1, j)]), collapse = "\n"))
+    }
+    m <- regmatches(calls, regexpr(setwd_arg, calls, perl = TRUE))
+    paths <- sub(paste0("(?s).*", setwd_arg, ".*"), "\\1", m[nzchar(m)], perl = TRUE)
     no_op <- if (identical(lang, "Python"))
       sprintf("\\1pass  # [%s removed os.chdir] \\2", by) else
       sprintf("\\1invisible(NULL)  # [%s removed setwd] \\2", by)
     txt[is_setwd] <- sub(setwd_line, no_op, txt[is_setwd], perl = TRUE)
+    txt[more] <- sub("^(\\s*)", "\\1# ", txt[more], perl = TRUE)
   }
   list(txt = txt, n = n, paths = paths)
+}
+
+# How many more brackets a line of code opens than it closes, leaving out
+# brackets in quoted text and after a comment sign.
+.repro_bracket_depth <- function(line, lang = "R") {
+  if (is.na(line) || !nzchar(line)) return(0L)
+  ch <- strsplit(line, "", fixed = TRUE)[[1]]
+  depth <- 0L; quote <- ""; esc <- FALSE
+  for (c in ch) {
+    if (nzchar(quote)) {
+      if (esc) esc <- FALSE
+      else if (c == "\\") esc <- TRUE
+      else if (c == quote) quote <- ""
+    } else if (c %in% c("'", '"', if (identical(lang, "R")) "`")) quote <- c
+    else if (c == "#") break
+    else if (c == "(") depth <- depth + 1L
+    else if (c == ")") depth <- depth - 1L
+  }
+  depth
 }
 
 # groundhog.library(...) as the library() calls that load the same packages: the
@@ -3433,6 +3783,27 @@ repro_materialize_layout <- function(plan, structure_df, root) {
           n, plural(n), plural(n, "was", "were"), paste(files, collapse = ", "))
 }
 
+# The program a script could not start, from its output, or NA: R's system()
+# answers "sh: 1: mark: not found" (RMark, 10.1111/1365-2656.13583), Python's
+# subprocess a FileNotFoundError that names the program, 'rsync' in
+# 10.1002/pan3.10551 (#575, item 7).
+.repro_missing_program <- function(msg) {
+  vapply(msg, function(m) {
+    if (is.na(m) || !nzchar(m)) return(NA_character_)
+    pats <- c("sh: [0-9]+: ([^:\n]+): not found", "\\n?([^\\s:]+): command not found",
+              "Unable to find or run ([^\\s]+)")
+    for (p in pats) {
+      hit <- regmatches(m, regexec(p, m, perl = TRUE))[[1]]
+      if (length(hit) > 1) return(trimws(hit[2]))
+    }
+    if (grepl("subprocess", m, fixed = TRUE)) {
+      hit <- regmatches(m, regexec("FileNotFoundError: \\[Errno 2\\] No such file or directory: '([^'/]+)'", m))[[1]]
+      if (length(hit) > 1) return(hit[2])
+    }
+    NA_character_
+  }, character(1), USE.NAMES = FALSE)
+}
+
 # Why a script did not run through, as one word, so reasons need not be recovered
 # from messages afterwards (#568, item 24). NA for what is not a failure of the script.
 .repro_failure_reason <- function(outcome, msg) {
@@ -3444,6 +3815,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   out[outcome %in% c("timed_out", "skipped_time_limit")] <- "time"
   out[outcome %in% c("needs_a_person")] <- "interactive"
   out[outcome %in% c("needs_internet")] <- "internet"
+  out[outcome %in% c("out_of_memory")] <- "environment"   # #578, item 8
   # a download that was too large, or still arriving when the time ran out
   out[outcome %in% c("download_too_large")] <- "download"
   out[outcome %in% c("timed_out") & has("while a download was still arriving")] <- "download"
@@ -3453,10 +3825,30 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   # stopped by the memory limit of the run (see .repro_oom_text()), before any
   # message the script's own output happens to contain
   set("was stopped for using more than the memory limit", "environment")
+  # The reason comes from the error that stopped the script, not from a warning
+  # before it: "object 'egg_hatching_date' not found" after a warning on
+  # "TIFFOpen: C://your.file.directory/Figure1.tiff" was counted as a missing
+  # file (10.1111/1365-2435.12953; #575, item 10). R's "cannot open the
+  # connection" names no file, so the warnings, which do, count then; so does
+  # the whole output when no error line is found (a crash, a time limit).
+  full <- msg
+  msg <- vapply(msg, function(m) {
+    e <- .repro_error_line(m, max_chars = 5000)
+    if (!nzchar(e)) e <- .repro_error_line(m, python = TRUE, max_chars = 5000)
+    if (!nzchar(e) || grepl("cannot open the connection", e, fixed = TRUE)) m else e
+  }, character(1), USE.NAMES = FALSE)
   # provided by Snakemake when it runs the script, so only there
   set("object 'snakemake' not found|name 'snakemake' is not defined", "environment")
   set("there is no package called|ModuleNotFoundError|No module named|ImportError|package or namespace|Error: package ", "package")
-  set("cannot open the connection|cannot open file|No such file|FileNotFoundError|does not exist|Cannot find the file|Could not find a root|cannot open compressed", "file")
+  # "does not exist" only of a file: Stan's "variable does not exist" is not one
+  # (10.1111/1365-2435.14436; #575, item 10)
+  file_pat <- paste0("cannot open the connection|cannot open file|No such file|FileNotFoundError|",
+                     "(?:[Ff]ile|[Pp]ath|[Dd]irectory|[Ff]older|['\"\u2018\u2019`])[^\n]{0,300}?does not exist|",
+                     "does not exist:? *['\"\u2018`/~.]|Cannot find the file|Could not find a root|cannot open compressed")
+  # a file error after a program could not be started is about the program
+  # (#575, item 7): "Output file does not exist. Unable to find or run mark.exe"
+  out[err & is.na(out) & has(file_pat) & !is.na(.repro_missing_program(full))] <- "environment"
+  set(file_pat, "file")
   set("object '[^']*' not found|could not find function|NameError|is not defined", "undefined")
   set("SyntaxError|IndentationError", "syntax")
   set("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11|can only print from a screen device", "environment")
@@ -3563,16 +3955,26 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # (which Python prints) reads sys.argv or parse_args(). 53 failed scripts in 8
 # papers of the corpus read arguments, as in 10.1111/2041-210X.13845 (PyRate) and
 # 10.1111/2041-210X.13721 (#568). `code` is a list of the scripts' lines.
-.repro_needs_arguments <- function(code, txt, lang = "R") {
+# A program that prints how to use it, on its standard output (`out`) or in its
+# error, also stopped for want of arguments: 45 tools of the Stacks pipeline of
+# 10.1111/1365-2656.13545 print "Usage: ./extract_first_snp.py input_vcf
+# output_vcf" when sys.argv is short, and stop without a message, and an R
+# script with optparse prints its help before stop() (#578, item 6). In R,
+# optparse, argparser and docopt read arguments too.
+.repro_needs_arguments <- function(code, txt, lang = "R", out = NULL) {
   txt <- txt %||% rep("", length(code))
+  txt[is.na(txt)] <- ""
+  out <- if (is.null(out)) rep("", length(txt)) else ifelse(is.na(out), "", out)
   reads <- vapply(code, function(s) grepl(
     if (identical(lang, "Python")) "argparse|sys[.]argv|getopt|docopt|click[.](command|argument|option)"
-    else "commandArgs[(]", paste(s, collapse = "\n"), perl = TRUE), logical(1))
+    else "commandArgs[(]|optparse|OptionParser[(]|parse_args[(]|argparser::|arg_parser[(]|docopt[(]",
+    paste(s, collapse = "\n"), perl = TRUE), logical(1))
   points <- if (identical(lang, "Python"))
     grepl(paste0("the following arguments are required|: error: (argument|unrecognized arguments)|",
                  "Use '-h'|sys[.]argv\\[|parse_args\\("), txt, perl = TRUE)
   else grepl("Error in [^\n:]*(\\bargs?\\[|\\bargv\\[|commandArgs)", txt, perl = TRUE)
-  unname(reads & points)
+  usage <- grepl("(?im)^\\s*usage\\s*:|Show this help message and exit", paste(txt, out), perl = TRUE)
+  unname(reads & (points | usage))
 }
 
 .repro_needs_person_error <- function(txt) {
@@ -3702,15 +4104,27 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # factors ("'relevel' only for (unordered) factors", "invalid 'labels'"), and
 # code written on Windows reads data files in Latin-1 ("invalid multibyte
 # string"). options(stringsAsFactors = TRUE) no longer has any effect in R 4.5.
+# Four more messages of text that is no longer a factor (#578, item 5):
+# "factor level [3] is duplicated" when levels(x) of text is NULL
+# (10.1111/1365-2435.13548), droplevels() on text (10.1111/1365-2435.13795),
+# arm::standardize()'s "must be either numeric or a factor"
+# (10.1002/2688-8319.12171), and plot() of text, "need finite 'xlim' values",
+# only with the warning that the text became NA (10.1111/1365-2664.13770):
+# without it the message has other causes (10.1111/1365-2435.13388, binnedplot()).
 # Returns, for each script that stopped on such an error, "factors", "latin1" or
 # both; an empty list when none did.
 .repro_old_defaults <- function(run_results) {
   if (is.null(run_results) || !nrow(run_results)) return(list())
   msg <- paste(run_results$error, run_results$stderr)
   stopped <- run_results$outcome %in% "errored"
-  factors <- stopped & grepl(paste0("only for \\(unordered\\) factors|invalid 'labels'; length|",
-                                    "is not a factor|level sets of factors are different|",
-                                    "argument is not a factor|must be a factor"), msg, perl = TRUE)
+  factors <- stopped & (grepl(paste0(
+    "only for \\(unordered\\) factors|invalid 'labels'; length|",
+    "is not a factor|level sets of factors are different|",
+    "argument is not a factor|must be a factor|factor level \\[\\d+\\] is duplicated|",
+    "no applicable method for '(?:droplevels|levels|relevel|reorder|nlevels)' applied to an object of class \"character\"|",
+    "must be either numeric or a factor"), msg, perl = TRUE) |
+      (grepl("need finite 'xlim' values", msg, fixed = TRUE) &
+         grepl("xy\\.coords[^\n]*(?:\n[^\n]*)?NAs introduced by coercion", msg, perl = TRUE)))
   latin1 <- stopped & grepl("invalid multibyte string|is invalid in this locale|utf8towcs", msg, perl = TRUE)
   out <- lapply(which(factors | latin1), function(i) c(if (factors[i]) "factors", if (latin1[i]) "latin1"))
   stats::setNames(out, run_results$file_name[factors | latin1])
@@ -3856,10 +4270,10 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   rewritten to its path from the top, for reads and writes alike.
 #'   `FALSE` (default) redirects every write, as before.
 #' @param run_dirs optional folder each script runs from, from `root`
-#'   ([.repro_run_folders()]), which becomes its `run_dir`. `NULL` (default) runs
+#'   (`.repro_run_folders()`), which becomes its `run_dir`. `NULL` (default) runs
 #'   every script from `root`.
 #' @param prepend optional named list, by file name: lines to put at the top of a
-#'   script, such as loading another script first ([.repro_run_after_lines()]).
+#'   script, such as loading another script first (`.repro_run_after_lines()`).
 #' @param replace_env_calls if `TRUE`, the calls to groundhog, checkpoint and renv
 #'   in R code are replaced, since packages are installed before the run, and such
 #'   a call would need the network (see `.repro_neutralise_env_calls()`).
@@ -3871,6 +4285,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   `env_calls_replaced` (count of groundhog, checkpoint and renv calls replaced),
 #'   `slashes_fixed` (the quoted Windows paths given `/`, as they were, joined by
 #'   "; "; see `.repro_slash_paths()`),
+#'   `setwd_folder_removed` (the paths made relative to the working folder
+#'   because they lay under the folder of a removed `setwd()`, as
+#'   "before -> after", joined by "; "; see `.repro_strip_setwd_folder()`),
 #'   `setwd_paths` (comma-joined paths those calls named, for the warning),
 #'   `family_replaced` (count of `family =`/`base_family =` named-font
 #'   arguments replaced with `"sans"`, so a plot call does not fail with
@@ -3879,6 +4296,14 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 #'   each replacement), and `library_injected` (the package name(s) injected
 #'   via `inject_libs` for that file, comma-joined, or `NA` when none was).
 #' @export
+#' @examples
+#' root <- file.path(tempdir(), "scripts_demo")
+#' plan <- data.frame(file_name = c("analysis.R", "x.csv"),
+#'                    target_path = c("analysis/analysis.R", "data/study-x_data.csv"))
+#' code <- list(analysis.R = 'a <- read.csv("x.csv")')
+#' rw <- list(analysis.R = repro_rewrite_paths(code$analysis.R, "analysis.R", plan))
+#' out <- repro_write_scripts(code, rw, plan, root)
+#' readLines(out$script_path)
 repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                                 inject_libs = NULL, lang = "R",
                                 script_paths = NULL, writes_in_place = FALSE,
@@ -3913,6 +4338,10 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     message("[repro]   rewriting '", fn, "' (", sum(nchar(txt, type = "bytes")), " bytes) ...")
     fn_lang <- lang_for[[i]] %||% "R"
     txt <- .repro_apply_rewrites(txt, rw)
+    # a path under the folder of a setwd() removed below counts from the working
+    # folder, before the Windows paths are changed (#578, item 3)
+    under_setwd <- .repro_strip_setwd_folder(txt, .repro_neutralise_setwd(txt, fn_lang)$paths)
+    txt <- under_setwd$txt
     slashed <- .repro_slash_paths(txt)
     txt <- slashed$txt
 
@@ -4045,6 +4474,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                setwd_removed = setwd_n,
                env_calls_replaced = env_n,
                slashes_fixed = paste(slashed$paths, collapse = "; "),
+               setwd_folder_removed = paste(under_setwd$paths, collapse = "; "),
                setwd_paths = paste(setwd_paths, collapse = ", "),
                family_replaced = family_n,
                family_detail = paste(
@@ -4237,6 +4667,46 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
   base | !model
 }
 
+# A path under the folder of a setwd() the check removes is made relative to the
+# working folder, which is what the authors meant: in 10.1111/1365-2656.13449
+# setwd("C:\\specify_directory_here") was removed, and jags() then could not open
+# "C:\\specify_directory_here\\EGVU_mig_lat_survival_model.jags", a file the script
+# writes itself into its working folder (#578, item 3). `folders` are the paths
+# the setwd() calls named; only an absolute one counts ("C:/...", "/...", "~/...").
+# Case does not count after a drive letter. Returns the lines and the paths
+# changed, as "before -> after".
+.repro_strip_setwd_folder <- function(txt, folders) {
+  none <- list(txt = txt, paths = character(0))
+  norm <- function(p) sub("/+$", "", gsub("\\\\+", "/", p))
+  folders <- unique(norm(folders[grepl("^([A-Za-z]:[/\\\\]|/|~)", folders)]))
+  folders <- folders[nzchar(folders) & !folders %in% c("/", "~")]
+  if (!length(txt) || !length(folders)) return(none)
+  changed <- character(0)
+  pat <- "([\"'])((?:[^\"'\\\\\n]|\\\\.)*)\\1"
+  txt <- vapply(txt, function(line) {
+    if (!grepl("[\"']", line)) return(line)
+    m <- gregexpr(pat, line, perl = TRUE)[[1]]
+    if (m[1] == -1) return(line)
+    hits <- regmatches(line, list(m))[[1]]
+    new <- vapply(hits, function(h) {
+      inner <- norm(substr(h, 2, nchar(h) - 1))
+      for (f in folders) {
+        drive <- grepl("^[A-Za-z]:", f)
+        starts <- if (drive) startsWith(tolower(inner), paste0(tolower(f), "/")) else startsWith(inner, paste0(f, "/"))
+        if (starts && nchar(inner) > nchar(f) + 1) {
+          out <- paste0(substr(h, 1, 1), substring(inner, nchar(f) + 2), substr(h, 1, 1))
+          changed <<- c(changed, sprintf("%s -> %s", h, out))
+          return(out)
+        }
+      }
+      h
+    }, character(1), USE.NAMES = FALSE)
+    regmatches(line, list(m)) <- list(new)
+    line
+  }, character(1), USE.NAMES = FALSE)
+  list(txt = txt, paths = changed)
+}
+
 # Windows paths in quoted file names, "Data\\MatrixNoct.txt", get "/": on Linux
 # the backslash is part of the name, so write.table() made one file named
 # "Data\MatrixNoct.txt" beside the script and the scripts reading
@@ -4270,22 +4740,31 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 }
 
 # The modifications rows for the Windows paths repro_write_scripts() changed, one
-# per path; NULL when there were none.
+# per path, and for the paths it made relative to the working folder because
+# they lay under the folder of a removed setwd() (`path_rewrite`, #578, item 3);
+# NULL when there were none.
 .repro_slash_rows <- function(run_tbl) {
-  if (is.null(run_tbl) || !nrow(run_tbl) || !"slashes_fixed" %in% names(run_tbl)) return(NULL)
-  hit <- !is.na(run_tbl$slashes_fixed) & nzchar(run_tbl$slashes_fixed)
-  if (!any(hit)) return(NULL)
-  dplyr::bind_rows(lapply(which(hit), function(i) {
-    p <- strsplit(run_tbl$slashes_fixed[i], "; ", fixed = TRUE)[[1]]
-    data.frame(file_name = run_tbl$file_name[i], change_type = "windows_path",
-               detail = sprintf("%s -> %s", p, gsub("\\\\\\\\", "/", p)))
-  }))
+  if (is.null(run_tbl) || !nrow(run_tbl)) return(NULL)
+  rows_of <- function(col, type, detail) {
+    if (!col %in% names(run_tbl)) return(NULL)
+    hit <- !is.na(run_tbl[[col]]) & nzchar(run_tbl[[col]])
+    dplyr::bind_rows(lapply(which(hit), function(i) {
+      p <- strsplit(run_tbl[[col]][i], "; ", fixed = TRUE)[[1]]
+      data.frame(file_name = run_tbl$file_name[i], change_type = type, detail = detail(p))
+    }))
+  }
+  out <- dplyr::bind_rows(
+    rows_of("setwd_folder_removed", "path_rewrite", \(p) paste(p, "(under the folder of a removed setwd())")),
+    rows_of("slashes_fixed", "windows_path", \(p) sprintf("%s -> %s", p, gsub("\\\\\\\\", "/", p))))
+  if (!nrow(out)) NULL else out
 }
 
 # The report's part on Windows paths: a sentence and a table; NULL when none.
 .repro_slash_report <- function(run_tbl) {
   rows <- .repro_slash_rows(run_tbl)
   if (is.null(rows)) return(NULL)
+  rows <- rows[rows$change_type %in% "windows_path", , drop = FALSE]
+  if (!nrow(rows)) return(NULL)
   n <- length(unique(rows$file_name))
   c(sprintf(paste0("**%d script%s use%s Windows paths**, with `\\` between folders, which ",
                    "works only on Windows. To run the code we put `/` instead, which works on ",
@@ -4586,7 +5065,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 #' Installs each non-base dependency into `lib_dir` (a temp library, never the
 #' user's), so a run does not mutate the user's installed packages. CRAN packages
 #' come from `install.packages()`; Bioconductor packages (`source == "bioc"`,
-#' see [repro_dependencies()]/[.repro_bioc_packages()]) from
+#' see [repro_dependencies()]/`.repro_bioc_packages()`) from
 #' `BiocManager::install()`, installing `BiocManager` itself first if absent;
 #' GitHub/URL sources from the ref the code named
 #' (`remotes::install_github()` / `install.packages(url)`), honouring a pinned
@@ -4643,6 +5122,12 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 #'   `version_installed` (the version now in the libraries, or `NA`) and
 #'   `version_note` (why the recorded version was not installed, else "").
 #' @export
+#' @examples
+#' \dontrun{
+#' # installs packages into a throwaway library
+#' deps <- repro_dependencies("library(pwr)")
+#' repro_install_deps(deps, file.path(tempdir(), "lib"))
+#' }
 repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
                                deadline = NULL) {
   empty <- data.frame(package = character(0), source = character(0),
@@ -5041,12 +5526,12 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
     if (in_docker) {
       # as for the install: the network is on, because a replaced package may need installing
       processx::run("docker", c("run", "--rm", "--name", container_name,
-                                "--user", .repro_docker_uid,
+                                "--user", .repro_docker_uid(),
                                 "--cap-drop", "ALL",
                                 "--security-opt", "no-new-privileges",
                                 "--pids-limit", "512",
                                 .repro_docker_resource_args(),
-                                "-v", paste0(sandbox_dir, ":/sandbox"),
+                                "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
                                 "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
                                 image, "Rscript", "/sandbox/check.R"),
                     error_on_status = FALSE, timeout = timeout)
@@ -5387,6 +5872,25 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
   if (inherits(total_timeout, "POSIXct")) return("the time for all scripts together")
   sprintf("the time for all scripts together (%g minutes, `total_timeout`)", total_timeout / 60)
 }
+# A pass after the first runs scripts it changed (added lines, a new order,
+# old defaults, a fetched or placed file). A script of such a pass that the
+# time left for all scripts stopped (error_type "deadline", set by the
+# runners), or did not start, says nothing about the change: it is
+# skipped_time_limit, never the first pass's failure the change was meant to
+# fix. A script got the last second of the paper and was reported as timed
+# out (#581). In the first pass, such a script stays timed_out: it is slow.
+.repro_later_pass <- function(res) {
+  if (is.null(res) || !nrow(res)) return(res)
+  cut <- res$outcome %in% "timed_out" & res$error_type %in% "deadline"
+  if (any(cut)) {
+    res$outcome[cut] <- "skipped_time_limit"
+    res$error[cut] <- sprintf(
+      "stopped after %d s: the time for all scripts together had run out",
+      as.integer(ceiling(as.numeric(res$elapsed[cut]))))
+  }
+  res
+}
+
 .repro_time_left <- function(deadline) {
   if (is.null(deadline)) return(Inf)
   as.numeric(difftime(deadline, Sys.time(), units = "secs"))
@@ -5462,6 +5966,17 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
 #'   `skipped_time_limit`; a running script is stopped then. `NULL` (the
 #'   default) sets no such limit.
 #' @export
+#' @examples
+#' \donttest{
+#' if (requireNamespace("callr", quietly = TRUE)) {
+#'   root <- file.path(tempdir(), "run_demo")
+#'   plan <- data.frame(file_name = "analysis.R", target_path = "analysis/analysis.R")
+#'   code <- list(analysis.R = c("x <- c(1, 2, 3)", "print(mean(x))"))
+#'   run_tbl <- repro_write_scripts(code, list(), plan, root)
+#'   res <- repro_run_scripts(run_tbl, order = "analysis.R")
+#'   res[, c("file_name", "outcome")]
+#' }
+#' }
 repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
                               skip = character(0), parses = NULL,
                               failed_deps = character(0), deadline = NULL) {
@@ -5510,6 +6025,8 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
                         error = "not started: the time for all scripts together had run out",
                         error_type = NA_character_, undefined_var = NA_character_,
                         stdout = "", stderr = "", elapsed = 0)))
+    # the time left for all scripts, not the script's own limit, may stop it (#581)
+    cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
     # The EXECUTED script's own text (path-rewritten, setwd()-commented — what
@@ -5627,6 +6144,8 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
       outc <- if (is_timeout) "timed_out"
               else if (dep_unavailable) "dependency_unavailable"
               else "errored"
+      # stopped by the time left for all scripts, not its own limit (#581)
+      if (is_timeout && isTRUE(cut_by_deadline)) etype <- "deadline"
       data.frame(file_name = fn, outcome = outc,
                  error = msg, error_type = etype, undefined_var = undef_var,
                  stdout = so, stderr = se, elapsed = elapsed) |>

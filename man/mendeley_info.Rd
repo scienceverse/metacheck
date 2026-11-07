@@ -26,7 +26,9 @@ a data frame of information
 Retrieve info from Mendeley Data by URL
 }
 \examples{
-\dontrun{
-  mendeley_info("https://doi.org/10.17632/vjtxybrc28.1")
+\donttest{
+if (online("data.mendeley.com")) {
+    mendeley_info("https://doi.org/10.17632/vjtxybrc28.1")
+}
 }
 }

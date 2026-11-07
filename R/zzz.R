@@ -54,8 +54,9 @@
   toset <- !(names(op.pkg) %in% names(op))
   if (any(toset)) options(op.pkg[toset])
 
-  # check OSF PAT
-  .osf_pat_validate()
+  # The OSF token is not checked here: loading the package must not use the
+  # internet (CRAN), and the token is checked the first time it is used
+  # (.key_use() in .osf_headers()), which leaves a refused token out.
 
   invisible()
 }
@@ -82,22 +83,9 @@
     )
   }
 
-  # check package version
+  # No check for a newer version on GitHub: attaching the package must not
+  # use the internet (CRAN), and CRAN tells its users about new versions.
   v <- utils::packageVersion("metacheck")
-  gh_v <- tryCatch({
-    url <- "https://raw.githubusercontent.com/scienceverse/metacheck/refs/heads/main/DESCRIPTION"
-    gh <- readLines(url, n = 3)
-    m <- regexec("Version:\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)", gh[[3]])
-    regmatches(gh[[3]], m)[[1]][[2]]
-  }, error = \(e) { return("0.0.0.0")})
-  if (gh_v > v) {
-    new_version <- sprintf("\U0001F195 Install newer version %s using\n%s", gh_v,
-    "remotes::install_github(\"scienceverse/metacheck\")")
-  } else if (v > gh_v) {
-    new_version <- "\u2728 Your version newer than the current release"
-  } else {
-    new_version <- "\u2728 Your version is up to date"
-  }
 
 
   stripe <- paste0(
@@ -122,9 +110,8 @@
     "\n",
     stripe,
     paste("\u2705 Welcome to metacheck beta version", v),
-    new_version,
     "\n\u2139 For support and examples visit:",
-    "https://scienceverse.github.io/metacheck/",
+    "https://www.scienceverse.org/metacheck/",
     mailset,
     "\U0001F9EA This is beta software; please check any",
     "results. Check module validation info for",

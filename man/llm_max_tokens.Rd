@@ -24,7 +24,8 @@ already specify \code{max_tokens} (an explicit \code{params$max_tokens} on a sin
 call still wins, same precedence as every other \code{params} entry).
 }
 \examples{
-\dontrun{
+old <- options(metacheck.llm_max_tokens = NULL)
 llm_max_tokens(8192)
-}
+llm_max_tokens()
+options(old)
 }

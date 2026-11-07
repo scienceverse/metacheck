@@ -9,6 +9,15 @@ llm_max_calls(n = NULL)
 \arguments{
 \item{n}{The maximum number of calls that the llm() function can make}
 }
+\value{
+the maximum number of calls (integer); invisibly when setting it
+}
 \description{
 Set the maximum number of calls to the LLM
+}
+\examples{
+llm_max_calls()
+old <- llm_max_calls()
+llm_max_calls(10)
+llm_max_calls(old)
 }
