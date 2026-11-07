@@ -50,7 +50,11 @@ jobs:
       - name: Install dependencies (with cache)
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::devtools, any::xml2, any::plumber, any::logger
+          # local::. installs metacheck itself from this branch: the parallel
+          # workers (callr) and the rendered reports (library(metacheck) in
+          # inst/templates/_report.qmd) load the installed package, not the
+          # source the tests load
+          extra-packages: any::devtools, any::xml2, any::plumber, any::logger, local::.
           cache: true
           cache-version: 1
 
