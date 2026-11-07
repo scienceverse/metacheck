@@ -100,14 +100,24 @@ jobs:
           needs: check
 
       # A second try a minute later, so a server that did not answer within the
-      # checker's 5 seconds once (CRAN's own website did) does not fail the check
+      # checker's 5 seconds once (CRAN's own website did) does not fail the check.
+      # An address that is a large file (the Retraction Watch database) times
+      # out while it arrives: one that sent data before the time-out works.
       - name: Check every web address
         run: |
-          res <- urlchecker::url_check()
+          check <- function() {
+            res <- urlchecker::url_check()
+            arriving <- grepl("Timeout was reached", res$Message) &
+              grepl("with [1-9][0-9]* bytes received", res$Message)
+            if (any(arriving)) message("Working, but large (still arriving after 5 seconds): ",
+                                       paste(res$URL[arriving], collapse = ", "))
+            res[!arriving, ]
+          }
+          res <- check()
           if (nrow(res)) {
             message("Trying the ", nrow(res), " failed addresses again in a minute")
             Sys.sleep(60)
-            res <- urlchecker::url_check()
+            res <- check()
           }
           print(res)
           if (nrow(res)) quit(status = 1)
