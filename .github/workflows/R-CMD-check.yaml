@@ -119,6 +119,14 @@ jobs:
             Sys.sleep(60)
             res <- check()
           }
+          # Still no answer at all after the second try: a network condition
+          # between GitHub and that server (GitHub's machines could not connect
+          # to CRAN.R-project.org twice in a row), not a wrong address. Reported,
+          # not failed; every other error (not found, moved, certificate,
+          # unknown host) fails the check.
+          silent <- grepl("Timeout was reached", res$Message)
+          if (any(silent)) message("::warning::No answer from: ", paste(unique(res$URL[silent]), collapse = ", "))
+          res <- res[!silent, ]
           print(res)
           if (nrow(res)) quit(status = 1)
         shell: Rscript {0}
