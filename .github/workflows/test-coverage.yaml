@@ -36,6 +36,10 @@ jobs:
       - name: Test coverage
         id: test
         run: |
+          # NULL until package_coverage() returns: exists("cov") found R's own
+          # function stats::cov after a failed test, and to_cobertura() stopped
+          # with "cannot coerce class '"function"' to a data.frame"
+          cov <- NULL
           result <- tryCatch({
             cov <- covr::package_coverage(
               quiet = FALSE,
@@ -48,7 +52,7 @@ jobs:
           }, error = function(e) {
             message("Tests failed, but continuing to produce partial coverage:")
             message(e)
-            if (exists("cov")) {
+            if (!is.null(cov)) {
               covr::to_cobertura(cov)
             }
             1

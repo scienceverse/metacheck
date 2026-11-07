@@ -1504,13 +1504,17 @@ test_that("the second pass runs only what it changes, and a changed script witho
   skip_if_quick()
   skip_if_not_installed("callr")
   llm_use(FALSE)
-  # a.R runs longer than a script may; b.R uses %>%, which only a.R loads,
-  # so the second pass gives b.R a library(magrittr) line
+  # a.R uses %>%, which only b.R loads, so the second pass gives a.R a
+  # library(magrittr) line; b.R, which runs after a.R, runs longer than a
+  # script may. a.R fails fast in the first pass, so how much time is left for
+  # its second run depends only on b.R, not on how fast the computer is (on
+  # GitHub's Linux machine a changed script that ran last still finished in
+  # the second that was left)
   make_repo <- function() {
     d <- file.path(withr::local_tempdir(.local_envir = parent.frame(2)), "deposit")
     dir.create(d)
-    writeLines(c("library(magrittr)", "x <- 1", "Sys.sleep(60)"), file.path(d, "a.R"))
-    writeLines(c("y <- c(1, 2, 3) %>% sum()", "print(y)"), file.path(d, "b.R"))
+    writeLines(c("y <- c(1, 2, 3) %>% sum()", "print(y)"), file.path(d, "a.R"))
+    writeLines(c("library(magrittr)", "x <- 1", "Sys.sleep(60)"), file.path(d, "b.R"))
     d
   }
   run <- function(total) {
@@ -1521,13 +1525,14 @@ test_that("the second pass runs only what it changes, and a changed script witho
     stats::setNames(rr$outcome, rr$file_name)
   }
 
-  # time for b.R again but not for a.R: a.R is not run again, so b.R runs
+  # time for a.R again: b.R, unchanged, is not run again, so a.R runs
   oc <- run(35)
-  expect_equal(oc[["a.R"]], "timed_out")
-  expect_equal(oc[["b.R"]], "ran_ok")
+  expect_equal(oc[["a.R"]], "ran_ok")
+  expect_equal(oc[["b.R"]], "timed_out")
 
-  # no time for b.R again: skipped_time_limit, not its first error
-  oc <- run(12)
-  expect_equal(oc[["a.R"]], "timed_out")
-  expect_equal(oc[["b.R"]], "skipped_time_limit")
+  # b.R uses up the time for all scripts together: no time for a.R again, so
+  # it is skipped_time_limit, not its first error
+  oc <- run(8)
+  expect_equal(oc[["a.R"]], "skipped_time_limit")
+  expect_equal(oc[["b.R"]], "timed_out")
 })

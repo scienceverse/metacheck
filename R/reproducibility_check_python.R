@@ -207,11 +207,24 @@ repro_dependencies_py <- function(code_text, manifest_text = NULL) {
   list_file <- tempfile(fileext = ".txt")
   writeLines(enc2utf8(tfs), list_file, useBytes = TRUE)
   on.exit(unlink(c(tfs, list_file)), add = TRUE)
+  # Python 3.14 reads Python 2's `except E, e:` as two exception types
+  # (PEP 758), so that code parses there; the grammar of 3.13 still refuses it,
+  # and a file it refuses only for that is Python 2 (GitHub's Linux machine,
+  # Python 3.14). Research code written for 3.14's new form is far rarer than
+  # Python 2 code.
   script <- paste(
     "import ast, sys",
     "for f in open(sys.argv[1], encoding='utf-8').read().splitlines():",
     "    try:",
-    "        ast.parse(open(f, encoding='utf-8', errors='replace').read())",
+    "        src = open(f, encoding='utf-8', errors='replace').read()",
+    "        ast.parse(src)",
+    "        if sys.version_info >= (3, 14):",
+    "            try:",
+    "                ast.parse(src, feature_version=(3, 13))",
+    "            except SyntaxError as e3:",
+    "                if 'except expressions without parentheses' in str(e3):",
+    "                    print(2)",
+    "                    continue",
     "        print(1)",
     "    except Exception as e:",
     "        words = ('Missing parentheses in call to', 'multiple exception types must be parenthesized')",

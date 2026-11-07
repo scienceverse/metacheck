@@ -5554,12 +5554,12 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
     if (in_docker) {
       # as for the install: the network is on, because a replaced package may need installing
       processx::run("docker", c("run", "--rm", "--name", container_name,
-                                "--user", .repro_docker_uid,
+                                "--user", .repro_docker_uid(),
                                 "--cap-drop", "ALL",
                                 "--security-opt", "no-new-privileges",
                                 "--pids-limit", "512",
                                 .repro_docker_resource_args(),
-                                "-v", paste0(sandbox_dir, ":/sandbox"),
+                                "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
                                 "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
                                 image, "Rscript", "/sandbox/check.R"),
                     error_on_status = FALSE, timeout = timeout)

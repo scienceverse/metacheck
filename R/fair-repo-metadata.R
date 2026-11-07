@@ -1051,7 +1051,7 @@
 # The changes metacheck made, as lines for CHANGES.md.
 .FAIR_repo_change_lines <- function(plan, copied) {
   lines <- paste0(format(Sys.Date(), "%Y-%m-%d"), " - Files reorganised by ",
-                  "[metacheck](https://scienceverse.github.io/metacheck/): every ",
+                  "[metacheck](https://www.scienceverse.org/metacheck/): every ",
                   "file was moved to its place in the Psych-DS layout.")
   conv <- which(plan$convert %in% TRUE & !is.na(plan$written))
   if (length(conv))
@@ -1339,7 +1339,7 @@
   c(paste0("# ", info$title), "",
     if (nzchar(info$abstract)) c(info$abstract, ""),
     paste0("This folder is a copy of the research files, reorganised by ",
-           "[metacheck](https://scienceverse.github.io/metacheck/) on ",
+           "[metacheck](https://www.scienceverse.org/metacheck/) on ",
            format(Sys.Date(), "%Y-%m-%d"), ". `ro-crate-metadata.json` holds ",
            "the same information in machine-readable form, and `CHANGES.md` ",
            "lists what metacheck changed."),
@@ -1379,7 +1379,7 @@
                   grepl("\\.csv$", plan$written) & plan$data_type %in% "data")
   c(paste0("# ", info$title, " \u2014 ", .FAIR_repo_label(root$grp)), "",
     paste0("One study of the research files, reorganised by ",
-           "[metacheck](https://scienceverse.github.io/metacheck/). The ",
+           "[metacheck](https://www.scienceverse.org/metacheck/). The ",
            "authors, licence, software and scripts are described in ",
            "`ro-crate-metadata.json` in the top folder."),
     "", "## Files", "", .FAIR_repo_tree(files),
