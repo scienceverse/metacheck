@@ -1630,6 +1630,41 @@ test_that("the load check script parses and runs from R 3.6", {
   expect_false(any(grepl("deparse1|\\|>", lines)))
 })
 
+test_that(".repro_docker_uid runs the containers as the user running R on Linux", {
+  withr::local_options(metacheck.docker_user = "123:456")
+  expect_equal(.repro_docker_uid(), "123:456")
+  withr::local_options(metacheck.docker_user = NULL)
+  expected <- "1000:1000"
+  if (identical(Sys.info()[["sysname"]], "Linux")) {
+    ids <- c(system2("id", "-u", stdout = TRUE), system2("id", "-g", stdout = TRUE))
+    if (ids[1] != "0") expected <- paste(ids, collapse = ":")
+  }
+  expect_equal(.repro_docker_uid(), expected)
+})
+
+test_that(".repro_docker_share opens a folder only to another user, and not through links", {
+  skip_if_not(identical(Sys.info()[["sysname"]], "Linux"), "folder permissions are Linux's")
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "sub"))
+  writeLines("x", file.path(d, "sub", "a.csv"))
+  outside <- withr::local_tempfile()
+  writeLines("y", outside)
+  Sys.chmod(outside, "600", use_umask = FALSE)
+  file.symlink(outside, file.path(d, "link"))
+  before <- file.mode(file.path(d, "sub"))
+  # the containers run as the user running R: nothing changes
+  withr::local_options(metacheck.docker_user = NULL)
+  .repro_docker_share(d)
+  expect_equal(file.mode(file.path(d, "sub")), before)
+  # another user: the folders and files are opened, the linked file is not
+  own <- paste(system2("id", "-u", stdout = TRUE), system2("id", "-g", stdout = TRUE), sep = ":")
+  withr::local_options(metacheck.docker_user = if (own == "1000:1000") "1001:1001" else "1000:1000")
+  expect_equal(.repro_docker_bind(d, "/sandbox"), paste0(d, ":/sandbox"))
+  expect_equal(format(file.mode(c(d, file.path(d, "sub")))), c("777", "777"))
+  expect_equal(format(file.mode(file.path(d, "sub", "a.csv"))), "666")
+  expect_equal(format(file.mode(outside)), "600")
+})
+
 test_that("repro_install_deps_docker installs recorded versions in a real container", {
   skip_if_quick()
   skip_if_offline()

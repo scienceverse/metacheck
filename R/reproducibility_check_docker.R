@@ -27,10 +27,10 @@
 # against a real Docker Desktop run before this was caught. /rlib is not a
 # path any Linux base image reserves.
 #
-# Both phases run as a fixed non-root uid/gid (1000:1000, arbitrary but
-# consistent across every run in this package): the image itself is root by
-# default (confirmed against rocker/r-ver:latest), and a container escape as
-# root is a strictly worse outcome than as an unprivileged uid.
+# Both phases run as a non-root uid/gid (see .repro_docker_uid()): the image
+# itself is root by default (confirmed against rocker/r-ver:latest), and a
+# container escape as root is a strictly worse outcome than as an
+# unprivileged uid.
 
 #' Is Docker available and running?
 #'
@@ -70,11 +70,59 @@ repro_docker_available <- function() {
   list(ok = TRUE, msg = "")
 }
 
-# Fixed non-root uid:gid every docker run in this backend uses. Arbitrary but
-# constant, so files written into a bind-mounted host directory (the
-# materialised sandbox, the throwaway library) are owned by a predictable,
-# non-root id on both sides of the mount.
-.repro_docker_uid <- "1000:1000"
+# The non-root user and group (uid:gid) every docker run in this backend uses.
+# On Linux it is the user running R: a folder R makes there may be written only
+# by the user who owns it, so the image's own user (1000:1000) was refused in
+# the folders it shares with R ("cannot open file '/sandbox/.install_status':
+# Permission denied", on GitHub's Linux machine, where R runs as user 1001).
+# Files the container writes then belong to the user running R, who can read
+# and delete them. Docker Desktop (Windows, macOS) shares folders without that
+# rule, so there it stays 1000:1000. When R runs as root, the containers still
+# do not: they run as 1000:1000, and the folders are opened to them
+# (.repro_docker_share()). options(metacheck.docker_user = "uid:gid") sets it.
+.repro_docker_user_cache <- new.env(parent = emptyenv())
+.repro_docker_uid <- function() {
+  opt <- getOption("metacheck.docker_user")
+  if (!is.null(opt)) return(as.character(opt))
+  if (!identical(Sys.info()[["sysname"]], "Linux")) return("1000:1000")
+  if (is.null(.repro_docker_user_cache$user)) {
+    ids <- tryCatch(c(system2("id", "-u", stdout = TRUE, stderr = FALSE),
+                      system2("id", "-g", stdout = TRUE, stderr = FALSE)),
+                    error = function(e) character(0), warning = function(w) character(0))
+    ok <- length(ids) == 2 && all(grepl("^[0-9]+$", ids)) && ids[1] != "0"
+    .repro_docker_user_cache$user <- if (ok) paste(ids, collapse = ":") else "1000:1000"
+  }
+  .repro_docker_user_cache$user
+}
+
+# Opens a folder that a container writes in to the container's user, when that
+# user is not the one running R on Linux (R runs as root, or
+# options(metacheck.docker_user) names another user): every folder in it may
+# then be written by anyone, and every file read and written, so a script can
+# also replace a file of the deposit. Symbolic links are left alone, so a link
+# in a deposit cannot open a folder outside it. R's temporary folder, which
+# holds these folders, can still be entered only by the user running R.
+.repro_docker_share <- function(dir) {
+  if (!identical(Sys.info()[["sysname"]], "Linux") || !dir.exists(dir)) return(invisible(dir))
+  own <- tryCatch(paste(system2("id", "-u", stdout = TRUE, stderr = FALSE),
+                        system2("id", "-g", stdout = TRUE, stderr = FALSE), sep = ":"),
+                  error = function(e) "", warning = function(w) "")
+  if (identical(own, .repro_docker_uid())) return(invisible(dir))
+  paths <- c(dir, list.files(dir, recursive = TRUE, full.names = TRUE, all.files = TRUE,
+                             include.dirs = TRUE, no.. = TRUE))
+  paths <- paths[!nzchar(Sys.readlink(paths))]
+  is_dir <- dir.exists(paths)
+  open_mode <- as.octmode(ifelse(is_dir, "777", "666"))
+  Sys.chmod(paths, file.mode(paths) | open_mode, use_umask = FALSE)
+  invisible(dir)
+}
+
+# The `-v` argument that mounts a folder of R's at `target` for the container to
+# write in, opened to the container's user first (.repro_docker_share()).
+.repro_docker_bind <- function(dir, target) {
+  .repro_docker_share(dir)
+  paste0(dir, ":", target)
+}
 
 # The `-v` argument that mounts a package library at `target` (/rlib, /pylib).
 # The library is a Docker volume, not the host folder `lib_dir` itself (#568): a
@@ -92,15 +140,17 @@ repro_docker_available <- function() {
 
 .repro_docker_lib_mount <- function(lib_dir, target, read_only = FALSE, image = NULL) {
   ro <- if (read_only) ":ro" else ""
-  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE)))
+  if (isFALSE(getOption("metacheck.docker_lib_volume", TRUE))) {
+    if (!read_only) .repro_docker_share(lib_dir)
     return(paste0(normalizePath(lib_dir, mustWork = FALSE), ":", target, ro))
+  }
   vol <- .repro_docker_lib_volume_name(lib_dir)
   have <- tryCatch(processx::run("docker", c("volume", "inspect", vol), error_on_status = FALSE)$status == 0,
                    error = function(e) FALSE)
   if (!have && !read_only && !is.null(image)) {
     processx::run("docker", c("volume", "create", vol), error_on_status = FALSE)
     processx::run("docker", c("run", "--rm", "--network", "none", "-v", paste0(vol, ":/v"), image,
-                              "chown", .repro_docker_uid, "/v"), error_on_status = FALSE)
+                              "chown", .repro_docker_uid(), "/v"), error_on_status = FALSE)
   }
   paste0(vol, ":", target, ro)
 }
@@ -840,12 +890,12 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
   # do even with network access.
   container_name <- .repro_docker_container_name()
   args <- c("run", "--rm", "--name", container_name,
-           "--user", .repro_docker_uid,
+           "--user", .repro_docker_uid(),
            "--cap-drop", "ALL",
            "--security-opt", "no-new-privileges",
            "--pids-limit", "512",
            .repro_docker_resource_args(),
-           "-v", paste0(sandbox_dir, ":/sandbox"),
+           "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
            "-v", .repro_docker_lib_mount(lib_dir, "/rlib", image = image),
            image, "Rscript", "/sandbox/install.R")
 
@@ -1216,7 +1266,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              # (10.1111/1365-2656.12673, 10.1111/1365-2656.13608; #568). The code can
              # already run anything R can; the other limits stay.
              "--tmpfs", "/tmp:exec",
-             "--user", .repro_docker_uid,
+             "--user", .repro_docker_uid(),
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
@@ -1233,7 +1283,7 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
              # reads this when it starts, also inside R (#578, item 7); tested in
              # the image with Java 21.
              "-e", "JAVA_TOOL_OPTIONS=--add-opens=java.base/java.util=ALL-UNNAMED",
-             "-v", paste0(sandbox_root, ":/sandbox"))
+             "-v", .repro_docker_bind(sandbox_root, "/sandbox"))
     # The library is writable: a package can keep data in its own folder, as
     # zipcodeR::download_zip_data() does in /rlib/zipcodeR/data, which stopped
     # with "Read-only file system" (10.1002/pan3.10527; #575, item 8). The

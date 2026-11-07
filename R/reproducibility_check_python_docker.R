@@ -6,7 +6,7 @@
 # bind-mounted throwaway library so pip can reach PyPI; run phase has
 # --network none + --read-only so the script cannot reach the network or
 # touch anything outside the mounted sandbox). The container-lifecycle
-# helpers (.repro_docker_uid, .repro_docker_container_name(),
+# helpers (.repro_docker_uid(), .repro_docker_container_name(),
 # .repro_docker_stop(), .repro_docker_resource_args(),
 # .repro_docker_container_path()) are GENERIC -- not R-specific at all (they
 # only ever touch docker/processx and host/container path strings) -- so
@@ -223,12 +223,12 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
 
   container_name <- .repro_docker_container_name()
   args <- c("run", "--rm", "--name", container_name,
-           "--user", .repro_docker_uid,
+           "--user", .repro_docker_uid(),
            "--cap-drop", "ALL",
            "--security-opt", "no-new-privileges",
            "--pids-limit", "512",
            .repro_docker_resource_args(),
-           "-v", paste0(sandbox_dir, ":/sandbox"),
+           "-v", .repro_docker_bind(sandbox_dir, "/sandbox"),
            "-v", .repro_docker_lib_mount(lib_dir, "/pylib", image = image),
            image, "sh", container_driver)
 
@@ -389,7 +389,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              .repro_docker_network_args(net), "--read-only",
              # exec: compiled code in /tmp must load (see the R runner; #568)
              "--tmpfs", "/tmp:exec",
-             "--user", .repro_docker_uid,
+             "--user", .repro_docker_uid(),
              "--cap-drop", "ALL",
              "--security-opt", "no-new-privileges",
              "--pids-limit", "512",
@@ -398,7 +398,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
              # PWD as a shell would set it: a Hydra or OmegaConf setting ${oc.env:PWD}
              # stopped three scripts of 10.1111/2041-210X.14007 (#568)
              "-e", paste0("PWD=", .repro_docker_workdir(row$run_dir, sandbox_root)),
-             "-v", paste0(sandbox_root, ":/sandbox"),
+             "-v", .repro_docker_bind(sandbox_root, "/sandbox"),
              # the container is read-only apart from /tmp, so caches go there: Numba
              # stopped with "cannot cache function" (#568, item 19). There is no
              # screen, so plots and windows must not ask for one.
