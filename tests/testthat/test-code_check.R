@@ -1241,6 +1241,49 @@ test_that("code_file_refs Python", {
 })
 
 
+test_that("code_file_refs leaves out files the code writes", {
+  # open() in a mode that creates the file is an output, not a missing input;
+  # r+ needs the file to exist, so it is still an input
+  py <- c('rows = open("data.csv").read()', 'open("out.txt", "w").write("1")',
+          'with open("log.txt", mode="a") as f: pass',
+          'with open("in.txt") as f, open("res.txt", "w") as g: pass',
+          'f = open("keep.txt", "r+")', 'g = open("new.bin", "xb")',
+          'h = open(', '    "multi.txt",', '    "w")')
+  expect_setequal(code_file_refs(py, "Python"), c("data.csv", "in.txt", "keep.txt"))
+  # repro_file_io() asks for the writes, and sorts them itself
+  expect_true(all(c("out.txt", "res.txt", "multi.txt") %in%
+                    code_file_refs(py, "Python", include_writes = TRUE)))
+  expect_length(.code_blank_write_opens(c(py, "", ""), "Python"), length(py) + 2)
+
+  m <- c("d = load('in.mat');", "fid = fopen('results.txt', 'w');",
+         "fid2 = fopen('raw.txt');", "fid3 = fopen(\"app.txt\", 'at');",
+         "fid4 = fopen('upd.txt', 'r+');")
+  expect_setequal(code_file_refs(m, "MATLAB"), c("in.mat", "raw.txt", "upd.txt"))
+
+  # Mplus: FILE = under SAVEDATA: is the file the model writes
+  mp <- c('TITLE: two files', 'DATA: FILE = "in.dat";', 'VARIABLE: NAMES = y1-y3;',
+          'MODEL: f BY y1-y3;', 'SAVEDATA:', '  FILE = "fscores.dat";',
+          '  SAVE = FSCORES;', 'OUTPUT: sampstat;')
+  expect_equal(code_file_refs(mp, "Mplus"), "in.dat")
+})
+
+
+test_that("code_file_refs ignores capitals in SAS, SPSS and Mplus", {
+  # these languages ignore capitals; only one way of writing was found
+  expect_setequal(code_file_refs(c('DATA: FILE = "UP.dat";', 'data: file = "low.dat";'), "Mplus"),
+                  c("UP.dat", "low.dat"))
+  expect_setequal(code_file_refs(c("proc import datafile='low.csv' out=a;",
+                                   "PROC IMPORT DATAFILE='UP.csv' OUT=b;",
+                                   "INFILE bare_up.dat;"), "SAS"),
+                  c("low.csv", "UP.csv", "bare_up.dat"))
+  expect_setequal(code_file_refs(c("GET FILE='UP.sav'.", "get file='low.sav'.",
+                                   "get data /type=txt /file=bare_low.txt"), "SPSS"),
+                  c("UP.sav", "low.sav", "bare_low.txt"))
+  # Stata does not: USE is not a command
+  expect_equal(code_file_refs(c('use "a.dta"', 'USE "b.dta"'), "Stata"), "a.dta")
+})
+
+
 test_that("code_extract_py", {
   expect_true(is.function(metacheck::code_extract_py))
   expect_no_error(helplist <- help(code_extract_py, metacheck))

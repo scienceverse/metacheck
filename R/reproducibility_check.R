@@ -1989,38 +1989,10 @@ repro_file_io <- function(code_text_list, lang = "R") {
 #' @returns TRUE when an `open()` call on the line has a write mode
 #' @keywords internal
 .py_open_writes <- function(line) {
-  starts <- gregexpr("\\bopen\\s*\\(", line, perl = TRUE)[[1]]
-  if (starts[1] == -1) return(FALSE)
-  chars <- strsplit(line, "", fixed = TRUE)[[1]]
-  first <- starts + attr(starts, "match.length")   # first character after "("
-  for (k in seq_along(starts)) {
-    # the call's closing parenthesis, skipping quoted text and nested brackets
-    depth <- 1L; in_str <- NA_character_; end <- NA_integer_; i <- first[k]
-    while (i <= length(chars)) {
-      ch <- chars[i]
-      if (!is.na(in_str)) {
-        if (ch == "\\") i <- i + 1L
-        else if (ch == in_str) in_str <- NA_character_
-      } else if (ch %in% c("'", '"')) in_str <- ch
-      else if (ch %in% c("(", "[", "{")) depth <- depth + 1L
-      else if (ch %in% c(")", "]", "}")) {
-        depth <- depth - 1L
-        if (depth == 0L) { end <- i; break }
-      }
-      i <- i + 1L
-    }
-    if (is.na(end) || end == first[k]) next
-    args <- vapply(.repro_split_args(paste(chars[first[k]:(end - 1L)], collapse = "")),
-                   function(a) trimws(a$text), character(1))
-    named <- grepl("^[A-Za-z_][A-Za-z0-9_]*\\s*=(?!=)", args, perl = TRUE)
-    is_mode <- named & grepl("^mode\\s*=", args)
-    mode <- if (any(is_mode)) sub("^mode\\s*=\\s*", "", args[is_mode][1])
-            else args[!named][2]
-    if (!is.na(mode) &&
-        grepl("^(['\"])(?=[^'\"]*[wax+])[rwaxbt+]+\\1$", mode, perl = TRUE))
-      return(TRUE)
-  }
-  FALSE
+  # the call text is blanked when its mode writes (code_check.R)
+  !identical(.code_blank_write_opens(line, "Python",
+                                     mode_regex = "^(['\"])(?=[^'\"]*[wax+])[rwaxbt+]+\\1$"),
+             line)
 }
 
 #' Find the variables each script defines at top level
