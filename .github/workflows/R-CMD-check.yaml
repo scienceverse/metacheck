@@ -106,7 +106,10 @@ jobs:
       - name: Check every web address
         run: |
           check <- function() {
-            res <- urlchecker::url_check()
+            # urlchecker 2.0.0 stops by itself on a bad address (fail = TRUE),
+            # before these rules could look at it
+            args <- if ("fail" %in% names(formals(urlchecker::url_check))) list(fail = FALSE) else list()
+            res <- do.call(urlchecker::url_check, args)
             arriving <- grepl("Timeout was reached", res$Message) &
               grepl("with [1-9][0-9]* bytes received", res$Message)
             if (any(arriving)) message("Working, but large (still arriving after 5 seconds): ",
