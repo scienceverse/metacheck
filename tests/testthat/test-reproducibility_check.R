@@ -1398,8 +1398,10 @@ test_that("repro_install_deps does not count a failed GitHub install as installe
   skip_if_not_installed("R6")
   deps <- data.frame(package = "R6", source = "github", ref = "r-lib/R6@abc", version = "0.0.1")
   # install_github() does not stop when the download fails. R6 is also in the
-  # main library, which must not count.
+  # main library, which must not count. (Not on CRAN here, or the install
+  # falls back to CRAN, #598.)
   local_mocked_bindings(.package = "remotes", install_github = function(...) NA)
+  local_mocked_bindings(.repro_on_cran = function(pkg) FALSE)
   out <- suppressMessages(repro_install_deps(deps, withr::local_tempdir()))
   expect_false(out$installed)
 
@@ -2759,6 +2761,91 @@ test_that(".repro_py_starts_server recognises a script that waits for connection
   expect_true(.repro_py_starts_server("app.run(debug = True)"))
   expect_false(.repro_py_starts_server(c("import numpy", "# s.listen(5)", "print(1)")))
   expect_false(.repro_py_starts_server("model.run(x)"))
+})
+
+test_that(".repro_drop_author_lib_loc removes a lib.loc on the authors' computer only (#594)", {
+  x <- .repro_drop_author_lib_loc(c(
+    'library(hydroGOF, lib.loc = "C:/Users/me/Documents/R/win-library/4.0")',
+    "suppressPackageStartupMessages(require(sp, lib.loc='/home/me/R/x86_64'))",
+    'requireNamespace("raster", lib.loc = "~/Rlibs", quietly = TRUE)',
+    'library(mypkg, lib.loc = "lib")',
+    '# library(y, lib.loc = "C:/z")',
+    "library(dplyr)"))
+  expect_equal(x$txt, c("library(hydroGOF)", "suppressPackageStartupMessages(require(sp))",
+                        'requireNamespace("raster", quietly = TRUE)', 'library(mypkg, lib.loc = "lib")',
+                        '# library(y, lib.loc = "C:/z")', "library(dplyr)"))
+  expect_equal(x$paths, c("C:/Users/me/Documents/R/win-library/4.0", "/home/me/R/x86_64", "~/Rlibs"))
+})
+
+test_that("repro_dependencies takes no install address from a line made a comment (#598)", {
+  # 10.1111/1365-2435.13410: the address no longer answers; embryogrowth is on CRAN
+  code <- c('# install.packages("embryogrowth")',
+            '# install.packages("http://www.ese.u-psud.fr/epc/conservation/CRAN/embryogrowth.tar.gz", repos=NULL, type="source")',
+            "#devtools::install_github('someone/HelpersMG')",
+            "library(embryogrowth); library(HelpersMG)",
+            'remotes::install_github("user/mypkg")  # this one is used',
+            "library(mypkg)")
+  d <- repro_dependencies(code)
+  expect_equal(d$source[d$package == "embryogrowth"], "cran")
+  expect_true(is.na(d$ref[d$package == "embryogrowth"]))
+  expect_equal(d$source[d$package == "HelpersMG"], "cran")
+  expect_equal(d$source[d$package == "mypkg"], "github")
+  expect_equal(d$ref[d$package == "mypkg"], "user/mypkg")
+})
+
+test_that(".repro_download_failed_msg says the download failed (#598)", {
+  expect_equal(.repro_download_failed_msg("http://a.org/p.tar.gz", c("x", "cannot open URL 'http://a.org/p.tar.gz'")),
+               "could not download http://a.org/p.tar.gz: cannot open URL 'http://a.org/p.tar.gz'")
+  expect_match(.repro_download_failed_msg("u/r", "HTTP error 404.\n  Not Found"), "^could not download u/r: HTTP error 404")
+  expect_null(.repro_download_failed_msg("u/r", c("non-zero exit status", "compilation failed")))
+})
+
+test_that("a CRAN package whose GitHub or URL install fails is installed from CRAN, with a note (#598)", {
+  skip_if_quick()
+  skip_on_cran()
+  skip_if_offline()
+  deps <- data.frame(package = "praise", source = "url",
+                     ref = "http://does-not-exist.invalid/CRAN/praise.tar.gz", base = FALSE)
+  r <- suppressWarnings(repro_install_deps(deps, withr::local_tempdir()))
+  expect_true(r$installed)
+  expect_match(r$version_note, "^installed from CRAN: the install from http://does-not-exist.invalid/CRAN/praise.tar.gz failed \\(could not download")
+})
+
+test_that(".repro_write_failed_folders finds the folder a write stopped on, not a read's (#591)", {
+  f <- .repro_write_failed_folders
+  q1 <- intToUtf8(8216L); q2 <- intToUtf8(8217L)
+  # 10.1111/1365-2664.14583: the path built in a function of a sourced file
+  expect_equal(f("Error in saveWorkbook(wb, paste0(wdoutputs, filename, \".xlsx\")) :\n  cannot create file './outputs/Butterfly_GAM_Outputs.xlsx', reason 'No such file or directory'"),
+               "./outputs")
+  # 10.1111/1365-2664.14735: ggsave(here("5_figs/final/methods-demo.pdf"))
+  expect_equal(f("Error in `ggsave()`:\n! Cannot find directory '/sandbox/SERDP/5_figs/final'."), "/sandbox/SERDP/5_figs/final")
+  expect_equal(f(paste0("Error in gzfile(file, \"wb\") : cannot open the connection\nIn addition: Warning message:\n  cannot open compressed file ",
+                        q1, "results/m.rds", q2, ", probable reason ", q1, "No such file or directory", q2)), "results")
+  expect_equal(f("Error in png(\"figs/a.png\") : unable to start png() device\nIn addition: Warning message:\ncannot open file 'figs/a.png': No such file or directory"), "figs")
+  expect_equal(f("Traceback (most recent call last):\n  File \"a.py\", line 3, in <module>\n    with open('out/res.txt', 'w') as f:\nFileNotFoundError: [Errno 2] No such file or directory: 'out/res.txt'"), "out")
+  expect_equal(f("Traceback (most recent call last):\n  File \"a.py\", line 9, in <module>\n    plt.savefig('figs/a.png')\nFileNotFoundError: [Errno 2] No such file or directory: 'figs/a.png'"), "figs")
+  # a file a script reads but does not find is not a folder to make
+  expect_equal(f("Error in file(file, \"rt\") : cannot open the connection\nIn addition: Warning message:\ncannot open file 'data/x.csv': No such file or directory"), character(0))
+  expect_equal(f("Error in readChar(con, 5L, useBytes = TRUE) : cannot open the connection\nIn addition: Warning message:\ncannot open compressed file 'out/m.Rdata', probable reason 'No such file or directory'"), character(0))
+  expect_equal(f("Traceback (most recent call last):\n  File \"a.py\", line 3, in <module>\n    df = pd.read_csv('data/x.csv')\nFileNotFoundError: [Errno 2] No such file or directory: 'data/x.csv'"), character(0))
+  expect_equal(f(NA_character_), character(0))
+})
+
+test_that(".repro_make_failed_write_folders makes the folder in the sandbox only, once (#591)", {
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "code"))
+  run_tbl <- data.frame(file_name = c("a.R", "b.R"), run_dir = file.path(root, "code"))
+  res <- data.frame(file_name = c("a.R", "b.R"), outcome = "errored",
+                    error = c("Error in saveRDS(x, \"../out/m.rds\") : cannot open the connection\ncannot create file '../out/m.rds'",
+                              "Error in pdf(\"C:/Users/me/fig.pdf\") : cannot open file 'C:/Users/me/fig.pdf'"),
+                    stderr = "")
+  made <- .repro_make_failed_write_folders(res, run_tbl, root)
+  expect_equal(made$script, "a.R")
+  expect_equal(made$folder, "out")
+  expect_true(dir.exists(file.path(root, "out")))
+  # not again
+  unlink(file.path(root, "out"), recursive = TRUE)
+  expect_equal(nrow(.repro_make_failed_write_folders(res, run_tbl, root, list(a.R = "out"))), 0)
 })
 
 test_that(".repro_error_message gives each failure's message, short (#615)", {

@@ -40,7 +40,7 @@ setting themselves, since they build their markdown/HTML while a module
 runs -- before \code{\link[=report]{report()}} ever selects a template.
 
 A fifth value, \code{"checklist"}, lays the report out by check instead of by
-module: every check of every module is sorted into to fix, to improve,
+module: every check of every module is sorted into to fix, to check,
 decide by hand, for information, fine and not applicable, and each check
 that needs work says what was found and what to do on separate lines. It is
 rendered like \code{"simple"} (static, no JavaScript), in the colours and font
@@ -58,7 +58,7 @@ next to the title), and \code{details} (markdown, for example a
 }
 
 A module without \code{checks} is shown as one check: its traffic light gives
-the result (red: to fix, yellow: to improve, green: fine), its summary text
+the result (red: to fix, yellow: to check, green: fine), its summary text
 what was found, and its report the folded details. A module can also give
 \code{intro} (a paragraph shown at the top) and \code{logo} (the path of an image
 shown next to metacheck's logo). A module that gives \code{checklist_section}
