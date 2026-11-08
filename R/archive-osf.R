@@ -467,9 +467,16 @@ osf_type <- function(guid) {
 
   if (is.na(id)) return(NA_character_)
 
+  # A view-only key goes at the end of the address, as a second query field.
+  # osf_check_id() keeps it on the id ("j9sdn?view_only=..."), and pasted in
+  # whole it gave ".../guids/j9sdn?view_only=.../?resolve=false", which the
+  # OSF does not answer: prereg_check then called the project behind a
+  # view-only link an inaccessible registration (8dn4g_v1).
+  key <- if (grepl("view_only=", id, fixed = TRUE)) sub("^.*view_only=([^&/]*).*$", "\\1", id) else ""
+  id <- sub("[?/].*$", "", id)
   url <- sprintf(
-    "%s/guids/%s/?resolve=false",
-    osf_api, id
+    "%s/guids/%s/?resolve=false%s",
+    osf_api, id, if (nzchar(key)) paste0("&view_only=", key) else ""
   )
   info <- osf_get_all_pages(url)
 
