@@ -8,6 +8,8 @@
 #'
 #' A p-value that is not the result of a test is not flagged: a table note ("* p < .05, ** p < .01"), a figure legend ("Asterisks indicate significant differences (p < .05)", "Values in bold are significant at p < .05") or a stated threshold ("p < .05 was considered significant", "thresholded at p < .001"). GROBID often puts such notes into the running text, so each p-value is judged by the words in its own clause (the text up to a ";" or a full stop), and never left out when a test statistic belongs to it ("F(1, 7) = 8.03, # p < .05"). The column `not_a_test` of the table says why a p-value was left out ("marker", "threshold" or "legend"). Notes in other forms, such as a marker after the p-value ("p < .05 (*)"), are still flagged.
 #'
+#' This module sometimes flags false positives when sentences discuss how p-value thresholds were set. It can also miss an imprecise p-value that is reported against a threshold ("decreased at the p < .05 significance threshold").
+#'
 #' This module only checks p-values reported in the running text of the manuscript. It cannot (yet) process p-values reported only in tables (as opposed to a table's footnote text, which the module does see and tries to exclude — see above).
 #'
 #' <validation>In a sample of 225 papers containing 405 instances of non-exact p-values, the module correctly detected 269 cases (true positives) and incorrectly identified 78 (false positives). It missed 136 instances of imprecisely reported p-values (false negatives) and correctly identified 4557 cases of precisely reported p-values (true negative). Additionally, 78% of positive detections were correct (positive predictive value).</validation>
@@ -133,9 +135,14 @@ stat_p_exact <- function(paper) {
         format_ref(apa)
       )
 
+      # The threshold words cannot always tell a sentence that sets a
+      # threshold from one that reports a result against it (#604)
+      caution <- "This module sometimes flags false positives when sentences discuss how p-value thresholds were set. It can also miss an imprecise p-value that is reported against a threshold (e.g., \"decreased at the *p* < .05 significance threshold\")."
+
       report <- c(
         report,
         report_text,
+        caution,
         scroll_table(report_table, colwidths = c(.1, .9)),
         collapse_section(guidance)
       )
