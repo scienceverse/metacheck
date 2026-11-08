@@ -3808,6 +3808,47 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   }, character(1), USE.NAMES = FALSE)
 }
 
+# The message of each script's failure, short, for the module's table (#615),
+# so a reader of the table need not take it from the report text, whose wording
+# changes: the error line of the script's output (as the report shows it, see
+# .repro_error_line()), which names the package that is not there; for a script
+# that needed the internet, with the address it asked for when the error line
+# names none; for one that timed out, the time limit. Else the last line of the
+# output. At most `max_chars` characters; NA for a script that ran through or
+# has no message.
+.repro_error_message <- function(outcome, error, stderr = NULL, python = FALSE, max_chars = 300) {
+  n <- length(outcome)
+  if (!n) return(character(0))
+  error <- rep_len(error %||% NA_character_, n)
+  stderr <- rep_len(stderr %||% NA_character_, n)
+  shorten <- function(x) {
+    x <- gsub("\\s+", " ", trimws(x))
+    if (nchar(x) > max_chars) paste0(substr(x, 1, max_chars - 1), "\u2026") else x
+  }
+  url_pat <- "https?://[^\\s'\"<>)\\]]+"
+  vapply(seq_len(n), function(i) {
+    o <- outcome[[i]]
+    if (is.na(o) || o %in% c("ran_ok", "run_by_source", "run_by_import", "jags_model", "not_r_content",
+                             "defines_functions", "not_analysis")) return(NA_character_)
+    e <- if (!is.na(error[[i]]) && nzchar(trimws(error[[i]]))) error[[i]] else stderr[[i]]
+    if (is.na(e) || !nzchar(trimws(e))) return(NA_character_)
+    # the time limit: error is the limit's own sentence ("timed out after 3600s")
+    if (o %in% c("timed_out", "skipped_time_limit")) return(shorten(e))
+    line <- .repro_error_line(e, python = python, max_chars = max_chars)
+    if (!nzchar(line)) line <- .repro_error_line(e, python = !python, max_chars = max_chars)
+    if (!nzchar(line)) {
+      lines <- trimws(strsplit(e, "\r?\n")[[1]])
+      lines <- lines[nzchar(lines) & !grepl("^(Execution halted|Calls:|Backtrace:)", lines)]
+      line <- if (length(lines)) shorten(lines[[length(lines)]]) else ""
+    }
+    if (o %in% "needs_internet" && !grepl("https?://", line, ignore.case = TRUE)) {
+      url <- regmatches(paste(e, stderr[[i]]), regexpr(url_pat, paste(e, stderr[[i]]), perl = TRUE))
+      if (length(url)) line <- shorten(paste0(line, " (", url, ")"))
+    }
+    if (nzchar(line)) line else NA_character_
+  }, character(1))
+}
+
 # Why a script did not run through, as one word, so reasons need not be recovered
 # from messages afterwards (#568, item 24). NA for what is not a failure of the script.
 .repro_failure_reason <- function(outcome, msg) {

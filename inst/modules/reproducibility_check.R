@@ -58,6 +58,10 @@
 #' that was not downloaded, such as one over `max_file_size`: it could not be
 #' tried, so it is not counted as a script that did not reproduce
 #' (`summary_table$repro_not_downloaded_n` counts them apart).
+#' For a script that did not run through, `table$error_message` is its error,
+#' short (at most 300 characters): the error line of its output, which names a
+#' package that is not there, with the address it asked for when it needed the
+#' internet, or the time limit it reached; `table$reason` sorts it into a kind.
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -2316,6 +2320,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   table$repo_name <- if ("repo_name" %in% names(r_files)) r_files$repo_name else NA_character_
   table$reason <- if (!is.null(run_results) && "reason" %in% names(run_results))
     run_results$reason[match(r_files$file_name, run_results$file_name)] else NA_character_
+  # the message of the failure, short (#615; see .repro_error_message())
+  table$error_message <- if (!is.null(run_results))
+    .repro_error_message(run_results$outcome, run_results$error, run_results$stderr)[match_run] else
+    rep(NA_character_, n_code)
 
   # ── 9. Report ───────────────────────────────────────────────────────────────
   intro <- if (isTRUE(execute))
@@ -3731,6 +3739,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_table$repo_name <- if ("repo_name" %in% names(py_files)) py_files$repo_name else NA_character_
   py_table$reason <- if (!is.null(py_run_results) && "reason" %in% names(py_run_results))
     py_run_results$reason[match(py_files$file_name, py_run_results$file_name)] else NA_character_
+  # the message of the failure, short (#615; see .repro_error_message())
+  py_table$error_message <- if (!is.null(py_run_results))
+    .repro_error_message(py_run_results$outcome, py_run_results$error, py_run_results$stderr,
+                         python = TRUE)[py_match_run] else rep(NA_character_, n_py_code)
   py_table$commands_removed <- vapply(py_commands_removed, function(x)
     if (length(x)) paste(x, collapse = "; ") else NA_character_, character(1), USE.NAMES = FALSE)
 
