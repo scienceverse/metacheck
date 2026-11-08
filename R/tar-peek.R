@@ -67,6 +67,11 @@
     if (is.na(len) || len <= 0 || p + len - 1L > n) break
     rec <- r[(p + sp[[1]]):(p + len - 2L)]      # without the trailing newline
     eq <- which(rec == as.raw(0x3D))
+    # a record with a null byte is binary, such as a file's extended
+    # attributes (SCHILY.xattr.*, written by tar on a Mac): only path and size
+    # are used, and rawToChar() stopped on it ("embedded nul in string",
+    # PsyArXiv preprint 4z75t_v1)
+    if (length(eq) && any(rec == as.raw(0))) eq <- integer(0)
     if (length(eq)) {
       key <- rawToChar(rec[seq_len(eq[[1]] - 1L)])
       val <- if (eq[[1]] < length(rec)) rawToChar(rec[(eq[[1]] + 1L):length(rec)]) else ""

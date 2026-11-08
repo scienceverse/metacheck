@@ -54,6 +54,22 @@
 #' A one-time session message is also shown (see repo_check) the first time
 #' a Dryad dataset is encountered with no key set.
 #'
+#' Every downloaded text file the authors wrote (code, settings, survey
+#' definitions such as Qualtrics `.qsf` files, documentation, outputs) is
+#' searched for keys: API keys, access tokens and private keys, which let
+#' anyone who downloads the file use a paid service at the authors' cost. Of a
+#' tabular data file only the column names and first 3 rows of the table as
+#' read are searched: its values come from participants, but a key the authors
+#' set for a whole survey (as embedded data in a Qualtrics survey flow) is
+#' exported in every response. The search
+#' uses the rules of the secret scanner betterleaks
+#' (https://github.com/betterleaks/betterleaks, MIT licence) of high and medium
+#' confidence. A key found turns the traffic light red; the report and the
+#' `keys` table give its file, line and type, and only its beginning. Other
+#' files over 25 MB and binary files are not searched. A key is never tested
+#' with its provider. Every module's result has any whole key replaced by
+#' "\[key removed\]" (see `module_run()`).
+#'
 
 #' <validation>This module has not been validated. All checks in the data_check module have unknown error rates. Carefully evaluate the output of this module. You can help improve this module by reporting an issue on GitHub.</validation>
 #'
@@ -1312,10 +1328,77 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     report <- c(report, llm_text)
   }
 
+  # ── 5c. Keys in the files (#607) ─────────────────────────────────────────────
+  # Every file on disk is searched for a key (an API key, an access token, a
+  # private key): anyone who downloads it can use the service at the authors'
+  # cost. code_check's downloads are searched too, as they are kept in the same
+  # place. The report shows only the beginning of a key (.key_scan_files()),
+  # and module_run() removes any whole key from every module's result.
+  # Of a tabular data file, only the column names and first rows of the table
+  # as read (see .key_table_rows): a key the authors set for a whole survey is
+  # in every response, a key a participant typed is not looked for.
+  key_seen <- new.env()
+  key_found <- .key_scan_repo_files(all_files, cache = cache, seen = key_seen)
+  key_not_searched <- attr(key_found, "not_searched")
+  attr(key_found, "not_searched") <- NULL
+  key_found$row <- rep(NA_integer_, nrow(key_found))
+  key_tab <- .key_scan_tables(file_previews, seen = key_seen)
+  if (nrow(key_tab)) {
+    src <- all_files$source_file %||% all_files$file_name
+    at <- match(sub(" \\[[^]]*\\]$", "", key_tab$table), src)
+    key_found <- rbind(key_found, data.frame(
+      paper_id = all_files$paper_id[at] %||% NA_character_, repo_url = all_files$repo_url[at] %||% NA_character_,
+      file = key_tab$table, line = NA_integer_, key = key_tab$key, rule = key_tab$rule,
+      shown = key_tab$shown, row = key_tab$row, stringsAsFactors = FALSE))
+  }
+  n_key <- nrow(key_found)
+  summary_keys <- NULL
+  if (n_key > 0) {
+    # n_key counts places; a key repeated in a file or in several files (a
+    # survey's key in every response) is one key
+    n_keys <- length(unique(key_found$key))
+    n_key_files <- nrow(unique(key_found[c("repo_url", "file")]))
+    summary_keys <- sprintf(
+      "**We found %d key%s** (such as an API key or an access token) in %d file%s. Anyone who downloads %s can use the service at the authors' cost.",
+      n_keys, plural(n_keys), n_key_files, plural(n_key_files),
+      if (n_key_files == 1) "this file" else "these files")
+    # one row per key and file, with the lines it is on
+    by_file <- split(key_found, list(key_found$key, ifelse(is.na(key_found$repo_url), "", key_found$repo_url),
+                                     key_found$file), drop = TRUE)
+    key_tbl <- do.call(rbind, lapply(by_file, function(g) {
+      # a file's lines, or a data table's rows (0: its column names)
+      where <- if (all(is.na(g$line))) {
+        r <- sort(unique(g$row))
+        ifelse(r == 0, "column names", paste("row", r))
+      } else paste("line", sort(unique(g$line)))
+      data.frame(File = g$file[[1]],
+                 Where = paste0(paste(utils::head(where, 5), collapse = ", "), if (length(where) > 5) ", ..." else ""),
+                 Key = g$key[[1]], `Type of key` = g$rule[[1]], Beginning = g$shown[[1]],
+                 check.names = FALSE)
+    }))
+    key_tbl <- key_tbl[order(key_tbl$Key, key_tbl$File), , drop = FALSE]
+    rownames(key_tbl) <- NULL
+    report <- append(report, c(
+      "#### Keys in the repository",
+      summary_keys,
+      scroll_table(key_tbl),
+      paste("Revoke each key with its provider and make a new one, then remove it from the files.",
+            "Deleting the file or the line does not remove the key: GitHub keeps every earlier",
+            "version of a repository, and the OSF keeps earlier versions of a file.",
+            "Metacheck shows only the beginning of each key, and does not test whether it still works."),
+      if (nrow(key_not_searched)) sprintf(
+        "%d file%s over %d MB %s not searched for keys.", nrow(key_not_searched),
+        plural(nrow(key_not_searched)), round(.key_max_bytes / 1024^2),
+        plural(nrow(key_not_searched), "was", "were"))
+    ), after = 1)
+  }
+
   # ── 6. traffic light + summary table ─────────────────────────────────────────
   tl <- if (n_tabular_all == 0) "na"
         else if (n_no_local > 0) "yellow"
         else "green"
+  # a key in the files is worse than anything about the data
+  if (n_key > 0) tl <- "red"
 
   # per-paper representation counts (wide). Representation is the primary
   # structural facet; concept/level are reported in the descriptives table.
@@ -1367,6 +1450,13 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_table$data_file_n[is.na(summary_table$data_file_n)] <- 0L
   summary_table$column_n[is.na(summary_table$column_n)] <- 0L
   summary_table$empty_col_n[is.na(summary_table$empty_col_n)] <- 0L
+  # distinct keys per paper (a key in several places counts once)
+  key_pairs <- unique(key_found[c("paper_id", "key")])
+  key_n_by_paper <- table(factor(key_pairs$paper_id, levels = summary_table$paper_id))
+  summary_table$key_n <- as.integer(key_n_by_paper[summary_table$paper_id])
+  summary_table$key_n[is.na(summary_table$key_n)] <- 0L
+  # one paper whose id is unknown (local files only) has all the keys found
+  if (nrow(summary_table) == 1) summary_table$key_n <- length(unique(key_found$key))
 
   # A brief report (report_type() "brief" or "simple_brief", set while the
   # modules run) is about what to improve. How the files were grouped into
@@ -1377,7 +1467,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_studies <- NULL
     summary_ungrouped <- NULL
   }
-  summary_text <- c(summary_files, summary_data, summary_studies,
+  summary_text <- c(summary_keys, summary_files, summary_data, summary_studies,
                      summary_ungrouped, summary_nolocal, summary_omitted,
                      summary_workspace, summary_nontabular, summary_trial_level) |>
     paste("\n- ", x = _, collapse = "")
@@ -1527,10 +1617,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                             all = TRUE, sort = FALSE),
       na_replace = c(data_file_n = 0, column_n = 0, empty_col_n = 0,
                      flagged_n = 0, spreadsheet_file_n = 0,
-                     spreadsheet_flagged_file_n = 0),
+                     spreadsheet_flagged_file_n = 0, key_n = 0),
       traffic_light = empty_tl,
       report = c(report, dv_report),
       summary_text = paste(summary_text, text),
+      keys = key_found,
       structure = all_files,
       previews = file_previews,
       gated_repos = listing_gated,
@@ -2279,7 +2370,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                           by = "paper_id", all = TRUE, sort = FALSE),
     na_replace = c(data_file_n = 0, column_n = 0, empty_col_n = 0,
                    flagged_n = 0, spreadsheet_file_n = 0,
-                   spreadsheet_flagged_file_n = 0),
+                   spreadsheet_flagged_file_n = 0, key_n = 0),
+    # One row per KEY found in the repository's files (#607): file, line,
+    # type and only the beginning of the key.
+    keys = key_found,
     traffic_light = tl,
     report = c(report, dv_report),
     summary_text = paste(summary_text, dv_summary_text)

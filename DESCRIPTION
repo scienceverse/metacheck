@@ -1,6 +1,6 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.4.3.9
+Version: 0.4.3.18
 Date: 2026-11-06
 Authors@R: c(
   person(  given = "Lisa",
@@ -45,6 +45,7 @@ Description: Screens scientific manuscripts and data repositories and flags
     interoperable, and reusable, and it can check whether the code in a
     repository reproduces its results.
 License: AGPL (>= 3)
+Copyright: See the file inst/COPYRIGHTS for the rules of betterleaks (MIT licence).
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Suggests:

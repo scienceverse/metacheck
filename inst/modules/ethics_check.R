@@ -74,6 +74,13 @@
 #' economics papers that analyse existing survey data. See `.detect_live_data()`
 #' for the full list of patterns and intentional exclusions.
 #'
+#' A paper that states that no human or animal subjects took part ("no human
+#' subjects were involved", "did not involve human participants", or people
+#' taking part "not as subjects") is not expected to have an ethics statement,
+#' whatever participant phrase it also has (see `.detect_no_participants()`).
+#' A negation near a participant phrase alone ("No participants were
+#' excluded") does not count: it reports a study with participants.
+#'
 #' @keywords general
 #'
 #' @import dplyr
@@ -215,6 +222,15 @@ ethics_check <- function(paper) {
     dplyr::left_join(live_summary, by = "paper_id")
   summary_table$ethics_approved[is.na(summary_table$ethics_approved)] <- FALSE
   summary_table$needs_ethics[is.na(summary_table$needs_ethics)] <- FALSE
+
+  # A paper that states no human or animal subjects took part ("no human
+  # subjects were involved", "not as subjects recruited for a study") is not
+  # expected to have an ethics statement, whatever participant phrase it also
+  # has (dq96z_v2; see .detect_no_participants())
+  none_table <- .detect_no_participants(paper)
+  none_ids <- unique(as.character(none_table$paper_id %||% character(0)))
+  summary_table$states_no_participants <- summary_table$paper_id %in% none_ids
+  summary_table$needs_ethics[summary_table$states_no_participants] <- FALSE
   # vapply()/lengths(), not sapply(): for no papers sapply() returned list(),
   # and indexing with it stopped ("invalid subscript type 'list'", U79)
   ethics_null <- vapply(summary_table$ethics_statements, is.null, logical(1))
@@ -253,7 +269,12 @@ ethics_check <- function(paper) {
     needs    <- summary_table$needs_ethics
     live_statements <- summary_table$live_data_statements[[1]]
 
-    if (!needs) {
+    if (!needs && summary_table$states_no_participants[[1]] && !approved) {
+      report <- sprintf(
+        "We did not detect an ethics approval statement. The paper states that no human or animal participants took part, so we do not expect one:\n\n> %s",
+        paste(unique(none_table$text), collapse = "\n\n> ")
+      )
+    } else if (!needs) {
       if (approved) {
         report <- sprintf(
           "An ethics approval statement was detected, based on the following text:\n\n> %s",
@@ -283,7 +304,7 @@ ethics_check <- function(paper) {
   list(
     table = dplyr::bind_rows(table, live_table),
     summary_table = summary_table,
-    na_replace = list(ethics_approved = FALSE),
+    na_replace = list(ethics_approved = FALSE, states_no_participants = FALSE),
     traffic_light = tl,
     summary_text = summary_text,
     report = report

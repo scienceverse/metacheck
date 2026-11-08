@@ -116,6 +116,13 @@ module_run <- function(paper, module, ...) {
     results <- list(table = results)
   }
 
+  # A key (an API key, an access token) that a module read from a file is
+  # replaced by "[key removed]" in its result, so metacheck never copies one
+  # into its report, tables or saved results (#607). data_check warns about the
+  # key itself, by its first characters only (.key_scan_files()).
+  results <- .key_remove(results)
+  attr(results, "keys_removed") <- NULL
+
   # add defaults
   if (is.null(results$traffic_light)) {
     results$traffic_light <- "info"

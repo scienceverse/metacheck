@@ -271,6 +271,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   reg_url_to_parent <- character(0)
 
   osf_files_df <- data.frame(repo_name = character(0))
+  # private projects read through a view-only link in the paper (see below)
+  osf_view_only <- data.frame(paper_id = character(0), repo_url = character(0),
+                              project = character(0))
   if (length(osf_urls) > 0) {
     tryCatch({
       suppressWarnings({
@@ -386,6 +389,29 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         _$osf_url
       if (length(private_repos)) {
         repos$repo_error[repos$repo_url %in% private_repos] <- "private"
+      }
+
+      # A private project read through a view-only link in the paper: the OSF
+      # lists its files through that link, and says the project is not public
+      # (public = FALSE on its node). The paper's plain link to the same
+      # project is then not a repository that could not be checked, and is
+      # left out; the project is named as private instead, as the authors can
+      # now make it public (8dn4g_v1 linked osf.io/j9sdn both ways: one copy
+      # was read, the other reported as "could not check ... (private)").
+      if (all(c("osf_id", "public") %in% names(osf_info))) {
+        vo <- osf_info[osf_info$osf_type %in% "nodes" & osf_info$public %in% FALSE &
+                         grepl("view_only=", osf_info$osf_id), , drop = FALSE]
+        vo <- vo[!duplicated(vo$repo_name) & vo$repo_name %in% repos$repo_url, , drop = FALSE]
+        if (nrow(vo) > 0) {
+          vo_id <- sub("[?/].*$", "", vo$osf_id)
+          plain <- osf_info$osf_url[osf_info$osf_type %in% "private" &
+                                      sub("[?/].*$", "", osf_info$osf_id) %in% vo_id]
+          repos <- repos[!repos$repo_url %in% plain, , drop = FALSE]
+          osf_view_only <- data.frame(
+            paper_id = repos$paper_id[match(vo$repo_name, repos$repo_url)],
+            repo_url = vo$repo_name,
+            project = sprintf("https://osf.io/%s", vo_id))
+        }
       }
 
       # follow registrations back to their origin project ----
@@ -2007,6 +2033,19 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       paste0("- ", repos$repo_url[unchecked], ": ", repos$repo_error[unchecked]))
   }
 
+  ## private projects checked through a view-only link ----
+  # (see the OSF block above) yellow: the files could be checked, but readers
+  # of the paper need the view-only link, which was meant for peer review
+  summary_view_only <- NULL
+  report_view_only <- NULL
+  view_only_projects <- unique(osf_view_only$project)
+  if (length(view_only_projects)) {
+    summary_view_only <- paste(sprintf(
+      "The OSF project %s is private. Metacheck examined the files through the view_only link. As the preprint is public, and the OSF Files are accessible to anyone, consider making the OSF project public.",
+      view_only_projects), collapse = " ")
+    report_view_only <- c("#### Private projects checked through a view-only link", summary_view_only)
+  }
+
   ## empty repos ----
   repo_no_files <- sum(repos$files_n == 0 & !unchecked)
   summary_repo <- NULL
@@ -2391,6 +2430,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   report <- c(
     report_unchecked,
+    report_view_only,
     report_repo,
     if(nrow(repo_tbl)) "#### Repositories" else NULL,
     scroll_table(repo_tbl, maxrows = 10),
@@ -2420,7 +2460,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else if (zip_n == 0 && repo_no_readme == 0 && n_unknown == 0 &&
       is.null(report_roster) && n_naming_bad == 0 &&
       length(closed_reg_unreachable) == 0 && !any(unchecked) &&
-      n_useless_suggestion == 0) {
+      n_useless_suggestion == 0 && !length(view_only_projects)) {
     tl <- "green"
   } else {
     tl <- "yellow"
@@ -2442,6 +2482,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dplyr::left_join(n_naming_bad_by_paper, by = "paper_id")
   summary_table$files_unknown[is.na(summary_table$files_unknown)] <- 0L
   summary_table$naming_issues[is.na(summary_table$naming_issues)] <- 0L
+  # private OSF projects checked through a view-only link, per paper
+  vo_by_paper <- table(factor(unique(osf_view_only[c("paper_id", "project")])$paper_id,
+                              levels = summary_table$paper_id))
+  summary_table$repo_view_only <- as.integer(vo_by_paper[summary_table$paper_id])
+  summary_table$repo_view_only[is.na(summary_table$repo_view_only)] <- 0L
   summary_table$roster_mismatch <- !is.null(roster_check) &&
     length(roster_check$roster) > 0 &&
     (length(roster_check$missing) > 0 || length(roster_check$extra) > 0)
@@ -2449,6 +2494,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # summary_text ----
   summary_text <- c(
     summary_unchecked,
+    summary_view_only,
     summary_repo,
     summary_files,
     summary_readme,
@@ -2490,6 +2536,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Files that do not belong in a repository, left out of `table`: paper_id,
     # repo_url, file_path, kind and severity ("problem" or "suggestion").
     useless_files = useless_files,
+    # Private OSF projects whose files were read through a view-only link in
+    # the paper: paper_id, repo_url (the link) and project (its plain address).
+    view_only = osf_view_only,
     na_replace = 0,
     traffic_light = tl,
     report = report,

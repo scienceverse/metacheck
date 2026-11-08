@@ -154,3 +154,32 @@ test_that("ethics_check quotes a statement once, and keeps a paper with an empty
   pl <- paperlist(paper("empty"), test_paper(s))
   expect_equal(paper_id(pl)[1], "empty")
 })
+
+test_that("a paper that states no human participants took part needs no ethics statement (dq96z_v2)", {
+  module <- "ethics_check"
+  # dq96z_v2: the participant phrase "subjects recruited" is in the sentence
+  # that says the professionals were not subjects
+  paper <- test_paper("The professionals described their own work as collaborators in the projects, not as subjects recruited for a study.")
+  mo <- module_run(paper, module)
+  expect_false(mo$summary_table$needs_ethics)
+  expect_true(mo$summary_table$states_no_participants)
+  expect_equal(mo$traffic_light, "na")
+  expect_match(mo$report, "The paper states that no human or animal participants took part", fixed = TRUE)
+  expect_match(mo$report, "not as subjects recruited", fixed = TRUE)
+  for (s in c("No human subjects were involved in this study.",
+              "As this study did not involve human subjects, institutional review board approval was not required.",
+              "Ethics Statement: No animals nor human participants were involved in the production and analysis of the data used for this article.")) {
+    mo <- module_run(test_paper(c("Participants were recruited online.", s)), module)
+    expect_false(mo$summary_table$needs_ethics, info = s)
+  }
+  # a negation near a participant phrase reports a study with participants
+  for (s in c("No participants were excluded.", "No participants were minors.",
+              "Only children without G6PD deficiency were enrolled in the study.",
+              "This study would not have been possible without our participants.",
+              "No participant was included more than once across training samples.")) {
+    mo <- module_run(test_paper(c("Participants were recruited online.", s)), module)
+    expect_true(mo$summary_table$needs_ethics, info = s)
+    expect_false(mo$summary_table$states_no_participants, info = s)
+    expect_equal(mo$traffic_light, "red", info = s)
+  }
+})
