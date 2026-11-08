@@ -152,6 +152,55 @@ test_that("stat_p_exact: p < .000 is zero, == is =, and a starred footnote hides
   expect_equal(mo$summary_table$n_imprecise, 2)   # .05 and .01, not the starred footnote
 })
 
+test_that("stat_p_exact leaves out table notes, legends and thresholds, not results (#604)", {
+  # each sentence from a real paper (PsyArXiv reports and the open-access
+  # collections); the p-value in the second column
+  cases <- list(
+    # notes with markers
+    list("Note. ** = p < .01, * = p < .05.", "p < .05", "marker"),
+    list("Data are presented as mean ± SD. ns, p > 0.05; **p < 0.01; ***p < 0.001.", "p > 0.05", "marker"),
+    list("Error bars indicate standard error. + p < 0.10, * p <0.05.", "p < 0.10", "marker"),
+    list("Model fit: χ2 = 129.59, df = 89, p < .01, CFI = 0.95, SRMR = .06, N = 135, *p <.05.", "p <.05", "marker"),
+    list("Error bars represent ±1 SEM.* p < 0.05 (two-tailed).", "p < 0.05", "marker"),
+    # thresholds
+    list("A p-value < 0.05 was considered statistically significant.", "p-value < 0.05", "threshold"),
+    list("The significance level was set at p <.05.", "p <.05", "threshold"),
+    list("All the reported clusters survived a cFWE-corrected threshold of P < 0.05.", "P < 0.05", "threshold"),
+    list("Contrasts, with a Bonferroni corrected alpha of p<.02 for 4 comparisons, showed an interaction.", "p<.02", "threshold"),
+    # legends
+    list("Asterisks indicate significant differences between conditions (p < .05).", "p < .05", "legend"),
+    list("Note: Correlations significant at the p < .05 level are highlighted in bold.", "p < .05", "legend"),
+    list("Black and white markers indicate reported effects that did (black) and did not (white) differ significantly (p < 0.05) from the corresponding expected effect.", "p < 0.05", "legend"),
+    # results, which stay
+    list("More importantly, there was a significant interaction [F(1,18) ¼ 6.05, P < 0.05, g2 ¼ 0.25].", "P < 0.05", NA),
+    list("The indirect effect through hopelessness was significant (β = 0.115*, p < 0.05).", "p < 0.05", NA),
+    list("Trials were more variable (paired t-test, n = 95, t52 = 6.92, ***p<<0.001, and for monkey D).", "p<<0.001", NA),
+    list("Silencing (overground n = 135/600 vs treadmill n = 22/151, *p<0.05 [z = 2.38]; hindlimbs).", "p<0.05", NA),
+    list("Tor1a +/+ p<0.05; Tor1a +/Dgag p<0.01.", "p<0.05", NA),
+    list("No other main effects or interactions reached conventional significance levels (all ps > 0.09).", "ps > 0.09", NA),
+    list("This effect remained significant when the maps were thresholded at varying levels (all Ps < 0.002).", "Ps < 0.002", NA),
+    list("Participants showed a higher exit threshold (P < 0.05).", "P < 0.05", NA),
+    list("The Kansas and Florida lines differed in DT but not PA (t-test, P>0.05, data not shown).", "P>0.05", NA),
+    list("Alpha power was higher in the online group than in the offline group (p < .05).", "p < .05", NA),
+    list("Participants who met the inclusion criteria scored higher (p < .05).", "p < .05", NA)
+  )
+  p <- data.frame(paper_id = "x", text_id = seq_along(cases),
+                  expanded = vapply(cases, `[[`, "", 1), text = vapply(cases, `[[`, "", 2))
+  expect_equal(.p_not_test(p), vapply(cases, function(x) as.character(x[[3]]), ""))
+
+  # the same note under two tables: both copies are left out, not one (b92ku_v1)
+  note <- "The table reports standard errors and asymptotic p-values. * p < .05. * * p < .01. * * * p < .001."
+  mo <- module_run(test_paper(c(note, "Some results.", note)), "stat_p_exact")
+  expect_equal(mo$summary_table$n_imprecise %||% 0, 0)
+  # a legend joined to a table's cells (z2hpt_v1)
+  mo <- module_run(test_paper(paste(cases[[12]][[1]], ".064 (.006; .122)* .008 (-.017; .033)")), "stat_p_exact")
+  expect_equal(mo$summary_table$n_imprecise %||% 0, 0)
+  # a result reported imprecisely is still found, next to a note
+  mo <- module_run(test_paper(c("Group A differed, F(1, 30) = 5.20, p < .05.", note)), "stat_p_exact")
+  expect_equal(mo$summary_table$n_imprecise, 1)
+  expect_equal(sum(!is.na(mo$table$not_a_test)), 3)
+})
+
 test_that("stat_check without statistics gives every paper of a list a summary row (U124)", {
   p1 <- test_paper("no stats"); p1$paper_id <- "a"
   p2 <- test_paper("none"); p2$paper_id <- "b"
