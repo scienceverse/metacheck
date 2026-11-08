@@ -829,6 +829,25 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     '    }',
     '    list(ok = TRUE, msg = "")',
     '  }, error = function(e) list(ok = FALSE, msg = conditionMessage(e)))',
+    # An install from GitHub or a web address that failed, for a package that
+    # is on CRAN or Bioconductor: installed from there, with a note (#598,
+    # embryogrowth: the address no longer answered). A failed download says so.
+    # The same rules as repro_install_deps() (R/reproducibility_check.R).
+    '  if (!res$ok && src %in% c("github", "url")) {',
+    '    dl <- grep("cannot open URL|cannot open the connection|download|status was|Could not resolve host|HTTP error|HTTP status|404|403|Failed to connect", c(warns, res$msg), value = TRUE, ignore.case = TRUE)',
+    '    first <- if (length(dl)) paste0("could not download ", ref, ": ", substr(gsub("[[:space:]]+", " ", dl[1]), 1, 200)) else res$msg',
+    '    cran_has <- tryCatch(pkg %in% rownames(utils::available.packages()), error = function(e) FALSE)',
+    '    alt <- if (cran_has) "CRAN" else if (isTRUE(.repro_docker_bioc[i])) "Bioconductor" else NA_character_',
+    '    if (!is.na(alt)) {',
+    '      try(if (alt == "CRAN") install.packages(pkg, lib = lib, quiet = FALSE) else {',
+    '        if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager", lib = lib, quiet = FALSE)',
+    '        BiocManager::install(pkg, lib = lib, update = FALSE, ask = FALSE) })',
+    '      if (file.exists(file.path(lib, pkg, "DESCRIPTION")) && requireNamespace(pkg, quietly = TRUE, lib.loc = lib)) {',
+    '        res <- list(ok = TRUE, msg = "")',
+    '        note <- paste0("installed from ", alt, ": the install from ", ref, " failed (", substr(first, 1, 200), ")")',
+    '      } else res$msg <- paste0(first, "; installing it from ", alt, " failed too")',
+    '    } else res$msg <- first',
+    '  }',
     '  v <- have_version(pkg)',
     '  if (res$ok && !is.na(ver) && !same_version(v, ver) && !nzchar(note))',
     '    note <- "the source gave another version than the recorded one"',
@@ -870,7 +889,10 @@ repro_install_deps_docker <- function(install_deps, lib_dir, image = "rocker/r-v
     paste0(".repro_docker_pkgs <- ", deparse1(install_deps$package)),
     paste0(".repro_docker_srcs <- ", deparse1(install_deps$source)),
     paste0(".repro_docker_refs <- ", deparse1(install_deps$ref)),
-    paste0(".repro_docker_vers <- ", deparse1(as.character(versions)))
+    paste0(".repro_docker_vers <- ", deparse1(as.character(versions))),
+    # whether each package is a Bioconductor one, for a failed GitHub or URL
+    # install (#598)
+    paste0(".repro_docker_bioc <- ", deparse1(install_deps$package %in% .repro_bioc_packages()))
   )
   script_path <- file.path(sandbox_dir, "install.R")
   # No BOM: writeLines()/UTF-8 without a BOM is R's own default, but Docker

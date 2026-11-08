@@ -164,7 +164,8 @@
 #' @param install_missing if TRUE (and `execute = TRUE`), install the code's
 #'   declared dependencies into a throwaway temp library before running (CRAN via
 #'   `install.packages`, GitHub/URL via `remotes`; Python packages via
-#'   `pip install --target`). If FALSE, nothing is installed: a script
+#'   `pip install --prefix` with `sandbox = "docker"`, and `pip install
+#'   --target` with `sandbox = "process"`). If FALSE, nothing is installed: a script
 #'   needing an absent package simply errors, recorded as its outcome. If `NULL`
 #'   (the default), this is FALSE, except that the R packages the scripts load
 #'   are installed when `recorded_versions = TRUE` and the repository records
@@ -2106,6 +2107,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     r_placed <- .repro_place_written(list(), NULL, NULL, sandbox_root, character(0), character(0))
     r_deposit_placed <- r_placed
     r_seen <- list()   # script -> the files it stopped on when it was run again
+    # A script whose write stopped on a folder the deposit does not have runs
+    # once more after the folder is made (#591; see .repro_make_failed_write_folders())
+    r_folders_made <- data.frame(script = character(0), folder = character(0))
     for (pass in 1:5) {
       names_after <- .repro_sandbox_names(sandbox_root)
       later <- .repro_written_later(run_results, r_names_before, names_after)
@@ -2116,10 +2120,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                        r_names_before, names_after))
       from_deposit <- .repro_place_from_deposit(run_results, run_tbl, sandbox_root, r_names_before)
       r_deposit_placed <- rbind(r_deposit_placed, from_deposit)
-      redo <- unique(c(names(later), from_deposit$script))
+      made <- .repro_make_failed_write_folders(run_results, run_tbl, sandbox_root,
+                                               split(r_folders_made$folder, r_folders_made$script))
+      r_folders_made <- rbind(r_folders_made, made)
+      redo <- unique(c(names(later), from_deposit$script, made$script))
       if (!length(redo)) break
-      .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
-           "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
+      .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote, ",
+           "the deposit holds elsewhere, or a folder a write needed: ", paste(redo, collapse = ", "))
       res4 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
                             c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
       ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
@@ -2521,6 +2528,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         r_written_later, run_results$file_name[oc == "ran_ok"], r_placed))
     if (exists("r_deposit_placed", inherits = FALSE) && nrow(r_deposit_placed))
       report_exec <- paste0(report_exec, .repro_placed_text(r_deposit_placed))
+    if (exists("r_folders_made", inherits = FALSE) && nrow(r_folders_made))
+      report_exec <- paste0(report_exec, .repro_folders_made_text(r_folders_made))
     if (exists("r_lfs_stopped", inherits = FALSE) && length(r_lfs_stopped))
       report_exec <- paste0(report_exec, .repro_lfs_stopped_text(r_lfs_stopped))
     if (sum(lengths(r_choices_filled)) > 0)
@@ -2929,6 +2938,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       else NULL
     } else NULL
 
+    # a lib.loc folder on the authors' computer, removed (#594)
+    lib_loc_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
+                            "lib_loc_removed" %in% names(run_tbl)) {
+      hit <- nzchar(run_tbl$lib_loc_removed %||% "")
+      if (any(hit)) dplyr::bind_rows(lapply(which(hit), function(i)
+        data.frame(file_name = run_tbl$file_name[i], change_type = "lib_loc_removed",
+                   detail = strsplit(run_tbl$lib_loc_removed[i], "; ", fixed = TRUE)[[1]],
+                   stringsAsFactors = FALSE)))
+      else NULL
+    } else NULL
+
     family_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
                            "family_detail" %in% names(run_tbl)) {
       hit <- run_tbl$family_replaced > 0 & nzchar(run_tbl$family_detail %||% "")
@@ -2974,7 +2994,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       later_rows <- rbind(later_rows, data.frame(file_name = r_deposit_placed$script, change_type = "file_placed",
         detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
                          r_deposit_placed$from, r_deposit_placed$to)))
-    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
+    if (exists("r_folders_made", inherits = FALSE) && nrow(r_folders_made))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_folders_made$script, change_type = "folder_made",
+        detail = sprintf("made the folder %s, where the script writes, and ran it once more", r_folders_made$folder)))
+    dplyr::bind_rows(rw_rows, setwd_rows_mod, lib_loc_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
                      slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
@@ -3490,6 +3513,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # items 2 and 4; see the R loop above).
     if (!is.null(py_run_results) && exists("py_names_before", inherits = FALSE)) {
       py_seen <- list()
+      # a folder a write stopped on is made (#591; see the R loop above)
+      py_folders_made <- data.frame(script = character(0), folder = character(0))
       for (pass in 1:5) {
         names_after <- .repro_sandbox_names(sandbox_root)
         later <- .repro_written_later(py_run_results, py_names_before, names_after)
@@ -3500,10 +3525,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                            py_names_before, names_after))
         from_deposit <- .repro_place_from_deposit(py_run_results, py_run_tbl, sandbox_root, py_names_before)
         py_deposit_placed <- rbind(py_deposit_placed, from_deposit)
-        redo <- unique(c(names(later), from_deposit$script))
+        made <- .repro_make_failed_write_folders(py_run_results, py_run_tbl, sandbox_root,
+                                                 split(py_folders_made$folder, py_folders_made$script))
+        py_folders_made <- rbind(py_folders_made, made)
+        redo <- unique(c(names(later), from_deposit$script, made$script))
         if (!length(redo)) break
-        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
-             "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
+        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file another script wrote, ",
+             "the deposit holds elsewhere, or a folder a write needed: ", paste(redo, collapse = ", "))
         res4 <- .repro_later_pass(run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
                        c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names))))
         if (is.null(res4)) break
@@ -3908,6 +3936,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         py_written_later, py_run_results$file_name[py_oc == "ran_ok"], py_placed))
     if (nrow(py_deposit_placed))
       py_report_exec <- paste0(py_report_exec, .repro_placed_text(py_deposit_placed))
+    if (exists("py_folders_made", inherits = FALSE) && nrow(py_folders_made))
+      py_report_exec <- paste0(py_report_exec, .repro_folders_made_text(py_folders_made))
     if (exists("py_lfs_stopped", inherits = FALSE) && length(py_lfs_stopped))
       py_report_exec <- paste0(py_report_exec, .repro_lfs_stopped_text(py_lfs_stopped))
     py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
@@ -4175,6 +4205,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_deposit_placed$script, change_type = "file_placed",
         detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
                          py_deposit_placed$from, py_deposit_placed$to)))
+    if (exists("py_folders_made", inherits = FALSE) && nrow(py_folders_made))
+      py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_folders_made$script, change_type = "folder_made",
+        detail = sprintf("made the folder %s, where the script writes, and ran it once more", py_folders_made$folder)))
     dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod, py_later_rows)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))

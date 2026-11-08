@@ -240,6 +240,37 @@ test_that("execute = TRUE: setwd() is stripped and reported, and the script stil
   expect_match(paste(mo$report, collapse = "\n"), "setwd", fixed = TRUE)
 })
 
+test_that("execute = TRUE: a lib.loc on the authors' computer is removed, and a folder a write needs is made (#594, #591)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+
+  tmp <- withr::local_tempdir()
+  # #594: the package is there, the authors' folder is not
+  writeLines(c('library(stats, lib.loc = "C:/Users/someone/Documents/R/win-library/4.1")',
+               "x <- median(1:5)"), file.path(tmp, "libloc.R"))
+  # #591: the folder's name is built in a function, so it cannot be made before the run
+  writeLines(c('out_dir <- function() file.path("results", "tables")',
+               'write.csv(data.frame(a = 1:3), file.path(out_dir(), "a.csv"), row.names = FALSE)'),
+             file.path(tmp, "writes.R"))
+  paper <- test_paper()
+  code_tbl <- dplyr::bind_rows(code_tbl_row(paper, "libloc.R", file.path(tmp, "libloc.R")),
+                               code_tbl_row(paper, "writes.R", file.path(tmp, "writes.R")))
+  structure_df <- data.frame(paper_id = character(0), file_name = character(0), file_location = character(0))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+
+  mo <- module_run(fake_code, "reproducibility_check", execute = TRUE, timeout = 60)
+
+  expect_equal(mo$table$outcome[mo$table$file_name == "libloc.R"], "ran_ok")
+  expect_equal(mo$modifications$detail[mo$modifications$change_type == "lib_loc_removed"],
+               "C:/Users/someone/Documents/R/win-library/4.1")
+  expect_equal(mo$table$outcome[mo$table$file_name == "writes.R"], "ran_ok")
+  made <- mo$modifications[mo$modifications$change_type == "folder_made", ]
+  expect_equal(made$file_name, "writes.R")
+  expect_match(made$detail, "results/tables", fixed = TRUE)
+  expect_match(paste(mo$report, collapse = "\n"), "wrote into a folder that the deposit does not have", fixed = TRUE)
+})
+
 test_that("execute = TRUE: a script another script source()s runs only inside that script", {
   # main.R loads dplyr and then sources a.R, which uses %>% without loading
   # anything: run on its own, a.R fails, so it is only run inside main.R.
