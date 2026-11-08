@@ -217,7 +217,7 @@ repro_docker_available <- function() {
 .repro_install_error_lines <- function(txt, pkg) {
   l <- strsplit(txt %||% "", "\n", fixed = TRUE)[[1]]
   if (!length(l) || is.na(pkg) || !nzchar(pkg)) return("")
-  q <- gsub("([.|()\\^{}+$*?\\[\\]\\\\])", "\\\\\\1", pkg)
+  q <- .repro_sw_escape(pkg)   # the [...] class used here escaped nothing (#597)
   # "... for package 'pkg'": the package that failed, not one it needs
   named <- grep(paste0("^ERROR: .*package ['\u2018\"]", q, "['\u2019\"]"), l, value = TRUE, perl = TRUE)
   start <- grep(paste0("installing \\*source\\* package ['\u2018\"]", q, "['\u2019\"]"), l, perl = TRUE)
