@@ -289,3 +289,191 @@
     "(<\\s*[.0-9]+|-?[0-9]+(?:\\.[0-9]+)?(?:e[-+]?[0-9]+)?)"
   ))
 }
+
+# ---- p-values that are not the result of a test --------------------------
+
+# Which p-values in sentences are clearly not the result of a test: a
+# threshold or a legend, not a finding (#604). A table note ("* p < .05,
+# ** p < .01"), a figure legend ("Asterisks indicate significant differences
+# (p < .05)") or a stated threshold ("p < .05 was considered significant",
+# "thresholded at P < .001") gives the level that marks significance, and is
+# not a p-value reported imprecisely. GROBID often puts such notes and
+# legends into the running text, so the section cannot tell them apart.
+#
+# Each p-value is judged in its own clause: the text around it up to a ";"
+# or a full stop followed by a space. That keeps the items of a note apart
+# ("p < .05. ** p < .01.") and keeps a note apart from a result in the same
+# sentence. A clause that holds a test statistic or an estimate (t(20) =,
+# F =, r =, b =, M =, a confidence interval) is never taken as a note: the
+# p-value then belongs to a result ("F(1, 7) = 8.03, # p < .05").
+#
+# A p-value is taken as not a test when its clause has, and no statistic:
+#   marker     a symbol right before it: *, the asterisk operator, a dagger or double dagger, a section or paragraph sign, #, ^, +, ~, or a
+#              repeat of them ("* * * p < .001", "*: p < .05", "** = p < .01");
+#              "ns" or "n.s." only with ":" or "=" after it ("ns: p > .05"),
+#              or in a clause with a symbol note too
+#   threshold  words that state a threshold: a significance level, alpha,
+#              "threshold", "cut-off", "criterion", "considered / regarded /
+#              accepted as significant", "set at"; not "reached", which
+#              reports a result ("did not reach significance levels, ps > .09")
+#   legend     a marker that is the subject of a verb of meaning ("Asterisks
+#              indicate", "Red dots denote", "Bold values represent"), the
+#              passive ("indicated by an asterisk", "highlighted in bold"), or
+#              "in bold" / "in grey"
+#
+# `p` is the table of extract_p_values() with `expanded` (the sentence):
+# columns `paper_id`, `text_id`, `text` (the p-value as matched) and
+# `expanded`. Returns a character vector, one per row: "marker",
+# "threshold", "legend", or NA for a p-value that may be a result.
+.p_not_test <- function(p) {
+  out <- rep(NA_character_, nrow(p))
+  if (!nrow(p)) return(out)
+  sentence <- p$expanded %||% p$text
+  sentence[is.na(sentence)] <- ""
+  ptext <- trimws(p$text)
+
+  # the k-th row of a p-value in a sentence is its k-th place there
+  key <- paste(p$paper_id, p$text_id, sentence, ptext, sep = "\r")
+  k <- stats::ave(seq_along(key), key, FUN = seq_along)
+
+  # a statistic or an estimate: a short name, an optional (df), a comparison
+  # and a number; not p (or q, an adjusted p), n, k, df or alpha, which
+  # thresholds and notes use too. The fraction one quarter and A with a grave accent are how GROBID reads "=" and
+  # the minus sign in some journals.
+  stat_name <- paste0(
+    "(?<![\\w.\u0370-\u03ff-])(?!(?:p|P|ps|Ps|q|n|N|k|K|df|alpha|value|values|pvalue|pvalues)(?![\\w\u0370-\u03ff]))",
+    "(?!\u03b1(?![\\w\u0370-\u03ff]))",
+    "(?:[A-Za-z\u0370-\u03ff][A-Za-z\u0370-\u03ff0-9\u00b2_]{0,5}|\u03c7\u00b2?)",
+    "\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
+    "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
+  ci <- "\\bCI\\b\\s*[\\[(=:]?\\s*[-\u2212\u00c0]?\\.?\\d|\\d+\\s*%\\s*CI\\b"
+  # a test statistic, which a p-value right after it belongs to: not a fit
+  # index, R squared, a size or another number, which a table note can follow
+  test_stat <- paste0(
+    "(?<![\\w\u0370-\u03ff-])(?:t|F|z|Z|r|rs|R(?![\u00b22])|W|U|H|D|V|Q|T|B|b|d|g|OR|HR|RR|",
+    "\u03c7\u00b2?|\u03c72|X2|chi2|chi\u00b2|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
+    "[0-9]{0,4}\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
+    "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
+  p_value <- "(?<![\\w])[pP]s?\\s*(?:-?values?)?\\s*(?:=|<|>|\u2264|\u2265|\u00bc)"
+  symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd]"
+  marker <- paste0("(?<![\\w)\\]/])(?:(?:", symbol, "|(?<![\\w/+])\\++)\\s*)+[:=,]?\\s*$")
+  ns_marker <- "(?<![\\w.])n\\.?s\\.?\\s*[:=]\\s*$"
+  ns_plain <- "(?<![\\w.])n\\.?s\\.?\\s*,?\\s*$"
+  # threshold words, each in a form that states a threshold: "threshold" or
+  # "alpha" alone also name perception thresholds and alpha power
+  thresh <- paste0(
+    "thresholded|threshold(?:s|ing)?\\s+(?:of|at|was|were|is|set|for\\s+(?:statistical\\s+)?significance|level)\\b|",
+    "(?:significance|statistical|voxel-?(?:wise|level)|cluster(?:-|\\s)?(?:level|wise|forming|extent)?|",
+    "height|extent|uncorrected|corrected|FWE|FDR|peak|whole-?brain|lenient|liberal|conservative|stringent)",
+    "\\s+thresholds?\\b|threshold-free|",
+    "significance\\s+(?:level|criterion|cut-?off)|levels?\\s+of\\s+(?:statistical\\s+)?significance|",
+    "\\balpha\\s*(?:level|value|criterion|of|was|is|=|set|\\()|\u03b1\\s*(?:level|value|=|<|\\()|",
+    "(?:corrected|adjusted|Bonferroni|nominal)\\s+(?:alpha|\u03b1)\\b|",
+    "(?:considered|regarded|accepted|deemed|defined|taken|treated|interpreted)\\s+(?:as\\s+)?(?:to\\s+be\\s+)?",
+    "(?:statistically\\s+)?significan|(?:set|fixed)\\s+(?:at|to)\\s+(?:an?\\s+|the\\s+)?(?:alpha|\u03b1|p\\b|P\\b|two|one|\\.|0)|",
+    "criteri(?:on|a)\\s+(?:for|of)\\s+(?:statistical\\s+)?significan|as\\s+(?:the|a|our)\\s+criterion|",
+    "cut-?off\\s+(?:value\\s+)?(?:of|for|at)\\b|as\\s+(?:the|a)\\s+cut-?off|cut-?off\\s*:|",
+    "significan(?:t|ce)\\s+(?:was|were|is|are)\\s+(?:set|defined|accepted|considered|determined|assumed)")
+  # words that report a result against the level: "did not reach significance
+  # levels", "was found above the level of statistical significance"
+  reach <- "\\b(?:reach|exceed|surpass|surviv)\\w*|\\bpass(?:ed|es|ing)?\\b|\\b(?:above|below|beyond)\\s+(?:the\\s+)?(?:\\w+\\s+)?(?:level|threshold|significan)"
+  vis <- paste0(
+    "asterisks?|stars?|daggers?|symbols?|markers?|letters|superscripts?|",
+    "(?:(?:filled|open|solid|dashed|dotted|horizontal|vertical|black|white|gr[ae]y|red|blue|green|",
+    "orange|yellow|purple|pink|colou?red|bold|thick|shaded)\\s+)+",
+    "(?:dots?|circles?|squares?|triangles?|diamonds?|lines?|bars?|arrows?|symbols?|markers?|",
+    "boxes|cells?|areas?|regions?|channels?|clusters?|voxels?|points?|values?|entries|estimates|numbers|fonts?|text)",
+    "|bold(?:ed|face)?\\s+(?:values?|entries|estimates|numbers|coefficients|correlations|cells?|text|font)")
+  verb <- "(?:indicat|denot|represent|mark|show|highlight|depict|signif|correspond|identif)\\w*"
+  legend <- paste0(
+    "\\b(?:", vis, ")\\s+(?:\\S+\\s+){0,3}?", verb, "|",
+    "(?:indicated|denoted|marked|highlighted|shown|represented|labell?ed|depicted|flagged|printed|",
+    "presented|displayed|set|written|given)\\s+(?:by|with|in|as|using)\\s+(?:an?\\s+|the\\s+)?",
+    "(?:asterisks?|stars?|daggers?|bold|boldface|italics?|colou?rs?|gr[ae]y|red|blue|green|black|white|",
+    "symbols?|letters|superscripts?|lines?|bars?|dots|circles|arrows|shading|boxes|", symbol, ")",
+    "|\\bin\\s+(?:bold|boldface|gr[ae]y|colou?r)\\b",
+    # "* and ** indicate p < .05 and p < .01", "red dotted line: corrected p < .05"
+    "|(?:", symbol, "\\s*)+(?:(?:and|or|,)\\s*(?:", symbol, "\\s*)+)*(?:indicat|denot|represent|mark|correspond)\\w*",
+    "|\\b(?:", vis, ")\\s*:")
+  # the end of a clause: ";", or a full stop with a space or a marker after it
+  boundary <- paste0(";|\\.\\s+|\\.(?=", symbol, ")|:\\s+(?=[A-Z])")
+
+  for (i in seq_along(out)) {
+    s <- sentence[[i]]
+    # not inside a longer value: "p < .05" is not found in "p < .051"
+    at <- gregexpr(paste0(gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", ptext[[i]]), "(?![0-9])"),
+                   s, perl = TRUE)[[1]]
+    if (at[[1]] == -1 || k[[i]] > length(at)) next   # not found: may be a result
+    start <- at[[k[[i]]]]
+    end <- start + nchar(ptext[[i]]) - 1L
+    before <- substr(s, max(1L, start - 120L), start - 1L)
+    after <- substr(s, end + 1L, end + 80L)
+    # the clause: back to the last boundary, on to the next
+    cut_b <- gregexpr(boundary, before, perl = TRUE)[[1]]
+    if (cut_b[[1]] > 0) {
+      last <- length(cut_b)
+      before <- substr(before, cut_b[[last]] + attr(cut_b, "match.length")[[last]], nchar(before))
+    }
+    cut_a <- regexpr(boundary, after, perl = TRUE)
+    if (cut_a > 0) after <- substr(after, 1L, cut_a - 1L)
+    clause <- paste(before, after)
+
+    # a marker note: unless a test statistic comes right before the p-value,
+    # with no other p-value between them ("t52 = 6.92, ***p < .001"), or
+    # right after it ("*p < .05 [z = 2.38]")
+    if (grepl(marker, before, perl = TRUE) || grepl(ns_marker, before, perl = TRUE, ignore.case = TRUE) ||
+        (grepl(ns_plain, before, perl = TRUE, ignore.case = TRUE) &&
+         grepl(paste0(symbol, "\\s*[pP]\\b"), s, perl = TRUE))) {
+      st <- gregexpr(test_stat, before, perl = TRUE)[[1]]
+      owned <- FALSE
+      if (st[[1]] > 0) {
+        last <- length(st)
+        between <- substr(before, st[[last]] + attr(st, "match.length")[[last]], nchar(before))
+        owned <- !grepl(p_value, between, perl = TRUE)
+      }
+      next_p <- regexpr(paste0(p_value, "|", symbol), after, perl = TRUE)
+      soon <- substr(after, 1L, if (next_p > 0) next_p - 1L else 30L)
+      if (!owned && !grepl(test_stat, substr(soon, 1L, 30L), perl = TRUE)) out[[i]] <- "marker"
+      next
+    }
+
+    # the words of a threshold or a legend: never with a statistic or an
+    # estimate anywhere in the clause, and never for "ps" or "all p", which
+    # report results ("remained significant when thresholded at varying
+    # levels, all Ps < .002")
+    if (grepl(stat_name, clause, perl = TRUE) || grepl(ci, clause, perl = TRUE)) next
+    if (grepl("^[pP]\\s*['\u2019]?s\\b", ptext[[i]], perl = TRUE) ||
+        grepl("\\b(?:all|both|each)\\s*\\(?\\s*$", before, perl = TRUE, ignore.case = TRUE)) next
+    # the p-value is the threshold itself: "a threshold of p < .05", "the
+    # p < .05 uncorrected threshold", even where clusters "survived" it
+    attached <- grepl(paste0("(?:threshold(?:ed|s)?|alpha|\u03b1|cut-?off|criterion|significance\\s+level)",
+                             "\\s*(?:of|at|=|:|\\(|was\\s+set\\s+(?:at|to)|set\\s+(?:at|to))?\\s*",
+                             "(?:an?\\s+|the\\s+)?(?:(?:two|one)-?\\s*tailed\\s+|(?:un)?corrected\\s+)?$"),
+                      before, perl = TRUE, ignore.case = TRUE) ||
+      grepl(paste0("^\\s*\\)?\\s*(?:\\(?(?:uncorrected|corrected|FWE|FDR|two-tailed|one-tailed)\\)?,?\\s*)*",
+                   "threshold"), after, perl = TRUE, ignore.case = TRUE)
+    # a threshold that is measured, not set: "participants showed a higher
+    # exit threshold (P < 0.05)", "lower thresholds for CA than DYS"
+    # A threshold that is set can be "lower" too ("using a lower statistical
+    # threshold of P < .005"): a measured one is compared ("than") or someone
+    # has it ("showed a higher threshold").
+    comparative <- "(?:higher|lower|greater|smaller|larger|increased|decreased|elevated|reduced|raised)"
+    measured <- grepl(paste0("\\b", comparative, "\\s+(?:\\w+\\s+){0,2}thresholds?\\b"),
+                      clause, perl = TRUE, ignore.case = TRUE) &&
+      (grepl("\\bthan\\b", clause, perl = TRUE, ignore.case = TRUE) ||
+       grepl(paste0("\\b(?:showed|shows?|had|has|have|exhibited|displayed|revealed|demonstrated|yielded)\\s+",
+                    "(?:an?\\s+|the\\s+)?(?:\\w+\\s+){0,1}", comparative), clause, perl = TRUE, ignore.case = TRUE))
+    if (measured) next
+    if (attached) {
+      out[[i]] <- "threshold"
+      next
+    }
+    if (grepl(thresh, clause, perl = TRUE, ignore.case = TRUE) &&
+               !grepl(reach, clause, perl = TRUE, ignore.case = TRUE)) {
+      out[[i]] <- "threshold"
+    } else if (grepl(legend, clause, perl = TRUE, ignore.case = TRUE)) {
+      out[[i]] <- "legend"
+    }
+  }
+  out
+}
