@@ -1142,6 +1142,10 @@ module_report <- function(module_output,
   summary <- module_output$summary_text %||% "..."
   report <- module_output$report %||% module_output$summary_text
   if (all(report == "")) report <- NULL
+  # a failed module's report is its error message, plain text: as markdown,
+  # "<haven_labelled>" was taken as an HTML tag and left out of the page
+  if (identical(module_output$traffic_light, "fail") && !is.null(report))
+    report <- .stat_html_escape(report)
 
 
   # how it works

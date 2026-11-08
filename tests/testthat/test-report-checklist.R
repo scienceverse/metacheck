@@ -179,3 +179,12 @@ test_that("render html report_type = 'checklist'", {
   # every <div> is closed exactly once
   expect_equal(lengths(gregexpr("<div\\b", txt)), lengths(gregexpr("</div>", txt)))
 })
+
+test_that("a failed module's error message keeps its angle brackets in the checklist", {
+  # as markdown, "<haven_labelled>" was taken as an HTML tag and left out:
+  # the page said "Can't convert x to ." (PsyArXiv preprint jev3u_v1)
+  mo <- list(module = "data_check", title = "data_check", traffic_light = "fail",
+             report = "Can't convert `x` <haven_labelled> to <character>.")
+  found <- .checklist_checks(list(mo))$found
+  expect_match(found, "&lt;haven_labelled&gt; to &lt;character&gt;", fixed = TRUE)
+})
