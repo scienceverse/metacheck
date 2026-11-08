@@ -22,7 +22,7 @@
 #' runs -- before [report()] ever selects a template.
 #'
 #' A fifth value, `"checklist"`, lays the report out by check instead of by
-#' module: every check of every module is sorted into to fix, to improve,
+#' module: every check of every module is sorted into to fix, to check,
 #' decide by hand, for information, fine and not applicable, and each check
 #' that needs work says what was found and what to do on separate lines. It is
 #' rendered like `"simple"` (static, no JavaScript), in the colours and font
@@ -38,7 +38,7 @@
 #'   [scroll_table()]) with `details_title` (the line that unfolds it)
 #'
 #' A module without `checks` is shown as one check: its traffic light gives
-#' the result (red: to fix, yellow: to improve, green: fine), its summary text
+#' the result (red: to fix, yellow: to check, green: fine), its summary text
 #' what was found, and its report the folded details. A module can also give
 #' `intro` (a paragraph shown at the top) and `logo` (the path of an image
 #' shown next to metacheck's logo). A module that gives `checklist_section`

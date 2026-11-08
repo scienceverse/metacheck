@@ -75,7 +75,7 @@
 #'   (even though it is inert without a browser). `"brief"` and
 #'   `"simple_brief"` show only the modules that need attention (red, yellow
 #'   or failed), in the full and the simple layout. `"checklist"` sorts every
-#'   check by its result (to fix, to improve, ...), with what was found and
+#'   check by its result (to fix, to check, ...), with what was found and
 #'   what to do on separate lines; it is static too. See [report_type()].
 #' @param args a list of arguments to pass to modules (see Details)
 #'
