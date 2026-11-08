@@ -14,7 +14,7 @@ output:
 
 <style>
   /* The checklist report (report_type("checklist")): every check of every
-     module sorted into to fix, to improve, decide by hand, for information,
+     module sorted into to fix, to check, decide by hand, for information,
      fine and not applicable. Colours and font are those of metacheck's
      website on SURF Research Cloud (its site.css): the logo's green and a
      light grey, and Cabin (SIL Open Font License, app/www/fonts/), embedded
