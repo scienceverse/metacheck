@@ -49,6 +49,7 @@ test_that("OSF no files", {
                     files_zip = 0,
                     files_unknown = 0L,
                     naming_issues = 0L,
+                    repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
   exp <- " 0 files "
@@ -80,6 +81,7 @@ test_that("no code files", {
                     files_zip = 1,
                     files_unknown = 0L,
                     naming_issues = 0L,
+                    repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
@@ -106,6 +108,7 @@ test_that("OSF", {
                     files_zip = 1,
                     files_unknown = 1L,
                     naming_issues = 1L,
+                    repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
 }, "mock")
@@ -679,6 +682,55 @@ test_that("repo_check reads the licence of the project a cited registration was 
   )
   mo <- module_run(paper, "repo_check", peek_zips = FALSE, osf_license = TRUE)
   expect_equal(mo$repo_metadata$license, "CC-By Attribution 4.0 International")
+})
+
+test_that("repo_check names a private OSF project read through a view-only link, once (8dn4g_v1)", {
+  vo <- "https://osf.io/j9sdn/overview?view_only=0123456789abcdef0123456789abcdef"
+  osf_info_mock <- function(osf_url, ...) {
+    if (grepl("view_only=", osf_url)) {
+      # the OSF lists the files through the view-only link, and says the
+      # project is not public
+      data.frame(osf_url = osf_url, osf_id = "j9sdn?view_only=0123456789abcdef0123456789abcdef",
+                 osf_type = c("nodes", "files"), parent = NA_character_, kind = c(NA, "file"),
+                 public = c(FALSE, NA), name = c("A study", "data.csv"), path = c(NA, "/data.csv"),
+                 download_url = c(NA, "https://osf.io/download/abcde"), size = c(NA, 10),
+                 filetype = c(NA, "data"), provider = c(NA, "osfstorage"))
+    } else {
+      data.frame(osf_url = osf_url, osf_id = "j9sdn", osf_type = "private", public = FALSE)
+    }
+  }
+  local_mocked_bindings(online = \(...) TRUE, osf_info = osf_info_mock)
+  for (both in c(TRUE, FALSE)) {
+    paper <- test_paper(text = if (both) "Data: https://osf.io/j9sdn" else "Data: see the link.", url = vo)
+    mo <- module_run(paper, "repo_check", peek_zips = FALSE)
+    # the plain link to the same private project is not "could not check"
+    expect_equal(nrow(mo$gated_repos), 0, info = both)
+    expect_equal(mo$summary_table$repo_n, 1, info = both)
+    expect_equal(mo$summary_table$repo_unchecked, 0, info = both)
+    expect_equal(mo$summary_table$repo_view_only, 1, info = both)
+    expect_equal(mo$view_only$project, "https://osf.io/j9sdn")
+    expect_match(mo$summary_text, "The OSF project https://osf.io/j9sdn is private. Metacheck examined the files through the view_only link.", fixed = TRUE)
+    expect_match(module_report(mo), "Private projects checked through a view-only link", fixed = TRUE)
+    expect_equal(mo$traffic_light, "yellow")
+  }
+  # a public project read through a view-only link is not named
+  local_mocked_bindings(osf_info = function(osf_url, ...) {
+    x <- osf_info_mock(osf_url); x$public[x$osf_type == "nodes"] <- TRUE; x })
+  mo <- module_run(test_paper(text = "Data: see the link.", url = vo), "repo_check", peek_zips = FALSE)
+  expect_equal(nrow(mo$view_only), 0)
+  expect_false(grepl("view_only link", mo$summary_text, fixed = TRUE))
+})
+
+test_that("osf_type() puts a view-only key at the end of the address (8dn4g_v1)", {
+  asked <- NULL
+  local_mocked_bindings(osf_get_all_pages = function(url, ...) {
+    asked <<- url
+    list(relationships = list(referent = list(links = list(related = list(meta = list(type = "nodes"))))))
+  })
+  expect_equal(osf_type("j9sdn?view_only=0123456789abcdef0123456789abcdef"), "nodes")
+  expect_match(asked, "/guids/j9sdn/?resolve=false&view_only=0123456789abcdef0123456789abcdef", fixed = TRUE)
+  osf_type("j9sdn")
+  expect_true(endsWith(asked, "/guids/j9sdn/?resolve=false"))
 })
 
 test_that("repo_check reports an expired Dryad sharing link with its reason (#484)", {
