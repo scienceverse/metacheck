@@ -199,6 +199,9 @@ test_that("stat_p_exact leaves out table notes, legends and thresholds, not resu
   mo <- module_run(test_paper(c("Group A differed, F(1, 30) = 5.20, p < .05.", note)), "stat_p_exact")
   expect_equal(mo$summary_table$n_imprecise, 1)
   expect_equal(sum(!is.na(mo$table$not_a_test)), 3)
+  # the report says where the threshold words can be wrong
+  expect_true(any(grepl("sometimes flags false positives when sentences discuss how p-value thresholds were set",
+                        mo$report, fixed = TRUE)))
 })
 
 test_that("stat_check without statistics gives every paper of a list a summary row (U124)", {
