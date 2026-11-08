@@ -42,8 +42,10 @@
       report <- paste(report, collapse = "\n\n")
       summary <- paste(mo$summary_text %||% "", collapse = "\n\n")
       details <- if (tl == "fail" || report == summary) "" else report
+      # an error message is plain text: as markdown, "<haven_labelled>" was
+      # taken as an HTML tag and left out of the page
       found <- if (tl == "fail") {
-        sprintf("This module failed to run: %s", report)
+        sprintf("This module failed to run: %s", .stat_html_escape(report))
       } else summary
       status <- unname(.checklist_light_status[tl])
       # a module with its own section shows its details there, not folded here
