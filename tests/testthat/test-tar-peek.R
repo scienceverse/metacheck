@@ -89,6 +89,25 @@ test_that(".tar_list_file reads pax, GNU long-name and ustar-prefix names", {
   expect_equal(l$member[[4]], "./deposit/notes.txt")
 })
 
+test_that(".tar_list_file skips a binary pax record, such as a Mac's extended attributes", {
+  # tar on a Mac stores a file's extended attributes as pax records whose
+  # value is binary, with null bytes: rawToChar() stopped on them ("embedded
+  # nul in string"), and with it data_check (PsyArXiv preprint 4z75t_v1)
+  value <- as.raw(c(0x01, 0x00, 0x00, 0xb1, 0xa4, 0x7f, 0x3d))
+  body <- c(charToRaw(" SCHILY.xattr.com.apple.provenance="), value, charToRaw("\n"))
+  n <- length(body) + 2L                      # two digits for the length itself
+  xattr <- c(charToRaw(as.character(n)), body)
+  p <- write_tar(
+    withr::local_tempfile(fileext = ".tar"),
+    tar_entry("PaxHeaders/data.csv", c(xattr, charToRaw(pax_record("path", "deposit/data.csv"))),
+              type = "x"),
+    tar_entry("data.csv", "a,b\n1,2\n")
+  )
+  l <- .tar_list_file(p)
+  expect_equal(l$name, "deposit/data.csv")
+  expect_equal(l$size, 8)
+})
+
 test_that(".tar_list_file returns NULL for a file that is not a readable tar", {
   p <- withr::local_tempfile(fileext = ".tar")
   writeLines(rep("not a tar archive", 100), p)

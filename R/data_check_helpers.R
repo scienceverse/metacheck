@@ -2642,6 +2642,12 @@ data_read_head <- function(path, n_rows = 5, sheet = NULL) {
       },
       NULL
     )
+    # A labelled column (haven) in an .rds or .RData file: readRDS() and load()
+    # do not load haven, and without its rules as.character() on a labelled
+    # text column stopped data_check ("Can't convert `x` <haven_labelled> to
+    # <character>", the PISA country codes of PsyArXiv preprint jev3u_v1)
+    if (is.data.frame(df) && any(vapply(df, inherits, logical(1), "haven_labelled")))
+      loadNamespace("haven")
     .utf8_repair_df(df)
   }, error = function(e) {
     if (grepl("time limit", conditionMessage(e), ignore.case = TRUE)) stop(e)

@@ -1,5 +1,11 @@
 # metacheck 0.4.3
 
+* `data_check` no longer stops on an `.rds` or `.RData` file with a labelled text column (from haven), such as PISA's three-digit country codes. `readRDS()` and `load()` do not load haven, and without it R could not turn the column into text ("Can't convert `x` <haven_labelled> to <character>"), so `data_check`, and with it `codebook_check` and `reproducibility_check`, failed for the whole paper. The reader now loads haven when a column is labelled. This happened since `data_check` first looked for file lists in data files (12 August 2026).
+
+* `data_check` no longer stops on a `.tar` archive that holds a file's extended attributes, as tar on a Mac writes them ("embedded nul in string"). These records are binary; only a member's path and size are read from the archive's extra records, and records with binary values are now skipped. This happened since plain `.tar` archives were listed (0.3.3.9, 17 October 2026).
+
+* A module that failed shows its whole error message in the report. As markdown, a part in angle brackets was taken as HTML and left out, so the page said "Can't convert x to .".
+
 * `code_check` no longer reports a file that the code writes as a missing file. `code_file_refs()` took every file name in Python's `open()`, MATLAB's `fopen()` and Mplus's `FILE =` as an input, so `open("out.txt", "w")`, `fopen('results.txt', 'w')` and the `FILE =` of `SAVEDATA:` (a file the model writes) were listed as files the repository lacks, as for a Python 2 script on SURF. A call whose mode creates the file (Python's `w`, `a` or `x`, MATLAB's `w` or `a`) and the SAVEDATA command are now left out; `r+` still counts, as that file must already exist. The reproducibility check's own list of what a script reads and writes (`repro_file_io()`) was already right and is unchanged; its list of files to place for a script (`repro_rewrite_paths()`) no longer includes these outputs.
 
 * `code_check` finds the files that SAS, SPSS and Mplus code reads however it is written in capitals. These languages ignore capitals, but `code_file_refs()` found only one way of writing each command, so `PROC IMPORT DATAFILE=` and `INFILE` in SAS, `get file=` in SPSS and `file =` in Mplus were never checked against the repository. Stata, which does not ignore capitals, is unchanged.

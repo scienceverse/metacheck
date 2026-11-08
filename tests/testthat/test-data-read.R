@@ -290,3 +290,36 @@ test_that("data_read_head reads an SPSS file with Windows (CP1252) text (#523, i
   # any other error is not hidden
   expect_error(.read_sav_any(bad_arg))
 })
+
+test_that("an .rds with a labelled text column is read and counted before haven is loaded", {
+  # readRDS() does not load haven, and without it as.character() on a
+  # labelled text column stopped data_check ("Can't convert `x`
+  # <haven_labelled> to <character>", PsyArXiv preprint jev3u_v1). This
+  # session has loaded haven already, so the check runs in a new one.
+  skip_on_cran()
+  skip_if_not_installed("processx")
+  skip_if_not_installed("haven")
+  wd <- withr::local_tempdir()
+  rds <- file.path(wd, "pisa.rds")
+  saveRDS(data.frame(id = 1:3, cnt = haven::labelled(c("826", "826", "250"),
+                                                     c(UK = "826", France = "250"))), rds)
+  # the package as tested: from its source folder (devtools::test()), or the
+  # installed one (R CMD check)
+  root <- normalizePath(test_path("..", ".."), winslash = "/", mustWork = FALSE)
+  load <- if (file.exists(file.path(root, "DESCRIPTION")) && dir.exists(file.path(root, "R")))
+    sprintf("suppressMessages(pkgload::load_all(%s, quiet = TRUE, helpers = FALSE))", deparse(root))
+  else "suppressMessages(library(metacheck))"
+  prog <- file.path(wd, "p.R")
+  writeLines(c(load,
+               'cat("haven loaded:", "haven" %in% loadedNamespaces(), "\n")',
+               sprintf('df <- metacheck:::data_read_head(%s, n_rows = Inf)', deparse(gsub("\\\\", "/", rds))),
+               'cat("values:", metacheck:::.text_counts(df$cnt)$values, "\n")',
+               'cat("manifest:", metacheck::data_is_manifest(df, c("a.csv", "b.R")), "\n")'), prog)
+  rscript <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
+  res <- processx::run(rscript, prog, error_on_status = FALSE, timeout = 120)
+  expect_equal(res$status, 0L, info = res$stderr)
+  out <- strsplit(res$stdout, "\r?\n")[[1]]
+  expect_true("haven loaded: FALSE " %in% out)   # the case of the fault
+  expect_true("values: 826 250 " %in% out)
+  expect_true("manifest: FALSE " %in% out)
+})
