@@ -1,5 +1,5 @@
 # The checklist report: report_type("checklist"). Every check of every module
-# is sorted by its result -- to fix, to improve, decide by hand, for
+# is sorted by its result -- to fix, to check, decide by hand, for
 # information, fine, not applicable -- instead of being shown module by
 # module, and each check that needs work says what was found and what to do
 # on separate lines. Rendered like the simple report (plain Pandoc through
@@ -15,9 +15,9 @@
 # word on a check's tag, and the label of its count.
 .checklist_results <- data.frame(
   status = c("fix", "improve", "decide", "info", "fine", "na"),
-  heading = c("To fix", "To improve", "Decide by hand", "For information", "Fine", "Not applicable"),
-  tag = c("To fix", "To improve", "Decide by hand", "Info", "Fine", "N/A"),
-  count = c("to fix", "to improve", "to decide by hand", "for information", "fine", "not applicable")
+  heading = c("To fix", "To check", "Decide by hand", "For information", "Fine", "Not applicable"),
+  tag = c("To fix", "To check", "Decide by hand", "Info", "Fine", "N/A"),
+  count = c("to fix", "to check", "to decide by hand", "for information", "fine", "not applicable")
 )
 
 # The result a module without a `checks` table gets, from its traffic light.
