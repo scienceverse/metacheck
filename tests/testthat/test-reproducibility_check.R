@@ -116,6 +116,31 @@ test_that("repro_rewrite_paths rewrites a single unambiguous match", {
   expect_equal(out$target, "study-ex1/data/study-demographics_data.csv")
 })
 
+test_that("repro_rewrite_paths takes file names with \\P, \\6, ( [ + as written, not as patterns (#597)", {
+  # a Windows path with "\P" (10.1111/2041-210X.13928) or "\6" (jskhb_v1)
+  # made an invalid pattern and stopped reproducibility_check for the paper
+  plan <- data.frame(
+    file_name = c("we2.tsv", "fit.csv", "results(1).csv", "a[1].csv", "data+x.csv"),
+    target_path = c("study-ex1/data/we2.tsv", "study-ex1/data/fit.csv", "study-ex1/data/results(1).csv",
+                    "study-ex1/data/a[1].csv", "study-ex1/data/data+x.csv"))
+  code <- c(r"(d <- read.table("D:\AviaNZ\Primary_dataset\ruru\we2.tsv"))",
+            r"(f <- read.csv("out\6.0\fit.csv"))",
+            r"(r <- read.csv(file.path(dir, "results(1).csv")))",
+            r"(a <- read.csv("a[1].csv"))",
+            r"(x <- read.csv(here("data+x.csv")))")
+  out <- expect_no_error(repro_rewrite_paths(code, "ex1/analysis.R", plan))
+  expect_setequal(basename(gsub("\\\\", "/", out$ref)), plan$file_name)
+  expect_true(all(out$matched))
+  expect_equal(out$in_join[out$ref == "results(1).csv"], TRUE)
+  expect_equal(out$in_here[out$ref == "data+x.csv"], TRUE)
+  # "a[1].csv" is not taken as the pattern "a1.csv" or as "a.csv"
+  expect_false(out$in_join[out$ref == "a[1].csv"] || out$in_here[out$ref == "a[1].csv"])
+  # the install error lines of a package whose name has a "." in it
+  txt <- "ERROR: dependency 'x' is not available for package 'data.table'\nERROR: dependency 'y' is not available for package 'dataXtable'"
+  expect_equal(.repro_install_error_lines(txt, "data.table"),
+               "ERROR: dependency 'x' is not available for package 'data.table'")
+})
+
 test_that("repro_rewrite_paths leaves an unmatched reference unmatched, not guessed", {
   plan <- data.frame(file_name = "scores.csv", target_path = "study-ex1/data/scores_data.csv")
   code <- 'd <- read.csv("data/not_in_plan.csv")'

@@ -1029,7 +1029,11 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   join_calls <- "\\b(?:file\\.path|paste0?|os\\.path\\.join|here|Path|sprintf|glue|str_c)\\s*\\([^()\n]*?"
   out$in_join <- vapply(seq_len(nrow(out)), function(i) {
     if (isTRUE(out$is_call[i])) return(FALSE)
-    q <- gsub("([.\\\\+*?^$()|{}\\[\\]])", "\\\\\\1", out$ref[i])
+    # .repro_sw_escape(), not a [...\\[\\]] class: without perl = TRUE that
+    # class ends at its first "]" and escaped nothing, so a name with "\P" or
+    # "\6" ("D:\AviaNZ\...\Primary_dataset", "%s\6.0") made an invalid pattern
+    # and stopped the module for the paper (#597)
+    q <- .repro_sw_escape(out$ref[i])
     if (grepl(paste0(join_calls, "[\"']", q, "[\"']"), joined_text, perl = TRUE)) return(TRUE)
     # The name kept in a variable that such a call, or an f-string after a "/",
     # joins to a folder later: `datname <- "Fig_2"` with `paste("Data/", datname)`
@@ -1049,7 +1053,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   # .repro_keep_working_refs()).
   out$in_here <- vapply(seq_len(nrow(out)), function(i) {
     if (isTRUE(out$is_call[i])) return(FALSE)
-    q <- gsub("([.\\\\+*?^$()|{}\\[\\]])", "\\\\\\1", out$ref[i])
+    q <- .repro_sw_escape(out$ref[i])
     grepl(paste0("\\bhere(?:::here)?\\s*\\(\\s*[\"']", q, "[\"']\\s*\\)"), joined_text, perl = TRUE)
   }, logical(1))
   out
@@ -4640,7 +4644,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
     up <- .repro_upgrade_stan(txt)
     if (!length(up$changes)) return(NULL)
     writeLines(up$txt, f)
-    data.frame(file_name = sub(paste0("^", gsub("([.\\\\+*?^$()|{}\\[\\]])", "\\\\\\1", normalizePath(root, "/", mustWork = FALSE)), "/"), "",
+    data.frame(file_name = sub(paste0("^", .repro_sw_escape(normalizePath(root, "/", mustWork = FALSE)), "/"), "",
                                normalizePath(f, "/", mustWork = FALSE)),
                change_type = "stan_syntax",
                detail = paste("Stan from before 2.33:", paste(up$changes, collapse = ", ")))
