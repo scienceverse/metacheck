@@ -2761,6 +2761,34 @@ test_that(".repro_py_starts_server recognises a script that waits for connection
   expect_false(.repro_py_starts_server("model.run(x)"))
 })
 
+test_that(".repro_error_message gives each failure's message, short (#615)", {
+  m <- .repro_error_message
+  # PsyArXiv 6b437_v1: the message the report shows, not only "runtime" / "other"
+  out <- "Loading required package: x\nError in .Primitive(\":\")() : 0 arguments passed to ':' which requires 2\nCalls: source -> withVisible\nExecution halted"
+  expect_equal(m("errored", out), "Error in .Primitive(\":\")() : 0 arguments passed to ':' which requires 2")
+  # the package that is not there
+  expect_match(m("dependency_unavailable", "Error in library(lme4) : there is no package called 'lme4'\nExecution halted"),
+               "there is no package called 'lme4'", fixed = TRUE)
+  # the address it asked for, when the error line names none
+  expect_equal(m("needs_internet", "Error in curl::curl_fetch_memory(url) : Could not resolve host\nExecution halted",
+                 "trying URL 'https://example.org/data.csv'"),
+               "Error in curl::curl_fetch_memory(url) : Could not resolve host (https://example.org/data.csv)")
+  expect_equal(m("needs_internet", "Error in file(con) : cannot open URL 'https://a.org/x.csv'"),
+               "Error in file(con) : cannot open URL 'https://a.org/x.csv'")
+  # the time limit
+  expect_equal(m("timed_out", "timed out after 3600s", "...last output"), "timed out after 3600s")
+  # Python's error line; without an error line, the last line of the output
+  py <- "Traceback (most recent call last):\n  File \"a.py\", line 3, in <module>\n    print(x)\nNameError: name 'x' is not defined"
+  expect_equal(m("errored", py, python = TRUE), "NameError: name 'x' is not defined")
+  expect_equal(m("errored", "killed\nthe script stopped without a message"), "the script stopped without a message")
+  # at most 300 characters
+  long <- paste("Error in f() :", strrep("word ", 200))
+  expect_lte(nchar(m("errored", long)), 300)
+  # none for what ran through, or when there is no message
+  expect_true(all(is.na(m(c("ran_ok", "run_by_source", "defines_functions", "errored", NA), c("x", "x", "x", "", "x")))))
+  expect_equal(m(character(0), character(0)), character(0))
+})
+
 test_that(".repro_failure_reason names why a script did not run through (#568)", {
   r <- .repro_failure_reason
   expect_equal(r("errored", "cannot open file 'a.csv'"), "file")

@@ -216,6 +216,9 @@ test_that("execute = TRUE: a script that errors forces the traffic light red", {
   expect_equal(mo$traffic_light, "red")
   expect_equal(mo$table$outcome, "errored")
   expect_match(mo$run_results$error, "deliberate failure", fixed = TRUE)
+  # the message is in the table too, short (#615)
+  expect_match(mo$table$error_message, "deliberate failure for testing", fixed = TRUE)
+  expect_lte(nchar(mo$table$error_message), 300)
 })
 
 test_that("execute = TRUE: setwd() is stripped and reported, and the script still runs", {
@@ -1251,6 +1254,9 @@ test_that("execute = TRUE: a Python NameError is reported with the script that d
   expect_equal(mo$table$outcome[mo$table$file_name == "undefined_var.py"], "errored")
   expect_equal(mo$table$error_type[mo$table$file_name == "undefined_var.py"],
               "undefined_variable")
+  # the Python error line in the table; none for the script that ran (#615)
+  expect_match(mo$table$error_message[mo$table$file_name == "undefined_var.py"], "NameError")
+  expect_true(is.na(mo$table$error_message[mo$table$file_name == "definer.py"]))
   report <- paste(mo$report, collapse = "\n")
   expect_match(report, "Undefined-name errors", fixed = TRUE)
   expect_false(grepl("re-ran once", report, fixed = TRUE))
