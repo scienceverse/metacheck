@@ -58,6 +58,15 @@
 #' that was not downloaded, such as one over `max_file_size`: it could not be
 #' tried, so it is not counted as a script that did not reproduce
 #' (`summary_table$repro_not_downloaded_n` counts them apart).
+#' `not_read` is a file metacheck could not read, so it was not run; the light is
+#' then not green, as the file may read and run on another computer, and
+#' `table$error_message` says why, naming a package that is installed but cannot
+#' be loaded on the computer that ran the check. `empty` is a file with nothing
+#' in it, which is not run or counted as a script.
+#' For a script that did not run through, `table$error_message` is its error,
+#' short (at most 300 characters): the error line of its output, which names a
+#' package that is not there, with the address it asked for when it needed the
+#' internet, or the time limit it reached; `table$reason` sorts it into a kind.
 #' A timeout means "still running at
 #' the cutoff", not a failure, so raise `timeout` for legitimately long-running
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
@@ -160,7 +169,8 @@
 #' @param install_missing if TRUE (and `execute = TRUE`), install the code's
 #'   declared dependencies into a throwaway temp library before running (CRAN via
 #'   `install.packages`, GitHub/URL via `remotes`; Python packages via
-#'   `pip install --target`). If FALSE, nothing is installed: a script
+#'   `pip install --prefix` with `sandbox = "docker"`, and `pip install
+#'   --target` with `sandbox = "process"`). If FALSE, nothing is installed: a script
 #'   needing an absent package simply errors, recorded as its outcome. If `NULL`
 #'   (the default), this is FALSE, except that the R packages the scripts load
 #'   are installed when `recorded_versions = TRUE` and the repository records
@@ -1320,10 +1330,20 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # content to recognise a JSON/HTML dump or a JAGS model saved with a `.R`
   # extension; code_extract_r() on such a file returns character(0) (no {r}
   # chunks to purl), which would make every sniff see nothing to sniff at all.
+  # A file that could not be read keeps its error: as no lines, it was written as
+  # an empty script that "ran" without an error, so a script nobody had read was
+  # reported as reproducible (#620).
+  r_read_errors <- rep(NA_character_, n_code)
   raw_text_list <- lapply(seq_len(n_code), function(i) {
     path <- resolve_row_path(i)
-    if (is.na(path)) return(character(0))
-    tryCatch(code_read(path), error = function(e) character(0))
+    if (is.na(path)) {
+      r_read_errors[i] <<- "there is no copy of it and no link to it"
+      return(character(0))
+    }
+    tryCatch(code_read(path), error = function(e) {
+      r_read_errors[i] <<- conditionMessage(e)
+      character(0)
+    })
   })
   names(raw_text_list) <- r_files$file_name
 
@@ -1340,7 +1360,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (is_rmd) code_extract_r(path)
       else if (is_ipynb) code_extract_py(path)
       else raw_text_list[[i]],
-      error = function(e) character(0))
+      error = function(e) {
+        if (is.na(r_read_errors[i])) r_read_errors[i] <<- conditionMessage(e)
+        character(0)
+      })
   })
   names(code_text_list) <- r_files$file_name
 
@@ -1516,6 +1539,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # A script that starts an app waits for a person until the time limit.
   starts_app <- is.na(sniff_type) & vapply(code_text_list, .repro_starts_app, logical(1))
   sniff_type[starts_app] <- "needs_a_person"
+  # A file that could not be read is not run, and the check is to be done again
+  # (see the light below): it may read and run on another computer (#620). A
+  # file with nothing in it but spaces and line breaks is not run either, as
+  # running it says nothing, like a file that only defines functions.
+  r_read_msg <- .repro_read_failed_msg(r_read_errors)
+  sniff_type[is.na(sniff_type) & !is.na(r_read_errors)] <- "not_read"
+  r_empty <- is.na(sniff_type) & vapply(raw_text_list, function(x)
+    is.null(attr(x, "binary")) && !any(grepl("\\S", x)), logical(1))
+  sniff_type[r_empty] <- "empty"
   r_used_by <- vapply(seq_len(n_code), function(i) {
     if (!only_functions[i]) return(NA_character_)
     users <- .repro_function_users(r_files$file_name[i], r_function_names[[i]], code_text_list,
@@ -1540,7 +1572,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # parse"* -- see not_runnable_reason below, which gives it its own reason
   # instead of lumping it in with "parse_error".
   parses <- !parse_error_genuine
-  runs_as_r <- !parse_error_raw & !is_binary   # still gates execution (parses_named), below
+  runs_as_r <- !parse_error_raw & !is_binary & !sniff_type %in% "not_read"   # still gates execution (parses_named), below
   file_order <- order_tbl$order[match(r_files$file_name, order_tbl$file_name)]
   placeable <- !is.na(file_order)
 
@@ -1598,6 +1630,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   tl_clean <- parse_errs == 0 && length(cycle) == 0 && !ambiguous_order &&
     sum(ambiguous_n) == 0
   tl <- .repro_static_light(missing_inputs, tl_clean)
+  if (any(sniff_type %in% "not_read") && tl == "green") tl <- "yellow"   # #620
 
   # (SPSS/Stata data without syntax turns the light red for the paper as a
   # whole, after both languages -- see "## Shared across languages" below.)
@@ -2102,6 +2135,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     r_placed <- .repro_place_written(list(), NULL, NULL, sandbox_root, character(0), character(0))
     r_deposit_placed <- r_placed
     r_seen <- list()   # script -> the files it stopped on when it was run again
+    # A script whose write stopped on a folder the deposit does not have runs
+    # once more after the folder is made (#591; see .repro_make_failed_write_folders())
+    r_folders_made <- data.frame(script = character(0), folder = character(0))
     for (pass in 1:5) {
       names_after <- .repro_sandbox_names(sandbox_root)
       later <- .repro_written_later(run_results, r_names_before, names_after)
@@ -2112,10 +2148,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                        r_names_before, names_after))
       from_deposit <- .repro_place_from_deposit(run_results, run_tbl, sandbox_root, r_names_before)
       r_deposit_placed <- rbind(r_deposit_placed, from_deposit)
-      redo <- unique(c(names(later), from_deposit$script))
+      made <- .repro_make_failed_write_folders(run_results, run_tbl, sandbox_root,
+                                               split(r_folders_made$folder, r_folders_made$script))
+      r_folders_made <- rbind(r_folders_made, made)
+      redo <- unique(c(names(later), from_deposit$script, made$script))
       if (!length(redo)) break
-      .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
-           "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
+      .dbg("re-running ", length(redo), " script(s) that stopped on a file another script wrote, ",
+           "the deposit holds elsewhere, or a folder a write needed: ", paste(redo, collapse = ", "))
       res4 <- .repro_later_pass(run_r_scripts(run_tbl[run_tbl$file_name %in% redo, , drop = FALSE],
                             c(intersect(run_order_names, redo), setdiff(redo, run_order_names))))
       ran4 <- res4$file_name[res4$outcome != "skipped_time_limit"]
@@ -2193,7 +2232,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Archive (or a GitHub/URL source), which is an infrastructure limitation,
     # not evidence the paper's code is broken.
     if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory")) && tl == "green") tl <- "yellow"
+    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory", "not_read")) && tl == "green") tl <- "yellow"
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2316,6 +2355,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   table$repo_name <- if ("repo_name" %in% names(r_files)) r_files$repo_name else NA_character_
   table$reason <- if (!is.null(run_results) && "reason" %in% names(run_results))
     run_results$reason[match(r_files$file_name, run_results$file_name)] else NA_character_
+  # the message of the failure, short (#615; see .repro_error_message())
+  table$error_message <- if (!is.null(run_results))
+    .repro_error_message(run_results$outcome, run_results$error, run_results$stderr)[match_run] else
+    rep(NA_character_, n_code)
+  # a file that could not be read: why (#620)
+  r_unread <- sniff_type %in% "not_read"
+  table$error_message[r_unread] <- r_read_msg[r_unread]
 
   # ── 9. Report ───────────────────────────────────────────────────────────────
   intro <- if (isTRUE(execute))
@@ -2444,7 +2490,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         Detail = sniff_detail[sniff_rows],
         check.names = FALSE), maxrows = 10))
   }
-  report <- c(report, .repro_not_run_report(r_files$file_name, sniff_type, r_used_by, r_software$why))
+  report <- c(report, .repro_not_run_report(r_files$file_name, sniff_type, r_used_by, r_software$why,
+                                            read_msg = r_read_msg))
 
   ## Execution ----
   if (!is.null(run_results) && nrow(run_results) > 0) {
@@ -2456,7 +2503,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     n_nodep   <- sum(oc == "dependency_unavailable")
     n_by_src  <- sum(oc == "run_by_source")
     n_late    <- sum(oc == "skipped_time_limit")
-    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content", "defines_functions", "not_analysis", "not_downloaded"))
+    n_scripts <- sum(!oc %in% c("jags_model", "not_r_content", "defines_functions", "not_analysis", "not_downloaded", "empty"))
     report_exec <- sprintf(
       paste0("**The code was run.** Each script ran in an isolated %s ",
              "against a throwaway copy of ", layout_name, ", in the run order ",
@@ -2513,6 +2560,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         r_written_later, run_results$file_name[oc == "ran_ok"], r_placed))
     if (exists("r_deposit_placed", inherits = FALSE) && nrow(r_deposit_placed))
       report_exec <- paste0(report_exec, .repro_placed_text(r_deposit_placed))
+    if (exists("r_folders_made", inherits = FALSE) && nrow(r_folders_made))
+      report_exec <- paste0(report_exec, .repro_folders_made_text(r_folders_made))
     if (exists("r_lfs_stopped", inherits = FALSE) && length(r_lfs_stopped))
       report_exec <- paste0(report_exec, .repro_lfs_stopped_text(r_lfs_stopped))
     if (sum(lengths(r_choices_filled)) > 0)
@@ -2921,6 +2970,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       else NULL
     } else NULL
 
+    # a lib.loc folder on the authors' computer, removed (#594)
+    lib_loc_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
+                            "lib_loc_removed" %in% names(run_tbl)) {
+      hit <- nzchar(run_tbl$lib_loc_removed %||% "")
+      if (any(hit)) dplyr::bind_rows(lapply(which(hit), function(i)
+        data.frame(file_name = run_tbl$file_name[i], change_type = "lib_loc_removed",
+                   detail = strsplit(run_tbl$lib_loc_removed[i], "; ", fixed = TRUE)[[1]],
+                   stringsAsFactors = FALSE)))
+      else NULL
+    } else NULL
+
     family_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
                            "family_detail" %in% names(run_tbl)) {
       hit <- run_tbl$family_replaced > 0 & nzchar(run_tbl$family_detail %||% "")
@@ -2966,7 +3026,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       later_rows <- rbind(later_rows, data.frame(file_name = r_deposit_placed$script, change_type = "file_placed",
         detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
                          r_deposit_placed$from, r_deposit_placed$to)))
-    dplyr::bind_rows(rw_rows, setwd_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
+    if (exists("r_folders_made", inherits = FALSE) && nrow(r_folders_made))
+      later_rows <- rbind(later_rows, data.frame(file_name = r_folders_made$script, change_type = "folder_made",
+        detail = sprintf("made the folder %s, where the script writes, and ran it once more", r_folders_made$folder)))
+    dplyr::bind_rows(rw_rows, setwd_rows_mod, lib_loc_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
                      slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
@@ -3119,15 +3182,23 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # A notebook is JSON and a Quarto document is Markdown: their Python code is
   # extracted first, as code_check does (and as the R path purls an
   # .Rmd/.qmd), or `python` would be run on the JSON/Markdown itself.
+  # a file that could not be read keeps its error, as for R (#620)
+  py_read_errors <- rep(NA_character_, n_py_code)
   py_code_text_list <- lapply(seq_len(n_py_code), function(i) {
     path <- py_resolve_row_path(i)
-    if (is.na(path)) return(character(0))
+    if (is.na(path)) {
+      py_read_errors[i] <<- "there is no copy of it and no link to it"
+      return(character(0))
+    }
     fn <- py_files$file_name[i]
     tryCatch(
       if (grepl("\\.ipynb$", fn, ignore.case = TRUE)) code_extract_py(path)
       else if (grepl("\\.qmd$", fn, ignore.case = TRUE)) code_extract_qmd_py(path)
       else code_read(path),
-      error = function(e) character(0))
+      error = function(e) {
+        py_read_errors[i] <<- conditionMessage(e)
+        character(0)
+      })
   })
   names(py_code_text_list) <- py_files$file_name
   # What was left out of a notebook or added to a script to run it, to report.
@@ -3247,6 +3318,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_py_noparse_static <- sum(!py_parses & !py_not_analysis)
   # A server waits for a connection until the time limit, so it is not run.
   py_server <- vapply(py_code_text_list, .repro_py_starts_server, logical(1), USE.NAMES = FALSE) & !py_not_analysis
+  # a file that could not be read, and an empty file, are not run, as for R (#620)
+  py_read_msg <- .repro_read_failed_msg(py_read_errors)
+  py_not_read <- !is.na(py_read_errors) & !py_not_analysis
+  py_empty <- is.na(py_read_errors) & !py_not_analysis & vapply(py_raw_text_list, function(x)
+    is.null(attr(x, "binary")) && !any(grepl("\\S", x)), logical(1), USE.NAMES = FALSE)
   # Set when the execute phase below could not run the Python code at all.
   py_exec_error <- NULL
   # the scripts run with Python 2.7, and those run once more after a later script
@@ -3278,14 +3354,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                  !(tolower(d$basename) %in% py_produced_before[[i]])])
   })
   py_file_unresolved <- lengths(py_unresolved_list) > 0L
-  py_runnable <- py_parses & py_placeable & !py_file_unresolved & !py_not_analysis
+  py_runnable <- py_parses & py_placeable & !py_file_unresolved & !py_not_analysis & !py_not_read & !py_empty
   n_py_runnable <- sum(py_runnable)
 
   py_not_runnable_reason <- ifelse(
     py_runnable, NA_character_,
-    ifelse(py_not_analysis, "not_analysis",
+    ifelse(py_not_analysis, "not_analysis", ifelse(py_not_read, "not_read", ifelse(py_empty, "empty",
     ifelse(py_python2, "python2", ifelse(!py_parses, "parse_error",
-           ifelse(!py_placeable, "unplaceable", "missing_input")))))
+           ifelse(!py_placeable, "unplaceable", "missing_input")))))))
   py_unresolved_inputs <- vapply(py_unresolved_list, function(x)
     if (length(x)) paste(x, collapse = ", ") else NA_character_, character(1))
 
@@ -3294,6 +3370,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_tl_clean <- n_py_noparse_static == 0 && length(py_cycle) == 0 &&
     !py_ambiguous_order && sum(py_ambiguous_n) == 0
   py_tl <- .repro_static_light(py_missing_inputs, py_tl_clean)
+  if (any(py_not_read) && py_tl == "green") py_tl <- "yellow"   # #620
 
   ## ── Execution (opt-in; runs downloaded code) ────────────────────────────
   if (isTRUE(execute)) {
@@ -3398,13 +3475,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (!isTRUE(install_missing)) py_failed_deps <- py_install_deps$package
     }
 
-    py_parses_named <- stats::setNames(py_parses & !py_not_analysis & !py_server, py_files$file_name)
+    py_parses_named <- stats::setNames(py_parses & !py_not_analysis & !py_server & !py_not_read & !py_empty,
+                                       py_files$file_name)
     py_run_order_names <- py_order_tbl$file_name[order(py_order_tbl$order)]
     # A module other files import is not run on its own (see
     # .repro_py_imported()), like an R script another script source()s.
     py_imported <- .repro_py_imported(py_code_text_list, py_files$file_path)
     # a file that does not parse keeps that outcome: it cannot run when imported either
-    py_imported <- py_imported[names(py_imported) %in% py_files$file_name[py_parses]]
+    py_imported <- py_imported[names(py_imported) %in% py_files$file_name[py_parses & !py_not_read]]
     # a test is not run, so a module only a test imports is not run by it
     py_imported <- lapply(py_imported, setdiff, py_files$file_name[py_not_analysis])
     py_imported <- py_imported[lengths(py_imported) > 0]
@@ -3482,6 +3560,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # items 2 and 4; see the R loop above).
     if (!is.null(py_run_results) && exists("py_names_before", inherits = FALSE)) {
       py_seen <- list()
+      # a folder a write stopped on is made (#591; see the R loop above)
+      py_folders_made <- data.frame(script = character(0), folder = character(0))
       for (pass in 1:5) {
         names_after <- .repro_sandbox_names(sandbox_root)
         later <- .repro_written_later(py_run_results, py_names_before, names_after)
@@ -3492,10 +3572,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                            py_names_before, names_after))
         from_deposit <- .repro_place_from_deposit(py_run_results, py_run_tbl, sandbox_root, py_names_before)
         py_deposit_placed <- rbind(py_deposit_placed, from_deposit)
-        redo <- unique(c(names(later), from_deposit$script))
+        made <- .repro_make_failed_write_folders(py_run_results, py_run_tbl, sandbox_root,
+                                                 split(py_folders_made$folder, py_folders_made$script))
+        py_folders_made <- rbind(py_folders_made, made)
+        redo <- unique(c(names(later), from_deposit$script, made$script))
         if (!length(redo)) break
-        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file another script wrote ",
-             "or the deposit holds elsewhere: ", paste(redo, collapse = ", "))
+        .dbg("[repro/py] re-running ", length(redo), " script(s) that stopped on a file another script wrote, ",
+             "the deposit holds elsewhere, or a folder a write needed: ", paste(redo, collapse = ", "))
         res4 <- .repro_later_pass(run_py(py_run_tbl[py_run_tbl$file_name %in% redo, , drop = FALSE],
                        c(intersect(py_run_order_names, redo), setdiff(redo, py_run_order_names))))
         if (is.null(res4)) break
@@ -3579,6 +3662,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         !py_run_results$file_name %in% py2_tried
       py_run_results$outcome[py_is_py2] <- "python2"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_analysis]] <- "not_analysis"
+      py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_not_read]] <- "not_read"
+      py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_empty]] <- "empty"
       py_run_results$outcome[py_run_results$file_name %in% py_files$file_name[py_server]] <- "needs_a_person"
       if (sandbox == "docker") py_run_results$outcome[py_run_results$outcome == "errored" &
         .repro_docker_failed(paste(py_run_results$error, py_run_results$stderr))] <- "docker_failed"
@@ -3633,7 +3718,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
     if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory")) && py_tl == "green") py_tl <- "yellow"
+    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory", "not_read")) && py_tl == "green") py_tl <- "yellow"
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -3731,6 +3816,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_table$repo_name <- if ("repo_name" %in% names(py_files)) py_files$repo_name else NA_character_
   py_table$reason <- if (!is.null(py_run_results) && "reason" %in% names(py_run_results))
     py_run_results$reason[match(py_files$file_name, py_run_results$file_name)] else NA_character_
+  # the message of the failure, short (#615; see .repro_error_message())
+  py_table$error_message <- if (!is.null(py_run_results))
+    .repro_error_message(py_run_results$outcome, py_run_results$error, py_run_results$stderr,
+                         python = TRUE)[py_match_run] else rep(NA_character_, n_py_code)
+  py_table$error_message[py_not_read] <- py_read_msg[py_not_read]   # #620
   py_table$commands_removed <- vapply(py_commands_removed, function(x)
     if (length(x)) paste(x, collapse = "; ") else NA_character_, character(1), USE.NAMES = FALSE)
 
@@ -3836,8 +3926,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         plural(sum(py_python2), "it was", "they were"),
         plural(sum(py_python2), "it needs", "they need"),
         paste(py_files$file_name[py_python2], collapse = ", "))),
-    .repro_not_run_report(py_files$file_name, ifelse(py_not_analysis, "not_analysis", NA_character_),
-                          why = py_software$why),
+    .repro_not_run_report(py_files$file_name,
+                          ifelse(py_not_analysis, "not_analysis", ifelse(py_not_read, "not_read",
+                                 ifelse(py_empty, "empty", NA_character_))),
+                          why = py_software$why, read_msg = py_read_msg),
     if (sum(lengths(py_commands_removed)) > 0 || any(py_uses_get_ipython)) c("#### Notebook commands", sprintf(
       paste0("To run the Python code we left out %d notebook command%s, which %s not Python",
              "%s. A command that installs a package or prepares a file did not run, so a ",
@@ -3872,8 +3964,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
              "drift, which argues for pinning versions (e.g. in a ",
              "`requirements.txt`)."),
       if (sandbox == "docker") "Docker container" else "subprocess",
-      layout_name, timeout, sum(!py_oc %in% c("not_analysis", "not_downloaded")),
-      plural(sum(!py_oc %in% c("not_analysis", "not_downloaded"))),
+      layout_name, timeout, sum(!py_oc %in% c("not_analysis", "not_downloaded", "empty")),
+      plural(sum(!py_oc %in% c("not_analysis", "not_downloaded", "empty"))),
       n_py_ran_ok, n_py_errored, n_py_timeout, n_py_nodep, n_py_noparse,
       n_py_python2, plural(n_py_python2, "is", "are"),
       if (n_py_import) sprintf(
@@ -3896,6 +3988,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         py_written_later, py_run_results$file_name[py_oc == "ran_ok"], py_placed))
     if (nrow(py_deposit_placed))
       py_report_exec <- paste0(py_report_exec, .repro_placed_text(py_deposit_placed))
+    if (exists("py_folders_made", inherits = FALSE) && nrow(py_folders_made))
+      py_report_exec <- paste0(py_report_exec, .repro_folders_made_text(py_folders_made))
     if (exists("py_lfs_stopped", inherits = FALSE) && length(py_lfs_stopped))
       py_report_exec <- paste0(py_report_exec, .repro_lfs_stopped_text(py_lfs_stopped))
     py_ran_py2_here <- intersect(py_run_results$file_name, py_ran_py2)
@@ -4163,6 +4257,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_deposit_placed$script, change_type = "file_placed",
         detail = sprintf("copied %s, of the deposit, to %s, where the script looked, and ran it once more",
                          py_deposit_placed$from, py_deposit_placed$to)))
+    if (exists("py_folders_made", inherits = FALSE) && nrow(py_folders_made))
+      py_later_rows <- rbind(py_later_rows, data.frame(file_name = py_folders_made$script, change_type = "folder_made",
+        detail = sprintf("made the folder %s, where the script writes, and ran it once more", py_folders_made$folder)))
     dplyr::bind_rows(py_rw_rows, py_setwd_rows_mod, py_slash_rows_mod, py2_rows_mod, py_later_rows)
   } else py_rw_rows
   if (is.null(py_modifications) || !nrow(py_modifications))

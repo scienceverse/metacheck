@@ -79,8 +79,15 @@ code_read <- function(file_path) {
   # instead of decoding and scanning megabytes of it as code (#568)
   binary <- .binary_kind_raw(raw)
   if (!is.na(binary)) return(structure(character(0), binary = binary))
-  enc <- readr::guess_encoding(raw)$encoding
-  enc <- if (length(enc) && !is.na(enc[[1]])) enc[[1]] else "UTF-8"
+  # Bytes that are valid UTF-8 (ASCII included) are read as UTF-8 without a
+  # guess. readr's guess needs stringi, whose compiled part can be installed
+  # but fail to load (a copy built for another Ubuntu version: #620); then
+  # every script read as no lines. A file with zero bytes is left to the guess,
+  # as it may be UTF-16 or UTF-32.
+  enc <- if (!any(raw == as.raw(0)) && validUTF8(rawToChar(raw))) "UTF-8" else {
+    g <- tryCatch(readr::guess_encoding(raw)$encoding, error = \(e) "latin1")
+    if (length(g) && !is.na(g[[1]])) g[[1]] else "UTF-8"
+  }
 
   # NUL bytes cannot be in an R string (base R's skipNul); in UTF-16 and
   # UTF-32 they are part of the characters

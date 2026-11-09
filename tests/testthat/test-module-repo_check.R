@@ -640,7 +640,7 @@ test_that("a zip inside a ResearchBox is listed from its local copy", {
                file_location = file.path(d, "inner.zip"),
                size = file.size(file.path(d, "inner.zip")), type = "archive",
                isdir = FALSE, stringsAsFactors = FALSE)
-  }, .rbox_license = \(...) NA_character_)
+  }, .rbox_box_meta = \(...) data.frame(RB_license = NA_character_, RB_status = NA_character_))
   httr2::local_mocked_responses(function(req) stop("no request expected: ", req$url))
 
   paper <- test_paper(url = box)
@@ -710,7 +710,7 @@ test_that("repo_check names a private OSF project read through a view-only link,
     expect_equal(mo$summary_table$repo_view_only, 1, info = both)
     expect_equal(mo$view_only$project, "https://osf.io/j9sdn")
     expect_match(mo$summary_text, "The OSF project https://osf.io/j9sdn is private. Metacheck examined the files through the view_only link.", fixed = TRUE)
-    expect_match(module_report(mo), "Private projects checked through a view-only link", fixed = TRUE)
+    expect_match(module_report(mo), "Private repositories checked through a view-only or peer-review link", fixed = TRUE)
     expect_equal(mo$traffic_light, "yellow")
   }
   # a public project read through a view-only link is not named
@@ -767,7 +767,7 @@ test_that("repo_check reports why a ResearchBox box could not be downloaded", {
     rbox_file_download = function(rb_url, ...) .rbox_no_files(data.frame(
       rb_url = box, name = NA_character_, error = "unfound")),
     # a box that could not be downloaded is not asked about again
-    .rbox_license = \(...) stop("no licence request expected")
+    .rbox_box_meta = \(...) stop("no licence request expected")
   )
   paper <- test_paper(url = box)
   mo <- suppressWarnings(module_run(paper, "repo_check"))
@@ -785,12 +785,96 @@ test_that("repo_check gives a ResearchBox box's licence", {
     rbox_file_download = function(rb_url, ...) data.frame(
       rb_url = box, name = "Data/study1.csv", file_location = file.path(d, "study1.csv"),
       size = 9, type = "data", isdir = FALSE),
-    .rbox_license = \(rb_url, cache = FALSE) "CC-BY-4.0"
+    .rbox_box_meta = \(rb_url, cache = FALSE) data.frame(RB_license = "CC-BY-4.0", RB_status = "public")
   )
   mo <- module_run(test_paper(url = box), "repo_check", peek_zips = FALSE)
   expect_equal(mo$repo_metadata$repo_url, box)
   expect_equal(mo$repo_metadata$license, "CC-BY-4.0")
   expect_true(is.na(mo$repo_metadata$doi))
+  # a public box read through its plain link is not named as private
+  expect_equal(nrow(mo$view_only), 0)
+  expect_equal(mo$summary_table$repo_view_only, 0)
+})
+
+test_that("repo_check advises on a ResearchBox box that readers cannot open (#621)", {
+  # 7eaw6_v1 links https://researchbox.org/8285 without its passcode; the API
+  # and the web page do not show the box
+  box <- "https://researchbox.org/8285"
+  why <- paste("HTTP 404: This box either does not exist or is not public; web page:",
+               "not public: ResearchBox asks for a captcha instead of showing the box;",
+               "a peer-review link with its passcode is needed")
+  for (err in c(why, "not public: ResearchBox asks for a captcha instead of showing the box")) {
+    local_mocked_bindings(
+      online = \(...) TRUE,
+      rbox_file_download = function(rb_url, ...) .rbox_no_files(data.frame(
+        rb_url = rb_url, name = NA_character_, error = err)),
+      .rbox_box_meta = \(...) stop("no licence request expected")
+    )
+    mo <- suppressWarnings(module_run(test_paper(url = box), "repo_check"))
+    expect_match(mo$summary_text, paste(
+      "The ResearchBox box https://researchbox.org/8285 does not exist or is not public, so",
+      "readers who follow the link cannot open it. As the preprint is public, consider making",
+      "the box public. If the box has to stay private for now, link to its full peer-review",
+      "link (https://researchbox.org/8285&PEER_REVIEW_passcode=...), so that the link itself",
+      "opens the box."), fixed = TRUE)
+    expect_match(module_report(mo), "Repositories that readers cannot open", fixed = TRUE)
+    # still a repository that could not be checked
+    expect_equal(mo$summary_table$repo_unchecked, 1)
+    expect_equal(mo$summary_table$repo_view_only, 0)
+    expect_equal(mo$traffic_light, "yellow")
+  }
+
+  # not for a box that was not served for another reason, or for a link that
+  # has its passcode
+  for (u in c(box, paste0(box, "&PEER_REVIEW_passcode=NNONJR"))) {
+    err <- if (u == box) "API rate limit exhausted: try later" else why
+    local_mocked_bindings(
+      online = \(...) TRUE,
+      rbox_file_download = function(rb_url, ...) .rbox_no_files(data.frame(
+        rb_url = rb_url, name = NA_character_, error = err)),
+      .rbox_box_meta = \(...) stop("no licence request expected")
+    )
+    mo <- suppressWarnings(module_run(test_paper(url = u), "repo_check"))
+    expect_match(mo$summary_text, "We could not check 1 repository", fixed = TRUE, info = u)
+    expect_false(grepl("readers who follow the link cannot open it", mo$summary_text, fixed = TRUE),
+                 info = u)
+  }
+})
+
+test_that("repo_check names a private ResearchBox box read through its peer-review link (#621)", {
+  d <- withr::local_tempdir()
+  writeLines("id,x\n1,2", file.path(d, "study1.csv"))
+  link <- "https://researchbox.org/8285&PEER_REVIEW_passcode=NNONJR"
+  for (status in c("private", NA, "public")) {
+    local_mocked_bindings(
+      online = \(...) TRUE,
+      rbox_file_download = function(rb_url, ...) data.frame(
+        rb_url = rb_url, name = "Data/study1.csv", file_location = file.path(d, "study1.csv"),
+        size = 9, type = "data", isdir = FALSE),
+      .rbox_box_meta = \(rb_url, cache = FALSE) data.frame(RB_license = "CC-BY-4.0",
+                                                          RB_status = status)
+    )
+    mo <- module_run(test_paper(url = link), "repo_check", peek_zips = FALSE)
+    expect_equal(mo$summary_table$files_n, 1, info = status)
+    if (status %in% "public") {
+      # the box is public: the passcode in the link does no harm
+      expect_equal(nrow(mo$view_only), 0)
+      expect_equal(mo$summary_table$repo_view_only, 0)
+      expect_false(grepl("is private", mo$summary_text, fixed = TRUE))
+    } else {
+      # private, or not known (no ResearchBox key): the passcode shows it is a
+      # link meant for peer review
+      expect_equal(mo$view_only$project, "https://researchbox.org/8285", info = status)
+      expect_equal(mo$summary_table$repo_view_only, 1, info = status)
+      expect_match(mo$summary_text, paste(
+        "The ResearchBox box https://researchbox.org/8285 is private. Metacheck examined the",
+        "files through the peer-review link. As the preprint is public, consider making the box",
+        "public."), fixed = TRUE)
+      expect_match(module_report(mo), "Private repositories checked through a view-only or peer-review link",
+                   fixed = TRUE)
+      expect_equal(mo$traffic_light, "yellow", info = status)
+    }
+  }
 })
 
 test_that("repo_check reports OSF links it could not check, instead of dropping them (#501)", {

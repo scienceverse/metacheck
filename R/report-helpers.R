@@ -22,7 +22,7 @@
 #' runs -- before [report()] ever selects a template.
 #'
 #' A fifth value, `"checklist"`, lays the report out by check instead of by
-#' module: every check of every module is sorted into to fix, to improve,
+#' module: every check of every module is sorted into to fix, to check,
 #' decide by hand, for information, fine and not applicable, and each check
 #' that needs work says what was found and what to do on separate lines. It is
 #' rendered like `"simple"` (static, no JavaScript), in the colours and font
@@ -38,7 +38,7 @@
 #'   [scroll_table()]) with `details_title` (the line that unfolds it)
 #'
 #' A module without `checks` is shown as one check: its traffic light gives
-#' the result (red: to fix, yellow: to improve, green: fine), its summary text
+#' the result (red: to fix, yellow: to check, green: fine), its summary text
 #' what was found, and its report the folded details. A module can also give
 #' `intro` (a paragraph shown at the top) and `logo` (the path of an image
 #' shown next to metacheck's logo). A module that gives `checklist_section`
@@ -712,7 +712,7 @@ report_type <- function(report_type = NULL) {
       exec_tbl <- exec_tbl[[1]]
       # a model file or other non-R content is not a script, so not a failure
       flagged <- exec_tbl[!exec_tbl$Outcome %in% c("ran_ok", "jags_model", "not_r_content",
-                                                   "defines_functions", "not_analysis"),
+                                                   "defines_functions", "not_analysis", "empty"),
                           c("File", "Outcome", "Detail")]
 
       # errored/timed_out are the two outcomes with a real, distinct
@@ -744,6 +744,7 @@ report_type <- function(report_type = NULL) {
           python2                 = "are written for Python 2 and so could not be run",
           docker_failed           = "could not be run because Docker failed, which says nothing about the code",
           not_downloaded          = "could not be tried, because they need a file the deposit holds but that we did not download",
+          not_read                = "could not be read by metacheck, which may be a problem of the computer that ran the check (the reason is in the table)",
           needs_a_person          = "need a person to choose a file, answer a question, use an app or give a program its arguments",
           needs_internet          = "need the internet, which is off during the run, or could not reach what they asked for",
           download_too_large      = "were stopped for downloading more than our limits allow",

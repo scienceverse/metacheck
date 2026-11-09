@@ -558,6 +558,35 @@ test_that(".rbox_license", {
   expect_true(is.na(.rbox_license("https://researchbox.org/803")))
 })
 
+test_that(".rbox_box_meta gives the licence and status from one request (#621)", {
+  withr::local_options(metacheck.researchbox.token = "test-token",
+                       metacheck.cache.dir = withr::local_tempdir(),
+                       metacheck.repo_cache.session_dir = withr::local_tempdir(),
+                       metacheck.state.dir = withr::local_tempdir())
+  asked <- NULL
+  local_mocked_bindings(.rbox_api = function(action, ..., code = NA_character_, path = NULL) {
+    asked <<- c(asked, code)
+    list(ok = TRUE, error = NA_character_,
+         body = list(license_id = "CC-BY-4.0", status = "private"))
+  })
+  meta <- .rbox_box_meta("https://researchbox.org/8285&PEER_REVIEW_passcode=NNONJR", cache = TRUE)
+  expect_equal(meta$RB_license, "CC-BY-4.0")
+  expect_equal(meta$RB_status, "private")
+  expect_equal(asked, "NNONJR")
+  # the status is saved with the licence
+  expect_equal(.rbox_box_meta("https://researchbox.org/8285", cache = TRUE)$RB_status, "private")
+  expect_length(asked, 1)
+
+  # the web page gives no status
+  local_mocked_bindings(
+    .rbox_api = function(...) list(ok = FALSE, error = "HTTP 503", body = NULL),
+    .rbox_info_page = function(rb_url) data.frame(rb_url = rb_url, RB_license = "CC-BY-4.0")
+  )
+  meta <- .rbox_box_meta("https://researchbox.org/802")
+  expect_equal(meta$RB_license, "CC-BY-4.0")
+  expect_true(is.na(meta$RB_status))
+})
+
 test_that("an empty ResearchBox page, and several boxes that all fail (U43, U45)", {
   withr::local_options(metacheck.researchbox.token = "",
                        metacheck.cache.dir = withr::local_tempdir(),

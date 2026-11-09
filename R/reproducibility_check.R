@@ -73,7 +73,11 @@ repro_dependencies <- function(code_text, lang = "R") {
 
     # GitHub / URL install sources named in the text, matched to a package by
     # the repo basename. install_github("user/repo@ref") -> package "repo".
-    joined <- paste(code_text, collapse = "\n")
+    # From the code without its comments, as the package names are: an
+    # address in a line made a comment ("# install.packages(\"http://...
+    # embryogrowth.tar.gz\")", which no longer answers) was used instead of
+    # CRAN, and the install failed (10.1111/1365-2435.13410; #598).
+    joined <- paste(code_remove_comments(code_text, "R"), collapse = "\n")
     gh_pat  <- "install_github\\s*\\(\\s*['\"]([^'\"]+)['\"]"
     url_pat <- "install\\.packages\\s*\\(\\s*['\"](https?://[^'\"]+)['\"]"
     gh  <- regmatches(joined, gregexpr(gh_pat,  joined, perl = TRUE))[[1]]
@@ -1347,6 +1351,99 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   if (length(rows)) do.call(rbind, rows) else none
 }
 
+# The folders a script's write stopped on, from its error (#591): a script
+# writes into a folder that is not in the deposit (authors leave empty output
+# folders out), and Metacheck could make it before the run only when it could
+# see the path (a quoted path, or a folder in a variable of the same script),
+# not when the path was built elsewhere: in a function of a sourced file
+# (10.1111/1365-2664.14583, "cannot create file './outputs/...xlsx'") or inside
+# here() (10.1111/1365-2664.14735, ggsave's "Cannot find directory
+# '/sandbox/.../5_figs/final'"). Only a message of a write: "cannot create file",
+# ggsave's "Cannot find directory", "cannot open (compressed) file" when the call
+# that failed writes (a mode "w", "a" or "wb", pdf(), png(), save(), saveRDS(),
+# sink(), write.csv(), ...), and Python's FileNotFoundError when the line it
+# names writes (open(..., "w"), savefig(), to_csv(), ...). A file a script reads
+# but does not find gives a message too, and is not a folder to make. Returns
+# the folders as the message gives them.
+.repro_write_failed_folders <- function(msg) {
+  if (is.na(msg) || !nzchar(msg)) return(character(0))
+  q <- paste0("['\"`", intToUtf8(c(8216L, 8217L)), "]")
+  nq <- paste0("[^'\"`", intToUtf8(c(8216L, 8217L)), "\n]+")
+  grab <- function(pat) {
+    m <- regmatches(msg, gregexpr(pat, msg, perl = TRUE))[[1]]
+    if (!length(m)) character(0) else sub(paste0(".*?", q, "(", nq, ")", q, ".*"), "\\1", m, perl = TRUE)
+  }
+  out <- c(dirname(grab(paste0("cannot create file ", q, nq, q))),
+           grab(paste0("Cannot find directory ", q, nq, q)))
+  calls <- regmatches(msg, gregexpr("Error in [^\n]*", msg, perl = TRUE))[[1]]
+  writes_r <- paste0("[\"'](?:w|a|wb|ab|w\\+|a\\+)[\"']|",
+                     "\\b(?:pdf|png|jpeg|jpg|tiff|bmp|svg|svglite|cairo_pdf|cairo_ps|postscript|sink|save|",
+                     "saveRDS|ggsave|writeLines|writeBin|dev\\.copy|dev\\.print)\\s*\\(|",
+                     "\\bwrite[A-Za-z_.]*\\s*\\(|\\bsaveWorkbook\\s*\\(")
+  if (any(grepl(writes_r, calls, perl = TRUE)))
+    out <- c(out, dirname(grab(paste0("cannot open (?:compressed )?file ", q, nq, q))))
+  if (grepl("FileNotFoundError", msg, fixed = TRUE)) {
+    lines <- trimws(strsplit(msg, "\n", fixed = TRUE)[[1]])
+    code <- lines[!grepl("^(File |Traceback|FileNotFoundError|\\^|~)", lines) & nzchar(lines)]
+    writes_py <- paste0("\\bopen\\s*\\([^)]*,\\s*(?:mode\\s*=\\s*)?[\"'][^\"']*[wax]|",
+                        "\\.(?:savefig|to_csv|to_excel|to_parquet|to_pickle|to_json|to_feather|to_html|",
+                        "to_latex|to_netcdf|write|save)\\s*\\(|\\bnp\\.(?:save|savez|savetxt)\\s*\\(|",
+                        "\\b(?:savefig|imsave|imwrite)\\s*\\(")
+    if (length(code) && grepl(writes_py, code[[length(code)]], perl = TRUE))
+      out <- c(out, dirname(grab(paste0("No such file or directory: ", q, nq, q))))
+  }
+  out <- gsub("\\\\", "/", out)
+  unique(out[nzchar(out) & !out %in% c(".", "/")])
+}
+
+# Before a script runs once more: the folders its writes stopped on are made,
+# inside the sandbox only (see .repro_write_failed_folders()), counted from the
+# folder the script runs in; a folder on the authors' computer is left. `seen`
+# holds the folders made for each script before, which are not made again.
+# Returns the folders made: script, folder (from the top of the sandbox).
+.repro_make_failed_write_folders <- function(results, run_tbl, root, seen = list()) {
+  none <- data.frame(script = character(0), folder = character(0))
+  if (is.null(results) || !nrow(results) || is.null(run_tbl)) return(none)
+  root_n <- gsub("\\\\", "/", normalizePath(root, mustWork = FALSE))
+  rel_dir <- function(path) {
+    p <- gsub("\\\\", "/", normalizePath(path, mustWork = FALSE))
+    if (identical(tolower(p), tolower(root_n))) return(".")
+    if (!startsWith(tolower(p), paste0(tolower(root_n), "/"))) return(NA_character_)
+    substring(p, nchar(root_n) + 2)
+  }
+  rows <- list()
+  for (s in results$file_name[results$outcome %in% "errored"]) {
+    i <- match(s, results$file_name); k <- match(s, run_tbl$file_name)
+    if (is.na(i) || is.na(k)) next
+    run_dir <- rel_dir(run_tbl$run_dir[k])
+    for (d in .repro_write_failed_folders(paste(results$error[i], results$stderr[i]))) {
+      to <- if (startsWith(d, "/sandbox/")) .repro_norm_rel(sub("^/sandbox/", "", d))
+            else if (startsWith(tolower(d), paste0(tolower(root_n), "/"))) rel_dir(d)
+            else if (grepl("^(/|~|[A-Za-z]:)", d) || is.na(run_dir)) NA_character_
+            else .repro_norm_rel(if (run_dir == ".") d else file.path(run_dir, d))
+      if (is.na(to) || !nzchar(to) || to == "." || to %in% seen[[s]]) next
+      dest <- file.path(root, .portable_path(to))
+      if (dir.exists(dest)) next
+      if (isTRUE(dir.create(dest, recursive = TRUE, showWarnings = FALSE)))
+        rows[[length(rows) + 1]] <- data.frame(script = s, folder = to)
+    }
+  }
+  if (length(rows)) do.call(rbind, rows) else none
+}
+
+# The report's sentence on the folders made for scripts whose writes stopped on
+# them (see .repro_make_failed_write_folders()).
+.repro_folders_made_text <- function(made) {
+  if (is.null(made) || !nrow(made)) return("")
+  n_s <- length(unique(made$script)); n <- nrow(made)
+  sprintf(paste0(" **%s wrote into %s that the deposit does not have**, so we made %s and ran %s once more: %s. ",
+                 "Keeping the (empty) output folders in the deposit, or making them in the code with ",
+                 "`dir.create()`, solves this."),
+          plural(n_s, "A script", sprintf("%d scripts", n_s)), plural(n, "a folder", sprintf("%d folders", n)),
+          plural(n, "it", "them"), plural(n_s, "it", "them"),
+          paste(sprintf("`%s` for `%s`", made$folder, made$script), collapse = "; "))
+}
+
 # The report's sentence on the files of the deposit copied to where a script
 # looked for them (see .repro_place_from_deposit()).
 .repro_placed_text <- function(placed) {
@@ -2531,12 +2628,27 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 # The report's section on files that are not run on their own; NULL when none.
 # `why` gives, for a file that is not part of the analysis, the sentence of
 # .repro_software_kind() (NA for a package's tests and setup.py).
-.repro_not_run_report <- function(file_names, kinds, used_by = NULL, why = NULL) {
+.repro_not_run_report <- function(file_names, kinds, used_by = NULL, why = NULL, read_msg = NULL) {
   fn <- kinds %in% "defines_functions"
   ts <- kinds %in% "not_analysis"
-  if (!any(fn) && !any(ts)) return(NULL)
+  nr <- kinds %in% "not_read"   # #620
+  em <- kinds %in% "empty"
+  if (!any(fn) && !any(ts) && !any(nr) && !any(em)) return(NULL)
   used <- if (is.null(used_by)) rep(NA_character_, length(kinds)) else used_by
   c("#### Files not run on their own",
+    if (any(nr)) sprintf(
+      paste0("%d file%s could not be read, so %s not run and %s to be checked again: ",
+             "this may be a problem of the computer that ran the check, not of the %s."),
+      sum(nr), plural(sum(nr)), plural(sum(nr), "it was", "they were"),
+      plural(sum(nr), "needs", "need"), plural(sum(nr), "file", "files")),
+    if (any(nr)) scroll_table(data.frame(
+      File = file_names[nr],
+      Why = if (is.null(read_msg)) "" else read_msg[nr],
+      check.names = FALSE), maxrows = 10),
+    if (any(em)) sprintf(
+      "%d file%s %s empty, so there is nothing to run, and %s not counted as %s: %s.",
+      sum(em), plural(sum(em)), plural(sum(em), "is", "are"), plural(sum(em), "it is", "they are"),
+      plural(sum(em), "a script", "scripts"), paste(file_names[em], collapse = ", ")),
     if (any(fn)) sprintf(
       paste0("%d file%s only define%s functions, so running %s on %s own says nothing: a ",
              "function counts when a script uses it. These files are not counted as scripts. ",
@@ -3643,6 +3755,27 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   list(txt = txt, n = n, paths = paths)
 }
 
+# A `lib.loc =` that points to a folder on the authors' computer, removed from
+# library(), require(), requireNamespace() and loadNamespace(): the run has its
+# own library, where the package is installed, and the folder is not there, so
+# the script stopped with "no library trees found in '<folder>'" although the
+# package was there (10.1111/2041-210X.13650; #594). Only an absolute path
+# ("C:/...", "/home/...", "~/..."), which cannot be in the sandbox; a relative
+# one may be a library the deposit holds, and stays. Returns list(txt, paths =
+# the folders removed).
+.repro_drop_author_lib_loc <- function(txt) {
+  call_pat <- paste0("(\\b(?:library|require|requireNamespace|loadNamespace)\\s*\\([^()]*?)",
+                     "\\s*,\\s*lib\\.loc\\s*=\\s*(['\"])((?:[A-Za-z]:[/\\\\]|/|~)[^'\"]*)\\2")
+  paths <- character(0)
+  hit <- which(grepl(call_pat, txt, perl = TRUE) & !grepl("^\\s*#", txt))
+  for (i in hit) {
+    m <- regmatches(txt[[i]], gregexpr(call_pat, txt[[i]], perl = TRUE))[[1]]
+    paths <- c(paths, sub(paste0("(?s)", call_pat), "\\3", m, perl = TRUE))
+    txt[[i]] <- gsub(call_pat, "\\1", txt[[i]], perl = TRUE)
+  }
+  list(txt = txt, paths = unique(paths))
+}
+
 # How many more brackets a line of code opens than it closes, leaving out
 # brackets in quoted text and after a comment sign.
 .repro_bracket_depth <- function(line, lang = "R") {
@@ -3808,6 +3941,47 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   }, character(1), USE.NAMES = FALSE)
 }
 
+# The message of each script's failure, short, for the module's table (#615),
+# so a reader of the table need not take it from the report text, whose wording
+# changes: the error line of the script's output (as the report shows it, see
+# .repro_error_line()), which names the package that is not there; for a script
+# that needed the internet, with the address it asked for when the error line
+# names none; for one that timed out, the time limit. Else the last line of the
+# output. At most `max_chars` characters; NA for a script that ran through or
+# has no message.
+.repro_error_message <- function(outcome, error, stderr = NULL, python = FALSE, max_chars = 300) {
+  n <- length(outcome)
+  if (!n) return(character(0))
+  error <- rep_len(error %||% NA_character_, n)
+  stderr <- rep_len(stderr %||% NA_character_, n)
+  shorten <- function(x) {
+    x <- gsub("\\s+", " ", trimws(x))
+    if (nchar(x) > max_chars) paste0(substr(x, 1, max_chars - 1), "\u2026") else x
+  }
+  url_pat <- "https?://[^\\s'\"<>)\\]]+"
+  vapply(seq_len(n), function(i) {
+    o <- outcome[[i]]
+    if (is.na(o) || o %in% c("ran_ok", "run_by_source", "run_by_import", "jags_model", "not_r_content",
+                             "defines_functions", "not_analysis", "empty")) return(NA_character_)
+    e <- if (!is.na(error[[i]]) && nzchar(trimws(error[[i]]))) error[[i]] else stderr[[i]]
+    if (is.na(e) || !nzchar(trimws(e))) return(NA_character_)
+    # the time limit: error is the limit's own sentence ("timed out after 3600s")
+    if (o %in% c("timed_out", "skipped_time_limit")) return(shorten(e))
+    line <- .repro_error_line(e, python = python, max_chars = max_chars)
+    if (!nzchar(line)) line <- .repro_error_line(e, python = !python, max_chars = max_chars)
+    if (!nzchar(line)) {
+      lines <- trimws(strsplit(e, "\r?\n")[[1]])
+      lines <- lines[nzchar(lines) & !grepl("^(Execution halted|Calls:|Backtrace:)", lines)]
+      line <- if (length(lines)) shorten(lines[[length(lines)]]) else ""
+    }
+    if (o %in% "needs_internet" && !grepl("https?://", line, ignore.case = TRUE)) {
+      url <- regmatches(paste(e, stderr[[i]]), regexpr(url_pat, paste(e, stderr[[i]]), perl = TRUE))
+      if (length(url)) line <- shorten(paste0(line, " (", url, ")"))
+    }
+    if (nzchar(line)) line else NA_character_
+  }, character(1))
+}
+
 # Why a script did not run through, as one word, so reasons need not be recovered
 # from messages afterwards (#568, item 24). NA for what is not a failure of the script.
 .repro_failure_reason <- function(outcome, msg) {
@@ -3894,8 +4068,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # Per-paper counts for summary_table (#568, item 24): the scripts with a result
 # of their own, the files of software that were not run (not analyses, counted
 # apart), and for each reason how many scripts did not run through for it. A
-# sourced or imported file, a model or function file and a Docker failure on our
-# side are not scripts with a result of their own, nor is a script that stopped on
+# sourced or imported file, a model or function file, an empty file, and a Docker
+# failure or a file not read on our side are not scripts with a result of their
+# own, nor is a script that stopped on
 # a file we did not download (counted apart as well). NA when nothing was run.
 .repro_run_counts <- function(run_results) {
   cols <- c("repro_scripts_n", "repro_not_analysis_n", "repro_not_downloaded_n",
@@ -3907,7 +4082,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     .repro_failure_reason(outcome, paste(run_results$error, run_results$stderr))
   counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
                              "defines_functions", "not_analysis", "docker_failed",
-                             "not_downloaded") &
+                             "not_downloaded", "not_read", "empty") &
     !is.na(outcome)
   fails <- vapply(.repro_reason_levels, function(r) sum(counted & reason %in% r), integer(1))
   as.data.frame(as.list(stats::setNames(
@@ -3922,7 +4097,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 .repro_by_repository <- function(table) {
   if (is.null(table) || !nrow(table) || !all(c("repo_name", "outcome") %in% names(table))) return(NULL)
   counted <- !table$outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
-                                   "defines_functions", "not_analysis", "not_downloaded") &
+                                   "defines_functions", "not_analysis", "not_downloaded", "empty") &
     !is.na(table$outcome)
   repos <- table$repo_name[counted]
   if (length(unique(repos[!is.na(repos)])) < 2) return(NULL)
@@ -4409,6 +4584,11 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
       env_n <- env$n
     }
 
+    # lib.loc pointing to a folder on the authors' computer (#594)
+    lib_loc <- if (identical(fn_lang, "R")) .repro_drop_author_lib_loc(txt) else
+      list(txt = txt, paths = character(0))
+    txt <- lib_loc$txt
+
     # Replace a named font family (family = "Times New Roman", base_family =
     # "Arial", ...) with grid's own universal fallback "sans" — a specific
     # named font is very commonly NOT registered as usable on the machine
@@ -4480,6 +4660,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                slashes_fixed = paste(slashed$paths, collapse = "; "),
                setwd_folder_removed = paste(under_setwd$paths, collapse = "; "),
                setwd_paths = paste(setwd_paths, collapse = ", "),
+               lib_loc_removed = paste(lib_loc$paths, collapse = "; "),
                family_replaced = family_n,
                family_detail = paste(
                  sprintf("%s -> \"sans\"", family_matches), collapse = "; "),
@@ -4794,6 +4975,54 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 .repro_same_version <- function(a, b) {
   if (length(a) != 1 || length(b) != 1 || is.na(a) || is.na(b)) return(FALSE)
   isTRUE(tryCatch(package_version(a) == package_version(b), error = function(e) FALSE))
+}
+
+# Whether a package is on CRAN now, from the repositories R is set to (else
+# cloud.r-project.org); the list is read once per session. FALSE when CRAN
+# cannot be read.
+.repro_cran_env <- new.env(parent = emptyenv())
+.repro_on_cran <- function(pkg) {
+  if (is.null(.repro_cran_env$names)) {
+    repos <- getOption("repos")
+    if (is.null(repos) || !length(repos) || any(repos == "@CRAN@")) repos <- c(CRAN = "https://cloud.r-project.org")
+    ap <- tryCatch(suppressWarnings(utils::available.packages(repos = repos)), error = function(e) NULL)
+    .repro_cran_env$names <- if (is.null(ap)) character(0) else rownames(ap)
+  }
+  pkg %in% .repro_cran_env$names
+}
+
+# "could not download <ref>: <why>" when a GitHub or URL install failed on the
+# download (a dead address, a missing repository), else NULL (#598)
+.repro_download_failed_msg <- function(ref, msgs) {
+  hit <- grep(paste0("cannot open URL|cannot open the connection|download|status was|Could not resolve host|",
+                     "HTTP error|HTTP status|404|403|Failed to connect"), msgs, value = TRUE, ignore.case = TRUE)
+  if (!length(hit)) return(NULL)
+  paste0("could not download ", ref, ": ", substr(gsub("[[:space:]]+", " ", hit[[1]]), 1, 200))
+}
+
+# The R packages metacheck reads a script with: code_read() (readr, stringi and
+# curl), code_extract_r() (knitr) and code_extract_py() (jsonlite).
+.repro_read_packages <- c("readr", "stringi", "curl", "knitr", "jsonlite")
+
+# For each script that could not be read, why, for its row in the table and the
+# report; NA where the read worked (#620). The read's error, and, when one of
+# the packages that read scripts cannot be used on this computer, that: the
+# script may then be fine and run on another computer.
+.repro_read_failed_msg <- function(errors, max_chars = 300) {
+  out <- rep(NA_character_, length(errors))
+  bad <- !is.na(errors)
+  if (!any(bad)) return(out)
+  problems <- stats::na.omit(vapply(.repro_read_packages, .pkg_problem, character(1)))
+  out[bad] <- vapply(errors[bad], function(e) {
+    e <- trimws(gsub("\\s+", " ", e))
+    if (nchar(e) > max_chars) e <- paste0(substr(e, 1, max_chars - 1), intToUtf8(8230L))   # an ellipsis
+    paste0("metacheck could not read the file: ", e,
+           if (length(problems)) paste0(
+             ". The cause is probably the computer that ran the check, not the file: ",
+             paste(problems, collapse = "; "), ". The script may run on another computer"),
+           ".")
+  }, character(1), USE.NAMES = FALSE)
+  out
 }
 
 # The version of a package in the given libraries, NA when it is not in them.
@@ -5293,6 +5522,29 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
         stop(.repro_not_loadable_msg(pkg, install_warnings, .repro_load_error(pkg, lib_dir)))
       list(ok = TRUE, msg = "", via_archive = FALSE)
     }, error = function(e) list(ok = FALSE, msg = conditionMessage(e), via_archive = FALSE))
+
+    # An install from GitHub or a web address that failed, for a package that
+    # is on CRAN or Bioconductor: installed from there, with a note (#598,
+    # embryogrowth: the address no longer answered). A failed download says
+    # so, not "the install did not put the package in the library".
+    if (!res$ok && src %in% c("github", "url")) {
+      first <- .repro_download_failed_msg(ref, c(install_warnings, res$msg)) %||% res$msg
+      alt <- if (.repro_on_cran(pkg)) "CRAN" else if (pkg %in% .repro_bioc_packages()) "Bioconductor" else NA_character_
+      if (!is.na(alt)) {
+        message("[repro]     '", pkg, "' could not be installed from ", ref, "; installing it from ", alt, " ...")
+        try(if (alt == "CRAN") utils::install.packages(pkg, lib = lib_dir, quiet = FALSE) else {
+          if (!requireNamespace("BiocManager", quietly = TRUE))
+            utils::install.packages("BiocManager", lib = lib_dir, quiet = FALSE)
+          BiocManager::install(pkg, lib = lib_dir, update = FALSE, ask = FALSE)
+        })
+        if (file.exists(file.path(lib_dir, pkg, "DESCRIPTION")) &&
+            requireNamespace(pkg, quietly = TRUE, lib.loc = lib_dir)) {
+          res <- list(ok = TRUE, msg = "", via_archive = FALSE)
+          version_note <- paste0("installed from ", alt, ": the install from ", ref, " failed (",
+                                 substr(first, 1, 200), ")")
+        } else res$msg <- paste0(first, "; installing it from ", alt, " failed too")
+      } else res$msg <- first
+    }
 
     # A CRAN-source package that failed is not necessarily broken code: CRAN
     # may simply no longer be SERVING it (removed for a check failure, a

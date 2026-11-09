@@ -735,6 +735,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   rb_files_df <- data.frame(repo_name = character(0))
   rb_meta_df <- data.frame(repo_url = character(0), doi = character(0),
                            license = character(0))
+  # Private boxes (#621): links without a passcode to a box that ResearchBox
+  # does not show (it does not exist or is not public), and boxes read through
+  # a peer-review link whose box is not public, named like OSF's view-only
+  # projects (paper_id, repo_url = the link, project = the box's address)
+  rb_not_public <- character(0)
+  rb_view_only <- data.frame(paper_id = character(0), repo_url = character(0),
+                             project = character(0))
   if (length(rb_urls) > 0) {
     tryCatch({
       rb_file_list <- rbox_file_download(rb_urls, pb = pb, cache = cache)
@@ -749,6 +756,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         fill <- !is.na(hit) & is.na(repos$repo_error)
         repos$repo_error[fill] <- paste("ResearchBox did not serve the box:",
                                          rb_failed$error[hit[fill]])
+        # the API answers "does not exist or is not public"; the web page asks
+        # for a captcha (.rbox_info_page()). A link with its passcode that
+        # fails this way is not a box readers were meant to open without it.
+        np <- grepl("does not exist or is not public|not public: ResearchBox asks for a captcha",
+                    rb_failed$error) & is.na(.rbox_code(rb_failed$rb_url))
+        rb_not_public <- unique(rb_failed$rb_url[np])
       }
       rb_file_list <- dplyr::filter(rb_file_list, !isdir)
       rb_files_df <- data.frame(
@@ -776,17 +789,27 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       repos$repo_error[repos$repo_url %in% rb_urls] <<- conditionMessage(e)
     })
 
-    # The licence of each box that was downloaded (one box_meta request per
-    # box; a box that could not be downloaded is not asked about again).
-    # ResearchBox puts every box under CC BY 4.0, but names it in each box's
-    # metadata since 2026-10.
+    # The licence and status of each box that was downloaded (one box_meta
+    # request per box; a box that could not be downloaded is not asked about
+    # again). ResearchBox puts every box under CC BY 4.0, but names it in each
+    # box's metadata since 2026-10.
     rb_ok <- setdiff(rb_urls, repos$repo_url[!is.na(repos$repo_error)])
     if (length(rb_ok) > 0) {
-      rb_license <- vapply(rb_ok, \(u) {
-        tryCatch(.rbox_license(u, cache = cache), error = \(e) NA_character_)
-      }, character(1))
+      rb_meta <- lapply(rb_ok, \(u) {
+        tryCatch(.rbox_box_meta(u, cache = cache), error = \(e)
+          data.frame(RB_license = NA_character_, RB_status = NA_character_))
+      }) |> dplyr::bind_rows()
       rb_meta_df <- data.frame(repo_url = rb_ok, doi = NA_character_,
-                               license = unname(rb_license))
+                               license = rb_meta$RB_license)
+      # A box read through its peer-review link is private unless ResearchBox
+      # says it is public; without a key the status is not known, and the
+      # passcode in the link shows it is a link meant for peer review.
+      rb_vo <- rb_ok[!is.na(.rbox_code(rb_ok)) & !rb_meta$RB_status %in% "public"]
+      if (length(rb_vo) > 0) {
+        rb_view_only <- repos[repos$repo_url %in% rb_vo, c("paper_id", "repo_url"), drop = FALSE]
+        rb_view_only$project <- paste0("https://researchbox.org/", .rbox_id(rb_view_only$repo_url))
+        rb_view_only <- unique(rb_view_only)
+      }
     }
   }
 
@@ -2033,17 +2056,37 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       paste0("- ", repos$repo_url[unchecked], ": ", repos$repo_error[unchecked]))
   }
 
-  ## private projects checked through a view-only link ----
-  # (see the OSF block above) yellow: the files could be checked, but readers
-  # of the paper need the view-only link, which was meant for peer review
+  ## private repositories checked through a view-only or peer-review link ----
+  # (see the OSF and ResearchBox blocks above) yellow: the files could be
+  # checked, but readers of the paper need the view-only or peer-review link,
+  # which was meant for peer review
   summary_view_only <- NULL
   report_view_only <- NULL
-  view_only_projects <- unique(osf_view_only$project)
+  view_only <- rbind(osf_view_only, rb_view_only)
+  view_only_projects <- unique(view_only$project)
   if (length(view_only_projects)) {
-    summary_view_only <- paste(sprintf(
-      "The OSF project %s is private. Metacheck examined the files through the view_only link. As the preprint is public, and the OSF Files are accessible to anyone, consider making the OSF project public.",
-      view_only_projects), collapse = " ")
-    report_view_only <- c("#### Private projects checked through a view-only link", summary_view_only)
+    summary_view_only <- paste(c(
+      sprintf("The OSF project %s is private. Metacheck examined the files through the view_only link. As the preprint is public, and the OSF Files are accessible to anyone, consider making the OSF project public.",
+              unique(osf_view_only$project)),
+      sprintf("The ResearchBox box %s is private. Metacheck examined the files through the peer-review link. As the preprint is public, consider making the box public.",
+              unique(rb_view_only$project))), collapse = " ")
+    report_view_only <- c("#### Private repositories checked through a view-only or peer-review link",
+                          summary_view_only)
+  }
+
+  ## ResearchBox boxes that readers cannot open (#621) ----
+  # Still counted as repositories that could not be checked (yellow); the
+  # authors are told how to make the link open the box. ResearchBox's API gives
+  # the same answer for a box that does not exist and one that is not public.
+  summary_not_public <- NULL
+  report_not_public <- NULL
+  if (length(rb_not_public)) {
+    box <- .rbox_id(rb_not_public)
+    box <- unique(ifelse(is.na(box), rb_not_public, paste0("https://researchbox.org/", box)))
+    summary_not_public <- paste(sprintf(
+      "The ResearchBox box %s does not exist or is not public, so readers who follow the link cannot open it. As the preprint is public, consider making the box public. If the box has to stay private for now, link to its full peer-review link (%s&PEER_REVIEW_passcode=...), so that the link itself opens the box.",
+      box, box), collapse = " ")
+    report_not_public <- c("#### Repositories that readers cannot open", summary_not_public)
   }
 
   ## empty repos ----
@@ -2430,6 +2473,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   report <- c(
     report_unchecked,
+    report_not_public,
     report_view_only,
     report_repo,
     if(nrow(repo_tbl)) "#### Repositories" else NULL,
@@ -2482,8 +2526,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dplyr::left_join(n_naming_bad_by_paper, by = "paper_id")
   summary_table$files_unknown[is.na(summary_table$files_unknown)] <- 0L
   summary_table$naming_issues[is.na(summary_table$naming_issues)] <- 0L
-  # private OSF projects checked through a view-only link, per paper
-  vo_by_paper <- table(factor(unique(osf_view_only[c("paper_id", "project")])$paper_id,
+  # private OSF projects and ResearchBox boxes checked through a view-only or
+  # peer-review link, per paper
+  vo_by_paper <- table(factor(unique(view_only[c("paper_id", "project")])$paper_id,
                               levels = summary_table$paper_id))
   summary_table$repo_view_only <- as.integer(vo_by_paper[summary_table$paper_id])
   summary_table$repo_view_only[is.na(summary_table$repo_view_only)] <- 0L
@@ -2494,6 +2539,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # summary_text ----
   summary_text <- c(
     summary_unchecked,
+    summary_not_public,
     summary_view_only,
     summary_repo,
     summary_files,
@@ -2536,9 +2582,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # Files that do not belong in a repository, left out of `table`: paper_id,
     # repo_url, file_path, kind and severity ("problem" or "suggestion").
     useless_files = useless_files,
-    # Private OSF projects whose files were read through a view-only link in
-    # the paper: paper_id, repo_url (the link) and project (its plain address).
-    view_only = osf_view_only,
+    # Private OSF projects and ResearchBox boxes whose files were read through
+    # a view-only or peer-review link in the paper: paper_id, repo_url (the
+    # link) and project (its plain address).
+    view_only = view_only,
     na_replace = 0,
     traffic_light = tl,
     report = report,
