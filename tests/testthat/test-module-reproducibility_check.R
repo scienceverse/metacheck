@@ -271,6 +271,82 @@ test_that("execute = TRUE: a lib.loc on the authors' computer is removed, and a 
   expect_match(paste(mo$report, collapse = "\n"), "wrote into a folder that the deposit does not have", fixed = TRUE)
 })
 
+# Files for the #620 tests: a script whose read fails, an empty file, and one
+# that reads; code_read() fails for the first, as with a stringi that cannot load.
+local_unreadable <- function(env = parent.frame()) {
+  tmp <- withr::local_tempdir(.local_envir = env)
+  writeLines(c('x <- read.csv("data/nothere.csv")', 'stop("boom")'), file.path(tmp, "fail.R"))
+  file.create(file.path(tmp, "empty.R"))
+  writeLines("x <- median(1:5)", file.path(tmp, "ok.R"))
+  writeLines("print(1)", file.path(tmp, "fail.py"))
+  real_read <- code_read
+  testthat::local_mocked_bindings(
+    code_read = function(file_path) {
+      if (grepl("fail\\.(R|py)$", file_path)) stop("stringi package required for encoding operations")
+      real_read(file_path)
+    }, .package = "metacheck", .env = env)
+  tmp
+}
+
+test_that("a script that could not be read is not run, and the light is yellow (#620)", {
+  tmp <- local_unreadable()
+  paper <- test_paper()
+  code_tbl <- dplyr::bind_rows(code_tbl_row(paper, "fail.R", file.path(tmp, "fail.R")),
+                               code_tbl_row(paper, "empty.R", file.path(tmp, "empty.R")),
+                               code_tbl_row(paper, "ok.R", file.path(tmp, "ok.R")))
+  structure_df <- data.frame(paper_id = character(0), file_name = character(0), file_location = character(0))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+
+  mo <- module_run(fake_code, "reproducibility_check")
+  reason <- stats::setNames(mo$table$not_runnable_reason, mo$table$file_name)
+  expect_equal(reason[["fail.R"]], "not_read")
+  expect_equal(reason[["empty.R"]], "empty")
+  expect_equal(mo$traffic_light, "yellow")
+  expect_match(mo$table$error_message[mo$table$file_name == "fail.R"],
+               "metacheck could not read the file: stringi package required for encoding operations", fixed = TRUE)
+  expect_match(paste(mo$report, collapse = "\n"), "1 file could not be read", fixed = TRUE)
+})
+
+test_that("execute = TRUE: a script that could not be read is not run, and the light is not green (#620)", {
+  skip_if_quick()
+  skip_if_not_installed("callr")
+  tmp <- local_unreadable()
+  paper <- test_paper()
+  code_tbl <- dplyr::bind_rows(code_tbl_row(paper, "fail.R", file.path(tmp, "fail.R")),
+                               code_tbl_row(paper, "empty.R", file.path(tmp, "empty.R")),
+                               code_tbl_row(paper, "ok.R", file.path(tmp, "ok.R")))
+  structure_df <- data.frame(paper_id = character(0), file_name = character(0), file_location = character(0))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+
+  mo <- module_run(fake_code, "reproducibility_check", execute = TRUE, timeout = 60)
+  outcome <- stats::setNames(mo$table$outcome, mo$table$file_name)
+  expect_equal(outcome[["fail.R"]], "not_read")
+  expect_equal(outcome[["empty.R"]], "empty")
+  expect_equal(outcome[["ok.R"]], "ran_ok")
+  expect_equal(mo$traffic_light, "yellow")
+  expect_match(mo$table$error_message[mo$table$file_name == "fail.R"], "stringi package required", fixed = TRUE)
+  expect_true(is.na(mo$table$error_message[mo$table$file_name == "empty.R"]))
+  # neither is counted as a script that ran or failed
+  expect_equal(mo$summary_table$repro_scripts_n, 1L)
+})
+
+test_that("a Python script that could not be read is not run (#620)", {
+  tmp <- local_unreadable()
+  paper <- test_paper()
+  code_tbl <- code_tbl_row(paper, "fail.py", file.path(tmp, "fail.py"), language = "Python")
+  structure_df <- data.frame(paper_id = character(0), file_name = character(0), file_location = character(0))
+  fake_code <- fake_module_output("code_check", code_tbl, paper)
+  fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
+
+  mo <- module_run(fake_code, "reproducibility_check")
+  py <- mo$table
+  expect_equal(py$not_runnable_reason[py$file_name == "fail.py"], "not_read")
+  expect_match(py$error_message[py$file_name == "fail.py"], "stringi package required", fixed = TRUE)
+  expect_false(identical(mo$traffic_light, "green"))
+})
+
 test_that("execute = TRUE: a script another script source()s runs only inside that script", {
   # main.R loads dplyr and then sources a.R, which uses %>% without loading
   # anything: run on its own, a.R fails, so it is only run inside main.R.

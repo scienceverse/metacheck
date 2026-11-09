@@ -1,5 +1,11 @@
 # metacheck 0.4.3
 
+* `reproducibility_check` no longer reports a script it could not read as reproducible (#620). When the read failed, the script's text became empty; the empty script then ran without an error, and the light was green. On a computer whose `stringi` was installed but could not be loaded (a copy built for Ubuntu 22.04, which needs `libicui18n.so.70`, on Ubuntu 24.04), every script went this way. Such a script now has the outcome `not_read`: it is not run, the light is yellow ("to check"), as the script may read and run on another computer, and `table$error_message` and the report say why, naming any package metacheck reads scripts with that is installed but cannot be loaded. A file with nothing in it is `empty`: it is not run or counted as a script. Both hold for R and Python.
+
+* `code_read()` reads a file that is valid UTF-8 (ASCII included) without guessing its encoding, which needs `stringi`; when the guess fails for another file, it reads it as Latin-1. On 9,047 code files the lines read are the same as before, in a third of the time.
+
+* `module_run()` says whether a package a module needs is not installed, or is installed but cannot be loaded on this computer, with the reason (#620). Both were "is required but not installed".
+
 * `reproducibility_check` takes an install address only from code that is not a comment (#598). An address in a line made a comment (`# install.packages("http://.../embryogrowth.tar.gz", repos = NULL)`, 10.1111/1365-2435.13410) was used instead of CRAN; the address no longer answered, and the script stopped. When an install from GitHub or a web address fails and the package is on CRAN or Bioconductor, it is installed from there, and `version_note` says so ("installed from CRAN: the install from ... failed (...)"). A failed download says "could not download <address>: ..." instead of "the install did not put the package in the library". In 955 corpus repositories with R code, 52 have such a commented-out line.
 
 * `reproducibility_check` removes a `lib.loc =` that points to a folder on the authors' computer (an absolute path) from `library()`, `require()`, `requireNamespace()` and `loadNamespace()` (#594, 10.1111/2041-210X.13650): the script stopped with "no library trees found" although the package was installed for the run. `$modifications` records it as `lib_loc_removed`.

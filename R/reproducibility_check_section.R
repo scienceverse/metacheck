@@ -413,6 +413,10 @@
       needs_a_person = , static_needs_a_person = c(
         "Stopped", "It asks a person to choose a file or answer a question, starts an app, or is a program that needs its arguments."),
       not_analysis = , static_not_analysis = c("Not run", .repro_cell(not_analysis_why[[i]])),
+      not_read = , static_not_read = c("Not read", .repro_cell(
+        if ("error_message" %in% names(tbl) && !is.na(tbl$error_message[[i]])) tbl$error_message[[i]]
+        else "metacheck could not read the file.")),
+      empty = , static_empty = c("Not run", "The file is empty."),
       c("Not run", ""))
     sprintf("| %s | %s | %s |", .repro_cell(tbl$file_name[[i]]), res[[1]], res[[2]])
   }, character(1))
@@ -422,7 +426,7 @@
                              "static_jags_model", "static_not_r_content",
                              "defines_functions", "not_analysis",
                              "static_defines_functions", "static_not_analysis",
-                             "not_downloaded")
+                             "not_downloaded", "empty", "static_empty")
   n_r <- sum(!is_py & counted)
   n_py <- sum(is_py & counted)
   scripts <- paste(c(
