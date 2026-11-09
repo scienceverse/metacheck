@@ -1,35 +1,27 @@
+# Metacheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+Metacheck is an open source tool that screens scientific manuscripts and data repositories to identify potential issues or areas for improvement. It is designed to guide researchers in adopting best practices. Inspired by practices in software development, where automated checks (e.g., CRAN checks for R packages) are used to identify issues before release, Metacheck screens scientific manuscripts to identify potential improvements. It can also process large numbers of papers, which can be useful for metascientific research, or to track the adoption of for example open science practices across all papers published at an institution. For an example of a dashboard summarizing the results across many papers, see our [summary of Metacheck reports of PsyArXiv preprints](https://lakens.github.io/psyarxiv_metacheck/totals/). 
 
-# metacheck <img src="man/figures/logo.png" align="right" height="120" alt="" />
+These checks are meant to assist, but not replace, human expertise. Automated checks can be incorrect. Like a spellchecker, the goal of Metacheck is to flag potential issues, and to point out a sufficient number of practices that can be improved to make the tool useful, despite the presence of some false positives. 
 
-Metacheck provides extendable and integrated tools for automated checks
-of research outputs for best practices. (formerly named papercheck)
+Metacheck can check power analyses, preregistrations, statements about ethics approvals, conflicts of interest, data and code sharing, and funding, statistical reporting practices for p values, effect sizes, it runs Statcheck, and it checks references for PubPeer comments, retractions, and replications. It also checks repositories for FAIR data and code sharing practices, and performs automated computational reproducibility checks. See the [Metacheck Manual](https://www.scienceverse.org/metacheck_book/) for worked examples and an overview of what you
+can do. 
 
-Inspired by practices in software development, where automated checks
-(e.g., CRAN checks for R packages) are used to identify issues before
-release, Metacheck screens scientific manuscripts to identify potential
-issues or areas for improvement and guide researchers in adopting best
-practices. It can also assist with processing large numbers of papers
-for metascientific enquiry.
+## Our Tools
 
-These check are meant to assist, but not replace, human expertise. For
-example, Metacheck can identify incorrect citations, add missing DOIs,
-and cross-reference citations against Retraction Watch, PubPeer, and the
-FLoRA replication database. It can also identify commonly misreported
-aspects, such as power analyses, and provide general advice. However,
-actioning this advice is always up to a human who can interpret the
-advice in context.
+You can find the [Metacheck R package here](https://github.com/scienceverse/metacheck). The R package offers you full access to all the functionality of Metacheck. 
 
-See the [Metacheck Manual](https://www.scienceverse.org/metacheck_book/)
-for the basics, worked examples, and a conceptual overview of what you
-can do. You can contact the Metacheck team at:
-<metacheck.scienceverse@gmail.com>.
+An [online version of Metacheck](https://metacheckserve.metacheck.src.surf-hosted.nl) hosted by SURF allows you to directly check a paper or repository without having to install any software.
+
+Our team has also developed [bibr](https://github.com/scienceverse/bibr), a tool to convert scientific manuscripts to structured .JSON files. It is an alternative to GROBID, and returns higher quality output. 
+
+To validate and improve Metacheck we have created [a repository of more than 15000 open access papers](https://github.com/scienceverse/papers), converted to GROBID xml, that can be loaded through metacheck. 
+
+As a demonstration of the functionality of Metacheck, [we automatically check new preprints uploaded to the PsyArXiv preprint server](https://lakens.github.io/psyarxiv_metacheck/). 
 
 ## Our Values
 
-The values below guide our priorities and decision-making for all
-Scienceverse projects.
+The values below guide our priorities and decision-making for all Scienceverse projects.
 
 1.  **Quality Control**: The knowledge, data, code and software we
     create will be verified for accuracy, using publicly available
@@ -78,31 +70,34 @@ Scienceverse projects.
     code, and software will be uniquely and persistently identified, and
     benefit a diverse range of contributors.
 
+## Funding
+
+Work on Metacheck is partly funded through the following grants: 
+
+NWO VICI 2024 grant "Interpretable Effect Sizes for Psychological Science". https://doi.org/10.61686/UOJCN75090 (€1.499.516) PI Daniel Lakens. 
+
+Thematic Digital Competence Centre Social Sciences & Humanities (TDCC-SSH) project "Research Transparency Check" https://doi.org/10.61686/ENWVD61320 (€248.273) PI René Bekkers.
+
+NWO Research on Open Science 2025 grant “Assessing and Improving the Effectiveness of Data and Code Sharing Policies in Dutch Research Performing Organizations” https://doi.org/10.61686/WQEKR44289 (€257.210) PI Krist Vaesen.
+
+NWO Research on Open Science 2025 grant "Shaping Open Science Culture: Investigating and influencing its impact and change"	https://doi.org/10.61686/BTKCI65580. (€258.498) PI Joeri Tijdink
+
+NWO FAIR Research Outputs "FAIRifying Environmental Sensor Data for Exposure Assessment" (€50.000) PI Cristian Mesquida. 
+
 ## The Team
 
 Metacheck is developed by a collaborative team of researchers,
-consisting of [Lisa DeBruine](https://debruine.github.io) (developer and
-maintainer, UofG), [Daniël
-Lakens](https://sites.google.com/site/lakens2/Home) (developer, TU/e),
-[Cristian
-Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/)
-(postdoctoral researcher, TU/e), [Jakub
-Werner](https://nl.linkedin.com/in/jakubwerner) (RA, TUE), [Lavinia
-Ion](https://nl.linkedin.com/in/lavinia-i-05275636b) (RA, TU/e), [Hadeel
-Khawatmy](https://nl.linkedin.com/in/hadeel-khawatmy-a720021a2) (RA,
-TU/e), Levi Baruch (RA, TU/e), Mink Veltman (RA, TU/e) [René
-Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator
-and PI of [Transparency
-Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check),
-VUE), and [Max
-Littel](https://nl.linkedin.com/in/max-littel-a0620a233/nl) (RA, VUE).
+consisting of [Lisa DeBruine](https://debruine.github.io) (developer and maintainer, UofG), [Daniël Lakens](https://sites.google.com/site/lakens2/Home) (developer, TU/e), [Cristian Mesquida](https://ssreplicationcentre.com/author/cristian-mesquida/)
+(postdoctoral researcher, TU/e), [Jakub Werner](https://nl.linkedin.com/in/jakubwerner) (developer, TU/e), [René Bekkers](https://research.vu.nl/en/persons/rene-bekkers) (collaborator
+and PI of [Transparency Check](https://tdcc.nl/tdcc-ssh-challenge-projects/research-transparency-check),
+VUE), and [Max Littel](https://nl.linkedin.com/in/max-littel-a0620a233/nl) (RA, VUE).
 
 Metacheck was initially developed by Lisa and Daniël in 2024 during
 Lisa’s visiting professorship at the Eindhoven Artificial Intelligence
 Systems Institute
 ([EAISI](https://www.tue.nl/en/research/institutes/eindhoven-artificial-intelligence-systems-institute)).
 
-<div class="people" layout-ncol="5">
+<div class="people people-3">
 
 <figure>
 <img src="https://scienceverse.github.io/images/people/debruine.jpg"
@@ -129,6 +124,32 @@ alt="Jakub Werner" />
 </figure>
 
 <figure>
+<img src="https://scienceverse.github.io/images/people/bekkers.jpg"
+alt="René Bekkers" />
+<figcaption aria-hidden="true">René Bekkers</figcaption>
+</figure>
+
+<figure>
+<img src="https://scienceverse.github.io/images/people/littel.jpg"
+alt="Max Littel" />
+<figcaption aria-hidden="true">Max Littel</figcaption>
+</figure>
+
+</div>
+
+The following people contributed to Metacheck in research projects or internships. 
+
+[Lavinia
+Ion](https://nl.linkedin.com/in/lavinia-i-05275636b) (RA, TU/e), 
+[Hadeel
+Khawatmy](https://nl.linkedin.com/in/hadeel-khawatmy-a720021a2) (RA,
+TU/e), 
+[Levi Baruch](https://www.linkedin.com/in/levi-baruch/) (RA, TU/e), 
+[Mink Veltman](https://www.linkedin.com/in/mink-veltman-74048b20a/) (RA, TU/e) 
+
+<div class="people">
+
+<figure>
 <img src="https://scienceverse.github.io/images/people/ion.jpg"
 alt="Lavinia Ion" />
 <figcaption aria-hidden="true">Lavinia Ion</figcaption>
@@ -147,21 +168,10 @@ alt="Levi Baruch" />
 </figure>
 
 <figure>
-<img src="https://scienceverse.github.io/images/people/mink.jpg"
+<img src="images/people/mink.jpg"
 alt="Mink Veltman" />
 <figcaption aria-hidden="true">Mink Veltman</figcaption>
 </figure>
 
-<figure>
-<img src="https://scienceverse.github.io/images/people/bekkers.jpg"
-alt="René Bekkers" />
-<figcaption aria-hidden="true">René Bekkers</figcaption>
-</figure>
-
-<figure>
-<img src="https://scienceverse.github.io/images/people/littel.jpg"
-alt="Max Littel" />
-<figcaption aria-hidden="true">Max Littel</figcaption>
-</figure>
-
 </div>
+

@@ -1,14 +1,38 @@
 $primary: #327118;
 
-.people figure {
-  width: 18%;
-  padding: 0;
-  margin: 1% 1% 0 1%;
-  float: left;
+// Team photos: a grid of small square photos with the name below each.
+// pkgdown writes each <figure> as <div class="float"> with a
+// <div class="figcaption">, so the rules cover both forms.
+.people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 110px);
+  gap: 1rem;
+  margin: 1rem 0 2rem 0;
 }
 
-.people figure figcaption {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+// The core team: three photos per row.
+.people.people-3 {
+  grid-template-columns: repeat(3, 110px);
+}
+
+.people > figure,
+.people > .float {
+  margin: 0;
+  padding: 0;
+}
+
+.people img {
+  display: block;
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.people figcaption,
+.people .figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  text-align: center;
 }
