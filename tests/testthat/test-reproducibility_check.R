@@ -1709,11 +1709,15 @@ test_that("repro_install_deps_docker installs recorded versions in a real contai
   expect_equal(out$installed, c(TRUE, TRUE))
   expect_equal(out$version_installed[1], "2.4.0")
 
+  # R6 is on CRAN, so after the failed install from GitHub it is installed from
+  # there, and the note says so (#598); that it loaded through callr does not
+  # count is tested without Docker, where CRAN can be left out
   out <- suppressMessages(repro_install_deps_docker(
     deps[2:3, ], withr::local_tempdir(),
     image = "ghcr.io/scienceverse/metacheck_r_large:latest", timeout = 300))
-  expect_equal(out$installed, c(TRUE, FALSE))
-  expect_match(out$message[2], "did not put the package in the library", fixed = TRUE)
+  expect_equal(out$installed, c(TRUE, TRUE))
+  expect_match(out$version_note[2], "installed from CRAN: the install from r-lib/R6@0000000000000000000000000000000000000000 failed",
+               fixed = TRUE)
 })
 
 # repro_install_deps_docker() -- generated install.R script (issue #418) ----
