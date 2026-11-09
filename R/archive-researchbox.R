@@ -579,38 +579,49 @@ rbox_info <- function(rb_url, id_col = 1, pb = NULL, cache = FALSE) {
   obj
 }
 
-# A box's licence (SPDX identifier, "CC-BY-4.0"), for repo_check, which gets
-# the files from the download: one box_meta request, where rbox_info() would
-# also ask for the file list. Without a key, or when the API fails, the web
-# page is read. NA when neither gives it. With `cache`, a licence from an
-# earlier rbox_info() or .rbox_license() is reused.
-.rbox_license <- function(rb_url, cache = FALSE) {
+# A box's licence (SPDX identifier, "CC-BY-4.0") and status ("public" or
+# "private", checked 2026-11-09), for repo_check, which gets the files from the
+# download: one box_meta request, where rbox_info() would also ask for the file
+# list. Without a key, or when the API fails, the web page is read for the
+# licence; the page does not give the status. NA when neither gives it. With
+# `cache`, a licence from an earlier rbox_info() or .rbox_box_meta() is reused,
+# with the status saved with it (NA when none was).
+.rbox_box_meta <- function(rb_url, cache = FALSE) {
+  out <- data.frame(RB_license = NA_character_, RB_status = NA_character_)
   rb_id <- .rbox_id(rb_url)
-  if (is.na(rb_id)) return(NA_character_)
+  if (is.na(rb_id)) return(out)
   if (isTRUE(cache)) {
     for (host in c("researchbox", "researchbox_license")) {
       cached <- .repo_info_cache_get(host, rb_id)
       if (is.data.frame(cached) && !is.na(cached$RB_license[1] %||% NA)) {
-        return(cached$RB_license[[1]])
+        out$RB_license <- cached$RB_license[[1]]
+        out$RB_status <- cached$RB_status[1] %||% NA_character_
+        return(out)
       }
     }
   }
 
-  license <- NA_character_
   if (.rbox_use_api(rb_url)) {
     meta <- .rbox_api("box_meta", box_id = rb_id, code = .rbox_code(rb_url))
-    if (meta$ok && is.character(meta$body$license_id) && nzchar(meta$body$license_id)) {
-      license <- meta$body$license_id
+    if (meta$ok) {
+      field <- \(x) if (is.character(x) && length(x) == 1 && nzchar(x)) x else NA_character_
+      out$RB_license <- field(meta$body$license_id)
+      out$RB_status <- field(meta$body$status)
     }
   }
-  if (is.na(license)) {
+  if (is.na(out$RB_license)) {
     page <- tryCatch(suppressWarnings(.rbox_info_page(rb_url)), error = \(e) NULL)
-    if (is.data.frame(page) && !"error" %in% names(page)) license <- page$RB_license
+    if (is.data.frame(page) && !"error" %in% names(page)) out$RB_license <- page$RB_license
   }
-  if (isTRUE(cache) && !is.na(license)) {
-    .repo_info_cache_put("researchbox_license", rb_id, data.frame(RB_license = license))
+  if (isTRUE(cache) && !is.na(out$RB_license)) {
+    .repo_info_cache_put("researchbox_license", rb_id, out)
   }
-  license
+  out
+}
+
+# A box's licence only (see .rbox_box_meta())
+.rbox_license <- function(rb_url, cache = FALSE) {
+  .rbox_box_meta(rb_url, cache = cache)$RB_license
 }
 
 # HTML markup to plain text (NA stays NA)
