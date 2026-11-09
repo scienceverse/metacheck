@@ -57,7 +57,10 @@ module_run <- function(paper, module, ...) {
       warn.conflicts = FALSE,
       character.only = TRUE
     )) {
-      stop("The '", pkg, "' package is required but not installed.")
+      # installed but not loadable is told apart from not installed (#620)
+      problem <- .pkg_problem(pkg)
+      if (is.na(problem)) problem <- sprintf("the R package '%s' loads but could not be attached", pkg)
+      stop("The module '", module, "' cannot run: ", problem, ".", call. = FALSE)
     }
   }
 
@@ -71,9 +74,11 @@ module_run <- function(paper, module, ...) {
         include.only = arg
       ) ||
         !exists(arg)) {
+        problem <- .pkg_problem(pkg[[1]])
         stop(
-          "The function '", pkg[[1]], "::", arg,
-          "' is required but not installed."
+          "The function '", pkg[[1]], "::", arg, "' is required, but ",
+          if (is.na(problem)) "the package does not have it" else problem, ".",
+          call. = FALSE
         )
       }
     }

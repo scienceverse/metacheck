@@ -530,3 +530,25 @@ path_sanitize <- function(path, replacement = "_",
   }
   new_path
 }
+
+# Why an R package cannot be used on this computer, or NA when it loads. A
+# package can be installed and still not load: a copy of stringi built for
+# Ubuntu 22.04 needs libicui18n.so.70, which Ubuntu 24.04 does not have, so
+# every call to it failed while installed.packages() listed it (#620).
+# require() and requireNamespace() return FALSE in both cases, which made
+# "is not installed" the message for both.
+.pkg_problem <- function(pkg) {
+  err <- tryCatch({ loadNamespace(pkg); NULL },
+                  error = function(e) conditionMessage(e))
+  if (is.null(err)) return(NA_character_)
+  where <- find.package(pkg, quiet = TRUE)
+  if (!length(where)) return(sprintf("the R package '%s' is not installed", pkg))
+  err <- trimws(gsub("\\s+", " ", err))
+  if (nchar(err) > 300) err <- paste0(substr(err, 1, 299), intToUtf8(8230L))   # an ellipsis
+  # a compiled part that does not load: built for another system
+  hint <- if (grepl("shared object|dyn\\.load|DLL", err))
+    "; it was probably built for another version of the operating system, and installing it again from source may fix this"
+  else "; installing it again may fix this"
+  sprintf("the R package '%s' is installed (in %s) but cannot be loaded on this computer: %s%s",
+          pkg, dirname(where[[1]]), err, hint)
+}

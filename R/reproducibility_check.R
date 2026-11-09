@@ -2628,12 +2628,27 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 # The report's section on files that are not run on their own; NULL when none.
 # `why` gives, for a file that is not part of the analysis, the sentence of
 # .repro_software_kind() (NA for a package's tests and setup.py).
-.repro_not_run_report <- function(file_names, kinds, used_by = NULL, why = NULL) {
+.repro_not_run_report <- function(file_names, kinds, used_by = NULL, why = NULL, read_msg = NULL) {
   fn <- kinds %in% "defines_functions"
   ts <- kinds %in% "not_analysis"
-  if (!any(fn) && !any(ts)) return(NULL)
+  nr <- kinds %in% "not_read"   # #620
+  em <- kinds %in% "empty"
+  if (!any(fn) && !any(ts) && !any(nr) && !any(em)) return(NULL)
   used <- if (is.null(used_by)) rep(NA_character_, length(kinds)) else used_by
   c("#### Files not run on their own",
+    if (any(nr)) sprintf(
+      paste0("%d file%s could not be read, so %s not run and %s to be checked again: ",
+             "this may be a problem of the computer that ran the check, not of the %s."),
+      sum(nr), plural(sum(nr)), plural(sum(nr), "it was", "they were"),
+      plural(sum(nr), "needs", "need"), plural(sum(nr), "file", "files")),
+    if (any(nr)) scroll_table(data.frame(
+      File = file_names[nr],
+      Why = if (is.null(read_msg)) "" else read_msg[nr],
+      check.names = FALSE), maxrows = 10),
+    if (any(em)) sprintf(
+      "%d file%s %s empty, so there is nothing to run, and %s not counted as %s: %s.",
+      sum(em), plural(sum(em)), plural(sum(em), "is", "are"), plural(sum(em), "it is", "they are"),
+      plural(sum(em), "a script", "scripts"), paste(file_names[em], collapse = ", ")),
     if (any(fn)) sprintf(
       paste0("%d file%s only define%s functions, so running %s on %s own says nothing: a ",
              "function counts when a script uses it. These files are not counted as scripts. ",
@@ -3947,7 +3962,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   vapply(seq_len(n), function(i) {
     o <- outcome[[i]]
     if (is.na(o) || o %in% c("ran_ok", "run_by_source", "run_by_import", "jags_model", "not_r_content",
-                             "defines_functions", "not_analysis")) return(NA_character_)
+                             "defines_functions", "not_analysis", "empty")) return(NA_character_)
     e <- if (!is.na(error[[i]]) && nzchar(trimws(error[[i]]))) error[[i]] else stderr[[i]]
     if (is.na(e) || !nzchar(trimws(e))) return(NA_character_)
     # the time limit: error is the limit's own sentence ("timed out after 3600s")
@@ -4053,8 +4068,9 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 # Per-paper counts for summary_table (#568, item 24): the scripts with a result
 # of their own, the files of software that were not run (not analyses, counted
 # apart), and for each reason how many scripts did not run through for it. A
-# sourced or imported file, a model or function file and a Docker failure on our
-# side are not scripts with a result of their own, nor is a script that stopped on
+# sourced or imported file, a model or function file, an empty file, and a Docker
+# failure or a file not read on our side are not scripts with a result of their
+# own, nor is a script that stopped on
 # a file we did not download (counted apart as well). NA when nothing was run.
 .repro_run_counts <- function(run_results) {
   cols <- c("repro_scripts_n", "repro_not_analysis_n", "repro_not_downloaded_n",
@@ -4066,7 +4082,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
     .repro_failure_reason(outcome, paste(run_results$error, run_results$stderr))
   counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
                              "defines_functions", "not_analysis", "docker_failed",
-                             "not_downloaded") &
+                             "not_downloaded", "not_read", "empty") &
     !is.na(outcome)
   fails <- vapply(.repro_reason_levels, function(r) sum(counted & reason %in% r), integer(1))
   as.data.frame(as.list(stats::setNames(
@@ -4081,7 +4097,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
 .repro_by_repository <- function(table) {
   if (is.null(table) || !nrow(table) || !all(c("repo_name", "outcome") %in% names(table))) return(NULL)
   counted <- !table$outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
-                                   "defines_functions", "not_analysis", "not_downloaded") &
+                                   "defines_functions", "not_analysis", "not_downloaded", "empty") &
     !is.na(table$outcome)
   repos <- table$repo_name[counted]
   if (length(unique(repos[!is.na(repos)])) < 2) return(NULL)
@@ -4982,6 +4998,31 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                      "HTTP error|HTTP status|404|403|Failed to connect"), msgs, value = TRUE, ignore.case = TRUE)
   if (!length(hit)) return(NULL)
   paste0("could not download ", ref, ": ", substr(gsub("[[:space:]]+", " ", hit[[1]]), 1, 200))
+}
+
+# The R packages metacheck reads a script with: code_read() (readr, stringi and
+# curl), code_extract_r() (knitr) and code_extract_py() (jsonlite).
+.repro_read_packages <- c("readr", "stringi", "curl", "knitr", "jsonlite")
+
+# For each script that could not be read, why, for its row in the table and the
+# report; NA where the read worked (#620). The read's error, and, when one of
+# the packages that read scripts cannot be used on this computer, that: the
+# script may then be fine and run on another computer.
+.repro_read_failed_msg <- function(errors, max_chars = 300) {
+  out <- rep(NA_character_, length(errors))
+  bad <- !is.na(errors)
+  if (!any(bad)) return(out)
+  problems <- stats::na.omit(vapply(.repro_read_packages, .pkg_problem, character(1)))
+  out[bad] <- vapply(errors[bad], function(e) {
+    e <- trimws(gsub("\\s+", " ", e))
+    if (nchar(e) > max_chars) e <- paste0(substr(e, 1, max_chars - 1), intToUtf8(8230L))   # an ellipsis
+    paste0("metacheck could not read the file: ", e,
+           if (length(problems)) paste0(
+             ". The cause is probably the computer that ran the check, not the file: ",
+             paste(problems, collapse = "; "), ". The script may run on another computer"),
+           ".")
+  }, character(1), USE.NAMES = FALSE)
+  out
 }
 
 # The version of a package in the given libraries, NA when it is not in them.

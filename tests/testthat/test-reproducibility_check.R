@@ -1709,11 +1709,15 @@ test_that("repro_install_deps_docker installs recorded versions in a real contai
   expect_equal(out$installed, c(TRUE, TRUE))
   expect_equal(out$version_installed[1], "2.4.0")
 
+  # R6 is on CRAN, so after the failed install from GitHub it is installed from
+  # there, and the note says so (#598); that it loaded through callr does not
+  # count is tested without Docker, where CRAN can be left out
   out <- suppressMessages(repro_install_deps_docker(
     deps[2:3, ], withr::local_tempdir(),
     image = "ghcr.io/scienceverse/metacheck_r_large:latest", timeout = 300))
-  expect_equal(out$installed, c(TRUE, FALSE))
-  expect_match(out$message[2], "did not put the package in the library", fixed = TRUE)
+  expect_equal(out$installed, c(TRUE, TRUE))
+  expect_match(out$version_note[2], "installed from CRAN: the install from r-lib/R6@0000000000000000000000000000000000000000 failed",
+               fixed = TRUE)
 })
 
 # repro_install_deps_docker() -- generated install.R script (issue #418) ----
@@ -4314,4 +4318,31 @@ test_that("a script that ran out of memory says so, also when a compiler did (#5
   expect_match(out, "1 ran out of memory", fixed = TRUE)
   expect_match(out, "It needed more than the 4 GB of memory it could use here.", fixed = TRUE)
   expect_match(out, "**A script needs more memory than our limit of 4 GB.**", fixed = TRUE)
+})
+
+test_that(".repro_read_failed_msg says why a script was not read, and names a package that cannot load (#620)", {
+  expect_equal(.repro_read_failed_msg(c(NA_character_, NA_character_)), c(NA_character_, NA_character_))
+  local_mocked_bindings(.pkg_problem = function(pkg) NA_character_)
+  msg <- .repro_read_failed_msg(c(NA, "cannot open URL 'https://x.org/a.R': HTTP status was 404"))
+  expect_true(is.na(msg[[1]]))
+  expect_equal(msg[[2]], "metacheck could not read the file: cannot open URL 'https://x.org/a.R': HTTP status was 404.")
+  local_mocked_bindings(.pkg_problem = function(pkg)
+    if (pkg == "stringi") "the R package 'stringi' is installed (in /lib) but cannot be loaded on this computer: x" else NA_character_)
+  msg <- .repro_read_failed_msg("stringi package required for encoding operations")
+  expect_match(msg, "The cause is probably the computer that ran the check, not the file: the R package 'stringi' is installed", fixed = TRUE)
+  expect_match(msg, "The script may run on another computer.", fixed = TRUE)
+  # the error is shortened to 300 characters
+  long <- .repro_read_failed_msg(strrep("a", 1000))
+  expect_match(long, paste0(strrep("a", 299), intToUtf8(8230L)), fixed = TRUE)
+  expect_false(grepl(strrep("a", 300), long, fixed = TRUE))
+})
+
+test_that(".repro_not_run_report lists files not read and empty files (#620)", {
+  rep <- .repro_not_run_report(c("a.R", "b.R", "c.R"), c("not_read", "empty", NA),
+                               read_msg = c("metacheck could not read the file: x.", NA, NA))
+  txt <- paste(rep, collapse = "\n")
+  expect_match(txt, "1 file could not be read, so it was not run and needs to be checked again", fixed = TRUE)
+  expect_match(txt, "metacheck could not read the file: x.", fixed = TRUE)
+  expect_match(txt, "1 file is empty, so there is nothing to run, and it is not counted as a script: b.R.", fixed = TRUE)
+  expect_null(.repro_not_run_report("a.R", NA_character_))
 })

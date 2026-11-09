@@ -51,6 +51,21 @@ test_that("code_read", {
                "HTTP status was 404", fixed = TRUE)
 })
 
+test_that("code_read reads UTF-8 without readr's guess, which needs stringi (#620)", {
+  # the guess fails, as it did with a stringi that is installed but cannot load
+  local_mocked_bindings(
+    guess_encoding = function(...) stop("stringi package required for encoding operations"),
+    .package = "readr")
+  # ASCII and UTF-8 are read as before
+  expect_equal(code_read(test_path("fixtures", "code_files", "analysis.R"))[[1]], "# Analysis script")
+  utf8_path <- withr::local_tempfile()
+  writeBin(charToRaw(enc2utf8(paste0("# M", intToUtf8(252), "ller\nx <- 1\n"))), utf8_path)
+  expect_equal(code_read(utf8_path), c(paste0("# M", intToUtf8(252), "ller"), "x <- 1"))
+  # bytes that are not UTF-8 fall back to Latin-1 instead of failing
+  expect_equal(code_read(test_path("fixtures", "code_files", "stata_latin1.do"))[[2]],
+               paste0("* Author: M", intToUtf8(252), "ller"))
+})
+
 
 test_that("code_lang", {
   expect_true(is.function(metacheck::code_lang))

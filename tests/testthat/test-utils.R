@@ -245,3 +245,44 @@ test_that(".zip_member_target makes a member's name portable and still refuses l
   expect_equal(.zip_member_target("File S5/ Almont*1.jpg", "dest"), "dest/File S5/ Almont_1.jpg")
   expect_true(is.na(.zip_member_target("../x.csv", "dest")))
 })
+
+test_that(".pkg_problem tells a package that is not installed from one that cannot be loaded (#620)", {
+  expect_true(is.na(.pkg_problem("stats")))
+  expect_equal(.pkg_problem("notapkgzzz"), "the R package 'notapkgzzz' is not installed")
+
+  # a package that is installed but stops while loading
+  skip_if_quick()
+  src <- file.path(withr::local_tempdir(), "brokenpkgzzz")
+  dir.create(file.path(src, "R"), recursive = TRUE)
+  writeLines(c("Package: brokenpkgzzz", "Version: 0.0.1", "Title: Test", "Description: Test.",
+               "License: MIT", "Encoding: UTF-8"), file.path(src, "DESCRIPTION"))
+  writeLines("", file.path(src, "NAMESPACE"))
+  writeLines(".onLoad <- function(libname, pkgname) stop(\"unable to load shared object 'brokenpkgzzz.so'\")",
+             file.path(src, "R", "zzz.R"))
+  lib <- withr::local_tempdir()
+  # without the test load, which removes a package that does not load
+  suppressMessages(utils::install.packages(src, lib = lib, repos = NULL, type = "source", quiet = TRUE,
+                                           INSTALL_opts = "--no-test-load"))
+  withr::local_libpaths(lib, action = "prefix")
+  problem <- .pkg_problem("brokenpkgzzz")
+  expect_match(problem, "the R package 'brokenpkgzzz' is installed (in ", fixed = TRUE)
+  expect_match(problem, "but cannot be loaded on this computer", fixed = TRUE)
+  expect_match(problem, "unable to load shared object", fixed = TRUE)
+  expect_match(problem, "built for another version of the operating system", fixed = TRUE)
+
+  # module_run() says so too, instead of "not installed"
+  mod <- file.path(withr::local_tempdir(), "needs_broken.R")
+  writeLines(c("#' Needs a broken package", "#'", "#' @description", "#' Test.", "#'",
+               "#' @import brokenpkgzzz", "#'", "#' @param paper a paper",
+               "#' @returns a list", "needs_broken <- function(paper) list(traffic_light = \"na\")"), mod)
+  expect_error(module_run(test_paper(), mod), "is installed (in ", fixed = TRUE)
+})
+
+test_that("module_run says when a package a module needs is not installed (#620)", {
+  mod <- file.path(withr::local_tempdir(), "needs_missing.R")
+  writeLines(c("#' Needs a missing package", "#'", "#' @description", "#' Test.", "#'",
+               "#' @import notapkgzzz", "#'", "#' @param paper a paper",
+               "#' @returns a list", "needs_missing <- function(paper) list(traffic_light = \"na\")"), mod)
+  expect_error(module_run(test_paper(), mod),
+               "cannot run: the R package 'notapkgzzz' is not installed.", fixed = TRUE)
+})
