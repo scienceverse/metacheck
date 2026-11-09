@@ -42,14 +42,11 @@ template:
 
 navbar:
   structure:
-    left: [home, manual, external, reference, news]
+    left: [home, manual, reference, news]
   components:
     manual:
       text: Metacheck Manual
       href: https://www.scienceverse.org/metacheck_book/
-    external:
-      text: Example Report
-      href: report-example.html
 
 reference:
 - title: Reading in Papers
@@ -98,6 +95,8 @@ reference:
   - '`report_module_run`'
   - '`report_qmd`'
   - '`FAIR_repo`'
+  - '`report_type`'
+  - '`report_repository`'
 - title: Module Helpers
   desc: These functions help module writers make consistently formatted report text.
   contents:
@@ -124,6 +123,12 @@ reference:
   - '`code_parse_r`'
   - '`code_read`'
   - '`code_remove_comments`'
+  - '`code_extract_py`'
+  - '`code_extract_qmd_py`'
+  - '`code_install_packages`'
+  - '`code_library_names`'
+  - '`code_packages`'
+  - '`code_setwd`'
 - title: LLM Functions
   desc: ~
   contents:
@@ -133,6 +138,11 @@ reference:
   - '`llm_model_list`'
   - '`llm_use`'
   - '`json_expand`'
+  - '`llm_cache`'
+  - '`llm_cache_clear`'
+  - '`llm_max_tokens`'
+  - '`llm_reasoning`'
+  - '`llm_timeout`'
 - title: References/Citations
   desc: ~
   contents:
@@ -165,6 +175,8 @@ reference:
   - '`osf_get_all_pages`'
   - '`osf_preprint_list`'
   - '`osf_type`'
+  - '`osf_app`'
+  - '`osf_user_projects`'
 - title: GitHub Functions
   desc: ~
   contents:
@@ -210,6 +222,22 @@ reference:
   - '`researchdata4tu_pat`'
   - '`ldbase_links`'
   - '`ldbase_info`'
+  - '`dataone_links`'
+  - '`dataone_info`'
+  - '`dspace_links`'
+  - '`dspace7_links`'
+  - '`dspace7_file_download`'
+  - '`fsd_links`'
+  - '`fsd_info`'
+  - '`mendeley_links`'
+  - '`mendeley_info`'
+  - '`psycharchives_links`'
+  - '`psycharchives_info`'
+  - '`psycharchives_file_download`'
+  - '`gitlab_links`'
+  - '`gitlab_repo`'
+  - '`dryad_auth`'
+  - '`zenodo_upload`'
 - title: API Keys
   desc: ~
   contents:
@@ -219,6 +247,7 @@ reference:
   - '`osf_pat`'
   - '`gitlab_pat`'
   - '`openalex_key`'
+  - '`zenodo_pat`'
 - title: Integrations
   desc: ~
   contents:
@@ -226,6 +255,10 @@ reference:
   - '`filetype`'
   - '`file_category`'
   - '`causal_relations`'
+  - '`regcheck_compare`'
+  - '`regcheck_setup_local`'
+  - '`regcheck_start_local`'
+  - '`regcheck_stop_local`'
 - title: Validation Functions
   desc: ~
   contents:
@@ -240,6 +273,76 @@ reference:
   - '`path_sanitize`'
   - '`stats`'
   - '`emojis`'
+  - '`pb`'
+  - '`verbose`'
+- title: Reproducibility Check
+  desc: ~
+  contents:
+  - '`repro_dependencies`'
+  - '`repro_dependencies_py`'
+  - '`repro_defined_vars`'
+  - '`repro_file_io`'
+  - '`repro_missing_inputs`'
+  - '`repro_run_order`'
+  - '`repro_rewrite_paths`'
+  - '`repro_materialize_layout`'
+  - '`repro_write_scripts`'
+  - '`repro_docker_available`'
+  - '`repro_install_deps`'
+  - '`repro_install_deps_docker`'
+  - '`repro_install_deps_py`'
+  - '`repro_install_deps_py_docker`'
+  - '`repro_run_scripts`'
+  - '`repro_run_scripts_docker`'
+  - '`repro_run_scripts_py`'
+  - '`repro_run_scripts_py_docker`'
+- title: Data Check Helpers
+  desc: ~
+  contents:
+  - '`data_check_case_issues`'
+  - '`data_check_colname`'
+  - '`data_check_constant`'
+  - '`data_check_demographic`'
+  - '`data_check_empty`'
+  - '`data_check_numeric_in_text`'
+  - '`data_check_scale_values`'
+  - '`data_check_spss_filter`'
+  - '`data_classify_files`'
+  - '`data_col_facets`'
+  - '`data_format`'
+  - '`manifest_merge`'
+- title: Statistical Output
+  desc: ~
+  contents:
+  - '`import_jasp`'
+  - '`import_mplus_output`'
+  - '`import_omv`'
+  - '`import_spv`'
+  - '`import_stata_smcl`'
+  - '`export_jasp_html`'
+  - '`export_mplus_html`'
+  - '`export_omv_html`'
+  - '`export_spv_html`'
+  - '`export_stata_smcl_html`'
+  - '`read_stat_tables`'
+  - '`read_r_output`'
+  - '`extract_tests`'
+  - '`match_reported_output`'
+  - '`stat_output_json`'
+  - '`stat_output_validate`'
+  - '`stat_output_write`'
+  - '`stat_results_long`'
+  - '`stato_type_column`'
+- title: Caches
+  desc: ~
+  contents:
+  - '`metacheck_cache_info`'
+  - '`osf_cache_clear`'
+  - '`repo_cache_dir`'
+  - '`repo_cache_size`'
+  - '`repo_cache_clear`'
+  - '`repo_info_cache_clear`'
+  - '`zip_peek_cache_clear`'
 - title: "Internal functions"
   desc: "Functions for developers"
   contents:
