@@ -1,27 +1,26 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Builds the package website with pkgdown and publishes it to GitHub Pages
+# (https://www.scienceverse.org/metacheck/) after every push to main.
+# Derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
-  # push:
-  #   branches: [main, master]
-  # pull_request:
-  #   branches: [main, master]
-  # release:
-  #   types: [published]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 name: pkgdown
 
+# Only one publication at a time; a newer run waits for the running one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  pkgdown:
+  build:
     runs-on: ubuntu-latest
-    # Only restrict concurrency for non-PR jobs
-    concurrency:
-      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v5
 
@@ -40,10 +39,21 @@ jobs:
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
-      - name: Deploy to GitHub pages 🚀
-        if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.7.3
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
         with:
-          clean: false
-          branch: gh-pages
-          folder: docs
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
