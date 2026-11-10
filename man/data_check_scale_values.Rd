@@ -79,3 +79,6 @@ This unifies the former \code{data_check_out_of_range} and
 # a 7-point scale with two values outside it
 data_check_scale_values(c(rep(1:7, 7), 99, 33))$message
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

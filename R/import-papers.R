@@ -4,7 +4,8 @@
 #' returns a table of available paper corpora that can be loaded with
 #' [papers_load()].
 #'
-#' @param repo GitHub repository in "owner/repo" format
+#' @param repo GitHub repository in "owner/repo" format; a private
+#'   repository needs a GitHub token with access to it (see [github_pat()])
 #'
 #' @returns a data frame with columns `name`, `tag`, `size_mb`, and `cached`
 #' @export
@@ -41,9 +42,14 @@ papers_available <- function(repo = "scienceverse/papers") {
 #' the cached copy rather than re-downloading. Use [papers_remove()] to
 #' delete a cached corpus.
 #'
+#' A corpus in a private repository (such as `scienceverse/papers_private`)
+#' is read with the GitHub token [github_pat()] returns, which needs access
+#' to that repository.
+#'
 #' @param name name of the corpus, without the `.rds` extension
 #'   (see [papers_available()])
-#' @param repo GitHub repository in "owner/repo" format
+#' @param repo GitHub repository in "owner/repo" format; a private
+#'   repository needs a GitHub token with access to it (see [github_pat()])
 #' @param cache whether to save the corpus to the user data directory for
 #'   reuse across sessions, instead of downloading it fresh each time
 #' @param overwrite whether to re-download if already cached (only relevant
@@ -88,8 +94,18 @@ papers_load <- function(name,
   tmp <- tempfile(fileext = ".rds")
   on.exit(unlink(tmp), add = TRUE)
 
-  req <- .mc_request(entry$download_url[[1]]) |>
-    httr2::req_error(is_error = \(r) FALSE)
+  # a private repository's file can only be downloaded through the API, with
+  # the token (#369); GitHub then sends the request on to where the file is
+  # stored, and the token is not sent there
+  token <- .key_use("github", check = .github_key_check)
+  if (nzchar(token) && !is.na(entry$api_url[[1]])) {
+    req <- .mc_request(entry$api_url[[1]]) |>
+      .github_config() |>
+      httr2::req_headers(Accept = "application/octet-stream")
+  } else {
+    req <- .mc_request(entry$download_url[[1]])
+  }
+  req <- httr2::req_error(req, is_error = \(r) FALSE)
   if (verbose()) req <- httr2::req_progress(req, type = "down")
 
   resp <- tryCatch(
@@ -151,7 +167,8 @@ papers_remove <- function(name) {
 #' narrative description, including known gaps and data-quality caveats.
 #'
 #' @param name name of the corpus (see [papers_available()])
-#' @param repo GitHub repository in "owner/repo" format
+#' @param repo GitHub repository in "owner/repo" format; a private
+#'   repository needs a GitHub token with access to it (see [github_pat()])
 #'
 #' @returns a named list of the corpus's Dublin Core metadata fields (colons
 #'   in the original `dc:field` names are replaced with underscores, e.g.
@@ -174,6 +191,7 @@ papers_metadata <- function(name, repo = "scienceverse/papers") {
 
   resp <- tryCatch(
     .mc_request(url) |>
+      .github_config() |>
       httr2::req_error(is_error = \(r) FALSE) |>
       httr2::req_perform(),
     error = \(e) stop("Could not reach GitHub: ", e$message, call. = FALSE)
@@ -214,14 +232,16 @@ papers_metadata <- function(name, repo = "scienceverse/papers") {
 #' most recently published release for that corpus family is kept. Returns
 #' one row per .rds asset.
 #'
-#' @returns a data frame with columns `name`, `tag`, `size` and
-#'   `download_url`, one row per .rds asset (no rows when there is none)
+#' @returns a data frame with columns `name`, `tag`, `size`, `download_url`
+#'   and `api_url` (the address a private repository's file is downloaded
+#'   from, with a token), one row per .rds asset (no rows when there is none)
 #' @keywords internal
 .papers_release_assets <- function(repo = "scienceverse/papers") {
   url <- sprintf("https://api.github.com/repos/%s/releases", repo)
 
   resp <- tryCatch(
     .mc_request(url) |>
+      .github_config() |>
       httr2::req_headers(Accept = "application/vnd.github+json") |>
       httr2::req_error(is_error = \(r) FALSE) |>
       httr2::req_perform(),
@@ -229,15 +249,21 @@ papers_metadata <- function(name, repo = "scienceverse/papers") {
   )
 
   if (httr2::resp_status(resp) != 200) {
+    # GitHub answers 404 for a private repository it is not shown
+    hint <- if (httr2::resp_status(resp) == 404) {
+      paste0(" If the repository is private, set a GitHub token with access ",
+             "to it (see ?github_pat).")
+    } else ""
     stop("GitHub API error (status ", httr2::resp_status(resp), "): ", url,
-         call. = FALSE)
+         hint, call. = FALSE)
   }
 
   releases <- httr2::resp_body_json(resp)
 
   if (length(releases) == 0) {
     return(data.frame(name = character(0), tag = character(0),
-                      size = integer(0), download_url = character(0)))
+                      size = integer(0), download_url = character(0),
+                      api_url = character(0)))
   }
 
   # keep only the most recently published release per corpus family
@@ -258,7 +284,8 @@ papers_metadata <- function(name, repo = "scienceverse/papers") {
       name         = sapply(rds, `[[`, "name"),
       tag          = tag,
       size         = sapply(rds, `[[`, "size"),
-      download_url = sapply(rds, `[[`, "browser_download_url")
+      download_url = sapply(rds, `[[`, "browser_download_url"),
+      api_url      = vapply(rds, \(a) a$url %||% NA_character_, character(1))
     )
   })
 
@@ -266,6 +293,7 @@ papers_metadata <- function(name, repo = "scienceverse/papers") {
   # no release with an .rds file: an empty table, as for no releases; NULL here
   # stopped papers_available() and then papers_load() (U18)
   if (is.null(out)) out <- data.frame(name = character(0), tag = character(0),
-                                      size = numeric(0), download_url = character(0))
+                                      size = numeric(0), download_url = character(0),
+                                      api_url = character(0))
   out
 }

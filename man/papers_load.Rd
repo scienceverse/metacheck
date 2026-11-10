@@ -15,7 +15,8 @@ papers_load(
 \item{name}{name of the corpus, without the \code{.rds} extension
 (see \code{\link[=papers_available]{papers_available()}})}
 
-\item{repo}{GitHub repository in "owner/repo" format}
+\item{repo}{GitHub repository in "owner/repo" format; a private
+repository needs a GitHub token with access to it (see \code{\link[=github_pat]{github_pat()}})}
 
 \item{cache}{whether to save the corpus to the user data directory for
 reuse across sessions, instead of downloading it fresh each time}
@@ -34,6 +35,11 @@ is the right choice for one-off use. Set \code{cache = TRUE} to save it
 permanently in the user data directory instead, so subsequent calls reuse
 the cached copy rather than re-downloading. Use \code{\link[=papers_remove]{papers_remove()}} to
 delete a cached corpus.
+}
+\details{
+A corpus in a private repository (such as \code{scienceverse/papers_private})
+is read with the GitHub token \code{\link[=github_pat]{github_pat()}} returns, which needs access
+to that repository.
 }
 \examples{
 \donttest{

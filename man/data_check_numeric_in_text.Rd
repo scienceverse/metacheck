@@ -28,3 +28,6 @@ indicate a reader problem rather than a data problem.
 \examples{
 data_check_numeric_in_text(c("1", "2", "3", "see note", "5"))$problem
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

@@ -12,7 +12,8 @@ A data frame with 44784+ rows and 2 columns:
 }
 }
 \source{
-\url{https://api.labs.crossref.org/data/retractionwatch}
+\url{https://api.labs.crossref.org/data/retractionwatch}, or
+\url{https://gitlab.com/crossref/retraction-watch-data}
 }
 \usage{
 retractionwatch()

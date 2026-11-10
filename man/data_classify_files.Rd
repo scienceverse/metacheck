@@ -38,3 +38,6 @@ applies format-locked extension overrides.
 \examples{
 data_classify_files(c("data.csv", "analysis.R", "README.md", "codebook.xlsx"))
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

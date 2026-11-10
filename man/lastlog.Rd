@@ -18,6 +18,7 @@ a list of the last log item, or a data frame of multiple items
 Reads entries back from the on-disk log written by \code{\link[=logger]{logger()}} (newest
 first, so \code{i = 1} is the most recent entry). Returns a single entry as a
 list, or several entries row-bound into a data frame.
+Based on an idea by Levi Baruch.
 }
 \examples{
 # set up 2 log items

@@ -7,8 +7,9 @@
 .papers_release_assets(repo = "scienceverse/papers")
 }
 \value{
-a data frame with columns \code{name}, \code{tag}, \code{size} and
-\code{download_url}, one row per .rds asset (no rows when there is none)
+a data frame with columns \code{name}, \code{tag}, \code{size}, \code{download_url}
+and \code{api_url} (the address a private repository's file is downloaded
+from, with a token), one row per .rds asset (no rows when there is none)
 }
 \description{
 Queries all releases (not just the latest) so corpora can be spread across

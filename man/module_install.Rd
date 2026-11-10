@@ -42,6 +42,13 @@ A module can state the lowest metacheck version it needs with a line
 an older metacheck. External modules should only use exported metacheck
 functions: internal functions can change without notice.
 
+A module names the R packages it needs with \verb{#' @import pkg} or
+\verb{#' @importFrom pkg fun}. A package that is not on CRAN is named with its
+GitHub repository, \verb{#' @import owner/pkg}: the package \code{pkg} is then
+loaded, and when it is not installed, \code{module_install()} and
+\code{\link[=module_run]{module_run()}} say to install it with \code{remotes::install_github("owner/pkg")}
+instead of \code{install.packages()}.
+
 Nothing is saved when a module in the repository has the same name as a
 built-in module, a module from another installed repository, or another
 module in the same repository.

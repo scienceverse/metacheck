@@ -50,8 +50,10 @@ module_run <- function(paper, module, ...) {
     summary_table <- data.frame(paper_id = paper$paper_id)
   }
 
-  # load required libraries
-  for (pkg in info[["import"]]) {
+  # load required libraries: one @import line can name several packages, and
+  # a package only on GitHub is named "owner/pkg" (#223)
+  for (imp in unlist(info[["import"]])) {
+    pkg <- .pkg_name(imp)
     if (!require(pkg,
       quietly = TRUE,
       warn.conflicts = FALSE,
@@ -60,24 +62,27 @@ module_run <- function(paper, module, ...) {
       # installed but not loadable is told apart from not installed (#620)
       problem <- .pkg_problem(pkg)
       if (is.na(problem)) problem <- sprintf("the R package '%s' loads but could not be attached", pkg)
-      stop("The module '", module, "' cannot run: ", problem, ".", call. = FALSE)
+      stop("The module '", module, "' cannot run: ", problem,
+           .pkg_github_hint(imp), ".", call. = FALSE)
     }
   }
 
   # loading required functions
-  for (pkg in info[["importFrom"]]) {
-    for (arg in pkg[-1]) {
-      if (!require(pkg[[1]],
+  for (imp in info[["importFrom"]]) {
+    pkg <- .pkg_name(imp[[1]])
+    for (arg in imp[-1]) {
+      if (!require(pkg,
         quietly = TRUE,
         warn.conflicts = FALSE,
         character.only = TRUE,
         include.only = arg
       ) ||
         !exists(arg)) {
-        problem <- .pkg_problem(pkg[[1]])
+        problem <- .pkg_problem(pkg)
         stop(
-          "The function '", pkg[[1]], "::", arg, "' is required, but ",
-          if (is.na(problem)) "the package does not have it" else problem, ".",
+          "The function '", pkg, "::", arg, "' is required, but ",
+          if (is.na(problem)) "the package does not have it" else problem,
+          .pkg_github_hint(imp[[1]]), ".",
           call. = FALSE
         )
       }

@@ -9,7 +9,8 @@ papers_metadata(name, repo = "scienceverse/papers")
 \arguments{
 \item{name}{name of the corpus (see \code{\link[=papers_available]{papers_available()}})}
 
-\item{repo}{GitHub repository in "owner/repo" format}
+\item{repo}{GitHub repository in "owner/repo" format; a private
+repository needs a GitHub token with access to it (see \code{\link[=github_pat]{github_pat()}})}
 }
 \value{
 a named list of the corpus's Dublin Core metadata fields (colons

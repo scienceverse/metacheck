@@ -574,6 +574,7 @@
 #' @returns a character vector of data_check types (see `.data_check_types`);
 #'   `"unknown"` when no rule fires. See `.data_doc_role()` for the finer
 #'   readme/codebook/supplemental distinction within `"documentation"`.
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #'
 #' @examples
@@ -942,6 +943,7 @@ data_classify_files <- function(file_name, file_path = NULL) {
 #' @returns `"tabular"` or `"raw"` for each element (never `NA`; unknown
 #'   extensions fall back to `"raw"`, since an unrecognised format has no
 #'   reader).
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #'
 #' @examples
@@ -1333,6 +1335,7 @@ data_is_manifest <- function(df, repo_files, threshold = 0.8, min_exts = 2L) {
 #' @param patch a named list of top-level keys to set
 #'
 #' @returns (invisibly) the manifest path
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' path <- tempfile(fileext = ".manifest.json")
@@ -5189,6 +5192,7 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 #'   values outside a range the authors documented, never a guessed one.
 #' @returns list(problem, message, values, lower, upper, classes) where `classes`
 #'   labels each flagged value "missing", `"typo:<intended>"`, or "unexplained"
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' # a 7-point scale with two values outside it
@@ -5353,6 +5357,7 @@ data_check_outliers <- function(x, k = 1.5, n_max = 10) {
 #' @param threshold if the most common non-NA value covers at least this
 #'   fraction, the column is near-constant
 #' @returns list(problem, message, values)
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' data_check_constant(rep(1, 40))$message
@@ -5383,6 +5388,7 @@ data_check_constant <- function(x, threshold = 0.99) {
 #'
 #' @param x a vector
 #' @returns list(problem, message, values)
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' data_check_empty(c(NA, NA, NA))$message
@@ -5433,6 +5439,7 @@ data_check_design_name <- function(col) {
 #' @param col the column name
 #' @param x the column's values
 #' @returns list(problem, message, values)
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' data_check_spss_filter("filter_$", rep(1, 30))$problem
@@ -5459,6 +5466,7 @@ data_check_spss_filter <- function(col, x) {
 #'
 #' @param x a character or factor vector
 #' @returns list(problem, message, values)
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' data_check_case_issues(c("Male", "male", "Female"))$message
@@ -5519,6 +5527,7 @@ data_check_whitespace <- function(x) {
 #'   numeric for the column to be considered "mostly numeric"
 #' @param n_max max number of non-numeric values to list
 #' @returns list(problem, message, values)
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' data_check_numeric_in_text(c("1", "2", "3", "see note", "5"))$problem
@@ -5583,6 +5592,7 @@ data_check_numeric_in_text <- function(x, threshold = 0.8, n_max = 10) {
 #' @param max_chars names longer than this are flagged as excessively long;
 #'   the default is SPSS's 64-byte maximum variable-name length (see Details)
 #' @returns list(problem, message, values)
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #' @examples
 #' data_check_colname("this/is:an*illegal|name")$problem
@@ -6263,6 +6273,7 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
 #'
 #' @returns `"age"`, `"gender"`, or `"race"` when the column matches one of
 #'   them, else `NA_character_`.
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #'
 #' @examples
@@ -6545,6 +6556,7 @@ data_col_concept <- function(col_name, x) {
 #'   `role`, `unit`, `quality`, `parse_note`, plus the numeric helpers carried
 #'   over from [data_col_type()] (`numeric_values`, `n_coerced`, `is_numeric`,
 #'   `ambiguous`) so `data_check` can compute statistics and target the LLM.
+#' @author Daniel Lakens and Levi Baruch
 #' @export
 #'
 #' @examples
