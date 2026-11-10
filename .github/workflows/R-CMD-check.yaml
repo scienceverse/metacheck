@@ -14,6 +14,9 @@
 # hand. The tests are not part of the build (.Rbuildignore), so this checks
 # the package and runs its examples, including the \donttest ones; the tests
 # run in full-tests.yaml.
+# A change to only the website or text files (.github/scripts/code-changed.sh)
+# skips the package checks; the web address check always runs. A new commit on
+# the same pull request or branch stops the runs for the previous one.
 on:
   push:
     branches: [dev, cran_fixes, linux_docker_fixes]
@@ -25,8 +28,29 @@ name: R-CMD-check
 
 permissions: read-all
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  changes:
+    name: Changes that can affect the package
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.check.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: check
+        run: bash .github/scripts/code-changed.sh "$BASE" "$GITHUB_SHA" | tee -a "$GITHUB_OUTPUT"
+        shell: bash
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+
   R-CMD-check:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})${{ matrix.config.name }}
