@@ -6,6 +6,8 @@ library(dplyr)
 options(timeout=300)
 tmp <- tempfile(fileext = ".csv")
 url <- paste0("https://api.labs.crossref.org/data/retractionwatch?", email())
+# when Crossref has retired the Labs API, use its copy on GitLab (#305):
+# url <- "https://gitlab.com/crossref/retraction-watch-data/-/raw/main/retraction_watch.csv"
 download.file(url, destfile = tmp)
 
 # tmp <- "../retractions.csv"

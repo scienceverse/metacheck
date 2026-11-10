@@ -24,3 +24,6 @@ and archived with its true extension, but never parsed as a table.
 \examples{
 data_format(c("csv", "edf", "mp4", "sav"))
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

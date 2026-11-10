@@ -7,7 +7,8 @@
 papers_available(repo = "scienceverse/papers")
 }
 \arguments{
-\item{repo}{GitHub repository in "owner/repo" format}
+\item{repo}{GitHub repository in "owner/repo" format; a private
+repository needs a GitHub token with access to it (see \code{\link[=github_pat]{github_pat()}})}
 }
 \value{
 a data frame with columns \code{name}, \code{tag}, \code{size_mb}, and \code{cached}

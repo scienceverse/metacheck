@@ -12,6 +12,11 @@ the path to the data frame (invisibly)
 \description{
 metacheck comes with a built-in data frame called \code{retractionwatch}. We update it regularly, but you can use this function to download the newest version. The download is >50MB, but this function will summarise the information into a smaller version (~0.5 MB) and delete the original file.
 }
+\details{
+The data come from the Crossref Labs API. Crossref is retiring that API;
+when it cannot be reached, Crossref's copy on GitLab
+(\url{https://gitlab.com/crossref/retraction-watch-data}) is used.
+}
 \examples{
 \dontrun{
 # downloads the Retraction Watch database into tools::R_user_dir("metacheck", "data")

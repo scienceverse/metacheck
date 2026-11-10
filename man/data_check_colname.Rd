@@ -53,3 +53,6 @@ computed there, not here.)
 data_check_colname("this/is:an*illegal|name")$problem
 data_check_colname("reaction_time")$problem
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

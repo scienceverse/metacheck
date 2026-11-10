@@ -21,3 +21,6 @@ Flag a constant or near-constant column
 \examples{
 data_check_constant(rep(1, 40))$message
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

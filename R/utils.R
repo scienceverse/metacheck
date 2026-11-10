@@ -552,3 +552,14 @@ path_sanitize <- function(path, replacement = "_",
   sprintf("the R package '%s' is installed (in %s) but cannot be loaded on this computer: %s%s",
           pkg, dirname(where[[1]]), err, hint)
 }
+
+# A module names a package in its @import or @importFrom line as "pkg", or as
+# "owner/pkg" for a package only on GitHub (#223); this is the package's name
+.pkg_name <- function(x) sub("^.*/", "", x)
+
+# How to install a package named "owner/pkg" that is not installed, to add to
+# .pkg_problem()'s message; "" for any other package
+.pkg_github_hint <- function(x) {
+  if (!grepl("/", x) || nzchar(system.file(package = .pkg_name(x)))) return("")
+  sprintf("; install it from GitHub with remotes::install_github(\"%s\")", x)
+}

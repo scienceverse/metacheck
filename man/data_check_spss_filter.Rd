@@ -25,3 +25,6 @@ the selected rows and the filter must be re-applied to reproduce them.
 \examples{
 data_check_spss_filter("filter_$", rep(1, 30))$problem
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

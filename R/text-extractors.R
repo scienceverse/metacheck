@@ -26,6 +26,12 @@ extract_urls <- function(paper) {
 }
 
 
+# Eta, or the Latin letter that looks like it (U+019E), with an optional
+# squared sign: before a p, it is partial eta squared written with its
+# subscript after it ("η² p = .06"), which extract_p_values() and
+# extract_eq() do not read as a p-value (#336)
+.eta_p_prefix <- "[ηƞ]\\s*[²2₂]?\\s*"
+
 #' Extract P-Values
 #'
 #' List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
@@ -65,7 +71,13 @@ extract_p_values <- function(paper) {
   # use the multiplication sign, leave out "^" and use the Unicode minus:
   # "ps < .05" gave no row, and "p = 1.8 \u00d7 10 -6" was read as 1.8
   # (U204, U205)
+  # A p right after eta (or the Latin letter that looks like it), with or
+  # without a squared sign, is partial eta squared written with its subscript
+  # after it ("\u03b7\u00b2 p = .06", "\u019e\u00b2p = .95"), not a p-value: the
+  # pattern takes the eta into the match, and those matches are left out
+  # (#336; 2,026 sentences in 240 of 13,706 papers)
   pattern <- paste0(
+    "(?:", .eta_p_prefix, ")?",
     "\\b[pP](?:-?values?|s|['\u2019]s)?\\s*", # ways to write p (or P)
     "[", operators, "]{1,2}\\s*", # 1-2 operators
     "(n\\.?s\\.?|\\d?\\.\\d+)", # ns or valid numbers
@@ -77,6 +89,7 @@ extract_p_values <- function(paper) {
     return = "match",
     perl = TRUE, ignore.case = FALSE
   )
+  p <- p[!grepl("^[\u03b7\u019e]", p$text), , drop = FALSE]
 
   # get operator
   pattern <- paste0("[", operators, "]{1,2}")
@@ -173,6 +186,9 @@ extract_eq <- function(paper) {
   # to for the bare, unscoped case).
   # \\b: the g or d is a word of its own, else "and z = 3.1" was "d z" (U218)
   bare_subscript <- paste0("\\b[gd]\\s+(?:av|z|rm|s)(?=\\s*[", op, "])")
+  # partial eta squared with its subscript after it, "η² p = .06",
+  # is one statistic, not "p = .06" (#336)
+  bare_subscript <- paste0(bare_subscript, "|", .eta_p_prefix, "[pP](?=\\s*[", op, "])")
   pattern <- paste0(
     "(?:(Hedge.{0,3}|Cronbach.{0,2}|Cohen.{0,2}|\\d{1,2}%)\\s+)?", # common prefix
     "(?:", bare_subscript, "|",

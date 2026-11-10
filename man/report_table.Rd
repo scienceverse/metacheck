@@ -11,7 +11,8 @@ report_table(table, colwidths = "auto", maxrows = 2, escape = FALSE)
 
 \item{colwidths}{set column widths as a vector of px (number > 1) or percent (numbers <= 1)}
 
-\item{maxrows}{if the table has more rows than this, paginate (full report)
+\item{maxrows}{if the table has more rows than this, paginate (full report,
+with a menu to show more rows per page, or all)
 or show a scrollbar sized to approximately this many rows (simple report)}
 
 \item{escape}{whether or not to escape the table (necessary if using raw html)}

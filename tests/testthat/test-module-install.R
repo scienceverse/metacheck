@@ -288,6 +288,24 @@ test_that("module_install names missing packages", {
   expect_equal(module_installed()$repo, "owner/repo")
 })
 
+test_that("module_install names how to install packages only on GitHub (#223)", {
+  mod_dir <- withr::local_tempdir()
+  repo_dir <- withr::local_tempdir()
+  testthat::local_mocked_bindings(.modules_dir = \() mod_dir,
+                                  .package = "metacheck")
+  write_modules(repo_dir, "ext_gh.R",
+                extra = "#' @import notapkgxyz someone/notapkggh")
+  local_fake_github(repo_dir)
+
+  expect_warning(
+    expect_message(module_install("owner/repo"), "Installed 1 module"),
+    paste0("These modules need packages that are not installed: notapkgxyz, notapkggh. ",
+           "Install them with install.packages(c(\"notapkgxyz\")) and ",
+           "remotes::install_github(c(\"someone/notapkggh\"))"),
+    fixed = TRUE
+  )
+})
+
 test_that("module_update", {
   mod_dir <- withr::local_tempdir()
   repo_dir <- withr::local_tempdir()

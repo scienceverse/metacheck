@@ -987,7 +987,8 @@ metacheck::report_table(table, %s, %s, %s)
 #'
 #' @param table the data frame to show in a table, or a vector for a list
 #' @param colwidths set column widths as a vector of px (number > 1) or percent (numbers <= 1)
-#' @param maxrows if the table has more rows than this, paginate (full report)
+#' @param maxrows if the table has more rows than this, paginate (full report,
+#'   with a menu to show more rows per page, or all)
 #'   or show a scrollbar sized to approximately this many rows (simple report)
 #' @param escape whether or not to escape the table (necessary if using raw html)
 #'
@@ -1039,13 +1040,17 @@ report_table <- function(table, colwidths = "auto", maxrows = 2, escape = FALSE)
     cd_code <- cd[!sapply(cd, is.null)]
   }
 
-  # set up options
-  dom <- ifelse(nrow(table) > maxrows, "<'top' p>", "t")
+  # set up options: a table longer than maxrows gets page buttons and a menu
+  # to show more rows per page, or all of them (#408)
+  dom <- ifelse(nrow(table) > maxrows, "<'top' lp>", "t")
+  lengths <- sort(unique(c(maxrows, 10, 25, 50)))
   options <- list(
     dom = dom,
     autoWidth = TRUE,
     ordering = FALSE,
     pageLength = maxrows,
+    lengthMenu = list(c(lengths, -1), c(as.character(lengths), "All")),
+    language = list(lengthMenu = "Show _MENU_ rows"),
     columnDefs = cd_code
   )
 

@@ -286,3 +286,37 @@ test_that("module_run says when a package a module needs is not installed (#620)
   expect_error(module_run(test_paper(), mod),
                "cannot run: the R package 'notapkgzzz' is not installed.", fixed = TRUE)
 })
+
+test_that("module_run names how to install a package only on GitHub (#223)", {
+  module_lines <- function(func, import) {
+    c("#' Needs packages", "#'", "#' @description", "#' Test.", "#'", import,
+      "#'", "#' @param paper a paper", "#' @returns a list",
+      paste0(func, " <- function(paper) list(traffic_light = \"na\")"))
+  }
+  dir <- withr::local_tempdir()
+
+  # @import owner/pkg
+  mod <- file.path(dir, "needs_github.R")
+  writeLines(module_lines("needs_github", "#' @import someone/notapkgzzz"), mod)
+  expect_error(module_run(test_paper(), mod),
+               paste0("cannot run: the R package 'notapkgzzz' is not installed; ",
+                      "install it from GitHub with remotes::install_github(\"someone/notapkgzzz\")."),
+               fixed = TRUE)
+
+  # @importFrom owner/pkg fun
+  mod <- file.path(dir, "needs_github_fun.R")
+  writeLines(module_lines("needs_github_fun", "#' @importFrom someone/notapkgzzz f"), mod)
+  expect_error(module_run(test_paper(), mod),
+               "'notapkgzzz::f' is required, but the R package 'notapkgzzz' is not installed; install it from GitHub",
+               fixed = TRUE)
+
+  # an installed package named with its GitHub repository is loaded by its name
+  mod <- file.path(dir, "has_github.R")
+  writeLines(module_lines("has_github", "#' @import tidyverse/dplyr"), mod)
+  expect_equal(module_run(test_paper(), mod)$traffic_light, "na")
+
+  # one @import line can name several packages
+  mod <- file.path(dir, "needs_two.R")
+  writeLines(module_lines("needs_two", "#' @import dplyr tidyr"), mod)
+  expect_equal(module_run(test_paper(), mod)$traffic_light, "na")
+})
