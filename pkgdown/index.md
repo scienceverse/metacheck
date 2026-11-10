@@ -19,6 +19,10 @@ To validate and improve Metacheck we have created [a repository of more than 150
 
 As a demonstration of the functionality of Metacheck, [we automatically check new preprints uploaded to the PsyArXiv preprint server](https://lakens.github.io/psyarxiv_metacheck/). 
 
+## Adoption by Journals
+
+Metacheck is part of the submission workflow of the [Journal of Replication Research](https://www.replicationresearch.org). If you want to use Metacheck as a journal editor (or are already using Metacheck), reach out to our team. If you are a diamond open access journal, we will work with you to create custom modules and reports that will make your work easier.
+
 ## Our Values
 
 The values below guide our priorities and decision-making for all Scienceverse projects.
