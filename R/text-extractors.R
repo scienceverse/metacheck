@@ -28,9 +28,9 @@ extract_urls <- function(paper) {
 
 # Eta, or the Latin letter that looks like it (U+019E), with an optional
 # squared sign: before a p, it is partial eta squared written with its
-# subscript after it ("η² p = .06"), which extract_p_values() and
+# subscript after it ("eta-squared p = .06"), which extract_p_values() and
 # extract_eq() do not read as a p-value (#336)
-.eta_p_prefix <- "[ηƞ]\\s*[²2₂]?\\s*"
+.eta_p_prefix <- "[\u03b7\u019e]\\s*[\u00b22\u2082]?\\s*"
 
 #' Extract P-Values
 #'
@@ -186,7 +186,7 @@ extract_eq <- function(paper) {
   # to for the bare, unscoped case).
   # \\b: the g or d is a word of its own, else "and z = 3.1" was "d z" (U218)
   bare_subscript <- paste0("\\b[gd]\\s+(?:av|z|rm|s)(?=\\s*[", op, "])")
-  # partial eta squared with its subscript after it, "η² p = .06",
+  # partial eta squared with its subscript after it, "eta-squared p = .06",
   # is one statistic, not "p = .06" (#336)
   bare_subscript <- paste0(bare_subscript, "|", .eta_p_prefix, "[pP](?=\\s*[", op, "])")
   pattern <- paste0(
