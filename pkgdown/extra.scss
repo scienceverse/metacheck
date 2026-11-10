@@ -1,4 +1,65 @@
-$primary: #327118;
+// The look of the metacheck server's site (scienceverse/surf-research-cloud,
+// site/site.css): light grey page, the logo's green, boxes with a green top
+// line. The colours and the font are set in _pkgdown.yml (template: bslib).
+
+$mc-green: #2F6F1C;
+$mc-green-dark: #1E4A10;
+$mc-card: #F4F3F1;
+$mc-line: #CFCDC8;
+$mc-muted: #5E5C58;
+
+a { text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: $mc-green-dark; }
+
+// top menu: the page's grey, with a green line under it
+.navbar {
+  background-color: #E9E8E5 !important;
+  border-bottom: 1px solid $mc-green;
+}
+.navbar .navbar-brand { color: $mc-green; font-weight: 700; }
+
+// headings of sections: a thin line under them
+main h2 {
+  font-weight: 700;
+  border-bottom: 1px solid $mc-line;
+  padding-bottom: 4px;
+  margin-top: 2rem;
+}
+
+// the home page's first paragraph starts with a large letter
+.template-home main .section.level1 > p:first-of-type::first-letter {
+  float: left;
+  font-size: 4.6em;
+  line-height: 0.82;
+  margin: 0.06em 0.08em 0 0;
+}
+
+// side column: boxes with a green top line
+// (each part is a <div> directly in <aside>; the first holds the badges)
+aside > div:not(:first-child) {
+  background: $mc-card;
+  border: 1px solid $mc-line;
+  border-top: 3px solid $mc-green;
+  border-radius: 4px;
+  padding: 12px 16px 6px;
+  margin-bottom: 16px;
+  overflow-wrap: anywhere;
+}
+aside > div:not(:first-child) h2 { font-size: 1.1rem; font-weight: 700; border: 0; margin-top: 0.25rem; }
+
+// code
+pre {
+  background: $mc-card;
+  border: 1px solid $mc-line;
+  border-radius: 3px;
+}
+
+// footer: a green line above it
+footer {
+  border-top: 1px solid $mc-green !important;
+  color: $mc-muted;
+  font-size: 0.9rem;
+}
 
 // Team photos: a grid of small square photos with the name below each.
 // pkgdown writes each <figure> as <div class="float"> with a
