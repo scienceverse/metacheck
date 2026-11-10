@@ -20,3 +20,6 @@ artifact, and it is invisible to \code{\link[=data_check_constant]{data_check_co
 \examples{
 data_check_empty(c(NA, NA, NA))$message
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

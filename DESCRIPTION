@@ -1,6 +1,6 @@
 Package: metacheck
 Title: Check Research Outputs for Best Practices
-Version: 0.4.3.26
+Version: 0.4.3.27
 Date: 2026-11-06
 Authors@R: c(
   person(  given = "Lisa",
@@ -28,6 +28,9 @@ Authors@R: c(
            role = c("ctb"),
            email = "l.wallrich@bbk.ac.uk",
            comment = c(ORCID = "0000-0003-2121-5177")),
+  person(  given = "Levi",
+           family = "Baruch",
+           role = c("ctb")),
   person(  given = "Daniel",
            family = "Lakens",
            role = c("aut"),

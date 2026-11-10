@@ -36,3 +36,6 @@ data_check_demographic("age", c(23, 45, 31, 29))
 data_check_demographic("gender", c("Male", "Female", "Female", "Male"))
 data_check_demographic("condition", c(1, 2, 1, 2))   # NA (name does not match)
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

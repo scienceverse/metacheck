@@ -123,7 +123,7 @@ curl -X POST http://localhost:2005/paper/search \
 ```bash
 curl -X POST http://localhost:2005/paper/module \
   -F "file=@paper.json" \
-  -F "name=ref_doi_check"
+  -F "name=ref_replication"
 ```
 
 ### Run Multiple Checking Modules

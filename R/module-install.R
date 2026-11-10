@@ -21,6 +21,13 @@
 #' an older metacheck. External modules should only use exported metacheck
 #' functions: internal functions can change without notice.
 #'
+#' A module names the R packages it needs with `#' @import pkg` or
+#' `#' @importFrom pkg fun`. A package that is not on CRAN is named with its
+#' GitHub repository, `#' @import owner/pkg`: the package `pkg` is then
+#' loaded, and when it is not installed, `module_install()` and
+#' [module_run()] say to install it with `remotes::install_github("owner/pkg")`
+#' instead of `install.packages()`.
+#'
 #' Nothing is saved when a module in the repository has the same name as a
 #' built-in module, a module from another installed repository, or another
 #' module in the same repository.
@@ -109,17 +116,25 @@ module_install <- function(repo, ref = NULL, overwrite = FALSE) {
           " (commit ", substr(src$sha, 1, 7), "): ",
           paste(mod_names, collapse = ", "))
 
-  # name packages the modules need that are not installed
+  # name packages the modules need that are not installed; "owner/pkg" is a
+  # package only on GitHub (#223)
   pkgs <- lapply(infos, \(info) {
-    c(info$import, sapply(info$importFrom, `[[`, 1))
+    c(unlist(info$import), sapply(info$importFrom, `[[`, 1))
   }) |> unlist() |> unique()
-  missing <- pkgs[!vapply(pkgs, \(p) nzchar(system.file(package = p)),
+  missing <- pkgs[!vapply(.pkg_name(pkgs), \(p) nzchar(system.file(package = p)),
                           logical(1))]
   if (length(missing)) {
+    on_github <- grepl("/", missing)
+    how <- c(
+      if (any(!on_github)) paste0("install.packages(c(\"",
+        paste(missing[!on_github], collapse = "\", \""), "\"))"),
+      if (any(on_github)) paste0("remotes::install_github(c(\"",
+        paste(missing[on_github], collapse = "\", \""), "\"))")
+    )
     warning("These modules need packages that are not installed: ",
-            paste(missing, collapse = ", "), ". Install them with ",
-            "install.packages(c(\"", paste(missing, collapse = "\", \""),
-            "\"))", call. = FALSE)
+            paste(unique(.pkg_name(missing)), collapse = ", "),
+            ". Install them with ", paste(how, collapse = " and "),
+            call. = FALSE)
   }
 
   installed <- module_installed()

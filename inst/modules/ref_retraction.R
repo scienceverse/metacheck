@@ -6,7 +6,7 @@
 #' @details
 #' The RetractionWatch Check module compares the reference list against studies in the RetractionWatch database based on the DOI. If a study in the database is found, a reminder is provided that the study was retracted, has an expression of concern, or a correction.
 #'
-#' The module requires that the reference has a DOI. If you run the ref_doi_check module in a pipeline before this, it will use the enhanced DOI list from that module, otherwise it will only run on references with existing DOIs.
+#' The module requires that the reference has a DOI: the DOI in the paper's reference list, or one looked up with `add_bib_match()` before the module runs (see `ref_table()`). References without a DOI are not checked.
 #'
 #' It is possible the authors are already aware that a study was retracted, but the module can't evaluate this.
 #'

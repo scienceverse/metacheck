@@ -18,3 +18,6 @@ e.g. "Male" and "male" -- likely the same category entered inconsistently.
 \examples{
 data_check_case_issues(c("Male", "male", "Female"))$message
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

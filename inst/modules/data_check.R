@@ -76,6 +76,7 @@
 #' @keywords results
 #'
 #' @author Daniel Lakens (\email{D.Lakens@tue.nl})
+#' @author Levi Baruch
 #'
 #' @import dplyr
 #'

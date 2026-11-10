@@ -34,3 +34,6 @@ writeLines("{}", path)
 manifest_merge(path, list(paper_id = "stroop_effect"))
 readLines(path)
 }
+\author{
+Daniel Lakens and Levi Baruch
+}

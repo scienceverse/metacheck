@@ -18,6 +18,7 @@ called for side effects of writing to log, returns logpath
 }
 \description{
 Adds a logging message to the log. Keeps the log as a maximum of 1000 rows.
+Based on an idea by Levi Baruch.
 }
 \examples{
 logpath <- tempfile(fileext = ".log")

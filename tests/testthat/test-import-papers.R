@@ -57,7 +57,7 @@ test_that(".papers_release_assets handles repos with no releases", {
     assets <- metacheck:::.papers_release_assets("scienceverse/norealeases")
   })
   expect_equal(nrow(assets), 0)
-  expect_equal(names(assets), c("name", "tag", "size", "download_url"))
+  expect_equal(names(assets), c("name", "tag", "size", "download_url", "api_url"))
 })
 
 test_that(".papers_release_assets errors on unreachable repo", {

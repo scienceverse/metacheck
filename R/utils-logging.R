@@ -34,6 +34,7 @@ logpath <- function() {
 #' Log messages
 #'
 #' Adds a logging message to the log. Keeps the log as a maximum of 1000 rows.
+#' Based on an idea by Levi Baruch.
 #'
 #' @param label a string with the context (e.g.,module name)
 #' @param contents a named list of the log contents
@@ -84,6 +85,7 @@ logger <- function(label = "", contents = list(), logpath = NULL) {
 #' Reads entries back from the on-disk log written by [logger()] (newest
 #' first, so `i = 1` is the most recent entry). Returns a single entry as a
 #' list, or several entries row-bound into a data frame.
+#' Based on an idea by Levi Baruch.
 #'
 #' @param i the indices to return
 #' @param logpath an optional file path to read the log from

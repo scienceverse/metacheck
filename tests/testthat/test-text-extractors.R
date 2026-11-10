@@ -133,6 +133,21 @@ test_that("extract_p_values reads ps, p's, x 10 and the Unicode minus (U204, U20
   expect_equal(pv$p_value, c(.05, .10, .10, .001, 1.8e-6, 6.1e-5, 2.14e-213, .05))
 })
 
+test_that("partial eta squared written with its subscript after it is not a p-value (#336)", {
+  txt <- c("F(2, 63) = 590, p < .001, ƞ²p = .95",
+           "an effect (η² p = .06) as",
+           "t = 2, η² P = 0.029, p = .04",
+           "η 2 p = .10 and p < .001",
+           "η² = .05, p = .03")
+  pv <- extract_p_values(txt)
+  expect_equal(pv$text_id, c(1L, 3L, 4L, 5L))
+  expect_equal(pv$p_value, c(.001, .04, .001, .03))
+
+  eq <- extract_eq(txt)
+  expect_equal(eq$lhs, c("F", "p", "ƞ²p", "η² p", "t", "η² P", "p",
+                         "η 2 p", "p", "η²", "p"))
+})
+
 test_that("extract_eq reads the Unicode minus, and 'and z' is z (U205, U218)", {
   eq <- extract_eq("t(28) = \u22122.15, r(98) = \u2212.32, r = \u2212 0.12, and z = 3.1.")
   expect_equal(eq$lhs, c("t", "r", "r", "z"))
