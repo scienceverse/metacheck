@@ -2,21 +2,46 @@
 # before code reaches main. R CMD check (R-CMD-check.yaml) does not run the
 # tests (they are not part of the build, see .Rbuildignore), and the coverage
 # run (test-coverage.yaml) runs only on main, so 15 tests that fail on Linux
-# were found only after the code was there. Runs on a push to dev, on a pull
-# request into dev, and by hand.
+# were found only after the code was there. Runs on a pull request into main
+# (from dev), and by hand: they take about 40 minutes, too long to wait for
+# on every pull request into dev, which R-CMD-check.yaml checks. A change to
+# only the website or text files (.github/scripts/code-changed.sh) skips
+# them. A new commit on the same pull request stops the run for the previous
+# one.
 on:
   push:
-    branches: [dev, linux_docker_fixes]
+    branches: [linux_docker_fixes]
   pull_request:
-    branches: [dev]
+    branches: [main]
   workflow_dispatch:
 
 name: Full tests
 
 permissions: read-all
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  changes:
+    name: Changes that can affect the package
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.check.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: check
+        run: bash .github/scripts/code-changed.sh "$BASE" "$GITHUB_SHA" | tee -a "$GITHUB_OUTPUT"
+        shell: bash
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+
   full-tests:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
