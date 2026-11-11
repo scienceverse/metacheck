@@ -75,7 +75,8 @@ papers_load <- function(name,
 
   if (cache && file.exists(cache_path) && !overwrite) {
     message("Loading cached ", name, " ...")
-    return(readRDS(cache_path))
+    # a corpus saved before the repair of split links (see .repair_links())
+    return(.paper_repair_links(readRDS(cache_path)))
   }
 
   assets <- .papers_release_assets(repo)
@@ -125,7 +126,7 @@ papers_load <- function(name,
   }
 
   message("Loading ", name, " ...")
-  readRDS(tmp)
+  .paper_repair_links(readRDS(tmp))
 }
 
 

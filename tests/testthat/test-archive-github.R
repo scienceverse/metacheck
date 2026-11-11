@@ -293,3 +293,40 @@ test_that("github_links finds hyperlinks in a bibr 12.x paper (U196)", {
   p <- suppressWarnings(.grobid_to_bibr(demofile("xml"), schema_version = "12.0"))
   expect_true(any(grepl("github.com", github_links(p)$href, fixed = TRUE)))
 })
+
+test_that("github_links finds a full link written in the text, once", {
+  # a link the PDF did not make clickable is not in the url table; a sentence
+  # with a full link was also left out of the search near the word "github"
+  paper <- test_paper(c(
+    "The code is at https://github.com/owner/repo.",
+    "See also github.com/owner/repo/tree/main for the figures.",
+    "Analyses: https://github.com/other/analysis."
+  ))
+  paper$url <- data.frame(href = "https://github.com/other/analysis", text_id = 3L)
+  obs <- github_links(paper)
+  expect_setequal(obs$href, c("https://github.com/owner/repo",
+                              "https://github.com/other/analysis"))
+})
+
+test_that("github_links leaves out a text link that repeats a found one wrongly", {
+  # the text has the url table's repository with its end repeated, a word of
+  # the next sentence attached, or a hyphen lost; a found link cut off at a
+  # hyphen is not a whole name, so its full form in the text is kept
+  paper <- test_paper(c(
+    "Code: https://github.com/owner/Vaccine-PolicyPolicy and more.",
+    "Data: https://github.com/owner/throwinglight.The end.",
+    "Also https://github.com/owner/attentionclusters here.",
+    "Glass: https://github.com/group/ionic-glass-formers here.",
+    "New: https://github.com/someone/else here."
+  ))
+  paper$url <- data.frame(
+    href = c("https://github.com/owner/Vaccine-Policy",
+             "https://github.com/owner/throwinglight",
+             "https://github.com/owner/attention-clusters",
+             "https://github.com/group/ionic-"),
+    text_id = 1:4)
+  obs <- github_links(paper)
+  expect_setequal(obs$href, c(paper$url$href,
+                              "https://github.com/group/ionic-glass-formers",
+                              "https://github.com/someone/else"))
+})

@@ -204,7 +204,156 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
 
   # ensure all expected columns exist and have correct types
   # (JSON may drop all-NA columns or read them back as logical)
+  paper <- .paper_repair_links(paper)
   paper <- .paper_coerce(paper)
 
+  paper
+}
+
+
+# Links broken by a space ----
+#
+# Reading a PDF (bibr and Grobid alike) sometimes turns the end of a line
+# inside a link into a space: "https://github.com/ owner/repo",
+# "10.1016/ j.cognition.2020.104", "doi. org/". The link is then not found
+# whole, so a repository is not checked. The repair removes such a space
+# only where a fixed part of a link comes before it (#411, #458). Removing
+# the space after every link is not safe: most links are followed by an
+# ordinary word, and of 909 main-text links followed by a space and more
+# text (17 corpora), joining all of them changed 368 links that were right
+# as written into links that do not exist. Repositories found by many
+# website names (Dataverse, DataONE, DSpace) are left out: no one fixed
+# name comes before the space.
+
+# The text after a space looks like part of a link: it starts with a letter
+# or digit, and before the next space it has a "/", a "_", a digit, or a
+# capital letter after a small one ("seantuck12/MODISTools", "RoboDoig"); an
+# ordinary word ("with", "Harvard", "review?") does not.
+.link_part <- "(?=[A-Za-z0-9])(?=\\S*?(?:[/_0-9]|[a-z][A-Z]))"
+
+# Repositories whose links begin with one fixed website name
+.link_hosts <- paste(
+  "github\\.com", "gitlab\\.com", "figshare\\.com", "bitbucket\\.org",
+  "datadryad\\.org", "aspredicted\\.org", "zenodo\\.org", "researchbox\\.org",
+  sep = "|")
+
+#' Join links that reading the PDF split with a space
+#'
+#' @param x a character vector (the sentences of a paper)
+#' @returns `x` with those spaces removed; nothing else is changed
+#' @noRd
+.repair_links <- function(x) {
+  if (!length(x)) return(x)
+  # every rule needs a "/", "_ ", "http" or a website's ending after a full
+  # stop and a space; most sentences have none of these, so only the others
+  # go through the rules
+  may <- which(grepl("/|_\\s|https?\\s*:|\\.\\s+(?:org|com|io)\\b", x,
+                     perl = TRUE, ignore.case = TRUE))
+  if (!length(may)) return(x)
+  x[may] <- .repair_link_rules(x[may])
+  x
+}
+
+.repair_link_rules <- function(x) {
+  # every rule with perl = TRUE: R's other engine took 2 to 12 seconds per
+  # rule for 46,000 sentences with ignore.case = TRUE, perl 0.1
+  x <- x |>
+    # "https ://", "https: //", and "https:// doi.org": only a website's
+    # name follows "https://"
+    gsub("\\b(https?)\\s*:\\s*//", "\\1://", x = _, ignore.case = TRUE,
+         perl = TRUE) |>
+    gsub("\\b(https?://)\\s+(?=[A-Za-z0-9])", "\\1", x = _, ignore.case = TRUE,
+         perl = TRUE) |>
+    # a website's name split from its ending: "doi. org", "github. com"
+    gsub("\\b(doi|zenodo|researchbox|bitbucket|datadryad)\\.\\s+org\\b",
+         "\\1.org", x = _, ignore.case = TRUE, perl = TRUE) |>
+    gsub("\\b(github|gitlab|figshare)\\.\\s+com\\b", "\\1.com", x = _,
+         ignore.case = TRUE, perl = TRUE) |>
+    gsub("\\bosf\\.\\s+io\\b", "osf.io", x = _, ignore.case = TRUE,
+         perl = TRUE) |>
+    # a space after the "/" of a DOI link or an OSF link
+    gsub("\\bdoi\\.org/\\s+", "doi.org/", x = _, ignore.case = TRUE,
+         perl = TRUE) |>
+    gsub("\\bosf\\.io/\\s+", "osf.io/", x = _, ignore.case = TRUE,
+         perl = TRUE) |>
+    # and of another repository, when the text after it looks like part of
+    # a link: "zenodo.org/ with doi:" stays as it is
+    gsub(paste0("(?i:\\b(", .link_hosts, ")/)\\s+", .link_part), "\\1/",
+         x = _, perl = TRUE) |>
+    # a space after a DOI's prefix, which is never followed by one
+    # ("10.1016/ j.cognition"), or inside a repository's DOI or record
+    gsub("(\\b10\\.\\d{4,9}/)\\s+", "\\1", x = _, perl = TRUE) |>
+    gsub("\\b(records?/)\\s+(?=[0-9])", "\\1", x = _, ignore.case = TRUE,
+         perl = TRUE) |>
+    gsub("(/dryad\\.|/zenodo\\.)\\s+([a-z0-9])", "\\1\\2", x = _,
+         ignore.case = TRUE, perl = TRUE) |>
+    gsub("(/m9\\.figshare\\.)\\s+([0-9])", "\\1\\2", x = _,
+         ignore.case = TRUE, perl = TRUE)
+
+  # a link that ends in "_" goes on after the space: a link never ends in
+  # "_" ("github.com/nardus/zoonotic_ rank/tree/main"); a link can be split
+  # more than once
+  cut <- paste0("((?i:https?://|www\\.|\\b(?:osf\\.io|", .link_hosts,
+                ")/)\\S*_)\\s+(?=[A-Za-z0-9])")
+  for (i in 1:5) {
+    joined <- gsub(cut, "\\1", x, perl = TRUE)
+    if (identical(joined, x)) break
+    x <- joined
+  }
+  x
+}
+
+# The positions (1 = first character) in `old` of the characters that are
+# not in `new`, where `new` is `old` with some spaces removed
+.removed_positions <- function(old, new) {
+  o <- strsplit(old, "")[[1]]
+  n <- strsplit(new, "")[[1]]
+  gone <- integer(0)
+  j <- 1L
+  for (i in seq_along(o)) {
+    if (j <= length(n) && o[[i]] == n[[j]]) j <- j + 1L else gone <- c(gone, i)
+  }
+  gone
+}
+
+#' Join links in a paper's sentences that reading the PDF split with a space
+#'
+#' Repairs the text table with `.repair_links()`. The url, xref and eq tables
+#' give where each item is in its sentence (`start`, counted from 0, and
+#' `end`, just after it); these move back by the number of spaces removed
+#' before them, so a paper written with `paper_write()` stays right.
+#'
+#' @param paper a paper or paperlist
+#' @returns the paper or paperlist
+#' @noRd
+.paper_repair_links <- function(paper) {
+  if (.is_paper_list(paper)) {
+    return(paperlist(lapply(paper, .paper_repair_links)))
+  }
+  tx <- paper$text
+  if (!is.data.frame(tx) || !nrow(tx) || !is.character(tx$text)) return(paper)
+
+  old <- tx$text
+  new <- .repair_links(old)
+  changed <- which(!is.na(old) & old != new)
+  if (!length(changed)) return(paper)
+  paper$text$text <- new
+
+  if (!"text_id" %in% names(tx)) return(paper)
+  for (tbl in c("url", "xref", "eq")) {
+    df <- paper[[tbl]]
+    if (!is.data.frame(df) || !nrow(df) ||
+        !all(c("text_id", "start", "end") %in% names(df))) next
+    for (r in changed) {
+      rows <- which(df$text_id %in% tx$text_id[[r]])
+      if (!length(rows)) next
+      gone <- .removed_positions(old[[r]], new[[r]])
+      for (col in c("start", "end")) {
+        p <- df[[col]][rows]
+        df[[col]][rows] <- p - vapply(p, \(q) sum(gone <= q), integer(1))
+      }
+    }
+    paper[[tbl]] <- df
+  }
   paper
 }

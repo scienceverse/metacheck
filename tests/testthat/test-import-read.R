@@ -158,3 +158,44 @@ test_that("a legacy bibr file without bib has no references, not its bib_match r
   p <- suppressWarnings(read(f))
   expect_equal(nrow(p$bib), 0)
 })
+
+test_that(".repair_links joins links split by a space, for every reader", {
+  x <- c(
+    "Code is on https://github.com/ seantuck12/MODISTools for all.",
+    "See https://github.com/nardus/zoonotic_ rank/tree/main/FigureData and more.",
+    "doi 10.6084/m9.figshare. 19518898 and https://doi. org/ 10.1002/ zoo.21834",
+    "github. com/ etldrz/phage and https:// doi.org/10.1/x"
+  )
+  expect_equal(metacheck:::.repair_links(x), c(
+    "Code is on https://github.com/seantuck12/MODISTools for all.",
+    "See https://github.com/nardus/zoonotic_rank/tree/main/FigureData and more.",
+    "doi 10.6084/m9.figshare.19518898 and https://doi.org/10.1002/zoo.21834",
+    "github.com/etldrz/phage and https://doi.org/10.1/x"
+  ))
+})
+
+test_that(".repair_links leaves a space before an ordinary word", {
+  x <- c(
+    "Data are in Zenodo https://zenodo.org/ with doi: 10.5281/zenodo.3876533.",
+    "Available at figshare.com/ upon request and aspredicted.org/ Clinical trials.",
+    "The variable my_ var is not a link.",
+    NA
+  )
+  expect_equal(metacheck:::.repair_links(x), x)
+})
+
+test_that(".paper_repair_links moves the positions of items after a removed space", {
+  p <- paper("t")
+  s <- "See https://github.com/ owner/repo and https:// doi.org/ 10.1/x (Smith, 2020)."
+  p$text <- data.frame(text = s, text_id = 1L)
+  at <- function(x) regexpr(x, s, fixed = TRUE)[[1]] - 1L
+  p$url <- data.frame(url_id = 1L, text_id = 1L, start = at("https:// doi"),
+                      end = at("10.1/x") + 6L)
+  p$xref <- data.frame(xref_id = 1L, text_id = 1L, start = at("Smith"),
+                       end = at("Smith") + 11L)
+  q <- metacheck:::.paper_repair_links(p)
+  expect_equal(q$text$text,
+               "See https://github.com/owner/repo and https://doi.org/10.1/x (Smith, 2020).")
+  expect_equal(substr(q$text$text, q$url$start + 1, q$url$end), "https://doi.org/10.1/x")
+  expect_equal(substr(q$text$text, q$xref$start + 1, q$xref$end), "Smith, 2020")
+})

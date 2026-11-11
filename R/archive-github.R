@@ -8,6 +8,44 @@
   urls
 }
 
+# Links written in full in a paper's text that match `regex`, one row per
+# paper and repository, leaving out those already in `found` (from the url
+# table). `repo_of` gives a link's repository ("owner/repo"), so that
+# "https://github.com/x/y" and "github.com/x/y/tree/main" count as one; a
+# full stop that ends the sentence is not part of the link.
+#
+# The text often holds the url table's link with an extraction error: its
+# end repeated ("California-Vaccine-PolicyPolicy" beside the table's
+# "California-Vaccine-Policy"), a word of the next sentence attached
+# ("throwinglight.The"), or a hyphen lost ("attentionclusters" beside
+# "attention-clusters"). Such a link is the same repository, written wrongly,
+# so it is left out when a repository already found for the paper begins it,
+# or is the same once hyphens are removed. A found link cut off at a hyphen
+# ("giuntoli-group/ionic-") is not a whole name, and its full form in the
+# text is kept. Of the 97 GitHub links the text adds in 17 corpora (13,706
+# papers), 55 exist; these two rules keep all 55 and leave out 33 of the 42
+# that do not (checked online 2026-11-11).
+.links_in_text <- function(paper, regex, found, repo_of) {
+  href <- text <- text_id <- NULL
+  x <- text_search(paper, regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, text_id, paper_id)
+  x$href <- sub("[.]+$", "", x$href)
+  repo <- function(h) {
+    tolower(vapply(h, \(u) repo_of(u) %||% u, character(1), USE.NAMES = FALSE))
+  }
+  x_repo <- repo(x$href)
+  f_repo <- repo(found$href)
+  whole <- !grepl("-$", f_repo)
+  same <- vapply(seq_len(nrow(x)), \(i) {
+    here <- found$paper_id == x$paper_id[[i]]
+    fr <- f_repo[whole & here]
+    x_repo[[i]] %in% f_repo[here] || any(startsWith(x_repo[[i]], fr) |
+          gsub("-", "", x_repo[[i]], fixed = TRUE) == gsub("-", "", fr, fixed = TRUE))
+  }, logical(1))
+  k <- paste(x$paper_id, x_repo)
+  x[!same & !duplicated(k), , drop = FALSE]
+}
+
 #' Find GitHub Links in Papers
 #'
 #' GitHub links can be in PDFs in several ways.
@@ -46,6 +84,15 @@ github_links <- function(paper) {
     drop = FALSE]
   found_gh <- dplyr::bind_rows(found_gh, found_account)
 
+  # A full GitHub link written in the text that the PDF did not make
+  # clickable, so it is not in the url table. A sentence with a full link
+  # was left out of the search below as well, so such a link was never found:
+  # 55 repositories that exist, in the main text of 17 corpora (13,706
+  # papers). Kept only when the url table does not have the repository
+  # already, also not written wrongly (see .links_in_text()).
+  found_text <- .links_in_text(paper, github_regex, found_gh,
+                               \(h) .github_repo_name(h))
+  found_gh <- dplyr::bind_rows(found_gh, found_text)
 
   # find github repos referenced only by org/repo near github (+-10 words)
   # like "See our github repo at scienceverse/metacheck"

@@ -179,6 +179,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # listing the same files, or one that could not be found.
   repos$repo_url <- sub("[.,;:]+$", "", repos$repo_url)
   repos <- dplyr::distinct(repos)
+  # A link that a space split, with the rest after it in the text, is
+  # replaced by the joined form when only that form exists
+  # (.repo_links_joined(), R/repo-link-versions.R).
+  if (nrow(repos) > 0) {
+    pb$tick(0, list(what = "Checking links that may be split"))
+    repos <- .repo_links_joined(repos, paper)
+  }
   repos$repo_error <- NA_character_
 
   # A Figshare private "share link" (figshare.com/s/<hash>) is a real,
@@ -601,10 +608,33 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         github_tree_files(url),
         error = \(e) list(gated = TRUE, reason = conditionMessage(e),
                           files = NULL, default_branch = NA_character_))
+      # A repository that does not exist may have a hyphen a line break
+      # added ("Betha-nyL/DeepKoopman"): the form without it is listed
+      # instead, and `repo_url` names it (R/repo-link-versions.R).
+      if (identical(result$reason, "invalid or inaccessible GitHub repository")) {
+        alt <- .repo_link_unhyphenated(url, github_repo)
+        if (!is.null(alt)) {
+          alt_result <- tryCatch(github_tree_files(alt), error = \(e) NULL)
+          if (!is.null(alt_result) && !isTRUE(alt_result$gated)) {
+            result <- alt_result
+            result$repo_url <- alt
+          }
+        }
+      }
       if (isTRUE(cache) && .repo_info_list_ok(result))
         .repo_info_cache_put("github", url, result)
       result
     })
+    # the links found without a hyphen take the place of the links as written
+    moved <- vapply(gh_results, \(r) r$repo_url %||% NA_character_, character(1))
+    for (i in which(!is.na(moved))) {
+      repos$repo_url[repos$repo_url == github_urls[[i]]] <- moved[[i]]
+      github_urls[[i]] <- moved[[i]]
+    }
+    keep <- !duplicated(github_urls)
+    gh_results <- gh_results[keep]
+    github_urls <- github_urls[keep]
+    repos <- dplyr::distinct(repos)
     names(gh_results) <- github_urls
 
     for (url in github_urls) {
@@ -679,10 +709,30 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         error = \(e) list(gated = TRUE, reason = conditionMessage(e),
                           files = NULL, default_branch = NA_character_,
                           license = NA_character_))
+      # a hyphen a line break added, as for GitHub above
+      if (identical(result$reason, "invalid or inaccessible GitLab repository")) {
+        alt <- .repo_link_unhyphenated(url, gitlab_repo)
+        if (!is.null(alt)) {
+          alt_result <- tryCatch(gitlab_tree_files(alt), error = \(e) NULL)
+          if (!is.null(alt_result) && !isTRUE(alt_result$gated)) {
+            result <- alt_result
+            result$repo_url <- alt
+          }
+        }
+      }
       if (isTRUE(cache) && .repo_info_list_ok(result))
         .repo_info_cache_put("gitlab", url, result)
       result
     })
+    moved <- vapply(gl_results, \(r) r$repo_url %||% NA_character_, character(1))
+    for (i in which(!is.na(moved))) {
+      repos$repo_url[repos$repo_url == gitlab_urls[[i]]] <- moved[[i]]
+      gitlab_urls[[i]] <- moved[[i]]
+    }
+    keep <- !duplicated(gitlab_urls)
+    gl_results <- gl_results[keep]
+    gitlab_urls <- gitlab_urls[keep]
+    repos <- dplyr::distinct(repos)
     names(gl_results) <- gitlab_urls
 
     for (url in gitlab_urls) {
