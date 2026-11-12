@@ -325,6 +325,27 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   sandbox <- match.arg(sandbox)
   # set when the first script starts (see total_timeout)
   script_deadline <- NULL
+  # the seconds that were left when the code check started with too little time
+  # to copy, install and run (see .repro_no_time_to_prepare(), below); NULL otherwise
+  prep_skipped_left <- NULL
+  # With a clock time as total_timeout (a server's job limit): when less than
+  # .repro_min_prep_time() is left as the code check starts, nothing is copied,
+  # installed or run, and every script is recorded as not started
+  # (skipped_time_limit), so the job keeps its time for the report. Asked before
+  # the R scripts and again before the Python ones; TRUE once it applies.
+  .repro_no_time_to_prepare <- function() {
+    if (is.null(prep_skipped_left) && .repro_short_of_time(total_timeout, .repro_min_prep_time())) {
+      prep_skipped_left <<- max(0, .repro_time_left(total_timeout))
+      script_deadline <<- Sys.time()
+      .dbg("only ", .repro_duration(prep_skipped_left), " left before the time limit: ",
+           "not copying, installing or running anything.")
+    }
+    !is.null(prep_skipped_left)
+  }
+  # no time left to install packages (a minute at least, or none at all, above)
+  .repro_no_time_to_install <- function() {
+    !is.null(prep_skipped_left) || .repro_short_of_time(total_timeout, 60)
+  }
   # whether R packages are installed, and which recorded versions (see the
   # execute block): install_missing = NULL decides there
   install_r <- isTRUE(install_missing)
@@ -766,7 +787,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     sandbox_root <- tempfile("repro_sandbox_")
     if (!isTRUE(keep_sandbox))
       on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
-    repro_materialize_layout(plan, structure_df, sandbox_root)
+    repro_materialize_layout(plan, structure_df, sandbox_root,
+                             deadline = .repro_clock_deadline(total_timeout))
     stat_output_write(stat_output, sandbox_root)
   }
 
@@ -1728,10 +1750,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (sandbox == "docker") .dbg("docker image: ", docker_image)
 
     # 1. Build the data tree the plan describes, and write the scripts into it.
+    # Not when too little time is left, and the copying stops at the clock
+    # deadline (a server's job limit), as running does
+    no_time <- .repro_no_time_to_prepare()
     .dbg("copying the repository (", nrow(plan %||% data.frame()), " files) ...")
-    ml <- repro_materialize_layout(plan, structure_df, sandbox_root)
+    ml <- repro_materialize_layout(plan, structure_df, sandbox_root,
+                                   deadline = if (no_time) Sys.time() else .repro_clock_deadline(total_timeout))
     .dbg("  materialised ", sum(attr(ml, "materialised")$ok %||% FALSE), "/",
-         nrow(attr(ml, "materialised") %||% data.frame()), " files.")
+         nrow(attr(ml, "materialised") %||% data.frame()), " files.",
+         if (isTRUE(attr(ml, "not_copied_time") > 0))
+           paste0(" ", attr(ml, "not_copied_time"), " not copied: the time had run out.") else "")
     # Stan files in the syntax Stan removed in 2.33 get the newer form (#568)
     stan_rows <- .repro_upgrade_stan_files(sandbox_root)
     # and Stan programs held in the R code as a quoted text (#568; see
@@ -1781,7 +1809,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     #    must not be given access to) the host's real R library, so
     #    cran_install_main has no meaning there and is silently ignored.
     failed_deps <- character(0)
-    if (install_r && nrow(to_install) > 0) {
+    if (install_r && nrow(to_install) > 0 && .repro_no_time_to_install()) {
+      # a script started in the last minute that fails on one of them could not
+      # run here (dependency_unavailable), as when nothing is installed
+      .dbg("no time left to install ", nrow(to_install), " dependenc(y/ies); skipping installs.")
+      failed_deps <- to_install$package
+    } else if (install_r && nrow(to_install) > 0) {
       .dbg("installing ", nrow(to_install), " dependenc(y/ies)",
            if (sandbox == "process") paste0(" (cran_install_main = ", cran_install_main, ")") else "",
            ": ", paste(to_install$package, collapse = ", "))
@@ -2095,7 +2128,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       unopened <- .repro_unopened_files(paste(run_results$error[stopped], run_results$stderr[stopped]))
       rows <- .repro_fetchable(structure_df) &
         tolower(basename(gsub("\\\\", "/", structure_df$file_name))) %in% tolower(unopened)
-      if (any(rows)) {
+      # not when the time is up: the scripts would not be run again
+      if (any(rows) && !.repro_short_of_time(total_timeout, 60)) {
         .dbg("fetching ", sum(rows), " file(s) scripts could not open: ",
              paste(structure_df$file_name[rows], collapse = ", "))
         structure_df <- .repro_fetch_files(structure_df, rows, max_file_size, max_download_size,
@@ -2104,7 +2138,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         if (any(got)) {
           plan <- .repro_package_plan(structure_df)
           new_plan <- plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE]
-          repro_materialize_layout(new_plan, structure_df, sandbox_root)
+          repro_materialize_layout(new_plan, structure_df, sandbox_root,
+                                   deadline = .repro_clock_deadline(total_timeout))
           fetched_after <- structure_df$file_name[got]
           redo <- run_results$file_name[stopped][vapply(which(stopped), function(i)
             any(vapply(tolower(fetched_after), grepl, logical(1),
@@ -2524,8 +2559,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (Lakens/tue_datamanager_check#4, item 6)
     if (n_late > 0) {
       report_exec <- paste0(report_exec, sprintf(
-        " %d %s not started, or stopped early, because %s had run out.",
-        n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
+        " %d %s not started, or stopped early, because %s had run out.%s",
+        n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout),
+        .repro_no_prep_text(prep_skipped_left)))
     }
     if (sum(oc == "docker_failed") > 0)
       report_exec <- paste0(report_exec, sprintf(
@@ -3382,17 +3418,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # reason repro_materialize_layout() is NOT called a second time here:
     # it operates over the WHOLE plan/structure_df, language-agnostically,
     # so a second call would just redundantly re-copy the same data files.
+    py_no_time <- .repro_no_time_to_prepare()
+    py_copy_deadline <- if (py_no_time) Sys.time() else .repro_clock_deadline(total_timeout)
     if (is.null(sandbox_root)) {
       sandbox_root <- tempfile("repro_sandbox_")
       if (!isTRUE(keep_sandbox))
         on.exit(unlink(sandbox_root, recursive = TRUE), add = TRUE)
-      repro_materialize_layout(plan, structure_df, sandbox_root)
+      repro_materialize_layout(plan, structure_df, sandbox_root, deadline = py_copy_deadline)
     } else if (!has_r) {
       # has_r's own materialise call never ran (R section skipped entirely),
       # so a Python-only paper still needs the layout actually built into
       # whatever sandbox_root the JASP/jamovi stat_output step above created
       # (that step only writes statistical_output/, never the data/ tree).
-      repro_materialize_layout(plan, structure_df, sandbox_root)
+      repro_materialize_layout(plan, structure_df, sandbox_root, deadline = py_copy_deadline)
     }
     py_lib_dir <- file.path(sandbox_root, "_pylib")
     if (sandbox == "docker" && !isTRUE(keep_sandbox))
@@ -3449,7 +3487,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
            " package(s) only files that are not run use: ",
            paste(py_install_deps$package[!py_install_deps$package %in% py_needed], collapse = ", "))
     py_to_install <- py_install_deps[py_install_deps$package %in% py_needed, , drop = FALSE]
-    if (is.null(py_exec_error) && isTRUE(install_missing) && nrow(py_to_install) > 0) {
+    if (is.null(py_exec_error) && isTRUE(install_missing) && nrow(py_to_install) > 0 &&
+        .repro_no_time_to_install()) {
+      # as for R: a script that fails on one of them could not run here
+      .dbg("[repro/py] no time left to install ", nrow(py_to_install), " dependenc(y/ies); skipping installs.")
+      py_failed_deps <- py_to_install$package
+    } else if (is.null(py_exec_error) && isTRUE(install_missing) && nrow(py_to_install) > 0) {
       .dbg("[repro/py] installing ", nrow(py_to_install), " dependenc(y/ies): ",
            paste(py_to_install$package, collapse = ", "))
       py_install_results <- tryCatch(
@@ -3524,7 +3567,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         py_unopened <- .repro_unopened_files(paste(py_run_results$error[py_stopped], py_run_results$stderr[py_stopped]))
         rows <- .repro_fetchable(structure_df) &
           tolower(basename(gsub("\\\\", "/", structure_df$file_name))) %in% tolower(py_unopened)
-        if (any(rows)) {
+        # not when the time is up: the scripts would not be run again
+        if (any(rows) && !.repro_short_of_time(total_timeout, 60)) {
           .dbg("[repro/py] fetching ", sum(rows), " file(s) scripts could not open")
           structure_df <- .repro_fetch_files(structure_df, rows, max_file_size, max_download_size,
                                              cache, skip_on_api_limit)
@@ -3532,7 +3576,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           if (any(got)) {
             plan <- .repro_package_plan(structure_df)
             repro_materialize_layout(plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE],
-                                     structure_df, sandbox_root)
+                                     structure_df, sandbox_root,
+                                     deadline = .repro_clock_deadline(total_timeout))
             got_names <- tolower(structure_df$file_name[got])
             redo <- py_run_results$file_name[py_stopped][vapply(which(py_stopped), function(i)
               any(vapply(got_names, grepl, logical(1),
@@ -3980,8 +4025,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (Lakens/tue_datamanager_check#4, item 6)
     if (n_late > 0) {
       py_report_exec <- paste0(py_report_exec, sprintf(
-        " %d %s not started, or stopped early, because %s had run out.",
-        n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout)))
+        " %d %s not started, or stopped early, because %s had run out.%s",
+        n_late, plural(n_late, "script was", "scripts were"), .repro_deadline_text(total_timeout),
+        .repro_no_prep_text(prep_skipped_left)))
     }
     if (length(py_written_later))
       py_report_exec <- paste0(py_report_exec, .repro_written_later_text(

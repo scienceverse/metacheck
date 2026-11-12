@@ -2749,9 +2749,14 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #' @param structure_df the `data_check` structure table (`file_name`,
 #'   `file_location`)
 #' @param root the temp directory to build into (created if absent)
+#' @param deadline a clock time (`POSIXct`) after which no further file is
+#'   copied; its folder is still made, and its row has `ok = FALSE`. `NULL` (the
+#'   default) copies every file.
 #'
 #' @returns `root`, invisibly, with attribute `"materialised"`: a data frame of
-#'   `target_path` / `source` / `ok` (whether the copy succeeded) rows.
+#'   `target_path` / `source` / `ok` (whether the copy succeeded) rows, and
+#'   attribute `"not_copied_time"`: the number of files not copied because
+#'   `deadline` had passed.
 #' @export
 #' @examples
 #' src <- tempfile(fileext = ".csv")
@@ -2761,7 +2766,7 @@ repro_missing_inputs <- function(refs, plan, structure_df, skipped = NULL) {
 #' root <- file.path(tempdir(), "layout_demo")
 #' repro_materialize_layout(plan, structure_df, root)
 #' list.files(root, recursive = TRUE)
-repro_materialize_layout <- function(plan, structure_df, root) {
+repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) {
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
   # A flat folder every write call is redirected into (see
   # .repro_redirect_writes(), applied in repro_write_scripts()) — created
@@ -2788,6 +2793,14 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   if (any(is_ptr)) sources[is_ptr] <- lfs$file[match(sources[is_ptr], lfs$pointer)]
 
   has_target <- !is.na(plan$target_path) & nzchar(plan$target_path %||% "")
+  # files not copied because `deadline` had passed: copying 10,658 files took
+  # 16 minutes on the metacheck server, past its limit for the code
+  late <- 0L
+  too_late <- function() {
+    if (is.null(deadline) || Sys.time() <= deadline) return(FALSE)
+    late <<- late + 1L
+    TRUE
+  }
   rows <- lapply(which(has_target), function(i) {
     tgt <- plan$target_path[i]
     src <- sources[i]
@@ -2802,6 +2815,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
       return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
     }
     dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+    if (too_late()) return(data.frame(target_path = tgt, source = src, ok = FALSE))
     ok <- isTRUE(file.copy(src, dest, overwrite = TRUE))
     # The copy is the code's to change: in the Docker sandbox the code runs
     # as another user, and a script that saves over a file the package holds
@@ -2832,6 +2846,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
         return(data.frame(target_path = tgt, source = NA_character_, ok = FALSE))
       dest <- file.path(root, .portable_path(tgt))
       dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+      if (too_late()) return(data.frame(target_path = tgt, source = src, ok = FALSE))
       ok <- isTRUE(file.copy(src, dest, overwrite = TRUE))
       data.frame(target_path = tgt, source = src, ok = ok)
     })
@@ -2841,7 +2856,7 @@ repro_materialize_layout <- function(plan, structure_df, root) {
   done <- if (length(rows)) dplyr::bind_rows(rows) else done
   # and its folders, so a script can save a new file next to the data
   Sys.chmod(list.dirs(root, recursive = TRUE), "0777", use_umask = FALSE)
-  invisible(structure(root, materialised = done, lfs = lfs))
+  invisible(structure(root, materialised = done, lfs = lfs, not_copied_time = late))
 }
 
 # The Git LFS pointers among `sources` (files on disk) and, for each, the file
@@ -6178,6 +6193,41 @@ repro_install_deps <- function(install_deps, lib_dir, cran_to_main_lib = FALSE,
   if (inherits(total_timeout, "POSIXct"))
     limit <- min(limit, max(60, .repro_time_left(total_timeout) / 2))
   limit
+}
+
+# With a clock time as `total_timeout` (a server's job limit minus the time for
+# its report): TRUE when at most `need` seconds are left. Always FALSE for a time
+# in seconds, which counts from the first script and so has not begun.
+.repro_short_of_time <- function(total_timeout, need = 0) {
+  inherits(total_timeout, "POSIXct") && .repro_time_left(total_timeout) <= need
+}
+
+# The clock time by which copying the repository must stop: `total_timeout`
+# when it is one, else NULL (no limit).
+.repro_clock_deadline <- function(total_timeout) {
+  if (inherits(total_timeout, "POSIXct")) total_timeout else NULL
+}
+
+# The seconds a clock time as `total_timeout` must leave when the code check
+# starts, for it to copy the repository, install its packages and run its
+# scripts. With less, none of that is done and every script is recorded as not
+# started (skipped_time_limit), so that the job still has its time for the
+# report. Copying a large repository alone can take longer: 10,658 files took
+# 16 minutes on the metacheck server, after the other checks had left 12, and
+# the server stopped the job before its report. The option
+# `metacheck.repro_min_time` sets it (default 900, 15 minutes).
+.repro_min_prep_time <- function() {
+  as.numeric(getOption("metacheck.repro_min_time", 900))
+}
+
+# The sentence for the report when the code check started with too little time
+# left (see .repro_min_prep_time()); "" otherwise.
+.repro_no_prep_text <- function(left) {
+  if (is.null(left)) return("")
+  sprintf(paste0(" The checks before this one had left %s before the time limit, too",
+                 " little to copy the repository, install its packages and run its",
+                 " scripts (at least %s), so none of that was done."),
+          .repro_duration(left), .repro_duration(.repro_min_prep_time()))
 }
 
 #' Run the paper's scripts, in order, in isolated subprocesses
