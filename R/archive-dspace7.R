@@ -270,7 +270,7 @@ dspace7_links <- function(paper) {
     # looked up (.dspace7_doi_prefixes(), R/repo-tables.R; #636): looking up
     # every other DOI cost 25,172 lookups (about 2.4 hours) in the main texts
     # of 17 corpora (13,706 papers), and 445,034 in their reference lists,
-    # where the prefix list leaves 55 and 88. The list leaves out the
+    # where the prefix list leaves 20 and 78. The list leaves out the
     # prefixes of the other detectors' platforms (.dspace7_skip_doi_prefixes(),
     # minus Dataverse's), so a prefix a Dataverse and a DSpace 7 host share
     # (10.23673, Tartu; 10.7939, Alberta) is looked up by both.
