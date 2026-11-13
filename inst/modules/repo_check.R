@@ -116,6 +116,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     mendeley_links_found <- empty_links
     dataone_links_found <- empty_links
     ldbase_links_found <- empty_links
+    ckan_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
     # exclude psychsci badges
@@ -134,7 +135,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     pa_links_found$repo_type     <- "dspace"
     dspace7_links_found <- dspace7_links(paper)
     dspace7_links_found$repo_type <- "dspace7"
-    zenodo_links_found <- zenodo_links(paper)
+    zenodo_links_found <- invenio_links(paper)  # Zenodo and the other Invenio installations (#636)
     zenodo_links_found$repo_type <- "zenodo"
     dataverse_links_found <- dataverse_links(paper)
     dataverse_links_found$repo_type <- "dataverse"
@@ -142,7 +143,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     figshare_links_found$repo_type <- "figshare"
     dryad_links_found <- dryad_links(paper)
     dryad_links_found$repo_type <- "dryad"
-    reshare_links_found <- reshare_links(paper)
+    reshare_links_found <- eprints_links(paper)  # ReShare and the other EPrints repositories (#637)
     reshare_links_found$repo_type <- "reshare"
     researchdata4tu_links_found <- researchdata4tu_links(paper)
     researchdata4tu_links_found$repo_type <- "researchdata4tu"
@@ -152,6 +153,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dataone_links_found$repo_type <- "dataone"
     ldbase_links_found <- ldbase_links(paper)
     ldbase_links_found$repo_type <- "ldbase"
+    ckan_links_found <- ckan_links(paper)  # CKAN data portals (#637)
+    ckan_links_found$repo_type <- "ckan"
   }
 
   ## organise repos in a table
@@ -171,7 +174,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dspace7_links_found[, cols],
     mendeley_links_found[, cols],
     dataone_links_found[, cols],
-    ldbase_links_found[, cols]
+    ldbase_links_found[, cols],
+    ckan_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   # The punctuation that ends a sentence is not part of an address: taken along
@@ -180,6 +184,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   repos$repo_url <- sub("[.,;:]+$", "", repos$repo_url)
   repos <- dplyr::distinct(repos)
   repos$repo_error <- NA_character_
+  # each DSpace and EPrints record's own type, by repo_url, from the requests
+  # below: a publication there is not a deposit (#637; see "Publications")
+  repo_record_type <- character(0)
 
   # A Figshare private "share link" (figshare.com/s/<hash>) is a real,
   # detected Figshare mention that cannot be resolved any further -- the
@@ -839,6 +846,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # appear in pa_files_df — the item's rights flag is the only signal that
       # some files are machine-inaccessible. Reuses the rights attribute
       # psycharchives_file_download() carries out (no extra API call).
+      repo_record_type <- c(repo_record_type, attr(pa_file_list, "record_type"))
       pa_rights <- attr(pa_file_list, "rights")
       if (length(pa_rights) > 0) {
         restricted <- names(pa_rights)[
@@ -910,6 +918,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # above -- no extra API call.
       dspace7_doi <- attr(dspace7_file_list, "doi")
       dspace7_license <- attr(dspace7_file_list, "license")
+      repo_record_type <- c(repo_record_type, attr(dspace7_file_list, "record_type"))
       if (length(dspace7_doi) > 0 || length(dspace7_license) > 0) {
         dspace7_meta_df <- data.frame(
           repo_url = dspace7_urls,
@@ -962,6 +971,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # guard belongs here too: extracting the metadata never needs the
       # record to have been readable.
       if (nrow(.zenodo_info) > 0) {
+        if ("resource_type" %in% names(.zenodo_info))
+          repo_record_type <- c(repo_record_type, stats::setNames(
+            as.character(.zenodo_info$resource_type), .zenodo_info$zenodo_url))
         zenodo_meta_df <- meta_rows(.zenodo_info, "zenodo_url")
         repos$repo_error <- link_errors(repos$repo_error, repos$repo_url,
                                         .zenodo_info, "zenodo_url")
@@ -1287,6 +1299,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # licence field through this endpoint at all (not a bug, a real gap
       # in what ReShare's own API returns).
       if (nrow(.reshare_info_tbl) > 0) {
+        if ("record_type" %in% names(.reshare_info_tbl))
+          repo_record_type <- c(repo_record_type, stats::setNames(
+            as.character(.reshare_info_tbl$record_type), .reshare_info_tbl$reshare_url))
         reshare_meta_df <- meta_rows(.reshare_info_tbl, "reshare_url")
         repos$repo_error <- link_errors(repos$repo_error, repos$repo_url,
                                         .reshare_info_tbl, "reshare_url")
@@ -1630,6 +1645,65 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
+  ## CKAN ----
+  # Data portals running CKAN (archive-ckan.R, #637): ckan_info() reads each
+  # dataset's record, one request; its files are the resources the portal
+  # holds itself, with their sizes (a resource that only links to another
+  # website is not listed).
+  ckan_urls <- repos |>
+    dplyr::filter(repo_type == "ckan") |>
+    _$repo_url |>
+    unique()
+  ckan_files_df <- data.frame(repo_name = character(0))
+  ckan_meta_df <- data.frame(repo_url = character(0), doi = character(0),
+                             license = character(0))
+  if (length(ckan_urls) > 0) {
+    tryCatch({
+      .ckan_info_tbl <- suppressMessages(ckan_info(ckan_urls, pb = pb, cache = cache))
+
+      if (nrow(.ckan_info_tbl) > 0) {
+        ckan_meta_df <- meta_rows(.ckan_info_tbl, "ckan_url")
+        repos$repo_error <- link_errors(repos$repo_error, repos$repo_url,
+                                        .ckan_info_tbl, "ckan_url")
+      }
+
+      if (nrow(.ckan_info_tbl) > 0 && "files" %in% names(.ckan_info_tbl)) {
+        file_rows <- lapply(seq_len(nrow(.ckan_info_tbl)), function(i) {
+          files_i <- .ckan_info_tbl$files[[i]]
+          if (is.null(files_i) || !nrow(files_i)) return(NULL)
+          data.frame(
+            repo_url = as.character(.ckan_info_tbl$ckan_url[[i]]),
+            file_name = files_i$file_name,
+            file_path = files_i$file_path,
+            file_url = files_i$file_url,
+            file_location = NA_character_,
+            file_size = files_i$file_size
+          )
+        })
+
+        ckan_files_df <- dplyr::bind_rows(file_rows)
+
+        if (nrow(ckan_files_df) > 0) {
+          ckan_files_df$ext <- tolower(sub("^.*\\.", "", basename(ckan_files_df$file_name)))
+          no_ext <- !is.na(ckan_files_df$file_name) &
+            !grepl("\\.", basename(ckan_files_df$file_name))
+          ckan_files_df$ext[no_ext] <- NA_character_
+
+          ckan_files_df <- ckan_files_df |>
+            dplyr::left_join(metacheck::file_types, by = "ext") |>
+            dplyr::rename(file_type = type)
+
+          ckan_files_df$ext <- NULL
+        } else {
+          ckan_files_df$file_type <- character(0)
+        }
+      }
+    }, error = \(e) {
+      # See the OSF block above for why every url is flagged on failure.
+      repos$repo_error[repos$repo_url %in% ckan_urls] <<- conditionMessage(e)
+    })
+  }
+
   ## Local files ----
   local_files_df <- data.frame(repo_name = character(0))
   if (!is.null(local_path)) {
@@ -1663,11 +1737,40 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     repos <- dplyr::bind_rows(repos, local_repo)
   }
 
+  ## Publications ----
+  # A paper, book or thesis in a repository that also holds them (DSpace,
+  # EPrints, Zenodo and the other Invenio installations) is not a deposit,
+  # and is ignored with its files (#636, #637): a record whose own type says
+  # it is a publication (.repo_publication_type(), R/repo-kind.R) and that
+  # holds no data or code file (data, code, a statistics file or an archive).
+  # A record that gives no type is ignored only when it lists files and none
+  # of them is data or code; a preprint with its data (zenodo.7692046, 185
+  # files) is kept. Before the check below, so a paper whose only links are
+  # publications has no repositories.
+  inst_urls <- unique(repos$repo_url[repos$repo_type %in% c("dspace", "dspace7", "reshare", "zenodo")])
+  if (length(inst_urls)) {
+    inst_files <- dplyr::bind_rows(pa_files_df, dspace7_files_df, reshare_files_df, zenodo_files_df)
+    is_pub <- .repo_publication_type(unname(repo_record_type[inst_urls]))
+    kinds <- lapply(inst_urls, \(u)
+      if ("repo_url" %in% names(inst_files)) inst_files$file_type[inst_files$repo_url %in% u] else character(0))
+    no_data <- vapply(kinds, \(k) !any(k %in% c("data", "code", "stats", "archive")), NA)
+    listed <- lengths(kinds) > 0
+    pub_urls <- inst_urls[(is_pub %in% TRUE & no_data) | (is.na(is_pub) & listed & no_data)]
+    if (length(pub_urls)) {
+      drop_pub <- \(df) if ("repo_url" %in% names(df)) df[!df$repo_url %in% pub_urls, , drop = FALSE] else df
+      repos <- drop_pub(repos)
+      pa_files_df <- drop_pub(pa_files_df); dspace7_files_df <- drop_pub(dspace7_files_df)
+      reshare_files_df <- drop_pub(reshare_files_df); zenodo_files_df <- drop_pub(zenodo_files_df)
+      pa_meta_df <- drop_pub(pa_meta_df); dspace7_meta_df <- drop_pub(dspace7_meta_df)
+      reshare_meta_df <- drop_pub(reshare_meta_df); zenodo_meta_df <- drop_pub(zenodo_meta_df)
+    }
+  }
+
   ## no repos found ----
   if (nrow(repos) == 0) {
     info <- list(
       traffic_light = "na",
-      summary_text = "We found no links to repositories on the Open Science Framework, Github, ResearchBox, DSpace, Zenodo, Dataverse, Figshare, Dryad, ReShare, 4TU.ResearchData, Mendeley Data, DataONE, or LDbase.",
+      summary_text = "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, or CKAN data portals.",
       summary_table = .per_paper_table(paper,
                 repo_n = 0,
         files_n = NA,
@@ -1682,7 +1785,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
-  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, local_files_df)
+  all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link
   # more than one repository (e.g. one for data, one for code) with
@@ -1694,7 +1797,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   repo_metadata <- dplyr::bind_rows(
     osf_meta_df, github_meta_df, gitlab_meta_df, rb_meta_df, pa_meta_df, dspace7_meta_df,
     zenodo_meta_df, dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df,
-    fourtu_meta_df, mendeley_meta_df, dataone_meta_df, ldbase_meta_df
+    fourtu_meta_df, mendeley_meta_df, dataone_meta_df, ldbase_meta_df, ckan_meta_df
   )
 
   # remove duplicate links

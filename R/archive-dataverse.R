@@ -197,7 +197,9 @@
     # own robots.txt looks like a generic Drupal portal, not a Dataverse
     # installation -- could not reproduce the issue's live confirmation from
     # here; re-check before adding.
-  )
+  ) |>
+    # and the hosts the repository survey found (#636; R/repo-tables.R)
+    c(.dataverse_hosts_survey())
 }
 
 # Regex fragment matching any known host, for use inside a larger pattern.
@@ -263,7 +265,7 @@
 # failed retrieval against dataverse.no, even though figshare_links() also
 # matched the same DOI correctly on its own.
 .dataverse_doi_prefix_hosts <- function() {
-  list(
+  x <- list(
     "agh.rodbuk.pl" = "10.58032",
     "akf.rodbuk.pl" = "10.58145",
     "arcadados.fiocruz.br" = "10.35078",
@@ -353,6 +355,15 @@
     "uwr.rodbuk.pl" = "10.34616",
     "www.sodha.be" = "10.34934"
   )
+  # and the prefixes the repository survey found (#636; R/repo-tables.R),
+  # under the hand-written entry's name when it writes the host with "www."
+  s <- .dataverse_doi_prefix_hosts_survey()
+  key <- sub("^www\\.", "", tolower(names(x)))
+  for (h in names(s)) {
+    k <- match(h, key)
+    if (is.na(k)) x[[h]] <- s[[h]] else x[[k]] <- unique(c(x[[k]], s[[h]]))
+  }
+  x
 }
 
 # Regex fragment matching any known Dataverse DOI prefix, for use inside a

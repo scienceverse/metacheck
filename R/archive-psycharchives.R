@@ -50,7 +50,9 @@
     # DSpace 7+ host and belongs in .dspace7_hosts() (archive-dspace7.R)
     # instead, where it has been added.
     "datastorre.stir.ac.uk"          # University of Stirling DataSTORRE (UK)
-  )
+  ) |>
+    # and the hosts the repository survey found (#636; R/repo-tables.R)
+    c(.dspace_legacy_hosts_survey())
 }
 
 .dspace_legacy_host_regex <- function() {
@@ -369,6 +371,8 @@ psycharchives_info <- function(pa_url, id_col = 1, pb = NULL, cache = FALSE) {
   obj$PA_title    <- item$name %empty_or% md_val("dc.title")
   obj$PA_authors  <- md_val("dc.contributor.author")
   obj$PA_doi      <- md_val("dc.identifier.doi")
+  # what the item is (dc.type): repo_check ignores a publication (#637)
+  obj$PA_type     <- md_val("dc.type")
   # Two different things, kept apart (2026-10-13). dc.rights holds the ACCESS
   # level on PsychArchives ("openAccess", "restrictedAccess", ...), which drives
   # repo_check's restricted-access flag. The reuse licence is in
@@ -499,6 +503,7 @@ psycharchives_file_download <- function(pa_url, pb = NULL, cache = FALSE) {
     attr(df, "license") <- license
     doi <- unlist(lapply(file_lists, \(x) attr(x, "doi")))
     attr(df, "doi") <- doi
+    attr(df, "record_type") <- unlist(lapply(file_lists, \(x) attr(x, "record_type")))
 
     return(df)
   }
@@ -524,6 +529,7 @@ psycharchives_file_download <- function(pa_url, pb = NULL, cache = FALSE) {
   rights <- stats::setNames(info$PA_rights %||% NA_character_, pa_url)
   license <- stats::setNames(info$PA_license %||% NA_character_, pa_url)
   doi <- stats::setNames(info$PA_doi %||% NA_character_, pa_url)
+  record_type <- stats::setNames(info$PA_type %||% NA_character_, pa_url)
 
   file_list <- info$files[[1]]
   if (is.null(file_list) || nrow(file_list) == 0) {
@@ -539,6 +545,7 @@ psycharchives_file_download <- function(pa_url, pb = NULL, cache = FALSE) {
     attr(empty, "rights") <- rights
     attr(empty, "license") <- license
     attr(empty, "doi") <- doi
+    attr(empty, "record_type") <- record_type
     return(empty)
   }
 
@@ -568,6 +575,7 @@ psycharchives_file_download <- function(pa_url, pb = NULL, cache = FALSE) {
   attr(pa_file_info, "rights") <- rights
   attr(pa_file_info, "license") <- license
   attr(pa_file_info, "doi") <- doi
+  attr(pa_file_info, "record_type") <- record_type
 
   return(pa_file_info)
 }

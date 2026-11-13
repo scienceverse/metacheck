@@ -347,8 +347,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     # token) -- .dryad_headers() applies it when set, but with none set every
     # Dryad download in this function will fail.
     req <- .dryad_headers(req)
-  } else if (.url_host_is(url, "reshare.ukdataservice.ac.uk")) {
-    # ReShare has no documented personal-access-token scheme; public deposits
+  } else if (.url_host_is(url, .eprints_hosts())) {
+    # ReShare and the other EPrints data repositories (#637) have no
+    # documented personal-access-token scheme; public deposits
     # download without any auth header at all (verified live 2026-08-16).
     # .reshare_headers() only sets User-Agent.
     req <- .reshare_headers(req)

@@ -56,6 +56,60 @@ test_that(".reshare_id extracts the eprint id from every citation form", {
   expect_equal(.reshare_id(character(0)), character(0))
 })
 
+test_that("a deposit on another EPrints data repository is '<host>/<id>' (#637)", {
+  expect_true(all(c("datacompass.lshtm.ac.uk", "researchdata.gla.ac.uk", "uclandata.uclan.ac.uk") %in% .eprints_hosts()))
+  ids <- .reshare_id(c(
+    "https://datacompass.lshtm.ac.uk/id/eprint/4333",
+    "https://datacompass.lshtm.ac.uk/4333/",
+    "http://researchdata.gla.ac.uk/2235",
+    "datacompass.lshtm.ac.uk/4333",
+    "https://www.example.org/id/eprint/4333",
+    "https://datacompass.lshtm.ac.uk/view/divisions/"
+  ))
+  expect_equal(unname(ids), c("datacompass.lshtm.ac.uk/4333", "datacompass.lshtm.ac.uk/4333",
+                              "researchdata.gla.ac.uk/2235", "datacompass.lshtm.ac.uk/4333", NA, NA))
+  # ReShare's own deposits keep their plain id
+  expect_equal(.reshare_id("https://reshare.ukdataservice.ac.uk/id/eprint/854001"), "854001")
+})
+
+test_that(".reshare_info asks the deposit's own EPrints host (#637)", local({
+  asked <- character(0)
+  testthat::local_mocked_bindings(.batch_query = function(url, ...) { asked <<- c(asked, url); list(NULL) })
+  x <- suppressWarnings(.reshare_info("datacompass.lshtm.ac.uk/4333"))
+  y <- suppressWarnings(.reshare_info("854001"))
+  expect_equal(asked, c("https://datacompass.lshtm.ac.uk/id/eprint/4333",
+                        "https://reshare.ukdataservice.ac.uk/id/eprint/854001"))
+  expect_equal(x$error, "unfound")
+  expect_warning(.reshare_info("datacompass.lshtm.ac.uk/4333"), "could not be found on datacompass.lshtm.ac.uk")
+}))
+
+test_that("eprints_links finds links, mentions and DOIs on every EPrints repository (#637)", local({
+  asked <- character(0)
+  # DataCite's records: a dataset, and a thesis on the same repository
+  testthat::local_mocked_bindings(.repo_doi_records = function(doi) {
+    asked <<- c(asked, doi)
+    d <- tolower(doi)
+    data.frame(doi = d,
+               url = ifelse(grepl("00001411", d), "https://datacompass.lshtm.ac.uk/id/eprint/1411",
+                            "https://datacompass.lshtm.ac.uk/id/eprint/77"),
+               resource_type = ifelse(grepl("00001411", d), "Dataset", "Dissertation"),
+               in_datacite = TRUE)
+  })
+  paper <- test_paper(
+    text = c("Data are at researchdata.gla.ac.uk/2235/ and doi:10.17037/DATA.00001411.",
+             "Methods follow 10.1016/j.cognition.2020.104 and 10.5255/UKDA-SN-854001.",
+             "Our earlier thesis is 10.17037/THESIS.77."),
+    url = "https://datacompass.lshtm.ac.uk/id/eprint/4333")
+  links <- eprints_links(paper)
+  # the thesis is left out before anything is read
+  expect_setequal(links$reshare_id, c("datacompass.lshtm.ac.uk/4333", "researchdata.gla.ac.uk/2235",
+                                      "datacompass.lshtm.ac.uk/1411", "854001"))
+  # only DOIs under an EPrints repository's prefix are looked up
+  expect_setequal(asked, c("10.17037/DATA.00001411", "10.17037/THESIS.77"))
+  # ReShare's own links are found as before
+  expect_equal(reshare_links(paper)$reshare_id, "854001")
+}))
+
 
 test_that(".reshare_info retrieves real metadata for a known public deposit", {
   info <- metacheck:::.reshare_info("854001")
