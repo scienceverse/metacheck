@@ -11,7 +11,7 @@ invenio_links(paper)
 }
 \value{
 a table with the record's url in the first (text) column, and
-\code{zenodo_url}, \code{zenodo_id} (the record id on Zenodo, "\if{html}{\out{<host>}}/\if{html}{\out{<id>}}" on
+\code{zenodo_url}, \code{zenodo_id} (the record id on Zenodo, \code{host/id} on
 another installation) and \code{zenodo_link}
 }
 \description{

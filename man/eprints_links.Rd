@@ -11,8 +11,8 @@ eprints_links(paper)
 }
 \value{
 a table with the deposit's url in the first (text) column, and
-\code{reshare_url} and \code{reshare_id} (the eprint id on ReShare, "\if{html}{\out{<host>}}/\if{html}{\out{<id>}}"
-on another host)
+\code{reshare_url} and \code{reshare_id} (the eprint id on ReShare, \code{host/id} on
+another host)
 }
 \description{
 Get all links to records on an EPrints repository: ReShare (see

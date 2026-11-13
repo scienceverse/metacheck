@@ -60,7 +60,7 @@ zenodo_links <- function(paper) {
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a table with the record's url in the first (text) column, and
-#'   `zenodo_url`, `zenodo_id` (the record id on Zenodo, "<host>/<id>" on
+#'   `zenodo_url`, `zenodo_id` (the record id on Zenodo, `host/id` on
 #'   another installation) and `zenodo_link`
 #' @export
 #'

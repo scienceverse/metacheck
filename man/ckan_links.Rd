@@ -11,8 +11,8 @@ ckan_links(paper)
 }
 \value{
 a data frame with a row for each link (\code{href}, plus \code{text_id} /
-\code{paper_id}), with \code{ckan_url} (the link) and \code{ckan_id} ("\if{html}{\out{<host>}}/\if{html}{\out{<dataset
-name or id>}}")
+\code{paper_id}), with \code{ckan_url} (the link) and \code{ckan_id} (the portal's
+host and the dataset's name or id, \code{host/name})
 }
 \description{
 Finds links to datasets on the CKAN data portals in metacheck's list

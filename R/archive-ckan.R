@@ -51,8 +51,8 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a data frame with a row for each link (`href`, plus `text_id` /
-#'   `paper_id`), with `ckan_url` (the link) and `ckan_id` ("<host>/<dataset
-#'   name or id>")
+#'   `paper_id`), with `ckan_url` (the link) and `ckan_id` (the portal's
+#'   host and the dataset's name or id, `host/name`)
 #' @export
 #'
 #' @examples

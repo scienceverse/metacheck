@@ -71,8 +71,8 @@
 #' @param paper a paper object or paperlist object
 #'
 #' @returns a table with the deposit's url in the first (text) column, and
-#'   `reshare_url` and `reshare_id` (the eprint id on ReShare, "<host>/<id>"
-#'   on another host)
+#'   `reshare_url` and `reshare_id` (the eprint id on ReShare, `host/id` on
+#'   another host)
 #' @export
 #'
 #' @examples
