@@ -237,10 +237,48 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   "datadryad\\.org", "aspredicted\\.org", "zenodo\\.org", "researchbox\\.org",
   sep = "|")
 
+# The full website names of the repositories repo_check reads, and of the
+# link services before them (doi.org, hdl.handle.net)
+.link_names <- c(
+  "doi.org", "dx.doi.org", "hdl.handle.net", "osf.io", "github.com",
+  "gitlab.com", "bitbucket.org", "zenodo.org", "figshare.com",
+  "datadryad.org", "researchbox.org", "aspredicted.org", "data.mendeley.com",
+  "data.4tu.nl", "psycharchives.org", "reshare.ukdataservice.ac.uk",
+  "ldbase.org", "archive.softwareheritage.org")
+
+#' Join a website's name that reading the PDF split at a dot
+#'
+#' A space after a dot ("doi. org/", "hdl. handle. net/") or before one
+#' ("doi .org/", "osf .io/") in one of `.link_names` is removed when a "/"
+#' follows the name, as in every link to a deposit; no sentence has a
+#' repository's name, a split at its dot, and a "/" after it other than a
+#' link. In 17 corpora (13,706 papers, 4.5 million sentences) this joined
+#' 2,474 names in 705 papers that the earlier rules (a space after the dot
+#' of nine names) left split, all of them links ("doi .org/" 2,161,
+#' "dx. doi.org/" 207, "osf .io/" 25, "hdl. handle. net/" 21); it no longer
+#' joins a name without a "/" after it, which happened in 3 sentences, none a
+#' link ("datadryad. org for production"). Letters are kept as written
+#' ("OSF. IO/" -> "OSF.IO/").
+#'
+#' @param x a character vector without NA
+#' @returns `x` with those spaces removed
+#' @noRd
+.repair_link_names <- function(x) {
+  nm <- .link_names[order(-nchar(.link_names))]
+  parts <- vapply(strsplit(nm, ".", fixed = TRUE),
+                  \(p) paste(p, collapse = "\\s*\\.\\s*"), character(1))
+  rx <- paste0("(?i)\\b(?:", paste(parts, collapse = "|"), ")(?=\\s*/)")
+  m <- gregexpr(rx, x, perl = TRUE)
+  regmatches(x, m) <- lapply(regmatches(x, m), \(s) gsub("\\s+", "", s))
+  x
+}
+
 #' Join links that reading the PDF split with a space
 #'
 #' @param x a character vector (the sentences of a paper)
-#' @returns `x` with those spaces removed; nothing else is changed
+#' @returns `x` with those spaces removed, and GROBID's temporary folder and
+#'   Check Point security wrappers taken out of links; characters are only
+#'   removed, never added or changed
 #' @noRd
 .repair_links <- function(x) {
   if (!length(x)) return(x)
@@ -258,23 +296,30 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   # every rule with perl = TRUE: R's other engine took 2 to 12 seconds per
   # rule for 46,000 sentences with ignore.case = TRUE, perl 0.1
   x <- x |>
+    # GROBID's own temporary folder, written before a link it could not
+    # resolve ("file://localhost/opt/grobid/grobid-home/tmp/10.5281/zenodo.
+    # 15527338"): 22 sentences in 12 papers of 17 corpora (#634)
+    gsub("file://localhost/\\S*?grobid-home/tmp/", "", x = _, perl = TRUE) |>
+    # a Check Point e-mail security wrapper around a link
+    # ("https://protect.checkpoint.com/v2/___https://osf.io/qby5j___.YzJ1...");
+    # wrappers that encode the link (Outlook, Proofpoint) are undone when
+    # repo_check gathers links, as decoding changes characters
+    # (.repo_link_unwrapped())
+    gsub("https?://protect\\.checkpoint\\.com/v2/___(\\S+?)___\\.[A-Za-z0-9+/=_-]+",
+         "\\1", x = _, ignore.case = TRUE, perl = TRUE) |>
     # "https ://", "https: //", and "https:// doi.org": only a website's
     # name follows "https://"
     gsub("\\b(https?)\\s*:\\s*//", "\\1://", x = _, ignore.case = TRUE,
          perl = TRUE) |>
     gsub("\\b(https?://)\\s+(?=[A-Za-z0-9])", "\\1", x = _, ignore.case = TRUE,
          perl = TRUE) |>
-    # a website's name split from its ending: "doi. org", "github. com"
-    gsub("\\b(doi|zenodo|researchbox|bitbucket|datadryad)\\.\\s+org\\b",
-         "\\1.org", x = _, ignore.case = TRUE, perl = TRUE) |>
-    gsub("\\b(github|gitlab|figshare)\\.\\s+com\\b", "\\1.com", x = _,
-         ignore.case = TRUE, perl = TRUE) |>
-    gsub("\\bosf\\.\\s+io\\b", "osf.io", x = _, ignore.case = TRUE,
-         perl = TRUE) |>
+    # a website's name split at a dot ("doi. org/", "osf .io/", "hdl. handle.
+    # net/"), see .repair_link_names()
+    .repair_link_names() |>
     # a space after the "/" of a DOI link or an OSF link
-    gsub("\\bdoi\\.org/\\s+", "doi.org/", x = _, ignore.case = TRUE,
+    gsub("\\b(doi\\.org/)\\s+", "\\1", x = _, ignore.case = TRUE,
          perl = TRUE) |>
-    gsub("\\bosf\\.io/\\s+", "osf.io/", x = _, ignore.case = TRUE,
+    gsub("\\b(osf\\.io/)\\s+", "\\1", x = _, ignore.case = TRUE,
          perl = TRUE) |>
     # and of another repository, when the text after it looks like part of
     # a link: "zenodo.org/ with doi:" stays as it is
@@ -303,6 +348,57 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   x
 }
 
+# References whose DOI a space split ----
+#
+# The rules above need a fixed part of a link before the space. In the
+# reference list a DOI is often split anywhere, also inside its number
+# ("10.5281/zenodo.76187 49", "10. 5281/ ZENODO. 13986711"), and no rule can
+# tell those spaces from the ones after a link. But the reader already found
+# each reference's DOI whole (GROBID's <idno type="DOI">, bibr's own), with
+# the sentence it is in. Where that DOI is in its sentence only with spaces
+# inside, the spaces are removed, so the text holds the DOI the reader found;
+# no character is added or changed (#459). In 17 corpora (10,453 papers),
+# 51,362 reference DOIs were in their sentence only with spaces; of 300 of
+# them, 296 exist as joined, at doi.org (checked 2026-11-12).
+#
+# Two exceptions. The reader's DOI sometimes took in the word after it, the
+# next reference's author or a word of the text ("...90173-ICao",
+# "...010.Targeting"), while the sentence has the space: 61 of the 71 DOIs
+# with a capitalised word after a space do not exist. A space before a
+# capitalised word is therefore kept. And a DOI that holds a second DOI
+# ("10.1007/BF0251070510.1007/BF02510705") is left out, as joining it would
+# break the copy written right.
+
+#' Join each reference's DOI in its sentence
+#'
+#' @param text the sentences of a paper
+#' @param text_id their ids
+#' @param bib the paper's bib table (`doi`, `text_id`)
+#' @returns `text` with spaces inside the references' DOIs removed
+#' @noRd
+.repair_bib_dois <- function(text, text_id, bib) {
+  if (!is.data.frame(bib) || !nrow(bib) ||
+      !all(c("doi", "text_id") %in% names(bib))) return(text)
+  doi <- as.character(bib$doi)
+  ok <- !is.na(doi) & nzchar(doi) & !is.na(bib$text_id) &
+    !grepl(".10\\.\\d{4,9}/", doi, perl = TRUE)
+  rows <- match(bib$text_id[ok], text_id)
+  doi <- doi[ok]
+  for (k in which(!is.na(rows))) {
+    r <- rows[[k]]
+    s <- text[[r]]
+    if (is.na(s) || grepl(tolower(doi[[k]]), tolower(s), fixed = TRUE)) next
+    pat <- paste(.zenodo_regex_escape(strsplit(doi[[k]], "")[[1]]),
+                 collapse = "\\s*")
+    m <- regexpr(pat, s, perl = TRUE, ignore.case = TRUE)
+    if (m < 0) next
+    end <- m + attr(m, "match.length")
+    joined <- gsub("\\s+(?![A-Z][a-z])", "", substr(s, m, end - 1), perl = TRUE)
+    text[[r]] <- paste0(substr(s, 1, m - 1), joined, substr(s, end, nchar(s)))
+  }
+  text
+}
+
 # The positions (1 = first character) in `old` of the characters that are
 # not in `new`, where `new` is `old` with some spaces removed
 .removed_positions <- function(old, new) {
@@ -318,7 +414,8 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
 
 #' Join links in a paper's sentences that reading the PDF split with a space
 #'
-#' Repairs the text table with `.repair_links()`. The url, xref and eq tables
+#' Repairs the text table with `.repair_links()` and `.repair_bib_dois()`
+#' (references' DOIs). The url, xref and eq tables
 #' give where each item is in its sentence (`start`, counted from 0, and
 #' `end`, just after it); these move back by the number of spaces removed
 #' before them, so a paper written with `paper_write()` stays right.
@@ -335,6 +432,13 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
 
   old <- tx$text
   new <- .repair_links(old)
+  # after the rules, so a reference's DOI is joined only where the rules left
+  # no whole copy of it. Both only remove spaces; in 17 corpora (4.5 million
+  # sentences) the order changed one sentence, where joining first also
+  # joined a second copy of the DOI inside another link (checked 2026-11-12)
+  if ("text_id" %in% names(tx)) {
+    new <- .repair_bib_dois(new, tx$text_id, paper$bib)
+  }
   changed <- which(!is.na(old) & old != new)
   if (!length(changed)) return(paper)
   paper$text$text <- new

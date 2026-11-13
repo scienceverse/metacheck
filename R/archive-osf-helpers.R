@@ -219,8 +219,17 @@ osf_pat <- function(pat = NULL) {
   guid_ids <- valid_ids[is_guid | is_vo]
   wb_ids <- valid_ids[!is_guid & !is_vo & !is.na(valid_ids)]
 
+  # The contributors come in the same answer (embed=bibliographic_contributors,
+  # verified 2026-11-13 for a node, a registration and a preprint): they tell
+  # a paper's own project from one it reuses (#634), at no extra request.
+  # (paste0() of no ids and the text would give the text alone, an address
+  # for no id, and every answer after it would go to the wrong id)
+  guid_urls <- sprintf("%s/guids/%s", osf_api, guid_ids)
+  if (length(guid_urls))
+    guid_urls <- paste0(guid_urls, ifelse(grepl("?", guid_urls, fixed = TRUE), "&", "?"),
+                        "embed=bibliographic_contributors")
   all_urls <- c(
-    sprintf("%s/guids/%s", osf_api, guid_ids),
+    guid_urls,
     #sprintf("%s/nodes/%s/?view_only=%s", osf_api, vo_ids, vo_tokens),
     sprintf("%s/files/%s", osf_api, wb_ids)
   )
@@ -237,6 +246,11 @@ osf_pat <- function(pat = NULL) {
   if (isTRUE(cache)) {
     for (i in seq_along(all_ids)) {
       hit <- .repo_info_cache_get("osf", all_ids[i])
+      # a project, registration or preprint stored before its contributors
+      # were read (#634) is asked for again
+      if (is.data.frame(hit) && any(hit$osf_type %in% c("nodes", "registrations", "preprints")) &&
+          !"contributors" %in% names(hit))
+        hit <- NULL
       if (!is.null(hit)) {
         results[[i]] <- hit
         need_fetch[i] <- FALSE
@@ -551,6 +565,25 @@ osf_pat <- function(pat = NULL) {
 }
 
 
+# The contributors OSF lists in a node's, registration's or preprint's
+# citation (bibliographic contributors), as "Name; Name" and their ORCID iDs
+# as "id; id". .osf_info() asks for them in the request it makes anyway
+# (?embed=bibliographic_contributors); they tell a paper's own project from
+# one it reuses (#634). NA when the answer holds none (a listing of child
+# nodes, or an answer from before they were asked for).
+.osf_contributors <- function(data) {
+  u <- tryCatch(data$embeds$bibliographic_contributors$data, error = \(e) NULL)
+  if (is.null(u) || !length(u)) return(c(NA_character_, NA_character_))
+  att <- tryCatch(u$embeds$users$data$attributes, error = \(e) NULL)
+  if (is.null(att) && is.list(u) && !is.data.frame(u))
+    att <- list(full_name = vapply(u, \(x) x$embeds$users$data$attributes$full_name %||% NA_character_, character(1)),
+                social = list(orcid = vapply(u, \(x) x$embeds$users$data$attributes$social$orcid %||% NA_character_, character(1))))
+  nm <- as.character(unlist(att$full_name %||% character(0)))
+  nm <- nm[!is.na(nm) & nzchar(nm)]
+  orc <- .meta_orcids(att$social$orcid %||% character(0))
+  c(if (length(nm)) paste(unique(nm), collapse = "; ") else NA_character_, orc)
+}
+
 #' Structure OSF Node Data
 #'
 #' @param data the data object from an OSF API call
@@ -577,8 +610,15 @@ osf_pat <- function(pat = NULL) {
     children = data$relationships$children$links$related$href %||% NA_character_,
     files = data$relationships$files$links$related$href %||% NA_character_,
     parent = data$relationships$parent$data$id %||% NA_character_,
-    project = data$relationships$root$data$id %||% NA_character_
+    project = data$relationships$root$data$id %||% NA_character_,
+    # in the same response; repo_check keeps them, to tell a paper's own
+    # project from an older one it reuses (#634)
+    date_created = att$date_created %||% NA_character_,
+    date_modified = att$date_modified %||% NA_character_
   )
+  cb <- .osf_contributors(data)
+  obj$contributors <- cb[[1]]
+  obj$contributor_orcids <- cb[[2]]
 
   return(obj)
 }
@@ -668,6 +708,9 @@ osf_pat <- function(pat = NULL) {
     project = data$relationships$root$data$id %||% NA_character_,
     primary_file = data$relationships$primary_file$links$related$href %||% NA_character_
   )
+  cb <- .osf_contributors(data)
+  obj$contributors <- cb[[1]]
+  obj$contributor_orcids <- cb[[2]]
 
   return(obj)
 }
@@ -696,8 +739,14 @@ osf_pat <- function(pat = NULL) {
     children = data$relationships$children$links$related$href %||% NA_character_,
     files = data$relationships$files$links$related$href %||% NA_character_,
     parent = data$relationships$registered_from$data$id %||% NA_character_,
-    project = data$relationships$root$data$id %||% NA_character_
+    project = data$relationships$root$data$id %||% NA_character_,
+    description = att$description %||% NA_character_,
+    date_created = att$date_created %||% NA_character_,
+    date_registered = att$date_registered %||% NA_character_
   )
+  cb <- .osf_contributors(data)
+  obj$contributors <- cb[[1]]
+  obj$contributor_orcids <- cb[[2]]
 
   return(obj)
 }

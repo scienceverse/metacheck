@@ -77,6 +77,27 @@
 #'   (always wait for a confirmed reset) -- see [download_repo_files()]'s
 #'   parameter of the same name, which this matches for the listing-only
 #'   requests `zip_peek()` makes here.
+#' @param references if TRUE (default), also look up the data and code
+#'   deposits cited only in the reference list (one lookup each, as for a
+#'   link in the text; a preprint server's record needs none), to tell
+#'   whose deposit each one is. Their files are never added to `table`, so
+#'   data_check and code_check do not download them. FALSE leaves them out.
+#'
+#' @details
+#' Whose deposit is each link? The `ownership` table gives, for every
+#' repository linked in the text and (with `references = TRUE`) every deposit
+#' cited in the reference list, one of six labels: `own_this` (made by the
+#' authors for this paper), `own_earlier_data` or `own_earlier_code` (the
+#' authors' own, from earlier work), `others_data` or `others_code` (made by
+#' other people, reused here), or `not_data` (a publication such as a
+#' preprint, not a deposit), with `ownership_group` ("own", "others",
+#' "not_data") and the reason. It is decided without a language model, from
+#' the sentence or reference that cites the link, the paper's authors (names,
+#' ORCID iDs, affiliations), and what the deposit's own record and files say
+#' (who made it, what it names, when, whether it is a software package). On
+#' links the rules were not written from, the three groups were right for
+#' about 97% of links in the main text and 92% in reference lists; telling
+#' this paper's own deposit from the authors' earlier one is less certain.
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
@@ -85,7 +106,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        cache = FALSE,
                        model = llm_model(),
                        params = list(),
-                       skip_on_api_limit = FALSE) {
+                       skip_on_api_limit = FALSE,
+                       references = TRUE) {
   # get repository links ----
   # paper <- demopaper()
   pb <- pb(NA, "(:spin) :what")
@@ -179,6 +201,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # listing the same files, or one that could not be found.
   repos$repo_url <- sub("[.,;:]+$", "", repos$repo_url)
   repos <- dplyr::distinct(repos)
+  # Damage from reading the PDF: a link in a security wrapper, two links run
+  # together, a home page alone, a link cut inside a name beside its longer
+  # form (.repo_links_tidy(), R/repo-link-versions.R, #634).
+  repos <- .repo_links_tidy(repos, paper)
   # A link that a space split, with the rest after it in the text, is
   # replaced by the joined form when only that form exists
   # (.repo_links_joined(), R/repo-link-versions.R).
@@ -187,6 +213,73 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     repos <- .repo_links_joined(repos, paper)
   }
   repos$repo_error <- NA_character_
+  # the links as the paper gives them, for telling whose deposit each is
+  # (#634) after the lookups below have changed `repos`
+  own_links <- unique(repos[, c("paper_id", "repo_url", "repo_type")])
+  # Whose deposit each link is (#634; R/repo-ownership.R): the links in the
+  # text, with what this check learns about each, and -- when `references`
+  # is TRUE -- the deposits cited only in the reference list, looked up with
+  # this same check (their files are not added to `table`).
+  own_references <- function() {
+    ids <- unique(paper_id(paper))
+    dplyr::bind_rows(lapply(ids, function(id) {
+      p <- if (.is_paper_list(paper)) paper[[id]] else paper
+      refl <- tryCatch(.own_reference_links(p, exclude = own_links$repo_url[own_links$paper_id %in% id]),
+                       error = \(e) NULL)
+      if (is.null(refl) || !nrow(refl)) return(NULL)
+      pre <- .own_preprint_link(refl$repo_url, refl$ref_text)
+      x <- data.frame(paper_id = id, repo_url = refl$repo_url, repo_type = refl$repo_type)
+      if (any(!pre)) {
+        pb$tick(0, list(what = sprintf("Looking up %d deposit%s cited in the reference list",
+                                         sum(!pre), plural(sum(!pre)))))
+        inner <- tryCatch(
+          repo_check(.own_reference_paper(id, refl$repo_url[!pre]), peek_zips = FALSE,
+                     osf_license = FALSE, cache = cache, references = FALSE,
+                     skip_on_api_limit = skip_on_api_limit),
+          error = \(e) NULL)
+        facts <- inner$ownership
+        if (is.data.frame(facts) && nrow(facts)) {
+          k <- match(.own_core(refl$repo_url), .own_core(facts$repo_url))
+          k[pre] <- NA
+          for (cc in setdiff(names(facts), c("paper_id", "repo_url", "repo_type", "source", "context",
+                                              "sections", "cites_others", "cites_own", "ownership",
+                                              "ownership_group", "ownership_reason")))
+            x[[cc]] <- facts[[cc]][k]
+          im <- inner$repo_metadata
+          if (is.data.frame(im) && nrow(im) && "readme" %in% names(im))
+            x$readme <- im$readme[match(.own_core(refl$repo_url), .own_core(im$repo_url))]
+        }
+      }
+      x$source <- "reference"
+      for (cc in c("bib_id", "ref_text", "ref_authors", "ref_year", "ref_title", "citing", "citing_sections"))
+        x[[cc]] <- refl[[cc]]
+      .own_classify(paper, x)
+    }))
+  }
+  own_ownership <- function(meta, files, osf_desc) {
+    x <- .own_facts(paper, own_links, meta, files, osf_desc)
+    x$source <- rep("text", nrow(x))
+    if (nrow(x)) {
+      ctx <- dplyr::bind_rows(lapply(unique(own_links$paper_id), function(id) {
+        p <- if (.is_paper_list(paper)) paper[[id]] else paper
+        cbind(paper_id = id, .own_text_context(p, unique(own_links$repo_url[own_links$paper_id %in% id])))
+      }))
+      x <- dplyr::left_join(x, ctx[!duplicated(ctx[c("paper_id", "repo_url")]), , drop = FALSE],
+                            by = c("paper_id", "repo_url"))
+    }
+    out <- .own_classify(paper, x)
+    if (isTRUE(references) && !isTRUE(local_only)) {
+      # a table without rows has empty logical columns, which cannot be
+      # joined to the reference rows' text columns
+      refs <- tryCatch(own_references(), error = \(e) NULL)
+      if (is.data.frame(refs) && nrow(refs))
+        out <- if (nrow(out)) dplyr::bind_rows(out, refs) else refs
+    }
+    first <- c("paper_id", "source", "repo_url", "repo_type", "ownership", "ownership_group", "ownership_reason")
+    out <- out[, c(intersect(first, names(out)), setdiff(names(out), c(first, "readme"))), drop = FALSE]
+    rownames(out) <- NULL
+    out
+  }
 
   # A Figshare private "share link" (figshare.com/s/<hash>) is a real,
   # detected Figshare mention that cannot be resolved any further -- the
@@ -212,10 +305,27 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # differing number of rows: n, 0" -- which the block's tryCatch reported for
   # every link in place of each link's real reason (#476; the Zenodo block
   # below explains the first case found).
+  # The deposit's own description is kept too (title, creators and their
+  # ORCID iDs, date, description, keywords): the *_info() functions fetch it
+  # in the request that lists the files, and it tells the paper's own
+  # deposit from one it reuses (#634). A platform whose table lacks a field
+  # gets NA there.
   meta_rows <- function(tbl, url_col) data.frame(
     repo_url = .col_chr(tbl, url_col),
     doi = .col_chr(tbl, "doi"),
-    license = .col_chr(tbl, "license")
+    license = .col_chr(tbl, "license"),
+    title = .meta_col(tbl, c("title", "name"), \(v) .meta_text(v, 300)),
+    creators = .meta_col(tbl, c("creators", "authors"), .meta_people),
+    creator_orcids = .meta_col(tbl, c("orcids", "creators", "authors"), .meta_orcids),
+    published = .meta_col(tbl, c("publication_date", "date_created"),
+                          \(v) substr(as.character(v), 1, 10)),
+    description = .meta_col(tbl, "description", .meta_text),
+    keywords = .meta_col(tbl, c("keywords", "tags"), .meta_people),
+    # the record's type ("dataset", "software", "preprint") and the works it
+    # names ("isSupplementTo:<the article's DOI>"), from the same answer
+    resource_type = .meta_col(tbl, "resource_type", \(v) as.character(v)),
+    resource_subtype = .meta_col(tbl, "resource_subtype", \(v) as.character(v)),
+    related = .meta_col(tbl, "related", \(v) as.character(v))
   )
   # `repo_error` with each link's own reason from its *_info() table
   # ("unfound", "parse_error", ...) filled in, so a link that could not be
@@ -588,6 +698,44 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     }
   }
 
+  # Each OSF project's own title, description, category, dates and
+  # contributors, from the listing osf_info() already made (no extra request;
+  # #634). `osf_desc_all` keeps them for every OSF link the paper gives,
+  # registrations included, for telling whose deposit each link is (below).
+  osf_repo_urls <- unique(repos$repo_url[repos$repo_type %in% "osf"])
+  osf_desc_all <- NULL
+  if (length(osf_urls) > 0 && exists("osf_info", inherits = FALSE) &&
+      is.data.frame(osf_info) && nrow(osf_info) > 0 && "osf_id" %in% names(osf_info)) {
+    own <- osf_info[osf_info$osf_type %in% c("nodes", "registrations", "preprints"), , drop = FALSE]
+    own <- own[!duplicated(own$osf_id), , drop = FALSE]
+    desc_urls <- unique(c(osf_urls, osf_repo_urls))
+    ids <- vapply(desc_urls, \(u) osf_check_id(u)[[1]], character(1), USE.NAMES = FALSE)
+    k <- match(tolower(sub("[?/].*$", "", ids)), tolower(own$osf_id))
+    osf_desc_all <- data.frame(
+      repo_url = desc_urls,
+      title = .col_chr(own, "name")[k],
+      description = vapply(.col_chr(own, "description")[k],
+                           \(v) if (is.na(v)) NA_character_ else .meta_text(v), character(1),
+                           USE.NAMES = FALSE),
+      category = .col_chr(own, "category")[k],
+      osf_type = .col_chr(own, "osf_type")[k],
+      creators = .col_chr(own, "contributors")[k],
+      creator_orcids = .col_chr(own, "contributor_orcids")[k],
+      published = substr(dplyr::coalesce(.col_chr(own, "date_registered")[k],
+                                          .col_chr(own, "date_created")[k]), 1, 10),
+      updated = substr(.col_chr(own, "date_modified")[k], 1, 10)
+    )
+  }
+  if (length(osf_repo_urls) > 0 && !is.null(osf_desc_all)) {
+    osf_desc <- osf_desc_all[match(osf_repo_urls, osf_desc_all$repo_url), , drop = FALSE]
+    osf_desc$repo_url <- osf_repo_urls
+    osf_meta_df <- if (nrow(osf_meta_df) > 0) {
+      dplyr::left_join(osf_meta_df, osf_desc, by = "repo_url")
+    } else {
+      cbind(data.frame(doi = NA_character_, license = NA_character_)[rep(1, nrow(osf_desc)), ], osf_desc)
+    }
+  }
+
   ## GitHub ----
   github_urls <- repos |>
     dplyr::filter(repo_type == "github") |>
@@ -677,10 +825,34 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # length 1 from every call, so %||% letting a length-zero value through
     # would error ("values must be length 1").
     gh_license <- vapply(gh_results, \(r) r$license %empty_or% NA_character_, character(1))
+    # the repository's own description, from the same metadata request
+    # (github_tree_files()'s `info`)
+    gh_info <- function(field) unname(vapply(gh_results[github_urls], \(r) {
+      v <- r$info[[field]]
+      if (is.null(v) || !length(v) || is.na(v[[1]])) NA_character_ else as.character(v[[1]])
+    }, character(1)))
+    # The README's text, one plain file request per listed repository (not
+    # the rate-limited API): its opening names the authors, and it says
+    # whether the repository is a tool to install or a study's code and
+    # which paper it belongs to (#634). At most 20,000 characters are kept.
+    gh_readme <- unname(vapply(gh_results[github_urls], \(r)
+      if (isTRUE(r$gated)) NA_character_ else .repo_readme_from_listing(r$files), character(1)))
     github_meta_df <- data.frame(
       repo_url = github_urls,
       doi = NA_character_,
-      license = unname(gh_license[github_urls])
+      license = unname(gh_license[github_urls]),
+      readme = gh_readme,
+      title = gh_info("full_name"),
+      creators = gh_info("owner"),
+      published = gh_info("created"),
+      updated = gh_info("pushed"),
+      description = gh_info("description"),
+      keywords = gh_info("topics"),
+      homepage = gh_info("homepage"),
+      owner_type = gh_info("owner_type"),
+      stars = suppressWarnings(as.integer(gh_info("stars"))),
+      forks = suppressWarnings(as.integer(gh_info("forks"))),
+      is_fork = as.logical(gh_info("fork"))
     )
   } else {
     github_meta_df <- data.frame(repo_url = character(0), doi = character(0),
@@ -770,10 +942,15 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # %empty_or% (not %||%) for the same reason as gh_license above: vapply
     # requires exactly length 1 from every call.
     gl_license <- vapply(gl_results, \(r) r$license %empty_or% NA_character_, character(1))
+    # The README, as for GitHub (one plain file request per listed
+    # repository): it can say the repository is a published tool (#634)
+    gl_readme <- unname(vapply(gl_results[gitlab_urls], \(r)
+      if (isTRUE(r$gated)) NA_character_ else .repo_readme_from_listing(r$files), character(1)))
     gitlab_meta_df <- data.frame(
       repo_url = gitlab_urls,
       doi = NA_character_,
-      license = unname(gl_license[gitlab_urls])
+      license = unname(gl_license[gitlab_urls]),
+      readme = gl_readme
     )
   }
 
@@ -1725,7 +1902,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         files_code = NA,
         files_readme = NA,
         files_zip = NA
-      )
+      ),
+      ownership = own_ownership(NULL, NULL, if (exists("osf_desc_all", inherits = FALSE)) osf_desc_all else NULL)
     )
 
     return(info)
@@ -2064,6 +2242,14 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else {
     repo_metadata$paper_id <- character(0)
   }
+
+  ## whose deposit is it (#634) ----
+  ownership <- own_ownership(repo_metadata, all_files, osf_desc_all)
+  own_text <- ownership[ownership$source %in% "text",
+                        c("paper_id", "repo_url", "ownership", "ownership_group", "ownership_reason"), drop = FALSE]
+  own_text <- own_text[!duplicated(own_text[c("paper_id", "repo_url")]), , drop = FALSE]
+  if (nrow(repo_metadata) > 0)
+    repo_metadata <- dplyr::left_join(repo_metadata, own_text, by = c("paper_id", "repo_url"))
 
   repos <- dplyr::full_join(repos, all_files, by = c("paper_id", "repo_url"), relationship = "many-to-many") |>
     dplyr::summarise(
@@ -2521,11 +2707,29 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     repo_tbl$Error <- NULL
   }
 
+  # whose deposit each link is (#634)
+  report_ownership <- NULL
+  if (is.data.frame(ownership) && nrow(ownership) > 0) {
+    whose <- c(own_this = "the authors', for this paper",
+               own_earlier_data = "the authors' earlier data",
+               own_earlier_code = "the authors' earlier code",
+               others_data = "others' data", others_code = "others' code",
+               not_data = "a publication, not a deposit")
+    own_tbl <- data.frame(
+      Repository = link(ownership$repo_url),
+      `Cited in` = ifelse(ownership$source %in% "text", "text", "reference list"),
+      Whose = unname(whose[ownership$ownership]),
+      Why = ownership$ownership_reason,
+      check.names = FALSE)
+    report_ownership <- c("#### Whose Deposits", scroll_table(own_tbl, maxrows = 10))
+  }
+
   report <- c(
     report_unchecked,
     report_not_public,
     report_view_only,
     report_repo,
+    report_ownership,
     if(nrow(repo_tbl)) "#### Repositories" else NULL,
     scroll_table(repo_tbl, maxrows = 10),
     if (nrow(report_tbl)) "#### Files" else NULL,
@@ -2575,6 +2779,14 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     dplyr::left_join(n_unknown_by_paper, by = "paper_id") |>
     dplyr::left_join(n_naming_bad_by_paper, by = "paper_id")
   summary_table$files_unknown[is.na(summary_table$files_unknown)] <- 0L
+  # whose deposits (#634): linked in the text and the authors' own, or
+  # others'; cited in the reference list and others'
+  own_n <- function(src, grp) vapply(summary_table$paper_id, \(id)
+    sum(ownership$paper_id %in% id & ownership$source %in% src & ownership$ownership_group %in% grp),
+    integer(1), USE.NAMES = FALSE)
+  summary_table$repo_own <- own_n("text", "own")
+  summary_table$repo_others <- own_n("text", "others")
+  summary_table$ref_others <- own_n("reference", "others")
   summary_table$naming_issues[is.na(summary_table$naming_issues)] <- 0L
   # private OSF projects and ResearchBox boxes checked through a view-only or
   # peer-review link, per paper
@@ -2627,6 +2839,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # repo_metadata's own construction comment above for why this is
     # per-repo rather than collapsed to one value per paper.
     repo_metadata = repo_metadata,
+    # Whose deposit each link is (#634): one row per repository linked in the
+    # text (source "text") and per deposit cited only in the reference list
+    # (source "reference"), with `ownership`, `ownership_group` and
+    # `ownership_reason`, and what the deposit's record and files showed.
+    ownership = ownership,
     roster_check = roster_check,
     group_no_evidence = group_no_evidence,
     # Files that do not belong in a repository, left out of `table`: paper_id,

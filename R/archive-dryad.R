@@ -76,7 +76,9 @@ dryad_links <- function(paper) {
     # a sharing link, resolved to its DOI by dryad_info() (#484)
     "|(?:https?://)?(?:www\\.)?datadryad\\.org/(?:stash/)?share/[A-Za-z0-9_-]+",
     "|(?:https?://)?(?:doi\\.org/)?10\\.5061/dryad\\.[A-Za-z0-9]+",
-    "|(?:https?://)?(?:doi\\.org/)?(?:", alt_prefix_regex, ")/[A-Za-z0-9]+"
+    # the newer prefixes' suffixes can hold a hyphen ("10.15146/5xcp-0d46"),
+    # which cut the link short before (#634)
+    "|(?:https?://)?(?:doi\\.org/)?(?:", alt_prefix_regex, ")/[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*"
   )
   other_dryad <- text_search(paper, dryad_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
@@ -126,7 +128,8 @@ dryad_links <- function(paper) {
   alt_prefix_regex <- paste(gsub("\\.", "\\\\.", alt_prefixes), collapse = "|")
   patterns <- c(
     "(10\\.5061/dryad\\.[A-Za-z0-9]+)",
-    paste0("((?:", alt_prefix_regex, ")/[A-Za-z0-9]+)")
+    # with a hyphen inside, as in dryad_links() ("10.15146/5xcp-0d46")
+    paste0("((?:", alt_prefix_regex, ")/[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)")
   )
   for (pattern in patterns) {
     match <- regexec(pattern, dryad_url, perl = TRUE, ignore.case = TRUE)
@@ -278,7 +281,7 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
   id_info <- vector("list", length(valid_dois))
   for (i in seq_along(valid_dois)) {
     doi <- valid_dois[[i]]
-    cached <- if (isTRUE(cache)) .repo_info_cache_get("dryad", doi) else NULL
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("dryad", doi, need = "related") else NULL
     # A listing stored before the paging fix (0.3.3.1) has no `files_total`:
     # it holds only Dryad's first page of 20 files, so it is not reused, and
     # Dryad is asked again (#506). Neither is one marked incomplete.
@@ -390,6 +393,12 @@ dryad_info <- function(dryad_url, id_col = 1, pb = NULL, cache = FALSE) {
   obj$publication_date <- rec$publicationDate %empty_or% NA_character_
   obj$updated_date <-     rec$lastModificationDate %empty_or% NA_character_
   obj$authors <-          list(authors)
+  # who made it (ORCID iDs), what it says, and the article it belongs to
+  # ("primary_article"): they tell the paper's own deposit from one it
+  # reuses (#634), and come in this same answer
+  obj$orcids <-           .meta_orcids(lapply(authors_field %||% list(), \(a) a$orcid))
+  obj$description <-      .meta_text(rec$abstract %||% "")
+  obj$related <-          .meta_related(rec$relatedWorks, "relationship", "identifier")
   obj$license <-          rec$license %empty_or% NA_character_
   obj$files <-            list(files_list)
 

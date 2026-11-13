@@ -174,6 +174,47 @@ test_that(".repair_links joins links split by a space, for every reader", {
   ))
 })
 
+test_that(".repair_links keeps the letters as written", {
+  x <- "Data: https://doi. ORG/ 10.17605/OSF. IO/ CY68W and GITHUB. COM/x/y."
+  expect_equal(metacheck:::.repair_links(x),
+               "Data: https://doi.ORG/10.17605/OSF.IO/CY68W and GITHUB.COM/x/y.")
+})
+
+test_that(".repair_links joins a website's name split before or after any of its dots", {
+  x <- c(
+    "Pain, 23, 1616-1628. https://doi .org/10.1016/j.jpain.2022.03.1",
+    "Materials are at osf .io/abcde and code at github .com/a/b.",
+    "Retrieved from http://hdl. handle. net/1911/16324 and http://dx. doi. org/10.1/x",
+    "Preregistered (https://aspredicted. org/vp4rg.pdf); https://archive. softwareheritage. org/swh:1:dir:1"
+  )
+  expect_equal(metacheck:::.repair_links(x), c(
+    "Pain, 23, 1616-1628. https://doi.org/10.1016/j.jpain.2022.03.1",
+    "Materials are at osf.io/abcde and code at github.com/a/b.",
+    "Retrieved from http://hdl.handle.net/1911/16324 and http://dx.doi.org/10.1/x",
+    "Preregistered (https://aspredicted.org/vp4rg.pdf); https://archive.softwareheritage.org/swh:1:dir:1"
+  ))
+})
+
+test_that(".repair_links leaves a website's name without a '/' after it as written", {
+  x <- c("Data are available at datadryad. org for production of results.",
+         "Software: github. com;2022.",
+         "We use the OSF .io file format.")
+  expect_equal(metacheck:::.repair_links(x), x)
+})
+
+test_that(".repair_links takes GROBID's temporary folder and Check Point wrappers out of links (#634)", {
+  x <- c(
+    "found in file://localhost/opt/grobid/grobid-home/tmp/10.5281/zenodo.15527338. More",
+    "accessed at file://localhost/opt/grobid/grobid-home/tmp/www.osf.io/qknug.",
+    "(Study 1: https://protect.checkpoint.com/v2/___https://osf.io/qby5j___.YzJ1OnN0b255YnJvb2s6YzpnOjY5 and"
+  )
+  expect_equal(metacheck:::.repair_links(x), c(
+    "found in 10.5281/zenodo.15527338. More",
+    "accessed at www.osf.io/qknug.",
+    "(Study 1: https://osf.io/qby5j and"
+  ))
+})
+
 test_that(".repair_links leaves a space before an ordinary word", {
   x <- c(
     "Data are in Zenodo https://zenodo.org/ with doi: 10.5281/zenodo.3876533.",
@@ -198,4 +239,54 @@ test_that(".paper_repair_links moves the positions of items after a removed spac
                "See https://github.com/owner/repo and https://doi.org/10.1/x (Smith, 2020).")
   expect_equal(substr(q$text$text, q$url$start + 1, q$url$end), "https://doi.org/10.1/x")
   expect_equal(substr(q$text$text, q$xref$start + 1, q$xref$end), "Smith, 2020")
+})
+
+test_that(".repair_bib_dois joins a reference's DOI with the DOI the reader found (#459)", {
+  s <- c(
+    "Main text: see 10.5281/zenodo.76187 49 here.",
+    "Smith (2024). Data. Zenodo. https:// doi. org/ 10. 5281/ ZENODO. 13986711",
+    "Lee (2021). Data. https://doi.org/10.5061/dryad.7d7wm 3806",
+    "Kim (2020). Text. https://doi.org/10.1016/j.cell.2017.10.041"
+  )
+  bib <- data.frame(doi = c("10.5281/ZENODO.13986711", "10.5061/dryad.7d7wm3806",
+                            "10.1016/j.cell.2017.10.041"), text_id = 2:4)
+  expect_equal(metacheck:::.repair_bib_dois(s, 1:4, bib), c(
+    s[[1]],
+    "Smith (2024). Data. Zenodo. https:// doi. org/ 10.5281/ZENODO.13986711",
+    "Lee (2021). Data. https://doi.org/10.5061/dryad.7d7wm3806",
+    s[[4]]
+  ))
+  # a space before a capitalised word stays: the reader's DOI took in the
+  # next reference's author; the spaces before it are still removed
+  s <- "Lee (1990). Vision Res. 10.1016/0042- 6989(90)90173-I Cao, X. (2001)."
+  bib <- data.frame(doi = "10.1016/0042-6989(90)90173-ICao", text_id = 1L)
+  expect_equal(metacheck:::.repair_bib_dois(s, 1L, bib),
+               "Lee (1990). Vision Res. 10.1016/0042-6989(90)90173-I Cao, X. (2001).")
+  # a DOI written twice is left alone
+  s <- "Ann (1994). Med Biol Eng. 10.1007/BF025 10705 10.1007/BF02510705"
+  bib <- data.frame(doi = "10.1007/BF0251070510.1007/BF02510705", text_id = 1L)
+  expect_equal(metacheck:::.repair_bib_dois(s, 1L, bib), s)
+  # no bib table, or one without DOIs
+  expect_equal(metacheck:::.repair_bib_dois(s, 1L, NULL), s)
+  expect_equal(metacheck:::.repair_bib_dois(s, 1L, data.frame(doi = NA, text_id = 1L)), s)
+})
+
+test_that(".paper_repair_links joins references' DOIs after the link rules (#459)", {
+  p <- paper("t")
+  s <- "Lee (2021). Data. https:// doi. org/ 10. 5061/ dryad. 7d7wm 3806 (Lee, 2021)."
+  p$text <- data.frame(text = s, text_id = 1L)
+  p$bib <- data.frame(bib_id = 1L, doi = "10.5061/dryad.7d7wm3806", text_id = 1L)
+  at <- function(x) regexpr(x, s, fixed = TRUE)[[1]] - 1L
+  p$url <- data.frame(url_id = 1L, text_id = 1L, start = at("https"),
+                      end = at("3806") + 4L)
+  p$xref <- data.frame(xref_id = 1L, text_id = 1L, start = at("Lee, 2021"),
+                       end = at("Lee, 2021") + 9L)
+  q <- metacheck:::.paper_repair_links(p)
+  expect_equal(q$text$text,
+               "Lee (2021). Data. https://doi.org/10.5061/dryad.7d7wm3806 (Lee, 2021).")
+  expect_equal(substr(q$text$text, q$url$start + 1, q$url$end),
+               "https://doi.org/10.5061/dryad.7d7wm3806")
+  expect_equal(substr(q$text$text, q$xref$start + 1, q$xref$end), "Lee, 2021")
+  # a second repair changes nothing
+  expect_equal(metacheck:::.paper_repair_links(q)$text$text, q$text$text)
 })

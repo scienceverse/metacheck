@@ -176,7 +176,7 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   while (i < length(valid_ids)) {
     i <- i + 1
     zid <- valid_ids[[i]]
-    cached <- if (isTRUE(cache)) .repo_info_cache_get("zenodo", zid) else NULL
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("zenodo", zid, need = "related") else NULL
     if (!is.null(cached)) {
       id_info[[i]] <- cached
     } else {
@@ -228,6 +228,8 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
     creators         = I(list(NULL)),
     keywords         = I(list(NULL)),
     resource_type    = NA_character_,
+    resource_subtype = NA_character_,
+    related          = NA_character_,
     journal          = I(list(NULL)),
     owners           = I(list(NULL)),
     license          = NA_character_,
@@ -305,7 +307,12 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   obj$creators <-         list(metadata$creators) %||% list(c())
   obj$keywords <-         list(metadata$keywords) %||% list(c())
   obj$resource_type <-    metadata$resource_type$type %empty_or% NA_character_
-  obj$journal <-          list(metadata$journal) %||% list(c())
+  # the subtype tells a preprint or article from other publications; the
+  # related works name the paper a deposit belongs to ("isSupplementTo" a DOI),
+  # which tells the paper's own deposit from one it reuses (#634)
+  obj$resource_subtype <- metadata$resource_type$subtype %empty_or% NA_character_
+  obj$related <-          .meta_related(metadata$related_identifiers, "relation", "identifier")
+  obj$journal <-        list(metadata$journal) %||% list(c())
   obj$owners <-           list(rec$owners) %||% list(c())
   obj$license <-          .field_or_value(metadata$license, "id") %empty_or%
                           .field_or_value(metadata$license, "title") %empty_or%

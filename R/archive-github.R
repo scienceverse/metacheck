@@ -104,6 +104,19 @@ github_links <- function(paper) {
     text_search(plusminus, return = "match") |>
     text_search(no_github_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, text_id, paper_id)
+  # A GitHub account's name has only letters, digits and hyphens, never a
+  # full stop: "GitHub. https://doi.org/10.5281/zenodo.7002689" gave
+  # "doi.org/10.5281", and "on github at: https://zenodo.org/doi/..." gave
+  # "zenodo.org/doi" (#634)
+  # ("github.com/<account>" itself stays: its rest often follows after a
+  # space, which .repo_links_joined() joins)
+  # A measurement or ratio near the word ("488 nm/50 mW", "and/or") has the
+  # shape "word/word" too; a repository is not named by a number alone
+  other_gh <- other_gh[(grepl("^[A-Za-z0-9][A-Za-z0-9-]*/", other_gh$href) &
+                          !grepl("/[0-9]+$", other_gh$href) &
+                          !grepl("^(?i:and/or)$", other_gh$href, perl = TRUE)) |
+                         grepl("^(?:www\\.)?github\\.com/", other_gh$href, ignore.case = TRUE), ,
+                       drop = FALSE]
 
   all_gh <- dplyr::bind_rows(found_gh, other_gh)
 
@@ -423,6 +436,11 @@ github_files <- function(repo, dir = "",
 #'     or \code{NULL} when the tree could not be fetched}
 #'   \item{\code{default_branch}}{character}
 #'   \item{\code{license}}{character licence key, or NA}
+#'   \item{\code{info}}{list with the repository's \code{full_name},
+#'     \code{description}, \code{created} and \code{pushed} dates,
+#'     \code{owner} and \code{owner_type}, \code{homepage}, \code{topics},
+#'     \code{stars}, \code{forks} and \code{fork}, from the same metadata
+#'     request; absent when that request failed}
 #' }
 #'
 #' @export
@@ -488,6 +506,17 @@ github_tree_files <- function(repo) {
   # value rather than NULL, which would otherwise propagate as a
   # length-zero "license" into the caller's vapply(..., character(1)).
   license <- .field_or_value(meta$license, "spdx_id") %empty_or% NA_character_
+  # The repository's own description, from the same response: who owns it,
+  # when it was made and last changed, how widely it is used. repo_check keeps
+  # these in repo_metadata, to tell a paper's own code from a tool it uses
+  # (#634).
+  chr1 <- \(v) if (is.null(v) || !length(v)) NA_character_ else as.character(v[[1]])
+  info <- list(
+    full_name = chr1(meta$full_name), description = chr1(meta$description),
+    created = substr(chr1(meta$created_at), 1, 10), pushed = substr(chr1(meta$pushed_at), 1, 10),
+    owner = chr1(meta$owner$login), owner_type = chr1(meta$owner$type),
+    homepage = chr1(meta$homepage), topics = if (length(meta$topics)) paste(unlist(meta$topics), collapse = "; ") else NA_character_,
+    stars = chr1(meta$stargazers_count), forks = chr1(meta$forks_count), fork = chr1(meta$fork))
 
   # ── 2. Git tree (recursive, 1 request) ──────────────────────────────────────
   tree_resp <- tryCatch(
@@ -501,10 +530,12 @@ github_tree_files <- function(repo) {
   limit <- if (!is.null(tree_resp)) .github_limit(tree_resp)
   if (!is.null(limit)) {
     return(list(gated = TRUE, reason = limit, files = NULL,
-                default_branch = default_branch, license = license))
+                default_branch = default_branch, license = license, info = info))
   }
   if (is.null(tree_resp) || httr2::resp_status(tree_resp) != 200) {
-    return(.github_crawl(repo, default_branch, license))
+    crawled <- .github_crawl(repo, default_branch, license)
+    crawled$info <- info
+    return(crawled)
   }
 
   tree <- httr2::resp_body_json(tree_resp)
@@ -513,7 +544,7 @@ github_tree_files <- function(repo) {
     return(list(
       gated  = TRUE,
       reason = "GitHub repo tree truncated (>100 000 items); too large to list",
-      files  = NULL, default_branch = default_branch, license = license))
+      files  = NULL, default_branch = default_branch, license = license, info = info))
 
   blobs   <- Filter(\(x) x$type == "blob", tree$tree %||% list())
   n_files <- length(blobs)
@@ -548,7 +579,7 @@ github_tree_files <- function(repo) {
   }
 
   list(gated = FALSE, reason = NA_character_,
-       files = files_df, default_branch = default_branch, license = license)
+       files = files_df, default_branch = default_branch, license = license, info = info)
 }
 
 

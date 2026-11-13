@@ -49,7 +49,8 @@ reshare_links <- function(paper) {
 
   reshare_bare_regex <- paste0(
     "(?:https?://)?(?:www\\.)?reshare\\.ukdataservice\\.ac\\.uk/[0-9]+/?",
-    "|(?:https?://)?(?:dx\\.)?(?:doi\\.org/)?10\\.5255/UKDA-SN-[0-9]+"
+    # with its edition, when given ("10.5255/UKDA-SN-5050-20"; #634)
+    "|(?:https?://)?(?:dx\\.)?(?:doi\\.org/)?10\\.5255/UKDA-SN-[0-9]+(?:-[0-9]+)?"
   )
   other_reshare <- text_search(paper, reshare_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))

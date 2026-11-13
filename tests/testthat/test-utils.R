@@ -320,3 +320,23 @@ test_that("module_run names how to install a package only on GitHub (#223)", {
   writeLines(module_lines("needs_two", "#' @import dplyr tidyr"), mod)
   expect_equal(module_run(test_paper(), mod)$traffic_light, "na")
 })
+
+test_that(".meta_col and its helpers turn a deposit's people and text into one string per row (#634)", {
+  # Zenodo: a list of people with name and ORCID; Figshare: a vector of names;
+  # Dryad: a data frame with first and last names
+  df <- data.frame(id = 1:3)
+  df$creators <- list(
+    list(list(name = "Päll, Taavi", orcid = "0000-0001-7606-675X"), list(name = "Tenson, Tanel")),
+    c("Daxue Kan", "Ann Lee"),
+    data.frame(firstName = "Jo", lastName = "Smith", orcid = "0000-0002-0260-3601"))
+  expect_equal(metacheck:::.meta_col(df, c("creators", "authors"), metacheck:::.meta_people),
+               c("Päll, Taavi; Tenson, Tanel", "Daxue Kan; Ann Lee", "Jo Smith"))
+  expect_equal(metacheck:::.meta_col(df, "creators", metacheck:::.meta_orcids),
+               c("0000-0001-7606-675X", NA, "0000-0002-0260-3601"))
+  # a missing column, an empty table
+  expect_equal(metacheck:::.meta_col(df, "keywords", metacheck:::.meta_people), rep(NA_character_, 3))
+  expect_equal(metacheck:::.meta_col(df[0, , drop = FALSE], "creators", metacheck:::.meta_people), character(0))
+  # text without HTML, shortened
+  expect_equal(metacheck:::.meta_text("<p>We analysed&nbsp;the   field</p>"), "We analysed the field")
+  expect_equal(nchar(metacheck:::.meta_text(strrep("a", 2000), 100)), 100)
+})

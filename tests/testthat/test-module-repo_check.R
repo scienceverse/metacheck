@@ -49,6 +49,10 @@ test_that("OSF no files", {
                     files_zip = 0,
                     files_unknown = 0L,
                     naming_issues = 0L,
+                    # a link in the text, not shown to be anyone else's (#634)
+                    repo_own = 1L,
+                    repo_others = 0L,
+                    ref_others = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -81,6 +85,10 @@ test_that("no code files", {
                     files_zip = 1,
                     files_unknown = 0L,
                     naming_issues = 0L,
+                    # a link in the text, not shown to be anyone else's (#634)
+                    repo_own = 1L,
+                    repo_others = 0L,
+                    ref_others = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -108,6 +116,10 @@ test_that("OSF", {
                     files_zip = 1,
                     files_unknown = 1L,
                     naming_issues = 1L,
+                    # a link in the text, not shown to be anyone else's (#634)
+                    repo_own = 1L,
+                    repo_others = 0L,
+                    ref_others = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)

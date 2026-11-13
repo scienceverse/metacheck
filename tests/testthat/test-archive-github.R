@@ -330,3 +330,19 @@ test_that("github_links leaves out a text link that repeats a found one wrongly"
                               "https://github.com/group/ionic-glass-formers",
                               "https://github.com/someone/else"))
 })
+
+test_that("github_links takes no other site's address near the word GitHub (#634)", {
+  # a GitHub account's name has no full stop
+  paper <- test_paper(c(
+    "Code for this paper. GitHub. https://doi.org/10.5281/zenodo.7002689 (2022).",
+    "Analyses are available on github at: https://zenodo.org/doi/10.5281/zenodo.12755505 here.",
+    "See our github repo at scienceverse/metacheck for more.",
+    # an account's address stays, as its rest may follow after a space
+    "Code on github: https://github.com/yixia n185/data-for-ECE",
+    # a measurement near the word is not a repository
+    "Lasers (488 nm/50 mW and 561 nm/25 mW) were run with code on GitHub."
+  ))
+  obs <- github_links(paper)
+  expect_false(any(grepl("doi\\.org|zenodo|10\\.5281|^nm/", obs$href)))
+  expect_contains(obs$href, c("scienceverse/metacheck", "github.com/yixia"))
+})
