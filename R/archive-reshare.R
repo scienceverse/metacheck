@@ -22,6 +22,107 @@
 # Content-Length matching the metadata's filesize, MD5 matching the metadata's
 # hash, and Accept-Ranges: bytes / 206 Partial Content on a Range request --
 # so zip_peek()/unzip_types work here exactly as for the other hosts).
+#
+# ReShare is one EPrints installation; every EPrints data repository answers
+# the same /id/eprint/<id> request (verified live 2026-11-13 on LSHTM Data
+# Compass, Glasgow's and UCLan's research data repositories and Mannheim's
+# MADATA: JSON with the same documents[].files[] shape). So the functions
+# below take the host from the link, as the legacy DSpace functions do for
+# .dspace_legacy_hosts() (archive-psycharchives.R), and eprints_links() is the
+# general (all-hosts) counterpart to reshare_links() (#637). A deposit on
+# ReShare keeps its plain eprint id ("854001"); one on another host is
+# "<host>/<id>" ("datacompass.lshtm.ac.uk/4333").
+
+# EPrints repositories: ReShare, UCLan's data repository (its DOIs,
+# 10.17030, are registered at uclandata.uclan.ac.uk, while DataCite's sample
+# landed on its older name data.lancashire.ac.uk; verified live 2026-11-13:
+# /cgi/oai2?verb=Identify names EPrints and /id/eprint/150 answers in JSON),
+# and the EPrints hosts the repository survey found (#637; R/repo-tables.R).
+# Most of those mainly hold papers and theses, but they hold datasets too
+# (eprints.soton.ac.uk, wrap.warwick.ac.uk): repo_check ignores a record
+# whose own type says it is a publication (R/repo-kind.R).
+.eprints_hosts <- function() {
+  c(
+    "reshare.ukdataservice.ac.uk",   # ReShare, UK Data Service
+    "uclandata.uclan.ac.uk"          # UCLan Data Repository (UK)
+  ) |>
+    c(.eprints_hosts_survey()) |>
+    unique()
+}
+
+.eprints_host_regex <- function() {
+  paste(gsub("\\.", "\\\\.", .eprints_hosts()), collapse = "|")
+}
+
+#' Find EPrints Repository Links in Papers
+#'
+#' Get all links to records on an EPrints repository: ReShare (see
+#' [reshare_links()]) and the others in metacheck's list, data repositories
+#' (LSHTM Data Compass, Glasgow's, Bath's and Reading's research data
+#' repositories, Mannheim's MADATA, ...) and university repositories that
+#' also hold datasets. Real hyperlinks from the paper's own `url` table, bare
+#' mentions in the text, and DOIs under one of these repositories' DOI
+#' prefixes, which are looked up once at DataCite to find the record's
+#' address; a DOI DataCite calls a publication (a paper, book or thesis) is
+#' left out, and a DOI under any other prefix is not looked up. A link to a
+#' publication is found here, and the `repo_check` module ignores it once its record
+#' says what it is.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a table with the deposit's url in the first (text) column, and
+#'   `reshare_url` and `reshare_id` (the eprint id on ReShare, "<host>/<id>"
+#'   on another host)
+#' @export
+#'
+#' @examples
+#' paper <- demopaper()
+#' eprints_links(paper)
+eprints_links <- function(paper) {
+  href <- text <- NULL
+  host_regex <- .eprints_host_regex()
+
+  found_href <- paper_table(paper, "url") |>
+    dplyr::filter(grepl(paste0(host_regex, "|10\\.5255/ukda-sn"), href, ignore.case = TRUE))
+
+  bare_regex <- paste0(
+    "(?:https?://)?(?:www\\.)?(?:", host_regex, ")/(?:id/eprint/)?[0-9]+/?",
+    "|(?:https?://)?(?:dx\\.)?(?:doi\\.org/)?10\\.5255/UKDA-SN-[0-9]+(?:-[0-9]+)?"
+  )
+  other <- text_search(paper, bare_regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+
+  # a DOI under an EPrints repository's prefix, replaced by the address
+  # it is registered with when that is on one of these hosts
+  doi_rx <- paste0("(?:https?://)?(?:dx\\.)?(?:doi\\.org/)?((?:",
+                   paste(gsub("\\.", "\\\\.", .eprints_doi_prefixes()), collapse = "|"),
+                   ")/[-._;()/:A-Za-z0-9]+[A-Za-z0-9])")
+  by_doi <- if (length(.eprints_doi_prefixes())) {
+    d <- text_search(paper, doi_rx, return = "match", perl = TRUE) |>
+      dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+    if (nrow(d)) {
+      doi <- sub(doi_rx, "\\1", d$href, perl = TRUE, ignore.case = TRUE)
+      d$href <- vapply(doi, .eprints_resolve_doi_url, character(1), USE.NAMES = FALSE)
+      d[!is.na(d$href), , drop = FALSE]
+    } else d
+  } else NULL
+
+  links <- dplyr::bind_rows(found_href, other, by_doi) |>
+    dplyr::mutate(href = sub("/+$", "", href)) |>
+    unique()
+  links$reshare_url <- links$href
+  links$reshare_id <- .reshare_id(links$reshare_url)
+  links
+}
+
+# The address a DOI is registered with, when it is on an EPrints repository
+# in .eprints_hosts() and DataCite does not call it a publication
+# (.repo_doi_url(), R/repo-kind.R: DataCite's record, one request); NA
+# otherwise.
+.eprints_resolve_doi_url <- function(doi) {
+  url <- .repo_doi_url(doi)$url
+  if (!is.na(url) && .url_host_is(url, .eprints_hosts())) url else NA_character_
+}
 
 #' Find ReShare Links in Papers
 #'
@@ -94,13 +195,24 @@ reshare_links <- function(paper) {
     return(reshare_url)
   }
 
+  # a deposit on another EPrints repository (.eprints_hosts()): its
+  # address, /<id>/ or /id/eprint/<id>; already a "<host>/<id>" key too
+  other <- setdiff(.eprints_hosts(), "reshare.ukdataservice.ac.uk")
+  if (length(other)) {
+    m <- regmatches(reshare_url, regexec(paste0(
+      "(?i)^(?:https?://)?(?:www\\.)?(", paste(gsub("\\.", "\\\\.", other), collapse = "|"),
+      ")/(?:id/eprint/)?([0-9]+)(?:[/?#].*)?$"), reshare_url, perl = TRUE))[[1]]
+    if (length(m) >= 3) return(paste0(tolower(m[[2]]), "/", m[[3]]))
+  }
+
   # A DOI (10.5255/UKDA-SN-854001) carries the eprint id as its final numeric
   # segment -- verified live to be the same id the URL path and the metadata
   # endpoint both use, so no separate DOI-to-id lookup call is needed the way
   # Dataverse's persistentId requires.
   patterns <- c(
     "10\\.5255/UKDA-SN-([0-9]+)",
-    "reshare\\.ukdataservice\\.ac\\.uk/([0-9]+)"
+    # also EPrints' own record address, /id/eprint/<id> (#637)
+    "reshare\\.ukdataservice\\.ac\\.uk/(?:id/eprint/)?([0-9]+)"
   )
 
   for (pattern in patterns) {
@@ -134,7 +246,12 @@ reshare_links <- function(paper) {
 #' }
 #' }
 reshare_info <- function(reshare_url, id_col = 1, pb = NULL, cache = FALSE) {
-  if (!online("reshare.ukdataservice.ac.uk")) {
+  # only ReShare's own deposits need ReShare; another EPrints host that does
+  # not answer gives its deposit an error row (.reshare_info())
+  urls <- if (is.data.frame(reshare_url)) reshare_url[[id_col]] else reshare_url
+  ids0 <- .reshare_id(urls)
+  if (any(!is.na(ids0) & !grepl("/", ids0, fixed = TRUE)) &&
+      !online("reshare.ukdataservice.ac.uk")) {
     stop("ReShare seems to be offline")
   }
 
@@ -233,12 +350,15 @@ reshare_info <- function(reshare_url, id_col = 1, pb = NULL, cache = FALSE) {
 
   obj <- data.frame(reshare_id = as.character(reshare_id))
 
-  api_url <- sprintf("https://reshare.ukdataservice.ac.uk/id/eprint/%s", reshare_id)
+  # "<host>/<id>" for another EPrints repository (see .reshare_id())
+  host <- if (grepl("/", reshare_id, fixed = TRUE)) sub("/.*$", "", reshare_id) else "reshare.ukdataservice.ac.uk"
+  api_url <- sprintf("https://%s/id/eprint/%s", host, sub("^.*/", "", reshare_id))
 
   resp <- .batch_query(api_url, msg = NULL, req_func = .reshare_headers)[[1]]
 
   if (is.null(resp) || httr2::resp_status(resp) != 200) {
-    warning(reshare_id, " could not be found on ReShare", call. = FALSE)
+    warning(reshare_id, " could not be found on ",
+            if (host == "reshare.ukdataservice.ac.uk") "ReShare" else host, call. = FALSE)
     obj$error <- "unfound"
     return(obj)
   }
@@ -282,6 +402,9 @@ reshare_info <- function(reshare_url, id_col = 1, pb = NULL, cache = FALSE) {
   # would let that through unchanged and break the $<- assignment above with
   # "replacement has 0 rows".
   obj$title <-            rec$title %empty_or% NA_character_
+  # what the record is (data_collection, dataset, article, thesis, ...):
+  # repo_check ignores a publication (#637; .repo_publication_type())
+  obj$record_type <-      rec$type %empty_or% NA_character_
   obj$doi <-              rec$doi %empty_or% NA_character_
   obj$publication_date <- rec$datestamp %empty_or% NA_character_
   obj$updated_date <-     rec$lastmod %empty_or% NA_character_
@@ -477,7 +600,7 @@ reshare_file_download <- function(reshare_id,
 
   # --- target directory (avoid overwrite) ----
   download_to <- normalizePath(download_to, winslash = "/", mustWork = FALSE)
-  folder_name <- paste0("reshare_", reshare_id)
+  folder_name <- paste0("reshare_", gsub("/", "_", reshare_id))  # "<host>/<id>" (another EPrints host)
   if (dir.exists(download_to)) {
     download_to <- file.path(download_to, folder_name)
   }

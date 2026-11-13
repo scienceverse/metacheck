@@ -33,6 +33,13 @@ The survey asked which repository software each DataCite repository runs, and wh
 | `repo_probe.R` | The probe; `Rscript repo_probe.R` for DataCite, `Rscript repo_probe.R crossref` for Crossref |
 | `repo_probe_sum.R`, `repo_probe_cr_sum.R` | Summaries per software, and the DSpace prefix list |
 | `repo_lists.R` | The markdown tables posted in #636 and #637 |
+| `repo_resample.R` | Up to 10 DOIs per repository that runs DSpace, Dataverse, Invenio, CKAN or EPrints (one DataCite request per repository; the one-request sample gives one DOI per repository whatever size is asked for) |
+| `repo_probe.R resample` | The probe of the resample's hosts that the first probe did not see |
+| `repo_resample_sum.R` | Every host of every resampled repository, with its program: `../repo_tables/datacite_hosts.csv` |
+| `repo_hosts.R <program>` | For every host of one program (dspace, dataverse, eprints, invenio, ckan): metacheck's own check of its programming interface, and DataCite's DOI count per prefix registered on it: `../repo_tables/<program>_hosts.csv`, `../repo_tables/<program>_host_prefixes.csv`. A hyphenated host is searched as a phrase: DataCite's wildcard search finds no DOI for one |
+| `repo_types.R eprints` | DataCite's count of each EPrints host's DOIs per resource type, for information: `../repo_tables/eprints_types.csv` |
+
+The tables the package is built from are in `data-raw/repo_tables/`, which stays when this folder is deleted; `data-raw/repo_tables.R` writes `R/repo-tables.R` from them. The resample's order is `repo_resample.R`, `repo_probe.R resample`, `repo_resample_sum.R`, `repo_hosts.R` for each program, `repo_types.R eprints`, then `data-raw/repo_tables.R`; their working files (`dc_resample.rds`, `resample/`, `probe_rs/`, `<program>_hosts/`, `eprints_types/`, the logs) are not kept.
 
 ## Running the scripts again
 

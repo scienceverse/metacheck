@@ -16,6 +16,116 @@
 #' paper <- demopaper()
 #' zenodo_links(paper)
 zenodo_links <- function(paper) {
+  .zenodo_links_only(paper)
+}
+
+# Zenodo runs Invenio; other installations of it answer the same
+# /api/records/<id> request (#636), in one of three record formats (checked
+# 2026-11-13): Zenodo's (files a list of key/size/checksum/links$self),
+# InvenioRDM's (files$entries, a file's bytes at links$content; Caltech's
+# data.caltech.edu and most others), and an older Invenio's (filename/
+# filesize/links$download; Hamburg's fdr.uni-hamburg.de). .invenio_files()
+# reads all three into Zenodo's. A record on Zenodo keeps its numeric id
+# ("2669586"); one on another host is "<host>/<id>"
+# ("data.caltech.edu/j4k4w-p8331"). Zenodo's token is only ever sent to
+# zenodo.org (repo-download.R), never to another installation.
+
+# Invenio installations: Zenodo, Hamburg's research data repository (an older
+# Invenio, whose search address answers differently, so the survey's check
+# did not find it; its /api/records/<id> answers, checked 2026-11-13), and
+# the hosts the repository survey found (R/repo-tables.R)
+.invenio_hosts <- function() {
+  c(
+    "zenodo.org",                    # Zenodo (CERN)
+    "fdr.uni-hamburg.de"             # Forschungsdaten-Repositorium, Universität Hamburg
+  ) |>
+    c(.invenio_hosts_survey()) |>
+    unique()
+}
+
+.invenio_host_regex <- function() {
+  paste(gsub("\\.", "\\\\.", .invenio_hosts()), collapse = "|")
+}
+
+#' Find Invenio Repository Links in Papers
+#'
+#' Get all links to records on Zenodo (see [zenodo_links()]) and on the other
+#' Invenio installations in metacheck's list (Caltech's data repository,
+#' CERN's, TU Wien's, Hamburg's, EUDAT's B2SHARE, ...): real hyperlinks from
+#' the paper's own `url` table, bare mentions in the text, and DOIs under one
+#' of these installations' DOI prefixes, which are looked up once at DataCite
+#' to find the record's address; a DOI DataCite calls a publication is left
+#' out, and a DOI under any other prefix is not looked up.
+#'
+#' @param paper a paper object or paperlist object
+#'
+#' @returns a table with the record's url in the first (text) column, and
+#'   `zenodo_url`, `zenodo_id` (the record id on Zenodo, "<host>/<id>" on
+#'   another installation) and `zenodo_link`
+#' @export
+#'
+#' @examples
+#' paper <- demopaper()
+#' invenio_links(paper)
+invenio_links <- function(paper) {
+  href <- text <- NULL
+  zen <- .zenodo_links_only(paper)
+  other <- setdiff(.invenio_hosts(), "zenodo.org")
+  rx <- paste(gsub("\\.", "\\\\.", other), collapse = "|")
+  found_href <- paper_table(paper, "url") |>
+    dplyr::filter(grepl(rx, href, ignore.case = TRUE))
+  bare <- text_search(paper, paste0("(?:https?://)?(?:www\\.)?(?:", rx, ")/(?:records?|doi)/[-A-Za-z0-9.:/_]+[A-Za-z0-9]"),
+                      return = "match", perl = TRUE) |>
+    dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+  # a DOI under another installation's prefix, replaced by the address it is
+  # registered with when that is on one of these hosts
+  # Hamburg's prefix by hand, as Hamburg itself (see .invenio_hosts())
+  pre <- unique(c("10.25592", .invenio_doi_prefixes()))
+  by_doi <- NULL
+  if (length(pre)) {
+    doi_rx <- paste0("(?:https?://)?(?:dx\\.)?(?:doi\\.org/)?((?:", paste(gsub("\\.", "\\\\.", pre), collapse = "|"),
+                     ")/[-._;()/:A-Za-z0-9]+[A-Za-z0-9])")
+    by_doi <- text_search(paper, doi_rx, return = "match", perl = TRUE) |>
+      dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
+    if (nrow(by_doi)) {
+      doi <- sub(doi_rx, "\\1", by_doi$href, perl = TRUE, ignore.case = TRUE)
+      by_doi$href <- vapply(doi, \(d) {
+        u <- .repo_doi_url(d)$url
+        if (!is.na(u) && .url_host_is(u, other)) u else NA_character_
+      }, character(1), USE.NAMES = FALSE)
+      by_doi <- by_doi[!is.na(by_doi$href), , drop = FALSE]
+    }
+  }
+  more <- dplyr::bind_rows(found_href, bare, by_doi)
+  if (nrow(more)) {
+    more$href <- sub("/+$", "", more$href)
+    # an address by DOI (data.caltech.edu/doi/10.22002/...) leads to the
+    # record's own address: followed once
+    by_doi_addr <- grepl("/doi/", more$href, fixed = TRUE)
+    more$href[by_doi_addr] <- vapply(more$href[by_doi_addr], .invenio_record_url, character(1), USE.NAMES = FALSE)
+    more <- unique(more)
+    more$zenodo_url <- more$href
+    more$zenodo_id <- .zenodo_id(more$zenodo_url)
+    more$zenodo_link <- more$href
+  }
+  # a table without rows has empty logical columns, which cannot be joined
+  # to text columns
+  if (!nrow(more)) return(zen)
+  if (!nrow(zen)) return(more)
+  dplyr::bind_rows(zen, more) |> unique()
+}
+
+# The record address an Invenio "/doi/<doi>" address redirects to (one
+# request), or the address as given when it cannot be followed
+.invenio_record_url <- function(url) {
+  u <- if (grepl("^https?://", url)) url else paste0("https://", url)
+  r <- tryCatch(.mc_request(u) |> httr2::req_error(is_error = \(e) FALSE) |>
+                  httr2::req_timeout(30) |> httr2::req_perform(), error = \(e) NULL)
+  if (!is.null(r) && httr2::resp_status(r) == 200 && grepl("/records?/", r$url)) r$url else url
+}
+
+# Zenodo's own links and DOIs (zenodo_links())
+.zenodo_links_only <- function(paper) {
   href <- text <- NULL
 
   found_href <- paper_table(paper, "url") |>
@@ -73,6 +183,18 @@ zenodo_links <- function(paper) {
     return(zenodo_url)
   }
 
+  # a record on another Invenio installation (.invenio_hosts()): its address,
+  # /records/<id>, /record/<id> or /api/records/<id>; a "<host>/<id>" key too.
+  # The host is kept as the link writes it, "www." included: Hamburg's
+  # answers only at www.fdr.uni-hamburg.de (checked 2026-11-13)
+  other <- setdiff(.invenio_hosts(), "zenodo.org")
+  if (length(other)) {
+    m <- regmatches(zenodo_url, regexec(paste0(
+      "(?i)^(?:https?://)?((?:www\\.)?(?:", paste(gsub("\\.", "\\\\.", other), collapse = "|"),
+      "))/(?:(?:api/)?records?/)?([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)(?:[/?#].*)?$"), zenodo_url, perl = TRUE))[[1]]
+    if (length(m) >= 3) return(paste0(tolower(m[[2]]), "/", m[[3]]))
+  }
+
   patterns <- c(
     "10\\.5281/zenodo\\.([0-9]+)",
     "zenodo\\.org/(?:records?|uploads)/([0-9]+)",
@@ -109,7 +231,11 @@ zenodo_links <- function(paper) {
 #' }
 #' }
 zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
-  if (!online("zenodo.org")) {
+  # only Zenodo's own records need Zenodo; a record on another Invenio
+  # installation that does not answer gets an error row (.zenodo_info())
+  urls <- if (is.data.frame(zenodo_url)) zenodo_url[[id_col]] else zenodo_url
+  ids0 <- .zenodo_id(urls)
+  if (any(!is.na(ids0) & !grepl("/", ids0, fixed = TRUE)) && !online("zenodo.org")) {
     stop("Zenodo.org seems to be offline")
   }
 
@@ -265,8 +391,9 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
     list(what = _) |>
     pb$tick(0, tokens = _)
 
-  # Build the URL
-  zenodo_api_url <- paste0("https://zenodo.org/api/records/", zenodo_id)
+  # Build the URL: "<host>/<id>" for another Invenio installation
+  host <- if (grepl("/", zenodo_id, fixed = TRUE)) sub("/.*$", "", zenodo_id) else "zenodo.org"
+  zenodo_api_url <- sprintf("https://%s/api/records/%s", host, sub("^.*/", "", zenodo_id))
 
   resp <- .batch_query(zenodo_api_url, msg = NULL)[[1]]
 
@@ -297,14 +424,18 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   # would let that through unchanged and break the data.frame() column
   # assignment below. List-wrapped fields (creators, keywords, journal,
   # owners, files) don't need it: wrapping in list() always yields length 1.
+  # The three record formats (see .invenio_files()): InvenioRDM gives the DOI
+  # under pids and the record type as resource_type$id ("dataset",
+  # "publication-article"); an older Invenio gives the date as `modified`
   obj$title <-            metadata$title %empty_or% NA_character_
-  obj$doi <-              rec$doi %empty_or% NA_character_
+  obj$doi <-              rec$doi %empty_or% rec$pids$doi$identifier %empty_or% NA_character_
   obj$description <-      metadata$description %empty_or% NA_character_
   obj$publication_date <- metadata$publication_date %empty_or% NA_character_
-  obj$updated_date <-     rec$updated %empty_or% NA_character_
+  obj$updated_date <-     rec$updated %empty_or% rec$modified %empty_or% NA_character_
   obj$creators <-         list(metadata$creators) %||% list(c())
   obj$keywords <-         list(metadata$keywords) %||% list(c())
-  obj$resource_type <-    metadata$resource_type$type %empty_or% NA_character_
+  obj$resource_type <-    metadata$resource_type$type %empty_or% metadata$resource_type$id %empty_or%
+                          metadata$upload_type %empty_or% NA_character_
   obj$journal <-          list(metadata$journal) %||% list(c())
   obj$owners <-           list(rec$owners) %||% list(c())
   obj$license <-          .field_or_value(metadata$license, "id") %empty_or%
@@ -314,9 +445,25 @@ zenodo_info <- function(zenodo_url, id_col = 1, pb = NULL, cache = FALSE) {
   obj$downloads <-        rec$stats$downloads %empty_or% NA_real_
   obj$unique_downloads <- rec$stats$unique_downloads %empty_or% NA_real_
   obj$views <-            rec$stats$views %empty_or% NA_real_
-  obj$files <-            list(rec$files) %||% list(c())
+  obj$files <-            list(.invenio_files(rec$files))
 
   return(obj)
+}
+
+# A record's files in Zenodo's format (a list of id, key, size, checksum and
+# links$self, the file's bytes), from any of Invenio's three formats:
+# Zenodo's own; InvenioRDM's files$entries, whose bytes are at links$content
+# (its links$self describes the file); an older Invenio's filename, filesize
+# and links$download. A restricted record lists none.
+.invenio_files <- function(files) {
+  if (is.list(files) && !is.null(names(files)) && "entries" %in% names(files)) files <- unname(files$entries)
+  if (!is.list(files) || !length(files)) return(list())
+  lapply(files, \(x) list(
+    id = x$id %||% x$file_id %||% NA_character_,
+    key = x$key %||% x$filename %||% NA_character_,
+    size = x$size %||% x$filesize %||% NA_real_,
+    checksum = x$checksum %||% NA_character_,
+    links = list(self = x$links$content %||% x$links$download %||% x$links$self %||% NA_character_)))
 }
 
 
@@ -491,7 +638,7 @@ zenodo_file_download <- function(zenodo_id,
   # download_to <- fs::path_abs(download_to)
   download_to <- normalizePath(download_to, winslash = "/", mustWork = FALSE)
   if (dir.exists(download_to)) {
-    download_to <- file.path(download_to, as.character(zenodo_id))
+    download_to <- file.path(download_to, gsub("/", "_", as.character(zenodo_id)))  # "<host>/<id>": one folder
   }
   # the base name is kept as it is: stripping "_<digits>" on each pass also
   # stripped the deposit id of "figshare_<id>", so the next download went to
@@ -541,7 +688,10 @@ zenodo_file_download <- function(zenodo_id,
   # path comes back by itself if Zenodo restores the endpoint.
   # !any(omit): omitted files now stay in `files` (U36), so the row count
   # alone no longer shows that the size limits left nothing out
+  # Zenodo's own records only: another Invenio installation is read file by
+  # file ("<host>/<id>")
   if (n == n_in_record && !any(omit) && !any(unzip_me) &&
+      !grepl("/", zenodo_id, fixed = TRUE) &&
       !isTRUE(.zenodo_files_archive_state$unavailable)) {
     zip_url <- sprintf("https://zenodo.org/api/records/%s/files-archive", zenodo_id)
     zip_path <- file.path(temppath, "archive.zip")

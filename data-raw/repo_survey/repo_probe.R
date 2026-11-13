@@ -6,12 +6,17 @@
 Sys.unsetenv(c("GITHUB_PAT", "GITHUB_TOKEN", "OSF_PAT"))
 suppressMessages(library(httr2))
 sp <- "data-raw/repo_survey/"
-# Usage: Rscript repo_probe.R [crossref]  (default: the DataCite sample)
+# Usage: Rscript repo_probe.R [crossref | resample]  (default: the DataCite
+# sample). "resample" probes the hosts of repo_resample.R's DOIs that the
+# first probe (datacite_probe.csv) did not.
 cr <- identical(commandArgs(TRUE)[1], "crossref")
-bd <- paste0(sp, if (cr) "probe_cr/" else "probe/"); dir.create(bd, showWarnings = FALSE)
+rs <- identical(commandArgs(TRUE)[1], "resample")
+bd <- paste0(sp, if (cr) "probe_cr/" else if (rs) "probe_rs/" else "probe/"); dir.create(bd, showWarnings = FALSE)
 
 if (cr) {
   s <- readRDS(paste0(sp, "cr_sample.rds"))[, c("doi", "url")]
+} else if (rs) {
+  s <- readRDS(paste0(sp, "dc_resample.rds"))[, c("doi", "url")]
 } else {
   j <- jsonlite::fromJSON(paste0(sp, "dc_sample.json"))
   s <- data.frame(doi = j$data$id, url = j$data$attributes$url)
@@ -20,6 +25,7 @@ s$prefix <- tolower(sub("/.*", "", s$doi))
 s <- s[!is.na(s$url) & grepl("^https?://", s$url), ]
 s$host0 <- tolower(sub("^https?://([^/:?#]+).*", "\\1", s$url))
 hosts <- unique(s$host0)
+if (rs) hosts <- setdiff(hosts, tolower(read.csv(paste0(sp, "datacite_probe.csv"))$host0))
 cat("DOIs:", nrow(s), " hosts:", length(hosts), "\n")
 
 ua <- "metacheck repository survey (https://github.com/scienceverse/metacheck)"

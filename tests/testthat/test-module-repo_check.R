@@ -16,7 +16,7 @@ test_that("repo_check offline", {
                     files_readme = NA,
                     files_zip = NA)
   expect_equal(mod_output$summary_table, exp)
-  exp <- "We found no links to repositories on the Open Science Framework, Github, ResearchBox, DSpace, Zenodo, Dataverse, Figshare, Dryad, ReShare, 4TU.ResearchData, Mendeley Data, DataONE, or LDbase."
+  exp <- "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, or CKAN data portals."
   expect_equal(mod_output$summary_text, exp)
   expect_equal(mod_output$report, exp)
 })

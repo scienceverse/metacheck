@@ -111,7 +111,9 @@
     # -- added 2026-10-05, issue #461 --
     "ecommons.cornell.edu",                     # Cornell eCommons (USA) -- confirmed live via /server/api (DSpace 8.2); NOT legacy DSpace despite issue #461 filing it there (/rest/test 404s with a DSpace-CRIS branded 404 page)
     "www.repository.cam.ac.uk"                  # Apollo, University of Cambridge (UK) -- citable UI host; its own /server/api 404s, see .dspace7_api_host_aliases() below for the real API host
-  )
+  ) |>
+    # and the hosts the repository survey found (#636; R/repo-tables.R)
+    c(.dspace7_hosts_survey())
 }
 
 .dspace7_host_regex <- function() {
@@ -218,20 +220,16 @@ dspace7_links <- function(paper) {
   other_ds7 <- text_search(paper, ds7_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 
-  # No 64-installation DOI-prefix registry exists for DSpace 7 the way
-  # .dataverse_doi_prefix_hosts()/.dryad_doi_prefixes() have for their own
-  # platforms (building one would mean individually verifying a prefix for
-  # every host in .dspace7_hosts()) -- so a paper citing ONLY a DOI, with the
-  # host domain never appearing anywhere in its text, was previously
-  # invisible to dspace7_links() entirely. Confirmed live 2026-09-29 (issue
+  # A paper citing ONLY a DOI, with the host domain never appearing anywhere
+  # in its text, was once invisible to dspace7_links() entirely. Confirmed live 2026-09-29 (issue
   # #435): 10.13020/q3y6-h459 resolves to conservancy.umn.edu, a known host,
   # but neither that host string nor a recognisable path shape ever appears
   # in the citing text.
   #
   # Resolved instead by live-resolving each distinct DOI-shaped string found
-  # in the paper and keeping only the ones that redirect to a known DSpace 7
-  # host -- bounded to the DOIs actually present in this one paper, not an
-  # unbounded scan. The bare "10.xxx/yyy" is captured directly (the same
+  # in the paper under a DSpace 7 prefix (.dspace7_doi_prefixes()) and keeping
+  # only the ones that redirect to a known DSpace 7 host -- bounded to the
+  # DOIs actually present in this one paper, not an unbounded scan. The bare "10.xxx/yyy" is captured directly (the same
   # regexec()-capture-group idiom every sibling archive-*.R DOI extractor
   # uses -- .dryad_doi(), .figshare_id(), .dataone_pid() -- rather than
   # matching a whole doi.org URL and normalising it afterwards).
@@ -268,8 +266,16 @@ dspace7_links <- function(paper) {
       doi_mentions <- doi_mentions[!is_own, , drop = FALSE]
     }
 
+    # Only a DOI under a prefix with DOIs registered on a DSpace 7+ host is
+    # looked up (.dspace7_doi_prefixes(), R/repo-tables.R; #636): looking up
+    # every other DOI cost 25,172 lookups (about 2.4 hours) in the main texts
+    # of 17 corpora (13,706 papers), and 445,034 in their reference lists,
+    # where the prefix list leaves 55 and 88. The list leaves out the
+    # prefixes of the other detectors' platforms (.dspace7_skip_doi_prefixes(),
+    # minus Dataverse's), so a prefix a Dataverse and a DSpace 7 host share
+    # (10.23673, Tartu; 10.7939, Alberta) is looked up by both.
     prefix <- tolower(sub("/.*$", "", doi_mentions$doi))
-    dois <- unique(doi_mentions$doi[!prefix %in% .dspace7_skip_doi_prefixes()])
+    dois <- unique(doi_mentions$doi[prefix %in% .dspace7_doi_prefixes()])
     # .dspace7_parse() needs the resolved landing-page URL itself (to read
     # off a uuid or handle from its path), not the bare DOI string, so the
     # resolved URL replaces href here rather than just gating on whether one
@@ -404,7 +410,11 @@ dspace7_links <- function(paper) {
     return(get(key, envir = .dspace7_doi_cache, inherits = FALSE))
 
   hdl_api <- "https://hdl.handle.net/api/handles/"
-  reg <- .handle_registered_url(doi)
+  # DataCite's record first: it gives the address and says whether the DOI
+  # is a publication (a paper or thesis in an institutional repository),
+  # which is not looked up further (#637; .repo_doi_url(), R/repo-kind.R);
+  # a DOI DataCite does not have is asked of the handle service
+  reg <- .repo_doi_url(doi)
   url <- reg$url
   ok <- reg$ok
 
@@ -591,6 +601,9 @@ dspace7_links <- function(paper) {
   obj$license           <- md_val(c("dc.rights", "dc.rights.uri", "dc.rights.license"))
   obj$publication_date <- md_val(c("dc.date.issued", "dc.date.available"))
   obj$updated_date      <- item$lastModified %empty_or% NA_character_
+  # what the item is (dc.type: "Dataset", "Article", "Doctoral thesis", ...):
+  # repo_check ignores a publication (#637; .repo_publication_type())
+  obj$record_type       <- md_val("dc.type")
 
   # Only the ORIGINAL bundle holds deposited files -- LICENSE/THUMBNAIL/SWORD
   # (and others some installations add) are derived or administrative, not
@@ -674,6 +687,7 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
     attr(df, "license") <- license
     doi <- unlist(lapply(file_lists, \(x) attr(x, "doi")))
     attr(df, "doi") <- doi
+    attr(df, "record_type") <- unlist(lapply(file_lists, \(x) attr(x, "record_type")))
 
     return(df)
   }
@@ -694,6 +708,8 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
   # psycharchives_file_download() uses for legacy DSpace's rights/doi.
   license <- stats::setNames(info$license %||% NA_character_, dspace7_url)
   doi <- stats::setNames(info$doi %||% NA_character_, dspace7_url)
+  # dc.type, so repo_check can tell a publication from a deposit (#637)
+  record_type <- stats::setNames(info$record_type %||% NA_character_, dspace7_url)
 
   file_list <- info$files[[1]]
   if (is.null(file_list) || nrow(file_list) == 0) {
@@ -707,6 +723,7 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
     )
     attr(empty, "license") <- license
     attr(empty, "doi") <- doi
+    attr(empty, "record_type") <- record_type
     return(empty)
   }
 
@@ -726,6 +743,7 @@ dspace7_file_download <- function(dspace7_url, pb = NULL) {
 
   attr(df, "license") <- license
   attr(df, "doi") <- doi
+  attr(df, "record_type") <- record_type
 
   df
 }
