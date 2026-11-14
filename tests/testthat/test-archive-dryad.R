@@ -307,8 +307,10 @@ test_that("a stored Dryad listing from before the paging fix is fetched again (#
     online = \(...) TRUE,
     .dryad_info = function(dryad_doi, pb = NULL) {
       n_calls <<- n_calls + 1
+      # `related` as .dryad_info() always gives it: a stored listing without
+      # it is from before #634, and is fetched again
       data.frame(dryad_doi = dryad_doi, doi = paste0("doi:", dryad_doi), license = "cc0",
-                 files_total = 22, files_incomplete = FALSE)
+                 files_total = 22, files_incomplete = FALSE, related = NA_character_)
     }
   )
   info <- suppressMessages(dryad_info(url, cache = TRUE))
@@ -323,3 +325,10 @@ test_that("a stored Dryad listing from before the paging fix is fetched again (#
   info <- suppressMessages(dryad_info(url, cache = TRUE))
   expect_equal(n_calls, 2)
 }))
+
+test_that("dryad_links keeps a hyphen inside a newer Dryad DOI (#634)", {
+  paper <- test_paper("Condit, R. (2019). Dryad. https://doi.org/10.15146/5xcp-0d46 and more.")
+  obs <- dryad_links(paper)
+  expect_equal(obs$href, "https://doi.org/10.15146/5xcp-0d46")
+  expect_equal(unname(obs$dryad_doi), "10.15146/5xcp-0d46")
+})

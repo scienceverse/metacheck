@@ -147,7 +147,8 @@ test_that(".zenodo_info", {
 # have been readable, so the schema must not depend on how the API answered.
 test_that(".zenodo_info keeps its schema when a record cannot be read", {
   full <- c("zenodo_id", "title", "doi", "description", "publication_date",
-            "updated_date", "creators", "keywords", "resource_type", "journal",
+            "updated_date", "creators", "keywords", "resource_type",
+            "resource_subtype", "related", "journal",
             "owners", "license", "downloads", "unique_downloads", "views",
             "files", "error")
 

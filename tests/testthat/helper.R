@@ -23,8 +23,14 @@ httptest2::.mockPaths(apis)
 # computing the mock path (mock_request: build_mock_url(get_current_redactor()(req))),
 # so a redactor that strips our page[size] makes the request resolve to the
 # pre-existing recording. The live request still carries the param.
+# The same for the contributors osf_info() now asks for with each guid
+# (embed=bibliographic_contributors, #634): the recordings of /v2/guids/<id>
+# predate it. Only the guid request's own embed is taken out, so
+# osf_metadata()'s node request (embed=license&embed=...) keeps its name.
 httptest2::set_redactor(function(req) {
   req$url <- gsub("[?&]page(%5[Bb]size%5[Dd]|\\[size\\])=100", "", req$url)
+  req$url <- gsub("(/v2/guids/[^/?&]+/?(?:[?][^&]*)?)[?&]embed=bibliographic_contributors$", "\\1",
+                  req$url, perl = TRUE)
   req
 })
 

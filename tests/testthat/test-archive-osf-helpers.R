@@ -116,6 +116,20 @@ test_that(".osf_file_data", {
   expect_in(code_obs$filetype, "code")
   expect_equal(code_obs$path, sprintf("/code/%02d.R", 1:25))
   expect_in(code_obs$parent, "mc45x")
+
+  # each OSF Storage file's file server is remembered from its listing, so a
+  # later read skips the request to osf.io (#634); a GitHub add-on's is not
+  osf_cache_clear()
+  withr::defer(osf_cache_clear())
+  osf_obs <- .osf_file_data(osf_data)
+  f <- osf_obs$kind %in% "file"
+  expect_gt(sum(f), 0)
+  known <- vapply(osf_obs$download_url[f], .osf_file_server_known, "", USE.NAMES = FALSE)
+  # mc45x is a European project: its region's file server
+  expect_true(all(grepl("^https://files[.]de-1[.]osf[.]io/v1/resources/mc45x/providers/osfstorage/", known)))
+  code_obs <- .osf_file_data(code_data)
+  known <- vapply(code_obs$download_url, .osf_file_server_known, "", USE.NAMES = FALSE)
+  expect_true(all(is.na(known)))
 }, "mock")
 
 
@@ -434,6 +448,23 @@ test_that(".osf_parse_response keeps the reason a lookup failed (#501)", {
   # a private project is not a failure
   expect_equal(parse(403)$osf_type, "private")
 })
+
+test_that("an OSF refusal (private) is not kept in the lasting cache, and an old one is asked again", local({
+  withr::local_options(metacheck.repo_info_cache.dir = withr::local_tempdir())
+  n_calls <- 0
+  local_mocked_bindings(.batch_query = function(urls, ...) {
+    n_calls <<- n_calls + length(urls)
+    lapply(urls, \(u) httr2::response(status_code = 403))
+  })
+  # a refusal is given, but not stored
+  r <- metacheck:::.osf_info("abcde", cache = TRUE)
+  expect_equal(r$osf_type, "private")
+  expect_null(metacheck:::.repo_info_cache_get("osf", "abcde"))
+  # one stored before is not reused: the OSF is asked again
+  metacheck:::.repo_info_cache_put("osf", "fghij", data.frame(osf_id = "fghij", osf_type = "private", public = FALSE))
+  metacheck:::.osf_info("fghij", cache = TRUE)
+  expect_equal(n_calls, 2)
+}))
 
 test_that("osf_file_download on a folders-only project, and osf_api_check offline (U53)", {
   # a single value into the 0-row result stopped with "replacement has 1

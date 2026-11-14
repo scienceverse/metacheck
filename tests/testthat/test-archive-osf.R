@@ -371,6 +371,76 @@ test_that("osf_info recursive", {
   expect_in(files, info$name)
 }, "mock")
 
+test_that("osf_info stops a listing at max_requests and marks it cut", {
+  # the session cache is off for the tests (setup.R); this test checks it
+  withr::local_options(metacheck.osf.cache = TRUE)
+  osf_cache_clear()
+  on.exit(osf_cache_clear(), add = TRUE)
+  n0 <- metacheck:::.osf_requests$n
+  full <- osf_info("j3gcx", recursive = TRUE)
+  n_full <- metacheck:::.osf_requests$n - n0
+  expect_false("listing_cut" %in% names(full))
+  expect_gt(n_full, 2)
+
+  osf_cache_clear()
+  n0 <- metacheck:::.osf_requests$n
+  expect_warning(cut <- osf_info("j3gcx", recursive = TRUE, max_requests = 2),
+                 "stopped at the limit of 2 requests")
+  # no new folder is opened once 2 requests are used; a request already
+  # started still has its retries (the recorded responses have no answer for
+  # the component tree, which is asked 3 times), so more than 2 can be made
+  expect_lt(metacheck:::.osf_requests$n - n0, n_full)
+  expect_true(all(cut$listing_cut))
+  expect_lt(sum(cut$kind %in% "file"), sum(full$kind %in% "file"))
+
+  # the cut listing is kept for this session under its limit only: a call
+  # without a limit lists the project in full again
+  expect_no_warning(again <- osf_info("j3gcx", recursive = TRUE, max_requests = 2))
+  expect_identical(again, cut)
+  whole <- osf_info("j3gcx", recursive = TRUE)
+  expect_false("listing_cut" %in% names(whole))
+  expect_equal(sum(whole$kind %in% "file"), sum(full$kind %in% "file"))
+}, "mock")
+
+test_that("osf_info keeps a complete recursive listing in the lasting cache, and goes on with a cut one", {
+  full <- osf_info("j3gcx", recursive = TRUE)
+
+  dir <- withr::local_tempdir()
+  withr::local_options(metacheck.repo_info_cache.dir = dir)
+  key <- metacheck:::.osf_cache_key("j3gcx", TRUE)
+  complete_file <- metacheck:::.repo_info_cache_path("osf_listing", key)
+  part_file <- metacheck:::.repo_info_cache_path("osf_listing_part", key)
+
+  # cut short: only its progress is stored, not as a complete listing
+  expect_warning(first <- osf_info("j3gcx", recursive = TRUE, cache = TRUE, max_requests = 2),
+                 "run again with `cache = TRUE`")
+  expect_true(all(first$listing_cut))
+  expect_false(file.exists(complete_file))
+  expect_true(file.exists(part_file))
+
+  # each later run goes on where the previous one stopped, until complete
+  runs <- 1
+  repeat {
+    x <- suppressWarnings(osf_info("j3gcx", recursive = TRUE, cache = TRUE, max_requests = 2))
+    runs <- runs + 1
+    if (!"listing_cut" %in% names(x) || runs > 20) break
+  }
+  expect_gt(runs, 2)
+  expect_false("listing_cut" %in% names(x))
+  expect_setequal(x$name[x$kind %in% "file"], full$name[full$kind %in% "file"])
+  expect_setequal(x$osf_id, full$osf_id)
+  expect_equal(nrow(x), nrow(full))
+  expect_true(file.exists(complete_file))
+  expect_false(file.exists(part_file))
+
+  # complete: a later run reads it without asking the OSF to list anything,
+  # whatever its limit
+  n0 <- metacheck:::.osf_requests$n
+  expect_no_warning(hit <- osf_info("j3gcx", recursive = TRUE, cache = TRUE, max_requests = 2))
+  expect_equal(metacheck:::.osf_requests$n, n0)
+  expect_identical(hit, x)
+}, "mock")
+
 test_that("osf_info - view_only", {
   skip_if_offline("api.osf.io")
 

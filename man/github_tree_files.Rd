@@ -19,6 +19,11 @@ not be listed at all (invalid/inaccessible, or a truncated tree)}
 or \code{NULL} when the tree could not be fetched}
 \item{\code{default_branch}}{character}
 \item{\code{license}}{character licence key, or NA}
+\item{\code{info}}{list with the repository's \code{full_name},
+\code{description}, \code{created} and \code{pushed} dates,
+\code{owner} and \code{owner_type}, \code{homepage}, \code{topics},
+\code{stars}, \code{forks} and \code{fork}, from the same metadata
+request; absent when that request failed}
 }
 }
 \description{

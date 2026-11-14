@@ -1,3 +1,10 @@
+# The downloads below were recorded at their osf.io/download/ addresses. A
+# file the listing names is now read at its file server directly (see
+# .osf_file_server_remember(), tested in test-repo-download.R), which these
+# recordings do not hold, so in this file the listings remember nothing and
+# every download goes to its osf.io/download/ address as recorded.
+local_mocked_bindings(.osf_file_server_remember = function(...) invisible(0L))
+
 test_that("osf_file_download", {
   osf_cache_clear()
   withr::defer(osf_cache_clear())

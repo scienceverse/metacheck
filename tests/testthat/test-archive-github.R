@@ -293,3 +293,56 @@ test_that("github_links finds hyperlinks in a bibr 12.x paper (U196)", {
   p <- suppressWarnings(.grobid_to_bibr(demofile("xml"), schema_version = "12.0"))
   expect_true(any(grepl("github.com", github_links(p)$href, fixed = TRUE)))
 })
+
+test_that("github_links finds a full link written in the text, once", {
+  # a link the PDF did not make clickable is not in the url table; a sentence
+  # with a full link was also left out of the search near the word "github"
+  paper <- test_paper(c(
+    "The code is at https://github.com/owner/repo.",
+    "See also github.com/owner/repo/tree/main for the figures.",
+    "Analyses: https://github.com/other/analysis."
+  ))
+  paper$url <- data.frame(href = "https://github.com/other/analysis", text_id = 3L)
+  obs <- github_links(paper)
+  expect_setequal(obs$href, c("https://github.com/owner/repo",
+                              "https://github.com/other/analysis"))
+})
+
+test_that("github_links leaves out a text link that repeats a found one wrongly", {
+  # the text has the url table's repository with its end repeated, a word of
+  # the next sentence attached, or a hyphen lost; a found link cut off at a
+  # hyphen is not a whole name, so its full form in the text is kept
+  paper <- test_paper(c(
+    "Code: https://github.com/owner/Vaccine-PolicyPolicy and more.",
+    "Data: https://github.com/owner/throwinglight.The end.",
+    "Also https://github.com/owner/attentionclusters here.",
+    "Glass: https://github.com/group/ionic-glass-formers here.",
+    "New: https://github.com/someone/else here."
+  ))
+  paper$url <- data.frame(
+    href = c("https://github.com/owner/Vaccine-Policy",
+             "https://github.com/owner/throwinglight",
+             "https://github.com/owner/attention-clusters",
+             "https://github.com/group/ionic-"),
+    text_id = 1:4)
+  obs <- github_links(paper)
+  expect_setequal(obs$href, c(paper$url$href,
+                              "https://github.com/group/ionic-glass-formers",
+                              "https://github.com/someone/else"))
+})
+
+test_that("github_links takes no other site's address near the word GitHub (#634)", {
+  # a GitHub account's name has no full stop
+  paper <- test_paper(c(
+    "Code for this paper. GitHub. https://doi.org/10.5281/zenodo.7002689 (2022).",
+    "Analyses are available on github at: https://zenodo.org/doi/10.5281/zenodo.12755505 here.",
+    "See our github repo at scienceverse/metacheck for more.",
+    # an account's address stays, as its rest may follow after a space
+    "Code on github: https://github.com/yixia n185/data-for-ECE",
+    # a measurement near the word is not a repository
+    "Lasers (488 nm/50 mW and 561 nm/25 mW) were run with code on GitHub."
+  ))
+  obs <- github_links(paper)
+  expect_false(any(grepl("doi\\.org|zenodo|10\\.5281|^nm/", obs$href)))
+  expect_contains(obs$href, c("scienceverse/metacheck", "github.com/yixia"))
+})

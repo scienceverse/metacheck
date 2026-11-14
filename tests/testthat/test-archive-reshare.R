@@ -150,3 +150,10 @@ test_that("reshare_info drops a stale pre-existing reshare_id column before reco
   expect_false(any(grepl("\\.x$|\\.y$", names(result))))
   expect_equal(result$reshare_id, "854001")
 })
+
+test_that("reshare_links keeps a DOI's edition (#634)", {
+  paper <- test_paper("UK Data Service. SN: 5050, http://doi.org/10.5255/UKDA-SN-5050-20 here.")
+  obs <- reshare_links(paper)
+  expect_equal(obs$href, "http://doi.org/10.5255/UKDA-SN-5050-20")
+  expect_equal(unname(obs$reshare_id), "5050")
+})

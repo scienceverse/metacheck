@@ -70,6 +70,89 @@
   }, character(1))
 }
 
+# A deposit's descriptive fields, one text value per row of an *_info() table,
+# for repo_check's repo_metadata: who made the deposit, when, under what title
+# and description. These tell a paper's own deposit from one it reuses (#634);
+# the info functions fetch them anyway, in the request that lists the files.
+#
+# `cols` are the column names to try, first found used; `fun` turns one
+# cell (a value, a vector, a list of people, a data frame of people) into one
+# string. A row whose cell cannot be read gets NA.
+.meta_col <- function(df, cols, fun) {
+  n <- nrow(df)
+  if (n == 0) return(character(0))
+  col <- intersect(cols, names(df))[1]
+  if (is.na(col)) return(rep(NA_character_, n))
+  x <- df[[col]]
+  vapply(seq_len(n), function(i) {
+    v <- if (is.list(x) && !is.data.frame(x)) x[[i]] else x[i]
+    out <- tryCatch(fun(v), error = \(e) NA_character_)
+    if (length(out) != 1 || is.na(out) || !nzchar(out)) NA_character_ else as.character(out)
+  }, character(1))
+}
+
+# People (creators, authors, contributors) as "Name; Name". A person may be a
+# name, or a list or data frame with `name`, `full_name`, `fullName`, or
+# `firstName` and `lastName` (Zenodo, Dryad, Dataverse and Figshare differ).
+.meta_people <- function(x) {
+  if (is.null(x) || !length(x)) return(NA_character_)
+  one <- function(p) {
+    if (is.null(p)) return(NA_character_)
+    if (is.atomic(p)) return(paste(p[!is.na(p)], collapse = " "))
+    nm <- p$name %||% p$full_name %||% p$fullName
+    if (is.null(nm) && (!is.null(p$firstName) || !is.null(p$lastName)))
+      nm <- paste(p$firstName %||% "", p$lastName %||% "")
+    if (is.null(nm)) NA_character_ else paste(unlist(nm), collapse = " ")
+  }
+  v <- if (is.data.frame(x)) {
+    vapply(seq_len(nrow(x)), \(i) one(as.list(x[i, , drop = FALSE])), character(1))
+  } else if (is.list(x)) {
+    vapply(x, one, character(1))
+  } else {
+    as.character(x)
+  }
+  v <- trimws(v[!is.na(v)])
+  v <- v[nzchar(v)]
+  if (length(v)) paste(unique(v), collapse = "; ") else NA_character_
+}
+
+# The ORCID iDs anywhere in a cell of people, as "id; id"
+.meta_orcids <- function(x) {
+  s <- paste(unlist(x), collapse = " ")
+  ids <- regmatches(s, gregexpr("\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]", s, perl = TRUE))[[1]]
+  if (length(ids)) paste(unique(ids), collapse = "; ") else NA_character_
+}
+
+# A deposit's related works as "relation:identifier | ...", from a list of
+# records naming each work's relation and identifier under the field names
+# `rel` and `id` (Zenodo: relation/identifier; Dryad: relationship/
+# identifier; Dataverse: publication type/ID). NA when there is none.
+.meta_related <- function(items, rel, id) {
+  if (is.null(items) || !length(items) || !is.list(items)) return(NA_character_)
+  v <- vapply(items, function(r) {
+    if (!is.list(r)) return(NA_character_)
+    i <- r[[id]]
+    if (is.list(i)) i <- i$value
+    if (is.null(i) || !length(i) || !nzchar(as.character(i[[1]]))) return(NA_character_)
+    k <- r[[rel]]
+    if (is.list(k)) k <- k$value
+    paste0(if (is.null(k) || !length(k)) "related" else as.character(k[[1]]), ":", as.character(i[[1]]))
+  }, character(1))
+  v <- v[!is.na(v)]
+  if (length(v)) paste(unique(v), collapse = " | ") else NA_character_
+}
+
+# Text without HTML tags, entities or runs of spaces, at most `n` characters
+.meta_text <- function(x, n = 1000) {
+  s <- paste(unlist(x), collapse = " ")
+  s <- gsub("<[^>]+>", " ", s)
+  s <- gsub("&nbsp;", " ", s, fixed = TRUE)
+  s <- gsub("&[a-z]+;|&#[0-9]+;", " ", s, perl = TRUE)
+  s <- trimws(gsub("\\s+", " ", s))
+  if (nchar(s) > n) s <- paste0(substr(s, 1, n - 3), "...")
+  s
+}
+
 # Decode %-codes ("%20" -> " ") in each value of `x`. utils::URLdecode() given
 # a "%" that does not start a two-digit hexadecimal code ("50%", "a%2",
 # "bad%zz.png") warns, and then drops characters ("50%" became "50", "a%2"
