@@ -36,10 +36,13 @@
 #' the sentence or reference that cites the link, the paper's authors (names,
 #' ORCID iDs, affiliations), and what the deposit's own record and files say
 #' (who made it, what it names, when, whether it is a software package; for
-#' an OSF project cited only in the reference list, its record alone). On
-#' links the rules were not written from, the three groups were right for
-#' about 97% of links in the main text and 93% in reference lists; telling
-#' this paper's own deposit from the authors' earlier one is less certain.
+#' an OSF project cited only in the reference list, its record alone). On a
+#' round of labelled links the rules had not been written from, the three
+#' groups were right for 98% of links in the main text (93 of 95) and 90% in
+#' reference lists (74 of 82); the labels were made by Claude agents from
+#' each link's evidence, and disputed ones checked against the deposits.
+#' Telling this paper's own deposit from the authors' earlier one is less
+#' certain.
 #'
 #' If you want to extend the package to be able to download files from additional data repositories reach out to the Metacheck development team.
 #'
