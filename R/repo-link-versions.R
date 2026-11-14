@@ -128,6 +128,30 @@
   unique(out[order(-n_words)])
 }
 
+# The links of a paper's own link list (its `url` table, read from the PDF's
+# link annotations), without a closing "/"
+.paper_link_hrefs <- function(paper) {
+  u <- paper$url
+  if (!is.data.frame(u) || !nrow(u) || !"href" %in% names(u)) return(character(0))
+  h <- as.character(u$href); h <- h[!is.na(h)]
+  sub("/+$", "", h)
+}
+
+# A link whose ending reading the PDF wrote twice ("macroeco_phylophylo",
+# "California-Vaccine-PolicyPolicy") gets the single form, when the paper's
+# own link list (`hrefs`) has that form: 15 of the 21 such links in the text
+# of 17 corpora (13,706 papers); the other six are left as written, as a name
+# may repeat ("SampSamp").
+.repo_link_undoubled <- function(u, hrefs) {
+  if (!length(u) || !length(hrefs)) return(u)
+  rx <- "([A-Za-z0-9_-]{4,})\\1/?$"
+  for (i in which(grepl(rx, u, perl = TRUE))) {
+    single <- sub(rx, "\\1", u[[i]], perl = TRUE)
+    if (tolower(single) %in% tolower(hrefs)) u[[i]] <- single
+  }
+  u
+}
+
 # Tidy repo_check()'s gathered links (paper_id, repo_url, repo_type) before
 # they are checked, for damage that reading the PDF did to them (#634):
 # - a link inside an e-mail security wrapper (Outlook "safelinks",
@@ -148,7 +172,9 @@
 #   ("10.6084/m9" beside "10.6084/m9.figshare.27262470") are left to
 #   .repo_links_joined(), which asks which form exists, as names often share
 #   a beginning;
-# - an OSF identifier of 10 characters is two run together; the first is kept.
+# - an OSF identifier of 10 characters is two run together; the first is kept;
+# - an ending written twice gets its single form when the paper's own link
+#   list has it (.repo_link_undoubled()).
 # Counts from the text of the 17 corpora (13,706 papers), 2026-11-12.
 .repo_links_tidy <- function(repos, paper) {
   if (!nrow(repos)) return(repos)
@@ -170,6 +196,12 @@
   # an OSF identifier has five characters: ten are two run together
   # ("osf.io/3bh673bh67", "osf.io/3bh67c9pag"); the second is found on its own
   u <- sub("(?i)(osf\\.io/[a-z0-9]{5})[a-z0-9]{5}(?=$|[/?#])", "\\1", u, perl = TRUE)
+  # an ending written twice, when the paper's own link list has it once
+  for (pid in unique(repos$paper_id)) {
+    k <- repos$paper_id %in% pid
+    p <- if (.is_paper_list(paper)) paper[[as.character(pid)]] else paper
+    if (!is.null(p)) u[k] <- .repo_link_undoubled(u[k], .paper_link_hrefs(p))
+  }
   # a DOI written right after the link in the text, where the link's pattern
   # stopped at the DOI's first ".": "dryad.w0vt4b8sh10.1007/s00018-..."
   tx <- paper_table(paper, "text", cols = "text")

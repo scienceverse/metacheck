@@ -179,3 +179,108 @@ test_that(".own_reference_links finds deposits with repo_check's general finders
   expect_equal(r$repo_type, "reshare")
   expect_equal(r$repo_url, "https://datacompass.lshtm.ac.uk/id/eprint/409")
 }))
+
+test_that("a reference whose link gave nothing is a publication only without a deposit's marks (#634)", {
+  # written as a deposit (a repository's name, a version): its authors decide
+  x <- own1(source = "reference", repo_url = "https://github.com/smithlab/facetool", repo_type = "github",
+            ref_text = "Smith, A. & Lee, T. Facetool: a platform for face stimuli. GitHub repository, smithlab/facetool: v0.0.1 (2023).",
+            ref_authors = "Smith, A; Lee, T", ref_year = "2023")
+  expect_equal(x$ownership_group, "own")
+  y <- own1(source = "reference", repo_url = "https://swh.example/x", repo_type = "ckan",
+            ref_text = "Smith, A. 2023. Macroeco. swh:1:rev:3d0e. Software Heritage.",
+            ref_authors = "Smith, A", ref_year = "2023")
+  expect_equal(y$ownership_group, "own")
+  # an article's reference without such a mark is still a publication
+  z <- own1(source = "reference", repo_url = "https://data.example.org/dataset/x", repo_type = "ckan",
+            ref_text = "Smith, A. (2023). Faces in memory. Journal of Memory, 12(3), 45-60.",
+            ref_authors = "Smith, A", ref_year = "2023")
+  expect_equal(z$ownership, "not_data")
+  # the link itself is no mark: every OSF link names the OSF (osf.io/5qkm3,
+  # a preprint's file)
+  w <- own1(source = "reference", repo_url = "https://osf.io/5qkm3", repo_type = "osf",
+            ref_text = "Smith, A. (2018). Word segmentation from text. Preprint. Retrieved from https://osf.io/5qkm3/",
+            ref_authors = "Smith, A", ref_year = "2018")
+  expect_equal(w$ownership, "not_data")
+  # an OSF project is a deposit whatever its category (osf.io/4g7fv,
+  # "instrumentation")
+  v <- own1(source = "reference", repo_url = "https://osf.io/4g7fv", repo_type = "osf",
+            ref_text = "Smith, A. (2016). Competitive reaction time task. https://doi.org/10.17605/OSF.IO/4G7FV",
+            ref_authors = "Smith, A", ref_year = "2016", osf_type = "nodes", osf_category = "instrumentation")
+  expect_equal(v$ownership_group, "own")
+})
+
+test_that("the paper's own data statement in the reference list: 'data is located in' (#634)", {
+  x <- own1(source = "reference", repo_url = "https://doi.org/10.5061/dryad.abc", repo_type = "dryad",
+            ref_text = "data is located in a permanent Dryad repository https://doi.org/10.5061/dryad.abc.",
+            dep_type = "Dataset", listed = FALSE, n_files = 0)
+  expect_equal(x$ownership, "own_this")
+  expect_equal(x$ownership_reason, "the reference is the paper's own data statement")
+})
+
+test_that("the name a GitHub account gives itself settles whose repository it is (#634)", {
+  old <- list(source = "text", repo_url = "https://github.com/AnWier/nanotool", repo_type = "github",
+              context = "See more information in https://github.com/AnWier/nanotool.",
+              dep_date = "2018-01-01", listed = TRUE, n_files = 40, has_code = TRUE)
+  # an account login that names no author: an old repository by others
+  expect_equal(do.call(own1, old)$ownership, "others_code")
+  # the account's name is a paper author's
+  expect_equal(do.call(own1, c(old, gh_owner_name = "Ben Wonder"))$ownership, "own_earlier_code")
+  # or a lab named after paper authors
+  expect_equal(do.call(own1, c(old, gh_owner_name = "Smith & Okafor Computational Lab"))$ownership_group, "own")
+  # a name that is no author's leaves it others'
+  expect_equal(do.call(own1, c(old, gh_owner_name = "Maria Garcia"))$ownership, "others_code")
+})
+
+test_that(".github_owner_names asks once per account, and keeps no failed answer (#634)", local({
+  rm(list = ls(.github_owner_memo), envir = .github_owner_memo)
+  withr::defer(rm(list = ls(.github_owner_memo), envir = .github_owner_memo))
+  asked <- character(0)
+  local_mocked_bindings(req_perform = function(req, ...) {
+    asked <<- c(asked, req$url)
+    status <- if (grepl("down", req$url)) 503L else if (grepl("gone", req$url)) 404L else 200L
+    body <- if (grepl("nameless", req$url)) '{"login":"nameless","name":null}' else '{"login":"x","name":"Anna Wierczeiko"}'
+    httr2::response(status_code = status, url = req$url, headers = list(`Content-Type` = "application/json"),
+                    body = charToRaw(body))
+  }, .package = "httr2")
+  got <- .github_owner_names(c("AnWiercze", "anwiercze", NA, "nameless", "gone", "down"))
+  expect_equal(got, c("Anna Wierczeiko", "Anna Wierczeiko", NA, NA, NA, NA))
+  # one request per account (logins are not case sensitive)
+  expect_equal(sum(grepl("users/AnWiercze$", asked)), 1)
+  expect_false(any(grepl("users/anwiercze$", asked)))
+  # a failed request is asked again; a settled answer is not
+  .github_owner_names(c("AnWiercze", "gone", "down"))
+  expect_equal(sum(grepl("users/down$", asked)), 2)
+  expect_equal(sum(grepl("users/gone$", asked)), 1)
+}))
+
+test_that(".own_paper_facts takes the authors from the text when the author table is empty (#634)", {
+  p <- paper("p1")
+  p$info <- data.frame(title = "Selecting fitted models under epistemic uncertainty", doi = NA_character_)
+  p$text <- data.frame(
+    text = c("Selecting fitted models under epistemic uncertainty Alexandre René 1,2,3 & André Longtin 3, 4, 5 Fitting models to data is important.",
+             "Correspondence and requests for materials should be addressed to Maria Okafor.",
+             "We thank the reviewers."),
+    text_id = 1:3, paragraph_id = 1:3, section_id = 1L, paper_id = "p1")
+  pf2 <- .own_paper_facts(p)
+  expect_setequal(pf2$family, c("René", "Longtin", "Okafor"))
+  expect_setequal(pf2$full, c("Alexandre René", "André Longtin", "Maria Okafor"))
+  # no names in the text: none made up
+  p$text$text <- c("Selecting fitted models under epistemic uncertainty Fitting models to data is important.",
+                   "Correspondence should be addressed to the corresponding author.", "We thank the reviewers.")
+  expect_length(.own_paper_facts(p)$family, 0)
+})
+
+test_that(".own_reference_links gives a GitHub name written alone its address (#634)", {
+  p <- paper("p1")
+  p$text <- data.frame(
+    text = c("We used Prop3D [1].",
+             "Draizen, E. J. Prop3D: a platform for protein structures. GitHub repository, bouralab/Prop3D: v0.0.1 (2024)."),
+    text_id = 1:2, paragraph_id = 1:2, section_id = c(1L, 2L), paper_id = "p1")
+  p$section <- data.frame(section_id = 1:2, header = c("Methods", "References"), section_type = c("method", "references"))
+  p$bib <- data.frame(bib_id = "b1", authors = "Draizen, E J", year = "2024", title = "Prop3D", doi = NA_character_, text_id = 2L)
+  p$xref <- data.frame(xref_id = "b1", xref_type = "bibr", contents = "1", text_id = 1L)
+  r <- .own_reference_links(p)
+  expect_equal(r$repo_url, "https://github.com/bouralab/Prop3D")
+  # the same repository linked in the text is not looked up twice
+  expect_equal(nrow(.own_reference_links(p, exclude = "http://github.com/bouralab/Prop3D")), 0)
+})

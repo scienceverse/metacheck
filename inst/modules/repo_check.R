@@ -98,12 +98,21 @@
 #'   link in the text; a preprint server's record needs none), to tell
 #'   whose deposit each one is. Their files are never added to `table`, so
 #'   data_check and code_check do not download them. FALSE leaves them out.
+#' @param osf_max_requests the largest number of requests to the OSF for
+#'   listing the components and folders of one OSF project (default 50; `Inf`
+#'   for no limit). The OSF needs one request per folder, and a project with
+#'   many components or folders, or one the OSF answers slowly for, can take
+#'   an hour to list in full. A project that reaches the limit is listed in
+#'   part: it is named in `partial_repos` and in the report, and its row in
+#'   `ownership` has `listing_cut` TRUE. With `cache = TRUE`, the next run
+#'   goes on where the listing stopped (see [osf_info()]).
 #'
 #' @returns a list
 repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                        peek_zips = TRUE,
                        osf_license = FALSE,
                        cache = FALSE,
+                       osf_max_requests = 50,
                        model = llm_model(),
                        params = list(),
                        skip_on_api_limit = FALSE,
@@ -420,6 +429,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   reg_url_to_parent <- character(0)
 
   osf_files_df <- data.frame(repo_name = character(0))
+  # OSF projects whose listing stopped at `osf_max_requests` (see below)
+  osf_cut_urls <- character(0)
   # private projects read through a view-only link in the paper (see below)
   osf_view_only <- data.frame(paper_id = character(0), repo_url = character(0),
                               project = character(0))
@@ -427,11 +438,14 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     tryCatch({
       suppressWarnings({
         osf_info <- lapply(osf_urls, \(x) {
-          osf_files <- osf_info(x, recursive = !records_only, pb = pb, cache = cache)
+          osf_files <- osf_info(x, recursive = !records_only, pb = pb, cache = cache,
+                                max_requests = osf_max_requests)
           osf_files$repo_name <- x
           osf_files
         }) |> dplyr::bind_rows()
       })
+      if ("listing_cut" %in% names(osf_info))
+        osf_cut_urls <- unique(osf_info$repo_name[osf_info$listing_cut %in% TRUE])
 
       # A registration is never itself the place files "live": either it
       # mirrors files into its own storage (in which case those files really
@@ -581,11 +595,15 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (length(parent_urls_new) > 0) {
         parent_info <- suppressWarnings(
           lapply(parent_urls_new, \(x) {
-            pf <- osf_info(x, recursive = !records_only, pb = pb, cache = cache)
+            pf <- osf_info(x, recursive = !records_only, pb = pb, cache = cache,
+                           max_requests = osf_max_requests)
             pf$repo_name <- x
             pf
           }) |> dplyr::bind_rows()
         )
+        if ("listing_cut" %in% names(parent_info))
+          osf_cut_urls <- unique(c(osf_cut_urls,
+                                   parent_info$repo_name[parent_info$listing_cut %in% TRUE]))
 
         # public parent: its files belong under the PARENT's real URL (the
         # place a reader would actually need to look). Any file also reached
@@ -783,7 +801,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # by download_repo_files() in data_check.
     gh_results <- lapply(github_urls, function(url) {
       cached <- if (isTRUE(cache)) .repo_info_cache_get("github", url) else NULL
-      if (!is.null(cached)) return(cached)
+      # a listing stored before the repository's own description was kept
+      # (`info`, #634) is asked for again
+      if (!is.null(cached) && !is.null(cached$info)) return(cached)
       result <- tryCatch(
         github_tree_files(url),
         error = \(e) list(gated = TRUE, reason = conditionMessage(e),
@@ -882,6 +902,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       keywords = gh_info("topics"),
       homepage = gh_info("homepage"),
       owner_type = gh_info("owner_type"),
+      # the name the account gives itself, for whose repository it is (#634)
+      owner_name = .github_owner_names(gh_info("owner"), cache = cache),
       stars = suppressWarnings(as.integer(gh_info("stars"))),
       forks = suppressWarnings(as.integer(gh_info("forks"))),
       is_fork = as.logical(gh_info("fork"))
@@ -2000,16 +2022,45 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # files) is kept. Before the check below, so a paper whose only links are
   # publications has no repositories.
   inst_urls <- unique(repos$repo_url[repos$repo_type %in% c("dspace", "dspace7", "reshare", "zenodo")])
+  # the records and files of the publications, kept for the ownership step
+  # only, so `ownership` still says what each one is (its title, type and
+  # files; #634)
+  pub_meta <- NULL; pub_files <- NULL
   if (length(inst_urls)) {
     inst_files <- dplyr::bind_rows(pa_files_df, dspace7_files_df, reshare_files_df, zenodo_files_df)
     is_pub <- .repo_publication_type(unname(repo_record_type[inst_urls]))
     kinds <- lapply(inst_urls, \(u)
       if ("repo_url" %in% names(inst_files)) inst_files$file_type[inst_files$repo_url %in% u] else character(0))
-    no_data <- vapply(kinds, \(k) !any(k %in% c("data", "code", "stats", "archive")), NA)
+    # A record whose type says publication, and whose only file that may hold
+    # data is a zip (three at most), is read inside: a report's zipped
+    # citation file is no data (zenodo.7430682, a 1 kB zip of its .bib and
+    # .ris beside the report's PDFs). One Range request per zip (zip_peek()),
+    # also when `peek_zips` is FALSE, as what the record is depends on it; a
+    # zip that cannot be read keeps the record a deposit.
+    for (j in which(is_pub %in% TRUE)) {
+      k <- kinds[[j]]
+      if (!any(k %in% "archive") || any(k %in% c("data", "code", "stats"))) next
+      d <- inst_files[inst_files$repo_url %in% inst_urls[[j]] & inst_files$file_type %in% "archive", , drop = FALSE]
+      if (!nrow(d) || nrow(d) > 3 || !all(.is_zip(d$file_name)) || !"file_url" %in% names(d)) next
+      inner <- lapply(seq_len(nrow(d)), \(i) {
+        pk <- tryCatch(zip_peek(d$file_url[[i]], cache = cache, skip_on_api_limit = skip_on_api_limit,
+                                size = if ("file_size" %in% names(d)) d$file_size[[i]] else NULL),
+                       error = \(e) NULL)
+        if (!is.data.frame(pk) || !nrow(pk)) return(NA_character_)
+        ft <- metacheck::file_types$type[match(tolower(tools::file_ext(pk$name)), metacheck::file_types$ext)]
+        ifelse(is.na(ft), "file", ft)
+      })
+      inner <- unlist(inner)
+      if (length(inner) && !anyNA(inner)) kinds[[j]] <- c(k[!k %in% "archive"], inner)
+    }
+    no_data <-vapply(kinds, \(k) !any(k %in% c("data", "code", "stats", "archive")), NA)
     listed <- lengths(kinds) > 0
     pub_urls <- inst_urls[(is_pub %in% TRUE & no_data) | (is.na(is_pub) & listed & no_data)]
     repo_publications <- pub_urls
     if (length(pub_urls)) {
+      keep_pub <- \(df) if ("repo_url" %in% names(df)) df[df$repo_url %in% pub_urls, , drop = FALSE] else NULL
+      pub_meta <- dplyr::bind_rows(lapply(list(pa_meta_df, dspace7_meta_df, reshare_meta_df, zenodo_meta_df), keep_pub))
+      pub_files <- keep_pub(inst_files)
       drop_pub <- \(df) if ("repo_url" %in% names(df)) df[!df$repo_url %in% pub_urls, , drop = FALSE] else df
       repos <- drop_pub(repos)
       pa_files_df <- drop_pub(pa_files_df); dspace7_files_df <- drop_pub(dspace7_files_df)
@@ -2032,7 +2083,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
         files_readme = NA,
         files_zip = NA
       ),
-      ownership = own_ownership(NULL, NULL, if (exists("osf_desc_all", inherits = FALSE)) osf_desc_all else NULL)
+      ownership = own_ownership(pub_meta, pub_files, if (exists("osf_desc_all", inherits = FALSE)) osf_desc_all else NULL)
     )
 
     return(info)
@@ -2373,7 +2424,24 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## whose deposit is it (#634) ----
-  ownership <- own_ownership(repo_metadata, all_files, osf_desc_all)
+  # with the records and files of the publications set aside above, so their
+  # rows say what they are
+  pub_cols <- c("repo_url", "file_name", "file_path", "file_url", "file_type")
+  ownership <- own_ownership(
+    dplyr::bind_rows(repo_metadata, pub_meta),
+    if (is.data.frame(pub_files) && nrow(pub_files))
+      dplyr::bind_rows(all_files, pub_files[, intersect(pub_cols, names(pub_files)), drop = FALSE]) else all_files,
+    osf_desc_all)
+  # OSF projects listed only in part (`osf_max_requests`): what their row says
+  # about files describes only the folders that were opened. A registration's
+  # files are kept under the project it was registered from, so that project
+  # counts as listed in part as well.
+  if (length(osf_cut_urls)) {
+    osf_cut_urls <- unique(c(osf_cut_urls,
+      unname(reg_url_to_parent[intersect(osf_cut_urls, names(reg_url_to_parent))])))
+  }
+  if (is.data.frame(ownership) && nrow(ownership))
+    ownership$listing_cut <- ownership$repo_url %in% osf_cut_urls
   own_text <- ownership[ownership$source %in% "text",
                         c("paper_id", "repo_url", "ownership", "ownership_group", "ownership_reason"), drop = FALSE]
   own_text <- own_text[!duplicated(own_text[c("paper_id", "repo_url")]), , drop = FALSE]
@@ -2573,6 +2641,33 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else {
     report_restricted <- NULL
     summary_restricted <- NULL
+  }
+
+  ## OSF projects listed only in part ----
+  # The listing of these stopped at `osf_max_requests` (see the OSF block
+  # above, and `listing_cut` in `ownership`).
+  cut_urls <- intersect(osf_cut_urls, c(repos$repo_url, all_files$repo_url))
+  partial_repos <- data.frame(
+    paper_id = repos$paper_id[match(cut_urls, repos$repo_url)],
+    repo_url = cut_urls,
+    files_listed = vapply(cut_urls, \(u) sum(all_files$repo_url %in% u), integer(1), USE.NAMES = FALSE))
+  if (nrow(partial_repos) > 0) {
+    report_partial <- sprintf(
+      "#### Partly Listed Repositories\n\n%s %s (%s) %s more folders than metacheck lists by default, so only part of %s files %s listed (%s), and what this report says about %s files describes only that part. Run the check again with `cache = TRUE` to list the next part, or raise `osf_max_requests`.",
+      nrow(partial_repos),
+      plural(nrow(partial_repos), "OSF project", "OSF projects"),
+      paste(partial_repos$repo_url, collapse = ", "),
+      if (nrow(partial_repos) == 1) "has" else "have",
+      if (nrow(partial_repos) == 1) "its" else "their",
+      if (sum(partial_repos$files_listed) == 1) "was" else "were",
+      paste(partial_repos$files_listed, plural(partial_repos$files_listed, "file", "files"), collapse = ", "),
+      if (nrow(partial_repos) == 1) "its" else "their")
+    summary_partial <- sprintf(
+      "We listed only part of %d OSF %s (the request limit was reached).",
+      nrow(partial_repos), plural(nrow(partial_repos), "project", "projects"))
+  } else {
+    report_partial <- NULL
+    summary_partial <- NULL
   }
 
   ## registrations pointing to a closed source project ----
@@ -2855,6 +2950,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   report <- c(
     report_unchecked,
+    report_partial,
     report_not_public,
     report_view_only,
     report_repo,
@@ -2930,6 +3026,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # summary_text ----
   summary_text <- c(
     summary_unchecked,
+    summary_partial,
     summary_not_public,
     summary_view_only,
     summary_repo,
@@ -2958,6 +3055,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     table = all_files,
     summary_table = summary_table,
     gated_repos = gated_repos,
+    # OSF projects listed only in part, because their listing stopped at
+    # `osf_max_requests`: paper_id, repo_url and files_listed. data_check and
+    # code_check warn that their files may be missing from what they download.
+    partial_repos = partial_repos,
     # naming_issues_by_paper (paper_id attached), not the un-tagged
     # naming_issues used only for this call's own narrative report/summary
     # text above -- data_check() reads this field via

@@ -449,6 +449,23 @@ test_that(".osf_parse_response keeps the reason a lookup failed (#501)", {
   expect_equal(parse(403)$osf_type, "private")
 })
 
+test_that("an OSF refusal (private) is not kept in the lasting cache, and an old one is asked again", local({
+  withr::local_options(metacheck.repo_info_cache.dir = withr::local_tempdir())
+  n_calls <- 0
+  local_mocked_bindings(.batch_query = function(urls, ...) {
+    n_calls <<- n_calls + length(urls)
+    lapply(urls, \(u) httr2::response(status_code = 403))
+  })
+  # a refusal is given, but not stored
+  r <- metacheck:::.osf_info("abcde", cache = TRUE)
+  expect_equal(r$osf_type, "private")
+  expect_null(metacheck:::.repo_info_cache_get("osf", "abcde"))
+  # one stored before is not reused: the OSF is asked again
+  metacheck:::.repo_info_cache_put("osf", "fghij", data.frame(osf_id = "fghij", osf_type = "private", public = FALSE))
+  metacheck:::.osf_info("fghij", cache = TRUE)
+  expect_equal(n_calls, 2)
+}))
+
 test_that("osf_file_download on a folders-only project, and osf_api_check offline (U53)", {
   # a single value into the 0-row result stopped with "replacement has 1
   # row, data has 0"

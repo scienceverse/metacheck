@@ -65,17 +65,62 @@
     v <- as.character(unlist(v))
     if (length(v) && !is.na(v[[1]]) && nzchar(trimws(v[[1]]))) v[[1]] else NA_character_
   }
+  full <- au$name[nzchar(au$name)]
+  # a paper whose author table is empty (53 of 13,706 papers in 17 corpora)
+  # still names its authors in the text, in 25 of them: the byline after the
+  # title, or "Correspondence ... should be addressed to <name>"
+  if (!length(fam)) {
+    ta <- .own_text_authors(paper, one(paper$info$title))
+    fam <- ta$family; full <- c(full, ta$full)
+  }
   list(
     title = one(paper$info$title),
     doi = tolower(one(paper$info$doi)),
     family = fam,
-    full = au$name[nzchar(au$name)],
+    full = full,
     orcids = unique(orc),
     affiliations = aff,
     year = year,
     date = if (is.na(year)) as.Date(NA) else as.Date(paste0(year, "-07-01")),
     abstract = abstract
   )
+}
+
+# The authors a paper names in its text, for a paper whose author table is
+# empty: the byline that follows the title in the first sentence ("Alexandre
+# René 1,2,3 & André Longtin 3, 4, 5", each name followed by its affiliation
+# numbers), and the person correspondence is addressed to. Returns full names
+# and family names (the last word of each name).
+.own_text_authors <- function(paper, title = NA_character_) {
+  none <- list(full = character(0), family = character(0))
+  tx <- paper$text
+  if (!is.data.frame(tx) || !nrow(tx) || !"text" %in% names(tx)) return(none)
+  s <- as.character(tx$text); s[is.na(s)] <- ""
+  nm <- "\\p{Lu}[\\p{L}'.-]+(?:\\s+\\p{Lu}[\\p{L}'.-]*){1,3}"
+  found <- character(0)
+  # the byline: names, each followed by affiliation numbers, after the title
+  if (!is.na(title) && nchar(title) >= 20) {
+    k <- which(grepl(substr(title, 1, 40), s, fixed = TRUE))[1]
+    if (!is.na(k)) {
+      rest <- substring(s[[k]], regexpr(substr(title, 1, 40), s[[k]], fixed = TRUE) + nchar(title))
+      by <- regmatches(rest, regexpr(paste0("^\\s*(?:", nm, "\\s*[0-9][0-9,*\\s]*(?:&|and|,)?\\s*)+"),
+                                     rest, perl = TRUE))
+      if (length(by)) found <- c(found, regmatches(by, gregexpr(nm, by, perl = TRUE))[[1]])
+    }
+  }
+  # "Correspondence and requests for materials should be addressed to <name>"
+  m <- regmatches(s, regexpr(paste0("(?i:correspondence|requests for materials)[^.]{0,80}?",
+                                    "(?i:addressed|sent) to:?\\s+(?:", nm, ")(?:\\s*(?:,|or|and|&)\\s*", nm, ")*"),
+                             s, perl = TRUE))
+  for (x in m) {
+    x <- sub("^.*?(?i:addressed|sent) to:?\\s+", "", x, perl = TRUE)
+    found <- c(found, regmatches(x, gregexpr(nm, x, perl = TRUE))[[1]])
+  }
+  found <- unique(sub("[.]+$", "", trimws(found)))
+  found <- found[nchar(found) >= 4]
+  if (!length(found)) return(none)
+  family <- vapply(strsplit(found, "\\s+"), \(w) w[[length(w)]], character(1))
+  list(full = found, family = unique(family[nchar(family) >= 2]))
 }
 
 # ---- the paper's text around each link -------------------------------------
@@ -154,6 +199,14 @@
     data.frame(href = sub("[.,;:]+$", "", x$href), text_id = x$text_id %||% NA_integer_, repo_type = k)
   }))
   if (is.null(found) || !nrow(found)) return(empty)
+  # a GitHub repository written by its name alone ("GitHub repository,
+  # bouralab/Prop3D") gets its address, so it is looked up and matched to the
+  # same repository linked in the text
+  gh_bare <- found$repo_type %in% "github" & !grepl("github", found$href, ignore.case = TRUE) &
+    grepl("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", found$href)
+  found$href[gh_bare] <- paste0("https://github.com/", found$href[gh_bare])
+  # a link whose ending reading the PDF wrote twice ("macroeco_phylophylo")
+  found$href <- .repo_link_undoubled(found$href, .paper_link_hrefs(paper))
   found <- found[!duplicated(tolower(found$href)), , drop = FALSE]
   found <- found[!.own_core(found$href) %in% .own_core(exclude), , drop = FALSE]
   if (!nrow(found)) return(empty)
@@ -258,6 +311,7 @@
   x$osf_category <- ifelse(links$repo_type %in% "osf", col(od, "category", ko), NA_character_)
   x$osf_contributors <- ifelse(links$repo_type %in% "osf", pick("creators"), NA_character_)
   x$readme <- col(meta, "readme", k)
+  x$gh_owner_name <- col(meta, "owner_name", k)
   x$gh_stars <- col(meta, "stars", k)
   x$gh_forks <- col(meta, "forks", k)
   # the files
@@ -496,7 +550,12 @@
   osf_author <- vapply(chr(x$osf_contributors), .own_names_author, NA, family = fam, USE.NAMES = FALSE)
   owner <- ifelse(x$repo_type %in% c("github", "gitlab"),
                   tolower(sub("^(https?://)?(www\\.)?(github|gitlab)[^/]*/([^/]+).*", "\\4", href, ignore.case = TRUE)), NA)
-  owner_author <- vapply(owner, .own_names_author, NA, family = fam, USE.NAMES = FALSE)
+  # the account (its login, and the name its owner gives: a person's, or a
+  # lab's such as "Bourne & Mura Computational Biosciences Lab")
+  login_author <- vapply(owner, .own_names_author, NA, family = fam, USE.NAMES = FALSE)
+  owner_name_author <- vapply(chr(x$gh_owner_name), .own_names_author, NA, family = fam, USE.NAMES = FALSE)
+  owner_author <- ifelse(T_(login_author) | T_(owner_name_author), TRUE,
+                         ifelse(F_(login_author) | F_(owner_name_author), FALSE, NA))
   # names in the README's opening only (its title and author line): further
   # down, a family name of five letters or more is too often part of an
   # ordinary word ("Chang" in "changes"), and short ones are words ("Very")
@@ -521,14 +580,31 @@
   osf_project <- x$repo_type %in% "osf" &
     (chr(x$osf_category) %in% c("project", "data", "analysis", "methods and measures", "procedure", "hypothesis",
                                 "communication", "") | x$osf_type %in% "registrations")
+  # any OSF project or registration is a deposit, not a publication, whatever
+  # its category (osf.io/4g7fv, a task's materials, is "instrumentation"); an
+  # OSF file or preprint is not one
+  osf_node <- x$repo_type %in% "osf" & x$osf_type %in% c("nodes", "registrations")
   repo_doi <- grepl("10\\.(5061|5281|6084|17632|7910|5255|3886|4121|15146|25338|5068|15482|5522|26180)/", href,
                     ignore.case = TRUE) |
     x$repo_type %in% c("dryad", "zenodo", "figshare", "dataverse", "reshare", "mendeley", "researchdata4tu", "dataone")
   few_files <- !T_(x$listed) | T_(num(x$n_files) <= 3)
+  # a reference written as a deposit: a data or software tag, a version, a
+  # repository's name
+  data_mark <- grepl("\\[(data ?set|computer software|software|code)\\]|\\bversion\\b|\\bv[0-9]+\\.[0-9]|\\b(zenodo|figshare|dryad|dataverse|github|gitlab|software heritage|swh:|osf\\b|open science framework|repository|data repository)\\b",
+                     rt, ignore.case = TRUE, perl = TRUE)
+  # a reference whose link gave nothing to read is a publication only when
+  # its own words mark no deposit ("GitHub repository", "v0.0.1", "Software
+  # Heritage"); with such a mark its authors decide whose deposit it is. Its
+  # links are left out first: every OSF or GitHub link names its host
+  rt_words <- gsub(paste0("https?://\\S+|\\bdoi:\\s*\\S+|\\b10\\.\\d{4,9}/\\S+",
+                          "|\\b(?:www\\.)?[a-z0-9-]+(?:\\.[a-z0-9-]+)*\\.(?:io|org|com|net|edu)/\\S*"),
+                   " ", rt, ignore.case = TRUE, perl = TRUE)
+  deposit_words <- grepl("\\[(data ?set|computer software|software|code)\\]|\\bversion\\b|\\bv[0-9]+\\.[0-9]|\\b(zenodo|figshare|dryad|dataverse|github|gitlab|software heritage|swh:|osf\\b|open science framework|repository|data repository)\\b",
+                         rt_words, ignore.case = TRUE, perl = TRUE)
   publication <- x$osf_type %in% "preprints" |
     (dep_type %in% c("Preprint", "JournalArticle", "ConferencePaper", "Book", "BookChapter", "Dissertation", "Report") &
        few_files) |
-    (ref & !T_(x$listed) & !dc_kind %in% c("data", "software") & !osf_project & !repo_doi)
+    (ref & !T_(x$listed) & !dc_kind %in% c("data", "software") & !osf_project & !osf_node & !repo_doi & !deposit_words)
 
   # 2. made for this paper: the README or the record names the paper (its DOI,
   #    or 80% of its title's words), relates to its DOI, or the reference's
@@ -659,14 +735,12 @@
   # the reference itself: a publication's marks without a deposit's, a
   # sentence of the paper's own data statement, an availability statement
   # in the citing sentence, software marks
-  data_mark <- grepl("\\[(data ?set|computer software|software|code)\\]|\\bversion\\b|\\bv[0-9]+\\.[0-9]|\\b(zenodo|figshare|dryad|dataverse|github|gitlab|software heritage|swh:|osf\\b|open science framework|repository|data repository)\\b",
-                     rt, ignore.case = TRUE, perl = TRUE)
-  pub_mark <- grepl(paste0("registered report|unpublished manuscript|\\(manuscript\\)|manuscript in preparation|\\bin press\\b|\\breport on\\b|\\bpreprint\\b",
+  pub_mark <-grepl(paste0("registered report|unpublished manuscript|\\(manuscript\\)|manuscript in preparation|\\bin press\\b|\\breport on\\b|\\bpreprint\\b",
                            "|\\b[0-9]{1,4}\\s*\\([0-9-]{1,5}\\)\\s*[,:]\\s*[0-9a-z]+|\\b(journal|proceedings|psychological science|nature|science|plos)\\b[^.]{0,40}\\b[0-9]{1,4}\\b"),
                     rt, ignore.case = TRUE, perl = TRUE)
   ref_publication <- ref & pub_mark & !data_mark
   statement_ref <- ref &
-    grepl("\\b(can be found|are available|is available|available (at|on|from|via)|deposited|repository:|pository:)", rt, ignore.case = TRUE, perl = TRUE) &
+    grepl("\\b(can be found|are available|is available|available (at|on|from|via)|deposited|repository:|pository:|(is|are) (located|stored|archived|hosted) (in|at|on))", rt, ignore.case = TRUE, perl = TRUE) &
     !grepl("^\\s*[A-Z][^.,]{1,40},\\s*[A-Z]", rt, perl = TRUE) &
     !grepl("\\b(19|20)[0-9]{2}\\b", sub("https?://\\S+|10\\.[0-9]{4,9}/\\S+", "", rt), perl = TRUE)
   avail_cite <- ref & grepl(paste0(

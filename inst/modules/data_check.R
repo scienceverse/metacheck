@@ -128,6 +128,11 @@
 #'   one paper's repository -- confirmed live 2026-09-07 against a real
 #'   Zenodo record (SAPFLUXNET, ~4000 files) that took hours and multiple GB
 #'   of memory. See [download_repo_files()]'s own parameter of the same name.
+#' @param osf_max_requests the largest number of requests to the OSF for
+#'   listing one OSF project, passed to `repo_check()` when this module runs it
+#'   (default 50; `Inf` for no limit). A project listed only in part is named
+#'   in a warning before anything is downloaded, because files in folders not
+#'   yet opened are not downloaded either.
 #' @param cache if `TRUE`, keep downloaded files in a persistent on-disk cache
 #'   (see [repo_cache_dir()]) so they are reused on later runs. If `FALSE` (the
 #'   default), download to a temporary directory that is discarded when the R
@@ -166,6 +171,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        max_file_size = 100,
                        max_download_size = 500,
                        max_files_per_repo = Inf,
+                       osf_max_requests = 50,
                        cache = FALSE,
                        skip_on_api_limit = FALSE,
                        manifest = NULL,
@@ -266,6 +272,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Files that do not belong in a repository, which repo_check leaves out of
   # its table; the file tree marks them (junk: remove / keep only on purpose).
   tree_useless <- get_prev_outputs("repo_check", "useless_files")
+  # OSF projects repo_check listed only in part (`osf_max_requests`); warned
+  # about below, before anything is downloaded
+  listing_partial <- get_prev_outputs("repo_check", "partial_repos")
   if (is.null(all_files)) {
     # cache forwarded from this call's own `cache` argument: without it,
     # repo_check() falls back to its own default (cache = FALSE) regardless
@@ -282,9 +291,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path,
                        local_only = local_only, cache = cache,
+                       osf_max_requests = osf_max_requests,
                        skip_on_api_limit = skip_on_api_limit)
     } else {
       mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
+                       osf_max_requests = osf_max_requests,
                        skip_on_api_limit = skip_on_api_limit)
     }
     all_files <- mo$table %||% data.frame(
@@ -294,7 +305,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     listing_gated <- mo$gated_repos
     tree_naming_issues <- mo$naming_issues
     tree_useless <- mo$useless_files
+    listing_partial <- mo$partial_repos
   }
+  if (download != "none" && nrow(all_files) > 0)
+    .cap_report_partial(listing_partial, all_files$repo_url)
 
   # ── 2. Classify every file into a data_check semantic type ───────────────────
   if (nrow(all_files) == 0) {

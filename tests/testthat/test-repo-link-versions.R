@@ -144,3 +144,23 @@ test_that(".repo_links_joined replaces a link that exists only joined", {
   expect_equal(.repo_link_unhyphenated("github.com/Betha-nyL/DeepKoopman", github_repo),
                "github.com/BethanyL/DeepKoopman")
 })
+
+test_that("a link whose ending was written twice gets its single form when the PDF's links have it (#634)", {
+  hrefs <- c("https://github.com/wrshoemaker/macroeco_phylo", "https://example.org")
+  expect_equal(.repo_link_undoubled(c("https://github.com/wrshoemaker/macroeco_phylophylo",
+                                      "https://github.com/HoverflyLab/SampSamp",
+                                      "https://github.com/x/plain"), hrefs),
+               c("https://github.com/wrshoemaker/macroeco_phylo",
+                 "https://github.com/HoverflyLab/SampSamp",
+                 "https://github.com/x/plain"))
+  # without the paper's own link list nothing changes
+  expect_equal(.repo_link_undoubled("https://github.com/a/PolicyPolicy", character(0)),
+               "https://github.com/a/PolicyPolicy")
+  # in repo_check's tidying, from the paper's `url` table
+  paper <- test_paper("Code: https://github.com/wrshoemaker/macroeco_phylophylo")
+  paper$paper_id <- "p"
+  paper$url <- data.frame(href = "https://github.com/wrshoemaker/macroeco_phylo/", text_id = 1L)
+  repos <- data.frame(paper_id = "p", repo_type = "github",
+                      repo_url = "https://github.com/wrshoemaker/macroeco_phylophylo")
+  expect_equal(.repo_links_tidy(repos, paper)$repo_url, "https://github.com/wrshoemaker/macroeco_phylo")
+})

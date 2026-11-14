@@ -36,6 +36,7 @@
 #' @param max_file_size largest single file to download, in MB (default 100). A file over this is skipped on its own; the rest of the repository is still downloaded. Set `Inf` for no cap.
 #' @param max_download_size largest total download per repository, in MB (default 500), used as a budget: files already in the cache count first, then the smallest missing files are added until the next one would not fit. A file whose size cannot be found out is skipped on its own. Set `Inf` for no cap.
 #' @param max_files_per_repo largest file COUNT a single repository may have before it is refused outright (default `Inf`, no cap) -- see [download_repo_files()]'s own parameter of the same name.
+#' @param osf_max_requests the largest number of requests to the OSF for listing one OSF project, passed to `repo_check()` when this module runs it (default 50; `Inf` for no limit). A project listed only in part is named in a warning before anything is downloaded, because files in folders not yet opened are not downloaded either.
 #' @param cache if TRUE, keep downloaded files in a persistent on-disk cache (see [repo_cache_dir()]) so they are reused on later runs. If FALSE (the default), download to a temporary directory discarded when the session ends. Clear the cache with [repo_cache_clear()].
 #' @param skip_on_api_limit if TRUE, a 429 that carries a confirmed rate-limit-exhausted signal (e.g. Dryad's per-day quota) skips that file instead of waiting out the host's own reset. Default FALSE (always wait for a confirmed reset) -- see [download_repo_files()]'s own parameter of the same name. Also forwarded to `repo_check()` and to `.code_expand_zip()`'s own zip-peeking step, both of which make the same kind of request and can hit the same rate limit.
 #' @param manifest optional path to a metacheck manifest directory or `*.manifest.json` file. When given, the distinct packages loaded across the paper's code are merged into the manifest's `code$packages` section, and any code file this module tried and failed to download (after retries) is recorded in `code$files_failed` (`file_name`, `repo_url`, `file_url`, `error` per file -- the `file_url` is a direct link to fetch it manually) (see [manifest_merge()]), preserving any `files`/`provenance` written by `data_check`. A directory resolves to `<paper_id>.manifest.json` inside it; the manifest is created if it does not yet exist.
@@ -45,6 +46,7 @@ code_check <- function(paper, local_path = NULL,
                         local_only = FALSE, download = TRUE,
                         max_file_size = 100, max_download_size = 500,
                         max_files_per_repo = Inf,
+                        osf_max_requests = 50,
                         cache = FALSE, skip_on_api_limit = FALSE,
                         manifest = NULL) {
   # example with osf Rmd files and github files: paper <- psychsci[[203]]
@@ -73,6 +75,10 @@ code_check <- function(paper, local_path = NULL,
   all_files <- if (is.null(local_path))
     get_prev_outputs("data_check", "structure") %||%
       get_prev_outputs("repo_check", "table") else NULL
+  # OSF projects repo_check listed only in part (`osf_max_requests`); warned
+  # about below, before anything is downloaded
+  listing_partial <- if (is.null(local_path))
+    get_prev_outputs("repo_check", "partial_repos") else NULL
   if (is.null(all_files)) {
     # cache forwarded from this call's own `cache` argument: without it,
     # repo_check() falls back to its own default (cache = FALSE) regardless
@@ -85,13 +91,18 @@ code_check <- function(paper, local_path = NULL,
     # the same forwarding fix in data_check.R, issue #427).
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path, local_only = local_only,
-                       cache = cache, skip_on_api_limit = skip_on_api_limit)
+                       cache = cache, osf_max_requests = osf_max_requests,
+                       skip_on_api_limit = skip_on_api_limit)
     } else {
       mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
+                       osf_max_requests = osf_max_requests,
                        skip_on_api_limit = skip_on_api_limit)
     }
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
+    listing_partial <- mo$partial_repos
   }
+  if (isTRUE(download) && nrow(all_files) > 0)
+    .cap_report_partial(listing_partial, all_files$repo_url)
   all_files$language <- code_lang(all_files$file_name)
 
   # Download every file the steps below might need (spv/smcl/mplus/html

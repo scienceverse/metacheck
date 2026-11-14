@@ -251,6 +251,9 @@ osf_pat <- function(pat = NULL) {
       if (is.data.frame(hit) && any(hit$osf_type %in% c("nodes", "registrations", "preprints")) &&
           !"contributors" %in% names(hit))
         hit <- NULL
+      # a refusal (401/403, "private") is not kept any more (see below); one
+      # stored before that is asked for again
+      if (is.data.frame(hit) && any(hit$osf_type %in% "private")) hit <- NULL
       if (!is.null(hit)) {
         results[[i]] <- hit
         need_fetch[i] <- FALSE
@@ -285,7 +288,12 @@ osf_pat <- function(pat = NULL) {
                    error = paste("the OSF answer could not be read:", conditionMessage(e)))
       })
 
-      if (isTRUE(cache) && .repo_info_ok(results[[i]]))
+      # A refusal (401/403, read as "private") is not kept: the OSF also
+      # refuses public projects for a while, as on 2026-11-13, when 147 were
+      # refused between 09:00 and 09:20, and 22 of 30 of them answered again
+      # later. Kept, the refusal made a paper's own project look empty in
+      # every later run.
+      if (isTRUE(cache) && .repo_info_ok(results[[i]]) && !any(results[[i]]$osf_type %in% "private"))
         .repo_info_cache_put("osf", id, results[[i]])
     }
   }

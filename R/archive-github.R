@@ -604,6 +604,45 @@ github_tree_files <- function(repo) {
 # GitHub answers 403 or 429 with x-ratelimit-remaining 0 and the end of the
 # hour in x-ratelimit-reset; its secondary limit (too many requests at once)
 # answers the same statuses with retry-after instead.
+# The name a GitHub account gives itself (a person's, "Anna Wierczeiko", or
+# an organisation's, "Bourne & Mura Computational Biosciences Lab"), one
+# request to /users/<login> per account. Its repository's record gives only
+# the login. NA when the account gives no name or the request fails; kept for
+# the session, and in the lasting cache when `cache` is TRUE (a failed
+# request is kept in neither, so it is asked again).
+.github_owner_memo <- new.env(parent = emptyenv())
+.github_owner_names <- function(logins, cache = FALSE) {
+  logins <- as.character(logins)
+  out <- rep(NA_character_, length(logins))
+  for (lg in unique(logins[!is.na(logins) & nzchar(logins)])) {
+    key <- tolower(lg)
+    nm <- .github_owner_memo[[key]]
+    if (is.null(nm) && isTRUE(cache)) {
+      hit <- .repo_info_cache_get("github_user", key)
+      if (is.list(hit) && "name" %in% names(hit)) nm <- hit$name
+    }
+    if (is.null(nm)) {
+      resp <- tryCatch(
+        .mc_request(sprintf("https://api.github.com/users/%s", utils::URLencode(lg, reserved = TRUE))) |>
+          .github_config() |>
+          httr2::req_error(is_error = \(r) FALSE) |>
+          httr2::req_perform(),
+        error = \(e) NULL)
+      if (!is.null(resp) && httr2::resp_status(resp) %in% c(200L, 404L)) {
+        body <- if (httr2::resp_status(resp) == 200L) tryCatch(httr2::resp_body_json(resp), error = \(e) list()) else list()
+        v <- body$name
+        nm <- if (is.null(v) || !length(v) || is.na(v[[1]]) || !nzchar(trimws(v[[1]]))) NA_character_ else as.character(v[[1]])
+        assign(key, nm, envir = .github_owner_memo)
+        if (isTRUE(cache)) .repo_info_cache_put("github_user", key, list(name = nm))
+      } else {
+        nm <- NA_character_
+      }
+    }
+    out[logins %in% lg] <- nm
+  }
+  out
+}
+
 .github_limit <- function(resp) {
   if (!httr2::resp_status(resp) %in% c(403L, 429L)) return(NULL)
   remaining <- httr2::resp_header(resp, "x-ratelimit-remaining")

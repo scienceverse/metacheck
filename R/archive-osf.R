@@ -111,6 +111,12 @@ osf_links <- function(paper) {
 # osf_cache_clear(); disable with options(metacheck.osf.cache = FALSE).
 .osf_listing_cache <- new.env(parent = emptyenv())
 
+# The number of OSF API pages requested in this session, increased by
+# .osf_get_one_page() and .osf_get_pages_parallel(). osf_info() compares it
+# before and after, to keep a listing within its `max_requests`.
+.osf_requests <- new.env(parent = emptyenv())
+.osf_requests$n <- 0
+
 .osf_cache_key <- function(osf_url, recursive) {
   ids <- if (is.data.frame(osf_url)) unlist(osf_url, use.names = FALSE) else osf_url
   paste0(paste(sort(unique(as.character(ids))), collapse = "|"),
@@ -143,10 +149,24 @@ osf_cache_clear <- function() {
 #' @param id_col the index or name of the column that contains OSF IDs or URLs, if id is a table
 #' @param recursive whether to retrieve all children
 #' @param pb a progress bar passed from another function
-#' @param cache if `TRUE`, also reuse a PERSISTENT, on-disk cached listing per
-#'   id (see [repo_info_cache_clear()]) that survives a restart of the script --
+#' @param cache if `TRUE`, also reuse a PERSISTENT, on-disk cached listing
+#'   (see [repo_info_cache_clear()]) that survives a restart of the script --
 #'   separate from, and in addition to, this function's own in-memory,
-#'   session-only cache described above. Off by default.
+#'   session-only cache described above. With `recursive = TRUE` this is the
+#'   whole listing, components and files included, kept only when every part
+#'   of it was read. A listing that stopped at `max_requests` is kept with the
+#'   folders still to be opened, and the next call with `cache = TRUE` goes on
+#'   from there with up to `max_requests` more requests, until the listing is
+#'   complete. Off by default.
+#' @param max_requests with `recursive = TRUE`, the largest number of requests
+#'   to the OSF API for listing components and folders (the records of the
+#'   projects themselves are not counted). The OSF needs one request per folder,
+#'   so a project with hundreds of folders takes hundreds of requests. When the
+#'   limit is reached the listing stops, with a warning, and the result has a
+#'   column `listing_cut` (`TRUE`): files in folders not yet opened are missing
+#'   from it. Folders are listed level by level, so the top folders come first;
+#'   a folder already started is listed in full, with its retries, so the count
+#'   can end a little above the limit. Default `Inf` (no limit).
 #'
 #' @returns a data frame of information
 #' @export
@@ -163,14 +183,42 @@ osf_cache_clear <- function() {
 osf_info <- function(osf_url, id_col = 1,
                      recursive = FALSE,
                      pb = NULL,
-                     cache = FALSE) {
+                     cache = FALSE,
+                     max_requests = Inf) {
   # Reuse a cached listing for this session, so a second pass over the same
   # repository (e.g. report() then convert_psychds()) doesn't re-query OSF.
+  # A listing that stopped at `max_requests` is kept under a key that names
+  # the limit, so a later call with another limit (osf_file_download() has
+  # none) never receives it as if it were complete.
   use_cache <- isTRUE(getOption("metacheck.osf.cache", TRUE))
   cache_key <- if (use_cache) .osf_cache_key(osf_url, recursive) else NULL
-  if (use_cache && exists(cache_key, envir = .osf_listing_cache, inherits = FALSE)) {
-    if (!is.null(pb)) pb$tick(0, list(what = "OSF listing (cached)"))
-    return(get(cache_key, envir = .osf_listing_cache, inherits = FALSE))
+  cut_key <- if (use_cache) paste0(cache_key, "::max_requests=", max_requests) else NULL
+  if (use_cache) {
+    for (k in unique(c(cache_key, cut_key))) {
+      if (exists(k, envir = .osf_listing_cache, inherits = FALSE)) {
+        if (!is.null(pb)) pb$tick(0, list(what = "OSF listing (cached)"))
+        return(get(k, envir = .osf_listing_cache, inherits = FALSE))
+      }
+    }
+  }
+
+  # The whole listing from the lasting cache (cache = TRUE). Before
+  # 2026-11-14 only each project's record was kept there, so a project's
+  # components and folders were listed again in every run: about an hour for
+  # ReproducibiliTea (3qrj6) in collabra.18684, in every corpus run. Only a
+  # complete listing is ever stored (see the end of this function), so one
+  # found here serves any `max_requests`. Not used for a long table of ids,
+  # whose key would make too long a file name.
+  disk_key <- if (isTRUE(cache) && isTRUE(recursive))
+    .osf_cache_key(osf_url, recursive) else NULL
+  if (!is.null(disk_key) && nchar(disk_key) > 150) disk_key <- NULL
+  if (!is.null(disk_key)) {
+    hit <- .repo_info_cache_get("osf_listing", disk_key)
+    if (is.data.frame(hit)) {
+      if (!is.null(pb)) pb$tick(0, list(what = "OSF listing (cached)"))
+      if (use_cache) assign(cache_key, hit, envir = .osf_listing_cache)
+      return(hit)
+    }
   }
 
   if (is.null(pb)) {
@@ -250,86 +298,171 @@ osf_info <- function(osf_url, id_col = 1,
     # /files/ is requested per component. The loop below now only walks the
     # nodes that listing could not cover (see .osf_tree() for when), exactly
     # as before.
-    child_collector <- data.frame()
-    provider_collector <- data.frame()
-    provider_missing <- character(0)
-    covered <- character(0)
-    is_container <- info$osf_type %in% c("nodes", "registrations") &
-      !is.na(info$children %||% NA_character_)
-    for (i in which(is_container)) {
-      sprintf("Listing the components of %s", info$osf_id[i]) |>
-        list(what = _) |>
-        pb$tick(0, tokens = _)
-      tree <- .osf_tree(info$osf_id[i], info$osf_type[i],
-                        info$project[i] %||% NA_character_)
-      if (is.null(tree)) next
-      covered <- c(covered, info$osf_id[i])
-      child_collector <- dplyr::bind_rows(child_collector, tree$nodes)
-      provider_collector <- dplyr::bind_rows(provider_collector, tree$providers)
-      provider_missing <- c(provider_missing, tree$missing)
-    }
-
-    children <- info[!info$osf_id %in% covered, , drop = FALSE]
-    walked <- data.frame()
-    urls <- children$children[!is.na(children$children)]
-    depth <- 0
-    while (length(urls) > 0) {
-      depth <- depth + 1
-      sprintf("Listing components: level %d, %d to check (%d found so far)",
-              depth, length(urls), nrow(child_collector)) |>
-        list(what = _) |>
-        pb$tick(0, tokens = _)
-      resp <- lapply(urls, osf_get_all_pages) |> dplyr::bind_rows()
-      children <- .osf_parse_response(resp)
-      child_collector <- dplyr::bind_rows(child_collector, children)
-      walked <- dplyr::bind_rows(walked, children)
-      urls <- children$children[!is.na(children$children)]
-    }
-    if (nrow(child_collector) > 0) {
-      sprintf("Found %d component%s", nrow(child_collector),
-              plural(nrow(child_collector))) |>
-        list(what = _) |>
-        pb$tick(0, tokens = _)
-    }
-
-    # Storage providers were already listed for every node .osf_tree()
-    # covered; the rest (nodes it did not cover, and file or folder links)
-    # are listed through their /files/ links as before.
-    uncovered <- dplyr::bind_rows(info[!info$osf_id %in% covered, , drop = FALSE],
-                                  walked)
-    urls <- c(uncovered$files[!is.na(uncovered$files %||% NA_character_)],
-              provider_missing,
-              provider_collector$files[!is.na(provider_collector$files %||% NA_character_)])
-    file_collector <- provider_collector
-    while (length(urls) > 0) {
-      # A GitHub repository linked to a node is listed through GitHub itself
-      # (.osf_github_files()): 2 requests for the whole repository instead of
-      # one slow OSF-proxied request per folder. Only the provider's top
-      # folder is matched, so a fallback below lists it the old way in full.
-      is_gh <- grepl("/nodes/[a-z0-9]+/files/github/?$", urls)
-      for (u in urls[is_gh]) {
-        node <- sub("^.*/nodes/([a-z0-9]+)/files/github/?$", "\\1", u)
-        gh_rows <- .osf_github_files(node)
-        if (!is.null(gh_rows)) {
-          file_collector <- dplyr::bind_rows(file_collector, gh_rows)
-          urls <- setdiff(urls, u)
-        }
+    #
+    # `max_requests` (2026-11-14): every listing request made from here on is
+    # counted (.osf_requests, see .osf_get_one_page()), and no new component
+    # tree or folder is opened once the limit is used up (`cut`). A folder
+    # that answers with a failed or short page (`short`; a refusal under load)
+    # is noted too: such a listing is not kept in any cache, because it lacks
+    # files the project has. A folder the OSF calls forbidden, not found or
+    # gone is a settled answer, not a short listing.
+    #
+    # The walk has three stages: the component tree of each linked node
+    # (`trees`), the components it did not cover (`components`), and the
+    # folders (`files`). Its progress is kept in `st`, so a listing that
+    # stopped at the limit can go on where it stopped: with cache = TRUE, `st`
+    # is stored in the lasting cache ("osf_listing_part"), and the next run
+    # lists up to `max_requests` more, until the listing is complete. A
+    # ReproducibiliTea listing (3qrj6, 171 components) took 337 to 1219
+    # seconds for 50 requests on 2026-11-14, so a corpus run would otherwise
+    # spend that on the same first 50 requests every time.
+    n_start <- .osf_requests$n
+    cut <- FALSE
+    short <- FALSE
+    budget_left <- function() max_requests - (.osf_requests$n - n_start)
+    # Lists `urls` in order while the limit lasts; returns the rows and the
+    # urls not yet asked for.
+    fetch <- function(urls) {
+      out <- vector("list", length(urls))
+      done <- 0
+      for (k in seq_along(urls)) {
+        if (budget_left() < 1) { cut <<- TRUE; break }
+        res <- osf_get_all_pages(urls[k])
+        if (identical(attr(res, "osf_error"), "request_failed") ||
+            !is.null(attr(res, "osf_incomplete"))) short <<- TRUE
+        out[[k]] <- res
+        done <- k
       }
-      if (length(urls) == 0) break
-
-      n_files <- sum(file_collector$kind %in% "file")
-      sprintf("Listing files: %d folder%s to check (%d file%s found so far)",
-              length(urls), plural(length(urls)), n_files, plural(n_files)) |>
-        list(what = _) |>
-        pb$tick(0, tokens = _)
-      resp <- lapply(urls, osf_get_all_pages) |> dplyr::bind_rows()
-      files <- .osf_parse_response(resp)
-      file_collector <- dplyr::bind_rows(file_collector, files)
-      urls <- files$files[!is.na(files$files)]
+      list(data = dplyr::bind_rows(out), left = urls[seq_along(urls) > done])
     }
 
-    data <- list(data, child_collector, file_collector) |>
+    st <- if (!is.null(disk_key)) .repo_info_cache_get("osf_listing_part", disk_key) else NULL
+    if (is.list(st) && !is.null(st$stage)) {
+      sprintf("Going on with the listing a previous run stopped (%d file%s so far)",
+              sum(st$files$kind %in% "file"), plural(sum(st$files$kind %in% "file"))) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+    } else {
+      is_container <- info$osf_type %in% c("nodes", "registrations") &
+        !is.na(info$children %||% NA_character_)
+      st <- list(stage = "trees", trees = info$osf_id[is_container],
+                 child = data.frame(), providers = data.frame(),
+                 missing = character(0), covered = character(0),
+                 walked = data.frame(), urls = character(0),
+                 files = data.frame())
+    }
+
+    if (st$stage == "trees") {
+      while (length(st$trees) > 0) {
+        if (budget_left() < 1) { cut <- TRUE; break }
+        i <- match(st$trees[1], info$osf_id)
+        st$trees <- st$trees[-1]
+        sprintf("Listing the components of %s", info$osf_id[i]) |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+        tree <- .osf_tree(info$osf_id[i], info$osf_type[i],
+                          info$project[i] %||% NA_character_)
+        if (is.null(tree)) next
+        st$covered <- c(st$covered, info$osf_id[i])
+        st$child <- dplyr::bind_rows(st$child, tree$nodes)
+        st$providers <- dplyr::bind_rows(st$providers, tree$providers)
+        st$missing <- c(st$missing, tree$missing)
+      }
+      if (!cut) {
+        children <- info[!info$osf_id %in% st$covered, , drop = FALSE]
+        st$urls <- children$children[!is.na(children$children %||% NA_character_)]
+        st$stage <- "components"
+      }
+    }
+
+    if (!cut && st$stage == "components") {
+      depth <- 0
+      while (length(st$urls) > 0) {
+        depth <- depth + 1
+        sprintf("Listing components: level %d, %d to check (%d found so far)",
+                depth, length(st$urls), nrow(st$child)) |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+        got <- fetch(st$urls)
+        children <- .osf_parse_response(got$data)
+        st$child <- dplyr::bind_rows(st$child, children)
+        st$walked <- dplyr::bind_rows(st$walked, children)
+        st$urls <- c(got$left, children$children[!is.na(children$children %||% NA_character_)])
+        if (cut) break
+      }
+      if (!cut) {
+        if (nrow(st$child) > 0) {
+          sprintf("Found %d component%s", nrow(st$child),
+                  plural(nrow(st$child))) |>
+            list(what = _) |>
+            pb$tick(0, tokens = _)
+        }
+        # Storage providers were already listed for every node .osf_tree()
+        # covered; the rest (nodes it did not cover, and file or folder
+        # links) are listed through their /files/ links as before.
+        uncovered <- dplyr::bind_rows(info[!info$osf_id %in% st$covered, , drop = FALSE],
+                                      st$walked)
+        st$urls <- c(uncovered$files[!is.na(uncovered$files %||% NA_character_)],
+                     st$missing,
+                     st$providers$files[!is.na(st$providers$files %||% NA_character_)])
+        st$files <- st$providers
+        st$stage <- "files"
+      }
+    }
+
+    if (!cut && st$stage == "files") {
+      while (length(st$urls) > 0) {
+        # A GitHub repository linked to a node is listed through GitHub
+        # itself (.osf_github_files()): 2 requests for the whole repository
+        # instead of one slow OSF-proxied request per folder. Only the
+        # provider's top folder is matched, so a fallback below lists it the
+        # old way in full.
+        is_gh <- grepl("/nodes/[a-z0-9]+/files/github/?$", st$urls)
+        for (u in st$urls[is_gh]) {
+          node <- sub("^.*/nodes/([a-z0-9]+)/files/github/?$", "\\1", u)
+          gh_rows <- .osf_github_files(node)
+          if (!is.null(gh_rows)) {
+            st$files <- dplyr::bind_rows(st$files, gh_rows)
+            st$urls <- setdiff(st$urls, u)
+          }
+        }
+        if (length(st$urls) == 0) break
+
+        n_files <- sum(st$files$kind %in% "file")
+        sprintf("Listing files: %d folder%s to check (%d file%s found so far)",
+                length(st$urls), plural(length(st$urls)), n_files, plural(n_files)) |>
+          list(what = _) |>
+          pb$tick(0, tokens = _)
+        got <- fetch(st$urls)
+        files <- .osf_parse_response(got$data)
+        st$files <- dplyr::bind_rows(st$files, files)
+        st$urls <- c(got$left, files$files[!is.na(files$files %||% NA_character_)])
+        if (cut) break
+      }
+    }
+
+    # Until the files stage, the providers listed with the trees are kept
+    # in `st$providers` only; they are part of what was found so far.
+    found_files <- if (st$stage == "files") st$files else st$providers
+    data <- list(data, st$child, found_files) |>
      dplyr::bind_rows()
+
+    if (cut) {
+      n_files <- sum(found_files$kind %in% "file")
+      data$listing_cut <- rep(TRUE, nrow(data))
+      sprintf("Listing stopped at the limit of %d requests (%d file%s found)",
+              max_requests, n_files, plural(n_files)) |>
+        list(what = _) |>
+        pb$tick(0, tokens = _)
+      warning(sprintf(
+        "The OSF listing of %s stopped at the limit of %d requests (`max_requests`), with %d file%s listed: files in folders not yet opened are missing from it. Raise `max_requests` to list it in full%s.",
+        paste(valid_ids, collapse = ", "), max_requests, n_files, plural(n_files),
+        if (!is.null(disk_key)) ", or run again with `cache = TRUE` to list the next part" else ""),
+        call. = FALSE)
+    }
+  } else {
+    cut <- FALSE
+    short <- FALSE
   }
 
   paste0("...OSF retrieval complete!")|>
@@ -339,9 +472,26 @@ osf_info <- function(osf_url, id_col = 1,
   # A failed lookup (an `error` reason: OSF unreachable, rate limited, not
   # found) is not kept, so a later call in the same session asks the OSF
   # again rather than replaying an outage (#501), as for the on-disk cache
-  # (.repo_info_ok()).
+  # (.repo_info_ok()); nor is a listing with a failed or short folder. A
+  # listing cut short at `max_requests` is kept for the session under the key
+  # that names the limit. In the lasting cache, a complete listing is kept as
+  # "osf_listing", and the progress of one cut short as "osf_listing_part",
+  # for the next run to go on with (see `st` above); the progress file is
+  # removed once the listing is complete. After a failed or short folder
+  # nothing new is stored, so a gap is never kept as part of a listing; a
+  # stored progress file then stays as it was.
   failed <- !is.na(.col_chr(data, "error"))
-  if (use_cache && !any(failed)) assign(cache_key, data, envir = .osf_listing_cache)
+  if (!any(failed) && !short) {
+    if (use_cache) assign(if (cut) cut_key else cache_key, data, envir = .osf_listing_cache)
+    if (!is.null(disk_key)) {
+      if (cut) {
+        .repo_info_cache_put("osf_listing_part", disk_key, st)
+      } else {
+        .repo_info_cache_put("osf_listing", disk_key, data)
+        unlink(.repo_info_cache_path("osf_listing_part", disk_key))
+      }
+    }
+  }
   return(data)
 }
 
@@ -703,6 +853,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 # out of osf_get_all_pages() so both the first page and the parallel-fetched
 # remaining pages share identical error handling.
 .osf_get_one_page <- function(url) {
+  .osf_requests$n <- .osf_requests$n + 1
   tryCatch({
     resp <- .mc_request(.osf_max_page_size(url)) |>
       .osf_headers() |>
@@ -734,6 +885,7 @@ osf_get_all_pages <- function(url, page_end = Inf) {
 # .osf_get_one_page() (a parsed content list, or an .osf_error_result() on
 # failure), so callers can treat the two interchangeably.
 .osf_get_pages_parallel <- function(urls) {
+  .osf_requests$n <- .osf_requests$n + length(urls)
   reqs <- lapply(urls, \(url) {
     .mc_request(.osf_max_page_size(url)) |>
       .osf_headers() |>
