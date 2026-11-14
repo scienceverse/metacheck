@@ -119,6 +119,8 @@ osf_links <- function(paper) {
 
 #' Clear the session cache of OSF listings
 #'
+#' Also forgets the file-server address of each file the listings named.
+#'
 #' @returns the number of cached listings removed, invisibly
 #' @export
 #' @examples
@@ -126,6 +128,7 @@ osf_links <- function(paper) {
 osf_cache_clear <- function() {
   n <- length(ls(.osf_listing_cache))
   rm(list = ls(.osf_listing_cache), envir = .osf_listing_cache)
+  rm(list = ls(.osf_file_server_memo, all.names = TRUE), envir = .osf_file_server_memo)
   invisible(n)
 }
 

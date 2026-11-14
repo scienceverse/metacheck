@@ -663,6 +663,14 @@ osf_pat <- function(pat = NULL) {
   is_file <- obj$kind == "file"
   obj$filetype[is_file] <- filetype(obj$name[is_file])
 
+  # each OSF Storage file's own file server, so a later read of it skips the
+  # request to osf.io that only redirects there (.osf_file_server_remember()
+  # in R/repo-download.R); its address ends in the file's own path ("/<id>")
+  server <- data$links$upload %||% rep(NA_character_, nrow(obj))
+  own <- obj$kind %in% "file" & obj$provider %in% "osfstorage" & !is.na(server) &
+    !is.na(att$path %||% NA_character_) & endsWith(server, att$path %||% "")
+  if (any(own)) .osf_file_server_remember(obj$download_url[own], server[own])
+
   folders <- which(obj$kind == "folder")
   # a logical test per row: `folders & is.na(...)` mixed row numbers with
   # TRUE/FALSE, so unnamed rows that are not folders were renamed too (U52)

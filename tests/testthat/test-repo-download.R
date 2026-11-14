@@ -1259,6 +1259,8 @@ test_that("the Dryad bulk download is used for every Dryad DOI form", {
 # OSF's own file server, is asked for with the token, and the download goes
 # there directly, so curl drops the token when it leaves the OSF.
 test_that(".osf_file_server_url follows only the redirect to an OSF file server (#508)", local({
+  osf_cache_clear()
+  withr::defer(osf_cache_clear())
   seen <- list()
   answer <- "https://files.de-1.osf.io/v1/resources/m4nbv/providers/osfstorage/696a"
   httr2::local_mocked_responses(function(req) {
@@ -1271,7 +1273,13 @@ test_that(".osf_file_server_url follows only the redirect to an OSF file server 
   expect_equal(httr2::req_get_headers(seen[[1]], "reveal")$Authorization, "Bearer tok")
   expect_false(seen[[1]]$options$followlocation)
 
+  # the answer is remembered: asked once per file
+  n <- length(seen)
+  expect_equal(.osf_file_server_url(url, "tok"), answer)
+  expect_length(seen, n)
+
   # a redirect that leaves the OSF is not followed
+  osf_cache_clear()
   answer <- "https://x.compat.objectstorage.us-ashburn-1.oraclecloud.com/p/signed"
   expect_equal(.osf_file_server_url(url, "tok"), url)
 
@@ -1285,6 +1293,8 @@ test_that(".osf_file_server_url follows only the redirect to an OSF file server 
 }))
 
 test_that(".auth_for_url never sends a token to every redirect (#508)", local({
+  osf_cache_clear()
+  withr::defer(osf_cache_clear())
   local_mocked_bindings(osf_pat = function(...) "tok", zenodo_pat = function(...) "ztok")
   httr2::local_mocked_responses(function(req) {
     httr2::response(status_code = 302,
@@ -1298,6 +1308,40 @@ test_that(".auth_for_url never sends a token to every redirect (#508)", local({
   req <- .auth_for_url(httr2::request("https://zenodo.org/records/1/files/a.csv"))
   expect_equal(httr2::req_get_headers(req, "reveal")$Authorization, "Bearer ztok")
   expect_null(req$options$unrestricted_auth)
+}))
+
+# An OSF Storage file's listing names its file server (links$upload), so a
+# read of it goes there directly, with or without a token, and no request to
+# osf.io is needed to find it (#634)
+test_that("a file server the OSF listing named is used without asking osf.io", local({
+  osf_cache_clear()
+  withr::defer(osf_cache_clear())
+  server <- "https://files.de-1.osf.io/v1/resources/x7dar/providers/osfstorage/646cea"
+  .osf_file_server_remember("https://osf.io/download/kxjhg/", server)
+  seen <- 0
+  httr2::local_mocked_responses(function(req) { seen <<- seen + 1; httr2::response(status_code = 500) })
+
+  # with a token: the remembered server, with the token, no request
+  expect_equal(.osf_file_server_url("https://osf.io/download/kxjhg/", "tok"), server)
+  local_mocked_bindings(osf_pat = function(...) "tok")
+  req <- .auth_for_url(httr2::request("https://osf.io/download/kxjhg/"))
+  expect_equal(req$url, server)
+  expect_equal(httr2::req_get_headers(req, "reveal")$Authorization, "Bearer tok")
+  expect_equal(seen, 0)
+
+  # without a token: the remembered server, without a token
+  local_mocked_bindings(osf_pat = function(...) "")
+  req <- .auth_for_url(httr2::request("https://osf.io/download/kxjhg/"))
+  expect_equal(req$url, server)
+  expect_null(httr2::req_get_headers(req, "reveal")$Authorization)
+  # a file not named by a listing is left as it is
+  req <- .auth_for_url(httr2::request("https://osf.io/download/other/"))
+  expect_equal(req$url, "https://osf.io/download/other/")
+  expect_equal(seen, 0)
+
+  # forgotten with the listings
+  osf_cache_clear()
+  expect_true(is.na(.osf_file_server_known("https://osf.io/download/kxjhg/")))
 }))
 
 test_that("a file the listing says is empty is written when the host refuses it (#575, item 5)", {

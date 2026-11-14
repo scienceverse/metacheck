@@ -149,3 +149,33 @@ test_that(".own_reference_links finds deposits cited only in the reference list 
   expect_equal(r$citing, "We used the data of Lee (2020).")
   expect_equal(r$ref_authors, "Lee, T")
 })
+
+test_that(".own_dep_type reads InvenioRDM's combined types (#634, #636)", {
+  expect_equal(.own_dep_type(c("zenodo", "zenodo", "zenodo"), c("publication-article", "dataset", "image-figure")),
+               c("JournalArticle", "Dataset", "Image"))
+})
+
+test_that("a link repo_check ignored as a publication is not a deposit (#634, #637)", {
+  out <- own1(source = c("text", "text"), repo_url = c("https://repo.example/handle/1/2", "https://osf.io/abcde"),
+              repo_type = c("dspace7", "osf"), context = c("Our earlier paper.", "Data are at osf.io/abcde."))
+  m <- .own_mark_publications(out, "https://repo.example/handle/1/2")
+  expect_equal(m$ownership, c("not_data", out$ownership[2]))
+  expect_equal(m$ownership_reason[1], .own_pub_reason)
+  expect_equal(.own_mark_publications(out, character(0)), out)
+})
+
+test_that(".own_reference_links finds deposits with repo_check's general finders (#636, #637)", local({
+  testthat::local_mocked_bindings(.repo_doi_records = function(doi) data.frame(
+    doi = tolower(doi), url = "https://datacompass.lshtm.ac.uk/id/eprint/409", resource_type = "Dataset", in_datacite = TRUE))
+  p <- paper("p1")
+  p$text <- data.frame(
+    text = c("We used survey data (Lee, 2020).",
+             "Lee, T. (2020). Survey data. LSHTM Data Compass. https://doi.org/10.17037/DATA.174"),
+    text_id = 1:2, paragraph_id = 1:2, section_id = c(1L, 2L), paper_id = "p1")
+  p$section <- data.frame(section_id = 1:2, header = c("Methods", "References"), section_type = c("method", "references"))
+  p$bib <- data.frame(bib_id = "b1", authors = "Lee, T", year = "2020", title = "Survey data", doi = NA_character_, text_id = 2L)
+  p$xref <- data.frame(xref_id = "b1", xref_type = "bibr", contents = "Lee, 2020", text_id = 1L)
+  r <- .own_reference_links(p)
+  expect_equal(r$repo_type, "reshare")
+  expect_equal(r$repo_url, "https://datacompass.lshtm.ac.uk/id/eprint/409")
+}))

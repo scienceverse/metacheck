@@ -138,24 +138,21 @@
   q$text <- data.frame(text = paste0(s, d), text_id = seq_len(nrow(b)), paragraph_id = seq_len(nrow(b)),
                        section_id = 1L, paper_id = id)
   q$section <- data.frame(section_id = 1L, header = "refs", section_type = "body")
+  # repo_check's own finders, the general ones included (EPrints, Invenio,
+  # CKAN, #636, #637). dspace7_links() looks up only DOIs under a DSpace 7
+  # prefix (78 lookups in the reference lists of 17 corpora), so a DSpace DOI
+  # in a reference list is found too, not only a DSpace address
   finders <- list(osf = osf_links, github = github_links, gitlab = gitlab_links, researchbox = rbox_links,
-                  dspace = dspace_links, zenodo = zenodo_links, dataverse = dataverse_links,
-                  figshare = figshare_links, dryad = dryad_links, reshare = reshare_links,
-                  researchdata4tu = researchdata4tu_links, mendeley = mendeley_links,
-                  dataone = dataone_links, ldbase = ldbase_links)
+                  dspace = dspace_links, dspace7 = dspace7_links, zenodo = invenio_links,
+                  dataverse = dataverse_links, figshare = figshare_links, dryad = dryad_links,
+                  reshare = eprints_links, researchdata4tu = researchdata4tu_links,
+                  mendeley = mendeley_links, dataone = dataone_links, ldbase = ldbase_links,
+                  ckan = ckan_links)
   found <- dplyr::bind_rows(lapply(names(finders), \(k) {
     x <- tryCatch(suppressMessages(suppressWarnings(finders[[k]](q))), error = \(e) NULL)
     if (!is.data.frame(x) || !nrow(x) || !"href" %in% names(x)) return(NULL)
     data.frame(href = sub("[.,;:]+$", "", x$href), text_id = x$text_id %||% NA_integer_, repo_type = k)
   }))
-  rx <- tryCatch(.dspace7_host_regex(), error = \(e) NULL)
-  if (!is.null(rx)) {
-    m <- regmatches(q$text$text, regexpr(paste0("(?:https?://)?(?:www\\.)?(?:", rx, ")/[A-Za-z0-9/._-]+"),
-                                         q$text$text, perl = TRUE, ignore.case = TRUE))
-    w <- which(grepl(paste0("(?:", rx, ")/"), q$text$text, perl = TRUE, ignore.case = TRUE))
-    if (length(m) == length(w) && length(w))
-      found <- dplyr::bind_rows(found, data.frame(href = sub("/+$", "", m), text_id = w, repo_type = "dspace7"))
-  }
   if (is.null(found) || !nrow(found)) return(empty)
   found <- found[!duplicated(tolower(found$href)), , drop = FALSE]
   found <- found[!.own_core(found$href) %in% .own_core(exclude), , drop = FALSE]
@@ -314,8 +311,28 @@
 
 # A host's record type as a DataCite resource type ("Dataset", "Software",
 # "Preprint", "JournalArticle", "Text", ...), so every host is read alike
+# A record repo_check ignores as a publication (a paper or thesis in a
+# repository, its own type says so, without data or code files; #636, #637)
+# is not a deposit
+.own_pub_reason <- "a publication in a repository (its record says so), without data or code files"
+
+# Mark the rows of `out` whose link repo_check ignored as a publication
+.own_mark_publications <- function(out, urls) {
+  if (!is.data.frame(out) || !nrow(out) || !length(urls)) return(out)
+  k <- .own_core(out$repo_url) %in% .own_core(urls)
+  out$ownership[k] <- "not_data"
+  out$ownership_group[k] <- "not_data"
+  out$ownership_reason[k] <- .own_pub_reason
+  out
+}
+
 .own_dep_type <- function(repo_type, type, subtype = NA_character_) {
   type <- tolower(trimws(as.character(type))); subtype <- tolower(trimws(as.character(subtype)))
+  # InvenioRDM (other Invenio installations, #636) gives type and subtype in
+  # one: "publication-article", "image-figure"
+  rdm <- !is.na(type) & grepl("-", type, fixed = TRUE)
+  subtype[rdm & is.na(subtype)] <- sub("^[^-]+-", "", type[rdm & is.na(subtype)])
+  type[rdm] <- sub("-.*$", "", type[rdm])
   out <- rep(NA_character_, length(repo_type))
   z <- repo_type %in% "zenodo"
   zen <- c(dataset = "Dataset", software = "Software", poster = "Text", presentation = "Text", image = "Image",

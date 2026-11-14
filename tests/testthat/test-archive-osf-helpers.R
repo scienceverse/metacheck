@@ -116,6 +116,20 @@ test_that(".osf_file_data", {
   expect_in(code_obs$filetype, "code")
   expect_equal(code_obs$path, sprintf("/code/%02d.R", 1:25))
   expect_in(code_obs$parent, "mc45x")
+
+  # each OSF Storage file's file server is remembered from its listing, so a
+  # later read skips the request to osf.io (#634); a GitHub add-on's is not
+  osf_cache_clear()
+  withr::defer(osf_cache_clear())
+  osf_obs <- .osf_file_data(osf_data)
+  f <- osf_obs$kind %in% "file"
+  expect_gt(sum(f), 0)
+  known <- vapply(osf_obs$download_url[f], .osf_file_server_known, "", USE.NAMES = FALSE)
+  # mc45x is a European project: its region's file server
+  expect_true(all(grepl("^https://files[.]de-1[.]osf[.]io/v1/resources/mc45x/providers/osfstorage/", known)))
+  code_obs <- .osf_file_data(code_data)
+  known <- vapply(code_obs$download_url, .osf_file_server_known, "", USE.NAMES = FALSE)
+  expect_true(all(is.na(known)))
 }, "mock")
 
 

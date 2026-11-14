@@ -4,7 +4,7 @@
 \alias{repro_materialize_layout}
 \title{Copy a paper's files into a throwaway directory, as a plan places them}
 \usage{
-repro_materialize_layout(plan, structure_df, root)
+repro_materialize_layout(plan, structure_df, root, deadline = NULL)
 }
 \arguments{
 \item{plan}{the \code{psychds_check} table (\code{file_name}, \code{target_path}), or the
@@ -15,10 +15,16 @@ names each row's own file}
 \code{file_location})}
 
 \item{root}{the temp directory to build into (created if absent)}
+
+\item{deadline}{a clock time (\code{POSIXct}) after which no further file is
+copied; its folder is still made, and its row has \code{ok = FALSE}. \code{NULL} (the
+default) copies every file.}
 }
 \value{
 \code{root}, invisibly, with attribute \code{"materialised"}: a data frame of
-\code{target_path} / \code{source} / \code{ok} (whether the copy succeeded) rows.
+\code{target_path} / \code{source} / \code{ok} (whether the copy succeeded) rows, and
+attribute \code{"not_copied_time"}: the number of files not copied because
+\code{deadline} had passed.
 }
 \description{
 The execute phase runs the paper's code in the repository as the authors

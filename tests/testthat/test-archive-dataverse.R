@@ -682,3 +682,24 @@ test_that("a file Dataverse converted is taken as it was uploaded (#582)", {
   expect_true(is.na(e$size))            # not the converted file's size
   expect_match(e$url, "format=original$")
 })
+
+test_that("the repository survey's Dataverse hosts and prefixes are added to the hand-written lists (#636)", {
+  hosts <- .dataverse_hosts()
+  # hand-written and survey hosts, each once
+  expect_true(all(c("dataverse.harvard.edu", "data.indores.fr", "dataverse.geus.dk") %in% hosts))
+  expect_false(any(duplicated(hosts)))
+  x <- .dataverse_doi_prefix_hosts()
+  expect_false(any(duplicated(names(x))))
+  # a survey prefix of a host the hand-written table writes with "www." goes
+  # under that entry, not a second one
+  expect_false(any(duplicated(sub("^www\\.", "", names(x)))))
+  # a DOI under a survey prefix finds its host
+  expect_equal(.dataverse_host_from_doi("10.48579/PRO/3LQH1M"), "data.indores.fr")
+  # never another platform's own prefix (10.6084 is Figshare's, #434)
+  p <- unlist(x, use.names = FALSE)
+  expect_false(any(c("10.6084", "10.5281", "10.17605", "10.5061") %in% p))
+  # every prefix is a full prefix: a table read as numbers loses a final 0
+  # ("10.18150" -> "10.1815")
+  expect_true(all(grepl("^10\\.[0-9]{4,9}$", p)))
+  expect_true(all(c("10.18150") %in% unlist(.dataverse_doi_prefix_hosts_survey())))
+})

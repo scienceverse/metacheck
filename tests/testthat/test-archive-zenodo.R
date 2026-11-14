@@ -1,3 +1,75 @@
+test_that("a record on another Invenio installation is '<host>/<id>' (#636)", {
+  expect_true(all(c("zenodo.org", "fdr.uni-hamburg.de", "data.caltech.edu") %in% .invenio_hosts()))
+  ids <- .zenodo_id(c(
+    "https://data.caltech.edu/records/j4k4w-p8331",
+    "https://data.caltech.edu/api/records/j4k4w-p8331/files",
+    "https://www.fdr.uni-hamburg.de/record/14137",
+    "data.caltech.edu/j4k4w-p8331",
+    "https://zenodo.org/records/2669586",
+    "10.5281/zenodo.2669586",
+    "https://www.example.org/records/123"
+  ))
+  # the host as the link writes it: Hamburg answers only with "www."
+  expect_equal(unname(ids), c("data.caltech.edu/j4k4w-p8331", "data.caltech.edu/j4k4w-p8331",
+                              "www.fdr.uni-hamburg.de/14137", "data.caltech.edu/j4k4w-p8331",
+                              "2669586", "2669586", NA))
+})
+
+test_that(".invenio_files reads Zenodo's, InvenioRDM's and an older Invenio's files alike (#636)", {
+  zen <- list(list(id = "a", key = "x.csv", size = 10, checksum = "md5:1",
+                   links = list(self = "https://zenodo.org/api/records/1/files/x.csv/content")))
+  rdm <- list(enabled = TRUE, count = 1, entries = list(`y.R` = list(
+    id = "b", key = "y.R", size = 20, checksum = "md5:2",
+    links = list(self = "https://h/api/records/2/files/y.R", content = "https://h/api/records/2/files/y.R/content"))))
+  old <- list(list(file_id = "c", filename = "z.txt", filesize = 30, checksum = "3",
+                   links = list(download = "https://h/record/3/files/z.txt", self = "https://h/api/files/c")))
+  f <- c(.invenio_files(zen), .invenio_files(rdm), .invenio_files(old))
+  expect_equal(vapply(f, `[[`, "", "key"), c("x.csv", "y.R", "z.txt"))
+  expect_equal(vapply(f, \(x) as.numeric(x$size), 1), c(10, 20, 30))
+  # the file's bytes, never InvenioRDM's description of the file
+  expect_equal(vapply(f, \(x) x$links$self, ""), c("https://zenodo.org/api/records/1/files/x.csv/content",
+                                                  "https://h/api/records/2/files/y.R/content",
+                                                  "https://h/record/3/files/z.txt"))
+  # a restricted record lists none
+  expect_equal(.invenio_files(list(enabled = TRUE, entries = list())), list())
+})
+
+test_that(".zenodo_info asks the record's own Invenio installation (#636)", local({
+  asked <- character(0)
+  testthat::local_mocked_bindings(.batch_query = function(url, ...) { asked <<- c(asked, url); list(NULL) })
+  suppressWarnings(.zenodo_info("data.caltech.edu/j4k4w-p8331"))
+  suppressWarnings(.zenodo_info("2669586"))
+  expect_equal(asked, c("https://data.caltech.edu/api/records/j4k4w-p8331",
+                        "https://zenodo.org/api/records/2669586"))
+}))
+
+test_that("invenio_links finds Zenodo and other Invenio records, links and DOIs (#636)", local({
+  asked <- character(0)
+  testthat::local_mocked_bindings(.repo_doi_records = function(doi) {
+    asked <<- c(asked, doi)
+    data.frame(doi = tolower(doi), url = "https://www.fdr.uni-hamburg.de/record/139",
+               resource_type = "Dataset", in_datacite = TRUE)
+  })
+  paper <- test_paper(
+    text = c("Code is at data.caltech.edu/records/mzrjq-6wc02 and data at doi:10.25592/uhhfdm.139.",
+             "See 10.5281/zenodo.2669586 and 10.1016/j.cognition.2020.104."),
+    url = "https://www.fdr.uni-hamburg.de/record/14137")
+  links <- invenio_links(paper)
+  expect_setequal(links$zenodo_id, c("2669586", "data.caltech.edu/mzrjq-6wc02",
+                                     "www.fdr.uni-hamburg.de/14137", "www.fdr.uni-hamburg.de/139"))
+  # only the DOI under another installation's prefix is looked up
+  expect_equal(asked, "10.25592/uhhfdm.139")
+  # Zenodo's own links are found as before
+  expect_equal(zenodo_links(paper)$zenodo_id, "2669586")
+  # a paper with another installation's link and none to Zenodo (an empty
+  # Zenodo table has empty logical columns, which could not be joined)
+  only <- invenio_links(test_paper(text = "Data: https://www.fdr.uni-hamburg.de/record/14137 ."))
+  expect_equal(only$zenodo_id, "www.fdr.uni-hamburg.de/14137")
+  # Zenodo's type for a paper is a publication
+  expect_true(.repo_publication_type("publication"))
+  expect_true(.repo_publication_type("publication-article"))
+}))
+
 test_that("zenodo_links", {
   expect_true(is.function(metacheck::zenodo_links))
   expect_no_error(helplist <- help(zenodo_links, metacheck))

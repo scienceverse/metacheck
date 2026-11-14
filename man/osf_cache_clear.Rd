@@ -10,7 +10,7 @@ osf_cache_clear()
 the number of cached listings removed, invisibly
 }
 \description{
-Clear the session cache of OSF listings
+Also forgets the file-server address of each file the listings named.
 }
 \examples{
 osf_cache_clear()
