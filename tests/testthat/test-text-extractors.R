@@ -168,8 +168,12 @@ test_that("extract_p_values reads numbers without a decimal point (#642)", {
            "the groups differed, p = 0,05",
            "the groups differed, p = 12.05",
            "the groups differed, p = 10",
-           "the groups differed (p < 1 \u00d7 10\u207b\u00b9\u2070)")
+           "the groups differed (p < 1 \u00d7 10\u207b\u00b9\u2070)",
+           # a statistic of 0 is not the test of a p of 0
+           "the best model had ARIMA values p = 0, d = 0, q = 2.")
   expect_equal(nrow(extract_p_values(txt)), 0)
+  # but it is the test of a p of 1
+  expect_equal(extract_p_values("No difference, z = 0, p = 1.")$p_value, 1)
 
   # a paper object
   paper <- test_paper(c("We found no difference, t(10) = 0.2, p = 1.",
@@ -188,6 +192,10 @@ test_that("extract_p_values reads p with a correction or p-value name (#642)", {
   expect_equal(pv$text_id, seq_along(txt))
   expect_equal(pv$p_value, c(.006, .034, .05, .27, .003, .001, .01, .001, .02,
                              .01, 1e-10, .021, 2.2e-9, .97, .56))
+  # the name after the p, NA for a plain p
+  expect_equal(pv$p_name, c("FWE", "adj", "Bonferroni", "MCMC", "interaction", "FDR",
+                            "corrected", "trend", NA, "Mantel", "ANOVA", "Wilcoxon",
+                            "MWU", "Binomial", "chi2"))
   # another word after p is not a correction name
   expect_equal(nrow(extract_p_values(c("PSA (ng/ml) = 0.5", "pH = 0.5", "pre = .5"))), 0)
 })
@@ -205,6 +213,17 @@ test_that("partial eta squared written with its subscript after it is not a p-va
   eq <- extract_eq(txt)
   expect_equal(eq$lhs, c("F", "p", "ƞ²p", "η² p", "t", "η² P", "p",
                          "η 2 p", "p", "η²", "p"))
+})
+
+test_that("extract_eq reads p-values as extract_p_values does (#642)", {
+  x <- c("t(20) = 3.1, p < 10 -15.", "t(20) = 3.1, p<2.2\u00c210 \u00c016.",
+         "t(20) = 3.1, p adj = .034.", "t(20) = 3.1, N = 10 -15 years.",
+         "t(20) = 3.1, M = 10-15.")
+  eq <- extract_eq(x)
+  eq <- eq[eq$lhs != "t", ]
+  expect_equal(eq$lhs, c("p", "p", "p adj", "N", "M"))
+  # 10 to a power only for a p-value; a range stays as it was
+  expect_equal(eq$rhs, c("10 -15", "2.2\u00c210 \u00c016", ".034", "10", "10-15"))
 })
 
 test_that("extract_eq reads the Unicode minus, and 'and z' is z (U205, U218)", {

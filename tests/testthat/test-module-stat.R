@@ -152,6 +152,16 @@ test_that("stat_p_nonsig: p = 1 is non-significant, p \u2248 0 and p = 2.4E-08 a
   expect_equal(mod_output$table$text, "p = 1")
 })
 
+test_that("stat_p_exact: a p with a correction name counts only after a statistic (#642)", {
+  s <- c("Genes with padj < 0.05 were selected for the enrichment analysis.",
+         "Activity increased in the left insula (t(37) = 7.17, p FWE < .05).",
+         "Thresholds were calculated at the cluster level using TFCE, P FWE < 0.05, K = 10.")
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$table$text[mo$table$imprecise], "p FWE < .05")
+  # the third is a threshold by its words already
+  expect_equal(mo$table$not_a_test[!mo$table$imprecise], c("named", "threshold"))
+})
+
 test_that("stat_p_exact: p = 0 is zero, a value too small for R is not (#642)", {
   s <- c("The groups differed, chi2(1) = 40, p = 0).",
          "The groups differed, z = 40, p < 10 -324.",

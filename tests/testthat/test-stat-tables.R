@@ -393,6 +393,24 @@ test_that(".norm_value counts the exponent in a number's decimals (U143)", {
   expect_equal(.norm_value("2.5E+03")$dec, 0L)
 })
 
+test_that(".norm_value reads scientific notation as papers write it (#642)", {
+  # "1.8 x 10 -6" was 1.8, so a reported p never matched its own output
+  expect_equal(.norm_value("1.8 \u00d7 10 -6")$num, 1.8e-6)
+  expect_equal(.norm_value("1.8 \u00d7 10 -6")$dec, 7L)
+  expect_equal(.norm_value("2.2\u00c210 \u00c016")$num, 2.2e-16)
+  expect_equal(.norm_value("\u22120.32")$num, -0.32)
+  expect_equal(.norm_value("1.5 x 10^3")$num, 1500)
+  # 10 to a power with nothing before it only for a p-value: elsewhere it
+  # can be a range
+  expect_equal(.norm_value("10 -15", ten_power = TRUE)$num, 1e-15)
+  expect_equal(.norm_value("< 10 -15", ten_power = TRUE)$censored, "<")
+  expect_equal(.norm_value("10-15")$num, NA_real_)
+  # unchanged
+  expect_equal(.norm_value("2 x 10")$num, 2)
+  expect_equal(.norm_value("< 2.2e-16")$num, 2.2e-16)
+  expect_equal(.norm_value("1,234")$num, 1234)
+})
+
 test_that("stat tables: a row without content is dropped, and fields are read by exact name (U141)", {
   # a short empty row became an NA row, and tb$line read tb$line_seq
   h <- xml2::read_html(paste0('<table><tr><th>Name</th><th>t</th></tr>',

@@ -147,14 +147,35 @@
 
 # ---- reported values --------------------------------------------------
 
+# A number as a paper writes it, in the form R reads: spaces removed, the
+# Unicode minus and A with a grave accent (GROBID's reading of the minus in
+# some PDFs) as "-", and "x 10^", the multiplication sign or A with a
+# circumflex or a tilde (GROBID's readings of it) before 10 and an exponent
+# as "e": "1.8 x 10 -6" and "2.2\u00c210 \u00c016" are "1.8e-6" and "2.2e-16".
+# With `ten_power`, 10 to a power with nothing before it ("10 -15", where
+# reading the PDF lost the superscript) is "1e-15": only for a p-value, as
+# elsewhere "10-15" can be a range. The one reader of such numbers for
+# extract_p_values() and .norm_value(), so the two cannot disagree (#642).
+.sci_text <- function(x, ten_power = FALSE) {
+  s <- gsub("\\s", "", x)
+  s <- gsub("[\u2212\u00c0]", "-", s)
+  if (ten_power) s <- sub("^([<>]?)10\\^?(?=-\\d)", "\\11e", s, perl = TRUE)
+  gsub("[x*\u00d7\u00c2\u00c3]10\\^?(?=[-+]?\\d)", "e", s, perl = TRUE)
+}
+
 # Normalise a value string to a number. APA leading-dot ".06" -> 0.06; strip
-# thousands separators; "< .001"/"> .05" -> the bound (with a censored flag).
+# thousands separators; "< .001"/"> .05" -> the bound (with a censored flag);
+# scientific notation as papers write it ("1.8 x 10 -6"), through
+# .sci_text(); with `ten_power` (a p-value), also "10 -15".
 # Returns list(num, dec = #decimals as written, censored = "<"/">"/"").
-.norm_value <- function(x) {
+.norm_value <- function(x, ten_power = FALSE) {
   s <- trimws(as.character(x %||% ""))
   cens <- ""
   if (grepl("^[<>]", s)) { cens <- substr(s, 1, 1); s <- trimws(sub("^[<>]\\s*", "", s)) }
-  s <- gsub("[, ]", "", s)
+  s <- gsub(",", "", s)
+  # "1.8 x 10 -6" was read as 1.8, so a reported p never matched its own
+  # output (#642)
+  s <- .sci_text(s, ten_power = ten_power)
   s <- sub("[^0-9.eE+-].*$", "", s)
   dm <- regmatches(s, regexpr("\\.[0-9]+", s))
   dec <- if (length(dm)) nchar(dm) - 1L else 0L
@@ -298,20 +319,28 @@
 # GROBID reads "=" and the minus sign in some journals. Used by
 # .p_not_test() (a p-value right after one belongs to it) and
 # .reports_test() (#642).
-.test_stat_pattern <- paste0(
+.test_stat_head <- paste0(
   "(?<![\\w\u0370-\u03ff-])(?:t|F|z|Z|r|rs|R(?![\u00b22])|W|U|H|D|V|Q|T|B|b|d|g|OR|HR|RR|",
   "\u03c7\u00b2?|\u03c72|X2|chi2|chi\u00b2|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
   "[0-9]{0,4}\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
-  "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
+  "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*")
+.test_stat_pattern <- paste0(.test_stat_head, "\\.?\\d")
+# the same, with a value that is not 0 ("d = 0", "T = 0.00" are left out):
+# a p-value of exactly 0 needs a large statistic (#642)
+.test_stat_nonzero <- paste0(.test_stat_head, "(?!(?:0+\\.?0*|\\.0+)(?![\\d.]))\\.?\\d")
 
 # Whether each sentence reports a statistical test: a test statistic with a
 # value, another p-value written with a decimal point or an exponent, or a
 # word that names a test or its outcome. extract_p_values() reads a whole
 # "p = 0" or "p = 1" as a p-value only in such a sentence; otherwise it is
 # often a probability or a model parameter ("with p = 1", "ARIMA values
-# p = 0") (#642).
-.reports_test <- function(sentence) {
+# p = 0") (#642). With `nonzero` TRUE (for "p = 0"), a statistic counts only
+# with a value that is not 0: "ARIMA values p = 0, d = 0" has no test.
+.reports_test <- function(sentence, nonzero = FALSE) {
   sentence[is.na(sentence)] <- ""
+  nonzero <- rep_len(nonzero, length(sentence))
+  stat <- grepl(.test_stat_pattern, sentence, perl = TRUE)
+  stat[nonzero] <- grepl(.test_stat_nonzero, sentence[nonzero], perl = TRUE)
   other_p <- paste0(
     "(?<![\\w])[pP]s?(?:-?values?)?\\s*[=<>\u2264\u2265\u2248~\u00bc]\\s*",
     "(?:\\d?\\.\\d|\\d+\\s*(?:[eE]|[x\u00d7*\u00c2\u00c3]\\s*10)\\s*[-\u2212\u00c0]|10\\s*\\^?\\s*[-\u2212\u00c0]\\s*\\d)")
@@ -320,9 +349,53 @@
     "Kruskal|Kolmogorov|binomial|chi.?squ|AN(?:C|M)?OVA|permut|bootstrap|",
     "Bonferroni|\\bHolm\\b|Tukey|Dunn|Sidak|adjusted|corrected|post.?hoc|",
     "pairwise|comparisons?\\b|likelihood.ratio|\\bLRT\\b|regression|correlat|\\bexact\\b")
-  grepl(.test_stat_pattern, sentence, perl = TRUE) |
+  stat |
     grepl(other_p, sentence, perl = TRUE) |
     grepl(words, sentence, perl = TRUE, ignore.case = TRUE)
+}
+
+# The symbols of a table note: *, the asterisk operator, a dagger or double
+# dagger, a section or paragraph sign, #, ^, ~ and the replacement character
+.p_note_symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd]"
+
+# The clause of each p-value in its sentence: the text before it back to the
+# last ";" or full stop (at most 120 characters), and the text after it on
+# to the next (at most 80). The k-th row of a p-value in a sentence is its
+# k-th place there, and "p < .05" is not found inside "p < .051". `p` has
+# the columns `paper_id`, `text_id`, `text` and `expanded`. Returns a data
+# frame with `before` and `after`, NA where the p-value is not found. Used
+# by .p_not_test() and stat_p_exact (#604, #642).
+.p_clause <- function(p) {
+  n <- nrow(p)
+  before <- after <- rep(NA_character_, n)
+  if (!n) return(data.frame(before = before, after = after))
+  sentence <- p$expanded %||% p$text
+  sentence[is.na(sentence)] <- ""
+  ptext <- trimws(p$text)
+  key <- paste(p$paper_id, p$text_id, sentence, ptext, sep = "\r")
+  k <- stats::ave(seq_along(key), key, FUN = seq_along)
+  # the end of a clause: ";", or a full stop with a space or a marker after it
+  boundary <- paste0(";|\\.\\s+|\\.(?=", .p_note_symbol, ")|:\\s+(?=[A-Z])")
+  for (i in seq_len(n)) {
+    s <- sentence[[i]]
+    at <- gregexpr(paste0(gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", ptext[[i]]), "(?![0-9])"),
+                   s, perl = TRUE)[[1]]
+    if (at[[1]] == -1 || k[[i]] > length(at)) next
+    start <- at[[k[[i]]]]
+    end <- start + nchar(ptext[[i]]) - 1L
+    b <- substr(s, max(1L, start - 120L), start - 1L)
+    a <- substr(s, end + 1L, end + 80L)
+    cut_b <- gregexpr(boundary, b, perl = TRUE)[[1]]
+    if (cut_b[[1]] > 0) {
+      last <- length(cut_b)
+      b <- substr(b, cut_b[[last]] + attr(cut_b, "match.length")[[last]], nchar(b))
+    }
+    cut_a <- regexpr(boundary, a, perl = TRUE)
+    if (cut_a > 0) a <- substr(a, 1L, cut_a - 1L)
+    before[[i]] <- b
+    after[[i]] <- a
+  }
+  data.frame(before = before, after = after)
 }
 
 # Which p-values in sentences are clearly not the result of a test: a
@@ -365,10 +438,6 @@
   sentence[is.na(sentence)] <- ""
   ptext <- trimws(p$text)
 
-  # the k-th row of a p-value in a sentence is its k-th place there
-  key <- paste(p$paper_id, p$text_id, sentence, ptext, sep = "\r")
-  k <- stats::ave(seq_along(key), key, FUN = seq_along)
-
   # a statistic or an estimate: a short name, an optional (df), a comparison
   # and a number; not p (or q, an adjusted p), n, k, df or alpha, which
   # thresholds and notes use too. The fraction one quarter and A with a grave accent are how GROBID reads "=" and
@@ -385,7 +454,7 @@
   # a p with a correction name is a p-value too ("pFWE < .05", #642)
   p_value <- paste0("(?<![\\w])[pP]s?\\s*(?:-?values?)?(?:[\\s_-]?", .p_subscripts, ")?",
                     "\\s*(?:=|<|>|\u2264|\u2265|\u00bc)")
-  symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd]"
+  symbol <- .p_note_symbol
   marker <- paste0("(?<![\\w)\\]/])(?:(?:", symbol, "|(?<![\\w/+])\\++)\\s*)+[:=,]?\\s*$")
   ns_marker <- "(?<![\\w.])n\\.?s\\.?\\s*[:=]\\s*$"
   ns_plain <- "(?<![\\w.])n\\.?s\\.?\\s*,?\\s*$"
@@ -425,27 +494,13 @@
     # "* and ** indicate p < .05 and p < .01", "red dotted line: corrected p < .05"
     "|(?:", symbol, "\\s*)+(?:(?:and|or|,)\\s*(?:", symbol, "\\s*)+)*(?:indicat|denot|represent|mark|correspond)\\w*",
     "|\\b(?:", vis, ")\\s*:")
-  # the end of a clause: ";", or a full stop with a space or a marker after it
-  boundary <- paste0(";|\\.\\s+|\\.(?=", symbol, ")|:\\s+(?=[A-Z])")
 
+  ctx <- .p_clause(p)
   for (i in seq_along(out)) {
     s <- sentence[[i]]
-    # not inside a longer value: "p < .05" is not found in "p < .051"
-    at <- gregexpr(paste0(gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", ptext[[i]]), "(?![0-9])"),
-                   s, perl = TRUE)[[1]]
-    if (at[[1]] == -1 || k[[i]] > length(at)) next   # not found: may be a result
-    start <- at[[k[[i]]]]
-    end <- start + nchar(ptext[[i]]) - 1L
-    before <- substr(s, max(1L, start - 120L), start - 1L)
-    after <- substr(s, end + 1L, end + 80L)
-    # the clause: back to the last boundary, on to the next
-    cut_b <- gregexpr(boundary, before, perl = TRUE)[[1]]
-    if (cut_b[[1]] > 0) {
-      last <- length(cut_b)
-      before <- substr(before, cut_b[[last]] + attr(cut_b, "match.length")[[last]], nchar(before))
-    }
-    cut_a <- regexpr(boundary, after, perl = TRUE)
-    if (cut_a > 0) after <- substr(after, 1L, cut_a - 1L)
+    if (is.na(ctx$before[[i]])) next   # not found: may be a result
+    before <- ctx$before[[i]]
+    after <- ctx$after[[i]]
     clause <- paste(before, after)
 
     # a marker note: unless a test statistic comes right before the p-value,

@@ -282,7 +282,8 @@
           list(family = "ci_upper", name = "ci_upper", value = ivl$hi$num,
                dec = ivl$hi$dec, censored = "")))
       }
-      nv <- .norm_value(g$rhs[i])
+      # a p-value may be 10 to a power with nothing before it ("p < 10 -15"; #642)
+      nv <- .norm_value(g$rhs[i], ten_power = identical(fam, "p"))
       if (is.na(nv$num)) return(NULL)
       cens <- nv$censored
       if (!nzchar(cens) && !is.na(cc) && cc %in% c("<", ">")) cens <- cc
@@ -353,7 +354,7 @@
           list(family = "ci_upper", name = "ci_upper", value = ivl$hi$num,
                dec = ivl$hi$dec, censored = "", is_anchor = FALSE, pos = pos)))
       }
-      nv <- .norm_value(c$value)
+      nv <- .norm_value(c$value, ten_power = identical(fam, "p"))
       if (is.na(nv$num)) return(NULL)
       cens <- nv$censored
       cc <- trimws(as.character(c$comp %||% ""))
