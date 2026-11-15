@@ -143,6 +143,24 @@ test_that("stat_p_nonsig", {
   expect_equal(mod_output$table$text, "p = .20")
 })
 
+test_that("stat_p_nonsig: p = 1 is non-significant, p \u2248 0 and p = 2.4E-08 are not (#642)", {
+  paper <- test_paper(c("No difference between groups (Fisher's exact test, p = 1).",
+                        "A difference (permutation test, p \u2248 0).",
+                        "A difference, p = 2.4E-08.",
+                        "Another, p ~ .01."))
+  mod_output <- module_run(paper, "stat_p_nonsig")
+  expect_equal(mod_output$table$text, "p = 1")
+})
+
+test_that("stat_p_exact: p = 0 is zero, a value too small for R is not (#642)", {
+  s <- c("The groups differed, chi2(1) = 40, p = 0).",
+         "The groups differed, z = 40, p < 10 -324.",
+         "The groups differed, z = 40, p = 1e-400.")
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$summary_table$n_zero, 1)
+  expect_equal(mo$table$text[mo$table$zero], "p = 0")
+})
+
 test_that("stat_p_exact: p < .000 is zero, == is =, and a starred footnote hides only itself (U127)", {
   s <- c("The effect was strong, p < .000.",
          "Another, p == .000.",

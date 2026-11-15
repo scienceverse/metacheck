@@ -292,6 +292,39 @@
 
 # ---- p-values that are not the result of a test --------------------------
 
+# A test statistic with a value: t(20) =, F =, chi2 =, z =, W =, OR =, b =.
+# Not a fit index, R squared, a size or another number, which a table note
+# can follow. The fraction one quarter and A with a grave accent are how
+# GROBID reads "=" and the minus sign in some journals. Used by
+# .p_not_test() (a p-value right after one belongs to it) and
+# .reports_test() (#642).
+.test_stat_pattern <- paste0(
+  "(?<![\\w\u0370-\u03ff-])(?:t|F|z|Z|r|rs|R(?![\u00b22])|W|U|H|D|V|Q|T|B|b|d|g|OR|HR|RR|",
+  "\u03c7\u00b2?|\u03c72|X2|chi2|chi\u00b2|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
+  "[0-9]{0,4}\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
+  "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
+
+# Whether each sentence reports a statistical test: a test statistic with a
+# value, another p-value written with a decimal point or an exponent, or a
+# word that names a test or its outcome. extract_p_values() reads a whole
+# "p = 0" or "p = 1" as a p-value only in such a sentence; otherwise it is
+# often a probability or a model parameter ("with p = 1", "ARIMA values
+# p = 0") (#642).
+.reports_test <- function(sentence) {
+  sentence[is.na(sentence)] <- ""
+  other_p <- paste0(
+    "(?<![\\w])[pP]s?(?:-?values?)?\\s*[=<>\u2264\u2265\u2248~\u00bc]\\s*",
+    "(?:\\d?\\.\\d|\\d+\\s*(?:[eE]|[x\u00d7*\u00c2\u00c3]\\s*10)\\s*[-\u2212\u00c0]|10\\s*\\^?\\s*[-\u2212\u00c0]\\s*\\d)")
+  words <- paste0(
+    "\\btest(?:s|ed|ing)?\\b|significan|\\bdiffer|Fisher|Wilcoxon|Mann.?Whitney|",
+    "Kruskal|Kolmogorov|binomial|chi.?squ|AN(?:C|M)?OVA|permut|bootstrap|",
+    "Bonferroni|\\bHolm\\b|Tukey|Dunn|Sidak|adjusted|corrected|post.?hoc|",
+    "pairwise|comparisons?\\b|likelihood.ratio|\\bLRT\\b|regression|correlat|\\bexact\\b")
+  grepl(.test_stat_pattern, sentence, perl = TRUE) |
+    grepl(other_p, sentence, perl = TRUE) |
+    grepl(words, sentence, perl = TRUE, ignore.case = TRUE)
+}
+
 # Which p-values in sentences are clearly not the result of a test: a
 # threshold or a legend, not a finding (#604). A table note ("* p < .05,
 # ** p < .01"), a figure legend ("Asterisks indicate significant differences
@@ -342,19 +375,16 @@
   # the minus sign in some journals.
   stat_name <- paste0(
     "(?<![\\w.\u0370-\u03ff-])(?!(?:p|P|ps|Ps|q|n|N|k|K|df|alpha|value|values|pvalue|pvalues)(?![\\w\u0370-\u03ff]))",
+    "(?![pP]_?", .p_subscripts, ")",   # pFWE, padj: a p-value (#642)
     "(?!\u03b1(?![\\w\u0370-\u03ff]))",
     "(?:[A-Za-z\u0370-\u03ff][A-Za-z\u0370-\u03ff0-9\u00b2_]{0,5}|\u03c7\u00b2?)",
     "\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
     "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
   ci <- "\\bCI\\b\\s*[\\[(=:]?\\s*[-\u2212\u00c0]?\\.?\\d|\\d+\\s*%\\s*CI\\b"
-  # a test statistic, which a p-value right after it belongs to: not a fit
-  # index, R squared, a size or another number, which a table note can follow
-  test_stat <- paste0(
-    "(?<![\\w\u0370-\u03ff-])(?:t|F|z|Z|r|rs|R(?![\u00b22])|W|U|H|D|V|Q|T|B|b|d|g|OR|HR|RR|",
-    "\u03c7\u00b2?|\u03c72|X2|chi2|chi\u00b2|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
-    "[0-9]{0,4}\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
-    "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
-  p_value <- "(?<![\\w])[pP]s?\\s*(?:-?values?)?\\s*(?:=|<|>|\u2264|\u2265|\u00bc)"
+  test_stat <- .test_stat_pattern
+  # a p with a correction name is a p-value too ("pFWE < .05", #642)
+  p_value <- paste0("(?<![\\w])[pP]s?\\s*(?:-?values?)?(?:[\\s_-]?", .p_subscripts, ")?",
+                    "\\s*(?:=|<|>|\u2264|\u2265|\u00bc)")
   symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd]"
   marker <- paste0("(?<![\\w)\\]/])(?:(?:", symbol, "|(?<![\\w/+])\\++)\\s*)+[:=,]?\\s*$")
   ns_marker <- "(?<![\\w.])n\\.?s\\.?\\s*[:=]\\s*$"

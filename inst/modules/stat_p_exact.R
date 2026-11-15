@@ -58,7 +58,10 @@ stat_p_exact <- function(paper) {
 
   # Flag p-values reported as exactly zero (e.g., p = .000, p = 0.00), also
   # "p < .000", which was neither imprecise nor zero (U127)
-  p$zero <- p$p_comp %in% c("=", "<") & !is.na(p$p_value) & p$p_value == 0
+  # A number written with an exponent is never a zero: "p < 10 -324" is
+  # smaller than R can hold and reads as 0 (#642)
+  p$zero <- p$p_comp %in% c("=", "<") & !is.na(p$p_value) & p$p_value == 0 &
+    !grepl("[eE]\\s*[-\u2212\u00c0]|10\\s*\\^?\\s*[-\u2212\u00c0]", p$text)
 
   cols <- c("text", "expanded")
   report_table <- unique(p[p$imprecise, cols, drop = FALSE])

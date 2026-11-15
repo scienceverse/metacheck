@@ -38,7 +38,8 @@ stat_p_nonsig <- function(paper) {
   cond <- !is.na(table$p_value) &
     table$p_value <= 0.05 &
     !is.na(table$p_comp) &
-    table$p_comp %in% c("<", "=", "==", "\u2264", "<=", "=<")   # "==" is "=" (U127)
+    # "==" is "=" (U127); "p \u2248 0" or "p ~ .01" is significant too (#642)
+    table$p_comp %in% c("<", "=", "==", "\u2264", "<=", "=<", "\u2248", "~")
 
   table$significance <- ifelse(cond, "significant", "nonsignificant")
   table <- subset(table, significance == "nonsignificant")
