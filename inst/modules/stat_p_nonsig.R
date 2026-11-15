@@ -10,7 +10,7 @@
 #'
 #' This module only checks p-values reported in the running text of the manuscript. It cannot (yet) process p-values reported only in tables.
 #'
-#' <validation>In a sample of 194 papers with 1602 instances of non-significant p-values, this module correctly detected 1486 of them, and incorrectly identified 153. Additionally, 91% of detections were true instances (positive predictive value). That is, when this module flags non-significant p-values in a paper, it correctly identifies an issue 91% of the time.</validation>
+#' <validation>Validated on three hand-coded sets of papers (scienceverse/validation: 249 Psychological Science, 250 Economics and 250 MDPI papers). Of 1,783 non-significant p-values in the ground truth, version 0.4.4.3 found 1,722 (3.4% missed), and 92.4% of its 1,864 detections were in the ground truth. Some differences come from the ground truth: it lacks p-values with a correction name ("p Bonf = .061"), and counts partial eta squared written with its subscript after it ("η 2 p = .05"), and "p = .05", as non-significant p-values.</validation>
 #'
 #'
 #' @keywords results

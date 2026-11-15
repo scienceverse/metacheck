@@ -14,7 +14,7 @@
 #'
 #' This module only checks p-values reported in the running text of the manuscript. It cannot (yet) process p-values reported only in tables (as opposed to a table's footnote text, which the module does see and tries to exclude — see above).
 #'
-#' <validation>In a sample of 225 papers containing 405 instances of non-exact p-values, the module correctly detected 269 cases (true positives) and incorrectly identified 78 (false positives). It missed 136 instances of imprecisely reported p-values (false negatives) and correctly identified 4557 cases of precisely reported p-values (true negative). Additionally, 78% of positive detections were correct (positive predictive value).</validation>
+#' <validation>Validated on 226 Psychological Science papers with 5,019 hand-coded p-values, 438 of them imprecise (scienceverse/validation, branch stat_p_exact). Version 0.4.4.3 reported 419 p-values as imprecise, 388 of them correctly (93%), and missed 50 (89% found). Of the misses, 13 are starred table notes ("*p < .05") that the module leaves out on purpose and 11 are p-values it did not find; of the wrong reports, 20 are p-values the ground truth does not contain (such as "ps < .05") and 6 use ≤ or ≥.</validation>
 #'
 #'
 #' @keywords results
