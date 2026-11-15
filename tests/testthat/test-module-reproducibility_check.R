@@ -1479,6 +1479,10 @@ test_that("total_timeout can be a clock time: the scripts must be done by then (
   fake_code$prev_outputs <- list(data_check = list(structure = structure_df),
                                  psychds_check = list(table = plan_df))
 
+  # Since 202ef05e, a clock time that leaves less than metacheck.repro_min_time
+  # (15 minutes) starts no script at all; this test is about the deadline
+  # itself, so that minimum is set to 0 here (both scripts were "not started")
+  withr::local_options(metacheck.repro_min_time = 0)
   mo <- module_run(fake_code, "reproducibility_check", execute = TRUE,
                    timeout = 60, total_timeout = Sys.time() + 5)
   rr <- mo$run_results

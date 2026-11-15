@@ -10,7 +10,7 @@ extract_p_values(paper)
 \item{paper}{a paper object or paperlist object}
 }
 \value{
-a table
+a table with one row per p-value: the matched text (\code{text}), its location, the comparison (\code{p_comp}), the value (\code{p_value}) and the name after the p (\code{p_name}, NA for a plain p)
 }
 \description{
 List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
@@ -18,7 +18,11 @@ List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and
 \details{
 Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the \code{text_search()} function and a custom pattern.
 
-This will catch most comparators like =<>~ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
+This will catch most comparators like =<>~ and most versions of scientific notation like 5.0 x 10^-2, 5.0e-2, 5E-2, 1e-10 and 10^-15 written as "10 -15". If you find any formats that are not correctly handled by this function, please contact the author.
+
+A p may carry the name of a correction, of the kind of p-value or of a test, glued to it or after a space ("pFWE = .006", "p adj = .034", "p Bonferroni < .05", "P MCMC = 0.27", "p interaction = .003", "pMantel < .01", "p Wilcoxon = .021"). The column \code{p_name} holds that name as written ("FWE", "adj"), and is NA for a plain p, so that a raw and a corrected p-value of the same test can be told apart.
+
+A p-value written as a whole 0 or 1 ("p = 1", "p = 0") is found only after "=", "~" or the approximately-equal sign, when a bracket, a semicolon or a comma follows it (after 1 also a full stop), and when its sentence reports a test: a test statistic ("t(20) = 0.3"), another p-value with a decimal point or an exponent, or a word that names a test or its outcome ("Fisher's exact test", "not significant", "did not differ"). Otherwise "p = 1" is often a probability or a model parameter, and "p < 0." is a p-value whose digits were lost when the PDF was read.
 }
 \examples{
 paper <- demopaper()

@@ -175,9 +175,14 @@ skip_if_quick <- function() {
   if (quick) skip("Quick mode")
 }
 
-# skip if the psychsci test corpus couldn't be downloaded (see setup.R)
-skip_no_psychsci <- function() {
-  skip_if_not(exists("psychsci") && !is.null(get("psychsci")),
+# skip if the psychsci test corpus couldn't be downloaded (see setup.R).
+# setup.R puts `psychsci` in the test environment, and a test calls this from
+# below it; devtools::load_all() puts this helper in the package environment,
+# above it. Looked up from the helper's own environment, `psychsci` was never
+# found, so the 25 tests that need it were always skipped under
+# devtools::test() (#642).
+skip_no_psychsci <- function(env = parent.frame()) {
+  skip_if_not(exists("psychsci", envir = env) && !is.null(get("psychsci", envir = env)),
               "psychsci test corpus not available")
 }
 
