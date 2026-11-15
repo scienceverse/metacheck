@@ -355,8 +355,10 @@
 }
 
 # The symbols of a table note: *, the asterisk operator, a dagger or double
-# dagger, a section or paragraph sign, #, ^, ~ and the replacement character
-.p_note_symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd]"
+# dagger, a section or paragraph sign, #, ^, ~ and the replacement character;
+# also the low asterisk, "@", and A with a tilde, which is how GROBID reads
+# an asterisk in some journals ("A-tilde p < 0.05, A-tilde A-tilde p < 0.01") (#642)
+.p_note_symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd\u00c3\u204e@]"
 
 # The clause of each p-value in its sentence: the text before it back to the
 # last ";" or full stop (at most 120 characters), and the text after it on
@@ -416,6 +418,9 @@
 # A p-value is taken as not a test when its clause has, and no statistic:
 #   marker     a symbol right before it: *, the asterisk operator, a dagger or double dagger, a section or paragraph sign, #, ^, +, ~, or a
 #              repeat of them ("* * * p < .001", "*: p < .05", "** = p < .01");
+#              GROBID's readings of an asterisk (A with a tilde, the low
+#              asterisk) and "@"; symbols in brackets before or after it
+#              ("(*) p < .05", "p < .01 (**)") (#642);
 #              "ns" or "n.s." only with ":" or "=" after it ("ns: p > .05"),
 #              or in a clause with a symbol note too
 #   threshold  words that state a threshold: a significance level, alpha,
@@ -456,6 +461,10 @@
                     "\\s*(?:=|<|>|\u2264|\u2265|\u00bc)")
   symbol <- .p_note_symbol
   marker <- paste0("(?<![\\w)\\]/])(?:(?:", symbol, "|(?<![\\w/+])\\++)\\s*)+[:=,]?\\s*$")
+  # a marker in brackets, before the p-value ("(*) p < .05", "(**) = p < .01")
+  # or after it ("p < .01 (**)") (#642)
+  marker_br_before <- paste0("\\(\\s*(?:", symbol, "\\s*)+\\)\\s*[:=,]?\\s*$")
+  marker_br_after <- paste0("^\\s*\\(\\s*(?:", symbol, "\\s*)+\\)")
   ns_marker <- "(?<![\\w.])n\\.?s\\.?\\s*[:=]\\s*$"
   ns_plain <- "(?<![\\w.])n\\.?s\\.?\\s*,?\\s*$"
   # threshold words, each in a form that states a threshold: "threshold" or
@@ -507,6 +516,7 @@
     # with no other p-value between them ("t52 = 6.92, ***p < .001"), or
     # right after it ("*p < .05 [z = 2.38]")
     if (grepl(marker, before, perl = TRUE) || grepl(ns_marker, before, perl = TRUE, ignore.case = TRUE) ||
+        grepl(marker_br_before, before, perl = TRUE) || grepl(marker_br_after, after, perl = TRUE) ||
         (grepl(ns_plain, before, perl = TRUE, ignore.case = TRUE) &&
          grepl(paste0(symbol, "\\s*[pP]\\b"), s, perl = TRUE))) {
       st <- gregexpr(test_stat, before, perl = TRUE)[[1]]

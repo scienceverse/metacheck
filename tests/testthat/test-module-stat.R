@@ -152,6 +152,28 @@ test_that("stat_p_nonsig: p = 1 is non-significant, p \u2248 0 and p = 2.4E-08 a
   expect_equal(mod_output$table$text, "p = 1")
 })
 
+test_that("notes: GROBID's asterisks and markers in brackets; stat_p_nonsig leaves notes out (#642)", {
+  s <- c("Significant differences: \u00c3 p < 0.05, \u00c3\u00c3 p < 0.01.",
+         "Stars: (*) p<0.05; (**) p<0.01.",
+         "Significance at p < 0.05 (*) and p < 0.01 (**).",
+         "For binary variables, *p < 0.05. \u204e\u204e p < 0.01.",
+         "Group A differed, F(1, 20) = 5.1, p < .05 (*).",
+         "The metformin group was higher than the insulin group (P < 0.05) and GLP-1 group (P < 0.01).")
+  tp <- test_paper(s)
+  p <- text_expand(extract_p_values(tp), tp)
+  nt <- .p_not_test(p)
+  expect_equal(nt[p$text_id %in% 1:4], rep("marker", 8))
+  # a marker after a test statistic belongs to a result; so do plain results
+  expect_true(all(is.na(nt[p$text_id %in% 5:6])))
+
+  # stat_p_nonsig lists a non-significant result, not a note
+  # a p-value next to threshold words is kept: often a result against the level
+  s <- c("\u2020 p < .10, * p < .05.", "Main effects were not significant (ps > .05).",
+         "This difference did not quite meet the conventional threshold for statistical significance (p = .054).")
+  mo <- module_run(test_paper(s), "stat_p_nonsig")
+  expect_equal(trimws(mo$table$text), c("ps > .05", "p = .054"))
+})
+
 test_that("stat_p_exact: a p with a correction name counts only after a statistic (#642)", {
   s <- c("Genes with padj < 0.05 were selected for the enrichment analysis.",
          "Activity increased in the left insula (t(37) = 7.17, p FWE < .05).",
