@@ -174,3 +174,14 @@ test_that("gitlab_tree_files reports a user or group address as such (#485)", {
   expect_true(result$gated)
   expect_equal(result$reason, "links to a GitLab user or group, not to a specific repository")
 })
+
+test_that("gitlab_links finds a full link written in the text, once", {
+  paper <- test_paper(c(
+    "The code is at https://gitlab.com/owner/repo.",
+    "Analyses: https://gitlab.com/other/analysis."
+  ))
+  paper$url <- data.frame(href = "https://gitlab.com/other/analysis", text_id = 2L)
+  obs <- gitlab_links(paper)
+  expect_setequal(obs$href, c("https://gitlab.com/owner/repo",
+                              "https://gitlab.com/other/analysis"))
+})

@@ -372,3 +372,11 @@ test_that(".figshare_zip_members passes the listed size to zip_peek()", local({
                                     dest = tempdir(), size = 4096))
   expect_equal(got_size, 4096)
 }))
+
+test_that("figshare_links keeps a '/' inside an institution's DOI (#634)", {
+  paper <- test_paper(c("Ag Data Commons. https://doi.org/10.15482/USDA.ADC/1529590.",
+                        "UCL data: 10.5522/04/14484084.v1 here."))
+  obs <- figshare_links(paper)
+  expect_setequal(sub("[.]$", "", obs$href),
+                  c("https://doi.org/10.15482/USDA.ADC/1529590", "10.5522/04/14484084.v1"))
+})

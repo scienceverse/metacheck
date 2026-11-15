@@ -146,7 +146,8 @@ test_that("report_table", {
   obs <- report_table(table)
   expect_equal(obs$x$data, table)
   expect_equal(obs$x$options$pageLength, 2)
-  expect_equal(obs$x$options$dom, "<'top' p>")
+  # page buttons and the menu of rows per page (#408)
+  expect_equal(obs$x$options$dom, "<'top' lp>")
 
   # 10 rows, show 10
   table <- data.frame(a = 1:10, b = 21:30)

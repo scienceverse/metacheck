@@ -229,7 +229,10 @@ figshare_links <- function(paper) {
   fs_bare_regex <- paste0(
     "(?:https?://)?(?:[a-z0-9.-]+\\.)?(?:", host_regex, ")/(?:articles|ndownloader|projects|collections|s)/[A-Za-z0-9/_.-]*",
     "|(?:https?://)?(?:doi\\.org/)?10\\.6084/m9\\.figshare\\.[0-9]+(?:\\.v[0-9]+)?",
-    "|(?:https?://)?(?:doi\\.org/)?(?:", doi_prefix_regex, ")/[A-Za-z0-9._-]+(?:\\.v[0-9]+)?"
+    # an institution's DOI can have a "/" in its suffix (UCL's
+    # 10.5522/04/14484084.v1, Ag Data Commons' 10.15482/USDA.ADC/1529590),
+    # which cut the link at its second "/" before (#634)
+    "|(?:https?://)?(?:doi\\.org/)?(?:", doi_prefix_regex, ")/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)?(?:\\.v[0-9]+)?"
   )
   other_fs <- text_search(paper, fs_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
@@ -819,7 +822,7 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
     # worker against a DIFFERENT host (data.4tu.nl), whose ids are not
     # guaranteed distinct from api.figshare.com's own id space.
     ckey <- paste(host, id)
-    cached <- if (isTRUE(cache)) .repo_info_cache_get("figshare", ckey) else NULL
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("figshare", ckey, need = "related") else NULL
     if (!is.null(cached)) {
       id_info[[i]] <- cached
     } else {
@@ -899,6 +902,22 @@ figshare_info <- function(figshare_url, id_col = 1, host = "api.figshare.com",
   obj$publication_date <- rec$published_date %empty_or% NA_character_
   obj$updated_date <-     rec$modified_date %empty_or% NA_character_
   obj$authors <-          list(authors)
+  # who made it (ORCID iDs), what kind of record it is ("dataset",
+  # "software", "preprint", "journal contribution"), what it says, and the
+  # article it belongs to (resource_doi): they tell the paper's own deposit
+  # from one it reuses (#634), and come in this same answer
+  obj$orcids <-           .meta_orcids(lapply(authors_field %||% list(), \(a) a$orcid_id))
+  obj$resource_type <-    rec$defined_type_name %empty_or% NA_character_
+  obj$description <-      .meta_text(rec$description %||% "")
+  obj$related <-          {
+    rd <- rec$resource_doi %empty_or% ""
+    mats <- vapply(rec$related_materials %||% list(), \(m) {
+      i <- m$identifier %empty_or% ""
+      if (nzchar(i)) paste0(m$relation %empty_or% "related", ":", i) else NA_character_
+    }, character(1))
+    v <- c(if (nzchar(rd)) paste0("IsSupplementTo:", rd), mats[!is.na(mats)])
+    if (length(v)) paste(unique(v), collapse = " | ") else NA_character_
+  }
   obj$license <-          .field_or_value(rec$license, "name") %empty_or% NA_character_
 
   files <- rec$files %||% list()

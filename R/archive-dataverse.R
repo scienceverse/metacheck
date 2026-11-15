@@ -729,7 +729,7 @@ dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL, cache = FALSE) 
     # comment), so the cache key must include the installation, not just
     # the DOI -- the same DOI-shaped string is meaningless without it.
     ckey <- paste(valid$dataverse_host[[i]], valid$dataverse_doi[[i]])
-    cached <- if (isTRUE(cache)) .repo_info_cache_get("dataverse", ckey) else NULL
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("dataverse", ckey, need = "related") else NULL
     if (!is.null(cached)) {
       id_info[[i]] <- cached
     } else {
@@ -829,6 +829,22 @@ dataverse_info <- function(dataverse_url, id_col = 1, pb = NULL, cache = FALSE) 
   obj$publication_date <- version$releaseTime %empty_or% data$publicationDate %empty_or% NA_character_
   obj$updated_date <-     version$lastUpdateTime %empty_or% NA_character_
   obj$authors <-          list(authors)
+  # who made it (ORCID iDs), what it says, and the publication it belongs to
+  # (relatedPublication): they tell the paper's own deposit from one it
+  # reuses (#634), and come in this same answer
+  obj$orcids <-           .meta_orcids(lapply(if (is.list(authors_field)) authors_field else list(),
+                                              \(a) a$authorIdentifier$value))
+  obj$description <-      .meta_text(lapply(field_val("dsDescription") %||% list(),
+                                            \(d) d$dsDescriptionValue$value))
+  obj$related <-          {
+    pubs <- field_val("publication") %||% list()
+    v <- vapply(if (is.list(pubs)) pubs else list(), \(p) {
+      i <- p$publicationIDNumber$value %empty_or% p$publicationURL$value %empty_or% ""
+      if (nzchar(i)) paste0("IsSupplementTo:", i) else NA_character_
+    }, character(1))
+    v <- v[!is.na(v)]
+    if (length(v)) paste(unique(v), collapse = " | ") else NA_character_
+  }
   obj$license <-          .field_or_value(version$license, "name") %empty_or% NA_character_
   obj$files <-            list(version$files %||% list())
 

@@ -49,6 +49,10 @@ test_that("OSF no files", {
                     files_zip = 0,
                     files_unknown = 0L,
                     naming_issues = 0L,
+                    # a link in the text, not shown to be anyone else's (#634)
+                    repo_own = 1L,
+                    repo_others = 0L,
+                    ref_others = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -81,6 +85,10 @@ test_that("no code files", {
                     files_zip = 1,
                     files_unknown = 0L,
                     naming_issues = 0L,
+                    # a link in the text, not shown to be anyone else's (#634)
+                    repo_own = 1L,
+                    repo_others = 0L,
+                    ref_others = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -108,6 +116,10 @@ test_that("OSF", {
                     files_zip = 1,
                     files_unknown = 1L,
                     naming_issues = 1L,
+                    # a link in the text, not shown to be anyone else's (#634)
+                    repo_own = 1L,
+                    repo_others = 0L,
+                    ref_others = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -684,6 +696,51 @@ test_that("repo_check reads the licence of the project a cited registration was 
   expect_equal(mo$repo_metadata$license, "CC-By Attribution 4.0 International")
 })
 
+test_that("repo_check names an OSF project listed only in part at osf_max_requests", {
+  asked <- NULL
+  osf_info_mock <- function(osf_url, recursive = TRUE, pb = NULL, cache = FALSE,
+                            max_requests = Inf, ...) {
+    asked <<- c(asked, max_requests)
+    d <- data.frame(osf_url = osf_url, osf_id = "abcde", osf_type = c("nodes", "files"),
+                    parent = NA_character_, kind = c(NA, "file"), public = TRUE,
+                    name = c("A study", "data.csv"), path = c(NA, "/data.csv"),
+                    download_url = c(NA, "https://osf.io/download/fghij"),
+                    size = c(NA, 10), filetype = c(NA, "data"), provider = c(NA, "osfstorage"))
+    if (is.finite(max_requests)) d$listing_cut <- TRUE
+    d
+  }
+  local_mocked_bindings(online = \(...) TRUE, osf_info = osf_info_mock)
+  paper <- test_paper(text = "Data: https://osf.io/abcde")
+
+  mo <- module_run(paper, "repo_check", peek_zips = FALSE)
+  expect_equal(asked, 50)
+  expect_equal(mo$partial_repos$repo_url, "https://osf.io/abcde")
+  expect_equal(mo$partial_repos$files_listed, 1L)
+  expect_true(mo$ownership$listing_cut[mo$ownership$repo_url == "https://osf.io/abcde"])
+  expect_true(any(grepl("Partly Listed Repositories", mo$report)))
+  expect_match(mo$summary_text, "listed only part of 1 OSF project")
+
+  # without a limit nothing is cut
+  mo <- module_run(paper, "repo_check", peek_zips = FALSE, osf_max_requests = Inf)
+  expect_equal(nrow(mo$partial_repos), 0)
+  expect_false(any(mo$ownership$listing_cut))
+  expect_false(any(grepl("Partly Listed Repositories", mo$report)))
+})
+
+test_that(".cap_report_partial warns once per partly listed repository that is downloaded from", {
+  partial <- data.frame(paper_id = "p", repo_url = c("https://osf.io/abcde", "https://osf.io/abcde", "https://osf.io/zzzzz"),
+                        files_listed = c(3L, 3L, 1L))
+  w <- character(0)
+  withCallingHandlers(
+    suppressMessages(metacheck:::.cap_report_partial(partial, c("https://osf.io/abcde", "https://github.com/a/b"))),
+    warning = \(x) { w <<- c(w, conditionMessage(x)); invokeRestart("muffleWarning") })
+  expect_length(w, 1)
+  expect_match(w, "https://osf.io/abcde was listed only in part \\(3 files listed\\)")
+  expect_match(w, "osf_max_requests")
+  expect_silent(metacheck:::.cap_report_partial(NULL, "https://osf.io/abcde"))
+  expect_silent(metacheck:::.cap_report_partial(partial[0, ], "https://osf.io/abcde"))
+})
+
 test_that("repo_check names a private OSF project read through a view-only link, once (8dn4g_v1)", {
   vo <- "https://osf.io/j9sdn/overview?view_only=0123456789abcdef0123456789abcdef"
   osf_info_mock <- function(osf_url, ...) {
@@ -757,6 +814,91 @@ test_that("repo_check reports each link's own reason when every link of a platfo
   expect_equal(mo$gated_repos$repo_error, "unfound")
   expect_false(any(grepl("differing number of rows", mo$gated_repos$repo_error)))
 })
+
+test_that("a publication set aside keeps its title and type in ownership (#634, #637)", {
+  local_mocked_bindings(
+    online = \(...) TRUE,
+    zenodo_info = function(zenodo_url, ...) {
+      out <- data.frame(zenodo_url = zenodo_url, zenodo_id = "4002076", title = "Kanata Declaration 2020",
+                        resource_type = "publication", resource_subtype = "report",
+                        doi = "10.5281/zenodo.4002076", license = "cc-by-4.0")
+      out$files <- list(list(list(key = "declaration.pdf", size = 1000,
+                                  links = list(self = "https://zenodo.org/api/records/4002076/files/declaration.pdf/content"))))
+      out
+    }
+  )
+  paper <- test_paper(text = "See the declaration at https://doi.org/10.5281/zenodo.4002076")
+  mo <- module_run(paper, "repo_check", references = FALSE)
+  # not a deposit, as before: no repository and no files
+  expect_equal(mo$summary_table$repo_n, 0)
+  o <- mo$ownership
+  expect_equal(o$ownership_reason, .own_pub_reason)
+  # but its row says what it is
+  expect_equal(o$dep_title, "Kanata Declaration 2020")
+  expect_equal(o$dep_type, "Report")
+  expect_equal(o$n_files, 1L)
+})
+
+test_that("a publication whose only other file is a zip is read inside the zip (#634, #637)", local({
+  inside <- c("IAS Assessment.bib", "IAS Assessment.ris")
+  peeked <- 0
+  local_mocked_bindings(
+    online = \(...) TRUE,
+    zenodo_info = function(zenodo_url, ...) {
+      out <- data.frame(zenodo_url = zenodo_url, zenodo_id = "7430682", title = "IPBES assessment: full report",
+                        resource_type = "publication", resource_subtype = "report",
+                        doi = "10.5281/zenodo.7430682", license = "cc-by-4.0")
+      f <- \(key, size) list(key = key, size = size,
+                             links = list(self = paste0("https://zenodo.org/api/records/7430682/files/", key, "/content")))
+      out$files <- list(list(f("Full report.pdf", 1.5e8), f("Citation.zip", 1075)))
+      out
+    },
+    zip_peek = function(url, ...) {
+      peeked <<- peeked + 1
+      data.frame(name = inside, size = c(500, 500))
+    }
+  )
+  paper <- test_paper(text = "See the report at https://doi.org/10.5281/zenodo.7430682")
+  # (peek_zips = FALSE: the publication check reads the zip all the same)
+  mo <- module_run(paper, "repo_check", references = FALSE, peek_zips = FALSE)
+  expect_equal(peeked, 1)
+  expect_equal(mo$ownership$ownership_reason, .own_pub_reason)
+  expect_equal(mo$summary_table$repo_n, 0)
+  # a zip holding data keeps the record a deposit
+  inside <- c("data.csv", "codebook.pdf")
+  mo <- module_run(paper, "repo_check", references = FALSE, peek_zips = FALSE)
+  expect_false(mo$ownership$ownership_reason %in% .own_pub_reason)
+  expect_equal(mo$summary_table$repo_n, 1)
+}))
+
+test_that("a GitHub listing stored without the repository's description is asked for again (#634)", local({
+  withr::local_options(metacheck.repo_info_cache.dir = withr::local_tempdir())
+  n_calls <- 0
+  with_info <- FALSE
+  local_mocked_bindings(
+    online = \(...) TRUE,
+    github_tree_files = function(repo) {
+      n_calls <<- n_calls + 1
+      out <- list(gated = FALSE, reason = NA_character_, default_branch = "main", license = NA_character_,
+                  files = data.frame(repo = "a/b", clean_repo = "a/b", name = "analysis.R", path = "analysis.R",
+                                     download_url = "https://raw.githubusercontent.com/a/b/main/analysis.R",
+                                     size = 10, type = "code"))
+      # as a listing stored before #634 was: without `info`
+      if (with_info) out$info <- list(full_name = "a/b", description = "Code for the study", stars = "5")
+      out
+    }
+  )
+  paper <- test_paper(text = "Our code is at https://github.com/a/b")
+  module_run(paper, "repo_check", references = FALSE, cache = TRUE)
+  expect_equal(n_calls, 1)
+  with_info <- TRUE
+  mo <- module_run(paper, "repo_check", references = FALSE, cache = TRUE)
+  expect_equal(n_calls, 2)
+  expect_equal(mo$ownership$dep_description, "Code for the study")
+  # a complete listing is reused
+  module_run(paper, "repo_check", references = FALSE, cache = TRUE)
+  expect_equal(n_calls, 2)
+}))
 
 test_that("repo_check reports why a ResearchBox box could not be downloaded", {
   # rbox_file_download() lists each box that failed in its "failed" attribute;

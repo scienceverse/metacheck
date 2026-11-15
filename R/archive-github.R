@@ -8,6 +8,44 @@
   urls
 }
 
+# Links written in full in a paper's text that match `regex`, one row per
+# paper and repository, leaving out those already in `found` (from the url
+# table). `repo_of` gives a link's repository ("owner/repo"), so that
+# "https://github.com/x/y" and "github.com/x/y/tree/main" count as one; a
+# full stop that ends the sentence is not part of the link.
+#
+# The text often holds the url table's link with an extraction error: its
+# end repeated ("California-Vaccine-PolicyPolicy" beside the table's
+# "California-Vaccine-Policy"), a word of the next sentence attached
+# ("throwinglight.The"), or a hyphen lost ("attentionclusters" beside
+# "attention-clusters"). Such a link is the same repository, written wrongly,
+# so it is left out when a repository already found for the paper begins it,
+# or is the same once hyphens are removed. A found link cut off at a hyphen
+# ("giuntoli-group/ionic-") is not a whole name, and its full form in the
+# text is kept. Of the 97 GitHub links the text adds in 17 corpora (13,706
+# papers), 55 exist; these two rules keep all 55 and leave out 33 of the 42
+# that do not (checked online 2026-11-11).
+.links_in_text <- function(paper, regex, found, repo_of) {
+  href <- text <- text_id <- NULL
+  x <- text_search(paper, regex, return = "match", perl = TRUE) |>
+    dplyr::select(href = text, text_id, paper_id)
+  x$href <- sub("[.]+$", "", x$href)
+  repo <- function(h) {
+    tolower(vapply(h, \(u) repo_of(u) %||% u, character(1), USE.NAMES = FALSE))
+  }
+  x_repo <- repo(x$href)
+  f_repo <- repo(found$href)
+  whole <- !grepl("-$", f_repo)
+  same <- vapply(seq_len(nrow(x)), \(i) {
+    here <- found$paper_id == x$paper_id[[i]]
+    fr <- f_repo[whole & here]
+    x_repo[[i]] %in% f_repo[here] || any(startsWith(x_repo[[i]], fr) |
+          gsub("-", "", x_repo[[i]], fixed = TRUE) == gsub("-", "", fr, fixed = TRUE))
+  }, logical(1))
+  k <- paste(x$paper_id, x_repo)
+  x[!same & !duplicated(k), , drop = FALSE]
+}
+
 #' Find GitHub Links in Papers
 #'
 #' GitHub links can be in PDFs in several ways.
@@ -46,6 +84,15 @@ github_links <- function(paper) {
     drop = FALSE]
   found_gh <- dplyr::bind_rows(found_gh, found_account)
 
+  # A full GitHub link written in the text that the PDF did not make
+  # clickable, so it is not in the url table. A sentence with a full link
+  # was left out of the search below as well, so such a link was never found:
+  # 55 repositories that exist, in the main text of 17 corpora (13,706
+  # papers). Kept only when the url table does not have the repository
+  # already, also not written wrongly (see .links_in_text()).
+  found_text <- .links_in_text(paper, github_regex, found_gh,
+                               \(h) .github_repo_name(h))
+  found_gh <- dplyr::bind_rows(found_gh, found_text)
 
   # find github repos referenced only by org/repo near github (+-10 words)
   # like "See our github repo at scienceverse/metacheck"
@@ -57,6 +104,19 @@ github_links <- function(paper) {
     text_search(plusminus, return = "match") |>
     text_search(no_github_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, text_id, paper_id)
+  # A GitHub account's name has only letters, digits and hyphens, never a
+  # full stop: "GitHub. https://doi.org/10.5281/zenodo.7002689" gave
+  # "doi.org/10.5281", and "on github at: https://zenodo.org/doi/..." gave
+  # "zenodo.org/doi" (#634)
+  # ("github.com/<account>" itself stays: its rest often follows after a
+  # space, which .repo_links_joined() joins)
+  # A measurement or ratio near the word ("488 nm/50 mW", "and/or") has the
+  # shape "word/word" too; a repository is not named by a number alone
+  other_gh <- other_gh[(grepl("^[A-Za-z0-9][A-Za-z0-9-]*/", other_gh$href) &
+                          !grepl("/[0-9]+$", other_gh$href) &
+                          !grepl("^(?i:and/or)$", other_gh$href, perl = TRUE)) |
+                         grepl("^(?:www\\.)?github\\.com/", other_gh$href, ignore.case = TRUE), ,
+                       drop = FALSE]
 
   all_gh <- dplyr::bind_rows(found_gh, other_gh)
 
@@ -376,6 +436,11 @@ github_files <- function(repo, dir = "",
 #'     or \code{NULL} when the tree could not be fetched}
 #'   \item{\code{default_branch}}{character}
 #'   \item{\code{license}}{character licence key, or NA}
+#'   \item{\code{info}}{list with the repository's \code{full_name},
+#'     \code{description}, \code{created} and \code{pushed} dates,
+#'     \code{owner} and \code{owner_type}, \code{homepage}, \code{topics},
+#'     \code{stars}, \code{forks} and \code{fork}, from the same metadata
+#'     request; absent when that request failed}
 #' }
 #'
 #' @export
@@ -441,6 +506,17 @@ github_tree_files <- function(repo) {
   # value rather than NULL, which would otherwise propagate as a
   # length-zero "license" into the caller's vapply(..., character(1)).
   license <- .field_or_value(meta$license, "spdx_id") %empty_or% NA_character_
+  # The repository's own description, from the same response: who owns it,
+  # when it was made and last changed, how widely it is used. repo_check keeps
+  # these in repo_metadata, to tell a paper's own code from a tool it uses
+  # (#634).
+  chr1 <- \(v) if (is.null(v) || !length(v)) NA_character_ else as.character(v[[1]])
+  info <- list(
+    full_name = chr1(meta$full_name), description = chr1(meta$description),
+    created = substr(chr1(meta$created_at), 1, 10), pushed = substr(chr1(meta$pushed_at), 1, 10),
+    owner = chr1(meta$owner$login), owner_type = chr1(meta$owner$type),
+    homepage = chr1(meta$homepage), topics = if (length(meta$topics)) paste(unlist(meta$topics), collapse = "; ") else NA_character_,
+    stars = chr1(meta$stargazers_count), forks = chr1(meta$forks_count), fork = chr1(meta$fork))
 
   # ── 2. Git tree (recursive, 1 request) ──────────────────────────────────────
   tree_resp <- tryCatch(
@@ -454,10 +530,12 @@ github_tree_files <- function(repo) {
   limit <- if (!is.null(tree_resp)) .github_limit(tree_resp)
   if (!is.null(limit)) {
     return(list(gated = TRUE, reason = limit, files = NULL,
-                default_branch = default_branch, license = license))
+                default_branch = default_branch, license = license, info = info))
   }
   if (is.null(tree_resp) || httr2::resp_status(tree_resp) != 200) {
-    return(.github_crawl(repo, default_branch, license))
+    crawled <- .github_crawl(repo, default_branch, license)
+    crawled$info <- info
+    return(crawled)
   }
 
   tree <- httr2::resp_body_json(tree_resp)
@@ -466,7 +544,7 @@ github_tree_files <- function(repo) {
     return(list(
       gated  = TRUE,
       reason = "GitHub repo tree truncated (>100 000 items); too large to list",
-      files  = NULL, default_branch = default_branch, license = license))
+      files  = NULL, default_branch = default_branch, license = license, info = info))
 
   blobs   <- Filter(\(x) x$type == "blob", tree$tree %||% list())
   n_files <- length(blobs)
@@ -501,7 +579,7 @@ github_tree_files <- function(repo) {
   }
 
   list(gated = FALSE, reason = NA_character_,
-       files = files_df, default_branch = default_branch, license = license)
+       files = files_df, default_branch = default_branch, license = license, info = info)
 }
 
 
@@ -526,6 +604,45 @@ github_tree_files <- function(repo) {
 # GitHub answers 403 or 429 with x-ratelimit-remaining 0 and the end of the
 # hour in x-ratelimit-reset; its secondary limit (too many requests at once)
 # answers the same statuses with retry-after instead.
+# The name a GitHub account gives itself (a person's, "Anna Wierczeiko", or
+# an organisation's, "Bourne & Mura Computational Biosciences Lab"), one
+# request to /users/<login> per account. Its repository's record gives only
+# the login. NA when the account gives no name or the request fails; kept for
+# the session, and in the lasting cache when `cache` is TRUE (a failed
+# request is kept in neither, so it is asked again).
+.github_owner_memo <- new.env(parent = emptyenv())
+.github_owner_names <- function(logins, cache = FALSE) {
+  logins <- as.character(logins)
+  out <- rep(NA_character_, length(logins))
+  for (lg in unique(logins[!is.na(logins) & nzchar(logins)])) {
+    key <- tolower(lg)
+    nm <- .github_owner_memo[[key]]
+    if (is.null(nm) && isTRUE(cache)) {
+      hit <- .repo_info_cache_get("github_user", key)
+      if (is.list(hit) && "name" %in% names(hit)) nm <- hit$name
+    }
+    if (is.null(nm)) {
+      resp <- tryCatch(
+        .mc_request(sprintf("https://api.github.com/users/%s", utils::URLencode(lg, reserved = TRUE))) |>
+          .github_config() |>
+          httr2::req_error(is_error = \(r) FALSE) |>
+          httr2::req_perform(),
+        error = \(e) NULL)
+      if (!is.null(resp) && httr2::resp_status(resp) %in% c(200L, 404L)) {
+        body <- if (httr2::resp_status(resp) == 200L) tryCatch(httr2::resp_body_json(resp), error = \(e) list()) else list()
+        v <- body$name
+        nm <- if (is.null(v) || !length(v) || is.na(v[[1]]) || !nzchar(trimws(v[[1]]))) NA_character_ else as.character(v[[1]])
+        assign(key, nm, envir = .github_owner_memo)
+        if (isTRUE(cache)) .repo_info_cache_put("github_user", key, list(name = nm))
+      } else {
+        nm <- NA_character_
+      }
+    }
+    out[logins %in% lg] <- nm
+  }
+  out
+}
+
 .github_limit <- function(resp) {
   if (!httr2::resp_status(resp) %in% c(403L, 429L)) return(NULL)
   remaining <- httr2::resp_header(resp, "x-ratelimit-remaining")

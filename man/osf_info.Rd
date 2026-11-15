@@ -4,7 +4,14 @@
 \alias{osf_info}
 \title{Retrieve info from the OSF by ID}
 \usage{
-osf_info(osf_url, id_col = 1, recursive = FALSE, pb = NULL, cache = FALSE)
+osf_info(
+  osf_url,
+  id_col = 1,
+  recursive = FALSE,
+  pb = NULL,
+  cache = FALSE,
+  max_requests = Inf
+)
 }
 \arguments{
 \item{osf_url}{an OSF ID or URL, or a table containing them}
@@ -15,10 +22,25 @@ osf_info(osf_url, id_col = 1, recursive = FALSE, pb = NULL, cache = FALSE)
 
 \item{pb}{a progress bar passed from another function}
 
-\item{cache}{if \code{TRUE}, also reuse a PERSISTENT, on-disk cached listing per
-id (see \code{\link[=repo_info_cache_clear]{repo_info_cache_clear()}}) that survives a restart of the script --
+\item{cache}{if \code{TRUE}, also reuse a PERSISTENT, on-disk cached listing
+(see \code{\link[=repo_info_cache_clear]{repo_info_cache_clear()}}) that survives a restart of the script --
 separate from, and in addition to, this function's own in-memory,
-session-only cache described above. Off by default.}
+session-only cache described above. With \code{recursive = TRUE} this is the
+whole listing, components and files included, kept only when every part
+of it was read. A listing that stopped at \code{max_requests} is kept with the
+folders still to be opened, and the next call with \code{cache = TRUE} goes on
+from there with up to \code{max_requests} more requests, until the listing is
+complete. Off by default.}
+
+\item{max_requests}{with \code{recursive = TRUE}, the largest number of requests
+to the OSF API for listing components and folders (the records of the
+projects themselves are not counted). The OSF needs one request per folder,
+so a project with hundreds of folders takes hundreds of requests. When the
+limit is reached the listing stops, with a warning, and the result has a
+column \code{listing_cut} (\code{TRUE}): files in folders not yet opened are missing
+from it. Folders are listed level by level, so the top folders come first;
+a folder already started is listed in full, with its retries, so the count
+can end a little above the limit. Default \code{Inf} (no limit).}
 }
 \value{
 a data frame of information

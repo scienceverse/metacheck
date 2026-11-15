@@ -295,6 +295,14 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   url <- req$url %||% ""
   if (.url_host_is(url, "osf.io")) {
     pat <- tryCatch(.key_use("osf", check = .osf_key_check), error = \(e) "")
+    # A file in OSF Storage whose file-server address its listing gave (see
+    # .osf_file_server_remember()) goes there directly, without a token as
+    # well: the request to osf.io that only answers with that address is
+    # not needed.
+    if (!nzchar(pat %||% "")) {
+      known <- .osf_file_server_known(url)
+      if (!is.na(known)) req <- httr2::req_url(req, known)
+    }
     if (nzchar(pat %||% "")) {
       # osf.io/download/<id>/ answers 302 to a REGIONAL file server --
       # files.de-1.osf.io for a European project, files.osf.io for others --
@@ -387,6 +395,8 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
 .osf_file_server_url <- function(url, pat) {
   host <- tolower(httr2::url_parse(url)$hostname %||% "")
   if (!host %in% c("osf.io", "www.osf.io")) return(url)
+  known <- .osf_file_server_known(url)
+  if (!is.na(known)) return(known)
   resp <- tryCatch(
     .mc_request(url) |>
       httr2::req_headers(Authorization = sprintf("Bearer %s", pat)) |>
@@ -397,7 +407,37 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   if (is.null(resp) || !httr2::resp_status(resp) %in% c(301, 302, 303, 307, 308)) return(url)
   location <- httr2::resp_header(resp, "location") %||% ""
   to <- tolower(tryCatch(httr2::url_parse(location)$hostname, error = \(e) "") %||% "")
-  if (grepl("(^|\\.)osf\\.io$", to)) location else url
+  if (!grepl("(^|\\.)osf\\.io$", to)) return(url)
+  # asked once per file: a zip whose index needs a second, larger read
+  # asked twice before
+  .osf_file_server_remember(url, location)
+  location
+}
+
+# The file server of each file in OSF Storage, by its download address
+# (osf.io/download/<id>/ -> files.osf.io/v1/resources/<node>/providers/
+# osfstorage/<id>, or the region's server, files.de-1.osf.io for a European
+# project). Every file's listing names it (links$upload), so the request to
+# osf.io that only redirects there can be skipped: one request fewer for
+# every zip whose contents are read and every file downloaded (checked
+# 2026-11-13: the listings of cbjq6, jukx9 and the European x7dar give
+# exactly the address osf.io/download/ redirects to, and the file server
+# answers a range request for a public file without a token). Only files in
+# OSF Storage: an add-on's file (GitHub, Dropbox) is served by its own
+# provider, and a preprint's listing names its folder, not the file. Kept
+# for the session, like the listings themselves (.osf_listing_cache).
+.osf_file_server_memo <- new.env(parent = emptyenv())
+
+.osf_file_server_remember <- function(download, server) {
+  ok <- !is.na(download) & nzchar(download %||% "") & !is.na(server) & nzchar(server %||% "")
+  for (i in which(ok)) assign(download[[i]], server[[i]], envir = .osf_file_server_memo)
+  invisible(sum(ok))
+}
+
+.osf_file_server_known <- function(url) {
+  if (length(url) != 1 || is.na(url) || !nzchar(url)) return(NA_character_)
+  if (exists(url, envir = .osf_file_server_memo, inherits = FALSE))
+    get(url, envir = .osf_file_server_memo, inherits = FALSE) else NA_character_
 }
 
 # A 401 from Dryad almost always means the same thing: no API key was set, and
