@@ -1244,7 +1244,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 # `list.files(pattern = "\\.wav$")` or `glob("*.tif")`. The first download leaves
 # out images, sound, video and documents from hosts that send files one by one
 # (see .run_download_want()); a script that reads one gets it here (#568).
-.repro_named_files <- function(structure_df, code_text) {
+# With `by_extension = FALSE` only names count: for the files of deposits that
+# are not the paper's own (#648), where a pattern such as "\\.csv$" fetched all
+# 1,327 files of another team's repository (10.1101/2026.11.02.26367118).
+.repro_named_files <- function(structure_df, code_text, by_extension = TRUE) {
   want <- .repro_fetchable(structure_df)
   if (!any(want) || !length(code_text)) return(want)
   # bytes that are not UTF-8 stopped tolower() for the whole paper (#568)
@@ -1262,6 +1265,7 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   if (any(!plain)) found <- c(found, cand[!plain][vapply(cand[!plain], function(b)
     grepl(b, txt, fixed = TRUE), logical(1), USE.NAMES = FALSE)])
   by_name <- base %in% found
+  if (!isTRUE(by_extension)) return(want & by_name)
   exts <- unique(ext[want & nzchar(ext)])
   ext_named <- exts[vapply(exts, function(e)
     grepl(paste0("(\\\\{1,2}\\.|\\*\\.|['\"]\\.)", e, "\\b"), txt, perl = TRUE), logical(1))]

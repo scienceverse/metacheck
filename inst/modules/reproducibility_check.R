@@ -507,29 +507,55 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     do.call(module_run, args)
   }
   if (is.null(structure_df)) structure_df <- run_missing("data_check")$structure
-  # The code runs in the repository as the authors organised it; only paths that
-  # do not work there are rewritten (#568)
-  plan <- .repro_package_plan(structure_df)
   if (is.null(code_tbl)) {
     cc <- run_missing("code_check"); code_tbl <- cc$table
     version_pin <- cc$version_pin
   }
+  # Deposits linked in the paper that hold other people's work or the authors'
+  # earlier work are not checked (repo_check's `table_not_checked`, #648), but
+  # the paper's own code may read their files, as a re-analysis of another
+  # team's data does. The files of theirs that the code names are fetched below
+  # and put in the run folder with the paper's own (`others_got`, added to the
+  # plan only); nothing else in this module counts them.
+  others_in <- get_prev_outputs("repo_check", "table_not_checked")
+  others_got <- NULL
+  # The code runs in the repository as the authors organised it; only paths that
+  # do not work there are rewritten (#568)
+  plan_of <- function(s) .repro_package_plan(
+    if (is.null(others_got)) s else dplyr::bind_rows(s, others_got))
+  plan <- plan_of(structure_df)
   # Before a run, the files the code names that the repository lists but the
   # first download left out (an image, a sound file) are fetched, in one call for
   # those files only (#568; see .repro_named_files())
   if (isTRUE(execute) && !identical(download, "none") && !isFALSE(download) &&
-      !is.null(code_tbl) && nrow(code_tbl) && any(.repro_fetchable(structure_df))) {
+      !is.null(code_tbl) && nrow(code_tbl)) {
     code_locs <- code_tbl$file_location[!is.na(code_tbl$file_location) & file.exists(code_tbl$file_location %||% "")]
     # code_read(), not readLines(): a file that is not text gives no lines, where
     # 10.1111/2041-210X.13967's 109 MB of R data named .r was read as text (#568)
     code_txt <- unlist(lapply(code_locs, function(f) tryCatch(code_read(f), error = function(e) character(0))))
-    named <- .repro_named_files(structure_df, code_txt)
-    if (any(named)) {
-      message("[repro] fetching ", sum(named), " file(s) the code names that were not downloaded")
-      structure_df <- .repro_fetch_files(structure_df, named, max_file_size, max_download_size,
-                                         cache, skip_on_api_limit)
-      plan <- .repro_package_plan(structure_df)
+    if (any(.repro_fetchable(structure_df))) {
+      named <- .repro_named_files(structure_df, code_txt)
+      if (any(named)) {
+        message("[repro] fetching ", sum(named), " file(s) the code names that were not downloaded")
+        structure_df <- .repro_fetch_files(structure_df, named, max_file_size, max_download_size,
+                                           cache, skip_on_api_limit)
+      }
     }
+    if (is.data.frame(others_in) && nrow(others_in)) {
+      cols <- intersect(c("file_name", "file_path", "file_url", "file_size", "repo_url",
+                          "archive_url", "archive_member"), names(others_in))
+      others_in <- others_in[, cols, drop = FALSE]
+      others_in$file_location <- NA_character_
+      named <- .repro_named_files(others_in, code_txt, by_extension = FALSE)
+      if (any(named)) {
+        message("[repro] fetching ", sum(named), " file(s) the code names from deposits that are not this paper's")
+        others_in <- .repro_fetch_files(others_in, named, max_file_size, max_download_size,
+                                        cache, skip_on_api_limit)
+        got <- named & !is.na(others_in$file_location) & file.exists(others_in$file_location %||% "")
+        if (any(got)) others_got <- others_in[got, intersect(c("file_name", "file_path", "file_location"), names(others_in)), drop = FALSE]
+      }
+    }
+    plan <- plan_of(structure_df)
   }
 
   # ── SPSS / Stata data without syntax ─────────────────────────────────────────
@@ -2136,7 +2162,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                            cache, skip_on_api_limit)
         got <- rows & !is.na(structure_df$file_location)
         if (any(got)) {
-          plan <- .repro_package_plan(structure_df)
+          plan <- plan_of(structure_df)
           new_plan <- plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE]
           repro_materialize_layout(new_plan, structure_df, sandbox_root,
                                    deadline = .repro_clock_deadline(total_timeout))
@@ -3574,7 +3600,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                              cache, skip_on_api_limit)
           got <- rows & !is.na(structure_df$file_location)
           if (any(got)) {
-            plan <- .repro_package_plan(structure_df)
+            plan <- plan_of(structure_df)
             repro_materialize_layout(plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE],
                                      structure_df, sandbox_root,
                                      deadline = .repro_clock_deadline(total_timeout))
