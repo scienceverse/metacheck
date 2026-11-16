@@ -387,3 +387,9 @@ test_that("extract_tests gives each paper of a list its own tests, once (U10)", 
   eq <- extract_eq(paperlist(p1, p2))
   expect_equal(eq$grp_id[eq$paper_id == "a"], c(1, 1, 2, 2))
 })
+
+test_that("a raised dot between two digits is read as a decimal point, as The Lancet writes it (#648)", {
+  x <- c("Mortality was lower (p = 0\u20220079).", "p<0\u00b7001 in all groups", "items 2 \u00b7 3")
+  expect_equal(extract_p_values(x)$p_value, c(0.0079, 0.001))
+  expect_equal(extract_eq(x)$rhs, c("0.0079", "0.001"))
+})

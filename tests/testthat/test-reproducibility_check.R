@@ -4522,3 +4522,15 @@ test_that("match_reported_output leaves out a single value that cannot be told f
   o3 <- data.frame(source_file = "a.R", analysis = c("a1", "a2"), statistic = "p", value = c("0.0231", "0.0231"))
   expect_true(match_reported_output(e[1, ], o3)$found)
 })
+
+test_that("a test none of whose values is evidence takes no part in the comparison (#648)", {
+  e <- data.frame(text_id = c(1, 1, 2, 2, 3, 3), grp_id = c(1, 1, 2, 2, 3, 3),
+                  lhs = c("alpha", "N", "p", "p", "alpha", "F"), df = NA,
+                  comp = c("=", "=", "<", "<", "=", "="), rhs = c(".05", "55", ".05", ".0002", ".86", "4.21"),
+                  paper_id = "p")
+  o <- data.frame(source_file = "a.R", analysis = "a1", statistic = c("F", "p"), value = c("4.2", "0.04"))
+  m <- match_reported_output(e, o)
+  # a power analysis and two bounds take no part; a reliability alpha with an F does
+  expect_equal(nrow(m), 1L)
+  expect_match(m$reported, "alpha=0.86", fixed = TRUE)
+})

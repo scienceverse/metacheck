@@ -761,12 +761,18 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
   # .regroup_by_evidence() below, which can join a lone value to the test it
   # belongs to ("t = 8.31, p < .001, d = 0.47"); here only when there is no
   # output, so nothing is regrouped.
+  # A test of several values none of which is evidence (.match_informative())
+  # can never be found either, and takes no part: a power analysis's
+  # "alpha = 0.05, N = 55, N = 68", "p < .05" with "p < 2e-04" (#648).
   drop_weak <- function(tests) {
     if (!identical(evidence, "informative") || !length(tests)) return(tests)
     keys <- unlist(lapply(tests, function(t) vapply(t$components, .match_value_key, character(1))))
     once <- names(which(table(keys) == 1))
-    Filter(function(t) length(t$components) != 1 ||
-             (.match_single_ok(t$components[[1]]) && .match_value_key(t$components[[1]]) %in% once), tests)
+    Filter(function(t) {
+      if (length(t$components) == 1)
+        return(.match_single_ok(t$components[[1]]) && .match_value_key(t$components[[1]]) %in% once)
+      any(vapply(t$components, .match_informative, logical(1)))
+    }, tests)
   }
   if (!length(tests) || is.null(out_long) || !nrow(out_long)) {
     tests <- drop_weak(tests)
@@ -1193,8 +1199,11 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
 # are; df1 = 2, d = 0.5 and p < .001 are not, as nearly every output holds them.
 .match_informative <- function(comp) {
   dec <- comp$dec %||% 0L
-  # a count of people or studies (n = 75) is not a result
+  # a count of people or studies (n = 75) is not a result, nor is a
+  # significance level (alpha = .05, a Bonferroni alpha = .0125); a
+  # reliability (Cronbach's alpha = .86) has the same family but is above .10
   !identical(comp$family %||% "", "n") &&
+  !(identical(comp$family %||% "", "alpha") && isTRUE(comp$value < 0.1)) &&
   !nzchar(comp$censored %||% "") && !is.na(comp$value) &&
     (dec >= 3L || .match_sig_digits(comp$value, dec) >= 2L)
 }
