@@ -513,6 +513,10 @@
     r("aux", "documentation"), r("fff", "documentation"),
     r("thmx","documentation"), r("dcf", "documentation"),
     r("drawio","documentation"), r("key", "documentation"),
+    # Stata's help files, which come with every Stata command a deposit
+    # bundles (#648: 20 .sthlp/.hlp files beside the .ado files in one
+    # deposit's extra_ados/ folder were "unknown")
+    r("sthlp", "documentation"), r("hlp", "documentation"),
     # .cgi is a generic Common-Gateway-Interface script marker; in real
     # corpus context it names a saved Ovid literature-search results
     # webpage ("ovidweb.cgi"), not an executable script -- reference
@@ -685,8 +689,29 @@ data_classify_files <- function(file_name, file_path = NULL) {
   # with the code that uses it; as a .txt it was classified as documentation.
   type[grepl("^(requirements|constraints)([_.-][a-z0-9]+)*\\.(txt|in)$|^pipfile(\\.lock)?$",
              base_lc)] <- "code"
+  # A file that builds or runs the analysis has a fixed name without an
+  # extension (Makefile, Dockerfile, Snakefile, Binder's postBuild), and a
+  # project's notices are named like its licence (NOTICE, NEWS, CHANGELOG);
+  # all were "unknown" (#648: 290 files in 68 of 563 papers had no extension).
+  # Only files nothing else typed ("makefile.txt" stays documentation).
+  type[is.na(type) & grepl("^(makefile|gnumakefile|dockerfile|containerfile|snakefile|vagrantfile|justfile|postbuild)([_.-][a-z0-9_]+)?$",
+                           base_lc)] <- "code"
+  type[is.na(type) & grepl("^(notice|news|changelog|changes|authors|contributors|citation|copyright)$",
+                           base_lc)] <- "documentation"
 
   type[is.na(type)] <- "unknown"
+
+  # A single compressed file ("scan.nii.gz", "trials.csv.gz", not a .tar.gz)
+  # holds one file, which is what it is (see .file_type_crosswalk); as an
+  # archive it was "unknown" until data_check opened it. data_check still
+  # downloads and opens it by its name (.is_single_compress()).
+  gz <- type == "unknown" & .is_single_compress(file_name)
+  if (any(gz)) {
+    strip <- function(x) sub("\\.(gz|bz2|xz)$", "", x, ignore.case = TRUE)
+    inner <- data_classify_files(strip(file_name[gz]),
+                                 if (!is.null(file_path)) strip(path_for_kw[gz]))
+    type[gz] <- inner
+  }
   type
 }
 

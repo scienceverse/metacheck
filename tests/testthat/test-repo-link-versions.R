@@ -88,8 +88,10 @@ test_that(".repo_links_tidy repairs damage from reading the PDF (#634)", {
                       repo_url = c("https://osf.io/3bh67", "http://osf.io/3bh673bh67",
                                    "http://osf.io/3bh67c9pag", "https://osf.io/c9pag", "knb.341.1",
                                    "https://osf.io/j7kt2/;%20%20https://rr.peercommunityin.org/x"))
+  # ("http://osf.io/3bh67", what is left of the first, is the same address as
+  # "https://osf.io/3bh67" and is not kept twice, #648)
   expect_equal(.repo_links_tidy(repos, paper)$repo_url,
-               c("https://osf.io/3bh67", "http://osf.io/3bh67", "https://osf.io/c9pag",
+               c("https://osf.io/3bh67", "https://osf.io/c9pag",
                  "knb.341.1", "https://osf.io/j7kt2/"))
   # an OSF link cut inside its identifier, beside its whole form
   repos <- data.frame(paper_id = "p", repo_type = "osf",
@@ -99,6 +101,26 @@ test_that(".repo_links_tidy repairs damage from reading the PDF (#634)", {
   repos <- data.frame(paper_id = "p", repo_type = "github",
                       repo_url = c("https://github.com/o/Vaccine-Policy", "https://github.com/o/Vaccine-PolicyPolicy"))
   expect_equal(.repo_links_tidy(repos, paper)$repo_url, repos$repo_url)
+})
+
+test_that(".repo_links_tidy keeps one row for an address written in two ways (#648)", {
+  repos <- data.frame(paper_id = "p", repo_type = c("github", "github", "osf", "osf", "zenodo", "zenodo", "github", "github"),
+                      repo_url = c("github.com/OpenSAFELY-Core", "www.github.com/OpenSAFELY-Core",
+                                   "osf.io/abcde/", "https://osf.io/abcde",
+                                   "https://doi.org/10.5281/ZENODO.123", "10.5281/zenodo.123",
+                                   # capitals in a name may matter: both stay
+                                   "github.com/A/Repo", "github.com/A/repo"))
+  paper <- test_paper("No text needed here.")
+  paper$paper_id <- "p"
+  expect_equal(.repo_links_tidy(repos, paper)$repo_url,
+               c("github.com/OpenSAFELY-Core", "https://osf.io/abcde",
+                 "https://doi.org/10.5281/ZENODO.123", "github.com/A/Repo", "github.com/A/repo"))
+  # the same address on two platforms' lists, or in two papers, is not merged
+  repos <- data.frame(paper_id = c("p", "p", "q"), repo_type = c("zenodo", "dataverse", "zenodo"),
+                      repo_url = c("10.5281/zenodo.1", "https://doi.org/10.5281/zenodo.1", "10.5281/zenodo.1"))
+  paper <- paperlist(paper, test_paper("Nothing."))
+  names(paper) <- c("p", "q"); paper[[2]]$paper_id <- "q"
+  expect_equal(nrow(.repo_links_tidy(repos, paper)), 3L)
 })
 
 test_that(".repo_link_without_hyphen changes the owner and repository only", {

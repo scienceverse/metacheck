@@ -472,6 +472,27 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # registration without one (should not normally happen) is left keyed
       # to its own URL below so its files are never silently dropped.
       reg_url_to_parent <- character(0)
+      # Opened with a view-only key, a registration does not say which project
+      # it was registered from (the OSF hides it, as an anonymous key hides
+      # who made the page). A public registration says it without the key, so
+      # it is asked once more without it (#648: q7pnw_v3's
+      # "osf.io/ujdep/?view_only=..." came from the closed project ke24d,
+      # which was reported only while the link was also found without its
+      # key).
+      if ("parent" %in% names(osf_info)) {
+        keyed_reg <- which(osf_info$osf_type %in% "registrations" & is.na(osf_info$parent) &
+                             grepl("view_only=", osf_info$osf_id %||% ""))
+        for (id in unique(sub("[?/].*$", "", osf_info$osf_id[keyed_reg]))) {
+          plain <- tryCatch(suppressWarnings(
+            osf_info(sprintf("https://osf.io/%s", id), recursive = FALSE, pb = pb, cache = cache)),
+            error = function(e) NULL)
+          from <- if (is.data.frame(plain) && "parent" %in% names(plain))
+            stats::na.omit(plain$parent)[1] else NA_character_
+          if (!is.na(from)) {
+            osf_info$parent[keyed_reg[sub("[?/].*$", "", osf_info$osf_id[keyed_reg]) == id]] <- from
+          }
+        }
+      }
       if ("parent" %in% names(osf_info)) {
         reg_rows <- osf_info |>
           dplyr::filter(osf_type %in% "registrations", !is.na(parent), !is.na(osf_url))
@@ -578,6 +599,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # left out; the project is named as private instead, as the authors can
       # now make it public (8dn4g_v1 linked osf.io/j9sdn both ways: one copy
       # was read, the other reported as "could not check ... (private)").
+      # The same holds for any page the key opens, also a registration (a
+      # preregistration shared with a view-only link): the plain link the
+      # paper also gives is not a repository that could not be checked
+      # (#648: osf.io/kpngh and osf.io/4vtjq in q7pnw_v3 were "private").
+      if ("osf_id" %in% names(osf_info)) {
+        key_ok <- grepl("view_only=", osf_info$osf_id) & !is.na(osf_info$osf_type) &
+          !osf_info$osf_type %in% c("private", osf_failed_types)
+        opened <- sub("[?/].*$", "", osf_info$osf_id[key_ok])
+        plain <- osf_info$osf_url[osf_info$osf_type %in% "private" &
+                                    sub("[?/].*$", "", osf_info$osf_id) %in% opened]
+        repos <- repos[!repos$repo_url %in% plain, , drop = FALSE]
+      }
       if (all(c("osf_id", "public") %in% names(osf_info))) {
         vo <- osf_info[osf_info$osf_type %in% "nodes" & osf_info$public %in% FALSE &
                          grepl("view_only=", osf_info$osf_id), , drop = FALSE]
@@ -2821,11 +2854,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## unclassifiable files ----
-  # Files data_classify_files() could not place at all (data_type == "unknown"),
-  # each with the same concrete rename suggestion check_file_naming() gives for
-  # the "unclassifiable" rule.
-  unknown_files <- all_files$file_name[
-    !is.na(all_files$data_type) & all_files$data_type == "unknown"]
+  # Files data_classify_files() could not place at all (data_type == "unknown").
+  # Two kinds are left out, as no name the authors could choose would help
+  # (#648): an archive, which is a container whose files are typed once it is
+  # opened (and which "Archive Files" already reports), and a hidden settings
+  # file (".gitattributes", ".Rbuildignore", ".gitkeep"), whose name the tool
+  # that reads it fixes. Hidden settings files were unknown in 83 of 563
+  # papers.
+  is_unknown <- !is.na(all_files$data_type) & all_files$data_type == "unknown" &
+    !.is_readable_archive(all_files$file_name %||% "") &
+    !((all_files$file_type %||% rep(NA_character_, nrow(all_files))) %in% "archive") &
+    !grepl("^[.]", all_files$file_name %||% "")
+  unknown_files <- all_files$file_name[is_unknown]
   n_unknown <- length(unknown_files)
   # Per-paper count for summary_table, below -- n_unknown above stays a
   # corpus-wide total for the narrative report/summary_text (one paragraph per
@@ -2834,10 +2874,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # on every row.
   n_unknown_by_paper <- if (nrow(all_files) > 0) {
     all_files |>
-      dplyr::summarise(
-        files_unknown = sum(!is.na(data_type) & data_type == "unknown"),
-        .by = paper_id
-      )
+      dplyr::mutate(.unknown = is_unknown) |>
+      dplyr::summarise(files_unknown = sum(.unknown), .by = paper_id)
   } else {
     data.frame(paper_id = character(0), files_unknown = integer(0))
   }

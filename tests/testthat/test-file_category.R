@@ -48,11 +48,27 @@ test_that("data_classify_files recognises genomic sequence formats, compressed o
   expect_equal(data_classify_files("random_archive.tar.gz"), "unknown")
   expect_equal(data_classify_files("random.gz"), "unknown")
 
-  # .dat is deliberately left ambiguous/unlocked (too generic on its own,
-  # same reasoning as excluding a bare ".info"), so a compressed ".dat.gz"
-  # stays unclassified too -- this is a design choice, not a gap this fix
-  # addresses.
-  expect_equal(data_classify_files("sample.dat.gz"), "unknown")
+  # A single compressed file is typed as the file inside it (#648): .dat is
+  # not format-locked, but the crosswalk makes "sample.dat" data, and so
+  # "sample.dat.gz" too.
+  expect_equal(data_classify_files("sample.dat.gz"), data_classify_files("sample.dat"))
+})
+
+test_that("data_classify_files types build files, notices, Stata help and compressed files (#648)", {
+  x <- c("Makefile", "Dockerfile", "Snakefile_inflation", "Makefile.win", "postBuild",
+         "NOTICE", "NEWS", "CHANGELOG", "asdoc.sthlp", "estadd.hlp",
+         "scan.nii.gz", "trials.csv.gz", "ids.txt.xz",
+         # not changed: a type found otherwise, an archive, an unknown format
+         "makefile.txt", "news.md", "pkg.tar.gz", "reads.bed.gz", "newsletter")
+  expect_equal(data_classify_files(x), c(
+    rep("code", 5), rep("documentation", 5), "data", "data", "documentation",
+    "documentation", "documentation", "unknown", "unknown", "unknown"))
+  # a compressed file in a folder is typed with its path, as the file inside
+  expect_equal(data_classify_files("x.gz", "raw/x.gz"), "unknown")
+  expect_equal(data_classify_files("trials.txt.gz", "data/trials.txt.gz"),
+               data_classify_files("trials.txt", "data/trials.txt"))
+  # a file of an unknown type is not a naming problem
+  expect_equal(nrow(check_file_naming("model.joblib", data_type = "unknown")), 0L)
 })
 
 test_that("add_filetype", {
