@@ -1435,3 +1435,33 @@ test_that("files a script writes or downloads are not missing, in any language, 
   expect_equal(out$loaded_files_missing, c(1L, 0L, 0L))
   expect_false("loaded_refs" %in% names(out))
 })
+
+test_that("text that is not a path on the authors' computer is not an absolute path (#648)", {
+  ap <- function(x) code_abs_path(x)$abs_path
+  # pieces the code joins to a folder of its own
+  expect_length(ap('d <- read_csv(paste0(input_dir, "/behaviour_data/ages.csv"))'), 0)
+  expect_length(ap("emfd = read_csv(fileDir+'/dictionaries/emfd_scoring.csv')"), 0)
+  expect_length(ap("p = strcat(userpath,'/MVPA-Light/startup');"), 0)
+  expect_length(ap("sbjdir = [rawdir 'sub-' nr '/ses-meg/meg/'];"), 0)
+  expect_length(ap(r"(save(strcat(DATA_DIR,'\\All\Results'),'x');)"), 0)
+  expect_length(ap('ggsave(file.path(out, "/figs/a.pdf"))'), 0)
+  # a path that comes first, or starts with a drive or ~, stays
+  expect_equal(ap('d <- read.csv(file.path("/Users/me/data", "x.csv"))'), "/Users/me/data")
+  expect_equal(ap('x <- c("/Users/me/a.csv", "/Users/me/b.csv")'), c("/Users/me/a.csv", "/Users/me/b.csv"))
+  expect_equal(ap('files = ["/home/me/a.csv"]'), "/home/me/a.csv")
+  expect_equal(ap(r"(m = dir("C:\Users\me\Data\S5*.mat"))"), r"(C:\Users\me\Data\S5*.mat)")
+  expect_equal(ap('d <- read.csv("/Users/me/Dropbox (Personal)/x.csv")'), "/Users/me/Dropbox (Personal)/x.csv")
+  # patterns, web routes and queries, devices, keys inside files, placeholders
+  expect_length(ap(r"(dicom = meta.str.extract(r"/([^/]+)\.dcm$"))"), 0)
+  expect_length(ap('@app.route("/users/<int:user_id>/reset")'), 0)
+  expect_length(ap('r = client.get("/api/v1/audit?limit=50")'), 0)
+  expect_length(ap('system("cmd > /dev/null/x")'), 0)
+  expect_length(ap('mag = f["/Data/MAG"][:]'), 0)
+  expect_length(ap('x <- h5read(file, "/Data/MAG")'), 0)
+  expect_length(ap('annot <- "/path/to/variants.tsv"'), 0)
+  expect_length(ap('snp <- "/YOUR PATH HERE/v10/files/"'), 0)
+  expect_length(ap('x <- "/EXAMPLEDIRECTORY/data/a.csv"'), 0)
+  # a message, and an R regular expression, are not Windows paths
+  expect_length(ap(r"("C:\\Users\\me\\launcher.py:36: RuntimeWarning: More than 20 figures")"), 0)
+  expect_length(ap(r"(india <- str_detect(x, "\\bindia\\b"))"), 0)
+})

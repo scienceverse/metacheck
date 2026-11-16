@@ -1191,7 +1191,95 @@ code_abs_path <- function(code_text) {
     gsub("^[\"']", "", x = _) |>
     gsub("[\"']$", "", x = _)
 
+  # what is not a path on the authors' computer (#648)
+  if (nrow(abs_paths)) {
+    # a check that fails keeps the path, rather than losing the whole file
+    keep <- vapply(seq_len(nrow(abs_paths)), function(i)
+      tryCatch(.code_is_abs_path(code_lines$text[[abs_paths$line[[i]]]], abs_paths$abs_path[[i]]),
+               error = function(e) TRUE), logical(1))
+    abs_paths <- abs_paths[keep, , drop = FALSE]
+  }
   return(abs_paths)
+}
+
+# Whether `path`, a quoted text on `line` that looks like an absolute path, is
+# one: a place on the authors' computer that the code reads or writes. Not when
+# (#648):
+# - it starts with one "/" and something comes before it in a path the code
+#   joins: paste0(dir, "/x.csv"), file.path(root, "/x"), base + "/x",
+#   pathlib's base / "x", MATLAB's [userpath '/x'] or strcat(userpath, '/x').
+#   The code adds it to a folder of its own. A path that comes first, or that
+#   starts with a drive or "~", stays.
+# - it holds a character that names on disk do not have but patterns and
+#   templates do (< > [ ] ^ $ | \ and a space before a slash), or the query
+#   of a web address (?name=): a regular expression ("/([^/]+)\\.dcm$"), a
+#   web route ("/users/<int:id>"). On Windows, a character Windows does not
+#   allow in a name or a second ":" marks a message, and a network path
+#   ("\\server\share") with mixed single and double backslashes is a regular
+#   expression escaped in R.
+# - it names a device or the system (/dev/null, /proc/...).
+# - it is a key in square brackets (an HDF5 data set f["/Data/MAG"]) or the
+#   name inside a file that h5read() and the like take after the file.
+# - it is a placeholder for the reader's own folder: /path/to/..., /your/...,
+#   a first folder in capitals that says what to put there (/EXAMPLEDIRECTORY/).
+.code_is_abs_path <- function(line, path) {
+  if (is.na(line) || is.na(path)) return(TRUE)
+  at <- regexpr(paste0("['\"]", .repro_sw_escape(path), "['\"]"), line, perl = TRUE)
+  before <- if (at > 0) trimws(substr(line, 1, at - 1), "right") else ""
+  # text that starts with a separator can be a piece the code joins
+  # (MATLAB's strcat(DATA_DIR, '\\All\Results')); a drive or "~" cannot
+  slash <- grepl("^/(?!/)|^\\\\", path, perl = TRUE)
+  drive <- grepl("^[A-Za-z]:[/\\\\]", path)
+  unc <- grepl("^\\\\\\\\", path)
+  if (drive || unc) {
+    # A character Windows does not allow in a name, or a second ":": a message
+    # ("C:\...\ipykernel_launcher.py:36: RuntimeWarning: ...") or a pattern
+    # (* and ? are left out: a path with a wildcard, dir("C:\data\S5*.mat"),
+    # is still a path)
+    if (grepl("[|<>\"]", path) || grepl(":", substring(path, if (drive) 3L else 1L), fixed = TRUE))
+      return(FALSE)
+    # A network path uses one kind of separator: "\\server\share" (Python's
+    # r"...") or, escaped in R, "\\\\server\\share". Two backslashes and then
+    # doubled ones are R's escapes of a regular expression ("\\bword\\b").
+    lead <- attr(regexpr("^\\\\+", path), "match.length")
+    if (unc && lead == 2L && grepl("\\\\\\\\", substring(path, 3L))) return(FALSE)
+    if (unc && grepl("[\\[\\]^$(){}+]", path, perl = TRUE)) return(FALSE)
+  } else if (grepl("[<>\\[\\]^$|\\\\]| /|\\?[A-Za-z_][A-Za-z0-9_]*=", path, perl = TRUE)) {
+    # Round brackets, {}, * and ? are left out of the signs: "Dropbox
+    # (Personal)", f"/Users/{user}/data" and "/Users/me/data/*.csv" are paths.
+    # "?name=" is the query of a web address ("/api/audit?limit=50").
+    return(FALSE)
+  }
+  if (grepl("^/(dev|proc|sys)(/|$)", path)) return(FALSE)
+  if (grepl("(^|/)(path/to|your[^/]*)(/|$)", path, ignore.case = TRUE) ||
+      grepl("^(/|[A-Za-z]:[/\\\\])?[A-Z_]*(EXAMPLE|DIRECTORY|FOLDER|PATH|YOUR)[A-Z_]*(/|$)", path)) return(FALSE)
+  # a key: a name or a closing bracket, then "[" (a list "[" stays)
+  if (grepl("[A-Za-z0-9_)\\]]\\s*\\[\\s*$", before, perl = TRUE)) return(FALSE)
+  if (grepl("\\b(h5read|h5readAtt|h5write|h5info|h5disp|h5ls|h5createDataset|read_hdf|get_node)\\s*\\([^()]*,\\s*$",
+            before, perl = TRUE)) return(FALSE)
+  if (!slash) return(TRUE)
+  # joined to what comes before it: + (Python, MATLAB strings), pathlib's /
+  if (grepl("(\\+|[^/*]/)$", before, perl = TRUE)) return(FALSE)
+  # MATLAB's [userpath '/x']: a name or a text, then this text, in brackets
+  if (grepl("\\[[^\\[\\],;=]*[A-Za-z0-9_)'\"]$", before, perl = TRUE)) return(FALSE)
+  if (!grepl(",$", before)) return(TRUE)
+  # an argument after the first of a call that joins paths
+  ch <- strsplit(before, "")[[1]]
+  depth <- 0L
+  for (k in rev(seq_along(ch))) {
+    if (ch[k] %in% c(")", "]")) {
+      depth <- depth + 1L
+    } else if (ch[k] %in% c("(", "[")) {
+      if (depth > 0L) { depth <- depth - 1L; next }
+      if (ch[k] == "[") return(TRUE)
+      fn <- regmatches(substr(before, 1, k - 1),
+                       regexpr("[A-Za-z_][A-Za-z0-9_.]*\\s*$", substr(before, 1, k - 1)))
+      fn <- sub("^.*\\.(?=[A-Za-z_][A-Za-z0-9_]*$)", "", trimws(fn), perl = TRUE)
+      return(!(length(fn) == 1 && fn %in% c("paste", "paste0", "file.path", "here", "path", "join",
+                                             "str_c", "glue", "fullfile", "strcat")))
+    }
+  }
+  TRUE
 }
 
 
