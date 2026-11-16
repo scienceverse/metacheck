@@ -4476,3 +4476,49 @@ test_that("a missing file a script makes under a built name, or in another langu
   expect_match(adv2, "A script needs a file that a script in another language makes.", fixed = TRUE)
   expect_match(adv2, "which <code>002&#95;incidence.do</code> makes", fixed = TRUE)
 })
+
+test_that("match_reported_output counts only values that are evidence of the test (#648)", {
+  # one reported test per grp_id
+  eq <- function(lhs, rhs, comp = rep("=", length(lhs)), df = NA, grp = 1)
+    data.frame(text_id = grp, grp_id = grp, lhs = lhs, df = df, comp = comp, rhs = rhs, paper_id = "p")
+  out <- function(stat, value, analysis = "a1")
+    data.frame(source_file = "a.R", analysis = analysis, statistic = stat, value = value)
+  found <- function(e, o, ...) match_reported_output(e, o, ...)$found
+
+  # a precise test statistic with its p: found
+  expect_true(found(eq(c("F", "p"), c("72.28", ".001"), comp = c("=", "<")),
+                    out(c("F", "p"), c("72.284", "0.00001"))))
+  # only a df and a bound matched, the t not: not found (it was, with evidence = "any")
+  e <- eq(c("t", "p"), c("20.22", ".001"), comp = c("=", "<"), df = c("(801)", NA))
+  o <- out(c("t", "df", "p"), c("-1.607", "801", "0.00001"))
+  expect_false(found(e, o))
+  expect_true(found(e, o, evidence = "any"))
+  # every value matched, one of them informative: found
+  expect_true(found(eq(c("chi2", "p"), c(".05", ".82"), df = c("(1)", NA)),
+                    out(c("chi2", "df", "p"), c("0.05", "1", "0.823"))))
+  # t compared without its sign
+  expect_true(found(eq(c("t", "p"), c("5.55", ".001"), comp = c("=", "<"), df = c("(160.18)", NA)),
+                    out(c("t", "df", "p"), c("-5.546", "160.177571", "1.18e-07"))))
+  # a standard error counts only where its estimate matches too
+  expect_false(found(eq(c("M", "SE", "p"), c("2.95", "0.11", ".021")),
+                     out(c("F", "SE", "p"), c("5.39", "0.11", "0.021"))))
+})
+
+test_that("match_reported_output leaves out a single value that cannot be told from chance (#648)", {
+  e <- data.frame(text_id = 1:5, grp_id = 1:5, lhs = c("p", "p", "r", "BF10", "B"), df = NA,
+                  comp = c("=", "<", "=", "=", "="), rhs = c(".023", ".001", ".17", ".01", "-0.323"),
+                  paper_id = "p")
+  o <- data.frame(source_file = "a.R", analysis = c("a1", "a1", "a2", "a2", "a3"),
+                  statistic = c("p", "r", "p", "BF10", "b"), value = c("0.0231", "0.171", "0.0004", "0.01", "-0.3234"))
+  m <- match_reported_output(e, o)
+  # p < .001, r = .17 and BF10 = .01 take no part: not in the result, nor in the count
+  expect_equal(sort(m$reported), sort(c("p=0.023", "B=-0.323")))
+  expect_true(all(m$found))
+  expect_equal(attr(m, "summary")$n_tests, 2L)
+  # a single value matching two different numbers is not found; the same
+  # number printed twice is
+  o2 <- data.frame(source_file = "a.R", analysis = c("a1", "a2"), statistic = "p", value = c("0.0231", "0.0226"))
+  expect_false(match_reported_output(e[1, ], o2)$found)
+  o3 <- data.frame(source_file = "a.R", analysis = c("a1", "a2"), statistic = "p", value = c("0.0231", "0.0231"))
+  expect_true(match_reported_output(e[1, ], o3)$found)
+})
