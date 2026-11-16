@@ -1529,7 +1529,14 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
   pat <- paste0("(?:cannot open (?:compressed )?file|No such file or directory:?|does not exist)",
                 nq, "*", q, "(", nq, "+)", q, "|", q, "(", nq, "+)", q, ":? No such file|",
                 q, "(", nq, "+)", q, " does not exist",
-                "|Cannot open ", q, "(", nq, "+)", q, "|file does not exist: ([^\\s'\"]+)")
+                "|Cannot open ", q, "(", nq, "+)", q, "|file does not exist: ([^\\s'\"]+)",
+                # "Data file not found: ../data/x.csv", Rcpp's "file not found: 'x.cpp'",
+                # h5py's "unable to open file: name = 'x.h5'", ggsave's "Cannot find
+                # directory `x`", a FileNotFoundError with only a path (#648)
+                "|[Ff]ile not found:? *", q, "?([^\\s'\"‘’(]+[./][^\\s'\"‘’(]*)",
+                "|unable to open file[^\n]*?name = ", q, "(", nq, "+)", q,
+                "|[Cc]annot find (?:the )?(?:file|directory|folder) [`'\"‘](", nq, "+?)[`'\"’]",
+                "|FileNotFoundError: (?!\\[Errno)([^\\s'\"]+[./][^\\s'\"]*)")
   out <- unlist(lapply(.utf8_lines(msgs[!is.na(msgs)]), function(m) {
     k <- regmatches(m, gregexpr(pat, m, perl = TRUE))[[1]]
     vapply(k, function(x) { g <- regmatches(x, regexec(pat, x, perl = TRUE))[[1]][-1]; g[nzchar(g)][1] },
@@ -4419,6 +4426,11 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
       hit <- regmatches(m, regexec(p, m, perl = TRUE))[[1]]
       if (length(hit) > 1) return(trimws(hit[2]))
     }
+    # programs R packages start: Chrome for chrome_print() and webshot2, pandoc
+    # for rmarkdown and Word tables, Python for reticulate and argparse (#648)
+    if (grepl("Cannot find (Chromium or )?(Google )?Chrome|find_chrome\\(\\)", m, perl = TRUE)) return("Chrome")
+    if (grepl("[Pp]andoc[^\n]{0,40}(is required|not found|was not found|is not available)", m, perl = TRUE)) return("pandoc")
+    if (grepl("\\b[Pp]ython3? (is required|was not found|not found)|Python was not found", m, perl = TRUE)) return("Python")
     if (grepl("subprocess", m, fixed = TRUE)) {
       hit <- regmatches(m, regexec("FileNotFoundError: \\[Errno 2\\] No such file or directory: '([^'/]+)'", m))[[1]]
       if (length(hit) > 1) return(hit[2])
@@ -4503,12 +4515,33 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   }, character(1), USE.NAMES = FALSE)
   # provided by Snakemake when it runs the script, so only there
   set("object 'snakemake' not found|name 'snakemake' is not defined", "environment")
+  # a setting from the authors' computer that a deposit cannot hold: an
+  # environment variable with the place of restricted data, or a personal key
+  # for an online service ("LEVELS_DB is not set", "ANTHROPIC_API_KEY
+  # environment variable is required", openai's "Missing credentials") (#648)
+  set(paste0("\\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\\b[^\n]{0,40}?\\b(?:is not set|not set\\b|is required|must be set)|",
+             "environment variable[^\n]{0,60}?\\b(?:is not set|not set|is required|must be set|missing)|",
+             "[Ss]et the [^\n]{0,40}?environment variable|Missing credentials|api[_ ]?key[^\n]{0,40}?(?:not set|missing|required)"),
+      "settings")
   set("there is no package called|ModuleNotFoundError|No module named|ImportError|package or namespace|Error: package ", "package")
+  # a package that another package loads only when one of its functions is
+  # used, so the run did not install it: "Please install the 'cmdstanr'
+  # package", 'The package "broom.helpers" (>= 1.20.0) is required' (#648)
+  set(paste0("[Pp]lease install the ['\"`‘][^'\"`’]+['\"`’] package|",
+             "[Tt]he package ['\"`‘][^'\"`’]+['\"`’] (?:\\([^)]*\\) )?is required|",
+             "requires the ['\"`‘][^'\"`’]+['\"`’] package"), "package")
+  # a program our run does not have (git, pandoc, Chrome): a gap in our run
+  out[err & is.na(out) & !is.na(.repro_missing_program(full))] <- "environment"
   # "does not exist" only of a file: Stan's "variable does not exist" is not one
   # (10.1111/1365-2435.14436; #575, item 10)
   file_pat <- paste0("cannot open the connection|cannot open file|No such file|FileNotFoundError|",
                      "(?:[Ff]ile|[Pp]ath|[Dd]irectory|[Ff]older|['\"\u2018\u2019`])[^\n]{0,300}?does not exist|",
-                     "does not exist:? *['\"\u2018`/~.]|Cannot find the file|Could not find a root|cannot open compressed")
+                     "does not exist:? *['\"\u2018`/~.]|Cannot find the file|Could not find a root|cannot open compressed|",
+                     # "Data file not found: x", "model file(s) not found", h5py's
+                     # "unable to open file", ggsave's "Cannot find directory",
+                     # sf's "The file doesn't seem to exist" (#648)
+                     "[Ff]ile(?:\\(s\\)|s)? not found|[Uu]nable to open file|",
+                     "[Cc]annot find (?:the )?(?:directory|folder)|doesn't seem to exist")
   # a file error after a program could not be started is about the program
   # (#575, item 7): "Output file does not exist. Unable to find or run mark.exe"
   out[err & is.na(out) & has(file_pat) & !is.na(.repro_missing_program(full))] <- "environment"
@@ -4534,6 +4567,18 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
                                    install_results$category %in% "source_unknown"])
 }
 
+# The report's sentence on the packages installed before the run. It named
+# every package tried as installed, also those that failed: "6 succeeded, 1
+# failed. matplotlib, monai, ... were installed." (#648)
+.repro_install_sentence <- function(install_results, pip = FALSE) {
+  ok <- install_results$package[install_results$installed %in% TRUE]
+  n_ok <- length(ok)
+  n_fail <- nrow(install_results) - n_ok
+  paste0(sprintf("Dependencies were installed into a throwaway library before running%s: %d succeeded, %d failed.",
+                 if (pip) " (`pip install`)" else "", n_ok, n_fail),
+         if (n_ok) sprintf(" %s %s installed.", paste(ok, collapse = ", "), plural(n_ok, "was", "were")) else "")
+}
+
 .repro_source_unknown_text <- function(pkgs) {
   if (!length(pkgs)) return(NULL)
   n <- length(pkgs)
@@ -4548,8 +4593,47 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 # Every reason .repro_failure_reason() gives, so each paper's row of summary_table
 # has the same columns, also for a reason none of its scripts had.
 .repro_reason_levels <- c("file", "package", "undefined", "syntax", "environment",
-                          "internet", "download", "interactive", "time",
+                          "settings", "internet", "download", "interactive", "time",
                           "no_message", "other")
+
+# Outcomes of files that are not scripts with a result of their own: run by
+# another script, files of software or of functions only, not downloaded,
+# empty. The summary counted them as scripts run: "0 of 5 scripts ran" when 4
+# were files of a package that were rightly not run (#648).
+.repro_not_own_outcomes <- c("run_by_source", "run_by_import", "jags_model", "not_r_content",
+                             "static_jags_model", "static_not_r_content",
+                             "defines_functions", "not_analysis",
+                             "static_defines_functions", "static_not_analysis",
+                             "not_downloaded", "empty", "static_empty")
+# Outcomes of scripts that were started. The summary said "We assessed AND ran
+# 32 Python code files" when none was started (#648).
+.repro_started_outcomes <- c("ran_ok", "errored", "timed_out", "needs_a_person", "needs_internet",
+                             "download_too_large", "out_of_memory")
+
+# The light after a run of one language, from the light before it (`tl`, from
+# the files the code reads) and the scripts' outcomes and reasons. A script
+# that stopped on an error of the code makes it red. Yellow, when nothing is
+# red: a script that ran past the time limit (a slow analysis is not an error
+# of the code; a time-out alone made 5 papers red, #648), one that stopped
+# only on something our run lacks or a deposit cannot hold (a program such as
+# git or Chrome, software outside R and Python, a setting such as a key or the
+# place of restricted data; reasons "environment" and "settings"), the other
+# outcomes the check could not finish, and a run in which no script ran to the
+# end, which was green when every script was set aside or could not install
+# its packages (#648).
+.repro_run_light <- function(tl, run_results) {
+  if (is.null(run_results) || !nrow(run_results)) return(tl)
+  oc <- run_results$outcome
+  reason <- run_results$reason %||% rep(NA_character_, length(oc))
+  ours <- oc %in% "errored" & reason %in% c("environment", "settings")
+  if (any(oc %in% "errored" & !ours)) return("red")
+  unfinished <- any(ours) ||
+    any(oc %in% c("timed_out", "skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet",
+                  "download_too_large", "not_downloaded", "out_of_memory", "not_read",
+                  "dependency_unavailable")) ||
+    !any(oc %in% c("ran_ok", "run_by_source", "run_by_import"))
+  if (unfinished && identical(tl, "green")) "yellow" else tl
+}
 
 # Per-paper counts for summary_table (#568, item 24): the scripts with a result
 # of their own, the files of software that were not run (not analyses, counted
@@ -4634,10 +4718,18 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
     if (identical(lang, "Python")) "argparse|sys[.]argv|getopt|docopt|click[.](command|argument|option)"
     else "commandArgs[(]|optparse|OptionParser[(]|parse_args[(]|argparser::|arg_parser[(]|docopt[(]",
     paste(s, collapse = "\n"), perl = TRUE), logical(1))
+  # The script's own message about its arguments, in either language: "Provide
+  # the file index as the first command-line argument", "--units is required",
+  # argparse's "error: one of --synthetic / --real is required", "One of -x,
+  # -y, or -z should be given" (#648)
+  own <- paste0("command[- ]line arguments?\\b|",
+                "(?:^|[\\s'\"`])--?[A-Za-z][\\w-]*\\b[^\n]{0,60}?\\b(?:is|are) required|",
+                "\\b[Oo]ne of --?[A-Za-z][\\w-]*|",
+                "--?[A-Za-z][\\w-]*\\b[^\n]{0,60}?\\b(?:should|must) be (?:given|specified|provided|supplied)")
   points <- if (identical(lang, "Python"))
-    grepl(paste0("the following arguments are required|: error: (argument|unrecognized arguments)|",
-                 "Use '-h'|sys[.]argv\\[|parse_args\\("), txt, perl = TRUE)
-  else grepl("Error in [^\n:]*(\\bargs?\\[|\\bargv\\[|commandArgs)", txt, perl = TRUE)
+    grepl(paste0("the following arguments are required|: error: (argument|unrecognized arguments|one of)|",
+                 "Use '-h'|sys[.]argv\\[|parse_args\\(|", own), txt, perl = TRUE)
+  else grepl(paste0("Error in [^\n:]*(\\bargs?\\[|\\bargv\\[|commandArgs)|", own), txt, perl = TRUE)
   usage <- grepl("(?im)^\\s*usage\\s*:|Show this help message and exit", paste(txt, out), perl = TRUE)
   unname(reads & (points | usage))
 }

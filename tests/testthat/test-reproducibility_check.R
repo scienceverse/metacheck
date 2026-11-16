@@ -4384,3 +4384,78 @@ test_that(".repro_not_run_report lists files not read and empty files (#620)", {
   expect_match(txt, "1 file is empty, so there is nothing to run, and it is not counted as a script: b.R.", fixed = TRUE)
   expect_null(.repro_not_run_report("a.R", NA_character_))
 })
+
+test_that("why a script stopped: files, packages, programs, settings and arguments named in more ways (#648)", {
+  r <- function(m) .repro_failure_reason("errored", m)
+  # a missing file, also when the error names it in the script's own words
+  expect_equal(r("Error in read_experiment(1) : Data file not found: ../data/expt1all.csv"), "file")
+  expect_equal(r("Error in eval(e, envir = env) : file not found: 'new/wiener_marginal.cpp'"), "file")
+  expect_equal(r("Error: Cannot open \"data/x.shp\"; The file doesn't seem to exist."), "file")
+  expect_equal(r("Error in `ggsave()`: ! Cannot find directory 'out/plots'."), "file")
+  expect_equal(r("Error in check(ti) : model file(s) not found in /sandbox: models/a.jags"), "file")
+  expect_equal(.repro_unopened_files(c("Error in f(1) : Data file not found: ../data/expt1all.csv",
+                                       "Error in eval(e) : file not found: 'new/w.cpp'",
+                                       "OSError: unable to open file (unable to open file: name = 'res/a.h5', errno = 2)",
+                                       "Error in `ggsave()`: ! Cannot find directory `out/plots`.",
+                                       "FileNotFoundError: data/raw/x.csv")),
+               c("expt1all.csv", "w.cpp", "a.h5", "plots", "x.csv"))
+  # not files: columns, and read.spss's own words in quotes
+  expect_equal(r("Error in `select()`: ! Can't select columns that don't exist."), "other")
+  expect_equal(.repro_unopened_files("Error in read.spss(x) : unable to open file: 'No such file or directory'"),
+               character(0))
+  # a package another package loads only when it is used
+  expect_equal(r("Error in `require_package()`: ! Please install the 'cmdstanr' package."), "package")
+  expect_equal(r("Error in check_pkg_installed(x) : The package \"broom.helpers\" (>= 1.20.0) is required."), "package")
+  # a program our run does not have
+  expect_equal(r("Error in find_chrome() : Cannot find Chromium or Google Chrome"), "environment")
+  expect_equal(.repro_missing_program("Error: python3 is required when rerun_text_analysis is TRUE."), "Python")
+  # a setting a deposit cannot hold
+  expect_equal(r("LEVELS_DB is not set. Set it to the path of the study DuckDB database"), "settings")
+  expect_equal(r("ValueError: ANTHROPIC_API_KEY environment variable is required"), "settings")
+  expect_equal(r("openai.OpenAIError: Missing credentials. Please pass an `api_key`"), "settings")
+  # a script's own message about its command-line arguments, when it reads them
+  py <- list("import argparse\np = argparse.ArgumentParser()")
+  expect_true(.repro_needs_arguments(py, "analysis.py: error: one of --synthetic / --real is required", "Python"))
+  expect_true(.repro_needs_arguments(py, "FATAL: --units is required (or use --selftest)", "Python"))
+  expect_true(.repro_needs_arguments(list("a <- commandArgs(TRUE)"),
+                                     "Error: Provide the file index as the first command-line argument.", "R"))
+  expect_false(.repro_needs_arguments(list("x <- 1"), "Error: Provide the first command-line argument.", "R"))
+})
+
+test_that("the light after a run, and the sentences on what was run and installed (#648)", {
+  rr <- function(o, reason = NA_character_) data.frame(outcome = o, reason = reason)
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "errored"), c(NA, "file"))), "red")
+  # a time-out alone is not an error of the code
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "timed_out"))), "yellow")
+  # what our run lacks, or a setting a deposit cannot hold
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "errored"), c(NA, "settings"))), "yellow")
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "errored"), c(NA, "environment"))), "yellow")
+  # no script ran to the end
+  expect_equal(.repro_run_light("green", rr(c("not_analysis", "dependency_unavailable"))), "yellow")
+  expect_equal(.repro_run_light("green", rr("ran_ok")), "green")
+  # the files the code reads already gave red
+  expect_equal(.repro_run_light("red", rr("timed_out")), "red")
+
+  ir <- data.frame(package = c("a", "b", "c"), installed = c(TRUE, FALSE, TRUE))
+  expect_equal(.repro_install_sentence(ir),
+               "Dependencies were installed into a throwaway library before running: 2 succeeded, 1 failed. a, c were installed.")
+  expect_equal(.repro_install_sentence(ir[2, ], pip = TRUE),
+               "Dependencies were installed into a throwaway library before running (`pip install`): 0 succeeded, 1 failed.")
+})
+
+test_that("the advice for a package that could not be installed fits its language and cause (#648)", {
+  tbl <- data.frame(file_name = c("a.py", "b.R", "c.R"))
+  rr <- data.frame(error = c("ModuleNotFoundError: No module named 'ehrql'",
+                             "Error in library(mixedpower) : there is no package called 'mixedpower'",
+                             "Error in library(sf) : there is no package called 'sf'"),
+                   stderr = NA_character_, reason = "package")
+  ir <- data.frame(package = c("ehrql", "mixedpower", "sf"), installed = FALSE,
+                   category = c(NA, "cran_unavailable", "compile_failure"))
+  adv <- paste(.repro_advice(tbl, rr, rep("dependency_unavailable", 3), mi = data.frame(), install_results = ir),
+               collapse = "\n")
+  expect_false(grepl("probably because it is old", adv, fixed = TRUE))
+  expect_match(adv, "<code>ehrql</code> could not be installed with <code>pip</code>", fixed = TRUE)
+  expect_match(adv, "<code>mixedpower</code> is not on CRAN", fixed = TRUE)
+  expect_match(adv, "BiocManager::install", fixed = TRUE)
+  expect_match(adv, "<code>sf</code> could not be built", fixed = TRUE)
+})

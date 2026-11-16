@@ -2286,14 +2286,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(missing_inputs, unresolved_list, r_files$file_name, run_results),
       tl_clean)
 
-    # An execution error (errored / timed_out) is a reproduction failure: force
-    # the traffic light red, whatever the static signals said. A
-    # dependency_unavailable script is deliberately excluded: it failed because
-    # ITS OWN package could not be installed from either live CRAN or the
-    # Archive (or a GitHub/URL source), which is an infrastructure limitation,
-    # not evidence the paper's code is broken.
-    if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory", "not_read")) && tl == "green") tl <- "yellow"
+    # An error of the code is a reproduction failure: red, whatever the static
+    # signals said. A time-out, a package that could not be installed, a gap in
+    # our run or no script run to the end is yellow (see .repro_run_light(); #648).
+    tl <- .repro_run_light(tl, run_results)
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2870,16 +2866,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                 output_blocks, truncation_note, .repro_output_cut_note(stat_cut))
 
     if (!is.null(install_results) && nrow(install_results) > 0) {
-      n_ok   <- sum(install_results$installed)
-      n_fail <- sum(!install_results$installed)
       # A package installed via the CRAN Archive retry (live CRAN no longer
       # serves it) reproduced against a STALE version, not necessarily the one
       # the authors used — worth distinguishing from an ordinary install.
       via_arch <- if ("via_archive" %in% names(install_results))
         install_results$package[!is.na(install_results$via_archive) & install_results$via_archive] else character(0)
-      report_inst <- sprintf(
-        "Dependencies were installed into a throwaway library before running: %d succeeded, %d failed. %s were installed.",
-        n_ok, n_fail, paste(install_results$package, collapse = ", "))
+      report_inst <- .repro_install_sentence(install_results)
       report_arch <- if (length(via_arch) > 0) sprintf(
         paste0("**%d of these were no longer on live CRAN** and were instead ",
                "installed from the **CRAN Archive**'s most recent published ",
@@ -2937,11 +2929,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     sum(run_results$outcome == "dependency_unavailable") else 0L
   n_by_src_sum <- if (!is.null(run_results))
     sum(run_results$outcome == "run_by_source") else 0L
-  n_run_own <- if (!is.null(run_results)) nrow(run_results) - n_by_src_sum else 0L
+  # the scripts with a result of their own, and those that were started: files
+  # of software or of functions only were counted as scripts run (#648)
+  n_run_own <- if (!is.null(run_results)) sum(!run_results$outcome %in% .repro_not_own_outcomes) else 0L
+  n_started <- if (!is.null(run_results)) sum(run_results$outcome %in% .repro_started_outcomes) else 0L
   summary_text <- c(
     if (isTRUE(execute)) sprintf(
-      "We assessed AND ran %d R code file%s for reproducibility (each in an isolated %s).",
-      n_code, plural(n_code), if (sandbox == "docker") "Docker container" else "subprocess") else sprintf(
+      "We assessed %d R code file%s for reproducibility and ran %s (each in an isolated %s).",
+      n_code, plural(n_code), if (n_started == 0) "none of them" else if (n_started == n_code) plural(n_code, "it", "them") else sprintf("%d of them", n_started),
+      if (sandbox == "docker") "Docker container" else "subprocess") else sprintf(
       "We assessed %d R code file%s for reproducibility (static analysis; no code was run).",
       n_code, plural(n_code)),
     if (!isTRUE(execute)) sprintf("%d file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
@@ -2951,14 +2947,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_dup, plural(n_dup), plural(n_dup)),
     # Scripts run only inside the script that sources them are not counted
     # here: their outcome is part of that script's.
-    if (isTRUE(execute) && !is.null(run_results)) sprintf(
+    if (isTRUE(execute) && !is.null(run_results) && n_run_own > 0) sprintf(
       "%d of %d script%s ran without error when executed%s.",
       n_ran_ok, n_run_own, plural(n_run_own),
       if (n_by_src_sum > 0) sprintf(
         " (%d more %s run by another script with `source()`)", n_by_src_sum,
         plural(n_by_src_sum, "is", "are")) else ""),
     if (n_nodep_sum > 0) sprintf(
-      "%d script%s could not run because %s own dependency is unavailable (not counted against the traffic light).",
+      "%d script%s could not run because %s own dependency is unavailable (not counted as an error of the code).",
       n_nodep_sum, plural(n_nodep_sum), plural(n_nodep_sum, "its", "their")),
     if (nrow(reported_inputs) > 0) sprintf(
       "%d referenced input%s unavailable (%d withheld due to size).",
@@ -3781,8 +3777,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py_tl <- .repro_static_light(
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
-    if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory", "not_read")) && py_tl == "green") py_tl <- "yellow"
+    py_tl <- .repro_run_light(py_tl, py_run_results)
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -4200,11 +4195,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                    py_output_blocks, py_truncation_note, .repro_output_cut_note(py_stat_cut))
 
     if (!is.null(py_install_results) && nrow(py_install_results) > 0) {
-      n_py_ok <- sum(py_install_results$installed)
-      n_py_fail <- sum(!py_install_results$installed)
-      py_report_inst <- sprintf(
-        "Dependencies were installed into a throwaway library before running (`pip install`): %d succeeded, %d failed. %s were installed.",
-        n_py_ok, n_py_fail, paste(py_install_results$package, collapse = ", "))
+      py_report_inst <- .repro_install_sentence(py_install_results, pip = TRUE)
       py_failed_rows <- py_install_results[!py_install_results$installed, , drop = FALSE]
       py_report_fail <- if (nrow(py_failed_rows) > 0) sprintf(
         "**Failed:** %s", paste(sprintf(
@@ -4228,9 +4219,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (isTRUE(execute) && !is.null(py_exec_error)) sprintf(
       "We assessed %d Python code file%s for reproducibility, but could not run %s: %s",
       n_py_code, plural(n_py_code), plural(n_py_code, "it", "them"), py_exec_error)
-    else if (isTRUE(execute)) sprintf(
-      "We assessed AND ran %d Python code file%s for reproducibility.",
-      n_py_code, plural(n_py_code)) else sprintf(
+    else if (isTRUE(execute)) {
+      n_py_started <- if (is.null(py_run_results)) 0L else sum(py_run_results$outcome %in% .repro_started_outcomes)
+      sprintf("We assessed %d Python code file%s for reproducibility and ran %s.",
+              n_py_code, plural(n_py_code),
+              if (n_py_started == 0) "none of them" else if (n_py_started == n_py_code) plural(n_py_code, "it", "them")
+              else sprintf("%d of them", n_py_started))
+    } else sprintf(
       "We assessed %d Python code file%s for reproducibility (static analysis; no code was run).",
       n_py_code, plural(n_py_code)),
     if (!isTRUE(execute)) sprintf("%d Python file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
@@ -4242,8 +4237,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (isTRUE(execute) && !is.null(py_run_results)) {
       n_py_imp <- sum(py_run_results$outcome == "run_by_import")
       # nor are files of software (a package's tests, __init__.py)
-      n_py_own <- nrow(py_run_results) - n_py_imp - sum(py_run_results$outcome == "not_analysis")
-      sprintf("%d of %d Python script%s ran without error when executed%s.",
+      n_py_own <- sum(!py_run_results$outcome %in% .repro_not_own_outcomes)
+      if (n_py_own > 0) sprintf("%d of %d Python script%s ran without error when executed%s.",
               n_py_ran_ok_sum, n_py_own, plural(n_py_own),
               if (n_py_imp > 0) sprintf(" (%d more %s imported by other files, not run on %s own)",
                                         n_py_imp, plural(n_py_imp, "file is", "files are"),

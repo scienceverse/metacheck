@@ -195,7 +195,7 @@ test_that("execute = TRUE actually runs a script and records ran_ok", {
   expect_equal(mo$table$outcome, "ran_ok")
   expect_equal(mo$run_results$outcome, "ran_ok")
   expect_match(mo$run_results$stdout, "Welch Two Sample t-test")
-  expect_match(mo$summary_text, "assessed AND ran", fixed = TRUE)
+  expect_match(mo$summary_text, "for reproducibility and ran it", fixed = TRUE)
 })
 
 test_that("execute = TRUE: a script that errors forces the traffic light red", {
@@ -1284,7 +1284,7 @@ test_that("execute = TRUE actually runs a Python script and records ran_ok", {
   expect_equal(mo$table$outcome, "ran_ok")
   expect_equal(mo$run_results$outcome, "ran_ok")
   expect_match(mo$run_results$stdout, "mean_a")
-  expect_match(mo$summary_text, "assessed AND ran", fixed = TRUE)
+  expect_match(mo$summary_text, "for reproducibility and ran it", fixed = TRUE)
 })
 
 test_that("execute = TRUE: a Python script that errors forces the traffic light red", {
