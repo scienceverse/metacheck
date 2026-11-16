@@ -150,12 +150,13 @@
     grepl("^df1$", n)                                                 ~ "df1",
     grepl("^df2$", n)                                                 ~ "df2",
     grepl("^df$", n)                                                  ~ "df",
-    grepl("^t($| |-|value|stat)", n) | n == "student's t" |
+    # "tval" and "zval" are metafor::rma()'s (#648)
+    grepl("^t($| |-|value|stat)|^tval$", n) | n == "student's t" |
       grepl("t-?test|student'?s t", n)                                ~ "t",
     grepl("^f($| |-|value| change)", n) |
       grepl("\\banova\\b|f-?test", n)                                 ~ "F",
     grepl("chi|\u03c7|x-squared|x\u00b2|goodness of fit", n)                    ~ "chisq",
-    grepl("^z($| |value)", n)                                         ~ "z",
+    grepl("^z($| |value)|^zval$", n)                                  ~ "z",
     grepl("^w$|wilcoxon|mann-whitney", n)                             ~ "W",
     grepl("^u$", n)                                                   ~ "U",
     grepl("^q$", n)                                                   ~ "Q",

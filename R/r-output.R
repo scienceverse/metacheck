@@ -439,6 +439,67 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
   vapply(names(direct), root_of, character(1)) |> stats::setNames(names(direct))
 }
 
+# -- Lines made readable for the table reader (#648) ----------------------------
+# - A pipe table, as knitr::kable() prints by default ("|term | estimate|",
+#   "|:----|-------:|"): the rule line is left out and every "|" becomes a
+#   space, which keeps the columns where they were, so the fixed-width split
+#   reads it like any printed table. Such tables were not read at all, and the
+#   b values of xwy5t_v2 were never compared.
+# - A superscript mark after a word ("pval¹ ci.lb¹", metafor's mark
+#   for the Knapp-Hartung test) becomes a space, which keeps the columns too;
+#   it shifted them, and the confidence interval became a row label (yf5gu_v3).
+#   The superscript two is left, as it belongs to R², eta² and chi².
+# - A group line inside a lavaan table ("  visual =~", "  textual ~~") is left
+#   out: it has no number, so the table ended at it before its first row.
+.r_output_normalise <- function(lines) {
+  if (!length(lines)) return(lines)
+  pipe_rule <- grepl("^\\s*\\|?(\\s*:?-{3,}:?\\s*\\|)+\\s*(:?-{3,}:?)?\\s*\\|?\\s*$", lines)
+  pipe_row <- grepl("^\\s*\\|.*\\|\\s*$", lines)
+  if (any(pipe_rule)) {
+    lines[pipe_row] <- gsub("|", " ", lines[pipe_row], fixed = TRUE)
+    lines <- lines[!pipe_rule]
+  }
+  lines <- gsub("(?<=[A-Za-z0-9.])[¹³⁰⁴-⁹†‡]", " ", lines, perl = TRUE)
+  lines[!grepl("^\\s*\\S+\\s+(=~|~~|<~|~)\\s*$", lines)]
+}
+
+# A block of "label   value" lines starting at line `i`: two or more lines in a
+# row, each a label of words, two or more spaces, and one number (lavaan's
+# "Test statistic   24.361", "Comparative Fit Index (CFI)   0.975"). Returns
+# list(table, end) with one row, a column per label, or NULL. A label with a
+# short form in brackets is named by it ("CFI", "AIC"); "Test statistic" in a
+# "Model Test ..." section is lavaan's chi-square, and a "P-value" there its p.
+.r_output_kv_block <- function(lines, i, section = NA_character_) {
+  # a label starts with a letter, or with a number and a word ("90 Percent
+  # confidence interval - lower"), and holds no number standing alone after
+  # that: a printed data frame's row ("1     a  3.2") and a table's ("a 13  7")
+  # are no labels
+  kv_re <- paste0("^\\s*((?:[A-Za-z]|[0-9]+ [A-Za-z])[^\\s]*(?: (?!-?[0-9.]+(?:\\s|$))[^\\s]+)*?)\\s{2,}",
+                  "(-?[0-9]*\\.?[0-9]+(?:e[-+]?[0-9]+)?|<\\s*[0-9.]+)\\s*$")
+  j <- i
+  while (j <= length(lines) && grepl(kv_re, lines[[j]], perl = TRUE)) j <- j + 1L
+  # one line is enough right under a section heading ("SRMR   0.047"), with
+  # blank lines between them as lavaan prints them
+  k <- i - 1L
+  while (k >= 1L && !nzchar(trimws(lines[[k]]))) k <- k - 1L
+  under_heading <- k >= 1L && grepl("^[A-Za-z][A-Za-z0-9 .()|>-]*:$", trimws(lines[[k]]))
+  if (j - i < 2L && !(j - i == 1L && under_heading)) return(NULL)
+  m <- regmatches(lines[i:(j - 1L)], regexec(kv_re, lines[i:(j - 1L)], perl = TRUE))
+  label <- vapply(m, `[[`, character(1), 2L)
+  value <- vapply(m, `[[`, character(1), 3L)
+  # a short form of two or more capitals (CFI, AIC, SABIC), not "(H0)"
+  short <- regmatches(label, regexec("\\(([A-Z]{2,}[A-Za-z0-9-]*)\\)\\s*$", label))
+  name <- ifelse(lengths(short) == 2L & !grepl("^P-value", label), vapply(short, function(s) s[2L] %||% "", ""), label)
+  if (isTRUE(grepl("^Model Test", section))) {
+    name[label == "Test statistic"] <- "Chi-square"
+    name[grepl("^P-value", label)] <- "p"
+  }
+  df <- as.data.frame(as.list(stats::setNames(value, make.unique(name))), check.names = FALSE,
+                      stringsAsFactors = FALSE)
+  list(table = list(analysis = section %||% NA_character_, title = section %||% NA_character_, data = df),
+       end = j - 1L)
+}
+
 # -- One-line tests ------------------------------------------------------------
 # Find lines carrying "<stat> <op> <value>" fragments (often several per line,
 # comma-separated: "t = 2.34, df = 48, p-value = 0.02"). A run of such fragments
@@ -817,6 +878,7 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
     FALSE
   }
 
+  lines <- .r_output_normalise(lines)
   n <- length(lines); i <- 1L; tables <- list(); section <- NA_character_
   # The last REJECTED block (#483). Every later line inside it that looks like
   # a header starts a block with the SAME end (the data-line tests are per
@@ -832,6 +894,16 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
   while (i <= n) {
     tl <- trimws(lines[[i]])
     if (grepl("^[A-Za-z][A-Za-z0-9 .()|>-]*:$", tl)) section <- sub(":$", "", tl)
+
+    # A block of "label   value" lines, as lavaan prints its fit measures
+    # ("Test statistic   24.361", "Degrees of freedom   8"): its first line
+    # looked like a header, so the first value became a column name and the
+    # paper's chi2 = 1.40 was never compared (qzm5p_v1; #648)
+    kv <- .r_output_kv_block(lines, i, section)
+    if (!is.null(kv)) {
+      tables[[length(tables) + 1L]] <- kv$table
+      i <- kv$end + 1L; next
+    }
 
     if (looks_header(lines[[i]]) && !is_quantile_hdr(strsplit(tl, "\\s+")[[1]])) {
       # Only when line i+1 was a DATA line of the rejected block: then the
@@ -868,7 +940,10 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
       # ever reaching its real content. Confirmed against real statsmodels
       # output from a Zenodo-sampled notebook (an OLS Regression Results
       # table whose coefficient block was silently dropped without this).
-      if (j <= n && grepl("^-{3,}\\s*$", trimws(lines[[j]]))) j <- j + 1L
+      # Also a rule of several dash runs, one per column, as knitr::kable(format
+      # = "simple") and pandoc print under the header: it was taken as the
+      # header itself, so every column was named "---------" (#648)
+      if (j <= n && grepl("^-{3,}(\\s+-{3,})*\\s*$", trimws(lines[[j]]))) j <- j + 1L
       # gather contiguous data lines (non-blank, containing a number, not prose)
       first_data <- j
       while (j <= n) {
