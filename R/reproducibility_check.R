@@ -437,8 +437,9 @@ repro_dependencies <- function(code_text, lang = "R") {
     R = c("write[\\._][A-Za-z\\._0-9]*", "saveRDS", "save\\.image",
          "save", "ggsave", "export", "fwrite"),
     # to_<format> (to_csv/to_pickle/to_parquet/...), numpy's save/savetxt,
-    # matplotlib's savefig, and pickle's/json's dump — see code_check.R's
-    # lang_write_regex (code_file_refs()) for the same list, kept in sync.
+    # matplotlib's savefig, and pickle's/json's dump — the writes of
+    # .code_write_calls (code_check.R) without the downloads, whose first
+    # quoted text is the address to download from, not a path to redirect.
     # open() is excluded — see this function's own `lang` docs above.
     Python = c("to_[A-Za-z_0-9]+", "savetxt", "savefig", "dump", "save")
   )
@@ -2036,11 +2037,10 @@ repro_file_io <- function(code_text_list, lang = "R") {
   lang_for <- if (length(lang) == 1) stats::setNames(rep(lang, length(fname)), fname)
     else lang[fname]
 
-  # A read call vs a write call, from the call name preceding the quoted path.
-  write_fns_for <- list(
-    R = "\\b(write[._][A-Za-z._0-9]*|saveRDS|save|save\\.image|ggsave|export|fwrite)\\s*\\(",
-    Python = "\\b(to_[A-Za-z_0-9]+|savetxt|savefig|dump|save)\\s*\\("
-  )
+  # A read call vs a write call, from the call name preceding the quoted path:
+  # the same calls code_file_refs() takes as writes (.code_write_regex()), so a
+  # file a script downloads is made by it, not read (#648)
+  write_fns_for <- list(R = .code_write_regex("R"), Python = .code_write_regex("Python"))
   # open(...) is BOTH a read call (code_file_refs()'s Python branch) and a
   # potential write call, decided only by its own mode argument (see
   # .py_open_writes()).

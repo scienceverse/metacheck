@@ -1398,3 +1398,40 @@ test_that("code_extract_r reads an .Rmd with a numeric YAML chunk label (U153)",
   txt <- c("# Title", "", "```{r}", "#| label: 3", "x <- 1", "```")
   expect_true("x <- 1" %in% code_extract_r(text = txt))
 })
+
+test_that("files a script writes or downloads are not missing, in any language, nor are name patterns (#648)", {
+  # the files written, per language
+  expect_equal(code_file_refs(c('save "out/clean.dta", replace', "export delimited using results.csv, replace",
+                                "use raw.dta"), "Stata", writes_only = TRUE),
+               c("out/clean.dta", "results.csv"))
+  expect_equal(code_file_refs(c('writetable(T, "tab.csv");', 'fid = fopen("log.txt", "w");', 'x = load("in.mat");'),
+                              "MATLAB", writes_only = TRUE), c("tab.csv", "log.txt"))
+  expect_true("data.csv" %in% code_file_refs('download.file("https://osf.io/x/data.csv", "data.csv")', "R",
+                                             writes_only = TRUE))
+  expect_equal(code_file_refs(c('df.to_csv(f"vzv_{COMPARATOR}_model.csv")', 'with open("o.txt", "w") as f:',
+                                'd = pd.read_csv("in.csv")'), "Python", writes_only = TRUE),
+               c("vzv_{COMPARATOR}_model.csv", "o.txt"))
+  expect_equal(code_file_refs('proc export data=a outfile="x.csv" dbms=csv;', "SAS", writes_only = TRUE), "x.csv")
+  # a downloaded file is made by the script, not read
+  io <- repro_file_io(list(a.R = c('download.file("https://x/y.csv", "y.csv")', 'd <- read.csv("y.csv")')))
+  expect_true("y.csv" %in% io$writes[[1]])
+
+  # names with placeholders on either side
+  m <- .code_name_match
+  expect_equal(m(c("vzv_aou_ac_%s_model.csv", "vzv_aou_ac_pneumo_model.csv", "other.csv", "X.CSV"),
+                 c("vzv_aou_ac_{COMPARATOR}_model.csv", "x.csv")), c(TRUE, TRUE, FALSE, TRUE))
+  # a pattern with little text of its own matches nothing
+  expect_false(m("education_tests.csv", "{name}.csv"))
+  expect_false(m("x.dta", "`weekly'"))
+  expect_true(m("resnet50_embeddings.npy", "{backbone}_embeddings.npy"))
+
+  # the missing files of each code file, once all are read
+  cf <- data.frame(paper_id = "p", repo_url = "r", file_name = c("a.R", "b.R", "c.do"),
+                   loaded_refs = c(paste("raw.csv", "clean.csv", "res_pneumo.csv", "_part.csv", "s{seed}.json",
+                                         "gone.csv", sep = "\u001f"), "", ""),
+                   files_written = c("", "clean.csv", "res_%s.csv"))
+  out <- .code_missing_files(cf, data.frame(repo_url = "r", file_name = "raw.csv"))
+  expect_equal(out$loaded_files_missing_names[1], "gone.csv")
+  expect_equal(out$loaded_files_missing, c(1L, 0L, 0L))
+  expect_false("loaded_refs" %in% names(out))
+})

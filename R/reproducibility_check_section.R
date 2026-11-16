@@ -57,7 +57,7 @@
 # seconds. Returns the blocks (markdown), with the rows they cover as the
 # attribute `scripts`; character(0) when nothing failed.
 .repro_advice <- function(tbl, rr, outcome, mi, install_results = NULL, versions_recorded = FALSE,
-                          timeout = 600) {
+                          timeout = 600, other_writes = NULL) {
   name <- tbl$file_name
   is_py <- grepl("\\.(py|ipynb)$", name, ignore.case = TRUE)
   msg <- paste(ifelse(is.na(rr$error), "", rr$error), ifelse(is.na(rr$stderr), "", rr$stderr))
@@ -91,15 +91,28 @@
   }
 
   # A file a script could not open: what kind of file it is decides what helps.
-  f <- list(by_script = list(), absolute = list(), renamed = list(), archived = list(), absent = list())
+  f <- list(by_script = list(), by_other = list(), absolute = list(), renamed = list(), archived = list(),
+            absent = list())
+  # code files in languages that are not run, with the files they write (#648)
+  other_name <- other_writes$file_name %||% character(0)
+  other_made <- as.character(other_writes$files_written %||% character(0))
+  other_made[is.na(other_made)] <- ""
+  other_made <- strsplit(other_made, ",[[:space:]]*")
   put <- function(kind, i, line) f[[kind]][[length(f[[kind]]) + 1]] <<- list(i = i, line = line)
   for (i in which(err & reason %in% "file")) {
     for (p in .repro_unopened_files(msg[[i]], full = TRUE)) {
       b <- tolower(basename(p)); k <- match(b, mi_base)
-      maker <- setdiff(which(vapply(writes, \(w) b %in% w, logical(1))), i)
+      # a name the other script builds counts, as a pattern (.code_name_match()):
+      # matched by exact names only, one of two identical cases in gx9qa_v3 got
+      # "find the file on your computer" (#648)
+      maker <- setdiff(which(vapply(writes, \(w) length(w) > 0 && .code_name_match(b, w), logical(1))), i)
+      other <- which(vapply(other_made, \(w) length(w) > 0 && .code_name_match(b, w), logical(1)))
       if (length(maker)) {
         put("by_script", i, sprintf("%s needs %s, which %s makes.", code(name[[i]]), code(basename(p)),
                                     code(name[[maker[[1]]]])))
+      } else if (length(other)) {
+        put("by_other", i, sprintf("%s needs %s, which %s makes.", code(name[[i]]), code(basename(p)),
+                                   code(other_name[[other[[1]]]])))
       } else if (!is.na(k) && !is.na(similar[[k]])) {
         put("renamed", i, sprintf("%s reads %s; your deposit holds %s.", code(name[[i]]), code(basename(p)),
                                   code(similar[[k]])))
@@ -121,6 +134,10 @@
           "The other script stopped before it made the file, so fix that script first; this one may",
           "then run as well. To make the order clear to readers, number your scripts in the order",
           "they run (<code>01&#95;clean.R</code>, <code>02&#95;model.R</code>), or add one main script that runs the others in order."))
+  block("by_other", rows_of(f$by_other), "A script needs a file that a script in another language makes.",
+        text_of(f$by_other), paste(
+          "We run only R and Python code, so the file was not made. Add the file to the deposit, or say",
+          "in the README in which order the scripts run, with the program each needs."))
   block("absent", rows_of(f$absent), "Files are missing from your deposit.", text_of(f$absent),
         "The script stops at the line that reads the file.",
         c("Find the file on your computer.",
@@ -303,7 +320,7 @@
         code(name[unknown]), "The error message of each script is in the table above.")
 
   # in the order in which the problems should be fixed
-  order <- c("by_script", "absent", "absolute", "renamed", "archived", "unnamed", "changed", "missing_pkg",
+  order <- c("by_script", "by_other", "absent", "absolute", "renamed", "archived", "unnamed", "changed", "missing_pkg",
              "dep", "program", "env", "keys", "windows", "undefined", "syntax", "slow", "memory", "online",
              "person", "unknown")
   structure(as.character(unlist(blocks[intersect(order, names(blocks))], use.names = FALSE)),
@@ -329,14 +346,17 @@
 # package versions used (see .repro_recorded_summary()), `source_unknown` the
 # packages found nowhere (see .repro_source_unknown()), `install_results` the
 # install of the packages and `versions_recorded` whether the deposit records
-# package versions, both for what would make the code run (see .repro_advice()).
-# NULL when no script was run.
+# package versions, both for what would make the code run (see .repro_advice()),
+# and `other_writes` the code files in languages that are not run, with the
+# files each writes (`file_name`, `files_written`), so a file a Stata script
+# makes is not called missing (#648). NULL when no script was run.
 .repro_checklist_section <- function(table, run_results, missing_inputs = NULL,
                                      n_dup = 0, n_tests = NA, n_found = NA,
                                      sandbox = "docker", timeout = 600,
                                      install_missing = FALSE, recorded_note = NULL,
                                      net = NULL, source_unknown = character(0),
-                                     install_results = NULL, versions_recorded = FALSE) {
+                                     install_results = NULL, versions_recorded = FALSE,
+                                     other_writes = NULL) {
   if (is.null(table) || !nrow(table) || is.null(run_results) || !nrow(run_results)) {
     return(NULL)
   }
@@ -532,7 +552,8 @@
   }
 
   # what the authors can change so the code runs, one line per cause (#575)
-  advice <- .repro_advice(tbl, rr, outcome, mi, install_results, versions_recorded, timeout = timeout)
+  advice <- .repro_advice(tbl, rr, outcome, mi, install_results, versions_recorded, timeout = timeout,
+                          other_writes = other_writes)
 
   c(
     intro,

@@ -4459,3 +4459,20 @@ test_that("the advice for a package that could not be installed fits its languag
   expect_match(adv, "BiocManager::install", fixed = TRUE)
   expect_match(adv, "<code>sf</code> could not be built", fixed = TRUE)
 })
+
+test_that("a missing file a script makes under a built name, or in another language, is said to be made by it (#648)", {
+  tbl <- data.frame(file_name = c("a.R", "b.R"), writes = c("", "fullfit_%s.rds"))
+  rr <- data.frame(error = c("Error in readRDS(\"fullfit_M2.rds\") : cannot open file 'fullfit_M2.rds': No such file or directory",
+                             NA), stderr = NA_character_, reason = c("file", NA))
+  adv <- paste(.repro_advice(tbl, rr, c("errored", "ran_ok"), mi = data.frame()), collapse = "\n")
+  expect_match(adv, "<code>a.R</code> needs <code>fullfit&#95;M2.rds</code>, which <code>b.R</code> makes.", fixed = TRUE)
+  tbl2 <- data.frame(file_name = "a.R", writes = "")
+  rr2 <- data.frame(error = "Error in file(file, \"rt\") : cannot open file 'arima_standardised.csv': No such file or directory",
+                    stderr = NA_character_, reason = "file")
+  adv2 <- paste(.repro_advice(tbl2, rr2, "errored", mi = data.frame(),
+                              other_writes = data.frame(file_name = "002_incidence.do",
+                                                        files_written = "$projectdir/output/arima_standardised.csv")),
+                collapse = "\n")
+  expect_match(adv2, "A script needs a file that a script in another language makes.", fixed = TRUE)
+  expect_match(adv2, "which <code>002&#95;incidence.do</code> makes", fixed = TRUE)
+})

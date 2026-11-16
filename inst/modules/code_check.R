@@ -451,20 +451,12 @@ code_check <- function(paper, local_path = NULL,
       the_file$percentage_comment <- line_stats$percent_comments
       the_file$has_docstring <- line_stats$has_docstring
 
-      # missing loaded files
-      file_refs <- code_file_refs(file_nc, the_file$language)
-      files_in_repo <- all_files[all_files$repo_url == the_file$repo_url, ]$file_name
-      # fix possible winslashes
-      base_ref <- gsub("\\\\", "/", file_refs) |> basename()
-      base_repo <- gsub("\\\\", "/", files_in_repo) |> basename()
-      # Case-insensitive: a real file that exists in the repo only under a
-      # different letter case (e.g. code references "REM_tools.r", the repo
-      # holds "REM_tools.R") is a match, not a missing file -- most filesystems
-      # authors develop on (Windows, macOS default) are themselves
-      # case-insensitive, so this is not an error on their end to flag.
-      missing_files <- base_ref[!tolower(base_ref) %in% tolower(base_repo)]
-      the_file$loaded_files_missing <- length(missing_files)
-      the_file$loaded_files_missing_names <- paste(missing_files, collapse = ", ")
+      # the files the code reads, and those it writes or downloads; which
+      # of the files it reads are missing is decided after every script is
+      # read (.code_missing_files()), as another script may make them (#648)
+      the_file$loaded_refs <- paste(code_file_refs(file_nc, the_file$language), collapse = "\u001f")
+      the_file$files_written <- paste(unique(code_file_refs(file_nc, the_file$language, writes_only = TRUE)),
+                                      collapse = ", ")
 
       return(the_file)
     },
@@ -487,6 +479,7 @@ code_check <- function(paper, local_path = NULL,
                        "library_max_between", "packages_n", "packages",
                        "comment_lines", "code_lines",
                        "percentage_comment", "has_docstring",
+                       "loaded_refs", "files_written",
                        "loaded_files_missing",
                        "loaded_files_missing_names", "error")
     for (col in analysis_cols)
@@ -506,6 +499,7 @@ code_check <- function(paper, local_path = NULL,
     unchecked <- code_files[!code_files$language %in% checked_langs, , drop = FALSE]
     code_files <- dplyr::bind_rows(collected_df, unchecked)
   }
+  code_files <- .code_missing_files(code_files, all_files)
   code_files$checked[is.na(code_files$checked)] <- FALSE
 
   # Reporting ----

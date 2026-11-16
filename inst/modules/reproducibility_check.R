@@ -523,6 +523,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # them, as on the authors' computer, and the archive itself is there too
   # (`archives_got`, added to the plan only); the report still names each file
   # by its path in the deposit (`file_path_deposit`) (#648)
+  # the files any code file of the paper writes or downloads, in any language
+  # (code_check's files_written), so a file a script makes is not missing (#648)
+  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl))
+    unique(unlist(strsplit(code_tbl$files_written[!is.na(code_tbl$files_written)], ",[[:space:]]*"))) else character(0)
   up <- .repro_unpack_archives(structure_df, code_tbl)
   structure_df <- up$structure_df
   code_tbl <- up$code_tbl
@@ -1497,8 +1501,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── 6. Missing-input diagnosis ──────────────────────────────────────────────
   # A read is a "missing input" when no earlier script writes it AND it is not a
   # file available in the repository. Cross-reference the download records.
+  # Also what scripts in other languages write (code_check's files_written: a
+  # Stata .do file's export delimited), and a name the code builds, matched as
+  # a pattern (.code_name_match()) (#648)
   produced <- unique(tolower(unlist(io$writes %||% list(), use.names = FALSE)))
-  candidate_missing <- setdiff(unique(tolower(unresolved_refs)), produced)
+  candidate_missing <- unique(tolower(unresolved_refs))
+  candidate_missing <- candidate_missing[!.code_name_match(candidate_missing, c(produced, written_by_code))]
   missing_inputs <- repro_missing_inputs(candidate_missing, plan, structure_df)
   n_missing_inputs <- nrow(missing_inputs)
   n_withheld <- sum(missing_inputs$status == "withheld_size")
@@ -3337,7 +3345,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── Missing-input diagnosis ───────────────────────────────────────────────
   py_produced <- unique(tolower(unlist(py_io$writes %||% list(), use.names = FALSE)))
-  py_candidate_missing <- setdiff(unique(tolower(py_unresolved_refs)), py_produced)
+  py_candidate_missing <- unique(tolower(py_unresolved_refs))
+  py_candidate_missing <- py_candidate_missing[!.code_name_match(py_candidate_missing,
+                                                                 c(py_produced, written_by_code))]
   py_missing_inputs <- repro_missing_inputs(py_candidate_missing, plan, structure_df)
   n_py_missing_inputs <- nrow(py_missing_inputs)
   n_py_withheld <- sum(py_missing_inputs$status == "withheld_size")
@@ -4475,7 +4485,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       sandbox = sandbox, timeout = timeout, install_missing = install_r,
       recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice),
       net = net, source_unknown = .repro_source_unknown(install_results),
-      install_results = install_results, versions_recorded = !is.null(recorded_advice))
+      install_results = install_results, versions_recorded = !is.null(recorded_advice),
+      # code files in languages that are not run, with what they write (#648)
+      other_writes = if (!is.null(code_tbl) && all(c("language", "files_written") %in% names(code_tbl)))
+        code_tbl[!code_tbl$language %in% c("R", "Python") & !is.na(code_tbl$files_written) &
+                   nzchar(code_tbl$files_written), c("file_name", "files_written"), drop = FALSE])
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

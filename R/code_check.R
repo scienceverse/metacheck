@@ -2636,16 +2636,138 @@ code_packages <- function(packages) {
   code_text
 }
 
+# The files each code file reads that are missing (code_check's
+# `loaded_files_missing` and `loaded_files_missing_names`), once every code file
+# of the paper has been read. A file is not missing when the repository holds it
+# (compared by base name and without case: authors work on Windows and Macs,
+# where "REM_tools.r" opens "REM_tools.R"), or a code file of the same paper,
+# in any language, writes or downloads it (`files_written`, see
+# code_file_refs(writes_only = TRUE)), or a name with a placeholder matches
+# either (.code_name_match()). A piece of a name the code joins to another
+# ("_model.csv", ".png") is not a file name, nor is a name with a placeholder. Before #648 only the repository
+# counted, so files a script writes a few lines earlier, files a Stata script
+# writes, and patterns such as "vzv_aou_ac_%s_model.csv" were reported as
+# missing. `code_files` holds `loaded_refs` (the files read, joined by
+# "\u001f"), which is dropped.
+.code_missing_files <- function(code_files, all_files) {
+  if (!"loaded_refs" %in% names(code_files)) return(code_files)
+  # NA for a file that was not read, or whose reading stopped on an error
+  code_files$loaded_files_missing <- NA_integer_
+  code_files$loaded_files_missing_names <- NA_character_
+  base <- function(x) basename(gsub("\\\\", "/", x))
+  paper <- if ("paper_id" %in% names(code_files)) code_files$paper_id else rep("", nrow(code_files))
+  written <- as.character(code_files$files_written %||% rep(NA_character_, nrow(code_files)))
+  written[is.na(written)] <- ""
+  written <- strsplit(written, ",[[:space:]]*")
+  for (i in seq_len(nrow(code_files))) {
+    refs <- code_files$loaded_refs[[i]]
+    if (is.na(refs)) next
+    refs <- base(strsplit(refs, "\u001f", fixed = TRUE)[[1]])
+    # a piece, and a name with a placeholder ("Ax1_s{seed}.jsonl"), are no
+    # file names, as reproducibility_check also leaves them out (.repro_ref_checkable())
+    refs <- refs[nzchar(refs) & !grepl("^[._-]", refs) & !grepl(.code_placeholder_re, refs, perl = TRUE)]
+    in_repo <- all_files$file_name[all_files$repo_url %in% code_files$repo_url[[i]]]
+    same <- if (is.na(paper[[i]])) is.na(paper) else paper %in% paper[[i]]
+    made <- unlist(written[same], use.names = FALSE)
+    missing <- refs[!.code_name_match(refs, c(in_repo, made))]
+    code_files$loaded_files_missing[[i]] <- length(missing)
+    code_files$loaded_files_missing_names[[i]] <- paste(missing, collapse = ", ")
+  }
+  code_files$loaded_refs <- NULL
+  code_files
+}
+
+# A part of a file name that the code fills in while it runs: a format
+# specifier (%s, %d, %.2f), an f-string or glue field ({m}), a wildcard (*),
+# a shell or Stata global ($x, ${x}) or a Stata local (`x').
+.code_placeholder_re <- "%[-+ 0#]*[0-9]*(?:\\.[0-9]+)?[a-zA-Z]|\\{[^{}]*\\}|\\*|\\$\\{?[A-Za-z_][A-Za-z0-9_]*\\}?|`[^`']*'"
+
+# Whether each file name in `names` is one of `candidates`, compared by base
+# name and without case, where a placeholder in either name stands for any
+# text: "vzv_aou_ac_%s_model.csv" is "vzv_aou_ac_{COMPARATOR}_model.csv" and
+# "vzv_aou_ac_pneumo_model.csv". code_check listed such patterns as missing
+# files, and reproducibility_check did not see that a script makes a file
+# whose name it builds (#648).
+.code_name_match <- function(names, candidates) {
+  base <- function(x) tolower(basename(gsub("\\\\", "/", x)))
+  names <- base(names)
+  cand <- unique(base(candidates[!is.na(candidates) & nzchar(candidates)]))
+  if (!length(names)) return(logical(0))
+  if (!length(cand)) return(rep(FALSE, length(names)))
+  ph <- .code_placeholder_re
+  # a name as a regular expression, each placeholder any text
+  to_re <- function(x) {
+    lit <- regmatches(x, gregexpr(ph, x, perl = TRUE), invert = TRUE)[[1]]
+    paste0("^", paste(.repro_sw_escape(lit), collapse = ".+"), "$")
+  }
+  # a name with each placeholder as one letter, to be matched by a pattern
+  skel <- function(x) gsub(ph, "x", x, perl = TRUE)
+  # A pattern with little text of its own matches almost any file: a Stata
+  # local alone (`weekly'), "{name}.csv", "{prefix}_{who}.json". Such a
+  # written pattern took dozens of files that were missing in an OpenSAFELY
+  # deposit, so a pattern counts only with 3 letters or digits besides its
+  # placeholders and its extension ("{backbone}_embeddings.npy").
+  # (tools::file_path_sans_ext() keeps ".csv" whole, so "{name}.csv" counted)
+  specific <- function(x) nchar(gsub("[^A-Za-z0-9]", "", sub("(\\.[A-Za-z0-9]{1,8}){1,2}$", "",
+                                                             gsub(ph, "", x, perl = TRUE)))) >= 3
+  has_ph <- grepl(ph, cand, perl = TRUE)
+  cand <- cand[!has_ph | specific(cand)]
+  has_ph <- grepl(ph, cand, perl = TRUE)
+  cand_re <- vapply(cand[has_ph], to_re, character(1))
+  vapply(names, function(n) {
+    if (is.na(n)) return(FALSE)
+    if (n %in% cand) return(TRUE)
+    if (grepl(ph, n, perl = TRUE) && specific(n) && any(grepl(to_re(n), skel(cand), perl = TRUE))) return(TRUE)
+    length(cand_re) > 0 && any(vapply(cand_re, grepl, logical(1), x = skel(n), perl = TRUE))
+  }, logical(1), USE.NAMES = FALSE)
+}
+
+# The calls with which code writes or downloads a file, per language, as one
+# regular expression; NA for a language without one. Shared by
+# code_file_refs() and repro_file_io(), so a file both see is a write in both.
+# R: write.csv, write_csv, saveRDS, save(), save.image(), ggsave(), rio's
+# export(), fwrite(), and a download (download.file(), curl_download()).
+# Python: pandas' to_<format> (to_csv, to_excel, ...), numpy's save/savetxt/
+# savez, pickle's and json's dump, matplotlib's savefig, polars' and pyarrow's
+# write_<format>, and a download (urlretrieve(), wget.download(),
+# download_file()); open(..., "w") is decided by its mode (.py_open_writes()).
+# MATLAB: save, writetable/writematrix/writecell, csvwrite, dlmwrite,
+# xlswrite, saveas, exportgraphics, imwrite, websave. Stata: save, export
+# delimited/excel, outsheet, graph export, esttab/estout/outreg2, putexcel set.
+# SAS: PROC EXPORT, ODS ... FILE=. The Stata, MATLAB and SAS ones are new
+# (#648): a file a .do or .m file writes was reported as missing.
+.code_write_calls <- list(
+  R = c("write[\\._][A-Za-z\\._0-9]*", "saveRDS", "save", "save\\.image", "ggsave", "export", "fwrite",
+        "download\\.file", "curl_download"),
+  Python = c("to_[A-Za-z_0-9]+", "savetxt", "savefig", "dump", "save", "savez(?:_compressed)?",
+             "write_[a-z_]+", "urlretrieve", "wget\\.download", "download_file"),
+  MATLAB = c("save", "writetable", "writematrix", "writecell", "csvwrite", "dlmwrite", "xlswrite",
+             "saveas", "exportgraphics", "imwrite", "websave")
+)
+.code_write_regex <- function(lang) {
+  if (lang %in% names(.code_write_calls))
+    return(paste0("\\b(", paste(.code_write_calls[[lang]], collapse = "|"), ")\\s*\\("))
+  switch(lang,
+    Stata = "^\\s*(?:save|saveold|export\\s+(?:delimited|excel)|outsheet|graph\\s+export|esttab|estout|outreg2|putexcel\\s+set)\\b",
+    SAS = "\\bproc\\s+export\\b|\\boutfile\\s*=|\\bods\\s+[a-z]+\\s+file\\s*=",
+    NA_character_)
+}
+
 #' Get files referenced in code
 #'
 #' @param code_text the code text for a single file
 #' @param lang the language (we only currently handle R, Python, SPSS, SAS,
 #'   Stata, Mplus, MATLAB)
-#' @param include_writes also return files the code *writes* (R only). Off by
-#'   default: callers that ask "which referenced inputs are missing from the
-#'   repository?" (e.g. `code_check`) must not see a written file as a missing
-#'   input. `repro_file_io()` turns this on so a file produced by one script can
-#'   be recognised as the input another script consumes.
+#' @param include_writes also return files the code *writes* (R, Python,
+#'   MATLAB). Off by default: callers that ask "which referenced inputs are
+#'   missing from the repository?" (e.g. `code_check`) must not see a written
+#'   file as a missing input. `repro_file_io()` turns this on so a file
+#'   produced by one script can be recognised as the input another script
+#'   consumes.
+#' @param writes_only return only the files the code writes or downloads, in R,
+#'   Python, MATLAB, Stata and SAS (see `.code_write_regex()`), so that
+#'   `code_check` does not report a file a script of the deposit makes as
+#'   missing (#648)
 #'
 #' @returns a vector of files that are referenced in the code
 #' @export
@@ -2660,13 +2782,13 @@ code_packages <- function(packages) {
 #'
 code_file_refs <- function(code_text,
                            lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB"),
-                           include_writes = FALSE) {
+                           include_writes = FALSE, writes_only = FALSE) {
   lang <- match.arg(lang)
   code_text <- code_remove_comments(code_text, lang)
   # Python's open() and MATLAB's fopen() are reading calls below, but with a
   # writing mode they create the file, and Mplus's SAVEDATA names a file the
   # model writes: outputs, left out unless writes are asked for
-  if (!isTRUE(include_writes)) {
+  if (!isTRUE(include_writes) && !isTRUE(writes_only)) {
     code_text <- .code_blank_write_opens(code_text, lang)
     if (identical(lang, "Mplus")) code_text <- .code_blank_mplus_savedata(code_text)
   }
@@ -2761,43 +2883,25 @@ code_file_refs <- function(code_text,
   # Write calls are *not* part of the default reference set: a written file is an
   # output, and the main consumer (code_check) reports referenced files that are
   # absent from the repository — an output would be a false "missing input"
-  # there. Reproducibility ordering does need them, so they are opt-in.
-  lang_write_regex <- list(
-    R = c(
-      "write[\\._][A-Za-z\\._0-9]*", # write.csv, write_csv, write.table, ...
-      "saveRDS",
-      "save",                        # save(), and save.image() via the \\.? below
-      "save\\.image",
-      "ggsave",
-      "export",
-      "fwrite"
-    ),
-    # Python's writers, by library: pandas' to_<format> (to_csv, to_excel,
-    # to_pickle, to_parquet, to_json, ...) mirrors read_<format> above, so the
-    # generic "to_[A-Za-z_0-9]+" covers the whole family the same way. The
-    # rest are named individually because they do not begin with "to_":
-    # numpy (save/savetxt), pickle (dump), json (dump), matplotlib
-    # (savefig). Python's own open(..., "w"/"a"/"wb") is not listed: open() is
-    # ALSO a read call (see the Python entry in lang_load_regex above), decided
-    # by its mode argument. Without include_writes its writing calls are
-    # blanked out above (.code_blank_write_opens()); with it, repro_file_io()
-    # sorts each open() by its mode (.py_open_writes()).
-    Python = c(
-      "to_[A-Za-z_0-9]+",
-      "savetxt",
-      "savefig",
-      "dump",
-      "save"
-    )
-  )
-  if (isTRUE(include_writes) && lang %in% names(lang_write_regex)) {
-    write_call_regex <- lang_write_regex[[lang]] |>
-      paste(collapse = "|") |>
-      paste0("\\b(", x = _, ")\\s*\\(")
+  # there. Reproducibility ordering does need them, so they are opt-in; and
+  # code_check asks for the written files alone (`writes_only`), to leave them
+  # out of the files it reports as missing (#648).
+  write_call_regex <- .code_write_regex(lang)
+  if (isTRUE(writes_only)) {
+    if (is.na(write_call_regex)) return(character(0))
+    grepl_load <- write_call_regex
+    if (no_case) grepl_load <- paste0("(?i)", grepl_load)
+  } else if (isTRUE(include_writes) && !is.na(write_call_regex)) {
     grepl_load <- paste0(grepl_load, "|", write_call_regex)
   }
 
   load_lines <- grep(grepl_load, code_text, value = TRUE, perl = TRUE)
+  # Python's open(..., "w") and MATLAB's fopen(..., "w") write the file
+  if (isTRUE(writes_only) && lang %in% c("Python", "MATLAB")) {
+    opens <- grep("\\b(open|fopen)\\s*\\(", code_text, value = TRUE, perl = TRUE)
+    load_lines <- c(load_lines, opens[vapply(opens, function(l)
+      !identical(.code_blank_write_opens(l, lang), l), logical(1))])
+  }
   # A call whose file name is on a line after it, as in `read.csv(` and then
   # `"./data.csv")`, is searched as a whole too (#568)
   if (lang %in% c("R", "Python"))
@@ -2852,6 +2956,18 @@ code_file_refs <- function(code_text,
       list(regex = "append\\b.*?using\\s+([^,\\s]+)", group = 1)
     ),
     Mplus = list() # FILE = "..." is always quoted; quoted-filename pattern suffices
+  )
+  # the files Stata and SAS write, named without quotes (#648)
+  if (isTRUE(writes_only)) lang_unquoted_captures <- list(
+    Stata = list(
+      list(regex = "^\\s*(?:save|saveold)\\s+([^,\\s]+)", group = 1),
+      list(regex = "\\busing\\s+([^,\\s]+)", group = 1),
+      list(regex = "graph\\s+export\\s+([^,\\s]+)", group = 1)
+    ),
+    SAS = list(
+      list(regex = "outfile\\s*=\\s*([^\\s;]+)", group = 1),
+      list(regex = "\\bfile\\s*=\\s*([^\\s;]+)", group = 1)
+    )
   )
 
   # Only run the unquoted-capture regexes against lines that do NOT already
