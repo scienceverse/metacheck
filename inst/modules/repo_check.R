@@ -2947,8 +2947,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # own per-file "Naming issue" column, so it needs paper_id to correctly
   # scope issues to the right paper on a multi-paper (batch/corpus) run, not
   # just a corpus-wide count.
+  # Files of a local folder checked without a paper have paper_id NA, which
+  # split() drops: the summary named the naming problems, while
+  # summary_table$naming_issues was 0 and naming_issues had no rows, so
+  # data_check saw none either (#650). NA is kept as a group of its own.
   naming_issues_by_paper_list <- if (nrow(all_files) > 0) {
-    split(all_files, all_files$paper_id) |>
+    split(all_files, addNA(factor(all_files$paper_id), ifany = TRUE)) |>
       lapply(function(df) {
         pf <- check_file_naming(
           df$file_name, file_path = df$file_path %||% df$file_name,

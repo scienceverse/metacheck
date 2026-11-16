@@ -2969,7 +2969,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       nrow(reported_inputs), plural(nrow(reported_inputs)), n_withheld),
     sprintf("%d installable dependenc%s detected.", n_deps,
             if (n_deps == 1) "y" else "ies"),
-    .repro_recorded_summary(recorded, install_results),
+    .repro_recorded_summary(recorded, install_results, version_pin, sandbox, docker_use_declared_version),
     recorded_advice
   ) |> paste("\n- ", x = _, collapse = "")
 
@@ -4483,7 +4483,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_tests = shared_match$summary$n_tests %||% NA_integer_,
       n_found = shared_match$summary$n_found %||% NA_integer_,
       sandbox = sandbox, timeout = timeout, install_missing = install_r,
-      recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice),
+      recorded_note = c(.repro_recorded_summary(recorded, install_results, version_pin, sandbox, docker_use_declared_version), recorded_advice),
       net = net, source_unknown = .repro_source_unknown(install_results),
       install_results = install_results, versions_recorded = !is.null(recorded_advice),
       # code files in languages that are not run, with what they write (#648)

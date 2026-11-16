@@ -1465,3 +1465,20 @@ test_that("text that is not a path on the authors' computer is not an absolute p
   expect_length(ap(r"("C:\\Users\\me\\launcher.py:36: RuntimeWarning: More than 20 figures")"), 0)
   expect_length(ap(r"(india <- str_detect(x, "\\bindia\\b"))"), 0)
 })
+
+test_that("code is not recovered from a knitted .html whose .Rmd is in the deposit (#648)", {
+  d <- withr::local_tempdir()
+  h <- c("<html><head><meta name=\"generator\" content=\"pandoc\" /></head><body>",
+         "<pre class=\"r\"><code>x &lt;- rnorm(10)", "mean(x)</code></pre>",
+         "<pre><code>## [1] 0.1</code></pre></body></html>")
+  writeLines(h, file.path(d, "analysis.html"))
+  writeLines(h, file.path(d, "other.html"))
+  writeLines("```{r}\nx <- rnorm(10)\n```", file.path(d, "analysis.Rmd"))
+  af <- data.frame(file_name = c("analysis.html", "other.html", "analysis.Rmd"),
+                   file_path = c("out/analysis.html", "other.html", "analysis.Rmd"),
+                   file_location = file.path(d, c("analysis.html", "other.html", "analysis.Rmd")),
+                   file_url = NA_character_, repo_url = "local", file_size = 1)
+  out <- metacheck:::.code_expand_html(af, Inf, Inf, cache = FALSE)
+  # only other.html, which has no source in the deposit, gives a code file
+  expect_equal(setdiff(out$file_name, af$file_name), "other.R")
+})

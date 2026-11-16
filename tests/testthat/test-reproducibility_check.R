@@ -1313,6 +1313,17 @@ test_that("the warning and report state that the R version is not changed", {
   expect_match(rep_txt, "also load c", fixed = TRUE)
   expect_match(rep_txt, "The R version is not changed", fixed = TRUE)
   expect_match(.repro_recorded_summary(recorded, results), "1 of the 3 packages", fixed = TRUE)
+  expect_match(.repro_recorded_summary(recorded, results), "did not change the R version", fixed = TRUE)
+  # a Docker run with the declared version used the recorded R version (#649)
+  s <- .repro_recorded_summary(recorded, results, vp, "docker", TRUE)
+  expect_match(s, sprintf("used the recorded R version (%s), so this is not an exact copy", vp$r_versions[1]),
+               fixed = TRUE)
+  expect_false(grepl("did not change", s, fixed = TRUE))
+  expect_match(.repro_recorded_summary(recorded, results, vp, "docker", FALSE), "did not change the R version")
+  expect_match(.repro_recorded_summary(recorded, results, vp, "process", TRUE), "did not change the R version")
+  # a recorded version that cannot be an image's name is not used
+  expect_match(.repro_recorded_summary(recorded, results, list(r_versions = "4.4.2 (x)"), "docker", TRUE),
+               "did not change the R version")
   expect_null(.repro_recorded_summary(NULL, results))
   expect_null(.repro_recorded_report(recorded, NULL, vp, "process"))
 })

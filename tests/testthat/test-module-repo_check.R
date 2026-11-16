@@ -235,6 +235,21 @@ test_that("repo_check: an unknown file type is not a naming problem (#648)", {
   expect_equal(mo$table$data_type[mo$table$file_name == "asdoc.sthlp"], "documentation")
 })
 
+test_that("repo_check counts naming problems of a local folder without a paper (#650)", {
+  d <- withr::local_tempdir()
+  writeLines("x,y\n1,2", file.path(d, "my data.csv"))
+  writeLines("x <- 1", file.path(d, "analysis two.R"))
+  writeLines("x <- 1", file.path(d, "clean.R"))
+  mo <- module_run(NULL, "repo_check", local_path = d, local_only = TRUE)
+  expect_true(grepl("2 file naming problems", mo$summary_text))
+  expect_equal(mo$summary_table$naming_issues, 2L)
+  expect_setequal(mo$naming_issues$file_name[mo$naming_issues$rule == "spaces"],
+                  c("my data.csv", "analysis two.R"))
+  # data_check's file tree shows them too
+  dc <- module_run(NULL, "data_check", local_path = d, local_only = TRUE)
+  expect_true(grepl("my data.csv[^\n]*contains a space", paste(dc$report, collapse = "\n")))
+})
+
 test_that("repo_check vector of local paths", {
   local_path <- c(
     test_path("fixtures", "code_files", "analysis.R"),

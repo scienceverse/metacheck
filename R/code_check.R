@@ -653,6 +653,17 @@ code_lang <- function(file_name) {
     if (!is.null(dl)) html_files$file_location[need_dl] <- dl$file_location
   }
 
+  # The R Markdown or Quarto file an .html was knitted from, when the deposit
+  # has it (the same name, in the same repository): its code is then checked
+  # and run from that file, and the copy recovered from the .html was counted
+  # and run a second time (#648, q7pnw_v3: 4 R files and 4 runs for 2
+  # analyses). In the 563 stored reports, 174 .html files in 48 papers had an
+  # .Rmd or .qmd of the same name.
+  stem <- function(x) tolower(sub("\\.[^.]*$", "", basename(x)))
+  src_rows <- grepl("\\.(rmd|qmd)$", all_files$file_name, ignore.case = TRUE)
+  src_key <- paste(all_files$repo_url[src_rows] %||% "", stem(all_files$file_name[src_rows]), sep = "\r")
+  has_source <- paste(html_files$repo_url %||% "", stem(html_files$file_name), sep = "\r") %in% src_key
+
   new_rows <- list()
   html_kind <- rep(NA_character_, nrow(html_files))
   for (i in seq_len(nrow(html_files))) {
@@ -660,6 +671,7 @@ code_lang <- function(file_name) {
     if (is.na(loc) || !nzchar(loc) || !file.exists(loc)) next
     html_kind[i] <- tryCatch(.html_sniff_kind(loc), error = function(e) NA_character_)
     if (is.na(html_kind[i]) || html_kind[i] != "rmd") next
+    if (has_source[i]) next
 
     r_path <- tryCatch(.html_export_r_source(loc), error = function(e) NA_character_)
     if (is.na(r_path)) next

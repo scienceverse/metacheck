@@ -5757,9 +5757,20 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 
 # What installing recorded versions does not do, as sentences: the limitation
 # stated in both the warning before a run and the report after it.
+# The recorded R version a run used, or NA when it kept its own: only a
+# Docker run with docker_use_declared_version = TRUE uses it, in the image
+# rocker/r-ver:<version> (.repro_docker_image_for(), which takes "latest" for
+# a version it cannot use as a tag).
+.repro_recorded_r_used <- function(version_pin, sandbox, use_declared = FALSE) {
+  declared <- version_pin$r_versions %||% character(0)
+  if (!identical(sandbox, "docker") || !isTRUE(use_declared) || !length(declared)) return(NA_character_)
+  tag <- sub("^rocker/r-ver:", "", .repro_docker_image_for(declared, use_declared_version = TRUE))
+  if (identical(tag, "latest")) NA_character_ else tag
+}
+
 .repro_recorded_limits <- function(recorded, version_pin, sandbox, use_declared = FALSE) {
   declared <- version_pin$r_versions %||% character(0)
-  r_kept <- !(sandbox == "docker" && isTRUE(use_declared) && length(declared) > 0)
+  r_kept <- is.na(.repro_recorded_r_used(version_pin, sandbox, use_declared))
   bioc <- recorded$deps$package[recorded$deps$source == "bioc" & !is.na(recorded$deps$version)]
   kept <- recorded$kept_with_r$package
   c(if (r_kept) sprintf(
@@ -5805,15 +5816,25 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
        replaced = installed & !same, failed = !installed)
 }
 
-# One sentence for the summary and the checklist. NULL without recorded versions.
-.repro_recorded_summary <- function(recorded, install_results) {
+# One sentence for the summary and the checklist. NULL without recorded
+# versions. It said "but did not change the R version" also when a Docker run
+# with docker_use_declared_version = TRUE used the recorded R version (#649).
+.repro_recorded_summary <- function(recorded, install_results, version_pin = NULL,
+                                    sandbox = "none", use_declared = FALSE) {
   if (is.null(recorded) || is.null(install_results) || !nrow(install_results)) return(NULL)
   counts <- .repro_recorded_counts(recorded, install_results)
   n <- nrow(counts$listed)
+  r_used <- .repro_recorded_r_used(version_pin, sandbox, use_declared)
+  if (is.na(r_used)) {
+    return(sprintf(paste0("We installed %d of the %d package%s the scripts load and the repository ",
+                          "lists at the recorded version, but did not change the R version, so ",
+                          "this is not an exact copy of the authors' setup."),
+                   sum(counts$exact), n, plural(n)))
+  }
   sprintf(paste0("We installed %d of the %d package%s the scripts load and the repository ",
-                 "lists at the recorded version, but did not change the R version, so ",
-                 "this is not an exact copy of the authors' setup."),
-          sum(counts$exact), n, plural(n))
+                 "lists at the recorded version, and used the recorded R version (%s)%s."),
+          sum(counts$exact), n, plural(n), r_used,
+          if (sum(counts$exact) < n) ", so this is not an exact copy of the authors' setup" else "")
 }
 
 # The section of the report on the recorded versions a run used. NULL without them.

@@ -537,6 +537,14 @@ test_that("data_check_pii_values validates to avoid false positives", {
   # Dates and date-like strings are not flagged.
   expect_false(data_check_pii_values(rep("2021-05-03", 6))$problem)
   expect_false(data_check_pii_values(as.character(sample(1990:2020, 40, TRUE)))$problem)
+  # A column of long codes in which a few pass the card checks by chance is
+  # not a column of cards: most values that look like a card must pass (#648)
+  set.seed(648)
+  codes <- c(sprintf("%015.0f", runif(97, 1e14, 3e14)), "4111111111111111", "5500005555555559",
+             "4012888888881881")
+  expect_false(data_check_pii_values(codes)$problem)
+  # a single card number in a text column still is one
+  expect_true(data_check_pii_values(c(rep("no comment", 20), "my card is 4111111111111111"))$problem)
   # Long integer IDs and prices are not PII.
   expect_false(data_check_pii_values(as.character(sample(1e8:9e8, 40)))$problem)
   expect_false(data_check_pii_values(sprintf("%.2f", runif(40, 1, 100)))$problem)
@@ -1075,6 +1083,26 @@ test_that("data_check reports careless coverage limits when nothing is flagged",
   expect_true(grepl("#### Careless Responding", rp, fixed = TRUE))
   expect_match(rp, "What this does not cover")
   expect_match(rp, "not evidence that a dataset is free of careless responding")
+})
+
+test_that("a person whose answers are repeated on several rows is flagged once (#648)", {
+  skip_if_not_installed("careless")
+  llm_use(FALSE)
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "data"))
+  set.seed(8)
+  items <- as.data.frame(matrix(sample(1:5, 40 * 10, replace = TRUE), nrow = 40))
+  names(items) <- paste0("panas_", 1:10)
+  items$panas_1 <- rep(c(1L, 5L), length.out = 40)
+  items[1, ] <- 3L                          # participant 1 straightlines
+  survey <- cbind(participant_id = 1:40, items)
+  # a log with 20 trial rows per person, each repeating the questionnaire
+  log <- survey[rep(seq_len(40), each = 20), ]
+  log$trial <- rep(1:20, 40)
+  utils::write.csv(log, file.path(d, "data", "log.csv"), row.names = FALSE)
+  mo <- module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE)
+  expect_equal(mo$careless$respondent, "1")
+  expect_equal(mo$careless$n_blocks_flagged, 1L)
 })
 
 test_that("careless scale blocks split by variable-name prefix", {

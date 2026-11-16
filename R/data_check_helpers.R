@@ -4033,8 +4033,13 @@ normalize_label <- function(x) {
 # "NOTES") which pushes the real header down, then a positional fallback.
 # Results are combined and `src` records the sheet so a variable can be traced.
 .extract_spreadsheet_codebook <- function(sheets, read, src, observed,
-                                          header_lookahead) {
+                                          header_lookahead, only = NULL) {
   sh_names <- tryCatch(sheets(), error = function(e) character(0))
+  # only the sheets asked for (parse_codebook()'s `sheets`)
+  if (!is.null(only)) {
+    sh_names <- intersect(sh_names, only)
+    if (!length(sh_names)) return(NULL)
+  }
   if (length(sh_names) == 0) sh_names <- NA_character_   # single default read
   parsed <- list()
   for (sh in sh_names) {
@@ -4356,6 +4361,10 @@ normalize_label <- function(x) {
 #'   leak onto an unrelated same-named column in Study B (coded 1-6). Callers
 #'   that know the file's group should pass it. Mirrors `.extract_haven_labels`'s
 #'   `group` argument.
+#' @param sheets for a spreadsheet, the names of the sheets to read; `NULL`
+#'   (the default) reads every sheet. A codebook sheet inside a data
+#'   spreadsheet is read alone (#651), as the other sheets hold data, which
+#'   the positional fallback would turn into made-up definitions.
 #'
 #' @returns a data.frame of variable definitions (`codebook_variable`, `label`,
 #'   `codebook_source`, `group`, `parse_method`); a character vector of text
@@ -4366,7 +4375,7 @@ normalize_label <- function(x) {
 #' parse_codebook(file.path(demofile("repo"), "documentation",
 #'                           "stroop_data_codebook.csv"))
 parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
-                           group = NA_character_) {
+                           group = NA_character_, sheets = NULL) {
   if (!file.exists(path)) return(NULL)
   ext <- tolower(tools::file_ext(path))
   src <- basename(path)
@@ -4480,7 +4489,8 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
               as.data.frame(readODS::read_ods(
                 path, sheet = if (is.na(sh)) 1 else sh, col_names = header,
                 .name_repair = "unique_quiet")),
-            src = src, observed = observed, header_lookahead = header_lookahead)
+            src = src, observed = observed, header_lookahead = header_lookahead,
+            only = sheets)
         }
       },
       xlsx = , xls = {
@@ -4496,7 +4506,8 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
               else
                 readxl::read_excel(path, sheet = sh, col_names = header,
                                    .name_repair = "unique_quiet")),
-            src = src, observed = observed, header_lookahead = header_lookahead)
+            src = src, observed = observed, header_lookahead = header_lookahead,
+            only = sheets)
         }
       },
       sav = , dta = , sas7bdat = {
@@ -4579,6 +4590,11 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
   }
 
   # No structured definitions: return raw lines so the caller can try the LLM.
+  # Not for a binary format, whose "lines" are the bytes of a zip or of a
+  # statistics program's file (an .xlsx whose sheets held no definitions gave
+  # "PK\003\004..." to the LLM, #651).
+  if (ext %in% c("xlsx", "xls", "ods", "sav", "dta", "sas7bdat", "jasp", "omv", "zip"))
+    return(NULL)
   tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
 }
 
@@ -4840,6 +4856,7 @@ parse_qsf <- function(path) {
 #'                    column_name = c("congruent", "incongruent"))
 #' match_column_labels(cols, cb)[, c("column_name", "label")]
 match_column_labels <- function(columns_df, codebook_vars_df) {
+  .same_id <- function(a, b) (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
   col_group <- if ("group" %in% names(columns_df)) columns_df$group else
                if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
                rep(NA_character_, nrow(columns_df))
@@ -4928,7 +4945,10 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 
   for (i in seq_len(n)) {
     name_idx <- if (has_var_paper_id) {
-      which(norm_var == norm_col[i] & var_paper_id == col_paper_id[i])
+      # files checked without a paper have paper_id NA on both sides, and
+      # NA == NA matched nothing: no codebook ever labelled a column of a
+      # local folder (#651)
+      which(norm_var == norm_col[i] & .same_id(var_paper_id, col_paper_id[i]))
     } else {
       which(norm_var == norm_col[i])
     }
@@ -5930,13 +5950,20 @@ data_check_pii_values <- function(x, broad_min_frac = 0.30) {
     n_matched <- n[m]
     if (length(matched) == 0) next
 
-    # Validate the matched values, when the pattern has a validator.
+    # Validate the matched values, when the pattern has a validator. Every
+    # real card number passes it, while long codes pass by chance (about one
+    # in ten for the checksum, fewer with the issuer's prefix): so most of
+    # the values that look like one must pass. A column of clinical codes
+    # (SNOMED, dm+d) had 3 to 14 such values among hundreds (#648: 6 columns
+    # of OpenSAFELY codelists, 0.8% to 4% passing, the only card flags in the
+    # 2,359 tabular files of 141 deposits).
     if (!is.null(spec$validate)) {
       vfun <- get(spec$validate, mode = "function")
       ok <- vapply(matched, vfun, logical(1))
+      n_looked <- sum(n_matched)
       matched <- matched[ok]
       n_matched <- n_matched[ok]
-      if (length(matched) == 0) next
+      if (length(matched) == 0 || sum(n_matched) < 0.5 * n_looked) next
     }
     n_valid <- sum(n_matched)
     frac <- n_valid / total
