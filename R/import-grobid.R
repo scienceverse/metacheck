@@ -530,7 +530,7 @@ grobid_to_bibr <- function(xml_path,
 
   # .process_full_text() repairs the main text only; the reference list is
   # repaired here, as every other reader does (see .repair_links())
-  paper <- .paper_repair_links(paper)
+  paper <- .paper_repair_text(paper)
   paper <- .paper_coerce(paper)
 
   return(paper)
