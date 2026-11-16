@@ -964,11 +964,28 @@ code_extract_py <- function(file_path = NULL, save_path = NULL, text = NULL) {
     return(list(lines = character(0), removed = trimws(first)))
   is_cmd <- grepl("^\\s*[%!?]", lines) |
     grepl("^\\s*cd(\\s+[^=(\\s].*)?$", lines, perl = TRUE) |
-    grepl("^\\s*[A-Za-z_][A-Za-z0-9_.]*\\?{1,2}\\s*$", lines)
+    grepl("^\\s*[A-Za-z_][A-Za-z0-9_.]*\\?{1,2}\\s*$", lines) |
+    # pip and conda, which IPython runs without "%" or "!" (Colab: "pip install
+    # x"); a line that begins so is never Python (nx3s2_v2; #648)
+    grepl("^\\s*(pip3?|conda|mamba)\\s+(install|uninstall|list|show|freeze|download|update|remove|create)\\b",
+          lines, perl = TRUE)
+  # A command continued on the next lines with a final "\": those lines are part
+  # of it. Only the first line went, and the 18 argument lines of a "%run ... \"
+  # were left as Python (10.1101/2026.10.15.26365116; #648).
+  # They go whole, also when indented, as a `pass` there would not parse.
+  continued <- logical(length(lines))
+  for (i in which(is_cmd)) {
+    j <- i
+    while (j < length(lines) && grepl("\\\\\\s*$", lines[j])) {
+      j <- j + 1L
+      continued[j] <- TRUE
+    }
+  }
+  is_cmd <- is_cmd & !continued
   indented <- is_cmd & grepl("^\\s", lines)
-  removed <- trimws(lines[is_cmd])
+  removed <- trimws(lines[is_cmd | continued])
   lines[indented] <- sub("^(\\s*).*$", "\\1pass", lines[indented])
-  list(lines = lines[!is_cmd | indented], removed = removed)
+  list(lines = lines[(!is_cmd | indented) & !continued], removed = removed)
 }
 
 #' Extract Python chunks from a Quarto document
@@ -1037,6 +1054,10 @@ code_extract_qmd_py <- function(file_path = NULL, save_path = NULL, text = NULL)
     # as real (if syntactically harmless, since "#" is also Python's comment
     # marker) code lines to code_line_stats()/code_abs_path()/etc.
     body <- body[!grepl("^\\s*#\\|", body)]
+    # IPython commands (%matplotlib inline, !pip install) run in a Quarto
+    # Python chunk as in a notebook cell; as Python they are a syntax error,
+    # reported as the authors' mistake (10.1101/2026.05.14.26352933; #648)
+    body <- .code_notebook_cell(body)$lines
     if (length(body)) out <- c(out, body, "")   # blank line marks chunk boundary
     i <- j + 1L
   }

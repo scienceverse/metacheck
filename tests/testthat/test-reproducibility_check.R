@@ -821,6 +821,30 @@ test_that("repro_write_scripts applies a resolved literal path rewrite", {
               "study-ex1/data/study-demographics_data.csv", fixed = TRUE)
 })
 
+test_that("repro_write_scripts leaves a document as deposited and runs its code from a file of its own (#648)", {
+  # vtwbs_v2: the .qmd files became bare R code, so a script that rendered them
+  # rendered nothing
+  rw <- function(fn) stats::setNames(list(data.frame(
+    ref = character(0), basename = character(0), matched = logical(0),
+    target = character(0), ambiguous = logical(0), n_candidates = integer(0),
+    is_call = logical(0))), fn)
+  plan <- data.frame(file_name = c("report.qmd", "nb.ipynb", "main.R"),
+                     target_path = c("analysis/report.qmd", "nb.ipynb", "main.R"))
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "analysis"))
+  writeLines(c("---", "title: x", "---", "```{r}", "x <- 1", "```"), file.path(root, "analysis/report.qmd"))
+  out <- suppressMessages(repro_write_scripts(list(report.qmd = "x <- 1"), rw("report.qmd"), plan, root))
+  expect_equal(basename(out$script_path), "report.qmd.R")
+  expect_equal(readLines(out$script_path), "x <- 1")
+  expect_equal(readLines(file.path(root, "analysis/report.qmd"))[1], "---")
+  out_py <- suppressMessages(repro_write_scripts(list(nb.ipynb = "x = 1"), rw("nb.ipynb"), plan, root,
+                                                 lang = "Python"))
+  expect_equal(basename(out_py$script_path), "nb.ipynb.py")
+  # a plain script is written in its own place, as before
+  out_r <- suppressMessages(repro_write_scripts(list(main.R = "y <- 2"), rw("main.R"), plan, root))
+  expect_equal(basename(out_r$script_path), "main.R")
+})
+
 test_that("repro_write_scripts replaces setwd() with a no-op and records it", {
   code_list <- list("analysis.R" = c('setwd("/Users/author/project")', 'x <- 1'))
   rewrite_list <- list("analysis.R" = data.frame(
@@ -1062,6 +1086,16 @@ test_that(".repro_missing_fn_pkgs adds every package the other scripts attach", 
     "1_prep.R" = c("library(tidyverse)", "library(lme4)"),
     "2_analysis.R" = c("d %>% filter(x > 1)"))
   expect_equal(.repro_missing_fn_pkgs("%>%", "2_analysis.R", code_list, character(0)),
+               c("tidyverse", "lme4"))
+})
+
+test_that(".repro_missing_fn_pkgs leaves out packages the run could not install (#648)", {
+  # sd2hq_v2: library(mixedpower) was added and stopped the script
+  code_list <- list(
+    "_targets.R" = c("library(tidyverse)", "library(mixedpower)", "library(lme4)"),
+    "R/data.R" = c("d %>% filter(x > 1)"))
+  expect_equal(.repro_missing_fn_pkgs("%>%", "R/data.R", code_list, character(0),
+                                      unavailable = "mixedpower"),
                c("tidyverse", "lme4"))
 })
 
@@ -3626,10 +3660,14 @@ test_that("a bare name read directly is pointed to its file in a folder below (#
                                                      script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
   expect_false(rw$as_written)
   expect_equal(rw$target, "data/x.csv")
-  # in a joining call it stays as written: the code joins it to a folder of its own
-  rw2 <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv(file.path(dir, "x.csv"))', "m.R", plan,
-                                                      script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
-  expect_true(all(rw2$as_written[rw2$ref == "x.csv"]))
+  # in a joining call it stays as written: the code joins it to a folder of its
+  # own; decided at each place, so a direct read in the same script is still
+  # pointed to the file (#648)
+  code2 <- c('d <- read.csv(file.path(dir, "x.csv"))', 'e <- read.csv("x.csv")')
+  rw2 <- .repro_keep_working_refs(repro_rewrite_paths(code2, "m.R", plan, script_path = "scripts/m.R"),
+                                  plan, "scripts/m.R", ".")
+  expect_equal(.repro_apply_rewrites(code2, rw2),
+               c('d <- read.csv(file.path(dir, "x.csv"))', 'e <- read.csv("data/x.csv")'))
 })
 
 test_that("a Git LFS pointer is replaced by the deposit's copy of the file (#568)", {

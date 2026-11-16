@@ -1323,6 +1323,16 @@ test_that("code_extract_py", {
   expect_equal(code_extract_py(text = nb(list("if a:\n    !pip install b"))), c("if a:", "    pass", ""))
   # Commands without a %, and what must stay.
   expect_equal(code_extract_py(text = nb(list("cd data\nnp.mean?\ncd = 3\nx = 1"))), c("cd = 3", "x = 1", ""))
+  # pip without "!" as in Colab, and a command continued with "\" goes whole,
+  # also its indented lines (#648)
+  expect_equal(code_extract_py(text = nb(list("pip install pandas\nx = 1"))), c("x = 1", ""))
+  expect_equal(code_extract_py(text = nb(list("%run train.py \\\n    --epochs 5 \\\n    --lr 0.1\nx = 1"))),
+               c("x = 1", ""))
+  # pip as a name stays
+  expect_equal(code_extract_py(text = nb(list("pip = 2\nx = pip"))), c("pip = 2", "x = pip", ""))
+  # IPython commands in a Quarto Python chunk go too (#648)
+  expect_equal(code_extract_qmd_py(text = c("```{python}", "%matplotlib inline", "import numpy as np", "```")),
+               c("import numpy as np", ""))
   # In an R notebook these are code.
   expect_equal(code_extract_py(text = nb(list("d\n  %>% f()\n!x"), "R")), c("d", "  %>% f()", "!x", ""))
   # Real source survives, in document order.
