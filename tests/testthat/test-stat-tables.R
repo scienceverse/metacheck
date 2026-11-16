@@ -455,3 +455,21 @@ test_that("a printed block with a backslash in it is split without recycled rows
   expect_no_warning(.mplus_split_block(lines))
   expect_no_warning(.stata_split_block(lines))
 })
+
+test_that("code settings and row numbers are not stored as statistics (#648)", {
+  # the one-line reader takes a name only when it is a statistic as a whole:
+  # scale1, size, width and res only began like one
+  r <- .r_output_oneline(c("t = 2.34, df = 48, p-value = 0.02", "SD = 0.41, SE = 0.05",
+                           "scale1 = 10000; width = 1480, res = 300, size = 3"), "s.R")
+  nm <- names(r[[1]]$data)
+  expect_true(all(c("t", "df", "p-value", "SD", "SE") %in% nm))
+  expect_false(any(c("scale1", "width", "res", "size") %in% nm))
+  # a column of row numbers under a default name is not a statistic; a
+  # column of other numbers under that name stays
+  tb <- list(list(analysis = "a", title = NA, data = data.frame(grp = c("Human", "AI"), V1 = c("1", "2"),
+                                                                 M = c("3.36", "4.08"))),
+             list(analysis = "b", title = NA, data = data.frame(V1 = c("5", "7"), t = c("2.1", "3.3"))))
+  long <- stat_results_long(tb)
+  expect_false(any(long$analysis == "a" & long$statistic == "V1"))
+  expect_equal(long$value[long$analysis == "b" & long$statistic == "V1"], c("5", "7"))
+})

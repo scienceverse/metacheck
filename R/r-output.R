@@ -483,8 +483,21 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
         mm <- regmatches(f, regexec(pp$pattern, f, perl = TRUE))[[1]]
         if (length(mm) >= 5) {
           nm <- mm[[2]]; dfp <- mm[[3]]; val <- mm[[5]]
-          # keep only recognisable statistic names (avoid matching prose)
-          if (grepl("(?i)^(t|z|f|r|w|u|h|d|p|p-value|df|chi|x-squared|bf|rho|tau|s|v|estimate|mean)", nm)) {
+          # keep only recognisable statistic names (avoid matching prose); the
+          # whole name, as a name that only began with one of these letters
+          # passed: scale1, sample_num, size, shape ("s"), width ("w"), height
+          # ("h") and res ("r") of code such as png(width = 1480, res = 300)
+          # were stored as statistics (#648)
+          # A name the vocabulary types as a statistic (SD, SE, Chisq, R²) is
+          # kept as well; W, S and V are typed later from the call (#648)
+          # (statistic, pvalue, dof, correlation, slope, intercept, rvalue and
+          # stderr are the fields of scipy's results: TtestResult(statistic=4.9,
+          # pvalue=6.8e-05, df=22), read by .ipynb_stat_line())
+          if (grepl(paste0("(?i)^(t|z|f|r|w|u|h|d|p|p-value|p\\.value|p-val|df|chi|chi-squared|x-squared|",
+                           "bf|bf10|bf01|rho|tau|s|v|estimate|mean|statistic(_[a-z]+)?|pvalue|p_value|pval|dof|",
+                           "correlation|slope|intercept|rvalue|stderr|intercept_stderr)$"),
+                    trimws(nm), perl = TRUE) ||
+              nzchar(stato_type_column(trimws(nm))$termSource %||% "")) {
             cur[[length(cur) + 1L]] <- list(stat = nm, val = val)
             if (nzchar(dfp)) cur[[length(cur) + 1L]] <-
               list(stat = "df", val = gsub("[()]", "", dfp))
