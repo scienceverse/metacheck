@@ -429,9 +429,13 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
 # them one pass through the whole text, across sentences, removes each other
 # stand-alone number that fits the line numbers before and after it. In a
 # paper without either sign nothing is removed. In the 1,586 preprints, 75
-# papers changed and 1,484 numbers were removed; of 40 removed numbers drawn
-# at random, 36 were line numbers and 3 more probably so, and of the 105 the
-# pass added, 101 were line numbers before the amount and table rules below.
+# papers changed and 1,561 numbers were removed. Of 40 removed numbers drawn
+# at random (from an earlier version), 36 were line numbers and 3 more
+# probably so; of the 105 the pass first added, 101 were line numbers before
+# the amount and table rules below; and all 96 that allowing a short line
+# and checking the chain's ends on both sides added were line numbers, while
+# it kept "acquiring 160 contiguous slices" and "68 of 250 vaccinated" (and
+# 17 line numbers, mostly next to a table the reader moved).
 #
 # A stand-alone number here is 1 to 4 digits, not in brackets or a list, not
 # part of a range or a decimal, and not the number of a label ("Table 2",
@@ -440,6 +444,14 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   "(?i)(?:^|\\W)(?:tables?|figures?|figs?\\.?|stud(?:y|ies)|experiments?|sections?|chapters?|",
   "appendix|items?|waves?|sessions?|steps?|models?|hypothes[ie]s|pages?|pp?\\.|vol\\.?|no\\.?|",
   "versions?|grades?|days?|weeks?|years?|months?|et al\\.?|refs?\\.?|n|k|h|s|t)\\s*$")
+
+# Is going `dv` line numbers up over `chars` characters a line's distance?
+# 40 to 170 characters per line on average; one line may be shorter, down to
+# nothing, as the last line of a paragraph, a heading or an empty line can be
+# ("ongoing at the time of assessment. 158", "894 895 896")
+.line_step_ok <- function(dv, chars) {
+  (chars / dv >= 40 & chars / dv <= 170) | (dv == 1L & chars <= 170)
+}
 
 # `text` the sentences of one paper, in order; returns them with the line
 # numbers removed (and the space beside each)
@@ -505,14 +517,13 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
       # a manuscript were above 50 in every case seen
       if (line_steps >= 10L && line_steps >= 0.5 * other && stats::median(v[ch]) >= 50) {
         # Only a number that is a line's distance from its neighbours in the
-        # chain, on both sides: a number of the text that fits the sequence
-        # ("between 300 and 420 ms", "68 of 250 vaccinated", "for 24 weeks")
-        # was removed with the line numbers around it
-        chars <- diff(toks$pos[cand[ch]])
-        ok_step <- (rate >= 40 & rate <= 170) | (diff(v[ch]) == 1L & chars < 8)
-        left <- c(TRUE, ok_step); right <- c(ok_step, TRUE)
-        keep_side <- left & right
-        keep_side[1] <- ok_step[1]; keep_side[length(ch)] <- ok_step[length(ok_step)]
+        # chain, on both sides, also at the chain's two ends: a number of the
+        # text that fits the sequence ("between 300 and 420 ms", "for 24
+        # weeks", "68 of 250 vaccinated" in an abstract without line numbers,
+        # followed by "254 million") was removed with the line numbers around
+        # it. A true line number at an end is found by the pass below.
+        ok_step <- .line_step_ok(diff(v[ch]), diff(toks$pos[cand[ch]]))
+        keep_side <- c(FALSE, ok_step) & c(ok_step, FALSE)
         remove[cand[ch][keep_side]] <- TRUE
       }
     }
@@ -522,7 +533,7 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   # The numbers found so far are a sure sign of line numbers. From them, one
   # pass through the whole text, across sentences, adds each stand-alone
   # number that fits the nearest line number before or after it: 1 to 10
-  # higher (or lower), at 40 to 170 characters per step. A number is not
+  # higher (or lower), at a line's distance (.line_step_ok()). A number is not
   # added when a line number on either side is within 10 steps of it but at
   # the wrong distance, when it is an amount ("254 million"), or when a
   # number is right before and after it, as in the row of a table ("1169 159
@@ -533,18 +544,22 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   in_row <- grepl("\\d%?\\)?$", prev_word, perl = TRUE) & grepl("^\\(?\\.?\\d", next_word, perl = TRUE)
   fits <- function(dv, dpos) {
     near <- dv >= 1L & dv <= 10L
-    c(near = near, ok = near && dpos / dv >= 40 && dpos / dv <= 170)
+    c(near = near, ok = near && .line_step_ok(dv, dpos))
   }
-  for (r in which(stand & !remove & !amount & !in_row)) {
-    before <- which(remove & toks$pos < toks$pos[r])
-    after <- which(remove & toks$pos > toks$pos[r])
-    l <- if (length(before)) fits(toks$value[r] - toks$value[before[length(before)]],
-                                  toks$pos[r] - toks$pos[before[length(before)]]) else c(near = FALSE, ok = FALSE)
-    a <- if (length(after)) fits(toks$value[after[1]] - toks$value[r],
-                                 toks$pos[after[1]] - toks$pos[r]) else c(near = FALSE, ok = FALSE)
-    if ((l[["ok"]] || a[["ok"]]) && (!l[["near"]] || l[["ok"]]) && (!a[["near"]] || a[["ok"]])) {
-      remove[r] <- TRUE
+  for (round in 1:20) {
+    added <- FALSE
+    for (r in which(stand & !remove & !amount & !in_row)) {
+      before <- which(remove & toks$pos < toks$pos[r])
+      after <- which(remove & toks$pos > toks$pos[r])
+      l <- if (length(before)) fits(toks$value[r] - toks$value[before[length(before)]],
+                                    toks$pos[r] - toks$pos[before[length(before)]]) else c(near = FALSE, ok = FALSE)
+      a <- if (length(after)) fits(toks$value[after[1]] - toks$value[r],
+                                   toks$pos[after[1]] - toks$pos[r]) else c(near = FALSE, ok = FALSE)
+      if ((l[["ok"]] || a[["ok"]]) && (!l[["near"]] || l[["ok"]]) && (!a[["near"]] || a[["ok"]])) {
+        remove[r] <- TRUE; added <- TRUE
+      }
     }
+    if (!added) break
   }
 
   # remove each number, with the space after it (or before it, at the end)

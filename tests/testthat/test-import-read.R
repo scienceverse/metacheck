@@ -308,6 +308,16 @@ test_that(".repair_line_numbers removes a manuscript's line numbers (#648)", {
                                    21), collapse = " "))
   # NA stays NA
   expect_equal(metacheck:::.repair_line_numbers(c(s, NA))[[4]], NA_character_)
+  # the last line of a paragraph can be short
+  s <- c(paste(.numbered_lines(100, 120), collapse = " "), "and at the end. 121",
+         "122 The next paragraph", paste(.numbered_lines(123, 140), collapse = " "))
+  out <- metacheck:::.repair_line_numbers(s)
+  expect_equal(out[2:3], c("and at the end.", "The next paragraph"))
+})
+
+test_that(".line_step_ok takes a line's distance, and one short line (#648)", {
+  expect_equal(metacheck:::.line_step_ok(c(1L, 1L, 1L, 2L, 2L, 3L), c(12, 80, 200, 30, 160, 600)),
+               c(TRUE, TRUE, FALSE, FALSE, TRUE, FALSE))
 })
 
 test_that(".repair_line_numbers removes runs and the line numbers beside them (#648)", {
