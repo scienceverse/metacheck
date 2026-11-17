@@ -142,6 +142,40 @@ test_that("odd errors", {
   x <- text_search(paper)
 })
 
+test_that("text_search keeps its result when one sentence hits the step limit (#645)", {
+  # this pattern repeats a part that can itself repeat, so on a bracket full
+  # of numbers the engine stops at its step limit and R gives a warning
+  hard <- paste0("Distances were binned (n = ",
+                 paste(rep("308, 1,168", 10), collapse = ", "), ").")
+  txt <- c("We found t(20) = 2.1, p = .04.", hard)
+  pattern <- "\\((?:[0-9,\\.\\s]+|n\\s*=\\s*[0-9]+)*\\)\\s*="
+
+  # the other sentence is still searched; one warning names the problem
+  expect_warning(x <- text_search(txt, pattern, perl = TRUE),
+                 "1 sentence was not searched and counts as not matching")
+  expect_equal(x, txt[1])
+  expect_warning(x <- text_search(txt, pattern, perl = TRUE, return = "match"),
+                 "match limit exceeded")
+  expect_equal(x, "(20) =")
+  # with exclude, the sentence that was not searched is returned
+  expect_warning(x <- text_search(txt, pattern, perl = TRUE, exclude = TRUE),
+                 "1 sentence")
+  expect_equal(x, hard)
+
+  # in a paper, and in a header
+  paper <- test_paper(txt)
+  expect_warning(x <- text_search(paper, pattern, perl = TRUE), "1 sentence")
+  expect_equal(x$text, txt[1])
+  tbl <- data.frame(text = c("A", "B"), header = txt)
+  expect_warning(x <- text_search(tbl, pattern, perl = TRUE, search_header = TRUE),
+                 "1 header")
+  expect_equal(x$text, "A")
+
+  # without a warning nothing changes
+  expect_no_warning(x <- text_search(txt, "t\\(20\\)", perl = TRUE))
+  expect_equal(x, txt[1])
+})
+
 test_that("exclude", {
   text <- c("Apple and Banana",
             "Just an apple.",

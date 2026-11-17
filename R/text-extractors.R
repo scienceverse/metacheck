@@ -342,7 +342,12 @@ extract_eq <- function(paper) {
   # and losing both real statistics entirely. Scoped narrowly (digits/N=
   # only) so the still-common "chi2(1, N = 200)" shape keeps matching as one
   # fragment exactly as before.
-  df_inner <- "(?:[0-9,\\.\\s]+|[nN]\\s*=\\s*[0-9]+)*"
+  # One character at a time, not "[0-9,\\.\\s]+" repeated: a part that can
+  # repeat inside a repeated group let the engine try every way of dividing a
+  # bracket of numbers ("(n = 308, 1,168, 564, 654, 1,492)") and stop at its
+  # step limit, which emptied the search of the whole paper list (#645). The
+  # same texts match.
+  df_inner <- "(?:[0-9,.\\s]|[nN]\\s*=\\s*[0-9]+)*"
   # A bare "g"/"d" immediately followed by one of its own known subscript
   # words ("av", "z", "rm", "s") -- catches a subscript GROBID collapsed to
   # plain space with no "Hedges'"/"Cohen's" prefix word before it (e.g. a

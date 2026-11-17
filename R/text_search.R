@@ -110,29 +110,15 @@ text_search <- function(paper, pattern = ".*",
   ft <- text[section_filter, ]
 
   # get all rows with a text match ----
-  match_rows <- tryCatch(
-    grepl(pattern, ft$text,
-      ignore.case = ignore.case,
-      perl = perl, fixed = fixed
-    ),
-    error = function(e) {
-      stop(e)
-    },
-    warning = function(w) {}
-  )
+  match_rows <- .search_kept(pattern, ft$text, "sentence",
+                             ignore.case = ignore.case,
+                             perl = perl, fixed = fixed)
 
   # add all rows with a header match ----
   if (search_header) {
-    header_match_rows <- tryCatch(
-      grepl(pattern, ft$header,
-        ignore.case = ignore.case,
-        perl = perl, fixed = fixed
-      ),
-      error = function(e) {
-        stop(e)
-      },
-      warning = function(w) {}
-    )
+    header_match_rows <- .search_kept(pattern, ft$header, "header",
+                                      ignore.case = ignore.case,
+                                      perl = perl, fixed = fixed)
     match_rows <- match_rows | header_match_rows
   }
 
@@ -146,10 +132,10 @@ text_search <- function(paper, pattern = ".*",
     ft_match_all <- ft_match
   } else if (return == "match") {
     ft_match_all <- ft_match
-    matches <- gregexpr(pattern, ft_match$text,
-      ignore.case = ignore.case,
-      perl = perl, fixed = fixed
-    )
+    matches <- .search_kept(pattern, ft_match$text, "sentence",
+                            ignore.case = ignore.case,
+                            perl = perl, fixed = fixed,
+                            search = gregexpr)
     ft_match_all$text <- regmatches(ft_match$text, matches)
     text_lens <- sapply(ft_match_all$text, length)
     rowrep <- rep(seq_along(text_lens), text_lens)
@@ -236,3 +222,43 @@ text_search <- function(paper, pattern = ".*",
 #' @rdname text_search
 #' @export
 search_text <- text_search
+
+# grepl() and gregexpr() for text_search(). When the search of a text gives a warning, most
+# often PCRE's "match limit exceeded" (the pattern needed too many steps on
+# one sentence), grepl() still returns a result: that text counts as not
+# matching and every other text was searched as usual. A tryCatch() around
+# grepl() returned nothing at all instead, so one hard sentence emptied the
+# search of a whole paper list without a word (#645: extract_eq() returned 0
+# rows for 21 papers and for the whole corpus around each). Now the result is
+# kept, and one warning says how many texts could not be searched and why.
+# `what` names the texts in that warning ("sentence" or "header"); `search`
+# is grepl or gregexpr (which gives -1, no match, for such a text).
+.search_kept <- function(pattern, x, what = "sentence", ..., search = grepl) {
+  problems <- character(0)
+  found <- withCallingHandlers(
+    search(pattern, x, ...),
+    warning = function(w) {
+      problems <<- c(problems, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  # a text that could not be read (invalid UTF-8) counts as not matching
+  if (is.logical(found)) found[is.na(found)] <- FALSE
+
+  if (length(problems) > 0) {
+    # R gives one warning per text, "PCRE error 'match limit exceeded' for
+    # element 2": the reason is the message without its element number
+    reasons <- sub("\\s*for element \\d+\\s*$", "", problems)
+    reasons <- unique(trimws(gsub("\\s+", " ", reasons)))
+    # extract_eq()'s pattern is over 1,000 characters
+    shown <- if (nchar(pattern) > 60) paste0(substr(pattern, 1, 60), "...") else pattern
+    n <- length(problems)
+    warning(n, " ", what,
+            if (n == 1) " was not searched and counts" else "s were not searched and count",
+            " as not matching the pattern '",
+            shown, "': ", paste(reasons, collapse = "; "),
+            call. = FALSE)
+  }
+
+  found
+}
