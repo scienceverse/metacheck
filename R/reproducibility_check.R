@@ -4496,6 +4496,17 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out[outcome %in% c("download_too_large")] <- "download"
   out[outcome %in% c("timed_out") & has("while a download was still arriving")] <- "download"
   out[outcome %in% c("skipped_missing_inputs")] <- "file"
+  # A Python module that exists only on one platform (Google Colab, Kaggle,
+  # Windows, OpenSAFELY): the script can be checked only there, so neither a
+  # package that was not available nor an error of the code (#580, #648; in the
+  # medRxiv runs google.colab, win32com and ehrql).
+  out[outcome %in% c("errored", "dependency_unavailable") & !is.na(.repro_platform_of(msg))] <- "platform"
+  # A file of a package of the code, which imports its other files with "from .",
+  # run on its own: Python runs such a file only as a module of its package
+  # (python -m package.module), so this says how the run started it, not that a
+  # package was missing (#580, #648; 8 of 620 medRxiv papers)
+  out[outcome %in% "errored" & has("attempted relative import (?:with no known parent package|beyond top-level package)")] <-
+    "how_to_run"
   err <- outcome == "errored"
   set <- function(pat, label) out[err & is.na(out) & has(pat)] <<- label
   # stopped by the memory limit of the run (see .repro_oom_text()), before any
@@ -4564,6 +4575,25 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out
 }
 
+# The platform a Python module that exists only there belongs to, from an error
+# "No module named '<module>'": "Google Colab" (google.colab), "Kaggle"
+# (kaggle_secrets and the like), "Windows" (pywin32's win32com, win32api and
+# the like; winreg and msvcrt of Python on Windows) or "OpenSAFELY" (ehrql,
+# cohortextractor). NA for any other message.
+.repro_platform_of <- function(msg) {
+  msg <- ifelse(is.na(msg), "", msg)
+  mod <- regmatches(msg, regexec("No module named ['\"]([A-Za-z0-9_.]+)['\"]", msg))
+  mod <- vapply(mod, function(m) if (length(m) > 1) m[[2]] else "", character(1))
+  top <- sub("\\..*$", "", mod)
+  out <- rep(NA_character_, length(msg))
+  out[grepl("^google\\.colab(\\.|$)", mod)] <- "Google Colab"
+  out[grepl("^kaggle_(secrets|datasets|web_client|gcp)$", top)] <- "Kaggle"
+  out[top %in% c("win32com", "win32api", "win32con", "win32gui", "win32file", "win32process",
+                 "win32clipboard", "pywintypes", "pythoncom", "winreg", "_winreg", "msvcrt")] <- "Windows"
+  out[top %in% c("ehrql", "cohortextractor")] <- "OpenSAFELY"
+  out
+}
+
 # The packages the code loads that are on neither CRAN nor Bioconductor and that
 # the install found nowhere else, since the code does not say where they come from
 # (#389). character(0) when there are none.
@@ -4600,8 +4630,8 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 # Every reason .repro_failure_reason() gives, so each paper's row of summary_table
 # has the same columns, also for a reason none of its scripts had.
 .repro_reason_levels <- c("file", "package", "undefined", "syntax", "environment",
-                          "settings", "internet", "download", "interactive", "time",
-                          "no_message", "other")
+                          "settings", "platform", "how_to_run", "internet", "download",
+                          "interactive", "time", "no_message", "other")
 
 # Outcomes of files that are not scripts with a result of their own: run by
 # another script, files of software or of functions only, not downloaded,
@@ -4633,8 +4663,10 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 #   started because the time for all scripts together had run out;
 # - "not_checkable": it could not be checked automatically, because it needs a
 #   person, the internet, a key or another setting of the authors' computer,
-#   more memory than the run allows, a download that was too large, a file we
-#   did not download, a screen, or a program that runs it (Snakemake).
+#   one platform (Google Colab, Kaggle, Windows, OpenSAFELY), more memory than
+#   the run allows, a download that was too large, a file we did not download,
+#   a screen, or a program that runs it (Snakemake), or it is a file of a
+#   package of the code that Python runs only as a module of that package.
 # NA for what is not a result of the script itself: a file run inside another
 # script, a file that is not an analysis, a file not read, and a Docker failure,
 # which says nothing about the code. `reason` is .repro_failure_reason()'s, and
@@ -4656,6 +4688,10 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out[outcome %in% c("needs_a_person", "needs_internet", "out_of_memory", "download_too_large",
                      "not_downloaded")] <- "not_checkable"
   out[err & reason %in% c("settings", "internet", "interactive", "download")] <- "not_checkable"
+  # a module of one platform, or a file of a package run on its own, also when
+  # the install tried to find the module as a package
+  out[outcome %in% c("errored", "dependency_unavailable") & reason %in% c("platform", "how_to_run")] <-
+    "not_checkable"
   env <- err & reason %in% "environment"
   missing_software <- env & !.repro_out_of_memory(msg) &
     (!is.na(.repro_missing_program(msg)) |

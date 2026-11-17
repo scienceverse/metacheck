@@ -3659,6 +3659,41 @@ test_that("each script's result is put in one of five groups (#580)", {
   expect_equal(g(character(0)), character(0))
 })
 
+test_that("a module of one platform and a file of a package run alone are not missing packages (#580)", {
+  expect_equal(.repro_platform_of(c("ModuleNotFoundError: No module named 'google.colab'",
+                                    "No module named 'win32com.client'", "No module named 'ehrql'",
+                                    "No module named 'kaggle_secrets'", "No module named 'google.cloud'",
+                                    "No module named 'torchvision'", NA)),
+               c("Google Colab", "Windows", "OpenSAFELY", "Kaggle", NA, NA, NA))
+  oc <- c("errored", "dependency_unavailable", "errored", "errored", "dependency_unavailable")
+  msg <- c("ModuleNotFoundError: No module named 'google.colab'",
+           "ModuleNotFoundError: No module named 'win32com'",
+           "ImportError: attempted relative import with no known parent package",
+           "ModuleNotFoundError: No module named 'torch'",
+           "ModuleNotFoundError: No module named 'torchvision'")
+  reason <- .repro_failure_reason(oc, msg)
+  expect_equal(reason, c("platform", "platform", "how_to_run", "package", "package"))
+  expect_equal(.repro_check_group(oc, reason, msg),
+               c("not_checkable", "not_checkable", "not_checkable", "dependency", "dependency"))
+  fn <- paste0(letters[1:5], ".py")
+  tb <- data.frame(file_name = fn, run_order = 1:5, outcome = oc, setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = fn, outcome = oc, error = msg, stderr = "")
+  out <- paste(.repro_checklist_section(tb, rr), collapse = "\n")
+  expect_match(out, paste("2 could not run because a package or program was not available, and 3 could not be",
+                          "checked automatically (1 needed Google Colab, 1 needed Windows, 1 needed to be",
+                          "started as part of its package)"), fixed = TRUE)
+  expect_match(out, "**A script runs only on one platform.**", fixed = TRUE)
+  expect_match(out, "<code>a.py</code> needs Google Colab.", fixed = TRUE)
+  expect_match(out, "| b.py | Could not be checked | It needs Windows", fixed = TRUE)
+  expect_match(out, "**A script is part of a package of your code, and Python cannot run it on its own.**", fixed = TRUE)
+  # neither is advised as an older package version or a package not installed
+  expect_no_match(out, "<code>a.py</code>: \"", fixed = TRUE)
+  expect_no_match(out, "- <code>c.py</code>\n\nThe code loads it", fixed = TRUE)
+  expect_equal(.repro_run_light("green", data.frame(outcome = oc[1:3], reason = reason[1:3], error = msg[1:3])),
+               "yellow")
+})
+
 test_that("the report and the summary give the scripts by group (#580)", {
   oc <- c("ran_ok", "errored", "errored", "dependency_unavailable", "timed_out", "needs_a_person",
           "errored", "docker_failed")

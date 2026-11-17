@@ -87,8 +87,10 @@
 #' limit for one script, or was not started because the time for all scripts
 #' had run out); and `not_checkable` (it could not be checked automatically: it
 #' needs a person, the internet, a key or another setting of the authors'
-#' computer, more memory than the run allows, a file that was not downloaded, a
-#' screen, or a program that runs it). It is NA for files run inside another
+#' computer, one platform such as Google Colab, Windows or OpenSAFELY, more
+#' memory than the run allows, a file that was not downloaded, a screen, or a
+#' program that runs it, or it is a file of a package of the code that Python
+#' runs only as a module of that package). It is NA for files run inside another
 #' script, files that are not an analysis, files not read, and a Docker failure.
 #' `summary_table` counts each group (`repro_ran_n`, `repro_code_error_n`,
 #' `repro_dependency_n`, `repro_time_n`, `repro_not_checkable_n`), and the
