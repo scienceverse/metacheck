@@ -13,9 +13,8 @@ check_file_naming(file_name, file_path = file_name, data_type = NA_character_)
 \code{file_name} when not supplied — length-checks need the full path,
 everything else only needs the basename)}
 
-\item{data_type}{an optional character vector (same length as \code{file_name})
-of \code{data_check} semantic types (see \code{data_classify_files()}), used only
-for the classifiability rule}
+\item{data_type}{not used any more: it was only used for a rule that made
+a file of an unknown type a naming problem, which was removed (#648)}
 }
 \value{
 a data.frame with one row per naming violation: \code{file_name},
@@ -25,14 +24,13 @@ a data.frame with one row per naming violation: \code{file_name},
 \description{
 Checks every file's name against the naming conventions from the metacheck
 "machine readable FAIR data and code" guide: no spaces, special characters
-or diacritics, an actually-classifiable name
-(not \code{data_type == "unknown"}), zero-padded numbering across sibling files,
-and four path-length budgets (255/228/100/50 characters).
+or diacritics, zero-padded numbering across sibling files, and four
+path-length budgets (255/228/100/50 characters). A file of a type metacheck
+does not know is not a naming problem (#648).
 }
 \details{
 Rules split into two severities. \code{"bad"}: spaces, special characters,
-diacritics, \code{data_type == "unknown"} (the file could not be classified at
-all), and exceeding the hard 255-character path limit — these break
+diacritics, and exceeding the hard 255-character path limit — these break
 something real. \code{"suggestion"}: unpadded sibling numbering and the softer
 228/100/50 path-length budgets — real conventions worth following, but nothing in
 metacheck's own classification or ordering logic actually depends on them

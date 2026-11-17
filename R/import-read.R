@@ -204,7 +204,7 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
 
   # ensure all expected columns exist and have correct types
   # (JSON may drop all-NA columns or read them back as logical)
-  paper <- .paper_repair_links(paper)
+  paper <- .paper_repair_text(paper)
   paper <- .paper_coerce(paper)
 
   paper
@@ -399,6 +399,186 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   text
 }
 
+# Line numbers ----
+#
+# A manuscript with numbered lines keeps some of its line numbers when GROBID
+# or bibr reads it, as stand-alone numbers inside sentences: "t(118) = 7.35,
+# p < 538 .001", "chi2(1) = 542 26.69", "no main effect of 918 919 920 ... 936
+# cue type". A statistic is then read with the wrong value, or not at all
+# (#648). In the 1,586 preprints of the two report sites, about 1.5 to 2% hold
+# such numbers.
+#
+# Line numbers are told from the other stand-alone numbers in a text (numbers
+# in sentences, numbered citations printed as plain numbers, tables) by how
+# they advance: one per printed line, so the text between two of them is
+# about 50 to 150 characters per step. A paper is taken to hold line numbers
+# when the longest chain of stand-alone numbers that increases in steps of 1
+# to 10 through the text has at least 10 such steps, and they are at least
+# half of its steps that are not within one run of numbers, and its middle
+# value is 50 or more. Numbered citations advance about 270 to 300 characters
+# per step, with a wide spread; tables advance a few characters per step; and
+# ordinary small numbers ("Diary 1", "fixed to 1.") can chain at a line's rate
+# but stay small. A run of 5 or more numbers that each add one, from 30
+# upwards ("894 895 896 ..."), is the numbers of empty lines; "Tables 1 2 3
+# 4" and the ticks of an axis start lower, and a run of years (1950 to 2050)
+# stays. In the 22 papers where only such runs were found, all 28 runs were
+# line numbers.
+#
+# Either sign is taken as sure. Then the runs, and the chain's numbers that
+# are a line's distance from their neighbours in it, are removed, and from
+# them one pass through the whole text, across sentences, removes each other
+# stand-alone number that fits the line numbers before and after it. In a
+# paper without either sign nothing is removed. In the 1,586 preprints, 75
+# papers changed and 1,561 numbers were removed. Of 40 removed numbers drawn
+# at random (from an earlier version), 36 were line numbers and 3 more
+# probably so; of the 105 the pass first added, 101 were line numbers before
+# the amount and table rules below; and all 96 that allowing a short line
+# and checking the chain's ends on both sides added were line numbers, while
+# it kept "acquiring 160 contiguous slices" and "68 of 250 vaccinated" (and
+# 17 line numbers, mostly next to a table the reader moved).
+#
+# A stand-alone number here is 1 to 4 digits, not in brackets or a list, not
+# part of a range or a decimal, and not the number of a label ("Table 2",
+# "Study 3", "et al. 12", "n 40").
+.line_no_label <- paste0(
+  "(?i)(?:^|\\W)(?:tables?|figures?|figs?\\.?|stud(?:y|ies)|experiments?|sections?|chapters?|",
+  "appendix|items?|waves?|sessions?|steps?|models?|hypothes[ie]s|pages?|pp?\\.|vol\\.?|no\\.?|",
+  "versions?|grades?|days?|weeks?|years?|months?|et al\\.?|refs?\\.?|n|k|h|s|t)\\s*$")
+
+# Is going `dv` line numbers up over `chars` characters a line's distance?
+# 40 to 170 characters per line on average; one line may be shorter, down to
+# nothing, as the last line of a paragraph, a heading or an empty line can be
+# ("ongoing at the time of assessment. 158", "894 895 896")
+.line_step_ok <- function(dv, chars) {
+  (chars / dv >= 40 & chars / dv <= 170) | (dv == 1L & chars <= 170)
+}
+
+# `text` the sentences of one paper, in order; returns them with the line
+# numbers removed (and the space beside each)
+.repair_line_numbers <- function(text) {
+  if (!length(text)) return(text)
+  t <- ifelse(is.na(text), "", as.character(text))
+  m <- gregexpr("(?<![\\w.,\\-\u2212\u2013])\\d{1,4}(?![\\w,]|\\.\\d)", t, perl = TRUE)
+  found <- vapply(m, \(st) st[[1]] > 0L, logical(1))
+  if (!any(found)) return(text)
+  toks <- data.frame(
+    s = rep(which(found), lengths(m[found])),
+    start = as.integer(unlist(m[found])),
+    len = unlist(lapply(m[found], attr, "match.length")))
+  toks$value <- as.integer(substring(t[toks$s], toks$start, toks$start + toks$len - 1L))
+  offset <- cumsum(c(0, nchar(t) + 1L))[seq_along(t)]
+  toks$pos <- offset[toks$s] + toks$start
+  before <- trimws(substr(t[toks$s], 1L, toks$start - 1L), "right")
+  after <- trimws(substring(t[toks$s], toks$start + toks$len), "left")
+  prev <- substring(before, nchar(before)); nxt <- substr(after, 1L, 1L)
+  stand <- !prev %in% c("[", "(", ",", ";", "\u2013", "-", "/", ":") &
+    !nxt %in% c("]", ")", ",", ";", "\u2013", "-", "/", "%", ":") &
+    !grepl(.line_no_label, substring(before, pmax(1L, nchar(before) - 14L)), perl = TRUE)
+  remove <- rep(FALSE, nrow(toks))
+
+  # runs of 5 or more numbers adding one each, from 30 up, in one sentence
+  for (i in unique(toks$s)) {
+    k <- which(toks$s == i)
+    if (length(k) < 5) next
+    v <- toks$value[k]
+    gap <- toks$start[k][-1] - (toks$start[k] + toks$len[k])[-length(k)]
+    step <- c(FALSE, diff(v) == 1L & gap <= 2L)
+    r <- rle(step)
+    ends <- cumsum(r$lengths)
+    for (q in which(r$values & r$lengths >= 4L)) {
+      span <- (ends[q] - r$lengths[q]):ends[q]
+      # not a list of years ("2011 2012 2013 2014 2015" in a table)
+      years <- all(v[span] >= 1950L & v[span] <= 2050L)
+      if (v[span[1]] >= 30L && !years) remove[k[span]] <- TRUE
+    }
+  }
+
+  # the chain of stand-alone numbers, and how fast it advances
+  cand <- which(stand & !remove)
+  if (length(cand) >= 15L) {
+    v <- toks$value[cand]
+    n <- length(v); best <- rep(1L, n); prev_i <- rep(0L, n)
+    for (i in seq_len(n)[-1]) {
+      w <- max(1L, i - 400L):(i - 1L)
+      ok <- w[(v[i] - v[w]) >= 1L & (v[i] - v[w]) <= 10L]
+      if (length(ok)) {
+        j <- ok[which.max(best[ok])]
+        if (best[j] + 1L > best[i]) { best[i] <- best[j] + 1L; prev_i[i] <- j }
+      }
+    }
+    i <- which.max(best); ch <- integer(0)
+    while (i > 0L) { ch <- c(i, ch); i <- prev_i[i] }
+    if (length(ch) >= 15L) {
+      rate <- diff(toks$pos[cand[ch]]) / diff(v[ch])
+      line_steps <- sum(rate >= 50 & rate <= 150)
+      other <- sum(rate >= 8)
+      # Ordinary small numbers ("fixed to 1.", "Diary 2", the rows of a table
+      # numbered 1 to 30) can form such a chain too; the line numbers left in
+      # a manuscript were above 50 in every case seen
+      if (line_steps >= 10L && line_steps >= 0.5 * other && stats::median(v[ch]) >= 50) {
+        # Only a number that is a line's distance from its neighbours in the
+        # chain, on both sides, also at the chain's two ends: a number of the
+        # text that fits the sequence ("between 300 and 420 ms", "for 24
+        # weeks", "68 of 250 vaccinated" in an abstract without line numbers,
+        # followed by "254 million") was removed with the line numbers around
+        # it. A true line number at an end is found by the pass below.
+        ok_step <- .line_step_ok(diff(v[ch]), diff(toks$pos[cand[ch]]))
+        keep_side <- c(FALSE, ok_step) & c(ok_step, FALSE)
+        remove[cand[ch][keep_side]] <- TRUE
+      }
+    }
+  }
+  if (!any(remove)) return(text)
+
+  # The numbers found so far are a sure sign of line numbers. From them, one
+  # pass through the whole text, across sentences, adds each stand-alone
+  # number that fits the nearest line number before or after it: 1 to 10
+  # higher (or lower), at a line's distance (.line_step_ok()). A number is not
+  # added when a line number on either side is within 10 steps of it but at
+  # the wrong distance, when it is an amount ("254 million"), or when a
+  # number is right before and after it, as in the row of a table ("1169 159
+  # 21.4", "95 (23%) 242 (21%)").
+  prev_word <- sub("^.*\\s", "", before)
+  next_word <- sub("\\s.*$", "", after)
+  amount <- grepl("^(?:thousand|million|billion|trillion)", next_word, perl = TRUE, ignore.case = TRUE)
+  in_row <- grepl("\\d%?\\)?$", prev_word, perl = TRUE) & grepl("^\\(?\\.?\\d", next_word, perl = TRUE)
+  fits <- function(dv, dpos) {
+    near <- dv >= 1L & dv <= 10L
+    c(near = near, ok = near && .line_step_ok(dv, dpos))
+  }
+  for (round in 1:20) {
+    added <- FALSE
+    for (r in which(stand & !remove & !amount & !in_row)) {
+      before <- which(remove & toks$pos < toks$pos[r])
+      after <- which(remove & toks$pos > toks$pos[r])
+      l <- if (length(before)) fits(toks$value[r] - toks$value[before[length(before)]],
+                                    toks$pos[r] - toks$pos[before[length(before)]]) else c(near = FALSE, ok = FALSE)
+      a <- if (length(after)) fits(toks$value[after[1]] - toks$value[r],
+                                   toks$pos[after[1]] - toks$pos[r]) else c(near = FALSE, ok = FALSE)
+      if ((l[["ok"]] || a[["ok"]]) && (!l[["near"]] || l[["ok"]]) && (!a[["near"]] || a[["ok"]])) {
+        remove[r] <- TRUE; added <- TRUE
+      }
+    }
+    if (!added) break
+  }
+
+  # remove each number, with the space after it (or before it, at the end)
+  out <- t
+  for (i in unique(toks$s[remove])) {
+    k <- rev(which(toks$s == i & remove))
+    x <- out[[i]]
+    for (r in k) {
+      a <- toks$start[r]; b <- a + toks$len[r] - 1L
+      if (b < nchar(x) && substr(x, b + 1L, b + 1L) == " ") b <- b + 1L
+      else if (a > 1L && substr(x, a - 1L, a - 1L) == " ") a <- a - 1L
+      x <- paste0(substr(x, 1L, a - 1L), substring(x, b + 1L))
+    }
+    out[[i]] <- x
+  }
+  out[is.na(text)] <- NA_character_
+  out
+}
+
 # The positions (1 = first character) in `old` of the characters that are
 # not in `new`, where `new` is `old` with some spaces removed
 .removed_positions <- function(old, new) {
@@ -412,26 +592,30 @@ read <- function(file_path, include_images = FALSE, recursive = FALSE) {
   gone
 }
 
-#' Join links in a paper's sentences that reading the PDF split with a space
+#' Clean a paper's sentences of what reading the PDF left wrong
 #'
-#' Repairs the text table with `.repair_links()` and `.repair_bib_dois()`
-#' (references' DOIs). The url, xref and eq tables
+#' Repairs the text table with `.repair_line_numbers()` (a manuscript's line
+#' numbers), `.repair_links()` (links split with a space) and
+#' `.repair_bib_dois()` (references' DOIs). The url, xref and eq tables
 #' give where each item is in its sentence (`start`, counted from 0, and
-#' `end`, just after it); these move back by the number of spaces removed
+#' `end`, just after it); these move back by the number of characters removed
 #' before them, so a paper written with `paper_write()` stays right.
 #'
 #' @param paper a paper or paperlist
 #' @returns the paper or paperlist
 #' @noRd
-.paper_repair_links <- function(paper) {
+.paper_repair_text <- function(paper) {
   if (.is_paper_list(paper)) {
-    return(paperlist(lapply(paper, .paper_repair_links)))
+    return(paperlist(lapply(paper, .paper_repair_text)))
   }
   tx <- paper$text
   if (!is.data.frame(tx) || !nrow(tx) || !is.character(tx$text)) return(paper)
 
   old <- tx$text
-  new <- .repair_links(old)
+  # line numbers first: the link rules would join a line number after
+  # "osf.io/ " to the link
+  new <- .repair_line_numbers(old)
+  new <- .repair_links(new)
   # after the rules, so a reference's DOI is joined only where the rules left
   # no whole copy of it. Both only remove spaces; in 17 corpora (4.5 million
   # sentences) the order changed one sentence, where joining first also

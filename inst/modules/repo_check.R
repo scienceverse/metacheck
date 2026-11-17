@@ -44,6 +44,20 @@
 #' Telling this paper's own deposit from the authors' earlier one is less
 #' certain.
 #'
+#' Only the deposits that are this paper's own are checked. A deposit linked
+#' in the text that holds other people's work (`others_data`, `others_code`)
+#' or the authors' earlier work (`own_earlier_data`, `own_earlier_code`) is
+#' listed in the report, with the reason, but its files are left out of
+#' `table` and kept in `table_not_checked`: they count toward nothing here
+#' (files that do not belong in a repository, naming, READMEs, studies, the
+#' traffic light), and code_check, data_check and reproducibility_check, which
+#' read `table`, do not check them either. reproducibility_check still puts the
+#' files of theirs that the paper's code names in the folder the code runs in,
+#' as a re-analysis needs the data it re-analyses. When every linked deposit
+#' is set aside, the traffic light is "na". A deposit that is the paper's own
+#' is counted as such when its README, title or description names the paper
+#' (its title or DOI).
+#'
 #' If you want to extend the package to be able to download files from additional data repositories reach out to the Metacheck development team.
 #'
 #' <validation>This module has not been validated. All checks in the repo_check module have unknown error rates. Carefully evaluate the output of this module. You can help improve this module by reporting an issue on GitHub.</validation>
@@ -458,6 +472,27 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # registration without one (should not normally happen) is left keyed
       # to its own URL below so its files are never silently dropped.
       reg_url_to_parent <- character(0)
+      # Opened with a view-only key, a registration does not say which project
+      # it was registered from (the OSF hides it, as an anonymous key hides
+      # who made the page). A public registration says it without the key, so
+      # it is asked once more without it (#648: q7pnw_v3's
+      # "osf.io/ujdep/?view_only=..." came from the closed project ke24d,
+      # which was reported only while the link was also found without its
+      # key).
+      if ("parent" %in% names(osf_info)) {
+        keyed_reg <- which(osf_info$osf_type %in% "registrations" & is.na(osf_info$parent) &
+                             grepl("view_only=", osf_info$osf_id %||% ""))
+        for (id in unique(sub("[?/].*$", "", osf_info$osf_id[keyed_reg]))) {
+          plain <- tryCatch(suppressWarnings(
+            osf_info(sprintf("https://osf.io/%s", id), recursive = FALSE, pb = pb, cache = cache)),
+            error = function(e) NULL)
+          from <- if (is.data.frame(plain) && "parent" %in% names(plain))
+            stats::na.omit(plain$parent)[1] else NA_character_
+          if (!is.na(from)) {
+            osf_info$parent[keyed_reg[sub("[?/].*$", "", osf_info$osf_id[keyed_reg]) == id]] <- from
+          }
+        }
+      }
       if ("parent" %in% names(osf_info)) {
         reg_rows <- osf_info |>
           dplyr::filter(osf_type %in% "registrations", !is.na(parent), !is.na(osf_url))
@@ -564,6 +599,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       # left out; the project is named as private instead, as the authors can
       # now make it public (8dn4g_v1 linked osf.io/j9sdn both ways: one copy
       # was read, the other reported as "could not check ... (private)").
+      # The same holds for any page the key opens, also a registration (a
+      # preregistration shared with a view-only link): the plain link the
+      # paper also gives is not a repository that could not be checked
+      # (#648: osf.io/kpngh and osf.io/4vtjq in q7pnw_v3 were "private").
+      if ("osf_id" %in% names(osf_info)) {
+        key_ok <- grepl("view_only=", osf_info$osf_id) & !is.na(osf_info$osf_type) &
+          !osf_info$osf_type %in% c("private", osf_failed_types)
+        opened <- sub("[?/].*$", "", osf_info$osf_id[key_ok])
+        plain <- osf_info$osf_url[osf_info$osf_type %in% "private" &
+                                    sub("[?/].*$", "", osf_info$osf_id) %in% opened]
+        repos <- repos[!repos$repo_url %in% plain, , drop = FALSE]
+      }
       if (all(c("osf_id", "public") %in% names(osf_info))) {
         vo <- osf_info[osf_info$osf_type %in% "nodes" & osf_info$public %in% FALSE &
                          grepl("view_only=", osf_info$osf_id), , drop = FALSE]
@@ -2303,6 +2350,66 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     useless
   } else data.frame(repo_url = character(0), file_path = character(0),
                     kind = character(0), severity = character(0))
+
+  ## preliminary classification ----
+  # A PRELIMINARY, name/path-only pass: repo_check does not download files, so
+  # it classifies from names/extensions (data_classify_files()) — the same
+  # deterministic-first machinery data_check uses, run independently here
+  # because data_check operates on a materially different, POST-download file
+  # set: it opens the archives .zip peeking cannot reach (.tar.gz, .7z) and
+  # reclassifies .txt by content, neither of which is visible from a listing.
+  # This preliminary pass powers repo_check's OWN report (warnings, naming
+  # check, dropdown below) and the ownership step; data_check's later
+  # classification is authoritative for placement.
+  all_files$data_type <- data_classify_files(all_files$file_name,
+                                             all_files$file_path)
+  all_files$doc_role  <- .data_doc_role(all_files$file_name)
+
+  ## whose deposit is it (#634) ----
+  # with the records and files of the publications set aside above, so their
+  # rows say what they are
+  pub_cols <- c("repo_url", "file_name", "file_path", "file_url", "file_type")
+  ownership <- own_ownership(
+    dplyr::bind_rows(repo_metadata, pub_meta),
+    if (is.data.frame(pub_files) && nrow(pub_files))
+      dplyr::bind_rows(all_files, pub_files[, intersect(pub_cols, names(pub_files)), drop = FALSE]) else all_files,
+    osf_desc_all)
+  # OSF projects listed only in part (`osf_max_requests`): what their row says
+  # about files describes only the folders that were opened. A registration's
+  # files are kept under the project it was registered from, so that project
+  # counts as listed in part as well.
+  if (length(osf_cut_urls)) {
+    osf_cut_urls <- unique(c(osf_cut_urls,
+      unname(reg_url_to_parent[intersect(osf_cut_urls, names(reg_url_to_parent))])))
+  }
+  if (is.data.frame(ownership) && nrow(ownership))
+    ownership$listing_cut <- ownership$repo_url %in% osf_cut_urls
+  own_text <- ownership[ownership$source %in% "text",
+                        c("paper_id", "repo_url", "ownership", "ownership_group", "ownership_reason"), drop = FALSE]
+  own_text <- own_text[!duplicated(own_text[c("paper_id", "repo_url")]), , drop = FALSE]
+
+  ## deposits that are not this paper's (#648) ----
+  # A deposit linked in the text that holds other people's work, or the
+  # authors' earlier work, is listed (Whose Deposits) but not checked: its
+  # files leave `table`, which code_check, data_check and, through code_check,
+  # reproducibility_check read, and they count toward nothing here (files that
+  # do not belong, naming, READMEs, studies, the light). In a hand check of
+  # 132 preprints, checking such deposits was wrong every time: a re-analysed
+  # study's deposit, a cited toolbox, the authors' deposit for an earlier
+  # paper. Its files are kept in `table_not_checked`. A repository two papers
+  # link leaves the file list here only when no paper counts it as its own;
+  # each paper's own rows are settled once paper_id is attached below.
+  not_this <- .own_not_this(ownership, reg_url_to_parent)
+  linked_by <- unique(repos[, c("paper_id", "repo_url")])
+  not_this_key <- paste(not_this$paper_id, not_this$repo_url, sep = "\x01")
+  set_aside_urls <- Filter(function(u) {
+    all(paste(linked_by$paper_id[linked_by$repo_url %in% u], u, sep = "\x01") %in% not_this_key)
+  }, unique(not_this$repo_url))
+  files_not_checked <- all_files[all_files$repo_url %in% set_aside_urls, , drop = FALSE]
+  all_files <- all_files[!all_files$repo_url %in% set_aside_urls, , drop = FALSE]
+  if (nrow(useless_files))
+    useless_files <- useless_files[!useless_files$repo_url %in% set_aside_urls, , drop = FALSE]
+
   n_useless <- nrow(useless_files)
   is_problem <- useless_files$severity == "problem"
   n_useless_problem <- sum(is_problem)
@@ -2356,20 +2463,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                             File = useless_files$file_path,
                             Kind = useless_files$kind), maxrows = 10)) else NULL
 
-  ## preliminary classification + study grouping ----
-  # A PRELIMINARY, name/path-only pass: repo_check does not download files, so
-  # it classifies from names/extensions (data_classify_files()) and groups from
-  # paths/repo-splits/the manuscript roster (data_group_llm()) — the same
-  # deterministic-first machinery data_check uses, run independently here (not
-  # shared as a frozen seed) because data_check operates on a materially
-  # different, POST-download file set: it opens the archives .zip peeking cannot
-  # reach (.tar.gz, .7z) and reclassifies .txt by content, neither of which is
-  # visible from a listing. This preliminary pass powers repo_check's OWN report
-  # (warnings, naming check, dropdown below); data_check's later classification
-  # is authoritative for placement.
-  all_files$data_type <- data_classify_files(all_files$file_name,
-                                             all_files$file_path)
-  all_files$doc_role  <- .data_doc_role(all_files$file_name)
+  ## preliminary study grouping ----
+  # From paths/repo-splits/the manuscript roster (data_group_llm()), on the
+  # files classified above (see "preliminary classification"), the same way
+  # data_check groups its own, POST-download file set.
 
   # Root readme / ro-crate-metadata.json are collection-level and are never
   # assigned a study (see data_check.R for the identical exclusion rule).
@@ -2426,30 +2523,19 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     repo_metadata$paper_id <- character(0)
   }
 
-  ## whose deposit is it (#634) ----
-  # with the records and files of the publications set aside above, so their
-  # rows say what they are
-  pub_cols <- c("repo_url", "file_name", "file_path", "file_url", "file_type")
-  ownership <- own_ownership(
-    dplyr::bind_rows(repo_metadata, pub_meta),
-    if (is.data.frame(pub_files) && nrow(pub_files))
-      dplyr::bind_rows(all_files, pub_files[, intersect(pub_cols, names(pub_files)), drop = FALSE]) else all_files,
-    osf_desc_all)
-  # OSF projects listed only in part (`osf_max_requests`): what their row says
-  # about files describes only the folders that were opened. A registration's
-  # files are kept under the project it was registered from, so that project
-  # counts as listed in part as well.
-  if (length(osf_cut_urls)) {
-    osf_cut_urls <- unique(c(osf_cut_urls,
-      unname(reg_url_to_parent[intersect(osf_cut_urls, names(reg_url_to_parent))])))
-  }
-  if (is.data.frame(ownership) && nrow(ownership))
-    ownership$listing_cut <- ownership$repo_url %in% osf_cut_urls
-  own_text <- ownership[ownership$source %in% "text",
-                        c("paper_id", "repo_url", "ownership", "ownership_group", "ownership_reason"), drop = FALSE]
-  own_text <- own_text[!duplicated(own_text[c("paper_id", "repo_url")]), , drop = FALSE]
+  # whose deposit each link is (see "whose deposit is it" above)
   if (nrow(repo_metadata) > 0)
     repo_metadata <- dplyr::left_join(repo_metadata, own_text, by = c("paper_id", "repo_url"))
+
+  # the deposits that are not this paper's, per paper (see "deposits that are
+  # not this paper's" above): a repository another paper of a paper list
+  # counts as its own stayed in the file list until here
+  aside <- paste(all_files$paper_id, all_files$repo_url, sep = "\x01") %in% not_this_key
+  if (any(aside)) {
+    files_not_checked <- dplyr::bind_rows(files_not_checked, all_files[aside, , drop = FALSE])
+    all_files <- all_files[!aside, , drop = FALSE]
+  }
+  repos <- repos[!paste(repos$paper_id, repos$repo_url, sep = "\x01") %in% not_this_key, , drop = FALSE]
 
   repos <- dplyr::full_join(repos, all_files, by = c("paper_id", "repo_url"), relationship = "many-to-many") |>
     dplyr::summarise(
@@ -2469,6 +2555,38 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     nrow(repos),
     plural(nrow(repos), "repository", "repositories")
   )
+
+  ## deposits we did not check ----
+  # (see "deposits that are not this paper's" above); one line per deposit
+  # with whose it is, and what an author can do when it is this paper's after
+  # all: a deposit whose README, title or description names the paper is
+  # counted as the paper's own (.repo_ownership(), "the deposit names this
+  # paper"), before any other rule
+  not_checked <- own_text[paste(own_text$paper_id, own_text$repo_url, sep = "\x01") %in% not_this_key, , drop = FALSE]
+  not_checked <- not_checked[!duplicated(not_checked$repo_url), , drop = FALSE]
+  whose_of <- c(own_earlier_data = "the authors' earlier data", own_earlier_code = "the authors' earlier code",
+                others_data = "others' data", others_code = "others' code")
+  summary_not_checked <- NULL
+  report_not_checked <- NULL
+  if (nrow(not_checked) > 0) {
+    n_nc <- nrow(not_checked)
+    summary_not_checked <- sprintf(
+      "We did not check %d linked deposit%s that %s not this paper's own: %s.",
+      n_nc, plural(n_nc), if (n_nc == 1) "is" else "are",
+      paste(sprintf("%s (%s)", not_checked$repo_url, unname(whose_of[not_checked$ownership])), collapse = "; "))
+    report_not_checked <- c(
+      "#### Deposits we did not check",
+      paste(
+        "The paper links these deposits, but the paper or the deposit itself shows that they hold other people's",
+        "work or the authors' earlier work, so we did not check them as the data and code of this paper (the",
+        "table Whose Deposits gives the reason for each). If one of them is where you shared the data or code of",
+        "this paper, name this paper in it: its title or DOI in the deposit's description or README. Metacheck",
+        "then checks it."),
+      scroll_table(data.frame(Repository = link(not_checked$repo_url),
+                              Whose = unname(whose_of[not_checked$ownership]),
+                              Why = not_checked$ownership_reason,
+                              check.names = FALSE), maxrows = 10))
+  }
 
   ## repositories that could not be checked ----
   # A repository with a recorded failure and no files (the OSF API down, a
@@ -2736,11 +2854,18 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## unclassifiable files ----
-  # Files data_classify_files() could not place at all (data_type == "unknown"),
-  # each with the same concrete rename suggestion check_file_naming() gives for
-  # the "unclassifiable" rule.
-  unknown_files <- all_files$file_name[
-    !is.na(all_files$data_type) & all_files$data_type == "unknown"]
+  # Files data_classify_files() could not place at all (data_type == "unknown").
+  # Two kinds are left out, as no name the authors could choose would help
+  # (#648): an archive, which is a container whose files are typed once it is
+  # opened (and which "Archive Files" already reports), and a hidden settings
+  # file (".gitattributes", ".Rbuildignore", ".gitkeep"), whose name the tool
+  # that reads it fixes. Hidden settings files were unknown in 83 of 563
+  # papers.
+  is_unknown <- !is.na(all_files$data_type) & all_files$data_type == "unknown" &
+    !.is_readable_archive(all_files$file_name %||% "") &
+    !((all_files$file_type %||% rep(NA_character_, nrow(all_files))) %in% "archive") &
+    !grepl("^[.]", all_files$file_name %||% "")
+  unknown_files <- all_files$file_name[is_unknown]
   n_unknown <- length(unknown_files)
   # Per-paper count for summary_table, below -- n_unknown above stays a
   # corpus-wide total for the narrative report/summary_text (one paragraph per
@@ -2749,10 +2874,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # on every row.
   n_unknown_by_paper <- if (nrow(all_files) > 0) {
     all_files |>
-      dplyr::summarise(
-        files_unknown = sum(!is.na(data_type) & data_type == "unknown"),
-        .by = paper_id
-      )
+      dplyr::mutate(.unknown = is_unknown) |>
+      dplyr::summarise(files_unknown = sum(.unknown), .by = paper_id)
   } else {
     data.frame(paper_id = character(0), files_unknown = integer(0))
   }
@@ -2824,8 +2947,12 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # own per-file "Naming issue" column, so it needs paper_id to correctly
   # scope issues to the right paper on a multi-paper (batch/corpus) run, not
   # just a corpus-wide count.
+  # Files of a local folder checked without a paper have paper_id NA, which
+  # split() drops: the summary named the naming problems, while
+  # summary_table$naming_issues was 0 and naming_issues had no rows, so
+  # data_check saw none either (#650). NA is kept as a group of its own.
   naming_issues_by_paper_list <- if (nrow(all_files) > 0) {
-    split(all_files, all_files$paper_id) |>
+    split(all_files, addNA(factor(all_files$paper_id), ifany = TRUE)) |>
       lapply(function(df) {
         pf <- check_file_naming(
           df$file_name, file_path = df$file_path %||% df$file_name,
@@ -2957,6 +3084,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_not_public,
     report_view_only,
     report_repo,
+    report_not_checked,
     report_ownership,
     if(nrow(repo_tbl)) "#### Repositories" else NULL,
     scroll_table(repo_tbl, maxrows = 10),
@@ -2981,7 +3109,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # the existing zip/README criteria. Files that do not belong in a repository
   # (useless_files above) are something to fix: red for a "problem" kind,
   # yellow for a "suggestion" kind.
-  if (n_useless_problem > 0) {
+  # Every linked deposit holds other people's or the authors' earlier work:
+  # there is nothing of this paper's to judge, as when no repository is linked.
+  if (nrow(repos) == 0 && nrow(not_checked) > 0) {
+    tl <- "na"
+  } else if (n_useless_problem > 0) {
     tl <- "red"
   } else if (zip_n == 0 && repo_no_readme == 0 && n_unknown == 0 &&
       is.null(report_roster) && n_naming_bad == 0 &&
@@ -3034,6 +3166,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_view_only,
     summary_repo,
     summary_files,
+    summary_not_checked,
     summary_readme,
     summary_zip,
     summary_edat,
@@ -3077,6 +3210,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # (source "reference"), with `ownership`, `ownership_group` and
     # `ownership_reason`, and what the deposit's record and files showed.
     ownership = ownership,
+    # The files of the deposits linked in the text that hold other people's
+    # or the authors' earlier work (#648), left out of `table` and so not
+    # checked by any module; the same columns as `table`.
+    table_not_checked = files_not_checked,
     roster_check = roster_check,
     group_no_evidence = group_no_evidence,
     # Files that do not belong in a repository, left out of `table`: paper_id,

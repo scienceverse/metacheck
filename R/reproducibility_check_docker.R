@@ -1230,6 +1230,11 @@ repro_run_scripts_docker <- function(run_tbl, order, sandbox_root, lib_dir = NUL
       '  assign("windowsFont", function(...) "sans", envir = stand_ins)',
       '  for (ask in c("file.choose", "choose.files", "choose.dir", "tk_choose.files", "tk_choose.dir"))',
       '    assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = stand_ins)',
+      # A script that finds its own folder from "--file=" in commandArgs() found
+      # this wrapper in /sandbox instead of its own folder (4sw6h_v4; #648): the
+      # command line it sees names the script itself.
+      paste0('  assign("commandArgs", function(trailingOnly = FALSE) { a <- base::commandArgs(trailingOnly); ',
+             'if (!trailingOnly) a <- sub("^--file=.*$", "--file=', container_script, '", a); a }, envir = stand_ins)'),
       '  attach(stand_ins, name = "metacheck:stand_ins", warn.conflicts = FALSE)'
     )
     wrapper_lines <- c(

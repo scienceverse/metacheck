@@ -771,6 +771,12 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # files) rather than real data; demoted to documentation (doc_role
   # "supplemental") after extraction.
   manifest_files <- character(0)
+  # Sheets of notes or a codebook that a data spreadsheet holds beside its
+  # data, set aside below as documentation: one row per sheet. Returned as
+  # `doc_sheets`, so codebook_check reads them (#651).
+  doc_sheets <- data.frame(paper_id = character(0), source_file = character(0),
+                           file_location = character(0), sheet = character(0),
+                           group = character(0))
   # .RData/.rda workspaces that held no reusable tabular data (only fitted
   # models / session objects, or could not be restored). Flagged as a
   # data-sharing recommendation: share the underlying data as CSV + codebook.
@@ -890,6 +896,14 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
           !is.null(p$df) && !is.null(.find_codebook_cols(names(p$df))), logical(1))
         keep <- which(is_table & !is_doc)
         if (!length(keep)) keep <- utils::head(which(is_table), 1)
+        set_aside <- setdiff(which(is_doc), keep)
+        if (length(set_aside) && length(keep)) {
+          doc_sheets <<- rbind(doc_sheets, data.frame(
+            paper_id = as.character(f$paper_id %||% NA_character_),
+            source_file = f$source_file, file_location = f$file_location,
+            sheet = sheets[set_aside],
+            group = as.character(f$group %||% NA_character_)))
+        }
         if (!length(keep)) {
           if (first$manifest) {
             manifest_files <<- c(manifest_files, f$source_file)
@@ -1637,6 +1651,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       report = c(report, dv_report),
       summary_text = paste(summary_text, text),
       keys = key_found,
+      doc_sheets = doc_sheets,
       structure = all_files,
       previews = file_previews,
       gated_repos = listing_gated,
@@ -2389,6 +2404,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # One row per KEY found in the repository's files (#607): file, line,
     # type and only the beginning of the key.
     keys = key_found,
+    # Sheets of notes or a codebook beside the data in a spreadsheet, which
+    # codebook_check reads (#651).
+    doc_sheets = doc_sheets,
     traffic_light = tl,
     report = c(report, dv_report),
     summary_text = paste(summary_text, dv_summary_text)
@@ -2442,6 +2460,16 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 .dv_careless_block <- function(block, ids, scale, prefix) {
   block <- as.data.frame(lapply(block, function(x)
     suppressWarnings(as.numeric(as.character(x)))))
+  # A file that repeats a person's answers on several rows (a log with one row
+  # per trial, and the questionnaire on each) holds one response: each copy
+  # was flagged, so one person was "flagged in 20 blocks" (#648, 5b3xh_v3:
+  # 5,085 rows for 255 ids). Rows that repeat an id and its answers are left
+  # out.
+  again <- duplicated(data.frame(.id = as.character(ids), block))
+  if (any(again)) {
+    block <- block[!again, , drop = FALSE]
+    ids <- ids[!again]
+  }
   n_items <- ncol(block)
   ls <- careless::longstring(block)
   iv <- careless::irv(block, na.rm = TRUE)
@@ -2531,7 +2559,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     data.frame(
       respondent       = g$respondent[1],
       source_file      = g$source_file[1],
-      n_blocks_flagged = nrow(g),
+      # scales, not rows: one scale flagged on two rows of a person is one
+      # block (#648)
+      n_blocks_flagged = length(unique(g$scale)),
       scales           = paste(sort(unique(g$scale)), collapse = "; "),
       reasons          = paste(sort(unique(g$reason)), collapse = "; "),
       max_longstring   = max(g$longstring, na.rm = TRUE),

@@ -225,7 +225,7 @@ test_that(".repair_links leaves a space before an ordinary word", {
   expect_equal(metacheck:::.repair_links(x), x)
 })
 
-test_that(".paper_repair_links moves the positions of items after a removed space", {
+test_that(".paper_repair_text moves the positions of items after a removed space", {
   p <- paper("t")
   s <- "See https://github.com/ owner/repo and https:// doi.org/ 10.1/x (Smith, 2020)."
   p$text <- data.frame(text = s, text_id = 1L)
@@ -234,7 +234,7 @@ test_that(".paper_repair_links moves the positions of items after a removed spac
                       end = at("10.1/x") + 6L)
   p$xref <- data.frame(xref_id = 1L, text_id = 1L, start = at("Smith"),
                        end = at("Smith") + 11L)
-  q <- metacheck:::.paper_repair_links(p)
+  q <- metacheck:::.paper_repair_text(p)
   expect_equal(q$text$text,
                "See https://github.com/owner/repo and https://doi.org/10.1/x (Smith, 2020).")
   expect_equal(substr(q$text$text, q$url$start + 1, q$url$end), "https://doi.org/10.1/x")
@@ -271,7 +271,7 @@ test_that(".repair_bib_dois joins a reference's DOI with the DOI the reader foun
   expect_equal(metacheck:::.repair_bib_dois(s, 1L, data.frame(doi = NA, text_id = 1L)), s)
 })
 
-test_that(".paper_repair_links joins references' DOIs after the link rules (#459)", {
+test_that(".paper_repair_text joins references' DOIs after the link rules (#459)", {
   p <- paper("t")
   s <- "Lee (2021). Data. https:// doi. org/ 10. 5061/ dryad. 7d7wm 3806 (Lee, 2021)."
   p$text <- data.frame(text = s, text_id = 1L)
@@ -281,12 +281,77 @@ test_that(".paper_repair_links joins references' DOIs after the link rules (#459
                       end = at("3806") + 4L)
   p$xref <- data.frame(xref_id = 1L, text_id = 1L, start = at("Lee, 2021"),
                        end = at("Lee, 2021") + 9L)
-  q <- metacheck:::.paper_repair_links(p)
+  q <- metacheck:::.paper_repair_text(p)
   expect_equal(q$text$text,
                "Lee (2021). Data. https://doi.org/10.5061/dryad.7d7wm3806 (Lee, 2021).")
   expect_equal(substr(q$text$text, q$url$start + 1, q$url$end),
                "https://doi.org/10.5061/dryad.7d7wm3806")
   expect_equal(substr(q$text$text, q$xref$start + 1, q$xref$end), "Lee, 2021")
   # a second repair changes nothing
-  expect_equal(metacheck:::.paper_repair_links(q)$text$text, q$text$text)
+  expect_equal(metacheck:::.paper_repair_text(q)$text$text, q$text$text)
+})
+
+# a manuscript's text with a line number after every 80 characters or so
+.numbered_lines <- function(from, to) {
+  line <- "the participants in this study read each of the short texts on the screen and"
+  vapply(from:to, \(k) paste(line, k), character(1))
+}
+
+test_that(".repair_line_numbers removes a manuscript's line numbers (#648)", {
+  s <- c(paste(.numbered_lines(100, 120), collapse = " "),
+         "The effect was large, t(118) = 7.35, p < 121 .001, in the 250 children.",
+         paste(.numbered_lines(122, 140), collapse = " "))
+  out <- metacheck:::.repair_line_numbers(s)
+  expect_false(any(grepl("\\b1[0-4]\\d\\b", out[-2], perl = TRUE)))
+  expect_equal(out[[2]], "The effect was large, t(118) = 7.35, p < .001, in the 250 children.")
+  expect_equal(out[[1]], paste(rep("the participants in this study read each of the short texts on the screen and",
+                                   21), collapse = " "))
+  # NA stays NA
+  expect_equal(metacheck:::.repair_line_numbers(c(s, NA))[[4]], NA_character_)
+  # the last line of a paragraph can be short
+  s <- c(paste(.numbered_lines(100, 120), collapse = " "), "and at the end. 121",
+         "122 The next paragraph", paste(.numbered_lines(123, 140), collapse = " "))
+  out <- metacheck:::.repair_line_numbers(s)
+  expect_equal(out[2:3], c("and at the end.", "The next paragraph"))
+})
+
+test_that(".line_step_ok takes a line's distance, and one short line (#648)", {
+  expect_equal(metacheck:::.line_step_ok(c(1L, 1L, 1L, 2L, 2L, 3L), c(12, 80, 200, 30, 160, 600)),
+               c(TRUE, TRUE, FALSE, FALSE, TRUE, FALSE))
+})
+
+test_that(".repair_line_numbers removes runs and the line numbers beside them (#648)", {
+  line <- "the participants in this study read each of the short texts on the screen and"
+  s <- c("There was no main effect of 918 919 920 921 922 cue type, F(2, 80) = 0.01.",
+         paste(line, "923", line, "924 the end."),
+         # not a line number: a table row, an amount, and numbers far off
+         paste("Age 25-34 1169 925 21.4 and", line, "926 an estimated 927 million people."),
+         "Tables 1 2 3 4 5 and the years 2011 2012 2013 2014 2015 stay.")
+  out <- metacheck:::.repair_line_numbers(s)
+  expect_equal(out[[1]], "There was no main effect of cue type, F(2, 80) = 0.01.")
+  expect_equal(out[[2]], paste(line, line, "the end."))
+  expect_equal(out[[3]], paste("Age 25-34 1169 925 21.4 and", line, "an estimated 927 million people."))
+  expect_equal(out[[4]], s[[4]])
+})
+
+test_that(".repair_line_numbers leaves a text without line numbers alone (#648)", {
+  s <- c("We tested 120 children and 130 adults in 2020.",
+         "Of these, 140 children and 150 adults came back, and 160 did not.",
+         "Table 2 shows the 170 tests, and Study 3 the other 180.",
+         .numbered_lines(1, 20))
+  expect_equal(metacheck:::.repair_line_numbers(s), s)
+  expect_equal(metacheck:::.repair_line_numbers(character(0)), character(0))
+})
+
+test_that(".paper_repair_text moves positions after a removed line number (#648)", {
+  p <- paper("t")
+  s <- c(paste(.numbered_lines(100, 125), collapse = " "),
+         "As shown in the earlier studies of reading with the same kind of short 126 texts (Smith, 2020).")
+  p$text <- data.frame(text = s, text_id = 1:2)
+  at <- regexpr("Smith", s[[2]], fixed = TRUE)[[1]] - 1L
+  p$xref <- data.frame(xref_id = 1L, text_id = 2L, start = at, end = at + 11L)
+  q <- metacheck:::.paper_repair_text(p)
+  expect_equal(q$text$text[[2]],
+               "As shown in the earlier studies of reading with the same kind of short texts (Smith, 2020).")
+  expect_equal(substr(q$text$text[[2]], q$xref$start + 1, q$xref$end), "Smith, 2020")
 })

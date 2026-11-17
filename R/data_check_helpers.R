@@ -513,6 +513,10 @@
     r("aux", "documentation"), r("fff", "documentation"),
     r("thmx","documentation"), r("dcf", "documentation"),
     r("drawio","documentation"), r("key", "documentation"),
+    # Stata's help files, which come with every Stata command a deposit
+    # bundles (#648: 20 .sthlp/.hlp files beside the .ado files in one
+    # deposit's extra_ados/ folder were "unknown")
+    r("sthlp", "documentation"), r("hlp", "documentation"),
     # .cgi is a generic Common-Gateway-Interface script marker; in real
     # corpus context it names a saved Ovid literature-search results
     # webpage ("ovidweb.cgi"), not an executable script -- reference
@@ -685,8 +689,29 @@ data_classify_files <- function(file_name, file_path = NULL) {
   # with the code that uses it; as a .txt it was classified as documentation.
   type[grepl("^(requirements|constraints)([_.-][a-z0-9]+)*\\.(txt|in)$|^pipfile(\\.lock)?$",
              base_lc)] <- "code"
+  # A file that builds or runs the analysis has a fixed name without an
+  # extension (Makefile, Dockerfile, Snakefile, Binder's postBuild), and a
+  # project's notices are named like its licence (NOTICE, NEWS, CHANGELOG);
+  # all were "unknown" (#648: 290 files in 68 of 563 papers had no extension).
+  # Only files nothing else typed ("makefile.txt" stays documentation).
+  type[is.na(type) & grepl("^(makefile|gnumakefile|dockerfile|containerfile|snakefile|vagrantfile|justfile|postbuild)([_.-][a-z0-9_]+)?$",
+                           base_lc)] <- "code"
+  type[is.na(type) & grepl("^(notice|news|changelog|changes|authors|contributors|citation|copyright)$",
+                           base_lc)] <- "documentation"
 
   type[is.na(type)] <- "unknown"
+
+  # A single compressed file ("scan.nii.gz", "trials.csv.gz", not a .tar.gz)
+  # holds one file, which is what it is (see .file_type_crosswalk); as an
+  # archive it was "unknown" until data_check opened it. data_check still
+  # downloads and opens it by its name (.is_single_compress()).
+  gz <- type == "unknown" & .is_single_compress(file_name)
+  if (any(gz)) {
+    strip <- function(x) sub("\\.(gz|bz2|xz)$", "", x, ignore.case = TRUE)
+    inner <- data_classify_files(strip(file_name[gz]),
+                                 if (!is.null(file_path)) strip(path_for_kw[gz]))
+    type[gz] <- inner
+  }
   type
 }
 
@@ -1481,6 +1506,9 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 #' ignored. Sorted by number then letter, so the order is stable.
 #'
 #' @param paper a paper object
+#' @param words the words that name a study; by default study, experiment and
+#'   pilot. Give one word to learn which numbers the paper uses for that word
+#'   only (used to read short labels such as `E1A` in file names).
 #'
 #' @returns a character vector of group codes, or `character(0)` when the text
 #'   names no numbered study.
@@ -1490,10 +1518,12 @@ data_group_llm <- function(files, model = llm_model(), params = list(),
 #' paper <- demopaper()
 #' paper$text$text[1] <- "We report Study 1, Study 2a and a pilot (Pilot 1)."
 #' data_study_roster(paper)
-data_study_roster <- function(paper) {
+#' data_study_roster(paper, words = "pilot")
+data_study_roster <- function(paper, words = c("study", "experiment", "pilot")) {
   if (!.is_paper(paper)) return(character(0))
   hits <- tryCatch(
-    text_search(paper, "\\b(?:study|experiment|pilot)[ ._-]?[0-9]{1,2}[a-z]?\\b",
+    text_search(paper, paste0("\\b(?:", paste(words, collapse = "|"),
+                              ")[ ._-]?[0-9]{1,2}[a-z]?\\b"),
                 return = "match", ignore.case = TRUE, perl = TRUE),
     error = function(e) NULL)
   if (is.null(hits) || !nrow(hits)) return(character(0))
@@ -1613,6 +1643,49 @@ data_study_roster <- function(paper) {
     }
     NA_character_
   }, character(1), USE.NAMES = FALSE)
+}
+
+# Read a one-letter study label in a file path, "Shift_E1A.csv" (Experiment 1A)
+# or "df_s1.csv" (Study 1), as a study code, or NA (#648). One letter is
+# ambiguous: "s1" is also session 1, subject 1 or supplementary file 1, and
+# "e1" an electrode. So a letter is read as a study only when the paper itself
+# settles it:
+#   * E stands for "experiment" and S for "study", and the paper names numbered
+#     studies with that word;
+#   * every label with that letter in the deposit is a study the paper names
+#     (one s9 in a paper with Studies 1 and 2 means the letter counts something
+#     else, and then no file is placed by it);
+#   * for S, the paper names no numbered session and does not use S<n> itself
+#     ("Table S1", "S2 Fig" label supplementary material).
+# The filename is searched first, then its folders from the innermost out, as
+# in .data_group_from_path(); a file extension is never read as a label.
+.data_group_from_short_label <- function(paths, paper = NULL) {
+  out <- rep(NA_character_, length(paths))
+  if (!length(paths) || is.null(paper) || !.is_paper(paper)) return(out)
+  tok <- "(?<![a-z0-9])%s([0-9]{1,2})([a-z]?)(?![a-z0-9])"
+  label_of <- function(letter) vapply(paths, function(path) {
+    if (is.na(path) || !nzchar(path)) return(NA_character_)
+    parts <- strsplit(tolower(gsub("\\\\", "/", path)), "/", fixed = TRUE)[[1]]
+    parts[length(parts)] <- tools::file_path_sans_ext(parts[length(parts)])
+    for (part in rev(parts)) {
+      m <- regmatches(part, regexec(sprintf(tok, letter), part, perl = TRUE))[[1]]
+      if (length(m)) return(paste0("ex", as.integer(m[2]), m[3]))
+    }
+    NA_character_
+  }, character(1), USE.NAMES = FALSE)
+  text <- tryCatch(paste(paper$text$text, collapse = " "), error = function(e) "")
+  for (kind in list(c(letter = "e", word = "experiment"),
+                    c(letter = "s", word = "study"))) {
+    lab <- label_of(kind[["letter"]])
+    if (all(is.na(lab))) next
+    if (kind[["letter"]] == "s" &&
+        grepl("(?i)\\bsessions? ?[0-9]|\\bS[0-9]{1,2}[a-z]?\\b", text, perl = TRUE))
+      next
+    roster <- data_study_roster(paper, words = kind[["word"]])
+    if (!length(roster) || !all(lab[!is.na(lab)] %in% roster)) next
+    out[is.na(out)] <- lab[is.na(out)]
+  }
+  out
 }
 
 # Normalize an LLM-returned study-group code to the documented scheme and
@@ -1736,6 +1809,10 @@ data_study_roster <- function(paper) {
   # The regex is exact where a small LLM has misread such names. Files still
   # ambiguous AFTER both repo and path passes go to the LLM.
   pre <- .data_group_from_path(paths)
+  # A one-letter label ("Shift_E1A", "df_s1") counts only where the paper's own
+  # study names confirm it (see .data_group_from_short_label()).
+  short <- .data_group_from_short_label(paths, paper)
+  pre[is.na(pre)] <- short[is.na(pre)]
   fixed <- send & !is.na(pre)
   group[fixed] <- pre[fixed]
 
@@ -4008,8 +4085,13 @@ normalize_label <- function(x) {
 # "NOTES") which pushes the real header down, then a positional fallback.
 # Results are combined and `src` records the sheet so a variable can be traced.
 .extract_spreadsheet_codebook <- function(sheets, read, src, observed,
-                                          header_lookahead) {
+                                          header_lookahead, only = NULL) {
   sh_names <- tryCatch(sheets(), error = function(e) character(0))
+  # only the sheets asked for (parse_codebook()'s `sheets`)
+  if (!is.null(only)) {
+    sh_names <- intersect(sh_names, only)
+    if (!length(sh_names)) return(NULL)
+  }
   if (length(sh_names) == 0) sh_names <- NA_character_   # single default read
   parsed <- list()
   for (sh in sh_names) {
@@ -4331,6 +4413,10 @@ normalize_label <- function(x) {
 #'   leak onto an unrelated same-named column in Study B (coded 1-6). Callers
 #'   that know the file's group should pass it. Mirrors `.extract_haven_labels`'s
 #'   `group` argument.
+#' @param sheets for a spreadsheet, the names of the sheets to read; `NULL`
+#'   (the default) reads every sheet. A codebook sheet inside a data
+#'   spreadsheet is read alone (#651), as the other sheets hold data, which
+#'   the positional fallback would turn into made-up definitions.
 #'
 #' @returns a data.frame of variable definitions (`codebook_variable`, `label`,
 #'   `codebook_source`, `group`, `parse_method`); a character vector of text
@@ -4341,7 +4427,7 @@ normalize_label <- function(x) {
 #' parse_codebook(file.path(demofile("repo"), "documentation",
 #'                           "stroop_data_codebook.csv"))
 parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
-                           group = NA_character_) {
+                           group = NA_character_, sheets = NULL) {
   if (!file.exists(path)) return(NULL)
   ext <- tolower(tools::file_ext(path))
   src <- basename(path)
@@ -4455,7 +4541,8 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
               as.data.frame(readODS::read_ods(
                 path, sheet = if (is.na(sh)) 1 else sh, col_names = header,
                 .name_repair = "unique_quiet")),
-            src = src, observed = observed, header_lookahead = header_lookahead)
+            src = src, observed = observed, header_lookahead = header_lookahead,
+            only = sheets)
         }
       },
       xlsx = , xls = {
@@ -4471,7 +4558,8 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
               else
                 readxl::read_excel(path, sheet = sh, col_names = header,
                                    .name_repair = "unique_quiet")),
-            src = src, observed = observed, header_lookahead = header_lookahead)
+            src = src, observed = observed, header_lookahead = header_lookahead,
+            only = sheets)
         }
       },
       sav = , dta = , sas7bdat = {
@@ -4554,6 +4642,11 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
   }
 
   # No structured definitions: return raw lines so the caller can try the LLM.
+  # Not for a binary format, whose "lines" are the bytes of a zip or of a
+  # statistics program's file (an .xlsx whose sheets held no definitions gave
+  # "PK\003\004..." to the LLM, #651).
+  if (ext %in% c("xlsx", "xls", "ods", "sav", "dta", "sas7bdat", "jasp", "omv", "zip"))
+    return(NULL)
   tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
 }
 
@@ -4815,6 +4908,7 @@ parse_qsf <- function(path) {
 #'                    column_name = c("congruent", "incongruent"))
 #' match_column_labels(cols, cb)[, c("column_name", "label")]
 match_column_labels <- function(columns_df, codebook_vars_df) {
+  .same_id <- function(a, b) (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
   col_group <- if ("group" %in% names(columns_df)) columns_df$group else
                if ("experiment_group" %in% names(columns_df)) columns_df$experiment_group else
                rep(NA_character_, nrow(columns_df))
@@ -4903,7 +4997,10 @@ match_column_labels <- function(columns_df, codebook_vars_df) {
 
   for (i in seq_len(n)) {
     name_idx <- if (has_var_paper_id) {
-      which(norm_var == norm_col[i] & var_paper_id == col_paper_id[i])
+      # files checked without a paper have paper_id NA on both sides, and
+      # NA == NA matched nothing: no codebook ever labelled a column of a
+      # local folder (#651)
+      which(norm_var == norm_col[i] & .same_id(var_paper_id, col_paper_id[i]))
     } else {
       which(norm_var == norm_col[i])
     }
@@ -5905,13 +6002,20 @@ data_check_pii_values <- function(x, broad_min_frac = 0.30) {
     n_matched <- n[m]
     if (length(matched) == 0) next
 
-    # Validate the matched values, when the pattern has a validator.
+    # Validate the matched values, when the pattern has a validator. Every
+    # real card number passes it, while long codes pass by chance (about one
+    # in ten for the checksum, fewer with the issuer's prefix): so most of
+    # the values that look like one must pass. A column of clinical codes
+    # (SNOMED, dm+d) had 3 to 14 such values among hundreds (#648: 6 columns
+    # of OpenSAFELY codelists, 0.8% to 4% passing, the only card flags in the
+    # 2,359 tabular files of 141 deposits).
     if (!is.null(spec$validate)) {
       vfun <- get(spec$validate, mode = "function")
       ok <- vapply(matched, vfun, logical(1))
+      n_looked <- sum(n_matched)
       matched <- matched[ok]
       n_matched <- n_matched[ok]
-      if (length(matched) == 0) next
+      if (length(matched) == 0 || sum(n_matched) < 0.5 * n_looked) next
     }
     n_valid <- sum(n_matched)
     frac <- n_valid / total
@@ -6106,8 +6210,14 @@ data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
 #' * long enough (`min_median_chars`),
 #' * varied enough to be responses rather than a repeated category
 #'   (`min_unique_frac`),
-#' * **multi-word** -- most values contain whitespace between words, and
-#' * **predominantly alphabetic** -- letters, not mostly digits/punctuation.
+#' * **multi-word** -- most values contain whitespace between words,
+#' * **predominantly alphabetic** -- letters, not mostly digits/punctuation,
+#' * **not file paths or web addresses** (fewer than half of the values), and
+#' * **written in the first person** -- at least `min_first_person_frac` of the
+#'   values contain "I", "my", "we" or a like word (also in Dutch, German,
+#'   French, Spanish and Italian). People write about themselves in the first
+#'   person, which is where personal detail comes in; a code list's terms,
+#'   titles or rules are prose that describes things.
 #'
 #' @param x a character or factor vector
 #' @param min_median_chars typical (median) length above which a column may be
@@ -6118,6 +6228,8 @@ data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
 #'   one word (a space between word characters)
 #' @param min_alpha_frac minimum share of alphabetic characters in the typical
 #'   value (screens out numeric/ID/hash/URL columns)
+#' @param min_first_person_frac minimum share of values written in the first
+#'   person
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
@@ -6132,7 +6244,8 @@ data_check_pii_geo <- function(col_name, x, sibling_names = NULL) {
 data_check_pii_freetext <- function(x, min_median_chars = 40,
                                     min_unique_frac = 0.8,
                                     min_multiword_frac = 0.6,
-                                    min_alpha_frac = 0.5) {
+                                    min_alpha_frac = 0.5,
+                                    min_first_person_frac = 0.1) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.numeric(x)) return(none)
   # each distinct value once, weighed by how often it occurs (#554)
@@ -6141,6 +6254,12 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
   x <- tc$values[keep]
   n <- tc$n[keep]
   if (sum(n) < 5) return(none)
+
+  # A file path or a web address is not writing, however long and varied it is
+  # and even when its folder names hold spaces (#648).
+  addr <- grepl("^\\s*(?:[A-Za-z]:[\\\\/]|[/~]|[.]{1,2}[\\\\/]|https?://|www[.])", x, perl = TRUE) |
+    grepl("[\\\\/][^\\\\/]*[.][A-Za-z0-9]{2,4}\\s*$", x, perl = TRUE)
+  if (sum(n[addr]) > 0.5 * sum(n)) return(none)
 
   chars <- nchar(x)
   med <- stats::median(rep(chars, n))
@@ -6159,11 +6278,28 @@ data_check_pii_freetext <- function(x, min_median_chars = 40,
   alpha_frac <- if (nchar(typical) > 0) n_alpha / nchar(typical) else 0
   if (alpha_frac < min_alpha_frac) return(none)
 
+  # People write about themselves in the first person, and that is where names,
+  # places and other personal detail come in. Text that describes things -- a
+  # code list's terms, titles, rules, registry fields, notes in a table -- is
+  # long, varied prose too, but rarely says "I", "my" or "we" (#648).
+  fp_frac <- sum(n[grepl(.first_person_rx, x, perl = TRUE)]) / sum(n)
+  if (fp_frac < min_first_person_frac) return(none)
+
   list(problem = TRUE,
-       message = sprintf("Free-text column (median %.0f characters, %.0f%% distinct) may contain names or other personal detail. Review before sharing.",
-                         med, 100 * uniq_frac),
+       message = sprintf("Free-text column (median %.0f characters, %.0f%% distinct, %.0f%% written in the first person) may contain names or other personal detail. Review before sharing.",
+                         med, 100 * uniq_frac, 100 * fp_frac),
        values = NULL)
 }
+
+# A word of the first person (I, me, my, we, us, our and their forms) in
+# English, Dutch, German, French, Spanish and Italian. Used by
+# data_check_pii_freetext().
+.first_person_rx <- paste0(
+  "(?i)(?<![\\p{L}'])(?:j'|(?:i(?![.]e)|i'm|i've|i'd|i'll|me|my|mine|myself|",
+  "we|us|our|ours|ourselves|",
+  "ik|mij|mijn|wij|ons|onze|ich|mich|mir|mein|meine|meinen|meiner|wir|uns|unser|unsere|",
+  "je|moi|mon|ma|mes|nous|notre|nos|yo|mis|nosotros|nuestro|nuestra|",
+  "io|mio|mia|miei|noi|nostro)(?![\\p{L}']))")
 
 # -- Demographic-column detection ----------------------------------------------
 # Detect the three demographic variables that almost every human-subjects study

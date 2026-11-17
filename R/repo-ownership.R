@@ -350,6 +350,29 @@
   x
 }
 
+# The deposits a paper links in its main text that are not its own for this
+# paper: other people's, or the authors' earlier work (#648). repo_check lists
+# them but does not check them, so the other modules, which read its file
+# table, do not check them either. A registration's files are kept under the
+# project it was registered from (`reg_parent`: registration address ->
+# project address), so that project is set aside with it. `ownership` is
+# repo_check's table; returns paper_id and repo_url.
+.own_not_this <- function(ownership, reg_parent = character(0)) {
+  none <- data.frame(paper_id = character(0), repo_url = character(0))
+  if (!is.data.frame(ownership) || !nrow(ownership)) return(none)
+  k <- ownership$source %in% "text" & grepl("^(others|own_earlier)", ownership$ownership)
+  out <- ownership[k, c("paper_id", "repo_url"), drop = FALSE]
+  if (!nrow(out)) return(none)
+  p <- intersect(out$repo_url, names(reg_parent))
+  if (length(p)) {
+    j <- match(p, out$repo_url)
+    out <- rbind(out, data.frame(paper_id = out$paper_id[j], repo_url = unname(reg_parent[p])))
+  }
+  out <- unique(out)
+  rownames(out) <- NULL
+  out
+}
+
 # Classify links of one or more papers: `x` holds .own_facts() columns plus
 # `source` and the citing text. Each paper's links are compared with that
 # paper's own facts.

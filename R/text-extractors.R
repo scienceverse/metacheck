@@ -87,6 +87,8 @@ extract_p_values <- function(paper) {
   # operator is invalid for atomic vectors" (U150)
   if (is.character(paper))
     paper <- data.frame(text = paper, text_id = seq_along(paper))
+  # "p = 0\u00B70079" in the style of The Lancet (#648)
+  paper <- .stat_decimal_point(paper)
 
   # set up pattern
   operators <- c(
@@ -120,8 +122,10 @@ extract_p_values <- function(paper) {
   sci_x <- paste0("[x\\*\u00d7\u00c2\u00c3]\\s*10\\s*\\^?\\s*", minus, "\\s*\\d+")
   # what may follow a whole 0 or 1: a bracket, a semicolon, or a comma with
   # no digit after it; after 1 also a full stop or the end of the text. Not
-  # "p < 0." (the digits of "p < 0.05" were lost), "p = 0,05", "p = 0\u00b705",
-  # "p = 1/6", "P = 1 bar" or "p = 1 \u00d7 10\u207b\u2076" (an exponent that cannot be read)
+  # "p < 0." (the digits of "p < 0.05" were lost), "p = 0,05",
+  # "p = 1/6", "P = 1 bar" or "p = 1 \u00d7 10\u207b\u2076" (an exponent that cannot be read).
+  # "p = 0\u00b705", in the style of The Lancet, is read as 0.05: the text is
+  # changed first (.stat_decimal_point(); #648)
   end01 <- "\\s*(?:[)\\];]|,(?!\\s*\\d))"
   number <- paste0(
     "n\\.?s\\.?",                                   # ns
@@ -213,6 +217,8 @@ extract_eq <- function(paper) {
   # below (U150)
   if (is.character(paper))
     paper <- data.frame(text = paper, text_id = seq_along(paper))
+  # "p = 0\u00B70079" in the style of The Lancet (#648)
+  paper <- .stat_decimal_point(paper)
 
   # set up pattern
   operators <- c(

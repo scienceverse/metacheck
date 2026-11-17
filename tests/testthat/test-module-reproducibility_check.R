@@ -195,7 +195,7 @@ test_that("execute = TRUE actually runs a script and records ran_ok", {
   expect_equal(mo$table$outcome, "ran_ok")
   expect_equal(mo$run_results$outcome, "ran_ok")
   expect_match(mo$run_results$stdout, "Welch Two Sample t-test")
-  expect_match(mo$summary_text, "assessed AND ran", fixed = TRUE)
+  expect_match(mo$summary_text, "for reproducibility and ran it", fixed = TRUE)
 })
 
 test_that("execute = TRUE: a script that errors forces the traffic light red", {
@@ -1284,7 +1284,7 @@ test_that("execute = TRUE actually runs a Python script and records ran_ok", {
   expect_equal(mo$table$outcome, "ran_ok")
   expect_equal(mo$run_results$outcome, "ran_ok")
   expect_match(mo$run_results$stdout, "mean_a")
-  expect_match(mo$summary_text, "assessed AND ran", fixed = TRUE)
+  expect_match(mo$summary_text, "for reproducibility and ran it", fixed = TRUE)
 })
 
 test_that("execute = TRUE: a Python script that errors forces the traffic light red", {
@@ -1541,7 +1541,11 @@ test_that("the duplicate note gives each copy's path in the package, not its pla
   expect_false(grepl(dirname(repro_fixture("ok.R")), txt, fixed = TRUE))
 })
 
-test_that("a script reading a file that is only inside a .zip is not run, and the report says why (#520, item 2)", {
+test_that("a file that is only inside a .zip is unpacked where the authors had it, and the report says so (#520, item 2; #648)", {
+  # The run used to leave the file in a folder named after the zip, so the
+  # script could not read it; the zip is now unpacked in its folder, as the
+  # authors did on their computer, and the report asks them to unpack it in
+  # the code or upload the files unpacked.
   paper <- test_paper()
   d <- withr::local_tempdir()
   writeLines("d <- read.csv('data/scores.csv')", file.path(d, "main.R"))
@@ -1554,9 +1558,47 @@ test_that("a script reading a file that is only inside a .zip is not run, and th
   fake_code$prev_outputs <- list(data_check = list(structure = structure_df))
   mo <- module_run(fake_code, "reproducibility_check")
   txt <- paste(mo$report, collapse = "\n")
-  expect_match(txt, "in_archive", fixed = TRUE)
-  expect_match(txt, "only inside data.zip; unpack it so the code finds it", fixed = TRUE)
-  expect_equal(mo$summary_table$repro_missing_inputs, 1)
+  expect_false(grepl("in_archive", txt, fixed = TRUE))
+  expect_match(txt, "The code reads files that are only inside `data.zip`", fixed = TRUE)
+  expect_equal(mo$summary_table$repro_missing_inputs, 0)
+})
+
+test_that("files inside archives go where unpacking the archive in its folder puts them (#648)", {
+  p <- c("behaviour_data.zip/behaviour_data/p01.json",   # one folder: beside the zip
+         "d/loose.zip/a.csv", "d/loose.zip/sub/b.csv",     # loose files: a folder of its name
+         "raw/s3_raw.json.gz/s3_raw.json",                 # one compressed file: beside it
+         "Data.tar.gz/Data/x.csv",
+         "outer.zip/top/inner.zip/q.csv", "outer.zip/top/r.csv",
+         "dup.zip/a.csv", "dup/a.csv",                     # a file outside the zip keeps its path
+         "plain.csv", NA)
+  expect_equal(.repro_unpacked_paths(p),
+               c("behaviour_data/p01.json", "d/loose/a.csv", "d/loose/sub/b.csv", "raw/s3_raw.json",
+                 "Data/x.csv", "top/inner/q.csv", "top/r.csv", "dup.zip_files/a.csv", "dup/a.csv",
+                 "plain.csv", NA))
+
+  # the archive on disk goes into the run folder too, at its own path; the
+  # report keeps the path in the deposit
+  d <- withr::local_tempdir()
+  gz <- file.path(d, "res.nii.gz"); writeLines("x", gz)
+  s <- data.frame(file_name = "res.nii", file_path = "templates/res.nii.gz/res.nii",
+                  file_location = file.path(d, "res.nii"),
+                  archive_file_path = "templates/res.nii.gz", archive_file_location = gz)
+  code <- data.frame(file_name = "a.R", file_path = "code/a.R")
+  up <- .repro_unpack_archives(s, code)
+  expect_equal(up$structure_df$file_path, "templates/res.nii")
+  expect_equal(up$structure_df$file_path_deposit, "templates/res.nii.gz/res.nii")
+  expect_equal(up$code_tbl$file_path, "code/a.R")
+  expect_equal(up$archives$file_path, "templates/res.nii.gz")
+  expect_equal(up$archives$file_location, gz)
+
+  # the sentence for the report: only for an archive whose files the code
+  # reads and that no script unpacks
+  s2 <- data.frame(file_name = "p01.json", file_path = "behaviour_data/p01.json",
+                   file_path_deposit = "behaviour_data.zip/behaviour_data/p01.json")
+  expect_match(.repro_archive_text(s2, "f <- Sys.glob('behaviour_data/*.json')"),
+               "only inside `behaviour_data.zip`")
+  expect_equal(.repro_archive_text(s2, "unzip('behaviour_data.zip'); f <- Sys.glob('behaviour_data/*.json')"), "")
+  expect_equal(.repro_archive_text(s2, "x <- read.csv('other.csv')"), "")
 })
 
 test_that("renv's own files in a renv/ folder are not assessed as the paper's scripts (#548)", {

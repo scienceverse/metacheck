@@ -1464,7 +1464,7 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # attached as attribute "oversize" (file_name, file_size in bytes, NA when
 # unknown), which data_check adds to its record of files over the limit, so
 # the manifest gives them that reason. `name` is the inner paths.
-.with_oversize <- function(rows, archive_row, label, name, file_size) {
+.with_oversize <- function(rows, archive_row, label, name, file_size, archive = NA_character_) {
   if (length(name) == 0) return(rows)
   extra <- archive_row[rep(1, length(name)), , drop = FALSE]
   extra$file_name     <- basename(name)
@@ -1477,13 +1477,30 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
     extra$data_format <- data_format(tolower(tools::file_ext(name)))
   if ("file_url" %in% names(extra))  extra$file_url  <- NA_character_
   if ("file_type" %in% names(extra)) extra$file_type <- .inner_file_type(name)
+  # the archive itself was downloaded; only its file was too large to unpack
+  extra$archive_file_path     <- label
+  extra$archive_file_location <- archive
   out <- dplyr::bind_rows(rows, extra)
   attr(out, "oversize") <- data.frame(file_name = basename(name),
                                       file_size = as.numeric(file_size))
   out
 }
 
-.archive_rows <- function(dest, archive_row, label, skip_types) {
+# The path an archive's files are listed under: the archive's own path in the
+# repository ("templates/ref-bounti/res-t2.nii.gz"), else its file name. With
+# only the file name, the folder the archive was in was lost, and
+# reproducibility_check put its files at the top of the run folder (#648).
+.archive_label <- function(archive_row, path) {
+  fp <- if ("file_path" %in% names(archive_row)) as.character(archive_row$file_path[1]) else NA_character_
+  if (is.na(fp) || !nzchar(fp)) return(basename(path))
+  sub("^(\\./|/)+", "", gsub("\\\\", "/", fp))
+}
+
+# `archive_row` is the archive's own row; its files get its path in
+# `archive_file_path` and its file on disk in `archive_file_location`, as
+# data_check drops the archive's row once it is unpacked, and
+# reproducibility_check puts the archive itself in the run folder (#648).
+.archive_rows <- function(dest, archive_row, label, skip_types, archive = NA_character_) {
   empty <- archive_row[0, , drop = FALSE]
   if (!dir.exists(dest)) return(empty)
 
@@ -1514,6 +1531,8 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   # Inner files came from a local extraction, not a remote URL of their own.
   if ("file_url" %in% names(rows))    rows$file_url    <- NA_character_
   if ("file_type" %in% names(rows))   rows$file_type   <- .inner_file_type(rel)
+  rows$archive_file_path     <- label
+  rows$archive_file_location <- archive
   rows
 }
 
@@ -1621,9 +1640,10 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
     .move_extracted(part, dest, missing)
   }
 
-  rows <- if (length(want) > 0) .archive_rows(dest, zip_row, basename(zip_path), skip_types)
+  label <- .archive_label(zip_row, zip_path)
+  rows <- if (length(want) > 0) .archive_rows(dest, zip_row, label, skip_types, archive = zip_path)
           else empty
-  .with_oversize(rows, zip_row, basename(zip_path), entries$Name[over], entries$Length[over])
+  .with_oversize(rows, zip_row, label, entries$Name[over], entries$Length[over], archive = zip_path)
 }
 
 # Expand a downloaded tar-family archive (.tar / .tar.gz / .tgz / .tar.bz2 /
@@ -1671,9 +1691,10 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
     unlink(got[big])
   }
 
-  rows <- if (any(keep & !over)) .archive_rows(dest, tar_row, basename(tar_path), skip_types)
+  label <- .archive_label(tar_row, tar_path)
+  rows <- if (any(keep & !over)) .archive_rows(dest, tar_row, label, skip_types, archive = tar_path)
           else empty
-  .with_oversize(rows, tar_row, basename(tar_path), entries[over], size[over])
+  .with_oversize(rows, tar_row, label, entries[over], size[over], archive = tar_path)
 }
 
 # Expand a downloaded single-file compression (.gz / .bz2 / .xz that is NOT a
@@ -1726,12 +1747,12 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
     if (!identical(status, "ok")) {
       unlink(dirname(part), recursive = TRUE)
       return(if (identical(status, "over"))
-        .with_oversize(empty, gz_row, basename(gz_path), inner_name, NA) else empty)
+        .with_oversize(empty, gz_row, .archive_label(gz_row, gz_path), inner_name, NA, archive = gz_path) else empty)
     }
     .move_extracted(dirname(part), dest, inner_name)
   }
 
-  .archive_rows(dest, gz_row, basename(gz_path), skip_types)
+  .archive_rows(dest, gz_row, .archive_label(gz_row, gz_path), skip_types, archive = gz_path)
 }
 
 #' Decide whether a remote ZIP is worth downloading for a data archive

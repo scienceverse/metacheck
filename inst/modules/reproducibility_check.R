@@ -507,29 +507,66 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     do.call(module_run, args)
   }
   if (is.null(structure_df)) structure_df <- run_missing("data_check")$structure
-  # The code runs in the repository as the authors organised it; only paths that
-  # do not work there are rewritten (#568)
-  plan <- .repro_package_plan(structure_df)
   if (is.null(code_tbl)) {
     cc <- run_missing("code_check"); code_tbl <- cc$table
     version_pin <- cc$version_pin
   }
+  # Deposits linked in the paper that hold other people's work or the authors'
+  # earlier work are not checked (repo_check's `table_not_checked`, #648), but
+  # the paper's own code may read their files, as a re-analysis of another
+  # team's data does. The files of theirs that the code names are fetched below
+  # and put in the run folder with the paper's own (`others_got`, added to the
+  # plan only); nothing else in this module counts them.
+  others_in <- get_prev_outputs("repo_check", "table_not_checked")
+  others_got <- NULL
+  # The files of an archive are where unpacking the archive in its folder puts
+  # them, as on the authors' computer, and the archive itself is there too
+  # (`archives_got`, added to the plan only); the report still names each file
+  # by its path in the deposit (`file_path_deposit`) (#648)
+  # the files any code file of the paper writes or downloads, in any language
+  # (code_check's files_written), so a file a script makes is not missing (#648)
+  written_by_code <- if (!is.null(code_tbl) && "files_written" %in% names(code_tbl))
+    unique(unlist(strsplit(code_tbl$files_written[!is.na(code_tbl$files_written)], ",[[:space:]]*"))) else character(0)
+  up <- .repro_unpack_archives(structure_df, code_tbl)
+  structure_df <- up$structure_df
+  code_tbl <- up$code_tbl
+  archives_got <- up$archives
+  # The code runs in the repository as the authors organised it; only paths that
+  # do not work there are rewritten (#568)
+  plan_of <- function(s) .repro_package_plan(dplyr::bind_rows(s, others_got, archives_got))
+  plan <- plan_of(structure_df)
   # Before a run, the files the code names that the repository lists but the
   # first download left out (an image, a sound file) are fetched, in one call for
   # those files only (#568; see .repro_named_files())
   if (isTRUE(execute) && !identical(download, "none") && !isFALSE(download) &&
-      !is.null(code_tbl) && nrow(code_tbl) && any(.repro_fetchable(structure_df))) {
+      !is.null(code_tbl) && nrow(code_tbl)) {
     code_locs <- code_tbl$file_location[!is.na(code_tbl$file_location) & file.exists(code_tbl$file_location %||% "")]
     # code_read(), not readLines(): a file that is not text gives no lines, where
     # 10.1111/2041-210X.13967's 109 MB of R data named .r was read as text (#568)
     code_txt <- unlist(lapply(code_locs, function(f) tryCatch(code_read(f), error = function(e) character(0))))
-    named <- .repro_named_files(structure_df, code_txt)
-    if (any(named)) {
-      message("[repro] fetching ", sum(named), " file(s) the code names that were not downloaded")
-      structure_df <- .repro_fetch_files(structure_df, named, max_file_size, max_download_size,
-                                         cache, skip_on_api_limit)
-      plan <- .repro_package_plan(structure_df)
+    if (any(.repro_fetchable(structure_df))) {
+      named <- .repro_named_files(structure_df, code_txt)
+      if (any(named)) {
+        message("[repro] fetching ", sum(named), " file(s) the code names that were not downloaded")
+        structure_df <- .repro_fetch_files(structure_df, named, max_file_size, max_download_size,
+                                           cache, skip_on_api_limit)
+      }
     }
+    if (is.data.frame(others_in) && nrow(others_in)) {
+      cols <- intersect(c("file_name", "file_path", "file_url", "file_size", "repo_url",
+                          "archive_url", "archive_member"), names(others_in))
+      others_in <- others_in[, cols, drop = FALSE]
+      others_in$file_location <- NA_character_
+      named <- .repro_named_files(others_in, code_txt, by_extension = FALSE)
+      if (any(named)) {
+        message("[repro] fetching ", sum(named), " file(s) the code names from deposits that are not this paper's")
+        others_in <- .repro_fetch_files(others_in, named, max_file_size, max_download_size,
+                                        cache, skip_on_api_limit)
+        got <- named & !is.na(others_in$file_location) & file.exists(others_in$file_location %||% "")
+        if (any(got)) others_got <- others_in[got, intersect(c("file_name", "file_path", "file_location"), names(others_in)), drop = FALSE]
+      }
+    }
+    plan <- plan_of(structure_df)
   }
 
   # ── SPSS / Stata data without syntax ─────────────────────────────────────────
@@ -1418,38 +1455,16 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_github  <- sum(install_deps$source %in% c("github", "url"))
 
   # ── 4. Per-file path rewrite + I/O for ordering ─────────────────────────────
-  io <- repro_file_io(code_text_list)
-  io$file_path <- .repro_order_path(r_files)
-
-  r_script_paths <- .repro_script_path(r_files)
-  rewrite_list <- lapply(seq_len(n_code), function(i)
-    repro_rewrite_paths(code_text_list[[i]], r_files$file_name[i], plan, "R",
-                       structure_df = structure_df, script_path = r_script_paths[i]))
-  names(rewrite_list) <- r_files$file_name
-  order_tbl <- repro_run_order(io)
-  r_script_places <- .repro_script_places(r_files)
-  # the folder each script runs from
-  r_run_dirs <- .repro_run_folders(r_script_places, code_text_list, plan, order_tbl, "R")
-  # where here() starts for each script (see .repro_here_roots() and the .here
-  # marks written with the scripts below): a path given to here() counts from there
-  here_roots <- .repro_here_roots(code_text_list, r_run_dirs, plan)
-  r_here_dirs <- vapply(seq_along(r_run_dirs), function(i)
-    .repro_here_start(r_run_dirs[i], here_roots[i], plan), character(1))
-  # a reference that works as written stays as it is
-  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
-    .repro_keep_working_refs(rewrite_list[[i]], plan, r_script_paths[i], r_run_dirs[i],
-                             here_dir = r_here_dirs[i])), names(rewrite_list))
-  # a folder on the authors' computer held in a variable gets the deposit's folder
-  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i)
-    .repro_apply_folder_vars(rewrite_list[[i]],
-                             .repro_folder_vars(code_text_list[[i]], plan, r_run_dirs[i],
-                                                rw = rewrite_list[[i]]))), names(rewrite_list))
-  # a folder the script lists, where the deposit holds it (#578, item 2)
-  rewrite_list <- stats::setNames(lapply(seq_along(rewrite_list), function(i) {
-    d <- rewrite_list[[i]]
-    lf <- .repro_listed_folders(code_text_list[[i]], plan, r_run_dirs[i], "R")
-    dplyr::bind_rows(d, lf[!lf$ref %in% d$ref, , drop = FALSE])
-  }), names(rewrite_list))
+  # (see .repro_plan_rewrites(), which .repro_rewrite_preview() also uses)
+  rp <- .repro_plan_rewrites(code_text_list, r_files, plan, structure_df, "R")
+  io <- rp$io
+  r_script_paths <- rp$script_paths
+  rewrite_list <- rp$rewrite_list
+  order_tbl <- rp$order_tbl
+  r_script_places <- rp$script_places
+  r_run_dirs <- rp$run_dirs
+  here_roots <- rp$here_roots
+  r_here_dirs <- rp$here_dirs
 
   # Per-file rewrite counts + unresolved reads (referenced, not matched in plan).
   rewrites_n  <- vapply(rewrite_list, function(d)
@@ -1486,8 +1501,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   # ── 6. Missing-input diagnosis ──────────────────────────────────────────────
   # A read is a "missing input" when no earlier script writes it AND it is not a
   # file available in the repository. Cross-reference the download records.
+  # Also what scripts in other languages write (code_check's files_written: a
+  # Stata .do file's export delimited), and a name the code builds, matched as
+  # a pattern (.code_name_match()) (#648)
   produced <- unique(tolower(unlist(io$writes %||% list(), use.names = FALSE)))
-  candidate_missing <- setdiff(unique(tolower(unresolved_refs)), produced)
+  candidate_missing <- unique(tolower(unresolved_refs))
+  candidate_missing <- candidate_missing[!.code_name_match(candidate_missing, c(produced, written_by_code))]
   missing_inputs <- repro_missing_inputs(candidate_missing, plan, structure_df)
   n_missing_inputs <- nrow(missing_inputs)
   n_withheld <- sum(missing_inputs$status == "withheld_size")
@@ -1795,11 +1814,19 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # The top always has a mark, so here() finds a root from every folder; a
     # mark in each run folder came before the authors' own .Rproj at the top.
     # (here_roots was worked out with the paths, above.)
+    # Only when a script uses here(): an empty .here in a deposit whose code
+    # does not use it is a file the authors did not make, and a release check
+    # of the authors' own that compares the folder with its list of checksums
+    # failed on it (10.1101/2026.11.03.26367206; #648).
+    uses_here <- any(vapply(code_text_list, function(t)
+      any(grepl("(?<![A-Za-z0-9_.])here\\s*\\(|here::|library\\(\\s*['\"]?here\\b", t, perl = TRUE)),
+      logical(1)))
     rooted <- !is.na(here_roots)
     root_dirs <- ifelse(here_roots[rooted] == ".", sandbox_root,
                         file.path(sandbox_root, .portable_path(here_roots[rooted])))
-    for (d in unique(c(sandbox_root, root_dirs))) if (!length(list.files(d, pattern = "\\.Rproj$|^\\.here$|^DESCRIPTION$", all.files = TRUE)))
-      suppressWarnings(file.create(file.path(d, ".here")))
+    if (uses_here)
+      for (d in unique(c(sandbox_root, root_dirs))) if (!length(list.files(d, pattern = "\\.Rproj$|^\\.here$|^DESCRIPTION$", all.files = TRUE)))
+        suppressWarnings(file.create(file.path(d, ".here")))
     .dbg("  wrote ", nrow(run_tbl), " script(s).")
 
     # 2. Optionally install dependencies. sandbox = "process": CRAN sources
@@ -2008,7 +2035,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
           # per file per pass (not %in% names() already) — a script failing
           # on a second, different missing function in the same pass is left
           # for a later, separate report rather than stacking guesses.
-          pkgs <- .repro_missing_fn_pkgs(v, user, code_text_list, candidate_pkgs)
+          # Without installs, failed_deps holds every package the code uses;
+          # one already installed here is there for a script run outside
+          # Docker, so its library() line can be added (#648)
+          unavailable <- if (!install_r && sandbox != "docker")
+            failed_deps[!nzchar(vapply(failed_deps, function(p) system.file(package = p), ""))]
+            else failed_deps
+          pkgs <- .repro_missing_fn_pkgs(v, user, code_text_list, candidate_pkgs,
+                                         unavailable = unavailable)
           if (length(pkgs)) {
             library_injections[[user]] <- pkgs
             .dbg("missing-library injection: '", v, "' -> library(",
@@ -2136,7 +2170,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                            cache, skip_on_api_limit)
         got <- rows & !is.na(structure_df$file_location)
         if (any(got)) {
-          plan <- .repro_package_plan(structure_df)
+          plan <- plan_of(structure_df)
           new_plan <- plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE]
           repro_materialize_layout(new_plan, structure_df, sandbox_root,
                                    deadline = .repro_clock_deadline(total_timeout))
@@ -2260,14 +2294,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       .repro_inputs_after_run(missing_inputs, unresolved_list, r_files$file_name, run_results),
       tl_clean)
 
-    # An execution error (errored / timed_out) is a reproduction failure: force
-    # the traffic light red, whatever the static signals said. A
-    # dependency_unavailable script is deliberately excluded: it failed because
-    # ITS OWN package could not be installed from either live CRAN or the
-    # Archive (or a GitHub/URL source), which is an infrastructure limitation,
-    # not evidence the paper's code is broken.
-    if (any(run_results$outcome %in% c("errored", "timed_out"))) tl <- "red"
-    else if (any(run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory", "not_read")) && tl == "green") tl <- "yellow"
+    # An error of the code is a reproduction failure: red, whatever the static
+    # signals said. A time-out, a package that could not be installed, a gap in
+    # our run or no script run to the end is yellow (see .repro_run_light(); #648).
+    tl <- .repro_run_light(tl, run_results)
 
     # Turn each script's run into statistical results, the same way JASP/jamovi
     # files are handled — so RUN R code contributes to statistical_output too.
@@ -2442,6 +2472,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   total_rewrites <- sum(rewrites_n)
   total_ambiguous <- sum(ambiguous_n)
   report_paths <- .repro_path_fix_text(rewrite_list, execute)
+  # archives the run unpacked because the code reads files inside them (#648)
+  arch_txt <- .repro_archive_text(structure_df, code_text_list)
+  if (nzchar(arch_txt)) report_paths <- paste(report_paths, arch_txt)
   if (total_ambiguous > 0)
     report_paths <- paste(report_paths, sprintf(
       "%d reference%s matched several files sharing a name and could not be resolved by study group or folder; %s left unrewritten and flagged.",
@@ -2841,16 +2874,12 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                 output_blocks, truncation_note, .repro_output_cut_note(stat_cut))
 
     if (!is.null(install_results) && nrow(install_results) > 0) {
-      n_ok   <- sum(install_results$installed)
-      n_fail <- sum(!install_results$installed)
       # A package installed via the CRAN Archive retry (live CRAN no longer
       # serves it) reproduced against a STALE version, not necessarily the one
       # the authors used — worth distinguishing from an ordinary install.
       via_arch <- if ("via_archive" %in% names(install_results))
         install_results$package[!is.na(install_results$via_archive) & install_results$via_archive] else character(0)
-      report_inst <- sprintf(
-        "Dependencies were installed into a throwaway library before running: %d succeeded, %d failed. %s were installed.",
-        n_ok, n_fail, paste(install_results$package, collapse = ", "))
+      report_inst <- .repro_install_sentence(install_results)
       report_arch <- if (length(via_arch) > 0) sprintf(
         paste0("**%d of these were no longer on live CRAN** and were instead ",
                "installed from the **CRAN Archive**'s most recent published ",
@@ -2908,11 +2937,15 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     sum(run_results$outcome == "dependency_unavailable") else 0L
   n_by_src_sum <- if (!is.null(run_results))
     sum(run_results$outcome == "run_by_source") else 0L
-  n_run_own <- if (!is.null(run_results)) nrow(run_results) - n_by_src_sum else 0L
+  # the scripts with a result of their own, and those that were started: files
+  # of software or of functions only were counted as scripts run (#648)
+  n_run_own <- if (!is.null(run_results)) sum(!run_results$outcome %in% .repro_not_own_outcomes) else 0L
+  n_started <- if (!is.null(run_results)) sum(run_results$outcome %in% .repro_started_outcomes) else 0L
   summary_text <- c(
     if (isTRUE(execute)) sprintf(
-      "We assessed AND ran %d R code file%s for reproducibility (each in an isolated %s).",
-      n_code, plural(n_code), if (sandbox == "docker") "Docker container" else "subprocess") else sprintf(
+      "We assessed %d R code file%s for reproducibility and ran %s (each in an isolated %s).",
+      n_code, plural(n_code), if (n_started == 0) "none of them" else if (n_started == n_code) plural(n_code, "it", "them") else sprintf("%d of them", n_started),
+      if (sandbox == "docker") "Docker container" else "subprocess") else sprintf(
       "We assessed %d R code file%s for reproducibility (static analysis; no code was run).",
       n_code, plural(n_code)),
     if (!isTRUE(execute)) sprintf("%d file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
@@ -2922,21 +2955,21 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_dup, plural(n_dup), plural(n_dup)),
     # Scripts run only inside the script that sources them are not counted
     # here: their outcome is part of that script's.
-    if (isTRUE(execute) && !is.null(run_results)) sprintf(
+    if (isTRUE(execute) && !is.null(run_results) && n_run_own > 0) sprintf(
       "%d of %d script%s ran without error when executed%s.",
       n_ran_ok, n_run_own, plural(n_run_own),
       if (n_by_src_sum > 0) sprintf(
         " (%d more %s run by another script with `source()`)", n_by_src_sum,
         plural(n_by_src_sum, "is", "are")) else ""),
     if (n_nodep_sum > 0) sprintf(
-      "%d script%s could not run because %s own dependency is unavailable (not counted against the traffic light).",
+      "%d script%s could not run because %s own dependency is unavailable (not counted as an error of the code).",
       n_nodep_sum, plural(n_nodep_sum), plural(n_nodep_sum, "its", "their")),
     if (nrow(reported_inputs) > 0) sprintf(
       "%d referenced input%s unavailable (%d withheld due to size).",
       nrow(reported_inputs), plural(nrow(reported_inputs)), n_withheld),
     sprintf("%d installable dependenc%s detected.", n_deps,
             if (n_deps == 1) "y" else "ies"),
-    .repro_recorded_summary(recorded, install_results),
+    .repro_recorded_summary(recorded, install_results, version_pin, sandbox, docker_use_declared_version),
     recorded_advice
   ) |> paste("\n- ", x = _, collapse = "")
 
@@ -3285,24 +3318,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   n_py_deps <- nrow(py_install_deps)
 
   # ── Per-file path rewrite + I/O for ordering ──────────────────────────────
-  py_io <- repro_file_io(py_code_text_list, "Python")
-
-  py_script_paths <- .repro_script_path(py_files)
-  py_rewrite_list <- lapply(seq_len(n_py_code), function(i)
-    repro_rewrite_paths(py_code_text_list[[i]], py_files$file_name[i], plan, "Python",
-                       structure_df = structure_df, script_path = py_script_paths[i]))
-  names(py_rewrite_list) <- py_files$file_name
-  py_order_tbl <- repro_run_order(py_io)
-  py_script_places <- .repro_script_places(py_files)
-  py_run_dirs <- .repro_run_folders(py_script_places, py_code_text_list, plan, py_order_tbl, "Python")
-  py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i)
-    .repro_keep_working_refs(py_rewrite_list[[i]], plan, py_script_paths[i], py_run_dirs[i])), names(py_rewrite_list))
-  # a folder the script lists, where the deposit holds it (#578, item 2)
-  py_rewrite_list <- stats::setNames(lapply(seq_along(py_rewrite_list), function(i) {
-    d <- py_rewrite_list[[i]]
-    lf <- .repro_listed_folders(py_code_text_list[[i]], plan, py_run_dirs[i], "Python")
-    dplyr::bind_rows(d, lf[!lf$ref %in% d$ref, , drop = FALSE])
-  }), names(py_rewrite_list))
+  # (see .repro_plan_rewrites(), which .repro_rewrite_preview() also uses)
+  py_rp <- .repro_plan_rewrites(py_code_text_list, py_files, plan, structure_df, "Python")
+  py_io <- py_rp$io
+  py_script_paths <- py_rp$script_paths
+  py_rewrite_list <- py_rp$rewrite_list
+  py_order_tbl <- py_rp$order_tbl
+  py_script_places <- py_rp$script_places
+  py_run_dirs <- py_rp$run_dirs
 
   py_rewrites_n <- vapply(py_rewrite_list, function(d)
     if (nrow(d)) sum(d$matched & !d$ambiguous & !(d$as_written %||% FALSE)) else 0L, integer(1))
@@ -3322,7 +3345,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── Missing-input diagnosis ───────────────────────────────────────────────
   py_produced <- unique(tolower(unlist(py_io$writes %||% list(), use.names = FALSE)))
-  py_candidate_missing <- setdiff(unique(tolower(py_unresolved_refs)), py_produced)
+  py_candidate_missing <- unique(tolower(py_unresolved_refs))
+  py_candidate_missing <- py_candidate_missing[!.code_name_match(py_candidate_missing,
+                                                                 c(py_produced, written_by_code))]
   py_missing_inputs <- repro_missing_inputs(py_candidate_missing, plan, structure_df)
   n_py_missing_inputs <- nrow(py_missing_inputs)
   n_py_withheld <- sum(py_missing_inputs$status == "withheld_size")
@@ -3574,7 +3599,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                              cache, skip_on_api_limit)
           got <- rows & !is.na(structure_df$file_location)
           if (any(got)) {
-            plan <- .repro_package_plan(structure_df)
+            plan <- plan_of(structure_df)
             repro_materialize_layout(plan[!is.na(plan$source) & plan$source %in% structure_df$file_location[got], , drop = FALSE],
                                      structure_df, sandbox_root,
                                      deadline = .repro_clock_deadline(total_timeout))
@@ -3762,8 +3787,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     py_tl <- .repro_static_light(
       .repro_inputs_after_run(py_missing_inputs, py_unresolved_list, py_files$file_name, py_run_results),
       py_tl_clean)
-    if (any(py_run_results$outcome %in% c("errored", "timed_out"))) py_tl <- "red"
-    else if (any(py_run_results$outcome %in% c("skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet", "download_too_large", "not_downloaded", "out_of_memory", "not_read")) && py_tl == "green") py_tl <- "yellow"
+    py_tl <- .repro_run_light(py_tl, py_run_results)
 
     # ── Statistical output extraction from Python stdout ─────────────────────
     # Mirrors the R path's own r_stat_output block (see "Statistical output
@@ -3900,6 +3924,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   py_total_rewrites <- sum(py_rewrites_n)
   py_total_ambiguous <- sum(py_ambiguous_n)
   py_report_paths <- .repro_path_fix_text(py_rewrite_list, execute)
+  py_arch_txt <- .repro_archive_text(structure_df, py_code_text_list)
+  if (nzchar(py_arch_txt)) py_report_paths <- paste(py_report_paths,
+    sub("`unzip\\(\"([^\"]*)\"\\)` in R", "`zipfile.ZipFile(\"\\1\").extractall()` in Python", py_arch_txt))
   if (py_total_ambiguous > 0)
     py_report_paths <- paste(py_report_paths, sprintf(
       "%d reference%s matched several files sharing a name and could not be resolved by study group or folder; %s left unrewritten and flagged.",
@@ -4178,11 +4205,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                    py_output_blocks, py_truncation_note, .repro_output_cut_note(py_stat_cut))
 
     if (!is.null(py_install_results) && nrow(py_install_results) > 0) {
-      n_py_ok <- sum(py_install_results$installed)
-      n_py_fail <- sum(!py_install_results$installed)
-      py_report_inst <- sprintf(
-        "Dependencies were installed into a throwaway library before running (`pip install`): %d succeeded, %d failed. %s were installed.",
-        n_py_ok, n_py_fail, paste(py_install_results$package, collapse = ", "))
+      py_report_inst <- .repro_install_sentence(py_install_results, pip = TRUE)
       py_failed_rows <- py_install_results[!py_install_results$installed, , drop = FALSE]
       py_report_fail <- if (nrow(py_failed_rows) > 0) sprintf(
         "**Failed:** %s", paste(sprintf(
@@ -4206,9 +4229,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (isTRUE(execute) && !is.null(py_exec_error)) sprintf(
       "We assessed %d Python code file%s for reproducibility, but could not run %s: %s",
       n_py_code, plural(n_py_code), plural(n_py_code, "it", "them"), py_exec_error)
-    else if (isTRUE(execute)) sprintf(
-      "We assessed AND ran %d Python code file%s for reproducibility.",
-      n_py_code, plural(n_py_code)) else sprintf(
+    else if (isTRUE(execute)) {
+      n_py_started <- if (is.null(py_run_results)) 0L else sum(py_run_results$outcome %in% .repro_started_outcomes)
+      sprintf("We assessed %d Python code file%s for reproducibility and ran %s.",
+              n_py_code, plural(n_py_code),
+              if (n_py_started == 0) "none of them" else if (n_py_started == n_py_code) plural(n_py_code, "it", "them")
+              else sprintf("%d of them", n_py_started))
+    } else sprintf(
       "We assessed %d Python code file%s for reproducibility (static analysis; no code was run).",
       n_py_code, plural(n_py_code)),
     if (!isTRUE(execute)) sprintf("%d Python file%s appear%s runnable so far (parses, inputs resolve, placeable in the run order).",
@@ -4220,8 +4247,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (isTRUE(execute) && !is.null(py_run_results)) {
       n_py_imp <- sum(py_run_results$outcome == "run_by_import")
       # nor are files of software (a package's tests, __init__.py)
-      n_py_own <- nrow(py_run_results) - n_py_imp - sum(py_run_results$outcome == "not_analysis")
-      sprintf("%d of %d Python script%s ran without error when executed%s.",
+      n_py_own <- sum(!py_run_results$outcome %in% .repro_not_own_outcomes)
+      if (n_py_own > 0) sprintf("%d of %d Python script%s ran without error when executed%s.",
               n_py_ran_ok_sum, n_py_own, plural(n_py_own),
               if (n_py_imp > 0) sprintf(" (%d more %s imported by other files, not run on %s own)",
                                         n_py_imp, plural(n_py_imp, "file is", "files are"),
@@ -4456,9 +4483,13 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       n_tests = shared_match$summary$n_tests %||% NA_integer_,
       n_found = shared_match$summary$n_found %||% NA_integer_,
       sandbox = sandbox, timeout = timeout, install_missing = install_r,
-      recorded_note = c(.repro_recorded_summary(recorded, install_results), recorded_advice),
+      recorded_note = c(.repro_recorded_summary(recorded, install_results, version_pin, sandbox, docker_use_declared_version), recorded_advice),
       net = net, source_unknown = .repro_source_unknown(install_results),
-      install_results = install_results, versions_recorded = !is.null(recorded_advice))
+      install_results = install_results, versions_recorded = !is.null(recorded_advice),
+      # code files in languages that are not run, with what they write (#648)
+      other_writes = if (!is.null(code_tbl) && all(c("language", "files_written") %in% names(code_tbl)))
+        code_tbl[!code_tbl$language %in% c("R", "Python") & !is.na(code_tbl$files_written) &
+                   nzchar(code_tbl$files_written), c("file_name", "files_written"), drop = FALSE])
   )
   # When asked to keep the sandbox, surface its path so the caller can inspect
   # exactly what ran (data/, statistical_output/, and — when execute = TRUE —

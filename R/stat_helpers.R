@@ -294,6 +294,25 @@
   !nzchar(h) || grepl("^[0-9]+\\.?$|^-+$", h)
 }
 
+# ---- the decimal point of The Lancet ------------------------------------
+
+# A paper's text with a raised dot between two digits read as a decimal point:
+# The Lancet and medRxiv papers in its style write "p = 0\u00b70079", which
+# GROBID gives with the middle dot or the bullet ("p = 0\u20220079"), so the
+# p-values and tests of such papers were not read at all (#648; 87 values in 2
+# of 141 preprints). Between two digits the dot is nothing else in a result.
+# `paper` is a paper, or a data frame with a `text` column; it is returned
+# with that text changed.
+.stat_decimal_point <- function(paper) {
+  fix <- function(x) gsub("(?<=\\d)[\u00b7\u2022\u2219](?=\\d)", ".", x, perl = TRUE)
+  if (is.data.frame(paper) && "text" %in% names(paper)) {
+    paper$text <- fix(paper$text)
+  } else if (is.list(paper) && is.data.frame(paper$text) && "text" %in% names(paper$text)) {
+    paper$text$text <- fix(paper$text$text)
+  }
+  paper
+}
+
 # ---- shared result pattern --------------------------------------------
 
 # The "<name> [(df)] <op> <value>" statistic pattern, shared with extract_eq().

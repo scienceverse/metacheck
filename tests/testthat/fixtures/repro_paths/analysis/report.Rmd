@@ -1,0 +1,17 @@
+---
+title: "Report"
+output: html_document
+---
+
+R Markdown knits from the file's own folder, analysis/.
+
+```{r setup}
+library(here)
+d01 <- read.csv(here("data", "raw", "raw_lab.csv")) # KEEP m01
+d02 <- read.csv(here( # KEEP m02a
+  "data", # KEEP m02b
+  "reference", # KEEP m02c
+  "ref.csv" # KEEP m02d
+))
+d03 <- read.csv("../data/processed/trials.csv") # KEEP m03
+```

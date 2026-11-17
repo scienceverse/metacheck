@@ -176,6 +176,18 @@
 # - an ending written twice gets its single form when the paper's own link
 #   list has it (.repo_link_undoubled()).
 # Counts from the text of the 17 corpora (13,706 papers), 2026-11-12.
+# The form of a link by which two ways of writing one address are found
+# (.repo_links_tidy()): without "https://", "www.", "dx.", "doi.org/" and a
+# closing "/", the website's name in small letters, and a DOI all in small
+# letters (DOIs do not depend on case).
+.repo_link_same_key <- function(url) {
+  b <- sub("^(?:https?://)?(?:www\\.|dx\\.)?(?:doi\\.org/)?", "", url, perl = TRUE, ignore.case = TRUE)
+  b <- sub("/+$", "", b)
+  host <- sub("/.*$", "", b)
+  b <- paste0(tolower(host), substring(b, nchar(host) + 1L))
+  ifelse(grepl("^10\\.\\d{4,9}/", b, perl = TRUE), tolower(b), b)
+}
+
 .repo_links_tidy <- function(repos, paper) {
   if (!nrow(repos)) return(repos)
   u <- vapply(repos$repo_url, .repo_link_unwrapped, character(1), USE.NAMES = FALSE)
@@ -220,6 +232,17 @@
     grepl("^(?:doi\\.org/)?10\\.\\d{4,9}$", bare, perl = TRUE)
   repos <- repos[!home, , drop = FALSE]
   repos <- dplyr::distinct(repos)
+  # one address written in two ways ("https://osf.io/abcde" and
+  # "osf.io/abcde/", "github.com/x" and "www.github.com/x") is one
+  # repository: it was checked, listed and counted twice (#648). Compared
+  # without "https://", "www.", "dx.", "doi.org/" and a closing "/", with the
+  # website's name in small letters (and a DOI, which is the same in either
+  # case); the form written in full is kept.
+  same <- .repo_link_same_key(repos$repo_url)
+  first <- order(!grepl("^https?://", repos$repo_url, ignore.case = TRUE), seq_len(nrow(repos)))
+  dup <- logical(nrow(repos))
+  dup[first] <- duplicated(paste(repos$paper_id, repos$repo_type, same, sep = "\r")[first])
+  repos <- repos[!dup, , drop = FALSE]
   # a link cut inside a name, beside its longer form; an account beside one
   # of its repositories
   key <- sub("[/.]+$", "", sub("^(?:https?://)?(?:www\\.|dx\\.)?(?:doi\\.org/)?", "",

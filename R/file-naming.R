@@ -1,8 +1,14 @@
 # File-naming convention checks, per the metacheck "machine readable FAIR data
-# and code" guide: no spaces or special characters, avoid CamelCase, actually
-# be classifiable, use zero-padded numbering for lexicographic sort, and stay
-# within path-length budgets a typical download would need. Used by
-# repo_check() to surface naming problems alongside its other warnings.
+# and code" guide: no spaces or special characters, avoid CamelCase, use
+# zero-padded numbering for lexicographic sort, and stay within path-length
+# budgets a typical download would need. Used by repo_check() to surface
+# naming problems alongside its other warnings.
+#
+# A file of a type metacheck does not know is not a naming problem (#648):
+# the "unclassifiable" rule made every such file a "bad" naming problem
+# (10,587 files in 150 of 563 papers: model files, game-engine assets,
+# genomics and brain-scan formats, Stata help files), which the authors could
+# not fix by renaming. repo_check lists those files on their own.
 #
 # A "date-format" rule (flagging an 8-digit run that doesn't parse as a valid
 # YYYYMMDD date) was removed: there is no way to tell, from the filename
@@ -26,7 +32,7 @@
 # assumed.
 
 # Severity per rule, decided with the user: "bad" rules break something real
-# (unreadable names, or a file so unclassifiable it cannot be typed at all);
+# (unreadable names, or paths too long to unpack);
 # "suggestion" rules are conventions metacheck's own classifiers do not
 # actually depend on today (case is ignored, and no code relies on
 # lexicographic sort order — see repro_run_order()'s numeric, not string,
@@ -116,7 +122,6 @@
   "spaces"               = "bad",
   "special-characters"   = "bad",
   "diacritics"           = "bad",
-  "unclassifiable"       = "bad",
   "zero-padding"         = "suggestion",
   "path-length-255"      = "bad",
   "path-length-228"      = "suggestion",
@@ -159,17 +164,6 @@
   # Non-ASCII / diacritics.
   if (grepl("[^\x01-\x7F]", base))
     add("diacritics", "contains non-ASCII characters (e.g. accented letters)")
-
-  # Unclassifiable: the file could not be classified at all — no recognised
-  # keyword (see file_category()) or extension (see .file_type_crosswalk /
-  # .fixed_ext_type) told data_classify_files() what kind of file this is.
-  # This is NOT a check on filename FORM (metacheck's classifiers match a
-  # keyword anywhere in the name, with any/no separator — see
-  # data_classify_files()), only on whether classification actually
-  # succeeded, which is what a human or machine reading the FAIR guide's
-  # "allow classification by machines" goal actually needs.
-  if (!is.na(data_type) && identical(data_type, "unknown"))
-    add("unclassifiable", "could not be classified by name or extension (data_type is 'unknown'); add a recognisable keyword (data, code, materials, ...) or a known extension")
 
   if (length(issues)) do.call(rbind, issues) else
     data.frame(rule = character(0), detail = character(0), stringsAsFactors = FALSE)
@@ -264,17 +258,16 @@
 #'
 #' Checks every file's name against the naming conventions from the metacheck
 #' "machine readable FAIR data and code" guide: no spaces, special characters
-#' or diacritics, an actually-classifiable name
-#' (not `data_type == "unknown"`), zero-padded numbering across sibling files,
-#' and four path-length budgets (255/228/100/50 characters).
+#' or diacritics, zero-padded numbering across sibling files, and four
+#' path-length budgets (255/228/100/50 characters). A file of a type metacheck
+#' does not know is not a naming problem (#648).
 #'
 #' @param file_name a character vector of file basenames
 #' @param file_path a character vector of repo-relative paths (defaults to
 #'   `file_name` when not supplied — length-checks need the full path,
 #'   everything else only needs the basename)
-#' @param data_type an optional character vector (same length as `file_name`)
-#'   of `data_check` semantic types (see `data_classify_files()`), used only
-#'   for the classifiability rule
+#' @param data_type not used any more: it was only used for a rule that made
+#'   a file of an unknown type a naming problem, which was removed (#648)
 #'
 #' @returns a data.frame with one row per naming violation: `file_name`,
 #'   `rule`, `severity` (`"bad"` or `"suggestion"` — see Details), `detail`.
@@ -282,8 +275,7 @@
 #'
 #' @details
 #' Rules split into two severities. `"bad"`: spaces, special characters,
-#' diacritics, `data_type == "unknown"` (the file could not be classified at
-#' all), and exceeding the hard 255-character path limit — these break
+#' diacritics, and exceeding the hard 255-character path limit — these break
 #' something real. `"suggestion"`: unpadded sibling numbering and the softer
 #' 228/100/50 path-length budgets — real conventions worth following, but nothing in
 #' metacheck's own classification or ordering logic actually depends on them

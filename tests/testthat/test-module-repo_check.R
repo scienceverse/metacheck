@@ -102,7 +102,9 @@ test_that("OSF", {
 
   expect_true(grepl("We found 4 files ", mod_output$summary_text))
   # The fixture's Archive.zip is not classifiable by name/extension without
-  # opening it (repo_check never downloads), and test_paper()'s empty
+  # opening it (repo_check never downloads), but an archive is neither an
+  # unclassified file nor a naming problem (#648): "Archive Files" reports
+  # it. test_paper()'s empty
   # manuscript text names no studies at all, so roster_check$roster is empty —
   # nothing for the file-derived "ex1" group to disagree with, hence FALSE
   # (not a real mismatch, just an absence of roster evidence to compare).
@@ -114,8 +116,8 @@ test_that("OSF", {
                     files_code = 2,
                     files_readme = 0,
                     files_zip = 1,
-                    files_unknown = 1L,
-                    naming_issues = 1L,
+                    files_unknown = 0L,
+                    naming_issues = 0L,
                     # a link in the text, not shown to be anyone else's (#634)
                     repo_own = 1L,
                     repo_others = 0L,
@@ -213,6 +215,39 @@ test_that("repo_check tolerates files with an unknown (NA) size", {
   # The unknown size flows through and renders as the placeholder, not a crash.
   expect_true(is.na(mo$table$file_size))
   expect_true(any(grepl("—", mo$report)))
+})
+
+test_that("repo_check: an unknown file type is not a naming problem (#648)", {
+  d <- withr::local_tempdir()
+  writeLines("x,y\n1,2", file.path(d, "data.csv"))
+  writeLines("x <- 1", file.path(d, "analysis.R"))
+  writeLines("", file.path(d, "model.joblib"))      # a type metacheck does not know
+  writeLines("* text=auto", file.path(d, ".gitattributes"))  # a tool's settings
+  writeLines("all:", file.path(d, "Makefile"))
+  writeLines("help", file.path(d, "asdoc.sthlp"))
+  mo <- module_run(test_paper(), "repo_check", local_path = d)
+  # only model.joblib is listed as unclassified; nothing is a naming problem
+  expect_equal(mo$summary_table$files_unknown, 1L)
+  expect_equal(mo$summary_table$naming_issues, 0L)
+  expect_false("unclassifiable" %in% mo$naming_issues$rule)
+  expect_true(grepl("We could not classify 1 file", mo$summary_text))
+  expect_equal(mo$table$data_type[mo$table$file_name == "Makefile"], "code")
+  expect_equal(mo$table$data_type[mo$table$file_name == "asdoc.sthlp"], "documentation")
+})
+
+test_that("repo_check counts naming problems of a local folder without a paper (#650)", {
+  d <- withr::local_tempdir()
+  writeLines("x,y\n1,2", file.path(d, "my data.csv"))
+  writeLines("x <- 1", file.path(d, "analysis two.R"))
+  writeLines("x <- 1", file.path(d, "clean.R"))
+  mo <- module_run(NULL, "repo_check", local_path = d, local_only = TRUE)
+  expect_true(grepl("2 file naming problems", mo$summary_text))
+  expect_equal(mo$summary_table$naming_issues, 2L)
+  expect_setequal(mo$naming_issues$file_name[mo$naming_issues$rule == "spaces"],
+                  c("my data.csv", "analysis two.R"))
+  # data_check's file tree shows them too
+  dc <- module_run(NULL, "data_check", local_path = d, local_only = TRUE)
+  expect_true(grepl("my data.csv[^\n]*contains a space", paste(dc$report, collapse = "\n")))
 })
 
 test_that("repo_check vector of local paths", {

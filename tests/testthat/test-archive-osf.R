@@ -9,6 +9,13 @@ test_that("osf_links", {
   # mention of the same project (which commonly differ only by a trailing
   # slash) dedupe to one row -- see its own roxygen for the rationale.
   expect_equal(obs$href, sub("/+$", "", exp[1:2]))
+
+  # a view-only key in the text stays part of the link (#648)
+  paper <- test_paper(c("Preregistered (https://osf.io/kpngh/?view_only=1e703c84a2414650b44ce1be9c98a189).",
+                        "See osf.io/abcde/ for the data."))
+  expect_equal(osf_links(paper)$href,
+               c("https://osf.io/kpngh/?view_only=1e703c84a2414650b44ce1be9c98a189",
+                 "osf.io/abcde"))
 })
 
 test_that("osf_type", {

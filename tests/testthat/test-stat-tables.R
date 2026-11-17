@@ -455,3 +455,61 @@ test_that("a printed block with a backslash in it is split without recycled rows
   expect_no_warning(.mplus_split_block(lines))
   expect_no_warning(.stata_split_block(lines))
 })
+
+test_that("code settings and row numbers are not stored as statistics (#648)", {
+  # the one-line reader takes a name only when it is a statistic as a whole:
+  # scale1, size, width and res only began like one
+  r <- .r_output_oneline(c("t = 2.34, df = 48, p-value = 0.02", "SD = 0.41, SE = 0.05",
+                           "scale1 = 10000; width = 1480, res = 300, size = 3"), "s.R")
+  nm <- names(r[[1]]$data)
+  expect_true(all(c("t", "df", "p-value", "SD", "SE") %in% nm))
+  expect_false(any(c("scale1", "width", "res", "size") %in% nm))
+  # a column of row numbers under a default name is not a statistic; a
+  # column of other numbers under that name stays
+  tb <- list(list(analysis = "a", title = NA, data = data.frame(grp = c("Human", "AI"), V1 = c("1", "2"),
+                                                                 M = c("3.36", "4.08"))),
+             list(analysis = "b", title = NA, data = data.frame(V1 = c("5", "7"), t = c("2.1", "3.3"))))
+  long <- stat_results_long(tb)
+  expect_false(any(long$analysis == "a" & long$statistic == "V1"))
+  expect_equal(long$value[long$analysis == "b" & long$statistic == "V1"], c("5", "7"))
+})
+
+test_that("kable tables, metafor's marked columns and lavaan's blocks are read (#648)", {
+  rd <- function(x) stat_results_long(read_r_output(x))
+  # knitr::kable()'s pipe and simple formats, read as a printed data frame is
+  pipe <- c("|term      | estimate| p.value|", "|:---------|--------:|-------:|",
+            "|condition |   -0.231|   0.008|", "|age       |    0.044|   0.000|")
+  simple <- c("term         estimate   p.value", "----------  ---------  --------",
+              "condition       -0.231     0.008", "age              0.044     0.000")
+  for (x in list(pipe, simple)) {
+    l <- rd(x)
+    expect_equal(l$value[l$row_label == "condition" & l$statistic == "estimate"], "-0.231")
+    expect_equal(sort(unique(l$statistic)), c("estimate", "p.value"))
+  }
+  # metafor's superscript mark keeps the columns in place
+  mf <- c("Model Results:", "",
+          "estimate      se    tval  df    pval\u00b9   ci.lb\u00b9   ci.ub\u00b9      ",
+          "  0.3201  0.0482  6.6466  11  <.0001  0.2141  0.4261  *** ")
+  l <- rd(mf)
+  expect_equal(l$value[l$statistic == "ci.lb"], "0.2141")
+  expect_equal(.stat_family("tval"), "t")
+  # lavaan: a block of "label  value" lines, and a table with group lines
+  lv <- c("Model Test User Model:", "                                                      ",
+          "  Test statistic                                24.361",
+          "  Degrees of freedom                                 8",
+          "  P-value (Chi-square)                           0.002", "",
+          "User Model versus Baseline Model:", "",
+          "  Comparative Fit Index (CFI)                    0.975", "",
+          "Latent Variables:",
+          "                   Estimate  Std.Err  z-value  P(>|z|)",
+          "  visual =~                                           ",
+          "    x1                1.000                           ",
+          "    x2                0.559    0.105    5.301    0.000")
+  l <- rd(lv)
+  expect_equal(l$value[l$statistic == "Chi-square"], "24.361")
+  expect_equal(l$value[l$statistic == "p" & l$analysis == "Model Test User Model"], "0.002")
+  expect_equal(l$value[l$statistic == "CFI"], "0.975")
+  expect_equal(l$value[l$row_label == "x2" & l$statistic == "z-value"], "5.301")
+  # a printed table's rows are no "label  value" lines
+  expect_equal(nrow(rd(c("   ", "     0  1", "  a 13  7", "  b 11  9"))[grepl("^a", rd(c("   ", "     0  1", "  a 13  7", "  b 11  9"))$statistic), ]), 0L)
+})

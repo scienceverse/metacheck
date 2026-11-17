@@ -86,7 +86,11 @@ osf_links <- function(paper) {
   # 5 characters but not fixed-width by design, so kept general; an optional
   # trailing slash is common ("osf.io/gms8z/") and consumed so it is not left
   # dangling on the end of the captured URL.
-  osf_bare_regex <- "(?:https?://)?osf\\.io/[A-Za-z0-9]+/?"
+  # A view-only key after it ("osf.io/kpngh/?view_only=1e70...") is part of
+  # the link: without it the OSF answers "private" for a private project or
+  # registration that the key opens (#648: two preregistrations in q7pnw_v3,
+  # whose hyperlinks had the key, were also found in the text without it).
+  osf_bare_regex <- "(?:https?://)?osf\\.io/[A-Za-z0-9]+/?(?:\\?view_only=[A-Za-z0-9]+)?"
   other_osf <- text_search(paper, osf_bare_regex, return = "match", perl = TRUE) |>
     dplyr::select(href = text, dplyr::any_of(c("text_id", "paper_id")))
 

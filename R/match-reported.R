@@ -150,12 +150,13 @@
     grepl("^df1$", n)                                                 ~ "df1",
     grepl("^df2$", n)                                                 ~ "df2",
     grepl("^df$", n)                                                  ~ "df",
-    grepl("^t($| |-|value|stat)", n) | n == "student's t" |
+    # "tval" and "zval" are metafor::rma()'s (#648)
+    grepl("^t($| |-|value|stat)|^tval$", n) | n == "student's t" |
       grepl("t-?test|student'?s t", n)                                ~ "t",
     grepl("^f($| |-|value| change)", n) |
       grepl("\\banova\\b|f-?test", n)                                 ~ "F",
     grepl("chi|\u03c7|x-squared|x\u00b2|goodness of fit", n)                    ~ "chisq",
-    grepl("^z($| |value)", n)                                         ~ "z",
+    grepl("^z($| |value)|^zval$", n)                                  ~ "z",
     grepl("^w$|wilcoxon|mann-whitney", n)                             ~ "W",
     grepl("^u$", n)                                                   ~ "U",
     grepl("^q$", n)                                                   ~ "Q",
@@ -651,6 +652,21 @@
 #'   single-component match is worth reading with that in mind -- set to 2 to
 #'   exclude single-component rows entirely, as this function used to by
 #'   default.
+#' @param evidence which reported values count as evidence that a test was
+#'   found (#648). `"informative"` (default): only an exact value (not a bound
+#'   such as `p < .001`) with at least 2 significant digits or at least 3
+#'   decimals (`p = .007`, `df = 163`, not `df1 = 2` or `d = 0.5`); a test
+#'   with several values is found when at least two such values match at one
+#'   place of the output, and a test of one value takes part only when that
+#'   value has at least 3 decimals or 3 significant digits, is not a whole
+#'   number or a conventional threshold (p = .05, .01, .001, .10, .005), and
+#'   occurs once among the paper's reported values; other tests of one value
+#'   are left out of the result and the summary. Matched against other
+#'   papers' output, single values with 2 decimals were found by chance about
+#'   four times as often as tests with several values, and every chance
+#'   match of a test with several values rested on bounds and small whole
+#'   numbers (`p < .001` twice, `df1 = 2` and `p < .001`). `"any"`: every
+#'   value counts, and a test of one value is found by one match, as before.
 #'
 #' @returns a data.frame, one row per recomposed reported test, with:
 #'   `text_id`, `grp_id`, `reported` (the recomposed test as text, e.g.
@@ -681,7 +697,9 @@
 #' long <- stat_results_long(read_r_output(out))
 #' match_reported_output(demopaper("stroop_effect"), long)
 match_reported_output <- function(paper, output, include_tables = FALSE,
-                                  min_components = 1L) {
+                                  min_components = 1L,
+                                  evidence = c("informative", "any")) {
+  evidence <- match.arg(evidence)
   # THREE accepted paper-side inputs, in order of preference:
   #   * an extract_tests() table  - already one row per TEST, with the sentence
   #     kept, so no recomposition is needed and the tests are correctly split;
@@ -738,8 +756,27 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
                       match_values = character(0), not_matched = character(0),
                       source_file = character(0),
                       analysis = character(0), confidence = character(0),
-                      plausible_split = logical(0))
+                      plausible_split = logical(0), n_sites = integer(0))
+  # A test of one value that cannot be told from chance takes no part (see
+  # `evidence`): it is not in the result and not in the summary. Done after
+  # .regroup_by_evidence() below, which can join a lone value to the test it
+  # belongs to ("t = 8.31, p < .001, d = 0.47"); here only when there is no
+  # output, so nothing is regrouped.
+  # A test of several values none of which is evidence (.match_informative())
+  # can never be found either, and takes no part: a power analysis's
+  # "alpha = 0.05, N = 55, N = 68", "p < .05" with "p < 2e-04" (#648).
+  drop_weak <- function(tests) {
+    if (!identical(evidence, "informative") || !length(tests)) return(tests)
+    keys <- unlist(lapply(tests, function(t) vapply(t$components, .match_value_key, character(1))))
+    once <- names(which(table(keys) == 1))
+    Filter(function(t) {
+      if (length(t$components) == 1)
+        return(.match_single_ok(t$components[[1]]) && .match_value_key(t$components[[1]]) %in% once)
+      any(vapply(t$components, .match_informative, logical(1)))
+    }, tests)
+  }
   if (!length(tests) || is.null(out_long) || !nrow(out_long)) {
+    tests <- drop_weak(tests)
     attr(empty, "summary") <- list(n_tests = length(tests), n_found = 0L,
                                    n_full = 0L, n_partial = 0L,
                                    n_missing = length(tests), pct_found = 0)
@@ -879,6 +916,11 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
     # comparing accepted only R's, so a correct "M = 13.63" was not found.
     # The small extra margin absorbs floating-point error in x - value.
     rounds_to <- function(x) abs(x - comp$value) <= tol * (1 + 1e-9)
+    # The sign of a t or z depends on which group the code takes first, and
+    # papers often give its size only: t(160.18) = 5.55 for an output t of
+    # -5.546, so the test was not found at its own place (#648)
+    if ((comp$family %||% "") %in% c("t", "z") && !nzchar(comp$censored %||% ""))
+      rounds_to <- function(x) abs(abs(x) - abs(comp$value)) <= tol * (1 + 1e-9)
     if (nzchar(comp$censored)) {
       # A censored bound ("p < .001") must ALSO respect a known family -- the
       # same reason the exact-match branch below does. Without this, "p <
@@ -999,6 +1041,7 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
   # grouping for its own components -- so this only ever REFINES a boundary
   # using evidence, never removes the text-only fallback when there is none.
   if (length(by_site) > 0) tests <- .regroup_by_evidence(tests, by_site, val_in)
+  tests <- drop_weak(tests)
 
   rows <- lapply(tests, function(tst) {
     comps <- tst$components; nc <- length(comps)
@@ -1028,15 +1071,59 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
                       not_matched = NA_character_,
                       source_file = NA_character_, analysis = NA_character_,
                       confidence = "none", plausible_split = plausible,
-                      stringsAsFactors = FALSE)
+                      n_sites = 0L, stringsAsFactors = FALSE)
     if (nc < min_components) return(res)
 
-    # Best site = the analysis where the most components co-occur.
-    best_n <- 0L; best_site <- NULL
+    # Best site = the analysis where the most components co-occur; with
+    # evidence = "informative", the most informative ones (.match_informative()),
+    # then the most of all (#648).
+    weight <- if (identical(evidence, "informative"))
+      vapply(comps, .match_informative, logical(1)) else rep(TRUE, nc)
+    # A standard error belongs to its estimate (a mean, b, beta): with the
+    # estimate reported, the SE counts only at a place where the estimate
+    # matches too. "M = 2.95, SE = 0.11, p = .021" was found by SE and p at an
+    # ANOVA of another comparison (#648).
+    fams <- vapply(comps, function(c) c$family %||% "", character(1))
+    is_se <- fams == "se"
+    est <- fams %in% c("mean", "b", "beta")
+    # strong and the test's own statistic (.is_primary_anchor(): t, F, z,
+    # chi2, U, W, H, Q, a Bayes factor), so that "95% CI = 2.93" or a mean
+    # with "p < .001" is not enough
+    strong <- if (identical(evidence, "informative"))
+      vapply(comps, function(c) .match_strong(c) && .is_primary_anchor(c$name %||% ""), logical(1))
+      else rep(TRUE, nc)
+    best_n <- 0L; best_inf <- 0L; best_strong <- 0L; best_site <- NULL
+    n_sites <- 0L   # places that match exactly as well as the best one
     for (s in names(by_site)) {
       cell <- by_site[[s]]
-      nm <- sum(vapply(comps, function(c) val_in(cell, c), logical(1)))
-      if (nm > best_n) { best_n <- nm; best_site <- cell }
+      hit <- vapply(comps, function(c) val_in(cell, c), logical(1))
+      w <- weight
+      if (identical(evidence, "informative") && any(est) && !any(hit & est)) w <- w & !is_se
+      ni <- sum(hit & w); nm <- sum(hit)
+      if (ni > best_inf || (ni == best_inf && nm > best_n)) {
+        best_inf <- ni; best_n <- nm; best_strong <- sum(hit & strong); best_site <- cell
+        n_sites <- 1L
+      } else if (nm > 0L && ni == best_inf && nm == best_n) {
+        n_sites <- n_sites + 1L
+      }
+    }
+    res$n_sites <- n_sites
+    if (best_n == 0L) best_site <- NULL
+    # For a test of one value: the different output numbers it matches, over
+    # all places. A model printed twice gives one number at two places; two
+    # numbers that round alike (p = 0.0075 and 0.0070 for p = .007) give two.
+    n_numbers <- NA_integer_
+    if (nc == 1L && identical(evidence, "informative") && best_n > 0L) {
+      c1 <- comps[[1]]
+      tol1 <- 0.5 / (10^(c1$dec %||% 0L))
+      vals <- unlist(lapply(by_site, function(cell) {
+        if (!val_in(cell, c1)) return(NULL)
+        same <- !is.na(cell$fam) & cell$fam == c1$family
+        v <- cell$val[if (any(same)) same else rep(TRUE, length(cell$val))]
+        d <- if ((c1$family %||% "") %in% c("t", "z")) abs(abs(v) - abs(c1$value)) else abs(v - c1$value)
+        v[!is.na(d) & d <= tol1 * (1 + 1e-9)]
+      }), use.names = FALSE)
+      n_numbers <- length(unique(signif(vals, 8)))
     }
     # A test is FOUND only when at least two of its components co-occur at one
     # site. Accepting a single component made a fabricated result "found": a
@@ -1051,7 +1138,22 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
     # a flat zero - that distinction matters when diagnosing WHY a reported
     # result could not be reproduced.
     res$n_matched <- best_n
-    if (best_n >= min(2L, nc) && !is.null(best_site)) {
+    # With evidence = "informative" (#648), a test of several values is found
+    # when at one place of the output
+    # - two informative values match (.match_informative()), or
+    # - a strong test statistic (.match_strong(): F = 72.28, W = 52378) and any
+    #   other value of the test match (F = 72.28, p < .001), or
+    # - every value of the test matches, one of them informative
+    #   (chi2(1) = .05, p = .82; F = 0.01, p = .992).
+    # A test of one value (which takes part only when it is strong, see
+    # drop_weak above) is found when it matches one output number only, at one
+    # place or at several where the same model is printed again: in an output
+    # with hundreds of p-values, a lone p = .007 also matched p = 0.0075 of
+    # another analysis.
+    found_now <- if (!identical(evidence, "informative")) best_n >= min(2L, nc)
+      else if (nc == 1L) best_inf >= 1L && identical(n_numbers, 1L)
+      else best_inf >= 2L || (best_strong >= 1L && best_n >= 2L) || (best_n == nc && best_inf >= 1L)
+    if (found_now && !is.null(best_site)) {
       res$found <- TRUE
       res$source_file <- best_site$sf[1]
       res$analysis <- best_site$an[1]
@@ -1082,4 +1184,68 @@ match_reported_output <- function(paper, output, include_tables = FALSE,
     n_missing = sum(!out$found),
     pct_found = if (n) round(100 * sum(out$found) / n, 1) else NA_real_)
   out
+}
+
+# The significant digits of a reported value as written, from its value and
+# its decimals (.norm_value()): .023 has 2, 0.007 has 1, 1678.9 has 5.
+.match_sig_digits <- function(value, dec) {
+  if (is.na(value)) return(0L)
+  s <- formatC(abs(value), format = "f", digits = max(0L, as.integer(dec %||% 0L)))
+  nchar(sub("^0+", "", gsub("[^0-9]", "", s)))
+}
+
+# Whether a reported value is evidence that a test was found, under
+# evidence = "informative" (#648): exact (not a bound such as p < .001), with
+# at least 2 significant digits or at least 3 decimals. p = .007 and df = 163
+# are; df1 = 2, d = 0.5 and p < .001 are not, as nearly every output holds them.
+.match_informative <- function(comp) {
+  dec <- comp$dec %||% 0L
+  # a count of people or studies (n = 75) is not a result, nor is a
+  # significance level (alpha = .05, a Bonferroni alpha = .0125); a
+  # reliability (Cronbach's alpha = .86) has the same family but is above .10
+  !identical(comp$family %||% "", "n") &&
+  !(identical(comp$family %||% "", "alpha") && isTRUE(comp$value < 0.1)) &&
+  !nzchar(comp$censored %||% "") && !is.na(comp$value) &&
+    (dec >= 3L || .match_sig_digits(comp$value, dec) >= 2L)
+}
+
+# Whether a reported value is strong evidence on its own: exact, with at least
+# 3 decimals or 3 significant digits (F = 72.28, W = 52378, p = .023). Matched
+# against other papers' output, such single values were never found by chance.
+.match_strong <- function(comp) {
+  dec <- comp$dec %||% 0L
+  !nzchar(comp$censored %||% "") && !is.na(comp$value) && !.match_threshold(comp) &&
+    (dec >= 3L || .match_sig_digits(comp$value, dec) >= 3L)
+}
+
+# A conventional threshold, which code prints as a setting: p = .05, .01,
+# .001, .10, .005 and alpha = .05 (a chance match rested on "p = 0.001")
+.match_threshold <- function(comp) {
+  (comp$family %||% "") %in% c("p", "alpha") && !is.na(comp$value) &&
+    any(abs(comp$value - c(.05, .01, .001, .1, .005)) < 1e-9)
+}
+
+# Whether a test of this one value can take part under evidence =
+# "informative": exact, at least 3 decimals or 3 significant digits, not a
+# whole number (a setting or a count: R = 1000, beta = 0) and not a
+# conventional threshold (p = .05, .01, .001, .10, .005; alpha = .05). Matched
+# against other papers' output, such values were never found by chance (0 of
+# 257 with 3 or more decimals), and 2 decimals about 1 in 8 of the own matches.
+.match_single_ok <- function(comp) {
+  dec <- comp$dec %||% 0L
+  v <- comp$value
+  if (is.na(v) || nzchar(comp$censored %||% "")) return(FALSE)
+  if (v == round(v)) return(FALSE)
+  # 2 significant digits are not enough on their own: letting them in added 12
+  # matches in the corpus papers' own output, about 3 of them right
+  # (d = .11 to an estimate, t = .73 to another test), and 4 chance matches
+  # with other papers' output (#648)
+  .match_strong(comp)
+}
+
+# A reported value as a key, to tell whether the paper reports it once:
+# its family and its value as written.
+.match_value_key <- function(comp) {
+  paste(comp$family %||% "", comp$censored %||% "",
+        formatC(comp$value %||% NA_real_, format = "f", digits = max(0L, as.integer(comp$dec %||% 0L))))
 }
