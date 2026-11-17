@@ -202,6 +202,39 @@ test_that("stat_p_exact: p < .000 is zero, == is =, and a starred footnote hides
   expect_equal(mo$summary_table$n_imprecise, 2)   # .05 and .01, not the starred footnote
 })
 
+test_that("stat_p_exact lists impossible p-values: below 0, or above 1 after a statistic (#351)", {
+  s <- c("The groups differed, t(134) = -2.32, p = -.13, d = -0.4.",
+         "Controls and the BMS group differed (Z = 3.091, P = 3.091).",
+         "Age did not differ, χ 2 (10) = 9.61, p = 7.15.",
+         "Less garbage was found (p = 3.23, CI = 2.11-4.61).",       # no statistic: a proportion
+         "The model fit, z = 4.61, p = 8.06 × 10 -06.",             # read right
+         "An effect, z = 7.68, p = 6.57 � 10 -14.",                 # power of ten garbled
+         "Both were negative, p < -0.6 -0.4 -0.2 0.0 0.2.",            # a figure's axis
+         "The ratio was N: P = À0.23*P concentration + 1.17.",      # a formula
+         "Group A differed, p < .05.")
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$table$text[mo$table$impossible], c("P = 3.091", "p = 7.15", "p = -.13"))
+  expect_equal(mo$summary_table$n_impossible, 3)
+  # an impossible p-value is not also imprecise
+  expect_equal(mo$summary_table$n_imprecise, 1)
+  expect_equal(mo$traffic_light, "red")
+  expect_match(mo$summary_text, "3 impossible \\*p\\* values")
+  expect_true(any(grepl("cannot be right", mo$report, fixed = TRUE)))
+})
+
+test_that("stat_p_exact gives each p-value its own row (#351)", {
+  # two separate reports in one sentence, and the same sentence in two papers
+  s <- "The indirect effect was significant (p < .01), as was the direct effect (p < .01)."
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$summary_table$n_imprecise, 2)
+  expect_match(mo$summary_text, "2 imprecise")
+  p1 <- test_paper(s); p1$paper_id <- "a"
+  p2 <- test_paper(s); p2$paper_id <- "b"
+  mo <- module_run(paperlist(p1, p2), "stat_p_exact")
+  expect_equal(sum(mo$table$imprecise), 4)
+  expect_match(mo$summary_text, "4 imprecise")
+})
+
 test_that("stat_p_exact leaves out table notes, legends and thresholds, not results (#604)", {
   # each sentence from a real paper (PsyArXiv reports and the open-access
   # collections); the p-value in the second column

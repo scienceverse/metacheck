@@ -301,12 +301,34 @@
 # GROBID gives with the middle dot or the bullet ("p = 0\u20220079"), so the
 # p-values and tests of such papers were not read at all (#648; 87 values in 2
 # of 141 preprints). Between two digits the dot is nothing else in a result.
-# `paper` is a paper, or a data frame with a `text` column; it is returned
-# with that text changed.
+# `paper` is a paper, a paper list, or a data frame with a `text` column; it
+# is returned with that text changed.
 .stat_decimal_point <- function(paper) {
-  fix <- function(x) gsub("(?<=\\d)[\u00b7\u2022\u2219](?=\\d)", ".", x, perl = TRUE)
-  if (is.data.frame(paper) && "text" %in% names(paper)) {
-    paper$text <- fix(paper$text)
+  .stat_text_apply(paper, function(x) gsub("(?<=\\d)[\u00b7\u2022\u2219](?=\\d)", ".", x, perl = TRUE))
+}
+
+# A paper's text with the chi of a chi-squared test joined to its 2: reading
+# a PDF often puts a space between them ("\u03c7 2 (10) = 9.61", "\u03c7 \u00b2 =
+# 3.9", "X 2 (1) = 3.20"), and the statistic was then not read (#351). Only
+# where a test follows: brackets with the degrees of freedom, or a
+# comparison. Chi is never anything else than a chi-squared test in a
+# result; a standing X with a 2 is read the same way as .test_stat_head reads
+# it.
+.stat_chi_join <- function(paper) {
+  .stat_text_apply(paper, function(x) {
+    x <- gsub("\u03c7\\s+([\u00b22\u2082])(?=\\s*[([=<>\u2264\u2265])", "\u03c7\\1", x, perl = TRUE)
+    gsub("(?<![\\w\u0370-\u03ff])X\\s+([\u00b22])(?=\\s*[([=<>\u2264\u2265])", "X\\1", x, perl = TRUE)
+  })
+}
+
+# Apply `fix` to the text of a paper, of each paper of a paper list, or of a
+# data frame with a `text` column. Only a single paper's text was changed
+# before, so a paper list kept "p = 0\u00b70079" and its p-values were not read.
+.stat_text_apply <- function(paper, fix) {
+  if (is.data.frame(paper)) {
+    if ("text" %in% names(paper)) paper$text <- fix(paper$text)
+  } else if (inherits(paper, "scivrs_paperlist")) {
+    paper[] <- lapply(paper, .stat_text_apply, fix = fix)
   } else if (is.list(paper) && is.data.frame(paper$text) && "text" %in% names(paper$text)) {
     paper$text$text <- fix(paper$text$text)
   }
@@ -337,10 +359,12 @@
 # can follow. The fraction one quarter and A with a grave accent are how
 # GROBID reads "=" and the minus sign in some journals. Used by
 # .p_not_test() (a p-value right after one belongs to it) and
-# .reports_test() (#642).
+# .reports_test() (#642). A chi-squared test in any of its written forms,
+# also with a space before its 2, which reading a PDF often adds
+# ("\u03c7 2 (10) =", "X 2 (1) =", "chi-square(2) =") (#351).
 .test_stat_head <- paste0(
   "(?<![\\w\u0370-\u03ff-])(?:t|F|z|Z|r|rs|R(?![\u00b22])|W|U|H|D|V|Q|T|B|b|d|g|OR|HR|RR|",
-  "\u03c7\u00b2?|\u03c72|X2|chi2|chi\u00b2|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
+  "\u03c7\\s?[\u00b22\u2082]?|X\\s?[2\u00b2]|chi[- ]?squared?|chi\\s?[2\u00b2]|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
   "[0-9]{0,4}\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
   "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*")
 .test_stat_pattern <- paste0(.test_stat_head, "\\.?\\d")
@@ -419,6 +443,46 @@
   data.frame(before = before, after = after)
 }
 
+# ---- p-values below 0 or above 1 (#351) ----------------------------------
+#
+# Rules from all 237,000 "p <comparison> number" in 18 corpora (16,847
+# papers), each case read: 50 were negative and 180 were read above 1.
+
+# The power of ten of a p-value in scientific notation, lost or garbled when
+# the PDF was read, right after the number: a multiplication sign ("2.4 x",
+# GROBID's "9 10 \u00c05" in some journals, "5.0.10 -12"), "10" with an exponent,
+# a minus with digits ("1.3 -4"), a superscript or an "e". The number written
+# is then not the p-value (99 of the 230).
+.p_lost_power <- paste0(
+  "^\\s*(?:[x\u00d7X\u00b7\u2022\u22c5\ufffd\u00c3\u00c2*]|9\\s+10\\b|\\.\\s*10\\b",
+  "|10\\s*(?:\\^|[-\u2212\u00c0\u207b]|\\s+[-\u2212\u00c0]?\\d|E|e|$)",
+  "|[-\u2212\u00c0\u207b]\\s*\\d|[\u2070\u00b9\u00b2\u00b3\u2074-\u2079]|[eE]\\s*[-\u2212+\u00c0]?\\s*\\d)")
+
+# Why a "p" with a value below 0 or above 1 is not a p-value at all, from the
+# text right before it (`before`) and right after its number (`after`); NA
+# when there is no such reason:
+# - "unit": a unit follows the number, so P is a physical quantity ("P = 2.9
+#   \u00b5m", "P = 6.02 MPa", "V p = -60 mV");
+# - "log": a logarithm of p ("-log10 P = 7.5");
+# - "formula": the p is part of a name or a formula, written against "/" or
+#   ":" or after a number and a hyphen ("Ca/P = 1.67", "N:P = -0.41", "1-p").
+# 50 of the 230 were one of these, none a p-value.
+.p_not_a_value <- function(before, after) {
+  before[is.na(before)] <- ""
+  after[is.na(after)] <- ""
+  unit <- paste0(
+    "^\\s*(?i:%|\u2030|[\u00b5\u03bcnmck]?m\\b|[kmg]?hz\\b|[mun]?s\\b|ps\\b|[km]?pa\\b|bar\\b|",
+    "[mk]?w\\b|[mk]?v\\b|k\\b|\u00b0|[km]?ev\\b|m?g\\b|kg\\b|g/ml|m?l\\b|mmhg\\b|dbm?\\b|",
+    "h\\b|hr\\b|min\\b|years?\\b|days?\\b|atm\\b)")
+  logp <- "(?i:log|\\bln)\\s*(?:\\(?\\s*10\\s*\\)?|\u2081\u2080)?\\s*\\(?\\s*$"
+  formula <- "(?:/|(?<!\\s):|\\d-)$"
+  out <- rep(NA_character_, length(before))
+  out[grepl(formula, before, perl = TRUE)] <- "formula"
+  out[grepl(logp, before, perl = TRUE)] <- "log"
+  out[grepl(unit, after, perl = TRUE)] <- "unit"
+  out
+}
+
 # Which p-values in sentences are clearly not the result of a test: a
 # threshold or a legend, not a finding (#604). A table note ("* p < .05,
 # ** p < .01"), a figure legend ("Asterisks indicate significant differences
@@ -470,7 +534,7 @@
     "(?<![\\w.\u0370-\u03ff-])(?!(?:p|P|ps|Ps|q|n|N|k|K|df|alpha|value|values|pvalue|pvalues)(?![\\w\u0370-\u03ff]))",
     "(?![pP]_?", .p_subscripts, ")",   # pFWE, padj: a p-value (#642)
     "(?!\u03b1(?![\\w\u0370-\u03ff]))",
-    "(?:[A-Za-z\u0370-\u03ff][A-Za-z\u0370-\u03ff0-9\u00b2_]{0,5}|\u03c7\u00b2?)",
+    "(?:[A-Za-z\u0370-\u03ff][A-Za-z\u0370-\u03ff0-9\u00b2_]{0,5}|\u03c7\\s?[\u00b22\u2082]?|X\\s[2\u00b2])",
     "\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
     "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
   ci <- "\\bCI\\b\\s*[\\[(=:]?\\s*[-\u2212\u00c0]?\\.?\\d|\\d+\\s*%\\s*CI\\b"
