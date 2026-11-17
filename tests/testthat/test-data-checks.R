@@ -655,6 +655,29 @@ test_that("data_check_pii_freetext flags real prose but not codes or non-prose",
     paste0("C:/data/study/participant_", 1:30, "/trial_data.csv"))$problem) # file paths
 })
 
+test_that("data_check_pii_freetext leaves out prose that describes things, and paths with spaces (#648)", {
+  # a code list's terms: long, varied, multi-word, but no one writes about themselves
+  terms <- c("Coronary arteriosclerosis in patient with history of previous myocardial infarction",
+             "Acute infarction of papillary muscle following surgery on the heart",
+             "Dialysis therapy started by renal service after kidney failure",
+             "Ulcer of skin due to type 2 diabetes mellitus of the left foot",
+             "Congestive heart failure due to left ventricular systolic dysfunction",
+             "Glaucoma suspect due to diabetes mellitus type 2 in both eyes")
+  expect_false(data_check_pii_freetext(terms)$problem)
+  # video paths whose folder names hold spaces (and "me")
+  expect_false(data_check_pii_freetext(
+    paste0("/Users/me/Dropbox/Road Hazards - Raw Videos/Final Set/clip_", 1:30, ".mp4"))$problem)
+  # answers in the first person in one of ten values are enough
+  ans <- c(terms[1:5], "The task was long", "Fine, nothing to add here at all",
+           "It was a bit hard to focus on the long blocks of the task",
+           "Too many questions about the same topic in the last part",
+           "My neighbour Anna helped me set up the laptop for the study")
+  ans[6:7] <- paste(ans[6:7], "and the screen was small for the pictures shown")
+  r <- data_check_pii_freetext(ans)
+  expect_true(r$problem)
+  expect_match(r$message, "10% written in the first person")
+})
+
 # ── Demographic-column detection ──────────────────────────────────────────────
 
 test_that("data_check_demographic detects age with name+value agreement", {
@@ -1459,6 +1482,36 @@ test_that("data_group_llm makes no model request and reports nothing unanswered 
   grp <- data_group_llm(files)
   expect_length(attr(grp, "unresolved"), 0)
   expect_false(anyNA(grp$group))
+})
+
+test_that("one-letter study labels in file names count only when the paper confirms them (#648)", {
+  llm_use(FALSE)
+  paper <- demopaper()
+  paper$text$text[1] <- "We ran Experiment 1A, Experiment 1B and Experiment 2."
+  paths <- c("data/Shift_E1A_sub1-40.txt", "data/Shift_E1B_sub1-20.txt",
+             "E2/RT.csv", "analysis.R", "dat.e01")
+  expect_equal(.data_group_from_short_label(paths, paper),
+               c("ex1a", "ex1b", "ex2", NA, NA))
+  # E is experiment, S is study: the paper names no numbered study
+  expect_true(all(is.na(.data_group_from_short_label("df_s1.csv", paper))))
+  # no paper, or a label the paper does not name: nothing is placed by the letter
+  expect_true(all(is.na(.data_group_from_short_label(paths))))
+  expect_true(all(is.na(.data_group_from_short_label(c(paths, "E3_RT.csv"), paper))))
+  # S also stands for sessions and supplementary material
+  p2 <- demopaper()
+  p2$text$text[1] <- "Study 1 and Study 2 are reported here."
+  expect_equal(.data_group_from_short_label(c("placebo_df_s1.csv", "S2_data.xlsx"), p2),
+               c("ex1", "ex2"))
+  p2$text$text[2] <- "See Table S1 in the supplement."
+  expect_true(all(is.na(.data_group_from_short_label("placebo_df_s1.csv", p2))))
+  p2$text$text[2] <- "Each person came to Session 1 and Session 2."
+  expect_true(all(is.na(.data_group_from_short_label("placebo_df_s1.csv", p2))))
+  # the grouping uses it; the paper's roster then agrees with the files
+  files <- data.frame(file_name = basename(paths[1:3]), file_path = paths[1:3],
+                      data_type = "data")
+  grp <- data_group_llm(files, paper = paper)
+  expect_equal(grp$group, c("ex1a", "ex1b", "ex2"))
+  expect_equal(data_study_roster(paper, words = "study"), character(0))
 })
 
 test_that(".bh_is_trial_level_file reads only the header line (#477)", {
