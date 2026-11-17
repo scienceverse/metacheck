@@ -459,7 +459,7 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
     lines[pipe_row] <- gsub("|", " ", lines[pipe_row], fixed = TRUE)
     lines <- lines[!pipe_rule]
   }
-  lines <- gsub("(?<=[A-Za-z0-9.])[¹³⁰⁴-⁹†‡]", " ", lines, perl = TRUE)
+  lines <- gsub("(?<=[A-Za-z0-9.])[\u00b9\u00b3\u2070\u2074-\u2079\u2020\u2021]", " ", lines, perl = TRUE)
   lines[!grepl("^\\s*\\S+\\s+(=~|~~|<~|~)\\s*$", lines)]
 }
 

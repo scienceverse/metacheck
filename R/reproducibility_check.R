@@ -1534,9 +1534,9 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
                 # "Data file not found: ../data/x.csv", Rcpp's "file not found: 'x.cpp'",
                 # h5py's "unable to open file: name = 'x.h5'", ggsave's "Cannot find
                 # directory `x`", a FileNotFoundError with only a path (#648)
-                "|[Ff]ile not found:? *", q, "?([^\\s'\"‘’(]+[./][^\\s'\"‘’(]*)",
+                "|[Ff]ile not found:? *", q, "?([^\\s'\"\u2018\u2019(]+[./][^\\s'\"\u2018\u2019(]*)",
                 "|unable to open file[^\n]*?name = ", q, "(", nq, "+)", q,
-                "|[Cc]annot find (?:the )?(?:file|directory|folder) [`'\"‘](", nq, "+?)[`'\"’]",
+                "|[Cc]annot find (?:the )?(?:file|directory|folder) [`'\"\u2018](", nq, "+?)[`'\"\u2019]",
                 "|FileNotFoundError: (?!\\[Errno)([^\\s'\"]+[./][^\\s'\"]*)")
   out <- unlist(lapply(.utf8_lines(msgs[!is.na(msgs)]), function(m) {
     k <- regmatches(m, gregexpr(pat, m, perl = TRUE))[[1]]
@@ -4527,9 +4527,9 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   # a package that another package loads only when one of its functions is
   # used, so the run did not install it: "Please install the 'cmdstanr'
   # package", 'The package "broom.helpers" (>= 1.20.0) is required' (#648)
-  set(paste0("[Pp]lease install the ['\"`‘][^'\"`’]+['\"`’] package|",
-             "[Tt]he package ['\"`‘][^'\"`’]+['\"`’] (?:\\([^)]*\\) )?is required|",
-             "requires the ['\"`‘][^'\"`’]+['\"`’] package"), "package")
+  set(paste0("[Pp]lease install the ['\"`\u2018][^'\"`\u2019]+['\"`\u2019] package|",
+             "[Tt]he package ['\"`\u2018][^'\"`\u2019]+['\"`\u2019] (?:\\([^)]*\\) )?is required|",
+             "requires the ['\"`\u2018][^'\"`\u2019]+['\"`\u2019] package"), "package")
   # a program our run does not have (git, pandoc, Chrome): a gap in our run
   out[err & is.na(out) & !is.na(.repro_missing_program(full))] <- "environment"
   # "does not exist" only of a file: Stan's "variable does not exist" is not one
