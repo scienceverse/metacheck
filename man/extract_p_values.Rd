@@ -23,6 +23,10 @@ This will catch most comparators like =<>~ and most versions of scientific notat
 A p may carry the name of a correction, of the kind of p-value or of a test, glued to it or after a space ("pFWE = .006", "p adj = .034", "p Bonferroni < .05", "P MCMC = 0.27", "p interaction = .003", "pMantel < .01", "p Wilcoxon = .021"). The column \code{p_name} holds that name as written ("FWE", "adj"), and is NA for a plain p, so that a raw and a corrected p-value of the same test can be told apart.
 
 A p-value written as a whole 0 or 1 ("p = 1", "p = 0") is found only after "=", "~" or the approximately-equal sign, when a bracket, a semicolon or a comma follows it (after 1 also a full stop), and when its sentence reports a test: a test statistic ("t(20) = 0.3"), another p-value with a decimal point or an exponent, or a word that names a test or its outcome ("Fisher's exact test", "not significant", "did not differ"). Otherwise "p = 1" is often a probability or a model parameter, and "p < 0." is a p-value whose digits were lost when the PDF was read.
+
+A "p" that is the subscript of another symbol is not a p-value: after a standing r or R, or a Greek letter, with "=" ("r p = .64" for a correlation, "R p = 3.83\%", "alpha p = .95"), and written against a superscript 2 or a Delta with any comparison ("2p = .02" for partial eta squared whose eta was lost, "Delta p = .33" for a contingency). With "<" or ">" such a letter marks a significance level in a note ("a p < 0.05", "alpha p < 0.05"), and the p-value is kept. A value below 0 or above 1 is not a p-value when a unit follows it ("P = 2.9 um", "P = 6.02 MPa"), a logarithm comes before it ("-log10 P = 7.5") or the p is part of a ratio or a formula ("Ca/P = 1.67", "1-p").
+
+A p-value written with a minus ("p = -.22") is not returned: no p-value is negative. \code{stat_p_exact} lists those as impossible.
 }
 \examples{
 paper <- demopaper()

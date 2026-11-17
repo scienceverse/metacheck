@@ -1,7 +1,7 @@
 #' Exact P-Values
 #'
 #' @description
-#' List any p-values reported with insufficient precision (e.g., p < .05 or p = n.s.) or reported as exactly zero (e.g., p = .000).
+#' List any p-values reported with insufficient precision (e.g., p < .05 or p = n.s.), reported as exactly zero (e.g., p = .000), or impossible (below 0 or above 1, e.g., p = -.22).
 #'
 #' @details
 #' This module uses regular expressions to identify p-values. It will flag any values reported as p > ? or p < numbers greater than .001. It will also flag p-values reported as exactly zero (e.g., p = .000, p = 0.00), which are mathematically impossible — p-values are never exactly zero and should instead be reported as p < .001.
@@ -9,6 +9,8 @@
 #' A p-value that is not the result of a test is not flagged: a table note ("* p < .05, ** p < .01"), a figure legend ("Asterisks indicate significant differences (p < .05)", "Values in bold are significant at p < .05") or a stated threshold ("p < .05 was considered significant", "thresholded at p < .001"). GROBID often puts such notes into the running text, so each p-value is judged by the words in its own clause (the text up to a ";" or a full stop), and never left out when a test statistic belongs to it ("F(1, 7) = 8.03, # p < .05"). The column `not_a_test` of the table says why a p-value was left out ("marker", "threshold", "legend" or "named").
 #'
 #' A p-value with the name of a correction or a test after the p ("pFWE < .05", "padj < 0.05", "p Wilcoxon = .02") is flagged only when a test statistic comes before it in its clause ("t(37) = 7.17, p FWE < .05"). Without one it is mostly the rule that decided what was significant ("genes with padj < 0.05 were selected"); such a p-value is "named" in `not_a_test`. Notes in other forms, such as a marker after the p-value ("p < .05 (*)"), are still flagged.
+#'
+#' A p-value below 0 or above 1 is impossible; it is listed apart and not also as imprecise. Often the statistic before it, or its minus sign, was copied into it ("t(134) = -2.32, p = -.13", "Z = 3.091, P = 3.091"). A value above 1 is listed only after a test statistic in its clause: without one, a "P" above 1 was nearly always another quantity (a proportion, pH, a group's mean, a model parameter). A number in scientific notation whose power of ten was lost when the PDF was read ("p = 2.4 x 10 -9" read as 2.4) is not listed. A "p" that is the subscript of another symbol ("r p = .64", "²p = .02" for partial eta squared, "Δp = .33"), or a quantity with a unit, a logarithm or a ratio ("P = 2.9 µm", "-log10 P = 7.5", "Ca/P = 1.67"), is not read as a p-value at all (see `extract_p_values()`). Each p-value has its own row, also when the same one is written twice in a sentence.
 #'
 #' This module sometimes flags false positives when sentences discuss how p-value thresholds were set. It can also miss an imprecise p-value that is reported against a threshold ("decreased at the p < .05 significance threshold").
 #'
@@ -29,6 +31,9 @@
 stat_p_exact <- function(paper) {
   # table ----
   p <- extract_p_values(paper)
+  # p-values written with a minus, which extract_p_values() does not read:
+  # they are listed here as impossible (#351)
+  p <- dplyr::bind_rows(p, .p_extract(paper, negative = TRUE))
 
   # Expand the sentences so the full sentence can be seen
   p <- expand_text(
@@ -39,8 +44,7 @@ stat_p_exact <- function(paper) {
 
   # "==" is "=": it counted as imprecise (U127)
   p$p_comp[p$p_comp %in% "=="] <- "="
-  # the match keeps trailing spaces, so one p-value twice in a sentence gave
-  # two report rows (U127)
+  # the match keeps trailing spaces (U127)
   p$text <- trimws(p$text)
 
   # Flag imprecise p-values
@@ -77,22 +81,56 @@ stat_p_exact <- function(paper) {
   p$zero <- p$p_comp %in% c("=", "<") & !is.na(p$p_value) & p$p_value == 0 &
     !grepl("[eE]\\s*[-\u2212\u00c0]|10\\s*\\^?\\s*[-\u2212\u00c0]", p$text)
 
+  # Flag p-values that no p-value can be (#351): below 0 (a minus, often that
+  # of the statistic before it, copied into the p-value), or above 1 after a
+  # test statistic in its clause ("Z = 3.091, P = 3.091", "t(18) = 0.466,
+  # p = 2.5872"). Not above 1 when the power of ten of a number in
+  # scientific notation was lost after it ("p = 2.4 x 10 -9" read as 2.4),
+  # and not below 0 when the number is part of a longer one, a formula or a
+  # row of numbers ("N: P = -0.23*P concentration", "p < -0.6 -0.4 -0.2" on
+  # a figure's axis). In 18 corpora (16,847 papers) this found 9 values below
+  # 0 and 8 above 1, each a wrong p-value as written; without a statistic, a
+  # value above 1 was nearly always no p-value (a proportion, pH, a group's
+  # mean, a model parameter).
+  below <- !is.na(p$p_value) & p$p_value < 0
+  above <- !is.na(p$p_value) & p$p_value > 1
+  p$impossible <- FALSE
+  if (any(below | above)) {
+    # every p-value of those sentences, so .p_clause() counts their places
+    key <- paste(p$paper_id, p$text_id, sep = "\r")
+    in_sent <- key %in% key[below | above]
+    cl <- .p_clause(p[in_sent, , drop = FALSE])
+    whole <- !grepl(.p_lost_power, cl$after, perl = TRUE)
+    stat <- !is.na(cl$before) & grepl(.test_stat_pattern, cl$before, perl = TRUE)
+    p$impossible[in_sent] <- whole & (below[in_sent] | (above[in_sent] & stat))
+  }
+  # an impossible p-value is listed once, as impossible
+  p$imprecise <- p$imprecise & !p$impossible
+
+  # one row per p-value: two identical p-values in one sentence are two
+  # reports, as summary_table counts them, and the same sentence in two
+  # papers is two papers' (#351)
   cols <- c("text", "expanded")
-  report_table <- unique(p[p$imprecise, cols, drop = FALSE])
+  report_table <- p[which(p$imprecise), cols, drop = FALSE]
   colnames(report_table) <- c("P-Value", "Text")
 
-  zero_table <- unique(p[p$zero, cols, drop = FALSE])
+  zero_table <- p[which(p$zero), cols, drop = FALSE]
   colnames(zero_table) <- c("P-Value", "Text")
 
+  impossible_table <- p[which(p$impossible), cols, drop = FALSE]
+  colnames(impossible_table) <- c("P-Value", "Text")
+
   # summary_table ----
-  imprecise_summary <- dplyr::count(p[p$imprecise, , drop = FALSE], paper_id, name = "n_imprecise")
-  zero_summary <- dplyr::count(p[p$zero, , drop = FALSE], paper_id, name = "n_zero")
-  summary_table <- dplyr::full_join(imprecise_summary, zero_summary, by = "paper_id")
+  imprecise_summary <- dplyr::count(p[which(p$imprecise), , drop = FALSE], paper_id, name = "n_imprecise")
+  zero_summary <- dplyr::count(p[which(p$zero), , drop = FALSE], paper_id, name = "n_zero")
+  impossible_summary <- dplyr::count(p[which(p$impossible), , drop = FALSE], paper_id, name = "n_impossible")
+  summary_table <- dplyr::full_join(imprecise_summary, zero_summary, by = "paper_id") |>
+    dplyr::full_join(impossible_summary, by = "paper_id")
 
   # traffic light ----
   if (nrow(p) == 0) {
     tl <- "na"
-  } else if (nrow(report_table) == 0 && nrow(zero_table) == 0) {
+  } else if (nrow(report_table) == 0 && nrow(zero_table) == 0 && nrow(impossible_table) == 0) {
     tl <- "green"
   } else {
     tl <- "red"
@@ -104,12 +142,19 @@ stat_p_exact <- function(paper) {
     summary_text <- report
   } else if (tl == "green") {
     report <- sprintf(
-      "We found no imprecise *p* values or *p*-values of exactly zero out of %d detected.",
+      "We found no imprecise *p* values, *p*-values of exactly zero or impossible *p* values out of %d detected.",
       nrow(p)
     )
     summary_text <- report
   } else {
     summary_parts <- c()
+    if (nrow(impossible_table) > 0) {
+      summary_parts <- c(summary_parts, sprintf(
+        "%d impossible *p* value%s",
+        nrow(impossible_table),
+        plural(nrow(impossible_table))
+      ))
+    }
     if (nrow(report_table) > 0) {
       summary_parts <- c(summary_parts, sprintf(
         "%d imprecise *p* value%s",
@@ -123,6 +168,10 @@ stat_p_exact <- function(paper) {
         nrow(zero_table),
         plural(nrow(zero_table))
       ))
+    }
+    n_parts <- length(summary_parts)
+    if (n_parts > 2) {
+      summary_parts <- c(paste(summary_parts[-n_parts], collapse = ", "), summary_parts[n_parts])
     }
     summary_text <- sprintf(
       "We found %s out of %d detected *p* value%s.",
@@ -143,6 +192,16 @@ stat_p_exact <- function(paper) {
     )
 
     report <- c()
+
+    if (nrow(impossible_table) > 0) {
+      # (#351)
+      impossible_text <- "*P* values lie between 0 and 1, so a negative *p* value or one above 1 cannot be right. Often the value of the test statistic before it, or its minus sign, was copied into the *p* value. Check the analysis output and report the *p* value it gives."
+      report <- c(
+        report,
+        impossible_text,
+        scroll_table(impossible_table, colwidths = c(.1, .9))
+      )
+    }
 
     if (nrow(report_table) > 0) {
       report_text <- "Reporting *p* values imprecisely (e.g., *p* < .05) reduces transparency, reproducibility, and re-use (e.g., in *p* value meta-analyses). Best practice is to report exact p-values with three decimal places (e.g., *p* = .032) unless *p* values are smaller than 0.001, in which case you can use *p* < .001."

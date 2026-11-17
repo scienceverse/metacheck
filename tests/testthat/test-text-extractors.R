@@ -392,4 +392,58 @@ test_that("a raised dot between two digits is read as a decimal point, as The La
   x <- c("Mortality was lower (p = 0\u20220079).", "p<0\u00b7001 in all groups", "items 2 \u00b7 3")
   expect_equal(extract_p_values(x)$p_value, c(0.0079, 0.001))
   expect_equal(extract_eq(x)$rhs, c("0.0079", "0.001"))
+  # also in each paper of a paper list (#351)
+  pl <- paperlist(test_paper("The effect, t(20) = 3.1, p = 0·0079."),
+                  test_paper("Another, t(20) = 2.2, p = 0·039."))
+  expect_equal(extract_p_values(pl)$p_value, c(0.0079, 0.039))
+})
+
+test_that("a p that is the subscript of another symbol is not a p-value; after a note's marker it is (#351)", {
+  x <- c("A correlation emerged (r p = 0.51, P < 0.001).",   # Pearson's r
+         "Refinement gave R p = 3.83% and R wp = 4.13%.",    # a reliability factor
+         "F(2, 54) = 0.77, ²p = 0.02, p = 0.46.",          # partial eta squared, eta lost
+         "The contingency is Δp = .33.",                   # a contingency
+         "Reliability was α s = 0.67, α p = 0.64.",       # Cronbach's alpha
+         "Significant: a p < 0.05, b p < 0.01.",             # markers of a note
+         "ΔΔ p < 0.01, α p < 0.05.",                   # markers of a note
+         "Mann-Whitney U p = .199, or p = .03.")
+  pv <- extract_p_values(x)
+  expect_equal(pv$text_id, c(1L, 3L, 6L, 6L, 7L, 7L, 8L, 8L))
+  expect_equal(pv$text, c("P < 0.001", "p = 0.46", "p < 0.05", "p < 0.01",
+                          "p < 0.01", "p < 0.05", "p = .199", "p = .03"))
+})
+
+test_that("a value above 1 with a unit, a logarithm or in a ratio is not a p-value (#351)", {
+  x <- c("The depth was constant for P = 2.9 μm.", "A cut-off (-log 10 P > 1.3) was applied.",
+         "Intrafibrillar apatite (Ca/P = 1.53) was found.", "The pressure was P = 6.02 MPa.",
+         "Groups differed (Z = 3.091, P = 3.091).")
+  pv <- extract_p_values(x)
+  expect_equal(pv$text_id, 5L)
+  expect_equal(pv$p_value, 3.091)
+})
+
+test_that("p-values written with a minus are found apart, and not by extract_p_values (#351)", {
+  x <- c("Trials differed, t(134) = -2.32, p = -.13, d = -0.4.",
+         "An effect (β = 0.94; |t| = 5.70; p < -0.001).",
+         "It was p = −.05 and p = À0.41 here.",
+         "Coordinates were A/P = -2.90 mm.", "In p 1-p = -4.42 + 8.47a.",
+         "A correlation (r p = -.64, p < .001).", "The contingency Δp = -.33.",
+         "Not negative, p = .05.")
+  expect_false(any(extract_p_values(x)$p_value < 0, na.rm = TRUE))
+  neg <- .p_extract(x, negative = TRUE)
+  expect_equal(neg$text_id, c(1L, 2L, 3L, 3L))
+  expect_equal(neg$p_value, c(-.13, -.001, -.05, -.41))
+})
+
+test_that("chi-squared is read with a space before its 2 (#351)", {
+  x <- c("χ 2 (10) = 9.61, p = .02", "χ ² (1) = 3.20, p = .07", "X 2 (1) = 3.20, p = .07",
+         "χ 2 (1, N = 200) = 4.10, p = .04", "Pearson's χ 2 test (χ 2 = 3.9, p = .048)",
+         "chi-square(2) = 5.10, p = .08")
+  eq <- extract_eq(x)
+  eq <- eq[eq$lhs != "p", ]
+  expect_equal(eq$lhs, c("χ2", "χ²", "X2", "χ2", "χ2", "chi-square"))
+  expect_equal(eq$rhs, c("9.61", "3.20", "3.20", "4.10", "3.9", "5.10"))
+  # a statistic before a p-value, for .p_not_test() and .reports_test()
+  before <- sub(",? p = .*$", "", x)
+  expect_true(all(grepl(.test_stat_pattern, before, perl = TRUE)))
 })
