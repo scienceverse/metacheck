@@ -226,6 +226,19 @@ test_that("extract_eq reads p-values as extract_p_values does (#642)", {
   expect_equal(eq$rhs, c("10 -15", "2.2\u00c210 \u00c016", ".034", "10", "10-15"))
 })
 
+test_that("extract_eq is not emptied by a bracket full of numbers (#645)", {
+  # this sentence made the search stop at its step limit, and extract_eq()
+  # returned no rows at all, also for the sentence before it
+  txt <- c("We found t(20) = 2.1, p = .04.",
+           "Amino acid distances were binned as shown on the figure (n = 308, 1,168, 564, 654, 1,492).")
+  expect_no_warning(eq <- extract_eq(txt))
+  expect_equal(eq$lhs, c("t", "p", "n"))
+  expect_equal(eq$rhs, c("2.1", ".04", "308"))
+  # degrees of freedom with N, in either order, are read as before
+  eq <- extract_eq("chi2(1, N = 200) = 4.2, F(2, 57) = 3.1, t (n = 30, 28) = 2.0.")
+  expect_equal(eq$df, c("(1, N = 200)", "(2, 57)", "(n = 30, 28)"))
+})
+
 test_that("extract_eq reads the Unicode minus, and 'and z' is z (U205, U218)", {
   eq <- extract_eq("t(28) = \u22122.15, r(98) = \u2212.32, r = \u2212 0.12, and z = 3.1.")
   expect_equal(eq$lhs, c("t", "r", "r", "z"))
