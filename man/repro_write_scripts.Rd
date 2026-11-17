@@ -88,6 +88,8 @@ a data frame with \code{file_name}, \code{script_path} (absolute path written),
 \code{setwd_removed} (count of \code{setwd()}/\code{os.chdir()} calls replaced with a
 statement that does nothing),
 \code{env_calls_replaced} (count of groundhog, checkpoint and renv calls replaced),
+\code{screen_calls_replaced} (the calls that need a screen replaced in R code,
+one name per call, joined by "; "; see \code{.repro_replace_screen_calls()}),
 \code{slashes_fixed} (the quoted Windows paths given \code{/}, as they were, joined by
 "; "; see \code{.repro_slash_paths()}),
 \code{setwd_folder_removed} (the paths made relative to the working folder

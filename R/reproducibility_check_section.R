@@ -492,21 +492,38 @@
       n_dup, plural(n_dup, "y", "ies"), plural(n_dup, "was", "were")))
   }
 
-  # the headline: how many ran to the end, and what happened to the others
-  groups <- c(errored = "stopped with an error", timed_out = "ran out of time",
-              dependency_unavailable = "could not run on our server",
-              docker_failed = "could not run on our server",
-              needs_a_person = "needed a person", needs_internet = "needed the internet",
-              out_of_memory = "ran out of memory",
-              download_too_large = "downloaded too much")
-  n_ok <- sum(outcome[counted] == "ran_ok")
-  parts <- vapply(names(groups), \(g) {
-    n <- sum(outcome[counted] == g)
-    if (n) sprintf("%d %s", n, groups[[g]]) else ""
-  }, character(1))
-  n_not_run <- sum(counted) - n_ok - sum(outcome[counted] %in% names(groups))
-  parts <- c(parts[nzchar(parts)],
+  # the headline: how many ran to the end, and for the others whether they did
+  # not reproduce, lacked a package or program, ran out of time, or could not
+  # be checked automatically (#580; see .repro_check_group())
+  msg <- paste(ifelse(is.na(rr$error), "", rr$error), ifelse(is.na(rr$stderr), "", rr$stderr))
+  reason <- if ("reason" %in% names(rr) && any(!is.na(rr$reason))) rr$reason else
+    .repro_failure_reason(outcome, msg)
+  group <- if ("checked" %in% names(rr)) rr$checked else .repro_check_group(outcome, reason, msg)
+  group[is.na(rr$outcome)] <- NA_character_
+  n_ok <- sum(counted & group %in% "ran")
+  n_of <- function(g) sum(counted & group %in% g)
+  # what kept the scripts that could not be checked from being checked
+  why <- ifelse(outcome %in% "needs_a_person" | reason %in% "interactive", "needed a person",
+         ifelse(outcome %in% "needs_internet" | reason %in% "internet", "needed the internet",
+         ifelse(outcome %in% "out_of_memory" | .repro_out_of_memory(msg), "needed more memory than our limit",
+         ifelse(outcome %in% "download_too_large" | reason %in% "download", "downloaded more than our limit",
+         ifelse(reason %in% "settings", "needed a key or a setting of your computer",
+                "needed something our computer does not have, such as a screen")))))
+  nc <- counted & group %in% "not_checkable"
+  why_n <- table(factor(why[nc], levels = unique(why[nc])))
+  parts <- c(
+    if (n_of("code_error")) sprintf("%d did not reproduce", n_of("code_error")),
+    if (n_of("dependency")) sprintf("%d could not run because a package or program was not available",
+                                    n_of("dependency")),
+    if (n_of("time")) sprintf("%d did not finish within our time limit", n_of("time")),
+    if (n_of("not_checkable")) sprintf("%d could not be checked automatically (%s)", n_of("not_checkable"),
+                                       paste(sprintf("%d %s", why_n, names(why_n)), collapse = ", ")))
+  n_docker <- sum(counted & outcome %in% "docker_failed")
+  n_not_run <- sum(counted) - n_ok - sum(counted & group %in% .repro_check_groups[-1]) - n_docker
+  parts <- c(parts,
+             if (n_docker) sprintf("%d could not be run because Docker failed", n_docker),
              if (n_not_run) sprintf("%d %s not run", n_not_run, plural(n_not_run, "was", "were")))
+  if (length(parts) > 1) parts <- c(parts[-length(parts)], paste("and", parts[[length(parts)]]))
   headline <- sprintf("**%d of %d script%s ran to the end**%s.",
                       n_ok, sum(counted), plural(sum(counted)),
                       if (length(parts)) paste0(": ", paste(parts, collapse = ", ")) else "")
