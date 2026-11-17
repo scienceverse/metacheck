@@ -1,0 +1,218 @@
+"host","api","version","checked","known","n_dois","datacite_ok","in_survey"
+"acuresearchbank.acu.edu.au","dspace7","DSpace 7.6","earlier",FALSE,1212,TRUE,NA
+"algomau.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,14,TRUE,NA
+"amitos.library.uop.gr","dspace7","DSpace 9.2","earlier",FALSE,7974,TRUE,NA
+"anrows.intersearch.com.au","none","DSpace 9.4","now",FALSE,9,TRUE,NA
+"arbor.bfh.ch","dspace7","DSpace 7.6.3","earlier",FALSE,11518,TRUE,NA
+"archive.nyu.edu","legacy","DSpace 5.4","now",FALSE,39,TRUE,NA
+"archive.uax.com","dspace7","DSpace 8.2","earlier",TRUE,45,TRUE,NA
+"aris.supsi.ch","dspace7","DSpace cris-2023.01.00","earlier",FALSE,6620,TRUE,NA
+"aura.abdn.ac.uk","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"bdc.c3sl.ufpr.br","legacy",NA,"now",FALSE,0,TRUE,TRUE
+"bdears.busitema.ac.ug","dspace7","DSpace 7.6","earlier",FALSE,512,TRUE,NA
+"bedl.asabe.org","dspace7","DSpace 10.1","earlier",TRUE,8,TRUE,NA
+"biblioteca.cenicafe.org","none",NA,"now",FALSE,NA,NA,TRUE
+"bibliotecadigitale.unimc.it","none","DSpace CRIS-5.12.0-SNAPSHOT","now",FALSE,38,TRUE,NA
+"bl.iro.bl.uk","dspace7","DSpace 9.2","earlier",FALSE,2084,TRUE,NA
+"bonndoc.ulb.uni-bonn.de","legacy",NA,"earlier",TRUE,968,TRUE,TRUE
+"britishmuseum.iro.bl.uk","dspace7","DSpace 9.2","now",FALSE,24,TRUE,NA
+"buleria.unileon.es","dspace7","DSpace 9.3","earlier",FALSE,11,TRUE,NA
+"ciencipca.ipca.pt","dspace7","DSpace 7.6.2","earlier",FALSE,16,TRUE,NA
+"cired-repository.org","dspace7",NA,"earlier",FALSE,0,TRUE,TRUE
+"comum.rcaap.pt","dspace7","DSpace 7.6.1","earlier",TRUE,105,TRUE,NA
+"conservancy.umn.edu","dspace7","DSpace 10.1","earlier",TRUE,122,TRUE,NA
+"cris.usm.cl","dspace7","DSpace 7.6.2","earlier",TRUE,671,TRUE,NA
+"daks.uni-kassel.de","dspace7",NA,"earlier",TRUE,315,TRUE,TRUE
+"data.thm.de","dspace7","DSpace 9.2","earlier",FALSE,1,TRUE,NA
+"datakatalogi.helsinki.fi","dspace7","DSpace 9.0","earlier",TRUE,361,TRUE,NA
+"datarepository.movebank.org","dspace7","DSpace 8.1","earlier",FALSE,1326,TRUE,NA
+"datashare.ed.ac.uk","dspace7","DSpace 8.3","earlier",FALSE,7860,TRUE,NA
+"datastorre.stir.ac.uk","legacy",NA,"earlier",TRUE,0,TRUE,NA
+"deposita.ibict.br","dspace7","DSpace 9.2","earlier",TRUE,11,TRUE,NA
+"depositonce.tu-berlin.de","none",NA,"now",FALSE,NA,NA,TRUE
+"diamond-oa.lib.cam.ac.uk","none",NA,"now",FALSE,NA,NA,TRUE
+"digitalcollection.zhaw.ch","dspace7","DSpace 8.4","earlier",TRUE,14229,TRUE,NA
+"digitalcollections.willamette.edu","dspace7",NA,"now",FALSE,0,TRUE,TRUE
+"digitallibrary.amnh.org","dspace7",NA,"now",FALSE,0,TRUE,TRUE
+"diglib.eg.org","dspace7","DSpace 7.6","earlier",TRUE,11846,TRUE,NA
+"dione.lib.unipi.gr","dspace7","DSpace 9.4","earlier",FALSE,4699,TRUE,NA
+"dl.eusset.eu","dspace7","DSpace 9.2","earlier",FALSE,562,TRUE,NA
+"dl.gi.de","dspace7","DSpace 9.2","earlier",TRUE,6501,TRUE,NA
+"drum.lib.umd.edu","none","DSpace 9.4-drum-1","now",FALSE,18239,TRUE,NA
+"dspace.emu.ee","dspace7","DSpace 7.6.1","earlier",FALSE,2096,TRUE,NA
+"dspace.lib.cranfield.ac.uk","dspace7",NA,"earlier",TRUE,399,TRUE,NA
+"dspace.stir.ac.uk","legacy","DSpace 6.2","now",FALSE,1,TRUE,NA
+"dspace.ub.uni-siegen.de","none",NA,"now",FALSE,NA,NA,TRUE
+"dspace.ut.ee","dspace7",NA,"earlier",TRUE,49,TRUE,NA
+"e-docs.geo-leo.de","dspace7",NA,"earlier",FALSE,7604,TRUE,TRUE
+"ecommons.cornell.edu","dspace7",NA,"earlier",TRUE,9,TRUE,NA
+"ecosistema.buap.mx","dspace7","DSpace 7.6","earlier",TRUE,105,TRUE,NA
+"edepositireland.ie","dspace7","DSpace 7.6","earlier",FALSE,224,TRUE,NA
+"edoc.hu-berlin.de","dspace7",NA,"earlier",FALSE,33238,TRUE,TRUE
+"edoc.rki.de","none","DSpace 6.4-SNAPSHOT","now",FALSE,12419,TRUE,NA
+"edoc.unibas.ch","dspace7","DSpace 7.6.2","earlier",FALSE,21220,TRUE,NA
+"edurepo.maren.ac.mw","none","DSpace 8.2","now",FALSE,8,TRUE,NA
+"eldorado.tu-dortmund.de","dspace7",NA,"earlier",FALSE,23497,TRUE,TRUE
+"elib.uni-stuttgart.de","dspace7",NA,"earlier",FALSE,18722,TRUE,TRUE
+"era.ed.ac.uk","dspace7","DSpace 8.3","earlier",FALSE,7952,TRUE,NA
+"estudogeral.uc.pt","legacy","DSpace CRIS-5.10.0-SNAPSHOT","now",FALSE,24,TRUE,NA
+"fuldok.hebis.de","none","DSpace 6.4","now",FALSE,836,TRUE,NA
+"genderopen.de","dspace7","DSpace 8.2","earlier",FALSE,3905,TRUE,NA
+"gnosis.library.ucy.ac.cy","dspace7","DSpace 7.6.1","earlier",FALSE,1003,TRUE,NA
+"gredos.usal.es","dspace7","DSpace 9.3","earlier",FALSE,27,TRUE,NA
+"gude.uni-frankfurt.de","none",NA,"now",FALSE,NA,NA,TRUE
+"harvest.usask.ca","dspace7","DSpace 9.2","earlier",FALSE,12,TRUE,NA
+"helda.helsinki.fi","dspace7","DSpace 9.2","earlier",FALSE,33,TRUE,NA
+"hephaestus.nup.ac.cy","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"hfmdk.hebis.de","none","DSpace 6.1","now",FALSE,3399,TRUE,NA
+"hilpub.uni-hildesheim.de","dspace7",NA,"earlier",FALSE,1001,TRUE,TRUE
+"historicroyalpalaces.iro.bl.uk","dspace7","DSpace 9.2","earlier",FALSE,3,TRUE,NA
+"hohpublica.uni-hohenheim.de","dspace7",NA,"earlier",FALSE,389,TRUE,TRUE
+"idus.us.es","dspace7",NA,"now",FALSE,0,TRUE,TRUE
+"infoscience.epfl.ch","dspace7","DSpace 7.6.2","earlier",FALSE,12326,TRUE,NA
+"iochem-bd.org","legacy",NA,"now",FALSE,0,TRUE,TRUE
+"ir.lib.uth.gr","none","DSpace 6.3","now",FALSE,13593,TRUE,NA
+"irep.mbzuai.ac.ae","dspace7",NA,"earlier",TRUE,459,TRUE,NA
+"irf.fhnw.ch","dspace7","DSpace 8.1","earlier",TRUE,8710,TRUE,NA
+"kalligeneia.aua.gr","none","DSpace 7.6.2-SNAPSHOT","now",FALSE,3197,TRUE,NA
+"kb.psu.ac.th","dspace7","DSpace 8.1","earlier",FALSE,109,TRUE,NA
+"kew.iro.bl.uk","dspace7","DSpace 9.2","earlier",FALSE,487,TRUE,NA
+"knowhub.aphrc.org","dspace7","DSpace 8.2","earlier",FALSE,7,TRUE,NA
+"kobra.uni-kassel.de","dspace7",NA,"earlier",FALSE,6232,TRUE,TRUE
+"kops.uni-konstanz.de","dspace7",NA,"earlier",FALSE,110,TRUE,TRUE
+"ktisis.cut.ac.cy","dspace7","DSpace 8.2","earlier",TRUE,1,TRUE,NA
+"library.camtree.org","dspace7","DSpace 7.6","earlier",FALSE,665,TRUE,NA
+"lingurep.dsa.info","dspace7","DSpace 10.1","earlier",FALSE,60483,TRUE,NA
+"loar.kb.dk","dspace7","DSpace 7.5","earlier",FALSE,20200,TRUE,NA
+"macsphere.mcmaster.ca","dspace7","DSpace 8.2","earlier",FALSE,25686,TRUE,NA
+"mcgill.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,56077,TRUE,NA
+"media.suub.uni-bremen.de","none",NA,"now",FALSE,NA,NA,TRUE
+"memorial.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,464,TRUE,NA
+"mola.iro.bl.uk","dspace7","DSpace 9.2","now",FALSE,17,TRUE,NA
+"mountainscholar.org","none","DSpace 9.3","now",FALSE,13887,TRUE,NA
+"mro.massey.ac.nz","dspace7","DSpace 8.3","earlier",TRUE,114,TRUE,NA
+"nalt-dspace.progress.plus","dspace7",NA,"earlier",TRUE,0,TRUE,FALSE
+"nls.iro.bl.uk","dspace7","DSpace 9.2","earlier",FALSE,15,TRUE,NA
+"nms.iro.bl.uk","dspace7","DSpace 9.2","earlier",FALSE,28,TRUE,NA
+"nosmu.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,5,TRUE,NA
+"oa.tib.eu","none","DSpace 7.6.5","now",FALSE,38042,TRUE,NA
+"opara.zih.tu-dresden.de","dspace7",NA,"earlier",TRUE,555,TRUE,TRUE
+"oparu.uni-ulm.de","dspace7",NA,"earlier",FALSE,13498,TRUE,TRUE
+"open.fau.de","dspace7","DSpace 7.4","earlier",TRUE,3578,TRUE,NA
+"open.fsc.org","dspace7","DSpace 7.2.1","earlier",FALSE,1039,TRUE,NA
+"open.ifz-muenchen.de","dspace7",NA,"earlier",TRUE,73,TRUE,TRUE
+"open.uni-marburg.de","dspace7",NA,"earlier",TRUE,450,TRUE,TRUE
+"openknowledge.fao.org","dspace7",NA,"now",FALSE,0,TRUE,TRUE
+"openresearch.ceu.edu","dspace7",NA,"earlier",TRUE,8330,TRUE,NA
+"openscience.ge","dspace7","DSpace 7.6.2","earlier",FALSE,551,TRUE,NA
+"openscience.ub.uni-mainz.de","dspace7",NA,"earlier",TRUE,12974,TRUE,TRUE
+"openumwelt.de","dspace7","DSpace 8.1","earlier",FALSE,8283,TRUE,NA
+"orbilu.uni.lu","legacy","DSpace 6.4-SNAPSHOT","now",FALSE,7,TRUE,NA
+"osnadocs.ub.uni-osnabrueck.de","legacy",NA,"now",FALSE,975,TRUE,TRUE
+"pedsnet.org","none","DSpace 8.2","now",FALSE,821,TRUE,NA
+"people.hochschule-burgenland.at","dspace7",NA,"earlier",FALSE,24,TRUE,TRUE
+"proforis.phsg.ch","dspace7","DSpace 8.2","earlier",TRUE,1140,TRUE,NA
+"psycharchives.org","legacy",NA,"earlier",TRUE,21753,TRUE,NA
+"pubdata.leuphana.de","dspace7","DSpace 9.2","earlier",FALSE,3365,TRUE,NA
+"publica.fraunhofer.de","none","DSpace 7.6.1","now",FALSE,36973,TRUE,NA
+"publications.mfo.de","none","DSpace 6.4","now",FALSE,2162,TRUE,NA
+"publicdata.fdm.uni-wuppertal.de","none",NA,"now",FALSE,NA,NA,TRUE
+"publish.fid-media.de","dspace7",NA,"earlier",TRUE,688,TRUE,TRUE
+"qmro.qmul.ac.uk","dspace7","DSpace 8.4","earlier",FALSE,291,TRUE,NA
+"qsardb.org","legacy","DSpace 6.4","earlier",TRUE,251,TRUE,NA
+"rdmcrepo.thri.gov.et","dspace7","DSpace 9.0-rc1","earlier",FALSE,260,TRUE,NA
+"recil.ensinolusofona.pt","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"reliam.ensam.eu","dspace7","DSpace 7.6","earlier",FALSE,107,TRUE,NA
+"repo.hab.de","dspace7","DSpace 9.0","earlier",FALSE,1414,TRUE,NA
+"repo.lib.duth.gr","none","DSpace 6.3","now",FALSE,18561,TRUE,NA
+"repo.uni-hannover.de","dspace7",NA,"earlier",FALSE,3916,TRUE,TRUE
+"repos.hcu-hamburg.de","none",NA,"now",FALSE,NA,NA,TRUE
+"reposit.haw-hamburg.de","none",NA,"now",FALSE,NA,NA,TRUE
+"repositorio-digital.cide.edu","legacy",NA,"earlier",TRUE,2,TRUE,TRUE
+"repositorio.cedia.edu.ec","dspace7","DSpace 9.4","earlier",FALSE,14,TRUE,NA
+"repositorio.ensinolusofona.pt","none","DSpace 6.3","now",FALSE,1,TRUE,NA
+"repositorio.ipen.br","dspace7","DSpace 7.6.5","earlier",TRUE,16,TRUE,NA
+"repositorio.ipsantarem.pt","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repositorio.tec.mx","dspace7",NA,"earlier",TRUE,177,TRUE,NA
+"repositorio.uac.pt","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repositorio.uautonoma.cl","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repositorio.ucentral.cl","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repositorio.uchile.cl","legacy","DSpace 6.3","now",FALSE,14216,TRUE,NA
+"repositorio.ucn.cl","dspace7","DSpace 7.6.2","earlier",TRUE,246,TRUE,NA
+"repositorio.ucsm.edu.pe","dspace7",NA,"earlier",TRUE,113,TRUE,NA
+"repositorio.ulusiada.pt","none","DSpace 6.1","now",FALSE,848,TRUE,NA
+"repositorio.umecit.edu.pa","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repositorio.uniandes.edu.co","dspace7","DSpace 9.4","earlier",FALSE,11986,TRUE,NA
+"repositorio.upct.es","dspace7","DSpace 7.6.2","earlier",FALSE,49,TRUE,NA
+"repositorio.usm.cl","dspace7","DSpace 7.6.2","earlier",FALSE,3475,TRUE,NA
+"repositorio.utad.pt","dspace7","DSpace 7.6.2","earlier",FALSE,38,TRUE,NA
+"repositoriodigital.uct.cl","dspace7","DSpace 9.1","earlier",FALSE,52,TRUE,NA
+"repositorioinstitucional.ceu.es","none","DSpace 8.1","now",FALSE,446,TRUE,NA
+"repository.aus.edu","dspace7",NA,"earlier",TRUE,1293,TRUE,NA
+"repository.cam.ac.uk","dspace7","DSpace 8.1","earlier",TRUE,116720,TRUE,NA
+"repository.difu.de","dspace7","DSpace 9.4","earlier",TRUE,63,TRUE,NA
+"repository.escholarship.umassmed.edu","dspace7",NA,"earlier",TRUE,3537,TRUE,NA
+"repository.fhgr.ch","dspace7","DSpace 9.2","earlier",FALSE,207,TRUE,NA
+"repository.gatech.edu","dspace7","DSpace 7.6","earlier",TRUE,284,TRUE,NA
+"repository.gchumanrights.org","dspace7","DSpace 8.1","earlier",TRUE,3341,TRUE,NA
+"repository.ifla.org","none","DSpace 7.6.5","now",FALSE,75,TRUE,NA
+"repository.kallipos.gr","none","DSpace 6.3","now",FALSE,1146,TRUE,NA
+"repository.kaust.edu.sa","dspace7","DSpace 7.4","earlier",FALSE,3658,TRUE,NA
+"repository.mines.edu","dspace7",NA,"earlier",TRUE,922,TRUE,NA
+"repository.mit.edu.au","none","DSpace 8.5","now",FALSE,27,TRUE,NA
+"repository.mu.edu.et","dspace7","DSpace 9.2","earlier",TRUE,903,TRUE,NA
+"repository.nottingham.ac.uk","dspace7","DSpace 8.2","earlier",FALSE,111,TRUE,NA
+"repository.sciensano.be","dspace7","DSpace 7.6","earlier",FALSE,175,TRUE,NA
+"repository.universidadean.edu.co","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repository.upenn.edu","dspace7","DSpace 7.6","earlier",FALSE,166,TRUE,NA
+"repository.upol.cz","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repositum.tuwien.at","none","DSpace CRIS-5.10.0-SNAPSHOT","now",FALSE,22530,TRUE,NA
+"repozitar.techlib.cz","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"repozytorium.p.lodz.pl","dspace7","DSpace 9.2","earlier",FALSE,790,TRUE,NA
+"research-collection.ethz.ch","dspace7",NA,"earlier",TRUE,0,TRUE,TRUE
+"research-repository.griffith.edu.au","dspace7",NA,"earlier",FALSE,5934,TRUE,TRUE
+"researchrepository.ul.ie","dspace7","DSpace 7.6","earlier",FALSE,11336,TRUE,NA
+"researchrepository.universityofgalway.ie","dspace7",NA,"earlier",TRUE,15977,TRUE,NA
+"ria.ua.pt","none","DSpace 5.2","now",FALSE,592,TRUE,NA
+"ricaxcan.uaz.edu.mx","none","DSpace 6.4","now",FALSE,2528,TRUE,NA
+"ridda2.utp.ac.pa","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"rims.unza.ac.zm","dspace7","DSpace 8.2","earlier",FALSE,30,TRUE,NA
+"riubu.ubu.es","none","DSpace 5.10_1.0.11","now",FALSE,10,TRUE,NA
+"riunet.upv.es","dspace7",NA,"now",FALSE,0,TRUE,TRUE
+"ruj.uj.edu.pl","dspace7","DSpace cris-2023.01.01-SNAPSHOT","earlier",FALSE,1178,TRUE,NA
+"ruor.uottawa.ca","dspace7","DSpace 8.3","earlier",FALSE,30239,TRUE,NA
+"scholarbank.nus.edu.sg","dspace7","DSpace 7.6","earlier",TRUE,657,TRUE,NA
+"scholarshare.temple.edu","dspace7",NA,"earlier",TRUE,11756,TRUE,NA
+"scholarworks.gsu.edu","dspace7","DSpace 7.6","earlier",FALSE,452,TRUE,NA
+"scholarworks.umass.edu","dspace7",NA,"earlier",TRUE,29211,TRUE,NA
+"scholarworks.wm.edu","dspace7","DSpace 7.6","earlier",FALSE,27805,TRUE,NA
+"sciencemuseumgroup.iro.bl.uk","dspace7","DSpace 9.2","earlier",FALSE,402,TRUE,NA
+"sedici.unlp.edu.ar","none",NA,"now",FALSE,NA,NA,TRUE
+"ses.library.usyd.edu.au","legacy",NA,"earlier",TRUE,464,TRUE,NA
+"share.swps.edu.pl","dspace7","DSpace cris-2022.03.00","earlier",TRUE,41,TRUE,NA
+"sic.usach.cl","dspace7","DSpace 8.2","earlier",FALSE,1,TRUE,NA
+"ssoar.info","legacy","DSpace 5.11","now",FALSE,4539,TRUE,NA
+"tam-datahub.online.uni-marburg.de","dspace7",NA,"earlier",TRUE,43,TRUE,TRUE
+"tate.iro.bl.uk","dspace7","DSpace 9.2","earlier",FALSE,5,TRUE,NA
+"toubkal.imist.ma","dspace7","DSpace 9.1","earlier",TRUE,29903,TRUE,NA
+"trace.tennessee.edu","dspace7",NA,"now",FALSE,0,TRUE,TRUE
+"tudatalib.ulb.tu-darmstadt.de","dspace7",NA,"earlier",TRUE,846,TRUE,TRUE
+"tuprints.ulb.tu-darmstadt.de","dspace7",NA,"earlier",FALSE,14950,TRUE,TRUE
+"ualberta.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,84833,TRUE,NA
+"ubishops.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,145,TRUE,NA
+"udspace.udel.edu","dspace7","DSpace 9.3","earlier",FALSE,4733,TRUE,NA
+"ulir.ul.ie","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"um.edu.mt","none","DSpace 6.3","now",FALSE,205,TRUE,NA
+"umontreal.scholaris.ca","dspace7","DSpace 9.4","earlier",TRUE,35967,TRUE,NA
+"unsworks.unsw.edu.au","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"uregina.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,7606,TRUE,NA
+"usherbrooke.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,941,TRUE,NA
+"utoronto.scholaris.ca","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"uvadoc.uva.es","dspace7","DSpace 9.3","earlier",FALSE,156,TRUE,NA
+"uwindsor.scholaris.ca","dspace7","DSpace 9.4","earlier",FALSE,3,TRUE,NA
+"uwo.scholaris.ca","dspace7",NA,"earlier",TRUE,0,TRUE,NA
+"viurrspace.ca","dspace7","DSpace 9.0","earlier",FALSE,22388,TRUE,NA
+"wiredspace.wits.ac.za","dspace7",NA,"now",FALSE,0,TRUE,TRUE
+"yoda.csem.ch","dspace7","DSpace 9.0","earlier",FALSE,49,TRUE,NA
+"zop.zb.uzh.ch","dspace7","DSpace 8.0","earlier",FALSE,11378,TRUE,NA
+"zora.uzh.ch","dspace7","DSpace 8.0","earlier",FALSE,152981,TRUE,NA

@@ -211,6 +211,15 @@ stat_results_long <- function(tables, paper_id = NA_character_,
       .stat_is_label_col(headers[[c]], df[[c]], roles[[headers[[c]]]]),
       logical(1))
     label_cols <- which(is_label); stat_cols <- which(!is_label)
+    # A column that is only the row number, under a default name (V1, X, ...1,
+    # rownames): a printed data frame or data.table numbers its rows so, and
+    # "V1 = 1, 2, 3" was the most common name in the corpus runs' stored
+    # output, 1,467 values (#648)
+    is_row_no <- vapply(stat_cols, function(ci) {
+      grepl("^(V[0-9]+|X[0-9]*|\\.\\.\\.[0-9]+|rownames?|row|)$", trimws(headers[[ci]])) &&
+        identical(suppressWarnings(as.numeric(trimws(as.character(df[[ci]])))), as.numeric(seq_len(nrow(df))))
+    }, logical(1))
+    stat_cols <- stat_cols[!is_row_no]
     if (!length(stat_cols)) return(NULL)
 
     # An .spv table (see R/spv.R) is LONG/tidy: one column per

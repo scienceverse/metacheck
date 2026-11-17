@@ -270,6 +270,9 @@
 
   paper$extraction <- extraction
 
+  # links split by a space when the PDF was read (see .repair_links())
+  paper <- .paper_repair_text(paper)
+
   .paper_coerce(paper)
 }
 

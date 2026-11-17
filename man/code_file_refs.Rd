@@ -7,7 +7,8 @@
 code_file_refs(
   code_text,
   lang = c("R", "Python", "SPSS", "SAS", "Stata", "Mplus", "MATLAB"),
-  include_writes = FALSE
+  include_writes = FALSE,
+  writes_only = FALSE
 )
 }
 \arguments{
@@ -16,11 +17,17 @@ code_file_refs(
 \item{lang}{the language (we only currently handle R, Python, SPSS, SAS,
 Stata, Mplus, MATLAB)}
 
-\item{include_writes}{also return files the code \emph{writes} (R only). Off by
-default: callers that ask "which referenced inputs are missing from the
-repository?" (e.g. \code{code_check}) must not see a written file as a missing
-input. \code{repro_file_io()} turns this on so a file produced by one script can
-be recognised as the input another script consumes.}
+\item{include_writes}{also return files the code \emph{writes} (R, Python,
+MATLAB). Off by default: callers that ask "which referenced inputs are
+missing from the repository?" (e.g. \code{code_check}) must not see a written
+file as a missing input. \code{repro_file_io()} turns this on so a file
+produced by one script can be recognised as the input another script
+consumes.}
+
+\item{writes_only}{return only the files the code writes or downloads, in R,
+Python, MATLAB, Stata and SAS (see \code{.code_write_regex()}), so that
+\code{code_check} does not report a file a script of the deposit makes as
+missing (#648)}
 }
 \value{
 a vector of files that are referenced in the code

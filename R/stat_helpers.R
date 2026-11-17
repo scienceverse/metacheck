@@ -147,14 +147,35 @@
 
 # ---- reported values --------------------------------------------------
 
+# A number as a paper writes it, in the form R reads: spaces removed, the
+# Unicode minus and A with a grave accent (GROBID's reading of the minus in
+# some PDFs) as "-", and "x 10^", the multiplication sign or A with a
+# circumflex or a tilde (GROBID's readings of it) before 10 and an exponent
+# as "e": "1.8 x 10 -6" and "2.2\u00c210 \u00c016" are "1.8e-6" and "2.2e-16".
+# With `ten_power`, 10 to a power with nothing before it ("10 -15", where
+# reading the PDF lost the superscript) is "1e-15": only for a p-value, as
+# elsewhere "10-15" can be a range. The one reader of such numbers for
+# extract_p_values() and .norm_value(), so the two cannot disagree (#642).
+.sci_text <- function(x, ten_power = FALSE) {
+  s <- gsub("\\s", "", x)
+  s <- gsub("[\u2212\u00c0]", "-", s)
+  if (ten_power) s <- sub("^([<>]?)10\\^?(?=-\\d)", "\\11e", s, perl = TRUE)
+  gsub("[x*\u00d7\u00c2\u00c3]10\\^?(?=[-+]?\\d)", "e", s, perl = TRUE)
+}
+
 # Normalise a value string to a number. APA leading-dot ".06" -> 0.06; strip
-# thousands separators; "< .001"/"> .05" -> the bound (with a censored flag).
+# thousands separators; "< .001"/"> .05" -> the bound (with a censored flag);
+# scientific notation as papers write it ("1.8 x 10 -6"), through
+# .sci_text(); with `ten_power` (a p-value), also "10 -15".
 # Returns list(num, dec = #decimals as written, censored = "<"/">"/"").
-.norm_value <- function(x) {
+.norm_value <- function(x, ten_power = FALSE) {
   s <- trimws(as.character(x %||% ""))
   cens <- ""
   if (grepl("^[<>]", s)) { cens <- substr(s, 1, 1); s <- trimws(sub("^[<>]\\s*", "", s)) }
-  s <- gsub("[, ]", "", s)
+  s <- gsub(",", "", s)
+  # "1.8 x 10 -6" was read as 1.8, so a reported p never matched its own
+  # output (#642)
+  s <- .sci_text(s, ten_power = ten_power)
   s <- sub("[^0-9.eE+-].*$", "", s)
   dm <- regmatches(s, regexpr("\\.[0-9]+", s))
   dec <- if (length(dm)) nchar(dm) - 1L else 0L
@@ -273,6 +294,47 @@
   !nzchar(h) || grepl("^[0-9]+\\.?$|^-+$", h)
 }
 
+# ---- the decimal point of The Lancet ------------------------------------
+
+# A paper's text with a raised dot between two digits read as a decimal point:
+# The Lancet and medRxiv papers in its style write "p = 0\u00b70079", which
+# GROBID gives with the middle dot or the bullet ("p = 0\u20220079"), so the
+# p-values and tests of such papers were not read at all (#648; 87 values in 2
+# of 141 preprints). Between two digits the dot is nothing else in a result.
+# `paper` is a paper, a paper list, or a data frame with a `text` column; it
+# is returned with that text changed.
+.stat_decimal_point <- function(paper) {
+  .stat_text_apply(paper, function(x) gsub("(?<=\\d)[\u00b7\u2022\u2219](?=\\d)", ".", x, perl = TRUE))
+}
+
+# A paper's text with the chi of a chi-squared test joined to its 2: reading
+# a PDF often puts a space between them ("\u03c7 2 (10) = 9.61", "\u03c7 \u00b2 =
+# 3.9", "X 2 (1) = 3.20"), and the statistic was then not read (#351). Only
+# where a test follows: brackets with the degrees of freedom, or a
+# comparison. Chi is never anything else than a chi-squared test in a
+# result; a standing X with a 2 is read the same way as .test_stat_head reads
+# it.
+.stat_chi_join <- function(paper) {
+  .stat_text_apply(paper, function(x) {
+    x <- gsub("\u03c7\\s+([\u00b22\u2082])(?=\\s*[([=<>\u2264\u2265])", "\u03c7\\1", x, perl = TRUE)
+    gsub("(?<![\\w\u0370-\u03ff])X\\s+([\u00b22])(?=\\s*[([=<>\u2264\u2265])", "X\\1", x, perl = TRUE)
+  })
+}
+
+# Apply `fix` to the text of a paper, of each paper of a paper list, or of a
+# data frame with a `text` column. Only a single paper's text was changed
+# before, so a paper list kept "p = 0\u00b70079" and its p-values were not read.
+.stat_text_apply <- function(paper, fix) {
+  if (is.data.frame(paper)) {
+    if ("text" %in% names(paper)) paper$text <- fix(paper$text)
+  } else if (inherits(paper, "scivrs_paperlist")) {
+    paper[] <- lapply(paper, .stat_text_apply, fix = fix)
+  } else if (is.list(paper) && is.data.frame(paper$text) && "text" %in% names(paper$text)) {
+    paper$text$text <- fix(paper$text$text)
+  }
+  paper
+}
+
 # ---- shared result pattern --------------------------------------------
 
 # The "<name> [(df)] <op> <value>" statistic pattern, shared with extract_eq().
@@ -292,6 +354,135 @@
 
 # ---- p-values that are not the result of a test --------------------------
 
+# A test statistic with a value: t(20) =, F =, chi2 =, z =, W =, OR =, b =.
+# Not a fit index, R squared, a size or another number, which a table note
+# can follow. The fraction one quarter and A with a grave accent are how
+# GROBID reads "=" and the minus sign in some journals. Used by
+# .p_not_test() (a p-value right after one belongs to it) and
+# .reports_test() (#642). A chi-squared test in any of its written forms,
+# also with a space before its 2, which reading a PDF often adds
+# ("\u03c7 2 (10) =", "X 2 (1) =", "chi-square(2) =") (#351).
+.test_stat_head <- paste0(
+  "(?<![\\w\u0370-\u03ff-])(?:t|F|z|Z|r|rs|R(?![\u00b22])|W|U|H|D|V|Q|T|B|b|d|g|OR|HR|RR|",
+  "\u03c7\\s?[\u00b22\u2082]?|X\\s?[2\u00b2]|chi[- ]?squared?|chi\\s?[2\u00b2]|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
+  "[0-9]{0,4}\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
+  "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*")
+.test_stat_pattern <- paste0(.test_stat_head, "\\.?\\d")
+# the same, with a value that is not 0 ("d = 0", "T = 0.00" are left out):
+# a p-value of exactly 0 needs a large statistic (#642)
+.test_stat_nonzero <- paste0(.test_stat_head, "(?!(?:0+\\.?0*|\\.0+)(?![\\d.]))\\.?\\d")
+
+# Whether each sentence reports a statistical test: a test statistic with a
+# value, another p-value written with a decimal point or an exponent, or a
+# word that names a test or its outcome. extract_p_values() reads a whole
+# "p = 0" or "p = 1" as a p-value only in such a sentence; otherwise it is
+# often a probability or a model parameter ("with p = 1", "ARIMA values
+# p = 0") (#642). With `nonzero` TRUE (for "p = 0"), a statistic counts only
+# with a value that is not 0: "ARIMA values p = 0, d = 0" has no test.
+.reports_test <- function(sentence, nonzero = FALSE) {
+  sentence[is.na(sentence)] <- ""
+  nonzero <- rep_len(nonzero, length(sentence))
+  stat <- grepl(.test_stat_pattern, sentence, perl = TRUE)
+  stat[nonzero] <- grepl(.test_stat_nonzero, sentence[nonzero], perl = TRUE)
+  other_p <- paste0(
+    "(?<![\\w])[pP]s?(?:-?values?)?\\s*[=<>\u2264\u2265\u2248~\u00bc]\\s*",
+    "(?:\\d?\\.\\d|\\d+\\s*(?:[eE]|[x\u00d7*\u00c2\u00c3]\\s*10)\\s*[-\u2212\u00c0]|10\\s*\\^?\\s*[-\u2212\u00c0]\\s*\\d)")
+  words <- paste0(
+    "\\btest(?:s|ed|ing)?\\b|significan|\\bdiffer|Fisher|Wilcoxon|Mann.?Whitney|",
+    "Kruskal|Kolmogorov|binomial|chi.?squ|AN(?:C|M)?OVA|permut|bootstrap|",
+    "Bonferroni|\\bHolm\\b|Tukey|Dunn|Sidak|adjusted|corrected|post.?hoc|",
+    "pairwise|comparisons?\\b|likelihood.ratio|\\bLRT\\b|regression|correlat|\\bexact\\b")
+  stat |
+    grepl(other_p, sentence, perl = TRUE) |
+    grepl(words, sentence, perl = TRUE, ignore.case = TRUE)
+}
+
+# The symbols of a table note: *, the asterisk operator, a dagger or double
+# dagger, a section or paragraph sign, #, ^, ~ and the replacement character;
+# also the low asterisk, "@", and A with a tilde, which is how GROBID reads
+# an asterisk in some journals ("A-tilde p < 0.05, A-tilde A-tilde p < 0.01") (#642)
+.p_note_symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd\u00c3\u204e@]"
+
+# The clause of each p-value in its sentence: the text before it back to the
+# last ";" or full stop (at most 120 characters), and the text after it on
+# to the next (at most 80). The k-th row of a p-value in a sentence is its
+# k-th place there, and "p < .05" is not found inside "p < .051". `p` has
+# the columns `paper_id`, `text_id`, `text` and `expanded`. Returns a data
+# frame with `before` and `after`, NA where the p-value is not found. Used
+# by .p_not_test() and stat_p_exact (#604, #642).
+.p_clause <- function(p) {
+  n <- nrow(p)
+  before <- after <- rep(NA_character_, n)
+  if (!n) return(data.frame(before = before, after = after))
+  sentence <- p$expanded %||% p$text
+  sentence[is.na(sentence)] <- ""
+  ptext <- trimws(p$text)
+  key <- paste(p$paper_id, p$text_id, sentence, ptext, sep = "\r")
+  k <- stats::ave(seq_along(key), key, FUN = seq_along)
+  # the end of a clause: ";", or a full stop with a space or a marker after it
+  boundary <- paste0(";|\\.\\s+|\\.(?=", .p_note_symbol, ")|:\\s+(?=[A-Z])")
+  for (i in seq_len(n)) {
+    s <- sentence[[i]]
+    at <- gregexpr(paste0(gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", ptext[[i]]), "(?![0-9])"),
+                   s, perl = TRUE)[[1]]
+    if (at[[1]] == -1 || k[[i]] > length(at)) next
+    start <- at[[k[[i]]]]
+    end <- start + nchar(ptext[[i]]) - 1L
+    b <- substr(s, max(1L, start - 120L), start - 1L)
+    a <- substr(s, end + 1L, end + 80L)
+    cut_b <- gregexpr(boundary, b, perl = TRUE)[[1]]
+    if (cut_b[[1]] > 0) {
+      last <- length(cut_b)
+      b <- substr(b, cut_b[[last]] + attr(cut_b, "match.length")[[last]], nchar(b))
+    }
+    cut_a <- regexpr(boundary, a, perl = TRUE)
+    if (cut_a > 0) a <- substr(a, 1L, cut_a - 1L)
+    before[[i]] <- b
+    after[[i]] <- a
+  }
+  data.frame(before = before, after = after)
+}
+
+# ---- p-values below 0 or above 1 (#351) ----------------------------------
+#
+# Rules from all 237,000 "p <comparison> number" in 18 corpora (16,847
+# papers), each case read: 50 were negative and 180 were read above 1.
+
+# The power of ten of a p-value in scientific notation, lost or garbled when
+# the PDF was read, right after the number: a multiplication sign ("2.4 x",
+# GROBID's "9 10 \u00c05" in some journals, "5.0.10 -12"), "10" with an exponent,
+# a minus with digits ("1.3 -4"), a superscript or an "e". The number written
+# is then not the p-value (99 of the 230).
+.p_lost_power <- paste0(
+  "^\\s*(?:[x\u00d7X\u00b7\u2022\u22c5\ufffd\u00c3\u00c2*]|9\\s+10\\b|\\.\\s*10\\b",
+  "|10\\s*(?:\\^|[-\u2212\u00c0\u207b]|\\s+[-\u2212\u00c0]?\\d|E|e|$)",
+  "|[-\u2212\u00c0\u207b]\\s*\\d|[\u2070\u00b9\u00b2\u00b3\u2074-\u2079]|[eE]\\s*[-\u2212+\u00c0]?\\s*\\d)")
+
+# Why a "p" with a value below 0 or above 1 is not a p-value at all, from the
+# text right before it (`before`) and right after its number (`after`); NA
+# when there is no such reason:
+# - "unit": a unit follows the number, so P is a physical quantity ("P = 2.9
+#   \u00b5m", "P = 6.02 MPa", "V p = -60 mV");
+# - "log": a logarithm of p ("-log10 P = 7.5");
+# - "formula": the p is part of a name or a formula, written against "/" or
+#   ":" or after a number and a hyphen ("Ca/P = 1.67", "N:P = -0.41", "1-p").
+# 50 of the 230 were one of these, none a p-value.
+.p_not_a_value <- function(before, after) {
+  before[is.na(before)] <- ""
+  after[is.na(after)] <- ""
+  unit <- paste0(
+    "^\\s*(?i:%|\u2030|[\u00b5\u03bcnmck]?m\\b|[kmg]?hz\\b|[mun]?s\\b|ps\\b|[km]?pa\\b|bar\\b|",
+    "[mk]?w\\b|[mk]?v\\b|k\\b|\u00b0|[km]?ev\\b|m?g\\b|kg\\b|g/ml|m?l\\b|mmhg\\b|dbm?\\b|",
+    "h\\b|hr\\b|min\\b|years?\\b|days?\\b|atm\\b)")
+  logp <- "(?i:log|\\bln)\\s*(?:\\(?\\s*10\\s*\\)?|\u2081\u2080)?\\s*\\(?\\s*$"
+  formula <- "(?:/|(?<!\\s):|\\d-)$"
+  out <- rep(NA_character_, length(before))
+  out[grepl(formula, before, perl = TRUE)] <- "formula"
+  out[grepl(logp, before, perl = TRUE)] <- "log"
+  out[grepl(unit, after, perl = TRUE)] <- "unit"
+  out
+}
+
 # Which p-values in sentences are clearly not the result of a test: a
 # threshold or a legend, not a finding (#604). A table note ("* p < .05,
 # ** p < .01"), a figure legend ("Asterisks indicate significant differences
@@ -310,6 +501,9 @@
 # A p-value is taken as not a test when its clause has, and no statistic:
 #   marker     a symbol right before it: *, the asterisk operator, a dagger or double dagger, a section or paragraph sign, #, ^, +, ~, or a
 #              repeat of them ("* * * p < .001", "*: p < .05", "** = p < .01");
+#              GROBID's readings of an asterisk (A with a tilde, the low
+#              asterisk) and "@"; symbols in brackets before or after it
+#              ("(*) p < .05", "p < .01 (**)") (#642);
 #              "ns" or "n.s." only with ":" or "=" after it ("ns: p > .05"),
 #              or in a clause with a symbol note too
 #   threshold  words that state a threshold: a significance level, alpha,
@@ -332,31 +526,28 @@
   sentence[is.na(sentence)] <- ""
   ptext <- trimws(p$text)
 
-  # the k-th row of a p-value in a sentence is its k-th place there
-  key <- paste(p$paper_id, p$text_id, sentence, ptext, sep = "\r")
-  k <- stats::ave(seq_along(key), key, FUN = seq_along)
-
   # a statistic or an estimate: a short name, an optional (df), a comparison
   # and a number; not p (or q, an adjusted p), n, k, df or alpha, which
   # thresholds and notes use too. The fraction one quarter and A with a grave accent are how GROBID reads "=" and
   # the minus sign in some journals.
   stat_name <- paste0(
     "(?<![\\w.\u0370-\u03ff-])(?!(?:p|P|ps|Ps|q|n|N|k|K|df|alpha|value|values|pvalue|pvalues)(?![\\w\u0370-\u03ff]))",
+    "(?![pP]_?", .p_subscripts, ")",   # pFWE, padj: a p-value (#642)
     "(?!\u03b1(?![\\w\u0370-\u03ff]))",
-    "(?:[A-Za-z\u0370-\u03ff][A-Za-z\u0370-\u03ff0-9\u00b2_]{0,5}|\u03c7\u00b2?)",
+    "(?:[A-Za-z\u0370-\u03ff][A-Za-z\u0370-\u03ff0-9\u00b2_]{0,5}|\u03c7\\s?[\u00b22\u2082]?|X\\s[2\u00b2])",
     "\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
     "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
   ci <- "\\bCI\\b\\s*[\\[(=:]?\\s*[-\u2212\u00c0]?\\.?\\d|\\d+\\s*%\\s*CI\\b"
-  # a test statistic, which a p-value right after it belongs to: not a fit
-  # index, R squared, a size or another number, which a table note can follow
-  test_stat <- paste0(
-    "(?<![\\w\u0370-\u03ff-])(?:t|F|z|Z|r|rs|R(?![\u00b22])|W|U|H|D|V|Q|T|B|b|d|g|OR|HR|RR|",
-    "\u03c7\u00b2?|\u03c72|X2|chi2|chi\u00b2|\u03c1|rho|\u03c4|\u03b2|\u03b7\u00b2?p?|\u03c9\u00b2?)",
-    "[0-9]{0,4}\\s*(?:\\([^()]{0,40}\\)|\\[[^][]{0,40}\\])?\\s*",
-    "(?:=|<|>|\u2264|\u2265|\u00bc)\\s*[-\u2212\u00c0]?\\s*\\.?\\d")
-  p_value <- "(?<![\\w])[pP]s?\\s*(?:-?values?)?\\s*(?:=|<|>|\u2264|\u2265|\u00bc)"
-  symbol <- "[*\u2217\u2020\u2021\u00a7#\u00b6^~\ufffd]"
+  test_stat <- .test_stat_pattern
+  # a p with a correction name is a p-value too ("pFWE < .05", #642)
+  p_value <- paste0("(?<![\\w])[pP]s?\\s*(?:-?values?)?(?:[\\s_-]?", .p_subscripts, ")?",
+                    "\\s*(?:=|<|>|\u2264|\u2265|\u00bc)")
+  symbol <- .p_note_symbol
   marker <- paste0("(?<![\\w)\\]/])(?:(?:", symbol, "|(?<![\\w/+])\\++)\\s*)+[:=,]?\\s*$")
+  # a marker in brackets, before the p-value ("(*) p < .05", "(**) = p < .01")
+  # or after it ("p < .01 (**)") (#642)
+  marker_br_before <- paste0("\\(\\s*(?:", symbol, "\\s*)+\\)\\s*[:=,]?\\s*$")
+  marker_br_after <- paste0("^\\s*\\(\\s*(?:", symbol, "\\s*)+\\)")
   ns_marker <- "(?<![\\w.])n\\.?s\\.?\\s*[:=]\\s*$"
   ns_plain <- "(?<![\\w.])n\\.?s\\.?\\s*,?\\s*$"
   # threshold words, each in a form that states a threshold: "threshold" or
@@ -395,33 +586,20 @@
     # "* and ** indicate p < .05 and p < .01", "red dotted line: corrected p < .05"
     "|(?:", symbol, "\\s*)+(?:(?:and|or|,)\\s*(?:", symbol, "\\s*)+)*(?:indicat|denot|represent|mark|correspond)\\w*",
     "|\\b(?:", vis, ")\\s*:")
-  # the end of a clause: ";", or a full stop with a space or a marker after it
-  boundary <- paste0(";|\\.\\s+|\\.(?=", symbol, ")|:\\s+(?=[A-Z])")
 
+  ctx <- .p_clause(p)
   for (i in seq_along(out)) {
     s <- sentence[[i]]
-    # not inside a longer value: "p < .05" is not found in "p < .051"
-    at <- gregexpr(paste0(gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", ptext[[i]]), "(?![0-9])"),
-                   s, perl = TRUE)[[1]]
-    if (at[[1]] == -1 || k[[i]] > length(at)) next   # not found: may be a result
-    start <- at[[k[[i]]]]
-    end <- start + nchar(ptext[[i]]) - 1L
-    before <- substr(s, max(1L, start - 120L), start - 1L)
-    after <- substr(s, end + 1L, end + 80L)
-    # the clause: back to the last boundary, on to the next
-    cut_b <- gregexpr(boundary, before, perl = TRUE)[[1]]
-    if (cut_b[[1]] > 0) {
-      last <- length(cut_b)
-      before <- substr(before, cut_b[[last]] + attr(cut_b, "match.length")[[last]], nchar(before))
-    }
-    cut_a <- regexpr(boundary, after, perl = TRUE)
-    if (cut_a > 0) after <- substr(after, 1L, cut_a - 1L)
+    if (is.na(ctx$before[[i]])) next   # not found: may be a result
+    before <- ctx$before[[i]]
+    after <- ctx$after[[i]]
     clause <- paste(before, after)
 
     # a marker note: unless a test statistic comes right before the p-value,
     # with no other p-value between them ("t52 = 6.92, ***p < .001"), or
     # right after it ("*p < .05 [z = 2.38]")
     if (grepl(marker, before, perl = TRUE) || grepl(ns_marker, before, perl = TRUE, ignore.case = TRUE) ||
+        grepl(marker_br_before, before, perl = TRUE) || grepl(marker_br_after, after, perl = TRUE) ||
         (grepl(ns_plain, before, perl = TRUE, ignore.case = TRUE) &&
          grepl(paste0(symbol, "\\s*[pP]\\b"), s, perl = TRUE))) {
       st <- gregexpr(test_stat, before, perl = TRUE)[[1]]

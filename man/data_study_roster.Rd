@@ -4,10 +4,14 @@
 \alias{data_study_roster}
 \title{Study roster named in a paper's text}
 \usage{
-data_study_roster(paper)
+data_study_roster(paper, words = c("study", "experiment", "pilot"))
 }
 \arguments{
 \item{paper}{a paper object}
+
+\item{words}{the words that name a study; by default study, experiment and
+pilot. Give one word to learn which numbers the paper uses for that word
+only (used to read short labels such as \code{E1A} in file names).}
 }
 \value{
 a character vector of group codes, or \code{character(0)} when the text
@@ -30,5 +34,6 @@ ignored. Sorted by number then letter, so the order is stable.
 paper <- demopaper()
 paper$text$text[1] <- "We report Study 1, Study 2a and a pilot (Pilot 1)."
 data_study_roster(paper)
+data_study_roster(paper, words = "pilot")
 }
 \keyword{internal}

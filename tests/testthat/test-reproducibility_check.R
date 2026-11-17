@@ -821,6 +821,30 @@ test_that("repro_write_scripts applies a resolved literal path rewrite", {
               "study-ex1/data/study-demographics_data.csv", fixed = TRUE)
 })
 
+test_that("repro_write_scripts leaves a document as deposited and runs its code from a file of its own (#648)", {
+  # vtwbs_v2: the .qmd files became bare R code, so a script that rendered them
+  # rendered nothing
+  rw <- function(fn) stats::setNames(list(data.frame(
+    ref = character(0), basename = character(0), matched = logical(0),
+    target = character(0), ambiguous = logical(0), n_candidates = integer(0),
+    is_call = logical(0))), fn)
+  plan <- data.frame(file_name = c("report.qmd", "nb.ipynb", "main.R"),
+                     target_path = c("analysis/report.qmd", "nb.ipynb", "main.R"))
+  root <- withr::local_tempdir()
+  dir.create(file.path(root, "analysis"))
+  writeLines(c("---", "title: x", "---", "```{r}", "x <- 1", "```"), file.path(root, "analysis/report.qmd"))
+  out <- suppressMessages(repro_write_scripts(list(report.qmd = "x <- 1"), rw("report.qmd"), plan, root))
+  expect_equal(basename(out$script_path), "report.qmd.R")
+  expect_equal(readLines(out$script_path), "x <- 1")
+  expect_equal(readLines(file.path(root, "analysis/report.qmd"))[1], "---")
+  out_py <- suppressMessages(repro_write_scripts(list(nb.ipynb = "x = 1"), rw("nb.ipynb"), plan, root,
+                                                 lang = "Python"))
+  expect_equal(basename(out_py$script_path), "nb.ipynb.py")
+  # a plain script is written in its own place, as before
+  out_r <- suppressMessages(repro_write_scripts(list(main.R = "y <- 2"), rw("main.R"), plan, root))
+  expect_equal(basename(out_r$script_path), "main.R")
+})
+
 test_that("repro_write_scripts replaces setwd() with a no-op and records it", {
   code_list <- list("analysis.R" = c('setwd("/Users/author/project")', 'x <- 1'))
   rewrite_list <- list("analysis.R" = data.frame(
@@ -1065,6 +1089,16 @@ test_that(".repro_missing_fn_pkgs adds every package the other scripts attach", 
                c("tidyverse", "lme4"))
 })
 
+test_that(".repro_missing_fn_pkgs leaves out packages the run could not install (#648)", {
+  # sd2hq_v2: library(mixedpower) was added and stopped the script
+  code_list <- list(
+    "_targets.R" = c("library(tidyverse)", "library(mixedpower)", "library(lme4)"),
+    "R/data.R" = c("d %>% filter(x > 1)"))
+  expect_equal(.repro_missing_fn_pkgs("%>%", "R/data.R", code_list, character(0),
+                                      unavailable = "mixedpower"),
+               c("tidyverse", "lme4"))
+})
+
 test_that(".repro_missing_fn_pkgs falls back to magrittr for %>% when nothing provides it", {
   code_list <- list("only.R" = "x <- 1:3 %>% sum()",
                     "other.R" = "library(lme4)")
@@ -1279,6 +1313,17 @@ test_that("the warning and report state that the R version is not changed", {
   expect_match(rep_txt, "also load c", fixed = TRUE)
   expect_match(rep_txt, "The R version is not changed", fixed = TRUE)
   expect_match(.repro_recorded_summary(recorded, results), "1 of the 3 packages", fixed = TRUE)
+  expect_match(.repro_recorded_summary(recorded, results), "did not change the R version", fixed = TRUE)
+  # a Docker run with the declared version used the recorded R version (#649)
+  s <- .repro_recorded_summary(recorded, results, vp, "docker", TRUE)
+  expect_match(s, sprintf("used the recorded R version (%s), so this is not an exact copy", vp$r_versions[1]),
+               fixed = TRUE)
+  expect_false(grepl("did not change", s, fixed = TRUE))
+  expect_match(.repro_recorded_summary(recorded, results, vp, "docker", FALSE), "did not change the R version")
+  expect_match(.repro_recorded_summary(recorded, results, vp, "process", TRUE), "did not change the R version")
+  # a recorded version that cannot be an image's name is not used
+  expect_match(.repro_recorded_summary(recorded, results, list(r_versions = "4.4.2 (x)"), "docker", TRUE),
+               "did not change the R version")
   expect_null(.repro_recorded_summary(NULL, results))
   expect_null(.repro_recorded_report(recorded, NULL, vp, "process"))
 })
@@ -3626,10 +3671,14 @@ test_that("a bare name read directly is pointed to its file in a folder below (#
                                                      script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
   expect_false(rw$as_written)
   expect_equal(rw$target, "data/x.csv")
-  # in a joining call it stays as written: the code joins it to a folder of its own
-  rw2 <- .repro_keep_working_refs(repro_rewrite_paths('d <- read.csv(file.path(dir, "x.csv"))', "m.R", plan,
-                                                      script_path = "scripts/m.R"), plan, "scripts/m.R", ".")
-  expect_true(all(rw2$as_written[rw2$ref == "x.csv"]))
+  # in a joining call it stays as written: the code joins it to a folder of its
+  # own; decided at each place, so a direct read in the same script is still
+  # pointed to the file (#648)
+  code2 <- c('d <- read.csv(file.path(dir, "x.csv"))', 'e <- read.csv("x.csv")')
+  rw2 <- .repro_keep_working_refs(repro_rewrite_paths(code2, "m.R", plan, script_path = "scripts/m.R"),
+                                  plan, "scripts/m.R", ".")
+  expect_equal(.repro_apply_rewrites(code2, rw2),
+               c('d <- read.csv(file.path(dir, "x.csv"))', 'e <- read.csv("data/x.csv")'))
 })
 
 test_that("a Git LFS pointer is replaced by the deposit's copy of the file (#568)", {
@@ -4345,4 +4394,154 @@ test_that(".repro_not_run_report lists files not read and empty files (#620)", {
   expect_match(txt, "metacheck could not read the file: x.", fixed = TRUE)
   expect_match(txt, "1 file is empty, so there is nothing to run, and it is not counted as a script: b.R.", fixed = TRUE)
   expect_null(.repro_not_run_report("a.R", NA_character_))
+})
+
+test_that("why a script stopped: files, packages, programs, settings and arguments named in more ways (#648)", {
+  r <- function(m) .repro_failure_reason("errored", m)
+  # a missing file, also when the error names it in the script's own words
+  expect_equal(r("Error in read_experiment(1) : Data file not found: ../data/expt1all.csv"), "file")
+  expect_equal(r("Error in eval(e, envir = env) : file not found: 'new/wiener_marginal.cpp'"), "file")
+  expect_equal(r("Error: Cannot open \"data/x.shp\"; The file doesn't seem to exist."), "file")
+  expect_equal(r("Error in `ggsave()`: ! Cannot find directory 'out/plots'."), "file")
+  expect_equal(r("Error in check(ti) : model file(s) not found in /sandbox: models/a.jags"), "file")
+  expect_equal(.repro_unopened_files(c("Error in f(1) : Data file not found: ../data/expt1all.csv",
+                                       "Error in eval(e) : file not found: 'new/w.cpp'",
+                                       "OSError: unable to open file (unable to open file: name = 'res/a.h5', errno = 2)",
+                                       "Error in `ggsave()`: ! Cannot find directory `out/plots`.",
+                                       "FileNotFoundError: data/raw/x.csv")),
+               c("expt1all.csv", "w.cpp", "a.h5", "plots", "x.csv"))
+  # not files: columns, and read.spss's own words in quotes
+  expect_equal(r("Error in `select()`: ! Can't select columns that don't exist."), "other")
+  expect_equal(.repro_unopened_files("Error in read.spss(x) : unable to open file: 'No such file or directory'"),
+               character(0))
+  # a package another package loads only when it is used
+  expect_equal(r("Error in `require_package()`: ! Please install the 'cmdstanr' package."), "package")
+  expect_equal(r("Error in check_pkg_installed(x) : The package \"broom.helpers\" (>= 1.20.0) is required."), "package")
+  # a program our run does not have
+  expect_equal(r("Error in find_chrome() : Cannot find Chromium or Google Chrome"), "environment")
+  expect_equal(.repro_missing_program("Error: python3 is required when rerun_text_analysis is TRUE."), "Python")
+  # a setting a deposit cannot hold
+  expect_equal(r("LEVELS_DB is not set. Set it to the path of the study DuckDB database"), "settings")
+  expect_equal(r("ValueError: ANTHROPIC_API_KEY environment variable is required"), "settings")
+  expect_equal(r("openai.OpenAIError: Missing credentials. Please pass an `api_key`"), "settings")
+  # a script's own message about its command-line arguments, when it reads them
+  py <- list("import argparse\np = argparse.ArgumentParser()")
+  expect_true(.repro_needs_arguments(py, "analysis.py: error: one of --synthetic / --real is required", "Python"))
+  expect_true(.repro_needs_arguments(py, "FATAL: --units is required (or use --selftest)", "Python"))
+  expect_true(.repro_needs_arguments(list("a <- commandArgs(TRUE)"),
+                                     "Error: Provide the file index as the first command-line argument.", "R"))
+  expect_false(.repro_needs_arguments(list("x <- 1"), "Error: Provide the first command-line argument.", "R"))
+})
+
+test_that("the light after a run, and the sentences on what was run and installed (#648)", {
+  rr <- function(o, reason = NA_character_) data.frame(outcome = o, reason = reason)
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "errored"), c(NA, "file"))), "red")
+  # a time-out alone is not an error of the code
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "timed_out"))), "yellow")
+  # what our run lacks, or a setting a deposit cannot hold
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "errored"), c(NA, "settings"))), "yellow")
+  expect_equal(.repro_run_light("green", rr(c("ran_ok", "errored"), c(NA, "environment"))), "yellow")
+  # no script ran to the end
+  expect_equal(.repro_run_light("green", rr(c("not_analysis", "dependency_unavailable"))), "yellow")
+  expect_equal(.repro_run_light("green", rr("ran_ok")), "green")
+  # the files the code reads already gave red
+  expect_equal(.repro_run_light("red", rr("timed_out")), "red")
+
+  ir <- data.frame(package = c("a", "b", "c"), installed = c(TRUE, FALSE, TRUE))
+  expect_equal(.repro_install_sentence(ir),
+               "Dependencies were installed into a throwaway library before running: 2 succeeded, 1 failed. a, c were installed.")
+  expect_equal(.repro_install_sentence(ir[2, ], pip = TRUE),
+               "Dependencies were installed into a throwaway library before running (`pip install`): 0 succeeded, 1 failed.")
+})
+
+test_that("the advice for a package that could not be installed fits its language and cause (#648)", {
+  tbl <- data.frame(file_name = c("a.py", "b.R", "c.R"))
+  rr <- data.frame(error = c("ModuleNotFoundError: No module named 'ehrql'",
+                             "Error in library(mixedpower) : there is no package called 'mixedpower'",
+                             "Error in library(sf) : there is no package called 'sf'"),
+                   stderr = NA_character_, reason = "package")
+  ir <- data.frame(package = c("ehrql", "mixedpower", "sf"), installed = FALSE,
+                   category = c(NA, "cran_unavailable", "compile_failure"))
+  adv <- paste(.repro_advice(tbl, rr, rep("dependency_unavailable", 3), mi = data.frame(), install_results = ir),
+               collapse = "\n")
+  expect_false(grepl("probably because it is old", adv, fixed = TRUE))
+  expect_match(adv, "<code>ehrql</code> could not be installed with <code>pip</code>", fixed = TRUE)
+  expect_match(adv, "<code>mixedpower</code> is not on CRAN", fixed = TRUE)
+  expect_match(adv, "BiocManager::install", fixed = TRUE)
+  expect_match(adv, "<code>sf</code> could not be built", fixed = TRUE)
+})
+
+test_that("a missing file a script makes under a built name, or in another language, is said to be made by it (#648)", {
+  tbl <- data.frame(file_name = c("a.R", "b.R"), writes = c("", "fullfit_%s.rds"))
+  rr <- data.frame(error = c("Error in readRDS(\"fullfit_M2.rds\") : cannot open file 'fullfit_M2.rds': No such file or directory",
+                             NA), stderr = NA_character_, reason = c("file", NA))
+  adv <- paste(.repro_advice(tbl, rr, c("errored", "ran_ok"), mi = data.frame()), collapse = "\n")
+  expect_match(adv, "<code>a.R</code> needs <code>fullfit&#95;M2.rds</code>, which <code>b.R</code> makes.", fixed = TRUE)
+  tbl2 <- data.frame(file_name = "a.R", writes = "")
+  rr2 <- data.frame(error = "Error in file(file, \"rt\") : cannot open file 'arima_standardised.csv': No such file or directory",
+                    stderr = NA_character_, reason = "file")
+  adv2 <- paste(.repro_advice(tbl2, rr2, "errored", mi = data.frame(),
+                              other_writes = data.frame(file_name = "002_incidence.do",
+                                                        files_written = "$projectdir/output/arima_standardised.csv")),
+                collapse = "\n")
+  expect_match(adv2, "A script needs a file that a script in another language makes.", fixed = TRUE)
+  expect_match(adv2, "which <code>002&#95;incidence.do</code> makes", fixed = TRUE)
+})
+
+test_that("match_reported_output counts only values that are evidence of the test (#648)", {
+  # one reported test per grp_id
+  eq <- function(lhs, rhs, comp = rep("=", length(lhs)), df = NA, grp = 1)
+    data.frame(text_id = grp, grp_id = grp, lhs = lhs, df = df, comp = comp, rhs = rhs, paper_id = "p")
+  out <- function(stat, value, analysis = "a1")
+    data.frame(source_file = "a.R", analysis = analysis, statistic = stat, value = value)
+  found <- function(e, o, ...) match_reported_output(e, o, ...)$found
+
+  # a precise test statistic with its p: found
+  expect_true(found(eq(c("F", "p"), c("72.28", ".001"), comp = c("=", "<")),
+                    out(c("F", "p"), c("72.284", "0.00001"))))
+  # only a df and a bound matched, the t not: not found (it was, with evidence = "any")
+  e <- eq(c("t", "p"), c("20.22", ".001"), comp = c("=", "<"), df = c("(801)", NA))
+  o <- out(c("t", "df", "p"), c("-1.607", "801", "0.00001"))
+  expect_false(found(e, o))
+  expect_true(found(e, o, evidence = "any"))
+  # every value matched, one of them informative: found
+  expect_true(found(eq(c("chi2", "p"), c(".05", ".82"), df = c("(1)", NA)),
+                    out(c("chi2", "df", "p"), c("0.05", "1", "0.823"))))
+  # t compared without its sign
+  expect_true(found(eq(c("t", "p"), c("5.55", ".001"), comp = c("=", "<"), df = c("(160.18)", NA)),
+                    out(c("t", "df", "p"), c("-5.546", "160.177571", "1.18e-07"))))
+  # a standard error counts only where its estimate matches too
+  expect_false(found(eq(c("M", "SE", "p"), c("2.95", "0.11", ".021")),
+                     out(c("F", "SE", "p"), c("5.39", "0.11", "0.021"))))
+})
+
+test_that("match_reported_output leaves out a single value that cannot be told from chance (#648)", {
+  e <- data.frame(text_id = 1:5, grp_id = 1:5, lhs = c("p", "p", "r", "BF10", "B"), df = NA,
+                  comp = c("=", "<", "=", "=", "="), rhs = c(".023", ".001", ".17", ".01", "-0.323"),
+                  paper_id = "p")
+  o <- data.frame(source_file = "a.R", analysis = c("a1", "a1", "a2", "a2", "a3"),
+                  statistic = c("p", "r", "p", "BF10", "b"), value = c("0.0231", "0.171", "0.0004", "0.01", "-0.3234"))
+  m <- match_reported_output(e, o)
+  # p < .001, r = .17 and BF10 = .01 take no part: not in the result, nor in the count
+  expect_equal(sort(m$reported), sort(c("p=0.023", "B=-0.323")))
+  expect_true(all(m$found))
+  expect_equal(attr(m, "summary")$n_tests, 2L)
+  # a single value matching two different numbers is not found; the same
+  # number printed twice is
+  o2 <- data.frame(source_file = "a.R", analysis = c("a1", "a2"), statistic = "p", value = c("0.0231", "0.0226"))
+  expect_false(match_reported_output(e[1, ], o2)$found)
+  o3 <- data.frame(source_file = "a.R", analysis = c("a1", "a2"), statistic = "p", value = c("0.0231", "0.0231"))
+  expect_true(match_reported_output(e[1, ], o3)$found)
+})
+
+test_that("a test none of whose values is evidence takes no part in the comparison (#648)", {
+  e <- data.frame(text_id = c(1, 1, 2, 2, 3, 3), grp_id = c(1, 1, 2, 2, 3, 3),
+                  lhs = c("alpha", "N", "p", "p", "alpha", "F"), df = NA,
+                  comp = c("=", "=", "<", "<", "=", "="), rhs = c(".05", "55", ".05", ".0002", ".86", "4.21"),
+                  paper_id = "p")
+  o <- data.frame(source_file = "a.R", analysis = "a1", statistic = c("F", "p"), value = c("4.2", "0.04"))
+  m <- match_reported_output(e, o)
+  # a power analysis and two bounds take no part; a reliability alpha with an F does
+  expect_equal(nrow(m), 1L)
+  expect_match(m$reported, "alpha=0.86", fixed = TRUE)
 })

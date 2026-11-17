@@ -375,6 +375,16 @@
     # Nobody can answer: on Windows file.choose() opens a window and waits.
     for (ask in c("file.choose", "choose.files", "choose.dir", "tk_choose.files", "tk_choose.dir"))
       assign(ask, function(...) stop("file choice cancelled", call. = FALSE), envir = stand_ins)
+    # The command line names the script itself, so a script that finds its own
+    # folder from "--file=" finds it, not the R session callr started (#648; as
+    # in the Docker runner)
+    script_file <- normalizePath(script, winslash = "/", mustWork = FALSE)
+    assign("commandArgs", function(trailingOnly = FALSE) {
+      a <- base::commandArgs(trailingOnly)
+      if (trailingOnly) return(a)
+      if (any(grepl("^--file=", a))) sub("^--file=.*$", paste0("--file=", script_file), a)
+      else c(a, paste0("--file=", script_file))
+    }, envir = stand_ins)
     # fetched by name, as `env` above, so R CMD check's scan for attach() in a
     # package does not take this child session for the user's
     att <- get("attach", envir = baseenv())

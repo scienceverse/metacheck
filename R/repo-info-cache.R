@@ -74,11 +74,16 @@ repo_info_cache_clear <- function() {
   file.path(.repo_info_cache_dir(), paste0(.repo_info_cache_key(host, id), ".rds"))
 }
 
-# Read a cached listing, or NULL on a miss / unreadable file.
-.repo_info_cache_get <- function(host, id) {
+# Read a cached listing, or NULL on a miss / unreadable file. `need` names
+# columns a stored table must have: one stored before a column was added to
+# the host's record (e.g. `related`, #634) is not reused, so the host is
+# asked again and the new answer is stored.
+.repo_info_cache_get <- function(host, id, need = NULL) {
   path <- .repo_info_cache_path(host, id)
   if (!file.exists(path)) return(NULL)
-  tryCatch(readRDS(path), error = function(e) NULL)
+  value <- tryCatch(readRDS(path), error = function(e) NULL)
+  if (length(need) && is.data.frame(value) && !all(need %in% names(value))) return(NULL)
+  value
 }
 
 # Write a listing result for one host + identifier pair. Failures are

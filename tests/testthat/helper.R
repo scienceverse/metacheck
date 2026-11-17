@@ -23,8 +23,14 @@ httptest2::.mockPaths(apis)
 # computing the mock path (mock_request: build_mock_url(get_current_redactor()(req))),
 # so a redactor that strips our page[size] makes the request resolve to the
 # pre-existing recording. The live request still carries the param.
+# The same for the contributors osf_info() now asks for with each guid
+# (embed=bibliographic_contributors, #634): the recordings of /v2/guids/<id>
+# predate it. Only the guid request's own embed is taken out, so
+# osf_metadata()'s node request (embed=license&embed=...) keeps its name.
 httptest2::set_redactor(function(req) {
   req$url <- gsub("[?&]page(%5[Bb]size%5[Dd]|\\[size\\])=100", "", req$url)
+  req$url <- gsub("(/v2/guids/[^/?&]+/?(?:[?][^&]*)?)[?&]embed=bibliographic_contributors$", "\\1",
+                  req$url, perl = TRUE)
   req
 })
 
@@ -169,9 +175,14 @@ skip_if_quick <- function() {
   if (quick) skip("Quick mode")
 }
 
-# skip if the psychsci test corpus couldn't be downloaded (see setup.R)
-skip_no_psychsci <- function() {
-  skip_if_not(exists("psychsci") && !is.null(get("psychsci")),
+# skip if the psychsci test corpus couldn't be downloaded (see setup.R).
+# setup.R puts `psychsci` in the test environment, and a test calls this from
+# below it; devtools::load_all() puts this helper in the package environment,
+# above it. Looked up from the helper's own environment, `psychsci` was never
+# found, so the 25 tests that need it were always skipped under
+# devtools::test() (#642).
+skip_no_psychsci <- function(env = parent.frame()) {
+  skip_if_not(exists("psychsci", envir = env) && !is.null(get("psychsci", envir = env)),
               "psychsci test corpus not available")
 }
 

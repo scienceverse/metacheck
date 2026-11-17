@@ -156,6 +156,10 @@ test_that(".dspace7_info resolves a real Cambridge item through the UI-host alia
 # `routes` (URL -> response) and records every URL asked for, so a test can
 # check how many requests a lookup made.
 local_dspace7_server <- function(routes, env = parent.frame()) {
+  # DataCite's records are remembered for the session (R/repo-kind.R): each
+  # test starts without them, so it sees the DataCite request it makes
+  rm(list = ls(.repo_doi_cache), envir = .repo_doi_cache)
+  withr::defer(rm(list = ls(.repo_doi_cache), envir = .repo_doi_cache), envir = env)
   seen <- new.env()
   seen$urls <- character(0)
   httr2::local_mocked_responses(function(req) {
@@ -321,13 +325,15 @@ test_that(".dspace7_resolve_doi_url uses the handle API, follows hdl.handle.net,
     httr2::response(status_code = 500)
   seen <- local_dspace7_server(routes)
 
+  # DataCite first (not found here), then the handle service twice
   expect_equal(.dspace7_resolve_doi_url("10.13020/q3y6-h459"),
                "https://conservancy.umn.edu/handle/11299/208294")
-  expect_length(seen$urls, 2)
+  expect_equal(seen$urls[1], "https://api.datacite.org/dois/10.13020/q3y6-h459")
+  expect_length(seen$urls, 3)
   # the same DOI again, in another case: answered from the session cache
   expect_equal(.dspace7_resolve_doi_url("10.13020/Q3Y6-H459"),
                "https://conservancy.umn.edu/handle/11299/208294")
-  expect_length(seen$urls, 2)
+  expect_length(seen$urls, 3)
 
   expect_equal(.dspace7_resolve_doi_url("10.35090/gatech/5981"),
                "https://repository.gatech.edu/handle/1853/70320")
@@ -357,8 +363,51 @@ test_that("dspace7_links does not look up the paper's own DOI or DOIs other dete
   links <- dspace7_links(paper)
 
   expect_equal(links$href, "https://conservancy.umn.edu/handle/11299/208294")
-  expect_equal(seen$urls, "https://doi.org/api/handles/10.13020%2Fq3y6-h459?type=URL")
+  expect_equal(seen$urls, c("https://api.datacite.org/dois/10.13020/q3y6-h459",
+                          "https://doi.org/api/handles/10.13020%2Fq3y6-h459?type=URL"))
 }))
+
+test_that("dspace7_links looks up only DOIs under a DSpace 7 prefix (#636)", local({
+  rm(list = ls(.dspace7_doi_cache), envir = .dspace7_doi_cache)
+  withr::defer(rm(list = ls(.dspace7_doi_cache), envir = .dspace7_doi_cache))
+  routes <- list()
+  routes[["https://doi.org/api/handles/10.13020%2Fq3y6-h459?type=URL"]] <-
+    httr2::response_json(body = list(responseCode = 1, values = list(
+      list(type = "URL", data = list(value = "https://conservancy.umn.edu/handle/11299/208294")))))
+  seen <- local_dspace7_server(routes)
+
+  # a journal's figure DOI and an article DOI: today looked up, never DSpace
+  paper <- test_paper(text = c(
+    "Data are at https://doi.org/10.13020/q3y6-h459.",
+    "See Fig 1 (https://doi.org/10.1371/journal.pone.0000001.g001) and 10.1016/j.cognition.2020.104.",
+    "Its source is 10.7554/eLife.12345."
+  ))
+  links <- dspace7_links(paper)
+  expect_equal(links$href, "https://conservancy.umn.edu/handle/11299/208294")
+  expect_equal(seen$urls, c("https://api.datacite.org/dois/10.13020/q3y6-h459",
+                          "https://doi.org/api/handles/10.13020%2Fq3y6-h459?type=URL"))
+}))
+
+test_that(".dspace7_doi_prefixes has the DSpace 7 prefixes found in October and the shared hosts' ones (#636)", {
+  p <- .dspace7_doi_prefixes()
+  # the 50 prefixes of the test above (.dspace7_skip_doi_prefixes)
+  expect_true(all(c("10.83384", "10.82482", "10.58086", "10.58164", "10.57776", "10.34642",
+    "10.34621", "10.48684", "10.13020", "10.71959", "10.71700", "10.60668",
+    "10.21256", "10.2312", "10.18420", "10.17862", "10.57996", "10.15157",
+    "10.23673", "10.57839", "10.82419", "10.26041", "10.82463", "10.82921",
+    "10.25593", "10.60644", "10.18747", "10.83160", "10.60473", "10.82218",
+    "10.60757", "10.82366", "10.34744", "10.13028", "10.35090", "10.25330",
+    "10.25676", "10.82589", "10.13025", "10.25818", "10.25540", "10.34899",
+    "10.25722", "10.34944", "10.7275", "10.58142", "10.83129", "10.71781",
+    "10.7298", "10.17863") %in% p))
+  # ETH Zürich registers its DOIs with a handle address; Movebank and
+  # Cambridge were found in the corpora's text
+  expect_true(all(c("10.3929", "10.5441", "10.17863") %in% p))
+  # never a journal's prefix
+  expect_false(any(c("10.1371", "10.7554", "10.1016", "10.1177") %in% p))
+  # every generated host passes the same host regex as the hand-written ones
+  expect_true(all(grepl(.dspace7_host_regex(), paste0("https://", .dspace7_hosts_survey(), "/handle/1/2"))))
+})
 
 test_that("DSpace 7: a known host is matched by host name, and messages name the handle (U42, U211)", {
   # a host anywhere in the URL counted, and an item without a uuid was
@@ -369,4 +418,32 @@ test_that("DSpace 7: a known host is matched by host name, and messages name the
   testthat::local_mocked_bindings(.dspace7_find_uuid = function(...) NA_character_)
   expect_warning(metacheck:::.dspace7_info("ecommons.cornell.edu", handle = "1813/12345"),
                  "(1813/12345)", fixed = TRUE)
+})
+
+test_that("DataCite says before reading whether a DSpace DOI is a publication (#637)", local({
+  rm(list = ls(.dspace7_doi_cache), envir = .dspace7_doi_cache)
+  withr::defer(rm(list = ls(.dspace7_doi_cache), envir = .dspace7_doi_cache))
+  dc <- function(url, type) httr2::response_json(body = list(data = list(attributes = list(
+    url = url, types = list(resourceTypeGeneral = type)))))
+  routes <- list()
+  routes[["https://api.datacite.org/dois/10.13020/thesis1"]] <-
+    dc("https://conservancy.umn.edu/handle/11299/1", "Dissertation")
+  routes[["https://api.datacite.org/dois/10.13020/data1"]] <-
+    dc("https://conservancy.umn.edu/handle/11299/2", "Dataset")
+  seen <- local_dspace7_server(routes)
+  # a thesis: no further request, not a deposit
+  expect_true(is.na(.dspace7_resolve_doi_url("10.13020/thesis1")))
+  # a dataset: DataCite's address, without the handle service
+  expect_equal(.dspace7_resolve_doi_url("10.13020/data1"), "https://conservancy.umn.edu/handle/11299/2")
+  expect_equal(seen$urls, c("https://api.datacite.org/dois/10.13020/thesis1",
+                            "https://api.datacite.org/dois/10.13020/data1"))
+}))
+
+test_that(".repo_publication_type reads EPrints, DSpace and DataCite types (#637)", {
+  expect_equal(.repo_publication_type(c("data_collection", "dataset", "Dataset", "Software", "artefact", "Data paper")),
+               rep(FALSE, 6))
+  expect_equal(.repo_publication_type(c("article", "thesis", "book_section", "Doctoral thesis", "Journal Article",
+                                        "Text", "JournalArticle", "conference_item", "Working paper")),
+               rep(TRUE, 9))
+  expect_equal(.repo_publication_type(c(NA, "")), c(NA, NA))
 })

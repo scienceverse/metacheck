@@ -6,7 +6,7 @@
 #' @details
 #' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use `text_search()` function and a custom pattern like "\\bp(-| )?values?\\s+.{1,20}\\s+[0-9\\.]+"
 #'
-#' This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
+#' This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2, 5.0e-2, 5E-2 or 10^-15, and a p with a correction name such as pFWE or p adj. If you find any formats that are not correctly handled by this function, please contact the author.
 #'
 #' This module only checks p-values reported in the running text of the manuscript. It cannot (yet) process p-values reported only in tables.
 #'
@@ -39,7 +39,7 @@ all_p_values <- function(paper) {
   report_table <- text_expand(p, paper)[, cols]
   names(report_table) <- c("Text", "Sentence")
   report_table_code <- scroll_table(report_table, colwidths = c("5em", NA))
-  explan <- "This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact debruine@gmail.com."
+  explan <- "This will catch most comparators like =<>~≈≠≤≥≪≫ and most versions of scientific notation like 5.0 x 10^-2, 5.0e-2, 5E-2 or 10^-15, and a p with a correction name such as pFWE or p adj. If you find any formats that are not correctly handled by this function, please contact debruine@gmail.com."
   report <- c(report_table_code, explan)
 
   # return a list ----

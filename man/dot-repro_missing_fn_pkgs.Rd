@@ -4,7 +4,13 @@
 \alias{.repro_missing_fn_pkgs}
 \title{Which \code{library()} calls to add for a missing function}
 \usage{
-.repro_missing_fn_pkgs(name, user, code_text_list, candidates)
+.repro_missing_fn_pkgs(
+  name,
+  user,
+  code_text_list,
+  candidates,
+  unavailable = character(0)
+)
 }
 \arguments{
 \item{name}{the missing function name (e.g. \code{"\%>\%"})}
@@ -14,6 +20,11 @@
 \item{code_text_list}{named list of every R script's code text}
 
 \item{candidates}{candidate packages for step 2 (see the module)}
+
+\item{unavailable}{packages the run could not install: never attached, as
+\code{library()} of such a package stops the script. In sd2hq_v2 all 23
+packages of a project were put in R/data.R, which then stopped on
+\code{library(mixedpower)}, a package from GitHub that was not installed (#648).}
 }
 \value{
 a character vector of package names to attach (empty when none)

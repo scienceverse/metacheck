@@ -8,7 +8,8 @@ match_reported_output(
   paper,
   output,
   include_tables = FALSE,
-  min_components = 1L
+  min_components = 1L,
+  evidence = c("informative", "any")
 )
 }
 \arguments{
@@ -38,6 +39,22 @@ site is more likely than a whole signature doing so by chance), so a
 single-component match is worth reading with that in mind -- set to 2 to
 exclude single-component rows entirely, as this function used to by
 default.}
+
+\item{evidence}{which reported values count as evidence that a test was
+found (#648). \code{"informative"} (default): only an exact value (not a bound
+such as \code{p < .001}) with at least 2 significant digits or at least 3
+decimals (\code{p = .007}, \code{df = 163}, not \code{df1 = 2} or \code{d = 0.5}); a test
+with several values is found when at least two such values match at one
+place of the output, and a test of one value takes part only when that
+value has at least 3 decimals or 3 significant digits, is not a whole
+number or a conventional threshold (p = .05, .01, .001, .10, .005), and
+occurs once among the paper's reported values; other tests of one value
+are left out of the result and the summary. Matched against other
+papers' output, single values with 2 decimals were found by chance about
+four times as often as tests with several values, and every chance
+match of a test with several values rested on bounds and small whole
+numbers (\code{p < .001} twice, \code{df1 = 2} and \code{p < .001}). \code{"any"}: every
+value counts, and a test of one value is found by one match, as before.}
 }
 \value{
 a data.frame, one row per recomposed reported test, with:

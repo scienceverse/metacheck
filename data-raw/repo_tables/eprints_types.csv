@@ -1,0 +1,69 @@
+"host","n_total","n_dataset","types","datacite_ok","phrase","share_dataset"
+"data.lancashire.ac.uk",27,27,"dataset:27",TRUE,NA,1
+"madata.bib.uni-mannheim.de",181,181,"dataset:181",TRUE,TRUE,1
+"researchdata.essex.ac.uk",72,72,"dataset:72",TRUE,NA,1
+"researchdata.gla.ac.uk",1407,1407,"dataset:1407",TRUE,NA,1
+"researchdata.reading.ac.uk",435,435,"dataset:435",TRUE,NA,1
+"reshare.ukdataservice.ac.uk",3680,3680,"dataset:3680",TRUE,NA,1
+"datacat.liverpool.ac.uk",730,727,"dataset:727",TRUE,NA,0.995890410958904
+"bordar.bournemouth.ac.uk",236,233,"dataset:233 collection:1 interactive-resource:1 text:1",TRUE,NA,0.98728813559322
+"researchdata.bbk.ac.uk",117,114,"dataset:114 collection:3",TRUE,NA,0.974358974358974
+"researchdata.bath.ac.uk",859,835,"dataset:835 audiovisual:9 software:9 interactive-resource:3 collection:1 sound:1 text:1",TRUE,NA,0.972060535506403
+"researchdata.brighton.ac.uk",114,107,"dataset:107",TRUE,NA,0.93859649122807
+"datacompass.lshtm.ac.uk",1682,1557,"dataset:1557 collection:50 other:31 software:14 interactive-resource:10 project:9 report:4 text:3 workflow:2 data-paper:1 physical-object:1",TRUE,NA,0.925683709869203
+"shurda.shu.ac.uk",125,114,"dataset:114 text:6 collection:1",TRUE,NA,0.912
+"researchdata.aston.ac.uk",393,330,"dataset:330 audiovisual:21 collection:10 text:10 image:3 software:3 model:2 workflow:2 other:1",TRUE,NA,0.83969465648855
+"researchdata.keele.ac.uk",86,72,"dataset:72 other:5 text:3 report:2 audiovisual:1 image:1 interactive-resource:1 poster:1",TRUE,NA,0.837209302325581
+"repository.rothamsted.ac.uk",137,103,"dataset:103 text:31 book:1 other:1 report:1",TRUE,NA,0.751824817518248
+"researchonline.rca.ac.uk",16,11,"dataset:11 report:4 book:1",TRUE,NA,0.6875
+"pure.iiasa.ac.at",46,19,"dataset:19 text:19 model:3 other:2 conference-paper:1 dissertation:1",TRUE,NA,0.41304347826087
+"amsacta.unibo.it",6183,647,"text:5358 dataset:647 book:60 book-chapter:53 report:33 conference-proceeding:11 preprint:11 software:10",TRUE,NA,0.104641759663594
+"irihs.ihs.ac.at",17,1,"report:13 book:2 conference-paper:1 dataset:1",TRUE,NA,0.0588235294117647
+"researchonline.rcm.ac.uk",146,4,"text:53 dissertation:39 audiovisual:34 book:6 collection:5 dataset:4 journal-article:2 sound:2 conference-paper:1",TRUE,NA,0.0273972602739726
+"lbsresearch.london.edu",302,7,"dissertation:271 text:23 dataset:7 book-chapter:1",TRUE,NA,0.0231788079470199
+"uhra.herts.ac.uk",1257,18,"other:1032 dissertation:167 text:20 dataset:18 report:18 audiovisual:2",TRUE,NA,0.0143198090692124
+"real.mtak.hu",483,4,"text:213 book-chapter:87 other:16 book:12 dataset:4 report:1",TRUE,NA,0.0082815734989648
+"vuir.vu.edu.au",152,1,"report:68 text:53 conference-paper:15 dissertation:6 other:3 book-chapter:1 book:1 collection:1 dataset:1 journal-article:1 preprint:1",TRUE,NA,0.00657894736842105
+"phrepo.phbern.ch",1341,5,"text:1315 other:11 audiovisual:7 dataset:5 software:3",TRUE,NA,0.00372856077554064
+"eprints.whiterose.ac.uk",617,2,"report:383 journal-article:126 text:50 other:24 interactive-resource:11 book:4 preprint:4 conference-paper:3 conference-proceeding:2 dataset:2 poster:2 audiovisual:1 collection:1 data-paper:1 image:1 journal:1 presentation:1",TRUE,NA,0.00324149108589951
+"researchonline.lse.ac.uk",1887,6,"text:957 dissertation:530 report:380 dataset:6 other:6 image:4 journal-article:2 audiovisual:1 conference-paper:1",TRUE,NA,0.00317965023847377
+"research.gold.ac.uk",1459,4,"text:1039 dissertation:397 sound:8 dataset:4 book:3 audiovisual:2 other:2 collection:1 conference-paper:1 journal:1 project:1",TRUE,NA,0.00274160383824537
+"oceanrep.geomar.de",941,1,"text:937 audiovisual:2 data-paper:1 dataset:1",TRUE,NA,0.00106269925611052
+"agritrop.cirad.fr",1421,0,"text:1410 audiovisual:10 service:1",TRUE,NA,0
+"amsdottorato.unibo.it",9955,0,"text:9955",TRUE,NA,0
+"centaur.reading.ac.uk",2008,0,"text:1980 report:28",TRUE,NA,0
+"collection-numerique.uqtr.ca",113,0,"conference-paper:113",TRUE,TRUE,0
+"disszertacio.uni-eszterhazy.hu",147,0,"text:94 dissertation:39",TRUE,TRUE,0
+"doktori.uni-sopron.hu",183,0,"text:84 dissertation:74",TRUE,TRUE,0
+"elib.dlr.de",293,0,"dissertation:132 report:67 conference-paper:44 conference-proceeding:17 journal-article:12 text:7 other:6 event:4 book-chapter:1 book:1 poster:1 presentation:1",TRUE,NA,0
+"epapers.bham.ac.uk",82,0,"other:38 report:31 text:6 conference-proceeding:2 journal-article:2 conference-paper:1 event:1 presentation:1",TRUE,NA,0
+"epic.awi.de",57,0,"report:56 book:1",TRUE,NA,0
+"eprints.bbk.ac.uk",1104,0,"dissertation:1104",TRUE,NA,0
+"eprints.bournemouth.ac.uk",22,0,"report:19 book:2 text:1",TRUE,NA,0
+"epub.uni-bayreuth.de",4069,0,"text:1948 journal-article:1415 dissertation:553 book:67 preprint:50 conference-paper:18 report:11 book-chapter:7",TRUE,TRUE,0
+"espace.enap.ca",15,0,"report:13 journal-article:2",TRUE,NA,0
+"kar.kent.ac.uk",2852,0,"text:2836 collection:14 audiovisual:2",TRUE,NA,0
+"knowledge.lancashire.ac.uk",96,0,"text:90 report:3 poster:2 other:1",TRUE,NA,0
+"livrepository.liverpool.ac.uk",15727,0,"text:15720 audiovisual:3 collection:1 interactive-resource:1 other:1 software:1",TRUE,NA,0
+"mural.maynoothuniversity.ie",391,0,"text:389 report:2",TRUE,NA,0
+"publications.aston.ac.uk",5250,0,"dissertation:5244 text:4 book:2",TRUE,NA,0
+"publikacio.uni-eszterhazy.hu",56,0,"text:56",TRUE,TRUE,0
+"real-eod.mtak.hu",1066,0,"text:1019 book-chapter:30 book:9",TRUE,TRUE,0
+"real-j.mtak.hu",65,0,"text:64",TRUE,TRUE,0
+"real-ms.mtak.hu",2,0,"book:1 text:1",TRUE,TRUE,0
+"real-phd.mtak.hu",1710,0,"dissertation:825 text:691",TRUE,TRUE,0
+"repository.corp.at",917,0,"text:917",TRUE,NA,0
+"repository.essex.ac.uk",485,0,"dissertation:418 text:46 report:13 other:5 preprint:2 project:1",TRUE,NA,0
+"repository.norland.ac.uk",23,0,"text:22 collection:1",TRUE,NA,0
+"repository.uwtsd.ac.uk",977,0,"dissertation:977",TRUE,NA,0
+"researchonline.jcu.edu.au",2187,0,"dissertation:2163 report:16 text:4 software:2 book:1 conference-proceeding:1",TRUE,NA,0
+"researchonline.lshtm.ac.uk",2176,0,"text:1662 dissertation:453 collection:34 conference-paper:12 report:8 audiovisual:6",TRUE,NA,0
+"sas-space.sas.ac.uk",14,0,"report:12 dissertation:2",TRUE,TRUE,0
+"strathprints.strath.ac.uk",1905,0,"text:1875 collection:18 report:11 book:1",TRUE,NA,0
+"theses.gla.ac.uk",6663,0,"text:6663",TRUE,NA,0
+"ualresearchonline.arts.ac.uk",122,0,"report:119 audiovisual:1 journal-article:1 other:1",TRUE,NA,0
+"discovery.ucl.ac.uk",0,0,NA,TRUE,NA,NA
+"eprints.glos.ac.uk",0,0,NA,TRUE,NA,NA
+"espace2.etsmtl.ca",0,0,NA,TRUE,NA,NA
+"openarchive.tk.hu",0,0,NA,TRUE,NA,NA
+"wrap.warwick.ac.uk",0,0,NA,TRUE,NA,NA

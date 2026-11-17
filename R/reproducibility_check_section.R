@@ -57,7 +57,7 @@
 # seconds. Returns the blocks (markdown), with the rows they cover as the
 # attribute `scripts`; character(0) when nothing failed.
 .repro_advice <- function(tbl, rr, outcome, mi, install_results = NULL, versions_recorded = FALSE,
-                          timeout = 600) {
+                          timeout = 600, other_writes = NULL) {
   name <- tbl$file_name
   is_py <- grepl("\\.(py|ipynb)$", name, ignore.case = TRUE)
   msg <- paste(ifelse(is.na(rr$error), "", rr$error), ifelse(is.na(rr$stderr), "", rr$stderr))
@@ -91,15 +91,28 @@
   }
 
   # A file a script could not open: what kind of file it is decides what helps.
-  f <- list(by_script = list(), absolute = list(), renamed = list(), archived = list(), absent = list())
+  f <- list(by_script = list(), by_other = list(), absolute = list(), renamed = list(), archived = list(),
+            absent = list())
+  # code files in languages that are not run, with the files they write (#648)
+  other_name <- other_writes$file_name %||% character(0)
+  other_made <- as.character(other_writes$files_written %||% character(0))
+  other_made[is.na(other_made)] <- ""
+  other_made <- strsplit(other_made, ",[[:space:]]*")
   put <- function(kind, i, line) f[[kind]][[length(f[[kind]]) + 1]] <<- list(i = i, line = line)
   for (i in which(err & reason %in% "file")) {
     for (p in .repro_unopened_files(msg[[i]], full = TRUE)) {
       b <- tolower(basename(p)); k <- match(b, mi_base)
-      maker <- setdiff(which(vapply(writes, \(w) b %in% w, logical(1))), i)
+      # a name the other script builds counts, as a pattern (.code_name_match()):
+      # matched by exact names only, one of two identical cases in gx9qa_v3 got
+      # "find the file on your computer" (#648)
+      maker <- setdiff(which(vapply(writes, \(w) length(w) > 0 && .code_name_match(b, w), logical(1))), i)
+      other <- which(vapply(other_made, \(w) length(w) > 0 && .code_name_match(b, w), logical(1)))
       if (length(maker)) {
         put("by_script", i, sprintf("%s needs %s, which %s makes.", code(name[[i]]), code(basename(p)),
                                     code(name[[maker[[1]]]])))
+      } else if (length(other)) {
+        put("by_other", i, sprintf("%s needs %s, which %s makes.", code(name[[i]]), code(basename(p)),
+                                   code(other_name[[other[[1]]]])))
       } else if (!is.na(k) && !is.na(similar[[k]])) {
         put("renamed", i, sprintf("%s reads %s; your deposit holds %s.", code(name[[i]]), code(basename(p)),
                                   code(similar[[k]])))
@@ -121,6 +134,10 @@
           "The other script stopped before it made the file, so fix that script first; this one may",
           "then run as well. To make the order clear to readers, number your scripts in the order",
           "they run (<code>01&#95;clean.R</code>, <code>02&#95;model.R</code>), or add one main script that runs the others in order."))
+  block("by_other", rows_of(f$by_other), "A script needs a file that a script in another language makes.",
+        text_of(f$by_other), paste(
+          "We run only R and Python code, so the file was not made. Add the file to the deposit, or say",
+          "in the README in which order the scripts run, with the program each needs."))
   block("absent", rows_of(f$absent), "Files are missing from your deposit.", text_of(f$absent),
         "The script stops at the line that reads the file.",
         c("Find the file on your computer.",
@@ -165,8 +182,13 @@
 
   # A package the code loads that was not there, which the install did not know of
   pkg_of <- function(m) {
-    hit <- regmatches(m, regexec("(?:no package called|No module named) ['\"\u2018]([^'\"\u2019]+)['\"\u2019]", m, perl = TRUE))[[1]]
-    if (length(hit) > 1) hit[2] else NA_character_
+    q1 <- "['\"`\u2018]"; q2 <- "['\"`\u2019]"
+    hit <- regmatches(m, regexec(paste0("(?:no package called|No module named) ", q1, "([^'\"`\u2019]+)", q2, "|",
+                                        "[Pp]lease install the ", q1, "([^'\"`\u2019]+)", q2, " package|",
+                                        "[Tt]he package ", q1, "([^'\"`\u2019]+)", q2, " (?:\\([^)]*\\) )?is required|",
+                                        "requires the ", q1, "([^'\"`\u2019]+)", q2, " package"), m, perl = TRUE))[[1]]
+    hit <- hit[-1][nzchar(hit[-1])]
+    if (length(hit)) hit[[1]] else NA_character_
   }
   missing_pkg <- setdiff(which(err & reason %in% "package"), covered)
   mp <- vapply(missing_pkg, \(i) pkg_of(msg[[i]]), character(1))
@@ -184,21 +206,38 @@
   if (length(dep)) {
     dp <- vapply(dep, \(i) pkg_of(msg[[i]]), character(1))
     pkgs <- unique(dp[!is.na(dp)])
+    # Advice for the language of the script that needs the package, and for why
+    # the install failed: every failed install was told that R was old and to
+    # use renv and rocker, also Python packages (ehrql, monai) and R packages
+    # from GitHub or Bioconductor, which the run looks for on CRAN (#648).
+    category_of <- function(p) {
+      k <- match(p, failed$package)
+      if (is.na(k) || !"category" %in% names(failed)) NA_character_ else failed$category[[k]]
+    }
     explain <- vapply(pkgs, \(p) {
-      if (p %in% names(.repro_retired_packages))
+      py <- any(is_py[dep[dp %in% p]])
+      cat_p <- category_of(p)
+      if (!py && p %in% names(.repro_retired_packages))
         sprintf(paste("%s was removed from CRAN in 2023 and can no longer be installed. Replace it with %s,",
                       "which do the same work, and check that your results stay the same."),
                 code(p), paste(code(strsplit(.repro_retired_packages[[p]], " or ", fixed = TRUE)[[1]]), collapse = " or "))
-      else if (p %in% failed$package[failed$category %in% "source_unknown"])
-        sprintf(paste("%s is not on CRAN, and your code does not say where it comes from. Add the command",
-                      "that installs it to the README, for example %s."),
-                code(p), code(sprintf("remotes::install_github(\"user/%s\")", p)))
+      else if (py)
+        sprintf(paste("%s could not be installed with <code>pip</code>. List it with its version in",
+                      "<code>requirements.txt</code>. If it is not on PyPI, or its name there differs from the",
+                      "name the code imports, say in the README how to install it."), code(p))
+      else if (cat_p %in% "compile_failure")
+        sprintf(paste("%s could not be built, because it needs software outside R that our computer does not",
+                      "have. Name that software in the README; a Docker image can include it."), code(p))
+      else if (cat_p %in% c("source_unknown", "cran_unavailable"))
+        sprintf(paste("%s is not on CRAN, and your code does not say where it comes from. If it comes from",
+                      "GitHub or Bioconductor, install it at the top of the script, or name the command in the",
+                      "README, for example %s or %s, with the version you used."),
+                code(p), code(sprintf("remotes::install_github(\"user/%s\")", p)),
+                code(sprintf("BiocManager::install(\"%s\")", p)))
       else
-        sprintf(paste("%s could not be installed with the current version of R, probably because it is old.",
-                      "Record the versions you used (in R, <code>renv::init()</code> writes them to a <code>renv.lock</code> file)",
-                      "and your R version. To be",
-                      "sure the code keeps running, provide a Docker image: a frozen copy of the whole computer",
-                      "setup the code needs, which you can build from <code>rocker/r-ver</code> at your R version."), code(p))
+        sprintf(paste("%s could not be installed in our run. Record the versions you used (in R,",
+                      "<code>renv::init()</code> writes them to a <code>renv.lock</code> file) and your R version, and",
+                      "say in the README where any package that is not on CRAN comes from."), code(p))
     }, character(1))
     block("dep", dep, "A package could not be installed.",
           ifelse(is.na(dp), code(name[dep]), sprintf("%s needs %s.", code(name[dep]), code(dp))),
@@ -210,20 +249,24 @@
   prog <- which(err & !is.na(program))
   block("program", prog, "A script starts a program outside R or Python.",
         sprintf("%s starts %s.", code(name[prog]), code(program[prog])),
-        paste("Our computer does not have this program, and neither will most readers'. Name the program,",
-              "its version and where to get it in the README. A Docker image can include it."))
+        paste("The computer we run the code on does not have this program, so we could not check these",
+              "scripts; this need not be a fault of the code. Name the program, its version and where",
+              "to get it in the README. A Docker image can include it."))
   memory <- which(outcome %in% "out_of_memory" | (err & .repro_out_of_memory(msg)))
-  keys <- setdiff(which(err & grepl("API key|api[_ ]key|set env(ironment)? var", key, ignore.case = TRUE)), prog)
+  keys <- setdiff(which(err & (reason %in% "settings" |
+                                 grepl("API key|api[_ ]key|set env(ironment)? var", key, ignore.case = TRUE))), prog)
   windows <- setdiff(which(err & grepl("RODBC|odbcConnect|\\.accdb|\\.mdb\\b", msg)), prog)
   env <- setdiff(which(err & reason %in% "environment"), c(prog, memory, keys, windows))
   block("env", env, "A script needs software our computer does not have.",
         sprintf("%s: \"%s\"", code(name[env]), .repro_cell(vapply(env, short, character(1)))),
         paste("Name everything the code needs beyond R and Python packages in the README; a Docker image",
               "can include all of it."))
-  block("keys", keys, "A script uses an online service that needs a personal key.", code(name[keys]),
-        paste("Say in the README which service it is and how to get a key. Services change or close (Dark",
-              "Sky has closed), so also save the data the script downloads, add it to the deposit, and let",
-              "the script read the saved copy."))
+  block("keys", keys, "A script needs a setting from your computer that the deposit does not hold, such as a personal key or the place of data.",
+        sprintf("%s: \"%s\"", code(name[keys]), .repro_cell(vapply(keys, short, character(1)))),
+        paste("We could not check these scripts. Say in the README what each setting is and how readers",
+              "get it. For an online service, also save the data the script downloads, add it to the",
+              "deposit, and let the script read the saved copy, as services change or close. For data",
+              "that cannot be shared, say where and how readers can apply for it."))
   block("windows", windows, "A script reads a Microsoft Access database, which works only on Windows.",
         code(name[windows]), "Export the tables to CSV files, add them to the deposit, and read those instead.")
 
@@ -277,7 +320,7 @@
         code(name[unknown]), "The error message of each script is in the table above.")
 
   # in the order in which the problems should be fixed
-  order <- c("by_script", "absent", "absolute", "renamed", "archived", "unnamed", "changed", "missing_pkg",
+  order <- c("by_script", "by_other", "absent", "absolute", "renamed", "archived", "unnamed", "changed", "missing_pkg",
              "dep", "program", "env", "keys", "windows", "undefined", "syntax", "slow", "memory", "online",
              "person", "unknown")
   structure(as.character(unlist(blocks[intersect(order, names(blocks))], use.names = FALSE)),
@@ -303,14 +346,17 @@
 # package versions used (see .repro_recorded_summary()), `source_unknown` the
 # packages found nowhere (see .repro_source_unknown()), `install_results` the
 # install of the packages and `versions_recorded` whether the deposit records
-# package versions, both for what would make the code run (see .repro_advice()).
-# NULL when no script was run.
+# package versions, both for what would make the code run (see .repro_advice()),
+# and `other_writes` the code files in languages that are not run, with the
+# files each writes (`file_name`, `files_written`), so a file a Stata script
+# makes is not called missing (#648). NULL when no script was run.
 .repro_checklist_section <- function(table, run_results, missing_inputs = NULL,
                                      n_dup = 0, n_tests = NA, n_found = NA,
                                      sandbox = "docker", timeout = 600,
                                      install_missing = FALSE, recorded_note = NULL,
                                      net = NULL, source_unknown = character(0),
-                                     install_results = NULL, versions_recorded = FALSE) {
+                                     install_results = NULL, versions_recorded = FALSE,
+                                     other_writes = NULL) {
   if (is.null(table) || !nrow(table) || is.null(run_results) || !nrow(run_results)) {
     return(NULL)
   }
@@ -422,11 +468,7 @@
   }, character(1))
 
   # the opening sentences: what was run, and how
-  counted <- !outcome %in% c("run_by_source", "run_by_import", "jags_model", "not_r_content",
-                             "static_jags_model", "static_not_r_content",
-                             "defines_functions", "not_analysis",
-                             "static_defines_functions", "static_not_analysis",
-                             "not_downloaded", "empty", "static_empty")
+  counted <- !outcome %in% .repro_not_own_outcomes
   n_r <- sum(!is_py & counted)
   n_py <- sum(is_py & counted)
   scripts <- paste(c(
@@ -434,7 +476,11 @@
     if (n_py) sprintf("%d Python script%s", n_py, plural(n_py))), collapse = " and ")
   how <- if (sandbox == "docker") "each in an isolated container" else
     "each in a separate R or Python session"
-  intro <- sprintf(
+  # with no script of its own, the sentence had no number: "We ran the paper's
+  # in the order they depend on each other" (#648)
+  intro <- if (!nzchar(scripts))
+    "We ran none of the paper's code files: none of them is a script with a result of its own."
+  else sprintf(
     "We ran the paper's %s in the order they depend on each other, %s, for at most %s minute%s per script.%s",
     scripts, how, format(round(timeout / 60, 1)), plural(round(timeout / 60, 1)),
     if (!isTRUE(install_missing)) " We did not install packages the scripts need." else "")
@@ -506,7 +552,8 @@
   }
 
   # what the authors can change so the code runs, one line per cause (#575)
-  advice <- .repro_advice(tbl, rr, outcome, mi, install_results, versions_recorded, timeout = timeout)
+  advice <- .repro_advice(tbl, rr, outcome, mi, install_results, versions_recorded, timeout = timeout,
+                          other_writes = other_writes)
 
   c(
     intro,

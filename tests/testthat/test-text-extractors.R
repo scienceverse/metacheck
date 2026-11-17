@@ -133,6 +133,73 @@ test_that("extract_p_values reads ps, p's, x 10 and the Unicode minus (U204, U20
   expect_equal(pv$p_value, c(.05, .10, .10, .001, 1.8e-6, 6.1e-5, 2.14e-213, .05))
 })
 
+test_that("extract_p_values reads numbers without a decimal point (#642)", {
+  # scientific notation with a whole first number, a capital E, 10 to a
+  # power with nothing before it, and GROBID's A-accent signs for the
+  # multiplication and minus signs
+  txt <- c("p < 1e-10", "p < 1 \u00d7 10 -6", "P < 1x10 -29", "p<1e -4",
+           "p = 2.4E-08", "p < 1E-5", "p < 10 -15", "p-value<10 -13",
+           "p<1\u00c210 \u00c04", "p = 4.1\u00c210 \u00c05", "p = 1 \u00c3 10 -6")
+  pv <- extract_p_values(txt)
+  expect_equal(pv$text_id, seq_along(txt))
+  expect_equal(pv$p_value, c(1e-10, 1e-6, 1e-29, 1e-4, 2.4e-8, 1e-5, 1e-15,
+                             1e-13, 1e-4, 4.1e-5, 1e-6))
+
+  # a whole 0 or 1 after "=", in a sentence that reports a test
+  txt <- c("No effect of condition (t(20) = 0.1, p = 1).",
+           "No difference between groups (Fisher's exact test, P = 1).",
+           "The groups did not differ, p = 1.",
+           "Both differed, chi2(1) = 40, p = 0; see Table 2.",
+           "All were significant (permutation test, p \u2248 0).",
+           "Interactions with time were also not significant for sCort (p = 1).")
+  pv <- extract_p_values(txt)
+  expect_equal(pv$text_id, seq_along(txt))
+  expect_equal(pv$p_value, c(1, 1, 1, 0, 0, 1))
+
+  # not p-values: a probability or parameter in a sentence without a test,
+  # a bound, a fraction, a unit, the digits of "p < 0.05" lost after "0.",
+  # a decimal comma, a value above 1, an exponent that cannot be read
+  txt <- c("The option was chosen with p = 1, as before.",
+           "Constraining the parameter to zero (p = 0) gave the model.",
+           "for all 0 < p < 1 the map converges, t = 2",
+           "with p = 1/6 in a single die roll, tested",
+           "pressure P = 1 bar in the test",
+           "Bolded values are significant at the p < 0.",
+           "the groups differed, p = 0,05",
+           "the groups differed, p = 12.05",
+           "the groups differed, p = 10",
+           "the groups differed (p < 1 \u00d7 10\u207b\u00b9\u2070)",
+           # a statistic of 0 is not the test of a p of 0
+           "the best model had ARIMA values p = 0, d = 0, q = 2.")
+  expect_equal(nrow(extract_p_values(txt)), 0)
+  # but it is the test of a p of 1
+  expect_equal(extract_p_values("No difference, z = 0, p = 1.")$p_value, 1)
+
+  # a paper object
+  paper <- test_paper(c("We found no difference, t(10) = 0.2, p = 1.",
+                        "The model used p = 1."))
+  expect_equal(extract_p_values(paper)$text, "p = 1")
+})
+
+test_that("extract_p_values reads p with a correction or p-value name (#642)", {
+  txt <- c("pFWE = .006", "p adj = .034", "p Bonferroni < .05", "P MCMC = 0.27",
+           "p interaction = 0.003", "p_FDR < .001", "p-corrected = .01",
+           "Ptrend < .001", "adjusted p = .02",
+           # a test name (#21)
+           "pMantel < .01", "p ANOVA < 10 -10", "p Wilcoxon = .021", "P MWU = 2.2 x 10 -9",
+           "PBinomial = 0.97", "Pchi2 = 0.56")
+  pv <- extract_p_values(txt)
+  expect_equal(pv$text_id, seq_along(txt))
+  expect_equal(pv$p_value, c(.006, .034, .05, .27, .003, .001, .01, .001, .02,
+                             .01, 1e-10, .021, 2.2e-9, .97, .56))
+  # the name after the p, NA for a plain p
+  expect_equal(pv$p_name, c("FWE", "adj", "Bonferroni", "MCMC", "interaction", "FDR",
+                            "corrected", "trend", NA, "Mantel", "ANOVA", "Wilcoxon",
+                            "MWU", "Binomial", "chi2"))
+  # another word after p is not a correction name
+  expect_equal(nrow(extract_p_values(c("PSA (ng/ml) = 0.5", "pH = 0.5", "pre = .5"))), 0)
+})
+
 test_that("partial eta squared written with its subscript after it is not a p-value (#336)", {
   txt <- c("F(2, 63) = 590, p < .001, ƞ²p = .95",
            "an effect (η² p = .06) as",
@@ -146,6 +213,30 @@ test_that("partial eta squared written with its subscript after it is not a p-va
   eq <- extract_eq(txt)
   expect_equal(eq$lhs, c("F", "p", "ƞ²p", "η² p", "t", "η² P", "p",
                          "η 2 p", "p", "η²", "p"))
+})
+
+test_that("extract_eq reads p-values as extract_p_values does (#642)", {
+  x <- c("t(20) = 3.1, p < 10 -15.", "t(20) = 3.1, p<2.2\u00c210 \u00c016.",
+         "t(20) = 3.1, p adj = .034.", "t(20) = 3.1, N = 10 -15 years.",
+         "t(20) = 3.1, M = 10-15.")
+  eq <- extract_eq(x)
+  eq <- eq[eq$lhs != "t", ]
+  expect_equal(eq$lhs, c("p", "p", "p adj", "N", "M"))
+  # 10 to a power only for a p-value; a range stays as it was
+  expect_equal(eq$rhs, c("10 -15", "2.2\u00c210 \u00c016", ".034", "10", "10-15"))
+})
+
+test_that("extract_eq is not emptied by a bracket full of numbers (#645)", {
+  # this sentence made the search stop at its step limit, and extract_eq()
+  # returned no rows at all, also for the sentence before it
+  txt <- c("We found t(20) = 2.1, p = .04.",
+           "Amino acid distances were binned as shown on the figure (n = 308, 1,168, 564, 654, 1,492).")
+  expect_no_warning(eq <- extract_eq(txt))
+  expect_equal(eq$lhs, c("t", "p", "n"))
+  expect_equal(eq$rhs, c("2.1", ".04", "308"))
+  # degrees of freedom with N, in either order, are read as before
+  eq <- extract_eq("chi2(1, N = 200) = 4.2, F(2, 57) = 3.1, t (n = 30, 28) = 2.0.")
+  expect_equal(eq$df, c("(1, N = 200)", "(2, 57)", "(n = 30, 28)"))
 })
 
 test_that("extract_eq reads the Unicode minus, and 'and z' is z (U205, U218)", {
@@ -308,4 +399,64 @@ test_that("extract_tests gives each paper of a list its own tests, once (U10)", 
   expect_equal(as.vector(table(tests$paper_id)[c("a", "b")]), c(2L, 1L))
   eq <- extract_eq(paperlist(p1, p2))
   expect_equal(eq$grp_id[eq$paper_id == "a"], c(1, 1, 2, 2))
+})
+
+test_that("a raised dot between two digits is read as a decimal point, as The Lancet writes it (#648)", {
+  x <- c("Mortality was lower (p = 0\u20220079).", "p<0\u00b7001 in all groups", "items 2 \u00b7 3")
+  expect_equal(extract_p_values(x)$p_value, c(0.0079, 0.001))
+  expect_equal(extract_eq(x)$rhs, c("0.0079", "0.001"))
+  # also in each paper of a paper list (#351)
+  pl <- paperlist(test_paper("The effect, t(20) = 3.1, p = 0·0079."),
+                  test_paper("Another, t(20) = 2.2, p = 0·039."))
+  expect_equal(extract_p_values(pl)$p_value, c(0.0079, 0.039))
+})
+
+test_that("a p that is the subscript of another symbol is not a p-value; after a note's marker it is (#351)", {
+  x <- c("A correlation emerged (r p = 0.51, P < 0.001).",   # Pearson's r
+         "Refinement gave R p = 3.83% and R wp = 4.13%.",    # a reliability factor
+         "F(2, 54) = 0.77, ²p = 0.02, p = 0.46.",          # partial eta squared, eta lost
+         "The contingency is Δp = .33.",                   # a contingency
+         "Reliability was α s = 0.67, α p = 0.64.",       # Cronbach's alpha
+         "Significant: a p < 0.05, b p < 0.01.",             # markers of a note
+         "ΔΔ p < 0.01, α p < 0.05.",                   # markers of a note
+         "Mann-Whitney U p = .199, or p = .03.")
+  pv <- extract_p_values(x)
+  expect_equal(pv$text_id, c(1L, 3L, 6L, 6L, 7L, 7L, 8L, 8L))
+  expect_equal(pv$text, c("P < 0.001", "p = 0.46", "p < 0.05", "p < 0.01",
+                          "p < 0.01", "p < 0.05", "p = .199", "p = .03"))
+})
+
+test_that("a value above 1 with a unit, a logarithm or in a ratio is not a p-value (#351)", {
+  x <- c("The depth was constant for P = 2.9 μm.", "A cut-off (-log 10 P > 1.3) was applied.",
+         "Intrafibrillar apatite (Ca/P = 1.53) was found.", "The pressure was P = 6.02 MPa.",
+         "Groups differed (Z = 3.091, P = 3.091).")
+  pv <- extract_p_values(x)
+  expect_equal(pv$text_id, 5L)
+  expect_equal(pv$p_value, 3.091)
+})
+
+test_that("p-values written with a minus are found apart, and not by extract_p_values (#351)", {
+  x <- c("Trials differed, t(134) = -2.32, p = -.13, d = -0.4.",
+         "An effect (β = 0.94; |t| = 5.70; p < -0.001).",
+         "It was p = −.05 and p = À0.41 here.",
+         "Coordinates were A/P = -2.90 mm.", "In p 1-p = -4.42 + 8.47a.",
+         "A correlation (r p = -.64, p < .001).", "The contingency Δp = -.33.",
+         "Not negative, p = .05.")
+  expect_false(any(extract_p_values(x)$p_value < 0, na.rm = TRUE))
+  neg <- .p_extract(x, negative = TRUE)
+  expect_equal(neg$text_id, c(1L, 2L, 3L, 3L))
+  expect_equal(neg$p_value, c(-.13, -.001, -.05, -.41))
+})
+
+test_that("chi-squared is read with a space before its 2 (#351)", {
+  x <- c("χ 2 (10) = 9.61, p = .02", "χ ² (1) = 3.20, p = .07", "X 2 (1) = 3.20, p = .07",
+         "χ 2 (1, N = 200) = 4.10, p = .04", "Pearson's χ 2 test (χ 2 = 3.9, p = .048)",
+         "chi-square(2) = 5.10, p = .08")
+  eq <- extract_eq(x)
+  eq <- eq[eq$lhs != "p", ]
+  expect_equal(eq$lhs, c("χ2", "χ²", "X2", "χ2", "χ2", "chi-square"))
+  expect_equal(eq$rhs, c("9.61", "3.20", "3.20", "4.10", "3.9", "5.10"))
+  # a statistic before a p-value, for .p_not_test() and .reports_test()
+  before <- sub(",? p = .*$", "", x)
+  expect_true(all(grepl(.test_stat_pattern, before, perl = TRUE)))
 })

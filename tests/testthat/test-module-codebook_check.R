@@ -729,3 +729,45 @@ test_that("on a paper list, the scale prefix stage sends each file's own paper's
                                    params = list(), max_calls = 5)
   expect_match(paste(sent, collapse = "\n"), "PANAS questionnaire", fixed = TRUE)
 })
+
+test_that("codebook_check reads a codebook sheet inside a data spreadsheet (#651)", {
+  skip_if_not_installed("openxlsx")
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- withr::local_tempdir()
+  wb <- openxlsx::createWorkbook()
+  openxlsx::addWorksheet(wb, "Data")
+  openxlsx::writeData(wb, "Data", data.frame(id = 1:8, age = c(21, 34, 25, 40, 30, 28, 33, 22),
+                                             score = c(3.5, 4.1, 2.8, 3.9, 4.4, 3.1, 2.6, 3.8)))
+  openxlsx::addWorksheet(wb, "Data_Dictionary")
+  openxlsx::writeData(wb, "Data_Dictionary", data.frame(
+    Variable_Name = c("id", "age", "score"),
+    Description = c("Participant number", "Age in years", "Mean rating of the task"),
+    Type = c("integer", "numeric", "numeric")))
+  openxlsx::saveWorkbook(wb, file.path(d, "model_data_with_dictionary.xlsx"))
+
+  dc <- module_run(NULL, "data_check", local_path = d, local_only = TRUE)
+  expect_equal(dc$doc_sheets$sheet, "Data_Dictionary")
+  expect_setequal(dc$table$column_name, c("id", "age", "score"))
+
+  mo <- module_run(NULL, "codebook_check", local_path = d, local_only = TRUE)
+  expect_false(grepl("no codebook", mo$summary_text))
+  lab <- mo$table
+  expect_equal(lab$label[match("age", lab$column_name)], "Age in years")
+  # only the dictionary sheet is read: no definitions made of the data's rows
+  pc <- parse_codebook(file.path(d, "model_data_with_dictionary.xlsx"), sheets = "Data_Dictionary")
+  expect_setequal(pc$codebook_variable, c("id", "age", "score"))
+  expect_null(parse_codebook(file.path(d, "model_data_with_dictionary.xlsx"), sheets = "nope"))
+})
+
+test_that("codebook_check labels the columns of a local folder checked without a paper (#651)", {
+  withr::local_options(metacheck.llm.use = FALSE)
+  d <- withr::local_tempdir()
+  utils::write.csv(data.frame(id = 1:8, age = c(21, 34, 25, 40, 30, 28, 33, 22)),
+                   file.path(d, "study_data.csv"), row.names = FALSE)
+  utils::write.csv(data.frame(variable = c("id", "age"), description = c("Participant number", "Age in years")),
+                   file.path(d, "codebook.csv"), row.names = FALSE)
+  mo <- module_run(NULL, "codebook_check", local_path = d, local_only = TRUE)
+  # paper_id is NA on both sides, and NA == NA matched nothing
+  expect_equal(mo$table$label_status, c("labelled", "labelled"))
+  expect_equal(mo$table$label[mo$table$column_name == "age"], "Age in years")
+})

@@ -143,6 +143,56 @@ test_that("stat_p_nonsig", {
   expect_equal(mod_output$table$text, "p = .20")
 })
 
+test_that("stat_p_nonsig: p = 1 is non-significant, p \u2248 0 and p = 2.4E-08 are not (#642)", {
+  paper <- test_paper(c("No difference between groups (Fisher's exact test, p = 1).",
+                        "A difference (permutation test, p \u2248 0).",
+                        "A difference, p = 2.4E-08.",
+                        "Another, p ~ .01."))
+  mod_output <- module_run(paper, "stat_p_nonsig")
+  expect_equal(mod_output$table$text, "p = 1")
+})
+
+test_that("notes: GROBID's asterisks and markers in brackets; stat_p_nonsig leaves notes out (#642)", {
+  s <- c("Significant differences: \u00c3 p < 0.05, \u00c3\u00c3 p < 0.01.",
+         "Stars: (*) p<0.05; (**) p<0.01.",
+         "Significance at p < 0.05 (*) and p < 0.01 (**).",
+         "For binary variables, *p < 0.05. \u204e\u204e p < 0.01.",
+         "Group A differed, F(1, 20) = 5.1, p < .05 (*).",
+         "The metformin group was higher than the insulin group (P < 0.05) and GLP-1 group (P < 0.01).")
+  tp <- test_paper(s)
+  p <- text_expand(extract_p_values(tp), tp)
+  nt <- .p_not_test(p)
+  expect_equal(nt[p$text_id %in% 1:4], rep("marker", 8))
+  # a marker after a test statistic belongs to a result; so do plain results
+  expect_true(all(is.na(nt[p$text_id %in% 5:6])))
+
+  # stat_p_nonsig lists a non-significant result, not a note
+  # a p-value next to threshold words is kept: often a result against the level
+  s <- c("\u2020 p < .10, * p < .05.", "Main effects were not significant (ps > .05).",
+         "This difference did not quite meet the conventional threshold for statistical significance (p = .054).")
+  mo <- module_run(test_paper(s), "stat_p_nonsig")
+  expect_equal(trimws(mo$table$text), c("ps > .05", "p = .054"))
+})
+
+test_that("stat_p_exact: a p with a correction name counts only after a statistic (#642)", {
+  s <- c("Genes with padj < 0.05 were selected for the enrichment analysis.",
+         "Activity increased in the left insula (t(37) = 7.17, p FWE < .05).",
+         "Thresholds were calculated at the cluster level using TFCE, P FWE < 0.05, K = 10.")
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$table$text[mo$table$imprecise], "p FWE < .05")
+  # the third is a threshold by its words already
+  expect_equal(mo$table$not_a_test[!mo$table$imprecise], c("named", "threshold"))
+})
+
+test_that("stat_p_exact: p = 0 is zero, a value too small for R is not (#642)", {
+  s <- c("The groups differed, chi2(1) = 40, p = 0).",
+         "The groups differed, z = 40, p < 10 -324.",
+         "The groups differed, z = 40, p = 1e-400.")
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$summary_table$n_zero, 1)
+  expect_equal(mo$table$text[mo$table$zero], "p = 0")
+})
+
 test_that("stat_p_exact: p < .000 is zero, == is =, and a starred footnote hides only itself (U127)", {
   s <- c("The effect was strong, p < .000.",
          "Another, p == .000.",
@@ -150,6 +200,39 @@ test_that("stat_p_exact: p < .000 is zero, == is =, and a starred footnote hides
   mo <- module_run(test_paper(s), "stat_p_exact")
   expect_equal(mo$summary_table$n_zero, 2)
   expect_equal(mo$summary_table$n_imprecise, 2)   # .05 and .01, not the starred footnote
+})
+
+test_that("stat_p_exact lists impossible p-values: below 0, or above 1 after a statistic (#351)", {
+  s <- c("The groups differed, t(134) = -2.32, p = -.13, d = -0.4.",
+         "Controls and the BMS group differed (Z = 3.091, P = 3.091).",
+         "Age did not differ, χ 2 (10) = 9.61, p = 7.15.",
+         "Less garbage was found (p = 3.23, CI = 2.11-4.61).",       # no statistic: a proportion
+         "The model fit, z = 4.61, p = 8.06 × 10 -06.",             # read right
+         "An effect, z = 7.68, p = 6.57 � 10 -14.",                 # power of ten garbled
+         "Both were negative, p < -0.6 -0.4 -0.2 0.0 0.2.",            # a figure's axis
+         "The ratio was N: P = À0.23*P concentration + 1.17.",      # a formula
+         "Group A differed, p < .05.")
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$table$text[mo$table$impossible], c("P = 3.091", "p = 7.15", "p = -.13"))
+  expect_equal(mo$summary_table$n_impossible, 3)
+  # an impossible p-value is not also imprecise
+  expect_equal(mo$summary_table$n_imprecise, 1)
+  expect_equal(mo$traffic_light, "red")
+  expect_match(mo$summary_text, "3 impossible \\*p\\* values")
+  expect_true(any(grepl("cannot be right", mo$report, fixed = TRUE)))
+})
+
+test_that("stat_p_exact gives each p-value its own row (#351)", {
+  # two separate reports in one sentence, and the same sentence in two papers
+  s <- "The indirect effect was significant (p < .01), as was the direct effect (p < .01)."
+  mo <- module_run(test_paper(s), "stat_p_exact")
+  expect_equal(mo$summary_table$n_imprecise, 2)
+  expect_match(mo$summary_text, "2 imprecise")
+  p1 <- test_paper(s); p1$paper_id <- "a"
+  p2 <- test_paper(s); p2$paper_id <- "b"
+  mo <- module_run(paperlist(p1, p2), "stat_p_exact")
+  expect_equal(sum(mo$table$imprecise), 4)
+  expect_match(mo$summary_text, "4 imprecise")
 })
 
 test_that("stat_p_exact leaves out table notes, legends and thresholds, not results (#604)", {

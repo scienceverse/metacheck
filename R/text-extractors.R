@@ -32,6 +32,34 @@ extract_urls <- function(paper) {
 # extract_eq() do not read as a p-value (#336)
 .eta_p_prefix <- "[\u03b7\u019e]\\s*[\u00b22\u2082]?\\s*"
 
+# Names written after p, glued or after a space, hyphen or underscore, that
+# make it a corrected or otherwise named p-value ("pFWE = .006", "p adj =
+# .034", "P MCMC = 0.27", "p interaction = 0.003", "pMantel < .01"):
+# correction methods, names of p-values and names of tests. A fixed list,
+# so that "PSA (ng/ml) = 0.5" or "SD = 0" are not read as p-values (#21,
+# #642). Not GLM: "p GLM < 7.1" lost its exponent.
+.p_subscripts <- paste0(
+  "(?i:adj(?:usted)?|corr(?:ected)?|uncorr(?:ected)?|unc|fwer?|fdr|",
+  "bonf(?:erroni)?|holm|tukey|perm(?:uted|utation)?|boot|mcmc|",
+  "int(?:eraction)?|trend|het(?:erogeneity)?|cluster|svc|",
+  # tests
+  "anova|mantel|wilcox(?:on)?|mann.?whitney|mwu?|kruskal(?:.?wallis)?|kw|",
+  "kolmogorov(?:.?smirnov)?|ks|fisher|binom(?:ial)?|chi.?(?:2|sq(?:uared?)?)|",
+  "\u03c7\u00b2?2?|lrt|wald|log.?rank|t.?test|welch|dunn|games.?howell|",
+  "spearman|pearson)(?![\\w])")
+
+# The correction or test name after the p of each p-value, as
+# extract_p_values() matched it ("FWE" in "pFWE < .05", "adj" in "p adj =
+# .03"); NA for a plain p (#642)
+.p_name <- function(text) {
+  re <- paste0("^[pP](?:-?values?|s|['\u2019]s)?[\\s_-]?(", .p_subscripts, ").*$")
+  text <- trimws(text)
+  out <- rep(NA_character_, length(text))
+  named <- grepl(re, text, perl = TRUE)
+  out[named] <- sub(re, "\\1", text[named], perl = TRUE)
+  out
+}
+
 #' Extract P-Values
 #'
 #' List all p-values in the text, returning the matched text (e.g., 'p = 0.04') and document location in a table.
@@ -39,22 +67,56 @@ extract_urls <- function(paper) {
 #' @details
 #' Note that this will not catch p-values reported like "the p-value is 0.03" because that results in a ton of false positives when papers discuss p-value thresholds. If you need to detect text like that, use the `text_search()` function and a custom pattern.
 #'
-#' This will catch most comparators like =<>~ and most versions of scientific notation like 5.0 x 10^-2 or 5.0e-2. If you find any formats that are not correctly handled by this function, please contact the author.
+#' This will catch most comparators like =<>~ and most versions of scientific notation like 5.0 x 10^-2, 5.0e-2, 5E-2, 1e-10 and 10^-15 written as "10 -15". If you find any formats that are not correctly handled by this function, please contact the author.
+#'
+#' A p may carry the name of a correction, of the kind of p-value or of a test, glued to it or after a space ("pFWE = .006", "p adj = .034", "p Bonferroni < .05", "P MCMC = 0.27", "p interaction = .003", "pMantel < .01", "p Wilcoxon = .021"). The column `p_name` holds that name as written ("FWE", "adj"), and is NA for a plain p, so that a raw and a corrected p-value of the same test can be told apart.
+#'
+#' A p-value written as a whole 0 or 1 ("p = 1", "p = 0") is found only after "=", "~" or the approximately-equal sign, when a bracket, a semicolon or a comma follows it (after 1 also a full stop), and when its sentence reports a test: a test statistic ("t(20) = 0.3"), another p-value with a decimal point or an exponent, or a word that names a test or its outcome ("Fisher's exact test", "not significant", "did not differ"). Otherwise "p = 1" is often a probability or a model parameter, and "p < 0." is a p-value whose digits were lost when the PDF was read.
+#'
+#' A "p" that is the subscript of another symbol is not a p-value: after a standing r or R, or a Greek letter, with "=" ("r p = .64" for a correlation, "R p = 3.83%", "alpha p = .95"), and written against a superscript 2 or a Delta with any comparison ("2p = .02" for partial eta squared whose eta was lost, "Delta p = .33" for a contingency). With "<" or ">" such a letter marks a significance level in a note ("a p < 0.05", "alpha p < 0.05"), and the p-value is kept. A value below 0 or above 1 is not a p-value when a unit follows it ("P = 2.9 um", "P = 6.02 MPa"), a logarithm comes before it ("-log10 P = 7.5") or the p is part of a ratio or a formula ("Ca/P = 1.67", "1-p").
+#'
+#' A p-value written with a minus ("p = -.22") is not returned: no p-value is negative. `stat_p_exact` lists those as impossible.
 #'
 #' @param paper a paper object or paperlist object
 #'
-#' @returns a table
+#' @returns a table with one row per p-value: the matched text (`text`), its location, the comparison (`p_comp`), the value (`p_value`) and the name after the p (`p_name`, NA for a plain p)
 #' @export
 #'
 #' @examples
 #' paper <- demopaper()
 #' p_values <- extract_p_values(paper)
 extract_p_values <- function(paper) {
+  .p_extract(paper)
+}
+
+# A symbol standing right before a p (#351): a standing r or R, a Greek
+# letter, a superscript 2, or a Delta. With "=" the p is that symbol's
+# subscript, not a p-value: a correlation ("r p = .64"), a reliability factor
+# ("R p = 3.83%"), Cronbach's alpha or a model parameter ("\u03B1 p = .95"). With
+# "<" or ">" the symbol marks a significance level in a note ("a p < 0.05",
+# "\u03B1 p < 0.05", "\u0394\u0394 p < 0.01"), and the p is a p-value. Written
+# against the p, a superscript 2 is partial eta squared whose eta was lost
+# ("\u00B2p = 0.02"), and a Delta a change in p or a contingency ("\u0394p = .33"),
+# whatever the comparison. In 18 corpora (16,847 papers), r and R gave 53 of
+# 55 subscripts, a Greek letter with "=" 10 of 10 and with "<" none of 4, the
+# superscript 2 16 of 16, and the Delta written against the p 11 of 13.
+.p_symbol_prefix <- paste0(
+  "(?<![\\w.'\u2019-])[rR\u0391-\u03A9\u03B1-\u03C9]\\s+",  # a standing letter
+  "|\u00B2\\s*|[\u0394\u2206]")                               # against the p
+
+# The p-values of a paper, as extract_p_values() returns them; with
+# `negative` TRUE, only the p-values written with a minus ("p = -.22"), which
+# no p-value can be: the minus of a statistic copied into it, or a typing
+# error (#351). These have the value of the number with its minus, and only
+# those from -1 to 0 are kept, the numbers that are a p-value without it.
+.p_extract <- function(paper, negative = FALSE) {
   # a character vector is searched as a text table, one row per string:
   # text_search() returns plain matches for one, and p$text stopped with "$
   # operator is invalid for atomic vectors" (U150)
   if (is.character(paper))
     paper <- data.frame(text = paper, text_id = seq_along(paper))
+  # "p = 0\u00B70079" in the style of The Lancet (#648)
+  paper <- .stat_decimal_point(paper)
 
   # set up pattern
   operators <- c(
@@ -76,15 +138,47 @@ extract_p_values <- function(paper) {
   # after it ("\u03b7\u00b2 p = .06", "\u019e\u00b2p = .95"), not a p-value: the
   # pattern takes the eta into the match, and those matches are left out
   # (#336; 2,026 sentences in 240 of 13,706 papers)
+  #
+  # Numbers without a decimal point (#642): a whole first number before
+  # scientific notation ("p < 1e-10", "p = 5 x 10 -8"), a capital E
+  # ("p = 2.4E-08" was read as 2.4), 10 to a power with nothing before it
+  # ("p < 10 -15"), and a whole 0 or 1 ("p = 1"). GROBID reads the minus
+  # sign as A with a grave accent and the multiplication sign as A with a
+  # circumflex or a tilde in some PDFs ("p<2.2\u00c210 \u00c016" was read as 2.2).
+  minus <- "[-\u2212\u00c0]"
+  sci_e <- paste0("[eE]\\s*", minus, "\\d+")
+  sci_x <- paste0("[x\\*\u00d7\u00c2\u00c3]\\s*10\\s*\\^?\\s*", minus, "\\s*\\d+")
+  # what may follow a whole 0 or 1: a bracket, a semicolon, or a comma with
+  # no digit after it; after 1 also a full stop or the end of the text. Not
+  # "p < 0." (the digits of "p < 0.05" were lost), "p = 0,05",
+  # "p = 1/6", "P = 1 bar" or "p = 1 \u00d7 10\u207b\u2076" (an exponent that cannot be read).
+  # "p = 0\u00b705", in the style of The Lancet, is read as 0.05: the text is
+  # changed first (.stat_decimal_point(); #648)
+  end01 <- "\\s*(?:[)\\];]|,(?!\\s*\\d))"
+  number <- paste0(
+    "n\\.?s\\.?",                                   # ns
+    "|\\d?\\.\\d+",                                 # a number with a decimal point
+    "|[1-9](?=\\s*(?:", sci_e, "|", sci_x, "))",    # 1e-10, 5 x 10^-8
+    "|10\\s*\\^?\\s*", minus, "\\s*\\d+",           # 10^-15, written "10 -15"
+    "|0(?=", end01, ")",                            # p = 0
+    "|1(?=", end01, "|\\s*\\.(?!\\s*\\d)|\\s*$)"    # p = 1
+  )
+  # a p-value with a minus: the minus (also an en dash, or GROBID's A with a
+  # grave accent) and a number with a decimal point (#351)
+  sign <- "[-\u2212\u2013\u00c0]"
+  if (negative) number <- paste0(sign, "\\s*\\d?\\.\\d+")
   pattern <- paste0(
-    "(?:", .eta_p_prefix, ")?",
-    "\\b[pP](?:-?values?|s|['\u2019]s)?\\s*", # ways to write p (or P)
+    "(?:", .eta_p_prefix, "|", .p_symbol_prefix, ")?",
+    "\\b[pP](?:-?values?|s|['\u2019]s)?", # ways to write p (or P)
+    "(?:[\\s_-]?", .p_subscripts, ")?\\s*", # pFWE, p adj
     "[", operators, "]{1,2}\\s*", # 1-2 operators
-    "(n\\.?s\\.?|\\d?\\.\\d+)", # ns or valid numbers
-    "\\s*(e\\s*[-\u2212]\\d+)?", # also match scientific notation
-    "(\\s*[x\\*\u00d7]\\s*10\\s*\\^?\\s*[-\u2212]\\s*\\d+)?"
+    "(", number, ")", # ns or valid numbers
+    if (!negative) paste0(
+      "\\s*(", sci_e, ")?", # also match scientific notation
+      "(\\s*", sci_x, ")?")
   )
 
+  p_pattern <- pattern
   p <- text_search(paper, pattern,
     return = "match",
     perl = TRUE, ignore.case = FALSE
@@ -92,17 +186,87 @@ extract_p_values <- function(paper) {
   p <- p[!grepl("^[\u03b7\u019e]", p$text), , drop = FALSE]
 
   # get operator
-  pattern <- paste0("[", operators, "]{1,2}")
-  matches <- gregexpr(pattern, p$text, perl = TRUE)
-  p$p_comp <- regmatches(p$text, matches) |> sapply(`[[`, 1)
+  op_pattern <- paste0("[", operators, "]{1,2}")
+  matches <- gregexpr(op_pattern, p$text, perl = TRUE)
+  # vapply: with no match, sapply() gave a list, which a table of p-values
+  # could not be joined to (#351)
+  p$p_comp <- vapply(regmatches(p$text, matches), `[[`, "", 1)
+
+  # a symbol before the p: its subscript with "=", or a note's marker (see
+  # .p_symbol_prefix); a marker leaves the match (#351)
+  sym <- regmatches(p$text, regexpr(paste0("^(?:", .p_symbol_prefix, ")"), p$text, perl = TRUE))
+  has_sym <- grepl(paste0("^(?:", .p_symbol_prefix, ")"), p$text, perl = TRUE)
+  if (any(has_sym)) {
+    against <- grepl("^(?:\u00b2|[\u0394\u2206](?!\\s))", p$text[has_sym], perl = TRUE)
+    subscript <- against | p$p_comp[has_sym] %in% c("=", "==", "\u2248", "~")
+    p$text[has_sym] <- substring(p$text[has_sym], nchar(sym) + 1L)
+    drop <- has_sym
+    drop[has_sym] <- subscript
+    p <- p[!drop, , drop = FALSE]
+  }
 
   # get value
   s <- strsplit(p$text, paste0("\\s*[", operators, "]{1,2}\\s*"))
-  pvals <- sapply(s, \(x) x[[2]]) |>
-    gsub("\\s", "", x = _) |>
-    gsub("\u2212", "-", x = _) |>
-    gsub("[x*\u00d7]10\\^?", "e", x = _)
-  p$p_value <- suppressWarnings(as.numeric(pvals))
+  pvals <- vapply(s, \(x) x[[2]], "")
+  if (negative) {
+    p$p_value <- -suppressWarnings(as.numeric(sub(paste0("^", sign, "\\s*"), "", pvals)))
+  } else {
+    # the one reader of written scientific notation, shared with the matcher's
+    # .norm_value() (R/stat_helpers.R) (#642)
+    p$p_value <- suppressWarnings(as.numeric(.sci_text(pvals, ten_power = TRUE)))
+  }
+  # the name after the p: a raw and a corrected p-value of one test are two
+  # rows, which this tells apart (#642)
+  p$p_name <- .p_name(p$text)
+
+  # the sentence of each row in `rows`, from the sentences with a match:
+  # text_expand() rebuilt the text table of a whole paper list for a few
+  # sentences, and took 13 of 14 seconds for 1,000 papers
+  sentence_of <- function(rows) {
+    sent <- text_search(paper, p_pattern, return = "sentence",
+                        perl = TRUE, ignore.case = FALSE)
+    by <- intersect(c("paper_id", "section_id", "paragraph_id", "text_id"),
+                    intersect(names(p), names(sent)))
+    at <- match(do.call(paste, c(as.list(p[rows, by, drop = FALSE]), sep = "\r")),
+                do.call(paste, c(as.list(sent[, by, drop = FALSE]), sep = "\r")))
+    sent$text[at]
+  }
+
+  # A value below 0 or above 1 is not a p-value when a unit follows it, a
+  # logarithm comes before it, or the p is part of a name or a formula
+  # ("P = 2.9 \u00b5m", "-log10 P = 7.5", "Ca/P = 1.67"; .p_not_a_value(); #351)
+  odd <- !is.na(p$p_value) & (p$p_value < 0 | p$p_value > 1)
+  if (any(odd)) {
+    # every p-value of those sentences, so .p_clause() counts their places
+    key <- paste(p$paper_id, p$text_id, sep = "\r")
+    in_sent <- key %in% key[odd]
+    q <- p[in_sent, , drop = FALSE]
+    q$expanded <- sentence_of(which(in_sent))
+    cl <- .p_clause(q)
+    not_p <- !is.na(.p_not_a_value(cl$before, cl$after)) & odd[in_sent]
+    drop <- in_sent
+    drop[in_sent] <- not_p
+    p <- p[!drop, , drop = FALSE]
+  }
+  if (negative) {
+    p <- p[!is.na(p$p_value) & p$p_value >= -1, , drop = FALSE]
+    return(p)
+  }
+
+  # A whole 0 or 1 is a p-value only after "=", "\u2248" or "~" ("0 < p < 1"
+  # bounds a probability, and "p < 1" says nothing), and only when its
+  # sentence reports a test: "p = 1" is otherwise often a probability or a
+  # model parameter ("with p = 1", "ARIMA values p = 0"). In 6,280 papers no
+  # rule was written from, 26 of 114 were not p-values without that, and 11
+  # of 93 with it, which kept 82 of the 88 p-values (#642)
+  whole <- grepl(paste0("[", operators, "]\\s*[01]$"), trimws(p$text))
+  if (any(whole)) {
+    ok <- p$p_comp[whole] %in% c("=", "==", "\u2248", "~")
+    sentence <- sentence_of(which(whole))
+    ok <- ok & .reports_test(sentence, nonzero = p$p_value[whole] == 0)
+    whole[whole] <- !ok
+    p <- p[!whole, , drop = FALSE]
+  }
 
   return(p)
 }
@@ -130,6 +294,10 @@ extract_eq <- function(paper) {
   # below (U150)
   if (is.character(paper))
     paper <- data.frame(text = paper, text_id = seq_along(paper))
+  # "p = 0\u00B70079" in the style of The Lancet (#648)
+  paper <- .stat_decimal_point(paper)
+  # "\u03C7 2 (10) = 9.61": the chi joined to its 2 (#351)
+  paper <- .stat_chi_join(paper)
 
   # set up pattern
   operators <- c(
@@ -174,7 +342,12 @@ extract_eq <- function(paper) {
   # and losing both real statistics entirely. Scoped narrowly (digits/N=
   # only) so the still-common "chi2(1, N = 200)" shape keeps matching as one
   # fragment exactly as before.
-  df_inner <- "(?:[0-9,\\.\\s]+|[nN]\\s*=\\s*[0-9]+)*"
+  # One character at a time, not "[0-9,\\.\\s]+" repeated: a part that can
+  # repeat inside a repeated group let the engine try every way of dividing a
+  # bracket of numbers ("(n = 308, 1,168, 564, 654, 1,492)") and stop at its
+  # step limit, which emptied the search of the whole paper list (#645). The
+  # same texts match.
+  df_inner <- "(?:[0-9,.\\s]|[nN]\\s*=\\s*[0-9]+)*"
   # A bare "g"/"d" immediately followed by one of its own known subscript
   # words ("av", "z", "rm", "s") -- catches a subscript GROBID collapsed to
   # plain space with no "Hedges'"/"Cohen's" prefix word before it (e.g. a
@@ -189,6 +362,10 @@ extract_eq <- function(paper) {
   # partial eta squared with its subscript after it, "eta-squared p = .06",
   # is one statistic, not "p = .06" (#336)
   bare_subscript <- paste0(bare_subscript, "|", .eta_p_prefix, "[pP](?=\\s*[", op, "])")
+  # a p with a correction or test name after a space, "p adj = .034", is one
+  # statistic: the name was "adj" (#642)
+  bare_subscript <- paste0(bare_subscript, "|\\b[pP]s?[\\s_-]", .p_subscripts,
+                           "(?=\\s*[", op, "])")
   pattern <- paste0(
     "(?:(Hedge.{0,3}|Cronbach.{0,2}|Cohen.{0,2}|\\d{1,2}%)\\s+)?", # common prefix
     "(?:", bare_subscript, "|",
@@ -208,8 +385,13 @@ extract_eq <- function(paper) {
     # minus, a leading one with a space after it ("r = \u2212 0.12"): those
     # statistics were lost (U205)
     "((?:\u2212\\s?)?[0-9\\.,+\u2212-]*[0-9]|\\[[^\\]]+\\]|n\\.?\\s*s\\.?)",
-    "\\s*(e\\s*[-\u2212]\\d+)?", # also match scientific notation
-    "(\\s*[x\\*\u00d7]\\s*10\\s*\\^?\\s*[-\u2212]\\s*\\d+)?"
+    # 10 to a power with nothing before it, "p < 10 -15", was "10": kept
+    # below only for a p-value, as elsewhere "10 -15" can be a range (#642)
+    "((?<=(?<![\\d.])10)\\s*\\^?\\s*[-\u2212\u00c0]\\s*\\d+)?",
+    # also match scientific notation, with GROBID's A-accent readings of
+    # the minus and multiplication signs ("2.2\u00c210 \u00c016"; #642)
+    "\\s*(e\\s*[-\u2212\u00c0]\\d+)?",
+    "(\\s*[x\\*\u00d7\u00c2\u00c3]\\s*10\\s*\\^?\\s*[-\u2212\u00c0]\\s*\\d+)?"
   )
 
   eq <- paper |>
@@ -257,6 +439,12 @@ extract_eq <- function(paper) {
   # the Unicode minus as "-" ("\u2212 0.12" gives "-0.12"; U205)
   eq$rhs <- sapply(s, \(x) x[[2]]) |> trimws() |>
     gsub("\u2212\\s?", "-", x = _)
+  # "10 -15" is 10 to a power only for a p-value; for another statistic the
+  # value stays "10", as before (#642)
+  is_p <- grepl(paste0("^[pP](?:s|-?values?|['\u2019]s)?(?:[\\s_-]?", .p_subscripts, ")?$"),
+                eq$lhs, perl = TRUE)
+  eq$rhs[!is_p] <- sub("^10(?=\\s|\\^|\u00c0)\\s*\\^?\\s*[-\u00c0]\\s*\\d+$", "10",
+                       eq$rhs[!is_p], perl = TRUE)
   #   gsub("\\s", "", x = _) |>
   #   gsub("[x*]10\\^", "e", x = _)
   # eq$rhs <- suppressWarnings(as.numeric(rhs))

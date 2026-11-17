@@ -1323,6 +1323,16 @@ test_that("code_extract_py", {
   expect_equal(code_extract_py(text = nb(list("if a:\n    !pip install b"))), c("if a:", "    pass", ""))
   # Commands without a %, and what must stay.
   expect_equal(code_extract_py(text = nb(list("cd data\nnp.mean?\ncd = 3\nx = 1"))), c("cd = 3", "x = 1", ""))
+  # pip without "!" as in Colab, and a command continued with "\" goes whole,
+  # also its indented lines (#648)
+  expect_equal(code_extract_py(text = nb(list("pip install pandas\nx = 1"))), c("x = 1", ""))
+  expect_equal(code_extract_py(text = nb(list("%run train.py \\\n    --epochs 5 \\\n    --lr 0.1\nx = 1"))),
+               c("x = 1", ""))
+  # pip as a name stays
+  expect_equal(code_extract_py(text = nb(list("pip = 2\nx = pip"))), c("pip = 2", "x = pip", ""))
+  # IPython commands in a Quarto Python chunk go too (#648)
+  expect_equal(code_extract_qmd_py(text = c("```{python}", "%matplotlib inline", "import numpy as np", "```")),
+               c("import numpy as np", ""))
   # In an R notebook these are code.
   expect_equal(code_extract_py(text = nb(list("d\n  %>% f()\n!x"), "R")), c("d", "  %>% f()", "!x", ""))
   # Real source survives, in document order.
@@ -1387,4 +1397,88 @@ test_that("code_extract_r reads an .Rmd with a numeric YAML chunk label (U153)",
   # file was skipped
   txt <- c("# Title", "", "```{r}", "#| label: 3", "x <- 1", "```")
   expect_true("x <- 1" %in% code_extract_r(text = txt))
+})
+
+test_that("files a script writes or downloads are not missing, in any language, nor are name patterns (#648)", {
+  # the files written, per language
+  expect_equal(code_file_refs(c('save "out/clean.dta", replace', "export delimited using results.csv, replace",
+                                "use raw.dta"), "Stata", writes_only = TRUE),
+               c("out/clean.dta", "results.csv"))
+  expect_equal(code_file_refs(c('writetable(T, "tab.csv");', 'fid = fopen("log.txt", "w");', 'x = load("in.mat");'),
+                              "MATLAB", writes_only = TRUE), c("tab.csv", "log.txt"))
+  expect_true("data.csv" %in% code_file_refs('download.file("https://osf.io/x/data.csv", "data.csv")', "R",
+                                             writes_only = TRUE))
+  expect_equal(code_file_refs(c('df.to_csv(f"vzv_{COMPARATOR}_model.csv")', 'with open("o.txt", "w") as f:',
+                                'd = pd.read_csv("in.csv")'), "Python", writes_only = TRUE),
+               c("vzv_{COMPARATOR}_model.csv", "o.txt"))
+  expect_equal(code_file_refs('proc export data=a outfile="x.csv" dbms=csv;', "SAS", writes_only = TRUE), "x.csv")
+  # a downloaded file is made by the script, not read
+  io <- repro_file_io(list(a.R = c('download.file("https://x/y.csv", "y.csv")', 'd <- read.csv("y.csv")')))
+  expect_true("y.csv" %in% io$writes[[1]])
+
+  # names with placeholders on either side
+  m <- .code_name_match
+  expect_equal(m(c("vzv_aou_ac_%s_model.csv", "vzv_aou_ac_pneumo_model.csv", "other.csv", "X.CSV"),
+                 c("vzv_aou_ac_{COMPARATOR}_model.csv", "x.csv")), c(TRUE, TRUE, FALSE, TRUE))
+  # a pattern with little text of its own matches nothing
+  expect_false(m("education_tests.csv", "{name}.csv"))
+  expect_false(m("x.dta", "`weekly'"))
+  expect_true(m("resnet50_embeddings.npy", "{backbone}_embeddings.npy"))
+
+  # the missing files of each code file, once all are read
+  cf <- data.frame(paper_id = "p", repo_url = "r", file_name = c("a.R", "b.R", "c.do"),
+                   loaded_refs = c(paste("raw.csv", "clean.csv", "res_pneumo.csv", "_part.csv", "s{seed}.json",
+                                         "gone.csv", sep = "\u001f"), "", ""),
+                   files_written = c("", "clean.csv", "res_%s.csv"))
+  out <- .code_missing_files(cf, data.frame(repo_url = "r", file_name = "raw.csv"))
+  expect_equal(out$loaded_files_missing_names[1], "gone.csv")
+  expect_equal(out$loaded_files_missing, c(1L, 0L, 0L))
+  expect_false("loaded_refs" %in% names(out))
+})
+
+test_that("text that is not a path on the authors' computer is not an absolute path (#648)", {
+  ap <- function(x) code_abs_path(x)$abs_path
+  # pieces the code joins to a folder of its own
+  expect_length(ap('d <- read_csv(paste0(input_dir, "/behaviour_data/ages.csv"))'), 0)
+  expect_length(ap("emfd = read_csv(fileDir+'/dictionaries/emfd_scoring.csv')"), 0)
+  expect_length(ap("p = strcat(userpath,'/MVPA-Light/startup');"), 0)
+  expect_length(ap("sbjdir = [rawdir 'sub-' nr '/ses-meg/meg/'];"), 0)
+  expect_length(ap(r"(save(strcat(DATA_DIR,'\\All\Results'),'x');)"), 0)
+  expect_length(ap('ggsave(file.path(out, "/figs/a.pdf"))'), 0)
+  # a path that comes first, or starts with a drive or ~, stays
+  expect_equal(ap('d <- read.csv(file.path("/Users/me/data", "x.csv"))'), "/Users/me/data")
+  expect_equal(ap('x <- c("/Users/me/a.csv", "/Users/me/b.csv")'), c("/Users/me/a.csv", "/Users/me/b.csv"))
+  expect_equal(ap('files = ["/home/me/a.csv"]'), "/home/me/a.csv")
+  expect_equal(ap(r"(m = dir("C:\Users\me\Data\S5*.mat"))"), r"(C:\Users\me\Data\S5*.mat)")
+  expect_equal(ap('d <- read.csv("/Users/me/Dropbox (Personal)/x.csv")'), "/Users/me/Dropbox (Personal)/x.csv")
+  # patterns, web routes and queries, devices, keys inside files, placeholders
+  expect_length(ap(r"(dicom = meta.str.extract(r"/([^/]+)\.dcm$"))"), 0)
+  expect_length(ap('@app.route("/users/<int:user_id>/reset")'), 0)
+  expect_length(ap('r = client.get("/api/v1/audit?limit=50")'), 0)
+  expect_length(ap('system("cmd > /dev/null/x")'), 0)
+  expect_length(ap('mag = f["/Data/MAG"][:]'), 0)
+  expect_length(ap('x <- h5read(file, "/Data/MAG")'), 0)
+  expect_length(ap('annot <- "/path/to/variants.tsv"'), 0)
+  expect_length(ap('snp <- "/YOUR PATH HERE/v10/files/"'), 0)
+  expect_length(ap('x <- "/EXAMPLEDIRECTORY/data/a.csv"'), 0)
+  # a message, and an R regular expression, are not Windows paths
+  expect_length(ap(r"("C:\\Users\\me\\launcher.py:36: RuntimeWarning: More than 20 figures")"), 0)
+  expect_length(ap(r"(india <- str_detect(x, "\\bindia\\b"))"), 0)
+})
+
+test_that("code is not recovered from a knitted .html whose .Rmd is in the deposit (#648)", {
+  d <- withr::local_tempdir()
+  h <- c("<html><head><meta name=\"generator\" content=\"pandoc\" /></head><body>",
+         "<pre class=\"r\"><code>x &lt;- rnorm(10)", "mean(x)</code></pre>",
+         "<pre><code>## [1] 0.1</code></pre></body></html>")
+  writeLines(h, file.path(d, "analysis.html"))
+  writeLines(h, file.path(d, "other.html"))
+  writeLines("```{r}\nx <- rnorm(10)\n```", file.path(d, "analysis.Rmd"))
+  af <- data.frame(file_name = c("analysis.html", "other.html", "analysis.Rmd"),
+                   file_path = c("out/analysis.html", "other.html", "analysis.Rmd"),
+                   file_location = file.path(d, c("analysis.html", "other.html", "analysis.Rmd")),
+                   file_url = NA_character_, repo_url = "local", file_size = 1)
+  out <- metacheck:::.code_expand_html(af, Inf, Inf, cache = FALSE)
+  # only other.html, which has no source in the deposit, gives a code file
+  expect_equal(setdiff(out$file_name, af$file_name), "other.R")
 })

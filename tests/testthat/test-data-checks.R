@@ -537,6 +537,14 @@ test_that("data_check_pii_values validates to avoid false positives", {
   # Dates and date-like strings are not flagged.
   expect_false(data_check_pii_values(rep("2021-05-03", 6))$problem)
   expect_false(data_check_pii_values(as.character(sample(1990:2020, 40, TRUE)))$problem)
+  # A column of long codes in which a few pass the card checks by chance is
+  # not a column of cards: most values that look like a card must pass (#648)
+  set.seed(648)
+  codes <- c(sprintf("%015.0f", runif(97, 1e14, 3e14)), "4111111111111111", "5500005555555559",
+             "4012888888881881")
+  expect_false(data_check_pii_values(codes)$problem)
+  # a single card number in a text column still is one
+  expect_true(data_check_pii_values(c(rep("no comment", 20), "my card is 4111111111111111"))$problem)
   # Long integer IDs and prices are not PII.
   expect_false(data_check_pii_values(as.character(sample(1e8:9e8, 40)))$problem)
   expect_false(data_check_pii_values(sprintf("%.2f", runif(40, 1, 100)))$problem)
@@ -645,6 +653,29 @@ test_that("data_check_pii_freetext flags real prose but not codes or non-prose",
     paste0("https://example.com/path/", 1:30, "/item?x=", 1:30))$problem)  # URLs
   expect_false(data_check_pii_freetext(
     paste0("C:/data/study/participant_", 1:30, "/trial_data.csv"))$problem) # file paths
+})
+
+test_that("data_check_pii_freetext leaves out prose that describes things, and paths with spaces (#648)", {
+  # a code list's terms: long, varied, multi-word, but no one writes about themselves
+  terms <- c("Coronary arteriosclerosis in patient with history of previous myocardial infarction",
+             "Acute infarction of papillary muscle following surgery on the heart",
+             "Dialysis therapy started by renal service after kidney failure",
+             "Ulcer of skin due to type 2 diabetes mellitus of the left foot",
+             "Congestive heart failure due to left ventricular systolic dysfunction",
+             "Glaucoma suspect due to diabetes mellitus type 2 in both eyes")
+  expect_false(data_check_pii_freetext(terms)$problem)
+  # video paths whose folder names hold spaces (and "me")
+  expect_false(data_check_pii_freetext(
+    paste0("/Users/me/Dropbox/Road Hazards - Raw Videos/Final Set/clip_", 1:30, ".mp4"))$problem)
+  # answers in the first person in one of ten values are enough
+  ans <- c(terms[1:5], "The task was long", "Fine, nothing to add here at all",
+           "It was a bit hard to focus on the long blocks of the task",
+           "Too many questions about the same topic in the last part",
+           "My neighbour Anna helped me set up the laptop for the study")
+  ans[6:7] <- paste(ans[6:7], "and the screen was small for the pictures shown")
+  r <- data_check_pii_freetext(ans)
+  expect_true(r$problem)
+  expect_match(r$message, "10% written in the first person")
 })
 
 # ── Demographic-column detection ──────────────────────────────────────────────
@@ -1077,6 +1108,26 @@ test_that("data_check reports careless coverage limits when nothing is flagged",
   expect_match(rp, "not evidence that a dataset is free of careless responding")
 })
 
+test_that("a person whose answers are repeated on several rows is flagged once (#648)", {
+  skip_if_not_installed("careless")
+  llm_use(FALSE)
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "data"))
+  set.seed(8)
+  items <- as.data.frame(matrix(sample(1:5, 40 * 10, replace = TRUE), nrow = 40))
+  names(items) <- paste0("panas_", 1:10)
+  items$panas_1 <- rep(c(1L, 5L), length.out = 40)
+  items[1, ] <- 3L                          # participant 1 straightlines
+  survey <- cbind(participant_id = 1:40, items)
+  # a log with 20 trial rows per person, each repeating the questionnaire
+  log <- survey[rep(seq_len(40), each = 20), ]
+  log$trial <- rep(1:20, 40)
+  utils::write.csv(log, file.path(d, "data", "log.csv"), row.names = FALSE)
+  mo <- module_run(test_paper("x"), "data_check", local_path = d, local_only = TRUE)
+  expect_equal(mo$careless$respondent, "1")
+  expect_equal(mo$careless$n_blocks_flagged, 1L)
+})
+
 test_that("careless scale blocks split by variable-name prefix", {
   skip_if_not_installed("careless")
   llm_use(FALSE)
@@ -1431,6 +1482,36 @@ test_that("data_group_llm makes no model request and reports nothing unanswered 
   grp <- data_group_llm(files)
   expect_length(attr(grp, "unresolved"), 0)
   expect_false(anyNA(grp$group))
+})
+
+test_that("one-letter study labels in file names count only when the paper confirms them (#648)", {
+  llm_use(FALSE)
+  paper <- demopaper()
+  paper$text$text[1] <- "We ran Experiment 1A, Experiment 1B and Experiment 2."
+  paths <- c("data/Shift_E1A_sub1-40.txt", "data/Shift_E1B_sub1-20.txt",
+             "E2/RT.csv", "analysis.R", "dat.e01")
+  expect_equal(.data_group_from_short_label(paths, paper),
+               c("ex1a", "ex1b", "ex2", NA, NA))
+  # E is experiment, S is study: the paper names no numbered study
+  expect_true(all(is.na(.data_group_from_short_label("df_s1.csv", paper))))
+  # no paper, or a label the paper does not name: nothing is placed by the letter
+  expect_true(all(is.na(.data_group_from_short_label(paths))))
+  expect_true(all(is.na(.data_group_from_short_label(c(paths, "E3_RT.csv"), paper))))
+  # S also stands for sessions and supplementary material
+  p2 <- demopaper()
+  p2$text$text[1] <- "Study 1 and Study 2 are reported here."
+  expect_equal(.data_group_from_short_label(c("placebo_df_s1.csv", "S2_data.xlsx"), p2),
+               c("ex1", "ex2"))
+  p2$text$text[2] <- "See Table S1 in the supplement."
+  expect_true(all(is.na(.data_group_from_short_label("placebo_df_s1.csv", p2))))
+  p2$text$text[2] <- "Each person came to Session 1 and Session 2."
+  expect_true(all(is.na(.data_group_from_short_label("placebo_df_s1.csv", p2))))
+  # the grouping uses it; the paper's roster then agrees with the files
+  files <- data.frame(file_name = basename(paths[1:3]), file_path = paths[1:3],
+                      data_type = "data")
+  grp <- data_group_llm(files, paper = paper)
+  expect_equal(grp$group, c("ex1a", "ex1b", "ex2"))
+  expect_equal(data_study_roster(paper, words = "study"), character(0))
 })
 
 test_that(".bh_is_trial_level_file reads only the header line (#477)", {

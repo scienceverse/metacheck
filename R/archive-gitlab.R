@@ -69,6 +69,12 @@ gitlab_links <- function(paper) {
     text_search(gitlab_regex, perl = TRUE) |>
     dplyr::select(href, text_id, paper_id)
 
+  # a full GitLab link written in the text that is not in the url table, as
+  # github_links() does (see .links_in_text())
+  found_gl <- dplyr::bind_rows(
+    found_gl,
+    .links_in_text(paper, gitlab_regex, found_gl, \(h) .gitlab_repo_path(h)))
+
   # find gitlab repos referenced only by "owner/repo" near "gitlab" (+-10
   # words), the same fallback pattern github_links() uses for GitHub.
   strip_text <- text_search(paper, ".*[^\\.$]", return = "match", perl = TRUE)

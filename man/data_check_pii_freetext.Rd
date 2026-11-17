@@ -9,7 +9,8 @@ data_check_pii_freetext(
   min_median_chars = 40,
   min_unique_frac = 0.8,
   min_multiword_frac = 0.6,
-  min_alpha_frac = 0.5
+  min_alpha_frac = 0.5,
+  min_first_person_frac = 0.1
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ one word (a space between word characters)}
 
 \item{min_alpha_frac}{minimum share of alphabetic characters in the typical
 value (screens out numeric/ID/hash/URL columns)}
+
+\item{min_first_person_frac}{minimum share of values written in the first
+person}
 }
 \value{
 list(problem, message, values)
@@ -44,8 +48,14 @@ typical value actually reads like written language:
 \item long enough (\code{min_median_chars}),
 \item varied enough to be responses rather than a repeated category
 (\code{min_unique_frac}),
-\item \strong{multi-word} -- most values contain whitespace between words, and
-\item \strong{predominantly alphabetic} -- letters, not mostly digits/punctuation.
+\item \strong{multi-word} -- most values contain whitespace between words,
+\item \strong{predominantly alphabetic} -- letters, not mostly digits/punctuation,
+\item \strong{not file paths or web addresses} (fewer than half of the values), and
+\item \strong{written in the first person} -- at least \code{min_first_person_frac} of the
+values contain "I", "my", "we" or a like word (also in Dutch, German,
+French, Spanish and Italian). People write about themselves in the first
+person, which is where personal detail comes in; a code list's terms,
+titles or rules are prose that describes things.
 }
 }
 \examples{

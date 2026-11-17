@@ -272,7 +272,7 @@ researchdata4tu_info <- function(researchdata4tu_url, id_col = 1, pb = NULL,
   # is correct, not incidental.
   id_info <- lapply(valid_ids, \(id) {
     ckey <- paste("data.4tu.nl", id)
-    cached <- if (isTRUE(cache)) .repo_info_cache_get("figshare", ckey) else NULL
+    cached <- if (isTRUE(cache)) .repo_info_cache_get("figshare", ckey, need = "related") else NULL
     if (!is.null(cached)) return(cached)
     result <- .figshare_info(id, host = "data.4tu.nl", pb = pb)
     if (isTRUE(cache) && .repo_info_ok(result))

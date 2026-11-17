@@ -8,7 +8,8 @@ parse_codebook(
   path,
   header_lookahead = 5L,
   observed = list(),
-  group = NA_character_
+  group = NA_character_,
+  sheets = NULL
 )
 }
 \arguments{
@@ -25,6 +26,11 @@ one study's codebook (e.g. a \code{condition} variable coded 1-4 in Study A)
 leak onto an unrelated same-named column in Study B (coded 1-6). Callers
 that know the file's group should pass it. Mirrors \code{.extract_haven_labels}'s
 \code{group} argument.}
+
+\item{sheets}{for a spreadsheet, the names of the sheets to read; \code{NULL}
+(the default) reads every sheet. A codebook sheet inside a data
+spreadsheet is read alone (#651), as the other sheets hold data, which
+the positional fallback would turn into made-up definitions.}
 }
 \value{
 a data.frame of variable definitions (\code{codebook_variable}, \code{label},

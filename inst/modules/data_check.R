@@ -128,6 +128,11 @@
 #'   one paper's repository -- confirmed live 2026-09-07 against a real
 #'   Zenodo record (SAPFLUXNET, ~4000 files) that took hours and multiple GB
 #'   of memory. See [download_repo_files()]'s own parameter of the same name.
+#' @param osf_max_requests the largest number of requests to the OSF for
+#'   listing one OSF project, passed to `repo_check()` when this module runs it
+#'   (default 50; `Inf` for no limit). A project listed only in part is named
+#'   in a warning before anything is downloaded, because files in folders not
+#'   yet opened are not downloaded either.
 #' @param cache if `TRUE`, keep downloaded files in a persistent on-disk cache
 #'   (see [repo_cache_dir()]) so they are reused on later runs. If `FALSE` (the
 #'   default), download to a temporary directory that is discarded when the R
@@ -166,6 +171,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                        max_file_size = 100,
                        max_download_size = 500,
                        max_files_per_repo = Inf,
+                       osf_max_requests = 50,
                        cache = FALSE,
                        skip_on_api_limit = FALSE,
                        manifest = NULL,
@@ -266,6 +272,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # Files that do not belong in a repository, which repo_check leaves out of
   # its table; the file tree marks them (junk: remove / keep only on purpose).
   tree_useless <- get_prev_outputs("repo_check", "useless_files")
+  # OSF projects repo_check listed only in part (`osf_max_requests`); warned
+  # about below, before anything is downloaded
+  listing_partial <- get_prev_outputs("repo_check", "partial_repos")
   if (is.null(all_files)) {
     # cache forwarded from this call's own `cache` argument: without it,
     # repo_check() falls back to its own default (cache = FALSE) regardless
@@ -282,9 +291,11 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     if (!is.null(local_path)) {
       mo <- module_run(paper, "repo_check", local_path = local_path,
                        local_only = local_only, cache = cache,
+                       osf_max_requests = osf_max_requests,
                        skip_on_api_limit = skip_on_api_limit)
     } else {
       mo <- module_run(paper, "repo_check", local_only = local_only, cache = cache,
+                       osf_max_requests = osf_max_requests,
                        skip_on_api_limit = skip_on_api_limit)
     }
     all_files <- mo$table %||% data.frame(
@@ -294,7 +305,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     listing_gated <- mo$gated_repos
     tree_naming_issues <- mo$naming_issues
     tree_useless <- mo$useless_files
+    listing_partial <- mo$partial_repos
   }
+  if (download != "none" && nrow(all_files) > 0)
+    .cap_report_partial(listing_partial, all_files$repo_url)
 
   # ── 2. Classify every file into a data_check semantic type ───────────────────
   if (nrow(all_files) == 0) {
@@ -757,6 +771,12 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
   # files) rather than real data; demoted to documentation (doc_role
   # "supplemental") after extraction.
   manifest_files <- character(0)
+  # Sheets of notes or a codebook that a data spreadsheet holds beside its
+  # data, set aside below as documentation: one row per sheet. Returned as
+  # `doc_sheets`, so codebook_check reads them (#651).
+  doc_sheets <- data.frame(paper_id = character(0), source_file = character(0),
+                           file_location = character(0), sheet = character(0),
+                           group = character(0))
   # .RData/.rda workspaces that held no reusable tabular data (only fitted
   # models / session objects, or could not be restored). Flagged as a
   # data-sharing recommendation: share the underlying data as CSV + codebook.
@@ -876,6 +896,14 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
           !is.null(p$df) && !is.null(.find_codebook_cols(names(p$df))), logical(1))
         keep <- which(is_table & !is_doc)
         if (!length(keep)) keep <- utils::head(which(is_table), 1)
+        set_aside <- setdiff(which(is_doc), keep)
+        if (length(set_aside) && length(keep)) {
+          doc_sheets <<- rbind(doc_sheets, data.frame(
+            paper_id = as.character(f$paper_id %||% NA_character_),
+            source_file = f$source_file, file_location = f$file_location,
+            sheet = sheets[set_aside],
+            group = as.character(f$group %||% NA_character_)))
+        }
         if (!length(keep)) {
           if (first$manifest) {
             manifest_files <<- c(manifest_files, f$source_file)
@@ -1623,6 +1651,7 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       report = c(report, dv_report),
       summary_text = paste(summary_text, text),
       keys = key_found,
+      doc_sheets = doc_sheets,
       structure = all_files,
       previews = file_previews,
       gated_repos = listing_gated,
@@ -2375,6 +2404,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     # One row per KEY found in the repository's files (#607): file, line,
     # type and only the beginning of the key.
     keys = key_found,
+    # Sheets of notes or a codebook beside the data in a spreadsheet, which
+    # codebook_check reads (#651).
+    doc_sheets = doc_sheets,
     traffic_light = tl,
     report = c(report, dv_report),
     summary_text = paste(summary_text, dv_summary_text)
@@ -2428,6 +2460,16 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 .dv_careless_block <- function(block, ids, scale, prefix) {
   block <- as.data.frame(lapply(block, function(x)
     suppressWarnings(as.numeric(as.character(x)))))
+  # A file that repeats a person's answers on several rows (a log with one row
+  # per trial, and the questionnaire on each) holds one response: each copy
+  # was flagged, so one person was "flagged in 20 blocks" (#648, 5b3xh_v3:
+  # 5,085 rows for 255 ids). Rows that repeat an id and its answers are left
+  # out.
+  again <- duplicated(data.frame(.id = as.character(ids), block))
+  if (any(again)) {
+    block <- block[!again, , drop = FALSE]
+    ids <- ids[!again]
+  }
   n_items <- ncol(block)
   ls <- careless::longstring(block)
   iv <- careless::irv(block, na.rm = TRUE)
@@ -2517,7 +2559,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     data.frame(
       respondent       = g$respondent[1],
       source_file      = g$source_file[1],
-      n_blocks_flagged = nrow(g),
+      # scales, not rows: one scale flagged on two rows of a person is one
+      # block (#648)
+      n_blocks_flagged = length(unique(g$scale)),
       scales           = paste(sort(unique(g$scale)), collapse = "; "),
       reasons          = paste(sort(unique(g$reason)), collapse = "; "),
       max_longstring   = max(g$longstring, na.rm = TRUE),
