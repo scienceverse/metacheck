@@ -386,12 +386,19 @@ gitlab_tree_files <- function(repo) {
     paths <- vapply(blobs, \(x) x$path %empty_or% "", character(1))
     raw_base <- sprintf("https://gitlab.com/%s/-/raw/%s/",
                         clean_repo, utils::URLencode(default_branch))
+    # each part of the path encoded (a space, "#", "?", "%" or "+" in a
+    # folder or file name), the slashes kept; `path` and `name` stay as they
+    # are, as the cache's file names and the paths a paper's code reads are
+    # built from them. Unencoded, curl refused every address with a space,
+    # and 184 files of one OSF project's GitHub storage were lost (#667).
+    enc_paths <- vapply(strsplit(paths, "/", fixed = TRUE),
+                        \(p) paste(utils::URLencode(p, reserved = TRUE), collapse = "/"), character(1))
     files_df <- data.frame(
       repo         = repo,
       clean_repo   = clean_repo,
       name         = basename(paths),
       path         = paths,
-      download_url = paste0(raw_base, paths),
+      download_url = paste0(raw_base, enc_paths),
       size         = NA_real_,
       ft           = "file",
       stringsAsFactors = FALSE)

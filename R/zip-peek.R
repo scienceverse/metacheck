@@ -123,6 +123,10 @@
 # read: an error answer's Content-Length is the length of the error page, not
 # of the file.
 .head_size <- function(url, skip_on_api_limit = FALSE) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   tryCatch({
     # See .wait_out_known_rate_limit()'s own comment (R/repo-download.R): a
     # host already known to be rate-limited waits out the remaining time
@@ -228,6 +232,10 @@
 # Size in bytes from a one-byte ranged GET, or NA. The fallback for when a
 # HEAD request gives no usable size (see the section comment above).
 .range_size <- function(url, skip_on_api_limit = FALSE) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   tryCatch({
     r <- .http_range_get(url, "bytes=0-0", skip_on_api_limit = skip_on_api_limit)
     if (r$status %in% c(206L, 416L) && is.finite(r$total) && r$total > 0)
@@ -706,6 +714,10 @@
 #' }
 zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
                      skip_on_api_limit = FALSE, size = NULL) {
+  # a space or other character an address may not hold, encoded (#667);
+  # a file on disk is left as it is
+  web <- !is.na(url) & grepl("^https?://", url)
+  url[web] <- utils::URLencode(url[web])
   # Reuse an earlier peek of this exact URL from this same session -- SUCCESS
   # OR FAILURE. Originally only a success was cached, on the assumption a
   # refused/unsupported NULL "would still return NULL again quickly" -- true

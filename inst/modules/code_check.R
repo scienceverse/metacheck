@@ -964,8 +964,11 @@ code_check <- function(paper, local_path = NULL,
     }
   }
 
+  # code files whose download failed: not checked (#667)
+  failed_text <- .download_failed_text(code_failed_files)
   report <- c(
     "Below, we describe some best coding practices and give the results of automatic evaluation of these practices in the code files below. This check may miss things or produce false positives if your scripts are less typical.",
+    failed_text$report,
     scroll_table(report_table, maxrows = 5),
     "#### Code Comments",
     report_comments,
@@ -1057,6 +1060,10 @@ code_check <- function(paper, local_path = NULL,
   summary_table$code_packages_n <-
     pkg_counts[as.character(summary_table$paper_id)] |> unname()
   summary_table$code_packages_n[is.na(summary_table$code_packages_n)] <- 0L
+  # code files whose download failed, per paper (#667)
+  summary_table$code_files_failed <- if (!is.data.frame(code_failed_files) || !nrow(code_failed_files)) 0L else
+    if (nrow(summary_table) == 1 || !"paper_id" %in% names(code_failed_files)) nrow(code_failed_files) else
+      vapply(summary_table$paper_id, \(id) sum(code_failed_files$paper_id %in% id), integer(1), USE.NAMES = FALSE)
 
   # Version-pinning is genuinely per-paper (renv.lock/sessionInfo.txt belong to
   # ONE paper's repository, unlike the whole-run `version_pin` used for the
@@ -1111,6 +1118,7 @@ code_check <- function(paper, local_path = NULL,
   # count is not an error or something to fix, just informational.
   summary_text <- c(
     summary_code,
+    failed_text$summary,
     summary_comments,
     if (length(setwd_issues) > 0) summary_setwd,
     if (length(install_packages_issues) > 0) summary_install_packages,
