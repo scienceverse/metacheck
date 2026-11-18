@@ -3150,9 +3150,9 @@ data_validate_dist_facets <- function(plot_specs, max_facets = .dv_max_facets) {
         path, col_names = FALSE, .name_repair = "minimal")))
       utils::head(d, 6L)
     }, error = function(e) NULL)
-  } else if (.xls_readable(path)) {   # see .xls_readable()
+  } else if (.xls_readable(path)) {   # see .xls_readable() and .xlsx_safe_path()
     tryCatch(as.data.frame(suppressWarnings(readxl::read_excel(
-      path, col_names = FALSE, n_max = 6L, col_types = "text",
+      .xlsx_safe_path(path), col_names = FALSE, n_max = 6L, col_types = "text",
       .name_repair = "minimal"))), error = function(e) NULL)
   } else NULL
   if (is.null(raw) || nrow(raw) < 2 || ncol(raw) < 2) return(NULL)
