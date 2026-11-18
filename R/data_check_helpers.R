@@ -1665,7 +1665,7 @@ data_study_roster <- function(paper, words = c("study", "experiment", "pilot")) 
   # something that doesn't survive a size check even though it "exists").
   sz <- file.size(path)
   if (is.na(sz) || sz > max_bytes) return(character(0))   # not a script
-  txt <- tryCatch(paste(readLines(path, warn = FALSE), collapse = "\n"),
+  txt <- tryCatch(paste(.utf8_lines(readLines(path, warn = FALSE)), collapse = "\n"),
                   error = function(e) NULL)
   if (is.null(txt) || !nzchar(txt)) return(character(0))
   # A script saved in another encoding (an older Stata .do file is often
@@ -2536,6 +2536,25 @@ txt_classify_content <- function(path) {
           lv[bad] <- iconv(lv[bad], from = "latin1", to = "UTF-8")
           levels(df[[j]]) <- lv
           repaired[names(df)[j]] <- sum(bad)
+        }
+      }
+      # The column's variable label and value labels (haven's "label" and
+      # "labels"): an older Stata file (version 13 and earlier) or SPSS file
+      # stores them in its own encoding, haven gives them as stored, and
+      # codebook_check searches them with text patterns, which stop on text
+      # that is not valid UTF-8 ("input string 1 is invalid")
+      lab <- attr(df[[j]], "label", exact = TRUE)
+      if (is.character(lab) && any(!validUTF8(lab)))
+        attr(df[[j]], "label") <- .utf8_lines(lab)
+      vl <- attr(df[[j]], "labels", exact = TRUE)
+      if (!is.null(vl)) {
+        nms <- names(vl)
+        bad_names <- !is.null(nms) && any(!validUTF8(nms))
+        bad_codes <- is.character(vl) && any(!validUTF8(vl))
+        if (bad_names || bad_codes) {
+          if (bad_codes) vl[] <- .utf8_lines(unname(vl))
+          if (bad_names) names(vl) <- .utf8_lines(nms)
+          attr(df[[j]], "labels") <- vl
         }
       }
     }
@@ -4160,7 +4179,7 @@ normalize_label <- function(x) {
 # ("|---|---|") whose preceding row is a codebook header, then reads rows until
 # the table ends. Returns a codebook-vars data.frame or NULL.
 .extract_markdown_codebook <- function(path, src, observed = list()) {
-  ln <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+  ln <- tryCatch(.utf8_lines(readLines(path, warn = FALSE)), error = function(e) NULL)
   if (is.null(ln) || !length(ln)) return(NULL)
   ln <- iconv(ln, to = "UTF-8", sub = "")
   ln[is.na(ln)] <- ""
@@ -4594,7 +4613,7 @@ normalize_label <- function(x) {
         paste(pdftools::pdf_text(path), collapse = "\n")
       },
       rtf = {
-        .strip_rtf(paste(readLines(path, warn = FALSE), collapse = "\n"))
+        .strip_rtf(paste(.utf8_lines(readLines(path, warn = FALSE)), collapse = "\n"))
       },
       odt = {
         tmp <- tempfile()
@@ -4675,7 +4694,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
         # Sniff the first non-blank character and route rather than handing a
         # perfectly structured file to the LLM as raw text.
         first <- tryCatch({
-          h <- readLines(path, n = 5L, warn = FALSE)
+          h <- .utf8_lines(readLines(path, n = 5L, warn = FALSE))
           h <- trimws(h[nzchar(trimws(h))])
           if (length(h)) substr(h[1], 1, 1) else ""
         }, error = function(e) "")
@@ -4797,7 +4816,9 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
             sav      = .read_sav_any(path),
             dta      = haven::read_dta(path),
             sas7bdat = haven::read_sas(path))
-          res <- .extract_haven_labels(as.data.frame(df), src)
+          # labels in another encoding repaired (.utf8_repair_df()), as when
+          # the file is read as data
+          res <- .extract_haven_labels(.utf8_repair_df(as.data.frame(df)), src)
           if (!is.null(res)) attr(res, ".is_haven") <- TRUE
           res
         }
@@ -4874,7 +4895,7 @@ parse_codebook <- function(path, header_lookahead = 5L, observed = list(),
   # "PK\003\004..." to the LLM, #651).
   if (ext %in% c("xlsx", "xls", "ods", "sav", "dta", "sas7bdat", "jasp", "omv", "zip"))
     return(NULL)
-  tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+  tryCatch(.utf8_lines(readLines(path, warn = FALSE)), error = function(e) NULL)
 }
 
 # -- Qualtrics survey-definition (.qsf) parsing --------------------------------
@@ -7775,7 +7796,7 @@ data_promote_header_row <- function(df, raw_rows = NULL, max_scan = 4L) {
   fields <- tryCatch(suppressWarnings({
     con <- file(path, encoding = "UTF-8-BOM")
     on.exit(close(con), add = TRUE)
-    line <- readLines(con, n = 1L, warn = FALSE)
+    line <- .utf8_lines(readLines(con, n = 1L, warn = FALSE))
     if (!length(line)) character(0) else
       scan(text = line, what = "", sep = if (ext == "iqdat") "\t" else ",",
            quote = "\"", quiet = TRUE, na.strings = character(0))

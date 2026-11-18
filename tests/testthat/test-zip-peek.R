@@ -286,6 +286,92 @@ test_that("zip_peek() reuses a same-session result instead of re-fetching", {
   expect_null(other)
 })
 
+test_that("a zip whose names are stored in the old DOS characters (CP437) is listed and unpacked", {
+  # medRxiv 2026.11.12.26367900v1: older releases of the German Index of
+  # Socioeconomic Deprivation inside a Zenodo zip store "Baden-Wuerttemberg"
+  # as "Baden-W\x81rttemberg"; gsub() on that name stopped data_check
+  # ("input string 19 is invalid"). Built byte by byte, as zip tools write
+  # names in UTF-8 now: stored members, no UTF-8 flag.
+  le <- function(x, n) writeBin(as.integer(x), raw(), size = n, endian = "little")
+  members <- list(list(name = charToRaw("data/a.csv"), data = charToRaw("id,x\n1,2\n")),
+                  list(name = c(charToRaw("Th"), as.raw(0x81), charToRaw("ringen/b.csv")),
+                       data = charToRaw("id,y\n3,4\n")))
+  local <- raw(0); central <- raw(0)
+  for (m in members) {
+    crc <- metacheck:::.crc32(m$data)
+    crc <- writeBin(if (crc > 2^31 - 1) as.integer(crc - 2^32) else as.integer(crc), raw(), size = 4, endian = "little")
+    fixed <- c(le(20, 2), le(0, 2), le(0, 2), le(0, 2), le(0, 2), crc,
+               le(length(m$data), 4), le(length(m$data), 4), le(length(m$name), 2), le(0, 2))
+    central <- c(central, as.raw(c(0x50, 0x4b, 0x01, 0x02)), le(20, 2), fixed, le(0, 2), le(0, 2),
+                 le(0, 2), le(0, 4), le(length(local), 4), m$name)
+    local <- c(local, as.raw(c(0x50, 0x4b, 0x03, 0x04)), fixed, m$name, m$data)
+  }
+  eocd <- c(as.raw(c(0x50, 0x4b, 0x05, 0x06)), le(0, 2), le(0, 2), le(2, 2), le(2, 2),
+            le(length(central), 4), le(length(local), 4), le(0, 2))
+  z <- file.path(withr::local_tempdir(), "dos_names.zip")
+  writeBin(c(local, central, eocd), z)
+
+  l <- metacheck:::.unzip_list(z)
+  expect_true(all(validUTF8(l$Name)))
+  expect_setequal(l$Name, c("data/a.csv", "Th\u00fcringen/b.csv"))
+  expect_false(validUTF8(l$Stored[l$Name == "Th\u00fcringen/b.csv"]))
+
+  # taken out by position, under the converted name
+  ex <- withr::local_tempdir()
+  got <- metacheck:::.zip_extract_local(z, "Th\u00fcringen/b.csv", ex)
+  expect_equal(readLines(got), c("id,y", "3,4"))
+
+  zip_row <- data.frame(
+    repo_url = "r", file_name = "dos_names.zip", file_path = "dos_names.zip",
+    file_url = "u", file_location = z, file_size = file.size(z),
+    file_type = "archive", repo_name = "r", paper_id = "p.1",
+    data_type = "unknown", doc_role = NA_character_,
+    data_format = "tabular", group = NA_character_,
+    stringsAsFactors = FALSE)
+  rows <- metacheck:::.expand_zip(z, zip_row, skip_types = "materials")
+  expect_setequal(rows$file_name, c("a.csv", "b.csv"))
+  expect_true(all(validUTF8(rows$file_path)))
+  expect_true(any(grepl("Th\u00fcringen/b.csv", rows$file_path, fixed = TRUE)))
+  expect_equal(readLines(rows$file_location[rows$file_name == "b.csv"]), c("id,y", "3,4"))
+
+  # .zip_extract_members() finds the member under the name zip_peek() gives
+  cd <- metacheck:::.zip_list_local(z)
+  expect_true("Th\u00fcringen/b.csv" %in% cd$name)
+  dest <- withr::local_tempdir()
+  targets <- vapply(cd$name, metacheck:::.zip_member_target, "", dest = dest, USE.NAMES = FALSE)
+  expect_false(anyNA(metacheck:::.zip_extract_members(z, cd, targets)))
+})
+
+test_that(".tar_unescape gives back the bytes a tar stores", {
+  latin1 <- c(charToRaw("Th"), as.raw(0xfc), charToRaw("ringen.csv"))
+  expect_identical(charToRaw(metacheck:::.tar_unescape("Th\\374ringen.csv")), latin1)
+  # in a name with escapes, a doubled backslash is one backslash
+  expect_identical(charToRaw(metacheck:::.tar_unescape("Th\\374\\\\b")),
+                   c(charToRaw("Th"), as.raw(0xfc), charToRaw("\\b")))
+  # a name without escapes is left as it is
+  expect_identical(metacheck:::.tar_unescape(c("a\\\\b.csv", "plain.csv", NA)),
+                   c("a\\\\b.csv", "plain.csv", NA))
+})
+
+test_that("a tar whose names are not UTF-8 is listed and unpacked under readable names", {
+  # A tar records no character set; a Latin-1 name stopped .tar_list_file()
+  # ("input string 1 is invalid"). Windows cannot write such a file name.
+  skip_on_os("windows")
+  d <- withr::local_tempdir()
+  nm <- rawToChar(c(charToRaw("Th"), as.raw(0xfc), charToRaw("ringen.csv")))
+  writeLines("id,x\n1,2", file.path(d, nm))
+  tf <- file.path(withr::local_tempdir(), "latin1.tar")
+  withr::with_dir(d, utils::tar(tf, files = nm, tar = "internal"))
+  expect_equal(metacheck:::.tar_list_file(tf)$name, "Th\u00fcringen.csv")
+  row <- data.frame(repo_url = "r", file_name = "latin1.tar", file_path = "latin1.tar",
+                    file_location = tf, data_type = "archive", stringsAsFactors = FALSE)
+  rows <- metacheck:::.expand_tar(tf, row)
+  expect_equal(nrow(rows), 1)
+  expect_true(validUTF8(rows$file_path))
+  expect_match(rows$file_path, "Th\u00fcringen.csv", fixed = TRUE)
+  expect_equal(readLines(rows$file_location), c("id,x", "1,2"))
+})
+
 test_that(".expand_zip keeps inner data files and drops inner materials", {
   d <- withr::local_tempdir()
   writeLines("id,x\n1,2", file.path(d, "study.csv"))   # data

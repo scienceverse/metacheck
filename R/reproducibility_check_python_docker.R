@@ -253,7 +253,7 @@ repro_install_deps_py_docker <- function(install_deps, lib_dir,
   } else NULL
 
   msg <- if (!is.null(res)) {
-    txt <- tryCatch(paste(readLines(out_file, warn = FALSE), collapse = "\n"),
+    txt <- tryCatch(paste(.utf8_lines(readLines(out_file, warn = FALSE)), collapse = "\n"),
                     error = function(e) "")
     if (isTRUE(res$timeout)) paste0("docker install timed out after ", round(timeout), "s")
     else paste0("docker install failed (status ", res$status, "): ", txt)
@@ -374,7 +374,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
-    exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
+    exec_lines <- tryCatch(.utf8_lines(readLines(row$script_path, warn = FALSE)),
                            error = function(e) character(0))
     message("[repro/py-docker]   -> running '", fn, "' (timeout ", timeout, "s) ...")
 
@@ -430,7 +430,7 @@ repro_run_scripts_py_docker <- function(run_tbl, order, sandbox_root, lib_dir = 
     if (is_timeout) .repro_docker_stop(container_name)
 
     read_cap <- function(f) if (file.exists(f))
-      paste(readLines(f, warn = FALSE), collapse = "\n") else ""
+      paste(.utf8_lines(readLines(f, warn = FALSE)), collapse = "\n") else ""
     so <- read_cap(out_file); se <- read_cap(err_file)
     unlink(c(out_file, err_file))
 

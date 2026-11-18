@@ -83,6 +83,36 @@
   out
 }
 
+# Names as utils::untar(list = TRUE) gives them, with GNU tar's escapes undone:
+# GNU tar (which untar() uses on Linux) lists a byte that is not a printable
+# character in its locale as a backslash and three octal digits ("Th\374ringen"
+# for "Thueringen" written in Latin-1), and a backslash as two. The result holds the
+# name's bytes as the tar stores them; a name without escapes is returned as
+# it is.
+.tar_unescape <- function(x) {
+  esc <- !is.na(x) & grepl("\\\\[0-7]{3}", x, useBytes = TRUE)
+  x[esc] <- vapply(x[esc], function(s) {
+    b <- charToRaw(s)
+    out <- raw(0)
+    i <- 1L
+    octal <- function(r) all(r >= as.raw(0x30) & r <= as.raw(0x37))
+    while (i <= length(b)) {
+      if (b[i] == as.raw(0x5c) && i + 3L <= length(b) && octal(b[(i + 1L):(i + 3L)])) {
+        out <- c(out, as.raw(strtoi(rawToChar(b[(i + 1L):(i + 3L)]), 8L)))
+        i <- i + 4L
+      } else if (b[i] == as.raw(0x5c) && i + 1L <= length(b) && b[i + 1L] == as.raw(0x5c)) {
+        out <- c(out, b[i])
+        i <- i + 2L
+      } else {
+        out <- c(out, b[i])
+        i <- i + 1L
+      }
+    }
+    rawToChar(out)
+  }, character(1), USE.NAMES = FALSE)
+  x
+}
+
 # List the regular files of a .tar on disk from its headers, with the columns
 # `name` (the path inside the archive, without a leading "./"), `size` (bytes)
 # and `member` (the name exactly as stored, which utils::untar(files = ) needs).
@@ -133,7 +163,10 @@
     }
     pos <- pos + 512 + ceiling(len / 512) * 512
   }
-  data.frame(name = sub("^(\\./)+", "", name), size = size, member = name,
+  # A tar records no character set: a name that is not valid UTF-8 is read as
+  # Latin-1 (.utf8_lines()), as text functions stop on it; `member` keeps it
+  # as stored
+  data.frame(name = sub("^(\\./)+", "", .utf8_lines(name)), size = size, member = name,
              stringsAsFactors = FALSE)
 }
 

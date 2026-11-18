@@ -909,7 +909,7 @@ FAIR_repo <- function(path, output_dir, paper = NULL,
   changed <- character(0)
   for (i in readme) {
     dest <- file.path(output_dir, plan$written[i])
-    txt <- tryCatch(readLines(dest, warn = FALSE, encoding = "UTF-8"),
+    txt <- tryCatch(.utf8_lines(readLines(dest, warn = FALSE, encoding = "UTF-8")),
                     error = function(e) NULL)
     if (is.null(txt) || !all(validUTF8(txt))) next
     from_dir <- dirname(orig[i])

@@ -672,7 +672,7 @@ repro_run_scripts_py <- function(run_tbl, order, lib_dir = NULL,
     cut_by_deadline <- ceiling(left) < timeout
     timeout <- min(timeout, ceiling(left))
 
-    exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
+    exec_lines <- tryCatch(.utf8_lines(readLines(row$script_path, warn = FALSE)),
                            error = function(e) character(0))
 
     message("[repro/py]   -> running '", fn, "' (timeout ", timeout, "s) ...")

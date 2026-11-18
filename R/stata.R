@@ -404,7 +404,7 @@ import_stata_smcl <- function(path) {
   if (!grepl("\\.smcl$", path, ignore.case = TRUE))
     stop("Not a .smcl file: ", path)
 
-  raw_lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  raw_lines <- .utf8_lines(readLines(path, warn = FALSE, encoding = "UTF-8"))
   rendered <- .smcl_render(raw_lines)
   chunks <- .smcl_command_chunks(rendered)
   if (!length(chunks)) return(list())
@@ -523,7 +523,7 @@ export_stata_smcl_html <- function(path, out = NULL) {
 .smcl_export_syntax <- function(smcl_path, code_dir_name = "code") {
   if (!file.exists(smcl_path)) stop("File not found: ", smcl_path, call. = FALSE)
 
-  raw_lines <- tryCatch(readLines(smcl_path, warn = FALSE, encoding = "UTF-8"),
+  raw_lines <- tryCatch(.utf8_lines(readLines(smcl_path, warn = FALSE, encoding = "UTF-8")),
                         error = function(e) character(0))
   if (!length(raw_lines)) return(NA_character_)
   rendered <- .smcl_render(raw_lines)
