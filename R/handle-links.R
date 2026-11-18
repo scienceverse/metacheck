@@ -45,7 +45,7 @@
 #'
 #' Finds Handle links (`hdl.handle.net/<prefix>/<suffix>`) in a paper, asks
 #' the Handle system where each leads, and keeps those that lead to a
-#' repository [repo_check()] reads (a Dataverse installation such as
+#' repository the repo_check module reads (a Dataverse installation such as
 #' DataverseNL or Borealis, a DSpace installation, an institutional Figshare),
 #' as a link to that address. A Handle that leads elsewhere (a thesis in an
 #' institutional repository, a web page) is left out.
