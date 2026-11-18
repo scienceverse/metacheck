@@ -17,7 +17,7 @@ test_that("repo_check offline", {
                     files_zip = NA,
                     file_share_n = 0L)
   expect_equal(mod_output$summary_table, exp)
-  exp <- "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, CKAN data portals, GEO, SRA, ENA, DDBJ, ArrayExpress, or CRAN."
+  exp <- "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, CKAN data portals, GEO, SRA, ENA, DDBJ, ArrayExpress, CRAN, or ICPSR (openICPSR, AEA Data and Code Repository)."
   expect_equal(mod_output$summary_text, exp)
   expect_equal(mod_output$report, exp)
 })
@@ -55,6 +55,7 @@ test_that("OSF no files", {
                     repo_others = 0L,
                     ref_others = 0L,
                     file_share_n = 0L,
+                    icpsr_own_n = 0L,
                     cran_own_n = 0L,
                     archive_own_n = 0L,
                     ref_own = 0L,
@@ -95,6 +96,7 @@ test_that("no code files", {
                     repo_others = 0L,
                     ref_others = 0L,
                     file_share_n = 0L,
+                    icpsr_own_n = 0L,
                     cran_own_n = 0L,
                     archive_own_n = 0L,
                     ref_own = 0L,
@@ -132,6 +134,7 @@ test_that("OSF", {
                     repo_others = 0L,
                     ref_others = 0L,
                     file_share_n = 0L,
+                    icpsr_own_n = 0L,
                     cran_own_n = 0L,
                     archive_own_n = 0L,
                     ref_own = 0L,

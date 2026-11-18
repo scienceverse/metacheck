@@ -161,7 +161,7 @@ seq_archive_links <- function(paper, max_n = 25) {
   obj$publication_date <- .seq_date(tag("Series_submission_date")[1] %||% NA)
   obj$description <- substr(paste(tag("Series_summary"), collapse = " "), 1, 2000)
   dois <- .seq_pubmed_dois(tag("Series_pubmed_id"))
-  if (length(dois)) obj$related <- paste(paste0("IsSupplementTo:", dois), collapse = "; ")
+  if (length(dois)) obj$related <- paste(paste0("IsSupplementTo:", dois), collapse = " | ")
   obj
 }
 
@@ -230,7 +230,7 @@ seq_archive_links <- function(paper, max_n = 25) {
   dois <- unlist(lapply(pubs, \(s) tolower(val(s$attributes, "DOI"))))
   dois <- c(dois, .seq_pubmed_dois(unlist(lapply(pubs, \(s) val(s$attributes, "PubMed ID")))))
   dois <- unique(dois[!is.na(dois) & nzchar(dois)])
-  if (length(dois)) obj$related <- paste(paste0("IsSupplementTo:", dois), collapse = "; ")
+  if (length(dois)) obj$related <- paste(paste0("IsSupplementTo:", dois), collapse = " | ")
   obj
 }
 

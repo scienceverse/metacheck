@@ -203,6 +203,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     seq_links_found <- empty_links
     handle_links_found <- empty_links
     cran_links_found <- empty_links
+    icpsr_links_found <- empty_links
   } else {
     osf_links_found <- osf_links(paper)
     # exclude psychsci badges
@@ -249,6 +250,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     handle_links_found <- tryCatch(handle_links(paper), error = \(e) empty_links)
     # R packages on CRAN, the paper's own or ones it uses (#478, #660)
     cran_links_found <- tryCatch(cran_links(paper), error = \(e) empty_links)
+    # replication packages at ICPSR and openICPSR, with the AEA Data and Code
+    # Repository (economics journals)
+    icpsr_links_found <- tryCatch(icpsr_links(paper), error = \(e) empty_links)
   }
 
   ## links to file-sharing services (#660) ----
@@ -300,7 +304,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     ckan_links_found[, cols],
     seq_links_found[, cols],
     handle_links_found[, cols],
-    cran_links_found[, cols]
+    cran_links_found[, cols],
+    icpsr_links_found[, cols]
   ) |> dplyr::distinct()
   names(repos)[2] <- "repo_url"
   # The punctuation that ends a sentence is not part of an address: taken along
@@ -2168,6 +2173,25 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     })
   }
 
+  ## ICPSR and openICPSR ----
+  # (archive-icpsr.R): the record of each from DataCite, read for whose
+  # deposit it is; the paper's own are listed below. Their files cannot be
+  # read: ICPSR's site answers automatic requests with a browser check.
+  icpsr_urls <- unique(repos$repo_url[repos$repo_type %in% "icpsr"])
+  icpsr_meta_df <- data.frame(repo_url = character(0), doi = character(0), license = character(0))
+  icpsr_info_all <- NULL
+  if (length(icpsr_urls) > 0) {
+    tryCatch({
+      icpsr_info_all <- suppressMessages(icpsr_info(icpsr_urls, pb = pb, cache = cache))
+      if (nrow(icpsr_info_all) > 0) {
+        icpsr_meta_df <- meta_rows(icpsr_info_all, "icpsr_url")
+        repos$repo_error <- link_errors(repos$repo_error, repos$repo_url, icpsr_info_all, "icpsr_url")
+      }
+    }, error = \(e) {
+      repos$repo_error[repos$repo_url %in% icpsr_urls] <<- conditionMessage(e)
+    })
+  }
+
   ## Local files ----
   local_files_df <- data.frame(repo_name = character(0))
   if (!is.null(local_path)) {
@@ -2262,7 +2286,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   ## no repos found ----
   if (nrow(repos) == 0) {
-    no_repo_text <- "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, CKAN data portals, GEO, SRA, ENA, DDBJ, ArrayExpress, or CRAN."
+    no_repo_text <- "We found no links to repositories on the Open Science Framework, Github, GitLab, ResearchBox, DSpace, EPrints (ReShare and others), Invenio (Zenodo and others), Dataverse, Figshare, Dryad, 4TU.ResearchData, Mendeley Data, DataONE, LDbase, CKAN data portals, GEO, SRA, ENA, DDBJ, ArrayExpress, CRAN, or ICPSR (openICPSR, AEA Data and Code Repository)."
     st <- .per_paper_table(paper,
                 repo_n = 0,
         files_n = NA,
@@ -2297,7 +2321,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   repo_metadata <- dplyr::bind_rows(
     osf_meta_df, github_meta_df, gitlab_meta_df, rb_meta_df, pa_meta_df, dspace7_meta_df,
     zenodo_meta_df, dv_meta_df, fs_meta_df, dryad_meta_df, reshare_meta_df,
-    fourtu_meta_df, mendeley_meta_df, dataone_meta_df, ldbase_meta_df, ckan_meta_df, seq_meta_df, cran_meta_df
+    fourtu_meta_df, mendeley_meta_df, dataone_meta_df, ldbase_meta_df, ckan_meta_df, seq_meta_df, cran_meta_df, icpsr_meta_df
   )
 
   # remove duplicate links
@@ -2713,6 +2737,34 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                      c("paper_id", "repo_url"), drop = FALSE]) else
     data.frame(paper_id = character(0), repo_url = character(0))
   repos <- repos[!repos$repo_type %in% "cran", , drop = FALSE]
+  # Replication packages at ICPSR and openICPSR (AEA Data and Code
+  # Repository): the paper's own are listed; their files cannot be read
+  icpsr_own <- if (is.data.frame(ownership) && nrow(ownership) && "repo_type" %in% names(ownership))
+    unique(ownership[ownership$repo_type %in% "icpsr" & ownership$ownership %in% "own_this",
+                     c("paper_id", "repo_url"), drop = FALSE]) else
+    data.frame(paper_id = character(0), repo_url = character(0))
+  repos <- repos[!repos$repo_type %in% "icpsr", , drop = FALSE]
+  report_icpsr <- NULL
+  summary_icpsr <- NULL
+  if (nrow(icpsr_own) > 0) {
+    k <- if (is.data.frame(icpsr_info_all)) match(icpsr_own$repo_url, icpsr_info_all$icpsr_url) else rep(NA_integer_, nrow(icpsr_own))
+    col <- function(nm) if (is.data.frame(icpsr_info_all)) icpsr_info_all[[nm]][k] else rep(NA_character_, nrow(icpsr_own))
+    doi <- .icpsr_doi_of(icpsr_own$repo_url)
+    icpsr_tbl <- data.frame(
+      Deposit = sprintf("<a href='%s' target='_blank'>%s</a>", icpsr_own$repo_url, doi),
+      Title = substr(col("title"), 1, 120), Published = col("publication_date"), check.names = FALSE)
+    n_i <- nrow(icpsr_own)
+    report_icpsr <- c(
+      "#### Replication packages at ICPSR",
+      paste(sprintf("The paper's replication %s at ICPSR (openICPSR, which holds the AEA Data and Code Repository).",
+                    plural(n_i, "package is", "packages are")),
+            sprintf("We list %s, but cannot check %s files: ICPSR's site does not allow automatic downloads.",
+                    plural(n_i, "it", "them"), plural(n_i, "its", "their"))),
+      scroll_table(icpsr_tbl, maxrows = 10))
+    summary_icpsr <- sprintf("The paper's replication %s at ICPSR (%s); we list %s but cannot check %s files.",
+                             plural(n_i, "package is", "packages are"), paste(doi, collapse = ", "),
+                             plural(n_i, "it", "them"), plural(n_i, "its", "their"))
+  }
   report_cran <- NULL
   summary_cran <- NULL
   if (nrow(cran_own) > 0) {
@@ -3342,6 +3394,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_ref_checked,
     report_archives,
     report_cran,
+    report_icpsr,
     report_file_share,
     report_not_checked,
     report_ownership,
@@ -3370,7 +3423,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # yellow for a "suggestion" kind.
   # Every linked deposit holds other people's or the authors' earlier work:
   # there is nothing of this paper's to judge, as when no repository is linked.
-  if (nrow(repos) == 0 && (nrow(not_checked) > 0 || nrow(arch_own) > 0 || nrow(cran_own) > 0)) {
+  if (nrow(repos) == 0 && (nrow(not_checked) > 0 || nrow(arch_own) > 0 || nrow(cran_own) > 0 || nrow(icpsr_own) > 0)) {
     tl <- "na"
   } else if (n_useless_problem > 0) {
     tl <- "red"
@@ -3419,6 +3472,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_table$ref_others <- own_n("reference", "others")
   # cited only in the reference list, and checked as the paper's own
   summary_table$file_share_n <- file_share_n_of(summary_table$paper_id)
+  summary_table$icpsr_own_n <- vapply(summary_table$paper_id, \(id) sum(icpsr_own$paper_id %in% id),
+                                      integer(1), USE.NAMES = FALSE)
   summary_table$cran_own_n <- vapply(summary_table$paper_id, \(id) sum(cran_own$paper_id %in% id),
                                      integer(1), USE.NAMES = FALSE)
   summary_table$archive_own_n <- vapply(summary_table$paper_id, \(id) sum(arch_own$paper_id %in% id),
@@ -3443,9 +3498,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     summary_not_public,
     summary_view_only,
     summary_repo,
-    if (nrow(repos) > 0 || !(nrow(arch_own) + nrow(cran_own))) summary_files,
+    if (nrow(repos) > 0 || !(nrow(arch_own) + nrow(cran_own) + nrow(icpsr_own))) summary_files,
     summary_archives,
     summary_cran,
+    summary_icpsr,
     summary_file_share,
     summary_not_checked,
     summary_readme,

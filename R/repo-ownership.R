@@ -210,7 +210,7 @@
   # in a reference list is found too, not only a DSpace address
   # and, each naming its links' type itself, the sequence archives (#660)
   # and Handles that lead to one of these repositories
-  finders <- c(.repo_link_finders(), list(seq = seq_archive_links, handle = handle_links))
+  finders <- c(.repo_link_finders(), list(seq = seq_archive_links, handle = handle_links, icpsr = icpsr_links))
   found <- dplyr::bind_rows(lapply(names(finders), \(k) {
     x <- tryCatch(suppressMessages(suppressWarnings(finders[[k]](q))), error = \(e) NULL)
     if (!is.data.frame(x) || !nrow(x) || !"href" %in% names(x)) return(NULL)
@@ -454,7 +454,7 @@
   out[f] <- unname(fig[type[f]])
   out[f & !is.na(type) & is.na(out)] <- "Other"
   out[repo_type %in% c("dryad", "dataverse", "mendeley", "reshare", "researchdata4tu", "dataone", "ldbase",
-                       "geo", "ena", "arrayexpress")] <- "Dataset"
+                       "geo", "ena", "arrayexpress", "icpsr")] <- "Dataset"
   out
 }
 
@@ -694,7 +694,12 @@
     dc <- paste(x$dep_title[[i]], x$dep_description[[i]])
     .own_title_in(pf$title, rd[[i]]) || .own_doi_in(pdoi, rd[[i]]) ||
       .own_title_in(pf$title, dc) || .own_doi_in(pdoi, dc) ||
-      (!is.na(pdoi) && !is.na(rel[[i]]) && grepl(pdoi, tolower(rel[[i]]), fixed = TRUE))
+      (!is.na(pdoi) && !is.na(rel[[i]]) &&
+         # ICPSR relates a study to every publication that used it
+         # ("IsDocumentedBy", "IsCitedBy": 376 for MIDUS), so there only a
+         # supplement counts (#660)
+         (if (x$repo_type[[i]] %in% "icpsr") pdoi %in% .own_rel_dois(rel[[i]], "IsSupplementTo")
+          else grepl(pdoi, tolower(rel[[i]]), fixed = TRUE)))
   }, logical(1)) |
     grepl("^\\s*(data|code|scripts?|supplementary (data|code|materials?|information)|replication (data|code|materials|package)|materials?|data and code|code and data)\\b.{0,20}\\b(for|from|of)\\b",
           ifelse(ref, chr(x$ref_title), NA), ignore.case = TRUE, perl = TRUE)
@@ -795,6 +800,11 @@
     grepl("\\bavailable\\b|\\bhosted\\b|can be (downloaded|installed)|\\bour (open[- ]source )?(r )?package\\b|\\bwe (developed|wrote|present|introduce)\\b",
           said, ignore.case = TRUE, perl = TRUE)
   cran_others <- cran & !author & !is.na(creators)
+  # (K) ICPSR and openICPSR (#660): a study's creators are its investigators,
+  # so one without a paper author is others' data, also when the paper's
+  # sentence presents it ("All data ... have been made publicly available via
+  # ICPSR", the open-data badge text, for reused studies such as MIDUS)
+  icpsr_others <- x$repo_type %in% "icpsr" & !author & !is.na(creators)
   known_not_author <- (known_not_author | (F_(org_match) & is.na(creators))) & !author
 
   # names another paper: "is supplement to" (or Dryad's primary article,
@@ -892,6 +902,7 @@
   steps <- list(
     list(publication, "not_data", "a publication: a preprint, an article or a manuscript, not a deposit"),
     list(cran_others, "others_code", "an R package on CRAN by others"),
+    list(icpsr_others, "others_data", "an ICPSR study whose investigators are not the paper's authors"),
     list(cran & author & cran_presented, "own_this", "an R package on CRAN by the paper's authors, presented in the paper"),
     list(cran & author, "own_earlier_code", "an R package on CRAN by the paper's authors, used in the paper"),
     list(statement_ref, "own_this", "the reference is the paper's own data statement"),
