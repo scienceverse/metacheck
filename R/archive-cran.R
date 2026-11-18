@@ -26,7 +26,7 @@
 #' (`https://CRAN.R-project.org/package=<name>`,
 #' `cran.r-project.org/web/packages/<name>/index.html`), a file of the package
 #' (its manual or a vignette), and the package DOI
-#' (`10.32614/CRAN.package.<name>`). [repo_check()] reads each package's record
+#' (`10.32614/CRAN.package.<name>`). The repo_check module reads each package's record
 #' to tell the paper's own package from one it uses.
 #'
 #' @param paper a paper object or paperlist object
@@ -37,7 +37,8 @@
 #' @export
 #'
 #' @examples
-#' cran_links(test_paper(text = "Our package is on CRAN: https://CRAN.R-project.org/package=metacheck."))
+#' p <- test_paper(text = "Our package is on CRAN: https://CRAN.R-project.org/package=metacheck.")
+#' cran_links(p)
 cran_links <- function(paper) {
   none <- data.frame(paper_id = character(0), href = character(0), package = character(0),
                      repo_type = character(0), link = character(0), text_id = integer(0))
