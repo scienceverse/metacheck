@@ -6239,8 +6239,8 @@ data_check_pii_name <- function(col_name, x = NULL) {
     # not a number with decimals ("1985.34")
     birth = any(grepl("^[0-9]{1,4}[-/.][0-9]{1,2}[-/.][0-9]{1,4}$", v) |
                   grepl("(?<![0-9.,])(?:19[0-9]{2}|20[0-2][0-9]|2030)(?![0-9]|[.,][0-9])", v, perl = TRUE) |
-                  grepl(paste0("(?i)(?:[0-9][ ./-]*\\b(?:jan|feb|m[aä]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])",
-                               "|\\b(?:jan|feb|m[aä]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])[a-zéû]*\\.?[ ,./-]*[0-9])"),
+                  grepl(paste0("(?i)(?:[0-9][ ./-]*\\b(?:jan|feb|m[a\u00e4]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])",
+                               "|\\b(?:jan|feb|m[a\u00e4]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])[a-z\u00e9\u00fb]*\\.?[ ,./-]*[0-9])"),
                         v, perl = TRUE) |
                   grepl(paste0("^(?:(?:19|20)[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01])|",
                                "(?:0[1-9]|[12][0-9]|3[01])(?:0[1-9]|1[0-2])(?:19|20)[0-9]{2})$"), v)),
