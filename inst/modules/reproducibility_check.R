@@ -4687,7 +4687,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         # stderr was redirected to a file (see launch()), not read via
         # p$read_all_error() -- that reads from the pipe callr uses by
         # default, which this worker was not given.
-        err <- tryCatch(paste(readLines(err_files[[pid]], warn = FALSE), collapse = "\n"),
+        err <- tryCatch(paste(.utf8_lines(readLines(err_files[[pid]], warn = FALSE)), collapse = "\n"),
                         error = function(e) "")
         res <- list(traffic_light = "error",
                     summary_text = paste0("Docker reproducibility check failed: ",

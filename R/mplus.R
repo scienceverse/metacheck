@@ -486,7 +486,7 @@
 #'   otherwise (including if it cannot be read at all)
 #' @keywords internal
 .mplus_is_genuine_output <- function(path) {
-  lines <- tryCatch(readLines(path, warn = FALSE, encoding = "UTF-8", n = 5),
+  lines <- tryCatch(.utf8_lines(readLines(path, warn = FALSE, encoding = "UTF-8", n = 5)),
                     error = function(e) character(0))
   any(grepl("^Mplus VERSION", lines))
 }
@@ -528,7 +528,7 @@ import_mplus_output <- function(path) {
   if (!.mplus_is_genuine_output(path))
     stop("Not a Mplus .out file: ", path)
 
-  lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  lines <- .utf8_lines(readLines(path, warn = FALSE, encoding = "UTF-8"))
   syntax <- .mplus_syntax_lines(lines)
   sections <- .mplus_sections(lines)
   if (!length(sections)) return(list())
@@ -597,7 +597,7 @@ import_mplus_output <- function(path) {
 .mplus_export_syntax <- function(out_path, code_dir_name = "code") {
   if (!file.exists(out_path)) stop("File not found: ", out_path, call. = FALSE)
   if (!.mplus_is_genuine_output(out_path)) return(NA_character_)
-  lines <- tryCatch(readLines(out_path, warn = FALSE, encoding = "UTF-8"),
+  lines <- tryCatch(.utf8_lines(readLines(out_path, warn = FALSE, encoding = "UTF-8")),
                     error = function(e) character(0))
   if (!length(lines)) return(NA_character_)
   syntax <- .mplus_syntax_lines(lines)

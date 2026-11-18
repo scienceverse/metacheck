@@ -304,6 +304,26 @@ test_that("data_read_head gives a table from an .rds or .RData file as a plain d
   expect_identical(attr(df$u, "label"), "Length")
 })
 
+test_that(".utf8_repair_df repairs variable and value labels in another encoding", {
+  # an older Stata or SPSS file stores labels in its own encoding; the label
+  # extractor stopped on them ("input string 1 is invalid UTF-8")
+  latin1 <- function(...) rawToChar(c(...))
+  df <- data.frame(q = c(1, 2))
+  attr(df$q, "label") <- latin1(charToRaw("Gem"), as.raw(0xfc), charToRaw("se"))
+  attr(df$q, "labels") <- stats::setNames(c(1, 2), c(latin1(charToRaw("gr"), as.raw(0xfc), charToRaw("n")), "rot"))
+  class(df$q) <- c("haven_labelled", "vctrs_vctr", "double")
+  r <- .utf8_repair_df(df)
+  expect_identical(attr(r$q, "label"), "Gem\u00fcse")
+  expect_identical(names(attr(r$q, "labels")), c("gr\u00fcn", "rot"))
+  expect_identical(unname(attr(r$q, "labels")), c(1, 2))
+  expect_error(.extract_haven_labels(df, "x.dta"))
+  expect_no_error(.extract_haven_labels(r, "x.dta"))
+  # a value-label code that is text
+  df2 <- data.frame(s = c("a", "b"))
+  attr(df2$s, "labels") <- stats::setNames(c("a", latin1(as.raw(0xfc), charToRaw("b"))), c("A", "B"))
+  expect_identical(unname(attr(.utf8_repair_df(df2)$s, "labels")), c("a", "\u00fcb"))
+})
+
 test_that("data_read_head keeps SPSS's codes for missing values of a column in an .rds tibble", {
   skip_if_not_installed("haven")
   skip_if_not_installed("tibble")

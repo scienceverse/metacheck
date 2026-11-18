@@ -871,7 +871,7 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   attr(raw, "total") <- total
   cd <- .parse_zip_central_dir(raw)
   if (is.null(cd)) {
-    lst <- tryCatch(utils::unzip(path, list = TRUE), error = function(e) NULL)
+    lst <- .unzip_list(path)   # names in valid UTF-8
     if (is.null(lst) || nrow(lst) == 0) return(NULL)
     cd <- data.frame(name = lst$Name, size = as.numeric(lst$Length),
                      method = NA_real_, csize = NA_real_, offset = NA_real_,
@@ -1392,6 +1392,13 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
                                            exdir = exdir)),
              error = function(e) NULL)
 
+  # A member whose name zip_peek() converted from the old DOS characters
+  # (CP437) is not found by unzip() under that name: it is taken out by its
+  # position instead (.zip_extract_local())
+  absent <- which(safe & !file.exists(file.path(exdir, want$name)))
+  if (length(absent))
+    .zip_extract_local(archive_path, want$name[absent], exdir)
+
   out <- rep(NA_character_, length(targets))
   for (i in which(safe)) {
     src <- file.path(exdir, want$name[i])
@@ -1401,6 +1408,69 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
         (!is.na(want$size[i]) && file.size(src) != want$size[i])) next
     dir.create(dirname(targets[i]), showWarnings = FALSE, recursive = TRUE)
     if (isTRUE(file.copy(src, targets[i], overwrite = TRUE))) out[i] <- targets[i]
+  }
+  out
+}
+
+# The members of a zip on disk, as utils::unzip(list = TRUE) lists them
+# (Name, Length, Date), with each name in valid UTF-8 and the name as the zip
+# stores it in `Stored`. A zip made by an older Windows tool stores names in
+# the old DOS characters (CP437, the zip standard's default), which
+# utils::unzip() gives as they are: "Baden-W\x81rttemberg" for
+# "Baden-Wuerttemberg". Such a name stopped every text function it reached
+# ("input string 19 is invalid", medRxiv 2026.11.12.26367900v1, the older
+# releases inside a Zenodo zip of the German Index of Socioeconomic
+# Deprivation). A name that is not valid UTF-8 is read as CP437, as
+# zip_peek() reads a name without the zip's UTF-8 flag; it is then taken out
+# by its position (.zip_extract_local()), as unzip() cannot find it by the
+# new name, and on Windows not by the stored one either ("invalid multibyte
+# string"). NULL when the file is not a readable zip.
+.unzip_list <- function(path) {
+  lst <- tryCatch(utils::unzip(path, list = TRUE), error = function(e) NULL)
+  if (is.null(lst) || !nrow(lst)) return(lst)
+  lst$Stored <- lst$Name
+  bad <- !is.na(lst$Name) & !validUTF8(lst$Name)
+  if (any(bad)) lst$Name[bad] <- iconv(lst$Name[bad], "CP437", "UTF-8")
+  lst
+}
+
+# Take members of a zip on disk out by their position, under `names` as
+# metacheck reads them (zip_peek(), .zip_list_local(), .unzip_list()), into
+# `exdir`, at the same paths utils::unzip() would write. For the members
+# unzip() cannot take out by name (see .unzip_list()). Each member's bytes
+# are checked against the size the archive records. A name that would write
+# outside `exdir` ("..", or a path from the root) is skipped. Returns the
+# written path per name, NA when it was not written.
+.zip_extract_local <- function(path, names, exdir) {
+  out <- rep(NA_character_, length(names))
+  if (!length(names)) return(out)
+  # the whole central directory, which can be larger than the 1 MB that is
+  # read by default
+  cd <- .zip_list_local(path, tail_bytes = min(file.size(path), 64 * 2^20))
+  if (is.null(cd) || !nrow(cd) || !all(c("offset", "csize", "method") %in% names(cd)))
+    return(out)
+  con <- tryCatch(file(path, "rb"), error = function(e) NULL)
+  if (is.null(con)) return(out)
+  on.exit(close(con), add = TRUE)
+  for (k in seq_along(names)) {
+    e <- cd[match(names[k], cd$name), , drop = FALSE]
+    rel <- gsub("\\\\", "/", names[k])
+    if (is.na(e$offset) || is.na(e$csize) || is.na(e$method) || grepl("^([A-Za-z]:)?/", rel) ||
+        any(strsplit(rel, "/", fixed = TRUE)[[1]] == "..")) next
+    bytes <- tryCatch({
+      seek(con, e$offset)
+      head <- readBin(con, "raw", 30)
+      if (!identical(head[1:4], as.raw(c(0x50, 0x4b, 0x03, 0x04)))) NULL
+      else if (e$csize == 0) raw(0) else {
+        seek(con, e$offset + 30 + .le_int(head, 27, 2) + .le_int(head, 29, 2))
+        .zip_inflate_member(readBin(con, "raw", e$csize), e$method, size = e$size)
+      }
+    }, error = function(err) NULL)
+    if (is.null(bytes) || (!is.na(e$size) && length(bytes) != e$size)) next
+    target <- file.path(exdir, rel)
+    dir.create(dirname(target), showWarnings = FALSE, recursive = TRUE)
+    if (isTRUE(tryCatch({ writeBin(bytes, target); TRUE }, error = function(err) FALSE)))
+      out[k] <- target
   }
   out
 }
@@ -1644,7 +1714,9 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   # Extract into "<zip>.contents/" beside the cached zip (idempotent: reuse);
   # a zip of the user's own is extracted elsewhere (.archive_dest()).
   dest <- .archive_dest(zip_path)
-  entries <- tryCatch(utils::unzip(zip_path, list = TRUE), error = function(e) NULL)
+  # names in valid UTF-8; a member stored under the old DOS characters is
+  # taken out by its position (.unzip_list())
+  entries <- .unzip_list(zip_path)
   if (is.null(entries) || nrow(entries) == 0) return(empty)
   entries <- entries[!grepl("/$", entries$Name), , drop = FALSE]
   keep <- .archive_keep(entries$Name, skip_types)
@@ -1654,8 +1726,12 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   missing <- want[!file.exists(file.path(dest, want))]
   if (length(missing) > 0) {
     part <- paste0(dest, ".part")
-    tryCatch(utils::unzip(zip_path, files = missing, exdir = part),
-             error = function(e) NULL, warning = function(w) NULL)
+    stored <- entries$Stored[match(missing, entries$Name)]
+    plain <- stored == missing
+    if (any(plain))
+      tryCatch(utils::unzip(zip_path, files = missing[plain], exdir = part),
+               error = function(e) NULL, warning = function(w) NULL)
+    if (any(!plain)) .zip_extract_local(zip_path, missing[!plain], part)
     .move_extracted(part, dest, missing)
   }
 
@@ -1685,10 +1761,19 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   entries <- tryCatch(utils::untar(tar_path, list = TRUE), error = function(e) NULL,
                       warning = function(w) NULL)
   if (is.null(entries) || length(entries) == 0) return(empty)
-  entries <- entries[!grepl("/$", entries)]
+  entries <- entries[!grepl("/$", entries, useBytes = TRUE)]
+  # A tar records no character set for its names: a name that is not valid
+  # UTF-8 is read as Latin-1, as other text files are (.utf8_lines()); text
+  # functions stopped on it, as on a zip's old DOS names (see .unzip_list()).
+  # GNU tar lists such a name with escapes (.tar_unescape()) and unpacks it
+  # under its stored bytes; it is unpacked by the listed name and then given
+  # the new one.
+  listed <- entries
+  stored <- .tar_unescape(listed)
+  entries <- .utf8_lines(stored)
   plain <- grepl("[.]tar$", tar_path, ignore.case = TRUE)
   listing <- if (plain) .tar_list_file(tar_path) else NULL
-  size <- if (!is.null(listing)) listing$size[match(entries, listing$member)] else
+  size <- if (!is.null(listing)) listing$size[match(stored, listing$member)] else
     rep(NA_real_, length(entries))
   keep <- .archive_keep(entries, skip_types)
   over <- keep & !is.na(size) & size > max_bytes
@@ -1697,8 +1782,21 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
   missing <- want[!file.exists(file.path(dest, want))]
   if (length(missing) > 0) {
     part <- paste0(dest, ".part")
-    tryCatch(utils::untar(tar_path, files = missing, exdir = part),
+    k_of <- match(missing, entries)
+    tryCatch(utils::untar(tar_path, files = listed[k_of], exdir = part),
              error = function(e) NULL, warning = function(w) NULL)
+    # a converted name: the file unpacked under the stored bytes is renamed
+    # (where such a member cannot be unpacked at all, it is left out)
+    from <- stored[k_of]
+    changed <- !mapply(function(a, b) identical(charToRaw(a), charToRaw(b)), from, missing)
+    for (k in which(changed)) tryCatch({
+      src <- file.path(part, from[k])
+      if (file.exists(src)) {
+        to <- file.path(part, missing[k])
+        dir.create(dirname(to), recursive = TRUE, showWarnings = FALSE)
+        file.rename(src, to)
+      }
+    }, error = function(e) NULL)
     .move_extracted(part, dest, missing)
   }
   # sizes only known once unpacked (compressed tar)

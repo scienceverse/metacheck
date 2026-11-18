@@ -2919,7 +2919,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   sz <- file.size(f)
   small <- f[!is.na(sz) & sz < 1024]
   is_ptr <- vapply(small, function(p) {
-    l <- tryCatch(readLines(p, n = 1, warn = FALSE), error = function(e) character(0))
+    l <- tryCatch(.utf8_lines(readLines(p, n = 1, warn = FALSE)), error = function(e) character(0))
     length(l) && startsWith(l[1], "version https://git-lfs.github.com/spec/")
   }, logical(1))
   ptr <- unique(basename(small[is_ptr]))
@@ -2956,7 +2956,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   small <- src[!is.na(size) & size < 1024]
   if (!length(small)) return(none)
   stated <- vapply(small, function(f) {
-    l <- tryCatch(readLines(f, n = 3, warn = FALSE), error = function(e) character(0))
+    l <- tryCatch(.utf8_lines(readLines(f, n = 3, warn = FALSE)), error = function(e) character(0))
     if (!length(l) || !startsWith(l[1], "version https://git-lfs.github.com/spec/")) return(NA_real_)
     s <- suppressWarnings(as.numeric(sub("^size ", "", grep("^size [0-9]+$", l, value = TRUE)[1])))
     if (is.na(s)) NA_real_ else s
@@ -3237,7 +3237,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
     out[[lang]] <- data.frame(
       file_name = wt$file_name, lang = lang, run_dir = rp$run_dirs,
       original = vapply(code[wt$file_name], paste, character(1), collapse = "\n"),
-      rewritten = vapply(wt$script_path, function(p) paste(readLines(p, warn = FALSE), collapse = "\n"),
+      rewritten = vapply(wt$script_path, function(p) paste(.utf8_lines(readLines(p, warn = FALSE)), collapse = "\n"),
                          character(1)),
       row.names = NULL)
   }
@@ -5043,7 +5043,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   paths <- list.files(root, pattern = "^\\.Rprofile$", recursive = TRUE, all.files = TRUE, full.names = TRUE)
   n <- 0L
   for (path in paths) {
-    txt <- tryCatch(readLines(path, warn = FALSE), error = function(e) NULL)
+    txt <- tryCatch(.utf8_lines(readLines(path, warn = FALSE)), error = function(e) NULL)
     if (is.null(txt)) next
     res <- .repro_neutralise_env_calls(txt)
     if (res$n > 0) tryCatch(writeLines(res$txt, path), error = function(e) NULL)
@@ -5636,7 +5636,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
 .repro_upgrade_stan_files <- function(root) {
   files <- list.files(root, pattern = "\\.stan$", recursive = TRUE, full.names = TRUE, ignore.case = TRUE)
   rows <- lapply(files, function(f) {
-    txt <- tryCatch(readLines(f, warn = FALSE), error = function(e) NULL)
+    txt <- tryCatch(.utf8_lines(readLines(f, warn = FALSE)), error = function(e) NULL)
     if (is.null(txt)) return(NULL)
     up <- .repro_upgrade_stan(txt)
     if (!length(up$changes)) return(NULL)
@@ -7169,7 +7169,7 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
     # matches echoed statements against to recover a line number, so it must be
     # read from script_path (not the pre-rewrite code_text_list) to stay aligned
     # with what the echo in stdout actually shows.
-    exec_lines <- tryCatch(readLines(row$script_path, warn = FALSE),
+    exec_lines <- tryCatch(.utf8_lines(readLines(row$script_path, warn = FALSE)),
                            error = function(e) character(0))
 
     # DEBUG (TEMPORARY — remove before release): announce each script as it starts
@@ -7212,7 +7212,7 @@ repro_run_scripts <- function(run_tbl, order, lib_dir = NULL, timeout = 600,
 
     # Read whatever the child wrote before it finished / errored / timed out.
     read_cap <- function(f) if (file.exists(f))
-      paste(readLines(f, warn = FALSE), collapse = "\n") else ""
+      paste(.utf8_lines(readLines(f, warn = FALSE)), collapse = "\n") else ""
     so <- read_cap(out_file); se <- read_cap(err_file)
     unlink(c(out_file, err_file))
 

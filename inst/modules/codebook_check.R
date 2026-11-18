@@ -289,7 +289,9 @@ codebook_check <- function(paper, local_path = NULL, local_only = FALSE,
       # named like data_check's tables (`source_file`: the file name, or its
       # path where several files share a name)
       src <- if ("source_file" %in% names(haven_rows)) haven_rows$source_file[i] else basename(p)
-      res <- .extract_haven_labels(df, src, group = file_group)
+      # labels in another encoding (an older Stata or SPSS file) repaired
+      # first: the extractor's text patterns stop on them (.utf8_repair_df())
+      res <- .extract_haven_labels(.utf8_repair_df(df), src, group = file_group)
       if (is.null(res)) next
       # parse_method = "haven" for ALL embedded data-file labels (sav/dta/sas AND
       # jasp/omv). These labels live inside the data file, so downstream logic

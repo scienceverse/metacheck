@@ -1455,7 +1455,9 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
     return(files)
   }
 
-  entries <- tryCatch(utils::unzip(zip_tmp, list = TRUE), error = \(e) NULL)
+  # names in valid UTF-8: a name stored in the old DOS characters stopped
+  # gsub() below, and could not match the listed path (see .unzip_list())
+  entries <- .unzip_list(zip_tmp)
   if (is.null(entries) || nrow(entries) == 0) return(files)
 
   zip_entries  <- entries$Name
@@ -1486,9 +1488,12 @@ repo_cache_clear <- function(repo_url = NULL, quiet = FALSE) {
   extract_dir <- tempfile(pattern = "repo-zip-")
   dir.create(extract_dir)
   on.exit(unlink(extract_dir, recursive = TRUE), add = TRUE)
-  tryCatch(
-    utils::unzip(zip_tmp, files = to_extract, exdir = extract_dir),
-    error = \(e) NULL)
+  plain <- entries$Stored[match(to_extract, entries$Name)] == to_extract
+  if (any(plain))
+    tryCatch(
+      utils::unzip(zip_tmp, files = to_extract[plain], exdir = extract_dir),
+      error = \(e) NULL)
+  if (any(!plain)) .zip_extract_local(zip_tmp, to_extract[!plain], extract_dir)
 
   for (j in seq_along(row_idx)) {
     if (is.na(matched_entry[j])) next
