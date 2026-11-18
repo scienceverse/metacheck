@@ -180,12 +180,21 @@
 # (.repo_links_tidy()): without "https://", "www.", "dx.", "doi.org/" and a
 # closing "/", the website's name in small letters, and a DOI all in small
 # letters (DOIs do not depend on case).
+# An OSF project is one address however it is written: its DOI
+# ("10.17605/OSF.IO/W4Q6J"), its page ("osf.io/bt2xy/overview"), with a
+# view-only key ("osf.io/qhwds/?view_only=..."), or a file in it
+# ("osf.io/pcjnb/files/qkx9f"), and its five-character identifier does not
+# depend on case. Each such pair was two repositories (#648, K8c: 23 of 132
+# preprints).
 .repo_link_same_key <- function(url) {
   b <- sub("^(?:https?://)?(?:www\\.|dx\\.)?(?:doi\\.org/)?", "", url, perl = TRUE, ignore.case = TRUE)
   b <- sub("/+$", "", b)
   host <- sub("/.*$", "", b)
   b <- paste0(tolower(host), substring(b, nchar(host) + 1L))
-  ifelse(grepl("^10\\.\\d{4,9}/", b, perl = TRUE), tolower(b), b)
+  b <- ifelse(grepl("^10\\.\\d{4,9}/", b, perl = TRUE), tolower(b), b)
+  osf <- grepl("^(?:10\\.17605/)?osf\\.io/[a-z0-9]{5}(?:$|[/?#])", b, perl = TRUE, ignore.case = TRUE)
+  b[osf] <- tolower(sub("^(?:10\\.17605/)?(osf\\.io/[a-z0-9]{5}).*$", "\\1", b[osf], perl = TRUE, ignore.case = TRUE))
+  b
 }
 
 .repo_links_tidy <- function(repos, paper) {
@@ -239,7 +248,11 @@
   # website's name in small letters (and a DOI, which is the same in either
   # case); the form written in full is kept.
   same <- .repo_link_same_key(repos$repo_url)
-  first <- order(!grepl("^https?://", repos$repo_url, ignore.case = TRUE), seq_len(nrow(repos)))
+  # the form with a view-only key first, as only it opens a private project;
+  # then the project's own address before a file in it
+  first <- order(!grepl("view_only=", repos$repo_url, ignore.case = TRUE),
+                 grepl("/files/", repos$repo_url, ignore.case = TRUE),
+                 !grepl("^https?://", repos$repo_url, ignore.case = TRUE), seq_len(nrow(repos)))
   dup <- logical(nrow(repos))
   dup[first] <- duplicated(paste(repos$paper_id, repos$repo_type, same, sep = "\r")[first])
   repos <- repos[!dup, , drop = FALSE]

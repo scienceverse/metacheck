@@ -727,6 +727,28 @@ test_that("code_check local_only = TRUE checks all local code files", {
 
 # parse errors ----
 
+test_that("files a download or unpacking in the code may make are not missing (#648, K3a)", {
+  expect_true(.code_fetches_unnamed('osf_retrieve_node("x") %>% osf_ls_files(pattern = "a.Rda") %>% osf_download()'))
+  expect_true(.code_fetches_unnamed('unzip("data.zip")'))
+  expect_true(.code_fetches_unnamed('zipfile.ZipFile(p).extractall("data")'))
+  expect_false(.code_fetches_unnamed('x <- read.csv("a.csv")'))
+  d <- withr::local_tempdir()
+  writeLines('osf_retrieve_node("abcde") %>% osf_ls_files(pattern = "VIA.Rda") %>% osf_download()',
+             file.path(d, "0_fetch.R"))
+  writeLines(c('load("VIA.Rda")', 'x <- read.csv("present.csv")'), file.path(d, "1_fit.R"))
+  writeLines("a,b", file.path(d, "present.csv"))
+  mo <- module_run(NULL, "code_check", local_path = d, local_only = TRUE)
+  expect_equal(mo$table$loaded_files_missing, c(0L, 0L))
+  expect_equal(mo$table$loaded_files_fetched_names[mo$table$file_name == "1_fit.R"], "VIA.Rda")
+  rep <- paste(mo$report, collapse = "\n")
+  expect_match(rep, "All other files loaded in the code were present", fixed = TRUE)
+  expect_match(rep, "is not counted as missing: VIA.Rda", fixed = TRUE)
+  # without the script that downloads, the file is missing
+  file.remove(file.path(d, "0_fetch.R"))
+  mo <- module_run(NULL, "code_check", local_path = d, local_only = TRUE)
+  expect_equal(mo$table$loaded_files_missing_names, "VIA.Rda")
+})
+
 test_that("parse errors", {
   local_path <- test_path("fixtures", "parse-errors")
   paper <- test_paper()
@@ -768,6 +790,8 @@ test_that("parse errors", {
     # all rows share one group.
     data_type = rep("code", 8),
     doc_role = rep(NA_character_, 8),
+    # what repo_check counts each file as (#648; .repo_file_kind())
+    file_kind = rep("code", 8),
     group = rep("ex1", 8),
     language = rep("R", 8),
     checked = rep(TRUE, 8),
@@ -802,7 +826,9 @@ test_that("parse errors", {
     # none of the fixture files writes a file (#648)
     files_written = rep("", 8),
     loaded_files_missing = c(0L, 0L, 0L, 1L, 0L, 0L, 0L, 0L),
-    loaded_files_missing_names = c("", "", "", "file.csv", "", "", "", "")
+    loaded_files_missing_names = c("", "", "", "file.csv", "", "", "", ""),
+    # no fixture downloads or unpacks files it does not name (#648)
+    loaded_files_fetched_names = rep(NA_character_, 8)
   ) |> dplyr::arrange(file_name)
   obs <- dplyr::arrange(mo$table, file_name)
 

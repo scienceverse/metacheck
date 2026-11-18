@@ -1625,7 +1625,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 # elsewhere in the repository (see .repro_keep_working_refs()). One string, since
 # the module adds sentences to it. `rewrite_list` holds a repro_rewrite_paths()
 # result per script, named by script.
-.repro_path_fix_text <- function(rewrite_list, execute = FALSE) {
+# `absent` holds the names the code reads that the repository does not hold
+# (the module's unresolved references, which leave out names the code builds
+# and files other scripts write).
+.repro_path_fix_text <- function(rewrite_list, execute = FALSE, absent = character(0)) {
   fixes <- do.call(rbind, lapply(names(rewrite_list), function(f) {
     d <- rewrite_list[[f]]
     if (!nrow(d)) return(NULL)
@@ -1635,6 +1638,15 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     data.frame(file = f, ref = d$ref[ok], target = d$target[ok])
   }))
   n <- NROW(fixes)
+  # paths to files the deposit does not hold: "every data path works" was said
+  # of reports whose scripts then stopped on missing files (#648, K8f)
+  absent <- unique(absent[!is.na(absent) & nzchar(absent)])
+  if (!n && length(absent))
+    return(sprintf(paste0("The data paths in the code to files the repository holds work as deposited, but %d ",
+                          "path%s name%s a file the repository does not hold: %s%s."),
+                   length(absent), plural(length(absent)), plural(length(absent), "s", ""),
+                   paste(sprintf("`%s`", utils::head(absent, 10)), collapse = ", "),
+                   if (length(absent) > 10) sprintf(", and %d more", length(absent) - 10) else ""))
   if (!n) return("Every data path in the code works in the repository as deposited.")
   shown <- utils::head(fixes, 10)
   sprintf(paste0("**%d data path%s in the code %s not work in the repository as deposited.** ",
@@ -4131,6 +4143,12 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   # a folder's final "/" stays, as the code pastes a file name to it
   portable <- function(p) paste0(.portable_path(p), ifelse(grepl("[/\\\\]$", p), "/", ""))
   rw$target[good] <- portable(rw$target[good])
+  # A pattern of names ("./images/*.jpg") that matched a file gets that
+  # file's folder, but keeps its pattern: it was replaced by the one file it
+  # matched, "../docs/images/_.jpg", so the script read one image (#648).
+  ref_name <- basename(gsub("\\\\", "/", rw$ref))
+  wild <- good & !(is_call_col %in% TRUE) & !is.na(rw$ref) & grepl("[*?]", ref_name)
+  if (any(wild)) rw$target[wild] <- paste0(dirname(rw$target[wild]), "/", ref_name[wild])
   unportable <- kept & !(is_call_col %in% TRUE) & !is.na(rw$ref) &
     !grepl("^([A-Za-z]:[/\\\\]|/|~)", rw$ref) & portable(rw$ref) != gsub("\\\\", "/", rw$ref)
   rw$target[unportable] <- portable(rw$ref[unportable])
@@ -4532,8 +4550,19 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   # environment variable is required", openai's "Missing credentials") (#648)
   set(paste0("\\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\\b[^\n]{0,40}?\\b(?:is not set|not set\\b|is required|must be set)|",
              "environment variable[^\n]{0,60}?\\b(?:is not set|not set|is required|must be set|missing)|",
-             "[Ss]et the [^\n]{0,40}?environment variable|Missing credentials|api[_ ]?key[^\n]{0,40}?(?:not set|missing|required)"),
+             "[Ss]et the [^\n]{0,40}?environment variable|Missing credentials|api[_ ]?key[^\n]{0,40}?(?:not set|missing|required)|",
+             # a key, token or password the authors' own message asks for
+             # ("ERROR: set ZENODO_TOKEN", "Either set OPENAI_API_KEY"), a
+             # cloud sign-in (Google's "default credentials were not found"),
+             # and a variable a platform sets, read from the environment
+             # (All of Us: KeyError: 'WORKSPACE_CDR') (#648, K4)
+             "(?i:\\b(?:set|provide|missing|export|define)\\b)[^\n]{0,40}?\\b[A-Z][A-Z0-9]*_(?:[A-Z0-9]+_)*",
+             "(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIALS?|API)\\b|",
+             "DefaultCredentialsError|default credentials were not found|",
+             "could not automatically determine credentials"),
       "settings")
+  out[err & is.na(out) & has("KeyError: '[A-Z][A-Z0-9_]{2,}'") &
+        grepl("environ|os\\.py", full, perl = TRUE)] <- "settings"
   set("there is no package called|ModuleNotFoundError|No module named|ImportError|package or namespace|Error: package ", "package")
   # a package that another package loads only when one of its functions is
   # used, so the run did not install it: "Please install the 'cmdstanr'
@@ -4563,6 +4592,9 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   # code does not define (#580).
   set(paste0("could not find function \"(?:windows|win\\.graph|win\\.metafile|win\\.print|",
              "bringToTop|msgWindow|windowsFonts?)\""), "environment")
+  # names Jupyter itself provides to a notebook, run here as plain Python
+  # (ufpgn_v1's display(); #648)
+  set("name '(?:display|get_ipython)' is not defined", "environment")
   set("object '[^']*' not found|could not find function|NameError|is not defined", "undefined")
   set("SyntaxError|IndentationError", "syntax")
   set(paste0("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11|",
@@ -4573,6 +4605,18 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out[err & is.na(out) & !grepl("\\S", msg)] <- "no_message"
   out[err & is.na(out)] <- "other"
   out
+}
+
+# Which run results are of code recovered from a knitted report (`from_report`,
+# file names) and stopped on what would otherwise count against the code: a
+# file, a name not defined, a syntax error, or another error. A knitted report
+# leaves out the chunks it does not show (echo = FALSE, include = FALSE), so
+# such code is incomplete, and its failure says nothing about the authors'
+# analysis (#648, K8a).
+.repro_from_report_failed <- function(run_results, from_report) {
+  if (is.null(run_results) || !nrow(run_results) || !length(from_report)) return(rep(FALSE, NROW(run_results)))
+  run_results$outcome %in% "errored" & run_results$file_name %in% from_report &
+    run_results$reason %in% c("file", "undefined", "syntax", "other", "no_message")
 }
 
 # The platform a Python module that exists only there belongs to, from an error
@@ -4630,7 +4674,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 # Every reason .repro_failure_reason() gives, so each paper's row of summary_table
 # has the same columns, also for a reason none of its scripts had.
 .repro_reason_levels <- c("file", "package", "undefined", "syntax", "environment",
-                          "settings", "platform", "how_to_run", "internet", "download",
+                          "settings", "platform", "how_to_run", "from_report", "internet", "download",
                           "interactive", "time", "no_message", "other")
 
 # Outcomes of files that are not scripts with a result of their own: run by
@@ -4690,7 +4734,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out[err & reason %in% c("settings", "internet", "interactive", "download")] <- "not_checkable"
   # a module of one platform, or a file of a package run on its own, also when
   # the install tried to find the module as a package
-  out[outcome %in% c("errored", "dependency_unavailable") & reason %in% c("platform", "how_to_run")] <-
+  out[outcome %in% c("errored", "dependency_unavailable") & reason %in% c("platform", "how_to_run", "from_report")] <-
     "not_checkable"
   env <- err & reason %in% "environment"
   missing_software <- env & !.repro_out_of_memory(msg) &

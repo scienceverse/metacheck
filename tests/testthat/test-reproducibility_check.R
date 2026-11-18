@@ -3694,6 +3694,47 @@ test_that("a module of one platform and a file of a package run alone are not mi
                "yellow")
 })
 
+test_that("keys or sign-ins are not errors of the code (#648, K4)", {
+  # keys, tokens, a cloud sign-in and a variable a platform sets
+  m <- c("ERROR: set ZENODO_TOKEN (deposit:write). Not publishing.",
+         "Error: Missing configuration. Either set OPENAI_API_KEY or pass api_key",
+         "File \"/usr/lib/python3.11/os.py\", line 679, in __getitem__\nKeyError: 'WORKSPACE_CDR'",
+         "google.auth.exceptions.DefaultCredentialsError: Your default credentials were not found.",
+         "KeyError: 'AGE'")
+  expect_equal(.repro_failure_reason(rep("errored", 5), m), c(rep("settings", 4), "other"))
+})
+
+test_that("advice is in the script's language, code from a knitted report is not blamed, and texts agree (#648)", {
+  fn <- c("a.R", "b.py", "c.ipynb", "rep.R")
+  err <- c("Error: object 'dat' not found", "NameError: name 'df' is not defined",
+           "NameError: name 'display' is not defined", "Error: object 'd' not found")
+  tb <- data.frame(file_name = fn, run_order = 1:4, outcome = "errored", setwd_removed = 0,
+                   not_runnable_reason = NA_character_, unresolved_inputs = NA_character_)
+  rr <- data.frame(file_name = fn, outcome = "errored", error = err, stderr = "")
+  rr$reason <- .repro_failure_reason(rr$outcome, rr$error)
+  # a name Jupyter provides is something our run lacks
+  expect_equal(rr$reason[3], "environment")
+  rr$reason[.repro_from_report_failed(rr, "rep.R")] <- "from_report"
+  expect_equal(rr$reason[4], "from_report")
+  expect_equal(.repro_check_group(rr$outcome, rr$reason, rr$error)[4], "not_checkable")
+  out <- paste(.repro_checklist_section(tb, rr), collapse = "\n")
+  expect_match(out, "**A script uses something it does not create or load itself.**\n\n- <code>a.R</code>", fixed = TRUE)
+  expect_match(out, "**A Python script or notebook uses something it does not create or import itself.**\n\n- <code>b.py</code>", fixed = TRUE)
+  expect_match(out, "Restart the kernel", fixed = TRUE)
+  expect_match(out, "taken from a knitted report", fixed = TRUE)
+  # paths to files the deposit does not hold are named, not "every path works"
+  expect_match(.repro_path_fix_text(list(), absent = "x.csv"), "1 path names a file the repository does not hold: `x.csv`",
+               fixed = TRUE)
+  expect_equal(.repro_path_fix_text(list()), "Every data path in the code works in the repository as deposited.")
+})
+
+test_that("a pattern of names gets the folder of the file it matched, not the file (#648)", {
+  rw <- data.frame(ref = "./images/*.jpg", basename = "*.jpg", matched = TRUE, target = "../docs/images/_.jpg",
+                   ambiguous = FALSE, n_candidates = 1L, is_call = FALSE)
+  out <- .repro_apply_rewrites("for name in glob.glob('./images/*.jpg'):", rw)
+  expect_match(out, "glob.glob('../docs/images/*.jpg')", fixed = TRUE)
+})
+
 test_that("the report and the summary give the scripts by group (#580)", {
   oc <- c("ran_ok", "errored", "errored", "dependency_unavailable", "timed_out", "needs_a_person",
           "errored", "docker_failed")

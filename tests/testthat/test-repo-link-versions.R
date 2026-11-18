@@ -123,6 +123,23 @@ test_that(".repo_links_tidy keeps one row for an address written in two ways (#6
   expect_equal(nrow(.repo_links_tidy(repos, paper)), 3L)
 })
 
+test_that("an OSF project is one repository however it is written (#648, K8c)", {
+  expect_equal(.repo_link_same_key(c("https://doi.org/10.17605/OSF.IO/W4Q6J", "osf.io/w4q6j",
+                                     "https://osf.io/qhwds/overview?view_only=abc", "osf.io/pcjnb/files/qkx9f")),
+               c("osf.io/w4q6j", "osf.io/w4q6j", "osf.io/qhwds", "osf.io/pcjnb"))
+  repos <- data.frame(paper_id = "p", repo_type = "osf",
+                      repo_url = c("osf.io/qhwds", "https://osf.io/qhwds/overview?view_only=abc",
+                                   "https://osf.io/pcjnb/files/qkx9f", "osf.io/pcjnb",
+                                   "https://osf.io/zzzzz/files/osfstorage/1"))
+  paper <- test_paper("No text needed here.")
+  paper$paper_id <- "p"
+  # the form with the view-only key is kept, as only it opens a private
+  # project; the project before a file in it; a file alone stays
+  expect_equal(.repo_links_tidy(repos, paper)$repo_url,
+               c("https://osf.io/qhwds/overview?view_only=abc", "osf.io/pcjnb",
+                 "https://osf.io/zzzzz/files/osfstorage/1"))
+})
+
 test_that(".repo_link_without_hyphen changes the owner and repository only", {
   expect_equal(.repo_link_without_hyphen("github.com/Betha-nyL/DeepKoopman"),
                "github.com/BethanyL/DeepKoopman")

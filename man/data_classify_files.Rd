@@ -4,7 +4,7 @@
 \alias{data_classify_files}
 \title{Classify repository files into data_check semantic types}
 \usage{
-data_classify_files(file_name, file_path = NULL)
+data_classify_files(file_name, file_path = NULL, group = NULL)
 }
 \arguments{
 \item{file_name}{a character vector of file names (basenames)}
@@ -23,6 +23,13 @@ author's own naming can). Does NOT override a format-locked type
 classifies by its real format, since the extension is stronger evidence
 of what the file actually IS than a name is. \code{NULL} (the default)
 disables this layer entirely, unchanged from before.}
+
+\item{group}{optional vector, same length as \code{file_name}: the repository
+each file is in. Code in a folder named after a release of a program
+(\code{"jspsych-6.3.1/"}) is material by others only when its repository also
+holds code outside that folder; the authors' own code released from
+GitHub sits in such a folder too (\code{"analysis-v2.1.0/"}). \code{NULL} counts
+all files as one repository.}
 }
 \value{
 a character vector of data_check types (see \code{.data_check_types});
