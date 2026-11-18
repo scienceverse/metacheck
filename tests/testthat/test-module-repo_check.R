@@ -676,6 +676,24 @@ test_that("repo_check excludes a nested vendored package but keeps real sibling 
   expect_true("data.csv" %in% mo$table$file_name)
 })
 
+test_that("repo_check keeps a package in a subfolder when nothing else is real data or code (#505)", {
+  # the paper's own package one folder down, as in github.com/afernandez1303/good
+  # ("good 2/"), with a README.Rmd beside it and a README.md at the top: the
+  # package is the deposit, so its files are kept
+  d <- withr::local_tempdir()
+  pkg <- file.path(d, "good 2")
+  dir.create(file.path(pkg, "R"), recursive = TRUE)
+  writeLines("Package: good\nVersion: 0.1.0", file.path(pkg, "DESCRIPTION"))
+  writeLines("export(dgood)", file.path(pkg, "NAMESPACE"))
+  writeLines("dgood <- function(x) x", file.path(pkg, "R", "dgood.R"))
+  writeLines("# good", file.path(pkg, "README.Rmd"))
+  writeLines("# good", file.path(d, "README.md"))
+
+  mo <- module_run(test_paper(), "repo_check", local_path = d)
+
+  expect_true(all(c("DESCRIPTION", "NAMESPACE", "dgood.R") %in% mo$table$file_name))
+})
+
 
 # repo_check() + local_only ----
 
