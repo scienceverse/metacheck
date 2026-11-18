@@ -138,6 +138,17 @@
 # publication at once (#644).
 .own_key <- function(h) .own_core(.repo_link_same_key(h))
 
+# What to look for in a sentence to find a link: the link's own words, or,
+# for a sequence or expression archive's record (#660), its accession number,
+# as papers name these deposits by number ("GSE149523") more than by link
+.own_needle <- function(h) {
+  acc <- .seq_acc_of(h)
+  archive <- !is.na(acc) & grepl("ncbi\\.nlm\\.nih\\.gov/geo/|ebi\\.ac\\.uk/(ena|biostudies)", h)
+  # an address found by resolving a Handle: the Handle the paper gave
+  alias <- .repo_link_alias_of(h)
+  ifelse(archive, tolower(acc), ifelse(!is.na(alias), .own_core(alias), .own_core(h)))
+}
+
 # For main-text links: the sentences holding the link (at most two), their
 # sections ("type:header"), and whether those sentences cite other people's
 # work or the authors' own (a reference sharing a family name with them).
@@ -155,7 +166,7 @@
   fam <- .own_paper_facts(paper)$family
   b <- paper$bib; x <- paper$xref
   for (i in seq_len(n)) {
-    hit <- which(!is.na(tx$text) & grepl(.own_core(urls[[i]]), squeezed, fixed = TRUE) & !refs)
+    hit <- which(!is.na(tx$text) & grepl(.own_needle(urls[[i]]), squeezed, fixed = TRUE) & !refs)
     if (!length(hit)) next
     out$context[[i]] <- paste(unique(tx$text[hit])[seq_len(min(2, length(unique(tx$text[hit]))))], collapse = " || ")
     out$sections[[i]] <- paste(unique(paste0(sec$section_type[hit], ":", sec$header[hit])), collapse = " | ")
@@ -197,16 +208,15 @@
   # CKAN, #636, #637). dspace7_links() looks up only DOIs under a DSpace 7
   # prefix (78 lookups in the reference lists of 17 corpora), so a DSpace DOI
   # in a reference list is found too, not only a DSpace address
-  finders <- list(osf = osf_links, github = github_links, gitlab = gitlab_links, researchbox = rbox_links,
-                  dspace = dspace_links, dspace7 = dspace7_links, zenodo = invenio_links,
-                  dataverse = dataverse_links, figshare = figshare_links, dryad = dryad_links,
-                  reshare = eprints_links, researchdata4tu = researchdata4tu_links,
-                  mendeley = mendeley_links, dataone = dataone_links, ldbase = ldbase_links,
-                  ckan = ckan_links)
+  # and, each naming its links' type itself, the sequence archives (#660)
+  # and Handles that lead to one of these repositories
+  finders <- c(.repo_link_finders(), list(seq = seq_archive_links, handle = handle_links, icpsr = icpsr_links))
   found <- dplyr::bind_rows(lapply(names(finders), \(k) {
     x <- tryCatch(suppressMessages(suppressWarnings(finders[[k]](q))), error = \(e) NULL)
     if (!is.data.frame(x) || !nrow(x) || !"href" %in% names(x)) return(NULL)
-    data.frame(href = sub("[.,;:]+$", "", x$href), text_id = x$text_id %||% NA_integer_, repo_type = k)
+    # the sequence archives' finder names each link's archive itself (#660)
+    data.frame(href = sub("[.,;:]+$", "", x$href), text_id = x$text_id %||% NA_integer_,
+               repo_type = x$repo_type %||% k)
   }))
   if (is.null(found) || !nrow(found)) return(empty)
   # a GitHub repository written by its name alone ("GitHub repository,
@@ -228,7 +238,7 @@
   x <- paper$xref
   rows <- lapply(seq_len(nrow(found)), \(i) {
     j <- found$text_id[[i]]
-    if (is.na(j)) j <- which(grepl(.own_core(found$href[[i]]), tolower(gsub("[[:space:]]", "", q$text$text)), fixed = TRUE))[1]
+    if (is.na(j)) j <- which(grepl(.own_needle(found$href[[i]]), tolower(gsub("[[:space:]]", "", q$text$text)), fixed = TRUE))[1]
     if (is.na(j)) return(NULL)
     cit <- if (is.data.frame(x) && nrow(x)) unique(x$text_id[x$xref_id %in% b$bib_id[[j]] & x$xref_type %in% "bibr"]) else integer(0)
     cs <- if (!is.null(sec)) sec[match(cit, tx$text_id), , drop = FALSE] else NULL
@@ -317,6 +327,8 @@
   x$dep_creators <- ifelse(code_host, NA_character_, pick("creators"))
   x$dep_orcids <- pick("creator_orcids")
   x$dep_type <- .own_dep_type(links$repo_type, col(meta, "resource_type", k), col(meta, "resource_subtype", k))
+  # the institute that submitted it, where the record names no people (#660)
+  x$dep_org <- col(meta, "organisation", k)
   x$dep_related <- col(meta, "related", k)
   x$dep_date <- substr(pick("published"), 1, 10)
   x$dep_year <- substr(x$dep_date, 1, 4)
@@ -441,7 +453,8 @@
            "educational resource" = "Text", "data management plan" = "Text", monograph = "Book", model = "Model")
   out[f] <- unname(fig[type[f]])
   out[f & !is.na(type) & is.na(out)] <- "Other"
-  out[repo_type %in% c("dryad", "dataverse", "mendeley", "reshare", "researchdata4tu", "dataone", "ldbase")] <- "Dataset"
+  out[repo_type %in% c("dryad", "dataverse", "mendeley", "reshare", "researchdata4tu", "dataone", "ldbase",
+                       "geo", "ena", "arrayexpress", "icpsr")] <- "Dataset"
   out
 }
 
@@ -530,6 +543,37 @@
 # its names' words are the paper's
 .own_pkg_files <- "^(DESCRIPTION|NAMESPACE|setup[.]py|setup[.]cfg|pyproject[.]toml|package[.]json|CMakeLists[.]txt|Cargo[.]toml|environment[.]ya?ml|Makefile|configure)$"
 
+# Whether an institute's name is one of the paper's affiliations: its own
+# words (leaving out "University", "Institute", "of" and the like) are mostly
+# in one affiliation, or its short form ("FISABIO", "NIEHS") is a word or the
+# initials of one. NA when the name has no such words (ENA gives a submission
+# number, "SUB14660361", for some records) or the paper gives no
+# affiliations; FALSE when it matches none.
+.own_org_stop <- c("university", "universidad", "universitat", "universite", "universita", "universidade",
+  "universiteit", "institute", "institut", "instituto", "istituto", "inst", "department", "dept", "center",
+  "centre", "centro", "research", "national", "of", "the", "and", "for", "de", "la", "del", "der", "fur",
+  "school", "college", "laboratory", "laboratories", "lab", "hospital", "medical", "medicine", "sciences",
+  "science", "faculty", "academy", "and", "et", "di", "da", "do", "y", "e", "at", "in", "for", "group", "unit",
+  "foundation", "health", "biology", "biological", "technology")
+.own_org_match <- function(org, affiliations) {
+  if (is.na(org) || !nzchar(trimws(org)) || !length(affiliations)) return(NA)
+  # a submission number or other code is no name
+  org <- gsub("\\b[A-Za-z]*[0-9][A-Za-z0-9]*\\b", " ", org, perl = TRUE)
+  words <- function(s) { w <- unlist(strsplit(.own_ascii(s), "[^a-z]+")); w[nzchar(w)] }
+  ow <- words(org); sig <- setdiff(ow[nchar(ow) >= 3], .own_org_stop)
+  short <- unique(tolower(unlist(regmatches(org, gregexpr("\\b[A-Z]{3,10}\\b", org)))))
+  if (!length(sig) && !length(short)) return(NA)
+  hit <- vapply(affiliations, \(a) {
+    aw <- words(a)
+    ini <- tolower(paste(substr(unlist(strsplit(iconv(a, "UTF-8", "ASCII//TRANSLIT", sub = ""), "[^A-Za-z]+")), 1, 1),
+                         collapse = ""))
+    (length(sig) >= 2 && mean(sig %in% aw) >= 0.6) ||
+      (length(sig) == 1 && nchar(sig) >= 4 && sig %in% aw) ||
+      (length(short) > 0 && any(short %in% aw | vapply(short, \(s) grepl(s, ini, fixed = TRUE), NA)))
+  }, NA)
+  any(hit)
+}
+
 # ---- the classification ----------------------------------------------------
 
 # Columns .repo_ownership() reads; any it is not given are NA
@@ -537,7 +581,7 @@
   "ref_year", "ref_title", "citing", "citing_sections", "cites_others", "cites_own", "dep_title",
   "dep_description", "dep_creators", "dep_orcids", "dep_type", "dep_related", "dep_year", "dep_date",
   "listed", "n_files", "has_data", "has_code", "pkg_layout", "file_paper_words", "readme", "osf_type",
-  "osf_category", "osf_contributors", "gh_owner_name", "gh_stars", "gh_forks", "cff_dois")
+  "osf_category", "osf_contributors", "gh_owner_name", "gh_stars", "gh_forks", "cff_dois", "dep_org")
 
 #' Whose deposit is each repository link?
 #'
@@ -650,7 +694,12 @@
     dc <- paste(x$dep_title[[i]], x$dep_description[[i]])
     .own_title_in(pf$title, rd[[i]]) || .own_doi_in(pdoi, rd[[i]]) ||
       .own_title_in(pf$title, dc) || .own_doi_in(pdoi, dc) ||
-      (!is.na(pdoi) && !is.na(rel[[i]]) && grepl(pdoi, tolower(rel[[i]]), fixed = TRUE))
+      (!is.na(pdoi) && !is.na(rel[[i]]) &&
+         # ICPSR relates a study to every publication that used it
+         # ("IsDocumentedBy", "IsCitedBy": 376 for MIDUS), so there only a
+         # supplement counts (#660)
+         (if (x$repo_type[[i]] %in% "icpsr") pdoi %in% .own_rel_dois(rel[[i]], "IsSupplementTo")
+          else grepl(pdoi, tolower(rel[[i]]), fixed = TRUE)))
   }, logical(1)) |
     grepl("^\\s*(data|code|scripts?|supplementary (data|code|materials?|information)|replication (data|code|materials|package)|materials?|data and code|code and data)\\b.{0,20}\\b(for|from|of)\\b",
           ifelse(ref, chr(x$ref_title), NA), ignore.case = TRUE, perl = TRUE)
@@ -722,8 +771,41 @@
         (length(core) == 1 && nchar(core) >= 4 && (core %in% aw || grepl(core, ini, fixed = TRUE)))
     }, logical(1)))
   }, logical(1), USE.NAMES = FALSE)
-  author <- author_raw | orcid_author | name_author | host_author
-  known_not_author <- known_not_author & !author
+  # (I) the institute that submitted a sequence or expression archive's
+  # record, which names no people (#660): one of the paper's affiliations,
+  # or, when the paper gives its affiliations, none of them
+  # Only for a record without people: an institute is shared by many labs, so
+  # where the record names its people, they decide (in one sample, a dataset
+  # of another lab at the authors' university)
+  org_match <- vapply(chr(x$dep_org), .own_org_match, NA, affiliations = pf$affiliations, USE.NAMES = FALSE)
+  org_match[!is.na(creators)] <- NA
+  author <- author_raw | orcid_author | name_author | host_author | T_(org_match)
+  # authorship shown by the institute alone is weak: words of reuse in the
+  # citing sentence outweigh it ("sequences derived from other publications")
+  org_only <- T_(org_match) & !(author_raw | orcid_author | name_author | host_author)
+  # (J) an R package on CRAN (#478, #660): CRAN requires a package to list
+  # its authors, so the list settles whose it is, however long it is. The
+  # paper's own when the paper presents it (the sentence says it is
+  # available, hosted, or theirs, or a word of the paper's title is its
+  # name); the
+  # authors' earlier code when the paper only uses it.
+  cran <- x$repo_type %in% "cran"
+  cran_pkg <- tolower(.cran_pkg_of(href))
+  cran_title <- vapply(cran_pkg, \(pk) {
+    if (is.na(pk)) return(FALSE)
+    tw <- unlist(strsplit(.own_ascii(pf$title %||% ""), "[^a-z0-9.]+"))
+    any(tw == pk)
+  }, logical(1), USE.NAMES = FALSE)
+  cran_presented <- presented | cran_title |
+    grepl("\\bavailable\\b|\\bhosted\\b|can be (downloaded|installed)|\\bour (open[- ]source )?(r )?package\\b|\\bwe (developed|wrote|present|introduce)\\b",
+          said, ignore.case = TRUE, perl = TRUE)
+  cran_others <- cran & !author & !is.na(creators)
+  # (K) ICPSR and openICPSR (#660): a study's creators are its investigators,
+  # so one without a paper author is others' data, also when the paper's
+  # sentence presents it ("All data ... have been made publicly available via
+  # ICPSR", the open-data badge text, for reused studies such as MIDUS)
+  icpsr_others <- x$repo_type %in% "icpsr" & !author & !is.na(creators)
+  known_not_author <- (known_not_author | (F_(org_match) & is.na(creators))) & !author
 
   # names another paper: "is supplement to" (or Dryad's primary article,
   # Figshare's article) a different article's DOI, preprint servers left out
@@ -819,6 +901,10 @@
   e <- paste0("own_earlier_", kind); o <- paste0("others_", kind)
   steps <- list(
     list(publication, "not_data", "a publication: a preprint, an article or a manuscript, not a deposit"),
+    list(cran_others, "others_code", "an R package on CRAN by others"),
+    list(icpsr_others, "others_data", "an ICPSR study whose investigators are not the paper's authors"),
+    list(cran & author & cran_presented, "own_this", "an R package on CRAN by the paper's authors, presented in the paper"),
+    list(cran & author, "own_earlier_code", "an R package on CRAN by the paper's authors, used in the paper"),
     list(statement_ref, "own_this", "the reference is the paper's own data statement"),
     list(names_paper, "own_this", "the deposit names this paper (its DOI, its title, or a link to it)"),
     list(archived_by, "own_this", "eLife's archived copy is credited to a paper author"),
@@ -841,6 +927,7 @@
     list(ref, o, "a reference by others"),
     list(known_not_author & !presented & !shares_words, o, "made by others, and not presented as the paper's own"),
     list(known_not_author & reused, o, "made by others, and the sentence says it is used or taken from them"),
+    list(org_only & reuse_wording, o, "the sentence says it is taken from elsewhere, and only the institute is shared"),
     list(rep(TRUE, n), "own_this", "a link in the main text, not shown to be anyone else's"))
   label <- rep(NA_character_, n); reason <- rep(NA_character_, n)
   for (st in steps) {
