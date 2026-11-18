@@ -345,19 +345,47 @@ code_lang <- function(file_name) {
 # one writes by hand). In 8 of 132 preprints such code was counted and checked
 # as the authors': 52 of 56 code files in one were jsPsych, 27 of 43 in another
 # Stata packages. `path` is a file's path in its deposit (or its name).
+# A folder named after a release is by others only when the repository
+# (`group`) also holds code (`is_code`) outside it: the authors' own code
+# released from GitHub unpacks into such a folder as well
+# ("takotsubo_ami_ai_ecg-v0.4.0/", "Coronial-NLP-Analysis-v2.1.0/": the only
+# two such folders in 620 medRxiv papers, both the authors' code), while a
+# library sits beside the code that uses it. `is_code` NULL counts every path
+# as code, `group` NULL every path as one repository.
 .others_code_folder_pat <- paste0(
   "(^|/)(node_modules|bower_components|vendor|vendored|third[_ -]?party|external|extern|",
-  "site-packages|dist-packages|ados?|[a-z0-9]+_ados?|toolboxes|",
-  "[a-z][a-z0-9_.]*-v?[0-9]+(?:[.][0-9]+)+)/")
-.is_others_code_path <- function(path) {
+  "site-packages|dist-packages|ados?|[a-z0-9]+_ados?|toolboxes)/")
+.release_folder_pat <- "^[a-z][a-z0-9_.]*-v?[0-9]+(?:[.][0-9]+)+$"
+.is_others_code_path <- function(path, is_code = NULL, group = NULL) {
   p <- gsub("\\\\", "/", ifelse(is.na(path), "", path))
-  grepl(.others_code_folder_pat, p, ignore.case = TRUE, perl = TRUE) |
+  out <- grepl(.others_code_folder_pat, p, ignore.case = TRUE, perl = TRUE) |
     grepl("[.]min[.]js$", p, ignore.case = TRUE)
+  # the innermost folder named after a release, in small letters (NA: none)
+  folders <- lapply(strsplit(tolower(p), "/", fixed = TRUE), function(s) utils::head(s, -1))
+  release <- vapply(folders, function(s) {
+    hit <- s[grepl(.release_folder_pat, s, perl = TRUE)]
+    if (length(hit)) hit[[length(hit)]] else NA_character_
+  }, character(1))
+  cand <- which(!out & !is.na(release))
+  if (!length(cand)) return(out)
+  is_code <- if (is.null(is_code)) rep(TRUE, length(p)) else is_code %in% TRUE
+  group <- if (is.null(group)) rep("", length(p)) else ifelse(is.na(group), "", as.character(group))
+  own <- is_code & !out   # code that may be the authors' own
+  key <- paste(group, release, sep = "\r")
+  for (k in unique(key[cand])) {
+    i <- cand[key[cand] == k]
+    g <- group[[i[[1]]]]; r <- release[[i[[1]]]]
+    others <- which(own & group == g)
+    out[i] <- any(vapply(folders[others], function(s) !r %in% s, logical(1)))
+  }
+  out
 }
 .in_others_code_folder <- function(files) {
   if (!nrow(files)) return(logical(0))
   p <- files$file_path %||% rep(NA_character_, nrow(files))
-  .is_others_code_path(ifelse(is.na(p) | !nzchar(p), files$file_name %||% NA_character_, p))
+  .is_others_code_path(ifelse(is.na(p) | !nzchar(p), files$file_name %||% NA_character_, p),
+                       is_code = !is.na(files$language %||% rep(NA_character_, nrow(files))),
+                       group = files$repo_url %||% files$paper_id)
 }
 
 # Whether each file is in a folder of this name, at any depth.

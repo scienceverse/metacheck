@@ -277,20 +277,6 @@
         paste("We could not check these scripts, because the computer we run the code on is not that",
               "platform. Say in the README which platform the code needs. Where you can, let the analysis",
               "also run without it, for example by reading the data from files in the deposit."))
-  # data the paper says cannot be shared, which the deposit does not hold
-  # (#648, K4)
-  restricted <- which(err & reason %in% "restricted")
-  restricted_file <- vapply(restricted, \(i) {
-    f <- .repro_unopened_files(msg[[i]], full = TRUE)
-    if (length(f)) basename(f[[1]]) else NA_character_
-  }, character(1))
-  block("restricted", restricted, "A script reads data the paper says cannot be shared.",
-        ifelse(is.na(restricted_file), code(name[restricted]),
-               sprintf("%s reads %s", code(name[restricted]), code(restricted_file))),
-        paste("We could not check these scripts, because the deposit does not hold their data, as the",
-              "paper explains. Readers who obtain the data can run them. Where the rules allow, add a",
-              "small example or synthetic data set with the same columns, so that readers can check",
-              "that the code runs."))
   # code recovered from a knitted report whose source is not deposited (#648, K8a)
   from_report <- which(err & reason %in% "from_report")
   block("from_report", from_report, "A script's code was taken from a knitted report, as its source is not in the deposit.",
@@ -369,7 +355,7 @@
 
   # in the order in which the problems should be fixed
   order <- c("by_script", "by_other", "absent", "absolute", "renamed", "archived", "unnamed", "changed", "missing_pkg",
-             "dep", "program", "env", "keys", "windows", "platform", "restricted", "from_report", "undefined", "undefined_py", "syntax", "slow", "memory",
+             "dep", "program", "env", "keys", "windows", "platform", "from_report", "undefined", "undefined_py", "syntax", "slow", "memory",
              "online", "person", "module", "unknown")
   structure(as.character(unlist(blocks[intersect(order, names(blocks))], use.names = FALSE)),
             scripts = sort(covered))
@@ -561,9 +547,8 @@
          ifelse(reason %in% "settings", "needed a key or a setting of your computer",
          ifelse(reason %in% "platform", paste("needed", .repro_platform_of(msg)),
          ifelse(reason %in% "how_to_run", "needed to be started as part of its package",
-         ifelse(reason %in% "restricted", "needed data the paper says cannot be shared",
          ifelse(reason %in% "from_report", "was taken from a knitted report, which leaves out code",
-                "needed something our computer does not have, such as a screen")))))))))
+                "needed something our computer does not have, such as a screen"))))))))
   nc <- counted & group %in% "not_checkable"
   why_n <- table(factor(why[nc], levels = unique(why[nc])))
   parts <- c(

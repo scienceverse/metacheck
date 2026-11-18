@@ -349,7 +349,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     ))
   }
 
-  all_files$data_type <- data_classify_files(all_files$file_name, all_files$file_path)
+  all_files$data_type <- data_classify_files(all_files$file_name, all_files$file_path,
+                                             group = all_files$repo_url)
   # Fine-grained documentation role (readme / codebook / supplemental), NA for
   # non-documentation rows. Drives root-vs-per-study placement (readme is
   # collection-level) and which files codebook_check parses.

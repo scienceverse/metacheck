@@ -555,11 +555,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   structure_df <- up$structure_df
   code_tbl <- up$code_tbl
   archives_got <- up$archives
-  # whether the paper says its data cannot be shared (#648, K4); only for one
-  # paper, as the scripts of several papers run as one are not told apart
-  one_paper <- if (.is_paper(paper)) paper else
-    if (.is_paper_list(paper) && length(paper) == 1) paper[[1]] else NULL
-  data_restricted <- .repro_paper_says_data_restricted(one_paper)
   # scripts code_check recovered from a knitted report (.html) whose source is
   # not in the deposit: the report leaves out the chunks it does not show, so
   # the recovered code is incomplete, and its failure was blamed on the code
@@ -2327,10 +2322,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # stopped on a Git LFS pointer the deposit has no file for: a missing file (#568)
     r_lfs_stopped <- .repro_lfs_stopped(run_results, sandbox_root)
     run_results$reason[run_results$file_name %in% names(r_lfs_stopped)] <- "file"
-    # data the paper says cannot be shared, which the deposit does not hold:
-    # not checkable, rather than an error of the code (#648, K4)
-    if (isTRUE(data_restricted))
-      run_results$reason[.repro_stopped_on_absent_file(run_results, structure_df$file_name)] <- "restricted"
     run_results$reason[.repro_from_report_failed(run_results, from_report)] <- "from_report"
     # ran, did not reproduce, a package or program not available, out of time,
     # or could not be checked automatically (#580)
@@ -3814,8 +3805,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_run_results$reason <- .repro_failure_reason(py_run_results$outcome, paste(py_run_results$error, py_run_results$stderr))
       py_lfs_stopped <- .repro_lfs_stopped(py_run_results, sandbox_root)
       py_run_results$reason[py_run_results$file_name %in% names(py_lfs_stopped)] <- "file"
-      if (isTRUE(data_restricted))
-        py_run_results$reason[.repro_stopped_on_absent_file(py_run_results, structure_df$file_name)] <- "restricted"
       py_run_results$reason[.repro_from_report_failed(py_run_results, from_report)] <- "from_report"
       py_run_results$checked <- .repro_check_group(py_run_results$outcome, py_run_results$reason,
                                                    paste(py_run_results$error, py_run_results$stderr))

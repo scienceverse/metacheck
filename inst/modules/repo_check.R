@@ -2362,7 +2362,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # check, dropdown below) and the ownership step; data_check's later
   # classification is authoritative for placement.
   all_files$data_type <- data_classify_files(all_files$file_name,
-                                             all_files$file_path)
+                                             all_files$file_path,
+                                             group = all_files$repo_url)
   all_files$doc_role  <- .data_doc_role(all_files$file_name)
   # what each file is for the counts per repository and the archive advice:
   # the same classification, so the two parts of the report agree (#648, K8d)

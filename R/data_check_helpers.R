@@ -580,6 +580,12 @@
 #'   classifies by its real format, since the extension is stronger evidence
 #'   of what the file actually IS than a name is. `NULL` (the default)
 #'   disables this layer entirely, unchanged from before.
+#' @param group optional vector, same length as `file_name`: the repository
+#'   each file is in. Code in a folder named after a release of a program
+#'   (`"jspsych-6.3.1/"`) is material by others only when its repository also
+#'   holds code outside that folder; the authors' own code released from
+#'   GitHub sits in such a folder too (`"analysis-v2.1.0/"`). `NULL` counts
+#'   all files as one repository.
 #'
 #' @returns a character vector of data_check types (see `.data_check_types`);
 #'   `"unknown"` when no rule fires. See `.data_doc_role()` for the finer
@@ -589,7 +595,7 @@
 #'
 #' @examples
 #' data_classify_files(c("data.csv", "analysis.R", "README.md", "codebook.xlsx"))
-data_classify_files <- function(file_name, file_path = NULL) {
+data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
   n <- length(file_name)
   if (n == 0) return(character(0))
   # a name that is not valid UTF-8 (a zip's old Windows name) stopped the
@@ -715,7 +721,8 @@ data_classify_files <- function(file_name, file_path = NULL) {
   # Code by others that the deposit bundles (a library, a toolbox, Stata
   # packages; see .is_others_code_path()) is material the analysis uses, not
   # the authors' code (#648, K5). Only code: data in such a folder stays data.
-  type[type == "code" & .is_others_code_path(path_for_kw)] <- "materials"
+  type[type == "code" & .is_others_code_path(path_for_kw, is_code = type == "code",
+                                             group = group)] <- "materials"
 
   # A single compressed file ("scan.nii.gz", "trials.csv.gz", not a .tar.gz)
   # holds one file, which is what it is (see .file_type_crosswalk); as an
@@ -1647,8 +1654,11 @@ data_study_roster <- function(paper, words = c("study", "experiment", "pilot")) 
 # "Pilot Study 1A", is a pilot, not study 1A.
 .data_group_from_path <- function(paths) {
   # five digits or more after it: a protocol or record number, not a year
-  # ("study2_2019.csv" stays study 2)
-  num_end <- "(?![0-9])(?![ ._-]?[0-9]{5,})"
+  # ("study2_2019.csv" stays study 2) and not a date of eight digits, the
+  # year first or last ("study1_20230512.csv" stays study 1)
+  dm <- "(?:(?:0[1-9]|[12][0-9]|3[01])(?:0[1-9]|1[0-2])|(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01]))"
+  date8 <- paste0("(?:(?:19|20)[0-9]{2}", dm, "|", dm, "(?:19|20)[0-9]{2})(?![0-9])")
+  num_end <- paste0("(?![0-9])(?![ ._-]?(?!", date8, ")[0-9]{5,})")
   ex_pat <- paste0(
     "(?:experiment|study|(?<![a-z])expt?|(?<![a-z])ex)",
     "[ ._-]?([0-9]{1,2})", num_end, "([a-z](?![a-z]))?"
@@ -6223,9 +6233,17 @@ data_check_pii_name <- function(col_name, x = NULL) {
     ip = any(grepl("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", v) |
                grepl("^[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,7}$", v, ignore.case = TRUE)),
     mac = any(grepl("^(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}$", v, ignore.case = TRUE)),
-    # a date, or a year a person now alive was born in
+    # a date, however it is written: in numbers ("15/03/1985"), with a year a
+    # person now alive was born in ("15-Mar-1985", "March 15, 1985", "1985"),
+    # with a month's name ("15 Mar 85"), or as eight digits ("19850315");
+    # not a number with decimals ("1985.34")
     birth = any(grepl("^[0-9]{1,4}[-/.][0-9]{1,2}[-/.][0-9]{1,4}$", v) |
-                  (grepl("^(?:19|20)[0-9]{2}$", v) & suppressWarnings(as.integer(v)) <= 2030)),
+                  grepl("(?<![0-9.,])(?:19[0-9]{2}|20[0-2][0-9]|2030)(?![0-9]|[.,][0-9])", v, perl = TRUE) |
+                  grepl(paste0("(?i)(?:[0-9][ ./-]*\\b(?:jan|feb|m[aä]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])",
+                               "|\\b(?:jan|feb|m[aä]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])[a-zéû]*\\.?[ ,./-]*[0-9])"),
+                        v, perl = TRUE) |
+                  grepl(paste0("^(?:(?:19|20)[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01])|",
+                               "(?:0[1-9]|[12][0-9]|3[01])(?:0[1-9]|1[0-2])(?:19|20)[0-9]{2})$"), v)),
     FALSE)
 }
 

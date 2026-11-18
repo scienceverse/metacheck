@@ -3694,24 +3694,7 @@ test_that("a module of one platform and a file of a package run alone are not mi
                "yellow")
 })
 
-test_that("data the paper says cannot be shared, and keys or sign-ins, are not errors of the code (#648, K4)", {
-  yes <- c("The data that support the findings of this study are available from the corresponding author upon reasonable request.",
-           "Data from the nuMoM2b cohort cannot be shared publicly due to participant privacy.",
-           "The UK Biobank data are available under controlled access to approved researchers.",
-           "Access to the All of Us dataset requires a data use agreement.")
-  no <- c("All data and code are available at https://osf.io/abcde.",
-          "Participants could withdraw their data on request at any time.",
-          "The code is available upon request.", "We removed five participants because of missing data.")
-  expect_true(all(vapply(yes, \(x) .repro_paper_says_data_restricted(test_paper(x)), logical(1))))
-  expect_false(any(vapply(no, \(x) .repro_paper_says_data_restricted(test_paper(x)), logical(1))))
-  expect_false(.repro_paper_says_data_restricted(NULL))
-  rr <- data.frame(file_name = c("a.R", "b.R", "c.R"), outcome = "errored", stderr = "",
-                   error = c("Error in file(file) : cannot open the connection\nWarning: cannot open file 'numom2b.csv': No such file or directory",
-                             "Error in file(file) : cannot open the connection\nWarning: cannot open file 'present.csv': No such file or directory",
-                             "Error: object 'x' not found"))
-  rr$reason <- .repro_failure_reason(rr$outcome, rr$error)
-  expect_equal(.repro_stopped_on_absent_file(rr, c("present.csv", "a.R")), c(TRUE, FALSE, FALSE))
-  expect_equal(.repro_check_group("errored", "restricted", ""), "not_checkable")
+test_that("keys or sign-ins are not errors of the code (#648, K4)", {
   # keys, tokens, a cloud sign-in and a variable a platform sets
   m <- c("ERROR: set ZENODO_TOKEN (deposit:write). Not publishing.",
          "Error: Missing configuration. Either set OPENAI_API_KEY or pass api_key",

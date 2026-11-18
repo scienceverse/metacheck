@@ -4607,47 +4607,6 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out
 }
 
-# Whether the paper says its data cannot be shared openly: available (only) on
-# request or application, restricted or controlled access, a data use
-# agreement, or not shared for privacy, confidentiality, consent or legal
-# reasons, in a sentence about data. A script that stops on a data file the
-# deposit does not hold then could not be checked, rather than failed: in 18
-# of 132 preprints it was an error of the code, with the advice "Find the file
-# on your computer" (#648, K4). Sentences of the reference list do not count.
-.repro_paper_says_data_restricted <- function(paper) {
-  if (is.null(paper) || !.is_paper(paper)) return(FALSE)
-  tx <- tryCatch(paper$text, error = function(e) NULL)
-  if (is.null(tx) || !nrow(tx)) return(FALSE)
-  s <- tx$text
-  if ("section_type" %in% names(tx)) s <- s[!tx$section_type %in% "references"]
-  if (!length(s)) return(FALSE)
-  about_data <- grepl("(?i)\\b(data(?:set|base)?s?|records|cohort|registry|participant[- ]level)\\b", s, perl = TRUE)
-  restricted <- grepl(paste0(
-    "(?i)(?:available|obtained|accessed|provided|shared|access)[^.]{0,80}?\\b(?:up)?on\\s+(?:reasonable\\s+|written\\s+|formal\\s+)?",
-    "(?:request|application)|",
-    "\\b(?:not|cannot|can ?not|could not|unable to)\\s+(?:be\\s+)?(?:made\\s+)?(?:publicly\\s+|openly\\s+|freely\\s+)?",
-    "(?:available|shared|released|deposited|published)|",
-    "\\b(?:restricted|controlled|limited)[ -]access\\b|\\bdata (?:use|access|sharing|transfer) agreement|",
-    "\\b(?:apply|application|applications) for (?:data )?access|",
-    "\\b(?:due to|because of|owing to)\\b[^.]{0,60}\\b(?:privacy|confidential|ethic|legal|consent|governance|data protection)"),
-    s, perl = TRUE)
-  any(about_data & restricted)
-}
-
-# Which run results stopped on a data file the deposit does not hold: an error
-# with the reason "file" whose file(s) are not among `deposit_names` (base
-# names, any case).
-.repro_stopped_on_absent_file <- function(run_results, deposit_names) {
-  if (is.null(run_results) || !nrow(run_results)) return(logical(0))
-  msg <- paste(run_results$error %||% "", run_results$stderr %||% "")
-  have <- tolower(basename(gsub("\\\\", "/", deposit_names %||% character(0))))
-  vapply(seq_len(nrow(run_results)), function(i) {
-    if (!run_results$outcome[[i]] %in% "errored" || !run_results$reason[[i]] %in% "file") return(FALSE)
-    f <- tolower(basename(gsub("\\\\", "/", .repro_unopened_files(msg[[i]], full = TRUE))))
-    length(f) > 0 && !any(f %in% have)
-  }, logical(1))
-}
-
 # Which run results are of code recovered from a knitted report (`from_report`,
 # file names) and stopped on what would otherwise count against the code: a
 # file, a name not defined, a syntax error, or another error. A knitted report
@@ -4715,7 +4674,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 # Every reason .repro_failure_reason() gives, so each paper's row of summary_table
 # has the same columns, also for a reason none of its scripts had.
 .repro_reason_levels <- c("file", "package", "undefined", "syntax", "environment",
-                          "settings", "platform", "how_to_run", "restricted", "from_report", "internet", "download",
+                          "settings", "platform", "how_to_run", "from_report", "internet", "download",
                           "interactive", "time", "no_message", "other")
 
 # Outcomes of files that are not scripts with a result of their own: run by
@@ -4775,7 +4734,7 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out[err & reason %in% c("settings", "internet", "interactive", "download")] <- "not_checkable"
   # a module of one platform, or a file of a package run on its own, also when
   # the install tried to find the module as a package
-  out[outcome %in% c("errored", "dependency_unavailable") & reason %in% c("platform", "how_to_run", "restricted", "from_report")] <-
+  out[outcome %in% c("errored", "dependency_unavailable") & reason %in% c("platform", "how_to_run", "from_report")] <-
     "not_checkable"
   env <- err & reason %in% "environment"
   missing_software <- env & !.repro_out_of_memory(msg) &

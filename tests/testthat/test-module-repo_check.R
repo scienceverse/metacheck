@@ -251,6 +251,26 @@ test_that("repo_check counts files with the classification it reports, and sets 
                c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE))
   expect_equal(data_classify_files(c("asdoc.ado", "census.csv"), c("extra_ados/asdoc.ado", "external/census.csv")),
                c("materials", "data"))
+  # a folder named after a release is the authors' own code when the
+  # repository has no code outside it (a GitHub release), and others' code
+  # when it sits beside the code that uses it
+  rel <- c("analysis-v2.1.0/main.py", "analysis-v2.1.0/utils/x.py",
+           "exp/jspsych-6.3.1/jspsych.js", "exp/experiment.js")
+  expect_equal(.is_others_code_path(rel, group = c("a", "a", "b", "b")), c(FALSE, FALSE, TRUE, FALSE))
+  expect_equal(.is_others_code_path(rel[1:2]), c(FALSE, FALSE))
+  expect_equal(.is_others_code_path(rel), c(TRUE, TRUE, TRUE, FALSE))
+  # only code outside the folder counts, not data
+  expect_equal(.is_others_code_path(c("tool-1.2/run.py", "data.csv"), is_code = c(TRUE, FALSE)),
+               c(FALSE, FALSE))
+  expect_equal(data_classify_files(basename(rel), rel, group = c("a", "a", "b", "b")),
+               c("code", "code", "materials", "code"))
+  # code_check: by repository, with code being a file of a language it reads
+  cf <- data.frame(file_name = c("main.R", "fit.R", "plot.R", "data.csv"),
+                   file_path = c("Coronial-NLP-Analysis-v2.1.0/main.R", "lib/pkg-1.0.2/fit.R",
+                                 "plot.R", "data.csv"),
+                   repo_url = c("osf.io/aaaaa", "osf.io/bbbbb", "osf.io/bbbbb", "osf.io/aaaaa"))
+  cf$language <- code_lang(cf$file_name)
+  expect_equal(.in_others_code_folder(cf), c(FALSE, TRUE, FALSE, FALSE))
   # files R leaves behind
   expect_equal(.useless_file_kind(c(".RDataTmp", ".Rapp.history")), c("temporary files", "R history"))
 

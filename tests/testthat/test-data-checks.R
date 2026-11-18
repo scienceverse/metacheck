@@ -1494,6 +1494,10 @@ test_that("a column name that suggests personal data is confirmed by its values 
   expect_false(f("HLA-DOB", c("DOB*01:01", "DOB*01:02")))
   expect_true(f("dob", c("1985-03-12", "1990-11-02")))
   expect_true(f("birthyear", c(1985, 1990)))
+  # a date of birth however it is written, but not a number with decimals
+  for (v in c("15-Mar-1985", "March 15, 1985", "19850315", "15 Mar 85", "12.03.1985"))
+    expect_true(f("dob", v), info = v)
+  expect_false(f("HLA-DOB", c(1985.34, 2001.7, 12.5)))
   expect_false(f("GEO_LOCATION_VILLAGE", c("Kibera", "Mathare")))
   expect_true(f("first_name", c("Anna", "Ben")))
   # without values, as before
@@ -1507,9 +1511,11 @@ test_that("a column name that suggests personal data is confirmed by its values 
 test_that("a study number in a path ends there, and a pilot study is a pilot (#648, K7)", {
   p <- c("study104/a.csv", "data/study03032026.csv", "STUDY-20-00338.pdf", "Pilot Study 1A/x.csv",
          "pilot2_data.csv", "pilot/x.csv", "Study 2/a.csv", "study2a_data.csv",
-         "experiment3explicit.csv", "Exp1/raw.csv", "study2_2019.csv", "study1_2.csv", "index1.csv")
+         "experiment3explicit.csv", "Exp1/raw.csv", "study2_2019.csv", "study1_2.csv", "index1.csv",
+         "study1_20230512.csv", "Study2_15032021_data.csv", "study3_12345678.csv")
   expect_equal(.data_group_from_path(p),
-               c(NA, NA, NA, "pilot1a", "pilot2", "pilot1", "ex2", "ex2a", "ex3", "ex1", "ex2", "ex1", NA))
+               c(NA, NA, NA, "pilot1a", "pilot2", "pilot1", "ex2", "ex2a", "ex3", "ex1", "ex2", "ex1", NA,
+                 "ex1", "ex2", NA))
 })
 
 test_that("one-letter study labels in file names count only when the paper confirms them (#648)", {
