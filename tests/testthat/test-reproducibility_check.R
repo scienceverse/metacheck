@@ -1881,6 +1881,15 @@ test_that("repro_run_scripts_docker stops the container on timeout instead of or
   # path this test is checking.
   writeLines(c('Sys.sleep(120)', 'cat("should never reach here\\n")'), script)
   run_tbl <- data.frame(file_name = "sleeper.R", script_path = script, run_dir = root)
+  # repro_* containers of other runs on this computer (a corpus run, another
+  # test session) are not this test's: only a container started here counts
+  repro_running <- function() {
+    x <- tryCatch(processx::run("docker", c("ps", "--filter", "name=repro_", "--format", "{{.Names}}"),
+                                error_on_status = FALSE, timeout = 10)$stdout, error = function(e) "")
+    x <- strsplit(trimws(x), "\n", fixed = TRUE)[[1]]
+    x[nzchar(x)]
+  }
+  others <- repro_running()
 
   out <- repro_run_scripts_docker(
     run_tbl, order = "sleeper.R", sandbox_root = root,
@@ -1895,12 +1904,7 @@ test_that("repro_run_scripts_docker stops the container on timeout instead of or
   # than asserting instantaneously.
   container_gone <- FALSE
   for (i in 1:10) {
-    running <- tryCatch(
-      processx::run("docker", c("ps", "--filter", "name=repro_",
-                                "--format", "{{.Names}}"),
-                    error_on_status = FALSE, timeout = 10)$stdout,
-      error = function(e) "")
-    if (!nzchar(trimws(running))) { container_gone <- TRUE; break }
+    if (!length(setdiff(repro_running(), others))) { container_gone <- TRUE; break }
     Sys.sleep(1)
   }
   expect_true(container_gone,
