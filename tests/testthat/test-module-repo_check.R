@@ -53,6 +53,7 @@ test_that("OSF no files", {
                     repo_own = 1L,
                     repo_others = 0L,
                     ref_others = 0L,
+                    ref_own = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -89,6 +90,7 @@ test_that("no code files", {
                     repo_own = 1L,
                     repo_others = 0L,
                     ref_others = 0L,
+                    ref_own = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -122,6 +124,7 @@ test_that("OSF", {
                     repo_own = 1L,
                     repo_others = 0L,
                     ref_others = 0L,
+                    ref_own = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -233,6 +236,61 @@ test_that("repo_check: an unknown file type is not a naming problem (#648)", {
   expect_true(grepl("We could not classify 1 file", mo$summary_text))
   expect_equal(mo$table$data_type[mo$table$file_name == "Makefile"], "code")
   expect_equal(mo$table$data_type[mo$table$file_name == "asdoc.sthlp"], "documentation")
+})
+
+test_that("repo_check counts files with the classification it reports, and sets bundled code aside (#648)", {
+  # one classification for the counts and the File Classification
+  f <- c("run.sh", "data.nc", "x.log.gz", "scan.nii.gz", "a.tar.gz", "b.7z", "c.zip", "t.jar",
+         "README.md", "LICENSE_code_MIT.txt", "data_report.html")
+  dt <- data_classify_files(f, f)
+  expect_equal(.repo_file_kind(f, dt, c(rep(10, 8), 0, 10, 10)),
+               c("code", "data", "documentation", "data", "archive", "archive", "archive", "materials",
+                 "documentation", "documentation", "documentation"))
+  expect_equal(.repo_file_kind("README.md", "documentation", NA), "readme")
+  # code by others that a deposit bundles is material, not the authors' code
+  expect_equal(.is_others_code_path(c("analysis/extra_ados/asdoc.ado", "task/jspsych-6.3.1/jspsych.js",
+                                      "js/jquery.min.js", "node_modules/x/index.js", "analysis/main.do",
+                                      "lib/helpers.py", "external/census.csv")),
+               c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE))
+  expect_equal(data_classify_files(c("asdoc.ado", "census.csv"), c("extra_ados/asdoc.ado", "external/census.csv")),
+               c("materials", "data"))
+  # a folder named after a release is the authors' own code when the
+  # repository has no code outside it (a GitHub release), and others' code
+  # when it sits beside the code that uses it
+  rel <- c("analysis-v2.1.0/main.py", "analysis-v2.1.0/utils/x.py",
+           "exp/jspsych-6.3.1/jspsych.js", "exp/experiment.js")
+  expect_equal(.is_others_code_path(rel, group = c("a", "a", "b", "b")), c(FALSE, FALSE, TRUE, FALSE))
+  expect_equal(.is_others_code_path(rel[1:2]), c(FALSE, FALSE))
+  expect_equal(.is_others_code_path(rel), c(TRUE, TRUE, TRUE, FALSE))
+  # only code outside the folder counts, not data
+  expect_equal(.is_others_code_path(c("tool-1.2/run.py", "data.csv"), is_code = c(TRUE, FALSE)),
+               c(FALSE, FALSE))
+  expect_equal(data_classify_files(basename(rel), rel, group = c("a", "a", "b", "b")),
+               c("code", "code", "materials", "code"))
+  # code_check: by repository, with code being a file of a language it reads
+  cf <- data.frame(file_name = c("main.R", "fit.R", "plot.R", "data.csv"),
+                   file_path = c("Coronial-NLP-Analysis-v2.1.0/main.R", "lib/pkg-1.0.2/fit.R",
+                                 "plot.R", "data.csv"),
+                   repo_url = c("osf.io/aaaaa", "osf.io/bbbbb", "osf.io/bbbbb", "osf.io/aaaaa"))
+  cf$language <- code_lang(cf$file_name)
+  expect_equal(.in_others_code_folder(cf), c(FALSE, TRUE, FALSE, FALSE))
+  # files R leaves behind
+  expect_equal(.useless_file_kind(c(".RDataTmp", ".Rapp.history")), c("temporary files", "R history"))
+
+  d <- withr::local_tempdir()
+  for (p in c("data.csv", "analysis.R", "run.sh", "model.joblib", "run.log.gz", "b.tar.gz",
+              "analysis/extra_ados/asdoc.ado", "task/jspsych-6.3.1/jspsych.js")) {
+    dir.create(dirname(file.path(d, p)), recursive = TRUE, showWarnings = FALSE)
+    writeLines("x", file.path(d, p))
+  }
+  mo <- module_run(NULL, "repo_check", local_path = d, local_only = TRUE)
+  expect_equal(mo$summary_table$files_code, 2L)    # analysis.R and run.sh
+  expect_equal(mo$summary_table$files_zip, 1L)     # b.tar.gz, not run.log.gz
+  expect_equal(mo$summary_table$files_unknown, 1L) # model.joblib, listed for information
+  rep <- paste(mo$report, collapse = "\n")
+  expect_match(rep, "This is no problem in itself", fixed = TRUE)
+  expect_no_match(rep, "Add a recognisable keyword", fixed = TRUE)
+  expect_no_match(rep, "not ZIP archives: [^.]*run.log.gz")
 })
 
 test_that("repo_check counts naming problems of a local folder without a paper (#650)", {

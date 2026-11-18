@@ -397,8 +397,12 @@
     # Java Web Start launcher (XML pointing at a Java app to fetch and run).
     r("elf",  "materials"), r("msix", "materials"), r("msixbundle", "materials"),
     r("jnlp", "materials"),
-    r("sh",   "materials"), r("bash", "materials"), r("zsh",  "materials"),
-    r("bat",  "materials"), r("cmd",  "materials"), r("ps1",  "materials"),
+    # Shell scripts are code the authors wrote to run their analysis (in one
+    # deposit the 9 .sh files were the pipeline its README describes), not
+    # materials; they were code in repo_check's counts and materials in its
+    # File Classification (#648). metacheck does not run them, so no code_lang.
+    r("sh",   "code"), r("bash", "code"), r("zsh",  "code"),
+    r("bat",  "code"), r("cmd",  "code"), r("ps1",  "code"),
     r("dll",  "materials"), r("so",   "materials"), r("dylib","materials"),
     r("lua",  "materials"), r("psyexp","materials"), r("osexp","materials"),
     # E-Prime .edat/.edat2 are proprietary BINARY (OLE compound documents)
@@ -527,7 +531,9 @@
 
 # Text-document formats the "data" name keyword never turns into data (see
 # data_classify_files()).
-.document_exts <- c("doc", "docx", "odt", "pdf", "rtf")
+# A web page or Markdown file is a document too: "data_report.html", a knitted
+# report, was classed as data for the word in its name (#648, K8d).
+.document_exts <- c("doc", "docx", "odt", "pdf", "rtf", "html", "htm", "md")
 
 # Which .tif/.tiff files in a listing are GIS rasters rather than images: those
 # in a folder that also holds a GIS file (a shapefile part, a world file, a
@@ -574,6 +580,12 @@
 #'   classifies by its real format, since the extension is stronger evidence
 #'   of what the file actually IS than a name is. `NULL` (the default)
 #'   disables this layer entirely, unchanged from before.
+#' @param group optional vector, same length as `file_name`: the repository
+#'   each file is in. Code in a folder named after a release of a program
+#'   (`"jspsych-6.3.1/"`) is material by others only when its repository also
+#'   holds code outside that folder; the authors' own code released from
+#'   GitHub sits in such a folder too (`"analysis-v2.1.0/"`). `NULL` counts
+#'   all files as one repository.
 #'
 #' @returns a character vector of data_check types (see `.data_check_types`);
 #'   `"unknown"` when no rule fires. See `.data_doc_role()` for the finer
@@ -583,7 +595,7 @@
 #'
 #' @examples
 #' data_classify_files(c("data.csv", "analysis.R", "README.md", "codebook.xlsx"))
-data_classify_files <- function(file_name, file_path = NULL) {
+data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
   n <- length(file_name)
   if (n == 0) return(character(0))
   # a name that is not valid UTF-8 (a zip's old Windows name) stopped the
@@ -685,6 +697,11 @@ data_classify_files <- function(file_name, file_path = NULL) {
   # recognised it, and it was "unknown".
   base_lc <- tolower(basename(file_name))
   type[grepl("^(licen[sc]e|copying)$", base_lc)] <- "documentation"
+  # A licence that names what it covers ("LICENSE_code_MIT.txt",
+  # "license_data.txt") is a licence too, not code or data for the word in its
+  # name (#648, K8d); only as a text document.
+  type[grepl("^(licen[sc]e|copying)[_. -]", base_lc) &
+         ext %in% c("", "txt", "md", "rst", "html", "htm", "pdf", "rtf")] <- "documentation"
   # A list of the packages a program needs (requirements.txt, Pipfile) belongs
   # with the code that uses it; as a .txt it was classified as documentation.
   type[grepl("^(requirements|constraints)([_.-][a-z0-9]+)*\\.(txt|in)$|^pipfile(\\.lock)?$",
@@ -700,6 +717,12 @@ data_classify_files <- function(file_name, file_path = NULL) {
                            base_lc)] <- "documentation"
 
   type[is.na(type)] <- "unknown"
+
+  # Code by others that the deposit bundles (a library, a toolbox, Stata
+  # packages; see .is_others_code_path()) is material the analysis uses, not
+  # the authors' code (#648, K5). Only code: data in such a folder stays data.
+  type[type == "code" & .is_others_code_path(path_for_kw, is_code = type == "code",
+                                             group = group)] <- "materials"
 
   # A single compressed file ("scan.nii.gz", "trials.csv.gz", not a .tar.gz)
   # holds one file, which is what it is (see .file_type_crosswalk); as an
@@ -1625,16 +1648,30 @@ data_study_roster <- function(paper, words = c("study", "experiment", "pilot")) 
 # in smashed-together names. A trailing letter counts as a sub-study suffix
 # only when it ends its token ("study2a_data" -> ex2a), not when the next word
 # merely starts with a letter ("experiment3explicit" -> ex3).
+# The number must end there and not run on into a code (#648, K7): "study104"
+# (an id) was study 10, "study03032026" (a date) study 3 and "STUDY-20-00338"
+# (a protocol number) study 20. And a pilot named before its study word,
+# "Pilot Study 1A", is a pilot, not study 1A.
 .data_group_from_path <- function(paths) {
+  # five digits or more after it: a protocol or record number, not a year
+  # ("study2_2019.csv" stays study 2) and not a date of eight digits, the
+  # year first or last ("study1_20230512.csv" stays study 1)
+  dm <- "(?:(?:0[1-9]|[12][0-9]|3[01])(?:0[1-9]|1[0-2])|(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01]))"
+  date8 <- paste0("(?:(?:19|20)[0-9]{2}", dm, "|", dm, "(?:19|20)[0-9]{2})(?![0-9])")
+  num_end <- paste0("(?![0-9])(?![ ._-]?(?!", date8, ")[0-9]{5,})")
   ex_pat <- paste0(
     "(?:experiment|study|(?<![a-z])expt?|(?<![a-z])ex)",
-    "[ ._-]?([0-9]{1,2})([a-z](?![a-z]))?"
+    "[ ._-]?([0-9]{1,2})", num_end, "([a-z](?![a-z]))?"
   )
+  pilot_study_pat <- paste0("(?<![a-z])pilot[ ._-]?(?:study|experiment|expt?)?[ ._-]?([0-9]{1,2})",
+                            num_end, "([a-z](?![a-z]))?")
   pilot_pat <- "(?<![a-z])pilot[ ._-]?([0-9]{1,2})?"
   vapply(paths, function(path) {
     if (is.na(path) || !nzchar(path)) return(NA_character_)
     parts <- rev(strsplit(tolower(path), "/", fixed = TRUE)[[1]])
     for (part in parts) {
+      m <- regmatches(part, regexec(pilot_study_pat, part, perl = TRUE))[[1]]
+      if (length(m) > 0) return(paste0("pilot", m[2], m[3]))
       m <- regmatches(part, regexec(ex_pat, part, perl = TRUE))[[1]]
       if (length(m) > 0) return(paste0("ex", m[2], m[3]))
       m <- regmatches(part, regexec(pilot_pat, part, perl = TRUE))[[1]]
@@ -5806,10 +5843,11 @@ data_check_colname_collisions <- function(col_names) {
   email = list(
     regex = "(?i)\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b",
     kind  = "specific"),
-  # IPv4 with each octet 0-255.
+  # IPv4 with each octet 0-255; see .pii_ip_ok() for what is not one.
   ip_address = list(
     regex = "\\b(?:(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)\\b",
-    kind  = "specific"),
+    kind  = "specific",
+    validate = ".pii_ip_ok"),
   # US SSN: 3-2-4 with separators, excluding obvious non-SSN (000/666/9xx area,
   # 00 group, 0000 serial).
   ssn = list(
@@ -5949,6 +5987,28 @@ data_check_colname_collisions <- function(col_names) {
   "gebruikersnaam", "benutzername", "initialen"
 )
 
+# Whether a value holds an IP address and not four numbers with dots that are
+# something else (#648, 3 of 132 preprints): a time after a date
+# ("06.04.2026 15.34.46.182"), a program's version ("Chrome 131.0.0.0",
+# "Chrome/84.0.4147.89" in a browser's user agent), or part of a longer run of
+# numbers with dots ("1.2.3.4.5").
+.pii_ip_ok <- function(value) {
+  ip <- "(?:(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1?\\d?\\d)"
+  m <- gregexpr(paste0("\\b", ip, "\\b"), value, perl = TRUE)[[1]]
+  if (m[[1]] < 0) return(FALSE)
+  for (k in seq_along(m)) {
+    start <- m[[k]]; end <- start + attr(m, "match.length")[[k]] - 1L
+    before <- substr(value, 1L, start - 1L)
+    after <- substr(value, end + 1L, nchar(value))
+    if (grepl("[0-9]\\.$", before) || grepl("^\\.[0-9]", after)) next
+    if (grepl("[0-9]{1,4}[./-][0-9]{1,2}[./-][0-9]{2,4}[ T]+$", before)) next
+    if (grepl("(?i)(?:chrome|chromium|firefox|safari|edge?|opera|opr|version|ver|mozilla|applewebkit|gecko|msie|crios|fxios|android|windows nt|os|build|v)[ /]?$",
+              before, perl = TRUE)) next
+    return(TRUE)
+  }
+  FALSE
+}
+
 #' Flag values that match a personal-information pattern
 #'
 #' Scans a column's values for standard PII patterns (email, IP address, SSN,
@@ -6087,14 +6147,26 @@ data_check_pii_values <- function(x, broad_min_frac = 0.30) {
 #' vocabulary, this cut false positives from 14 to 2 while missing nothing the
 #' previous substring rule caught.
 #'
+#' Some words name a kind of value with a shape of its own. When the column's
+#' values `x` are given, such a word counts only when a value has that shape: a
+#' phone number for "phone", "mobile" or "fax"; an IP address for "ip"; a MAC
+#' address for "mac"; a date or a year of birth for "dob" and the like.
+#' Coordinates ("lat", "gps", "geolocation") are left to
+#' [data_check_pii_geo()], which checks their values. Without that, "phone"
+#' holding the kind of device, "hosp_ward_IP" (inpatient), "SiPhy_29way_logOdds"
+#' (read as "ip"), "HLA-DOB" (a gene) and "GEO_LOCATION_VILLAGE" (village names)
+#' were flagged in 19 of 132 preprints (#648, K6).
+#'
 #' @param col_name the column name
+#' @param x optional: the column's values, to confirm a word with a value shape
 #' @returns list(problem, message, values)
 #' @export
 #' @keywords internal
 #' @examples
 #' data_check_pii_name("email")$problem
 #' data_check_pii_name("rt")$problem
-data_check_pii_name <- function(col_name) {
+#' data_check_pii_name("phone", c("iPhone", "Android"))$problem
+data_check_pii_name <- function(col_name, x = NULL) {
   none <- list(problem = FALSE, message = "", values = NULL)
   if (is.null(col_name) || is.na(col_name) || !nzchar(col_name)) return(none)
 
@@ -6118,11 +6190,61 @@ data_check_pii_name <- function(col_name) {
 
   matched <- unique(cand[cand %in% .pii_name_tokens])
   if (!length(matched)) return(none)
+  if (!is.null(x)) {
+    shape <- .pii_token_shape(matched)
+    ok <- vapply(seq_along(matched), function(i)
+      is.na(shape[[i]]) || .pii_values_have_shape(x, shape[[i]]), logical(1))
+    matched <- matched[ok]
+    if (!length(matched)) return(none)
+  }
 
   list(problem = TRUE,
        message = sprintf("Column name suggests personal information (matched: %s). Review before sharing.",
                          paste(matched, collapse = ", ")),
        values = matched)
+}
+
+# The kind of value a word of .pii_name_tokens names, when it has a shape of
+# its own (see data_check_pii_name()): "phone", "ip", "mac", "birth" or "geo";
+# NA for a word whose values have no shape (a name, an address).
+.pii_token_shape <- function(token) {
+  out <- rep(NA_character_, length(token))
+  out[grepl("phone|mobil|tele|fax|gsm|rufnummer|handy|puhelin|movil|portable|cell", token)] <- "phone"
+  out[token %in% c("ip", "ipaddress")] <- "ip"
+  out[token %in% "mac"] <- "mac"
+  out[grepl("dob|yob|birth|geboorte|geburts|naissance|nacimiento|nascita", token)] <- "birth"
+  out[token %in% c("latitude", "longitude", "lat", "lon", "lng", "geolocation", "gps",
+                   "breitengrad", "laengengrad", "ortsangabe")] <- "geo"
+  out
+}
+
+# Whether any value of `x` has the shape of `shape` (see .pii_token_shape()).
+# Coordinates are left to data_check_pii_geo(), so "geo" is FALSE here.
+.pii_values_have_shape <- function(x, shape) {
+  if (shape == "geo") return(FALSE)
+  if (inherits(x, c("Date", "POSIXt"))) return(shape == "birth")
+  v <- trimws(as.character(x))
+  v <- v[!is.na(v) & nzchar(v)]
+  if (!length(v)) return(FALSE)
+  switch(shape,
+    # 7 to 15 digits, written with only spaces, brackets, dots, dashes or "+"
+    phone = any(grepl("^\\+?[0-9 ().-]{7,}$", v) & nchar(gsub("[^0-9]", "", v)) >= 7 &
+                  nchar(gsub("[^0-9]", "", v)) <= 15),
+    ip = any(grepl("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", v) |
+               grepl("^[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,7}$", v, ignore.case = TRUE)),
+    mac = any(grepl("^(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}$", v, ignore.case = TRUE)),
+    # a date, however it is written: in numbers ("15/03/1985"), with a year a
+    # person now alive was born in ("15-Mar-1985", "March 15, 1985", "1985"),
+    # with a month's name ("15 Mar 85"), or as eight digits ("19850315");
+    # not a number with decimals ("1985.34")
+    birth = any(grepl("^[0-9]{1,4}[-/.][0-9]{1,2}[-/.][0-9]{1,4}$", v) |
+                  grepl("(?<![0-9.,])(?:19[0-9]{2}|20[0-2][0-9]|2030)(?![0-9]|[.,][0-9])", v, perl = TRUE) |
+                  grepl(paste0("(?i)(?:[0-9][ ./-]*\\b(?:jan|feb|m[a\u00e4]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])",
+                               "|\\b(?:jan|feb|m[a\u00e4]r|mrt|apr|ma[iy]|mei|jun|jul|aug|sep|o[ck]t|nov|de[cz])[a-z\u00e9\u00fb]*\\.?[ ,./-]*[0-9])"),
+                        v, perl = TRUE) |
+                  grepl(paste0("^(?:(?:19|20)[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01])|",
+                               "(?:0[1-9]|[12][0-9]|3[01])(?:0[1-9]|1[0-2])(?:19|20)[0-9]{2})$"), v)),
+    FALSE)
 }
 
 #' Flag a column that holds geographic coordinates

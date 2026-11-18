@@ -349,7 +349,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     ))
   }
 
-  all_files$data_type <- data_classify_files(all_files$file_name, all_files$file_path)
+  all_files$data_type <- data_classify_files(all_files$file_name, all_files$file_path,
+                                             group = all_files$repo_url)
   # Fine-grained documentation role (readme / codebook / supplemental), NA for
   # non-documentation rows. Drives root-vs-per-study placement (readme is
   # collection-level) and which files codebook_check parses.
@@ -1861,7 +1862,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # sharing" prompts, never echoing the matching value.
       pv <- data_check_pii_values(x)
       if (pv$problem) col_finds[["Personal info (values)"]] <- pv$message
-      pn <- data_check_pii_name(col)
+      # with the values, which confirm a word such as "phone" or "ip" (#648)
+      pn <- data_check_pii_name(col, x)
       if (pn$problem) col_finds[["Personal info (column name)"]] <- pn$message
       # sibling_names lets the geo check require a partner column: a latitude is
       # only a coordinate when a longitude sits beside it, which is what tells a

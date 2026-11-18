@@ -202,7 +202,8 @@
   ir <- install_results
   failed <- if (!is.null(ir) && nrow(ir) && all(c("package", "installed") %in% names(ir)))
     ir[!ir$installed %in% TRUE, , drop = FALSE] else data.frame(package = character(0), category = character(0))
-  dep <- which(outcome %in% "dependency_unavailable")
+  # not a module that exists only on one platform (see the block "platform")
+  dep <- which(outcome %in% "dependency_unavailable" & !reason %in% "platform")
   if (length(dep)) {
     dp <- vapply(dep, \(i) pkg_of(msg[[i]]), character(1))
     pkgs <- unique(dp[!is.na(dp)])
@@ -269,6 +270,27 @@
               "that cannot be shared, say where and how readers can apply for it."))
   block("windows", windows, "A script reads a Microsoft Access database, which works only on Windows.",
         code(name[windows]), "Export the tables to CSV files, add them to the deposit, and read those instead.")
+  # a module that exists only on one platform (#580)
+  platform <- which(reason %in% "platform" & outcome %in% c("errored", "dependency_unavailable"))
+  block("platform", platform, "A script runs only on one platform.",
+        sprintf("%s needs %s.", code(name[platform]), .repro_platform_of(msg[platform])),
+        paste("We could not check these scripts, because the computer we run the code on is not that",
+              "platform. Say in the README which platform the code needs. Where you can, let the analysis",
+              "also run without it, for example by reading the data from files in the deposit."))
+  # code recovered from a knitted report whose source is not deposited (#648, K8a)
+  from_report <- which(err & reason %in% "from_report")
+  block("from_report", from_report, "A script's code was taken from a knitted report, as its source is not in the deposit.",
+        code(name[from_report]),
+        paste("A knitted report (.html) shows only the code chunks it was set to show, so code is missing",
+              "from it, and we could not check the analysis. Add the R Markdown or Quarto file the report was",
+              "knitted from to the deposit."))
+  # a file of a package of the code, run on its own (#580)
+  module <- which(err & reason %in% "how_to_run")
+  block("module", module, "A script is part of a package of your code, and Python cannot run it on its own.",
+        code(name[module]),
+        paste("It imports other files of its package with <code>from .</code>, which works only when it is",
+              "started as a module, as <code>python -m package.module</code> from the folder above the package.",
+              "Put the command that starts it in the README."))
 
   # What the code itself does.
   undefined <- setdiff(which(err & reason %in% "undefined"), covered)
@@ -277,13 +299,25 @@
     hit <- hit[-1][nzchar(hit[-1])]
     if (length(hit)) hit[[1]] else NA_character_
   }, character(1))
-  block("undefined", undefined, "A script uses something it does not create or load itself.",
-        ifelse(is.na(obj), code(name[undefined]), sprintf("%s: %s", code(name[undefined]), code(obj))),
+  # The steps in the language of the scripts: Python notebooks were told to
+  # restart R and use library() (#648, K2c)
+  und_py <- is_py[undefined]
+  und_lines <- ifelse(is.na(obj), code(name[undefined]), sprintf("%s: %s", code(name[undefined]), code(obj)))
+  block("undefined", undefined[!und_py], "A script uses something it does not create or load itself.",
+        und_lines[!und_py],
         "Usually the object was still in your R session from earlier work, or another script made it.",
         c("Restart R (in RStudio: Session > Restart R).",
           "Run each script from top to bottom, and fix what is missing.",
           "If a script needs results of another, save them to a file in the first script and read them in the second.",
           "Load every package with <code>library()</code> at the top."))
+  block("undefined_py", undefined[und_py], "A Python script or notebook uses something it does not create or import itself.",
+        und_lines[und_py],
+        paste("Usually the name was still defined in your Python session or notebook kernel from earlier work,",
+              "or another script made it."),
+        c("Restart the kernel and run every cell from the top (in Jupyter: Kernel > Restart & Run All), or run the script in a new Python session.",
+          "Fix what is missing.",
+          "If a script needs results of another, save them to a file in the first script and read them in the second.",
+          "Import every module at the top with <code>import</code>."))
   syntax <- which(outcome %in% c("not_parsed", "static_parse_error") | (err & reason %in% "syntax"))
   block("syntax", syntax, "R or Python could not read a script, because of a mistake in the code itself.",
         code(name[syntax]),
@@ -321,8 +355,8 @@
 
   # in the order in which the problems should be fixed
   order <- c("by_script", "by_other", "absent", "absolute", "renamed", "archived", "unnamed", "changed", "missing_pkg",
-             "dep", "program", "env", "keys", "windows", "undefined", "syntax", "slow", "memory", "online",
-             "person", "unknown")
+             "dep", "program", "env", "keys", "windows", "platform", "from_report", "undefined", "undefined_py", "syntax", "slow", "memory",
+             "online", "person", "module", "unknown")
   structure(as.character(unlist(blocks[intersect(order, names(blocks))], use.names = FALSE)),
             scripts = sort(covered))
 }
@@ -419,7 +453,10 @@
         if (grepl("^stopped: ", rr$error[[i]] %||% ""))
           sprintf(" (%s)", .repro_cell(sub("^stopped: ", "", rr$error[[i]]))),
         ".")),
-      dependency_unavailable = c("Could not run on our server", sprintf(
+      dependency_unavailable = if (!is.na(.repro_platform_of(paste(rr$error[[i]], se))))
+        c("Could not be checked", sprintf("It needs %s, which our computer is not. This is not an error in the script.",
+                                          .repro_platform_of(paste(rr$error[[i]], se))))
+      else c("Could not run on our server", sprintf(
         "It needs the %s package %s, which %s. This is not an error in the script.",
         lang, if (nzchar(pkg)) .repro_cell(pkg) else "(see its output below)",
         if (pkg %in% source_unknown)
@@ -492,21 +529,41 @@
       n_dup, plural(n_dup, "y", "ies"), plural(n_dup, "was", "were")))
   }
 
-  # the headline: how many ran to the end, and what happened to the others
-  groups <- c(errored = "stopped with an error", timed_out = "ran out of time",
-              dependency_unavailable = "could not run on our server",
-              docker_failed = "could not run on our server",
-              needs_a_person = "needed a person", needs_internet = "needed the internet",
-              out_of_memory = "ran out of memory",
-              download_too_large = "downloaded too much")
-  n_ok <- sum(outcome[counted] == "ran_ok")
-  parts <- vapply(names(groups), \(g) {
-    n <- sum(outcome[counted] == g)
-    if (n) sprintf("%d %s", n, groups[[g]]) else ""
-  }, character(1))
-  n_not_run <- sum(counted) - n_ok - sum(outcome[counted] %in% names(groups))
-  parts <- c(parts[nzchar(parts)],
+  # the headline: how many ran to the end, and for the others whether they did
+  # not reproduce, lacked a package or program, ran out of time, or could not
+  # be checked automatically (#580; see .repro_check_group())
+  msg <- paste(ifelse(is.na(rr$error), "", rr$error), ifelse(is.na(rr$stderr), "", rr$stderr))
+  reason <- if ("reason" %in% names(rr) && any(!is.na(rr$reason))) rr$reason else
+    .repro_failure_reason(outcome, msg)
+  group <- if ("checked" %in% names(rr)) rr$checked else .repro_check_group(outcome, reason, msg)
+  group[is.na(rr$outcome)] <- NA_character_
+  n_ok <- sum(counted & group %in% "ran")
+  n_of <- function(g) sum(counted & group %in% g)
+  # what kept the scripts that could not be checked from being checked
+  why <- ifelse(outcome %in% "needs_a_person" | reason %in% "interactive", "needed a person",
+         ifelse(outcome %in% "needs_internet" | reason %in% "internet", "needed the internet",
+         ifelse(outcome %in% "out_of_memory" | .repro_out_of_memory(msg), "needed more memory than our limit",
+         ifelse(outcome %in% "download_too_large" | reason %in% "download", "downloaded more than our limit",
+         ifelse(reason %in% "settings", "needed a key or a setting of your computer",
+         ifelse(reason %in% "platform", paste("needed", .repro_platform_of(msg)),
+         ifelse(reason %in% "how_to_run", "needed to be started as part of its package",
+         ifelse(reason %in% "from_report", "was taken from a knitted report, which leaves out code",
+                "needed something our computer does not have, such as a screen"))))))))
+  nc <- counted & group %in% "not_checkable"
+  why_n <- table(factor(why[nc], levels = unique(why[nc])))
+  parts <- c(
+    if (n_of("code_error")) sprintf("%d did not reproduce", n_of("code_error")),
+    if (n_of("dependency")) sprintf("%d could not run because a package or program was not available",
+                                    n_of("dependency")),
+    if (n_of("time")) sprintf("%d did not finish within our time limit", n_of("time")),
+    if (n_of("not_checkable")) sprintf("%d could not be checked automatically (%s)", n_of("not_checkable"),
+                                       paste(sprintf("%d %s", why_n, names(why_n)), collapse = ", ")))
+  n_docker <- sum(counted & outcome %in% "docker_failed")
+  n_not_run <- sum(counted) - n_ok - sum(counted & group %in% .repro_check_groups[-1]) - n_docker
+  parts <- c(parts,
+             if (n_docker) sprintf("%d could not be run because Docker failed", n_docker),
              if (n_not_run) sprintf("%d %s not run", n_not_run, plural(n_not_run, "was", "were")))
+  if (length(parts) > 1) parts <- c(parts[-length(parts)], paste("and", parts[[length(parts)]]))
   headline <- sprintf("**%d of %d script%s ran to the end**%s.",
                       n_ok, sum(counted), plural(sum(counted)),
                       if (length(parts)) paste0(": ", paste(parts, collapse = ", ")) else "")
@@ -520,9 +577,13 @@
   setwd_n[is.na(setwd_n)] <- 0L
   problems <- vapply(which(setwd_n > 0), \(i) {
     fun <- if (is_py[[i]]) "os.chdir()" else "setwd()"
-    sprintf(paste0("- %s calls %s, which ties the script to a folder on the ",
-                   "author's computer. We replaced the call with one that does ",
-                   "nothing so the script could run; it should be removed from the script."),
+    # Not every such call names a folder on the author's computer:
+    # setwd(here::here("S3", "data")) and a folder next to the script work
+    # anywhere, and were called so (#648, 7 of 132 preprints)
+    sprintf(paste0("- %s calls %s, which sets the folder the script runs in. We replaced the call ",
+                   "with one that does nothing, so the script ran from the top folder of the project. ",
+                   "A folder on your own computer does not exist on another; paths written from the ",
+                   "project's top folder work everywhere."),
             .repro_cell(tbl$file_name[[i]]), fun)
   }, character(1))
   # file names spelled otherwise in the code than in the deposit
@@ -548,7 +609,7 @@
     paste0(
       sprintf("Of the %d statistical test%s reported in the paper, %d %s found in the output of the code.",
               n_tests, plural(n_tests), n_found, plural(n_found, "was", "were")),
-      if (n_ok == 0) " No script ran to the end, so most results were never produced." else "")
+      if (n_ok == 0) " No script ran to the end, so the results the scripts would have printed after the point where they stopped are missing from the comparison." else "")
   }
 
   # what the authors can change so the code runs, one line per cause (#575)

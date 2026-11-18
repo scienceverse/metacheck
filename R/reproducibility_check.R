@@ -1625,7 +1625,10 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
 # elsewhere in the repository (see .repro_keep_working_refs()). One string, since
 # the module adds sentences to it. `rewrite_list` holds a repro_rewrite_paths()
 # result per script, named by script.
-.repro_path_fix_text <- function(rewrite_list, execute = FALSE) {
+# `absent` holds the names the code reads that the repository does not hold
+# (the module's unresolved references, which leave out names the code builds
+# and files other scripts write).
+.repro_path_fix_text <- function(rewrite_list, execute = FALSE, absent = character(0)) {
   fixes <- do.call(rbind, lapply(names(rewrite_list), function(f) {
     d <- rewrite_list[[f]]
     if (!nrow(d)) return(NULL)
@@ -1635,6 +1638,15 @@ repro_rewrite_paths <- function(code_text, file_name, plan, lang = "R",
     data.frame(file = f, ref = d$ref[ok], target = d$target[ok])
   }))
   n <- NROW(fixes)
+  # paths to files the deposit does not hold: "every data path works" was said
+  # of reports whose scripts then stopped on missing files (#648, K8f)
+  absent <- unique(absent[!is.na(absent) & nzchar(absent)])
+  if (!n && length(absent))
+    return(sprintf(paste0("The data paths in the code to files the repository holds work as deposited, but %d ",
+                          "path%s name%s a file the repository does not hold: %s%s."),
+                   length(absent), plural(length(absent)), plural(length(absent), "s", ""),
+                   paste(sprintf("`%s`", utils::head(absent, 10)), collapse = ", "),
+                   if (length(absent) > 10) sprintf(", and %d more", length(absent) - 10) else ""))
   if (!n) return("Every data path in the code works in the repository as deposited.")
   shown <- utils::head(fixes, 10)
   sprintf(paste0("**%d data path%s in the code %s not work in the repository as deposited.** ",
@@ -4131,6 +4143,12 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   # a folder's final "/" stays, as the code pastes a file name to it
   portable <- function(p) paste0(.portable_path(p), ifelse(grepl("[/\\\\]$", p), "/", ""))
   rw$target[good] <- portable(rw$target[good])
+  # A pattern of names ("./images/*.jpg") that matched a file gets that
+  # file's folder, but keeps its pattern: it was replaced by the one file it
+  # matched, "../docs/images/_.jpg", so the script read one image (#648).
+  ref_name <- basename(gsub("\\\\", "/", rw$ref))
+  wild <- good & !(is_call_col %in% TRUE) & !is.na(rw$ref) & grepl("[*?]", ref_name)
+  if (any(wild)) rw$target[wild] <- paste0(dirname(rw$target[wild]), "/", ref_name[wild])
   unportable <- kept & !(is_call_col %in% TRUE) & !is.na(rw$ref) &
     !grepl("^([A-Za-z]:[/\\\\]|/|~)", rw$ref) & portable(rw$ref) != gsub("\\\\", "/", rw$ref)
   rw$target[unportable] <- portable(rw$ref[unportable])
@@ -4496,6 +4514,17 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   out[outcome %in% c("download_too_large")] <- "download"
   out[outcome %in% c("timed_out") & has("while a download was still arriving")] <- "download"
   out[outcome %in% c("skipped_missing_inputs")] <- "file"
+  # A Python module that exists only on one platform (Google Colab, Kaggle,
+  # Windows, OpenSAFELY): the script can be checked only there, so neither a
+  # package that was not available nor an error of the code (#580, #648; in the
+  # medRxiv runs google.colab, win32com and ehrql).
+  out[outcome %in% c("errored", "dependency_unavailable") & !is.na(.repro_platform_of(msg))] <- "platform"
+  # A file of a package of the code, which imports its other files with "from .",
+  # run on its own: Python runs such a file only as a module of its package
+  # (python -m package.module), so this says how the run started it, not that a
+  # package was missing (#580, #648; 8 of 620 medRxiv papers)
+  out[outcome %in% "errored" & has("attempted relative import (?:with no known parent package|beyond top-level package)")] <-
+    "how_to_run"
   err <- outcome == "errored"
   set <- function(pat, label) out[err & is.na(out) & has(pat)] <<- label
   # stopped by the memory limit of the run (see .repro_oom_text()), before any
@@ -4521,8 +4550,19 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   # environment variable is required", openai's "Missing credentials") (#648)
   set(paste0("\\b[A-Z][A-Z0-9]*_[A-Z0-9_]+\\b[^\n]{0,40}?\\b(?:is not set|not set\\b|is required|must be set)|",
              "environment variable[^\n]{0,60}?\\b(?:is not set|not set|is required|must be set|missing)|",
-             "[Ss]et the [^\n]{0,40}?environment variable|Missing credentials|api[_ ]?key[^\n]{0,40}?(?:not set|missing|required)"),
+             "[Ss]et the [^\n]{0,40}?environment variable|Missing credentials|api[_ ]?key[^\n]{0,40}?(?:not set|missing|required)|",
+             # a key, token or password the authors' own message asks for
+             # ("ERROR: set ZENODO_TOKEN", "Either set OPENAI_API_KEY"), a
+             # cloud sign-in (Google's "default credentials were not found"),
+             # and a variable a platform sets, read from the environment
+             # (All of Us: KeyError: 'WORKSPACE_CDR') (#648, K4)
+             "(?i:\\b(?:set|provide|missing|export|define)\\b)[^\n]{0,40}?\\b[A-Z][A-Z0-9]*_(?:[A-Z0-9]+_)*",
+             "(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIALS?|API)\\b|",
+             "DefaultCredentialsError|default credentials were not found|",
+             "could not automatically determine credentials"),
       "settings")
+  out[err & is.na(out) & has("KeyError: '[A-Z][A-Z0-9_]{2,}'") &
+        grepl("environ|os\\.py", full, perl = TRUE)] <- "settings"
   set("there is no package called|ModuleNotFoundError|No module named|ImportError|package or namespace|Error: package ", "package")
   # a package that another package loads only when one of its functions is
   # used, so the run did not install it: "Please install the 'cmdstanr'
@@ -4546,14 +4586,55 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
   # (#575, item 7): "Output file does not exist. Unable to find or run mark.exe"
   out[err & is.na(out) & has(file_pat) & !is.na(.repro_missing_program(full))] <- "environment"
   set(file_pat, "file")
+  # a function only R for Windows has, which the run's Linux lacks: the plot
+  # windows (windows(), win.graph(), bringToTop()), its own plot files and fonts.
+  # Without this, "could not find function \"windows\"" counted as something the
+  # code does not define (#580).
+  set(paste0("could not find function \"(?:windows|win\\.graph|win\\.metafile|win\\.print|",
+             "bringToTop|msgWindow|windowsFonts?)\""), "environment")
+  # names Jupyter itself provides to a notebook, run here as plain Python
+  # (ufpgn_v1's display(); #648)
+  set("name '(?:display|get_ipython)' is not defined", "environment")
   set("object '[^']*' not found|could not find function|NameError|is not defined", "undefined")
   set("SyntaxError|IndentationError", "syntax")
-  set("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11|can only print from a screen device", "environment")
+  set(paste0("shared object|ImproperlyConfigured|cannot cache function|cannot open display|X11|",
+             "can only print from a screen device|unable to start data viewer"), "environment")
   # R itself crashed, in a package's compiled code: rgeos, installed from the
   # CRAN Archive, crashes on every geometry against the GEOS of the image (#568)
   set("caught segfault|Segmentation fault|core dumped|caught illegal operation", "environment")
   out[err & is.na(out) & !grepl("\\S", msg)] <- "no_message"
   out[err & is.na(out)] <- "other"
+  out
+}
+
+# Which run results are of code recovered from a knitted report (`from_report`,
+# file names) and stopped on what would otherwise count against the code: a
+# file, a name not defined, a syntax error, or another error. A knitted report
+# leaves out the chunks it does not show (echo = FALSE, include = FALSE), so
+# such code is incomplete, and its failure says nothing about the authors'
+# analysis (#648, K8a).
+.repro_from_report_failed <- function(run_results, from_report) {
+  if (is.null(run_results) || !nrow(run_results) || !length(from_report)) return(rep(FALSE, NROW(run_results)))
+  run_results$outcome %in% "errored" & run_results$file_name %in% from_report &
+    run_results$reason %in% c("file", "undefined", "syntax", "other", "no_message")
+}
+
+# The platform a Python module that exists only there belongs to, from an error
+# "No module named '<module>'": "Google Colab" (google.colab), "Kaggle"
+# (kaggle_secrets and the like), "Windows" (pywin32's win32com, win32api and
+# the like; winreg and msvcrt of Python on Windows) or "OpenSAFELY" (ehrql,
+# cohortextractor). NA for any other message.
+.repro_platform_of <- function(msg) {
+  msg <- ifelse(is.na(msg), "", msg)
+  mod <- regmatches(msg, regexec("No module named ['\"]([A-Za-z0-9_.]+)['\"]", msg))
+  mod <- vapply(mod, function(m) if (length(m) > 1) m[[2]] else "", character(1))
+  top <- sub("\\..*$", "", mod)
+  out <- rep(NA_character_, length(msg))
+  out[grepl("^google\\.colab(\\.|$)", mod)] <- "Google Colab"
+  out[grepl("^kaggle_(secrets|datasets|web_client|gcp)$", top)] <- "Kaggle"
+  out[top %in% c("win32com", "win32api", "win32con", "win32gui", "win32file", "win32process",
+                 "win32clipboard", "pywintypes", "pythoncom", "winreg", "_winreg", "msvcrt")] <- "Windows"
+  out[top %in% c("ehrql", "cohortextractor")] <- "OpenSAFELY"
   out
 }
 
@@ -4593,8 +4674,8 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 # Every reason .repro_failure_reason() gives, so each paper's row of summary_table
 # has the same columns, also for a reason none of its scripts had.
 .repro_reason_levels <- c("file", "package", "undefined", "syntax", "environment",
-                          "settings", "internet", "download", "interactive", "time",
-                          "no_message", "other")
+                          "settings", "platform", "how_to_run", "from_report", "internet", "download",
+                          "interactive", "time", "no_message", "other")
 
 # Outcomes of files that are not scripts with a result of their own: run by
 # another script, files of software or of functions only, not downloaded,
@@ -4610,27 +4691,101 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 .repro_started_outcomes <- c("ran_ok", "errored", "timed_out", "needs_a_person", "needs_internet",
                              "download_too_large", "out_of_memory")
 
+# What the run of each script says about the code (#580), in five groups, so
+# that a script that does not reproduce is kept apart from one the check could
+# not test:
+# - "ran": it ran to the end;
+# - "code_error": it did not reproduce: it stopped with an error of the code or
+#   the deposit (a file it reads, something it does not define), could not be
+#   read, is Python 2 code, or needs a file the deposit does not hold;
+# - "dependency": a package or a program was not available: a package that
+#   could not be installed or was not loaded ("there is no package called"), a
+#   program outside R and Python, a system library ("shared object"), or R
+#   crashing in a package's compiled code, which comes from a system library
+#   of our computer that does not match the package (#652);
+# - "time": it did not finish within the time limit for one script, or was not
+#   started because the time for all scripts together had run out;
+# - "not_checkable": it could not be checked automatically, because it needs a
+#   person, the internet, a key or another setting of the authors' computer,
+#   one platform (Google Colab, Kaggle, Windows, OpenSAFELY), more memory than
+#   the run allows, a download that was too large, a file we did not download,
+#   a screen, or a program that runs it (Snakemake), or it is a file of a
+#   package of the code that Python runs only as a module of that package.
+# NA for what is not a result of the script itself: a file run inside another
+# script, a file that is not an analysis, a file not read, and a Docker failure,
+# which says nothing about the code. `reason` is .repro_failure_reason()'s, and
+# `msg` the script's output, which tells a missing program or system library
+# apart from the other needs of the reason "environment".
+.repro_check_groups <- c("ran", "code_error", "dependency", "time", "not_checkable")
+.repro_check_group <- function(outcome, reason = NULL, msg = NULL) {
+  n <- length(outcome)
+  if (!n) return(character(0))
+  reason <- rep_len(reason %||% NA_character_, n)
+  msg <- rep_len(msg %||% "", n)
+  msg[is.na(msg)] <- ""
+  err <- outcome %in% "errored"
+  out <- rep(NA_character_, n)
+  out[outcome %in% "ran_ok"] <- "ran"
+  out[outcome %in% c("errored", "not_parsed", "python2", "skipped_missing_inputs")] <- "code_error"
+  out[outcome %in% "dependency_unavailable" | (err & reason %in% "package")] <- "dependency"
+  out[outcome %in% c("timed_out", "skipped_time_limit")] <- "time"
+  out[outcome %in% c("needs_a_person", "needs_internet", "out_of_memory", "download_too_large",
+                     "not_downloaded")] <- "not_checkable"
+  out[err & reason %in% c("settings", "internet", "interactive", "download")] <- "not_checkable"
+  # a module of one platform, or a file of a package run on its own, also when
+  # the install tried to find the module as a package
+  out[outcome %in% c("errored", "dependency_unavailable") & reason %in% c("platform", "how_to_run", "from_report")] <-
+    "not_checkable"
+  env <- err & reason %in% "environment"
+  missing_software <- env & !.repro_out_of_memory(msg) &
+    (!is.na(.repro_missing_program(msg)) |
+       grepl("shared object|caught segfault|Segmentation fault|core dumped|caught illegal operation",
+             msg, perl = TRUE))
+  out[missing_software] <- "dependency"
+  out[env & !missing_software] <- "not_checkable"
+  out
+}
+
+# The module summary's sentence on the scripts that did not run to the end,
+# by group (#580): "Of the others, 2 did not reproduce, 1 could not run because
+# a package or program was not available, and 1 could not be checked
+# automatically." Only scripts with a result of their own count (as in "3 of 6
+# scripts ran without error"), and not a Docker failure. NULL when there are none.
+.repro_groups_sentence <- function(run_results) {
+  if (is.null(run_results) || !nrow(run_results)) return(NULL)
+  oc <- run_results$outcome
+  group <- run_results$checked %||% .repro_check_group(
+    oc, run_results$reason, paste(run_results$error %||% "", run_results$stderr %||% ""))
+  own <- !oc %in% .repro_not_own_outcomes
+  n <- vapply(c("code_error", "dependency", "time", "not_checkable"),
+              function(g) sum(own & group %in% g), integer(1))
+  parts <- c(code_error = "did not reproduce",
+             dependency = "could not run because a package or program was not available",
+             time = "did not finish within the time limit",
+             not_checkable = "could not be checked automatically")
+  parts <- sprintf("%d %s", n, parts)[n > 0]
+  if (!length(parts)) return(NULL)
+  if (length(parts) > 1) parts <- c(parts[-length(parts)], paste("and", parts[[length(parts)]]))
+  paste0("Of the others, ", paste(parts, collapse = if (length(parts) > 2) ", " else " "), ".")
+}
+
 # The light after a run of one language, from the light before it (`tl`, from
 # the files the code reads) and the scripts' outcomes and reasons. A script
 # that stopped on an error of the code makes it red. Yellow, when nothing is
-# red: a script that ran past the time limit (a slow analysis is not an error
-# of the code; a time-out alone made 5 papers red, #648), one that stopped
-# only on something our run lacks or a deposit cannot hold (a program such as
-# git or Chrome, software outside R and Python, a setting such as a key or the
-# place of restricted data; reasons "environment" and "settings"), the other
-# outcomes the check could not finish, and a run in which no script ran to the
-# end, which was green when every script was set aside or could not install
-# its packages (#648).
+# red: a script whose package or program was not available, that ran past a
+# time limit (a slow analysis is not an error of the code; a time-out alone
+# made 5 papers red, #648), or that could not be checked automatically (see
+# .repro_check_group(); #580); a Docker failure or a file not read on our
+# side; and a run in which no script ran to the end, which was green when
+# every script was set aside or could not install its packages (#648).
 .repro_run_light <- function(tl, run_results) {
   if (is.null(run_results) || !nrow(run_results)) return(tl)
   oc <- run_results$outcome
-  reason <- run_results$reason %||% rep(NA_character_, length(oc))
-  ours <- oc %in% "errored" & reason %in% c("environment", "settings")
-  if (any(oc %in% "errored" & !ours)) return("red")
-  unfinished <- any(ours) ||
-    any(oc %in% c("timed_out", "skipped_time_limit", "docker_failed", "needs_a_person", "needs_internet",
-                  "download_too_large", "not_downloaded", "out_of_memory", "not_read",
-                  "dependency_unavailable")) ||
+  group <- run_results$checked %||% .repro_check_group(
+    oc, run_results$reason, paste(run_results$error %||% "", run_results$stderr %||% ""))
+  if (any(oc %in% "errored" & group %in% "code_error")) return("red")
+  unfinished <- any(group %in% c("dependency", "time", "not_checkable")) ||
+    any(oc %in% c("docker_failed", "not_read")) ||
     !any(oc %in% c("ran_ok", "run_by_source", "run_by_import"))
   if (unfinished && identical(tl, "green")) "yellow" else tl
 }
@@ -4642,8 +4797,12 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 # failure or a file not read on our side are not scripts with a result of their
 # own, nor is a script that stopped on
 # a file we did not download (counted apart as well). NA when nothing was run.
+# Also, per group of .repro_check_group(), how many of these scripts are in it
+# (`repro_ran_n`, `repro_code_error_n`, `repro_dependency_n`, `repro_time_n`,
+# `repro_not_checkable_n`; #580).
 .repro_run_counts <- function(run_results) {
   cols <- c("repro_scripts_n", "repro_not_analysis_n", "repro_not_downloaded_n",
+            paste0("repro_", .repro_check_groups, "_n"),
             paste0("repro_fail_", .repro_reason_levels))
   if (is.null(run_results) || !nrow(run_results) || !"outcome" %in% names(run_results))
     return(as.data.frame(as.list(stats::setNames(rep(NA_integer_, length(cols)), cols))))
@@ -4655,8 +4814,11 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
                              "not_downloaded", "not_read", "empty") &
     !is.na(outcome)
   fails <- vapply(.repro_reason_levels, function(r) sum(counted & reason %in% r), integer(1))
+  group <- run_results$checked %||% .repro_check_group(
+    outcome, reason, paste(run_results$error %||% "", run_results$stderr %||% ""))
+  groups <- vapply(.repro_check_groups, function(g) sum(counted & group %in% g), integer(1))
   as.data.frame(as.list(stats::setNames(
-    c(sum(counted), sum(outcome %in% "not_analysis"), sum(outcome %in% "not_downloaded"), fails),
+    c(sum(counted), sum(outcome %in% "not_analysis"), sum(outcome %in% "not_downloaded"), groups, fails),
     cols)))
 }
 
@@ -4810,6 +4972,66 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
     list(txt = strsplit(joined, "\n", fixed = TRUE)[[1]], n = n)
   }, error = function(e) list(txt = txt, n = 0L))
   out
+}
+
+# The calls of R code that need a screen, which the run does not have (#580).
+# Code written in RStudio or R on Windows always has one, so these calls are
+# no error of the code, but they stopped the script: dev.print(),
+# dev.copy2pdf() and dev.copy2eps() with "can only print from a screen
+# device", savePlot() with "can only copy from 'X11(type="*cairo")' devices",
+# x11() with "unable to start device X11cairo", View() with "unable to start
+# data viewer", and windows() with "could not find function". The name of each
+# call is replaced by a function written in its place, so the script's own
+# arguments stay as they are (also over several lines and in a pipe, "df %>%
+# View()") and the script keeps its number of lines:
+# - dev.print(), dev.copy2pdf(), dev.copy2eps() and savePlot() copy the plot
+#   to the file with dev.copy(), which needs no screen, close that copy, and
+#   go back to the plot that was open, as the originals do; savePlot()'s type
+#   chooses the device ("png" when it names none we have) and is added to a
+#   file name without an extension, as R for Windows does;
+# - windows(), win.graph(), x11(), X11() and quartz() open nothing: the next
+#   plot opens the run's default device, which writes to a file;
+# - View() shows nothing.
+# Each replacement says what it replaced. Returns list(txt, calls = the name of
+# each call replaced, once per call).
+.repro_screen_replacements <- local({
+  back <- "if (.d %in% grDevices::dev.list()) grDevices::dev.set(.d)"
+  copy_to <- function(device) sprintf(paste0(
+    "(function(...) { .d <- grDevices::dev.cur(); grDevices::dev.copy(device = %s, ...); ",
+    "grDevices::dev.off(); %s; invisible(.d) })"), device, back)
+  nothing <- function(name) sprintf(
+    "(function(...) invisible(\"reproducibility_check removed %s(), which needs a screen\"))", name)
+  c(dev.print = sprintf(paste0(
+      "(function(device = grDevices::postscript, ...) { .d <- grDevices::dev.cur(); ",
+      "grDevices::dev.copy(device = device, ...); grDevices::dev.off(); %s; invisible(.d) })"), back),
+    dev.copy2pdf = sub("(function(...)", "(function(..., out.type = \"pdf\")",
+                       copy_to("grDevices::pdf"), fixed = TRUE),
+    dev.copy2eps = copy_to("grDevices::postscript"),
+    savePlot = paste0(
+      "(function(filename = \"Rplot\", type = \"png\", device = grDevices::dev.cur(), ...) { ",
+      "type <- type[[1]]; to <- switch(type, jpg = , jpeg = grDevices::jpeg, tif = , tiff = grDevices::tiff, ",
+      "bmp = grDevices::bmp, pdf = grDevices::pdf, ps = , eps = grDevices::postscript, grDevices::png); ",
+      "if (!grepl(\".\", basename(filename), fixed = TRUE)) filename <- paste0(filename, \".\", type); ",
+      ".d <- grDevices::dev.cur(); grDevices::dev.set(device); grDevices::dev.copy(device = to, filename); ",
+      "grDevices::dev.off(); ", back, "; invisible(NULL) })"),
+    windows = nothing("windows"), win.graph = nothing("win.graph"), x11 = nothing("x11"),
+    X11 = nothing("X11"), quartz = nothing("quartz"), View = nothing("View"))
+})
+
+.repro_replace_screen_calls <- function(txt) {
+  calls <- character(0)
+  if (!length(txt)) return(list(txt = txt, calls = calls))
+  for (f in names(.repro_screen_replacements)) {
+    pat <- paste0("(?<![\\w.:$@])(?:(?:grDevices|utils)::)?", gsub(".", "\\.", f, fixed = TRUE),
+                  "(?=\\s*\\()")
+    # not in a line that is a comment, which would count a call never made
+    hit <- grepl(pat, txt, perl = TRUE) & !grepl("^\\s*#", txt)
+    if (!any(hit)) next
+    n <- sum(lengths(regmatches(txt[hit], gregexpr(pat, txt[hit], perl = TRUE))))
+    calls <- c(calls, rep(paste0(f, "()"), n))
+    txt[hit] <- gsub(pat, .repro_screen_replacements[[f]], txt[hit], perl = TRUE)
+  }
+  list(txt = txt, calls = calls)
 }
 
 # The same for a project's .Rprofile, which R runs when it starts: it usually
@@ -5040,6 +5262,8 @@ repro_materialize_layout <- function(plan, structure_df, root, deadline = NULL) 
 #'   `setwd_removed` (count of `setwd()`/`os.chdir()` calls replaced with a
 #'   statement that does nothing),
 #'   `env_calls_replaced` (count of groundhog, checkpoint and renv calls replaced),
+#'   `screen_calls_replaced` (the calls that need a screen replaced in R code,
+#'   one name per call, joined by "; "; see `.repro_replace_screen_calls()`),
 #'   `slashes_fixed` (the quoted Windows paths given `/`, as they were, joined by
 #'   "; "; see `.repro_slash_paths()`),
 #'   `setwd_folder_removed` (the paths made relative to the working folder
@@ -5162,6 +5386,11 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
       env_n <- env$n
     }
 
+    # calls that need a screen, which the run does not have (#580)
+    screen <- if (identical(fn_lang, "R")) .repro_replace_screen_calls(txt) else
+      list(txt = txt, calls = character(0))
+    txt <- screen$txt
+
     # lib.loc pointing to a folder on the authors' computer (#594)
     lib_loc <- if (identical(fn_lang, "R")) .repro_drop_author_lib_loc(txt) else
       list(txt = txt, paths = character(0))
@@ -5243,6 +5472,7 @@ repro_write_scripts <- function(code_text_list, rewrite_list, plan, root,
                run_dir = if (run_dir == ".") root else file.path(root, .portable_path(run_dir)),
                setwd_removed = setwd_n,
                env_calls_replaced = env_n,
+               screen_calls_replaced = paste(screen$calls, collapse = "; "),
                slashes_fixed = paste(slashed$paths, collapse = "; "),
                setwd_folder_removed = paste(under_setwd$paths, collapse = "; "),
                setwd_paths = paste(setwd_paths, collapse = ", "),

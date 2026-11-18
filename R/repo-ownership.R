@@ -128,6 +128,16 @@
 # The part of a link that identifies it, for finding it in a sentence
 .own_core <- function(h) tolower(gsub("[[:space:]]", "", sub("^https?://(dx\\.)?(www\\.)?", "", sub("/+$", "", h))))
 
+# One key for every form of one deposit's link, for telling links apart and
+# matching them to what a lookup learnt: a DOI as written in a reference
+# ("10.6084/m9.figshare.29094266") and as a link ("https://doi.org/10.6084/
+# m9.figshare.29094266"), an OSF project and its other forms (see
+# .repo_link_same_key()). With .own_core() alone a reference's DOI kept both
+# forms, and the lookup, which joins them, matched its record to one: the
+# other was classified without it, so one deposit was the paper's own and a
+# publication at once (#644).
+.own_key <- function(h) .own_core(.repo_link_same_key(h))
+
 # For main-text links: the sentences holding the link (at most two), their
 # sections ("type:header"), and whether those sentences cite other people's
 # work or the authors' own (a reference sharing a family name with them).
@@ -207,8 +217,11 @@
   found$href[gh_bare] <- paste0("https://github.com/", found$href[gh_bare])
   # a link whose ending reading the PDF wrote twice ("macroeco_phylophylo")
   found$href <- .repo_link_undoubled(found$href, .paper_link_hrefs(paper))
-  found <- found[!duplicated(tolower(found$href)), , drop = FALSE]
-  found <- found[!.own_core(found$href) %in% .own_core(exclude), , drop = FALSE]
+  # one row per deposit, however often and in whatever form the reference
+  # writes it; the full address is kept, which a report can link to
+  found <- found[order(!grepl("^https?://", found$href, ignore.case = TRUE)), , drop = FALSE]
+  found <- found[!duplicated(.own_key(found$href)), , drop = FALSE]
+  found <- found[!.own_key(found$href) %in% .own_key(exclude), , drop = FALSE]
   if (!nrow(found)) return(empty)
   se <- paper$section
   sec <- if (is.data.frame(se)) se[match(tx$section_id, se$section_id), , drop = FALSE] else NULL
@@ -396,7 +409,7 @@
 # Mark the rows of `out` whose link repo_check ignored as a publication
 .own_mark_publications <- function(out, urls) {
   if (!is.data.frame(out) || !nrow(out) || !length(urls)) return(out)
-  k <- .own_core(out$repo_url) %in% .own_core(urls)
+  k <- .own_key(out$repo_url) %in% .own_key(urls)
   out$ownership[k] <- "not_data"
   out$ownership_group[k] <- "not_data"
   out$ownership_reason[k] <- .own_pub_reason

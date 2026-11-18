@@ -96,13 +96,16 @@
   kind[is.na(kind) & (startsWith(base, "~$") | grepl("^\\.~lock\\..*#$", base))] <-
     "open-document lock files"
   # The commands typed in an R session: they can hold file paths and passwords.
-  kind[is.na(kind) & base == ".Rhistory"] <- "R history"
+  # The R app on macOS keeps it as .Rapp.history (#648).
+  kind[is.na(kind) & base %in% c(".Rhistory", ".Rapp.history")] <- "R history"
   # Copies an editor makes by itself: "file~", .bak, and Vim's swap files.
   kind[is.na(kind) & grepl("(~|\\.bak|\\.swp|\\.swo)$", base, ignore.case = TRUE)] <-
     "editor backups"
   # Temporary files a program forgot to remove.
-  kind[is.na(kind) & grepl("\\.(tmp|temp)$", base, ignore.case = TRUE)] <-
-    "temporary files"
+  # R writes a workspace to .RDataTmp first and renames it when saving ends,
+  # so one left behind is an interrupted save (#648: a 9 MB one).
+  kind[is.na(kind) & (grepl("\\.(tmp|temp)$", base, ignore.case = TRUE) |
+                        grepl("^\\.RDataTmp[0-9]*$", base))] <- "temporary files"
   kind[is.na(p)] <- NA_character_
   kind
 }

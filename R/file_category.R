@@ -139,6 +139,24 @@ file_category <- function(contents) {
     grepl("(^|[^A-Za-z])read\\.me([^A-Za-z]|$)", x, ignore.case = TRUE, perl = TRUE)
 }
 
+# What a file is for repo_check's counts (files_data, files_code, files_readme,
+# files_zip) and its archive advice: data_classify_files()'s class
+# (`data_type`), a README by its name, and an archive by .is_archive_name().
+# The counts were taken from filetype(), a second table of extensions that
+# disagreed with the File Classification of the same report: data.nc and
+# eeg.set were none there and data here, run.sh code there and materials
+# here, a .jar and a .log.gz archives there (#648, K8d). A README inside a .zip
+# whose listing was read counts too, as its rows are classified here (11 of 132
+# preprints had "no README" for one), and an empty file named README does not
+# (`file_size` 0; NA counts, as many hosts give no size).
+.repo_file_kind <- function(file_name, data_type, file_size = NULL) {
+  out <- as.character(data_type)
+  size <- suppressWarnings(as.numeric(file_size %||% rep(NA_real_, length(file_name))))
+  out[.is_readme_name(file_name) & !(size %in% 0)] <- "readme"
+  out[.is_archive_name(file_name)] <- "archive"
+  out
+}
+
 #' Get file Type from Extension
 #'
 #' @param filename the file name

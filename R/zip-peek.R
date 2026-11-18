@@ -1416,6 +1416,13 @@ zip_peek <- function(url, tail_bytes = 131072, cache = FALSE,
 # Archives base R can read (and therefore worth downloading despite `unknown`).
 .is_readable_archive <- function(name)
   .is_zip(name) | .is_tar_archive(name) | .is_single_compress(name)
+# An archive, a container of several files: a .zip, a tar (also compressed),
+# a .7z or a .rar. A single compressed file ("scan.nii.gz", "run.log.gz") is
+# not one, as it holds one file, which is what it is; repo_check counted 280
+# compressed logs of one deposit as archives and advised the .zip format for
+# them (#648).
+.is_archive_name <- function(name)
+  .is_zip(name) | .is_tar_archive(name) | grepl("[.](7z|rar)$", name, ignore.case = TRUE)
 
 # Shared back end for the three .expand_* functions. Called AFTER extraction: it
 # walks what is actually on disk under `dest` (rather than trusting the archive's
