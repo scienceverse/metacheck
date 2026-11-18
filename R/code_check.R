@@ -336,6 +336,30 @@ code_lang <- function(file_name) {
 # Returns TRUE per row of `files` (a code_check/repo_check table).
 .in_renv_folder <- function(files) .in_folder(files, "renv")
 
+# Whether each path is code by others that a deposit bundles, so it is not
+# judged as the authors' own code (#648, K5): a folder that by convention holds
+# other people's software (node_modules, vendor, third_party, external,
+# site-packages, Stata's ado folders such as extra_ados/, MATLAB toolboxes/), a
+# folder named after a release of a program ("jspsych-6.3.1/", "ANTs-2.4.3/",
+# unpacked rather than written), or minified JavaScript (".min.js", which no
+# one writes by hand). In 8 of 132 preprints such code was counted and checked
+# as the authors': 52 of 56 code files in one were jsPsych, 27 of 43 in another
+# Stata packages. `path` is a file's path in its deposit (or its name).
+.others_code_folder_pat <- paste0(
+  "(^|/)(node_modules|bower_components|vendor|vendored|third[_ -]?party|external|extern|",
+  "site-packages|dist-packages|ados?|[a-z0-9]+_ados?|toolboxes|",
+  "[a-z][a-z0-9_.]*-v?[0-9]+(?:[.][0-9]+)+)/")
+.is_others_code_path <- function(path) {
+  p <- gsub("\\\\", "/", ifelse(is.na(path), "", path))
+  grepl(.others_code_folder_pat, p, ignore.case = TRUE, perl = TRUE) |
+    grepl("[.]min[.]js$", p, ignore.case = TRUE)
+}
+.in_others_code_folder <- function(files) {
+  if (!nrow(files)) return(logical(0))
+  p <- files$file_path %||% rep(NA_character_, nrow(files))
+  .is_others_code_path(ifelse(is.na(p) | !nzchar(p), files$file_name %||% NA_character_, p))
+}
+
 # Whether each file is in a folder of this name, at any depth.
 .in_folder <- function(files, folder) {
   if (!nrow(files)) return(logical(0))
@@ -660,7 +684,9 @@ code_lang <- function(file_name) {
   # analyses). In the 563 stored reports, 174 .html files in 48 papers had an
   # .Rmd or .qmd of the same name.
   stem <- function(x) tolower(sub("\\.[^.]*$", "", basename(x)))
-  src_rows <- grepl("\\.(rmd|qmd)$", all_files$file_name, ignore.case = TRUE)
+  # also a plain .R script, which rmarkdown::render() knits as well (r89cq_v1:
+  # MOS01_osf_raport.R beside MOS01_osf_raport.html; #648)
+  src_rows <- grepl("\\.(rmd|qmd|r)$", all_files$file_name, ignore.case = TRUE)
   src_key <- paste(all_files$repo_url[src_rows] %||% "", stem(all_files$file_name[src_rows]), sep = "\r")
   has_source <- paste(html_files$repo_url %||% "", stem(html_files$file_name), sep = "\r") %in% src_key
 
@@ -1262,6 +1288,20 @@ code_abs_path <- function(code_text) {
     # "?name=" is the query of a web address ("/api/audit?limit=50").
     return(FALSE)
   }
+  # a web route or address, the first thing given to a call that serves or
+  # requests one: Flask's @app.route("/api/v1/auth/login"), a test client's
+  # client.get("/api/health"), requests.post(), fetch(), url_for(), httr's
+  # GET(); h5py's f.get("/Data") names a data set. In one deposit these were
+  # all 12 of 41 Python files flagged (#648)
+  if (slash && grepl(paste0("(?:^|[^A-Za-z0-9_])(?:[A-Za-z_][A-Za-z0-9_]*\\.)*",
+                            "(?:route|api_route|get|post|put|patch|delete|head|options|fetch|url_for|",
+                            "redirect|add_url_rule|websocket|GET|POST|PUT|PATCH|DELETE|HEAD|VERB)",
+                            "\\s*\\(\\s*[rfbu]?$"), before, perl = TRUE)) return(FALSE)
+  # or assigned to a name that says it is one (API_PREFIX = "/api/v1",
+  # url = "/api/v1/examinations/%d"); not "prefix" or "path", which also name
+  # folders (data_prefix = "/home/me/data")
+  if (slash && grepl("(?i)\\b[a-z0-9_]*(?:url|uri|route|endpoint|api|href)[a-z0-9_]*\\s*(?:=|<-)\\s*[rfbu]?$",
+                     before, perl = TRUE)) return(FALSE)
   if (grepl("^/(dev|proc|sys)(/|$)", path)) return(FALSE)
   if (grepl("(^|/)(path/to|your[^/]*)(/|$)", path, ignore.case = TRUE) ||
       grepl("^(/|[A-Za-z]:[/\\\\])?[A-Z_]*(EXAMPLE|DIRECTORY|FOLDER|PATH|YOUR)[A-Z_]*(/|$)", path)) return(FALSE)
@@ -2736,6 +2776,23 @@ code_packages <- function(packages) {
   code_text
 }
 
+# Whether code downloads or unpacks files without naming them in the call, so
+# the files it makes cannot be listed: an osfr download
+# (`osf_ls_files(pattern = "x.Rda") %>% osf_download()`), an archive unpacked
+# with unzip(), untar(), archive_extract(), Python's extractall() or
+# unpack_archive(), or a whole record fetched (Zenodo, Hugging Face, Kaggle,
+# figshare, Dataverse, Google Drive, a GitHub release). The files such code
+# reads were reported as missing from the deposit (#648, K3a: sjtp3_v2's
+# VIA_merged_unfiltered.Rda); they may well be made by it.
+.code_fetch_unnamed_re <- paste0(
+  "\\b(?:osf_download|osf_retrieve_[a-z]+|unzip|untar|archive_extract|extractall|unpack_archive|",
+  "download_zenodo|zenodo_get|snapshot_download|hf_hub_download|pb_download|drive_download|",
+  "get_dataframe_by_name|get_file_by_name|fs_download|dataset_download_files|download_and_extract)\\s*\\(|",
+  "\\bkaggle\\s+datasets\\s+download\\b|^\\s*unzipfile\\b")
+.code_fetches_unnamed <- function(code_text, lang = NA_character_) {
+  any(grepl(.code_fetch_unnamed_re, code_text %||% character(0), perl = TRUE, ignore.case = TRUE))
+}
+
 # The files each code file reads that are missing (code_check's
 # `loaded_files_missing` and `loaded_files_missing_names`), once every code file
 # of the paper has been read. A file is not missing when the repository holds it
@@ -2749,11 +2806,18 @@ code_packages <- function(packages) {
 # writes, and patterns such as "vzv_aou_ac_%s_model.csv" were reported as
 # missing. `code_files` holds `loaded_refs` (the files read, joined by
 # "\u001f"), which is dropped.
+# When a code file of the same paper downloads or unpacks files without naming
+# them (`fetches_unnamed`, see .code_fetches_unnamed()), the files not found
+# are listed in `loaded_files_fetched_names` instead, as files that code may
+# make, and are not counted as missing (#648, K3a).
 .code_missing_files <- function(code_files, all_files) {
   if (!"loaded_refs" %in% names(code_files)) return(code_files)
   # NA for a file that was not read, or whose reading stopped on an error
   code_files$loaded_files_missing <- NA_integer_
   code_files$loaded_files_missing_names <- NA_character_
+  code_files$loaded_files_fetched_names <- NA_character_
+  fetches <- as.logical(code_files$fetches_unnamed %||% rep(FALSE, nrow(code_files)))
+  fetches[is.na(fetches)] <- FALSE
   base <- function(x) basename(gsub("\\\\", "/", x))
   paper <- if ("paper_id" %in% names(code_files)) code_files$paper_id else rep("", nrow(code_files))
   written <- as.character(code_files$files_written %||% rep(NA_character_, nrow(code_files)))
@@ -2770,10 +2834,15 @@ code_packages <- function(packages) {
     same <- if (is.na(paper[[i]])) is.na(paper) else paper %in% paper[[i]]
     made <- unlist(written[same], use.names = FALSE)
     missing <- refs[!.code_name_match(refs, c(in_repo, made))]
+    if (length(missing) && any(fetches[same])) {
+      code_files$loaded_files_fetched_names[[i]] <- paste(missing, collapse = ", ")
+      missing <- character(0)
+    }
     code_files$loaded_files_missing[[i]] <- length(missing)
     code_files$loaded_files_missing_names[[i]] <- paste(missing, collapse = ", ")
   }
   code_files$loaded_refs <- NULL
+  code_files$fetches_unnamed <- NULL
   code_files
 }
 

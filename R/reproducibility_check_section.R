@@ -277,6 +277,27 @@
         paste("We could not check these scripts, because the computer we run the code on is not that",
               "platform. Say in the README which platform the code needs. Where you can, let the analysis",
               "also run without it, for example by reading the data from files in the deposit."))
+  # data the paper says cannot be shared, which the deposit does not hold
+  # (#648, K4)
+  restricted <- which(err & reason %in% "restricted")
+  restricted_file <- vapply(restricted, \(i) {
+    f <- .repro_unopened_files(msg[[i]], full = TRUE)
+    if (length(f)) basename(f[[1]]) else NA_character_
+  }, character(1))
+  block("restricted", restricted, "A script reads data the paper says cannot be shared.",
+        ifelse(is.na(restricted_file), code(name[restricted]),
+               sprintf("%s reads %s", code(name[restricted]), code(restricted_file))),
+        paste("We could not check these scripts, because the deposit does not hold their data, as the",
+              "paper explains. Readers who obtain the data can run them. Where the rules allow, add a",
+              "small example or synthetic data set with the same columns, so that readers can check",
+              "that the code runs."))
+  # code recovered from a knitted report whose source is not deposited (#648, K8a)
+  from_report <- which(err & reason %in% "from_report")
+  block("from_report", from_report, "A script's code was taken from a knitted report, as its source is not in the deposit.",
+        code(name[from_report]),
+        paste("A knitted report (.html) shows only the code chunks it was set to show, so code is missing",
+              "from it, and we could not check the analysis. Add the R Markdown or Quarto file the report was",
+              "knitted from to the deposit."))
   # a file of a package of the code, run on its own (#580)
   module <- which(err & reason %in% "how_to_run")
   block("module", module, "A script is part of a package of your code, and Python cannot run it on its own.",
@@ -292,13 +313,25 @@
     hit <- hit[-1][nzchar(hit[-1])]
     if (length(hit)) hit[[1]] else NA_character_
   }, character(1))
-  block("undefined", undefined, "A script uses something it does not create or load itself.",
-        ifelse(is.na(obj), code(name[undefined]), sprintf("%s: %s", code(name[undefined]), code(obj))),
+  # The steps in the language of the scripts: Python notebooks were told to
+  # restart R and use library() (#648, K2c)
+  und_py <- is_py[undefined]
+  und_lines <- ifelse(is.na(obj), code(name[undefined]), sprintf("%s: %s", code(name[undefined]), code(obj)))
+  block("undefined", undefined[!und_py], "A script uses something it does not create or load itself.",
+        und_lines[!und_py],
         "Usually the object was still in your R session from earlier work, or another script made it.",
         c("Restart R (in RStudio: Session > Restart R).",
           "Run each script from top to bottom, and fix what is missing.",
           "If a script needs results of another, save them to a file in the first script and read them in the second.",
           "Load every package with <code>library()</code> at the top."))
+  block("undefined_py", undefined[und_py], "A Python script or notebook uses something it does not create or import itself.",
+        und_lines[und_py],
+        paste("Usually the name was still defined in your Python session or notebook kernel from earlier work,",
+              "or another script made it."),
+        c("Restart the kernel and run every cell from the top (in Jupyter: Kernel > Restart & Run All), or run the script in a new Python session.",
+          "Fix what is missing.",
+          "If a script needs results of another, save them to a file in the first script and read them in the second.",
+          "Import every module at the top with <code>import</code>."))
   syntax <- which(outcome %in% c("not_parsed", "static_parse_error") | (err & reason %in% "syntax"))
   block("syntax", syntax, "R or Python could not read a script, because of a mistake in the code itself.",
         code(name[syntax]),
@@ -336,7 +369,7 @@
 
   # in the order in which the problems should be fixed
   order <- c("by_script", "by_other", "absent", "absolute", "renamed", "archived", "unnamed", "changed", "missing_pkg",
-             "dep", "program", "env", "keys", "windows", "platform", "undefined", "syntax", "slow", "memory",
+             "dep", "program", "env", "keys", "windows", "platform", "restricted", "from_report", "undefined", "undefined_py", "syntax", "slow", "memory",
              "online", "person", "module", "unknown")
   structure(as.character(unlist(blocks[intersect(order, names(blocks))], use.names = FALSE)),
             scripts = sort(covered))
@@ -528,7 +561,9 @@
          ifelse(reason %in% "settings", "needed a key or a setting of your computer",
          ifelse(reason %in% "platform", paste("needed", .repro_platform_of(msg)),
          ifelse(reason %in% "how_to_run", "needed to be started as part of its package",
-                "needed something our computer does not have, such as a screen")))))))
+         ifelse(reason %in% "restricted", "needed data the paper says cannot be shared",
+         ifelse(reason %in% "from_report", "was taken from a knitted report, which leaves out code",
+                "needed something our computer does not have, such as a screen")))))))))
   nc <- counted & group %in% "not_checkable"
   why_n <- table(factor(why[nc], levels = unique(why[nc])))
   parts <- c(
@@ -557,9 +592,13 @@
   setwd_n[is.na(setwd_n)] <- 0L
   problems <- vapply(which(setwd_n > 0), \(i) {
     fun <- if (is_py[[i]]) "os.chdir()" else "setwd()"
-    sprintf(paste0("- %s calls %s, which ties the script to a folder on the ",
-                   "author's computer. We replaced the call with one that does ",
-                   "nothing so the script could run; it should be removed from the script."),
+    # Not every such call names a folder on the author's computer:
+    # setwd(here::here("S3", "data")) and a folder next to the script work
+    # anywhere, and were called so (#648, 7 of 132 preprints)
+    sprintf(paste0("- %s calls %s, which sets the folder the script runs in. We replaced the call ",
+                   "with one that does nothing, so the script ran from the top folder of the project. ",
+                   "A folder on your own computer does not exist on another; paths written from the ",
+                   "project's top folder work everywhere."),
             .repro_cell(tbl$file_name[[i]]), fun)
   }, character(1))
   # file names spelled otherwise in the code than in the deposit
@@ -585,7 +624,7 @@
     paste0(
       sprintf("Of the %d statistical test%s reported in the paper, %d %s found in the output of the code.",
               n_tests, plural(n_tests), n_found, plural(n_found, "was", "were")),
-      if (n_ok == 0) " No script ran to the end, so most results were never produced." else "")
+      if (n_ok == 0) " No script ran to the end, so the results the scripts would have printed after the point where they stopped are missing from the comparison." else "")
   }
 
   # what the authors can change so the code runs, one line per cause (#575)

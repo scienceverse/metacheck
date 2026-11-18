@@ -4,10 +4,12 @@
 \alias{data_check_pii_name}
 \title{Flag a column whose name suggests personal information}
 \usage{
-data_check_pii_name(col_name)
+data_check_pii_name(col_name, x = NULL)
 }
 \arguments{
 \item{col_name}{the column name}
+
+\item{x}{optional: the column's values, to confirm a word with a value shape}
 }
 \value{
 list(problem, message, values)
@@ -35,9 +37,20 @@ separators still match ("telefoonnummer", "geboortedatum");
 Measured against 2113 real column names and a decoy set of ordinary research
 vocabulary, this cut false positives from 14 to 2 while missing nothing the
 previous substring rule caught.
+
+Some words name a kind of value with a shape of its own. When the column's
+values \code{x} are given, such a word counts only when a value has that shape: a
+phone number for "phone", "mobile" or "fax"; an IP address for "ip"; a MAC
+address for "mac"; a date or a year of birth for "dob" and the like.
+Coordinates ("lat", "gps", "geolocation") are left to
+\code{\link[=data_check_pii_geo]{data_check_pii_geo()}}, which checks their values. Without that, "phone"
+holding the kind of device, "hosp_ward_IP" (inpatient), "SiPhy_29way_logOdds"
+(read as "ip"), "HLA-DOB" (a gene) and "GEO_LOCATION_VILLAGE" (village names)
+were flagged in 19 of 132 preprints (#648, K6).
 }
 \examples{
 data_check_pii_name("email")$problem
 data_check_pii_name("rt")$problem
+data_check_pii_name("phone", c("iPhone", "Android"))$problem
 }
 \keyword{internal}

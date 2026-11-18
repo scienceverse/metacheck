@@ -264,12 +264,17 @@ read_r_output <- function(text, source_label = NA_character_, code_lines = NULL)
 # real result is never dropped on a guess -- only these specific, well-known
 # inspection calls are excluded.
 .R_PREVIEW_CALLS <- c("head", "tail", "str", "glimpse", "print", "view",
-                     "dim", "names", "colnames", "rownames", "nrow", "ncol")
+                     "dim", "names", "colnames", "rownames", "nrow", "ncol",
+                     # what R reports about the session, never a result: the
+                     # memory table of gc(), dev.off()'s "null device 1", the
+                     # times of system.time() (#648, K8e)
+                     "gc", "dev.off", "graphics.off", "system.time", "proc.time",
+                     "sessioninfo", "sys.time", "set.seed", "packageversion")
 .r_is_preview_call <- function(call_text) {
   if (is.null(call_text) || !nzchar(call_text)) return(FALSE)
   ct <- tolower(call_text)
   any(vapply(.R_PREVIEW_CALLS, function(f)
-    grepl(paste0("^(dplyr::|utils::|base::)?", f, "\\s*\\("), ct, perl = TRUE),
+    grepl(paste0("^([a-z][a-z0-9.]*::)?", gsub(".", "\\.", f, fixed = TRUE), "\\s*\\("), ct, perl = TRUE),
     logical(1)))
 }
 

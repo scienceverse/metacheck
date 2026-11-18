@@ -1861,7 +1861,8 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       # sharing" prompts, never echoing the matching value.
       pv <- data_check_pii_values(x)
       if (pv$problem) col_finds[["Personal info (values)"]] <- pv$message
-      pn <- data_check_pii_name(col)
+      # with the values, which confirm a word such as "phone" or "ip" (#648)
+      pn <- data_check_pii_name(col, x)
       if (pn$problem) col_finds[["Personal info (column name)"]] <- pn$message
       # sibling_names lets the geo check require a partner column: a latitude is
       # only a coordinate when a longitude sits beside it, which is what tells a

@@ -222,6 +222,27 @@ stat_results_long <- function(tables, paper_id = NA_character_,
     stat_cols <- stat_cols[!is_row_no]
     if (!length(stat_cols)) return(NULL)
 
+    # What a column header says it holds: a statistic the vocabulary knows
+    # (typed), or nothing. A header that is itself a number ("0.61", "<2e-16",
+    # a value of the row above taken as the header, as in the HTML of
+    # knitr::kable() tables) or no header at all (V3, V7: the reader found
+    # none) says nothing, so an untyped value under it is no result (#648, K8e:
+    # 55,599 of 255,615 values stored in 118 runs, none typed).
+    typed_col <- vapply(stat_cols, function(ci)
+      nzchar(stato_type_column(headers[[ci]], tb$call_fn)$termSource %||% ""), logical(1))
+    no_name <- grepl("^(V[0-9]+|\\s*[<>]?\\s*-?[0-9][0-9.]*(e[-+]?[0-9]+)?\\s*)$", headers[stat_cols],
+                     ignore.case = TRUE)
+    # A printed data frame numbers its rows, while a result table labels each
+    # row with what it is about (a predictor, a parameter). A numbered table
+    # of more than 20 rows in which no column names a statistic is therefore
+    # a listing of data ("subjID | session | choice | outcome", 125 rows), not
+    # results: 29,483 values in 35 such tables of 118 runs (#648, K8e).
+    # (an .spv table, see below, has one generic "value" column instead)
+    spv_table <- !is.null(tb$syntax)
+    if (!spv_table && any(is_row_no) && nrow(df) > 20 && !any(typed_col)) return(NULL)
+    stat_cols <- stat_cols[typed_col | !no_name | spv_table]
+    if (!length(stat_cols)) return(NULL)
+
     # An .spv table (see R/spv.R) is LONG/tidy: one column per
     # row/column/layer DIMENSION holding that cell's category label, plus a
     # single generic "value" column -- the statistic's own NAME sits as a

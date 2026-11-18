@@ -555,6 +555,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   structure_df <- up$structure_df
   code_tbl <- up$code_tbl
   archives_got <- up$archives
+  # whether the paper says its data cannot be shared (#648, K4); only for one
+  # paper, as the scripts of several papers run as one are not told apart
+  one_paper <- if (.is_paper(paper)) paper else
+    if (.is_paper_list(paper) && length(paper) == 1) paper[[1]] else NULL
+  data_restricted <- .repro_paper_says_data_restricted(one_paper)
+  # scripts code_check recovered from a knitted report (.html) whose source is
+  # not in the deposit: the report leaves out the chunks it does not show, so
+  # the recovered code is incomplete, and its failure was blamed on the code
+  # (#648, K8a: 17 of 132 preprints)
+  from_report <- if (!is.null(code_tbl) && "recovered_from" %in% names(code_tbl))
+    code_tbl$file_name[grepl("\\.html?$", code_tbl$recovered_from %||% "", ignore.case = TRUE)] else character(0)
   # The code runs in the repository as the authors organised it; only paths that
   # do not work there are rewritten (#568)
   plan_of <- function(s) .repro_package_plan(dplyr::bind_rows(s, others_got, archives_got))
@@ -2131,6 +2142,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         run_results2 <- run_results2[order(match(run_results2$file_name, run_order2)), , drop = FALSE]
         run_results <- run_results2
         order_tbl <- order_tbl2   # report the corrected order
+        # and say of it what the table shows: the text kept the first order's
+        # "no ordering signal" or cycle beside the corrected table (#648, K8f)
+        cycle <- attr(order_tbl2, "cycle") %||% character(0)
+        ambiguous_order <- ambiguous_order && isTRUE(attr(order_tbl2, "ambiguous"))
         run_tbl <- run_tbl2       # so downstream setwd/family/injection detail (#391) reflects pass 2
         reran <- TRUE
         reran_for_reorder <- length(extra_edges) > 0
@@ -2312,6 +2327,11 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # stopped on a Git LFS pointer the deposit has no file for: a missing file (#568)
     r_lfs_stopped <- .repro_lfs_stopped(run_results, sandbox_root)
     run_results$reason[run_results$file_name %in% names(r_lfs_stopped)] <- "file"
+    # data the paper says cannot be shared, which the deposit does not hold:
+    # not checkable, rather than an error of the code (#648, K4)
+    if (isTRUE(data_restricted))
+      run_results$reason[.repro_stopped_on_absent_file(run_results, structure_df$file_name)] <- "restricted"
+    run_results$reason[.repro_from_report_failed(run_results, from_report)] <- "from_report"
     # ran, did not reproduce, a package or program not available, out of time,
     # or could not be checked automatically (#580)
     run_results$checked <- .repro_check_group(run_results$outcome, run_results$reason,
@@ -2499,7 +2519,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
   ## Path rewriting ----
   total_rewrites <- sum(rewrites_n)
   total_ambiguous <- sum(ambiguous_n)
-  report_paths <- .repro_path_fix_text(rewrite_list, execute)
+  report_paths <- .repro_path_fix_text(rewrite_list, execute, absent = unresolved_refs)
   # archives the run unpacked because the code reads files inside them (#648)
   arch_txt <- .repro_archive_text(structure_df, code_text_list)
   if (nzchar(arch_txt)) report_paths <- paste(report_paths, arch_txt)
@@ -3794,6 +3814,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_run_results$reason <- .repro_failure_reason(py_run_results$outcome, paste(py_run_results$error, py_run_results$stderr))
       py_lfs_stopped <- .repro_lfs_stopped(py_run_results, sandbox_root)
       py_run_results$reason[py_run_results$file_name %in% names(py_lfs_stopped)] <- "file"
+      if (isTRUE(data_restricted))
+        py_run_results$reason[.repro_stopped_on_absent_file(py_run_results, structure_df$file_name)] <- "restricted"
+      py_run_results$reason[.repro_from_report_failed(py_run_results, from_report)] <- "from_report"
       py_run_results$checked <- .repro_check_group(py_run_results$outcome, py_run_results$reason,
                                                    paste(py_run_results$error, py_run_results$stderr))
     }
@@ -3962,7 +3985,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   py_total_rewrites <- sum(py_rewrites_n)
   py_total_ambiguous <- sum(py_ambiguous_n)
-  py_report_paths <- .repro_path_fix_text(py_rewrite_list, execute)
+  py_report_paths <- .repro_path_fix_text(py_rewrite_list, execute, absent = py_unresolved_refs)
   py_arch_txt <- .repro_archive_text(structure_df, py_code_text_list)
   if (nzchar(py_arch_txt)) py_report_paths <- paste(py_report_paths,
     sub("`unzip\\(\"([^\"]*)\"\\)` in R", "`zipfile.ZipFile(\"\\1\").extractall()` in Python", py_arch_txt))
@@ -4083,9 +4106,14 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
         " %d %s not run on %s own, because other files import %s: %s.",
         n_py_import, plural(n_py_import, "file was", "files were"),
         plural(n_py_import, "its", "their"), plural(n_py_import, "it", "them"),
-        paste(sprintf("%s (by %s)", names(py_imported),
-                      vapply(py_imported, paste, character(1), collapse = ", ")),
-              collapse = "; ")) else "")
+        # only the files counted: the list named every file another imports,
+        # also those with another outcome ("2 more files are imported" beside
+        # a list of 19; #648, K8f)
+        local({
+          imp <- py_imported[names(py_imported) %in% py_run_results$file_name[py_oc == "run_by_import"]]
+          paste(sprintf("%s (by %s)", names(imp), vapply(imp, paste, character(1), collapse = ", ")),
+                collapse = "; ")
+        })) else "")
 
     # scripts not started because the time for all scripts together ran out
     # (Lakens/tue_datamanager_check#4, item 6)

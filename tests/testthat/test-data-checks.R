@@ -1484,6 +1484,34 @@ test_that("data_group_llm makes no model request and reports nothing unanswered 
   expect_false(anyNA(grp$group))
 })
 
+test_that("a column name that suggests personal data is confirmed by its values when it can be (#648, K6)", {
+  f <- function(nm, x) data_check_pii_name(nm, x)$problem
+  expect_false(f("phone", c("iPhone", "Android")))
+  expect_true(f("phone", c("+31 6 12345678", "06-87654321")))
+  expect_false(f("hosp_ward_IP", c(3, 5, 0)))
+  expect_true(f("ip_address", c("192.168.0.1", "10.0.0.2")))
+  expect_false(f("SiPhy_29way_logOdds", c(1.2, 3.4)))
+  expect_false(f("HLA-DOB", c("DOB*01:01", "DOB*01:02")))
+  expect_true(f("dob", c("1985-03-12", "1990-11-02")))
+  expect_true(f("birthyear", c(1985, 1990)))
+  expect_false(f("GEO_LOCATION_VILLAGE", c("Kibera", "Mathare")))
+  expect_true(f("first_name", c("Anna", "Ben")))
+  # without values, as before
+  expect_true(data_check_pii_name("phone")$problem)
+  # a time after a date, or a browser's version, is not an IP address
+  expect_false(data_check_pii_values(rep("06.04.2026 15.34.46.182", 5))$problem)
+  expect_false(data_check_pii_values(rep("Mozilla/5.0 AppleWebKit/537.36 Chrome/84.0.4147.89", 3))$problem)
+  expect_true(data_check_pii_values(c("192.168.0.1", "10.0.0.2", "10.0.0.3"))$problem)
+})
+
+test_that("a study number in a path ends there, and a pilot study is a pilot (#648, K7)", {
+  p <- c("study104/a.csv", "data/study03032026.csv", "STUDY-20-00338.pdf", "Pilot Study 1A/x.csv",
+         "pilot2_data.csv", "pilot/x.csv", "Study 2/a.csv", "study2a_data.csv",
+         "experiment3explicit.csv", "Exp1/raw.csv", "study2_2019.csv", "study1_2.csv", "index1.csv")
+  expect_equal(.data_group_from_path(p),
+               c(NA, NA, NA, "pilot1a", "pilot2", "pilot1", "ex2", "ex2a", "ex3", "ex1", "ex2", "ex1", NA))
+})
+
 test_that("one-letter study labels in file names count only when the paper confirms them (#648)", {
   llm_use(FALSE)
   paper <- demopaper()

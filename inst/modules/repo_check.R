@@ -2364,6 +2364,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   all_files$data_type <- data_classify_files(all_files$file_name,
                                              all_files$file_path)
   all_files$doc_role  <- .data_doc_role(all_files$file_name)
+  # what each file is for the counts per repository and the archive advice:
+  # the same classification, so the two parts of the report agree (#648, K8d)
+  all_files$file_kind <- .repo_file_kind(all_files$file_name, all_files$data_type,
+                                         all_files$file_size)
 
   ## whose deposit is it (#634) ----
   # with the records and files of the publications set aside above, so their
@@ -2445,13 +2449,13 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
       "command line with `zip -r -X`, or remove them afterwards with",
       "`zip -d archive.zip \"__MACOSX/*\" \"*.DS_Store\"`.",
       "*RStudio session files* (`.Rproj.user/`) hold open tabs and unsaved",
-      "edits; *R history* (`.Rhistory`) lists the commands typed in a session",
+      "edits; *R history* (`.Rhistory`, `.Rapp.history`) lists the commands typed in a session",
       "and can hold file paths and passwords; *Jupyter checkpoints*",
       "(`.ipynb_checkpoints/`) are automatic copies of notebooks; *compiled",
       "Python files* (`__pycache__/`, `.pyc`) are recreated when the code runs;",
       "*open-document lock files* (`~$...docx`, `.~lock...#`) are left while a",
       "document is open; *editor backups* (`file~`, `.bak`, `.swp`) and",
-      "*temporary files* (`.tmp`, `.temp`) are copies a program made by itself."),
+      "*temporary files* (`.tmp`, `.temp`, an interrupted save of R's workspace, `.RDataTmp`) are copies a program made by itself."),
     paste(
       "*Keep only on purpose:* *version control* folders (`.git`, `.svn`, `.hg`)",
       "hold the project's history, which can include earlier versions of files",
@@ -2540,10 +2544,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   repos <- dplyr::full_join(repos, all_files, by = c("paper_id", "repo_url"), relationship = "many-to-many") |>
     dplyr::summarise(
       files_n = sum(!is.na(file_name)),
-      files_data = sum(file_type %in% "data"),
-      files_code = sum(file_type %in% "code"),
-      files_readme = sum(file_type %in% "readme"),
-      files_zip = sum(file_type %in% "archive"),
+      files_data = sum(file_kind %in% "data"),
+      files_code = sum(file_kind %in% "code"),
+      files_readme = sum(file_kind %in% "readme"),
+      files_zip = sum(file_kind %in% "archive"),
       .by = c(paper_id, repo_url, repo_type, repo_error)
     )
 
@@ -2691,7 +2695,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # A plain .tar listed above (by downloading it) is no longer an archive row,
   # but the advice still applies to it, so it is named here too.
   zip_n <- sum(repos$files_zip)
-  zip_files <- all_files$file_name[!is.na(all_files$file_type) & all_files$file_type == "archive"]
+  zip_files <- all_files$file_name[all_files$file_kind %in% "archive"]
   nonzip_files <- c(zip_files[!grepl("[.]zip$", zip_files, ignore.case = TRUE)],
                     listed_tars)
   report_zip <- if (length(nonzip_files) > 0) {
@@ -2863,7 +2867,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   # papers.
   is_unknown <- !is.na(all_files$data_type) & all_files$data_type == "unknown" &
     !.is_readable_archive(all_files$file_name %||% "") &
-    !((all_files$file_type %||% rep(NA_character_, nrow(all_files))) %in% "archive") &
+    !((all_files$file_kind %||% rep(NA_character_, nrow(all_files))) %in% "archive") &
     !grepl("^[.]", all_files$file_name %||% "")
   unknown_files <- all_files$file_name[is_unknown]
   n_unknown <- length(unknown_files)
@@ -2879,10 +2883,16 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   } else {
     data.frame(paper_id = character(0), files_unknown = integer(0))
   }
+  # A type metacheck does not know is no fault of the deposit: a trained model
+  # (.joblib, .pth), a genome file (.bed), an R package's DESCRIPTION. Advice
+  # to rename such files, and a yellow light for them, were wrong in 40 of 132
+  # preprints (#648, K5), so they are listed for information only, whatever
+  # their type.
   if (n_unknown > 0) {
     report_unknown <- sprintf(
-      "#### Unclassified Files\n\nWe could not classify %d file%s by name or extension: %s. Add a recognisable keyword (`data`, `code`, `materials`, `documentation`, `output`) to the file name, or use a common extension, so both humans and machines can tell what kind of file it is.",
-      n_unknown, plural(n_unknown), paste(utils::head(unknown_files, 10), collapse = ", "))
+      "#### Unclassified Files\n\n%d file%s of a kind metacheck does not know, so %s not counted as data, code or documentation: %s. This is no problem in itself.",
+      n_unknown, plural(n_unknown, " is", "s are"), plural(n_unknown, "it is", "they are"),
+      paste(utils::head(unknown_files, 10), collapse = ", "))
     summary_unknown <- sprintf("We could not classify %d file%s.",
                                n_unknown, plural(n_unknown))
   } else {
@@ -3103,8 +3113,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   )
 
   # traffic_light ----
-  # A repository where metacheck cannot tell how many studies exist, has files
-  # it cannot classify at all, or has real (non-suggestion) naming problems is
+  # A repository where metacheck cannot tell how many studies exist, or has
+  # real (non-suggestion) naming problems is
   # exactly the kind of ambiguity this traffic light exists to flag, alongside
   # the existing zip/README criteria. Files that do not belong in a repository
   # (useless_files above) are something to fix: red for a "problem" kind,
@@ -3115,7 +3125,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     tl <- "na"
   } else if (n_useless_problem > 0) {
     tl <- "red"
-  } else if (zip_n == 0 && repo_no_readme == 0 && n_unknown == 0 &&
+  } else if (zip_n == 0 && repo_no_readme == 0 &&
       is.null(report_roster) && n_naming_bad == 0 &&
       length(closed_reg_unreachable) == 0 && !any(unchecked) &&
       n_useless_suggestion == 0 && !length(view_only_projects)) {

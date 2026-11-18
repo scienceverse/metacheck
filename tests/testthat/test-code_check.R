@@ -1464,6 +1464,14 @@ test_that("text that is not a path on the authors' computer is not an absolute p
   # a message, and an R regular expression, are not Windows paths
   expect_length(ap(r"("C:\\Users\\me\\launcher.py:36: RuntimeWarning: More than 20 figures")"), 0)
   expect_length(ap(r"(india <- str_detect(x, "\\bindia\\b"))"), 0)
+  # a web route given to a call that serves or requests it, or assigned to a
+  # name that says it is a web address; a folder named "prefix" stays
+  expect_length(ap('@admin_bp.route("/api/v1/auth/login", methods=["POST"])'), 0)
+  expect_length(ap('r = client.get("/api/health")'), 0)
+  expect_length(ap('d <- httr::GET("/api/x")'), 0)
+  expect_length(ap('API_PREFIX = "/api/v1"'), 0)
+  expect_equal(ap('data_prefix = "/home/me/data"'), "/home/me/data")
+  expect_equal(ap('p <- fs::path("/Users/me/data")'), "/Users/me/data")
 })
 
 test_that("code is not recovered from a knitted .html whose .Rmd is in the deposit (#648)", {

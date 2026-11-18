@@ -464,14 +464,26 @@ test_that("code settings and row numbers are not stored as statistics (#648)", {
   nm <- names(r[[1]]$data)
   expect_true(all(c("t", "df", "p-value", "SD", "SE") %in% nm))
   expect_false(any(c("scale1", "width", "res", "size") %in% nm))
-  # a column of row numbers under a default name is not a statistic; a
-  # column of other numbers under that name stays
+  # a column of row numbers under a default name is not a statistic; nor,
+  # since #648 (K8e), is any column without a header (V1, V3) or with a number
+  # as its header, unless that names a statistic: in 118 runs these held
+  # 55,599 stored values, none typed as a statistic
   tb <- list(list(analysis = "a", title = NA, data = data.frame(grp = c("Human", "AI"), V1 = c("1", "2"),
                                                                  M = c("3.36", "4.08"))),
-             list(analysis = "b", title = NA, data = data.frame(V1 = c("5", "7"), t = c("2.1", "3.3"))))
+             list(analysis = "b", title = NA, data = data.frame(V1 = c("5", "7"), t = c("2.1", "3.3"),
+                                                                `0.61` = c("1", "2"), check.names = FALSE)))
   long <- stat_results_long(tb)
   expect_false(any(long$analysis == "a" & long$statistic == "V1"))
-  expect_equal(long$value[long$analysis == "b" & long$statistic == "V1"], c("5", "7"))
+  expect_false(any(long$statistic %in% c("V1", "0.61")))
+  expect_equal(long$value[long$analysis == "b" & long$statistic == "t"], c("2.1", "3.3"))
+  # a numbered listing of more than 20 rows that names no statistic is data
+  big <- data.frame(V1 = as.character(1:25), subjID = as.character(rep(1:5, 5)), gain = as.character(1:25 / 10))
+  expect_equal(nrow(stat_results_long(list(list(analysis = "d", title = NA, data = big)))), 0)
+  big$t <- "2.1"
+  expect_gt(nrow(stat_results_long(list(list(analysis = "d", title = NA, data = big)))), 0)
+  # the memory table of gc() and dev.off()'s "null device 1" are not results
+  expect_true(.r_is_preview_call("gc()") && .r_is_preview_call("grDevices::dev.off()"))
+  expect_false(.r_is_preview_call("summary(m)"))
 })
 
 test_that("kable tables, metafor's marked columns and lavaan's blocks are read (#648)", {

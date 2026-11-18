@@ -235,6 +235,41 @@ test_that("repo_check: an unknown file type is not a naming problem (#648)", {
   expect_equal(mo$table$data_type[mo$table$file_name == "asdoc.sthlp"], "documentation")
 })
 
+test_that("repo_check counts files with the classification it reports, and sets bundled code aside (#648)", {
+  # one classification for the counts and the File Classification
+  f <- c("run.sh", "data.nc", "x.log.gz", "scan.nii.gz", "a.tar.gz", "b.7z", "c.zip", "t.jar",
+         "README.md", "LICENSE_code_MIT.txt", "data_report.html")
+  dt <- data_classify_files(f, f)
+  expect_equal(.repo_file_kind(f, dt, c(rep(10, 8), 0, 10, 10)),
+               c("code", "data", "documentation", "data", "archive", "archive", "archive", "materials",
+                 "documentation", "documentation", "documentation"))
+  expect_equal(.repo_file_kind("README.md", "documentation", NA), "readme")
+  # code by others that a deposit bundles is material, not the authors' code
+  expect_equal(.is_others_code_path(c("analysis/extra_ados/asdoc.ado", "task/jspsych-6.3.1/jspsych.js",
+                                      "js/jquery.min.js", "node_modules/x/index.js", "analysis/main.do",
+                                      "lib/helpers.py", "external/census.csv")),
+               c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE))
+  expect_equal(data_classify_files(c("asdoc.ado", "census.csv"), c("extra_ados/asdoc.ado", "external/census.csv")),
+               c("materials", "data"))
+  # files R leaves behind
+  expect_equal(.useless_file_kind(c(".RDataTmp", ".Rapp.history")), c("temporary files", "R history"))
+
+  d <- withr::local_tempdir()
+  for (p in c("data.csv", "analysis.R", "run.sh", "model.joblib", "run.log.gz", "b.tar.gz",
+              "analysis/extra_ados/asdoc.ado", "task/jspsych-6.3.1/jspsych.js")) {
+    dir.create(dirname(file.path(d, p)), recursive = TRUE, showWarnings = FALSE)
+    writeLines("x", file.path(d, p))
+  }
+  mo <- module_run(NULL, "repo_check", local_path = d, local_only = TRUE)
+  expect_equal(mo$summary_table$files_code, 2L)    # analysis.R and run.sh
+  expect_equal(mo$summary_table$files_zip, 1L)     # b.tar.gz, not run.log.gz
+  expect_equal(mo$summary_table$files_unknown, 1L) # model.joblib, listed for information
+  rep <- paste(mo$report, collapse = "\n")
+  expect_match(rep, "This is no problem in itself", fixed = TRUE)
+  expect_no_match(rep, "Add a recognisable keyword", fixed = TRUE)
+  expect_no_match(rep, "not ZIP archives: [^.]*run.log.gz")
+})
+
 test_that("repo_check counts naming problems of a local folder without a paper (#650)", {
   d <- withr::local_tempdir()
   writeLines("x,y\n1,2", file.path(d, "my data.csv"))
