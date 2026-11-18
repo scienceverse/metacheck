@@ -56,6 +56,37 @@ test_that(".report_is_static and .report_is_brief", {
   expect_true(.report_is_brief("simple_brief"))
 })
 
+test_that(".report_file_tabs keeps a report's per-file tables to a limit", {
+  # Explicit reset, as for report_type above (a bare session option)
+  old <- getOption("metacheck.report_max_file_tabs")
+  on.exit(options(metacheck.report_max_file_tabs = old), add = TRUE)
+
+  options(metacheck.report_max_file_tabs = NULL)
+  few <- .report_file_tabs(c("a.csv", "b.csv"))
+  expect_equal(as.vector(few), c("a.csv", "b.csv"))
+  expect_null(attr(few, "note"))
+
+  many <- .report_file_tabs(sprintf("f%04d.csv", 1:1190))
+  expect_length(many, 20)
+  expect_equal(as.vector(many)[1:2], c("f0001.csv", "f0002.csv"))
+  expect_equal(attr(many, "note"), "*Showing the first 20 of 1190 files.*")
+
+  exactly <- .report_file_tabs(sprintf("f%02d.csv", 1:20))
+  expect_length(exactly, 20)
+  expect_null(attr(exactly, "note"))
+
+  options(metacheck.report_max_file_tabs = 3)
+  expect_length(.report_file_tabs(letters), 3)
+  expect_equal(attr(.report_file_tabs(letters), "note"), "*Showing the first 3 of 26 files.*")
+
+  # an unusable setting falls back to 20
+  for (bad in list(0, -1, NA, "x", c(1, 2))) {
+    options(metacheck.report_max_file_tabs = bad)
+    expect_length(suppressWarnings(.report_file_tabs(sprintf("f%02d", 1:30))), 20)
+  }
+  expect_length(.report_file_tabs(character(0)), 0)
+})
+
 test_that(".report_flagged_bullets", {
   # no report field at all
   expect_equal(.report_flagged_bullets(list(report = NULL)), character(0))
