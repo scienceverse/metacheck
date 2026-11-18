@@ -28,5 +28,7 @@ You can only make 100 API requests per hour, unless you authorise your requests,
 OSF_PAT="replace-with-your-token-string"
 }
 \examples{
-osf_api_check()
+# warn, not stop, when the OSF is down: an outage of the OSF (an "Error 500"
+# on 2026-11-18) made this example, and so R CMD check, fail
+osf_api_check(on_error = "warn")
 }
