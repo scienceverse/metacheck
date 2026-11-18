@@ -53,3 +53,25 @@ test_that("files whose download failed are named in the report and counted (#667
   expect_equal(mo$summary_table$code_files_failed, 1L)
   expect_match(paste(unlist(mo$report), collapse = " "), "Files that could not be downloaded", fixed = TRUE)
 })
+
+test_that("every request made with .mc_request() encodes its address, and leaves an encoded one as it is (#667)", {
+  expect_equal(.mc_request("https://example.org/data raw.zip")$url,
+               "https://example.org/data%20raw.zip")
+  u <- "https://api.osf.io/v2/nodes/abcde/files/?page[size]=100&filter[name]=a"
+  expect_equal(.mc_request(u)$url, u)
+  expect_equal(.mc_request("https://example.org/data%20raw.zip")$url,
+               "https://example.org/data%20raw.zip")
+})
+
+test_that("members of a zip whose address has spaces are fetched by byte range (#667)", {
+  skip_if_quick()
+  skip_api("https://github.com/ianhussey/repository-of-published-irap-data")
+  # the zip of metapsych.mp20234008 whose 432 members all failed in 0.4.4.13:
+  # .http_range_bytes() sent the address without encoding it
+  arc <- "https://raw.githubusercontent.com/ianhussey/repository-of-published-irap-data/main/data/screened/van der kaap et al - 2018/other/data raw.zip"
+  cd <- zip_peek(arc)
+  d <- withr::local_tempdir()
+  r <- .zip_fetch_members(arc, names = cd$name[1:2], dest = d)
+  expect_true(all(r$ok))
+  expect_length(list.files(d, recursive = TRUE), 2)
+})
