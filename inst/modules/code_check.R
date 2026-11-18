@@ -79,6 +79,9 @@ code_check <- function(paper, local_path = NULL,
   # about below, before anything is downloaded
   listing_partial <- if (is.null(local_path))
     get_prev_outputs("repo_check", "partial_repos") else NULL
+  # the authors' own deposits in sequence and expression archives (#660)
+  archive_deposits <- if (is.null(local_path))
+    get_prev_outputs("repo_check", "archive_deposits") else NULL
   if (is.null(all_files)) {
     # cache forwarded from this call's own `cache` argument: without it,
     # repo_check() falls back to its own default (cache = FALSE) regardless
@@ -100,6 +103,7 @@ code_check <- function(paper, local_path = NULL,
     }
     all_files <- mo$table %||% data.frame(file_name = character(0), repo_url = character(0))
     listing_partial <- mo$partial_repos
+    archive_deposits <- mo$archive_deposits
   }
   if (isTRUE(download) && nrow(all_files) > 0)
     .cap_report_partial(listing_partial, all_files$repo_url)
@@ -686,6 +690,25 @@ code_check <- function(paper, local_path = NULL,
     }
     summary_missingfiles <- c(summary_missingfiles, fetched_text)
     report_missingfiles <- paste(c(report_missingfiles, fetched_text), collapse = " ")
+  }
+  # Files the code reads are missing, and the authors deposited raw data in a
+  # sequence or expression archive (#660): in 16 papers (13 BES, 3 medRxiv)
+  # the missing files were never the archive's own files, and in 11 they
+  # included tables a processing pipeline makes from them (OTU, ASV and count
+  # tables, alignments, genotype files). File names cannot tell which ones,
+  # so the sentence is conditional.
+  if (length(missingfiles_issue) && is.data.frame(archive_deposits) && nrow(archive_deposits)) {
+    ids <- unique(code_files$paper_id[which(code_files$loaded_files_missing > 0)] %||% character(0))
+    ad <- archive_deposits[archive_deposits$paper_id %in% ids | !length(ids), , drop = FALSE]
+    if (nrow(ad)) {
+      arch_txt <- sprintf(paste(
+        "The paper deposited raw data in %s. If some of these files were made from those raw data by a processing",
+        "pipeline (for example OTU, ASV or count tables, alignments, or genotype files), deposit them as well, so the",
+        "analysis can be rerun without the pipeline."),
+        paste(sprintf("%s: %s", ad$archive, ad$accession), collapse = "; "))
+      summary_missingfiles <- c(summary_missingfiles, arch_txt)
+      report_missingfiles <- paste(c(report_missingfiles, arch_txt), collapse = " ")
+    }
   }
 
   ## set up table of code file links ----
