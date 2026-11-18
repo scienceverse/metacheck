@@ -113,8 +113,12 @@
 #' @param references if TRUE (default), also look up the data and code
 #'   deposits cited only in the reference list (one lookup each, as for a
 #'   link in the text; a preprint server's record needs none), to tell
-#'   whose deposit each one is. Their files are never added to `table`, so
-#'   data_check and code_check do not download them. FALSE leaves them out.
+#'   whose deposit each one is. A deposit that is the authors' own for this
+#'   paper (`own_this`) is then checked like a link in the text: its files
+#'   are added to `table`, so data_check, code_check and
+#'   reproducibility_check check them too, and `summary_table$ref_own` counts
+#'   them. The files of the other deposits cited there are never added.
+#'   FALSE leaves them out.
 #' @param osf_max_requests the largest number of requests to the OSF for
 #'   listing the components and folders of one OSF project (default 50; `Inf`
 #'   for no limit). The OSF needs one request per folder, and a project with
@@ -281,7 +285,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           error = \(e) NULL, finally = options(old_opt))
         facts <- inner$ownership
         if (is.data.frame(facts) && nrow(facts)) {
-          k <- match(.own_core(refl$repo_url), .own_core(facts$repo_url))
+          k <- match(.own_key(refl$repo_url), .own_key(facts$repo_url))
           k[pre] <- NA
           for (cc in setdiff(names(facts), c("paper_id", "repo_url", "repo_type", "source", "context",
                                               "sections", "cites_others", "cites_own", "ownership",
@@ -295,7 +299,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
             x[[cc]][osf_k] <- NA
           im <- inner$repo_metadata
           if (is.data.frame(im) && nrow(im) && "readme" %in% names(im))
-            x$readme <- im$readme[match(.own_core(refl$repo_url), .own_core(im$repo_url))]
+            x$readme <- im$readme[match(.own_key(refl$repo_url), .own_key(im$repo_url))]
         }
       }
       x$source <- "reference"
@@ -321,18 +325,46 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     # a link repo_check ignored as a publication (see "Publications") is not
     # a deposit
     out <- .own_mark_publications(.own_classify(paper, x), repo_publications)
-    if (isTRUE(references) && !isTRUE(local_only)) {
-      # a table without rows has empty logical columns, which cannot be
-      # joined to the reference rows' text columns
-      refs <- tryCatch(own_references(), error = \(e) NULL)
-      if (is.data.frame(refs) && nrow(refs))
-        out <- if (nrow(out)) dplyr::bind_rows(out, refs) else refs
-    }
+    # the deposits cited in the reference list, looked up once below
+    # ("deposits cited in the reference list"); a table without rows has
+    # empty logical columns, which cannot be joined to the reference rows'
+    # text columns
+    if (is.data.frame(ref_rows) && nrow(ref_rows))
+      out <- if (nrow(out)) dplyr::bind_rows(out, ref_rows) else ref_rows
     first <- c("paper_id", "source", "repo_url", "repo_type", "ownership", "ownership_group", "ownership_reason")
     out <- out[, c(intersect(first, names(out)), setdiff(names(out), c(first, "readme"))), drop = FALSE]
     rownames(out) <- NULL
     out
   }
+  ## deposits cited in the reference list (#634, #644) ----
+  # A deposit the paper cites only in its reference list ("Data are available
+  # from Dryad [75]", with the address in reference 75) and that is the
+  # authors' own for this paper (`ownership` "own_this": its record names the
+  # paper, the citing sentence is the data statement, ...) is checked like a
+  # link in the text: its files are listed, and code_check, data_check and
+  # reproducibility_check, which read `table`, check them. Before, such
+  # deposits were only classified, and a paper whose data and code were cited
+  # this way had "no links to repositories" (#644: two Proc. R. Soc. B papers,
+  # where the journal's style puts the data and code in the references).
+  # Deposits of others, the authors' earlier deposits and publications are
+  # listed in Whose Deposits only, as before.
+  ref_rows <- NULL
+  ref_checked <- data.frame(paper_id = character(0), repo_url = character(0))
+  if (isTRUE(references) && !isTRUE(local_only)) {
+    ref_rows <- tryCatch(own_references(), error = \(e) NULL)
+    if (is.data.frame(ref_rows) && nrow(ref_rows)) {
+      add <- ref_rows[ref_rows$ownership %in% "own_this", c("paper_id", "repo_url", "repo_type"), drop = FALSE]
+      add <- add[!paste(add$paper_id, .own_key(add$repo_url)) %in% paste(repos$paper_id, .own_key(repos$repo_url)), ,
+                 drop = FALSE]
+      add <- add[!duplicated(paste(add$paper_id, .own_key(add$repo_url))), , drop = FALSE]
+      if (nrow(add)) {
+        add$repo_error <- NA_character_
+        repos <- dplyr::bind_rows(repos, add)
+        ref_checked <- add[, c("paper_id", "repo_url")]
+      }
+    }
+  }
+
   # each DSpace and EPrints record's own type, by repo_url, from the requests
   # below: a publication there is not a deposit (#637; see "Publications")
   repo_record_type <- character(0)
@@ -2389,7 +2421,11 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
   if (is.data.frame(ownership) && nrow(ownership))
     ownership$listing_cut <- ownership$repo_url %in% osf_cut_urls
-  own_text <- ownership[ownership$source %in% "text",
+  # the links that were checked: those in the text, and the authors' own
+  # deposits cited in the reference list (see above)
+  checked_ref <- ownership$source %in% "reference" &
+    paste(ownership$paper_id, ownership$repo_url) %in% paste(ref_checked$paper_id, ref_checked$repo_url)
+  own_text <- ownership[ownership$source %in% "text" | checked_ref,
                         c("paper_id", "repo_url", "ownership", "ownership_group", "ownership_reason"), drop = FALSE]
   own_text <- own_text[!duplicated(own_text[c("paper_id", "repo_url")]), , drop = FALSE]
 
@@ -2560,6 +2596,19 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     nrow(repos),
     plural(nrow(repos), "repository", "repositories")
   )
+  # the deposits checked although the paper cites them only in its reference
+  # list (see "deposits cited in the reference list")
+  ref_checked <- ref_checked[paste(ref_checked$paper_id, ref_checked$repo_url) %in%
+                               paste(repos$paper_id, repos$repo_url), , drop = FALSE]
+  report_ref_checked <- NULL
+  if (nrow(ref_checked)) {
+    n_rc <- nrow(ref_checked)
+    report_ref_checked <- sprintf(
+      "The paper cites %s only in its reference list; we checked %s as the authors' deposit for this paper. Linking %s in the data availability statement as well makes %s easier to find.",
+      paste(ref_checked$repo_url, collapse = ", "),
+      plural(n_rc, "it", "them"), plural(n_rc, "it", "them"), plural(n_rc, "it", "them"))
+    summary_files <- paste(summary_files, report_ref_checked)
+  }
 
   ## deposits we did not check ----
   # (see "deposits that are not this paper's" above); one line per deposit
@@ -3095,6 +3144,7 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
     report_not_public,
     report_view_only,
     report_repo,
+    report_ref_checked,
     report_not_checked,
     report_ownership,
     if(nrow(repo_tbl)) "#### Repositories" else NULL,
@@ -3158,6 +3208,9 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   summary_table$repo_own <- own_n("text", "own")
   summary_table$repo_others <- own_n("text", "others")
   summary_table$ref_others <- own_n("reference", "others")
+  # cited only in the reference list, and checked as the paper's own
+  summary_table$ref_own <- vapply(summary_table$paper_id, \(id) sum(ref_checked$paper_id %in% id),
+                                  integer(1), USE.NAMES = FALSE)
   summary_table$naming_issues[is.na(summary_table$naming_issues)] <- 0L
   # private OSF projects and ResearchBox boxes checked through a view-only or
   # peer-review link, per paper

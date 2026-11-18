@@ -150,6 +150,29 @@ test_that(".own_reference_links finds deposits cited only in the reference list 
   expect_equal(r$ref_authors, "Lee, T")
 })
 
+test_that("a deposit's DOI written in a reference and given as its link is one deposit (#644)", {
+  expect_equal(.own_key(c("10.6084/m9.figshare.29094266", "https://doi.org/10.6084/M9.figshare.29094266",
+                          "doi.org/10.6084/m9.figshare.29094266/")),
+               rep(.own_key("10.6084/m9.figshare.29094266"), 3))
+  expect_false(.own_key("10.6084/m9.figshare.29094266") == .own_key("10.6084/m9.figshare.c.8754103"))
+  p <- paper("p1")
+  p$text <- data.frame(
+    text = c("All scripts are available from Figshare [74].",
+             "Yang S. 2025 IGPC. Figshare. (doi:10.6084/m9.figshare.29094266)"),
+    text_id = 1:2, paragraph_id = 1:2, section_id = c(1L, 2L), paper_id = "p1")
+  p$section <- data.frame(section_id = 1:2, header = c("Data accessibility", "References"),
+                          section_type = c("availability", "references"))
+  p$bib <- data.frame(bib_id = "b74", authors = "Yang, S", year = "2025", title = "",
+                      doi = "10.6084/m9.figshare.29094266", text_id = 2L)
+  p$xref <- data.frame(xref_id = "b74", xref_type = "bibr", contents = "[74]", text_id = 1L)
+  r <- .own_reference_links(p)
+  expect_equal(r$repo_url, "https://doi.org/10.6084/m9.figshare.29094266")
+  # the lookup's record, under either form, marks the same row
+  out <- own1(source = "reference", repo_url = r$repo_url, repo_type = "figshare",
+              context = NA_character_)
+  expect_equal(.own_mark_publications(out, "10.6084/m9.figshare.29094266")$ownership, "not_data")
+})
+
 test_that(".own_dep_type reads InvenioRDM's combined types (#634, #636)", {
   expect_equal(.own_dep_type(c("zenodo", "zenodo", "zenodo"), c("publication-article", "dataset", "image-figure")),
                c("JournalArticle", "Dataset", "Image"))

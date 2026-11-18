@@ -53,6 +53,7 @@ test_that("OSF no files", {
                     repo_own = 1L,
                     repo_others = 0L,
                     ref_others = 0L,
+                    ref_own = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -89,6 +90,7 @@ test_that("no code files", {
                     repo_own = 1L,
                     repo_others = 0L,
                     ref_others = 0L,
+                    ref_own = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
@@ -122,6 +124,7 @@ test_that("OSF", {
                     repo_own = 1L,
                     repo_others = 0L,
                     ref_others = 0L,
+                    ref_own = 0L,
                     repo_view_only = 0L,
                     roster_mismatch = FALSE)
   expect_equal(mod_output$summary_table, exp)
