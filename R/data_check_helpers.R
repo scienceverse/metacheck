@@ -1442,26 +1442,71 @@ manifest_merge <- function(path, patch) {
 
   batches <- split(seq_len(n), ceiling(seq_len(n) / batch_size))
   model_used <- NA_character_
-  for (rows in batches) {
+  unanswered <- integer(0)   # items no request (or retry) gave a usable value
+
+  # The answer's length limit: the caller's own, else the session's, else
+  # llm()'s default. A cut-off answer is asked again with four times it (#673):
+  # a reasoning model (gpt-oss) can spend the whole limit reasoning before it
+  # answers, while the answer for 50 items needs about a fifth of 4,096.
+  limit <- params$max_tokens %||% llm_max_tokens() %||% 4096
+  raised <- utils::modifyList(params, list(max_tokens = limit * 4))
+
+  # Ask about one batch of items; returns the items left without a usable
+  # value, and whether the answer was cut off at the length limit. llm()'s own
+  # note on a failed answer is not shown: the item is asked again, and what is
+  # still unanswered at the end is counted (attribute "llm_unanswered") and
+  # reported once below.
+  ask <- function(rows, prm) {
     listing <- paste(seq_along(rows), item_texts[rows], sep = ". ",
                      collapse = "\n")
     resp <- tryCatch(
-      llm(text = data.frame(text = listing), text_col = "text",
-          system_prompt = system_prompt, type = type_spec, model = model,
-          params = params, phase = phase),
+      withCallingHandlers(
+        llm(text = data.frame(text = listing), text_col = "text",
+            system_prompt = system_prompt, type = type_spec, model = model,
+            params = prm, phase = phase),
+        warning = function(w) {
+          if (startsWith(conditionMessage(w), "Note (not fatal)"))
+            invokeRestart("muffleWarning")
+        }),
       error = function(e) NULL
     )
+    cut <- is.data.frame(resp) && ".error_msg" %in% names(resp) &&
+      any(grepl("max_tokens", resp$.error_msg, fixed = TRUE))
     resp <- .strip_llm_wrapper(resp, "results")
     if (is.null(resp) || nrow(resp) == 0 ||
-        !all(c("index", "value") %in% names(resp))) next
-    if (is.na(model_used)) model_used <- attr(resp, "llm")$model %||% NA_character_
+        !all(c("index", "value") %in% names(resp)))
+      return(list(left = rows, cut = cut))
+    if (is.na(model_used)) model_used <<- attr(resp, "llm")$model %||% NA_character_
     idx <- suppressWarnings(as.integer(resp$index))
     val <- tolower(trimws(as.character(resp$value)))
     good <- !is.na(idx) & idx >= 1 & idx <= length(rows) & nzchar(val)
     if (!is.null(valid)) good <- good & val %in% valid
-    if (any(good)) out[rows[idx[good]]] <- val[good]
+    if (any(good)) out[rows[idx[good]]] <<- val[good]
+    list(left = rows[setdiff(seq_along(rows), idx[good])], cut = cut)
   }
+
+  for (rows in batches) {
+    a <- ask(rows, params)
+    # cut off at the length limit: once more with the higher limit, unless the
+    # caller set the limit itself
+    if (a$cut && length(a$left) && is.null(params$max_tokens))
+      a <- ask(a$left, raised)
+    left <- a$left
+    # ONE retry at half the batch size, as .llm_assign_groups() does: a
+    # shorter list is less to reason about and a shorter answer
+    if (length(left) > 1L) {
+      halves <- split(left, ceiling(seq_along(left) / ceiling(length(left) / 2)))
+      left <- unlist(lapply(halves, function(h) ask(h, params)$left), use.names = FALSE)
+    }
+    unanswered <- c(unanswered, left)
+  }
+  if (length(unanswered))
+    warning(sprintf("%s: %d of %d item%s got no usable answer from the model, also when asked again in smaller batches, and %s left to the rules.",
+                    phase %||% "LLM classification", length(unanswered), n, plural(n),
+                    if (length(unanswered) == 1) "was" else "were"),
+            call. = FALSE)
   attr(out, "llm_model") <- model_used
+  attr(out, "llm_unanswered") <- sort(unique(as.integer(unanswered)))
   out
 }
 

@@ -449,6 +449,37 @@ test_that(".osf_parse_response keeps the reason a lookup failed (#501)", {
   expect_equal(parse(403)$osf_type, "private")
 })
 
+test_that("a refused OSF request is not reported as not found, and a file is asked for without contributors (#672)", {
+  json <- function(status, body) httr2::response(
+    status_code = status, body = charToRaw(body),
+    headers = list(`Content-Type` = "application/vnd.api+json"))
+  embed <- json(400, '{"errors":[{"source":{"parameter":"embed"},"detail":"The following fields are not embeddable: bibliographic_contributors","status":"400"}]}')
+  other <- json(400, '{"errors":[{"detail":"Bad filter"}]}')
+  expect_true(metacheck:::.osf_embed_refused(embed))
+  expect_false(metacheck:::.osf_embed_refused(other))
+  expect_false(metacheck:::.osf_embed_refused(httr2::response(status_code = 404)))
+  expect_false(metacheck:::.osf_embed_refused(simpleError("no answer")))
+
+  expect_warning(r <- metacheck:::.osf_parse_response(other, osf_id = "abcde"),
+                 "refused the request")
+  expect_equal(r$osf_type, "error")
+  expect_equal(r$error, "the OSF refused the request (HTTP 400): Bad filter")
+  expect_false(metacheck:::.repo_info_ok(r))
+
+  # osf_info() asks for a file again without the contributors
+  asked <- character(0)
+  file_json <- '{"data":{"id":"64db83e25e739d047b39b61e","type":"files","attributes":{"kind":"file","name":"a.docx","size":10},"links":{"download":"https://osf.io/download/abcde/"},"relationships":{}}}'
+  testthat::local_mocked_bindings(.batch_query = function(urls, ...) {
+    asked <<- c(asked, urls)
+    lapply(urls, function(u) if (grepl("embed=", u, fixed = TRUE)) embed else json(200, file_json))
+  })
+  info <- osf_info("abcde")
+  expect_equal(asked, c("https://api.osf.io/v2/guids/abcde?embed=bibliographic_contributors",
+                        "https://api.osf.io/v2/guids/abcde"))
+  expect_equal(info$osf_type, "files")
+  expect_equal(info$name, "a.docx")
+})
+
 test_that("an OSF refusal (private) is not kept in the lasting cache, and an old one is asked again", local({
   withr::local_options(metacheck.repo_info_cache.dir = withr::local_tempdir())
   n_calls <- 0
