@@ -790,10 +790,13 @@ data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
 #' repository that happens to bundle a vendored copy of someone else's
 #' package alongside the study's own files (here the vendored package's
 #' DESCRIPTION/NAMESPACE sits alongside the study's own real data/code, so
-#' only the vendored package's own files are excluded). A package detected in
-#' a NESTED subfolder is always excluded regardless of this check, since by
-#' construction there is always an "outside" for a nested package (at
-#' minimum, the parent folder itself).
+#' only the vendored package's own files are excluded). The same check holds
+#' for a package in a subfolder: a paper's own package can sit one folder
+#' down with nothing beside it ("good 2/" in github.com/afernandez1303/good,
+#' 10.1111/2041-210X.14387, #505), and leaving it out left the paper with no
+#' files at all. The check is made once for the repository: files of any
+#' package do not count as content outside the packages, so a repository of
+#' nothing but packages keeps all of them.
 #'
 #' @param file_path a character vector of repo-relative file paths (as found
 #'   in `all_files$file_path`, all belonging to the same `repo_url`)
@@ -801,8 +804,8 @@ data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
 #' @returns a logical vector, same length as `file_path`: `TRUE` for every
 #'   file that is part of a detected R package (the `DESCRIPTION`/`NAMESPACE`
 #'   themselves, plus their standard package subdirectories) AND that package
-#'   is being excluded (root-level packages are only excluded when real
-#'   content survives outside them; nested packages are always excluded).
+#'   is being excluded (packages are only excluded when real data or code is
+#'   in the repository outside every package, wherever the package sits).
 #' @keywords internal
 .is_r_package_file <- function(file_path) {
   n <- length(file_path)
@@ -847,30 +850,30 @@ data_classify_files <- function(file_name, file_path = NULL, group = NULL) {
   owner <- vapply(seq_len(n), member_of, character(1))
   is_pkg_member <- known & !is.na(owner)
 
-  for (pd in pkg_dirs) {
-    if (!identical(pd, ".")) next  # nested packages are always excluded
-    outside_idx <- which(!is_pkg_member & known)
-    # an RStudio project marker (e.g. "BaBA.Rproj") classifies as "code" by
-    # extension alone under data_classify_files(), but it is packaging
-    # config, not a real analysis script -- exclude it here rather than loosen
-    # the general-purpose classifier just for this one packaging artifact.
-    outside_idx <- outside_idx[!grepl("\\.rproj$", basename(path[outside_idx]), ignore.case = TRUE)]
-    # The same holds for the configuration files of a package's build, test
-    # and website services (Travis, AppVeyor, GitHub Actions, codecov,
-    # pkgdown, ...): .yml files classify as "code" by extension, so a
-    # .travis.yml or codecov.yml next to a root-level package made the
-    # package look vendored and discarded all of its real files (#469).
-    # Matched by exact name or folder, not every .yml: a paper's own
-    # config.yml can be real analysis settings. These files are only left
-    # out of this decision; they stay in the file list.
-    outside_idx <- outside_idx[!.is_r_package_service_file(path[outside_idx])]
-    outside_types <- data_classify_files(basename(path[outside_idx]), path[outside_idx])
-    has_real_content <- any(outside_types %in% c("data", "code"))
-    if (!has_real_content) {
-      # nothing data/code-shaped survives outside this root-level package:
-      # the package IS the deposit, so do not exclude any of its files.
-      is_pkg_member[owner == pd & !is.na(owner)] <- FALSE
-    }
+  outside_idx <- which(!is_pkg_member & known)
+  # an RStudio project marker (e.g. "BaBA.Rproj") classifies as "code" by
+  # extension alone under data_classify_files(), but it is packaging
+  # config, not a real analysis script -- exclude it here rather than loosen
+  # the general-purpose classifier just for this one packaging artifact.
+  outside_idx <- outside_idx[!grepl("\\.rproj$", basename(path[outside_idx]), ignore.case = TRUE)]
+  # The same holds for the configuration files of a package's build, test
+  # and website services (Travis, AppVeyor, GitHub Actions, codecov,
+  # pkgdown, ...): .yml files classify as "code" by extension, so a
+  # .travis.yml or codecov.yml next to a root-level package made the
+  # package look vendored and discarded all of its real files (#469).
+  # Matched by exact name or folder, not every .yml: a paper's own
+  # config.yml can be real analysis settings. These files are only left
+  # out of this decision; they stay in the file list.
+  outside_idx <- outside_idx[!.is_r_package_service_file(path[outside_idx])]
+  # A README is not data or code, also when written as R Markdown (the
+  # README.Rmd from which a package's README.md is made classifies as code
+  # by its extension); repo_check counts it as a README (.is_readme_name()).
+  outside_idx <- outside_idx[!.is_readme_name(basename(path[outside_idx]))]
+  outside_types <- data_classify_files(basename(path[outside_idx]), path[outside_idx])
+  if (!any(outside_types %in% c("data", "code"))) {
+    # nothing data/code-shaped outside the packages, wherever they sit: the
+    # packages ARE the deposit, so none of their files is excluded (#505)
+    is_pkg_member[] <- FALSE
   }
 
   is_pkg_member

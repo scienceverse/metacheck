@@ -178,8 +178,11 @@
 # GROBID and bibr conversions, uploads): those send nothing for a long time
 # on purpose and have timeouts of their own. A stall is an ordinary request
 # error, so callers that retry or record failures do so for a stall too.
+#
+# The address is encoded first, so a space in a repository's file path does
+# not stop the request (#667); an address already encoded is left as it is.
 .mc_request <- function(url, low_speed_time = 60) {
-  httr2::request(url) |>
+  httr2::request(utils::URLencode(url)) |>
     httr2::req_options(low_speed_limit = 1024L,
                        low_speed_time = as.integer(low_speed_time),
                        connecttimeout = 30L)
@@ -226,7 +229,7 @@
   # set up requests from urls
   reqs <- lapply(urls, \(url) {
     tryCatch({
-      req <- httr2::request(url) |>
+      req <- httr2::request(utils::URLencode(url)) |>
         httr2::req_headers(Accept = accept) |>
         httr2::req_timeout(timeout_s) |>
         req_func()

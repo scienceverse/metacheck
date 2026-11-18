@@ -14,8 +14,8 @@ in \code{all_files$file_path}, all belonging to the same \code{repo_url})}
 a logical vector, same length as \code{file_path}: \code{TRUE} for every
 file that is part of a detected R package (the \code{DESCRIPTION}/\code{NAMESPACE}
 themselves, plus their standard package subdirectories) AND that package
-is being excluded (root-level packages are only excluded when real
-content survives outside them; nested packages are always excluded).
+is being excluded (packages are only excluded when real data or code is
+in the repository outside every package, wherever the package sits).
 }
 \description{
 An R package repository (or a package kept in a subfolder of a larger
@@ -59,9 +59,12 @@ outside the package for the study's content to be) versus a study's
 repository that happens to bundle a vendored copy of someone else's
 package alongside the study's own files (here the vendored package's
 DESCRIPTION/NAMESPACE sits alongside the study's own real data/code, so
-only the vendored package's own files are excluded). A package detected in
-a NESTED subfolder is always excluded regardless of this check, since by
-construction there is always an "outside" for a nested package (at
-minimum, the parent folder itself).
+only the vendored package's own files are excluded). The same check holds
+for a package in a subfolder: a paper's own package can sit one folder
+down with nothing beside it ("good 2/" in github.com/afernandez1303/good,
+10.1111/2041-210X.14387, #505), and leaving it out left the paper with no
+files at all. The check is made once for the repository: files of any
+package do not count as content outside the packages, so a repository of
+nothing but packages keeps all of them.
 }
 \keyword{internal}
