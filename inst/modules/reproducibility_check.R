@@ -72,13 +72,37 @@
 #' (e.g. Bayesian) scripts. `dependency_unavailable` means the script's own
 #' package could not be installed from live CRAN, the CRAN Archive, or a named
 #' GitHub/URL source — an infrastructure limitation, not a defect in the
-#' paper's code, so unlike `errored`/`timed_out` it does **not** force the
-#' traffic light red. The full stdout/stderr of every run is kept in the
+#' paper's code. The full stdout/stderr of every run is kept in the
 #' result's `run_results` (the report shows it in per-script dropdowns, capped
-#' for readability). The traffic light reflects the STATIC readiness signals
-#' by default, but an execution error (`errored`/`timed_out`) does recolour it
-#' to red — a script that crashes on its own analysis is a genuine
-#' reproduction failure. A script that fails with `could not find function`
+#' for readability).
+#'
+#' `run_results$checked` says what the run of each script shows about the code,
+#' in five groups, so that a script that does not reproduce is kept apart from
+#' one the check could not test: `ran` (it ran to the end); `code_error` (it did
+#' not reproduce: it stopped with an error of the code or the deposit, could not
+#' be read, or needs a file the deposit does not hold); `dependency` (a package
+#' or program was not available: a package that could not be installed or was
+#' not loaded, a program outside R and Python, a system library, or R crashing
+#' in a package's compiled code); `time` (it did not finish within the time
+#' limit for one script, or was not started because the time for all scripts
+#' had run out); and `not_checkable` (it could not be checked automatically: it
+#' needs a person, the internet, a key or another setting of the authors'
+#' computer, one platform such as Google Colab, Windows or OpenSAFELY, more
+#' memory than the run allows, a file that was not downloaded, a screen, or a
+#' program that runs it, or it is a file of a package of the code that Python
+#' runs only as a module of that package). It is NA for files run inside another
+#' script, files that are not an analysis, files not read, and a Docker failure.
+#' `summary_table` counts each group (`repro_ran_n`, `repro_code_error_n`,
+#' `repro_dependency_n`, `repro_time_n`, `repro_not_checkable_n`), and the
+#' report's first sentence gives them. The traffic light reflects the static
+#' readiness signals by default; a script in `code_error` that stopped with an
+#' error makes it red, as a script that crashes on its own analysis is a
+#' genuine reproduction failure, and a script in one of the other three groups
+#' keeps it from being green. Calls that need a screen, which the run does not
+#' have (`dev.print()`, `dev.copy2pdf()`, `dev.copy2eps()`, `savePlot()`,
+#' `windows()`, `win.graph()`, `x11()`, `quartz()`, `View()`), are replaced
+#' before the run by calls that need none, which `modifications` records as
+#' `screen_call_replaced`. A script that fails with `could not find function`
 #' is run once more with the `library()` calls the project's other scripts
 #' make added at its top (or the one package that exports the function, or
 #' magrittr for `%>%`), and a script that then runs is reported as
@@ -2288,6 +2312,10 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
     # stopped on a Git LFS pointer the deposit has no file for: a missing file (#568)
     r_lfs_stopped <- .repro_lfs_stopped(run_results, sandbox_root)
     run_results$reason[run_results$file_name %in% names(r_lfs_stopped)] <- "file"
+    # ran, did not reproduce, a package or program not available, out of time,
+    # or could not be checked automatically (#580)
+    run_results$checked <- .repro_check_group(run_results$outcome, run_results$reason,
+                                              paste(run_results$error, run_results$stderr))
 
     # A predicted missing file no longer counts for a script that ran through.
     tl <- .repro_static_light(
@@ -2933,8 +2961,6 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   # ── 10. Summary ─────────────────────────────────────────────────────────────
   n_ran_ok <- if (!is.null(run_results)) sum(run_results$outcome == "ran_ok") else NA_integer_
-  n_nodep_sum <- if (!is.null(run_results))
-    sum(run_results$outcome == "dependency_unavailable") else 0L
   n_by_src_sum <- if (!is.null(run_results))
     sum(run_results$outcome == "run_by_source") else 0L
   # the scripts with a result of their own, and those that were started: files
@@ -2961,9 +2987,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       if (n_by_src_sum > 0) sprintf(
         " (%d more %s run by another script with `source()`)", n_by_src_sum,
         plural(n_by_src_sum, "is", "are")) else ""),
-    if (n_nodep_sum > 0) sprintf(
-      "%d script%s could not run because %s own dependency is unavailable (not counted as an error of the code).",
-      n_nodep_sum, plural(n_nodep_sum), plural(n_nodep_sum, "its", "their")),
+    # did not reproduce, lacked a package or program, out of time, or could not
+    # be checked automatically (#580)
+    if (isTRUE(execute) && n_run_own > 0) .repro_groups_sentence(run_results),
     if (nrow(reported_inputs) > 0) sprintf(
       "%d referenced input%s unavailable (%d withheld due to size).",
       nrow(reported_inputs), plural(nrow(reported_inputs)), n_withheld),
@@ -3076,6 +3102,17 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                                 plural(run_tbl$env_calls_replaced[hit]))) else NULL
     } else NULL
 
+    # calls that need a screen, replaced so they run without one (#580)
+    screen_rows_mod <- if (exists("run_tbl", inherits = FALSE) &&
+                           "screen_calls_replaced" %in% names(run_tbl)) {
+      hit <- nzchar(run_tbl$screen_calls_replaced %||% "")
+      if (any(hit)) dplyr::bind_rows(lapply(which(hit), function(i)
+        data.frame(file_name = run_tbl$file_name[i], change_type = "screen_call_replaced",
+                   detail = strsplit(run_tbl$screen_calls_replaced[i], "; ", fixed = TRUE)[[1]],
+                   stringsAsFactors = FALSE)))
+      else NULL
+    } else NULL
+
     slash_rows_mod <- if (exists("run_tbl", inherits = FALSE)) .repro_slash_rows(run_tbl)
     old_default_rows <- if (exists("old_defaults_used", inherits = FALSE) && length(old_defaults_used))
       data.frame(file_name = rep(names(old_defaults_used), lengths(old_defaults_used)),
@@ -3099,7 +3136,7 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       later_rows <- rbind(later_rows, data.frame(file_name = r_folders_made$script, change_type = "folder_made",
         detail = sprintf("made the folder %s, where the script writes, and ran it once more", r_folders_made$folder)))
     dplyr::bind_rows(rw_rows, setwd_rows_mod, lib_loc_rows_mod, family_rows_mod, library_rows_mod, env_rows_mod,
-                     slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
+                     screen_rows_mod, slash_rows_mod, old_default_rows, stan_rows_mod, run_after_rows, later_rows)
   } else rw_rows
   if (is.null(modifications) || !nrow(modifications))
     modifications <- data.frame(file_name = character(0), change_type = character(0),
@@ -3757,6 +3794,8 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
       py_run_results$reason <- .repro_failure_reason(py_run_results$outcome, paste(py_run_results$error, py_run_results$stderr))
       py_lfs_stopped <- .repro_lfs_stopped(py_run_results, sandbox_root)
       py_run_results$reason[py_run_results$file_name %in% names(py_lfs_stopped)] <- "file"
+      py_run_results$checked <- .repro_check_group(py_run_results$outcome, py_run_results$reason,
+                                                   paste(py_run_results$error, py_run_results$stderr))
     }
     if (!is.null(py_run_results))
       .dbg("[repro/py] execution finished. outcomes: ",
@@ -4254,6 +4293,9 @@ reproducibility_check <- function(paper, local_path = NULL, local_only = FALSE,
                                         n_py_imp, plural(n_py_imp, "file is", "files are"),
                                         plural(n_py_imp, "its", "their")) else "")
     },
+    if (isTRUE(execute) && !is.null(py_run_results) &&
+        sum(!py_run_results$outcome %in% .repro_not_own_outcomes) > 0)
+      .repro_groups_sentence(py_run_results),
     if (nrow(py_reported_inputs) > 0) sprintf(
       "%d referenced Python input%s unavailable (%d withheld due to size).",
       nrow(py_reported_inputs), plural(nrow(py_reported_inputs)), n_py_withheld),
