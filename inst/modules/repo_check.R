@@ -632,7 +632,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
           # Waterbutler-zip decision in download_repo_files(): only osfstorage is
           # coverable by the node's ?zip= endpoint. NULL when osf_info did not
           # return the column, which download_repo_files() falls back on gracefully.
-          provider = osf_file_list$provider %||% NA_character_
+          provider = osf_file_list$provider %||% NA_character_,
+          # the component the file is stored in: its storage is downloaded as
+          # one zip per component (#675)
+          osf_node = osf_file_list$project %||% NA_character_
         )
       }
 
@@ -776,7 +779,8 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
                 file_location = rep(NA_character_, nrow(parent_file_list)),
                 file_size = parent_file_list$size,
                 file_type = parent_file_list$filetype,
-                provider = parent_file_list$provider %||% NA_character_
+                provider = parent_file_list$provider %||% NA_character_,
+                osf_node = parent_file_list$project %||% NA_character_
               )
             )
           }
@@ -2309,6 +2313,10 @@ repo_check <- function(paper, local_path = NULL, local_only = FALSE,
   }
 
   ## file numbers and types ----
+  # each OSF storage's listed size and number of files, which decide whether
+  # it is downloaded as one archive: the checks pass download_repo_files()
+  # only the files they want, so it cannot count the storage itself (#675)
+  osf_files_df <- .osf_storage_totals(osf_files_df)
   all_files <- dplyr::bind_rows(osf_files_df, github_files_df, gitlab_files_df, rb_files_df, pa_files_df, dspace7_files_df, zenodo_files_df, dv_files_df, fs_files_df, dryad_files_df, reshare_files_df, fourtu_files_df, mendeley_files_df, dataone_files_df, ldbase_files_df, ckan_files_df, seq_files_df, local_files_df)
 
   # One row per REPOSITORY (not per paper, not per file): a paper can link

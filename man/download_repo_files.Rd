@@ -98,7 +98,12 @@ Fetches the bytes for a table of repository files (as produced by
 persistent on-disk cache, and fills in \code{file_location} for every file it
 successfully retrieves. For Dryad (\code{stash:download} endpoint), GitHub
 (zipball) and GitLab (\code{archive.zip}), a whole-repo archive download is used
-instead of one HTTP request per file. None of these archives reports its
+instead of one HTTP request per file. A GitHub repository linked to an OSF
+project, and each OSF component's OSF Storage (\verb{?zip=}), are downloaded as
+one archive when more than 50 of their files, or at least half of them, are
+wanted and the archive is at most twice the size of the wanted files (the
+component and the storage's size come from \code{repo_check()}'s \code{osf_node},
+\code{storage_size} and \code{storage_n}). None of these archives reports its
 size in advance, so the size is estimated from the listed file sizes: an
 archive with no listed sizes, or an estimate above twice
 \code{max_download_size}, is not used, and a download that grows past twice
