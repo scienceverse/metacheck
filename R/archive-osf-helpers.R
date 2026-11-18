@@ -267,6 +267,18 @@ osf_pat <- function(pat = NULL) {
     fetch_ids  <- all_ids[fetch_idx]
     resps <- .batch_query(fetch_urls, msg = "OSF Info", req_func = .osf_headers)
 
+    # An OSF item without contributors (a single file) cannot have them added:
+    # the OSF refuses the whole request (HTTP 400, "not embeddable"), and every
+    # link to a file was reported as not found (#672). Such an item is asked
+    # for again without them, one extra request for each.
+    refused <- which(vapply(resps, .osf_embed_refused, logical(1)))
+    if (length(refused)) {
+      again <- .batch_query(sub("[?&]embed=bibliographic_contributors$", "",
+                                fetch_urls[refused]),
+                            msg = "OSF Info", req_func = .osf_headers)
+      resps[refused] <- again
+    }
+
     for (k in seq_along(fetch_idx)) {
       i <- fetch_idx[k]
       resp <- resps[[k]]
@@ -477,6 +489,32 @@ osf_pat <- function(pat = NULL) {
   dplyr::bind_rows(folder_rows, file_rows)
 }
 
+# The errors in an OSF API answer that is not a success (the body's
+# "errors", each with a "detail" and a "source"), or NULL when the body has
+# none or cannot be read.
+.osf_errors <- function(resp) {
+  if (!inherits(resp, "httr2_response")) return(NULL)
+  body <- tryCatch(httr2::resp_body_json(resp, simplifyVector = FALSE),
+                   error = function(e) NULL)
+  if (is.list(body) && is.list(body$errors)) body$errors else NULL
+}
+
+# The OSF's own reason in an answer that is not a success, as one text, or ""
+.osf_error_detail <- function(resp) {
+  d <- vapply(.osf_errors(resp), function(e)
+    if (is.character(e$detail)) e$detail[1] else "", character(1))
+  paste(unique(d[nzchar(d)]), collapse = "; ")
+}
+
+# Whether the OSF refused a request because of its `embed` parameter (HTTP
+# 400 with an error whose source is "embed"): an item without contributors,
+# such as a single file, cannot have them added (#672).
+.osf_embed_refused <- function(resp) {
+  if (!inherits(resp, "httr2_response") || httr2::resp_status(resp) != 400) return(FALSE)
+  any(vapply(.osf_errors(resp), function(e)
+    identical(e$source$parameter, "embed"), logical(1)))
+}
+
 #' Parse an OSF API response into a data frame
 #'
 #' @param resp an httr2 response
@@ -501,6 +539,16 @@ osf_pat <- function(pat = NULL) {
       return(data.frame(osf_id = id,
                         osf_type = "private",
                         public = FALSE))
+    } else if (sc == 400) {
+      # The OSF refused the request itself, which says nothing about whether
+      # the item exists: it was reported as "not found" (#672)
+      detail <- .osf_error_detail(resp)
+      warning(if (is.na(id)) "An OSF resource" else id,
+              ": the OSF refused the request (HTTP 400)",
+              if (nzchar(detail)) paste0(": ", detail) else "", call. = FALSE)
+      return(data.frame(osf_id = id, osf_type = "error",
+                        error = paste0("the OSF refused the request (HTTP 400)",
+                                       if (nzchar(detail)) paste0(": ", detail) else "")))
     } else if (sc == 429) {
       # The OSF sends no time at which its limit ends (100 requests per hour
       # without a key, 10,000 per day with one), so an hour is assumed.

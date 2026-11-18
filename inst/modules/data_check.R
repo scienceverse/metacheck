@@ -369,6 +369,10 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
 
   llm_file_updates <- 0L
   llm_col_updates <- 0L
+  # files and columns the model gave no usable answer for, also when asked
+  # again (#673): the paper each belongs to, for the report and summary_table
+  llm_file_unanswered <- character(0)
+  llm_col_unanswered  <- character(0)
   llm_group_updates <- 0L
   roster_check      <- NULL
   group_unresolved  <- character(0)
@@ -399,6 +403,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
                                     phase = "Classifying file types")
       if (is.na(llm_model_used))
         llm_model_used <- attr(pred, "llm_model") %||% NA_character_
+      llm_file_unanswered <- as.character(
+        (all_files$paper_id %||% rep(NA_character_, nrow(all_files)))[
+          amb_files[attr(pred, "llm_unanswered")]])
 
       ok <- !is.na(pred)
       if (any(ok)) {
@@ -1073,6 +1080,9 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
           phase = "Classifying column concepts")
         if (is.na(llm_model_used))
           llm_model_used <- attr(pred_concept, "llm_model") %||% NA_character_
+        un_cols <- gap_idx[attr(pred_concept, "llm_unanswered")]
+        llm_col_unanswered <- as.character(
+          (columns_df$paper_id %||% rep(NA_character_, nrow(columns_df)))[un_cols])
         # 'measure'/'other' are non-informative concepts → leave NA.
         fill <- !is.na(pred_concept) & !pred_concept %in% c("measure", "other") &
           is.na(columns_df$concept[gap_idx])
@@ -1358,6 +1368,16 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
       llm_col_updates, plural(llm_col_updates),
       n_groups, plural(n_groups)
     )
+    # items the model gave no usable answer for, also when asked again (#673)
+    n_un_cols <- length(llm_col_unanswered)
+    n_un_files <- length(llm_file_unanswered)
+    if (n_un_cols + n_un_files > 0)
+      llm_text <- paste(llm_text, sprintf(
+        "The model gave no usable answer for %s, also when asked again in smaller batches; the rules alone classified %s.",
+        paste(c(if (n_un_cols) sprintf("%d column%s", n_un_cols, plural(n_un_cols)),
+                if (n_un_files) sprintf("%d file%s", n_un_files, plural(n_un_files))),
+              collapse = " and "),
+        if (n_un_cols + n_un_files == 1) "it" else "them"))
     report <- c(report, llm_text)
   }
 
@@ -1495,6 +1515,14 @@ data_check <- function(paper, local_path = NULL, local_only = FALSE,
     failed_files[!duplicated(paste(failed_files$repo_url, failed_files$file_name)), , drop = FALSE] else NULL
   summary_table$files_failed <- if (is.null(ff)) 0L else if (nrow(summary_table) == 1) nrow(ff) else
     vapply(summary_table$paper_id, \(id) sum(ff$paper_id %in% id), integer(1), USE.NAMES = FALSE)
+  # columns and files the model gave no usable answer for, per paper (#673);
+  # NA when the model was not used, so a run without it does not read as one
+  # without failures
+  count_by_paper <- function(pids) if (!llm_use()) NA_integer_ else
+    if (nrow(summary_table) == 1) length(pids) else
+    vapply(summary_table$paper_id, \(id) sum(pids %in% id), integer(1), USE.NAMES = FALSE)
+  summary_table$llm_cols_unanswered <- count_by_paper(llm_col_unanswered)
+  summary_table$llm_files_unanswered <- count_by_paper(llm_file_unanswered)
 
   # A brief report (report_type() "brief" or "simple_brief", set while the
   # modules run) is about what to improve. How the files were grouped into
